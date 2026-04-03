@@ -1,8 +1,11 @@
-import { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
+import { createGpuHal } from '@jbrowse/core/gpu/hal'
 
 import { Canvas2DWiggleRenderer } from './Canvas2DWiggleRenderer.ts'
-import { WebGLWiggleRenderer } from './WebGLWiggleRenderer.ts'
-import { WebGPUWiggleRenderer } from './WebGPUWiggleRenderer.ts'
+import {
+  GpuWiggleRenderer,
+  WIGGLE_PASSES,
+  WIGGLE_UNIFORM_BYTE_SIZE,
+} from './GpuWiggleRenderer.ts'
 
 import type {
   SourceRenderData,
@@ -38,25 +41,18 @@ export class WiggleRenderer {
   }
 
   async init() {
-    if (getGpuOverride() === 'canvas2d') {
-      this.backend = new Canvas2DWiggleRenderer(this.canvas)
+    const hal = await createGpuHal(
+      this.canvas,
+      WIGGLE_PASSES,
+      WIGGLE_UNIFORM_BYTE_SIZE,
+    )
+    if (hal) {
+      this.backend = new GpuWiggleRenderer(hal)
       return true
     }
 
-    const webgpu = await WebGPUWiggleRenderer.create(this.canvas)
-    if (webgpu) {
-      this.backend = webgpu
-      return true
-    }
-
-    try {
-      this.backend = new WebGLWiggleRenderer(this.canvas)
-      return true
-    } catch (e) {
-      console.warn('[WiggleRenderer] WebGL2 fallback also failed:', e)
-      this.backend = new Canvas2DWiggleRenderer(this.canvas)
-      return true
-    }
+    this.backend = new Canvas2DWiggleRenderer(this.canvas)
+    return true
   }
 
   uploadRegion(

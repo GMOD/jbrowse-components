@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { MISMATCH_COLOR, buildCoverageTooltipBin } from '@jbrowse/alignments-core'
-import { getBpDisplayStr, getContainingView, useGpuRenderer } from '@jbrowse/core/util'
+import {
+  getBpDisplayStr,
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
+  useGpuRenderer,
+} from '@jbrowse/core/util'
 import { hexToGLrgb } from '@jbrowse/core/util/colord'
 import {
   CoverageTooltipContents,
@@ -16,6 +23,8 @@ import { computeMultiSyntenyLabels } from './computeVisibleLabels.ts'
 import { buildSyntenyIndex, hitTestMultiSynteny } from './hitTesting.ts'
 import { LABEL_FONT_MAX, LABEL_WIDTH, truncateGenomeName } from './multiSyntenyBackendTypes.ts'
 
+import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { MultiLGVSyntenyDisplayModel } from '../model.ts'
 import type { FeatureHitResult } from './hitTesting.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
@@ -66,6 +75,47 @@ function formatTooltip(hit: FeatureHitResult) {
   }
 
   return lines.filter(Boolean).join('\n')
+}
+
+function pct(n: number, total: number) {
+  return `${((n / (total || 1)) * 100).toFixed(1)}%`
+}
+
+function openCoverageWidget(
+  model: IAnyStateTreeNode,
+  bin: CoverageTooltipBin,
+  refName: string,
+) {
+  const session = getSession(model)
+  if (isSessionModelWithWidgets(session)) {
+    const featureData: Record<string, unknown> = {
+      uniqueId: `coverage-${refName}-${bin.position}`,
+      name: 'Coverage',
+      type: 'coverage',
+      refName,
+      start: bin.position,
+      end: bin.position + 1,
+      depth: bin.depth,
+    }
+    for (const [base, snpEntry] of Object.entries(bin.snps)) {
+      featureData[`SNP ${base.toUpperCase()}`] =
+        `${snpEntry.count}/${bin.depth} (${pct(snpEntry.count, bin.depth)}) (${snpEntry.fwd}(+) ${snpEntry.rev}(-))`
+    }
+    for (const [type, interbaseEntry] of Object.entries(bin.interbase)) {
+      featureData[type] =
+        `${interbaseEntry.count}/${bin.interbaseDepth} (${pct(interbaseEntry.count, bin.interbaseDepth)}) (${interbaseEntry.minLen}-${interbaseEntry.maxLen}bp)`
+    }
+    const featureWidget = session.addWidget(
+      'BaseFeatureWidget',
+      'baseFeature',
+      {
+        featureData,
+        view: getContainingView(model),
+        track: getContainingTrack(model),
+      },
+    )
+    session.showWidget(featureWidget)
+  }
 }
 
 function featureToRect(
@@ -405,11 +455,18 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   const onClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
       const hit = doHitTest(e)
-      setSelectedHit(prev =>
-        hit?.feature.featureId === prev?.feature.featureId ? undefined : hit,
-      )
+      if (hit) {
+        setSelectedHit(prev =>
+          hit.feature.featureId === prev?.feature.featureId ? undefined : hit,
+        )
+      } else {
+        const covHit = doCoverageHitTest(e)
+        if (covHit) {
+          openCoverageWidget(model, covHit.bin, covHit.refName)
+        }
+      }
     },
-    [doHitTest],
+    [doHitTest, doCoverageHitTest, model],
   )
 
   const labels = useMemo(

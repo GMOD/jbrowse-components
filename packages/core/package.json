@@ -39,6 +39,7 @@
     "./gpu/initGpuContext": "./src/gpu/initGpuContext.ts",
     "./gpu/webglUtils": "./src/gpu/webglUtils.ts",
     "./gpu/webgpuUtils": "./src/gpu/webgpuUtils.ts",
+    "./gpu/hal": "./src/gpu/hal/index.ts",
     "./pluggableElementTypes": "./src/pluggableElementTypes/index.ts",
     "./pluggableElementTypes/AdapterType": "./src/pluggableElementTypes/AdapterType.ts",
     "./pluggableElementTypes/ConnectionType": "./src/pluggableElementTypes/ConnectionType.ts",
@@ -261,6 +262,10 @@
       "./gpu/webglUtils": {
         "types": "./esm/gpu/webglUtils.d.ts",
         "import": "./esm/gpu/webglUtils.js"
+      },
+      "./gpu/hal": {
+        "types": "./esm/gpu/hal/index.d.ts",
+        "import": "./esm/gpu/hal/index.js"
       },
       "./pluggableElementTypes": {
         "types": "./esm/pluggableElementTypes/index.d.ts",
@@ -707,6 +712,9 @@
         ],
         "gpu/webglUtils": [
           "esm/gpu/webglUtils.d.ts"
+        ],
+        "gpu/hal": [
+          "esm/gpu/hal/index.d.ts"
         ],
         "pluggableElementTypes": [
           "esm/pluggableElementTypes/index.d.ts"

@@ -1,7 +1,12 @@
-import { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
+import { createGpuHal } from '@jbrowse/core/gpu/hal'
 
 import { Canvas2DMultiSyntenyRenderer } from './Canvas2DMultiSyntenyRenderer.ts'
-import { prepareBlockGeometry, packCoverageForGpu, packSnpCoverageForGpu } from './multiSyntenyGpuData.ts'
+import {
+  GpuMultiSyntenyRenderer,
+  SYNTENY_PASSES,
+  SYNTENY_UNIFORM_BYTE_SIZE,
+} from './GpuMultiSyntenyRenderer.ts'
+import { prepareBlockGeometry, packCoverageForGpu, packSnpCoverageForGpu, packIndicatorsForGpu } from './multiSyntenyGpuData.ts'
 
 import type {
   GpuRenderOpts,
@@ -40,33 +45,15 @@ export class MultiSyntenyRenderer {
     this.gpuBackend = null
     this.canvasBackend = null
 
-    if (getGpuOverride() === 'canvas2d') {
-      this.canvasBackend = new Canvas2DMultiSyntenyRenderer(this.canvas)
-      this.backendType = 'canvas2d'
+    const hal = await createGpuHal(
+      this.canvas,
+      SYNTENY_PASSES,
+      SYNTENY_UNIFORM_BYTE_SIZE,
+    )
+    if (hal) {
+      this.gpuBackend = new GpuMultiSyntenyRenderer(hal)
+      this.backendType = 'webgpu'
       return true
-    }
-
-    try {
-      const { WebGPUMultiSyntenyRenderer } =
-        await import('./WebGPUMultiSyntenyRenderer.ts')
-      const gpu = await WebGPUMultiSyntenyRenderer.create(this.canvas)
-      if (gpu) {
-        this.gpuBackend = gpu
-        this.backendType = 'webgpu'
-        return true
-      }
-    } catch {
-      // WebGPU not available
-    }
-
-    try {
-      const { WebGLMultiSyntenyRenderer } =
-        await import('./WebGLMultiSyntenyRenderer.ts')
-      this.gpuBackend = new WebGLMultiSyntenyRenderer(this.canvas)
-      this.backendType = 'webgl'
-      return true
-    } catch {
-      // WebGL2 not available
     }
 
     this.canvasBackend = new Canvas2DMultiSyntenyRenderer(this.canvas)
@@ -137,6 +124,20 @@ export class MultiSyntenyRenderer {
         regionData.regionStart,
       )
       this.gpuBackend.uploadSnpCoverageForBlock(regionNumber, packed)
+    }
+  }
+
+  uploadIndicatorsForBlock(
+    regionNumber: number,
+    regionData: SyntenyRegionData,
+  ) {
+    if (this.gpuBackend) {
+      const packed = packIndicatorsForGpu(
+        regionData.indicatorPositions,
+        regionData.numIndicators,
+        regionData.regionStart,
+      )
+      this.gpuBackend.uploadIndicatorsForBlock(regionNumber, packed)
     }
   }
 

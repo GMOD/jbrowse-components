@@ -15,13 +15,17 @@ export {
   drawCsOps,
   drawDeletion,
   drawInsertion,
+  INDICATOR_TRIANGLE_H,
+  INDICATOR_TRIANGLE_HW,
+  drawIndicatorTriangle,
+  extractIndelsFromCs,
   extractMismatchesFromCs,
   isCsOpChar,
   isDigit,
   parseCsSeqLen,
   textWidthForNumber,
 } from './labelConstants.ts'
-export type { CigarOpDrawColors } from './labelConstants.ts'
+export type { CigarOpDrawColors, IndelEntry } from './labelConstants.ts'
 export {
   CIGAR_D,
   CIGAR_EQ,
@@ -33,6 +37,8 @@ export {
   CIGAR_S,
   CIGAR_X,
 } from './cigarConstants.ts'
+export { visitCigarOps, visitCsOps } from './cigarOpsVisitor.ts'
+export type { CigarOpsVisitor } from './cigarOpsVisitor.ts'
 export { HP_GLSL_CORE, HP_GLSL_WITH_UNIFORM } from './hpGlsl.ts'
 export { HP_WGSL_CORE } from './hpWgsl.ts'
 export { InstanceBuilder } from './InstanceBuilder.ts'
@@ -45,21 +51,25 @@ export {
   SIMPLE_VERTEX_OUTPUT_WGSL,
 } from './sharedShaders.ts'
 export {
-  STANDARD_BLEND_STATE,
-  createPickingFbo,
-  createStandardBindGroup,
-  createStandardBindGroupLayout,
-  createStorageBuffer,
-  enableStandardBlend,
   getDevicePixelRatio,
   resizeCanvas,
 } from './rendererUtils.ts'
-export type { PickingFbo } from './rendererUtils.ts'
+export {
+  packSnpSegmentsForGpu,
+  packIndicatorsForGpu,
+  packNoncovSegmentsForGpu,
+} from './coverageGpuPacking.ts'
+export type {
+  SnpGpuUpload,
+  IndicatorGpuUpload,
+  NoncovGpuUpload,
+} from './coverageGpuPacking.ts'
 export {
   YSCALEBAR_LABEL_OFFSET,
   buildCoverageTooltipBin,
   computeCoverageTicks,
   computeDepthScale,
+  computeInsertionIndicators,
   computeSNPCoverage,
   computeVisibleMaxDepth,
   countSnpsAtPosition,
@@ -74,6 +84,7 @@ export type {
   CoverageTooltipBin,
   DownsampledBins,
   MismatchArrays,
+  InsertionIndicatorResult,
   MismatchEntry,
   SNPCoverageResult,
 } from './coverageDownsampling.ts'

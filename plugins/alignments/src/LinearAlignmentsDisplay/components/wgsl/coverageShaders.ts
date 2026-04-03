@@ -218,22 +218,3 @@ fn fs_main(@location(0) color: vec4f, @location(1) bary: vec3f) -> @location(0) 
   return vec4f(color.rgb, color.a * aa);
 }
 `
-
-export const SEPARATOR_LINE_WGSL = `
-${PREAMBLE}
-${SIMPLE_VERTEX_OUTPUT}
-
-struct LineVert { x: f32, y: f32 }
-@group(0) @binding(0) var<storage, read> verts: array<LineVert>;
-
-@vertex
-fn vs_main(@builtin(vertex_index) vid: u32) -> VertexOutput {
-  var out: VertexOutput;
-  let v = verts[vid];
-  out.position = vec4f(v.x, v.y, 0.0, 1.0);
-  out.color = vec4f(uf(0u), uf(1u), uf(2u), uf(3u));
-  return out;
-}
-
-${SIMPLE_FS}
-`

@@ -1,6 +1,6 @@
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
-import { drawCigarOps, drawCsOps } from '@jbrowse/alignments-core'
+import { drawCigarOps, drawCsOps, drawIndicatorTriangle } from '@jbrowse/alignments-core'
 
 import { BG_COLOR_HEX, LABEL_FONT_MAX, truncateGenomeName } from './multiSyntenyBackendTypes.ts'
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
@@ -72,22 +72,33 @@ function renderCoverageToCtx(
     ctx.fillRect(px, bandTop, Math.max(px2 - px, 1), bandBottom - bandTop)
   }
 
-  for (let i = 0; i < coverage.snpCount; i++) {
-    const pos = regionStart + coverage.snpPositions[i]!
-    const px = bpToPx(refName, pos)
-    const px2 = bpToPx(refName, pos + 1)
-    if (px === undefined || px2 === undefined) {
+  if (coverage.snpCount <= width * 4) {
+    for (let i = 0; i < coverage.snpCount; i++) {
+      const pos = regionStart + coverage.snpPositions[i]!
+      const px = bpToPx(refName, pos)
+      const px2 = bpToPx(refName, pos + 1)
+      if (px === undefined || px2 === undefined) {
+        continue
+      }
+      if (px > width || px2 < 0) {
+        continue
+      }
+      const yOff = coverage.snpYOffsets[i]!
+      const segH = coverage.snpHeights[i]!
+      const segBottom = coverageBottom - yOff * depthScale * effectiveHeight
+      const segTop = segBottom - segH * depthScale * effectiveHeight
+      ctx.fillStyle = snpColorForType(coverage.snpColorTypes[i]!, snpColors)
+      ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segBottom - segTop)
+    }
+  }
+
+  ctx.fillStyle = snpColors.insertion
+  for (let i = 0; i < coverage.numIndicators; i++) {
+    const px = bpToPx(refName, regionStart + coverage.indicatorPositions[i]!)
+    if (px === undefined || px < 0 || px > width) {
       continue
     }
-    if (px > width || px2 < 0) {
-      continue
-    }
-    const yOff = coverage.snpYOffsets[i]!
-    const segH = coverage.snpHeights[i]!
-    const segBottom = coverageBottom - yOff * depthScale * effectiveHeight
-    const segTop = segBottom - segH * depthScale * effectiveHeight
-    ctx.fillStyle = snpColorForType(coverage.snpColorTypes[i]!, snpColors)
-    ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segBottom - segTop)
+    drawIndicatorTriangle(ctx, px)
   }
 }
 

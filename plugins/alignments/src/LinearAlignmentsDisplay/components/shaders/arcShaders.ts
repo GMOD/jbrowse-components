@@ -1,5 +1,5 @@
 import { toRgb } from './colors.ts'
-import { FLIP_GLSL, HP_GLSL_FUNCTIONS } from './utils.ts'
+import { GLSL_UBO_PREAMBLE, HP_GLSL_UBO } from './uboCommon.ts'
 import { fillColor } from '../../../shared/color.ts'
 
 import type { RGBColor } from './colors.ts'
@@ -33,28 +33,18 @@ export const arcLineColorPalette: RGBColor[] = [
 //   - vertex: halfWidth = lineWidth * 0.5 + 1.0  (geometry padding)
 //   - fragment: alpha = clamp((halfWidth - d) / aa + 0.5, 0, 1)  (AA formula)
 // If you change either, update the other file to match.
-export const MAX_REGIONS = 64
 
 export const ARC_VERTEX_SHADER = `#version 300 es
 precision highp float;
+
+${GLSL_UBO_PREAMBLE}
+
 // SYNC(wgsl/miscShaders.ts): ArcInst struct { x1, x2, color_type, is_arc }
-in float a_t;
-in float a_side;
+// Instance data (per-instance attributes via HAL)
 in float a_x1;
 in float a_x2;
 in float a_colorType;
 in float a_isArc;
-
-uniform float u_canvasWidth;
-uniform float u_canvasHeight;
-uniform float u_coverageOffset;
-uniform float u_lineWidthPx;
-uniform float u_gradientHue;
-uniform vec3 u_arcColors[${NUM_ARC_COLORS}];
-uniform int u_numRegions;
-uniform vec4 u_regions[${MAX_REGIONS}];
-
-${FLIP_GLSL}
 
 out vec4 v_color;
 out float v_dist;
@@ -62,38 +52,19 @@ out float v_dist;
 // SYNC(wgsl/miscShaders.ts): PI = 3.14159265359
 const float PI = 3.14159265359;
 
-// SYNC(wgsl/miscShaders.ts): bpOffsetToPx region lookup
-float bpOffsetToPx(float bpOffset) {
-  for (int i = 0; i < ${MAX_REGIONS}; i++) {
-    if (i >= u_numRegions) break;
-    float rStart = u_regions[i].x;
-    float rEnd = u_regions[i].y;
-    float rStartPx = u_regions[i].z;
-    float rEndPx = u_regions[i].w;
-    if (bpOffset >= rStart && bpOffset <= rEnd) {
-      float t = (bpOffset - rStart) / (rEnd - rStart);
-      return mix(rStartPx, rEndPx, t);
-    }
-    if (i + 1 < u_numRegions) {
-      float nextStart = u_regions[i + 1].x;
-      if (bpOffset > rEnd && bpOffset < nextStart) {
-        float gapT = (bpOffset - rEnd) / (nextStart - rEnd);
-        return mix(rEndPx, u_regions[i + 1].z, gapT);
-      }
-    }
-  }
-  int last = u_numRegions - 1;
-  float pxPerBp = (u_regions[last].w - u_regions[last].z) /
-                  (u_regions[last].y - u_regions[last].x);
-  return u_regions[last].w + (bpOffset - u_regions[last].y) * pxPerBp;
+// Per-block coordinate conversion: bp offset -> screen pixel
+// Uses blockStartPx (slot 24), blockWidth (slot 25), bpLen (slot 2), domainStart (slot 30)
+float bpToPx(float bpOffset) {
+  float pxPerBp = uf(25u) / uf(2u);
+  return uf(24u) + (bpOffset - uf(30u)) * pxPerBp;
 }
 
 vec3 getArcColor(float colorType) {
   int idx = int(colorType + 0.5);
   if (idx < ${NUM_ARC_COLORS}) {
-    return u_arcColors[idx];
+    return color3(98u + uint(idx) * 3u);
   }
-  float h = u_gradientHue / 360.0;
+  float h = uf(27u) / 360.0;
   float s = 0.5;
   float l = 0.5;
   float c = (1.0 - abs(2.0 * l - 1.0)) * s;
@@ -110,13 +81,11 @@ vec3 getArcColor(float colorType) {
 }
 
 vec2 evalCurve(float t) {
-  // Map endpoints to screen pixels, then evaluate bezier in pixel space.
-  // This avoids kinks when arcs span collapsed intron gaps.
-  float startPx = bpOffsetToPx(a_x1);
-  float endPx = bpOffsetToPx(a_x2);
+  float startPx = bpToPx(a_x1);
+  float endPx = bpToPx(a_x2);
   float radiusPx = (endPx - startPx) / 2.0;
   float absradPx = abs(radiusPx);
-  float availableHeight = u_canvasHeight - u_coverageOffset - ${ARC_HEIGHT_MARGIN}.0;
+  float availableHeight = canvas_height() - coverage_offset() - ${ARC_HEIGHT_MARGIN}.0;
   float destY = min(availableHeight, absradPx);
   float screenX, y_px;
   if (a_isArc > 0.5) {
@@ -139,10 +108,15 @@ vec2 evalCurve(float t) {
 }
 
 void main() {
-  vec2 pos = evalCurve(a_t);
+  // Compute t and side from vertex index (triangle-strip topology)
+  int seg = gl_VertexID / 2;
+  float side = (gl_VertexID % 2 == 0) ? 1.0 : -1.0;
+  float t = float(seg) / ${ARC_CURVE_SEGMENTS}.0;
+
+  vec2 pos = evalCurve(t);
   float eps = 1.0 / ${ARC_CURVE_SEGMENTS}.0;
-  float t0 = max(a_t - eps * 0.5, 0.0);
-  float t1 = min(a_t + eps * 0.5, 1.0);
+  float t0 = max(t - eps * 0.5, 0.0);
+  float t1 = min(t + eps * 0.5, 1.0);
   vec2 p0 = evalCurve(t0);
   vec2 p1 = evalCurve(t1);
   vec2 tangent = p1 - p0;
@@ -155,25 +129,27 @@ void main() {
   } else {
     normal = vec2(0.0, 1.0);
   }
-  float halfWidth = u_lineWidthPx * 0.5 + 1.0;
-  pos += normal * halfWidth * a_side;
-  float clipX = (pos.x / u_canvasWidth) * 2.0 - 1.0;
-  float clipY = 1.0 - ((pos.y + u_coverageOffset) / u_canvasHeight) * 2.0;
+  float halfWidth = uf(26u) * 0.5 + 1.0;
+  pos += normal * halfWidth * side;
+  float clipX = (pos.x / canvas_width()) * 2.0 - 1.0;
+  float clipY = 1.0 - ((pos.y + coverage_offset()) / canvas_height()) * 2.0;
   gl_Position = vec4(flip_x(clipX), clipY, 0.0, 1.0);
-  v_dist = a_side * halfWidth;
+  v_dist = side * halfWidth;
   v_color = vec4(getArcColor(a_colorType), 1.0);
 }
 `
 
 export const ARC_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
+
+${GLSL_UBO_PREAMBLE}
+
 in vec4 v_color;
 in float v_dist;
-uniform float u_lineWidthPx;
 out vec4 fragColor;
 void main() {
   // SYNC(wgsl/miscShaders.ts): AA formula clamp((halfWidth - d) / aa + 0.5, 0, 1)
-  float halfWidth = u_lineWidthPx * 0.5;
+  float halfWidth = uf(26u) * 0.5;
   float d = abs(v_dist);
   float aa = fwidth(v_dist);
   float alpha = clamp((halfWidth - d) / aa + 0.5, 0.0, 1.0);
@@ -192,80 +168,54 @@ export const sashimiColorPalette: RGBColor[] = [
 
 export const SASHIMI_ARC_VERTEX_SHADER = `#version 300 es
 precision highp float;
+
+${GLSL_UBO_PREAMBLE}
+
 // SYNC(wgsl/miscShaders.ts): SashimiInst struct { x1, x2, color_type, line_width }
-in float a_t;
-in float a_side;
+// Instance data (per-instance attributes via HAL)
 in float a_x1;
 in float a_x2;
 in float a_colorType;
 in float a_lineWidth;
 
-uniform float u_canvasWidth;
-uniform float u_canvasHeight;
-uniform float u_coverageOffset;
-uniform float u_coverageHeight;
-uniform vec3 u_sashimiColors[${NUM_SASHIMI_COLORS}];
-uniform int u_numRegions;
-uniform vec4 u_regions[${MAX_REGIONS}];
-
-${FLIP_GLSL}
-
 out vec4 v_color;
 out float v_dist;
 out float v_lineWidth;
 
-// SYNC(wgsl/miscShaders.ts): bpOffsetToPx region lookup
-float bpOffsetToPx(float bpOffset) {
-  for (int i = 0; i < ${MAX_REGIONS}; i++) {
-    if (i >= u_numRegions) break;
-    float rStart = u_regions[i].x;
-    float rEnd = u_regions[i].y;
-    float rStartPx = u_regions[i].z;
-    float rEndPx = u_regions[i].w;
-    if (bpOffset >= rStart && bpOffset <= rEnd) {
-      float t = (bpOffset - rStart) / (rEnd - rStart);
-      return mix(rStartPx, rEndPx, t);
-    }
-    if (i + 1 < u_numRegions) {
-      float nextStart = u_regions[i + 1].x;
-      if (bpOffset > rEnd && bpOffset < nextStart) {
-        float gapT = (bpOffset - rEnd) / (nextStart - rEnd);
-        return mix(rEndPx, u_regions[i + 1].z, gapT);
-      }
-    }
-  }
-  int last = u_numRegions - 1;
-  float pxPerBp = (u_regions[last].w - u_regions[last].z) /
-                  (u_regions[last].y - u_regions[last].x);
-  return u_regions[last].w + (bpOffset - u_regions[last].y) * pxPerBp;
+// Per-block coordinate conversion: bp offset -> screen pixel
+float bpToPx(float bpOffset) {
+  float pxPerBp = uf(25u) / uf(2u);
+  return uf(24u) + (bpOffset - uf(30u)) * pxPerBp;
 }
 
 // CRITICAL: This Bezier curve formula MUST match the CPU version in:
 // hitTesting.ts:hitTestSashimiArc
-// If either implementation changes, the other MUST be updated to match,
-// otherwise picking and rendering will be out of sync.
 vec2 evalCurve(float t) {
-  // Map endpoints to screen pixels, then evaluate bezier in pixel space.
-  // This avoids kinks when arcs span collapsed intron gaps.
-  float startPx = bpOffsetToPx(a_x1);
-  float endPx = bpOffsetToPx(a_x2);
+  float startPx = bpToPx(a_x1);
+  float endPx = bpToPx(a_x2);
   float mt = 1.0 - t;
   float mt2 = mt * mt;
   float mt3 = mt2 * mt;
   float t2 = t * t;
   float t3 = t2 * t;
   float screenX = mt3 * startPx + 3.0 * mt2 * t * startPx + 3.0 * mt * t2 * endPx + t3 * endPx;
+  float ch = uf(16u);
   // SYNC(wgsl/miscShaders.ts): destY = coverageHeight * (0.8/0.75), baseline at 0.9*covH
-  float destY = u_coverageHeight * (0.8 / 0.75);
+  float destY = ch * (0.8 / 0.75);
   float y_px = 3.0 * mt2 * t * destY + 3.0 * mt * t2 * destY;
-  return vec2(screenX, 0.9 * u_coverageHeight - y_px);
+  return vec2(screenX, 0.9 * ch - y_px);
 }
 
 void main() {
-  vec2 pos = evalCurve(a_t);
+  // Compute t and side from vertex index (triangle-strip topology)
+  int seg = gl_VertexID / 2;
+  float side = (gl_VertexID % 2 == 0) ? 1.0 : -1.0;
+  float t = float(seg) / ${ARC_CURVE_SEGMENTS}.0;
+
+  vec2 pos = evalCurve(t);
   float eps = 1.0 / ${ARC_CURVE_SEGMENTS}.0;
-  float t0 = max(a_t - eps * 0.5, 0.0);
-  float t1 = min(a_t + eps * 0.5, 1.0);
+  float t0 = max(t - eps * 0.5, 0.0);
+  float t1 = min(t + eps * 0.5, 1.0);
   vec2 p0 = evalCurve(t0);
   vec2 p1 = evalCurve(t1);
   vec2 tangent = p1 - p0;
@@ -278,17 +228,17 @@ void main() {
     normal = vec2(0.0, 1.0);
   }
   float halfWidth = a_lineWidth * 0.5 + 1.0;
-  pos += normal * halfWidth * a_side;
-  float clipX = (pos.x / u_canvasWidth) * 2.0 - 1.0;
-  float clipY = 1.0 - ((pos.y + u_coverageOffset) / u_canvasHeight) * 2.0;
+  pos += normal * halfWidth * side;
+  float clipX = (pos.x / canvas_width()) * 2.0 - 1.0;
+  float clipY = 1.0 - ((pos.y + coverage_offset()) / canvas_height()) * 2.0;
   gl_Position = vec4(flip_x(clipX), clipY, 0.0, 1.0);
-  v_dist = a_side * halfWidth;
+  v_dist = side * halfWidth;
   v_lineWidth = a_lineWidth;
   int idx = int(a_colorType + 0.5);
   if (idx < ${NUM_SASHIMI_COLORS}) {
-    v_color = vec4(u_sashimiColors[idx], 1.0);
+    v_color = vec4(color3(128u + uint(idx) * 3u), 1.0);
   } else {
-    v_color = vec4(u_sashimiColors[0], 1.0);
+    v_color = vec4(color3(128u), 1.0);
   }
 }
 `
@@ -312,37 +262,27 @@ void main() {
 export const ARC_LINE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
+
+${GLSL_UBO_PREAMBLE}
+${HP_GLSL_UBO}
+
 in uint a_position;
 in float a_y;
 in float a_colorType;
-uniform vec3 u_bpRangeX;
-uniform uint u_regionStart;
-uniform float u_canvasHeight;
-uniform float u_canvasWidth;
-uniform float u_coverageOffset;
-uniform float u_blockStartPx;
-uniform float u_blockWidth;
-uniform vec3 u_arcLineColors[${NUM_LINE_COLORS}];
+
 out vec4 v_color;
 
-${HP_GLSL_FUNCTIONS}
-${FLIP_GLSL}
-
 void main() {
-  uint absPos = a_position + u_regionStart;
+  uint absPos = a_position + region_start();
   vec2 splitPos = hp_split_uint(absPos);
-  // Map genomic position to block-relative pixel, then to global clip space
-  float normalizedBpPos = hp_scale_linear(splitPos, u_bpRangeX);
-  float screenX = u_blockStartPx + normalizedBpPos * u_blockWidth;
-  float sx = (screenX / u_canvasWidth) * 2.0 - 1.0;
-  float sy = 1.0 - ((a_y + u_coverageOffset) / u_canvasHeight) * 2.0;
+  float normalizedBpPos = hp_scale_linear(splitPos, bp_range());
+  float screenX = uf(24u) + normalizedBpPos * uf(25u);
+  float sx = (screenX / canvas_width()) * 2.0 - 1.0;
+  float sy = 1.0 - ((a_y + coverage_offset()) / canvas_height()) * 2.0;
   gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
   int idx = int(a_colorType + 0.5);
-  if (idx < ${NUM_LINE_COLORS}) {
-    v_color = vec4(u_arcLineColors[idx], 1.0);
-  } else {
-    v_color = vec4(u_arcLineColors[0], 1.0);
-  }
+  uint ci = uint(min(idx, ${NUM_LINE_COLORS - 1}));
+  v_color = vec4(color3(122u + ci * 3u), 1.0);
 }
 `
 

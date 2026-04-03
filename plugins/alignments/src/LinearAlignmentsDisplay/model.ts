@@ -330,7 +330,7 @@ export default function stateModelFactory(
       simplexModifications: new Set<string>(),
       modificationsReady: false,
       overCigarItem: false,
-      webglRenderer: null as AlignmentsRenderer | null,
+      gpuRenderer: null as AlignmentsRenderer | null,
       colorPalette: null as ColorPalette | null,
       visibleMaxDepth: 0,
     }))
@@ -757,8 +757,8 @@ export default function stateModelFactory(
           self.overCigarItem = flag
         },
 
-        setWebGLRenderer(renderer: AlignmentsRenderer | null) {
-          self.webglRenderer = renderer
+        setGpuRenderer(renderer: AlignmentsRenderer | null) {
+          self.gpuRenderer = renderer
         },
 
         setColorPalette(palette: ColorPalette | null) {
@@ -1483,7 +1483,7 @@ export default function stateModelFactory(
             self,
             autorun(
               () => {
-                const renderer = self.webglRenderer
+                const renderer = self.gpuRenderer
                 if (!renderer) {
                   return
                 }
@@ -1517,7 +1517,7 @@ export default function stateModelFactory(
             self,
             autorun(
               () => {
-                const renderer = self.webglRenderer
+                const renderer = self.gpuRenderer
                 if (!renderer) {
                   return
                 }
@@ -1571,7 +1571,7 @@ export default function stateModelFactory(
             self,
             autorun(
               () => {
-                const renderer = self.webglRenderer
+                const renderer = self.gpuRenderer
                 const palette = self.colorPalette
                 if (!renderer || !palette) {
                   return

@@ -1,8 +1,11 @@
-import { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
+import { createGpuHal } from '@jbrowse/core/gpu/hal'
 
 import { Canvas2DVariantMatrixRenderer } from './Canvas2DVariantMatrixRenderer.ts'
-import { WebGLVariantMatrixRenderer } from './WebGLVariantMatrixRenderer.ts'
-import { WebGPUVariantMatrixRenderer } from './WebGPUVariantMatrixRenderer.ts'
+import {
+  GpuVariantMatrixRenderer,
+  VARIANT_MATRIX_PASSES,
+  VARIANT_MATRIX_UNIFORM_BYTE_SIZE,
+} from './GpuVariantMatrixRenderer.ts'
 
 export type {
   MatrixRenderState,
@@ -34,32 +37,18 @@ export class VariantMatrixRenderer {
   }
 
   async init() {
-    if (getGpuOverride() === 'canvas2d') {
-      this.backend = new Canvas2DVariantMatrixRenderer(this.canvas)
+    const hal = await createGpuHal(
+      this.canvas,
+      VARIANT_MATRIX_PASSES,
+      VARIANT_MATRIX_UNIFORM_BYTE_SIZE,
+    )
+    if (hal) {
+      this.backend = new GpuVariantMatrixRenderer(hal)
       return true
     }
 
-    const gpu = await WebGPUVariantMatrixRenderer.create(this.canvas)
-    if (gpu) {
-      this.backend = gpu
-      return true
-    }
-    try {
-      this.backend = new WebGLVariantMatrixRenderer(this.canvas)
-      return true
-    } catch (e) {
-      console.warn('[VariantMatrixRenderer] WebGL2 fallback failed:', e)
-      try {
-        this.backend = new Canvas2DVariantMatrixRenderer(this.canvas)
-        return true
-      } catch (e2) {
-        console.warn(
-          '[VariantMatrixRenderer] Canvas 2D fallback also failed:',
-          e2,
-        )
-        return false
-      }
-    }
+    this.backend = new Canvas2DVariantMatrixRenderer(this.canvas)
+    return true
   }
 
   uploadCellData(data: {

@@ -1,6 +1,7 @@
 import {
   InstanceBuilder,
   downsampleMinMax,
+  packSnpSegmentsForGpu,
 } from '@jbrowse/alignments-core'
 import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 import { cssColorToNormalizedRgba } from '@jbrowse/core/util/colorBits'
@@ -10,7 +11,7 @@ import {
   COVERAGE_BIN_BYTE_SIZE,
   INSTANCE_BYTE_SIZE,
 } from './multiSyntenyGpuShaders.ts'
-import { visitCigarOps, visitCsOps } from './syntenyOpsVisitor.ts'
+import { visitCigarOps, visitCsOps } from '@jbrowse/alignments-core'
 
 import type { SyntenyColors } from './multiSyntenyBackendTypes.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -243,11 +244,8 @@ export interface BlockSnpUploadData {
 // SNP segment byte size: position(f32) + yOffset(f32) + height(f32) + colorType(f32) = 16 bytes
 export const SNP_SEGMENT_BYTE_SIZE = 16
 
-/**
- * Pack SNP coverage segments for GPU upload.
- * Positions are stored as absolute genome coordinates (regionStart + offset)
- * so the shader can map them to any content block.
- */
+// Pack SNP coverage segments for GPU upload.
+// Positions stored as absolute genome coordinates (regionStart + offset).
 export function packSnpCoverageForGpu(
   snpPositions: Uint32Array,
   snpYOffsets: Float32Array,
@@ -256,19 +254,39 @@ export function packSnpCoverageForGpu(
   snpCount: number,
   regionStart: number,
 ): BlockSnpUploadData {
-  if (snpCount === 0) {
-    return { buffer: new ArrayBuffer(0), segmentCount: 0 }
+  return packSnpSegmentsForGpu(
+    snpPositions, snpYOffsets, snpHeights, snpColorTypes,
+    snpCount, regionStart,
+  )
+}
+
+export interface BlockIndicatorUploadData {
+  buffer: ArrayBuffer
+  indicatorCount: number
+}
+
+// Indicator byte size: position(f32) = 4 bytes per indicator
+export const INDICATOR_BYTE_SIZE = 4
+
+/**
+ * Pack insertion indicator positions for GPU upload.
+ * Positions stored as absolute genome coordinates.
+ * All indicators are insertion type (no colorType needed).
+ */
+export function packIndicatorsForGpu(
+  indicatorPositions: Uint32Array,
+  numIndicators: number,
+  regionStart: number,
+): BlockIndicatorUploadData {
+  if (numIndicators === 0) {
+    return { buffer: new ArrayBuffer(0), indicatorCount: 0 }
   }
 
-  const buffer = new ArrayBuffer(snpCount * SNP_SEGMENT_BYTE_SIZE)
+  const buffer = new ArrayBuffer(numIndicators * INDICATOR_BYTE_SIZE)
   const f32 = new Float32Array(buffer)
-  for (let i = 0; i < snpCount; i++) {
-    const idx = i * 4
-    f32[idx] = regionStart + snpPositions[i]!
-    f32[idx + 1] = snpYOffsets[i]!
-    f32[idx + 2] = snpHeights[i]!
-    f32[idx + 3] = snpColorTypes[i]!
+  for (let i = 0; i < numIndicators; i++) {
+    f32[i] = regionStart + indicatorPositions[i]!
   }
 
-  return { buffer, segmentCount: snpCount }
+  return { buffer, indicatorCount: numIndicators }
 }

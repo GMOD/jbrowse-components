@@ -19,6 +19,8 @@ export interface SyntenyRegionData {
   mismatchPositions: Uint32Array
   mismatchBases: Uint8Array
   numMismatches: number
+  indicatorPositions: Uint32Array
+  numIndicators: number
 }
 
 export function mergeGenomeRows(rpcDataMap: Map<number, SyntenyRegionData>) {

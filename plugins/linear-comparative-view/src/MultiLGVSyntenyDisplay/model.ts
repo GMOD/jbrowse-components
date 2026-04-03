@@ -466,6 +466,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                     globalMax,
                   )
                   renderer.uploadSnpCoverageForBlock(regionNumber, data)
+                  renderer.uploadIndicatorsForBlock(regionNumber, data)
                 }
               },
               { name: 'MultiLGVSyntenyDisplay:uploadCoverage' },

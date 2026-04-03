@@ -1,8 +1,12 @@
+import { createGpuHal } from '@jbrowse/core/gpu/hal'
 import { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 
 import { Canvas2DAlignmentsRenderer } from './Canvas2DAlignmentsRenderer.ts'
-import { WebGLRenderer } from './WebGLRenderer.ts'
-import { WebGPUAlignmentsRenderer } from './WebGPUAlignmentsRenderer.ts'
+import {
+  GpuAlignmentsRenderer,
+  ALIGNMENTS_PASSES,
+} from './GpuAlignmentsRenderer.ts'
+import { UNIFORM_SIZE } from './wgsl/common.ts'
 
 export type { ColorPalette, RGBColor, RenderState } from './rendererTypes.ts'
 
@@ -45,19 +49,19 @@ export class AlignmentsRenderer {
       return true
     }
 
-    const gpu = await WebGPUAlignmentsRenderer.create(this.canvas)
-    if (gpu) {
-      this.backend = gpu
+    const hal = await createGpuHal(
+      this.canvas,
+      ALIGNMENTS_PASSES,
+      UNIFORM_SIZE,
+    )
+    if (hal) {
+      this.backend = new GpuAlignmentsRenderer(hal)
       return true
     }
-    try {
-      this.backend = new WebGLRenderer(this.canvas)
-      return true
-    } catch (e) {
-      console.warn('[AlignmentsRenderer] WebGL2 fallback also failed:', e)
-      this.backend = new Canvas2DAlignmentsRenderer(this.canvas)
-      return true
-    }
+
+    console.warn('[AlignmentsRenderer] GPU not available, using Canvas2D fallback')
+    this.backend = new Canvas2DAlignmentsRenderer(this.canvas)
+    return true
   }
 
   clearLegacyBuffers() {

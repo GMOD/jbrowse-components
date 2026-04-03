@@ -1,16 +1,89 @@
 export const INSTANCE_BYTE_SIZE = 48
-
+export const UNIFORM_BYTE_SIZE = 32
 export const VERTS_PER_INSTANCE = 6
 
-const INSTANCE_STRUCT = /* wgsl */ `
+// GLSL vertex shader — uses UBO and gl_VertexID for template
+export const DOTPLOT_VERTEX_SHADER = `#version 300 es
+precision highp float;
+
+in float a_x1;
+in float a_y1;
+in float a_x2;
+in float a_y2;
+in vec4 a_color;
+
+layout(std140) uniform Uniforms {
+  vec2 resolution;
+  float offsetX;
+  float offsetY;
+  float lineWidth;
+  float scaleX;
+  float scaleY;
+  float _pad;
+} u;
+
+out vec4 v_color;
+out float v_dist;
+
+void main() {
+  float templateT[6] = float[6](0.0, 0.0, 1.0, 1.0, 0.0, 1.0);
+  float templateSide[6] = float[6](-1.0, 1.0, -1.0, -1.0, 1.0, 1.0);
+
+  int vid = gl_VertexID % 6;
+  float t = templateT[vid];
+  float side = templateSide[vid];
+
+  float sx1 = a_x1 * u.scaleX - u.offsetX;
+  float sy1 = u.resolution.y - (a_y1 * u.scaleY - u.offsetY);
+  float sx2 = a_x2 * u.scaleX - u.offsetX;
+  float sy2 = u.resolution.y - (a_y2 * u.scaleY - u.offsetY);
+
+  float x = mix(sx1, sx2, t);
+  float y = mix(sy1, sy2, t);
+
+  vec2 dir = vec2(sx2 - sx1, sy2 - sy1);
+  float len = length(dir);
+  vec2 normal;
+  if (len > 0.001) {
+    dir /= len;
+    normal = vec2(-dir.y, dir.x);
+  } else {
+    normal = vec2(0.0, 1.0);
+  }
+
+  vec2 pos = vec2(x, y) + normal * side * u.lineWidth * 0.5;
+  vec2 clipSpace = (pos / u.resolution) * 2.0 - 1.0;
+  gl_Position = vec4(clipSpace.x, -clipSpace.y, 0.0, 1.0);
+  v_color = a_color;
+  v_dist = side;
+}
+`
+
+export const DOTPLOT_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+
+in vec4 v_color;
+in float v_dist;
+
+out vec4 fragColor;
+
+void main() {
+  float d = abs(v_dist);
+  float aa = fwidth(v_dist);
+  float edgeAlpha = 1.0 - smoothstep(0.5 - aa * 0.5, 0.5 + aa, d);
+  float finalAlpha = v_color.a * edgeAlpha;
+  fragColor = vec4(v_color.rgb * finalAlpha, finalAlpha);
+}
+`
+
+// WGSL shader (unchanged)
+export const dotplotShader = `
 struct Instance {
   x1: f32, y1: f32, x2: f32, y2: f32,
   color: vec4f,
   _pad1: f32, _pad2: f32, _pad3: f32, _pad4: f32,
 }
-`
 
-const UNIFORMS_STRUCT = /* wgsl */ `
 struct Uniforms {
   resolution: vec2f,
   offsetX: f32,
@@ -20,11 +93,6 @@ struct Uniforms {
   scaleY: f32,
   _pad: f32,
 }
-`
-
-export const dotplotShader = /* wgsl */ `
-${INSTANCE_STRUCT}
-${UNIFORMS_STRUCT}
 
 struct VOut {
   @builtin(position) pos: vec4f,

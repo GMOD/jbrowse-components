@@ -1,16 +1,19 @@
 # Next Steps: Multi-Synteny Coverage & Graph Integration
 
-## Coverage: remaining work
+## Coverage: completed
 
-- **Deletion/insertion indicators from CS tags**: the coverage area could show
-  insertion triangles and deletion indicators like LinearAlignmentsDisplay does.
-  The mismatch data is already available in SyntenyRegionData.
-- **Canvas2D SNP coverage downsampling**: the SNP segments are rendered per-bp
-  in Canvas2D but the coverage bars use downsampleMinMax. At very wide zoom
-  the SNP segments could overwhelm the canvas. Consider downsampling or
-  skipping SNP rendering when bpPerPx is large.
-- **Coverage click to open widget**: LinearAlignmentsDisplay opens a coverage
-  detail widget on click. MultiLGVSyntenyDisplay only shows a tooltip.
+- **Insertion indicator triangles from CS tags**: insertion indicators are now
+  rendered as downward-pointing triangles at the top of the coverage area when
+  the insertion count at a position exceeds 15% of local depth. Shared
+  `drawIndicatorTriangle` primitive and `computeInsertionIndicators` function
+  via `@jbrowse/alignments-core`. Rendered in all 3 backends (WebGL, WebGPU,
+  Canvas2D). LinearAlignmentsDisplay renderSvg.tsx also uses the shared
+  `drawIndicatorTriangle`.
+- **Canvas2D SNP coverage downsampling**: SNP segments are now skipped when
+  `snpCount > width * 4` to avoid overwhelming Canvas2D at wide zoom levels.
+- **Coverage click to open widget**: clicking the coverage area now opens a
+  BaseFeatureWidget showing depth, SNP counts/percentages, and interbase
+  entries, matching LinearAlignmentsDisplay behavior.
 
 ## Code sharing: further opportunities
 

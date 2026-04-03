@@ -414,3 +414,59 @@ export function computeSNPCoverage(
     count: filteredSegments.length,
   }
 }
+
+import type { IndelEntry } from './labelConstants.ts'
+
+export interface InsertionIndicatorResult {
+  positions: Uint32Array
+  count: number
+}
+
+/**
+ * Compute insertion indicator positions from CS tag indel events.
+ * Only insertions produce indicators — deletions already show as reduced
+ * depth in the coverage area. Creates an indicator when the insertion count
+ * at a position exceeds `threshold` fraction of the local coverage depth.
+ */
+export function computeInsertionIndicators(
+  indels: IndelEntry[],
+  coverageDepths: Float32Array,
+  coverageStartOffset: number,
+  regionStart: number,
+  threshold = 0.15,
+): InsertionIndicatorResult {
+  if (indels.length === 0) {
+    return { positions: new Uint32Array(0), count: 0 }
+  }
+
+  const insertionCountByPos = new Map<number, number>()
+  for (const indel of indels) {
+    if (indel.type === 1) {
+      insertionCountByPos.set(
+        indel.position,
+        (insertionCountByPos.get(indel.position) ?? 0) + 1,
+      )
+    }
+  }
+
+  const resultPositions: number[] = []
+  for (const [pos, count] of insertionCountByPos) {
+    const depthIdx = pos - regionStart - coverageStartOffset
+    const localDepth =
+      depthIdx >= 0 && depthIdx < coverageDepths.length
+        ? coverageDepths[depthIdx]!
+        : 0
+    if (localDepth >= 1 && count / localDepth >= threshold) {
+      resultPositions.push(pos)
+    }
+  }
+
+  resultPositions.sort((a, b) => a - b)
+
+  const positions = new Uint32Array(resultPositions.length)
+  for (let i = 0; i < resultPositions.length; i++) {
+    positions[i] = resultPositions[i]! - regionStart
+  }
+
+  return { positions, count: resultPositions.length }
+}

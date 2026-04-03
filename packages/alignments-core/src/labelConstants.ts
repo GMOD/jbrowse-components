@@ -201,6 +201,69 @@ export function extractMismatchesFromCs(
   }
 }
 
+export interface IndelEntry {
+  position: number
+  type: 1 | 2 // 1=insertion, 2=deletion
+  length: number
+}
+
+/**
+ * Extract insertion and deletion events from a CS tag string.
+ * Pushes IndelEntry objects into the output array.
+ */
+export function extractIndelsFromCs(
+  cs: string,
+  featureStart: number,
+  indels: IndelEntry[],
+) {
+  let refPos = 0
+  let i = 0
+  while (i < cs.length) {
+    const ch = cs[i]!
+    if (ch === ':') {
+      i++
+      let num = 0
+      while (i < cs.length && isDigit(cs[i]!)) {
+        num = num * 10 + (cs.charCodeAt(i) - 48)
+        i++
+      }
+      refPos += num
+    } else if (ch === '*') {
+      i += 3
+      refPos += 1
+    } else if (ch === '-') {
+      i++
+      const len = parseCsSeqLen(cs, i)
+      indels.push({ position: featureStart + refPos, type: 2, length: len })
+      i += len
+      refPos += len
+    } else if (ch === '+') {
+      i++
+      const len = parseCsSeqLen(cs, i)
+      indels.push({ position: featureStart + refPos, type: 1, length: len })
+      i += len
+    } else {
+      i++
+    }
+  }
+}
+
+export const INDICATOR_TRIANGLE_HW = 3.5
+export const INDICATOR_TRIANGLE_H = 4.5
+
+/**
+ * Draw a single downward-pointing indicator triangle on a Canvas2D context.
+ * Shared between LinearAlignmentsDisplay and MultiLGVSyntenyDisplay.
+ */
+export function drawIndicatorTriangle(ctx: DrawCtx, cx: number) {
+  ctx.beginPath()
+  ctx.moveTo(cx - INDICATOR_TRIANGLE_HW, 0)
+  ctx.lineTo(cx + INDICATOR_TRIANGLE_HW, 0)
+  ctx.lineTo(cx, INDICATOR_TRIANGLE_H)
+  ctx.closePath()
+  ctx.fill()
+}
+
 // Shared CIGAR/CS op drawing
 
 export function drawCigarOps(

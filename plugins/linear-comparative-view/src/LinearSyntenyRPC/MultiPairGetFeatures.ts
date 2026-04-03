@@ -2,11 +2,13 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { computeCoverage } from '@jbrowse/plugin-alignments'
 import {
+  computeInsertionIndicators,
   computeSNPCoverage,
+  extractIndelsFromCs,
   extractMismatchesFromCs,
 } from '@jbrowse/alignments-core'
 
-import type { MismatchEntry } from '@jbrowse/alignments-core'
+import type { IndelEntry, MismatchEntry } from '@jbrowse/alignments-core'
 import type {
   MultiPairGetFeaturesArgs,
   MultiPairGetFeaturesResult,
@@ -93,6 +95,7 @@ export class MultiPairGetFeatures extends RpcMethodType {
       // Collect all features overlapping this region for coverage
       const coverageFeatures: { start: number; end: number }[] = []
       const mismatches: MismatchEntry[] = []
+      const indels: IndelEntry[] = []
       const genomeFeatures: [string, MultiPairFeature[]][] = []
       for (const [genome, features] of genomeRows) {
         genomeFeatures.push([genome, features])
@@ -100,6 +103,7 @@ export class MultiPairGetFeatures extends RpcMethodType {
           coverageFeatures.push({ start: f.start, end: f.end })
           if (f.cs) {
             extractMismatchesFromCs(f.cs, f.start, mismatches)
+            extractIndelsFromCs(f.cs, f.start, indels)
           }
         }
       }
@@ -112,6 +116,12 @@ export class MultiPairGetFeatures extends RpcMethodType {
       )
 
       const snp = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
+      const indicators = computeInsertionIndicators(
+        indels,
+        coverage.depths,
+        coverage.startOffset,
+        regionStart,
+      )
 
       const mismatchPositions = new Uint32Array(mismatches.length)
       const mismatchBases = new Uint8Array(mismatches.length)
@@ -137,6 +147,8 @@ export class MultiPairGetFeatures extends RpcMethodType {
           mismatchPositions,
           mismatchBases,
           numMismatches: mismatches.length,
+          indicatorPositions: indicators.positions,
+          numIndicators: indicators.count,
         },
       ])
     }

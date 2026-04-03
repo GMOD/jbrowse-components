@@ -1,7 +1,9 @@
 import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import {
   DEFAULT_CIGAR_OP_DRAW_COLORS,
+  computeInsertionIndicators,
   computeSNPCoverage,
+  extractIndelsFromCs,
   extractMismatchesFromCs,
 } from '@jbrowse/alignments-core'
 import { computeCoverage } from '@jbrowse/plugin-alignments'
@@ -41,13 +43,16 @@ function buildRegion(
   const regionEnd = Math.ceil(end)
   const coverageFeatures = features.map(f => ({ start: f.start, end: f.end }))
   const mismatches: { position: number; base: number; strand: number }[] = []
+  const indels: { position: number; type: 1 | 2; length: number }[] = []
   for (const f of features) {
     if (f.cs) {
       extractMismatchesFromCs(f.cs, f.start, mismatches)
+      extractIndelsFromCs(f.cs, f.start, indels)
     }
   }
   const coverage = computeCoverage(coverageFeatures, [], regionStart, regionEnd)
   const snp = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
+  const indicators = computeInsertionIndicators(indels, coverage.depths, coverage.startOffset, regionStart)
   const mismatchPositions = new Uint32Array(mismatches.length)
   const mismatchBases = new Uint8Array(mismatches.length)
   for (let i = 0; i < mismatches.length; i++) {
@@ -69,6 +74,8 @@ function buildRegion(
     mismatchPositions,
     mismatchBases,
     numMismatches: mismatches.length,
+    indicatorPositions: indicators.positions,
+    numIndicators: indicators.count,
   }
 }
 
@@ -147,6 +154,26 @@ describe('renderMultiSyntenyToCtx multi-region coverage', () => {
     expect(svg).toContain(DEFAULT_CIGAR_OP_DRAW_COLORS.baseT)
   })
 
+  test('renders insertion indicator triangles from CS tag insertions', () => {
+    // Multiple features with insertions at the same position trigger an indicator
+    const features = Array.from({ length: 5 }, () =>
+      feat({ origRefName: 'chr1', start: 50, end: 150, cs: ':30+acgt:69' }),
+    )
+    const region = buildRegion('chr1', 0, 200, features)
+    expect(region.numIndicators).toBeGreaterThan(0)
+
+    const ctx = new SvgCanvas()
+    renderMultiSyntenyToCtx(ctx, new Map(), [], {
+      ...baseOpts,
+      coverageHeight: 50,
+      coverageRegions: [region],
+    })
+
+    const svg = ctx.getSerializedSvg()
+    // The insertion color from the default palette should appear in triangle paths
+    expect(svg).toContain(DEFAULT_CIGAR_OP_DRAW_COLORS.insertion)
+  })
+
   test('coverage uses provided color, not hardcoded', () => {
     const region = buildRegion('chr1', 0, 200, [
       feat({ origRefName: 'chr1', start: 50, end: 150 }),
@@ -162,6 +189,32 @@ describe('renderMultiSyntenyToCtx multi-region coverage', () => {
 
     const svg = ctx.getSerializedSvg()
     expect(svg).toContain('#abcdef')
+  })
+
+  test('skips SNP segments when snpCount exceeds canvas width threshold', () => {
+    const region = buildRegion('chr1', 0, 200, [
+      feat({ origRefName: 'chr1', start: 50, end: 150, cs: ':30*ag:20*ct:49' }),
+    ])
+    expect(region.snpCount).toBeGreaterThan(0)
+
+    // Artificially inflate snpCount beyond 4x the narrow width to trigger skip
+    const narrowWidth = 2
+    const inflatedRegion = {
+      ...region,
+      snpCount: narrowWidth * 4 + 1,
+    }
+
+    const ctx = new SvgCanvas()
+    renderMultiSyntenyToCtx(ctx, new Map(), [], {
+      ...baseOpts,
+      width: narrowWidth,
+      coverageHeight: 50,
+      coverageRegions: [inflatedRegion],
+    })
+
+    const svg = ctx.getSerializedSvg()
+    expect(svg).not.toContain(DEFAULT_CIGAR_OP_DRAW_COLORS.baseG)
+    expect(svg).not.toContain(DEFAULT_CIGAR_OP_DRAW_COLORS.baseT)
   })
 })
 

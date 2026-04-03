@@ -1,73 +1,41 @@
-import { FLIP_GLSL, HP_GLSL_FUNCTIONS } from './utils.ts'
+import { GLSL_UBO_PREAMBLE, HP_GLSL_UBO, PILEUP_Y_GLSL } from './uboCommon.ts'
 
 export const READ_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
+${GLSL_UBO_PREAMBLE}
+${HP_GLSL_UBO}
+${PILEUP_Y_GLSL}
+
 // SYNC(wgsl/readShader.ts): field order must match ReadInst struct (17 fields)
 in uvec2 a_position;  // segment [start, end] as uint offsets from regionStart
-in float a_y;
-in float a_flags;
-in float a_mapq;
-in float a_baseQuality;
+in uint a_y;
+in uint a_flags;
+in uint a_mapq;
+in uint a_baseQuality;
 in float a_insertSize;
-in float a_pairOrientation;  // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
-in float a_strand;           // -1=reverse, 0=unknown, 1=forward
+in uint a_pairOrientation;  // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
+in int a_strand;             // -1=reverse, 0=unknown, 1=forward
 in vec3 a_tagColor;
-in float a_chainHasSupp;     // 0=no supp, 1=has supp + primary fwd, 2=has supp + primary rev
+in uint a_chainHasSupp;     // 0=no supp, 1=has supp + primary fwd, 2=has supp + primary rev
 in uint a_readIndex;         // parent read index for highlight matching
 in uint a_edgeFlags;         // bit 0=first segment, bit 1=last segment
 in uvec2 a_readSpan;         // full read [start, end] offsets for highlight overlay
-
-uniform vec3 u_bpRangeX;
-uniform uint u_regionStart;
-uniform vec2 u_rangeY;
-uniform int u_colorScheme;
-uniform float u_featureHeight;
-uniform float u_featureSpacing;
-uniform float u_coverageOffset;
-uniform float u_canvasHeight;
-uniform int u_highlightedIndex;
-uniform int u_highlightOnlyMode;
-uniform float u_canvasWidth;
-uniform int u_chainMode;
-
-uniform vec3 u_colorFwdStrand;
-uniform vec3 u_colorRevStrand;
-uniform vec3 u_colorNostrand;
-uniform vec3 u_colorPairLR;
-uniform vec3 u_colorPairRL;
-uniform vec3 u_colorPairRR;
-uniform vec3 u_colorPairLL;
-uniform vec3 u_colorModificationFwd;
-uniform vec3 u_colorModificationRev;
-uniform vec3 u_colorLongInsert;
-uniform vec3 u_colorShortInsert;
-uniform vec3 u_colorSupplementary;
-uniform vec3 u_colorUnmappedMate;
-
-uniform float u_insertSizeUpper;
-uniform float u_insertSizeLower;
-uniform int u_flipStrandLongReadChains;
 
 out vec4 v_color;
 out vec2 v_localPos;       // 0-1 UV within the feature rectangle
 out vec2 v_featureSizePx;  // feature width and height in pixels
 out float v_edgeFlags;     // 0=normal, 1=suppress right, -1=suppress left, 2=chevron mode
 
-${HP_GLSL_FUNCTIONS}
-${FLIP_GLSL}
-
 // SYNC(wgsl/readShader.ts): color schemes 0-9, flag bit checks (64=first-of-pair, 16=reverse), pair orientation codes (1=LR,2=RL,3=RR,4=LL)
-// Color scheme 1: strand
 vec3 strandColor(float strand) {
-  if (strand > 0.5) return u_colorFwdStrand;
-  if (strand < -0.5) return u_colorRevStrand;
-  return u_colorNostrand;
+  if (strand > 0.5) return color3(32u);
+  if (strand < -0.5) return color3(35u);
+  return color3(38u);
 }
 
 // SYNC(wgsl/readShader.ts): MAPQ HSL formula h=mapq/360, s=0.5, l=0.5 with HSL->RGB conversion
-// Color scheme 2: mapping quality - hsl(mapq, 50%, 50%)
 vec3 mapqColor(float mapq) {
   float h = mapq / 360.0;
   float s = 0.5;
@@ -89,74 +57,72 @@ vec3 mapqColor(float mapq) {
   return rgb + m;
 }
 
-// Color scheme 3: insert size (threshold)
 vec3 insertSizeColor(float insertSize) {
-  if (insertSize > u_insertSizeUpper) return u_colorLongInsert;
-  if (insertSize < u_insertSizeLower) return u_colorShortInsert;
-  return u_colorPairLR;
+  if (insertSize > uf(21u)) return color3(89u);
+  if (insertSize < uf(22u)) return color3(92u);
+  return color3(41u);
 }
 
-// Color scheme 10: insert size (gradient)
-// Maps deviation from normal range to a blue→grey→red gradient
 vec3 insertSizeGradientColor(float insertSize) {
-  if (insertSize > u_insertSizeUpper) {
-    float t = clamp((insertSize - u_insertSizeUpper) / u_insertSizeUpper, 0.0, 1.0);
-    return mix(u_colorPairLR, u_colorLongInsert, t);
+  if (insertSize > uf(21u)) {
+    float t = clamp((insertSize - uf(21u)) / uf(21u), 0.0, 1.0);
+    return mix(color3(41u), color3(89u), t);
   }
-  if (insertSize < u_insertSizeLower) {
-    float t = clamp((u_insertSizeLower - insertSize) / u_insertSizeLower, 0.0, 1.0);
-    return mix(u_colorPairLR, u_colorShortInsert, t);
+  if (insertSize < uf(22u)) {
+    float t = clamp((uf(22u) - insertSize) / uf(22u), 0.0, 1.0);
+    return mix(color3(41u), color3(92u), t);
   }
-  return u_colorPairLR;
+  return color3(41u);
 }
 
-// Color scheme 4: first-of-pair strand
 vec3 firstOfPairColor(float flags, float strand) {
-  bool isFirst = mod(floor(flags / 64.0), 2.0) > 0.5;  // flag 64 = first of pair
+  bool isFirst = mod(floor(flags / 64.0), 2.0) > 0.5;
   float effectiveStrand = isFirst ? strand : -strand;
   if (effectiveStrand > 0.5) {
-    return u_colorFwdStrand;
+    return color3(32u);
   } else if (effectiveStrand < -0.5) {
-    return u_colorRevStrand;
+    return color3(35u);
   }
-  return u_colorNostrand;
+  return color3(38u);
 }
 
-// Color scheme 5: pair orientation
 vec3 pairOrientationColor(float pairOrientation) {
   int po = int(pairOrientation);
-  if (po == 1) return u_colorPairLR;   // LR
-  if (po == 2) return u_colorPairRL;   // RL
-  if (po == 3) return u_colorPairRR;   // RR
-  if (po == 4) return u_colorPairLL;   // LL
-  return u_colorNostrand;
+  if (po == 1) return color3(41u);
+  if (po == 2) return color3(44u);
+  if (po == 3) return color3(47u);
+  if (po == 4) return color3(50u);
+  return color3(38u);
 }
 
-// Color scheme 6: insert size + orientation
 vec3 insertSizeAndOrientationColor(float insertSize, float pairOrientation) {
   int po = int(pairOrientation);
-  if (po == 2) return u_colorPairRL;
-  if (po == 3) return u_colorPairRR;
-  if (po == 4) return u_colorPairLL;
+  if (po == 2) return color3(44u);
+  if (po == 3) return color3(47u);
+  if (po == 4) return color3(50u);
   return insertSizeColor(insertSize);
 }
 
-// Color scheme 7: modifications/methylation mode
-// Reverse strand reads get slightly green tint to distinguish from forward
-// (helpful because C-G is flipped on reverse strand reads)
 vec3 modificationsColor(float flags) {
-  // Check flag 16 (0x10) for reverse strand
   bool isReverse = mod(floor(flags / 16.0), 2.0) > 0.5;
   if (isReverse) {
-    return u_colorModificationRev;
+    return color3(86u);
   }
-  return u_colorModificationFwd;
+  return color3(83u);
 }
 
 void main() {
-  // In highlight-only mode, discard all non-highlighted instances
-  if (u_highlightOnlyMode == 1) {
-    if (u_highlightedIndex < 0 || int(a_readIndex) != u_highlightedIndex) {
+  // Cast integer attributes to float for arithmetic
+  float fy = float(a_y);
+  float fflags = float(a_flags);
+  float fmapq = float(a_mapq);
+  float fbaseQuality = float(a_baseQuality);
+  float fpairOrientation = float(a_pairOrientation);
+  float fstrand = float(a_strand);
+  float fchainHasSupp = float(a_chainHasSupp);
+
+  if (ui(13) == 1) {
+    if (ui(12) < 0 || int(a_readIndex) != ui(12)) {
       gl_Position = vec4(0.0);
       v_color = vec4(0.0);
       return;
@@ -165,78 +131,68 @@ void main() {
 
   int vid = gl_VertexID % 9;
 
-  uint absStart = a_position.x + u_regionStart;
-  uint absEnd = a_position.y + u_regionStart;
+  uint absStart = a_position.x + region_start();
+  uint absEnd = a_position.y + region_start();
   vec2 splitStart = hp_split_uint(absStart);
   vec2 splitEnd = hp_split_uint(absEnd);
-  float sx1 = hp_to_clip_x(splitStart, u_bpRangeX);
-  float sx2 = hp_to_clip_x(splitEnd, u_bpRangeX);
+  float sx1 = hp_to_clip_x(splitStart, bp_range());
+  float sx2 = hp_to_clip_x(splitEnd, bp_range());
 
-  // Calculate Y position in pixels (constant height per row)
-  float rowHeight = u_featureHeight + u_featureSpacing;
-  float yTopPx = a_y * rowHeight - u_rangeY.x;  // subtract scroll offset
-  float yBotPx = yTopPx + u_featureHeight;
+  float rowHeight = feature_height() + feature_spacing();
+  float yTopPx = fy * rowHeight - range_y0();
+  float yBotPx = yTopPx + feature_height();
 
-  // Convert to clip space: top of pileup area is at y = pileupTop
-  // Each pixel moves down by 2.0/canvasHeight in clip space
-  float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
-  float pxToClip = 2.0 / u_canvasHeight;
+  float pileupTop = 1.0 - (coverage_offset() / canvas_height()) * 2.0;
+  float pxToClip = 2.0 / canvas_height();
   float syTop = pileupTop - yTopPx * pxToClip;
   float syBot = pileupTop - yBotPx * pxToClip;
   float syMid = (syTop + syBot) * 0.5;
 
   // SYNC(wgsl/readShader.ts): chevron 8px wide, featureHeight>=3.0 threshold, alt calculation
-  float chevronClip = 8.0 / u_canvasWidth * 2.0;
-  float regionLengthBp = u_bpRangeX.z;
-  float bpPerPx = regionLengthBp / u_canvasWidth;
-  bool showChevron = (u_chainMode == 1 || bpPerPx < 10.0) && u_featureHeight >= 3.0;
+  float chevronClip = 8.0 / canvas_width() * 2.0;
+  float regionLengthBp = bp_range().z;
+  float bpPerPx = regionLengthBp / canvas_width();
+  bool showChevron = (ui(14) == 1 || bpPerPx < 10.0) && feature_height() >= 3.0;
 
-  // Feature size in pixels for stroke edge detection
-  float featureWidthPx = (sx2 - sx1) * u_canvasWidth * 0.5;
-  v_featureSizePx = vec2(featureWidthPx, u_featureHeight);
+  float featureWidthPx = (sx2 - sx1) * canvas_width() * 0.5;
+  v_featureSizePx = vec2(featureWidthPx, feature_height());
 
   float sx;
   float sy;
   float localX;
   float localY;
   float edgeFlags = 0.0;
-  if (u_highlightOnlyMode == 1) {
-    // Highlight overlay uses full read span (not segment span) to cover introns
-    uint hlAbsStart = a_readSpan.x + u_regionStart;
-    uint hlAbsEnd = a_readSpan.y + u_regionStart;
-    float hlSx1 = hp_to_clip_x(hp_split_uint(hlAbsStart), u_bpRangeX);
-    float hlSx2 = hp_to_clip_x(hp_split_uint(hlAbsEnd), u_bpRangeX);
+  if (ui(13) == 1) {
+    uint hlAbsStart = a_readSpan.x + region_start();
+    uint hlAbsEnd = a_readSpan.y + region_start();
+    float hlSx1 = hp_to_clip_x(hp_split_uint(hlAbsStart), bp_range());
+    float hlSx2 = hp_to_clip_x(hp_split_uint(hlAbsEnd), bp_range());
     localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
     localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
     sx = mix(hlSx1, hlSx2, localX);
     sy = mix(syBot, syTop, localY);
     if (vid >= 6) { sx = hlSx1; sy = syTop; localX = 0.5; localY = 0.5; }
   } else if (vid < 6) {
-    // Vertices 0-5: rectangle body
     localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
     localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
     sx = mix(sx1, sx2, localX);
     sy = mix(syBot, syTop, localY);
-    // Suppress stroke on the edge shared with the chevron
-    // Only show chevron at segment endpoints: forward chevron on last segment, reverse on first
     bool isLastSeg = (a_edgeFlags & 2u) != 0u;
     bool isFirstSeg = (a_edgeFlags & 1u) != 0u;
-    if (showChevron && a_strand > 0.5 && isLastSeg) {
-      edgeFlags = 1.0;   // suppress right edge
-    } else if (showChevron && a_strand < -0.5 && isFirstSeg) {
-      edgeFlags = -1.0;  // suppress left edge
+    if (showChevron && fstrand > 0.5 && isLastSeg) {
+      edgeFlags = 1.0;
+    } else if (showChevron && fstrand < -0.5 && isFirstSeg) {
+      edgeFlags = -1.0;
     }
   } else if (showChevron) {
-    // Vertices 6-8: chevron triangle
-    // Only draw chevron at read endpoints: forward on last segment, reverse on first
     bool isLastSeg = (a_edgeFlags & 2u) != 0u;
     bool isFirstSeg = (a_edgeFlags & 1u) != 0u;
-    bool drawFwdChevron = a_strand > 0.5 && isLastSeg;
-    bool drawRevChevron = a_strand < -0.5 && isFirstSeg;
+    bool drawFwdChevron = fstrand > 0.5 && isLastSeg;
+    bool drawRevChevron = fstrand < -0.5 && isFirstSeg;
     edgeFlags = 2.0;
     float chevronWidthPx = 8.0;
-    float halfH = u_featureHeight * 0.5;
-    float altPx = chevronWidthPx * u_featureHeight / sqrt(halfH * halfH + chevronWidthPx * chevronWidthPx);
+    float halfH = feature_height() * 0.5;
+    float altPx = chevronWidthPx * feature_height() / sqrt(halfH * halfH + chevronWidthPx * chevronWidthPx);
     if (drawFwdChevron) {
       if (vid == 6) { sx = sx2; sy = syTop; localX = 0.0; localY = altPx; }
       else if (vid == 7) { sx = sx2; sy = syBot; localX = altPx; localY = 0.0; }
@@ -246,12 +202,10 @@ void main() {
       else if (vid == 7) { sx = sx1 - chevronClip; sy = syMid; localX = 0.0; localY = 0.0; }
       else { sx = sx1; sy = syBot; localX = altPx; localY = 0.0; }
     } else {
-      // No strand: degenerate triangle (invisible)
       localX = 999.0; localY = 999.0;
       sx = sx1; sy = syTop;
     }
   } else {
-    // Chevrons disabled: degenerate triangle
     localX = 0.5;
     localY = 0.5;
     sx = sx1; sy = syTop;
@@ -259,47 +213,44 @@ void main() {
 
   v_localPos = vec2(localX, localY);
   v_edgeFlags = edgeFlags;
-  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
 
   // SYNC(wgsl/readShader.ts): highlight-only dark overlay vec4(0,0,0,0.4), no chevrons
-  if (u_highlightOnlyMode == 1) {
+  if (ui(13) == 1) {
     v_color = vec4(0.0, 0.0, 0.0, 0.4);
     return;
   }
 
   vec3 color;
-  // In chain mode, supplementary chains use orange for paired-end reads only.
-  // Long reads (non-paired) use strand-based coloring with optional flip.
-  // a_chainHasSupp: 0=no supp, 1=has supp + primary fwd, 2=has supp + primary rev
-  bool isPaired = mod(a_flags, 2.0) > 0.5;
-  if (u_chainMode == 1 && a_chainHasSupp > 0.5 && isPaired) {
-    color = u_colorSupplementary;
-  } else if (u_chainMode == 1 && a_chainHasSupp > 0.5) {
-    float primaryStrand = a_chainHasSupp > 1.5 ? -1.0 : 1.0;
-    float effectiveStrand = u_flipStrandLongReadChains == 1
-      ? a_strand * primaryStrand
-      : a_strand;
+  bool isPaired = mod(fflags, 2.0) > 0.5;
+  if (ui(14) == 1 && fchainHasSupp > 0.5 && isPaired) {
+    color = color3(95u);
+  } else if (ui(14) == 1 && fchainHasSupp > 0.5) {
+    float primaryStrand = fchainHasSupp > 1.5 ? -1.0 : 1.0;
+    float effectiveStrand = ui(29) == 1
+      ? fstrand * primaryStrand
+      : fstrand;
     color = strandColor(effectiveStrand);
-  } else if (mod(floor(a_flags / 8.0), 2.0) > 0.5 && (u_colorScheme == 0 || u_colorScheme == 3 || u_colorScheme == 5 || u_colorScheme == 6 || u_colorScheme == 10)) {
-    color = u_colorUnmappedMate;
-  } else if (u_colorScheme == 0) color = u_colorPairLR;
-  else if (u_colorScheme == 1) color = strandColor(a_strand);
-  else if (u_colorScheme == 2) color = mapqColor(a_mapq);
-  else if (u_colorScheme == 3) color = insertSizeColor(a_insertSize);
-  else if (u_colorScheme == 4) color = firstOfPairColor(a_flags, a_strand);
-  else if (u_colorScheme == 5) color = pairOrientationColor(a_pairOrientation);
-  else if (u_colorScheme == 6) color = insertSizeAndOrientationColor(a_insertSize, a_pairOrientation);
-  else if (u_colorScheme == 7) color = modificationsColor(a_flags);
-  else if (u_colorScheme == 8) {
+  } else if (mod(floor(fflags / 8.0), 2.0) > 0.5 && (ui(11) == 0 || ui(11) == 3 || ui(11) == 5 || ui(11) == 6 || ui(11) == 10)) {
+    color = color3(134u);
+  } else if (ui(11) == 0) color = color3(41u);
+  else if (ui(11) == 1) color = strandColor(fstrand);
+  else if (ui(11) == 2) color = mapqColor(fmapq);
+  else if (ui(11) == 3) color = insertSizeColor(a_insertSize);
+  else if (ui(11) == 4) color = firstOfPairColor(fflags, fstrand);
+  else if (ui(11) == 5) color = pairOrientationColor(fpairOrientation);
+  else if (ui(11) == 6) color = insertSizeAndOrientationColor(a_insertSize, fpairOrientation);
+  else if (ui(11) == 7) color = modificationsColor(fflags);
+  else if (ui(11) == 8) {
     if (a_tagColor.r != 0.0 || a_tagColor.g != 0.0 || a_tagColor.b != 0.0) {
       color = a_tagColor;
     } else {
-      color = u_colorPairLR;
+      color = color3(41u);
     }
   }
-  else if (u_colorScheme == 9) color = mapqColor(a_baseQuality);
-  else if (u_colorScheme == 10) color = insertSizeGradientColor(a_insertSize);
-  else color = u_colorPairLR;
+  else if (ui(11) == 9) color = mapqColor(fbaseQuality);
+  else if (ui(11) == 10) color = insertSizeGradientColor(a_insertSize);
+  else color = color3(41u);
 
   v_color = vec4(color, 1.0);
 }
@@ -307,23 +258,23 @@ void main() {
 
 export const READ_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
+precision highp int;
+
+${GLSL_UBO_PREAMBLE}
+
 in vec4 v_color;
 in vec2 v_localPos;
 in vec2 v_featureSizePx;
 in float v_edgeFlags;
-uniform int u_showStroke;
 out vec4 fragColor;
 void main() {
-  if (u_showStroke == 1) {
+  if (ui(15) == 1) {
     float edgeDist;
     if (v_edgeFlags > 1.5) {
-      // Chevron mode: v_localPos contains pixel distances to outer edges
       edgeDist = min(v_localPos.x, v_localPos.y);
     } else {
-      // Rectangle mode: v_localPos is 0-1 UV
       float dx_left = v_localPos.x * v_featureSizePx.x;
       float dx_right = (1.0 - v_localPos.x) * v_featureSizePx.x;
-      // Suppress stroke on edge shared with chevron
       if (v_edgeFlags > 0.5) { dx_right = 999.0; }
       if (v_edgeFlags < -0.5) { dx_left = 999.0; }
       float dy = min(v_localPos.y, 1.0 - v_localPos.y) * v_featureSizePx.y;

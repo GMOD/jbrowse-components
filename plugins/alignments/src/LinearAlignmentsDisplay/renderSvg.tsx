@@ -25,7 +25,7 @@ import {
   LONG_INSERTION_MIN_LENGTH,
   insertionBarWidth,
 } from './constants.ts'
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
+import { YSCALEBAR_LABEL_OFFSET, drawIndicatorTriangle } from '@jbrowse/alignments-core'
 
 import type { ArcsDataResult } from '../RenderArcsDataRPC/types.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
@@ -424,16 +424,8 @@ function drawInterbaseIndicators(
     }
     const cx = (pos - block.start) / bpPerPx + blockScreenX
     const colorType = data.indicatorColorTypes[i]!
-    const color = noncovColors[colorType - 1] ?? noncovColors[0]!
-    const hw = 3.5
-
-    ctx.fillStyle = color
-    ctx.beginPath()
-    ctx.moveTo(cx - hw, 0)
-    ctx.lineTo(cx + hw, 0)
-    ctx.lineTo(cx, indicatorTriangleH)
-    ctx.closePath()
-    ctx.fill()
+    ctx.fillStyle = noncovColors[colorType - 1] ?? noncovColors[0]!
+    drawIndicatorTriangle(ctx, cx)
   }
 }
 

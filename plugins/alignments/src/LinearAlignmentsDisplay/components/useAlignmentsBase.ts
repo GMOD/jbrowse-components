@@ -80,7 +80,7 @@ export interface LinearAlignmentsDisplayModel {
   visibleLabels: VisibleLabel[]
   isChainMode: boolean
   setOverCigarItem: (flag: boolean) => void
-  setWebGLRenderer: (renderer: AlignmentsRenderer | null) => void
+  setGpuRenderer: (renderer: AlignmentsRenderer | null) => void
   setColorPalette: (palette: ColorPalette | null) => void
   setCurrentRangeY: (rangeY: [number, number]) => void
   setCoverageHeight: (height: number) => void
@@ -458,7 +458,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           return
         }
         rendererRef.current = renderer
-        model.setWebGLRenderer(renderer)
+        model.setGpuRenderer(renderer)
         if (contextVersion > 0) {
           model.clearAllRpcData()
         }
@@ -470,7 +470,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       cancelled = true
       rendererRef.current?.destroy()
       rendererRef.current = null
-      model.setWebGLRenderer(null)
+      model.setGpuRenderer(null)
     }
   }, [contextVersion, model])
 

@@ -1,26 +1,14 @@
-import { FLIP_GLSL } from './utils.ts'
+import { GLSL_UBO_PREAMBLE, COV_DOMAIN_GLSL } from './uboCommon.ts'
 
-// Coverage vertex shader - renders grey bars for total coverage
-// Uses explicit position attribute for consistent positioning with other coverage elements
 export const COVERAGE_VERTEX_SHADER = `#version 300 es
 precision highp float;
+
+${GLSL_UBO_PREAMBLE}
+${COV_DOMAIN_GLSL}
 
 // SYNC(wgsl/coverageShaders.ts): CovInst struct { position, depth }
 in float a_position;    // position offset from regionStart
 in float a_depth;       // normalized depth (0-1, against per-region max)
-
-uniform vec2 u_visibleRange;  // [domainStart, domainEnd] as offsets
-uniform float u_coverageHeight;  // height in pixels
-uniform float u_coverageYOffset; // padding at top/bottom for scalebar labels
-uniform float u_depthScale;      // perRegionMax / nicedOverallMax correction
-uniform float u_binSize;
-uniform float u_canvasHeight;
-uniform float u_canvasWidth;
-
-// Coverage bar color (typically light grey)
-uniform vec3 u_colorCoverage;
-
-${FLIP_GLSL}
 
 out vec4 v_color;
 
@@ -29,14 +17,13 @@ void main() {
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
-  // Use explicit position (offset from regionStart)
-  float domainWidth = u_visibleRange.y - u_visibleRange.x;
+  float domainWidth = vis_range().y - vis_range().x;
 
-  float x1 = (a_position - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
-  float x2 = (a_position + u_binSize - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
+  float x1 = (a_position - vis_range().x) / domainWidth * 2.0 - 1.0;
+  float x2 = (a_position + uf(19u) - vis_range().x) / domainWidth * 2.0 - 1.0;
 
   // SYNC(wgsl/coverageShaders.ts): min width enforcement 2.0/canvasWidth
-  float minWidth = 2.0 / u_canvasWidth;
+  float minWidth = 2.0 / canvas_width();
   if (x2 - x1 < minWidth) {
     float mid = (x1 + x2) * 0.5;
     x1 = mid - minWidth * 0.5;
@@ -45,17 +32,14 @@ void main() {
 
   float sx = mix(x1, x2, localX);
 
-  // Y: coverage area at top of canvas with offset padding
-  // Effective drawing area is from offset to coverageHeight-offset
-  // depthScale corrects for nice() domain expansion and multi-region max differences
   // SYNC(wgsl/coverageShaders.ts): effectiveHeight, coverageBottom, depthScale formulas
-  float effectiveHeight = u_coverageHeight - 2.0 * u_coverageYOffset;
-  float coverageBottom = 1.0 - ((u_coverageHeight - u_coverageYOffset) / u_canvasHeight) * 2.0;
-  float barTop = coverageBottom + (a_depth * u_depthScale * effectiveHeight / u_canvasHeight) * 2.0;
+  float effectiveHeight = cov_height() - 2.0 * cov_y_offset();
+  float coverageBottom = 1.0 - ((cov_height() - cov_y_offset()) / canvas_height()) * 2.0;
+  float barTop = coverageBottom + (a_depth * depth_scale() * effectiveHeight / canvas_height()) * 2.0;
   float sy = mix(coverageBottom, barTop, localY);
 
   gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
-  v_color = vec4(u_colorCoverage, 1.0);
+  v_color = vec4(color3(80u), 1.0);
 }
 `
 
@@ -68,31 +52,17 @@ void main() {
 }
 `
 
-// SNP Coverage vertex shader - renders colored stacked bars at exact positions
-// Uses simple float offsets (relative to regionStart) - sufficient for coverage features
 export const SNP_COVERAGE_VERTEX_SHADER = `#version 300 es
 precision highp float;
+
+${GLSL_UBO_PREAMBLE}
+${COV_DOMAIN_GLSL}
 
 // SYNC(wgsl/coverageShaders.ts): SnpCovInst struct { position, y_offset, seg_height, color_type }
 in float a_position;       // position offset from regionStart
 in float a_yOffset;       // cumulative height below this segment (normalized 0-1)
 in float a_segmentHeight; // height of this segment (normalized 0-1)
 in float a_colorType;     // 1=A(green), 2=C(blue), 3=G(orange), 4=T(red)
-
-uniform vec2 u_visibleRange;  // [domainStart, domainEnd] as offsets
-uniform float u_coverageHeight;
-uniform float u_coverageYOffset; // padding at top/bottom for scalebar labels
-uniform float u_depthScale;      // perRegionMax / nicedOverallMax correction
-uniform float u_canvasHeight;
-uniform float u_canvasWidth;
-
-// Base color uniforms from theme
-uniform vec3 u_colorBaseA;
-uniform vec3 u_colorBaseC;
-uniform vec3 u_colorBaseG;
-uniform vec3 u_colorBaseT;
-
-${FLIP_GLSL}
 
 out vec4 v_color;
 
@@ -101,12 +71,11 @@ void main() {
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
-  float domainWidth = u_visibleRange.y - u_visibleRange.x;
-  float x1 = (a_position - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
-  float x2 = (a_position + 1.0 - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
+  float domainWidth = vis_range().y - vis_range().x;
+  float x1 = (a_position - vis_range().x) / domainWidth * 2.0 - 1.0;
+  float x2 = (a_position + 1.0 - vis_range().x) / domainWidth * 2.0 - 1.0;
 
-  // Ensure minimum width of 1 pixel
-  float minWidth = 2.0 / u_canvasWidth;
+  float minWidth = 2.0 / canvas_width();
   if (x2 - x1 < minWidth) {
     float mid = (x1 + x2) * 0.5;
     x1 = mid - minWidth * 0.5;
@@ -115,25 +84,23 @@ void main() {
 
   float sx = mix(x1, x2, localX);
 
-  // Y: stacked from bottom of coverage area with offset padding
-  float effectiveHeight = u_coverageHeight - 2.0 * u_coverageYOffset;
-  float coverageBottom = 1.0 - ((u_coverageHeight - u_coverageYOffset) / u_canvasHeight) * 2.0;
-  float segmentBot = coverageBottom + (a_yOffset * u_depthScale * effectiveHeight / u_canvasHeight) * 2.0;
-  float segmentTop = segmentBot + (a_segmentHeight * u_depthScale * effectiveHeight / u_canvasHeight) * 2.0;
+  float effectiveHeight = cov_height() - 2.0 * cov_y_offset();
+  float coverageBottom = 1.0 - ((cov_height() - cov_y_offset()) / canvas_height()) * 2.0;
+  float segmentBot = coverageBottom + (a_yOffset * depth_scale() * effectiveHeight / canvas_height()) * 2.0;
+  float segmentTop = segmentBot + (a_segmentHeight * depth_scale() * effectiveHeight / canvas_height()) * 2.0;
   float sy = mix(segmentBot, segmentTop, localY);
 
   gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
 
-  // Colors: A=green, C=blue, G=orange, T=red (from theme uniforms)
   int colorIdx = int(a_colorType);
   if (colorIdx == 1) {
-    v_color = vec4(u_colorBaseA, 1.0);
+    v_color = vec4(color3(53u), 1.0);
   } else if (colorIdx == 2) {
-    v_color = vec4(u_colorBaseC, 1.0);
+    v_color = vec4(color3(56u), 1.0);
   } else if (colorIdx == 3) {
-    v_color = vec4(u_colorBaseG, 1.0);
+    v_color = vec4(color3(59u), 1.0);
   } else {
-    v_color = vec4(u_colorBaseT, 1.0);
+    v_color = vec4(color3(62u), 1.0);
   }
 }
 `
@@ -147,25 +114,17 @@ void main() {
 }
 `
 
-// Modification coverage vertex shader - renders colored stacked bars at exact positions
-// Like SNP coverage but uses per-instance RGBA color instead of color type lookup
 export const MOD_COVERAGE_VERTEX_SHADER = `#version 300 es
 precision highp float;
+
+${GLSL_UBO_PREAMBLE}
+${COV_DOMAIN_GLSL}
 
 // SYNC(wgsl/coverageShaders.ts): ModCovInst struct { position, y_offset, seg_height, packed_color }
 in float a_position;       // position offset from regionStart
 in float a_yOffset;       // cumulative height below this segment (normalized 0-1)
 in float a_segmentHeight; // height of this segment (normalized 0-1)
-in vec4 a_color;          // RGBA color (normalized from Uint8)
-
-uniform vec2 u_visibleRange;  // [domainStart, domainEnd] as offsets
-uniform float u_coverageHeight;
-uniform float u_coverageYOffset; // padding at top/bottom for scalebar labels
-uniform float u_depthScale;      // perRegionMax / nicedOverallMax correction
-uniform float u_canvasHeight;
-uniform float u_canvasWidth;
-
-${FLIP_GLSL}
+in uint a_packedColor;    // RGBA packed as u32 (R in low byte)
 
 out vec4 v_color;
 
@@ -174,12 +133,11 @@ void main() {
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
-  float domainWidth = u_visibleRange.y - u_visibleRange.x;
-  float x1 = (a_position - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
-  float x2 = (a_position + 1.0 - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
+  float domainWidth = vis_range().y - vis_range().x;
+  float x1 = (a_position - vis_range().x) / domainWidth * 2.0 - 1.0;
+  float x2 = (a_position + 1.0 - vis_range().x) / domainWidth * 2.0 - 1.0;
 
-  // Ensure minimum width of 1 pixel
-  float minWidth = 2.0 / u_canvasWidth;
+  float minWidth = 2.0 / canvas_width();
   if (x2 - x1 < minWidth) {
     float mid = (x1 + x2) * 0.5;
     x1 = mid - minWidth * 0.5;
@@ -188,15 +146,19 @@ void main() {
 
   float sx = mix(x1, x2, localX);
 
-  // Y: stacked from bottom of coverage area with offset padding
-  float effectiveHeight = u_coverageHeight - 2.0 * u_coverageYOffset;
-  float coverageBottom = 1.0 - ((u_coverageHeight - u_coverageYOffset) / u_canvasHeight) * 2.0;
-  float segmentBot = coverageBottom + (a_yOffset * u_depthScale * effectiveHeight / u_canvasHeight) * 2.0;
-  float segmentTop = segmentBot + (a_segmentHeight * u_depthScale * effectiveHeight / u_canvasHeight) * 2.0;
+  float effectiveHeight = cov_height() - 2.0 * cov_y_offset();
+  float coverageBottom = 1.0 - ((cov_height() - cov_y_offset()) / canvas_height()) * 2.0;
+  float segmentBot = coverageBottom + (a_yOffset * depth_scale() * effectiveHeight / canvas_height()) * 2.0;
+  float segmentTop = segmentBot + (a_segmentHeight * depth_scale() * effectiveHeight / canvas_height()) * 2.0;
   float sy = mix(segmentBot, segmentTop, localY);
 
   gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
-  v_color = a_color;
+  // Unpack RGBA from u32
+  float r = float(a_packedColor & 0xFFu) / 255.0;
+  float g = float((a_packedColor >> 8u) & 0xFFu) / 255.0;
+  float b = float((a_packedColor >> 16u) & 0xFFu) / 255.0;
+  float a = float((a_packedColor >> 24u) & 0xFFu) / 255.0;
+  v_color = vec4(r, g, b, a);
 }
 `
 
@@ -209,29 +171,17 @@ void main() {
 }
 `
 
-// Noncov (interbase) histogram vertex shader - renders colored bars DOWNWARD from top
-// For insertion/softclip/hardclip counts aggregated by position
-// Uses FIXED PIXEL WIDTH (1.2px like the original renderer) regardless of zoom
 export const NONCOV_HISTOGRAM_VERTEX_SHADER = `#version 300 es
 precision highp float;
+
+${GLSL_UBO_PREAMBLE}
+${COV_DOMAIN_GLSL}
 
 // SYNC(wgsl/coverageShaders.ts): NoncovInst struct { position, y_offset, seg_height, color_type }
 in float a_position;      // position offset from regionStart
 in float a_yOffset;       // cumulative height below this segment (normalized 0-1)
 in float a_segmentHeight; // height of this segment (normalized 0-1)
 in float a_colorType;     // 1=insertion, 2=softclip, 3=hardclip
-
-uniform vec2 u_visibleRange;  // [domainStart, domainEnd] as offsets
-uniform float u_noncovHeight; // height in pixels for noncov bars
-uniform float u_canvasHeight;
-uniform float u_canvasWidth;
-
-// Indel/clip color uniforms from theme
-uniform vec3 u_colorInsertion;
-uniform vec3 u_colorSoftclip;
-uniform vec3 u_colorHardclip;
-
-${FLIP_GLSL}
 
 out vec4 v_color;
 
@@ -240,36 +190,30 @@ void main() {
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
-  float domainWidth = u_visibleRange.y - u_visibleRange.x;
+  float domainWidth = vis_range().y - vis_range().x;
 
-  // Center position in clip space
-  float cx = (a_position - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
+  float cx = (a_position - vis_range().x) / domainWidth * 2.0 - 1.0;
 
-  // Fixed pixel width (1px)
-  float barWidthClip = 1.0 / u_canvasWidth * 2.0;
+  float barWidthClip = 1.0 / canvas_width() * 2.0;
   float x1 = cx - barWidthClip * 0.5;
   float x2 = cx + barWidthClip * 0.5;
 
   float sx = mix(x1, x2, localX);
 
-  // Y: bars grow DOWNWARD from top of canvas, below indicator triangles
-  // Top of canvas is y=1.0 in clip space
-  // Offset by indicator triangle height (4.5px) so bars appear directly below triangles
-  float indicatorOffsetClip = 4.5 / u_canvasHeight * 2.0;
-  float segmentTop = 1.0 - indicatorOffsetClip - (a_yOffset * u_noncovHeight / u_canvasHeight) * 2.0;
-  float segmentBot = segmentTop - (a_segmentHeight * u_noncovHeight / u_canvasHeight) * 2.0;
+  float indicatorOffsetClip = 4.5 / canvas_height() * 2.0;
+  float segmentTop = 1.0 - indicatorOffsetClip - (a_yOffset * uf(20u) / canvas_height()) * 2.0;
+  float segmentBot = segmentTop - (a_segmentHeight * uf(20u) / canvas_height()) * 2.0;
   float sy = mix(segmentBot, segmentTop, localY);
 
   gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
 
-  // Colors from theme uniforms
   int colorIdx = int(a_colorType);
   if (colorIdx == 1) {
-    v_color = vec4(u_colorInsertion, 1.0);
+    v_color = vec4(color3(65u), 1.0);
   } else if (colorIdx == 2) {
-    v_color = vec4(u_colorSoftclip, 1.0);
+    v_color = vec4(color3(74u), 1.0);
   } else {
-    v_color = vec4(u_colorHardclip, 1.0);
+    v_color = vec4(color3(77u), 1.0);
   }
 }
 `
@@ -283,55 +227,39 @@ void main() {
 }
 `
 
-// Interbase indicator vertex shader - renders small triangles pointing DOWN
-// at positions with significant insertion/softclip/hardclip counts
-// Positioned at the very top of the coverage area
 export const INDICATOR_VERTEX_SHADER = `#version 300 es
 precision highp float;
+
+${GLSL_UBO_PREAMBLE}
+${COV_DOMAIN_GLSL}
 
 // SYNC(wgsl/coverageShaders.ts): IndicatorInst struct { position, color_type }
 in float a_position;   // position offset from regionStart
 in float a_colorType;  // 1=insertion, 2=softclip, 3=hardclip (dominant type)
 
-uniform vec2 u_visibleRange;
-uniform float u_canvasHeight;
-uniform float u_canvasWidth;
-
-// Indel/clip color uniforms from theme
-uniform vec3 u_colorInsertion;
-uniform vec3 u_colorSoftclip;
-uniform vec3 u_colorHardclip;
-
-${FLIP_GLSL}
-
 out vec4 v_color;
 out vec3 v_bary;
 
 void main() {
-  // Triangle: 3 vertices per indicator
   int vid = gl_VertexID % 3;
 
-  float domainWidth = u_visibleRange.y - u_visibleRange.x;
-  float cx = (a_position - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
+  float domainWidth = vis_range().y - vis_range().x;
+  float cx = (a_position - vis_range().x) / domainWidth * 2.0 - 1.0;
 
-  // Triangle dimensions in clip space
   // SYNC(wgsl/coverageShaders.ts): indicator triangle 7px wide, 4.5px tall
-  float triangleWidth = 7.0 / u_canvasWidth * 2.0;  // 7px wide
-  float triangleHeight = 4.5 / u_canvasHeight * 2.0; // 4.5px tall
+  float triangleWidth = 7.0 / canvas_width() * 2.0;
+  float triangleHeight = 4.5 / canvas_height() * 2.0;
 
   float sx, sy;
   if (vid == 0) {
-    // Top left — opposite edge is right diagonal
     sx = cx - triangleWidth * 0.5;
     sy = 1.0;
     v_bary = vec3(1.0, 0.0, 0.0);
   } else if (vid == 1) {
-    // Top right — opposite edge is left diagonal
     sx = cx + triangleWidth * 0.5;
     sy = 1.0;
     v_bary = vec3(0.0, 1.0, 0.0);
   } else {
-    // Bottom center (point) — opposite edge is top (flat, no AA needed)
     sx = cx;
     sy = 1.0 - triangleHeight;
     v_bary = vec3(0.0, 0.0, 1.0);
@@ -339,14 +267,13 @@ void main() {
 
   gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
 
-  // Colors from theme uniforms
   int colorIdx = int(a_colorType);
   if (colorIdx == 1) {
-    v_color = vec4(u_colorInsertion, 1.0);
+    v_color = vec4(color3(65u), 1.0);
   } else if (colorIdx == 2) {
-    v_color = vec4(u_colorSoftclip, 1.0);
+    v_color = vec4(color3(74u), 1.0);
   } else {
-    v_color = vec4(u_colorHardclip, 1.0);
+    v_color = vec4(color3(77u), 1.0);
   }
 }
 `
@@ -357,10 +284,6 @@ in vec4 v_color;
 in vec3 v_bary;
 out vec4 fragColor;
 void main() {
-  // Anti-alias diagonal edges using barycentric coordinates.
-  // For a 7x4.5px triangle, the altitude from each top vertex to the
-  // opposite diagonal edge is ~3.7px. Multiplying bary coord by this
-  // gives approximate pixel distance to that edge.
   float altPx = 3.7;
   float dLeft = v_bary.y * altPx;
   float dRight = v_bary.x * altPx;
@@ -369,23 +292,3 @@ void main() {
 }
 `
 
-// Simple line shader for drawing separator and highlight overlays
-export const LINE_VERTEX_SHADER = `#version 300 es
-precision highp float;
-in vec2 a_position;
-
-${FLIP_GLSL}
-
-void main() {
-  gl_Position = vec4(flip_x(a_position.x), a_position.y, 0.0, 1.0);
-}
-`
-
-export const LINE_FRAGMENT_SHADER = `#version 300 es
-precision highp float;
-out vec4 fragColor;
-uniform vec4 u_color;
-void main() {
-  fragColor = u_color;
-}
-`

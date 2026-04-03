@@ -22,9 +22,20 @@ fn canvas_width() -> f32 { return uf(7u); }
 fn coverage_offset() -> f32 { return uf(8u); }
 fn feature_height() -> f32 { return uf(9u); }
 fn feature_spacing() -> f32 { return uf(10u); }
+fn flip_x(x: f32) -> f32 { return mix(x, -x, uf(23u)); }
 `
 
-export const PREAMBLE = UNIFORM_WGSL + HP_WGSL
+// 2-arg HP wrappers that inject uf(5u) as hp_zero — matches GLSL uboCommon.ts wrappers
+const HP_WGSL_WRAPPERS = `
+fn hp_clip_x(split_pos: vec2f, range: vec3f) -> f32 {
+  return hp_to_clip_x(split_pos, range, uf(5u));
+}
+fn hp_linear(split_pos: vec2f, range: vec3f) -> f32 {
+  return hp_scale_linear(split_pos, range, uf(5u));
+}
+`
+
+export const PREAMBLE = UNIFORM_WGSL + HP_WGSL + HP_WGSL_WRAPPERS
 
 // Re-export shared shader fragments for backward compat with existing references
 
@@ -66,7 +77,7 @@ export const U_BIN_SIZE = 19
 export const U_NONCOV_HEIGHT = 20
 export const U_INSERT_UPPER = 21
 export const U_INSERT_LOWER = 22
-// slot 23 unused (was U_ERASE_MODE, removed with stencil pass)
+export const U_REVERSED = 23
 export const U_BLOCK_START_PX = 24
 export const U_BLOCK_WIDTH = 25
 export const U_LINE_WIDTH_PX = 26

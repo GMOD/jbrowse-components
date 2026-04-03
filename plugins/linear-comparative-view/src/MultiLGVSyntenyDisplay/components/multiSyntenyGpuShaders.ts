@@ -437,6 +437,93 @@ fn fs_main(in: SnpVOut) -> @location(0) vec4f {
 }
 `
 
+// GLSL indicator shader - insertion triangles at top of coverage area
+export const GLSL_INDICATOR_VERTEX_SHADER = `#version 300 es
+precision highp float;
+
+layout(location = 0) in float a_position;  // absolute genome coordinate
+
+${UNIFORMS_GLSL}
+
+out vec4 v_color;
+
+void main() {
+  int vid = gl_VertexID % 3;
+  float blockStart = u.bpRangeHi + u.bpRangeLo;
+  float t = (a_position - blockStart) / u.bpRangeLen;
+  float cx = u.regionScreenLeft + t * u.regionScreenWidth;
+
+  if (cx < -4.0 || cx > u.resolutionX + 4.0) {
+    gl_Position = vec4(0.0);
+    return;
+  }
+
+  float hw = 3.5;
+  float th = 4.5;
+  float sx, sy;
+  if (vid == 0) { sx = cx - hw; sy = 0.0; }
+  else if (vid == 1) { sx = cx + hw; sy = 0.0; }
+  else { sx = cx; sy = th; }
+
+  vec2 clipPos = vec2(sx, sy) / vec2(u.resolutionX, u.resolutionY) * 2.0 - 1.0;
+  gl_Position = vec4(clipPos.x, -clipPos.y, 0.0, 1.0);
+
+  // Insertion color (purple) — matches theme insertion color
+  v_color = vec4(0.71, 0.0, 0.71, 1.0);
+}
+`
+
+// WGSL indicator shader
+export const WGSL_INDICATOR_SHADER = `
+${UNIFORMS_STRUCT_WGSL}
+
+struct Indicator {
+  position: f32,
+}
+
+struct IndVOut {
+  @builtin(position) pos: vec4f,
+  @location(0) color: vec4f,
+}
+
+@group(0) @binding(0) var<storage, read> indicators: array<Indicator>;
+@group(0) @binding(1) var<uniform> uniforms: Uniforms;
+
+@vertex
+fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -> IndVOut {
+  let ind = indicators[iid];
+  var out: IndVOut;
+
+  let blockStart = uniforms.bpRangeHi + uniforms.bpRangeLo;
+  let t = (ind.position - blockStart) / uniforms.bpRangeLen;
+  let cx = uniforms.regionScreenLeft + t * uniforms.regionScreenWidth;
+
+  if (cx < -4.0 || cx > uniforms.resolutionX + 4.0) {
+    out.pos = vec4f(0.0, 0.0, 0.0, 0.0);
+    return out;
+  }
+
+  let hw = 3.5;
+  let th = 4.5;
+  let v = vid % 3u;
+  var sx: f32;
+  var sy: f32;
+  if v == 0u { sx = cx - hw; sy = 0.0; }
+  else if v == 1u { sx = cx + hw; sy = 0.0; }
+  else { sx = cx; sy = th; }
+
+  let clipPos = vec2f(sx, sy) / vec2f(uniforms.resolutionX, uniforms.resolutionY) * 2.0 - 1.0;
+  out.pos = vec4f(clipPos.x, -clipPos.y, 0.0, 1.0);
+  out.color = vec4f(0.71, 0.0, 0.71, 1.0);
+  return out;
+}
+
+@fragment
+fn fs_main(in: IndVOut) -> @location(0) vec4f {
+  return in.color;
+}
+`
+
 export {
   PICKING_FS_GLSL as PICKING_FRAGMENT_SHADER,
   SIMPLE_FS_GLSL as FILL_FRAGMENT_SHADER,

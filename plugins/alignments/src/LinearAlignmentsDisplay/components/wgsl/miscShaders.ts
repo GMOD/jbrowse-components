@@ -101,7 +101,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let offset_pos = pos + normal * hw * side;
   let clip_x = (offset_pos.x / canvas_width()) * 2.0 - 1.0;
   let clip_y = 1.0 - ((offset_pos.y + coverage_offset()) / canvas_height()) * 2.0;
-  out.position = vec4f(clip_x, clip_y, 0.0, 1.0);
+  out.position = vec4f(flip_x(clip_x), clip_y, 0.0, 1.0);
   out.dist = side * hw;
   out.color = vec4f(arc_color(inst.color_type), 1.0);
   return out;
@@ -135,7 +135,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
 
   let abs_pos = inst.position + region_start();
   let split_pos = hp_split_uint(abs_pos);
-  let norm = hp_scale_linear(split_pos, bp_range());
+  let norm = hp_linear(split_pos, bp_range());
   let screen_x = uf(24u) + norm * uf(25u);
   let sx = (screen_x / canvas_width()) * 2.0 - 1.0;
 
@@ -143,7 +143,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   if v == 0u { sy = 1.0 - ((inst.y + coverage_offset()) / canvas_height()) * 2.0; }
   else { sy = 1.0 - (coverage_offset() / canvas_height()) * 2.0; }
 
-  out.position = vec4f(sx, sy, 0.0, 1.0);
+  out.position = vec4f(flip_x(sx), sy, 0.0, 1.0);
   let idx = u32(inst.color_type + 0.5);
   let ci = min(idx, ${NUM_LINE_COLORS - 1}u);
   out.color = vec4f(color3(122u + ci * 3u), 1.0);
@@ -205,7 +205,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let offset_pos = pos + normal * hw * side;
   let clip_x = (offset_pos.x / canvas_width()) * 2.0 - 1.0;
   let clip_y = 1.0 - ((offset_pos.y + coverage_offset()) / canvas_height()) * 2.0;
-  out.position = vec4f(clip_x, clip_y, 0.0, 1.0);
+  out.position = vec4f(flip_x(clip_x), clip_y, 0.0, 1.0);
   out.dist = side * hw;
   out.lw = inst.line_width;
   let idx = min(u32(inst.color_type + 0.5), ${NUM_SASHIMI_COLORS - 1}u);
@@ -244,8 +244,8 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
 
   let abs_start = inst.start_off + region_start();
   let abs_end = inst.end_off + region_start();
-  let sx1 = hp_to_clip_x(hp_split_uint(abs_start), bp_range(), uf(5u));
-  let sx2 = hp_to_clip_x(hp_split_uint(abs_end), bp_range(), uf(5u));
+  let sx1 = hp_clip_x(hp_split_uint(abs_start), bp_range());
+  let sx2 = hp_clip_x(hp_split_uint(abs_end), bp_range());
 
   let row_h = feature_height() + feature_spacing();
   let row_center = coverage_offset() + inst.y * row_h + feature_height() * 0.5 - uf(28u);

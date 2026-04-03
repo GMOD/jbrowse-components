@@ -1,5 +1,7 @@
 import {
+  computeInsertionIndicators,
   computeSNPCoverage,
+  extractIndelsFromCs,
   extractMismatchesFromCs,
 } from '@jbrowse/alignments-core'
 import { computeCoverage } from '@jbrowse/plugin-alignments'
@@ -37,13 +39,16 @@ function buildRegionData(
   const regionEnd = Math.ceil(region.end)
   const coverageFeatures = features.map(f => ({ start: f.start, end: f.end }))
   const mismatches: { position: number; base: number; strand: number }[] = []
+  const indels: { position: number; type: 1 | 2; length: number }[] = []
   for (const f of features) {
     if (f.cs) {
       extractMismatchesFromCs(f.cs, f.start, mismatches)
+      extractIndelsFromCs(f.cs, f.start, indels)
     }
   }
   const coverage = computeCoverage(coverageFeatures, [], regionStart, regionEnd)
   const snp = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
+  const indicators = computeInsertionIndicators(indels, coverage.depths, coverage.startOffset, regionStart)
   const mismatchPositions = new Uint32Array(mismatches.length)
   const mismatchBases = new Uint8Array(mismatches.length)
   for (let i = 0; i < mismatches.length; i++) {
@@ -65,6 +70,8 @@ function buildRegionData(
     mismatchPositions,
     mismatchBases,
     numMismatches: mismatches.length,
+    indicatorPositions: indicators.positions,
+    numIndicators: indicators.count,
   }
 }
 
@@ -155,6 +162,8 @@ describe('genomeRows aggregation across regions', () => {
         mismatchPositions: new Uint32Array(0),
         mismatchBases: new Uint8Array(0),
         numMismatches: 0,
+        indicatorPositions: new Uint32Array(0),
+        numIndicators: 0,
       }],
     ])
 

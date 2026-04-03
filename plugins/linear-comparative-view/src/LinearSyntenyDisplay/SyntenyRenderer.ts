@@ -1,8 +1,11 @@
-import { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
+import { createGpuHal } from '@jbrowse/core/gpu/hal'
 
 import { Canvas2DSyntenyRenderer } from './Canvas2DSyntenyRenderer.ts'
-import { WebGLSyntenyRenderer } from './WebGLSyntenyRenderer.ts'
-import { WebGPUSyntenyRenderer } from './WebGPUSyntenyRenderer.ts'
+import {
+  GpuSyntenyRenderer,
+  SYNTENY_PASSES,
+  SYNTENY_UNIFORM_BYTE_SIZE,
+} from './GpuSyntenyRenderer.ts'
 
 import type { SyntenyBackend } from './syntenyBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
@@ -27,24 +30,18 @@ export class SyntenyRenderer {
   }
 
   async init() {
-    if (getGpuOverride() === 'canvas2d') {
-      this.backend = new Canvas2DSyntenyRenderer(this.canvas)
+    const hal = await createGpuHal(
+      this.canvas,
+      SYNTENY_PASSES,
+      SYNTENY_UNIFORM_BYTE_SIZE,
+    )
+    if (hal) {
+      this.backend = new GpuSyntenyRenderer(hal, this.canvas)
       return true
     }
 
-    const gpu = await WebGPUSyntenyRenderer.create(this.canvas)
-    if (gpu) {
-      this.backend = gpu
-      return true
-    }
-    try {
-      this.backend = new WebGLSyntenyRenderer(this.canvas)
-      return true
-    } catch (e) {
-      console.warn('[SyntenyRenderer] WebGL2 fallback also failed:', e)
-      this.backend = new Canvas2DSyntenyRenderer(this.canvas)
-      return true
-    }
+    this.backend = new Canvas2DSyntenyRenderer(this.canvas)
+    return true
   }
 
   resize(width: number, height: number) {

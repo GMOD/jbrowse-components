@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/alignments-core'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
-import { visitCigarOps, visitCsOps } from './syntenyOpsVisitor.ts'
+import { visitCigarOps, visitCsOps } from '@jbrowse/alignments-core'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 

@@ -1,8 +1,11 @@
-import { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
+import { createGpuHal } from '@jbrowse/core/gpu/hal'
 
 import { Canvas2DVariantRenderer } from './Canvas2DVariantRenderer.ts'
-import { WebGLVariantRenderer } from './WebGLVariantRenderer.ts'
-import { WebGPUVariantRenderer } from './WebGPUVariantRenderer.ts'
+import {
+  GpuVariantRenderer,
+  VARIANT_PASSES,
+  VARIANT_UNIFORM_BYTE_SIZE,
+} from './GpuVariantRenderer.ts'
 
 import type {
   VariantBackend,
@@ -29,30 +32,18 @@ export class VariantRenderer {
   }
 
   async init() {
-    if (getGpuOverride() === 'canvas2d') {
-      this.backend = new Canvas2DVariantRenderer(this.canvas)
+    const hal = await createGpuHal(
+      this.canvas,
+      VARIANT_PASSES,
+      VARIANT_UNIFORM_BYTE_SIZE,
+    )
+    if (hal) {
+      this.backend = new GpuVariantRenderer(hal)
       return true
     }
 
-    const gpu = await WebGPUVariantRenderer.create(this.canvas)
-    if (gpu) {
-      this.backend = gpu
-      return true
-    }
-
-    try {
-      this.backend = new WebGLVariantRenderer(this.canvas)
-      return true
-    } catch (e) {
-      console.warn('[VariantRenderer] WebGL2 fallback failed:', e)
-      try {
-        this.backend = new Canvas2DVariantRenderer(this.canvas)
-        return true
-      } catch (e2) {
-        console.warn('[VariantRenderer] Canvas 2D fallback also failed:', e2)
-        return false
-      }
-    }
+    this.backend = new Canvas2DVariantRenderer(this.canvas)
+    return true
   }
 
   uploadRegion(

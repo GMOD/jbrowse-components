@@ -5,11 +5,10 @@ import {
   CIGAR_M,
   CIGAR_N,
   CIGAR_X,
-  isCsOpChar,
-  isDigit,
-} from '@jbrowse/alignments-core'
+} from './cigarConstants.ts'
+import { isCsOpChar, isDigit } from './labelConstants.ts'
 
-export interface SyntenyOpsVisitor {
+export interface CigarOpsVisitor {
   onMismatch(refPos: number, len: number, queryBase?: string): void
   onDeletion(refPos: number, len: number): void
   onInsertion(refPos: number, len: number, insertionSeq?: string): void
@@ -18,7 +17,7 @@ export interface SyntenyOpsVisitor {
 export function visitCigarOps(
   cigar: number[],
   featStart: number,
-  visitor: SyntenyOpsVisitor,
+  visitor: CigarOpsVisitor,
 ) {
   let refPos = 0
   for (const packed of cigar) {
@@ -42,7 +41,7 @@ export function visitCigarOps(
 export function visitCsOps(
   cs: string,
   featStart: number,
-  visitor: SyntenyOpsVisitor,
+  visitor: CigarOpsVisitor,
 ) {
   let refPos = 0
   let i = 0

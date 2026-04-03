@@ -1,8 +1,11 @@
-import { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
+import { createGpuHal } from '@jbrowse/core/gpu/hal'
 
 import { Canvas2DDotplotRenderer } from './Canvas2DDotplotRenderer.ts'
-import { WebGLDotplotRenderer } from './WebGLDotplotRenderer.ts'
-import { WebGPUDotplotRenderer } from './WebGPUDotplotRenderer.ts'
+import {
+  GpuDotplotRenderer,
+  DOTPLOT_PASSES,
+  DOTPLOT_UNIFORM_BYTE_SIZE,
+} from './GpuDotplotRenderer.ts'
 
 import type {
   DotplotBackend,
@@ -29,24 +32,18 @@ export class DotplotRenderer {
   }
 
   async init() {
-    if (getGpuOverride() === 'canvas2d') {
-      this.backend = new Canvas2DDotplotRenderer(this.canvas)
+    const hal = await createGpuHal(
+      this.canvas,
+      DOTPLOT_PASSES,
+      DOTPLOT_UNIFORM_BYTE_SIZE,
+    )
+    if (hal) {
+      this.backend = new GpuDotplotRenderer(hal)
       return true
     }
 
-    const gpu = await WebGPUDotplotRenderer.create(this.canvas)
-    if (gpu) {
-      this.backend = gpu
-      return true
-    }
-    try {
-      this.backend = new WebGLDotplotRenderer(this.canvas)
-      return true
-    } catch (e) {
-      console.warn('[DotplotRenderer] WebGL2 fallback also failed:', e)
-      this.backend = new Canvas2DDotplotRenderer(this.canvas)
-      return true
-    }
+    this.backend = new Canvas2DDotplotRenderer(this.canvas)
+    return true
   }
 
   resize(width: number, height: number) {

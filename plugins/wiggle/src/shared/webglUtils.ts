@@ -4,12 +4,6 @@ import { INSTANCE_STRIDE } from './wiggleShader.ts'
 
 import type { SourceRenderData } from './wiggleBackendTypes.ts'
 
-export {
-  createProgram,
-  createShader,
-  splitPositionWithFrac,
-} from '@jbrowse/core/gpu/webglUtils'
-
 const INSTANCE_BYTES = INSTANCE_STRIDE * 4
 
 const parseColorCache = new Map<string, [number, number, number]>()

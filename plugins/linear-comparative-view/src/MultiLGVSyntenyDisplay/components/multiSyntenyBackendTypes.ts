@@ -2,6 +2,7 @@ import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
 import type {
   BlockGeometryData,
   BlockCoverageUploadData,
+  BlockIndicatorUploadData,
   BlockSnpUploadData,
 } from './multiSyntenyGpuData.ts'
 import type { SyntenyColorPalette } from '../model.ts'
@@ -72,6 +73,10 @@ export interface MultiSyntenyGpuBackend {
   uploadSnpCoverageForBlock(
     regionNumber: number,
     data: BlockSnpUploadData,
+  ): void
+  uploadIndicatorsForBlock(
+    regionNumber: number,
+    data: BlockIndicatorUploadData,
   ): void
   clearBlock(regionNumber: number): void
   clearAllBlocks(): void
