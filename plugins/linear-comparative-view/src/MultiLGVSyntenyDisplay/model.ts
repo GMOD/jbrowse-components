@@ -12,7 +12,6 @@ import {
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
-  makeDisplayedRegionKey,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -342,14 +341,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             const { rpcManager } = session
             const view = getContainingView(self) as LGV
 
-            const blockKeyToRegionNumber = new Map<string, number>()
-            const regions = needed.map(n => {
-              const blockKey = makeDisplayedRegionKey(
-                view.displayedRegions[n.regionNumber]!,
-              )
-              blockKeyToRegionNumber.set(blockKey, n.regionNumber)
-              return { region: n.region, blockKey }
-            })
+            const regions = needed.map(n => ({
+              region: n.region,
+              regionNumber: n.regionNumber,
+            }))
 
             const result = await rpcManager.call(
               sessionId,
@@ -402,11 +397,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               self.setAllGenomeNames(result.sources.map(s => s.name))
             }
 
-            for (const [blockKey, data] of result.regionData) {
-              const regionNumber = blockKeyToRegionNumber.get(blockKey)
-              if (regionNumber !== undefined) {
-                self.setRpcData(regionNumber, data)
-              }
+            for (const [regionNumber, data] of result.regionData) {
+              self.setRpcData(regionNumber, data)
             }
 
             for (const { region, regionNumber } of needed) {
@@ -418,7 +410,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         afterAttach() {
           superAfterAttach()
 
-          // Autorun 1: upload geometry per region (keyed by regionKey)
+          // Autorun 1: upload geometry per region
           addDisposer(
             self,
             autorun(

@@ -1,4 +1,3 @@
-import { makeDisplayedRegionKey } from '@jbrowse/core/util/blockTypes'
 import { computeCoverage } from '@jbrowse/plugin-alignments'
 
 import { getFirstCoverage, mergeGenomeRows } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
@@ -53,18 +52,8 @@ function buildRegionData(
 }
 
 describe('collapsed intron view: same refName, different regions', () => {
-  // This was the original bug: two chr1 fragments would collide under
-  // refName keying. With displayedRegionKey, each gets its own entry.
   const regionA = { assemblyName: 'hg38', refName: 'chr1', start: 1000, end: 3000 }
   const regionB = { assemblyName: 'hg38', refName: 'chr1', start: 8000, end: 10000 }
-
-  test('produces different displayedRegionKeys for same refName', () => {
-    const keyA = makeDisplayedRegionKey(regionA)
-    const keyB = makeDisplayedRegionKey(regionB)
-    expect(keyA).not.toBe(keyB)
-    expect(keyA).toContain('chr1')
-    expect(keyB).toContain('chr1')
-  })
 
   test('each region gets independent coverage data', () => {
     const featuresA = [
@@ -109,11 +98,6 @@ describe('regionNumber round-trip: fetch stores and render looks up by number', 
     }
   })
 
-  test('reversed region produces distinct key from non-reversed', () => {
-    const fwd = { assemblyName: 'hg38', refName: 'chr1', start: 0, end: 1000 }
-    const rev = { assemblyName: 'hg38', refName: 'chr1', start: 0, end: 1000, reversed: true }
-    expect(makeDisplayedRegionKey(fwd)).not.toBe(makeDisplayedRegionKey(rev))
-  })
 })
 
 describe('genomeRows aggregation across regions', () => {

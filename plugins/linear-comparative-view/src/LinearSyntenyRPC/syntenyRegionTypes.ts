@@ -53,7 +53,7 @@ export function getFirstCoverage(rpcDataMap: Map<number, SyntenyRegionData>) {
 
 export interface MultiPairGetFeaturesArgs {
   adapterConfig: Record<string, unknown>
-  regions: { region: Region; blockKey: string }[]
+  regions: { region: Region; regionNumber: number }[]
   bpPerPx: number
   resolution?: number
   sessionId: string
@@ -63,7 +63,7 @@ export interface MultiPairGetFeaturesArgs {
 }
 
 export interface MultiPairGetFeaturesResult {
-  regionData: [string, SyntenyRegionData][]
+  regionData: [number, SyntenyRegionData][]
   sources?: { name: string }[]
   chromSizes?: [string, { refName: string; length: number }[]][]
 }
