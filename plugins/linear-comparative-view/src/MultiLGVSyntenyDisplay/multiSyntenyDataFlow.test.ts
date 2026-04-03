@@ -27,7 +27,7 @@ function feat(overrides: Partial<MultiPairFeature> = {}): MultiPairFeature {
 }
 
 function buildRegionData(
-  region: { start: number; end: number },
+  region: { start: number; end: number; refName?: string },
   features: MultiPairFeature[],
 ): SyntenyRegionData {
   const regionStart = Math.floor(region.start)
@@ -35,6 +35,7 @@ function buildRegionData(
   const coverageFeatures = features.map(f => ({ start: f.start, end: f.end }))
   const coverage = computeCoverage(coverageFeatures, [], regionStart, regionEnd)
   return {
+    refName: region.refName ?? 'chr1',
     regionStart,
     genomeFeatures: [['genomeA', features]],
     coverageDepths: coverage.depths,
@@ -45,6 +46,9 @@ function buildRegionData(
     snpHeights: new Float32Array(0),
     snpColorTypes: new Uint8Array(0),
     snpCount: 0,
+    mismatchPositions: new Uint32Array(0),
+    mismatchBases: new Uint8Array(0),
+    numMismatches: 0,
   }
 }
 
@@ -78,36 +82,29 @@ describe('collapsed intron view: same refName, different regions', () => {
     expect(dataB.coverageMaxDepth).toBe(1)
 
     // Store under different keys
-    const rpcDataMap = new Map<string, SyntenyRegionData>([
-      [makeDisplayedRegionKey(regionA), dataA],
-      [makeDisplayedRegionKey(regionB), dataB],
+    const rpcDataMap = new Map<number, SyntenyRegionData>([
+      [0, dataA],
+      [1, dataB],
     ])
     expect(rpcDataMap.size).toBe(2)
   })
 })
 
-describe('displayedRegionKey round-trip: fetch key matches render lookup', () => {
-  // The fetch path computes makeDisplayedRegionKey(displayedRegion) and stores
-  // data under it. The render path computes the same key from the same
-  // displayedRegion for a block with that regionNumber. They must match.
-  test('key from displayed region matches key used for lookup', () => {
+describe('regionNumber round-trip: fetch stores and render looks up by number', () => {
+  test('data stored by regionNumber is retrievable', () => {
     const displayedRegions = [
       { assemblyName: 'hg38', refName: 'chr1', start: 0, end: 248956422 },
       { assemblyName: 'hg38', refName: 'chr2', start: 0, end: 242193529 },
     ]
 
-    // Simulate fetch: store data under displayedRegionKey
-    const rpcDataMap = new Map<string, SyntenyRegionData>()
-    for (const region of displayedRegions) {
-      const key = makeDisplayedRegionKey(region)
-      rpcDataMap.set(key, buildRegionData(region, [feat({ start: region.start + 100, end: region.start + 200 })]))
+    const rpcDataMap = new Map<number, SyntenyRegionData>()
+    for (let i = 0; i < displayedRegions.length; i++) {
+      const region = displayedRegions[i]!
+      rpcDataMap.set(i, buildRegionData(region, [feat({ start: region.start + 100, end: region.start + 200 })]))
     }
 
-    // Simulate render: look up by regionNumber → displayedRegion → key
     for (let regionNumber = 0; regionNumber < displayedRegions.length; regionNumber++) {
-      const displayedRegion = displayedRegions[regionNumber]!
-      const lookupKey = makeDisplayedRegionKey(displayedRegion)
-      const data = rpcDataMap.get(lookupKey)
+      const data = rpcDataMap.get(regionNumber)
       expect(data).toBeDefined()
     }
   })
@@ -121,11 +118,11 @@ describe('displayedRegionKey round-trip: fetch key matches render lookup', () =>
 
 describe('genomeRows aggregation across regions', () => {
   test('merges features from multiple rpcDataMap entries', () => {
-    const rpcDataMap = new Map<string, SyntenyRegionData>([
-      ['region1', buildRegionData({ start: 0, end: 1000 }, [
+    const rpcDataMap = new Map<number, SyntenyRegionData>([
+      [0, buildRegionData({ start: 0, end: 1000 }, [
         feat({ start: 100, end: 200 }),
       ])],
-      ['region2', buildRegionData({ start: 5000, end: 6000 }, [
+      [1, buildRegionData({ start: 5000, end: 6000 }, [
         feat({ start: 5100, end: 5200 }),
       ])],
     ])
@@ -138,8 +135,9 @@ describe('genomeRows aggregation across regions', () => {
   })
 
   test('multiple genomes are preserved separately', () => {
-    const rpcDataMap = new Map<string, SyntenyRegionData>([
-      ['region1', {
+    const rpcDataMap = new Map<number, SyntenyRegionData>([
+      [0, {
+        refName: 'chr1',
         regionStart: 0,
         genomeFeatures: [
           ['genomeA', [feat({ queryGenome: 'genomeA', start: 100, end: 200 })]],
@@ -153,6 +151,9 @@ describe('genomeRows aggregation across regions', () => {
         snpHeights: new Float32Array(0),
         snpColorTypes: new Uint8Array(0),
         snpCount: 0,
+        mismatchPositions: new Uint32Array(0),
+        mismatchBases: new Uint8Array(0),
+        numMismatches: 0,
       }],
     ])
 
@@ -212,19 +213,20 @@ describe('getFirstCoverage', () => {
   })
 
   test('returns undefined when all regions have zero depth', () => {
-    const rpcDataMap = new Map<string, SyntenyRegionData>([
-      ['r1', buildRegionData({ start: 0, end: 100 }, [])],
+    const rpcDataMap = new Map<number, SyntenyRegionData>([
+      [0, buildRegionData({ start: 0, end: 100 }, [])],
     ])
     expect(getFirstCoverage(rpcDataMap)).toBeUndefined()
   })
 
   test('returns first region with non-zero coverage', () => {
-    const rpcDataMap = new Map<string, SyntenyRegionData>([
-      ['r1', buildRegionData({ start: 0, end: 100 }, [])],
-      ['r2', buildRegionData({ start: 0, end: 100 }, [feat({ start: 10, end: 50 })])],
+    const rpcDataMap = new Map<number, SyntenyRegionData>([
+      [0, buildRegionData({ start: 0, end: 100 }, [])],
+      [1, buildRegionData({ start: 0, end: 100, refName: 'chr2' }, [feat({ start: 10, end: 50 })])],
     ])
     const result = getFirstCoverage(rpcDataMap)
     expect(result).toBeDefined()
     expect(result!.coverageMaxDepth).toBe(1)
+    expect(result!.refName).toBe('chr2')
   })
 })

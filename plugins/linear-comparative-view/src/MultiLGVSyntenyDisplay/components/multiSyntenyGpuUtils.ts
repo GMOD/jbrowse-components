@@ -1,9 +1,13 @@
-import { YSCALEBAR_LABEL_OFFSET, niceNum } from '@jbrowse/alignments-core'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 
 import { computeBlockRenderParams } from './multiSyntenyGpuData.ts'
 
 import type { BlockRenderParams } from './multiSyntenyGpuData.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+
+import type { SyntenyColorPalette } from '../model.ts'
+
+type Rgb3 = [number, number, number]
 
 export function fillSyntenyUniforms(
   f: Float32Array,
@@ -18,7 +22,7 @@ export function fillSyntenyUniforms(
   rowPadding: number,
   coverageHeight: number,
   depthScale: number,
-  coverageColor?: [number, number, number],
+  palette: SyntenyColorPalette,
 ) {
   f[0] = width
   f[1] = height
@@ -33,15 +37,17 @@ export function fillSyntenyUniforms(
   f[10] = rowPadding
   f[11] = YSCALEBAR_LABEL_OFFSET
   f[12] = depthScale
-  f[13] = coverageColor ? coverageColor[0] : 0.6
-  f[14] = coverageColor ? coverageColor[1] : 0.6
-  f[15] = coverageColor ? coverageColor[2] : 0.6
+  writeRgb(f, 13, palette.coverageColorRgb)
+  writeRgb(f, 16, palette.baseColorGl.A)
+  writeRgb(f, 19, palette.baseColorGl.C)
+  writeRgb(f, 22, palette.baseColorGl.G)
+  writeRgb(f, 25, palette.baseColorGl.T)
 }
 
-export function computeDepthScale(globalMaxDepth: number) {
-  const nicedMax = globalMaxDepth > 0 ? niceNum(globalMaxDepth) : 1
-  const depthScale = globalMaxDepth > 0 ? globalMaxDepth / nicedMax : 1
-  return depthScale
+function writeRgb(f: Float32Array, offset: number, rgb: Rgb3) {
+  f[offset] = rgb[0]
+  f[offset + 1] = rgb[1]
+  f[offset + 2] = rgb[2]
 }
 
 export function computeGlobalMaxDepth<T extends { coverageMaxDepth: number }>(
@@ -60,28 +66,22 @@ export function computeGlobalMaxDepth<T extends { coverageMaxDepth: number }>(
 
 export function getRegionForBlock<T>(
   block: BaseBlock,
-  regionKeyMap: Map<number, string>,
-  regions: Map<string, T>,
+  regions: Map<number, T>,
 ) {
   if (block.regionNumber === undefined) {
     return undefined
   }
-  const key = regionKeyMap.get(block.regionNumber)
-  if (!key) {
-    return undefined
-  }
-  return regions.get(key)
+  return regions.get(block.regionNumber)
 }
 
 export function* visibleBlocks<T>(
   contentBlocks: BaseBlock[],
-  regionKeyMap: Map<number, string>,
-  regions: Map<string, T>,
+  regions: Map<number, T>,
   viewOffsetPx: number,
   viewWidth: number,
 ): Generator<[T, BlockRenderParams]> {
   for (const block of contentBlocks) {
-    const region = getRegionForBlock(block, regionKeyMap, regions)
+    const region = getRegionForBlock(block, regions)
     if (!region) {
       continue
     }

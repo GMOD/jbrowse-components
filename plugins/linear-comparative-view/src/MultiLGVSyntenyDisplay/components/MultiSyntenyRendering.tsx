@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { MISMATCH_COLOR } from '@jbrowse/alignments-core'
+import { MISMATCH_COLOR, buildCoverageTooltipBin } from '@jbrowse/alignments-core'
 import { getBpDisplayStr, getContainingView, useGpuRenderer } from '@jbrowse/core/util'
-import { CoverageYScaleBar } from '@jbrowse/plugin-alignments'
+import { hexToGLrgb } from '@jbrowse/core/util/colord'
+import {
+  CoverageTooltipContents,
+  CoverageYScaleBar,
+} from '@jbrowse/plugin-alignments'
 import { Tooltip, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -21,7 +25,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface MultiSyntenyModel {
   genomeRows: Map<string, MultiPairFeature[]>
-  rpcDataMap: Map<string, SyntenyRegionData>
+  rpcDataMap: Map<number, SyntenyRegionData>
   displayedGenomes: string[]
   rowHeight: number
   rowSpacing: boolean
@@ -257,9 +261,9 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const { palette } = useTheme()
   const [tooltip, setTooltip] = useState<{
-    text: string
+    content: React.ReactNode
     open: boolean
-  }>({ text: '', open: false })
+  }>({ content: '', open: false })
   const [hoveredHit, setHoveredHit] = useState<FeatureHitResult | undefined>()
   const [selectedHit, setSelectedHit] = useState<FeatureHitResult | undefined>()
   const prevViewRef = useRef({ bpPerPx: 0, offsetPx: 0 })
@@ -282,13 +286,15 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
 
   // Theme color palette sync to model
   useEffect(() => {
-    const hex =
-      palette.mode === 'dark' ? palette.grey[700] : palette.grey[400]
-    const r = parseInt(hex.slice(1, 3), 16) / 255
-    const g = parseInt(hex.slice(3, 5), 16) / 255
-    const b = parseInt(hex.slice(5, 7), 16) / 255
     model.setColorPalette({
-      coverageColorRgb: [r, g, b],
+      coverageColorRgb: hexToGLrgb(palette.coverage),
+      coverageColorHex: palette.coverage,
+      baseColorGl: {
+        A: hexToGLrgb(palette.bases.A.main),
+        C: hexToGLrgb(palette.bases.C.main),
+        G: hexToGLrgb(palette.bases.G.main),
+        T: hexToGLrgb(palette.bases.T.main),
+      },
       syntenyColors: {
         mismatch: MISMATCH_COLOR,
         deletion: palette.deletion,
@@ -313,7 +319,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       prev.bpPerPx !== 0 &&
       (prev.bpPerPx !== bpPerPx || prev.offsetPx !== offsetPx)
     ) {
-      setTooltip(t => (t.open ? { text: '', open: false } : t))
+      setTooltip(t => (t.open ? { content: '', open: false } : t))
       setHoveredHit(undefined)
     }
     prevViewRef.current = { bpPerPx, offsetPx }
@@ -363,15 +369,15 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       if (!bp || bp.oob) {
         return undefined
       }
-      const regionKey = `${bp.assemblyName}:${bp.refName}:${bp.start}:${bp.end}${bp.reversed ? ':rev' : ''}`
-      const data = model.rpcDataMap.get(regionKey)
+      const data = model.rpcDataMap.get(bp.index)
       if (data) {
-        const idx = Math.floor(bp.coord - 1) - data.regionStart - data.coverageStartOffset
-        if (idx >= 0 && idx < data.coverageDepths.length) {
-          const depth = data.coverageDepths[idx]!
-          if (depth > 0) {
-            return `${bp.refName}:${Math.floor(bp.coord).toLocaleString()} depth: ${depth}`
-          }
+        const bin = buildCoverageTooltipBin(
+          Math.floor(bp.coord - 1),
+          data,
+          data,
+        )
+        if (bin) {
+          return { bin, refName: bp.refName }
         }
       }
       return undefined
@@ -384,13 +390,28 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       const hit = doHitTest(e)
       setHoveredHit(hit)
       if (hit) {
-        setTooltip({ text: formatTooltip(hit), open: true })
+        setTooltip({
+          content: (
+            <span style={{ whiteSpace: 'pre-line', fontSize: 12 }}>
+              {formatTooltip(hit)}
+            </span>
+          ),
+          open: true,
+        })
       } else {
-        const covTip = doCoverageHitTest(e)
-        if (covTip) {
-          setTooltip({ text: covTip, open: true })
+        const covHit = doCoverageHitTest(e)
+        if (covHit) {
+          setTooltip({
+            content: (
+              <CoverageTooltipContents
+                bin={covHit.bin}
+                refName={covHit.refName}
+              />
+            ),
+            open: true,
+          })
         } else {
-          setTooltip(t => (t.open ? { text: '', open: false } : t))
+          setTooltip(t => (t.open ? { content: '', open: false } : t))
         }
       }
     },
@@ -399,7 +420,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
 
   const onMouseLeave = useCallback(() => {
     setHoveredHit(undefined)
-    setTooltip({ text: '', open: false })
+    setTooltip({ content: '', open: false })
   }, [])
 
   const onClick = useCallback(
@@ -439,11 +460,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   return (
     <Tooltip
       open={tooltip.open}
-      title={
-        <span style={{ whiteSpace: 'pre-line', fontSize: 12 }}>
-          {tooltip.text}
-        </span>
-      }
+      title={tooltip.content}
       placement="right"
       followCursor
     >

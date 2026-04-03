@@ -113,9 +113,17 @@ export class MultiPairGetFeatures extends RpcMethodType {
 
       const snp = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
 
+      const mismatchPositions = new Uint32Array(mismatches.length)
+      const mismatchBases = new Uint8Array(mismatches.length)
+      for (let i = 0; i < mismatches.length; i++) {
+        mismatchPositions[i] = mismatches[i]!.position - regionStart
+        mismatchBases[i] = mismatches[i]!.base
+      }
+
       regionData.push([
         blockKey,
         {
+          refName: region.refName,
           regionStart,
           genomeFeatures,
           coverageDepths: coverage.depths,
@@ -126,6 +134,9 @@ export class MultiPairGetFeatures extends RpcMethodType {
           snpHeights: snp.heights,
           snpColorTypes: snp.colorTypes,
           snpCount: snp.count,
+          mismatchPositions,
+          mismatchBases,
+          numMismatches: mismatches.length,
         },
       ])
     }

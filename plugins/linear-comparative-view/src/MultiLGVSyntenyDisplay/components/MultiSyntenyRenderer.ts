@@ -9,6 +9,7 @@ import type {
   MultiSyntenyGpuBackend,
   SyntenyColors,
 } from './multiSyntenyBackendTypes.ts'
+import type { SyntenyColorPalette } from '../model.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
@@ -79,7 +80,7 @@ export class MultiSyntenyRenderer {
   }
 
   uploadGeometryForBlock(
-    blockKey: string,
+    regionNumber: number,
     regionData: SyntenyRegionData,
     displayedGenomes: string[],
     colorBy: string,
@@ -94,7 +95,7 @@ export class MultiSyntenyRenderer {
         showSnps,
         colors,
       )
-      this.gpuBackend.uploadGeometryForBlock(blockKey, {
+      this.gpuBackend.uploadGeometryForBlock(regionNumber, {
         ...geometry,
         regionStart: regionData.regionStart,
       })
@@ -102,7 +103,7 @@ export class MultiSyntenyRenderer {
   }
 
   uploadCoverageForBlock(
-    blockKey: string,
+    regionNumber: number,
     regionData: SyntenyRegionData,
     viewWidthPx: number,
     globalMaxDepth: number,
@@ -115,7 +116,7 @@ export class MultiSyntenyRenderer {
         regionData.regionStart,
         viewWidthPx,
       )
-      this.gpuBackend.uploadCoverageForBlock(blockKey, {
+      this.gpuBackend.uploadCoverageForBlock(regionNumber, {
         ...packed,
         regionStart: regionData.regionStart,
         maxDepth: regionData.coverageMaxDepth,
@@ -124,7 +125,7 @@ export class MultiSyntenyRenderer {
   }
 
   uploadSnpCoverageForBlock(
-    blockKey: string,
+    regionNumber: number,
     regionData: SyntenyRegionData,
   ) {
     if (this.gpuBackend) {
@@ -136,7 +137,7 @@ export class MultiSyntenyRenderer {
         regionData.snpCount,
         regionData.regionStart,
       )
-      this.gpuBackend.uploadSnpCoverageForBlock(blockKey, packed)
+      this.gpuBackend.uploadSnpCoverageForBlock(regionNumber, packed)
     }
   }
 
@@ -146,25 +147,23 @@ export class MultiSyntenyRenderer {
 
   renderGpu(
     contentBlocks: BaseBlock[],
-    regionKeyMap: Map<number, string>,
     viewOffsetPx: number,
     width: number,
     height: number,
     rowHeight: number,
     rowSpacing: boolean,
     coverageHeight: number,
-    coverageColor?: [number, number, number],
+    palette: SyntenyColorPalette,
   ) {
     this.gpuBackend?.render(
       contentBlocks,
-      regionKeyMap,
       viewOffsetPx,
       width,
       height,
       rowHeight,
       rowSpacing,
       coverageHeight,
-      coverageColor,
+      palette,
     )
   }
 

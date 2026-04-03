@@ -12,7 +12,7 @@ export const INSTANCE_BYTE_SIZE = 32
 export const COVERAGE_BIN_BYTE_SIZE = 12
 
 // SYNC: uniform field order must match fillSyntenyUniforms() in multiSyntenyGpuUtils.ts
-export const UNIFORM_BYTE_SIZE = 64
+export const UNIFORM_BYTE_SIZE = 112
 
 // Shared GLSL uniform block used by both synteny and coverage shaders
 const UNIFORMS_GLSL = `
@@ -34,6 +34,10 @@ layout(std140) uniform Uniforms {
   float coverageR;            // coverage bar color RGB (from theme)
   float coverageG;
   float coverageB;
+  float baseAR; float baseAG; float baseAB;
+  float baseCR; float baseCG; float baseCB;
+  float baseGR; float baseGG; float baseGB;
+  float baseTR; float baseTG; float baseTB;
 } u;
 `
 
@@ -183,6 +187,10 @@ struct Uniforms {
   coverageR: f32,
   coverageG: f32,
   coverageB: f32,
+  baseAR: f32, baseAG: f32, baseAB: f32,
+  baseCR: f32, baseCG: f32, baseCB: f32,
+  baseGR: f32, baseGG: f32, baseGB: f32,
+  baseTR: f32, baseTG: f32, baseTB: f32,
 }
 `
 
@@ -307,14 +315,13 @@ fn fs_main(in: CovVOut) -> @location(0) vec4f {
 }
 `
 
-// SNP coverage colors: A=green, C=blue, G=orange, T=red
 const SNP_COLORS_GLSL = `
 vec3 snpColor(float ct) {
   int ci = int(ct);
-  if (ci == 1) return vec3(0.0, 0.6, 0.0);       // A = green
-  else if (ci == 2) return vec3(0.0, 0.0, 0.8);   // C = blue
-  else if (ci == 3) return vec3(0.9, 0.6, 0.0);   // G = orange
-  else return vec3(0.8, 0.0, 0.0);                 // T = red
+  if (ci == 1) return vec3(u.baseAR, u.baseAG, u.baseAB);
+  else if (ci == 2) return vec3(u.baseCR, u.baseCG, u.baseCB);
+  else if (ci == 3) return vec3(u.baseGR, u.baseGG, u.baseGB);
+  else return vec3(u.baseTR, u.baseTG, u.baseTB);
 }
 `
 
@@ -384,10 +391,10 @@ struct SnpVOut {
 
 fn snpColor(ct: f32) -> vec3f {
   let ci = i32(ct);
-  if ci == 1 { return vec3f(0.0, 0.6, 0.0); }       // A = green
-  else if ci == 2 { return vec3f(0.0, 0.0, 0.8); }   // C = blue
-  else if ci == 3 { return vec3f(0.9, 0.6, 0.0); }   // G = orange
-  else { return vec3f(0.8, 0.0, 0.0); }               // T = red
+  if ci == 1 { return vec3f(uniforms.baseAR, uniforms.baseAG, uniforms.baseAB); }
+  else if ci == 2 { return vec3f(uniforms.baseCR, uniforms.baseCG, uniforms.baseCB); }
+  else if ci == 3 { return vec3f(uniforms.baseGR, uniforms.baseGG, uniforms.baseGB); }
+  else { return vec3f(uniforms.baseTR, uniforms.baseTG, uniforms.baseTB); }
 }
 
 @vertex

@@ -11,15 +11,13 @@
 
 ## Coverage track: remaining work
 
-- **Downsampling** (see DOWNSAMPLING_PLAN.md): per-bp bins will be slow at
-  wide zoom. Implement min/max band rendering capped to ~viewWidthPx bins.
-  Preserves peaks and valleys faithfully.
-- **Coverage color from theme**: currently hardcoded grey (0.6, 0.6, 0.6).
-  Should read from MUI theme palette like LinearAlignmentsDisplay does.
-- **Coverage tooltip**: hovering the coverage area could show depth at that
-  position. Currently no hit testing in the coverage region.
-- **SVG export**: renderSvg passes coverage data to Canvas2D renderer but the
-  CoverageYScaleBar is not included in SVG export path yet.
+- ~~**Downsampling**: implemented via min/max band rendering~~
+- ~~**Coverage color from theme**: uses `palette.coverage` from MUI theme~~
+- ~~**Coverage tooltip**: uses shared `CoverageTooltipContents` component and
+  `buildCoverageTooltipBin` from alignments-core~~
+- ~~**SVG export**: CoverageYScaleBar included in SVG export~~
+- ~~**Canvas2D refName bug**: fixed, refName extracted from region key~~
+- ~~**SNP colors theme-driven**: GPU shaders read base colors from uniforms~~
 
 ## Subgraph extraction: remaining work
 

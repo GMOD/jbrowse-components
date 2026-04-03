@@ -8,7 +8,7 @@ import { observer } from 'mobx-react'
 
 import { getInterbaseTypeLabel } from '../../shared/types.ts'
 
-import type { CoverageTooltipBin } from '../../RenderPileupDataRPC/types'
+import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 
 const useStyles = makeStyles()(theme => ({
   hoverVertical: {
@@ -125,8 +125,7 @@ function InterbaseTooltip({
   )
 }
 
-// Coverage tooltip - matches LinearSNPCoverageDisplay/components/TooltipContents BinTooltip structure
-function CoverageTooltipContents({
+export function CoverageTooltipContents({
   bin,
   refName,
 }: {
@@ -154,6 +153,9 @@ function CoverageTooltipContents({
       )
     : []
   const hasModifications = modEntries.length > 0
+  const hasStrands =
+    hasModifications ||
+    snpEntries.some(([, d]) => d.fwd > 0 || d.rev > 0)
 
   return (
     <table>
@@ -164,7 +166,7 @@ function CoverageTooltipContents({
           <th>Base</th>
           <th>Reads</th>
           {hasModifications && <th>Avg Prob</th>}
-          <th>Strands</th>
+          {hasStrands && <th>Strands</th>}
         </tr>
       </thead>
       <tbody>
@@ -173,7 +175,7 @@ function CoverageTooltipContents({
           <td>Total</td>
           <td>{depth}</td>
           {hasModifications && <td />}
-          <td />
+          {hasStrands && <td />}
         </tr>
         {hasModifications
           ? modEntries.map(([, data]) => {
@@ -207,9 +209,11 @@ function CoverageTooltipContents({
                 <td className={classes.td}>
                   {data.count}/{depth} ({pct(data.count, depth)})
                 </td>
-                <td>
-                  {data.fwd}(+) {data.rev}(-)
-                </td>
+                {hasStrands && (
+                  <td>
+                    {data.fwd}(+) {data.rev}(-)
+                  </td>
+                )}
               </tr>
             ))}
         {deletions && (

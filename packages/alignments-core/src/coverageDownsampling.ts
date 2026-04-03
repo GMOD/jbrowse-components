@@ -57,41 +57,37 @@ export function computeCoverageTicks(
   }
 }
 
+export function computeDepthScale(maxDepth: number) {
+  const nicedMax = maxDepth > 0 ? niceNum(maxDepth) : 1
+  return maxDepth > 0 ? maxDepth / nicedMax : 1
+}
+
 export interface CoverageRegion {
-  depths: Float32Array
-  startOffset: number
+  coverageDepths: Float32Array
+  coverageStartOffset: number
   regionStart: number
 }
 
-// Scans visible coverage bins and returns the maximum depth in the viewport.
-// Used by debounced autoruns to normalize coverage Y-scale to visible data.
-// The getDataForBlock callback lets callers use any lookup strategy
-// (e.g. by block.key, block.regionNumber, or displayedRegionKey).
-export function computeVisibleMaxDepth<B extends { start: number; end: number }, D>(
+export function computeVisibleMaxDepth<B extends { start: number; end: number }>(
   visibleBlocks: B[],
-  getDataForBlock: (block: B) => D | undefined,
-  getCoverage: (data: D) => CoverageRegion | undefined,
+  getCoverageForBlock: (block: B) => CoverageRegion | undefined,
 ) {
   let maxDepth = 0
   for (const block of visibleBlocks) {
-    const data = getDataForBlock(block)
-    if (!data) {
-      continue
-    }
-    const cov = getCoverage(data)
+    const cov = getCoverageForBlock(block)
     if (!cov) {
       continue
     }
     const startBin = Math.max(
       0,
-      Math.floor(block.start - cov.regionStart - cov.startOffset),
+      Math.floor(block.start - cov.regionStart - cov.coverageStartOffset),
     )
     const endBin = Math.min(
-      cov.depths.length,
-      Math.ceil(block.end - cov.regionStart - cov.startOffset),
+      cov.coverageDepths.length,
+      Math.ceil(block.end - cov.regionStart - cov.coverageStartOffset),
     )
     for (let i = startBin; i < endBin; i++) {
-      const d = cov.depths[i]!
+      const d = cov.coverageDepths[i]!
       if (d > maxDepth) {
         maxDepth = d
       }
@@ -100,8 +96,8 @@ export function computeVisibleMaxDepth<B extends { start: number; end: number },
   return maxDepth
 }
 
-export function getGlobalMaxCoverageDepth<D>(
-  dataMap: Map<string, D>,
+export function getGlobalMaxCoverageDepth<K, D>(
+  dataMap: Map<K, D>,
   getMaxDepth: (data: D) => number,
 ) {
   let max = 0
@@ -209,6 +205,99 @@ export function downsampleMinMax(
     mins: mins.subarray(0, count),
     maxs: maxs.subarray(0, count),
     count,
+  }
+}
+
+export interface CoverageTooltipBin {
+  position: number
+  depth: number
+  interbaseDepth: number
+  snps: Record<string, { count: number; fwd: number; rev: number }>
+  deletions?: {
+    count: number
+    minLen: number
+    maxLen: number
+    avgLen: number
+  }
+  interbase: Record<
+    string,
+    {
+      count: number
+      minLen: number
+      maxLen: number
+      avgLen: number
+      topSeq?: string
+      topSeqCount?: number
+    }
+  >
+  modifications?: Record<
+    string,
+    {
+      count: number
+      fwd: number
+      rev: number
+      probabilityTotal: number
+      color: string
+      name: string
+    }
+  >
+}
+
+export interface MismatchArrays {
+  mismatchPositions: Uint32Array
+  mismatchBases: Uint8Array
+  mismatchStrands?: Uint8Array | Int8Array
+  numMismatches: number
+}
+
+export interface CoverageArrays {
+  coverageDepths: Float32Array
+  coverageStartOffset: number
+  regionStart: number
+}
+
+export function countSnpsAtPosition(
+  posOffset: number,
+  mismatches: MismatchArrays,
+) {
+  const snps: Record<string, { count: number; fwd: number; rev: number }> = {}
+  for (let i = 0; i < mismatches.numMismatches; i++) {
+    if (mismatches.mismatchPositions[i] === posOffset) {
+      const base = String.fromCharCode(mismatches.mismatchBases[i]!)
+      if (!snps[base]) {
+        snps[base] = { count: 0, fwd: 0, rev: 0 }
+      }
+      snps[base].count++
+      if (mismatches.mismatchStrands) {
+        if (mismatches.mismatchStrands[i] === 1) {
+          snps[base].fwd++
+        } else {
+          snps[base].rev++
+        }
+      }
+    }
+  }
+  return snps
+}
+
+export function buildCoverageTooltipBin(
+  position: number,
+  coverage: CoverageArrays,
+  mismatches: MismatchArrays,
+): CoverageTooltipBin | undefined {
+  const posOffset = position - coverage.regionStart
+  const binIdx = Math.floor(posOffset - coverage.coverageStartOffset)
+  const depth = coverage.coverageDepths[binIdx] ?? 0
+  if (depth === 0) {
+    return undefined
+  }
+  const snps = countSnpsAtPosition(posOffset, mismatches)
+  return {
+    position,
+    depth,
+    interbaseDepth: 0,
+    snps,
+    interbase: {},
   }
 }
 

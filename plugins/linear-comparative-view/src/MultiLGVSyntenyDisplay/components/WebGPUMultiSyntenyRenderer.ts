@@ -1,6 +1,10 @@
 /// <reference types="@webgpu/types" />
 
-import { getDevicePixelRatio, resizeCanvas } from '@jbrowse/alignments-core'
+import {
+  computeDepthScale,
+  getDevicePixelRatio,
+  resizeCanvas,
+} from '@jbrowse/alignments-core'
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 import {
@@ -12,7 +16,6 @@ import {
 
 import {
   fillSyntenyUniforms,
-  computeDepthScale,
   computeGlobalMaxDepth,
   getRegionForBlock,
   visibleBlocks,
@@ -27,6 +30,7 @@ import {
 import { BG_COLOR_GL } from './multiSyntenyBackendTypes.ts'
 import type { MultiSyntenyGpuBackend } from './multiSyntenyBackendTypes.ts'
 import type { BlockGeometryData, BlockCoverageUploadData, BlockSnpUploadData } from './multiSyntenyGpuData.ts'
+import type { SyntenyColorPalette } from '../model.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 interface SyntenyGpuRegion {
@@ -59,7 +63,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
   private uniformData = new ArrayBuffer(UNIFORM_BYTE_SIZE)
   private uniformF32 = new Float32Array(this.uniformData)
 
-  private regions = new Map<string, SyntenyGpuRegion>()
+  private regions = new Map<number, SyntenyGpuRegion>()
 
   private constructor(
     canvas: HTMLCanvasElement,
@@ -161,8 +165,8 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     ])
   }
 
-  private getOrCreateRegion(blockKey: string, regionStart: number) {
-    let region = this.regions.get(blockKey)
+  private getOrCreateRegion(regionNumber: number, regionStart: number) {
+    let region = this.regions.get(regionNumber)
     if (!region) {
       region = {
         regionStart,
@@ -177,7 +181,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
         snpBindGroup: null,
         snpSegmentCount: 0,
       }
-      this.regions.set(blockKey, region)
+      this.regions.set(regionNumber, region)
     }
     return region
   }
@@ -187,7 +191,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
   }
 
   uploadGeometryForBlock(
-    blockKey: string,
+    regionNumber: number,
     data: BlockGeometryData & { regionStart: number },
   ) {
     const device = WebGPUMultiSyntenyRenderer.device
@@ -196,7 +200,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
       return
     }
 
-    const existing = this.regions.get(blockKey)
+    const existing = this.regions.get(regionNumber)
     if (existing?.instanceBuffer) {
       existing.instanceBuffer.destroy()
     }
@@ -210,7 +214,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
       return
     }
 
-    const region = this.getOrCreateRegion(blockKey, data.regionStart)
+    const region = this.getOrCreateRegion(regionNumber, data.regionStart)
     region.regionStart = data.regionStart
     region.instanceCount = data.instanceCount
     region.instanceBuffer = createStorageBuffer(device, data.buffer)
@@ -223,7 +227,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
   }
 
   uploadCoverageForBlock(
-    blockKey: string,
+    regionNumber: number,
     data: BlockCoverageUploadData & { regionStart: number; maxDepth: number },
   ) {
     const device = WebGPUMultiSyntenyRenderer.device
@@ -232,7 +236,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
       return
     }
 
-    const existing = this.regions.get(blockKey)
+    const existing = this.regions.get(regionNumber)
     if (existing?.coverageBuffer) {
       existing.coverageBuffer.destroy()
     }
@@ -247,7 +251,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
       return
     }
 
-    const region = this.getOrCreateRegion(blockKey, data.regionStart)
+    const region = this.getOrCreateRegion(regionNumber, data.regionStart)
     region.coverageBinCount = data.binCount
     region.coverageMaxDepth = data.maxDepth
     region.coverageBuffer = createStorageBuffer(device, data.buffer)
@@ -260,7 +264,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
   }
 
   uploadSnpCoverageForBlock(
-    blockKey: string,
+    regionNumber: number,
     data: BlockSnpUploadData,
   ) {
     const device = WebGPUMultiSyntenyRenderer.device
@@ -269,7 +273,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
       return
     }
 
-    const existing = this.regions.get(blockKey)
+    const existing = this.regions.get(regionNumber)
     if (existing?.snpBuffer) {
       existing.snpBuffer.destroy()
     }
@@ -283,7 +287,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
       return
     }
 
-    const region = this.regions.get(blockKey)
+    const region = this.regions.get(regionNumber)
     if (!region) {
       return
     }
@@ -297,13 +301,13 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     )
   }
 
-  clearBlock(blockKey: string) {
-    const region = this.regions.get(blockKey)
+  clearBlock(regionNumber: number) {
+    const region = this.regions.get(regionNumber)
     if (region) {
       region.instanceBuffer?.destroy()
       region.coverageBuffer?.destroy()
       region.snpBuffer?.destroy()
-      this.regions.delete(blockKey)
+      this.regions.delete(regionNumber)
     }
   }
 
@@ -318,14 +322,13 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
 
   render(
     contentBlocks: BaseBlock[],
-    regionKeyMap: Map<number, string>,
     viewOffsetPx: number,
     width: number,
     height: number,
     rowHeight: number,
     rowSpacing: boolean,
     coverageHeight: number,
-    coverageColor?: [number, number, number],
+    palette: SyntenyColorPalette,
   ) {
     const device = WebGPUMultiSyntenyRenderer.device
     if (!device) {
@@ -339,7 +342,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     const rowPadding = rowSpacing ? 1 : 0
 
     const lookup = (b: BaseBlock) =>
-      getRegionForBlock(b, regionKeyMap, this.regions)
+      getRegionForBlock(b, this.regions)
     const depthScale = computeDepthScale(
       computeGlobalMaxDepth(contentBlocks, lookup),
     )
@@ -367,7 +370,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     }
 
     const iterBlocks = () => visibleBlocks(
-      contentBlocks, regionKeyMap, this.regions, viewOffsetPx, logicalW,
+      contentBlocks, this.regions, viewOffsetPx, logicalW,
     )
 
     // Draw coverage
@@ -381,7 +384,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
           device, logicalW, logicalH, rowHeight,
           params.bpRangeHi, params.bpRangeLo, params.bpRangeLen,
           params.regionScreenLeft, params.regionScreenWidth,
-          rowPadding, coverageHeight, depthScale, coverageColor,
+          rowPadding, coverageHeight, depthScale, palette,
         )
         submitPass(pipeline, region.coverageBindGroup, region.coverageBinCount)
       }
@@ -398,7 +401,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
           device, logicalW, logicalH, rowHeight,
           params.bpRangeHi, params.bpRangeLo, params.bpRangeLen,
           params.regionScreenLeft, params.regionScreenWidth,
-          rowPadding, coverageHeight, depthScale, coverageColor,
+          rowPadding, coverageHeight, depthScale, palette,
         )
         submitPass(pipeline, region.snpBindGroup, region.snpSegmentCount)
       }
@@ -415,7 +418,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
           device, logicalW, logicalH, rowHeight,
           params.bpRangeHi, params.bpRangeLo, params.bpRangeLen,
           params.regionScreenLeft, params.regionScreenWidth,
-          rowPadding, coverageHeight, depthScale, coverageColor,
+          rowPadding, coverageHeight, depthScale, palette,
         )
         submitPass(pipeline, region.instanceBindGroup, region.instanceCount)
       }
@@ -458,13 +461,13 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     rowPadding: number,
     coverageHeight: number,
     depthScale: number,
-    coverageColor?: [number, number, number],
+    palette: SyntenyColorPalette,
   ) {
     fillSyntenyUniforms(
       this.uniformF32, width, height, rowHeight,
       bpRangeHi, bpRangeLo, bpRangeLen,
       regionScreenLeft, regionScreenWidth,
-      rowPadding, coverageHeight, depthScale, coverageColor,
+      rowPadding, coverageHeight, depthScale, palette,
     )
     device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformData)
   }

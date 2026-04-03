@@ -1,7 +1,10 @@
 import type React from 'react'
 import { lazy } from 'react'
 
-import { computeCoverageTicks } from '@jbrowse/alignments-core'
+import {
+  computeCoverageTicks,
+  computeVisibleMaxDepth,
+} from '@jbrowse/alignments-core'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -49,6 +52,13 @@ import type {
 
 export interface SyntenyColorPalette {
   coverageColorRgb: [number, number, number]
+  coverageColorHex: string
+  baseColorGl: {
+    A: [number, number, number]
+    C: [number, number, number]
+    G: [number, number, number]
+    T: [number, number, number]
+  }
   syntenyColors: SyntenyColors
 }
 
@@ -159,7 +169,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       }),
     )
     .volatile(() => ({
-      rpcDataMap: new Map<string, SyntenyRegionData>(),
+      rpcDataMap: new Map<number, SyntenyRegionData>(),
       allGenomeNames: [] as string[],
       contextMenuFeature: undefined as Feature | undefined,
       statusMessage: undefined as string | undefined,
@@ -239,9 +249,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
     }))
     .actions(self => ({
-      setRpcData(blockKey: string, data: SyntenyRegionData) {
+      setRpcData(regionNumber: number, data: SyntenyRegionData) {
         const next = new Map(self.rpcDataMap)
-        next.set(blockKey, data)
+        next.set(regionNumber, data)
         self.rpcDataMap = next
       },
       setAllGenomeNames(names: string[]) {
@@ -332,12 +342,14 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             const { rpcManager } = session
             const view = getContainingView(self) as LGV
 
-            const regions = needed.map(n => ({
-              region: n.region,
-              blockKey: makeDisplayedRegionKey(
+            const blockKeyToRegionNumber = new Map<string, number>()
+            const regions = needed.map(n => {
+              const blockKey = makeDisplayedRegionKey(
                 view.displayedRegions[n.regionNumber]!,
-              ),
-            }))
+              )
+              blockKeyToRegionNumber.set(blockKey, n.regionNumber)
+              return { region: n.region, blockKey }
+            })
 
             const result = await rpcManager.call(
               sessionId,
@@ -391,7 +403,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             }
 
             for (const [blockKey, data] of result.regionData) {
-              self.setRpcData(blockKey, data)
+              const regionNumber = blockKeyToRegionNumber.get(blockKey)
+              if (regionNumber !== undefined) {
+                self.setRpcData(regionNumber, data)
+              }
             }
 
             for (const { region, regionNumber } of needed) {
@@ -422,9 +437,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 if (!colorPalette) {
                   return
                 }
-                for (const [regionKey, data] of rpcDataMap) {
+                for (const [regionNumber, data] of rpcDataMap) {
                   renderer.uploadGeometryForBlock(
-                    regionKey,
+                    regionNumber,
                     data,
                     displayedGenomes,
                     colorBy,
@@ -452,14 +467,14 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                   return
                 }
                 const globalMax = getGlobalMaxDepth(rpcDataMap)
-                for (const [regionKey, data] of rpcDataMap) {
+                for (const [regionNumber, data] of rpcDataMap) {
                   renderer.uploadCoverageForBlock(
-                    regionKey,
+                    regionNumber,
                     data,
                     Math.ceil(view.width),
                     globalMax,
                   )
-                  renderer.uploadSnpCoverageForBlock(regionKey, data)
+                  renderer.uploadSnpCoverageForBlock(regionNumber, data)
                 }
               },
               { name: 'MultiLGVSyntenyDisplay:uploadCoverage' },
@@ -485,25 +500,17 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 const { height, rowHeight, rowSpacing, syntenyCoverageHeight } =
                   self
                 const contentBlocks = view.staticBlocks.contentBlocks
-                const regionKeyMap = new Map<number, string>()
-                for (let i = 0; i < view.displayedRegions.length; i++) {
-                  regionKeyMap.set(
-                    i,
-                    makeDisplayedRegionKey(view.displayedRegions[i]!),
-                  )
-                }
 
                 if (renderer.isGpu) {
                   renderer.renderGpu(
                     contentBlocks,
-                    regionKeyMap,
                     view.offsetPx,
                     view.width,
                     height,
                     rowHeight,
                     rowSpacing,
                     syntenyCoverageHeight,
-                    palette.coverageColorRgb,
+                    palette,
                   )
                 } else {
                   const {
@@ -536,6 +543,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                       ? getFirstCoverage(self.rpcDataMap)
                       : undefined,
                     colors: palette.syntenyColors,
+                    coverageColor: palette.coverageColorHex,
                   })
                 }
               },
@@ -544,8 +552,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           )
 
           // Autorun 4: visible max depth (debounced).
-          // Uses dynamicBlocks for precise viewport, looks up data via
-          // displayedRegionKey computed from displayedRegions[regionNumber].
           addDisposer(
             self,
             autorun(
@@ -557,39 +563,12 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 if (!view.initialized) {
                   return
                 }
-                const blocks = view.dynamicBlocks.contentBlocks
-                let maxDepth = 0
-                for (const block of blocks) {
-                  if (block.regionNumber === undefined) {
-                    continue
-                  }
-                  const dr = view.displayedRegions[block.regionNumber]
-                  if (!dr) {
-                    continue
-                  }
-                  const data = self.rpcDataMap.get(makeDisplayedRegionKey(dr))
-                  if (!data) {
-                    continue
-                  }
-                  const startBin = Math.max(
-                    0,
-                    Math.floor(
-                      block.start - data.regionStart - data.coverageStartOffset,
-                    ),
-                  )
-                  const endBin = Math.min(
-                    data.coverageDepths.length,
-                    Math.ceil(
-                      block.end - data.regionStart - data.coverageStartOffset,
-                    ),
-                  )
-                  for (let i = startBin; i < endBin; i++) {
-                    const d = data.coverageDepths[i]!
-                    if (d > maxDepth) {
-                      maxDepth = d
-                    }
-                  }
-                }
+                const maxDepth = computeVisibleMaxDepth(
+                  view.dynamicBlocks.contentBlocks,
+                  b => b.regionNumber !== undefined
+                    ? self.rpcDataMap.get(b.regionNumber)
+                    : undefined,
+                )
                 self.setVisibleMaxDepth(maxDepth)
               },
               {

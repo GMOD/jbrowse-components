@@ -16,19 +16,14 @@ import type {
   BlockCoverageUploadData,
   BlockSnpUploadData,
 } from './multiSyntenyGpuData.ts'
+import type { SyntenyColorPalette } from '../model.ts'
+import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
 export type BpToPxFn = (refName: string, coord: number) => number | undefined
 
 export type SyntenyColors = CigarOpDrawColors
-
-export interface CanvasCoverageData {
-  coverageDepths: Float32Array
-  coverageMaxDepth: number
-  coverageStartOffset: number
-  coverageRegionStart: number
-}
 
 export interface MultiSyntenyCanvasRenderOpts {
   width: number
@@ -41,7 +36,8 @@ export interface MultiSyntenyCanvasRenderOpts {
   showSnps: boolean
   colors: SyntenyColors
   coverageHeight: number
-  coverage?: CanvasCoverageData
+  coverage?: SyntenyRegionData
+  coverageColor: string
 }
 
 export interface MultiSyntenyCanvasBackend {
@@ -57,29 +53,28 @@ export interface MultiSyntenyCanvasBackend {
 export interface MultiSyntenyGpuBackend {
   resize(width: number, height: number): void
   uploadGeometryForBlock(
-    blockKey: string,
+    regionNumber: number,
     data: BlockGeometryData & { regionStart: number },
   ): void
   uploadCoverageForBlock(
-    blockKey: string,
+    regionNumber: number,
     data: BlockCoverageUploadData & { regionStart: number; maxDepth: number },
   ): void
   uploadSnpCoverageForBlock(
-    blockKey: string,
+    regionNumber: number,
     data: BlockSnpUploadData,
   ): void
-  clearBlock(blockKey: string): void
+  clearBlock(regionNumber: number): void
   clearAllBlocks(): void
   render(
     contentBlocks: BaseBlock[],
-    regionKeyMap: Map<number, string>,
     viewOffsetPx: number,
     width: number,
     height: number,
     rowHeight: number,
     rowSpacing: boolean,
     coverageHeight: number,
-    coverageColor?: [number, number, number],
+    palette: SyntenyColorPalette,
   ): void
   pick(x: number, y: number): number
   dispose(): void

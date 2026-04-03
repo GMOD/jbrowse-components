@@ -10,6 +10,7 @@ import {
   getRed,
   newColor,
   parse,
+  toGLrgb,
   toHSLA,
   toRGBA,
 } from './color-bits/index.ts'
@@ -157,4 +158,8 @@ export function colord(
   input: string | { h: number; s: number; l: number },
 ): Colord {
   return createColord(parseInput(input))
+}
+
+export function hexToGLrgb(hex: string): [number, number, number] {
+  return toGLrgb(parse(hex))
 }

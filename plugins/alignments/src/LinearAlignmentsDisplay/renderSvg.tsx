@@ -705,10 +705,7 @@ export async function renderSvg(
   const displayHeight = model.height
   const renderingMode = showLinkedReads ? 'linkedRead' : 'pileup'
 
-  const coverageColor =
-    theme.palette.mode === 'dark'
-      ? theme.palette.grey[700]
-      : theme.palette.grey[400]
+  const coverageColor = theme.palette.coverage
 
   // Create contexts — either real canvas (rasterize) or SvgCanvas (vector)
   const pileup = createCtx(rasterize, totalWidth, pileupHeight, opts)

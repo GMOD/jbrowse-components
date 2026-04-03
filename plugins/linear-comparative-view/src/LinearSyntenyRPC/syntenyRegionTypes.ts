@@ -1,13 +1,11 @@
-import {
-  getFirstCoverageEntry,
-  getGlobalMaxCoverageDepth,
-} from '@jbrowse/alignments-core'
+import { getGlobalMaxCoverageDepth } from '@jbrowse/alignments-core'
 
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
 export interface SyntenyRegionData {
+  refName: string
   regionStart: number
   genomeFeatures: [string, MultiPairFeature[]][]
   coverageDepths: Float32Array
@@ -18,18 +16,12 @@ export interface SyntenyRegionData {
   snpHeights: Float32Array
   snpColorTypes: Uint8Array
   snpCount: number
+  mismatchPositions: Uint32Array
+  mismatchBases: Uint8Array
+  numMismatches: number
 }
 
-function toCoverageRegion(data: SyntenyRegionData) {
-  return {
-    depths: data.coverageDepths,
-    startOffset: data.coverageStartOffset,
-    regionStart: data.regionStart,
-    maxDepth: data.coverageMaxDepth,
-  }
-}
-
-export function mergeGenomeRows(rpcDataMap: Map<string, SyntenyRegionData>) {
+export function mergeGenomeRows(rpcDataMap: Map<number, SyntenyRegionData>) {
   const merged = new Map<string, MultiPairFeature[]>()
   for (const data of rpcDataMap.values()) {
     for (const [genome, features] of data.genomeFeatures) {
@@ -46,18 +38,14 @@ export function mergeGenomeRows(rpcDataMap: Map<string, SyntenyRegionData>) {
   return merged
 }
 
-export function getGlobalMaxDepth(rpcDataMap: Map<string, SyntenyRegionData>) {
+export function getGlobalMaxDepth(rpcDataMap: Map<number, SyntenyRegionData>) {
   return getGlobalMaxCoverageDepth(rpcDataMap, d => d.coverageMaxDepth)
 }
 
-export function getFirstCoverage(rpcDataMap: Map<string, SyntenyRegionData>) {
-  const entry = getFirstCoverageEntry(rpcDataMap, toCoverageRegion)
-  if (entry) {
-    return {
-      coverageDepths: entry.depths,
-      coverageMaxDepth: entry.maxDepth,
-      coverageStartOffset: entry.startOffset,
-      coverageRegionStart: entry.regionStart,
+export function getFirstCoverage(rpcDataMap: Map<number, SyntenyRegionData>) {
+  for (const data of rpcDataMap.values()) {
+    if (data.coverageMaxDepth > 0) {
+      return data
     }
   }
   return undefined

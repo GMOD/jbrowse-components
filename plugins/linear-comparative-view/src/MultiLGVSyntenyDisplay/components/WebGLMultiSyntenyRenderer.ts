@@ -1,4 +1,5 @@
 import {
+  computeDepthScale,
   createPickingFbo,
   getDevicePixelRatio,
   resizeCanvas,
@@ -11,7 +12,6 @@ import {
 
 import {
   fillSyntenyUniforms,
-  computeDepthScale,
   computeGlobalMaxDepth,
   getRegionForBlock,
   visibleBlocks,
@@ -31,6 +31,7 @@ import { SNP_SEGMENT_BYTE_SIZE } from './multiSyntenyGpuData.ts'
 import { BG_COLOR_GL } from './multiSyntenyBackendTypes.ts'
 import type { MultiSyntenyGpuBackend } from './multiSyntenyBackendTypes.ts'
 import type { BlockGeometryData, BlockCoverageUploadData, BlockSnpUploadData } from './multiSyntenyGpuData.ts'
+import type { SyntenyColorPalette } from '../model.ts'
 import type { PickingFbo } from '@jbrowse/alignments-core'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
@@ -60,7 +61,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
   private uniformData = new ArrayBuffer(UNIFORM_BYTE_SIZE)
   private uniformF32 = new Float32Array(this.uniformData)
 
-  private regions = new Map<string, SyntenyGpuRegion>()
+  private regions = new Map<number, SyntenyGpuRegion>()
 
   private pickingFboState: PickingFbo | undefined
   private pickingDirty = true
@@ -220,8 +221,8 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     }
   }
 
-  private getOrCreateRegion(blockKey: string, regionStart: number) {
-    let region = this.regions.get(blockKey)
+  private getOrCreateRegion(regionNumber: number, regionStart: number) {
+    let region = this.regions.get(regionNumber)
     if (!region) {
       region = {
         regionStart,
@@ -233,7 +234,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
         snpVbo: null,
         snpSegmentCount: 0,
       }
-      this.regions.set(blockKey, region)
+      this.regions.set(regionNumber, region)
     }
     return region
   }
@@ -251,11 +252,11 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
   }
 
   uploadGeometryForBlock(
-    blockKey: string,
+    regionNumber: number,
     data: BlockGeometryData & { regionStart: number },
   ) {
     const gl = this.gl
-    const existing = this.regions.get(blockKey)
+    const existing = this.regions.get(regionNumber)
 
     if (existing?.instanceVbo) {
       gl.deleteBuffer(existing.instanceVbo)
@@ -269,7 +270,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
       return
     }
 
-    const region = this.getOrCreateRegion(blockKey, data.regionStart)
+    const region = this.getOrCreateRegion(regionNumber, data.regionStart)
     region.regionStart = data.regionStart
     region.instanceVbo = gl.createBuffer()!
     region.instanceCount = data.instanceCount
@@ -280,11 +281,11 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
   }
 
   uploadCoverageForBlock(
-    blockKey: string,
+    regionNumber: number,
     data: BlockCoverageUploadData & { regionStart: number; maxDepth: number },
   ) {
     const gl = this.gl
-    const existing = this.regions.get(blockKey)
+    const existing = this.regions.get(regionNumber)
 
     if (existing?.coverageVbo) {
       gl.deleteBuffer(existing.coverageVbo)
@@ -299,7 +300,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
       return
     }
 
-    const region = this.getOrCreateRegion(blockKey, data.regionStart)
+    const region = this.getOrCreateRegion(regionNumber, data.regionStart)
     region.coverageVbo = gl.createBuffer()!
     region.coverageBinCount = data.binCount
     region.coverageMaxDepth = data.maxDepth
@@ -308,11 +309,11 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
   }
 
   uploadSnpCoverageForBlock(
-    blockKey: string,
+    regionNumber: number,
     data: BlockSnpUploadData,
   ) {
     const gl = this.gl
-    const existing = this.regions.get(blockKey)
+    const existing = this.regions.get(regionNumber)
 
     if (existing?.snpVbo) {
       gl.deleteBuffer(existing.snpVbo)
@@ -326,7 +327,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
       return
     }
 
-    const region = this.regions.get(blockKey)
+    const region = this.regions.get(regionNumber)
     if (!region) {
       return
     }
@@ -336,9 +337,9 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     gl.bufferData(gl.ARRAY_BUFFER, data.buffer, gl.STATIC_DRAW)
   }
 
-  clearBlock(blockKey: string) {
+  clearBlock(regionNumber: number) {
     const gl = this.gl
-    const region = this.regions.get(blockKey)
+    const region = this.regions.get(regionNumber)
     if (region) {
       if (region.instanceVbo) {
         gl.deleteBuffer(region.instanceVbo)
@@ -349,7 +350,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
       if (region.snpVbo) {
         gl.deleteBuffer(region.snpVbo)
       }
-      this.regions.delete(blockKey)
+      this.regions.delete(regionNumber)
     }
   }
 
@@ -371,14 +372,13 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
 
   render(
     contentBlocks: BaseBlock[],
-    regionKeyMap: Map<number, string>,
     viewOffsetPx: number,
     width: number,
     height: number,
     rowHeight: number,
     rowSpacing: boolean,
     coverageHeight: number,
-    coverageColor?: [number, number, number],
+    palette: SyntenyColorPalette,
   ) {
     const gl = this.gl
 
@@ -395,13 +395,13 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     const rowPadding = rowSpacing ? 1 : 0
 
     const lookup = (b: BaseBlock) =>
-      getRegionForBlock(b, regionKeyMap, this.regions)
+      getRegionForBlock(b, this.regions)
     const depthScale = computeDepthScale(
       computeGlobalMaxDepth(contentBlocks, lookup),
     )
 
     const iterBlocks = () => visibleBlocks(
-      contentBlocks, regionKeyMap, this.regions, viewOffsetPx, logicalW,
+      contentBlocks, this.regions, viewOffsetPx, logicalW,
     )
 
     // Draw coverage first (behind synteny features)
@@ -417,7 +417,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
           logicalW, logicalH, rowHeight,
           params.bpRangeHi, params.bpRangeLo, params.bpRangeLen,
           params.regionScreenLeft, params.regionScreenWidth,
-          rowPadding, coverageHeight, depthScale, coverageColor,
+          rowPadding, coverageHeight, depthScale, palette,
         )
         this.bindCoverageBufferDirect(region.coverageVbo)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, region.coverageBinCount)
@@ -439,7 +439,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
           logicalW, logicalH, rowHeight,
           params.bpRangeHi, params.bpRangeLo, params.bpRangeLen,
           params.regionScreenLeft, params.regionScreenWidth,
-          rowPadding, coverageHeight, depthScale, coverageColor,
+          rowPadding, coverageHeight, depthScale, palette,
         )
         this.bindSnpBufferDirect(region.snpVbo)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, region.snpSegmentCount)
@@ -460,7 +460,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
         logicalW, logicalH, rowHeight,
         params.bpRangeHi, params.bpRangeLo, params.bpRangeLen,
         params.regionScreenLeft, params.regionScreenWidth,
-        rowPadding, coverageHeight, depthScale, coverageColor,
+        rowPadding, coverageHeight, depthScale, palette,
       )
       this.bindInstanceBufferDirect(this.fillProgram, region.instanceVbo)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, region.instanceCount)
@@ -504,14 +504,14 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     rowPadding: number,
     coverageHeight: number,
     depthScale: number,
-    coverageColor?: [number, number, number],
+    palette: SyntenyColorPalette,
   ) {
     const gl = this.gl
     fillSyntenyUniforms(
       this.uniformF32, width, height, rowHeight,
       bpRangeHi, bpRangeLo, bpRangeLen,
       regionScreenLeft, regionScreenWidth,
-      rowPadding, coverageHeight, depthScale, coverageColor,
+      rowPadding, coverageHeight, depthScale, palette,
     )
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
     gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.uniformData)

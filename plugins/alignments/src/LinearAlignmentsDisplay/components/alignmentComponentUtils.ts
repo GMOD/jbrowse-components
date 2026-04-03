@@ -5,20 +5,19 @@
  * and GPU data upload coordination.
  */
 
+import { countSnpsAtPosition } from '@jbrowse/alignments-core'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
 import { fillColor } from '../../shared/color.ts'
 
+import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 import type {
   AlignmentsRenderer,
   ColorPalette,
   RGBColor,
 } from './AlignmentsRenderer.ts'
 import type { CigarHitResult, SashimiArcHitResult } from './hitTesting'
-import type {
-  CoverageTooltipBin,
-  PileupDataResult,
-} from '../../RenderPileupDataRPC/types'
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types'
 import type { Theme } from '@mui/material'
 
 function toRgb(color: string): RGBColor {
@@ -50,10 +49,7 @@ export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
     colorSkip: toRgb(palette.skip),
     colorSoftclip: toRgb(palette.softclip),
     colorHardclip: toRgb(palette.hardclip),
-    // Coverage color from theme grey palette
-    colorCoverage: toRgb(
-      palette.mode === 'dark' ? palette.grey[700] : palette.grey[400],
-    ),
+    colorCoverage: toRgb(palette.coverage),
     // Modification mode read colors
     colorModificationFwd: toRgb(palette.modificationFwd),
     colorModificationRev: toRgb(palette.modificationRev),
@@ -268,23 +264,7 @@ export function getTooltipBin(
   const binIdx = Math.floor(posOffset - blockRpcData.coverageStartOffset)
   const depth = blockRpcData.coverageDepths[binIdx] ?? 0
 
-  const snps: Record<string, { count: number; fwd: number; rev: number }> = {}
-  const { mismatchPositions, mismatchBases, mismatchStrands, numMismatches } =
-    blockRpcData
-  for (let i = 0; i < numMismatches; i++) {
-    if (mismatchPositions[i] === posOffset) {
-      const base = String.fromCharCode(mismatchBases[i]!)
-      if (!snps[base]) {
-        snps[base] = { count: 0, fwd: 0, rev: 0 }
-      }
-      snps[base].count++
-      if (mismatchStrands[i] === 1) {
-        snps[base].fwd++
-      } else {
-        snps[base].rev++
-      }
-    }
-  }
+  const snps = countSnpsAtPosition(posOffset, blockRpcData)
 
   const interbase: CoverageTooltipBin['interbase'] = {}
   const {

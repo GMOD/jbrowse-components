@@ -36,40 +36,7 @@ export interface RenderPileupDataArgs {
   stopToken?: StopToken
 }
 
-export interface CoverageTooltipBin {
-  position: number
-  depth: number
-  interbaseDepth: number
-  snps: Record<string, { count: number; fwd: number; rev: number }>
-  deletions?: {
-    count: number
-    minLen: number
-    maxLen: number
-    avgLen: number
-  }
-  interbase: Record<
-    string,
-    {
-      count: number
-      minLen: number
-      maxLen: number
-      avgLen: number
-      topSeq?: string
-      topSeqCount?: number
-    }
-  >
-  modifications?: Record<
-    string,
-    {
-      count: number
-      fwd: number
-      rev: number
-      probabilityTotal: number
-      color: string
-      name: string
-    }
-  >
-}
+export type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 
 export interface ModTooltipEntry {
   count: number

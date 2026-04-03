@@ -33,6 +33,7 @@ declare module '@mui/material/styles' {
     highlight: PaletteColor
     stopCodon: string
     startCodon: string
+    coverage: string
     insertion: string
     softclip: string
     skip: string
@@ -55,6 +56,7 @@ declare module '@mui/material/styles' {
     highlight?: PaletteColorOptions
     stopCodon?: string
     startCodon?: string
+    coverage?: string
     hardclip?: string
     softclip?: string
     insertion?: string
@@ -105,6 +107,7 @@ const frames = [
 ] as Frames
 const stopCodon = '#e22'
 const startCodon = '#3e3'
+const coverage = grey[400]
 const insertion = '#800080'
 const deletion = '#808080'
 const hardclip = '#f00'
@@ -121,6 +124,7 @@ const defaults = {
   highlight: mandarin,
   stopCodon,
   startCodon,
+  coverage,
   insertion,
   deletion,
   softclip,
@@ -173,6 +177,7 @@ function getDarkStockTheme() {
     palette: {
       ...defaults,
       mode: 'dark',
+      coverage: grey[700],
     },
     components: {
       MuiAppBar: {
@@ -193,6 +198,7 @@ function getDarkMinimalTheme() {
     palette: {
       ...defaults,
       mode: 'dark' as const,
+      coverage: grey[700],
       primary: { main: grey[700] },
       secondary: { main: grey[800] },
       tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
@@ -539,6 +545,7 @@ function addMissingColors(theme: ThemeOptions = {}) {
         quaternary: palette?.quaternary || lightgrey,
         tertiary: palette?.tertiary || lightgrey,
         highlight: palette?.highlight || mandarin,
+        coverage: palette?.coverage || coverage,
         insertion: palette?.insertion || insertion,
         softclip: palette?.softclip || softclip,
         skip: palette?.skip || skip,

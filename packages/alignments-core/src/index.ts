@@ -57,18 +57,24 @@ export {
 export type { PickingFbo } from './rendererUtils.ts'
 export {
   YSCALEBAR_LABEL_OFFSET,
+  buildCoverageTooltipBin,
   computeCoverageTicks,
+  computeDepthScale,
   computeSNPCoverage,
   computeVisibleMaxDepth,
+  countSnpsAtPosition,
   downsampleMinMax,
   getFirstCoverageEntry,
   getGlobalMaxCoverageDepth,
   niceNum,
 } from './coverageDownsampling.ts'
 export type {
+  CoverageArrays,
   CoverageRegion,
   CoverageTicks,
+  CoverageTooltipBin,
   DownsampledBins,
+  MismatchArrays,
   MismatchEntry,
   SNPCoverageResult,
 } from './coverageDownsampling.ts'

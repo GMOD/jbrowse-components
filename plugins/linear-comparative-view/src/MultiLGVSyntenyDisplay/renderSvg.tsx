@@ -2,6 +2,7 @@ import { MISMATCH_COLOR } from '@jbrowse/alignments-core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
+import { CoverageYScaleBar } from '@jbrowse/plugin-alignments'
 import { when } from 'mobx'
 
 import { getFirstCoverage } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
@@ -68,7 +69,19 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
       baseG: palette.bases.G.main,
       baseT: palette.bases.T.main,
     },
+    coverageColor: palette.coverage,
   })
 
-  return <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
+  const { coverageTicks } = model
+
+  return (
+    <g>
+      <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
+      {showCoverage && coverageTicks ? (
+        <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
+          <CoverageYScaleBar model={{ coverageTicks }} />
+        </g>
+      ) : null}
+    </g>
+  )
 }

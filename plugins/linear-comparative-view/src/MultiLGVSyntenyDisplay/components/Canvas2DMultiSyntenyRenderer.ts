@@ -8,41 +8,53 @@ import { getFeatureColor } from './multiSyntenyColorUtils.ts'
 import type {
   MultiSyntenyCanvasBackend,
   MultiSyntenyCanvasRenderOpts,
+  SyntenyColors,
 } from './multiSyntenyBackendTypes.ts'
-import type { SyntenyColors } from './multiSyntenyBackendTypes.ts'
+import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import {
   YSCALEBAR_LABEL_OFFSET,
+  computeDepthScale,
   downsampleMinMax,
+  getDevicePixelRatio,
 } from '@jbrowse/alignments-core'
-import { computeDepthScale } from './multiSyntenyGpuUtils.ts'
 
 import type { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
 type Ctx = CanvasRenderingContext2D | SvgCanvas
 
+function snpColorForType(colorType: number, colors: SyntenyColors) {
+  if (colorType === 1) {
+    return colors.baseA
+  } else if (colorType === 2) {
+    return colors.baseC
+  } else if (colorType === 3) {
+    return colors.baseG
+  }
+  return colors.baseT
+}
+
 function renderCoverageToCtx(
   ctx: Ctx,
-  depths: Float32Array,
-  maxDepth: number,
-  startOffset: number,
-  regionStart: number,
+  coverage: SyntenyRegionData,
   bpToPx: (refName: string, coord: number) => number | undefined,
-  refName: string,
   width: number,
   coverageHeight: number,
+  coverageColor: string,
+  snpColors: SyntenyColors,
 ) {
-  if (maxDepth === 0) {
+  const { coverageDepths, coverageMaxDepth, coverageStartOffset, regionStart, refName } = coverage
+  if (coverageMaxDepth === 0) {
     return
   }
 
-  const depthScale = computeDepthScale(maxDepth)
+  const depthScale = computeDepthScale(coverageMaxDepth)
   const effectiveHeight = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
   const coverageBottom = coverageHeight - YSCALEBAR_LABEL_OFFSET
 
-  ctx.fillStyle = '#999'
+  ctx.fillStyle = coverageColor
 
-  const ds = downsampleMinMax(depths, startOffset, Math.ceil(width), maxDepth)
+  const ds = downsampleMinMax(coverageDepths, coverageStartOffset, Math.ceil(width), coverageMaxDepth)
 
   for (let i = 0; i < ds.count; i++) {
     const binPos = regionStart + ds.positions[i]!
@@ -59,6 +71,24 @@ function renderCoverageToCtx(
     const bandTop = coverageBottom - ds.maxs[i]! * depthScale * effectiveHeight
     ctx.fillRect(px, bandTop, Math.max(px2 - px, 1), bandBottom - bandTop)
   }
+
+  for (let i = 0; i < coverage.snpCount; i++) {
+    const pos = regionStart + coverage.snpPositions[i]!
+    const px = bpToPx(refName, pos)
+    const px2 = bpToPx(refName, pos + 1)
+    if (px === undefined || px2 === undefined) {
+      continue
+    }
+    if (px > width || px2 < 0) {
+      continue
+    }
+    const yOff = coverage.snpYOffsets[i]!
+    const segH = coverage.snpHeights[i]!
+    const segBottom = coverageBottom - yOff * depthScale * effectiveHeight
+    const segTop = segBottom - segH * depthScale * effectiveHeight
+    ctx.fillStyle = snpColorForType(coverage.snpColorTypes[i]!, snpColors)
+    ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segBottom - segTop)
+  }
 }
 
 export function renderMultiSyntenyToCtx(
@@ -67,24 +97,15 @@ export function renderMultiSyntenyToCtx(
   displayedGenomes: string[],
   opts: MultiSyntenyCanvasRenderOpts,
 ) {
-  const { width, height, rowHeight, rowSpacing, bpToPx, colorBy, labelW, showSnps, colors, coverageHeight, coverage } = opts
+  const { width, height, rowHeight, rowSpacing, bpToPx, colorBy, labelW, showSnps, colors, coverageHeight, coverage, coverageColor } = opts
+
   const showLabels = labelW > 0
 
   ctx.fillStyle = BG_COLOR_HEX
   ctx.fillRect(0, 0, width, coverageHeight + height)
 
   if (coverageHeight > 0 && coverage) {
-    renderCoverageToCtx(
-      ctx,
-      coverage.coverageDepths,
-      coverage.coverageMaxDepth,
-      coverage.coverageStartOffset,
-      coverage.coverageRegionStart,
-      bpToPx,
-      '',
-      width,
-      coverageHeight,
-    )
+    renderCoverageToCtx(ctx, coverage, bpToPx, width, coverageHeight, coverageColor, colors)
   }
 
   for (let g = 0; g < displayedGenomes.length; g++) {
@@ -190,7 +211,7 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyCanvasBackend {
   }
 
   resize(width: number, height: number) {
-    const dpr = window.devicePixelRatio || 1
+    const dpr = getDevicePixelRatio()
     const pw = Math.round(width * dpr)
     const ph = Math.round(height * dpr)
     if (this.canvas.width !== pw || this.canvas.height !== ph) {
@@ -204,7 +225,7 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyCanvasBackend {
     displayedGenomes: string[],
     opts: MultiSyntenyCanvasRenderOpts,
   ) {
-    const dpr = window.devicePixelRatio || 1
+    const dpr = getDevicePixelRatio()
     this.resize(opts.width, opts.height + opts.coverageHeight)
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     renderMultiSyntenyToCtx(this.ctx, genomeRows, displayedGenomes, opts)

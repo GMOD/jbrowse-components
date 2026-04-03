@@ -78,6 +78,13 @@ export function toHWBA(color: Color) {
   return { h, w, b, a }
 }
 
+/**
+ * Returns [r, g, b] as floats in 0-1 range, suitable for GPU shader uniforms.
+ */
+export function toGLrgb(color: Color): [number, number, number] {
+  return [getRed(color) / 255, getGreen(color) / 255, getBlue(color) / 255]
+}
+
 // Conversion functions
 // https://www.30secondsofcode.org/js/s/rgb-hex-hsl-hsb-color-format-conversion/
 function rgbToHSL(r: number, g: number, b: number) {

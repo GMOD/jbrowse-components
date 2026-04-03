@@ -1553,20 +1553,9 @@ export default function stateModelFactory(
                 if (!view.initialized) {
                   return
                 }
-                const blocks = view.dynamicBlocks.contentBlocks
                 const maxDepth = computeVisibleMaxDepth(
-                  blocks,
-                  block => {
-                    if (block.regionNumber === undefined) {
-                      return undefined
-                    }
-                    return self.rpcDataMap.get(block.regionNumber)
-                  },
-                  (data: PileupDataResult) => ({
-                    depths: data.coverageDepths,
-                    startOffset: data.coverageStartOffset,
-                    regionStart: data.regionStart,
-                  }),
+                  view.dynamicBlocks.contentBlocks,
+                  b => self.rpcDataMap.get(b.regionNumber!),
                 )
                 self.setVisibleMaxDepth(maxDepth)
               },
