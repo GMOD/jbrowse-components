@@ -1,23 +1,28 @@
 # Next Steps: Multi-Synteny Coverage & Graph Integration
 
-## Completed
+## Coverage: remaining work
 
-- Coverage track added to MultiLGVSyntenyDisplay (GPU-rendered on same canvas)
-- Shared code with LinearAlignmentsDisplay: computeCoverage, CoverageYScaleBar
-- GfaAdapter.getSubgraph terminal alt segment bug fixed
-- Same fix applied to GfaTabixAdapter buildGfaFromPathInference
-- Topology validation tests added (7 new tests)
-- Subgraph output uses `*` with LN:i: tags instead of full sequences
+- **Deletion/insertion indicators from CS tags**: the coverage area could show
+  insertion triangles and deletion indicators like LinearAlignmentsDisplay does.
+  The mismatch data is already available in SyntenyRegionData.
+- **Canvas2D SNP coverage downsampling**: the SNP segments are rendered per-bp
+  in Canvas2D but the coverage bars use downsampleMinMax. At very wide zoom
+  the SNP segments could overwhelm the canvas. Consider downsampling or
+  skipping SNP rendering when bpPerPx is large.
+- **Coverage click to open widget**: LinearAlignmentsDisplay opens a coverage
+  detail widget on click. MultiLGVSyntenyDisplay only shows a tooltip.
 
-## Coverage track: remaining work
+## Code sharing: further opportunities
 
-- ~~**Downsampling**: implemented via min/max band rendering~~
-- ~~**Coverage color from theme**: uses `palette.coverage` from MUI theme~~
-- ~~**Coverage tooltip**: uses shared `CoverageTooltipContents` component and
-  `buildCoverageTooltipBin` from alignments-core~~
-- ~~**SVG export**: CoverageYScaleBar included in SVG export~~
-- ~~**Canvas2D refName bug**: fixed, refName extracted from region key~~
-- ~~**SNP colors theme-driven**: GPU shaders read base colors from uniforms~~
+- **GPU coverage shaders**: the GLSL/WGSL coverage bar and SNP segment shaders
+  in both displays are structurally identical (same coordinate math, same
+  snpColor lookup). Could extract shared shader fragments to alignments-core.
+  Blocked by different coordinate spaces (clip-space vs pixel-space) and
+  uniform buffer layouts.
+- **Canvas2D coverage rendering**: LinearAlignmentsDisplay renderSvg.tsx has
+  its own coverage bar rendering loop that duplicates the same effectiveHeight /
+  coverageBottom / depthScale math. Could extract a shared
+  renderCoverageBarsToCtx utility.
 
 ## Subgraph extraction: remaining work
 
@@ -68,7 +73,6 @@ can coexist as separate adapter types.
 
 ## Launch workflow improvements (lower priority)
 
-- Remove `as any` cast on graphView.loadGFA by importing the type
 - Hide graph view menu items when adapter doesn't support getSubgraph
 - Consider passing GFA during view creation instead of after (avoids
   flash of empty view)
