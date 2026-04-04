@@ -491,8 +491,14 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       return
     }
 
-    const handleScroll = () => {
-      renderWithBlocks()
+    let rafId = 0
+    const scheduleRender = () => {
+      if (rafId === 0) {
+        rafId = requestAnimationFrame(() => {
+          rafId = 0
+          renderWithBlocks()
+        })
+      }
     }
 
     const handleWheel = (e: WheelEvent) => {
@@ -505,11 +511,14 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       }
     }
 
-    container.addEventListener('scroll', handleScroll, { passive: true })
+    container.addEventListener('scroll', scheduleRender, { passive: true })
     container.addEventListener('wheel', handleWheel, { passive: false })
     return () => {
-      container.removeEventListener('scroll', handleScroll)
+      container.removeEventListener('scroll', scheduleRender)
       container.removeEventListener('wheel', handleWheel)
+      if (rafId !== 0) {
+        cancelAnimationFrame(rafId)
+      }
     }
   }, [model, view])
 

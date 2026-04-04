@@ -11,6 +11,11 @@ import {
 
 import type { GpuHal, PassDescriptor, BlendState, RegionMeta } from './types.ts'
 
+// Maximum number of writeUniforms() calls per frame. Each call occupies one
+// aligned slot in the uniform ring buffer. 512 slots × 256-byte alignment =
+// 128 KB — negligible GPU memory for eliminating per-draw command submissions.
+const MAX_UNIFORM_SLOTS = 512
+
 function gpuBlendState(bs: BlendState): GPUBlendState {
   return {
     color: {
@@ -37,13 +42,15 @@ interface RegionState {
   buffers: Map<string, RegionPassBuffer>
 }
 
-// Per-device shared state: bind group layout and compiled pipelines.
+// Per-device shared state: bind group layouts and compiled pipelines.
 // Multiple HAL instances can share a device — pipelines are merged incrementally.
 const deviceState = new WeakMap<
   GPUDevice,
   {
     bindGroupLayout: GPUBindGroupLayout
     pipelineLayout: GPUPipelineLayout
+    texturedBindGroupLayout: GPUBindGroupLayout | null
+    texturedPipelineLayout: GPUPipelineLayout | null
     pipelines: Map<string, GPURenderPipeline>
   }
 >()
@@ -58,11 +65,52 @@ function getOrCreateDeviceState(device: GPUDevice) {
     state = {
       bindGroupLayout,
       pipelineLayout,
+      texturedBindGroupLayout: null,
+      texturedPipelineLayout: null,
       pipelines: new Map(),
     }
     deviceState.set(device, state)
   }
   return state
+}
+
+function getOrCreateTexturedLayout(device: GPUDevice, state: ReturnType<typeof getOrCreateDeviceState>) {
+  if (!state.texturedBindGroupLayout) {
+    state.texturedBindGroupLayout = device.createBindGroupLayout({
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          buffer: { type: 'read-only-storage' as GPUBufferBindingType },
+        },
+        {
+          binding: 1,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          buffer: {
+            type: 'uniform' as GPUBufferBindingType,
+            hasDynamicOffset: true,
+          },
+        },
+        {
+          binding: 2,
+          visibility: GPUShaderStage.FRAGMENT,
+          texture: { sampleType: 'float' },
+        },
+        {
+          binding: 3,
+          visibility: GPUShaderStage.FRAGMENT,
+          sampler: { type: 'filtering' },
+        },
+      ],
+    })
+    state.texturedPipelineLayout = device.createPipelineLayout({
+      bindGroupLayouts: [state.texturedBindGroupLayout],
+    })
+  }
+  return {
+    layout: state.texturedBindGroupLayout,
+    pipelineLayout: state.texturedPipelineLayout!,
+  }
 }
 
 async function ensurePipelines(
@@ -97,8 +145,11 @@ async function ensurePipelines(
         : desc.blend ? (desc.blendState ? gpuBlendState(desc.blendState) : STANDARD_BLEND_STATE)
         : undefined
       const topo = (desc.topology ?? 'triangle-list') as GPUPrimitiveTopology
+      const pLayout = desc.textures?.length
+        ? getOrCreateTexturedLayout(device, state).pipelineLayout
+        : state.pipelineLayout
       const pipeline = await device.createRenderPipelineAsync({
-        layout: state.pipelineLayout,
+        layout: pLayout,
         vertex: { module, entryPoint: 'vs_main' },
         fragment: {
           module,
@@ -112,16 +163,32 @@ async function ensurePipelines(
   )
 }
 
+interface PassTextureState {
+  texture: GPUTexture
+  sampler: GPUSampler
+}
+
 export class WebGPUHal implements GpuHal {
   private device: GPUDevice
   private canvas: HTMLCanvasElement
   private context: GPUCanvasContext
-  private uniformBuffer: GPUBuffer
   private regions = new Map<number, RegionState>()
   private descriptors: PassDescriptor[]
+  private passTextures = new Map<string, PassTextureState>()
 
-  // Frame state
+  // Uniform ring buffer: holds up to MAX_UNIFORM_SLOTS sets of uniforms so
+  // that all draw calls in a frame can reference different uniform data via
+  // dynamic offsets, enabling a single command encoder + submit per frame.
+  private uniformByteSize: number
+  private alignedUniformSize: number
+  private uniformRingBuffer: GPUBuffer
+  private uniformStaging: ArrayBuffer
+  private uniformStagingU8: Uint8Array
+  private uniformSlot = 0
+
+  // Frame state — single encoder batches all render passes per frame
   private currentTextureView: GPUTextureView | null = null
+  private currentEncoder: GPUCommandEncoder | null = null
   private isFirstPass = true
 
   // Scissor/viewport state (physical pixels, top-left origin)
@@ -132,6 +199,8 @@ export class WebGPUHal implements GpuHal {
   private pickingTexture: GPUTexture | null = null
   private pickingStagingBuffer: GPUBuffer | null = null
   private cachedPickResult = -1
+
+  private _clearColor = { r: 0, g: 0, b: 0, a: 1 }
 
   private constructor(
     device: GPUDevice,
@@ -144,10 +213,19 @@ export class WebGPUHal implements GpuHal {
     this.canvas = canvas
     this.context = context
     this.descriptors = descriptors
-    this.uniformBuffer = device.createBuffer({
-      size: uniformByteSize,
+    this.uniformByteSize = uniformByteSize
+
+    // Align uniform slots to device requirements for dynamic offsets
+    const alignment = device.limits.minUniformBufferOffsetAlignment
+    this.alignedUniformSize = Math.ceil(uniformByteSize / alignment) * alignment
+
+    const ringSize = MAX_UNIFORM_SLOTS * this.alignedUniformSize
+    this.uniformRingBuffer = device.createBuffer({
+      size: ringSize,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     })
+    this.uniformStaging = new ArrayBuffer(ringSize)
+    this.uniformStagingU8 = new Uint8Array(this.uniformStaging)
   }
 
   static async create(
@@ -207,13 +285,37 @@ export class WebGPUHal implements GpuHal {
       return
     }
     const storageBuffer = createStorageBuffer(this.device, data)
-    const bindGroup = createStandardBindGroup(
-      this.device,
-      state.bindGroupLayout,
-      storageBuffer,
-      this.uniformBuffer,
-    )
-    region.buffers.set(passId, { storageBuffer, bindGroup, count })
+    const desc = this.descriptors.find(d => d.id === passId)
+    const texState = this.passTextures.get(passId)
+    if (desc?.textures?.length && texState) {
+      const { layout } = getOrCreateTexturedLayout(this.device, state)
+      const bindGroup = this.device.createBindGroup({
+        layout,
+        entries: [
+          { binding: 0, resource: { buffer: storageBuffer } },
+          {
+            binding: 1,
+            resource: {
+              buffer: this.uniformRingBuffer,
+              offset: 0,
+              size: this.uniformByteSize,
+            },
+          },
+          { binding: 2, resource: texState.texture.createView() },
+          { binding: 3, resource: texState.sampler },
+        ],
+      })
+      region.buffers.set(passId, { storageBuffer, bindGroup, count })
+    } else {
+      const bindGroup = createStandardBindGroup(
+        this.device,
+        state.bindGroupLayout,
+        storageBuffer,
+        this.uniformRingBuffer,
+        this.uniformByteSize,
+      )
+      region.buffers.set(passId, { storageBuffer, bindGroup, count })
+    }
   }
 
   setRegionMeta(regionKey: number, meta: Partial<RegionMeta>) {
@@ -264,21 +366,68 @@ export class WebGPUHal implements GpuHal {
     this.regions.clear()
   }
 
+  uploadTexture(passId: string, data: Uint8Array, width: number, height: number) {
+    const desc = this.descriptors.find(d => d.id === passId)
+    if (!desc?.textures?.length) {
+      return
+    }
+    const existing = this.passTextures.get(passId)
+    if (existing) {
+      existing.texture.destroy()
+    }
+    const tb = desc.textures[0]!
+    const texture = this.device.createTexture({
+      size: [width, height],
+      format: 'rgba8unorm',
+      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+    })
+    this.device.queue.writeTexture(
+      { texture },
+      data,
+      { bytesPerRow: width * 4 },
+      { width, height },
+    )
+    const sampler = this.device.createSampler({
+      magFilter: tb.filter,
+      minFilter: tb.filter,
+      addressModeU: 'clamp-to-edge',
+      addressModeV: 'clamp-to-edge',
+    })
+    this.passTextures.set(passId, { texture, sampler })
+
+    // Rebuild bind groups for all regions that have buffers for this pass
+    for (const [regionKey, region] of this.regions) {
+      const buf = region.buffers.get(passId)
+      if (buf) {
+        this.rebuildTexturedBindGroup(regionKey, passId, buf.storageBuffer, buf.count)
+      }
+    }
+  }
+
   writeUniforms(data: ArrayBuffer) {
-    this.device.queue.writeBuffer(this.uniformBuffer, 0, data)
+    if (this.currentEncoder) {
+      // Inside a frame: stage data at the current slot for batched upload
+      const offset = this.uniformSlot * this.alignedUniformSize
+      this.uniformStagingU8.set(new Uint8Array(data), offset)
+      this.uniformSlot++
+    } else {
+      // Outside a frame (e.g. picking): write directly to slot 0
+      this.device.queue.writeBuffer(this.uniformRingBuffer, 0, data)
+      this.uniformSlot = 1
+    }
   }
 
   beginFrame(clearR: number, clearG: number, clearB: number, clearA = 1) {
     this.currentTextureView = this.context.getCurrentTexture().createView()
+    this.currentEncoder = this.device.createCommandEncoder()
     this.isFirstPass = true
+    this.uniformSlot = 0
     this._clearColor = { r: clearR, g: clearG, b: clearB, a: clearA }
   }
 
-  private _clearColor = { r: 0, g: 0, b: 0, a: 1 }
-
   drawPass(passId: string, regionKey: number, bufferPassId?: string) {
     const state = deviceState.get(this.device)
-    if (!state || !this.currentTextureView) {
+    if (!state || !this.currentTextureView || !this.currentEncoder) {
       return
     }
     const pipeline = state.pipelines.get(passId)
@@ -295,8 +444,10 @@ export class WebGPUHal implements GpuHal {
       return
     }
 
-    const encoder = this.device.createCommandEncoder()
-    const pass = encoder.beginRenderPass({
+    // Dynamic offset points to the most recently written uniform slot
+    const dynamicOffset = Math.max(0, this.uniformSlot - 1) * this.alignedUniformSize
+
+    const pass = this.currentEncoder.beginRenderPass({
       colorAttachments: [
         {
           view: this.currentTextureView,
@@ -315,17 +466,19 @@ export class WebGPUHal implements GpuHal {
       pass.setScissorRect(s.x, s.y, s.w, s.h)
     }
     pass.setPipeline(pipeline)
-    pass.setBindGroup(0, regionBuf.bindGroup)
+    pass.setBindGroup(0, regionBuf.bindGroup, [dynamicOffset])
     pass.draw(desc.verticesPerInstance, regionBuf.count, 0, 0)
     pass.end()
-    this.device.queue.submit([encoder.finish()])
     this.isFirstPass = false
   }
 
   endFrame() {
+    if (!this.currentEncoder) {
+      return
+    }
+
     if (this.isFirstPass && this.currentTextureView) {
-      const encoder = this.device.createCommandEncoder()
-      const pass = encoder.beginRenderPass({
+      const pass = this.currentEncoder.beginRenderPass({
         colorAttachments: [
           {
             view: this.currentTextureView,
@@ -336,14 +489,26 @@ export class WebGPUHal implements GpuHal {
         ],
       })
       pass.end()
-      this.device.queue.submit([encoder.finish()])
     }
+
+    // Upload all staged uniform data in one writeBuffer, then submit
+    // the single command buffer containing every render pass for this frame.
+    if (this.uniformSlot > 0) {
+      const uploadSize = this.uniformSlot * this.alignedUniformSize
+      this.device.queue.writeBuffer(
+        this.uniformRingBuffer, 0,
+        this.uniformStaging, 0, uploadSize,
+      )
+    }
+    this.device.queue.submit([this.currentEncoder.finish()])
+
+    this.currentEncoder = null
     this.currentTextureView = null
   }
 
   drawPickingPass(passId: string, regionKey: number, instanceCount?: number, bufferPassId?: string) {
     const state = deviceState.get(this.device)
-    if (!state || !this.currentTextureView) {
+    if (!state) {
       return
     }
     const pipeline = state.pipelines.get(passId)
@@ -364,6 +529,8 @@ export class WebGPUHal implements GpuHal {
       return
     }
 
+    // Picking runs outside the frame cycle with its own encoder.
+    // writeUniforms called before this wrote directly to slot 0.
     const encoder = this.device.createCommandEncoder()
     const pass = encoder.beginRenderPass({
       colorAttachments: [{
@@ -374,7 +541,7 @@ export class WebGPUHal implements GpuHal {
       }],
     })
     pass.setPipeline(pipeline)
-    pass.setBindGroup(0, regionBuf.bindGroup)
+    pass.setBindGroup(0, regionBuf.bindGroup, [0])
     pass.draw(desc.verticesPerInstance, instanceCount ?? regionBuf.count)
     pass.end()
     this.device.queue.submit([encoder.finish()])
@@ -449,7 +616,11 @@ export class WebGPUHal implements GpuHal {
 
   dispose() {
     this.deleteAllRegions()
-    this.uniformBuffer.destroy()
+    this.uniformRingBuffer.destroy()
+    for (const ts of this.passTextures.values()) {
+      ts.texture.destroy()
+    }
+    this.passTextures.clear()
     this.pickingTexture?.destroy()
     this.pickingStagingBuffer?.destroy()
   }
@@ -486,6 +657,43 @@ export class WebGPUHal implements GpuHal {
       size: 256,
       usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
     })
+  }
+
+  private rebuildTexturedBindGroup(
+    regionKey: number,
+    passId: string,
+    storageBuffer: GPUBuffer,
+    count: number,
+  ) {
+    const state = deviceState.get(this.device)
+    if (!state) {
+      return
+    }
+    const texState = this.passTextures.get(passId)
+    if (!texState) {
+      return
+    }
+    const { layout } = getOrCreateTexturedLayout(this.device, state)
+    const bindGroup = this.device.createBindGroup({
+      layout,
+      entries: [
+        { binding: 0, resource: { buffer: storageBuffer } },
+        {
+          binding: 1,
+          resource: {
+            buffer: this.uniformRingBuffer,
+            offset: 0,
+            size: this.uniformByteSize,
+          },
+        },
+        { binding: 2, resource: texState.texture.createView() },
+        { binding: 3, resource: texState.sampler },
+      ],
+    })
+    const region = this.regions.get(regionKey)
+    if (region) {
+      region.buffers.set(passId, { storageBuffer, bindGroup, count })
+    }
   }
 
   private getOrCreateRegion(regionKey: number) {

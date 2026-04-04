@@ -14,7 +14,8 @@ export const STANDARD_BLEND_STATE: GPUBlendState = {
   },
 }
 
-// Standard bind group layout: binding 0 = storage buffer, binding 1 = uniform buffer.
+// Standard bind group layout: binding 0 = storage buffer, binding 1 = uniform buffer
+// with dynamic offset for per-draw uniform batching.
 export function createStandardBindGroupLayout(device: GPUDevice) {
   return device.createBindGroupLayout({
     entries: [
@@ -26,7 +27,10 @@ export function createStandardBindGroupLayout(device: GPUDevice) {
       {
         binding: 1,
         visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-        buffer: { type: 'uniform' as GPUBufferBindingType },
+        buffer: {
+          type: 'uniform' as GPUBufferBindingType,
+          hasDynamicOffset: true,
+        },
       },
     ],
   })
@@ -43,17 +47,22 @@ export function createStorageBuffer(device: GPUDevice, data: ArrayBuffer) {
 }
 
 // Create a standard bind group (storage at binding 0, uniform at binding 1).
+// uniformVisibleSize is the byte range visible to the shader at each dynamic offset.
 export function createStandardBindGroup(
   device: GPUDevice,
   layout: GPUBindGroupLayout,
   storageBuffer: GPUBuffer,
   uniformBuffer: GPUBuffer,
+  uniformVisibleSize: number,
 ) {
   return device.createBindGroup({
     layout,
     entries: [
       { binding: 0, resource: { buffer: storageBuffer } },
-      { binding: 1, resource: { buffer: uniformBuffer } },
+      {
+        binding: 1,
+        resource: { buffer: uniformBuffer, offset: 0, size: uniformVisibleSize },
+      },
     ],
   })
 }
