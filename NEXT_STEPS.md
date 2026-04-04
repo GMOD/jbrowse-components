@@ -12,15 +12,7 @@ Organized by feature area and priority. For completed work, see `COMPLETED.md`.
 
 ### Medium Priority
 
-**GLSL codegen from WGSL** — Mechanically generate GLSL vertex shaders from WGSL using glAttributes metadata, eliminating manual GLSL maintenance.
-
 **Sequence and Graph renderers** — Still use direct WebGPU device access rather than the HAL. Could be migrated for consistency.
-
-### Lower Priority
-
-**Browser-based snapshot tests** — Puppeteer tests comparing actual GPU rendering output against Canvas2D for specific test datasets. Would require test fixtures with BAM/VCF data.
-
-**Uniform layout unification** — Share coverage uniform slots between alignments and multi-synteny GPU shaders (currently ~20 overlapping slots with slightly different layouts).
 
 ---
 
@@ -178,12 +170,6 @@ The structural tier could be precomputed by `make-gfa-tabix` as an additional ou
 - For tabix-indexed data: graph viewer uses segments.gz for node sequences and layout, synteny uses pos+segments+aln
 - For non-indexed GFA: consider a unified `PangenomeAdapter` serving both views
 
-**Variant annotation from graph structure:**
-- Classify bubbles: SNP (1bp), small indel (<50bp), SV (>50bp), complex
-- Show bubble type in tooltips and optionally as a color mode
-- Count genomes per bubble allele (allele frequency from graph)
-- Export variant calls (VCF-like) from graph bubbles
-
 ---
 
 ## Graph Genome Viewer
@@ -248,60 +234,13 @@ The structural tier could be precomputed by `make-gfa-tabix` as an additional ou
 
 ## Bubbles & Variant Density
 
-### Intermediate Zoom Heatmap
-
-At intermediate zoom levels (too far for individual SNPs, too close for pure structural view), there's a visual gap. A density heatmap of variant sites per window would bridge this — showing "this region is highly variable" before you zoom in enough to see individual SNPs.
-
-**Needs investigation:** What's the right rendering approach (per-pixel binning vs precomputed windows), and does the bubbles data already support this or would we need a separate summary track?
-
-### SNP Budget / Max Feature Limit
-
-If a user enables SNP rendering with a very large region, `expandCsOps` will expand every feature's SNPs into GPU instances. With millions of SNPs this could overflow GPU memory. A per-region budget or progressive LOD could help.
-
-**Needs verification:** Does this actually happen in practice with current zoom thresholds, or does the `bpPerPx < 50` gate already prevent it?
-
 ### Cross-Linking Between Views
 
 **Cross-linking between synteny and VCF views:** Click a colored mark in the synteny view to highlight the corresponding variant in the VCF track, and vice versa. Both views now use the same source data so the coordinate mapping is straightforward.
 
-### Phasing Visualization
-
-The bubbles now carry per-haplotype allele assignments for diploid data. Haplotype 1 vs 2 could be colored differently to show phasing patterns across samples — e.g., distinguishing which parental chromosome carries a variant.
-
-**Needs investigation:** What color scheme avoids confusion with existing base colors (A/C/G/T)?
-
 ---
 
-## vg Server Integration
-
-### Option A: VgServerAdapter
-
-Create an adapter that calls a vg server (like sequenceTubeMap's Express server) over REST. The server runs `vg chunk` to extract subgraphs.
-
-**Steps:**
-- Define adapter config schema (serverUrl, graphFile, optional gamFiles)
-- Implement getSubgraph: POST to /api/v0/getChunkedData, receive vg JSON, convert to GFA text
-- Implement getMultiPairFeatures: parse vg JSON paths into synteny features
-- Add to comparative-adapters plugin or a new plugin
-- Test with sequenceTubeMap's server
-
-**Benefits:** Topology-aware extraction via `vg chunk -c N` (context steps), native .xg/.gbz support, read alignment integration.
-
-### Option B: GbzWasmAdapter
-
-Use gbz-base WASM library to query GBZ files client-side in a Web Worker.
-
-**Steps:**
-- Add gbz-base as dependency
-- Create adapter that loads GBZ file and queries via WASM
-- Run in JBrowse's RPC worker for off-main-thread execution
-- Implement getSubgraph and getMultiPairFeatures
-
-**Benefits:** No server needed, works with static file hosting, same tech as sequenceTubeMap's local mode.
-
-**Priority:** Option A is simpler and immediately useful. Option B is more interesting long-term. Both can coexist as separate adapter types.
-
-### Launch Workflow Improvements
+## Launch Workflow Improvements
 
 - Hide graph view menu items when adapter doesn't support getSubgraph
 - Consider passing GFA during view creation instead of after (avoids flash of empty view)
@@ -331,22 +270,6 @@ Use gbz-base WASM library to query GBZ files client-side in a Web Worker.
 
 **C. elegans multi-species PAF:** Small genomes, good for integration testing.
 
----
-
-## Data & Formats (Future)
-
-### DuckDB/Parquet Investigation
-
-For future scale beyond tabix (hundreds of genomes, complex graph queries).
-
-### MAF/TAF Integration
-
-For base-level multiple alignment at zoomed-in views:
-- MAF → multi-pair PIF converter (extract pairwise alignments from MAF blocks)
-- TAF (transposed alignment format) as compressed alternative to MAF
-- LOD: GFA-derived CIGAR at overview, MAF/TAF at base level
-- Reference: jbrowse-plugin-mafviewer for prior art
-
 ### S3 Data Upload
 
 HPRC chrM and chr20 data has been regenerated using the Rust converter. Upload:
@@ -368,11 +291,3 @@ Both could use a shared cached color utility from `@jbrowse/core/util/colorBits`
 ### Canvas2D DPR Transform
 
 Both Canvas2D renderers do `ctx.setTransform(dpr, 0, 0, dpr, 0, 0)` + `ctx.clearRect()`. Could add a `prepareCanvas2D(ctx, width, height)` helper to `@jbrowse/alignments-core/rendererUtils`.
-
----
-
-## N-Way LinearSyntenyView
-
-### Cross-Level Linking (deprioritized)
-
-Show relationships that skip levels (A↔C, A↔D) as dotted/faded lines. Segment-ID based linking for GFA, coordinate chaining for PAF.
