@@ -17,7 +17,6 @@ export interface HicDisplayModel {
   regionTooLarge?: boolean
   reload: () => void
   regionCannotBeRendered: () => React.ReactElement | null
-  drawn: boolean
   loading: boolean
   statusMessage?: string
 }
@@ -67,10 +66,10 @@ const DataDisplay = observer(function DataDisplay({
   model: HicDisplayModel
   children?: React.ReactNode
 }) {
-  const { drawn, loading } = model
+  const { loading } = model
 
   return (
-    <div data-testid={`drawn-${drawn}`}>
+    <div>
       {children}
       {loading ? <LoadingBar model={model} /> : null}
     </div>

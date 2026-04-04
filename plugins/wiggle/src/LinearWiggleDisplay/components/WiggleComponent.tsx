@@ -28,7 +28,6 @@ const WiggleComponent = observer(function WiggleComponent({
   model: WiggleDisplayModel
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [drawn, setDrawn] = useState(false)
 
   const { error, ready, rendererRef, retry } = useGpuRenderer(
     canvasRef,
@@ -105,11 +104,8 @@ const WiggleComponent = observer(function WiggleComponent({
           model.height,
         ),
       )
-      if (!drawn) {
-        setDrawn(true)
-      }
     })
-  }, [model, view, ready, drawn, rendererRef])
+  }, [model, view, ready, rendererRef])
 
   const coord0: [number, number] = [0, 0]
   const [offsetMouseCoord, setOffsetMouseCoord] = useState(coord0)
@@ -206,7 +202,6 @@ const WiggleComponent = observer(function WiggleComponent({
           error={error ?? model.error}
           onRetry={() => {
             retry()
-            setDrawn(false)
             model.reload()
           }}
         />
@@ -222,7 +217,7 @@ const WiggleComponent = observer(function WiggleComponent({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <div data-testid={`drawn-${drawn}`}>
+      <div>
         <canvas
           ref={canvasRef}
           style={{

@@ -62,19 +62,38 @@ const suite: TestSuite = {
         await delay(2000)
         await waitForDataLoaded(page, 90000)
 
-        const drawnTrue = await page.evaluate(() => {
-          const el = document.querySelector('[data-testid="drawn-true"]')
-          return el !== null
+        const hasContent = await page.evaluate(() => {
+          const canvas = document.querySelector('canvas')
+          if (!canvas) {
+            return false
+          }
+          try {
+            const tmp = document.createElement('canvas')
+            tmp.width = 10
+            tmp.height = 10
+            const ctx = tmp.getContext('2d')
+            if (!ctx) {
+              return false
+            }
+            const cx = Math.max(0, Math.floor(canvas.width / 2) - 5)
+            const cy = Math.max(0, Math.floor(canvas.height / 2) - 5)
+            ctx.drawImage(canvas, cx, cy, 10, 10, 0, 0, 10, 10)
+            const d = ctx.getImageData(0, 0, 10, 10).data
+            for (let i = 4; i < d.length; i += 4) {
+              if (d[i] !== d[0] || d[i + 1] !== d[1] || d[i + 2] !== d[2]) {
+                return true
+              }
+            }
+            return false
+          } catch {
+            return false
+          }
         })
 
-        if (!drawnTrue) {
-          const drawnFalse = await page.evaluate(() => {
-            const el = document.querySelector('[data-testid="drawn-false"]')
-            return el !== null
-          })
+        if (!hasContent) {
           // eslint-disable-next-line no-console
           console.log(
-            `      [diagnostic] drawn-true: ${drawnTrue}, drawn-false: ${drawnFalse}, beforePixels: ${beforePixels}`,
+            `      [diagnostic] canvas has no content variation, beforePixels: ${beforePixels}`,
           )
         }
       },

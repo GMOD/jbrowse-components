@@ -105,7 +105,6 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   model: MultiWiggleDisplayModel
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [drawn, setDrawn] = useState(false)
 
   const { error, ready, rendererRef, retry } = useGpuRenderer(
     canvasRef,
@@ -255,11 +254,8 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
           model.height,
         ),
       )
-      if (!drawn) {
-        setDrawn(true)
-      }
     })
-  }, [model, view, ready, drawn, rendererRef])
+  }, [model, view, ready, rendererRef])
 
   const containerRef = useRef<HTMLDivElement>(null)
   const coord0: [number, number] = [0, 0]
@@ -448,7 +444,6 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
           error={error ?? model.error}
           onRetry={() => {
             retry()
-            setDrawn(false)
             model.reload()
           }}
         />
@@ -476,7 +471,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
     >
-      <div data-testid={`drawn-${drawn}`}>
+      <div>
         <canvas
           ref={canvasRef}
           style={{

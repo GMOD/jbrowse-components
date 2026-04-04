@@ -81,22 +81,12 @@ export async function waitForCanvasRendered(
 ) {
   await page.waitForFunction(
     (sel: string) => {
-      const canvas = document.querySelector(sel)
-      // these always get reverted by lint if we cast to the right return value
-      // @ts-expect-error
+      const canvas = document.querySelector(sel) as HTMLCanvasElement | null
       if (!canvas || canvas.width === 0 || canvas.height === 0) {
         return false
       }
 
-      const parent = canvas.closest('[data-testid^="drawn-"]')
-      if (parent) {
-        // these always get reverted by lint if we cast to the right return value
-        // @ts-expect-error
-        return parent.dataset.testid === 'drawn-true'
-      }
-
-      // for displays without drawn- indicator (e.g. alignments pileup),
-      // check that no loading overlay is present in the display container
+      // Check that no loading overlay is visible in the display container
       const displayContainer =
         canvas.closest('[data-testid^="display-"]') ||
         canvas.closest('[data-testid="pileup-display"]')
@@ -109,9 +99,34 @@ export async function waitForCanvasRendered(
           return false
         }
       }
-      // these always get reverted by lint if we cast to the right return value
-      // @ts-expect-error
-      return canvas.width > 0 && canvas.height > 0
+
+      // Sample a 10x10 region from the canvas center and check for pixel
+      // variation. A cleared/blank canvas is uniform; drawn content (genomic
+      // features, wiggle plots, etc.) always produces color variation.
+      try {
+        const tmp = document.createElement('canvas')
+        tmp.width = 10
+        tmp.height = 10
+        const ctx = tmp.getContext('2d')
+        if (!ctx) {
+          return false
+        }
+        const cx = Math.max(0, Math.floor(canvas.width / 2) - 5)
+        const cy = Math.max(0, Math.floor(canvas.height / 2) - 5)
+        ctx.drawImage(canvas, cx, cy, 10, 10, 0, 0, 10, 10)
+        const d = ctx.getImageData(0, 0, 10, 10).data
+        const r0 = d[0]!
+        const g0 = d[1]!
+        const b0 = d[2]!
+        for (let i = 4; i < d.length; i += 4) {
+          if (d[i] !== r0 || d[i + 1] !== g0 || d[i + 2] !== b0) {
+            return true
+          }
+        }
+        return false
+      } catch {
+        return false
+      }
     },
     { timeout, polling: 200 },
     selector,

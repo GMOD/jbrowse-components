@@ -21,7 +21,6 @@ export interface NonBlockCanvasDisplayModel {
   regionTooLarge?: boolean
   reload: () => void
   regionCannotBeRendered: () => React.ReactElement | null
-  drawn: boolean
   loading: boolean
   lastDrawnOffsetPx?: number
   lastDrawnBpPerPx?: number
@@ -88,8 +87,7 @@ const DataDisplay = observer(function DataDisplay({
   model: NonBlockCanvasDisplayModel
   children?: React.ReactNode
 }) {
-  const { drawn, loading, showLegend, legendItems, lastDrawnBpPerPx, height } =
-    model
+  const { loading, showLegend, legendItems, lastDrawnBpPerPx, height } = model
   const view = getContainingView(model) as LinearGenomeViewModel
   const items = legendItems?.() ?? []
 
@@ -109,12 +107,7 @@ const DataDisplay = observer(function DataDisplay({
     : (model.lastDrawnOffsetPx ?? 0) - view.offsetPx
 
   return (
-    // this data-testid is located here because changing props on the canvas
-    // itself is very sensitive to triggering ref invalidation
-    <div
-      data-testid={`drawn-${drawn}`}
-      style={{ position: 'relative', height }}
-    >
+    <div style={{ position: 'relative', height }}>
       <div
         style={{
           position: 'absolute',

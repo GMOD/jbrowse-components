@@ -291,10 +291,8 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     }
   }
 
-  const drawn = model.gpuInitialized && !!model.featureData
-
   return (
-    <div className={classes.rel} data-testid={`drawn-${drawn}`}>
+    <div className={classes.rel}>
       <canvas
         ref={gpuCanvasCallbackRef}
         onMouseMove={handleMouseMove}

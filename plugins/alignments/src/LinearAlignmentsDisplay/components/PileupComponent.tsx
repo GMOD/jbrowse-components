@@ -211,10 +211,8 @@ const PileupInner = observer(function PileupInner({
         (trackHeight - thumbHeight)
     : 0
 
-  const pileupDrawn = model.rpcDataMap.size > 0 && !model.isLoading
-
   return (
-    <div data-testid={`drawn-${pileupDrawn}`}>
+    <div>
       <div
         data-testid="pileup-display"
         style={{ position: 'relative', width: '100%', height }}
