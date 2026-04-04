@@ -495,23 +495,16 @@ export class WebGPUHal implements GpuHal {
   drawPass(passId: string, regionKey: number, bufferPassId?: string) {
     const state = deviceState.get(this.device)
     if (!state || !this.currentTextureView || !this.currentEncoder) {
-      console.log('[WebGPUHal] drawPass: missing state/texture/encoder', {
-        hasState: !!state,
-        hasTextureView: !!this.currentTextureView,
-        hasEncoder: !!this.currentEncoder,
-      })
       return
     }
     const pipeline = state.pipelines.get(passId)
     if (!pipeline) {
-      console.log('[WebGPUHal] drawPass: no pipeline for', passId)
       return
     }
     const regionBuf = this.regions
       .get(regionKey)
       ?.buffers.get(bufferPassId ?? passId)
     if (!regionBuf || regionBuf.count === 0) {
-      console.log('[WebGPUHal] drawPass: no buffer for', passId, regionKey)
       return
     }
 
@@ -519,14 +512,6 @@ export class WebGPUHal implements GpuHal {
     if (!desc) {
       return
     }
-
-    console.log('[WebGPUHal] drawPass:', {
-      passId,
-      regionKey,
-      count: regionBuf.count,
-      canvasW: this.canvas.width,
-      canvasH: this.canvas.height,
-    })
 
     // Dynamic offset points to the most recently written uniform slot
     const dynamicOffset =
