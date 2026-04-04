@@ -345,6 +345,12 @@ export class WebGPUHal implements GpuHal {
   }
 
   deleteBuffer(regionKey: number, passId: string) {
+    if (this.currentEncoder) {
+      console.warn(
+        `[WebGPUHal] deleteBuffer(${regionKey}, ${passId}) called mid-frame — ` +
+          'in-flight render passes may reference this buffer',
+      )
+    }
     const region = this.regions.get(regionKey)
     if (region) {
       const buf = region.buffers.get(passId)
@@ -356,6 +362,12 @@ export class WebGPUHal implements GpuHal {
   }
 
   deleteRegion(regionKey: number) {
+    if (this.currentEncoder) {
+      console.warn(
+        `[WebGPUHal] deleteRegion(${regionKey}) called mid-frame — ` +
+          'in-flight render passes may reference these buffers',
+      )
+    }
     const region = this.regions.get(regionKey)
     if (region) {
       for (const buf of region.buffers.values()) {
@@ -366,6 +378,12 @@ export class WebGPUHal implements GpuHal {
   }
 
   deleteAllRegions() {
+    if (this.currentEncoder) {
+      console.warn(
+        '[WebGPUHal] deleteAllRegions called mid-frame — ' +
+          'in-flight render passes may reference these buffers',
+      )
+    }
     for (const region of this.regions.values()) {
       for (const buf of region.buffers.values()) {
         buf.storageBuffer.destroy()

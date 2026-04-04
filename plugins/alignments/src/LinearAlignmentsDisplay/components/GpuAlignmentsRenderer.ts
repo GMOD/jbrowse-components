@@ -1185,6 +1185,9 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     this.hal.clearScissor()
     this.hal.clearViewport()
     this.hal.endFrame()
+    // Clean up transient overlay buffer after submission so the GPU can
+    // finish reading it before it is destroyed.
+    this.hal.deleteRegion(OVERLAY_REGION)
 
     if (!hasDrawn) {
       // Ensure canvas gets cleared even if no blocks
@@ -1466,7 +1469,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       pileupH,
     )
     this.hal.drawPass(PASS_FLAT_QUAD, OVERLAY_REGION)
-    this.hal.deleteRegion(OVERLAY_REGION)
   }
 
   destroy() {
