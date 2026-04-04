@@ -19,10 +19,17 @@ function glBlendFactor(gl: WebGL2RenderingContext, factor: BlendState['srcFactor
   }
 }
 
+interface TextureState {
+  texture: WebGLTexture
+  unit: number
+  uniformLoc: WebGLUniformLocation | null
+}
+
 interface PassState {
   program: WebGLProgram
   vao: WebGLVertexArrayObject
   descriptor: PassDescriptor
+  textureState: TextureState | null
 }
 
 interface RegionPassBuffer {
@@ -86,7 +93,14 @@ export class WebGL2Hal implements GpuHal {
       }
       gl.bindVertexArray(null)
 
-      this.passes.set(desc.id, { program, vao, descriptor: desc })
+      let textureState: TextureState | null = null
+      if (desc.textures?.length) {
+        const tb = desc.textures[0]!
+        const uniformLoc = gl.getUniformLocation(program, tb.glUniformName)
+        textureState = { texture: null!, unit: tb.glTextureUnit, uniformLoc }
+      }
+
+      this.passes.set(desc.id, { program, vao, descriptor: desc, textureState })
     }
 
     gl.enable(gl.BLEND)
@@ -177,6 +191,28 @@ export class WebGL2Hal implements GpuHal {
     this.regions.clear()
   }
 
+  uploadTexture(passId: string, data: Uint8Array, width: number, height: number) {
+    const gl = this.gl
+    const pass = this.passes.get(passId)
+    if (!pass?.textureState) {
+      return
+    }
+    const ts = pass.textureState
+    if (ts.texture) {
+      gl.deleteTexture(ts.texture)
+    }
+    const tex = gl.createTexture()!
+    gl.bindTexture(gl.TEXTURE_2D, tex)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, data)
+    const tb = pass.descriptor.textures![0]!
+    const filter = tb.filter === 'linear' ? gl.LINEAR : gl.NEAREST
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    ts.texture = tex
+  }
+
   writeUniforms(data: ArrayBuffer) {
     const gl = this.gl
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
@@ -226,6 +262,7 @@ export class WebGL2Hal implements GpuHal {
     gl.useProgram(pass.program)
     gl.bindVertexArray(pass.vao)
     this.bindAttributes(pass, regionBuf.vbo)
+    this.bindTextures(pass)
     const topo = pass.descriptor.topology ?? 'triangle-list'
     const glMode =
       topo === 'triangle-strip' ? gl.TRIANGLE_STRIP
@@ -237,6 +274,7 @@ export class WebGL2Hal implements GpuHal {
       pass.descriptor.verticesPerInstance,
       regionBuf.count,
     )
+
     gl.bindVertexArray(null)
   }
 
@@ -317,6 +355,9 @@ export class WebGL2Hal implements GpuHal {
     for (const pass of this.passes.values()) {
       gl.deleteVertexArray(pass.vao)
       gl.deleteProgram(pass.program)
+      if (pass.textureState?.texture) {
+        gl.deleteTexture(pass.textureState.texture)
+      }
     }
     this.passes.clear()
     gl.deleteBuffer(this.ubo)
@@ -384,6 +425,16 @@ export class WebGL2Hal implements GpuHal {
         gl.ONE,
         gl.ONE_MINUS_SRC_ALPHA,
       )
+    }
+  }
+
+  private bindTextures(pass: PassState) {
+    const gl = this.gl
+    const ts = pass.textureState
+    if (ts?.texture) {
+      gl.activeTexture(gl.TEXTURE0 + ts.unit)
+      gl.bindTexture(gl.TEXTURE_2D, ts.texture)
+      gl.uniform1i(ts.uniformLoc, ts.unit)
     }
   }
 
