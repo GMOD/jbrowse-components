@@ -211,8 +211,8 @@ describe('countSnpsAtPosition', () => {
       numMismatches: 4,
     }
     const snps = countSnpsAtPosition(5, mismatches)
-    expect(snps.A.count).toBe(2)
-    expect(snps.C.count).toBe(1)
+    expect(snps.A!.count).toBe(2)
+    expect(snps.C!.count).toBe(1)
     expect(snps.G).toBeUndefined()
   })
 
@@ -224,9 +224,9 @@ describe('countSnpsAtPosition', () => {
       numMismatches: 3,
     }
     const snps = countSnpsAtPosition(5, mismatches)
-    expect(snps.A.count).toBe(3)
-    expect(snps.A.fwd).toBe(2)
-    expect(snps.A.rev).toBe(1)
+    expect(snps.A!.count).toBe(3)
+    expect(snps.A!.fwd).toBe(2)
+    expect(snps.A!.rev).toBe(1)
   })
 
   test('leaves strand counts at zero when no strand data', () => {
@@ -236,9 +236,9 @@ describe('countSnpsAtPosition', () => {
       numMismatches: 1,
     }
     const snps = countSnpsAtPosition(5, mismatches)
-    expect(snps.T.count).toBe(1)
-    expect(snps.T.fwd).toBe(0)
-    expect(snps.T.rev).toBe(0)
+    expect(snps.T!.count).toBe(1)
+    expect(snps.T!.fwd).toBe(0)
+    expect(snps.T!.rev).toBe(0)
   })
 
   test('handles non-standard bases like N', () => {
@@ -248,7 +248,7 @@ describe('countSnpsAtPosition', () => {
       numMismatches: 1,
     }
     const snps = countSnpsAtPosition(5, mismatches)
-    expect(snps.N.count).toBe(1)
+    expect(snps.N!.count).toBe(1)
   })
 })
 
@@ -291,8 +291,8 @@ describe('buildCoverageTooltipBin', () => {
     )
     const bin = buildCoverageTooltipBin(102, data, data)
     expect(bin).toBeDefined()
-    expect(bin!.snps.A.count).toBe(2)
-    expect(bin!.snps.C.count).toBe(1)
+    expect(bin!.snps.A!.count).toBe(2)
+    expect(bin!.snps.C!.count).toBe(1)
   })
 
   test('position outside coverage array returns undefined', () => {

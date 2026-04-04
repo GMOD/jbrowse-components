@@ -1,4 +1,4 @@
-import { ArrayFeatureView, BigWig } from '@gmod/bbi'
+import { ArrayFeatureView, BigWig, BigWigFeature } from '@gmod/bbi'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   aggregateQuantitativeStats,
@@ -164,23 +164,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
       const view = new ArrayFeatureView(arrays, source, refName)
 
       for (let i = 0; i < view.length; i++) {
-        const uniqueId = view.id(i)
-        const idx = i
-        observer.next({
-          get: (str: string) => view.get(idx, str),
-          id: () => uniqueId,
-          toJSON: () => ({
-            start: view.start(idx),
-            end: view.end(idx),
-            score: view.score(idx),
-            refName,
-            source,
-            uniqueId,
-            summary: view.isSummary,
-            minScore: view.minScore(idx),
-            maxScore: view.maxScore(idx),
-          }),
-        })
+        observer.next(new BigWigFeature(view, i))
       }
       observer.complete()
     }, stopToken)

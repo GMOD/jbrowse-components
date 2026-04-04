@@ -416,7 +416,6 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
           })
         }
       },
-      stopToken: opts.stopToken,
     })
 
     return features

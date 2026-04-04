@@ -33,10 +33,14 @@
     "./data_adapters/BaseAdapter": "./src/data_adapters/BaseAdapter/index.ts",
     "./data_adapters/BaseAdapter/BaseOptions": "./src/data_adapters/BaseAdapter/BaseOptions.ts",
     "./data_adapters/BaseAdapter/stats": "./src/data_adapters/BaseAdapter/stats.ts",
+    "./data_adapters/BaseAdapter/types": "./src/data_adapters/BaseAdapter/types.ts",
     "./data_adapters/dataAdapterCache": "./src/data_adapters/dataAdapterCache.ts",
     "./gpu/shaderConstants": "./src/gpu/shaderConstants.ts",
+    "./gpu/canvas2dUtils": "./src/gpu/canvas2dUtils.ts",
+    "./gpu/createDualRenderer": "./src/gpu/createDualRenderer.ts",
     "./gpu/getGpuDevice": "./src/gpu/getGpuDevice.ts",
     "./gpu/initGpuContext": "./src/gpu/initGpuContext.ts",
+    "./gpu/blockClipUtils": "./src/gpu/blockClipUtils.ts",
     "./gpu/webglUtils": "./src/gpu/webglUtils.ts",
     "./gpu/webgpuUtils": "./src/gpu/webgpuUtils.ts",
     "./gpu/hal": "./src/gpu/hal/index.ts",
@@ -258,6 +262,18 @@
       "./gpu/initGpuContext": {
         "types": "./esm/gpu/initGpuContext.d.ts",
         "import": "./esm/gpu/initGpuContext.js"
+      },
+      "./gpu/blockClipUtils": {
+        "types": "./esm/gpu/blockClipUtils.d.ts",
+        "import": "./esm/gpu/blockClipUtils.js"
+      },
+      "./gpu/canvas2dUtils": {
+        "types": "./esm/gpu/canvas2dUtils.d.ts",
+        "import": "./esm/gpu/canvas2dUtils.js"
+      },
+      "./gpu/createDualRenderer": {
+        "types": "./esm/gpu/createDualRenderer.d.ts",
+        "import": "./esm/gpu/createDualRenderer.js"
       },
       "./gpu/webglUtils": {
         "types": "./esm/gpu/webglUtils.d.ts",
@@ -709,6 +725,15 @@
         ],
         "gpu/initGpuContext": [
           "esm/gpu/initGpuContext.d.ts"
+        ],
+        "gpu/blockClipUtils": [
+          "esm/gpu/blockClipUtils.d.ts"
+        ],
+        "gpu/canvas2dUtils": [
+          "esm/gpu/canvas2dUtils.d.ts"
+        ],
+        "gpu/createDualRenderer": [
+          "esm/gpu/createDualRenderer.d.ts"
         ],
         "gpu/webglUtils": [
           "esm/gpu/webglUtils.d.ts"
