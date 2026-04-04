@@ -1136,7 +1136,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
         const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
         const y =
           region.readYs[idx]! * (fH + fSpacing) + covOffset - state.rangeY[0]
-        ctx.strokeStyle = 'rgba(0,0,0,0.8)'
+        ctx.strokeStyle = '#00b8ff'
         ctx.lineWidth = 2
         ctx.strokeRect(x1, y, x2 - x1, fH)
       }
@@ -1190,7 +1190,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
         const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
         const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
         const y = bounds.y * (fH + fSpacing) + covOffset - state.rangeY[0]
-        ctx.strokeStyle = 'rgba(0,0,0,1)'
+        ctx.strokeStyle = '#00b8ff'
         ctx.lineWidth = 2
         ctx.strokeRect(x1, y, x2 - x1, fH)
       }
