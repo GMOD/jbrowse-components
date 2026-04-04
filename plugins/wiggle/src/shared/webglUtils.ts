@@ -58,10 +58,10 @@ export function interleaveInstances(
       u32[off + 1] = positions[i * 2 + 1]!
       f32[off + 2] = scores[i]!
       f32[off + 3] = i === 0 ? scores[i]! : scores[i - 1]!
-      f32[off + 4] = row
-      f32[off + 5] = cr
-      f32[off + 6] = cg
-      f32[off + 7] = cb
+      f32[off + 4] = cr
+      f32[off + 5] = cg
+      f32[off + 6] = cb
+      f32[off + 7] = row
     }
     offset += n
   }

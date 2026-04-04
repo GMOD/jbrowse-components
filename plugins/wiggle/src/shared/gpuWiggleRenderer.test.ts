@@ -63,10 +63,10 @@ describe('GpuWiggleRenderer', () => {
     expect(f32[2]).toBeCloseTo(5.0)
     // prev_score for first feature = itself
     expect(f32[3]).toBeCloseTo(5.0)
+    // color r=1 (offset 4 after reorder: color before row_index)
+    expect(f32[4]).toBeCloseTo(1.0)
     // row_index=0
-    expect(f32[4]).toBe(0)
-    // color r=1
-    expect(f32[5]).toBeCloseTo(1.0)
+    expect(f32[7]).toBe(0)
   })
 
   it('sets region metadata on upload', () => {
@@ -314,12 +314,12 @@ describe('GpuWiggleRenderer', () => {
     expect(buf!.count).toBe(4) // 2 features * 2 sources
 
     const f32 = new Float32Array(buf!.data)
-    // first source row_index=0
-    expect(f32[4]).toBe(0)
+    // first source row_index=0 (at offset 7 after reorder)
+    expect(f32[7]).toBe(0)
     // second source starts at offset 2*INSTANCE_STRIDE, row_index=1
-    expect(f32[2 * INSTANCE_STRIDE + 4]).toBe(1)
-    // second source color g=1
-    expect(f32[2 * INSTANCE_STRIDE + 6]).toBeCloseTo(1.0)
+    expect(f32[2 * INSTANCE_STRIDE + 7]).toBe(1)
+    // second source color g=1 (at offset 5)
+    expect(f32[2 * INSTANCE_STRIDE + 5]).toBeCloseTo(1.0)
   })
 
   it('disposes cleanly', () => {

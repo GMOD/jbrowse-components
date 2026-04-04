@@ -28,8 +28,8 @@ const WIGGLE_GL_ATTRIBUTES: GlAttributeLayout[] = [
   { name: 'a_start_end', components: 2, type: 'uint', offsetBytes: 0, integer: true },
   { name: 'a_score', components: 1, type: 'float', offsetBytes: 8, integer: false },
   { name: 'a_prev_score', components: 1, type: 'float', offsetBytes: 12, integer: false },
-  { name: 'a_row_index', components: 1, type: 'float', offsetBytes: 16, integer: false },
-  { name: 'a_color', components: 3, type: 'float', offsetBytes: 20, integer: false },
+  { name: 'a_color', components: 3, type: 'float', offsetBytes: 16, integer: false },
+  { name: 'a_row_index', components: 1, type: 'float', offsetBytes: 28, integer: false },
 ]
 
 const BASE_PASS = {

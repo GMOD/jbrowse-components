@@ -6,7 +6,12 @@ import {
   SYNTENY_PASSES,
   SYNTENY_UNIFORM_BYTE_SIZE,
 } from './GpuMultiSyntenyRenderer.ts'
-import { prepareBlockGeometry, packCoverageForGpu, packSnpCoverageForGpu, packIndicatorsForGpu } from './multiSyntenyGpuData.ts'
+import {
+  packCoverageForGpu,
+  packIndicatorsForGpu,
+  packSnpCoverageForGpu,
+  prepareBlockGeometry,
+} from './multiSyntenyGpuData.ts'
 
 import type {
   MultiSyntenyBackend,
@@ -15,23 +20,16 @@ import type {
 } from './multiSyntenyBackendTypes.ts'
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
 
-const cache = new WeakMap<HTMLCanvasElement, MultiSyntenyRenderer>()
-
 export class MultiSyntenyRenderer {
   private canvas: HTMLCanvasElement
   private backend: MultiSyntenyBackend | null = null
 
-  private constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
   }
 
   static getOrCreate(canvas: HTMLCanvasElement) {
-    let r = cache.get(canvas)
-    if (!r) {
-      r = new MultiSyntenyRenderer(canvas)
-      cache.set(canvas, r)
-    }
-    return r
+    return new MultiSyntenyRenderer(canvas)
   }
 
   async init() {
@@ -53,72 +51,52 @@ export class MultiSyntenyRenderer {
     showSnps: boolean,
     colors: SyntenyColors,
   ) {
-    if (this.backend) {
-      const geometry = prepareBlockGeometry(
-        regionData.genomeFeatures,
-        displayedGenomes,
-        colorBy,
-        showSnps,
-        colors,
-      )
-      this.backend.uploadGeometryForBlock(regionNumber, {
-        ...geometry,
-        regionStart: regionData.regionStart,
-      })
-    }
+    const geometry = prepareBlockGeometry(
+      regionData.genomeFeatures,
+      displayedGenomes,
+      colorBy,
+      showSnps,
+      colors,
+    )
+    this.backend?.uploadGeometryForBlock(regionNumber, {
+      ...geometry,
+      regionStart: regionData.regionStart,
+    })
   }
 
-  uploadCoverageForBlock(
+  uploadCoverageDataForBlock(
     regionNumber: number,
     regionData: SyntenyRegionData,
     viewWidthPx: number,
     globalMaxDepth: number,
   ) {
-    if (this.backend) {
-      const packed = packCoverageForGpu(
-        regionData.coverageDepths,
-        regionData.coverageStartOffset,
-        globalMaxDepth,
-        regionData.regionStart,
-        viewWidthPx,
-      )
-      this.backend.uploadCoverageForBlock(regionNumber, {
-        ...packed,
-        regionStart: regionData.regionStart,
-        maxDepth: regionData.coverageMaxDepth,
-      })
-    }
-  }
-
-  uploadSnpCoverageForBlock(
-    regionNumber: number,
-    regionData: SyntenyRegionData,
-  ) {
-    if (this.backend) {
-      const packed = packSnpCoverageForGpu(
-        regionData.snpPositions,
-        regionData.snpYOffsets,
-        regionData.snpHeights,
-        regionData.snpColorTypes,
-        regionData.snpCount,
-        regionData.regionStart,
-      )
-      this.backend.uploadSnpCoverageForBlock(regionNumber, packed)
-    }
-  }
-
-  uploadIndicatorsForBlock(
-    regionNumber: number,
-    regionData: SyntenyRegionData,
-  ) {
-    if (this.backend) {
-      const packed = packIndicatorsForGpu(
-        regionData.indicatorPositions,
-        regionData.numIndicators,
-        regionData.regionStart,
-      )
-      this.backend.uploadIndicatorsForBlock(regionNumber, packed)
-    }
+    const coverage = packCoverageForGpu(
+      regionData.coverageDepths,
+      regionData.coverageStartOffset,
+      globalMaxDepth,
+      regionData.regionStart,
+      viewWidthPx,
+    )
+    this.backend?.uploadCoverageForBlock(regionNumber, {
+      ...coverage,
+      regionStart: regionData.regionStart,
+      maxDepth: regionData.coverageMaxDepth,
+    })
+    const snps = packSnpCoverageForGpu(
+      regionData.snpPositions,
+      regionData.snpYOffsets,
+      regionData.snpHeights,
+      regionData.snpColorTypes,
+      regionData.snpCount,
+      regionData.regionStart,
+    )
+    this.backend?.uploadSnpCoverageForBlock(regionNumber, snps)
+    const indicators = packIndicatorsForGpu(
+      regionData.indicatorPositions,
+      regionData.numIndicators,
+      regionData.regionStart,
+    )
+    this.backend?.uploadIndicatorsForBlock(regionNumber, indicators)
   }
 
   clearAllBlocks() {
@@ -132,6 +110,5 @@ export class MultiSyntenyRenderer {
   dispose() {
     this.backend?.dispose()
     this.backend = null
-    cache.delete(this.canvas)
   }
 }

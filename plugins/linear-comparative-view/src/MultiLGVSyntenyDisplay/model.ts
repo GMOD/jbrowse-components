@@ -459,14 +459,12 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 }
                 const globalMax = getGlobalMaxDepth(rpcDataMap)
                 for (const [regionNumber, data] of rpcDataMap) {
-                  renderer.uploadCoverageForBlock(
+                  renderer.uploadCoverageDataForBlock(
                     regionNumber,
                     data,
                     Math.ceil(view.width),
                     globalMax,
                   )
-                  renderer.uploadSnpCoverageForBlock(regionNumber, data)
-                  renderer.uploadIndicatorsForBlock(regionNumber, data)
                 }
               },
               { name: 'MultiLGVSyntenyDisplay:uploadCoverage' },

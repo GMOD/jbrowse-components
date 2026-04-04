@@ -1,4 +1,4 @@
-export const INSTANCE_STRIDE = 8 // SYNC: must match field count in WGSL struct Instance
+export const INSTANCE_STRIDE = 8 // SYNC: must match sizeof(Instance)/4 in WGSL (32 bytes / 4 = 8 f32 slots)
 export const UNIFORM_SIZE = 64 // SYNC: must match byte size of WGSL struct Uniforms (padded to 16-byte alignment)
 export const VERTICES_PER_INSTANCE = 6 // SYNC: VERTICES_PER_INSTANCE in WGSL
 export const RENDERING_TYPE_XYPLOT = 0 // SYNC: RENDERING_TYPE_XYPLOT in WGSL
@@ -61,14 +61,12 @@ fn get_row_top(row_index: f32, row_height: f32) -> f32 {
   return row_index * row_height;
 }
 
-struct Instance { // SYNC: field count must match INSTANCE_STRIDE in TS
+struct Instance { // SYNC: sizeof must be INSTANCE_STRIDE*4=32 bytes
   start_end: vec2u,
   score: f32,
   prev_score: f32,
+  color: vec3f,  // offset 16 — vec3f alignment=16, fits after 2 f32s
   row_index: f32,
-  color_r: f32,
-  color_g: f32,
-  color_b: f32,
 }
 
 struct Uniforms { // SYNC: byte size must match UNIFORM_SIZE in TS
@@ -119,7 +117,7 @@ fn vs_main(
 
   var sx: f32;
   var sy: f32;
-  let inst_color = vec3f(inst.color_r, inst.color_g, inst.color_b);
+  let inst_color = inst.color;
 
   if (u.rendering_type == RENDERING_TYPE_LINE) {
     let score_y = score_to_y(inst.score, u.domain_y, row_height, u.scale_type) + row_top;

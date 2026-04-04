@@ -173,7 +173,7 @@ export class WebGPUHal implements GpuHal {
   private canvas: HTMLCanvasElement
   private context: GPUCanvasContext
   private regions = new Map<number, RegionState>()
-  private descriptors: PassDescriptor[]
+  private descriptors: Map<string, PassDescriptor>
   private passTextures = new Map<string, PassTextureState>()
 
   // Uniform ring buffer: holds up to MAX_UNIFORM_SLOTS sets of uniforms so
@@ -212,7 +212,7 @@ export class WebGPUHal implements GpuHal {
     this.device = device
     this.canvas = canvas
     this.context = context
-    this.descriptors = descriptors
+    this.descriptors = new Map(descriptors.map(d => [d.id, d]))
     this.uniformByteSize = uniformByteSize
 
     // Align uniform slots to device requirements for dynamic offsets
@@ -285,7 +285,7 @@ export class WebGPUHal implements GpuHal {
       return
     }
     const storageBuffer = createStorageBuffer(this.device, data)
-    const desc = this.descriptors.find(d => d.id === passId)
+    const desc = this.descriptors.get(passId)
     const texState = this.passTextures.get(passId)
     if (desc?.textures?.length && texState) {
       const { layout } = getOrCreateTexturedLayout(this.device, state)
@@ -367,7 +367,7 @@ export class WebGPUHal implements GpuHal {
   }
 
   uploadTexture(passId: string, data: Uint8Array, width: number, height: number) {
-    const desc = this.descriptors.find(d => d.id === passId)
+    const desc = this.descriptors.get(passId)
     if (!desc?.textures?.length) {
       return
     }
@@ -407,6 +407,10 @@ export class WebGPUHal implements GpuHal {
   writeUniforms(data: ArrayBuffer) {
     if (this.currentEncoder) {
       // Inside a frame: stage data at the current slot for batched upload
+      if (this.uniformSlot >= MAX_UNIFORM_SLOTS) {
+        console.error('[WebGPUHal] uniform ring buffer exhausted — increase MAX_UNIFORM_SLOTS')
+        return
+      }
       const offset = this.uniformSlot * this.alignedUniformSize
       this.uniformStagingU8.set(new Uint8Array(data), offset)
       this.uniformSlot++
@@ -439,7 +443,7 @@ export class WebGPUHal implements GpuHal {
       return
     }
 
-    const desc = this.descriptors.find(d => d.id === passId)
+    const desc = this.descriptors.get(passId)
     if (!desc) {
       return
     }
@@ -519,7 +523,7 @@ export class WebGPUHal implements GpuHal {
     if (!regionBuf || regionBuf.count === 0) {
       return
     }
-    const desc = this.descriptors.find(d => d.id === passId)
+    const desc = this.descriptors.get(passId)
     if (!desc) {
       return
     }

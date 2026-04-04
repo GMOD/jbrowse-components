@@ -10,7 +10,7 @@
 //
 // Shared concepts (must stay in sync between WGSL and GLSL):
 //   - Instance layout: [start_end(u32x2), score(f32), prev_score(f32),
-//     row_index(f32), color_r(f32), color_g(f32), color_b(f32)]
+//     color(vec3f at offset 16), row_index(f32 at offset 28)]
 //     SYNC: must match INSTANCE_STRIDE in wiggleShader.ts and interleaveInstances() in webglUtils.ts
 //   - Uniform layout: bp_range_x(vec3f), region_start(u32), canvas_height(f32),
 //     scale_type(i32), rendering_type(i32), num_rows(f32), domain_y(vec2f),
@@ -31,8 +31,8 @@ precision highp int;
 in uvec2 a_start_end;   // byte offset 0,  INSTANCE_STRIDE fields [0..1]
 in float a_score;        // byte offset 8,  INSTANCE_STRIDE field  [2]
 in float a_prev_score;   // byte offset 12, INSTANCE_STRIDE field  [3]
-in float a_row_index;    // byte offset 16, INSTANCE_STRIDE field  [4]
-in vec3 a_color;         // byte offset 20, INSTANCE_STRIDE fields [5..7]
+in vec3 a_color;         // byte offset 16, INSTANCE_STRIDE fields [4..6]
+in float a_row_index;    // byte offset 28, INSTANCE_STRIDE field  [7]
 
 // SYNC: uniform layout must match struct Uniforms in wiggleShader.ts (WGSL)
 // and writeUniforms() in both WebGLWiggleRenderer.ts and WiggleRenderer.ts

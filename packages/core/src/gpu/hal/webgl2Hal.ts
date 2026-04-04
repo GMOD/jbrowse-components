@@ -30,6 +30,7 @@ interface PassState {
   vao: WebGLVertexArrayObject
   descriptor: PassDescriptor
   textureState: TextureState | null
+  attrLocs: number[]
 }
 
 interface RegionPassBuffer {
@@ -82,10 +83,12 @@ export class WebGL2Hal implements GpuHal {
       const program = createProgram(gl, desc.glslVertex, fragShader)
       bindUniformBlock(gl, program, 'Uniforms', 0)
 
+      const attrLocs = desc.glAttributes.map(attr =>
+        gl.getAttribLocation(program, attr.name),
+      )
       const vao = gl.createVertexArray()!
       gl.bindVertexArray(vao)
-      for (const attr of desc.glAttributes) {
-        const loc = gl.getAttribLocation(program, attr.name)
+      for (const loc of attrLocs) {
         if (loc >= 0) {
           gl.enableVertexAttribArray(loc)
           gl.vertexAttribDivisor(loc, 1)
@@ -100,7 +103,7 @@ export class WebGL2Hal implements GpuHal {
         textureState = { texture: null!, unit: tb.glTextureUnit, uniformLoc }
       }
 
-      this.passes.set(desc.id, { program, vao, descriptor: desc, textureState })
+      this.passes.set(desc.id, { program, vao, descriptor: desc, textureState, attrLocs })
     }
 
     gl.enable(gl.BLEND)
@@ -443,11 +446,12 @@ export class WebGL2Hal implements GpuHal {
     const desc = pass.descriptor
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
 
-    for (const attr of desc.glAttributes) {
-      const loc = gl.getAttribLocation(pass.program, attr.name)
+    for (let i = 0; i < desc.glAttributes.length; i++) {
+      const loc = pass.attrLocs[i]!
       if (loc < 0) {
         continue
       }
+      const attr = desc.glAttributes[i]!
       if (attr.integer) {
         const glType =
           attr.type === 'uint'
