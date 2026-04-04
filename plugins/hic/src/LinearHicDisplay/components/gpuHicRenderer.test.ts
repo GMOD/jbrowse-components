@@ -26,7 +26,7 @@ describe('GpuHicRenderer', () => {
 
     renderer.uploadData({
       positions: new Float32Array([10, 20, 30, 40]),
-      counts: new Float32Array([5.0, 15.0]),
+      counts: new Float32Array([5, 15]),
       numContacts: 2,
     })
 
@@ -39,7 +39,7 @@ describe('GpuHicRenderer', () => {
     // first contact: px=10, py=20, count=5.0
     expect(f32[0]).toBe(10)
     expect(f32[1]).toBe(20)
-    expect(f32[2]).toBe(5.0)
+    expect(f32[2]).toBe(5)
   })
 
   it('deletes region on empty upload', () => {
@@ -48,7 +48,7 @@ describe('GpuHicRenderer', () => {
 
     renderer.uploadData({
       positions: new Float32Array([10, 20]),
-      counts: new Float32Array([5.0]),
+      counts: new Float32Array([5]),
       numContacts: 1,
     })
     expect(hal.getBufferCount(0, 'main')).toBe(1)
@@ -82,7 +82,7 @@ describe('GpuHicRenderer', () => {
 
     renderer.uploadData({
       positions: new Float32Array([10, 20]),
-      counts: new Float32Array([5.0]),
+      counts: new Float32Array([5]),
       numContacts: 1,
     })
 
@@ -106,7 +106,7 @@ describe('GpuHicRenderer', () => {
 
     renderer.uploadData({
       positions: new Float32Array([10, 20]),
-      counts: new Float32Array([5.0]),
+      counts: new Float32Array([5]),
       numContacts: 1,
     })
 
@@ -133,7 +133,7 @@ describe('GpuHicRenderer', () => {
 
     renderer.uploadData({
       positions: new Float32Array([10, 20]),
-      counts: new Float32Array([5.0]),
+      counts: new Float32Array([5]),
       numContacts: 1,
     })
 
@@ -141,7 +141,13 @@ describe('GpuHicRenderer', () => {
 
     const methods = hal.calls
       .filter(c =>
-        ['resize', 'beginFrame', 'writeUniforms', 'drawPass', 'endFrame'].includes(c.method),
+        [
+          'resize',
+          'beginFrame',
+          'writeUniforms',
+          'drawPass',
+          'endFrame',
+        ].includes(c.method),
       )
       .map(c => c.method)
 

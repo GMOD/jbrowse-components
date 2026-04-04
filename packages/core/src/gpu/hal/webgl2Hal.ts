@@ -1,21 +1,20 @@
-import {
-  createProgram,
-  bindUniformBlock,
-} from '../webglUtils.ts'
+import { bindUniformBlock, createProgram } from '../webglUtils.ts'
 
-import type {
-  GpuHal,
-  PassDescriptor,
-  BlendState,
-  RegionMeta,
-} from './types.ts'
+import type { BlendState, GpuHal, PassDescriptor, RegionMeta } from './types.ts'
 
-function glBlendFactor(gl: WebGL2RenderingContext, factor: BlendState['srcFactor']) {
+function glBlendFactor(
+  gl: WebGL2RenderingContext,
+  factor: BlendState['srcFactor'],
+) {
   switch (factor) {
-    case 'one': return gl.ONE
-    case 'zero': return gl.ZERO
-    case 'src-alpha': return gl.SRC_ALPHA
-    case 'one-minus-src-alpha': return gl.ONE_MINUS_SRC_ALPHA
+    case 'one':
+      return gl.ONE
+    case 'zero':
+      return gl.ZERO
+    case 'src-alpha':
+      return gl.SRC_ALPHA
+    case 'one-minus-src-alpha':
+      return gl.ONE_MINUS_SRC_ALPHA
   }
 }
 
@@ -86,7 +85,7 @@ export class WebGL2Hal implements GpuHal {
       const attrLocs = desc.glAttributes.map(attr =>
         gl.getAttribLocation(program, attr.name),
       )
-      const vao = gl.createVertexArray()!
+      const vao = gl.createVertexArray()
       gl.bindVertexArray(vao)
       for (const loc of attrLocs) {
         if (loc >= 0) {
@@ -103,7 +102,13 @@ export class WebGL2Hal implements GpuHal {
         textureState = { texture: null!, unit: tb.glTextureUnit, uniformLoc }
       }
 
-      this.passes.set(desc.id, { program, vao, descriptor: desc, textureState, attrLocs })
+      this.passes.set(desc.id, {
+        program,
+        vao,
+        descriptor: desc,
+        textureState,
+        attrLocs,
+      })
     }
 
     gl.enable(gl.BLEND)
@@ -140,7 +145,7 @@ export class WebGL2Hal implements GpuHal {
       return
     }
 
-    const vbo = gl.createBuffer()!
+    const vbo = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     region.buffers.set(passId, { vbo, count })
@@ -194,7 +199,12 @@ export class WebGL2Hal implements GpuHal {
     this.regions.clear()
   }
 
-  uploadTexture(passId: string, data: Uint8Array, width: number, height: number) {
+  uploadTexture(
+    passId: string,
+    data: Uint8Array,
+    width: number,
+    height: number,
+  ) {
     const gl = this.gl
     const pass = this.passes.get(passId)
     if (!pass?.textureState) {
@@ -204,9 +214,19 @@ export class WebGL2Hal implements GpuHal {
     if (ts.texture) {
       gl.deleteTexture(ts.texture)
     }
-    const tex = gl.createTexture()!
+    const tex = gl.createTexture()
     gl.bindTexture(gl.TEXTURE_2D, tex)
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, data)
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      width,
+      height,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      data,
+    )
     const tb = pass.descriptor.textures![0]!
     const filter = tb.filter === 'linear' ? gl.LINEAR : gl.NEAREST
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter)
@@ -256,7 +276,9 @@ export class WebGL2Hal implements GpuHal {
     if (!pass) {
       return
     }
-    const regionBuf = this.regions.get(regionKey)?.buffers.get(bufferPassId ?? passId)
+    const regionBuf = this.regions
+      .get(regionKey)
+      ?.buffers.get(bufferPassId ?? passId)
     if (!regionBuf || regionBuf.count === 0) {
       return
     }
@@ -268,9 +290,11 @@ export class WebGL2Hal implements GpuHal {
     this.bindTextures(pass)
     const topo = pass.descriptor.topology ?? 'triangle-list'
     const glMode =
-      topo === 'triangle-strip' ? gl.TRIANGLE_STRIP
-      : topo === 'line-list' ? gl.LINES
-      : gl.TRIANGLES
+      topo === 'triangle-strip'
+        ? gl.TRIANGLE_STRIP
+        : topo === 'line-list'
+          ? gl.LINES
+          : gl.TRIANGLES
     gl.drawArraysInstanced(
       glMode,
       0,
@@ -291,13 +315,20 @@ export class WebGL2Hal implements GpuHal {
     return -1
   }
 
-  drawPickingPass(passId: string, regionKey: number, instanceCount?: number, bufferPassId?: string) {
+  drawPickingPass(
+    passId: string,
+    regionKey: number,
+    instanceCount?: number,
+    bufferPassId?: string,
+  ) {
     const gl = this.gl
     const pass = this.passes.get(passId)
     if (!pass) {
       return
     }
-    const regionBuf = this.regions.get(regionKey)?.buffers.get(bufferPassId ?? passId)
+    const regionBuf = this.regions
+      .get(regionKey)
+      ?.buffers.get(bufferPassId ?? passId)
     if (!regionBuf || regionBuf.count === 0) {
       return
     }
@@ -336,7 +367,15 @@ export class WebGL2Hal implements GpuHal {
       return -1
     }
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingFbo)
-    gl.readPixels(px, this.pickingH - py - 1, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, this.pickPixel)
+    gl.readPixels(
+      px,
+      this.pickingH - py - 1,
+      1,
+      1,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      this.pickPixel,
+    )
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     const r = this.pickPixel[0]!
     const g = this.pickPixel[1]!
@@ -386,12 +425,28 @@ export class WebGL2Hal implements GpuHal {
     }
     this.pickingTex = gl.createTexture()!
     gl.bindTexture(gl.TEXTURE_2D, this.pickingTex)
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA8,
+      w,
+      h,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      null,
+    )
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
     this.pickingFbo = gl.createFramebuffer()!
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingFbo)
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.pickingTex, 0)
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D,
+      this.pickingTex,
+      0,
+    )
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     this.pickingW = w
     this.pickingH = h

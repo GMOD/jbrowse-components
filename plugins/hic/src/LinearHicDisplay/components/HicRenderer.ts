@@ -9,23 +9,16 @@ import {
 
 import type { HicBackend, HicRenderState } from './hicBackendTypes.ts'
 
-const rendererCache = new WeakMap<HTMLCanvasElement, HicRenderer>()
-
 export class HicRenderer {
   private canvas: HTMLCanvasElement
   private backend: HicBackend | null = null
 
-  private constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
   }
 
   static getOrCreate(canvas: HTMLCanvasElement) {
-    let renderer = rendererCache.get(canvas)
-    if (!renderer) {
-      renderer = new HicRenderer(canvas)
-      rendererCache.set(canvas, renderer)
-    }
-    return renderer
+    return new HicRenderer(canvas)
   }
 
   async init() {
@@ -58,7 +51,6 @@ export class HicRenderer {
   dispose() {
     this.backend?.dispose()
     this.backend = null
-    rendererCache.delete(this.canvas)
   }
 }
 

@@ -154,8 +154,7 @@ export function CoverageTooltipContents({
     : []
   const hasModifications = modEntries.length > 0
   const hasStrands =
-    hasModifications ||
-    snpEntries.some(([, d]) => d.fwd > 0 || d.rev > 0)
+    hasModifications || snpEntries.some(([, d]) => d.fwd > 0 || d.rev > 0)
 
   return (
     <table>

@@ -1,23 +1,26 @@
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
-
 import {
   coverageLayout,
   downsampleMinMax,
   drawCigarOps,
-  drawCsOps,
   drawCoverageBins,
-  drawSnpSegments,
-  drawIndicators,
+  drawCsOps,
   drawIndicatorTriangle,
+  drawIndicators,
+  drawSnpSegments,
   getDevicePixelRatio,
-  snpColorForType,
   rgbaString,
+  snpColorForType,
 } from '@jbrowse/alignments-core'
+import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
-import { BG_COLOR_HEX, LABEL_FONT_MAX, truncateGenomeName } from './multiSyntenyBackendTypes.ts'
-import { INSTANCE_BYTE_SIZE } from './multiSyntenyGpuShaders.ts'
-import { computeBlockRenderParams } from './multiSyntenyGpuData.ts'
+import {
+  BG_COLOR_HEX,
+  LABEL_FONT_MAX,
+  truncateGenomeName,
+} from './multiSyntenyBackendTypes.ts'
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
+import { computeBlockRenderParams } from './multiSyntenyGpuData.ts'
+import { INSTANCE_BYTE_SIZE } from './multiSyntenyGpuShaders.ts'
 
 import type {
   MultiSyntenyBackend,
@@ -26,10 +29,10 @@ import type {
   SyntenyColors,
 } from './multiSyntenyBackendTypes.ts'
 import type {
-  BlockGeometryData,
   BlockCoverageUploadData,
-  BlockSnpUploadData,
+  BlockGeometryData,
   BlockIndicatorUploadData,
+  BlockSnpUploadData,
 } from './multiSyntenyGpuData.ts'
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
@@ -37,7 +40,13 @@ import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
 type Ctx = CanvasRenderingContext2D | SvgCanvas
 
-function drawRowBackgrounds(ctx: Ctx, numGenomes: number, coverageHeight: number, rowHeight: number, width: number) {
+function drawRowBackgrounds(
+  ctx: Ctx,
+  numGenomes: number,
+  coverageHeight: number,
+  rowHeight: number,
+  width: number,
+) {
   for (let g = 0; g < numGenomes; g++) {
     if (g % 2 === 0) {
       ctx.fillStyle = '#f8f8f8'
@@ -46,7 +55,13 @@ function drawRowBackgrounds(ctx: Ctx, numGenomes: number, coverageHeight: number
   }
 }
 
-function drawRowDividers(ctx: Ctx, numGenomes: number, coverageHeight: number, rowHeight: number, width: number) {
+function drawRowDividers(
+  ctx: Ctx,
+  numGenomes: number,
+  coverageHeight: number,
+  rowHeight: number,
+  width: number,
+) {
   if (rowHeight < 4) {
     return
   }
@@ -69,14 +84,35 @@ export function renderMultiSyntenyToCtx(
   displayedGenomes: string[],
   opts: MultiSyntenyCanvasRenderOpts,
 ) {
-  const { width, height, rowHeight, rowSpacing, bpToPx, colorBy, labelW, showSnps, colors, coverageHeight, coverageRegions, coverageColor } = opts
+  const {
+    width,
+    height,
+    rowHeight,
+    rowSpacing,
+    bpToPx,
+    colorBy,
+    labelW,
+    showSnps,
+    colors,
+    coverageHeight,
+    coverageRegions,
+    coverageColor,
+  } = opts
 
   ctx.fillStyle = BG_COLOR_HEX
   ctx.fillRect(0, 0, width, coverageHeight + height)
 
   if (coverageHeight > 0) {
     for (const coverage of coverageRegions) {
-      renderCoverageForSvg(ctx, coverage, bpToPx, width, coverageHeight, coverageColor, colors)
+      renderCoverageForSvg(
+        ctx,
+        coverage,
+        bpToPx,
+        width,
+        coverageHeight,
+        coverageColor,
+        colors,
+      )
     }
   }
 
@@ -112,7 +148,16 @@ export function renderMultiSyntenyToCtx(
         if (feat.cs) {
           drawCsOps(ctx, feat.cs, px1, fy, blockWidth, fh, bpLen, colors)
         } else if (feat.cigar) {
-          drawCigarOps(ctx, parseCigar2(feat.cigar), px1, fy, blockWidth, fh, bpLen, colors)
+          drawCigarOps(
+            ctx,
+            parseCigar2(feat.cigar),
+            px1,
+            fy,
+            blockWidth,
+            fh,
+            bpLen,
+            colors,
+          )
         }
       }
     }
@@ -121,7 +166,14 @@ export function renderMultiSyntenyToCtx(
   drawRowDividers(ctx, numGenomes, coverageHeight, rowHeight, width)
 
   if (labelW > 0) {
-    drawGenomeLabels(ctx, displayedGenomes, coverageHeight, labelW, rowHeight, height)
+    drawGenomeLabels(
+      ctx,
+      displayedGenomes,
+      coverageHeight,
+      labelW,
+      rowHeight,
+      height,
+    )
   }
 }
 
@@ -135,7 +187,13 @@ function drawGenomeLabels(
 ) {
   ctx.fillStyle = BG_COLOR_HEX
   ctx.fillRect(0, coverageHeight, labelW, height)
-  drawRowBackgrounds(ctx, displayedGenomes.length, coverageHeight, rowHeight, labelW)
+  drawRowBackgrounds(
+    ctx,
+    displayedGenomes.length,
+    coverageHeight,
+    rowHeight,
+    labelW,
+  )
 
   const fontSize = Math.min(rowHeight - 4, LABEL_FONT_MAX)
   ctx.fillStyle = '#333'
@@ -146,7 +204,13 @@ function drawGenomeLabels(
     ctx.fillText(truncateGenomeName(displayedGenomes[g]!), 4, y + rowHeight / 2)
   }
 
-  drawRowDividers(ctx, displayedGenomes.length, coverageHeight, rowHeight, labelW)
+  drawRowDividers(
+    ctx,
+    displayedGenomes.length,
+    coverageHeight,
+    rowHeight,
+    labelW,
+  )
 }
 
 // Coverage rendering for SVG export — reads raw SyntenyRegionData
@@ -159,13 +223,27 @@ function renderCoverageForSvg(
   coverageColor: string,
   snpColors: SyntenyColors,
 ) {
-  const { coverageDepths, coverageMaxDepth, coverageStartOffset, regionStart, refName } = coverage
+  const {
+    coverageDepths,
+    coverageMaxDepth,
+    coverageStartOffset,
+    regionStart,
+    refName,
+  } = coverage
   if (coverageMaxDepth === 0) {
     return
   }
 
-  const { depthScale, effectiveH, bottom } = coverageLayout(coverageMaxDepth, coverageHeight)
-  const ds = downsampleMinMax(coverageDepths, coverageStartOffset, Math.ceil(width), coverageMaxDepth)
+  const { depthScale, effectiveH, bottom } = coverageLayout(
+    coverageMaxDepth,
+    coverageHeight,
+  )
+  const ds = downsampleMinMax(
+    coverageDepths,
+    coverageStartOffset,
+    Math.ceil(width),
+    coverageMaxDepth,
+  )
 
   const refBpToPx = (bp: number) => bpToPx(refName, bp)
 
@@ -189,8 +267,10 @@ function renderCoverageForSvg(
       if (px === undefined || px2 === undefined || px > width || px2 < 0) {
         continue
       }
-      const segBottom = bottom - coverage.snpYOffsets[i]! * depthScale * effectiveH
-      const segTop = segBottom - coverage.snpHeights[i]! * depthScale * effectiveH
+      const segBottom =
+        bottom - coverage.snpYOffsets[i]! * depthScale * effectiveH
+      const segTop =
+        segBottom - coverage.snpHeights[i]! * depthScale * effectiveH
       ctx.fillStyle = snpColorForType(coverage.snpColorTypes[i]!, snpColors)
       ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segBottom - segTop)
     }
@@ -236,37 +316,77 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
   private ensureRegion(regionNumber: number) {
     let r = this.regions.get(regionNumber)
     if (!r) {
-      r = { regionStart: 0, geometry: null, coverage: null, snp: null, indicators: null }
+      r = {
+        regionStart: 0,
+        geometry: null,
+        coverage: null,
+        snp: null,
+        indicators: null,
+      }
       this.regions.set(regionNumber, r)
     }
     return r
   }
 
-  uploadGeometryForBlock(regionNumber: number, data: BlockGeometryData & { regionStart: number }) {
+  uploadGeometryForBlock(
+    regionNumber: number,
+    data: BlockGeometryData & { regionStart: number },
+  ) {
     const r = this.ensureRegion(regionNumber)
     r.regionStart = data.regionStart
     r.geometry = { buffer: data.buffer, instanceCount: data.instanceCount }
   }
 
-  uploadCoverageForBlock(regionNumber: number, data: BlockCoverageUploadData & { regionStart: number; maxDepth: number }) {
+  uploadCoverageForBlock(
+    regionNumber: number,
+    data: BlockCoverageUploadData & { regionStart: number; maxDepth: number },
+  ) {
     const r = this.ensureRegion(regionNumber)
     r.regionStart = data.regionStart
-    r.coverage = { buffer: data.buffer, binCount: data.binCount, maxDepth: data.maxDepth }
+    r.coverage = {
+      buffer: data.buffer,
+      binCount: data.binCount,
+      maxDepth: data.maxDepth,
+    }
   }
 
   uploadSnpCoverageForBlock(regionNumber: number, data: BlockSnpUploadData) {
-    this.ensureRegion(regionNumber).snp = { buffer: data.buffer, segmentCount: data.segmentCount }
+    this.ensureRegion(regionNumber).snp = {
+      buffer: data.buffer,
+      segmentCount: data.segmentCount,
+    }
   }
 
-  uploadIndicatorsForBlock(regionNumber: number, data: BlockIndicatorUploadData) {
-    this.ensureRegion(regionNumber).indicators = { buffer: data.buffer, indicatorCount: data.indicatorCount }
+  uploadIndicatorsForBlock(
+    regionNumber: number,
+    data: BlockIndicatorUploadData,
+  ) {
+    this.ensureRegion(regionNumber).indicators = {
+      buffer: data.buffer,
+      indicatorCount: data.indicatorCount,
+    }
   }
 
-  clearAllBlocks() { this.regions.clear() }
-  pick() { return -1 }
+  clearAllBlocks() {
+    this.regions.clear()
+  }
+  pick() {
+    return -1
+  }
 
   renderBlocks(state: MultiSyntenyRenderState) {
-    const { contentBlocks, viewOffsetPx, width, height, rowHeight, rowSpacing, coverageHeight, palette, displayedGenomes, labelW } = state
+    const {
+      contentBlocks,
+      viewOffsetPx,
+      width,
+      height,
+      rowHeight,
+      rowSpacing,
+      coverageHeight,
+      palette,
+      displayedGenomes,
+      labelW,
+    } = state
 
     const dpr = getDevicePixelRatio()
     const pw = Math.round(width * dpr)
@@ -301,22 +421,63 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
         continue
       }
       const params = computeBlockRenderParams(block, viewOffsetPx)
-      if (params.regionScreenLeft + params.regionScreenWidth < 0 || params.regionScreenLeft > width) {
+      if (
+        params.regionScreenLeft + params.regionScreenWidth < 0 ||
+        params.regionScreenLeft > width
+      ) {
         continue
       }
 
       const bpToX = (absBp: number) =>
-        params.regionScreenLeft + ((absBp - block.start) / params.bpRangeLen) * params.regionScreenWidth
+        params.regionScreenLeft +
+        ((absBp - block.start) / params.bpRangeLen) * params.regionScreenWidth
 
       // Shared drawing functions from @jbrowse/alignments-core
-      if (coverageHeight > 0 && region.coverage && region.coverage.binCount > 0) {
-        drawCoverageBins(ctx, region.coverage.buffer, region.coverage.binCount, globalMaxDepth, coverageHeight, palette.coverageColorHex, bpToX, width)
+      if (
+        coverageHeight > 0 &&
+        region.coverage &&
+        region.coverage.binCount > 0
+      ) {
+        drawCoverageBins(
+          ctx,
+          region.coverage.buffer,
+          region.coverage.binCount,
+          globalMaxDepth,
+          coverageHeight,
+          palette.coverageColorHex,
+          bpToX,
+          width,
+        )
       }
       if (coverageHeight > 0 && region.snp && region.snp.segmentCount > 0) {
-        drawSnpSegments(ctx, region.snp.buffer, region.snp.segmentCount, globalMaxDepth, coverageHeight, palette.syntenyColors, bpToX, width)
+        drawSnpSegments(
+          ctx,
+          region.snp.buffer,
+          region.snp.segmentCount,
+          globalMaxDepth,
+          coverageHeight,
+          palette.syntenyColors,
+          bpToX,
+          width,
+        )
       }
-      if (coverageHeight > 0 && region.indicators && region.indicators.indicatorCount > 0) {
-        drawIndicators(ctx, region.indicators.buffer, region.indicators.indicatorCount, { insertion: palette.syntenyColors.insertion, softclip: palette.syntenyColors.insertion, hardclip: palette.syntenyColors.insertion }, bpToX, width)
+      if (
+        coverageHeight > 0 &&
+        region.indicators &&
+        region.indicators.indicatorCount > 0
+      ) {
+        drawIndicators(
+          ctx,
+          region.indicators.buffer,
+          region.indicators.indicatorCount,
+          {
+            insertion: palette.syntenyColors.insertion,
+            softclip: palette.syntenyColors.insertion,
+            hardclip: palette.syntenyColors.insertion,
+          },
+          bpToX,
+          width,
+        )
       }
 
       // Geometry instances
@@ -334,7 +495,12 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
           const genomeRow = u32[off + 2]!
           const y = coverageHeight + genomeRow * rowHeight + rowPadding
           const h = rowHeight - rowPadding * 2
-          ctx.fillStyle = rgbaString(f32[off + 4]!, f32[off + 5]!, f32[off + 6]!, f32[off + 7]!)
+          ctx.fillStyle = rgbaString(
+            f32[off + 4]!,
+            f32[off + 5]!,
+            f32[off + 6]!,
+            f32[off + 7]!,
+          )
           ctx.fillRect(x1, y, w, h)
         }
       }
@@ -343,7 +509,14 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
     drawRowDividers(ctx, numGenomes, coverageHeight, rowHeight, width)
 
     if (labelW > 0) {
-      drawGenomeLabels(ctx, displayedGenomes, coverageHeight, labelW, rowHeight, height - coverageHeight)
+      drawGenomeLabels(
+        ctx,
+        displayedGenomes,
+        coverageHeight,
+        labelW,
+        rowHeight,
+        height - coverageHeight,
+      )
     }
   }
 

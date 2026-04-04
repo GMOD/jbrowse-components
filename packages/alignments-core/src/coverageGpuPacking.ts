@@ -80,15 +80,14 @@ export function packModCovSegmentsForGpu(
   const u32 = new Uint32Array(buffer)
   for (let i = 0; i < count; i++) {
     const idx = i * 4
-    const ci = i * 4
     f32[idx] = positionOffset + positions[i]!
     f32[idx + 1] = yOffsets[i]!
     f32[idx + 2] = heights[i]!
     u32[idx + 3] =
-      colors[ci]! |
-      (colors[ci + 1]! << 8) |
-      (colors[ci + 2]! << 16) |
-      (colors[ci + 3]! << 24)
+      colors[idx]! |
+      (colors[idx + 1]! << 8) |
+      (colors[idx + 2]! << 16) |
+      (colors[idx + 3]! << 24)
   }
   return { buffer, segmentCount: count }
 }

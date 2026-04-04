@@ -1,13 +1,16 @@
 import {
-  DOTPLOT_VERTEX_SHADER,
   DOTPLOT_FRAGMENT_SHADER,
-  dotplotShader,
+  DOTPLOT_VERTEX_SHADER,
   INSTANCE_BYTE_SIZE,
   UNIFORM_BYTE_SIZE,
   VERTS_PER_INSTANCE,
+  dotplotShader,
 } from './dotplotShaders.ts'
 
-import type { DotplotBackend, DotplotGeometryData } from './dotplotBackendTypes.ts'
+import type {
+  DotplotBackend,
+  DotplotGeometryData,
+} from './dotplotBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_LINE = 'line'
@@ -24,16 +27,44 @@ export const DOTPLOT_PASSES: PassDescriptor[] = [
     blend: true,
     blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
     glAttributes: [
-      { name: 'a_x1', components: 1, type: 'float', offsetBytes: 0, integer: false },
-      { name: 'a_y1', components: 1, type: 'float', offsetBytes: 4, integer: false },
-      { name: 'a_x2', components: 1, type: 'float', offsetBytes: 8, integer: false },
-      { name: 'a_y2', components: 1, type: 'float', offsetBytes: 12, integer: false },
-      { name: 'a_color', components: 4, type: 'float', offsetBytes: 16, integer: false },
+      {
+        name: 'a_x1',
+        components: 1,
+        type: 'float',
+        offsetBytes: 0,
+        integer: false,
+      },
+      {
+        name: 'a_y1',
+        components: 1,
+        type: 'float',
+        offsetBytes: 4,
+        integer: false,
+      },
+      {
+        name: 'a_x2',
+        components: 1,
+        type: 'float',
+        offsetBytes: 8,
+        integer: false,
+      },
+      {
+        name: 'a_y2',
+        components: 1,
+        type: 'float',
+        offsetBytes: 12,
+        integer: false,
+      },
+      {
+        name: 'a_color',
+        components: 4,
+        type: 'float',
+        offsetBytes: 16,
+        integer: false,
+      },
     ],
   },
 ]
-
-export { UNIFORM_BYTE_SIZE as DOTPLOT_UNIFORM_BYTE_SIZE }
 
 export class GpuDotplotRenderer implements DotplotBackend {
   private hal: GpuHal
@@ -104,3 +135,5 @@ export class GpuDotplotRenderer implements DotplotBackend {
     this.hal.dispose()
   }
 }
+
+export { UNIFORM_BYTE_SIZE as DOTPLOT_UNIFORM_BYTE_SIZE } from './dotplotShaders.ts'

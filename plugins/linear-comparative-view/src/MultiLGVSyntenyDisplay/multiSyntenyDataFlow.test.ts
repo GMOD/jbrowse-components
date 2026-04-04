@@ -6,7 +6,10 @@ import {
 } from '@jbrowse/alignments-core'
 import { computeCoverage } from '@jbrowse/plugin-alignments'
 
-import { getGlobalMaxDepth, mergeGenomeRows } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
+import {
+  getGlobalMaxDepth,
+  mergeGenomeRows,
+} from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 
 import type { SyntenyRegionData } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
@@ -48,7 +51,12 @@ function buildRegionData(
   }
   const coverage = computeCoverage(coverageFeatures, [], regionStart, regionEnd)
   const snp = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
-  const indicators = computeInsertionIndicators(indels, coverage.depths, coverage.startOffset, regionStart)
+  const indicators = computeInsertionIndicators(
+    indels,
+    coverage.depths,
+    coverage.startOffset,
+    regionStart,
+  )
   const mismatchPositions = new Uint32Array(mismatches.length)
   const mismatchBases = new Uint8Array(mismatches.length)
   for (let i = 0; i < mismatches.length; i++) {
@@ -76,8 +84,18 @@ function buildRegionData(
 }
 
 describe('collapsed intron view: same refName, different regions', () => {
-  const regionA = { assemblyName: 'hg38', refName: 'chr1', start: 1000, end: 3000 }
-  const regionB = { assemblyName: 'hg38', refName: 'chr1', start: 8000, end: 10000 }
+  const regionA = {
+    assemblyName: 'hg38',
+    refName: 'chr1',
+    start: 1000,
+    end: 3000,
+  }
+  const regionB = {
+    assemblyName: 'hg38',
+    refName: 'chr1',
+    start: 8000,
+    end: 10000,
+  }
 
   test('each region gets independent coverage data', () => {
     const featuresA = [
@@ -113,26 +131,40 @@ describe('regionNumber round-trip: fetch stores and render looks up by number', 
     const rpcDataMap = new Map<number, SyntenyRegionData>()
     for (let i = 0; i < displayedRegions.length; i++) {
       const region = displayedRegions[i]!
-      rpcDataMap.set(i, buildRegionData(region, [feat({ start: region.start + 100, end: region.start + 200 })]))
+      rpcDataMap.set(
+        i,
+        buildRegionData(region, [
+          feat({ start: region.start + 100, end: region.start + 200 }),
+        ]),
+      )
     }
 
-    for (let regionNumber = 0; regionNumber < displayedRegions.length; regionNumber++) {
+    for (
+      let regionNumber = 0;
+      regionNumber < displayedRegions.length;
+      regionNumber++
+    ) {
       const data = rpcDataMap.get(regionNumber)
       expect(data).toBeDefined()
     }
   })
-
 })
 
 describe('genomeRows aggregation across regions', () => {
   test('merges features from multiple rpcDataMap entries', () => {
     const rpcDataMap = new Map<number, SyntenyRegionData>([
-      [0, buildRegionData({ start: 0, end: 1000 }, [
-        feat({ start: 100, end: 200 }),
-      ])],
-      [1, buildRegionData({ start: 5000, end: 6000 }, [
-        feat({ start: 5100, end: 5200 }),
-      ])],
+      [
+        0,
+        buildRegionData({ start: 0, end: 1000 }, [
+          feat({ start: 100, end: 200 }),
+        ]),
+      ],
+      [
+        1,
+        buildRegionData({ start: 5000, end: 6000 }, [
+          feat({ start: 5100, end: 5200 }),
+        ]),
+      ],
     ])
 
     const merged = mergeGenomeRows(rpcDataMap)
@@ -144,27 +176,36 @@ describe('genomeRows aggregation across regions', () => {
 
   test('multiple genomes are preserved separately', () => {
     const rpcDataMap = new Map<number, SyntenyRegionData>([
-      [0, {
-        refName: 'chr1',
-        regionStart: 0,
-        genomeFeatures: [
-          ['genomeA', [feat({ queryGenome: 'genomeA', start: 100, end: 200 })]],
-          ['genomeB', [feat({ queryGenome: 'genomeB', start: 300, end: 400 })]],
-        ],
-        coverageDepths: new Float32Array(0),
-        coverageMaxDepth: 0,
-        coverageStartOffset: 0,
-        snpPositions: new Uint32Array(0),
-        snpYOffsets: new Float32Array(0),
-        snpHeights: new Float32Array(0),
-        snpColorTypes: new Uint8Array(0),
-        snpCount: 0,
-        mismatchPositions: new Uint32Array(0),
-        mismatchBases: new Uint8Array(0),
-        numMismatches: 0,
-        indicatorPositions: new Uint32Array(0),
-        numIndicators: 0,
-      }],
+      [
+        0,
+        {
+          refName: 'chr1',
+          regionStart: 0,
+          genomeFeatures: [
+            [
+              'genomeA',
+              [feat({ queryGenome: 'genomeA', start: 100, end: 200 })],
+            ],
+            [
+              'genomeB',
+              [feat({ queryGenome: 'genomeB', start: 300, end: 400 })],
+            ],
+          ],
+          coverageDepths: new Float32Array(0),
+          coverageMaxDepth: 0,
+          coverageStartOffset: 0,
+          snpPositions: new Uint32Array(0),
+          snpYOffsets: new Float32Array(0),
+          snpHeights: new Float32Array(0),
+          snpColorTypes: new Uint8Array(0),
+          snpCount: 0,
+          mismatchPositions: new Uint32Array(0),
+          mismatchBases: new Uint8Array(0),
+          numMismatches: 0,
+          indicatorPositions: new Uint32Array(0),
+          numIndicators: 0,
+        },
+      ],
     ])
 
     const merged = mergeGenomeRows(rpcDataMap)
@@ -185,8 +226,10 @@ describe('coverage correctness for overlapping synteny features', () => {
     expect(data.coverageMaxDepth).toBe(1)
 
     // Check actual depths at specific positions
-    const depthAt150 = data.coverageDepths[150 - data.regionStart - data.coverageStartOffset]
-    const depthAt250 = data.coverageDepths[250 - data.regionStart - data.coverageStartOffset]
+    const depthAt150 =
+      data.coverageDepths[150 - data.regionStart - data.coverageStartOffset]
+    const depthAt250 =
+      data.coverageDepths[250 - data.regionStart - data.coverageStartOffset]
     expect(depthAt150).toBe(1)
     // Gap between features should be 0
     expect(depthAt250).toBe(0)
@@ -220,11 +263,17 @@ describe('coverage correctness for overlapping synteny features', () => {
 describe('getGlobalMaxDepth', () => {
   test('returns max across all regions', () => {
     const rpcDataMap = new Map<number, SyntenyRegionData>([
-      [0, buildRegionData({ start: 0, end: 100 }, [feat({ start: 10, end: 50 })])],
-      [1, buildRegionData({ start: 0, end: 100 }, [
-        feat({ start: 10, end: 50 }),
-        feat({ start: 20, end: 40 }),
-      ])],
+      [
+        0,
+        buildRegionData({ start: 0, end: 100 }, [feat({ start: 10, end: 50 })]),
+      ],
+      [
+        1,
+        buildRegionData({ start: 0, end: 100 }, [
+          feat({ start: 10, end: 50 }),
+          feat({ start: 20, end: 40 }),
+        ]),
+      ],
     ])
     expect(getGlobalMaxDepth(rpcDataMap)).toBe(2)
   })
@@ -253,9 +302,7 @@ describe('SNP coverage from CS tags', () => {
   })
 
   test('SyntenyRegionData with CS features has mismatch data', () => {
-    const features = [
-      feat({ start: 100, end: 110, cs: ':3*ag:3*ct:2' }),
-    ]
+    const features = [feat({ start: 100, end: 110, cs: ':3*ag:3*ct:2' })]
     const region = { start: 0, end: 200 }
     const regionStart = Math.floor(region.start)
     const regionEnd = Math.ceil(region.end)
@@ -266,7 +313,12 @@ describe('SNP coverage from CS tags', () => {
         extractMismatchesFromCs(f.cs, f.start, mismatches)
       }
     }
-    const coverage = computeCoverage(coverageFeatures, [], regionStart, regionEnd)
+    const coverage = computeCoverage(
+      coverageFeatures,
+      [],
+      regionStart,
+      regionEnd,
+    )
     const snp = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
 
     expect(mismatches.length).toBe(2)
@@ -277,15 +329,24 @@ describe('SNP coverage from CS tags', () => {
 describe('multi-region coverage rendering data', () => {
   test('all regions are available for Canvas2D rendering', () => {
     const rpcDataMap = new Map<number, SyntenyRegionData>([
-      [0, buildRegionData({ start: 0, end: 100, refName: 'chr1' }, [
-        feat({ start: 10, end: 50 }),
-      ])],
-      [1, buildRegionData({ start: 0, end: 100, refName: 'chr2' }, [
-        feat({ start: 20, end: 60 }),
-      ])],
-      [2, buildRegionData({ start: 0, end: 100, refName: 'chr3' }, [
-        feat({ start: 30, end: 70 }),
-      ])],
+      [
+        0,
+        buildRegionData({ start: 0, end: 100, refName: 'chr1' }, [
+          feat({ start: 10, end: 50 }),
+        ]),
+      ],
+      [
+        1,
+        buildRegionData({ start: 0, end: 100, refName: 'chr2' }, [
+          feat({ start: 20, end: 60 }),
+        ]),
+      ],
+      [
+        2,
+        buildRegionData({ start: 0, end: 100, refName: 'chr3' }, [
+          feat({ start: 30, end: 70 }),
+        ]),
+      ],
     ])
     const coverageRegions = [...rpcDataMap.values()]
     expect(coverageRegions.length).toBe(3)
@@ -329,9 +390,7 @@ describe('rendering parity: Canvas2D and GPU paths use same data', () => {
   })
 
   test('mismatch arrays match SNP coverage segments', () => {
-    const features = [
-      feat({ start: 100, end: 110, cs: ':3*ag:6' }),
-    ]
+    const features = [feat({ start: 100, end: 110, cs: ':3*ag:6' })]
     const region = { start: 0, end: 200 }
     const regionStart = Math.floor(region.start)
     const regionEnd = Math.ceil(region.end)
@@ -342,7 +401,12 @@ describe('rendering parity: Canvas2D and GPU paths use same data', () => {
         extractMismatchesFromCs(f.cs, f.start, mismatches)
       }
     }
-    const coverage = computeCoverage(coverageFeatures, [], regionStart, regionEnd)
+    const coverage = computeCoverage(
+      coverageFeatures,
+      [],
+      regionStart,
+      regionEnd,
+    )
     const snp = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
 
     expect(mismatches.length).toBe(1)
@@ -350,4 +414,3 @@ describe('rendering parity: Canvas2D and GPU paths use same data', () => {
     expect(snp.positions[0]).toBe(mismatches[0]!.position)
   })
 })
-

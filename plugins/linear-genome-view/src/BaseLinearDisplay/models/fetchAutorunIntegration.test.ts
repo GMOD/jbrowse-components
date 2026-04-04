@@ -42,7 +42,12 @@ function computeStaticRegions(view: ReturnType<typeof createMockView>) {
     const end = Math.min(dr.end, (blockEnd + 1) * blockSizeBp)
     if (end > start) {
       regions.push({
-        region: { refName: dr.refName, start, end, assemblyName: dr.assemblyName },
+        region: {
+          refName: dr.refName,
+          start,
+          end,
+          assemblyName: dr.assemblyName,
+        },
         regionNumber: idx,
       })
     }

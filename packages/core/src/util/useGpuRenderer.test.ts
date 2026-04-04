@@ -3,7 +3,10 @@ import { act, renderHook } from '@testing-library/react'
 import { useGpuRenderer } from './useGpuRenderer.ts'
 
 function createMockRendererCache(initResult = true) {
-  const renderers = new Map<HTMLCanvasElement, { init: jest.Mock }>()
+  const renderers = new Map<
+    HTMLCanvasElement,
+    { init: jest.Mock; dispose: jest.Mock }
+  >()
 
   return {
     getOrCreate(canvas: HTMLCanvasElement) {
@@ -11,6 +14,7 @@ function createMockRendererCache(initResult = true) {
       if (!renderer) {
         renderer = {
           init: jest.fn(() => Promise.resolve(initResult)),
+          dispose: jest.fn(),
         }
         renderers.set(canvas, renderer)
       }
@@ -58,6 +62,7 @@ describe('useGpuRenderer', () => {
       getOrCreate() {
         return {
           init: () => Promise.reject(new Error('GPU crash')),
+          dispose: jest.fn(),
         }
       },
     }

@@ -84,9 +84,9 @@ export function useGpuRenderer<R extends GpuRenderer>(
       setReady(false)
       opts?.onDispose?.()
     }
-  // opts callbacks (onReady/onDispose) are intentionally omitted from deps —
-  // callers must pass stable references (e.g. useMemo)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // opts callbacks (onReady/onDispose) are intentionally omitted from deps —
+    // callers must pass stable references (e.g. useMemo)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contextVersion, rendererCache, canvasRef])
 
   function retry() {

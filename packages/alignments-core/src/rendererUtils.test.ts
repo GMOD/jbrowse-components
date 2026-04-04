@@ -1,17 +1,19 @@
 import {
   coverageLayout,
-  snpColorForType,
-  rgbaString,
   drawCoverageBins,
-  drawSnpSegments,
   drawIndicators,
+  drawSnpSegments,
+  rgbaString,
+  snpColorForType,
 } from './rendererUtils.ts'
 
 function makeCtx() {
   const calls: { method: string; args: unknown[] }[] = []
   let currentFill = ''
   const ctx = {
-    get fillStyle() { return currentFill },
+    get fillStyle() {
+      return currentFill
+    },
     set fillStyle(v: string) {
       currentFill = v
       calls.push({ method: 'fillStyle', args: [v] })
@@ -43,7 +45,15 @@ describe('coverageLayout', () => {
 })
 
 describe('snpColorForType', () => {
-  const colors = { baseA: 'red', baseC: 'blue', baseG: 'green', baseT: 'yellow', mismatch: 'gray', deletion: 'black', insertion: 'purple' }
+  const colors = {
+    baseA: 'red',
+    baseC: 'blue',
+    baseG: 'green',
+    baseT: 'yellow',
+    mismatch: 'gray',
+    deletion: 'black',
+    insertion: 'purple',
+  }
 
   it('returns correct base colors', () => {
     expect(snpColorForType(1, colors)).toBe('red')
@@ -69,9 +79,13 @@ describe('drawCoverageBins', () => {
     const buf = new ArrayBuffer(2 * 12)
     const f32 = new Float32Array(buf)
     // bin 0: pos=100, min=0.2, max=0.8
-    f32[0] = 100; f32[1] = 0.2; f32[2] = 0.8
+    f32[0] = 100
+    f32[1] = 0.2
+    f32[2] = 0.8
     // bin 1: pos=101, min=0.1, max=0.5
-    f32[3] = 101; f32[4] = 0.1; f32[5] = 0.5
+    f32[3] = 101
+    f32[4] = 0.1
+    f32[5] = 0.5
 
     const { ctx, calls } = makeCtx()
     const bpToX = (bp: number) => (bp - 100) * 10
@@ -85,7 +99,9 @@ describe('drawCoverageBins', () => {
   it('skips bins outside viewport', () => {
     const buf = new ArrayBuffer(12)
     const f32 = new Float32Array(buf)
-    f32[0] = 1000; f32[1] = 0.5; f32[2] = 0.5
+    f32[0] = 1000
+    f32[1] = 0.5
+    f32[2] = 0.5
 
     const { ctx, calls } = makeCtx()
     const bpToX = (bp: number) => (bp - 1000) * 10 + 500
@@ -109,9 +125,20 @@ describe('drawSnpSegments', () => {
   it('draws segments with correct colors', () => {
     const buf = new ArrayBuffer(16)
     const f32 = new Float32Array(buf)
-    f32[0] = 100; f32[1] = 0.5; f32[2] = 0.3; f32[3] = 1 // colorType=1 → baseA
+    f32[0] = 100
+    f32[1] = 0.5
+    f32[2] = 0.3
+    f32[3] = 1 // colorType=1 → baseA
 
-    const colors = { baseA: 'red', baseC: 'blue', baseG: 'green', baseT: 'yellow', mismatch: '', deletion: '', insertion: '' }
+    const colors = {
+      baseA: 'red',
+      baseC: 'blue',
+      baseG: 'green',
+      baseT: 'yellow',
+      mismatch: '',
+      deletion: '',
+      insertion: '',
+    }
     const { ctx, calls } = makeCtx()
     drawSnpSegments(ctx, buf, 1, 100, 50, colors, bp => bp - 100, 200)
 
@@ -121,13 +148,19 @@ describe('drawSnpSegments', () => {
 })
 
 describe('drawIndicators', () => {
-  const noncovColors = { insertion: 'purple', softclip: 'cyan', hardclip: 'orange' }
+  const noncovColors = {
+    insertion: 'purple',
+    softclip: 'cyan',
+    hardclip: 'orange',
+  }
 
   it('draws triangles at positions with correct colors', () => {
     const buf = new ArrayBuffer(16)
     const f32 = new Float32Array(buf)
-    f32[0] = 50; f32[1] = 1  // insertion
-    f32[2] = 150; f32[3] = 2 // softclip
+    f32[0] = 50
+    f32[1] = 1 // insertion
+    f32[2] = 150
+    f32[3] = 2 // softclip
 
     const { ctx, calls } = makeCtx()
     drawIndicators(ctx, buf, 2, noncovColors, bp => bp, 200)
@@ -140,7 +173,8 @@ describe('drawIndicators', () => {
   it('skips indicators outside viewport', () => {
     const buf = new ArrayBuffer(8)
     const f32 = new Float32Array(buf)
-    f32[0] = 300; f32[1] = 1
+    f32[0] = 300
+    f32[1] = 1
 
     const { ctx, calls } = makeCtx()
     drawIndicators(ctx, buf, 1, noncovColors, bp => bp, 200)

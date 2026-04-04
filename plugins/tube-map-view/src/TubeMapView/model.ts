@@ -1,8 +1,8 @@
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { layoutGFA } from '../layout/gfaToTubeMap.ts'
 import { parseGFA } from '../gfa/gfaParser.ts'
+import { layoutGFA } from '../layout/gfaToTubeMap.ts'
 
 import type { TubeMapLayout } from '../layout/types.ts'
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { ErrorOverlay } from '@jbrowse/core/ui'
+import { CanvasDisplayWrapper, ErrorOverlay } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import {
   getContainingView,
@@ -11,7 +11,6 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { CanvasDisplayWrapper } from '@jbrowse/core/ui'
 import { HicRenderer, generateColorRamp } from './HicRenderer.ts'
 import HicColorLegend from '../../HicRenderer/components/HicColorLegend.tsx'
 

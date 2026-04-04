@@ -21,6 +21,7 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import { computeHierarchyLayout, parseClusterTree } from '@jbrowse/tree-sidebar'
 import CategoryIcon from '@mui/icons-material/Category'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import HeightIcon from '@mui/icons-material/Height'
@@ -38,12 +39,7 @@ import {
 } from './constants.ts'
 import { getSources } from './getSources.ts'
 import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
-import {
-  computeHierarchyLayout,
-  parseClusterTree,
-} from '@jbrowse/tree-sidebar'
 
-import type { HoveredTreeNode } from '@jbrowse/tree-sidebar'
 import type { SampleInfo, Source } from './types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -54,6 +50,7 @@ import type {
   LegendItem,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { HoveredTreeNode } from '@jbrowse/tree-sidebar'
 
 // lazies
 const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))

@@ -24,8 +24,20 @@ export const HIC_PASSES: PassDescriptor[] = [
     blend: true,
     blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
     glAttributes: [
-      { name: 'a_position', components: 2, type: 'float', offsetBytes: 0, integer: false },
-      { name: 'a_count', components: 1, type: 'float', offsetBytes: 8, integer: false },
+      {
+        name: 'a_position',
+        components: 2,
+        type: 'float',
+        offsetBytes: 0,
+        integer: false,
+      },
+      {
+        name: 'a_count',
+        components: 1,
+        type: 'float',
+        offsetBytes: 8,
+        integer: false,
+      },
     ],
     textures: [
       {

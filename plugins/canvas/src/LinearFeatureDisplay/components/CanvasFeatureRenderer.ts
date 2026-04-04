@@ -12,25 +12,18 @@ import type {
   FeatureRenderBlock,
 } from './canvasFeatureBackendTypes.ts'
 
-const rendererCache = new WeakMap<HTMLCanvasElement, CanvasFeatureRenderer>()
-
 export class CanvasFeatureRenderer {
   onDeviceLost: (() => void) | null = null
 
   private canvas: HTMLCanvasElement
   private backend: CanvasFeatureBackend | null = null
 
-  private constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
   }
 
   static getOrCreate(canvas: HTMLCanvasElement) {
-    let renderer = rendererCache.get(canvas)
-    if (!renderer) {
-      renderer = new CanvasFeatureRenderer(canvas)
-      rendererCache.set(canvas, renderer)
-    }
-    return renderer
+    return new CanvasFeatureRenderer(canvas)
   }
 
   async init() {
@@ -83,7 +76,6 @@ export class CanvasFeatureRenderer {
   dispose() {
     this.backend?.dispose()
     this.backend = null
-    rendererCache.delete(this.canvas)
   }
 }
 

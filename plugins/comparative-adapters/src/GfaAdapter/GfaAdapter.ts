@@ -279,7 +279,7 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
     const allRefSegIds = new Set(
       gfa.paths
         .find(p => p.genome === assemblyName && p.refName === refName)
-        ?.segments.map(s => s.segId) ?? [],
+        ?.segments.map(s => s.segId),
     )
 
     for (const path of gfa.paths) {
@@ -300,11 +300,17 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
         // path boundary. This captures terminal variants (e.g. s12
         // replacing s11 at a path tail) that would otherwise be lost.
         let spanStart = firstShared
-        while (spanStart > 0 && !allRefSegIds.has(path.segments[spanStart - 1]!.segId)) {
+        while (
+          spanStart > 0 &&
+          !allRefSegIds.has(path.segments[spanStart - 1]!.segId)
+        ) {
           spanStart--
         }
         let spanEnd = lastShared
-        while (spanEnd < path.segments.length - 1 && !allRefSegIds.has(path.segments[spanEnd + 1]!.segId)) {
+        while (
+          spanEnd < path.segments.length - 1 &&
+          !allRefSegIds.has(path.segments[spanEnd + 1]!.segId)
+        ) {
           spanEnd++
         }
 

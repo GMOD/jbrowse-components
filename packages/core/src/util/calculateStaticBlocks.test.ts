@@ -1,5 +1,5 @@
-import calculateBlocks from './calculateStaticBlocks.ts'
 import { makeDisplayedRegionKey } from './blockTypes.ts'
+import calculateBlocks from './calculateStaticBlocks.ts'
 
 describe('block calculation', () => {
   it('can calculate some blocks 1', () => {
@@ -390,8 +390,18 @@ describe('makeDisplayedRegionKey', () => {
   })
 
   test('different regions produce different keys', () => {
-    const a = makeDisplayedRegionKey({ assemblyName: 'hg38', refName: 'chr1', start: 0, end: 1000 })
-    const b = makeDisplayedRegionKey({ assemblyName: 'hg38', refName: 'chr1', start: 0, end: 2000 })
+    const a = makeDisplayedRegionKey({
+      assemblyName: 'hg38',
+      refName: 'chr1',
+      start: 0,
+      end: 1000,
+    })
+    const b = makeDisplayedRegionKey({
+      assemblyName: 'hg38',
+      refName: 'chr1',
+      start: 0,
+      end: 2000,
+    })
     expect(a).not.toBe(b)
   })
 })

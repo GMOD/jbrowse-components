@@ -1,4 +1,4 @@
-import { GLSL_UBO_PREAMBLE, COV_DOMAIN_GLSL } from './uboCommon.ts'
+import { COV_DOMAIN_GLSL, GLSL_UBO_PREAMBLE } from './uboCommon.ts'
 
 export const COVERAGE_VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -291,4 +291,3 @@ void main() {
   fragColor = vec4(v_color.rgb, v_color.a * aa);
 }
 `
-

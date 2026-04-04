@@ -68,7 +68,9 @@ export interface CoverageRegion {
   regionStart: number
 }
 
-export function computeVisibleMaxDepth<B extends { start: number; end: number }>(
+export function computeVisibleMaxDepth<
+  B extends { start: number; end: number },
+>(
   visibleBlocks: B[],
   getCoverageForBlock: (block: B) => CoverageRegion | undefined,
 ) {

@@ -24,9 +24,27 @@ export const LD_PASSES: PassDescriptor[] = [
     blend: true,
     blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
     glAttributes: [
-      { name: 'a_position', components: 2, type: 'float', offsetBytes: 0, integer: false },
-      { name: 'a_cellSize', components: 2, type: 'float', offsetBytes: 8, integer: false },
-      { name: 'a_ldValue', components: 1, type: 'float', offsetBytes: 16, integer: false },
+      {
+        name: 'a_position',
+        components: 2,
+        type: 'float',
+        offsetBytes: 0,
+        integer: false,
+      },
+      {
+        name: 'a_cellSize',
+        components: 2,
+        type: 'float',
+        offsetBytes: 8,
+        integer: false,
+      },
+      {
+        name: 'a_ldValue',
+        components: 1,
+        type: 'float',
+        offsetBytes: 16,
+        integer: false,
+      },
     ],
     textures: [
       {

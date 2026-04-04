@@ -1,5 +1,5 @@
-import { computeTubeMapLayout } from './tubeMapLayout.ts'
 import { layoutGFA } from './gfaToTubeMap.ts'
+import { computeTubeMapLayout } from './tubeMapLayout.ts'
 import { parseGFA } from '../gfa/gfaParser.ts'
 
 // simple bubble: ref goes 1→2→4, alt goes 1→3→4

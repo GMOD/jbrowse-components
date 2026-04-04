@@ -1,31 +1,33 @@
 // @ts-nocheck
-export default function(end) {
-  var start = this,
-      ancestor = leastCommonAncestor(start, end),
-      nodes = [start];
+export default function (end) {
+  let start = this
+  const ancestor = leastCommonAncestor(start, end)
+  const nodes = [start]
   while (start !== ancestor) {
-    start = start.parent;
-    nodes.push(start);
+    start = start.parent
+    nodes.push(start)
   }
-  var k = nodes.length;
+  const k = nodes.length
   while (end !== ancestor) {
-    nodes.splice(k, 0, end);
-    end = end.parent;
+    nodes.splice(k, 0, end)
+    end = end.parent
   }
-  return nodes;
+  return nodes
 }
 
 function leastCommonAncestor(a, b) {
-  if (a === b) return a;
-  var aNodes = a.ancestors(),
-      bNodes = b.ancestors(),
-      c = null;
-  a = aNodes.pop();
-  b = bNodes.pop();
-  while (a === b) {
-    c = a;
-    a = aNodes.pop();
-    b = bNodes.pop();
+  if (a === b) {
+    return a
   }
-  return c;
+  const aNodes = a.ancestors()
+  const bNodes = b.ancestors()
+  let c = null
+  a = aNodes.pop()
+  b = bNodes.pop()
+  while (a === b) {
+    c = a
+    a = aNodes.pop()
+    b = bNodes.pop()
+  }
+  return c
 }

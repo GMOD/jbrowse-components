@@ -1,11 +1,11 @@
 import { execSync } from 'child_process'
-import { writeFileSync, mkdtempSync, rmSync } from 'fs'
-import path from 'path'
+import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import os from 'os'
+import path from 'path'
 
+import { ldShader } from './LDDisplay/components/ldShaders.ts'
 import { variantShader } from './MultiVariantDisplay/components/variantShaders.ts'
 import { variantMatrixShader } from './MultiVariantMatrixDisplay/components/variantMatrixShaders.ts'
-import { ldShader } from './LDDisplay/components/ldShaders.ts'
 
 let tmpDir: string
 

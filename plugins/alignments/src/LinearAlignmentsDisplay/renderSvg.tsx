@@ -1,5 +1,9 @@
 import type React from 'react'
 
+import {
+  YSCALEBAR_LABEL_OFFSET,
+  drawIndicatorTriangle,
+} from '@jbrowse/alignments-core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
@@ -25,7 +29,6 @@ import {
   LONG_INSERTION_MIN_LENGTH,
   insertionBarWidth,
 } from './constants.ts'
-import { YSCALEBAR_LABEL_OFFSET, drawIndicatorTriangle } from '@jbrowse/alignments-core'
 
 import type { ArcsDataResult } from '../RenderArcsDataRPC/types.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'

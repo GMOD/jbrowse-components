@@ -9,7 +9,7 @@ import {
   createStorageBuffer,
 } from '../webgpuUtils.ts'
 
-import type { GpuHal, PassDescriptor, BlendState, RegionMeta } from './types.ts'
+import type { BlendState, GpuHal, PassDescriptor, RegionMeta } from './types.ts'
 
 // Maximum number of writeUniforms() calls per frame. Each call occupies one
 // aligned slot in the uniform ring buffer. 512 slots × 256-byte alignment =
@@ -74,7 +74,10 @@ function getOrCreateDeviceState(device: GPUDevice) {
   return state
 }
 
-function getOrCreateTexturedLayout(device: GPUDevice, state: ReturnType<typeof getOrCreateDeviceState>) {
+function getOrCreateTexturedLayout(
+  device: GPUDevice,
+  state: ReturnType<typeof getOrCreateDeviceState>,
+) {
   if (!state.texturedBindGroupLayout) {
     state.texturedBindGroupLayout = device.createBindGroupLayout({
       entries: [
@@ -132,7 +135,7 @@ async function ensurePipelines(
         if (msg.type === 'error') {
           console.error(
             `[WebGPUHal] WGSL error in pass "${desc.id}" ` +
-            `line ${msg.lineNum}: ${msg.message}`,
+              `line ${msg.lineNum}: ${msg.message}`,
           )
         }
       }
@@ -140,10 +143,13 @@ async function ensurePipelines(
       const format = desc.picking
         ? ('rgba8unorm' as GPUTextureFormat)
         : ('bgra8unorm' as GPUTextureFormat)
-      const blend =
-        desc.picking ? undefined
-        : desc.blend ? (desc.blendState ? gpuBlendState(desc.blendState) : STANDARD_BLEND_STATE)
-        : undefined
+      const blend = desc.picking
+        ? undefined
+        : desc.blend
+          ? desc.blendState
+            ? gpuBlendState(desc.blendState)
+            : STANDARD_BLEND_STATE
+          : undefined
       const topo = (desc.topology ?? 'triangle-list') as GPUPrimitiveTopology
       const pLayout = desc.textures?.length
         ? getOrCreateTexturedLayout(device, state).pipelineLayout
@@ -192,8 +198,10 @@ export class WebGPUHal implements GpuHal {
   private isFirstPass = true
 
   // Scissor/viewport state (physical pixels, top-left origin)
-  private scissorRect: { x: number; y: number; w: number; h: number } | null = null
-  private viewportRect: { x: number; y: number; w: number; h: number } | null = null
+  private scissorRect: { x: number; y: number; w: number; h: number } | null =
+    null
+  private viewportRect: { x: number; y: number; w: number; h: number } | null =
+    null
 
   // Picking state
   private pickingTexture: GPUTexture | null = null
@@ -366,7 +374,12 @@ export class WebGPUHal implements GpuHal {
     this.regions.clear()
   }
 
-  uploadTexture(passId: string, data: Uint8Array, width: number, height: number) {
+  uploadTexture(
+    passId: string,
+    data: Uint8Array,
+    width: number,
+    height: number,
+  ) {
     const desc = this.descriptors.get(passId)
     if (!desc?.textures?.length) {
       return
@@ -399,7 +412,12 @@ export class WebGPUHal implements GpuHal {
     for (const [regionKey, region] of this.regions) {
       const buf = region.buffers.get(passId)
       if (buf) {
-        this.rebuildTexturedBindGroup(regionKey, passId, buf.storageBuffer, buf.count)
+        this.rebuildTexturedBindGroup(
+          regionKey,
+          passId,
+          buf.storageBuffer,
+          buf.count,
+        )
       }
     }
   }
@@ -408,7 +426,9 @@ export class WebGPUHal implements GpuHal {
     if (this.currentEncoder) {
       // Inside a frame: stage data at the current slot for batched upload
       if (this.uniformSlot >= MAX_UNIFORM_SLOTS) {
-        console.error('[WebGPUHal] uniform ring buffer exhausted — increase MAX_UNIFORM_SLOTS')
+        console.error(
+          '[WebGPUHal] uniform ring buffer exhausted — increase MAX_UNIFORM_SLOTS',
+        )
         return
       }
       const offset = this.uniformSlot * this.alignedUniformSize
@@ -438,7 +458,9 @@ export class WebGPUHal implements GpuHal {
     if (!pipeline) {
       return
     }
-    const regionBuf = this.regions.get(regionKey)?.buffers.get(bufferPassId ?? passId)
+    const regionBuf = this.regions
+      .get(regionKey)
+      ?.buffers.get(bufferPassId ?? passId)
     if (!regionBuf || regionBuf.count === 0) {
       return
     }
@@ -449,7 +471,8 @@ export class WebGPUHal implements GpuHal {
     }
 
     // Dynamic offset points to the most recently written uniform slot
-    const dynamicOffset = Math.max(0, this.uniformSlot - 1) * this.alignedUniformSize
+    const dynamicOffset =
+      Math.max(0, this.uniformSlot - 1) * this.alignedUniformSize
 
     const pass = this.currentEncoder.beginRenderPass({
       colorAttachments: [
@@ -500,8 +523,11 @@ export class WebGPUHal implements GpuHal {
     if (this.uniformSlot > 0) {
       const uploadSize = this.uniformSlot * this.alignedUniformSize
       this.device.queue.writeBuffer(
-        this.uniformRingBuffer, 0,
-        this.uniformStaging, 0, uploadSize,
+        this.uniformRingBuffer,
+        0,
+        this.uniformStaging,
+        0,
+        uploadSize,
       )
     }
     this.device.queue.submit([this.currentEncoder.finish()])
@@ -510,7 +536,12 @@ export class WebGPUHal implements GpuHal {
     this.currentTextureView = null
   }
 
-  drawPickingPass(passId: string, regionKey: number, instanceCount?: number, bufferPassId?: string) {
+  drawPickingPass(
+    passId: string,
+    regionKey: number,
+    instanceCount?: number,
+    bufferPassId?: string,
+  ) {
     const state = deviceState.get(this.device)
     if (!state) {
       return
@@ -519,7 +550,9 @@ export class WebGPUHal implements GpuHal {
     if (!pipeline) {
       return
     }
-    const regionBuf = this.regions.get(regionKey)?.buffers.get(bufferPassId ?? passId)
+    const regionBuf = this.regions
+      .get(regionKey)
+      ?.buffers.get(bufferPassId ?? passId)
     if (!regionBuf || regionBuf.count === 0) {
       return
     }
@@ -537,12 +570,14 @@ export class WebGPUHal implements GpuHal {
     // writeUniforms called before this wrote directly to slot 0.
     const encoder = this.device.createCommandEncoder()
     const pass = encoder.beginRenderPass({
-      colorAttachments: [{
-        view: this.pickingTexture.createView(),
-        loadOp: 'clear' as GPULoadOp,
-        storeOp: 'store' as GPUStoreOp,
-        clearValue: { r: 0, g: 0, b: 0, a: 0 },
-      }],
+      colorAttachments: [
+        {
+          view: this.pickingTexture.createView(),
+          loadOp: 'clear' as GPULoadOp,
+          storeOp: 'store' as GPUStoreOp,
+          clearValue: { r: 0, g: 0, b: 0, a: 0 },
+        },
+      ],
     })
     pass.setPipeline(pipeline)
     pass.setBindGroup(0, regionBuf.bindGroup, [0])
@@ -562,7 +597,12 @@ export class WebGPUHal implements GpuHal {
     const dpr = typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
     const px = Math.floor(x * dpr)
     const py = Math.floor(y * dpr)
-    if (px < 0 || px >= this.canvas.width || py < 0 || py >= this.canvas.height) {
+    if (
+      px < 0 ||
+      px >= this.canvas.width ||
+      py < 0 ||
+      py >= this.canvas.height
+    ) {
       return -1
     }
 
@@ -588,7 +628,9 @@ export class WebGPUHal implements GpuHal {
       const b = data[2]!
       result = r === 0 && g === 0 && b === 0 ? -1 : r + g * 256 + b * 65536 - 1
     } finally {
-      try { this.pickingStagingBuffer.unmap() } catch {}
+      try {
+        this.pickingStagingBuffer.unmap()
+      } catch {}
     }
     this.cachedPickResult = result
     return result
@@ -656,7 +698,9 @@ export class WebGPUHal implements GpuHal {
   }
 
   private resetStagingBuffer() {
-    try { this.pickingStagingBuffer?.destroy() } catch {}
+    try {
+      this.pickingStagingBuffer?.destroy()
+    } catch {}
     this.pickingStagingBuffer = this.device.createBuffer({
       size: 256,
       usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,

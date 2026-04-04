@@ -61,7 +61,11 @@ export function createStandardBindGroup(
       { binding: 0, resource: { buffer: storageBuffer } },
       {
         binding: 1,
-        resource: { buffer: uniformBuffer, offset: 0, size: uniformVisibleSize },
+        resource: {
+          buffer: uniformBuffer,
+          offset: 0,
+          size: uniformVisibleSize,
+        },
       },
     ],
   })

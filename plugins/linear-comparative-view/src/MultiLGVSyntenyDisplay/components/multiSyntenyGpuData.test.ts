@@ -1,6 +1,6 @@
+import { DEFAULT_CIGAR_OP_DRAW_COLORS as DEFAULT_SYNTENY_COLORS } from '@jbrowse/alignments-core'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
-import { DEFAULT_CIGAR_OP_DRAW_COLORS as DEFAULT_SYNTENY_COLORS } from '@jbrowse/alignments-core'
 import {
   computeBlockRenderParams,
   packCoverageForGpu,
@@ -61,7 +61,9 @@ describe('prepareBlockGeometry', () => {
   })
 
   test('packs single feature with correct bp coordinates', () => {
-    const genomeFeatures: [string, MultiPairFeature[]][] = [['genomeA', [feat()]]]
+    const genomeFeatures: [string, MultiPairFeature[]][] = [
+      ['genomeA', [feat()]],
+    ]
     const result = prepareBlockGeometry(
       genomeFeatures,
       ['genomeA'],

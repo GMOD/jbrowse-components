@@ -12,12 +12,14 @@ import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
 
 // Resolve through pnpm's node_modules
+const { CraiIndex, IndexedCramFile } = require('@gmod/cram')
 const { RemoteFile } = require('generic-filehandle2')
-const { IndexedCramFile, CraiIndex } = require('@gmod/cram')
 
 async function main() {
   // First test: WITHOUT seqFetch returning sequence (reproduces the bug)
-  console.log('=== Test 1: No reference sequence (reproduces production bug) ===')
+  console.log(
+    '=== Test 1: No reference sequence (reproduces production bug) ===',
+  )
   const cramNoRef = new IndexedCramFile({
     cramFilehandle: new RemoteFile(
       'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
@@ -39,7 +41,9 @@ async function main() {
   )
 
   const chr11Idx = sqLines.findIndex(h =>
-    h.data.some(d => d.tag === 'SN' && (d.value === '11' || d.value === 'chr11')),
+    h.data.some(
+      d => d.tag === 'SN' && (d.value === '11' || d.value === 'chr11'),
+    ),
   )
   const chr11Name = sqLines[chr11Idx]?.data.find(d => d.tag === 'SN')?.value
   console.log(`chr11 seqId in CRAM: ${chr11Idx} (name="${chr11Name}")`)
@@ -55,7 +59,9 @@ async function main() {
   let totalX = 0
   let missingSubCount = 0
   for (const record of recordsNoRef) {
-    if (!record.readFeatures) continue
+    if (!record.readFeatures) {
+      continue
+    }
     for (const rf of record.readFeatures) {
       if (rf.code === 'X') {
         totalX++
@@ -69,7 +75,9 @@ async function main() {
     `No-ref results: ${totalX} X features, ${missingSubCount} missing sub`,
   )
   if (totalX > 0 && missingSubCount === totalX) {
-    console.log('CONFIRMED: without ref sequence, ALL X features have missing sub (this is the bug)')
+    console.log(
+      'CONFIRMED: without ref sequence, ALL X features have missing sub (this is the bug)',
+    )
   }
 
   // Second test: WITH proper seqFetch using the FASTA
@@ -86,7 +94,9 @@ async function main() {
   // to fetch from the FASTA. This demonstrates the name mismatch bug.
   console.log('\n--- Demonstrating the name mismatch ---')
   console.log(`CRAM seqId ${chr11Idx} = "${cramSeqNames[chr11Idx]}"`)
-  console.log(`If seqFetch asks FASTA for "${cramSeqNames[chr11Idx]}", it will get the WRONG chromosome or nothing`)
+  console.log(
+    `If seqFetch asks FASTA for "${cramSeqNames[chr11Idx]}", it will get the WRONG chromosome or nothing`,
+  )
 
   // Now use the correct mapping (strip chr prefix)
   const cramWithRef = new IndexedCramFile({
@@ -102,7 +112,9 @@ async function main() {
       // Use the IndexedFasta from the pnpm resolved path
       const { IndexedFasta: IF } = require(
         require.resolve('@gmod/indexedfasta', {
-          paths: [process.cwd() + '/node_modules/.pnpm/@gmod+indexedfasta@5.0.2/node_modules'],
+          paths: [
+            `${process.cwd()}/node_modules/.pnpm/@gmod+indexedfasta@5.0.2/node_modules`,
+          ],
         }),
       )
       const fasta = new IF({
@@ -119,8 +131,12 @@ async function main() {
       // Strip chr prefix to match the FASTA naming convention
       const cramName = cramSeqNames[seqId]
       const fastaName = cramName?.replace(/^chr/, '')
-      console.log(`  seqFetch: seqId=${seqId} cramName="${cramName}" -> fastaName="${fastaName}" range=${start}-${end}`)
-      if (!fastaName) return ''
+      console.log(
+        `  seqFetch: seqId=${seqId} cramName="${cramName}" -> fastaName="${fastaName}" range=${start}-${end}`,
+      )
+      if (!fastaName) {
+        return ''
+      }
       const seq = await fasta.getSequence(fastaName, start - 1, end)
       console.log(`  seqFetch result: ${seq ? seq.length : 'undefined'} bases`)
       return seq ?? ''
@@ -139,13 +155,17 @@ async function main() {
   let totalX2 = 0
   let missingSubCount2 = 0
   for (const record of recordsWithRef) {
-    if (!record.readFeatures) continue
+    if (!record.readFeatures) {
+      continue
+    }
     for (const rf of record.readFeatures) {
       if (rf.code === 'X') {
         totalX2++
         if (!rf.sub) {
           missingSubCount2++
-          console.log(`  STILL MISSING sub: data=${rf.data} ref=${rf.ref} refPos=${rf.refPos}`)
+          console.log(
+            `  STILL MISSING sub: data=${rf.data} ref=${rf.ref} refPos=${rf.refPos}`,
+          )
         }
       }
     }
@@ -154,9 +174,13 @@ async function main() {
     `With-ref results: ${totalX2} X features, ${missingSubCount2} missing sub`,
   )
   if (missingSubCount2 === 0 && totalX2 > 0) {
-    console.log('PASS: with correct ref sequence, all X features have valid sub')
+    console.log(
+      'PASS: with correct ref sequence, all X features have valid sub',
+    )
   } else if (missingSubCount2 > 0) {
-    console.log('FAIL: some X features still missing sub even with ref sequence')
+    console.log(
+      'FAIL: some X features still missing sub even with ref sequence',
+    )
   }
 }
 

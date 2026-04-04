@@ -9,23 +9,16 @@ import {
 
 import type { LDBackend, LDRenderState } from './ldBackendTypes.ts'
 
-const rendererCache = new WeakMap<HTMLCanvasElement, LDRenderer>()
-
 export class LDRenderer {
   private canvas: HTMLCanvasElement
   private backend: LDBackend | null = null
 
-  private constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
   }
 
   static getOrCreate(canvas: HTMLCanvasElement) {
-    let renderer = rendererCache.get(canvas)
-    if (!renderer) {
-      renderer = new LDRenderer(canvas)
-      rendererCache.set(canvas, renderer)
-    }
-    return renderer
+    return new LDRenderer(canvas)
   }
 
   async init() {
@@ -59,7 +52,6 @@ export class LDRenderer {
   dispose() {
     this.backend?.dispose()
     this.backend = null
-    rendererCache.delete(this.canvas)
   }
 }
 

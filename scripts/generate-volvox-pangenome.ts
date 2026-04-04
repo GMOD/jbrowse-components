@@ -5,7 +5,7 @@
 // Usage:
 //   node --experimental-strip-types scripts/generate-volvox-pangenome.ts <output_dir>
 
-import { mkdirSync, writeFileSync, readFileSync } from 'fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'fs'
 
 const SEED = 42
 const NUM_SAMPLES = 50
@@ -45,8 +45,14 @@ function readFasta(path: string) {
 }
 
 const COMP: Record<string, string> = {
-  A: 'T', T: 'A', C: 'G', G: 'C',
-  a: 't', t: 'a', c: 'g', g: 'c',
+  A: 'T',
+  T: 'A',
+  C: 'G',
+  G: 'C',
+  a: 't',
+  t: 'a',
+  c: 'g',
+  g: 'c',
 }
 
 function reverseComplement(seq: string) {
@@ -106,7 +112,9 @@ function generateVariantPool(refSeq: string, rng: () => number) {
     const len = Math.floor(rng() * 2900) + 100
     const ref = refUpper.slice(pos, pos + len)
     variants.push({
-      pos, refAllele: ref, altAllele: ref[0]!,
+      pos,
+      refAllele: ref,
+      altAllele: ref[0]!,
       freq: Math.max(0.05, Math.min(0.5, rng())),
     })
   }
@@ -121,7 +129,9 @@ function generateVariantPool(refSeq: string, rng: () => number) {
       ins += 'ACGT'[Math.floor(rng() * 4)]
     }
     variants.push({
-      pos, refAllele: anchor, altAllele: ins,
+      pos,
+      refAllele: anchor,
+      altAllele: ins,
       freq: Math.max(0.05, Math.min(0.3, rng())),
     })
   }
@@ -132,7 +142,9 @@ function generateVariantPool(refSeq: string, rng: () => number) {
     const len = Math.floor(rng() * 4500) + 500
     const ref = refUpper.slice(pos, pos + len)
     variants.push({
-      pos, refAllele: ref, altAllele: reverseComplement(ref),
+      pos,
+      refAllele: ref,
+      altAllele: reverseComplement(ref),
       freq: 0.4 + rng() * 0.2,
     })
   }
@@ -149,7 +161,11 @@ function generateVariantPool(refSeq: string, rng: () => number) {
   return filtered
 }
 
-function applyVariants(refSeq: string, variants: Variant[], carriedIndices: Set<number>) {
+function applyVariants(
+  refSeq: string,
+  variants: Variant[],
+  carriedIndices: Set<number>,
+) {
   const parts: string[] = []
   let pos = 0
   for (let vi = 0; vi < variants.length; vi++) {
@@ -175,13 +191,15 @@ function writeFasta(path: string, name: string, seq: string) {
   for (let i = 0; i < seq.length; i += 80) {
     lines.push(seq.slice(i, i + 80))
   }
-  writeFileSync(path, lines.join('\n') + '\n')
+  writeFileSync(path, `${lines.join('\n')}\n`)
 }
 
 // --- Main ---
 const outDir = process.argv[2]
 if (!outDir) {
-  console.error('Usage: node --experimental-strip-types scripts/generate-volvox-pangenome.ts <output_dir>')
+  console.error(
+    'Usage: node --experimental-strip-types scripts/generate-volvox-pangenome.ts <output_dir>',
+  )
   process.exit(1)
 }
 
@@ -214,7 +232,11 @@ for (let si = 0; si < NUM_SAMPLES; si++) {
   }
   const sampleName = `sample${String(si + 1).padStart(2, '0')}#0`
   const sampleSeq = applyVariants(refUpper, variants, carried)
-  writeFasta(`${outDir}/${sampleName}#${REF_NAME}.fa`, `${sampleName}#${REF_NAME}`, sampleSeq)
+  writeFasta(
+    `${outDir}/${sampleName}#${REF_NAME}.fa`,
+    `${sampleName}#${REF_NAME}`,
+    sampleSeq,
+  )
 }
 
 console.error(`Wrote ${NUM_SAMPLES + 1} FASTA files to ${outDir}`)

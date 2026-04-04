@@ -1,31 +1,31 @@
 import { execSync } from 'child_process'
-import { writeFileSync, mkdtempSync, rmSync } from 'fs'
-import path from 'path'
+import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import os from 'os'
+import path from 'path'
 
-import { READ_WGSL } from './components/wgsl/readShader.ts'
 import {
   GAP_WGSL,
-  MISMATCH_WGSL,
-  INSERTION_WGSL,
-  SOFTCLIP_WGSL,
   HARDCLIP_WGSL,
+  INSERTION_WGSL,
+  MISMATCH_WGSL,
   MODIFICATION_WGSL,
+  SOFTCLIP_WGSL,
 } from './components/wgsl/cigarShaders.ts'
 import {
   COVERAGE_WGSL,
-  SNP_COVERAGE_WGSL,
+  INDICATOR_WGSL,
   MOD_COVERAGE_WGSL,
   NONCOV_HISTOGRAM_WGSL,
-  INDICATOR_WGSL,
+  SNP_COVERAGE_WGSL,
 } from './components/wgsl/coverageShaders.ts'
 import {
-  ARC_WGSL,
   ARC_LINE_WGSL,
-  SASHIMI_WGSL,
+  ARC_WGSL,
   CONNECTING_LINE_WGSL,
   FLAT_QUAD_WGSL,
+  SASHIMI_WGSL,
 } from './components/wgsl/miscShaders.ts'
+import { READ_WGSL } from './components/wgsl/readShader.ts'
 
 let tmpDir: string
 
@@ -44,7 +44,10 @@ function validateWgsl(name: string, code: string) {
   try {
     execSync(`naga ${file}`, { stdio: 'pipe' })
   } catch (e) {
-    const msg = e instanceof Error ? (e as { stderr?: Buffer }).stderr?.toString() ?? e.message : String(e)
+    const msg =
+      e instanceof Error
+        ? ((e as { stderr?: Buffer }).stderr?.toString() ?? e.message)
+        : String(e)
     throw new Error(`WGSL validation failed for "${name}":\n${msg}`)
   }
 }

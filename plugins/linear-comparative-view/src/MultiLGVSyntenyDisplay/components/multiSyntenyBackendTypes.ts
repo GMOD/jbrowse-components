@@ -1,12 +1,12 @@
-import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
 import type {
-  BlockGeometryData,
   BlockCoverageUploadData,
+  BlockGeometryData,
   BlockIndicatorUploadData,
   BlockSnpUploadData,
 } from './multiSyntenyGpuData.ts'
-import type { SyntenyColorPalette } from '../model.ts'
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
+import type { SyntenyColorPalette } from '../model.ts'
+import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 export const LABEL_WIDTH = 120

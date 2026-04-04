@@ -26,7 +26,7 @@ float flip_x(float x) { return mix(x, -x, uf(23u)); }
 // hp_zero is always at slot 5 (U_HP_ZERO).
 // HP_GLSL_CORE defines camelCase (hpSplitUint, hpToClipX, hpScaleLinear).
 // We add snake_case aliases for consistency with WGSL naming.
-export const HP_GLSL_UBO = HP_GLSL_CORE + `
+export const HP_GLSL_UBO = `${HP_GLSL_CORE}
 vec2 hp_split_uint(uint value) { return hpSplitUint(value); }
 float hp_to_clip_x(vec2 splitPos, vec3 bpRange) {
   return hpToClipX(splitPos, bpRange, uf(5u));

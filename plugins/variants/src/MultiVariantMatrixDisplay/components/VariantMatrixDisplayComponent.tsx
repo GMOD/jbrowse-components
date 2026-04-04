@@ -3,12 +3,12 @@ import { Suspense, useRef } from 'react'
 import { LoadingOverlay } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
+import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
 import LegendBar from '../../shared/components/MultiSampleVariantLegendBar.tsx'
-import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { useMouseTracking } from '../../shared/hooks/useMouseTracking.ts'
 
 import type { LinearVariantMatrixDisplayModel } from '../model.ts'

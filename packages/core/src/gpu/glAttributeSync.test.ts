@@ -1,13 +1,13 @@
-import type { GlAttributeLayout, PassDescriptor } from './hal/types.ts'
-
-import { WIGGLE_PASSES } from '../../../../plugins/wiggle/src/shared/GpuWiggleRenderer.ts'
-import { VARIANT_PASSES } from '../../../../plugins/variants/src/MultiVariantDisplay/components/GpuVariantRenderer.ts'
-import { VARIANT_MATRIX_PASSES } from '../../../../plugins/variants/src/MultiVariantMatrixDisplay/components/GpuVariantMatrixRenderer.ts'
-import { LD_PASSES } from '../../../../plugins/variants/src/LDDisplay/components/GpuLDRenderer.ts'
-import { HIC_PASSES } from '../../../../plugins/hic/src/LinearHicDisplay/components/GpuHicRenderer.ts'
 import { CANVAS_FEATURE_PASSES } from '../../../../plugins/canvas/src/LinearFeatureDisplay/components/GpuCanvasFeatureRenderer.ts'
 import { DOTPLOT_PASSES } from '../../../../plugins/dotplot-view/src/DotplotDisplay/GpuDotplotRenderer.ts'
+import { HIC_PASSES } from '../../../../plugins/hic/src/LinearHicDisplay/components/GpuHicRenderer.ts'
 import { SYNTENY_PASSES } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/GpuSyntenyRenderer.ts'
+import { LD_PASSES } from '../../../../plugins/variants/src/LDDisplay/components/GpuLDRenderer.ts'
+import { VARIANT_PASSES } from '../../../../plugins/variants/src/MultiVariantDisplay/components/GpuVariantRenderer.ts'
+import { VARIANT_MATRIX_PASSES } from '../../../../plugins/variants/src/MultiVariantMatrixDisplay/components/GpuVariantMatrixRenderer.ts'
+import { WIGGLE_PASSES } from '../../../../plugins/wiggle/src/shared/GpuWiggleRenderer.ts'
+
+import type { GlAttributeLayout, PassDescriptor } from './hal/types.ts'
 // Multi-synteny and alignments have deep import chains that hit jest module
 // resolution issues, so they are tested via their own plugin test suites instead.
 
@@ -21,7 +21,10 @@ interface GlslAttribute {
 function parseGlslAttributes(glsl: string): GlslAttribute[] {
   const attrs: GlslAttribute[] = []
   for (const line of glsl.split('\n')) {
-    const match = line.match(/^\s*in\s+(uvec(\d)|uint|ivec(\d)|int|vec(\d)|float)\s+(\w+)\s*;/)
+    const match =
+      /^\s*in\s+(uvec(\d)|uint|ivec(\d)|int|vec(\d)|float)\s+(\w+)\s*;/.exec(
+        line,
+      )
     if (match) {
       const glslType = match[1]!
       const name = match[5]!

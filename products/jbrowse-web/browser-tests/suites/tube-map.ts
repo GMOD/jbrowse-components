@@ -172,7 +172,9 @@ const suite: TestSuite = {
           return null
         })
         if (legendEntry) {
-          const box = await (legendEntry as import('puppeteer').ElementHandle).boundingBox()
+          const box = await (
+            legendEntry as import('puppeteer').ElementHandle
+          ).boundingBox()
           if (box) {
             await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
             await delay(300)

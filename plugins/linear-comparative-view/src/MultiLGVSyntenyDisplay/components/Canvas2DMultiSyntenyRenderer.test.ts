@@ -1,4 +1,3 @@
-import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import {
   DEFAULT_CIGAR_OP_DRAW_COLORS,
   computeInsertionIndicators,
@@ -6,6 +5,7 @@ import {
   extractIndelsFromCs,
   extractMismatchesFromCs,
 } from '@jbrowse/alignments-core'
+import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { computeCoverage } from '@jbrowse/plugin-alignments'
 
 import { renderMultiSyntenyToCtx } from './Canvas2DMultiSyntenyRenderer.ts'
@@ -52,7 +52,12 @@ function buildRegion(
   }
   const coverage = computeCoverage(coverageFeatures, [], regionStart, regionEnd)
   const snp = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
-  const indicators = computeInsertionIndicators(indels, coverage.depths, coverage.startOffset, regionStart)
+  const indicators = computeInsertionIndicators(
+    indels,
+    coverage.depths,
+    coverage.startOffset,
+    regionStart,
+  )
   const mismatchPositions = new Uint32Array(mismatches.length)
   const mismatchBases = new Uint8Array(mismatches.length)
   for (let i = 0; i < mismatches.length; i++) {

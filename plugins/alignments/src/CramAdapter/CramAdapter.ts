@@ -42,13 +42,15 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   private seqAdapterRefNamesP?: Promise<Set<string>>
 
   private async getSeqAdapterRefNames() {
-    this.seqAdapterRefNamesP ??= this.getSequenceAdapter().then(async adapter => {
-      if (!adapter) {
-        return new Set<string>()
-      }
-      const refNames = await adapter.getRefNames()
-      return new Set(refNames)
-    })
+    this.seqAdapterRefNamesP ??= this.getSequenceAdapter().then(
+      async adapter => {
+        if (!adapter) {
+          return new Set<string>()
+        }
+        const refNames = await adapter.getRefNames()
+        return new Set(refNames)
+      },
+    )
     return this.seqAdapterRefNamesP
   }
 

@@ -1,13 +1,17 @@
-import { MockHal } from '@jbrowse/core/gpu/hal'
 import { coverageLayout } from '@jbrowse/alignments-core'
+import { MockHal } from '@jbrowse/core/gpu/hal'
 
-import {
-  GpuAlignmentsRenderer,
-  ALIGNMENTS_PASSES,
-} from './GpuAlignmentsRenderer.ts'
 import { Canvas2DAlignmentsRenderer } from './Canvas2DAlignmentsRenderer.ts'
+import {
+  ALIGNMENTS_PASSES,
+  GpuAlignmentsRenderer,
+} from './GpuAlignmentsRenderer.ts'
 
-import type { CoverageUploadData, ReadUploadData, RenderState } from './rendererTypes.ts'
+import type {
+  CoverageUploadData,
+  ReadUploadData,
+  RenderState,
+} from './rendererTypes.ts'
 
 beforeAll(() => {
   ;(globalThis as Record<string, unknown>).window = { devicePixelRatio: 1 }
@@ -68,13 +72,18 @@ function makeMinimalReadData() {
 }
 
 function recordingCtx() {
-  const rects: { x: number; y: number; w: number; h: number; fill: string }[] = []
+  const rects: { x: number; y: number; w: number; h: number; fill: string }[] =
+    []
   let currentFill = ''
   return {
     rects,
     ctx: {
-      set fillStyle(v: string) { currentFill = v },
-      get fillStyle() { return currentFill },
+      set fillStyle(v: string) {
+        currentFill = v
+      },
+      get fillStyle() {
+        return currentFill
+      },
       fillRect(x: number, y: number, w: number, h: number) {
         rects.push({ x, y, w, h, fill: currentFill })
       },
@@ -117,13 +126,15 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     }
 
     // Canvas2D path: create a mock canvas and upload
-    const canvas = { getContext: () => ({ setTransform() {}, clearRect() {} }) } as unknown as HTMLCanvasElement
+    const canvas = {
+      getContext: () => ({ setTransform() {}, clearRect() {} }),
+    } as unknown as HTMLCanvasElement
     const canvas2d = new Canvas2DAlignmentsRenderer(canvas)
     canvas2d.uploadFromTypedArraysForRegion(0, makeMinimalReadData())
     canvas2d.uploadCoverageFromTypedArraysForRegion(0, covData)
 
     // The normalized depths should be identical
-    const expectedDepths = [10/50, 30/50, 50/50, 20/50, 40/50]
+    const expectedDepths = [10 / 50, 30 / 50, 50 / 50, 20 / 50, 40 / 50]
     for (let i = 0; i < expectedDepths.length; i++) {
       expect(gpuNormalizedDepths[i]).toBeCloseTo(expectedDepths[i]!)
     }
@@ -144,7 +155,9 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     const gpuF32 = new Float32Array(gpuSnpBuf!.data)
 
     // Canvas2D packs with regionStart offset
-    const canvas = { getContext: () => ({ setTransform() {}, clearRect() {} }) } as unknown as HTMLCanvasElement
+    const canvas = {
+      getContext: () => ({ setTransform() {}, clearRect() {} }),
+    } as unknown as HTMLCanvasElement
     const canvas2d = new Canvas2DAlignmentsRenderer(canvas)
     canvas2d.uploadFromTypedArraysForRegion(0, makeMinimalReadData())
     canvas2d.uploadCoverageFromTypedArraysForRegion(0, covData)
@@ -163,7 +176,11 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
   it('Canvas2D drawCoverage produces rectangles at expected screen positions', () => {
     const covData = makeCoverageData()
     const { ctx, rects } = recordingCtx()
-    const canvas = { getContext: () => ctx, width: 0, height: 0 } as unknown as HTMLCanvasElement
+    const canvas = {
+      getContext: () => ctx,
+      width: 0,
+      height: 0,
+    } as unknown as HTMLCanvasElement
     const renderer = new Canvas2DAlignmentsRenderer(canvas)
 
     renderer.uploadFromTypedArraysForRegion(0, makeMinimalReadData())
@@ -223,7 +240,9 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     // Then the block clip rect, then coverage rects
     const allFillRects = rects
     // Coverage rects should be in the coverage area (y < covH) and narrow (w ~10px per bp)
-    const covRects = allFillRects.filter(r => r.w > 0 && r.w < 100 && r.h > 0 && r.y < covH && r.y >= 0)
+    const covRects = allFillRects.filter(
+      r => r.w > 0 && r.w < 100 && r.h > 0 && r.y < covH && r.y >= 0,
+    )
     // 5 coverage bins + 2 SNP segments = 7 narrow rects in coverage area
     expect(covRects.length).toBe(7)
 
@@ -247,7 +266,10 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     const normalizedDepth = 0.6 // depth/maxDepth
 
     // Shared coverageLayout (used by drawCoverageBins)
-    const { depthScale, effectiveH, bottom } = coverageLayout(maxDepth, coverageHeight)
+    const { depthScale, effectiveH, bottom } = coverageLayout(
+      maxDepth,
+      coverageHeight,
+    )
 
     // drawCoverageBins computes: bandTop = bottom - depth * depthScale * effectiveH
     const sharedTop = bottom - normalizedDepth * depthScale * effectiveH

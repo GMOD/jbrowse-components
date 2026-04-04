@@ -15,7 +15,12 @@ function makeAdapter(gfaPath: string) {
 function parseOutputGfa(gfaText: string) {
   const lines = gfaText.split('\n').filter(l => l.length > 0)
   const segments = new Map<string, number>()
-  const links: { source: string; strand1: string; target: string; strand2: string }[] = []
+  const links: {
+    source: string
+    strand1: string
+    target: string
+    strand2: string
+  }[] = []
   const paths: { name: string; segments: string[] }[] = []
 
   for (const line of lines) {
@@ -44,8 +49,12 @@ function parseOutputGfa(gfaText: string) {
   return { segments, links, paths }
 }
 
-function linkSet(links: { source: string; strand1: string; target: string; strand2: string }[]) {
-  return new Set(links.map(l => `${l.source}${l.strand1}->${l.target}${l.strand2}`))
+function linkSet(
+  links: { source: string; strand1: string; target: string; strand2: string }[],
+) {
+  return new Set(
+    links.map(l => `${l.source}${l.strand1}->${l.target}${l.strand2}`),
+  )
 }
 
 const pangenomePath =

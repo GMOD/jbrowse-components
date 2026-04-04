@@ -41,10 +41,7 @@ interface GFAGraph {
   id: string
 }
 
-export function layoutGFA(
-  gfa: GFAGraph,
-  widthPerBp = 10,
-): TubeMapLayout {
+export function layoutGFA(gfa: GFAGraph, widthPerBp = 10): TubeMapLayout {
   const inputNodes = gfa.nodes.map(n => ({
     name: n.id,
     sequenceLength: n.length,
@@ -82,7 +79,7 @@ export function layoutGFA(
       name,
       segments,
       type: 'haplotype' as const,
-      indexOfFirstBase: w.start >= 0 ? w.start : 0,
+      indexOfFirstBase: Math.max(w.start, 0),
     })
   }
 

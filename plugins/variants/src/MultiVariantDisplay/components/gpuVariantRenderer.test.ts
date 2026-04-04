@@ -24,7 +24,9 @@ function makeUploadData() {
   }
 }
 
-function makeBlock(overrides?: Partial<VariantRenderBlock>): VariantRenderBlock {
+function makeBlock(
+  overrides?: Partial<VariantRenderBlock>,
+): VariantRenderBlock {
   return {
     regionNumber: 0,
     bpRangeX: [0, 10000],
@@ -56,7 +58,7 @@ describe('GpuVariantRenderer', () => {
     // shape_type=0
     expect(u32[3]).toBe(0)
     // color: r=255/255=1.0
-    expect(f32[4]).toBeCloseTo(1.0)
+    expect(f32[4]).toBeCloseTo(1)
 
     // second cell: start=300, end=400, row=1, shape=1
     const off = INSTANCE_STRIDE
@@ -65,7 +67,7 @@ describe('GpuVariantRenderer', () => {
     expect(u32[off + 2]).toBe(1)
     expect(u32[off + 3]).toBe(1)
     // green: 255/255=1.0
-    expect(f32[off + 5]).toBeCloseTo(1.0)
+    expect(f32[off + 5]).toBeCloseTo(1)
     // alpha: 128/255
     expect(f32[off + 7]).toBeCloseTo(128 / 255)
   })
@@ -95,9 +97,15 @@ describe('GpuVariantRenderer', () => {
     })
 
     const methods = hal.calls.map(c => c.method)
-    expect(methods.indexOf('resize')).toBeLessThan(methods.indexOf('beginFrame'))
-    expect(methods.indexOf('beginFrame')).toBeLessThan(methods.indexOf('drawPass'))
-    expect(methods.indexOf('drawPass')).toBeLessThan(methods.indexOf('endFrame'))
+    expect(methods.indexOf('resize')).toBeLessThan(
+      methods.indexOf('beginFrame'),
+    )
+    expect(methods.indexOf('beginFrame')).toBeLessThan(
+      methods.indexOf('drawPass'),
+    )
+    expect(methods.indexOf('drawPass')).toBeLessThan(
+      methods.indexOf('endFrame'),
+    )
 
     const f32 = hal.getLastUniformsF32()!
     const u32 = hal.getLastUniformsU32()!

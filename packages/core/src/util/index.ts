@@ -14,6 +14,7 @@ import {
 import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 
+import { makeDisplayedRegionKey } from './blockTypes.ts'
 import { coarseStripHTML } from './coarseStripHTML.ts'
 import { colord } from './colord.ts'
 import { parseLocString } from './locString.ts'
@@ -28,8 +29,6 @@ import {
 
 import type { ParsedLocString } from './locString.ts'
 import type PluginManager from '../PluginManager.ts'
-import { makeDisplayedRegionKey } from './blockTypes.ts'
-
 import type { BaseBlock } from './blockTypes.ts'
 import type { Feature } from './simpleFeature.ts'
 import type { StopToken } from './stopToken.ts'

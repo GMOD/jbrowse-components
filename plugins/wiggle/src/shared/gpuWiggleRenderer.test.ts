@@ -9,7 +9,10 @@ import {
   SCALE_TYPE_LOG,
 } from './wiggleShader.ts'
 
-import type { SourceRenderData, WiggleRenderBlock } from './wiggleBackendTypes.ts'
+import type {
+  SourceRenderData,
+  WiggleRenderBlock,
+} from './wiggleBackendTypes.ts'
 
 // GpuWiggleRenderer reads window.devicePixelRatio
 beforeAll(() => {
@@ -23,7 +26,7 @@ afterAll(() => {
 function makeSource(overrides?: Partial<SourceRenderData>): SourceRenderData {
   return {
     featurePositions: new Uint32Array([100, 200, 200, 300]),
-    featureScores: new Float32Array([5.0, 10.0]),
+    featureScores: new Float32Array([5, 10]),
     numFeatures: 2,
     color: [1, 0, 0],
     ...overrides,
@@ -60,11 +63,11 @@ describe('GpuWiggleRenderer', () => {
     expect(u32[0]).toBe(100)
     expect(u32[1]).toBe(200)
     // score=5.0
-    expect(f32[2]).toBeCloseTo(5.0)
+    expect(f32[2]).toBeCloseTo(5)
     // prev_score for first feature = itself
-    expect(f32[3]).toBeCloseTo(5.0)
+    expect(f32[3]).toBeCloseTo(5)
     // color r=1 (offset 4 after reorder: color before row_index)
-    expect(f32[4]).toBeCloseTo(1.0)
+    expect(f32[4]).toBeCloseTo(1)
     // row_index=0
     expect(f32[7]).toBe(0)
   })
@@ -229,16 +232,13 @@ describe('GpuWiggleRenderer', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
 
-    renderer.renderBlocks(
-      [makeBlock({ regionNumber: 99 })],
-      {
-        canvasWidth: 800,
-        canvasHeight: 400,
-        renderingType: RENDERING_TYPE_XYPLOT,
-        scaleType: SCALE_TYPE_LINEAR,
-        domainY: [0, 20],
-      },
-    )
+    renderer.renderBlocks([makeBlock({ regionNumber: 99 })], {
+      canvasWidth: 800,
+      canvasHeight: 400,
+      renderingType: RENDERING_TYPE_XYPLOT,
+      scaleType: SCALE_TYPE_LINEAR,
+      domainY: [0, 20],
+    })
 
     expect(hal.callsOf('drawPass').length).toBe(0)
     expect(hal.callsOf('beginFrame').length).toBe(1)
@@ -294,7 +294,7 @@ describe('GpuWiggleRenderer', () => {
 
     const f32 = hal.getLastUniformsF32()!
     // reversed at slot 12 should be 1.0
-    expect(f32[12]).toBe(1.0)
+    expect(f32[12]).toBe(1)
   })
 
   it('handles multiple sources with different row indices', () => {
@@ -305,7 +305,7 @@ describe('GpuWiggleRenderer', () => {
     const source1 = makeSource({
       rowIndex: 1,
       color: [0, 1, 0],
-      featureScores: new Float32Array([15.0, 20.0]),
+      featureScores: new Float32Array([15, 20]),
     })
 
     renderer.uploadRegion(0, 1000, [source0, source1])
@@ -319,7 +319,7 @@ describe('GpuWiggleRenderer', () => {
     // second source starts at offset 2*INSTANCE_STRIDE, row_index=1
     expect(f32[2 * INSTANCE_STRIDE + 7]).toBe(1)
     // second source color g=1 (at offset 5)
-    expect(f32[2 * INSTANCE_STRIDE + 5]).toBeCloseTo(1.0)
+    expect(f32[2 * INSTANCE_STRIDE + 5]).toBeCloseTo(1)
   })
 
   it('disposes cleanly', () => {

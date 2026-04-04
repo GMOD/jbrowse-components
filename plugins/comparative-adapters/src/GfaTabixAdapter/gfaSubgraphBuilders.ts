@@ -109,7 +109,10 @@ export function buildGfaFromPathInference(
         spanStart--
       }
       let spanEnd = lastShared
-      while (spanEnd < records.length - 1 && !refOrdSet.has(records[spanEnd + 1]!.segOrd)) {
+      while (
+        spanEnd < records.length - 1 &&
+        !refOrdSet.has(records[spanEnd + 1]!.segOrd)
+      ) {
         spanEnd++
       }
 

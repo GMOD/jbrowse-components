@@ -1,10 +1,10 @@
 // @ts-nocheck
-export default function() {
-  var leaves = [];
-  this.eachBefore(function(node) {
+export default function () {
+  const leaves = []
+  this.eachBefore(function (node) {
     if (!node.children) {
-      leaves.push(node);
+      leaves.push(node)
     }
-  });
-  return leaves;
+  })
+  return leaves
 }

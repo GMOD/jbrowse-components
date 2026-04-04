@@ -35,10 +35,34 @@ const PASS_ARROW = 'arrow'
 const UNIFORM_BYTE_SIZE = 48
 
 const LINE_ATTRS = [
-  { name: 'a_start_end', components: 2, type: 'uint' as const, offsetBytes: 0, integer: true },
-  { name: 'a_y', components: 1, type: 'float' as const, offsetBytes: 8, integer: false },
-  { name: 'a_direction', components: 1, type: 'float' as const, offsetBytes: 12, integer: false },
-  { name: 'a_color', components: 4, type: 'float' as const, offsetBytes: 16, integer: false },
+  {
+    name: 'a_start_end',
+    components: 2,
+    type: 'uint' as const,
+    offsetBytes: 0,
+    integer: true,
+  },
+  {
+    name: 'a_y',
+    components: 1,
+    type: 'float' as const,
+    offsetBytes: 8,
+    integer: false,
+  },
+  {
+    name: 'a_direction',
+    components: 1,
+    type: 'float' as const,
+    offsetBytes: 12,
+    integer: false,
+  },
+  {
+    name: 'a_color',
+    components: 4,
+    type: 'float' as const,
+    offsetBytes: 16,
+    integer: false,
+  },
 ]
 
 export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
@@ -51,10 +75,34 @@ export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
     verticesPerInstance: 6,
     blend: true,
     glAttributes: [
-      { name: 'a_start_end', components: 2, type: 'uint', offsetBytes: 0, integer: true },
-      { name: 'a_y', components: 1, type: 'float', offsetBytes: 8, integer: false },
-      { name: 'a_height', components: 1, type: 'float', offsetBytes: 12, integer: false },
-      { name: 'a_color', components: 4, type: 'float', offsetBytes: 16, integer: false },
+      {
+        name: 'a_start_end',
+        components: 2,
+        type: 'uint',
+        offsetBytes: 0,
+        integer: true,
+      },
+      {
+        name: 'a_y',
+        components: 1,
+        type: 'float',
+        offsetBytes: 8,
+        integer: false,
+      },
+      {
+        name: 'a_height',
+        components: 1,
+        type: 'float',
+        offsetBytes: 12,
+        integer: false,
+      },
+      {
+        name: 'a_color',
+        components: 4,
+        type: 'float',
+        offsetBytes: 16,
+        integer: false,
+      },
     ],
   },
   {
@@ -86,14 +134,56 @@ export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
     verticesPerInstance: 9,
     blend: true,
     glAttributes: [
-      { name: 'a_x', components: 1, type: 'uint', offsetBytes: 0, integer: true },
+      {
+        name: 'a_x',
+        components: 1,
+        type: 'uint',
+        offsetBytes: 0,
+        integer: true,
+      },
       // offsetBytes: 8 skips padding u32
-      { name: 'a_y', components: 1, type: 'float', offsetBytes: 8, integer: false },
-      { name: 'a_direction', components: 1, type: 'float', offsetBytes: 12, integer: false },
-      { name: 'a_height', components: 1, type: 'float', offsetBytes: 16, integer: false },
-      { name: 'a_color_r', components: 1, type: 'float', offsetBytes: 20, integer: false },
-      { name: 'a_color_g', components: 1, type: 'float', offsetBytes: 24, integer: false },
-      { name: 'a_color_b', components: 1, type: 'float', offsetBytes: 28, integer: false },
+      {
+        name: 'a_y',
+        components: 1,
+        type: 'float',
+        offsetBytes: 8,
+        integer: false,
+      },
+      {
+        name: 'a_direction',
+        components: 1,
+        type: 'float',
+        offsetBytes: 12,
+        integer: false,
+      },
+      {
+        name: 'a_height',
+        components: 1,
+        type: 'float',
+        offsetBytes: 16,
+        integer: false,
+      },
+      {
+        name: 'a_color_r',
+        components: 1,
+        type: 'float',
+        offsetBytes: 20,
+        integer: false,
+      },
+      {
+        name: 'a_color_g',
+        components: 1,
+        type: 'float',
+        offsetBytes: 24,
+        integer: false,
+      },
+      {
+        name: 'a_color_b',
+        components: 1,
+        type: 'float',
+        offsetBytes: 28,
+        integer: false,
+      },
     ],
   },
 ]
@@ -148,14 +238,22 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
 
     if (data.numRects > 0) {
       const buf = interleaveRects(
-        data.rectPositions, data.rectYs, data.rectHeights, data.rectColors, data.numRects,
+        data.rectPositions,
+        data.rectYs,
+        data.rectHeights,
+        data.rectColors,
+        data.numRects,
       )
       this.hal.uploadBuffer(regionNumber, PASS_RECT, buf, data.numRects)
     }
 
     if (data.numLines > 0) {
       const buf = interleaveLines(
-        data.linePositions, data.lineYs, data.lineDirections, data.lineColors, data.numLines,
+        data.linePositions,
+        data.lineYs,
+        data.lineDirections,
+        data.lineColors,
+        data.numLines,
       )
       this.hal.uploadBuffer(regionNumber, PASS_LINE, buf, data.numLines)
       this.hasLines.set(regionNumber, true)
@@ -163,8 +261,12 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
 
     if (data.numArrows > 0) {
       const buf = interleaveArrows(
-        data.arrowXs, data.arrowYs, data.arrowDirections, data.arrowHeights,
-        data.arrowColors, data.numArrows,
+        data.arrowXs,
+        data.arrowYs,
+        data.arrowDirections,
+        data.arrowHeights,
+        data.arrowColors,
+        data.numArrows,
       )
       this.hal.uploadBuffer(regionNumber, PASS_ARROW, buf, data.numArrows)
       this.hasArrows.set(regionNumber, true)
@@ -191,9 +293,11 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
       if (regionStart === undefined) {
         continue
       }
-      if (this.hal.getBufferCount(block.regionNumber, PASS_RECT) === 0 &&
-          !this.hasLines.get(block.regionNumber) &&
-          !this.hasArrows.get(block.regionNumber)) {
+      if (
+        this.hal.getBufferCount(block.regionNumber, PASS_RECT) === 0 &&
+        !this.hasLines.get(block.regionNumber) &&
+        !this.hasArrows.get(block.regionNumber)
+      ) {
         continue
       }
 

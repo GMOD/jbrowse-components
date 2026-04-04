@@ -1,9 +1,16 @@
 import { clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
 
 import { FRAGMENT_SHADER, VERTEX_SHADER } from './variantGlslShaders.ts'
-import { INSTANCE_STRIDE, interleaveVariantInstances, variantShader } from './variantShaders.ts'
+import {
+  INSTANCE_STRIDE,
+  interleaveVariantInstances,
+  variantShader,
+} from './variantShaders.ts'
 
-import type { VariantBackend, VariantRenderBlock } from './variantBackendTypes.ts'
+import type {
+  VariantBackend,
+  VariantRenderBlock,
+} from './variantBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_MAIN = 'main'
@@ -21,10 +28,34 @@ export const VARIANT_PASSES: PassDescriptor[] = [
     blend: true,
     blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
     glAttributes: [
-      { name: 'a_start_end', components: 2, type: 'uint', offsetBytes: 0, integer: true },
-      { name: 'a_row_index', components: 1, type: 'uint', offsetBytes: 8, integer: true },
-      { name: 'a_shape_type', components: 1, type: 'uint', offsetBytes: 12, integer: true },
-      { name: 'a_color', components: 4, type: 'float', offsetBytes: 16, integer: false },
+      {
+        name: 'a_start_end',
+        components: 2,
+        type: 'uint',
+        offsetBytes: 0,
+        integer: true,
+      },
+      {
+        name: 'a_row_index',
+        components: 1,
+        type: 'uint',
+        offsetBytes: 8,
+        integer: true,
+      },
+      {
+        name: 'a_shape_type',
+        components: 1,
+        type: 'uint',
+        offsetBytes: 12,
+        integer: true,
+      },
+      {
+        name: 'a_color',
+        components: 4,
+        type: 'float',
+        offsetBytes: 16,
+        integer: false,
+      },
     ],
   },
 ]

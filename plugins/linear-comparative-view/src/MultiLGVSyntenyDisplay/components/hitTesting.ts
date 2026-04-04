@@ -1,7 +1,6 @@
+import { visitCigarOps, visitCsOps } from '@jbrowse/alignments-core'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
-
-import { visitCigarOps, visitCsOps } from '@jbrowse/alignments-core'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
@@ -46,7 +45,11 @@ function collectOpsItems(feat: MultiPairFeature) {
       })
     },
     onDeletion(refPos: number, len: number) {
-      items.push({ type: 'deletion' as const, refPosition: refPos, length: len })
+      items.push({
+        type: 'deletion' as const,
+        refPosition: refPos,
+        length: len,
+      })
     },
     onInsertion(refPos: number, len: number, insertionSeq?: string) {
       items.push({

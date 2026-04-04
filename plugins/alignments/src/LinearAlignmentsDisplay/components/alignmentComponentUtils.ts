@@ -10,7 +10,6 @@ import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
 import { fillColor } from '../../shared/color.ts'
 
-import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 import type {
   AlignmentsRenderer,
   ColorPalette,
@@ -18,6 +17,7 @@ import type {
 } from './AlignmentsRenderer.ts'
 import type { CigarHitResult, SashimiArcHitResult } from './hitTesting'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types'
+import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 import type { Theme } from '@mui/material'
 
 function toRgb(color: string): RGBColor {

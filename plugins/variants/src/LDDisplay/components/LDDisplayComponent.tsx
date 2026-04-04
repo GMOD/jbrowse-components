@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { ErrorOverlay } from '@jbrowse/core/ui'
+import { CanvasDisplayWrapper, ErrorOverlay } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView, max, useGpuRenderer } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { CanvasDisplayWrapper } from '@jbrowse/core/ui'
 import LDColorLegend from './LDColorLegend.tsx'
 import { LDRenderer, generateLDColorRamp } from './LDRenderer.ts'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
@@ -281,12 +280,10 @@ const LDCanvas = observer(function LDCanvas({
     y: number
   }>()
 
-  const {
-    error,
-    ready,
-    rendererRef,
-    retry,
-  } = useGpuRenderer(canvasRef, LDRenderer)
+  const { error, ready, rendererRef, retry } = useGpuRenderer(
+    canvasRef,
+    LDRenderer,
+  )
 
   const region = view.dynamicBlocks.contentBlocks[0]
   const bpPerPx = view.bpPerPx

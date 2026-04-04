@@ -4,11 +4,6 @@ import {
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
 
-import type {
-  CanvasFeatureBackend,
-  FeatureRenderBlock,
-} from './canvasFeatureBackendTypes.ts'
-
 import {
   CHEVRON_H_PX,
   CHEVRON_SPACING_PX,
@@ -18,6 +13,11 @@ import {
   STEM_HALF_H_PX,
   STEM_LENGTH_PX,
 } from './sharedRendererConstants.ts'
+
+import type {
+  CanvasFeatureBackend,
+  FeatureRenderBlock,
+} from './canvasFeatureBackendTypes.ts'
 
 const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5
 const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5

@@ -4,8 +4,8 @@ import { observer } from 'mobx-react'
 
 import { CANVAS_HEIGHT } from '../model.ts'
 
-import type { TubeMapViewModel } from '../model.ts'
 import type { TubeMapLayout, TubeMapNode } from '../../layout/types.ts'
+import type { TubeMapViewModel } from '../model.ts'
 
 // color palette for tracks (similar to sequenceTubeMap)
 const TRACK_COLORS = [
@@ -46,24 +46,28 @@ function NodeRect({
   onClick: () => void
 }) {
   const screenWidth = node.pixelWidth * scale
-  const showSequence =
-    node.sequence && screenWidth > MIN_SEQ_DISPLAY_WIDTH
+  const showSequence = node.sequence && screenWidth > MIN_SEQ_DISPLAY_WIDTH
   const nodeHeight = Math.max(node.contentHeight, 6)
 
   // compute font size that fits the node height, capped at a reasonable size
   const fontSize = showSequence
-    ? Math.min(10, nodeHeight * 0.7, (node.pixelWidth / node.sequenceLength) * 0.9)
+    ? Math.min(
+        10,
+        nodeHeight * 0.7,
+        (node.pixelWidth / node.sequenceLength) * 0.9,
+      )
     : 0
 
   // only show as many chars as will fit
   const maxChars = showSequence
     ? Math.floor(node.pixelWidth / (fontSize * 0.6))
     : 0
-  const displaySeq = showSequence && node.sequence
-    ? node.sequence.length <= maxChars
-      ? node.sequence
-      : node.sequence.slice(0, maxChars)
-    : ''
+  const displaySeq =
+    showSequence && node.sequence
+      ? node.sequence.length <= maxChars
+        ? node.sequence
+        : node.sequence.slice(0, maxChars)
+      : ''
 
   return (
     <g>
@@ -145,13 +149,14 @@ function TrackPaths({
 
         for (let i = 0; i < pathSegments.length; i++) {
           const seg = pathSegments[i]!
-          const node =
-            seg.node !== null ? layout.nodes[seg.node] : undefined
+          const node = seg.node !== null ? layout.nodes[seg.node] : undefined
 
           if (i === 0) {
             if (node) {
-              pathParts.push(`M ${node.x} ${seg.y + 3.5}`)
-              pathParts.push(`L ${node.x + node.pixelWidth} ${seg.y + 3.5}`)
+              pathParts.push(
+                `M ${node.x} ${seg.y + 3.5}`,
+                `L ${node.x + node.pixelWidth} ${seg.y + 3.5}`,
+              )
             } else {
               // edge segment at an intermediate order - find x from nodes at this order
               const x = layout.orderToX[seg.order]!
@@ -204,16 +209,13 @@ function TrackPaths({
             stroke={color}
             strokeWidth={isHovered ? 5 : 3}
             strokeLinecap="round"
-            opacity={
-              hoveredTrack !== null && !isHovered ? 0.3 : 0.85
-            }
+            opacity={hoveredTrack !== null && !isHovered ? 0.3 : 0.85}
           />
         )
       })}
     </>
   )
 }
-
 
 function TrackLegend({
   layout,
@@ -347,7 +349,12 @@ const TubeMapCanvas = observer(function TubeMapCanvas({
 
   return (
     <div
-      style={{ overflow: 'hidden', height: CANVAS_HEIGHT, background: '#fff', position: 'relative' }}
+      style={{
+        overflow: 'hidden',
+        height: CANVAS_HEIGHT,
+        background: '#fff',
+        position: 'relative',
+      }}
     >
       <TrackLegend
         layout={layout}
@@ -370,7 +377,12 @@ const TubeMapCanvas = observer(function TubeMapCanvas({
         <g
           transform={`translate(${model.translateX},${model.translateY}) scale(${model.scale})`}
         >
-          <TrackPaths layout={layout} hoveredTrack={model.hoveredTrack} xMin={xMin} xMax={xMax} />
+          <TrackPaths
+            layout={layout}
+            hoveredTrack={model.hoveredTrack}
+            xMin={xMin}
+            xMax={xMax}
+          />
           {layout.nodes.map((node, i) => {
             // viewport culling: skip nodes entirely outside visible range
             if (node.x + node.pixelWidth < xMin || node.x > xMax) {
@@ -393,9 +405,7 @@ const TubeMapCanvas = observer(function TubeMapCanvas({
                   model.setHoveredNode(null)
                 }}
                 onClick={() => {
-                  model.setSelectedNode(
-                    model.selectedNode === i ? null : i,
-                  )
+                  model.setSelectedNode(model.selectedNode === i ? null : i)
                 }}
               />
             )

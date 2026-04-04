@@ -3,15 +3,15 @@ import {
   BASE_C_COLOR,
   BASE_G_COLOR,
   BASE_T_COLOR,
-  packSnpSegmentsForGpu,
-  packIndicatorsForGpu,
-  packNoncovSegmentsForGpu,
-  packModCovSegmentsForGpu,
   drawCoverageBins,
-  drawSnpSegments,
   drawIndicators,
-  drawNoncovSegments,
   drawModCovSegments,
+  drawNoncovSegments,
+  drawSnpSegments,
+  packIndicatorsForGpu,
+  packModCovSegmentsForGpu,
+  packNoncovSegmentsForGpu,
+  packSnpSegmentsForGpu,
 } from '@jbrowse/alignments-core'
 import {
   clipBlockForCanvas,
@@ -375,7 +375,8 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       const f32 = new Float32Array(buf)
       for (let i = 0; i < n; i++) {
         const off = i * 3
-        const normalizedDepth = (data.coverageDepths[i] ?? 0) / data.coverageMaxDepth
+        const normalizedDepth =
+          (data.coverageDepths[i] ?? 0) / data.coverageMaxDepth
         f32[off] = data.coverageStartOffset + i + r.regionStart
         f32[off + 1] = 0
         f32[off + 2] = normalizedDepth
@@ -386,8 +387,12 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
 
     if (data.numSnpSegments > 0) {
       const packed = packSnpSegmentsForGpu(
-        data.snpPositions, data.snpYOffsets, data.snpHeights,
-        data.snpColorTypes, data.numSnpSegments, r.regionStart,
+        data.snpPositions,
+        data.snpYOffsets,
+        data.snpHeights,
+        data.snpColorTypes,
+        data.numSnpSegments,
+        r.regionStart,
       )
       r.snpBuffer = packed.buffer
       r.snpSegmentCount = packed.segmentCount
@@ -395,8 +400,12 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
 
     if (data.numNoncovSegments > 0) {
       const packed = packNoncovSegmentsForGpu(
-        data.noncovPositions, data.noncovYOffsets, data.noncovHeights,
-        data.noncovColorTypes, data.numNoncovSegments, r.regionStart,
+        data.noncovPositions,
+        data.noncovYOffsets,
+        data.noncovHeights,
+        data.noncovColorTypes,
+        data.numNoncovSegments,
+        r.regionStart,
       )
       r.noncovBuffer = packed.buffer
       r.noncovSegmentCount = packed.segmentCount
@@ -405,8 +414,10 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
 
     if (data.numIndicators > 0) {
       const packed = packIndicatorsForGpu(
-        data.indicatorPositions, data.indicatorColorTypes,
-        data.numIndicators, r.regionStart,
+        data.indicatorPositions,
+        data.indicatorColorTypes,
+        data.numIndicators,
+        r.regionStart,
       )
       r.indicatorBuffer = packed.buffer
       r.indicatorCount = packed.indicatorCount
@@ -423,8 +434,12 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     }
     if (data.numModCovSegments > 0) {
       const packed = packModCovSegmentsForGpu(
-        data.modCovPositions, data.modCovYOffsets, data.modCovHeights,
-        data.modCovColors, data.numModCovSegments, r.regionStart,
+        data.modCovPositions,
+        data.modCovYOffsets,
+        data.modCovHeights,
+        data.modCovColors,
+        data.numModCovSegments,
+        r.regionStart,
       )
       r.modCovBuffer = packed.buffer
       r.modCovSegmentCount = packed.segmentCount
@@ -894,7 +909,8 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   ) {
     const covH = state.coverageHeight
     const covColor = rgb255(state.colors.colorCoverage)
-    const bpToX = (bp: number) => this.bpToScreenX(bp, block, bpLength, fullBlockWidth)
+    const bpToX = (bp: number) =>
+      this.bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const viewWidth = fullBlockWidth + block.screenStartPx
 
     const snpColors = {
@@ -913,11 +929,52 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       hardclip: rgb255(state.colors.colorHardclip),
     }
 
-    drawCoverageBins(ctx, region.coverageBuffer, region.coverageBinCount, region.coverageMaxDepth, covH, covColor, bpToX, viewWidth)
-    drawSnpSegments(ctx, region.snpBuffer, region.snpSegmentCount, region.coverageMaxDepth, covH, snpColors, bpToX, viewWidth)
-    drawModCovSegments(ctx, region.modCovBuffer, region.modCovSegmentCount, region.coverageMaxDepth, covH, bpToX, viewWidth)
-    drawNoncovSegments(ctx, region.noncovBuffer, region.noncovSegmentCount, region.noncovMaxCount, noncovColors, bpToX, viewWidth)
-    drawIndicators(ctx, region.indicatorBuffer, region.indicatorCount, noncovColors, bpToX, viewWidth)
+    drawCoverageBins(
+      ctx,
+      region.coverageBuffer,
+      region.coverageBinCount,
+      region.coverageMaxDepth,
+      covH,
+      covColor,
+      bpToX,
+      viewWidth,
+    )
+    drawSnpSegments(
+      ctx,
+      region.snpBuffer,
+      region.snpSegmentCount,
+      region.coverageMaxDepth,
+      covH,
+      snpColors,
+      bpToX,
+      viewWidth,
+    )
+    drawModCovSegments(
+      ctx,
+      region.modCovBuffer,
+      region.modCovSegmentCount,
+      region.coverageMaxDepth,
+      covH,
+      bpToX,
+      viewWidth,
+    )
+    drawNoncovSegments(
+      ctx,
+      region.noncovBuffer,
+      region.noncovSegmentCount,
+      region.noncovMaxCount,
+      noncovColors,
+      bpToX,
+      viewWidth,
+    )
+    drawIndicators(
+      ctx,
+      region.indicatorBuffer,
+      region.indicatorCount,
+      noncovColors,
+      bpToX,
+      viewWidth,
+    )
   }
 
   private paletteColor(palette: [number, number, number][], idx: number) {

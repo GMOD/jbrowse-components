@@ -1,17 +1,17 @@
+import {
+  lookupColorRamp,
+  lookupColorRampCSS,
+} from '@jbrowse/core/gpu/canvas2dUtils'
 import { getContainingView, max } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
 import { LDSVGColorLegend } from './components/LDColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantLabels from './components/VariantLabels.tsx'
-import { generateLDColorRamp } from './components/ldColorRamp.ts'
 import Wrapper from './components/Wrapper.tsx'
+import { generateLDColorRamp } from './components/ldColorRamp.ts'
 import RecombinationTrack from '../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../shared/components/RecombinationYScaleBar.tsx'
-import {
-  lookupColorRamp,
-  lookupColorRampCSS,
-} from '@jbrowse/core/gpu/canvas2dUtils'
 
 import type { SharedLDModel } from './shared.ts'
 import type {

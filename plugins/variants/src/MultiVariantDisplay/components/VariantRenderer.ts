@@ -12,23 +12,16 @@ import type {
   VariantRenderBlock,
 } from './variantBackendTypes.ts'
 
-const rendererCache = new WeakMap<HTMLCanvasElement, VariantRenderer>()
-
 export class VariantRenderer {
   private canvas: HTMLCanvasElement
   private backend: VariantBackend | null = null
 
-  private constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
   }
 
   static getOrCreate(canvas: HTMLCanvasElement) {
-    let renderer = rendererCache.get(canvas)
-    if (!renderer) {
-      renderer = new VariantRenderer(canvas)
-      rendererCache.set(canvas, renderer)
-    }
-    return renderer
+    return new VariantRenderer(canvas)
   }
 
   async init() {
@@ -75,6 +68,5 @@ export class VariantRenderer {
   dispose() {
     this.backend?.dispose()
     this.backend = null
-    rendererCache.delete(this.canvas)
   }
 }

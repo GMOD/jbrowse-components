@@ -1,4 +1,5 @@
 import { clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
+
 import { computeNumRows, interleaveInstances } from './webglUtils.ts'
 import {
   WIGGLE_FRAGMENT_SHADER_GLSL,
@@ -18,18 +19,52 @@ import type {
   WiggleGPURenderState,
   WiggleRenderBlock,
 } from './wiggleBackendTypes.ts'
-import type { GlAttributeLayout, GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
+import type {
+  GlAttributeLayout,
+  GpuHal,
+  PassDescriptor,
+} from '@jbrowse/core/gpu/hal'
 
 const PASS_FILL = 'fill'
 const PASS_LINE = 'line'
 const INSTANCE_BYTES = INSTANCE_STRIDE * 4
 
 const WIGGLE_GL_ATTRIBUTES: GlAttributeLayout[] = [
-  { name: 'a_start_end', components: 2, type: 'uint', offsetBytes: 0, integer: true },
-  { name: 'a_score', components: 1, type: 'float', offsetBytes: 8, integer: false },
-  { name: 'a_prev_score', components: 1, type: 'float', offsetBytes: 12, integer: false },
-  { name: 'a_color', components: 3, type: 'float', offsetBytes: 16, integer: false },
-  { name: 'a_row_index', components: 1, type: 'float', offsetBytes: 28, integer: false },
+  {
+    name: 'a_start_end',
+    components: 2,
+    type: 'uint',
+    offsetBytes: 0,
+    integer: true,
+  },
+  {
+    name: 'a_score',
+    components: 1,
+    type: 'float',
+    offsetBytes: 8,
+    integer: false,
+  },
+  {
+    name: 'a_prev_score',
+    components: 1,
+    type: 'float',
+    offsetBytes: 12,
+    integer: false,
+  },
+  {
+    name: 'a_color',
+    components: 3,
+    type: 'float',
+    offsetBytes: 16,
+    integer: false,
+  },
+  {
+    name: 'a_row_index',
+    components: 1,
+    type: 'float',
+    offsetBytes: 28,
+    integer: false,
+  },
 ]
 
 const BASE_PASS = {
@@ -46,8 +81,6 @@ export const WIGGLE_PASSES: PassDescriptor[] = [
   { ...BASE_PASS, id: PASS_FILL, topology: 'triangle-list' },
   { ...BASE_PASS, id: PASS_LINE, topology: 'line-list' },
 ]
-
-export { UNIFORM_SIZE as WIGGLE_UNIFORM_BYTE_SIZE }
 
 interface RegionInfo {
   numRows: number
@@ -141,7 +174,7 @@ export class GpuWiggleRenderer implements WiggleBackend {
       this.uniformF32[9] = state.domainY[1]
       this.uniformF32[10] = 0 // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision
       this.uniformF32[11] = clip.pxW
-      this.uniformF32[12] = block.reversed ? 1.0 : 0.0
+      this.uniformF32[12] = block.reversed ? 1 : 0
 
       this.hal.writeUniforms(this.uniformData)
       this.hal.drawPass(passId, block.regionNumber, PASS_FILL)
@@ -157,3 +190,5 @@ export class GpuWiggleRenderer implements WiggleBackend {
     this.hal.dispose()
   }
 }
+
+export { UNIFORM_SIZE as WIGGLE_UNIFORM_BYTE_SIZE } from './wiggleShader.ts'

@@ -70,7 +70,7 @@ export class MockHal implements GpuHal {
 
   deleteRegion(regionKey: number) {
     this.record('deleteRegion', regionKey)
-    for (const key of [...this.buffers.keys()]) {
+    for (const key of this.buffers.keys()) {
       if (key.startsWith(`${regionKey}:`)) {
         this.buffers.delete(key)
       }
@@ -116,7 +116,13 @@ export class MockHal implements GpuHal {
     instanceCount?: number,
     bufferPassId?: string,
   ) {
-    this.record('drawPickingPass', passId, regionKey, instanceCount, bufferPassId)
+    this.record(
+      'drawPickingPass',
+      passId,
+      regionKey,
+      instanceCount,
+      bufferPassId,
+    )
   }
 
   readPickingPixel(_x: number, _y: number) {

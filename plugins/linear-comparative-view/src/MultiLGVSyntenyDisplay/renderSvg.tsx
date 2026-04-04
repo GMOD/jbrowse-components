@@ -5,8 +5,8 @@ import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { CoverageYScaleBar } from '@jbrowse/plugin-alignments'
 import { when } from 'mobx'
 
-import { LABEL_WIDTH } from './components/multiSyntenyBackendTypes.ts'
 import { renderMultiSyntenyToCtx } from './components/Canvas2DMultiSyntenyRenderer.ts'
+import { LABEL_WIDTH } from './components/multiSyntenyBackendTypes.ts'
 
 import type { MultiLGVSyntenyDisplayModel } from './model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -56,9 +56,7 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
     labelW,
     showSnps,
     coverageHeight: syntenyCoverageHeight,
-    coverageRegions: showCoverage
-      ? [...rpcDataMap.values()]
-      : [],
+    coverageRegions: showCoverage ? [...rpcDataMap.values()] : [],
     colors: {
       mismatch: MISMATCH_COLOR,
       deletion: palette.deletion,

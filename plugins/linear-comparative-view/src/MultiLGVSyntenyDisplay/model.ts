@@ -15,7 +15,6 @@ import {
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
@@ -26,10 +25,10 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import TimelineIcon from '@mui/icons-material/Timeline'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
+import { autorun } from 'mobx'
 
-import { legendItems as legendItemsMap } from './components/multiSyntenyColorUtils.ts'
 import { LABEL_WIDTH } from './components/multiSyntenyBackendTypes.ts'
-
+import { legendItems as legendItemsMap } from './components/multiSyntenyColorUtils.ts'
 import {
   getGlobalMaxDepth,
   mergeGenomeRows,
@@ -487,8 +486,13 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 }
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const _dv = self.dataVersion
-                const { height, rowHeight, rowSpacing, syntenyCoverageHeight, displayedGenomes } =
-                  self
+                const {
+                  height,
+                  rowHeight,
+                  rowSpacing,
+                  syntenyCoverageHeight,
+                  displayedGenomes,
+                } = self
                 const contentBlocks = view.staticBlocks.contentBlocks
                 const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
 
@@ -523,9 +527,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 }
                 const maxDepth = computeVisibleMaxDepth(
                   view.dynamicBlocks.contentBlocks,
-                  b => b.regionNumber !== undefined
-                    ? self.rpcDataMap.get(b.regionNumber)
-                    : undefined,
+                  b =>
+                    b.regionNumber !== undefined
+                      ? self.rpcDataMap.get(b.regionNumber)
+                      : undefined,
                 )
                 self.setVisibleMaxDepth(maxDepth)
               },

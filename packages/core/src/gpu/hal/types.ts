@@ -69,10 +69,20 @@ export interface GpuHal {
   deleteRegion(regionKey: number): void
   deleteAllRegions(): void
 
-  uploadTexture(passId: string, data: Uint8Array, width: number, height: number): void
+  uploadTexture(
+    passId: string,
+    data: Uint8Array,
+    width: number,
+    height: number,
+  ): void
 
   writeUniforms(data: ArrayBuffer): void
-  beginFrame(clearR: number, clearG: number, clearB: number, clearA?: number): void
+  beginFrame(
+    clearR: number,
+    clearG: number,
+    clearB: number,
+    clearA?: number,
+  ): void
   // Draw a pass. If bufferPassId is provided, use that pass's data buffer
   // instead of passId's own buffer (for sharing data between passes with
   // different pipelines/topologies).
@@ -82,7 +92,12 @@ export interface GpuHal {
   // Render a picking pass to the offscreen target. The pass must have picking: true.
   // Optional instanceCount overrides the uploaded count (for rendering a subset).
   // Optional bufferPassId uses another pass's data buffer.
-  drawPickingPass(passId: string, regionKey: number, instanceCount?: number, bufferPassId?: string): void
+  drawPickingPass(
+    passId: string,
+    regionKey: number,
+    instanceCount?: number,
+    bufferPassId?: string,
+  ): void
   // Synchronous pixel read from picking target (WebGL) or last cached result.
   readPickingPixel(x: number, y: number): number
   // Async pixel read from picking target (WebGPU mapAsync).

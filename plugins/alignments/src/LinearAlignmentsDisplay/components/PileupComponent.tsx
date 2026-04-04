@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { ErrorBar } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -9,7 +10,6 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'

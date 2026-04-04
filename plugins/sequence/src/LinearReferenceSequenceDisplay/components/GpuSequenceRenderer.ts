@@ -23,9 +23,27 @@ export const SEQUENCE_PASSES: PassDescriptor[] = [
     verticesPerInstance: 6,
     blend: false,
     glAttributes: [
-      { name: 'a_rect', components: 4, type: 'float', offsetBytes: 0, integer: false },
-      { name: 'a_color', components: 3, type: 'float', offsetBytes: 16, integer: false },
-      { name: 'a_borderFlag', components: 1, type: 'float', offsetBytes: 28, integer: false },
+      {
+        name: 'a_rect',
+        components: 4,
+        type: 'float',
+        offsetBytes: 0,
+        integer: false,
+      },
+      {
+        name: 'a_color',
+        components: 3,
+        type: 'float',
+        offsetBytes: 16,
+        integer: false,
+      },
+      {
+        name: 'a_borderFlag',
+        components: 1,
+        type: 'float',
+        offsetBytes: 28,
+        integer: false,
+      },
     ],
   },
 ]
@@ -48,8 +66,17 @@ export class GpuSequenceRenderer implements SequenceBackend {
       this.hal.deleteRegion(REGION_KEY)
       return
     }
-    const interleaved = interleaveSequenceInstances(rectBuf, colorBuf, instanceCount)
-    this.hal.uploadBuffer(REGION_KEY, PASS_MAIN, interleaved.buffer, instanceCount)
+    const interleaved = interleaveSequenceInstances(
+      rectBuf,
+      colorBuf,
+      instanceCount,
+    )
+    this.hal.uploadBuffer(
+      REGION_KEY,
+      PASS_MAIN,
+      interleaved.buffer,
+      instanceCount,
+    )
   }
 
   render(
@@ -62,7 +89,10 @@ export class GpuSequenceRenderer implements SequenceBackend {
     this.hal.resize(cssWidth, cssHeight)
     this.hal.beginFrame(1, 1, 1, 1)
 
-    if (instanceCount > 0 && this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0) {
+    if (
+      instanceCount > 0 &&
+      this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0
+    ) {
       this.uniformF32[0] = basePx
       this.uniformF32[1] = bpPerPx
       this.uniformF32[2] = cssWidth

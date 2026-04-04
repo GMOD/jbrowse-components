@@ -1,9 +1,10 @@
 import React from 'react'
 
-import LoadingEllipses from './LoadingEllipses.tsx'
-import ErrorMessage from './ErrorMessage.tsx'
-import { makeStyles } from '../util/tss-react/index.ts'
 import { observer } from 'mobx-react'
+
+import ErrorMessage from './ErrorMessage.tsx'
+import LoadingEllipses from './LoadingEllipses.tsx'
+import { makeStyles } from '../util/tss-react/index.ts'
 
 export interface CanvasDisplayModel {
   error?: unknown

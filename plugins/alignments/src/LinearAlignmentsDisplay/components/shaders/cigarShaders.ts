@@ -1,9 +1,13 @@
 import {
+  CIGAR_DOMAIN_GLSL,
+  GLSL_UBO_PREAMBLE,
+  PILEUP_Y_GLSL,
+} from './uboCommon.ts'
+import {
   INSERTION_SERIF_MIN_PX_PER_BP,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
 } from '../../constants.ts'
-import { GLSL_UBO_PREAMBLE, CIGAR_DOMAIN_GLSL, PILEUP_Y_GLSL } from './uboCommon.ts'
 
 export const GAP_VERTEX_SHADER = `#version 300 es
 precision highp float;

@@ -5,49 +5,53 @@ import {
 } from '@jbrowse/alignments-core'
 
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
-import { splitPositionWithFrac } from './shaders/utils.ts'
 import {
+  ARC_FRAGMENT_SHADER,
+  ARC_LINE_FRAGMENT_SHADER,
+  ARC_LINE_VERTEX_SHADER,
+  ARC_VERTEX_SHADER,
+  SASHIMI_ARC_FRAGMENT_SHADER,
+  SASHIMI_ARC_VERTEX_SHADER,
   arcColorPalette,
   arcLineColorPalette,
   sashimiColorPalette,
-  ARC_VERTEX_SHADER,
-  ARC_FRAGMENT_SHADER,
-  ARC_LINE_VERTEX_SHADER,
-  ARC_LINE_FRAGMENT_SHADER,
-  SASHIMI_ARC_VERTEX_SHADER,
-  SASHIMI_ARC_FRAGMENT_SHADER,
 } from './shaders/arcShaders.ts'
 import {
-  GAP_VERTEX_SHADER,
   GAP_FRAGMENT_SHADER,
-  MISMATCH_VERTEX_SHADER,
-  MISMATCH_FRAGMENT_SHADER,
-  INSERTION_VERTEX_SHADER,
-  INSERTION_FRAGMENT_SHADER,
-  SOFTCLIP_VERTEX_SHADER,
-  SOFTCLIP_FRAGMENT_SHADER,
-  HARDCLIP_VERTEX_SHADER,
+  GAP_VERTEX_SHADER,
   HARDCLIP_FRAGMENT_SHADER,
-  MODIFICATION_VERTEX_SHADER,
+  HARDCLIP_VERTEX_SHADER,
+  INSERTION_FRAGMENT_SHADER,
+  INSERTION_VERTEX_SHADER,
+  MISMATCH_FRAGMENT_SHADER,
+  MISMATCH_VERTEX_SHADER,
   MODIFICATION_FRAGMENT_SHADER,
+  MODIFICATION_VERTEX_SHADER,
+  SOFTCLIP_FRAGMENT_SHADER,
+  SOFTCLIP_VERTEX_SHADER,
 } from './shaders/cigarShaders.ts'
 import {
-  COVERAGE_VERTEX_SHADER,
+  CONNECTING_LINE_FRAGMENT_SHADER,
+  CONNECTING_LINE_VERTEX_SHADER,
+} from './shaders/connectingLineShaders.ts'
+import {
   COVERAGE_FRAGMENT_SHADER,
-  SNP_COVERAGE_VERTEX_SHADER,
-  SNP_COVERAGE_FRAGMENT_SHADER,
-  MOD_COVERAGE_VERTEX_SHADER,
-  MOD_COVERAGE_FRAGMENT_SHADER,
-  NONCOV_HISTOGRAM_VERTEX_SHADER,
-  NONCOV_HISTOGRAM_FRAGMENT_SHADER,
-  INDICATOR_VERTEX_SHADER,
+  COVERAGE_VERTEX_SHADER,
   INDICATOR_FRAGMENT_SHADER,
+  INDICATOR_VERTEX_SHADER,
+  MOD_COVERAGE_FRAGMENT_SHADER,
+  MOD_COVERAGE_VERTEX_SHADER,
+  NONCOV_HISTOGRAM_FRAGMENT_SHADER,
+  NONCOV_HISTOGRAM_VERTEX_SHADER,
+  SNP_COVERAGE_FRAGMENT_SHADER,
+  SNP_COVERAGE_VERTEX_SHADER,
 } from './shaders/coverageShaders.ts'
 import {
-  CONNECTING_LINE_VERTEX_SHADER,
-  CONNECTING_LINE_FRAGMENT_SHADER,
-} from './shaders/connectingLineShaders.ts'
-import { READ_VERTEX_SHADER, READ_FRAGMENT_SHADER } from './shaders/readShaders.ts'
+  READ_FRAGMENT_SHADER,
+  READ_VERTEX_SHADER,
+} from './shaders/readShaders.ts'
+import { GLSL_UBO_PREAMBLE } from './shaders/uboCommon.ts'
+import { splitPositionWithFrac } from './shaders/utils.ts'
 import {
   GAP_WGSL,
   HARDCLIP_WGSL,
@@ -86,6 +90,15 @@ import {
   U_CANVAS_H,
   U_CANVAS_W,
   U_CHAIN_MODE,
+  U_COLOR_BASE_A,
+  U_COLOR_BASE_C,
+  U_COLOR_BASE_G,
+  U_COLOR_BASE_T,
+  U_COLOR_COVERAGE,
+  U_COLOR_DELETION,
+  U_COLOR_FWD,
+  U_COLOR_NOSTRAND,
+  U_COLOR_REV,
   U_COLOR_SCHEME,
   U_COV_HEIGHT,
   U_COV_OFFSET,
@@ -110,23 +123,14 @@ import {
   U_SASHIMI_COLORS,
   U_SCROLL_TOP,
   U_SHOW_STROKE,
-  U_COLOR_FWD,
-  U_COLOR_REV,
-  U_COLOR_NOSTRAND,
   U_COLOR_PAIR_LR,
   U_COLOR_PAIR_RL,
   U_COLOR_PAIR_RR,
   U_COLOR_PAIR_LL,
-  U_COLOR_BASE_A,
-  U_COLOR_BASE_C,
-  U_COLOR_BASE_G,
-  U_COLOR_BASE_T,
   U_COLOR_INSERTION,
-  U_COLOR_DELETION,
   U_COLOR_SKIP,
   U_COLOR_SOFTCLIP,
   U_COLOR_HARDCLIP,
-  U_COLOR_COVERAGE,
   U_COLOR_MOD_FWD,
   U_COLOR_MOD_REV,
   U_COLOR_LONG_INSERT,
@@ -149,7 +153,6 @@ import {
   SASHIMI_WGSL,
 } from './wgsl/miscShaders.ts'
 import { READ_WGSL } from './wgsl/readShader.ts'
-import { GLSL_UBO_PREAMBLE } from './shaders/uboCommon.ts'
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
@@ -215,7 +218,13 @@ const PASS_SOFTCLIP_BASES = 'softclipBases'
 
 // Helper to define float attributes
 function fattr(name: string, components: number, offsetBytes: number) {
-  return { name, components, type: 'float' as const, offsetBytes, integer: false }
+  return {
+    name,
+    components,
+    type: 'float' as const,
+    offsetBytes,
+    integer: false,
+  }
 }
 function uattr(name: string, components: number, offsetBytes: number) {
   return { name, components, type: 'uint' as const, offsetBytes, integer: true }
@@ -231,14 +240,20 @@ export const ALIGNMENTS_PASSES: PassDescriptor[] = [
     verticesPerInstance: 9,
     blend: true,
     glAttributes: [
-      uattr('a_position', 2, 0),      // posHi, posLo (uvec2)
+      uattr('a_position', 2, 0), // posHi, posLo (uvec2)
       uattr('a_y', 1, 8),
       uattr('a_flags', 1, 12),
       uattr('a_mapq', 1, 16),
       uattr('a_baseQuality', 1, 20),
       fattr('a_insertSize', 1, 24),
       uattr('a_pairOrientation', 1, 28),
-      { name: 'a_strand', components: 1, type: 'int' as const, offsetBytes: 32, integer: true },
+      {
+        name: 'a_strand',
+        components: 1,
+        type: 'int' as const,
+        offsetBytes: 32,
+        integer: true,
+      },
       fattr('a_tagColor', 3, 36),
       uattr('a_chainHasSupp', 1, 48),
       uattr('a_readIndex', 1, 52),
@@ -343,10 +358,7 @@ export const ALIGNMENTS_PASSES: PassDescriptor[] = [
     instanceStride: COVERAGE_STRIDE * 4,
     verticesPerInstance: 6,
     blend: true,
-    glAttributes: [
-      fattr('a_position', 1, 0),
-      fattr('a_depth', 1, 4),
-    ],
+    glAttributes: [fattr('a_position', 1, 0), fattr('a_depth', 1, 4)],
   },
   {
     id: PASS_SNP_COV,
@@ -401,10 +413,7 @@ export const ALIGNMENTS_PASSES: PassDescriptor[] = [
     instanceStride: INDICATOR_STRIDE * 4,
     verticesPerInstance: 3,
     blend: true,
-    glAttributes: [
-      fattr('a_position', 1, 0),
-      fattr('a_colorType', 1, 4),
-    ],
+    glAttributes: [fattr('a_position', 1, 0), fattr('a_colorType', 1, 4)],
   },
   {
     id: PASS_ARC,
@@ -461,10 +470,7 @@ export const ALIGNMENTS_PASSES: PassDescriptor[] = [
     instanceStride: CONN_LINE_STRIDE * 4,
     verticesPerInstance: 6,
     blend: true,
-    glAttributes: [
-      uattr('a_position', 2, 0),
-      fattr('a_y', 1, 8),
-    ],
+    glAttributes: [uattr('a_position', 2, 0), fattr('a_y', 1, 8)],
   },
   {
     id: PASS_SOFTCLIP_BASES,
@@ -630,7 +636,12 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         u32[o + 2] = data.mismatchBases[i]!
         f32[o + 3] = data.mismatchFrequencies[i]! / 255
       }
-      this.hal.uploadBuffer(regionNumber, PASS_MISMATCH, buf, data.numMismatches)
+      this.hal.uploadBuffer(
+        regionNumber,
+        PASS_MISMATCH,
+        buf,
+        data.numMismatches,
+      )
     }
 
     const insIdx: number[] = []
@@ -677,7 +688,12 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         u32[o + 2] = data.softclipBaseBases[i]!
       }
       // softclip bases reuse the mismatch pass
-      this.hal.uploadBuffer(regionNumber, PASS_SOFTCLIP_BASES, buf, data.numSoftclipBases)
+      this.hal.uploadBuffer(
+        regionNumber,
+        PASS_SOFTCLIP_BASES,
+        buf,
+        data.numSoftclipBases,
+      )
     }
   }
 
@@ -730,27 +746,49 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
     if (data.numSnpSegments > 0) {
       const packed = packSnpSegmentsForGpu(
-        data.snpPositions, data.snpYOffsets, data.snpHeights,
-        data.snpColorTypes, data.numSnpSegments,
+        data.snpPositions,
+        data.snpYOffsets,
+        data.snpHeights,
+        data.snpColorTypes,
+        data.numSnpSegments,
       )
-      this.hal.uploadBuffer(regionNumber, PASS_SNP_COV, packed.buffer, packed.segmentCount)
+      this.hal.uploadBuffer(
+        regionNumber,
+        PASS_SNP_COV,
+        packed.buffer,
+        packed.segmentCount,
+      )
     }
 
     if (data.numNoncovSegments > 0) {
       const packed = packNoncovSegmentsForGpu(
-        data.noncovPositions, data.noncovYOffsets, data.noncovHeights,
-        data.noncovColorTypes, data.numNoncovSegments,
+        data.noncovPositions,
+        data.noncovYOffsets,
+        data.noncovHeights,
+        data.noncovColorTypes,
+        data.numNoncovSegments,
       )
-      this.hal.uploadBuffer(regionNumber, PASS_NONCOV, packed.buffer, packed.segmentCount)
+      this.hal.uploadBuffer(
+        regionNumber,
+        PASS_NONCOV,
+        packed.buffer,
+        packed.segmentCount,
+      )
       r.noncovMaxCount = data.noncovMaxCount
     }
 
     if (data.numIndicators > 0) {
       const packed = packIndicatorsForGpu(
-        data.indicatorPositions, data.indicatorColorTypes,
+        data.indicatorPositions,
+        data.indicatorColorTypes,
         data.numIndicators,
       )
-      this.hal.uploadBuffer(regionNumber, PASS_INDICATOR, packed.buffer, packed.indicatorCount)
+      this.hal.uploadBuffer(
+        regionNumber,
+        PASS_INDICATOR,
+        packed.buffer,
+        packed.indicatorCount,
+      )
     }
   }
 
@@ -914,9 +952,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         : 1
     f[U_BIN_SIZE] = region.binSize
     f[U_NONCOV_HEIGHT] =
-      region.noncovMaxCount > 0
-        ? Math.min(region.noncovMaxCount * 2, 20)
-        : 0
+      region.noncovMaxCount > 0 ? Math.min(region.noncovMaxCount * 2, 20) : 0
     f[U_INSERT_UPPER] = region.insertSizeStats?.upper ?? 999999
     f[U_INSERT_LOWER] = region.insertSizeStats?.lower ?? 0
     f[U_SCROLL_TOP] = state.rangeY[0]
@@ -994,8 +1030,16 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       const bpLen = clippedBpEnd - clippedBpStart
 
       this.writeUniforms(
-        state, bpHi, bpLo, bpLen, region.regionStart, scissorW,
-        region, clippedBpStart, clippedBpEnd, block.reversed,
+        state,
+        bpHi,
+        bpLo,
+        bpLen,
+        region.regionStart,
+        scissorW,
+        region,
+        clippedBpStart,
+        clippedBpEnd,
+        block.reversed,
       )
 
       const mode = state.renderingMode ?? 'pileup'
@@ -1007,12 +1051,16 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
       // Coverage area: full-height scissor
       this.hal.setViewport(
-        Math.round(scissorX * dpr), 0,
-        Math.round(scissorW * dpr), bufH,
+        Math.round(scissorX * dpr),
+        0,
+        Math.round(scissorW * dpr),
+        bufH,
       )
       this.hal.setScissor(
-        Math.round(scissorX * dpr), 0,
-        Math.round(scissorW * dpr), bufH,
+        Math.round(scissorX * dpr),
+        0,
+        Math.round(scissorW * dpr),
+        bufH,
       )
 
       if (state.showCoverage) {
@@ -1026,8 +1074,10 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       // Pileup area: clip to below coverage+arcs
       if (pileupH > 0) {
         this.hal.setScissor(
-          Math.round(scissorX * dpr), pileupTop,
-          Math.round(scissorW * dpr), pileupH,
+          Math.round(scissorX * dpr),
+          pileupTop,
+          Math.round(scissorW * dpr),
+          pileupH,
         )
       }
 
@@ -1054,8 +1104,18 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
       // Feature highlight/selection overlays
       this.renderFeatureOverlays(
-        block, region, state, bpHi, bpLo, bpLen, scissorX, scissorW,
-        bufH, pileupTop, pileupH, dpr,
+        block,
+        region,
+        state,
+        bpHi,
+        bpLo,
+        bpLen,
+        scissorX,
+        scissorW,
+        bufH,
+        pileupTop,
+        pileupH,
+        dpr,
       )
 
       // Arcs area
@@ -1068,20 +1128,22 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         if (effectiveArcsHPx > 0) {
           this.uF32[U_COV_OFFSET] = 0
           this.uF32[U_CANVAS_H] = effectiveArcsHPx / dpr
-          this.writeBlockUniforms(
-            region, block, scissorX, scissorW,
-          )
+          this.writeBlockUniforms(region, block, scissorX, scissorW)
           this.uF32[U_LINE_WIDTH_PX] = state.arcLineWidth ?? 1
           this.uF32[U_GRADIENT_HUE] = 0
           this.hal.writeUniforms(this.uData)
 
           this.hal.setViewport(
-            Math.round(scissorX * dpr), covHPx,
-            Math.round(scissorW * dpr), effectiveArcsHPx,
+            Math.round(scissorX * dpr),
+            covHPx,
+            Math.round(scissorW * dpr),
+            effectiveArcsHPx,
           )
           this.hal.setScissor(
-            Math.round(scissorX * dpr), covHPx,
-            Math.round(scissorW * dpr), effectiveArcsHPx,
+            Math.round(scissorX * dpr),
+            covHPx,
+            Math.round(scissorW * dpr),
+            effectiveArcsHPx,
           )
           this.hal.drawPass(PASS_ARC, block.regionNumber)
           this.hal.drawPass(PASS_ARC_LINE, block.regionNumber)
@@ -1100,12 +1162,16 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         this.hal.writeUniforms(this.uData)
 
         this.hal.setViewport(
-          Math.round(scissorX * dpr), 0,
-          Math.round(scissorW * dpr), Math.round(covH * dpr),
+          Math.round(scissorX * dpr),
+          0,
+          Math.round(scissorW * dpr),
+          Math.round(covH * dpr),
         )
         this.hal.setScissor(
-          Math.round(scissorX * dpr), 0,
-          Math.round(scissorW * dpr), Math.round(covH * dpr),
+          Math.round(scissorX * dpr),
+          0,
+          Math.round(scissorW * dpr),
+          Math.round(covH * dpr),
         )
         this.hal.drawPass(PASS_SASHIMI, block.regionNumber)
 
@@ -1186,12 +1252,16 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         this.hal.writeUniforms(this.uData)
 
         this.hal.setViewport(
-          Math.round(scissorX * dpr), 0,
-          Math.round(scissorW * dpr), bufH,
+          Math.round(scissorX * dpr),
+          0,
+          Math.round(scissorW * dpr),
+          bufH,
         )
         this.hal.setScissor(
-          Math.round(scissorX * dpr), pileupTop,
-          Math.round(scissorW * dpr), pileupH,
+          Math.round(scissorX * dpr),
+          pileupTop,
+          Math.round(scissorW * dpr),
+          pileupH,
         )
         this.hal.drawPass(PASS_READ, block.regionNumber)
 
@@ -1206,21 +1276,64 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         const y = region.readYs[idx]!
         const arcsOff =
           state.showArcs && state.arcsHeight ? state.arcsHeight : 0
-        const covOff =
-          (state.showCoverage ? state.coverageHeight : 0) + arcsOff
+        const covOff = (state.showCoverage ? state.coverageHeight : 0) + arcsOff
         const clip = toClipRect(
-          absStart, absEnd, y, state, bpHi, bpLo, bpLen,
-          covOff, state.canvasHeight,
+          absStart,
+          absEnd,
+          y,
+          state,
+          bpHi,
+          bpLo,
+          bpLen,
+          covOff,
+          state.canvasHeight,
         )
         const tx = 4 / scissorW
         const ty = 4 / state.canvasHeight
         const quads = new Float32Array([
-          clip.sx1, clip.syTop, clip.sx2, clip.syTop - ty, 0, 0, 0, 1,
-          clip.sx1, clip.syBot + ty, clip.sx2, clip.syBot, 0, 0, 0, 1,
-          clip.sx1, clip.syTop, clip.sx1 + tx, clip.syBot, 0, 0, 0, 1,
-          clip.sx2 - tx, clip.syTop, clip.sx2, clip.syBot, 0, 0, 0, 1,
+          clip.sx1,
+          clip.syTop,
+          clip.sx2,
+          clip.syTop - ty,
+          0,
+          0,
+          0,
+          1,
+          clip.sx1,
+          clip.syBot + ty,
+          clip.sx2,
+          clip.syBot,
+          0,
+          0,
+          0,
+          1,
+          clip.sx1,
+          clip.syTop,
+          clip.sx1 + tx,
+          clip.syBot,
+          0,
+          0,
+          0,
+          1,
+          clip.sx2 - tx,
+          clip.syTop,
+          clip.sx2,
+          clip.syBot,
+          0,
+          0,
+          0,
+          1,
         ])
-        this.drawOverlayQuads(quads, 4, scissorX, scissorW, pileupTop, pileupH, bufH, dpr)
+        this.drawOverlayQuads(
+          quads,
+          4,
+          scissorX,
+          scissorW,
+          pileupTop,
+          pileupH,
+          bufH,
+          dpr,
+        )
       }
     }
 
@@ -1240,8 +1353,13 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         const clip = toClipRect(
           bounds.minStart + region.regionStart,
           bounds.maxEnd + region.regionStart,
-          bounds.y, state, bpHi, bpLo, bpLen,
-          covOff, state.canvasHeight,
+          bounds.y,
+          state,
+          bpHi,
+          bpLo,
+          bpLen,
+          covOff,
+          state.canvasHeight,
         )
         quads.push(clip.sx1, clip.syTop, clip.sx2, clip.syBot, 0, 0, 0, 0.4)
       }
@@ -1258,24 +1376,63 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         const clip = toClipRect(
           bounds.minStart + region.regionStart,
           bounds.maxEnd + region.regionStart,
-          bounds.y, state, bpHi, bpLo, bpLen,
-          covOff, state.canvasHeight,
+          bounds.y,
+          state,
+          bpHi,
+          bpLo,
+          bpLen,
+          covOff,
+          state.canvasHeight,
         )
         const tx = 4 / scissorW
         const ty = 4 / state.canvasHeight
         quads.push(
-          clip.sx1, clip.syTop, clip.sx2, clip.syTop - ty, 0, 0, 0, 1,
-          clip.sx1, clip.syBot + ty, clip.sx2, clip.syBot, 0, 0, 0, 1,
-          clip.sx1, clip.syTop, clip.sx1 + tx, clip.syBot, 0, 0, 0, 1,
-          clip.sx2 - tx, clip.syTop, clip.sx2, clip.syBot, 0, 0, 0, 1,
+          clip.sx1,
+          clip.syTop,
+          clip.sx2,
+          clip.syTop - ty,
+          0,
+          0,
+          0,
+          1,
+          clip.sx1,
+          clip.syBot + ty,
+          clip.sx2,
+          clip.syBot,
+          0,
+          0,
+          0,
+          1,
+          clip.sx1,
+          clip.syTop,
+          clip.sx1 + tx,
+          clip.syBot,
+          0,
+          0,
+          0,
+          1,
+          clip.sx2 - tx,
+          clip.syTop,
+          clip.sx2,
+          clip.syBot,
+          0,
+          0,
+          0,
+          1,
         )
       }
     }
 
     if (quads.length > 0) {
       this.drawOverlayQuads(
-        new Float32Array(quads), quads.length / 8,
-        scissorX, scissorW, pileupTop, pileupH, bufH, dpr,
+        new Float32Array(quads),
+        quads.length / 8,
+        scissorX,
+        scissorW,
+        pileupTop,
+        pileupH,
+        bufH,
+        dpr,
       )
     }
   }
@@ -1290,14 +1447,23 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     bufH: number,
     dpr: number,
   ) {
-    this.hal.uploadBuffer(OVERLAY_REGION, PASS_FLAT_QUAD, quads.buffer as ArrayBuffer, count)
+    this.hal.uploadBuffer(
+      OVERLAY_REGION,
+      PASS_FLAT_QUAD,
+      quads.buffer as ArrayBuffer,
+      count,
+    )
     this.hal.setViewport(
-      Math.round(scissorX * dpr), 0,
-      Math.round(scissorW * dpr), bufH,
+      Math.round(scissorX * dpr),
+      0,
+      Math.round(scissorW * dpr),
+      bufH,
     )
     this.hal.setScissor(
-      Math.round(scissorX * dpr), pileupTop,
-      Math.round(scissorW * dpr), pileupH,
+      Math.round(scissorX * dpr),
+      pileupTop,
+      Math.round(scissorW * dpr),
+      pileupH,
     )
     this.hal.drawPass(PASS_FLAT_QUAD, OVERLAY_REGION)
     this.hal.deleteRegion(OVERLAY_REGION)

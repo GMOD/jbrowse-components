@@ -4,11 +4,11 @@ import {
   FloatingLegend,
   TooLargeMessage,
 } from '@jbrowse/plugin-linear-genome-view'
+import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import Crosshair from './MultiSampleVariantCrosshairs.tsx'
 import LegendBar from './MultiSampleVariantLegendBar.tsx'
-import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { useMouseTracking } from '../hooks/useMouseTracking.ts'
 
 import type { MultiSampleVariantBaseModel } from '../MultiSampleVariantBaseModel.ts'

@@ -18,15 +18,11 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import { computeHierarchyLayout, parseClusterTree } from '@jbrowse/tree-sidebar'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun, untracked } from 'mobx'
-
-import {
-  computeHierarchyLayout,
-  parseClusterTree,
-} from '@jbrowse/tree-sidebar'
 
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
@@ -40,7 +36,6 @@ import {
 
 import type { MultiWiggleDataResult } from '../RenderMultiWiggleDataRPC/types.ts'
 import type { Source, SourceInfo } from '../util.ts'
-import type { HoveredTreeNode } from '@jbrowse/tree-sidebar'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -51,6 +46,7 @@ import type {
   MultiRegionRegion as Region,
   MultiRegionRegionWithNumber as RegionWithNumber,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { HoveredTreeNode } from '@jbrowse/tree-sidebar'
 
 type LGV = LinearGenomeViewModel
 

@@ -1,17 +1,17 @@
 import { execSync } from 'child_process'
-import { writeFileSync, mkdtempSync, rmSync } from 'fs'
-import path from 'path'
+import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import os from 'os'
+import path from 'path'
 
 import {
-  fillVertexShader,
   edgeVertexShader,
+  fillVertexShader,
 } from './LinearSyntenyDisplay/wgslShaders.ts'
 import {
-  WGSL_FILL_SHADER,
   WGSL_COVERAGE_SHADER,
-  WGSL_SNP_COVERAGE_SHADER,
+  WGSL_FILL_SHADER,
   WGSL_INDICATOR_SHADER,
+  WGSL_SNP_COVERAGE_SHADER,
 } from './MultiLGVSyntenyDisplay/components/multiSyntenyGpuShaders.ts'
 
 let tmpDir: string

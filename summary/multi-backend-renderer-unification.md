@@ -1,7 +1,6 @@
 # Multi-Backend Renderer Unification Investigation
 
-Date: 2026-03-26
-Branch: webgl-poc
+Date: 2026-03-26 Branch: webgl-poc
 
 ## Problem
 
@@ -20,8 +19,8 @@ once and have it target all three?
 - `canvasShaders.ts` (~355 lines) — WGSL shader source for WebGPU
 - `CanvasFeatureRenderer.ts` (~103 lines) — Orchestrator, tries WebGPU then
   WebGL2 then Canvas2D
-- All backends implement the `CanvasFeatureBackend` interface
-  (`uploadRegion`, `renderBlocks`, `pruneStaleRegions`, `dispose`)
+- All backends implement the `CanvasFeatureBackend` interface (`uploadRegion`,
+  `renderBlocks`, `pruneStaleRegions`, `dispose`)
 
 All backends draw the same 4 primitives: rectangles, lines, chevrons, arrows.
 All use the same high-precision (HP) coordinate splitting technique for
@@ -37,7 +36,8 @@ via templates. Their architecture:
 
 - Shared abstractions: Geometry, Buffer, Shader, State classes
 - Backend Systems: GlBufferSystem vs GpuBufferSystem, etc.
-- Adaptors: Convert generic "draw batch" instructions into backend-specific calls
+- Adaptors: Convert generic "draw batch" instructions into backend-specific
+  calls
 - Auto-detection: dynamically imports only the needed renderer
 
 This works for PixiJS because they have dozens of composable features (textures,
@@ -56,8 +56,8 @@ mismatch, not just a syntax difference.
 
 - **wgpu compiled to WASM**: ~10MB bundle size, buggy WebGL fallback, no
   Canvas2D target. Not viable.
-- **Three.js**: Too high-level for 2D instanced rectangles. Scene graph overhead,
-  600KB+ bundle, custom HP math awkward in TSL.
+- **Three.js**: Too high-level for 2D instanced rectangles. Scene graph
+  overhead, 600KB+ bundle, custom HP math awkward in TSL.
 - **Regl**: WebGL only, doesn't solve unification.
 - **luma.gl v9**: Portable GPU API (WebGPU + WebGL2), but still requires dual
   shaders, no Canvas2D, adds dependency.
@@ -92,13 +92,13 @@ negligible for instanced rendering where each instance is read once.
 command encoder with one render pass; WebGL uses immediate-mode state changes;
 Canvas2D uses save/clip/restore. A unified callback would be leaky or bloated.
 
-**The real maintenance cost is low.** Adding a new primitive type costs ~60 lines
-across 3 backends. The proposed abstraction was ~300 lines of shared code. You'd
-need 5+ new primitive types before it pays for itself.
+**The real maintenance cost is low.** Adding a new primitive type costs ~60
+lines across 3 backends. The proposed abstraction was ~300 lines of shared code.
+You'd need 5+ new primitive types before it pays for itself.
 
-**Bad abstractions lock you in.** If we later need backend-specific optimizations
-(WebGPU compute shaders for culling, WebGL multi-draw, Canvas2D path batching),
-a unified abstraction actively fights independent optimization.
+**Bad abstractions lock you in.** If we later need backend-specific
+optimizations (WebGPU compute shaders for culling, WebGL multi-draw, Canvas2D
+path batching), a unified abstraction actively fights independent optimization.
 
 ## Recommended Approach — Extract shared constants and HP math
 
@@ -117,12 +117,12 @@ PixiJS also uses at its highest level.
 
 ## Key Structural Differences Between Backends (why unification is hard)
 
-| Aspect | WebGPU | WebGL2 | Canvas2D |
-|--------|--------|--------|----------|
-| Shader language | WGSL | GLSL ES 3.0 | N/A |
-| Instance data | Storage buffers (interleaved) | Separate VBOs per attribute | Plain TypedArrays |
-| Uniforms | Dynamic offset UBO | Individual `gl.uniform*` calls | N/A |
-| Command model | Command buffer recording | Immediate-mode state machine | Immediate-mode drawing |
-| Line draw | 6 verts (thin quad) | 2 verts (`gl.LINES`) | `ctx.stroke()` |
-| Colors | f32 [0..1] in storage buffer | Normalized UNSIGNED_BYTE | `rgba()` strings |
-| MSAA | 4x with resolve texture | None | N/A |
+| Aspect          | WebGPU                        | WebGL2                         | Canvas2D               |
+| --------------- | ----------------------------- | ------------------------------ | ---------------------- |
+| Shader language | WGSL                          | GLSL ES 3.0                    | N/A                    |
+| Instance data   | Storage buffers (interleaved) | Separate VBOs per attribute    | Plain TypedArrays      |
+| Uniforms        | Dynamic offset UBO            | Individual `gl.uniform*` calls | N/A                    |
+| Command model   | Command buffer recording      | Immediate-mode state machine   | Immediate-mode drawing |
+| Line draw       | 6 verts (thin quad)           | 2 verts (`gl.LINES`)           | `ctx.stroke()`         |
+| Colors          | f32 [0..1] in storage buffer  | Normalized UNSIGNED_BYTE       | `rgba()` strings       |
+| MSAA            | 4x with resolve texture       | None                           | N/A                    |

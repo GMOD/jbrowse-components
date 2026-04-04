@@ -1,9 +1,9 @@
 import {
-  FILL_VERTEX_SHADER,
+  EDGE_FRAGMENT_SHADER,
+  EDGE_VERTEX_SHADER,
   FILL_FRAGMENT_SHADER,
   FILL_FRAGMENT_SHADER_PICKING,
-  EDGE_VERTEX_SHADER,
-  EDGE_FRAGMENT_SHADER,
+  FILL_VERTEX_SHADER,
 } from './glslShaders.ts'
 import {
   EDGE_SEGMENTS,
@@ -12,8 +12,8 @@ import {
   FILL_VERTS_PER_INSTANCE,
   INSTANCE_BYTE_SIZE,
   UNIFORM_BYTE_SIZE,
-  fillVertexShader,
   edgeVertexShader,
+  fillVertexShader,
   interleaveInstances,
 } from './wgslShaders.ts'
 
@@ -27,10 +27,34 @@ const PASS_EDGE = 'edge'
 const REGION_KEY = 0
 
 const INST_LAYOUT = [
-  { name: 'a_inst0', components: 4, type: 'float' as const, offsetBytes: 0, integer: false },
-  { name: 'a_inst1', components: 4, type: 'float' as const, offsetBytes: 16, integer: false },
-  { name: 'a_inst2', components: 4, type: 'float' as const, offsetBytes: 32, integer: false },
-  { name: 'a_inst3', components: 4, type: 'float' as const, offsetBytes: 48, integer: false },
+  {
+    name: 'a_inst0',
+    components: 4,
+    type: 'float' as const,
+    offsetBytes: 0,
+    integer: false,
+  },
+  {
+    name: 'a_inst1',
+    components: 4,
+    type: 'float' as const,
+    offsetBytes: 16,
+    integer: false,
+  },
+  {
+    name: 'a_inst2',
+    components: 4,
+    type: 'float' as const,
+    offsetBytes: 32,
+    integer: false,
+  },
+  {
+    name: 'a_inst3',
+    components: 4,
+    type: 'float' as const,
+    offsetBytes: 48,
+    integer: false,
+  },
 ]
 
 export const SYNTENY_PASSES: PassDescriptor[] = [
@@ -68,8 +92,6 @@ export const SYNTENY_PASSES: PassDescriptor[] = [
     glAttributes: INST_LAYOUT,
   },
 ]
-
-export const SYNTENY_UNIFORM_BYTE_SIZE = UNIFORM_BYTE_SIZE
 
 export class GpuSyntenyRenderer implements SyntenyBackend {
   private hal: GpuHal
@@ -119,8 +141,18 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     const interleaved = interleaveInstances(data)
 
     // Upload once to PASS_FILL; PASS_PICKING shares the same buffer via drawPickingPass
-    this.hal.uploadBuffer(REGION_KEY, PASS_FILL, interleaved, data.instanceCount)
-    this.hal.uploadBuffer(REGION_KEY, PASS_EDGE, interleaved, data.nonCigarInstanceCount)
+    this.hal.uploadBuffer(
+      REGION_KEY,
+      PASS_FILL,
+      interleaved,
+      data.instanceCount,
+    )
+    this.hal.uploadBuffer(
+      REGION_KEY,
+      PASS_EDGE,
+      interleaved,
+      data.nonCigarInstanceCount,
+    )
     this.pickingDirty = true
   }
 
@@ -148,16 +180,30 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     const adjOff1 = offset1 / scale1 - this.refOffset1
 
     this.lastRenderParams = {
-      height, adjOff0, adjOff1, scale0, scale1,
-      maxOffScreenPx, minAlignmentLength, alpha,
-      hoveredFeatureId, clickedFeatureId,
+      height,
+      adjOff0,
+      adjOff1,
+      scale0,
+      scale1,
+      maxOffScreenPx,
+      minAlignmentLength,
+      alpha,
+      hoveredFeatureId,
+      clickedFeatureId,
     }
     this.pickingDirty = true
 
     this.writeUniforms(
-      height, adjOff0, adjOff1, scale0, scale1,
-      maxOffScreenPx, minAlignmentLength, alpha,
-      hoveredFeatureId, clickedFeatureId,
+      height,
+      adjOff0,
+      adjOff1,
+      scale0,
+      scale1,
+      maxOffScreenPx,
+      minAlignmentLength,
+      alpha,
+      hoveredFeatureId,
+      clickedFeatureId,
     )
 
     this.hal.beginFrame(1, 1, 1, 1)
@@ -176,8 +222,16 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     if (this.pickingDirty) {
       const p = this.lastRenderParams
       this.writeUniforms(
-        p.height, p.adjOff0, p.adjOff1, p.scale0, p.scale1,
-        p.maxOffScreenPx, p.minAlignmentLength, 1, 0, 0,
+        p.height,
+        p.adjOff0,
+        p.adjOff1,
+        p.scale0,
+        p.scale1,
+        p.maxOffScreenPx,
+        p.minAlignmentLength,
+        1,
+        0,
+        0,
       )
       this.hal.drawPickingPass(PASS_PICKING, REGION_KEY, undefined, PASS_FILL)
       this.pickingDirty = false
@@ -225,3 +279,5 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     this.hal.writeUniforms(this.uniformData)
   }
 }
+
+export { UNIFORM_BYTE_SIZE as SYNTENY_UNIFORM_BYTE_SIZE } from './wgslShaders.ts'

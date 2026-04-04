@@ -77,7 +77,13 @@ interface DrawCtx {
   fill(): void
 }
 
-function drawSerifs(ctx: DrawCtx, px: number, y: number, h: number, triW: number) {
+function drawSerifs(
+  ctx: DrawCtx,
+  px: number,
+  y: number,
+  h: number,
+  triW: number,
+) {
   ctx.beginPath()
   ctx.moveTo(px - triW, y)
   ctx.lineTo(px + triW, y)
@@ -299,7 +305,15 @@ export function drawCigarOps(
       }
       refPos += len
     } else if (op === CIGAR_I) {
-      drawInsertion(ctx, x + refPos * pxPerBp, y, h, len, pxPerBp, colors.insertion)
+      drawInsertion(
+        ctx,
+        x + refPos * pxPerBp,
+        y,
+        h,
+        len,
+        pxPerBp,
+        colors.insertion,
+      )
     }
   }
 }
@@ -357,7 +371,15 @@ export function drawCsOps(
       const len = parseCsSeqLen(cs, i)
       i += len
       if (len > 0) {
-        drawInsertion(ctx, x + refPos * pxPerBp, y, h, len, pxPerBp, colors.insertion)
+        drawInsertion(
+          ctx,
+          x + refPos * pxPerBp,
+          y,
+          h,
+          len,
+          pxPerBp,
+          colors.insertion,
+        )
       }
     } else {
       i++

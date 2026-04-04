@@ -1,13 +1,13 @@
 import { execSync } from 'child_process'
-import { writeFileSync, mkdtempSync, rmSync } from 'fs'
-import path from 'path'
+import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import os from 'os'
+import path from 'path'
 
 import {
-  RECT_SHADER,
-  LINE_SHADER,
-  CHEVRON_SHADER,
   ARROW_SHADER,
+  CHEVRON_SHADER,
+  LINE_SHADER,
+  RECT_SHADER,
 } from './canvasShaders.ts'
 
 let tmpDir: string

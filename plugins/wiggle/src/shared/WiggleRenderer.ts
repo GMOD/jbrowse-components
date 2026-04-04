@@ -21,23 +21,16 @@ export type {
   WiggleRenderBlock,
 } from './wiggleBackendTypes.ts'
 
-const rendererCache = new WeakMap<HTMLCanvasElement, WiggleRenderer>()
-
 export class WiggleRenderer {
   private canvas: HTMLCanvasElement
   private backend: WiggleBackend | null = null
 
-  private constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
   }
 
   static getOrCreate(canvas: HTMLCanvasElement) {
-    let renderer = rendererCache.get(canvas)
-    if (!renderer) {
-      renderer = new WiggleRenderer(canvas)
-      rendererCache.set(canvas, renderer)
-    }
-    return renderer
+    return new WiggleRenderer(canvas)
   }
 
   async init() {
@@ -70,6 +63,5 @@ export class WiggleRenderer {
   dispose() {
     this.backend?.dispose()
     this.backend = null
-    rendererCache.delete(this.canvas)
   }
 }

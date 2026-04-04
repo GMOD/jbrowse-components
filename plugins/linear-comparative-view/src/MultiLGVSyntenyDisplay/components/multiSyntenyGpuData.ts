@@ -2,16 +2,18 @@ import {
   InstanceBuilder,
   downsampleMinMax,
   packSnpSegmentsForGpu,
+  visitCigarOps,
+  visitCsOps,
 } from '@jbrowse/alignments-core'
 import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 import { cssColorToNormalizedRgba } from '@jbrowse/core/util/colorBits'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
+
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
 import {
   COVERAGE_BIN_BYTE_SIZE,
   INSTANCE_BYTE_SIZE,
 } from './multiSyntenyGpuShaders.ts'
-import { visitCigarOps, visitCsOps } from '@jbrowse/alignments-core'
 
 import type { SyntenyColors } from './multiSyntenyBackendTypes.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -88,12 +90,33 @@ function makeGpuOpsVisitor(
 ) {
   return {
     onMismatch(refPos: number, len: number, queryBase?: string) {
-      const [r, g, b, a] = (queryBase ? rgba.bases[queryBase] : undefined) ?? rgba.mismatch
-      addInstance(builder, refPos, refPos + len, genomeRow, featureId, r, g, b, a)
+      const [r, g, b, a] =
+        (queryBase ? rgba.bases[queryBase] : undefined) ?? rgba.mismatch
+      addInstance(
+        builder,
+        refPos,
+        refPos + len,
+        genomeRow,
+        featureId,
+        r,
+        g,
+        b,
+        a,
+      )
     },
     onDeletion(refPos: number, len: number) {
       const [r, g, b, a] = rgba.deletion
-      addInstance(builder, refPos, refPos + len, genomeRow, featureId, r, g, b, a)
+      addInstance(
+        builder,
+        refPos,
+        refPos + len,
+        genomeRow,
+        featureId,
+        r,
+        g,
+        b,
+        a,
+      )
     },
     onInsertion(refPos: number, len: number) {
       const [r, g, b, a] = rgba.insertion
@@ -255,8 +278,12 @@ export function packSnpCoverageForGpu(
   regionStart: number,
 ): BlockSnpUploadData {
   return packSnpSegmentsForGpu(
-    snpPositions, snpYOffsets, snpHeights, snpColorTypes,
-    snpCount, regionStart,
+    snpPositions,
+    snpYOffsets,
+    snpHeights,
+    snpColorTypes,
+    snpCount,
+    regionStart,
   )
 }
 

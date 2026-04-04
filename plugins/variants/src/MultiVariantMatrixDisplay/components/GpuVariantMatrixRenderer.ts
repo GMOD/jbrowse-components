@@ -1,9 +1,9 @@
+import { FRAGMENT_SHADER, VERTEX_SHADER } from './variantMatrixGlslShaders.ts'
 import {
   MATRIX_INSTANCE_STRIDE,
   interleaveMatrixInstances,
   variantMatrixShader,
 } from './variantMatrixShaders.ts'
-import { FRAGMENT_SHADER, VERTEX_SHADER } from './variantMatrixGlslShaders.ts'
 
 import type {
   MatrixRenderState,
@@ -27,10 +27,28 @@ export const VARIANT_MATRIX_PASSES: PassDescriptor[] = [
     blend: true,
     blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
     glAttributes: [
-      { name: 'a_feature_index', components: 1, type: 'float', offsetBytes: 0, integer: false },
-      { name: 'a_row_index', components: 1, type: 'uint', offsetBytes: 4, integer: true },
+      {
+        name: 'a_feature_index',
+        components: 1,
+        type: 'float',
+        offsetBytes: 0,
+        integer: false,
+      },
+      {
+        name: 'a_row_index',
+        components: 1,
+        type: 'uint',
+        offsetBytes: 4,
+        integer: true,
+      },
       // offset 8 skips padding (u32x2), then color at offset 16
-      { name: 'a_color', components: 4, type: 'float', offsetBytes: 16, integer: false },
+      {
+        name: 'a_color',
+        components: 4,
+        type: 'float',
+        offsetBytes: 16,
+        integer: false,
+      },
     ],
   },
 ]
@@ -67,7 +85,10 @@ export class GpuVariantMatrixRenderer implements VariantMatrixBackend {
     this.hal.resize(canvasWidth, canvasHeight)
     this.hal.beginFrame(0, 0, 0, 0)
 
-    if (this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0 && state.numFeatures > 0) {
+    if (
+      this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0 &&
+      state.numFeatures > 0
+    ) {
       this.uniformF32[0] = state.numFeatures
       this.uniformF32[1] = canvasWidth
       this.uniformF32[2] = canvasHeight

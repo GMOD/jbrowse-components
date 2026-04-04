@@ -1,9 +1,14 @@
-import type { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
-
-import { INDICATOR_TRIANGLE_H, drawIndicatorTriangle } from './labelConstants.ts'
-import { YSCALEBAR_LABEL_OFFSET, computeDepthScale } from './coverageDownsampling.ts'
+import {
+  YSCALEBAR_LABEL_OFFSET,
+  computeDepthScale,
+} from './coverageDownsampling.ts'
+import {
+  INDICATOR_TRIANGLE_H,
+  drawIndicatorTriangle,
+} from './labelConstants.ts'
 
 import type { CigarOpDrawColors } from './labelConstants.ts'
+import type { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 
 export interface NoncovDrawColors {
   insertion: string
@@ -69,7 +74,10 @@ export function drawCoverageBins(
     return
   }
 
-  const { depthScale, effectiveH, bottom } = coverageLayout(maxDepth, coverageHeight)
+  const { depthScale, effectiveH, bottom } = coverageLayout(
+    maxDepth,
+    coverageHeight,
+  )
   const f32 = new Float32Array(buffer)
 
   ctx.fillStyle = coverageColor
@@ -101,7 +109,10 @@ export function drawSnpSegments(
     return
   }
 
-  const { depthScale, effectiveH, bottom } = coverageLayout(maxDepth, coverageHeight)
+  const { depthScale, effectiveH, bottom } = coverageLayout(
+    maxDepth,
+    coverageHeight,
+  )
   const f32 = new Float32Array(buffer)
 
   for (let i = 0; i < segmentCount; i++) {
@@ -137,7 +148,7 @@ export function drawIndicators(
   const colorLut = [colors.insertion, colors.softclip, colors.hardclip]
   for (let i = 0; i < indicatorCount; i++) {
     const px = bpToX(f32[i * 2]!)
-    if (px >= 0 && px <= viewWidth) {
+    if (px >= 0 && px < viewWidth) {
       ctx.fillStyle = colorLut[f32[i * 2 + 1]! - 1] ?? colorLut[0]!
       drawIndicatorTriangle(ctx, px)
     }
@@ -169,10 +180,10 @@ export function drawNoncovSegments(
     if (px > viewWidth || px2 < 0) {
       continue
     }
-    const yOff = f32[off + 1]!
+    const yOffset = f32[off + 1]!
     const segH = f32[off + 2]!
     const colorType = f32[off + 3]!
-    const segTop = INDICATOR_TRIANGLE_H + yOff * noncovHeight
+    const segTop = INDICATOR_TRIANGLE_H + yOffset * noncovHeight
     const segHeight = segH * noncovHeight
     ctx.fillStyle = colorLut[colorType - 1] ?? colorLut[0]!
     ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segHeight)
@@ -192,7 +203,10 @@ export function drawModCovSegments(
     return
   }
 
-  const { depthScale, effectiveH, bottom } = coverageLayout(maxDepth, coverageHeight)
+  const { depthScale, effectiveH, bottom } = coverageLayout(
+    maxDepth,
+    coverageHeight,
+  )
   const f32 = new Float32Array(buffer)
   const u32 = new Uint32Array(buffer)
 

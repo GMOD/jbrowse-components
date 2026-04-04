@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { MISMATCH_COLOR, buildCoverageTooltipBin } from '@jbrowse/alignments-core'
+import {
+  MISMATCH_COLOR,
+  buildCoverageTooltipBin,
+} from '@jbrowse/alignments-core'
 import { ErrorOverlay } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
@@ -22,12 +25,16 @@ import { MultiSyntenyRenderer } from './MultiSyntenyRenderer.ts'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { computeMultiSyntenyLabels } from './computeVisibleLabels.ts'
 import { buildSyntenyIndex, hitTestMultiSynteny } from './hitTesting.ts'
-import { LABEL_FONT_MAX, LABEL_WIDTH, truncateGenomeName } from './multiSyntenyBackendTypes.ts'
+import {
+  LABEL_FONT_MAX,
+  LABEL_WIDTH,
+  truncateGenomeName,
+} from './multiSyntenyBackendTypes.ts'
 
-import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { MultiLGVSyntenyDisplayModel } from '../model.ts'
 import type { FeatureHitResult } from './hitTesting.ts'
+import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -342,7 +349,16 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   }, [model, palette])
 
   // Read observables during render for tooltip/style (observer tracks these)
-  const { genomeRows, displayedGenomes, rowHeight, rowSpacing, height, syntenyCoverageHeight, showSnps, coverageTicks } = model
+  const {
+    genomeRows,
+    displayedGenomes,
+    rowHeight,
+    rowSpacing,
+    height,
+    syntenyCoverageHeight,
+    showSnps,
+    coverageTicks,
+  } = model
   const { width, bpPerPx, offsetPx } = view
   const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
 
@@ -556,7 +572,12 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
           height={height - syntenyCoverageHeight}
           yOffset={syntenyCoverageHeight}
         />
-        <VisibleLabelsOverlay labels={labels} width={width} height={height} yOffset={syntenyCoverageHeight} />
+        <VisibleLabelsOverlay
+          labels={labels}
+          width={width}
+          height={height}
+          yOffset={syntenyCoverageHeight}
+        />
         <FeatureHighlightOverlay
           hoveredHit={hoveredHit}
           selectedHit={selectedHit}

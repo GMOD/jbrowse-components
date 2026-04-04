@@ -69,7 +69,6 @@ import type {
   AlignmentsRenderer,
   ColorPalette,
 } from './components/AlignmentsRenderer.ts'
-import type { CoverageTicks } from '@jbrowse/alignments-core'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type {
   CigarHitResult,
@@ -86,6 +85,7 @@ import type {
   MismatchData,
   SoftclipData,
 } from '../shared/webglRpcTypes.ts'
+import type { CoverageTicks } from '@jbrowse/alignments-core'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
@@ -1357,9 +1357,7 @@ export default function stateModelFactory(
         }
       }
 
-      function computeAndSetArcs(
-        regions: RegionWithNumber[],
-      ) {
+      function computeAndSetArcs(regions: RegionWithNumber[]) {
         const allRegionInfos: {
           refName: string
           start: number

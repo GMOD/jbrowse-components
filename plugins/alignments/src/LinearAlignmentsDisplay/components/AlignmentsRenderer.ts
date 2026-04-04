@@ -2,8 +2,8 @@ import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
 
 import { Canvas2DAlignmentsRenderer } from './Canvas2DAlignmentsRenderer.ts'
 import {
-  GpuAlignmentsRenderer,
   ALIGNMENTS_PASSES,
+  GpuAlignmentsRenderer,
 } from './GpuAlignmentsRenderer.ts'
 import { UNIFORM_SIZE } from './wgsl/common.ts'
 

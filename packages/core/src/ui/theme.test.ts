@@ -86,10 +86,6 @@ test('default theme has coverage color', () => {
 
 test('dark theme has different coverage color', () => {
   const light = createJBrowseTheme()
-  const dark = createJBrowseTheme(
-    {},
-    undefined,
-    'darkStock',
-  )
+  const dark = createJBrowseTheme({}, undefined, 'darkStock')
   expect(light.palette.coverage).not.toBe(dark.palette.coverage)
 })

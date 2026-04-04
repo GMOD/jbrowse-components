@@ -1,7 +1,7 @@
 import { execSync } from 'child_process'
-import { writeFileSync, mkdtempSync, rmSync } from 'fs'
-import path from 'path'
+import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import os from 'os'
+import path from 'path'
 
 import { wiggleShader } from './wiggleShader.ts'
 

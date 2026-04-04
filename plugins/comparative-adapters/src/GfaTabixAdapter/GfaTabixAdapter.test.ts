@@ -771,9 +771,7 @@ describe('GfaTabixAdapter HPRC getSubgraph', () => {
 })
 
 const pangenomePrefix = require
-  .resolve(
-    '../../../../test_data/volvox/volvox_pangenome_50.pos.bed.gz',
-  )
+  .resolve('../../../../test_data/volvox/volvox_pangenome_50.pos.bed.gz')
   .replace('.pos.bed.gz', '')
 
 describe('GfaTabixAdapter bubbles (volvox pangenome 50)', () => {

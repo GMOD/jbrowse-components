@@ -179,10 +179,7 @@ function generateNodeOrder(nodes: TubeMapNode[], tracks: TubeMapTrack[]) {
 }
 
 // Pass 2: build successor/predecessor adjacency from tracks (using Sets for O(1) lookup)
-function generateNodeSuccessors(
-  nodes: TubeMapNode[],
-  tracks: TubeMapTrack[],
-) {
+function generateNodeSuccessors(nodes: TubeMapNode[], tracks: TubeMapTrack[]) {
   for (const track of tracks) {
     const seq = track.sequence
     for (let i = 0; i < seq.length - 1; i++) {
@@ -207,10 +204,7 @@ function generateNodeSuccessors(
 }
 
 // Pass 3: assign lanes (vertical slots) to track segments at each order position
-function generateLaneAssignment(
-  nodes: TubeMapNode[],
-  tracks: TubeMapTrack[],
-) {
+function generateLaneAssignment(nodes: TubeMapNode[], tracks: TubeMapTrack[]) {
   const mo = maxOrder(nodes)
   const assignments: NodeAssignment[][] = Array.from(
     { length: mo + 1 },
@@ -373,11 +367,10 @@ function applyVerticalPositions(
       if (assignment.node !== null) {
         const node = nodes[assignment.node]!
         const lastTrack = assignment.tracks.at(-1)
-        if (lastTrack?.idealY !== undefined && lastTrack.idealY !== null) {
-          node.contentHeight = lastTrack.idealY - node.y + TRACK_WIDTH
-        } else {
-          node.contentHeight = TRACK_WIDTH
-        }
+        node.contentHeight =
+          lastTrack?.idealY !== undefined && lastTrack.idealY !== null
+            ? lastTrack.idealY - node.y + TRACK_WIDTH
+            : TRACK_WIDTH
       }
     }
   }

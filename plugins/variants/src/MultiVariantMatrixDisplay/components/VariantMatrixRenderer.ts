@@ -17,23 +17,16 @@ import type {
   VariantMatrixBackend,
 } from './variantMatrixBackendTypes.ts'
 
-const cache = new WeakMap<HTMLCanvasElement, VariantMatrixRenderer>()
-
 export class VariantMatrixRenderer {
   private canvas: HTMLCanvasElement
   private backend: VariantMatrixBackend | null = null
 
-  private constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
   }
 
   static getOrCreate(canvas: HTMLCanvasElement) {
-    let r = cache.get(canvas)
-    if (!r) {
-      r = new VariantMatrixRenderer(canvas)
-      cache.set(canvas, r)
-    }
-    return r
+    return new VariantMatrixRenderer(canvas)
   }
 
   async init() {
@@ -63,6 +56,5 @@ export class VariantMatrixRenderer {
   dispose() {
     this.backend?.dispose()
     this.backend = null
-    cache.delete(this.canvas)
   }
 }

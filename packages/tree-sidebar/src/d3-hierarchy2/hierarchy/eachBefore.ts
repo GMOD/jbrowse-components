@@ -1,13 +1,17 @@
 // @ts-nocheck
-export default function(callback, that) {
-  var node = this, nodes = [node], children, i, index = -1;
-  while (node = nodes.pop()) {
-    callback.call(that, node, ++index, this);
-    if (children = node.children) {
+export default function (callback, that) {
+  let node = this
+  const nodes = [node]
+  let children
+  let i
+  let index = -1
+  while ((node = nodes.pop())) {
+    callback.call(that, node, ++index, this)
+    if ((children = node.children)) {
       for (i = children.length - 1; i >= 0; --i) {
-        nodes.push(children[i]);
+        nodes.push(children[i])
       }
     }
   }
-  return this;
+  return this
 }

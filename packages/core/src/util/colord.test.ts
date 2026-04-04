@@ -147,9 +147,9 @@ describe('colord wrapper over color-bits', () => {
   describe('hexToGLrgb', () => {
     test('converts hex to GL floats', () => {
       const [r, g, b] = hexToGLrgb('#ff0000')
-      expect(r).toBeCloseTo(1.0)
-      expect(g).toBeCloseTo(0.0)
-      expect(b).toBeCloseTo(0.0)
+      expect(r).toBeCloseTo(1)
+      expect(g).toBeCloseTo(0)
+      expect(b).toBeCloseTo(0)
     })
 
     test('handles grey', () => {
@@ -161,9 +161,9 @@ describe('colord wrapper over color-bits', () => {
 
     test('handles short hex', () => {
       const [r, g, b] = hexToGLrgb('#fff')
-      expect(r).toBeCloseTo(1.0)
-      expect(g).toBeCloseTo(1.0)
-      expect(b).toBeCloseTo(1.0)
+      expect(r).toBeCloseTo(1)
+      expect(g).toBeCloseTo(1)
+      expect(b).toBeCloseTo(1)
     })
   })
 })

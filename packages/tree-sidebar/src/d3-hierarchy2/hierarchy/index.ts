@@ -1,76 +1,83 @@
 // @ts-nocheck
-import node_count from "./count.ts";
-import node_each from "./each.ts";
-import node_eachBefore from "./eachBefore.ts";
-import node_eachAfter from "./eachAfter.ts";
-import node_find from "./find.ts";
-import node_sum from "./sum.ts";
-import node_sort from "./sort.ts";
-import node_path from "./path.ts";
-import node_ancestors from "./ancestors.ts";
-import node_descendants from "./descendants.ts";
-import node_leaves from "./leaves.ts";
-import node_links from "./links.ts";
-import node_iterator from "./iterator.ts";
+import node_ancestors from './ancestors.ts'
+import node_count from './count.ts'
+import node_descendants from './descendants.ts'
+import node_each from './each.ts'
+import node_eachAfter from './eachAfter.ts'
+import node_eachBefore from './eachBefore.ts'
+import node_find from './find.ts'
+import node_iterator from './iterator.ts'
+import node_leaves from './leaves.ts'
+import node_links from './links.ts'
+import node_path from './path.ts'
+import node_sort from './sort.ts'
+import node_sum from './sum.ts'
 
 export default function hierarchy(data, children) {
   if (data instanceof Map) {
-    data = [undefined, data];
-    if (children === undefined) children = mapChildren;
+    data = [undefined, data]
+    if (children === undefined) {
+      children = mapChildren
+    }
   } else if (children === undefined) {
-    children = objectChildren;
+    children = objectChildren
   }
 
-  var root = new Node(data),
-      node,
-      nodes = [root],
-      child,
-      childs,
-      i,
-      n;
+  const root = new Node(data)
+  let node
+  const nodes = [root]
+  let child
+  let childs
+  let i
+  let n
 
-  while (node = nodes.pop()) {
-    if ((childs = children(node.data)) && (n = (childs = Array.from(childs)).length)) {
-      node.children = childs;
+  while ((node = nodes.pop())) {
+    if (
+      (childs = children(node.data)) &&
+      (n = (childs = Array.from(childs)).length)
+    ) {
+      node.children = childs
       for (i = n - 1; i >= 0; --i) {
-        nodes.push(child = childs[i] = new Node(childs[i]));
-        child.parent = node;
-        child.depth = node.depth + 1;
+        nodes.push((child = childs[i] = new Node(childs[i])))
+        child.parent = node
+        child.depth = node.depth + 1
       }
     }
   }
 
-  return root.eachBefore(computeHeight);
+  return root.eachBefore(computeHeight)
 }
 
 function node_copy() {
-  return hierarchy(this).eachBefore(copyData);
+  return hierarchy(this).eachBefore(copyData)
 }
 
 function objectChildren(d) {
-  return d.children;
+  return d.children
 }
 
 function mapChildren(d) {
-  return Array.isArray(d) ? d[1] : null;
+  return Array.isArray(d) ? d[1] : null
 }
 
 function copyData(node) {
-  if (node.data.value !== undefined) node.value = node.data.value;
-  node.data = node.data.data;
+  if (node.data.value !== undefined) {
+    node.value = node.data.value
+  }
+  node.data = node.data.data
 }
 
 export function computeHeight(node) {
-  var height = 0;
-  do node.height = height;
-  while ((node = node.parent) && (node.height < ++height));
+  let height = 0
+  do {
+    node.height = height
+  } while ((node = node.parent) && node.height < ++height)
 }
 
 export function Node(data) {
-  this.data = data;
-  this.depth =
-  this.height = 0;
-  this.parent = null;
+  this.data = data
+  this.depth = this.height = 0
+  this.parent = null
 }
 
 Node.prototype = hierarchy.prototype = {
@@ -88,5 +95,5 @@ Node.prototype = hierarchy.prototype = {
   leaves: node_leaves,
   links: node_links,
   copy: node_copy,
-  [Symbol.iterator]: node_iterator
-};
+  [Symbol.iterator]: node_iterator,
+}

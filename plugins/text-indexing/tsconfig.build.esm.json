@@ -6,6 +6,6 @@
     "types": ["node", "jest"],
     "outDir": "esm",
     "rootDir": "src",
-    "paths": {},
+    "paths": {}
   }
 }

@@ -1,19 +1,19 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { computeCoverage } from '@jbrowse/plugin-alignments'
 import {
   computeInsertionIndicators,
   computeSNPCoverage,
   extractIndelsFromCs,
   extractMismatchesFromCs,
 } from '@jbrowse/alignments-core'
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+import { computeCoverage } from '@jbrowse/plugin-alignments'
 
-import type { IndelEntry, MismatchEntry } from '@jbrowse/alignments-core'
 import type {
   MultiPairGetFeaturesArgs,
   MultiPairGetFeaturesResult,
   SyntenyRegionData,
 } from './syntenyRegionTypes.ts'
+import type { IndelEntry, MismatchEntry } from '@jbrowse/alignments-core'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'

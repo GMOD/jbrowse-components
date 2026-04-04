@@ -9,8 +9,8 @@ a bottleneck, and the buffer upload alone takes significant time.
 
 ## Requirements
 
-- Faithfully preserve **peaks** (local maxima must not be clipped — a single
-  1bp spike should still appear at full height)
+- Faithfully preserve **peaks** (local maxima must not be clipped — a single 1bp
+  spike should still appear at full height)
 - Faithfully preserve **valleys** (drops to zero or low coverage must remain
   visible, not averaged away)
 - Smooth appearance when zoomed out — no aliasing artifacts from sampling
@@ -18,22 +18,21 @@ a bottleneck, and the buffer upload alone takes significant time.
 
 ## Approach: Min/Max band rendering
 
-For each output bin that aggregates N input bp, store **two values** rather
-than one:
+For each output bin that aggregates N input bp, store **two values** rather than
+one:
 
 - `minDepth`: minimum depth in the bin
 - `maxDepth`: maximum depth in the bin
 
-The shader renders each bin as a filled rectangle from `minDepth` to
-`maxDepth`. This naturally shows:
+The shader renders each bin as a filled rectangle from `minDepth` to `maxDepth`.
+This naturally shows:
 
 - **Peaks**: maxDepth preserves the true peak height
 - **Valleys**: minDepth preserves the true valley depth
 - **Uniform regions**: min ≈ max → thin bar at the correct level
 - **High-variance regions**: wide band showing the range
 
-This is the same technique used by audio waveform renderers and the IGV
-browser.
+This is the same technique used by audio waveform renderers and the IGV browser.
 
 ## Bin format
 
@@ -51,13 +50,13 @@ struct CovBin {
 - Target: `min(viewWidthPx, depths.length)` — never upsample, only downsample
 - At 1920px viewport this means at most ~2000 bins per refName regardless of
   chromosome size
-- When `depths.length <= viewWidthPx`, emit per-bp bins (no downsampling) —
-  this naturally transitions to exact rendering when zoomed in
+- When `depths.length <= viewWidthPx`, emit per-bp bins (no downsampling) — this
+  naturally transitions to exact rendering when zoomed in
 
 ## Where to compute
 
-- In `computeSyntenyCoverageGpuData`, after `computeCoverage` returns the
-  per-bp depths array
+- In `computeSyntenyCoverageGpuData`, after `computeCoverage` returns the per-bp
+  depths array
 - Pass `bpPerPx` or `viewWidthPx` as a parameter to control bin resolution
 - The coverage upload autorun already has access to the view
 
