@@ -1,4 +1,3 @@
-import { createProgram } from '@jbrowse/core/gpu/webglUtils'
 import {
   defaultCodonTable,
   defaultStarts,
@@ -6,18 +5,13 @@ import {
   generateCodonTable,
 } from '@jbrowse/core/util'
 
-import {
-  SEQUENCE_FRAGMENT_SHADER,
-  SEQUENCE_VERTEX_SHADER,
-} from './sequenceShaders.ts'
-
 import type { SequenceRegionData } from '../model.ts'
 import type { Frame } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
 
 type RGB = readonly [number, number, number]
 
-interface RenderSettings {
+export interface RenderSettings {
   showForward: boolean
   showReverse: boolean
   showTranslation: boolean
@@ -45,7 +39,7 @@ function hexToRGB(hex: string): RGB {
 const DEFAULT_BASE_COLOR: RGB = [170, 170, 170]
 const DEFAULT_FRAME_COLOR: RGB = [200, 200, 200]
 
-interface ColorPalette {
+export interface ColorPalette {
   baseColors: Map<string, RGB>
   frameColors: Map<number, RGB>
   frameCDSColors: Map<number, RGB>
@@ -53,7 +47,7 @@ interface ColorPalette {
   stopColor: RGB
 }
 
-function buildColorPalette(theme: Theme): ColorPalette {
+export function buildColorPalette(theme: Theme): ColorPalette {
   const baseColors = new Map<string, RGB>()
   for (const base of ['A', 'C', 'G', 'T']) {
     // @ts-expect-error
@@ -98,7 +92,6 @@ const complementMap: Record<string, string> = {
 const startsSet = new Set(defaultStarts)
 const stopsSet = new Set(defaultStops)
 
-// alpha=255 means border-eligible, alpha=254 means no border
 const BORDER_ALPHA = 255
 const NO_BORDER_ALPHA = 254
 
@@ -397,109 +390,4 @@ function writeTranslationRects(
   }
 }
 
-export interface GLHandles {
-  program: WebGLProgram
-  vao: WebGLVertexArrayObject
-  rectBuffer: WebGLBuffer
-  colorBuffer: WebGLBuffer
-  uBasePx: WebGLUniformLocation
-  uBpPerPx: WebGLUniformLocation
-  uCanvasWidth: WebGLUniformLocation
-  uCanvasHeight: WebGLUniformLocation
-  uBorderWidth: WebGLUniformLocation
-}
-
-export function initGL(gl: WebGL2RenderingContext): GLHandles {
-  const program = createProgram(
-    gl,
-    SEQUENCE_VERTEX_SHADER,
-    SEQUENCE_FRAGMENT_SHADER,
-  )
-
-  const vao = gl.createVertexArray()
-  gl.bindVertexArray(vao)
-
-  const rectBuffer = gl.createBuffer()
-  gl.bindBuffer(gl.ARRAY_BUFFER, rectBuffer)
-  gl.enableVertexAttribArray(0)
-  gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 0, 0)
-  gl.vertexAttribDivisor(0, 1)
-
-  const colorBuffer = gl.createBuffer()
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
-  gl.enableVertexAttribArray(1)
-  gl.vertexAttribPointer(1, 4, gl.UNSIGNED_BYTE, true, 0, 0)
-  gl.vertexAttribDivisor(1, 1)
-
-  gl.bindVertexArray(null)
-
-  return {
-    program,
-    vao,
-    rectBuffer,
-    colorBuffer,
-    uBasePx: gl.getUniformLocation(program, 'u_basePx')!,
-    uBpPerPx: gl.getUniformLocation(program, 'u_bpPerPx')!,
-    uCanvasWidth: gl.getUniformLocation(program, 'u_canvasWidth')!,
-    uCanvasHeight: gl.getUniformLocation(program, 'u_canvasHeight')!,
-    uBorderWidth: gl.getUniformLocation(program, 'u_borderWidth')!,
-  }
-}
-
-export function uploadGeometry(
-  gl: WebGL2RenderingContext,
-  handles: GLHandles,
-  rectBuf: Float32Array,
-  colorBuf: Uint8Array,
-) {
-  gl.bindBuffer(gl.ARRAY_BUFFER, handles.rectBuffer)
-  gl.bufferData(gl.ARRAY_BUFFER, rectBuf, gl.STATIC_DRAW)
-  gl.bindBuffer(gl.ARRAY_BUFFER, handles.colorBuffer)
-  gl.bufferData(gl.ARRAY_BUFFER, colorBuf, gl.STATIC_DRAW)
-}
-
-export function render(
-  gl: WebGL2RenderingContext,
-  handles: GLHandles,
-  instanceCount: number,
-  basePx: number,
-  bpPerPx: number,
-  cssWidth: number,
-  cssHeight: number,
-) {
-  const dpr = window.devicePixelRatio || 1
-  const w = Math.round(cssWidth * dpr)
-  const h = Math.round(cssHeight * dpr)
-  if (gl.canvas.width !== w || gl.canvas.height !== h) {
-    gl.canvas.width = w
-    gl.canvas.height = h
-  }
-  gl.viewport(0, 0, w, h)
-  gl.clearColor(1, 1, 1, 1)
-  gl.clear(gl.COLOR_BUFFER_BIT)
-
-  if (instanceCount === 0) {
-    return
-  }
-
-  gl.useProgram(handles.program)
-  gl.uniform1f(handles.uBasePx, basePx)
-  gl.uniform1f(handles.uBpPerPx, bpPerPx)
-  gl.uniform1f(handles.uCanvasWidth, cssWidth)
-  gl.uniform1f(handles.uCanvasHeight, cssHeight)
-  gl.uniform1f(handles.uBorderWidth, 1 / bpPerPx >= 12 ? 1 : 0)
-
-  gl.bindVertexArray(handles.vao)
-  gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, instanceCount)
-  gl.bindVertexArray(null)
-}
-
-export function disposeGL(gl: WebGL2RenderingContext, handles: GLHandles) {
-  gl.deleteBuffer(handles.rectBuffer)
-  gl.deleteBuffer(handles.colorBuffer)
-  gl.deleteVertexArray(handles.vao)
-  gl.deleteProgram(handles.program)
-}
-
-export { buildColorPalette, codonTable }
-export type { ColorPalette, RenderSettings }
+export { codonTable }

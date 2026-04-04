@@ -11,7 +11,7 @@ import {
   buildColorPalette,
   buildSequenceGeometry,
   codonTable,
-} from './components/drawSequenceWebGL.ts'
+} from './components/sequenceGeometry.ts'
 
 import type { SequenceRegionData } from './model.ts'
 import type { Frame } from '@jbrowse/core/util'

@@ -7,12 +7,13 @@ import { observer } from 'mobx-react'
 
 import LoadingOverlay from './LoadingOverlay.tsx'
 import SequenceLettersOverlay from './SequenceLettersOverlay.tsx'
-import { WebGPUSequenceRenderer } from './WebGPUSequenceRenderer.ts'
+import { createSequenceRenderer } from './SequenceRenderer.ts'
 import {
   buildColorPalette,
   buildSequenceGeometry,
-} from './drawSequenceWebGL.ts'
+} from './sequenceGeometry.ts'
 
+import type { SequenceBackend } from './sequenceBackendTypes.ts'
 import type { LinearReferenceSequenceDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -35,7 +36,7 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
   const view = getContainingView(model) as LinearGenomeViewModel
   const theme = useTheme()
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const rendererRef = useRef<WebGPUSequenceRenderer | null>(null)
+  const rendererRef = useRef<SequenceBackend | null>(null)
   const instanceCountRef = useRef(0)
   const baseBpRef = useRef(0)
   const [initReady, setInitReady] = useState(0)
@@ -52,25 +53,26 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
     if (!canvas) {
       return
     }
-    const renderer = WebGPUSequenceRenderer.getOrCreate(canvas)
-    rendererRef.current = renderer
     let cancelled = false
-    renderer
-      .init()
-      .then(ok => {
-        if (!ok) {
-          console.error('[WebGLSequenceComponent] GPU initialization failed')
+    let backend: SequenceBackend | null = null
+    createSequenceRenderer(canvas)
+      .then(b => {
+        if (cancelled) {
+          b.dispose()
+          return
         }
-        if (!cancelled) {
-          setInitReady(v => v + 1)
-        }
+        backend = b
+        rendererRef.current = b
+        setInitReady(v => v + 1)
       })
       .catch((e: unknown) => {
-        console.error('[WebGLSequenceComponent] GPU initialization error:', e)
+        console.error('[WebGLSequenceComponent] renderer initialization error:', e)
       })
     return () => {
       cancelled = true
-      renderer.dispose()
+      if (backend) {
+        backend.dispose()
+      }
       rendererRef.current = null
     }
   }, [])

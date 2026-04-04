@@ -8,7 +8,7 @@ import {
 } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
-import { codonTable } from './drawSequenceWebGL.ts'
+import { codonTable } from './sequenceGeometry.ts'
 
 import type { SequenceRegionData } from '../model.ts'
 import type { Frame } from '@jbrowse/core/util'
