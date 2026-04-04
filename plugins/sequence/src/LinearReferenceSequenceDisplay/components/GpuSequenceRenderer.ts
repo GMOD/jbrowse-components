@@ -89,10 +89,8 @@ export class GpuSequenceRenderer implements SequenceBackend {
     this.hal.resize(cssWidth, cssHeight)
     this.hal.beginFrame(1, 1, 1, 1)
 
-    if (
-      instanceCount > 0 &&
-      this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0
-    ) {
+    const bufCount = this.hal.getBufferCount(REGION_KEY, PASS_MAIN)
+    if (instanceCount > 0 && bufCount > 0) {
       this.uniformF32[0] = basePx
       this.uniformF32[1] = bpPerPx
       this.uniformF32[2] = cssWidth

@@ -121,7 +121,7 @@ export function setupCoarseDynamicBlocksAutorun(self: LinearGenomeViewModel) {
     autorun(
       function coarseDynamicBlocksAutorun() {
         if (self.initialized) {
-          self.setCoarseDynamicBlocks(self.dynamicBlocks)
+          self.setCoarseDynamicBlocks(self.dynamicBlocks, self.bpPerPx)
         }
       },
       { delay: 500, name: 'LGVCoarseDynamicBlocks' },

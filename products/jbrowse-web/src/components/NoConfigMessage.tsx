@@ -1,28 +1,70 @@
-function configLink(root: string, rest: Record<string, string>, link: string) {
-  const params = new URLSearchParams(Object.entries({ ...rest, config: link }))
-  return `${root}?${params}`
-}
+import React from 'react'
 
-function ConfigLinkList({
-  root,
-  rest,
+function LinkList({
   links,
-  extraParams,
+  buildUrl,
 }: {
-  root: string
-  rest: Record<string, string>
-  links: [string, string][]
-  extraParams?: Record<string, string>
+  links: readonly {
+    config?: string
+    href?: string
+    label: string
+    renderers?: readonly string[]
+  }[]
+  buildUrl?: (config: string, params?: Record<string, string>) => string
 }) {
+  const [hoveredBadge, setHoveredBadge] = React.useState<string | null>(null)
+
   return (
     <ul>
-      {links.map(([link, name]) => {
-        const params = new URLSearchParams(
-          Object.entries({ ...rest, ...extraParams, config: link }),
-        )
+      {links.map(({ config, href, label, renderers }) => {
+        const finalHref =
+          href ||
+          (config && buildUrl ? buildUrl(config) : `?config=${config || ''}`)
+
+        const extractConfigFromHref = (h: string) => {
+          const params = new URLSearchParams(h.split('?')[1] || '')
+          return params.get('config')
+        }
+
+        const configForRenderers = config || (href ? extractConfigFromHref(href) : null)
+
+        const defaultRenderers: readonly string[] = [
+          'webgpu',
+          'webgl',
+          'canvas',
+        ]
+        const badgeList = renderers?.length ? renderers : defaultRenderers
+        const badgeKey = `${label}:${renderers?.length ? renderers.join(',') : 'default'}`
         return (
-          <li key={name}>
-            <a href={`${root}?${params}`}>{name}</a>
+          <li key={label} style={{ marginBottom: 4 }}>
+            <a href={finalHref}>{label}</a>{' '}
+            <small style={{ color: '#666' }}>
+              {badgeList.map(r => {
+                const badgeId = `${badgeKey}:${r}`
+                return (
+                  <span key={r}>
+                    {' '}
+                    <a
+                      href={
+                        configForRenderers && buildUrl
+                          ? buildUrl(configForRenderers, { renderer: r })
+                          : finalHref
+                      }
+                      onMouseEnter={() => setHoveredBadge(badgeId)}
+                      onMouseLeave={() => setHoveredBadge(null)}
+                      style={{
+                        color: hoveredBadge === badgeId ? '#000' : '#666',
+                        textDecoration:
+                          hoveredBadge === badgeId ? 'underline' : 'none',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      [{r}]
+                    </a>
+                  </span>
+                )
+              })}
+            </small>
           </li>
         )
       })}
@@ -30,90 +72,154 @@ function ConfigLinkList({
   )
 }
 
-function SessionLinkList({
-  links,
-}: {
-  links: { href: string; label: string }[]
-}) {
-  return (
-    <ul>
-      {links.map(({ href, label }) => (
-        <li key={label}>
-          <a href={href}>{label}</a>
-        </li>
-      ))}
-    </ul>
-  )
-}
-
-const sampleConfigs: [string, string][] = [
-  ['test_data/config.json', 'Human basic'],
-  ['test_data/config_demo.json', 'Human sample data'],
-  ['test_data/sars-cov2/config.json', 'SARS-CoV2'],
-  ['test_data/cfam2/config.json', 'Dog (NCBI sequence aliases adapter)'],
-  ['test_data/honeybee/config.json', 'Honeybee'],
-  ['test_data/wormbase/config.json', 'Wormbase'],
-  ['test_data/breakpoint/config.json', 'Breakpoint'],
-  ['test_data/many_contigs/config.json', 'Many contigs'],
-  ['test_data/wgbs/config.json', 'WGBS methylation'],
-  ['test_data/methylation_test/config.json', 'Nanopore methylation'],
-  ['test_data/volvox/config_main_thread.json', 'Volvox (mainthreadrpc)'],
-  ['test_data/volvox/config_auth_main.json', 'Volvox (auth, mainthreadrpc)'],
-  ['test_data/volvox/config_auth.json', 'Volvox (auth)'],
-  ['test_data/volvox/config_spec.json', 'Volvox (w/ spec session)'],
-  ['test_data/volvoxhub/config.json', 'Volvox (with ucsc-hub)'],
-  ['test_data/volvox/theme.json', 'Theme test (wild color)'],
-  ['test_data/volvox/theme2.json', 'Theme test (wormbase color)'],
+const sampleConfigs: {
+  config: string
+  label: string
+}[] = [
+  {
+    config: 'test_data/volvox/config.json',
+    label: 'Volvox (sample data)',
+  },
+  {
+    config: 'test_data/config.json',
+    label: 'Human basic',
+  },
+  {
+    config: 'test_data/config_demo.json',
+    label: 'Human sample data',
+  },
+  {
+    config: 'test_data/sars-cov2/config.json',
+    label: 'SARS-CoV2',
+  },
+  {
+    config: 'test_data/cfam2/config.json',
+    label: 'Dog (NCBI adapter)',
+  },
+  {
+    config: 'test_data/honeybee/config.json',
+    label: 'Honeybee',
+  },
+  {
+    config: 'test_data/wormbase/config.json',
+    label: 'Wormbase',
+  },
+  {
+    config: 'test_data/breakpoint/config.json',
+    label: 'Breakpoint',
+  },
+  {
+    config: 'test_data/many_contigs/config.json',
+    label: 'Many contigs',
+  },
+  {
+    config: 'test_data/wgbs/config.json',
+    label: 'WGBS methylation',
+  },
+  {
+    config: 'test_data/methylation_test/config.json',
+    label: 'Nanopore methylation',
+  },
+  {
+    config: 'test_data/volvox/config_main_thread.json',
+    label: 'Volvox (main thread)',
+  },
+  {
+    config: 'test_data/volvox/config_auth_main.json',
+    label: 'Volvox (auth, main thread)',
+  },
+  {
+    config: 'test_data/volvox/config_auth.json',
+    label: 'Volvox (auth)',
+  },
+  {
+    config: 'test_data/volvox/config_spec.json',
+    label: 'Volvox (w/ spec session)',
+  },
+  {
+    config: 'test_data/volvoxhub/config.json',
+    label: 'Volvox (UCSC hub)',
+  },
+  {
+    config: 'test_data/volvox/theme.json',
+    label: 'Theme (wild color)',
+  },
+  {
+    config: 'test_data/volvox/theme2.json',
+    label: 'Theme (wormbase)',
+  },
 ]
 
-const syntenyConfigs: [string, string][] = [
-  ['test_data/config_synteny_grape_peach.json', 'Grape/Peach synteny'],
-  ['test_data/config_dotplot.json', 'Grape/Peach dotplot'],
-  ['test_data/config_human_dotplot.json', 'Human dotplot'],
-  ['test_data/yeast_synteny/config.json', 'Yeast synteny'],
-  [
-    'test_data/config_synteny_nway.json',
-    '3-way volvox synteny (volvox+ins+del)',
-  ],
-  [
-    'test_data/config_multi_lgv_synteny.json',
-    'Multi-genome volvox synteny (LGV, multi-pair)',
-  ],
-  [
-    'test_data/hprc/config_hprc_chrM.json',
-    'HPRC chrM pangenome (44 haplotypes, minigraph-cactus)',
-  ],
-  [
-    'test_data/hprc/config_hprc_chr20.json',
-    'HPRC chr20 pangenome (90 haplotypes, minigraph-cactus)',
-  ],
-  [
-    'test_data/config_gfa_pangenome.json',
-    'Volvox GFA pangenome (4 genomes, with cs tags)',
-  ],
-  ['test_data/config_graph_genome.json', 'Graph genome viewer (GFA)'],
-  ['test_data/hs1_vs_mm39/config.json', 'Human (hs1) vs Mouse (mm39) synteny'],
-  ['test_data/hg19_vs_hg38/config.json', 'hg19 vs hg38 liftover synteny'],
+const syntenyConfigs: {
+  config: string
+  label: string
+}[] = [
+  {
+    config: 'test_data/config_synteny_grape_peach.json',
+    label: 'Grape/Peach synteny',
+  },
+  {
+    config: 'test_data/config_dotplot.json',
+    label: 'Grape/Peach dotplot',
+  },
+  {
+    config: 'test_data/config_human_dotplot.json',
+    label: 'Human dotplot',
+  },
+  {
+    config: 'test_data/yeast_synteny/config.json',
+    label: 'Yeast synteny',
+  },
+  {
+    config: 'test_data/config_synteny_nway.json',
+    label: '3-way volvox synteny',
+  },
+  {
+    config: 'test_data/config_multi_lgv_synteny.json',
+    label: 'Multi-genome volvox',
+  },
+  {
+    config: 'test_data/hprc/config_hprc_chrM.json',
+    label: 'HPRC chrM (44 haps)',
+  },
+  {
+    config: 'test_data/hprc/config_hprc_chr20.json',
+    label: 'HPRC chr20 (90 haps)',
+  },
+  {
+    config: 'test_data/config_gfa_pangenome.json',
+    label: 'Volvox GFA pangenome',
+  },
+  {
+    config: 'test_data/config_graph_genome.json',
+    label: 'Graph genome (GFA)',
+  },
+  {
+    config: 'test_data/hs1_vs_mm39/config.json',
+    label: 'hs1 vs mm39',
+  },
+  {
+    config: 'test_data/hg19_vs_hg38/config.json',
+    label: 'hg19 vs hg38 liftover',
+  },
 ]
 
-const demoSessions: { href: string; label: string }[] = [
+const demoSessions = [
   {
     href: '?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt',
     label: 'Human instance with HG002 insertion shown',
   },
   {
     href: '?config=test_data/config_demo.json&session=share-pjaAq1hNxB&password=Z9teR',
-    label:
-      'SKBR3 breast cancer cell line - breakpoint split view translocation',
+    label: 'SKBR3 breakpoint split view',
   },
   {
     href: '?config=test_data/config_demo.json&session=share-XyL52LPDoO&password=861E4',
-    label:
-      'Human instance coloring methylation/modifications on nanopore reads',
+    label: 'Methylation/modifications nanopore',
   },
   {
     href: '?config=test_data/breakpoint/config.json&session=share-xeUuLRakik&password=vh0ca',
-    label: 'Breakpoint split view demo (multi-hop split read connection)',
+    label: 'Breakpoint split view demo (multi-hop)',
   },
   {
     href: '?config=test_data/config_dotplot.json&session=share-zw51jIwuXb&password=i8WqY',
@@ -127,21 +233,18 @@ const demoSessions: { href: string; label: string }[] = [
     href: '?config=https://jbrowse.org/genomes/GRCh38/1000genomes/config_1000genomes.json&session=share-SUK-mntGyB&password=eQF0F',
     label: '1000 genomes extended trio demo',
   },
-  {
-    href: '?config=test_data/volvox/config.json&session=share-JCsm46ATdn&password=ilHg5',
-    label: 'Volvox sample data (small imaginary test datasets)',
-  },
+
   {
     href: '?config=test_data/config_demo.json&session=share-Pw7kOjagSF&password=e0SuE',
     label: 'ENCODE Multi-bigwig example',
   },
   {
     href: '?config=test_data/config_demo.json&session=share-7skGDzEmMi&password=NGzLX',
-    label: 'COLO829 melanoma cancer cell line tumor vs normal multi-bigwig',
+    label: 'COLO829 tumor vs normal multi-bigwig',
   },
   {
     href: '?config=test_data/config_demo.json&session=share-sA7riIQWhJ&password=3pkHd',
-    label: 'Inversion example ("single row" breakpoint split view)',
+    label: 'Inversion "single row" breakpoint view',
   },
   {
     href: '?config=test_data/config_demo.json&session=share-ofjI26CNas&password=ohqlR',
@@ -149,26 +252,29 @@ const demoSessions: { href: string; label: string }[] = [
   },
   {
     href: '?config=https://jbrowse.org/demos/plant_synteny_demo/config2.json&session=share-pARmvLazem&password=ZPOwE',
-    label: 'Multi-way synteny demo (grape vs peach vs cacao)',
+    label: 'Grape vs peach vs cacao',
   },
   {
     href: '?config=https://jbrowse.org/genomes/potato/config.json',
-    label: 'Tetraploid potato multi-sample VCF rendering',
+    label: 'Tetraploid potato multi-sample VCF',
   },
   {
     href: '?config=test_data/config_demo.json&session=share-vQBatl-Of9&password=Mhl6F',
     label: 'Human trio phased VCF rendering',
   },
-]
+] as const
 
-const galleryDemos: { href: string; label: string }[] = [
+const galleryDemos: {
+  href: string
+  label: string
+}[] = [
   {
     href: '?config=test_data%2Fconfig_dotplot.json&session=share-r4sMB3bHh5&password=C9jCa',
-    label: 'Dotplot showing alignment between grape vs peach genome',
+    label: 'Dotplot grape vs peach genome',
   },
   {
     href: '?config=test_data%2Fconfig_dotplot.json&session=share-4MjF5YGM_G&password=rByjt',
-    label: 'Linear synteny view of grape vs peach genome',
+    label: 'Synteny grape vs peach',
   },
   {
     href: 'test_data/hs1_vs_mm39/config.json?config=test_data%2Fhs1_vs_mm39%2Fconfig.json&session=share-sYw9py4ItD&password=fAVJa',
@@ -180,39 +286,39 @@ const galleryDemos: { href: string; label: string }[] = [
   },
   {
     href: '?config=test_data%2Fconfig_demo.json&session=share-n9_vE%2FEl2R&password=wu9J6',
-    label: 'SV inspector displaying inter-chromosomal translocations in SKBR3',
+    label: 'SKBR3 SV inspector',
   },
   {
     href: '?config=test_data%2Fconfig_demo.json&session=share-6pkcSXlbFL&password=ER28C',
-    label: 'Horizontally flip feature demonstration',
+    label: 'Horizontally flipped demo',
   },
   {
     href: '?config=test_data%2Fconfig_demo.json&session=share-AcZSrC_yOb&password=e7b64',
-    label: 'COLO829 melanoma coverage (multi-quantitative track)',
+    label: 'COLO829 tumor vs normal',
   },
   {
     href: '?config=test_data%2Fconfig_demo.json&session=share-Swq8pJTX0z&password=yM41l',
-    label: 'Translocation in SKBR3 using breakpoint split view',
+    label: 'SKBR3 using breakpoint split view',
   },
   {
     href: '?config=test_data%2Fconfig_demo.json&session=share-psOr2x2efp&password=bErZE',
-    label: 'Heterozygous small deletion in GIAB dataset',
+    label: 'GIAB - Heterozygous small deletion',
   },
   {
     href: '?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt',
-    label: '~1.5kb insertion in GIAB dataset',
+    label: 'GIAB - ~1.5kb insertion',
   },
   {
     href: '?config=test_data%2Fconfig_demo.json&session=share-rzJ27iixQH&password=rSgZe',
-    label: '~500bp insertion from SKBR3 PacBio reads',
+    label: 'SKBR3 - ~500bp insertion',
   },
   {
     href: '?config=test_data%2Fconfig_demo.json&session=share-LffYr8SI5E&password=VmZVl',
-    label: 'Methylated and unmethylated CpG island with nanopore reads',
+    label: 'Methylated and unmethylated CpG',
   },
   {
     href: '?config=https://jbrowse.org/genomes/GRCh38/1000genomes/config_1000genomes.json&session=share-DN_h4SIwo4&password=CxkLw',
-    label: '1000 genomes structural variant call with large inversion on chr19',
+    label: '1000 genomes SV call w/ INV on chr19',
   },
 ]
 
@@ -222,54 +328,36 @@ export default function NoConfigMessage() {
     new URLSearchParams(search),
   )
   const root = href.split('?')[0] ?? href
+
+  const buildConfigUrl = (config: string, params?: Record<string, string>) => {
+    return `${root}?${new URLSearchParams(
+      Object.entries({ ...rest, ...params, config }),
+    )}`
+  }
+
   return (
     <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>
       <div style={{ flex: 1 }}>
         <h3 style={{ margin: '0 0 4px' }}>
-          Volvox (sample data){' '}
-          <small style={{ fontWeight: 'normal', fontSize: '0.8em' }}>
-            GPU variants
-          </small>
-        </h3>
-        <ConfigLinkList
-          root={root}
-          rest={rest}
-          links={[['test_data/volvox/config.json', 'WebGPU']]}
-          extraParams={{ gpu: 'webgpu' }}
-        />
-        <ConfigLinkList
-          root={root}
-          rest={rest}
-          links={[['test_data/volvox/config.json', 'WebGL']]}
-          extraParams={{ gpu: 'webgl' }}
-        />
-        <ConfigLinkList
-          root={root}
-          rest={rest}
-          links={[['test_data/volvox/config.json', 'Canvas']]}
-          extraParams={{ gpu: 'canvas' }}
-        />
-
-        <h3 style={{ margin: '16px 0 4px' }}>
           Sample configs{' '}
           <small style={{ fontWeight: 'normal', fontSize: '0.8em' }}>
             (local test data, requires dev server)
           </small>
         </h3>
-        <ConfigLinkList root={root} rest={rest} links={sampleConfigs} />
+        <LinkList links={sampleConfigs} buildUrl={buildConfigUrl} />
 
         <h3 style={{ margin: '16px 0 4px' }}>Synteny and dotplot</h3>
-        <ConfigLinkList root={root} rest={rest} links={syntenyConfigs} />
+        <LinkList links={syntenyConfigs} buildUrl={buildConfigUrl} />
       </div>
 
       <div style={{ flex: 1 }}>
         <h3 style={{ margin: '0 0 4px' }}>Demo sessions</h3>
-        <SessionLinkList links={demoSessions} />
+        <LinkList links={demoSessions} buildUrl={buildConfigUrl} />
       </div>
 
       <div style={{ flex: 1 }}>
         <h3 style={{ margin: '0 0 4px' }}>Gallery demos</h3>
-        <SessionLinkList links={galleryDemos} />
+        <LinkList links={galleryDemos} buildUrl={buildConfigUrl} />
       </div>
     </div>
   )

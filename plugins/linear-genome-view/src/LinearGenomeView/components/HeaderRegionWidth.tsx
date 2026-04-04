@@ -19,10 +19,9 @@ const HeaderRegionWidth = observer(function HeaderRegionWidth({
   model: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const { effectiveTotalBpDisplayStr } = model
   return (
     <Typography variant="body2" color="textSecondary" className={classes.bp}>
-      {effectiveTotalBpDisplayStr}
+      {model.coarseTotalBpDisplayStr}
     </Typography>
   )
 })

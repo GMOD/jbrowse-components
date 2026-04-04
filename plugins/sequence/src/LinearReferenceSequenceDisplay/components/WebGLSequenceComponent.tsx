@@ -55,7 +55,7 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
     const instanceCount = instanceCountRef.current
     const cssWidth = view.trackWidthPx
     const cssHeight = model.height
-    if (!renderer || !ready || instanceCount === 0 || cssWidth === 0 || cssHeight === 0) {
+    if (!renderer || instanceCount === 0 || cssWidth === 0 || cssHeight === 0) {
       return
     }
     const basePx = baseBpRef.current / view.bpPerPx - view.offsetPx

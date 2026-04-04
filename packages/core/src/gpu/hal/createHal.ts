@@ -12,6 +12,7 @@ export async function createGpuHal(
   const override = getGpuOverride()
 
   if (override === 'canvas2d' || override === 'off') {
+    console.log('[GPU] Rendering disabled via URL parameter')
     return null
   }
 
@@ -19,18 +20,20 @@ export async function createGpuHal(
     try {
       const webgpu = await WebGPUHal.create(canvas, passes, uniformByteSize)
       if (webgpu) {
+        console.log('[GPU] Using WebGPU renderer')
         return webgpu
       }
-    } catch {
-      // WebGPU not available, fall through to WebGL2
+    } catch (e) {
+      console.log('[GPU] WebGPU initialization failed, falling back to WebGL2:', e)
     }
   }
 
   try {
     return new WebGL2Hal(canvas, passes, uniformByteSize)
-  } catch {
-    // WebGL2 not available
+  } catch (e) {
+    console.error('[GPU] WebGL2 initialization failed:', e)
   }
 
+  console.error('[GPU] No rendering backend available')
   return null
 }

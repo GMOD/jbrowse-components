@@ -24,11 +24,12 @@ async function createDevice(): Promise<GPUDevice | null> {
   try {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!navigator.gpu) {
-      console.warn('WebGPU unsupported in this browser, trying fallback')
+      console.warn('[GPU] WebGPU not supported in this browser. Falling back to WebGL2.')
       return null
     }
     const adapter = await navigator.gpu.requestAdapter()
     if (!adapter) {
+      console.warn('[GPU] No compatible GPU adapter available. This may indicate WebGPU is disabled, unsupported hardware, or a system limitation. Falling back to WebGL2.')
       return null
     }
     const d = await adapter.requestDevice({
@@ -38,7 +39,7 @@ async function createDevice(): Promise<GPUDevice | null> {
       },
     })
     void d.lost.then(info => {
-      console.error('Device lost:', info.message)
+      console.error('[GPU] Device lost:', info.message)
       device = null
       devicePromise = null
       const listeners = deviceLostListeners.get(d)
@@ -51,7 +52,7 @@ async function createDevice(): Promise<GPUDevice | null> {
     device = d
     return d
   } catch (e) {
-    console.warn('WebGPU device creation failed:', e)
+    console.warn('[GPU] WebGPU device creation failed:', e)
     return null
   }
 }
@@ -60,11 +61,7 @@ let gpuOverride: string | null | undefined
 
 export function getGpuOverride() {
   if (gpuOverride === undefined) {
-    try {
-      gpuOverride = new URLSearchParams(window.location.search).get('gpu')
-    } catch {
-      gpuOverride = null
-    }
+    gpuOverride = new URLSearchParams(window.location.search).get('renderer') ?? null
   }
   return gpuOverride
 }
