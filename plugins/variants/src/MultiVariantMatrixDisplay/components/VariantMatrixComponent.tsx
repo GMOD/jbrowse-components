@@ -64,7 +64,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
   const renderNow = useEffectEvent(() => {
     const renderer = rendererRef.current
     const cellData = model.cellData
-    if (!renderer || !ready || !view.initialized || !cellData) {
+    if (!renderer || !view.initialized || !cellData) {
       return
     }
     renderer.render({
@@ -197,8 +197,6 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
           backgroundColor:
             model.referenceDrawingMode === 'skip' ? '#ccc' : undefined,
         }}
-        width={width}
-        height={height}
         onMouseMove={e => {
           const rect = e.currentTarget.getBoundingClientRect()
           const result = getFeatureUnderMouse(rect, e.clientX, e.clientY)

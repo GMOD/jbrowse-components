@@ -122,7 +122,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
   const renderNow = useEffectEvent(() => {
     const renderer = rendererRef.current
-    if (!renderer || !ready || !view.initialized) {
+    if (!renderer || !view.initialized) {
       return
     }
     // See dataVersion comment in MultiRegionDisplayMixin.
@@ -483,8 +483,6 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
             left: 0,
             top: 0,
           }}
-          width={totalWidth}
-          height={height}
         />
       </div>
 

@@ -145,7 +145,7 @@ const VariantComponent = observer(function VariantComponent({
 
   const renderNow = useEffectEvent(() => {
     const renderer = rendererRef.current
-    if (!renderer || !ready || !view.initialized) {
+    if (!renderer || !view.initialized) {
       return
     }
     const regions = model.visibleRegions
@@ -345,8 +345,6 @@ const VariantComponent = observer(function VariantComponent({
           backgroundColor:
             model.referenceDrawingMode === 'skip' ? '#ccc' : undefined,
         }}
-        width={width}
-        height={height}
         onMouseMove={e => {
           const rect = e.currentTarget.getBoundingClientRect()
           const result = getFeatureUnderMouse(rect, e.clientX, e.clientY)

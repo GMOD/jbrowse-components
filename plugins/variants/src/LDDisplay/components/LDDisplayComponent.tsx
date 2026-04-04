@@ -345,7 +345,7 @@ const LDCanvas = observer(function LDCanvas({
   const renderNow = useEffectEvent(() => {
     const renderer = rendererRef.current
     const data = model.rpcData
-    if (!renderer || !ready || !data) {
+    if (!renderer || !data) {
       return
     }
     const w = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
@@ -499,8 +499,6 @@ const LDCanvas = observer(function LDCanvas({
           left: 0,
           top: effectiveLineZoneHeight,
         }}
-        width={width}
-        height={canvasOnlyHeight}
       />
 
       {hoveredItem && genomicX1 !== undefined && genomicX2 !== undefined ? (

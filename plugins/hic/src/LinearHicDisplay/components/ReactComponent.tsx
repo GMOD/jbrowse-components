@@ -130,7 +130,7 @@ const HicCanvas = observer(function HicCanvas({
   const renderNow = useEffectEvent(() => {
     const renderer = rendererRef.current
     const data = model.rpcData
-    if (!renderer || !ready || !data) {
+    if (!renderer || !data) {
       return
     }
     const w = Math.round(view.dynamicBlocks.totalWidthPx)
@@ -276,8 +276,6 @@ const HicCanvas = observer(function HicCanvas({
           position: 'absolute',
           left: 0,
         }}
-        width={width}
-        height={height}
       />
       {hoveredItem && localMousePos ? (
         <Crosshairs

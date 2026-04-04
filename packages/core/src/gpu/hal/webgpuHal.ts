@@ -164,9 +164,7 @@ async function ensurePipelines(
           targets: [{ format, ...(blend && { blend }) }],
         },
         primitive: { topology: topo },
-        multisample: desc.picking
-          ? undefined
-          : { count: MSAA_SAMPLE_COUNT },
+        multisample: desc.picking ? undefined : { count: MSAA_SAMPLE_COUNT },
       })
       state.pipelines.set(desc.id, pipeline)
     }),
@@ -271,11 +269,14 @@ export class WebGPUHal implements GpuHal {
     const dpr = typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
     const pw = Math.round(width * dpr)
     const ph = Math.round(height * dpr)
-    if (this.canvas.width !== pw || this.canvas.height !== ph) {
+    const sizeChanged = this.canvas.width !== pw || this.canvas.height !== ph
+    if (sizeChanged) {
       this.canvas.width = pw
       this.canvas.height = ph
       this.canvas.style.width = `${width}px`
       this.canvas.style.height = `${height}px`
+    }
+    if (sizeChanged || !this.msaaTexture) {
       this.recreateMsaaTexture(pw, ph)
     }
   }
@@ -494,16 +495,23 @@ export class WebGPUHal implements GpuHal {
   drawPass(passId: string, regionKey: number, bufferPassId?: string) {
     const state = deviceState.get(this.device)
     if (!state || !this.currentTextureView || !this.currentEncoder) {
+      console.log('[WebGPUHal] drawPass: missing state/texture/encoder', {
+        hasState: !!state,
+        hasTextureView: !!this.currentTextureView,
+        hasEncoder: !!this.currentEncoder,
+      })
       return
     }
     const pipeline = state.pipelines.get(passId)
     if (!pipeline) {
+      console.log('[WebGPUHal] drawPass: no pipeline for', passId)
       return
     }
     const regionBuf = this.regions
       .get(regionKey)
       ?.buffers.get(bufferPassId ?? passId)
     if (!regionBuf || regionBuf.count === 0) {
+      console.log('[WebGPUHal] drawPass: no buffer for', passId, regionKey)
       return
     }
 
@@ -512,27 +520,29 @@ export class WebGPUHal implements GpuHal {
       return
     }
 
+    console.log('[WebGPUHal] drawPass:', {
+      passId,
+      regionKey,
+      count: regionBuf.count,
+      canvasW: this.canvas.width,
+      canvasH: this.canvas.height,
+    })
+
     // Dynamic offset points to the most recently written uniform slot
     const dynamicOffset =
       Math.max(0, this.uniformSlot - 1) * this.alignedUniformSize
 
-    const colorAttachment: GPURenderPassColorAttachment = this.msaaView
-      ? {
-          view: this.msaaView,
-          resolveTarget: this.currentTextureView,
-          loadOp: (this.isFirstPass ? 'clear' : 'load') as GPULoadOp,
-          storeOp: 'store' as GPUStoreOp,
-          ...(this.isFirstPass && { clearValue: this._clearColor }),
-        }
-      : {
-          view: this.currentTextureView,
-          loadOp: (this.isFirstPass ? 'clear' : 'load') as GPULoadOp,
-          storeOp: 'store' as GPUStoreOp,
-          ...(this.isFirstPass && { clearValue: this._clearColor }),
-        }
+    if (!this.msaaView) {
+      console.warn(
+        `[WebGPUHal] drawPass(${passId}): no MSAA texture — skipping`,
+      )
+      return
+    }
 
     const pass = this.currentEncoder.beginRenderPass({
-      colorAttachments: [colorAttachment],
+      colorAttachments: [
+        this.makeColorAttachment(this.isFirstPass ? 'clear' : 'load'),
+      ],
     })
     if (this.viewportRect) {
       const v = this.viewportRect
@@ -554,23 +564,9 @@ export class WebGPUHal implements GpuHal {
       return
     }
 
-    if (this.isFirstPass && this.currentTextureView) {
-      const clearAttachment: GPURenderPassColorAttachment = this.msaaView
-        ? {
-            view: this.msaaView,
-            resolveTarget: this.currentTextureView,
-            loadOp: 'clear' as GPULoadOp,
-            storeOp: 'store' as GPUStoreOp,
-            clearValue: this._clearColor,
-          }
-        : {
-            view: this.currentTextureView,
-            loadOp: 'clear' as GPULoadOp,
-            storeOp: 'store' as GPUStoreOp,
-            clearValue: this._clearColor,
-          }
+    if (this.isFirstPass && this.currentTextureView && this.msaaView) {
       const pass = this.currentEncoder.beginRenderPass({
-        colorAttachments: [clearAttachment],
+        colorAttachments: [this.makeColorAttachment('clear')],
       })
       pass.end()
     }
@@ -727,6 +723,16 @@ export class WebGPUHal implements GpuHal {
     this.msaaTexture?.destroy()
     this.pickingTexture?.destroy()
     this.pickingStagingBuffer?.destroy()
+  }
+
+  private makeColorAttachment(loadOp: GPULoadOp): GPURenderPassColorAttachment {
+    return {
+      view: this.msaaView!,
+      resolveTarget: this.currentTextureView!,
+      loadOp,
+      storeOp: 'store',
+      ...(loadOp === 'clear' && { clearValue: this._clearColor }),
+    }
   }
 
   private ensurePickingTexture() {

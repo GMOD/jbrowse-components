@@ -42,7 +42,7 @@ const WiggleComponent = observer(function WiggleComponent({
 
   const renderNow = useEffectEvent(() => {
     const renderer = rendererRef.current
-    if (!renderer || !ready || !view.initialized) {
+    if (!renderer || !view.initialized) {
       return
     }
     const { domain } = model
@@ -229,8 +229,6 @@ const WiggleComponent = observer(function WiggleComponent({
             left: 0,
             top: 0,
           }}
-          width={width}
-          height={height}
         />
       </div>
       {model.isDensityMode && model.domain ? (
