@@ -7,18 +7,25 @@ function ConfigLinkList({
   root,
   rest,
   links,
+  extraParams,
 }: {
   root: string
   rest: Record<string, string>
   links: [string, string][]
+  extraParams?: Record<string, string>
 }) {
   return (
     <ul>
-      {links.map(([link, name]) => (
-        <li key={name}>
-          <a href={configLink(root, rest, link)}>{name}</a>
-        </li>
-      ))}
+      {links.map(([link, name]) => {
+        const params = new URLSearchParams(
+          Object.entries({ ...rest, ...extraParams, config: link }),
+        )
+        return (
+          <li key={name}>
+            <a href={`${root}?${params}`}>{name}</a>
+          </li>
+        )
+      })}
     </ul>
   )
 }
@@ -40,7 +47,6 @@ function SessionLinkList({
 }
 
 const sampleConfigs: [string, string][] = [
-  ['test_data/volvox/config.json', 'Volvox (sample data)'],
   ['test_data/config.json', 'Human basic'],
   ['test_data/config_demo.json', 'Human sample data'],
   ['test_data/sars-cov2/config.json', 'SARS-CoV2'],
@@ -220,6 +226,31 @@ export default function NoConfigMessage() {
     <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>
       <div style={{ flex: 1 }}>
         <h3 style={{ margin: '0 0 4px' }}>
+          Volvox (sample data){' '}
+          <small style={{ fontWeight: 'normal', fontSize: '0.8em' }}>
+            GPU variants
+          </small>
+        </h3>
+        <ConfigLinkList
+          root={root}
+          rest={rest}
+          links={[['test_data/volvox/config.json', 'WebGPU']]}
+          extraParams={{ gpu: 'webgpu' }}
+        />
+        <ConfigLinkList
+          root={root}
+          rest={rest}
+          links={[['test_data/volvox/config.json', 'WebGL']]}
+          extraParams={{ gpu: 'webgl' }}
+        />
+        <ConfigLinkList
+          root={root}
+          rest={rest}
+          links={[['test_data/volvox/config.json', 'Canvas']]}
+          extraParams={{ gpu: 'canvas' }}
+        />
+
+        <h3 style={{ margin: '16px 0 4px' }}>
           Sample configs{' '}
           <small style={{ fontWeight: 'normal', fontSize: '0.8em' }}>
             (local test data, requires dev server)
