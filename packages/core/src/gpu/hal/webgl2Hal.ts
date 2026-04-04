@@ -63,7 +63,7 @@ export class WebGL2Hal implements GpuHal {
     this.canvas = canvas
     this.uniformByteSize = uniformByteSize
     const gl = canvas.getContext('webgl2', {
-      antialias: false,
+      antialias: true,
       premultipliedAlpha: false,
       preserveDrawingBuffer: true,
     })

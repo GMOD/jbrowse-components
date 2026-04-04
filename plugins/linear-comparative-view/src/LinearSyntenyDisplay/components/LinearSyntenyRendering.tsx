@@ -7,6 +7,7 @@ import {
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
+  useTabVisibilityRerender,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { transaction } from 'mobx'
@@ -77,6 +78,10 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     'loading',
   )
   const [gpuError, setGpuError] = useState('')
+
+  useTabVisibilityRerender(() => {
+    model.bumpTabVisibility()
+  })
 
   function getEventCanvasCoords(evt: { clientX: number; clientY: number }) {
     const rect = gpuCanvasRef.current?.getBoundingClientRect()

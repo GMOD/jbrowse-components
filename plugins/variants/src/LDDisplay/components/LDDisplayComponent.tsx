@@ -1,8 +1,20 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import { CanvasDisplayWrapper, ErrorOverlay } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView, max, useGpuRenderer } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  max,
+  useGpuRenderer,
+  useTabVisibilityRerender,
+} from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
@@ -330,6 +342,31 @@ const LDCanvas = observer(function LDCanvas({
     [flatbush],
   )
 
+  const renderNow = useEffectEvent(() => {
+    const renderer = rendererRef.current
+    const data = model.rpcData
+    if (!renderer || !ready || !data) {
+      return
+    }
+    const w = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
+    const scale =
+      model.lastDrawnBpPerPx !== undefined
+        ? model.lastDrawnBpPerPx / view.bpPerPx
+        : 1
+    const offsetX =
+      model.lastDrawnOffsetPx !== undefined
+        ? model.lastDrawnOffsetPx * scale - view.offsetPx
+        : 0
+    renderer.render({
+      yScalar: data.yScalar,
+      canvasWidth: w,
+      canvasHeight: model.fitToHeight ? model.ldCanvasHeight : w / 2,
+      signedLD: data.signedLD,
+      viewScale: scale,
+      viewOffsetX: offsetX,
+    })
+  })
+
   useEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !ready) {
@@ -363,26 +400,11 @@ const LDCanvas = observer(function LDCanvas({
         )
       }
 
-      const w = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
-      const scale =
-        model.lastDrawnBpPerPx !== undefined
-          ? model.lastDrawnBpPerPx / view.bpPerPx
-          : 1
-      const offsetX =
-        model.lastDrawnOffsetPx !== undefined
-          ? model.lastDrawnOffsetPx * scale - view.offsetPx
-          : 0
-
-      renderer.render({
-        yScalar: data.yScalar,
-        canvasWidth: w,
-        canvasHeight: model.fitToHeight ? model.ldCanvasHeight : w / 2,
-        signedLD: data.signedLD,
-        viewScale: scale,
-        viewOffsetX: offsetX,
-      })
+      renderNow()
     })
   }, [model, view, ready, rendererRef])
+
+  useTabVisibilityRerender(renderNow)
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {

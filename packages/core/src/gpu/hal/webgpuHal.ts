@@ -15,6 +15,7 @@ import type { BlendState, GpuHal, PassDescriptor, RegionMeta } from './types.ts'
 // aligned slot in the uniform ring buffer. 512 slots × 256-byte alignment =
 // 128 KB — negligible GPU memory for eliminating per-draw command submissions.
 const MAX_UNIFORM_SLOTS = 512
+const MSAA_SAMPLE_COUNT = 4
 
 function gpuBlendState(bs: BlendState): GPUBlendState {
   return {
@@ -163,6 +164,9 @@ async function ensurePipelines(
           targets: [{ format, ...(blend && { blend }) }],
         },
         primitive: { topology: topo },
+        multisample: desc.picking
+          ? undefined
+          : { count: MSAA_SAMPLE_COUNT },
       })
       state.pipelines.set(desc.id, pipeline)
     }),
@@ -191,6 +195,10 @@ export class WebGPUHal implements GpuHal {
   private uniformStaging: ArrayBuffer
   private uniformStagingU8: Uint8Array
   private uniformSlot = 0
+
+  // MSAA resolve texture — 4x multisampled render target
+  private msaaTexture: GPUTexture | null = null
+  private msaaView: GPUTextureView | null = null
 
   // Frame state — single encoder batches all render passes per frame
   private currentTextureView: GPUTextureView | null = null
@@ -268,6 +276,22 @@ export class WebGPUHal implements GpuHal {
       this.canvas.height = ph
       this.canvas.style.width = `${width}px`
       this.canvas.style.height = `${height}px`
+      this.recreateMsaaTexture(pw, ph)
+    }
+  }
+
+  private recreateMsaaTexture(width: number, height: number) {
+    this.msaaTexture?.destroy()
+    this.msaaTexture = null
+    this.msaaView = null
+    if (width > 0 && height > 0) {
+      this.msaaTexture = this.device.createTexture({
+        size: [width, height],
+        format: 'bgra8unorm',
+        sampleCount: MSAA_SAMPLE_COUNT,
+        usage: GPUTextureUsage.RENDER_ATTACHMENT,
+      })
+      this.msaaView = this.msaaTexture.createView()
     }
   }
 
@@ -492,15 +516,23 @@ export class WebGPUHal implements GpuHal {
     const dynamicOffset =
       Math.max(0, this.uniformSlot - 1) * this.alignedUniformSize
 
-    const pass = this.currentEncoder.beginRenderPass({
-      colorAttachments: [
-        {
+    const colorAttachment: GPURenderPassColorAttachment = this.msaaView
+      ? {
+          view: this.msaaView,
+          resolveTarget: this.currentTextureView,
+          loadOp: (this.isFirstPass ? 'clear' : 'load') as GPULoadOp,
+          storeOp: 'store' as GPUStoreOp,
+          ...(this.isFirstPass && { clearValue: this._clearColor }),
+        }
+      : {
           view: this.currentTextureView,
           loadOp: (this.isFirstPass ? 'clear' : 'load') as GPULoadOp,
           storeOp: 'store' as GPUStoreOp,
           ...(this.isFirstPass && { clearValue: this._clearColor }),
-        },
-      ],
+        }
+
+    const pass = this.currentEncoder.beginRenderPass({
+      colorAttachments: [colorAttachment],
     })
     if (this.viewportRect) {
       const v = this.viewportRect
@@ -523,15 +555,22 @@ export class WebGPUHal implements GpuHal {
     }
 
     if (this.isFirstPass && this.currentTextureView) {
-      const pass = this.currentEncoder.beginRenderPass({
-        colorAttachments: [
-          {
+      const clearAttachment: GPURenderPassColorAttachment = this.msaaView
+        ? {
+            view: this.msaaView,
+            resolveTarget: this.currentTextureView,
+            loadOp: 'clear' as GPULoadOp,
+            storeOp: 'store' as GPUStoreOp,
+            clearValue: this._clearColor,
+          }
+        : {
             view: this.currentTextureView,
             loadOp: 'clear' as GPULoadOp,
             storeOp: 'store' as GPUStoreOp,
             clearValue: this._clearColor,
-          },
-        ],
+          }
+      const pass = this.currentEncoder.beginRenderPass({
+        colorAttachments: [clearAttachment],
       })
       pass.end()
     }
@@ -685,6 +724,7 @@ export class WebGPUHal implements GpuHal {
       ts.texture.destroy()
     }
     this.passTextures.clear()
+    this.msaaTexture?.destroy()
     this.pickingTexture?.destroy()
     this.pickingStagingBuffer?.destroy()
   }

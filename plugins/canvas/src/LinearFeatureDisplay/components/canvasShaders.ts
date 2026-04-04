@@ -281,7 +281,7 @@ fn vs_main(
 
   let half_w = 4.5 / u.canvas_width;
   let half_h = 3.5 / u.canvas_height;
-  let thickness = 1.0 / u.canvas_height;
+  let thickness = 1.5 / u.canvas_height;
   let dir = inst.direction;
 
   let is_top_arm = v < 6u;

@@ -12,6 +12,7 @@ import {
   getSession,
   isSessionModelWithWidgets,
   useGpuRenderer,
+  useTabVisibilityRerender,
 } from '@jbrowse/core/util'
 import { hexToGLrgb } from '@jbrowse/core/util/colord'
 import {
@@ -324,6 +325,10 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     MultiSyntenyRenderer,
     gpuOpts,
   )
+
+  useTabVisibilityRerender(() => {
+    model.bumpTabVisibility()
+  })
 
   // Theme color palette sync to model
   useEffect(() => {

@@ -1,7 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
 
 import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
-import { getContainingView, useGpuRenderer } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  useGpuRenderer,
+  useTabVisibilityRerender,
+} from '@jbrowse/core/util'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
@@ -116,6 +120,43 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
   const view = getContainingView(model) as LGV
 
+  const renderNow = useEffectEvent(() => {
+    const renderer = rendererRef.current
+    if (!renderer || !ready || !view.initialized) {
+      return
+    }
+    // See dataVersion comment in MultiRegionDisplayMixin.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _dv = model.dataVersion
+    const { domain } = model
+    const visibleRegions = view.visibleRegions
+    const totalWidth = Math.round(view.width)
+    if (!domain || visibleRegions.length === 0) {
+      renderer.renderBlocks(
+        [],
+        makeRenderState([0, 1], 'linear', 'xyplot', totalWidth, model.height),
+      )
+      return
+    }
+    const blocks: WiggleRenderBlock[] = visibleRegions.map(vr => ({
+      regionNumber: vr.regionNumber,
+      bpRangeX: [vr.start, vr.end] as [number, number],
+      screenStartPx: vr.screenStartPx,
+      screenEndPx: vr.screenEndPx,
+      reversed: vr.reversed ?? false,
+    }))
+    renderer.renderBlocks(
+      blocks,
+      makeRenderState(
+        domain,
+        model.scaleType,
+        model.renderingType,
+        totalWidth,
+        model.height,
+      ),
+    )
+  })
+
   useEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !ready) {
@@ -213,46 +254,11 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         }
       }
 
-      if (!view.initialized) {
-        return
-      }
-
-      // See dataVersion comment in MultiRegionDisplayMixin.
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _dv = model.dataVersion
-
-      const { domain } = model
-      const visibleRegions = view.visibleRegions
-      const totalWidth = Math.round(view.width)
-
-      if (!domain || visibleRegions.length === 0) {
-        renderer.renderBlocks(
-          [],
-          makeRenderState([0, 1], 'linear', 'xyplot', totalWidth, model.height),
-        )
-        return
-      }
-
-      const blocks: WiggleRenderBlock[] = visibleRegions.map(vr => ({
-        regionNumber: vr.regionNumber,
-        bpRangeX: [vr.start, vr.end] as [number, number],
-        screenStartPx: vr.screenStartPx,
-        screenEndPx: vr.screenEndPx,
-        reversed: vr.reversed ?? false,
-      }))
-
-      renderer.renderBlocks(
-        blocks,
-        makeRenderState(
-          domain,
-          model.scaleType,
-          model.renderingType,
-          totalWidth,
-          model.height,
-        ),
-      )
+      renderNow()
     })
   }, [model, view, ready, rendererRef])
+
+  useTabVisibilityRerender(renderNow)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const coord0: [number, number] = [0, 0]

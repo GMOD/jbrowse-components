@@ -175,6 +175,7 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
 
       const dir = region.lineDirections[i]!
       if (dir !== 0) {
+        ctx.lineWidth = 1.5
         const lineWidthPx = Math.abs(x2 - x1)
         if (lineWidthPx >= CHEVRON_SPACING_PX * 0.5) {
           const totalChevrons = Math.max(

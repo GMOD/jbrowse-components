@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
 
 import { ErrorBar, ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
   getContainingView,
   useGpuRenderer,
+  useTabVisibilityRerender,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { autorun } from 'mobx'
@@ -60,6 +61,21 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
       setRowHeight: model.setRowHeight,
     })
 
+  const renderNow = useEffectEvent(() => {
+    const renderer = rendererRef.current
+    const cellData = model.cellData
+    if (!renderer || !ready || !view.initialized || !cellData) {
+      return
+    }
+    renderer.render({
+      canvasWidth: Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders),
+      canvasHeight: model.availableHeight,
+      rowHeight: model.rowHeight,
+      scrollTop: model.scrollTop,
+      numFeatures: cellData.numFeatures,
+    })
+  })
+
   useEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !ready) {
@@ -82,15 +98,11 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
         renderer.uploadCellData(cellData)
       }
 
-      renderer.render({
-        canvasWidth: Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders),
-        canvasHeight: model.availableHeight,
-        rowHeight: model.rowHeight,
-        scrollTop: model.scrollTop,
-        numFeatures: cellData.numFeatures,
-      })
+      renderNow()
     })
   }, [model, view, ready, rendererRef])
+
+  useTabVisibilityRerender(renderNow)
 
   function getFeatureUnderMouse(
     rect: DOMRect,

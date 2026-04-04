@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
 
 import { ErrorBar, ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
   getContainingView,
   useGpuRenderer,
+  useTabVisibilityRerender,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -142,6 +143,29 @@ const VariantComponent = observer(function VariantComponent({
       setRowHeight: model.setRowHeight,
     })
 
+  const renderNow = useEffectEvent(() => {
+    const renderer = rendererRef.current
+    if (!renderer || !ready || !view.initialized) {
+      return
+    }
+    const regions = model.visibleRegions
+    if (regions.length === 0) {
+      return
+    }
+    const blocks = regions.map(r => ({
+      regionNumber: r.regionNumber,
+      bpRangeX: [r.start, r.end] as [number, number],
+      screenStartPx: r.screenStartPx,
+      screenEndPx: r.screenEndPx,
+    }))
+    renderer.renderBlocks(blocks, {
+      canvasWidth: view.trackWidthPx,
+      canvasHeight: model.availableHeight,
+      rowHeight: model.rowHeight,
+      scrollTop: model.scrollTop,
+    })
+  })
+
   useEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !ready) {
@@ -173,26 +197,11 @@ const VariantComponent = observer(function VariantComponent({
         renderer.pruneStaleRegions(activeRegions)
       }
 
-      const regions = model.visibleRegions
-      if (regions.length === 0) {
-        return
-      }
-
-      const blocks = regions.map(r => ({
-        regionNumber: r.regionNumber,
-        bpRangeX: [r.start, r.end] as [number, number],
-        screenStartPx: r.screenStartPx,
-        screenEndPx: r.screenEndPx,
-      }))
-
-      renderer.renderBlocks(blocks, {
-        canvasWidth: view.trackWidthPx,
-        canvasHeight: model.availableHeight,
-        rowHeight: model.rowHeight,
-        scrollTop: model.scrollTop,
-      })
+      renderNow()
     })
   }, [model, view, ready, rendererRef])
+
+  useTabVisibilityRerender(renderNow)
 
   function getFeatureUnderMouse(
     rect: DOMRect,

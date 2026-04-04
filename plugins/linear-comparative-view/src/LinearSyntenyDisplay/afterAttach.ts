@@ -35,6 +35,8 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           return
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _tvv = self.tabVisibilityVersion
         const {
           alpha,
           featureData,

@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import { CanvasDisplayWrapper, ErrorOverlay } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
@@ -6,6 +13,7 @@ import {
   getContainingView,
   reducePrecision,
   useGpuRenderer,
+  useTabVisibilityRerender,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { autorun } from 'mobx'
@@ -119,6 +127,33 @@ const HicCanvas = observer(function HicCanvas({
     HicRenderer,
   )
 
+  const renderNow = useEffectEvent(() => {
+    const renderer = rendererRef.current
+    const data = model.rpcData
+    if (!renderer || !ready || !data) {
+      return
+    }
+    const w = Math.round(view.dynamicBlocks.totalWidthPx)
+    const scale =
+      model.lastDrawnBpPerPx !== undefined
+        ? model.lastDrawnBpPerPx / view.bpPerPx
+        : 1
+    const offsetX =
+      model.lastDrawnOffsetPx !== undefined
+        ? model.lastDrawnOffsetPx * scale - view.offsetPx
+        : 0
+    renderer.render({
+      binWidth: data.binWidth,
+      yScalar: data.yScalar,
+      canvasWidth: w,
+      canvasHeight: model.height,
+      maxScore: data.maxScore,
+      useLogScale: model.useLogScale,
+      viewScale: scale,
+      viewOffsetX: offsetX,
+    })
+  })
+
   // Compute view transform for smooth zoom/scroll
   const viewScale =
     lastDrawnBpPerPx !== undefined ? lastDrawnBpPerPx / view.bpPerPx : 1
@@ -161,28 +196,11 @@ const HicCanvas = observer(function HicCanvas({
         renderer.uploadColorRamp(generateColorRamp(model.colorScheme))
       }
 
-      const w = Math.round(view.dynamicBlocks.totalWidthPx)
-      const scale =
-        model.lastDrawnBpPerPx !== undefined
-          ? model.lastDrawnBpPerPx / view.bpPerPx
-          : 1
-      const offsetX =
-        model.lastDrawnOffsetPx !== undefined
-          ? model.lastDrawnOffsetPx * scale - view.offsetPx
-          : 0
-
-      renderer.render({
-        binWidth: data.binWidth,
-        yScalar: data.yScalar,
-        canvasWidth: w,
-        canvasHeight: model.height,
-        maxScore: data.maxScore,
-        useLogScale: model.useLogScale,
-        viewScale: scale,
-        viewOffsetX: offsetX,
-      })
+      renderNow()
     })
   }, [model, view, ready, rendererRef])
+
+  useTabVisibilityRerender(renderNow)
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {

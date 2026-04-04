@@ -1,7 +1,11 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useEffectEvent, useMemo, useRef } from 'react'
 
 import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
-import { getContainingView, useGpuRenderer } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  useGpuRenderer,
+  useTabVisibilityRerender,
+} from '@jbrowse/core/util'
 import { Alert, useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
@@ -43,6 +47,21 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
     retry,
   } = useGpuRenderer(canvasRef, SequenceRenderer)
 
+  const instanceCountRef = useRef(0)
+  const baseBpRef = useRef(0)
+
+  const renderNow = useEffectEvent(() => {
+    const renderer = rendererRef.current
+    const instanceCount = instanceCountRef.current
+    const cssWidth = view.trackWidthPx
+    const cssHeight = model.height
+    if (!renderer || !ready || instanceCount === 0 || cssWidth === 0 || cssHeight === 0) {
+      return
+    }
+    const basePx = baseBpRef.current / view.bpPerPx - view.offsetPx
+    renderer.render(instanceCount, basePx, view.bpPerPx, cssWidth, cssHeight)
+  })
+
   useEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !ready) {
@@ -51,15 +70,13 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
 
     let lastDataIdentity: unknown = null
     let lastSettingsKey = ''
-    let instanceCount = 0
-    let baseBp = 0
 
     return autorun(function sequenceAutorun() {
       const data = model.sequenceData
       const regionEntries = [...data.entries()]
 
       if (regionEntries.length === 0) {
-        instanceCount = 0
+        instanceCountRef.current = 0
         return
       }
 
@@ -80,7 +97,7 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
           showBorders,
         }
 
-        baseBp = Math.min(...regionEntries.map(([, d]) => d.start))
+        baseBpRef.current = Math.min(...regionEntries.map(([, d]) => d.start))
 
         let totalRects = 0
         const allGeom: {
@@ -97,7 +114,7 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
             settings,
             reversed,
             palette,
-            baseBp,
+            baseBpRef.current,
           )
           allGeom.push(geom)
           totalRects += geom.instanceCount
@@ -116,23 +133,14 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
         } else {
           renderer.uploadGeometry(new Float32Array(0), new Uint8Array(0), 0)
         }
-        instanceCount = totalRects
+        instanceCountRef.current = totalRects
       }
 
-      const cssWidth = view.trackWidthPx
-      const cssHeight = model.height
-      if (instanceCount > 0 && cssWidth > 0 && cssHeight > 0) {
-        const basePx = baseBp / view.bpPerPx - view.offsetPx
-        renderer.render(
-          instanceCount,
-          basePx,
-          view.bpPerPx,
-          cssWidth,
-          cssHeight,
-        )
-      }
+      renderNow()
     })
   }, [model, view, palette, ready, rendererRef])
+
+  useTabVisibilityRerender(renderNow)
 
   if (glError) {
     return (

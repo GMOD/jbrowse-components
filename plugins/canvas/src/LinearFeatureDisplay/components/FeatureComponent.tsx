@@ -9,7 +9,11 @@ import {
 } from 'react'
 
 import { ErrorOverlay, Menu } from '@jbrowse/core/ui'
-import { getContainingView, useDebounce } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  useDebounce,
+  useTabVisibilityRerender,
+} from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
@@ -479,6 +483,8 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
     renderWithBlocks()
   }, [model, rpcDataMap, rendererReady])
+
+  useTabVisibilityRerender(renderWithBlocks)
 
   useEffect(() => {
     const container = scrollContainerRef.current

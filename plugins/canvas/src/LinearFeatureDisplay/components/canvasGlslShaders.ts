@@ -155,7 +155,7 @@ void main() {
 
   float halfW = 4.5 / canvas_width;
   float halfH = 3.5 / canvas_height;
-  float thickness = 1.0 / canvas_height;
+  float thickness = 1.5 / canvas_height;
   float dir = a_direction;
 
   bool isTopArm = v < 6u;

@@ -173,6 +173,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       visibleMaxDepth: 0,
       webglRenderer: null as MultiSyntenyRenderer | null,
       colorPalette: null as SyntenyColorPalette | null,
+      tabVisibilityVersion: 0,
     }))
     .views(self => ({
       get prefersOffset() {
@@ -246,6 +247,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
     }))
     .actions(self => ({
+      bumpTabVisibility() {
+        self.tabVisibilityVersion++
+      },
       setRpcData(regionNumber: number, data: SyntenyRegionData) {
         const next = new Map(self.rpcDataMap)
         next.set(regionNumber, data)
@@ -486,6 +490,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 }
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const _dv = self.dataVersion
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const _tvv = self.tabVisibilityVersion
                 const {
                   height,
                   rowHeight,

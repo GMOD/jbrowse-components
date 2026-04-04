@@ -138,11 +138,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #volatile
        */
       isScrolling: false,
+
+      /**
+       * #volatile
+       * Incremented on tab visibility restore to re-trigger the draw autorun.
+       */
+      tabVisibilityVersion: 0,
     }))
     .actions(self => ({
       /**
        * #action
        */
+      bumpTabVisibility() {
+        self.tabVisibilityVersion++
+      },
       setFeatureData(arg: SyntenyFeatureData | undefined) {
         self.featureData = arg
       },
