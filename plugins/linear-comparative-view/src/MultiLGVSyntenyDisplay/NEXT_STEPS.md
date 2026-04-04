@@ -1,19 +1,4 @@
-# Next Steps: Multi-Synteny Coverage & Graph Integration
-
-## Coverage: completed
-
-- **Insertion indicator triangles from CS tags**: insertion indicators are now
-  rendered as downward-pointing triangles at the top of the coverage area when
-  the insertion count at a position exceeds 15% of local depth. Shared
-  `drawIndicatorTriangle` primitive and `computeInsertionIndicators` function
-  via `@jbrowse/alignments-core`. Rendered in all 3 backends (WebGL, WebGPU,
-  Canvas2D). LinearAlignmentsDisplay renderSvg.tsx also uses the shared
-  `drawIndicatorTriangle`.
-- **Canvas2D SNP coverage downsampling**: SNP segments are now skipped when
-  `snpCount > width * 4` to avoid overwhelming Canvas2D at wide zoom levels.
-- **Coverage click to open widget**: clicking the coverage area now opens a
-  BaseFeatureWidget showing depth, SNP counts/percentages, and interbase
-  entries, matching LinearAlignmentsDisplay behavior.
+# Next Steps: Multi-Synteny Graph Integration
 
 ## Code sharing: further opportunities
 
