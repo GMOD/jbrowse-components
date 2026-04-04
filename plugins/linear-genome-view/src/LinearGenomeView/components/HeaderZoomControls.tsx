@@ -1,4 +1,4 @@
-import { lazy, useEffect, useState } from 'react'
+import { lazy, useState } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getBpDisplayStr, getSession } from '@jbrowse/core/util'
@@ -48,16 +48,12 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
   model: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const { width, maxBpPerPx, minBpPerPx, bpPerPx, effectiveBpPerPx } = model
+  const { width, maxBpPerPx, minBpPerPx, bpPerPx, coarseBpPerPx } = model
 
-  // local state needed for slider drag: onChange updates this for visual
-  // feedback, onChangeCommitted syncs to model
-  const [value, setValue] = useState(-Math.log2(bpPerPx) * 100)
-  useEffect(() => {
-    setValue(-Math.log2(effectiveBpPerPx) * 100)
-  }, [effectiveBpPerPx])
-  const zoomInDisabled = effectiveBpPerPx <= minBpPerPx + 0.0001
-  const zoomOutDisabled = effectiveBpPerPx >= maxBpPerPx - 0.0001
+  const [dragValue, setDragValue] = useState<number | null>(null)
+  const value = dragValue ?? -Math.log2(coarseBpPerPx) * 100
+  const zoomInDisabled = coarseBpPerPx <= minBpPerPx + 0.0001
+  const zoomOutDisabled = coarseBpPerPx >= maxBpPerPx - 0.0001
   return (
     <div className={classes.container}>
       <Tooltip title="Zoom out 2x">
@@ -80,7 +76,10 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
         value={value}
         min={-Math.log2(maxBpPerPx) * 100}
         max={-Math.log2(minBpPerPx) * 100}
-        onChangeCommitted={() => model.zoomTo(2 ** (-value / 100))}
+        onChangeCommitted={(_, val) => {
+          setDragValue(null)
+          model.zoomTo(2 ** (-(val as number) / 100))
+        }}
         valueLabelDisplay="auto"
         valueLabelFormat={newValue =>
           `Window size: ${getBpDisplayStr(2 ** (-newValue / 100) * width)}`
@@ -89,7 +88,7 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
           valueLabel: ValueLabelComponent,
         }}
         onChange={(_, val) => {
-          setValue(val)
+          setDragValue(val as number)
         }}
       />
       <Tooltip title="Zoom in 2x">

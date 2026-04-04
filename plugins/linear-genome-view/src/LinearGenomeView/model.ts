@@ -285,6 +285,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
+      coarseBpPerPx: 0,
+      /**
+       * #volatile
+       */
       leftOffset: undefined as undefined | BpOffset,
       /**
        * #volatile
@@ -1552,9 +1556,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setCoarseDynamicBlocks(blocks: BlockSet) {
+      setCoarseDynamicBlocks(blocks: BlockSet, bpPerPx: number) {
         self.coarseDynamicBlocks = blocks.contentBlocks
         self.coarseTotalBp = blocks.totalBp
+        self.coarseBpPerPx = bpPerPx
       },
     }))
     .actions(self => ({
