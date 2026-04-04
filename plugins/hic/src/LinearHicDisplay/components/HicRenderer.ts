@@ -1,8 +1,11 @@
-import { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
+import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
 
 import { Canvas2DHicRenderer } from './Canvas2DHicRenderer.ts'
-import { WebGLHicRenderer } from './WebGLHicRenderer.ts'
-import { WebGPUHicRenderer } from './WebGPUHicRenderer.ts'
+import {
+  GpuHicRenderer,
+  HIC_PASSES,
+  HIC_UNIFORM_BYTE_SIZE,
+} from './GpuHicRenderer.ts'
 
 import type { HicBackend, HicRenderState } from './hicBackendTypes.ts'
 
@@ -26,25 +29,14 @@ export class HicRenderer {
   }
 
   async init() {
-    if (getGpuOverride() === 'canvas2d') {
-      this.backend = new Canvas2DHicRenderer(this.canvas)
-      return true
-    }
-
-    const gpu = await WebGPUHicRenderer.create(this.canvas)
-    if (gpu) {
-      this.backend = gpu
-      return true
-    }
-
-    try {
-      this.backend = new WebGLHicRenderer(this.canvas)
-      return true
-    } catch (e) {
-      console.warn('[HicRenderer] WebGL2 fallback also failed:', e)
-      this.backend = new Canvas2DHicRenderer(this.canvas)
-      return true
-    }
+    this.backend = await initDualBackend<HicBackend>(
+      this.canvas,
+      HIC_PASSES,
+      HIC_UNIFORM_BYTE_SIZE,
+      hal => new GpuHicRenderer(hal),
+      canvas => new Canvas2DHicRenderer(canvas),
+    )
+    return true
   }
 
   uploadData(data: {
@@ -70,4 +62,4 @@ export class HicRenderer {
   }
 }
 
-export { generateColorRamp } from './WebGLHicRenderer.ts'
+export { generateColorRamp } from './colorRamp.ts'

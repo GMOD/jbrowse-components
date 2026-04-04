@@ -1,4 +1,4 @@
-import { createGpuHal } from '@jbrowse/core/gpu/hal'
+import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
 
 import { Canvas2DDotplotRenderer } from './Canvas2DDotplotRenderer.ts'
 import {
@@ -32,17 +32,13 @@ export class DotplotRenderer {
   }
 
   async init() {
-    const hal = await createGpuHal(
+    this.backend = await initDualBackend<DotplotBackend>(
       this.canvas,
       DOTPLOT_PASSES,
       DOTPLOT_UNIFORM_BYTE_SIZE,
+      hal => new GpuDotplotRenderer(hal),
+      canvas => new Canvas2DDotplotRenderer(canvas),
     )
-    if (hal) {
-      this.backend = new GpuDotplotRenderer(hal)
-      return true
-    }
-
-    this.backend = new Canvas2DDotplotRenderer(this.canvas)
     return true
   }
 

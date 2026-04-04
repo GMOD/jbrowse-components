@@ -4,19 +4,23 @@ import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 import type { MultiWiggleDataResult } from './types.ts'
 import type { SourceInfo } from '../util.ts'
 import type { Region } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 interface RenderMultiWiggleDataArgs extends Record<string, unknown> {
-  sessionId: string
   adapterConfig: Record<string, unknown>
   region: Region
   sources?: SourceInfo[]
   bicolorPivot?: number
+  stopToken?: StopToken
+  bpPerPx?: number
+  resolution?: number
+  statusCallback?: (msg: string) => void
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     RenderMultiWiggleData: {
-      args: Record<string, unknown>
+      args: RenderMultiWiggleDataArgs
       return: MultiWiggleDataResult
     }
   }
@@ -25,20 +29,19 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class RenderMultiWiggleData extends RpcMethodType {
   name = 'RenderMultiWiggleData'
 
-  async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
-    const typedArgs = args as RenderMultiWiggleDataArgs
+  async serializeArguments(args: RenderMultiWiggleDataArgs, rpcDriver: string) {
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
 
     if (assemblyManager) {
       const result = await renameRegionsIfNeeded(assemblyManager, {
-        sessionId: typedArgs.sessionId,
-        adapterConfig: typedArgs.adapterConfig,
-        regions: [typedArgs.region],
+        sessionId: args.sessionId as string,
+        adapterConfig: args.adapterConfig,
+        regions: [args.region],
       })
 
       return super.serializeArguments(
-        { ...typedArgs, region: result.regions[0] },
+        { ...args, region: result.regions[0] },
         rpcDriver,
       )
     }
@@ -51,7 +54,8 @@ export default class RenderMultiWiggleData extends RpcMethodType {
       await import('./executeRenderMultiWiggleData.ts')
     return executeRenderMultiWiggleData({
       pluginManager: this.pluginManager,
-      args: args as RenderMultiWiggleDataArgs,
+      // sessionId is added by RpcManager.call() before execute runs
+      args: args as RenderMultiWiggleDataArgs & { sessionId: string },
     })
   }
 }

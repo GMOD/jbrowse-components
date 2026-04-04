@@ -1,4 +1,4 @@
-import { createGpuHal } from '@jbrowse/core/gpu/hal'
+import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
 
 import { Canvas2DSyntenyRenderer } from './Canvas2DSyntenyRenderer.ts'
 import {
@@ -30,17 +30,13 @@ export class SyntenyRenderer {
   }
 
   async init() {
-    const hal = await createGpuHal(
+    this.backend = await initDualBackend<SyntenyBackend>(
       this.canvas,
       SYNTENY_PASSES,
       SYNTENY_UNIFORM_BYTE_SIZE,
+      hal => new GpuSyntenyRenderer(hal, this.canvas),
+      canvas => new Canvas2DSyntenyRenderer(canvas),
     )
-    if (hal) {
-      this.backend = new GpuSyntenyRenderer(hal, this.canvas)
-      return true
-    }
-
-    this.backend = new Canvas2DSyntenyRenderer(this.canvas)
     return true
   }
 

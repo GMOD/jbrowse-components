@@ -1,3 +1,8 @@
+import {
+  clipBlockForCanvas,
+  prepareCanvas,
+} from '@jbrowse/core/gpu/canvas2dUtils'
+
 import type {
   VariantBackend,
   VariantRenderBlock,
@@ -70,18 +75,9 @@ export class Canvas2DVariantRenderer implements VariantBackend {
     },
   ) {
     const { canvasWidth, canvasHeight, rowHeight, scrollTop } = state
-    const dpr = window.devicePixelRatio || 1
-    const bufW = Math.round(canvasWidth * dpr)
-    const bufH = Math.round(canvasHeight * dpr)
-
-    if (this.canvas.width !== bufW || this.canvas.height !== bufH) {
-      this.canvas.width = bufW
-      this.canvas.height = bufH
-    }
 
     const ctx = this.ctx
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight)
+    prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
 
     for (const block of blocks) {
       const region = this.regions.get(block.regionNumber)
@@ -89,19 +85,16 @@ export class Canvas2DVariantRenderer implements VariantBackend {
         continue
       }
 
-      const scissorX = Math.max(0, Math.floor(block.screenStartPx))
-      const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
-      const scissorW = scissorEnd - scissorX
-      if (scissorW <= 0) {
+      const clip = clipBlockForCanvas(block, canvasWidth)
+      if (!clip) {
         continue
       }
 
-      const fullBlockWidth = block.screenEndPx - block.screenStartPx
-      const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
+      const { fullBlockWidth, bpLength } = clip
 
       ctx.save()
       ctx.beginPath()
-      ctx.rect(scissorX, 0, scissorW, canvasHeight)
+      ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
       ctx.clip()
 
       for (let i = 0; i < region.numCells; i++) {

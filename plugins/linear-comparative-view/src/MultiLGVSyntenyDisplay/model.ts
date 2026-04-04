@@ -415,7 +415,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             autorun(
               () => {
                 const renderer = self.webglRenderer
-                if (!renderer?.isGpu) {
+                if (!renderer) {
                   return
                 }
                 const {
@@ -449,7 +449,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             autorun(
               () => {
                 const renderer = self.webglRenderer
-                if (!renderer?.isGpu || !self.showCoverage) {
+                if (!renderer || !self.showCoverage) {
                   return
                 }
                 const { rpcDataMap } = self
@@ -489,55 +489,23 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 }
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const _dv = self.dataVersion
-                const { height, rowHeight, rowSpacing, syntenyCoverageHeight } =
+                const { height, rowHeight, rowSpacing, syntenyCoverageHeight, displayedGenomes } =
                   self
                 const contentBlocks = view.staticBlocks.contentBlocks
+                const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
 
-                if (renderer.isGpu) {
-                  renderer.renderGpu({
-                    contentBlocks,
-                    viewOffsetPx: view.offsetPx,
-                    width: view.width,
-                    height,
-                    rowHeight,
-                    rowSpacing,
-                    coverageHeight: syntenyCoverageHeight,
-                    palette,
-                  })
-                } else {
-                  const {
-                    genomeRows,
-                    displayedGenomes,
-                    colorBy,
-                    syntenyAreaHeight,
-                    showSnps,
-                  } = self
-                  const { width, offsetPx } = view
-                  const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
-                  const bpToPx = (refName: string, coord: number) => {
-                    const result = view.bpToPx({ refName, coord })
-                    if (result === undefined) {
-                      return undefined
-                    }
-                    return result.offsetPx - offsetPx
-                  }
-                  renderer.renderCanvas(genomeRows, displayedGenomes, {
-                    width,
-                    height: syntenyAreaHeight,
-                    rowHeight,
-                    rowSpacing,
-                    bpToPx,
-                    colorBy,
-                    labelW,
-                    showSnps,
-                    coverageHeight: syntenyCoverageHeight,
-                    coverageRegions: self.showCoverage
-                      ? [...self.rpcDataMap.values()]
-                      : [],
-                    colors: palette.syntenyColors,
-                    coverageColor: palette.coverageColorHex,
-                  })
-                }
+                renderer.renderBlocks({
+                  contentBlocks,
+                  viewOffsetPx: view.offsetPx,
+                  width: view.width,
+                  height,
+                  rowHeight,
+                  rowSpacing,
+                  coverageHeight: syntenyCoverageHeight,
+                  palette,
+                  displayedGenomes,
+                  labelW,
+                })
               },
               { name: 'MultiLGVSyntenyDisplay:draw' },
             ),

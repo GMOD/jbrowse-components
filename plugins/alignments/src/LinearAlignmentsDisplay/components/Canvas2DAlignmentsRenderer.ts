@@ -3,7 +3,20 @@ import {
   BASE_C_COLOR,
   BASE_G_COLOR,
   BASE_T_COLOR,
+  packSnpSegmentsForGpu,
+  packIndicatorsForGpu,
+  packNoncovSegmentsForGpu,
+  packModCovSegmentsForGpu,
+  drawCoverageBins,
+  drawSnpSegments,
+  drawIndicators,
+  drawNoncovSegments,
+  drawModCovSegments,
 } from '@jbrowse/alignments-core'
+import {
+  clipBlockForCanvas,
+  prepareCanvas,
+} from '@jbrowse/core/gpu/canvas2dUtils'
 
 import {
   INTERBASE_HARDCLIP,
@@ -31,13 +44,6 @@ import type {
   RenderState,
   SashimiUploadData,
 } from './rendererTypes.ts'
-
-// base color indices used by SNP coverage
-const SNP_COLOR_A = 0
-const SNP_COLOR_C = 1
-const SNP_COLOR_G = 2
-const SNP_COLOR_T = 3
-const SNP_COLOR_DEL = 5
 
 interface Canvas2DRegionData {
   regionStart: number
@@ -92,32 +98,21 @@ interface Canvas2DRegionData {
   modificationColors: Uint8Array
   numModifications: number
 
-  // Coverage
-  coverageDepths: Float32Array
+  // Coverage — stored in GPU-compatible packed buffer formats
+  coverageBuffer: ArrayBuffer
+  coverageBinCount: number
   coverageMaxDepth: number
-  coverageStartOffset: number
-  numCoverageBins: number
-  snpPositions: Uint32Array
-  snpYOffsets: Float32Array
-  snpHeights: Float32Array
-  snpColorTypes: Uint8Array
-  numSnpSegments: number
-  noncovPositions: Uint32Array
-  noncovYOffsets: Float32Array
-  noncovHeights: Float32Array
-  noncovColorTypes: Uint8Array
+  snpBuffer: ArrayBuffer
+  snpSegmentCount: number
+  noncovBuffer: ArrayBuffer
+  noncovSegmentCount: number
   noncovMaxCount: number
-  numNoncovSegments: number
-  indicatorPositions: Uint32Array
-  indicatorColorTypes: Uint8Array
-  numIndicators: number
+  indicatorBuffer: ArrayBuffer
+  indicatorCount: number
 
-  // Mod coverage
-  modCovPositions: Uint32Array
-  modCovYOffsets: Float32Array
-  modCovHeights: Float32Array
-  modCovColors: Uint8Array
-  numModCovSegments: number
+  // Mod coverage — packed buffer: [position(f32), yOffset(f32), height(f32), rgba(u32)]
+  modCovBuffer: ArrayBuffer
+  modCovSegmentCount: number
 
   // Arcs
   arcX1: Float32Array
@@ -207,29 +202,18 @@ function emptyRegion(regionStart: number): Canvas2DRegionData {
     modificationYs: empty16,
     modificationColors: empty8,
     numModifications: 0,
-    coverageDepths: emptyF32,
+    coverageBuffer: new ArrayBuffer(0),
+    coverageBinCount: 0,
     coverageMaxDepth: 0,
-    coverageStartOffset: 0,
-    numCoverageBins: 0,
-    snpPositions: empty32,
-    snpYOffsets: emptyF32,
-    snpHeights: emptyF32,
-    snpColorTypes: empty8,
-    numSnpSegments: 0,
-    noncovPositions: empty32,
-    noncovYOffsets: emptyF32,
-    noncovHeights: emptyF32,
-    noncovColorTypes: empty8,
+    snpBuffer: new ArrayBuffer(0),
+    snpSegmentCount: 0,
+    noncovBuffer: new ArrayBuffer(0),
+    noncovSegmentCount: 0,
     noncovMaxCount: 0,
-    numNoncovSegments: 0,
-    indicatorPositions: empty32,
-    indicatorColorTypes: empty8,
-    numIndicators: 0,
-    modCovPositions: empty32,
-    modCovYOffsets: emptyF32,
-    modCovHeights: emptyF32,
-    modCovColors: empty8,
-    numModCovSegments: 0,
+    indicatorBuffer: new ArrayBuffer(0),
+    indicatorCount: 0,
+    modCovBuffer: new ArrayBuffer(0),
+    modCovSegmentCount: 0,
     arcX1: emptyF32,
     arcX2: emptyF32,
     arcColorTypes: emptyF32,
@@ -382,24 +366,51 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     if (!r) {
       return
     }
-    r.coverageDepths = data.coverageDepths
+
     r.coverageMaxDepth = data.coverageMaxDepth
-    r.coverageStartOffset = data.coverageStartOffset
-    r.numCoverageBins = data.numCoverageBins
-    r.snpPositions = data.snpPositions
-    r.snpYOffsets = data.snpYOffsets
-    r.snpHeights = data.snpHeights
-    r.snpColorTypes = data.snpColorTypes
-    r.numSnpSegments = data.numSnpSegments
-    r.noncovPositions = data.noncovPositions
-    r.noncovYOffsets = data.noncovYOffsets
-    r.noncovHeights = data.noncovHeights
-    r.noncovColorTypes = data.noncovColorTypes
+
+    if (data.numCoverageBins > 0 && data.coverageMaxDepth > 0) {
+      const n = data.numCoverageBins
+      const buf = new ArrayBuffer(n * 12)
+      const f32 = new Float32Array(buf)
+      for (let i = 0; i < n; i++) {
+        const off = i * 3
+        const normalizedDepth = (data.coverageDepths[i] ?? 0) / data.coverageMaxDepth
+        f32[off] = data.coverageStartOffset + i + r.regionStart
+        f32[off + 1] = 0
+        f32[off + 2] = normalizedDepth
+      }
+      r.coverageBuffer = buf
+      r.coverageBinCount = n
+    }
+
+    if (data.numSnpSegments > 0) {
+      const packed = packSnpSegmentsForGpu(
+        data.snpPositions, data.snpYOffsets, data.snpHeights,
+        data.snpColorTypes, data.numSnpSegments, r.regionStart,
+      )
+      r.snpBuffer = packed.buffer
+      r.snpSegmentCount = packed.segmentCount
+    }
+
+    if (data.numNoncovSegments > 0) {
+      const packed = packNoncovSegmentsForGpu(
+        data.noncovPositions, data.noncovYOffsets, data.noncovHeights,
+        data.noncovColorTypes, data.numNoncovSegments, r.regionStart,
+      )
+      r.noncovBuffer = packed.buffer
+      r.noncovSegmentCount = packed.segmentCount
+    }
     r.noncovMaxCount = data.noncovMaxCount
-    r.numNoncovSegments = data.numNoncovSegments
-    r.indicatorPositions = data.indicatorPositions
-    r.indicatorColorTypes = data.indicatorColorTypes
-    r.numIndicators = data.numIndicators
+
+    if (data.numIndicators > 0) {
+      const packed = packIndicatorsForGpu(
+        data.indicatorPositions, data.indicatorColorTypes,
+        data.numIndicators, r.regionStart,
+      )
+      r.indicatorBuffer = packed.buffer
+      r.indicatorCount = packed.indicatorCount
+    }
   }
 
   uploadModCoverageFromTypedArraysForRegion(
@@ -410,11 +421,14 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     if (!r) {
       return
     }
-    r.modCovPositions = data.modCovPositions
-    r.modCovYOffsets = data.modCovYOffsets
-    r.modCovHeights = data.modCovHeights
-    r.modCovColors = data.modCovColors
-    r.numModCovSegments = data.numModCovSegments
+    if (data.numModCovSegments > 0) {
+      const packed = packModCovSegmentsForGpu(
+        data.modCovPositions, data.modCovYOffsets, data.modCovHeights,
+        data.modCovColors, data.numModCovSegments, r.regionStart,
+      )
+      r.modCovBuffer = packed.buffer
+      r.modCovSegmentCount = packed.segmentCount
+    }
   }
 
   uploadSashimiFromTypedArraysForRegion(
@@ -477,18 +491,9 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
 
   renderBlocks(blocks: RenderBlock[], state: RenderState) {
     const { canvasWidth, canvasHeight } = state
-    const dpr = window.devicePixelRatio || 1
-    const bufW = Math.round(canvasWidth * dpr)
-    const bufH = Math.round(canvasHeight * dpr)
-
-    if (this.canvas.width !== bufW || this.canvas.height !== bufH) {
-      this.canvas.width = bufW
-      this.canvas.height = bufH
-    }
 
     const ctx = this.ctx
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight)
+    prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
 
     if (this.regions.size === 0) {
       return
@@ -505,15 +510,12 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
         continue
       }
 
-      const scissorX = Math.max(0, Math.floor(block.screenStartPx))
-      const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
-      const scissorW = scissorEnd - scissorX
-      if (scissorW <= 0) {
+      const blockClip = clipBlockForCanvas(block, canvasWidth)
+      if (!blockClip) {
         continue
       }
 
-      const fullBlockWidth = block.screenEndPx - block.screenStartPx
-      const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
+      const { fullBlockWidth, bpLength, scissorX, scissorW } = blockClip
 
       ctx.save()
       ctx.beginPath()
@@ -890,112 +892,32 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     fullBlockWidth: number,
     state: RenderState,
   ) {
-    if (region.numCoverageBins === 0) {
-      return
-    }
     const covH = state.coverageHeight
-    const covYOffset = state.coverageYOffset
-
-    // Draw coverage histogram
     const covColor = rgb255(state.colors.colorCoverage)
-    ctx.fillStyle = covColor
+    const bpToX = (bp: number) => this.bpToScreenX(bp, block, bpLength, fullBlockWidth)
+    const viewWidth = fullBlockWidth + block.screenStartPx
 
-    for (let i = 0; i < region.numCoverageBins; i++) {
-      const binBp = region.coverageStartOffset + i + region.regionStart
-      const x = this.bpToScreenX(binBp, block, bpLength, fullBlockWidth)
-      const x2 = this.bpToScreenX(binBp + 1, block, bpLength, fullBlockWidth)
-      const depth = (region.coverageDepths[i] ?? 0) / region.coverageMaxDepth
-      const barH = depth * (covH - covYOffset * 2)
-      const y = covYOffset + (covH - covYOffset * 2) - barH
-      ctx.fillRect(x, y, Math.max(1, x2 - x), barH)
+    const snpColors = {
+      baseA: rgb255(state.colors.colorBaseA),
+      baseC: rgb255(state.colors.colorBaseC),
+      baseG: rgb255(state.colors.colorBaseG),
+      baseT: rgb255(state.colors.colorBaseT),
+      mismatch: '',
+      deletion: rgb255(state.colors.colorDeletion),
+      insertion: '',
     }
 
-    // Draw SNP coverage colored segments
-    this.drawSnpCoverage(ctx, region, block, bpLength, fullBlockWidth, state)
-
-    // Draw mod coverage
-    this.drawModCoverage(ctx, region, block, bpLength, fullBlockWidth, state)
-  }
-
-  private getSnpColor(colorType: number, state: RenderState) {
-    switch (colorType) {
-      case SNP_COLOR_A:
-        return rgb255(state.colors.colorBaseA)
-      case SNP_COLOR_C:
-        return rgb255(state.colors.colorBaseC)
-      case SNP_COLOR_G:
-        return rgb255(state.colors.colorBaseG)
-      case SNP_COLOR_T:
-        return rgb255(state.colors.colorBaseT)
-      case SNP_COLOR_DEL:
-        return rgb255(state.colors.colorDeletion)
-      default:
-        return 'rgb(200,200,200)' // reference
+    const noncovColors = {
+      insertion: rgb255(state.colors.colorInsertion),
+      softclip: rgb255(state.colors.colorSoftclip),
+      hardclip: rgb255(state.colors.colorHardclip),
     }
-  }
 
-  private drawSnpCoverage(
-    ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    if (region.numSnpSegments === 0) {
-      return
-    }
-    const covH = state.coverageHeight
-    const covYOffset = state.coverageYOffset
-    const bpPerPx = bpLength / fullBlockWidth
-
-    for (let i = 0; i < region.numSnpSegments; i++) {
-      const bp = region.snpPositions[i]! + region.regionStart
-      const x = this.bpToScreenX(bp, block, bpLength, fullBlockWidth)
-      const w = Math.max(1, 1 / bpPerPx)
-      const yOffset = region.snpYOffsets[i]!
-      const h = region.snpHeights[i]!
-      const colorType = region.snpColorTypes[i]!
-      const barH = h * (covH - covYOffset * 2)
-      const y = covYOffset + (1 - yOffset - h) * (covH - covYOffset * 2)
-
-      ctx.fillStyle = this.getSnpColor(colorType, state)
-      ctx.fillRect(x, y, w, barH)
-    }
-  }
-
-  private drawModCoverage(
-    ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    if (region.numModCovSegments === 0) {
-      return
-    }
-    const covH = state.coverageHeight
-    const covYOffset = state.coverageYOffset
-    const bpPerPx = bpLength / fullBlockWidth
-
-    for (let i = 0; i < region.numModCovSegments; i++) {
-      const bp = region.modCovPositions[i]! + region.regionStart
-      const x = this.bpToScreenX(bp, block, bpLength, fullBlockWidth)
-      const w = Math.max(1, 1 / bpPerPx)
-      const yOffset = region.modCovYOffsets[i]!
-      const h = region.modCovHeights[i]!
-      const ci = i * 4
-      const r = region.modCovColors[ci]!
-      const g = region.modCovColors[ci + 1]!
-      const b = region.modCovColors[ci + 2]!
-      const a = region.modCovColors[ci + 3]! / 255
-      const barH = h * (covH - covYOffset * 2)
-      const y = covYOffset + (1 - yOffset - h) * (covH - covYOffset * 2)
-
-      ctx.fillStyle = `rgba(${r},${g},${b},${a})`
-      ctx.fillRect(x, y, w, barH)
-    }
+    drawCoverageBins(ctx, region.coverageBuffer, region.coverageBinCount, region.coverageMaxDepth, covH, covColor, bpToX, viewWidth)
+    drawSnpSegments(ctx, region.snpBuffer, region.snpSegmentCount, region.coverageMaxDepth, covH, snpColors, bpToX, viewWidth)
+    drawModCovSegments(ctx, region.modCovBuffer, region.modCovSegmentCount, region.coverageMaxDepth, covH, bpToX, viewWidth)
+    drawNoncovSegments(ctx, region.noncovBuffer, region.noncovSegmentCount, region.noncovMaxCount, noncovColors, bpToX, viewWidth)
+    drawIndicators(ctx, region.indicatorBuffer, region.indicatorCount, noncovColors, bpToX, viewWidth)
   }
 
   private paletteColor(palette: [number, number, number][], idx: number) {

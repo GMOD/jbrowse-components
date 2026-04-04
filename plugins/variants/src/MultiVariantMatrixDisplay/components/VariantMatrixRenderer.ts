@@ -1,4 +1,4 @@
-import { createGpuHal } from '@jbrowse/core/gpu/hal'
+import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
 
 import { Canvas2DVariantMatrixRenderer } from './Canvas2DVariantMatrixRenderer.ts'
 import {
@@ -37,17 +37,13 @@ export class VariantMatrixRenderer {
   }
 
   async init() {
-    const hal = await createGpuHal(
+    this.backend = await initDualBackend<VariantMatrixBackend>(
       this.canvas,
       VARIANT_MATRIX_PASSES,
       VARIANT_MATRIX_UNIFORM_BYTE_SIZE,
+      hal => new GpuVariantMatrixRenderer(hal),
+      canvas => new Canvas2DVariantMatrixRenderer(canvas),
     )
-    if (hal) {
-      this.backend = new GpuVariantMatrixRenderer(hal)
-      return true
-    }
-
-    this.backend = new Canvas2DVariantMatrixRenderer(this.canvas)
     return true
   }
 

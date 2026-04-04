@@ -57,6 +57,42 @@ export function packIndicatorsForGpu(
   return { buffer, indicatorCount: count }
 }
 
+export interface ModCovGpuUpload {
+  buffer: ArrayBuffer
+  segmentCount: number
+}
+
+// Pack mod-coverage segments into a GPU buffer.
+// Layout per segment: [position(f32), yOffset(f32), height(f32), rgbaColor(u32)] = 16 bytes.
+export function packModCovSegmentsForGpu(
+  positions: Uint32Array,
+  yOffsets: Float32Array,
+  heights: Float32Array,
+  colors: Uint8Array,
+  count: number,
+  positionOffset = 0,
+): ModCovGpuUpload {
+  if (count === 0) {
+    return { buffer: new ArrayBuffer(0), segmentCount: 0 }
+  }
+  const buffer = new ArrayBuffer(count * 16)
+  const f32 = new Float32Array(buffer)
+  const u32 = new Uint32Array(buffer)
+  for (let i = 0; i < count; i++) {
+    const idx = i * 4
+    const ci = i * 4
+    f32[idx] = positionOffset + positions[i]!
+    f32[idx + 1] = yOffsets[i]!
+    f32[idx + 2] = heights[i]!
+    u32[idx + 3] =
+      colors[ci]! |
+      (colors[ci + 1]! << 8) |
+      (colors[ci + 2]! << 16) |
+      (colors[ci + 3]! << 24)
+  }
+  return { buffer, segmentCount: count }
+}
+
 export interface NoncovGpuUpload {
   buffer: ArrayBuffer
   segmentCount: number

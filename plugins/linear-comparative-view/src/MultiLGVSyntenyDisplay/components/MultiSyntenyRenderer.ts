@@ -1,4 +1,4 @@
-import { createGpuHal } from '@jbrowse/core/gpu/hal'
+import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
 
 import { Canvas2DMultiSyntenyRenderer } from './Canvas2DMultiSyntenyRenderer.ts'
 import {
@@ -9,22 +9,17 @@ import {
 import { prepareBlockGeometry, packCoverageForGpu, packSnpCoverageForGpu, packIndicatorsForGpu } from './multiSyntenyGpuData.ts'
 
 import type {
-  GpuRenderOpts,
-  MultiSyntenyCanvasBackend,
-  MultiSyntenyCanvasRenderOpts,
-  MultiSyntenyGpuBackend,
+  MultiSyntenyBackend,
+  MultiSyntenyRenderState,
   SyntenyColors,
 } from './multiSyntenyBackendTypes.ts'
-import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
 
 const cache = new WeakMap<HTMLCanvasElement, MultiSyntenyRenderer>()
 
 export class MultiSyntenyRenderer {
   private canvas: HTMLCanvasElement
-  private gpuBackend: MultiSyntenyGpuBackend | null = null
-  private canvasBackend: MultiSyntenyCanvasBackend | null = null
-  private backendType: 'webgpu' | 'webgl' | 'canvas2d' = 'canvas2d'
+  private backend: MultiSyntenyBackend | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -40,29 +35,14 @@ export class MultiSyntenyRenderer {
   }
 
   async init() {
-    this.gpuBackend?.dispose()
-    this.canvasBackend?.dispose()
-    this.gpuBackend = null
-    this.canvasBackend = null
-
-    const hal = await createGpuHal(
+    this.backend = await initDualBackend<MultiSyntenyBackend>(
       this.canvas,
       SYNTENY_PASSES,
       SYNTENY_UNIFORM_BYTE_SIZE,
+      hal => new GpuMultiSyntenyRenderer(hal),
+      canvas => new Canvas2DMultiSyntenyRenderer(canvas),
     )
-    if (hal) {
-      this.gpuBackend = new GpuMultiSyntenyRenderer(hal)
-      this.backendType = 'webgpu'
-      return true
-    }
-
-    this.canvasBackend = new Canvas2DMultiSyntenyRenderer(this.canvas)
-    this.backendType = 'canvas2d'
     return true
-  }
-
-  get isGpu() {
-    return this.gpuBackend !== null
   }
 
   uploadGeometryForBlock(
@@ -73,7 +53,7 @@ export class MultiSyntenyRenderer {
     showSnps: boolean,
     colors: SyntenyColors,
   ) {
-    if (this.gpuBackend) {
+    if (this.backend) {
       const geometry = prepareBlockGeometry(
         regionData.genomeFeatures,
         displayedGenomes,
@@ -81,7 +61,7 @@ export class MultiSyntenyRenderer {
         showSnps,
         colors,
       )
-      this.gpuBackend.uploadGeometryForBlock(regionNumber, {
+      this.backend.uploadGeometryForBlock(regionNumber, {
         ...geometry,
         regionStart: regionData.regionStart,
       })
@@ -94,7 +74,7 @@ export class MultiSyntenyRenderer {
     viewWidthPx: number,
     globalMaxDepth: number,
   ) {
-    if (this.gpuBackend) {
+    if (this.backend) {
       const packed = packCoverageForGpu(
         regionData.coverageDepths,
         regionData.coverageStartOffset,
@@ -102,7 +82,7 @@ export class MultiSyntenyRenderer {
         regionData.regionStart,
         viewWidthPx,
       )
-      this.gpuBackend.uploadCoverageForBlock(regionNumber, {
+      this.backend.uploadCoverageForBlock(regionNumber, {
         ...packed,
         regionStart: regionData.regionStart,
         maxDepth: regionData.coverageMaxDepth,
@@ -114,7 +94,7 @@ export class MultiSyntenyRenderer {
     regionNumber: number,
     regionData: SyntenyRegionData,
   ) {
-    if (this.gpuBackend) {
+    if (this.backend) {
       const packed = packSnpCoverageForGpu(
         regionData.snpPositions,
         regionData.snpYOffsets,
@@ -123,7 +103,7 @@ export class MultiSyntenyRenderer {
         regionData.snpCount,
         regionData.regionStart,
       )
-      this.gpuBackend.uploadSnpCoverageForBlock(regionNumber, packed)
+      this.backend.uploadSnpCoverageForBlock(regionNumber, packed)
     }
   }
 
@@ -131,37 +111,27 @@ export class MultiSyntenyRenderer {
     regionNumber: number,
     regionData: SyntenyRegionData,
   ) {
-    if (this.gpuBackend) {
+    if (this.backend) {
       const packed = packIndicatorsForGpu(
         regionData.indicatorPositions,
         regionData.numIndicators,
         regionData.regionStart,
       )
-      this.gpuBackend.uploadIndicatorsForBlock(regionNumber, packed)
+      this.backend.uploadIndicatorsForBlock(regionNumber, packed)
     }
   }
 
   clearAllBlocks() {
-    this.gpuBackend?.clearAllBlocks()
+    this.backend?.clearAllBlocks()
   }
 
-  renderGpu(opts: GpuRenderOpts) {
-    this.gpuBackend?.render(opts)
-  }
-
-  renderCanvas(
-    genomeRows: Map<string, MultiPairFeature[]>,
-    displayedGenomes: string[],
-    opts: MultiSyntenyCanvasRenderOpts,
-  ) {
-    this.canvasBackend?.render(genomeRows, displayedGenomes, opts)
+  renderBlocks(state: MultiSyntenyRenderState) {
+    this.backend?.renderBlocks(state)
   }
 
   dispose() {
-    this.gpuBackend?.dispose()
-    this.canvasBackend?.dispose()
-    this.gpuBackend = null
-    this.canvasBackend = null
+    this.backend?.dispose()
+    this.backend = null
     cache.delete(this.canvas)
   }
 }

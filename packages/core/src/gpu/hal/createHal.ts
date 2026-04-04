@@ -22,7 +22,7 @@ export async function createGpuHal(
         return webgpu
       }
     } catch {
-      // WebGPU not available
+      // WebGPU not available, fall through to WebGL2
     }
   }
 

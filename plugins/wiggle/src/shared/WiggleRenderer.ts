@@ -1,4 +1,4 @@
-import { createGpuHal } from '@jbrowse/core/gpu/hal'
+import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
 
 import { Canvas2DWiggleRenderer } from './Canvas2DWiggleRenderer.ts'
 import {
@@ -41,17 +41,13 @@ export class WiggleRenderer {
   }
 
   async init() {
-    const hal = await createGpuHal(
+    this.backend = await initDualBackend<WiggleBackend>(
       this.canvas,
       WIGGLE_PASSES,
       WIGGLE_UNIFORM_BYTE_SIZE,
+      hal => new GpuWiggleRenderer(hal),
+      canvas => new Canvas2DWiggleRenderer(canvas),
     )
-    if (hal) {
-      this.backend = new GpuWiggleRenderer(hal)
-      return true
-    }
-
-    this.backend = new Canvas2DWiggleRenderer(this.canvas)
     return true
   }
 

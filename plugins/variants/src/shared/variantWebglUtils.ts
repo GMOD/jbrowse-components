@@ -1,12 +1,5 @@
 import { cssColorToRgba } from '@jbrowse/core/util/colorBits'
 
-export {
-  cacheUniforms,
-  createProgram,
-  createShader,
-  splitPositionWithFrac,
-} from '@jbrowse/core/gpu/webglUtils'
-
 export function colorToRGBA(color: string): [number, number, number, number] {
   return cssColorToRgba(color)
 }

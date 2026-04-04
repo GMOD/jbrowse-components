@@ -8,7 +8,6 @@ import type {
 import type { SyntenyColorPalette } from '../model.ts'
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
-import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
 export const LABEL_WIDTH = 120
 export const LABEL_FONT_MAX = 12
@@ -24,32 +23,7 @@ export type BpToPxFn = (refName: string, coord: number) => number | undefined
 
 export type SyntenyColors = CigarOpDrawColors
 
-export interface MultiSyntenyCanvasRenderOpts {
-  width: number
-  height: number
-  rowHeight: number
-  rowSpacing: boolean
-  bpToPx: BpToPxFn
-  colorBy: string
-  labelW: number
-  showSnps: boolean
-  colors: SyntenyColors
-  coverageHeight: number
-  coverageRegions: SyntenyRegionData[]
-  coverageColor: string
-}
-
-export interface MultiSyntenyCanvasBackend {
-  resize(width: number, height: number): void
-  render(
-    genomeRows: Map<string, MultiPairFeature[]>,
-    displayedGenomes: string[],
-    opts: MultiSyntenyCanvasRenderOpts,
-  ): void
-  dispose(): void
-}
-
-export interface GpuRenderOpts {
+export interface MultiSyntenyRenderState {
   contentBlocks: BaseBlock[]
   viewOffsetPx: number
   width: number
@@ -58,10 +32,11 @@ export interface GpuRenderOpts {
   rowSpacing: boolean
   coverageHeight: number
   palette: SyntenyColorPalette
+  displayedGenomes: string[]
+  labelW: number
 }
 
-export interface MultiSyntenyGpuBackend {
-  resize(width: number, height: number): void
+export interface MultiSyntenyBackend {
   uploadGeometryForBlock(
     regionNumber: number,
     data: BlockGeometryData & { regionStart: number },
@@ -78,9 +53,24 @@ export interface MultiSyntenyGpuBackend {
     regionNumber: number,
     data: BlockIndicatorUploadData,
   ): void
-  clearBlock(regionNumber: number): void
   clearAllBlocks(): void
-  render(opts: GpuRenderOpts): void
+  renderBlocks(state: MultiSyntenyRenderState): void
   pick(x: number, y: number): number
   dispose(): void
+}
+
+// Used by renderMultiSyntenyToCtx (SVG export path)
+export interface MultiSyntenyCanvasRenderOpts {
+  width: number
+  height: number
+  rowHeight: number
+  rowSpacing: boolean
+  bpToPx: BpToPxFn
+  colorBy: string
+  labelW: number
+  showSnps: boolean
+  colors: SyntenyColors
+  coverageHeight: number
+  coverageRegions: SyntenyRegionData[]
+  coverageColor: string
 }

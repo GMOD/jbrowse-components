@@ -4,10 +4,14 @@ import { when } from 'mobx'
 import { LDSVGColorLegend } from './components/LDColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantLabels from './components/VariantLabels.tsx'
-import { generateLDColorRamp } from './components/WebGLLDRenderer.ts'
+import { generateLDColorRamp } from './components/ldColorRamp.ts'
 import Wrapper from './components/Wrapper.tsx'
 import RecombinationTrack from '../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../shared/components/RecombinationYScaleBar.tsx'
+import {
+  lookupColorRamp,
+  lookupColorRampCSS,
+} from '@jbrowse/core/gpu/canvas2dUtils'
 
 import type { SharedLDModel } from './shared.ts'
 import type {
@@ -16,24 +20,6 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-function lookupColor(ramp: Uint8Array, t: number) {
-  const idx = Math.max(0, Math.min(255, Math.round(t * 255)))
-  const r = ramp[idx * 4]!
-  const g = ramp[idx * 4 + 1]!
-  const b = ramp[idx * 4 + 2]!
-  const a = ramp[idx * 4 + 3]!
-  return { rgb: `rgb(${r},${g},${b})`, opacity: a / 255 }
-}
-
-function lookupColorCSS(ramp: Uint8Array, t: number) {
-  const idx = Math.max(0, Math.min(255, Math.round(t * 255)))
-  const r = ramp[idx * 4]!
-  const g = ramp[idx * 4 + 1]!
-  const b = ramp[idx * 4 + 2]!
-  const a = ramp[idx * 4 + 3]!
-  return `rgba(${r},${g},${b},${(a / 255).toFixed(3)})`
-}
 
 function computeT(ldVal: number, signedLD: boolean) {
   const t = signedLD ? (ldVal + 1) / 2 : ldVal
@@ -92,7 +78,7 @@ export async function renderSvg(
         const cw = cellSizes[i * 2]!
         const ch = cellSizes[i * 2 + 1]!
         const t = computeT(ldValues[i]!, signedLD)
-        ctx.fillStyle = lookupColorCSS(ramp, t)
+        ctx.fillStyle = lookupColorRampCSS(ramp, t)
         ctx.fillRect(px, py, cw, ch)
       }
       ctx.restore()
@@ -116,7 +102,7 @@ export async function renderSvg(
       const cw = cellSizes[i * 2]!
       const ch = cellSizes[i * 2 + 1]!
       const t = computeT(ldValues[i]!, signedLD)
-      const { rgb, opacity } = lookupColor(ramp, t)
+      const { r, g, b, a } = lookupColorRamp(ramp, t)
 
       const corners = [
         [px, py],
@@ -133,7 +119,7 @@ export async function renderSvg(
         })
         .join(' ')
 
-      content += `<polygon points="${pts}" fill="${rgb}" fill-opacity="${opacity}"/>`
+      content += `<polygon points="${pts}" fill="rgb(${r},${g},${b})" fill-opacity="${a.toFixed(3)}"/>`
     }
     matrixEl = <g dangerouslySetInnerHTML={{ __html: content }} />
   }

@@ -541,7 +541,7 @@ export default function stateModelFactory(
           'RenderMultiWiggleData',
           {
             adapterConfig,
-            region,
+            region: region.region,
             sources: self.sources,
             bicolorPivot: self.bicolorPivot,
             stopToken,

@@ -1,3 +1,5 @@
+import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
+
 import type {
   MatrixRenderState,
   VariantMatrixBackend,
@@ -35,18 +37,9 @@ export class Canvas2DVariantMatrixRenderer implements VariantMatrixBackend {
   render(state: MatrixRenderState) {
     const { canvasWidth, canvasHeight, rowHeight, scrollTop, numFeatures } =
       state
-    const dpr = window.devicePixelRatio || 1
-    const bufW = Math.round(canvasWidth * dpr)
-    const bufH = Math.round(canvasHeight * dpr)
-
-    if (this.canvas.width !== bufW || this.canvas.height !== bufH) {
-      this.canvas.width = bufW
-      this.canvas.height = bufH
-    }
 
     const ctx = this.ctx
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight)
+    prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
 
     if (
       !this.cellFeatureIndices ||

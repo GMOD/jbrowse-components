@@ -337,7 +337,7 @@ export default function stateModelFactory(
           'RenderWiggleData',
           {
             adapterConfig,
-            region,
+            region: region.region,
             bicolorPivot: self.effectiveBicolorPivot,
             stopToken,
             bpPerPx,

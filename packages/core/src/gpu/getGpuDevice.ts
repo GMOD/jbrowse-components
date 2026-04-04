@@ -37,8 +37,6 @@ async function createDevice(): Promise<GPUDevice | null> {
         maxBufferSize: adapter.limits.maxBufferSize,
       },
     })
-    // eslint-disable-next-line no-console
-    console.log('WebGPU device created successfully')
     void d.lost.then(info => {
       console.error('Device lost:', info.message)
       device = null

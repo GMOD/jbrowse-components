@@ -1,4 +1,4 @@
-import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
+import { clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
 import { computeNumRows, interleaveInstances } from './webglUtils.ts'
 import {
   WIGGLE_FRAGMENT_SHADER_GLSL,
@@ -110,7 +110,8 @@ export class GpuWiggleRenderer implements WiggleBackend {
     const passId = isLine ? PASS_LINE : PASS_FILL
 
     for (const block of blocks) {
-      if (this.hal.getBufferCount(block.regionNumber, PASS_FILL) === 0) {
+      const bufCount = this.hal.getBufferCount(block.regionNumber, PASS_FILL)
+      if (bufCount === 0) {
         continue
       }
 
@@ -120,33 +121,17 @@ export class GpuWiggleRenderer implements WiggleBackend {
         continue
       }
 
-      const scissorX = Math.max(0, Math.floor(block.screenStartPx))
-      const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
-      const scissorW = scissorEnd - scissorX
-      if (scissorW <= 0) {
+      const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
+      if (!clip) {
         continue
       }
 
-      const pxX = Math.round(scissorX * dpr)
-      const pxW = Math.round(scissorW * dpr)
-      const pxH = Math.round(canvasHeight * dpr)
+      this.hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
+      this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
 
-      this.hal.setScissor(pxX, 0, pxW, pxH)
-      this.hal.setViewport(pxX, 0, pxW, pxH)
-
-      const fullBlockWidth = block.screenEndPx - block.screenStartPx
-      const regionLengthBp = block.bpRangeX[1] - block.bpRangeX[0]
-      const bpPerPx = regionLengthBp / fullBlockWidth
-      const clippedBpStart =
-        block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
-      const clippedBpEnd =
-        block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
-      const [bpStartHi, bpStartLo] = splitPositionWithFrac(clippedBpStart)
-      const clippedLengthBp = clippedBpEnd - clippedBpStart
-
-      this.uniformF32[0] = bpStartHi
-      this.uniformF32[1] = bpStartLo
-      this.uniformF32[2] = clippedLengthBp
+      this.uniformF32[0] = clip.bpStartHi
+      this.uniformF32[1] = clip.bpStartLo
+      this.uniformF32[2] = clip.clippedLengthBp
       this.uniformU32[3] = Math.floor(meta.regionStart)
       this.uniformF32[4] = canvasHeight
       this.uniformI32[5] = state.scaleType
@@ -155,7 +140,7 @@ export class GpuWiggleRenderer implements WiggleBackend {
       this.uniformF32[8] = state.domainY[0]
       this.uniformF32[9] = state.domainY[1]
       this.uniformF32[10] = 0 // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision
-      this.uniformF32[11] = pxW
+      this.uniformF32[11] = clip.pxW
       this.uniformF32[12] = block.reversed ? 1.0 : 0.0
 
       this.hal.writeUniforms(this.uniformData)

@@ -3,18 +3,22 @@ import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
 import type { WiggleDataResult } from './types.ts'
 import type { Region } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 interface RenderWiggleDataArgs extends Record<string, unknown> {
-  sessionId: string
   adapterConfig: Record<string, unknown>
   region: Region
   bicolorPivot?: number
+  stopToken?: StopToken
+  bpPerPx?: number
+  resolution?: number
+  statusCallback?: (msg: string) => void
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     RenderWiggleData: {
-      args: Record<string, unknown>
+      args: RenderWiggleDataArgs
       return: WiggleDataResult
     }
   }
@@ -23,20 +27,19 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class RenderWiggleData extends RpcMethodType {
   name = 'RenderWiggleData'
 
-  async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
-    const typedArgs = args as RenderWiggleDataArgs
+  async serializeArguments(args: RenderWiggleDataArgs, rpcDriver: string) {
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
 
     if (assemblyManager) {
       const result = await renameRegionsIfNeeded(assemblyManager, {
-        sessionId: typedArgs.sessionId,
-        adapterConfig: typedArgs.adapterConfig,
-        regions: [typedArgs.region],
+        sessionId: args.sessionId as string,
+        adapterConfig: args.adapterConfig,
+        regions: [args.region],
       })
 
       return super.serializeArguments(
-        { ...typedArgs, region: result.regions[0] },
+        { ...args, region: result.regions[0] },
         rpcDriver,
       )
     }
@@ -49,7 +52,8 @@ export default class RenderWiggleData extends RpcMethodType {
       await import('./executeRenderWiggleData.ts')
     return executeRenderWiggleData({
       pluginManager: this.pluginManager,
-      args: args as RenderWiggleDataArgs,
+      // sessionId is added by RpcManager.call() before execute runs
+      args: args as RenderWiggleDataArgs & { sessionId: string },
     })
   }
 }

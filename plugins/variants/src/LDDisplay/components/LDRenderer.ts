@@ -1,8 +1,11 @@
-import { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
+import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
 
 import { Canvas2DLDRenderer } from './Canvas2DLDRenderer.ts'
-import { WebGLLDRenderer } from './WebGLLDRenderer.ts'
-import { WebGPULDRenderer } from './WebGPULDRenderer.ts'
+import {
+  GpuLDRenderer,
+  LD_PASSES,
+  LD_UNIFORM_BYTE_SIZE,
+} from './GpuLDRenderer.ts'
 
 import type { LDBackend, LDRenderState } from './ldBackendTypes.ts'
 
@@ -26,30 +29,14 @@ export class LDRenderer {
   }
 
   async init() {
-    if (getGpuOverride() === 'canvas2d') {
-      this.backend = new Canvas2DLDRenderer(this.canvas)
-      return true
-    }
-
-    const gpu = await WebGPULDRenderer.create(this.canvas)
-    if (gpu) {
-      this.backend = gpu
-      return true
-    }
-
-    try {
-      this.backend = new WebGLLDRenderer(this.canvas)
-      return true
-    } catch (e) {
-      console.warn('[LDRenderer] WebGL2 fallback failed:', e)
-      try {
-        this.backend = new Canvas2DLDRenderer(this.canvas)
-        return true
-      } catch (e2) {
-        console.warn('[LDRenderer] Canvas 2D fallback also failed:', e2)
-        return false
-      }
-    }
+    this.backend = await initDualBackend<LDBackend>(
+      this.canvas,
+      LD_PASSES,
+      LD_UNIFORM_BYTE_SIZE,
+      hal => new GpuLDRenderer(hal),
+      canvas => new Canvas2DLDRenderer(canvas),
+    )
+    return true
   }
 
   uploadData(data: {
@@ -70,12 +57,10 @@ export class LDRenderer {
   }
 
   dispose() {
-    if (this.backend) {
-      this.backend.dispose()
-      this.backend = null
-    }
+    this.backend?.dispose()
+    this.backend = null
     rendererCache.delete(this.canvas)
   }
 }
 
-export { generateLDColorRamp } from './WebGLLDRenderer.ts'
+export { generateLDColorRamp } from './ldColorRamp.ts'

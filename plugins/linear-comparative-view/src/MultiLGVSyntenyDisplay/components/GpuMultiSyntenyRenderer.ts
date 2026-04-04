@@ -22,7 +22,7 @@ import {
 } from './multiSyntenyGpuData.ts'
 import { BG_COLOR_GL } from './multiSyntenyBackendTypes.ts'
 
-import type { GpuRenderOpts, MultiSyntenyGpuBackend } from './multiSyntenyBackendTypes.ts'
+import type { MultiSyntenyBackend, MultiSyntenyRenderState } from './multiSyntenyBackendTypes.ts'
 import type {
   BlockGeometryData,
   BlockCoverageUploadData,
@@ -97,7 +97,7 @@ export const SYNTENY_PASSES: PassDescriptor[] = [
 
 export const SYNTENY_UNIFORM_BYTE_SIZE = UNIFORM_BYTE_SIZE
 
-export class GpuMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
+export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
   private hal: GpuHal
   private uniformData = new ArrayBuffer(UNIFORM_BYTE_SIZE)
   private uniformF32 = new Float32Array(this.uniformData)
@@ -153,7 +153,7 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     this.hal.deleteAllRegions()
   }
 
-  render(opts: GpuRenderOpts) {
+  renderBlocks(state: MultiSyntenyRenderState) {
     const {
       contentBlocks,
       viewOffsetPx,
@@ -163,7 +163,7 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
       rowSpacing,
       coverageHeight,
       palette,
-    } = opts
+    } = state
 
     this.hal.resize(width, height)
     const dpr = getDevicePixelRatio()
@@ -225,7 +225,7 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     rowPadding: number,
     coverageHeight: number,
     depthScale: number,
-    palette: GpuRenderOpts['palette'],
+    palette: MultiSyntenyRenderState['palette'],
   ) {
     for (const [regionKey, params] of this.visibleBlocks(contentBlocks, viewOffsetPx, logicalW)) {
       if (this.hal.getBufferCount(regionKey, passId) === 0) {

@@ -2,7 +2,11 @@ import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
 import HicSVGColorLegend from './components/HicSVGColorLegend.tsx'
-import { generateColorRamp } from './components/WebGLHicRenderer.ts'
+import {
+  generateColorRamp,
+  lookupColorRamp,
+  lookupColorRampCSS,
+} from './components/colorRamp.ts'
 
 import type { LinearHicDisplayModel } from './model.ts'
 import type {
@@ -11,24 +15,6 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-function lookupColor(ramp: Uint8Array, t: number) {
-  const idx = Math.max(0, Math.min(255, Math.round(t * 255)))
-  const r = ramp[idx * 4]!
-  const g = ramp[idx * 4 + 1]!
-  const b = ramp[idx * 4 + 2]!
-  const a = ramp[idx * 4 + 3]!
-  return { rgb: `rgb(${r},${g},${b})`, opacity: a / 255 }
-}
-
-function lookupColorCSS(ramp: Uint8Array, t: number) {
-  const idx = Math.max(0, Math.min(255, Math.round(t * 255)))
-  const r = ramp[idx * 4]!
-  const g = ramp[idx * 4 + 1]!
-  const b = ramp[idx * 4 + 2]!
-  const a = ramp[idx * 4 + 3]!
-  return `rgba(${r},${g},${b},${(a / 255).toFixed(3)})`
-}
 
 function computeT(count: number, m: number, useLogScale: boolean) {
   const t = useLogScale
@@ -81,7 +67,7 @@ export async function renderSvg(
         const py = positions[i * 2 + 1]!
         const count = counts[i]!
         const t = computeT(count, m, useLogScale)
-        ctx.fillStyle = lookupColorCSS(ramp, t)
+        ctx.fillStyle = lookupColorRampCSS(ramp, t)
         ctx.fillRect(px, py, binWidth, binWidth)
       }
       ctx.restore()
@@ -104,7 +90,7 @@ export async function renderSvg(
       const py = positions[i * 2 + 1]!
       const count = counts[i]!
       const t = computeT(count, m, useLogScale)
-      const { rgb, opacity } = lookupColor(ramp, t)
+      const { r, g, b, a } = lookupColorRamp(ramp, t)
 
       const corners = [
         [px, py],
@@ -121,7 +107,7 @@ export async function renderSvg(
         })
         .join(' ')
 
-      content += `<polygon points="${pts}" fill="${rgb}" fill-opacity="${opacity}"/>`
+      content += `<polygon points="${pts}" fill="rgb(${r},${g},${b})" fill-opacity="${a.toFixed(3)}"/>`
     }
     matrixEl = <g dangerouslySetInnerHTML={{ __html: content }} />
   }

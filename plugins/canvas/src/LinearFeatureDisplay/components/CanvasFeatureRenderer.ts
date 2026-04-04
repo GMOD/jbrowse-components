@@ -1,8 +1,11 @@
-import { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
+import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
 
 import { Canvas2DFeatureRenderer } from './Canvas2DFeatureRenderer.ts'
-import { WebGLFeatureRenderer } from './WebGLFeatureRenderer.ts'
-import { WebGPUFeatureRenderer } from './WebGPUFeatureRenderer.ts'
+import {
+  CANVAS_FEATURE_PASSES,
+  CANVAS_FEATURE_UNIFORM_BYTE_SIZE,
+  GpuCanvasFeatureRenderer,
+} from './GpuCanvasFeatureRenderer.ts'
 
 import type {
   CanvasFeatureBackend,
@@ -31,29 +34,14 @@ export class CanvasFeatureRenderer {
   }
 
   async init() {
-    if (getGpuOverride() === 'canvas2d') {
-      this.backend = new Canvas2DFeatureRenderer(this.canvas)
-      return true
-    }
-
-    const gpuBackend = await WebGPUFeatureRenderer.create(this.canvas)
-    if (gpuBackend) {
-      gpuBackend.onDeviceLost = () => {
-        this.backend = null
-        this.onDeviceLost?.()
-      }
-      this.backend = gpuBackend
-      return true
-    }
-
-    try {
-      this.backend = new WebGLFeatureRenderer(this.canvas)
-      return true
-    } catch (e) {
-      console.warn('[CanvasFeatureRenderer] WebGL2 fallback also failed:', e)
-      this.backend = new Canvas2DFeatureRenderer(this.canvas)
-      return true
-    }
+    this.backend = await initDualBackend<CanvasFeatureBackend>(
+      this.canvas,
+      CANVAS_FEATURE_PASSES,
+      CANVAS_FEATURE_UNIFORM_BYTE_SIZE,
+      hal => new GpuCanvasFeatureRenderer(hal),
+      canvas => new Canvas2DFeatureRenderer(canvas),
+    )
+    return true
   }
 
   uploadRegion(

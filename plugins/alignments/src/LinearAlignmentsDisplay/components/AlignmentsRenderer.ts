@@ -1,5 +1,4 @@
-import { createGpuHal } from '@jbrowse/core/gpu/hal'
-import { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
+import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
 
 import { Canvas2DAlignmentsRenderer } from './Canvas2DAlignmentsRenderer.ts'
 import {
@@ -44,23 +43,13 @@ export class AlignmentsRenderer {
   }
 
   async init() {
-    if (getGpuOverride() === 'canvas2d') {
-      this.backend = new Canvas2DAlignmentsRenderer(this.canvas)
-      return true
-    }
-
-    const hal = await createGpuHal(
+    this.backend = await initDualBackend<AlignmentsBackend>(
       this.canvas,
       ALIGNMENTS_PASSES,
       UNIFORM_SIZE,
+      hal => new GpuAlignmentsRenderer(hal),
+      canvas => new Canvas2DAlignmentsRenderer(canvas),
     )
-    if (hal) {
-      this.backend = new GpuAlignmentsRenderer(hal)
-      return true
-    }
-
-    console.warn('[AlignmentsRenderer] GPU not available, using Canvas2D fallback')
-    this.backend = new Canvas2DAlignmentsRenderer(this.canvas)
     return true
   }
 

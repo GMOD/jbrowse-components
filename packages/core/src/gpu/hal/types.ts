@@ -12,6 +12,18 @@ export interface BlendState {
   dstFactor: 'one' | 'src-alpha' | 'one-minus-src-alpha' | 'zero'
 }
 
+export interface TextureBinding {
+  // WebGPU binding index for the texture view (e.g. 2)
+  textureBinding: number
+  // WebGPU binding index for the sampler (e.g. 3)
+  samplerBinding: number
+  // WebGL texture unit index (e.g. 0 for TEXTURE0)
+  glTextureUnit: number
+  // GLSL sampler uniform name (e.g. 'u_colorRamp')
+  glUniformName: string
+  filter: 'linear' | 'nearest'
+}
+
 export interface PassDescriptor {
   id: string
   wgslSource: string
@@ -32,6 +44,8 @@ export interface PassDescriptor {
   glslFragmentOverride?: string
   // primitive topology (default: 'triangle-list')
   topology?: 'triangle-list' | 'triangle-strip' | 'line-list'
+  // texture bindings for this pass
+  textures?: TextureBinding[]
 }
 
 export interface RegionMeta {
@@ -54,6 +68,8 @@ export interface GpuHal {
   deleteBuffer(regionKey: number, passId: string): void
   deleteRegion(regionKey: number): void
   deleteAllRegions(): void
+
+  uploadTexture(passId: string, data: Uint8Array, width: number, height: number): void
 
   writeUniforms(data: ArrayBuffer): void
   beginFrame(clearR: number, clearG: number, clearB: number, clearA?: number): void

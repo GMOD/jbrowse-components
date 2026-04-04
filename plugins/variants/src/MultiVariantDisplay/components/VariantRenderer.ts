@@ -1,4 +1,4 @@
-import { createGpuHal } from '@jbrowse/core/gpu/hal'
+import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
 
 import { Canvas2DVariantRenderer } from './Canvas2DVariantRenderer.ts'
 import {
@@ -32,17 +32,13 @@ export class VariantRenderer {
   }
 
   async init() {
-    const hal = await createGpuHal(
+    this.backend = await initDualBackend<VariantBackend>(
       this.canvas,
       VARIANT_PASSES,
       VARIANT_UNIFORM_BYTE_SIZE,
+      hal => new GpuVariantRenderer(hal),
+      canvas => new Canvas2DVariantRenderer(canvas),
     )
-    if (hal) {
-      this.backend = new GpuVariantRenderer(hal)
-      return true
-    }
-
-    this.backend = new Canvas2DVariantRenderer(this.canvas)
     return true
   }
 

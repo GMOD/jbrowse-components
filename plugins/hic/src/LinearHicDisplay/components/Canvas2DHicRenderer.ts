@@ -1,3 +1,7 @@
+import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
+
+import { lookupColorRamp } from './colorRamp.ts'
+
 import type { HicBackend, HicRenderState } from './hicBackendTypes.ts'
 
 const SQRT_HALF = 0.7071067811865476
@@ -45,18 +49,8 @@ export class Canvas2DHicRenderer implements HicBackend {
       viewOffsetX,
     } = state
 
-    const dpr = window.devicePixelRatio || 1
-    const bufW = Math.round(canvasWidth * dpr)
-    const bufH = Math.round(canvasHeight * dpr)
-
-    if (this.canvas.width !== bufW || this.canvas.height !== bufH) {
-      this.canvas.width = bufW
-      this.canvas.height = bufH
-    }
-
     const ctx = this.ctx
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight)
+    prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
 
     if (
       this.numContacts === 0 ||
@@ -80,11 +74,7 @@ export class Canvas2DHicRenderer implements HicBackend {
         : count / Math.max(m, 0.001)
       const t = Math.max(0, Math.min(1, raw))
 
-      const rampIdx = Math.round(t * 255) * 4
-      const r = this.colorRamp[rampIdx]!
-      const g = this.colorRamp[rampIdx + 1]!
-      const b = this.colorRamp[rampIdx + 2]!
-      const a = this.colorRamp[rampIdx + 3]! / 255
+      const { r, g, b, a } = lookupColorRamp(this.colorRamp, t)
 
       if (a < 0.01) {
         continue

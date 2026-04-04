@@ -1,3 +1,5 @@
+import { lookupColorRamp } from '@jbrowse/core/gpu/canvas2dUtils'
+
 import type { LDBackend, LDRenderState } from './ldBackendTypes.ts'
 
 const COS45 = 0.7071067811865476
@@ -79,11 +81,7 @@ export class Canvas2DLDRenderer implements LDBackend {
       let t = signedLD ? (ldVal + 1) / 2 : ldVal
       t = Math.max(0, Math.min(1, t))
 
-      const rampIdx = Math.min(255, Math.round(t * 255)) * 4
-      const r = this.colorRamp[rampIdx]!
-      const g = this.colorRamp[rampIdx + 1]!
-      const b = this.colorRamp[rampIdx + 2]!
-      const a = this.colorRamp[rampIdx + 3]! / 255
+      const { r, g, b, a } = lookupColorRamp(this.colorRamp, t)
 
       if (a < 0.01) {
         continue

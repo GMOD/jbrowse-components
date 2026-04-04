@@ -53,16 +53,27 @@ export {
 export {
   getDevicePixelRatio,
   resizeCanvas,
+  coverageLayout,
+  snpColorForType,
+  rgbaString,
+  drawCoverageBins,
+  drawSnpSegments,
+  drawIndicators,
+  drawNoncovSegments,
+  drawModCovSegments,
 } from './rendererUtils.ts'
+export type { NoncovDrawColors } from './rendererUtils.ts'
 export {
   packSnpSegmentsForGpu,
   packIndicatorsForGpu,
   packNoncovSegmentsForGpu,
+  packModCovSegmentsForGpu,
 } from './coverageGpuPacking.ts'
 export type {
   SnpGpuUpload,
   IndicatorGpuUpload,
   NoncovGpuUpload,
+  ModCovGpuUpload,
 } from './coverageGpuPacking.ts'
 export {
   YSCALEBAR_LABEL_OFFSET,
