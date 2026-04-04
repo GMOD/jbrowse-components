@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react'
 
-import { ErrorBar, Menu } from '@jbrowse/core/ui'
+import { ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import { getContainingView, useDebounce } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
@@ -984,14 +984,14 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
   if (error) {
     return (
-      <div style={{ position: 'relative', width: width ?? '100%', height }}>
-        <ErrorBar
-          error={error}
-          onRetry={() => {
-            model.reload()
-          }}
-        />
-      </div>
+      <ErrorOverlay
+        error={error}
+        width={width ?? '100%'}
+        height={height}
+        onRetry={() => {
+          model.reload()
+        }}
+      />
     )
   }
 

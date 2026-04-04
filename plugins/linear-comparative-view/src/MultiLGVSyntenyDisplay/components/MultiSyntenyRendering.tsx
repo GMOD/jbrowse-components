@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { MISMATCH_COLOR, buildCoverageTooltipBin } from '@jbrowse/alignments-core'
+import { ErrorOverlay } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
   getContainingTrack,
@@ -311,7 +312,11 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     }),
     [model],
   )
-  useGpuRenderer(canvasRef, MultiSyntenyRenderer, gpuOpts)
+  const { error, retry } = useGpuRenderer(
+    canvasRef,
+    MultiSyntenyRenderer,
+    gpuOpts,
+  )
 
   // Theme color palette sync to model
   useEffect(() => {
@@ -492,6 +497,19 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       width,
     ],
   )
+
+  if (error) {
+    return (
+      <ErrorOverlay
+        error={error}
+        width={width}
+        height={height}
+        onRetry={() => {
+          retry()
+        }}
+      />
+    )
+  }
 
   return (
     <Tooltip

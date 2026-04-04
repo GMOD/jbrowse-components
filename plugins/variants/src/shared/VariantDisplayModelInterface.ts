@@ -22,6 +22,5 @@ export interface VariantDisplayModelBase {
   selectFeature: (feature: { id(): string }) => void
   setContextMenuFeature: (feature?: { id(): string }) => void
   contextMenuItems: () => { label: string; onClick: () => void }[]
-  retryLoadingData: () => void
   regionCannotBeRendered: () => React.ReactElement | null
 }

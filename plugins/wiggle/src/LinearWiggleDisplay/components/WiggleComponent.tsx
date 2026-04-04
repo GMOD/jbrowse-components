@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { ErrorBar } from '@jbrowse/core/ui'
+import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
 import { getContainingView, useGpuRenderer } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
@@ -16,9 +16,9 @@ import {
   makeRenderState,
 } from '../../shared/wiggleComponentUtils.ts'
 
+import type { WiggleDisplayModel } from './buildSourceRenderData.ts'
 import type { WiggleRenderBlock } from '../../shared/wiggleBackendTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { WiggleDisplayModel } from './buildSourceRenderData.ts'
 
 type LGV = LinearGenomeViewModel
 
@@ -42,30 +42,26 @@ const WiggleComponent = observer(function WiggleComponent({
       return
     }
 
+    let lastDataMap: unknown = null
+
     return autorun(() => {
       const dataMap = model.rpcDataMap
-      if (dataMap.size === 0) {
-        renderer.pruneRegions([])
-        return
+
+      if (lastDataMap !== dataMap) {
+        lastDataMap = dataMap
+        if (dataMap.size === 0) {
+          renderer.pruneRegions([])
+        } else {
+          const activeRegions: number[] = []
+          for (const [regionNumber, data] of dataMap) {
+            activeRegions.push(regionNumber)
+            const sources = buildSourceRenderData(data, model)
+            renderer.uploadRegion(regionNumber, data.regionStart, sources)
+          }
+          renderer.pruneRegions(activeRegions)
+        }
       }
 
-      const activeRegions: number[] = []
-      for (const [regionNumber, data] of dataMap) {
-        activeRegions.push(regionNumber)
-        const sources = buildSourceRenderData(data, model)
-        renderer.uploadRegion(regionNumber, data.regionStart, sources)
-      }
-      renderer.pruneRegions(activeRegions)
-    })
-  }, [model, ready, rendererRef])
-
-  useEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !ready) {
-      return
-    }
-
-    return autorun(() => {
       if (!view.initialized) {
         return
       }
@@ -195,17 +191,16 @@ const WiggleComponent = observer(function WiggleComponent({
   const height = model.height
   const scalebarLeft = model.scalebarOverlapLeft
 
-  if (error || model.error) {
+  if (error) {
     return (
-      <div style={{ position: 'relative', width, height }}>
-        <ErrorBar
-          error={error ?? model.error}
-          onRetry={() => {
-            retry()
-            model.reload()
-          }}
-        />
-      </div>
+      <ErrorOverlay
+        error={error}
+        width={width}
+        height={height}
+        onRetry={() => {
+          retry()
+        }}
+      />
     )
   }
 
@@ -298,6 +293,14 @@ const WiggleComponent = observer(function WiggleComponent({
         offsetMouseCoord={offsetMouseCoord}
         height={height}
       />
+      {model.error ? (
+        <ErrorBar
+          error={model.error}
+          onRetry={() => {
+            model.reload()
+          }}
+        />
+      ) : null}
       <LoadingOverlay
         statusMessage={model.statusMessage || 'Loading'}
         isVisible={model.isLoading}

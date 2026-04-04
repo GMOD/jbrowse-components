@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 
-import { ErrorBar, Menu } from '@jbrowse/core/ui'
+import { ErrorBar, ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
   getContainingView,
@@ -152,14 +152,14 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
 
   if (error) {
     return (
-      <div style={{ position: 'relative', width, height }}>
-        <ErrorBar
-          error={error}
-          onRetry={() => {
-            retry()
-          }}
-        />
-      </div>
+      <ErrorOverlay
+        error={error}
+        width={width}
+        height={height}
+        onRetry={() => {
+          retry()
+        }}
+      />
     )
   }
 
@@ -245,7 +245,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
         <ErrorBar
           error={model.displayError}
           onRetry={() => {
-            model.retryLoadingData()
+            model.reload()
           }}
         />
       ) : null}

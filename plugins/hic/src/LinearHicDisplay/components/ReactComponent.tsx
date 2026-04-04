@@ -1,6 +1,6 @@
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { ErrorBar } from '@jbrowse/core/ui'
+import { ErrorOverlay } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import {
   getContainingView,
@@ -8,9 +8,10 @@ import {
   useGpuRenderer,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import BaseDisplayComponent from './BaseDisplayComponent.tsx'
+import { CanvasDisplayWrapper } from '@jbrowse/core/ui'
 import { HicRenderer, generateColorRamp } from './HicRenderer.ts'
 import HicColorLegend from '../../HicRenderer/components/HicColorLegend.tsx'
 
@@ -132,54 +133,57 @@ const HicCanvas = observer(function HicCanvas({
     [flatbush],
   )
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const renderer = rendererRef.current
-    if (!renderer || !rpcData || !ready) {
+    if (!renderer || !ready) {
       return
     }
 
-    renderer.uploadData({
-      positions: rpcData.positions,
-      counts: rpcData.counts,
-      numContacts: rpcData.numContacts,
+    let lastRpcData: unknown = null
+    let lastColorScheme: string | undefined
+
+    return autorun(() => {
+      const data = model.rpcData
+      if (!data) {
+        return
+      }
+
+      if (lastRpcData !== data) {
+        lastRpcData = data
+        renderer.uploadData({
+          positions: data.positions,
+          counts: data.counts,
+          numContacts: data.numContacts,
+        })
+      }
+
+      if (lastColorScheme !== model.colorScheme) {
+        lastColorScheme = model.colorScheme
+        renderer.uploadColorRamp(generateColorRamp(model.colorScheme))
+      }
+
+      const w = Math.round(view.dynamicBlocks.totalWidthPx)
+      const scale =
+        model.lastDrawnBpPerPx !== undefined
+          ? model.lastDrawnBpPerPx / view.bpPerPx
+          : 1
+      const offsetX =
+        model.lastDrawnOffsetPx !== undefined
+          ? model.lastDrawnOffsetPx * scale - view.offsetPx
+          : 0
+
+      renderer.render({
+        binWidth: data.binWidth,
+        yScalar: data.yScalar,
+        canvasWidth: w,
+        canvasHeight: model.height,
+        maxScore: data.maxScore,
+        useLogScale: model.useLogScale,
+        viewScale: scale,
+        viewOffsetX: offsetX,
+      })
     })
-  }, [rpcData, ready, rendererRef])
-
-  useLayoutEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !rpcData || !ready) {
-      return
-    }
-
-    renderer.uploadColorRamp(generateColorRamp(colorScheme))
-  }, [rpcData, colorScheme, ready, rendererRef])
-
-  useLayoutEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !rpcData || !ready) {
-      return
-    }
-
-    renderer.render({
-      binWidth: rpcData.binWidth,
-      yScalar: rpcData.yScalar,
-      canvasWidth: width,
-      canvasHeight: height,
-      maxScore: rpcData.maxScore,
-      useLogScale,
-      viewScale,
-      viewOffsetX,
-    })
-  }, [
-    rpcData,
-    width,
-    height,
-    useLogScale,
-    viewScale,
-    viewOffsetX,
-    ready,
-    rendererRef,
-  ])
+  }, [model, view, ready, rendererRef])
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {
@@ -222,14 +226,14 @@ const HicCanvas = observer(function HicCanvas({
 
   if (error) {
     return (
-      <div style={{ position: 'relative', width, height }}>
-        <ErrorBar
-          error={error}
-          onRetry={() => {
-            retry()
-          }}
-        />
-      </div>
+      <ErrorOverlay
+        error={error}
+        width={width}
+        height={height}
+        onRetry={() => {
+          retry()
+        }}
+      />
     )
   }
 
@@ -292,9 +296,9 @@ const LinearHicReactComponent = observer(function LinearHicReactComponent({
   model: LinearHicDisplayModel
 }) {
   return (
-    <BaseDisplayComponent model={model}>
+    <CanvasDisplayWrapper model={model}>
       <HicCanvas model={model} />
-    </BaseDisplayComponent>
+    </CanvasDisplayWrapper>
   )
 })
 

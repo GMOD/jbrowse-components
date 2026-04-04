@@ -1,22 +1,13 @@
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { ErrorOverlay } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import {
-  getContainingView,
-  max,
-  setupWebGLContextLossHandler,
-} from '@jbrowse/core/util'
+import { getContainingView, max, useGpuRenderer } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import BaseDisplayComponent from './BaseDisplayComponent.tsx'
+import { CanvasDisplayWrapper } from '@jbrowse/core/ui'
 import LDColorLegend from './LDColorLegend.tsx'
 import { LDRenderer, generateLDColorRamp } from './LDRenderer.ts'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
@@ -283,25 +274,19 @@ const LDCanvas = observer(function LDCanvas({
   const containerHeight = canvasOnlyHeight + effectiveLineZoneHeight
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const rendererRef = useRef<LDRenderer | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredItem, setHoveredItem] = useState<LDFlatbushItem>()
   const [mousePosition, setMousePosition] = useState<{
     x: number
     y: number
   }>()
-  const [glError, setGlError] = useState<string>()
-  const [contextVersion, setContextVersion] = useState(0)
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (canvas) {
-      return setupWebGLContextLossHandler(canvas, () => {
-        setContextVersion(v => v + 1)
-      })
-    }
-    return undefined
-  }, [])
+  const {
+    error,
+    ready,
+    rendererRef,
+    retry,
+  } = useGpuRenderer(canvasRef, LDRenderer)
 
   const region = view.dynamicBlocks.contentBlocks[0]
   const bpPerPx = view.bpPerPx
@@ -348,91 +333,59 @@ const LDCanvas = observer(function LDCanvas({
     [flatbush],
   )
 
-  const [ready, setReady] = useState(false)
-
-  useLayoutEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) {
+  useEffect(() => {
+    const renderer = rendererRef.current
+    if (!renderer || !ready) {
       return
     }
 
-    let cancelled = false
-    const renderer = LDRenderer.getOrCreate(canvas)
-    rendererRef.current = renderer
-    renderer
-      .init()
-      .then(ok => {
-        if (!cancelled) {
-          if (!ok) {
-            setGlError('GPU initialization failed')
-          }
-          setReady(true)
-        }
+    let lastRpcData: unknown = null
+    let lastColorKey: string | undefined
+
+    return autorun(() => {
+      const data = model.rpcData
+      if (!data) {
+        return
+      }
+
+      if (lastRpcData !== data) {
+        lastRpcData = data
+        renderer.uploadData({
+          positions: data.positions,
+          cellSizes: data.cellSizes,
+          ldValues: data.ldValues,
+          numCells: data.numCells,
+        })
+      }
+
+      const colorKey = `${data.metric},${data.signedLD}`
+      if (lastColorKey !== colorKey) {
+        lastColorKey = colorKey
+        renderer.uploadColorRamp(
+          generateLDColorRamp(data.metric, data.signedLD),
+        )
+      }
+
+      const w = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
+      const scale =
+        model.lastDrawnBpPerPx !== undefined
+          ? model.lastDrawnBpPerPx / view.bpPerPx
+          : 1
+      const offsetX =
+        model.lastDrawnOffsetPx !== undefined
+          ? model.lastDrawnOffsetPx * scale - view.offsetPx
+          : 0
+
+      renderer.render({
+        yScalar: data.yScalar,
+        canvasWidth: w,
+        canvasHeight: model.fitToHeight ? model.ldCanvasHeight : w / 2,
+        signedLD: data.signedLD,
+        viewScale: scale,
+        viewOffsetX: offsetX,
       })
-      .catch((e: unknown) => {
-        if (!cancelled) {
-          setGlError(
-            e instanceof Error ? e.message : 'GPU initialization failed',
-          )
-        }
-      })
-
-    return () => {
-      cancelled = true
-      rendererRef.current?.dispose()
-      rendererRef.current = null
-      setReady(false)
-    }
-  }, [contextVersion])
-
-  useLayoutEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !rpcData || !ready) {
-      return
-    }
-
-    renderer.uploadData({
-      positions: rpcData.positions,
-      cellSizes: rpcData.cellSizes,
-      ldValues: rpcData.ldValues,
-      numCells: rpcData.numCells,
     })
-  }, [rpcData, contextVersion, ready])
-
-  useLayoutEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !rpcData || !ready) {
-      return
-    }
-
-    renderer.uploadColorRamp(
-      generateLDColorRamp(rpcData.metric, rpcData.signedLD),
-    )
-  }, [rpcData, contextVersion, ready])
-
-  useLayoutEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !rpcData || !ready) {
-      return
-    }
-
-    renderer.render({
-      yScalar: rpcData.yScalar,
-      canvasWidth: width,
-      canvasHeight: canvasOnlyHeight,
-      signedLD: rpcData.signedLD,
-      viewScale,
-      viewOffsetX,
-    })
-  }, [
-    rpcData,
-    width,
-    canvasOnlyHeight,
-    viewScale,
-    viewOffsetX,
-    contextVersion,
-    ready,
-  ])
+  }, [model, view, ready, rendererRef])
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {
@@ -491,9 +444,16 @@ const LDCanvas = observer(function LDCanvas({
     setMousePosition(undefined)
   }, [])
 
-  if (glError) {
+  if (error) {
     return (
-      <div style={{ color: 'red', padding: 10 }}>WebGL Error: {glError}</div>
+      <ErrorOverlay
+        error={error}
+        width={width}
+        height={containerHeight}
+        onRetry={() => {
+          retry()
+        }}
+      />
     )
   }
 
@@ -620,9 +580,9 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
   model: SharedLDModel
 }) {
   return (
-    <BaseDisplayComponent model={model}>
+    <CanvasDisplayWrapper model={model}>
       <LDDisplayContent model={model} />
-    </BaseDisplayComponent>
+    </CanvasDisplayWrapper>
   )
 })
 

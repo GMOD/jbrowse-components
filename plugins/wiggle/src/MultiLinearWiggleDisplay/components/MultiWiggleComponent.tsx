@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { ErrorBar } from '@jbrowse/core/ui'
+import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
 import { getContainingView, useGpuRenderer } from '@jbrowse/core/util'
+import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import MultiWiggleTooltip from './Tooltip.tsx'
-import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import DensityLegend from '../../shared/DensityLegend.tsx'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import MultiRowLabels from '../../shared/MultiRowLabels.tsx'
@@ -24,7 +24,6 @@ import {
   makeWhiskersSourceData,
 } from '../../shared/wiggleComponentUtils.ts'
 
-import type { ClusterHierarchyNode, HoveredTreeNode } from '@jbrowse/tree-sidebar'
 import type {
   MultiWiggleDataResult,
   MultiWiggleSourceData,
@@ -35,6 +34,10 @@ import type {
   WiggleRenderBlock,
 } from '../../shared/wiggleBackendTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ClusterHierarchyNode,
+  HoveredTreeNode,
+} from '@jbrowse/tree-sidebar'
 
 type LGV = LinearGenomeViewModel
 
@@ -119,106 +122,100 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       return
     }
 
+    let lastDataMap: unknown = null
+
     return autorun(() => {
       const dataMap = model.rpcDataMap
-      if (dataMap.size === 0) {
-        renderer.pruneRegions([])
-        return
-      }
 
-      const modelSources = model.sources
-      const defaultPosColor = parseColor(model.posColor)
-      const defaultNegColor = parseColor(model.negColor)
-      const { summaryScoreMode, renderingType } = model
-      const overlay = isOverlayMode(renderingType)
-      const activeRegions: number[] = []
-      for (const [regionNumber, data] of dataMap) {
-        activeRegions.push(regionNumber)
-        const sourcesByName = Object.fromEntries(
-          data.sources.map(s => [s.name, s]),
-        )
-        const orderedSources =
-          modelSources.length > 0 ? modelSources : data.sources
-        const sourcesData: SourceRenderData[] = []
-        let rowCounter = 0
-        for (const orderedSource of orderedSources) {
-          const rpcSource = sourcesByName[orderedSource.name]
-          if (!rpcSource) {
-            continue
+      if (lastDataMap !== dataMap) {
+        lastDataMap = dataMap
+        if (dataMap.size === 0) {
+          renderer.pruneRegions([])
+        } else {
+          const modelSources = model.sources
+          const defaultPosColor = parseColor(model.posColor)
+          const defaultNegColor = parseColor(model.negColor)
+          const { summaryScoreMode, renderingType } = model
+          const overlay = isOverlayMode(renderingType)
+          const activeRegions: number[] = []
+          for (const [regionNumber, data] of dataMap) {
+            activeRegions.push(regionNumber)
+            const sourcesByName = Object.fromEntries(
+              data.sources.map(s => [s.name, s]),
+            )
+            const orderedSources =
+              modelSources.length > 0 ? modelSources : data.sources
+            const sourcesData: SourceRenderData[] = []
+            let rowCounter = 0
+            for (const orderedSource of orderedSources) {
+              const rpcSource = sourcesByName[orderedSource.name]
+              if (!rpcSource) {
+                continue
+              }
+
+              const posColor = orderedSource.color
+                ? parseColor(orderedSource.color)
+                : defaultPosColor
+              const negColor = overlay ? posColor : defaultNegColor
+              const row = overlay ? 0 : rowCounter
+              rowCounter++
+
+              if (summaryScoreMode === 'whiskers') {
+                for (const s of makeWhiskersSourceData(
+                  rpcSource,
+                  posColor,
+                  model.isDensityMode,
+                  isScatterMode(renderingType),
+                  row,
+                )) {
+                  sourcesData.push(s)
+                }
+              } else if (
+                summaryScoreMode === 'min' ||
+                summaryScoreMode === 'max'
+              ) {
+                const scores =
+                  summaryScoreMode === 'min'
+                    ? rpcSource.featureMinScores
+                    : rpcSource.featureMaxScores
+                sourcesData.push({
+                  featurePositions: rpcSource.featurePositions,
+                  featureScores: scores,
+                  numFeatures: rpcSource.numFeatures,
+                  color: posColor,
+                  rowIndex: row,
+                })
+              } else {
+                if (rpcSource.posNumFeatures > 0) {
+                  sourcesData.push({
+                    featurePositions: rpcSource.posFeaturePositions,
+                    featureScores: rpcSource.posFeatureScores,
+                    numFeatures: rpcSource.posNumFeatures,
+                    color: posColor,
+                    rowIndex: row,
+                  })
+                }
+                if (rpcSource.negNumFeatures > 0) {
+                  sourcesData.push({
+                    featurePositions: rpcSource.negFeaturePositions,
+                    featureScores: rpcSource.negFeatureScores,
+                    numFeatures: rpcSource.negNumFeatures,
+                    color: negColor,
+                    rowIndex: row,
+                  })
+                }
+              }
+            }
+
+            renderer.uploadRegion(regionNumber, data.regionStart, sourcesData)
           }
-
-          const posColor = orderedSource.color
-            ? parseColor(orderedSource.color)
-            : defaultPosColor
-          const negColor = overlay ? posColor : defaultNegColor
-          const row = overlay ? 0 : rowCounter
-          rowCounter++
-
-          if (summaryScoreMode === 'whiskers') {
-            for (const s of makeWhiskersSourceData(
-              rpcSource,
-              posColor,
-              model.isDensityMode,
-              isScatterMode(renderingType),
-              row,
-            )) {
-              sourcesData.push(s)
-            }
-          } else if (summaryScoreMode === 'min' || summaryScoreMode === 'max') {
-            const scores =
-              summaryScoreMode === 'min'
-                ? rpcSource.featureMinScores
-                : rpcSource.featureMaxScores
-            sourcesData.push({
-              featurePositions: rpcSource.featurePositions,
-              featureScores: scores,
-              numFeatures: rpcSource.numFeatures,
-              color: posColor,
-              rowIndex: row,
-            })
-          } else {
-            if (rpcSource.posNumFeatures > 0) {
-              sourcesData.push({
-                featurePositions: rpcSource.posFeaturePositions,
-                featureScores: rpcSource.posFeatureScores,
-                numFeatures: rpcSource.posNumFeatures,
-                color: posColor,
-                rowIndex: row,
-              })
-            }
-            if (rpcSource.negNumFeatures > 0) {
-              sourcesData.push({
-                featurePositions: rpcSource.negFeaturePositions,
-                featureScores: rpcSource.negFeatureScores,
-                numFeatures: rpcSource.negNumFeatures,
-                color: negColor,
-                rowIndex: row,
-              })
-            }
-          }
+          renderer.pruneRegions(activeRegions)
         }
-
-        renderer.uploadRegion(regionNumber, data.regionStart, sourcesData)
       }
-      renderer.pruneRegions(activeRegions)
-    })
-  }, [model, ready, rendererRef])
 
-  useEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !ready) {
-      return
-    }
-
-    return autorun(() => {
       if (!view.initialized) {
         return
       }
-
-      // access sources so MobX tracks it as a dependency,
-      // ensuring re-render when source order/filtering changes
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _sources = model.sources
 
       // See dataVersion comment in MultiRegionDisplayMixin.
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -437,17 +434,16 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   const height = model.height
   const scalebarLeft = model.scalebarOverlapLeft
 
-  if (error !== null || model.error) {
+  if (error) {
     return (
-      <div style={{ position: 'relative', width: totalWidth, height }}>
-        <ErrorBar
-          error={error ?? model.error}
-          onRetry={() => {
-            retry()
-            model.reload()
-          }}
-        />
-      </div>
+      <ErrorOverlay
+        error={error}
+        width={totalWidth}
+        height={height}
+        onRetry={() => {
+          retry()
+        }}
+      />
     )
   }
 
@@ -615,6 +611,14 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         offsetMouseCoord={offsetMouseCoord}
       />
 
+      {model.error ? (
+        <ErrorBar
+          error={model.error}
+          onRetry={() => {
+            model.reload()
+          }}
+        />
+      ) : null}
       <LoadingOverlay
         statusMessage={model.statusMessage || 'Loading'}
         isVisible={model.isLoading}

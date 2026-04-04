@@ -4,6 +4,7 @@ import { setupWebGLContextLossHandler } from './webglContextLoss.ts'
 
 interface GpuRenderer {
   init(): Promise<boolean>
+  dispose(): void
 }
 
 interface GpuRendererCache<R extends GpuRenderer> {
@@ -78,11 +79,15 @@ export function useGpuRenderer<R extends GpuRenderer>(
       })
     return () => {
       cancelled = true
+      renderer.dispose()
       rendererRef.current = null
       setReady(false)
       opts?.onDispose?.()
     }
-  }, [contextVersion, rendererCache, canvasRef, opts])
+  // opts callbacks (onReady/onDispose) are intentionally omitted from deps —
+  // callers must pass stable references (e.g. useMemo)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contextVersion, rendererCache, canvasRef])
 
   function retry() {
     setError(null)

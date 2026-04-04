@@ -314,10 +314,6 @@ export default function MultiSampleVariantBaseModelF(
       setContextMenuFeature(feature?: Feature) {
         self.contextMenuFeature = feature
       },
-      retryLoadingData() {
-        self.displayError = undefined
-        self.errorRetryCount++
-      },
     }))
     .views(self => ({
       /**
@@ -1149,6 +1145,7 @@ export default function MultiSampleVariantBaseModelF(
       const superReload = self.reload
       return {
         reload() {
+          self.displayError = undefined
           self.setRegionTooLarge(false)
           self.errorRetryCount++
           superReload()

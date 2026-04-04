@@ -39,6 +39,7 @@ export interface LinearReferenceSequenceDisplayModel {
   rowHeight: number
   sequenceHeight: number
   showLoading: boolean
+  reload: () => void
 }
 
 export const WebGLSequenceComponent = lazy(
