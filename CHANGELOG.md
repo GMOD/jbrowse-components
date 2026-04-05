@@ -1,3 +1,27 @@
+## Changes since v4.1.14 (2026-03-08)
+
+### bug
+
+- Fix MM tag ambiguity codes not being recognized
+  ([#5529](https://github.com/GMOD/jbrowse-components/pull/5529)) @cmdcolin
+- Fix when using refname aliases for chromosome names in displayedRegions list
+  ([#5522](https://github.com/GMOD/jbrowse-components/pull/5522)) @cmdcolin
+- Fix arc tracks with custom jexl crashing
+  ([#5513](https://github.com/GMOD/jbrowse-components/pull/5513)) @cmdcolin
+- Fix alignments tracks not being able to vertically scroll since v4.1.4
+  ([#5512](https://github.com/GMOD/jbrowse-components/pull/5512)) @cmdcolin
+- Fix HTTP 416 errors by replacing http-range-fetcher with simpler fetcher
+  ([#5505](https://github.com/GMOD/jbrowse-components/pull/5505)) @cmdcolin
+
+### enhancement
+
+- Update dependencies
+  ([#5527](https://github.com/GMOD/jbrowse-components/pull/5527)) @cmdcolin
+- Add debounce to hierarchical search text field
+  ([#5517](https://github.com/GMOD/jbrowse-components/pull/5517)) @cmdcolin
+- Use Element setHTML if available
+  ([#5507](https://github.com/GMOD/jbrowse-components/pull/5507)) @cmdcolin
+
 ## Changes since v4.1.13 (2026-02-20)
 
 ### bug

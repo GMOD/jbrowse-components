@@ -1,6 +1,5 @@
 import Alert from '@mui/material/Alert'
 import AlertTitle from '@mui/material/AlertTitle'
-import clsx from 'clsx'
 import Link from '@docusaurus/Link'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
@@ -14,7 +13,7 @@ function Header() {
 
   return (
     <header
-      className={clsx('hero hero--primary', styles.heroBanner)}
+      className={`hero hero--primary ${styles.heroBanner}`}
       style={{ backgroundColor: '#135560' }}
     >
       <div className="container">

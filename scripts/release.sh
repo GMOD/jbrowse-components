@@ -26,7 +26,7 @@ pnpm test
 
 # Calculate new version
 PREVIOUS_VERSION=$(node --print "require('./plugins/alignments/package.json').version")
-VERSION=4.1.14
+VERSION=4.1.15
 RELEASE_TAG=v$VERSION
 
 # Check for blog post draft
