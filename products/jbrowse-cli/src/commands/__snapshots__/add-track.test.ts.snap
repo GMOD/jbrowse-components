@@ -602,7 +602,7 @@ exports[`fails if URL with load flag is passed 1`] = `"Error: The --load flag is
 exports[`fails if it cannot assume the assemblyname 1`] = `"Error: No assemblies found. Please add one before adding tracks"`;
 
 exports[`fails if load flag is not passed in for a localFile 1`] = `
-"(node:46182) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+"(node:PID) ExperimentalWarning: SQLite is an experimental feature and might change at any time
 (Use \`node --trace-warnings ...\` to show where the warning was created)
 Error: The --load flag should be used if a local file is used, example --load
         copy to copy the file into the config directory. Options for load are

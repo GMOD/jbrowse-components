@@ -37,12 +37,12 @@ test('fails if no config file', async () => {
     'add-connection',
     'https://example.com/hub.txt',
   ])
-  expect(error?.message).toMatchSnapshot()
+  expect(error?.message?.replace(/\(node:\d+\)/g, '(node:PID)')).toMatchSnapshot()
 })
 
 test('fails if data directory is not an url', async () => {
   const { error } = await runCommand(['add-connection .'])
-  expect(error?.message).toMatchSnapshot()
+  expect(error?.message?.replace(/\(node:\d+\)/g, '(node:PID)')).toMatchSnapshot()
 })
 
 test('fails when fetching from url fails', async () => {
@@ -51,7 +51,7 @@ test('fails when fetching from url fails', async () => {
     'add-connection',
     'https://mysite.com/notafile.txt',
   ])
-  expect(error?.message).toMatchSnapshot()
+  expect(error?.message?.replace(/\(node:\d+\)/g, '(node:PID)')).toMatchSnapshot()
 })
 
 test('adds an UCSCTrackHubConnection connection from a url', async () => {
@@ -114,7 +114,7 @@ test('fails to add a duplicate connection', async () => {
       '--config',
       '{"url":{"uri":"https://mysite.com/custom"},"locationType":"UriLocation"}',
     ])
-    expect(error?.message).toMatchSnapshot()
+    expect(error?.message?.replace(/\(node:\d+\)/g, '(node:PID)')).toMatchSnapshot()
   })
 })
 
