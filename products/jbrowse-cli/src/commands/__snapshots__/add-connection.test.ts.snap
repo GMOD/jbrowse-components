@@ -51,7 +51,7 @@ Available commands: create, add-assembly, add-track, text-index, admin-server, u
 `;
 
 exports[`fails if no config file 1`] = `
-"(node:43660) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+"(node:46184) ExperimentalWarning: SQLite is an experimental feature and might change at any time
 (Use \`node --trace-warnings ...\` to show where the warning was created)
 Error: Error: ENOENT: no such file or directory, open './config.json'"
 `;

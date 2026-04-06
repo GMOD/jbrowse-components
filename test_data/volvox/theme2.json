@@ -147,7 +147,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram_pileup",
-      "name": "volvox-sorted.cram (contigA, LinearAlignmentsDisplay)",
+      "name": "volvox-sorted.cram (contigA, LinearPileupDisplay)",
       "category": ["Integration test"],
       "metadata": {
         "source": "We generated 150bp paired end reads from a <i>Volvox mythicus</i>, an imaginary species, for this jbrowse demo"
@@ -167,7 +167,7 @@
       },
       "displays": [
         {
-          "type": "LinearAlignmentsDisplay",
+          "type": "LinearPileupDisplay",
           "displayId": "volvox_cram_pileup_pileup"
         }
       ]
@@ -175,7 +175,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram_snpcoverage",
-      "name": "volvox-sorted.cram (contigA, LinearAlignmentsDisplay)",
+      "name": "volvox-sorted.cram (contigA, LinearSNPCoverageDisplay)",
       "category": ["Integration test"],
       "assemblyNames": ["volvox"],
       "adapter": {
@@ -191,7 +191,7 @@
       },
       "displays": [
         {
-          "type": "LinearAlignmentsDisplay",
+          "type": "LinearSNPCoverageDisplay",
           "displayId": "volvox_cram_snpcoverage_snpcoverage"
         }
       ]
@@ -217,7 +217,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram_pileup_ctga",
-      "name": "volvox-sorted.cram (ctgA, LinearAlignmentsDisplay)",
+      "name": "volvox-sorted.cram (ctgA, LinearPileupDisplay)",
       "category": ["Integration test"],
       "assemblyNames": ["volvox"],
       "adapter": {
@@ -233,7 +233,7 @@
       },
       "displays": [
         {
-          "type": "LinearAlignmentsDisplay",
+          "type": "LinearPileupDisplay",
           "displayId": "volvox_cram_pileup_ctga_pileup"
         }
       ]
@@ -241,7 +241,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram_snpcoverage_ctga",
-      "name": "volvox-sorted.cram (ctgA, LinearAlignmentsDisplay)",
+      "name": "volvox-sorted.cram (ctgA, LinearSNPCoverageDisplay)",
       "category": ["Integration test"],
       "assemblyNames": ["volvox"],
       "adapter": {
@@ -257,7 +257,7 @@
       },
       "displays": [
         {
-          "type": "LinearAlignmentsDisplay",
+          "type": "LinearSNPCoverageDisplay",
           "displayId": "volvox_cram_pileup_ctga_snpcoverage"
         }
       ]
@@ -284,14 +284,18 @@
       "displays": [
         {
           "type": "LinearAlignmentsDisplay",
-          "displayId": "volvox_alignments_alignments"
+          "displayId": "volvox_alignments_alignments",
+          "pileupDisplay": {
+            "type": "LinearPileupDisplay",
+            "displayId": "volvox_bam_altname_alignments_pileup"
+          }
         }
       ]
     },
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_bam_snpcoverage",
-      "name": "volvox-sorted.bam (contigA LinearAlignmentsDisplay)",
+      "name": "volvox-sorted.bam (contigA LinearSNPCoverageDisplay)",
       "category": ["Integration test"],
       "assemblyNames": ["volvox"],
       "adapter": {
@@ -309,7 +313,7 @@
       },
       "displays": [
         {
-          "type": "LinearAlignmentsDisplay",
+          "type": "LinearSNPCoverageDisplay",
           "displayId": "volvox_bam_snpcoverage_snpcoverage"
         }
       ]
@@ -317,7 +321,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_bam_pileup",
-      "name": "volvox-sorted.bam (contigA LinearAlignmentsDisplay)",
+      "name": "volvox-sorted.bam (contigA LinearPileupDisplay)",
       "category": ["Integration test"],
       "assemblyNames": ["volvox"],
       "adapter": {
@@ -335,7 +339,7 @@
       },
       "displays": [
         {
-          "type": "LinearAlignmentsDisplay",
+          "type": "LinearPileupDisplay",
           "displayId": "volvox_bam_pileup_pileup"
         }
       ]
