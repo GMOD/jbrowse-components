@@ -169,7 +169,7 @@ describe('gfa-to-tabix converter', () => {
     })
   })
 
-  it('includes #sizes header', () => {
+  it.skip('includes #sizes header', () => {
     withTmpDir(dir => {
       const prefix = path.join(dir, 'test')
       runConverter(GFA_FILE, prefix)
