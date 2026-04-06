@@ -9,7 +9,6 @@ import { run as addTrackJsonRun } from './commands/add-track-json.ts'
 import { run as addTrackRun } from './commands/add-track.ts'
 import { run as adminServerRun } from './commands/admin-server/index.ts'
 import { run as createRun } from './commands/create.ts'
-import { run as makeGfaDbRun } from './commands/make-gfa-db/index.ts'
 import { run as makePIFRun } from './commands/make-pif/index.ts'
 import { run as removeTrackRun } from './commands/remove-track.ts'
 import { run as setDefaultSessionRun } from './commands/set-default-session.ts'
@@ -26,7 +25,10 @@ const commands = {
   'text-index': textIndexRun,
   'admin-server': adminServerRun,
   upgrade: upgradeRun,
-  'make-gfa-db': makeGfaDbRun,
+  'make-gfa-db': async (args: string[]) => {
+    const { run } = await import('./commands/make-gfa-db/index.ts')
+    return run(args)
+  },
   'make-pif': makePIFRun,
   'sort-gff': sortGffRun,
   'sort-bed': sortBedRun,

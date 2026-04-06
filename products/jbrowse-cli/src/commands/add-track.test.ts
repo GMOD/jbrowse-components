@@ -48,7 +48,7 @@ test('fails if no track is specified', async () => {
 
 test('fails if load flag is not passed in for a localFile', async () => {
   const { error } = await runCommand(['add-track', simpleBam])
-  expect(error?.message?.replace(/\(node:\d+\)/g, '(node:PID)')).toMatchSnapshot()
+  expect(error?.message).toMatchSnapshot()
 })
 
 test('fails if URL with load flag is passed', async () => {

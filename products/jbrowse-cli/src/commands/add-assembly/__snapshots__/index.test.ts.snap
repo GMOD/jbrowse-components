@@ -1,10 +1,6 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`add-assembly no load flag 1`] = `
-"(node:PID) ExperimentalWarning: SQLite is an experimental feature and might change at any time
-(Use \`node --trace-warnings ...\` to show where the warning was created)
-Error: Please specify the loading operation for this file with --load copy|symlink|move|inPlace"
-`;
+exports[`add-assembly no load flag 1`] = `"Error: Please specify the loading operation for this file with --load copy|symlink|move|inPlace"`;
 
 exports[`adds an assembly from a 2bit 1`] = `
 {
