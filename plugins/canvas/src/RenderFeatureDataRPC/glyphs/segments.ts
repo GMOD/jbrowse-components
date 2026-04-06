@@ -7,7 +7,7 @@ export const segmentsGlyph: Glyph = {
   type: 'Segments',
 
   layout(args: LayoutArgs): FeatureLayout {
-    const { feature, bpPerPx, reversed, configContext } = args
+    const { feature, bpPerPx, configContext } = args
     const { config, featureHeight, heightMultiplier } = configContext
 
     const start = feature.get('start')

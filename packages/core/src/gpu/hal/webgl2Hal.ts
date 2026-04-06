@@ -19,7 +19,7 @@ function glBlendFactor(
 }
 
 interface TextureState {
-  texture: WebGLTexture
+  texture: WebGLTexture | null
   unit: number
   uniformLoc: WebGLUniformLocation | null
 }

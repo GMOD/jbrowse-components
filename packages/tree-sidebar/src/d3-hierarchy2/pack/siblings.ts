@@ -70,7 +70,7 @@ export function packSiblingsRandom(circles, random) {
   let sj
   let sk
 
-  // Place the first circle.
+    // Place the first circle.
   ;((a = circles[0]), (a.x = 0), (a.y = 0))
   if (!(n > 1)) {
     return a.r
@@ -113,9 +113,11 @@ export function packSiblingsRandom(circles, random) {
         }
         ;((sk += k._.r), (k = k.previous))
       }
-    } while (j !== k.next)
+    } while (
+      j !== k.next
 
-    // Success! Insert the new circle c between a and b.
+      // Success! Insert the new circle c between a and b.
+    )
     ;((c.previous = a), (c.next = b), (a.next = b.previous = b = c))
 
     // Compute the new closest circle pair to the centroid.

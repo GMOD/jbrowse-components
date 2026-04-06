@@ -12,6 +12,7 @@ export async function createGpuHal(
   const override = getGpuOverride()
 
   if (override === 'canvas2d' || override === 'off') {
+    // eslint-disable-next-line no-console
     console.log('[GPU] Rendering disabled via URL parameter')
     return null
   }
@@ -20,11 +21,16 @@ export async function createGpuHal(
     try {
       const webgpu = await WebGPUHal.create(canvas, passes, uniformByteSize)
       if (webgpu) {
+        // eslint-disable-next-line no-console
         console.log('[GPU] Using WebGPU renderer')
         return webgpu
       }
     } catch (e) {
-      console.log('[GPU] WebGPU initialization failed, falling back to WebGL2:', e)
+      // eslint-disable-next-line no-console
+      console.log(
+        '[GPU] WebGPU initialization failed, falling back to WebGL2:',
+        e,
+      )
     }
   }
 

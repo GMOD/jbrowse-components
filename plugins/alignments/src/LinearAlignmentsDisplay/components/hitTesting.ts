@@ -104,7 +104,7 @@ function calculateBpPerPx(
 function canvasXToGenomicPosition(
   canvasX: number,
   resolved: ResolvedBlock,
-  bpPerPx: number,
+  _bpPerPx: number,
 ): number {
   const { bpRange, blockStartPx, blockWidth } = resolved
   const frac = (canvasX - blockStartPx) / blockWidth

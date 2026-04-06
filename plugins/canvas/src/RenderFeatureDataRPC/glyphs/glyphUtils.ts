@@ -20,7 +20,7 @@ export function layoutChild(
   args: LayoutArgs,
   glyphType = 'Box',
 ): FeatureLayout {
-  const { bpPerPx, reversed, configContext } = args
+  const { bpPerPx, configContext } = args
   const { config, featureHeight, heightMultiplier } = configContext
 
   const heightPx = readCachedConfig(featureHeight, config, 'height', child)
@@ -29,7 +29,6 @@ export function layoutChild(
   const childStart = child.get('start')
   const childEnd = child.get('end')
   const parentStart = parentFeature.get('start')
-  const parentEnd = parentFeature.get('end')
 
   const widthPx = (childEnd - childStart) / bpPerPx
 

@@ -132,7 +132,6 @@ function emitCodonData(opts: {
     y,
     height,
     strand,
-    reversed,
     flatbushIdx,
   } = opts
   const baseHex = formatHEX(parseCssColor(baseColor))

@@ -369,7 +369,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     start: number,
     end: number,
     queryGenome: string,
-    opts: { stopToken?: BaseOptions['stopToken'] },
+    _opts: { stopToken?: BaseOptions['stopToken'] },
   ) {
     const features: MultiPairFeature[] = []
     const isStructural = prefix.startsWith('x')
@@ -407,6 +407,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             mateRefName: r.tname,
             mateStart: r.tstart,
             mateEnd: r.tend,
+            // eslint-disable-next-line unicorn/prefer-logical-operator-over-ternary
             syriType: extra.sy ? (extra.sy as SyriType) : undefined,
             identity: (+extra.numMatches! || 0) / (+extra.blockLen! || 1),
             featureId: `${fileOffset}`,

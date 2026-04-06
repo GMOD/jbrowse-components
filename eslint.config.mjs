@@ -37,8 +37,10 @@ export default defineConfig(
       'packages/core/src/util/map-obj',
       'packages/core/src/util/nanoid.js',
       'packages/core/src/ReExports/material-ui-colors.js',
+      'packages/tree-sidebar/src/d3-hierarchy2',
       'plugins/variants/src/d3-hierarchy2',
       'plugins/wiggle/src/d3-hierarchy2',
+      'plugins/alignments/src/CramAdapter/testNA12878.mjs',
 
       // Desktop tests
       'products/jbrowse-desktop/test/specs/test.e2e.ts',

@@ -7,7 +7,7 @@ export const boxGlyph: Glyph = {
   type: 'Box',
 
   layout(args: LayoutArgs): FeatureLayout {
-    const { feature, bpPerPx, reversed, configContext } = args
+    const { feature, bpPerPx, configContext } = args
     const { config, featureHeight, heightMultiplier } = configContext
 
     const height = readCachedConfig(featureHeight, config, 'height', feature)

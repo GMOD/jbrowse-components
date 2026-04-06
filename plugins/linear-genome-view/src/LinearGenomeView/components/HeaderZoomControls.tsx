@@ -78,7 +78,7 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
         max={-Math.log2(minBpPerPx) * 100}
         onChangeCommitted={(_, val) => {
           setDragValue(null)
-          model.zoomTo(2 ** (-(val as number) / 100))
+          model.zoomTo(2 ** (-val / 100))
         }}
         valueLabelDisplay="auto"
         valueLabelFormat={newValue =>
@@ -88,7 +88,7 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
           valueLabel: ValueLabelComponent,
         }}
         onChange={(_, val) => {
-          setDragValue(val as number)
+          setDragValue(val)
         }}
       />
       <Tooltip title="Zoom in 2x">

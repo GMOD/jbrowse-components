@@ -43,7 +43,6 @@ import type {
   ExportSvgDisplayOptions,
   FetchContext,
   LinearGenomeViewModel,
-  MultiRegionRegion as Region,
   MultiRegionRegionWithNumber as RegionWithNumber,
 } from '@jbrowse/plugin-linear-genome-view'
 import type { HoveredTreeNode } from '@jbrowse/tree-sidebar'

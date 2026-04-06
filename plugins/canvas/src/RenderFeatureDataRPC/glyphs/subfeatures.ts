@@ -48,7 +48,7 @@ export const subfeaturesGlyph: Glyph = {
   type: 'Subfeatures',
 
   layout(args: LayoutArgs): FeatureLayout {
-    const { feature, bpPerPx, reversed, configContext } = args
+    const { feature, bpPerPx, configContext } = args
     const {
       config,
       featureHeight,

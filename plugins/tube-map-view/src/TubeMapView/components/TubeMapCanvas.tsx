@@ -300,12 +300,6 @@ const TubeMapCanvas = observer(function TubeMapCanvas({
   const svgRef = useRef<SVGSVGElement>(null)
   const isPanning = useRef(false)
   const lastPos = useRef({ x: 0, y: 0 })
-
-  const layout = model.layout
-  if (!layout) {
-    return null
-  }
-
   const { xMin, xMax, yMin, yMax } = useVisibleRange(
     model.scale,
     model.translateX,
@@ -313,6 +307,11 @@ const TubeMapCanvas = observer(function TubeMapCanvas({
     model.width,
     CANVAS_HEIGHT,
   )
+
+  const layout = model.layout
+  if (!layout) {
+    return null
+  }
 
   function handleWheel(e: React.WheelEvent) {
     e.preventDefault()

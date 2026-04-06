@@ -341,8 +341,7 @@ function applyVerticalPositions(
 ) {
   const startY = 20
 
-  for (let order = 0; order < assignments.length; order++) {
-    const slot = assignments[order]!
+  for (const slot of assignments) {
     let y = startY
 
     for (const assignment of slot) {

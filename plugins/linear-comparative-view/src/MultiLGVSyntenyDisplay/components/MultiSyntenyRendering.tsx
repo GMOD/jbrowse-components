@@ -421,7 +421,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       }
       const x = e.clientX - rect.left
       const bp = view.pxToBp(x + view.offsetPx)
-      if (!bp || bp.oob) {
+      if (bp.oob) {
         return undefined
       }
       const data = model.rpcDataMap.get(bp.index)

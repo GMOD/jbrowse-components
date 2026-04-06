@@ -118,7 +118,7 @@ function makeGpuOpsVisitor(
         a,
       )
     },
-    onInsertion(refPos: number, len: number) {
+    onInsertion(refPos: number, _len: number) {
       const [r, g, b, a] = rgba.insertion
       addInstance(builder, refPos, refPos, genomeRow, featureId, r, g, b, a)
     },

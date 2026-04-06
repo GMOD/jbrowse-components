@@ -2,9 +2,9 @@
 
 ## GPU rendering (plugins/canvas, packages/core/src/gpu)
 
-Shader uniforms `canvas_width`/`canvas_height` are CSS pixels. The HAL sets
-the canvas backing store to `css * dpr`, so `N / canvas_width` in clip space =
-`N` CSS pixels at any DPR. Do NOT manually scale by devicePixelRatio.
+Shader uniforms `canvas_width`/`canvas_height` are CSS pixels. The HAL sets the
+canvas backing store to `css * dpr`, so `N / canvas_width` in clip space = `N`
+CSS pixels at any DPR. Do NOT manually scale by devicePixelRatio.
 
 WebGPU uses 4x MSAA; WebGL2 uses `antialias: true`. Picking passes skip MSAA.
 

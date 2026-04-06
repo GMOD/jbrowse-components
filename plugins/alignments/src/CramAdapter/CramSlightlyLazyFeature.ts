@@ -267,11 +267,6 @@ export default class CramSlightlyLazyFeature implements Feature {
 
       if (code === 'X') {
         const refCharCode = rf.ref ? rf.ref.charCodeAt(0) & ~0x20 : 0
-        if (rf.sub === undefined) {
-          console.log(
-            `[DEBUG CramSlightlyLazyFeature] X feature missing sub: data=${(rf as { data?: number }).data} ref=${rf.ref} refPos=${rf.refPos} pos=${rf.pos}`,
-          )
-        }
         callback(
           MISMATCH_TYPE,
           refPos,

@@ -81,7 +81,7 @@ export async function waitForCanvasRendered(
 ) {
   await page.waitForFunction(
     (sel: string) => {
-      const canvas = document.querySelector(sel) as HTMLCanvasElement | null
+      const canvas = document.querySelector<HTMLCanvasElement>(sel)
       if (!canvas || canvas.width === 0 || canvas.height === 0) {
         return false
       }

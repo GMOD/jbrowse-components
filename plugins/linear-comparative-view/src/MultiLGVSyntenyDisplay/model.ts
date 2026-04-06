@@ -40,7 +40,6 @@ import type { SyntenyColors } from './components/multiSyntenyBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
-import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type {
   FetchContext,
   LinearGenomeViewModel,

@@ -97,9 +97,23 @@ import {
   U_COLOR_COVERAGE,
   U_COLOR_DELETION,
   U_COLOR_FWD,
+  U_COLOR_HARDCLIP,
+  U_COLOR_INSERTION,
+  U_COLOR_LONG_INSERT,
+  U_COLOR_MOD_FWD,
+  U_COLOR_MOD_REV,
   U_COLOR_NOSTRAND,
+  U_COLOR_PAIR_LL,
+  U_COLOR_PAIR_LR,
+  U_COLOR_PAIR_RL,
+  U_COLOR_PAIR_RR,
   U_COLOR_REV,
   U_COLOR_SCHEME,
+  U_COLOR_SHORT_INSERT,
+  U_COLOR_SKIP,
+  U_COLOR_SOFTCLIP,
+  U_COLOR_SUPPLEMENTARY,
+  U_COLOR_UNMAPPED_MATE,
   U_COV_HEIGHT,
   U_COV_OFFSET,
   U_COV_Y_OFFSET,
@@ -123,20 +137,6 @@ import {
   U_SASHIMI_COLORS,
   U_SCROLL_TOP,
   U_SHOW_STROKE,
-  U_COLOR_PAIR_LR,
-  U_COLOR_PAIR_RL,
-  U_COLOR_PAIR_RR,
-  U_COLOR_PAIR_LL,
-  U_COLOR_INSERTION,
-  U_COLOR_SKIP,
-  U_COLOR_SOFTCLIP,
-  U_COLOR_HARDCLIP,
-  U_COLOR_MOD_FWD,
-  U_COLOR_MOD_REV,
-  U_COLOR_LONG_INSERT,
-  U_COLOR_SHORT_INSERT,
-  U_COLOR_SUPPLEMENTARY,
-  U_COLOR_UNMAPPED_MATE,
 } from './wgsl/common.ts'
 import {
   COVERAGE_WGSL,
@@ -998,7 +998,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
   renderBlocks(blocks: RenderBlock[], state: RenderState) {
     const { canvasWidth, canvasHeight } = state
     const dpr = window.devicePixelRatio || 1
-    const bufW = Math.round(canvasWidth * dpr)
     const bufH = Math.round(canvasHeight * dpr)
     this.hal.resize(canvasWidth, canvasHeight)
     this.hal.beginFrame(0, 0, 0, 0)

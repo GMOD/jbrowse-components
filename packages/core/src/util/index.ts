@@ -14,7 +14,6 @@ import {
 import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 
-import { makeDisplayedRegionKey } from './blockTypes.ts'
 import { coarseStripHTML } from './coarseStripHTML.ts'
 import { colord } from './colord.ts'
 import { parseLocString } from './locString.ts'

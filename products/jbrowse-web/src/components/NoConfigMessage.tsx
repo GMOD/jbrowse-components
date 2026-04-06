@@ -26,7 +26,8 @@ function LinkList({
           return params.get('config')
         }
 
-        const configForRenderers = config || (href ? extractConfigFromHref(href) : null)
+        const configForRenderers =
+          config || (href ? extractConfigFromHref(href) : null)
 
         const defaultRenderers: readonly string[] = [
           'webgpu',
@@ -50,8 +51,12 @@ function LinkList({
                           ? buildUrl(configForRenderers, { renderer: r })
                           : finalHref
                       }
-                      onMouseEnter={() => setHoveredBadge(badgeId)}
-                      onMouseLeave={() => setHoveredBadge(null)}
+                      onMouseEnter={() => {
+                        setHoveredBadge(badgeId)
+                      }}
+                      onMouseLeave={() => {
+                        setHoveredBadge(null)
+                      }}
                       style={{
                         color: hoveredBadge === badgeId ? '#000' : '#666',
                         textDecoration:

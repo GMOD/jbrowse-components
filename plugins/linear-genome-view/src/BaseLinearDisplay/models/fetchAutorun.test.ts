@@ -8,8 +8,8 @@ function shouldFetchRegion(
   const loaded = loadedRegions.get(vr.regionNumber)
   const boundsValid =
     loaded?.refName === vr.region.refName &&
-    vr.region.start >= (loaded?.start ?? Infinity) &&
-    vr.region.end <= (loaded?.end ?? -Infinity)
+    vr.region.start >= loaded.start &&
+    vr.region.end <= loaded.end
   if (boundsValid && isCacheValid(vr.regionNumber)) {
     return false
   }

@@ -1,3 +1,4 @@
+/* eslint-disable react-compiler/react-compiler */
 import { useEffect, useRef, useState } from 'react'
 
 import { setupWebGLContextLossHandler } from './webglContextLoss.ts'
