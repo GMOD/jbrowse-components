@@ -22,6 +22,8 @@ export type {
 } from './wiggleBackendTypes.ts'
 
 export class WiggleRenderer {
+  private static cache = new WeakMap<HTMLCanvasElement, WiggleRenderer>()
+
   private canvas: HTMLCanvasElement
   private backend: WiggleBackend | null = null
 
@@ -30,7 +32,12 @@ export class WiggleRenderer {
   }
 
   static getOrCreate(canvas: HTMLCanvasElement) {
-    return new WiggleRenderer(canvas)
+    let r = WiggleRenderer.cache.get(canvas)
+    if (!r) {
+      r = new WiggleRenderer(canvas)
+      WiggleRenderer.cache.set(canvas, r)
+    }
+    return r
   }
 
   async init() {

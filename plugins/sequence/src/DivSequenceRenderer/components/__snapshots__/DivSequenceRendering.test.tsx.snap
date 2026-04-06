@@ -152,7 +152,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       <text
         dominant-baseline="middle"
         fill="#fff"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="19970"
         y="70"
@@ -170,7 +170,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="19950"
         y="70"
@@ -188,7 +188,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       <text
         dominant-baseline="middle"
         fill="rgba(0, 0, 0, 0.87)"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="19930"
         y="70"
@@ -206,7 +206,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="19910"
         y="70"
@@ -224,7 +224,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="19890"
         y="70"
@@ -242,7 +242,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="19870"
         y="70"
@@ -260,7 +260,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       <text
         dominant-baseline="middle"
         fill="#fff"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="19850"
         y="70"
@@ -278,7 +278,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="19830"
         y="70"
@@ -296,7 +296,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="19810"
         y="70"
@@ -316,7 +316,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       <text
         dominant-baseline="middle"
         fill="rgba(0, 0, 0, 0.87)"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="19970"
         y="90"
@@ -334,7 +334,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="19950"
         y="90"
@@ -352,7 +352,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       <text
         dominant-baseline="middle"
         fill="#fff"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="19930"
         y="90"
@@ -370,7 +370,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="19910"
         y="90"
@@ -388,7 +388,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="19890"
         y="90"
@@ -406,7 +406,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="19870"
         y="90"
@@ -424,7 +424,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       <text
         dominant-baseline="middle"
         fill="rgba(0, 0, 0, 0.87)"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="19850"
         y="90"
@@ -442,7 +442,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="19830"
         y="90"
@@ -460,7 +460,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="19810"
         y="90"
@@ -756,7 +756,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       <text
         dominant-baseline="middle"
         fill="rgba(0, 0, 0, 0.87)"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="30"
         y="70"
@@ -774,7 +774,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="50"
         y="70"
@@ -792,7 +792,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       <text
         dominant-baseline="middle"
         fill="#fff"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="70"
         y="70"
@@ -810,7 +810,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="90"
         y="70"
@@ -828,7 +828,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="110"
         y="70"
@@ -846,7 +846,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="130"
         y="70"
@@ -864,7 +864,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       <text
         dominant-baseline="middle"
         fill="rgba(0, 0, 0, 0.87)"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="150"
         y="70"
@@ -882,7 +882,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="170"
         y="70"
@@ -900,7 +900,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="190"
         y="70"
@@ -920,7 +920,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       <text
         dominant-baseline="middle"
         fill="#fff"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="30"
         y="90"
@@ -938,7 +938,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="50"
         y="90"
@@ -956,7 +956,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       <text
         dominant-baseline="middle"
         fill="rgba(0, 0, 0, 0.87)"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="70"
         y="90"
@@ -974,7 +974,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="90"
         y="90"
@@ -992,7 +992,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="110"
         y="90"
@@ -1010,7 +1010,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="130"
         y="90"
@@ -1028,7 +1028,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       <text
         dominant-baseline="middle"
         fill="#fff"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="150"
         y="90"
@@ -1046,7 +1046,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="170"
         y="90"
@@ -1064,7 +1064,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="190"
         y="90"
@@ -1270,7 +1270,7 @@ exports[`renders with one feature with an incorrect seq, zoomed in, should throw
       <text
         dominant-baseline="middle"
         fill="rgba(0, 0, 0, 0.87)"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="30"
         y="70"
@@ -1288,7 +1288,7 @@ exports[`renders with one feature with an incorrect seq, zoomed in, should throw
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="50"
         y="70"
@@ -1306,7 +1306,7 @@ exports[`renders with one feature with an incorrect seq, zoomed in, should throw
       <text
         dominant-baseline="middle"
         fill="#fff"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="70"
         y="70"
@@ -1326,7 +1326,7 @@ exports[`renders with one feature with an incorrect seq, zoomed in, should throw
       <text
         dominant-baseline="middle"
         fill="#fff"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="30"
         y="90"
@@ -1344,7 +1344,7 @@ exports[`renders with one feature with an incorrect seq, zoomed in, should throw
       <text
         dominant-baseline="middle"
         fill="black"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="50"
         y="90"
@@ -1362,7 +1362,7 @@ exports[`renders with one feature with an incorrect seq, zoomed in, should throw
       <text
         dominant-baseline="middle"
         fill="rgba(0, 0, 0, 0.87)"
-        font-size="18"
+        font-size="14"
         text-anchor="middle"
         x="70"
         y="90"

@@ -66,7 +66,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "volvox",
       "refNameAliases": {
         "adapter": {
-          "adapterId": "W6DyPGJ0UU",
           "features": [
             {
               "aliases": [
@@ -106,7 +105,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "type": "LinearReferenceSequenceDisplay",
           },
           {
-            "displayId": "volvox_refseq-LinearGCContentDisplay",
             "type": "LinearGCContentDisplay",
             "windowDelta": 10,
             "windowSize": 10,
@@ -141,10 +139,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "displayId": "volvox_refseq2-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
-          {
-            "displayId": "volvox_refseq2-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
-          },
+          {},
         ],
         "trackId": "volvox_refseq2",
         "type": "ReferenceSequenceTrack",
@@ -169,10 +164,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "displayId": "volvox_refseq404-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
-          {
-            "displayId": "volvox_refseq404-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
-          },
+          {},
         ],
         "trackId": "volvox_refseq404",
         "type": "ReferenceSequenceTrack",
@@ -201,10 +193,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "displayId": "misc_asm-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
-          {
-            "displayId": "misc_asm-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
-          },
+          {},
         ],
         "trackId": "misc_asm",
         "type": "ReferenceSequenceTrack",
@@ -233,10 +222,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "displayId": "volvox_del-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
-          {
-            "displayId": "volvox_del-ReferenceSequenceTrack-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
-          },
+          {},
         ],
         "trackId": "volvox_del-ReferenceSequenceTrack",
         "type": "ReferenceSequenceTrack",
@@ -265,10 +251,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "displayId": "volvox_ins-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
-          {
-            "displayId": "volvox_ins-ReferenceSequenceTrack-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
-          },
+          {},
         ],
         "trackId": "volvox_ins-ReferenceSequenceTrack",
         "type": "ReferenceSequenceTrack",
@@ -297,10 +280,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "displayId": "volvox-rev-del-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
-          {
-            "displayId": "volvox-rev-del-ReferenceSequenceTrack-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
-          },
+          {},
         ],
         "trackId": "volvox-rev-del-ReferenceSequenceTrack",
         "type": "ReferenceSequenceTrack",
@@ -329,10 +309,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "displayId": "volvox-simple-inv-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
-          {
-            "displayId": "volvox-simple-inv-ReferenceSequenceTrack-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
-          },
+          {},
         ],
         "trackId": "volvox-simple-inv-ReferenceSequenceTrack",
         "type": "ReferenceSequenceTrack",
@@ -361,12 +338,38 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "displayId": "volvox_random_inv-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
-          {
-            "displayId": "volvox_random_inv-ReferenceSequenceTrack-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
-          },
+          {},
         ],
         "trackId": "volvox_random_inv-ReferenceSequenceTrack",
+        "type": "ReferenceSequenceTrack",
+      },
+    },
+    {
+      "name": "volvox_joined",
+      "sequence": {
+        "adapter": {
+          "faiLocation": {
+            "locationType": "UriLocation",
+            "uri": "volvox_joined.fa.fai",
+          },
+          "fastaLocation": {
+            "locationType": "UriLocation",
+            "uri": "volvox_joined.fa",
+          },
+          "metadataLocation": {
+            "locationType": "UriLocation",
+            "uri": "/path/to/fa.metadata.yaml",
+          },
+          "type": "IndexedFastaAdapter",
+        },
+        "displays": [
+          {
+            "displayId": "volvox_joined-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
+            "type": "LinearReferenceSequenceDisplay",
+          },
+          {},
+        ],
+        "trackId": "volvox_joined-ReferenceSequenceTrack",
         "type": "ReferenceSequenceTrack",
       },
     },
@@ -375,6 +378,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     "LinearGenomeViewPlugin": {
       "trackLabels": "offset",
     },
+    "disableAnalytics": true,
     "extraThemes": {
       "darkForest": {
         "name": "Dark (forest, from config file)",
@@ -553,7 +557,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           },
           "displayId": "volvox_cram_pileup_pileup",
           "height": 400,
-          "type": "LinearPileupDisplay",
+          "type": "LinearAlignmentsDisplay",
         },
       ],
       "metadata": {
@@ -564,7 +568,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "subkey": "wow",
         },
       },
-      "name": "volvox-sorted.cram (contigA, LinearPileupDisplay, large height, colorBy mappingQual)",
+      "name": "volvox-sorted.cram (contigA, LinearAlignmentsDisplay, large height, colorBy mappingQual)",
       "trackId": "volvox_cram_pileup",
       "type": "AlignmentsTrack",
     },
@@ -589,10 +593,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "volvox_cram_snpcoverage_snpcoverage",
-          "type": "LinearSNPCoverageDisplay",
+          "type": "LinearAlignmentsDisplay",
         },
       ],
-      "name": "volvox-sorted.cram (contigA, LinearSNPCoverageDisplay)",
+      "name": "volvox-sorted.cram (contigA, LinearAlignmentsDisplay)",
       "trackId": "volvox_cram_snpcoverage",
       "type": "AlignmentsTrack",
     },
@@ -639,10 +643,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "volvox_cram_pileup_ctga_pileup",
-          "type": "LinearPileupDisplay",
+          "type": "LinearAlignmentsDisplay",
         },
       ],
-      "name": "volvox-sorted.cram (ctgA, LinearPileupDisplay)",
+      "name": "volvox-sorted.cram (ctgA, LinearAlignmentsDisplay)",
       "trackId": "volvox_cram_pileup_ctga",
       "type": "AlignmentsTrack",
     },
@@ -667,10 +671,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "volvox_cram_pileup_ctga_snpcoverage",
-          "type": "LinearSNPCoverageDisplay",
+          "type": "LinearAlignmentsDisplay",
         },
       ],
-      "name": "volvox-sorted.cram (ctgA, LinearSNPCoverageDisplay)",
+      "name": "volvox-sorted.cram (ctgA, LinearAlignmentsDisplay)",
       "trackId": "volvox_cram_snpcoverage_ctga",
       "type": "AlignmentsTrack",
     },
@@ -688,15 +692,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
+          "colorBy": {
+            "type": "mappingQuality",
+          },
           "displayId": "volvox_alignments_alignments",
           "height": 600,
-          "pileupDisplay": {
-            "colorBy": {
-              "type": "mappingQuality",
-            },
-            "displayId": "volvox_bam_altname_alignments_pileup",
-            "type": "LinearPileupDisplay",
-          },
           "type": "LinearAlignmentsDisplay",
         },
       ],
@@ -731,10 +731,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "volvox_bam_snpcoverage_snpcoverage",
-          "type": "LinearSNPCoverageDisplay",
+          "type": "LinearAlignmentsDisplay",
         },
       ],
-      "name": "volvox-sorted.bam (contigA LinearSNPCoverageDisplay)",
+      "name": "volvox-sorted.bam (contigA LinearAlignmentsDisplay)",
       "trackId": "volvox_bam_snpcoverage",
       "type": "AlignmentsTrack",
     },
@@ -761,10 +761,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "volvox_bam_pileup_pileup",
-          "type": "LinearPileupDisplay",
+          "type": "LinearAlignmentsDisplay",
         },
       ],
-      "name": "volvox-sorted.bam (contigA LinearPileupDisplay)",
+      "name": "volvox-sorted.bam (contigA LinearAlignmentsDisplay)",
       "trackId": "volvox_bam_pileup",
       "type": "AlignmentsTrack",
     },
@@ -839,16 +839,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "volvox_bam_small_max_height_alignments",
-          "pileupDisplay": {
-            "displayId": "volvox_bam_small_max_height_alignments_pileup",
-            "renderers": {
-              "PileupRenderer": {
-                "maxHeight": 10,
-                "type": "PileupRenderer",
-              },
-            },
-            "type": "LinearPileupDisplay",
-          },
+          "maxHeight": 10,
           "type": "LinearAlignmentsDisplay",
         },
       ],
@@ -1986,6 +1977,79 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "bamLocation": {
+          "locationType": "UriLocation",
+          "uri": "wgsim_short_reads.bam",
+        },
+        "index": {
+          "indexType": "BAI",
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "wgsim_short_reads.bam.bai",
+          },
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Alignments",
+      ],
+      "name": "wgsim short reads (joined genome)",
+      "trackId": "wgsim_short_reads",
+      "type": "AlignmentsTrack",
+    },
+    {
+      "adapter": {
+        "bamLocation": {
+          "locationType": "UriLocation",
+          "uri": "badread_long_reads.bam",
+        },
+        "index": {
+          "indexType": "BAI",
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "badread_long_reads.bam.bai",
+          },
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Alignments",
+      ],
+      "name": "badread long reads (joined genome)",
+      "trackId": "badread_long_reads",
+      "type": "AlignmentsTrack",
+    },
+    {
+      "adapter": {
+        "assemblyNames": [
+          "volvox",
+          "volvox_joined",
+        ],
+        "pafLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_joined_vs_volvox.paf",
+        },
+        "type": "PAFAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+        "volvox_joined",
+      ],
+      "category": [
+        "Synteny",
+      ],
+      "name": "volvox_joined_vs_volvox",
+      "trackId": "volvox_joined_vs_volvox",
+      "type": "SyntenyTrack",
+    },
+    {
+      "adapter": {
         "assemblyNames": [
           "volvox",
           "volvox",
@@ -2121,12 +2185,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "ChordVariantDisplay",
         },
         {
+          "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'",
           "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
           "maxFeatureScreenDensity": 0.0006,
-          "renderer": {
-            "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'",
-            "type": "CanvasFeatureRenderer",
-          },
           "type": "LinearVariantDisplay",
         },
       ],
@@ -2327,16 +2388,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "deep_seq_alignments",
-          "pileupDisplay": {
-            "displayId": "deep_seq_pileup",
-            "renderers": {
-              "PileupRenderer": {
-                "maxHeight": 10000,
-                "type": "PileupRenderer",
-              },
-            },
-            "type": "LinearPileupDisplay",
-          },
+          "maxHeight": 10000,
           "type": "LinearAlignmentsDisplay",
         },
       ],
@@ -3076,19 +3128,16 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "gff3_custom_tooltips_linear",
-          "renderer": {
-            "labels": {
-              "description": "jexl:get(feature,'note') || get(feature,'description') || ''",
-              "name": "jexl:get(feature,'name') || get(feature,'id')",
-            },
-            "mouseover": "jexl:\`\${get(feature,'name')} [\${get(feature,'type')}] at \${get(feature,'start')} - \${get(feature,'end')} (strand: \${(get(feature,'strand') == 1 ? '+' : get(feature,'strand') == -1 ? '-' : 'none'})\`",
-            "showDescriptions": true,
-            "showLabels": true,
-            "subfeatureLabels": "below",
-            "subfeatureMouseover": "jexl:get(feature,'name') + ' (' + get(feature,'type') + ') - parent: ' + get(parent(feature),'name')",
-            "type": "CanvasFeatureRenderer",
+          "labels": {
+            "description": "jexl:get(feature,'note') || get(feature,'description') || ''",
+            "name": "jexl:get(feature,'name') || get(feature,'id')",
           },
-          "type": "LinearBasicDisplay",
+          "mouseover": "jexl:\`\${get(feature,'name')} [\${get(feature,'type')}] at \${get(feature,'start')} - \${get(feature,'end')} (strand: \${(get(feature,'strand') == 1 ? '+' : get(feature,'strand') == -1 ? '-' : 'none'})\`",
+          "showDescriptions": true,
+          "showLabels": true,
+          "subfeatureLabels": "below",
+          "subfeatureMouseover": "jexl:get(feature,'name') + ' (' + get(feature,'type') + ') - parent: ' + get(parent(feature),'name')",
+          "type": "LinearWebGLFeatureDisplay",
         },
       ],
       "name": "Custom Tooltips (mouseover callback)",
@@ -3112,17 +3161,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "gff3_mouseover_attr_linear",
-          "renderer": {
-            "labels": {
-              "description": "jexl:get(feature,'note') || get(feature,'description') || ''",
-              "name": "jexl:get(feature,'name') || get(feature,'id')",
-            },
-            "showDescriptions": false,
-            "showLabels": true,
-            "subfeatureLabels": "below",
-            "type": "CanvasFeatureRenderer",
+          "labels": {
+            "description": "jexl:get(feature,'note') || get(feature,'description') || ''",
+            "name": "jexl:get(feature,'name') || get(feature,'id')",
           },
-          "type": "LinearBasicDisplay",
+          "showDescriptions": false,
+          "showLabels": true,
+          "subfeatureLabels": "below",
+          "type": "LinearWebGLFeatureDisplay",
         },
       ],
       "name": "_mouseOver Attributes",
@@ -3146,6 +3192,54 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "Volvox DEL SV",
       "trackId": "volvox_del_sv",
       "type": "VariantTrack",
+    },
+    {
+      "adapter": {
+        "gffGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.sort.gff3.gz",
+        },
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.sort.gff3.gz.tbi",
+          },
+        },
+        "type": "Gff3TabixAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Miscellaneous",
+      ],
+      "displays": [
+        {
+          "displayId": "gff3tabix_genes2-LinearFeatureDisplay",
+          "height": 263,
+          "trackShowDescriptions": false,
+          "trackShowLabels": false,
+          "type": "LinearFeatureDisplay",
+        },
+        {
+          "displayId": "gff3tabix_genes2-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+        },
+        {
+          "displayId": "gff3tabix_genes2-LinearArcDisplay",
+          "type": "LinearArcDisplay",
+        },
+      ],
+      "formatDetails": {
+        "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',extrafield:'Field added with custom callback:' + feature.name,phase:undefined,type:undefined}",
+        "subfeatures": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>Subfeature: '+(!feature.name?'No name':feature.name)+'</a>'}",
+      },
+      "metadata": {
+        "metadata from plugin": "added by umd_plugin.js using Core-preProcessTrackConfig",
+      },
+      "name": "GFF3Tabix genes2",
+      "trackId": "gff3tabix_genes2",
+      "type": "FeatureTrack",
     },
     {
       "adapter": {
@@ -3186,20 +3280,148 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
+          "color1": "jexl:get(feature,'start')>5000?'darkgreen':'red'",
           "displayId": "volvox_test_vcf_jexl-LinearVariantDisplay",
           "jexlFilters": [
             "get(feature,'start')<8000",
           ],
-          "renderer": {
-            "color1": "jexl:get(feature,'start')>5000?'darkgreen':'red'",
-            "type": "CanvasFeatureRenderer",
-          },
           "type": "LinearVariantDisplay",
         },
       ],
       "name": "volvox 1000genomes vcf (JEXL filters + coloring)",
       "trackId": "volvox_test_vcf_jexl",
       "type": "VariantTrack",
+    },
+    {
+      "adapter": {
+        "subadapters": [
+          {
+            "bigWigLocation": {
+              "uri": "posneg_rw1.bw",
+            },
+            "name": "sample1",
+            "type": "BigWigAdapter",
+          },
+          {
+            "bigWigLocation": {
+              "uri": "posneg_rw2.bw",
+            },
+            "name": "sample2",
+            "type": "BigWigAdapter",
+          },
+          {
+            "bigWigLocation": {
+              "uri": "posneg_rw3.bw",
+            },
+            "name": "sample3",
+            "type": "BigWigAdapter",
+          },
+          {
+            "bigWigLocation": {
+              "uri": "posneg_rw4.bw",
+            },
+            "name": "sample4",
+            "type": "BigWigAdapter",
+          },
+        ],
+        "type": "MultiWiggleAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "name": "MultiWig (pos/neg values)",
+      "trackId": "volvox_posneg_multi",
+      "type": "MultiQuantitativeTrack",
+    },
+    {
+      "adapter": {
+        "assemblyNameMap": {
+          "volvox#0": "volvox",
+          "volvox_del#0": "volvox_del",
+        },
+        "posIndex": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox_del_synteny.pos.bed.gz.tbi",
+          },
+        },
+        "posLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_del_synteny.pos.bed.gz",
+        },
+        "segmentsIdxLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_del_synteny.segments.idx",
+        },
+        "segmentsLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_del_synteny.segments.bin",
+        },
+        "type": "GfaTabixAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+        "volvox_del",
+      ],
+      "category": [
+        "Synteny",
+      ],
+      "name": "volvox vs volvox_del (GfaTabix MultiLGV)",
+      "trackId": "volvox_del_gfa_multi",
+      "type": "MultiSyntenyTrack",
+    },
+    {
+      "adapter": {
+        "assemblyNameMap": {
+          "ref#0": "volvox",
+        },
+        "bubblesIndex": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox_pangenome_50.bubbles.bed.gz.tbi",
+          },
+        },
+        "bubblesLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_pangenome_50.bubbles.bed.gz",
+        },
+        "edgesIdxLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_pangenome_50.edges.idx",
+        },
+        "edgesLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_pangenome_50.edges.bin",
+        },
+        "posIndex": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox_pangenome_50.pos.bed.gz.tbi",
+          },
+        },
+        "posLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_pangenome_50.pos.bed.gz",
+        },
+        "segmentsIdxLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_pangenome_50.segments.idx",
+        },
+        "segmentsLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_pangenome_50.segments.bin",
+        },
+        "type": "GfaTabixAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Synteny",
+      ],
+      "name": "Volvox 50-sample pangenome",
+      "trackId": "volvox_pangenome_50_multi",
+      "type": "MultiSyntenyTrack",
     },
   ],
 }

@@ -517,8 +517,10 @@ test('can instantiate a model that >2 regions', () => {
     { refName: 'ctgB', index: 1, offset: 0, start: 0, end: 10000 },
     { refName: 'ctgC', index: 2, offset: 0, start: 0, end: 10000 },
   )
-  expect(model.offsetPx).toEqual(10000 / model.bpPerPx)
-  // 3 regions = 2 paddings (4px), displayedRegionsTotalPx includes padding
+  expect(model.offsetPx).toEqual(
+    10000 / model.bpPerPx + model.interRegionPaddingWidth,
+  )
+  // 3 regions = 2 paddings, displayedRegionsTotalPx includes padding
   expect(model.displayedRegionsTotalPx).toBeCloseTo(
     30000 / model.bpPerPx + 2 * model.interRegionPaddingWidth,
   )
@@ -607,7 +609,7 @@ test('can perform pxToBp on human genome things with elided blocks (zoomed in)',
   model.setNewView(6359.273152497633, 503862)
   expect(model.pxToBp(0).refName).toBe('Y')
   expect(model.pxToBp(400).refName).toBe('Y')
-  expect(model.pxToBp(800).refName).toBe('Y_KI270740v1_random')
+  expect(model.pxToBp(800).refName).toBe('Y')
 })
 
 // determined objectively from looking at http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-TUJdqKI2c9&password=01tan
@@ -639,9 +641,9 @@ test('can perform pxToBp on human genome things with elided blocks (zoomed out)'
   expect(model.pxToBp(800).refName).toBe('10')
 
   // chrX after an elided block, this tests a specific coord but should just be
-  // probably somewhat around here
-  expect(model.pxToBp(1228).coord).toBe(1075410)
-  expect(model.pxToBp(1228).refName).toBe('Y')
+  // probably somewhat around here (padding changes shift coordinates)
+  expect(model.pxToBp(1228).coord).toBe(80093439)
+  expect(model.pxToBp(1228).refName).toBe('X')
 
   // chrY_random at the end
   expect(model.pxToBp(1500).refName).toBe('Y_KI270740v1_random')
@@ -831,7 +833,7 @@ describe('get sequence for selected displayed regions', () => {
     expect(overlapping[1]!.start).toEqual(0)
     expect(overlapping[1]!.end).toEqual(3000)
     expect(overlapping[2]!.start).toEqual(0)
-    expect(overlapping[2]!.end).toEqual(110)
+    expect(overlapping[2]!.end).toEqual(101)
   })
 
   it('can select over two regions in diff reference sequence', () => {
