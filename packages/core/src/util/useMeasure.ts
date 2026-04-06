@@ -10,7 +10,15 @@ export default function useMeasure() {
     if (!ref.current) {
       return
     }
-    const observer = new ResizeObserver(entries => {
+    const RS =
+      typeof window !== 'undefined' && 'ResizeObserver' in window
+        ? window.ResizeObserver
+        : undefined
+
+    if (!RS) {
+      return
+    }
+    const observer = new RS(entries => {
       const box = entries[0]!.contentBoxSize[0]!
       setDims({
         width: box.inlineSize,

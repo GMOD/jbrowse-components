@@ -66,10 +66,14 @@ export function useWheelScroll(
     // Nms" warnings. event.offsetX would be simpler but is unreliable here
     // since wheel events bubble from child elements
     rectLeft.current = curr.getBoundingClientRect().left
-    const observer = new ResizeObserver(() => {
-      rectLeft.current = curr.getBoundingClientRect().left
-    })
-    observer.observe(curr)
+    const hasRO =
+      typeof window !== 'undefined' && 'ResizeObserver' in window
+    const observer = hasRO
+      ? new ResizeObserver(() => {
+          rectLeft.current = curr.getBoundingClientRect().left
+        })
+      : undefined
+    observer?.observe(curr)
 
     // the handler must be non-passive (passive: false) so we can
     // preventDefault to suppress native scroll during zoom. to compensate,
@@ -146,7 +150,7 @@ export function useWheelScroll(
     curr.addEventListener('wheel', onWheel, { passive: false })
     return () => {
       curr.removeEventListener('wheel', onWheel)
-      observer.disconnect()
+      observer?.disconnect()
       if (rafId.current !== null) {
         cancelAnimationFrame(rafId.current)
       }

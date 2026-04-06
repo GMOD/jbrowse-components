@@ -67,26 +67,30 @@ const BreakpointSplitViewOverlay = observer(
     }, [matchedTracks, views])
 
     useEffect(() => {
-      const observer = new ResizeObserver(() => {
-        measurePositions()
-      })
+      const hasRO =
+        typeof window !== 'undefined' && 'ResizeObserver' in window
+      const observer = hasRO
+        ? new ResizeObserver(() => {
+            measurePositions()
+          })
+        : undefined
 
       for (const view of views) {
         for (const track of matchedTracks) {
           const trackRef = view.trackRefs[track.configuration.trackId]
           if (trackRef) {
-            observer.observe(trackRef)
+            observer?.observe(trackRef)
           }
         }
       }
       if (ref.current) {
-        observer.observe(ref.current)
+        observer?.observe(ref.current)
       }
 
       measurePositions()
 
       return () => {
-        observer.disconnect()
+        observer?.disconnect()
       }
     }, [views, matchedTracks, measurePositions])
 
