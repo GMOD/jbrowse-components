@@ -28,6 +28,7 @@ const baseConfig = {
     '<rootDir>/config/jest/messagechannel.js',
     '<rootDir>/config/jest/structuredClone.js',
     '<rootDir>/config/jest/setHTML.js',
+    '<rootDir>/config/jest/resizeObserver.js',
   ],
   testEnvironmentOptions: { url: 'http://localhost' },
   testTimeout: 15000,
