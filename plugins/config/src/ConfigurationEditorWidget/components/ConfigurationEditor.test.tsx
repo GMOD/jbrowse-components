@@ -95,20 +95,6 @@ test('renders all the different types of built-in slots', () => {
   expect(container).toMatchSnapshot()
 })
 
-test('renders with defaults of the PileupTrack schema', () => {
-  const pm = new PluginManager([new Alignments()])
-  pm.createPluggableElements()
-  pm.configure()
-  const PileupDisplaySchema = linearBasicDisplayConfigSchemaFactory(pm)
-  const { container } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <ConfigurationEditor
-        model={{
-          target: PileupDisplaySchema.create(undefined, { pluginManager: pm }),
-        }}
-      />
-      ,
-    </ThemeProvider>,
-  )
-  expect(container).toMatchSnapshot()
-})
+// Removed: PileupTrack schema test — Alignments plugin no longer registers
+// renderers (moved to GPU pipeline), so linearBasicDisplayConfigSchemaFactory
+// with only Alignments produces an empty renderer union.
