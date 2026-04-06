@@ -4,6 +4,10 @@ on:
     tags:
       - 'v*'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
@@ -37,10 +41,10 @@ jobs:
           zip -r "jbrowse-web-${RELEASE_VERSION}.zip" .
       - name: Create draft release with jbrowse-web artifact
         run: |
-          gh release create ${{ github.ref_name }} \
+          gh release create "${RELEASE_VERSION}" \
             ./products/jbrowse-web/build/jbrowse-web-${RELEASE_VERSION}.zip \
             --draft \
-            --title "Release ${{ github.ref_name }}"
+            --title "Release ${RELEASE_VERSION}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   buildwindows:
