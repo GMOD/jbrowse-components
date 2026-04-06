@@ -73,7 +73,6 @@ Use "jbrowse <command> --help" for more information about a command.
 
 ```
 
-
 ## jbrowse create
 
 ```
@@ -116,7 +115,6 @@ $ jbrowse create /path/to/new/installation --tag v1.0.0
 $ jbrowse create --listVersions
 ```
 
-
 ## jbrowse add-assembly
 
 ```
@@ -127,19 +125,19 @@ Usage: jbrowse add-assembly <sequence> [options]
 Options:
   -t, --type                 type of sequence, by default inferred from sequence
                              file
-                             
+
                              indexedFasta - An index FASTA (e.g. .fa or .fasta)
                              file; can optionally specify --faiLocation
-                             
+
                              bgzipFasta - A block-gzipped and indexed FASTA
                              (e.g. .fa.gz or .fasta.gz) file; can optionally
                              specify --faiLocation and/or --gziLocation
-                             
+
                              twoBit - A twoBit (e.g. .2bit) file
-                             
+
                              chromSizes - A chromosome sizes (e.g. .chrom.sizes)
                              file
-                             
+
                              custom - Either a JSON file location or inline JSON
                              that defines a custom sequence adapter; must
                              provide --name if using inline JSON [choices:
@@ -224,7 +222,6 @@ $ jbrowse add-assembly https://example.com/data/sample.2bit
 $ jbrowse add-assembly myfile.fa.gz --load copy
 ```
 
-
 ## jbrowse add-track
 
 ```
@@ -233,7 +230,7 @@ Add a track to a JBrowse 2 configuration
 Usage: jbrowse add-track <track> [options]
 
 Options:
-  -h, --help                 
+  -h, --help
 
   -t, --trackType            Type of track, by default inferred from track file
 
@@ -297,7 +294,6 @@ $ jbrowse add-track https://mywebsite.com/my.bam
 # --load inPlace adds a track without doing file operations
 $ jbrowse add-track /url/relative/path.bam --load inPlace
 ```
-
 
 ## jbrowse text-index
 
@@ -374,7 +370,6 @@ $ jbrowse text-index -a hg19 --force
 $ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes
 ```
 
-
 ## jbrowse admin-server
 
 ```
@@ -383,7 +378,7 @@ Start up a small admin server for JBrowse configuration
 Usage: jbrowse admin-server [options]
 
 Options:
-  -h, --help                 
+  -h, --help
 
   -p, --port                 Specified port to start the server on (default:
                              9090)
@@ -395,7 +390,6 @@ Options:
 $ jbrowse admin-server
 $ jbrowse admin-server -p 8888
 ```
-
 
 ## jbrowse upgrade
 
@@ -442,7 +436,6 @@ $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
 $ jbrowse upgrade --nightly
 ```
 
-
 ## jbrowse make-pif
 
 ```
@@ -451,7 +444,7 @@ creates pairwise indexed PAF (PIF), with bgzip and tabix
 Usage: jbrowse make-pif <file> [options]
 
 Options:
-  -h, --help                 
+  -h, --help
 
       --out                  Where to write the output file. will write
                              ${file}.pif.gz and ${file}.pif.gz.tbi
@@ -463,7 +456,6 @@ $ jbrowse make-pif input.paf # creates input.pif.gz in same directory
 $ jbrowse make-pif input.paf --out output.pif.gz # specify output file, creates output.pif.gz.tbi also
 ```
 
-
 ## jbrowse sort-gff
 
 ```
@@ -472,7 +464,7 @@ Helper utility to sort GFF files for tabix. Moves all lines starting with # to t
 Usage: jbrowse sort-gff [file] [options]
 
 Options:
-  -h, --help                 
+  -h, --help
 
 # sort gff and pipe to bgzip
 $ jbrowse sort-gff input.gff | bgzip > sorted.gff.gz
@@ -482,7 +474,6 @@ $ tabix sorted.gff.gz
 $ cat input.gff | jbrowse sort-gff | bgzip > sorted.gff.gz
 ```
 
-
 ## jbrowse sort-bed
 
 ```
@@ -491,7 +482,7 @@ Helper utility to sort BED files for tabix. Moves all lines starting with # to t
 Usage: jbrowse sort-bed [file] [options]
 
 Options:
-  -h, --help                 
+  -h, --help
 
 # sort bed and pipe to bgzip
 $ jbrowse sort-bed input.bed | bgzip > sorted.bed.gz
@@ -499,7 +490,6 @@ $ tabix sorted.bed.gz
 
 # OR pipe data via stdin: cat file.bed | jbrowse sort-bed | bgzip > sorted.bed.gz
 ```
-
 
 ## jbrowse add-connection
 
@@ -509,7 +499,7 @@ Add a connection to a JBrowse 2 configuration
 Usage: jbrowse add-connection <connectionUrlOrPath> [options]
 
 Options:
-  -h, --help                 
+  -h, --help
 
   -t, --type                 Type of connection (e.g. JBrowse1Connection,
                              UCSCTrackHubConnection, custom)
@@ -547,7 +537,6 @@ $ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config
 $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json
 ```
 
-
 ## jbrowse add-track-json
 
 ```
@@ -556,7 +545,7 @@ Add a track configuration directly from a JSON hunk to the JBrowse 2 configurati
 Usage: jbrowse add-track-json <track> [options]
 
 Options:
-  -h, --help                 
+  -h, --help
 
   -u, --update               Update the contents of an existing track, matched
                              based on trackId
@@ -570,7 +559,6 @@ $ jbrowse add-track-json track.json
 $ jbrowse add-track-json track.json --update
 ```
 
-
 ## jbrowse remove-track
 
 ```
@@ -579,7 +567,7 @@ Remove a track configuration from a JBrowse 2 configuration. Be aware that this 
 Usage: jbrowse remove-track <trackId> [options]
 
 Options:
-  -h, --help                 
+  -h, --help
 
       --target               Path to config file in JB2 installation directory
                              to write out to
@@ -588,7 +576,6 @@ Options:
 
 $ jbrowse remove-track trackId
 ```
-
 
 ## jbrowse set-default-session
 
@@ -625,5 +612,3 @@ $ jbrowse set-default-session --target /path/to/jb2/installation/config.json --s
 # print current default session
 $ jbrowse set-default-session --currentSession # Prints out current default session
 ```
-
-

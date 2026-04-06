@@ -7,6 +7,10 @@ on:
     tags:
       - '*'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -435,7 +439,9 @@ jobs:
   windows_electron_e2e:
     name: Windows Electron E2E Tests
     needs: [check_commit_message, test, lint, format, build_and_pack_artifacts]
-    if: needs.check_commit_message.outputs.skip_jobs != 'true' && github.ref == 'refs/heads/main'
+    if:
+      needs.check_commit_message.outputs.skip_jobs != 'true' && github.ref ==
+      'refs/heads/main'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
