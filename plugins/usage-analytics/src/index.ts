@@ -70,6 +70,8 @@ export default class UsageAnalyticsPlugin extends Plugin {
         } else if (call.name === 'addWidget') {
           const w = call.args?.[0]
           if (typeof w === 'string') detail.widgetType = w
+        } else if (call.name === 'queueDialog') {
+          detail.dialogType = resolveDialogName(session)
         }
 
         tracker.record(call.name, detail)
@@ -83,10 +85,36 @@ export default class UsageAnalyticsPlugin extends Plugin {
       }
     })
 
+    const onAnalyticsEvent = (e: Event) => {
+      const detail = (e as CustomEvent<{ type: string; label?: string }>).detail
+      if (detail?.type) {
+        tracker.recordUIEvent(detail.type, detail.label)
+      }
+    }
+    window.addEventListener('jbrowse:analytics', onAnalyticsEvent)
+
+    addDisposer(session, () => {
+      window.removeEventListener('jbrowse:analytics', onAnalyticsEvent)
+    })
+
     addDisposer(session, () => {
       disposeMiddleware()
       tracker.dispose()
     })
+  }
+}
+
+function resolveDialogName(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  session: any,
+): string | undefined {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const queue: [any, unknown][] = session?.queueOfDialogs ?? []
+    const component = queue.at(-1)?.[0]
+    return component?.displayName ?? component?.name
+  } catch {
+    return undefined
   }
 }
 

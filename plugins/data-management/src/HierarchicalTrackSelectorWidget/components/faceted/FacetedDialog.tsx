@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
 import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -12,6 +14,15 @@ const FacetedTrackSelectorDialog = observer(
     model: HierarchicalTrackSelectorModel
   }) {
     const { handleClose } = props
+
+    useEffect(() => {
+      window.dispatchEvent(
+        new CustomEvent('jbrowse:analytics', {
+          detail: { type: 'faceted_selector_opened' },
+        }),
+      )
+    }, [])
+
     return (
       <Dialog
         open

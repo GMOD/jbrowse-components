@@ -43,6 +43,14 @@ const ShareDialog = observer(function ShareDialog({
   const [error, setError] = useState<unknown>()
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
 
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent('jbrowse:analytics', {
+        detail: { type: 'share_dialog_opened' },
+      }),
+    )
+  }, [])
+
   const url = session.shareURL
   const currentSetting =
     localStorageGetItem(SHARE_URL_LOCALSTORAGE_KEY) || 'short'

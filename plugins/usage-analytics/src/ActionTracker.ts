@@ -46,6 +46,8 @@ const ACTION_MAP: Record<string, string> = {
   setDrawInter: 'config_view_option',
   setDrawLongRange: 'config_view_option',
   setLineWidth: 'config_view_option',
+  // Dialogs
+  queueDialog: 'open_dialog',
   // Other
   addBookmark: 'bookmark',
   addToHighlights: 'bookmark',
@@ -67,6 +69,7 @@ type RecordDetail = {
   trackShowType?: string
   trackHideType?: string
   widgetType?: string
+  dialogType?: string
 }
 
 export default class ActionTracker {
@@ -76,6 +79,9 @@ export default class ActionTracker {
   private trackShowTypes = new Map<string, number>()
   private trackHideTypes = new Map<string, number>()
   private widgetTypes = new Map<string, number>()
+  private dialogTypes = new Map<string, number>()
+  private menuClicks = new Map<string, number>()
+  private uiEvents = new Map<string, number>()
   private prev: string | null = null
   private sessionStart = Date.now()
   private endpointUrl: string
@@ -103,6 +109,16 @@ export default class ActionTracker {
     if (detail?.trackShowType) this.inc(this.trackShowTypes, detail.trackShowType)
     if (detail?.trackHideType) this.inc(this.trackHideTypes, detail.trackHideType)
     if (detail?.widgetType) this.inc(this.widgetTypes, detail.widgetType)
+    if (detail?.dialogType) this.inc(this.dialogTypes, detail.dialogType)
+  }
+
+  recordUIEvent(type: string, label?: string) {
+    const key = label ? `${type}:${label}` : type
+    if (type === 'menu_item_click' && label) {
+      this.inc(this.menuClicks, label)
+    } else {
+      this.inc(this.uiEvents, key)
+    }
   }
 
   flush(reason: 'visibility_hidden' | 'manual') {
@@ -116,6 +132,9 @@ export default class ActionTracker {
       track_show_types: Object.fromEntries(this.trackShowTypes),
       track_hide_types: Object.fromEntries(this.trackHideTypes),
       widget_types: Object.fromEntries(this.widgetTypes),
+      dialog_types: Object.fromEntries(this.dialogTypes),
+      menu_clicks: Object.fromEntries(this.menuClicks),
+      ui_events: Object.fromEntries(this.uiEvents),
       session_length_bucket: sessionLengthBucket(Date.now() - this.sessionStart),
       session_end_reason: reason,
     })

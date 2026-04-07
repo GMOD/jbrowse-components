@@ -173,6 +173,11 @@ function CascadingMenuList({
               if (closeAfterItemClick) {
                 onCloseRoot()
               }
+              window.dispatchEvent(
+                new CustomEvent('jbrowse:analytics', {
+                  detail: { type: 'menu_item_click', label: actionItem.label },
+                }),
+              )
               onMenuItemClick(event, actionItem.onClick)
             }}
             onMouseOver={closeSubmenu}

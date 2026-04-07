@@ -29,6 +29,7 @@ const FacetedHeader = observer(function FacetedHeader({
           onChange={value => {
             faceted.setFilterText(value)
           }}
+          analyticsEvent="faceted_search_used"
         />
         <IconButton
           onClick={event => {

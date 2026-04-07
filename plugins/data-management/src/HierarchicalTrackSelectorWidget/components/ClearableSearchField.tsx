@@ -9,11 +9,13 @@ export default function ClearableSearchField({
   onChange,
   label,
   className,
+  analyticsEvent,
 }: {
   value: string
   onChange: (value: string) => void
   label: string
   className?: string
+  analyticsEvent?: string
 }) {
   // Data flow: keystrokes update localValue immediately (keeping the input
   // responsive), useDebounce delays propagation by 300ms so rapid typing
@@ -33,6 +35,16 @@ export default function ClearableSearchField({
   useEffect(() => {
     onChangeEvent(debouncedValue)
   }, [debouncedValue])
+
+  useEffect(() => {
+    if (analyticsEvent && debouncedValue) {
+      window.dispatchEvent(
+        new CustomEvent('jbrowse:analytics', {
+          detail: { type: analyticsEvent },
+        }),
+      )
+    }
+  }, [analyticsEvent, debouncedValue])
 
   return (
     <TextField

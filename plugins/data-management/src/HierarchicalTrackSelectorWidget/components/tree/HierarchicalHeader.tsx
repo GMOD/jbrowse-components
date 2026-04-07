@@ -45,6 +45,7 @@ const HierarchicalTrackSelectorHeader = observer(
             label="Filter tracks"
             value={model.filterText}
             onChange={model.setFilterText}
+            analyticsEvent="hierarchical_search_used"
           />
           <RecentlyUsedTracks model={model} />
           <FavoriteTracks model={model} />
