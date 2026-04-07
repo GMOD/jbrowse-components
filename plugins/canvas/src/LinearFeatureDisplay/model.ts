@@ -383,14 +383,12 @@ export default function stateModelFactory(
         const session = getSession(self)
         session.setSelection(feature)
         if (isSessionModelWithWidgets(session)) {
-          const track = getContainingTrack(self)
-          const view = getContainingView(self)
           const { type, id } = self.featureWidgetType
           session.showWidget(
             session.addWidget(type, id, {
               featureData: feature.toJSON(),
-              view,
-              track,
+              view: getContainingView(self),
+              track: getContainingTrack(self),
             }),
           )
         }

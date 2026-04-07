@@ -6,7 +6,6 @@ import {
   getContainingTrack,
   getContainingView,
   getSession,
-  isSelectionContainer,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -65,6 +64,12 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get displayModeSetting() {
         return self.displayMode ?? getConf(self, ['renderer', 'displayMode'])
       },
+      get featureWidgetType() {
+        return {
+          type: 'VariantFeatureWidget',
+          id: 'variantFeature',
+        }
+      },
     }))
 
     .actions(self => ({
@@ -73,21 +78,16 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       selectFeature(feature: Feature) {
         const session = getSession(self)
+        session.setSelection(feature)
         if (isSessionModelWithWidgets(session)) {
-          const featureWidget = session.addWidget(
-            'VariantFeatureWidget',
-            'variantFeature',
-            {
+          const { type, id } = self.featureWidgetType
+          session.showWidget(
+            session.addWidget(type, id, {
+              featureData: feature.toJSON(),
               view: getContainingView(self),
               track: getContainingTrack(self),
-              featureData: feature.toJSON(),
-            },
+            }),
           )
-
-          session.showWidget(featureWidget)
-        }
-        if (isSelectionContainer(session)) {
-          session.setSelection(feature)
         }
       },
       /**
