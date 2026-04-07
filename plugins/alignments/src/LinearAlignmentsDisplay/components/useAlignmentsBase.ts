@@ -1,11 +1,7 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
-import {
-  getContainingView,
-  useGpuRenderer,
-  useTabVisibilityRerender,
-} from '@jbrowse/core/util'
+import { getContainingView, useGpuRenderer } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 
@@ -586,7 +582,17 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     })
   }, [model, view, ready, rendererRef])
 
-  useTabVisibilityRerender(renderNow)
+  useEffect(() => {
+    const handle = () => {
+      if (!document.hidden) {
+        renderNow()
+      }
+    }
+    document.addEventListener('visibilitychange', handle)
+    return () => {
+      document.removeEventListener('visibilitychange', handle)
+    }
+  }, [])
 
   return {
     canvasRef,

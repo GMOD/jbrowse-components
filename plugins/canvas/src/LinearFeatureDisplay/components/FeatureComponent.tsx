@@ -260,6 +260,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     if (rpcDataMap.size > 0) {
       model.setCanvasDrawn(true)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model, rpcDataMap, rendererReady])
 
   useTabVisibilityRerender(renderWithBlocks)
@@ -307,35 +308,12 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       return
     }
 
-    const hitTestAtEvent = (e: MouseEvent, debug = false) => {
+    const hitTestAtEvent = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect()
       const mouseX = e.clientX - rect.left
       const mouseY = e.clientY - rect.top
       const scrollTop = scrollContainerRef.current?.scrollTop ?? 0
       const yPos = mouseY + scrollTop
-      if (debug) {
-        console.log(
-          '[HitTest] hitTestAtEvent clientX=',
-          e.clientX,
-          'clientY=',
-          e.clientY,
-          'rect=',
-          JSON.stringify({
-            left: rect.left,
-            top: rect.top,
-            width: rect.width,
-            height: rect.height,
-          }),
-          'mouseX=',
-          mouseX,
-          'mouseY=',
-          mouseY,
-          'scrollTop=',
-          scrollTop,
-          'yPos=',
-          yPos,
-        )
-      }
       return performMultiRegionHitDetection(
         flatbushCacheMapRef.current,
         model.rpcDataMap,
@@ -343,7 +321,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         mouseX,
         yPos,
         model.effectiveShowDescriptions,
-        debug,
       )
     }
 
@@ -387,7 +364,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       if (model.rpcDataMap.size === 0) {
         return
       }
-      const result = hitTestAtEvent(e, true)
+      const result = hitTestAtEvent(e)
       if (result.feature) {
         model.selectFeatureById(
           result.feature,
@@ -402,7 +379,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       if (model.rpcDataMap.size === 0) {
         return
       }
-      const result = hitTestAtEvent(e, true)
+      const result = hitTestAtEvent(e)
       if (result.feature) {
         openContextMenu(
           result.feature,
@@ -419,7 +396,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       }
     }
 
-    console.log('[FeatureComponent] attaching event listeners to canvas')
     canvas.addEventListener('mousemove', handleMouseMove)
     canvas.addEventListener('mouseleave', handleMouseLeave)
     canvas.addEventListener('click', handleClick)

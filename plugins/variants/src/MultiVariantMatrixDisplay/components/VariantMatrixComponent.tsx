@@ -99,9 +99,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
       }
 
       renderNow()
-      if (cellData) {
-        model.setCanvasDrawn(true)
-      }
+      model.setCanvasDrawn(true)
     })
   }, [model, view, ready, rendererRef])
 

@@ -143,7 +143,7 @@ export function facetedStateTreeF() {
               conf: track,
               name: getTrackName(track, session),
               category: readConfObject(track, 'category')?.join(', '),
-              adapter: (track.adapter as { type?: string })?.type,
+              adapter: (track.adapter as { type?: string } | undefined)?.type,
               description: readConfObject(track, 'description') as
                 | string
                 | undefined,

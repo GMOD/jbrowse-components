@@ -167,8 +167,6 @@ export function useFloatingLabels(
     width,
     bpPerPx,
     visibleRegions,
-    model.showLabels,
-    model.effectiveShowDescriptions,
     model,
     openContextMenu,
   ])

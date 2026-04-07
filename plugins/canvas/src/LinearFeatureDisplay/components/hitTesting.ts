@@ -120,7 +120,6 @@ function performHitDetection(
   bpPos: number,
   yPos: number,
   showDescriptions: boolean,
-  debug: boolean,
 ) {
   let feature: FlatbushItem | null = null
   let subfeature: SubfeatureInfo | null = null
@@ -133,28 +132,8 @@ function performHitDetection(
     showDescriptions,
   )
 
-  if (debug) {
-    console.log(
-      '[HitTest] performHitDetection bpPos=',
-      bpPos,
-      'yPos=',
-      yPos,
-      'numItems=',
-      data.flatbushItems.length,
-      'numSub=',
-      data.subfeatureInfos.length,
-      'hasFeatureIndex=',
-      !!featureIndex,
-      'hasSubIndex=',
-      !!subfeatureIndex,
-    )
-  }
-
   if (subfeatureIndex) {
     const subHits = subfeatureIndex.search(bpPos, yPos, bpPos, yPos)
-    if (debug) {
-      console.log('[HitTest] subfeature hits:', subHits.length)
-    }
     for (const idx of subHits) {
       const info = data.subfeatureInfos[idx]
       if (info) {
@@ -166,22 +145,6 @@ function performHitDetection(
 
   if (featureIndex) {
     const hits = featureIndex.search(bpPos, yPos, bpPos, yPos)
-    if (debug) {
-      console.log(
-        '[HitTest] feature hits:',
-        hits.length,
-        'first few items bounds:',
-        data.flatbushItems
-          .slice(0, 3)
-          .map(i => ({
-            id: i.featureId,
-            startBp: i.startBp,
-            endBp: i.endBp,
-            topPx: i.topPx,
-            bottomPx: i.bottomPx,
-          })),
-      )
-    }
     for (const idx of hits) {
       const item = data.flatbushItems[idx]
       if (item) {
@@ -191,14 +154,6 @@ function performHitDetection(
     }
   }
 
-  if (debug) {
-    console.log(
-      '[HitTest] result: feature=',
-      feature?.featureId ?? null,
-      'subfeature=',
-      subfeature?.featureId ?? null,
-    )
-  }
   return { feature, subfeature }
 }
 
@@ -209,48 +164,13 @@ export function performMultiRegionHitDetection(
   mouseXPx: number,
   yPos: number,
   showDescriptions: boolean,
-  debug = false,
 ): HitResult {
-  if (debug) {
-    console.log(
-      '[HitTest] performMultiRegionHitDetection mouseXPx=',
-      mouseXPx,
-      'yPos=',
-      yPos,
-      'numRegions=',
-      visibleRegions.length,
-      'rpcDataMapSize=',
-      rpcDataMap.size,
-    )
-  }
   for (const vr of visibleRegions) {
-    if (debug) {
-      console.log(
-        '[HitTest] region',
-        vr.regionNumber,
-        'screenStartPx=',
-        vr.screenStartPx,
-        'screenEndPx=',
-        vr.screenEndPx,
-        'start=',
-        vr.start,
-        'end=',
-        vr.end,
-        'refName=',
-        vr.refName,
-      )
-    }
     if (mouseXPx < vr.screenStartPx || mouseXPx > vr.screenEndPx) {
-      if (debug) {
-        console.log('[HitTest] mouseX outside region bounds, skipping')
-      }
       continue
     }
     const data = rpcDataMap.get(vr.regionNumber)
     if (!data) {
-      if (debug) {
-        console.log('[HitTest] no rpcData for region', vr.regionNumber)
-      }
       continue
     }
     let cache = cacheMap.get(vr.regionNumber)
@@ -277,7 +197,6 @@ export function performMultiRegionHitDetection(
       bpPos,
       yPos,
       showDescriptions,
-      debug,
     )
 
     if (feature) {

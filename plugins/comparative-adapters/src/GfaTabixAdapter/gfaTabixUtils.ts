@@ -13,7 +13,6 @@ import {
   parseGfaPathName,
   parsePosLineOrdinals,
 } from './gfaBinaryIO.ts'
-
 import {
   buildGfaFromEdges,
   buildGfaFromPathInference,

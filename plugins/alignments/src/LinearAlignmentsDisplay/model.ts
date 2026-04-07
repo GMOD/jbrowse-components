@@ -705,14 +705,6 @@ export default function stateModelFactory(
         },
 
         setRpcData(regionNumber: number, data: PileupDataResult | null) {
-          console.log(
-            '[DEBUG] setRpcData called, regionNumber:',
-            regionNumber,
-            'hasData:',
-            !!data,
-            'numReads:',
-            data?.numReads,
-          )
           const next = new Map(self.rpcDataMap)
           if (data) {
             next.set(regionNumber, data)
@@ -1275,18 +1267,7 @@ export default function stateModelFactory(
         const entries = [...rpcDataMap.entries()].filter(
           ([, d]) => d.numReads > 0,
         )
-        console.log(
-          '[DEBUG] computeAndAssignLayoutForData: entries:',
-          entries.length,
-          'total in map:',
-          rpcDataMap.size,
-          'numReads:',
-          [...rpcDataMap.values()].map(d => d.numReads),
-        )
         if (entries.length === 0) {
-          console.log(
-            '[DEBUG] computeAndAssignLayoutForData: no entries with reads, returning early',
-          )
           return
         }
 
