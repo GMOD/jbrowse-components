@@ -47,20 +47,29 @@ export default class UsageAnalyticsPlugin extends Plugin {
     const disposeMiddleware = addMiddleware(session, (call, next) => {
       const result = next(call)
       if (!call.parentActionEvent) {
-        const detail: { viewType?: string; trackType?: string } = {}
+        const detail: {
+          viewType?: string
+          trackShowType?: string
+          trackHideType?: string
+          widgetType?: string
+        } = {}
 
         if (call.name === 'addView') {
-          const viewType = call.args?.[0]
-          if (typeof viewType === 'string') {
-            detail.viewType = viewType
-          }
-        }
-
-        if (call.name === 'showTrack' || call.name === 'toggleTrack') {
+          const v = call.args?.[0]
+          if (typeof v === 'string') detail.viewType = v
+        } else if (call.name === 'showTrack' || call.name === 'toggleTrack') {
           const trackId = call.args?.[0]
           if (typeof trackId === 'string') {
-            detail.trackType = resolveTrackType(trackId, session)
+            detail.trackShowType = resolveTrackType(trackId, session)
           }
+        } else if (call.name === 'hideTrack') {
+          const trackId = call.args?.[0]
+          if (typeof trackId === 'string') {
+            detail.trackHideType = resolveTrackType(trackId, session)
+          }
+        } else if (call.name === 'addWidget') {
+          const w = call.args?.[0]
+          if (typeof w === 'string') detail.widgetType = w
         }
 
         tracker.record(call.name, detail)
