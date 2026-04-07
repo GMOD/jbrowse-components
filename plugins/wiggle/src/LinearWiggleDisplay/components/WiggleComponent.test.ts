@@ -44,6 +44,8 @@ function makeModel(
     featureUnderMouse: undefined,
     setFeatureUnderMouse: () => {},
     reload: () => {},
+    canvasDrawn: false,
+    setCanvasDrawn: () => {},
     ...overrides,
   }
 }

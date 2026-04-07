@@ -31,6 +31,8 @@ export interface VariantDisplayModel extends VariantDisplayModelBase {
   cellData: PerRegionCellData | undefined
   cellDataLoading: boolean
   statusMessage?: string
+  canvasDrawn: boolean
+  setCanvasDrawn: (flag: boolean) => void
   visibleRegions: {
     refName: string
     regionNumber: number
@@ -79,7 +81,6 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
   }
   const blockWidth = region.screenEndPx - region.screenStartPx
   const regionLengthBp = region.end - region.start
-  const pxPerBp = blockWidth / regionLengthBp
   const reversed = region.reversed
   const frac1 = (cell.genomicStart - region.start) / regionLengthBp
   const frac2 = (cell.genomicEnd - region.start) / regionLengthBp

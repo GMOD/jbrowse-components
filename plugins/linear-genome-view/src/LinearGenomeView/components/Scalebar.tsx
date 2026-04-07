@@ -40,7 +40,7 @@ const Scalebar = observer(function Scalebar({
   ...other
 }: ScalebarProps) {
   const { classes } = useStyles()
-  const { scaleFactor, staticBlocks, offsetPx } = model
+  const { staticBlocks, offsetPx } = model
   const offsetLeft = Math.round(staticBlocks.offsetPx - offsetPx)
 
   return (
@@ -53,12 +53,7 @@ const Scalebar = observer(function Scalebar({
     >
       {/* offset 1px for left track border */}
       <Gridlines model={model} offset={1} />
-      <div
-        className={classes.zoomContainer}
-        style={{
-          transform: scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
-        }}
-      >
+      <div className={classes.zoomContainer}>
         <div
           className={classes.scalebar}
           style={{

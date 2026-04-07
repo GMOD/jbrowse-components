@@ -362,7 +362,7 @@ export default function stateModelFactory(
       },
 
       setFeatureDensityStatsLimit() {
-        self.userFeatureDensityLimit = Math.ceil(self.maxFeatureDensity * 3)
+        self.userFeatureDensityLimit = Math.ceil(self.maxFeatureDensity! * 3)
         self.setRegionTooLarge(false)
       },
 

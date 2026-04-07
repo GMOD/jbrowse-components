@@ -27,6 +27,7 @@ function renderCellsForRegion(
     regionNumber: number
     start: number
     end: number
+    reversed?: boolean
     screenStartPx: number
     screenEndPx: number
   },
@@ -65,12 +66,16 @@ function renderCellsForRegion(
     const clippedStart = Math.max(cellStart, region.start)
     const clippedEnd = Math.min(cellEnd, region.end)
 
-    const x =
-      region.screenStartPx +
-      ((clippedStart - region.start) / regionLengthBp) * blockWidth
-    const x2 =
-      region.screenStartPx +
-      ((clippedEnd - region.start) / regionLengthBp) * blockWidth
+    const frac1 = (clippedStart - region.start) / regionLengthBp
+    const frac2 = (clippedEnd - region.start) / regionLengthBp
+    const px1 = region.reversed
+      ? region.screenEndPx - frac1 * blockWidth
+      : region.screenStartPx + frac1 * blockWidth
+    const px2 = region.reversed
+      ? region.screenEndPx - frac2 * blockWidth
+      : region.screenStartPx + frac2 * blockWidth
+    const x = Math.min(px1, px2)
+    const x2 = Math.max(px1, px2)
     const w = Math.max(x2 - x, 1)
     const h = Math.max(rowHeight, 1)
 
@@ -128,6 +133,7 @@ export async function renderSvg(
     regionNumber: number
     start: number
     end: number
+    reversed?: boolean
     screenStartPx: number
     screenEndPx: number
   }[]

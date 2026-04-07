@@ -657,7 +657,11 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
 
   private bpToScreenX(
     absBp: number,
-    block: { bpRangeX: [number, number]; screenStartPx: number; reversed?: boolean },
+    block: {
+      bpRangeX: [number, number]
+      screenStartPx: number
+      reversed?: boolean
+    },
     bpLength: number,
     fullBlockWidth: number,
   ) {

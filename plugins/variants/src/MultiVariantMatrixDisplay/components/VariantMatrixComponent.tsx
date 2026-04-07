@@ -27,6 +27,8 @@ const useStyles = makeStyles()(scrollbarStyles)
 
 export interface VariantMatrixDisplayModel extends VariantDisplayModelBase {
   cellData: MatrixCellData | undefined
+  canvasDrawn: boolean
+  setCanvasDrawn: (flag: boolean) => void
 }
 
 const VariantMatrixComponent = observer(function VariantMatrixComponent({

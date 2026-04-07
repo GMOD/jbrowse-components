@@ -32,6 +32,7 @@ function makeBlock(
     bpRangeX: [0, 10000],
     screenStartPx: 0,
     screenEndPx: 800,
+    reversed: false,
     ...overrides,
   }
 }

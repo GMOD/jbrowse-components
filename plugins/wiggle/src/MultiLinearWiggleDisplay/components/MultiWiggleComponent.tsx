@@ -104,6 +104,8 @@ export interface MultiWiggleDisplayModel {
   selectFeature: (
     feat: NonNullable<MultiWiggleDisplayModel['featureUnderMouse']>,
   ) => void
+  canvasDrawn: boolean
+  setCanvasDrawn: (flag: boolean) => void
 }
 
 const MultiWiggleComponent = observer(function MultiWiggleComponent({

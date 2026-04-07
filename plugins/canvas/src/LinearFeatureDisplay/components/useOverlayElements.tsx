@@ -354,7 +354,7 @@ export function useHighlightOverlays(
     }
 
     const computeExtraWidth = (entry: FeatureItemEntry) => {
-      if (entry.item.kind !== 'feature') {
+      if (entry.item.kind !== 'feature' || !('data' in entry)) {
         return 0
       }
       const labelData = entry.data.floatingLabelsData[entry.item.featureId]

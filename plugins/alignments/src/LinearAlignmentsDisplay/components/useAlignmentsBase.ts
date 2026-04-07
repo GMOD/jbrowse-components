@@ -92,7 +92,7 @@ export interface LinearAlignmentsDisplayModel {
         arcX1: Float32Array
         arcX2: Float32Array
         arcColorTypes: Float32Array
-        arcIsArc: Float32Array
+        arcIsArc: Uint8Array
         numArcs: number
         linePositions: Uint32Array
         lineYs: Float32Array

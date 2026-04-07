@@ -35,6 +35,8 @@ export interface WiggleDisplayModel {
   }
   setFeatureUnderMouse: (feat?: WiggleDisplayModel['featureUnderMouse']) => void
   reload: () => void
+  canvasDrawn: boolean
+  setCanvasDrawn: (flag: boolean) => void
 }
 
 export function buildSourceRenderData(
