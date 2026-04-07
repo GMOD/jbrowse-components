@@ -713,6 +713,7 @@ export default function stateModelFactory(
         },
 
         setRpcData(regionNumber: number, data: PileupDataResult | null) {
+          console.log('[DEBUG] setRpcData called, regionNumber:', regionNumber, 'hasData:', !!data)
           const next = new Map(self.rpcDataMap)
           if (data) {
             next.set(regionNumber, data)
@@ -1044,22 +1045,29 @@ export default function stateModelFactory(
           self.contextMenuRefName = refName
         },
 
+        selectFeature(feature: Feature) {
+          const session = getSession(self)
+          if (isSessionModelWithWidgets(session)) {
+            const featureWidget = session.addWidget(
+              'AlignmentsFeatureWidget',
+              'alignmentFeature',
+              {
+                featureData: feature.toJSON(),
+                view: getContainingView(self),
+                track: getContainingTrack(self),
+              },
+            )
+            session.showWidget(featureWidget)
+          }
+          session.setSelection(feature)
+        },
+
         async selectFeatureById(featureId: string) {
           const session = getSession(self)
           try {
             const feat = await fetchFeatureDetails(self, featureId)
-            if (isAlive(self) && feat && isSessionModelWithWidgets(session)) {
-              const featureWidget = session.addWidget(
-                'AlignmentsFeatureWidget',
-                'alignmentFeature',
-                {
-                  featureData: feat.toJSON(),
-                  view: getContainingView(self),
-                  track: getContainingTrack(self),
-                },
-              )
-              session.showWidget(featureWidget)
-              session.setSelection(feat)
+            if (isAlive(self) && feat) {
+              self.selectFeature(feat)
             }
           } catch (e) {
             console.error(e)
@@ -1414,7 +1422,8 @@ export default function stateModelFactory(
           const view = getContainingView(self) as LGV
           return {
             adapterConfig: self.adapterConfigSnapshot,
-            fetchSizeLimit: self.fetchSizeLimit,
+            fetchSizeLimit: getConf(self, 'fetchSizeLimit') as number,
+            userByteSizeLimit: self.userByteSizeLimit,
             visibleBp: view.visibleBp,
           }
         },
@@ -1433,6 +1442,7 @@ export default function stateModelFactory(
             if (ctx.isStale()) {
               return
             }
+
             const newDataMap = new Map<number, PileupDataResult>()
             let newTagColorsAdded = false
             for (const r of results) {
@@ -1443,7 +1453,6 @@ export default function stateModelFactory(
               }
               self.setModificationsReady(true)
               self.setSimplexModifications(r.result.simplexModifications)
-              self.setLoadedRegion(r.regionNumber, r.region)
               newDataMap.set(r.regionNumber, r.result)
             }
             if (
@@ -1621,6 +1630,9 @@ export default function stateModelFactory(
                   arcLineWidth: self.arcsState.lineWidth,
                   bpRangeX: [0, 0],
                 })
+                if (self.rpcDataMap.size > 0) {
+                  self.setCanvasDrawn(true)
+                }
               },
               { name: 'LinearAlignmentsDisplay:draw' },
             ),

@@ -21,6 +21,7 @@ function makeFeatureData(opts: {
   return {
     regionStart,
     flatbushItems: features.map(f => ({
+      kind: 'feature' as const,
       featureId: f.featureId,
       type: 'feature',
       startBp: f.startBp,
@@ -488,6 +489,7 @@ test('relayout correctly handles subfeatureInfos and floatingLabelsData', () => 
 
   data.subfeatureInfos = [
     {
+      kind: 'subfeature' as const,
       featureId: 'exon1',
       parentFeatureId: 'gene1',
       type: 'exon',
@@ -497,6 +499,7 @@ test('relayout correctly handles subfeatureInfos and floatingLabelsData', () => 
       bottomPx: 15,
     },
     {
+      kind: 'subfeature' as const,
       featureId: 'exon2',
       parentFeatureId: 'gene2',
       type: 'exon',
@@ -810,6 +813,7 @@ test('fillYArrays handles subfeatures and labels across layout changes', () => {
   })
   data.subfeatureInfos = [
     {
+      kind: 'subfeature' as const,
       featureId: 'exon1',
       parentFeatureId: 'gene1',
       type: 'exon',
@@ -819,6 +823,7 @@ test('fillYArrays handles subfeatures and labels across layout changes', () => {
       bottomPx: 15,
     },
     {
+      kind: 'subfeature' as const,
       featureId: 'exon2',
       parentFeatureId: 'gene2',
       type: 'exon',
@@ -959,6 +964,7 @@ test('incremental fetch with subfeatures preserves correct offsets', () => {
   })
   r0.subfeatureInfos = [
     {
+      kind: 'subfeature' as const,
       featureId: 'exon0',
       parentFeatureId: 'gene1',
       type: 'exon',
@@ -978,6 +984,7 @@ test('incremental fetch with subfeatures preserves correct offsets', () => {
   })
   r1.subfeatureInfos = [
     {
+      kind: 'subfeature' as const,
       featureId: 'exon1',
       parentFeatureId: 'gene1',
       type: 'exon',

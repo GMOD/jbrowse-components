@@ -107,6 +107,7 @@ export interface AminoAcidOverlayItem {
 }
 
 export interface FlatbushItem {
+  kind: 'feature'
   featureId: string
   type: string
   startBp: number
@@ -121,6 +122,7 @@ export interface FlatbushItem {
 }
 
 export interface SubfeatureInfo {
+  kind: 'subfeature'
   featureId: string
   parentFeatureId: string
   type: string

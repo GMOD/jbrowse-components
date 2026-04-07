@@ -14,7 +14,6 @@ import {
   useDebounce,
   useTabVisibilityRerender,
 } from '@jbrowse/core/util'
-import Flatbush from '@jbrowse/core/util/flatbush'
 import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
@@ -23,11 +22,12 @@ import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
 import OverflowIndicator from './OverflowIndicator.tsx'
 import { computeLabelExtraWidth } from './highlightUtils.ts'
-import { maxLabelTextWidth } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import { performMultiRegionHitDetection } from './hitTesting.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 
 import type { FeatureRenderBlock } from './canvasFeatureBackendTypes.ts'
+import type { FlatbushRegionCache, VisibleRegion } from './hitTesting.ts'
 import type {
   FeatureDataResult,
   FlatbushItem,
@@ -36,16 +36,6 @@ import type {
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-interface VisibleRegion {
-  refName: string
-  regionNumber: number
-  start: number
-  end: number
-  assemblyName: string
-  screenStartPx: number
-  screenEndPx: number
-}
 
 interface LinearFeatureDisplayModel {
   height: number
@@ -83,200 +73,16 @@ interface LinearFeatureDisplayModel {
   setContextMenuInfo: (info?: unknown) => void
   contextMenuItems: () => { label: string; onClick: () => void }[]
   getFeatureById: (featureId: string) => FlatbushItem | undefined
+  setCanvasDrawn: (val: boolean) => void
 }
 
 export interface Props {
   model: LinearFeatureDisplayModel
 }
 
-interface FlatbushRegionCache {
-  featureIndex: Flatbush | null
-  subfeatureIndex: Flatbush | null
-  cachedItems: FlatbushItem[] | null
-  cachedSubInfos: SubfeatureInfo[] | null
-  cachedShowDescriptions?: boolean
-}
-
-function buildFeatureIndex(
-  items: FlatbushItem[],
-  floatingLabelsData: FeatureDataResult['floatingLabelsData'],
-  bpPerPx: number,
-  reversed: boolean,
-  showDescriptions: boolean,
-) {
-  const index = new Flatbush(items.length)
-  for (const item of items) {
-    let hitStartBp = item.startBp
-    let hitEndBp = item.endBp
-    const labelData = floatingLabelsData[item.featureId]
-    if (labelData) {
-      const maxLabelWidthPx = maxLabelTextWidth(labelData, showDescriptions)
-      const featureWidthPx = (item.endBp - item.startBp) / bpPerPx
-      if (maxLabelWidthPx > featureWidthPx) {
-        const extraBp = (maxLabelWidthPx - featureWidthPx) * bpPerPx
-        if (reversed) {
-          hitStartBp -= extraBp
-        } else {
-          hitEndBp += extraBp
-        }
-      }
-    }
-    index.add(hitStartBp, item.topPx, hitEndBp, item.bottomPx)
-  }
-  index.finish()
-  return index
-}
-
-function buildSubfeatureIndex(infos: SubfeatureInfo[]) {
-  const index = new Flatbush(infos.length)
-  for (const item of infos) {
-    index.add(item.startBp, item.topPx, item.endBp, item.bottomPx)
-  }
-  index.finish()
-  return index
-}
-
-function getOrCreateFlatbushIndexes(
-  cache: FlatbushRegionCache,
-  data: FeatureDataResult,
-  bpPerPx: number,
-  reversed: boolean,
-  showDescriptions: boolean,
-) {
-  if (
-    cache.cachedItems !== data.flatbushItems ||
-    cache.cachedShowDescriptions !== showDescriptions
-  ) {
-    cache.cachedItems = data.flatbushItems
-    cache.cachedShowDescriptions = showDescriptions
-    cache.featureIndex =
-      data.flatbushItems.length > 0
-        ? buildFeatureIndex(
-            data.flatbushItems,
-            data.floatingLabelsData,
-            bpPerPx,
-            reversed,
-            showDescriptions,
-          )
-        : null
-  }
-
-  if (cache.cachedSubInfos !== data.subfeatureInfos) {
-    cache.cachedSubInfos = data.subfeatureInfos
-    cache.subfeatureIndex =
-      data.subfeatureInfos.length > 0
-        ? buildSubfeatureIndex(data.subfeatureInfos)
-        : null
-  }
-
-  return {
-    featureIndex: cache.featureIndex,
-    subfeatureIndex: cache.subfeatureIndex,
-  }
-}
-
-function performHitDetection(
-  cache: FlatbushRegionCache,
-  data: FeatureDataResult,
-  bpPerPx: number,
-  reversed: boolean,
-  bpPos: number,
-  yPos: number,
-  showDescriptions: boolean,
-) {
-  let feature: FlatbushItem | null = null
-  let subfeature: SubfeatureInfo | null = null
-
-  const { featureIndex, subfeatureIndex } = getOrCreateFlatbushIndexes(
-    cache,
-    data,
-    bpPerPx,
-    reversed,
-    showDescriptions,
-  )
-
-  if (subfeatureIndex) {
-    const subHits = subfeatureIndex.search(bpPos, yPos, bpPos, yPos)
-    for (const idx of subHits) {
-      const info = data.subfeatureInfos[idx]
-      if (info) {
-        subfeature = info
-        break
-      }
-    }
-  }
-
-  if (featureIndex) {
-    const hits = featureIndex.search(bpPos, yPos, bpPos, yPos)
-    for (const idx of hits) {
-      const item = data.flatbushItems[idx]
-      if (item) {
-        feature = item
-        break
-      }
-    }
-  }
-
-  return { feature, subfeature }
-}
-
-type HitResult =
-  | { feature: null; subfeature: null }
-  | {
-      feature: FlatbushItem
-      subfeature: SubfeatureInfo | null
-      regionNumber: number
-    }
-
-function performMultiRegionHitDetection(
-  cacheMap: Map<number, FlatbushRegionCache>,
-  rpcDataMap: Map<number, FeatureDataResult>,
-  visibleRegions: VisibleRegion[],
-  mouseXPx: number,
-  yPos: number,
-  showDescriptions: boolean,
-): HitResult {
-  for (const vr of visibleRegions) {
-    if (mouseXPx < vr.screenStartPx || mouseXPx > vr.screenEndPx) {
-      continue
-    }
-    const data = rpcDataMap.get(vr.regionNumber)
-    if (!data) {
-      continue
-    }
-    let cache = cacheMap.get(vr.regionNumber)
-    if (!cache) {
-      cache = {
-        featureIndex: null,
-        subfeatureIndex: null,
-        cachedItems: null,
-        cachedSubInfos: null,
-      }
-      cacheMap.set(vr.regionNumber, cache)
-    }
-
-    const blockWidth = vr.screenEndPx - vr.screenStartPx
-    const bpPerPx = (vr.end - vr.start) / blockWidth
-    const reversed = vr.start > vr.end
-    const bpPos = vr.start + (mouseXPx - vr.screenStartPx) * bpPerPx
-
-    const { feature, subfeature } = performHitDetection(
-      cache,
-      data,
-      bpPerPx,
-      reversed,
-      bpPos,
-      yPos,
-      showDescriptions,
-    )
-
-    if (feature) {
-      return { feature, subfeature, regionNumber: vr.regionNumber }
-    }
-    return { feature: null, subfeature: null }
-  }
-  return { feature: null, subfeature: null }
-}
+type FeatureItemEntry =
+  | { item: FlatbushItem; vr: VisibleRegion; data: FeatureDataResult }
+  | { item: SubfeatureInfo; vr: VisibleRegion }
 
 const ContextMenu = observer(function ContextMenu({
   model,
@@ -314,8 +120,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   )
   const [hoveredSubfeature, setHoveredSubfeature] =
     useState<SubfeatureInfo | null>(null)
-  const coord0: [number, number] = [0, 0]
-  const [clientXY, setClientXY] = useState(coord0)
+  const [clientXY, setClientXY] = useState<[number, number]>([0, 0])
   const [contextMenuCoord, setContextMenuCoord] = useState<
     [number, number] | undefined
   >()
@@ -329,6 +134,15 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
   const width = view.initialized ? view.trackWidthPx : undefined
   const height = model.height
+
+  const openContextMenu = useCallback(
+    (feature: FlatbushItem, regionNumber: number, clientX: number, clientY: number) => {
+      model.showContextMenuForFeature(feature, regionNumber)
+      model.setMouseoverExtraInformation(undefined)
+      setContextMenuCoord([clientX, clientY])
+    },
+    [model],
+  )
 
   const rendererRef = useRef<CanvasFeatureRenderer | null>(null)
 
@@ -369,6 +183,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       return
     }
     canvasRef.current = canvas
+    console.log('[FeatureComponent] canvasCallbackRef called, canvas element set')
     const renderer = CanvasFeatureRenderer.getOrCreate(canvas)
     rendererRef.current = renderer
 
@@ -380,8 +195,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
             console.error('[FeatureComponent] GPU initialization failed')
           }
           setRendererReady(ok)
-          // GPU context lost/reset — data will be re-uploaded
-          // automatically when the useLayoutEffect next fires
         })
         .catch((e: unknown) => {
           console.error('[FeatureComponent] GPU initialization error:', e)
@@ -482,6 +295,9 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     model.setFeatureIdUnderMouse(null)
 
     renderWithBlocks()
+    if (rpcDataMap.size > 0) {
+      model.setCanvasDrawn(true)
+    }
   }, [model, rpcDataMap, rendererReady])
 
   useTabVisibilityRerender(renderWithBlocks)
@@ -529,11 +345,15 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       return
     }
 
-    const hitTestAtEvent = (e: MouseEvent) => {
+    const hitTestAtEvent = (e: MouseEvent, debug = false) => {
       const rect = canvas.getBoundingClientRect()
       const mouseX = e.clientX - rect.left
       const mouseY = e.clientY - rect.top
-      const yPos = mouseY + (scrollContainerRef.current?.scrollTop ?? 0)
+      const scrollTop = scrollContainerRef.current?.scrollTop ?? 0
+      const yPos = mouseY + scrollTop
+      if (debug) {
+        console.log('[HitTest] hitTestAtEvent clientX=', e.clientX, 'clientY=', e.clientY, 'rect=', JSON.stringify({ left: rect.left, top: rect.top, width: rect.width, height: rect.height }), 'mouseX=', mouseX, 'mouseY=', mouseY, 'scrollTop=', scrollTop, 'yPos=', yPos)
+      }
       return performMultiRegionHitDetection(
         flatbushCacheMapRef.current,
         model.rpcDataMap,
@@ -541,6 +361,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         mouseX,
         yPos,
         model.effectiveShowDescriptions,
+        debug,
       )
     }
 
@@ -584,7 +405,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       if (model.rpcDataMap.size === 0) {
         return
       }
-      const result = hitTestAtEvent(e)
+      const result = hitTestAtEvent(e, true)
       if (result.feature) {
         model.selectFeatureById(
           result.feature,
@@ -599,11 +420,9 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       if (model.rpcDataMap.size === 0) {
         return
       }
-      const result = hitTestAtEvent(e)
+      const result = hitTestAtEvent(e, true)
       if (result.feature) {
-        model.showContextMenuForFeature(result.feature, result.regionNumber)
-        model.setMouseoverExtraInformation(undefined)
-        setContextMenuCoord([e.clientX, e.clientY])
+        openContextMenu(result.feature, result.regionNumber, e.clientX, e.clientY)
       }
     }
 
@@ -613,6 +432,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       }
     }
 
+    console.log('[FeatureComponent] attaching event listeners to canvas')
     canvas.addEventListener('mousemove', handleMouseMove)
     canvas.addEventListener('mouseleave', handleMouseLeave)
     canvas.addEventListener('click', handleClick)
@@ -630,14 +450,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   const visibleRegions = view.visibleRegions
 
   const featureItemMap = useMemo(() => {
-    const map = new Map<
-      string,
-      {
-        item: FlatbushItem | SubfeatureInfo
-        vr: VisibleRegion
-        data: FeatureDataResult | undefined
-      }
-    >()
+    const map = new Map<string, FeatureItemEntry>()
     for (const vr of visibleRegions) {
       const data = rpcDataMap.get(vr.regionNumber)
       if (data) {
@@ -646,7 +459,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         }
         for (const s of data.subfeatureInfos) {
           if (!map.has(s.featureId)) {
-            map.set(s.featureId, { item: s, vr, data: undefined })
+            map.set(s.featureId, { item: s, vr })
           }
         }
       }
@@ -677,6 +490,11 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       const blockBpPerPx =
         (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
 
+      const flatbushItemById = new Map<string, FlatbushItem>()
+      for (const f of data.flatbushItems) {
+        flatbushItemById.set(f.featureId, f)
+      }
+
       for (const [featureId, labelData] of Object.entries(
         data.floatingLabelsData,
       )) {
@@ -702,6 +520,20 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
         const featureBottomPx = labelData.topY + labelData.featureHeight
 
+        const item = flatbushItemById.get(featureId)
+        const handleLabelClick = item
+          ? () => {
+              model.selectFeatureById(item, undefined, vr.regionNumber)
+            }
+          : undefined
+
+        const handleLabelContextMenu = item
+          ? (e: React.MouseEvent) => {
+              e.preventDefault()
+              openContextMenu(item, vr.regionNumber, e.clientX, e.clientY)
+            }
+          : undefined
+
         const emitLabel = (
           label: {
             text: string
@@ -712,6 +544,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
           },
           padding: number,
           key: string,
+          clickable?: boolean,
         ) => {
           const labelY = featureBottomPx + label.relativeY + padding
           const labelX =
@@ -725,13 +558,19 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
           elements.push(
             <div
               key={`${vr.regionNumber}-${featureId}-${key}`}
+              data-testid={
+                clickable ? `feature-${key}-${label.text}` : undefined
+              }
+              onClick={clickable ? handleLabelClick : undefined}
+              onContextMenu={clickable ? handleLabelContextMenu : undefined}
               style={{
                 position: 'absolute',
                 transform: `translate(${labelX}px, ${labelY}px)`,
                 fontSize: 11,
                 lineHeight: 1,
                 color: label.color,
-                pointerEvents: 'none',
+                pointerEvents: clickable ? 'auto' : 'none',
+                cursor: clickable ? 'pointer' : undefined,
                 whiteSpace: 'nowrap',
                 ...(label.isOverlay
                   ? { background: 'rgba(255,255,255,0.65)' }
@@ -744,13 +583,13 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         }
 
         if (labelData.nameLabel && model.showLabels) {
-          emitLabel(labelData.nameLabel, 2, 'name')
+          emitLabel(labelData.nameLabel, 2, 'name', true)
         }
         if (labelData.descriptionLabel && model.effectiveShowDescriptions) {
           emitLabel(labelData.descriptionLabel, 2, 'desc')
         }
         if (labelData.subfeatureLabel) {
-          emitLabel(labelData.subfeatureLabel, 0, 'sub')
+          emitLabel(labelData.subfeatureLabel, 0, 'sub', true)
         }
       }
     }
@@ -864,8 +703,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       }
     }
 
-    const findItemForId = (featureId: string) => featureItemMap.get(featureId)
-
     const addOverlay = (
       item: { startBp: number; endBp: number; topPx: number; bottomPx: number },
       refName: string,
@@ -898,22 +735,19 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       }
     }
 
-    const computeExtraWidth = (
-      featureId: string,
-      item: { startBp: number; endBp: number },
-      vr: VisibleRegion,
-      data: FeatureDataResult | undefined,
-    ) => {
-      if (!data) {
+    const computeExtraWidth = (entry: FeatureItemEntry) => {
+      if (entry.item.kind !== 'feature') {
         return 0
       }
-      const labelData = data.floatingLabelsData[featureId]
+      const labelData = entry.data.floatingLabelsData[entry.item.featureId]
       if (!labelData) {
         return 0
       }
       const blockBpPerPx =
-        (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
-      const featureWidthPx = (item.endBp - item.startBp) / blockBpPerPx
+        (entry.vr.end - entry.vr.start) /
+        (entry.vr.screenEndPx - entry.vr.screenStartPx)
+      const featureWidthPx =
+        (entry.item.endBp - entry.item.startBp) / blockBpPerPx
       return computeLabelExtraWidth(
         labelData,
         featureWidthPx,
@@ -923,49 +757,34 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
     const hoverItem = hoveredSubfeature ?? hoveredFeature
     if (hoverItem) {
-      const featureId = hoveredSubfeature
-        ? hoveredSubfeature.featureId
-        : hoveredFeature!.featureId
-      const result = findItemForId(featureId)
-      if (result) {
-        let hoverExtraWidth = 0
-        if (hoveredFeature && !hoveredSubfeature && result.data) {
-          hoverExtraWidth = computeExtraWidth(
-            hoveredFeature.featureId,
-            hoverItem,
-            result.vr,
-            result.data,
-          )
-        }
+      const entry = featureItemMap.get(hoverItem.featureId)
+      if (entry) {
+        const extraWidth =
+          hoveredFeature && !hoveredSubfeature
+            ? computeExtraWidth(entry)
+            : 0
         addOverlay(
           hoverItem,
-          result.vr.refName,
+          entry.vr.refName,
           { backgroundColor: 'rgba(0, 0, 0, 0.15)' },
           'hover',
-          hoverExtraWidth,
+          extraWidth,
         )
       }
     }
 
     if (model.selectedFeatureId) {
-      const result = findItemForId(model.selectedFeatureId)
-      if (result) {
-        const { item, data } = result
-        const extraWidth = computeExtraWidth(
-          model.selectedFeatureId,
-          item,
-          result.vr,
-          data,
-        )
+      const entry = featureItemMap.get(model.selectedFeatureId)
+      if (entry) {
         addOverlay(
-          item,
-          result.vr.refName,
+          entry.item,
+          entry.vr.refName,
           {
             border: '2px solid rgba(0, 100, 255, 0.8)',
             borderRadius: 3,
           },
           'selected',
-          extraWidth,
+          computeExtraWidth(entry),
           2,
         )
       }

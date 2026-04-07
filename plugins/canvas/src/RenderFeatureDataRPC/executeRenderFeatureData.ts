@@ -257,6 +257,7 @@ function collectRenderData(
       : `${featureType}: ${featureStart.toLocaleString()}-${featureEnd.toLocaleString()}`
 
     flatbushItems.push({
+      kind: 'feature',
       featureId: feature.id(),
       type: featureType,
       startBp: featureStart,
@@ -426,6 +427,7 @@ function collectRenderData(
       )
 
       subfeatureInfos.push({
+        kind: 'subfeature',
         featureId: transcriptFeature.id(),
         parentFeatureId: parentFeature.id(),
         type: transcriptFeature.get('type') || 'transcript',
