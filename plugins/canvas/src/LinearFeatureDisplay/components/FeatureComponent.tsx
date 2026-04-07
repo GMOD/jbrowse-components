@@ -430,6 +430,17 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     return map
   }, [rpcDataMap, visibleRegions])
 
+  const onLabelMouseOver = useCallback(
+    (item: FlatbushItem, e: React.MouseEvent) => {
+      setClientXY([e.clientX, e.clientY])
+      setHoveredFeature(item)
+      setHoveredSubfeature(null)
+      model.setFeatureIdUnderMouse(item.featureId)
+      model.setMouseoverExtraInformation(item.tooltip)
+    },
+    [model],
+  )
+
   const floatingLabelElements = useFloatingLabels(
     rpcDataMap,
     visibleRegions,
@@ -438,6 +449,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     bpPerPx,
     model,
     openContextMenu,
+    onLabelMouseOver,
   )
 
   const aminoAcidOverlayElements = useAminoAcidOverlay(

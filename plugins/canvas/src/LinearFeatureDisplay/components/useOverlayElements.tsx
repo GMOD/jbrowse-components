@@ -38,6 +38,10 @@ export function useFloatingLabels(
     clientX: number,
     clientY: number,
   ) => void,
+  onLabelMouseOver?: (
+    item: FlatbushItem,
+    e: React.MouseEvent,
+  ) => void,
 ) {
   return useMemo(() => {
     if (!viewInitialized || !width || !bpPerPx || visibleRegions.length === 0) {
@@ -100,6 +104,12 @@ export function useFloatingLabels(
             }
           : undefined
 
+        const handleLabelMouseMove = item
+          ? (e: React.MouseEvent) => {
+              onLabelMouseOver?.(item, e)
+            }
+          : undefined
+
         const emitLabel = (
           label: {
             text: string
@@ -129,6 +139,7 @@ export function useFloatingLabels(
               }
               onClick={clickable ? handleLabelClick : undefined}
               onContextMenu={clickable ? handleLabelContextMenu : undefined}
+              onMouseMove={clickable ? handleLabelMouseMove : undefined}
               style={{
                 position: 'absolute',
                 transform: `translate(${labelX}px, ${labelY}px)`,
@@ -169,6 +180,7 @@ export function useFloatingLabels(
     visibleRegions,
     model,
     openContextMenu,
+    onLabelMouseOver,
   ])
 }
 
