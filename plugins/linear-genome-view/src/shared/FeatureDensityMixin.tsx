@@ -3,6 +3,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import RegionTooLargeMixin from './RegionTooLargeMixin.tsx'
 import TooLargeMessage from './TooLargeMessage.tsx'
 import autorunFeatureDensityStats from './autorunFeatureDensityStats.ts'
 import {
@@ -20,17 +21,29 @@ type LGV = LinearGenomeViewModel
 
 type FeatureDensityStatsSelf = Parameters<typeof getFeatureDensityStatsPre>[0]
 
+/**
+ * Block-based display mixin that adds reactive density-stats checking
+ * on top of RegionTooLargeMixin.
+ *
+ * Runs autorunFeatureDensityStats to RPC for density stats, then computes
+ * regionTooLarge reactively from bytes/density thresholds.
+ *
+ * For canvas/GPU displays, use MultiRegionDisplayMixin instead (which
+ * also composes RegionTooLargeMixin but uses an imperative check path).
+ */
 export default function FeatureDensityMixin() {
   return types
-    .model({
-      userBpPerPxLimit: types.maybe(types.number),
-      userByteSizeLimit: types.maybe(types.number),
-    })
+    .compose(
+      'FeatureDensityMixin',
+      RegionTooLargeMixin(),
+      types.model({
+        userBpPerPxLimit: types.maybe(types.number),
+      }),
+    )
     .volatile(() => ({
       featureDensityStatsP: undefined as
         | undefined
         | Promise<FeatureDensityStats>,
-      featureDensityStats: undefined as undefined | FeatureDensityStats,
       currStatsBpPerPx: 0,
     }))
     .views(self => ({
@@ -80,6 +93,8 @@ export default function FeatureDensityMixin() {
         self.currStatsBpPerPx = n
       },
 
+      // Override RegionTooLargeMixin's setFeatureDensityStatsLimit to also
+      // handle bpPerPx-based limits for density-based "too large" detection
       setFeatureDensityStatsLimit(stats?: FeatureDensityStats) {
         const view = getContainingView(self) as LGV
         if (stats?.bytes) {
@@ -87,6 +102,7 @@ export default function FeatureDensityMixin() {
         } else {
           self.userBpPerPxLimit = view.bpPerPx
         }
+        self.setRegionTooLarge(false)
       },
 
       getFeatureDensityStats() {
@@ -107,16 +123,14 @@ export default function FeatureDensityMixin() {
         self.featureDensityStatsP = arg
       },
 
-      setFeatureDensityStats(featureDensityStats?: FeatureDensityStats) {
-        self.featureDensityStats = featureDensityStats
-      },
-
       clearFeatureDensityStats() {
         self.featureDensityStatsP = undefined
-        self.featureDensityStats = undefined
+        self.setFeatureDensityStats(undefined)
       },
     }))
     .views(self => ({
+      // Override RegionTooLargeMixin's imperative regionTooLarge with a
+      // reactive computation from density stats
       get regionTooLarge() {
         const view = getContainingView(self) as LGV
         if (
