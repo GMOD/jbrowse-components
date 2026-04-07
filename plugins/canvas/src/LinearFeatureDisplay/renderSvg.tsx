@@ -45,10 +45,13 @@ function bpToScreenX(
   regionEnd: number,
   screenStartPx: number,
   screenEndPx: number,
+  reversed?: boolean,
 ) {
   const blockWidth = screenEndPx - screenStartPx
-  const regionLengthBp = regionEnd - regionStart
-  return screenStartPx + ((bpPos - regionStart) / regionLengthBp) * blockWidth
+  const frac = (bpPos - regionStart) / (regionEnd - regionStart)
+  return reversed
+    ? screenEndPx - frac * blockWidth
+    : screenStartPx + frac * blockWidth
 }
 
 function renderRectsForRegion(
@@ -58,6 +61,7 @@ function renderRectsForRegion(
   screenStartPx: number,
   screenEndPx: number,
   scrollY: number,
+  reversed?: boolean,
 ) {
   let content = ''
   const {
@@ -80,21 +84,10 @@ function renderRectsForRegion(
     const clippedStart = Math.max(startBp, regionStart)
     const clippedEnd = Math.min(endBp, regionEnd)
 
-    const x = bpToScreenX(
-      clippedStart,
-      regionStart,
-      regionEnd,
-      screenStartPx,
-      screenEndPx,
-    )
-    const x2 = bpToScreenX(
-      clippedEnd,
-      regionStart,
-      regionEnd,
-      screenStartPx,
-      screenEndPx,
-    )
-    const w = Math.max(x2 - x, 0.5)
+    const px1 = bpToScreenX(clippedStart, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const px2 = bpToScreenX(clippedEnd, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const x = Math.min(px1, px2)
+    const w = Math.max(Math.abs(px2 - px1), 0.5)
     const y = rectYs[i]! - scrollY
     const h = rectHeights[i]!
     content += `<rect x="${x}" y="${y}" width="${w}" height="${h}" ${fillAttrs(rectColors, i)}/>`
@@ -109,6 +102,7 @@ function renderLinesForRegion(
   screenStartPx: number,
   screenEndPx: number,
   scrollY: number,
+  reversed?: boolean,
 ) {
   let content = ''
   const {
@@ -134,20 +128,8 @@ function renderLinesForRegion(
     const clippedStart = Math.max(startBp, regionStart)
     const clippedEnd = Math.min(endBp, regionEnd)
 
-    const x1 = bpToScreenX(
-      clippedStart,
-      regionStart,
-      regionEnd,
-      screenStartPx,
-      screenEndPx,
-    )
-    const x2 = bpToScreenX(
-      clippedEnd,
-      regionStart,
-      regionEnd,
-      screenStartPx,
-      screenEndPx,
-    )
+    const x1 = bpToScreenX(clippedStart, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const x2 = bpToScreenX(clippedEnd, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
     const y = rectRound(lineYs[i]! - scrollY)
     const lineStroke = strokeAttr(lineColors, i)
     const direction = lineDirections[i]!
@@ -170,15 +152,10 @@ function renderLinesForRegion(
         if (chevronBp < regionStart || chevronBp > regionEnd) {
           continue
         }
-        const cx = bpToScreenX(
-          chevronBp,
-          regionStart,
-          regionEnd,
-          screenStartPx,
-          screenEndPx,
-        )
-        const tipX = cx + chevronW * 0.5 * direction
-        const baseX = cx - chevronW * 0.5 * direction
+        const cx = bpToScreenX(chevronBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+        const dir = reversed ? -direction : direction
+        const tipX = cx + chevronW * 0.5 * dir
+        const baseX = cx - chevronW * 0.5 * dir
 
         content += `<polyline points="${baseX},${y - chevronH} ${tipX},${y} ${baseX},${y + chevronH}" fill="none" ${lineStroke} stroke-width="1"/>`
       }
@@ -194,6 +171,7 @@ function renderArrowsForRegion(
   screenStartPx: number,
   screenEndPx: number,
   scrollY: number,
+  reversed?: boolean,
 ) {
   let content = ''
   const {
@@ -213,15 +191,9 @@ function renderArrowsForRegion(
       continue
     }
 
-    const cx = bpToScreenX(
-      bpPos,
-      regionStart,
-      regionEnd,
-      screenStartPx,
-      screenEndPx,
-    )
+    const cx = bpToScreenX(bpPos, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
     const cy = arrowYs[i]! - scrollY
-    const dir = arrowDirections[i]!
+    const dir = reversed ? -arrowDirections[i]! : arrowDirections[i]!
     const h = arrowHeights[i]!
     const arrowStroke = strokeAttr(arrowColors, i)
     const arrowFill = fillAttrs(arrowColors, i)
@@ -252,11 +224,11 @@ function renderLabelsForRegion(
   regionEnd: number,
   screenStartPx: number,
   screenEndPx: number,
+  reversed?: boolean,
 ) {
   let content = ''
   const { floatingLabelsData, regionStart: dataRegionStart } = data
 
-  const blockBpPerPx = (regionEnd - regionStart) / (screenEndPx - screenStartPx)
   const fontSize = 11
 
   for (const labelData of Object.values(floatingLabelsData)) {
@@ -267,10 +239,10 @@ function renderLabelsForRegion(
       continue
     }
 
-    const featureLeftPx =
-      screenStartPx + (featureStartBp - regionStart) / blockBpPerPx
-    const featureRightPx =
-      screenStartPx + (featureEndBp - regionStart) / blockBpPerPx
+    const px1 = bpToScreenX(featureStartBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const px2 = bpToScreenX(featureEndBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const featureLeftPx = Math.min(px1, px2)
+    const featureRightPx = Math.max(px1, px2)
     const featureWidth = featureRightPx - featureLeftPx
     const featureBottomPx = labelData.topY + labelData.featureHeight
 
@@ -322,6 +294,7 @@ function renderPeptideLettersForRegion(
   regionEnd: number,
   screenStartPx: number,
   screenEndPx: number,
+  reversed?: boolean,
 ) {
   let content = ''
   const { aminoAcidOverlay } = data
@@ -329,16 +302,14 @@ function renderPeptideLettersForRegion(
     return content
   }
 
-  const blockBpPerPx = (regionEnd - regionStart) / (screenEndPx - screenStartPx)
-
   for (const item of aminoAcidOverlay) {
     if (item.endBp < regionStart || item.startBp > regionEnd) {
       continue
     }
 
-    const leftPx = screenStartPx + (item.startBp - regionStart) / blockBpPerPx
-    const rightPx = screenStartPx + (item.endBp - regionStart) / blockBpPerPx
-    const centerPx = (leftPx + rightPx) / 2
+    const px1 = bpToScreenX(item.startBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const px2 = bpToScreenX(item.endBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const centerPx = (px1 + px2) / 2
     const fontSize = Math.min(item.heightPx - 2, 12)
     const color = item.isStopOrNonTriplet ? 'red' : 'black'
     const label = `${item.aminoAcid}${item.proteinIndex + 1}`
@@ -367,6 +338,7 @@ export async function renderSvg(
     regionNumber: number
     start: number
     end: number
+    reversed?: boolean
     screenStartPx: number
     screenEndPx: number
   }[]
@@ -382,45 +354,13 @@ export async function renderSvg(
       continue
     }
 
-    content += renderLinesForRegion(
-      data,
-      vr.start,
-      vr.end,
-      vr.screenStartPx,
-      vr.screenEndPx,
-      scrollY,
-    )
-    content += renderRectsForRegion(
-      data,
-      vr.start,
-      vr.end,
-      vr.screenStartPx,
-      vr.screenEndPx,
-      scrollY,
-    )
-    content += renderArrowsForRegion(
-      data,
-      vr.start,
-      vr.end,
-      vr.screenStartPx,
-      vr.screenEndPx,
-      scrollY,
-    )
-    content += renderLabelsForRegion(
-      data,
-      vr.start,
-      vr.end,
-      vr.screenStartPx,
-      vr.screenEndPx,
-    )
+    const rev = vr.reversed
+    content += renderLinesForRegion(data, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, scrollY, rev)
+    content += renderRectsForRegion(data, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, scrollY, rev)
+    content += renderArrowsForRegion(data, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, scrollY, rev)
+    content += renderLabelsForRegion(data, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, rev)
     if (renderPeptides) {
-      content += renderPeptideLettersForRegion(
-        data,
-        vr.start,
-        vr.end,
-        vr.screenStartPx,
-        vr.screenEndPx,
-      )
+      content += renderPeptideLettersForRegion(data, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, rev)
     }
   }
 
