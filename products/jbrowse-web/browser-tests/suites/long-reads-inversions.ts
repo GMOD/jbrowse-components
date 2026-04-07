@@ -1,8 +1,7 @@
 import {
   findByTestId,
   navigateWithSessionSpec,
-  waitForCanvasRendered,
-  waitForDataLoaded,
+  waitForDataLoaded
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
 
@@ -20,24 +19,20 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-10000',
-              tracks: ['volvox-long-reads-bam'],
-            },
-          ],
-        })
+              tracks: ['volvox-long-reads-bam']
+},
+          ]
+})
 
-        await findByTestId(page, 'pileup-display', 60000)
+        await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="pileup-display"] canvas',
-        )
         await canvasSnapshot(
           page,
           'long-reads-bam-canvas',
-          '[data-testid="pileup-display"] canvas',
+          '[data-testid="pileup-display-done"] canvas',
         )
-      },
-    },
+      }
+},
     {
       name: 'long reads CRAM rendering',
       fn: async page => {
@@ -47,24 +42,20 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-10000',
-              tracks: ['volvox-long-reads-cram'],
-            },
-          ],
-        })
+              tracks: ['volvox-long-reads-cram']
+},
+          ]
+})
 
-        await findByTestId(page, 'pileup-display', 60000)
+        await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="pileup-display"] canvas',
-        )
         await canvasSnapshot(
           page,
           'long-reads-cram-canvas',
-          '[data-testid="pileup-display"] canvas',
+          '[data-testid="pileup-display-done"] canvas',
         )
-      },
-    },
+      }
+},
     {
       name: 'simple inversion BAM rendering',
       fn: async page => {
@@ -74,24 +65,20 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-50000',
-              tracks: ['volvox-simple-inv.bam'],
-            },
-          ],
-        })
+              tracks: ['volvox-simple-inv.bam']
+},
+          ]
+})
 
-        await findByTestId(page, 'pileup-display', 60000)
+        await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="pileup-display"] canvas',
-        )
         await canvasSnapshot(
           page,
           'inversion-simple-bam-canvas',
-          '[data-testid="pileup-display"] canvas',
+          '[data-testid="pileup-display-done"] canvas',
         )
-      },
-    },
+      }
+},
     {
       name: 'simple inversion CRAM rendering',
       fn: async page => {
@@ -101,24 +88,20 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-50000',
-              tracks: ['volvox-simple-inv.cram'],
-            },
-          ],
-        })
+              tracks: ['volvox-simple-inv.cram']
+},
+          ]
+})
 
-        await findByTestId(page, 'pileup-display', 60000)
+        await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="pileup-display"] canvas',
-        )
         await canvasSnapshot(
           page,
           'inversion-simple-cram-canvas',
-          '[data-testid="pileup-display"] canvas',
+          '[data-testid="pileup-display-done"] canvas',
         )
-      },
-    },
+      }
+},
     {
       name: 'inversion with indels rendering',
       fn: async page => {
@@ -128,23 +111,22 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-50000',
-              tracks: ['volvox_inv_indels'],
-            },
-          ],
-        })
+              tracks: ['volvox_inv_indels']
+},
+          ]
+})
 
-        await page.waitForSelector('[data-testid^="display-"] canvas', {
-          timeout: 60000,
-        })
+        await page.waitForSelector('[data-testid$="-done"] canvas', {
+          timeout: 60000
+})
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
         await canvasSnapshot(
           page,
           'inversion-indels-canvas',
-          '[data-testid^="display-"] canvas',
+          '[data-testid$="-done"] canvas',
         )
-      },
-    },
+      }
+},
     {
       name: 'inversion pbsim simulation rendering',
       fn: async page => {
@@ -154,25 +136,21 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-50000',
-              tracks: ['volvox-inv-pbsim'],
-            },
-          ],
-        })
+              tracks: ['volvox-inv-pbsim']
+},
+          ]
+})
 
-        await findByTestId(page, 'pileup-display', 60000)
+        await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="pileup-display"] canvas',
-        )
         await canvasSnapshot(
           page,
           'inversion-pbsim-canvas',
-          '[data-testid="pileup-display"] canvas',
+          '[data-testid="pileup-display-done"] canvas',
         )
-      },
-    },
-  ],
+      }
+},
+  ]
 }
 
 export default suite

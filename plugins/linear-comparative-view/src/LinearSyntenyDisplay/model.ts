@@ -134,6 +134,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       gpuInitialized: false,
 
+      canvasDrawn: false,
+
       /**
        * #volatile
        */
@@ -196,6 +198,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setGpuInitialized(value: boolean) {
         self.gpuInitialized = value
+      },
+      setCanvasDrawn(value: boolean) {
+        self.canvasDrawn = value
       },
       /**
        * #action

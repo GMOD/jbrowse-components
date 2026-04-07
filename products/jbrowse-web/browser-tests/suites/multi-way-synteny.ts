@@ -1,7 +1,6 @@
 import {
   findByTestId,
   navigateWithSessionSpec,
-  waitForCanvasRendered,
   waitForDataLoaded,
 } from '../helpers.ts'
 import { canvasSnapshot, pageSnapshot } from '../snapshot.ts'
@@ -28,13 +27,12 @@ const suite: TestSuite = {
           ],
         })
 
-        await findByTestId(page, 'synteny_canvas', 60000)
+        await findByTestId(page, 'synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(page, '[data-testid="synteny_canvas"]')
         await canvasSnapshot(
           page,
           'multiway-synteny-3way-canvas',
-          '[data-testid="synteny_canvas"]',
+          '[data-testid="synteny_canvas_done"]',
         )
       },
     },
@@ -55,9 +53,8 @@ const suite: TestSuite = {
           ],
         })
 
-        await findByTestId(page, 'synteny_canvas', 60000)
+        await findByTestId(page, 'synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(page, '[data-testid="synteny_canvas"]')
         await pageSnapshot(page, 'multiway-synteny-3way-fullpage')
       },
     },
@@ -85,13 +82,12 @@ const suite: TestSuite = {
           ],
         })
 
-        await findByTestId(page, 'synteny_canvas', 60000)
+        await findByTestId(page, 'synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(page, '[data-testid="synteny_canvas"]')
         await canvasSnapshot(
           page,
           'multiway-synteny-2way-with-genes-canvas',
-          '[data-testid="synteny_canvas"]',
+          '[data-testid="synteny_canvas_done"]',
         )
       },
     },
@@ -115,9 +111,7 @@ const suite: TestSuite = {
           'test_data/grape_peach_synteny/config.json',
         )
 
-        await page.waitForSelector('[data-testid="dotplot_webgl_canvas_done"]', {
-          timeout: 60000,
-        })
+        await findByTestId(page, 'dotplot_webgl_canvas_done', 60000)
         await waitForDataLoaded(page)
         await canvasSnapshot(
           page,

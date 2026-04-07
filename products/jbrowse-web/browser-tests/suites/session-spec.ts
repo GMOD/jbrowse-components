@@ -2,8 +2,7 @@ import {
   findByTestId,
   findByText,
   navigateWithSessionSpec,
-  waitForCanvasRendered,
-  waitForDataLoaded,
+  waitForDataLoaded
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
 
@@ -21,25 +20,21 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-10000',
-              tracks: ['volvox_sv_cram'],
-            },
-          ],
-        })
+              tracks: ['volvox_sv_cram']
+},
+          ]
+})
 
         await findByText(page, 'ctgA')
-        await findByTestId(page, 'pileup-display', 60000)
+        await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="pileup-display"] canvas',
-        )
         await canvasSnapshot(
           page,
           'session-spec-display-snapshot-canvas',
-          '[data-testid="pileup-display"] canvas',
+          '[data-testid="pileup-display-done"] canvas',
         )
-      },
-    },
+      }
+},
     {
       name: 'jexl',
       fn: async page => {
@@ -49,24 +44,23 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:2,707..8,600',
-              tracks: ['volvox_test_vcf_jexl'],
-            },
-          ],
-        })
+              tracks: ['volvox_test_vcf_jexl']
+},
+          ]
+})
 
         await page.waitForSelector('[data-testid^="display-"]', {
-          timeout: 60000,
-        })
+          timeout: 60000
+})
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
         await canvasSnapshot(
           page,
           'session-spec-jexl-canvas',
-          '[data-testid^="display-"] canvas',
+          '[data-testid$="-done"] canvas',
         )
-      },
-    },
-  ],
+      }
+},
+  ]
 }
 
 export default suite

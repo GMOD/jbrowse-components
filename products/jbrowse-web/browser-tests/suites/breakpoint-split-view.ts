@@ -4,8 +4,7 @@ import {
   delay,
   findByTestId,
   navigateWithSessionSpec,
-  waitForCanvasRendered,
-  waitForDataLoaded,
+  waitForDataLoaded
 } from '../helpers.ts'
 import { canvasSnapshot, pageSnapshot } from '../snapshot.ts'
 
@@ -25,15 +24,11 @@ const suite: TestSuite = {
         )
 
         // BSV has two LGV sub-views with alignments tracks
-        await findByTestId(page, 'pileup-display', 60000)
+        await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="pileup-display"] canvas',
-        )
         await pageSnapshot(page, 'bsv-hg19-default-session')
-      },
-    },
+      }
+},
     {
       name: 'breakpoint split view canvas screenshot',
       fn: async page => {
@@ -44,19 +39,15 @@ const suite: TestSuite = {
           { waitUntil: 'networkidle0', timeout: 60000 },
         )
 
-        await findByTestId(page, 'pileup-display', 60000)
+        await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="pileup-display"] canvas',
-        )
         await canvasSnapshot(
           page,
           'bsv-hg19-pileup-canvas',
-          '[data-testid="pileup-display"] canvas',
+          '[data-testid="pileup-display-done"] canvas',
         )
-      },
-    },
+      }
+},
     {
       name: 'volvox inversion breakpoint split view',
       fn: async page => {
@@ -69,30 +60,26 @@ const suite: TestSuite = {
                   type: 'LinearGenomeView',
                   assembly: 'volvox',
                   loc: 'ctgA:1-50000',
-                  tracks: ['volvox_sv'],
-                },
+                  tracks: ['volvox_sv']
+},
                 {
                   type: 'LinearGenomeView',
                   assembly: 'volvox',
                   loc: 'ctgA:1-50000',
-                  tracks: ['volvox_sv'],
-                },
-              ],
-            },
-          ],
-        })
+                  tracks: ['volvox_sv']
+},
+              ]
+},
+          ]
+})
 
-        await findByTestId(page, 'pileup-display', 60000)
+        await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="pileup-display"] canvas',
-        )
         await delay(1000)
         await pageSnapshot(page, 'bsv-volvox-inversion')
-      },
-    },
-  ],
+      }
+},
+  ]
 }
 
 export default suite

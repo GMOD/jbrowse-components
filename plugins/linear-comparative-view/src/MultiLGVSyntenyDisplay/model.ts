@@ -173,6 +173,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       webglRenderer: null as MultiSyntenyRenderer | null,
       colorPalette: null as SyntenyColorPalette | null,
       tabVisibilityVersion: 0,
+      canvasDrawn: false,
     }))
     .views(self => ({
       get prefersOffset() {
@@ -303,6 +304,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
       setWebGLRenderer(renderer: MultiSyntenyRenderer | null) {
         self.webglRenderer = renderer
+      },
+      setCanvasDrawn(value: boolean) {
+        self.canvasDrawn = value
       },
       setColorPalette(palette: SyntenyColorPalette | null) {
         self.colorPalette = palette
@@ -509,6 +513,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                   displayedGenomes,
                   labelW,
                 })
+                if (!self.canvasDrawn) {
+                  self.setCanvasDrawn(true)
+                }
               },
               { name: 'MultiLGVSyntenyDisplay:draw' },
             ),

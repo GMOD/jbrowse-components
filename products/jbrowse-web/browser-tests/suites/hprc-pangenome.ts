@@ -35,13 +35,13 @@ const suite: TestSuite = {
           'test_data/hprc/config_hprc_chrM.json',
         )
 
-        await findByTestId(page, 'multi_synteny_canvas', 60000)
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(3000)
         await canvasSnapshot(
           page,
           'hprc-chrM-44hap-multi-lgv-canvas',
-          '[data-testid="multi_synteny_canvas"]',
+          '[data-testid="multi_synteny_canvas_done"]',
         )
       },
     },
@@ -68,7 +68,7 @@ const suite: TestSuite = {
           'test_data/hprc/config_hprc_chrM.json',
         )
 
-        await findByTestId(page, 'multi_synteny_canvas', 60000)
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(3000)
         await pageSnapshot(page, 'hprc-chrM-44hap-multi-lgv-fullpage')

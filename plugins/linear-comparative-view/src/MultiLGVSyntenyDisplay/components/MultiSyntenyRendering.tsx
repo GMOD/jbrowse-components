@@ -546,7 +546,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
         onClick={onClick}
       >
         <canvas
-          data-testid="multi_synteny_canvas"
+          data-testid={model.canvasDrawn ? 'multi_synteny_canvas_done' : 'multi_synteny_canvas'}
           ref={canvasRef}
           style={{
             width,

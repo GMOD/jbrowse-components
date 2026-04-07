@@ -74,61 +74,6 @@ export async function waitForDataLoaded(page: Page, timeout = 60000) {
   )
 }
 
-export async function waitForCanvasRendered(
-  page: Page,
-  selector: string,
-  timeout = 30000,
-) {
-  await page.waitForFunction(
-    (sel: string) => {
-      const canvas = document.querySelector<HTMLCanvasElement>(sel)
-      if (!canvas || canvas.width === 0 || canvas.height === 0) {
-        return false
-      }
-
-      // Check that no loading overlay is visible in the display container
-      const displayContainer =
-        canvas.closest('[data-testid^="display-"]') ||
-        canvas.closest('[data-testid="pileup-display"]')
-      if (displayContainer) {
-        const outerDisplay = displayContainer.closest(
-          '[data-testid^="display-"]',
-        )
-        const container = outerDisplay || displayContainer
-        if (container.querySelector('[data-testid="loading-overlay"]')) {
-          return false
-        }
-      }
-
-      // Downsample the full canvas to 32x32 and check for any non-zero pixel.
-      // An unrendered canvas is all (0,0,0,0). Any rendered canvas —
-      // white background (synteny), scattered dots (dotplot), features —
-      // has at least one non-zero pixel somewhere.
-      try {
-        const tmp = document.createElement('canvas')
-        tmp.width = 32
-        tmp.height = 32
-        const ctx = tmp.getContext('2d')
-        if (!ctx) {
-          return false
-        }
-        ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, 32, 32)
-        const d = ctx.getImageData(0, 0, 32, 32).data
-        for (const v of d) {
-          if (v > 0) {
-            return true
-          }
-        }
-        return false
-      } catch {
-        return false
-      }
-    },
-    { timeout, polling: 200 },
-    selector,
-  )
-}
-
 export async function navigateToApp(
   page: Page,
   config = 'test_data/volvox/config.json',

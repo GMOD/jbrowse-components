@@ -30,13 +30,13 @@ const suite: TestSuite = {
           ],
         })
 
-        await findByTestId(page, 'multi_synteny_canvas', 60000)
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(2000)
         await canvasSnapshot(
           page,
           'multi-lgv-volvox-perspective-canvas',
-          '[data-testid="multi_synteny_canvas"]',
+          '[data-testid="multi_synteny_canvas_done"]',
         )
       },
     },
@@ -59,7 +59,7 @@ const suite: TestSuite = {
           ],
         })
 
-        await findByTestId(page, 'multi_synteny_canvas', 60000)
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(2000)
         await pageSnapshot(page, 'multi-lgv-volvox-perspective-fullpage')
@@ -84,13 +84,13 @@ const suite: TestSuite = {
           ],
         })
 
-        await findByTestId(page, 'multi_synteny_canvas', 60000)
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(2000)
         await canvasSnapshot(
           page,
           'multi-lgv-volvox-del-perspective-canvas',
-          '[data-testid="multi_synteny_canvas"]',
+          '[data-testid="multi_synteny_canvas_done"]',
         )
       },
     },
@@ -113,7 +113,7 @@ const suite: TestSuite = {
           ],
         })
 
-        await findByTestId(page, 'multi_synteny_canvas', 60000)
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(2000)
         await pageSnapshot(page, 'multi-lgv-volvox-del-perspective-fullpage')

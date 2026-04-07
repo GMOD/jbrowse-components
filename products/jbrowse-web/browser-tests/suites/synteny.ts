@@ -1,7 +1,6 @@
 import {
   findByTestId,
   navigateWithSessionSpec,
-  waitForCanvasRendered,
   waitForDataLoaded,
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
@@ -43,13 +42,12 @@ function syntenyTest(
         'test_data/grape_peach_synteny/config.json',
       )
 
-      await findByTestId(page, 'synteny_canvas', 60000)
+      await findByTestId(page, 'synteny_canvas_done', 60000)
       await waitForDataLoaded(page)
-      await waitForCanvasRendered(page, '[data-testid="synteny_canvas"]')
       await canvasSnapshot(
         page,
         `${snapshotName}-canvas`,
-        '[data-testid="synteny_canvas"]',
+        '[data-testid="synteny_canvas_done"]',
       )
     },
   }
@@ -84,15 +82,14 @@ const suite: TestSuite = {
           ],
         })
 
-        await page.waitForSelector('[data-testid^="display-"] canvas', {
+        await page.waitForSelector('[data-testid$="-done"]', {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
         await canvasSnapshot(
           page,
           'synteny-lgv-paf-canvas',
-          '[data-testid^="display-"] canvas',
+          '[data-testid$="-done"] canvas',
         )
       },
     },

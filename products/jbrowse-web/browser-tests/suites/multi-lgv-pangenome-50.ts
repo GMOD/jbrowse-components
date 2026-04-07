@@ -36,13 +36,13 @@ const suite: TestSuite = {
           config,
         )
 
-        await findByTestId(page, 'multi_synteny_canvas', 60000)
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(2000)
         await canvasSnapshot(
           page,
           'multi-lgv-pangenome-50-canvas',
-          '[data-testid="multi_synteny_canvas"]',
+          '[data-testid="multi_synteny_canvas_done"]',
         )
       },
     },
@@ -69,7 +69,7 @@ const suite: TestSuite = {
           config,
         )
 
-        await findByTestId(page, 'multi_synteny_canvas', 60000)
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(2000)
         await pageSnapshot(page, 'multi-lgv-pangenome-50-fullpage')
@@ -98,13 +98,13 @@ const suite: TestSuite = {
           config,
         )
 
-        await findByTestId(page, 'multi_synteny_canvas', 60000)
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(2000)
         await canvasSnapshot(
           page,
           'multi-lgv-pangenome-50-zoomed-canvas',
-          '[data-testid="multi_synteny_canvas"]',
+          '[data-testid="multi_synteny_canvas_done"]',
         )
       },
     },

@@ -8,7 +8,6 @@ import {
   findByTestId,
   findByText,
   navigateWithSessionSpec,
-  waitForCanvasRendered,
   waitForDataLoaded,
   waitForLoadingToComplete,
 } from '../helpers.ts'
@@ -91,12 +90,8 @@ const suite: TestSuite = {
             },
           ],
         })
-        await findByTestId(page, 'wiggle-display', 60000)
+        await findByTestId(page, 'wiggle-display-done', 60000)
         await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="wiggle-display"] canvas',
-        )
 
         const svg = await exportSvgAndSave(page, 'svg-export-wiggle')
         if (!svg.includes('</svg>')) {
@@ -118,12 +113,8 @@ const suite: TestSuite = {
             },
           ],
         })
-        await findByTestId(page, 'pileup-display', 60000)
+        await findByTestId(page, 'pileup-display-done', 60000)
         await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="pileup-display"] canvas',
-        )
 
         await exportSvgAndSave(page, 'svg-export-alignments')
       },
@@ -142,12 +133,8 @@ const suite: TestSuite = {
             },
           ],
         })
-        await findByTestId(page, 'wiggle-display', 60000)
+        await findByTestId(page, 'wiggle-display-done', 60000)
         await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="wiggle-display"] canvas',
-        )
 
         await exportSvgAndSave(page, 'svg-export-multiple-tracks')
       },
@@ -191,12 +178,8 @@ const suite: TestSuite = {
             },
           ],
         })
-        await findByTestId(page, 'wiggle-display', 60000)
+        await findByTestId(page, 'wiggle-display-done', 60000)
         await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="wiggle-display"] canvas',
-        )
 
         const svg = await exportSvgAndSave(page, 'svg-export-multi-wiggle')
         const rectCount = (svg.match(/<rect/g) || []).length
@@ -221,11 +204,10 @@ const suite: TestSuite = {
             },
           ],
         })
-        await page.waitForSelector('[data-testid^="display-"] canvas', {
+        await page.waitForSelector('[data-testid$="-done"]', {
           timeout: 60000,
         })
         await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
 
         const svg = await exportSvgAndSave(page, 'svg-export-genes-peptides')
         const textCount = (svg.match(/<text/g) || []).length
@@ -249,12 +231,8 @@ const suite: TestSuite = {
             },
           ],
         })
-        await findByTestId(page, 'pileup-display', 60000)
+        await findByTestId(page, 'pileup-display-done', 60000)
         await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="pileup-display"] canvas',
-        )
 
         const svg = await exportSvgAndSave(page, 'svg-export-sashimi-arcs')
         const pathCount = (svg.match(/<path/g) || []).length
@@ -282,9 +260,8 @@ const suite: TestSuite = {
           'test_data/grape_peach_synteny/config.json',
         )
 
-        await findByTestId(page, 'synteny_canvas', 60000)
+        await findByTestId(page, 'synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(page, '[data-testid="synteny_canvas"]')
 
         await exportSvgAndSave(page, 'svg-export-synteny-2way')
       },
@@ -307,9 +284,8 @@ const suite: TestSuite = {
           ],
         })
 
-        await findByTestId(page, 'synteny_canvas', 60000)
+        await findByTestId(page, 'synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(page, '[data-testid="synteny_canvas"]')
 
         await exportSvgAndSave(page, 'svg-export-synteny-3way')
       },

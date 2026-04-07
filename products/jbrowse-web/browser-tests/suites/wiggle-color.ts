@@ -3,8 +3,7 @@ import {
   findByTestId,
   findByText,
   navigateWithSessionSpec,
-  waitForCanvasRendered,
-  waitForDataLoaded,
+  waitForDataLoaded
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
 
@@ -22,17 +21,13 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-4000',
-              tracks: ['volvox_gc'],
-            },
-          ],
-        })
+              tracks: ['volvox_gc']
+},
+          ]
+})
 
-        await findByTestId(page, 'wiggle-display', 60000)
+        await findByTestId(page, 'wiggle-display-done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="wiggle-display"] canvas',
-        )
 
         const menuIcon = await findByTestId(page, 'track_menu_icon', 10000)
         await menuIcon?.click()
@@ -51,23 +46,19 @@ const suite: TestSuite = {
         await delay(1500)
 
         const submitBtn = await page.waitForSelector('button[type="submit"]', {
-          timeout: 10000,
-        })
+          timeout: 10000
+})
         await submitBtn?.click()
         await delay(1000)
 
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="wiggle-display"] canvas',
-        )
         await canvasSnapshot(
           page,
           'wiggle-color-after-red',
-          '[data-testid="wiggle-display"] canvas',
+          '[data-testid="wiggle-display-done"] canvas',
         )
-      },
-    },
-  ],
+      }
+},
+  ]
 }
 
 export default suite

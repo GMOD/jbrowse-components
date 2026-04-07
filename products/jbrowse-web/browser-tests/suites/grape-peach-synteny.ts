@@ -1,8 +1,7 @@
 import {
   findByTestId,
   navigateWithSessionSpec,
-  waitForCanvasRendered,
-  waitForDataLoaded,
+  waitForDataLoaded
 } from '../helpers.ts'
 import { canvasSnapshot, pageSnapshot } from '../snapshot.ts'
 
@@ -26,32 +25,27 @@ const suite: TestSuite = {
                 tracks: ['peach_grape_minimap2'],
                 views: [
                   {
-                    assembly: 'grape',
-                  },
+                    assembly: 'grape'
+},
                   {
-                    assembly: 'peach',
-                  },
-                ],
-              },
-            ],
-          },
+                    assembly: 'peach'
+},
+                ]
+},
+            ]
+},
           grapePeachConfig,
         )
 
-        await findByTestId(page, 'synteny_canvas', 120000)
+        await findByTestId(page, 'synteny_canvas_done', 120000)
         await waitForDataLoaded(page, 120000)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="synteny_canvas"]',
-          120000,
-        )
         await canvasSnapshot(
           page,
           'grape-peach-synteny-overview-canvas',
-          '[data-testid="synteny_canvas"]',
+          '[data-testid="synteny_canvas_done"]',
         )
-      },
-    },
+      }
+},
     {
       name: 'full page screenshot of grape vs peach synteny',
       fn: async page => {
@@ -64,29 +58,24 @@ const suite: TestSuite = {
                 tracks: ['peach_grape_minimap2'],
                 views: [
                   {
-                    assembly: 'grape',
-                  },
+                    assembly: 'grape'
+},
                   {
-                    assembly: 'peach',
-                  },
-                ],
-              },
-            ],
-          },
+                    assembly: 'peach'
+},
+                ]
+},
+            ]
+},
           grapePeachConfig,
         )
 
-        await findByTestId(page, 'synteny_canvas', 120000)
+        await findByTestId(page, 'synteny_canvas_done', 120000)
         await waitForDataLoaded(page, 120000)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="synteny_canvas"]',
-          120000,
-        )
         await pageSnapshot(page, 'grape-peach-synteny-fullpage')
-      },
-    },
-  ],
+      }
+},
+  ]
 }
 
 export default suite

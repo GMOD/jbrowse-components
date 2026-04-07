@@ -3,8 +3,7 @@ import {
   findByTestId,
   findByText,
   navigateWithSessionSpec,
-  waitForCanvasRendered,
-  waitForDataLoaded,
+  waitForDataLoaded
 } from '../helpers.ts'
 
 import type { TestSuite } from '../types.ts'
@@ -21,22 +20,18 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1000-2000',
-              tracks: ['volvox_cram'],
-            },
-          ],
-        })
+              tracks: ['volvox_cram']
+},
+          ]
+})
 
         await findByText(page, 'ctgA')
-        await findByTestId(page, 'pileup-display', 60000)
+        await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="pileup-display"] canvas',
-        )
 
         const beforePixels = await page.evaluate(() => {
           const canvas = document.querySelector<HTMLCanvasElement>(
-            '[data-testid="pileup-display"] canvas',
+            '[data-testid="pileup-display-done"] canvas',
           )
           if (!canvas) {
             return 0
@@ -96,8 +91,8 @@ const suite: TestSuite = {
             `      [diagnostic] canvas has no content variation, beforePixels: ${beforePixels}`,
           )
         }
-      },
-    },
+      }
+},
     {
       name: 'feature track redraws after zoom out',
       fn: async page => {
@@ -107,17 +102,16 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1000-2000',
-              tracks: ['volvox_filtered_vcf'],
-            },
-          ],
-        })
+              tracks: ['volvox_filtered_vcf']
+},
+          ]
+})
 
         await findByText(page, 'ctgA')
         await page.waitForSelector('[data-testid^="display-"]', {
-          timeout: 60000,
-        })
+          timeout: 60000
+})
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
 
         const zoomOut = await findByTestId(page, 'zoom_out', 10000)
         await zoomOut?.click()
@@ -125,9 +119,8 @@ const suite: TestSuite = {
         await delay(2000)
         await waitForDataLoaded(page, 90000)
 
-        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
-      },
-    },
+      }
+},
     {
       name: 'wiggle track fills visible region after zoom',
       fn: async page => {
@@ -137,17 +130,16 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1000-3000',
-              tracks: ['volvox_cram_snpcoverage'],
-            },
-          ],
-        })
+              tracks: ['volvox_cram_snpcoverage']
+},
+          ]
+})
 
         await findByText(page, 'ctgA')
         await page.waitForSelector('[data-testid^="display-"]', {
-          timeout: 60000,
-        })
+          timeout: 60000
+})
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
 
         const zoomOut = await findByTestId(page, 'zoom_out', 10000)
         await zoomOut?.click()
@@ -155,14 +147,9 @@ const suite: TestSuite = {
         await delay(2000)
         await waitForDataLoaded(page, 90000)
 
-        await waitForCanvasRendered(
-          page,
-          '[data-testid^="display-"] canvas',
-          60000,
-        )
-      },
-    },
-  ],
+      }
+},
+  ]
 }
 
 export default suite

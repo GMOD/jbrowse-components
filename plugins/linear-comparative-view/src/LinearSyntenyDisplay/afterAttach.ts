@@ -91,6 +91,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             hoveredFeatureId,
             clickedFeatureId,
           )
+          if (!self.canvasDrawn) {
+            self.setCanvasDrawn(true)
+          }
         } catch (e) {
           console.error('[synteny] render error:', e)
           if (isAlive(self)) {

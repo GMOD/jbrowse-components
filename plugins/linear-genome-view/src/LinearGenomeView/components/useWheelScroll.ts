@@ -54,6 +54,33 @@ export function useWheelScroll(
   const rafId = useRef<number | null>(null)
   const lastRafTime = useRef<number | null>(null)
 
+  // when scrollZoom is on, lock the nearest scrollable ancestor(s) at the
+  // CSS level. Chrome has a scroll "intervention": if the main thread is slow
+  // to respond to a non-passive wheel listener, it starts native scroll
+  // anyway and marks subsequent events as non-cancelable. Setting
+  // overflow-y: hidden on the scrollable containers above us prevents any
+  // scroll from starting at all, which is the only reliable defense.
+  useEffect(() => {
+    if (!model.scrollZoom || !ref.current) {
+      return
+    }
+    const locked: { el: HTMLElement; prev: string }[] = []
+    let el = ref.current.parentElement
+    while (el && el !== document.body) {
+      const style = window.getComputedStyle(el)
+      if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
+        locked.push({ el, prev: el.style.overflowY })
+        el.style.overflowY = 'hidden'
+      }
+      el = el.parentElement
+    }
+    return () => {
+      for (const { el: lockedEl, prev } of locked) {
+        lockedEl.style.overflowY = prev
+      }
+    }
+  }, [model.scrollZoom, ref])
+
   useEffect(() => {
     const curr = ref.current
     if (!curr) {
@@ -90,6 +117,12 @@ export function useWheelScroll(
         model.scrollZoom && Math.abs(deltaY) >= Math.abs(deltaX)
 
       if (isCtrlZoom || isScrollZoom) {
+        if (!event.cancelable) {
+          console.debug(
+            '[useWheelScroll] wheel event not cancelable — scroll sequence already in progress',
+            { deltaY: event.deltaY, deltaX: event.deltaX },
+          )
+        }
         event.preventDefault()
         zoomDelta.current += deltaY
         zoomDivisor.current = isCtrlZoom

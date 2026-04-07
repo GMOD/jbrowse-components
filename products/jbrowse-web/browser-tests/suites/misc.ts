@@ -3,8 +3,7 @@ import {
   appendGpuParam,
   findByTestId,
   navigateWithSessionSpec,
-  waitForCanvasRendered,
-  waitForDataLoaded,
+  waitForDataLoaded
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
 
@@ -22,24 +21,20 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:13,010..13,610',
-              tracks: ['volvox_alignments_pileup_coverage'],
-            },
-          ],
-        })
+              tracks: ['volvox_alignments_pileup_coverage']
+},
+          ]
+})
 
-        await findByTestId(page, 'pileup-display', 60000)
+        await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="pileup-display"] canvas',
-        )
         await canvasSnapshot(
           page,
           'misc-snpcoverage-canvas',
-          '[data-testid="pileup-display"] canvas',
+          '[data-testid="pileup-display-done"] canvas',
         )
-      },
-    },
+      }
+},
     {
       name: 'NCBI alias adapter',
       fn: async page => {
@@ -50,18 +45,17 @@ const suite: TestSuite = {
           { waitUntil: 'networkidle0', timeout: 60000 },
         )
 
-        await page.waitForSelector('[data-testid^="display-"] canvas', {
-          timeout: 60000,
-        })
+        await page.waitForSelector('[data-testid$="-done"] canvas', {
+          timeout: 60000
+})
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
         await canvasSnapshot(
           page,
           'misc-ncbi-alias-canvas',
-          '[data-testid^="display-"] canvas',
+          '[data-testid$="-done"] canvas',
         )
-      },
-    },
+      }
+},
     {
       name: 'GFF3 track rendering',
       fn: async page => {
@@ -71,27 +65,23 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:907..15,319',
-              tracks: ['gff3tabix_genes'],
-            },
-          ],
-        })
+              tracks: ['gff3tabix_genes']
+},
+          ]
+})
 
         await page.waitForSelector('[data-testid^="display-gff3tabix_genes"]', {
-          timeout: 60000,
-        })
+          timeout: 60000
+})
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid^="display-gff3tabix_genes"] canvas',
-        )
         await canvasSnapshot(
           page,
           'misc-gff3-track-canvas',
           '[data-testid^="display-gff3tabix_genes"] canvas',
         )
-      },
-    },
-  ],
+      }
+},
+  ]
 }
 
 export default suite

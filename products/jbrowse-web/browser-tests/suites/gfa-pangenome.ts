@@ -38,13 +38,13 @@ const suite: TestSuite = {
           config,
         )
 
-        await findByTestId(page, 'multi_synteny_canvas', 60000)
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(2000)
         await canvasSnapshot(
           page,
           'gfa-pangenome-aln-cigar-canvas',
-          '[data-testid="multi_synteny_canvas"]',
+          '[data-testid="multi_synteny_canvas_done"]',
         )
       },
     },
@@ -57,13 +57,13 @@ const suite: TestSuite = {
           config,
         )
 
-        await findByTestId(page, 'multi_synteny_canvas', 60000)
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(2000)
         await canvasSnapshot(
           page,
           'gfa-pangenome-runtime-cigar-canvas',
-          '[data-testid="multi_synteny_canvas"]',
+          '[data-testid="multi_synteny_canvas_done"]',
         )
       },
     },
@@ -76,14 +76,14 @@ const suite: TestSuite = {
           config,
         )
 
-        await findByTestId(page, 'multi_synteny_canvas', 60000)
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(2000)
 
         // Verify the canvas has non-white pixels (features are actually drawn)
         const hasFeatures = await page.evaluate(() => {
           const canvas = document.querySelector<HTMLCanvasElement>(
-            '[data-testid="multi_synteny_canvas"]',
+            '[data-testid="multi_synteny_canvas_done"]',
           )
           if (!canvas) {
             return false
@@ -116,11 +116,11 @@ const suite: TestSuite = {
           config,
         )
 
-        await findByTestId(page, 'multi_synteny_canvas', 60000)
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(2000)
 
-        const canvas = await page.$('[data-testid="multi_synteny_canvas"]')
+        const canvas = await page.$('[data-testid="multi_synteny_canvas_done"]')
         const box = await canvas!.boundingBox()
         if (!box) {
           throw new Error('Could not get canvas bounding box')
@@ -169,7 +169,7 @@ const suite: TestSuite = {
           config,
         )
 
-        await findByTestId(page, 'multi_synteny_canvas', 60000)
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(2000)
 
@@ -193,7 +193,7 @@ const suite: TestSuite = {
           config,
         )
 
-        await findByTestId(page, 'multi_synteny_canvas', 60000)
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(2000)
         await pageSnapshot(page, 'gfa-pangenome-aln-fullpage')
