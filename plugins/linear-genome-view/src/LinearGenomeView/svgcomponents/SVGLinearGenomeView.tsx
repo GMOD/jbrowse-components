@@ -64,33 +64,16 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const displayResults = await Promise.all(
     visibleTracks.map(async track => {
       const display = track.displays[0]
-      const hasRenderSvg = typeof display.renderSvg === 'function'
-      console.warn(
-        '[SVG export] track',
-        getTrackName(track.configuration, session),
-        'display type',
-        display.type,
-        'hasRenderSvg',
-        hasRenderSvg,
-        'notReady',
-        display.renderProps().notReady,
-        'error',
-        display.error,
-      )
-      if (!hasRenderSvg) {
+      // Canvas-based displays (alignments, wiggle, canvas plugin) always return
+      // notReady:true and do their own internal await when() inside renderSvg.
+      // Server-side rendered displays use notReady:false when loaded, so we
+      // wait for them here to avoid rendering before data or error is known.
+      if (!display.renderProps().notReady) {
         await when(() => isReadyOrHasError(display))
-      } else {
-        console.warn(
-          '[SVG export] skipping readiness wait for display with renderSvg:',
-          display.type,
-        )
       }
-      console.warn('[SVG export] calling renderSvg for', display.type)
-      const result = await display.renderSvg({ ...opts, theme, legendWidth })
-      console.warn('[SVG export] renderSvg complete for', display.type)
       return {
         track,
-        result,
+        result: await display.renderSvg({ ...opts, theme, legendWidth }),
       }
     }),
   )

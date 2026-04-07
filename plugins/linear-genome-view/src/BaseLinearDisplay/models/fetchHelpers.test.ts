@@ -158,9 +158,10 @@ describe('checkByteEstimate', () => {
     expect(result!.tooLarge).toBe(false)
   })
 
-  it('uses higher of adapter and display limits', async () => {
-    // Edge case: display config has higher limit than adapter.
-    // Should use the higher one (display's 10MB > adapter's 5MB).
+  it('adapter fetchSizeLimit takes precedence over display limit', async () => {
+    // When adapter returns its own fetchSizeLimit, it takes precedence over the
+    // display config's fetchSizeLimit (replicates FeatureDensityMixin fallback chain).
+    // adapter limit = 5MB, display limit = 10MB, bytes = 7MB → too large (7MB > 5MB)
     const rpc = makeRpcManager({ bytes: 7_000_000, fetchSizeLimit: 5_000_000 })
     const config = makeConfig({ fetchSizeLimit: 10_000_000 })
 
@@ -173,7 +174,7 @@ describe('checkByteEstimate', () => {
     )
 
     expect(result).not.toBeNull()
-    expect(result!.tooLarge).toBe(false)
+    expect(result!.tooLarge).toBe(true)
   })
 
   it('passes correct regions and adapterConfig to RPC', async () => {

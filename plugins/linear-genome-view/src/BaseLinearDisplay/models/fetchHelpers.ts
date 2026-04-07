@@ -47,11 +47,6 @@ export async function checkByteEstimate(
   const effectiveLimit =
     config.userByteSizeLimit || stats.fetchSizeLimit || config.fetchSizeLimit
 
-  // eslint-disable-next-line no-console
-  console.debug(
-    `[byte-estimate] bytes=${stats.bytes ?? 'n/a'} effectiveLimit=${effectiveLimit} (user=${config.userByteSizeLimit ?? 'n/a'}, adapter=${stats.fetchSizeLimit ?? 'n/a'}, display=${config.fetchSizeLimit}) visibleBp=${config.visibleBp}`,
-  )
-
   if (stats.bytes && stats.bytes > effectiveLimit) {
     return {
       stats,

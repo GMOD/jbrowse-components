@@ -1,4 +1,5 @@
 import { getContainingView } from '@jbrowse/core/util'
+import { SVGErrorBox } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import { bpToScreenPx } from './components/coordinateUtils.ts'
@@ -16,6 +17,7 @@ interface RenderSvgModel {
   rpcDataMap: Map<number, FeatureDataResult>
   error: unknown
   regionTooLarge: boolean
+  height: number
 }
 
 function rgbaColor(colors: Uint8Array, i: number) {
@@ -385,6 +387,10 @@ export async function renderSvg(
     () => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge,
   )
   const { rpcDataMap } = model
+
+  if (model.error) {
+    return <SVGErrorBox error={model.error} width={view.width} height={model.height} />
+  }
 
   if (rpcDataMap.size === 0) {
     return null

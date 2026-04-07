@@ -11,7 +11,7 @@ export default function LGVSyntenyDisplayF(pluginManager: PluginManager) {
     const stateModel = stateModelF(configSchema)
     const { ReactComponent } = pluginManager.getDisplayType(
       'LinearAlignmentsDisplay',
-    )
+    )!
     return new DisplayType({
       name: 'LGVSyntenyDisplay',
       configSchema,

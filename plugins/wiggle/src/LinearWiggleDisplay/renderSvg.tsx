@@ -1,5 +1,7 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
+import { SVGErrorBox } from '@jbrowse/plugin-linear-genome-view'
+import { when } from 'mobx'
 
 import DensityLegend from '../shared/DensityLegend.tsx'
 import YScaleBar from '../shared/YScaleBar.tsx'
@@ -136,9 +138,16 @@ export async function renderSvg(
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
+  await when(
+    () => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge,
+  )
   const { offsetPx } = view
   const height = model.height
   const { ticks, rpcDataMap, domain, scaleType } = model
+
+  if (model.error) {
+    return <SVGErrorBox error={model.error} width={view.width} height={height} />
+  }
 
   if (rpcDataMap.size === 0 || !domain) {
     return null

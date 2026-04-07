@@ -32,6 +32,8 @@ import {
 
 import type { ArcsDataResult } from '../RenderArcsDataRPC/types.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
+import { SVGErrorBox } from '@jbrowse/plugin-linear-genome-view'
+
 import type { ColorPalette } from './components/shaders/colors.ts'
 import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type {
@@ -681,6 +683,10 @@ export async function renderSvg(
     showInterbaseIndicators,
     showSoftClipping,
   } = model
+
+  if (model.error) {
+    return <SVGErrorBox error={model.error} width={view.width} height={model.height} />
+  }
 
   if (rpcDataMap.size === 0) {
     return null
