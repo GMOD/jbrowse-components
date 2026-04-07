@@ -36,6 +36,7 @@ export interface VariantDisplayModel extends VariantDisplayModelBase {
     regionNumber: number
     start: number
     end: number
+    reversed?: boolean
     assemblyName: string
     screenStartPx: number
     screenEndPx: number
@@ -79,7 +80,7 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
   const blockWidth = region.screenEndPx - region.screenStartPx
   const regionLengthBp = region.end - region.start
   const pxPerBp = blockWidth / regionLengthBp
-  const reversed = (region as { reversed?: boolean }).reversed
+  const reversed = region.reversed
   const frac1 = (cell.genomicStart - region.start) / regionLengthBp
   const frac2 = (cell.genomicEnd - region.start) / regionLengthBp
   const px1 = reversed
