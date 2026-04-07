@@ -11,6 +11,7 @@ import type {
   CanvasFeatureBackend,
   FeatureRenderBlock,
 } from './canvasFeatureBackendTypes.ts'
+import type { RegionGpuData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 
 export class CanvasFeatureRenderer {
   onDeviceLost: (() => void) | null = null
@@ -37,28 +38,7 @@ export class CanvasFeatureRenderer {
     return true
   }
 
-  uploadRegion(
-    regionNumber: number,
-    data: {
-      regionStart: number
-      rectPositions: Uint32Array
-      rectYs: Float32Array
-      rectHeights: Float32Array
-      rectColors: Uint8Array
-      numRects: number
-      linePositions: Uint32Array
-      lineYs: Float32Array
-      lineColors: Uint8Array
-      lineDirections: Int8Array
-      numLines: number
-      arrowXs: Uint32Array
-      arrowYs: Float32Array
-      arrowDirections: Int8Array
-      arrowHeights: Float32Array
-      arrowColors: Uint8Array
-      numArrows: number
-    },
-  ) {
+  uploadRegion(regionNumber: number, data: RegionGpuData) {
     this.backend?.uploadRegion(regionNumber, data)
   }
 

@@ -88,6 +88,27 @@ export interface FeatureDataResult {
   maxY: number
 }
 
+export type RegionGpuData = Pick<
+  FeatureDataResult,
+  | 'regionStart'
+  | 'rectPositions'
+  | 'rectYs'
+  | 'rectHeights'
+  | 'rectColors'
+  | 'numRects'
+  | 'linePositions'
+  | 'lineYs'
+  | 'lineColors'
+  | 'lineDirections'
+  | 'numLines'
+  | 'arrowXs'
+  | 'arrowYs'
+  | 'arrowDirections'
+  | 'arrowHeights'
+  | 'arrowColors'
+  | 'numArrows'
+>
+
 export interface RegionTooLargeResult {
   regionTooLarge: true
   featureCount: number

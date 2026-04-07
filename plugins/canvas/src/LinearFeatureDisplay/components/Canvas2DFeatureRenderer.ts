@@ -18,6 +18,7 @@ import type {
   CanvasFeatureBackend,
   FeatureRenderBlock,
 } from './canvasFeatureBackendTypes.ts'
+import type { RegionGpuData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 
 const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5
 const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5
@@ -56,28 +57,7 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
     this.ctx = ctx
   }
 
-  uploadRegion(
-    regionNumber: number,
-    data: {
-      regionStart: number
-      rectPositions: Uint32Array
-      rectYs: Float32Array
-      rectHeights: Float32Array
-      rectColors: Uint8Array
-      numRects: number
-      linePositions: Uint32Array
-      lineYs: Float32Array
-      lineColors: Uint8Array
-      lineDirections: Int8Array
-      numLines: number
-      arrowXs: Uint32Array
-      arrowYs: Float32Array
-      arrowDirections: Int8Array
-      arrowHeights: Float32Array
-      arrowColors: Uint8Array
-      numArrows: number
-    },
-  ) {
+  uploadRegion(regionNumber: number, data: RegionGpuData) {
     this.regions.set(regionNumber, {
       regionStart: data.regionStart,
       rectPositions: data.rectPositions,

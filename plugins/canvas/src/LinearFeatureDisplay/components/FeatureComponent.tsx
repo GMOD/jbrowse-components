@@ -268,25 +268,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     // fetch completion or relayout), not on every scroll tick, so
     // always re-uploading is safe and correct.
     for (const [regionNumber, data] of rpcDataMap) {
-      renderer.uploadRegion(regionNumber, {
-        regionStart: data.regionStart,
-        rectPositions: data.rectPositions,
-        rectYs: data.rectYs,
-        rectHeights: data.rectHeights,
-        rectColors: data.rectColors,
-        numRects: data.numRects,
-        linePositions: data.linePositions,
-        lineYs: data.lineYs,
-        lineColors: data.lineColors,
-        lineDirections: data.lineDirections,
-        numLines: data.numLines,
-        arrowXs: data.arrowXs,
-        arrowYs: data.arrowYs,
-        arrowDirections: data.arrowDirections,
-        arrowHeights: data.arrowHeights,
-        arrowColors: data.arrowColors,
-        numArrows: data.numArrows,
-      })
+      renderer.uploadRegion(regionNumber, data)
     }
     renderer.pruneStaleRegions([...rpcDataMap.keys()])
 
