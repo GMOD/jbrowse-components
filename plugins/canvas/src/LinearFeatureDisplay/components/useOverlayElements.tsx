@@ -58,8 +58,14 @@ export function useFloatingLabels(
       }
 
       const regionStart = data.regionStart
-      const blockBpPerPx =
-        (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
+      const bpLength = vr.end - vr.start
+      const screenWidth = vr.screenEndPx - vr.screenStartPx
+      const bpToScreenPx = (bp: number) => {
+        const frac = (bp - vr.start) / bpLength
+        return vr.reversed
+          ? vr.screenEndPx - frac * screenWidth
+          : vr.screenStartPx + frac * screenWidth
+      }
 
       const flatbushItemById = new Map<string, FlatbushItem>()
       for (const f of data.flatbushItems) {
@@ -82,11 +88,10 @@ export function useFloatingLabels(
 
         renderedLabels.add(featureId)
 
-        const featureLeftPx =
-          vr.screenStartPx + (featureStartBp - vr.start) / blockBpPerPx
-        const featureRightPx =
-          vr.screenStartPx + (featureEndBp - vr.start) / blockBpPerPx
-
+        const px1 = bpToScreenPx(featureStartBp)
+        const px2 = bpToScreenPx(featureEndBp)
+        const featureLeftPx = Math.min(px1, px2)
+        const featureRightPx = Math.max(px1, px2)
         const featureWidth = featureRightPx - featureLeftPx
         const featureBottomPx = labelData.topY + labelData.featureHeight
 
@@ -210,19 +215,21 @@ export function useAminoAcidOverlay(
         continue
       }
 
-      const blockBpPerPx =
-        (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
+      const bpLength = vr.end - vr.start
+      const sw = vr.screenEndPx - vr.screenStartPx
+      const toScreen = (bp: number) => {
+        const frac = (bp - vr.start) / bpLength
+        return vr.reversed
+          ? vr.screenEndPx - frac * sw
+          : vr.screenStartPx + frac * sw
+      }
 
       for (const [i, item] of data.aminoAcidOverlay.entries()) {
         if (item.endBp < vr.start || item.startBp > vr.end) {
           continue
         }
 
-        const leftPx =
-          vr.screenStartPx + (item.startBp - vr.start) / blockBpPerPx
-        const rightPx =
-          vr.screenStartPx + (item.endBp - vr.start) / blockBpPerPx
-        const centerPx = (leftPx + rightPx) / 2
+        const centerPx = (toScreen(item.startBp) + toScreen(item.endBp)) / 2
         const topPx = item.topPx
         const fontSize = Math.min(item.heightPx - 2, 12)
 
@@ -283,16 +290,18 @@ export function useHighlightOverlays(
       if (item.endBp < vr.start || item.startBp > vr.end) {
         return undefined
       }
-      const blockBpPerPx =
-        (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
-      const leftPx = Math.max(
-        vr.screenStartPx,
-        vr.screenStartPx + (item.startBp - vr.start) / blockBpPerPx,
-      )
-      const rightPx = Math.min(
-        vr.screenEndPx,
-        vr.screenStartPx + (item.endBp - vr.start) / blockBpPerPx,
-      )
+      const bpLength = vr.end - vr.start
+      const sw = vr.screenEndPx - vr.screenStartPx
+      const toScreen = (bp: number) => {
+        const frac = (bp - vr.start) / bpLength
+        return vr.reversed
+          ? vr.screenEndPx - frac * sw
+          : vr.screenStartPx + frac * sw
+      }
+      const px1 = toScreen(item.startBp)
+      const px2 = toScreen(item.endBp)
+      const leftPx = Math.max(vr.screenStartPx, Math.min(px1, px2))
+      const rightPx = Math.min(vr.screenEndPx, Math.max(px1, px2))
       return {
         leftPx,
         width: rightPx - leftPx,

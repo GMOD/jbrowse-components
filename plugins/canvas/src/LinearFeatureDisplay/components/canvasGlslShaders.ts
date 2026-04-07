@@ -14,6 +14,7 @@ layout(std140) uniform Uniforms {
   float scroll_y;
   float bp_per_px;
   float zero;
+  float reversed;
 };
 
 ${HP_GLSL_CORE}
@@ -49,8 +50,9 @@ void main() {
 
   // SYNC: must match MIN_RECT_WIDTH_PX in sharedRendererConstants.ts
   float minWidth = 2.0 / canvas_width;
-  if (sx2 - sx1 < minWidth) {
-    sx2 = sx1 + minWidth;
+  float dx = sx2 - sx1;
+  if (abs(dx) < minWidth) {
+    sx2 = sx1 + (dx < 0.0 ? -minWidth : minWidth);
   }
 
   float sx = mix(sx1, sx2, localX);
@@ -131,8 +133,10 @@ void main() {
   int totalChevrons = max(1, int(floor(lineWidthPx / chevronSpacingPx)));
   float bpSpacing = lineLengthBp / float(totalChevrons + 1);
 
-  float viewportStartBp = bp_range_x.x + bp_range_x.y - float(region_start) - float(a_start_end.x);
-  float viewportEndBp = viewportStartBp + bp_range_x.z;
+  float vpBase = bp_range_x.x + bp_range_x.y - float(region_start) - float(a_start_end.x);
+  float vpOther = vpBase + bp_range_x.z;
+  float viewportStartBp = min(vpBase, vpOther);
+  float viewportEndBp = max(vpBase, vpOther);
 
   int firstVisible = max(0, int(floor(viewportStartBp / bpSpacing)) - 1);
   int lastVisible = min(totalChevrons - 1, int(ceil(viewportEndBp / bpSpacing)));
@@ -157,7 +161,7 @@ void main() {
   float halfW = 4.5 / canvas_width;
   float halfH = 4.5 / canvas_height;
   float thickness = 1.5 / canvas_height;
-  float dir = a_direction;
+  float dir = mix(a_direction, -a_direction, reversed);
 
   bool isTopArm = v < 6u;
   uint qv = v % 6u;
@@ -209,7 +213,7 @@ void main() {
   float stemHalf = 0.5 / canvas_height * 2.0;
   float headHalf = 2.5 / canvas_height * 2.0;
 
-  float dir = a_direction;
+  float dir = mix(a_direction, -a_direction, reversed);
 
   float sx, sy;
   if (vid < 6) {

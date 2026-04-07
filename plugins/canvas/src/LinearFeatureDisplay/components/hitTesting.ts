@@ -13,6 +13,7 @@ export interface VisibleRegion {
   regionNumber: number
   start: number
   end: number
+  reversed?: boolean
   assemblyName: string
   screenStartPx: number
   screenEndPx: number
@@ -186,8 +187,11 @@ export function performMultiRegionHitDetection(
 
     const blockWidth = vr.screenEndPx - vr.screenStartPx
     const bpPerPx = (vr.end - vr.start) / blockWidth
-    const reversed = vr.start > vr.end
-    const bpPos = vr.start + (mouseXPx - vr.screenStartPx) * bpPerPx
+    const reversed = vr.reversed ?? false
+    const frac = (mouseXPx - vr.screenStartPx) / blockWidth
+    const bpPos = reversed
+      ? vr.end - frac * (vr.end - vr.start)
+      : vr.start + frac * (vr.end - vr.start)
 
     const { feature, subfeature } = performHitDetection(
       cache,

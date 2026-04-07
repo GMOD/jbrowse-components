@@ -95,6 +95,7 @@ struct Uniforms {
   scroll_y: f32,
   bp_per_px: f32,
   zero: f32,
+  reversed: f32,
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<RectInstance>;
@@ -122,7 +123,8 @@ fn vs_main(
 
   // SYNC: must match MIN_RECT_WIDTH_PX in sharedRendererConstants.ts
   let min_width = 2.0 / u.canvas_width;
-  let final_sx2 = select(sx2, sx1 + min_width, sx2 - sx1 < min_width);
+  let dx = sx2 - sx1;
+  let final_sx2 = select(sx2, sx1 + select(min_width, -min_width, dx < 0.0), abs(dx) < min_width);
   let sx = mix(sx1, final_sx2, local_x);
 
   let y_top_px = floor(inst.y - u.scroll_y + 0.5);
@@ -161,6 +163,7 @@ struct Uniforms {
   scroll_y: f32,
   bp_per_px: f32,
   zero: f32,
+  reversed: f32,
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<LineInstance>;
@@ -223,6 +226,7 @@ struct Uniforms {
   scroll_y: f32,
   bp_per_px: f32,
   zero: f32,
+  reversed: f32,
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<ChevronInstance>;
@@ -257,8 +261,10 @@ fn vs_main(
   let total_chevrons = max(1, i32(floor(line_width_px / chevron_spacing_px)));
   let bp_spacing = line_length_bp / f32(total_chevrons + 1);
 
-  let viewport_start_bp = u.bp_range_x.x + u.bp_range_x.y - f32(u.region_start) - f32(inst.start_end.x);
-  let viewport_end_bp = viewport_start_bp + u.bp_range_x.z;
+  let vp_base = u.bp_range_x.x + u.bp_range_x.y - f32(u.region_start) - f32(inst.start_end.x);
+  let vp_other = vp_base + u.bp_range_x.z;
+  let viewport_start_bp = min(vp_base, vp_other);
+  let viewport_end_bp = max(vp_base, vp_other);
 
   let first_visible = max(0, i32(floor(viewport_start_bp / bp_spacing)) - 1);
   let last_visible = min(total_chevrons - 1, i32(ceil(viewport_end_bp / bp_spacing)));
@@ -283,7 +289,7 @@ fn vs_main(
   let half_w = 4.5 / u.canvas_width;
   let half_h = 4.5 / u.canvas_height;
   let thickness = 1.5 / u.canvas_height;
-  let dir = inst.direction;
+  let dir = mix(inst.direction, -inst.direction, u.reversed);
 
   let is_top_arm = v < 6u;
   let qv = v % 6u;
@@ -336,6 +342,7 @@ struct Uniforms {
   scroll_y: f32,
   bp_per_px: f32,
   zero: f32,
+  reversed: f32,
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<ArrowInstance>;
@@ -364,7 +371,7 @@ fn vs_main(
   let stem_half = 0.5 / u.canvas_height * 2.0;
   let head_half = 2.5 / u.canvas_height * 2.0;
 
-  let dir = inst.direction;
+  let dir = mix(inst.direction, -inst.direction, u.reversed);
 
   var sx: f32;
   var sy: f32;
