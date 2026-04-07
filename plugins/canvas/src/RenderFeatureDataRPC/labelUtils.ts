@@ -33,9 +33,16 @@ export function applyLabelDimensions(
 
   const effectiveShowDescriptions = !isTranscriptChild
 
-  const name = truncateLabel(
-    String(readConfObject(config, ['labels', 'name'], { feature }) || ''),
-  )
+  // for transcript children, use the feature name directly (matching
+  // createTranscriptFloatingLabel) instead of the config callback which may
+  // be empty in the RPC worker's mock config
+  const name = isTranscriptChild
+    ? truncateLabel(
+        String(feature.get('name') || feature.get('id') || ''),
+      )
+    : truncateLabel(
+        String(readConfObject(config, ['labels', 'name'], { feature }) || ''),
+      )
   const shouldShowName = /\S/.test(name)
 
   const description = truncateLabel(
