@@ -28,6 +28,7 @@ interface BlockLabelParams {
   blockEnd: number
   blockScreenOffsetPx: number
   bpPerPx: number
+  reversed: boolean
 }
 
 interface ComputeVisibleLabelsParams {
@@ -63,8 +64,17 @@ export function computeVisibleLabels(
   const fontSize = computeLabelFontSize(featureHeightSetting)
 
   for (const block of blocks) {
-    const { rpcData, blockStart, blockEnd, blockScreenOffsetPx, bpPerPx } =
-      block
+    const {
+      rpcData,
+      blockStart,
+      blockEnd,
+      blockScreenOffsetPx,
+      bpPerPx,
+      reversed,
+    } = block
+    const bpEdge = reversed ? blockEnd : blockStart
+    const bpToPx = (bp: number) =>
+      (reversed ? bpEdge - bp : bp - bpEdge) / bpPerPx + blockScreenOffsetPx
     const pxPerBp = 1 / bpPerPx
     const charWidth = 6.5
     const canRenderText =
@@ -91,8 +101,10 @@ export function computeVisibleLabels(
           continue
         }
 
-        const startPx = (gapStart - blockStart) / bpPerPx + blockScreenOffsetPx
-        const endPx = (gapEnd - blockStart) / bpPerPx + blockScreenOffsetPx
+        const rawStartPx = bpToPx(gapStart)
+        const rawEndPx = bpToPx(gapEnd)
+        const startPx = Math.min(rawStartPx, rawEndPx)
+        const endPx = Math.max(rawStartPx, rawEndPx)
         const widthPx = endPx - startPx
 
         const lengthStr = String(length)
@@ -141,7 +153,7 @@ export function computeVisibleLabels(
         continue
       }
 
-      const xPx = (pos - blockStart) / bpPerPx + blockScreenOffsetPx
+      const xPx = bpToPx(pos)
       const yPx =
         y * rowHeight + featureHeightSetting / 2 - rangeY[0] + topOffset
 
@@ -214,8 +226,10 @@ export function computeVisibleLabels(
           continue
         }
 
-        const startPx = (pos - blockStart) / bpPerPx + blockScreenOffsetPx
-        const endPx = (pos + 1 - blockStart) / bpPerPx + blockScreenOffsetPx
+        const rawStartPx = bpToPx(pos)
+        const rawEndPx = bpToPx(pos + 1)
+        const startPx = Math.min(rawStartPx, rawEndPx)
+        const endPx = Math.max(rawStartPx, rawEndPx)
         const xPx = (startPx + endPx) / 2
 
         const yPx =

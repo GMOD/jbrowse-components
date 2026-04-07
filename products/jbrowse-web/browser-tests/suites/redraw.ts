@@ -3,7 +3,7 @@ import {
   findByTestId,
   findByText,
   navigateWithSessionSpec,
-  waitForDataLoaded
+  waitForDataLoaded,
 } from '../helpers.ts'
 
 import type { TestSuite } from '../types.ts'
@@ -20,10 +20,10 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1000-2000',
-              tracks: ['volvox_cram']
-},
-          ]
-})
+              tracks: ['volvox_cram'],
+            },
+          ],
+        })
 
         await findByText(page, 'ctgA')
         await findByTestId(page, 'pileup-display-done', 60000)
@@ -91,8 +91,8 @@ const suite: TestSuite = {
             `      [diagnostic] canvas has no content variation, beforePixels: ${beforePixels}`,
           )
         }
-      }
-},
+      },
+    },
     {
       name: 'feature track redraws after zoom out',
       fn: async page => {
@@ -102,15 +102,15 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1000-2000',
-              tracks: ['volvox_filtered_vcf']
-},
-          ]
-})
+              tracks: ['volvox_filtered_vcf'],
+            },
+          ],
+        })
 
         await findByText(page, 'ctgA')
         await page.waitForSelector('[data-testid^="display-"]', {
-          timeout: 60000
-})
+          timeout: 60000,
+        })
         await waitForDataLoaded(page)
 
         const zoomOut = await findByTestId(page, 'zoom_out', 10000)
@@ -118,9 +118,8 @@ const suite: TestSuite = {
         await zoomOut?.click()
         await delay(2000)
         await waitForDataLoaded(page, 90000)
-
-      }
-},
+      },
+    },
     {
       name: 'wiggle track fills visible region after zoom',
       fn: async page => {
@@ -130,15 +129,15 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1000-3000',
-              tracks: ['volvox_cram_snpcoverage']
-},
-          ]
-})
+              tracks: ['volvox_cram_snpcoverage'],
+            },
+          ],
+        })
 
         await findByText(page, 'ctgA')
         await page.waitForSelector('[data-testid^="display-"]', {
-          timeout: 60000
-})
+          timeout: 60000,
+        })
         await waitForDataLoaded(page)
 
         const zoomOut = await findByTestId(page, 'zoom_out', 10000)
@@ -146,10 +145,9 @@ const suite: TestSuite = {
         await zoomOut?.click()
         await delay(2000)
         await waitForDataLoaded(page, 90000)
-
-      }
-},
-  ]
+      },
+    },
+  ],
 }
 
 export default suite

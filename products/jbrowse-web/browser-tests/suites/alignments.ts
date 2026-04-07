@@ -4,7 +4,7 @@ import {
   navigateToApp,
   navigateWithSessionSpec,
   openTrack,
-  waitForDataLoaded
+  waitForDataLoaded,
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
 
@@ -19,16 +19,16 @@ const suite: TestSuite = {
         await navigateToApp(page)
         await openTrack(page, 'volvox_alignments')
         await findByTestId(page, 'pileup-display-done', 60000)
-      }
-},
+      },
+    },
     {
       name: 'loads CRAM track',
       fn: async page => {
         await navigateToApp(page)
         await openTrack(page, 'volvox_cram_alignments')
         await findByTestId(page, 'pileup-display-done', 60000)
-      }
-},
+      },
+    },
     {
       name: 'BAM track screenshot',
       fn: async page => {
@@ -41,8 +41,8 @@ const suite: TestSuite = {
           'alignments-bam-canvas',
           '[data-testid="pileup-display-done"] canvas',
         )
-      }
-},
+      },
+    },
     {
       name: 'volvox_sv track screenshot',
       fn: async page => {
@@ -52,10 +52,10 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:2,707..48,600',
-              tracks: ['volvox_sv']
-},
-          ]
-})
+              tracks: ['volvox_sv'],
+            },
+          ],
+        })
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
@@ -64,8 +64,8 @@ const suite: TestSuite = {
           'alignments-volvox-sv-canvas',
           '[data-testid="pileup-display-done"] canvas',
         )
-      }
-},
+      },
+    },
     {
       name: 'volvox long reads with SV (zoomed out)',
       fn: async page => {
@@ -75,10 +75,10 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1..50,001',
-              tracks: ['volvox-long-reads-sv-bam']
-},
-          ]
-})
+              tracks: ['volvox-long-reads-sv-bam'],
+            },
+          ],
+        })
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
@@ -87,8 +87,8 @@ const suite: TestSuite = {
           'alignments-long-reads-sv-zoomed-out-canvas',
           '[data-testid="pileup-display-done"] canvas',
         )
-      }
-},
+      },
+    },
     {
       name: 'pileup + coverage track',
       fn: async page => {
@@ -98,10 +98,10 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-4000',
-              tracks: ['volvox_alignments_pileup_coverage']
-},
-          ]
-})
+              tracks: ['volvox_alignments_pileup_coverage'],
+            },
+          ],
+        })
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
@@ -110,8 +110,8 @@ const suite: TestSuite = {
           'alignments-pileup-coverage-canvas',
           '[data-testid="pileup-display-done"] canvas',
         )
-      }
-},
+      },
+    },
     {
       name: 'read vs ref context menu appears',
       fn: async page => {
@@ -121,16 +121,18 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:500-700',
-              tracks: ['volvox_alignments_pileup_coverage']
-},
-          ]
-})
+              tracks: ['volvox_alignments_pileup_coverage'],
+            },
+          ],
+        })
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
         await delay(1000)
 
-        const canvas = await page.$('[data-testid="pileup-display-done"] canvas')
+        const canvas = await page.$(
+          '[data-testid="pileup-display-done"] canvas',
+        )
         if (!canvas) {
           throw new Error('Pileup canvas not found')
         }
@@ -157,8 +159,8 @@ const suite: TestSuite = {
             `"Linear read vs ref" not in context menu. Got: ${items.join(', ')}`,
           )
         }
-      }
-},
+      },
+    },
     {
       name: 'sub-pixel mismatch blending with coverage (zoomed out)',
       fn: async page => {
@@ -168,10 +170,10 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1..10,000',
-              tracks: ['volvox_alignments_pileup_coverage']
-},
-          ]
-})
+              tracks: ['volvox_alignments_pileup_coverage'],
+            },
+          ],
+        })
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
@@ -184,9 +186,9 @@ const suite: TestSuite = {
           'alignments-subpixel-mismatch-blend-canvas',
           '[data-testid="pileup-display-done"] canvas',
         )
-      }
-},
-  ]
+      },
+    },
+  ],
 }
 
 export default suite

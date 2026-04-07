@@ -1021,12 +1021,17 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         fullBlockWidth > 0
           ? (block.bpRangeX[1] - block.bpRangeX[0]) / fullBlockWidth
           : 1
-      const clippedBpStart =
-        block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
-      const clippedBpEnd =
-        block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
-      const [bpHi, bpLo] = splitPositionWithFrac(clippedBpStart)
-      const bpLen = clippedBpEnd - clippedBpStart
+
+      // For reversed blocks the low-bp edge is at the right of the scissor;
+      // measure from screenEndPx instead of screenStartPx so the formula is
+      // the same in both orientations.
+      const pxFromEdge = block.reversed
+        ? block.screenEndPx - scissorEnd
+        : scissorX - block.screenStartPx
+      const clippedBpLow = block.bpRangeX[0] + pxFromEdge * bpPerPx
+      const clippedBpHigh = clippedBpLow + scissorW * bpPerPx
+      const [bpHi, bpLo] = splitPositionWithFrac(clippedBpLow)
+      const bpLen = clippedBpHigh - clippedBpLow
 
       this.writeUniforms(
         state,
@@ -1036,8 +1041,8 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         region.regionStart,
         scissorW,
         region,
-        clippedBpStart,
-        clippedBpEnd,
+        clippedBpLow,
+        clippedBpHigh,
         block.reversed,
       )
 
@@ -1289,6 +1294,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
           bpLen,
           covOff,
           state.canvasHeight,
+          block.reversed,
         )
         const tx = 4 / scissorW
         const ty = 4 / state.canvasHeight
@@ -1362,6 +1368,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
           bpLen,
           covOff,
           state.canvasHeight,
+          block.reversed,
         )
         quads.push(clip.sx1, clip.syTop, clip.sx2, clip.syBot, 0, 0, 0, 0.4)
       }
@@ -1385,6 +1392,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
           bpLen,
           covOff,
           state.canvasHeight,
+          block.reversed,
         )
         const tx = 4 / scissorW
         const ty = 4 / state.canvasHeight

@@ -1,7 +1,7 @@
 import {
   findByTestId,
   navigateWithSessionSpec,
-  waitForDataLoaded
+  waitForDataLoaded,
 } from '../helpers.ts'
 import { canvasSnapshot, pageSnapshot } from '../snapshot.ts'
 
@@ -27,16 +27,16 @@ const suite: TestSuite = {
                 views: [
                   {
                     loc: 'chr7:25,000,000..30,000,000',
-                    assembly: 'hs1'
-},
+                    assembly: 'hs1',
+                  },
                   {
                     loc: 'chr6:45,000,000..60,000,000',
-                    assembly: 'mm39'
-},
-                ]
-},
-            ]
-},
+                    assembly: 'mm39',
+                  },
+                ],
+              },
+            ],
+          },
           hs1Mm39Config,
         )
 
@@ -47,8 +47,8 @@ const suite: TestSuite = {
           'hs1-mm39-synteny-chr7-canvas',
           '[data-testid="synteny_canvas_done"]',
         )
-      }
-},
+      },
+    },
     {
       name: 'renders synteny view for chr1 region (large dataset, viewport culling)',
       fn: async page => {
@@ -63,16 +63,16 @@ const suite: TestSuite = {
                 views: [
                   {
                     loc: 'chr1:50,000,000..100,000,000',
-                    assembly: 'hs1'
-},
+                    assembly: 'hs1',
+                  },
                   {
                     loc: 'chr1',
-                    assembly: 'mm39'
-},
-                ]
-},
-            ]
-},
+                    assembly: 'mm39',
+                  },
+                ],
+              },
+            ],
+          },
           hs1Mm39Config,
         )
 
@@ -83,8 +83,8 @@ const suite: TestSuite = {
           'hs1-mm39-synteny-chr1-large-canvas',
           '[data-testid="synteny_canvas_done"]',
         )
-      }
-},
+      },
+    },
     {
       name: 'full page screenshot of hs1 vs mm39 synteny',
       fn: async page => {
@@ -98,25 +98,25 @@ const suite: TestSuite = {
                 views: [
                   {
                     loc: 'chr7:25,000,000..30,000,000',
-                    assembly: 'hs1'
-},
+                    assembly: 'hs1',
+                  },
                   {
                     loc: 'chr6:45,000,000..60,000,000',
-                    assembly: 'mm39'
-},
-                ]
-},
-            ]
-},
+                    assembly: 'mm39',
+                  },
+                ],
+              },
+            ],
+          },
           hs1Mm39Config,
         )
 
         await findByTestId(page, 'synteny_canvas_done', 120000)
         await waitForDataLoaded(page, 120000)
         await pageSnapshot(page, 'hs1-mm39-synteny-fullpage')
-      }
-},
-  ]
+      },
+    },
+  ],
 }
 
 export default suite

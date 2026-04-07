@@ -2,7 +2,7 @@ import {
   PORT,
   appendGpuParam,
   findByTestId,
-  waitForDataLoaded
+  waitForDataLoaded,
 } from '../helpers.ts'
 import { canvasSnapshot, pageSnapshot } from '../snapshot.ts'
 
@@ -28,8 +28,8 @@ const suite: TestSuite = {
           'methylation-pileup-canvas',
           '[data-testid="pileup-display-done"] canvas',
         )
-      }
-},
+      },
+    },
     {
       name: 'methylation full page screenshot',
       fn: async page => {
@@ -43,8 +43,8 @@ const suite: TestSuite = {
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
         await pageSnapshot(page, 'methylation-fullpage')
-      }
-},
+      },
+    },
     {
       name: 'modifications color-by mode renders',
       fn: async page => {
@@ -62,8 +62,8 @@ const suite: TestSuite = {
           'modifications-pileup-canvas',
           '[data-testid="pileup-display-done"] canvas',
         )
-      }
-},
+      },
+    },
     {
       name: 'modifications full page screenshot',
       fn: async page => {
@@ -77,9 +77,9 @@ const suite: TestSuite = {
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
         await pageSnapshot(page, 'modifications-fullpage')
-      }
-},
-  ]
+      },
+    },
+  ],
 }
 
 export default suite

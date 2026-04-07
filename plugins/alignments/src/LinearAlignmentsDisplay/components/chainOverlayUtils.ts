@@ -47,16 +47,19 @@ export function toClipRect(
   regionLengthBp: number,
   coverageOffset: number,
   canvasHeight: number,
+  reversed = false,
 ): ClipRect {
   const splitStart0 = Math.floor(absStart) - (Math.floor(absStart) & 0xfff)
   const splitStart1 = Math.floor(absStart) & 0xfff
   const splitEnd0 = Math.floor(absEnd) - (Math.floor(absEnd) & 0xfff)
   const splitEnd1 = Math.floor(absEnd) & 0xfff
-  const sx1 =
+  const rawSx1 =
     ((splitStart0 - bpStartHi + splitStart1 - bpStartLo) / regionLengthBp) * 2 -
     1
-  const sx2 =
+  const rawSx2 =
     ((splitEnd0 - bpStartHi + splitEnd1 - bpStartLo) / regionLengthBp) * 2 - 1
+  const sx1 = reversed ? -rawSx2 : rawSx1
+  const sx2 = reversed ? -rawSx1 : rawSx2
 
   const rowHeight = state.featureHeight + state.featureSpacing
   const yTopPx = y * rowHeight - state.rangeY[0]

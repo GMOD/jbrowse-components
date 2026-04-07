@@ -305,7 +305,9 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onContextMenu={handleContextMenu}
-        data-testid={model.canvasDrawn ? 'synteny_canvas_done' : 'synteny_canvas'}
+        data-testid={
+          model.canvasDrawn ? 'synteny_canvas_done' : 'synteny_canvas'
+        }
         className={classes.gpuCanvas}
         style={{ width, height }}
       />

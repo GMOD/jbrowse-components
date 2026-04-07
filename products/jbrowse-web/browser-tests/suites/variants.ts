@@ -1,7 +1,4 @@
-import {
-  navigateWithSessionSpec,
-  waitForDataLoaded
-} from '../helpers.ts'
+import { navigateWithSessionSpec, waitForDataLoaded } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
@@ -18,23 +15,23 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1..50,001',
-              tracks: ['volvox_filtered_vcf_assembly_alias']
-},
-          ]
-})
+              tracks: ['volvox_filtered_vcf_assembly_alias'],
+            },
+          ],
+        })
 
         await page.waitForSelector('[data-testid^="display-"]', {
-          timeout: 60000
-})
+          timeout: 60000,
+        })
         await waitForDataLoaded(page)
         await canvasSnapshot(
           page,
           'variants-assembly-aliases-canvas',
           '[data-testid$="-done"] canvas',
         )
-      }
-},
-  ]
+      },
+    },
+  ],
 }
 
 export default suite

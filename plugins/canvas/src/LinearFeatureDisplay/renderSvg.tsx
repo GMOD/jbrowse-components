@@ -40,7 +40,6 @@ function strokeAttr(colors: Uint8Array, i: number) {
     : `stroke="${rgb}" stroke-opacity="${opacity.toFixed(3)}"`
 }
 
-
 function renderRectsForRegion(
   data: FeatureDataResult,
   regionStart: number,
@@ -71,8 +70,22 @@ function renderRectsForRegion(
     const clippedStart = Math.max(startBp, regionStart)
     const clippedEnd = Math.min(endBp, regionEnd)
 
-    const px1 = bpToScreenPx(clippedStart, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
-    const px2 = bpToScreenPx(clippedEnd, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const px1 = bpToScreenPx(
+      clippedStart,
+      regionStart,
+      regionEnd,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
+    const px2 = bpToScreenPx(
+      clippedEnd,
+      regionStart,
+      regionEnd,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
     const x = Math.min(px1, px2)
     const w = Math.max(Math.abs(px2 - px1), 0.5)
     const y = rectYs[i]! - scrollY
@@ -115,8 +128,22 @@ function renderLinesForRegion(
     const clippedStart = Math.max(startBp, regionStart)
     const clippedEnd = Math.min(endBp, regionEnd)
 
-    const x1 = bpToScreenPx(clippedStart, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
-    const x2 = bpToScreenPx(clippedEnd, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const x1 = bpToScreenPx(
+      clippedStart,
+      regionStart,
+      regionEnd,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
+    const x2 = bpToScreenPx(
+      clippedEnd,
+      regionStart,
+      regionEnd,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
     const y = rectRound(lineYs[i]! - scrollY)
     const lineStroke = strokeAttr(lineColors, i)
     const direction = lineDirections[i]!
@@ -139,7 +166,14 @@ function renderLinesForRegion(
         if (chevronBp < regionStart || chevronBp > regionEnd) {
           continue
         }
-        const cx = bpToScreenPx(chevronBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+        const cx = bpToScreenPx(
+          chevronBp,
+          regionStart,
+          regionEnd,
+          screenStartPx,
+          screenEndPx,
+          reversed,
+        )
         const dir = reversed ? -direction : direction
         const tipX = cx + chevronW * 0.5 * dir
         const baseX = cx - chevronW * 0.5 * dir
@@ -178,7 +212,14 @@ function renderArrowsForRegion(
       continue
     }
 
-    const cx = bpToScreenPx(bpPos, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const cx = bpToScreenPx(
+      bpPos,
+      regionStart,
+      regionEnd,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
     const cy = arrowYs[i]! - scrollY
     const dir = reversed ? -arrowDirections[i]! : arrowDirections[i]!
     const h = arrowHeights[i]!
@@ -226,8 +267,22 @@ function renderLabelsForRegion(
       continue
     }
 
-    const px1 = bpToScreenPx(featureStartBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
-    const px2 = bpToScreenPx(featureEndBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const px1 = bpToScreenPx(
+      featureStartBp,
+      regionStart,
+      regionEnd,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
+    const px2 = bpToScreenPx(
+      featureEndBp,
+      regionStart,
+      regionEnd,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
     const featureLeftPx = Math.min(px1, px2)
     const featureRightPx = Math.max(px1, px2)
     const featureWidth = featureRightPx - featureLeftPx
@@ -294,8 +349,22 @@ function renderPeptideLettersForRegion(
       continue
     }
 
-    const px1 = bpToScreenPx(item.startBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
-    const px2 = bpToScreenPx(item.endBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const px1 = bpToScreenPx(
+      item.startBp,
+      regionStart,
+      regionEnd,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
+    const px2 = bpToScreenPx(
+      item.endBp,
+      regionStart,
+      regionEnd,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
     const centerPx = (px1 + px2) / 2
     const fontSize = Math.min(item.heightPx - 2, 12)
     const color = item.isStopOrNonTriplet ? 'red' : 'black'
@@ -342,12 +411,50 @@ export async function renderSvg(
     }
 
     const rev = vr.reversed
-    content += renderLinesForRegion(data, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, scrollY, rev)
-    content += renderRectsForRegion(data, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, scrollY, rev)
-    content += renderArrowsForRegion(data, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, scrollY, rev)
-    content += renderLabelsForRegion(data, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, rev)
+    content += renderLinesForRegion(
+      data,
+      vr.start,
+      vr.end,
+      vr.screenStartPx,
+      vr.screenEndPx,
+      scrollY,
+      rev,
+    )
+    content += renderRectsForRegion(
+      data,
+      vr.start,
+      vr.end,
+      vr.screenStartPx,
+      vr.screenEndPx,
+      scrollY,
+      rev,
+    )
+    content += renderArrowsForRegion(
+      data,
+      vr.start,
+      vr.end,
+      vr.screenStartPx,
+      vr.screenEndPx,
+      scrollY,
+      rev,
+    )
+    content += renderLabelsForRegion(
+      data,
+      vr.start,
+      vr.end,
+      vr.screenStartPx,
+      vr.screenEndPx,
+      rev,
+    )
     if (renderPeptides) {
-      content += renderPeptideLettersForRegion(data, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, rev)
+      content += renderPeptideLettersForRegion(
+        data,
+        vr.start,
+        vr.end,
+        vr.screenStartPx,
+        vr.screenEndPx,
+        rev,
+      )
     }
   }
 

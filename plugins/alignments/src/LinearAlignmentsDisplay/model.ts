@@ -528,6 +528,7 @@ export default function stateModelFactory(
               blockEnd: block.end,
               blockScreenOffsetPx: block.offsetPx - view.offsetPx,
               bpPerPx,
+              reversed: block.reversed ?? false,
             })
           }
         }

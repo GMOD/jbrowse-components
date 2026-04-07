@@ -35,7 +35,7 @@ void main() {
   float syBot = 1.0 - yBot * pxToClip;
   float sy = mix(syBot, syTop, localY);
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
   // SYNC(wgsl/miscShaders.ts): line color vec4(0,0,0,0.45), 1px tall with floor snapping
   v_color = vec4(0, 0, 0, 0.45);
 }

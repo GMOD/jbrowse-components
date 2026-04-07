@@ -2,7 +2,7 @@ import {
   delay,
   findByTestId,
   navigateWithSessionSpec,
-  waitForDataLoaded
+  waitForDataLoaded,
 } from '../helpers.ts'
 import { canvasSnapshot, pageSnapshot } from '../snapshot.ts'
 
@@ -27,12 +27,12 @@ const suite: TestSuite = {
                 tracks: [
                   {
                     trackId: 'volvox_multi_pif',
-                    displaySnapshot: { type: 'MultiLGVSyntenyDisplay' }
-},
-                ]
-},
-            ]
-},
+                    displaySnapshot: { type: 'MultiLGVSyntenyDisplay' },
+                  },
+                ],
+              },
+            ],
+          },
           config,
         )
 
@@ -44,8 +44,8 @@ const suite: TestSuite = {
           'multi-lgv-synteny-genome-rows-canvas',
           '[data-testid="multi_synteny_canvas_done"]',
         )
-      }
-},
+      },
+    },
     {
       name: 'multi-pair PIF full page screenshot',
       fn: async page => {
@@ -60,12 +60,12 @@ const suite: TestSuite = {
                 tracks: [
                   {
                     trackId: 'volvox_multi_pif',
-                    displaySnapshot: { type: 'MultiLGVSyntenyDisplay' }
-},
-                ]
-},
-            ]
-},
+                    displaySnapshot: { type: 'MultiLGVSyntenyDisplay' },
+                  },
+                ],
+              },
+            ],
+          },
           config,
         )
 
@@ -73,8 +73,8 @@ const suite: TestSuite = {
         await waitForDataLoaded(page)
         await delay(2000)
         await pageSnapshot(page, 'multi-lgv-synteny-fullpage')
-      }
-},
+      },
+    },
     {
       name: 'N-way synteny view from PIF tracks',
       fn: async page => {
@@ -89,10 +89,10 @@ const suite: TestSuite = {
                   { loc: 'ctgA:1-50000', assembly: 'volvox_ins' },
                   { loc: 'ctgA:1-50000', assembly: 'volvox' },
                   { loc: 'ctgA:1-50000', assembly: 'volvox_del' },
-                ]
-},
-            ]
-},
+                ],
+              },
+            ],
+          },
           config,
         )
 
@@ -103,8 +103,8 @@ const suite: TestSuite = {
           'nway-synteny-pif-canvas',
           '[data-testid="synteny_canvas_done"]',
         )
-      }
-},
+      },
+    },
     {
       name: 'N-way synteny from PIF full page',
       fn: async page => {
@@ -119,19 +119,19 @@ const suite: TestSuite = {
                   { loc: 'ctgA:1-50000', assembly: 'volvox_ins' },
                   { loc: 'ctgA:1-50000', assembly: 'volvox' },
                   { loc: 'ctgA:1-50000', assembly: 'volvox_del' },
-                ]
-},
-            ]
-},
+                ],
+              },
+            ],
+          },
           config,
         )
 
         await findByTestId(page, 'synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await pageSnapshot(page, 'nway-synteny-pif-fullpage', 0.15)
-      }
-},
-  ]
+      },
+    },
+  ],
 }
 
 export default suite

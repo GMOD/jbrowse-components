@@ -1,7 +1,5 @@
 import { Suspense, lazy, useEffect, useRef } from 'react'
 
-import { useWheelScroll } from './useWheelScroll.ts'
-
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -10,6 +8,7 @@ import { observer } from 'mobx-react'
 
 import TrackContainer from './TrackContainer.tsx'
 import TracksContainer from './TracksContainer.tsx'
+import { useWheelScroll } from './useWheelScroll.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 

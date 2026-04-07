@@ -30,7 +30,7 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
     if (!ctx) {
       return
     }
-    const dpr = window.devicePixelRatio ?? 1
+    const dpr = window.devicePixelRatio
     const w = width ?? 0
     canvas.width = w * dpr
     canvas.height = height * dpr

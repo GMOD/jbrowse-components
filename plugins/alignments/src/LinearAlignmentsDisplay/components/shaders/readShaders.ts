@@ -213,7 +213,7 @@ void main() {
 
   v_localPos = vec2(localX, localY);
   v_edgeFlags = edgeFlags;
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
 
   // SYNC(wgsl/readShader.ts): highlight-only dark overlay vec4(0,0,0,0.4), no chevrons
   if (ui(13u) == 1) {

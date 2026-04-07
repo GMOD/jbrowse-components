@@ -4,7 +4,7 @@ import {
   delay,
   findByTestId,
   navigateWithSessionSpec,
-  waitForDataLoaded
+  waitForDataLoaded,
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
 
@@ -22,10 +22,10 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:39,433..39,804',
-              tracks: ['volvox_gc']
-},
-          ]
-})
+              tracks: ['volvox_gc'],
+            },
+          ],
+        })
 
         await findByTestId(page, 'wiggle-display-done', 60000)
         await waitForDataLoaded(page)
@@ -34,8 +34,8 @@ const suite: TestSuite = {
           'bigwig-gc-content-canvas',
           '[data-testid="wiggle-display-done"] canvas',
         )
-      }
-},
+      },
+    },
     {
       name: 'MultiBigWig xyplot',
       fn: async page => {
@@ -45,10 +45,10 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-4000',
-              tracks: ['volvox_microarray_multi']
-},
-          ]
-})
+              tracks: ['volvox_microarray_multi'],
+            },
+          ],
+        })
 
         await findByTestId(page, 'multi-wiggle-display-done', 60000)
         await waitForDataLoaded(page)
@@ -57,8 +57,8 @@ const suite: TestSuite = {
           'bigwig-multibigwig-xyplot-canvas',
           '[data-testid="multi-wiggle-display-done"] canvas',
         )
-      }
-},
+      },
+    },
     {
       name: 'MultiBigWig multirowxy',
       fn: async page => {
@@ -68,10 +68,10 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-4000',
-              tracks: ['volvox_microarray_multi_multirowxy']
-},
-          ]
-})
+              tracks: ['volvox_microarray_multi_multirowxy'],
+            },
+          ],
+        })
 
         await findByTestId(page, 'multi-wiggle-display-done', 60000)
         await waitForDataLoaded(page)
@@ -80,8 +80,8 @@ const suite: TestSuite = {
           'bigwig-multibigwig-multirowxy-canvas',
           '[data-testid="multi-wiggle-display-done"] canvas',
         )
-      }
-},
+      },
+    },
     {
       name: 'MultiBigWig multirowdensity',
       fn: async page => {
@@ -91,10 +91,10 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-4000',
-              tracks: ['volvox_microarray_multi_multirowdensity']
-},
-          ]
-})
+              tracks: ['volvox_microarray_multi_multirowdensity'],
+            },
+          ],
+        })
 
         await findByTestId(page, 'multi-wiggle-display-done', 60000)
         await waitForDataLoaded(page)
@@ -103,8 +103,8 @@ const suite: TestSuite = {
           'bigwig-multibigwig-multirowdensity-canvas',
           '[data-testid="multi-wiggle-display-done"] canvas',
         )
-      }
-},
+      },
+    },
     {
       name: 'MultiBigWig multirowline',
       fn: async page => {
@@ -114,10 +114,10 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-4000',
-              tracks: ['volvox_microarray_multi_multirowline']
-},
-          ]
-})
+              tracks: ['volvox_microarray_multi_multirowline'],
+            },
+          ],
+        })
 
         await findByTestId(page, 'multi-wiggle-display-done', 60000)
         await waitForDataLoaded(page)
@@ -126,8 +126,8 @@ const suite: TestSuite = {
           'bigwig-multibigwig-multirowline-canvas',
           '[data-testid="multi-wiggle-display-done"] canvas',
         )
-      }
-},
+      },
+    },
     {
       name: 'MultiBigWig multirowxy uses uniform default color',
       fn: async page => {
@@ -137,10 +137,10 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-4000',
-              tracks: ['volvox_microarray_multi_multirowxy']
-},
-          ]
-})
+              tracks: ['volvox_microarray_multi_multirowxy'],
+            },
+          ],
+        })
 
         await findByTestId(page, 'multi-wiggle-display-done', 60000)
         await waitForDataLoaded(page)
@@ -204,8 +204,8 @@ const suite: TestSuite = {
             `Expected uniform color across rows but got: ${rowColors.join(' | ')}`,
           )
         }
-      }
-},
+      },
+    },
     {
       name: 'MultiBigWig overlay xyplot uses distinct colors per source',
       fn: async page => {
@@ -215,10 +215,10 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-4000',
-              tracks: ['volvox_microarray_multi']
-},
-          ]
-})
+              tracks: ['volvox_microarray_multi'],
+            },
+          ],
+        })
 
         await findByTestId(page, 'multi-wiggle-display-done', 60000)
         await waitForDataLoaded(page)
@@ -266,9 +266,9 @@ const suite: TestSuite = {
             `Expected multiple distinct colors in overlay mode but found: ${significantColors.join(' | ')}`,
           )
         }
-      }
-},
-  ]
+      },
+    },
+  ],
 }
 
 export default suite

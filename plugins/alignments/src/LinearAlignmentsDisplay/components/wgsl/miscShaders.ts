@@ -255,7 +255,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let sy_top = 1.0 - y_top * px2clip;
   let sy_bot = 1.0 - y_bot * px2clip;
 
-  out.position = vec4f(mix(sx1, sx2, lx), mix(sy_bot, sy_top, ly), 0.0, 1.0);
+  out.position = vec4f(flip_x(mix(sx1, sx2, lx)), mix(sy_bot, sy_top, ly), 0.0, 1.0);
   // SYNC(shaders/connectingLineShaders.ts): line color vec4(0,0,0,0.45), 1px tall with floor snapping
   out.color = vec4f(0.0, 0.0, 0.0, 0.45);
   return out;

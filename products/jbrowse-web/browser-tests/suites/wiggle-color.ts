@@ -3,7 +3,7 @@ import {
   findByTestId,
   findByText,
   navigateWithSessionSpec,
-  waitForDataLoaded
+  waitForDataLoaded,
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
 
@@ -21,10 +21,10 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-4000',
-              tracks: ['volvox_gc']
-},
-          ]
-})
+              tracks: ['volvox_gc'],
+            },
+          ],
+        })
 
         await findByTestId(page, 'wiggle-display-done', 60000)
         await waitForDataLoaded(page)
@@ -46,8 +46,8 @@ const suite: TestSuite = {
         await delay(1500)
 
         const submitBtn = await page.waitForSelector('button[type="submit"]', {
-          timeout: 10000
-})
+          timeout: 10000,
+        })
         await submitBtn?.click()
         await delay(1000)
 
@@ -56,9 +56,9 @@ const suite: TestSuite = {
           'wiggle-color-after-red',
           '[data-testid="wiggle-display-done"] canvas',
         )
-      }
-},
-  ]
+      },
+    },
+  ],
 }
 
 export default suite

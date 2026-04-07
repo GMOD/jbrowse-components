@@ -91,7 +91,7 @@ export function useWheelScroll(
 
       if (isCtrlZoom || isScrollZoom) {
         if (!event.cancelable) {
-          console.debug(
+          console.warn(
             '[useWheelScroll] wheel event not cancelable — scroll sequence already in progress',
             { deltaY: event.deltaY, deltaX: event.deltaX },
           )

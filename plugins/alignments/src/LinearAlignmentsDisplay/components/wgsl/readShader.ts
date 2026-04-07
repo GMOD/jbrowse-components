@@ -219,7 +219,7 @@ fn vs_main(
 
   out.local_pos = vec2f(lx, ly);
   out.edge_flags = ef;
-  out.position = vec4f(sx, sy, 0.0, 1.0);
+  out.position = vec4f(flip_x(sx), sy, 0.0, 1.0);
 
   // SYNC(shaders/readShaders.ts): highlight-only dark overlay vec4(0,0,0,0.4), no chevrons
   if highlight_only == 1 {

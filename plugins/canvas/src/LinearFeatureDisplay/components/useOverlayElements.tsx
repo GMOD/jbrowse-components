@@ -39,10 +39,7 @@ export function useFloatingLabels(
     clientX: number,
     clientY: number,
   ) => void,
-  onLabelMouseOver?: (
-    item: FlatbushItem,
-    e: React.MouseEvent,
-  ) => void,
+  onLabelMouseOver?: (item: FlatbushItem, e: React.MouseEvent) => void,
 ) {
   return useMemo(() => {
     if (!viewInitialized || !width || !bpPerPx || visibleRegions.length === 0) {
@@ -60,7 +57,14 @@ export function useFloatingLabels(
 
       const regionStart = data.regionStart
       const toScreen = (bp: number) =>
-        bpToScreenPx(bp, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, vr.reversed)
+        bpToScreenPx(
+          bp,
+          vr.start,
+          vr.end,
+          vr.screenStartPx,
+          vr.screenEndPx,
+          vr.reversed,
+        )
 
       const flatbushItemById = new Map<string, FlatbushItem>()
       for (const f of data.flatbushItems) {
@@ -211,7 +215,14 @@ export function useAminoAcidOverlay(
       }
 
       const toScreen = (bp: number) =>
-        bpToScreenPx(bp, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, vr.reversed)
+        bpToScreenPx(
+          bp,
+          vr.start,
+          vr.end,
+          vr.screenStartPx,
+          vr.screenEndPx,
+          vr.reversed,
+        )
 
       for (const [i, item] of data.aminoAcidOverlay.entries()) {
         if (item.endBp < vr.start || item.startBp > vr.end) {
@@ -279,8 +290,22 @@ export function useHighlightOverlays(
       if (item.endBp < vr.start || item.startBp > vr.end) {
         return undefined
       }
-      const px1 = bpToScreenPx(item.startBp, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, vr.reversed)
-      const px2 = bpToScreenPx(item.endBp, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, vr.reversed)
+      const px1 = bpToScreenPx(
+        item.startBp,
+        vr.start,
+        vr.end,
+        vr.screenStartPx,
+        vr.screenEndPx,
+        vr.reversed,
+      )
+      const px2 = bpToScreenPx(
+        item.endBp,
+        vr.start,
+        vr.end,
+        vr.screenStartPx,
+        vr.screenEndPx,
+        vr.reversed,
+      )
       const leftPx = Math.max(vr.screenStartPx, Math.min(px1, px2))
       const rightPx = Math.min(vr.screenEndPx, Math.max(px1, px2))
       return {
