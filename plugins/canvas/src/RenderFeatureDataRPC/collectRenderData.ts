@@ -59,7 +59,6 @@ interface RenderContext {
   configContext: RenderConfigContext
   theme: Theme
   colorByCDS: boolean
-  reversed: boolean
   peptideDataMap?: Map<string, PeptideData>
 }
 
@@ -550,7 +549,6 @@ export function collectRenderData(
   config: AnyConfigurationModel,
   configContext: RenderConfigContext,
   theme: Theme,
-  reversed: boolean,
   colorByCDS: boolean,
   peptideDataMap?: Map<string, PeptideData>,
 ) {
@@ -560,7 +558,6 @@ export function collectRenderData(
     configContext,
     theme,
     colorByCDS,
-    reversed,
     peptideDataMap,
   }
 

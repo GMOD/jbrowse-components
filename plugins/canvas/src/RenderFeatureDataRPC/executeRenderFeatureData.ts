@@ -246,7 +246,6 @@ export async function executeRenderFeatureData({
       mockConfig as any,
       configContext,
       mockTheme as any,
-      region.reversed ?? false,
       !!colorByCDS,
       peptideDataMap,
     ),

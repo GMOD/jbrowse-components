@@ -1,6 +1,7 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
+import { bpToScreenPx } from './components/coordinateUtils.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -39,20 +40,6 @@ function strokeAttr(colors: Uint8Array, i: number) {
     : `stroke="${rgb}" stroke-opacity="${opacity.toFixed(3)}"`
 }
 
-function bpToScreenX(
-  bpPos: number,
-  regionStart: number,
-  regionEnd: number,
-  screenStartPx: number,
-  screenEndPx: number,
-  reversed?: boolean,
-) {
-  const blockWidth = screenEndPx - screenStartPx
-  const frac = (bpPos - regionStart) / (regionEnd - regionStart)
-  return reversed
-    ? screenEndPx - frac * blockWidth
-    : screenStartPx + frac * blockWidth
-}
 
 function renderRectsForRegion(
   data: FeatureDataResult,
@@ -84,8 +71,8 @@ function renderRectsForRegion(
     const clippedStart = Math.max(startBp, regionStart)
     const clippedEnd = Math.min(endBp, regionEnd)
 
-    const px1 = bpToScreenX(clippedStart, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
-    const px2 = bpToScreenX(clippedEnd, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const px1 = bpToScreenPx(clippedStart, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const px2 = bpToScreenPx(clippedEnd, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
     const x = Math.min(px1, px2)
     const w = Math.max(Math.abs(px2 - px1), 0.5)
     const y = rectYs[i]! - scrollY
@@ -128,8 +115,8 @@ function renderLinesForRegion(
     const clippedStart = Math.max(startBp, regionStart)
     const clippedEnd = Math.min(endBp, regionEnd)
 
-    const x1 = bpToScreenX(clippedStart, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
-    const x2 = bpToScreenX(clippedEnd, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const x1 = bpToScreenPx(clippedStart, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const x2 = bpToScreenPx(clippedEnd, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
     const y = rectRound(lineYs[i]! - scrollY)
     const lineStroke = strokeAttr(lineColors, i)
     const direction = lineDirections[i]!
@@ -152,7 +139,7 @@ function renderLinesForRegion(
         if (chevronBp < regionStart || chevronBp > regionEnd) {
           continue
         }
-        const cx = bpToScreenX(chevronBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+        const cx = bpToScreenPx(chevronBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
         const dir = reversed ? -direction : direction
         const tipX = cx + chevronW * 0.5 * dir
         const baseX = cx - chevronW * 0.5 * dir
@@ -191,7 +178,7 @@ function renderArrowsForRegion(
       continue
     }
 
-    const cx = bpToScreenX(bpPos, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const cx = bpToScreenPx(bpPos, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
     const cy = arrowYs[i]! - scrollY
     const dir = reversed ? -arrowDirections[i]! : arrowDirections[i]!
     const h = arrowHeights[i]!
@@ -239,8 +226,8 @@ function renderLabelsForRegion(
       continue
     }
 
-    const px1 = bpToScreenX(featureStartBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
-    const px2 = bpToScreenX(featureEndBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const px1 = bpToScreenPx(featureStartBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const px2 = bpToScreenPx(featureEndBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
     const featureLeftPx = Math.min(px1, px2)
     const featureRightPx = Math.max(px1, px2)
     const featureWidth = featureRightPx - featureLeftPx
@@ -307,8 +294,8 @@ function renderPeptideLettersForRegion(
       continue
     }
 
-    const px1 = bpToScreenX(item.startBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
-    const px2 = bpToScreenX(item.endBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const px1 = bpToScreenPx(item.startBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
+    const px2 = bpToScreenPx(item.endBp, regionStart, regionEnd, screenStartPx, screenEndPx, reversed)
     const centerPx = (px1 + px2) / 2
     const fontSize = Math.min(item.heightPx - 2, 12)
     const color = item.isStopOrNonTriplet ? 'red' : 'black'

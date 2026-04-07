@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import { bpToScreenPx } from './coordinateUtils.ts'
 import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 
@@ -58,14 +59,8 @@ export function useFloatingLabels(
       }
 
       const regionStart = data.regionStart
-      const bpLength = vr.end - vr.start
-      const screenWidth = vr.screenEndPx - vr.screenStartPx
-      const bpToScreenPx = (bp: number) => {
-        const frac = (bp - vr.start) / bpLength
-        return vr.reversed
-          ? vr.screenEndPx - frac * screenWidth
-          : vr.screenStartPx + frac * screenWidth
-      }
+      const toScreen = (bp: number) =>
+        bpToScreenPx(bp, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, vr.reversed)
 
       const flatbushItemById = new Map<string, FlatbushItem>()
       for (const f of data.flatbushItems) {
@@ -88,8 +83,8 @@ export function useFloatingLabels(
 
         renderedLabels.add(featureId)
 
-        const px1 = bpToScreenPx(featureStartBp)
-        const px2 = bpToScreenPx(featureEndBp)
+        const px1 = toScreen(featureStartBp)
+        const px2 = toScreen(featureEndBp)
         const featureLeftPx = Math.min(px1, px2)
         const featureRightPx = Math.max(px1, px2)
         const featureWidth = featureRightPx - featureLeftPx
@@ -215,14 +210,8 @@ export function useAminoAcidOverlay(
         continue
       }
 
-      const bpLength = vr.end - vr.start
-      const sw = vr.screenEndPx - vr.screenStartPx
-      const toScreen = (bp: number) => {
-        const frac = (bp - vr.start) / bpLength
-        return vr.reversed
-          ? vr.screenEndPx - frac * sw
-          : vr.screenStartPx + frac * sw
-      }
+      const toScreen = (bp: number) =>
+        bpToScreenPx(bp, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, vr.reversed)
 
       for (const [i, item] of data.aminoAcidOverlay.entries()) {
         if (item.endBp < vr.start || item.startBp > vr.end) {
@@ -290,16 +279,8 @@ export function useHighlightOverlays(
       if (item.endBp < vr.start || item.startBp > vr.end) {
         return undefined
       }
-      const bpLength = vr.end - vr.start
-      const sw = vr.screenEndPx - vr.screenStartPx
-      const toScreen = (bp: number) => {
-        const frac = (bp - vr.start) / bpLength
-        return vr.reversed
-          ? vr.screenEndPx - frac * sw
-          : vr.screenStartPx + frac * sw
-      }
-      const px1 = toScreen(item.startBp)
-      const px2 = toScreen(item.endBp)
+      const px1 = bpToScreenPx(item.startBp, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, vr.reversed)
+      const px2 = bpToScreenPx(item.endBp, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, vr.reversed)
       const leftPx = Math.max(vr.screenStartPx, Math.min(px1, px2))
       const rightPx = Math.min(vr.screenEndPx, Math.max(px1, px2))
       return {
