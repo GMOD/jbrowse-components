@@ -79,10 +79,17 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
   const blockWidth = region.screenEndPx - region.screenStartPx
   const regionLengthBp = region.end - region.start
   const pxPerBp = blockWidth / regionLengthBp
-  const left =
-    region.screenStartPx + (cell.genomicStart - region.start) * pxPerBp
-  const right =
-    region.screenStartPx + (cell.genomicEnd - region.start) * pxPerBp
+  const reversed = (region as { reversed?: boolean }).reversed
+  const frac1 = (cell.genomicStart - region.start) / regionLengthBp
+  const frac2 = (cell.genomicEnd - region.start) / regionLengthBp
+  const px1 = reversed
+    ? region.screenEndPx - frac1 * blockWidth
+    : region.screenStartPx + frac1 * blockWidth
+  const px2 = reversed
+    ? region.screenEndPx - frac2 * blockWidth
+    : region.screenStartPx + frac2 * blockWidth
+  const left = Math.min(px1, px2)
+  const right = Math.max(px1, px2)
   const top = cell.rowIndex * model.rowHeight - model.scrollTop
   return (
     <div
@@ -157,6 +164,7 @@ const VariantComponent = observer(function VariantComponent({
       bpRangeX: [r.start, r.end] as [number, number],
       screenStartPx: r.screenStartPx,
       screenEndPx: r.screenEndPx,
+      reversed: r.reversed ?? false,
     }))
     renderer.renderBlocks(blocks, {
       canvasWidth: view.trackWidthPx,
@@ -238,9 +246,10 @@ const VariantComponent = observer(function VariantComponent({
     const regionLengthBp = region.end - region.start
     const bpPerPx = regionLengthBp / blockWidth
 
-    const genomicPos =
-      region.start +
-      ((mouseX - region.screenStartPx) / blockWidth) * regionLengthBp
+    const frac = (mouseX - region.screenStartPx) / blockWidth
+    const genomicPos = region.reversed
+      ? region.end - frac * regionLengthBp
+      : region.start + frac * regionLengthBp
     const rowFrac = (mouseY + model.scrollTop) / model.rowHeight
 
     const pxPadding = 5

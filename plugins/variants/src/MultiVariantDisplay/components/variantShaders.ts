@@ -57,6 +57,7 @@ struct Uniforms {
   row_height: f32,
   scroll_top: f32,
   zero: f32,
+  reversed: f32,
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<CellInstance>;

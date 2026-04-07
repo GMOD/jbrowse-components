@@ -103,12 +103,16 @@ export class Canvas2DVariantRenderer implements VariantBackend {
         const rowIdx = region.cellRowIndices[i]!
         const shapeType = region.cellShapeTypes[i]!
 
-        const x1 =
-          block.screenStartPx +
-          ((startBp - block.bpRangeX[0]) / bpLength) * fullBlockWidth
-        const x2 =
-          block.screenStartPx +
-          ((endBp - block.bpRangeX[0]) / bpLength) * fullBlockWidth
+        const frac1 = (startBp - block.bpRangeX[0]) / bpLength
+        const frac2 = (endBp - block.bpRangeX[0]) / bpLength
+        const rawX1 = block.reversed
+          ? block.screenEndPx - frac1 * fullBlockWidth
+          : block.screenStartPx + frac1 * fullBlockWidth
+        const rawX2 = block.reversed
+          ? block.screenEndPx - frac2 * fullBlockWidth
+          : block.screenStartPx + frac2 * fullBlockWidth
+        const x1 = Math.min(rawX1, rawX2)
+        const x2 = Math.max(rawX1, rawX2)
         const y = rowIdx * rowHeight - scrollTop
         const w = Math.max(2, x2 - x1)
 

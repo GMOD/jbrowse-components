@@ -1,4 +1,5 @@
 import { clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
+import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 
 import { FRAGMENT_SHADER, VERTEX_SHADER } from './variantGlslShaders.ts'
 import {
@@ -137,9 +138,17 @@ export class GpuVariantRenderer implements VariantBackend {
       this.hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
       this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
 
-      this.uniformF32[0] = clip.bpStartHi
-      this.uniformF32[1] = clip.bpStartLo
-      this.uniformF32[2] = clip.clippedLengthBp
+      if (block.reversed) {
+        const endBp = clip.bpStartHi + clip.bpStartLo + clip.clippedLengthBp
+        const [endHi, endLo] = splitPositionWithFrac(endBp)
+        this.uniformF32[0] = endHi
+        this.uniformF32[1] = endLo
+        this.uniformF32[2] = -clip.clippedLengthBp
+      } else {
+        this.uniformF32[0] = clip.bpStartHi
+        this.uniformF32[1] = clip.bpStartLo
+        this.uniformF32[2] = clip.clippedLengthBp
+      }
       this.uniformU32[3] = Math.floor(regionStart)
       this.uniformF32[4] = canvasHeight
       this.uniformF32[5] = clip.scissorW

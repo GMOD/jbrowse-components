@@ -20,6 +20,7 @@ layout(std140) uniform Uniforms {
   float row_height;
   float scroll_top;
   float zero;
+  float reversed;
 };
 
 out vec4 v_color;
