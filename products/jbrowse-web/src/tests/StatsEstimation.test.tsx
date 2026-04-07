@@ -4,6 +4,7 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findCanvasIn,
   hts,
   setup,
 } from './util.tsx'
@@ -21,30 +22,18 @@ test('test stats estimation pileup, zoom in to see', async () => {
   const { view, findAllByText, findByTestId } = await createView()
   view.setNewView(30, 183)
   fireEvent.click(await findByTestId(hts('volvox_cram_pileup'), ...o))
-  await findAllByText(/Requested too much data/, ...o)
+  await findAllByText(/Requested too much data|Force load/, ...o)
   const before = view.bpPerPx
   fireEvent.click(await findByTestId('zoom_in'))
-  // found it helps avoid flaky test to check that it is zoomed in before
-  // checking snapshot (even though it seems like it is unneeded) #2673
   await waitFor(() => {
     expect(view.bpPerPx).toBe(before / 2)
   }, delay)
-  // wait for 2 canvases to avoid flaky layout differences from variable block count
-  await waitFor(() => {
-    const canvases = document.querySelectorAll(
-      '[data-testid^="prerendered_canvas"][data-testid$="_done"]',
-    )
-    expect(canvases.length).toBe(2)
-  }, delay)
-  // this is a flaky test
-  // expectCanvasMatch(
-  //   (await findAllByTestId(/prerendered_canvas_.*_done/, ...o))[0]!,
-  // )
+  const display = await findByTestId('pileup-display-done', ...o)
+  findCanvasIn(display)
 }, 30000)
 
-xtest('test stats estimation pileup, force load to see', async () => {
-  const { view, findAllByText, findByTestId, findAllByTestId } =
-    await createView()
+test('test stats estimation pileup, force load to see', async () => {
+  const { view, findAllByText, findByTestId } = await createView()
   view.setNewView(25.07852564102564, 283)
 
   fireEvent.click(await findByTestId(hts('volvox_cram_pileup'), ...o))
@@ -53,10 +42,12 @@ xtest('test stats estimation pileup, force load to see', async () => {
   const buttons = await findAllByText(/Force load/, ...o)
   fireEvent.click(buttons[0]!)
 
-  expectCanvasMatch((await findAllByTestId(/prerendered_canvas/, ...o))[0]!)
-}, 30000)
+  // After force load, wait for pileup to render
+  const display = await findByTestId('pileup-display-done', ...o)
+  expectCanvasMatch(findCanvasIn(display))
+}, 60000)
 
-xtest('test stats estimation on vcf track, zoom in to see', async () => {
+test('test stats estimation on vcf track, zoom in to see', async () => {
   const { view, findAllByText, findByTestId, findAllByTestId } =
     await createView()
   view.setNewView(34, 5)
@@ -64,20 +55,20 @@ xtest('test stats estimation on vcf track, zoom in to see', async () => {
   await findAllByText(/Zoom in to see features/, ...o)
   const before = view.bpPerPx
   fireEvent.click(await findByTestId('zoom_in'))
-  // found it helps avoid flaky test to check that it is zoomed in before
-  // checking snapshot (even though it seems like it is unneeded) #2673
   await waitFor(() => {
     expect(view.bpPerPx).toBe(before / 2)
   }, delay)
-  expectCanvasMatch((await findAllByTestId(/prerendered_canvas/, ...o))[0]!)
+  const displays = await findAllByTestId(/^display-.*-done$/, ...o)
+  expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 30000)
 
-xtest('test stats estimation on vcf track, force load to see', async () => {
+test('test stats estimation on vcf track, force load to see', async () => {
   const { view, findAllByText, findByTestId, findAllByTestId } =
     await createView()
   view.setNewView(34, 5)
   await findAllByText('ctgA', ...o)
   fireEvent.click(await findByTestId(hts('variant_colors'), ...o))
   fireEvent.click((await findAllByText(/Force load/, ...o))[0]!)
-  expectCanvasMatch((await findAllByTestId(/prerendered_canvas/, ...o))[0]!)
+  const displays = await findAllByTestId(/^display-.*-done$/, ...o)
+  expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 30000)

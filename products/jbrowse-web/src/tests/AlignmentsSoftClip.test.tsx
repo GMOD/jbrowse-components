@@ -1,12 +1,12 @@
-import { screen, within } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
 import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findCanvasIn,
   hts,
-  pc,
   setup,
 } from './util.tsx'
 
@@ -27,14 +27,12 @@ test('opens the track menu and enables soft clipping', async () => {
   await user.click(
     await screen.findByTestId(hts('volvox-long-reads-sv-bam'), ...opts),
   )
+  // wait for initial render before toggling soft clipping
+  await screen.findByTestId('pileup-display-done', ...opts)
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-  await user.click(await screen.findByText('Pileup settings'))
   await user.click(await screen.findByText('Show...'))
   await user.click(await screen.findByText('Show soft clipping'))
-  const f0 = within(await screen.findByTestId('Blockset-pileup'))
   // slightly higher threshold for fonts
-  expectCanvasMatch(
-    await f0.findByTestId(pc('softclipped_{volvox}ctgA:2849..2864-0'), ...opts),
-    0.05,
-  )
+  const display = await screen.findByTestId('pileup-display-done', ...opts)
+  expectCanvasMatch(findCanvasIn(display), 0.05)
 }, 60000)

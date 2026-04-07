@@ -32,5 +32,5 @@ test('can use a spec url for dotplot view', async () => {
     <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"DotplotView","views":[{"assembly":"volvox"},{"assembly":"volvox"}],"tracks":["volvox_fake_synteny"]}]}' />,
   )
 
-  await findByTestId('prerendered_canvas_done', {}, delay)
+  await findByTestId('dotplot_webgl_canvas_done', {}, delay)
 }, 40000)

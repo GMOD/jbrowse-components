@@ -4,6 +4,7 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findCanvasIn,
   hts,
   setup,
 } from './util.tsx'
@@ -29,6 +30,6 @@ test('renders peptide letters on CDS features', async () => {
   fireEvent.click(await findByTestId(hts('bedtabix_genes'), ...opts))
 
   // Get canvas snapshot
-  const canvases = await findAllByTestId(/prerendered_canvas/, ...opts)
-  expectCanvasMatch(canvases[0]!)
+  const displays = await findAllByTestId(/^display-.*-done$/, ...opts)
+  expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 25000)

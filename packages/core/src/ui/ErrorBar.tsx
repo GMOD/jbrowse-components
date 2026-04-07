@@ -41,7 +41,7 @@ export default function ErrorBar({
         classes={{ message: classes.ellipses }}
         action={
           <Tooltip title="Retry">
-            <IconButton onClick={onRetry}>
+            <IconButton data-testid="reload_button" onClick={onRetry}>
               <RefreshIcon />
             </IconButton>
           </Tooltip>

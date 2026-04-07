@@ -214,7 +214,9 @@ const PileupInner = observer(function PileupInner({
   return (
     <div>
       <div
-        data-testid="pileup-display"
+        data-testid={
+          model.canvasDrawn ? 'pileup-display-done' : 'pileup-display'
+        }
         style={{ position: 'relative', width: '100%', height }}
       >
         <canvas

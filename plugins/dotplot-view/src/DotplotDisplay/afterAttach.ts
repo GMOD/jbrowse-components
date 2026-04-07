@@ -262,11 +262,11 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
           scaleX,
           scaleY,
         )
+        if (self.features && self.features.length > 0) {
+          self.setCanvasDrawn(true)
+        }
       },
-      {
-        name: 'DotplotDraw',
-        scheduler: run => requestAnimationFrame(run),
-      },
+      { name: 'DotplotDraw' },
     ),
   )
 }

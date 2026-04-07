@@ -19,6 +19,7 @@ import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
+  AUTO_FORCE_LOAD_BP,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -245,7 +246,14 @@ export default function stateModelFactory(
       },
 
       get maxFeatureDensity() {
-        return self.userFeatureDensityLimit ?? 20
+        const view = getContainingView(self) as LGV
+        if (view.visibleBp < AUTO_FORCE_LOAD_BP) {
+          return undefined
+        }
+        return (
+          self.userFeatureDensityLimit ??
+          (getConf(self, 'maxFeatureScreenDensity') as number)
+        )
       },
 
       get colorByCDS() {
@@ -589,18 +597,17 @@ export default function stateModelFactory(
             )
           }
         }
-        // Compute density BEFORE layout so effectiveShowDescriptions is
-        // accurate for the first layout pass (avoids a re-layout flash)
         let totalFeatures = 0
         let totalSpanPx = 0
         for (const r of results) {
           if (r) {
-            self.setLoadedRegionForRegion(r.regionNumber, r.region)
             self.setLayoutBpPerPxForRegion(r.regionNumber, r.bpPerPx)
             totalFeatures += r.data.featureCount
             totalSpanPx += (r.region.end - r.region.start) / r.bpPerPx
           }
         }
+        // Compute density BEFORE layout so effectiveShowDescriptions is
+        // accurate for the first layout pass (avoids a re-layout flash)
         self.setFeatureDensityPerPx(
           totalSpanPx > 0 ? totalFeatures / totalSpanPx : 0,
         )
@@ -932,7 +939,7 @@ export default function stateModelFactory(
             ],
           },
           {
-            label: 'Transcript labels',
+            label: 'Subfeature labels',
             subMenu: (
               [
                 { value: 'none', label: 'None' },

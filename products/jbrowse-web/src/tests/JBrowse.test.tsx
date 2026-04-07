@@ -11,6 +11,7 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findCanvasIn,
   hts,
   setup,
 } from './util.tsx'
@@ -65,9 +66,8 @@ test('assembly aliases', async () => {
   fireEvent.click(
     await findByTestId(hts('volvox_filtered_vcf_assembly_alias'), {}, delay),
   )
-  expectCanvasMatch(
-    (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,
-  )
+  const displays = await findAllByTestId(/^display-.*-done$/, {}, delay)
+  expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 30000)
 
 xtest('nclist track test with long name', async () => {

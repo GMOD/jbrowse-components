@@ -8,9 +8,14 @@ import type { RenderConfigContext } from './renderConfig.ts'
 import type { FeatureLayout } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-/**
- * Calculate label dimensions and update layout accordingly.
- */
+export function getFeatureName(feature: Feature) {
+  return String(feature.get('name') || feature.get('id') || '')
+}
+
+export function getFeatureDescription(feature: Feature) {
+  return String(feature.get('note') || feature.get('description') || '')
+}
+
 export function applyLabelDimensions(
   layout: FeatureLayout,
   args: {
@@ -37,9 +42,7 @@ export function applyLabelDimensions(
   // createTranscriptFloatingLabel) instead of the config callback which may
   // be empty in the RPC worker's mock config
   const name = isTranscriptChild
-    ? truncateLabel(
-        String(feature.get('name') || feature.get('id') || ''),
-      )
+    ? truncateLabel(getFeatureName(feature))
     : truncateLabel(
         String(readConfObject(config, ['labels', 'name'], { feature }) || ''),
       )

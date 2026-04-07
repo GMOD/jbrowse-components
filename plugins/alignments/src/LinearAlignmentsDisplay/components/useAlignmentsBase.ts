@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import {
   getContainingView,
-  setupWebGLContextLossHandler,
+  useGpuRenderer,
+  useTabVisibilityRerender,
 } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
+import { autorun } from 'mobx'
 
 import { AlignmentsRenderer } from './AlignmentsRenderer.ts'
 import {
@@ -13,6 +16,7 @@ import {
   formatCoverageTooltip,
   formatIndicatorTooltip,
   getCanvasCoords,
+  uploadRegionDataToGPU,
 } from './alignmentComponentUtils.ts'
 import { performHitTest } from './hitTestPipeline.ts'
 import {
@@ -80,8 +84,39 @@ export interface LinearAlignmentsDisplayModel {
   visibleLabels: VisibleLabel[]
   isChainMode: boolean
   setOverCigarItem: (flag: boolean) => void
-  setGpuRenderer: (renderer: AlignmentsRenderer | null) => void
+  colorPalette: ColorPalette | null
+  colorSchemeIndex: number
+  dataVersion: number
+  canvasDrawn: boolean
+  arcsState: {
+    rpcDataMap: Map<
+      number,
+      {
+        regionStart: number
+        arcX1: Float32Array
+        arcX2: Float32Array
+        arcColorTypes: Float32Array
+        arcIsArc: Float32Array
+        numArcs: number
+        linePositions: Uint32Array
+        lineYs: Float32Array
+        lineColorTypes: Float32Array
+        numLines: number
+      }
+    >
+    dataVersion: number
+    lineWidth: number
+    drawInter: boolean
+  }
+  showMismatches: boolean
+  showSoftClipping: boolean
+  showModifications: boolean
+  showOutlineSetting: boolean
+  selectedFeatureId: string | undefined
+  flipStrandLongReadChains: boolean
+  setMaxY: (val: number) => void
   setColorPalette: (palette: ColorPalette | null) => void
+  setCanvasDrawn: (val: boolean) => void
   setCurrentRangeY: (rangeY: [number, number]) => void
   setCoverageHeight: (height: number) => void
   setArcsHeight: (height: number) => void
@@ -109,6 +144,7 @@ export interface LinearAlignmentsDisplayModel {
   renderingMode: 'pileup' | 'linkedRead'
   scalebarOverlapLeft: number
   clearAllRpcData: () => void
+  setError: (error?: unknown) => void
 }
 
 export interface FeatureHit {
@@ -265,7 +301,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       rangeY: model.currentRangeY,
       isChainMode,
     })
-
     if (result.type === 'cigar') {
       e.preventDefault()
       model.setContextMenuCoord([e.clientX, e.clientY])
@@ -423,64 +458,140 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   // --- Effects ---
 
-  const rendererRef = useRef<AlignmentsRenderer | null>(null)
-  const [contextVersion, setContextVersion] = useState(0)
+  const {
+    error: gpuError,
+    ready,
+    rendererRef,
+    retry,
+  } = useGpuRenderer(canvasRef, AlignmentsRenderer)
 
-  // Alignments stores the renderer in the MST model instead of using the
-  // shared useGpuRenderer hook. This is because alignments has 3 separate
-  // model autoruns that need the renderer (upload pileup, upload arcs,
-  // render), and the render autorun depends on 20+ model observables
-  // (rangeY, colorScheme, featureHeight, showCoverage, etc.). Storing the
-  // renderer as a MobX observable lets autoruns automatically track and
-  // re-run when it changes. Wiggle/variants/hic are simpler (1-2 effects,
-  // few model deps) so they use useGpuRenderer instead.
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (canvas) {
-      return setupWebGLContextLossHandler(canvas, () => {
-        setContextVersion(v => v + 1)
-      })
-    }
-    return undefined
-  }, [])
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) {
-      return
-    }
-    let cancelled = false
-    const renderer = AlignmentsRenderer.getOrCreate(canvas)
-    renderer
-      .init()
-      .then(() => {
-        if (cancelled) {
-          return
-        }
-        rendererRef.current = renderer
-        model.setGpuRenderer(renderer)
-        if (contextVersion > 0) {
-          model.clearAllRpcData()
-        }
-      })
-      .catch((e: unknown) => {
-        console.error('Failed to initialize renderer:', e)
-      })
-    return () => {
-      cancelled = true
-      rendererRef.current?.destroy()
-      rendererRef.current = null
-      model.setGpuRenderer(null)
-    }
-  }, [contextVersion, model])
-
-  // Sync theme-derived color palette to model
   useEffect(() => {
     model.setColorPalette(colorPalette)
   }, [model, colorPalette])
 
+  const renderNow = useEffectEvent(() => {
+    const renderer = rendererRef.current
+    if (!renderer || !view.initialized) {
+      return
+    }
+    const palette = model.colorPalette
+    if (!palette) {
+      return
+    }
+    const regions = view.visibleRegions
+    renderer.renderBlocks(
+      regions.map(r => ({
+        regionNumber: r.regionNumber,
+        bpRangeX: [r.start, r.end] as [number, number],
+        screenStartPx: r.screenStartPx,
+        screenEndPx: r.screenEndPx,
+        reversed: r.reversed ?? false,
+      })),
+      {
+        rangeY: model.currentRangeY,
+        colorScheme: model.colorSchemeIndex,
+        featureHeight: model.featureHeightSetting,
+        featureSpacing: model.featureSpacing,
+        showCoverage: model.showCoverage,
+        coverageHeight: model.coverageHeight,
+        coverageYOffset: YSCALEBAR_LABEL_OFFSET,
+        coverageNicedMax: model.coverageTicks?.nicedMax,
+        showMismatches: model.showMismatches,
+        showSoftClipping: model.showSoftClipping,
+        showInterbaseIndicators: model.showInterbaseIndicators,
+        showModifications: model.showModifications,
+        showSashimiArcs: model.showSashimiArcs,
+        showOutline: model.showOutlineSetting,
+        showArcs: model.showArcs,
+        arcsHeight: model.arcsHeight,
+        canvasWidth: view.width,
+        canvasHeight: model.height,
+        highlightedFeatureId: model.featureIdUnderMouse,
+        selectedFeatureId: model.selectedFeatureId,
+        highlightedChainIds: model.highlightedChainIds,
+        selectedChainIds: model.selectedChainIds,
+        colors: palette,
+        renderingMode: model.renderingMode,
+        flipStrandLongReadChains: model.flipStrandLongReadChains,
+        arcLineWidth: model.arcsState.lineWidth,
+        bpRangeX: [0, 0],
+      },
+    )
+  })
+
+  useEffect(() => {
+    const renderer = rendererRef.current
+    if (!renderer || !ready) {
+      return
+    }
+
+    let lastRpcDataMap: unknown = null
+    let lastArcsDataMap: unknown = null
+
+    return autorun(() => {
+      const rpcDataMap = model.rpcDataMap
+
+      if (lastRpcDataMap !== rpcDataMap) {
+        lastRpcDataMap = rpcDataMap
+        const maxYVal = uploadRegionDataToGPU(renderer, rpcDataMap)
+        if (maxYVal > 0) {
+          model.setMaxY(maxYVal)
+        }
+        for (const [regionNumber, data] of rpcDataMap) {
+          if (
+            data.connectingLinePositions &&
+            data.connectingLineYs &&
+            data.connectingLineColorTypes &&
+            data.numConnectingLines
+          ) {
+            renderer.uploadConnectingLinesForRegion(regionNumber, {
+              regionStart: data.regionStart,
+              connectingLinePositions: data.connectingLinePositions,
+              connectingLineYs: data.connectingLineYs,
+              connectingLineColorTypes: data.connectingLineColorTypes,
+              numConnectingLines: data.numConnectingLines,
+            })
+          }
+        }
+      }
+
+      const arcsRpcDataMap = model.arcsState.rpcDataMap
+      if (lastArcsDataMap !== arcsRpcDataMap) {
+        lastArcsDataMap = arcsRpcDataMap
+        for (const [regionNumber, data] of arcsRpcDataMap) {
+          renderer.uploadArcsFromTypedArraysForRegion(regionNumber, {
+            regionStart: data.regionStart,
+            arcX1: data.arcX1,
+            arcX2: data.arcX2,
+            arcColorTypes: data.arcColorTypes,
+            arcIsArc: data.arcIsArc,
+            numArcs: data.numArcs,
+            linePositions: data.linePositions,
+            lineYs: data.lineYs,
+            lineColorTypes: data.lineColorTypes,
+            numLines: data.numLines,
+          })
+        }
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _dv = model.dataVersion
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _adv = model.arcsState.dataVersion
+
+      renderNow()
+      if (rpcDataMap.size > 0 && !model.canvasDrawn) {
+        model.setCanvasDrawn(true)
+      }
+    })
+  }, [model, view, ready, rendererRef])
+
+  useTabVisibilityRerender(renderNow)
+
   return {
     canvasRef,
+    gpuError,
+    retry,
     resizeHandleHovered,
     setResizeHandleHovered,
     width,

@@ -24,7 +24,7 @@ const delay = { timeout: 40000 }
 const opts = [{}, delay]
 
 test('export svg of reversed region with gene labels', async () => {
-  const { view, findByTestId, findByText } = await createView()
+  const { view, findByTestId, findByText, findAllByTestId } = await createView()
 
   // Navigate to reversed region
   await view.navToLocString('ctgA:1..7,720[rev]', 'volvox')
@@ -40,12 +40,8 @@ test('export svg of reversed region with gene labels', async () => {
   // Open gff3tabix_genes track which has labels
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
 
-  // Wait for the canvas to render first
-  await findByTestId(
-    'prerendered_canvas_{volvox}ctgA:4138..11781[rev]-0-reversed_done',
-    {},
-    { timeout: 30000 },
-  )
+  // Wait for display to render
+  await findAllByTestId(/^display-.*-done$/, {}, { timeout: 30000 })
 
   await exportAndVerifySvg({
     findByTestId,

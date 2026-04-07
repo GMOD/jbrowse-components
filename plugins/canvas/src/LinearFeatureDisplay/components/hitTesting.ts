@@ -134,7 +134,20 @@ function performHitDetection(
   )
 
   if (debug) {
-    console.log('[HitTest] performHitDetection bpPos=', bpPos, 'yPos=', yPos, 'numItems=', data.flatbushItems.length, 'numSub=', data.subfeatureInfos.length, 'hasFeatureIndex=', !!featureIndex, 'hasSubIndex=', !!subfeatureIndex)
+    console.log(
+      '[HitTest] performHitDetection bpPos=',
+      bpPos,
+      'yPos=',
+      yPos,
+      'numItems=',
+      data.flatbushItems.length,
+      'numSub=',
+      data.subfeatureInfos.length,
+      'hasFeatureIndex=',
+      !!featureIndex,
+      'hasSubIndex=',
+      !!subfeatureIndex,
+    )
   }
 
   if (subfeatureIndex) {
@@ -154,7 +167,20 @@ function performHitDetection(
   if (featureIndex) {
     const hits = featureIndex.search(bpPos, yPos, bpPos, yPos)
     if (debug) {
-      console.log('[HitTest] feature hits:', hits.length, 'first few items bounds:', data.flatbushItems.slice(0, 3).map(i => ({ id: i.featureId, startBp: i.startBp, endBp: i.endBp, topPx: i.topPx, bottomPx: i.bottomPx })))
+      console.log(
+        '[HitTest] feature hits:',
+        hits.length,
+        'first few items bounds:',
+        data.flatbushItems
+          .slice(0, 3)
+          .map(i => ({
+            id: i.featureId,
+            startBp: i.startBp,
+            endBp: i.endBp,
+            topPx: i.topPx,
+            bottomPx: i.bottomPx,
+          })),
+      )
     }
     for (const idx of hits) {
       const item = data.flatbushItems[idx]
@@ -166,7 +192,12 @@ function performHitDetection(
   }
 
   if (debug) {
-    console.log('[HitTest] result: feature=', feature?.featureId ?? null, 'subfeature=', subfeature?.featureId ?? null)
+    console.log(
+      '[HitTest] result: feature=',
+      feature?.featureId ?? null,
+      'subfeature=',
+      subfeature?.featureId ?? null,
+    )
   }
   return { feature, subfeature }
 }
@@ -181,11 +212,33 @@ export function performMultiRegionHitDetection(
   debug = false,
 ): HitResult {
   if (debug) {
-    console.log('[HitTest] performMultiRegionHitDetection mouseXPx=', mouseXPx, 'yPos=', yPos, 'numRegions=', visibleRegions.length, 'rpcDataMapSize=', rpcDataMap.size)
+    console.log(
+      '[HitTest] performMultiRegionHitDetection mouseXPx=',
+      mouseXPx,
+      'yPos=',
+      yPos,
+      'numRegions=',
+      visibleRegions.length,
+      'rpcDataMapSize=',
+      rpcDataMap.size,
+    )
   }
   for (const vr of visibleRegions) {
     if (debug) {
-      console.log('[HitTest] region', vr.regionNumber, 'screenStartPx=', vr.screenStartPx, 'screenEndPx=', vr.screenEndPx, 'start=', vr.start, 'end=', vr.end, 'refName=', vr.refName)
+      console.log(
+        '[HitTest] region',
+        vr.regionNumber,
+        'screenStartPx=',
+        vr.screenStartPx,
+        'screenEndPx=',
+        vr.screenEndPx,
+        'start=',
+        vr.start,
+        'end=',
+        vr.end,
+        'refName=',
+        vr.refName,
+      )
     }
     if (mouseXPx < vr.screenStartPx || mouseXPx > vr.screenEndPx) {
       if (debug) {

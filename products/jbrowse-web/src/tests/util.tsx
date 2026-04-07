@@ -81,6 +81,14 @@ export const hts = (str: string) => `htsTrackEntry-Tracks,${str}`
 export const pc = (str: string) => `prerendered_canvas_${str}_done`
 export const pv = (str: string) => pc(`{volvox}ctgA:${str}`)
 
+export function findCanvasIn(container: HTMLElement) {
+  const canvas = container.querySelector('canvas')
+  if (!canvas) {
+    throw new Error('No canvas found in container')
+  }
+  return canvas
+}
+
 export async function createView(args?: any, adminMode?: boolean) {
   const ret = createViewNoWait(args, adminMode)
   const { view } = ret
@@ -249,10 +257,11 @@ export async function testFileReload(config: {
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0]!)
 
-    const canvas =
+    const displayEl =
       typeof config.expectedCanvas === 'string'
         ? await findByTestId(config.expectedCanvas, ...opts)
         : (await findAllByTestId(config.expectedCanvas, ...opts))[0]!
+    const canvas = displayEl.querySelector('canvas') ?? displayEl
     expectCanvasMatch(canvas)
   })
 }

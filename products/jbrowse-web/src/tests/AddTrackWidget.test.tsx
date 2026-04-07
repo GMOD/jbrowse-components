@@ -1,6 +1,12 @@
 import { fireEvent, within } from '@testing-library/react'
 
-import { createView, doBeforeEach, expectCanvasMatch, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  expectCanvasMatch,
+  findCanvasIn,
+  setup,
+} from './util.tsx'
 
 setup()
 
@@ -42,8 +48,8 @@ test('adds a PAF via the add track workflow', async () => {
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
   fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
 
-  const res = await findAllByTestId(/prerendered_canvas/, ...opts)
-  expectCanvasMatch(res[0]!)
+  const displays = await findAllByTestId(/^display-.*-done$/, ...opts)
+  expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 60000)
 
 test('bug: error message persists after fixing URL', async () => {

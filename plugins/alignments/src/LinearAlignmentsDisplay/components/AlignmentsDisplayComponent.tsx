@@ -53,7 +53,7 @@ const AlignmentsDisplayComponent = observer(
     return (
       <div
         ref={ref}
-        data-testid={`display-${getConf(model, 'displayId')}`}
+        data-testid={`display-${getConf(model, 'displayId')}${model.canvasDrawn ? '-done' : ''}`}
         className={classes.display}
         onMouseMove={event => {
           if (!ref.current) {

@@ -50,10 +50,15 @@ export default function MultiRegionDisplayMixin() {
       regionTooLargeState: false,
       regionTooLargeReasonState: '',
       featureDensityStats: undefined as FeatureDensityStats | undefined,
+      canvasDrawn: false,
     }))
     .views(self => ({
       get isLoading() {
         return self.renderingStopToken !== undefined
+      },
+
+      get fullyDrawn() {
+        return self.canvasDrawn && !this.isLoading
       },
 
       get regionTooLarge() {
@@ -135,6 +140,10 @@ export default function MultiRegionDisplayMixin() {
         // no-op base
       },
 
+      setCanvasDrawn(val: boolean) {
+        self.canvasDrawn = val
+      },
+
       setStatusMessage(_msg?: string) {
         // no-op base — subclasses override (e.g. NonBlockCanvasDisplayMixin)
       },
@@ -213,6 +222,17 @@ export default function MultiRegionDisplayMixin() {
               }
               self.setRegionTooLarge(false)
               await work(ctx)
+              // Mark regions as loaded AFTER the work callback has
+              // populated display-specific data (rpcDataMap, cellData,
+              // etc). setLoadedRegionForRegion bumps dataVersion which
+              // triggers draw autoruns — the data must already be
+              // present when they fire. Displays must NOT call
+              // setLoadedRegionForRegion themselves.
+              if (!isStale()) {
+                for (const { regionNumber, region } of needed) {
+                  self.setLoadedRegionForRegion(regionNumber, region)
+                }
+              }
             } catch (e) {
               if (!isAbortException(e)) {
                 console.error('Fetch failed:', e)

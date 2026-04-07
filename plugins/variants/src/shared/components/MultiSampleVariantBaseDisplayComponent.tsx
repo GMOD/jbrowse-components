@@ -36,7 +36,9 @@ const MultiSampleVariantBaseDisplayComponent = observer(
     if (regionTooLarge) {
       return (
         <div
-          data-testid="variant-display"
+          data-testid={
+            model.canvasDrawn ? 'variant-display-done' : 'variant-display'
+          }
           style={{ position: 'relative', height: availableHeight }}
         >
           <TooLargeMessage model={model} />
@@ -47,7 +49,9 @@ const MultiSampleVariantBaseDisplayComponent = observer(
     return (
       <div
         ref={ref}
-        data-testid="variant-display"
+        data-testid={
+          model.canvasDrawn ? 'variant-display-done' : 'variant-display'
+        }
         style={{ position: 'relative' }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}

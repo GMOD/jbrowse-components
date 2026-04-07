@@ -401,10 +401,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             for (const [regionNumber, data] of result.regionData) {
               self.setRpcData(regionNumber, data)
             }
-
-            for (const { region, regionNumber } of needed) {
-              self.setLoadedRegionForRegion(regionNumber, region)
-            }
           })
         },
 

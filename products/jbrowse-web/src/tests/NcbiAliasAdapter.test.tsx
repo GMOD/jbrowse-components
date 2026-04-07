@@ -1,4 +1,10 @@
-import { createView, doBeforeEach, expectCanvasMatch, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  expectCanvasMatch,
+  findCanvasIn,
+  setup,
+} from './util.tsx'
 import config from '../../test_data/cfam2/config.json' with { type: 'json' }
 
 setup()
@@ -10,5 +16,6 @@ test('ncbi config', async () => {
   doBeforeEach(url => require.resolve(`../../test_data/cfam2/${url}`))
   const { findAllByTestId } = await createView(config)
 
-  expectCanvasMatch((await findAllByTestId(/prerendered_canvas/, ...opts))[0]!)
+  const displays = await findAllByTestId(/^display-.*-done$/, ...opts)
+  expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 50000)

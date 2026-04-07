@@ -76,6 +76,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            * bpPerPx at which featPositions were computed (v-axis)
            */
           featPositionsBpPerPxV: 0,
+          canvasDrawn: false,
         })),
     )
     .views(self => ({
@@ -144,6 +145,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setGpuInitialized(value: boolean) {
         self.gpuInitialized = value
+      },
+      setCanvasDrawn(value: boolean) {
+        self.canvasDrawn = value
       },
       /**
        * #action

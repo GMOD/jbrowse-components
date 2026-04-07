@@ -1,6 +1,6 @@
-import { fireEvent } from '@testing-library/react'
+import { fireEvent, waitFor } from '@testing-library/react'
 
-import { createView, expectCanvasMatch, hts } from './util.tsx'
+import { createView, expectCanvasMatch, findCanvasIn, hts } from './util.tsx'
 
 export async function testMultiVariantDisplay({
   displayType,
@@ -18,8 +18,7 @@ export async function testMultiVariantDisplay({
       ? 'Multi-sample variant display (matrix)'
       : 'Multi-sample variant display (regular)'
 
-  const { view, findByTestId, findAllByText, findByText, findAllByTestId } =
-    await createView()
+  const { view, findByTestId, findByText } = await createView()
   await view.navToLocString('ctgA')
   fireEvent.click(await findByTestId(hts('volvox_test_vcf'), ...opts))
 
@@ -33,6 +32,9 @@ export async function testMultiVariantDisplay({
     fireEvent.click(await findByText(/^Phased/, ...opts))
   }
 
-  fireEvent.click((await findAllByText('Force load', ...opts))[0]!)
-  expectCanvasMatch((await findAllByTestId(/prerendered_canvas/, ...opts))[0]!)
+  const display = await findByTestId('variant-display-done', ...opts)
+  await waitFor(() => {
+    findCanvasIn(display)
+  }, delay)
+  expectCanvasMatch(findCanvasIn(display))
 }

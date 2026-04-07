@@ -1,7 +1,6 @@
 import { lazy } from 'react'
 
 import {
-  YSCALEBAR_LABEL_OFFSET,
   computeCoverageTicks,
   computeVisibleMaxDepth,
 } from '@jbrowse/alignments-core'
@@ -54,10 +53,7 @@ import {
   getSortByMenuItem,
 } from '../shared/menuItems.ts'
 import { getColorForModification } from '../util.ts'
-import {
-  CIGAR_TYPE_LABELS,
-  uploadRegionDataToGPU,
-} from './components/alignmentComponentUtils.ts'
+import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
 import {
   INTERBASE_HARDCLIP,
@@ -65,10 +61,7 @@ import {
   INTERBASE_SOFTCLIP,
 } from '../shared/types.ts'
 
-import type {
-  AlignmentsRenderer,
-  ColorPalette,
-} from './components/AlignmentsRenderer.ts'
+import type { ColorPalette } from './components/AlignmentsRenderer.ts'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type {
   CigarHitResult,
@@ -330,7 +323,6 @@ export default function stateModelFactory(
       simplexModifications: new Set<string>(),
       modificationsReady: false,
       overCigarItem: false,
-      gpuRenderer: null as AlignmentsRenderer | null,
       colorPalette: null as ColorPalette | null,
       visibleMaxDepth: 0,
     }))
@@ -713,7 +705,14 @@ export default function stateModelFactory(
         },
 
         setRpcData(regionNumber: number, data: PileupDataResult | null) {
-          console.log('[DEBUG] setRpcData called, regionNumber:', regionNumber, 'hasData:', !!data)
+          console.log(
+            '[DEBUG] setRpcData called, regionNumber:',
+            regionNumber,
+            'hasData:',
+            !!data,
+            'numReads:',
+            data?.numReads,
+          )
           const next = new Map(self.rpcDataMap)
           if (data) {
             next.set(regionNumber, data)
@@ -740,26 +739,12 @@ export default function stateModelFactory(
           self.setRegionTooLarge(false)
         },
 
-        setLoadedRegion(regionNumber: number, region: Region | null) {
-          if (region) {
-            self.setLoadedRegionForRegion(regionNumber, region)
-          } else {
-            const next = new Map(self.loadedRegions)
-            next.delete(regionNumber)
-            self.loadedRegions = next
-          }
-        },
-
         setWebGLRef(ref: unknown) {
           self.webglRef = ref
         },
 
         setOverCigarItem(flag: boolean) {
           self.overCigarItem = flag
-        },
-
-        setGpuRenderer(renderer: AlignmentsRenderer | null) {
-          self.gpuRenderer = renderer
         },
 
         setColorPalette(palette: ColorPalette | null) {
@@ -1290,7 +1275,18 @@ export default function stateModelFactory(
         const entries = [...rpcDataMap.entries()].filter(
           ([, d]) => d.numReads > 0,
         )
+        console.log(
+          '[DEBUG] computeAndAssignLayoutForData: entries:',
+          entries.length,
+          'total in map:',
+          rpcDataMap.size,
+          'numReads:',
+          [...rpcDataMap.values()].map(d => d.numReads),
+        )
         if (entries.length === 0) {
+          console.log(
+            '[DEBUG] computeAndAssignLayoutForData: no entries with reads, returning early',
+          )
           return
         }
 
@@ -1480,73 +1476,6 @@ export default function stateModelFactory(
 
         afterAttach() {
           superAfterAttach()
-          // SYNC: Upload-before-draw autorun pattern is shared with
-          // MultiLGVSyntenyDisplay (plugins/linear-comparative-view/
-          // src/MultiLGVSyntenyDisplay/components/MultiSyntenyRendering.tsx).
-          // Upload autoruns are registered BEFORE the draw autorun so
-          // that MobX runs them first when rpcDataMap changes, ensuring
-          // GPU buffers are populated before renderBlocks() reads them.
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const renderer = self.gpuRenderer
-                if (!renderer) {
-                  return
-                }
-                const rpcDataMap = self.rpcDataMap
-                const maxYVal = uploadRegionDataToGPU(renderer, rpcDataMap)
-                if (maxYVal > 0) {
-                  self.setMaxY(maxYVal)
-                }
-                for (const [regionNumber, data] of rpcDataMap) {
-                  if (
-                    data.connectingLinePositions &&
-                    data.connectingLineYs &&
-                    data.connectingLineColorTypes &&
-                    data.numConnectingLines
-                  ) {
-                    renderer.uploadConnectingLinesForRegion(regionNumber, {
-                      regionStart: data.regionStart,
-                      connectingLinePositions: data.connectingLinePositions,
-                      connectingLineYs: data.connectingLineYs,
-                      connectingLineColorTypes: data.connectingLineColorTypes,
-                      numConnectingLines: data.numConnectingLines,
-                    })
-                  }
-                }
-              },
-              { name: 'LinearAlignmentsDisplay:uploadPileupData' },
-            ),
-          )
-
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const renderer = self.gpuRenderer
-                if (!renderer) {
-                  return
-                }
-                const arcsRpcDataMap = self.arcsState.rpcDataMap
-                for (const [regionNumber, data] of arcsRpcDataMap) {
-                  renderer.uploadArcsFromTypedArraysForRegion(regionNumber, {
-                    regionStart: data.regionStart,
-                    arcX1: data.arcX1,
-                    arcX2: data.arcX2,
-                    arcColorTypes: data.arcColorTypes,
-                    arcIsArc: data.arcIsArc,
-                    numArcs: data.numArcs,
-                    linePositions: data.linePositions,
-                    lineYs: data.lineYs,
-                    lineColorTypes: data.lineColorTypes,
-                    numLines: data.numLines,
-                  })
-                }
-              },
-              { name: 'LinearAlignmentsDisplay:uploadArcsData' },
-            ),
-          )
 
           // Debounced autorun: compute visible max depth from only visible bins.
           addDisposer(
@@ -1570,71 +1499,6 @@ export default function stateModelFactory(
                 delay: 400,
                 name: 'LinearAlignmentsDisplay:visibleMaxDepth',
               },
-            ),
-          )
-
-          // Draw autorun: re-renders whenever visual settings change.
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const renderer = self.gpuRenderer
-                const palette = self.colorPalette
-                if (!renderer || !palette) {
-                  return
-                }
-                const view = getContainingView(self) as LGV
-                if (!view.initialized) {
-                  return
-                }
-
-                // See dataVersion comment in MultiRegionDisplayMixin.
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const _dv = self.dataVersion
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const _adv = self.arcsState.dataVersion
-                const regions = view.visibleRegions
-                const blocks = regions.map(r => ({
-                  regionNumber: r.regionNumber,
-                  bpRangeX: [r.start, r.end] as [number, number],
-                  screenStartPx: r.screenStartPx,
-                  screenEndPx: r.screenEndPx,
-                  reversed: r.reversed ?? false,
-                }))
-                renderer.renderBlocks(blocks, {
-                  rangeY: self.currentRangeY,
-                  colorScheme: self.colorSchemeIndex,
-                  featureHeight: self.featureHeightSetting,
-                  featureSpacing: self.featureSpacing,
-                  showCoverage: self.showCoverage,
-                  coverageHeight: self.coverageHeight,
-                  coverageYOffset: YSCALEBAR_LABEL_OFFSET,
-                  coverageNicedMax: self.coverageTicks?.nicedMax,
-                  showMismatches: self.showMismatches,
-                  showSoftClipping: self.showSoftClipping,
-                  showInterbaseIndicators: self.showInterbaseIndicators,
-                  showModifications: self.showModifications,
-                  showSashimiArcs: self.showSashimiArcs,
-                  showOutline: self.showOutlineSetting,
-                  showArcs: self.showArcs,
-                  arcsHeight: self.arcsHeight,
-                  canvasWidth: view.width,
-                  canvasHeight: self.height,
-                  highlightedFeatureId: self.featureIdUnderMouse,
-                  selectedFeatureId: self.selectedFeatureId,
-                  highlightedChainIds: self.highlightedChainIds,
-                  selectedChainIds: self.selectedChainIds,
-                  colors: palette,
-                  renderingMode: self.renderingMode,
-                  flipStrandLongReadChains: self.flipStrandLongReadChains,
-                  arcLineWidth: self.arcsState.lineWidth,
-                  bpRangeX: [0, 0],
-                })
-                if (self.rpcDataMap.size > 0) {
-                  self.setCanvasDrawn(true)
-                }
-              },
-              { name: 'LinearAlignmentsDisplay:draw' },
             ),
           )
 

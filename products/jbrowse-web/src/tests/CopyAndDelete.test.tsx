@@ -6,6 +6,7 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findCanvasIn,
   getPluginManager,
   mockConsoleWarn,
   setup,
@@ -52,9 +53,8 @@ test('copy and delete track in admin mode', () => {
     await waitFor(() => {
       expect(view.tracks.length).toBe(1)
     })
-    expectCanvasMatch(
-      (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,
-    )
+    const displays = await findAllByTestId(/^display-.*-done$/, {}, delay)
+    expectCanvasMatch(findCanvasIn(displays[0]!))
     fireEvent.click(await findByTestId('track_menu_icon'))
     fireEvent.click(await findByText('Track actions'))
     fireEvent.click(await findByText('Delete track'))
@@ -130,9 +130,8 @@ test('copy and delete track to session tracks', () => {
     await waitFor(() => {
       expect(view.tracks.length).toBe(1)
     })
-    expectCanvasMatch(
-      (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,
-    )
+    const displays = await findAllByTestId(/^display-.*-done$/, {}, delay)
+    expectCanvasMatch(findCanvasIn(displays[0]!))
     fireEvent.click(await findByTestId('track_menu_icon'))
     fireEvent.click(await findByText('Track actions'))
     fireEvent.click(await findByText('Delete track'))

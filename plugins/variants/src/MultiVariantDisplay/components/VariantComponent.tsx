@@ -198,6 +198,9 @@ const VariantComponent = observer(function VariantComponent({
       }
 
       renderNow()
+      if (cellData) {
+        model.setCanvasDrawn(true)
+      }
     })
   }, [model, view, ready, rendererRef])
 

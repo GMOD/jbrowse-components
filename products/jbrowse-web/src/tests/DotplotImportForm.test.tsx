@@ -33,7 +33,7 @@ test('open tracklist file', async () => {
   fireEvent.click(listbox.getByText('volvox_del'))
   fireEvent.click(await findByText('Launch'))
 
-  expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
+  expectCanvasMatch(await findByTestId('dotplot_webgl_canvas_done', {}, delay))
 }, 50000)
 
 test('open local paf', async () => {
@@ -59,7 +59,7 @@ test('open local paf', async () => {
 
   fireEvent.click(await findByText('Swap?'))
   fireEvent.click(await findByText('Launch'))
-  expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
+  expectCanvasMatch(await findByTestId('dotplot_webgl_canvas_done', {}, delay))
 }, 50000)
 
 test('open local pif', async () => {
@@ -92,5 +92,5 @@ test('open local pif', async () => {
 
   fireEvent.click(await findByText('Swap?'))
   fireEvent.click(await findByText('Launch'))
-  expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
+  expectCanvasMatch(await findByTestId('dotplot_webgl_canvas_done', {}, delay))
 }, 50000)

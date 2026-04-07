@@ -2,6 +2,18 @@ import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
+interface Region {
+  refName: string
+  start: number
+  end: number
+  assemblyName: string
+}
+
+interface RegionWithNumber {
+  region: Region
+  regionNumber: number
+}
+
 interface LifecycleModel {
   readonly isLoading: boolean
   error: unknown
@@ -10,12 +22,18 @@ interface LifecycleModel {
   regionTooLargeState: boolean
   regionTooLargeReasonState: string
   statusMessage: string | undefined
+  loadedRegions: Map<number, Region>
+  dataVersion: number
 }
 
 interface FetchContext {
   stopToken: StopToken
   generation: number
   isStale: () => boolean
+}
+
+function makeRegion(refName: string, start: number, end: number): Region {
+  return { refName, start, end, assemblyName: 'test' }
 }
 
 function createModel(): LifecycleModel {
@@ -29,11 +47,25 @@ function createModel(): LifecycleModel {
     regionTooLargeState: false,
     regionTooLargeReasonState: '',
     statusMessage: undefined,
+    loadedRegions: new Map(),
+    dataVersion: 0,
   }
+}
+
+function setLoadedRegionForRegion(
+  model: LifecycleModel,
+  regionNumber: number,
+  region: Region,
+) {
+  const next = new Map(model.loadedRegions)
+  next.set(regionNumber, region)
+  model.loadedRegions = next
+  model.dataVersion++
 }
 
 function withFetchLifecycle(
   model: LifecycleModel,
+  needed: RegionWithNumber[],
   byteEstimate:
     | (() => Promise<{
         tooLarge: boolean
@@ -75,6 +107,11 @@ function withFetchLifecycle(
       }
       model.regionTooLargeState = false
       await work(ctx)
+      if (!isStale()) {
+        for (const { regionNumber, region } of needed) {
+          setLoadedRegionForRegion(model, regionNumber, region)
+        }
+      }
     } catch (e) {
       if (!isStale()) {
         model.error = e
@@ -83,6 +120,7 @@ function withFetchLifecycle(
       if (!isStale()) {
         model.renderingStopToken = undefined
         model.statusMessage = undefined
+        model.fetchGeneration++
       }
     }
   })()
@@ -119,7 +157,7 @@ describe('withFetchLifecycle state management', () => {
     expect(model.isLoading).toBe(false)
 
     let loadingDuringWork = false
-    await withFetchLifecycle(model, null, async () => {
+    await withFetchLifecycle(model, [], null, async () => {
       loadingDuringWork = model.isLoading
     })
 
@@ -132,6 +170,7 @@ describe('withFetchLifecycle state management', () => {
 
     await withFetchLifecycle(
       model,
+      [],
       async () => ({ tooLarge: true, reason: 'too big' }),
       async () => {},
     )
@@ -144,7 +183,7 @@ describe('withFetchLifecycle state management', () => {
   it('sets isLoading=false when work throws', async () => {
     const model = createModel()
 
-    await withFetchLifecycle(model, null, async () => {
+    await withFetchLifecycle(model, [], null, async () => {
       throw new Error('work failed')
     })
 
@@ -157,6 +196,7 @@ describe('withFetchLifecycle state management', () => {
 
     await withFetchLifecycle(
       model,
+      [],
       async () => ({ tooLarge: true, reason: 'too big' }),
       async () => {},
     )
@@ -169,7 +209,7 @@ describe('withFetchLifecycle state management', () => {
     expect(model.regionTooLargeState).toBe(false)
     expect(model.isLoading).toBe(false)
 
-    await withFetchLifecycle(model, null, async () => {})
+    await withFetchLifecycle(model, [], null, async () => {})
 
     expect(model.isLoading).toBe(false)
     expect(model.regionTooLargeState).toBe(false)
@@ -181,7 +221,7 @@ describe('withFetchLifecycle state management', () => {
     let firstWorkRan = false
     let secondWorkRan = false
 
-    const firstFetch = withFetchLifecycle(model, null, async ctx => {
+    const firstFetch = withFetchLifecycle(model, [], null, async ctx => {
       await new Promise(r => setTimeout(r, 50))
       if (!ctx.isStale()) {
         firstWorkRan = true
@@ -189,7 +229,7 @@ describe('withFetchLifecycle state management', () => {
     })
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    withFetchLifecycle(model, null, async () => {
+    withFetchLifecycle(model, [], null, async () => {
       secondWorkRan = true
     })
 
@@ -207,6 +247,7 @@ describe('withFetchLifecycle state management', () => {
     for (let i = 0; i < 5; i++) {
       await withFetchLifecycle(
         model,
+        [],
         async () => ({ tooLarge: true, reason: `cycle ${i}` }),
         async () => {},
       )
@@ -221,7 +262,7 @@ describe('withFetchLifecycle state management', () => {
       expect(model.isLoading).toBe(false)
     }
 
-    await withFetchLifecycle(model, null, async () => {})
+    await withFetchLifecycle(model, [], null, async () => {})
     expect(model.isLoading).toBe(false)
     expect(model.regionTooLargeState).toBe(false)
   })
@@ -237,6 +278,7 @@ describe('withFetchLifecycle state management', () => {
       fetchCount++
       await withFetchLifecycle(
         model,
+        [],
         async () => ({ tooLarge: true, reason: 'too big' }),
         async () => {},
       )
@@ -255,7 +297,7 @@ describe('withFetchLifecycle state management', () => {
     const model = createModel()
     let workWasStale = false
 
-    const fetchPromise = withFetchLifecycle(model, null, async ctx => {
+    const fetchPromise = withFetchLifecycle(model, [], null, async ctx => {
       await new Promise(r => setTimeout(r, 10))
       workWasStale = ctx.isStale()
     })
@@ -273,6 +315,7 @@ describe('withFetchLifecycle state management', () => {
 
     await withFetchLifecycle(
       model,
+      [],
       async () => {
         throw new Error('RPC failed')
       },
@@ -290,6 +333,7 @@ describe('withFetchLifecycle state management', () => {
 
     await withFetchLifecycle(
       model,
+      [],
       async () => null,
       async () => {
         workRan = true
@@ -306,6 +350,7 @@ describe('withFetchLifecycle state management', () => {
 
     await withFetchLifecycle(
       model,
+      [],
       async () => ({ tooLarge: true, reason: 'big' }),
       async () => {},
     )
@@ -315,6 +360,7 @@ describe('withFetchLifecycle state management', () => {
 
     await withFetchLifecycle(
       model,
+      [],
       async () => ({ tooLarge: true, reason: 'still big' }),
       async () => {},
     )
@@ -328,7 +374,7 @@ describe('withFetchLifecycle state management', () => {
     const model = createModel()
     let workWasStale = false
 
-    const fetchPromise = withFetchLifecycle(model, null, async ctx => {
+    const fetchPromise = withFetchLifecycle(model, [], null, async ctx => {
       await new Promise(r => setTimeout(r, 10))
       workWasStale = ctx.isStale()
     })
@@ -358,7 +404,7 @@ describe('withFetchLifecycle state management', () => {
     let firstWorkRan = false
     let secondWorkRan = false
 
-    await withFetchLifecycle(model, null, async ctx => {
+    await withFetchLifecycle(model, [], null, async ctx => {
       firstWorkRan = true
       invalidateLoadedRegions(model)
       expect(ctx.isStale()).toBe(true)
@@ -366,11 +412,113 @@ describe('withFetchLifecycle state management', () => {
 
     expect(firstWorkRan).toBe(true)
 
-    await withFetchLifecycle(model, null, async () => {
+    await withFetchLifecycle(model, [], null, async () => {
       secondWorkRan = true
     })
 
     expect(secondWorkRan).toBe(true)
     expect(model.isLoading).toBe(false)
+  })
+})
+
+describe('data-before-loaded invariant', () => {
+  const needed: RegionWithNumber[] = [
+    { regionNumber: 0, region: makeRegion('chr1', 0, 1000) },
+    { regionNumber: 1, region: makeRegion('chr1', 1000, 2000) },
+  ]
+
+  it('marks regions loaded only after work callback completes', async () => {
+    const model = createModel()
+    const dataMap = new Map<number, string>()
+    let dataVersionDuringWork = -1
+
+    await withFetchLifecycle(model, needed, null, async () => {
+      dataMap.set(0, 'region0-data')
+      dataMap.set(1, 'region1-data')
+      dataVersionDuringWork = model.dataVersion
+    })
+
+    expect(dataVersionDuringWork).toBe(0)
+    expect(model.dataVersion).toBe(2)
+    expect(model.loadedRegions.size).toBe(2)
+    expect(model.loadedRegions.get(0)?.refName).toBe('chr1')
+    expect(model.loadedRegions.get(1)?.start).toBe(1000)
+  })
+
+  it('does not mark regions loaded when work throws', async () => {
+    const model = createModel()
+
+    await withFetchLifecycle(model, needed, null, async () => {
+      throw new Error('fetch failed')
+    })
+
+    expect(model.loadedRegions.size).toBe(0)
+    expect(model.dataVersion).toBe(0)
+    expect(model.error).toBeTruthy()
+  })
+
+  it('does not mark regions loaded when stale', async () => {
+    const model = createModel()
+
+    await withFetchLifecycle(model, needed, null, async () => {
+      clearAllRpcData(model)
+    })
+
+    expect(model.loadedRegions.size).toBe(0)
+    expect(model.dataVersion).toBe(0)
+  })
+
+  it('simulates display pattern: data populated before dataVersion bumps', async () => {
+    const model = createModel()
+    const rpcDataMap = new Map<number, unknown>()
+    const events: string[] = []
+
+    await withFetchLifecycle(model, needed, null, async () => {
+      rpcDataMap.set(0, { features: [1, 2, 3] })
+      rpcDataMap.set(1, { features: [4, 5] })
+      events.push('data-set')
+    })
+
+    events.push(
+      `loaded-regions:${model.loadedRegions.size}`,
+      `data-version:${model.dataVersion}`,
+    )
+
+    expect(events).toEqual(['data-set', 'loaded-regions:2', 'data-version:2'])
+    expect(rpcDataMap.size).toBe(2)
+    expect(model.loadedRegions.size).toBe(2)
+  })
+
+  it('does not mark regions loaded when tooLarge', async () => {
+    const model = createModel()
+
+    await withFetchLifecycle(
+      model,
+      needed,
+      async () => ({ tooLarge: true, reason: 'too many features' }),
+      async () => {},
+    )
+
+    expect(model.loadedRegions.size).toBe(0)
+    expect(model.dataVersion).toBe(0)
+    expect(model.regionTooLargeState).toBe(true)
+  })
+
+  it('second fetch updates loaded regions for requested region numbers', async () => {
+    const model = createModel()
+
+    await withFetchLifecycle(model, needed, null, async () => {})
+
+    expect(model.loadedRegions.size).toBe(2)
+    expect(model.dataVersion).toBe(2)
+
+    const needed2: RegionWithNumber[] = [
+      { regionNumber: 0, region: makeRegion('chr2', 0, 500) },
+    ]
+
+    await withFetchLifecycle(model, needed2, null, async () => {})
+
+    expect(model.loadedRegions.get(0)?.refName).toBe('chr2')
+    expect(model.loadedRegions.get(1)?.refName).toBe('chr1')
   })
 })

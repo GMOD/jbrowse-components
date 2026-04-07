@@ -1,12 +1,12 @@
-import { screen, within } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
 import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findCanvasIn,
   hts,
-  pv,
   setup,
 } from './util.tsx'
 
@@ -30,15 +30,12 @@ test('selects a sort, sort by base pair', async () => {
   )
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
 
-  await user.click(await screen.findByText('Pileup settings'))
   await user.click(await screen.findByText('Sort by...'))
   await user.click(await screen.findByText('Base pair'))
-  await screen.findAllByTestId('pileup-overlay-Base pair-normal', ...opts)
-  const f1 = within(await screen.findByTestId('Blockset-pileup'))
-  expectCanvasMatch(await f1.findByTestId(pv('13196..13230-0'), ...opts))
+  const display1 = await screen.findByTestId('pileup-display-done', ...opts)
+  expectCanvasMatch(findCanvasIn(display1))
   await new Promise(resolve => setTimeout(resolve, 1000))
   await user.click(await screen.findByTestId('zoom_out'))
-  await screen.findAllByTestId('pileup-overlay-Base pair-normal', ...opts)
-  const f2 = within(await screen.findByTestId('Blockset-pileup'))
-  expectCanvasMatch(await f2.findByTestId(pv('13161..13230-0'), ...opts))
+  const display2 = await screen.findByTestId('pileup-display-done', ...opts)
+  expectCanvasMatch(findCanvasIn(display2))
 }, 35000)

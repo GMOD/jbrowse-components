@@ -293,14 +293,7 @@ test('caches flatbush index across calls', () => {
   const region = makeRegion(0, 0, 10000, 0, 800)
   const cacheMap = freshCacheMap()
 
-  performMultiRegionHitDetection(
-    cacheMap,
-    rpcDataMap,
-    [region],
-    320,
-    10,
-    false,
-  )
+  performMultiRegionHitDetection(cacheMap, rpcDataMap, [region], 320, 10, false)
 
   const cache = cacheMap.get(0)!
   expect(cache.featureIndex).not.toBeNull()
@@ -308,14 +301,7 @@ test('caches flatbush index across calls', () => {
 
   const savedIndex = cache.featureIndex
 
-  performMultiRegionHitDetection(
-    cacheMap,
-    rpcDataMap,
-    [region],
-    320,
-    10,
-    false,
-  )
+  performMultiRegionHitDetection(cacheMap, rpcDataMap, [region], 320, 10, false)
 
   expect(cacheMap.get(0)!.featureIndex).toBe(savedIndex)
 })
@@ -328,14 +314,7 @@ test('rebuilds cache when data changes', () => {
   const region = makeRegion(0, 0, 10000, 0, 800)
   const cacheMap = freshCacheMap()
 
-  performMultiRegionHitDetection(
-    cacheMap,
-    rpcDataMap,
-    [region],
-    320,
-    10,
-    false,
-  )
+  performMultiRegionHitDetection(cacheMap, rpcDataMap, [region], 320, 10, false)
 
   const savedIndex = cacheMap.get(0)!.featureIndex
 
@@ -343,14 +322,7 @@ test('rebuilds cache when data changes', () => {
   const data2 = makeData([item2])
   rpcDataMap.set(0, data2)
 
-  performMultiRegionHitDetection(
-    cacheMap,
-    rpcDataMap,
-    [region],
-    560,
-    10,
-    false,
-  )
+  performMultiRegionHitDetection(cacheMap, rpcDataMap, [region], 560, 10, false)
 
   expect(cacheMap.get(0)!.featureIndex).not.toBe(savedIndex)
   expect(cacheMap.get(0)!.cachedItems).toBe(data2.flatbushItems)

@@ -66,8 +66,7 @@ export function useWheelScroll(
     // Nms" warnings. event.offsetX would be simpler but is unreliable here
     // since wheel events bubble from child elements
     rectLeft.current = curr.getBoundingClientRect().left
-    const hasRO =
-      typeof window !== 'undefined' && 'ResizeObserver' in window
+    const hasRO = typeof window !== 'undefined' && 'ResizeObserver' in window
     const observer = hasRO
       ? new ResizeObserver(() => {
           rectLeft.current = curr.getBoundingClientRect().left

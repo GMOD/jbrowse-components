@@ -255,6 +255,9 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       }
 
       renderNow()
+      if (dataMap.size > 0 && model.domain) {
+        model.setCanvasDrawn(true)
+      }
     })
   }, [model, view, ready, rendererRef])
 
@@ -463,7 +466,9 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   return (
     <div
       ref={containerRef}
-      data-testid="multi-wiggle-display"
+      data-testid={
+        model.canvasDrawn ? 'multi-wiggle-display-done' : 'multi-wiggle-display'
+      }
       style={{
         position: 'relative',
         width: totalWidth,

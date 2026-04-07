@@ -121,8 +121,8 @@ void main() {
   float fstrand = float(a_strand);
   float fchainHasSupp = float(a_chainHasSupp);
 
-  if (ui(13) == 1) {
-    if (ui(12) < 0 || int(a_readIndex) != ui(12)) {
+  if (ui(13u) == 1) {
+    if (ui(12u) < 0 || int(a_readIndex) != ui(12u)) {
       gl_Position = vec4(0.0);
       v_color = vec4(0.0);
       return;
@@ -152,7 +152,7 @@ void main() {
   float chevronClip = 8.0 / canvas_width() * 2.0;
   float regionLengthBp = bp_range().z;
   float bpPerPx = regionLengthBp / canvas_width();
-  bool showChevron = (ui(14) == 1 || bpPerPx < 10.0) && feature_height() >= 3.0;
+  bool showChevron = (ui(14u) == 1 || bpPerPx < 10.0) && feature_height() >= 3.0;
 
   float featureWidthPx = (sx2 - sx1) * canvas_width() * 0.5;
   v_featureSizePx = vec2(featureWidthPx, feature_height());
@@ -162,7 +162,7 @@ void main() {
   float localX;
   float localY;
   float edgeFlags = 0.0;
-  if (ui(13) == 1) {
+  if (ui(13u) == 1) {
     uint hlAbsStart = a_readSpan.x + region_start();
     uint hlAbsEnd = a_readSpan.y + region_start();
     float hlSx1 = hp_to_clip_x(hp_split_uint(hlAbsStart), bp_range());
@@ -216,40 +216,40 @@ void main() {
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
   // SYNC(wgsl/readShader.ts): highlight-only dark overlay vec4(0,0,0,0.4), no chevrons
-  if (ui(13) == 1) {
+  if (ui(13u) == 1) {
     v_color = vec4(0.0, 0.0, 0.0, 0.4);
     return;
   }
 
   vec3 color;
   bool isPaired = mod(fflags, 2.0) > 0.5;
-  if (ui(14) == 1 && fchainHasSupp > 0.5 && isPaired) {
+  if (ui(14u) == 1 && fchainHasSupp > 0.5 && isPaired) {
     color = color3(95u);
-  } else if (ui(14) == 1 && fchainHasSupp > 0.5) {
+  } else if (ui(14u) == 1 && fchainHasSupp > 0.5) {
     float primaryStrand = fchainHasSupp > 1.5 ? -1.0 : 1.0;
-    float effectiveStrand = ui(29) == 1
+    float effectiveStrand = ui(29u) == 1
       ? fstrand * primaryStrand
       : fstrand;
     color = strandColor(effectiveStrand);
-  } else if (mod(floor(fflags / 8.0), 2.0) > 0.5 && (ui(11) == 0 || ui(11) == 3 || ui(11) == 5 || ui(11) == 6 || ui(11) == 10)) {
+  } else if (mod(floor(fflags / 8.0), 2.0) > 0.5 && (ui(11u) == 0 || ui(11u) == 3 || ui(11u) == 5 || ui(11u) == 6 || ui(11u) == 10)) {
     color = color3(134u);
-  } else if (ui(11) == 0) color = color3(41u);
-  else if (ui(11) == 1) color = strandColor(fstrand);
-  else if (ui(11) == 2) color = mapqColor(fmapq);
-  else if (ui(11) == 3) color = insertSizeColor(a_insertSize);
-  else if (ui(11) == 4) color = firstOfPairColor(fflags, fstrand);
-  else if (ui(11) == 5) color = pairOrientationColor(fpairOrientation);
-  else if (ui(11) == 6) color = insertSizeAndOrientationColor(a_insertSize, fpairOrientation);
-  else if (ui(11) == 7) color = modificationsColor(fflags);
-  else if (ui(11) == 8) {
+  } else if (ui(11u) == 0) color = color3(41u);
+  else if (ui(11u) == 1) color = strandColor(fstrand);
+  else if (ui(11u) == 2) color = mapqColor(fmapq);
+  else if (ui(11u) == 3) color = insertSizeColor(a_insertSize);
+  else if (ui(11u) == 4) color = firstOfPairColor(fflags, fstrand);
+  else if (ui(11u) == 5) color = pairOrientationColor(fpairOrientation);
+  else if (ui(11u) == 6) color = insertSizeAndOrientationColor(a_insertSize, fpairOrientation);
+  else if (ui(11u) == 7) color = modificationsColor(fflags);
+  else if (ui(11u) == 8) {
     if (a_tagColor.r != 0.0 || a_tagColor.g != 0.0 || a_tagColor.b != 0.0) {
       color = a_tagColor;
     } else {
       color = color3(41u);
     }
   }
-  else if (ui(11) == 9) color = mapqColor(fbaseQuality);
-  else if (ui(11) == 10) color = insertSizeGradientColor(a_insertSize);
+  else if (ui(11u) == 9) color = mapqColor(fbaseQuality);
+  else if (ui(11u) == 10) color = insertSizeGradientColor(a_insertSize);
   else color = color3(41u);
 
   v_color = vec4(color, 1.0);
@@ -268,7 +268,7 @@ in vec2 v_featureSizePx;
 in float v_edgeFlags;
 out vec4 fragColor;
 void main() {
-  if (ui(15) == 1) {
+  if (ui(15u) == 1) {
     float edgeDist;
     if (v_edgeFlags > 1.5) {
       edgeDist = min(v_localPos.x, v_localPos.y);

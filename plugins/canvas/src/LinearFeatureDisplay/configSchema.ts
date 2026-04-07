@@ -12,6 +12,12 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         defaultValue: 1200,
         description: 'Maximum height of the display in pixels',
       },
+      maxFeatureScreenDensity: {
+        type: 'number',
+        defaultValue: 20,
+        description:
+          'Maximum features per pixel before showing region too large message',
+      },
       autoHeight: {
         type: 'boolean',
         defaultValue: false,

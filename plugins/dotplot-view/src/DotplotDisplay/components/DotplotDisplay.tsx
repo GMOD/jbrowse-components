@@ -50,7 +50,11 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
     <div style={{ position: 'relative', width: viewWidth, height: viewHeight }}>
       <canvas
         ref={gpuCanvasCallbackRef}
-        data-testid="dotplot_webgl_canvas"
+        data-testid={
+          model.canvasDrawn
+            ? 'dotplot_webgl_canvas_done'
+            : 'dotplot_webgl_canvas'
+        }
         style={{
           width: viewWidth,
           height: viewHeight,

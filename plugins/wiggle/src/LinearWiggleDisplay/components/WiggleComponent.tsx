@@ -105,6 +105,9 @@ const WiggleComponent = observer(function WiggleComponent({
       const _dv = model.dataVersion
 
       renderNow()
+      if (dataMap.size > 0 && model.domain) {
+        model.setCanvasDrawn(true)
+      }
     })
   }, [model, view, ready, rendererRef])
 
@@ -214,7 +217,7 @@ const WiggleComponent = observer(function WiggleComponent({
   return (
     <div
       ref={containerRef}
-      data-testid="wiggle-display"
+      data-testid={model.canvasDrawn ? 'wiggle-display-done' : 'wiggle-display'}
       style={{ position: 'relative', width, height }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}

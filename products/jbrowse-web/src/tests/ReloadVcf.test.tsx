@@ -23,7 +23,7 @@ test('reloads vcf (VCF.GZ 404)', async () => {
     readBuffer,
     trackId: 'volvox_filtered_vcf',
     viewLocation: [0.05, 5000],
-    expectedCanvas: /prerendered_canvas/,
+    expectedCanvas: /^display-.*-done$/,
     timeout: 30000,
   })
 }, 40000)
@@ -34,7 +34,7 @@ test('reloads vcf (VCF.GZ.TBI 404)', async () => {
     readBuffer,
     trackId: 'volvox_filtered_vcf',
     viewLocation: [0.05, 5000],
-    expectedCanvas: /prerendered_canvas/,
+    expectedCanvas: /^display-.*-done$/,
     timeout: 30000,
   })
 }, 40000)

@@ -203,7 +203,7 @@ export function getFiltersMenuItem(
 ) {
   const showPairFilters = opts?.showPairFilters ?? false
   return {
-    label: 'Filters...',
+    label: 'Filter by...',
     icon: ClearAllIcon,
     type: 'subMenu' as const,
     subMenu: [

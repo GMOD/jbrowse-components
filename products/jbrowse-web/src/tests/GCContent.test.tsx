@@ -1,12 +1,12 @@
-import { screen, within } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
 import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findCanvasIn,
   hts,
-  pv,
   setup,
 } from './util.tsx'
 
@@ -24,6 +24,6 @@ test('gccontent', async () => {
   const { view } = await createView()
   view.setNewView(0.465, 85055)
   await user.click(await screen.findByTestId(hts('volvox_gc'), ...opts))
-  const f1 = within(await screen.findByTestId('wiggle-rendering-test', ...opts))
-  expectCanvasMatch(await f1.findByTestId(pv('39433..39804-0'), ...opts))
+  const display = await screen.findByTestId('wiggle-display-done', ...opts)
+  expectCanvasMatch(findCanvasIn(display))
 }, 50000)

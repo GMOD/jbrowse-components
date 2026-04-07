@@ -23,7 +23,7 @@ test('reloads alignments track (CRAI 404)', async () => {
     readBuffer,
     trackId: 'volvox_cram_pileup',
     viewLocation: [0.5, 0],
-    expectedCanvas: /prerendered_canvas/,
+    expectedCanvas: 'pileup-display-done',
     timeout: 30000,
   })
 }, 50000)
@@ -34,7 +34,7 @@ test('reloads alignments track (CRAM 404)', async () => {
     readBuffer,
     trackId: 'volvox_cram_snpcoverage',
     viewLocation: [0.5, 0],
-    expectedCanvas: /prerendered_canvas/,
+    expectedCanvas: 'pileup-display-done',
     timeout: 30000,
   })
 }, 50000)

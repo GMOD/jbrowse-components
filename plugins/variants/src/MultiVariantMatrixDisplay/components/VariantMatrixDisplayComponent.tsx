@@ -39,6 +39,9 @@ const VariantMatrixDisplayComponent = observer(
     return (
       <div
         ref={ref}
+        data-testid={
+          model.canvasDrawn ? 'variant-display-done' : 'variant-display'
+        }
         style={{ position: 'relative', height }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}

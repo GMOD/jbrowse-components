@@ -113,5 +113,3 @@ test('can use config from a url with nonexistent share param ', async () => {
   )
   await findAllByText(/Error/, {}, delay)
 }, 20000)
-
-

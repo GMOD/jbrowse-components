@@ -13,6 +13,7 @@ import {
   parseGfaPathName,
   parsePosLineOrdinals,
 } from './gfaBinaryIO.ts'
+
 import {
   buildGfaFromEdges,
   buildGfaFromPathInference,
@@ -40,6 +41,22 @@ interface SetupResult {
   bubblesGenomeNames?: string[]
 }
 
+function hasFileLocation(loc: FileLocation | undefined): loc is FileLocation {
+  if (!loc) {
+    return false
+  }
+  if ('uri' in loc) {
+    return loc.uri !== ''
+  }
+  if ('localPath' in loc) {
+    return loc.localPath !== ''
+  }
+  if ('blobId' in loc) {
+    return loc.blobId !== ''
+  }
+  return false
+}
+
 export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
@@ -65,8 +82,8 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       chunkCacheSize: 50 * 2 ** 20,
     })
 
-    const edgesLoc = this.getConf('edgesLocation') as FileLocation
-    if ('uri' in edgesLoc && edgesLoc.uri !== '') {
+    const edgesLoc = this.getConf('edgesLocation') as FileLocation | undefined
+    if (hasFileLocation(edgesLoc)) {
       const edgesIdxLoc = this.getConf('edgesIdxLocation') as FileLocation
       this.edgeShard = {
         filehandle: openLocation(edgesLoc, pm),
@@ -74,11 +91,10 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       }
     }
 
-    const bubblesLoc = this.getConf('bubblesLocation') as FileLocation
-    const hasBubbles =
-      ('uri' in bubblesLoc && bubblesLoc.uri !== '') ||
-      ('localPath' in bubblesLoc && bubblesLoc.localPath !== '')
-    if (hasBubbles) {
+    const bubblesLoc = this.getConf('bubblesLocation') as
+      | FileLocation
+      | undefined
+    if (hasFileLocation(bubblesLoc)) {
       const bubblesIdxLoc = this.getConf([
         'bubblesIndex',
         'location',

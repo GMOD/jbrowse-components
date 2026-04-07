@@ -5,6 +5,7 @@ import {
   doBeforeEach,
   expectCanvasMatch,
   exportAndVerifySvg,
+  findCanvasIn,
   hts,
   setup,
 } from './util.tsx'
@@ -23,8 +24,7 @@ const delay = { timeout: 60000 }
 const opts = [{}, delay]
 
 test('opens a vcf track and clusters genotypes', async () => {
-  const { view, findAllByText, findByTestId, findByText, findAllByTestId } =
-    await createView()
+  const { view, findByTestId, findByText } = await createView()
   await view.navToLocString('ctgA:1-50000')
 
   fireEvent.click(await findByTestId(hts('volvox_test_vcf'), ...opts))
@@ -46,11 +46,9 @@ test('opens a vcf track and clusters genotypes', async () => {
   await waitFor(() => {
     expect(view.tracks[0].displays[0].hierarchy).toBeTruthy()
   }, delay)
-  fireEvent.click((await findAllByText('Force load', ...opts))[0]!)
 
-  expectCanvasMatch(
-    (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,
-  )
+  const display = await findByTestId('variant-display-done', {}, delay)
+  expectCanvasMatch(findCanvasIn(display))
 
   // export svg
   await exportAndVerifySvg({

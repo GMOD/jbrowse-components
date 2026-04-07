@@ -4,7 +4,7 @@ import { HP_GLSL_CORE } from '@jbrowse/alignments-core'
 // Matches the WGSL uniform layout in wgsl/common.ts: array<vec4u, 40> (640 bytes).
 // All shaders use uf()/uu()/ui() accessors instead of named uniforms.
 export const GLSL_UBO_PREAMBLE = `
-layout(std140) uniform Uniforms { uvec4 raw[40]; };
+layout(std140) uniform Uniforms { highp uvec4 raw[40]; };
 float uf(uint i) { return uintBitsToFloat(raw[i / 4u][i % 4u]); }
 uint uu(uint i) { return raw[i / 4u][i % 4u]; }
 int ui(uint i) { return int(raw[i / 4u][i % 4u]); }
