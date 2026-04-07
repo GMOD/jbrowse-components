@@ -42,8 +42,7 @@ export async function checkByteEstimate(
     return null
   }
 
-  // Replicate the FeatureDensityMixin.maxAllowableBytes fallback chain:
-  // userByteSizeLimit || adapter.fetchSizeLimit || display.fetchSizeLimit
+  // Effective limit: user override (from force-load) → adapter's own limit → display config default
   const effectiveLimit =
     config.userByteSizeLimit || stats.fetchSizeLimit || config.fetchSizeLimit
 
