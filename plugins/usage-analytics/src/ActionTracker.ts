@@ -6,7 +6,7 @@ const ACTION_MAP: Record<string, string> = {
   // Navigation — pan
   horizontalScroll: 'pan',
   scrollTo: 'pan',
-  // Navigation — coordinate entry (locstring / parsed location)
+  // Navigation — coordinate entry
   navTo: 'nav_coord',
   navToLocString: 'nav_coord',
   navToLocation: 'nav_coord',
@@ -14,6 +14,13 @@ const ACTION_MAP: Record<string, string> = {
   navToMultiple: 'nav_coord',
   // Navigation — text search (gene name, feature ID)
   navToSearchString: 'nav_search',
+  // Navigation — search returned multiple results (fired as sub-action of nav_search)
+  setSearchResults: 'search_disambiguation_shown',
+  // Navigation — jump to feature from feature detail panel
+  navToFeature: 'nav_to_feature',
+  // Navigation — show all regions
+  showAllRegions: 'show_all_regions',
+  showAllRegionsInAssembly: 'show_all_regions_assembly',
   // Track management
   showTrack: 'show_track',
   toggleTrack: 'show_track',
@@ -23,38 +30,92 @@ const ACTION_MAP: Record<string, string> = {
   moveTrackToTop: 'reorder_track',
   moveTrackToBottom: 'reorder_track',
   moveTrack: 'reorder_track',
+  addTrackConf: 'track_added',
+  deleteTrackConf: 'track_deleted',
   // View management
   addView: 'add_view',
   removeView: 'remove_view',
   horizontallyFlip: 'flip_view',
+  moveViewUp: 'reorder_view',
+  moveViewDown: 'reorder_view',
+  moveViewToTop: 'reorder_view',
+  moveViewToBottom: 'reorder_view',
+  clearView: 'clear_view',
+  // Feature interaction
+  selectFeature: 'feature_selected',
+  // Track selector
+  activateTrackSelector: 'track_selector_opened',
   // Widgets / dialogs
   addWidget: 'open_widget',
-  // Display config — specific subtypes kept distinct for analysis
+  showWidgetDrawer: 'drawer_shown',
+  minimizeWidgetDrawer: 'drawer_minimized',
+  hideAllWidgets: 'hide_all_widgets',
+  editConfiguration: 'open_config_editor',
+  queueDialog: 'open_dialog',
+  // Connections
+  makeConnection: 'connection_added',
+  breakConnection: 'connection_removed',
+  // App config
+  setThemeName: 'config_theme',
+  setDrawerPosition: 'config_drawer_position',
+  setStickyViewHeaders: 'config_sticky_headers',
+  setUseWorkspaces: 'config_workspaces',
+  // View display config (each kept distinct for analysis)
+  setTrackLabels: 'config_track_labels',
+  setShowCenterLine: 'config_center_line',
+  setShowGridlines: 'config_gridlines',
+  setColorByCDS: 'config_color_by_cds',
+  setShowCytobands: 'config_cytobands',
+  setHideHeader: 'config_hide_header',
+  setHideHeaderOverview: 'config_hide_header_overview',
+  setShowTrackOutlines: 'config_track_outlines',
+  setShowLegend: 'config_legend',
+  setShowTooltips: 'config_tooltips',
+  // Track display config — common
   setColorScheme: 'config_color_scheme',
   setSortedBy: 'config_sort',
   setSortedByAtPosition: 'config_sort',
   setFeatureHeight: 'config_height',
-  setShowCenterLine: 'config_view_option',
-  setShowGridlines: 'config_view_option',
-  setColorByCDS: 'config_view_option',
-  setShowCytobands: 'config_view_option',
-  setHideHeader: 'config_view_option',
-  setHideHeaderOverview: 'config_view_option',
-  setShowTrackOutlines: 'config_view_option',
-  setDrawSingletons: 'config_view_option',
-  setDrawProperPairs: 'config_view_option',
-  setDrawInter: 'config_view_option',
-  setDrawLongRange: 'config_view_option',
-  setLineWidth: 'config_view_option',
-  // Dialogs
-  queueDialog: 'open_dialog',
+  setRowHeight: 'config_row_height',
+  setLineWidth: 'config_line_width',
+  // Track display config — alignments
+  setDrawSingletons: 'config_singletons',
+  setDrawProperPairs: 'config_proper_pairs',
+  setDrawInter: 'config_inter_chr_reads',
+  setDrawLongRange: 'config_long_range_reads',
+  setLowerPanelType: 'config_alignment_panel',
+  toggleSoftClipping: 'config_soft_clipping',
+  toggleMismatchAlpha: 'config_mismatch_alpha',
+  setFilterBy: 'config_alignment_filter',
+  setJexlFilters: 'config_jexl_filter',
+  setHideSmallIndels: 'config_hide_small_indels',
+  setHideMismatches: 'config_hide_mismatches',
+  setHideLargeIndels: 'config_hide_large_indels',
+  // Track display config — variants / LD
+  setMafFilter: 'config_maf_filter',
+  setHweFilter: 'config_hwe_filter',
+  setCallRateFilter: 'config_call_rate_filter',
+  setLengthCutoffFilter: 'config_length_cutoff_filter',
+  setLDMetric: 'config_ld_metric',
+  setSignedLD: 'config_signed_ld',
+  setShowTree: 'config_cluster_tree',
+  setPhasedMode: 'config_phased_mode',
+  setUseGenomicPositions: 'config_genomic_positions',
+  setFitToHeight: 'config_fit_to_height',
+  setShowRecombination: 'config_show_recombination',
+  setShowLDTriangle: 'config_show_ld_triangle',
   // Other
   addBookmark: 'bookmark',
   addToHighlights: 'bookmark',
+  removeHighlight: 'bookmark_removed',
   undo: 'undo',
   redo: 'redo',
   exportSvg: 'export_svg',
+  notifyError: 'error_encountered',
 }
+
+// Actions that are normally sub-actions but we still want to capture
+const SUB_ACTION_EXCEPTIONS = new Set(['setSearchResults', 'addBookmark', 'addToHighlights'])
 
 function sessionLengthBucket(ms: number): string {
   if (ms < 60_000) return '<1min'
@@ -71,6 +132,8 @@ type RecordDetail = {
   widgetType?: string
   dialogType?: string
 }
+
+export { SUB_ACTION_EXCEPTIONS }
 
 export default class ActionTracker {
   private counts = new Map<string, number>()
@@ -113,11 +176,10 @@ export default class ActionTracker {
   }
 
   recordUIEvent(type: string, label?: string) {
-    const key = label ? `${type}:${label}` : type
     if (type === 'menu_item_click' && label) {
       this.inc(this.menuClicks, label)
     } else {
-      this.inc(this.uiEvents, key)
+      this.inc(this.uiEvents, label ? `${type}:${label}` : type)
     }
   }
 

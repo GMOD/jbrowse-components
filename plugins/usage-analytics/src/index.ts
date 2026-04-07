@@ -2,7 +2,7 @@ import { ConfigurationSchema, getConf } from '@jbrowse/core/configuration'
 import Plugin from '@jbrowse/core/Plugin'
 import { addDisposer, addMiddleware } from '@jbrowse/mobx-state-tree'
 
-import ActionTracker from './ActionTracker.ts'
+import ActionTracker, { SUB_ACTION_EXCEPTIONS } from './ActionTracker.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -46,12 +46,13 @@ export default class UsageAnalyticsPlugin extends Plugin {
 
     const disposeMiddleware = addMiddleware(session, (call, next) => {
       const result = next(call)
-      if (!call.parentActionEvent) {
+      if (!call.parentActionEvent || SUB_ACTION_EXCEPTIONS.has(call.name)) {
         const detail: {
           viewType?: string
           trackShowType?: string
           trackHideType?: string
           widgetType?: string
+          dialogType?: string
         } = {}
 
         if (call.name === 'addView') {
