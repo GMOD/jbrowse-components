@@ -179,7 +179,7 @@ export function computeVisibleLabels(
       if (type === INTERBASE_SOFTCLIP && canRenderText) {
         labels.push({
           type: 'softclip',
-          x: xPx,
+          x: xPx + 3,
           y: yPx,
           text: `(S${length})`,
           width: 0,
@@ -190,7 +190,7 @@ export function computeVisibleLabels(
       if (type === INTERBASE_HARDCLIP && canRenderText) {
         labels.push({
           type: 'hardclip',
-          x: xPx,
+          x: xPx + 3,
           y: yPx,
           text: `(H${length})`,
           width: 0,

@@ -339,8 +339,8 @@ void main() {
   }
 
   float bpPerPx = 1.0 / pxPerBp;
-  // SYNC(wgsl/cigarShaders.ts): bar width = max(bpPerPx, min(2*bpPerPx, 1.0))
-  float barWidthBp = max(bpPerPx, min(2.0 * bpPerPx, 1.0));
+  // SYNC(wgsl/cigarShaders.ts): bar width = max(bpPerPx, min(bpPerPx, 1.0))
+  float barWidthBp = max(bpPerPx, min(bpPerPx, 1.0));
 
   float x1 = pos - barWidthBp * 0.5;
   float x2 = pos + barWidthBp * 0.5;
@@ -418,8 +418,8 @@ void main() {
   }
 
   float bpPerPx = 1.0 / pxPerBp;
-  // SYNC(wgsl/cigarShaders.ts): bar width = max(bpPerPx, min(2*bpPerPx, 1.0))
-  float barWidthBp = max(bpPerPx, min(2.0 * bpPerPx, 1.0));
+  // SYNC(wgsl/cigarShaders.ts): bar width = max(bpPerPx, min(bpPerPx, 1.0))
+  float barWidthBp = max(bpPerPx, min(bpPerPx, 1.0));
 
   float x1 = pos - barWidthBp * 0.5;
   float x2 = pos + barWidthBp * 0.5;

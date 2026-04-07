@@ -30,7 +30,11 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
     if (!ctx) {
       return
     }
+    const dpr = window.devicePixelRatio ?? 1
     const w = width ?? 0
+    canvas.width = w * dpr
+    canvas.height = height * dpr
+    ctx.scale(dpr, dpr)
     ctx.clearRect(0, 0, w, height)
     for (const label of labels) {
       const isSmallInterbase =
@@ -67,12 +71,12 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
   return (
     <canvas
       ref={canvasRef}
-      width={width}
-      height={height}
       style={{
         position: 'absolute',
         top: 0,
         left: 0,
+        width,
+        height,
         pointerEvents: 'none',
       }}
     />

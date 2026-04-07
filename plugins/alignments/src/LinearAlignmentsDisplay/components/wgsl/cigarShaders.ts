@@ -212,7 +212,7 @@ const CLIP_SHADER_BODY = (colorSlot: number) => `
 ${CIGAR_PREAMBLE}
 ${CIGAR_DOMAIN}
 
-// SYNC(shaders/cigarShaders.ts): ClipInst field order must match GLSL; bar width = max(bpPerPx, min(2*bpPerPx, 1.0))
+// SYNC(shaders/cigarShaders.ts): ClipInst field order must match GLSL; bar width = max(bpPerPx, min(bpPerPx, 1.0))
 struct ClipInst { position: u32, y: u32, length: u32, frequency: f32 }
 @group(0) @binding(0) var<storage, read> instances: array<ClipInst>;
 
@@ -234,7 +234,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   if alpha <= 0.0 { out.position = vec4f(0.0); out.color = vec4f(0.0); return out; }
 
   let bp_per_px = 1.0 / px_per_bp;
-  let bar_w = max(bp_per_px, min(2.0 * bp_per_px, 1.0));
+  let bar_w = max(bp_per_px, min(bp_per_px, 1.0));
   var sx1 = (pos - bar_w * 0.5 - domain.x) / domain_len * 2.0 - 1.0;
   var sx2 = (pos + bar_w * 0.5 - domain.x) / domain_len * 2.0 - 1.0;
 
