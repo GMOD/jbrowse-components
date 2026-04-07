@@ -198,10 +198,11 @@ export class WebGPUHal implements GpuHal {
   private msaaTexture: GPUTexture | null = null
   private msaaView: GPUTextureView | null = null
 
-  // Frame state — single encoder batches all render passes per frame
+  // Frame state — single render pass batches all draws per frame so MSAA
+  // resolves only once, eliminating artifacts from intermediate resolves.
   private currentTextureView: GPUTextureView | null = null
   private currentEncoder: GPUCommandEncoder | null = null
-  private isFirstPass = true
+  private currentPass: GPURenderPassEncoder | null = null
 
   // Scissor/viewport state (physical pixels, top-left origin)
   private scissorRect: { x: number; y: number; w: number; h: number } | null =
@@ -487,14 +488,21 @@ export class WebGPUHal implements GpuHal {
   beginFrame(clearR: number, clearG: number, clearB: number, clearA = 1) {
     this.currentTextureView = this.context.getCurrentTexture().createView()
     this.currentEncoder = this.device.createCommandEncoder()
-    this.isFirstPass = true
     this.uniformSlot = 0
     this._clearColor = { r: clearR, g: clearG, b: clearB, a: clearA }
+
+    if (!this.msaaView) {
+      return
+    }
+
+    this.currentPass = this.currentEncoder.beginRenderPass({
+      colorAttachments: [this.makeColorAttachment('clear')],
+    })
   }
 
   drawPass(passId: string, regionKey: number, bufferPassId?: string) {
     const state = deviceState.get(this.device)
-    if (!state || !this.currentTextureView || !this.currentEncoder) {
+    if (!state || !this.currentPass) {
       return
     }
     const pipeline = state.pipelines.get(passId)
@@ -513,35 +521,20 @@ export class WebGPUHal implements GpuHal {
       return
     }
 
-    // Dynamic offset points to the most recently written uniform slot
     const dynamicOffset =
       Math.max(0, this.uniformSlot - 1) * this.alignedUniformSize
 
-    if (!this.msaaView) {
-      console.warn(
-        `[WebGPUHal] drawPass(${passId}): no MSAA texture — skipping`,
-      )
-      return
-    }
-
-    const pass = this.currentEncoder.beginRenderPass({
-      colorAttachments: [
-        this.makeColorAttachment(this.isFirstPass ? 'clear' : 'load'),
-      ],
-    })
     if (this.viewportRect) {
       const v = this.viewportRect
-      pass.setViewport(v.x, v.y, v.w, v.h, 0, 1)
+      this.currentPass.setViewport(v.x, v.y, v.w, v.h, 0, 1)
     }
     if (this.scissorRect) {
       const s = this.scissorRect
-      pass.setScissorRect(s.x, s.y, s.w, s.h)
+      this.currentPass.setScissorRect(s.x, s.y, s.w, s.h)
     }
-    pass.setPipeline(pipeline)
-    pass.setBindGroup(0, regionBuf.bindGroup, [dynamicOffset])
-    pass.draw(desc.verticesPerInstance, regionBuf.count, 0, 0)
-    pass.end()
-    this.isFirstPass = false
+    this.currentPass.setPipeline(pipeline)
+    this.currentPass.setBindGroup(0, regionBuf.bindGroup, [dynamicOffset])
+    this.currentPass.draw(desc.verticesPerInstance, regionBuf.count, 0, 0)
   }
 
   endFrame() {
@@ -549,15 +542,11 @@ export class WebGPUHal implements GpuHal {
       return
     }
 
-    if (this.isFirstPass && this.currentTextureView && this.msaaView) {
-      const pass = this.currentEncoder.beginRenderPass({
-        colorAttachments: [this.makeColorAttachment('clear')],
-      })
-      pass.end()
+    if (this.currentPass) {
+      this.currentPass.end()
+      this.currentPass = null
     }
 
-    // Upload all staged uniform data in one writeBuffer, then submit
-    // the single command buffer containing every render pass for this frame.
     if (this.uniformSlot > 0) {
       const uploadSize = this.uniformSlot * this.alignedUniformSize
       this.device.queue.writeBuffer(

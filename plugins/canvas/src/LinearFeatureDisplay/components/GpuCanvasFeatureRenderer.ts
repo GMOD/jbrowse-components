@@ -142,7 +142,13 @@ export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
         offsetBytes: 0,
         integer: true,
       },
-      // offsetBytes: 8 skips padding u32
+      {
+        name: 'a_color_a',
+        components: 1,
+        type: 'float',
+        offsetBytes: 4,
+        integer: false,
+      },
       {
         name: 'a_y',
         components: 1,

@@ -66,7 +66,7 @@ export function interleaveArrows(
   for (let i = 0; i < count; i++) {
     const off = i * ARROW_STRIDE
     u32[off] = xs[i]!
-    u32[off + 1] = 0
+    f32[off + 1] = colors[i * 4 + 3]! / 255
     f32[off + 2] = ys[i]!
     f32[off + 3] = directions[i]!
     f32[off + 4] = heights[i]!
@@ -120,7 +120,8 @@ fn vs_main(
   let sx1 = snap_to_pixel_x(hp_to_clip_x(hp_split_uint(abs_start), u.bp_range_x, u.zero), u.canvas_width);
   let sx2 = snap_to_pixel_x(hp_to_clip_x(hp_split_uint(abs_end), u.bp_range_x, u.zero), u.canvas_width);
 
-  let min_width = 4.0 / u.canvas_width;
+  // SYNC: must match MIN_RECT_WIDTH_PX in sharedRendererConstants.ts
+  let min_width = 2.0 / u.canvas_width;
   let final_sx2 = select(sx2, sx1 + min_width, sx2 - sx1 < min_width);
   let sx = mix(sx1, final_sx2, local_x);
 
@@ -280,7 +281,7 @@ fn vs_main(
   let cy = 1.0 - (y_px / u.canvas_height) * 2.0;
 
   let half_w = 4.5 / u.canvas_width;
-  let half_h = 3.5 / u.canvas_height;
+  let half_h = 4.5 / u.canvas_height;
   let thickness = 1.5 / u.canvas_height;
   let dir = inst.direction;
 
@@ -299,7 +300,7 @@ fn vs_main(
     case 2u: { sx = tip_x; sy = cy - thickness * 0.5; }
     case 3u: { sx = outer_x; sy = cy + arm_y; }
     case 4u: { sx = tip_x; sy = cy - thickness * 0.5; }
-    default: { sx = outer_x; sy = cy + arm_y - select(-thickness, thickness, is_top_arm); }
+    default: { sx = outer_x; sy = cy + arm_y - select(thickness, -thickness, is_top_arm); }
   }
 
   out.position = vec4f(sx, sy, 0.0, 1.0);
@@ -318,7 +319,7 @@ ${HP_WGSL_CORE}
 
 struct ArrowInstance {
   x: u32,
-  _pad0: u32,
+  color_a: f32,
   y: f32,
   direction: f32,
   height: f32,
@@ -388,7 +389,7 @@ fn vs_main(
 
   var out: VertexOutput;
   out.position = vec4f(sx, sy, 0.0, 1.0);
-  out.color = vec4f(inst.color_r, inst.color_g, inst.color_b, 1.0);
+  out.color = vec4f(inst.color_r, inst.color_g, inst.color_b, inst.color_a);
   return out;
 }
 

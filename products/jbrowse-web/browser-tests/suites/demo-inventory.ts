@@ -5,7 +5,6 @@ import {
   findByTestId,
   findByText,
   navigateWithSessionSpec,
-  waitForCanvasRendered,
   waitForDataLoaded,
 } from '../helpers.ts'
 import { canvasSnapshot, pageSnapshot } from '../snapshot.ts'
@@ -210,15 +209,14 @@ const localDemos: TestSuite = {
           'test_data/sars-cov2/config.json',
         )
 
-        await page.waitForSelector('[data-testid^="display-"] canvas', {
+        await page.waitForSelector('[data-testid$="-done"]', {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
         await canvasSnapshot(
           page,
           'demo-sars-cov2-canvas',
-          '[data-testid^="display-"] canvas',
+          '[data-testid$="-done"] canvas',
         )
       },
     },
@@ -263,13 +261,12 @@ const localDemos: TestSuite = {
           'test_data/yeast_synteny/config.json',
         )
 
-        await findByTestId(page, 'synteny_canvas', 60000)
+        await findByTestId(page, 'synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(page, '[data-testid="synteny_canvas"]')
         await canvasSnapshot(
           page,
           'demo-yeast-synteny-canvas',
-          '[data-testid="synteny_canvas"]',
+          '[data-testid="synteny_canvas_done"]',
         )
       },
     },
@@ -283,12 +280,8 @@ const localDemos: TestSuite = {
           { waitUntil: 'networkidle0', timeout: 60000 },
         )
 
-        await findByTestId(page, 'pileup-display', 60000)
+        await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="pileup-display"] canvas',
-        )
         await pageSnapshot(page, 'demo-breakpoint-split-view-fullpage')
       },
     },
@@ -320,6 +313,35 @@ const localDemos: TestSuite = {
       },
     },
     {
+      name: 'hg19 gene glyph rendering',
+      fn: async page => {
+        await navigateWithSessionSpec(
+          page,
+          {
+            views: [
+              {
+                type: 'LinearGenomeView',
+                assembly: 'hg19',
+                loc: '1:47,678,865..47,688,389',
+                tracks: ['ncbi_gff_hg19'],
+              },
+            ],
+          },
+          'test_data/config_demo.json',
+        )
+
+        await page.waitForSelector('[data-testid$="-done"] canvas', {
+          timeout: 60000,
+        })
+        await waitForDataLoaded(page)
+        await canvasSnapshot(
+          page,
+          'demo-hg19-gene-glyph-canvas',
+          '[data-testid$="-done"] canvas',
+        )
+      },
+    },
+    {
       name: 'Grape-peach synteny demo screenshot',
       fn: async page => {
         await navigateWithSessionSpec(
@@ -342,13 +364,12 @@ const localDemos: TestSuite = {
           'test_data/grape_peach_synteny/config.json',
         )
 
-        await findByTestId(page, 'synteny_canvas', 60000)
+        await findByTestId(page, 'synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(page, '[data-testid="synteny_canvas"]')
         await canvasSnapshot(
           page,
           'demo-grape-peach-synteny-canvas',
-          '[data-testid="synteny_canvas"]',
+          '[data-testid="synteny_canvas_done"]',
         )
       },
     },

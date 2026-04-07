@@ -163,7 +163,7 @@ function renderLinesForRegion(
       )
       const bpSpacing = (endBp - startBp) / (totalChevrons + 1)
       const chevronW = 4.5
-      const chevronH = 3.5
+      const chevronH = 4.5
 
       for (let c = 1; c <= totalChevrons; c++) {
         const chevronBp = startBp + bpSpacing * c

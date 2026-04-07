@@ -47,7 +47,8 @@ void main() {
   float sx1 = snapToPixelX(hpToClipX(hpSplitUint(absStart), bp_range_x, zero));
   float sx2 = snapToPixelX(hpToClipX(hpSplitUint(absEnd), bp_range_x, zero));
 
-  float minWidth = 4.0 / canvas_width;
+  // SYNC: must match MIN_RECT_WIDTH_PX in sharedRendererConstants.ts
+  float minWidth = 2.0 / canvas_width;
   if (sx2 - sx1 < minWidth) {
     sx2 = sx1 + minWidth;
   }
@@ -154,7 +155,7 @@ void main() {
   float cy = 1.0 - (yPx / canvas_height) * 2.0;
 
   float halfW = 4.5 / canvas_width;
-  float halfH = 3.5 / canvas_height;
+  float halfH = 4.5 / canvas_height;
   float thickness = 1.5 / canvas_height;
   float dir = a_direction;
 
@@ -183,6 +184,7 @@ precision highp float;
 precision highp int;
 
 in uint a_x;
+in float a_color_a;
 in float a_y;
 in float a_direction;
 in float a_height;
@@ -230,7 +232,7 @@ void main() {
   }
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
-  v_color = vec4(a_color_r, a_color_g, a_color_b, 1.0);
+  v_color = vec4(a_color_r, a_color_g, a_color_b, a_color_a);
 }
 `
 
