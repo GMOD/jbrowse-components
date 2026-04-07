@@ -47,7 +47,23 @@ export default class UsageAnalyticsPlugin extends Plugin {
     const disposeMiddleware = addMiddleware(session, (call, next) => {
       const result = next(call)
       if (!call.parentActionEvent) {
-        tracker.record(call.name)
+        const detail: { viewType?: string; trackType?: string } = {}
+
+        if (call.name === 'addView') {
+          const viewType = call.args?.[0]
+          if (typeof viewType === 'string') {
+            detail.viewType = viewType
+          }
+        }
+
+        if (call.name === 'showTrack' || call.name === 'toggleTrack') {
+          const trackId = call.args?.[0]
+          if (typeof trackId === 'string') {
+            detail.trackType = resolveTrackType(trackId, session)
+          }
+        }
+
+        tracker.record(call.name, detail)
       }
       return result
     })
@@ -62,5 +78,19 @@ export default class UsageAnalyticsPlugin extends Plugin {
       disposeMiddleware()
       tracker.dispose()
     })
+  }
+}
+
+function resolveTrackType(
+  trackId: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  session: any,
+): string | undefined {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const allTracks: any[] = session?.jbrowse?.tracks ?? session?.tracks ?? []
+    return allTracks.find(t => t.trackId === trackId)?.type
+  } catch {
+    return undefined
   }
 }
