@@ -24,7 +24,7 @@ function LoadingMessage({ format }: { format: string }) {
   return (
     <div>
       <CircularProgress size={20} style={{ marginRight: 20 }} />
-      <Typography display="inline">Creating {format.toUpperCase()}</Typography>
+      <Typography sx={{ display: 'inline' }}>Creating {format.toUpperCase()}</Typography>
     </div>
   )
 }

@@ -102,8 +102,7 @@ const LinearGenomeViewImportForm = observer(
             <Grid
               container
               spacing={1}
-              justifyContent="center"
-              alignItems="center"
+              sx={{ justifyContent: 'center', alignItems: 'center' }}
             >
               <FormControl>
                 <AssemblySelector

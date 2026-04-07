@@ -50,13 +50,13 @@ test('allows adding a custom override', () => {
 
 test('allows modifying a default override', () => {
   const muiButtonStyle = {
-    styleOverrides: { textSecondary: 'orange' },
+    styleOverrides: { root: 'orange' },
   }
   const theme = createJBrowseTheme({
     components: { MuiButton: muiButtonStyle },
   })
-  expect(theme.components?.MuiButton?.styleOverrides?.textSecondary).toEqual(
-    muiButtonStyle.styleOverrides.textSecondary,
+  expect(theme.components?.MuiButton?.styleOverrides?.root).toEqual(
+    muiButtonStyle.styleOverrides.root,
   )
 })
 

@@ -76,11 +76,11 @@ const FileSelector = observer(function FileSelector({
 
   return (
     <>
-      <Box display="flex">
+      <Box sx={{ display: 'flex' }}>
         <InputLabel shrink>{name}</InputLabel>
       </Box>
       <FormGroup>
-        <Box display="flex" flexDirection={inline ? 'row' : 'column'} gap={0.5}>
+        <Box sx={{ display: 'flex', flexDirection: inline ? 'row' : 'column', gap: 0.5 }}>
           <SourceTypeSelector
             value={sourceType}
             shownAccountIds={shownAccountIds}

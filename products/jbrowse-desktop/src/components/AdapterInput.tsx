@@ -30,7 +30,7 @@ export default function AdapterInput({
 }) {
   if (adapterSelection === 'IndexedFastaAdapter') {
     return (
-      <Grid container direction="column" spacing={2}>
+      <Grid container spacing={2} sx={{ flexDirection: 'column' }}>
         <FileSelector
           name="fastaLocation"
           location={fastaLocation}
@@ -50,7 +50,7 @@ export default function AdapterInput({
   }
   if (adapterSelection === 'BgzipFastaAdapter') {
     return (
-      <Grid container direction="column" spacing={2}>
+      <Grid container spacing={2} sx={{ flexDirection: 'column' }}>
         <FileSelector
           name="fastaLocation"
           location={fastaLocation}
@@ -78,7 +78,7 @@ export default function AdapterInput({
 
   if (adapterSelection === 'TwoBitAdapter') {
     return (
-      <Grid container direction="column" spacing={2}>
+      <Grid container spacing={2} sx={{ flexDirection: 'column' }}>
         <FileSelector
           name="twoBitLocation"
           location={twoBitLocation}
@@ -99,7 +99,7 @@ export default function AdapterInput({
 
   if (adapterSelection === 'FastaAdapter') {
     return (
-      <Grid container direction="column" spacing={2}>
+      <Grid container spacing={2} sx={{ flexDirection: 'column' }}>
         <FileSelector
           name="fastaLocation"
           location={fastaLocation}

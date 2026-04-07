@@ -1040,21 +1040,22 @@ export default function stateModelFactory(
           session.setSelection(feature)
         },
 
-        async selectFeatureById(featureId: string) {
-          const session = getSession(self)
-          try {
-            const feat = await fetchFeatureDetails(self, featureId)
-            if (isAlive(self) && feat) {
-              selectFeature(feat)
-            }
-          } catch (e) {
-            console.error(e)
-            session.notifyError(`${e}`, e)
-          }
-        },
       }
     })
     .actions(self => ({
+      async selectFeatureById(featureId: string) {
+        const session = getSession(self)
+        try {
+          const feat = await fetchFeatureDetails(self, featureId)
+          if (isAlive(self) && feat) {
+            self.selectFeature(feat)
+          }
+        } catch (e) {
+          console.error(e)
+          session.notifyError(`${e}`, e)
+        }
+      },
+
       async setContextMenuFeatureById(featureId: string) {
         const session = getSession(self)
         try {

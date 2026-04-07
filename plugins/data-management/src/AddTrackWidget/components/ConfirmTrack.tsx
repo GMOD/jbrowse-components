@@ -85,10 +85,12 @@ const ConfirmTrack = observer(function ConfirmTrack({
           }}
           TextFieldProps={{
             fullWidth: true,
-            SelectProps: {
-              SelectDisplayProps: {
-                // @ts-expect-error
-                'data-testid': 'assemblyNameSelect',
+            slotProps: {
+              select: {
+                SelectDisplayProps: {
+                  // @ts-expect-error
+                  'data-testid': 'assemblyNameSelect',
+                },
               },
             },
           }}

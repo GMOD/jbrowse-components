@@ -18,26 +18,31 @@ export default function AutocompleteTextField({
   setInputValue: (arg: string) => void
   setCurrentSearch: (arg: string) => void
 }) {
-  const { helperText, slotProps = {} } = TextFieldProps
-  const { ref: inputRef, ...restInputProps } = params.InputProps
-  const { InputProps: _InputProps, ...restParams } = params
+  const { helperText, slotProps: tfSlotProps = {} } = TextFieldProps
+  const { slotProps: paramSlotProps, ...restParams } = params
   return (
     <TextField
       onBlur={() => {
-        // this is used to restore a refName or the non-user-typed input to the
-        // box on blurring
         setInputValue(inputBoxVal)
       }}
       {...restParams}
       {...TextFieldProps}
-      inputRef={inputRef}
       size="small"
       helperText={helperText}
       slotProps={{
+        ...tfSlotProps,
         input: {
-          ...restInputProps,
+          ...paramSlotProps.input,
           // eslint-disable-next-line @typescript-eslint/no-misused-spread
-          ...slotProps.input,
+          ...(tfSlotProps.input as object),
+        },
+        htmlInput: {
+          ...paramSlotProps.htmlInput,
+          ...(tfSlotProps.htmlInput as object),
+        },
+        inputLabel: {
+          ...paramSlotProps.inputLabel,
+          ...(tfSlotProps.inputLabel as object),
         },
       }}
       placeholder="Search for location"
