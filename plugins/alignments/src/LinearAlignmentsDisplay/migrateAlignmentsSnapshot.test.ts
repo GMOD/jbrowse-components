@@ -12,7 +12,7 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(result.showCoverage).toBe(true)
   })
 
-  test('strips blockState, showTooltips, userByteSizeLimit', () => {
+  test('strips blockState, showTooltips but keeps userByteSizeLimit', () => {
     const snap = {
       type: 'LinearAlignmentsDisplay',
       blockState: { key: 'value' },
@@ -23,7 +23,7 @@ describe('migrateAlignmentsSnapshot', () => {
     const result = migrateAlignmentsSnapshot(snap)
     expect(result).not.toHaveProperty('blockState')
     expect(result).not.toHaveProperty('showTooltips')
-    expect(result).not.toHaveProperty('userByteSizeLimit')
+    expect(result.userByteSizeLimit).toBe(5000000)
     expect(result.showCoverage).toBe(true)
   })
 

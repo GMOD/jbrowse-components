@@ -11,7 +11,7 @@
  *   - renderingMode → showLinkedReads
  *   - showReadCloud → showLinkedReads
  *   - height → heightPreConfig
- *   - Strips removed properties: blockState, showTooltips, userByteSizeLimit
+ *   - Strips removed properties: blockState, showTooltips
  */
 export function migrateAlignmentsSnapshot(snap: Record<string, unknown>) {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -19,8 +19,10 @@ export function migrateAlignmentsSnapshot(snap: Record<string, unknown>) {
     return snap
   }
 
-  // Strip properties from old BaseLinearDisplayNoFeatureDensity snapshots
-  const { blockState, showTooltips, userByteSizeLimit, ...cleaned } = snap
+  // Strip properties from old BaseLinearDisplayNoFeatureDensity snapshots.
+  // userByteSizeLimit is kept — it persists the user's force-load threshold
+  // via RegionTooLargeMixin so it survives session restore.
+  const { blockState, showTooltips, ...cleaned } = snap
   let result = cleaned
 
   // Rewrite "height" from older snapshots to "heightPreConfig"
