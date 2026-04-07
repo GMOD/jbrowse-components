@@ -102,6 +102,7 @@ export default function LauncherPanel({
             setFavorites={setFavorites}
             launch={sel =>
               structuredCb(async () => {
+                window.dispatchEvent(new CustomEvent('jbrowse:analytics', { detail: { type: 'desktop_launch_open_sequence' } }))
                 await initializeSession(await fetchData(sel))
               })
             }
@@ -111,6 +112,7 @@ export default function LauncherPanel({
             setFavorites={setFavorites}
             launch={sel =>
               structuredCb(async () => {
+                window.dispatchEvent(new CustomEvent('jbrowse:analytics', { detail: { type: 'desktop_launch_favorite_genome' } }))
                 await initializeSession(await fetchData(sel))
               })
             }
@@ -118,6 +120,7 @@ export default function LauncherPanel({
           <QuickstartPanel
             launch={sel =>
               structuredCb(async () => {
+                window.dispatchEvent(new CustomEvent('jbrowse:analytics', { detail: { type: 'desktop_launch_quickstart' } }))
                 await initializeSession(await getQuickstarts(sel))
               })
             }

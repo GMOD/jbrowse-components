@@ -84,6 +84,7 @@ function RecentSessionCard({
           setHovered(false)
         }}
         onClick={() => {
+          window.dispatchEvent(new CustomEvent('jbrowse:analytics', { detail: { type: 'desktop_recent_session_opened' } }))
           onClick(sessionData)
         }}
         raised={hovered}
@@ -137,6 +138,7 @@ function RecentSessionCard({
         <MenuItem
           onClick={() => {
             setMenuAnchorEl(null)
+            window.dispatchEvent(new CustomEvent('jbrowse:analytics', { detail: { type: 'desktop_session_renamed' } }))
             onRename(sessionData)
           }}
         >
@@ -147,6 +149,7 @@ function RecentSessionCard({
         </MenuItem>
         <MenuItem
           onClick={() => {
+            window.dispatchEvent(new CustomEvent('jbrowse:analytics', { detail: { type: 'desktop_session_deleted' } }))
             onDelete(sessionData)
             setMenuAnchorEl(null)
           }}
@@ -158,6 +161,7 @@ function RecentSessionCard({
         </MenuItem>
         <MenuItem
           onClick={() => {
+            window.dispatchEvent(new CustomEvent('jbrowse:analytics', { detail: { type: 'desktop_session_added_to_quickstart' } }))
             onAddToQuickstartList(sessionData)
             setMenuAnchorEl(null)
           }}

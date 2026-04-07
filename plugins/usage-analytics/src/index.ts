@@ -73,6 +73,11 @@ export default class UsageAnalyticsPlugin extends Plugin {
           if (typeof w === 'string') detail.widgetType = w
         } else if (call.name === 'queueDialog') {
           detail.dialogType = resolveDialogName(session)
+        } else if (call.name === 'notifyError') {
+          const msg = call.args?.[0]
+          if (typeof msg === 'string') {
+            tracker.recordError(msg, call.args?.[1])
+          }
         }
 
         tracker.record(call.name, detail)

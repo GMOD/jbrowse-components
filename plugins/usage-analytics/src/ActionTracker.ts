@@ -133,6 +133,21 @@ type RecordDetail = {
   dialogType?: string
 }
 
+// Strip URLs and file paths from strings to avoid leaking data locations
+function sanitize(s: string): string {
+  return s
+    .replace(/https?:\/\/\S+/gi, '[url]')
+    .replace(/file:\/\/\S+/gi, '[url]')
+    .replace(/\/[\w./~-]{8,}/g, '[path]')
+    .replace(/[A-Za-z]:\\[\w\\.-]{6,}/g, '[path]')
+}
+
+interface ErrorRecord {
+  message: string
+  errorType?: string
+  stack?: string
+}
+
 export { SUB_ACTION_EXCEPTIONS }
 
 export default class ActionTracker {
@@ -145,6 +160,7 @@ export default class ActionTracker {
   private dialogTypes = new Map<string, number>()
   private menuClicks = new Map<string, number>()
   private uiEvents = new Map<string, number>()
+  private errors: ErrorRecord[] = []
   private prev: string | null = null
   private sessionStart = Date.now()
   private endpointUrl: string
@@ -175,6 +191,20 @@ export default class ActionTracker {
     if (detail?.dialogType) this.inc(this.dialogTypes, detail.dialogType)
   }
 
+  recordError(message: string, error?: unknown) {
+    if (this.errors.length >= 20) {
+      return
+    }
+    const record: ErrorRecord = { message: sanitize(message) }
+    if (error instanceof Error) {
+      record.errorType = error.constructor.name
+      if (error.stack) {
+        record.stack = sanitize(error.stack)
+      }
+    }
+    this.errors.push(record)
+  }
+
   recordUIEvent(type: string, label?: string) {
     if (type === 'menu_item_click' && label) {
       this.inc(this.menuClicks, label)
@@ -197,6 +227,7 @@ export default class ActionTracker {
       dialog_types: Object.fromEntries(this.dialogTypes),
       menu_clicks: Object.fromEntries(this.menuClicks),
       ui_events: Object.fromEntries(this.uiEvents),
+      errors: this.errors,
       session_length_bucket: sessionLengthBucket(Date.now() - this.sessionStart),
       session_end_reason: reason,
     })
