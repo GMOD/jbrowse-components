@@ -12,7 +12,6 @@ import VerticalGuide from './VerticalGuide.tsx'
 import { SCALE_BAR_HEIGHT } from '../consts.ts'
 import { useRangeSelect } from './useRangeSelect.ts'
 import { useSideScroll } from './useSideScroll.ts'
-import { useWheelScroll } from './useWheelScroll.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -64,7 +63,6 @@ const TracksContainer = observer(function TracksContainer({
     mouseMove,
     mouseDown: mouseDown2,
   } = useRangeSelect(ref, model, true)
-  useWheelScroll(ref, model)
 
   const additional = pluginManager.evaluateExtensionPoint(
     'LinearGenomeView-TracksContainerComponent',

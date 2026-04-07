@@ -1,5 +1,7 @@
 import { Suspense, lazy, useEffect, useRef } from 'react'
 
+import { useWheelScroll } from './useWheelScroll.ts'
+
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -46,6 +48,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
   const ref = useRef<HTMLDivElement>(null)
   const MiniControlsComponent = model.MiniControlsComponent()
   const HeaderComponent = model.HeaderComponent()
+  useWheelScroll(ref, model)
   useEffect(() => {
     // sets the focused view id based on a click within the LGV;
     // necessary for subviews to be focused properly
