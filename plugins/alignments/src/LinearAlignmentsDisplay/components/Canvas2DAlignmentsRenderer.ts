@@ -1205,7 +1205,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  destroy() {
+  dispose() {
     this.regions.clear()
   }
 }

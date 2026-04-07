@@ -1,7 +1,6 @@
 import {
   PORT,
   appendGpuParam,
-  waitForCanvasRendered,
   waitForDataLoaded,
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
@@ -21,18 +20,14 @@ const suite: TestSuite = {
           { waitUntil: 'networkidle0', timeout: 60000 },
         )
 
-        await page.waitForSelector('[data-testid="dotplot_webgl_canvas"]', {
+        await page.waitForSelector('[data-testid="dotplot_webgl_canvas_done"]', {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="dotplot_webgl_canvas"]',
-        )
         await canvasSnapshot(
           page,
           'dotplot-default-canvas',
-          '[data-testid="dotplot_webgl_canvas"]',
+          '[data-testid="dotplot_webgl_canvas_done"]',
         )
       },
     },

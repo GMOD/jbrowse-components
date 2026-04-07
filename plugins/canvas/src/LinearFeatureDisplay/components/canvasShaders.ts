@@ -299,7 +299,7 @@ fn vs_main(
     case 2u: { sx = tip_x; sy = cy - thickness * 0.5; }
     case 3u: { sx = outer_x; sy = cy + arm_y; }
     case 4u: { sx = tip_x; sy = cy - thickness * 0.5; }
-    default: { sx = outer_x; sy = cy + arm_y - select(thickness, -thickness, is_top_arm); }
+    default: { sx = outer_x; sy = cy + arm_y - select(-thickness, thickness, is_top_arm); }
   }
 
   out.position = vec4f(sx, sy, 0.0, 1.0);

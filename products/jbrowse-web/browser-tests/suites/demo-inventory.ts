@@ -232,18 +232,14 @@ const localDemos: TestSuite = {
           { waitUntil: 'networkidle0', timeout: 60000 },
         )
 
-        await page.waitForSelector('[data-testid="dotplot_webgl_canvas"]', {
+        await page.waitForSelector('[data-testid="dotplot_webgl_canvas_done"]', {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="dotplot_webgl_canvas"]',
-        )
         await canvasSnapshot(
           page,
           'demo-dotplot-canvas',
-          '[data-testid="dotplot_webgl_canvas"]',
+          '[data-testid="dotplot_webgl_canvas_done"]',
         )
       },
     },

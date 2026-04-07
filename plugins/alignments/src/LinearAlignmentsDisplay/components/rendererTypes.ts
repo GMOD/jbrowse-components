@@ -191,5 +191,5 @@ export interface AlignmentsBackend {
     data: ConnectingLinesUploadData,
   ): void
   renderBlocks(blocks: RenderBlock[], state: RenderState): void
-  destroy(): void
+  dispose(): void
 }

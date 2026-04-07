@@ -121,8 +121,8 @@ export class AlignmentsRenderer {
     this.backend?.renderBlocks(blocks, state)
   }
 
-  destroy() {
-    this.backend?.destroy()
+  dispose() {
+    this.backend?.dispose()
     this.backend = null
     cache.delete(this.canvas)
   }

@@ -49,7 +49,11 @@ function chromeArgsForBackend(backend?: Backend) {
     '--disable-popup-blocking',
   ]
   if (backend === 'webgl') {
-    chromeArgs.push('--use-gl=angle', '--use-angle=swiftshader')
+    chromeArgs.push(
+      '--use-gl=angle',
+      '--use-angle=swiftshader',
+      '--enable-unsafe-swiftshader',
+    )
   } else if (backend === 'webgpu') {
     // WebGPU requires Vulkan. Use lavapipe (software Vulkan) via:
     //   VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json

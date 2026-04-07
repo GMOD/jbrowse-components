@@ -115,18 +115,14 @@ const suite: TestSuite = {
           'test_data/grape_peach_synteny/config.json',
         )
 
-        await page.waitForSelector('[data-testid="dotplot_webgl_canvas"]', {
+        await page.waitForSelector('[data-testid="dotplot_webgl_canvas_done"]', {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid="dotplot_webgl_canvas"]',
-        )
         await canvasSnapshot(
           page,
           'multiway-dotplot-grape-peach-zoomed-canvas',
-          '[data-testid="dotplot_webgl_canvas"]',
+          '[data-testid="dotplot_webgl_canvas_done"]',
         )
       },
     },

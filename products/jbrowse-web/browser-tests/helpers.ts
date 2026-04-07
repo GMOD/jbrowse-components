@@ -100,26 +100,22 @@ export async function waitForCanvasRendered(
         }
       }
 
-      // Sample a 10x10 region from the canvas center and check for pixel
-      // variation. A cleared/blank canvas is uniform; drawn content (genomic
-      // features, wiggle plots, etc.) always produces color variation.
+      // Downsample the full canvas to 32x32 and check for any non-zero pixel.
+      // An unrendered canvas is all (0,0,0,0). Any rendered canvas —
+      // white background (synteny), scattered dots (dotplot), features —
+      // has at least one non-zero pixel somewhere.
       try {
         const tmp = document.createElement('canvas')
-        tmp.width = 10
-        tmp.height = 10
+        tmp.width = 32
+        tmp.height = 32
         const ctx = tmp.getContext('2d')
         if (!ctx) {
           return false
         }
-        const cx = Math.max(0, Math.floor(canvas.width / 2) - 5)
-        const cy = Math.max(0, Math.floor(canvas.height / 2) - 5)
-        ctx.drawImage(canvas, cx, cy, 10, 10, 0, 0, 10, 10)
-        const d = ctx.getImageData(0, 0, 10, 10).data
-        const r0 = d[0]!
-        const g0 = d[1]!
-        const b0 = d[2]!
-        for (let i = 4; i < d.length; i += 4) {
-          if (d[i] !== r0 || d[i + 1] !== g0 || d[i + 2] !== b0) {
+        ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, 32, 32)
+        const d = ctx.getImageData(0, 0, 32, 32).data
+        for (const v of d) {
+          if (v > 0) {
             return true
           }
         }

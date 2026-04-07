@@ -1470,7 +1470,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     this.hal.drawPass(PASS_FLAT_QUAD, OVERLAY_REGION)
   }
 
-  destroy() {
+  dispose() {
     for (const key of this.regions.keys()) {
       this.hal.deleteRegion(key)
     }
