@@ -94,22 +94,38 @@ test('click and drag to reorder tracks', async () => {
 test('click and zoom in and back out', async () => {
   const { view, findByTestId, findAllByText } = await createView()
   await findAllByText('ctgA', ...opts)
+
+  // mock requestAnimationFrame and performance.now so the spring
+  // animation used by zoom() completes synchronously
+  const origRAF = window.requestAnimationFrame
+  const origPerfNow = performance.now.bind(performance)
+  let fakeTime = origPerfNow()
+  performance.now = () => fakeTime
+  window.requestAnimationFrame = (cb: FrameRequestCallback) => {
+    fakeTime += 16
+    cb(fakeTime)
+    return 0
+  }
+
+  // wait for coarseBpPerPx to be set (500ms debounced autorun) so
+  // the zoom buttons become enabled
   const before = view.bpPerPx
+  await waitFor(() => {
+    expect(view.coarseBpPerPx).toBeGreaterThan(0)
+  }, delay)
+
   fireEvent.click(await findByTestId('zoom_in'))
   await waitFor(() => {
     expect(view.bpPerPx).toBe(before / 2)
   }, delay)
 
-  // wait for it not to be disabled also
-  const elt = await findByTestId('zoom_out')
-  await waitFor(() => {
-    expect(elt).toHaveProperty('disabled', false)
-  })
-  fireEvent.click(elt)
-
+  fireEvent.click(await findByTestId('zoom_out'))
   await waitFor(() => {
     expect(view.bpPerPx).toBe(before)
   }, delay)
+
+  window.requestAnimationFrame = origRAF
+  performance.now = origPerfNow
 }, 60000)
 
 test('opens track selector', async () => {
@@ -125,11 +141,7 @@ test('opens reference sequence track and expects zoom in message', async () => {
   const { view, findByTestId, findAllByText } = await createView()
   fireEvent.click(await findByTestId(hts('volvox_refseq'), ...opts))
   view.setNewView(20, 0)
-  await findByTestId(
-    'display-volvox_refseq-LinearReferenceSequenceDisplay',
-    {},
-    delay,
-  )
+  await findByTestId('sequence-display', {}, delay)
   await findAllByText('Zoom in to see sequence')
 }, 30000)
 

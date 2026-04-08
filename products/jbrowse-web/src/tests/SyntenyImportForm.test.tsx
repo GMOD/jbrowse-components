@@ -67,10 +67,10 @@ test('three level', async () => {
 
   fireEvent.click(await findByText('Launch'))
   await waitFor(() => {
-    const canvases = queryAllByTestId('synteny_canvas')
+    const canvases = queryAllByTestId('synteny_canvas_done')
     expect(canvases.length).toBe(2)
   }, delay)
-  const canvases = getAllByTestId('synteny_canvas')
+  const canvases = getAllByTestId('synteny_canvas_done')
   expectCanvasMatch(canvases[0]!)
   expectCanvasMatch(canvases[1]!)
 }, 40000)

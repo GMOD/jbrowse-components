@@ -4,8 +4,8 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findCanvasIn,
   hts,
-  pv,
   setup,
 } from './util.tsx'
 
@@ -21,7 +21,7 @@ function getCanvasData(canvas: Element) {
 }
 
 test('open a bigwig track and change to green color', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId, findAllByTestId } = await createView()
   view.setNewView(5, 0)
 
   // Open the track
@@ -30,7 +30,8 @@ test('open a bigwig track and change to green color', async () => {
   )
 
   // Wait for the track to render
-  const canvas1 = await findByTestId(pv('1..4000-0'), {}, { timeout: 20000 })
+  const displays = await findAllByTestId(/^display-.*-done$/, {}, { timeout: 20000 })
+  const canvas1 = findCanvasIn(displays[0]!)
   expectCanvasMatch(canvas1)
 
   // Capture initial canvas state
@@ -49,9 +50,13 @@ test('open a bigwig track and change to green color', async () => {
   // Wait for the canvas content to change
   await waitFor(
     () => {
-      const canvas = document.querySelector(
-        `[data-testid="${pv('1..4000-0')}"]`,
+      const displayEl = document.querySelector(
+        '[data-testid^="display-"][data-testid$="-done"]',
       )
+      if (!displayEl) {
+        throw new Error('Display not found')
+      }
+      const canvas = displayEl.querySelector('canvas')
       if (!canvas) {
         throw new Error('Canvas not found')
       }
@@ -64,12 +69,12 @@ test('open a bigwig track and change to green color', async () => {
   )
 
   // Get the updated canvas and verify
-  const canvas2 = await findByTestId(pv('1..4000-0'), {}, { timeout: 20000 })
-  expectCanvasMatch(canvas2)
+  const displays2 = await findAllByTestId(/^display-.*-done$/, {}, { timeout: 20000 })
+  expectCanvasMatch(findCanvasIn(displays2[0]!))
 }, 40000)
 
 test('open a bigwig track and change to purple color', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId, findAllByTestId } = await createView()
   view.setNewView(5, 0)
 
   // Open the track
@@ -78,7 +83,8 @@ test('open a bigwig track and change to purple color', async () => {
   )
 
   // Wait for the track to render
-  const canvas1 = await findByTestId(pv('1..4000-0'), {}, { timeout: 20000 })
+  const displays = await findAllByTestId(/^display-.*-done$/, {}, { timeout: 20000 })
+  const canvas1 = findCanvasIn(displays[0]!)
   expectCanvasMatch(canvas1)
 
   // Capture initial canvas state
@@ -94,9 +100,13 @@ test('open a bigwig track and change to purple color', async () => {
   // Wait for the canvas content to change
   await waitFor(
     () => {
-      const canvas = document.querySelector(
-        `[data-testid="${pv('1..4000-0')}"]`,
+      const displayEl = document.querySelector(
+        '[data-testid^="display-"][data-testid$="-done"]',
       )
+      if (!displayEl) {
+        throw new Error('Display not found')
+      }
+      const canvas = displayEl.querySelector('canvas')
       if (!canvas) {
         throw new Error('Canvas not found')
       }
@@ -109,6 +119,6 @@ test('open a bigwig track and change to purple color', async () => {
   )
 
   // Get the updated canvas and verify
-  const canvas2 = await findByTestId(pv('1..4000-0'), {}, { timeout: 20000 })
-  expectCanvasMatch(canvas2)
+  const displays2 = await findAllByTestId(/^display-.*-done$/, {}, { timeout: 20000 })
+  expectCanvasMatch(findCanvasIn(displays2[0]!))
 }, 40000)

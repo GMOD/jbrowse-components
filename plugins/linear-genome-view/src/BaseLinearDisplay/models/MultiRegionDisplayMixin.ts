@@ -1,9 +1,11 @@
 import {
+  getContainingTrack,
   getContainingView,
   getRpcSessionId,
   getSession,
   isAbortException,
 } from '@jbrowse/core/util'
+import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
@@ -279,7 +281,28 @@ export default function MultiRegionDisplayMixin() {
 
                 self.beforeFetchCheck()
 
+                const { assemblyManager } = getSession(self)
+                const trackAssemblyNames = getTrackAssemblyNames(
+                  getContainingTrack(self),
+                )
                 const visibleMerged = view.mergedVisibleRegions
+                for (const vr of visibleMerged) {
+                  const regionAsm = vr.assemblyName
+                  if (
+                    !trackAssemblyNames.includes(regionAsm) &&
+                    !trackAssemblyNames.some(name =>
+                      assemblyManager.get(name)?.hasName(regionAsm),
+                    )
+                  ) {
+                    self.setError(
+                      new Error(
+                        `region assembly (${regionAsm}) does not match track assemblies (${trackAssemblyNames})`,
+                      ),
+                    )
+                    return
+                  }
+                }
+
                 const bufferedByRegion = new Map(
                   view.bufferedVisibleRegions.map(b => [b.regionNumber, b]),
                 )

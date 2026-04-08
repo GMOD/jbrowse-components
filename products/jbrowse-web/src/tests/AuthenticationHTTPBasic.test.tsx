@@ -4,8 +4,8 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findCanvasIn,
   hts,
-  pv,
   setup,
 } from './util.tsx'
 import config from '../../test_data/volvox/config_auth.json' with { type: 'json' }
@@ -20,7 +20,7 @@ beforeEach(() => {
 const delay = { timeout: 20000 }
 
 test('opens a bigwig track that needs httpbasic authentication', async () => {
-  const { findByTestId, findByText, view } = await createView({
+  const { findByTestId, findAllByTestId, findByText, view } = await createView({
     ...config,
     tracks: [
       {
@@ -58,5 +58,6 @@ test('opens a bigwig track that needs httpbasic authentication', async () => {
     sessionStorage.getItem('HTTPBasicInternetAccount-HTTPBasicTest-token'),
   ).toContain(btoa('username:password'))
 
-  expectCanvasMatch(await findByTestId(pv('1..4000-0'), {}, delay))
+  const displays = await findAllByTestId(/^display-.*-done$/, {}, delay)
+  expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 25000)

@@ -3,7 +3,6 @@ import { LocalFile } from 'generic-filehandle2'
 import {
   doBeforeEach,
   generateReadBuffer,
-  pv,
   setup,
   testFileReload,
 } from './util.tsx'
@@ -24,7 +23,7 @@ test('reloads bigwig (BW 404)', async () => {
     readBuffer,
     trackId: 'volvox_microarray',
     viewLocation: [10, 0],
-    expectedCanvas: pv('1..8000-0'),
+    expectedCanvas: /^display-.*-done$/,
     timeout: 50000,
   })
 }, 50000)

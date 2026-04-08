@@ -78,8 +78,6 @@ export function expectCanvasMatch(
 }
 
 export const hts = (str: string) => `htsTrackEntry-Tracks,${str}`
-export const pc = (str: string) => `prerendered_canvas_${str}_done`
-export const pv = (str: string) => pc(`{volvox}ctgA:${str}`)
 
 export function findCanvasIn(container: HTMLElement) {
   const canvas = container.querySelector('canvas')
