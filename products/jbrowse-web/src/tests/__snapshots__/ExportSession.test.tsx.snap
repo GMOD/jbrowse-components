@@ -74,7 +74,6 @@ exports[`export session with alignments and gff tracks 1`] = `
         "type": "GridBookmarkWidget",
       },
       "hierarchicalTrackSelector": {
-        "faceted": {},
         "id": "hierarchicalTrackSelector",
         "type": "HierarchicalTrackSelectorWidget",
         "view": "integration_test",

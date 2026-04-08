@@ -375,6 +375,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "Methylation",
         ],
       },
+      "defaultFolderCategories": [
+        "Integration test,Wiggle,Wiggle Rendering Styles",
+      ],
     },
     "logoPath": {
       "locationType": "UriLocation",
@@ -1213,6 +1216,26 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "category": [
         "Integration test",
         "Wiggle",
+        "Wiggle Rendering Styles",
+      ],
+      "name": "wiggle_track xyplot (folder)",
+      "trackId": "volvox_microarray_xyplot_folder",
+      "type": "QuantitativeTrack",
+    },
+    {
+      "adapter": {
+        "bigWigLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_microarray.bw",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Integration test",
+        "Wiggle",
       ],
       "displays": [
         {
@@ -1249,6 +1272,60 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "name": "wiggle_track density",
       "trackId": "volvox_microarray_density",
+      "type": "QuantitativeTrack",
+    },
+    {
+      "adapter": {
+        "bigWigLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_microarray.bw",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Integration test",
+        "Wiggle",
+        "Wiggle Rendering Styles",
+      ],
+      "displays": [
+        {
+          "defaultRendering": "line",
+          "displayId": "volvox_microarray_line_folder_line",
+          "type": "LinearWiggleDisplay",
+        },
+      ],
+      "name": "wiggle_track lineplot (folder)",
+      "trackId": "volvox_microarray_line_folder",
+      "type": "QuantitativeTrack",
+    },
+    {
+      "adapter": {
+        "bigWigLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_microarray.bw",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Integration test",
+        "Wiggle",
+        "Wiggle Rendering Styles",
+      ],
+      "displays": [
+        {
+          "defaultRendering": "density",
+          "displayId": "volvox_microarray_density_folder_density",
+          "type": "LinearWiggleDisplay",
+        },
+      ],
+      "name": "wiggle_track density (folder)",
+      "trackId": "volvox_microarray_density_folder",
       "type": "QuantitativeTrack",
     },
     {
