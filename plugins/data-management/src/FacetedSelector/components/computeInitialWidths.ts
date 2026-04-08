@@ -1,5 +1,7 @@
 import { measureGridWidth } from '@jbrowse/core/util'
 
+import { measureNameColumnWidth } from '../../HierarchicalTrackSelectorWidget/components/shared/trackGridUtils.ts'
+
 export function computeInitialWidths(
   rows: { name: string; metadata: Record<string, unknown> }[],
   filteredNonMetadataKeys: readonly string[],
@@ -7,11 +9,7 @@ export function computeInitialWidths(
   visible: Record<string, boolean>,
 ) {
   return {
-    name:
-      measureGridWidth(
-        rows.map(r => r.name),
-        { maxWidth: 500, stripHTML: true },
-      ) + 15,
+    name: measureNameColumnWidth(rows),
     ...Object.fromEntries(
       filteredNonMetadataKeys
         .filter(f => visible[f])

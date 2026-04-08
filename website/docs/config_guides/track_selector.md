@@ -57,5 +57,39 @@ Example config.json with examples of these hierarchical settings:
 Note: The `defaultCollapsed` options only apply to the "initial startup",
 afterwards, the "users preference" (their settings in their session) apply
 
+## Folder categories (supertracks)
+
+Categories can be displayed in "folder mode", which collapses the entire
+category into a compact folder row. Clicking a folder opens a faceted track
+selector scoped to just the tracks in that category.
+
+- `hierarchical.defaultFolderCategories` - string array - categories to display
+  as folders by default. Use the category name for top-level categories, or a
+  comma-joined path for nested categories (e.g.
+  `"Wiggle,Wiggle Rendering Styles"`). default: `[]`
+
+Users can also toggle any category between folder and normal mode at runtime via
+the category's context menu ("Collapse into folder" / "Expand to category").
+
+Example config.json:
+
+```json
+{
+  "configuration": {
+    "hierarchical": {
+      "defaultFolderCategories": ["Wiggle", "SNP/Coverage,Coverage"]
+    }
+  }
+}
+```
+
+The category ID used internally is `Tracks-{categoryPath}`, where `categoryPath`
+is the full comma-joined path of category names. This is the value you match
+against in the `TrackSelector-folderDialog` extension point (see developer
+docs).
+
+Note: Like `defaultCollapsed`, `defaultFolderCategories` only applies on initial
+startup — afterwards the user's preference is preserved in their session.
+
 See https://jbrowse.org/jb2/docs/config/hierarchicalconfigschema/ for more
 auto-generated config schema docs

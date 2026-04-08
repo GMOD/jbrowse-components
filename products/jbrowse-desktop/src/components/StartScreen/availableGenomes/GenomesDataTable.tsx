@@ -5,14 +5,8 @@ import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Help from '@mui/icons-material/Help'
 import MoreVert from '@mui/icons-material/MoreVert'
-import { Button, IconButton } from '@mui/material'
-import {
-  flexRender,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from '@tanstack/react-table'
+import { Button, Checkbox, IconButton } from '@mui/material'
+import { alpha, darken, lighten } from '@mui/material/styles'
 
 import CategorySelector from './CategorySelector.tsx'
 import MoreInfoDialog from './MoreInfoDialog.tsx'
@@ -24,42 +18,82 @@ import { useGenomesData } from './useGenomesData.ts'
 import defaultFavs from '../defaultFavs.ts'
 import useCategories from './useCategories.ts'
 
+import type { Entry, GenomeColumn } from './getColumnDefinitions.tsx'
 import type { Fav, LaunchCallback } from '../types.ts'
 
-const useStyles = makeStyles()({
-  span: {
-    gap: 10,
-    display: 'flex',
-    marginBottom: 20,
-    marginTop: 20,
-  },
-  panel: {
-    minWidth: 1000,
-    minHeight: 500,
-    position: 'relative',
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-    '& th, & td': {
-      textAlign: 'left',
-      padding: '2px 4px',
-      border: '1px solid #ddd',
-      fontSize: '0.9rem',
+const useStyles = makeStyles()(theme => {
+  const borderColor =
+    theme.palette.mode === 'light'
+      ? lighten(alpha(theme.palette.divider, 1), 0.88)
+      : darken(alpha(theme.palette.divider, 1), 0.68)
+  const border = `1px solid ${borderColor}`
+  return {
+    span: {
+      gap: 10,
+      display: 'flex',
+      marginBottom: 20,
+      marginTop: 20,
     },
-    '& th': {
-      backgroundColor: '#f5f5f5',
-      fontWeight: 'bold',
-      cursor: 'pointer',
-      '&:hover': {
-        backgroundColor: '#e5e5e5',
+    panel: {
+      minWidth: 1000,
+      minHeight: 500,
+      position: 'relative',
+    },
+    table: {
+      width: '100%',
+      borderCollapse: 'collapse',
+      '& th, & td': {
+        textAlign: 'left',
+        padding: '2px 4px',
+        borderBottom: border,
+        fontSize: theme.typography.body2.fontSize,
+      },
+      '& th': {
+        backgroundColor: theme.palette.background.paper,
+        fontWeight: theme.typography.fontWeightMedium,
+        cursor: 'pointer',
+        '&:hover': {
+          backgroundColor: theme.palette.action.hover,
+        },
+      },
+      '& tr:hover': {
+        backgroundColor: theme.palette.action.hover,
       },
     },
-    '& tr:hover': {
-      backgroundColor: '#f9f9f9',
+    selectedRow: {
+      backgroundColor: alpha(
+        theme.palette.primary.main,
+        theme.palette.action.selectedOpacity,
+      ),
+      '&:hover': {
+        backgroundColor: alpha(
+          theme.palette.primary.main,
+          theme.palette.action.selectedOpacity +
+            theme.palette.action.hoverOpacity,
+        ),
+      },
     },
-  },
+    checkboxCell: {
+      padding: 0,
+      textAlign: 'center',
+      verticalAlign: 'middle',
+    },
+  }
 })
+
+const checkboxSx = {
+  padding: 0,
+  '& .MuiSvgIcon-root': { fontSize: '1.15rem' },
+}
+
+function defaultSort(a: Entry, b: Entry, col: GenomeColumn) {
+  if (col.sortFn) {
+    return col.sortFn(a, b)
+  }
+  const aVal = `${a[col.id] ?? ''}`
+  const bVal = `${b[col.id] ?? ''}`
+  return aVal.localeCompare(bVal)
+}
 
 export default function GenomesDataTable({
   favorites,
@@ -73,17 +107,18 @@ export default function GenomesDataTable({
   launch: LaunchCallback
 }) {
   'use no memo'
-  const [selected, setSelected] = useState<string[]>([])
+  const [selected, setSelected] = useState(new Set())
   const [showOnlyFavs, setShowOnlyFavs] = useState(false)
   const [filterOption, setFilterOption] = useState('all')
   const [moreInfoDialogOpen, setMoreInfoDialogOpen] = useState(false)
   const [multipleSelection, setMultipleSelection] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 50,
-  })
-  const [sorting, setSorting] = useState<{ id: string; desc: boolean }[]>([])
+  const [pageIndex, setPageIndex] = useState(0)
+  const [pageSize, setPageSize] = useState(50)
+  const [sorting, setSorting] = useState<{
+    id: string
+    desc: boolean
+  }>()
   const [typeOption, setTypeOption] = useLocalStorage(
     'startScreen-genArkChoice',
     'ucsc',
@@ -99,7 +134,7 @@ export default function GenomesDataTable({
 
   const favs = useMemo(() => new Set(favorites.map(f => f.id)), [favorites])
   const toggleFavorite = useCallback(
-    (row: any) => {
+    (row: Entry) => {
       const isFavorite = favs.has(row.id)
       if (isFavorite) {
         setFavorites(favorites.filter(fav => fav.id !== row.id))
@@ -131,7 +166,7 @@ export default function GenomesDataTable({
     url,
   })
 
-  const tableColumns = useMemo(
+  const columns = useMemo(
     () =>
       getColumnDefinitions({
         typeOption,
@@ -153,46 +188,51 @@ export default function GenomesDataTable({
     ],
   )
 
-  // Create table instance
-  const rowSelection = useMemo(
-    () => Object.fromEntries(selected.map(id => [id, true])),
-    [selected],
-  )
+  const sortedData = useMemo(() => {
+    if (!sorting) {
+      return data
+    }
+    const col = columns.find(c => c.id === sorting.id)
+    if (!col) {
+      return data
+    }
+    const dir = sorting.desc ? -1 : 1
+    return [...data].sort((a, b) => dir * defaultSort(a, b, col))
+  }, [data, sorting, columns])
 
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
-    // @ts-expect-error
-    data,
-    columns: tableColumns,
-    state: {
-      sorting,
-      pagination,
-      rowSelection,
-    },
-    onSortingChange: setSorting,
-    onPaginationChange: setPagination,
-    onRowSelectionChange: (updater: any) => {
-      const newSelection =
-        typeof updater === 'function' ? updater(rowSelection) : updater
-      setSelected(Object.keys(newSelection).filter(key => newSelection[key]))
-    },
-    getRowId: row => row.id,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    enableRowSelection: multipleSelection,
-    autoResetPageIndex: false, // Prevent automatic page reset
-  })
+  const pageRows = useMemo(() => {
+    const start = pageIndex * pageSize
+    return sortedData.slice(start, start + pageSize)
+  }, [sortedData, pageIndex, pageSize])
+
+  const toggleSort = (colId: string) => {
+    if (sorting?.id === colId) {
+      if (sorting.desc) {
+        setSorting(undefined)
+      } else {
+        setSorting({ id: colId, desc: true })
+      }
+    } else {
+      setSorting({ id: colId, desc: false })
+    }
+  }
+
+  const allSelected =
+    pageRows.length > 0 && pageRows.every(row => selected.has(row.id))
+
+  const someSelected =
+    !allSelected && pageRows.some(row => selected.has(row.id))
+
   return (
     <div className={classes.panel}>
       <div className={classes.span}>
         {multipleSelection ? (
           <Button
             variant="contained"
-            disabled={selected.length === 0}
+            disabled={selected.size === 0}
             onClick={() => {
-              if (selected.length > 0) {
-                const selectedRows = selected
+              if (selected.size > 0) {
+                const selectedRows = [...selected]
                   .map(id => data.find(row => row.id === id))
                   .filter(notEmpty)
                   .map(r => ({
@@ -226,7 +266,7 @@ export default function GenomesDataTable({
               type: 'checkbox',
               onClick: () => {
                 setMultipleSelection(!multipleSelection)
-                setSelected([])
+                setSelected(new Set())
               },
             },
             {
@@ -320,71 +360,83 @@ export default function GenomesDataTable({
         <div>
           <table className={classes.table}>
             <thead>
-              {table.getHeaderGroups().map(headerGroup => (
-                <tr key={headerGroup.id}>
-                  {multipleSelection && (
-                    <th>
-                      <input
-                        type="checkbox"
-                        checked={table.getIsAllRowsSelected()}
-                        onChange={table.getToggleAllRowsSelectedHandler()}
-                      />
-                    </th>
-                  )}
-                  {headerGroup.headers.map(header => (
-                    <th
-                      key={header.id}
-                      onClick={header.column.getToggleSortingHandler()}
-                      style={{
-                        cursor: header.column.getCanSort()
-                          ? 'pointer'
-                          : 'default',
+              <tr>
+                {multipleSelection ? (
+                  <th className={classes.checkboxCell}>
+                    <Checkbox
+                      size="small"
+                      checked={allSelected}
+                      indeterminate={someSelected}
+                      onChange={() => {
+                        if (allSelected) {
+                          setSelected(new Set())
+                        } else {
+                          setSelected(new Set(pageRows.map(r => r.id)))
+                        }
                       }}
-                    >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                      {{
-                        asc: ' ↑',
-                        desc: ' ↓',
-                      }[header.column.getIsSorted() as string] ?? ''}
-                    </th>
-                  ))}
-                </tr>
-              ))}
+                      sx={checkboxSx}
+                    />
+                  </th>
+                ) : null}
+                {columns.map(col => (
+                  <th
+                    key={col.id}
+                    onClick={() => {
+                      toggleSort(col.id)
+                    }}
+                  >
+                    {col.header}
+                    {sorting?.id === col.id ? (sorting.desc ? ' ↓' : ' ↑') : ''}
+                  </th>
+                ))}
+              </tr>
             </thead>
             <tbody>
-              {table.getRowModel().rows.map(row => (
-                <tr key={row.id}>
-                  {multipleSelection && (
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={row.getIsSelected()}
-                        onChange={row.getToggleSelectedHandler()}
-                      />
-                    </td>
-                  )}
-                  {row.getVisibleCells().map(cell => (
-                    <td key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
+              {pageRows.map(row => {
+                const isSelected = selected.has(row.id)
+                return (
+                  <tr
+                    key={row.id}
+                    className={isSelected ? classes.selectedRow : undefined}
+                  >
+                    {multipleSelection ? (
+                      <td className={classes.checkboxCell}>
+                        <Checkbox
+                          size="small"
+                          checked={isSelected}
+                          onChange={() => {
+                            const next = new Set(selected)
+                            if (next.has(row.id)) {
+                              next.delete(row.id)
+                            } else {
+                              next.add(row.id)
+                            }
+                            setSelected(next)
+                          }}
+                          sx={checkboxSx}
+                        />
+                      </td>
+                    ) : null}
+                    {columns.map(col => (
+                      <td key={col.id}>
+                        {col.cell ? col.cell(row) : `${row[col.id] ?? ''}`}
+                      </td>
+                    ))}
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
 
           <TablePagination
-            table={table}
-            pagination={pagination}
-            setPagination={setPagination}
-            totalRows={data.length}
-            displayedRows={table.getRowModel().rows.length}
+            pageIndex={pageIndex}
+            pageSize={pageSize}
+            totalRows={sortedData.length}
+            onPageChange={setPageIndex}
+            onPageSizeChange={size => {
+              setPageSize(size)
+              setPageIndex(0)
+            }}
           />
         </div>
       )}

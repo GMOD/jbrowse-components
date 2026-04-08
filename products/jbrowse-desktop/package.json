@@ -74,7 +74,6 @@
     "@mui/icons-material": "^7.3.9",
     "@mui/material": "^7.3.9",
     "@mui/x-data-grid": "^8.28.2",
-    "@tanstack/react-table": "^8.21.3",
     "date-fns": "^4.1.0",
     "deepmerge": "^4.3.1",
     "dockview": "^5.2.0",

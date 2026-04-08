@@ -16,7 +16,9 @@ import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 // lazies
-const FacetedDialog = lazy(() => import('../faceted/FacetedDialog.tsx'))
+const FacetedDialog = lazy(
+  () => import('../../../FacetedSelector/components/FacetedDialog.tsx'),
+)
 
 // lazy components
 const CloseConnectionDialog = lazy(

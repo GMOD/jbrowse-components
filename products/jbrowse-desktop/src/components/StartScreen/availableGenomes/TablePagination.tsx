@@ -1,7 +1,5 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
-import type { Table } from '@tanstack/react-table'
-
 const useStyles = makeStyles()({
   paginationContainer: {
     display: 'flex',
@@ -25,77 +23,74 @@ const useStyles = makeStyles()({
   },
 })
 
-interface TablePaginationProps {
-  table: Table<any>
-  pagination: { pageIndex: number; pageSize: number }
-  setPagination: (pagination: { pageIndex: number; pageSize: number }) => void
-  totalRows: number
-  displayedRows: number
-}
-
 export default function TablePagination({
-  table,
-  pagination,
-  setPagination,
+  pageIndex,
+  pageSize,
   totalRows,
-  displayedRows,
-}: TablePaginationProps) {
+  onPageChange,
+  onPageSizeChange,
+}: {
+  pageIndex: number
+  pageSize: number
+  totalRows: number
+  onPageChange: (pageIndex: number) => void
+  onPageSizeChange: (pageSize: number) => void
+}) {
   const { classes } = useStyles()
+  const pageCount = Math.max(1, Math.ceil(totalRows / pageSize))
+  const canPrevious = pageIndex > 0
+  const canNext = pageIndex < pageCount - 1
 
   return (
     <div className={classes.paginationContainer}>
       <button
         className={classes.paginationButton}
         onClick={() => {
-          table.setPageIndex(0)
+          onPageChange(0)
         }}
-        disabled={!table.getCanPreviousPage()}
+        disabled={!canPrevious}
       >
         {'<<'}
       </button>
       <button
         className={classes.paginationButton}
         onClick={() => {
-          table.previousPage()
+          onPageChange(pageIndex - 1)
         }}
-        disabled={!table.getCanPreviousPage()}
+        disabled={!canPrevious}
       >
         {'<'}
       </button>
       <span className={classes.pageInfo}>
         Page{' '}
         <strong>
-          {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+          {pageIndex + 1} of {pageCount}
         </strong>
       </span>
       <button
         className={classes.paginationButton}
         onClick={() => {
-          table.nextPage()
+          onPageChange(pageIndex + 1)
         }}
-        disabled={!table.getCanNextPage()}
+        disabled={!canNext}
       >
         {'>'}
       </button>
       <button
         className={classes.paginationButton}
         onClick={() => {
-          table.setPageIndex(table.getPageCount() - 1)
+          onPageChange(pageCount - 1)
         }}
-        disabled={!table.getCanNextPage()}
+        disabled={!canNext}
       >
         {'>>'}
       </button>
       <div style={{ marginLeft: '1rem' }}>
         <label>Show:</label>
         <select
-          value={pagination.pageSize}
+          value={pageSize}
           onChange={e => {
-            const newSize = Number(e.target.value)
-            setPagination({
-              pageIndex: 0,
-              pageSize: newSize,
-            })
+            onPageSizeChange(Number(e.target.value))
           }}
           style={{ marginLeft: '0.5rem', padding: '0.25rem' }}
         >
@@ -108,7 +103,8 @@ export default function TablePagination({
         <span style={{ marginLeft: '0.5rem' }}>rows</span>
       </div>
       <span style={{ marginLeft: '1rem', fontSize: '0.9rem', color: '#666' }}>
-        Showing {displayedRows} of {totalRows} rows
+        Showing {Math.min(pageSize, totalRows - pageIndex * pageSize)} of{' '}
+        {totalRows} rows
       </span>
     </div>
   )
