@@ -104,7 +104,6 @@ function calculateBpPerPx(
 function canvasXToGenomicPosition(
   canvasX: number,
   resolved: ResolvedBlock,
-  _bpPerPx: number,
 ): number {
   const { bpRange, blockStartPx, blockWidth } = resolved
   const frac = (canvasX - blockStartPx) / blockWidth
@@ -122,7 +121,7 @@ function canvasXToPosOffset(
 ): { genomicPos: number; posOffset: number; bpPerPx: number } {
   const { bpRange, blockWidth, rpcData } = resolved
   const bpPerPx = calculateBpPerPx(bpRange, blockWidth)
-  const genomicPos = canvasXToGenomicPosition(canvasX, resolved, bpPerPx)
+  const genomicPos = canvasXToGenomicPosition(canvasX, resolved)
   const posOffset = genomicPos - rpcData.regionStart
   return { genomicPos, posOffset, bpPerPx }
 }
@@ -264,40 +263,69 @@ export function hitTestCigarItem(
 
   const pxPerBp = 1 / bpPerPx
 
-  // Check large insertions first (they render as wide boxes that overlap SNPs)
-  for (let i = 0; i < numInterbases; i++) {
-    if (interbaseTypes[i] !== INTERBASE_INSERTION) {
-      continue
-    }
-    const y = interbaseYs[i]
-    if (y !== row) {
-      continue
-    }
-    const pos = interbasePositions[i]
-    if (pos !== undefined) {
-      const len = interbaseLengths[i] ?? 0
-      const type = getInsertionType(len, pxPerBp)
-      if (type !== 'small') {
-        const rectWidthPx = getInsertionRectWidthPx(len, pxPerBp) + 4
-        const rectHalfWidthBp = (rectWidthPx / 2) * bpPerPx
-        if (Math.abs(posOffset - pos) < rectHalfWidthBp) {
-          return {
-            type: 'insertion',
-            index: i,
-            position: regionStart + pos,
-            length: len,
-            sequence: interbaseSequences[i] || undefined,
+  function checkInsertionHit(sizeFilter: 'small' | 'large') {
+    for (let i = 0; i < numInterbases; i++) {
+      if (interbaseTypes[i] !== INTERBASE_INSERTION || interbaseYs[i] !== row) {
+        continue
+      }
+      const pos = interbasePositions[i]
+      if (pos !== undefined) {
+        const len = interbaseLengths[i] ?? 0
+        const isSmall = getInsertionType(len, pxPerBp) === 'small'
+        if (sizeFilter === 'small' ? isSmall : !isSmall) {
+          const rectWidthPx = getInsertionRectWidthPx(len, pxPerBp) + 4
+          const rectHalfWidthBp = (rectWidthPx / 2) * bpPerPx
+          if (Math.abs(posOffset - pos) < rectHalfWidthBp) {
+            return {
+              type: 'insertion' as const,
+              index: i,
+              position: regionStart + pos,
+              length: len,
+              sequence: interbaseSequences[i] || undefined,
+            }
           }
         }
       }
     }
+    return undefined
   }
 
-  // Check mismatches (1bp features - use floor to determine which base mouse is over)
+  function checkClipHit(
+    clipType: typeof INTERBASE_SOFTCLIP | typeof INTERBASE_HARDCLIP,
+    label: 'softclip' | 'hardclip',
+  ) {
+    for (let i = 0; i < numInterbases; i++) {
+      if (interbaseTypes[i] !== clipType || interbaseYs[i] !== row) {
+        continue
+      }
+      const pos = interbasePositions[i]
+      const len = interbaseLengths[i]
+      if (
+        pos !== undefined &&
+        len !== undefined &&
+        Math.abs(posOffset - pos) < hitToleranceBp
+      ) {
+        return {
+          type: label,
+          index: i,
+          position: regionStart + pos,
+          length: len,
+        }
+      }
+    }
+    return undefined
+  }
+
+  // Large insertions first (wide boxes that overlap SNPs)
+  const largeInsHit = checkInsertionHit('large')
+  if (largeInsHit) {
+    return largeInsHit
+  }
+
+  // Mismatches (1bp features - use floor to determine which base mouse is over)
   const mouseBaseOffset = Math.floor(posOffset)
   for (let i = 0; i < numMismatches; i++) {
-    const y = mismatchYs[i]
-    if (y !== row) {
+    if (mismatchYs[i] !== row) {
       continue
     }
     const pos = mismatchPositions[i]
@@ -312,40 +340,16 @@ export function hitTestCigarItem(
     }
   }
 
-  // Check small insertions (thin bars that don't overlap SNPs)
-  for (let i = 0; i < numInterbases; i++) {
-    if (interbaseTypes[i] !== INTERBASE_INSERTION) {
-      continue
-    }
-    const y = interbaseYs[i]
-    if (y !== row) {
-      continue
-    }
-    const pos = interbasePositions[i]
-    if (pos !== undefined) {
-      const len = interbaseLengths[i] ?? 0
-      const type = getInsertionType(len, pxPerBp)
-      if (type === 'small') {
-        const rectWidthPx = getInsertionRectWidthPx(len, pxPerBp) + 4
-        const rectHalfWidthBp = (rectWidthPx / 2) * bpPerPx
-        if (Math.abs(posOffset - pos) < rectHalfWidthBp) {
-          return {
-            type: 'insertion',
-            index: i,
-            position: regionStart + pos,
-            length: len,
-            sequence: interbaseSequences[i] || undefined,
-          }
-        }
-      }
-    }
+  // Small insertions (thin bars that don't overlap SNPs)
+  const smallInsHit = checkInsertionHit('small')
+  if (smallInsHit) {
+    return smallInsHit
   }
 
-  // Check gaps (deletions/skips - have start and end)
+  // Gaps (deletions/skips - have start and end)
   const { gapTypes } = blockData
   for (let i = 0; i < numGaps; i++) {
-    const y = gapYs[i]
-    if (y !== row) {
+    if (gapYs[i] !== row) {
       continue
     }
     const startPos = gapPositions[i * 2]
@@ -356,7 +360,6 @@ export function hitTestCigarItem(
       posOffset >= startPos &&
       posOffset <= endPos
     ) {
-      // gapTypes: 0 = deletion, 1 = skip
       const gapType = gapTypes[i]
       return {
         type: gapType === 1 ? 'skip' : 'deletion',
@@ -367,54 +370,10 @@ export function hitTestCigarItem(
     }
   }
 
-  // Check softclips
-  for (let i = 0; i < numInterbases; i++) {
-    if (interbaseTypes[i] !== INTERBASE_SOFTCLIP) {
-      continue
-    }
-    const y = interbaseYs[i]
-    if (y !== row) {
-      continue
-    }
-    const pos = interbasePositions[i]
-    const len = interbaseLengths[i]
-    if (
-      pos !== undefined &&
-      len !== undefined &&
-      Math.abs(posOffset - pos) < hitToleranceBp
-    ) {
-      return {
-        type: 'softclip',
-        index: i,
-        position: regionStart + pos,
-        length: len,
-      }
-    }
-  }
-
-  // Check hardclips
-  for (let i = 0; i < numInterbases; i++) {
-    if (interbaseTypes[i] !== INTERBASE_HARDCLIP) {
-      continue
-    }
-    const y = interbaseYs[i]
-    if (y !== row) {
-      continue
-    }
-    const pos = interbasePositions[i]
-    const len = interbaseLengths[i]
-    // Hardclips are rendered as markers at their position
-    if (pos !== undefined && Math.abs(posOffset - pos) < hitToleranceBp) {
-      return {
-        type: 'hardclip',
-        index: i,
-        position: regionStart + pos,
-        length: len,
-      }
-    }
-  }
-
-  return undefined
+  return (
+    checkClipHit(INTERBASE_SOFTCLIP, 'softclip') ??
+    checkClipHit(INTERBASE_HARDCLIP, 'hardclip')
+  )
 }
 
 const significantOffsetsCache = new WeakMap<Uint32Array, number[]>()

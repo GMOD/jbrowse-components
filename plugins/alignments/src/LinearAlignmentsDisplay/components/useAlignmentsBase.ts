@@ -297,28 +297,25 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       rangeY: model.currentRangeY,
       isChainMode,
     })
-    if (result.type === 'cigar') {
+    if (
+      result.type === 'cigar' ||
+      result.type === 'indicator' ||
+      result.type === 'feature'
+    ) {
       e.preventDefault()
       model.setContextMenuCoord([e.clientX, e.clientY])
-      model.setContextMenuCigarHit(result.hit)
-      model.setContextMenuIndicatorHit(undefined)
       model.setContextMenuRefName(resolved?.refName)
-      if (result.featureHit) {
+      model.setContextMenuCigarHit(
+        result.type === 'cigar' ? result.hit : undefined,
+      )
+      model.setContextMenuIndicatorHit(
+        result.type === 'indicator' ? result.hit : undefined,
+      )
+      if (result.type === 'cigar' && result.featureHit) {
         model.setContextMenuFeatureById(result.featureHit.id)
+      } else if (result.type === 'feature') {
+        model.setContextMenuFeatureById(result.hit.id)
       }
-    } else if (result.type === 'indicator') {
-      e.preventDefault()
-      model.setContextMenuCoord([e.clientX, e.clientY])
-      model.setContextMenuCigarHit(undefined)
-      model.setContextMenuIndicatorHit(result.hit)
-      model.setContextMenuRefName(resolved?.refName)
-    } else if (result.type === 'feature') {
-      e.preventDefault()
-      model.setContextMenuCoord([e.clientX, e.clientY])
-      model.setContextMenuCigarHit(undefined)
-      model.setContextMenuIndicatorHit(undefined)
-      model.setContextMenuRefName(resolved?.refName)
-      model.setContextMenuFeatureById(result.hit.id)
     }
   }
 
@@ -438,9 +435,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
     if (result.type === 'cigar') {
       const refName = result.resolved.refName
-      if (result.featureHit) {
-        model.selectFeatureById(result.featureHit.id)
-      }
       openCigarWidget(model, result.hit, refName)
       return
     }
@@ -521,8 +515,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       return
     }
 
-    let lastRpcDataMap: unknown = null
-    let lastArcsDataMap: unknown = null
+    let lastRpcDataMap: Map<number, PileupDataResult> | null = null
+    let lastArcsDataMap: Map<number, unknown> | null = null
 
     return autorun(() => {
       const rpcDataMap = model.rpcDataMap
