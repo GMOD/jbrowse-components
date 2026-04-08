@@ -3,6 +3,8 @@ import { fireEvent, render } from '@testing-library/react'
 
 import AssemblySelector from './AssemblySelector.tsx'
 
+import type { AbstractSessionModel } from '../util/index.ts'
+
 function makeSession(
   assemblyNames: string[],
   displayNames?: Record<string, string>,
@@ -12,7 +14,7 @@ function makeSession(
     assemblyManager: {
       getDisplayName: (name: string) => displayNames?.[name] ?? name,
     },
-  }
+  } as unknown as AbstractSessionModel
 }
 
 test('renders assembly names as menu items', async () => {

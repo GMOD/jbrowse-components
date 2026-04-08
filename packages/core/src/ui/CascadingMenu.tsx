@@ -66,7 +66,6 @@ function CascadingSubmenu({
         ref={setAnchorEl}
         data-testid={testId ? `cascading-submenu-${testId}` : undefined}
         onMouseOver={onOpen}
-        onFocus={onOpen}
         onClick={onOpen}
       >
         {Icon ? (

@@ -373,7 +373,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get assemblyDisplayNames() {
         const { assemblyManager } = getSession(self)
         return this.assemblyNames.map(
-          a => assemblyManager.get(a)?.displayName ?? a,
+          a => assemblyManager.getDisplayName(a),
         )
       },
       /**
