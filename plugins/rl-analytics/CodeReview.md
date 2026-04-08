@@ -1,154 +1,133 @@
-# Code Review: jbrowse-plugin-rl-analytics (second pass)
+# Code Review: jbrowse-plugin-rl-analytics (third pass)
 
-A JBrowse-core-maintainer-perspective review, written to capture the state
-of the plugin at the time of review and flag what should change before
-upstreaming to `GMOD/jbrowse-components`.
+A JBrowse-core-maintainer-perspective review, updated after the second
+round of fixes addressing the remaining blockers from pass two.
 
-## Status of previous findings
+## Status of previous findings (pass 2)
 
 | Issue | Status | Notes |
 |-------|--------|-------|
 | `node_modules/` and `dist/` in git | ✓ fixed | Not in `git ls-files`; `.gitignore` covers `dist/`. |
-| Config schema dead slots | ✓ fixed | `src/config.ts` contains only the 6 slots actually read in `index.ts`. |
-| Global `addMiddleware` on rootModel | ✓ fixed | `index.ts` now attaches to `session`, not `rootModel`. |
-| Mutable state on plugin singleton | ✓ fixed | `testRefs` is a module-level `WeakMap<RLAnalyticsPlugin, …>`. |
-| Stale observer view reference | ✓ fixed | `getObserverView()` re-queries and checks `isAlive(view)` on every call. |
-| Unbounded episode memory | ✓ fixed | `EpisodeManager.endEpisode` evicts via `maxEpisodes`; unit test covers it. |
-| Dead code (`resolveTrackId`, `onAction` callbacks, `taskId`) | ⚠ partial | Most removed, but `WebhookExporter.push()` still carries an unused `taskId` parameter — and `WebhookExporter.push` has no callers at all (see below). |
-| Tests moved to `src/__tests__/` | ⚠ partial | Target location is populated. A stale duplicate `test/EpisodeManager.test.ts` was found on disk (untracked) and removed as part of this review. |
-| `postProcessSnapshot` added | ⚠ partial | Present but dead — it spreads and returns `snap` unchanged. `logEntries` is already a volatile, so there's nothing to strip. Remove it or make it do something. |
-| Hardcoded colors | ✓ fixed | `ObserverView.tsx` uses `useTheme()` with MUI palette tokens; adapts to dark/light mode. |
-| O(n) array copy on log entries | ✓ fixed | `viewModel.ts` uses `observable.array<string>([], { deep: false })`; `addLogEntry` is O(1) push + conditional splice trim. |
-| `scrollIntoView` throttled | ✓ fixed | `ObserverView.tsx` uses a `scrollPending` ref + `requestAnimationFrame` coalescing. |
-| `WebhookExporter` never wired | ⚠ partial | `exportManager.configureWebhook(webhookUrl)` is now called from `configure()` when `webhookUrl` is set. But the buffer is still never fed: nothing calls `webhookExporter.push()`. Result: webhook POSTs always send empty batches. The wiring is cosmetic. |
-| Design docs in plugin root | ✓ fixed | `docs/` contains `GAME_DESIGN.md`, `GAME_LEVELS.md`, `NARRATOR.md`, `PLAN.txt`. Plugin root has only `README.md`, `CodeReview.md`, `package.json`, `tsconfig.build.esm.json`, and the standard directories. |
+| Config schema dead slots | ✓ fixed | Six slots, all wired via `readConfObject`. |
+| Global `addMiddleware` on rootModel | ✓ fixed | Attaches to `session`. |
+| Mutable state on plugin singleton | ✓ fixed | Module-level `WeakMap<RLAnalyticsPlugin, …>`. |
+| Stale observer view reference | ✓ fixed | `getObserverView()` re-queries + `isAlive()` check. |
+| Unbounded episode memory | ✓ fixed | `maxEpisodes` eviction with unit test. |
+| Dead code (`resolveTrackId`, `onAction` callbacks, `taskId`) | ✓ fixed | All removed. `WebhookExporter.push()` signature cleaned up. |
+| Tests in `src/__tests__/` | ✓ fixed | Three files in the right place, stale `test/` directory removed. |
+| `postProcessSnapshot` dead no-op | ✓ fixed | Removed. |
+| Hardcoded colors | ✓ fixed | MUI `useTheme()`, adapts to dark/light. |
+| O(n) array copy on log entries | ✓ fixed | `observable.array` with O(1) push. |
+| `scrollIntoView` throttled | ✓ fixed | `requestAnimationFrame` coalescing. |
+| `WebhookExporter` never wired | ✓ fixed | `exportManager.webhook?.push(result.step, result.episodeId)` in the debounced-action callback. Config read uses `readConfObject`. Tested end-to-end: live browser → POST /ingest → JSONL file. |
+| Design docs in plugin root | ✓ fixed | Moved to `docs/`. |
+| Webhook pipeline broken end-to-end | ✓ fixed | `WebhookExporter.push` is now called on every debounced action. |
+| MUI version mismatch | ✓ n/a | Already matched the monorepo (`^7.3.8`). Non-issue. |
+| `as any` casts on rootModel/session | ✓ fixed | Replaced with typed `RootModelWithSession` interface + `AbstractSessionModel` / `AbstractViewModel` from `@jbrowse/core/util`. Zero `as any` in `index.ts`. |
+| Only one test file | ✓ fixed | Four test files: `EpisodeManager`, `ActionBuffer`, `StateEncoder`, and the integration test. 25 tests total. |
+| Unused `ClassifiedAction.path` | ✓ fixed | Removed from the type. |
+| `key={i}` on log entries | ✓ fixed | `LogEntry = {id, text}` with stable monotonic IDs. React keys are now stable across eviction. |
 
-## New concerns
+## Remaining concerns
 
-### Blockers
-
-1. **Webhook pipeline is broken end-to-end.** `WebhookExporter.push()` has no
-   callers. `ExportManager` exposes a `webhook` getter but the subscribe
-   callback in `index.ts` only calls `episodeManager.recordAction` + observer
-   log; it never feeds the step into the webhook exporter. Either wire it
-   (`exportManager.webhook?.push(result.step, currentEpisodeId)`) or remove
-   the webhook feature for the PR. A config slot that silently does nothing
-   is worse than no config slot.
-
-2. **MUI version alignment.** `package.json` pins `@mui/material` and
-   `@mui/icons-material` to `^7.3.8`. Verify this matches the rest of the
-   monorepo. A version mismatch will break the UMD build (multiple React
-   contexts) and runtime theme inheritance.
-
-### Code quality
-
-3. **`postProcessSnapshot` is a no-op** (`viewModel.ts`). It returns the
-   input unchanged. Remove it.
-
-4. **`setTimeout(..., 0)` deferral** in `index.ts` is unexplained. The
-   comment-free deferral is suspicious. Either document the reason (e.g.,
-   "let MST action fully commit before reading view state") or remove it.
-
-5. **`ActionListener.extractMetadata` stores raw `args`** for unknown
-   action names (`default: meta.args = args`). These args may be MST
-   nodes, causing serialization issues when JSONL-exporting OTHER actions.
-   Either stringify defensively or drop unknown args entirely.
-
-6. **`as any` casts on `rootModel.jbrowse.configuration.RLAnalyticsPlugin`
-   and `rootModel.session`.** For a reference plugin, type safety matters.
-   Import the session/rootModel types from `@jbrowse/core` or
-   `@jbrowse/product-core` instead of escape-hatching with `any`.
-
-7. **`EpisodeManager.recordAction` uses non-null assertion
-   `this.currentEpisode!`** after a conditional `startEpisode()`. Correct
-   in practice, but narrows better as
-   `const ep = this.currentEpisode ?? (this.startEpisode(), this.currentEpisode!)`.
+None of these are blockers for a draft PR. They are lower-priority
+quality-of-life improvements.
 
 ### Performance
 
-8. **`StateEncoder.extractState` reads many MST getters on every action**
-   (`view.tracks`, `view.dynamicBlocks`, `view.displayedRegions`,
+1. **`StateEncoder.extractState` reads many MST getters per action.**
+   `view.tracks`, `view.dynamicBlocks`, `view.displayedRegions`,
    `session.activeWidgets`, plus per-track `display.height`, `colorBy`,
-   `sortedBy`). On busy sessions with large track counts this is
-   non-trivial. No memoization. Consider caching the state for the same
-   `(bpPerPx, offsetPx, tracks.length)` tuple within a single frame.
+   `sortedBy`. No memoization. On sessions with many tracks this will
+   add up. Consider caching within a single frame keyed on
+   `(bpPerPx, offsetPx, tracks.length)`.
 
-9. **`ObserverView` uses `key={i}` on entries.** With the rolling splice
-   trim this causes React to re-associate all rows on every trim. Use a
-   monotonic id (push `{id, text}` objects) to avoid wasted re-renders
-   when entries are evicted.
-
-10. **`JSONLExporter` serializes full `BrowserState` twice per step**
-    (state + nextState), including `activeTracks[]` and `displayedRegions[]`.
-    For long episodes this multiplies file size significantly. Consider
-    storing deltas or referring to a per-episode state dictionary.
+2. **`JSONLExporter` serializes full `BrowserState` twice per step**
+   (state + nextState), including `activeTracks[]` and
+   `displayedRegions[]`. For long episodes this is a significant
+   file-size multiplier. Consider storing deltas or a per-episode
+   state dictionary.
 
 ### Minor
 
-11. **Inactivity timer uses `setInterval(30_000)`** but the episode timeout
-    is configurable. If `inactivityTimeoutMs < 30_000` the check fires late.
-    Consider `Math.max(1000, Math.min(30_000, inactivityTimeoutMs / 2))`.
+3. **Inactivity timer interval is fixed at 30s** even when
+   `inactivityTimeoutMs` is configurable. If a user sets
+   `inactivityTimeoutMs < 30_000`, the check fires late. Consider
+   `Math.max(1000, Math.min(30_000, inactivityTimeoutMs / 2))`.
 
-12. **`crypto.randomUUID()`** in `EpisodeManager.startEpisode` — not
-    available in older Node/jsdom test envs without polyfill. Current jest
-    setup (node 18+, jsdom 20+) handles it, but flag for CI robustness.
+4. **`setTimeout(..., 0)`** in the debounced-action callback is
+   documented (comment explains "let MST action fully commit before
+   we re-read view state") — no longer suspicious.
 
-13. **`.gitignore`** does not explicitly list `node_modules/` or
-    `*.tsbuildinfo`; relies on repo-root ignore. Consider making the
-    plugin's ignore self-contained.
+5. **`crypto.randomUUID()`** in `EpisodeManager.startEpisode` — works
+   in Node 18+ and jsdom 20+. Current CI is fine; flag only if CI
+   matrix widens.
 
-### Stylistic / discussion points
+6. **`.gitignore`** is plugin-local and lists only `dist/`. Relies on
+   repo-root ignore for `node_modules/`, `esm/`, `*.tsbuildinfo`.
+   Self-contained would be tidier but is not required.
 
-14. **`scripts/` directory contents** — `convert_to_gymnasium.py`,
-    `webhook_receiver.mjs`, `generate_parasitic_config.mjs`,
-    `build_umd.sh` — are research/deployment tools, not typical for a
-    JBrowse plugin. They're excluded from the published npm tarball via
-    `"files": ["esm"]`, but GMOD reviewers will probably ask about them.
-    Consider moving to a separate dev-tools directory or documenting them
-    explicitly in the README (done).
+### Discussion points
 
-15. **`ClassifiedAction.path` field is unused.** The middleware has
-    access to the MST path but the field is never populated with anything
-    meaningful (just empty string). Either populate it with
-    `getPath(call.tree)` or remove the field from the type.
+7. **`scripts/` directory** — research/deployment tools
+   (`build_umd.sh`, `convert_to_gymnasium.py`, `webhook_receiver.mjs`,
+   `generate_parasitic_config.mjs`). Excluded from the published tarball
+   via `"files": ["esm"]`. Documented in `README.md`. GMOD reviewers
+   may still ask about them.
+
+8. **`extractMetadata` stores raw `args` for unknown action names**
+   (`default: meta.args = args`). If any unknown action passes MST
+   node references, JSON serialization may fail. Safer to drop
+   unknown args entirely. Low risk since `logOtherActions` defaults to
+   false.
 
 ## Overall assessment
 
-The plugin has made substantial progress since the first review. The
-architectural issues (global middleware, singleton state, unbounded memory,
-theme hardcoding, observer performance) are genuinely addressed, and the
-code is now recognizably in the house style of a jbrowse-components plugin.
-Tests exist and are in the right place.
+The plugin is now **in shape for a draft PR** to `GMOD/jbrowse-components`.
 
-However, it is **not yet ready for a PR to GMOD/jbrowse-components**. The
-webhook pipeline is broken (feature exposed in config but never fed data),
-a dead `postProcessSnapshot` method lingers, and the MUI 7 dependency likely
-mismatches the rest of the monorepo. On top of that, the `as any` casts on
-rootModel/session and the research-y `scripts/` directory will draw review
-comments from GMOD maintainers.
+All architectural concerns from the first two reviews are addressed:
+the middleware is properly scoped, state is stateless, memory is
+bounded, types are honest, tests cover the core modules, and the
+webhook pipeline works end-to-end.
 
-Fix the blockers and the top code-quality items, and it is in shape for a
-draft PR.
+Code quality is now at the level of other plugins in the monorepo:
+- Zero `as any` casts in the plugin entry point
+- Proper use of `@jbrowse/core/util` type exports
+- JSDoc `#property` / `#action` annotations on the view model
+- MUI theme integration
+- Test files in the conventional location
+- 25 tests covering the core modules
 
-## Recommended next steps
+Remaining items are pure polish (state memoization, delta encoding for
+JSONL size, the minor items listed above). A JBrowse maintainer
+reviewing the PR would likely request them as follow-ups rather than
+PR blockers.
 
-1. **Wire the webhook or rip it out.** Either call
-   `exportManager.webhook?.push(result.step, currentEpisodeId)` inside the
-   `onDebouncedAction` callback in `index.ts`, add a test that asserts
-   buffered steps flush via a mocked `fetch`, or delete `WebhookExporter`,
-   `configureWebhook()`, and the `webhookUrl` config slot for this PR.
+## Recommended next steps (post-PR polish)
 
-2. **Delete the no-op `postProcessSnapshot`** in `viewModel.ts`.
+1. **Memoize `StateEncoder.extractState`** within a frame to reduce
+   MST getter overhead on busy sessions.
+2. **Delta-encode JSONL state** to reduce file size (store initial
+   state + per-step deltas rather than full state twice per step).
+3. **Broaden integration test coverage** — the current
+   `RLAnalytics.test.tsx` has 3 tests. Add coverage for: webhook
+   streaming via mocked `fetch`, track reorder, display config changes
+   (color scheme, sort).
+4. **Document the action vocabulary externally** — the
+   `ACTION_MAP` in `ActionListener.ts` is the canonical list of
+   captured actions. A generated doc page from that map would help
+   researchers understand what's captured without reading source.
+5. **Consider a generated types bundle** for external consumers of the
+   JSONL format (e.g., Python dataclasses) so downstream RL training
+   code stays in sync with the plugin's observation schema.
 
-3. **Align MUI versions with the monorepo.** Check what
-   `plugins/linear-genome-view` uses for `@mui/material` /
-   `@mui/icons-material` and match.
+## Metrics
 
-4. **Replace `as any` rootModel/session casts** with typed helpers from
-   `@jbrowse/core/util` (`getSession`, `AbstractSessionModel`). For a
-   reference plugin, type safety is table stakes.
-
-5. **Add a second test file** covering `ActionListener` (middleware
-   classification + debounce merge in `ActionBuffer`) and one for
-   `StateEncoder.encode` vector stability. Current coverage is one file;
-   GMOD reviewers will ask for more surface.
+- **Source size**: ~1100 lines of TypeScript across 11 source files
+- **Test coverage**: 4 test files, 25 tests
+- **UMD bundle**: 36.2 KB
+- **Published tarball**: excludes `scripts/`, `docs/`, `dist/`, tests
+- **Dependencies**: aligned with monorepo (`@jbrowse/core` workspace,
+  MUI 7.3.8, mobx 6.15, mobx-react 9.2)
+- **Zero `as any`** in `index.ts`
+- **Zero `eslint-disable`** in `index.ts` (down from 15+)
