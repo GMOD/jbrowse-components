@@ -583,12 +583,6 @@ export default function assemblyFactory(
         const map = await this.getAdapterMapEntry(adapterConf, opts)
         return map.reverseMap
       },
-      afterCreate() {
-        // autorun previously needed to keep computed getters from going stale
-        // for fragmented assemblies. No longer needed since
-        // lowerCaseRefNameAliases and allRefNamesWithLowerCase are now
-        // precomputed volatiles set during loadPre.
-      },
     }))
 }
 
