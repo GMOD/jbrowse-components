@@ -4,10 +4,9 @@ import BaseResult, {
   RefSequenceResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
 import { getSession, measureText, useDebounce } from '@jbrowse/core/util'
-import { Autocomplete } from '@mui/material'
+import { Autocomplete, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import AutocompleteTextField from './AutocompleteTextField.tsx'
 import { getDeduplicatedResult, getFiltered } from './util.ts'
 
 import type { Option } from './util.ts'
@@ -48,7 +47,6 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
 
-  // this callback runs an async search. the typescript code claims that
   useEffect(() => {
     const isCurrent = { cancelled: false }
 
@@ -93,9 +91,11 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
           displayString: region.refName,
           matchedAttribute: 'refName',
         }),
-      })) || [],
+      })) ?? [],
     [regions],
   )
+
+  const { helperText, slotProps: tfSlotProps } = TextFieldProps
 
   // notes on implementation:
   // The selectOnFocus setting helps highlight the field when clicked
@@ -118,9 +118,12 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       value={inputBoxVal}
       loading={!loaded}
       inputValue={inputValue}
-      onInputChange={(_event, newInputValue) => {
+      onInputChange={(_event, newInputValue, reason) => {
         setInputValue(newInputValue)
         onChange?.(newInputValue)
+        if (reason === 'input') {
+          setCurrentSearch(newInputValue)
+        }
       }}
       loadingText="loading results"
       open={open}
@@ -155,13 +158,19 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       options={searchOptions?.length ? searchOptions : regionOptions}
       getOptionDisabled={option => option.group === 'limitOption'}
       filterOptions={(opts, { inputValue }) => getFiltered(opts, inputValue)}
-      renderInput={params => (
-        <AutocompleteTextField
-          params={params}
-          inputBoxVal={inputBoxVal}
-          TextFieldProps={TextFieldProps}
-          setCurrentSearch={setCurrentSearch}
-          setInputValue={setInputValue}
+      renderInput={({ slotProps: paramSlotProps, ...restParams }) => (
+        <TextField
+          onBlur={() => setInputValue(inputBoxVal)}
+          {...restParams}
+          {...TextFieldProps}
+          size="small"
+          helperText={helperText}
+          slotProps={{
+            ...paramSlotProps,
+            ...tfSlotProps,
+            input: { ...paramSlotProps?.input, ...tfSlotProps?.input },
+          }}
+          placeholder="Search for location"
         />
       )}
       getOptionLabel={opt =>
