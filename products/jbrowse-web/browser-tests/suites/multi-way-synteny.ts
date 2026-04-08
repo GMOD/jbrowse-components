@@ -1,4 +1,5 @@
 import {
+  delay,
   findByTestId,
   navigateWithSessionSpec,
   waitForDataLoaded,
@@ -55,6 +56,13 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
+        await page.waitForFunction(
+          () =>
+            document.querySelectorAll('[data-testid="synteny_canvas_done"]')
+              .length >= 2,
+          { timeout: 60000 },
+        )
+        await delay(2000)
         await pageSnapshot(page, 'multiway-synteny-3way-fullpage')
       },
     },
