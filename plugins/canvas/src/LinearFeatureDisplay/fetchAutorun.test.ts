@@ -49,6 +49,7 @@ function makeEmptyFeatureData(regionStart: number): FeatureDataResult {
 
 function createTestEnvironment() {
   console.warn = jest.fn()
+  console.error = jest.fn()
   const pluginManager = new PluginManager()
 
   const configSchema = configSchemaFactory(pluginManager)

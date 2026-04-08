@@ -588,6 +588,7 @@ describe('FetchVisibleRegions autorun', () => {
   })
 
   it('fetch error sets display error and stops retrying', async () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 
     const { display } = createDisplay()
@@ -604,6 +605,7 @@ describe('FetchVisibleRegions autorun', () => {
 
     jest.advanceTimersByTime(2000)
     expect(mockRpcCall.mock.calls.length).toBe(callCount)
+    spy.mockRestore()
   })
 
   it('autorun does not loop when isLoading transitions', async () => {
