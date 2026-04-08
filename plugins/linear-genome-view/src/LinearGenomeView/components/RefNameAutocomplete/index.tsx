@@ -11,7 +11,10 @@ import { getDeduplicatedResult, getFiltered } from './util.ts'
 
 import type { Option } from './util.ts'
 import type { LinearGenomeViewModel } from '../../model.ts'
-import type { TextFieldProps as TFP } from '@mui/material'
+import type {
+  AutocompleteRenderInputParams,
+  TextFieldProps as TFP,
+} from '@mui/material'
 
 const RefNameAutocomplete = observer(function RefNameAutocomplete({
   model,
@@ -158,7 +161,10 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       options={searchOptions?.length ? searchOptions : regionOptions}
       getOptionDisabled={option => option.group === 'limitOption'}
       filterOptions={(opts, { inputValue }) => getFiltered(opts, inputValue)}
-      renderInput={({ slotProps: paramSlotProps, ...restParams }) => (
+      renderInput={({
+        slotProps: paramSlotProps,
+        ...restParams
+      }: AutocompleteRenderInputParams) => (
         <TextField
           onBlur={() => setInputValue(inputBoxVal)}
           {...restParams}

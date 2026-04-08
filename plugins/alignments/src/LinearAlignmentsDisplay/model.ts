@@ -1043,11 +1043,9 @@ export default function stateModelFactory(
                 track: getContainingTrack(self),
               }),
             )
-            session.showWidget(featureWidget)
           }
           session.setSelection(feature)
         },
-
       }
     })
     .actions(self => ({

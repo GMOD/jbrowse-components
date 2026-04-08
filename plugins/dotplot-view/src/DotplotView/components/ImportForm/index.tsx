@@ -76,7 +76,11 @@ const DotplotImportForm = observer(function DotplotImportForm({
         <Typography style={{ textAlign: 'center' }}>
           Select assemblies for dotplot view
         </Typography>
-        <Grid container spacing={1} sx={{ justifyContent: 'center', alignItems: 'center' }}>
+        <Grid
+          container
+          spacing={1}
+          sx={{ justifyContent: 'center', alignItems: 'center' }}
+        >
           <AssemblySelector
             helperText="x-axis assembly"
             selected={assembly2}
