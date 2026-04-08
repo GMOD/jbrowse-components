@@ -84,15 +84,9 @@ function querySegsRange(prefix: string, minOrd: number, maxOrd: number) {
   return all.slice(startRecord, endRecord)
 }
 
-beforeAll(() => {
-  if (!fs.existsSync(BINARY)) {
-    throw new Error(
-      `Rust binary not found at ${BINARY}. Run: cargo build --release --manifest-path tools/gfa-to-tabix/Cargo.toml`,
-    )
-  }
-})
+const describeIfBinary = fs.existsSync(BINARY) ? describe : describe.skip
 
-describe('gfa-to-tabix converter', () => {
+describeIfBinary('gfa-to-tabix converter', () => {
   it('creates pos.bed.gz and segments.bin with indexes', () => {
     withTmpDir(dir => {
       const prefix = path.join(dir, 'test')

@@ -1,13 +1,18 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 // @ts-expect-error
 import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
 import HierarchicalTrackSelector from './HierarchicalTrackSelector.tsx'
-import { findNonSparseKeys, getRootKeys } from '../facetedUtil.ts'
-import { getRowStr } from './faceted/util.ts'
 import conf from '../../../../../test_data/test_order/config.json' with { type: 'json' }
+import { getRowStr } from '../../FacetedSelector/components/util.ts'
+import { facetedStateTreeF } from '../../FacetedSelector/facetedModel.ts'
+import {
+  findNonSparseKeys,
+  getRootKeys,
+} from '../../FacetedSelector/facetedUtil.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
 
@@ -742,7 +747,11 @@ test('faceted model filter text', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const { faceted } = model
+  const faceted = facetedStateTreeF().create({})
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+  )
 
   // initially empty filter
   expect(faceted.filterText).toBe('')
@@ -770,7 +779,11 @@ test('faceted model column filters', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const { faceted } = model
+  const faceted = facetedStateTreeF().create({})
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+  )
 
   // initially no filters
   expect(faceted.filters.size).toBe(0)
@@ -806,7 +819,11 @@ test('faceted model toggle options', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const { faceted } = model
+  const faceted = facetedStateTreeF().create({})
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+  )
 
   // test showSparse toggle
   const initialShowSparse = faceted.showSparse
@@ -843,7 +860,11 @@ test('faceted model panel width', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const { faceted } = model
+  const faceted = facetedStateTreeF().create({})
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+  )
 
   // set panel width
   faceted.setPanelWidth(500)
@@ -867,7 +888,11 @@ test('faceted model rows contain expected data', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const { faceted } = model
+  const faceted = facetedStateTreeF().create({})
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+  )
 
   // rows should have expected structure
   expect(faceted.rows.length).toBeGreaterThan(0)
@@ -893,7 +918,11 @@ test('faceted model fields includes expected columns', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const { faceted } = model
+  const faceted = facetedStateTreeF().create({})
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+  )
 
   // fields should always include 'name'
   expect(faceted.fields).toContain('name')
@@ -918,7 +947,11 @@ test('faceted model multiple column filters', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const { faceted } = model
+  const faceted = facetedStateTreeF().create({})
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+  )
 
   const initialCount = faceted.filteredRows.length
 
@@ -954,7 +987,11 @@ test('faceted model filter with multiple values', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const { faceted } = model
+  const faceted = facetedStateTreeF().create({})
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+  )
 
   // filter with multiple allowed values (OR logic within column)
   faceted.setFilter('name', ['fooC', 'barC'])
@@ -979,7 +1016,11 @@ test('faceted model column visibility', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const { faceted } = model
+  const faceted = facetedStateTreeF().create({})
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+  )
 
   // setVisible sets column visibility
   faceted.setVisible({ name: true, adapter: false })
@@ -1006,7 +1047,11 @@ test('faceted and hierarchical filter text are independent', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const { faceted } = model
+  const faceted = facetedStateTreeF().create({})
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+  )
 
   // set hierarchical filter
   model.setFilterText('foo')
@@ -1038,7 +1083,11 @@ test('faceted filter drilling down behavior', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const { faceted } = model
+  const faceted = facetedStateTreeF().create({})
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+  )
 
   // get initial state
   const allRows = faceted.filteredRows
@@ -1089,7 +1138,11 @@ test('faceted filter tracks unique values per column', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const { faceted } = model
+  const faceted = facetedStateTreeF().create({})
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+  )
 
   // get unique categories from rows
   const categories = [
@@ -1187,7 +1240,11 @@ test('faceted model exposes metadata keys from tracks', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const { faceted } = model
+  const faceted = facetedStateTreeF().create({})
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+  )
 
   expect(faceted.metadataKeys).toContain('tissue')
   expect(faceted.metadataKeys).toContain('species')
@@ -1207,7 +1264,11 @@ test('faceted model search matches non-string metadata', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const { faceted } = model
+  const faceted = facetedStateTreeF().create({})
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+  )
 
   // search for numeric metadata value
   faceted.setFilterText('2020')
@@ -1233,7 +1294,11 @@ test('faceted model filters on metadata columns', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const { faceted } = model
+  const faceted = facetedStateTreeF().create({})
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+  )
 
   const initialCount = faceted.filteredRows.length
 
@@ -1259,12 +1324,118 @@ test('faceted model fields include metadata columns with prefix', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const { faceted } = model
+  const faceted = facetedStateTreeF().create({})
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+  )
 
   faceted.setShowSparse(true)
   const metadataFields = faceted.fields.filter(f => f.startsWith('metadata.'))
   expect(metadataFields).toContain('metadata.tissue')
   expect(metadataFields).toContain('metadata.species')
+})
+
+// -------------------------- category-based folder tests -
+
+test('category-based folder hides children when toggled', async () => {
+  const session = addTestDataWithDeepCategories(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  const { findAllByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
+    </ThemeProvider>,
+  )
+
+  // all tracks should be visible initially
+  const trackLabels = await findAllByTestId(/htsTrackLabel/)
+  const names = trackLabels.map(e => e.textContent)
+  expect(names).toContain('H3K4me3')
+  expect(names).toContain('H3K27ac')
+  expect(names).toContain('Regular Track')
+})
+
+test('category-based folder hierarchy model groups correctly', () => {
+  const session = addTestDataWithDeepCategories(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  const tracksGroup = model.hierarchy.children[0]!
+  const epigenomicsCategory = tracksGroup.children.find(
+    c => c.name === 'Epigenomics',
+  )!
+  expect(epigenomicsCategory).toBeDefined()
+
+  const histoneCategory = epigenomicsCategory.children.find(
+    c => c.name === 'Histone Marks',
+  )
+  expect(histoneCategory).toBeDefined()
+  expect(histoneCategory!.type).toBe('category')
+  expect(histoneCategory!.children.length).toBe(2)
+})
+
+test('toggleFolderCategory collapses children in flattenedItems', () => {
+  const session = addTestDataWithDeepCategories(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  const tracksGroup = model.hierarchy.children[0]!
+  const epigenomicsCategory = tracksGroup.children.find(
+    c => c.name === 'Epigenomics',
+  )!
+  const histoneCategory = epigenomicsCategory.children.find(
+    c => c.name === 'Histone Marks',
+  )!
+
+  // before toggling, children are visible in flattened items
+  const beforeNames = model.flattenedItems
+    .filter(i => i.type === 'track')
+    .map(i => i.name)
+  expect(beforeNames).toContain('H3K4me3')
+  expect(beforeNames).toContain('H3K27ac')
+
+  // toggle folder category
+  model.toggleFolderCategory(histoneCategory.id)
+
+  // after toggling, children should be hidden
+  const afterNames = model.flattenedItems
+    .filter(i => i.type === 'track')
+    .map(i => i.name)
+  expect(afterNames).not.toContain('H3K4me3')
+  expect(afterNames).not.toContain('H3K27ac')
+  expect(afterNames).toContain('Regular Track')
 })
 
 // -------------------------- test utils -
@@ -1401,6 +1572,56 @@ function addTestDataWithCategories(
     assemblyNames: ['volMyt1'],
     type: 'FeatureTrack',
     category: ['Variants'],
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  return session
+}
+
+function addTestDataWithDeepCategories(
+  session: ReturnType<typeof createTestSession>,
+) {
+  session.addAssemblyConf({
+    name: 'volMyt1',
+    sequence: {
+      trackId: 'sequenceConfigId',
+      type: 'ReferenceSequenceTrack',
+      adapter: {
+        type: 'FromConfigSequenceAdapter',
+        features: [
+          {
+            refName: 'ctgA',
+            uniqueId: 'firstId',
+            start: 0,
+            end: 10,
+            seq: 'cattgttgcg',
+          },
+        ],
+      },
+    },
+  })
+
+  session.addTrackConf({
+    trackId: 'h3k4me3',
+    name: 'H3K4me3',
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    category: ['Epigenomics', 'Histone Marks'],
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  session.addTrackConf({
+    trackId: 'h3k27ac',
+    name: 'H3K27ac',
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    category: ['Epigenomics', 'Histone Marks'],
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  session.addTrackConf({
+    trackId: 'regularTrack',
+    name: 'Regular Track',
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    category: ['Epigenomics'],
     adapter: { type: 'FromConfigAdapter', features: [] },
   })
   return session

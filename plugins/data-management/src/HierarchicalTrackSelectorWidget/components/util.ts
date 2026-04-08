@@ -1,12 +1,15 @@
+export { getAllTrackNodes } from '../util.ts'
+
 import type { TreeNode } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export function getAllChildren(subtree?: TreeNode): AnyConfigurationModel[] {
-  return subtree?.type === 'category'
-    ? subtree.children.flatMap(t =>
-        t.type === 'category' ? getAllChildren(t) : t.conf,
-      )
-    : []
+  if (subtree?.type === 'category') {
+    return subtree.children.flatMap(t =>
+      t.type === 'category' ? getAllChildren(t) : t.conf,
+    )
+  }
+  return []
 }
 
 export function isUnsupported(name = '') {

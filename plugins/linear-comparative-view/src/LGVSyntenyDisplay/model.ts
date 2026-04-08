@@ -57,30 +57,37 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       showCoverage: false,
       ...snap,
     }))
+    .views(() => ({
+      get featureWidgetType() {
+        return {
+          type: 'SyntenyFeatureWidget',
+          id: 'syntenyFeature',
+        }
+      },
+    }))
     .actions(self => ({
       /**
        * #action
        */
       selectFeature(feature: Feature) {
         const session = getSession(self)
-        if (isSessionModelWithWidgets(session)) {
-          const r2 = getContainingView(self)
-          let r3 = r2
-          try {
-            r3 = getContainingView(r3)
-          } catch (e) {}
-          const featureWidget = session.addWidget(
-            'SyntenyFeatureWidget',
-            'syntenyFeature',
-            {
-              featureData: feature.toJSON(),
-              view: r3,
-              track: getContainingTrack(self),
-            },
-          )
-          session.showWidget(featureWidget)
-        }
         session.setSelection(feature)
+        if (isSessionModelWithWidgets(session)) {
+          const { type, id } = self.featureWidgetType
+          let view = getContainingView(self)
+          try {
+            view = getContainingView(view)
+          } catch (_e) {
+            /* already at top-level */
+          }
+          session.showWidget(
+            session.addWidget(type, id, {
+              featureData: feature.toJSON(),
+              view,
+              track: getContainingTrack(self),
+            }),
+          )
+        }
       },
       afterCreate() {
         if (!self.colorBySetting && self.colorBy.type === 'normal') {

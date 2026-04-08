@@ -6,13 +6,11 @@ import { observer } from 'mobx-react'
 import FacetFilters from './FacetFilters.tsx'
 import FacetedDataGrid from './FacetedDataGrid.tsx'
 import FacetedHeader from './FacetedHeader.tsx'
-import TrackSelectorTrackMenu from '../tree/TrackSelectorTrackMenu.tsx'
+import TrackSelectorTrackMenu from '../../HierarchicalTrackSelectorWidget/components/tree/TrackSelectorTrackMenu.tsx'
 
-import type { FacetedRow } from '../../facetedModel.ts'
-import type { HierarchicalTrackSelectorModel } from '../../model.ts'
-import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
-
-type T = GridColDef<FacetedRow>
+import type { FacetedColumn } from './FacetedDataGrid.tsx'
+import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
+import type { FacetedModel } from '../facetedModel.ts'
 
 const useStyles = makeStyles()({
   cell: {
@@ -82,11 +80,13 @@ function HighlightCell({
 
 const FacetedSelector = observer(function FacetedSelector({
   model,
+  faceted,
 }: {
   model: HierarchicalTrackSelectorModel
+  faceted: FacetedModel
 }) {
   const { classes } = useStyles()
-  const { selection, shownTrackIds, faceted } = model
+  const { selection, shownTrackIds } = model
   const {
     rows,
     panelWidth,
@@ -98,52 +98,62 @@ const FacetedSelector = observer(function FacetedSelector({
 
   const nonMetadataFieldSet = new Set(['name', ...filteredNonMetadataKeys])
 
-  const columns: T[] = [
+  const columns: FacetedColumn[] = [
     {
-      field: 'name',
-      hideable: false,
-      renderCell: params => {
-        const { value, row } = params
-        const { id, conf } = row
-        return (
-          <div className={classes.cell}>
-            <HighlightText text={value as string} query={filterText} />
-            <TrackSelectorTrackMenu id={id} conf={conf} model={model} />
-          </div>
-        )
-      },
+      id: 'name',
+      header: 'name',
+      cell: row => (
+        <div className={classes.cell}>
+          <HighlightText text={row.name} query={filterText} />
+          <TrackSelectorTrackMenu id={row.id} conf={row.conf} model={model} />
+        </div>
+      ),
     },
-    ...filteredNonMetadataKeys.map(e => {
-      return {
-        field: e,
-        renderCell: (params: GridRenderCellParams<FacetedRow>) => (
-          <HighlightCell
-            value={params.value}
-            filterText={filterText}
-            className={classes.cell}
-          />
-        ),
-      } satisfies T
-    }),
-    ...filteredMetadataKeys.map(e => {
-      return {
-        field: `metadata.${e}`,
-        headerName: nonMetadataFieldSet.has(e) ? `${e} (from metadata)` : e,
-        valueGetter: (_, row) => `${row.metadata[e] ?? ''}`,
-        renderCell: (params: GridRenderCellParams<FacetedRow>) => (
-          <HighlightCell
-            value={params.value}
-            filterText={filterText}
-            className={classes.cell}
-          />
-        ),
-      } satisfies T
-    }),
+    ...filteredNonMetadataKeys.map(
+      e =>
+        ({
+          id: e,
+          header: e,
+          cell: row => {
+            const val =
+              e === 'category'
+                ? row.category
+                : e === 'adapter'
+                  ? row.adapter
+                  : e === 'description'
+                    ? row.description
+                    : ''
+            return (
+              <HighlightCell
+                value={`${val ?? ''}`}
+                filterText={filterText}
+                className={classes.cell}
+              />
+            )
+          },
+        }) satisfies FacetedColumn,
+    ),
+    ...filteredMetadataKeys.map(
+      e =>
+        ({
+          id: `metadata.${e}`,
+          header: nonMetadataFieldSet.has(e) ? `${e} (from metadata)` : e,
+          cell: row => (
+            <HighlightCell
+              value={`${row.metadata[e] ?? ''}`}
+              filterText={filterText}
+              className={classes.cell}
+            />
+          ),
+        }) satisfies FacetedColumn,
+    ),
   ]
+
+  const facetColumns = columns.map(col => ({ field: col.id }))
 
   return (
     <>
-      <FacetedHeader model={model} />
+      <FacetedHeader model={model} faceted={faceted} />
       <div
         style={{
           display: 'flex',
@@ -160,6 +170,7 @@ const FacetedSelector = observer(function FacetedSelector({
         >
           <FacetedDataGrid
             model={model}
+            faceted={faceted}
             columns={columns}
             shownTrackIds={shownTrackIds}
             selection={selection}
@@ -174,7 +185,11 @@ const FacetedSelector = observer(function FacetedSelector({
               className={classes.resizeHandle}
             />
             <div style={{ width: panelWidth, overflow: 'auto' }}>
-              <FacetFilters model={model} rows={rows} columns={columns} />
+              <FacetFilters
+                faceted={faceted}
+                rows={rows}
+                columns={facetColumns}
+              />
             </div>
           </>
         ) : null}

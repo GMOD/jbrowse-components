@@ -14,7 +14,7 @@ const ServerSideRenderedBlockContent = observer(
   }) {
     if (model.error) {
       return <BlockError error={model.error} />
-    } else if (!model.numFeats) {
+    } else if (model.isLoading) {
       return <LoadingMessage />
     } else {
       return <LinearSyntenyRendering model={model} />

@@ -175,6 +175,14 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       tabVisibilityVersion: 0,
       canvasDrawn: false,
     }))
+    .views(() => ({
+      get featureWidgetType() {
+        return {
+          type: 'SyntenyFeatureWidget',
+          id: 'syntenyFeature',
+        }
+      },
+    }))
     .views(self => ({
       get prefersOffset() {
         return true
@@ -318,19 +326,17 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
       selectFeature(feature: Feature) {
         const session = getSession(self)
+        session.setSelection(feature)
         if (isSessionModelWithWidgets(session)) {
-          const featureWidget = session.addWidget(
-            'SyntenyFeatureWidget',
-            'syntenyFeature',
-            {
+          const { type, id } = self.featureWidgetType
+          session.showWidget(
+            session.addWidget(type, id, {
               featureData: feature.toJSON(),
               view: getContainingView(self),
               track: getContainingTrack(self),
-            },
+            }),
           )
-          session.showWidget(featureWidget)
         }
-        session.setSelection(feature)
       },
     }))
     .actions(self => {

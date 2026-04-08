@@ -5,14 +5,13 @@ import Check from '@mui/icons-material/Check'
 import Close from '@mui/icons-material/Close'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { Link, Tooltip } from '@mui/material'
-import { createColumnHelper } from '@tanstack/react-table'
 
 import HighlightedText from './HighlightedText.tsx'
 import StarIcon from '../StarIcon.tsx'
 
 import type { LaunchCallback } from '../types.ts'
 
-interface Entry {
+export interface Entry {
   suppressed: boolean
   jbrowseConfig: string
   jbrowseMinimalConfig?: string
@@ -33,6 +32,13 @@ interface Entry {
   favorite: boolean
 }
 
+export interface GenomeColumn {
+  id: keyof Entry
+  header: string
+  cell?: (row: Entry) => React.ReactNode
+  sortFn?: (a: Entry, b: Entry) => number
+}
+
 export function getColumnDefinitions({
   typeOption,
   favs,
@@ -44,51 +50,46 @@ export function getColumnDefinitions({
 }: {
   typeOption: string
   favs: Set<string>
-  toggleFavorite: (row: any) => void
+  toggleFavorite: (row: Entry) => void
   launch: LaunchCallback
   onClose: () => void
   searchQuery: string
   showAllColumns: boolean
-}) {
-  const columnHelper = createColumnHelper<Entry>()
+}): GenomeColumn[] {
+  const favoriteColumn: GenomeColumn = {
+    id: 'favorite',
+    header: 'Favorite',
+    sortFn: (a, b) => {
+      const aIsFav = favs.has(a.id)
+      const bIsFav = favs.has(b.id)
+      return aIsFav === bIsFav ? 0 : aIsFav ? -1 : 1
+    },
+    cell: row => {
+      const isFavorite = favs.has(row.id)
+      return (
+        <StarIcon
+          isFavorite={isFavorite}
+          onClick={() => {
+            toggleFavorite(row)
+          }}
+        />
+      )
+    },
+  }
 
   if (typeOption === 'ucsc') {
     return [
-      columnHelper.accessor('favorite', {
-        header: 'Favorite',
-        sortingFn: (a, b) => {
-          const aIsFav = favs.has(a.original.id)
-          const bIsFav = favs.has(b.original.id)
-          return aIsFav === bIsFav ? 0 : aIsFav ? -1 : 1
-        },
-        cell: info => {
-          const row = info.row.original
-          const isFavorite = favs.has(row.id)
-          return (
-            <StarIcon
-              isFavorite={isFavorite}
-              onClick={() => {
-                toggleFavorite(row)
-              }}
-            />
-          )
-        },
-      }),
-      columnHelper.accessor('name', {
+      favoriteColumn,
+      {
+        id: 'name',
         header: 'Name',
-        cell: info => {
-          const row = info.row.original
+        cell: row => {
           const isFavorite = favs.has(row.id)
           const websiteUrl = `https://genomes.jbrowse.org/ucsc/${row.id}/`
 
           const handleLaunch = (event: React.MouseEvent) => {
             event.preventDefault()
-            launch([
-              {
-                jbrowseConfig: row.jbrowseConfig,
-                shortName: row.id,
-              },
-            ])
+            launch([{ jbrowseConfig: row.jbrowseConfig, shortName: row.id }])
             onClose()
           }
 
@@ -106,11 +107,7 @@ export function getColumnDefinitions({
           }
           return (
             <div>
-              <HighlightedText
-                text={info.getValue() || ''}
-                query={searchQuery}
-              />{' '}
-              (
+              <HighlightedText text={row.name || ''} query={searchQuery} /> (
               <Link href="#" onClick={handleLaunch}>
                 launch
               </Link>
@@ -152,52 +149,39 @@ export function getColumnDefinitions({
             </div>
           )
         },
-      }),
-      columnHelper.accessor('scientificName', {
+      },
+      {
+        id: 'scientificName',
         header: 'Scientific Name',
-        cell: info => (
-          <HighlightedText text={info.getValue() || ''} query={searchQuery} />
+        cell: row => (
+          <HighlightedText
+            text={row.scientificName || ''}
+            query={searchQuery}
+          />
         ),
-      }),
-      columnHelper.accessor('organism', {
+      },
+      {
+        id: 'organism',
         header: 'Organism',
-        cell: info => (
-          <HighlightedText text={info.getValue() || ''} query={searchQuery} />
+        cell: row => (
+          <HighlightedText text={row.organism || ''} query={searchQuery} />
         ),
-      }),
-      columnHelper.accessor('description', {
+      },
+      {
+        id: 'description',
         header: 'Description',
-        cell: info => (
-          <HighlightedText text={info.getValue() || ''} query={searchQuery} />
+        cell: row => (
+          <HighlightedText text={row.description || ''} query={searchQuery} />
         ),
-      }),
+      },
     ]
   } else {
-    const baseColumns = [
-      columnHelper.accessor('favorite', {
-        header: 'Favorite',
-        sortingFn: (a, b) => {
-          const aIsFav = favs.has(a.original.id)
-          const bIsFav = favs.has(b.original.id)
-          return aIsFav === bIsFav ? 0 : aIsFav ? -1 : 1
-        },
-        cell: info => {
-          const row = info.row.original
-          const isFavorite = favs.has(row.id)
-          return (
-            <StarIcon
-              isFavorite={isFavorite}
-              onClick={() => {
-                toggleFavorite(row)
-              }}
-            />
-          )
-        },
-      }),
-      columnHelper.accessor('commonName', {
+    const baseColumns: GenomeColumn[] = [
+      favoriteColumn,
+      {
+        id: 'commonName',
         header: 'Common Name',
-        cell: info => {
-          const row = info.row.original
+        cell: row => {
           const isFavorite = favs.has(row.id)
           const websiteUrl = `https://genomes.jbrowse.org/accession/${row.accession}/`
 
@@ -228,7 +212,7 @@ export function getColumnDefinitions({
           return (
             <div>
               <HighlightedText
-                text={info.getValue() || ''}
+                text={row.commonName || ''}
                 query={searchQuery}
               />{' '}
               (
@@ -236,7 +220,7 @@ export function getColumnDefinitions({
                 launch
               </Link>
               )
-              {row.jbrowseMinimalConfig && (
+              {row.jbrowseMinimalConfig ? (
                 <>
                   {' '}
                   (
@@ -245,7 +229,7 @@ export function getColumnDefinitions({
                   </Link>
                   )
                 </>
-              )}
+              ) : null}
               {row.ncbiRefSeqCategory === 'reference genome' ? (
                 <Tooltip title="NCBI designated reference">
                   <Check style={{ color: 'green' }} />
@@ -291,47 +275,49 @@ export function getColumnDefinitions({
             </div>
           )
         },
-      }),
-
-      columnHelper.accessor('assemblyStatus', {
+      },
+      {
+        id: 'assemblyStatus',
         header: 'Assembly Status',
-      }),
-      columnHelper.accessor('seqReleaseDate', {
+      },
+      {
+        id: 'seqReleaseDate',
         header: 'Release Date',
-        cell: info => {
-          const date = info.getValue()
+        cell: row => {
+          const date = row.seqReleaseDate
           if (!date) {
             return ''
           }
-          // Parse the date and format it to show only the date part (YYYY-MM-DD)
           const dateObj = new Date(date)
           return dateObj.toISOString().split('T')[0]
         },
-      }),
-      columnHelper.accessor('scientificName', {
+      },
+      {
+        id: 'scientificName',
         header: 'Scientific Name',
-        cell: info => (
-          <HighlightedText text={info.getValue() || ''} query={searchQuery} />
+        cell: row => (
+          <HighlightedText
+            text={row.scientificName || ''}
+            query={searchQuery}
+          />
         ),
-      }),
-      columnHelper.accessor('ncbiAssemblyName', {
+      },
+      {
+        id: 'ncbiAssemblyName',
         header: 'NCBI Assembly Name',
-        cell: info => (
-          <HighlightedText text={info.getValue() || ''} query={searchQuery} />
+        cell: row => (
+          <HighlightedText
+            text={row.ncbiAssemblyName || ''}
+            query={searchQuery}
+          />
         ),
-      }),
+      },
     ]
 
-    const extraColumns = [
-      columnHelper.accessor('accession', {
-        header: 'Accession',
-      }),
-      columnHelper.accessor('taxonId', {
-        header: 'Taxonomy ID',
-      }),
-      columnHelper.accessor('submitterOrg', {
-        header: 'Submitter',
-      }),
+    const extraColumns: GenomeColumn[] = [
+      { id: 'accession', header: 'Accession' },
+      { id: 'taxonId', header: 'Taxonomy ID' },
+      { id: 'submitterOrg', header: 'Submitter' },
     ]
 
     return showAllColumns ? [...baseColumns, ...extraColumns] : baseColumns

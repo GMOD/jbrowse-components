@@ -61,7 +61,7 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
           imageRendering: 'auto',
         }}
       />
-      {!model.features ? (
+      {model.isLoading ? (
         <div
           style={{
             position: 'absolute',

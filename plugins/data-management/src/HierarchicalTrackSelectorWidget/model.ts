@@ -10,16 +10,18 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun, observable } from 'mobx'
 
-import { facetedStateTreeF } from './facetedModel.ts'
 import { filterTracks } from './filterTracks.ts'
 import { generateHierarchy } from './generateHierarchy.ts'
-import { findSubCategories, findTopLevelCategories } from './util.ts'
+import {
+  findSubCategories,
+  findTopLevelCategories,
+  getAllTrackNodes,
+} from './util.ts'
 
 import type { TreeNode } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { GridRowId } from '@mui/x-data-grid'
 
 type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined
 
@@ -43,8 +45,13 @@ function keyConfigPostFix() {
     : 'empty'
 }
 
-export function getItemHeight(item: TreeNode) {
-  return item.type === 'category' ? categoryItemHeight : defaultItemHeight
+export function getItemHeight(item: TreeNode, folderCategories?: Set<string>) {
+  if (item.type === 'category') {
+    return folderCategories?.has(item.id)
+      ? defaultItemHeight
+      : categoryItemHeight
+  }
+  return defaultItemHeight
 }
 
 function recentlyUsedK(assemblyNames: string[]) {
@@ -57,6 +64,15 @@ function recentlyUsedK(assemblyNames: string[]) {
 // released
 function favoritesK() {
   return `favoriteTracks-${keyConfigPostFix()}}`
+}
+
+function folderCategoriesK(assemblyNames: string[], viewType: string) {
+  return [
+    'folderCategories',
+    keyConfigPostFix(),
+    assemblyNames.join(','),
+    viewType,
+  ].join('-')
 }
 
 function collapsedK(assemblyNames: string[], viewType: string) {
@@ -112,10 +128,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
-      /**
-       * #property
-       */
-      faceted: types.optional(facetedStateTreeF(), {}),
     })
     .volatile(() => ({
       /**
@@ -125,7 +137,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      recentlyUsed: [] as GridRowId[],
+      recentlyUsed: [] as string[],
       /**
        * #volatile
        */
@@ -148,6 +160,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #volatile
        */
       collapsed: observable.map<string, boolean>(),
+      /**
+       * #volatile
+       */
+      folderCategories: observable.set<string>(),
       /**
        * #volatile
        */
@@ -284,7 +300,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      addToRecentlyUsed(id: GridRowId) {
+      addToRecentlyUsed(id: string) {
         if (!self.recentlyUsed.includes(id)) {
           self.recentlyUsedCounter = Math.min(
             self.recentlyUsedCounter + 1,
@@ -331,6 +347,22 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       setCollapsedCategories(str: [string, boolean][]) {
         self.collapsed.replace(str)
+      },
+      /**
+       * #action
+       */
+      toggleFolderCategory(categoryId: string) {
+        if (self.folderCategories.has(categoryId)) {
+          self.folderCategories.delete(categoryId)
+        } else {
+          self.folderCategories.add(categoryId)
+        }
+      },
+      /**
+       * #action
+       */
+      setFolderCategories(ids: string[]) {
+        self.folderCategories.replace(ids)
       },
       /**
        * #action
@@ -501,10 +533,32 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get flattenedItems() {
-        const flatten = (items: TreeNode[], result = [] as TreeNode[]) => {
+        const { folderCategories } = self
+        const sortedChildren = (items: TreeNode[]) => {
+          const tracks = [] as TreeNode[]
+          const folders = [] as TreeNode[]
+          const categories = [] as TreeNode[]
           for (const item of items) {
+            if (item.type === 'track') {
+              tracks.push(item)
+            } else if (folderCategories.has(item.id)) {
+              folders.push(item)
+            } else {
+              categories.push(item)
+            }
+          }
+          return [...tracks, ...folders, ...categories]
+        }
+        const flatten = (items: TreeNode[], result = [] as TreeNode[]) => {
+          for (const item of sortedChildren(items)) {
             result.push(item)
-            if (item.children.length > 0 && !self.collapsed.get(item.id)) {
+            const isFolderCategory =
+              item.type === 'category' && folderCategories.has(item.id)
+            if (
+              item.children.length > 0 &&
+              !self.collapsed.get(item.id) &&
+              !isFolderCategory
+            ) {
               flatten(item.children, result)
             }
           }
@@ -517,10 +571,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const items = this.flattenedItems
         const offsets: number[] = []
         let cumulativeHeight = 0
+        const fc = new Set(self.folderCategories)
 
         for (let i = 0, l = items.length; i < l; i++) {
           offsets.push(cumulativeHeight)
-          cumulativeHeight += getItemHeight(items[i]!)
+          cumulativeHeight += getItemHeight(items[i]!, fc)
         }
         return { cumulativeHeight, offsets }
       },
@@ -574,6 +629,21 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           totalHeight: cumulativeHeight,
           itemOffsets: offsets,
         }
+      },
+      get folderCategoryStats() {
+        const stats = new Map<string, { active: number; total: number }>()
+        const { shownTrackIds } = self
+        for (const item of self.flattenedItems) {
+          if (item.type === 'category' && self.folderCategories.has(item.id)) {
+            const trackNodes = getAllTrackNodes(item)
+            stats.set(item.id, {
+              active: trackNodes.filter(n => shownTrackIds.has(n.trackId))
+                .length,
+              total: trackNodes.length,
+            })
+          }
+        }
+        return stats
       },
     }))
     .actions(self => ({
@@ -644,6 +714,21 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                 } else {
                   self.setCollapsedCategories(lc)
                 }
+
+                const stc = localStorageGetJSON<string[] | undefined>(
+                  folderCategoriesK(assemblyNames, view.type),
+                  undefined,
+                )
+                if (stc) {
+                  self.setFolderCategories(stc)
+                } else {
+                  for (const elt of getConf(session, [
+                    'hierarchical',
+                    'defaultFolderCategories',
+                  ])) {
+                    self.toggleFolderCategory(`Tracks-${elt}`)
+                  }
+                }
               }
             },
             { name: 'TrackSelectorInit' },
@@ -661,6 +746,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                 recentlyUsed,
                 assemblyNames,
                 collapsed,
+                folderCategories,
                 view,
               } = self
               localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
@@ -671,6 +757,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                 localStorageSetJSON(
                   collapsedK(assemblyNames, view.type),
                   collapsed,
+                )
+                localStorageSetJSON(
+                  folderCategoriesK(assemblyNames, view.type),
+                  [...folderCategories],
                 )
               }
             },

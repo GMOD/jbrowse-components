@@ -77,9 +77,13 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            */
           featPositionsBpPerPxV: 0,
           canvasDrawn: false,
+          fetchStopToken: undefined as StopToken | undefined,
         })),
     )
     .views(self => ({
+      get isLoading() {
+        return self.fetchStopToken !== undefined
+      },
       /**
        * #getter
        */
@@ -109,7 +113,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setLoading(_stopToken?: StopToken) {
+      setLoading(stopToken?: StopToken) {
+        self.fetchStopToken = stopToken
         self.error = undefined
       },
       /**
@@ -120,6 +125,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return
         }
         self.features = args.features
+        self.fetchStopToken = undefined
         self.error = undefined
       },
       /**
@@ -155,6 +161,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setError(error: unknown) {
         console.error(error)
         self.error = error
+        self.fetchStopToken = undefined
       },
       /**
        * #action

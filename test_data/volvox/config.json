@@ -193,7 +193,10 @@
     "hierarchical": {
       "defaultCollapsed": {
         "categoryNames": ["Methylation"]
-      }
+      },
+      "defaultFolderCategories": [
+        "Integration test,Wiggle,Wiggle Rendering Styles"
+      ]
     },
     "extraThemes": {
       "darkForest": {
@@ -920,6 +923,20 @@
     },
     {
       "type": "QuantitativeTrack",
+      "trackId": "volvox_microarray_xyplot_folder",
+      "name": "wiggle_track xyplot (folder)",
+      "category": ["Integration test", "Wiggle", "Wiggle Rendering Styles"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "volvox_microarray.bw",
+          "locationType": "UriLocation"
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_line",
       "name": "wiggle_track lineplot",
       "category": ["Integration test", "Wiggle"],
@@ -956,6 +973,48 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "volvox_microarray_density_density",
+          "defaultRendering": "density"
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "volvox_microarray_line_folder",
+      "name": "wiggle_track lineplot (folder)",
+      "category": ["Integration test", "Wiggle", "Wiggle Rendering Styles"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "volvox_microarray.bw",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "volvox_microarray_line_folder_line",
+          "defaultRendering": "line"
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "volvox_microarray_density_folder",
+      "name": "wiggle_track density (folder)",
+      "category": ["Integration test", "Wiggle", "Wiggle Rendering Styles"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "volvox_microarray.bw",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "volvox_microarray_density_folder_density",
           "defaultRendering": "density"
         }
       ]

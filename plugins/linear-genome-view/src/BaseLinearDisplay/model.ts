@@ -8,7 +8,6 @@ import {
   getContainingView,
   getSession,
   isFeature,
-  isSelectionContainer,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
@@ -340,18 +339,14 @@ function stateModelFactory() {
        */
       selectFeature(feature: Feature) {
         const session = getSession(self)
-        if (isSelectionContainer(session)) {
-          session.setSelection(feature)
-        }
+        session.setSelection(feature)
         if (isSessionModelWithWidgets(session)) {
-          const { rpcManager } = session
-          const sessionId = getRpcSessionId(self)
+          const { type, id } = self.featureWidgetType
           const track = getContainingTrack(self)
           const view = getContainingView(self)
           const adapterConfig = getConf(track, 'adapter')
-          const { type, id } = self.featureWidgetType
-          rpcManager
-            .call(sessionId, 'CoreGetMetadata', { adapterConfig })
+          session.rpcManager
+            .call(getRpcSessionId(self), 'CoreGetMetadata', { adapterConfig })
             .then(descriptions => {
               if (isAlive(self)) {
                 session.showWidget(

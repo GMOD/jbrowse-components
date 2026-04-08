@@ -326,6 +326,14 @@ export default function stateModelFactory(
       colorPalette: null as ColorPalette | null,
       visibleMaxDepth: 0,
     }))
+    .views(() => ({
+      get featureWidgetType() {
+        return {
+          type: 'AlignmentsFeatureWidget',
+          id: 'alignmentFeature',
+        }
+      },
+    }))
     .views(self => ({
       get adapterConfigSnapshot() {
         return getConf(getContainingTrack(self), 'adapter') as Record<
@@ -1025,15 +1033,15 @@ export default function stateModelFactory(
 
         selectFeature(feature: Feature) {
           const session = getSession(self)
+          session.setSelection(feature)
           if (isSessionModelWithWidgets(session)) {
-            const featureWidget = session.addWidget(
-              'AlignmentsFeatureWidget',
-              'alignmentFeature',
-              {
+            const { type, id } = self.featureWidgetType
+            session.showWidget(
+              session.addWidget(type, id, {
                 featureData: feature.toJSON(),
                 view: getContainingView(self),
                 track: getContainingTrack(self),
-              },
+              }),
             )
             session.showWidget(featureWidget)
           }

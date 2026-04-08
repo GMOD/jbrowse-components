@@ -4,18 +4,11 @@ import useSWR from 'swr'
 
 import { fetchjson } from '../util.tsx'
 
+import type { Entry } from './getColumnDefinitions.tsx'
 import type { Fav } from '../types.ts'
 
-interface Entry {
-  jbrowseConfig: string
-  jbrowseMinimalConfig?: string
-  accession: string
-  commonName: string
-  ncbiAssemblyName: string
-  ncbiName: string
-  ncbiRefSeqCategory: string
+interface RawEntry extends Entry {
   orderKey: number
-  id: string
 }
 
 export function useGenomesData({
@@ -36,7 +29,7 @@ export function useGenomesData({
   const { data, error: dataError } = useSWR(url, () =>
     url
       ? (fetchjson(url) as Promise<
-          Entry[] | { ucscGenomes: Record<string, Entry> }
+          RawEntry[] | { ucscGenomes: Record<string, RawEntry> }
         >)
       : undefined,
   )

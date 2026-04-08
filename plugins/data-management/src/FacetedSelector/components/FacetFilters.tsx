@@ -4,18 +4,17 @@ import FacetFilter from './FacetFilter.tsx'
 import { getRowStr } from './util.ts'
 
 import type { Row } from './util.ts'
-import type { HierarchicalTrackSelectorModel } from '../../model.ts'
+import type { FacetedModel } from '../facetedModel.ts'
 
 const FacetFilters = observer(function FacetFilters({
   rows,
   columns,
-  model,
+  faceted,
 }: {
   rows: Row[]
   columns: { field: string }[]
-  model: HierarchicalTrackSelectorModel
+  faceted: FacetedModel
 }) {
-  const { faceted } = model
   const { filters } = faceted
   const facets = columns.slice(1)
   const facetFieldToCategoryCountMap = new Map(
@@ -60,7 +59,7 @@ const FacetFilters = observer(function FacetFilters({
           key={c.field}
           vals={[...facetFieldToCategoryCountMap.get(c.field)!]}
           column={c}
-          model={model}
+          faceted={faceted}
         />
       ))}
     </div>

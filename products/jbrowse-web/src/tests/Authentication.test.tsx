@@ -5,8 +5,8 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findCanvasIn,
   hts,
-  pv,
   setup,
 } from './util.tsx'
 import config from '../../test_data/volvox/config_auth.json' with { type: 'json' }
@@ -21,7 +21,7 @@ beforeEach(() => {
 const delay = { timeout: 20000 }
 
 test('open a bigwig track that needs oauth authentication and has existing token', async () => {
-  const { rootModel, view, findByTestId } = await createView({
+  const { rootModel, view, findByTestId, findAllByTestId } = await createView({
     ...config,
     tracks: [
       {
@@ -56,11 +56,12 @@ test('open a bigwig track that needs oauth authentication and has existing token
   fireEvent.click(
     await findByTestId(hts('volvox_microarray_dropbox'), {}, delay),
   )
-  expectCanvasMatch(await findByTestId(pv('1..4000-0'), {}, delay))
+  const displays = await findAllByTestId(/^display-.*-done$/, {}, delay)
+  expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 25000)
 
 test('opens a bigwig track that needs external token authentication', async () => {
-  const { view, findByTestId } = await createView({
+  const { view, findByTestId, findAllByTestId } = await createView({
     ...config,
     internetAccounts: [
       {
@@ -102,5 +103,6 @@ test('opens a bigwig track that needs external token authentication', async () =
   expect(Object.keys(sessionStorage)).toContain('ExternalTokenTest-token')
   expect(Object.values(sessionStorage)).toContain('testentry')
 
-  expectCanvasMatch(await findByTestId(pv('1..4000-0'), {}, delay))
+  const displays = await findAllByTestId(/^display-.*-done$/, {}, delay)
+  expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 25000)

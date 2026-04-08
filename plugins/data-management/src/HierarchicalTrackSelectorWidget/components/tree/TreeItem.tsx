@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 import TrackCategory from './TrackCategory.tsx'
 import TrackLabel from './TrackLabel.tsx'
@@ -53,8 +54,7 @@ const NestingMarkers = memo(function NestingMarkers({
   return <>{markers}</>
 })
 
-// Memoized to prevent re-renders when parent re-renders but props haven't changed
-const TreeItem = memo(function TreeItem({
+const TreeItem = observer(function TreeItem({
   item,
   model,
   top,
@@ -67,8 +67,13 @@ const TreeItem = memo(function TreeItem({
 }) {
   const { classes } = useStyles()
   const isCategory = item.type === 'category'
+  const isFolder = isCategory && model.folderCategories.has(item.id)
+  const useAccordionStyle = isCategory && !isFolder
   const { nestingLevel } = item
-  const height = getItemHeight(item)
+  const height = getItemHeight(
+    item,
+    model.folderCategories as unknown as Set<string>,
+  )
   const marginLeft = nestingLevel * levelWidth + (isCategory ? 0 : levelWidth)
 
   return (
@@ -88,14 +93,14 @@ const TreeItem = memo(function TreeItem({
         className={classes.nestingLevelMarker}
       />
       <div
-        className={isCategory ? classes.accordionCard : undefined}
+        className={useAccordionStyle ? classes.accordionCard : undefined}
         style={{
           marginLeft,
           whiteSpace: 'nowrap',
           flex: 1,
         }}
       >
-        <div className={isCategory ? classes.accordionColor : undefined}>
+        <div className={useAccordionStyle ? classes.accordionColor : undefined}>
           {isCategory ? (
             <TrackCategory model={model} item={item} />
           ) : (

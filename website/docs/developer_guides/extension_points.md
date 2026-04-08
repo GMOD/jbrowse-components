@@ -332,6 +332,108 @@ hierarchical track menu when tracks are added to the selection
 example
 https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/wiggle/src/CreateMultiWiggleExtension/index.ts#L10-L67
 
+### TrackSelector-folderDialog
+
+type: synchronous
+
+Replaces the dialog that opens when a user clicks a folder category (supertrack)
+in the hierarchical track selector. The default dialog shows a faceted track
+selector scoped to the tracks in that category. Use this extension point to
+provide a custom UI for a specific category.
+
+- `args` - a React component — the default `DefaultFolderDialog`
+- `props` - an object of the type below
+
+```typescript
+interface props {
+  categoryId: string // internal ID of the folder category, e.g. "Tracks-Wiggle,My Subcategory"
+  model: HierarchicalTrackSelectorModel
+  subtracks: TreeNode[] // flat list of all track nodes under this category (recursive)
+}
+```
+
+Return value: A React component that will be rendered as the dialog. The
+component receives the following props:
+
+```typescript
+interface DialogProps {
+  model: HierarchicalTrackSelectorModel
+  title: string // the display name of the category
+  subtracks: TreeNode[] // same flat list of track nodes passed in props above
+  handleClose: () => void
+}
+```
+
+The `categoryId` format is `Tracks-{categoryPath}`, where `categoryPath` is the
+comma-joined path of category names matching the track's `category` config
+field. For example, a track with `"category": ["Wiggle", "My Subcategory"]`
+produces `categoryId = "Tracks-Wiggle,My Subcategory"`.
+
+Example: custom dialog for a specific folder category
+
+```javascript
+pluginManager.addToExtensionPoint(
+  'TrackSelector-folderDialog',
+  (DefaultComponent, { categoryId, model, subtracks }) => {
+    if (categoryId !== 'Tracks-Wiggle,My Subcategory') {
+      return DefaultComponent
+    }
+
+    const React = pluginManager.jbrequire('react')
+    const { observer } = pluginManager.jbrequire('mobx-react')
+    const { Dialog, DialogTitle, DialogContent, DialogActions, Button } =
+      pluginManager.jbrequire('@mui/material')
+
+    return observer(function MyFolderDialog({
+      model,
+      title,
+      subtracks,
+      handleClose,
+    }) {
+      const { shownTrackIds, view } = model
+      const tracks = subtracks.filter(s => s.type === 'track')
+
+      return React.createElement(
+        Dialog,
+        { open: true, onClose: handleClose, maxWidth: 'sm', fullWidth: true },
+        React.createElement(DialogTitle, null, title),
+        React.createElement(
+          DialogContent,
+          null,
+          ...tracks.map(track =>
+            React.createElement(
+              'div',
+              {
+                key: track.trackId,
+                onClick: () => view.toggleTrack(track.trackId),
+                style: {
+                  padding: 12,
+                  marginBottom: 8,
+                  border: shownTrackIds.has(track.trackId)
+                    ? '2px solid #1976d2'
+                    : '2px solid #ddd',
+                  cursor: 'pointer',
+                },
+              },
+              track.name,
+            ),
+          ),
+        ),
+        React.createElement(
+          DialogActions,
+          null,
+          React.createElement(Button, { onClick: handleClose }, 'Close'),
+        ),
+      )
+    })
+  },
+)
+```
+
+A more complete example using this extension point is in
+[test_data/volvox/umd_plugin.js](https://github.com/GMOD/jbrowse-components/blob/main/test_data/volvox/umd_plugin.js)
+(search for `TrackSelector-folderDialog`).
+
 ### LaunchView-LinearGenomeView
 
 type: async

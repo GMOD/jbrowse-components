@@ -14,7 +14,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { HierarchicalTrackSelectorModel } from '../../model.ts'
+import type { FacetedModel } from '../facetedModel.ts'
 
 const useStyles = makeStyles()(theme => ({
   facet: {
@@ -55,15 +55,14 @@ function ExpandButton({
 const FacetFilter = observer(function FacetFilter({
   column,
   vals,
-  model,
+  faceted,
 }: {
   column: { field: string }
   vals: [string, number][]
-  model: HierarchicalTrackSelectorModel
+  faceted: FacetedModel
 }) {
   const { classes } = useStyles()
   const [visible, setVisible] = useState(true)
-  const { faceted } = model
   const { filters } = faceted
   const { field } = column
   return (

@@ -55,7 +55,7 @@ async function testSyntenyView(
     },
   )}`
   const { findByTestId } = render(<App search={str} />)
-  expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
+  expectCanvasMatch(await findByTestId('synteny_canvas_done', {}, delay))
 }
 
 test('horizontally flipped inverted alignment', async () => {

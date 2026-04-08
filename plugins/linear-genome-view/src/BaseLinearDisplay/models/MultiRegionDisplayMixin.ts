@@ -1,22 +1,21 @@
-import { createElement } from 'react'
-
 import {
+  getContainingTrack,
   getContainingView,
   getRpcSessionId,
   getSession,
   isAbortException,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
 import { checkByteEstimate } from './fetchHelpers.ts'
-import TooLargeMessage from '../../shared/TooLargeMessage.tsx'
+import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.tsx'
 
 export type { ByteEstimateConfig } from './fetchHelpers.ts'
 import type { ByteEstimateConfig } from './fetchHelpers.ts'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
-import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface Region {
@@ -39,17 +38,13 @@ export interface FetchContext {
 
 export default function MultiRegionDisplayMixin() {
   return types
-    .model('MultiRegionDisplayMixin', {})
+    .compose('MultiRegionDisplayMixin', RegionTooLargeMixin(), types.model({}))
     .volatile(() => ({
       loadedRegions: new Map<number, Region>(),
       error: undefined as unknown,
       renderingStopToken: undefined as StopToken | undefined,
       fetchGeneration: 0,
       dataVersion: 0,
-      userByteSizeLimit: undefined as number | undefined,
-      regionTooLargeState: false,
-      regionTooLargeReasonState: '',
-      featureDensityStats: undefined as FeatureDensityStats | undefined,
       canvasDrawn: false,
     }))
     .views(self => ({
@@ -59,24 +54,6 @@ export default function MultiRegionDisplayMixin() {
 
       get fullyDrawn() {
         return self.canvasDrawn && !this.isLoading
-      },
-
-      get regionTooLarge() {
-        return self.regionTooLargeState
-      },
-
-      get regionTooLargeReason() {
-        return self.regionTooLargeReasonState
-      },
-
-      regionCannotBeRenderedText() {
-        return self.regionTooLargeState ? 'Force load to see features' : ''
-      },
-
-      regionCannotBeRendered() {
-        return self.regionTooLargeState
-          ? createElement(TooLargeMessage, { model: self as any })
-          : null
       },
     }))
     .actions(self => ({
@@ -106,8 +83,7 @@ export default function MultiRegionDisplayMixin() {
           self.renderingStopToken = undefined
         }
         self.error = undefined
-        self.regionTooLargeState = false
-        self.regionTooLargeReasonState = ''
+        self.setRegionTooLarge(false)
         self.loadedRegions = new Map()
         self.fetchGeneration++
         self.clearDisplaySpecificData()
@@ -146,23 +122,6 @@ export default function MultiRegionDisplayMixin() {
 
       setStatusMessage(_msg?: string) {
         // no-op base — subclasses override (e.g. NonBlockCanvasDisplayMixin)
-      },
-
-      setFeatureDensityStats(stats?: FeatureDensityStats) {
-        self.featureDensityStats = stats
-      },
-
-      setRegionTooLarge(val: boolean, reason?: string) {
-        self.regionTooLargeState = val
-        self.regionTooLargeReasonState = reason ?? ''
-      },
-
-      setFeatureDensityStatsLimit(stats?: FeatureDensityStats) {
-        if (stats?.bytes) {
-          self.userByteSizeLimit = Math.ceil(stats.bytes * 1.5)
-        }
-        self.regionTooLargeState = false
-        self.regionTooLargeReasonState = ''
       },
 
       getByteEstimateConfig(): ByteEstimateConfig | null {
@@ -318,7 +277,28 @@ export default function MultiRegionDisplayMixin() {
 
                 self.beforeFetchCheck()
 
+                const { assemblyManager } = getSession(self)
+                const trackAssemblyNames = getTrackAssemblyNames(
+                  getContainingTrack(self),
+                )
                 const visibleMerged = view.mergedVisibleRegions
+                for (const vr of visibleMerged) {
+                  const regionAsm = vr.assemblyName
+                  if (
+                    !trackAssemblyNames.includes(regionAsm) &&
+                    !trackAssemblyNames.some(name =>
+                      assemblyManager.get(name)?.hasName(regionAsm),
+                    )
+                  ) {
+                    self.setError(
+                      new Error(
+                        `region assembly (${regionAsm}) does not match track assemblies (${trackAssemblyNames})`,
+                      ),
+                    )
+                    return
+                  }
+                }
+
                 const bufferedByRegion = new Map(
                   view.bufferedVisibleRegions.map(b => [b.regionNumber, b]),
                 )

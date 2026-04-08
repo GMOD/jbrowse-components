@@ -285,7 +285,10 @@ const hprcPrefix = require
   )
   .replace('.pos.bed.gz', '')
 
-describe('GfaTabixAdapter with HPRC chrM (44 haplotypes)', () => {
+const hasHprcSegmentsBin = fs.existsSync(`${hprcPrefix}.segments.bin`)
+const describeHprc = hasHprcSegmentsBin ? describe : describe.skip
+
+describeHprc('GfaTabixAdapter with HPRC chrM (44 haplotypes)', () => {
   it('returns features for all 43 non-ref genomes', async () => {
     const adapter = makeAdapter(hprcPrefix)
     const result = await adapter.getMultiPairFeatures({
@@ -535,7 +538,7 @@ describe('getSources', () => {
   })
 })
 
-describe('getSources HPRC chrM', () => {
+describeHprc('getSources HPRC chrM', () => {
   it('returns all 44 genomes', async () => {
     const adapter = makeAdapter(hprcPrefix)
     const sources = await adapter.getSources()
@@ -725,7 +728,7 @@ describe('GfaTabixAdapter getSubgraph', () => {
   })
 })
 
-describe('GfaTabixAdapter HPRC getSubgraph', () => {
+describeHprc('GfaTabixAdapter HPRC getSubgraph', () => {
   it('returns GFA for chrM full region', async () => {
     const adapter = makeAdapter(hprcPrefix)
     const result = await adapter.getSubgraph({

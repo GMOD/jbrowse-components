@@ -22,6 +22,14 @@ export function HierarchicalConfigSchemaFactory() {
         defaultValue: false,
       },
     }),
+    /**
+     * #slot configuration.hierarchical.defaultFolderCategories
+     */
+    defaultFolderCategories: {
+      type: 'stringArray',
+      description: 'list of category names to display as folders by default',
+      defaultValue: [],
+    },
     defaultCollapsed: ConfigurationSchema('defaultCollapsed', {
       /**
        * #slot configuration.hierarchical.defaultCollapsed.categoryNames

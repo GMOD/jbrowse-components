@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
+import type { TreeNode, TreeTrackNode } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -78,4 +79,13 @@ export function findTopLevelCategories(obj: Node[], paths: string[]) {
       paths.push(elt.id)
     }
   }
+}
+
+export function getAllTrackNodes(subtree?: TreeNode): TreeTrackNode[] {
+  if (subtree?.type === 'category') {
+    return subtree.children.flatMap(t =>
+      t.type === 'category' ? getAllTrackNodes(t) : [t],
+    )
+  }
+  return []
 }

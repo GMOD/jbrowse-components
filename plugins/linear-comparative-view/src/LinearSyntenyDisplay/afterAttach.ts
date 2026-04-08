@@ -146,6 +146,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const thisStopToken = createStopToken()
         currentStopToken = thisStopToken
 
+        self.setFetchStopToken(thisStopToken)
         debounceTimer = setTimeout(async () => {
           try {
             const { level, adapterConfig } = self
@@ -208,6 +209,10 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
                 console.error(e)
                 self.setError(e)
               }
+            }
+          } finally {
+            if (isAlive(self) && thisStopToken === currentStopToken) {
+              self.setFetchStopToken(undefined)
             }
           }
         }, 300)

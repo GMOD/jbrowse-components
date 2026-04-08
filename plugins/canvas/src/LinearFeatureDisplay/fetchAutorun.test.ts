@@ -91,6 +91,16 @@ function createTestEnvironment() {
 
   const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
 
+  const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
+  const trackConfig = trackConfigSchema.create(
+    {
+      type: 'FeatureTrack',
+      trackId: 'test_track',
+      assemblyNames: ['volvox'],
+    },
+    { pluginManager },
+  )
+
   const Session = types
     .model({
       name: 'testSession',
@@ -115,6 +125,9 @@ function createTestEnvironment() {
                   },
                 ],
                 getCanonicalRefName: (refName: string) => refName,
+                configuration: {
+                  sequence: undefined,
+                },
               }
             : undefined,
         waitForAssembly: () =>
@@ -129,8 +142,18 @@ function createTestEnvironment() {
               },
             ],
             getCanonicalRefName: (refName: string) => refName,
+            configuration: {
+              sequence: undefined,
+            },
           }),
         isValidRefName: () => true,
+      },
+    }))
+    .views(() => ({
+      getTracksById() {
+        return {
+          test_track: trackConfig,
+        }
       },
     }))
     .actions(self => ({
@@ -150,7 +173,7 @@ function createTestEnvironment() {
         tracks: [
           {
             type: 'FeatureTrack',
-            trackId: 'test_track',
+            configuration: 'test_track',
             displays: [{ type: 'LinearFeatureDisplay' }],
           },
         ],
@@ -185,7 +208,6 @@ describe('FetchVisibleRegions autorun', () => {
 
     const { display, view } = createDisplay()
 
-    // Debug: verify the view is initialized
     expect(view.initialized).toBe(true)
     expect(display.regionTooLarge).toBe(false)
     expect(display.error).toBeUndefined()

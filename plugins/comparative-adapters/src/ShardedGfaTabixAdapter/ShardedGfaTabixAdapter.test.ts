@@ -54,7 +54,9 @@ function makeAdapter(prefix: string) {
   )
 }
 
-describe('ShardedGfaTabixAdapter round-trip', () => {
+const describeIfBinary = fs.existsSync(BINARY) ? describe : describe.skip
+
+describeIfBinary('ShardedGfaTabixAdapter round-trip', () => {
   it('returns features for all genomes from sharded data', async () => {
     await withShardedData(async prefix => {
       const adapter = makeAdapter(prefix)

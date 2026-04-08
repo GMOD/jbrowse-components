@@ -7,6 +7,7 @@ import {
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
+import { SVGErrorBox } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import {
@@ -681,6 +682,16 @@ export async function renderSvg(
     showInterbaseIndicators,
     showSoftClipping,
   } = model
+
+  if (model.error) {
+    return (
+      <SVGErrorBox
+        error={model.error}
+        width={view.width}
+        height={model.height}
+      />
+    )
+  }
 
   if (rpcDataMap.size === 0) {
     return null
