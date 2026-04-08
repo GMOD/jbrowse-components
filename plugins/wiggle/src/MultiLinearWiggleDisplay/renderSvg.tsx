@@ -238,7 +238,9 @@ export async function renderSvg(
   } = model
 
   if (model.error) {
-    return <SVGErrorBox error={model.error} width={view.width} height={height} />
+    return (
+      <SVGErrorBox error={model.error} width={view.width} height={height} />
+    )
   }
 
   if (rpcDataMap.size === 0 || !domain || numSources === 0) {

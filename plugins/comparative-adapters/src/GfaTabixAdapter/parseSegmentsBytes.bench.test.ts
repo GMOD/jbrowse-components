@@ -101,29 +101,32 @@ function makeAdapter(prefix: string) {
 const hasHprcSegmentsBin = fs.existsSync(`${hprcPrefix}.segments.bin`)
 const describeHprc = hasHprcSegmentsBin ? describe : describe.skip
 
-describeHprc('getMultiPairFeatures e2e benchmark (HPRC chrM, 44 haplotypes)', () => {
-  it('full-chromosome query timing', async () => {
-    const adapter = makeAdapter(hprcPrefix)
-    const query = {
-      refName: 'chrM',
-      start: 0,
-      end: 16569,
-      assemblyName: 'GRCh38#0',
-    }
+describeHprc(
+  'getMultiPairFeatures e2e benchmark (HPRC chrM, 44 haplotypes)',
+  () => {
+    it('full-chromosome query timing', async () => {
+      const adapter = makeAdapter(hprcPrefix)
+      const query = {
+        refName: 'chrM',
+        start: 0,
+        end: 16569,
+        assemblyName: 'GRCh38#0',
+      }
 
-    // warmup (caches index + segment files)
-    await adapter.getMultiPairFeatures(query)
-
-    const ITERS = 5
-    const times: number[] = []
-    for (let i = 0; i < ITERS; i++) {
-      const t0 = performance.now()
+      // warmup (caches index + segment files)
       await adapter.getMultiPairFeatures(query)
-      times.push(performance.now() - t0)
-    }
 
-    const median = times.sort((a, b) => a - b)[Math.floor(ITERS / 2)]!
+      const ITERS = 5
+      const times: number[] = []
+      for (let i = 0; i < ITERS; i++) {
+        const t0 = performance.now()
+        await adapter.getMultiPairFeatures(query)
+        times.push(performance.now() - t0)
+      }
 
-    expect(median).toBeLessThan(500)
-  })
-})
+      const median = times.sort((a, b) => a - b)[Math.floor(ITERS / 2)]!
+
+      expect(median).toBeLessThan(500)
+    })
+  },
+)

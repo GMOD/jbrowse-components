@@ -5,8 +5,8 @@ import {
   getSession,
   isAbortException,
 } from '@jbrowse/core/util'
-import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
@@ -38,11 +38,7 @@ export interface FetchContext {
 
 export default function MultiRegionDisplayMixin() {
   return types
-    .compose(
-      'MultiRegionDisplayMixin',
-      RegionTooLargeMixin(),
-      types.model({}),
-    )
+    .compose('MultiRegionDisplayMixin', RegionTooLargeMixin(), types.model({}))
     .volatile(() => ({
       loadedRegions: new Map<number, Region>(),
       error: undefined as unknown,

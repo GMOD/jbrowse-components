@@ -123,7 +123,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   )
   const [hoveredSubfeature, setHoveredSubfeature] =
     useState<SubfeatureInfo | null>(null)
-  const [clientXY, setClientXY] = useState<[number, number]>([0, 0])
+  const [clientXY, setClientXY] = useState([0, 0] as [number, number])
   const [contextMenuCoord, setContextMenuCoord] = useState<
     [number, number] | undefined
   >()

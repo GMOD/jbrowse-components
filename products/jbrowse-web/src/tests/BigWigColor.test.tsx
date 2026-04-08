@@ -30,7 +30,11 @@ test('open a bigwig track and change to green color', async () => {
   )
 
   // Wait for the track to render
-  const displays = await findAllByTestId(/^display-.*-done$/, {}, { timeout: 20000 })
+  const displays = await findAllByTestId(
+    /^display-.*-done$/,
+    {},
+    { timeout: 20000 },
+  )
   const canvas1 = findCanvasIn(displays[0]!)
   expectCanvasMatch(canvas1)
 
@@ -69,7 +73,11 @@ test('open a bigwig track and change to green color', async () => {
   )
 
   // Get the updated canvas and verify
-  const displays2 = await findAllByTestId(/^display-.*-done$/, {}, { timeout: 20000 })
+  const displays2 = await findAllByTestId(
+    /^display-.*-done$/,
+    {},
+    { timeout: 20000 },
+  )
   expectCanvasMatch(findCanvasIn(displays2[0]!))
 }, 40000)
 
@@ -83,7 +91,11 @@ test('open a bigwig track and change to purple color', async () => {
   )
 
   // Wait for the track to render
-  const displays = await findAllByTestId(/^display-.*-done$/, {}, { timeout: 20000 })
+  const displays = await findAllByTestId(
+    /^display-.*-done$/,
+    {},
+    { timeout: 20000 },
+  )
   const canvas1 = findCanvasIn(displays[0]!)
   expectCanvasMatch(canvas1)
 
@@ -119,6 +131,10 @@ test('open a bigwig track and change to purple color', async () => {
   )
 
   // Get the updated canvas and verify
-  const displays2 = await findAllByTestId(/^display-.*-done$/, {}, { timeout: 20000 })
+  const displays2 = await findAllByTestId(
+    /^display-.*-done$/,
+    {},
+    { timeout: 20000 },
+  )
   expectCanvasMatch(findCanvasIn(displays2[0]!))
 }, 40000)

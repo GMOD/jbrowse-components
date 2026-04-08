@@ -7,6 +7,7 @@ import {
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
+import { SVGErrorBox } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import {
@@ -32,8 +33,6 @@ import {
 
 import type { ArcsDataResult } from '../RenderArcsDataRPC/types.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
-import { SVGErrorBox } from '@jbrowse/plugin-linear-genome-view'
-
 import type { ColorPalette } from './components/shaders/colors.ts'
 import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type {
@@ -685,7 +684,13 @@ export async function renderSvg(
   } = model
 
   if (model.error) {
-    return <SVGErrorBox error={model.error} width={view.width} height={model.height} />
+    return (
+      <SVGErrorBox
+        error={model.error}
+        width={view.width}
+        height={model.height}
+      />
+    )
   }
 
   if (rpcDataMap.size === 0) {

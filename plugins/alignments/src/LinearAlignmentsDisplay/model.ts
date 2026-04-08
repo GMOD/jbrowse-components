@@ -1045,7 +1045,6 @@ export default function stateModelFactory(
             )
           }
         },
-
       }
     })
     .actions(self => ({

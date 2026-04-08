@@ -166,7 +166,6 @@ export default function FeatureDensityMixin() {
       },
 
       regionCannotBeRendered(_region: Region) {
-        // @ts-expect-error
         return self.regionTooLarge ? <TooLargeMessage model={self} /> : null
       },
     }))

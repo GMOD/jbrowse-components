@@ -37,11 +37,6 @@ export default function RegionTooLargeMixin() {
       regionCannotBeRenderedText() {
         return self.regionTooLargeState ? 'Force load to see features' : ''
       },
-
-      regionCannotBeRendered() {
-        // @ts-expect-error
-        return self.regionTooLargeState ? <TooLargeMessage model={self} /> : null
-      },
     }))
     .actions(self => ({
       setRegionTooLarge(val: boolean, reason?: string) {
@@ -59,6 +54,17 @@ export default function RegionTooLargeMixin() {
         }
         self.regionTooLargeState = false
         self.regionTooLargeReasonState = ''
+      },
+
+      reload() {
+        // no-op, overridden by composing display models
+      },
+    }))
+    .views(self => ({
+      regionCannotBeRendered() {
+        return self.regionTooLargeState ? (
+          <TooLargeMessage model={self} />
+        ) : null
       },
     }))
 }
