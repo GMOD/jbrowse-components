@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-legacy-jbrowse",
-  "version": "4.1.14",
+  "version": "4.1.15",
   "type": "module",
   "description": "JBrowse 2 plugin for connecting to and reading JBrowse 1 data",
   "keywords": [
@@ -30,10 +30,10 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/nclist": "^3.0.4",
+    "@gmod/nclist": "^3.0.6",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.5.0",
-    "generic-filehandle2": "^2.0.18",
+    "@jbrowse/mobx-state-tree": "^5.6.0",
+    "generic-filehandle2": "^2.1.4",
     "mobx": "^6.15.0",
     "rxjs": "^7.8.2",
     "set-value": "^4.1.0"

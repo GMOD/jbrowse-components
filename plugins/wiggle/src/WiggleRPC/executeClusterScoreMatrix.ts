@@ -1,4 +1,8 @@
-import { clusterData, toNewick } from '@gmod/hclust'
+import { clusterObject, toNewick } from '@gmod/hclust'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 
 import { getScoreMatrix } from './getScoreMatrix.ts'
 
@@ -12,17 +16,21 @@ export async function executeClusterScoreMatrix({
   pluginManager: PluginManager
   args: GetScoreMatrixArgs
 }) {
+  const stopTokenCheck = createStopTokenChecker(args.stopToken)
   const matrix = await getScoreMatrix({
     pluginManager,
-    args,
+    args: {
+      ...args,
+      stopTokenCheck,
+    },
   })
-  const sampleLabels = Object.keys(matrix)
-  const result = await clusterData({
-    data: Object.values(matrix),
-    sampleLabels,
-    stopToken: args.stopToken,
+  const result = await clusterObject({
+    data: matrix,
     onProgress: a => {
       args.statusCallback?.(a)
+    },
+    checkCancellation: () => {
+      checkStopToken2(stopTokenCheck)
     },
   })
   return {

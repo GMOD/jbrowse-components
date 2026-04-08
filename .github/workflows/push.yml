@@ -7,6 +7,10 @@ on:
     tags:
       - '*'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -21,6 +25,7 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 1
+          persist-credentials: false
       - name: Check commit message
         id: check_message
         env:
@@ -158,7 +163,7 @@ jobs:
       - name: Check spelling
         uses: crate-ci/typos@a1d64977b4aa1709d6328d518aa753f4899352d8 # v1.42.2
 
-  main:
+  build_and_pack_artifacts:
     name: Build and pack artifacts
     needs: check_commit_message
     if: needs.check_commit_message.outputs.skip_jobs != 'true'
@@ -199,15 +204,8 @@ jobs:
         run: node --experimental-strip-types browser-tests/runner.ts
         working-directory: products/jbrowse-web
         continue-on-error: true
-      - name: Run auth browser tests with Puppeteer
-        id: auth-browser-tests
-        run: node --experimental-strip-types browser-tests/runner.ts --auth
-        working-directory: products/jbrowse-web
-        continue-on-error: true
       - name: Upload snapshot diffs to S3
-        if:
-          steps.browser-tests.outcome == 'failure' ||
-          steps.auth-browser-tests.outcome == 'failure'
+        if: steps.browser-tests.outcome == 'failure'
         run: |
           SNAPSHOTS_DIR="products/jbrowse-web/browser-tests/__snapshots__"
           S3_PATH="s3://jbrowse.org/demos/imagediff/${{ github.run_id }}"
@@ -229,9 +227,7 @@ jobs:
             echo "No snapshot diff files found"
           fi
       - name: Fail if browser tests failed
-        if:
-          steps.browser-tests.outcome == 'failure' ||
-          steps.auth-browser-tests.outcome == 'failure'
+        if: steps.browser-tests.outcome == 'failure'
         run: exit 1
 
       - name: Upload packed artifacts for component tests
@@ -269,6 +265,7 @@ jobs:
             exit 1
           fi
           echo "Ref name validated: $REF_NAME"
+          echo "REF_NAME=$REF_NAME" >> "$GITHUB_ENV"
       - name: Build jbrowse-web
         run: |
           cd products/jbrowse-web/
@@ -282,10 +279,10 @@ jobs:
       - name: Deploy to S3
         run: |
           cd products/jbrowse-web/build
-          zip -r "jbrowse-web-${{ github.ref_name }}.zip" .
+          zip -r "jbrowse-web-${REF_NAME}.zip" .
           cp test_data/config.json config.json
-          aws s3 sync --delete --exclude="*.map" . s3://jbrowse.org/code/jb2/${{ github.ref_name }}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/${{ github.ref_name }}/*"
+          aws s3 sync --delete --exclude="*.map" . s3://jbrowse.org/code/jb2/${REF_NAME}
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/${REF_NAME}/*"
 
       - name: Build LGV storybook
         run: pnpm storybook:build
@@ -295,8 +292,8 @@ jobs:
           github.ref == 'refs/heads/main' || startsWith(github.ref,
           'refs/tags/')
         run: |
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/${{ github.ref_name }}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/lgv/${{ github.ref_name }}/*"
+          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/${REF_NAME}
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/lgv/${REF_NAME}/*"
         working-directory: products/jbrowse-react-linear-genome-view
 
       - name: Build React App storybook
@@ -307,8 +304,8 @@ jobs:
           github.ref == 'refs/heads/main' || startsWith(github.ref,
           'refs/tags/')
         run: |
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/app/${{ github.ref_name }}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/app/${{ github.ref_name }}/*"
+          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/app/${REF_NAME}
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/app/${REF_NAME}/*"
         working-directory: products/jbrowse-react-app
 
       - name: Build CGV storybook
@@ -319,8 +316,8 @@ jobs:
           github.ref == 'refs/heads/main' || startsWith(github.ref,
           'refs/tags/')
         run: |
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/${{ github.ref_name }}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/${{ github.ref_name }}/*"
+          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/${REF_NAME}
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/${REF_NAME}/*"
         working-directory: products/jbrowse-react-circular-genome-view
 
   # Conditionally run the buildwebsite job
@@ -363,7 +360,7 @@ jobs:
   # code, create issues/PRs, access secrets, or call GitHub APIs.
   component_tests:
     name: Test embedded components
-    needs: [check_commit_message, main]
+    needs: [check_commit_message, build_and_pack_artifacts]
     if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     permissions: {}
@@ -388,9 +385,9 @@ jobs:
 
   # Test CLI on Node 18 to ensure compatibility with older Node versions.
   # This job has no permissions since it installs npm packages without a lockfile.
-  cli_node18:
+  test_cli_compat:
     name: Test CLI on Node 18
-    needs: [check_commit_message, main]
+    needs: [check_commit_message, build_and_pack_artifacts]
     if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     permissions: {}
@@ -412,12 +409,12 @@ jobs:
           yarn install
           yarn testcli
 
-  # Test @jbrowse/img on Node 24 to ensure the jb2export CLI works.
+  # Test @jbrowse/img to ensure the jb2export CLI works.
   # Requires Node ~24 for module.registerHooks API.
   # This job has no permissions since it installs npm packages without a lockfile.
-  img_node23:
-    name: Test @jbrowse/img on Node 24
-    needs: [check_commit_message, main]
+  test_jbrowse_img:
+    name: Test @jbrowse/img
+    needs: [check_commit_message, build_and_pack_artifacts]
     if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     permissions: {}
@@ -433,8 +430,34 @@ jobs:
         with:
           name: packed-artifacts
           path: component_tests/
-      - name: Test @jbrowse/img on Node 24
+      - name: Test @jbrowse/img
         run: |
           cd component_tests/jbrowse-img
           yarn install
           yarn testimg
+
+  windows_electron_e2e:
+    name: Windows Electron E2E Tests
+    needs: [check_commit_message, test, lint, format, build_and_pack_artifacts]
+    if:
+      needs.check_commit_message.outputs.skip_jobs != 'true' && github.ref ==
+      'refs/heads/main'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        with:
+          version: 10
+      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+      - name: Build and test Electron on Windows
+        run: pnpm test:e2e:ci:win
+        working-directory: products/jbrowse-desktop
+        env:
+          NO_MINIMIZE: true

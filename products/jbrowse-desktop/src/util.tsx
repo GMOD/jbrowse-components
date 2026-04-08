@@ -25,6 +25,6 @@ export async function fetchCJS(url: string): Promise<LoadedPlugin> {
     await fsPromises.writeFile(pluginLocation, pluginText)
     return globalThis.require(pluginLocationRelative) as LoadedPlugin
   } finally {
-    await fsPromises.rmdir(tmpDir, { recursive: true })
+    await fsPromises.rm(tmpDir, { recursive: true, force: true })
   }
 }

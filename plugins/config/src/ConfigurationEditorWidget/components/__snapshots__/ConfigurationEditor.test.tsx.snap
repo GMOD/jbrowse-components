@@ -21,7 +21,9 @@ exports[`renders all the different types of built-in slots 1`] = `
           <p
             class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
           >
-            Configuration
+            <span>
+              Configuration
+            </span>
           </p>
         </span>
         <span
@@ -334,7 +336,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                       class="MuiCardHeader-root css-149tc0y-MuiCardHeader-root"
                     >
                       <div
-                        class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
+                        class="MuiCardHeader-content css-16o2p3x-MuiCardHeader-content"
                       >
                         <span
                           class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-w2zoog-MuiTypography-root"
@@ -479,7 +481,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                       class="MuiCardHeader-root css-149tc0y-MuiCardHeader-root"
                     >
                       <div
-                        class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
+                        class="MuiCardHeader-content css-16o2p3x-MuiCardHeader-content"
                       >
                         <div
                           class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -760,7 +762,9 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
           <p
             class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
           >
-            Configuration
+            <span>
+              Configuration
+            </span>
           </p>
         </span>
         <span
@@ -1898,7 +1902,9 @@ exports[`renders with just the required model elements 1`] = `
           <p
             class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
           >
-            Configuration
+            <span>
+              Configuration
+            </span>
           </p>
         </span>
         <span

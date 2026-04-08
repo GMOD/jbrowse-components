@@ -1,5 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { groupBy } from '@jbrowse/core/util'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom, toArray } from 'rxjs'
 
 import type { GetScoreMatrixArgs } from './types.ts'
@@ -13,7 +14,14 @@ export async function getScoreMatrix({
   args: GetScoreMatrixArgs
   pluginManager: PluginManager
 }) {
-  const { sources, regions, adapterConfig, sessionId, bpPerPx } = args
+  const {
+    sources,
+    regions,
+    adapterConfig,
+    sessionId,
+    bpPerPx,
+    stopTokenCheck,
+  } = args
   const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
@@ -55,6 +63,7 @@ export async function getScoreMatrix({
     }
     // convert to regular array for JSON serialization
     rows[name] = Array.from(arr)
+    checkStopToken2(stopTokenCheck)
   }
 
   return rows

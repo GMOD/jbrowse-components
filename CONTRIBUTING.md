@@ -295,22 +295,50 @@ particular notes include
 2. The use of tsconfig.build.json to generate types in the final release
 3. The use of referring to the src directory at development time
 
-## What to do if a release fails
+## Releasing
 
-### Option A. It already published to NPM
+Releases are done from the `main` branch. The release script handles versioning,
+changelog, blog post, and pushing the tag. npm publishing then happens
+automatically via the `publish` GitHub Actions workflow when the tag is pushed.
 
-You should probably run another patch release
+### Prerequisites (one-time setup)
 
-Note: You must make miniscule source code change or the changelog code will
-fail, so rename a random variable somewhere, commit, and re-run the release
+- `gh` CLI installed and authenticated
+- npm trusted publishing registered for all packages:
+  ```
+  scripts/register-trusted-publishing.sh
+  ```
 
-### Option B. It hasn't published to NPM
+### Running a release
 
-You can cancel the release script
+```
+scripts/release.sh patch   # or minor / major
+```
 
-If it already pushed the tag, then revert the automated commits it made, and
-then delete the tag and push the tag delete (e.g. git tag -d v1.2.3 && git push
-origin :refs/tags/v1.2.3)
+Before running, create a blog post draft at
+`website/release_announcement_drafts/vX.Y.Z.md` — the script will fail if it
+is missing.
 
-If it already made a release draft, delete it, and then re-run the release
-script
+The script will:
+
+- Run lint and tests
+- Compute the new version from the semver level argument
+- Generate the changelog from merged PRs
+- Create the blog post from the draft
+- Bump all package versions
+- Commit, tag, and push
+
+GitHub Actions then picks up the tag and publishes all packages to npm.
+
+### If a release fails
+
+**The tag has not been pushed yet** — fix the issue and re-run the script.
+
+**The tag was pushed but the publish workflow failed** — re-run the publish
+workflow from the Actions tab in GitHub.
+
+**Any other failure** — run a new patch release. If packages were partially
+published to npm, avoid deleting the tag and trying to re-use it, as that
+causes more problems. Just do a fresh release instead. Note that the changelog
+script requires at least one PR merged since the last release, so make a
+trivial commit if needed.

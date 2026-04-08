@@ -2,8 +2,7 @@
   "extends": "./tsconfig",
   "compilerOptions": {
     "outDir": "esm",
-    "paths": {},
-    "baseUrl": "."
+    "rootDir": "src"
   },
   "include": ["src"]
 }

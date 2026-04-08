@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import SharedTooltip from './SharedTooltip.tsx'
 import TreeItem from './TreeItem.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
@@ -14,6 +16,7 @@ const HierarchicalTree = observer(function HierarchicalTree({
   model: HierarchicalTrackSelectorModel
 }) {
   const { flattenedItems, shownTrackIds } = model
+  const { drawerPosition } = getSession(model)
   const containerRef = useRef<HTMLDivElement>(null)
   const [scrollTop, setScrollTop] = useState(0)
   const { startIndex, endIndex, totalHeight, itemOffsets } = model.itemOffsets(
@@ -27,28 +30,33 @@ const HierarchicalTree = observer(function HierarchicalTree({
       return
     }
 
+    let rafId: number | undefined
     const onScroll = () => {
-      const newScrollTop = container.scrollTop
-      setScrollTop(prev => {
-        // avoid re-render if scroll position hasn't changed enough to affect visible items
-        const { startIndex: prevStart, endIndex: prevEnd } = model.itemOffsets(
-          height,
-          prev,
-        )
-        const { startIndex: nextStart, endIndex: nextEnd } = model.itemOffsets(
-          height,
-          newScrollTop,
-        )
-        if (prevStart === nextStart && prevEnd === nextEnd) {
-          return prev
-        }
-        return newScrollTop
+      if (rafId !== undefined) {
+        return
+      }
+      rafId = requestAnimationFrame(() => {
+        rafId = undefined
+        const newScrollTop = container.scrollTop
+        setScrollTop(prev => {
+          const { startIndex: prevStart, endIndex: prevEnd } =
+            model.itemOffsets(height, prev)
+          const { startIndex: nextStart, endIndex: nextEnd } =
+            model.itemOffsets(height, newScrollTop)
+          if (prevStart === nextStart && prevEnd === nextEnd) {
+            return prev
+          }
+          return newScrollTop
+        })
       })
     }
 
     container.addEventListener('scroll', onScroll, { passive: true })
     return () => {
       container.removeEventListener('scroll', onScroll)
+      if (rafId !== undefined) {
+        cancelAnimationFrame(rafId)
+      }
     }
   }, [height, model])
 
@@ -85,6 +93,10 @@ const HierarchicalTree = observer(function HierarchicalTree({
           ) : null
         })}
       </div>
+      <SharedTooltip
+        containerRef={containerRef}
+        placement={drawerPosition === 'left' ? 'right' : 'left'}
+      />
     </div>
   )
 })

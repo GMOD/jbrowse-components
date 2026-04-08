@@ -26,13 +26,13 @@ export function getColorCallback(
   config: AnyConfigurationModel,
   opts?: { defaultColor?: string },
 ) {
-  const color = readConfObject(config, 'color')
   const colorIsCallback = config.color?.isCallback
-  const colorIsDefault = color === WIGGLE_COLOR_DEFAULT
 
   if (colorIsCallback) {
     return (feature: Feature) => readConfObject(config, 'color', { feature })
   }
+  const color = readConfObject(config, 'color')
+  const colorIsDefault = color === WIGGLE_COLOR_DEFAULT
   if (!colorIsDefault) {
     return () => color
   }

@@ -42,8 +42,8 @@ const SashimiArcs = observer(function SashimiArcs({
   const [selectedArcId, setSelectedArcId] = useState<string | null>(null)
 
   const svgRef = useRef<SVGSVGElement>(null)
-  const arcMapRef = useRef<Map<string, ArcData>>(new Map())
-  const pathMapRef = useRef<Map<string, SVGPathElement>>(new Map())
+  const arcMapRef = useRef(new Map())
+  const pathMapRef = useRef(new Map())
   const selectedArcIdRef = useRef<string | null>(null)
   selectedArcIdRef.current = selectedArcId
 

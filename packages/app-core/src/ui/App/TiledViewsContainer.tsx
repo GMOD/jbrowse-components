@@ -30,8 +30,6 @@ import type {
   DockviewReadyEvent,
 } from 'dockview-react'
 
-import 'dockview-react/dist/styles/dockview.css'
-
 const useStyles = makeStyles()(() => ({
   container: {
     height: '100%',
@@ -71,7 +69,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
   const { classes } = useStyles()
   const theme = useTheme()
   const [api, setApi] = useState<DockviewApi | null>(null)
-  const trackedViewIdsRef = useRef<Set<string>>(new Set())
+  const trackedViewIdsRef = useRef(new Set<string>())
   const rearrangingRef = useRef(false)
   const sessionRef = useRef(session)
   sessionRef.current = session

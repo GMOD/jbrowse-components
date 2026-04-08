@@ -3,9 +3,8 @@
   "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
   "include": ["src/**/*.ts*", "src/**/*.js*"],
   "compilerOptions": {
+    "types": ["node", "jest"],
     "outDir": "esm",
-    "rootDir": "src",
-    "paths": {},
-    "baseUrl": "."
+    "rootDir": "src"
   }
 }

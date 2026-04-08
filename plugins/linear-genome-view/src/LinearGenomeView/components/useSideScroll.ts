@@ -9,7 +9,7 @@ export function useSideScroll(model: LinearGenomeViewModel) {
   // with useState/setState
   const scheduled = useRef(false)
 
-  const prevX = useRef<number>(0)
+  const prevX = useRef(0)
 
   useEffect(() => {
     let cleanup = () => {}

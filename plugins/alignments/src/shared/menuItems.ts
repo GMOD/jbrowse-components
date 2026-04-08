@@ -6,7 +6,7 @@ import PaletteIcon from '@mui/icons-material/Palette'
 
 import { modificationData } from './modificationData.ts'
 
-import type { ColorBy } from './types.ts'
+import type { ColorBy, FilterBy } from './types.ts'
 
 const FilterByTagDialog = lazy(
   () => import('./components/FilterByTagDialog.tsx'),
@@ -194,16 +194,20 @@ export function getColorSchemeMenuItem(model: LinearReadDisplayModel) {
   }
 }
 
+interface FilterByModel {
+  filterBy: FilterBy
+  setFilterBy: (arg: FilterBy) => void
+}
+
 /**
  * Shared filter by menu item for all LinearRead displays
  */
-export function getFilterByMenuItem(model: unknown) {
+export function getFilterByMenuItem(model: FilterByModel) {
   return {
     label: 'Filter by',
     icon: ClearAllIcon,
     onClick: () => {
-      // @ts-expect-error getSession works on model
-      getSession(model).queueDialog((handleClose: () => void) => [
+      getSession(model).queueDialog(handleClose => [
         FilterByTagDialog,
         { model, handleClose },
       ])
@@ -211,7 +215,7 @@ export function getFilterByMenuItem(model: unknown) {
   }
 }
 
-interface EditFiltersModel {
+interface EditFiltersModel extends FilterByModel {
   drawSingletons: boolean
   drawProperPairs: boolean
   setDrawSingletons: (arg: boolean) => void
@@ -247,8 +251,7 @@ export function getEditFiltersMenuItem(model: EditFiltersModel) {
       {
         label: 'Edit filters...',
         onClick: () => {
-          // @ts-expect-error getSession works on model
-          getSession(model).queueDialog((handleClose: () => void) => [
+          getSession(model).queueDialog(handleClose => [
             FilterByTagDialog,
             { model, handleClose },
           ])

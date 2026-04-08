@@ -133,7 +133,7 @@ export class IntervalTree<V> {
       existing.values.push(value)
       return existing
     }
-    const insertNode = new Node<V>(
+    const insertNode = new Node(
       key,
       value,
       this.nilNode,
@@ -150,13 +150,7 @@ export class IntervalTree<V> {
     const searchNode = new Node<V>(interval)
     const resultNodes: Node<V>[] = []
     this.treeSearchInterval(this.root, searchNode, resultNodes)
-    const results: V[] = []
-    for (const node of resultNodes) {
-      for (const v of node.values) {
-        results.push(v)
-      }
-    }
-    return results
+    return resultNodes.flatMap(node => node.values)
   }
 
   private recalcMax(node: Node<V>) {

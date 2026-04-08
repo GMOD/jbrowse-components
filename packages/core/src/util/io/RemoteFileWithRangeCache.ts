@@ -45,7 +45,7 @@ function limitConcurrency<T>(fn: () => Promise<T>) {
         },
         (err: unknown) => {
           activeCount--
-          reject(err as Error)
+          reject(err instanceof Error ? err : new Error(String(err)))
           runNext()
         },
       )
@@ -64,6 +64,18 @@ function cacheKey(url: string, chunkIndex: number) {
 }
 
 export class RemoteFileWithRangeCache extends RemoteFile {
+  private cachedStat?: { size: number }
+
+  async stat() {
+    if (!this.cachedStat) {
+      await this.getCachedRange(this.url, 0, 1)
+    }
+    // Content-Range may not be exposed (CORS) — return size 0 rather than
+    // throwing so callers degrade gracefully.
+
+    return this.cachedStat ?? { size: 0 }
+  }
+
   private async fetchRange(
     url: string,
     start: number,
@@ -74,10 +86,22 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       signal: signal ?? undefined,
       headers: { range: `bytes=${start}-${end}` },
     })
+    if (res.status === 416) {
+      // Range Not Satisfiable: requested range starts past end of file
+      return new Uint8Array(0)
+    }
     if (!res.ok) {
-      const errorMessage = `HTTP ${res.status} fetching ${url} bytes ${start}-${end}`
       const hint = ' (should be 206 for range requests)'
-      throw new Error(`${errorMessage}${res.status === 200 ? hint : ''}`)
+      const msg = `HTTP ${res.status} fetching ${url} bytes ${start}-${end}${res.status === 200 ? hint : ''}`
+      throw Object.assign(new Error(msg), { status: res.status })
+    }
+    // Parse total file size from Content-Range (e.g. "bytes 0-255/12345")
+    if (!this.cachedStat) {
+      const contentRange = res.headers.get('content-range')
+      const match = contentRange ? /\/(\d+)$/.exec(contentRange) : null
+      if (match) {
+        this.cachedStat = { size: parseInt(match[1]!, 10) }
+      }
     }
     return new Uint8Array(await res.arrayBuffer())
   }
@@ -90,35 +114,64 @@ export class RemoteFileWithRangeCache extends RemoteFile {
   ) {
     const startChunk = Math.floor(start / CHUNK_SIZE)
     const endChunk = Math.floor((start + length - 1) / CHUNK_SIZE)
-    const chunkCount = endChunk - startChunk + 1
 
-    const chunks = await Promise.all(
-      Array.from({ length: chunkCount }, (_, i) => {
-        const idx = startChunk + i
-        const key = cacheKey(url, idx)
-        const existing = getCached(key)
-        if (existing) {
-          return Promise.resolve(existing)
+    // Pre-pass: if any already-cached chunk in [startChunk, endChunk) is
+    // shorter than CHUNK_SIZE, the file ended within it. Chunks beyond that
+    // point start past EOF — skip fetching them. This prevents @gmod/bam and
+    // @gmod/tabix's fetchedSize() over-read of (1<<16) bytes past the last
+    // bgzf block from triggering a 416 when the over-read crosses a chunk boundary.
+    let effectiveEndChunk = endChunk
+    for (let i = startChunk; i < endChunk; i++) {
+      const c = getCached(cacheKey(url, i))
+      if (c !== undefined && c.length < CHUNK_SIZE) {
+        effectiveEndChunk = i
+        break
+      }
+    }
+    const chunkCount = effectiveEndChunk - startChunk + 1
+
+    // Find contiguous runs of missing (uncached) chunks
+    const runs: { start: number; end: number }[] = []
+    for (let i = 0; i < chunkCount; i++) {
+      if (!getCached(cacheKey(url, startChunk + i))) {
+        const lastRun = runs[runs.length - 1]
+        if (lastRun?.end === i - 1) {
+          lastRun.end = i
+        } else {
+          runs.push({ start: i, end: i })
         }
-        return limitConcurrency(async () => {
-          const alreadyCached = getCached(key)
-          if (alreadyCached) {
-            return alreadyCached
+      }
+    }
+
+    // Fetch each contiguous run as a single HTTP range request
+    await Promise.all(
+      runs.map(run =>
+        limitConcurrency(async () => {
+          const runStartChunk = startChunk + run.start
+          const runEndChunk = startChunk + run.end
+          const rangeStart = runStartChunk * CHUNK_SIZE
+          const rangeEnd = (runEndChunk + 1) * CHUNK_SIZE - 1
+          const data = await this.fetchRange(url, rangeStart, rangeEnd, signal)
+          for (let i = run.start; i <= run.end; i++) {
+            const offset = (i - run.start) * CHUNK_SIZE
+            putCached(
+              cacheKey(url, startChunk + i),
+              data.subarray(offset, offset + CHUNK_SIZE),
+            )
           }
-          const chunkStart = idx * CHUNK_SIZE
-          const chunkEnd = chunkStart + CHUNK_SIZE - 1
-          const data = await this.fetchRange(url, chunkStart, chunkEnd, signal)
-          putCached(key, data)
-          return data
-        })
-      }),
+        }),
+      ),
     )
 
+    // Assemble result from cached chunks
     const offsetInFirstChunk = start - startChunk * CHUNK_SIZE
     const result = new Uint8Array(length)
     let written = 0
-    for (const [i, chunk_] of chunks.entries()) {
-      const chunk = chunk_
+    for (let i = 0; i < chunkCount; i++) {
+      // Every chunk in [startChunk, effectiveEndChunk] is guaranteed cached
+      // here: either it was already present (skipped by the runs loop) or it
+      // was just fetched and putCached'd above.
+      const chunk = getCached(cacheKey(url, startChunk + i))!
       const sourceStart = i === 0 ? offsetInFirstChunk : 0
       const available = chunk.length - sourceStart
       const needed = length - written

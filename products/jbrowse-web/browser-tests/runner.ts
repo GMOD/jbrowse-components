@@ -27,7 +27,7 @@ const volvoxDataPath = path.resolve(__dirname, '../test_data/volvox')
 const PORT = 3333
 const OAUTH_PORT = 3030
 const BASICAUTH_PORT = 3040
-const runAuthTests = args.includes('--auth')
+const runAuthTests = !args.includes('--no-auth')
 
 // Helpers
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))

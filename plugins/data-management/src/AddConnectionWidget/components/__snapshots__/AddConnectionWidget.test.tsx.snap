@@ -19,7 +19,7 @@ exports[`renders 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiStepIcon-root Mui-active css-1jm3coa-MuiSvgIcon-root-MuiStepIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiStepIcon-root Mui-active css-19iamhn-MuiSvgIcon-root-MuiStepIcon-root"
               focusable="false"
               viewBox="0 0 24 24"
             >
@@ -43,7 +43,7 @@ exports[`renders 1`] = `
             class="MuiStepLabel-labelContainer css-p8xe3-MuiStepLabel-labelContainer"
           >
             <span
-              class="MuiStepLabel-label Mui-active css-vxmcgq-MuiStepLabel-label"
+              class="MuiStepLabel-label Mui-active css-1yi5sow-MuiStepLabel-label"
             >
               Select a Connection Type
             </span>
@@ -192,7 +192,7 @@ exports[`renders 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiStepIcon-root css-1jm3coa-MuiSvgIcon-root-MuiStepIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiStepIcon-root css-19iamhn-MuiSvgIcon-root-MuiStepIcon-root"
               focusable="false"
               viewBox="0 0 24 24"
             >
@@ -216,7 +216,7 @@ exports[`renders 1`] = `
             class="MuiStepLabel-labelContainer css-p8xe3-MuiStepLabel-labelContainer"
           >
             <span
-              class="MuiStepLabel-label Mui-disabled css-vxmcgq-MuiStepLabel-label"
+              class="MuiStepLabel-label Mui-disabled css-1yi5sow-MuiStepLabel-label"
             >
               Configure Connection
             </span>

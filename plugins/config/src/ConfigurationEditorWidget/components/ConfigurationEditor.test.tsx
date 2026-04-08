@@ -1,7 +1,9 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+// @ts-expect-error
 import Alignments from '@jbrowse/plugin-alignments'
+// @ts-expect-error
 import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
