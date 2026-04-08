@@ -97,7 +97,7 @@ const AssemblySelector = observer(function AssemblySelector({
     >
       {assemblyNames.map(name => (
         <MenuItem key={name} value={name}>
-          {assemblyManager.get(name)?.displayName || name}
+          {assemblyManager.getDisplayName(name)}
         </MenuItem>
       ))}
     </TextField>

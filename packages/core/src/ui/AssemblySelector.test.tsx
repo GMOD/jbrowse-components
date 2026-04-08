@@ -10,8 +10,7 @@ function makeSession(
   return {
     assemblyNames,
     assemblyManager: {
-      get: (name: string) =>
-        displayNames?.[name] ? { displayName: displayNames[name] } : undefined,
+      getDisplayName: (name: string) => displayNames?.[name] ?? name,
     },
   }
 }
