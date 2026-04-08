@@ -58,6 +58,7 @@ export function useGpuRenderer<R extends GpuRenderer>(
       return
     }
     let cancelled = false
+    let disposed = false
     const renderer = rendererCache.getOrCreate(canvas)
     rendererRef.current = renderer
     renderer
@@ -78,9 +79,32 @@ export function useGpuRenderer<R extends GpuRenderer>(
           setError(e)
         }
       })
+
+    // When the browser performs a hard navigation (e.g. page.goto() in
+    // Puppeteer tests, or the user navigating away), the JS context is
+    // destroyed without running React cleanup effects.  This means the
+    // useEffect return function (which calls renderer.dispose()) never
+    // fires, and WebGL contexts + all their GPU buffers leak until GC
+    // eventually reclaims them.  Chrome caps active WebGL contexts at
+    // ~16 and its GPU process can OOM well before GC runs.
+    //
+    // The pagehide event fires synchronously during navigation, giving
+    // us a reliable hook to release GPU resources before the page dies.
+    const handlePageHide = () => {
+      if (!disposed) {
+        disposed = true
+        renderer.dispose()
+      }
+    }
+    window.addEventListener('pagehide', handlePageHide)
+
     return () => {
+      window.removeEventListener('pagehide', handlePageHide)
       cancelled = true
-      renderer.dispose()
+      if (!disposed) {
+        disposed = true
+        renderer.dispose()
+      }
       rendererRef.current = null
       setReady(false)
       opts?.onDispose?.()

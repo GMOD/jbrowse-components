@@ -393,6 +393,8 @@ export class WebGL2Hal implements GpuHal {
 
   dispose() {
     const gl = this.gl
+    // eslint-disable-next-line no-console
+    console.log('[GPU] WebGL2Hal.dispose() — releasing GPU resources')
     this.deleteAllRegions()
     for (const pass of this.passes.values()) {
       gl.deleteVertexArray(pass.vao)
@@ -406,6 +408,14 @@ export class WebGL2Hal implements GpuHal {
     if (this.pickingFbo) {
       gl.deleteFramebuffer(this.pickingFbo)
       gl.deleteTexture(this.pickingTex)
+    }
+
+    // Explicitly release the WebGL context so Chrome's GPU process frees
+    // the memory immediately instead of waiting for GC.  Without this,
+    // long-running test suites accumulate unreleased contexts and OOM.
+    const ext = gl.getExtension('WEBGL_lose_context')
+    if (ext) {
+      ext.loseContext()
     }
   }
 

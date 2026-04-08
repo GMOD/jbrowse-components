@@ -688,6 +688,8 @@ export class WebGPUHal implements GpuHal {
   }
 
   dispose() {
+    // eslint-disable-next-line no-console
+    console.log('[GPU] WebGPUHal.dispose() — releasing GPU resources')
     this.deleteAllRegions()
     this.uniformRingBuffer.destroy()
     for (const ts of this.passTextures.values()) {

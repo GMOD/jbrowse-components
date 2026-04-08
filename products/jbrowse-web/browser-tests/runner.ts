@@ -95,13 +95,14 @@ async function discoverSuites(): Promise<TestSuite[]> {
 }
 
 async function runTests(
-  page: Page,
+  initialPage: Page,
   browser: Browser,
   suites: TestSuite[],
   includeAuth: boolean,
 ) {
   let passed = 0
   let failed = 0
+  let page = initialPage
 
   const suitesToRun = suites.filter(suite => {
     if (suite.requiresAuth && !includeAuth) {
@@ -119,7 +120,27 @@ async function runTests(
   for (const suite of suitesToRun) {
     console.log(`\n  ${suite.name}`)
 
+    // Recycle the page between suites to release accumulated GPU/memory
+    // resources and prevent OOM crashes during long test runs
+    try {
+      await page.close()
+      page = await setupPage(browser)
+    } catch (recycleErr) {
+      console.warn(
+        `  [warn] Failed to recycle page before suite "${suite.name}": ${recycleErr instanceof Error ? recycleErr.message : recycleErr}`,
+      )
+    }
+
     for (const test of suite.tests) {
+      if (test.requiresRemote && !includeRemote) {
+        console.log(`    ⚡ ${test.name} (skipped — requires --include-remote)`)
+        continue
+      }
+      if (test.requiresAuth && !includeAuth) {
+        console.log(`    ⚡ ${test.name} (skipped — requires --auth)`)
+        continue
+      }
+
       const start = performance.now()
       testStartTime = start
       process.stdout.write(`    ⏳ ${test.name}...`)
@@ -151,6 +172,26 @@ async function runTests(
         }
         console.log(`    ✗ ${test.name}`)
         console.log(`      Error: ${error}`)
+
+        // If the page/frame became detached (browser crash or GPU failure),
+        // open a fresh page so subsequent tests can continue
+        const isPageCrash =
+          error.includes('detached') ||
+          error.includes('Session closed') ||
+          error.includes('Target closed') ||
+          error.includes('Navigating frame was detached')
+        if (isPageCrash) {
+          try {
+            console.log('      [recovery] Page/frame crashed, opening fresh page...')
+            page = await setupPage(browser)
+            console.log('      [recovery] Fresh page ready')
+          } catch (recoveryErr) {
+            console.error(
+              `      [recovery] Browser itself has crashed, cannot recover: ${recoveryErr instanceof Error ? recoveryErr.message : recoveryErr}`,
+            )
+            return { passed, failed }
+          }
+        }
       }
     }
   }
@@ -190,6 +231,15 @@ async function runTestsWithRestart(
     console.log(`\n  ${suite.name}`)
 
     for (const test of suite.tests) {
+      if (test.requiresRemote && !includeRemote) {
+        console.log(`    ⚡ ${test.name} (skipped — requires --include-remote)`)
+        continue
+      }
+      if (test.requiresAuth && !includeAuth) {
+        console.log(`    ⚡ ${test.name} (skipped — requires --auth)`)
+        continue
+      }
+
       const start = performance.now()
       testStartTime = start
       process.stdout.write(`    ⏳ ${test.name}...`)

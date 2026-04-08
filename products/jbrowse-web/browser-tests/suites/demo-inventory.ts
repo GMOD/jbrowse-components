@@ -246,6 +246,7 @@ const localDemos: TestSuite = {
     },
     {
       name: 'Yeast synteny demo screenshot',
+      requiresRemote: true,
       fn: async page => {
         await navigateWithSessionSpec(
           page,
