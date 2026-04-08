@@ -11,10 +11,7 @@ import { getDeduplicatedResult, getFiltered } from './util.ts'
 
 import type { Option } from './util.ts'
 import type { LinearGenomeViewModel } from '../../model.ts'
-import type {
-  AutocompleteRenderInputParams,
-  TextFieldProps as TFP,
-} from '@mui/material'
+import type { TextFieldProps as TFP } from '@mui/material'
 
 const RefNameAutocomplete = observer(function RefNameAutocomplete({
   model,
@@ -98,8 +95,6 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
     [regions],
   )
 
-  const { helperText, slotProps: tfSlotProps } = TextFieldProps
-
   // notes on implementation:
   // The selectOnFocus setting helps highlight the field when clicked
   return (
@@ -161,20 +156,15 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       options={searchOptions?.length ? searchOptions : regionOptions}
       getOptionDisabled={option => option.group === 'limitOption'}
       filterOptions={(opts, { inputValue }) => getFiltered(opts, inputValue)}
-      renderInput={({
-        slotProps: paramSlotProps,
-        ...restParams
-      }: AutocompleteRenderInputParams) => (
+      renderInput={({ slotProps: paramSlotProps, ...restParams }) => (
         <TextField
-          onBlur={() => setInputValue(inputBoxVal)}
+          onBlur={() => { setInputValue(inputBoxVal) }}
           {...restParams}
           {...TextFieldProps}
           size="small"
-          helperText={helperText}
           slotProps={{
             ...paramSlotProps,
-            ...tfSlotProps,
-            input: { ...paramSlotProps?.input, ...tfSlotProps?.input },
+            ...TextFieldProps.slotProps,
           }}
           placeholder="Search for location"
         />
