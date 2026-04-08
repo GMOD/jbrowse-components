@@ -6,6 +6,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Help from '@mui/icons-material/Help'
 import MoreVert from '@mui/icons-material/MoreVert'
 import { Button, IconButton } from '@mui/material'
+/* eslint-disable import/named -- package exports are valid; eslint import resolver misses them */
 import {
   flexRender,
   getCoreRowModel,

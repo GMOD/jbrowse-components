@@ -1045,7 +1045,8 @@ export default function stateModelFactory(
           try {
             const feat = await fetchFeatureDetails(self, featureId)
             if (isAlive(self) && feat) {
-              selectFeature(feat)
+              ;(self as unknown as { selectFeature: (f: Feature) => void })
+                .selectFeature(feat)
             }
           } catch (e) {
             console.error(e)

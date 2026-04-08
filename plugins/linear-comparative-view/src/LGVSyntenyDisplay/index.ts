@@ -9,9 +9,15 @@ export default function LGVSyntenyDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaF(pluginManager)
     const stateModel = stateModelF(configSchema)
-    const { ReactComponent } = pluginManager.getDisplayType(
+    const linearAlignmentsDisplay = pluginManager.getDisplayType(
       'LinearAlignmentsDisplay',
     )
+    if (!linearAlignmentsDisplay?.ReactComponent) {
+      throw new Error(
+        'LinearAlignmentsDisplay plugin must be registered before LGVSyntenyDisplay',
+      )
+    }
+    const { ReactComponent } = linearAlignmentsDisplay
     return new DisplayType({
       name: 'LGVSyntenyDisplay',
       configSchema,

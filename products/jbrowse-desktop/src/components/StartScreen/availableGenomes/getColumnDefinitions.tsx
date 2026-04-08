@@ -5,6 +5,7 @@ import Check from '@mui/icons-material/Check'
 import Close from '@mui/icons-material/Close'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { Link, Tooltip } from '@mui/material'
+/* eslint-disable import/named -- package exports are valid; eslint import resolver misses them */
 import { createColumnHelper } from '@tanstack/react-table'
 
 import HighlightedText from './HighlightedText.tsx'

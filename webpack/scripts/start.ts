@@ -39,6 +39,7 @@ export default function startWebpack(config: webpack.Configuration) {
       }
 
       const protocol = process.env.HTTPS === 'true' ? 'https' : 'http'
+      const wsProtocol = process.env.HTTPS === 'true' ? 'wss' : 'ws'
       const appName = JSON.parse(fs.readFileSync('package.json', 'utf8')).name
 
       const urls = prepareUrls(protocol, HOST, port)
@@ -54,6 +55,16 @@ export default function startWebpack(config: webpack.Configuration) {
           host: HOST,
           port,
           hot: false,
+          // With host 0.0.0.0, the injected dev-server client can pick a wrong
+          // WebSocket URL on Windows; the tab then spins forever. Pin WS to localhost.
+          client: {
+            webSocketURL: {
+              hostname: 'localhost',
+              pathname: '/ws',
+              port,
+              protocol: wsProtocol,
+            },
+          },
           static: {
             serveIndex: true,
             staticOptions: { dotfiles: 'allow' },

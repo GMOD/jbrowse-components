@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import fs from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
+import { fileURLToPath, pathToFileURL } from 'url'
 
 import { launch } from 'puppeteer'
 
@@ -80,7 +80,7 @@ async function discoverSuites(): Promise<TestSuite[]> {
   const suites: TestSuite[] = []
 
   for (const file of files) {
-    const mod = await import(path.join(suitesDir, file))
+    const mod = await import(pathToFileURL(path.join(suitesDir, file)).href)
     const exported = mod.default
     if (Array.isArray(exported)) {
       for (const s of exported) {

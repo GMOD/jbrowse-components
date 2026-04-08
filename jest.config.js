@@ -1,3 +1,16 @@
+// canvas.js patches HTMLCanvasElement (jsdom); not available in pure Node
+const setupFilesBase = [
+  '<rootDir>/config/jest/textEncoder.js',
+  '<rootDir>/config/jest/console.js',
+  '<rootDir>/config/jest/messagechannel.js',
+  '<rootDir>/config/jest/structuredClone.js',
+  '<rootDir>/config/jest/setHTML.js',
+]
+const setupFilesWithCanvas = [
+  ...setupFilesBase,
+  '<rootDir>/config/jest/canvas.js',
+]
+
 const baseConfig = {
   moduleNameMapper: {
     '^@jbrowse/core/util/useMeasure$':
@@ -14,7 +27,9 @@ const baseConfig = {
     '\\.module\\.(css|sass|scss)$',
   ],
   collectCoverageFrom: [
-    '{packages,products,plugins}/*/src/**/*.{js,jsx,ts,tsx}',
+    'packages/*/src/**/*.{js,jsx,ts,tsx}',
+    'products/*/src/**/*.{js,jsx,ts,tsx}',
+    'plugins/*/src/**/*.{js,jsx,ts,tsx}',
   ],
   coveragePathIgnorePatterns: [
     '!*.d.ts',
@@ -22,14 +37,7 @@ const baseConfig = {
     'react-colorful.js',
     'QuickLRU.js',
   ],
-  setupFiles: [
-    '<rootDir>/config/jest/textEncoder.js',
-    '<rootDir>/config/jest/console.js',
-    '<rootDir>/config/jest/messagechannel.js',
-    '<rootDir>/config/jest/structuredClone.js',
-    '<rootDir>/config/jest/setHTML.js',
-    '<rootDir>/config/jest/canvas.js',
-  ],
+  setupFiles: setupFilesWithCanvas,
   testEnvironmentOptions: { url: 'http://localhost' },
   testTimeout: 15000,
 }
@@ -42,6 +50,7 @@ export default {
       testMatch: ['<rootDir>/integration.test.js'],
       testEnvironment: 'node',
       ...baseConfig,
+      setupFiles: setupFilesBase,
     },
     {
       // jbrowse-img uses Node environment with native fetch (no jest-fetch-mock)
@@ -50,12 +59,16 @@ export default {
       testPathIgnorePatterns: ['/dist/', '/cypress/', '/demos/'],
       testEnvironment: 'node',
       ...baseConfig,
+      setupFiles: setupFilesBase,
     },
     {
       // All other tests use jsdom with jest-fetch-mock
       displayName: 'default',
+      // Explicit globs (not brace expansion) so tests are discovered on Windows
       testMatch: [
-        '<rootDir>/{packages,products,plugins}/**/*.test.{ts,tsx,js,jsx}',
+        '<rootDir>/packages/**/*.test.{ts,tsx,js,jsx}',
+        '<rootDir>/products/**/*.test.{ts,tsx,js,jsx}',
+        '<rootDir>/plugins/**/*.test.{ts,tsx,js,jsx}',
       ],
       testPathIgnorePatterns: [
         '/dist/',
