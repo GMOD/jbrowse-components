@@ -1,3 +1,11 @@
+### Alignments — Curved Lines for Linked Reads
+
+The "Link supplementary alignments" mode draws a single straight line between
+reads. The breakpoint split view already has logic to draw curved lines that
+encode read orientation. Consider a mode (e.g. "Link paired/supp reads with
+curved lines") that reuses that curved-line orientation logic inside the normal
+alignments track.
+
 - Track Google Analytics events from users on a fine grained basis. better
 - Ensure `types.refinement` from @jbrowse/mobx-state-tree (see
   ~/src/mobx-state-tree) v5.6.0 provides fallbacks when state tree fails to load
@@ -36,13 +44,107 @@
 | Swap axes dotplot                                     | Idea / future feature                                               |
 | Swap axes linear synteny view                         | Idea / future feature                                               |
 
-### P4.2 R/ggplot2 Export System
+### Declarative "JBrowse Spec" Config Layer
+
+The current config system is a serialization format for MST internal state —
+users must think in terms of adapters, displays, and renderers rather than what
+they want to see. Vega-Lite, ggplot2, and GenomeSpy use a data → encoding → mark
+grammar that is far more discoverable.
+
+The session-spec URL format (`assembly`, `loc`, `tracks[]`) is already 80% of
+the way there. The idea is to extend it into a proper spec layer that compiles
+down to the internal config:
+
+```json
+{
+  "assembly": "hg38",
+  "location": "chr1:1,000,000-2,000,000",
+  "tracks": [
+    {
+      "data": "https://example.com/file.bam",
+      "color": { "field": "strand", "type": "nominal" },
+      "filter": { "mapq": ">= 20" },
+      "height": 300
+    },
+    {
+      "data": "https://example.com/coverage.bw",
+      "mark": "area",
+      "color": "steelblue"
+    }
+  ]
+}
+```
+
+Key behaviors:
+- Infer adapter type from URL/file extension (partially done already)
+- Infer display/track type from data type + mark
+- Map encoding channels (`color: {field: "strand"}`) to internal colorBy config
+- Map `filter` to internal filterBy flags
+- Fall through to raw config for anything the grammar doesn't cover
+
+This is the Vega-Lite → Vega pattern: simple grammar compiles to full spec.
+Plugin authors keep the full MST config power; end users get a clean API.
+
+Separately, `readConfObject`/`getConf` are expensive (traverse MST nodes each
+call) and are called in hot paths — caching resolved values would help
+performance.
+
+### R/ggplot2 Export System
 
 **Status:** Very ambitious, branch exists with initial work.
 
-- Design system to export session to R code generating ggplot images
-- Generic WebGL + ggplot2 system (very speculative)
-- Needs significant planning before implementation
+**Goal:** Export any JBrowse session view as an R script that reproduces the
+visualization using ggplot2/Bioconductor. This serves two purposes:
+
+- **Publication-quality figures** — researchers currently screenshot JBrowse and
+  paste into papers. An R export produces vector graphics with full control over
+  fonts, sizing, and journal-specific styling (Nature, Cell, etc.)
+- **Reproducibility** — the exported R script is a complete record of what data
+  was shown and how. It can be checked into a repo alongside a paper's analysis
+  code, re-run on updated data, or modified by reviewers
+
+**How it could work:**
+
+The JBrowse session already knows everything needed: data source URLs, genomic
+region, track types, color schemes, filters, and layout. An export step would
+translate each track type into its R equivalent:
+
+- Alignments pileup → Gviz/ggbio `AlignmentsTrack` or custom `geom_rect` layout
+- Wiggle/coverage → `geom_area` / `geom_line` with the same scale/color settings
+- Features/genes → `geom_rect` + `geom_text` for labels, or ggbio's gene model
+  geoms
+- Variants → `geom_point` or custom VCF geoms
+- Synteny → `geom_segment` / `geom_curve` between faceted panels
+- Color-by schemes → mapped to ggplot2 `scale_color_*` / `scale_fill_*`
+- JEXL callbacks → translated to R expressions where possible, or pre-evaluated
+  and baked into the data frame
+
+The exported script would use Bioconductor packages (Rsamtools, rtracklayer,
+VariantAnnotation) to read the same data files, so the R code is self-contained
+and re-runnable.
+
+**Open questions:**
+- How much of the layout engine (pileup stacking, synteny routing) needs to be
+  reimplemented in R vs. pre-computed and exported as coordinates?
+- Could a shared "JBrowse Spec" (see above) be the intermediate representation
+  that both the browser and the R exporter consume?
+- Integration with Quarto/RMarkdown — generate a notebook that mixes narrative
+  text with JBrowse-exported figures
+
+### Notebook Integration Refresh
+
+The `jupyter-jbrowse` project started this but needs a refresh. The session-spec
+format (see "JBrowse Spec" idea above) could be the basis for a cleaner API in
+Jupyter / Observable / Quarto. A notebook cell like:
+
+```python
+jbrowse.view("hg38", "chr17:7,571,720-7,590,868", tracks=["clinvar", "gencode"])
+```
+
+would generate a session-spec URL and render an iframe or embedded React
+component. The `@jbrowse/react-linear-genome-view` package already supports
+embedding, but the config wiring is too complex for notebook use — the spec layer
+would fix that.
 
 ### P4.4 Automatic Noisiness Scaling for Feature Frequency Thresholds
 

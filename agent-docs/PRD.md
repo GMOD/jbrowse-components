@@ -1,9 +1,9 @@
 # JBrowse 2 WebGL/WebGPU Migration — Project Requirements Document
 
-**Branch:** `webgl-poc` **Last updated:** 2026-03-17 **Status:** Active
+**Branch:** `webgl-poc` **Last updated:** 2026-04-08 **Status:** Active
 development — many features working, significant polish and testing needed
 
-> **Note:** When items are completed, move them to `COMPLETED.md`.
+> **Note:** When items are completed, move them to `agent-docs/completed/COMPLETED.md`.
 
 ---
 
@@ -19,43 +19,64 @@ documented below.
 
 ## Priority 1 — Critical / Blocking
 
-These issues block production readiness or affect the majority of users.
+### P1.3 WebGPU CI Testing
 
-### P1.3 Expand Browser Test Suite
+CI already runs Canvas 2D and WebGL passes on `ubuntu-latest`. WebGPU is not
+yet run on CI. `runner.ts` already has the Chrome flags for WebGPU, but Vulkan
+is not installed on the runner.
 
-**Requirements:**
+**Local:** Firefox headed mode with a real GPU works for WebGPU — use
+`--backend=webgpu --firefox --headed`. See `TEST_INFRASTRUCTURE.md`.
 
-- WebGPU does not work on CI action runners — tests must work with WebGL and
-  Canvas fallback
+**CI options:**
+- Install `mesa-vulkan-drivers` (lavapipe — software Vulkan), set
+  `VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json`, run under `xvfb-run`.
+  Zero extra runner cost; flags already scaffolded in `runner.ts`.
+- Use `macos-latest` runner (real GPU, confirmed by Bevy project) — ~10×
+  runner cost.
 
-### P1.4 Demo Session Loading
+### P1.4 Old Config / Session Migration
 
-- Many shared session links fail to load or load with incorrect settings. This
-  is the primary way users encounter the app.
+Old user configs and shared session links can break silently because this branch
+removed the `PileupRenderer` entirely — `LinearAlignmentsDisplay` no longer has
+a `renderer` config slot. Alignments tracks that had custom renderer settings
+(e.g. `featureHeight`, `featureSpacing`, `maxHeight`, `colorBy`, `filterBy`
+stored under `configuration.renderer`) will load with defaults instead.
 
-### Extra ideas
+**What already exists:**
+- `migrateSessionSnapshot` / `migrateConfigSnapshot` in
+  `products/jbrowse-web/src/migrateSessionSnapshot.ts` — rewrites old display
+  type names (LinearPileupDisplay → LinearAlignmentsDisplay, etc.) but does NOT
+  migrate `configuration.renderer` properties
+- `migrateAlignmentsSnapshot` (via `preProcessSnapshot` in
+  `LinearAlignmentsDisplay/model.ts`) — migrates display *state* properties
+  (renderingMode, showReadCloud, PileupDisplay/SNPCoverageDisplay nesting, etc.)
+  but also does NOT touch `configuration`
 
-Make curvy breakpoint split view lines in the alignments track for link
-paired/supp reads
+**Gap:** `configuration.renderer` hoisting. Old configs look like:
+```json
+{ "configuration": { "renderer": { "type": "PileupRenderer", "featureHeight": 10 } } }
+```
+The renderer slot is gone; those values are silently dropped.
 
-- Idea: The 'Link supplementary alignments has the concept of connecting reads
-  using a single line. But, we have logic in breakpoint split view for properly
-  linking the ORIENTATION of the reads using curved lines. evaluate whether we
-  can do this in the Linked paired end/supplementary reads mode in the normal
-  alignments track. If might be a separate mode from Link supplementary reads,
-  like "Link paired/supp reads with curved lines"
+**Action plan:**
+- Add a `migrateDisplayConfiguration(display)` helper in
+  `migrateSessionSnapshot.ts` that checks for `configuration.renderer.type ===
+  'PileupRenderer'` and hoists `featureHeight`, `featureSpacing`, `maxHeight`,
+  `colorBy`, `filterBy` up to `configuration`, then removes `renderer`
+- Wire it into `migrateTrackSnapshot` (already walks all display configs) — both
+  the config and session paths go through this
+- Other renderer types (`CanvasFeatureRenderer`, `SvgFeatureRenderer`,
+  `ArcRenderer`, `LollipopRenderer`) still have valid `renderer` slots in their
+  display configSchemas and do not need migration
 
-## Priority 4 — Low / Future Enhancements
+**Verification:** Our own `config_demo.json` and `volvox/config.json` actively
+use `CanvasFeatureRenderer`/`SvgFeatureRenderer`/`ArcRenderer` renderer configs
+with JEXL color expressions — verify these still load correctly after the change.
 
-### P4.3 Loading old configs
-
-- Ensure all old renderer configuration settings e.g. PileupRenderer (which were
-  all effectively removed) are mapped to new display model settings (e.g. to
-  LinearAlignmentsDisplay)
+---
 
 ## Architecture Notes
-
-### Current Rendering Backends
 
 ```
 ┌─────────────────────────────────────────────┐
@@ -78,55 +99,6 @@ paired/supp reads
                                └───────┘
 ```
 
-### Backend Selection
+Backend override: `?gpu=webgpu` / `?gpu=webgl` / `?gpu=off`
 
-- `?gpu=webgpu` — force WebGPU
-- `?gpu=webgl` — force WebGL2
-- `?gpu=off` — disable GPU (uses Canvas 2D fallback)
-- Default: auto-detect (WebGPU → WebGL2 → Canvas 2D)
-
-### Test Infrastructure
-
-- Puppeteer-based browser tests in `products/jbrowse-web/browser-tests/`
-- **21 test suites** with **~120 test cases** covering: alignments, bigwig,
-  variants, synteny, dotplot, HiC, canvas2d-fallback (8 tests: features,
-  multi-track, zoom, alignments+coverage, SNP coverage, arcs, sequence, wiggle),
-  canvas2d-variants, rendering-backends (16 tests: VCF, GFF3, wiggle, BAM/CRAM
-  pileup, SNP coverage, multi-wiggle, SV, JEXL, sequence, alignments+coverage,
-  arcs, synteny LGV, synteny linear, dotplot), color-by-tag, wiggle-color,
-  workspaces, session-spec, demo-inventory, svg-export, authentication,
-  main-thread-rpc, custom-url, redraw, basic-lgv, misc
-- Screenshot comparison via pixelmatch (threshold 0.1)
-- Backend-specific golden snapshots in `__snapshots__/{webgl,webgpu,canvas2d}/`
-- `--backend=webgl|webgpu|canvas2d` flag, `--filter=` for running subsets
-- `compare-backends.ts` for cross-backend visual regression (categories:
-  identical, similar <5%, different ≥5%)
-- Unit tests co-located with source (`*.test.ts`) using Jest with jsdom — **157
-  tests across 15 suites** in modified plugins
-- Canvas 2D renderer unit tests use mock canvas context pattern (20 tests
-  including picking)
-- Density-based feature limit unit tests (7 tests covering all threshold
-  scenarios)
-- Strand swap coordinate tests (4 tests covering all strand×reversed
-  combinations)
-- `copyView.renameIds()` unit tests (8 tests verifying ID uniqueness)
-- Fetch autorun tests include error recovery via `reload()` flow
-- Interbase indicator tests (7 tests for `computeNoncovCoverage` threshold
-  logic, depth boundaries, dominant type selection)
-- Interbase frequency tests (6 tests for `computePositionFrequencies`
-  edge/cliff/offset cases)
-- Depth-dependent threshold tests (2 tests for `applyDepthDependentThreshold`
-  interbase mode)
-- `featureFrequencyThreshold` tests (5 tests covering step boundaries,
-  interpolation, monotonicity)
-- Floating label regression test verifying description data stability across
-  zoom levels
-- Browser test runner forwards `[alignments]` and `[webgl-wiggle]` console logs
-  for debugging
-
-## Next Steps
-
-### Cross-Backend Testing
-
-1. **Cross-backend visual regression**: Use `compare-backends.ts` to flag
-   rendering differences between WebGL and Canvas2D for each track type
+Default: auto-detect (WebGPU → WebGL2 → Canvas 2D)
