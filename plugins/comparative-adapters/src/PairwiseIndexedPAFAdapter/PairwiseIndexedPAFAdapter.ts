@@ -11,7 +11,10 @@ import type { MultiPairFeature, PairInfo } from '../MultiPairFeature.ts'
 import type { SyriType } from '../syriUtils.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseOptions,
+  BaseOptionsWithRegions,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
 import type { FileLocation, Region } from '@jbrowse/core/util/types'
@@ -132,7 +135,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return true
   }
 
-  async getRefNames(opts: BaseOptions & { regions?: Region[] } = {}) {
+  async getRefNames(opts: BaseOptionsWithRegions = {}) {
     const r1 = opts.regions?.[0]?.assemblyName
     if (!r1) {
       return []

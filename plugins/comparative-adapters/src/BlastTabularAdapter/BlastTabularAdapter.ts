@@ -7,7 +7,10 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseOptions,
+  BaseOptionsWithRegions,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 // Blast output column names/descriptions taken from
@@ -253,7 +256,7 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
     return assemblyNames
   }
 
-  async getRefNames(opts: BaseOptions & { regions?: Region[] } = {}) {
+  async getRefNames(opts: BaseOptionsWithRegions = {}) {
     const r1 = opts.regions?.[0]?.assemblyName
     const feats = await this.getData(opts)
 

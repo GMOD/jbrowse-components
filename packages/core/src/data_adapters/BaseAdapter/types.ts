@@ -1,4 +1,5 @@
 import type { StopToken } from '../../util/stopToken.ts'
+import type { Region } from '../../util/types/index.ts'
 
 export interface BaseOptions {
   stopToken?: StopToken
@@ -8,6 +9,10 @@ export interface BaseOptions {
   signal?: AbortSignal
   statusCallback?: (message: string) => void
   headers?: Record<string, string>
+}
+
+export interface BaseOptionsWithRegions extends BaseOptions {
+  regions?: Region[]
 }
 
 export type SearchType = 'full' | 'prefix' | 'exact'

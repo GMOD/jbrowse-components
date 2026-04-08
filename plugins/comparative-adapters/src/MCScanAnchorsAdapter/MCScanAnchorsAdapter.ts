@@ -5,7 +5,10 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { parseBed, readFile } from '../util.ts'
 
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseOptions,
+  BaseOptionsWithRegions,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 interface BareFeature {
@@ -83,7 +86,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
     return assemblyNames
   }
 
-  async getRefNames(opts: BaseOptions & { regions?: Region[] } = {}) {
+  async getRefNames(opts: BaseOptionsWithRegions = {}) {
     const r1 = opts.regions?.[0]?.assemblyName
     const { feats } = await this.setup(opts)
 
