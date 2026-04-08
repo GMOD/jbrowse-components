@@ -7,12 +7,18 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 const defaultHeight = 200
 
+export interface LogEntry {
+  id: number
+  text: string
+}
+
 /**
  * #stateModel RLObserverView
  * #category view
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function stateModelFactory(_pluginManager: PluginManager) {
+  let nextEntryId = 0
   return types
     .compose(
       BaseViewModel,
@@ -32,8 +38,10 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
-      // Use MobX observable array for reactivity without O(n) copy
-      logEntries: observable.array<string>([], { deep: false }),
+      // MobX observable array for reactivity without O(n) copy.
+      // Entries have stable monotonic IDs so React keys are stable
+      // across eviction (avoids re-associating all rows when trimming).
+      logEntries: observable.array<LogEntry>([], { deep: false }),
     }))
     .views(self => ({
       /**
@@ -60,10 +68,13 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
       /**
        * #action
        */
-      addLogEntry(entry: string) {
-        self.logEntries.push(entry)
+      addLogEntry(text: string) {
+        self.logEntries.push({ id: nextEntryId++, text })
         if (self.logEntries.length > self.maxLogEntries) {
-          self.logEntries.splice(0, self.logEntries.length - self.maxLogEntries)
+          self.logEntries.splice(
+            0,
+            self.logEntries.length - self.maxLogEntries,
+          )
         }
       },
       /**
@@ -73,8 +84,6 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
         self.logEntries.clear()
       },
     }))
-  // logEntries is on .volatile() so it is already excluded from snapshots;
-  // no postProcessSnapshot needed.
 }
 
 export type RLObserverViewModel = ReturnType<

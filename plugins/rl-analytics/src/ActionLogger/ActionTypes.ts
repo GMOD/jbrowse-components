@@ -35,8 +35,6 @@ export interface ClassifiedAction {
   timestamp: number
   /** The MST action name that produced this (e.g. 'zoomTo', 'horizontalScroll') */
   sourceAction: string
-  /** Path of the MST node where the action was called */
-  path: string
   /** Action-specific data extracted from args */
   metadata: Record<string, unknown>
 }

@@ -122,7 +122,6 @@ export default class ActionListener {
         type: actionType ?? ActionType.OTHER,
         timestamp: Date.now(),
         sourceAction: call.name,
-        path: '',
         metadata: this.extractMetadata(call.name, call.args ?? [], call.tree),
       }
 

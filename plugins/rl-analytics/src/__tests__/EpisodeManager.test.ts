@@ -6,7 +6,6 @@ function makeAction(type: ActionType = ActionType.PAN) {
     type,
     timestamp: Date.now(),
     sourceAction: 'horizontalScroll',
-    path: '/views/0',
     metadata: { distance: 100 },
   }
 }

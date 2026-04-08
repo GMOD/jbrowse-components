@@ -58,12 +58,12 @@ const ObserverView = observer(function ObserverView({
           Action Monitor — waiting for actions...
         </Typography>
       )}
-      {model.logEntries.map((entry, i) => (
+      {model.logEntries.map(entry => (
         <Box
-          key={i}
+          key={entry.id}
           sx={{ py: 0.15, whiteSpace: 'pre-wrap', lineHeight: 1.3 }}
         >
-          {entry}
+          {entry.text}
         </Box>
       ))}
       <div ref={bottomRef} />

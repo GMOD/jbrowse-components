@@ -16,6 +16,24 @@ import configSchema from './config.ts'
 import type { RLObserverViewModel } from './ObserverView/viewModel.ts'
 import type { BrowserState, Step } from './RLPipeline/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
+  AbstractSessionModel,
+  AbstractViewModel,
+} from '@jbrowse/core/util'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+
+/**
+ * Shape of the rootModel we access — typed as a minimum interface to
+ * avoid depending on product-core types (which would be a circular dep).
+ */
+interface RootModelWithSession {
+  session?: AbstractSessionModel
+  jbrowse?: {
+    configuration?: {
+      RLAnalyticsPlugin?: AnyConfigurationModel
+    }
+  }
+}
 
 /** Module-level storage for test access — keyed by plugin instance */
 const testRefs = new WeakMap<
@@ -26,11 +44,6 @@ const testRefs = new WeakMap<
     exportManager: ExportManager
   }
 >()
-
-interface SessionLike {
-  views?: { type: string }[]
-  addView?: (typeName: string, initialState: object) => unknown
-}
 
 export default class RLAnalyticsPlugin extends Plugin {
   name = 'RLAnalyticsPlugin'
@@ -62,15 +75,14 @@ export default class RLAnalyticsPlugin extends Plugin {
     let maxEpisodes = 100
     let logOther = false
 
-    // Session accessor
-    const getSession = (): SessionLike | undefined =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (rootModel as any).session as SessionLike | undefined
+    // Typed accessor for rootModel — avoids repeated as-any casts
+    const typedRoot = rootModel as unknown as RootModelWithSession
 
-    // View accessors
-    const getLinearGenomeView = () => {
+    const getSession = (): AbstractSessionModel | undefined => typedRoot.session
+
+    const getLinearGenomeView = (): AbstractViewModel | undefined => {
       try {
-        return getSession()?.views?.find(v => v.type === 'LinearGenomeView')
+        return getSession()?.views.find(v => v.type === 'LinearGenomeView')
       } catch {
         return undefined
       }
@@ -78,9 +90,7 @@ export default class RLAnalyticsPlugin extends Plugin {
 
     const getObserverView = (): RLObserverViewModel | undefined => {
       try {
-        const view = getSession()?.views?.find(
-          v => v.type === 'RLObserverView',
-        )
+        const view = getSession()?.views.find(v => v.type === 'RLObserverView')
         if (view && isAlive(view)) {
           return view as unknown as RLObserverViewModel
         }
@@ -93,8 +103,7 @@ export default class RLAnalyticsPlugin extends Plugin {
     // Read config BEFORE creating subsystems
     let webhookUrl = ''
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const conf = (rootModel as any).jbrowse?.configuration?.RLAnalyticsPlugin
+      const conf = typedRoot.jbrowse?.configuration?.RLAnalyticsPlugin
       if (conf) {
         const readSlot = <T>(slot: string, fallback: T): T => {
           try {
@@ -171,10 +180,9 @@ export default class RLAnalyticsPlugin extends Plugin {
         label: 'Action Monitor',
         onClick: () => {
           const s = getSession()
-          if (s?.addView) {
+          if (s) {
             const view = s.addView('RLObserverView', {})
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ;(view as any).setDisplayName?.('Action Monitor')
+            view.setDisplayName('Action Monitor')
           }
         },
       })
@@ -193,10 +201,9 @@ export default class RLAnalyticsPlugin extends Plugin {
       const params = new URLSearchParams(window.location.search)
       if (params.has('rlObserver') && !getObserverView()) {
         const s = getSession()
-        if (s?.addView) {
+        if (s) {
           const view = s.addView('RLObserverView', {})
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ;(view as any).setDisplayName?.('Action Monitor')
+          view.setDisplayName('Action Monitor')
         }
       }
     }
