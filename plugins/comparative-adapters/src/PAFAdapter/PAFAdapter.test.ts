@@ -4,8 +4,8 @@ import { toArray } from 'rxjs/operators'
 import Adapter from './PAFAdapter.ts'
 import MyConfigSchema from './configSchema.ts'
 
-test('adapter can fetch features from peach_grape.paf', async () => {
-  const adapter = new Adapter(
+function makeAdapter() {
+  return new Adapter(
     MyConfigSchema.create({
       pafLocation: {
         localPath: require.resolve('./test_data/peach_grape.paf'),
@@ -14,6 +14,10 @@ test('adapter can fetch features from peach_grape.paf', async () => {
       assemblyNames: ['peach', 'grape'],
     }),
   )
+}
+
+test('adapter can fetch features from peach_grape.paf', async () => {
+  const adapter = makeAdapter()
 
   const features1 = adapter.getFeatures({
     refName: 'Pp01',
@@ -35,4 +39,34 @@ test('adapter can fetch features from peach_grape.paf', async () => {
   expect(fa2.length).toBe(5)
   expect(fa1[0]!.get('refName')).toBe('Pp01')
   expect(fa2[0]!.get('refName')).toBe('chr1')
+})
+
+test('getRefNames returns query ref names for query assembly', async () => {
+  const adapter = makeAdapter()
+  const refNames = await adapter.getRefNames({
+    regions: [{ assemblyName: 'peach', refName: '', start: 0, end: 0 }],
+  })
+  expect(refNames).toContain('Pp01')
+})
+
+test('getRefNames returns target ref names for target assembly', async () => {
+  const adapter = makeAdapter()
+  const refNames = await adapter.getRefNames({
+    regions: [{ assemblyName: 'grape', refName: '', start: 0, end: 0 }],
+  })
+  expect(refNames).toContain('chr1')
+})
+
+test('getRefNames returns empty for unknown assembly', async () => {
+  const adapter = makeAdapter()
+  const refNames = await adapter.getRefNames({
+    regions: [{ assemblyName: 'unknown', refName: '', start: 0, end: 0 }],
+  })
+  expect(refNames).toEqual([])
+})
+
+test('getRefNames returns empty when no regions provided', async () => {
+  const adapter = makeAdapter()
+  const refNames = await adapter.getRefNames({})
+  expect(refNames).toEqual([])
 })
