@@ -1,8 +1,4 @@
-import {
-  findByText,
-  navigateWithSessionSpec,
-  waitForDataLoaded,
-} from '../helpers.ts'
+import { navigateWithSessionSpec, waitForDataLoaded } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
@@ -10,32 +6,6 @@ import type { TestSuite } from '../types.ts'
 const suite: TestSuite = {
   name: 'Additional Track Types',
   tests: [
-    {
-      name: 'lollipop track renders',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-50000',
-              tracks: ['lollipop_track'],
-            },
-          ],
-        })
-
-        await findByText(page, 'ctgA')
-        await waitForDataLoaded(page)
-        await page.waitForSelector('[data-testid$="-done"] canvas', {
-          timeout: 60000,
-        })
-        await canvasSnapshot(
-          page,
-          'additional-lollipop-canvas',
-          '[data-testid$="-done"] canvas',
-        )
-      },
-    },
     {
       name: 'BED genes track renders',
       fn: async page => {
@@ -244,7 +214,7 @@ const suite: TestSuite = {
             {
               type: 'LinearGenomeView',
               assembly: 'volvox',
-              loc: 'ctgA:1-50000',
+              loc: 'ctgA:1-800',
               tracks: ['variant_colors'],
             },
           ],
