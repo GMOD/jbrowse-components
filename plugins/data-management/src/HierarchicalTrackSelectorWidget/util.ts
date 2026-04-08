@@ -1,9 +1,9 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
+import type { TreeNode, TreeTrackNode } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { TreeNode, TreeTrackNode } from './types.ts'
 
 export function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
   // shortcut case is that arrays are single entries, and are equal

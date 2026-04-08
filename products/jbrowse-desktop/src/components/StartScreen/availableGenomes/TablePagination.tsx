@@ -37,7 +37,7 @@ export default function TablePagination({
   onPageSizeChange: (pageSize: number) => void
 }) {
   const { classes } = useStyles()
-  const pageCount = Math.ceil(totalRows / pageSize)
+  const pageCount = Math.max(1, Math.ceil(totalRows / pageSize))
   const canPrevious = pageIndex > 0
   const canNext = pageIndex < pageCount - 1
 

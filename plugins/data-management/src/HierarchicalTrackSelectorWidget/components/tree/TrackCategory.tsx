@@ -135,9 +135,7 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
         label: 'Show all',
         onClick: () => {
           for (const child of nodes) {
-            if (child.type === 'track') {
-              model.view.showTrack(child.trackId)
-            }
+            model.view.showTrack(child.trackId)
           }
         },
       },
@@ -145,9 +143,7 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
         label: 'Hide all',
         onClick: () => {
           for (const child of nodes) {
-            if (child.type === 'track') {
-              model.view.hideTrack(child.trackId)
-            }
+            model.view.hideTrack(child.trackId)
           }
         },
       },

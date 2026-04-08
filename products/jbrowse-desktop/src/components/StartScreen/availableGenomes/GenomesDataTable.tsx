@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { CascadingMenuButton, ErrorMessage } from '@jbrowse/core/ui'
 import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
@@ -12,6 +12,7 @@ import CategorySelector from './CategorySelector.tsx'
 import MoreInfoDialog from './MoreInfoDialog.tsx'
 import SearchField from './SearchField.tsx'
 import SkeletonLoader from './SkeletonLoader.tsx'
+import TablePagination from './TablePagination.tsx'
 import { getColumnDefinitions } from './getColumnDefinitions.tsx'
 import { useGenomesData } from './useGenomesData.ts'
 import defaultFavs from '../defaultFavs.ts'
@@ -19,15 +20,6 @@ import useCategories from './useCategories.ts'
 
 import type { Entry, GenomeColumn } from './getColumnDefinitions.tsx'
 import type { Fav, LaunchCallback } from '../types.ts'
-
-const ROW_HEIGHT = 28
-const HEADER_HEIGHT = 35
-const CHECKBOX_WIDTH = 48
-
-const checkboxSx = {
-  padding: 0,
-  '& .MuiSvgIcon-root': { fontSize: '1.15rem' },
-}
 
 const useStyles = makeStyles()(theme => {
   const borderColor =
@@ -47,146 +39,51 @@ const useStyles = makeStyles()(theme => {
       minHeight: 500,
       position: 'relative',
     },
-    root: {
-      height: 500,
-      width: '100%',
-      overflow: 'auto',
-      border,
-      borderRadius: theme.shape.borderRadius,
-      background: theme.palette.background.paper,
-      fontFamily: theme.typography.fontFamily,
-      fontSize: theme.typography.body2.fontSize,
-      lineHeight: theme.typography.body2.lineHeight,
-      color: theme.palette.text.primary,
-    },
     table: {
-      minWidth: '100%',
+      width: '100%',
       borderCollapse: 'collapse',
-      tableLayout: 'fixed',
-    },
-    thead: {
-      position: 'sticky',
-      top: 0,
-      zIndex: 1,
-      background: theme.palette.background.paper,
-    },
-    checkboxCell: {
-      padding: 0,
-      textAlign: 'center',
-      verticalAlign: 'middle',
-      lineHeight: 0,
-      borderBottom: border,
-      boxSizing: 'border-box',
-    },
-    headerCell: {
-      height: HEADER_HEIGHT,
-      position: 'relative',
-      textAlign: 'left',
-      fontWeight: theme.typography.fontWeightMedium,
-      padding: '0 10px',
-      borderBottom: border,
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-      userSelect: 'none',
-      cursor: 'pointer',
-      lineHeight: `${HEADER_HEIGHT}px`,
-      verticalAlign: 'middle',
-      boxSizing: 'border-box',
-      '&:hover': {
-        background: theme.palette.action.hover,
+      '& th, & td': {
+        textAlign: 'left',
+        padding: '2px 4px',
+        borderBottom: border,
+        fontSize: theme.typography.body2.fontSize,
       },
-    },
-    bodyRow: {
-      '&:hover': {
-        background: theme.palette.action.hover,
+      '& th': {
+        backgroundColor: theme.palette.background.paper,
+        fontWeight: theme.typography.fontWeightMedium,
+        cursor: 'pointer',
+        '&:hover': {
+          backgroundColor: theme.palette.action.hover,
+        },
+      },
+      '& tr:hover': {
+        backgroundColor: theme.palette.action.hover,
       },
     },
     selectedRow: {
-      background: alpha(
+      backgroundColor: alpha(
         theme.palette.primary.main,
         theme.palette.action.selectedOpacity,
       ),
       '&:hover': {
-        background: alpha(
+        backgroundColor: alpha(
           theme.palette.primary.main,
           theme.palette.action.selectedOpacity +
             theme.palette.action.hoverOpacity,
         ),
       },
     },
-    bodyCell: {
-      height: ROW_HEIGHT,
-      padding: '0 10px',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-      borderBottom: border,
-      lineHeight: `${ROW_HEIGHT - 1}px`,
-      boxSizing: 'border-box',
-    },
-    resizeHandle: {
-      position: 'absolute',
-      right: 0,
-      top: '25%',
-      height: '50%',
-      width: 10,
-      display: 'flex',
-      justifyContent: 'center',
-      cursor: 'col-resize',
-    },
-    resizeLine: {
-      width: 1,
-      height: '100%',
-      background: borderColor,
-    },
-    fillerCell: {
-      borderBottom: border,
+    checkboxCell: {
       padding: 0,
+      textAlign: 'center',
+      verticalAlign: 'middle',
     },
   }
 })
 
-function useVirtualRows(
-  parentRef: React.RefObject<HTMLDivElement | null>,
-  count: number,
-  rowHeight: number,
-  overscan = 20,
-) {
-  const [scrollState, setScrollState] = useState({
-    scrollTop: 0,
-    clientHeight: 0,
-  })
-
-  useEffect(() => {
-    const el = parentRef.current
-    if (!el) {
-      return
-    }
-    setScrollState({ scrollTop: el.scrollTop, clientHeight: el.clientHeight })
-    const onScroll = () => {
-      setScrollState({ scrollTop: el.scrollTop, clientHeight: el.clientHeight })
-    }
-    el.addEventListener('scroll', onScroll, { passive: true })
-    return () => {
-      el.removeEventListener('scroll', onScroll)
-    }
-  }, [parentRef])
-
-  const { scrollTop, clientHeight } = scrollState
-  const totalSize = count * rowHeight
-  const startIdx = Math.max(0, Math.floor(scrollTop / rowHeight) - overscan)
-  const endIdx = Math.min(
-    count,
-    Math.ceil((scrollTop + clientHeight) / rowHeight) + overscan,
-  )
-
-  const items = []
-  for (let i = startIdx; i < endIdx; i++) {
-    items.push({ index: i, start: i * rowHeight })
-  }
-
-  return { items, totalSize }
+const checkboxSx = {
+  padding: 0,
+  '& .MuiSvgIcon-root': { fontSize: '1.15rem' },
 }
 
 function defaultSort(a: Entry, b: Entry, col: GenomeColumn) {
@@ -196,20 +93,6 @@ function defaultSort(a: Entry, b: Entry, col: GenomeColumn) {
   const aVal = `${a[col.id] ?? ''}`
   const bVal = `${b[col.id] ?? ''}`
   return aVal.localeCompare(bVal)
-}
-
-function defaultColWidth(col: GenomeColumn) {
-  if (col.id === 'favorite') {
-    return 70
-  }
-  if (
-    col.id === 'name' ||
-    col.id === 'commonName' ||
-    col.id === 'description'
-  ) {
-    return 300
-  }
-  return 150
 }
 
 export default function GenomesDataTable({
@@ -224,12 +107,14 @@ export default function GenomesDataTable({
   launch: LaunchCallback
 }) {
   'use no memo'
-  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [selected, setSelected] = useState(new Set())
   const [showOnlyFavs, setShowOnlyFavs] = useState(false)
   const [filterOption, setFilterOption] = useState('all')
   const [moreInfoDialogOpen, setMoreInfoDialogOpen] = useState(false)
   const [multipleSelection, setMultipleSelection] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [pageIndex, setPageIndex] = useState(0)
+  const [pageSize, setPageSize] = useState(50)
   const [sorting, setSorting] = useState<{
     id: string
     desc: boolean
@@ -239,7 +124,6 @@ export default function GenomesDataTable({
     'ucsc',
   )
   const [showAllColumns, setShowAllColumns] = useState(false)
-  const [colWidths, setColWidths] = useState<Record<string, number>>({})
   const { classes } = useStyles()
   const {
     categories,
@@ -316,6 +200,11 @@ export default function GenomesDataTable({
     return [...data].sort((a, b) => dir * defaultSort(a, b, col))
   }, [data, sorting, columns])
 
+  const pageRows = useMemo(() => {
+    const start = pageIndex * pageSize
+    return sortedData.slice(start, start + pageSize)
+  }, [sortedData, pageIndex, pageSize])
+
   const toggleSort = (colId: string) => {
     if (sorting?.id === colId) {
       if (sorting.desc) {
@@ -328,41 +217,11 @@ export default function GenomesDataTable({
     }
   }
 
-  const onResizeStart = (colId: string, e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    const startX = e.clientX
-    const startWidth =
-      colWidths[colId] ?? defaultColWidth(columns.find(c => c.id === colId)!)
-
-    const onMouseMove = (ev: MouseEvent) => {
-      const newWidth = Math.max(50, startWidth + ev.clientX - startX)
-      setColWidths(prev => ({ ...prev, [colId]: newWidth }))
-    }
-
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-    }
-
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
-  }
-
-  const parentRef = useRef<HTMLDivElement>(null)
-  const { items: virtualItems, totalSize } = useVirtualRows(
-    parentRef,
-    sortedData.length,
-    ROW_HEIGHT,
-  )
-
-  const lastColId = columns.at(-1)?.id
-
   const allSelected =
-    sortedData.length > 0 && sortedData.every(row => selected.has(row.id))
+    pageRows.length > 0 && pageRows.every(row => selected.has(row.id))
 
   const someSelected =
-    !allSelected && sortedData.some(row => selected.has(row.id))
+    !allSelected && pageRows.some(row => selected.has(row.id))
 
   return (
     <div className={classes.panel}>
@@ -499,138 +358,85 @@ export default function GenomesDataTable({
         <SkeletonLoader />
       ) : (
         <div>
-          <div ref={parentRef} className={classes.root}>
-            <table className={classes.table}>
-              <colgroup>
+          <table className={classes.table}>
+            <thead>
+              <tr>
                 {multipleSelection ? (
-                  <col style={{ width: CHECKBOX_WIDTH }} />
+                  <th className={classes.checkboxCell}>
+                    <Checkbox
+                      size="small"
+                      checked={allSelected}
+                      indeterminate={someSelected}
+                      onChange={() => {
+                        if (allSelected) {
+                          setSelected(new Set())
+                        } else {
+                          setSelected(new Set(pageRows.map(r => r.id)))
+                        }
+                      }}
+                      sx={checkboxSx}
+                    />
+                  </th>
                 ) : null}
                 {columns.map(col => (
-                  <col
+                  <th
                     key={col.id}
-                    style={{
-                      width: colWidths[col.id] ?? defaultColWidth(col),
-                    }}
-                  />
-                ))}
-                <col />
-              </colgroup>
-              <thead className={classes.thead}>
-                <tr>
-                  {multipleSelection ? (
-                    <th className={classes.checkboxCell}>
-                      <Checkbox
-                        size="small"
-                        checked={allSelected}
-                        indeterminate={someSelected}
-                        onChange={() => {
-                          if (allSelected) {
-                            setSelected(new Set())
-                          } else {
-                            setSelected(new Set(sortedData.map(r => r.id)))
-                          }
-                        }}
-                        sx={checkboxSx}
-                      />
-                    </th>
-                  ) : null}
-                  {columns.map(col => (
-                    <th
-                      key={col.id}
-                      className={classes.headerCell}
-                      onClick={() => {
-                        toggleSort(col.id)
-                      }}
-                    >
-                      {col.header}
-                      {sorting?.id === col.id
-                        ? sorting.desc
-                          ? ' ↓'
-                          : ' ↑'
-                        : ''}
-                      {col.id !== lastColId ? (
-                        <div
-                          className={classes.resizeHandle}
-                          onMouseDown={e => {
-                            onResizeStart(col.id, e)
-                          }}
-                          onClick={e => {
-                            e.stopPropagation()
-                          }}
-                        >
-                          <div className={classes.resizeLine} />
-                        </div>
-                      ) : null}
-                    </th>
-                  ))}
-                  <th className={classes.fillerCell} />
-                </tr>
-              </thead>
-              <tbody>
-                {virtualItems.length > 0 ? (
-                  <tr style={{ height: virtualItems[0]!.start }}>
-                    <td />
-                  </tr>
-                ) : null}
-                {virtualItems.map(virtualRow => {
-                  const row = sortedData[virtualRow.index]!
-                  const isSelected = selected.has(row.id)
-                  return (
-                    <tr
-                      key={row.id}
-                      className={
-                        isSelected
-                          ? `${classes.bodyRow} ${classes.selectedRow}`
-                          : classes.bodyRow
-                      }
-                    >
-                      {multipleSelection ? (
-                        <td className={classes.checkboxCell}>
-                          <Checkbox
-                            size="small"
-                            checked={isSelected}
-                            onChange={() => {
-                              const next = new Set(selected)
-                              if (next.has(row.id)) {
-                                next.delete(row.id)
-                              } else {
-                                next.add(row.id)
-                              }
-                              setSelected(next)
-                            }}
-                            sx={checkboxSx}
-                          />
-                        </td>
-                      ) : null}
-                      {columns.map(col => (
-                        <td key={col.id} className={classes.bodyCell}>
-                          {col.cell ? col.cell(row) : `${row[col.id] ?? ''}`}
-                        </td>
-                      ))}
-                      <td className={classes.fillerCell} />
-                    </tr>
-                  )
-                })}
-                {virtualItems.length > 0 ? (
-                  <tr
-                    style={{
-                      height:
-                        totalSize - virtualItems.at(-1)!.start - ROW_HEIGHT,
+                    onClick={() => {
+                      toggleSort(col.id)
                     }}
                   >
-                    <td />
+                    {col.header}
+                    {sorting?.id === col.id ? (sorting.desc ? ' ↓' : ' ↑') : ''}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {pageRows.map(row => {
+                const isSelected = selected.has(row.id)
+                return (
+                  <tr
+                    key={row.id}
+                    className={isSelected ? classes.selectedRow : undefined}
+                  >
+                    {multipleSelection ? (
+                      <td className={classes.checkboxCell}>
+                        <Checkbox
+                          size="small"
+                          checked={isSelected}
+                          onChange={() => {
+                            const next = new Set(selected)
+                            if (next.has(row.id)) {
+                              next.delete(row.id)
+                            } else {
+                              next.add(row.id)
+                            }
+                            setSelected(next)
+                          }}
+                          sx={checkboxSx}
+                        />
+                      </td>
+                    ) : null}
+                    {columns.map(col => (
+                      <td key={col.id}>
+                        {col.cell ? col.cell(row) : `${row[col.id] ?? ''}`}
+                      </td>
+                    ))}
                   </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </div>
+                )
+              })}
+            </tbody>
+          </table>
 
           <TablePagination
-            pageIndex={0}
-            pageSize={sortedData.length}
+            pageIndex={pageIndex}
+            pageSize={pageSize}
             totalRows={sortedData.length}
-            onPageChange={() => {}}
-            onPageSizeChange={() => {}}
+            onPageChange={setPageIndex}
+            onPageSizeChange={size => {
+              setPageSize(size)
+              setPageIndex(0)
+            }}
           />
         </div>
       )}
