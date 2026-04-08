@@ -5,10 +5,10 @@ exports[`renders 1`] = `
   <div
     class="css-1fhgjcy"
   >
-    <div
-      class="MuiStepper-root MuiStepper-vertical css-h3b25w-MuiStepper-root"
+    <ol
+      class="MuiStepper-root MuiStepper-vertical css-12ge8x3-MuiStepper-root"
     >
-      <div
+      <li
         class="MuiStep-root MuiStep-vertical css-enonti-MuiStep-root"
       >
         <span
@@ -68,14 +68,13 @@ exports[`renders 1`] = `
                   <div
                     class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-cmpglg-MuiFormControl-root-MuiTextField-root"
                   >
-                    <label
+                    <div
                       class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined css-flglzq-MuiFormLabel-root-MuiInputLabel-root"
                       data-shrink="true"
-                      for="_r_1_"
                       id="_r_1_-label"
                     >
                       connectionType
-                    </label>
+                    </div>
                     <div
                       class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiSelect-root css-b32mwt-MuiInputBase-root-MuiOutlinedInput-root"
                     >
@@ -95,12 +94,13 @@ exports[`renders 1`] = `
                         aria-hidden="true"
                         aria-invalid="false"
                         class="MuiSelect-nativeInput css-j0riat-MuiSelect-nativeInput"
+                        id="_r_3_"
                         tabindex="-1"
                         value="UCSCTrackHubConnection"
                       />
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiSelect-iconOutlined css-1n8g1bv-MuiSvgIcon-root-MuiNativeSelect-root-MuiSelect-icon"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon css-1n8g1bv-MuiSvgIcon-root-MuiNativeSelect-root-MuiSelect-icon"
                         data-testid="ArrowDropDownIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
@@ -153,7 +153,7 @@ exports[`renders 1`] = `
                   class="css-19idom"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary Mui-disabled MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary css-4rmdel-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-bcqx18-MuiButtonBase-root-MuiButton-root"
                     disabled=""
                     tabindex="-1"
                     type="button"
@@ -161,7 +161,7 @@ exports[`renders 1`] = `
                     Back
                   </button>
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-1pprb7-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-sizeMedium MuiButton-colorPrimary css-a7w8l0-MuiButtonBase-root-MuiButton-root"
                     data-testid="addConnectionNext"
                     tabindex="0"
                     type="button"
@@ -173,15 +173,15 @@ exports[`renders 1`] = `
             </div>
           </div>
         </div>
-      </div>
+      </li>
       <div
         class="MuiStepConnector-root MuiStepConnector-vertical Mui-disabled css-1afu6qk-MuiStepConnector-root"
       >
         <span
-          class="MuiStepConnector-line MuiStepConnector-lineVertical css-1deaddp-MuiStepConnector-line"
+          class="MuiStepConnector-line css-1deaddp-MuiStepConnector-line"
         />
       </div>
-      <div
+      <li
         class="MuiStep-root MuiStep-vertical css-enonti-MuiStep-root"
       >
         <span
@@ -225,8 +225,8 @@ exports[`renders 1`] = `
         <div
           class="MuiStepContent-root MuiStepContent-last css-1r4r9eo-MuiStepContent-root"
         />
-      </div>
-    </div>
+      </li>
+    </ol>
   </div>
 </div>
 `;

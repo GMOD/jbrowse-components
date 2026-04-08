@@ -61,6 +61,8 @@ const AssemblySelector = observer(function AssemblySelector({
   }, [selection, onChange, selected])
 
   const error = assemblyNames.length ? '' : 'No configured assemblies'
+  const { slotProps: textFieldSlotProps, ...restTextFieldProps } =
+    TextFieldProps || {}
   return (
     <TextField
       select
@@ -75,12 +77,13 @@ const AssemblySelector = observer(function AssemblySelector({
       error={!!error}
       disabled={!!error}
       className={classes.importFormEntry}
-      {...TextFieldProps}
+      {...restTextFieldProps}
       slotProps={{
         input: InputProps,
         htmlInput: {
           'data-testid': 'assembly-selector',
         },
+        ...textFieldSlotProps,
       }}
     >
       {assemblyNames.map(name => (

@@ -80,12 +80,12 @@ exports[`renders all the different types of built-in slots 1`] = `
                       stringTest
                     </label>
                     <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
+                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-17skhn2-MuiInputBase-root-MuiInput-root"
                     >
                       <input
                         aria-describedby="_r_5_-helper-text"
                         aria-invalid="false"
-                        class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
+                        class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
                         id="_r_5_"
                         type="text"
                         value="string1"
@@ -136,7 +136,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                         <button
                           aria-label="local file"
                           aria-pressed="false"
-                          class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-firstButton css-ll6l22-MuiButtonBase-root-MuiToggleButton-root"
+                          class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-firstButton css-ll6l22-MuiButtonBase-root-MuiToggleButton-root"
                           tabindex="0"
                           type="button"
                           value="file"
@@ -146,7 +146,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                         <button
                           aria-label="url"
                           aria-pressed="true"
-                          class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root Mui-selected MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-lastButton css-ll6l22-MuiButtonBase-root-MuiToggleButton-root"
+                          class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root Mui-selected MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-lastButton css-ll6l22-MuiButtonBase-root-MuiToggleButton-root"
                           tabindex="0"
                           type="button"
                           value="url"
@@ -170,7 +170,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                         >
                           <input
                             aria-invalid="false"
-                            class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1pzfmz2-MuiInputBase-input-MuiOutlinedInput-input"
+                            class="MuiInputBase-input MuiOutlinedInput-input css-1pzfmz2-MuiInputBase-input-MuiOutlinedInput-input"
                             data-testid="urlInput"
                             id="_r_6_"
                             type="text"
@@ -224,11 +224,11 @@ exports[`renders all the different types of built-in slots 1`] = `
                         class="MuiFormControl-root MuiFormControl-marginDense MuiTextField-root css-jqmkbu-MuiFormControl-root-MuiTextField-root"
                       >
                         <div
-                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1xu0vz9-MuiInputBase-root-MuiInput-root"
+                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1hj5hjn-MuiInputBase-root-MuiInput-root"
                         >
                           <input
                             aria-invalid="false"
-                            class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-1wd3yy0-MuiInputBase-input-MuiInput-input"
+                            class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
                             id="_r_7_"
                             type="text"
                             value="string1"
@@ -264,11 +264,11 @@ exports[`renders all the different types of built-in slots 1`] = `
                         class="MuiFormControl-root MuiFormControl-marginDense MuiTextField-root css-jqmkbu-MuiFormControl-root-MuiTextField-root"
                       >
                         <div
-                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1xu0vz9-MuiInputBase-root-MuiInput-root"
+                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1hj5hjn-MuiInputBase-root-MuiInput-root"
                         >
                           <input
                             aria-invalid="false"
-                            class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-1wd3yy0-MuiInputBase-input-MuiInput-input"
+                            class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
                             id="_r_9_"
                             type="text"
                             value="string2"
@@ -298,7 +298,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                       </div>
                     </li>
                     <button
-                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-cobw0g-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-wbgmo7-MuiButtonBase-root-MuiButton-root"
                       style="margin: 4px;"
                       tabindex="0"
                       type="button"
@@ -336,7 +336,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                       class="MuiCardHeader-root css-149tc0y-MuiCardHeader-root"
                     >
                       <div
-                        class="MuiCardHeader-content css-16o2p3x-MuiCardHeader-content"
+                        class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
                       >
                         <span
                           class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-w2zoog-MuiTypography-root"
@@ -384,11 +384,11 @@ exports[`renders all the different types of built-in slots 1`] = `
                             class="MuiFormControl-root MuiFormControl-marginDense MuiTextField-root css-jqmkbu-MuiFormControl-root-MuiTextField-root"
                           >
                             <div
-                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1xu0vz9-MuiInputBase-root-MuiInput-root"
+                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1hj5hjn-MuiInputBase-root-MuiInput-root"
                             >
                               <input
                                 aria-invalid="false"
-                                class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-1wd3yy0-MuiInputBase-input-MuiInput-input"
+                                class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
                                 id="_r_d_"
                                 type="text"
                                 value="string1"
@@ -424,11 +424,11 @@ exports[`renders all the different types of built-in slots 1`] = `
                             class="MuiFormControl-root MuiFormControl-marginDense MuiTextField-root css-jqmkbu-MuiFormControl-root-MuiTextField-root"
                           >
                             <div
-                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1xu0vz9-MuiInputBase-root-MuiInput-root"
+                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1hj5hjn-MuiInputBase-root-MuiInput-root"
                             >
                               <input
                                 aria-invalid="false"
-                                class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-1wd3yy0-MuiInputBase-input-MuiInput-input"
+                                class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
                                 id="_r_f_"
                                 type="text"
                                 value="string2"
@@ -458,7 +458,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                           </div>
                         </li>
                         <button
-                          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-cobw0g-MuiButtonBase-root-MuiButton-root"
+                          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-wbgmo7-MuiButtonBase-root-MuiButton-root"
                           style="margin: 4px;"
                           tabindex="0"
                           type="button"
@@ -481,17 +481,17 @@ exports[`renders all the different types of built-in slots 1`] = `
                       class="MuiCardHeader-root css-149tc0y-MuiCardHeader-root"
                     >
                       <div
-                        class="MuiCardHeader-content css-16o2p3x-MuiCardHeader-content"
+                        class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
                       >
                         <div
                           class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
                         >
                           <div
-                            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1eo3eah-MuiInputBase-root-MuiInput-root"
+                            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-17skhn2-MuiInputBase-root-MuiInput-root"
                           >
                             <input
                               aria-invalid="false"
-                              class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-1wd3yy0-MuiInputBase-input-MuiInput-input"
+                              class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
                               id="_r_i_"
                               placeholder="add new"
                               type="text"
@@ -553,12 +553,12 @@ exports[`renders all the different types of built-in slots 1`] = `
                       numberTest
                     </label>
                     <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
+                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-17skhn2-MuiInputBase-root-MuiInput-root"
                     >
                       <input
                         aria-describedby="_r_k_-helper-text"
                         aria-invalid="false"
-                        class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
+                        class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
                         id="_r_k_"
                         type="number"
                         value="88.5"
@@ -597,12 +597,12 @@ exports[`renders all the different types of built-in slots 1`] = `
                       integerTest
                     </label>
                     <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
+                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-17skhn2-MuiInputBase-root-MuiInput-root"
                     >
                       <input
                         aria-describedby="_r_l_-helper-text"
                         aria-invalid="false"
-                        class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
+                        class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
                         id="_r_l_"
                         type="number"
                         value="42"
@@ -644,12 +644,12 @@ exports[`renders all the different types of built-in slots 1`] = `
                         colorTest
                       </label>
                       <div
-                        class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
+                        class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-17skhn2-MuiInputBase-root-MuiInput-root"
                       >
                         <input
                           aria-describedby="_r_m_-helper-text"
                           aria-invalid="false"
-                          class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
+                          class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
                           id="_r_m_"
                           type="text"
                           value="#396494"
@@ -821,12 +821,12 @@ exports[`renders with just the required model elements 1`] = `
                       foo
                     </label>
                     <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
+                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-17skhn2-MuiInputBase-root-MuiInput-root"
                     >
                       <input
                         aria-describedby="_r_2_-helper-text"
                         aria-invalid="false"
-                        class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
+                        class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
                         id="_r_2_"
                         type="text"
                         value="bar"

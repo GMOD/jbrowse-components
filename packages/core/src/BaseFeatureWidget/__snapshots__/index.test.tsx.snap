@@ -123,7 +123,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControl-root MuiFormControl-marginDense css-1uvyb5m-MuiFormControl-root"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-cobw0g-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-wbgmo7-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
