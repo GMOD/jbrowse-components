@@ -26,7 +26,8 @@
     "prebuild": "pnpm clean",
     "build": "pnpm run /^build:/",
     "build:esm": "tsc -p tsconfig.build.esm.json",
-    "clean": "rimraf esm *.tsbuildinfo",
+    "build:umd": "bash scripts/build_umd.sh",
+    "clean": "rimraf esm dist *.tsbuildinfo",
     "test": "cd ../..; jest --passWithNoTests plugins/rl-analytics",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build"

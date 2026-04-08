@@ -73,11 +73,8 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
         self.logEntries.clear()
       },
     }))
-    .postProcessSnapshot(snap => {
-      // Strip volatile log entries from serialized snapshots
-      const { ...rest } = snap
-      return rest
-    })
+  // logEntries is on .volatile() so it is already excluded from snapshots;
+  // no postProcessSnapshot needed.
 }
 
 export type RLObserverViewModel = ReturnType<
