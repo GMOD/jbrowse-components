@@ -88,6 +88,10 @@ const AssemblySelector = observer(function AssemblySelector({
         htmlInput: {
           'data-testid': 'assembly-selector',
         },
+        select: {
+          // @ts-expect-error
+          SelectDisplayProps: { 'data-testid': 'assembly-selector-select' },
+        },
         ...textFieldSlotProps,
       }}
     >
