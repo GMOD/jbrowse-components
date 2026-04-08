@@ -47,7 +47,7 @@ export async function handleSelectedRegion({
   model: LinearGenomeViewModel
   assembly: Assembly
 }) {
-  const allRefs = assembly.allRefNamesWithLowerCase || []
+  const allRefs = assembly.allRefNamesWithLowerCase!
   const assemblyName = assembly.name
   if (input.split(' ').every(entry => checkRef(entry, allRefs))) {
     await model.navToLocString(input, assembly.name)
@@ -77,11 +77,11 @@ export async function handleSelectedRegion({
   }
 }
 
-export function checkRef(str: string, allRefs: string[]) {
+export function checkRef(str: string, allRefs: Set<string>) {
   const [ref, rest] = splitLast(str, ':')
   return (
-    allRefs.includes(str) ||
-    (allRefs.includes(ref) && !Number.isNaN(Number.parseInt(rest, 10)))
+    allRefs.has(str) ||
+    (allRefs.has(ref) && !Number.isNaN(Number.parseInt(rest, 10)))
   )
 }
 
