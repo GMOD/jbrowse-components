@@ -125,10 +125,16 @@ export default class RLAnalyticsPlugin extends Plugin {
       // config not available
     }
 
-    // Wire debounced actions → episode recording + observer
+    // Wire debounced actions → episode recording + webhook streaming + observer
     actionListener.buffer.onDebouncedAction(action => {
+      // Defer to setTimeout so the MST action fully commits before we
+      // re-read view state in the state encoder.
       setTimeout(() => {
         const result = episodeManager.recordAction(action)
+        if (result) {
+          // Stream to webhook if configured
+          exportManager.webhook?.push(result.step, result.episodeId)
+        }
         const observer = getObserverView()
         if (observer) {
           if (result) {

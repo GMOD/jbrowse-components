@@ -22,10 +22,9 @@ export default class WebhookExporter {
     }, this.intervalMs)
   }
 
-  push(step: Step, episodeId: string, taskId?: string) {
+  push(step: Step, episodeId: string) {
     this.buffer.push({
       episode_id: episodeId,
-      task_id: taskId,
       timestamp: step.timestamp,
       observation: step.state,
       action: step.action,

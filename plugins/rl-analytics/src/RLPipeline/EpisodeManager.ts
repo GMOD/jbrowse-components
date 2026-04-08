@@ -94,7 +94,16 @@ export default class EpisodeManager {
     this.cachedState = nextState
     this.restartInactivityTimer()
 
-    return { step, prevState, nextState }
+    return {
+      step,
+      prevState,
+      nextState,
+      episodeId: this.currentEpisode!.id,
+    }
+  }
+
+  get currentEpisodeId(): string | null {
+    return this.currentEpisode?.id ?? null
   }
 
   endEpisode(outcome: Episode['outcome']) {
