@@ -22,7 +22,7 @@ describe('sanitizeForFilename', () => {
     expect(sanitizeForFilename('test_a/b-index')).toBe('test_a_b-index')
   })
   it('replaces all Windows-invalid characters', () => {
-    expect(sanitizeForFilename('a\\b/c:d*e?f"g<h>i|j')).toBe(
+    expect(sanitizeForFilename(String.raw`a\b/c:d*e?f"g<h>i|j`)).toBe(
       'a_b_c_d_e_f_g_h_i_j',
     )
   })

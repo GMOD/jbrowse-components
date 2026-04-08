@@ -54,7 +54,7 @@ describe('createTextSearchConf', () => {
 
   it('replaces all Windows-invalid characters with underscores', () => {
     const conf = createTextSearchConf(
-      'track\\:*?"<>|name-index',
+      String.raw`track\:*?"<>|name-index`,
       [],
       [],
       outDir,

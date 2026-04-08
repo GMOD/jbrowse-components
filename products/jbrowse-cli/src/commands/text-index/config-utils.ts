@@ -1,11 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { sanitizeForFilename } from '@jbrowse/text-indexing-core'
-
 import { supported } from '../../types/common.ts'
-
-export { sanitizeForFilename as sanitizeNameForPath }
 
 import type { Config, Track } from '../../base.ts'
 
@@ -161,3 +157,5 @@ export function getTrackConfigs(
       return true
     })
 }
+
+export { sanitizeForFilename as sanitizeNameForPath } from '@jbrowse/text-indexing-core'
