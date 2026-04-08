@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import Plugin from '@jbrowse/core/Plugin'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
@@ -55,26 +55,12 @@ export default class RLAnalyticsPlugin extends Plugin {
       return
     }
 
-    // Read config (safe fallback for tests)
+    // Defaults; overridden below by config values if present
     let bufferSize = 10000
     let debounceMs = 500
     let inactivityMs = 300_000
     let maxEpisodes = 100
     let logOther = false
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const conf = (rootModel as any).jbrowse?.configuration
-        ?.RLAnalyticsPlugin
-      if (conf) {
-        bufferSize = getConf(conf, 'actionBufferSize') ?? bufferSize
-        debounceMs = getConf(conf, 'debounceMs') ?? debounceMs
-        inactivityMs = getConf(conf, 'inactivityTimeoutMs') ?? inactivityMs
-        maxEpisodes = getConf(conf, 'maxEpisodes') ?? maxEpisodes
-        logOther = getConf(conf, 'logOtherActions') ?? logOther
-      }
-    } catch {
-      // config not available
-    }
 
     // Session accessor
     const getSession = (): SessionLike | undefined =>
@@ -104,6 +90,31 @@ export default class RLAnalyticsPlugin extends Plugin {
       return undefined
     }
 
+    // Read config BEFORE creating subsystems
+    let webhookUrl = ''
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const conf = (rootModel as any).jbrowse?.configuration?.RLAnalyticsPlugin
+      if (conf) {
+        const readSlot = <T>(slot: string, fallback: T): T => {
+          try {
+            const v = readConfObject(conf, slot)
+            return v !== undefined && v !== null ? (v as T) : fallback
+          } catch {
+            return fallback
+          }
+        }
+        bufferSize = readSlot('actionBufferSize', bufferSize)
+        debounceMs = readSlot('debounceMs', debounceMs)
+        inactivityMs = readSlot('inactivityTimeoutMs', inactivityMs)
+        maxEpisodes = readSlot('maxEpisodes', maxEpisodes)
+        logOther = readSlot('logOtherActions', logOther)
+        webhookUrl = readSlot('webhookUrl', '')
+      }
+    } catch {
+      // config not available
+    }
+
     // Create subsystems
     const actionListener = new ActionListener(bufferSize, debounceMs, logOther)
     const episodeManager = new EpisodeManager(inactivityMs, maxEpisodes)
@@ -112,17 +123,8 @@ export default class RLAnalyticsPlugin extends Plugin {
     episodeManager.setViewAccessor(getLinearGenomeView)
 
     // Wire webhook if configured
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const conf = (rootModel as any).jbrowse?.configuration?.RLAnalyticsPlugin
-      if (conf) {
-        const webhookUrl = getConf(conf, 'webhookUrl')
-        if (webhookUrl) {
-          exportManager.configureWebhook(webhookUrl)
-        }
-      }
-    } catch {
-      // config not available
+    if (webhookUrl) {
+      exportManager.configureWebhook(webhookUrl)
     }
 
     // Wire debounced actions → episode recording + webhook streaming + observer
