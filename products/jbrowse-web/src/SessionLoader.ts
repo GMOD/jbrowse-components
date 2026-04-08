@@ -1,4 +1,5 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
+import ReExports from '@jbrowse/core/ReExports'
 import { openLocation } from '@jbrowse/core/util/io'
 import { createElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
@@ -280,7 +281,7 @@ const SessionLoader = types
         const pluginLoader = new PluginLoader(config.plugins || [], {
           fetchESM: url => import(/* webpackIgnore:true */ url),
         })
-        pluginLoader.installGlobalReExports(window)
+        pluginLoader.installGlobalReExports(window, ReExports)
         const runtimePlugins = await pluginLoader.load(window.location.href)
         self.setRuntimePlugins([...runtimePlugins])
       } catch (e) {
@@ -295,7 +296,7 @@ const SessionLoader = types
       try {
         const pluginLoader = new PluginLoader(snap.sessionPlugins || [], {
           fetchESM: url => import(/* webpackIgnore:true */ url),
-        }).installGlobalReExports(window)
+        }).installGlobalReExports(window, ReExports)
         const plugins = await pluginLoader.load(window.location.href)
         self.setSessionPlugins([...plugins])
       } catch (e) {

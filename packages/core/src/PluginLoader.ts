@@ -1,5 +1,4 @@
 import Plugin from './Plugin.ts'
-import ReExports from './ReExports/index.ts'
 import { isElectron } from './util/index.ts'
 
 import type { PluginConstructor } from './Plugin.ts'
@@ -288,10 +287,13 @@ export default class PluginLoader {
     return plugin.default
   }
 
-  installGlobalReExports(target: WindowOrWorkerGlobalScope) {
+  installGlobalReExports(
+    target: WindowOrWorkerGlobalScope,
+    reExports: Record<string, unknown>,
+  ) {
     // @ts-expect-error
     target.JBrowseExports = Object.fromEntries(
-      Object.entries(ReExports).map(([moduleName, module]) => {
+      Object.entries(reExports).map(([moduleName, module]) => {
         return [moduleName, module]
       }),
     )

@@ -3,7 +3,6 @@ import { isModelType, isType, types } from '@jbrowse/mobx-state-tree'
 
 import CorePlugin from './CorePlugin.ts'
 import PhasedScheduler from './PhasedScheduler.ts'
-import ReExports from './ReExports/index.ts'
 import {
   ConfigurationSchema,
   isBareConfigurationSchemaType,
@@ -158,7 +157,14 @@ export default class PluginManager {
 
   extensionPoints = new Map<string, Function[]>()
 
-  constructor(initialPlugins: (Plugin | PluginLoadRecord)[] = []) {
+  constructor(
+    initialPlugins: (Plugin | PluginLoadRecord)[] = [],
+    opts?: { reExports?: Record<string, unknown> },
+  ) {
+    if (opts?.reExports) {
+      this.lib = opts.reExports
+    }
+
     // add the core plugin
     this.addPlugin({
       plugin: new CorePlugin(),
@@ -419,7 +425,7 @@ export default class PluginManager {
 
   jbrequireCache = new Map()
 
-  lib = ReExports
+  lib: Record<string, unknown> = {}
 
   load = <FTYPE extends AnyFunction>(lib: FTYPE): ReturnType<FTYPE> => {
     if (!this.jbrequireCache.has(lib)) {
@@ -435,7 +441,7 @@ export default class PluginManager {
    * @returns the library's default export
    */
   jbrequire = (
-    lib: keyof typeof ReExports | AnyFunction | { default: AnyFunction },
+    lib: string | AnyFunction | { default: AnyFunction },
   ): any => {
     if (typeof lib === 'string') {
       const pack = this.lib[lib]
@@ -450,10 +456,8 @@ export default class PluginManager {
       return this.load(lib)
     }
 
-    // @ts-expect-error
     else if (lib.default) {
       console.warn('initiated jbrequire on a {default:Function}')
-      // @ts-expect-error
       return this.jbrequire(lib.default)
     }
 

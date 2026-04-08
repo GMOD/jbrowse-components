@@ -1,4 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import ReExports from '@jbrowse/core/ReExports'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 import {
   restoreFileHandlesFromSnapshot,
@@ -24,28 +25,31 @@ export function createPluginManager(
   //
   // Assuming that the query changes model.sessionError or
   // model.sessionSnapshot or model.blankSession
-  const pluginManager = new PluginManager([
-    ...corePlugins.map(P => ({
-      plugin: new P(),
-      metadata: { isCore: true },
-    })),
-    ...(model.runtimePlugins ?? []).map(({ plugin: P, definition }) => ({
-      plugin: new P(),
-      definition,
-      metadata: {
-        // @ts-expect-error
-        url: definition.url,
-      },
-    })),
-    ...(model.sessionPlugins ?? []).map(({ plugin: P, definition }) => ({
-      plugin: new P(),
-      definition,
-      metadata: {
-        // @ts-expect-error
-        url: definition.url,
-      },
-    })),
-  ]).createPluggableElements()
+  const pluginManager = new PluginManager(
+    [
+      ...corePlugins.map(P => ({
+        plugin: new P(),
+        metadata: { isCore: true },
+      })),
+      ...(model.runtimePlugins ?? []).map(({ plugin: P, definition }) => ({
+        plugin: new P(),
+        definition,
+        metadata: {
+          // @ts-expect-error
+          url: definition.url,
+        },
+      })),
+      ...(model.sessionPlugins ?? []).map(({ plugin: P, definition }) => ({
+        plugin: new P(),
+        definition,
+        metadata: {
+          // @ts-expect-error
+          url: definition.url,
+        },
+      })),
+    ],
+    { reExports: ReExports },
+  ).createPluggableElements()
 
   const RootModel = JBrowseRootModelFactory({
     pluginManager,

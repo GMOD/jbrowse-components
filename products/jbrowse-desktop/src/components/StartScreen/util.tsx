@@ -1,5 +1,6 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
+import ReExports from '@jbrowse/core/ReExports'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { dedupe } from '@jbrowse/core/util'
 import {
@@ -33,30 +34,33 @@ export async function createPluginManager(
     fetchESM: url => import(/* webpackIgnore:true */ url),
     fetchCJS,
   })
-  pluginLoader.installGlobalReExports(window)
+  pluginLoader.installGlobalReExports(window, ReExports)
   const runtimePlugins = await pluginLoader.load(window.location.href)
-  const pluginManager = new PluginManager([
-    ...corePlugins.map(P => ({
-      plugin: new P(),
-      metadata: {
-        isCore: true,
-      },
-    })),
-    ...runtimePlugins.map(({ plugin: P, definition }) => ({
-      plugin: new P(),
-      definition,
-      metadata: {
-        // @ts-expect-error
-        url: definition.url,
-        // @ts-expect-error
-        esmUrl: definition.esmUrl,
-        // @ts-expect-error
-        umdUrl: definition.umdUrl,
-        // @ts-expect-error
+  const pluginManager = new PluginManager(
+    [
+      ...corePlugins.map(P => ({
+        plugin: new P(),
+        metadata: {
+          isCore: true,
+        },
+      })),
+      ...runtimePlugins.map(({ plugin: P, definition }) => ({
+        plugin: new P(),
+        definition,
+        metadata: {
+          // @ts-expect-error
+          url: definition.url,
+          // @ts-expect-error
+          esmUrl: definition.esmUrl,
+          // @ts-expect-error
+          umdUrl: definition.umdUrl,
+          // @ts-expect-error
         cjsUrl: definition.cjsUrl,
       },
     })),
-  ])
+    ],
+    { reExports: ReExports },
+  )
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory({

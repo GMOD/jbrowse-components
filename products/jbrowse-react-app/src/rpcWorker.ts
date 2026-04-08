@@ -1,4 +1,5 @@
 import './workerPolyfill.js'
+import workerReExports from '@jbrowse/core/ReExports/workerModules'
 import { initializeWorker } from '@jbrowse/product-core'
 import { enableStaticRendering } from 'mobx-react'
 
@@ -11,6 +12,7 @@ enableStaticRendering(true)
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 initializeWorker(corePlugins, {
   fetchESM: url => import(/* webpackIgnore:true */ url),
+  reExports: workerReExports,
 })
 
 export default function doNothing() {

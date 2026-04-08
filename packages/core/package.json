@@ -128,6 +128,9 @@
     "./util/useMeasure": "./src/util/useMeasure.ts",
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
     "./util/nanoid": "./src/util/nanoid.ts",
+    "./ReExports": "./src/ReExports/modules.ts",
+    "./ReExports/workerModules": "./src/ReExports/workerModules.ts",
+    "./ReExports/workerList": "./src/ReExports/workerList.ts",
     "./ReExports/list": "./src/ReExports/list.ts",
     "./util/fileHandleStore": "./src/util/fileHandleStore.ts",
     "./util/tss-react/types": "./src/util/tss-react/types.ts",
@@ -623,6 +626,18 @@
         "types": "./esm/util/nanoid.d.ts",
         "import": "./esm/util/nanoid.js"
       },
+      "./ReExports": {
+        "types": "./esm/ReExports/modules.d.ts",
+        "import": "./esm/ReExports/modules.js"
+      },
+      "./ReExports/workerModules": {
+        "types": "./esm/ReExports/workerModules.d.ts",
+        "import": "./esm/ReExports/workerModules.js"
+      },
+      "./ReExports/workerList": {
+        "types": "./esm/ReExports/workerList.d.ts",
+        "import": "./esm/ReExports/workerList.js"
+      },
       "./ReExports/list": {
         "types": "./esm/ReExports/list.d.ts",
         "import": "./esm/ReExports/list.js"
@@ -965,6 +980,15 @@
         ],
         "util/nanoid": [
           "esm/util/nanoid.d.ts"
+        ],
+        "ReExports": [
+          "esm/ReExports/modules.d.ts"
+        ],
+        "ReExports/workerModules": [
+          "esm/ReExports/workerModules.d.ts"
+        ],
+        "ReExports/workerList": [
+          "esm/ReExports/workerList.d.ts"
         ],
         "ReExports/list": [
           "esm/ReExports/list.d.ts"

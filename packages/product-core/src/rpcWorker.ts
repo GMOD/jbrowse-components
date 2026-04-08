@@ -34,19 +34,23 @@ function receiveConfiguration() {
 
 async function getPluginManager(
   corePlugins: PluginConstructor[],
-  opts: { fetchESM?: (url: string) => Promise<LoadedPlugin> },
+  opts: {
+    fetchESM?: (url: string) => Promise<LoadedPlugin>
+    reExports: Record<string, unknown>
+  },
 ) {
   // Load runtime plugins
   const config = await receiveConfiguration()
   const pluginLoader = new PluginLoader(
     config.plugins,
     opts,
-  ).installGlobalReExports(self)
+  ).installGlobalReExports(self, opts.reExports)
   return new PluginManager(
     [
       ...corePlugins.map(p => ({ plugin: p })),
       ...(await pluginLoader.load(config.windowHref)),
     ].map(P => new P.plugin()),
+    { reExports: opts.reExports },
   )
     .createPluggableElements()
     .configure()
@@ -81,6 +85,7 @@ export async function initializeWorker(
   opts: {
     fetchESM?: (url: string) => Promise<LoadedPlugin>
     fetchCJS?: (url: string) => Promise<LoadedPlugin>
+    reExports: Record<string, unknown>
   },
 ) {
   // Add global error handler to catch uncaught errors in the worker

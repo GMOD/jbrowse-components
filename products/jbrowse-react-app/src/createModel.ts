@@ -1,4 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import ReExports from '@jbrowse/core/ReExports'
 
 import corePlugins from './corePlugins.ts'
 import createRootModel from './rootModel/rootModel.ts'
@@ -16,10 +17,13 @@ export default function createModel({
   runtimePlugins: PluginConstructor[]
   makeWorkerInstance?: () => Worker
 }) {
-  const pluginManager = new PluginManager([
-    ...corePlugins.map(P => ({ plugin: new P(), metadata: { isCore: true } })),
-    ...runtimePlugins.map(P => new P()),
-  ]).createPluggableElements()
+  const pluginManager = new PluginManager(
+    [
+      ...corePlugins.map(P => ({ plugin: new P(), metadata: { isCore: true } })),
+      ...runtimePlugins.map(P => new P()),
+    ],
+    { reExports: ReExports },
+  ).createPluggableElements()
 
   return {
     model: createRootModel({

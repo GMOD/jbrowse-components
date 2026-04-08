@@ -1,4 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import ReExports from '@jbrowse/core/ReExports'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyManagerFactory, {
   assemblyConfigSchemaFactory,
@@ -26,6 +27,7 @@ export default function createModel(
 ) {
   const pluginManager = new PluginManager(
     [...corePlugins, ...runtimePlugins].map(P => new P()),
+    { reExports: ReExports },
   )
   pluginManager.createPluggableElements()
   const Session = createSessionModel(pluginManager)
