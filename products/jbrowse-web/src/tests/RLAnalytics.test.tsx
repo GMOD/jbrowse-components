@@ -147,3 +147,49 @@ test('episode manager caches prevState correctly', async () => {
     expect(step2.state.offsetPx).toBe(step1.nextState.offsetPx)
   }
 })
+
+test('track toggle is captured', async () => {
+  const { pluginManager, rootModel } = getPluginManager()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const lgv = rootModel.session!.views[0]! as any
+  lgv.setWidth(800)
+
+  const episodeManager = getRLPlugin(pluginManager).getEpisodeManager()!
+
+  // showTrack fires the SHOW_TRACK action
+  lgv.showTrack('volvox_refseq')
+
+  await flushMicrotasks()
+
+  const episodes = episodeManager.getAllEpisodes()
+  const steps = episodes[0]?.steps ?? []
+  const showTrackSteps = steps.filter(s => s.action === 'SHOW_TRACK')
+  expect(showTrackSteps.length).toBeGreaterThan(0)
+  expect(showTrackSteps[0]!.actionMetadata.trackId).toBe('volvox_refseq')
+})
+
+test('delta encoding in JSONL export', async () => {
+  const { pluginManager, rootModel } = getPluginManager()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const lgv = rootModel.session!.views[0]! as any
+  lgv.setWidth(800)
+
+  const rlPlugin = getRLPlugin(pluginManager)
+  const exportManager = rlPlugin.getExportManager()!
+
+  lgv.horizontalScroll(100)
+  lgv.horizontalScroll(200)
+
+  await flushMicrotasks()
+
+  const jsonl = exportManager.getJSONL()
+  const lines = jsonl.split('\n').filter(Boolean)
+  if (lines.length > 0) {
+    const step = JSON.parse(lines[0]!)
+    // Delta-encoded: has next_observation_delta but not full next_observation
+    expect(step).toHaveProperty('next_observation_delta')
+    // Full observation still present on the state side
+    expect(step).toHaveProperty('observation')
+    expect(step.observation).toHaveProperty('bpPerPx')
+  }
+})

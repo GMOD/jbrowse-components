@@ -35,12 +35,54 @@ export default class StateEncoder {
   private actionCounts: Record<string, number> = {}
   private totalActions = 0
 
+  // Within-frame memoization: if the view hasn't changed and we're
+  // called again within the same frame, return the cached state.
+  // Keyed on (bpPerPx, offsetPx, numTracks, firstRegion signature).
+  private memoKey: string | null = null
+  private memoState: BrowserState | null = null
+  private memoTimer: ReturnType<typeof setTimeout> | null = null
+
+  private computeMemoKey(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    view: any,
+    lastActionTimestamp: number,
+  ): string | null {
+    try {
+      const bp = view.bpPerPx ?? 0
+      const off = view.offsetPx ?? 0
+      const numTracks = view.tracks?.length ?? 0
+      const r = view.displayedRegions?.[0]
+      const rSig = r ? `${r.refName}:${r.start}-${r.end}` : ''
+      return `${bp}|${off}|${numTracks}|${rSig}|${lastActionTimestamp}`
+    } catch {
+      return null
+    }
+  }
+
+  private invalidateMemoNextFrame() {
+    if (this.memoTimer) {
+      return
+    }
+    this.memoTimer = setTimeout(() => {
+      this.memoKey = null
+      this.memoState = null
+      this.memoTimer = null
+    }, 0)
+  }
+
   extractState(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     view: any,
     lastActionTimestamp: number,
     recentActionCount: number,
   ): BrowserState {
+    // Check memo cache first — within the same frame, if the view
+    // hasn't changed, skip re-reading all the MST getters.
+    const key = this.computeMemoKey(view, lastActionTimestamp)
+    if (key && key === this.memoKey && this.memoState) {
+      return this.memoState
+    }
+
     let bpPerPx = 1
     let offsetPx = 0
     let viewWidthPx = 800
@@ -152,7 +194,7 @@ export default class StateEncoder {
       // session access may fail
     }
 
-    return {
+    const state: BrowserState = {
       bpPerPx,
       offsetPx,
       viewWidthPx,
@@ -181,6 +223,21 @@ export default class StateEncoder {
       actionCountsByType: { ...this.actionCounts },
       uniqueRefNamesVisited: [...this.refNamesVisited],
       totalActionsThisSession: this.totalActions,
+    }
+
+    // Cache for within-frame reuse
+    if (key) {
+      this.memoKey = key
+      this.memoState = state
+      this.invalidateMemoNextFrame()
+    }
+    return state
+  }
+
+  dispose() {
+    if (this.memoTimer) {
+      clearTimeout(this.memoTimer)
+      this.memoTimer = null
     }
   }
 

@@ -116,4 +116,38 @@ describe('StateEncoder', () => {
     // Should not throw
     expect(() => encoder.extractState(throwingView, 0, 0)).not.toThrow()
   })
+
+  it('memoizes within a frame: repeat calls return same state object', () => {
+    const encoder = new StateEncoder()
+    const view = {
+      bpPerPx: 1,
+      offsetPx: 0,
+      width: 800,
+      displayedRegions: [{ refName: 'chr1', start: 0, end: 1000 }],
+      tracks: [],
+      dynamicBlocks: { contentBlocks: [] },
+    }
+    const state1 = encoder.extractState(view, 100, 0)
+    const state2 = encoder.extractState(view, 100, 0)
+    // Same object reference — memoization hit
+    expect(state2).toBe(state1)
+  })
+
+  it('memo invalidates when view changes', () => {
+    const encoder = new StateEncoder()
+    const view1 = {
+      bpPerPx: 1,
+      offsetPx: 0,
+      width: 800,
+      displayedRegions: [{ refName: 'chr1', start: 0, end: 1000 }],
+      tracks: [],
+      dynamicBlocks: { contentBlocks: [] },
+    }
+    const state1 = encoder.extractState(view1, 100, 0)
+    // Change bpPerPx — should produce a new state object
+    const view2 = { ...view1, bpPerPx: 2 }
+    const state2 = encoder.extractState(view2, 100, 0)
+    expect(state2).not.toBe(state1)
+    expect(state2.bpPerPx).toBe(2)
+  })
 })

@@ -140,9 +140,15 @@ export default class EpisodeManager {
 
   private startInactivityTimer() {
     this.stopInactivityTimer()
+    // Check half as often as the timeout, clamped to [1s, 30s], so short
+    // timeouts still fire promptly and long timeouts don't waste cycles
+    const checkInterval = Math.max(
+      1_000,
+      Math.min(30_000, Math.floor(this.inactivityTimeout / 2)),
+    )
     this.inactivityTimer = setInterval(() => {
       this.checkInactivity()
-    }, 30_000)
+    }, checkInterval)
   }
 
   private restartInactivityTimer() {
@@ -168,5 +174,6 @@ export default class EpisodeManager {
 
   dispose() {
     this.stopInactivityTimer()
+    this.stateEncoder.dispose()
   }
 }

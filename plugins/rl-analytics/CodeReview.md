@@ -1,133 +1,135 @@
-# Code Review: jbrowse-plugin-rl-analytics (third pass)
+# Code Review Reference: jbrowse-plugin-rl-analytics
 
-A JBrowse-core-maintainer-perspective review, updated after the second
-round of fixes addressing the remaining blockers from pass two.
+A snapshot of the plugin's current architecture, intended as a
+reference for a PR reviewer. Describes what the code does today, not
+the history of how it got here.
 
-## Status of previous findings (pass 2)
+## Purpose
 
-| Issue | Status | Notes |
-|-------|--------|-------|
-| `node_modules/` and `dist/` in git | ✓ fixed | Not in `git ls-files`; `.gitignore` covers `dist/`. |
-| Config schema dead slots | ✓ fixed | Six slots, all wired via `readConfObject`. |
-| Global `addMiddleware` on rootModel | ✓ fixed | Attaches to `session`. |
-| Mutable state on plugin singleton | ✓ fixed | Module-level `WeakMap<RLAnalyticsPlugin, …>`. |
-| Stale observer view reference | ✓ fixed | `getObserverView()` re-queries + `isAlive()` check. |
-| Unbounded episode memory | ✓ fixed | `maxEpisodes` eviction with unit test. |
-| Dead code (`resolveTrackId`, `onAction` callbacks, `taskId`) | ✓ fixed | All removed. `WebhookExporter.push()` signature cleaned up. |
-| Tests in `src/__tests__/` | ✓ fixed | Three files in the right place, stale `test/` directory removed. |
-| `postProcessSnapshot` dead no-op | ✓ fixed | Removed. |
-| Hardcoded colors | ✓ fixed | MUI `useTheme()`, adapts to dark/light. |
-| O(n) array copy on log entries | ✓ fixed | `observable.array` with O(1) push. |
-| `scrollIntoView` throttled | ✓ fixed | `requestAnimationFrame` coalescing. |
-| `WebhookExporter` never wired | ✓ fixed | `exportManager.webhook?.push(result.step, result.episodeId)` in the debounced-action callback. Config read uses `readConfObject`. Tested end-to-end: live browser → POST /ingest → JSONL file. |
-| Design docs in plugin root | ✓ fixed | Moved to `docs/`. |
-| Webhook pipeline broken end-to-end | ✓ fixed | `WebhookExporter.push` is now called on every debounced action. |
-| MUI version mismatch | ✓ n/a | Already matched the monorepo (`^7.3.8`). Non-issue. |
-| `as any` casts on rootModel/session | ✓ fixed | Replaced with typed `RootModelWithSession` interface + `AbstractSessionModel` / `AbstractViewModel` from `@jbrowse/core/util`. Zero `as any` in `index.ts`. |
-| Only one test file | ✓ fixed | Four test files: `EpisodeManager`, `ActionBuffer`, `StateEncoder`, and the integration test. 25 tests total. |
-| Unused `ClassifiedAction.path` | ✓ fixed | Removed from the type. |
-| `key={i}` on log entries | ✓ fixed | `LogEntry = {id, text}` with stable monotonic IDs. React keys are now stable across eviction. |
+Captures user interactions with a JBrowse 2 session as RL-compatible
+`(state, action, reward, next_state)` tuples and exports them as
+JSONL or streams them to a webhook. Designed to enable training and
+evaluation of agents that operate JBrowse on behalf of users.
 
-## Remaining concerns
+## Architecture
 
-None of these are blockers for a draft PR. They are lower-priority
-quality-of-life improvements.
+```
+session ──onAction──▶ ActionListener ──▶ ActionBuffer (debounce)
+                                               │
+                                               ▼
+                                       EpisodeManager
+                                       (StateEncoder)
+                                               │
+                       ┌───────────────────────┴───────────────┐
+                       ▼                                       ▼
+                 JSONLExporter                          WebhookExporter
+                 (delta-encoded)                        (batch + interval)
+```
 
-### Performance
+### Source layout (`src/`)
 
-1. **`StateEncoder.extractState` reads many MST getters per action.**
-   `view.tracks`, `view.dynamicBlocks`, `view.displayedRegions`,
-   `session.activeWidgets`, plus per-track `display.height`, `colorBy`,
-   `sortedBy`. No memoization. On sessions with many tracks this will
-   add up. Consider caching within a single frame keyed on
-   `(bpPerPx, offsetPx, tracks.length)`.
+| File | Role |
+|------|------|
+| `index.ts` | Plugin entry. Installs middleware on the session, wires components, exposes `getExportManager()` / `getEpisodeManager()` / `getActionListener()` for tests via a module-level `WeakMap<Plugin, refs>`. |
+| `config.ts` | Six config slots, all consumed via `readConfObject`: `enabled`, `webhookUrl`, `webhookBatchSize`, `webhookFlushIntervalMs`, `inactivityTimeoutMs`, `maxEpisodes`. |
+| `ActionLogger/ActionListener.ts` | MST `addMiddleware` listener. Filters sub-actions via `parentActionEvent`. Maps MST action names → semantic `ActionType` via `ACTION_MAP`. Extracts per-action metadata in `extractMetadata()`. |
+| `ActionLogger/ActionBuffer.ts` | Debounces same-type actions in a sliding window. Calls `onDebouncedAction` with the merged event. |
+| `ActionLogger/ActionTypes.ts` | `ActionType` enum + `ClassifiedAction` shape. |
+| `RLPipeline/StateEncoder.ts` | Reads MST view getters → `BrowserState`. Memoizes within a frame keyed on `(bpPerPx, offsetPx, numTracks, firstRegion, lastActionTimestamp)`. Tracks action counts and unique refNames visited. `encode()` returns a fixed 21-dim numeric vector. |
+| `RLPipeline/EpisodeManager.ts` | Builds `Step` records from prev/next `BrowserState`, manages episode lifecycle, inactivity timeout (dynamic check interval = clamp(1s, 30s, timeout/2)), bounded ring buffer of completed episodes via `maxEpisodes`. |
+| `RLPipeline/types.ts` | `BrowserState`, `Step`, `Episode` types. |
+| `Export/ExportManager.ts` | Holds the JSONLExporter and (optional) WebhookExporter; exposes `getJSONL()` for tests/UI. |
+| `Export/JSONLExporter.ts` | Serializes episodes to JSONL. Delta-encodes `next_observation` against `observation` to reduce file size. |
+| `Export/WebhookExporter.ts` | Buffered POSTer with batch-size and interval triggers. Restores buffer on fetch failure. Uses `navigator.sendBeacon` on dispose if available. |
+| `ObserverView/viewModel.ts` | The "Action Monitor" view model. Reactive log via `observable.array<LogEntry>` for O(1) push and stable React keys. |
+| `ObserverView/ObserverView.tsx` | The view UI. Uses MUI `useTheme()` for dark/light. `requestAnimationFrame`-coalesced auto-scroll. |
 
-2. **`JSONLExporter` serializes full `BrowserState` twice per step**
-   (state + nextState), including `activeTracks[]` and
-   `displayedRegions[]`. For long episodes this is a significant
-   file-size multiplier. Consider storing deltas or a per-episode
-   state dictionary.
+### Tests (`src/__tests__/`)
 
-### Minor
+| File | Tests | Coverage |
+|------|-------|----------|
+| `ActionBuffer.test.ts` | Debounce window, merge semantics, flush on type change. |
+| `EpisodeManager.test.ts` | Episode lifecycle, inactivity timeout, `maxEpisodes` eviction, prevState caching. |
+| `StateEncoder.test.ts` | Shape, zoomLevel buckets, label visibility, track type flags, `encode()` vector dims, action count tracking, unique refName tracking, throwing-getter resilience, frame memoization (hit + invalidation). |
+| `WebhookExporter.test.ts` | Batch flush, interval flush, empty buffer, fetch-failure restore, `sendBeacon` on dispose, empty-URL disabled — all via mocked `global.fetch`. |
 
-3. **Inactivity timer interval is fixed at 30s** even when
-   `inactivityTimeoutMs` is configurable. If a user sets
-   `inactivityTimeoutMs < 30_000`, the check fires late. Consider
-   `Math.max(1000, Math.min(30_000, inactivityTimeoutMs / 2))`.
+Plus `products/jbrowse-web/src/tests/RLAnalytics.test.tsx`:
+end-to-end integration through the real `LinearGenomeView`. Covers
+MST `onAction` propagation, full pipeline → JSONL with enriched
+state, prevState caching across steps, `SHOW_TRACK` capture, and
+delta-encoded JSONL output.
 
-4. **`setTimeout(..., 0)`** in the debounced-action callback is
-   documented (comment explains "let MST action fully commit before
-   we re-read view state") — no longer suspicious.
+**Total: 35 tests across 5 files.**
 
-5. **`crypto.randomUUID()`** in `EpisodeManager.startEpisode` — works
-   in Node 18+ and jsdom 20+. Current CI is fine; flag only if CI
-   matrix widens.
+## Key design decisions
 
-6. **`.gitignore`** is plugin-local and lists only `dist/`. Relies on
-   repo-root ignore for `node_modules/`, `esm/`, `*.tsbuildinfo`.
-   Self-contained would be tidier but is not required.
+1. **Middleware on session, not rootModel.** Action capture is scoped
+   to a single session; this avoids capturing assembly-loading and
+   bootstrap actions that occur before the user takes control.
 
-### Discussion points
+2. **Plugin state in a `WeakMap`.** No mutable state on the plugin
+   instance itself; refs (`actionListener`, `episodeManager`,
+   `exportManager`) live in a module-level WeakMap keyed by the
+   plugin object. Accessor methods (`getExportManager()` etc.) exist
+   for the integration test.
 
-7. **`scripts/` directory** — research/deployment tools
-   (`build_umd.sh`, `convert_to_gymnasium.py`, `webhook_receiver.mjs`,
-   `generate_parasitic_config.mjs`). Excluded from the published tarball
-   via `"files": ["esm"]`. Documented in `README.md`. GMOD reviewers
-   may still ask about them.
+3. **`parentActionEvent` filter.** Suppresses sub-actions like
+   `scrollTo` inside `zoomTo`, so only top-level user-initiated
+   actions become Steps.
 
-8. **`extractMetadata` stores raw `args` for unknown action names**
-   (`default: meta.args = args`). If any unknown action passes MST
-   node references, JSON serialization may fail. Safer to drop
-   unknown args entirely. Low risk since `logOtherActions` defaults to
-   false.
+4. **Frame-level state memoization.** `StateEncoder.extractState`
+   returns the same object on repeat calls within a frame to avoid
+   re-walking MST getters. Invalidated on the next animation frame
+   or when any view input changes.
 
-## Overall assessment
+5. **Delta-encoded JSONL.** `next_observation` is stored as the diff
+   from `observation`, computed by shallow-equality on each
+   `BrowserState` field. The Python converter
+   (`scripts/convert_to_gymnasium.py`) reconstructs full
+   observations.
 
-The plugin is now **in shape for a draft PR** to `GMOD/jbrowse-components`.
+6. **`isAlive()` checks** on the observer view in
+   `getObserverView()` to handle MST destruction races.
 
-All architectural concerns from the first two reviews are addressed:
-the middleware is properly scoped, state is stateless, memory is
-bounded, types are honest, tests cover the core modules, and the
-webhook pipeline works end-to-end.
+7. **Webhook export is fully optional and gated by config.** If
+   `webhookUrl` is empty the exporter short-circuits and never
+   touches `fetch`.
 
-Code quality is now at the level of other plugins in the monorepo:
-- Zero `as any` casts in the plugin entry point
-- Proper use of `@jbrowse/core/util` type exports
-- JSDoc `#property` / `#action` annotations on the view model
-- MUI theme integration
-- Test files in the conventional location
-- 25 tests covering the core modules
+## Generated docs
 
-Remaining items are pure polish (state memoization, delta encoding for
-JSONL size, the minor items listed above). A JBrowse maintainer
-reviewing the PR would likely request them as follow-ups rather than
-PR blockers.
+`docs/ACTIONS.md` is auto-generated from `ActionListener.ts` by
+`scripts/generate_action_doc.mjs`. It lists all 13 semantic action
+types, the MST action names mapped to each, and the metadata fields
+extracted per action. Regenerate with:
 
-## Recommended next steps (post-PR polish)
+    node scripts/generate_action_doc.mjs
 
-1. **Memoize `StateEncoder.extractState`** within a frame to reduce
-   MST getter overhead on busy sessions.
-2. **Delta-encode JSONL state** to reduce file size (store initial
-   state + per-step deltas rather than full state twice per step).
-3. **Broaden integration test coverage** — the current
-   `RLAnalytics.test.tsx` has 3 tests. Add coverage for: webhook
-   streaming via mocked `fetch`, track reorder, display config changes
-   (color scheme, sort).
-4. **Document the action vocabulary externally** — the
-   `ACTION_MAP` in `ActionListener.ts` is the canonical list of
-   captured actions. A generated doc page from that map would help
-   researchers understand what's captured without reading source.
-5. **Consider a generated types bundle** for external consumers of the
-   JSONL format (e.g., Python dataclasses) so downstream RL training
-   code stays in sync with the plugin's observation schema.
+## Type safety
+
+- Zero `as any` in `index.ts` — uses `AbstractSessionModel` and
+  `AbstractViewModel` from `@jbrowse/core/util`, plus a local
+  `RootModelWithSession` interface.
+- Zero `eslint-disable` in `index.ts`.
+- The few `as any` casts in tests are for constructing minimal mock
+  views/steps and are isolated to fixtures.
 
 ## Metrics
 
-- **Source size**: ~1100 lines of TypeScript across 11 source files
-- **Test coverage**: 4 test files, 25 tests
-- **UMD bundle**: 36.2 KB
-- **Published tarball**: excludes `scripts/`, `docs/`, `dist/`, tests
-- **Dependencies**: aligned with monorepo (`@jbrowse/core` workspace,
-  MUI 7.3.8, mobx 6.15, mobx-react 9.2)
-- **Zero `as any`** in `index.ts`
-- **Zero `eslint-disable`** in `index.ts` (down from 15+)
+- **Source**: ~1100 lines of TypeScript across 12 source files
+- **Tests**: 5 files, 35 tests
+- **UMD bundle**: ~36 KB
+- **Published tarball**: `"files": ["esm"]` — excludes `scripts/`,
+  `docs/`, `dist/`, tests
+- **Dependencies**: aligned with the monorepo (`@jbrowse/core`
+  workspace, MUI `^7.3.8`, mobx 6.15, mobx-react 9.2)
+
+## Known follow-ups (non-blocking)
+
+1. `extractMetadata` falls back to storing raw `args` for unknown
+   action names (`logOtherActions` opt-in). If an unknown action
+   passes MST node references, JSON serialization could fail. Safer
+   to drop unknown args entirely.
+2. A generated Python dataclass for the JSONL `BrowserState` schema
+   would let downstream RL training stay in sync with the plugin.
+3. `crypto.randomUUID()` requires Node 18+ / jsdom 20+. Fine on
+   current CI; flag if the matrix widens.

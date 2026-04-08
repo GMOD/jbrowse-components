@@ -61,6 +61,15 @@ def encode_state(obs: dict) -> list[float]:
     ]
 
 
+def reconstruct_next_obs(step: dict, prev_obs: dict) -> dict:
+    """Reconstruct the next_observation from a delta-encoded step."""
+    if "next_observation" in step and step["next_observation"]:
+        return step["next_observation"]
+    if "next_observation_delta" in step and step["next_observation_delta"]:
+        return {**prev_obs, **step["next_observation_delta"]}
+    return prev_obs
+
+
 def convert(jsonl_path: str, output_path: str) -> None:
     """Convert a JSONL file to a .npz file compatible with d3rlpy."""
     steps = [json.loads(line) for line in open(jsonl_path) if line.strip()]
@@ -68,6 +77,10 @@ def convert(jsonl_path: str, output_path: str) -> None:
     if not steps:
         print("No steps found in input file.", file=sys.stderr)
         sys.exit(1)
+
+    # Reconstruct next_observation from delta if needed
+    for s in steps:
+        s["_next_obs"] = reconstruct_next_obs(s, s["observation"])
 
     observations = np.array(
         [encode_state(s["observation"]) for s in steps], dtype=np.float32
