@@ -12,7 +12,11 @@ import { autorun, observable } from 'mobx'
 
 import { filterTracks } from './filterTracks.ts'
 import { generateHierarchy } from './generateHierarchy.ts'
-import { findSubCategories, findTopLevelCategories } from './util.ts'
+import {
+  findSubCategories,
+  findTopLevelCategories,
+  getAllTrackNodes,
+} from './util.ts'
 
 import type { TreeNode } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -625,6 +629,21 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           totalHeight: cumulativeHeight,
           itemOffsets: offsets,
         }
+      },
+      get folderCategoryStats() {
+        const stats = new Map<string, { active: number; total: number }>()
+        const { shownTrackIds } = self
+        for (const item of self.flattenedItems) {
+          if (item.type === 'category' && self.folderCategories.has(item.id)) {
+            const trackNodes = getAllTrackNodes(item)
+            stats.set(item.id, {
+              active: trackNodes.filter(n => shownTrackIds.has(n.trackId))
+                .length,
+              total: trackNodes.length,
+            })
+          }
+        }
+        return stats
       },
     }))
     .actions(self => ({

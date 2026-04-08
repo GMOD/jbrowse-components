@@ -31,4 +31,6 @@ jobs:
           cache: pnpm
           registry-url: 'https://registry.npmjs.org'
       - run: pnpm install --frozen-lockfile
-      - run: pnpm publish -r --access public --no-git-checks ${{ inputs.dry_run == true && '--dry-run' || '' }}
+      - run:
+          pnpm publish -r --access public --no-git-checks ${{ inputs.dry_run ==
+          true && '--dry-run' || '' }}

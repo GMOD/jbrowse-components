@@ -3,6 +3,7 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { TreeNode, TreeTrackNode } from './types.ts'
 
 export function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
   // shortcut case is that arrays are single entries, and are equal
@@ -78,4 +79,13 @@ export function findTopLevelCategories(obj: Node[], paths: string[]) {
       paths.push(elt.id)
     }
   }
+}
+
+export function getAllTrackNodes(subtree?: TreeNode): TreeTrackNode[] {
+  if (subtree?.type === 'category') {
+    return subtree.children.flatMap(t =>
+      t.type === 'category' ? getAllTrackNodes(t) : [t],
+    )
+  }
+  return []
 }

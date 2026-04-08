@@ -316,8 +316,8 @@ scripts/release.sh patch   # or minor / major
 ```
 
 Before running, create a blog post draft at
-`website/release_announcement_drafts/vX.Y.Z.md` — the script will fail if it
-is missing.
+`website/release_announcement_drafts/vX.Y.Z.md` — the script will fail if it is
+missing.
 
 The script will:
 
@@ -338,7 +338,7 @@ GitHub Actions then picks up the tag and publishes all packages to npm.
 workflow from the Actions tab in GitHub.
 
 **Any other failure** — run a new patch release. If packages were partially
-published to npm, avoid deleting the tag and trying to re-use it, as that
-causes more problems. Just do a fresh release instead. Note that the changelog
-script requires at least one PR merged since the last release, so make a
-trivial commit if needed.
+published to npm, avoid deleting the tag and trying to re-use it, as that causes
+more problems. Just do a fresh release instead. Note that the changelog script
+requires at least one PR merged since the last release, so make a trivial commit
+if needed.

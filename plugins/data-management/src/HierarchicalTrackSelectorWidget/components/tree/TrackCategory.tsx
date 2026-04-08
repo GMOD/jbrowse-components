@@ -101,16 +101,12 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
   const { classes } = useStyles()
   const [menuOpen, setMenuOpen] = useState(false)
   const { name, id } = item
-  const { shownTrackIds } = model
+  const stats = model.folderCategoryStats.get(id)
+  const hasActiveSubtracks = (stats?.active ?? 0) > 0
 
-  const trackNodes = getAllTrackNodes(item)
-  const activeCount = trackNodes.filter(
-    child => child.type === 'track' && shownTrackIds.has(child.trackId),
-  ).length
-  const hasActiveSubtracks = activeCount > 0
-
-  const getMenuItems = useCallback(
-    () => [
+  const getMenuItems = useCallback(() => {
+    const nodes = getAllTrackNodes(item)
+    return [
       {
         label: 'Expand to category',
         onClick: () => {
@@ -138,7 +134,7 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
       {
         label: 'Show all',
         onClick: () => {
-          for (const child of trackNodes) {
+          for (const child of nodes) {
             if (child.type === 'track') {
               model.view.showTrack(child.trackId)
             }
@@ -148,16 +144,15 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
       {
         label: 'Hide all',
         onClick: () => {
-          for (const child of trackNodes) {
+          for (const child of nodes) {
             if (child.type === 'track') {
               model.view.hideTrack(child.trackId)
             }
           }
         },
       },
-    ],
-    [model, item, id, trackNodes],
-  )
+    ]
+  }, [model, item, id])
 
   return (
     <div
@@ -172,9 +167,9 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
       <span data-testid={`htsCategory-${name}`}>
         <SanitizedHTML html={name} />
       </span>
-      {hasActiveSubtracks ? (
+      {hasActiveSubtracks && stats ? (
         <span className={classes.countBadge}>
-          ({activeCount}/{trackNodes.length})
+          ({stats.active}/{stats.total})
         </span>
       ) : null}
       <CascadingMenuButton
