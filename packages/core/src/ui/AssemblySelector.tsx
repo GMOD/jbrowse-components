@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -7,7 +7,7 @@ import { useLocalStorage } from '../util/index.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
 
 import type { AbstractSessionModel } from '../util/index.ts'
-import type { InputProps as IIP, TextFieldProps as TFP } from '@mui/material'
+import type { TextFieldProps as TFP } from '@mui/material'
 
 const useStyles = makeStyles()({
   importFormEntry: {
@@ -20,7 +20,6 @@ const AssemblySelector = observer(function AssemblySelector({
   onChange,
   label = 'Assembly',
   selected,
-  InputProps,
   TextFieldProps,
   localStorageKey,
   helperText = 'Select assembly to view',
@@ -31,7 +30,6 @@ const AssemblySelector = observer(function AssemblySelector({
   onChange: (arg: string) => void
   selected?: string
   localStorageKey?: string
-  InputProps?: IIP
   TextFieldProps?: TFP
 }) {
   const { classes } = useStyles()
@@ -54,11 +52,17 @@ const AssemblySelector = observer(function AssemblySelector({
     ? lastSelected
     : selected
 
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
+
+  // On mount only: if localStorage has a valid assembly that differs from the
+  // parent's current value, push it up so the parent stays in sync.
   useEffect(() => {
     if (selection && selection !== selected) {
-      onChange(selection)
+      onChangeRef.current(selection)
     }
-  }, [selection, onChange, selected])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const error = assemblyNames.length ? '' : 'No configured assemblies'
   const { slotProps: textFieldSlotProps, ...restTextFieldProps } =
@@ -72,14 +76,15 @@ const AssemblySelector = observer(function AssemblySelector({
       helperText={error || helperText}
       value={selection || ''}
       onChange={event => {
-        setLastSelected(event.target.value)
+        const val = event.target.value
+        setLastSelected(val)
+        onChange(val)
       }}
       error={!!error}
       disabled={!!error}
       className={classes.importFormEntry}
       {...restTextFieldProps}
       slotProps={{
-        input: InputProps,
         htmlInput: {
           'data-testid': 'assembly-selector',
         },
