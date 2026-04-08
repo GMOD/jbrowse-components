@@ -14,7 +14,9 @@ const baseConfig = {
     '\\.module\\.(css|sass|scss)$',
   ],
   collectCoverageFrom: [
-    '{packages,products,plugins}/*/src/**/*.{js,jsx,ts,tsx}',
+    'packages/*/src/**/*.{js,jsx,ts,tsx}',
+    'products/*/src/**/*.{js,jsx,ts,tsx}',
+    'plugins/*/src/**/*.{js,jsx,ts,tsx}',
   ],
   coveragePathIgnorePatterns: [
     '!*.d.ts',
@@ -54,7 +56,9 @@ export default {
       // All other tests use jsdom with jest-fetch-mock
       displayName: 'default',
       testMatch: [
-        '<rootDir>/{packages,products,plugins}/**/*.test.{ts,tsx,js,jsx}',
+        '<rootDir>/packages/**/*.test.{ts,tsx,js,jsx}',
+        '<rootDir>/products/**/*.test.{ts,tsx,js,jsx}',
+        '<rootDir>/plugins/**/*.test.{ts,tsx,js,jsx}',
       ],
       testPathIgnorePatterns: [
         '/dist/',
