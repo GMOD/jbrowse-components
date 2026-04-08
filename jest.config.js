@@ -45,6 +45,16 @@ export default {
       ...baseConfig,
     },
     {
+      // gfa-to-tabix CLI tests: run in Node, auto-build Rust binary if cargo is available
+      displayName: 'gfa-to-tabix',
+      testMatch: [
+        '<rootDir>/products/jbrowse-cli/src/commands/make-gfa-tabix/gfa-to-tabix.test.ts',
+      ],
+      testEnvironment: 'node',
+      globalSetup: '<rootDir>/config/jest/buildGfaTabix.cjs',
+      ...baseConfig,
+    },
+    {
       // jbrowse-img uses Node environment with native fetch (no jest-fetch-mock)
       displayName: 'jbrowse-img',
       testMatch: ['<rootDir>/products/jbrowse-img/**/*.test.ts'],
@@ -65,6 +75,7 @@ export default {
         '/cypress/',
         '/demos/',
         '<rootDir>/products/jbrowse-img/',
+        '<rootDir>/products/jbrowse-cli/src/commands/make-gfa-tabix/gfa-to-tabix.test.ts',
       ],
       testEnvironment: 'jsdom',
       setupFilesAfterEnv: ['<rootDir>/config/jest/fetchMockAfterEnv.js'],
