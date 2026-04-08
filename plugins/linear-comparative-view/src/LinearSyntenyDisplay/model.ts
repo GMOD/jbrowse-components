@@ -10,6 +10,7 @@ import type { SyntenyRenderer } from './SyntenyRenderer.ts'
 import type { ColorScheme } from './drawSyntenyUtils.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface SyntenyFeatureData {
@@ -141,11 +142,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       isScrolling: false,
 
+      fetchStopToken: undefined as StopToken | undefined,
+
       /**
        * #volatile
        * Incremented on tab visibility restore to re-trigger the draw autorun.
        */
       tabVisibilityVersion: 0,
+    }))
+    .views(self => ({
+      get isLoading() {
+        return self.fetchStopToken !== undefined
+      },
     }))
     .actions(self => ({
       /**
@@ -156,6 +164,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       setFeatureData(arg: SyntenyFeatureData | undefined) {
         self.featureData = arg
+      },
+      setFetchStopToken(token: StopToken | undefined) {
+        self.fetchStopToken = token
       },
       setHoveredFeatureIdx(idx: number) {
         self.hoveredFeatureIdx = idx

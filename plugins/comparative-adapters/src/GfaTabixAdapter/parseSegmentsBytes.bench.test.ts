@@ -1,3 +1,5 @@
+import fs from 'fs'
+
 import Adapter from './GfaTabixAdapter.ts'
 import MyConfigSchema from './configSchema.ts'
 import { parseSegmentsBinary } from './gfaBinaryIO.ts'
@@ -96,7 +98,10 @@ function makeAdapter(prefix: string) {
   )
 }
 
-describe('getMultiPairFeatures e2e benchmark (HPRC chrM, 44 haplotypes)', () => {
+const hasHprcSegmentsBin = fs.existsSync(`${hprcPrefix}.segments.bin`)
+const describeHprc = hasHprcSegmentsBin ? describe : describe.skip
+
+describeHprc('getMultiPairFeatures e2e benchmark (HPRC chrM, 44 haplotypes)', () => {
   it('full-chromosome query timing', async () => {
     const adapter = makeAdapter(hprcPrefix)
     const query = {

@@ -813,16 +813,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "volvox_bam_small_max_height_alignments",
-          "pileupDisplay": {
-            "displayId": "volvox_bam_small_max_height_alignments_pileup",
-            "renderers": {
-              "PileupRenderer": {
-                "maxHeight": 10,
-                "type": "PileupRenderer",
-              },
-            },
-            "type": "LinearPileupDisplay",
-          },
+          "maxHeight": 10,
           "type": "LinearAlignmentsDisplay",
         },
       ],

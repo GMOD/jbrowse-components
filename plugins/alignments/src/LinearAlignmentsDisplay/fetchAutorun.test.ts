@@ -143,6 +143,16 @@ function createTestEnvironment() {
 
   const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
 
+  const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
+  const trackConfig = trackConfigSchema.create(
+    {
+      type: 'AlignmentsTrack',
+      trackId: 'test_track',
+      assemblyNames: ['volvox'],
+    },
+    { pluginManager },
+  )
+
   const Session = types
     .model({
       name: 'testSession',
@@ -185,6 +195,13 @@ function createTestEnvironment() {
         isValidRefName: () => true,
       },
     }))
+    .views(() => ({
+      getTracksById() {
+        return {
+          test_track: trackConfig,
+        }
+      },
+    }))
     .actions(self => ({
       setView(view: Instance<typeof LinearGenomeModel>) {
         self.view = view
@@ -202,7 +219,7 @@ function createTestEnvironment() {
         tracks: [
           {
             type: 'AlignmentsTrack',
-            trackId: 'test_track',
+            configuration: 'test_track',
             displays: [{ type: 'LinearAlignmentsDisplay' }],
           },
         ],
