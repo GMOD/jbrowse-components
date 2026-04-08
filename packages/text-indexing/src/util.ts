@@ -1,7 +1,7 @@
 import path from 'path'
 
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
-import sanitize from 'sanitize-filename'
+import { sanitizeForFilename } from '@jbrowse/text-indexing-core'
 
 import type {
   LocalPathLocation,
@@ -102,7 +102,7 @@ export function createTextSearchConf(
   locationPath: string,
 ) {
   const base = path.join(locationPath, 'trix')
-  const n = sanitize(name)
+  const n = sanitizeForFilename(name)
   return {
     type: 'TrixTextSearchAdapter',
     textSearchAdapterId: name,
@@ -115,7 +115,7 @@ export function createTextSearchConf(
       locationType: 'LocalPathLocation' as const,
     },
     metaFilePath: {
-      localPath: path.join(base, `${n}.json`),
+      localPath: path.join(base, `${n}_meta.json`),
       locationType: 'LocalPathLocation' as const,
     },
     tracks: trackIds,

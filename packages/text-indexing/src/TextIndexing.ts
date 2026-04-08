@@ -233,8 +233,7 @@ async function* indexFiles({
           statusCallback(`${progressBytes}/${myTotalBytes}`)
         },
       })
-    }
-    if (type === 'Gff3TabixAdapter') {
+    } else if (type === 'Gff3TabixAdapter') {
       yield* indexGff3({
         config: track,
         attributesToIndex,

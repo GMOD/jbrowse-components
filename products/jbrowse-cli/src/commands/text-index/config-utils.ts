@@ -1,7 +1,11 @@
 import fs from 'fs'
 import path from 'path'
 
+import { sanitizeForFilename } from '@jbrowse/text-indexing-core'
+
 import { supported } from '../../types/common.ts'
+
+export { sanitizeForFilename as sanitizeNameForPath }
 
 import type { Config, Track } from '../../base.ts'
 
@@ -15,14 +19,6 @@ export function parseCommaSeparatedString(value?: string): string[] {
       .map(s => s.trim())
       .filter(Boolean) ?? []
   )
-}
-
-/**
- * Sanitizes a name for use in file paths by replacing invalid characters
- * Replaces characters that are problematic in file paths: / \ : * ? " < > |
- */
-export function sanitizeNameForPath(name: string): string {
-  return name.replace(/[/\\:*?"<>|]/g, '_')
 }
 
 /**
