@@ -19,7 +19,8 @@ const shouldMinimize = process.env.NO_MINIMIZE !== 'true'
 function getWorkspaces() {
   const workspacesStr = execSync('pnpm recursive list --json --depth=-1', {
     cwd: process.cwd(),
-  }).toString()
+    encoding: 'utf8',
+  })
   return Object.values(
     JSON.parse(workspacesStr) as Record<string, { path: string }>,
   ).map(e => e.path)
