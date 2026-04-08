@@ -1,4 +1,4 @@
-import {
+import React, {
   useCallback,
   useEffect,
   useEffectEvent,
@@ -88,6 +88,22 @@ type FeatureItemEntry =
   | { item: FlatbushItem; vr: VisibleRegion; data: FeatureDataResult }
   | { item: SubfeatureInfo; vr: VisibleRegion }
 
+const OverlayLayer = ({ children }: { children: React.ReactNode }) =>
+  children ? (
+    <div
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+      }}
+    >
+      {children}
+    </div>
+  ) : null
+
 const ContextMenu = observer(function ContextMenu({
   model,
   contextCoord,
@@ -137,6 +153,13 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
   const width = view.initialized ? view.trackWidthPx : undefined
   const height = model.height
+
+  const clearHoverState = useCallback(() => {
+    model.setMouseoverExtraInformation(undefined)
+    setHoveredFeature(null)
+    setHoveredSubfeature(null)
+    model.setFeatureIdUnderMouse(null)
+  }, [model])
 
   const openContextMenu = useCallback(
     (
@@ -322,13 +345,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         yPos,
         model.effectiveShowDescriptions,
       )
-    }
-
-    const clearHoverState = () => {
-      model.setMouseoverExtraInformation(undefined)
-      setHoveredFeature(null)
-      setHoveredSubfeature(null)
-      model.setFeatureIdUnderMouse(null)
     }
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -528,27 +544,9 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
             }}
           />
 
-          {[
-            highlightOverlays,
-            floatingLabelElements,
-            aminoAcidOverlayElements,
-          ].map((elements, i) =>
-            elements ? (
-              <div
-                key={i}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  pointerEvents: 'none',
-                }}
-              >
-                {elements}
-              </div>
-            ) : null,
-          )}
+          <OverlayLayer>{highlightOverlays}</OverlayLayer>
+          <OverlayLayer>{floatingLabelElements}</OverlayLayer>
+          <OverlayLayer>{aminoAcidOverlayElements}</OverlayLayer>
         </div>
       </div>
 
@@ -556,12 +554,8 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         <OverflowIndicator
           expanded={model.heightBeforeExpand !== undefined}
           showScrollHint={view.scrollZoom && model.hasOverflow}
-          onExpand={() => {
-            model.expandToFit()
-          }}
-          onRestore={() => {
-            model.collapseFromExpand()
-          }}
+          onExpand={model.expandToFit}
+          onRestore={model.collapseFromExpand}
         />
       ) : null}
 

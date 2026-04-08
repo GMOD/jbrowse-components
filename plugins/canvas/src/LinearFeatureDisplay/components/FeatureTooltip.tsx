@@ -10,16 +10,13 @@ const FeatureTooltip = observer(function FeatureTooltip({
   info: string | undefined
   clientMouseCoord: Coord
 }) {
-  if (!info) {
-    return null
-  }
-  return (
+  return info ? (
     <BaseTooltip
       clientPoint={{ x: clientMouseCoord[0] + 15, y: clientMouseCoord[1] }}
     >
       <div>{info}</div>
     </BaseTooltip>
-  )
+  ) : null
 })
 
 export default FeatureTooltip
