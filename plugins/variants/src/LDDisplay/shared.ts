@@ -1,10 +1,11 @@
 import type React from 'react'
 
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getSession } from '@jbrowse/core/util'
-import { cast, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
+  ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -38,120 +39,17 @@ export default function sharedModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
+      ConfigOverrideMixin(),
       types.model({
-        /**
-         * #property
-         */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         */
-        minorAlleleFrequencyFilterSetting: types.maybe(types.number),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         */
-        lengthCutoffFilterSetting: types.maybe(types.number),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         * Height of the zone for connecting lines at the top
-         */
-        lineZoneHeightSetting: types.maybe(types.number),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         * LD metric to compute: 'r2' (squared correlation) or 'dprime' (normalized D)
-         */
-        ldMetricSetting: types.maybe(types.string),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         */
-        colorSchemeSetting: types.maybe(types.string),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         */
-        showLegendSetting: types.maybe(types.boolean),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         * Whether to show the LD triangle heatmap
-         */
-        showLDTriangleSetting: types.maybe(types.boolean),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         * Whether to show the recombination rate track
-         */
-        showRecombinationSetting: types.maybe(types.boolean),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         * Height of the recombination track zone at the top
-         */
-        recombinationZoneHeightSetting: types.maybe(types.number),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         * When true, squash the LD triangle to fit the display height
-         */
-        fitToHeightSetting: types.maybe(types.boolean),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         * HWE filter p-value threshold (variants with HWE p < this are excluded)
-         * Set to 0 to disable HWE filtering
-         */
-        hweFilterThresholdSetting: types.maybe(types.number),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         * Call rate filter threshold (0-1). Variants with fewer than this
-         * proportion of non-missing genotypes are excluded.
-         */
-        callRateFilterSetting: types.maybe(types.number),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         * Whether to show vertical guides at the connected genome positions on hover
-         */
-        showVerticalGuidesSetting: types.maybe(types.boolean),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         * Whether to show variant labels above the tick marks
-         */
-        showLabelsSetting: types.maybe(types.boolean),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         * Height of the vertical tick marks at the genomic position
-         */
-        tickHeightSetting: types.maybe(types.number),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         * When true, draw cells sized according to genomic distance between SNPs
-         * rather than uniform squares
-         */
-        useGenomicPositionsSetting: types.maybe(types.boolean),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         * When true, show signed LD values (-1 to 1) instead of absolute values
-         */
-        signedLDSetting: types.maybe(types.boolean),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         * JEXL filter expressions to apply to variants
-         */
-        jexlFiltersSetting: types.maybe(types.array(types.string)),
       }),
     )
+    .preProcessSnapshot((snap: any) => {
+      if (!snap) {
+        return snap
+      }
+      return migrateLDSettings(snap)
+    })
     .volatile(() => ({
       /**
        * #volatile
@@ -247,83 +145,44 @@ export default function sharedModelFactory(
         self.yScalar = yScalar
         self.cellWidth = cellWidth
       },
-      /**
-       * #action
-       */
       setLineZoneHeight(n: number) {
-        self.lineZoneHeightSetting = Math.max(0, n)
+        self.setOverride('lineZoneHeight', Math.max(0, n))
       },
-      /**
-       * #action
-       */
       reload() {
         self.error = undefined
       },
-      /**
-       * #action
-       */
       setMafFilter(arg: number) {
-        self.minorAlleleFrequencyFilterSetting = arg
+        self.setOverride('minorAlleleFrequencyFilter', arg)
       },
-      /**
-       * #action
-       */
       setLengthCutoffFilter(arg: number) {
-        self.lengthCutoffFilterSetting = arg
+        self.setOverride('lengthCutoffFilter', arg)
       },
-      /**
-       * #action
-       */
       setLDMetric(metric: string) {
-        self.ldMetricSetting = metric
+        self.setOverride('ldMetric', metric)
       },
-      /**
-       * #action
-       */
       setColorScheme(scheme: string | undefined) {
-        self.colorSchemeSetting = scheme
+        self.setOverride('colorScheme', scheme)
       },
-      /**
-       * #action
-       */
       setShowLegend(show: boolean) {
-        self.showLegendSetting = show
+        self.setOverride('showLegend', show)
       },
-      /**
-       * #action
-       */
       setShowLDTriangle(show: boolean) {
-        self.showLDTriangleSetting = show
+        self.setOverride('showLDTriangle', show)
       },
-      /**
-       * #action
-       */
       setShowRecombination(show: boolean) {
-        self.showRecombinationSetting = show
+        self.setOverride('showRecombination', show)
       },
-      /**
-       * #action
-       */
       setRecombinationZoneHeight(n: number) {
-        self.recombinationZoneHeightSetting = Math.max(20, n)
+        self.setOverride('recombinationZoneHeight', Math.max(20, n))
       },
-      /**
-       * #action
-       */
       setFitToHeight(value: boolean) {
-        self.fitToHeightSetting = value
+        self.setOverride('fitToHeight', value)
       },
-      /**
-       * #action
-       */
       setHweFilter(threshold: number) {
-        self.hweFilterThresholdSetting = threshold
+        self.setOverride('hweFilterThreshold', threshold)
       },
-      /**
-       * #action
-       */
       setCallRateFilter(threshold: number) {
-        self.callRateFilterSetting = threshold
+        self.setOverride('callRateFilter', threshold)
       },
       /**
        * #action
@@ -337,41 +196,23 @@ export default function sharedModelFactory(
       setRecombination(data: typeof self.recombination) {
         self.recombination = data
       },
-      /**
-       * #action
-       */
       setShowVerticalGuides(show: boolean) {
-        self.showVerticalGuidesSetting = show
+        self.setOverride('showVerticalGuides', show)
       },
-      /**
-       * #action
-       */
       setShowLabels(show: boolean) {
-        self.showLabelsSetting = show
+        self.setOverride('showLabels', show)
       },
-      /**
-       * #action
-       */
       setTickHeight(height: number) {
-        self.tickHeightSetting = Math.max(0, height)
+        self.setOverride('tickHeight', Math.max(0, height))
       },
-      /**
-       * #action
-       */
       setUseGenomicPositions(value: boolean) {
-        self.useGenomicPositionsSetting = value
+        self.setOverride('useGenomicPositions', value)
       },
-      /**
-       * #action
-       */
       setSignedLD(value: boolean) {
-        self.signedLDSetting = value
+        self.setOverride('signedLD', value)
       },
-      /**
-       * #action
-       */
       setJexlFilters(filters: string[] | undefined) {
-        self.jexlFiltersSetting = cast(filters)
+        self.setOverride('jexlFilters', filters)
       },
     }))
     .views(self => ({
@@ -399,150 +240,59 @@ export default function sharedModelFactory(
       get fullyDrawn() {
         return !!self.rpcData
       },
-      /**
-       * #getter
-       * Returns the effective minor allele frequency filter, falling back to config
-       */
       get minorAlleleFrequencyFilter() {
-        return (
-          self.minorAlleleFrequencyFilterSetting ??
-          getConf(self, 'minorAlleleFrequencyFilter')
-        )
+        return self.getConfWithOverride('minorAlleleFrequencyFilter')
       },
-      /**
-       * #getter
-       * Returns the effective length cutoff filter, falling back to config
-       */
       get lengthCutoffFilter() {
-        return (
-          self.lengthCutoffFilterSetting ?? getConf(self, 'lengthCutoffFilter')
-        )
+        return self.getConfWithOverride('lengthCutoffFilter')
       },
-      /**
-       * #getter
-       * Returns the effective line zone height, falling back to config
-       */
       get lineZoneHeight() {
-        return self.lineZoneHeightSetting ?? getConf(self, 'lineZoneHeight')
+        return self.getConfWithOverride('lineZoneHeight')
       },
-      /**
-       * #getter
-       * Returns the effective LD metric, falling back to config
-       */
       get ldMetric() {
-        return self.ldMetricSetting ?? getConf(self, 'ldMetric')
+        return self.getConfWithOverride('ldMetric')
       },
-      /**
-       * #getter
-       * Returns the effective color scheme, falling back to config
-       */
       get colorScheme() {
-        return (
-          self.colorSchemeSetting || getConf(self, 'colorScheme') || undefined
-        )
+        return self.getConfWithOverride('colorScheme') || undefined
       },
-      /**
-       * #getter
-       * Returns the effective show legend setting, falling back to config
-       */
       get showLegend() {
-        return self.showLegendSetting ?? getConf(self, 'showLegend')
+        return self.getConfWithOverride('showLegend')
       },
-      /**
-       * #getter
-       * Returns the effective show LD triangle setting, falling back to config
-       */
       get showLDTriangle() {
-        return self.showLDTriangleSetting ?? getConf(self, 'showLDTriangle')
+        return self.getConfWithOverride('showLDTriangle')
       },
-      /**
-       * #getter
-       * Returns the effective show recombination setting, falling back to config
-       */
       get showRecombination() {
-        return (
-          self.showRecombinationSetting ?? getConf(self, 'showRecombination')
-        )
+        return self.getConfWithOverride('showRecombination')
       },
-      /**
-       * #getter
-       * Returns the effective recombination zone height, falling back to config
-       */
       get recombinationZoneHeight() {
-        return (
-          self.recombinationZoneHeightSetting ??
-          getConf(self, 'recombinationZoneHeight')
-        )
+        return self.getConfWithOverride('recombinationZoneHeight')
       },
-      /**
-       * #getter
-       * Returns the effective fit to height setting, falling back to config
-       */
       get fitToHeight() {
-        return self.fitToHeightSetting ?? getConf(self, 'fitToHeight')
+        return self.getConfWithOverride('fitToHeight')
       },
-      /**
-       * #getter
-       * Returns the effective HWE filter threshold, falling back to config
-       */
       get hweFilterThreshold() {
-        return (
-          self.hweFilterThresholdSetting ?? getConf(self, 'hweFilterThreshold')
-        )
+        return self.getConfWithOverride('hweFilterThreshold')
       },
-      /**
-       * #getter
-       * Returns the effective call rate filter threshold, falling back to config
-       */
       get callRateFilter() {
-        return self.callRateFilterSetting ?? getConf(self, 'callRateFilter')
+        return self.getConfWithOverride('callRateFilter')
       },
-      /**
-       * #getter
-       * Returns the effective show vertical guides setting, falling back to config
-       */
       get showVerticalGuides() {
-        return (
-          self.showVerticalGuidesSetting ?? getConf(self, 'showVerticalGuides')
-        )
+        return self.getConfWithOverride('showVerticalGuides')
       },
-      /**
-       * #getter
-       * Returns the effective show labels setting, falling back to config
-       */
       get showLabels() {
-        return self.showLabelsSetting ?? getConf(self, 'showLabels')
+        return self.getConfWithOverride('showLabels')
       },
-      /**
-       * #getter
-       * Returns the effective tick height, falling back to config
-       */
       get tickHeight() {
-        return self.tickHeightSetting ?? getConf(self, 'tickHeight')
+        return self.getConfWithOverride('tickHeight')
       },
-      /**
-       * #getter
-       * Returns the effective use genomic positions setting, falling back to config
-       */
       get useGenomicPositions() {
-        return (
-          self.useGenomicPositionsSetting ??
-          getConf(self, 'useGenomicPositions')
-        )
+        return self.getConfWithOverride('useGenomicPositions')
       },
-      /**
-       * #getter
-       * Returns the effective signed LD setting, falling back to config
-       */
       get signedLD() {
-        return self.signedLDSetting ?? getConf(self, 'signedLD')
+        return self.getConfWithOverride('signedLD')
       },
-      /**
-       * #getter
-       * Returns the effective jexl filters, falling back to config
-       */
       get jexlFilters() {
-        return self.jexlFiltersSetting ?? getConf(self, 'jexlFilters')
+        return self.getConfWithOverride('jexlFilters')
       },
       /**
        * #getter
@@ -770,83 +520,49 @@ export default function sharedModelFactory(
         })()
       },
     }))
-    .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const {
-        minorAlleleFrequencyFilterSetting,
-        lengthCutoffFilterSetting,
-        lineZoneHeightSetting,
-        ldMetricSetting,
-        colorSchemeSetting,
-        showLegendSetting,
-        showLDTriangleSetting,
-        showRecombinationSetting,
-        recombinationZoneHeightSetting,
-        fitToHeightSetting,
-        hweFilterThresholdSetting,
-        callRateFilterSetting,
-        showVerticalGuidesSetting,
-        showLabelsSetting,
-        tickHeightSetting,
-        useGenomicPositionsSetting,
-        signedLDSetting,
-        jexlFiltersSetting,
-        ...rest
-      } = snap as Omit<typeof snap, symbol>
-
-      const defaults: Record<string, unknown> = {
-        minorAlleleFrequencyFilterSetting: 0.1,
-        lengthCutoffFilterSetting: Number.MAX_SAFE_INTEGER,
-        lineZoneHeightSetting: 100,
-        ldMetricSetting: 'r2',
-        colorSchemeSetting: '',
-        showLegendSetting: false,
-        showLDTriangleSetting: true,
-        showRecombinationSetting: false,
-        recombinationZoneHeightSetting: 50,
-        fitToHeightSetting: false,
-        hweFilterThresholdSetting: 0,
-        callRateFilterSetting: 0,
-        showVerticalGuidesSetting: true,
-        showLabelsSetting: false,
-        tickHeightSetting: 6,
-        useGenomicPositionsSetting: false,
-        signedLDSetting: false,
-      }
-      const settings = {
-        minorAlleleFrequencyFilterSetting,
-        lengthCutoffFilterSetting,
-        lineZoneHeightSetting,
-        ldMetricSetting,
-        colorSchemeSetting,
-        showLegendSetting,
-        showLDTriangleSetting,
-        showRecombinationSetting,
-        recombinationZoneHeightSetting,
-        fitToHeightSetting,
-        hweFilterThresholdSetting,
-        callRateFilterSetting,
-        showVerticalGuidesSetting,
-        showLabelsSetting,
-        tickHeightSetting,
-        useGenomicPositionsSetting,
-        signedLDSetting,
-      }
-      const nonDefault = Object.fromEntries(
-        Object.entries(settings).filter(
-          ([k, v]) => v !== undefined && v !== defaults[k],
-        ),
-      )
-      return {
-        ...rest,
-        ...nonDefault,
-        ...(jexlFiltersSetting?.length ? { jexlFiltersSetting } : {}),
-      } as typeof snap
-    })
 }
 
 export type SharedLDStateModel = ReturnType<typeof sharedModelFactory>
 export type SharedLDModel = Instance<SharedLDStateModel>
+
+const ldSettingKeys = [
+  ['minorAlleleFrequencyFilterSetting', 'minorAlleleFrequencyFilter'],
+  ['lengthCutoffFilterSetting', 'lengthCutoffFilter'],
+  ['lineZoneHeightSetting', 'lineZoneHeight'],
+  ['ldMetricSetting', 'ldMetric'],
+  ['colorSchemeSetting', 'colorScheme'],
+  ['showLegendSetting', 'showLegend'],
+  ['showLDTriangleSetting', 'showLDTriangle'],
+  ['showRecombinationSetting', 'showRecombination'],
+  ['recombinationZoneHeightSetting', 'recombinationZoneHeight'],
+  ['fitToHeightSetting', 'fitToHeight'],
+  ['hweFilterThresholdSetting', 'hweFilterThreshold'],
+  ['callRateFilterSetting', 'callRateFilter'],
+  ['showVerticalGuidesSetting', 'showVerticalGuides'],
+  ['showLabelsSetting', 'showLabels'],
+  ['tickHeightSetting', 'tickHeight'],
+  ['useGenomicPositionsSetting', 'useGenomicPositions'],
+  ['signedLDSetting', 'signedLD'],
+  ['jexlFiltersSetting', 'jexlFilters'],
+] as const
+
+function migrateLDSettings(snap: Record<string, unknown>) {
+  const overrides: Record<string, unknown> = {}
+  const rest = { ...snap }
+  for (const [oldKey, newKey] of ldSettingKeys) {
+    if (rest[oldKey] !== undefined) {
+      overrides[newKey] = rest[oldKey]
+      delete rest[oldKey]
+    }
+  }
+  if (Object.keys(overrides).length === 0) {
+    return rest
+  }
+  return {
+    ...rest,
+    configOverrides: {
+      ...(rest.configOverrides as Record<string, unknown> | undefined),
+      ...overrides,
+    },
+  }
+}
