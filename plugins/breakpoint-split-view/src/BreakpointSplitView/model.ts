@@ -109,6 +109,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       get showImportForm() {
         return !this.hasSomethingToShow
       },
+
+      /**
+       * #getter
+       */
+      get assembly() {
+        const name = self.views[0]?.assemblyNames[0]
+        if (name) {
+          return getSession(self).assemblyManager.get(name)
+        }
+        return undefined
+      },
     }))
     .views(self => ({
       /**

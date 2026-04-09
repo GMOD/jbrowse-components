@@ -448,8 +448,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get assembliesNotFound() {
         const { assemblyManager } = getSession(self)
         const r0 = self.assemblyNames
-          .map(a => (!assemblyManager.get(a) ? a : undefined))
-          .filter(f => !!f)
+          .filter(a => !assemblyManager.assemblyNameMap[a])
           .join(',')
         return r0 ? `Assemblies ${r0} not found` : undefined
       },
@@ -458,20 +457,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get assemblyErrors() {
-        const { assemblyManager } = getSession(self)
-        return self.assemblyNames
-          .map(a => assemblyManager.get(a)?.error)
-          .filter(f => !!f)
-          .join(', ')
+        return getSession(self).assemblyManager.getAssemblyErrors(
+          self.assemblyNames,
+        )
       },
 
       /**
        * #getter
        */
       get assembliesInitialized() {
-        const { assemblyManager } = getSession(self)
-        return self.assemblyNames.every(
-          a => assemblyManager.get(a)?.initialized,
+        return getSession(self).assemblyManager.areAssembliesInitialized(
+          self.assemblyNames,
         )
       },
 

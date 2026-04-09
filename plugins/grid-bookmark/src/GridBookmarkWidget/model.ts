@@ -110,7 +110,7 @@ export default function f(_pluginManager: PluginManager) {
       get validAssemblies() {
         const { assemblyManager } = getSession(self)
         return new Set(
-          this.bookmarkAssemblies.filter(a => assemblyManager.get(a)),
+          this.bookmarkAssemblies.filter(a => assemblyManager.assemblyNameMap[a]),
         )
       },
       /**
