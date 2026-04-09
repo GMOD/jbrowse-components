@@ -223,27 +223,19 @@ export default function stateModelFactory(
       },
 
       get scaleType() {
-        return self.getOverride<string>('scaleType') ?? getConf(self, 'scaleType')
+        return self.getConfWithOverride('scaleType')
       },
 
       get autoscaleType() {
-        return (
-          self.getOverride<string>('autoscale') ?? getConf(self, 'autoscale')
-        )
+        return self.getConfWithOverride('autoscale')
       },
 
       get summaryScoreMode() {
-        return (
-          self.getOverride<string>('summaryScoreMode') ??
-          getConf(self, 'summaryScoreMode')
-        )
+        return self.getConfWithOverride('summaryScoreMode')
       },
 
       get renderingType() {
-        return (
-          self.getOverride<string>('defaultRendering') ??
-          getConf(self, 'defaultRendering')
-        )
+        return self.getConfWithOverride('defaultRendering')
       },
 
       get isDensityMode() {
@@ -255,11 +247,11 @@ export default function stateModelFactory(
       },
 
       get minScore() {
-        return self.getOverride<number>('minScore') ?? getConf(self, 'minScore')
+        return self.getConfWithOverride('minScore')
       },
 
       get maxScore() {
-        return self.getOverride<number>('maxScore') ?? getConf(self, 'maxScore')
+        return self.getConfWithOverride('maxScore')
       },
 
       get minScoreConfig() {

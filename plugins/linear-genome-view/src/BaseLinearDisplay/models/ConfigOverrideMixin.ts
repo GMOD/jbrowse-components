@@ -1,3 +1,4 @@
+import { getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -10,7 +11,7 @@ import { types } from '@jbrowse/mobx-state-tree'
  *   .compose(ConfigOverrideMixin(), ...)
  *   .views(self => ({
  *     get displayMode() {
- *       return self.getOverride('displayMode') ?? getConf(self, 'displayMode')
+ *       return self.getConfWithOverride('displayMode')
  *     },
  *   }))
  *   .actions(self => ({
@@ -31,6 +32,13 @@ export default function ConfigOverrideMixin() {
       getOverride<T>(key: string) {
         const val = self.configOverrides[key]
         return val as T | undefined
+      },
+      getConfWithOverride<T>(key: string) {
+        const val = self.configOverrides[key]
+        if (val !== undefined) {
+          return val as T
+        }
+        return getConf(self as Parameters<typeof getConf>[0], key) as T
       },
     }))
     .actions(self => ({

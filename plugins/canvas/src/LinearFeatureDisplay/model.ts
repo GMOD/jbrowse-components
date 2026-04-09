@@ -234,17 +234,11 @@ export default function stateModelFactory(
       },
 
       get showLabels(): boolean {
-        return (
-          self.getOverride<boolean>('showLabels') ??
-          (getConf(self, 'showLabels') as boolean)
-        )
+        return self.getConfWithOverride('showLabels')
       },
 
       get showDescriptions(): boolean {
-        return (
-          self.getOverride<boolean>('showDescriptions') ??
-          (getConf(self, 'showDescriptions') as boolean)
-        )
+        return self.getConfWithOverride('showDescriptions')
       },
 
       get effectiveShowDescriptions(): boolean {
@@ -255,31 +249,19 @@ export default function stateModelFactory(
       },
 
       get subfeatureLabels(): string {
-        return (
-          self.getOverride<string>('subfeatureLabels') ??
-          (getConf(self, 'subfeatureLabels') as string)
-        )
+        return self.getConfWithOverride('subfeatureLabels')
       },
 
       get displayMode(): string {
-        return (
-          self.getOverride<string>('displayMode') ??
-          (getConf(self, 'displayMode') as string)
-        )
+        return self.getConfWithOverride('displayMode')
       },
 
       get geneGlyphMode(): string {
-        return (
-          self.getOverride<string>('geneGlyphMode') ??
-          (getConf(self, 'geneGlyphMode') as string)
-        )
+        return self.getConfWithOverride('geneGlyphMode')
       },
 
       get displayDirectionalChevrons(): boolean {
-        return (
-          self.getOverride<boolean>('displayDirectionalChevrons') ??
-          (getConf(self, 'displayDirectionalChevrons') as boolean)
-        )
+        return self.getConfWithOverride('displayDirectionalChevrons')
       },
 
       get effectiveGeneGlyphMode(): string {

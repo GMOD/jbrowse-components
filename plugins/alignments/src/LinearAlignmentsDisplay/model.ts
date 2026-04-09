@@ -305,9 +305,7 @@ export default function stateModelFactory(
       },
 
       get colorBy(): ColorBy {
-        return (
-          self.getOverride<ColorBy>('colorBy') ?? getConf(self, 'colorBy')
-        )
+        return self.getConfWithOverride('colorBy')
       },
 
       get modificationThreshold() {
@@ -315,17 +313,11 @@ export default function stateModelFactory(
       },
 
       get filterBy(): FilterBy {
-        return (
-          self.getOverride<FilterBy>('filterBy') ?? getConf(self, 'filterBy')
-        )
+        return self.getConfWithOverride('filterBy')
       },
 
       get featureHeightSetting(): number {
-        return (
-          self.getOverride<number>('featureHeight') ??
-          getConf(self, 'featureHeight') ??
-          7
-        )
+        return self.getConfWithOverride('featureHeight')
       },
 
       get noSpacingSetting(): boolean | undefined {
@@ -341,11 +333,7 @@ export default function stateModelFactory(
       },
 
       get maxHeight(): number {
-        return (
-          self.getOverride<number>('maxHeight') ??
-          getConf(self, 'maxHeight') ??
-          1200
-        )
+        return self.getConfWithOverride('maxHeight')
       },
 
       /**
