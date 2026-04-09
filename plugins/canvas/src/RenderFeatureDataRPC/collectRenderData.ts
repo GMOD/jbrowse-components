@@ -55,7 +55,7 @@ export interface ArrowData {
 interface RenderContext {
   regionStart: number
   configContext: RenderConfigContext
-  theme: Record<string, unknown>
+  theme: Theme
   colorByCDS: boolean
   peptideDataMap?: Map<string, PeptideData>
 }

@@ -34,6 +34,7 @@ import type {
 import type { LayoutRecord, PeptideData } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 
 function writeColorBytes(out: Uint8Array, index: number, color: number) {
@@ -201,7 +202,7 @@ export async function executeRenderFeatureData({
       layoutRecords,
       regionStart,
       configContext,
-      mockTheme as any,
+      mockTheme as Theme,
       !!colorByCDS,
       peptideDataMap,
     ),

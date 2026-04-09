@@ -26,7 +26,7 @@ export function getBoxColor({
   feature: Feature
   configContext: RenderConfigContext
   colorByCDS: boolean
-  theme: Record<string, unknown>
+  theme: Theme
 }) {
   const { config } = configContext
 
@@ -46,14 +46,8 @@ export function getBoxColor({
   ) {
     const featureStart = feature.get('start')
     const featureEnd = feature.get('end')
-
-    const frame = getFrame(
-      featureStart,
-      featureEnd,
-      featureStrand,
-      featurePhase,
-    )
-    const frameColor = (theme as Theme).palette.framesCDS.at(frame)?.main
+    const frame = getFrame(featureStart, featureEnd, featureStrand, featurePhase)
+    const frameColor = theme.palette.framesCDS.at(frame)?.main
     if (frameColor) {
       fill = frameColor
     }
@@ -69,8 +63,8 @@ export function getStrokeColor({
 }: {
   feature: Feature
   configContext: RenderConfigContext
-  theme: Record<string, unknown>
+  theme: Theme
 }) {
-  const c = readConfigValue(configContext.config, 'color2', feature)
-  return c === '#f0f' ? stripAlpha((theme as Theme).palette.text.secondary) : c
+  const c = readConfigValue<string>(configContext.config, 'color2', feature)
+  return c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
 }

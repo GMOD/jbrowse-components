@@ -3,7 +3,7 @@ import {
   readConfigValue,
 } from './renderConfig.ts'
 
-function mockFeature(data: Record<string, unknown>) {
+function mockFeature(data: Record<string, unknown> = {}) {
   return {
     get: (key: string) => data[key],
     id: () => 'test-id',
@@ -11,16 +11,18 @@ function mockFeature(data: Record<string, unknown>) {
   } as any
 }
 
+const anyFeature = mockFeature()
+
 describe('readConfigValue', () => {
   it('returns value when present', () => {
-    expect(readConfigValue({ color1: 'red' }, 'color1')).toBe('red')
+    expect(readConfigValue({ color1: 'red' }, 'color1', anyFeature)).toBe('red')
   })
 
   it('returns undefined when key is missing', () => {
-    expect(readConfigValue({}, 'color1')).toBeUndefined()
+    expect(readConfigValue({}, 'color1', anyFeature)).toBeUndefined()
   })
 
-  it('evaluates JEXL expression with feature', () => {
+  it('evaluates JEXL expression per-feature', () => {
     const config = {
       color1: "jexl:get(feature,'type')=='SNV'?'green':'purple'",
     }
@@ -32,16 +34,9 @@ describe('readConfigValue', () => {
     ).toBe('purple')
   })
 
-  it('returns undefined for JEXL when no feature provided', () => {
-    const config = {
-      color1: "jexl:get(feature,'type')=='SNV'?'green':'purple'",
-    }
-    expect(readConfigValue(config, 'color1')).toBeUndefined()
-  })
-
   it('resolves nested keys', () => {
     expect(
-      readConfigValue({ labels: { fontSize: 14 } }, ['labels', 'fontSize']),
+      readConfigValue({ labels: { fontSize: 14 } }, ['labels', 'fontSize'], anyFeature),
     ).toBe(14)
   })
 })
@@ -97,11 +92,9 @@ describe('createRenderConfigContext', () => {
       transcriptTypes: ['mRNA'],
       containerTypes: [],
     })
-
     expect(
       readConfigValue(ctx.config, 'color1', mockFeature({ type: 'SNV' })),
     ).toBe('green')
-
     expect(
       readConfigValue(ctx.config, 'color1', mockFeature({ type: 'insertion' })),
     ).toBe('purple')

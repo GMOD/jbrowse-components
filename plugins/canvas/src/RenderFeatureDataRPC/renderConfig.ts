@@ -16,13 +16,10 @@ function resolveValue(config: Record<string, unknown>, key: string | string[]) {
 export function readConfigValue<T>(
   config: Record<string, unknown>,
   key: string | string[],
-  feature?: Feature,
+  feature: Feature,
 ): T {
   const raw = resolveValue(config, key)
   if (typeof raw === 'string' && raw.startsWith('jexl:')) {
-    if (!feature) {
-      return undefined as T
-    }
     return stringToJexlExpression(raw).eval({ feature }) as T
   }
   return raw as T
@@ -30,32 +27,20 @@ export function readConfigValue<T>(
 
 export interface RenderConfigContext {
   config: Record<string, unknown>
-
   displayMode: string
   subfeatureLabels: string
-
   transcriptTypes: string[]
   containerTypes: string[]
-
   geneGlyphMode: string
   displayDirectionalChevrons: boolean
-
   labelAllowed: boolean
   heightMultiplier: number
-}
-
-function getHeightMultiplier(displayMode: string) {
-  if (displayMode === 'compact') {
-    return 0.6
-  }
-  return 1
 }
 
 export function createRenderConfigContext(
   config: Record<string, unknown>,
 ): RenderConfigContext {
   const displayMode = config.displayMode as string
-
   return {
     config,
     displayMode,
@@ -65,6 +50,6 @@ export function createRenderConfigContext(
     geneGlyphMode: config.geneGlyphMode as string,
     displayDirectionalChevrons: config.displayDirectionalChevrons as boolean,
     labelAllowed: displayMode !== 'collapse',
-    heightMultiplier: getHeightMultiplier(displayMode),
+    heightMultiplier: displayMode === 'compact' ? 0.6 : 1,
   }
 }
