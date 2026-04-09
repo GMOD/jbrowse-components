@@ -62,6 +62,12 @@ export default function MultiRegionDisplayMixin() {
       },
 
       setRenderingStopToken(token: StopToken | undefined) {
+        if (token) {
+          console.log('[MultiRegionDisplay] setRenderingStopToken: LOADING fetchGeneration:', self.fetchGeneration)
+          console.trace('[MultiRegionDisplay] setRenderingStopToken LOADING caller')
+        } else {
+          console.log('[MultiRegionDisplay] setRenderingStopToken: DONE fetchGeneration:', self.fetchGeneration)
+        }
         self.renderingStopToken = token
       },
 

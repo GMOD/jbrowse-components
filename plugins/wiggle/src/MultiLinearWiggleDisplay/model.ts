@@ -646,6 +646,7 @@ export default function stateModelFactory(
                   if (!view.initialized) {
                     return
                   }
+                  console.log('[MultiWiggle] VisibleScoreRange autorun firing, rpcDataMap.size:', self.rpcDataMap.size)
                   const numStdDev = getConf(self, 'numStdDev') || 3
                   const visibleEntries = view.dynamicBlocks.contentBlocks
                     .filter(block => block.regionNumber !== undefined)
@@ -675,11 +676,13 @@ export default function stateModelFactory(
                     visibleEntries,
                     allEntries,
                   )
+                  console.log('[MultiWiggle] VisibleScoreRange computed:', JSON.stringify(range), 'prev:', JSON.stringify(self.visibleScoreRange))
                   if (
                     range &&
                     (range[0] !== self.visibleScoreRange?.[0] ||
                       range[1] !== self.visibleScoreRange[1])
                   ) {
+                    console.log('[MultiWiggle] VisibleScoreRange setting new range:', JSON.stringify(range))
                     self.setVisibleScoreRange(range)
                   }
                 } catch (e) {

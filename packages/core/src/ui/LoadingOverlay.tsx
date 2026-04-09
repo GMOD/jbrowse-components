@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+
 import { cx, keyframes, makeStyles } from '../util/tss-react/index.ts'
 
 const dot1 = keyframes`
@@ -56,6 +58,8 @@ const useStyles = makeStyles()({
   },
 })
 
+let debugCounter = 0
+
 export default function LoadingOverlay({
   statusMessage,
   isVisible,
@@ -64,10 +68,41 @@ export default function LoadingOverlay({
   isVisible?: boolean
 }) {
   const { classes } = useStyles()
+  const spanRef = useRef<HTMLSpanElement>(null)
+  const idRef = useRef<number>()
+  if (idRef.current === undefined) {
+    idRef.current = ++debugCounter
+  }
+  useEffect(() => {
+    const el = spanRef.current
+    if (el) {
+      const cs = window.getComputedStyle(el)
+      const rect = el.getBoundingClientRect()
+      const parent = el.parentElement
+      const parentRect = parent?.getBoundingClientRect()
+      console.log(
+        `[LoadingOverlay #${idRef.current}] render, isVisible:`,
+        isVisible,
+        'className:',
+        el.className,
+        'opacity:',
+        cs.opacity,
+        'rect:',
+        `${Math.round(rect.x)},${Math.round(rect.y)} ${Math.round(rect.width)}x${Math.round(rect.height)}`,
+        'parent:',
+        parent?.tagName,
+        parentRect
+          ? `${Math.round(parentRect.x)},${Math.round(parentRect.y)} ${Math.round(parentRect.width)}x${Math.round(parentRect.height)}`
+          : 'none',
+      )
+    }
+  })
   return (
     <span
+      ref={spanRef}
       className={cx(classes.overlay, isVisible && classes.visible)}
       data-testid={isVisible ? 'loading-overlay' : undefined}
+      data-debug-id={idRef.current}
     >
       <span className={classes.text}>
         {statusMessage || 'Loading'}

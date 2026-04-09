@@ -15,7 +15,9 @@ import type { BlendState, GpuHal, PassDescriptor, RegionMeta } from './types.ts'
 // aligned slot in the uniform ring buffer. 512 slots × 256-byte alignment =
 // 128 KB — negligible GPU memory for eliminating per-draw command submissions.
 const MAX_UNIFORM_SLOTS = 512
-const MSAA_SAMPLE_COUNT = 4
+// DEBUG: MSAA disabled to test whether Firefox WebGPU MSAA resolve is the
+// root cause of the blank-canvas problem. Set to 4 to re-enable.
+const MSAA_SAMPLE_COUNT: number = 1
 
 function gpuBlendState(bs: BlendState): GPUBlendState {
   return {
@@ -170,7 +172,10 @@ async function ensurePipelines(
           targets: [{ format, ...(blend && { blend }) }],
         },
         primitive: { topology: topo },
-        multisample: desc.picking ? undefined : { count: MSAA_SAMPLE_COUNT },
+        multisample:
+          desc.picking || MSAA_SAMPLE_COUNT === 1
+            ? undefined
+            : { count: MSAA_SAMPLE_COUNT },
       })
       console.log(`[WebGPUHal] pass "${desc.id}": pipeline ready`)
       state.pipelines.set(desc.id, pipeline)
@@ -500,12 +505,19 @@ export class WebGPUHal implements GpuHal {
   }
 
   beginFrame(clearR: number, clearG: number, clearB: number, clearA = 1) {
+    console.log('[WebGPUHal] beginFrame, canvas:', this.canvas.width, 'x', this.canvas.height, 'msaaView:', !!this.msaaView)
+    // Wrap the entire frame in a validation error scope so that any bad
+    // bind group / pipeline / draw shows up in the console instead of
+    // silently producing a blank canvas.
+    this.device.pushErrorScope('validation')
+    this.device.pushErrorScope('out-of-memory')
     this.currentTextureView = this.context.getCurrentTexture().createView()
     this.currentEncoder = this.device.createCommandEncoder()
     this.uniformSlot = 0
     this._clearColor = { r: clearR, g: clearG, b: clearB, a: clearA }
 
     if (!this.msaaView) {
+      console.warn('[WebGPUHal] beginFrame: no msaaView, skipping render pass')
       return
     }
 
@@ -571,7 +583,40 @@ export class WebGPUHal implements GpuHal {
         uploadSize,
       )
     }
+    const slotAtSubmit = this.uniformSlot
+    console.log('[WebGPUHal] endFrame: submitting, uniformSlot:', slotAtSubmit)
     this.device.queue.submit([this.currentEncoder.finish()])
+    console.log('[WebGPUHal] endFrame: submitted')
+
+    // Pop the error scopes pushed in beginFrame. Both scopes were pushed
+    // even when msaaView was missing and no render pass was created, so
+    // we must always pop exactly the same number.
+    void this.device.popErrorScope().then(err => {
+      if (err) {
+        console.error(
+          '[WebGPUHal] endFrame: OUT-OF-MEMORY error after submit, slot=',
+          slotAtSubmit,
+          err.message,
+        )
+      }
+    })
+    void this.device.popErrorScope().then(err => {
+      if (err) {
+        console.error(
+          '[WebGPUHal] endFrame: VALIDATION error after submit, slot=',
+          slotAtSubmit,
+          err.message,
+        )
+      }
+    })
+    // Confirm the submitted work actually completes on the GPU. If this
+    // promise never resolves, the GPU timeline is stuck.
+    void this.device.queue.onSubmittedWorkDone().then(() => {
+      console.log(
+        '[WebGPUHal] endFrame: onSubmittedWorkDone fired, slot=',
+        slotAtSubmit,
+      )
+    })
 
     this.currentEncoder = null
     this.currentTextureView = null
@@ -714,6 +759,16 @@ export class WebGPUHal implements GpuHal {
   }
 
   private makeColorAttachment(loadOp: GPULoadOp): GPURenderPassColorAttachment {
+    // When MSAA is disabled (sample count 1), render directly to the canvas
+    // texture instead of through an MSAA resolve.
+    if (MSAA_SAMPLE_COUNT === 1) {
+      return {
+        view: this.currentTextureView!,
+        loadOp,
+        storeOp: 'store',
+        ...(loadOp === 'clear' && { clearValue: this._clearColor }),
+      }
+    }
     return {
       view: this.msaaView!,
       resolveTarget: this.currentTextureView!,

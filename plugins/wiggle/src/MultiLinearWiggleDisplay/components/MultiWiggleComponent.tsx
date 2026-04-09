@@ -122,9 +122,12 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
   const view = getContainingView(model) as LGV
 
+  console.log('[MultiWiggleComponent] RENDER, isLoading:', model.isLoading, 'canvasDrawn:', model.canvasDrawn, 'ready:', ready, 'domain:', !!model.domain)
+
   const renderNow = useEffectEvent(() => {
     const renderer = rendererRef.current
     if (!renderer || !view.initialized) {
+      console.log('[MultiWiggleComponent] renderNow skipped, renderer:', !!renderer, 'view.initialized:', view.initialized)
       return
     }
     // See dataVersion comment in MultiRegionDisplayMixin.
@@ -133,11 +136,10 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     const { domain } = model
     const visibleRegions = view.visibleRegions
     const totalWidth = Math.round(view.width)
+    const height = model.height
+    console.log('[MultiWiggleComponent] renderNow: domain:', !!domain, 'visibleRegions:', visibleRegions.length, 'totalWidth:', totalWidth, 'height:', height, 'dataVersion:', _dv)
     if (!domain || visibleRegions.length === 0) {
-      renderer.renderBlocks(
-        [],
-        makeRenderState([0, 1], 'linear', 'xyplot', totalWidth, model.height),
-      )
+      console.log('[MultiWiggleComponent] renderNow: skipping empty render (no domain or no visible regions)')
       return
     }
     const blocks: WiggleRenderBlock[] = visibleRegions.map(vr => ({
@@ -147,28 +149,53 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       screenEndPx: vr.screenEndPx,
       reversed: vr.reversed ?? false,
     }))
-    renderer.renderBlocks(
-      blocks,
-      makeRenderState(
-        domain,
-        model.scaleType,
-        model.renderingType,
-        totalWidth,
-        model.height,
-      ),
-    )
+    try {
+      renderer.renderBlocks(
+        blocks,
+        makeRenderState(
+          domain,
+          model.scaleType,
+          model.renderingType,
+          totalWidth,
+          model.height,
+        ),
+      )
+      console.log('[MultiWiggleComponent] renderBlocks done')
+    } catch (e) {
+      console.error('[MultiWiggleComponent] renderBlocks threw:', e)
+    }
   })
 
   useEffect(() => {
     const renderer = rendererRef.current
+    console.log('[MultiWiggleComponent] upload useEffect running, ready:', ready, 'renderer:', !!renderer, 'isLoading:', model.isLoading)
     if (!renderer || !ready) {
       return
     }
 
-    let lastDataMap: unknown = null
+    // Prove rAF works before any WebGPU submission. If this never fires,
+    // rAF was broken from the start (not due to WebGPU stalling the paint
+    // cycle).
+    let preRafBeat = 0
+    const preTick = () => {
+      preRafBeat++
+      console.log(`[MultiWiggleComponent] pre-render rAF heartbeat #${preRafBeat}`)
+      if (preRafBeat < 5) {
+        requestAnimationFrame(preTick)
+      }
+    }
+    requestAnimationFrame(preTick)
 
+    let lastDataMap: unknown = null
+    let autorunCount = 0
+    let pendingRaf: number | null = null
+    let renderCallCount = 0
+
+    console.log('[MultiWiggleComponent] creating upload autorun')
     return autorun(() => {
+      const fireIndex = ++autorunCount
       const dataMap = model.rpcDataMap
+      console.log('[MultiWiggleComponent] autorun fired #' + fireIndex + ', dataMap.size:', dataMap.size, 'isLoading:', model.isLoading, 'domain:', !!model.domain)
 
       if (lastDataMap !== dataMap) {
         lastDataMap = dataMap
@@ -256,10 +283,62 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         }
       }
 
-      renderNow()
-      if (dataMap.size > 0 && model.domain) {
-        model.setCanvasDrawn(true)
+      // Coalesce multiple autorun fires into one rAF-scheduled render.
+      // Calling WebGPU's context.getCurrentTexture() outside a rendering
+      // update step (e.g. from microtasks / MobX autoruns) stalls
+      // Firefox's compositor: commands are submitted but the canvas is
+      // never presented, which halts rAF and leaves the previous frame
+      // (with the loading overlay visible) stuck on screen.
+      if (pendingRaf !== null) {
+        console.log('[MultiWiggleComponent] render already scheduled, skipping raf for fire #' + fireIndex)
+      } else {
+        console.log('[MultiWiggleComponent] scheduling rAF for fire #' + fireIndex)
+        pendingRaf = requestAnimationFrame(() => {
+          pendingRaf = null
+          renderCallCount++
+          console.log('[MultiWiggleComponent] rAF-scheduled renderNow #' + renderCallCount)
+          renderNow()
+          if (model.rpcDataMap.size > 0 && model.domain) {
+            console.log('[MultiWiggleComponent] rAF setCanvasDrawn(true)')
+            model.setCanvasDrawn(true)
+          }
+        })
       }
+      if (dataMap.size > 0 && model.domain) {
+        setTimeout(() => {
+          console.log('[MultiWiggleComponent] health-check setTimeout: JS event loop OK after setCanvasDrawn, isLoading:', model.isLoading, 'canvasDrawn:', model.canvasDrawn)
+        }, 0)
+        setTimeout(() => {
+          console.log('[MultiWiggleComponent] health-check 2s: isLoading:', model.isLoading, 'canvasDrawn:', model.canvasDrawn)
+        }, 2000)
+        // Heartbeat — runs indefinitely. If this stops firing, the main
+        // thread is frozen. If it keeps firing but the canvas is blank,
+        // the browser is running JS fine but WebGPU isn't presenting.
+        let beat = 0
+        setInterval(() => {
+          beat++
+          console.log(
+            `[MultiWiggleComponent] heartbeat #${beat}, isLoading:`,
+            model.isLoading,
+            'canvasDrawn:',
+            model.canvasDrawn,
+          )
+        }, 1000)
+        // rAF chain that runs indefinitely so we can tell whether rAFs
+        // ever resume firing. If this never logs, rAF/paint is stuck.
+        let rafBeat = 0
+        const tick = () => {
+          rafBeat++
+          if (rafBeat <= 5 || rafBeat % 30 === 0) {
+            console.log(
+              `[MultiWiggleComponent] rAF heartbeat #${rafBeat}`,
+            )
+          }
+          requestAnimationFrame(tick)
+        }
+        requestAnimationFrame(tick)
+      }
+      console.log('[MultiWiggleComponent] autorun #' + fireIndex + ' complete')
     })
   }, [model, view, ready, rendererRef])
 

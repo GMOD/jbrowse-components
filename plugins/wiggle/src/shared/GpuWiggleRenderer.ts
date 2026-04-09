@@ -132,6 +132,7 @@ export class GpuWiggleRenderer implements WiggleBackend {
   renderBlocks(blocks: WiggleRenderBlock[], state: WiggleGPURenderState) {
     const { canvasWidth, canvasHeight } = state
     const dpr = window.devicePixelRatio || 1
+    console.log('[GpuWiggleRenderer] renderBlocks, blocks:', blocks.length, 'canvasWidth:', canvasWidth, 'canvasHeight:', canvasHeight)
 
     this.hal.resize(canvasWidth, canvasHeight)
     this.hal.beginFrame(0, 0, 0, 0)
