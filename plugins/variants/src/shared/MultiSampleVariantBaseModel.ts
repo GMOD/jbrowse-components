@@ -20,6 +20,7 @@ import {
   ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
+  migrateOldSettingSnapshots,
 } from '@jbrowse/plugin-linear-genome-view'
 import { computeHierarchyLayout, parseClusterTree } from '@jbrowse/tree-sidebar'
 import CategoryIcon from '@mui/icons-material/Category'
@@ -1094,31 +1095,6 @@ export type MultiSampleVariantBaseStateModel = ReturnType<
 export type MultiSampleVariantBaseModel =
   Instance<MultiSampleVariantBaseStateModel>
 
-const variantSettingKeys = [
-  ['minorAlleleFrequencyFilterSetting', 'minorAlleleFrequencyFilter'],
-  ['showSidebarLabelsSetting', 'showSidebarLabels'],
-  ['showTreeSetting', 'showTree'],
-  ['renderingModeSetting', 'renderingMode'],
-  ['referenceDrawingModeSetting', 'referenceDrawingMode'],
-] as const
-
 function migrateVariantSettings(snap: Record<string, unknown>) {
-  const overrides: Record<string, unknown> = {}
-  const rest = { ...snap }
-  for (const [oldKey, newKey] of variantSettingKeys) {
-    if (rest[oldKey] !== undefined) {
-      overrides[newKey] = rest[oldKey]
-      delete rest[oldKey]
-    }
-  }
-  if (Object.keys(overrides).length === 0) {
-    return rest
-  }
-  return {
-    ...rest,
-    configOverrides: {
-      ...(rest.configOverrides as Record<string, unknown> | undefined),
-      ...overrides,
-    },
-  }
+  return migrateOldSettingSnapshots(snap)
 }

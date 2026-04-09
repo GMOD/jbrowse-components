@@ -20,6 +20,47 @@ import { types } from '@jbrowse/mobx-state-tree'
  *     },
  *   }))
  */
+/**
+ * Migrate old `*Setting` snapshot properties into `configOverrides`.
+ * Automatically strips the `Setting` suffix to derive the config key.
+ * Use in preProcessSnapshot to handle backward compat with old snapshots.
+ */
+export function migrateOldSettingSnapshots(
+  snap: Record<string, unknown>,
+  extraMappings?: Record<string, string>,
+) {
+  const overrides: Record<string, unknown> = {}
+  const rest = { ...snap }
+
+  for (const key of Object.keys(rest)) {
+    if (key.endsWith('Setting')) {
+      const configKey = key.slice(0, -7) // strip 'Setting'
+      overrides[configKey] = rest[key]
+      delete rest[key]
+    }
+  }
+
+  if (extraMappings) {
+    for (const [oldKey, newKey] of Object.entries(extraMappings)) {
+      if (rest[oldKey] !== undefined) {
+        overrides[newKey] = rest[oldKey]
+        delete rest[oldKey]
+      }
+    }
+  }
+
+  if (Object.keys(overrides).length === 0) {
+    return rest
+  }
+  return {
+    ...rest,
+    configOverrides: {
+      ...(rest.configOverrides as Record<string, unknown> | undefined),
+      ...overrides,
+    },
+  }
+}
+
 export default function ConfigOverrideMixin() {
   return types
     .model({

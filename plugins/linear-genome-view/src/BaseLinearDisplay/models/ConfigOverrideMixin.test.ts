@@ -1,6 +1,8 @@
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
-import ConfigOverrideMixin from './ConfigOverrideMixin.ts'
+import ConfigOverrideMixin, {
+  migrateOldSettingSnapshots,
+} from './ConfigOverrideMixin.ts'
 
 const TestModel = types.compose(
   'TestDisplay',
@@ -69,5 +71,45 @@ describe('ConfigOverrideMixin', () => {
     model.setOverride('color', 'red')
     model.setOverride('color', 'blue')
     expect(model.getOverride('color')).toBe('blue')
+  })
+})
+
+describe('migrateOldSettingSnapshots', () => {
+  it('strips Setting suffix and moves to configOverrides', () => {
+    const result = migrateOldSettingSnapshots({
+      type: 'TestDisplay',
+      colorSetting: 'red',
+      scaleTypeSetting: 'log',
+    })
+    expect(result).toEqual({
+      type: 'TestDisplay',
+      configOverrides: { color: 'red', scaleType: 'log' },
+    })
+  })
+
+  it('returns unchanged when no *Setting properties', () => {
+    const snap = { type: 'TestDisplay', showCoverage: true }
+    const result = migrateOldSettingSnapshots(snap)
+    expect(result).toEqual(snap)
+  })
+
+  it('merges with existing configOverrides', () => {
+    const result = migrateOldSettingSnapshots({
+      configOverrides: { existing: true },
+      colorSetting: 'blue',
+    })
+    expect(result).toEqual({
+      configOverrides: { existing: true, color: 'blue' },
+    })
+  })
+
+  it('handles extraMappings for non-Setting properties', () => {
+    const result = migrateOldSettingSnapshots(
+      { trackMaxHeight: 800, colorSetting: 'red' },
+      { trackMaxHeight: 'maxHeight' },
+    )
+    expect(result).toEqual({
+      configOverrides: { maxHeight: 800, color: 'red' },
+    })
   })
 })

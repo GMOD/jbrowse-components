@@ -8,6 +8,7 @@ import {
   ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
+  migrateOldSettingSnapshots,
 } from '@jbrowse/plugin-linear-genome-view'
 
 import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
@@ -525,44 +526,6 @@ export default function sharedModelFactory(
 export type SharedLDStateModel = ReturnType<typeof sharedModelFactory>
 export type SharedLDModel = Instance<SharedLDStateModel>
 
-const ldSettingKeys = [
-  ['minorAlleleFrequencyFilterSetting', 'minorAlleleFrequencyFilter'],
-  ['lengthCutoffFilterSetting', 'lengthCutoffFilter'],
-  ['lineZoneHeightSetting', 'lineZoneHeight'],
-  ['ldMetricSetting', 'ldMetric'],
-  ['colorSchemeSetting', 'colorScheme'],
-  ['showLegendSetting', 'showLegend'],
-  ['showLDTriangleSetting', 'showLDTriangle'],
-  ['showRecombinationSetting', 'showRecombination'],
-  ['recombinationZoneHeightSetting', 'recombinationZoneHeight'],
-  ['fitToHeightSetting', 'fitToHeight'],
-  ['hweFilterThresholdSetting', 'hweFilterThreshold'],
-  ['callRateFilterSetting', 'callRateFilter'],
-  ['showVerticalGuidesSetting', 'showVerticalGuides'],
-  ['showLabelsSetting', 'showLabels'],
-  ['tickHeightSetting', 'tickHeight'],
-  ['useGenomicPositionsSetting', 'useGenomicPositions'],
-  ['signedLDSetting', 'signedLD'],
-  ['jexlFiltersSetting', 'jexlFilters'],
-] as const
-
 function migrateLDSettings(snap: Record<string, unknown>) {
-  const overrides: Record<string, unknown> = {}
-  const rest = { ...snap }
-  for (const [oldKey, newKey] of ldSettingKeys) {
-    if (rest[oldKey] !== undefined) {
-      overrides[newKey] = rest[oldKey]
-      delete rest[oldKey]
-    }
-  }
-  if (Object.keys(overrides).length === 0) {
-    return rest
-  }
-  return {
-    ...rest,
-    configOverrides: {
-      ...(rest.configOverrides as Record<string, unknown> | undefined),
-      ...overrides,
-    },
-  }
+  return migrateOldSettingSnapshots(snap)
 }
