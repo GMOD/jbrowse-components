@@ -146,16 +146,6 @@ async function runTests(
       process.stdout.write(`    ⏳ ${test.name}...`)
 
       try {
-        // Explicitly dispose GPU resources before navigating away.
-        // pagehide doesn't reliably fire in headless Chrome/SwiftShader,
-        // so we call dispose from the runner side via page.evaluate().
-        try {
-          await page.evaluate(() => {
-            window.dispatchEvent(new Event('pagehide'))
-          })
-        } catch {
-          // page may already be on about:blank or detached
-        }
         await page.goto(`http://localhost:${PORT}/test_data/volvox/config.json`)
         await page.evaluate(() => {
           localStorage.clear()
