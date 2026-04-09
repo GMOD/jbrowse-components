@@ -12,6 +12,7 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { updateStatus } from '@jbrowse/core/util'
 import { cssColorToRgba } from '@jbrowse/core/util/colorBits'
+import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -151,6 +152,11 @@ export async function executeRenderFeatureData({
     ...displayConfig,
     subfeatureLabels: displayConfig.subfeatureLabels,
   }
+
+  // eslint-disable-next-line no-console
+  console.log(
+    `[RenderFeatureData] mockConfig color1=${JSON.stringify(mockConfig.color1)} displayMode=${JSON.stringify(mockConfig.displayMode)} geneGlyphMode=${JSON.stringify(mockConfig.geneGlyphMode)} displayConfig=${JSON.stringify(displayConfig)}`,
+  )
 
   const configContext: RenderConfigContext = {
     config: mockConfig as any,
@@ -307,6 +313,24 @@ export async function executeRenderFeatureData({
     writeColorBytes(arrowColors, i, arrow.color)
     arrowFeatureIndices[i] = arrow.flatbushIdx
   }
+
+  // eslint-disable-next-line no-console
+  console.log(
+    `[RenderFeatureData] region=${region.refName}:${region.start}-${region.end}`,
+    `features=${features.size}`,
+    `rects=${rects.length}`,
+    `visibleRects=${visibleRects.length}`,
+    `regionWidth=${regionWidth}`,
+    visibleRects.length > 0
+      ? `firstRectColor=${JSON.stringify({
+          start: visibleRects[0]!.startOffset,
+          end: visibleRects[0]!.endOffset,
+          color: visibleRects[0]!.color,
+          height: visibleRects[0]!.height,
+          y: visibleRects[0]!.y,
+        })}`
+      : 'no rects',
+  )
 
   const result: FeatureDataResult = {
     regionStart,

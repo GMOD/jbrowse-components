@@ -2583,6 +2583,26 @@
           }
         }
       ]
+    },
+    {
+      "type": "MultiSyntenyTrack",
+      "trackId": "volvox_del_gfa_multi",
+      "name": "volvox/volvox_del GFA (MultiLGV)",
+      "category": ["Synteny"],
+      "assemblyNames": ["volvox", "volvox_del"],
+      "adapter": {
+        "type": "GfaAdapter",
+        "gfaLocation": {
+          "uri": "volvox_del_synteny.gfa",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "MultiLGVSyntenyDisplay",
+          "displayId": "volvox_del_gfa_multi-MultiLGVSyntenyDisplay"
+        }
+      ]
     }
   ],
   "plugins": [

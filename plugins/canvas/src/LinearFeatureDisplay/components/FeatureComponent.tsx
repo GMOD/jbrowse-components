@@ -491,10 +491,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     model.effectiveShowDescriptions,
   )
 
-  if (model.regionTooLarge) {
-    return <TooLargeMessage model={model} />
-  }
-
   if (error) {
     return (
       <ErrorOverlay
@@ -510,6 +506,10 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   }
 
   const isReady = view.initialized
+
+  if (model.regionTooLarge) {
+    return <TooLargeMessage model={model} />
+  }
 
   return (
     <div

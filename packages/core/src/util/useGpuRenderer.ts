@@ -41,16 +41,26 @@ export function useGpuRenderer<R extends GpuRenderer>(
   const [ready, setReady] = useState(false)
   const [contextVersion, setContextVersion] = useState(0)
   const rendererRef = useRef<R | null>(null)
+  const lastCanvasRef = useRef<HTMLCanvasElement | null>(null)
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (canvas) {
+      // Detect when the canvas DOM element has been replaced (e.g. after
+      // regionTooLarge unmounts and remounts the component tree). The ref
+      // object identity is stable but the underlying element changes, so
+      // bump contextVersion to force the renderer to re-initialize on the
+      // new canvas.
+      if (lastCanvasRef.current && lastCanvasRef.current !== canvas) {
+        setContextVersion(v => v + 1)
+      }
+      lastCanvasRef.current = canvas
       return setupWebGLContextLossHandler(canvas, () => {
         setContextVersion(v => v + 1)
       })
     }
     return undefined
-  }, [canvasRef])
+  })
 
   useEffect(() => {
     const canvas = canvasRef.current

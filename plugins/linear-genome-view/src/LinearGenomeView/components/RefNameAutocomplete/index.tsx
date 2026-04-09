@@ -158,7 +158,9 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       filterOptions={(opts, { inputValue }) => getFiltered(opts, inputValue)}
       renderInput={({ slotProps: paramSlotProps, ...restParams }) => (
         <TextField
-          onBlur={() => { setInputValue(inputBoxVal) }}
+          onBlur={() => {
+            setInputValue(inputBoxVal)
+          }}
           {...restParams}
           {...TextFieldProps}
           size="small"

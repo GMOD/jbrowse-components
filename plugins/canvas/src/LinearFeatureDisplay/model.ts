@@ -139,6 +139,7 @@ export default function stateModelFactory(
       rpcDataMap: new Map<number, FeatureDataResult>(),
       layoutBpPerPxMap: new Map<number, number>(),
       maxY: 0,
+      canvasDrawn: false,
       featureIdUnderMouse: null as string | null,
       mouseoverExtraInformation: undefined as string | undefined,
       contextMenuInfo: undefined as ContextMenuFeatureInfo | undefined,
@@ -165,6 +166,28 @@ export default function stateModelFactory(
           string,
           unknown
         >
+      },
+
+      get rendererColorConfig() {
+        try {
+          const snap = readConfObject(self.configuration) as Record<
+            string,
+            unknown
+          >
+          const renderer = snap?.renderer as Record<string, unknown> | undefined
+          if (!renderer) {
+            return undefined
+          }
+          const color1 = renderer.color1 as string | undefined
+          const color2 = renderer.color2 as string | undefined
+          const color3 = renderer.color3 as string | undefined
+          if (!color1 && !color2 && !color3) {
+            return undefined
+          }
+          return { color1, color2, color3 }
+        } catch {
+          return undefined
+        }
       },
 
       get DisplayMessageComponent() {
@@ -320,6 +343,10 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
+      setCanvasDrawn(value: boolean) {
+        self.canvasDrawn = value
+      },
+
       expandToFit() {
         self.heightBeforeExpand = self.height
         self.setHeight(Math.min(self.maxY, self.maxHeight))
@@ -556,6 +583,7 @@ export default function stateModelFactory(
               subfeatureLabels: self.subfeatureLabels,
               geneGlyphMode: self.effectiveGeneGlyphMode,
               displayMode: self.displayMode,
+              rendererColors: self.rendererColorConfig,
             },
             region,
             bpPerPx,

@@ -54,7 +54,10 @@
             assemblyName &&
             !session.connections.find(f => f.connectionId === jb2asm)
           ) {
-            console.log('getUnrecognizedAssembly', { assemblyName })
+            console.log(
+              'getUnrecognizedAssembly',
+              JSON.stringify({ assemblyName }),
+            )
             const conf = {
               type: 'JB2TrackHubConnection',
               uri: 'http://localhost:3000/test_data/volvox/config2.json',

@@ -182,7 +182,9 @@ async function runTests(
           error.includes('Navigating frame was detached')
         if (isPageCrash) {
           try {
-            console.log('      [recovery] Page/frame crashed, opening fresh page...')
+            console.log(
+              '      [recovery] Page/frame crashed, opening fresh page...',
+            )
             page = await setupPage(browser)
             console.log('      [recovery] Fresh page ready')
           } catch (recoveryErr) {
