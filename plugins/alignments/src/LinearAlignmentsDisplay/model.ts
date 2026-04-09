@@ -23,6 +23,7 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 import {
+  ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -188,113 +189,24 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
+      ConfigOverrideMixin(),
       types.model({
-        /**
-         * #property
-         */
         type: types.literal('LinearAlignmentsDisplay'),
-        /**
-         * #property
-         */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         */
         showLinkedReads: false,
-        /**
-         * #property
-         */
-        colorBySetting: types.frozen<ColorBy | undefined>(),
-        /**
-         * #property
-         */
-        filterBySetting: types.frozen<FilterBy | undefined>(),
-        /**
-         * #property
-         */
-        featureHeight: types.maybe(types.number),
-        /**
-         * #property
-         */
-        noSpacing: types.maybe(types.boolean),
-        /**
-         * #property
-         */
         showSashimiArcs: true,
-        /**
-         * #property
-         */
         showCoverage: true,
-        /**
-         * #property
-         */
         coverageHeight: 45,
-        /**
-         * #property
-         */
         showMismatches: true,
-        /**
-         * #property
-         * Show interbase indicators (triangular markers and histogram bars for
-         * insertion/softclip/hardclip events)
-         */
         showInterbaseIndicators: true,
-        /**
-         * #property
-         */
         showYScalebar: true,
-        /**
-         * #property
-         */
-        showLegend: types.maybe(types.boolean),
-        /**
-         * #property
-         */
         drawSingletons: true,
-        /**
-         * #property
-         */
         drawProperPairs: true,
-        /**
-         * #property
-         */
         flipStrandLongReadChains: true,
-        /**
-         * #property
-         */
         arcsState: types.optional(ArcsSubModel, {}),
-        /**
-         * #property
-         */
         showArcs: false,
-        /**
-         * #property
-         */
         arcsHeight: 100,
-        /**
-         * #property
-         */
         showSoftClipping: false,
-        /**
-         * #property
-         */
-        showOutline: types.maybe(types.boolean),
-        /**
-         * #property
-         */
-        mismatchAlpha: types.maybe(types.boolean),
-        /**
-         * #property
-         */
-        sortedBySetting: types.frozen<SortedBy | undefined>(),
-        /**
-         * #property
-         */
-        trackMaxHeight: types.maybe(types.number),
-        /**
-         * #property
-         * For backwards compatibility: migration from old LinearSNPCoverageDisplay
-         */
         jexlFilters: types.optional(types.array(types.string), []),
       }),
     )
@@ -393,7 +305,9 @@ export default function stateModelFactory(
       },
 
       get colorBy(): ColorBy {
-        return self.colorBySetting ?? getConf(self, 'colorBy')
+        return (
+          self.getOverride<ColorBy>('colorBy') ?? getConf(self, 'colorBy')
+        )
       },
 
       get modificationThreshold() {
@@ -401,26 +315,37 @@ export default function stateModelFactory(
       },
 
       get filterBy(): FilterBy {
-        return self.filterBySetting ?? getConf(self, 'filterBy')
+        return (
+          self.getOverride<FilterBy>('filterBy') ?? getConf(self, 'filterBy')
+        )
       },
 
       get featureHeightSetting(): number {
-        return self.featureHeight ?? getConf(self, 'featureHeight') ?? 7
+        return (
+          self.getOverride<number>('featureHeight') ??
+          getConf(self, 'featureHeight') ??
+          7
+        )
       },
 
       get noSpacingSetting(): boolean | undefined {
-        return self.noSpacing
+        return self.getOverride<boolean>('noSpacing')
       },
 
       get featureSpacing(): number {
-        if (self.noSpacing !== undefined) {
-          return self.noSpacing ? 0 : 2
+        const noSpacing = self.getOverride<boolean>('noSpacing')
+        if (noSpacing !== undefined) {
+          return noSpacing ? 0 : 2
         }
         return getConf(self, 'featureSpacing') ?? 1
       },
 
       get maxHeight(): number {
-        return self.trackMaxHeight ?? getConf(self, 'maxHeight') ?? 1200
+        return (
+          self.getOverride<number>('maxHeight') ??
+          getConf(self, 'maxHeight') ??
+          1200
+        )
       },
 
       /**
@@ -487,6 +412,14 @@ export default function stateModelFactory(
         }
       },
 
+      get mismatchAlpha(): boolean {
+        return !!self.getOverride<boolean>('mismatchAlpha')
+      },
+
+      get showLegend(): boolean | undefined {
+        return self.getOverride<boolean>('showLegend')
+      },
+
       get showModifications(): boolean {
         const t = this.colorBy.type
         return t === 'modifications' || t === 'methylation'
@@ -497,7 +430,7 @@ export default function stateModelFactory(
       },
 
       get sortedBy() {
-        return self.sortedBySetting
+        return self.getOverride<SortedBy>('sortedBy')
       },
 
       get coverageTicks(): CoverageTicks | undefined {
@@ -512,7 +445,7 @@ export default function stateModelFactory(
       },
 
       get legendItems(): LegendItem[] {
-        return getReadDisplayLegendItems(self.colorBySetting)
+        return getReadDisplayLegendItems(self.getOverride<ColorBy>('colorBy'))
       },
     }))
     .views(self => ({
@@ -558,7 +491,7 @@ export default function stateModelFactory(
       },
 
       get showOutlineSetting() {
-        return self.showOutline ?? this.isChainMode
+        return self.getOverride<boolean>('showOutline') ?? this.isChainMode
       },
     }))
     .views(self => ({
@@ -807,13 +740,11 @@ export default function stateModelFactory(
         },
 
         setColorScheme(colorBy: ColorBy) {
-          if (
-            colorBy.type !== 'tag' ||
-            colorBy.tag !== self.colorBySetting?.tag
-          ) {
+          const current = self.getOverride<ColorBy>('colorBy')
+          if (colorBy.type !== 'tag' || colorBy.tag !== current?.tag) {
             self.colorTagMap = {}
           }
-          self.colorBySetting = colorBy
+          self.setOverride('colorBy', colorBy)
         },
 
         updateColorTagMap(uniqueTag: string[]) {
@@ -843,11 +774,11 @@ export default function stateModelFactory(
         },
 
         setFilterBy(filterBy: FilterBy) {
-          self.filterBySetting = filterBy
+          self.setOverride('filterBy', filterBy)
         },
 
         setShowOutline(show: boolean | undefined) {
-          self.showOutline = show
+          self.setOverride('showOutline', show)
         },
 
         toggleSoftClipping() {
@@ -855,7 +786,10 @@ export default function stateModelFactory(
         },
 
         toggleMismatchAlpha() {
-          self.mismatchAlpha = !self.mismatchAlpha
+          self.setOverride(
+            'mismatchAlpha',
+            !self.getOverride<boolean>('mismatchAlpha'),
+          )
         },
 
         setSortedBy(type: string, tag?: string) {
@@ -869,13 +803,13 @@ export default function stateModelFactory(
           if (centerBp < 0 || !refName) {
             return
           }
-          self.sortedBySetting = {
+          self.setOverride('sortedBy', {
             type,
             pos: centerBp,
             refName,
             assemblyName,
             tag,
-          }
+          })
         },
 
         setSortedByAtPosition(type: string, pos: number, refName: string) {
@@ -884,29 +818,29 @@ export default function stateModelFactory(
           if (!assemblyName) {
             return
           }
-          self.sortedBySetting = {
+          self.setOverride('sortedBy', {
             type,
             pos,
             refName,
             assemblyName,
-          }
+          })
         },
 
         clearSelected() {
-          self.sortedBySetting = undefined
+          self.clearOverride('sortedBy')
         },
 
         setMaxHeight(n?: number) {
-          self.trackMaxHeight = n
+          self.setOverride('maxHeight', n)
         },
 
         setFeatureHeight(height?: number) {
-          self.featureHeight = height
+          self.setOverride('featureHeight', height)
           self.currentRangeY = [0, 0]
         },
 
         setNoSpacing(flag?: boolean) {
-          self.noSpacing = flag
+          self.setOverride('noSpacing', flag)
           self.currentRangeY = [0, 0]
         },
 
@@ -939,7 +873,7 @@ export default function stateModelFactory(
         },
 
         setShowLegend(show: boolean | undefined) {
-          self.showLegend = show
+          self.setOverride('showLegend', show)
         },
 
         setDrawSingletons(flag: boolean) {
@@ -967,10 +901,10 @@ export default function stateModelFactory(
             self.highlightedChainIds = []
           }
           if (flag) {
-            self.showOutline = undefined
-            self.colorBySetting = { type: 'insertSizeAndOrientation' }
+            self.clearOverride('showOutline')
+            self.setOverride('colorBy', { type: 'insertSizeAndOrientation' })
           } else {
-            self.colorBySetting = { type: 'normal' }
+            self.setOverride('colorBy', { type: 'normal' })
           }
           self.invalidateLoadedRegions()
         },

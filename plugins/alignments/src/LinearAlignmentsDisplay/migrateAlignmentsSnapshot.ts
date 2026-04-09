@@ -11,6 +11,7 @@
  *   - renderingMode → showLinkedReads
  *   - showReadCloud → showLinkedReads
  *   - height → heightPreConfig
+ *   - Individual override properties → configOverrides map
  *   - Strips removed properties: blockState, showTooltips
  */
 export function migrateAlignmentsSnapshot(snap: Record<string, unknown>) {
@@ -48,9 +49,7 @@ export function migrateAlignmentsSnapshot(snap: Record<string, unknown>) {
       ...rest,
       showLinkedReads: linked,
       colorBySetting: linked
-        ? (rest.colorBySetting ?? {
-            type: 'insertSizeAndOrientation',
-          })
+        ? (rest.colorBySetting ?? { type: 'insertSizeAndOrientation' })
         : rest.colorBySetting,
     }
   }
@@ -63,9 +62,7 @@ export function migrateAlignmentsSnapshot(snap: Record<string, unknown>) {
       ...rest,
       showLinkedReads: linked,
       colorBySetting: linked
-        ? (rest.colorBySetting ?? {
-            type: 'insertSizeAndOrientation',
-          })
+        ? (rest.colorBySetting ?? { type: 'insertSizeAndOrientation' })
         : rest.colorBySetting,
     }
   }
@@ -98,7 +95,7 @@ export function migrateAlignmentsSnapshot(snap: Record<string, unknown>) {
       ...rest
     } = result
 
-    return {
+    result = {
       ...rest,
       type: 'LinearAlignmentsDisplay',
       showSashimiArcs: showArcs ?? true,
@@ -112,5 +109,62 @@ export function migrateAlignmentsSnapshot(snap: Record<string, unknown>) {
     }
   }
 
-  return result
+  // Migrate individual override properties → configOverrides
+  return migrateOverrideProperties(result)
+}
+
+function migrateOverrideProperties(snap: Record<string, unknown>) {
+  const {
+    colorBySetting,
+    filterBySetting,
+    featureHeight,
+    noSpacing,
+    showOutline,
+    mismatchAlpha,
+    showLegend,
+    sortedBySetting,
+    trackMaxHeight,
+    ...rest
+  } = snap
+
+  const overrides: Record<string, unknown> = {}
+  if (colorBySetting !== undefined) {
+    overrides.colorBy = colorBySetting
+  }
+  if (filterBySetting !== undefined) {
+    overrides.filterBy = filterBySetting
+  }
+  if (featureHeight !== undefined) {
+    overrides.featureHeight = featureHeight
+  }
+  if (noSpacing !== undefined) {
+    overrides.noSpacing = noSpacing
+  }
+  if (showOutline !== undefined) {
+    overrides.showOutline = showOutline
+  }
+  if (mismatchAlpha !== undefined) {
+    overrides.mismatchAlpha = mismatchAlpha
+  }
+  if (showLegend !== undefined) {
+    overrides.showLegend = showLegend
+  }
+  if (sortedBySetting !== undefined) {
+    overrides.sortedBy = sortedBySetting
+  }
+  if (trackMaxHeight !== undefined) {
+    overrides.maxHeight = trackMaxHeight
+  }
+
+  if (Object.keys(overrides).length === 0) {
+    return rest
+  }
+
+  return {
+    ...rest,
+    configOverrides: {
+      ...(rest.configOverrides as Record<string, unknown> | undefined),
+      ...overrides,
+    },
+  }
 }

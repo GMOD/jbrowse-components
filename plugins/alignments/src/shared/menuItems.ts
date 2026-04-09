@@ -255,7 +255,6 @@ interface MismatchDisplayModel {
 
 interface FeatureHeightModel {
   featureHeightSetting: number
-  noSpacing?: boolean
   noSpacingSetting?: boolean
   setFeatureHeight: (height?: number) => void
   setNoSpacing: (noSpacing?: boolean) => void
@@ -269,7 +268,9 @@ export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
       {
         label: 'Normal',
         type: 'radio' as const,
-        checked: model.featureHeightSetting === 7 && model.noSpacing !== true,
+        checked:
+          model.featureHeightSetting === 7 &&
+          model.noSpacingSetting !== true,
         onClick: () => {
           model.setFeatureHeight(7)
           model.setNoSpacing(false)
