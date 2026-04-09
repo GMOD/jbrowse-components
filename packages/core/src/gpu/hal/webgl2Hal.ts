@@ -65,7 +65,6 @@ export class WebGL2Hal implements GpuHal {
     const gl = canvas.getContext('webgl2', {
       antialias: true,
       premultipliedAlpha: false,
-      preserveDrawingBuffer: true,
     })
     if (!gl) {
       throw new Error('WebGL2 not supported')

@@ -272,7 +272,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         self.rpcDataMap = next
       },
       setAllGenomeNames(names: string[]) {
-        console.log('[MultiSynteny] setAllGenomeNames:', JSON.stringify(names))
         self.allGenomeNames = names
       },
       setColorBy(value: string) {
@@ -320,7 +319,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         self.statusMessage = msg
       },
       setWebGLRenderer(renderer: MultiSyntenyBackend | null) {
-        console.log('[MultiSynteny] setWebGLRenderer:', renderer ? 'renderer' : 'null')
         self.webglRenderer = renderer
       },
       setCanvasDrawn(value: boolean) {
@@ -330,7 +328,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         self.colorPalette = palette
       },
       clearDisplaySpecificData() {
-        console.log('[MultiSynteny] clearDisplaySpecificData, stack:', new Error().stack?.split('\n').slice(1, 4).join(' | '))
         self.rpcDataMap = new Map()
         self.allGenomeNames = []
         self.webglRenderer?.clearAllBlocks()

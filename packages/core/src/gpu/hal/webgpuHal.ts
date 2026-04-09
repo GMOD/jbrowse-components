@@ -129,13 +129,10 @@ async function ensurePipelines(
   }
 
   const preferredFormat = navigator.gpu.getPreferredCanvasFormat()
-  console.log(`[WebGPUHal] ensurePipelines: ${missing.length} passes, preferredCanvasFormat=${preferredFormat}`)
 
   await Promise.all(
     missing.map(async desc => {
-      console.log(`[WebGPUHal] pass "${desc.id}": createShaderModule`)
       const module = device.createShaderModule({ code: desc.wgslSource })
-      console.log(`[WebGPUHal] pass "${desc.id}": getCompilationInfo`)
       const info = await module.getCompilationInfo()
       for (const msg of info.messages) {
         if (msg.type === 'error') {
@@ -160,7 +157,6 @@ async function ensurePipelines(
       const pLayout = desc.textures?.length
         ? getOrCreateTexturedLayout(device, state).pipelineLayout
         : state.pipelineLayout
-      console.log(`[WebGPUHal] pass "${desc.id}": createRenderPipelineAsync format=${format}`)
       const pipeline = await device.createRenderPipelineAsync({
         layout: pLayout,
         vertex: { module, entryPoint: 'vs_main' },
@@ -172,11 +168,9 @@ async function ensurePipelines(
         primitive: { topology: topo },
         multisample: desc.picking ? undefined : { count: MSAA_SAMPLE_COUNT },
       })
-      console.log(`[WebGPUHal] pass "${desc.id}": pipeline ready`)
       state.pipelines.set(desc.id, pipeline)
     }),
   )
-  console.log('[WebGPUHal] ensurePipelines: all done')
 }
 
 interface PassTextureState {
@@ -256,21 +250,15 @@ export class WebGPUHal implements GpuHal {
     descriptors: PassDescriptor[],
     uniformByteSize: number,
   ) {
-    console.log('[WebGPUHal] create: getGpuDevice...')
     const device = await getGpuDevice()
-    console.log('[WebGPUHal] create: device=', device)
     if (!device) {
       return null
     }
-    console.log('[WebGPUHal] create: initGpuContext...')
-    const result = await initGpuContext(canvas, { alphaMode: 'opaque' })
-    console.log('[WebGPUHal] create: context=', result)
+    const result = await initGpuContext(canvas, { alphaMode: 'premultiplied' })
     if (!result) {
       return null
     }
-    console.log('[WebGPUHal] create: ensurePipelines...')
     await ensurePipelines(device, descriptors)
-    console.log('[WebGPUHal] create: done, creating HAL instance')
     return new WebGPUHal(
       device,
       canvas,

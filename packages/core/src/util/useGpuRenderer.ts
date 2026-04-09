@@ -1,7 +1,7 @@
 /* eslint-disable react-compiler/react-compiler */
 import { useEffect, useRef, useState } from 'react'
 
-import { setupWebGLContextLossHandler } from './webglContextLoss.ts'
+import { onDeviceLost } from '../gpu/getGpuDevice.ts'
 
 interface UseGpuRendererOptions<R> {
   onReady?: (renderer: R) => void
@@ -15,8 +15,8 @@ interface UseGpuRendererOptions<R> {
  *
  * Pattern:
  * 1. Canvas mounts → useEffect calls factory(canvas) to create and init backend
- * 2. WebGL context loss → contextVersion bumps → cleanup disposes old
- *    backend → effect re-runs creating fresh backend
+ * 2. WebGL context loss or WebGPU device loss → contextVersion bumps →
+ *    cleanup disposes old backend → effect re-runs creating fresh backend
  * 3. Error → ErrorBar with retry → retry resets state + bumps contextVersion
  *
  * For displays with model-driven autoruns (alignments, synteny), pass
@@ -34,25 +34,27 @@ export function useGpuRenderer<R extends { dispose(): void }>(
   const rendererRef = useRef<R | null>(null)
   const lastCanvasRef = useRef<HTMLCanvasElement | null>(null)
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const canvas = canvasRef.current
-    if (canvas) {
-      // Detect when the canvas DOM element has been replaced (e.g. after
-      // regionTooLarge unmounts and remounts the component tree). The ref
-      // object identity is stable but the underlying element changes, so
-      // bump contextVersion to force the renderer to re-initialize on the
-      // new canvas.
-      if (lastCanvasRef.current && lastCanvasRef.current !== canvas) {
-        setContextVersion(v => v + 1)
-      }
-      lastCanvasRef.current = canvas
-      return setupWebGLContextLossHandler(canvas, () => {
-        setContextVersion(v => v + 1)
-      })
+    if (!canvas) {
+      return undefined
     }
-    return undefined
-  })
+    // preventDefault on contextlost allows the context to be restored.
+    const onLost = (e: Event) => { e.preventDefault() }
+    const onRestored = () => { setContextVersion(v => v + 1) }
+    canvas.addEventListener('webglcontextlost', onLost)
+    canvas.addEventListener('webglcontextrestored', onRestored)
+    return () => {
+      canvas.removeEventListener('webglcontextlost', onLost)
+      canvas.removeEventListener('webglcontextrestored', onRestored)
+    }
+  }, [canvasRef])
+
+  useEffect(() => {
+    return onDeviceLost(() => {
+      setContextVersion(v => v + 1)
+    })
+  }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current

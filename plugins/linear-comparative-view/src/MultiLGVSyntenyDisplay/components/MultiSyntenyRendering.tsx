@@ -312,11 +312,9 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   const gpuOpts = useMemo(
     () => ({
       onReady: (renderer) => {
-        console.log('[MultiSyntenyRendering] onReady, setting webglRenderer')
         model.setWebGLRenderer(renderer)
       },
       onDispose: () => {
-        console.log('[MultiSyntenyRendering] onDispose, clearing webglRenderer')
         model.setWebGLRenderer(null)
       },
     }),
