@@ -43,6 +43,7 @@ export function useGpuRenderer<R extends GpuRenderer>(
   const rendererRef = useRef<R | null>(null)
   const lastCanvasRef = useRef<HTMLCanvasElement | null>(null)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const canvas = canvasRef.current
     if (canvas) {

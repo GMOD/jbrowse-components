@@ -7,7 +7,11 @@ export const boxGlyph: Glyph = {
 
   layout(args: LayoutArgs): FeatureLayout {
     const { feature, bpPerPx, configContext } = args
-    const { heightPx, widthPx } = getFeatureDimensions(feature, bpPerPx, configContext)
+    const { heightPx, widthPx } = getFeatureDimensions(
+      feature,
+      bpPerPx,
+      configContext,
+    )
 
     // Only top-level boxes get strand arrows; child boxes (inside
     // subfeaturesGlyph) skip them since the parent handles arrows

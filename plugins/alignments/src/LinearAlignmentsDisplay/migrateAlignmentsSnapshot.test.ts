@@ -215,7 +215,12 @@ describe('migrateAlignmentsSnapshot', () => {
   })
 
   test('migrates sortedBySetting to configOverrides.sortedBy', () => {
-    const sorted = { type: 'base', pos: 100, refName: 'chr1', assemblyName: 'hg38' }
+    const sorted = {
+      type: 'base',
+      pos: 100,
+      refName: 'chr1',
+      assemblyName: 'hg38',
+    }
     const snap = {
       type: 'LinearAlignmentsDisplay',
       sortedBySetting: sorted,

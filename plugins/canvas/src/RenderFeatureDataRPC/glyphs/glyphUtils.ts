@@ -22,8 +22,8 @@ export function getFeatureDimensions(
   configContext: RenderConfigContext,
 ) {
   const { config, heightMultiplier } = configContext
-  const start = feature.get('start') as number
-  const end = feature.get('end') as number
+  const start = feature.get('start')
+  const end = feature.get('end')
   const heightPx =
     readConfigValue(config, 'featureHeight', feature) * heightMultiplier
   const widthPx = (end - start) / bpPerPx
@@ -47,8 +47,12 @@ export function layoutChild(
   args: LayoutArgs,
 ): FeatureLayout {
   const { bpPerPx, configContext } = args
-  const { start, heightPx, widthPx } = getFeatureDimensions(child, bpPerPx, configContext)
-  const parentStart = parentFeature.get('start') as number
+  const { start, heightPx, widthPx } = getFeatureDimensions(
+    child,
+    bpPerPx,
+    configContext,
+  )
+  const parentStart = parentFeature.get('start')
 
   return {
     feature: child,
@@ -72,7 +76,11 @@ export function layoutContainerGlyph(
   subfeatures: Feature[],
 ): FeatureLayout {
   const { feature, bpPerPx, configContext } = args
-  const { heightPx, widthPx } = getFeatureDimensions(feature, bpPerPx, configContext)
+  const { heightPx, widthPx } = getFeatureDimensions(
+    feature,
+    bpPerPx,
+    configContext,
+  )
 
   const strand = feature.get('strand') as number
   const arrowPadding = getStrandArrowPadding(strand)

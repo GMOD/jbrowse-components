@@ -56,8 +56,7 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
       },
       color3: {
         type: 'color',
-        description:
-          'the tertiary color of each feature, used for UTRs',
+        description: 'the tertiary color of each feature, used for UTRs',
         defaultValue: '#357089',
         contextVariable: ['feature'],
       },

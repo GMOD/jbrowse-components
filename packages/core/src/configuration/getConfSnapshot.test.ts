@@ -169,9 +169,9 @@ describe('readConfigValue', () => {
     )
     const snap = getConfSnapshot(config)
 
-    expect(
-      readConfigValue(snap, 'color1', mockFeature({ type: 'SNV' })),
-    ).toBe('green')
+    expect(readConfigValue(snap, 'color1', mockFeature({ type: 'SNV' }))).toBe(
+      'green',
+    )
     expect(snap.featureHeight).toBe(10)
   })
 })

@@ -242,58 +242,58 @@ export default function sharedModelFactory(
         return !!self.rpcData
       },
       get minorAlleleFrequencyFilter() {
-        return self.getConfWithOverride('minorAlleleFrequencyFilter')
+        return self.getConfWithOverride<number>('minorAlleleFrequencyFilter')
       },
       get lengthCutoffFilter() {
-        return self.getConfWithOverride('lengthCutoffFilter')
+        return self.getConfWithOverride<number>('lengthCutoffFilter')
       },
       get lineZoneHeight() {
-        return self.getConfWithOverride('lineZoneHeight')
+        return self.getConfWithOverride<number>('lineZoneHeight')
       },
       get ldMetric() {
-        return self.getConfWithOverride('ldMetric')
+        return self.getConfWithOverride<string>('ldMetric')
       },
       get colorScheme() {
-        return self.getConfWithOverride('colorScheme') || undefined
+        return self.getConfWithOverride<string>('colorScheme') || undefined
       },
       get showLegend() {
-        return self.getConfWithOverride('showLegend')
+        return self.getConfWithOverride<boolean>('showLegend')
       },
       get showLDTriangle() {
-        return self.getConfWithOverride('showLDTriangle')
+        return self.getConfWithOverride<boolean>('showLDTriangle')
       },
       get showRecombination() {
-        return self.getConfWithOverride('showRecombination')
+        return self.getConfWithOverride<boolean>('showRecombination')
       },
       get recombinationZoneHeight() {
-        return self.getConfWithOverride('recombinationZoneHeight')
+        return self.getConfWithOverride<number>('recombinationZoneHeight')
       },
       get fitToHeight() {
-        return self.getConfWithOverride('fitToHeight')
+        return self.getConfWithOverride<boolean>('fitToHeight')
       },
       get hweFilterThreshold() {
-        return self.getConfWithOverride('hweFilterThreshold')
+        return self.getConfWithOverride<number>('hweFilterThreshold')
       },
       get callRateFilter() {
-        return self.getConfWithOverride('callRateFilter')
+        return self.getConfWithOverride<number>('callRateFilter')
       },
       get showVerticalGuides() {
-        return self.getConfWithOverride('showVerticalGuides')
+        return self.getConfWithOverride<boolean>('showVerticalGuides')
       },
       get showLabels() {
-        return self.getConfWithOverride('showLabels')
+        return self.getConfWithOverride<boolean>('showLabels')
       },
       get tickHeight() {
-        return self.getConfWithOverride('tickHeight')
+        return self.getConfWithOverride<number>('tickHeight')
       },
       get useGenomicPositions() {
-        return self.getConfWithOverride('useGenomicPositions')
+        return self.getConfWithOverride<boolean>('useGenomicPositions')
       },
       get signedLD() {
-        return self.getConfWithOverride('signedLD')
+        return self.getConfWithOverride<boolean>('signedLD')
       },
       get jexlFilters() {
-        return self.getConfWithOverride('jexlFilters')
+        return self.getConfWithOverride<string[]>('jexlFilters')
       },
       /**
        * #getter

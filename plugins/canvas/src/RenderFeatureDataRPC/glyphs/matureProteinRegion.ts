@@ -29,7 +29,11 @@ export const matureProteinRegionGlyph: Glyph = {
   layout(args: LayoutArgs): FeatureLayout {
     const { feature, bpPerPx, configContext } = args
     const { subfeatureLabels } = configContext
-    const { heightPx, widthPx } = getFeatureDimensions(feature, bpPerPx, configContext)
+    const { heightPx, widthPx } = getFeatureDimensions(
+      feature,
+      bpPerPx,
+      configContext,
+    )
 
     const matureProteins = getMatureProteinChildren(feature)
     const sortedChildren = sortByPosition(

@@ -51,7 +51,11 @@ export const subfeaturesGlyph: Glyph = {
     const { feature, bpPerPx, configContext } = args
     const { geneGlyphMode, transcriptTypes } = configContext
 
-    const { start: featureStart, heightPx, widthPx } = getFeatureDimensions(feature, bpPerPx, configContext)
+    const {
+      start: featureStart,
+      heightPx,
+      widthPx,
+    } = getFeatureDimensions(feature, bpPerPx, configContext)
 
     // Sort coding transcripts first so they render on top in stacked layout
     let subfeatures = [...(feature.get('subfeatures') || [])] as Feature[]

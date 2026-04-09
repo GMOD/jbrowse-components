@@ -120,19 +120,19 @@ export default function stateModelFactory(
       },
 
       get color() {
-        return self.getConfWithOverride('color')
+        return self.getConfWithOverride<string>('color')
       },
 
       get posColor() {
-        return self.getConfWithOverride('posColor')
+        return self.getConfWithOverride<string>('posColor')
       },
 
       get negColor() {
-        return self.getConfWithOverride('negColor')
+        return self.getConfWithOverride<string>('negColor')
       },
 
       get bicolorPivot() {
-        return getConf(self, 'bicolorPivot')
+        return self.getConfWithOverride<number>('bicolorPivot')
       },
 
       get effectiveBicolorPivot() {
@@ -140,11 +140,11 @@ export default function stateModelFactory(
       },
 
       get scaleType() {
-        return self.getConfWithOverride('scaleType')
+        return self.getConfWithOverride<string>('scaleType')
       },
 
       get autoscaleType() {
-        return self.getConfWithOverride('autoscale')
+        return self.getConfWithOverride<string>('autoscale')
       },
 
       get hasResolution() {
@@ -166,11 +166,11 @@ export default function stateModelFactory(
       },
 
       get summaryScoreMode() {
-        return self.getConfWithOverride('summaryScoreMode')
+        return self.getConfWithOverride<string>('summaryScoreMode')
       },
 
       get renderingType() {
-        return self.getConfWithOverride('defaultRendering')
+        return self.getConfWithOverride<string>('defaultRendering')
       },
 
       get isDensityMode() {
@@ -178,11 +178,11 @@ export default function stateModelFactory(
       },
 
       get minScore() {
-        return self.getConfWithOverride('minScore')
+        return self.getConfWithOverride<number>('minScore')
       },
 
       get maxScore() {
-        return self.getConfWithOverride('maxScore')
+        return self.getConfWithOverride<number>('maxScore')
       },
 
       get minScoreConfig() {
@@ -217,7 +217,7 @@ export default function stateModelFactory(
         if (!domain) {
           return undefined
         }
-        const minimalTicks = getConf(self, 'minimalTicks')
+        const minimalTicks = self.getConfWithOverride<boolean>('minimalTicks')
         const ticks = axisPropsFromTickScale(
           getScale({
             scaleType,
@@ -424,7 +424,7 @@ export default function stateModelFactory(
                 if (!view.initialized) {
                   return
                 }
-                const numStdDev = getConf(self, 'numStdDev') || 3
+                const numStdDev = self.getConfWithOverride<number>('numStdDev')
                 const visibleEntries = view.dynamicBlocks.contentBlocks
                   .filter(block => block.regionNumber !== undefined)
                   .map(block => {

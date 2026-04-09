@@ -269,8 +269,7 @@ export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
         label: 'Normal',
         type: 'radio' as const,
         checked:
-          model.featureHeightSetting === 7 &&
-          model.noSpacingSetting !== true,
+          model.featureHeightSetting === 7 && model.noSpacingSetting !== true,
         onClick: () => {
           model.setFeatureHeight(7)
           model.setNoSpacing(false)

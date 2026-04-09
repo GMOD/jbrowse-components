@@ -1,11 +1,17 @@
-import { sortByPosition, getStrandArrowPadding, getFeatureDimensions, layoutChild, layoutContainerGlyph } from './glyphUtils.ts'
 import { boxGlyph } from './box.ts'
+import {
+  getFeatureDimensions,
+  getStrandArrowPadding,
+  layoutChild,
+  layoutContainerGlyph,
+  sortByPosition,
+} from './glyphUtils.ts'
 import { findGlyph } from './index.ts'
 import { processedTranscriptGlyph } from './processed.ts'
 import { segmentsGlyph } from './segments.ts'
 
-import type { FeatureLayout } from '../types.ts'
 import type { RenderConfigContext } from '../renderConfig.ts'
+import type { FeatureLayout } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 function createMockConfigContext(
@@ -73,13 +79,21 @@ describe('sortByPosition', () => {
   }
 
   it('sorts by start position ascending', () => {
-    const layouts = [makeLayout(300, 400), makeLayout(100, 200), makeLayout(200, 300)]
+    const layouts = [
+      makeLayout(300, 400),
+      makeLayout(100, 200),
+      makeLayout(200, 300),
+    ]
     const sorted = sortByPosition(layouts)
     expect(sorted.map(l => l.feature.get('start'))).toEqual([100, 200, 300])
   })
 
   it('breaks ties on start by end descending (longer first)', () => {
-    const layouts = [makeLayout(100, 200), makeLayout(100, 500), makeLayout(100, 300)]
+    const layouts = [
+      makeLayout(100, 200),
+      makeLayout(100, 500),
+      makeLayout(100, 300),
+    ]
     const sorted = sortByPosition(layouts)
     expect(sorted.map(l => l.feature.get('end'))).toEqual([500, 300, 200])
   })
@@ -147,7 +161,12 @@ describe('getFeatureDimensions', () => {
 describe('layoutChild', () => {
   it('computes x offset relative to parent start', () => {
     const parent = mockFeature({ type: 'mRNA', start: 100, end: 500 })
-    const child = mockFeature({ type: 'CDS', start: 200, end: 300, parentFeature: parent })
+    const child = mockFeature({
+      type: 'CDS',
+      start: 200,
+      end: 300,
+      parentFeature: parent,
+    })
     const configContext = createMockConfigContext()
 
     const result = layoutChild(child, parent, {
@@ -164,7 +183,12 @@ describe('layoutChild', () => {
 
   it('scales by bpPerPx', () => {
     const parent = mockFeature({ type: 'mRNA', start: 100, end: 500 })
-    const child = mockFeature({ type: 'CDS', start: 200, end: 400, parentFeature: parent })
+    const child = mockFeature({
+      type: 'CDS',
+      start: 200,
+      end: 400,
+      parentFeature: parent,
+    })
     const configContext = createMockConfigContext()
 
     const result = layoutChild(child, parent, {
@@ -181,7 +205,12 @@ describe('layoutChild', () => {
 
 describe('boxGlyph', () => {
   it('uses Px-suffixed naming convention (layout returns correct dimensions)', () => {
-    const feature = mockFeature({ type: 'match', start: 100, end: 300, strand: 1 })
+    const feature = mockFeature({
+      type: 'match',
+      start: 100,
+      end: 300,
+      strand: 1,
+    })
     const configContext = createMockConfigContext()
 
     const layout = boxGlyph.layout({
@@ -197,7 +226,12 @@ describe('boxGlyph', () => {
   })
 
   it('adds arrow padding for top-level forward strand features', () => {
-    const feature = mockFeature({ type: 'match', start: 100, end: 300, strand: 1 })
+    const feature = mockFeature({
+      type: 'match',
+      start: 100,
+      end: 300,
+      strand: 1,
+    })
     const configContext = createMockConfigContext()
 
     const layout = boxGlyph.layout({
@@ -213,7 +247,13 @@ describe('boxGlyph', () => {
 
   it('skips arrow padding for child features', () => {
     const parent = mockFeature({ type: 'gene', start: 100, end: 500 })
-    const child = mockFeature({ type: 'exon', start: 100, end: 300, strand: 1, parentFeature: parent })
+    const child = mockFeature({
+      type: 'exon',
+      start: 100,
+      end: 300,
+      strand: 1,
+      parentFeature: parent,
+    })
     const configContext = createMockConfigContext()
 
     const layout = boxGlyph.layout({
@@ -230,7 +270,12 @@ describe('boxGlyph', () => {
 
 describe('boxGlyph for CDS', () => {
   it('adds arrow padding for top-level CDS (same as any top-level feature)', () => {
-    const feature = mockFeature({ type: 'CDS', start: 200, end: 400, strand: 1 })
+    const feature = mockFeature({
+      type: 'CDS',
+      start: 200,
+      end: 400,
+      strand: 1,
+    })
     const configContext = createMockConfigContext()
 
     const layout = boxGlyph.layout({
@@ -248,7 +293,13 @@ describe('boxGlyph for CDS', () => {
 
   it('skips arrow padding for child CDS', () => {
     const parent = mockFeature({ type: 'mRNA', start: 100, end: 500 })
-    const feature = mockFeature({ type: 'CDS', start: 200, end: 400, strand: 1, parentFeature: parent })
+    const feature = mockFeature({
+      type: 'CDS',
+      start: 200,
+      end: 400,
+      strand: 1,
+      parentFeature: parent,
+    })
     const configContext = createMockConfigContext()
 
     const layout = boxGlyph.layout({
@@ -381,7 +432,9 @@ describe('findGlyph', () => {
           type: 'child',
           start: 0,
           end: 500,
-          subfeatures: [mockFeature({ type: 'grandchild', start: 0, end: 100 })],
+          subfeatures: [
+            mockFeature({ type: 'grandchild', start: 0, end: 100 }),
+          ],
         }),
       ],
     })
@@ -427,7 +480,9 @@ describe('findGlyph', () => {
           type: 'child',
           start: 0,
           end: 500,
-          subfeatures: [mockFeature({ type: 'grandchild', start: 0, end: 100 })],
+          subfeatures: [
+            mockFeature({ type: 'grandchild', start: 0, end: 100 }),
+          ],
         }),
       ],
     })

@@ -11,19 +11,7 @@ import {
   isUnionType,
 } from '@jbrowse/mobx-state-tree'
 
-interface ConfigSlot {
-  getValue: (args: Record<string, unknown>) => unknown
-}
-
-// confObject[slotPath] can return:
-// - a config slot model (has getValue method)
-// - a sub-configuration object (nested config schema)
-// - a primitive value (string, number, etc.)
-// - undefined/null
-function isConfigSlot(slot: unknown): slot is ConfigSlot {
-  return typeof (slot as ConfigSlot | undefined)?.getValue === 'function'
-}
-
+import { stringToJexlExpression } from '../util/jexlStrings.ts'
 import {
   getDefaultValue,
   getSubType,
@@ -37,6 +25,19 @@ import type {
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
 } from './types.ts'
+
+interface ConfigSlot {
+  getValue: (args: Record<string, unknown>) => unknown
+}
+
+// confObject[slotPath] can return:
+// - a config slot model (has getValue method)
+// - a sub-configuration object (nested config schema)
+// - a primitive value (string, number, etc.)
+// - undefined/null
+function isConfigSlot(slot: unknown): slot is ConfigSlot {
+  return typeof (slot as ConfigSlot | undefined)?.getValue === 'function'
+}
 
 /**
  * given a configuration model (an instance of a ConfigurationSchema),
@@ -125,7 +126,7 @@ export function getConfSnapshot(confObject: AnyConfigurationModel) {
       isStateTreeNode(slot) &&
       isConfigurationModel(slot)
     ) {
-      result[key] = getConfSnapshot(slot as AnyConfigurationModel)
+      result[key] = getConfSnapshot(slot)
     }
   }
   return result
@@ -260,7 +261,6 @@ export function isConfigurationSlotType(thing: unknown) {
 
 // --- Plain-object config utilities (no MST dependency) ---
 
-import { stringToJexlExpression } from '../util/jexlStrings.ts'
 import type { Feature } from '../util/index.ts'
 
 function resolveConfigValue(
@@ -270,7 +270,7 @@ function resolveConfigValue(
   if (Array.isArray(key)) {
     let val: unknown = config
     for (const k of key) {
-      val = (val as Record<string, unknown>)?.[k]
+      val = (val as Record<string, unknown> | null | undefined)?.[k]
     }
     return val
   }

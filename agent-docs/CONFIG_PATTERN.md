@@ -2,9 +2,9 @@
 
 ## Overview
 
-Display rendering config follows a simple pipeline: MST config model on the
-main thread → plain object snapshot → rendering code (GPU, Canvas2D, or worker).
-No MST dependency at the rendering layer.
+Display rendering config follows a simple pipeline: MST config model on the main
+thread → plain object snapshot → rendering code (GPU, Canvas2D, or worker). No
+MST dependency at the rendering layer.
 
 ## The pattern
 
@@ -41,7 +41,11 @@ const height = readConfigValue<number>(config, 'featureHeight', feature)
 const color = readConfigValue<string>(config, 'color1', feature)
 
 // Nested key:
-const fontSize = readConfigValue<number>(config, ['labels', 'fontSize'], feature)
+const fontSize = readConfigValue<number>(
+  config,
+  ['labels', 'fontSize'],
+  feature,
+)
 ```
 
 `readConfigValue` detects `"jexl:..."` strings and evaluates them via
@@ -58,7 +62,7 @@ ConfigurationSchema('MyDisplay', {
   color1: {
     type: 'color',
     defaultValue: 'goldenrod',
-    contextVariable: ['feature'],  // enables jexl callbacks
+    contextVariable: ['feature'], // enables jexl callbacks
   },
   featureHeight: {
     type: 'number',
@@ -77,21 +81,21 @@ display-level properties. Old configs work without migration.
 
 ## Key functions
 
-| Function | Location | Purpose |
-|----------|----------|---------|
-| `getConfSnapshot(config)` | `packages/core/src/configuration/util.ts` | Snapshot with defaults included, JEXL strings preserved |
-| `readConfigValue(config, key, feature)` | `packages/core/src/configuration/util.ts` | Read from plain object, auto-evaluate JEXL |
-| `createRenderConfigContext(config)` | `plugins/canvas/src/RenderFeatureDataRPC/renderConfig.ts` | Extract frequently-accessed fields for the rendering loop |
+| Function                                | Location                                                  | Purpose                                                   |
+| --------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------- |
+| `getConfSnapshot(config)`               | `packages/core/src/configuration/util.ts`                 | Snapshot with defaults included, JEXL strings preserved   |
+| `readConfigValue(config, key, feature)` | `packages/core/src/configuration/util.ts`                 | Read from plain object, auto-evaluate JEXL                |
+| `createRenderConfigContext(config)`     | `plugins/canvas/src/RenderFeatureDataRPC/renderConfig.ts` | Extract frequently-accessed fields for the rendering loop |
 
 ## What this replaces
 
-| Old pattern | New pattern |
-|-------------|-------------|
-| `readConfObject(mstModel, key, { feature })` in workers | `readConfigValue(plainObj, key, feature)` |
-| `configSchema.create(snapshot, { pluginManager })` re-hydration | Not needed — plain objects work directly |
-| `CachedConfig<T>` / `readCachedConfig()` indirection | Removed — `readConfigValue` is simple and direct |
-| Hardcoded `mockConfig` with fallback defaults | `getConfSnapshot` includes real values |
-| Nested `renderer: { type: "X", color1: "..." }` in config | Direct `color1: "..."` on display config |
+| Old pattern                                                     | New pattern                                      |
+| --------------------------------------------------------------- | ------------------------------------------------ |
+| `readConfObject(mstModel, key, { feature })` in workers         | `readConfigValue(plainObj, key, feature)`        |
+| `configSchema.create(snapshot, { pluginManager })` re-hydration | Not needed — plain objects work directly         |
+| `CachedConfig<T>` / `readCachedConfig()` indirection            | Removed — `readConfigValue` is simple and direct |
+| Hardcoded `mockConfig` with fallback defaults                   | `getConfSnapshot` includes real values           |
+| Nested `renderer: { type: "X", color1: "..." }` in config       | Direct `color1: "..."` on display config         |
 
 ## Current adoption
 

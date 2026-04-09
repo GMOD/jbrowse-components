@@ -199,7 +199,7 @@ export default function stateModelFactory(
 
       get displayConfigSnapshot() {
         return {
-          ...(getConfSnapshot(self.configuration) as Record<string, unknown>),
+          ...getConfSnapshot(self.configuration),
           ...self.configOverrides,
         }
       },
@@ -226,19 +226,19 @@ export default function stateModelFactory(
       },
 
       get maxHeight(): number {
-        return getConf(self, 'maxHeight') ?? 1200
+        return self.getConfWithOverride<number>('maxHeight')
       },
 
       get autoHeight(): boolean {
-        return getConf(self, 'autoHeight') ?? false
+        return self.getConfWithOverride<boolean>('autoHeight')
       },
 
       get showLabels(): boolean {
-        return self.getConfWithOverride('showLabels')
+        return self.getConfWithOverride<boolean>('showLabels')
       },
 
       get showDescriptions(): boolean {
-        return self.getConfWithOverride('showDescriptions')
+        return self.getConfWithOverride<boolean>('showDescriptions')
       },
 
       get effectiveShowDescriptions(): boolean {
@@ -249,19 +249,19 @@ export default function stateModelFactory(
       },
 
       get subfeatureLabels(): string {
-        return self.getConfWithOverride('subfeatureLabels')
+        return self.getConfWithOverride<string>('subfeatureLabels')
       },
 
       get displayMode(): string {
-        return self.getConfWithOverride('displayMode')
+        return self.getConfWithOverride<string>('displayMode')
       },
 
       get geneGlyphMode(): string {
-        return self.getConfWithOverride('geneGlyphMode')
+        return self.getConfWithOverride<string>('geneGlyphMode')
       },
 
       get displayDirectionalChevrons(): boolean {
-        return self.getConfWithOverride('displayDirectionalChevrons')
+        return self.getConfWithOverride<boolean>('displayDirectionalChevrons')
       },
 
       get effectiveGeneGlyphMode(): string {
@@ -290,7 +290,7 @@ export default function stateModelFactory(
         }
         return (
           self.userFeatureDensityLimit ??
-          (getConf(self, 'maxFeatureScreenDensity') as number)
+          self.getConfWithOverride<number>('maxFeatureScreenDensity')
         )
       },
 

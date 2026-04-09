@@ -39,9 +39,7 @@ export function applyLabelDimensions(
 
   const name = isTranscriptChild
     ? truncateLabel(getFeatureName(feature))
-    : truncateLabel(
-        readConfigValue(config, ['labels', 'name'], feature),
-      )
+    : truncateLabel(readConfigValue(config, ['labels', 'name'], feature))
   const shouldShowName = /\S/.test(name)
 
   const description = truncateLabel(

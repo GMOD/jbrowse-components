@@ -256,7 +256,8 @@ export default function stateModelFactory(
 
       get fetchSizeLimit() {
         return (
-          self.userByteSizeLimit || (getConf(self, 'fetchSizeLimit') as number)
+          self.userByteSizeLimit ||
+          self.getConfWithOverride<number>('fetchSizeLimit')
         )
       },
 
@@ -305,7 +306,7 @@ export default function stateModelFactory(
       },
 
       get colorBy(): ColorBy {
-        return self.getConfWithOverride('colorBy')
+        return self.getConfWithOverride<ColorBy>('colorBy')
       },
 
       get modificationThreshold() {
@@ -313,11 +314,11 @@ export default function stateModelFactory(
       },
 
       get filterBy(): FilterBy {
-        return self.getConfWithOverride('filterBy')
+        return self.getConfWithOverride<FilterBy>('filterBy')
       },
 
       get featureHeightSetting(): number {
-        return self.getConfWithOverride('featureHeight')
+        return self.getConfWithOverride<number>('featureHeight')
       },
 
       get noSpacingSetting(): boolean | undefined {
@@ -329,11 +330,11 @@ export default function stateModelFactory(
         if (noSpacing !== undefined) {
           return noSpacing ? 0 : 2
         }
-        return getConf(self, 'featureSpacing') ?? 1
+        return self.getConfWithOverride<number>('featureSpacing')
       },
 
       get maxHeight(): number {
-        return self.getConfWithOverride('maxHeight')
+        return self.getConfWithOverride<number>('maxHeight')
       },
 
       /**
@@ -1329,7 +1330,7 @@ export default function stateModelFactory(
           const view = getContainingView(self) as LGV
           return {
             adapterConfig: self.adapterConfigSnapshot,
-            fetchSizeLimit: getConf(self, 'fetchSizeLimit') as number,
+            fetchSizeLimit: self.getConfWithOverride<number>('fetchSizeLimit'),
             userByteSizeLimit: self.userByteSizeLimit,
             visibleBp: view.visibleBp,
           }

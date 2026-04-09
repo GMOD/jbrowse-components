@@ -252,7 +252,7 @@ export default function MultiSampleVariantBaseModelF(
        * Returns the effective rendering mode, falling back to config
        */
       get renderingMode(): string {
-        return self.getConfWithOverride('renderingMode')
+        return self.getConfWithOverride<string>('renderingMode')
       },
 
       get featureWidgetType() {
@@ -263,7 +263,10 @@ export default function MultiSampleVariantBaseModelF(
       },
 
       get fetchSizeLimit() {
-        return self.userByteSizeLimit || self.getConfWithOverride('fetchSizeLimit')
+        return (
+          self.userByteSizeLimit ||
+          self.getConfWithOverride<number>('fetchSizeLimit')
+        )
       },
     }))
     .actions(self => ({
@@ -496,15 +499,15 @@ export default function MultiSampleVariantBaseModelF(
        * Returns the effective minor allele frequency filter, falling back to config
        */
       get minorAlleleFrequencyFilter() {
-        return self.getConfWithOverride('minorAlleleFrequencyFilter')
+        return self.getConfWithOverride<number>('minorAlleleFrequencyFilter')
       },
 
       get showSidebarLabels() {
-        return self.getConfWithOverride('showSidebarLabels')
+        return self.getConfWithOverride<boolean>('showSidebarLabels')
       },
 
       get showTree() {
-        return self.getConfWithOverride('showTree')
+        return self.getConfWithOverride<boolean>('showTree')
       },
 
       get referenceDrawingMode(): string {
@@ -512,7 +515,9 @@ export default function MultiSampleVariantBaseModelF(
         if (override !== undefined) {
           return override
         }
-        return self.getConfWithOverride('showReferenceAlleles') ? 'draw' : 'skip'
+        return self.getConfWithOverride<boolean>('showReferenceAlleles')
+          ? 'draw'
+          : 'skip'
       },
 
       activeFilters() {

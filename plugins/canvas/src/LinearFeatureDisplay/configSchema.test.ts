@@ -1,5 +1,5 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { readConfObject } from '@jbrowse/core/configuration'
 
 import configSchemaFactory from './configSchema.ts'
 

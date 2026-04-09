@@ -2,13 +2,9 @@ import { type Feature, SimpleFeature } from '@jbrowse/core/util'
 
 import { isUTR } from './util.ts'
 
-function makeSubpartsFilter(
-  confKey: string,
-  config: Record<string, unknown>,
-) {
-  const filter = (config[confKey] ?? 'CDS,UTR,five_prime_UTR,three_prime_UTR') as
-    | string[]
-    | string
+function makeSubpartsFilter(confKey: string, config: Record<string, unknown>) {
+  const filter = (config[confKey] ??
+    'CDS,UTR,five_prime_UTR,three_prime_UTR') as string[] | string
   const ret = typeof filter === 'string' ? filter.split(/\s*,\s*/) : filter
   const lowerRet = new Set(ret.map(t => t.toLowerCase()))
 

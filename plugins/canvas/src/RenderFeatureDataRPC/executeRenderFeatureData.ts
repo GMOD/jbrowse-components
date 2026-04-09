@@ -129,9 +129,7 @@ export async function executeRenderFeatureData({
     },
   }
 
-  const configContext = createRenderConfigContext(
-    displayConfig as Record<string, unknown>,
-  )
+  const configContext = createRenderConfigContext(displayConfig)
 
   const features = new Map<string, Feature>()
   for (const f of featuresArray) {

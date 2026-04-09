@@ -9,18 +9,19 @@
 
 ## Completed
 
-- ~~Move `readConfigValue` to core~~ — now in `packages/core/src/configuration/util.ts`
+- ~~Move `readConfigValue` to core~~ — now in
+  `packages/core/src/configuration/util.ts`
 - ~~Eliminate bespoke override properties~~ — `ConfigOverrideMixin` replaces
   individual `types.maybe()` properties with one `configOverrides` frozen map.
   Applied to all display types: LinearFeatureDisplay (canvas),
   LinearWiggleDisplay, MultiLinearWiggleDisplay, LinearAlignmentsDisplay.
-  Migration in `preProcessSnapshot` handles old `track*` and `*Setting`
-  property names.
+  Migration in `preProcessSnapshot` handles old `track*` and `*Setting` property
+  names.
 
 ## Short-term
 
-- Verify `geneGlyphMode` default change from 'all' to 'auto' works correctly
-  in browser (config schema updated, auto mode switches based on zoom level)
+- Verify `geneGlyphMode` default change from 'all' to 'auto' works correctly in
+  browser (config schema updated, auto mode switches based on zoom level)
 
 ## Medium-term
 

@@ -1,7 +1,4 @@
-import {
-  createRenderConfigContext,
-  readConfigValue,
-} from './renderConfig.ts'
+import { createRenderConfigContext, readConfigValue } from './renderConfig.ts'
 
 function mockFeature(data: Record<string, unknown> = {}) {
   return {
@@ -36,7 +33,11 @@ describe('readConfigValue', () => {
 
   it('resolves nested keys', () => {
     expect(
-      readConfigValue({ labels: { fontSize: 14 } }, ['labels', 'fontSize'], anyFeature),
+      readConfigValue(
+        { labels: { fontSize: 14 } },
+        ['labels', 'fontSize'],
+        anyFeature,
+      ),
     ).toBe(14)
   })
 })

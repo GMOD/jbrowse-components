@@ -29,7 +29,6 @@ import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
 import { getRowHeight, isOverlayMode } from '../shared/wiggleComponentUtils.ts'
 import {
-  MULTI_WIGGLE_RENDERING_TYPES,
   computeAutoscaleDomain,
   getNiceDomain,
   getScale,
@@ -211,31 +210,31 @@ export default function stateModelFactory(
       },
 
       get posColor() {
-        return getConf(self, 'posColor') as string
+        return self.getConfWithOverride<string>('posColor')
       },
 
       get negColor() {
-        return getConf(self, 'negColor') as string
+        return self.getConfWithOverride<string>('negColor')
       },
 
       get bicolorPivot() {
-        return getConf(self, 'bicolorPivot') as number
+        return self.getConfWithOverride<number>('bicolorPivot')
       },
 
       get scaleType() {
-        return self.getConfWithOverride('scaleType')
+        return self.getConfWithOverride<string>('scaleType')
       },
 
       get autoscaleType() {
-        return self.getConfWithOverride('autoscale')
+        return self.getConfWithOverride<string>('autoscale')
       },
 
       get summaryScoreMode() {
-        return self.getConfWithOverride('summaryScoreMode')
+        return self.getConfWithOverride<string>('summaryScoreMode')
       },
 
       get renderingType() {
-        return self.getConfWithOverride('defaultRendering')
+        return self.getConfWithOverride<string>('defaultRendering')
       },
 
       get isDensityMode() {
@@ -247,11 +246,11 @@ export default function stateModelFactory(
       },
 
       get minScore() {
-        return self.getConfWithOverride('minScore')
+        return self.getConfWithOverride<number>('minScore')
       },
 
       get maxScore() {
-        return self.getConfWithOverride('maxScore')
+        return self.getConfWithOverride<number>('maxScore')
       },
 
       get minScoreConfig() {
@@ -300,7 +299,7 @@ export default function stateModelFactory(
         if (!domain) {
           return undefined
         }
-        const minimalTicks = getConf(self, 'minimalTicks')
+        const minimalTicks = self.getConfWithOverride<boolean>('minimalTicks')
         const ticks = axisPropsFromTickScale(
           getScale({
             scaleType,
@@ -638,7 +637,8 @@ export default function stateModelFactory(
                   if (!view.initialized) {
                     return
                   }
-                  const numStdDev = getConf(self, 'numStdDev') || 3
+                  const numStdDev =
+                    self.getConfWithOverride<number>('numStdDev')
                   const visibleEntries = view.dynamicBlocks.contentBlocks
                     .filter(block => block.regionNumber !== undefined)
                     .flatMap(block => {
