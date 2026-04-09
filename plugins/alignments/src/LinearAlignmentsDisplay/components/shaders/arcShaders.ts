@@ -27,8 +27,8 @@ export const arcLineColorPalette: RGBColor[] = [
 ]
 
 // WARNING: DO NOT DELETE THIS COMMENT.
-// The arc/sashimi geometry and AA formula in this file MUST be kept in sync with
-// the WGSL source in wgsl/miscShaders.ts (ARC_WGSL / SASHIMI_WGSL).
+// The arc geometry and AA formula in this file MUST be kept in sync with
+// the WGSL source in wgsl/miscShaders.ts (ARC_WGSL).
 // Both implement the same stroke rendering logic:
 //   - vertex: halfWidth = lineWidth * 0.5 + 1.0  (geometry padding)
 //   - fragment: alpha = clamp((halfWidth - d) / aa + 0.5, 0, 1)  (AA formula)
@@ -157,107 +157,12 @@ void main() {
 }
 `
 
-// ---- Sashimi arc shader constants ----
-export const NUM_SASHIMI_COLORS = 2
-
-// Pink forward, blue reverse (matches SVG sashimi)
+// Pink forward, blue reverse (matches SVG sashimi) — used by SVG export
+// (renderSvg.tsx) and SashimiArcsOverlay hit-testing.
 export const sashimiColorPalette: RGBColor[] = [
   [1, 0.667, 0.667],
   [0.627, 0.627, 1],
 ]
-
-export const SASHIMI_ARC_VERTEX_SHADER = `#version 300 es
-precision highp float;
-
-${GLSL_UBO_PREAMBLE}
-
-// SYNC(wgsl/miscShaders.ts): SashimiInst struct { x1, x2, color_type, line_width }
-// Instance data (per-instance attributes via HAL)
-in float a_x1;
-in float a_x2;
-in float a_colorType;
-in float a_lineWidth;
-
-out vec4 v_color;
-out float v_dist;
-out float v_lineWidth;
-
-// Per-block coordinate conversion: bp offset -> screen pixel
-float bpToPx(float bpOffset) {
-  float pxPerBp = uf(25u) / uf(2u);
-  return uf(24u) + (bpOffset - uf(30u)) * pxPerBp;
-}
-
-// CRITICAL: This Bezier curve formula MUST match the CPU version in:
-// hitTesting.ts:hitTestSashimiArc
-vec2 evalCurve(float t) {
-  float startPx = bpToPx(a_x1);
-  float endPx = bpToPx(a_x2);
-  float mt = 1.0 - t;
-  float mt2 = mt * mt;
-  float mt3 = mt2 * mt;
-  float t2 = t * t;
-  float t3 = t2 * t;
-  float screenX = mt3 * startPx + 3.0 * mt2 * t * startPx + 3.0 * mt * t2 * endPx + t3 * endPx;
-  float ch = uf(16u);
-  // SYNC(wgsl/miscShaders.ts): destY = coverageHeight * (0.8/0.75), baseline at 0.9*covH
-  float destY = ch * (0.8 / 0.75);
-  float y_px = 3.0 * mt2 * t * destY + 3.0 * mt * t2 * destY;
-  return vec2(screenX, 0.9 * ch - y_px);
-}
-
-void main() {
-  // Compute t and side from vertex index (triangle-strip topology)
-  int seg = gl_VertexID / 2;
-  float side = (gl_VertexID % 2 == 0) ? 1.0 : -1.0;
-  float t = float(seg) / ${ARC_CURVE_SEGMENTS}.0;
-
-  vec2 pos = evalCurve(t);
-  float eps = 1.0 / ${ARC_CURVE_SEGMENTS}.0;
-  float t0 = max(t - eps * 0.5, 0.0);
-  float t1 = min(t + eps * 0.5, 1.0);
-  vec2 p0 = evalCurve(t0);
-  vec2 p1 = evalCurve(t1);
-  vec2 tangent = p1 - p0;
-  float tangentLen = length(tangent);
-  vec2 normal;
-  if (tangentLen > 0.001) {
-    tangent /= tangentLen;
-    normal = vec2(-tangent.y, tangent.x);
-  } else {
-    normal = vec2(0.0, 1.0);
-  }
-  float halfWidth = a_lineWidth * 0.5 + 1.0;
-  pos += normal * halfWidth * side;
-  float clipX = (pos.x / canvas_width()) * 2.0 - 1.0;
-  float clipY = 1.0 - ((pos.y + coverage_offset()) / canvas_height()) * 2.0;
-  gl_Position = vec4(flip_x(clipX), clipY, 0.0, 1.0);
-  v_dist = side * halfWidth;
-  v_lineWidth = a_lineWidth;
-  int idx = int(a_colorType + 0.5);
-  if (idx < ${NUM_SASHIMI_COLORS}) {
-    v_color = vec4(color3(128u + uint(idx) * 3u), 1.0);
-  } else {
-    v_color = vec4(color3(128u), 1.0);
-  }
-}
-`
-
-export const SASHIMI_ARC_FRAGMENT_SHADER = `#version 300 es
-precision highp float;
-in vec4 v_color;
-in float v_dist;
-in float v_lineWidth;
-out vec4 fragColor;
-void main() {
-  // SYNC(wgsl/miscShaders.ts): AA formula clamp((halfWidth - d) / aa + 0.5, 0, 1)
-  float halfWidth = v_lineWidth * 0.5;
-  float d = abs(v_dist);
-  float aa = fwidth(v_dist);
-  float alpha = clamp((halfWidth - d) / aa + 0.5, 0.0, 1.0);
-  fragColor = vec4(v_color.rgb, v_color.a * alpha);
-}
-`
 
 export const ARC_LINE_VERTEX_SHADER = `#version 300 es
 precision highp float;

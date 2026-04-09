@@ -117,7 +117,7 @@ describe('Canvas2DVariantRenderer', () => {
     })
   })
 
-  describe('pruneStaleRegions', () => {
+  describe('pruneRegions', () => {
     test('removes inactive regions', () => {
       const { canvas, ctx } = createMockCanvas()
       const renderer = new Canvas2DVariantRenderer(canvas)
@@ -126,7 +126,7 @@ describe('Canvas2DVariantRenderer', () => {
       renderer.uploadRegion(1, makeRegionData())
       renderer.uploadRegion(2, makeRegionData())
 
-      renderer.pruneStaleRegions([1])
+      renderer.pruneRegions([1])
 
       // Region 0 and 2 should be gone; rendering blocks for them should skip
       renderer.renderBlocks(

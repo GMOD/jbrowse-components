@@ -1,5 +1,8 @@
-import { clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
-import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
+import {
+  clipBlock,
+  writeBpRangeUniforms,
+} from '@jbrowse/core/gpu/blockClipUtils'
+import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
 import { FRAGMENT_SHADER, VERTEX_SHADER } from './variantGlslShaders.ts'
 import {
@@ -96,14 +99,10 @@ export class GpuVariantRenderer implements VariantBackend {
     this.regionStarts.set(regionNumber, data.regionStart)
   }
 
-  pruneStaleRegions(activeRegionNumbers: number[]) {
-    const active = new Set(activeRegionNumbers)
-    for (const regionNumber of this.regionStarts.keys()) {
-      if (!active.has(regionNumber)) {
-        this.hal.deleteRegion(regionNumber)
-        this.regionStarts.delete(regionNumber)
-      }
-    }
+  pruneRegions(activeRegionNumbers: number[]) {
+    pruneRegionMap(this.regionStarts, activeRegionNumbers, n => {
+      this.hal.deleteRegion(n)
+    })
   }
 
   renderBlocks(
@@ -138,17 +137,7 @@ export class GpuVariantRenderer implements VariantBackend {
       this.hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
       this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
 
-      if (block.reversed) {
-        const endBp = clip.bpStartHi + clip.bpStartLo + clip.clippedLengthBp
-        const [endHi, endLo] = splitPositionWithFrac(endBp)
-        this.uniformF32[0] = endHi
-        this.uniformF32[1] = endLo
-        this.uniformF32[2] = -clip.clippedLengthBp
-      } else {
-        this.uniformF32[0] = clip.bpStartHi
-        this.uniformF32[1] = clip.bpStartLo
-        this.uniformF32[2] = clip.clippedLengthBp
-      }
+      writeBpRangeUniforms(this.uniformF32, clip, block.reversed)
       this.uniformU32[3] = Math.floor(regionStart)
       this.uniformF32[4] = canvasHeight
       this.uniformF32[5] = clip.scissorW

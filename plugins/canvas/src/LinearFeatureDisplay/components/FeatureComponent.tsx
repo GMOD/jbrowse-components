@@ -255,7 +255,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     }
 
     if (rpcDataMap.size === 0) {
-      renderer.pruneStaleRegions([])
+      renderer.pruneRegions([])
       flatbushCacheMapRef.current.clear()
       return
     }
@@ -276,7 +276,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     for (const [regionNumber, data] of rpcDataMap) {
       renderer.uploadRegion(regionNumber, data)
     }
-    renderer.pruneStaleRegions([...rpcDataMap.keys()])
+    renderer.pruneRegions([...rpcDataMap.keys()])
 
     setHoveredFeature(null)
     setHoveredSubfeature(null)

@@ -7,52 +7,16 @@ import {
   LD_UNIFORM_BYTE_SIZE,
 } from './GpuLDRenderer.ts'
 
-import type { LDBackend, LDRenderState } from './ldBackendTypes.ts'
-
-export class LDRenderer {
-  private canvas: HTMLCanvasElement
-  private backend: LDBackend | null = null
-
-  constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas
-  }
-
-  static getOrCreate(canvas: HTMLCanvasElement) {
-    return new LDRenderer(canvas)
-  }
-
-  async init() {
-    this.backend = await initDualBackend<LDBackend>(
-      this.canvas,
-      LD_PASSES,
-      LD_UNIFORM_BYTE_SIZE,
-      hal => new GpuLDRenderer(hal),
-      canvas => new Canvas2DLDRenderer(canvas),
-    )
-    return true
-  }
-
-  uploadData(data: {
-    positions: Float32Array
-    cellSizes: Float32Array
-    ldValues: Float32Array
-    numCells: number
-  }) {
-    this.backend?.uploadData(data)
-  }
-
-  uploadColorRamp(colors: Uint8Array) {
-    this.backend?.uploadColorRamp(colors)
-  }
-
-  render(state: LDRenderState) {
-    this.backend?.render(state)
-  }
-
-  dispose() {
-    this.backend?.dispose()
-    this.backend = null
-  }
-}
-
 export { generateLDColorRamp } from './ldColorRamp.ts'
+
+import type { LDBackend } from './ldBackendTypes.ts'
+
+export function LDRenderer(canvas: HTMLCanvasElement) {
+  return initDualBackend<LDBackend>(
+    canvas,
+    LD_PASSES,
+    LD_UNIFORM_BYTE_SIZE,
+    hal => new GpuLDRenderer(hal),
+    c => new Canvas2DLDRenderer(c),
+  )
+}

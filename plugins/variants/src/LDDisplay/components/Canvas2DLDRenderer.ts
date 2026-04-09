@@ -1,4 +1,7 @@
-import { lookupColorRamp } from '@jbrowse/core/gpu/canvas2dUtils'
+import {
+  lookupColorRamp,
+  prepareCanvas,
+} from '@jbrowse/core/gpu/canvas2dUtils'
 
 import type { LDBackend, LDRenderState } from './ldBackendTypes.ts'
 
@@ -48,18 +51,8 @@ export class Canvas2DLDRenderer implements LDBackend {
       viewOffsetX,
     } = state
 
-    const dpr = window.devicePixelRatio || 1
-    const bufW = Math.round(canvasWidth * dpr)
-    const bufH = Math.round(canvasHeight * dpr)
-
-    if (this.canvas.width !== bufW || this.canvas.height !== bufH) {
-      this.canvas.width = bufW
-      this.canvas.height = bufH
-    }
-
     const ctx = this.ctx
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight)
+    prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
 
     if (
       !this.positions ||

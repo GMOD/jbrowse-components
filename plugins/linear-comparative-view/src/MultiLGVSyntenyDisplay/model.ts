@@ -30,13 +30,21 @@ import { autorun } from 'mobx'
 import { LABEL_WIDTH } from './components/multiSyntenyBackendTypes.ts'
 import { legendItems as legendItemsMap } from './components/multiSyntenyColorUtils.ts'
 import {
+  packCoverageForGpu,
+  packIndicatorsForGpu,
+  packSnpCoverageForGpu,
+  prepareBlockGeometry,
+} from './components/multiSyntenyGpuData.ts'
+import {
   getGlobalMaxDepth,
   mergeGenomeRows,
 } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 
 import type { SyntenyRegionData } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
-import type { MultiSyntenyRenderer } from './components/MultiSyntenyRenderer.ts'
-import type { SyntenyColors } from './components/multiSyntenyBackendTypes.ts'
+import type {
+  MultiSyntenyBackend,
+  SyntenyColors,
+} from './components/multiSyntenyBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
@@ -170,7 +178,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       contextMenuFeature: undefined as Feature | undefined,
       statusMessage: undefined as string | undefined,
       visibleMaxDepth: 0,
-      webglRenderer: null as MultiSyntenyRenderer | null,
+      webglRenderer: null as MultiSyntenyBackend | null,
       colorPalette: null as SyntenyColorPalette | null,
       tabVisibilityVersion: 0,
       canvasDrawn: false,
@@ -264,6 +272,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         self.rpcDataMap = next
       },
       setAllGenomeNames(names: string[]) {
+        console.log('[MultiSynteny] setAllGenomeNames:', JSON.stringify(names))
         self.allGenomeNames = names
       },
       setColorBy(value: string) {
@@ -310,7 +319,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       setStatusMessage(msg?: string) {
         self.statusMessage = msg
       },
-      setWebGLRenderer(renderer: MultiSyntenyRenderer | null) {
+      setWebGLRenderer(renderer: MultiSyntenyBackend | null) {
+        console.log('[MultiSynteny] setWebGLRenderer:', renderer ? 'renderer' : 'null')
         self.webglRenderer = renderer
       },
       setCanvasDrawn(value: boolean) {
@@ -320,6 +330,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         self.colorPalette = palette
       },
       clearDisplaySpecificData() {
+        console.log('[MultiSynteny] clearDisplaySpecificData, stack:', new Error().stack?.split('\n').slice(1, 4).join(' | '))
         self.rpcDataMap = new Map()
         self.allGenomeNames = []
         self.webglRenderer?.clearAllBlocks()
@@ -437,14 +448,17 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                   return
                 }
                 for (const [regionNumber, data] of rpcDataMap) {
-                  renderer.uploadGeometryForBlock(
-                    regionNumber,
-                    data,
+                  const geometry = prepareBlockGeometry(
+                    data.genomeFeatures,
                     displayedGenomes,
                     colorBy,
                     showSnps,
                     colorPalette.syntenyColors,
                   )
+                  renderer.uploadGeometryForBlock(regionNumber, {
+                    ...geometry,
+                    regionStart: data.regionStart,
+                  })
                 }
               },
               { name: 'MultiLGVSyntenyDisplay:uploadGeometry' },
@@ -466,13 +480,35 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                   return
                 }
                 const globalMax = getGlobalMaxDepth(rpcDataMap)
+                const viewWidthPx = Math.ceil(view.width)
                 for (const [regionNumber, data] of rpcDataMap) {
-                  renderer.uploadCoverageDataForBlock(
-                    regionNumber,
-                    data,
-                    Math.ceil(view.width),
+                  const coverage = packCoverageForGpu(
+                    data.coverageDepths,
+                    data.coverageStartOffset,
                     globalMax,
+                    data.regionStart,
+                    viewWidthPx,
                   )
+                  renderer.uploadCoverageForBlock(regionNumber, {
+                    ...coverage,
+                    regionStart: data.regionStart,
+                    maxDepth: data.coverageMaxDepth,
+                  })
+                  const snps = packSnpCoverageForGpu(
+                    data.snpPositions,
+                    data.snpYOffsets,
+                    data.snpHeights,
+                    data.snpColorTypes,
+                    data.snpCount,
+                    data.regionStart,
+                  )
+                  renderer.uploadSnpCoverageForBlock(regionNumber, snps)
+                  const indicators = packIndicatorsForGpu(
+                    data.indicatorPositions,
+                    data.numIndicators,
+                    data.regionStart,
+                  )
+                  renderer.uploadIndicatorsForBlock(regionNumber, indicators)
                 }
               },
               { name: 'MultiLGVSyntenyDisplay:uploadCoverage' },

@@ -113,7 +113,6 @@ export const U_COLOR_SHORT_INSERT = 92
 export const U_COLOR_SUPPLEMENTARY = 95
 export const U_ARC_COLORS = 98
 export const U_ARC_LINE_COLORS = 122
-export const U_SASHIMI_COLORS = 128
 export const U_COLOR_UNMAPPED_MATE = 134
 
 // SYNC(shaders/*): Stride constants must match GLSL instance attribute layouts.
@@ -131,7 +130,6 @@ export const MOD_COV_STRIDE = 4
 export const NONCOV_STRIDE = 4
 export const INDICATOR_STRIDE = 2
 export const ARC_STRIDE = 4
-export const SASHIMI_STRIDE = 4
 export const ARC_LINE_STRIDE = 4
 export const CONN_LINE_STRIDE = 3
 
@@ -140,7 +138,6 @@ export const ARC_CURVE_SEGMENTS = 64
 export const ARC_HEIGHT_MARGIN = 8
 export const NUM_ARC_COLORS = 8
 export const NUM_LINE_COLORS = 2
-export const NUM_SASHIMI_COLORS = 2
 
 export {
   RECT_LOCALS_WGSL as RECT_LOCALS,

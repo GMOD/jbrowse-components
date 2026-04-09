@@ -39,7 +39,7 @@
     "@jbrowse/tree-sidebar": "workspace:^",
     "@mui/icons-material": "^9.0.0",
     "@mui/material": "^9.0.0",
-    "@mui/x-data-grid": "^9.0.0-rc.0",
+    "@mui/x-data-grid": "9.0.0-rc.0",
     "@types/file-saver-es": "^2.0.3",
     "copy-to-clipboard": "^3.3.3",
     "file-saver-es": "^2.0.5",

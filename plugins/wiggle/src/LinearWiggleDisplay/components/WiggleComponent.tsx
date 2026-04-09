@@ -76,14 +76,17 @@ const WiggleComponent = observer(function WiggleComponent({
 
   useEffect(() => {
     const renderer = rendererRef.current
+    console.log('[WiggleComponent] upload useEffect running, ready:', ready, 'renderer:', !!renderer)
     if (!renderer || !ready) {
       return
     }
 
     let lastDataMap: unknown = null
 
+    console.log('[WiggleComponent] creating data upload autorun')
     return autorun(() => {
       const dataMap = model.rpcDataMap
+      console.log('[WiggleComponent] autorun fired, dataMap.size:', dataMap.size, 'isLoading:', model.isLoading, 'domain:', !!model.domain)
 
       if (lastDataMap !== dataMap) {
         lastDataMap = dataMap
@@ -104,8 +107,10 @@ const WiggleComponent = observer(function WiggleComponent({
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _dv = model.dataVersion
 
+      console.log('[WiggleComponent] calling renderNow')
       renderNow()
       if (dataMap.size > 0 && model.domain) {
+        console.log('[WiggleComponent] setCanvasDrawn(true)')
         model.setCanvasDrawn(true)
       }
     })

@@ -1,5 +1,8 @@
-import { clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
-import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
+import {
+  clipBlock,
+  writeBpRangeUniforms,
+} from '@jbrowse/core/gpu/blockClipUtils'
+import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
 import {
   ARROW_VERTEX_SHADER,
@@ -296,17 +299,7 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
       this.hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
       this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
 
-      if (block.reversed) {
-        const endBp = clip.bpStartHi + clip.bpStartLo + clip.clippedLengthBp
-        const [endHi, endLo] = splitPositionWithFrac(endBp)
-        this.uniformF32[0] = endHi
-        this.uniformF32[1] = endLo
-        this.uniformF32[2] = -clip.clippedLengthBp
-      } else {
-        this.uniformF32[0] = clip.bpStartHi
-        this.uniformF32[1] = clip.bpStartLo
-        this.uniformF32[2] = clip.clippedLengthBp
-      }
+      writeBpRangeUniforms(this.uniformF32, clip, block.reversed)
       this.uniformU32[3] = Math.floor(regionStart)
       this.uniformF32[4] = canvasHeight
       this.uniformF32[5] = clip.scissorW
@@ -334,16 +327,12 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
     this.hal.endFrame()
   }
 
-  pruneStaleRegions(activeRegions: number[]) {
-    const active = new Set(activeRegions)
-    for (const regionNumber of this.regionStarts.keys()) {
-      if (!active.has(regionNumber)) {
-        this.hal.deleteRegion(regionNumber)
-        this.regionStarts.delete(regionNumber)
-        this.hasLines.delete(regionNumber)
-        this.hasArrows.delete(regionNumber)
-      }
-    }
+  pruneRegions(activeRegions: number[]) {
+    pruneRegionMap(this.regionStarts, activeRegions, n => {
+      this.hal.deleteRegion(n)
+      this.hasLines.delete(n)
+      this.hasArrows.delete(n)
+    })
   }
 
   dispose() {

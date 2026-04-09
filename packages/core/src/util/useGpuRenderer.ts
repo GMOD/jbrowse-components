@@ -3,15 +3,6 @@ import { useEffect, useRef, useState } from 'react'
 
 import { setupWebGLContextLossHandler } from './webglContextLoss.ts'
 
-interface GpuRenderer {
-  init(): Promise<boolean>
-  dispose(): void
-}
-
-interface GpuRendererCache<R extends GpuRenderer> {
-  getOrCreate(canvas: HTMLCanvasElement): R
-}
-
 interface UseGpuRendererOptions<R> {
   onReady?: (renderer: R) => void
   onDispose?: () => void
@@ -23,18 +14,18 @@ interface UseGpuRendererOptions<R> {
  * display components.
  *
  * Pattern:
- * 1. Canvas mounts → useEffect creates renderer via getOrCreate + init()
- * 2. WebGL context loss → contextVersion bumps → cleanup destroys old
- *    renderer → effect re-runs creating fresh renderer
+ * 1. Canvas mounts → useEffect calls factory(canvas) to create and init backend
+ * 2. WebGL context loss → contextVersion bumps → cleanup disposes old
+ *    backend → effect re-runs creating fresh backend
  * 3. Error → ErrorBar with retry → retry resets state + bumps contextVersion
  *
  * For displays with model-driven autoruns (alignments, synteny), pass
- * onReady/onDispose callbacks to store the renderer in the MST model
+ * onReady/onDispose callbacks to store the backend in the MST model
  * volatile so autoruns can track it as a MobX observable.
  */
-export function useGpuRenderer<R extends GpuRenderer>(
+export function useGpuRenderer<R extends { dispose(): void }>(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
-  rendererCache: GpuRendererCache<R>,
+  factory: (canvas: HTMLCanvasElement) => Promise<R>,
   opts?: UseGpuRendererOptions<R>,
 ) {
   const [error, setError] = useState<unknown>(null)
@@ -69,21 +60,17 @@ export function useGpuRenderer<R extends GpuRenderer>(
       return
     }
     let cancelled = false
-    let disposed = false
-    const renderer = rendererCache.getOrCreate(canvas)
-    rendererRef.current = renderer
-    renderer
-      .init()
-      .then(ok => {
+    let backend: R | null = null
+    factory(canvas)
+      .then(r => {
         if (cancelled) {
+          r.dispose()
           return
         }
-        if (!ok) {
-          setError(new Error('GPU initialization failed'))
-        } else {
-          setReady(true)
-          opts?.onReady?.(renderer)
-        }
+        backend = r
+        rendererRef.current = r
+        setReady(true)
+        opts?.onReady?.(r)
       })
       .catch((e: unknown) => {
         if (!cancelled) {
@@ -112,10 +99,7 @@ export function useGpuRenderer<R extends GpuRenderer>(
     return () => {
       window.removeEventListener('pagehide', handlePageHide)
       cancelled = true
-      if (!disposed) {
-        disposed = true
-        renderer.dispose()
-      }
+      backend?.dispose()
       rendererRef.current = null
       setReady(false)
       opts?.onDispose?.()
@@ -123,7 +107,7 @@ export function useGpuRenderer<R extends GpuRenderer>(
     // opts callbacks (onReady/onDispose) are intentionally omitted from deps —
     // callers must pass stable references (e.g. useMemo)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contextVersion, rendererCache, canvasRef])
+  }, [contextVersion, factory, canvasRef])
 
   function retry() {
     setError(null)

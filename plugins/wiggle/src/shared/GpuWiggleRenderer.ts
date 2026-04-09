@@ -1,4 +1,5 @@
 import { clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
+import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
 import { computeNumRows, interleaveInstances } from './webglUtils.ts'
 import {
@@ -123,13 +124,9 @@ export class GpuWiggleRenderer implements WiggleBackend {
   }
 
   pruneRegions(activeRegions: number[]) {
-    const active = new Set(activeRegions)
-    for (const regionNumber of this.regionInfo.keys()) {
-      if (!active.has(regionNumber)) {
-        this.hal.deleteRegion(regionNumber)
-        this.regionInfo.delete(regionNumber)
-      }
-    }
+    pruneRegionMap(this.regionInfo, activeRegions, n => {
+      this.hal.deleteRegion(n)
+    })
   }
 
   renderBlocks(blocks: WiggleRenderBlock[], state: WiggleGPURenderState) {

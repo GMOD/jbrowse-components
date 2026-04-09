@@ -128,7 +128,7 @@ describe('GpuVariantRenderer', () => {
     renderer.uploadRegion(1, makeUploadData())
     renderer.uploadRegion(2, makeUploadData())
 
-    renderer.pruneStaleRegions([1])
+    renderer.pruneRegions([1])
 
     expect(hal.getBufferCount(0, 'main')).toBe(0)
     expect(hal.getBufferCount(1, 'main')).toBe(2)
