@@ -32,7 +32,6 @@ export interface RenderConfigContext {
   transcriptTypes: string[]
   containerTypes: string[]
   geneGlyphMode: string
-  displayDirectionalChevrons: boolean
   labelAllowed: boolean
   heightMultiplier: number
 }
@@ -48,7 +47,6 @@ export function createRenderConfigContext(
     transcriptTypes: config.transcriptTypes as string[],
     containerTypes: config.containerTypes as string[],
     geneGlyphMode: config.geneGlyphMode as string,
-    displayDirectionalChevrons: config.displayDirectionalChevrons as boolean,
     labelAllowed: displayMode !== 'collapse',
     heightMultiplier: displayMode === 'compact' ? 0.6 : 1,
   }

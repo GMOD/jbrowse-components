@@ -47,7 +47,6 @@ describe('createRenderConfigContext', () => {
       displayMode: 'normal',
       subfeatureLabels: 'none',
       geneGlyphMode: 'all',
-      displayDirectionalChevrons: true,
       transcriptTypes: ['mRNA'],
       containerTypes: ['proteoform_orf'],
     })
@@ -63,7 +62,6 @@ describe('createRenderConfigContext', () => {
       displayMode: 'compact',
       subfeatureLabels: 'none',
       geneGlyphMode: 'all',
-      displayDirectionalChevrons: true,
       transcriptTypes: ['mRNA'],
       containerTypes: [],
     })
@@ -75,7 +73,6 @@ describe('createRenderConfigContext', () => {
       displayMode: 'collapse',
       subfeatureLabels: 'none',
       geneGlyphMode: 'all',
-      displayDirectionalChevrons: true,
       transcriptTypes: ['mRNA'],
       containerTypes: [],
     })
@@ -88,7 +85,6 @@ describe('createRenderConfigContext', () => {
       displayMode: 'normal',
       subfeatureLabels: 'none',
       geneGlyphMode: 'all',
-      displayDirectionalChevrons: true,
       transcriptTypes: ['mRNA'],
       containerTypes: [],
     })
