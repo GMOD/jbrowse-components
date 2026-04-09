@@ -33,6 +33,17 @@ export function useGpuRenderer<R extends { dispose(): void }>(
   const [contextVersion, setContextVersion] = useState(0)
   const rendererRef = useRef<R | null>(null)
   const lastCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  // No deps: runs every render to detect when canvasRef.current is a new
+  // element (e.g. after regionTooLarge unmounts and remounts the canvas).
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (canvas && lastCanvasRef.current && lastCanvasRef.current !== canvas) {
+      setContextVersion(v => v + 1)
+    }
+    if (canvas) {
+      lastCanvasRef.current = canvas
+    }
+  })
 
   useEffect(() => {
     const canvas = canvasRef.current

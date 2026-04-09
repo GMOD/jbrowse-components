@@ -143,6 +143,37 @@ describe('useGpuRenderer', () => {
     expect(result.current.ready).toBe(true)
   })
 
+  test('re-initializes when canvas element is replaced after regionTooLarge recovery', async () => {
+    const canvas1 = document.createElement('canvas')
+    const canvas2 = document.createElement('canvas')
+    const canvasRef: { current: HTMLCanvasElement | null } = { current: canvas1 }
+    const dispose = jest.fn()
+    const factory = jest.fn().mockResolvedValue({ dispose })
+
+    const { result, rerender } = renderHook(() =>
+      useGpuRenderer(canvasRef, factory),
+    )
+    await act(async () => {})
+
+    expect(result.current.ready).toBe(true)
+    expect(factory).toHaveBeenCalledTimes(1)
+
+    // Simulate regionTooLarge: component returns early, canvas unmounts
+    canvasRef.current = null
+    rerender()
+    await act(async () => {})
+
+    // Simulate recovery: regionTooLarge cleared, new canvas element mounts
+    // React creates a fresh canvas element on remount — it is not canvas1
+    canvasRef.current = canvas2
+    rerender()
+    await act(async () => {})
+
+    expect(factory).toHaveBeenCalledTimes(2)
+    expect(dispose).toHaveBeenCalledTimes(1)
+    expect(result.current.ready).toBe(true)
+  })
+
   test('cleans up device lost listener on unmount', () => {
     const cleanup = jest.fn()
     jest.mocked(onDeviceLost).mockReturnValueOnce(cleanup)
