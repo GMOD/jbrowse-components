@@ -257,3 +257,39 @@ export function isConfigurationSlotType(thing: unknown) {
     'isJBrowseConfigurationSlot' in thing
   )
 }
+
+// --- Plain-object config utilities (no MST dependency) ---
+
+import { stringToJexlExpression } from '../util/jexlStrings.ts'
+import type { Feature } from '../util/index.ts'
+
+function resolveConfigValue(
+  config: Record<string, unknown>,
+  key: string | string[],
+) {
+  if (Array.isArray(key)) {
+    let val: unknown = config
+    for (const k of key) {
+      val = (val as Record<string, unknown>)?.[k]
+    }
+    return val
+  }
+  return config[key]
+}
+
+/**
+ * Read a value from a plain config snapshot object. Automatically evaluates
+ * "jexl:..." strings per-feature. Works without MST — intended for use in
+ * rendering code (GPU, Canvas2D, workers).
+ */
+export function readConfigValue<T>(
+  config: Record<string, unknown>,
+  key: string | string[],
+  feature: Feature,
+) {
+  const raw = resolveConfigValue(config, key)
+  if (typeof raw === 'string' && raw.startsWith('jexl:')) {
+    return stringToJexlExpression(raw).eval({ feature }) as T
+  }
+  return raw as T
+}

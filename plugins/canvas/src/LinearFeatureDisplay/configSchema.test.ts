@@ -24,7 +24,7 @@ describe('LinearFeatureDisplay configSchema', () => {
     expect(readConfObject(config, 'color3')).toBe('#357089')
     expect(readConfObject(config, 'featureHeight')).toBe(10)
     expect(readConfObject(config, 'displayMode')).toBe('normal')
-    expect(readConfObject(config, 'geneGlyphMode')).toBe('all')
+    expect(readConfObject(config, 'geneGlyphMode')).toBe('auto')
     expect(readConfObject(config, 'transcriptTypes')).toEqual([
       'mRNA',
       'transcript',

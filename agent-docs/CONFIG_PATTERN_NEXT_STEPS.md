@@ -7,25 +7,24 @@
   preProcessSnapshot change (renderer property promotion)
 - Add e2e test for variant_colors asserting non-goldenrod pixels
 
+## Completed
+
+- ~~Move `readConfigValue` to core~~ — now in `packages/core/src/configuration/util.ts`
+- ~~Eliminate bespoke override properties~~ — `ConfigOverrideMixin` replaces
+  individual `types.maybe()` properties with one `configOverrides` frozen map.
+  Applied to: LinearFeatureDisplay (canvas), LinearWiggleDisplay,
+  MultiLinearWiggleDisplay. Migration in `preProcessSnapshot` handles old
+  `track*` and `*Setting` property names.
+
 ## Short-term
 
-- Move `readConfigValue` from `plugins/canvas/src/RenderFeatureDataRPC/` to
-  `packages/core/src/configuration/` alongside `getConfSnapshot` so any plugin
-  can use it
-- Wiggle displays: replace the bespoke override pattern
-  (`self.colorSetting ?? getConf(self, 'color')`) with
-  `getConfSnapshot` + override spread for consistency. Low urgency since these
-  render on the main thread and work correctly today
-- Alignments display: same — bespoke overrides could use the standard pattern
-  but already work
+- Alignments display: apply `ConfigOverrideMixin` (same pattern, similar
+  override properties)
+- Verify `geneGlyphMode` default change from 'all' to 'auto' works correctly
+  in browser (config schema updated, auto mode switches based on zoom level)
 
 ## Medium-term
 
-- Eliminate bespoke model override properties (`trackShowLabels`,
-  `trackDisplayMode`, etc.) across all displays. Replace with direct config
-  mutation: `self.configuration.color1.set('red')`. Session snapshots would
-  store the delta from the base track config, not individual override properties.
-  This would remove hundreds of lines of boilerplate across the codebase
 - Migrate HiC and dotplot displays from `ServerSideRendererType` to the GPU
   pipeline, adopting `getConfSnapshot` + `readConfigValue`
 

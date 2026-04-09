@@ -93,6 +93,7 @@ export {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
   BlockMsg,
+  ConfigOverrideMixin,
   FeatureDensityMixin,
   FloatingLegend,
   MultiRegionDisplayMixin,

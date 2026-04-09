@@ -1,80 +1,132 @@
 /**
- * Migrates old SharedWiggleMixin snapshot properties to the new names.
+ * Migrates old wiggle snapshot properties to configOverrides.
  *
- * Old (origin/main SharedWiggleMixin) → New:
- *   rendererTypeNameState / selectedRendering → renderingTypeSetting
- *   scale → scaleTypeSetting
- *   autoscale → autoscaleSetting
- *   summaryScoreMode → summaryScoreModeSetting
- *   constraints.{min,max} → minScoreSetting / maxScoreSetting
- *   color → colorSetting
- *   posColor → posColorSetting
- *   negColor → negColorSetting
- *   showSidebar → showTreeSetting
- *   fill, minSize → stripped (no longer used)
+ * Handles two generations of old property names:
+ *
+ * Generation 1 (SharedWiggleMixin):
+ *   rendererTypeNameState / selectedRendering, scale, autoscale,
+ *   summaryScoreMode, constraints.{min,max}, color, posColor, negColor,
+ *   showSidebar, fill, minSize
+ *
+ * Generation 2 (*Setting suffix):
+ *   colorSetting, posColorSetting, negColorSetting, scaleTypeSetting,
+ *   minScoreSetting, maxScoreSetting, renderingTypeSetting,
+ *   summaryScoreModeSetting, autoscaleSetting, showTreeSetting
  */
 export function migrateWiggleSnapshot(
   snap: Record<string, unknown>,
   opts?: { multiWiggle?: boolean },
 ) {
-  const needsMigration =
-    snap.rendererTypeNameState !== undefined ||
-    snap.selectedRendering !== undefined ||
-    snap.scale !== undefined ||
-    snap.autoscale !== undefined ||
-    snap.summaryScoreMode !== undefined ||
-    snap.constraints !== undefined ||
-    snap.color !== undefined ||
-    snap.posColor !== undefined ||
-    snap.negColor !== undefined ||
-    snap.showSidebar !== undefined
-
-  if (!needsMigration) {
-    return snap
-  }
-
   const {
+    // Generation 1 properties
     rendererTypeNameState,
     selectedRendering,
     scale,
-    autoscale,
-    summaryScoreMode,
+    autoscale: autoscaleGen1,
+    summaryScoreMode: summaryScoreModeGen1,
     constraints,
     showSidebar,
     fill,
-    color,
-    posColor,
-    negColor,
+    color: colorGen1,
+    posColor: posColorGen1,
+    negColor: negColorGen1,
     minSize,
+    // Generation 2 properties
+    colorSetting,
+    posColorSetting,
+    negColorSetting,
+    scaleTypeSetting,
+    minScoreSetting,
+    maxScoreSetting,
+    renderingTypeSetting,
+    summaryScoreModeSetting,
+    autoscaleSetting,
+    showTreeSetting,
     ...rest
   } = snap
 
+  const overrides: Record<string, unknown> = {}
+
+  // Generation 1 migrations
   const oldRendering =
     (rendererTypeNameState as string | undefined) ??
     (selectedRendering as string | undefined)
-  const cons = constraints as { min?: number; max?: number } | undefined
-
-  let renderingTypeSetting: string | undefined
   if (oldRendering !== undefined) {
-    renderingTypeSetting =
+    overrides.defaultRendering =
       opts?.multiWiggle && oldRendering === 'xyplot'
         ? 'multixyplot'
         : oldRendering
   }
+  const cons = constraints as { min?: number; max?: number } | undefined
+  if (scale !== undefined) {
+    overrides.scaleType = scale
+  }
+  if (autoscaleGen1 !== undefined) {
+    overrides.autoscale = autoscaleGen1
+  }
+  if (summaryScoreModeGen1 !== undefined) {
+    overrides.summaryScoreMode = summaryScoreModeGen1
+  }
+  if (cons?.min !== undefined) {
+    overrides.minScore = cons.min
+  }
+  if (cons?.max !== undefined) {
+    overrides.maxScore = cons.max
+  }
+  if (colorGen1 !== undefined) {
+    overrides.color = colorGen1
+  }
+  if (posColorGen1 !== undefined) {
+    overrides.posColor = posColorGen1
+  }
+  if (negColorGen1 !== undefined) {
+    overrides.negColor = negColorGen1
+  }
+  if (showSidebar !== undefined) {
+    overrides.showTree = showSidebar
+  }
+
+  // Generation 2 migrations
+  if (colorSetting !== undefined) {
+    overrides.color = colorSetting
+  }
+  if (posColorSetting !== undefined) {
+    overrides.posColor = posColorSetting
+  }
+  if (negColorSetting !== undefined) {
+    overrides.negColor = negColorSetting
+  }
+  if (scaleTypeSetting !== undefined) {
+    overrides.scaleType = scaleTypeSetting
+  }
+  if (minScoreSetting !== undefined) {
+    overrides.minScore = minScoreSetting
+  }
+  if (maxScoreSetting !== undefined) {
+    overrides.maxScore = maxScoreSetting
+  }
+  if (renderingTypeSetting !== undefined) {
+    overrides.defaultRendering = renderingTypeSetting
+  }
+  if (summaryScoreModeSetting !== undefined) {
+    overrides.summaryScoreMode = summaryScoreModeSetting
+  }
+  if (autoscaleSetting !== undefined) {
+    overrides.autoscale = autoscaleSetting
+  }
+  if (showTreeSetting !== undefined) {
+    overrides.showTree = showTreeSetting
+  }
+
+  if (Object.keys(overrides).length === 0) {
+    return rest
+  }
 
   return {
     ...rest,
-    ...(renderingTypeSetting !== undefined ? { renderingTypeSetting } : {}),
-    ...(scale !== undefined ? { scaleTypeSetting: scale } : {}),
-    ...(autoscale !== undefined ? { autoscaleSetting: autoscale } : {}),
-    ...(summaryScoreMode !== undefined
-      ? { summaryScoreModeSetting: summaryScoreMode }
-      : {}),
-    ...(cons?.min !== undefined ? { minScoreSetting: cons.min } : {}),
-    ...(cons?.max !== undefined ? { maxScoreSetting: cons.max } : {}),
-    ...(color !== undefined ? { colorSetting: color } : {}),
-    ...(posColor !== undefined ? { posColorSetting: posColor } : {}),
-    ...(negColor !== undefined ? { negColorSetting: negColor } : {}),
-    ...(showSidebar !== undefined ? { showTreeSetting: showSidebar } : {}),
+    configOverrides: {
+      ...(rest.configOverrides as Record<string, unknown> | undefined),
+      ...overrides,
+    },
   }
 }

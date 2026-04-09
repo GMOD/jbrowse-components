@@ -1,29 +1,5 @@
-import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
-
-import type { Feature } from '@jbrowse/core/util'
-
-function resolveValue(config: Record<string, unknown>, key: string | string[]) {
-  if (Array.isArray(key)) {
-    let val: unknown = config
-    for (const k of key) {
-      val = (val as Record<string, unknown>)?.[k]
-    }
-    return val
-  }
-  return config[key]
-}
-
-export function readConfigValue<T>(
-  config: Record<string, unknown>,
-  key: string | string[],
-  feature: Feature,
-): T {
-  const raw = resolveValue(config, key)
-  if (typeof raw === 'string' && raw.startsWith('jexl:')) {
-    return stringToJexlExpression(raw).eval({ feature }) as T
-  }
-  return raw as T
-}
+// Re-export readConfigValue from core so existing canvas imports continue to work
+export { readConfigValue } from '@jbrowse/core/configuration'
 
 export interface RenderConfigContext {
   config: Record<string, unknown>

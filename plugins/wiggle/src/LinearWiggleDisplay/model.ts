@@ -12,6 +12,7 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
+  ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -59,19 +60,11 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
+      ConfigOverrideMixin(),
       types.model({
         type: types.literal('LinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
         resolution: types.optional(types.number, 1),
-        colorSetting: types.maybe(types.string),
-        posColorSetting: types.maybe(types.string),
-        negColorSetting: types.maybe(types.string),
-        scaleTypeSetting: types.maybe(types.string),
-        minScoreSetting: types.maybe(types.number),
-        maxScoreSetting: types.maybe(types.number),
-        renderingTypeSetting: types.maybe(types.string),
-        summaryScoreModeSetting: types.maybe(types.string),
-        autoscaleSetting: types.maybe(types.string),
         displayCrossHatches: types.optional(types.boolean, false),
       }),
     )
@@ -127,15 +120,15 @@ export default function stateModelFactory(
       },
 
       get color() {
-        return self.colorSetting ?? getConf(self, 'color')
+        return self.getOverride<string>('color') ?? getConf(self, 'color')
       },
 
       get posColor() {
-        return self.posColorSetting ?? getConf(self, 'posColor')
+        return self.getOverride<string>('posColor') ?? getConf(self, 'posColor')
       },
 
       get negColor() {
-        return self.negColorSetting ?? getConf(self, 'negColor')
+        return self.getOverride<string>('negColor') ?? getConf(self, 'negColor')
       },
 
       get bicolorPivot() {
@@ -147,11 +140,13 @@ export default function stateModelFactory(
       },
 
       get scaleType() {
-        return self.scaleTypeSetting ?? getConf(self, 'scaleType')
+        return self.getOverride<string>('scaleType') ?? getConf(self, 'scaleType')
       },
 
       get autoscaleType() {
-        return self.autoscaleSetting ?? getConf(self, 'autoscale')
+        return (
+          self.getOverride<string>('autoscale') ?? getConf(self, 'autoscale')
+        )
       },
 
       get hasResolution() {
@@ -173,11 +168,17 @@ export default function stateModelFactory(
       },
 
       get summaryScoreMode() {
-        return self.summaryScoreModeSetting ?? getConf(self, 'summaryScoreMode')
+        return (
+          self.getOverride<string>('summaryScoreMode') ??
+          getConf(self, 'summaryScoreMode')
+        )
       },
 
       get renderingType() {
-        return self.renderingTypeSetting ?? getConf(self, 'defaultRendering')
+        return (
+          self.getOverride<string>('defaultRendering') ??
+          getConf(self, 'defaultRendering')
+        )
       },
 
       get isDensityMode() {
@@ -185,11 +186,11 @@ export default function stateModelFactory(
       },
 
       get minScore() {
-        return self.minScoreSetting ?? getConf(self, 'minScore')
+        return self.getOverride<number>('minScore') ?? getConf(self, 'minScore')
       },
 
       get maxScore() {
-        return self.maxScoreSetting ?? getConf(self, 'maxScore')
+        return self.getOverride<number>('maxScore') ?? getConf(self, 'maxScore')
       },
 
       get minScoreConfig() {
@@ -268,35 +269,35 @@ export default function stateModelFactory(
       },
 
       setColor(color?: string) {
-        self.colorSetting = color
+        self.setOverride('color', color)
       },
 
       setPosColor(color?: string) {
-        self.posColorSetting = color
+        self.setOverride('posColor', color)
       },
 
       setNegColor(color?: string) {
-        self.negColorSetting = color
+        self.setOverride('negColor', color)
       },
 
       setScaleType(scaleType: string) {
-        self.scaleTypeSetting = scaleType
+        self.setOverride('scaleType', scaleType)
       },
 
       setMinScore(val?: number) {
-        self.minScoreSetting = val
+        self.setOverride('minScore', val)
       },
 
       setMaxScore(val?: number) {
-        self.maxScoreSetting = val
+        self.setOverride('maxScore', val)
       },
 
       setRenderingType(type: string) {
-        self.renderingTypeSetting = type
+        self.setOverride('defaultRendering', type)
       },
 
       setSummaryScoreMode(val: string) {
-        self.summaryScoreModeSetting = val
+        self.setOverride('summaryScoreMode', val)
       },
 
       setResolution(res: number) {
@@ -308,7 +309,7 @@ export default function stateModelFactory(
       },
 
       setAutoscale(val?: string) {
-        self.autoscaleSetting = val
+        self.setOverride('autoscale', val)
       },
 
       toggleCrossHatches() {
@@ -630,38 +631,6 @@ export default function stateModelFactory(
         return renderSvg(self as LinearWiggleDisplayModel, opts)
       },
     }))
-    .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const {
-        colorSetting,
-        posColorSetting,
-        negColorSetting,
-        scaleTypeSetting,
-        minScoreSetting,
-        maxScoreSetting,
-        renderingTypeSetting,
-        summaryScoreModeSetting,
-        autoscaleSetting,
-        ...rest
-      } = snap as Omit<typeof snap, symbol>
-      return {
-        ...rest,
-        ...(colorSetting !== undefined ? { colorSetting } : {}),
-        ...(posColorSetting !== undefined ? { posColorSetting } : {}),
-        ...(negColorSetting !== undefined ? { negColorSetting } : {}),
-        ...(scaleTypeSetting !== undefined ? { scaleTypeSetting } : {}),
-        ...(minScoreSetting !== undefined ? { minScoreSetting } : {}),
-        ...(maxScoreSetting !== undefined ? { maxScoreSetting } : {}),
-        ...(renderingTypeSetting !== undefined ? { renderingTypeSetting } : {}),
-        ...(summaryScoreModeSetting !== undefined
-          ? { summaryScoreModeSetting }
-          : {}),
-        ...(autoscaleSetting !== undefined ? { autoscaleSetting } : {}),
-      } as typeof snap
-    })
 }
 
 export type LinearWiggleDisplayStateModel = ReturnType<typeof stateModelFactory>

@@ -21,6 +21,7 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
+  ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -102,15 +103,10 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
+      ConfigOverrideMixin(),
       types.model({
         type: types.literal('LinearFeatureDisplay'),
         configuration: ConfigurationReference(configSchema),
-        trackShowLabels: types.maybe(types.boolean),
-        trackShowDescriptions: types.maybe(types.boolean),
-        trackSubfeatureLabels: types.maybe(types.string),
-        trackGeneGlyphMode: types.maybe(types.string),
-        trackDisplayMode: types.maybe(types.string),
-        trackDisplayDirectionalChevrons: types.maybe(types.boolean),
         showOnlyGenes: false,
       }),
     )
@@ -128,13 +124,44 @@ export default function stateModelFactory(
         userByteSizeLimit,
         // Rewrite "height" from older snapshots to "heightPreConfig"
         height,
+        // Migrate old individual override properties to configOverrides
+        trackShowLabels,
+        trackShowDescriptions,
+        trackSubfeatureLabels,
+        trackGeneGlyphMode,
+        trackDisplayMode,
+        trackDisplayDirectionalChevrons,
         ...rest
       } = snap
+
+      const migrated: Record<string, unknown> = {}
+      if (trackShowLabels !== undefined) {
+        migrated.showLabels = trackShowLabels
+      }
+      if (trackShowDescriptions !== undefined) {
+        migrated.showDescriptions = trackShowDescriptions
+      }
+      if (trackSubfeatureLabels !== undefined) {
+        migrated.subfeatureLabels = trackSubfeatureLabels
+      }
+      if (trackGeneGlyphMode !== undefined) {
+        migrated.geneGlyphMode = trackGeneGlyphMode
+      }
+      if (trackDisplayMode !== undefined) {
+        migrated.displayMode = trackDisplayMode
+      }
+      if (trackDisplayDirectionalChevrons !== undefined) {
+        migrated.displayDirectionalChevrons = trackDisplayDirectionalChevrons
+      }
+
       return {
         ...rest,
         ...(height !== undefined && rest.heightPreConfig === undefined
           ? { heightPreConfig: height }
           : undefined),
+        ...(Object.keys(migrated).length > 0 && {
+          configOverrides: { ...rest.configOverrides, ...migrated },
+        }),
       }
     })
     .volatile(() => ({
@@ -171,7 +198,10 @@ export default function stateModelFactory(
       },
 
       get displayConfigSnapshot() {
-        return getConfSnapshot(self.configuration) as Record<string, unknown>
+        return {
+          ...(getConfSnapshot(self.configuration) as Record<string, unknown>),
+          ...self.configOverrides,
+        }
       },
 
       get DisplayMessageComponent() {
@@ -204,12 +234,15 @@ export default function stateModelFactory(
       },
 
       get showLabels(): boolean {
-        return self.trackShowLabels ?? (getConf(self, 'showLabels') as boolean)
+        return (
+          self.getOverride<boolean>('showLabels') ??
+          (getConf(self, 'showLabels') as boolean)
+        )
       },
 
       get showDescriptions(): boolean {
         return (
-          self.trackShowDescriptions ??
+          self.getOverride<boolean>('showDescriptions') ??
           (getConf(self, 'showDescriptions') as boolean)
         )
       },
@@ -222,20 +255,29 @@ export default function stateModelFactory(
       },
 
       get subfeatureLabels(): string {
-        return self.trackSubfeatureLabels ?? 'none'
+        return (
+          self.getOverride<string>('subfeatureLabels') ??
+          (getConf(self, 'subfeatureLabels') as string)
+        )
       },
 
       get displayMode(): string {
-        return self.trackDisplayMode ?? 'normal'
+        return (
+          self.getOverride<string>('displayMode') ??
+          (getConf(self, 'displayMode') as string)
+        )
       },
 
       get geneGlyphMode(): string {
-        return self.trackGeneGlyphMode ?? 'auto'
+        return (
+          self.getOverride<string>('geneGlyphMode') ??
+          (getConf(self, 'geneGlyphMode') as string)
+        )
       },
 
       get displayDirectionalChevrons(): boolean {
         return (
-          self.trackDisplayDirectionalChevrons ??
+          self.getOverride<boolean>('displayDirectionalChevrons') ??
           (getConf(self, 'displayDirectionalChevrons') as boolean)
         )
       },
@@ -417,23 +459,23 @@ export default function stateModelFactory(
       },
 
       setShowLabels(value: boolean) {
-        self.trackShowLabels = value
+        self.setOverride('showLabels', value)
       },
 
       setShowDescriptions(value: boolean) {
-        self.trackShowDescriptions = value
+        self.setOverride('showDescriptions', value)
       },
 
       setSubfeatureLabels(value: string) {
-        self.trackSubfeatureLabels = value
+        self.setOverride('subfeatureLabels', value)
       },
 
       setGeneGlyphMode(value: string) {
-        self.trackGeneGlyphMode = value
+        self.setOverride('geneGlyphMode', value)
       },
 
       setDisplayMode(value: string) {
-        self.trackDisplayMode = value
+        self.setOverride('displayMode', value)
       },
 
       setShowOnlyGenes(value: boolean) {
@@ -441,7 +483,10 @@ export default function stateModelFactory(
       },
 
       toggleDisplayDirectionalChevrons() {
-        self.trackDisplayDirectionalChevrons = !self.displayDirectionalChevrons
+        self.setOverride(
+          'displayDirectionalChevrons',
+          !self.displayDirectionalChevrons,
+        )
       },
 
       showContextMenuForFeature(
@@ -576,10 +621,8 @@ export default function stateModelFactory(
             adapterConfig,
             displayConfig: {
               ...self.displayConfigSnapshot,
-              // Model overrides take precedence over config values
-              subfeatureLabels: self.subfeatureLabels,
+              // effectiveGeneGlyphMode resolves 'auto' based on zoom level
               geneGlyphMode: self.effectiveGeneGlyphMode,
-              displayMode: self.displayMode,
             },
             region,
             bpPerPx,
@@ -1015,26 +1058,9 @@ export default function stateModelFactory(
       },
     }))
     .postProcessSnapshot(snap => {
-      const {
-        trackShowLabels,
-        trackShowDescriptions,
-        trackSubfeatureLabels,
-        trackGeneGlyphMode,
-        trackDisplayMode,
-        trackDisplayDirectionalChevrons,
-        showOnlyGenes,
-        ...rest
-      } = snap as Omit<typeof snap, symbol>
+      const { showOnlyGenes, ...rest } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(trackShowLabels !== undefined && { trackShowLabels }),
-        ...(trackShowDescriptions !== undefined && { trackShowDescriptions }),
-        ...(trackSubfeatureLabels !== undefined && { trackSubfeatureLabels }),
-        ...(trackGeneGlyphMode !== undefined && { trackGeneGlyphMode }),
-        ...(trackDisplayMode !== undefined && { trackDisplayMode }),
-        ...(trackDisplayDirectionalChevrons !== undefined && {
-          trackDisplayDirectionalChevrons,
-        }),
         ...(showOnlyGenes && { showOnlyGenes }),
       } as typeof snap
     })

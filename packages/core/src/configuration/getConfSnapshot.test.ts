@@ -1,6 +1,6 @@
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
-import { getConfSnapshot, readConfObject } from './util.ts'
+import { getConfSnapshot, readConfObject, readConfigValue } from './util.ts'
 
 function createPluginManager() {
   const pm = new PluginManager([])
@@ -117,5 +117,61 @@ describe('getConfSnapshot', () => {
     const snap = getConfSnapshot(config)
     const labels = snap.labels as Record<string, unknown>
     expect(labels.name).toBe("jexl:get(feature,'name')")
+  })
+})
+
+function mockFeature(data: Record<string, unknown> = {}) {
+  return {
+    get: (key: string) => data[key],
+    id: () => 'test-id',
+    parent: () => undefined,
+  } as any
+}
+
+const anyFeature = mockFeature()
+
+describe('readConfigValue', () => {
+  it('returns value when present', () => {
+    expect(readConfigValue({ color1: 'red' }, 'color1', anyFeature)).toBe('red')
+  })
+
+  it('returns undefined when key is missing', () => {
+    expect(readConfigValue({}, 'color1', anyFeature)).toBeUndefined()
+  })
+
+  it('evaluates JEXL expression per-feature', () => {
+    const config = {
+      color1: "jexl:get(feature,'type')=='SNV'?'green':'purple'",
+    }
+    expect(
+      readConfigValue(config, 'color1', mockFeature({ type: 'SNV' })),
+    ).toBe('green')
+    expect(
+      readConfigValue(config, 'color1', mockFeature({ type: 'insertion' })),
+    ).toBe('purple')
+  })
+
+  it('resolves nested keys', () => {
+    expect(
+      readConfigValue(
+        { labels: { fontSize: 14 } },
+        ['labels', 'fontSize'],
+        anyFeature,
+      ),
+    ).toBe(14)
+  })
+
+  it('end-to-end: getConfSnapshot + readConfigValue', () => {
+    const jexl = "jexl:get(feature,'type')=='SNV'?'green':'purple'"
+    const config = TestSchema.create(
+      { type: 'TestDisplay', color1: jexl },
+      { pluginManager: pm },
+    )
+    const snap = getConfSnapshot(config)
+
+    expect(
+      readConfigValue(snap, 'color1', mockFeature({ type: 'SNV' })),
+    ).toBe('green')
+    expect(snap.featureHeight).toBe(10)
   })
 })

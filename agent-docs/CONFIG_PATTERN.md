@@ -80,8 +80,8 @@ display-level properties. Old configs work without migration.
 | Function | Location | Purpose |
 |----------|----------|---------|
 | `getConfSnapshot(config)` | `packages/core/src/configuration/util.ts` | Snapshot with defaults included, JEXL strings preserved |
-| `readConfigValue(config, key, feature)` | `plugins/canvas/src/RenderFeatureDataRPC/renderConfig.ts` | Read from plain object, auto-evaluate JEXL |
-| `createRenderConfigContext(config)` | Same file | Extract frequently-accessed fields for the rendering loop |
+| `readConfigValue(config, key, feature)` | `packages/core/src/configuration/util.ts` | Read from plain object, auto-evaluate JEXL |
+| `createRenderConfigContext(config)` | `plugins/canvas/src/RenderFeatureDataRPC/renderConfig.ts` | Extract frequently-accessed fields for the rendering loop |
 
 ## What this replaces
 
