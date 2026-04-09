@@ -221,10 +221,6 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
     )
   }
 
-  clearBlock(regionNumber: number) {
-    this.hal.deleteRegion(regionNumber)
-  }
-
   clearAllBlocks() {
     this.hal.deleteAllRegions()
   }
@@ -313,10 +309,6 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
     )
 
     this.hal.endFrame()
-  }
-
-  pick(x: number, y: number) {
-    return this.hal.pick(x, y)
   }
 
   dispose() {

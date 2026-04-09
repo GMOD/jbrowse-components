@@ -692,14 +692,6 @@ export class WebGPUHal implements GpuHal {
     this.viewportRect = null
   }
 
-  pick(_x: number, _y: number) {
-    return -1
-  }
-
-  getWebGLContext() {
-    return null
-  }
-
   dispose() {
     // eslint-disable-next-line no-console
     console.log('[GPU] WebGPUHal.dispose() — releasing GPU resources')

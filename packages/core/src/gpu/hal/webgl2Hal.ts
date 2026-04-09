@@ -310,10 +310,6 @@ export class WebGL2Hal implements GpuHal {
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
   }
 
-  pick(_x: number, _y: number) {
-    return -1
-  }
-
   drawPickingPass(
     passId: string,
     regionKey: number,
@@ -384,10 +380,6 @@ export class WebGL2Hal implements GpuHal {
 
   async readPickingPixelAsync(x: number, y: number) {
     return this.readPickingPixel(x, y)
-  }
-
-  getWebGLContext() {
-    return this.gl
   }
 
   dispose() {

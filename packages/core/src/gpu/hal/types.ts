@@ -103,17 +103,11 @@ export interface GpuHal {
   // Async pixel read from picking target (WebGPU mapAsync).
   readPickingPixelAsync(x: number, y: number): Promise<number>
 
-  pick(x: number, y: number): number
-
   // Scissor and viewport control (coordinates in physical pixels, top-left origin)
   setScissor(x: number, y: number, w: number, h: number): void
   clearScissor(): void
   setViewport(x: number, y: number, w: number, h: number): void
   clearViewport(): void
-
-  // Access to underlying WebGL context (for advanced use cases).
-  // Returns null for non-WebGL backends.
-  getWebGLContext(): WebGL2RenderingContext | null
 
   dispose(): void
 }

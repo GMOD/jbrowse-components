@@ -81,11 +81,12 @@ export class WebGPURenderer implements Renderer {
   }
 
   static async create(canvas: HTMLCanvasElement) {
-    const result = await initGpuContext(canvas, { alphaMode: 'opaque' })
+    const result = await initGpuContext(canvas, { alphaMode: 'premultiplied' })
     if (!result) {
       return null
     }
     const { device, context } = result
+    const format = navigator.gpu.getPreferredCanvasFormat() as GPUTextureFormat
     const module = device.createShaderModule({ code: shaderSource })
 
     const pipeline = device.createRenderPipeline({
@@ -141,7 +142,7 @@ export class WebGPURenderer implements Renderer {
         entryPoint: 'fs_main',
         targets: [
           {
-            format: 'bgra8unorm' as GPUTextureFormat,
+            format,
             blend: {
               color: {
                 srcFactor: 'src-alpha',
@@ -180,12 +181,16 @@ export class WebGPURenderer implements Renderer {
   }
 
   resize(width: number, height: number) {
-    const dpr = window.devicePixelRatio || 1
+    const dpr = typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
+    const pw = Math.round(width * dpr)
+    const ph = Math.round(height * dpr)
     const canvas = this.context.canvas as HTMLCanvasElement
-    canvas.width = width * dpr
-    canvas.height = height * dpr
-    canvas.style.width = `${width}px`
-    canvas.style.height = `${height}px`
+    if (canvas.width !== pw || canvas.height !== ph) {
+      canvas.width = pw
+      canvas.height = ph
+      canvas.style.width = `${width}px`
+      canvas.style.height = `${height}px`
+    }
   }
 
   private createBuffer(data: ArrayBufferView, usage: GPUBufferUsageFlags) {
@@ -276,12 +281,6 @@ export class WebGPURenderer implements Renderer {
   }
 
   render(clearColor: [number, number, number, number]) {
-    const hasGeometry =
-      this.edgeBuffers || this.nodeBuffers || this.arrowBuffers
-    if (!hasGeometry) {
-      return
-    }
-
     const textureView = this.context.getCurrentTexture().createView()
     const encoder = this.device.createCommandEncoder()
     const pass = encoder.beginRenderPass({
