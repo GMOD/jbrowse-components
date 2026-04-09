@@ -1,5 +1,5 @@
 import { readCachedConfig } from '../renderConfig.ts'
-import { layoutChild } from './glyphUtils.ts'
+import { layoutChild, sortByPosition } from './glyphUtils.ts'
 
 import type { FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -19,17 +19,6 @@ export function getMatureProteinChildren(feature: Feature): Feature[] {
   return (
     subfeatures?.filter(sub => MATURE_PROTEIN_TYPES.has(sub.get('type'))) ?? []
   )
-}
-
-function sortByPosition(children: FeatureLayout[]) {
-  return [...children].sort((a, b) => {
-    const aStart = a.feature.get('start')
-    const bStart = b.feature.get('start')
-    if (aStart !== bStart) {
-      return aStart - bStart
-    }
-    return b.feature.get('end') - a.feature.get('end')
-  })
 }
 
 export const matureProteinRegionGlyph: Glyph = {
@@ -56,7 +45,7 @@ export const matureProteinRegionGlyph: Glyph = {
 
     const start = feature.get('start')
     const end = feature.get('end')
-    const heightPx = readCachedConfig(featureHeight, config, 'height', feature)
+    const heightPx = readCachedConfig(featureHeight, config, 'featureHeight', feature)
     const baseHeightPx = heightPx * heightMultiplier
     const widthPx = (end - start) / bpPerPx
 
@@ -77,8 +66,7 @@ export const matureProteinRegionGlyph: Glyph = {
         ? Math.floor(rowHeight / 2) - padding
         : rowHeight - padding * 2
 
-    for (const [i, sortedChild] of sortedChildren.entries()) {
-      const child = sortedChild
+    for (const [i, child] of sortedChildren.entries()) {
       child.y = i * rowHeight + padding
       child.height = boxHeight
       child.totalLayoutHeight = rowHeight

@@ -224,11 +224,6 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
     this.regionStarts.set(regionNumber, data.regionStart)
 
     if (data.numRects > 0) {
-      // eslint-disable-next-line no-console
-      console.log(
-        `[GpuRenderer] uploadRegion ${regionNumber}: ${data.numRects} rects,`,
-        `firstColor RGBA=[${data.rectColors[0]},${data.rectColors[1]},${data.rectColors[2]},${data.rectColors[3]}]`,
-      )
       const buf = interleaveRects(
         data.rectPositions,
         data.rectYs,
@@ -280,14 +275,9 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
 
     this.hal.beginFrame(0, 0, 0, 0)
 
-    let blocksDrawn = 0
     for (const block of blocks) {
       const regionStart = this.regionStarts.get(block.regionNumber)
       if (regionStart === undefined) {
-        // eslint-disable-next-line no-console
-        console.log(
-          `[GpuRenderer] renderBlocks: block regionNumber=${block.regionNumber} not in regionStarts=${JSON.stringify([...this.regionStarts.keys()])}`,
-        )
         continue
       }
       if (
@@ -295,10 +285,6 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
         !this.hasLines.get(block.regionNumber) &&
         !this.hasArrows.get(block.regionNumber)
       ) {
-        // eslint-disable-next-line no-console
-        console.log(
-          `[GpuRenderer] renderBlocks: block regionNumber=${block.regionNumber} has no buffers`,
-        )
         continue
       }
 
@@ -336,23 +322,11 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
         this.hal.drawPass(PASS_CHEVRON, block.regionNumber, PASS_LINE)
       }
 
-      const rectCount = this.hal.getBufferCount(block.regionNumber, PASS_RECT)
       this.hal.drawPass(PASS_RECT, block.regionNumber)
-      blocksDrawn++
-      // eslint-disable-next-line no-console
-      console.log(
-        `[GpuRenderer] drawPass RECT region=${block.regionNumber} rects=${rectCount} canvasSize=${canvasWidth}x${canvasHeight} scissor=${clip.pxX},${clip.pxW}`,
-      )
 
       if (this.hasArrows.get(block.regionNumber)) {
         this.hal.drawPass(PASS_ARROW, block.regionNumber)
       }
-    }
-    if (blocksDrawn === 0 && blocks.length > 0) {
-      // eslint-disable-next-line no-console
-      console.log(
-        `[GpuRenderer] renderBlocks: canvas cleared but 0/${blocks.length} blocks drawn! regionStarts=${JSON.stringify([...this.regionStarts.keys()])} blockRegions=${JSON.stringify(blocks.map(b => b.regionNumber))}`,
-      )
     }
 
     this.hal.clearScissor()

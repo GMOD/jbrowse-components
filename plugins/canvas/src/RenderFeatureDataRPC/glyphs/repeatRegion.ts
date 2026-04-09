@@ -12,7 +12,7 @@ export const repeatRegionGlyph: Glyph = {
 
     const start = feature.get('start')
     const end = feature.get('end')
-    const heightPx = readCachedConfig(featureHeight, config, 'height', feature)
+    const heightPx = readCachedConfig(featureHeight, config, 'featureHeight', feature)
     const baseHeightPx = heightPx * heightMultiplier
     const widthPx = (end - start) / bpPerPx
 

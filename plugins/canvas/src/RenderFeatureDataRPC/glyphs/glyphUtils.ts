@@ -3,6 +3,17 @@ import { readCachedConfig } from '../renderConfig.ts'
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
+export function sortByPosition(children: FeatureLayout[]) {
+  return [...children].sort((a, b) => {
+    const aStart = a.feature.get('start')
+    const bStart = b.feature.get('start')
+    if (aStart !== bStart) {
+      return aStart - bStart
+    }
+    return b.feature.get('end') - a.feature.get('end')
+  })
+}
+
 export const STRAND_ARROW_WIDTH = 8
 
 export function getStrandArrowPadding(strand: number) {
@@ -23,7 +34,7 @@ export function layoutChild(
   const { bpPerPx, configContext } = args
   const { config, featureHeight, heightMultiplier } = configContext
 
-  const heightPx = readCachedConfig(featureHeight, config, 'height', child)
+  const heightPx = readCachedConfig(featureHeight, config, 'featureHeight', child)
   const baseHeightPx = heightPx * heightMultiplier
 
   const childStart = child.get('start')

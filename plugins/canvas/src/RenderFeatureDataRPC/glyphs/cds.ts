@@ -9,19 +9,19 @@ export const cdsGlyph: Glyph = {
     const { feature, bpPerPx, configContext } = args
     const { config, featureHeight, heightMultiplier } = configContext
 
-    const height = readCachedConfig(featureHeight, config, 'height', feature)
-    const baseHeight = height * heightMultiplier
-    const width = (feature.get('end') - feature.get('start')) / bpPerPx
+    const heightPx = readCachedConfig(featureHeight, config, 'featureHeight', feature)
+    const baseHeightPx = heightPx * heightMultiplier
+    const widthPx = (feature.get('end') - feature.get('start')) / bpPerPx
 
     return {
       feature,
       glyphType: 'CDS',
       x: 0,
       y: 0,
-      width,
-      height: baseHeight,
-      totalLayoutHeight: baseHeight,
-      totalLayoutWidth: width,
+      width: widthPx,
+      height: baseHeightPx,
+      totalLayoutHeight: baseHeightPx,
+      totalLayoutWidth: widthPx,
       leftPadding: 0,
       children: [],
     }

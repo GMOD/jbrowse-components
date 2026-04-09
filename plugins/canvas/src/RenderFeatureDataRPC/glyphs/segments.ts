@@ -1,5 +1,9 @@
 import { readCachedConfig } from '../renderConfig.ts'
-import { getStrandArrowPadding, layoutChild } from './glyphUtils.ts'
+import {
+  getStrandArrowPadding,
+  layoutChild,
+  sortByPosition,
+} from './glyphUtils.ts'
 
 import type { FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 
@@ -12,7 +16,7 @@ export const segmentsGlyph: Glyph = {
 
     const start = feature.get('start')
     const end = feature.get('end')
-    const heightPx = readCachedConfig(featureHeight, config, 'height', feature)
+    const heightPx = readCachedConfig(featureHeight, config, 'featureHeight', feature)
     const baseHeightPx = heightPx * heightMultiplier
     const widthPx = (end - start) / bpPerPx
 
@@ -20,13 +24,13 @@ export const segmentsGlyph: Glyph = {
     const arrowPadding = getStrandArrowPadding(strand)
 
     const subfeatures = feature.get('subfeatures') || []
-    const children = subfeatures
-      .map(child => {
+    const children = sortByPosition(
+      subfeatures.map(child => {
         const childType = child.get('type')
         const glyphType = childType === 'CDS' ? 'CDS' : 'Box'
         return layoutChild(child, feature, args, glyphType)
-      })
-      .sort((a, b) => a.feature.get('start') - b.feature.get('start'))
+      }),
+    )
 
     return {
       feature,

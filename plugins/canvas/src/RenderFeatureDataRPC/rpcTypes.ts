@@ -19,10 +19,7 @@ export interface LabelItem {
 export interface RenderFeatureDataArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
-  displayConfig: {
-    subfeatureLabels: string
-    geneGlyphMode: string
-  }
+  displayConfig: Record<string, unknown>
   region: {
     refName: string
     start: number

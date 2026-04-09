@@ -210,10 +210,27 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
             .filter(d => knownDisplayTypes.has(d.type))
             .map(d => {
               const { renderer, ...rest } = d
+              if (renderer?.type && knownRendererTypes.has(renderer.type)) {
+                return {
+                  ...d,
+                  displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
+                }
+              }
+              // Promote renderer properties to display level so they
+              // survive even when the renderer type is no longer registered.
+              // Rename 'height' to 'featureHeight' to avoid collision with
+              // the display-level track height setting.
+              const {
+                type: _rendererType,
+                height: rendererHeight,
+                ...rendererProps
+              } = renderer ?? {}
               return {
-                ...(renderer?.type && knownRendererTypes.has(renderer.type)
-                  ? d
-                  : rest),
+                ...rendererProps,
+                ...(rendererHeight !== undefined
+                  ? { featureHeight: rendererHeight }
+                  : undefined),
+                ...rest,
                 displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
               }
             }),

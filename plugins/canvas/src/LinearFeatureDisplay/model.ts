@@ -168,26 +168,8 @@ export default function stateModelFactory(
         >
       },
 
-      get rendererColorConfig() {
-        try {
-          const snap = readConfObject(self.configuration) as Record<
-            string,
-            unknown
-          >
-          const renderer = snap?.renderer as Record<string, unknown> | undefined
-          if (!renderer) {
-            return undefined
-          }
-          const color1 = renderer.color1 as string | undefined
-          const color2 = renderer.color2 as string | undefined
-          const color3 = renderer.color3 as string | undefined
-          if (!color1 && !color2 && !color3) {
-            return undefined
-          }
-          return { color1, color2, color3 }
-        } catch {
-          return undefined
-        }
+      get displayConfigSnapshot() {
+        return readConfObject(self.configuration) as Record<string, unknown>
       },
 
       get DisplayMessageComponent() {
@@ -580,10 +562,11 @@ export default function stateModelFactory(
           {
             adapterConfig,
             displayConfig: {
+              ...self.displayConfigSnapshot,
+              // Model overrides take precedence over config values
               subfeatureLabels: self.subfeatureLabels,
               geneGlyphMode: self.effectiveGeneGlyphMode,
               displayMode: self.displayMode,
-              rendererColors: self.rendererColorConfig,
             },
             region,
             bpPerPx,

@@ -1,6 +1,6 @@
 import { applyLabelDimensions } from '../labelUtils.ts'
 import { readCachedConfig } from '../renderConfig.ts'
-import { findChildGlyph } from './childGlyphs.ts'
+import { findGlyph } from './index.ts'
 
 import type { FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -61,7 +61,7 @@ export const subfeaturesGlyph: Glyph = {
       start: feature.get('start'),
       end: feature.get('end'),
     }
-    const heightPx = readCachedConfig(featureHeight, config, 'height', feature)
+    const heightPx = readCachedConfig(featureHeight, config, 'featureHeight', feature)
     const baseHeightPx = heightPx * heightMultiplier
     const widthPx = (featureBp.end - featureBp.start) / bpPerPx
 
@@ -96,7 +96,7 @@ export const subfeaturesGlyph: Glyph = {
     for (const [i, child] of subfeatures.entries()) {
       const childType = child.get('type')
       const isChildTranscript = transcriptTypes.includes(childType)
-      const childGlyph = findChildGlyph(child, configContext)
+      const childGlyph = findGlyph(child, configContext, false)
 
       const childLayout = childGlyph.layout({
         ...args,

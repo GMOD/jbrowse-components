@@ -10,9 +10,9 @@ export const boxGlyph: Glyph = {
     const { feature, bpPerPx, configContext } = args
     const { config, featureHeight, heightMultiplier } = configContext
 
-    const height = readCachedConfig(featureHeight, config, 'height', feature)
-    const baseHeight = height * heightMultiplier
-    const width = (feature.get('end') - feature.get('start')) / bpPerPx
+    const heightPx = readCachedConfig(featureHeight, config, 'featureHeight', feature)
+    const baseHeightPx = heightPx * heightMultiplier
+    const widthPx = (feature.get('end') - feature.get('start')) / bpPerPx
 
     const isTopLevel = !feature.parent?.()
     const strand = feature.get('strand') as number
@@ -25,10 +25,10 @@ export const boxGlyph: Glyph = {
       glyphType: 'Box',
       x: 0,
       y: 0,
-      width,
-      height: baseHeight,
-      totalLayoutHeight: baseHeight,
-      totalLayoutWidth: width + arrowPadding.left + arrowPadding.right,
+      width: widthPx,
+      height: baseHeightPx,
+      totalLayoutHeight: baseHeightPx,
+      totalLayoutWidth: widthPx + arrowPadding.left + arrowPadding.right,
       leftPadding: arrowPadding.left,
       children: [],
     }

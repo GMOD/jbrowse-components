@@ -1,28 +1,12 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
+import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
 /**
- * IMPORTANT: Config Reading Performance Optimization
- *
- * Reading config values via readConfObject is expensive because:
- * 1. It may involve JEXL expression evaluation
- * 2. It traverses the config tree
- * 3. It can trigger MobX reactions
- *
- * In rendering code, we process thousands of features in tight loops.
- * Calling readConfObject per-feature creates significant overhead.
- *
- * SOLUTION: Read all non-feature-dependent config values ONCE at the start
- * of the rendering pipeline and pass them through as a context object.
- *
- * For feature-dependent configs (callbacks), we use CachedConfig which stores
- * both the cached value and whether it needs per-feature evaluation.
- */
-
-/**
- * A cached config value that may need per-feature evaluation.
+ * Cached config value that may need per-feature evaluation.
  * - If isCallback is false, use `value` directly (fast path)
  * - If isCallback is true, call readCachedConfig() to evaluate per-feature
  */
@@ -31,9 +15,18 @@ export interface CachedConfig<T> {
   isCallback: boolean
 }
 
+function resolveConfigValue(
+  config: Record<string, unknown>,
+  key: string | string[],
+) {
+  return Array.isArray(key)
+    ? key.reduce((acc: unknown, k) => (acc as Record<string, unknown>)?.[k], config)
+    : config[key]
+}
+
 /**
  * Read a potentially cached config value.
- * Uses cached value if not a callback, otherwise evaluates per-feature.
+ * Supports both MST config models (main thread) and plain objects (worker).
  */
 export function readCachedConfig<T>(
   cached: CachedConfig<T>,
@@ -41,26 +34,54 @@ export function readCachedConfig<T>(
   key: string | string[],
   feature: Feature,
 ): T {
-  return cached.isCallback
-    ? (readConfObject(config, key, { feature }) as T)
-    : cached.value
+  if (cached.isCallback) {
+    if (isStateTreeNode(config)) {
+      return readConfObject(config, key, { feature }) as T
+    }
+    const raw = resolveConfigValue(
+      config as unknown as Record<string, unknown>,
+      key,
+    )
+    if (typeof raw === 'string' && raw.startsWith('jexl:')) {
+      return stringToJexlExpression(raw).eval({ feature }) as T
+    }
+    return raw as T
+  }
+  return cached.value
 }
 
 function createCachedConfig<T>(
-  config: AnyConfigurationModel,
+  config: Record<string, unknown>,
   key: string | string[],
   defaultValue: T,
 ): CachedConfig<T> {
-  const configSlot = Array.isArray(key)
-    ? key.reduce((acc: any, k) => acc?.[k], config)
-    : config[key]
-  const isCallback = configSlot?.isCallback ?? false
-  const value = isCallback ? defaultValue : (readConfObject(config, key) as T)
-  return { value, isCallback }
+  const configSlot = resolveConfigValue(config, key) as
+    | { isCallback?: boolean }
+    | string
+    | undefined
+
+  // MST config slot — has isCallback property
+  if (
+    configSlot !== null &&
+    typeof configSlot === 'object' &&
+    'isCallback' in configSlot
+  ) {
+    const isCallback = configSlot.isCallback ?? false
+    const value = isCallback
+      ? defaultValue
+      : (readConfObject(config as AnyConfigurationModel, key) as T)
+    return { value, isCallback }
+  }
+
+  // Plain object — detect jexl: strings directly
+  if (typeof configSlot === 'string' && configSlot.startsWith('jexl:')) {
+    return { value: defaultValue, isCallback: true }
+  }
+
+  return { value: (configSlot as T) ?? defaultValue, isCallback: false }
 }
 
 export interface RenderConfigContext {
-  // Reference to the raw config for callback evaluation
   config: AnyConfigurationModel
 
   displayMode: string
@@ -83,10 +104,6 @@ export interface RenderConfigContext {
   geneGlyphMode: string
   displayDirectionalChevrons: boolean
 
-  /**
-   * Multiplier for feature height based on displayMode.
-   * normal=1, compact=0.6
-   */
   heightMultiplier: number
 }
 
@@ -98,28 +115,35 @@ function getHeightMultiplier(displayMode: string) {
 }
 
 export function createRenderConfigContext(
-  config: AnyConfigurationModel,
+  config: Record<string, unknown>,
 ): RenderConfigContext {
-  const displayMode = readConfObject(config, 'displayMode') as string
+  const displayMode =
+    (config.displayMode as string | undefined) ?? 'normal'
 
   return {
-    config,
+    config: config as AnyConfigurationModel,
     displayMode,
-    subfeatureLabels: readConfObject(config, 'subfeatureLabels') as string,
-    transcriptTypes: readConfObject(config, 'transcriptTypes') as string[],
-    containerTypes: readConfObject(config, 'containerTypes') as string[],
-    geneGlyphMode: readConfObject(config, 'geneGlyphMode') as string,
-    displayDirectionalChevrons: readConfObject(
-      config,
-      'displayDirectionalChevrons',
-    ) as boolean,
+    subfeatureLabels:
+      (config.subfeatureLabels as string | undefined) ?? 'none',
+    transcriptTypes: (config.transcriptTypes as string[] | undefined) ?? [
+      'mRNA',
+      'transcript',
+      'primary_transcript',
+    ],
+    containerTypes: (config.containerTypes as string[] | undefined) ?? [
+      'proteoform_orf',
+    ],
+    geneGlyphMode:
+      (config.geneGlyphMode as string | undefined) ?? 'all',
+    displayDirectionalChevrons:
+      (config.displayDirectionalChevrons as boolean | undefined) ?? true,
 
     color1: createCachedConfig(config, 'color1', 'goldenrod'),
     color2: createCachedConfig(config, 'color2', '#f0f'),
     color3: createCachedConfig(config, 'color3', '#357089'),
     outline: createCachedConfig(config, 'outline', ''),
 
-    featureHeight: createCachedConfig(config, 'height', 10),
+    featureHeight: createCachedConfig(config, 'featureHeight', 10),
     fontHeight: createCachedConfig(config, ['labels', 'fontSize'], 12),
     nameColor: createCachedConfig(config, ['labels', 'nameColor'], 'black'),
     descriptionColor: createCachedConfig(
