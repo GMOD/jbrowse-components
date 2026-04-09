@@ -119,6 +119,16 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         type: 'stringArray',
         defaultValue: ['proteoform_orf'],
       },
+      subParts: {
+        type: 'string',
+        description: 'subparts for a glyph',
+        defaultValue: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
+      },
+      impliedUTRs: {
+        type: 'boolean',
+        description: 'imply UTR from the exon and CDS differences',
+        defaultValue: false,
+      },
       labels: ConfigurationSchema('CanvasFeatureLabels', {
         name: {
           type: 'string',

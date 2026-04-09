@@ -124,12 +124,21 @@ describe('LinearFeatureDisplay configSchema', () => {
       { displayId: 'test', type: 'LinearFeatureDisplay' },
       { pluginManager: pm },
     )
-    // Reading with a path evaluates the slot properly
     expect(readConfObject(config, 'transcriptTypes')).toEqual([
       'mRNA',
       'transcript',
       'primary_transcript',
     ])
     expect(readConfObject(config, ['labels', 'fontSize'])).toBe(12)
+  })
+
+  it('JEXL callback slot exposes isCallback and raw value', () => {
+    const jexlExpr = "jexl:get(feature,'type')=='SNV'?'green':'purple'"
+    const config = schema.create(
+      { displayId: 'test', type: 'LinearFeatureDisplay', color1: jexlExpr },
+      { pluginManager: pm },
+    )
+    expect(config.color1.isCallback).toBe(true)
+    expect(String(config.color1.value)).toBe(jexlExpr)
   })
 })

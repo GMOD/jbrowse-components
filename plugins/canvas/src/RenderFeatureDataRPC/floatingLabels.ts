@@ -1,11 +1,10 @@
 import { measureText } from '@jbrowse/core/util'
 
-import { readCachedConfig } from './renderConfig.ts'
+import { readConfigValue } from './renderConfig.ts'
 import { truncateLabel } from './util.ts'
 
 import type { RenderConfigContext } from './renderConfig.ts'
 import type { LabelItem } from './rpcTypes.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
 const FLOATING_LABEL_FONT_SIZE = 11
@@ -18,7 +17,6 @@ const FLOATING_LABEL_FONT_SIZE = 11
  */
 export function createFeatureFloatingLabels({
   feature,
-  config,
   configContext,
   nameColor,
   descriptionColor,
@@ -26,15 +24,12 @@ export function createFeatureFloatingLabels({
   description: rawDescription,
 }: {
   feature: Feature
-  config: AnyConfigurationModel
   configContext: RenderConfigContext
   nameColor: string
   descriptionColor: string
   name: string
   description: string
 }) {
-  const { fontHeight } = configContext
-
   const name = truncateLabel(rawName)
   const description = truncateLabel(rawDescription)
 
@@ -52,9 +47,8 @@ export function createFeatureFloatingLabels({
       color: nameColor,
       textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
     }
-    currentY += readCachedConfig(
-      fontHeight,
-      config,
+    currentY += readConfigValue(
+      configContext.config,
       ['labels', 'fontSize'],
       feature,
     )

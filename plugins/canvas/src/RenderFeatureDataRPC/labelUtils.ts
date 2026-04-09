@@ -1,7 +1,6 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { measureText } from '@jbrowse/core/util'
 
-import { readCachedConfig } from './renderConfig.ts'
+import { readConfigValue } from './renderConfig.ts'
 import { truncateLabel } from './util.ts'
 
 import type { RenderConfigContext } from './renderConfig.ts'
@@ -26,7 +25,7 @@ export function applyLabelDimensions(
   },
 ): void {
   const { feature, configContext, isNested, isTranscriptChild } = args
-  const { config, subfeatureLabels, fontHeight, labelAllowed } = configContext
+  const { config, subfeatureLabels, labelAllowed } = configContext
 
   const showSubfeatureLabels = subfeatureLabels !== 'none'
   const shouldCalculateLabels =
@@ -38,26 +37,20 @@ export function applyLabelDimensions(
 
   const effectiveShowDescriptions = !isTranscriptChild
 
-  // for transcript children, use the feature name directly (matching
-  // createTranscriptFloatingLabel) instead of the config callback which may
-  // be empty in the RPC worker's mock config
   const name = isTranscriptChild
     ? truncateLabel(getFeatureName(feature))
     : truncateLabel(
-        String(readConfObject(config, ['labels', 'name'], { feature }) || ''),
+        readConfigValue(config, ['labels', 'name'], feature),
       )
   const shouldShowName = /\S/.test(name)
 
   const description = truncateLabel(
-    String(
-      readConfObject(config, ['labels', 'description'], { feature }) || '',
-    ),
+    readConfigValue(config, ['labels', 'description'], feature),
   )
   const shouldShowDescription =
     /\S/.test(description) && effectiveShowDescriptions
 
-  const actualFontHeight = readCachedConfig(
-    fontHeight,
+  const actualFontHeight = readConfigValue(
     config,
     ['labels', 'fontSize'],
     feature,

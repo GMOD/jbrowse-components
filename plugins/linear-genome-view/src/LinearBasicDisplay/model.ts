@@ -1,4 +1,4 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { modelFactory as LinearFeatureDisplayModelFactory } from '../LinearFeatureDisplay/index.ts'
@@ -35,119 +35,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        trackGeneGlyphMode: types.maybe(types.string),
-        /**
-         * #property
-         */
-        trackSubfeatureLabels: types.maybe(types.string),
-        /**
-         * #property
-         */
-        trackDisplayDirectionalChevrons: types.maybe(types.boolean),
-        /**
-         * #property
-         */
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get geneGlyphMode() {
-        return (
-          self.trackGeneGlyphMode ??
-          getConf(self, ['renderer', 'geneGlyphMode'])
-        )
-      },
-      /**
-       * #getter
-       */
-      get subfeatureLabels() {
-        return (
-          self.trackSubfeatureLabels ??
-          getConf(self, ['renderer', 'subfeatureLabels'])
-        )
-      },
-      /**
-       * #getter
-       */
-      get displayDirectionalChevrons() {
-        return (
-          self.trackDisplayDirectionalChevrons ??
-          getConf(self, ['renderer', 'displayDirectionalChevrons'])
-        )
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get rendererConfig() {
-        const configBlob = getConf(self, ['renderer']) || {}
-        const config = configBlob as Omit<typeof configBlob, symbol>
-        return {
-          ...config,
-          // Use track overrides if set, otherwise use what's already in configBlob
-          // This avoids redundant getConf calls for each property
-          showLabels: self.trackShowLabels ?? config.showLabels,
-          showDescriptions:
-            self.trackShowDescriptions ?? config.showDescriptions,
-          subfeatureLabels:
-            self.trackSubfeatureLabels ?? config.subfeatureLabels,
-          displayMode: self.trackDisplayMode ?? config.displayMode,
-          maxHeight: self.trackMaxHeight ?? config.maxHeight,
-          geneGlyphMode: self.trackGeneGlyphMode ?? config.geneGlyphMode,
-          displayDirectionalChevrons:
-            self.trackDisplayDirectionalChevrons ??
-            config.displayDirectionalChevrons,
-        }
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setGeneGlyphMode(val: string) {
-        self.trackGeneGlyphMode = val
-      },
-      /**
-       * #action
-       */
-      setSubfeatureLabels(val: string) {
-        self.trackSubfeatureLabels = val
-      },
-      /**
-       * #action
-       */
-      toggleDisplayDirectionalChevrons() {
-        self.trackDisplayDirectionalChevrons = !self.displayDirectionalChevrons
-      },
-    }))
-    .views(self => {
-      const { filterMenuItems: superFilterMenuItems } = self
-      return {
-        filterMenuItems() {
-          const filters = self.activeFilters()
-          return [
-            {
-              label: 'Show only genes',
-              type: 'checkbox',
-              checked: filters.includes("jexl:get(feature,'type')=='gene'"),
-              onClick: () => {
-                const geneFilter = "jexl:get(feature,'type')=='gene'"
-                if (filters.includes(geneFilter)) {
-                  self.setJexlFilters(filters.filter(f => f !== geneFilter))
-                } else {
-                  self.setJexlFilters([...filters, geneFilter])
-                }
-              },
-            },
-            ...superFilterMenuItems(),
-          ]
-        },
-      }
-    })
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       return {
@@ -168,68 +58,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   self.toggleDisplayDirectionalChevrons()
                 },
               },
-              {
-                label: 'Subfeature labels',
-                subMenu: ['none', 'below', 'overlay'].map(val => ({
-                  label: val,
-                  type: 'radio' as const,
-                  checked: self.subfeatureLabels === val,
-                  onClick: () => {
-                    self.setSubfeatureLabels(val)
-                  },
-                })),
-              },
-              {
-                label: 'Gene glyph',
-                subMenu: [
-                  {
-                    value: 'all',
-                    label: 'All transcripts',
-                  },
-                  {
-                    value: 'longest',
-                    label: 'Longest transcript',
-                  },
-                  {
-                    value: 'longestCoding',
-                    label: 'Longest coding transcript',
-                  },
-                ].map(({ value, label }) => ({
-                  label,
-                  type: 'radio' as const,
-                  checked: self.geneGlyphMode === value,
-                  onClick: () => {
-                    self.setGeneGlyphMode(value)
-                  },
-                })),
-              },
             ]
           }
           return items
         },
       }
-    })
-    .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const {
-        trackGeneGlyphMode,
-        trackSubfeatureLabels,
-        trackDisplayDirectionalChevrons,
-        ...rest
-      } = snap as Omit<typeof snap, symbol>
-      return {
-        ...rest,
-        ...(trackGeneGlyphMode !== undefined ? { trackGeneGlyphMode } : {}),
-        ...(trackSubfeatureLabels !== undefined
-          ? { trackSubfeatureLabels }
-          : {}),
-        ...(trackDisplayDirectionalChevrons !== undefined
-          ? { trackDisplayDirectionalChevrons }
-          : {}),
-      } as typeof snap
     })
 }
 

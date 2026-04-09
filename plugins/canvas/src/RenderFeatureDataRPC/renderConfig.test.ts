@@ -1,9 +1,7 @@
 import {
   createRenderConfigContext,
-  readCachedConfig,
+  readConfigValue,
 } from './renderConfig.ts'
-
-import type { CachedConfig } from './renderConfig.ts'
 
 function mockFeature(data: Record<string, unknown>) {
   return {
@@ -13,119 +11,99 @@ function mockFeature(data: Record<string, unknown>) {
   } as any
 }
 
-describe('readCachedConfig', () => {
-  it('returns cached value when isCallback is false', () => {
-    const cached: CachedConfig<string> = {
-      value: 'cachedColor',
-      isCallback: false,
-    }
-    const result = readCachedConfig(
-      cached,
-      {} as any,
-      'color1',
-      mockFeature({}),
-    )
-    expect(result).toBe('cachedColor')
+describe('readConfigValue', () => {
+  it('returns value when present', () => {
+    expect(readConfigValue({ color1: 'red' }, 'color1')).toBe('red')
   })
 
-  it('evaluates JEXL expression from plain object when isCallback is true', () => {
-    const cached: CachedConfig<string> = {
-      value: 'goldenrod',
-      isCallback: true,
-    }
+  it('returns undefined when key is missing', () => {
+    expect(readConfigValue({}, 'color1')).toBeUndefined()
+  })
+
+  it('evaluates JEXL expression with feature', () => {
     const config = {
       color1: "jexl:get(feature,'type')=='SNV'?'green':'purple'",
     }
-    const snvFeature = mockFeature({ type: 'SNV' })
-    const indelFeature = mockFeature({ type: 'insertion' })
-
-    expect(readCachedConfig(cached, config as any, 'color1', snvFeature)).toBe(
-      'green',
-    )
     expect(
-      readCachedConfig(cached, config as any, 'color1', indelFeature),
+      readConfigValue(config, 'color1', mockFeature({ type: 'SNV' })),
+    ).toBe('green')
+    expect(
+      readConfigValue(config, 'color1', mockFeature({ type: 'insertion' })),
     ).toBe('purple')
   })
 
-  it('returns non-jexl value from plain object when isCallback is true', () => {
-    const cached: CachedConfig<string> = {
-      value: 'goldenrod',
-      isCallback: true,
+  it('returns undefined for JEXL when no feature provided', () => {
+    const config = {
+      color1: "jexl:get(feature,'type')=='SNV'?'green':'purple'",
     }
-    const config = { color1: 'red' }
+    expect(readConfigValue(config, 'color1')).toBeUndefined()
+  })
+
+  it('resolves nested keys', () => {
     expect(
-      readCachedConfig(cached, config as any, 'color1', mockFeature({})),
-    ).toBe('red')
+      readConfigValue({ labels: { fontSize: 14 } }, ['labels', 'fontSize']),
+    ).toBe(14)
   })
 })
 
 describe('createRenderConfigContext', () => {
-  it('creates context from plain object with defaults', () => {
-    const ctx = createRenderConfigContext({})
+  it('reads values from config', () => {
+    const ctx = createRenderConfigContext({
+      displayMode: 'normal',
+      subfeatureLabels: 'none',
+      geneGlyphMode: 'all',
+      displayDirectionalChevrons: true,
+      transcriptTypes: ['mRNA'],
+      containerTypes: ['proteoform_orf'],
+    })
     expect(ctx.displayMode).toBe('normal')
-    expect(ctx.color1.value).toBe('goldenrod')
-    expect(ctx.color1.isCallback).toBe(false)
-    expect(ctx.featureHeight.value).toBe(10)
     expect(ctx.labelAllowed).toBe(true)
     expect(ctx.heightMultiplier).toBe(1)
+    expect(ctx.geneGlyphMode).toBe('all')
+    expect(ctx.transcriptTypes).toEqual(['mRNA'])
   })
 
-  it('reads explicit color values from plain object', () => {
-    const ctx = createRenderConfigContext({ color1: 'red', color2: 'blue' })
-    expect(ctx.color1.value).toBe('red')
-    expect(ctx.color1.isCallback).toBe(false)
-    expect(ctx.color2.value).toBe('blue')
-    expect(ctx.color2.isCallback).toBe(false)
-  })
-
-  it('detects JEXL callback in color value', () => {
+  it('compact mode adjusts height multiplier', () => {
     const ctx = createRenderConfigContext({
-      color1: "jexl:get(feature,'type')=='SNV'?'green':'purple'",
+      displayMode: 'compact',
+      subfeatureLabels: 'none',
+      geneGlyphMode: 'all',
+      displayDirectionalChevrons: true,
+      transcriptTypes: ['mRNA'],
+      containerTypes: [],
     })
-    expect(ctx.color1.isCallback).toBe(true)
-    expect(ctx.color1.value).toBe('goldenrod')
-  })
-
-  it('handles compact display mode', () => {
-    const ctx = createRenderConfigContext({ displayMode: 'compact' })
-    expect(ctx.displayMode).toBe('compact')
     expect(ctx.heightMultiplier).toBe(0.6)
-    expect(ctx.labelAllowed).toBe(true)
   })
 
-  it('handles collapse display mode', () => {
-    const ctx = createRenderConfigContext({ displayMode: 'collapse' })
+  it('collapse mode disables labels', () => {
+    const ctx = createRenderConfigContext({
+      displayMode: 'collapse',
+      subfeatureLabels: 'none',
+      geneGlyphMode: 'all',
+      displayDirectionalChevrons: true,
+      transcriptTypes: ['mRNA'],
+      containerTypes: [],
+    })
     expect(ctx.labelAllowed).toBe(false)
   })
 
-  it('reads nested labels config', () => {
-    const ctx = createRenderConfigContext({
-      labels: { fontSize: 14, nameColor: 'red' },
-    })
-    expect(ctx.fontHeight.value).toBe(14)
-    expect(ctx.nameColor.value).toBe('red')
-  })
-
   it('end-to-end: JEXL color evaluated per-feature', () => {
-    const config = {
+    const ctx = createRenderConfigContext({
       color1: "jexl:get(feature,'type')=='SNV'?'green':'purple'",
-    }
-    const ctx = createRenderConfigContext(config)
+      displayMode: 'normal',
+      subfeatureLabels: 'none',
+      geneGlyphMode: 'all',
+      displayDirectionalChevrons: true,
+      transcriptTypes: ['mRNA'],
+      containerTypes: [],
+    })
 
-    const snvResult = readCachedConfig(
-      ctx.color1,
-      ctx.config,
-      'color1',
-      mockFeature({ type: 'SNV' }),
-    )
-    expect(snvResult).toBe('green')
+    expect(
+      readConfigValue(ctx.config, 'color1', mockFeature({ type: 'SNV' })),
+    ).toBe('green')
 
-    const indelResult = readCachedConfig(
-      ctx.color1,
-      ctx.config,
-      'color1',
-      mockFeature({ type: 'insertion' }),
-    )
-    expect(indelResult).toBe('purple')
+    expect(
+      readConfigValue(ctx.config, 'color1', mockFeature({ type: 'insertion' })),
+    ).toBe('purple')
   })
 })

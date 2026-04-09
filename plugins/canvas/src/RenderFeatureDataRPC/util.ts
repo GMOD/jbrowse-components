@@ -1,9 +1,8 @@
 import { getFrame, stripAlpha } from '@jbrowse/core/util'
 
-import { readCachedConfig } from './renderConfig.ts'
+import { readConfigValue } from './renderConfig.ts'
 
 import type { RenderConfigContext } from './renderConfig.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -20,22 +19,20 @@ export function isUTR(feature: Feature) {
 
 export function getBoxColor({
   feature,
-  config,
   configContext,
   colorByCDS,
   theme,
 }: {
   feature: Feature
-  config: AnyConfigurationModel
   configContext: RenderConfigContext
   colorByCDS: boolean
-  theme: Theme
+  theme: Record<string, unknown>
 }) {
-  const { color1, color3 } = configContext
+  const { config } = configContext
 
   let fill = isUTR(feature)
-    ? readCachedConfig(color3, config, 'color3', feature)
-    : readCachedConfig(color1, config, 'color1', feature)
+    ? readConfigValue(config, 'color3', feature)
+    : readConfigValue(config, 'color1', feature)
 
   const featureType: string | undefined = feature.get('type')
   const featureStrand: -1 | 1 | undefined = feature.get('strand')
@@ -56,7 +53,7 @@ export function getBoxColor({
       featureStrand,
       featurePhase,
     )
-    const frameColor = theme.palette.framesCDS.at(frame)?.main
+    const frameColor = (theme as Theme).palette.framesCDS.at(frame)?.main
     if (frameColor) {
       fill = frameColor
     }
@@ -67,16 +64,13 @@ export function getBoxColor({
 
 export function getStrokeColor({
   feature,
-  config,
   configContext,
   theme,
 }: {
   feature: Feature
-  config: AnyConfigurationModel
   configContext: RenderConfigContext
-  theme: Theme
+  theme: Record<string, unknown>
 }) {
-  const { color2 } = configContext
-  const c = readCachedConfig(color2, config, 'color2', feature)
-  return c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
+  const c = readConfigValue(configContext.config, 'color2', feature)
+  return c === '#f0f' ? stripAlpha((theme as Theme).palette.text.secondary) : c
 }

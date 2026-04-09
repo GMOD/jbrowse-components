@@ -13,6 +13,7 @@ function createMockConfigContext(
 ): RenderConfigContext {
   return {
     config: {
+      featureHeight: 10,
       labels: { name: '', description: '', fontSize: 12 },
       subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
     } as any,
@@ -22,14 +23,6 @@ function createMockConfigContext(
     containerTypes: [],
     geneGlyphMode: 'all',
     displayDirectionalChevrons: true,
-    color1: { value: 'goldenrod', isCallback: false },
-    color2: { value: '#f0f', isCallback: false },
-    color3: { value: '#357089', isCallback: false },
-    outline: { value: '', isCallback: false },
-    featureHeight: { value: 10, isCallback: false },
-    fontHeight: { value: 12, isCallback: false },
-    nameColor: { value: 'black', isCallback: false },
-    descriptionColor: { value: 'blue', isCallback: false },
     labelAllowed: true,
     heightMultiplier: 1,
     ...overrides,

@@ -200,7 +200,6 @@ export async function executeRenderFeatureData({
     collectRenderData(
       layoutRecords,
       regionStart,
-      configContext.config,
       configContext,
       mockTheme as any,
       !!colorByCDS,

@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import {
   ConfigurationReference,
   getConf,
+  getConfSnapshot,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -109,6 +110,7 @@ export default function stateModelFactory(
         trackSubfeatureLabels: types.maybe(types.string),
         trackGeneGlyphMode: types.maybe(types.string),
         trackDisplayMode: types.maybe(types.string),
+        trackDisplayDirectionalChevrons: types.maybe(types.boolean),
         showOnlyGenes: false,
       }),
     )
@@ -169,7 +171,7 @@ export default function stateModelFactory(
       },
 
       get displayConfigSnapshot() {
-        return readConfObject(self.configuration) as Record<string, unknown>
+        return getConfSnapshot(self.configuration) as Record<string, unknown>
       },
 
       get DisplayMessageComponent() {
@@ -229,6 +231,13 @@ export default function stateModelFactory(
 
       get geneGlyphMode(): string {
         return self.trackGeneGlyphMode ?? 'auto'
+      },
+
+      get displayDirectionalChevrons(): boolean {
+        return (
+          self.trackDisplayDirectionalChevrons ??
+          (getConf(self, 'displayDirectionalChevrons') as boolean)
+        )
       },
 
       get effectiveGeneGlyphMode(): string {
@@ -429,6 +438,10 @@ export default function stateModelFactory(
 
       setShowOnlyGenes(value: boolean) {
         self.showOnlyGenes = value
+      },
+
+      toggleDisplayDirectionalChevrons() {
+        self.trackDisplayDirectionalChevrons = !self.displayDirectionalChevrons
       },
 
       showContextMenuForFeature(
@@ -1008,6 +1021,7 @@ export default function stateModelFactory(
         trackSubfeatureLabels,
         trackGeneGlyphMode,
         trackDisplayMode,
+        trackDisplayDirectionalChevrons,
         showOnlyGenes,
         ...rest
       } = snap as Omit<typeof snap, symbol>
@@ -1018,6 +1032,9 @@ export default function stateModelFactory(
         ...(trackSubfeatureLabels !== undefined && { trackSubfeatureLabels }),
         ...(trackGeneGlyphMode !== undefined && { trackGeneGlyphMode }),
         ...(trackDisplayMode !== undefined && { trackDisplayMode }),
+        ...(trackDisplayDirectionalChevrons !== undefined && {
+          trackDisplayDirectionalChevrons,
+        }),
         ...(showOnlyGenes && { showOnlyGenes }),
       } as typeof snap
     })
