@@ -22,11 +22,8 @@ const PairedFeatures = observer(function PairedFeatures({
   cachedTrackTops,
   cachedYOffset,
 }: OverlayProps) {
-  const { interactiveOverlay, views } = model
+  const { interactiveOverlay, views, assembly } = model
   const session = getSession(model)
-  const { assemblyManager } = session
-  const v0 = views[0]
-  const assembly = v0 ? assemblyManager.get(v0.assemblyNames[0]!) : undefined
   const totalFeatures = model.getTrackFeatures(trackId)
 
   const layoutMatches = useMemo(() => {

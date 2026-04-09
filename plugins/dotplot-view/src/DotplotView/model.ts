@@ -239,19 +239,16 @@ export default function stateModelFactory(pm: PluginManager) {
        * #getter
        */
       get assemblyErrors() {
-        const { assemblyManager } = getSession(self)
-        return self.assemblyNames
-          .map(a => assemblyManager.get(a)?.error)
-          .filter(f => !!f)
-          .join(', ')
+        return getSession(self).assemblyManager.getAssemblyErrors(
+          self.assemblyNames,
+        )
       },
       /**
        * #getter
        */
       get assembliesInitialized() {
-        const { assemblyManager } = getSession(self)
-        return self.assemblyNames.every(
-          n => assemblyManager.get(n)?.initialized ?? true,
+        return getSession(self).assemblyManager.areAssembliesInitialized(
+          self.assemblyNames,
         )
       },
     }))

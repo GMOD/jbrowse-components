@@ -27,12 +27,9 @@ const AlignmentConnections = observer(function AlignmentConnections({
   cachedTrackTops,
   cachedYOffset,
 }: OverlayProps) {
-  const { interactiveOverlay, views, showIntraviewLinks } = model
+  const { interactiveOverlay, views, showIntraviewLinks, assembly } = model
   const theme = useTheme()
   const session = getSession(model)
-  const { assemblyManager } = session
-  const v0 = views[0]
-  const assembly = v0 ? assemblyManager.get(v0.assemblyNames[0]!) : undefined
   const allFeatures = model.getTrackFeatures(trackId)
   const hasPaired = useMemo(() => hasPairedReads(allFeatures), [allFeatures])
 

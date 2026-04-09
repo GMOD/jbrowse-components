@@ -59,14 +59,23 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       /**
        * #method
        */
-      getCanonicalAssemblyName2(asmName: string) {
-        return self.assemblyNameMap[asmName]?.name || asmName
+      getDisplayName(asmName: string) {
+        return self.assemblyNameMap[asmName]?.displayName || asmName
       },
       /**
        * #method
        */
-      getDisplayName(asmName: string) {
-        return self.assemblyNameMap[asmName]?.displayName || asmName
+      getAssemblyErrors(assemblyNames: string[]) {
+        return assemblyNames
+          .map(a => self.assemblyNameMap[a]?.error)
+          .filter(f => !!f)
+          .join(', ')
+      },
+      /**
+       * #method
+       */
+      areAssembliesInitialized(assemblyNames: string[]) {
+        return assemblyNames.every(a => self.assemblyNameMap[a]?.initialized)
       },
       /**
        * #method
