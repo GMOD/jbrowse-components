@@ -1,23 +1,19 @@
 import { act, renderHook } from '@testing-library/react'
 
+import { onDeviceLost } from '../gpu/getGpuDevice.ts'
 import { useGpuRenderer } from './useGpuRenderer.ts'
 
-jest.mock('../gpu/getGpuDevice.ts', () => {
-  let listener: (() => void) | null = null
-  return {
-    onDeviceLost: jest.fn((cb: () => void) => {
-      listener = cb
-      return () => {
-        listener = null
-      }
-    }),
-    simulateDeviceLost: () => listener?.(),
-  }
+jest.mock('../gpu/getGpuDevice.ts', () => ({
+  onDeviceLost: jest.fn(() => jest.fn()),
+}))
+
+beforeEach(() => {
+  jest.mocked(onDeviceLost).mockClear()
 })
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { simulateDeviceLost } = require('../gpu/getGpuDevice.ts') as {
-  simulateDeviceLost: () => void
+function simulateDeviceLost() {
+  const listener = jest.mocked(onDeviceLost).mock.calls.at(-1)?.[0]
+  listener?.()
 }
 
 function createMockFactory(shouldReject = false) {
@@ -103,10 +99,8 @@ describe('useGpuRenderer', () => {
     expect(result.current.ready).toBe(true)
     expect(factory).toHaveBeenCalledTimes(1)
 
-    // Simulate WebGL context loss then restore
     act(() => {
-      const lostEvent = new Event('webglcontextlost', { cancelable: true })
-      canvas.dispatchEvent(lostEvent)
+      canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }))
     })
     act(() => {
       canvas.dispatchEvent(new Event('webglcontextrestored'))
@@ -120,8 +114,7 @@ describe('useGpuRenderer', () => {
 
   test('prevents default on webglcontextlost to allow restore', () => {
     const canvas = document.createElement('canvas')
-    const canvasRef = createCanvasRef(canvas)
-    renderHook(() => useGpuRenderer(canvasRef, createMockFactory()))
+    renderHook(() => useGpuRenderer(createCanvasRef(canvas), createMockFactory()))
 
     const event = new Event('webglcontextlost', { cancelable: true })
     canvas.dispatchEvent(event)
@@ -151,21 +144,14 @@ describe('useGpuRenderer', () => {
   })
 
   test('cleans up device lost listener on unmount', () => {
-    const { onDeviceLost } = jest.requireMock('../gpu/getGpuDevice.ts') as {
-      onDeviceLost: jest.Mock
-    }
-    const canvasRef = createCanvasRef()
+    const cleanup = jest.fn()
+    jest.mocked(onDeviceLost).mockReturnValueOnce(cleanup)
+
     const { unmount } = renderHook(() =>
-      useGpuRenderer(canvasRef, createMockFactory()),
+      useGpuRenderer(createCanvasRef(), createMockFactory()),
     )
-
-    const cleanup = onDeviceLost.mock.results[0]?.value
-    expect(typeof cleanup).toBe('function')
-
     unmount()
-    // After unmount the cleanup should have run — listener should be null
-    act(() => {
-      simulateDeviceLost() // should not throw or re-init
-    })
+
+    expect(cleanup).toHaveBeenCalledTimes(1)
   })
 })
