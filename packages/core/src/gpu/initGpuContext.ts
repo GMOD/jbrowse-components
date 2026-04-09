@@ -11,11 +11,14 @@ export async function initGpuContext(
     try {
       const context = canvas.getContext('webgpu')
       if (context) {
+        const format = navigator.gpu.getPreferredCanvasFormat()
+        console.log('[initGpuContext] configuring, format:', format)
         context.configure({
           device,
-          format: 'bgra8unorm',
+          format,
           alphaMode: opts?.alphaMode ?? 'premultiplied',
         })
+        console.log('[initGpuContext] configured ok')
         return { device, context }
       }
       console.warn(

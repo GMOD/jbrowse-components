@@ -18,6 +18,24 @@ export interface BlockClipResult {
   bpPerPx: number
 }
 
+export function writeBpRangeUniforms(
+  uniformF32: Float32Array,
+  clip: BlockClipResult,
+  reversed: boolean,
+) {
+  if (reversed) {
+    const endBp = clip.bpStartHi + clip.bpStartLo + clip.clippedLengthBp
+    const [endHi, endLo] = splitPositionWithFrac(endBp)
+    uniformF32[0] = endHi
+    uniformF32[1] = endLo
+    uniformF32[2] = -clip.clippedLengthBp
+  } else {
+    uniformF32[0] = clip.bpStartHi
+    uniformF32[1] = clip.bpStartLo
+    uniformF32[2] = clip.clippedLengthBp
+  }
+}
+
 export function clipBlock(
   block: RenderBlock,
   canvasWidth: number,

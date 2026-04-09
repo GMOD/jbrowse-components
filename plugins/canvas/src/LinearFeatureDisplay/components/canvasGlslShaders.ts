@@ -49,7 +49,7 @@ void main() {
   float sx2 = snapToPixelX(hpToClipX(hpSplitUint(absEnd), bp_range_x, zero));
 
   // SYNC: must match MIN_RECT_WIDTH_PX in sharedRendererConstants.ts
-  float minWidth = 2.0 / canvas_width;
+  float minWidth = 4.0 / canvas_width;
   float dx = sx2 - sx1;
   if (abs(dx) < minWidth) {
     sx2 = sx1 + (dx < 0.0 ? -minWidth : minWidth);

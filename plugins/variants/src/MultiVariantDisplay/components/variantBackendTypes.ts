@@ -18,7 +18,7 @@ export interface VariantBackend {
       numCells: number
     },
   ): void
-  pruneStaleRegions(activeRegionNumbers: number[]): void
+  pruneRegions(activeRegionNumbers: number[]): void
   renderBlocks(
     blocks: VariantRenderBlock[],
     state: {

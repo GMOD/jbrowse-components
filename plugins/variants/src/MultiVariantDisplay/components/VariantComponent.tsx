@@ -204,7 +204,7 @@ const VariantComponent = observer(function VariantComponent({
           activeRegions.push(regionNum)
           renderer.uploadRegion(regionNum, regionData)
         }
-        renderer.pruneStaleRegions(activeRegions)
+        renderer.pruneRegions(activeRegions)
       }
 
       renderNow()

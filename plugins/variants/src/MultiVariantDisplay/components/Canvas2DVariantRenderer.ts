@@ -2,6 +2,7 @@ import {
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
+import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
 import type {
   VariantBackend,
@@ -56,13 +57,8 @@ export class Canvas2DVariantRenderer implements VariantBackend {
     })
   }
 
-  pruneStaleRegions(activeRegionNumbers: number[]) {
-    const active = new Set(activeRegionNumbers)
-    for (const regionNumber of this.regions.keys()) {
-      if (!active.has(regionNumber)) {
-        this.regions.delete(regionNumber)
-      }
-    }
+  pruneRegions(activeRegionNumbers: number[]) {
+    pruneRegionMap(this.regions, activeRegionNumbers)
   }
 
   renderBlocks(

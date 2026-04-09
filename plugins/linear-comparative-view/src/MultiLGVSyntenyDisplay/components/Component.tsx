@@ -18,6 +18,8 @@ const MultiLGVSyntenyDisplayComponent = observer(
       return <ErrorMessage error={model.error} />
     }
 
+    console.log('[MultiSyntenyComponent] allGenomeNames.length:', model.allGenomeNames.length, 'isLoading:', model.isLoading, 'debouncedLoading:', debouncedLoading)
+
     if (model.allGenomeNames.length === 0) {
       return (
         <div style={{ position: 'relative', height: model.height }}>

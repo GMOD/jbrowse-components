@@ -3,6 +3,7 @@ import {
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
+import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
 import {
   CHEVRON_H_PX,
@@ -242,13 +243,8 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
     }
   }
 
-  pruneStaleRegions(activeRegions: number[]) {
-    const activeSet = new Set(activeRegions)
-    for (const regionNumber of this.regions.keys()) {
-      if (!activeSet.has(regionNumber)) {
-        this.regions.delete(regionNumber)
-      }
-    }
+  pruneRegions(activeRegions: number[]) {
+    pruneRegionMap(this.regions, activeRegions)
   }
 
   dispose() {

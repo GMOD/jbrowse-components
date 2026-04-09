@@ -3,6 +3,7 @@ import {
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
+import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
 import { WIGGLE_FUDGE_FACTOR, normalizeScore } from '../util.ts'
 import {
@@ -289,12 +290,7 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
   }
 
   pruneRegions(activeRegions: number[]) {
-    const active = new Set(activeRegions)
-    for (const regionNumber of this.regions.keys()) {
-      if (!active.has(regionNumber)) {
-        this.regions.delete(regionNumber)
-      }
-    }
+    pruneRegionMap(this.regions, activeRegions)
   }
 
   dispose() {

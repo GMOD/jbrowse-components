@@ -496,7 +496,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         showSoftClipping: model.showSoftClipping,
         showInterbaseIndicators: model.showInterbaseIndicators,
         showModifications: model.showModifications,
-        showSashimiArcs: model.showSashimiArcs,
         showOutline: model.showOutlineSetting,
         showArcs: model.showArcs,
         arcsHeight: model.arcsHeight,

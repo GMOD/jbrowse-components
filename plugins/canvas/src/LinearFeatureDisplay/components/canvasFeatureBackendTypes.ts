@@ -14,6 +14,6 @@ export interface CanvasFeatureBackend {
     blocks: FeatureRenderBlock[],
     state: { scrollY: number; canvasWidth: number; canvasHeight: number },
   ): void
-  pruneStaleRegions(activeRegions: number[]): void
+  pruneRegions(activeRegions: number[]): void
   dispose(): void
 }

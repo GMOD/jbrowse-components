@@ -209,7 +209,6 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       showMismatches: false,
       showSoftClipping: false,
       showModifications: false,
-      showSashimiArcs: false,
       colors: {
         colorCoverage: [0.2, 0.4, 0.8] as [number, number, number],
         colorBaseA: [0, 1, 0] as [number, number, number],

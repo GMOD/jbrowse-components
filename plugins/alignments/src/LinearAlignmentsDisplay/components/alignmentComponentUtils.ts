@@ -8,13 +8,15 @@
 import { countSnpsAtPosition } from '@jbrowse/alignments-core'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../../shared/types.ts'
 import { fillColor } from '../../shared/color.ts'
 
-import type {
-  AlignmentsRenderer,
-  ColorPalette,
-  RGBColor,
-} from './AlignmentsRenderer.ts'
+import type { ColorPalette, RGBColor } from './AlignmentsRenderer.ts'
+import type { AlignmentsBackend } from './rendererTypes.ts'
 import type { CigarHitResult, SashimiArcHitResult } from './hitTesting'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
@@ -22,6 +24,26 @@ import type { Theme } from '@mui/material'
 
 function toRgb(color: string): RGBColor {
   return cssColorToNormalizedRgb(color)
+}
+
+export function splitInterbasesByType(
+  interbaseTypes: Uint8Array,
+  numInterbases: number,
+) {
+  const insIdx: number[] = []
+  const scIdx: number[] = []
+  const hcIdx: number[] = []
+  for (let i = 0; i < numInterbases; i++) {
+    const t = interbaseTypes[i]
+    if (t === INTERBASE_INSERTION) {
+      insIdx.push(i)
+    } else if (t === INTERBASE_SOFTCLIP) {
+      scIdx.push(i)
+    } else if (t === INTERBASE_HARDCLIP) {
+      hcIdx.push(i)
+    }
+  }
+  return { insIdx, scIdx, hcIdx }
 }
 
 /**
@@ -442,27 +464,25 @@ export function formatFeatureTooltip(
 }
 
 /**
- * Upload all region data to GPU for rendering.
- * Coordinates uploading reads, CIGAR features, coverage, and sashimi arcs.
+ * Upload all per-region pileup data to the backend, skipping empty regions.
+ * Returns the max Y across uploaded regions for layout.
  */
 export function uploadRegionDataToGPU(
-  renderer: AlignmentsRenderer,
+  renderer: AlignmentsBackend,
   rpcDataMap: Map<number, PileupDataResult>,
 ) {
-  renderer.clearLegacyBuffers()
   let maxYVal = 0
+  const activeRegions: number[] = []
   for (const [regionNumber, data] of rpcDataMap) {
     if (data.numReads === 0) {
       continue
     }
-    renderer.uploadFromTypedArraysForRegion(regionNumber, data)
-    renderer.uploadCigarFromTypedArraysForRegion(regionNumber, data)
-    renderer.uploadModificationsFromTypedArraysForRegion(regionNumber, data)
+    activeRegions.push(regionNumber)
+    renderer.uploadRegion(regionNumber, data)
     if (data.maxY > maxYVal) {
       maxYVal = data.maxY
     }
-    renderer.uploadCoverageFromTypedArraysForRegion(regionNumber, data)
-    renderer.uploadModCoverageFromTypedArraysForRegion(regionNumber, data)
   }
+  renderer.pruneRegions(activeRegions)
   return maxYVal
 }

@@ -17,18 +17,14 @@ import {
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
+import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
-import {
-  INTERBASE_HARDCLIP,
-  INTERBASE_INSERTION,
-  INTERBASE_SOFTCLIP,
-} from '../../shared/types.ts'
+import { splitInterbasesByType } from './alignmentComponentUtils.ts'
 import { getReadColor, rgb255 } from '../colorUtils.ts'
 import { getChainBounds } from './chainOverlayUtils.ts'
 import {
   arcColorPalette,
   arcLineColorPalette,
-  sashimiColorPalette,
 } from './shaders/arcShaders.ts'
 
 import type {
@@ -42,8 +38,8 @@ import type {
   ReadUploadData,
   RenderBlock,
   RenderState,
-  SashimiUploadData,
 } from './rendererTypes.ts'
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
 interface Canvas2DRegionData {
   regionStart: number
@@ -124,13 +120,6 @@ interface Canvas2DRegionData {
   arcLineYs: Float32Array
   arcLineColorTypes: Float32Array
   numArcLines: number
-
-  // Sashimi
-  sashimiX1: Float32Array
-  sashimiX2: Float32Array
-  sashimiScores: Float32Array
-  sashimiColorTypes: Uint8Array
-  numSashimiArcs: number
 
   // Connecting lines
   connectingLinePositions: Uint32Array
@@ -223,11 +212,6 @@ function emptyRegion(regionStart: number): Canvas2DRegionData {
     arcLineYs: emptyF32,
     arcLineColorTypes: emptyF32,
     numArcLines: 0,
-    sashimiX1: emptyF32,
-    sashimiX2: emptyF32,
-    sashimiScores: emptyF32,
-    sashimiColorTypes: empty8,
-    numSashimiArcs: 0,
     connectingLinePositions: empty32,
     connectingLineYs: empty16,
     connectingLineColorTypes: empty8,
@@ -247,6 +231,14 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       throw new Error('Canvas 2D context not available')
     }
     this.ctx = ctx
+  }
+
+  uploadRegion(regionNumber: number, data: PileupDataResult) {
+    this.uploadFromTypedArraysForRegion(regionNumber, data)
+    this.uploadCigarFromTypedArraysForRegion(regionNumber, data)
+    this.uploadModificationsFromTypedArraysForRegion(regionNumber, data)
+    this.uploadCoverageFromTypedArraysForRegion(regionNumber, data)
+    this.uploadModCoverageFromTypedArraysForRegion(regionNumber, data)
   }
 
   uploadFromTypedArraysForRegion(regionNumber: number, data: ReadUploadData) {
@@ -293,20 +285,10 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     r.mismatchFrequencies = data.mismatchFrequencies
     r.numMismatches = data.numMismatches
 
-    // Split interbases into types
-    const insIdx: number[] = []
-    const scIdx: number[] = []
-    const hcIdx: number[] = []
-    for (let i = 0; i < data.numInterbases; i++) {
-      const interbaseType = data.interbaseTypes[i]
-      if (interbaseType === INTERBASE_INSERTION) {
-        insIdx.push(i)
-      } else if (interbaseType === INTERBASE_SOFTCLIP) {
-        scIdx.push(i)
-      } else if (interbaseType === INTERBASE_HARDCLIP) {
-        hcIdx.push(i)
-      }
-    }
+    const { insIdx, scIdx, hcIdx } = splitInterbasesByType(
+      data.interbaseTypes,
+      data.numInterbases,
+    )
 
     const extractInterbases = (indices: number[]) => ({
       positions: new Uint32Array(indices.map(i => data.interbasePositions[i]!)),
@@ -446,21 +428,6 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  uploadSashimiFromTypedArraysForRegion(
-    regionNumber: number,
-    data: SashimiUploadData,
-  ) {
-    const r = this.regions.get(regionNumber)
-    if (!r) {
-      return
-    }
-    r.sashimiX1 = data.sashimiX1
-    r.sashimiX2 = data.sashimiX2
-    r.sashimiScores = data.sashimiScores
-    r.sashimiColorTypes = data.sashimiColorTypes
-    r.numSashimiArcs = data.numSashimiArcs
-  }
-
   uploadArcsFromTypedArraysForRegion(
     regionNumber: number,
     data: ArcsUploadData,
@@ -496,12 +463,8 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     r.numConnectingLines = data.numConnectingLines
   }
 
-  ensureBuffers(_regionStart: number) {
-    // no-op for Canvas 2D
-  }
-
-  clearLegacyBuffers() {
-    this.regions.clear()
+  pruneRegions(activeRegions: number[]) {
+    pruneRegionMap(this.regions, activeRegions)
   }
 
   renderBlocks(blocks: RenderBlock[], state: RenderState) {
@@ -539,17 +502,6 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
 
       if (state.showCoverage) {
         this.drawCoverage(ctx, region, block, bpLength, fullBlockWidth, state)
-      }
-
-      if (state.showSashimiArcs) {
-        this.drawSashimiArcs(
-          ctx,
-          region,
-          block,
-          bpLength,
-          fullBlockWidth,
-          state,
-        )
       }
 
       // Clip pileup area
@@ -1028,43 +980,6 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  private drawSashimiArcs(
-    ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    if (region.numSashimiArcs === 0) {
-      return
-    }
-    const covH = state.showCoverage ? state.coverageHeight : 0
-    const covYOffset = state.showCoverage ? state.coverageYOffset : 0
-
-    for (let i = 0; i < region.numSashimiArcs; i++) {
-      const x1Bp = region.sashimiX1[i]! + region.regionStart
-      const x2Bp = region.sashimiX2[i]! + region.regionStart
-      const colorIdx = region.sashimiColorTypes[i]!
-      const score = region.sashimiScores[i]!
-
-      const sx1 = this.bpToScreenX(x1Bp, block, bpLength, fullBlockWidth)
-      const sx2 = this.bpToScreenX(x2Bp, block, bpLength, fullBlockWidth)
-      const midX = (sx1 + sx2) / 2
-      const arcH = Math.min(
-        Math.abs(sx2 - sx1) * 0.3,
-        (covH - covYOffset * 2) * 0.8,
-      )
-
-      ctx.strokeStyle = this.paletteColor(sashimiColorPalette, colorIdx)
-      ctx.lineWidth = Math.max(1, Math.min(score / 5, 4))
-      ctx.beginPath()
-      ctx.moveTo(sx1, covYOffset)
-      ctx.quadraticCurveTo(midX, covYOffset + arcH, sx2, covYOffset)
-      ctx.stroke()
-    }
-  }
-
   private drawConnectingLines(
     ctx: CanvasRenderingContext2D,
     region: Canvas2DRegionData,
@@ -1196,14 +1111,6 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
         ctx.strokeStyle = '#00b8ff'
         ctx.lineWidth = 2
         ctx.strokeRect(x1, y, x2 - x1, fH)
-      }
-    }
-  }
-
-  pruneStaleRegions(activeRegionNumbers: Set<number>) {
-    for (const regionNumber of this.regions.keys()) {
-      if (!activeRegionNumbers.has(regionNumber)) {
-        this.regions.delete(regionNumber)
       }
     }
   }

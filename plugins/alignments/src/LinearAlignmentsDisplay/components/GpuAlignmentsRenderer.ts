@@ -3,6 +3,7 @@ import {
   packNoncovSegmentsForGpu,
   packSnpSegmentsForGpu,
 } from '@jbrowse/alignments-core'
+import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
 import {
@@ -10,11 +11,8 @@ import {
   ARC_LINE_FRAGMENT_SHADER,
   ARC_LINE_VERTEX_SHADER,
   ARC_VERTEX_SHADER,
-  SASHIMI_ARC_FRAGMENT_SHADER,
-  SASHIMI_ARC_VERTEX_SHADER,
   arcColorPalette,
   arcLineColorPalette,
-  sashimiColorPalette,
 } from './shaders/arcShaders.ts'
 import {
   GAP_FRAGMENT_SHADER,
@@ -75,7 +73,6 @@ import {
   MOD_COV_STRIDE,
   NONCOV_STRIDE,
   READ_STRIDE,
-  SASHIMI_STRIDE,
   SNP_COV_STRIDE,
   SOFTCLIP_STRIDE,
   UNIFORM_SIZE,
@@ -134,7 +131,6 @@ import {
   U_RANGE_Y0,
   U_REGION_START,
   U_REVERSED,
-  U_SASHIMI_COLORS,
   U_SCROLL_TOP,
   U_SHOW_STROKE,
 } from './wgsl/common.ts'
@@ -150,14 +146,9 @@ import {
   ARC_WGSL,
   CONNECTING_LINE_WGSL,
   FLAT_QUAD_WGSL,
-  SASHIMI_WGSL,
 } from './wgsl/miscShaders.ts'
 import { READ_WGSL } from './wgsl/readShader.ts'
-import {
-  INTERBASE_HARDCLIP,
-  INTERBASE_INSERTION,
-  INTERBASE_SOFTCLIP,
-} from '../../shared/types.ts'
+import { splitInterbasesByType } from './alignmentComponentUtils.ts'
 
 import type {
   AlignmentsBackend,
@@ -170,8 +161,8 @@ import type {
   ReadUploadData,
   RenderBlock,
   RenderState,
-  SashimiUploadData,
 } from './rendererTypes.ts'
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 // Simple GLSL for flat quad overlay (clip-space x1,y1,x2,y2 + RGBA)
@@ -211,7 +202,6 @@ const PASS_NONCOV = 'noncov'
 const PASS_INDICATOR = 'indicator'
 const PASS_ARC = 'arc'
 const PASS_ARC_LINE = 'arcLine'
-const PASS_SASHIMI = 'sashimi'
 const PASS_CONN_LINE = 'connLine'
 const PASS_FLAT_QUAD = 'flatQuad'
 const PASS_SOFTCLIP_BASES = 'softclipBases'
@@ -447,22 +437,6 @@ export const ALIGNMENTS_PASSES: PassDescriptor[] = [
     ],
   },
   {
-    id: PASS_SASHIMI,
-    wgslSource: SASHIMI_WGSL,
-    glslVertex: SASHIMI_ARC_VERTEX_SHADER,
-    glslFragment: SASHIMI_ARC_FRAGMENT_SHADER,
-    instanceStride: SASHIMI_STRIDE * 4,
-    verticesPerInstance: (ARC_CURVE_SEGMENTS + 1) * 2,
-    blend: true,
-    topology: 'triangle-strip',
-    glAttributes: [
-      fattr('a_x1', 1, 0),
-      fattr('a_x2', 1, 4),
-      fattr('a_colorType', 1, 8),
-      fattr('a_lineWidth', 1, 12),
-    ],
-  },
-  {
     id: PASS_CONN_LINE,
     wgslSource: CONNECTING_LINE_WGSL,
     glslVertex: CONNECTING_LINE_VERTEX_SHADER,
@@ -532,15 +506,10 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     this.hal = hal
   }
 
-  clearLegacyBuffers() {
-    for (const key of this.regions.keys()) {
-      this.hal.deleteRegion(key)
-    }
-    this.regions.clear()
-  }
-
-  ensureBuffers(_regionStart: number) {
-    // no-op — regions are created on upload
+  pruneRegions(activeRegions: number[]) {
+    pruneRegionMap(this.regions, activeRegions, n => {
+      this.hal.deleteRegion(n)
+    })
   }
 
   private emptyRegion(regionStart: number): LocalRegion {
@@ -554,6 +523,14 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       binSize: 1,
       noncovMaxCount: 0,
     }
+  }
+
+  uploadRegion(regionNumber: number, data: PileupDataResult) {
+    this.uploadFromTypedArraysForRegion(regionNumber, data)
+    this.uploadCigarFromTypedArraysForRegion(regionNumber, data)
+    this.uploadModificationsFromTypedArraysForRegion(regionNumber, data)
+    this.uploadCoverageFromTypedArraysForRegion(regionNumber, data)
+    this.uploadModCoverageFromTypedArraysForRegion(regionNumber, data)
   }
 
   uploadFromTypedArraysForRegion(regionNumber: number, data: ReadUploadData) {
@@ -644,19 +621,10 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       )
     }
 
-    const insIdx: number[] = []
-    const scIdx: number[] = []
-    const hcIdx: number[] = []
-    for (let i = 0; i < data.numInterbases; i++) {
-      const t = data.interbaseTypes[i]
-      if (t === INTERBASE_INSERTION) {
-        insIdx.push(i)
-      } else if (t === INTERBASE_SOFTCLIP) {
-        scIdx.push(i)
-      } else if (t === INTERBASE_HARDCLIP) {
-        hcIdx.push(i)
-      }
-    }
+    const { insIdx, scIdx, hcIdx } = splitInterbasesByType(
+      data.interbaseTypes,
+      data.numInterbases,
+    )
 
     const uploadClip = (indices: number[], stride: number, passId: string) => {
       if (indices.length === 0) {
@@ -817,25 +785,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  uploadSashimiFromTypedArraysForRegion(
-    regionNumber: number,
-    data: SashimiUploadData,
-  ) {
-    if (data.numSashimiArcs > 0) {
-      const n = data.numSashimiArcs
-      const buf = new ArrayBuffer(n * SASHIMI_STRIDE * 4)
-      const f32 = new Float32Array(buf)
-      for (let i = 0; i < n; i++) {
-        const o = i * SASHIMI_STRIDE
-        f32[o] = data.sashimiX1[i]!
-        f32[o + 1] = data.sashimiX2[i]!
-        f32[o + 2] = data.sashimiColorTypes[i]!
-        f32[o + 3] = data.sashimiScores[i]!
-      }
-      this.hal.uploadBuffer(regionNumber, PASS_SASHIMI, buf, n)
-    }
-  }
-
   uploadArcsFromTypedArraysForRegion(
     regionNumber: number,
     data: ArcsUploadData,
@@ -987,9 +936,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
     for (const [i, element] of arcLineColorPalette.entries()) {
       this.writeColor(U_ARC_LINE_COLORS + i * 3, element)
-    }
-    for (const [i, element] of sashimiColorPalette.entries()) {
-      this.writeColor(U_SASHIMI_COLORS + i * 3, element)
     }
 
     this.hal.writeUniforms(this.uData)
@@ -1157,30 +1103,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
           this.uF32[U_CANVAS_H] = state.canvasHeight
           this.hal.writeUniforms(this.uData)
         }
-      }
-
-      // Sashimi arcs overlay on coverage
-      if (state.showSashimiArcs && state.showCoverage) {
-        this.uF32[U_COV_OFFSET] = state.coverageYOffset
-        this.writeBlockUniforms(region, block, scissorX, scissorW)
-        this.hal.writeUniforms(this.uData)
-
-        this.hal.setViewport(
-          Math.round(scissorX * dpr),
-          0,
-          Math.round(scissorW * dpr),
-          Math.round(covH * dpr),
-        )
-        this.hal.setScissor(
-          Math.round(scissorX * dpr),
-          0,
-          Math.round(scissorW * dpr),
-          Math.round(covH * dpr),
-        )
-        this.hal.drawPass(PASS_SASHIMI, block.regionNumber)
-
-        this.uF32[U_COV_OFFSET] = covH + arcsHeight
-        this.hal.writeUniforms(this.uData)
       }
 
       hasDrawn = true

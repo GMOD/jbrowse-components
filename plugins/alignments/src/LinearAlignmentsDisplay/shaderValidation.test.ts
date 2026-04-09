@@ -23,7 +23,6 @@ import {
   ARC_WGSL,
   CONNECTING_LINE_WGSL,
   FLAT_QUAD_WGSL,
-  SASHIMI_WGSL,
 } from './components/wgsl/miscShaders.ts'
 import { READ_WGSL } from './components/wgsl/readShader.ts'
 
@@ -67,7 +66,6 @@ const wgslShaders: [string, string][] = [
   ['indicator', INDICATOR_WGSL],
   ['arc', ARC_WGSL],
   ['arcLine', ARC_LINE_WGSL],
-  ['sashimi', SASHIMI_WGSL],
   ['connectingLine', CONNECTING_LINE_WGSL],
   ['flatQuad', FLAT_QUAD_WGSL],
 ]

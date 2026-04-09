@@ -1,3 +1,4 @@
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { ColorPalette } from './shaders/colors.ts'
 
 export type { ColorPalette, RGBColor } from './shaders/colors.ts'
@@ -29,8 +30,6 @@ export interface RenderState {
   flipStrandLongReadChains?: boolean
   reversed?: boolean
   arcLineWidth?: number
-  // Sashimi arcs (splice junctions overlaid on coverage)
-  showSashimiArcs?: boolean
   // Show arcs alongside pileup (between coverage and reads)
   showArcs?: boolean
   arcsHeight?: number
@@ -126,14 +125,6 @@ export interface ModCoverageUploadData {
   numModCovSegments: number
 }
 
-export interface SashimiUploadData {
-  sashimiX1: Float32Array
-  sashimiX2: Float32Array
-  sashimiScores: Float32Array
-  sashimiColorTypes: Uint8Array
-  numSashimiArcs: number
-}
-
 export interface ArcsUploadData {
   regionStart: number
   arcX1: Float32Array
@@ -156,32 +147,8 @@ export interface ConnectingLinesUploadData {
 }
 
 export interface AlignmentsBackend {
-  clearLegacyBuffers(): void
-  ensureBuffers(regionStart: number): void
-  uploadFromTypedArraysForRegion(
-    regionNumber: number,
-    data: ReadUploadData,
-  ): void
-  uploadCigarFromTypedArraysForRegion(
-    regionNumber: number,
-    data: CigarUploadData,
-  ): void
-  uploadModificationsFromTypedArraysForRegion(
-    regionNumber: number,
-    data: ModificationUploadData,
-  ): void
-  uploadCoverageFromTypedArraysForRegion(
-    regionNumber: number,
-    data: CoverageUploadData,
-  ): void
-  uploadModCoverageFromTypedArraysForRegion(
-    regionNumber: number,
-    data: ModCoverageUploadData,
-  ): void
-  uploadSashimiFromTypedArraysForRegion(
-    regionNumber: number,
-    data: SashimiUploadData,
-  ): void
+  pruneRegions(activeRegions: number[]): void
+  uploadRegion(regionNumber: number, data: PileupDataResult): void
   uploadArcsFromTypedArraysForRegion(
     regionNumber: number,
     data: ArcsUploadData,

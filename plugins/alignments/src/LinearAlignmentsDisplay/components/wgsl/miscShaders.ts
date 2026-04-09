@@ -3,7 +3,6 @@ import {
   ARC_HEIGHT_MARGIN,
   NUM_ARC_COLORS,
   NUM_LINE_COLORS,
-  NUM_SASHIMI_COLORS,
   PREAMBLE,
   SIMPLE_FS,
   SIMPLE_VERTEX_OUTPUT,
@@ -13,9 +12,9 @@ import {
 const ARC_PREAMBLE = PREAMBLE
 
 // WARNING: DO NOT DELETE THIS COMMENT.
-// The arc/sashimi geometry and AA formula in this file MUST be kept in sync with
+// The arc geometry and AA formula in this file MUST be kept in sync with
 // the hand-written WebGL GLSL in shaders/arcShaders.ts (ARC_VERTEX_SHADER /
-// ARC_FRAGMENT_SHADER / SASHIMI_ARC_VERTEX_SHADER / SASHIMI_ARC_FRAGMENT_SHADER).
+// ARC_FRAGMENT_SHADER).
 // Both implement the same stroke rendering logic:
 //   - vertex: hw = lineWidth * 0.5 + 1.0  (geometry padding)
 //   - fragment: alpha = clamp((hw - d) / aa + 0.5, 0, 1)  (AA formula)
@@ -151,79 +150,6 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
 }
 
 ${SIMPLE_FS}
-`
-
-export const SASHIMI_WGSL = `
-${ARC_PREAMBLE}
-
-const SEGMENTS: u32 = ${ARC_CURVE_SEGMENTS}u;
-
-// SYNC(shaders/arcShaders.ts): SashimiInst field order must match GLSL in attributes
-struct SashimiInst { x1: f32, x2: f32, color_type: f32, line_width: f32 }
-@group(0) @binding(0) var<storage, read> instances: array<SashimiInst>;
-
-struct SashimiOut {
-  @builtin(position) position: vec4f,
-  @location(0) color: vec4f,
-  @location(1) dist: f32,
-  @location(2) lw: f32,
-}
-
-fn eval_sashimi(t: f32, inst: SashimiInst) -> vec2f {
-  let mt = 1.0-t; let mt2 = mt*mt; let mt3 = mt2*mt;
-  let t2 = t*t; let t3 = t2*t;
-  let x_bp = mt3*inst.x1 + 3.0*mt2*t*inst.x1 + 3.0*mt*t2*inst.x2 + t3*inst.x2;
-  let ch = uf(16u);
-  // SYNC(shaders/arcShaders.ts): destY = coverageHeight * (0.8/0.75), baseline at 0.9*covH
-  let dest_y = ch * (0.8 / 0.75);
-  let y_px = 3.0*mt2*t*dest_y + 3.0*mt*t2*dest_y;
-  let px_per_bp = uf(25u) / uf(2u);
-  let screen_x = uf(24u) + (x_bp - uf(30u)) * px_per_bp;
-  return vec2f(screen_x, 0.9 * ch - y_px);
-}
-
-@vertex
-fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -> SashimiOut {
-  var out: SashimiOut;
-  let inst = instances[iid];
-  let seg = vid / 2u;
-  let side = select(-1.0, 1.0, vid % 2u == 0u);
-  let t = f32(seg) / f32(SEGMENTS);
-
-  let pos = eval_sashimi(t, inst);
-  let eps = 1.0 / f32(SEGMENTS);
-  let p0 = eval_sashimi(max(t - eps*0.5, 0.0), inst);
-  let p1 = eval_sashimi(min(t + eps*0.5, 1.0), inst);
-  let tang = p1 - p0;
-  let tlen = length(tang);
-  var normal: vec2f;
-  // SYNC(shaders/arcShaders.ts): tangent threshold 0.001, halfWidth = lineWidth*0.5+1.0
-  if tlen > 0.001 { let tn = tang / tlen; normal = vec2f(-tn.y, tn.x); }
-  else { normal = vec2f(0.0, 1.0); }
-
-  let hw = inst.line_width * 0.5 + 1.0;
-  let offset_pos = pos + normal * hw * side;
-  let clip_x = (offset_pos.x / canvas_width()) * 2.0 - 1.0;
-  let clip_y = 1.0 - ((offset_pos.y + coverage_offset()) / canvas_height()) * 2.0;
-  out.position = vec4f(flip_x(clip_x), clip_y, 0.0, 1.0);
-  out.dist = side * hw;
-  out.lw = inst.line_width;
-  let idx = min(u32(inst.color_type + 0.5), ${NUM_SASHIMI_COLORS - 1}u);
-  out.color = vec4f(color3(128u + idx * 3u), 1.0);
-  return out;
-}
-
-@fragment
-fn fs_main(in: SashimiOut) -> @location(0) vec4f {
-  // SYNC(shaders/arcShaders.ts): AA formula clamp((halfWidth - d) / aa + 0.5, 0, 1)
-  let hw = in.lw * 0.5;
-  let d = abs(in.dist);
-  let aa = fwidth(in.dist);
-  let alpha = clamp((hw - d) / aa + 0.5, 0.0, 1.0);
-  let a = in.color.a * alpha;
-  // premultiply RGB for WebGPU premultiplied alpha canvas
-  return vec4f(in.color.rgb * a, a);
-}
 `
 
 export const CONNECTING_LINE_WGSL = `
