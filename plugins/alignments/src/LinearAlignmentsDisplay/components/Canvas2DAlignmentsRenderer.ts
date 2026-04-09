@@ -22,10 +22,7 @@ import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 import { splitInterbasesByType } from './alignmentComponentUtils.ts'
 import { getReadColor, rgb255 } from '../colorUtils.ts'
 import { getChainBounds } from './chainOverlayUtils.ts'
-import {
-  arcColorPalette,
-  arcLineColorPalette,
-} from './shaders/arcShaders.ts'
+import { arcColorPalette, arcLineColorPalette } from './shaders/arcShaders.ts'
 
 import type {
   AlignmentsBackend,

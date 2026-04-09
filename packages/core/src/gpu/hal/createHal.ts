@@ -26,8 +26,10 @@ export async function createGpuHal(
         return webgpu
       }
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn('[GPU] WebGPU initialization failed, falling back to WebGL2:', e)
+      console.warn(
+        '[GPU] WebGPU initialization failed, falling back to WebGL2:',
+        e,
+      )
     }
   }
 

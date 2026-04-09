@@ -150,7 +150,7 @@ async function ensurePipelines(
       const fragEntry = desc.wgslFragmentEntry ?? 'fs_main'
       const format = desc.picking
         ? ('rgba8unorm' as GPUTextureFormat)
-        : (preferredFormat as GPUTextureFormat)
+        : preferredFormat
       const blend = desc.picking
         ? undefined
         : desc.blend
@@ -290,7 +290,7 @@ export class WebGPUHal implements GpuHal {
     if (width > 0 && height > 0) {
       this.msaaTexture = this.device.createTexture({
         size: [width, height],
-        format: navigator.gpu.getPreferredCanvasFormat() as GPUTextureFormat,
+        format: navigator.gpu.getPreferredCanvasFormat(),
         sampleCount: MSAA_SAMPLE_COUNT,
         usage: GPUTextureUsage.RENDER_ATTACHMENT,
       })

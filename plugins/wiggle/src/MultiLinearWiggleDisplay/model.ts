@@ -28,11 +28,7 @@ import { autorun, untracked } from 'mobx'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
 import { getRowHeight, isOverlayMode } from '../shared/wiggleComponentUtils.ts'
-import {
-  computeAutoscaleDomain,
-  getNiceDomain,
-  getScale,
-} from '../util.ts'
+import { computeAutoscaleDomain, getNiceDomain, getScale } from '../util.ts'
 
 import type { MultiWiggleDataResult } from '../RenderMultiWiggleDataRPC/types.ts'
 import type { Source, SourceInfo } from '../util.ts'

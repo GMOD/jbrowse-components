@@ -86,7 +86,7 @@ export class WebGPURenderer implements Renderer {
       return null
     }
     const { device, context } = result
-    const format = navigator.gpu.getPreferredCanvasFormat() as GPUTextureFormat
+    const format = navigator.gpu.getPreferredCanvasFormat()
     const module = device.createShaderModule({ code: shaderSource })
 
     const pipeline = device.createRenderPipeline({

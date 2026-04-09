@@ -25,6 +25,7 @@ import type {
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
 } from './types.ts'
+import type { Feature } from '../util/index.ts'
 
 interface ConfigSlot {
   getValue: (args: Record<string, unknown>) => unknown
@@ -258,10 +259,6 @@ export function isConfigurationSlotType(thing: unknown) {
     'isJBrowseConfigurationSlot' in thing
   )
 }
-
-// --- Plain-object config utilities (no MST dependency) ---
-
-import type { Feature } from '../util/index.ts'
 
 function resolveConfigValue(
   config: Record<string, unknown>,

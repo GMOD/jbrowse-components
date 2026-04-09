@@ -141,7 +141,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     useState<SubfeatureInfo | null>(null)
   // false positive: omitting <[number,number]> widens to number[] — known tuple issue
   // https://github.com/typescript-eslint/typescript-eslint/issues/9529
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments
+
   const [clientXY, setClientXY] = useState<[number, number]>([0, 0])
   const [contextMenuCoord, setContextMenuCoord] = useState<
     [number, number] | undefined

@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react'
 
-import { onDeviceLost } from '../gpu/getGpuDevice.ts'
 import { useGpuRenderer } from './useGpuRenderer.ts'
+import { onDeviceLost } from '../gpu/getGpuDevice.ts'
 
 jest.mock('../gpu/getGpuDevice.ts', () => ({
   onDeviceLost: jest.fn(() => jest.fn()),
@@ -114,7 +114,9 @@ describe('useGpuRenderer', () => {
 
   test('prevents default on webglcontextlost to allow restore', () => {
     const canvas = document.createElement('canvas')
-    renderHook(() => useGpuRenderer(createCanvasRef(canvas), createMockFactory()))
+    renderHook(() =>
+      useGpuRenderer(createCanvasRef(canvas), createMockFactory()),
+    )
 
     const event = new Event('webglcontextlost', { cancelable: true })
     canvas.dispatchEvent(event)
@@ -146,7 +148,9 @@ describe('useGpuRenderer', () => {
   test('re-initializes when canvas element is replaced after regionTooLarge recovery', async () => {
     const canvas1 = document.createElement('canvas')
     const canvas2 = document.createElement('canvas')
-    const canvasRef: { current: HTMLCanvasElement | null } = { current: canvas1 }
+    const canvasRef: { current: HTMLCanvasElement | null } = {
+      current: canvas1,
+    }
     const dispose = jest.fn()
     const factory = jest.fn().mockResolvedValue({ dispose })
 

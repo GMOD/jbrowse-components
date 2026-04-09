@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/alignments-core'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
+import { splitInterbasesByType } from './alignmentComponentUtils.ts'
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
 import {
   ARC_FRAGMENT_SHADER,
@@ -148,7 +149,6 @@ import {
   FLAT_QUAD_WGSL,
 } from './wgsl/miscShaders.ts'
 import { READ_WGSL } from './wgsl/readShader.ts'
-import { splitInterbasesByType } from './alignmentComponentUtils.ts'
 
 import type {
   AlignmentsBackend,

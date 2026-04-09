@@ -1,7 +1,4 @@
-import {
-  lookupColorRamp,
-  prepareCanvas,
-} from '@jbrowse/core/gpu/canvas2dUtils'
+import { lookupColorRamp, prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
 
 import type { LDBackend, LDRenderState } from './ldBackendTypes.ts'
 

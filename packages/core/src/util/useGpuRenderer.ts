@@ -51,8 +51,12 @@ export function useGpuRenderer<R extends { dispose(): void }>(
       return undefined
     }
     // preventDefault on contextlost allows the context to be restored.
-    const onLost = (e: Event) => { e.preventDefault() }
-    const onRestored = () => { setContextVersion(v => v + 1) }
+    const onLost = (e: Event) => {
+      e.preventDefault()
+    }
+    const onRestored = () => {
+      setContextVersion(v => v + 1)
+    }
     canvas.addEventListener('webglcontextlost', onLost)
     canvas.addEventListener('webglcontextrestored', onRestored)
     return () => {

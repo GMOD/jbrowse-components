@@ -1,5 +1,5 @@
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { ColorPalette } from './shaders/colors.ts'
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
 export type { ColorPalette, RGBColor } from './shaders/colors.ts'
 
