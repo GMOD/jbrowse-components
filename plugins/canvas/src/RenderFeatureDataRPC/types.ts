@@ -35,8 +35,6 @@ export interface LayoutArgs {
 export interface Glyph {
   type: GlyphType
   layout(args: LayoutArgs): FeatureLayout
-  getSubfeatureMouseover?(feature: Feature): string | undefined
-  hasIndexableChildren?: boolean
 }
 
 export interface LayoutRecord {
@@ -50,6 +48,4 @@ export type GlyphType =
   | 'ProcessedTranscript'
   | 'Segments'
   | 'Subfeatures'
-  | 'CDS'
   | 'MatureProteinRegion'
-  | 'RepeatRegion'

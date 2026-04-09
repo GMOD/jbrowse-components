@@ -27,19 +27,19 @@ const defaultConfigContext = {
 
 describe('findGlyph (glyph matching)', () => {
   describe('CDS features', () => {
-    it('returns CDS glyph for type=CDS regardless of subfeatures', () => {
+    it('returns Box glyph for type=CDS regardless of subfeatures', () => {
       const feature = createMockFeature({
         type: 'CDS',
         subfeatures: [createMockFeature({ type: 'exon' })],
       })
       const glyph = findGlyph(feature as any, defaultConfigContext)
-      expect(glyph.type).toBe('CDS')
+      expect(glyph.type).toBe('Box')
     })
 
-    it('returns CDS glyph for simple CDS without subfeatures', () => {
+    it('returns Box glyph for simple CDS without subfeatures', () => {
       const feature = createMockFeature({ type: 'CDS' })
       const glyph = findGlyph(feature as any, defaultConfigContext)
-      expect(glyph.type).toBe('CDS')
+      expect(glyph.type).toBe('Box')
     })
   })
 

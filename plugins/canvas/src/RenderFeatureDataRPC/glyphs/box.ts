@@ -1,5 +1,4 @@
-import { readCachedConfig } from '../renderConfig.ts'
-import { getStrandArrowPadding } from './glyphUtils.ts'
+import { getFeatureDimensions, getStrandArrowPadding } from './glyphUtils.ts'
 
 import type { FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 
@@ -8,12 +7,10 @@ export const boxGlyph: Glyph = {
 
   layout(args: LayoutArgs): FeatureLayout {
     const { feature, bpPerPx, configContext } = args
-    const { config, featureHeight, heightMultiplier } = configContext
+    const { heightPx, widthPx } = getFeatureDimensions(feature, bpPerPx, configContext)
 
-    const heightPx = readCachedConfig(featureHeight, config, 'featureHeight', feature)
-    const baseHeightPx = heightPx * heightMultiplier
-    const widthPx = (feature.get('end') - feature.get('start')) / bpPerPx
-
+    // Only top-level boxes get strand arrows; child boxes (inside
+    // subfeaturesGlyph) skip them since the parent handles arrows
     const isTopLevel = !feature.parent?.()
     const strand = feature.get('strand') as number
     const arrowPadding = isTopLevel
@@ -26,8 +23,8 @@ export const boxGlyph: Glyph = {
       x: 0,
       y: 0,
       width: widthPx,
-      height: baseHeightPx,
-      totalLayoutHeight: baseHeightPx,
+      height: heightPx,
+      totalLayoutHeight: heightPx,
       totalLayoutWidth: widthPx + arrowPadding.left + arrowPadding.right,
       leftPadding: arrowPadding.left,
       children: [],

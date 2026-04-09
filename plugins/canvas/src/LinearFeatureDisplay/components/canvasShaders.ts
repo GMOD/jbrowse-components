@@ -122,7 +122,7 @@ fn vs_main(
   let sx2 = snap_to_pixel_x(hp_to_clip_x(hp_split_uint(abs_end), u.bp_range_x, u.zero), u.canvas_width);
 
   // SYNC: must match MIN_RECT_WIDTH_PX in sharedRendererConstants.ts
-  let min_width = 2.0 / u.canvas_width;
+  let min_width = 4.0 / u.canvas_width;
   let dx = sx2 - sx1;
   let final_sx2 = select(sx2, sx1 + select(min_width, -min_width, dx < 0.0), abs(dx) < min_width);
   let sx = mix(sx1, final_sx2, local_x);

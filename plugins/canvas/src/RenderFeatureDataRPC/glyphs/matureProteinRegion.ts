@@ -1,5 +1,8 @@
-import { readCachedConfig } from '../renderConfig.ts'
-import { layoutChild, sortByPosition } from './glyphUtils.ts'
+import {
+  getFeatureDimensions,
+  layoutChild,
+  sortByPosition,
+} from './glyphUtils.ts'
 
 import type { FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -9,11 +12,6 @@ const MATURE_PROTEIN_TYPES = new Set([
   'mature_protein_region',
 ])
 
-export function hasMatureProteinChildren(feature: Feature) {
-  const subfeatures = feature.get('subfeatures')
-  return !!subfeatures?.some(sub => MATURE_PROTEIN_TYPES.has(sub.get('type')))
-}
-
 export function getMatureProteinChildren(feature: Feature): Feature[] {
   const subfeatures = feature.get('subfeatures')
   return (
@@ -21,43 +19,27 @@ export function getMatureProteinChildren(feature: Feature): Feature[] {
   )
 }
 
+export function hasMatureProteinChildren(feature: Feature) {
+  return getMatureProteinChildren(feature).length > 0
+}
+
 export const matureProteinRegionGlyph: Glyph = {
   type: 'MatureProteinRegion',
-  hasIndexableChildren: true,
-
-  getSubfeatureMouseover(feature: Feature) {
-    const product = feature.get('product') as string | undefined
-    const proteinId = feature.get('protein_id') as string | undefined
-    const parts: string[] = []
-    if (product) {
-      parts.push(product)
-    }
-    if (proteinId) {
-      parts.push(`(${proteinId})`)
-    }
-    return parts.length > 0 ? parts.join(' ') : undefined
-  },
 
   layout(args: LayoutArgs): FeatureLayout {
     const { feature, bpPerPx, configContext } = args
-    const { config, featureHeight, heightMultiplier, subfeatureLabels } =
-      configContext
-
-    const start = feature.get('start')
-    const end = feature.get('end')
-    const heightPx = readCachedConfig(featureHeight, config, 'featureHeight', feature)
-    const baseHeightPx = heightPx * heightMultiplier
-    const widthPx = (end - start) / bpPerPx
+    const { subfeatureLabels } = configContext
+    const { heightPx, widthPx } = getFeatureDimensions(feature, bpPerPx, configContext)
 
     const matureProteins = getMatureProteinChildren(feature)
-    const children = matureProteins.map(child =>
-      layoutChild(child, feature, args),
+    const sortedChildren = sortByPosition(
+      matureProteins.map(child => layoutChild(child, feature, args)),
     )
 
-    const sortedChildren = sortByPosition(children)
     const numRows = Math.max(1, sortedChildren.length)
+    // 'below' labels need 2x row height: one half for the box, one for the label
     const perRowMultiplier = subfeatureLabels === 'below' ? 2 : 1
-    const rowHeight = baseHeightPx * perRowMultiplier
+    const rowHeight = heightPx * perRowMultiplier
     const totalHeight = rowHeight * numRows
 
     const padding = 1

@@ -22,7 +22,6 @@ import type {
   SubfeatureInfo,
 } from './rpcTypes.ts'
 import type { FeatureLayout, LayoutRecord, PeptideData } from './types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -55,9 +54,8 @@ export interface ArrowData {
 
 interface RenderContext {
   regionStart: number
-  config: AnyConfigurationModel
   configContext: RenderConfigContext
-  theme: Theme
+  theme: Record<string, unknown>
   colorByCDS: boolean
   peptideDataMap?: Map<string, PeptideData>
 }
@@ -73,6 +71,13 @@ interface Collector {
 }
 
 const UTR_HEIGHT_FRACTION = 0.65
+
+function isTranscriptLayout(layout: FeatureLayout) {
+  return (
+    layout.glyphType === 'ProcessedTranscript' ||
+    layout.glyphType === 'Segments'
+  )
+}
 
 function colorToUint32(colorStr: string) {
   const [r, g, b, a] = cssColorToRgba(colorStr)
@@ -223,7 +228,6 @@ function emitExonRects(
 
     const childColor = getBoxColor({
       feature: childFeature,
-      config: ctx.config,
       configContext: ctx.configContext,
       colorByCDS: ctx.colorByCDS,
       theme: ctx.theme,
@@ -351,7 +355,6 @@ function processTranscriptLayout(
   const transcriptStrand = (transcriptFeature.get('strand') as number) || 0
   const strokeColor = getStrokeColor({
     feature: transcriptFeature,
-    config: ctx.config,
     configContext: ctx.configContext,
     theme: ctx.theme,
   })
@@ -404,14 +407,12 @@ function processFeatureRecord(
 
   const fillColor = getBoxColor({
     feature,
-    config: ctx.config,
     configContext: ctx.configContext,
     colorByCDS: ctx.colorByCDS,
     theme: ctx.theme,
   })
   const strokeColor = getStrokeColor({
     feature,
-    config: ctx.config,
     configContext: ctx.configContext,
     theme: ctx.theme,
   })
@@ -422,7 +423,6 @@ function processFeatureRecord(
   const description = getFeatureDescription(feature)
   const { nameLabel, descriptionLabel } = createFeatureFloatingLabels({
     feature,
-    config: ctx.config,
     configContext: ctx.configContext,
     nameColor: 'black',
     descriptionColor: 'blue',
@@ -463,17 +463,11 @@ function processFeatureRecord(
   })
   const flatbushIdx = collector.flatbushItems.length - 1
 
-  if (
-    layout.glyphType === 'ProcessedTranscript' ||
-    layout.glyphType === 'Segments'
-  ) {
+  if (isTranscriptLayout(layout)) {
     processTranscriptLayout(layout, 0, feature, flatbushIdx, ctx, collector)
   } else if (layout.glyphType === 'Subfeatures') {
     for (const childLayout of layout.children) {
-      if (
-        childLayout.glyphType === 'ProcessedTranscript' ||
-        childLayout.glyphType === 'Segments'
-      ) {
+      if (isTranscriptLayout(childLayout)) {
         processTranscriptLayout(
           childLayout,
           childLayout.y,
@@ -490,7 +484,6 @@ function processFeatureRecord(
 
         const childColor = getBoxColor({
           feature: childFeature,
-          config: ctx.config,
           configContext: ctx.configContext,
           colorByCDS: ctx.colorByCDS,
           theme: ctx.theme,
@@ -546,7 +539,6 @@ function processFeatureRecord(
 export function collectRenderData(
   layoutRecords: LayoutRecord[],
   regionStart: number,
-  config: AnyConfigurationModel,
   configContext: RenderConfigContext,
   theme: Theme,
   colorByCDS: boolean,
@@ -554,7 +546,6 @@ export function collectRenderData(
 ) {
   const ctx: RenderContext = {
     regionStart,
-    config,
     configContext,
     theme,
     colorByCDS,

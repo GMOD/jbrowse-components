@@ -1,6 +1,6 @@
 import { applyLabelDimensions } from '../labelUtils.ts'
-import { readCachedConfig } from '../renderConfig.ts'
-import { findGlyph } from './index.ts'
+import { findGlyph } from './findGlyph.ts'
+import { getFeatureDimensions } from './glyphUtils.ts'
 
 import type { FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -49,22 +49,11 @@ export const subfeaturesGlyph: Glyph = {
 
   layout(args: LayoutArgs): FeatureLayout {
     const { feature, bpPerPx, configContext } = args
-    const {
-      config,
-      featureHeight,
-      heightMultiplier,
-      geneGlyphMode,
-      transcriptTypes,
-    } = configContext
+    const { geneGlyphMode, transcriptTypes } = configContext
 
-    const featureBp = {
-      start: feature.get('start'),
-      end: feature.get('end'),
-    }
-    const heightPx = readCachedConfig(featureHeight, config, 'featureHeight', feature)
-    const baseHeightPx = heightPx * heightMultiplier
-    const widthPx = (featureBp.end - featureBp.start) / bpPerPx
+    const { start: featureStart, heightPx, widthPx } = getFeatureDimensions(feature, bpPerPx, configContext)
 
+    // Sort coding transcripts first so they render on top in stacked layout
     let subfeatures = [...(feature.get('subfeatures') || [])] as Feature[]
     const codingStatus = new Map(
       subfeatures.map(f => [f.id(), hasCodingSubfeature(f)]),
@@ -111,12 +100,7 @@ export const subfeaturesGlyph: Glyph = {
         isTranscriptChild: isChildTranscript,
       })
 
-      const childBp = {
-        start: child.get('start'),
-        end: child.get('end'),
-      }
-      const offsetBp = childBp.start - featureBp.start
-      const xRelativePx = offsetBp / bpPerPx
+      const xRelativePx = (child.get('start') - featureStart) / bpPerPx
 
       childLayout.x = xRelativePx
       childLayout.y = currentYPx
@@ -134,7 +118,7 @@ export const subfeaturesGlyph: Glyph = {
       }
     }
 
-    const totalHeightPx = currentYPx > 0 ? currentYPx : baseHeightPx
+    const totalHeightPx = currentYPx > 0 ? currentYPx : heightPx
 
     return {
       feature,
