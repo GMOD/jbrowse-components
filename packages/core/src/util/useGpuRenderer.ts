@@ -35,6 +35,7 @@ export function useGpuRenderer<R extends { dispose(): void }>(
   const lastCanvasRef = useRef<HTMLCanvasElement | null>(null)
   // No deps: runs every render to detect when canvasRef.current is a new
   // element (e.g. after regionTooLarge unmounts and remounts the canvas).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const canvas = canvasRef.current
     if (canvas && lastCanvasRef.current && lastCanvasRef.current !== canvas) {

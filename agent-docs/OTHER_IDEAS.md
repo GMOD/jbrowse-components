@@ -166,3 +166,8 @@ are real variants that users may want to see at all zoom levels regardless of
 frequency. When enabled, features would render at full opacity whenever they are
 present, bypassing both the zoom-based alpha and the frequency-based importance
 scaling.
+
+## More
+
+Multi-bed e.g. chromatin bed, repeat types on different rows from single file,
+or multiple iles

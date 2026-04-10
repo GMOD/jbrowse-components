@@ -359,16 +359,20 @@ function stateModelFactory(pluginManager: PluginManager) {
           const asm = assemblyManager.get(self.init.assembly)
           return !!(asm?.initialized && asm.regions)
         }
-        return assemblyManager.areAssembliesInitialized(this.assemblyNames)
+        return this.assemblyNames.every(
+          a => assemblyManager.get(a)?.initialized,
+        )
       },
 
       /**
        * #getter
        */
       get assemblyErrors() {
-        return getSession(self).assemblyManager.getAssemblyErrors(
-          this.assemblyNames,
-        )
+        const { assemblyManager } = getSession(self)
+        return this.assemblyNames
+          .map(a => assemblyManager.get(a)?.error)
+          .filter(f => !!f)
+          .join(', ')
       },
 
       /**

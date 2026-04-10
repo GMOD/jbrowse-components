@@ -446,7 +446,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get assembliesNotFound() {
         const { assemblyManager } = getSession(self)
         const r0 = self.assemblyNames
-          .filter(a => !assemblyManager.assemblyNameMap[a])
+          .map(a => (!assemblyManager.get(a) ? a : undefined))
+          .filter(f => !!f)
           .join(',')
         return r0 ? `Assemblies ${r0} not found` : undefined
       },
@@ -455,17 +456,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get assemblyErrors() {
-        return getSession(self).assemblyManager.getAssemblyErrors(
-          self.assemblyNames,
-        )
+        const { assemblyManager } = getSession(self)
+        return self.assemblyNames
+          .map(a => assemblyManager.get(a)?.error)
+          .filter(f => !!f)
+          .join(', ')
       },
 
       /**
        * #getter
        */
       get assembliesInitialized() {
-        return getSession(self).assemblyManager.areAssembliesInitialized(
-          self.assemblyNames,
+        const { assemblyManager } = getSession(self)
+        return self.assemblyNames.every(
+          a => assemblyManager.get(a)?.initialized,
         )
       },
 
@@ -853,9 +857,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setVolatileGuides(guides: VolatileGuide[]) {
         self.volatileGuides = guides
       },
-      /**
-       * #action
-       */
       /**
        * #action
        */

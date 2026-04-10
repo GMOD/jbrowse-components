@@ -239,16 +239,19 @@ export default function stateModelFactory(pm: PluginManager) {
        * #getter
        */
       get assemblyErrors() {
-        return getSession(self).assemblyManager.getAssemblyErrors(
-          self.assemblyNames,
-        )
+        const { assemblyManager } = getSession(self)
+        return self.assemblyNames
+          .map(a => assemblyManager.get(a)?.error)
+          .filter(f => !!f)
+          .join(', ')
       },
       /**
        * #getter
        */
       get assembliesInitialized() {
-        return getSession(self).assemblyManager.areAssembliesInitialized(
-          self.assemblyNames,
+        const { assemblyManager } = getSession(self)
+        return self.assemblyNames.every(
+          n => assemblyManager.get(n)?.initialized ?? true,
         )
       },
     }))
@@ -698,7 +701,9 @@ export default function stateModelFactory(pm: PluginManager) {
               URL.revokeObjectURL(url)
               canvas.toBlob(blob => {
                 if (blob) {
-                  saveAs(blob, opts.filename || 'image.png', { autoBom: false })
+                  saveAs(blob, opts.filename || 'image.png', {
+                    autoBom: false,
+                  })
                   resolve()
                 } else {
                   reject(

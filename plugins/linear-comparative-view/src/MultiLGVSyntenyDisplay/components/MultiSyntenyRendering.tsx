@@ -31,8 +31,8 @@ import {
   LABEL_WIDTH,
   truncateGenomeName,
 } from './multiSyntenyBackendTypes.ts'
-import type { MultiSyntenyBackend } from './multiSyntenyBackendTypes.ts'
 
+import type { MultiSyntenyBackend } from './multiSyntenyBackendTypes.ts'
 import type { MultiLGVSyntenyDisplayModel } from '../model.ts'
 import type { FeatureHitResult } from './hitTesting.ts'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'

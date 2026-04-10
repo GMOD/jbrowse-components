@@ -96,7 +96,7 @@
     "electron": "41.2.0",
     "electron-chromedriver": "^41.2.0",
     "esbuild": "^0.28.0",
-    "selenium-webdriver": "^4.42.0"
+    "selenium-webdriver": "^4.43.0"
   },
   "browserslist": [
     "last 1 chrome version"

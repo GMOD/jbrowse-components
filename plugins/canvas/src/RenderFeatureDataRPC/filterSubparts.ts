@@ -40,7 +40,7 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
   const parentStart = parent.get('start')
   const parentEnd = parent.get('end')
   const parentStrand = parent.get('strand')
-  const parentRefName = parent.get('refName') as string
+  const parentRefName = parent.get('refName')
 
   for (const sub of subparts) {
     const type = sub.get('type')
