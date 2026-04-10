@@ -200,8 +200,7 @@ export default function MultiRegionDisplayMixin() {
                 }
               }
             } finally {
-              const stale = isStale()
-              if (!stale) {
+              if (!isStale()) {
                 finishLoading()
 
                 // DO NOT REMOVE: This re-triggers the fetch autorun so
