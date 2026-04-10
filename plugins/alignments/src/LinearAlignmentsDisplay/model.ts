@@ -205,7 +205,7 @@ export default function stateModelFactory(
         flipStrandLongReadChains: true,
         arcsState: types.optional(ArcsSubModel, {}),
         showArcs: false,
-        arcsHeight: 100,
+        arcsHeight: 40,
         showSoftClipping: false,
         jexlFilters: types.optional(types.array(types.string), []),
       }),
