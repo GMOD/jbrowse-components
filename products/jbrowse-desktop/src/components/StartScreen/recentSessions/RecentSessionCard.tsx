@@ -1,21 +1,9 @@
 import { useEffect, useState } from 'react'
 
+import { CascadingMenuButton } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import DeleteIcon from '@mui/icons-material/Delete'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
-import TextFieldsIcon from '@mui/icons-material/TextFields'
-import {
-  Card,
-  CardHeader,
-  CardMedia,
-  IconButton,
-  ListItemIcon,
-  Menu,
-  MenuItem,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import { Card, CardHeader, CardMedia, Tooltip, Typography } from '@mui/material'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -52,7 +40,6 @@ function RecentSessionCard({
 }) {
   const { classes } = useStyles()
   const [hovered, setHovered] = useState(false)
-  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
   const [screenshot, setScreenshot] = useState<string>()
   const { name, path } = sessionData
 
@@ -97,14 +84,19 @@ function RecentSessionCard({
         ) : null}
         <CardHeader
           action={
-            <IconButton
-              onClick={event => {
-                event.stopPropagation()
-                setMenuAnchorEl(event.currentTarget)
-              }}
+            <CascadingMenuButton
+              stopPropagation
+              menuItems={[
+                { label: 'Rename', onClick: () => onRename(sessionData) },
+                { label: 'Delete', onClick: () => onDelete(sessionData) },
+                {
+                  label: 'Add to quickstart list',
+                  onClick: () => onAddToQuickstartList(sessionData),
+                },
+              ]}
             >
               <MoreVertIcon />
-            </IconButton>
+            </CascadingMenuButton>
           }
           disableTypography
           title={
@@ -127,51 +119,6 @@ function RecentSessionCard({
           }
         />
       </Card>
-      <Menu
-        anchorEl={menuAnchorEl}
-        keepMounted
-        open={Boolean(menuAnchorEl)}
-        onClose={() => {
-          setMenuAnchorEl(null)
-        }}
-      >
-        <MenuItem
-          onClick={() => {
-            setMenuAnchorEl(null)
-            window.dispatchEvent(new CustomEvent('jbrowse:analytics', { detail: { type: 'desktop_session_renamed' } }))
-            onRename(sessionData)
-          }}
-        >
-          <ListItemIcon>
-            <TextFieldsIcon />
-          </ListItemIcon>
-          <Typography variant="inherit">Rename</Typography>
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            window.dispatchEvent(new CustomEvent('jbrowse:analytics', { detail: { type: 'desktop_session_deleted' } }))
-            onDelete(sessionData)
-            setMenuAnchorEl(null)
-          }}
-        >
-          <ListItemIcon>
-            <DeleteIcon />
-          </ListItemIcon>
-          <Typography variant="inherit">Delete</Typography>
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            window.dispatchEvent(new CustomEvent('jbrowse:analytics', { detail: { type: 'desktop_session_added_to_quickstart' } }))
-            onAddToQuickstartList(sessionData)
-            setMenuAnchorEl(null)
-          }}
-        >
-          <ListItemIcon>
-            <PlaylistAddIcon />
-          </ListItemIcon>
-          <Typography variant="inherit">Add to quickstart list</Typography>
-        </MenuItem>
-      </Menu>
     </>
   )
 }
