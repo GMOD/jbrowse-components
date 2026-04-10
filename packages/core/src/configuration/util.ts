@@ -28,7 +28,9 @@ import type {
 import type { Feature } from '../util/index.ts'
 
 interface ConfigSlot {
-  getValue: (args: Record<string, unknown>) => unknown
+  isCallback: boolean
+  value: unknown
+  getValue: (args?: Record<string, unknown>) => unknown
 }
 
 // confObject[slotPath] can return:

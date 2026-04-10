@@ -12,7 +12,7 @@ interface BasicTrack {
   displays?: {
     type: string
     displayId?: string
-    renderer?: { type: string; [key: string]: unknown }
+    renderer?: { type: string; height?: unknown; [key: string]: unknown }
     [key: string]: unknown
   }[]
 }

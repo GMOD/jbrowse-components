@@ -18,7 +18,7 @@ import {
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
   ConfigOverrideMixin,
@@ -47,7 +47,11 @@ import type {
   FlatbushItem,
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type {
+  AnyConfigurationModel,
+  AnyConfigurationSchemaType,
+} from '@jbrowse/core/configuration'
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -89,6 +93,21 @@ function findSubfeatureById(
 }
 
 export type { MultiRegionRegion as Region } from '@jbrowse/plugin-linear-genome-view'
+
+async function fetchCanvasFeatureDetails(
+  rpcManager: RpcManager,
+  sessionId: string,
+  adapterConfig: Record<string, unknown>,
+  featureId: string,
+  region: Region,
+): Promise<Feature | undefined> {
+  const result = await rpcManager.call(sessionId, 'GetCanvasFeatureDetails', {
+    adapterConfig,
+    featureId,
+    region,
+  })
+  return result.feature ? new SimpleFeature(result.feature) : undefined
+}
 
 const FeatureComponent = lazy(() => import('./components/FeatureComponent.tsx'))
 
@@ -198,9 +217,16 @@ export default function stateModelFactory(
       },
 
       get displayConfigSnapshot() {
+        const conf = (
+          self as unknown as { configuration: AnyConfigurationModel }
+        ).configuration
+        const overrides = self.configOverrides as Omit<
+          typeof self.configOverrides,
+          symbol
+        >
         return {
-          ...getConfSnapshot(self.configuration),
-          ...self.configOverrides,
+          ...getConfSnapshot(conf),
+          ...overrides,
         }
       },
 
@@ -482,99 +508,79 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      fetchFullFeature: flow(function* (
-        featureId: string,
-        regionNumber: number,
-      ) {
+      selectFullFeature(featureId: string, regionNumber: number) {
         const session = getSession(self)
-        const { rpcManager } = session
         const adapterConfig = self.adapterConfigSnapshot
-
         const region = self.loadedRegions.get(regionNumber)
         if (!region) {
-          return undefined
+          return
         }
-
-        try {
-          const result = yield rpcManager.call(
-            getRpcSessionId(self),
-            'GetCanvasFeatureDetails',
-            {
-              adapterConfig,
-              featureId,
-              region,
-            },
-          )
-
-          if (result.feature && isAlive(self)) {
-            return new SimpleFeature(result.feature)
-          }
-        } catch (e) {
-          console.error('Failed to fetch feature details:', e)
-          session.notifyError(`${e}`, e)
-        }
-        return undefined
-      }),
-    }))
-    .actions(self => ({
-      selectFullFeature: flow(function* (
-        featureId: string,
-        regionNumber: number,
-      ) {
-        const feature: Feature | undefined = yield self.fetchFullFeature(
+        fetchCanvasFeatureDetails(
+          session.rpcManager,
+          getRpcSessionId(self),
+          adapterConfig,
           featureId,
-          regionNumber,
+          region,
         )
-        if (feature) {
-          self.selectFeature(feature)
-        }
-      }),
+          .then(feature => {
+            if (feature && isAlive(self)) {
+              self.selectFeature(feature)
+            }
+          })
+          .catch((e: unknown) => {
+            console.error('Failed to fetch feature details:', e)
+            session.notifyError(`${e}`, e)
+          })
+      },
 
-      selectFeatureById: flow(function* (
+      selectFeatureById(
         featureInfo: FlatbushItem,
         subfeatureInfo: SubfeatureInfo | undefined,
         regionNumber: number,
       ) {
+        const session = getSession(self)
         const featureIdToFetch = subfeatureInfo
           ? subfeatureInfo.parentFeatureId
           : featureInfo.featureId
-
-        const parentFeature: Feature | undefined = yield self.fetchFullFeature(
-          featureIdToFetch,
-          regionNumber,
-        )
-
-        if (parentFeature) {
-          const target = subfeatureInfo
-            ? (findSubfeatureById(parentFeature, subfeatureInfo.featureId) ??
-              parentFeature)
-            : parentFeature
-          self.selectFeature(target)
+        const adapterConfig = self.adapterConfigSnapshot
+        const region = self.loadedRegions.get(regionNumber)
+        if (!region) {
+          return
         }
-      }),
+        fetchCanvasFeatureDetails(
+          session.rpcManager,
+          getRpcSessionId(self),
+          adapterConfig,
+          featureIdToFetch,
+          region,
+        )
+          .then(parentFeature => {
+            if (parentFeature && isAlive(self)) {
+              const target = subfeatureInfo
+                ? (findSubfeatureById(parentFeature, subfeatureInfo.featureId) ??
+                  parentFeature)
+                : parentFeature
+              self.selectFeature(target)
+            }
+          })
+          .catch((e: unknown) => {
+            console.error('Failed to fetch feature details:', e)
+            session.notifyError(`${e}`, e)
+          })
+      },
+
+      softReset() {
+        if (self.renderingStopToken) {
+          stopStopToken(self.renderingStopToken)
+          self.renderingStopToken = undefined
+        }
+        self.error = undefined
+        self.loadedRegions = new Map()
+        self.layoutBpPerPxMap = new Map()
+        self.setRegionTooLarge(false)
+        self.fetchGeneration++
+      },
     }))
-    .actions(self => {
-      return {
-        // Soft reset: clears tracking state (loadedRegions,
-        // layoutBpPerPxMap, error, stopToken) and bumps fetchGeneration to
-        // invalidate in-flight fetches, but intentionally preserves
-        // rpcDataMap so the previous frame's rendered data stays visible
-        // while the new fetch is in progress, avoiding a flash of empty
-        // content. Compare with reload()/clearAllRpcData() which is a
-        // "hard reset" that also wipes rpcDataMap.
-        softReset() {
-          if (self.renderingStopToken) {
-            stopStopToken(self.renderingStopToken)
-            self.renderingStopToken = undefined
-          }
-          self.error = undefined
-          self.loadedRegions = new Map()
-          self.layoutBpPerPxMap = new Map()
-          self.setRegionTooLarge(false)
-          self.fetchGeneration++
-        },
-      }
-    })
     .actions(self => {
       interface FetchResult {
         regionNumber: number
@@ -868,7 +874,6 @@ export default function stateModelFactory(
             label: 'Open feature details',
             icon: MenuOpenIcon,
             onClick: () => {
-              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               self.selectFullFeature(featureId, regionNumber)
             },
           },
@@ -892,14 +897,20 @@ export default function stateModelFactory(
             onClick: () => {
               // eslint-disable-next-line @typescript-eslint/no-floating-promises
               ;(async () => {
-                const fullFeature = await self.fetchFullFeature(
+                if (!region) {
+                  return
+                }
+                const session = getSession(self)
+                const fullFeature = await fetchCanvasFeatureDetails(
+                  session.rpcManager,
+                  getRpcSessionId(self),
+                  self.adapterConfigSnapshot,
                   featureId,
-                  regionNumber,
+                  region,
                 )
                 if (!fullFeature) {
                   return
                 }
-                const session = getSession(self)
                 const { uniqueId: _, ...rest } = fullFeature.toJSON()
                 const { default: copy } = await import('copy-to-clipboard')
                 copy(JSON.stringify(rest, null, 4))
@@ -915,14 +926,20 @@ export default function stateModelFactory(
                   onClick: () => {
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     ;(async () => {
-                      const fullFeature = await self.fetchFullFeature(
+                      if (!region) {
+                        return
+                      }
+                      const session = getSession(self)
+                      const fullFeature = await fetchCanvasFeatureDetails(
+                        session.rpcManager,
+                        getRpcSessionId(self),
+                        self.adapterConfigSnapshot,
                         featureId,
-                        regionNumber,
+                        region,
                       )
                       if (!fullFeature) {
                         return
                       }
-                      const session = getSession(self)
                       const transcripts = getTranscripts(fullFeature)
                       if (!hasIntrons(transcripts)) {
                         session.notify(
