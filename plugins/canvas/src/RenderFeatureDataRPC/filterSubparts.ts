@@ -40,6 +40,7 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
   const parentStart = parent.get('start')
   const parentEnd = parent.get('end')
   const parentStrand = parent.get('strand')
+  const parentRefName = parent.get('refName') as string
 
   for (const sub of subparts) {
     const type = sub.get('type')
@@ -51,6 +52,7 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
         subparts.push(
           new SimpleFeature({
             uniqueId: `${sub.id()}-utr`,
+            refName: parentRefName,
             start: exonStart,
             end: Math.min(exonEnd, codeStart),
             strand: parentStrand,
@@ -68,6 +70,7 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
         subparts.push(
           new SimpleFeature({
             uniqueId: `${sub.id()}-utr2`,
+            refName: parentRefName,
             start: Math.max(exonStart, codeEnd),
             end: exonEnd,
             strand: parentStrand,
@@ -87,6 +90,7 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
     subparts.push(
       new SimpleFeature({
         uniqueId: `${parent.id()}-utr-left`,
+        refName: parentRefName,
         start: parentStart,
         end: codeStart,
         strand: parentStrand,
@@ -104,6 +108,7 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
     subparts.push(
       new SimpleFeature({
         uniqueId: `${parent.id()}-utr-right`,
+        refName: parentRefName,
         start: codeEnd,
         end: parentEnd,
         strand: parentStrand,

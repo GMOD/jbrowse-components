@@ -31,6 +31,7 @@ import {
   LABEL_WIDTH,
   truncateGenomeName,
 } from './multiSyntenyBackendTypes.ts'
+import type { MultiSyntenyBackend } from './multiSyntenyBackendTypes.ts'
 
 import type { MultiLGVSyntenyDisplayModel } from '../model.ts'
 import type { FeatureHitResult } from './hitTesting.ts'
@@ -311,7 +312,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   // Renderer lifecycle: create, init, store in model
   const gpuOpts = useMemo(
     () => ({
-      onReady: renderer => {
+      onReady: (renderer: MultiSyntenyBackend) => {
         model.setWebGLRenderer(renderer)
       },
       onDispose: () => {

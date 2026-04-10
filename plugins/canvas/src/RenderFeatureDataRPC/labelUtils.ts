@@ -48,7 +48,7 @@ export function applyLabelDimensions(
   const shouldShowDescription =
     /\S/.test(description) && effectiveShowDescriptions
 
-  const actualFontHeight = readConfigValue(
+  const actualFontHeight = readConfigValue<number>(
     config,
     ['labels', 'fontSize'],
     feature,

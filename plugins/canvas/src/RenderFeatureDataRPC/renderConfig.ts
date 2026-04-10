@@ -10,6 +10,7 @@ export interface RenderConfigContext {
   geneGlyphMode: string
   labelAllowed: boolean
   heightMultiplier: number
+  displayDirectionalChevrons: boolean
 }
 
 export function createRenderConfigContext(
@@ -25,5 +26,6 @@ export function createRenderConfigContext(
     geneGlyphMode: config.geneGlyphMode as string,
     labelAllowed: displayMode !== 'collapse',
     heightMultiplier: displayMode === 'compact' ? 0.6 : 1,
+    displayDirectionalChevrons: config.displayDirectionalChevrons !== false,
   }
 }

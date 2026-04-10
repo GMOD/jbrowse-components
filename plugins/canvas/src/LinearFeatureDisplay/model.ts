@@ -464,11 +464,8 @@ export default function stateModelFactory(
         self.showOnlyGenes = value
       },
 
-      toggleDisplayDirectionalChevrons() {
-        self.setOverride(
-          'displayDirectionalChevrons',
-          !self.displayDirectionalChevrons,
-        )
+      setDisplayDirectionalChevrons(value: boolean) {
+        self.setOverride('displayDirectionalChevrons', value)
       },
 
       showContextMenuForFeature(

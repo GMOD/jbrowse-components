@@ -31,8 +31,8 @@ export function getBoxColor({
   const { config } = configContext
 
   let fill = isUTR(feature)
-    ? readConfigValue(config, 'color3', feature)
-    : readConfigValue(config, 'color1', feature)
+    ? readConfigValue<string>(config, 'color3', feature)
+    : readConfigValue<string>(config, 'color1', feature)
 
   const featureType: string | undefined = feature.get('type')
   const featureStrand: -1 | 1 | undefined = feature.get('strand')

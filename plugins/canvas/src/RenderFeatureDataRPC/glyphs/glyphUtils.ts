@@ -25,7 +25,7 @@ export function getFeatureDimensions(
   const start = feature.get('start')
   const end = feature.get('end')
   const heightPx =
-    readConfigValue(config, 'featureHeight', feature) * heightMultiplier
+    readConfigValue<number>(config, 'featureHeight', feature) * heightMultiplier
   const widthPx = (end - start) / bpPerPx
   return { start, end, heightPx, widthPx }
 }

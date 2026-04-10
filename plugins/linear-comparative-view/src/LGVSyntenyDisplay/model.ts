@@ -90,8 +90,13 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         }
       },
       afterCreate() {
-        if (!self.colorBySetting && self.colorBy.type === 'normal') {
-          self.setColorScheme({ type: 'strand' })
+        const alignSelf = self as unknown as {
+          colorBySetting: unknown
+          colorBy: { type: string }
+          setColorScheme(scheme: { type: string }): void
+        }
+        if (!alignSelf.colorBySetting && alignSelf.colorBy.type === 'normal') {
+          alignSelf.setColorScheme({ type: 'strand' })
         }
       },
     }))

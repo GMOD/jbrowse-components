@@ -106,9 +106,9 @@ export function useGpuRenderer<R extends { dispose(): void }>(
     // The pagehide event fires synchronously during navigation, giving
     // us a reliable hook to release GPU resources before the page dies.
     const handlePageHide = () => {
-      if (!disposed) {
-        disposed = true
-        renderer.dispose()
+      if (!cancelled) {
+        cancelled = true
+        backend?.dispose()
       }
     }
     window.addEventListener('pagehide', handlePageHide)

@@ -1,4 +1,3 @@
-import { getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -79,7 +78,16 @@ export default function ConfigOverrideMixin() {
         if (val !== undefined) {
           return val as T
         }
-        return getConf(self as Parameters<typeof getConf>[0], key) as T
+        // ConfigOverrideMixin is always composed with models that provide
+        // 'configuration'. Access it via plain-object cast to avoid propagating
+        // MST internal symbol types ($stateTreeNodeType) into declaration files.
+        const conf = (self as unknown as { configuration: Record<string, unknown> })
+          .configuration
+        const slot = conf?.[key] as { getValue?: () => unknown } | unknown
+        if (slot !== null && slot !== undefined && typeof (slot as { getValue?: unknown }).getValue === 'function') {
+          return (slot as { getValue: () => T }).getValue()
+        }
+        return slot as T
       },
     }))
     .actions(self => ({

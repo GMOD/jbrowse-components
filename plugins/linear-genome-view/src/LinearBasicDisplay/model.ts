@@ -40,6 +40,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
+      const baseSelf = self as unknown as {
+        displayDirectionalChevrons: boolean
+        setDisplayDirectionalChevrons(value: boolean): void
+      }
       return {
         /**
          * #method
@@ -53,9 +57,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               {
                 label: 'Show chevrons',
                 type: 'checkbox',
-                checked: self.displayDirectionalChevrons,
+                checked: baseSelf.displayDirectionalChevrons,
                 onClick: () => {
-                  self.toggleDisplayDirectionalChevrons()
+                  baseSelf.setDisplayDirectionalChevrons(
+                    !baseSelf.displayDirectionalChevrons,
+                  )
                 },
               },
             ]

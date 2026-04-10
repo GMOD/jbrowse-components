@@ -47,7 +47,7 @@ export function createFeatureFloatingLabels({
       color: nameColor,
       textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
     }
-    currentY += readConfigValue(
+    currentY += readConfigValue<number>(
       configContext.config,
       ['labels', 'fontSize'],
       feature,
