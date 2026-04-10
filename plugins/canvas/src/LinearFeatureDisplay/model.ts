@@ -47,10 +47,7 @@ import type {
   FlatbushItem,
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type {
-  AnyConfigurationModel,
-  AnyConfigurationSchemaType,
-} from '@jbrowse/core/configuration'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -95,18 +92,27 @@ function findSubfeatureById(
 export type { MultiRegionRegion as Region } from '@jbrowse/plugin-linear-genome-view'
 
 async function fetchCanvasFeatureDetails(
-  rpcManager: RpcManager,
+  session: {
+    rpcManager: RpcManager
+    notifyError: (msg: string, err?: unknown) => void
+  },
   sessionId: string,
   adapterConfig: Record<string, unknown>,
   featureId: string,
   region: Region,
-): Promise<Feature | undefined> {
-  const result = await rpcManager.call(sessionId, 'GetCanvasFeatureDetails', {
-    adapterConfig,
-    featureId,
-    region,
-  })
-  return result.feature ? new SimpleFeature(result.feature) : undefined
+) {
+  try {
+    const result = await session.rpcManager.call(
+      sessionId,
+      'GetCanvasFeatureDetails',
+      { adapterConfig, featureId, region },
+    )
+    return result.feature ? new SimpleFeature(result.feature) : undefined
+  } catch (e) {
+    console.error('Failed to fetch feature details:', e)
+    session.notifyError(`${e}`, e)
+    return undefined
+  }
 }
 
 const FeatureComponent = lazy(() => import('./components/FeatureComponent.tsx'))
@@ -217,16 +223,12 @@ export default function stateModelFactory(
       },
 
       get displayConfigSnapshot() {
-        const conf = (
-          self as unknown as { configuration: AnyConfigurationModel }
-        ).configuration
-        const overrides = self.configOverrides as Omit<
-          typeof self.configOverrides,
-          symbol
-        >
         return {
-          ...getConfSnapshot(conf),
-          ...overrides,
+          ...getConfSnapshot(self.configuration),
+          ...(self.configOverrides as Omit<
+            typeof self.configOverrides,
+            symbol
+          >),
         }
       },
 
@@ -251,52 +253,51 @@ export default function stateModelFactory(
         return renderSvg(self, opts)
       },
 
-      get maxHeight(): number {
+      get maxHeight() {
         return self.getConfWithOverride<number>('maxHeight')
       },
 
-      get autoHeight(): boolean {
+      get autoHeight() {
         return self.getConfWithOverride<boolean>('autoHeight')
       },
 
-      get showLabels(): boolean {
+      get showLabels() {
         return self.getConfWithOverride<boolean>('showLabels')
       },
 
-      get showDescriptions(): boolean {
+      get showDescriptions() {
         return self.getConfWithOverride<boolean>('showDescriptions')
       },
 
-      get effectiveShowDescriptions(): boolean {
+      get effectiveShowDescriptions() {
         return (
           this.showDescriptions &&
           self.featureDensityPerPx < DESCRIPTION_DENSITY_THRESHOLD
         )
       },
 
-      get subfeatureLabels(): string {
+      get subfeatureLabels() {
         return self.getConfWithOverride<string>('subfeatureLabels')
       },
 
-      get displayMode(): string {
+      get displayMode() {
         return self.getConfWithOverride<string>('displayMode')
       },
 
-      get geneGlyphMode(): string {
+      get geneGlyphMode() {
         return self.getConfWithOverride<string>('geneGlyphMode')
       },
 
-      get displayDirectionalChevrons(): boolean {
+      get displayDirectionalChevrons() {
         return self.getConfWithOverride<boolean>('displayDirectionalChevrons')
       },
 
-      get effectiveGeneGlyphMode(): string {
-        const mode = this.geneGlyphMode
-        if (mode === 'auto') {
+      get effectiveGeneGlyphMode() {
+        if (this.geneGlyphMode === 'auto') {
           const view = getContainingView(self) as LGV
           return view.bpPerPx > 100 ? 'longestCoding' : 'all'
         }
-        return mode
+        return this.geneGlyphMode
       },
 
       get selectedFeatureId() {
@@ -509,28 +510,23 @@ export default function stateModelFactory(
     }))
     .actions(self => ({
       selectFullFeature(featureId: string, regionNumber: number) {
-        const session = getSession(self)
-        const adapterConfig = self.adapterConfigSnapshot
         const region = self.loadedRegions.get(regionNumber)
         if (!region) {
           return
         }
-        fetchCanvasFeatureDetails(
-          session.rpcManager,
-          getRpcSessionId(self),
-          adapterConfig,
-          featureId,
-          region,
-        )
-          .then(feature => {
-            if (feature && isAlive(self)) {
-              self.selectFeature(feature)
-            }
-          })
-          .catch((e: unknown) => {
-            console.error('Failed to fetch feature details:', e)
-            session.notifyError(`${e}`, e)
-          })
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          const feature = await fetchCanvasFeatureDetails(
+            getSession(self),
+            getRpcSessionId(self),
+            self.adapterConfigSnapshot,
+            featureId,
+            region,
+          )
+          if (feature && isAlive(self)) {
+            self.selectFeature(feature)
+          }
+        })()
       },
 
       selectFeatureById(
@@ -538,35 +534,30 @@ export default function stateModelFactory(
         subfeatureInfo: SubfeatureInfo | undefined,
         regionNumber: number,
       ) {
-        const session = getSession(self)
-        const featureIdToFetch = subfeatureInfo
-          ? subfeatureInfo.parentFeatureId
-          : featureInfo.featureId
-        const adapterConfig = self.adapterConfigSnapshot
         const region = self.loadedRegions.get(regionNumber)
         if (!region) {
           return
         }
-        fetchCanvasFeatureDetails(
-          session.rpcManager,
-          getRpcSessionId(self),
-          adapterConfig,
-          featureIdToFetch,
-          region,
-        )
-          .then(parentFeature => {
-            if (parentFeature && isAlive(self)) {
-              const target = subfeatureInfo
-                ? (findSubfeatureById(parentFeature, subfeatureInfo.featureId) ??
-                  parentFeature)
-                : parentFeature
-              self.selectFeature(target)
-            }
-          })
-          .catch((e: unknown) => {
-            console.error('Failed to fetch feature details:', e)
-            session.notifyError(`${e}`, e)
-          })
+        const featureIdToFetch = subfeatureInfo
+          ? subfeatureInfo.parentFeatureId
+          : featureInfo.featureId
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          const parentFeature = await fetchCanvasFeatureDetails(
+            getSession(self),
+            getRpcSessionId(self),
+            self.adapterConfigSnapshot,
+            featureIdToFetch,
+            region,
+          )
+          if (parentFeature && isAlive(self)) {
+            const target = subfeatureInfo
+              ? (findSubfeatureById(parentFeature, subfeatureInfo.featureId) ??
+                parentFeature)
+              : parentFeature
+            self.selectFeature(target)
+          }
+        })()
       },
 
       softReset() {
@@ -902,7 +893,7 @@ export default function stateModelFactory(
                 }
                 const session = getSession(self)
                 const fullFeature = await fetchCanvasFeatureDetails(
-                  session.rpcManager,
+                  session,
                   getRpcSessionId(self),
                   self.adapterConfigSnapshot,
                   featureId,
@@ -911,10 +902,15 @@ export default function stateModelFactory(
                 if (!fullFeature) {
                   return
                 }
-                const { uniqueId: _, ...rest } = fullFeature.toJSON()
-                const { default: copy } = await import('copy-to-clipboard')
-                copy(JSON.stringify(rest, null, 4))
-                session.notify('Copied to clipboard', 'success')
+                try {
+                  const { uniqueId: _, ...rest } = fullFeature.toJSON()
+                  const { default: copy } = await import('copy-to-clipboard')
+                  copy(JSON.stringify(rest, null, 4))
+                  session.notify('Copied to clipboard', 'success')
+                } catch (e) {
+                  console.error(e)
+                  session.notifyError(`${e}`, e)
+                }
               })()
             },
           },
@@ -931,7 +927,7 @@ export default function stateModelFactory(
                       }
                       const session = getSession(self)
                       const fullFeature = await fetchCanvasFeatureDetails(
-                        session.rpcManager,
+                        session,
                         getRpcSessionId(self),
                         self.adapterConfigSnapshot,
                         featureId,
@@ -949,8 +945,7 @@ export default function stateModelFactory(
                         return
                       }
                       const view = getContainingView(self) as LGV
-                      const { assemblyManager } = session
-                      const assembly = assemblyManager.get(
+                      const assembly = session.assemblyManager.get(
                         view.assemblyNames[0]!,
                       )
                       if (assembly) {

@@ -54,8 +54,11 @@ let gpuOverride: string | null | undefined
 
 export function getGpuOverride() {
   if (gpuOverride === undefined) {
-    gpuOverride =
-      new URLSearchParams(window.location.search).get('renderer') ?? null
+    // Guarded: workers have no `window`, and this is reachable from the LD
+    // matrix RPC path (plugins/variants/VariantRPC/getLDMatrixGPU.ts).
+    const search =
+      typeof window !== 'undefined' ? window.location.search : ''
+    gpuOverride = new URLSearchParams(search).get('renderer') ?? null
   }
   return gpuOverride
 }

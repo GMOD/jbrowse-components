@@ -178,7 +178,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       contextMenuFeature: undefined as Feature | undefined,
       statusMessage: undefined as string | undefined,
       visibleMaxDepth: 0,
-      webglRenderer: null as MultiSyntenyBackend | null,
+      gpuRenderer: null as MultiSyntenyBackend | null,
       colorPalette: null as SyntenyColorPalette | null,
       tabVisibilityVersion: 0,
       canvasDrawn: false,
@@ -318,8 +318,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       setStatusMessage(msg?: string) {
         self.statusMessage = msg
       },
-      setWebGLRenderer(renderer: MultiSyntenyBackend | null) {
-        self.webglRenderer = renderer
+      setGpuRenderer(renderer: MultiSyntenyBackend | null) {
+        self.gpuRenderer = renderer
       },
       setCanvasDrawn(value: boolean) {
         self.canvasDrawn = value
@@ -330,7 +330,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       clearDisplaySpecificData() {
         self.rpcDataMap = new Map()
         self.allGenomeNames = []
-        self.webglRenderer?.clearAllBlocks()
+        self.gpuRenderer?.clearAllBlocks()
       },
       selectFeature(feature: Feature) {
         const session = getSession(self)
@@ -430,7 +430,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             self,
             autorun(
               () => {
-                const renderer = self.webglRenderer
+                const renderer = self.gpuRenderer
                 if (!renderer) {
                   return
                 }
@@ -467,7 +467,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             self,
             autorun(
               () => {
-                const renderer = self.webglRenderer
+                const renderer = self.gpuRenderer
                 if (!renderer || !self.showCoverage) {
                   return
                 }
@@ -517,7 +517,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             self,
             autorun(
               () => {
-                const renderer = self.webglRenderer
+                const renderer = self.gpuRenderer
                 const palette = self.colorPalette
                 if (!renderer || !palette) {
                   return

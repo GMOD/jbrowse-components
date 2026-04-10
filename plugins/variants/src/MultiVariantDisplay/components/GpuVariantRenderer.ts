@@ -99,8 +99,8 @@ export class GpuVariantRenderer implements VariantBackend {
     this.regionStarts.set(regionNumber, data.regionStart)
   }
 
-  pruneRegions(activeRegionNumbers: number[]) {
-    pruneRegionMap(this.regionStarts, activeRegionNumbers, n => {
+  pruneRegions(activeRegions: number[]) {
+    pruneRegionMap(this.regionStarts, activeRegions, n => {
       this.hal.deleteRegion(n)
     })
   }
