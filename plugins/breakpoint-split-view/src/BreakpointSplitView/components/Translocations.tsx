@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
@@ -9,6 +9,7 @@ import {
   createVariantMouseHandlers,
   getTestId,
   strandToSign,
+  useMouseoverElt,
 } from './overlayUtils.tsx'
 import { getMatchedTranslocationFeatures } from './util.ts'
 import { getPxFromCoordinate, getTrackHeightsCache, yPos } from '../util.ts'
@@ -32,7 +33,7 @@ const Translocations = observer(function Translocations({
     return model.getMatchedFeaturesInLayout(trackId, matchedFeatures)
   }, [totalFeatures, trackId, model])
 
-  const [mouseoverElt, setMouseoverElt] = useState<string>()
+  const [mouseoverElt, setMouseoverElt] = useMouseoverElt()
   const yOffset = cachedYOffset ?? 0
   const tracks = views.map(v => v.getTrack(trackId))
   const hasOverride = !!getTrackYPosOverride

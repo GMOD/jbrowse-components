@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import { getSession, getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
@@ -10,7 +10,13 @@ import {
   getPairedOrientationColor,
   isAbnormalOrientation,
 } from './getOrientationColor.tsx'
-import { LEFT, RIGHT, getCanonicalRefs, getTestId } from './overlayUtils.tsx'
+import {
+  LEFT,
+  RIGHT,
+  getCanonicalRefs,
+  getTestId,
+  useMouseoverElt,
+} from './overlayUtils.tsx'
 import {
   getBadlyPairedAlignments,
   getMatchedAlignmentFeatures,
@@ -46,7 +52,7 @@ const AlignmentConnections = observer(function AlignmentConnections({
     return layoutMatches
   }, [allFeatures, trackId, hasPaired, model])
 
-  const [mouseoverElt, setMouseoverElt] = useState<string>()
+  const [mouseoverElt, setMouseoverElt] = useMouseoverElt()
   const yOffset = cachedYOffset ?? 0
 
   const tracks = views.map(v => v.getTrack(trackId))

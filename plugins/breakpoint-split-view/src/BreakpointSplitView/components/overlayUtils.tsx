@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 import type { BreakpointViewModel } from '../model.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { getSession } from '@jbrowse/core/util'
@@ -10,6 +12,18 @@ export interface OverlayProps {
   getTrackYPosOverride?: (trackId: string, level: number) => number
   cachedTrackTops?: number[]
   cachedYOffset?: number
+}
+
+export function useMouseoverElt() {
+  const [mouseoverElt, setMouseoverElt] = useState<string>()
+  useEffect(() => {
+    function clear() {
+      setMouseoverElt(undefined)
+    }
+    window.addEventListener('wheel', clear, { passive: true })
+    return () => window.removeEventListener('wheel', clear)
+  }, [])
+  return [mouseoverElt, setMouseoverElt] as const
 }
 
 export function createVariantMouseHandlers(
