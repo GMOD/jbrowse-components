@@ -18,14 +18,6 @@ export function parseCommaSeparatedString(value?: string): string[] {
 }
 
 /**
- * Sanitizes a name for use in file paths by replacing invalid characters
- * Replaces characters that are problematic in file paths: / \ : * ? " < > |
- */
-export function sanitizeNameForPath(name: string): string {
-  return name.replace(/[/\\:*?"<>|]/g, '_')
-}
-
-/**
  * Validates and parses a prefix size value
  */
 export function validatePrefixSize(
@@ -165,3 +157,5 @@ export function getTrackConfigs(
       return true
     })
 }
+
+export { sanitizeForFilename as sanitizeNameForPath } from '@jbrowse/text-indexing-core'

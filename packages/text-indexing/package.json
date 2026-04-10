@@ -34,8 +34,7 @@
   "dependencies": {
     "@jbrowse/core": "workspace:^",
     "@jbrowse/text-indexing-core": "workspace:^",
-    "ixixx": "^3.0.3",
-    "sanitize-filename": "^1.6.4"
+    "ixixx": "^3.0.3"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

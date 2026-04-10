@@ -162,7 +162,7 @@ export async function indexDriver({
     quiet,
   })
 
-  await generateMeta({
+  generateMeta({
     configs: trackConfigs,
     attributesToIndex: attributes,
     outDir: outLocation,

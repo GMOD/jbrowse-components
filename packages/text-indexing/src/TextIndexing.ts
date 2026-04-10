@@ -133,7 +133,7 @@ async function aggregateIndex({
   }
   if (!assemblyNames) {
     throw new Error(
-      'No assemblies passed. Assmeblies required for aggregate indexes',
+      'No assemblies passed. Assemblies required for aggregate indexes',
     )
   }
   for (const asm of assemblyNames) {
@@ -187,7 +187,7 @@ async function indexDriver({
   statusCallback('Indexing files.')
   await runIxIxx(readable, outDir, name)
   checkStopToken(stopToken)
-  await generateMeta({
+  generateMeta({
     configs: tracks,
     attributesToIndex,
     outDir,
@@ -234,8 +234,7 @@ async function* indexFiles({
           statusCallback(`${progressBytes}/${myTotalBytes}`)
         },
       })
-    }
-    if (type === 'Gff3TabixAdapter') {
+    } else if (type === 'Gff3TabixAdapter') {
       yield* indexGff3({
         config: track,
         attributesToIndex,

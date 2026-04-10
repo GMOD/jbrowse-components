@@ -551,9 +551,6 @@ importers:
       react-dom:
         specifier: '>=18.0.0'
         version: 19.2.5(react@19.2.5)
-      sanitize-filename:
-        specifier: ^1.6.4
-        version: 1.6.4
 
   packages/text-indexing-core: {}
 
