@@ -3,7 +3,15 @@ import { SVGErrorBox } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import { bpToScreenPx } from './components/coordinateUtils.ts'
-import { MIN_RECT_WIDTH_PX } from './components/sharedRendererConstants.ts'
+import {
+  CHEVRON_H_PX,
+  CHEVRON_SPACING_PX,
+  CHEVRON_W_PX,
+  HEAD_HALF_H_PX,
+  MIN_RECT_WIDTH_PX,
+  STEM_HALF_H_PX,
+  STEM_LENGTH_PX,
+} from './components/sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -155,14 +163,11 @@ function renderLinesForRegion(
 
     if (direction !== 0) {
       const lineWidthPx = (endBp - startBp) / bpPerPx
-      const chevronSpacing = 25
       const totalChevrons = Math.max(
         1,
-        Math.floor(lineWidthPx / chevronSpacing),
+        Math.floor(lineWidthPx / CHEVRON_SPACING_PX),
       )
       const bpSpacing = (endBp - startBp) / (totalChevrons + 1)
-      const chevronW = 4.5
-      const chevronH = 4.5
 
       for (let c = 1; c <= totalChevrons; c++) {
         const chevronBp = startBp + bpSpacing * c
@@ -178,10 +183,10 @@ function renderLinesForRegion(
           reversed,
         )
         const dir = reversed ? -direction : direction
-        const tipX = cx + chevronW * 0.5 * dir
-        const baseX = cx - chevronW * 0.5 * dir
+        const tipX = cx + CHEVRON_W_PX * 0.5 * dir
+        const baseX = cx - CHEVRON_W_PX * 0.5 * dir
 
-        content += `<polyline points="${baseX},${y - chevronH} ${tipX},${y} ${baseX},${y + chevronH}" fill="none" ${lineStroke} stroke-width="1"/>`
+        content += `<polyline points="${baseX},${y - CHEVRON_H_PX} ${tipX},${y} ${baseX},${y + CHEVRON_H_PX}" fill="none" ${lineStroke} stroke-width="1"/>`
       }
     }
   }
@@ -229,17 +234,14 @@ function renderArrowsForRegion(
     const arrowStroke = strokeAttr(arrowColors, i)
     const arrowFill = fillAttrs(arrowColors, i)
 
-    const stemLength = 7
-    const stemHalf = 0.5
-    const headWidth = 3.5
-    const headHalf = Math.min(2.5, h * 0.4)
+    const headHalf = Math.min(HEAD_HALF_H_PX, h * 0.4)
 
-    const stemStartX = cx - stemLength * 0.5 * dir
-    const stemEndX = cx + stemLength * 0.5 * dir
+    const stemStartX = cx - STEM_LENGTH_PX * 0.5 * dir
+    const stemEndX = cx + STEM_LENGTH_PX * 0.5 * dir
 
-    content += `<line x1="${stemStartX}" y1="${cy}" x2="${stemEndX}" y2="${cy}" ${arrowStroke} stroke-width="${stemHalf * 2}"/>`
+    content += `<line x1="${stemStartX}" y1="${cy}" x2="${stemEndX}" y2="${cy}" ${arrowStroke} stroke-width="${STEM_HALF_H_PX * 2}"/>`
 
-    const tipX = stemEndX + headWidth * dir
+    const tipX = stemEndX + (STEM_LENGTH_PX * 0.5) * dir
     content += `<polygon points="${stemEndX},${cy - headHalf} ${tipX},${cy} ${stemEndX},${cy + headHalf}" ${arrowFill}/>`
   }
   return content

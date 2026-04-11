@@ -11,18 +11,15 @@ import {
   RECT_VERTEX_SHADER,
   SIMPLE_FRAGMENT_SHADER,
 } from './canvasGlslShaders.ts'
+import { ARROW_SHADER, CHEVRON_SHADER, LINE_SHADER, RECT_SHADER } from './canvasShaders.ts'
 import {
-  ARROW_SHADER,
   ARROW_STRIDE,
-  CHEVRON_SHADER,
-  LINE_SHADER,
   LINE_STRIDE,
-  RECT_SHADER,
   RECT_STRIDE,
   interleaveArrows,
   interleaveLines,
   interleaveRects,
-} from './canvasShaders.ts'
+} from './interleaveBuffers.ts'
 import { MAX_VISIBLE_CHEVRONS_PER_LINE } from './sharedRendererConstants.ts'
 
 import type {
@@ -38,6 +35,14 @@ const PASS_CHEVRON = 'chevron'
 const PASS_ARROW = 'arrow'
 
 const UNIFORM_BYTE_SIZE = 48
+
+const U_REGION_START = 3
+const U_CANVAS_HEIGHT = 4
+const U_CANVAS_WIDTH = 5
+const U_SCROLL_Y = 6
+const U_BP_PER_PX = 7
+// U_ZERO = 8 (always 0, never written)
+const U_REVERSED = 9
 
 const LINE_ATTRS = [
   {
@@ -300,13 +305,12 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
       this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
 
       writeBpRangeUniforms(this.uniformF32, clip, block.reversed)
-      this.uniformU32[3] = Math.floor(regionStart)
-      this.uniformF32[4] = canvasHeight
-      this.uniformF32[5] = clip.scissorW
-      this.uniformF32[6] = scrollY
-      this.uniformF32[7] = clip.bpPerPx
-      // uniformF32[8] = 0 (zero)
-      this.uniformF32[9] = block.reversed ? 1 : 0
+      this.uniformU32[U_REGION_START] = Math.floor(regionStart)
+      this.uniformF32[U_CANVAS_HEIGHT] = canvasHeight
+      this.uniformF32[U_CANVAS_WIDTH] = clip.scissorW
+      this.uniformF32[U_SCROLL_Y] = scrollY
+      this.uniformF32[U_BP_PER_PX] = clip.bpPerPx
+      this.uniformF32[U_REVERSED] = block.reversed ? 1 : 0
 
       this.hal.writeUniforms(this.uniformData)
 

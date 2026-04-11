@@ -69,7 +69,6 @@ export function createTranscriptFloatingLabel({
   subfeatureLabels: string
   color: string
   parentFeatureId: string
-  subfeatureId: string
   tooltip: string
 }) {
   if (!displayLabel) {

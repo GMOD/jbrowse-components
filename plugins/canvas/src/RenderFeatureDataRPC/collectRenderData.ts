@@ -327,7 +327,6 @@ function emitTranscriptMetadata(
       subfeatureLabels: config.subfeatureLabels,
       color: 'black',
       parentFeatureId: parentFeature.id(),
-      subfeatureId: transcriptFeature.id(),
       tooltip,
     })
     if (result) {

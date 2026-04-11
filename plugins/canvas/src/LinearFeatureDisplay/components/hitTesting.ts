@@ -134,24 +134,16 @@ function performHitDetection(
   )
 
   if (subfeatureIndex) {
-    const subHits = subfeatureIndex.search(bpPos, yPos, bpPos, yPos)
-    for (const idx of subHits) {
-      const info = data.subfeatureInfos[idx]
-      if (info) {
-        subfeature = info
-        break
-      }
+    const idx = subfeatureIndex.search(bpPos, yPos, bpPos, yPos)[0]
+    if (idx !== undefined) {
+      subfeature = data.subfeatureInfos[idx]!
     }
   }
 
   if (featureIndex) {
-    const hits = featureIndex.search(bpPos, yPos, bpPos, yPos)
-    for (const idx of hits) {
-      const item = data.flatbushItems[idx]
-      if (item) {
-        feature = item
-        break
-      }
+    const idx = featureIndex.search(bpPos, yPos, bpPos, yPos)[0]
+    if (idx !== undefined) {
+      feature = data.flatbushItems[idx]!
     }
   }
 

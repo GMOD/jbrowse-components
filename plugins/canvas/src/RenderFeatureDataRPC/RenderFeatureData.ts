@@ -34,15 +34,10 @@ export default class RenderFeatureData extends RpcMethodType {
 
     const { region, sessionId, adapterConfig } = args
 
-    const regionWithAssembly = {
-      ...region,
-      assemblyName: region.assemblyName ?? '',
-    }
-
     const result = await renameRegionsIfNeeded(assemblyManager, {
       sessionId,
       adapterConfig,
-      regions: [regionWithAssembly],
+      regions: [region],
     })
 
     // single-region RPC: we pass one region in, get one back
@@ -57,7 +52,7 @@ export default class RenderFeatureData extends RpcMethodType {
       const seqResult = await renameRegionsIfNeeded(assemblyManager, {
         sessionId,
         adapterConfig: sequenceAdapter,
-        regions: [regionWithAssembly],
+        regions: [region],
       })
       seqAdapterRefName = seqResult.regions[0]?.refName
     }

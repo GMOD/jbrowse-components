@@ -125,30 +125,27 @@ export interface AminoAcidOverlayItem {
   flatbushIdx: number
 }
 
-export interface FlatbushItem {
-  kind: 'feature'
+interface HitItemBase {
   featureId: string
   type: string
   startBp: number
   endBp: number
-  layoutEndBp: number
   topPx: number
   bottomPx: number
+}
+
+export interface FlatbushItem extends HitItemBase {
+  kind: 'feature'
+  layoutEndBp: number
   featureHeightPx: number
   tooltip: string
   name?: string
   strand?: number
 }
 
-export interface SubfeatureInfo {
+export interface SubfeatureInfo extends HitItemBase {
   kind: 'subfeature'
-  featureId: string
   parentFeatureId: string
-  type: string
-  startBp: number
-  endBp: number
-  topPx: number
-  bottomPx: number
   displayLabel?: string
   tooltip?: string
 }

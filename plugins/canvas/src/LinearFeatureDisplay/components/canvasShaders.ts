@@ -1,81 +1,14 @@
 import { HP_WGSL_CORE } from '@jbrowse/alignments-core'
 
-export const RECT_STRIDE = 8
-export const LINE_STRIDE = 8
-export const ARROW_STRIDE = 8
-
-export function interleaveRects(
-  positions: Uint32Array,
-  ys: Float32Array,
-  heights: Float32Array,
-  colors: Uint8Array,
-  count: number,
-) {
-  const buf = new ArrayBuffer(count * RECT_STRIDE * 4)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
-  for (let i = 0; i < count; i++) {
-    const off = i * RECT_STRIDE
-    u32[off] = positions[i * 2]!
-    u32[off + 1] = positions[i * 2 + 1]!
-    f32[off + 2] = ys[i]!
-    f32[off + 3] = heights[i]!
-    f32[off + 4] = colors[i * 4]! / 255
-    f32[off + 5] = colors[i * 4 + 1]! / 255
-    f32[off + 6] = colors[i * 4 + 2]! / 255
-    f32[off + 7] = colors[i * 4 + 3]! / 255
-  }
-  return buf
-}
-
-export function interleaveLines(
-  positions: Uint32Array,
-  ys: Float32Array,
-  directions: Int8Array,
-  colors: Uint8Array,
-  count: number,
-) {
-  const buf = new ArrayBuffer(count * LINE_STRIDE * 4)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
-  for (let i = 0; i < count; i++) {
-    const off = i * LINE_STRIDE
-    u32[off] = positions[i * 2]!
-    u32[off + 1] = positions[i * 2 + 1]!
-    f32[off + 2] = ys[i]!
-    f32[off + 3] = directions[i]!
-    f32[off + 4] = colors[i * 4]! / 255
-    f32[off + 5] = colors[i * 4 + 1]! / 255
-    f32[off + 6] = colors[i * 4 + 2]! / 255
-    f32[off + 7] = colors[i * 4 + 3]! / 255
-  }
-  return buf
-}
-
-export function interleaveArrows(
-  xs: Uint32Array,
-  ys: Float32Array,
-  directions: Int8Array,
-  heights: Float32Array,
-  colors: Uint8Array,
-  count: number,
-) {
-  const buf = new ArrayBuffer(count * ARROW_STRIDE * 4)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
-  for (let i = 0; i < count; i++) {
-    const off = i * ARROW_STRIDE
-    u32[off] = xs[i]!
-    f32[off + 1] = colors[i * 4 + 3]! / 255
-    f32[off + 2] = ys[i]!
-    f32[off + 3] = directions[i]!
-    f32[off + 4] = heights[i]!
-    f32[off + 5] = colors[i * 4]! / 255
-    f32[off + 6] = colors[i * 4 + 1]! / 255
-    f32[off + 7] = colors[i * 4 + 2]! / 255
-  }
-  return buf
-}
+import {
+  CHEVRON_H_PX,
+  CHEVRON_SPACING_PX,
+  CHEVRON_W_PX,
+  HEAD_HALF_H_PX,
+  MIN_RECT_WIDTH_PX,
+  STEM_HALF_H_PX,
+  STEM_LENGTH_PX,
+} from './sharedRendererConstants.ts'
 
 export const RECT_SHADER = /* wgsl */ `
 ${HP_WGSL_CORE}
@@ -121,8 +54,7 @@ fn vs_main(
   let sx1 = snap_to_pixel_x(hp_to_clip_x(hp_split_uint(abs_start), u.bp_range_x, u.zero), u.canvas_width);
   let sx2 = snap_to_pixel_x(hp_to_clip_x(hp_split_uint(abs_end), u.bp_range_x, u.zero), u.canvas_width);
 
-  // SYNC: must match MIN_RECT_WIDTH_PX in sharedRendererConstants.ts
-  let min_width = 4.0 / u.canvas_width;
+  let min_width = ${MIN_RECT_WIDTH_PX * 2}.0 / u.canvas_width;
   let dx = sx2 - sx1;
   let final_sx2 = select(sx2, sx1 + select(min_width, -min_width, dx < 0.0), abs(dx) < min_width);
   let sx = mix(sx1, final_sx2, local_x);
@@ -248,7 +180,7 @@ fn vs_main(
 
   let line_length_bp = f32(inst.start_end.y - inst.start_end.x);
   let line_width_px = line_length_bp / u.bp_per_px;
-  let chevron_spacing_px = 25.0;
+  let chevron_spacing_px = ${CHEVRON_SPACING_PX}.0;
 
   var out: VertexOutput;
 
@@ -286,8 +218,8 @@ fn vs_main(
   let y_px = floor(inst.y - u.scroll_y + 0.5) + 0.5;
   let cy = 1.0 - (y_px / u.canvas_height) * 2.0;
 
-  let half_w = 4.5 / u.canvas_width;
-  let half_h = 4.5 / u.canvas_height;
+  let half_w = ${CHEVRON_W_PX} / u.canvas_width;
+  let half_h = ${CHEVRON_H_PX} / u.canvas_height;
   let thickness = 1.5 / u.canvas_height;
   let dir = mix(inst.direction, -inst.direction, u.reversed);
 
@@ -367,9 +299,9 @@ fn vs_main(
   let y_px = floor(inst.y - u.scroll_y + 0.5) + 0.5;
   let cy = 1.0 - (y_px / u.canvas_height) * 2.0;
 
-  let stem_length = 7.0 / u.canvas_width * 2.0;
-  let stem_half = 0.5 / u.canvas_height * 2.0;
-  let head_half = 2.5 / u.canvas_height * 2.0;
+  let stem_length = ${STEM_LENGTH_PX}.0 / u.canvas_width * 2.0;
+  let stem_half = ${STEM_HALF_H_PX} / u.canvas_height * 2.0;
+  let head_half = ${HEAD_HALF_H_PX} / u.canvas_height * 2.0;
 
   let dir = mix(inst.direction, -inst.direction, u.reversed);
 

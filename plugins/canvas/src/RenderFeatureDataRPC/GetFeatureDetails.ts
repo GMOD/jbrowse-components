@@ -33,15 +33,10 @@ export default class GetFeatureDetails extends RpcMethodType {
 
     const { region, sessionId, adapterConfig } = args
 
-    const regionWithAssembly = {
-      ...region,
-      assemblyName: region.assemblyName ?? '',
-    }
-
     const result = await renameRegionsIfNeeded(assemblyManager, {
       sessionId,
       adapterConfig,
-      regions: [regionWithAssembly],
+      regions: [region],
     })
 
     // single-region RPC: we pass one region in, get one back
@@ -74,13 +69,8 @@ export default class GetFeatureDetails extends RpcMethodType {
       await getAdapter(this.pluginManager, sessionId, adapterConfig)
     ).dataAdapter as BaseFeatureDataAdapter
 
-    const regionWithAssembly = {
-      ...region,
-      assemblyName: region.assemblyName ?? '',
-    }
-
     const featuresArray = await firstValueFrom(
-      dataAdapter.getFeatures(regionWithAssembly).pipe(toArray()),
+      dataAdapter.getFeatures(region).pipe(toArray()),
     )
 
     const feature = featuresArray.find(f => f.id() === featureId)

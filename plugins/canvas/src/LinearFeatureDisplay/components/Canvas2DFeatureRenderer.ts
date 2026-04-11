@@ -24,30 +24,14 @@ import type { RegionGpuData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5
 const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5
 
-interface Canvas2DRegionData {
-  regionStart: number
-  rectPositions: Uint32Array
-  rectYs: Float32Array
-  rectHeights: Float32Array
-  rectColors: Uint8Array
-  numRects: number
-  linePositions: Uint32Array
-  lineYs: Float32Array
-  lineColors: Uint8Array
-  lineDirections: Int8Array
-  numLines: number
-  arrowXs: Uint32Array
-  arrowYs: Float32Array
-  arrowDirections: Int8Array
-  arrowHeights: Float32Array
-  arrowColors: Uint8Array
-  numArrows: number
+function rgbaString(colors: Uint8Array, i: number) {
+  return `rgba(${colors[i * 4]},${colors[i * 4 + 1]},${colors[i * 4 + 2]},${colors[i * 4 + 3]! / 255})`
 }
 
 export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
-  private regions = new Map<number, Canvas2DRegionData>()
+  private regions = new Map<number, RegionGpuData>()
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -59,25 +43,7 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
   }
 
   uploadRegion(regionNumber: number, data: RegionGpuData) {
-    this.regions.set(regionNumber, {
-      regionStart: data.regionStart,
-      rectPositions: data.rectPositions,
-      rectYs: data.rectYs,
-      rectHeights: data.rectHeights,
-      rectColors: data.rectColors,
-      numRects: data.numRects,
-      linePositions: data.linePositions,
-      lineYs: data.lineYs,
-      lineColors: data.lineColors,
-      lineDirections: data.lineDirections,
-      numLines: data.numLines,
-      arrowXs: data.arrowXs,
-      arrowYs: data.arrowYs,
-      arrowDirections: data.arrowDirections,
-      arrowHeights: data.arrowHeights,
-      arrowColors: data.arrowColors,
-      numArrows: data.numArrows,
-    })
+    this.regions.set(regionNumber, data)
   }
 
   renderBlocks(
@@ -130,7 +96,7 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
 
   private drawLines(
     ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
+    region: RegionGpuData,
     block: FeatureRenderBlock,
     bpLength: number,
     fullBlockWidth: number,
@@ -142,12 +108,7 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
       const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
       const y = Math.floor(region.lineYs[i]! - scrollY) + 0.5
-      const r = region.lineColors[i * 4]!
-      const g = region.lineColors[i * 4 + 1]!
-      const b = region.lineColors[i * 4 + 2]!
-      const a = region.lineColors[i * 4 + 3]! / 255
-
-      ctx.strokeStyle = `rgba(${r},${g},${b},${a})`
+      ctx.strokeStyle = rgbaString(region.lineColors, i)
       ctx.lineWidth = 1
       ctx.beginPath()
       ctx.moveTo(x1, y)
@@ -180,7 +141,7 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
 
   private drawRects(
     ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
+    region: RegionGpuData,
     block: FeatureRenderBlock,
     bpLength: number,
     fullBlockWidth: number,
@@ -193,21 +154,16 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
       const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
       const y = Math.floor(region.rectYs[i]! - scrollY + 0.5)
       const h = Math.floor(region.rectHeights[i]! + 0.5)
-      const r = region.rectColors[i * 4]!
-      const g = region.rectColors[i * 4 + 1]!
-      const b = region.rectColors[i * 4 + 2]!
-      const a = region.rectColors[i * 4 + 3]! / 255
-
       const w = Math.max(MIN_RECT_WIDTH_PX, x2 - x1)
 
-      ctx.fillStyle = `rgba(${r},${g},${b},${a})`
+      ctx.fillStyle = rgbaString(region.rectColors, i)
       ctx.fillRect(x1, y, w, h)
     }
   }
 
   private drawArrows(
     ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
+    region: RegionGpuData,
     block: FeatureRenderBlock,
     bpLength: number,
     fullBlockWidth: number,
@@ -218,12 +174,7 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
       const cx = this.bpToScreenX(xBp, block, bpLength, fullBlockWidth)
       const y = Math.floor(region.arrowYs[i]! - scrollY + 0.5) + 0.5
       const dir = region.arrowDirections[i]!
-      const r = region.arrowColors[i * 4]!
-      const g = region.arrowColors[i * 4 + 1]!
-      const b = region.arrowColors[i * 4 + 2]!
-      const a = region.arrowColors[i * 4 + 3]! / 255
-
-      ctx.fillStyle = `rgba(${r},${g},${b},${a})`
+      ctx.fillStyle = rgbaString(region.arrowColors, i)
 
       const stemEndX = cx + STEM_LENGTH_PX * 0.5 * dir
       ctx.fillRect(

@@ -10,6 +10,16 @@ function makeSubpartsFilter(subParts: string) {
   return (feature: Feature) => lowerRet.has(feature.get('type').toLowerCase())
 }
 
+function utrType(strand: number, isFivePrime: boolean) {
+  if (strand > 0) {
+    return isFivePrime ? 'five_prime_UTR' : 'three_prime_UTR'
+  }
+  if (strand < 0) {
+    return isFivePrime ? 'three_prime_UTR' : 'five_prime_UTR'
+  }
+  return 'UTR'
+}
+
 export function makeUTRs(parent: Feature, subs: Feature[]) {
   const subparts = [...subs]
 
@@ -55,12 +65,7 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
             start: exonStart,
             end: Math.min(exonEnd, codeStart),
             strand: parentStrand,
-            type:
-              parentStrand > 0
-                ? 'five_prime_UTR'
-                : parentStrand < 0
-                  ? 'three_prime_UTR'
-                  : 'UTR',
+            type: utrType(parentStrand, true),
           }),
         )
       }
@@ -73,12 +78,7 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
             start: Math.max(exonStart, codeEnd),
             end: exonEnd,
             strand: parentStrand,
-            type:
-              parentStrand > 0
-                ? 'three_prime_UTR'
-                : parentStrand < 0
-                  ? 'five_prime_UTR'
-                  : 'UTR',
+            type: utrType(parentStrand, false),
           }),
         )
       }
@@ -93,12 +93,7 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
         start: parentStart,
         end: codeStart,
         strand: parentStrand,
-        type:
-          parentStrand > 0
-            ? 'five_prime_UTR'
-            : parentStrand < 0
-              ? 'three_prime_UTR'
-              : 'UTR',
+        type: utrType(parentStrand, true),
       }),
     )
   }
@@ -111,12 +106,7 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
         start: codeEnd,
         end: parentEnd,
         strand: parentStrand,
-        type:
-          parentStrand > 0
-            ? 'three_prime_UTR'
-            : parentStrand < 0
-              ? 'five_prime_UTR'
-              : 'UTR',
+        type: utrType(parentStrand, false),
       }),
     )
   }

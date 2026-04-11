@@ -11,7 +11,7 @@ export async function createGpuHal(
 ): Promise<GpuHal | null> {
   const override = getGpuOverride()
 
-  if (override === 'canvas2d' || override === 'off') {
+  if (override === 'canvas2d' || override === 'canvas') {
     // eslint-disable-next-line no-console
     console.log('[GPU] Rendering disabled via URL parameter')
     return null

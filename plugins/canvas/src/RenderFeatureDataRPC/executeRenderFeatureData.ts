@@ -80,17 +80,12 @@ export async function executeRenderFeatureData({
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
-  const regionWithAssembly = {
-    ...region,
-    assemblyName: region.assemblyName ?? '',
-  }
-
   let featuresArray = await updateStatus(
     'Fetching features',
     statusCallback,
     () =>
       firstValueFrom(
-        dataAdapter.getFeatures(regionWithAssembly).pipe(toArray()),
+        dataAdapter.getFeatures(region).pipe(toArray()),
       ),
   )
   checkStopToken2(stopTokenCheck)
@@ -167,12 +162,7 @@ export async function executeRenderFeatureData({
       sequenceAdapter,
       colorByCDS: true,
       bpPerPx,
-      regions: [
-        {
-          ...region,
-          assemblyName: region.assemblyName ?? '',
-        },
-      ],
+      regions: [region],
     }
     peptideDataMap = await updateStatus(
       'Fetching peptide data',

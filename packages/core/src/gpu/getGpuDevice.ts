@@ -64,7 +64,11 @@ export function getGpuOverride() {
 
 export default function getGpuDevice() {
   const override = getGpuOverride()
-  if (override === 'webgl' || override === 'off' || override === 'canvas2d') {
+  if (
+    override === 'webgl' ||
+    override === 'canvas2d' ||
+    override === 'canvas'
+  ) {
     return Promise.resolve(null)
   }
   if (device) {

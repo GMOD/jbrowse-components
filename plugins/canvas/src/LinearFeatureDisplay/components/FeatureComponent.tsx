@@ -279,9 +279,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     }
     renderer.pruneRegions([...rpcDataMap.keys()])
 
-    setHoveredFeature(null)
-    setHoveredSubfeature(null)
-    model.setFeatureIdUnderMouse(null)
+    clearHoverState()
 
     renderWithBlocks()
     if (rpcDataMap.size > 0) {
@@ -564,10 +562,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
           onClose={() => {
             setContextMenuCoord(undefined)
             model.setContextMenuInfo(undefined)
-            setHoveredFeature(null)
-            setHoveredSubfeature(null)
-            model.setFeatureIdUnderMouse(null)
-            model.setMouseoverExtraInformation(undefined)
+            clearHoverState()
           }}
         />
       ) : null}
