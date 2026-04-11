@@ -6,15 +6,9 @@ export const boxGlyph: Glyph = {
   type: 'Box',
 
   layout(args: LayoutArgs): FeatureLayout {
-    const { feature, bpPerPx, configContext } = args
-    const { heightPx, widthPx } = getFeatureDimensions(
-      feature,
-      bpPerPx,
-      configContext,
-    )
+    const { feature, bpPerPx, config } = args
+    const { heightPx, widthPx } = getFeatureDimensions(feature, bpPerPx, config)
 
-    // Only top-level boxes get strand arrows; child boxes (inside
-    // subfeaturesGlyph) skip them since the parent handles arrows
     const isTopLevel = !feature.parent?.()
     const strand = feature.get('strand') as number
     const arrowPadding = isTopLevel

@@ -2,41 +2,21 @@ import {
   createFeatureFloatingLabels,
   createTranscriptFloatingLabel,
 } from './floatingLabels.ts'
-
-import type { RenderConfigContext } from './renderConfig.ts'
+import { mockDisplayConfig } from './testUtils.ts'
 
 const mockFeature = {
   get: () => 'test',
   id: () => 'test-id',
 } as any
 
-function createMockConfigContext(
-  overrides: Partial<RenderConfigContext> = {},
-): RenderConfigContext {
-  const config = {
-    labels: { fontSize: 12, nameColor: 'black', descriptionColor: 'blue' },
-    ...overrides.config,
-  }
-  return {
-    config,
-    displayMode: 'normal',
-    subfeatureLabels: 'below',
-    transcriptTypes: [],
-    containerTypes: [],
-    geneGlyphMode: 'all',
-    displayDirectionalChevrons: true,
-    labelAllowed: true,
-    heightMultiplier: 1,
-    ...overrides,
-  }
-}
+const baseConfig = mockDisplayConfig()
 
 describe('floatingLabels', () => {
   describe('createFeatureFloatingLabels', () => {
     it('creates both name and description labels when text is present', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
-        configContext: createMockConfigContext(),
+        config: baseConfig,
         nameColor: 'black',
         descriptionColor: 'blue',
         name: 'Gene1',
@@ -51,7 +31,7 @@ describe('floatingLabels', () => {
     it('returns no labels when name and description are whitespace-only', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
-        configContext: createMockConfigContext(),
+        config: baseConfig,
         nameColor: 'black',
         descriptionColor: 'blue',
         name: '   ',
@@ -64,7 +44,7 @@ describe('floatingLabels', () => {
     it('positions description below name using fontSize from config', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
-        configContext: createMockConfigContext(),
+        config: baseConfig,
         nameColor: 'black',
         descriptionColor: 'blue',
         name: 'Gene1',
@@ -77,7 +57,7 @@ describe('floatingLabels', () => {
     it('includes textWidth for each label', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
-        configContext: createMockConfigContext(),
+        config: baseConfig,
         nameColor: 'black',
         descriptionColor: 'blue',
         name: 'Gene1',
@@ -90,7 +70,7 @@ describe('floatingLabels', () => {
     it('returns only name label when description is empty', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
-        configContext: createMockConfigContext(),
+        config: baseConfig,
         nameColor: 'black',
         descriptionColor: 'blue',
         name: 'Gene1',
@@ -103,7 +83,7 @@ describe('floatingLabels', () => {
     it('returns only description label when name is empty', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
-        configContext: createMockConfigContext(),
+        config: baseConfig,
         nameColor: 'black',
         descriptionColor: 'blue',
         name: '',

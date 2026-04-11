@@ -1,9 +1,9 @@
 import { measureText } from '@jbrowse/core/util'
 
-import { readConfigValue } from './renderConfig.ts'
+import { isLabelAllowed, readConfigValue } from './renderConfig.ts'
 import { truncateLabel } from './util.ts'
 
-import type { RenderConfigContext } from './renderConfig.ts'
+import type { DisplayConfig } from './renderConfig.ts'
 import type { FeatureLayout } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -19,17 +19,18 @@ export function applyLabelDimensions(
   layout: FeatureLayout,
   args: {
     feature: Feature
-    configContext: RenderConfigContext
+    config: DisplayConfig
     isNested: boolean
     isTranscriptChild: boolean
   },
 ): void {
-  const { feature, configContext, isNested, isTranscriptChild } = args
-  const { config, subfeatureLabels, labelAllowed } = configContext
+  const { feature, config, isNested, isTranscriptChild } = args
+  const { subfeatureLabels } = config
 
   const showSubfeatureLabels = subfeatureLabels !== 'none'
   const shouldCalculateLabels =
-    labelAllowed && (!isNested || (isTranscriptChild && showSubfeatureLabels))
+    isLabelAllowed(config) &&
+    (!isNested || (isTranscriptChild && showSubfeatureLabels))
 
   if (!shouldCalculateLabels) {
     return

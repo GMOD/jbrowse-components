@@ -23,7 +23,6 @@ import { toArray } from 'rxjs/operators'
 import { collectRenderData } from './collectRenderData.ts'
 import { layoutFeature } from './layout/layoutFeature.ts'
 import { fetchPeptideData } from './peptides/peptideUtils.ts'
-import { createRenderConfigContext } from './renderConfig.ts'
 import { shouldRenderPeptideBackground } from './zoomThresholds.ts'
 
 import type {
@@ -129,8 +128,6 @@ export async function executeRenderFeatureData({
     },
   }
 
-  const configContext = createRenderConfigContext(displayConfig)
-
   const features = new Map<string, Feature>()
   for (const f of featuresArray) {
     const id = f.id()
@@ -150,7 +147,7 @@ export async function executeRenderFeatureData({
           feature,
           bpPerPx,
           reversed,
-          configContext,
+          config: displayConfig,
         })
         records.push({
           feature,
@@ -199,7 +196,7 @@ export async function executeRenderFeatureData({
     collectRenderData(
       layoutRecords,
       regionStart,
-      configContext,
+      displayConfig,
       mockTheme as Theme,
       !!colorByCDS,
       peptideDataMap,

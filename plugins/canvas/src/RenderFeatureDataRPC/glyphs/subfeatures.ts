@@ -48,14 +48,14 @@ export const subfeaturesGlyph: Glyph = {
   type: 'Subfeatures',
 
   layout(args: LayoutArgs): FeatureLayout {
-    const { feature, bpPerPx, configContext } = args
-    const { geneGlyphMode, transcriptTypes } = configContext
+    const { feature, bpPerPx, config } = args
+    const { geneGlyphMode, transcriptTypes, subfeatureLabels } = config
 
     const {
       start: featureStart,
       heightPx,
       widthPx,
-    } = getFeatureDimensions(feature, bpPerPx, configContext)
+    } = getFeatureDimensions(feature, bpPerPx, config)
 
     // Sort coding transcripts first so they render on top in stacked layout
     let subfeatures = [...(feature.get('subfeatures') || [])] as Feature[]
@@ -84,12 +84,11 @@ export const subfeaturesGlyph: Glyph = {
 
     const children: FeatureLayout[] = []
     let currentYPx = 0
-    const { subfeatureLabels } = configContext
 
     for (const [i, child] of subfeatures.entries()) {
       const childType = child.get('type')
       const isChildTranscript = transcriptTypes.includes(childType)
-      const childGlyph = findGlyph(child, configContext, false)
+      const childGlyph = findGlyph(child, config, false)
 
       const childLayout = childGlyph.layout({
         ...args,
@@ -99,7 +98,7 @@ export const subfeaturesGlyph: Glyph = {
 
       applyLabelDimensions(childLayout, {
         feature: child,
-        configContext,
+        config,
         isNested: true,
         isTranscriptChild: isChildTranscript,
       })

@@ -1,4 +1,4 @@
-import type { RenderConfigContext } from './renderConfig.ts'
+import type { DisplayConfig } from './renderConfig.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export interface SequenceData {
@@ -28,7 +28,7 @@ export interface LayoutArgs {
   feature: Feature
   bpPerPx: number
   reversed: boolean
-  configContext: RenderConfigContext
+  config: DisplayConfig
   parentFeature?: Feature
 }
 

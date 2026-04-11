@@ -7,6 +7,7 @@
  * This is critical for alignment between features and hit detection.
  */
 
+import type { DisplayConfig } from './renderConfig.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface LabelItem {
@@ -19,7 +20,7 @@ export interface LabelItem {
 export interface RenderFeatureDataArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
-  displayConfig: Record<string, unknown>
+  displayConfig: DisplayConfig
   region: {
     refName: string
     start: number

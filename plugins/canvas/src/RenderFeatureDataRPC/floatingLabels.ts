@@ -3,28 +3,22 @@ import { measureText } from '@jbrowse/core/util'
 import { readConfigValue } from './renderConfig.ts'
 import { truncateLabel } from './util.ts'
 
-import type { RenderConfigContext } from './renderConfig.ts'
+import type { DisplayConfig } from './renderConfig.ts'
 import type { LabelItem } from './rpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const FLOATING_LABEL_FONT_SIZE = 11
 
-/**
- * Create floating labels for a top-level feature (gene, etc.)
- *
- * Labels are positioned relative to the feature's visual bottom.
- * relativeY = 0 means the label starts at the feature's bottom edge.
- */
 export function createFeatureFloatingLabels({
   feature,
-  configContext,
+  config,
   nameColor,
   descriptionColor,
   name: rawName,
   description: rawDescription,
 }: {
   feature: Feature
-  configContext: RenderConfigContext
+  config: DisplayConfig
   nameColor: string
   descriptionColor: string
   name: string
@@ -47,11 +41,7 @@ export function createFeatureFloatingLabels({
       color: nameColor,
       textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
     }
-    currentY += readConfigValue<number>(
-      configContext.config,
-      ['labels', 'fontSize'],
-      feature,
-    )
+    currentY += readConfigValue<number>(config, ['labels', 'fontSize'], feature)
   }
 
   if (shouldShowDescription) {
@@ -66,12 +56,6 @@ export function createFeatureFloatingLabels({
   return { nameLabel, descriptionLabel }
 }
 
-/**
- * Create floating labels for a transcript subfeature
- *
- * For 'overlay' mode, labels are positioned at the top of the feature.
- * For 'below' mode, labels are positioned at the bottom.
- */
 export function createTranscriptFloatingLabel({
   displayLabel,
   featureHeight,

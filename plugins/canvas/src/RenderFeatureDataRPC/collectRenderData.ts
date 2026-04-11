@@ -14,7 +14,9 @@ import { prepareAminoAcidData } from './peptides/prepareAminoAcidData.ts'
 import { getBoxColor, getStrokeColor, isUTR } from './util.ts'
 
 import type { AggregatedAminoAcid } from './peptides/aggregateAminoAcids.ts'
-import type { RenderConfigContext } from './renderConfig.ts'
+import { isLabelAllowed } from './renderConfig.ts'
+
+import type { DisplayConfig } from './renderConfig.ts'
 import type {
   AminoAcidOverlayItem,
   FlatbushItem,
@@ -54,7 +56,7 @@ export interface ArrowData {
 
 interface RenderContext {
   regionStart: number
-  configContext: RenderConfigContext
+  config: DisplayConfig
   theme: Theme
   colorByCDS: boolean
   peptideDataMap?: Map<string, PeptideData>
@@ -228,7 +230,7 @@ function emitExonRects(
 
     const childColor = getBoxColor({
       feature: childFeature,
-      configContext: ctx.configContext,
+      config: ctx.config,
       colorByCDS: ctx.colorByCDS,
       theme: ctx.theme,
     })
@@ -314,16 +316,16 @@ function emitTranscriptMetadata(
     tooltip,
   })
 
-  const { configContext, regionStart } = ctx
+  const { config, regionStart } = ctx
   if (
-    configContext.labelAllowed &&
-    configContext.subfeatureLabels !== 'none' &&
+    isLabelAllowed(config) &&
+    config.subfeatureLabels !== 'none' &&
     transcriptName
   ) {
     const result = createTranscriptFloatingLabel({
       displayLabel: transcriptName,
       featureHeight: transcript.height,
-      subfeatureLabels: configContext.subfeatureLabels,
+      subfeatureLabels: config.subfeatureLabels,
       color: 'black',
       parentFeatureId: parentFeature.id(),
       subfeatureId: transcriptFeature.id(),
@@ -355,7 +357,7 @@ function processTranscriptLayout(
   const transcriptStrand = (transcriptFeature.get('strand') as number) || 0
   const strokeColor = getStrokeColor({
     feature: transcriptFeature,
-    configContext: ctx.configContext,
+    config: ctx.config,
     theme: ctx.theme,
   })
   const strokeUint = colorToUint32(strokeColor)
@@ -407,13 +409,13 @@ function processFeatureRecord(
 
   const fillColor = getBoxColor({
     feature,
-    configContext: ctx.configContext,
+    config: ctx.config,
     colorByCDS: ctx.colorByCDS,
     theme: ctx.theme,
   })
   const strokeColor = getStrokeColor({
     feature,
-    configContext: ctx.configContext,
+    config: ctx.config,
     theme: ctx.theme,
   })
   const colorUint = colorToUint32(fillColor)
@@ -423,7 +425,7 @@ function processFeatureRecord(
   const description = getFeatureDescription(feature)
   const { nameLabel, descriptionLabel } = createFeatureFloatingLabels({
     feature,
-    configContext: ctx.configContext,
+    config: ctx.config,
     nameColor: 'black',
     descriptionColor: 'blue',
     name,
@@ -484,7 +486,7 @@ function processFeatureRecord(
 
         const childColor = getBoxColor({
           feature: childFeature,
-          configContext: ctx.configContext,
+          config: ctx.config,
           colorByCDS: ctx.colorByCDS,
           theme: ctx.theme,
         })
@@ -539,14 +541,14 @@ function processFeatureRecord(
 export function collectRenderData(
   layoutRecords: LayoutRecord[],
   regionStart: number,
-  configContext: RenderConfigContext,
+  config: DisplayConfig,
   theme: Theme,
   colorByCDS: boolean,
   peptideDataMap?: Map<string, PeptideData>,
 ) {
   const ctx: RenderContext = {
     regionStart,
-    configContext,
+    config,
     theme,
     colorByCDS,
     peptideDataMap,

@@ -27,12 +27,12 @@ export const matureProteinRegionGlyph: Glyph = {
   type: 'MatureProteinRegion',
 
   layout(args: LayoutArgs): FeatureLayout {
-    const { feature, bpPerPx, configContext } = args
-    const { subfeatureLabels } = configContext
+    const { feature, bpPerPx, config } = args
+    const { subfeatureLabels } = config
     const { heightPx, widthPx } = getFeatureDimensions(
       feature,
       bpPerPx,
-      configContext,
+      config,
     )
 
     const matureProteins = getMatureProteinChildren(feature)

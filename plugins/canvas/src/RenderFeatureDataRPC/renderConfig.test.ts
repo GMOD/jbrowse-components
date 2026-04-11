@@ -1,4 +1,5 @@
-import { createRenderConfigContext, readConfigValue } from './renderConfig.ts'
+import { isLabelAllowed, readConfigValue } from './renderConfig.ts'
+import { mockDisplayConfig } from './testUtils.ts'
 
 function mockFeature(data: Record<string, unknown> = {}) {
   return {
@@ -42,58 +43,14 @@ describe('readConfigValue', () => {
   })
 })
 
-describe('createRenderConfigContext', () => {
-  it('reads values from config', () => {
-    const ctx = createRenderConfigContext({
-      displayMode: 'normal',
-      subfeatureLabels: 'none',
-      geneGlyphMode: 'all',
-      transcriptTypes: ['mRNA'],
-      containerTypes: ['proteoform_orf'],
-    })
-    expect(ctx.displayMode).toBe('normal')
-    expect(ctx.labelAllowed).toBe(true)
-    expect(ctx.heightMultiplier).toBe(1)
-    expect(ctx.geneGlyphMode).toBe('all')
-    expect(ctx.transcriptTypes).toEqual(['mRNA'])
+describe('isLabelAllowed', () => {
+  it('returns true for normal mode', () => {
+    expect(isLabelAllowed(mockDisplayConfig())).toBe(true)
   })
 
-  it('compact mode adjusts height multiplier', () => {
-    const ctx = createRenderConfigContext({
-      displayMode: 'compact',
-      subfeatureLabels: 'none',
-      geneGlyphMode: 'all',
-      transcriptTypes: ['mRNA'],
-      containerTypes: [],
-    })
-    expect(ctx.heightMultiplier).toBe(0.6)
-  })
-
-  it('collapse mode disables labels', () => {
-    const ctx = createRenderConfigContext({
-      displayMode: 'collapse',
-      subfeatureLabels: 'none',
-      geneGlyphMode: 'all',
-      transcriptTypes: ['mRNA'],
-      containerTypes: [],
-    })
-    expect(ctx.labelAllowed).toBe(false)
-  })
-
-  it('end-to-end: JEXL color evaluated per-feature', () => {
-    const ctx = createRenderConfigContext({
-      color1: "jexl:get(feature,'type')=='SNV'?'green':'purple'",
-      displayMode: 'normal',
-      subfeatureLabels: 'none',
-      geneGlyphMode: 'all',
-      transcriptTypes: ['mRNA'],
-      containerTypes: [],
-    })
-    expect(
-      readConfigValue(ctx.config, 'color1', mockFeature({ type: 'SNV' })),
-    ).toBe('green')
-    expect(
-      readConfigValue(ctx.config, 'color1', mockFeature({ type: 'insertion' })),
-    ).toBe('purple')
+  it('returns false for collapse mode', () => {
+    expect(isLabelAllowed(mockDisplayConfig({ displayMode: 'collapse' }))).toBe(
+      false,
+    )
   })
 })

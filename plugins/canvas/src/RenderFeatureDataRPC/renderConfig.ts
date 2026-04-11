@@ -1,31 +1,27 @@
-// Re-export readConfigValue from core so existing canvas imports continue to work
 export { readConfigValue } from '@jbrowse/core/configuration'
 
-export interface RenderConfigContext {
-  config: Record<string, unknown>
-  displayMode: string
-  subfeatureLabels: string
+export interface DisplayConfig {
+  displayMode: 'normal' | 'compact' | 'reducedRepresentation' | 'collapse'
+  geneGlyphMode: 'auto' | 'all' | 'longest' | 'longestCoding'
+  subfeatureLabels: 'none' | 'below' | 'overlay'
   transcriptTypes: string[]
   containerTypes: string[]
-  geneGlyphMode: string
-  labelAllowed: boolean
-  heightMultiplier: number
+  subParts: string
+  impliedUTRs: boolean
   displayDirectionalChevrons: boolean
+  featureHeight: number | string
+  color1: string
+  color2: string
+  color3: string
+  labels: {
+    name: string
+    nameColor: string
+    description: string
+    descriptionColor: string
+    fontSize: number | string
+  }
 }
 
-export function createRenderConfigContext(
-  config: Record<string, unknown>,
-): RenderConfigContext {
-  const displayMode = config.displayMode as string
-  return {
-    config,
-    displayMode,
-    subfeatureLabels: config.subfeatureLabels as string,
-    transcriptTypes: config.transcriptTypes as string[],
-    containerTypes: config.containerTypes as string[],
-    geneGlyphMode: config.geneGlyphMode as string,
-    labelAllowed: displayMode !== 'collapse',
-    heightMultiplier: displayMode === 'compact' ? 0.6 : 1,
-    displayDirectionalChevrons: config.displayDirectionalChevrons !== false,
-  }
+export function isLabelAllowed(config: DisplayConfig) {
+  return config.displayMode !== 'collapse'
 }

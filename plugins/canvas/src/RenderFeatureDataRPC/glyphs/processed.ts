@@ -8,7 +8,7 @@ export const processedTranscriptGlyph: Glyph = {
 
   layout(args: LayoutArgs): FeatureLayout {
     // getSubparts filters to configured subParts and synthesizes implied UTRs
-    const subparts = getSubparts(args.feature, args.configContext.config)
+    const subparts = getSubparts(args.feature, args.config)
     return layoutContainerGlyph('ProcessedTranscript', args, subparts)
   },
 }

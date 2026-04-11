@@ -10,30 +10,9 @@ import { findGlyph } from './index.ts'
 import { processedTranscriptGlyph } from './processed.ts'
 import { segmentsGlyph } from './segments.ts'
 
-import type { RenderConfigContext } from '../renderConfig.ts'
+import { mockDisplayConfig } from '../testUtils.ts'
 import type { FeatureLayout } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
-
-function createMockConfigContext(
-  overrides: Partial<RenderConfigContext> = {},
-): RenderConfigContext {
-  return {
-    config: {
-      featureHeight: 10,
-      labels: { name: '', description: '', fontSize: 12 },
-      subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
-    } as any,
-    displayMode: 'normal',
-    subfeatureLabels: 'none',
-    transcriptTypes: ['mRNA'],
-    containerTypes: [],
-    geneGlyphMode: 'all',
-    displayDirectionalChevrons: true,
-    labelAllowed: true,
-    heightMultiplier: 1,
-    ...overrides,
-  }
-}
 
 function mockFeature(opts: {
   type: string
@@ -138,9 +117,9 @@ describe('getStrandArrowPadding', () => {
 describe('getFeatureDimensions', () => {
   it('computes height with multiplier and width from bp range', () => {
     const feature = mockFeature({ type: 'exon', start: 100, end: 300 })
-    const configContext = createMockConfigContext({ heightMultiplier: 0.6 })
+    const config = mockDisplayConfig({ displayMode: 'compact' })
 
-    const dims = getFeatureDimensions(feature, 1, configContext)
+    const dims = getFeatureDimensions(feature, 1, config)
 
     expect(dims.start).toBe(100)
     expect(dims.end).toBe(300)
@@ -150,9 +129,9 @@ describe('getFeatureDimensions', () => {
 
   it('scales width by bpPerPx', () => {
     const feature = mockFeature({ type: 'exon', start: 0, end: 1000 })
-    const configContext = createMockConfigContext()
+    const config = mockDisplayConfig()
 
-    const dims = getFeatureDimensions(feature, 10, configContext)
+    const dims = getFeatureDimensions(feature, 10, config)
 
     expect(dims.widthPx).toBe(100)
   })
@@ -167,13 +146,13 @@ describe('layoutChild', () => {
       end: 300,
       parentFeature: parent,
     })
-    const configContext = createMockConfigContext()
+    const config = mockDisplayConfig()
 
     const result = layoutChild(child, parent, {
       feature: parent,
       bpPerPx: 1,
       reversed: false,
-      configContext,
+      config,
     })
 
     expect(result.x).toBe(100)
@@ -189,13 +168,13 @@ describe('layoutChild', () => {
       end: 400,
       parentFeature: parent,
     })
-    const configContext = createMockConfigContext()
+    const config = mockDisplayConfig()
 
     const result = layoutChild(child, parent, {
       feature: parent,
       bpPerPx: 2,
       reversed: false,
-      configContext,
+      config,
     })
 
     expect(result.x).toBe(50)
@@ -211,13 +190,13 @@ describe('boxGlyph', () => {
       end: 300,
       strand: 1,
     })
-    const configContext = createMockConfigContext()
+    const config = mockDisplayConfig()
 
     const layout = boxGlyph.layout({
       feature,
       bpPerPx: 1,
       reversed: false,
-      configContext,
+      config,
     })
 
     expect(layout.width).toBe(200)
@@ -232,13 +211,13 @@ describe('boxGlyph', () => {
       end: 300,
       strand: 1,
     })
-    const configContext = createMockConfigContext()
+    const config = mockDisplayConfig()
 
     const layout = boxGlyph.layout({
       feature,
       bpPerPx: 1,
       reversed: false,
-      configContext,
+      config,
     })
 
     expect(layout.leftPadding).toBe(0)
@@ -254,13 +233,13 @@ describe('boxGlyph', () => {
       strand: 1,
       parentFeature: parent,
     })
-    const configContext = createMockConfigContext()
+    const config = mockDisplayConfig()
 
     const layout = boxGlyph.layout({
       feature: child,
       bpPerPx: 1,
       reversed: false,
-      configContext,
+      config,
     })
 
     expect(layout.leftPadding).toBe(0)
@@ -276,13 +255,13 @@ describe('boxGlyph for CDS', () => {
       end: 400,
       strand: 1,
     })
-    const configContext = createMockConfigContext()
+    const config = mockDisplayConfig()
 
     const layout = boxGlyph.layout({
       feature,
       bpPerPx: 1,
       reversed: false,
-      configContext,
+      config,
     })
 
     expect(layout.width).toBe(200)
@@ -300,13 +279,13 @@ describe('boxGlyph for CDS', () => {
       strand: 1,
       parentFeature: parent,
     })
-    const configContext = createMockConfigContext()
+    const config = mockDisplayConfig()
 
     const layout = boxGlyph.layout({
       feature,
       bpPerPx: 1,
       reversed: false,
-      configContext,
+      config,
     })
 
     expect(layout.leftPadding).toBe(0)
@@ -325,13 +304,13 @@ describe('processedTranscriptGlyph', () => {
       strand: 1,
       subfeatures: [cds1, cds2],
     })
-    const configContext = createMockConfigContext()
+    const config = mockDisplayConfig()
 
     const layout = processedTranscriptGlyph.layout({
       feature: mrna,
       bpPerPx: 1,
       reversed: false,
-      configContext,
+      config,
     })
 
     expect(layout.children).toHaveLength(2)
@@ -351,13 +330,13 @@ describe('segmentsGlyph', () => {
       strand: -1,
       subfeatures: [sub1, sub2],
     })
-    const configContext = createMockConfigContext()
+    const config = mockDisplayConfig()
 
     const layout = segmentsGlyph.layout({
       feature,
       bpPerPx: 1,
       reversed: false,
-      configContext,
+      config,
     })
 
     expect(layout.children).toHaveLength(2)
@@ -378,13 +357,13 @@ describe('segmentsGlyph for repeat_region', () => {
       strand: 0,
       subfeatures: [sub1, sub2],
     })
-    const configContext = createMockConfigContext()
+    const config = mockDisplayConfig()
 
     const layout = segmentsGlyph.layout({
       feature,
       bpPerPx: 1,
       reversed: false,
-      configContext,
+      config,
     })
 
     expect(layout.children).toHaveLength(2)
@@ -405,8 +384,8 @@ describe('layoutContainerGlyph', () => {
       end: 400,
       strand: 1,
     })
-    const configContext = createMockConfigContext()
-    const args = { feature, bpPerPx: 1, reversed: false, configContext }
+    const config = mockDisplayConfig()
+    const args = { feature, bpPerPx: 1, reversed: false, config }
 
     const layout = layoutContainerGlyph('Segments', args, [sub1, sub2])
 
@@ -438,10 +417,10 @@ describe('findGlyph', () => {
         }),
       ],
     })
-    const configContext = createMockConfigContext()
+    const config = mockDisplayConfig()
 
     // feature with parent → non-top-level → Segments, not Subfeatures
-    expect(findGlyph(nested, configContext).type).toBe('Segments')
+    expect(findGlyph(nested, config).type).toBe('Segments')
   })
 
   it('returns Subfeatures for top-level with nested children', () => {
@@ -458,16 +437,16 @@ describe('findGlyph', () => {
         }),
       ],
     })
-    const configContext = createMockConfigContext()
+    const config = mockDisplayConfig()
 
-    expect(findGlyph(feature, configContext).type).toBe('Subfeatures')
+    expect(findGlyph(feature, config).type).toBe('Subfeatures')
   })
 
   it('returns Box for leaf features', () => {
     const feature = mockFeature({ type: 'match', start: 0, end: 100 })
-    const configContext = createMockConfigContext()
+    const config = mockDisplayConfig()
 
-    expect(findGlyph(feature, configContext).type).toBe('Box')
+    expect(findGlyph(feature, config).type).toBe('Box')
   })
 
   it('respects explicit isTopLevel=false', () => {
@@ -486,9 +465,9 @@ describe('findGlyph', () => {
         }),
       ],
     })
-    const configContext = createMockConfigContext()
+    const config = mockDisplayConfig()
 
     // explicit false → Segments even though feature has no parent
-    expect(findGlyph(feature, configContext, false).type).toBe('Segments')
+    expect(findGlyph(feature, config, false).type).toBe('Segments')
   })
 })

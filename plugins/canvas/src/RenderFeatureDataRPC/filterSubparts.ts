@@ -2,11 +2,10 @@ import { type Feature, SimpleFeature } from '@jbrowse/core/util'
 
 import { isUTR } from './util.ts'
 
-function makeSubpartsFilter(confKey: string, config: Record<string, unknown>) {
-  const filter = (config[confKey] ??
-    'CDS,UTR,five_prime_UTR,three_prime_UTR') as string[] | string
-  const ret = typeof filter === 'string' ? filter.split(/\s*,\s*/) : filter
-  const lowerRet = new Set(ret.map(t => t.toLowerCase()))
+import type { DisplayConfig } from './renderConfig.ts'
+
+function makeSubpartsFilter(subParts: string) {
+  const lowerRet = new Set(subParts.split(/\s*,\s*/).map(t => t.toLowerCase()))
 
   return (feature: Feature) => lowerRet.has(feature.get('type').toLowerCase())
 }
@@ -125,7 +124,7 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
   return subparts
 }
 
-export function getSubparts(f: Feature, config: Record<string, unknown>) {
+export function getSubparts(f: Feature, config: DisplayConfig) {
   let c = f.get('subfeatures')
   if (!c || c.length === 0) {
     return []
@@ -138,6 +137,5 @@ export function getSubparts(f: Feature, config: Record<string, unknown>) {
     c = makeUTRs(f, c)
   }
 
-  const subpartFilter = makeSubpartsFilter('subParts', config)
-  return c.filter(subpartFilter)
+  return c.filter(makeSubpartsFilter(config.subParts))
 }

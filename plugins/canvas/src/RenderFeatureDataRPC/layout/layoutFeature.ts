@@ -1,7 +1,7 @@
 import { findGlyph } from '../glyphs/index.ts'
 import { applyLabelDimensions } from '../labelUtils.ts'
 
-import type { RenderConfigContext } from '../renderConfig.ts'
+import type { DisplayConfig } from '../renderConfig.ts'
 import type { LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -9,7 +9,7 @@ export function layoutFeature(args: {
   feature: Feature
   bpPerPx: number
   reversed: boolean
-  configContext: RenderConfigContext
+  config: DisplayConfig
   isNested?: boolean
   isTranscriptChild?: boolean
 }) {
@@ -17,7 +17,7 @@ export function layoutFeature(args: {
     feature,
     bpPerPx,
     reversed,
-    configContext,
+    config,
     isNested = false,
     isTranscriptChild = false,
   } = args
@@ -26,18 +26,15 @@ export function layoutFeature(args: {
     feature,
     bpPerPx,
     reversed,
-    configContext,
+    config,
   }
 
-  const layout = findGlyph(feature, configContext).layout(layoutArgs)
+  const layout = findGlyph(feature, config).layout(layoutArgs)
 
-  // Only apply label dimensions for nested/transcript children where
-  // totalLayoutHeight is used for stacking within parent glyphs.
-  // Top-level features skip this — layout.ts owns their height decisions.
   if (isNested || isTranscriptChild) {
     applyLabelDimensions(layout, {
       feature,
-      configContext,
+      config,
       isNested,
       isTranscriptChild,
     })

@@ -80,9 +80,6 @@ describe('LinearFeatureDisplay configSchema', () => {
     expect(snap.type).toBe('LinearFeatureDisplay')
 
     // postProcessSnapshot strips default values, so defaults are absent
-    // This means transcriptTypes and labels are NOT in the snapshot
-    // unless explicitly set. Our createRenderConfigContext must handle
-    // these being undefined by providing defaults.
     expect(snap.transcriptTypes).toBeUndefined()
     expect(snap.labels).toBeUndefined()
 

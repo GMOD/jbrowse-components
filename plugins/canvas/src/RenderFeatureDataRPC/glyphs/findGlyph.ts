@@ -7,7 +7,7 @@ import { processedTranscriptGlyph } from './processed.ts'
 import { segmentsGlyph } from './segments.ts'
 import { subfeaturesGlyph } from './subfeatures.ts'
 
-import type { RenderConfigContext } from '../renderConfig.ts'
+import type { DisplayConfig } from '../renderConfig.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // Selects the glyph that best represents a feature's structure.
@@ -23,7 +23,7 @@ import type { Feature } from '@jbrowse/core/util'
 //   Subfeatures         — gene-level: stacks child transcripts vertically
 export function findGlyph(
   feature: Feature,
-  configContext: RenderConfigContext,
+  config: DisplayConfig,
   isTopLevel?: boolean,
 ) {
   if (isTopLevel === undefined) {
@@ -39,8 +39,8 @@ export function findGlyph(
       : boxGlyph
   }
   if (hasSubfeatures) {
-    const { transcriptTypes } = configContext
-    if (isTopLevel && configContext.containerTypes.includes(type)) {
+    const { transcriptTypes, containerTypes } = config
+    if (isTopLevel && containerTypes.includes(type)) {
       return subfeaturesGlyph
     }
     const hasCDS = subfeatures.some((f: Feature) => f.get('type') === 'CDS')

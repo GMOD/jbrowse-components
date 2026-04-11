@@ -1,6 +1,4 @@
-import { readConfigValue } from '../renderConfig.ts'
-
-import type { RenderConfigContext } from '../renderConfig.ts'
+import type { DisplayConfig } from '../renderConfig.ts'
 import type { FeatureLayout, GlyphType, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -19,13 +17,12 @@ export function sortByPosition(children: FeatureLayout[]) {
 export function getFeatureDimensions(
   feature: Feature,
   bpPerPx: number,
-  configContext: RenderConfigContext,
+  config: DisplayConfig,
 ) {
-  const { config, heightMultiplier } = configContext
   const start = feature.get('start')
   const end = feature.get('end')
-  const heightPx =
-    readConfigValue<number>(config, 'featureHeight', feature) * heightMultiplier
+  const heightMultiplier = config.displayMode === 'compact' ? 0.6 : 1
+  const heightPx = (config.featureHeight as number) * heightMultiplier
   const widthPx = (end - start) / bpPerPx
   return { start, end, heightPx, widthPx }
 }
@@ -46,11 +43,11 @@ export function layoutChild(
   parentFeature: Feature,
   args: LayoutArgs,
 ): FeatureLayout {
-  const { bpPerPx, configContext } = args
+  const { bpPerPx, config } = args
   const { start, heightPx, widthPx } = getFeatureDimensions(
     child,
     bpPerPx,
-    configContext,
+    config,
   )
   const parentStart = parentFeature.get('start')
 
@@ -75,11 +72,11 @@ export function layoutContainerGlyph(
   args: LayoutArgs,
   subfeatures: Feature[],
 ): FeatureLayout {
-  const { feature, bpPerPx, configContext } = args
+  const { feature, bpPerPx, config } = args
   const { heightPx, widthPx } = getFeatureDimensions(
     feature,
     bpPerPx,
-    configContext,
+    config,
   )
 
   const strand = feature.get('strand') as number
