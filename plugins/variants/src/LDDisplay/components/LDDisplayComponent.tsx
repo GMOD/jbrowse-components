@@ -2,7 +2,6 @@ import {
   useCallback,
   useEffect,
   useEffectEvent,
-  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -15,7 +14,6 @@ import {
   useGpuRenderer,
   useTabVisibilityRerender,
 } from '@jbrowse/core/util'
-import Flatbush from '@jbrowse/core/util/flatbush'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -191,6 +189,20 @@ function Crosshairs({
   )
 }
 
+function upperBound(arr: Float32Array, val: number) {
+  let lo = 0
+  let hi = arr.length
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1
+    if (arr[mid]! <= val) {
+      lo = mid + 1
+    } else {
+      hi = mid
+    }
+  }
+  return lo
+}
+
 function screenToUnrotated(
   screenX: number,
   screenY: number,
@@ -257,8 +269,6 @@ const LDCanvas = observer(function LDCanvas({
   const width = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
   const {
     rpcData,
-    flatbush,
-    flatbushItems,
     yScalar,
     cellWidth,
     showLegend,
@@ -337,11 +347,6 @@ const LDCanvas = observer(function LDCanvas({
     }
   }, [genomicX1, genomicX2, model.showVerticalGuides, view, viewOffsetX])
 
-  const flatbushIndex = useMemo(
-    () => (flatbush ? Flatbush.from(flatbush) : null),
-    [flatbush],
-  )
-
   const renderNow = useEffectEvent(() => {
     const renderer = rendererRef.current
     const data = model.rpcData
@@ -364,6 +369,7 @@ const LDCanvas = observer(function LDCanvas({
       signedLD: data.signedLD,
       viewScale: scale,
       viewOffsetX: offsetX,
+      uniformW: data.uniformW,
     })
   })
 
@@ -385,10 +391,11 @@ const LDCanvas = observer(function LDCanvas({
       if (lastRpcData !== data) {
         lastRpcData = data
         renderer.uploadData({
+          ldValues: data.ldValues,
+          boundaries: data.boundaries,
+          numCells: data.numCells,
           positions: data.positions,
           cellSizes: data.cellSizes,
-          ldValues: data.ldValues,
-          numCells: data.numCells,
         })
       }
 
@@ -419,7 +426,8 @@ const LDCanvas = observer(function LDCanvas({
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {
       const container = containerRef.current
-      if (!container || !flatbushIndex || !flatbushItems.length || loading) {
+      const data = model.rpcData
+      if (!container || !data || loading) {
         setHoveredItem(undefined)
         setMousePosition(undefined)
         return
@@ -436,7 +444,7 @@ const LDCanvas = observer(function LDCanvas({
         return
       }
 
-      // Reverse the shader transform to get data-space screen coordinates
+      // Reverse the shader transform to get data-space (pre-rotation) coords
       const dataScreenX = (mouseX - viewOffsetX) / viewScale
       const dataScreenY =
         (mouseY - effectiveLineZoneHeight) / viewScale + effectiveLineZoneHeight
@@ -448,23 +456,45 @@ const LDCanvas = observer(function LDCanvas({
         effectiveLineZoneHeight,
       )
 
-      const results = flatbushIndex.search(x - 1, y - 1, x + 1, y + 1)
+      const { boundaries, ldValues } = data
+      const n = boundaries.length - 1
 
-      if (results.length > 0) {
-        const item = flatbushItems[results[0]!]
-        setHoveredItem(item)
+      let hitI = -1
+      let hitJ = -1
+      if (useGenomicPositions) {
+        hitJ = upperBound(boundaries, x) - 1
+        hitI = upperBound(boundaries, y) - 1
+      } else {
+        const w = cellWidth
+        if (w > 0) {
+          hitJ = Math.floor(x / w)
+          hitI = Math.floor(y / w)
+        }
+      }
+
+      if (hitI > hitJ && hitI > 0 && hitJ >= 0 && hitI < n) {
+        const ldIdx = (hitI * (hitI - 1)) / 2 + hitJ
+        setHoveredItem({
+          i: hitI,
+          j: hitJ,
+          ldValue: ldValues[ldIdx] ?? 0,
+          snp1: snps[hitI]!,
+          snp2: snps[hitJ]!,
+        })
       } else {
         setHoveredItem(undefined)
       }
     },
     [
-      flatbushIndex,
-      flatbushItems,
+      model,
+      cellWidth,
+      useGenomicPositions,
       yScalar,
       effectiveLineZoneHeight,
       viewScale,
       viewOffsetX,
       loading,
+      snps,
     ],
   )
 

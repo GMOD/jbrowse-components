@@ -98,6 +98,11 @@ function regionFromViewport(view: LGV) {
   }
 }
 
+const SUBGRAPH_VIEW_TYPES = [
+  { type: 'GraphGenomeView' as const, label: 'Graph genome', icon: BubbleChartIcon },
+  { type: 'TubeMapView' as const, label: 'Tube map', icon: TimelineIcon },
+]
+
 function regionLabel(region: { refName: string; start: number; end: number }) {
   return `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`
 }
@@ -659,10 +664,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               ])
             },
           },
-          ...(['GraphGenomeView', 'TubeMapView'] as const).map(viewType => ({
-            label: `${viewType === 'GraphGenomeView' ? 'Graph genome' : 'Tube map'} view (feature)`,
-            icon:
-              viewType === 'GraphGenomeView' ? BubbleChartIcon : TimelineIcon,
+          ...SUBGRAPH_VIEW_TYPES.map(({ type: viewType, label, icon }) => ({
+            label: `${label} view (feature)`,
+            icon,
             onClick: async () => {
               const session = getSession(self)
               const fallback =
@@ -748,11 +752,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           )
         }
 
-        for (const viewType of ['GraphGenomeView', 'TubeMapView'] as const) {
+        for (const { type: viewType, label, icon } of SUBGRAPH_VIEW_TYPES) {
           launchSubMenu.push({
-            label: `${viewType === 'GraphGenomeView' ? 'Graph genome' : 'Tube map'} view (local)`,
-            icon:
-              viewType === 'GraphGenomeView' ? BubbleChartIcon : TimelineIcon,
+            label: `${label} view (local)`,
+            icon,
             onClick: async () => {
               const session = getSession(self)
               const region = regionFromViewport(view)

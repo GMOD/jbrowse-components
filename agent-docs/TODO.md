@@ -99,6 +99,20 @@ Lost context? maybe initially renders but not subsequently?
 
 Check
 
+## Implement "Query name" color-by option for LGVSyntenyDisplay
+
+Was listed in the color menu but marked TODO and never implemented. Removed the
+option for now. If desired, implement coloring synteny features by query name
+(hash query name to a color) in LGVSyntenyDisplay similar to how it's done in
+alignments.
+
+## linear-comparative-view: bounds checking on level+1 access
+
+Multiple places access `views[level + 1]` without checking bounds, e.g.
+LinearSyntenyView/model.ts line 398. Would break in edge cases with malformed
+level data. Add guards similar to LinearSyntenyViewHelper which checks
+`self.level + 1 >= p.views.length`.
+
 ## Potential improvements in type checking
 
 An agent said the following, but i think we could improve the types if we tried:

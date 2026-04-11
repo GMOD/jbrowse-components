@@ -10,6 +10,7 @@ import { computeSyriTypes } from '@jbrowse/plugin-comparative-adapters'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { chainCollinearAlignments } from './chainCollinearAlignments.ts'
 import { executeSyntenyInstanceData } from './executeSyntenyInstanceData.ts'
 
 import type { SyntenyInstanceData } from './executeSyntenyInstanceData.ts'
@@ -167,6 +168,7 @@ export async function executeSyntenyFeaturesAndPositions({
   drawCIGAR = true,
   drawCIGARMatchesOnly = false,
   drawLocationMarkers = false,
+  chainMerge = false,
   statusCallback,
 }: {
   pluginManager: PluginManager
@@ -181,6 +183,7 @@ export async function executeSyntenyFeaturesAndPositions({
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean
   drawLocationMarkers?: boolean
+  chainMerge?: boolean
   statusCallback?: (msg: string) => void
 }) {
   const dataAdapter = (
@@ -210,10 +213,18 @@ export async function executeSyntenyFeaturesAndPositions({
 
   const v1 = viewSnaps[level]!
   const v2 = viewSnaps[level + 1]!
+
+  const processedFeatures = chainMerge
+    ? chainCollinearAlignments(
+        features,
+        Math.min(10_000_000, Math.max(v1.bpPerPx, v2.bpPerPx) * 50),
+      )
+    : features
+
   const v1Index = buildBpToPxIndex(v1)
   const v2Index = buildBpToPxIndex(v2)
 
-  const count = features.length
+  const count = processedFeatures.length
   const p11Array = new Float64Array(count)
   const p12Array = new Float64Array(count)
   const p21Array = new Float64Array(count)
@@ -249,7 +260,7 @@ export async function executeSyntenyFeaturesAndPositions({
 
   const stopTokenChecker = createStopTokenChecker(stopToken)
   let validCount = 0
-  for (const f of features) {
+  for (const f of processedFeatures) {
     checkStopToken2(stopTokenChecker)
     const strand = f.get('strand')!
     const mate = f.get('mate') as {

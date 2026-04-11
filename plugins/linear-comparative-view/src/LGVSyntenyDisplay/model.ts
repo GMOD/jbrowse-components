@@ -155,8 +155,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               { label: 'Normal', type: 'normal' },
               { label: 'Strand', type: 'strand' },
               { label: 'Mapping quality', type: 'mappingQuality' },
-              // TODO: implement
-              { label: 'Query name', type: 'query' },
             ],
           }),
           getFiltersMenuItem(self),

@@ -157,7 +157,7 @@ const RulerLabel = observer(function RulerLabel({
           textAnchor="start"
           dominantBaseline="middle"
           transform={`translate(${textXY}) rotate(${radToDeg(radians)})`}
-          fill={color}
+          {...getFillProps(color)}
         >
           {text}
           <title>{title || text}</title>
@@ -172,7 +172,7 @@ const RulerLabel = observer(function RulerLabel({
         textAnchor="end"
         dominantBaseline="middle"
         transform={`translate(${textXY}) rotate(${radToDeg(radians) + 180})`}
-        fill={color}
+        {...getFillProps(color)}
       >
         {text}
         <title>{title || text}</title>
@@ -224,7 +224,7 @@ const RegionRulerArc = observer(function RegionRulerArc({
       />
       <path
         d={sliceArcPath(slice, radiusPx + 1, region.start, region.end)}
-        stroke={color}
+        {...getStrokeProps(color)}
         strokeWidth={2}
         fill="none"
       />

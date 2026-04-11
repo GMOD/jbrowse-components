@@ -376,9 +376,6 @@ export function interleaveInstances(data: SyntenyInstanceData) {
     f[off + 10] = queryTotalLengths[i]!
     f[off + 11] = padTops[i]!
     f[off + 12] = padBottoms[i]!
-    f[off + 13] = 0
-    f[off + 14] = 0
-    f[off + 15] = 0
   }
   return buf
 }

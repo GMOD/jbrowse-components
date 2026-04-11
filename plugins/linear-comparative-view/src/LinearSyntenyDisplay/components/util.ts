@@ -35,8 +35,6 @@ export function drawLocationMarkers(
   x4: number,
   y2: number,
   mid: number,
-  bpPerPx1: number,
-  bpPerPx2: number,
   drawCurves?: boolean,
 ) {
   const width1 = Math.abs(x2 - x1)
@@ -115,7 +113,7 @@ export function drawBezierBox(
   mid: number,
 ) {
   const len1 = Math.abs(x1 - x2)
-  const len2 = Math.abs(x1 - x2)
+  const len2 = Math.abs(x3 - x4)
 
   // heuristic to not draw hourglass inversions with bezier curves when they
   // are thin and far apart because it results in areas that are not drawn well
@@ -154,6 +152,6 @@ export function getTooltip(
     feat.name ? `Name 1: ${feat.name}` : '',
     feat.mate.name ? `Name 2: ${feat.mate.name}` : '',
   ]
-    .filter(f => !!f)
+    .filter(Boolean)
     .join('<br/>')
 }

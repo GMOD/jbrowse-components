@@ -58,6 +58,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         drawLocationMarkers: false,
         /**
          * #property
+         */
+        chainMerge: false,
+        /**
+         * #property
          * maximum number of pixels off screen before a synteny line is culled
          */
         maxOffScreenDrawPx: 300,
@@ -157,6 +161,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setDrawLocationMarkers(arg: boolean) {
         self.drawLocationMarkers = arg
+      },
+      /**
+       * #action
+       */
+      setChainMerge(arg: boolean) {
+        self.chainMerge = arg
       },
       /**
        * #action
@@ -297,6 +307,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               },
               helpText:
                 'Toggle between straight lines and smooth bezier curves for synteny connections. Curved lines can make the visualization more aesthetically pleasing and may help reduce visual clutter when many syntenic regions are displayed. Straight lines provide a more direct representation.',
+            },
+            {
+              label: 'Chain collinear alignments',
+              type: 'checkbox',
+              checked: self.chainMerge,
+              onClick: () => {
+                self.setChainMerge(!self.chainMerge)
+              },
+              helpText:
+                'Merge adjacent collinear alignment fragments into single blocks. This reduces visual noise from fragmented alignments (e.g. minimap2 whole-genome output) by bundling nearby same-strand alignments on the same chromosome pair into clean ribbons. The merge distance adapts to the current zoom level.',
             },
             {
               label: 'Show location markers',
@@ -569,6 +589,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         drawCurves,
         drawLocationMarkers,
         maxOffScreenDrawPx,
+        chainMerge,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -577,6 +598,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ...(drawCurves ? { drawCurves } : {}),
         ...(drawLocationMarkers ? { drawLocationMarkers } : {}),
         ...(maxOffScreenDrawPx !== 300 ? { maxOffScreenDrawPx } : {}),
+        ...(chainMerge ? { chainMerge } : {}),
       } as typeof snap
     })
 }

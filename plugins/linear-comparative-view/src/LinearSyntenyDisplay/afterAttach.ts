@@ -141,6 +141,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const drawCIGAR = view.drawCIGAR
         const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
         const drawLocationMarkers = view.drawLocationMarkers
+        const chainMerge = view.chainMerge
 
         if (debounceTimer) {
           clearTimeout(debounceTimer)
@@ -198,6 +199,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
                 drawCIGAR,
                 drawCIGARMatchesOnly,
                 drawLocationMarkers,
+                chainMerge,
                 statusCallback: (msg: string) => {
                   if (isAlive(self)) {
                     self.setStatusMessage(msg)

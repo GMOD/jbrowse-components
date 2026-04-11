@@ -603,7 +603,83 @@ section('6. Allocation comparison: per-variant Int8Array vs flat buffer')
   console.log(`  → speedup: ${(oldMean / newMean).toFixed(2)}x`)
 }
 
-// ─── 7. Correctness check ─────────────────────────────────────────────────────
+// ─── 7. GPU packing: 4 read-modify-writes per word vs 1 write ────────────────
+section('7. GPU genotype packing (4 samples per u32)')
+
+function old_packForGPU(encodedGenotypes, n, numSamples) {
+  const numSamplesPacked = Math.ceil(numSamples / 4)
+  const genoPacked = new Uint32Array(n * numSamplesPacked)
+  for (let snp = 0; snp < n; snp++) {
+    const geno = encodedGenotypes[snp]
+    for (let s = 0; s < numSamples; s++) {
+      const wordIdx = snp * numSamplesPacked + (s >> 2)
+      const byte = geno[s] < 0 ? 0xff : geno[s] & 0xff
+      genoPacked[wordIdx] = genoPacked[wordIdx] | (byte << ((s & 3) * 8))
+    }
+  }
+  return genoPacked
+}
+
+function new_packForGPU(encodedGenotypes, n, numSamples) {
+  const numSamplesPacked = Math.ceil(numSamples / 4)
+  const genoPacked = new Uint32Array(n * numSamplesPacked)
+  const fullWords = numSamples >> 2
+  const remainder = numSamples & 3
+  for (let snp = 0; snp < n; snp++) {
+    const geno = encodedGenotypes[snp]
+    const base = snp * numSamplesPacked
+    for (let w = 0, s = 0; w < fullWords; w++, s += 4) {
+      const b0 = geno[s] < 0 ? 0xff : geno[s]
+      const b1 = geno[s + 1] < 0 ? 0xff : geno[s + 1]
+      const b2 = geno[s + 2] < 0 ? 0xff : geno[s + 2]
+      const b3 = geno[s + 3] < 0 ? 0xff : geno[s + 3]
+      genoPacked[base + w] = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24)
+    }
+    if (remainder) {
+      const s = fullWords << 2
+      let word = geno[s] < 0 ? 0xff : geno[s]
+      if (remainder > 1) word |= (geno[s + 1] < 0 ? 0xff : geno[s + 1]) << 8
+      if (remainder > 2) word |= (geno[s + 2] < 0 ? 0xff : geno[s + 2]) << 16
+      genoPacked[base + fullWords] = word
+    }
+  }
+  return genoPacked
+}
+
+{
+  const flat = new Int8Array(N_VARIANTS * N_SAMPLES)
+  for (let vi = 0; vi < N_VARIANTS; vi++) {
+    const cg = makeRawGenotypes(N_SAMPLES, PLOIDY)
+    new_fillEncodedFromRaw(flat.subarray(vi * N_SAMPLES, (vi + 1) * N_SAMPLES), cg, PLOIDY, N_SAMPLES)
+  }
+  const encodedList = Array.from({ length: N_VARIANTS }, (_, vi) =>
+    flat.subarray(vi * N_SAMPLES, (vi + 1) * N_SAMPLES),
+  )
+
+  let oldMean, newMean
+
+  oldMean = bench('OLD: 4 read-modify-write ops per word', () => {
+    old_packForGPU(encodedList, N_VARIANTS, N_SAMPLES)
+  })
+
+  newMean = bench('NEW: 4 reads + 1 write per word', () => {
+    new_packForGPU(encodedList, N_VARIANTS, N_SAMPLES)
+  })
+
+  // Correctness
+  const r1 = old_packForGPU(encodedList, N_VARIANTS, N_SAMPLES)
+  const r2 = new_packForGPU(encodedList, N_VARIANTS, N_SAMPLES)
+  let gpuErrors = 0
+  for (let i = 0; i < r1.length; i++) {
+    if (r1[i] !== r2[i]) { gpuErrors++; if (gpuErrors === 1) console.error(`  GPU pack mismatch at index ${i}: ${r1[i]} vs ${r2[i]}`) }
+  }
+  if (gpuErrors === 0) console.log('  Correctness: OK')
+  else console.error(`  ${gpuErrors} GPU packing errors!`)
+
+  console.log(`  → speedup: ${(oldMean / newMean).toFixed(2)}x`)
+}
+
+// ─── 8. Correctness check ─────────────────────────────────────────────────────
 section('7. Correctness check (old vs new must agree)')
 
 {

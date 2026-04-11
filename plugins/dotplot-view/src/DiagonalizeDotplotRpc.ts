@@ -153,8 +153,9 @@ function diagonalizeRegions(
   const newQueryRegions: Region[] = []
   let regionsReversed = 0
 
+  const regionsByName = new Map(currentRegions.map(r => [r.refName, r]))
   for (const { refName, shouldReverse } of queryOrdering) {
-    const region = currentRegions.find(r => r.refName === refName)
+    const region = regionsByName.get(refName)
     if (region) {
       newQueryRegions.push({
         ...region,

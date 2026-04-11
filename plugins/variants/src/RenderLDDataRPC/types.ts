@@ -1,4 +1,3 @@
-import type { LDFlatbushItem } from '../LDRenderer/types.ts'
 import type {
   FilterStats,
   LDMatrixResult,
@@ -6,21 +5,25 @@ import type {
 } from '../VariantRPC/getLDMatrix.ts'
 
 export interface LDDataResult {
-  positions: Float32Array
   ldValues: Float32Array
-  cellSizes: Float32Array
+  // n+1 boundary positions for hit testing and Canvas2D/SVG rendering.
+  // For uniform mode: boundaries[k] = k * uniformW.
+  // For genomic positions mode: midpoint boundaries between adjacent SNPs.
+  boundaries: Float32Array
   numCells: number
   maxScore: number
   uniformW: number
   yScalar: number
   metric: LDMetric
   signedLD: boolean
-  flatbush: ArrayBuffer
-  items: LDFlatbushItem[]
   snps: LDMatrixResult['snps']
   filterStats?: FilterStats
   recombination?: {
     values: number[]
     positions: number[]
   }
+  // Only present for genomic positions mode (pre-computed per-cell positions
+  // for the GPU interleaved buffer).
+  positions?: Float32Array
+  cellSizes?: Float32Array
 }

@@ -239,6 +239,7 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
 
     if (onResult) {
       this.hal.readPickingPixelAsync(x, y).then(onResult, () => {})
+      return -1
     }
     return this.hal.readPickingPixel(x, y)
   }

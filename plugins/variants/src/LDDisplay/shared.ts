@@ -14,7 +14,6 @@ import {
 import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
-import type { LDFlatbushItem } from '../LDRenderer/types.ts'
 import type { LDDataResult } from '../RenderLDDataRPC/types.ts'
 import type { FilterStats, LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -71,14 +70,6 @@ export default function sharedModelFactory(
       /**
        * #volatile
        */
-      flatbush: undefined as ArrayBuffer | undefined,
-      /**
-       * #volatile
-       */
-      flatbushItems: [] as LDFlatbushItem[],
-      /**
-       * #volatile
-       */
       snps: [] as LDMatrixResult['snps'],
       /**
        * #volatile
@@ -131,16 +122,12 @@ export default function sharedModelFactory(
       /**
        * #action
        */
-      setFlatbushData(
-        flatbush: ArrayBuffer | undefined,
-        items: LDFlatbushItem[],
+      setRenderData(
         snps: LDMatrixResult['snps'],
         maxScore: number,
         yScalar: number,
         cellWidth: number,
       ) {
-        self.flatbush = flatbush
-        self.flatbushItems = items
         self.snps = snps
         self.maxScore = maxScore
         self.yScalar = yScalar

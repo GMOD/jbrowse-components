@@ -10,20 +10,11 @@ import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { when } from 'mobx'
 
-import { lineLimit, oobLimit } from './drawSyntenyUtils.ts'
+import { OP_TO_CIGAR_KEY, lineLimit, oobLimit } from './drawSyntenyUtils.ts'
 
 import type { defaultCigarColors } from './drawSyntenyUtils.ts'
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
-
-const OP_TO_CIGAR_KEY: Record<number, string> = {
-  [CIGAR_M]: 'M',
-  [CIGAR_I]: 'I',
-  [CIGAR_D]: 'D',
-  [CIGAR_N]: 'N',
-  [CIGAR_EQ]: '=',
-  [CIGAR_X]: 'X',
-}
 
 function drawShape(
   ctx: SvgCanvas,
@@ -41,7 +32,7 @@ function drawShape(
   ctx.beginPath()
   if (drawCurves) {
     const len1 = Math.abs(x1 - x2)
-    const len2 = Math.abs(x1 - x2)
+    const len2 = Math.abs(x3 - x4)
     if (len1 < 5 && len2 < 5 && x2 < x1 && Math.abs(x1 - x3) > 100) {
       ;[x1, x2] = [x2, x1]
     }

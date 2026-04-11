@@ -1,3 +1,11 @@
+import {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_X,
+} from '@jbrowse/alignments-core'
 import { category10 } from '@jbrowse/core/ui/colors'
 import {
   alpha as setAlpha,
@@ -15,7 +23,7 @@ function hashString(str: string) {
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i)
     hash = (hash << 5) - hash + char
-    hash = hash & hash // Convert to 32bit integer
+    hash |= 0
   }
   return Math.abs(hash)
 }
@@ -73,6 +81,15 @@ export const colorSchemes = {
 }
 
 export type ColorScheme = keyof typeof colorSchemes
+
+export const OP_TO_CIGAR_KEY: Record<number, string> = {
+  [CIGAR_M]: 'M',
+  [CIGAR_I]: 'I',
+  [CIGAR_D]: 'D',
+  [CIGAR_N]: 'N',
+  [CIGAR_EQ]: '=',
+  [CIGAR_X]: 'X',
+}
 
 export function applyAlpha(color: string, a: number) {
   if (a === 1) {

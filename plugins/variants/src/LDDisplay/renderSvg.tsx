@@ -49,7 +49,8 @@ export async function renderSvg(
     return null
   }
 
-  const { positions, ldValues, cellSizes, numCells, yScalar } = rpcData
+  const { ldValues, boundaries, yScalar } = rpcData
+  const n = boundaries.length - 1
   const visibleWidth = view.width
   const ramp = generateLDColorRamp(rpcData.metric, rpcData.signedLD)
   const rasterize = opts.rasterizeLayers
@@ -73,14 +74,17 @@ export async function renderSvg(
       ctx.scale(1, yScalar)
       ctx.rotate(-Math.PI / 4)
 
-      for (let i = 0; i < numCells; i++) {
-        const px = positions[i * 2]!
-        const py = positions[i * 2 + 1]!
-        const cw = cellSizes[i * 2]!
-        const ch = cellSizes[i * 2 + 1]!
-        const t = computeT(ldValues[i]!, signedLD)
-        ctx.fillStyle = lookupColorRampCSS(ramp, t)
-        ctx.fillRect(px, py, cw, ch)
+      let k = 0
+      for (let i = 1; i < n; i++) {
+        const py = boundaries[i]!
+        const ch = boundaries[i + 1]! - py
+        for (let j = 0; j < i; j++) {
+          const px = boundaries[j]!
+          const cw = boundaries[j + 1]! - px
+          const t = computeT(ldValues[k++]!, signedLD)
+          ctx.fillStyle = lookupColorRampCSS(ramp, t)
+          ctx.fillRect(px, py, cw, ch)
+        }
       }
       ctx.restore()
     }
@@ -97,35 +101,38 @@ export async function renderSvg(
     const SQRT2_INV = 0.7071067811865476
     const ctx = new SvgCanvas()
 
-    for (let i = 0; i < numCells; i++) {
-      const px = positions[i * 2]!
-      const py = positions[i * 2 + 1]!
-      const cw = cellSizes[i * 2]!
-      const ch = cellSizes[i * 2 + 1]!
-      const t = computeT(ldValues[i]!, signedLD)
-      const { r, g, b, a } = lookupColorRamp(ramp, t)
+    let k = 0
+    for (let i = 1; i < n; i++) {
+      const py = boundaries[i]!
+      const ch = boundaries[i + 1]! - py
+      for (let j = 0; j < i; j++) {
+        const px = boundaries[j]!
+        const cw = boundaries[j + 1]! - px
+        const t = computeT(ldValues[k++]!, signedLD)
+        const { r, g, b, a } = lookupColorRamp(ramp, t)
 
-      ctx.fillStyle = `rgb(${r},${g},${b})`
-      ctx.globalAlpha = a
-      ctx.beginPath()
-      let first = true
-      for (const [cx, cy] of [
-        [px, py],
-        [px + cw, py],
-        [px + cw, py + ch],
-        [px, py + ch],
-      ] as const) {
-        const rx = (cx + cy) * SQRT2_INV
-        const ry = (-cx + cy) * SQRT2_INV * yScalar
-        if (first) {
-          ctx.moveTo(rx, ry)
-          first = false
-        } else {
-          ctx.lineTo(rx, ry)
+        ctx.fillStyle = `rgb(${r},${g},${b})`
+        ctx.globalAlpha = a
+        ctx.beginPath()
+        let first = true
+        for (const [cx, cy] of [
+          [px, py],
+          [px + cw, py],
+          [px + cw, py + ch],
+          [px, py + ch],
+        ] as const) {
+          const rx = (cx + cy) * SQRT2_INV
+          const ry = (-cx + cy) * SQRT2_INV * yScalar
+          if (first) {
+            ctx.moveTo(rx, ry)
+            first = false
+          } else {
+            ctx.lineTo(rx, ry)
+          }
         }
+        ctx.closePath()
+        ctx.fill()
       }
-      ctx.closePath()
-      ctx.fill()
     }
     matrixEl = <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
   }
