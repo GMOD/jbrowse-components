@@ -4,14 +4,6 @@ import { aggregateAminos } from './aggregateAminoAcids.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
-export interface AggregatedAminoAcid {
-  aminoAcid: string
-  startIndex: number
-  endIndex: number
-  length: number
-  proteinIndex: number
-}
-
 export function prepareAminoAcidData(
   parent: Feature,
   protein: string,

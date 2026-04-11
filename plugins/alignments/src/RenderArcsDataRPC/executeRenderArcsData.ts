@@ -235,7 +235,7 @@ export async function executeRenderArcsData({
     }
   }
 
-  const chains = Object.values(groupBy(deduped, f => f.get('name')))
+  const chains = Object.values(groupBy(deduped, f => f.get('name')!))
   const chainData: ChainData = { chains, stats }
   const hasPaired = hasPairedReads(chainData)
 
@@ -333,7 +333,7 @@ export async function executeRenderArcsData({
   function processSingletonLongRead(f: Feature) {
     const allFeatures = [
       f,
-      ...featurizeSA(getTag(f, 'SA'), f.id(), f.get('strand'), f.get('name')),
+      ...featurizeSA(getTag(f, 'SA'), f.id(), f.get('strand')!, f.get('name')!),
     ].toSorted(
       (a, b) =>
         getStrandRelativeFirstClipLength(a) -

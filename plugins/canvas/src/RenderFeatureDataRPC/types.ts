@@ -40,7 +40,6 @@ export interface Glyph {
 export interface LayoutRecord {
   feature: Feature
   layout: FeatureLayout
-  layoutHeight: number
 }
 
 export type GlyphType =

@@ -28,7 +28,7 @@ export function getBadlyPairedAlignments(features: Map<string, Feature>) {
       !correctlyPaired &&
       !unmapped
     ) {
-      const n = feature.get('name')
+      const n = feature.get('name')!
       let val = candidates.get(n)
       if (!val) {
         val = []
@@ -55,7 +55,7 @@ export function getMatchedAlignmentFeatures(features: Map<string, Feature>) {
     const unmapped = feature.get('flags') & 4
     const hasSA = !!feature.get('tags')?.SA
     if (!alreadySeen.has(id) && !unmapped && hasSA) {
-      const n = feature.get('name')
+      const n = feature.get('name')!
       let val = candidates.get(n)
       if (!val) {
         val = []

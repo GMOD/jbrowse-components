@@ -32,9 +32,9 @@ export function getBoxColor({
     ? readConfigValue<string>(config, 'color3', feature)
     : readConfigValue<string>(config, 'color1', feature)
 
-  const featureType: string | undefined = feature.get('type')
-  const featureStrand: -1 | 1 | undefined = feature.get('strand')
-  const featurePhase: 0 | 1 | 2 | undefined = feature.get('phase')
+  const featureType = feature.get('type')
+  const featureStrand = feature.get('strand') as -1 | 1 | undefined
+  const featurePhase = feature.get('phase')
 
   if (
     colorByCDS &&

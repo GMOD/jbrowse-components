@@ -42,6 +42,7 @@ const CollapseIntronsDialog = lazy(
   () => import('./components/CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
 )
 
+import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type {
   FeatureDataResult,
   FlatbushItem,
@@ -105,7 +106,7 @@ async function fetchCanvasFeatureDetails(
     const result = await session.rpcManager.call(
       sessionId,
       'GetCanvasFeatureDetails',
-      { adapterConfig, featureId, region },
+      { sessionId, adapterConfig, featureId, region },
     )
     return result.feature ? new SimpleFeature(result.feature) : undefined
   } catch (e) {
@@ -222,14 +223,14 @@ export default function stateModelFactory(
         >
       },
 
-      get displayConfigSnapshot() {
+      get displayConfigSnapshot(): DisplayConfig {
         return {
           ...getConfSnapshot(self.configuration),
           ...(self.configOverrides as Omit<
             typeof self.configOverrides,
             symbol
           >),
-        }
+        } as DisplayConfig
       },
 
       get DisplayMessageComponent() {
@@ -284,15 +285,15 @@ export default function stateModelFactory(
         return self.getConfWithOverride<string>('displayMode')
       },
 
-      get geneGlyphMode() {
-        return self.getConfWithOverride<string>('geneGlyphMode')
+      get geneGlyphMode(): DisplayConfig['geneGlyphMode'] {
+        return self.getConfWithOverride<DisplayConfig['geneGlyphMode']>('geneGlyphMode')
       },
 
       get displayDirectionalChevrons() {
         return self.getConfWithOverride<boolean>('displayDirectionalChevrons')
       },
 
-      get effectiveGeneGlyphMode() {
+      get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {
         if (this.geneGlyphMode === 'auto') {
           const view = getContainingView(self) as LGV
           return view.bpPerPx > 100 ? 'longestCoding' : 'all'
@@ -590,10 +591,12 @@ export default function stateModelFactory(
         const { rpcManager } = session
         const adapterConfig = self.adapterConfigSnapshot
 
+        const sessionId = getRpcSessionId(self)
         const result = await rpcManager.call(
-          getRpcSessionId(self),
+          sessionId,
           'RenderFeatureData',
           {
+            sessionId,
             adapterConfig,
             displayConfig: {
               ...self.displayConfigSnapshot,

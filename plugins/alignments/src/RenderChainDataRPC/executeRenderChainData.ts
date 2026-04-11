@@ -227,7 +227,7 @@ export async function executeRenderChainData({
     for (const feature of keptFeatures) {
       const featureId = feature.id()
       const featureStart = feature.get('start')
-      const strand = feature.get('strand')
+      const strand = feature.get('strand')!
 
       featuresData.push({
         ...buildBaseFeatureData(feature),

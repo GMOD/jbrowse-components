@@ -15,13 +15,14 @@ import { buildLineSegments } from './drawDotplotWebGL.ts'
 import type { DotplotDisplayModel } from './stateModelFactory.tsx'
 import type { DotplotFeatPos, DotplotFeatureData } from './types.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, ViewSnap } from '@jbrowse/core/util'
 
 const RPC_DEBOUNCE_MS = 1000
 
-function makeViewSnap(view: { width: number; interRegionPaddingWidth: number; minimumBlockWidth: number }) {
+function makeViewSnap(view: { width: number; interRegionPaddingWidth: number; minimumBlockWidth: number }): ViewSnap {
+  const snap = getSnapshot(view as Parameters<typeof getSnapshot>[0]) as ViewSnap
   return {
-    ...getSnapshot(view as Parameters<typeof getSnapshot>[0]),
+    ...snap,
     width: view.width,
     staticBlocks: { contentBlocks: [], blocks: [] },
     interRegionPaddingWidth: view.interRegionPaddingWidth,

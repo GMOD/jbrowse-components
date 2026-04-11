@@ -54,6 +54,15 @@ export function cssColorToRgba(
   return [getRed(c), getGreen(c), getBlue(c), getAlpha(c)]
 }
 
+export function cssColorToABGR(color: string) {
+  const c = parseCssColor(color)
+  const r = getRed(c)
+  const g = getGreen(c)
+  const b = getBlue(c)
+  const a = getAlpha(c)
+  return (a << 24) | (b << 16) | (g << 8) | r
+}
+
 export function cssColorToNormalizedRgba(
   color: string,
 ): [number, number, number, number] {

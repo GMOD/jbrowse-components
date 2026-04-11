@@ -351,7 +351,7 @@ export async function executeRenderPileupData({
     for (const feature of featuresArray) {
       const featureId = feature.id()
       const featureStart = feature.get('start')
-      const strand = feature.get('strand')
+      const strand = feature.get('strand')!
 
       featuresData.push(buildBaseFeatureData(feature))
 

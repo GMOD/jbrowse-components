@@ -5,8 +5,10 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 export interface GetFeatureDetailsArgs {
+  [key: string]: unknown
   sessionId: string
   adapterConfig: Record<string, unknown>
   featureId: string
@@ -14,8 +16,17 @@ export interface GetFeatureDetailsArgs {
     refName: string
     start: number
     end: number
-    assemblyName?: string
+    assemblyName: string
     reversed?: boolean
+  }
+}
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    GetCanvasFeatureDetails: {
+      args: GetFeatureDetailsArgs
+      return: { feature?: SimpleFeatureSerialized }
+    }
   }
 }
 
@@ -53,17 +64,14 @@ export default class GetFeatureDetails extends RpcMethodType {
 
   async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
     const renamed = await this.renameRegionsIfNeeded(
-      args as unknown as GetFeatureDetailsArgs,
+      args as GetFeatureDetailsArgs,
     )
-    return super.serializeArguments(
-      renamed as unknown as Record<string, unknown>,
-      rpcDriver,
-    )
+    return super.serializeArguments(renamed as Record<string, unknown>, rpcDriver)
   }
 
   async execute(args: Record<string, unknown>, _rpcDriver: string) {
     const { sessionId, adapterConfig, featureId, region } =
-      args as unknown as GetFeatureDetailsArgs
+      args as GetFeatureDetailsArgs
 
     const dataAdapter = (
       await getAdapter(this.pluginManager, sessionId, adapterConfig)

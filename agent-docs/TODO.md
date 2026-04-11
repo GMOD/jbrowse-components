@@ -48,10 +48,6 @@ Try to measure where there is unnecessarily large bundles
 Can see feature labels and there are mouseover rects "work" but they are over
 'blank' areas of the screen because the actual features did not get loaded
 
-## Does reference sequence track need to be webgl rendered?
-
-Might not need to be?
-
 ## Check that 'renderer' url param is working
 
 Not sure if it is
@@ -66,14 +62,7 @@ Need to design a system for good defaults
 
 Look into circos, or other synteny plotting systems
 
-## Remove gap between paired read arcs and coverage track
-
-Also add option to let sashimi arcs plot over the coverage track (not upside
-down)
-
-Slightly more bezier points?
-
-Also make it easier to just post arcs and coverage, no reads
+## Also make it easier to just post arcs and coverage, no reads
 
 Want to make it easy to plot megabase scale data
 
@@ -83,6 +72,8 @@ Remove snp level clickmap when zoomed out super far also, no reason for it
 
 If possible, with arcs, try to aggregate them to add nice mouseover?
 
+Another concept: presets, similar to old display mode
+
 ## Better 'blue/green' connectors in the breakpoint split view
 
 Looks weird, arbitrarily increases in y (goes down), then loops back up. need
@@ -91,13 +82,6 @@ more ideal squiggle connector
 ## 1000 genomes demo
 
 Add more metadata, change to a 'folder' by default
-
-## Paired-arcs slightly darker colors for both red (larger insert size) and grey (normal) than expected
-
-Not sure why. We have run into this several times before, please check the
-coloring algorithm
-
-It almost looks like every paired arc has a little 'outline' which darkens it
 
 ## Add global 'config overrides'
 

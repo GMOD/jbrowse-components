@@ -87,8 +87,8 @@ const Cytobands = observer(function Cytobands({
         const l = Math.min(s, e)
         const w = Math.abs(e - s)
         if (type === 'n/a') {
-          const match = name?.match(/^(\d+)([A-Za-z])/)
-          const ret = match[1] + match[2]
+          const match = name?.match(/^(\d+)([A-Za-z])/)!
+          const ret = match[1]! + match[2]!
           if (ret && ret !== curr) {
             curr = ret
             idx++

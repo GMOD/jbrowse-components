@@ -7,7 +7,8 @@ import type { DisplayConfig } from './renderConfig.ts'
 function makeSubpartsFilter(subParts: string) {
   const lowerRet = new Set(subParts.split(/\s*,\s*/).map(t => t.toLowerCase()))
 
-  return (feature: Feature) => lowerRet.has(feature.get('type').toLowerCase())
+  return (feature: Feature) =>
+    lowerRet.has(feature.get('type')?.toLowerCase() ?? '')
 }
 
 function utrType(strand: number, isFivePrime: boolean) {
@@ -48,7 +49,7 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
 
   const parentStart = parent.get('start')
   const parentEnd = parent.get('end')
-  const parentStrand = parent.get('strand')
+  const parentStrand = parent.get('strand') ?? 0
   const parentRefName = parent.get('refName')
 
   for (const sub of subparts) {
@@ -120,7 +121,7 @@ export function getSubparts(f: Feature, config: DisplayConfig) {
     return []
   }
   const hasUTRs = c.some(child => isUTR(child))
-  const isTranscript = ['mRNA', 'transcript'].includes(f.get('type'))
+  const isTranscript = ['mRNA', 'transcript'].includes(f.get('type') ?? '')
   const impliedUTRs = !hasUTRs && isTranscript
 
   if (impliedUTRs || config.impliedUTRs) {

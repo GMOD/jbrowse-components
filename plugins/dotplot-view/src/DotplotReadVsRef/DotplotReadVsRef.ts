@@ -17,8 +17,8 @@ export function onClick(feature: Feature, self: LinearAlignmentsDisplayModel) {
     const cigar = feature.get('CIGAR')
     const clipLengthAtStartOfRead = getClip(cigar, 1)
     const flags = feature.get('flags')
-    const strand = feature.get('strand')
-    const readName = feature.get('name')
+    const strand = feature.get('strand')!
+    const readName = feature.get('name')!
     const readAssembly = `${readName}_assembly_${Date.now()}`
     const { parentTrack } = self
     const [trackAssembly] = getConf(parentTrack, 'assemblyNames')

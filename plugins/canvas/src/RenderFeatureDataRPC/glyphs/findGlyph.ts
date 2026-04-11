@@ -29,7 +29,7 @@ export function findGlyph(
   if (isTopLevel === undefined) {
     isTopLevel = !feature.parent?.()
   }
-  const type = feature.get('type') as string
+  const type = feature.get('type') ?? ''
   const subfeatures = feature.get('subfeatures')
   const hasSubfeatures = !!subfeatures?.length
 

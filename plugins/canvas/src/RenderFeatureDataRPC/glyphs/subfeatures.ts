@@ -12,7 +12,7 @@ function hasCodingSubfeature(feature: Feature): boolean {
   const subfeatures = feature.get('subfeatures') || []
   return subfeatures.some(
     (sub: Feature) =>
-      CODING_TYPES.has(sub.get('type')) || hasCodingSubfeature(sub),
+      CODING_TYPES.has(sub.get('type') ?? '') || hasCodingSubfeature(sub),
   )
 }
 
@@ -26,7 +26,7 @@ function filterByGeneGlyphMode(
   }
 
   const transcriptSubfeatures = subfeatures.filter(sub =>
-    transcriptTypes.includes(sub.get('type')),
+    transcriptTypes.includes(sub.get('type') ?? ''),
   )
   let candidates =
     transcriptSubfeatures.length > 0 ? transcriptSubfeatures : subfeatures
@@ -58,7 +58,7 @@ export const subfeaturesGlyph: Glyph = {
     } = getFeatureDimensions(feature, bpPerPx, config)
 
     // Sort coding transcripts first so they render on top in stacked layout
-    let subfeatures = [...(feature.get('subfeatures') || [])] as Feature[]
+    let subfeatures = [...(feature.get('subfeatures') || [])]
     const codingStatus = new Map(
       subfeatures.map(f => [f.id(), hasCodingSubfeature(f)]),
     )
@@ -86,7 +86,7 @@ export const subfeaturesGlyph: Glyph = {
     let currentYPx = 0
 
     for (const [i, child] of subfeatures.entries()) {
-      const childType = child.get('type')
+      const childType = child.get('type') ?? ''
       const isChildTranscript = transcriptTypes.includes(childType)
       const childGlyph = findGlyph(child, config, false)
 

@@ -10,7 +10,7 @@ export const boxGlyph: Glyph = {
     const { heightPx, widthPx } = getFeatureDimensions(feature, bpPerPx, config)
 
     const isTopLevel = !feature.parent?.()
-    const strand = feature.get('strand') as number
+    const strand = feature.get('strand')
     const arrowPadding = isTopLevel
       ? getStrandArrowPadding(strand)
       : { left: 0, right: 0 }

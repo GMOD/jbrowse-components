@@ -11,7 +11,6 @@
 
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { updateStatus } from '@jbrowse/core/util'
-import { cssColorToRgba } from '@jbrowse/core/util/colorBits'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -36,6 +35,21 @@ import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAda
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 
+const workerTheme = {
+  palette: {
+    text: { secondary: '#666666' },
+    framesCDS: [
+      null,
+      { main: '#FF8080' },
+      { main: '#80FF80' },
+      { main: '#8080FF' },
+      { main: '#8080FF' },
+      { main: '#80FF80' },
+      { main: '#FF8080' },
+    ],
+  },
+} as Theme
+
 function writeColorBytes(out: Uint8Array, index: number, color: number) {
   const o = index * 4
   out[o] = color & 0xff
@@ -43,13 +57,6 @@ function writeColorBytes(out: Uint8Array, index: number, color: number) {
   out[o + 2] = (color >> 16) & 0xff
   out[o + 3] = (color >> 24) & 0xff
 }
-
-function colorToUint32(colorStr: string) {
-  const [r, g, b, a] = cssColorToRgba(colorStr)
-  return (a << 24) | (b << 16) | (g << 8) | r
-}
-
-export { colorToUint32, writeColorBytes }
 
 export async function executeRenderFeatureData({
   pluginManager,
@@ -70,9 +77,7 @@ export async function executeRenderFeatureData({
     maxFeatureDensity,
     stopToken,
     statusCallback = () => {},
-  } = args as RenderFeatureDataArgs & {
-    statusCallback?: (msg: string) => void
-  }
+  } = args
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 
@@ -108,21 +113,6 @@ export async function executeRenderFeatureData({
   const regionStart = Math.floor(region.start)
   const bpPerPx = requestedBpPerPx || 1
 
-  const mockTheme = {
-    palette: {
-      text: { secondary: '#666666' },
-      framesCDS: [
-        null,
-        { main: '#FF8080' },
-        { main: '#80FF80' },
-        { main: '#8080FF' },
-        { main: '#8080FF' },
-        { main: '#80FF80' },
-        { main: '#FF8080' },
-      ],
-    },
-  }
-
   const features = new Map<string, Feature>()
   for (const f of featuresArray) {
     const id = f.id()
@@ -147,7 +137,6 @@ export async function executeRenderFeatureData({
         records.push({
           feature,
           layout: featureLayout,
-          layoutHeight: featureLayout.height,
         })
       }
       return records
@@ -157,18 +146,21 @@ export async function executeRenderFeatureData({
 
   let peptideDataMap: Map<string, PeptideData> | undefined
   if (colorByCDS && sequenceAdapter && shouldRenderPeptideBackground(bpPerPx)) {
-    const mockRenderProps = {
-      sessionId,
-      sequenceAdapter,
-      colorByCDS: true,
-      bpPerPx,
-      regions: [region],
-    }
     peptideDataMap = await updateStatus(
       'Fetching peptide data',
       statusCallback,
       async () =>
-        fetchPeptideData(pluginManager, mockRenderProps as any, features),
+        fetchPeptideData(
+          pluginManager,
+          {
+            sessionId,
+            sequenceAdapter,
+            colorByCDS: true,
+            bpPerPx,
+            regions: [region],
+          },
+          features,
+        ),
     )
   }
 
@@ -187,7 +179,7 @@ export async function executeRenderFeatureData({
       layoutRecords,
       regionStart,
       displayConfig,
-      mockTheme as Theme,
+      workerTheme,
       !!colorByCDS,
       peptideDataMap,
     ),

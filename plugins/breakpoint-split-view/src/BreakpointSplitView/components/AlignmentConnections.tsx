@@ -85,8 +85,8 @@ const AlignmentConnections = observer(function AlignmentConnections({
             pair_orientation: f1.get('pair_orientation'),
           }
 
-          const s1 = f1.get('strand')
-          const s2 = f2.get('strand')
+          const s1 = f1.get('strand')!
+          const s2 = f2.get('strand')!
           const sameRef = f1ref === f2ref
           let orientationColor = ''
           let isAbnormal = false
@@ -125,11 +125,11 @@ const AlignmentConnections = observer(function AlignmentConnections({
             x1,
             y1,
             'C',
-            x1 + 200 * f1.get('strand') * rf1,
+            x1 + 200 * s1 * rf1,
             abnormalSpecialRenderFlag
               ? Math.min(y0 - yOffset + trackHeight, y1 + trackHeight)
               : y1,
-            x2 - 200 * f2.get('strand') * rf2 * pf1,
+            x2 - 200 * s2 * rf2 * pf1,
             abnormalSpecialRenderFlag
               ? Math.min(y0 - yOffset + trackHeight, y2 + trackHeight)
               : y2,

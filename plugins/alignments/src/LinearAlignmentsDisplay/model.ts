@@ -476,7 +476,6 @@ export default function stateModelFactory(
         return undefined
       },
     }))
-    // Layout views — depend on the submodel delegates above via self.
     .views(self => ({
       /**
        * Compatibility getter for BreakpointSplitView overlay which reads
@@ -500,6 +499,9 @@ export default function stateModelFactory(
             : 0)
         )
       },
+    }))
+    // Layout views — depend on coverageDisplayHeight above via self.
+    .views(self => ({
       get pileupViewportHeight() {
         return Math.max(0, self.height - self.coverageDisplayHeight)
       },
@@ -635,6 +637,12 @@ export default function stateModelFactory(
     .actions(self => {
       const superSetError = self.setError
       const superSetRegionTooLarge = self.setRegionTooLarge
+      function setCurrentRangeY(rangeY: [number, number]) {
+        const cur = self.currentRangeY
+        if (cur[0] !== rangeY[0] || cur[1] !== rangeY[1]) {
+          self.currentRangeY = rangeY
+        }
+      }
       return {
         setError(error?: unknown) {
           superSetError(error)
@@ -699,18 +707,13 @@ export default function stateModelFactory(
         },
 
         setScrollTop(scrollTop: number) {
-          self.setCurrentRangeY([
+          setCurrentRangeY([
             scrollTop,
             scrollTop + self.pileupViewportHeight,
           ])
         },
 
-        setCurrentRangeY(rangeY: [number, number]) {
-          const cur = self.currentRangeY
-          if (cur[0] !== rangeY[0] || cur[1] !== rangeY[1]) {
-            self.currentRangeY = rangeY
-          }
-        },
+        setCurrentRangeY,
 
         setHighlightedChainIds(ids: string[]) {
           self.highlightedChainIds = ids

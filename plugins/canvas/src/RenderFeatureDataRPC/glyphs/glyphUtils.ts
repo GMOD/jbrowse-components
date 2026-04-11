@@ -22,14 +22,14 @@ export function getFeatureDimensions(
   const start = feature.get('start')
   const end = feature.get('end')
   const heightMultiplier = config.displayMode === 'compact' ? 0.6 : 1
-  const heightPx = (config.featureHeight as number) * heightMultiplier
+  const heightPx = config.featureHeight * heightMultiplier
   const widthPx = (end - start) / bpPerPx
   return { start, end, heightPx, widthPx }
 }
 
 export const STRAND_ARROW_WIDTH = 8
 
-export function getStrandArrowPadding(strand: number) {
+export function getStrandArrowPadding(strand: number | undefined) {
   return {
     left: strand === -1 ? STRAND_ARROW_WIDTH : 0,
     right: strand === 1 ? STRAND_ARROW_WIDTH : 0,
@@ -75,7 +75,7 @@ export function layoutContainerGlyph(
   const { feature, bpPerPx, config } = args
   const { heightPx, widthPx } = getFeatureDimensions(feature, bpPerPx, config)
 
-  const strand = feature.get('strand') as number
+  const strand = feature.get('strand')
   const arrowPadding = getStrandArrowPadding(strand)
 
   const children = sortByPosition(

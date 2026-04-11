@@ -18,6 +18,7 @@ export interface LabelItem {
 }
 
 export interface RenderFeatureDataArgs {
+  [key: string]: unknown
   sessionId: string
   adapterConfig: Record<string, unknown>
   displayConfig: DisplayConfig
@@ -25,7 +26,7 @@ export interface RenderFeatureDataArgs {
     refName: string
     start: number
     end: number
-    assemblyName?: string
+    assemblyName: string
     reversed?: boolean
     seqAdapterRefName?: string
   }
@@ -35,6 +36,7 @@ export interface RenderFeatureDataArgs {
   showOnlyGenes?: boolean
   maxFeatureDensity?: number
   stopToken?: StopToken
+  statusCallback?: (msg: string) => void
 }
 
 export interface FeatureDataResult {

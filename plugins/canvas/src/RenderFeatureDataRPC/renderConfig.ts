@@ -10,7 +10,7 @@ export interface DisplayConfig {
   subParts: string
   impliedUTRs: boolean
   displayDirectionalChevrons: boolean
-  featureHeight: number | string
+  featureHeight: number
   color1: string
   color2: string
   color3: string
@@ -19,7 +19,7 @@ export interface DisplayConfig {
     nameColor: string
     description: string
     descriptionColor: string
-    fontSize: number | string
+    fontSize: number
   }
 }
 
