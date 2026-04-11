@@ -17,6 +17,18 @@ import type { DotplotFeatPos, DotplotFeatureData } from './types.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
 import type { Feature } from '@jbrowse/core/util'
 
+const RPC_DEBOUNCE_MS = 1000
+
+function makeViewSnap(view: { width: number; interRegionPaddingWidth: number; minimumBlockWidth: number }) {
+  return {
+    ...getSnapshot(view as Parameters<typeof getSnapshot>[0]),
+    width: view.width,
+    staticBlocks: { contentBlocks: [], blocks: [] },
+    interRegionPaddingWidth: view.interRegionPaddingWidth,
+    minimumBlockWidth: view.minimumBlockWidth,
+  }
+}
+
 function serializeFeatures(
   features: Feature[],
   assemblyManager: { get: (name: string) => any },
@@ -72,7 +84,7 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
     },
     {
       name: `${self.type} ${self.id} feature loading`,
-      delay: 500,
+      delay: RPC_DEBOUNCE_MS,
       fireImmediately: true,
     },
     self.setLoading,
@@ -114,21 +126,8 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
         const snapshotBpPerPxH = hview.bpPerPx
         const snapshotBpPerPxV = vview.bpPerPx
 
-        const hViewSnap = {
-          ...getSnapshot(hview),
-          width: hview.width,
-          staticBlocks: { contentBlocks: [], blocks: [] },
-          interRegionPaddingWidth: hview.interRegionPaddingWidth,
-          minimumBlockWidth: hview.minimumBlockWidth,
-        }
-
-        const vViewSnap = {
-          ...getSnapshot(vview),
-          width: vview.width,
-          staticBlocks: { contentBlocks: [], blocks: [] },
-          interRegionPaddingWidth: vview.interRegionPaddingWidth,
-          minimumBlockWidth: vview.minimumBlockWidth,
-        }
+        const hViewSnap = makeViewSnap(hview)
+        const vViewSnap = makeViewSnap(vview)
 
         if (self.features !== cachedFeatures) {
           cachedFeatures = self.features
@@ -163,14 +162,13 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
         }
         self.setFeatPositions(positions, snapshotBpPerPxH, snapshotBpPerPxV)
       },
-      { fireImmediately: true, delay: 300 },
+      { fireImmediately: true, delay: RPC_DEBOUNCE_MS },
     ),
   )
 
-  let lastGeometryKey = ''
-  let lastFeatPositions: DotplotFeatPos[] = []
-  let lastRenderer: unknown = null
-  let resizeSent = ''
+  let lastFeatPositions: DotplotFeatPos[] | undefined
+  let lastUploadSettings = ''
+  let lastRenderer: typeof self.gpuRenderer = null
 
   addDisposer(
     self,
@@ -192,53 +190,46 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
           featPositions,
           featPositionsBpPerPxH,
           featPositionsBpPerPxV,
+          gpuRenderer: renderer,
           minAlignmentLength,
         } = self
         const { viewWidth, viewHeight, hview, vview, drawCigar } = view
-
         const hBpPerPx = hview.bpPerPx
         const vBpPerPx = vview.bpPerPx
 
-        if (!self.gpuRenderer || !self.gpuInitialized) {
+        if (!renderer) {
           return
         }
 
-        if (self.gpuRenderer !== lastRenderer) {
-          lastGeometryKey = ''
-          lastRenderer = self.gpuRenderer
+        if (renderer !== lastRenderer) {
+          lastFeatPositions = undefined
+          lastUploadSettings = ''
+          lastRenderer = renderer
         }
 
-        const resizeKey = `${viewWidth}-${viewHeight}`
-        if (resizeKey !== resizeSent) {
-          self.gpuRenderer.resize(viewWidth, viewHeight)
-          resizeSent = resizeKey
-        }
+        renderer.resize(viewWidth, viewHeight)
 
-        let filteredPositions = featPositions
-        if (minAlignmentLength > 0) {
-          filteredPositions = featPositions.filter(fp => {
-            const alignmentLength = Math.abs(
-              fp.f.get('end') - fp.f.get('start'),
-            )
-            return alignmentLength >= minAlignmentLength
-          })
-        }
-
-        const geometryKey = `${filteredPositions.length}-${colorBy}-${alpha}-${drawCigar}-${minAlignmentLength}`
-
+        const settingsKey = `${colorBy}-${alpha}-${drawCigar}-${minAlignmentLength}`
         if (
-          geometryKey !== lastGeometryKey ||
-          filteredPositions !== lastFeatPositions
+          featPositions !== lastFeatPositions ||
+          settingsKey !== lastUploadSettings
         ) {
+          let filtered = featPositions
+          if (minAlignmentLength > 0) {
+            filtered = featPositions.filter(fp => {
+              const len = Math.abs(fp.f.get('end') - fp.f.get('start'))
+              return len >= minAlignmentLength
+            })
+          }
           const colorFn = createDotplotColorFunction(colorBy, alpha)
           const segments = buildLineSegments(
-            filteredPositions,
+            filtered,
             colorFn,
             drawCigar,
             hBpPerPx,
             vBpPerPx,
           )
-          self.gpuRenderer.uploadGeometry({
+          renderer.uploadGeometry({
             x1s: new Float32Array(segments.x1s),
             y1s: new Float32Array(segments.y1s),
             x2s: new Float32Array(segments.x2s),
@@ -246,8 +237,8 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
             colors: new Float32Array(segments.colors),
             instanceCount: segments.x1s.length,
           })
-          lastGeometryKey = geometryKey
-          lastFeatPositions = filteredPositions
+          lastFeatPositions = featPositions
+          lastUploadSettings = settingsKey
         }
 
         const scaleX =
@@ -255,14 +246,14 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
         const scaleY =
           featPositionsBpPerPxV > 0 ? featPositionsBpPerPxV / vBpPerPx : 1
 
-        self.gpuRenderer.render(
+        renderer.render(
           hview.offsetPx,
           vview.offsetPx,
           2,
           scaleX,
           scaleY,
         )
-        if (self.features && self.features.length > 0) {
+        if (!self.canvasDrawn && self.features?.length) {
           self.setCanvasDrawn(true)
         }
       },

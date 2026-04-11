@@ -1,10 +1,10 @@
-import { useCallback, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, useGpuRenderer } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { DotplotRenderer } from '../DotplotRenderer.ts'
+import { createDotplotRenderer } from '../DotplotRenderer.ts'
 
 import type { DotplotViewModel } from '../../DotplotView/model.ts'
 import type { DotplotDisplayModel } from '../stateModelFactory.tsx'
@@ -16,30 +16,20 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
   const { model, children } = props
   const view = getContainingView(model) as DotplotViewModel
   const { viewWidth, viewHeight } = view
-  const gpuCanvasRef = useRef<HTMLCanvasElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  const gpuCanvasCallbackRef = useCallback(
-    (canvas: HTMLCanvasElement | null) => {
-      gpuCanvasRef.current = canvas
-      if (!canvas) {
-        return
-      }
-      const renderer = DotplotRenderer.getOrCreate(canvas)
-      renderer
-        .init()
-        .then(success => {
-          if (!success) {
-            console.error('[DotplotDisplay] GPU initialization failed')
-          }
-          model.setGpuRenderer(renderer)
-          model.setGpuInitialized(success)
-        })
-        .catch((e: unknown) => {
-          console.error('[DotplotDisplay] GPU initialization error:', e)
-          model.setGpuInitialized(false)
-        })
-    },
+  const gpuOpts = useMemo(
+    () => ({
+      onReady: model.setGpuRenderer,
+      onDispose: () => model.setGpuRenderer(null),
+    }),
     [model],
+  )
+
+  const { error: gpuError } = useGpuRenderer(
+    canvasRef,
+    createDotplotRenderer,
+    gpuOpts,
   )
 
   if (model.error) {
@@ -49,7 +39,7 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
   return (
     <div style={{ position: 'relative', width: viewWidth, height: viewHeight }}>
       <canvas
-        ref={gpuCanvasCallbackRef}
+        ref={canvasRef}
         data-testid={
           model.canvasDrawn
             ? 'dotplot_webgl_canvas_done'
@@ -61,6 +51,7 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
           imageRendering: 'auto',
         }}
       />
+      {gpuError ? <ErrorMessage error={gpuError} /> : null}
       {model.isLoading ? (
         <div
           style={{
@@ -72,6 +63,18 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+          }}
+        >
+          <LoadingEllipses />
+        </div>
+      ) : null}
+      {model.isRefetching ? (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 4,
+            right: 4,
+            opacity: 0.7,
           }}
         >
           <LoadingEllipses />
