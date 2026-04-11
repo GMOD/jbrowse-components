@@ -9,21 +9,16 @@ import {
   createVariantMouseHandlers,
   getTestId,
   strandToSign,
-  useMouseoverElt,
+  useOverlaySetup,
 } from './overlayUtils.tsx'
 import { getMatchedTranslocationFeatures } from './util.ts'
-import { getPxFromCoordinate, getTrackHeightsCache, yPos } from '../util.ts'
+import { getPxFromCoordinate, yPos } from '../util.ts'
 
 import type { OverlayProps } from './overlayUtils.tsx'
 import type { LayoutRecord } from '../types.ts'
 
-const Translocations = observer(function Translocations({
-  model,
-  trackId,
-  getTrackYPosOverride,
-  cachedTrackTops,
-  cachedYOffset,
-}: OverlayProps) {
+const Translocations = observer(function Translocations(props: OverlayProps) {
+  const { model, trackId } = props
   const { interactiveOverlay, views, assembly } = model
   const session = getSession(model)
   const totalFeatures = model.getTrackFeatures(trackId)
@@ -33,13 +28,8 @@ const Translocations = observer(function Translocations({
     return model.getMatchedFeaturesInLayout(trackId, matchedFeatures)
   }, [totalFeatures, trackId, model])
 
-  const [mouseoverElt, setMouseoverElt] = useMouseoverElt()
-  const yOffset = cachedYOffset ?? 0
-  const tracks = views.map(v => v.getTrack(trackId))
-  const hasOverride = !!getTrackYPosOverride
-  const cachedHeights =
-    cachedTrackTops ??
-    getTrackHeightsCache(views, trackId, getTrackYPosOverride)
+  const { mouseoverElt, setMouseoverElt, yOffset, tracks, hasOverride, cachedHeights } =
+    useOverlaySetup(props)
 
   if (!assembly) {
     return null
@@ -60,9 +50,8 @@ const Translocations = observer(function Translocations({
       strokeWidth={5}
       data-testid={getTestId(trackId, layoutMatches.length > 0)}
     >
-      {layoutMatches.map(chunk => {
-        const ret = []
-        for (const { layout: c1, feature: f1, level: level1 } of chunk) {
+      {layoutMatches.flatMap(chunk =>
+        chunk.flatMap(({ layout: c1, feature: f1, level: level1 }) => {
           const level2 = level1 === 0 ? 1 : 0
           const id = f1.id()
 
@@ -73,48 +62,46 @@ const Translocations = observer(function Translocations({
           const [myDirection, mateDirection] = res ?? ['.', '.']
 
           const r = getPxFromCoordinate(views[level2]!, chr2, end2)
-          if (r) {
-            const c2: LayoutRecord = [r, 0, r + 1, 0]
-            const x1 = getPxFromCoordinate(
-              views[level1]!,
-              f1.get('refName'),
-              c1[LEFT],
-            )
-            const x2 = r
-            const reversed1 = views[level1]!.pxToBp(x1).reversed
-            const reversed2 = views[level2]!.pxToBp(x2).reversed
-
-            const y1 =
-              yPos(level1, tracks, c1, cachedHeights, hasOverride) - yOffset
-            const y2 =
-              yPos(level2, tracks, c2, cachedHeights, hasOverride) - yOffset
-
-            const x1Tick =
-              x1 - 20 * strandToSign(myDirection) * (reversed1 ? -1 : 1)
-            const x2Tick =
-              x2 - 20 * strandToSign(mateDirection) * (reversed2 ? -1 : 1)
-            const path = buildBreakpointPath(x1, y1, x2, y2, x1Tick, x2Tick)
-
-            const mouseHandlers = createVariantMouseHandlers(
-              id,
-              setMouseoverElt,
-              session,
-              totalFeatures.get(id)?.toJSON(),
-            )
-
-            ret.push(
-              <path
-                d={path}
-                key={JSON.stringify(path)}
-                pointerEvents={interactiveOverlay ? 'auto' : undefined}
-                strokeWidth={id === mouseoverElt ? 10 : 5}
-                {...mouseHandlers}
-              />,
-            )
+          if (!r) {
+            return []
           }
-        }
-        return ret
-      })}
+          const c2: LayoutRecord = [r, 0, r + 1, 0]
+          const x1 = getPxFromCoordinate(
+            views[level1]!,
+            f1.get('refName'),
+            c1[LEFT],
+          )
+          const x2 = r
+          const reversed1 = views[level1]!.pxToBp(x1).reversed
+          const reversed2 = views[level2]!.pxToBp(x2).reversed
+
+          const y1 =
+            yPos(level1, tracks, c1, cachedHeights, hasOverride) - yOffset
+          const y2 =
+            yPos(level2, tracks, c2, cachedHeights, hasOverride) - yOffset
+
+          const x1Tick =
+            x1 - 20 * strandToSign(myDirection) * (reversed1 ? -1 : 1)
+          const x2Tick =
+            x2 - 20 * strandToSign(mateDirection) * (reversed2 ? -1 : 1)
+          const path = buildBreakpointPath(x1, y1, x2, y2, x1Tick, x2Tick)
+
+          return [
+            <path
+              d={path}
+              key={JSON.stringify(path)}
+              pointerEvents={interactiveOverlay ? 'auto' : undefined}
+              strokeWidth={id === mouseoverElt ? 10 : 5}
+              {...createVariantMouseHandlers(
+                id,
+                setMouseoverElt,
+                session,
+                totalFeatures.get(id)?.toJSON(),
+              )}
+            />,
+          ]
+        }),
+      )}
     </g>
   )
 })
