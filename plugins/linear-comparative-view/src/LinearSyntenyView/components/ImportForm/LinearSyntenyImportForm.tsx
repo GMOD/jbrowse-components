@@ -3,11 +3,18 @@ import { useState } from 'react'
 import { ErrorMessage } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Container, Tab, Tabs } from '@mui/material'
+import {
+  Container,
+  Tab,
+  Tabs,
+  ToggleButton,
+  ToggleButtonGroup,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelectorArea.tsx'
-import LeftPanel from './LeftPanel.tsx'
+import PairwisePanel from './PairwisePanel.tsx'
+import PangenomePanel from './PangenomePanel.tsx'
 import QuickImportPanel from './QuickImportPanel.tsx'
 import { doSubmit } from './doSubmit.tsx'
 
@@ -25,10 +32,7 @@ const useStyles = makeStyles()(theme => ({
     flexGrow: 11,
   },
   leftPanel: {
-    // proportionally smaller than right panel
     flexGrow: 4,
-
-    // and don't shrink when right panel grows
     flexShrink: 0,
   },
 }))
@@ -43,13 +47,15 @@ const LinearSyntenyViewImportForm = observer(
     const session = getSession(model)
     const { assemblyNames } = session
     const defaultAssemblyName = assemblyNames[0] || ''
-    const [selectedRow, setSelectedRow] = useState(0)
     const [selectedAssemblyNames, setSelectedAssemblyNames] = useState([
       defaultAssemblyName,
       defaultAssemblyName,
     ])
     const [error, setError] = useState<unknown>()
     const [importMode, setImportMode] = useState(0)
+    const [viewMode, setViewMode] = useState<'pairwise' | 'pangenome'>(
+      'pairwise',
+    )
 
     const handleLaunch = async () => {
       try {
@@ -64,53 +70,68 @@ const LinearSyntenyViewImportForm = observer(
       }
     }
 
+    const isPairwise = viewMode === 'pairwise'
+
     return (
       <Container className={classes.importFormContainer}>
         {error ? <ErrorMessage error={error} /> : null}
 
-        <Tabs
-          value={importMode}
-          onChange={(_, val) => {
-            setImportMode(val)
+        <ToggleButtonGroup
+          value={viewMode}
+          exclusive
+          onChange={(_, v: 'pairwise' | 'pangenome') => {
+            if (v) {
+              setViewMode(v)
+            }
           }}
+          size="small"
           sx={{ mb: 2 }}
         >
-          <Tab label="Manual setup" />
-          <Tab label="Quick import" />
-        </Tabs>
+          <ToggleButton value="pairwise">Pairwise synteny</ToggleButton>
+          <ToggleButton value="pangenome">Pangenome / multi-way</ToggleButton>
+        </ToggleButtonGroup>
 
-        {importMode === 0 ? (
-          <div className={classes.flex}>
-            <div className={classes.leftPanel}>
-              <LeftPanel
-                model={model}
-                selectedAssemblyNames={selectedAssemblyNames}
-                setSelectedAssemblyNames={setSelectedAssemblyNames}
-                selectedRow={selectedRow}
-                setSelectedRow={setSelectedRow}
-                defaultAssemblyName={defaultAssemblyName}
-                onLaunch={() => {
-                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                  handleLaunch()
-                }}
-              />
-            </div>
+        {isPairwise ? (
+          <>
+            <Tabs
+              value={importMode}
+              onChange={(_, val) => {
+                setImportMode(val)
+              }}
+              sx={{ mb: 2 }}
+            >
+              <Tab label="Manual setup" />
+              <Tab label="Quick import" />
+            </Tabs>
 
-            <div className={classes.rightPanel}>
-              <div>
-                Synteny dataset to display between row {selectedRow + 1} and{' '}
-                {selectedRow + 2}
+            {importMode === 1 ? (
+              <QuickImportPanel model={model} />
+            ) : (
+              <div className={classes.flex}>
+                <div className={classes.leftPanel}>
+                  <PairwisePanel
+                    model={model}
+                    selectedAssemblyNames={selectedAssemblyNames}
+                    setSelectedAssemblyNames={setSelectedAssemblyNames}
+                    onLaunch={() => {
+                      void handleLaunch()
+                    }}
+                  />
+                </div>
+                <div className={classes.rightPanel}>
+                  <div>Configure synteny data</div>
+                  <ImportSyntenyTrackSelector
+                    model={model}
+                    selectedRow={0}
+                    assembly1={selectedAssemblyNames[0]!}
+                    assembly2={selectedAssemblyNames[1]!}
+                  />
+                </div>
               </div>
-              <ImportSyntenyTrackSelector
-                model={model}
-                selectedRow={selectedRow}
-                assembly1={selectedAssemblyNames[selectedRow]!}
-                assembly2={selectedAssemblyNames[selectedRow + 1]!}
-              />
-            </div>
-          </div>
+            )}
+          </>
         ) : (
-          <QuickImportPanel model={model} />
+          <PangenomePanel model={model} />
         )}
       </Container>
     )
