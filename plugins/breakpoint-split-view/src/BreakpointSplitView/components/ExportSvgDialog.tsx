@@ -17,7 +17,6 @@ import {
 } from '@mui/material'
 
 import type { ExportSvgOptions } from '../types.ts'
-import type { TextFieldProps } from '@mui/material'
 
 function LoadingMessage({ format }: { format: string }) {
   return (
@@ -30,13 +29,6 @@ function LoadingMessage({ format }: { format: string }) {
   )
 }
 
-function TextField2({ children, ...rest }: TextFieldProps) {
-  return (
-    <div>
-      <TextField {...rest}>{children}</TextField>
-    </div>
-  )
-}
 function useSvgLocal<T>(key: string, val: T) {
   return useLocalStorage(`svg-${key}`, val)
 }
@@ -96,41 +88,42 @@ export default function ExportSvgDialog({
             <ToggleButton value="png">PNG</ToggleButton>
           </ToggleButtonGroup>
         </div>
-        <TextField2
-          select
-          label="Track label positioning"
-          variant="outlined"
-          style={{ width: 150 }}
-          value={trackLabels}
-          onChange={event => {
-            setTrackLabels(event.target.value)
-          }}
-        >
-          <MenuItem value="offset">Offset</MenuItem>
-          <MenuItem value="overlay">Overlay</MenuItem>
-          <MenuItem value="left">Left</MenuItem>
-          <MenuItem value="none">None</MenuItem>
-        </TextField2>
-        <br />
-        {session.allThemes ? (
-          <TextField2
+        <div>
+          <TextField
             select
-            label="Theme"
+            label="Track label positioning"
             variant="outlined"
-            value={themeName}
+            style={{ width: 150 }}
+            value={trackLabels}
             onChange={event => {
-              setThemeName(event.target.value)
+              setTrackLabels(event.target.value)
             }}
           >
-            {Object.entries(session.allThemes()).map(([key, val]) => (
-              <MenuItem key={key} value={key}>
-                {
-                  // @ts-expect-error
-                  val.name || '(Unknown name)'
-                }
-              </MenuItem>
-            ))}
-          </TextField2>
+            <MenuItem value="offset">Offset</MenuItem>
+            <MenuItem value="overlay">Overlay</MenuItem>
+            <MenuItem value="left">Left</MenuItem>
+            <MenuItem value="none">None</MenuItem>
+          </TextField>
+        </div>
+        <br />
+        {session.allThemes ? (
+          <div>
+            <TextField
+              select
+              label="Theme"
+              variant="outlined"
+              value={themeName}
+              onChange={event => {
+                setThemeName(event.target.value)
+              }}
+            >
+              {Object.entries(session.allThemes()).map(([key, val]) => (
+                <MenuItem key={key} value={key}>
+                  {(val as { name?: string }).name || '(Unknown name)'}
+                </MenuItem>
+              ))}
+            </TextField>
+          </div>
         ) : null}
 
         <FormControlLabel
