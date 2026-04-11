@@ -1,7 +1,11 @@
 import { useMemo, useRef } from 'react'
 
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { getContainingView, useGpuRenderer } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  useGpuRenderer,
+  useTabVisibilityRerender,
+} from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import { createDotplotRenderer } from '../DotplotRenderer.ts'
@@ -33,6 +37,14 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
     createDotplotRenderer,
     gpuOpts,
   )
+
+  // SYNC across model-driven GPU displays (dotplot, linear synteny,
+  // multi-LGV synteny): bumps tabVisibilityVersion so the model draw autorun
+  // re-fires on tab restore. Hook-driven displays pass renderNow directly to
+  // useTabVisibilityRerender instead.
+  useTabVisibilityRerender(() => {
+    model.bumpTabVisibility()
+  })
 
   if (model.error) {
     return <ErrorMessage error={model.error} />

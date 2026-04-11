@@ -244,6 +244,14 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   // WebGL features in sync with the DOM label overlay (which is computed
   // during the same render via useMemo). useEffect would run after paint,
   // causing a frame where labels show new data but WebGL shows old data.
+  //
+  // SYNC: unlike the other GPU displays (which use an autorun and read
+  // dataVersion explicitly), this component uses observer() +
+  // useLayoutEffect([..., rpcDataMap]). The observer re-renders when
+  // rpcDataMap changes reference, which fires this effect and uploads
+  // data. dataVersion is not needed here because rpcDataMap always gets
+  // a new Map reference when work() completes — the reference change is
+  // the sole trigger. See MultiRegionDisplayMixin.withFetchLifecycle.
 
   useLayoutEffect(() => {
     const renderer = rendererRef.current

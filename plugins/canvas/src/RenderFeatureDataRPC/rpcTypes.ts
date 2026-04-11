@@ -62,7 +62,6 @@ export interface FeatureDataResult {
   arrowXs: Uint32Array
   arrowYs: Float32Array
   arrowDirections: Int8Array
-  arrowHeights: Float32Array
   arrowColors: Uint8Array
   numArrows: number
 
@@ -104,7 +103,6 @@ export type RegionGpuData = Pick<
   | 'arrowXs'
   | 'arrowYs'
   | 'arrowDirections'
-  | 'arrowHeights'
   | 'arrowColors'
   | 'numArrows'
 >

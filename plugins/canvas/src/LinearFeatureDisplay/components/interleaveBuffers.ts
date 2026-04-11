@@ -1,6 +1,6 @@
 export const RECT_STRIDE = 8
 export const LINE_STRIDE = 8
-export const ARROW_STRIDE = 8
+export const ARROW_STRIDE = 7
 
 export function interleaveRects(
   positions: Uint32Array,
@@ -54,7 +54,6 @@ export function interleaveArrows(
   xs: Uint32Array,
   ys: Float32Array,
   directions: Int8Array,
-  heights: Float32Array,
   colors: Uint8Array,
   count: number,
 ) {
@@ -67,10 +66,9 @@ export function interleaveArrows(
     f32[off + 1] = colors[i * 4 + 3]! / 255
     f32[off + 2] = ys[i]!
     f32[off + 3] = directions[i]!
-    f32[off + 4] = heights[i]!
-    f32[off + 5] = colors[i * 4]! / 255
-    f32[off + 6] = colors[i * 4 + 1]! / 255
-    f32[off + 7] = colors[i * 4 + 2]! / 255
+    f32[off + 4] = colors[i * 4]! / 255
+    f32[off + 5] = colors[i * 4 + 1]! / 255
+    f32[off + 6] = colors[i * 4 + 2]! / 255
   }
   return buf
 }

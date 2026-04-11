@@ -14,7 +14,7 @@ import {
   useGpuRenderer,
   useTabVisibilityRerender,
 } from '@jbrowse/core/util'
-import { hexToGLrgb } from '@jbrowse/core/util/colord'
+import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 import {
   CoverageTooltipContents,
   CoverageYScaleBar,
@@ -327,6 +327,10 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     gpuOpts,
   )
 
+  // SYNC across model-driven GPU displays (dotplot, linear synteny,
+  // multi-LGV synteny): bumps tabVisibilityVersion so the model draw autorun
+  // re-fires on tab restore. Hook-driven displays pass renderNow directly to
+  // useTabVisibilityRerender instead.
   useTabVisibilityRerender(() => {
     model.bumpTabVisibility()
   })
@@ -334,13 +338,13 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   // Theme color palette sync to model
   useEffect(() => {
     model.setColorPalette({
-      coverageColorRgb: hexToGLrgb(palette.coverage),
+      coverageColorRgb: cssColorToNormalizedRgb(palette.coverage),
       coverageColorHex: palette.coverage,
       baseColorGl: {
-        A: hexToGLrgb(palette.bases.A.main),
-        C: hexToGLrgb(palette.bases.C.main),
-        G: hexToGLrgb(palette.bases.G.main),
-        T: hexToGLrgb(palette.bases.T.main),
+        A: cssColorToNormalizedRgb(palette.bases.A.main),
+        C: cssColorToNormalizedRgb(palette.bases.C.main),
+        G: cssColorToNormalizedRgb(palette.bases.G.main),
+        T: cssColorToNormalizedRgb(palette.bases.T.main),
       },
       syntenyColors: {
         mismatch: MISMATCH_COLOR,

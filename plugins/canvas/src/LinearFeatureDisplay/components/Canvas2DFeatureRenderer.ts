@@ -15,6 +15,8 @@ import {
   STEM_LENGTH_PX,
 } from './sharedRendererConstants.ts'
 
+import type { Canvas2DRenderBlock } from '@jbrowse/core/gpu/canvas2dUtils'
+import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import type {
   CanvasFeatureBackend,
   FeatureRenderBlock,
@@ -24,8 +26,110 @@ import type { RegionGpuData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5
 const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5
 
+type Ctx = CanvasRenderingContext2D | SvgCanvas
+
 function rgbaString(colors: Uint8Array, i: number) {
   return `rgba(${colors[i * 4]},${colors[i * 4 + 1]},${colors[i * 4 + 2]},${colors[i * 4 + 3]! / 255})`
+}
+
+export function drawLines(
+  ctx: Ctx,
+  region: RegionGpuData,
+  block: Canvas2DRenderBlock,
+  bpLength: number,
+  fullBlockWidth: number,
+  scrollY: number,
+) {
+  for (let i = 0; i < region.numLines; i++) {
+    const startBp = region.linePositions[i * 2]! + region.regionStart
+    const endBp = region.linePositions[i * 2 + 1]! + region.regionStart
+    const x1 = bpToScreenXUtil(startBp, block, bpLength, fullBlockWidth)
+    const x2 = bpToScreenXUtil(endBp, block, bpLength, fullBlockWidth)
+    const y = Math.floor(region.lineYs[i]! - scrollY + 0.5) + 0.5
+    ctx.strokeStyle = rgbaString(region.lineColors, i)
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(x1, y)
+    ctx.lineTo(x2, y)
+    ctx.stroke()
+
+    const dir = region.lineDirections[i]!
+    if (dir !== 0) {
+      ctx.lineWidth = 1.5
+      const lineWidthPx = Math.abs(x2 - x1)
+      if (lineWidthPx >= CHEVRON_SPACING_PX * 0.5) {
+        const totalChevrons = Math.max(
+          1,
+          Math.floor(lineWidthPx / CHEVRON_SPACING_PX),
+        )
+        const spacing = lineWidthPx / (totalChevrons + 1)
+        const minX = Math.min(x1, x2)
+        for (let c = 0; c < totalChevrons; c++) {
+          const cx = minX + spacing * (c + 1)
+          ctx.beginPath()
+          ctx.moveTo(cx - CHEVRON_HALF_W * dir, y - CHEVRON_HALF_H)
+          ctx.lineTo(cx + CHEVRON_HALF_W * dir, y)
+          ctx.lineTo(cx - CHEVRON_HALF_W * dir, y + CHEVRON_HALF_H)
+          ctx.stroke()
+        }
+      }
+    }
+  }
+}
+
+export function drawRects(
+  ctx: Ctx,
+  region: RegionGpuData,
+  block: Canvas2DRenderBlock,
+  bpLength: number,
+  fullBlockWidth: number,
+  scrollY: number,
+) {
+  for (let i = 0; i < region.numRects; i++) {
+    const startBp = region.rectPositions[i * 2]! + region.regionStart
+    const endBp = region.rectPositions[i * 2 + 1]! + region.regionStart
+    const x1 = bpToScreenXUtil(startBp, block, bpLength, fullBlockWidth)
+    const x2 = bpToScreenXUtil(endBp, block, bpLength, fullBlockWidth)
+    const y = Math.floor(region.rectYs[i]! - scrollY + 0.5)
+    const h = Math.floor(region.rectHeights[i]! + 0.5)
+    const w = Math.max(MIN_RECT_WIDTH_PX, x2 - x1)
+
+    ctx.fillStyle = rgbaString(region.rectColors, i)
+    ctx.fillRect(x1, y, w, h)
+  }
+}
+
+export function drawArrows(
+  ctx: Ctx,
+  region: RegionGpuData,
+  block: Canvas2DRenderBlock,
+  bpLength: number,
+  fullBlockWidth: number,
+  scrollY: number,
+) {
+  for (let i = 0; i < region.numArrows; i++) {
+    const xBp = region.arrowXs[i]! + region.regionStart
+    const cx = bpToScreenXUtil(xBp, block, bpLength, fullBlockWidth)
+    const y = Math.floor(region.arrowYs[i]! - scrollY + 0.5) + 0.5
+    const dir = region.arrowDirections[i]!
+    ctx.fillStyle = rgbaString(region.arrowColors, i)
+
+    const stemEndX = cx + STEM_LENGTH_PX * 0.5 * dir
+    ctx.fillRect(
+      Math.min(cx, stemEndX),
+      y - STEM_HALF_H_PX,
+      Math.abs(stemEndX - cx),
+      STEM_HALF_H_PX * 2,
+    )
+
+    const headTipX = cx + STEM_LENGTH_PX * dir
+    ctx.beginPath()
+    ctx.moveTo(stemEndX, y - HEAD_HALF_H_PX)
+    ctx.lineTo(stemEndX, y + HEAD_HALF_H_PX)
+    ctx.lineTo(headTipX, y)
+    ctx.closePath()
+    ctx.fill()
+  }
 }
 
 export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
@@ -77,120 +181,11 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
       ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
       ctx.clip()
 
-      this.drawLines(ctx, region, block, bpLength, fullBlockWidth, scrollY)
-      this.drawRects(ctx, region, block, bpLength, fullBlockWidth, scrollY)
-      this.drawArrows(ctx, region, block, bpLength, fullBlockWidth, scrollY)
+      drawLines(ctx, region, block, bpLength, fullBlockWidth, scrollY)
+      drawRects(ctx, region, block, bpLength, fullBlockWidth, scrollY)
+      drawArrows(ctx, region, block, bpLength, fullBlockWidth, scrollY)
 
       ctx.restore()
-    }
-  }
-
-  private bpToScreenX(
-    absBp: number,
-    block: FeatureRenderBlock,
-    bpLength: number,
-    fullBlockWidth: number,
-  ) {
-    return bpToScreenXUtil(absBp, block, bpLength, fullBlockWidth)
-  }
-
-  private drawLines(
-    ctx: CanvasRenderingContext2D,
-    region: RegionGpuData,
-    block: FeatureRenderBlock,
-    bpLength: number,
-    fullBlockWidth: number,
-    scrollY: number,
-  ) {
-    for (let i = 0; i < region.numLines; i++) {
-      const startBp = region.linePositions[i * 2]! + region.regionStart
-      const endBp = region.linePositions[i * 2 + 1]! + region.regionStart
-      const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const y = Math.floor(region.lineYs[i]! - scrollY) + 0.5
-      ctx.strokeStyle = rgbaString(region.lineColors, i)
-      ctx.lineWidth = 1
-      ctx.beginPath()
-      ctx.moveTo(x1, y)
-      ctx.lineTo(x2, y)
-      ctx.stroke()
-
-      const dir = region.lineDirections[i]!
-      if (dir !== 0) {
-        ctx.lineWidth = 1.5
-        const lineWidthPx = Math.abs(x2 - x1)
-        if (lineWidthPx >= CHEVRON_SPACING_PX * 0.5) {
-          const totalChevrons = Math.max(
-            1,
-            Math.floor(lineWidthPx / CHEVRON_SPACING_PX),
-          )
-          const spacing = lineWidthPx / (totalChevrons + 1)
-          const minX = Math.min(x1, x2)
-          for (let c = 0; c < totalChevrons; c++) {
-            const cx = minX + spacing * (c + 1)
-            ctx.beginPath()
-            ctx.moveTo(cx - CHEVRON_HALF_W * dir, y - CHEVRON_HALF_H)
-            ctx.lineTo(cx + CHEVRON_HALF_W * dir, y)
-            ctx.lineTo(cx - CHEVRON_HALF_W * dir, y + CHEVRON_HALF_H)
-            ctx.stroke()
-          }
-        }
-      }
-    }
-  }
-
-  private drawRects(
-    ctx: CanvasRenderingContext2D,
-    region: RegionGpuData,
-    block: FeatureRenderBlock,
-    bpLength: number,
-    fullBlockWidth: number,
-    scrollY: number,
-  ) {
-    for (let i = 0; i < region.numRects; i++) {
-      const startBp = region.rectPositions[i * 2]! + region.regionStart
-      const endBp = region.rectPositions[i * 2 + 1]! + region.regionStart
-      const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const y = Math.floor(region.rectYs[i]! - scrollY + 0.5)
-      const h = Math.floor(region.rectHeights[i]! + 0.5)
-      const w = Math.max(MIN_RECT_WIDTH_PX, x2 - x1)
-
-      ctx.fillStyle = rgbaString(region.rectColors, i)
-      ctx.fillRect(x1, y, w, h)
-    }
-  }
-
-  private drawArrows(
-    ctx: CanvasRenderingContext2D,
-    region: RegionGpuData,
-    block: FeatureRenderBlock,
-    bpLength: number,
-    fullBlockWidth: number,
-    scrollY: number,
-  ) {
-    for (let i = 0; i < region.numArrows; i++) {
-      const xBp = region.arrowXs[i]! + region.regionStart
-      const cx = this.bpToScreenX(xBp, block, bpLength, fullBlockWidth)
-      const y = Math.floor(region.arrowYs[i]! - scrollY + 0.5) + 0.5
-      const dir = region.arrowDirections[i]!
-      ctx.fillStyle = rgbaString(region.arrowColors, i)
-
-      const stemEndX = cx + STEM_LENGTH_PX * 0.5 * dir
-      ctx.fillRect(
-        Math.min(cx, stemEndX),
-        y - STEM_HALF_H_PX,
-        Math.abs(stemEndX - cx),
-        STEM_HALF_H_PX * 2,
-      )
-
-      const headTipX = cx + STEM_LENGTH_PX * dir
-      ctx.beginPath()
-      ctx.moveTo(stemEndX, y - HEAD_HALF_H_PX)
-      ctx.lineTo(stemEndX, y + HEAD_HALF_H_PX)
-      ctx.lineTo(headTipX, y)
-      ctx.closePath()
-      ctx.fill()
     }
   }
 

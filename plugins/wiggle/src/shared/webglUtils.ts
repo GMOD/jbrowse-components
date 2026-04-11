@@ -17,24 +17,6 @@ export function parseColor(color: string): [number, number, number] {
   return result
 }
 
-export function lightenColor(
-  rgb: [number, number, number],
-  amount: number,
-): [number, number, number] {
-  return [
-    Math.min(1, rgb[0] + (1 - rgb[0]) * amount),
-    Math.min(1, rgb[1] + (1 - rgb[1]) * amount),
-    Math.min(1, rgb[2] + (1 - rgb[2]) * amount),
-  ]
-}
-
-export function darkenColor(
-  rgb: [number, number, number],
-  amount: number,
-): [number, number, number] {
-  return [rgb[0] * (1 - amount), rgb[1] * (1 - amount), rgb[2] * (1 - amount)]
-}
-
 export function interleaveInstances(
   sources: SourceRenderData[],
   totalFeatures: number,

@@ -31,10 +31,6 @@ function toRelativeFloat32(
   return result
 }
 
-function cssColorToNormalized(color: string): [number, number, number, number] {
-  return cssColorToNormalizedRgba(color)
-}
-
 function hashString(str: string) {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
@@ -54,10 +50,10 @@ const STRAND_NEG: RGBA = [0, 0, 1, 1]
 const DEFAULT_COLOR: RGBA = [1, 0, 0, 1]
 
 const syriColorMap: Record<SyriType, RGBA> = {
-  SYN: cssColorToNormalized(syriColors.SYN),
-  INV: cssColorToNormalized(syriColors.INV),
-  TRANS: cssColorToNormalized(syriColors.TRANS),
-  DUP: cssColorToNormalized(syriColors.DUP),
+  SYN: cssColorToNormalizedRgba(syriColors.SYN),
+  INV: cssColorToNormalizedRgba(syriColors.INV),
+  TRANS: cssColorToNormalizedRgba(syriColors.TRANS),
+  DUP: cssColorToNormalizedRgba(syriColors.DUP),
 }
 
 function createColorFunction(
@@ -103,7 +99,7 @@ function buildIndelColors(colorBy: string) {
   ] as const) {
     const color = cigarColors[key as keyof typeof cigarColors]
     if (color) {
-      indelColors[op] = cssColorToNormalized(color)
+      indelColors[op] = cssColorToNormalizedRgba(color)
     }
   }
   return indelColors

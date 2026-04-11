@@ -1,17 +1,14 @@
 import { getContainingView } from '@jbrowse/core/util'
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { SVGErrorBox } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
-import { bpToScreenPx } from './components/coordinateUtils.ts'
 import {
-  CHEVRON_H_PX,
-  CHEVRON_SPACING_PX,
-  CHEVRON_W_PX,
-  HEAD_HALF_H_PX,
-  MIN_RECT_WIDTH_PX,
-  STEM_HALF_H_PX,
-  STEM_LENGTH_PX,
-} from './components/sharedRendererConstants.ts'
+  drawArrows,
+  drawLines,
+  drawRects,
+} from './components/Canvas2DFeatureRenderer.ts'
+import { bpToScreenPx } from './components/coordinateUtils.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -29,229 +26,10 @@ interface RenderSvgModel {
   height: number
 }
 
-function rgbaColor(colors: Uint8Array, i: number) {
-  const r = colors[i * 4]!
-  const g = colors[i * 4 + 1]!
-  const b = colors[i * 4 + 2]!
-  const a = colors[i * 4 + 3]!
-  return { rgb: `rgb(${r},${g},${b})`, opacity: a / 255 }
-}
+const LABEL_FONT_SIZE = 11
 
-function fillAttrs(colors: Uint8Array, i: number) {
-  const { rgb, opacity } = rgbaColor(colors, i)
-  return opacity === 1
-    ? `fill="${rgb}"`
-    : `fill="${rgb}" fill-opacity="${opacity.toFixed(3)}"`
-}
-
-function strokeAttr(colors: Uint8Array, i: number) {
-  const { rgb, opacity } = rgbaColor(colors, i)
-  return opacity === 1
-    ? `stroke="${rgb}"`
-    : `stroke="${rgb}" stroke-opacity="${opacity.toFixed(3)}"`
-}
-
-function renderRectsForRegion(
-  data: FeatureDataResult,
-  regionStart: number,
-  regionEnd: number,
-  screenStartPx: number,
-  screenEndPx: number,
-  scrollY: number,
-  reversed?: boolean,
-) {
-  let content = ''
-  const {
-    rectPositions,
-    rectYs,
-    rectHeights,
-    rectColors,
-    numRects,
-    regionStart: dataRegionStart,
-  } = data
-
-  for (let i = 0; i < numRects; i++) {
-    const startBp = dataRegionStart + rectPositions[i * 2]!
-    const endBp = dataRegionStart + rectPositions[i * 2 + 1]!
-
-    if (endBp < regionStart || startBp > regionEnd) {
-      continue
-    }
-
-    const clippedStart = Math.max(startBp, regionStart)
-    const clippedEnd = Math.min(endBp, regionEnd)
-
-    const px1 = bpToScreenPx(
-      clippedStart,
-      regionStart,
-      regionEnd,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
-    const px2 = bpToScreenPx(
-      clippedEnd,
-      regionStart,
-      regionEnd,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
-    const x = Math.min(px1, px2)
-    const w = Math.max(Math.abs(px2 - px1), MIN_RECT_WIDTH_PX)
-    const y = rectYs[i]! - scrollY
-    const h = rectHeights[i]!
-    content += `<rect x="${x}" y="${y}" width="${w}" height="${h}" ${fillAttrs(rectColors, i)}/>`
-  }
-  return content
-}
-
-function renderLinesForRegion(
-  data: FeatureDataResult,
-  regionStart: number,
-  regionEnd: number,
-  screenStartPx: number,
-  screenEndPx: number,
-  scrollY: number,
-  reversed?: boolean,
-) {
-  let content = ''
-  const {
-    linePositions,
-    lineYs,
-    lineColors,
-    lineDirections,
-    numLines,
-    regionStart: dataRegionStart,
-  } = data
-  const blockWidth = screenEndPx - screenStartPx
-  const regionLengthBp = regionEnd - regionStart
-  const bpPerPx = regionLengthBp / blockWidth
-
-  for (let i = 0; i < numLines; i++) {
-    const startBp = dataRegionStart + linePositions[i * 2]!
-    const endBp = dataRegionStart + linePositions[i * 2 + 1]!
-
-    if (endBp < regionStart || startBp > regionEnd) {
-      continue
-    }
-
-    const clippedStart = Math.max(startBp, regionStart)
-    const clippedEnd = Math.min(endBp, regionEnd)
-
-    const x1 = bpToScreenPx(
-      clippedStart,
-      regionStart,
-      regionEnd,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
-    const x2 = bpToScreenPx(
-      clippedEnd,
-      regionStart,
-      regionEnd,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
-    const y = rectRound(lineYs[i]! - scrollY)
-    const lineStroke = strokeAttr(lineColors, i)
-    const direction = lineDirections[i]!
-
-    content += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" ${lineStroke} stroke-width="1"/>`
-
-    if (direction !== 0) {
-      const lineWidthPx = (endBp - startBp) / bpPerPx
-      const totalChevrons = Math.max(
-        1,
-        Math.floor(lineWidthPx / CHEVRON_SPACING_PX),
-      )
-      const bpSpacing = (endBp - startBp) / (totalChevrons + 1)
-
-      for (let c = 1; c <= totalChevrons; c++) {
-        const chevronBp = startBp + bpSpacing * c
-        if (chevronBp < regionStart || chevronBp > regionEnd) {
-          continue
-        }
-        const cx = bpToScreenPx(
-          chevronBp,
-          regionStart,
-          regionEnd,
-          screenStartPx,
-          screenEndPx,
-          reversed,
-        )
-        const dir = reversed ? -direction : direction
-        const tipX = cx + CHEVRON_W_PX * 0.5 * dir
-        const baseX = cx - CHEVRON_W_PX * 0.5 * dir
-
-        content += `<polyline points="${baseX},${y - CHEVRON_H_PX} ${tipX},${y} ${baseX},${y + CHEVRON_H_PX}" fill="none" ${lineStroke} stroke-width="1"/>`
-      }
-    }
-  }
-  return content
-}
-
-function renderArrowsForRegion(
-  data: FeatureDataResult,
-  regionStart: number,
-  regionEnd: number,
-  screenStartPx: number,
-  screenEndPx: number,
-  scrollY: number,
-  reversed?: boolean,
-) {
-  let content = ''
-  const {
-    arrowXs,
-    arrowYs,
-    arrowDirections,
-    arrowHeights,
-    arrowColors,
-    numArrows,
-    regionStart: dataRegionStart,
-  } = data
-
-  for (let i = 0; i < numArrows; i++) {
-    const bpPos = dataRegionStart + arrowXs[i]!
-
-    if (bpPos < regionStart || bpPos > regionEnd) {
-      continue
-    }
-
-    const cx = bpToScreenPx(
-      bpPos,
-      regionStart,
-      regionEnd,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
-    const cy = arrowYs[i]! - scrollY
-    const dir = reversed ? -arrowDirections[i]! : arrowDirections[i]!
-    const h = arrowHeights[i]!
-    const arrowStroke = strokeAttr(arrowColors, i)
-    const arrowFill = fillAttrs(arrowColors, i)
-
-    const headHalf = Math.min(HEAD_HALF_H_PX, h * 0.4)
-
-    const stemStartX = cx - STEM_LENGTH_PX * 0.5 * dir
-    const stemEndX = cx + STEM_LENGTH_PX * 0.5 * dir
-
-    content += `<line x1="${stemStartX}" y1="${cy}" x2="${stemEndX}" y2="${cy}" ${arrowStroke} stroke-width="${STEM_HALF_H_PX * 2}"/>`
-
-    const tipX = stemEndX + STEM_LENGTH_PX * 0.5 * dir
-    content += `<polygon points="${stemEndX},${cy - headHalf} ${tipX},${cy} ${stemEndX},${cy + headHalf}" ${arrowFill}/>`
-  }
-  return content
-}
-
-function rectRound(v: number) {
-  return Math.round(v * 2) / 2
-}
-
-function renderLabelsForRegion(
+function renderLabels(
+  ctx: SvgCanvas,
   data: FeatureDataResult,
   regionStart: number,
   regionEnd: number,
@@ -259,10 +37,9 @@ function renderLabelsForRegion(
   screenEndPx: number,
   reversed?: boolean,
 ) {
-  let content = ''
   const { floatingLabelsData, regionStart: dataRegionStart } = data
 
-  const fontSize = 11
+  ctx.font = `${LABEL_FONT_SIZE}px sans-serif`
 
   for (const labelData of Object.values(floatingLabelsData)) {
     const featureStartBp = labelData.minX + dataRegionStart
@@ -313,13 +90,13 @@ function renderLabelsForRegion(
             )
 
       if (label.isOverlay) {
-        content += `<rect x="${labelX - 1}" y="${labelY}" width="${label.textWidth + 2}" height="${fontSize + 1}" fill="rgb(255,255,255)" fill-opacity="0.8"/>`
+        ctx.globalAlpha = 0.8
+        ctx.fillStyle = 'rgb(255,255,255)'
+        ctx.fillRect(labelX - 1, labelY, label.textWidth + 2, LABEL_FONT_SIZE + 1)
+        ctx.globalAlpha = 1
       }
-      const escaped = label.text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-      content += `<text x="${labelX}" y="${labelY + fontSize}" font-size="${fontSize}" fill="${label.color}" style="pointer-events:none">${escaped}</text>`
+      ctx.fillStyle = label.color
+      ctx.fillText(label.text, labelX, labelY + LABEL_FONT_SIZE)
     }
 
     if (labelData.nameLabel) {
@@ -332,10 +109,10 @@ function renderLabelsForRegion(
       emitLabel(labelData.subfeatureLabel, 0)
     }
   }
-  return content
 }
 
-function renderPeptideLettersForRegion(
+function renderPeptides(
+  ctx: SvgCanvas,
   data: FeatureDataResult,
   regionStart: number,
   regionEnd: number,
@@ -343,12 +120,12 @@ function renderPeptideLettersForRegion(
   screenEndPx: number,
   reversed?: boolean,
 ) {
-  let content = ''
   const { aminoAcidOverlay } = data
   if (!aminoAcidOverlay) {
-    return content
+    return
   }
 
+  ctx.textAlign = 'center'
   for (const item of aminoAcidOverlay) {
     if (item.endBp < regionStart || item.startBp > regionEnd) {
       continue
@@ -372,13 +149,13 @@ function renderPeptideLettersForRegion(
     )
     const centerPx = (px1 + px2) / 2
     const fontSize = Math.min(item.heightPx - 2, 12)
-    const color = item.isStopOrNonTriplet ? 'red' : 'black'
-    const label = `${item.aminoAcid}${item.proteinIndex + 1}`
     const y = item.topPx + item.heightPx / 2 + fontSize / 3
 
-    content += `<text x="${centerPx}" y="${y}" font-size="${fontSize}" font-family="monospace" fill="${color}" text-anchor="middle" style="pointer-events:none">${label}</text>`
+    ctx.fillStyle = item.isStopOrNonTriplet ? 'red' : 'black'
+    ctx.font = `${fontSize}px monospace`
+    ctx.fillText(`${item.aminoAcid}${item.proteinIndex + 1}`, centerPx, y)
   }
-  return content
+  ctx.textAlign = 'start'
 }
 
 export async function renderSvg(
@@ -414,10 +191,8 @@ export async function renderSvg(
     screenEndPx: number
   }[]
 
-  const scrollY = 0
-  const renderPeptides = shouldRenderPeptideText(view.bpPerPx)
-
-  let content = ''
+  const renderPeptidesFlag = shouldRenderPeptideText(view.bpPerPx)
+  const svgCanvas = new SvgCanvas()
 
   for (const vr of visibleRegions) {
     const data = rpcDataMap.get(vr.regionNumber)
@@ -425,53 +200,39 @@ export async function renderSvg(
       continue
     }
 
-    const rev = vr.reversed
-    content += renderLinesForRegion(
+    const block = {
+      screenStartPx: vr.screenStartPx,
+      screenEndPx: vr.screenEndPx,
+      bpRangeX: [vr.start, vr.end] as [number, number],
+      reversed: vr.reversed ?? false,
+    }
+    const bpLength = vr.end - vr.start
+    const fullBlockWidth = vr.screenEndPx - vr.screenStartPx
+
+    drawLines(svgCanvas, data, block, bpLength, fullBlockWidth, 0)
+    drawRects(svgCanvas, data, block, bpLength, fullBlockWidth, 0)
+    drawArrows(svgCanvas, data, block, bpLength, fullBlockWidth, 0)
+    renderLabels(
+      svgCanvas,
       data,
       vr.start,
       vr.end,
       vr.screenStartPx,
       vr.screenEndPx,
-      scrollY,
-      rev,
+      vr.reversed,
     )
-    content += renderRectsForRegion(
-      data,
-      vr.start,
-      vr.end,
-      vr.screenStartPx,
-      vr.screenEndPx,
-      scrollY,
-      rev,
-    )
-    content += renderArrowsForRegion(
-      data,
-      vr.start,
-      vr.end,
-      vr.screenStartPx,
-      vr.screenEndPx,
-      scrollY,
-      rev,
-    )
-    content += renderLabelsForRegion(
-      data,
-      vr.start,
-      vr.end,
-      vr.screenStartPx,
-      vr.screenEndPx,
-      rev,
-    )
-    if (renderPeptides) {
-      content += renderPeptideLettersForRegion(
+    if (renderPeptidesFlag) {
+      renderPeptides(
+        svgCanvas,
         data,
         vr.start,
         vr.end,
         vr.screenStartPx,
         vr.screenEndPx,
-        rev,
+        vr.reversed,
       )
     }
   }
 
-  return <g dangerouslySetInnerHTML={{ __html: content }} />
+  return <g dangerouslySetInnerHTML={{ __html: svgCanvas.getSerializedSvg() }} />
 }

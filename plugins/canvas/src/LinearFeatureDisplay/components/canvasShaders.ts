@@ -260,7 +260,6 @@ struct ArrowInstance {
   color_a: f32,
   y: f32,
   direction: f32,
-  height: f32,
   color_r: f32,
   color_g: f32,
   color_b: f32,

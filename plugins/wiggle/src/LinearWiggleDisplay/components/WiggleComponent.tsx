@@ -100,7 +100,12 @@ const WiggleComponent = observer(function WiggleComponent({
         }
       }
 
-      // See dataVersion comment in MultiRegionDisplayMixin.
+      // SYNC across all hook-driven GPU displays (wiggle, multi-wiggle,
+      // variants, alignments, HiC, LD): dataVersion is a counter incremented
+      // by setLoadedRegionForRegion() after each region's data is committed.
+      // Reading it here creates a MobX dependency so this autorun re-fires at
+      // that point, ensuring renderNow() runs with fully-committed data.
+      // See MultiRegionDisplayMixin.withFetchLifecycle.
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _dv = model.dataVersion
 

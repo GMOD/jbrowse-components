@@ -1,7 +1,11 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
-import { getContainingView, useGpuRenderer } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  useGpuRenderer,
+  useTabVisibilityRerender,
+} from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 
@@ -591,29 +595,25 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         }
       }
 
+      // SYNC across all hook-driven GPU displays (wiggle, multi-wiggle,
+      // variants, alignments, HiC, LD): dataVersion is a counter incremented
+      // by setLoadedRegionForRegion() after each region's data is committed.
+      // Reading it here creates a MobX dependency so this autorun re-fires at
+      // that point, ensuring renderNow() runs with fully-committed data.
+      // See MultiRegionDisplayMixin.withFetchLifecycle.
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _dv = model.dataVersion
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _adv = model.arcsState.dataVersion
 
       renderNow()
-      if (rpcDataMap.size > 0 && !model.canvasDrawn) {
+      if (rpcDataMap.size > 0) {
         model.setCanvasDrawn(true)
       }
     })
   }, [model, view, ready, rendererRef])
 
-  useEffect(() => {
-    const handle = () => {
-      if (!document.hidden) {
-        renderNow()
-      }
-    }
-    document.addEventListener('visibilitychange', handle)
-    return () => {
-      document.removeEventListener('visibilitychange', handle)
-    }
-  }, [])
+  useTabVisibilityRerender(renderNow)
 
   return {
     canvasRef,

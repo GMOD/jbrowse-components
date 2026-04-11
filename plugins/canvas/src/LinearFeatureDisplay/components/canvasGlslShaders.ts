@@ -195,7 +195,6 @@ in uint a_x;
 in float a_color_a;
 in float a_y;
 in float a_direction;
-in float a_height;
 in float a_color_r;
 in float a_color_g;
 in float a_color_b;

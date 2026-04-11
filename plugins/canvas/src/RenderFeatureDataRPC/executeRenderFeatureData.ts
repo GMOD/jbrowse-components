@@ -226,7 +226,6 @@ export async function executeRenderFeatureData({
   const arrowXs = new Uint32Array(visibleArrows.length)
   const arrowYs = new Float32Array(visibleArrows.length)
   const arrowDirections = new Int8Array(visibleArrows.length)
-  const arrowHeights = new Float32Array(visibleArrows.length)
   const arrowColors = new Uint8Array(visibleArrows.length * 4)
   const arrowFeatureIndices = new Uint32Array(visibleArrows.length)
 
@@ -234,7 +233,6 @@ export async function executeRenderFeatureData({
     arrowXs[i] = Math.max(0, arrow.x)
     arrowYs[i] = arrow.y
     arrowDirections[i] = arrow.direction
-    arrowHeights[i] = arrow.height
     writeColorBytes(arrowColors, i, arrow.color)
     arrowFeatureIndices[i] = arrow.flatbushIdx
   }
@@ -257,7 +255,6 @@ export async function executeRenderFeatureData({
     arrowXs,
     arrowYs,
     arrowDirections,
-    arrowHeights,
     arrowColors,
     numArrows: visibleArrows.length,
 
@@ -291,7 +288,6 @@ export async function executeRenderFeatureData({
     result.arrowXs.buffer,
     result.arrowYs.buffer,
     result.arrowDirections.buffer,
-    result.arrowHeights.buffer,
     result.arrowColors.buffer,
     result.arrowFeatureIndices.buffer,
   ] as ArrayBuffer[]

@@ -73,6 +73,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            */
           featPositionsBpPerPxV: 0,
           canvasDrawn: false,
+          tabVisibilityVersion: 0,
           fetchStopToken: undefined as StopToken | undefined,
         })),
     )
@@ -147,6 +148,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       setCanvasDrawn(value: boolean) {
         self.canvasDrawn = value
+      },
+      bumpTabVisibility() {
+        self.tabVisibilityVersion++
       },
       /**
        * #action

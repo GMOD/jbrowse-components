@@ -6,7 +6,7 @@ import { parseCigar2 } from '@jbrowse/plugin-alignments'
 import { getTooltip } from './components/util.ts'
 import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
 
-import type { SyntenyRenderer } from './SyntenyRenderer.ts'
+import type { SyntenyBackend } from './syntenyBackendTypes.ts'
 import type { ColorScheme } from './drawSyntenyUtils.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -127,12 +127,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #volatile
        */
-      gpuRenderer: null as SyntenyRenderer | null,
-
-      /**
-       * #volatile
-       */
-      gpuInitialized: false,
+      gpuRenderer: null as SyntenyBackend | null,
 
       canvasDrawn: false,
 
@@ -195,14 +190,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setGpuRenderer(renderer: SyntenyRenderer | null) {
+      setGpuRenderer(renderer: SyntenyBackend | null) {
         self.gpuRenderer = renderer
-      },
-      /**
-       * #action
-       */
-      setGpuInitialized(value: boolean) {
-        self.gpuInitialized = value
       },
       setCanvasDrawn(value: boolean) {
         self.canvasDrawn = value

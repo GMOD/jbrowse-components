@@ -11,6 +11,7 @@ import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import MultiWiggleTooltip from './Tooltip.tsx'
+import { buildMultiSourceRenderData } from './buildMultiSourceRenderData.ts'
 import DensityLegend from '../../shared/DensityLegend.tsx'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import MultiRowLabels from '../../shared/MultiRowLabels.tsx'
@@ -21,11 +22,8 @@ import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
 import {
   getRowTop,
-  isOverlayMode,
-  isScatterMode,
   isSummaryFeature,
   makeRenderState,
-  makeWhiskersSourceData,
 } from '../../shared/wiggleComponentUtils.ts'
 
 import type {
@@ -33,10 +31,7 @@ import type {
   MultiWiggleSourceData,
 } from '../../RenderMultiWiggleDataRPC/types.ts'
 import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
-import type {
-  SourceRenderData,
-  WiggleRenderBlock,
-} from '../../shared/wiggleBackendTypes.ts'
+import type { WiggleRenderBlock } from '../../shared/wiggleBackendTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {
   ClusterHierarchyNode,
@@ -127,12 +122,9 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     if (!renderer || !view.initialized) {
       return
     }
-    // See dataVersion comment in MultiRegionDisplayMixin.
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _dv = model.dataVersion
     const { domain } = model
     const visibleRegions = view.visibleRegions
-    const totalWidth = Math.round(view.width)
+    const totalWidth = view.trackWidthPx
     if (!domain || visibleRegions.length === 0) {
       renderer.renderBlocks(
         [],
@@ -175,86 +167,35 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         if (dataMap.size === 0) {
           renderer.pruneRegions([])
         } else {
-          const modelSources = model.sources
+          const { summaryScoreMode, renderingType, isDensityMode } = model
           const defaultPosColor = parseColor(model.posColor)
           const defaultNegColor = parseColor(model.negColor)
-          const { summaryScoreMode, renderingType } = model
-          const overlay = isOverlayMode(renderingType)
           const activeRegions: number[] = []
           for (const [regionNumber, data] of dataMap) {
             activeRegions.push(regionNumber)
-            const sourcesByName = Object.fromEntries(
-              data.sources.map(s => [s.name, s]),
+            const sourcesData = buildMultiSourceRenderData(
+              data,
+              model.sources,
+              defaultPosColor,
+              defaultNegColor,
+              summaryScoreMode,
+              renderingType,
+              isDensityMode,
             )
-            const orderedSources =
-              modelSources.length > 0 ? modelSources : data.sources
-            const sourcesData: SourceRenderData[] = []
-            let rowCounter = 0
-            for (const orderedSource of orderedSources) {
-              const rpcSource = sourcesByName[orderedSource.name]
-              if (!rpcSource) {
-                continue
-              }
-
-              const posColor = orderedSource.color
-                ? parseColor(orderedSource.color)
-                : defaultPosColor
-              const negColor = overlay ? posColor : defaultNegColor
-              const row = overlay ? 0 : rowCounter
-              rowCounter++
-
-              if (summaryScoreMode === 'whiskers') {
-                for (const s of makeWhiskersSourceData(
-                  rpcSource,
-                  posColor,
-                  model.isDensityMode,
-                  isScatterMode(renderingType),
-                  row,
-                )) {
-                  sourcesData.push(s)
-                }
-              } else if (
-                summaryScoreMode === 'min' ||
-                summaryScoreMode === 'max'
-              ) {
-                const scores =
-                  summaryScoreMode === 'min'
-                    ? rpcSource.featureMinScores
-                    : rpcSource.featureMaxScores
-                sourcesData.push({
-                  featurePositions: rpcSource.featurePositions,
-                  featureScores: scores,
-                  numFeatures: rpcSource.numFeatures,
-                  color: posColor,
-                  rowIndex: row,
-                })
-              } else {
-                if (rpcSource.posNumFeatures > 0) {
-                  sourcesData.push({
-                    featurePositions: rpcSource.posFeaturePositions,
-                    featureScores: rpcSource.posFeatureScores,
-                    numFeatures: rpcSource.posNumFeatures,
-                    color: posColor,
-                    rowIndex: row,
-                  })
-                }
-                if (rpcSource.negNumFeatures > 0) {
-                  sourcesData.push({
-                    featurePositions: rpcSource.negFeaturePositions,
-                    featureScores: rpcSource.negFeatureScores,
-                    numFeatures: rpcSource.negNumFeatures,
-                    color: negColor,
-                    rowIndex: row,
-                  })
-                }
-              }
-            }
-
             renderer.uploadRegion(regionNumber, data.regionStart, sourcesData)
           }
           renderer.pruneRegions(activeRegions)
         }
       }
+
+      // SYNC across all hook-driven GPU displays (wiggle, multi-wiggle,
+      // variants, alignments, HiC, LD): dataVersion is a counter incremented
+      // by setLoadedRegionForRegion() after each region's data is committed.
+      // Reading it here creates a MobX dependency so this autorun re-fires at
+      // that point, ensuring renderNow() runs with fully-committed data.
+      // See MultiRegionDisplayMixin.withFetchLifecycle.
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _dv = model.dataVersion
 
       renderNow()
       if (dataMap.size > 0 && model.domain) {
@@ -306,7 +247,9 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
       const blockWidth = region.screenEndPx - region.screenStartPx
       const frac = (offsetX - region.screenStartPx) / blockWidth
-      const bp = Math.round(region.start + frac * (region.end - region.start))
+      const bp = region.reversed
+        ? Math.round(region.end - frac * (region.end - region.start))
+        : Math.round(region.start + frac * (region.end - region.start))
       const bpOffset = bp - data.regionStart
 
       if (model.isOverlay && domain) {
@@ -441,7 +384,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     }
   }, [model])
 
-  const totalWidth = Math.round(view.width)
+  const totalWidth = view.trackWidthPx
   const height = model.height
   const scalebarLeft = model.scalebarOverlapLeft
 

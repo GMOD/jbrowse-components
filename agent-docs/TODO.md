@@ -98,3 +98,16 @@ Lost context? maybe initially renders but not subsequently?
 ## Methylation mode not working
 
 Check
+
+## Potential improvements in type checking
+
+An agent said the following, but i think we could improve the types if we tried:
+
+- MultiSampleVariantGetCellData.ts line 27 — post-deserializeArguments cast;
+  unavoidable because the base class return type is generic
+- HtsgetBamAdapter.ts — pre-existing, unrelated to our work
+
+The @ts-expect-error on dataAdapter.getSources() in
+MultiSampleVariantGetSources.ts is also unavoidable — getSources is a method
+specific to certain adapters, not on the BaseFeatureDataAdapter interface, so
+there's no clean way to type it without touching the adapter base class.

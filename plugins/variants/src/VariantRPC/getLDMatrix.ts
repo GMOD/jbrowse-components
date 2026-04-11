@@ -66,21 +66,17 @@ function fillEncodedFromRaw(
       const a0 = callGenotype[off]!
       const a1 = callGenotype[off + 1]!
       if (a0 >= 0 && a1 >= 0) {
-        // Fast path: both alleles called, no missing/padding
-        const isAlt0 = a0 !== 0
-        const isAlt1 = a1 !== 0
-        if (!isAlt0 && !isAlt1) {
-          out[s] = 0
+        // Fast path: both alleles called. nonRef ∈ {0,1,2} directly encodes
+        // the genotype; hoist nValid++ since both alleles are always valid here.
+        nValid++
+        const nonRef = (a0 !== 0 ? 1 : 0) + (a1 !== 0 ? 1 : 0)
+        out[s] = nonRef
+        if (nonRef === 0) {
           nHomRef++
-          nValid++
-        } else if (isAlt0 && isAlt1) {
-          out[s] = 2
-          nHomAlt++
-          nValid++
-        } else {
-          out[s] = 1
+        } else if (nonRef === 1) {
           nHet++
-          nValid++
+        } else {
+          nHomAlt++
         }
       } else {
         // Slow path: missing (-1) or padding (-2)
@@ -152,22 +148,22 @@ function packHaplotypesFromRaw(
       const bit = 1 << (s & 31)
       const v0 = a0 !== -1
       const v1 = a1 !== -1
+      const isAlt0 = a0 !== 0
+      const isAlt1 = a1 !== 0
       if (v0) {
         validH1[w] = validH1[w]! | bit
-        if (a0 !== 0) {
+        if (isAlt0) {
           altH1[w] = altH1[w]! | bit
         }
       }
       if (v1) {
         validH2[w] = validH2[w]! | bit
-        if (a1 !== 0) {
+        if (isAlt1) {
           altH2[w] = altH2[w]! | bit
         }
       }
       if (v0 && v1) {
         nValid++
-        const isAlt0 = a0 !== 0
-        const isAlt1 = a1 !== 0
         if (!isAlt0 && !isAlt1) {
           nHomRef++
         } else if (isAlt0 && isAlt1) {
@@ -191,22 +187,22 @@ function packHaplotypesFromRaw(
       const bit = 1 << (s & 31)
       const v0 = a0 !== -1
       const v1 = a1 !== -1
+      const isAlt0 = a0 !== 0
+      const isAlt1 = a1 !== 0
       if (v0) {
         validH1[w] = validH1[w]! | bit
-        if (a0 !== 0) {
+        if (isAlt0) {
           altH1[w] = altH1[w]! | bit
         }
       }
       if (v1) {
         validH2[w] = validH2[w]! | bit
-        if (a1 !== 0) {
+        if (isAlt1) {
           altH2[w] = altH2[w]! | bit
         }
       }
       if (v0 && v1) {
         nValid++
-        const isAlt0 = a0 !== 0
-        const isAlt1 = a1 !== 0
         if (!isAlt0 && !isAlt1) {
           nHomRef++
         } else if (isAlt0 && isAlt1) {
