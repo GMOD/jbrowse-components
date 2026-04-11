@@ -8,8 +8,22 @@ export interface ClickCoord {
   feature: FeatPos
 }
 
+export type CanvasLike = Pick<
+  CanvasRenderingContext2D,
+  | 'fillStyle'
+  | 'strokeStyle'
+  | 'lineWidth'
+  | 'beginPath'
+  | 'moveTo'
+  | 'lineTo'
+  | 'bezierCurveTo'
+  | 'closePath'
+  | 'fill'
+  | 'stroke'
+>
+
 export function draw(
-  ctx: CanvasRenderingContext2D,
+  ctx: CanvasLike,
   x1: number,
   x2: number,
   y1: number,
@@ -27,7 +41,7 @@ export function draw(
 }
 
 export function drawLocationMarkers(
-  ctx: CanvasRenderingContext2D,
+  ctx: CanvasLike,
   x1: number,
   x2: number,
   y1: number,
@@ -86,7 +100,7 @@ export function drawLocationMarkers(
 }
 
 export function drawBox(
-  ctx: CanvasRenderingContext2D,
+  ctx: CanvasLike,
   x1: number,
   x2: number,
   y1: number,
@@ -103,7 +117,7 @@ export function drawBox(
 }
 
 export function drawBezierBox(
-  ctx: CanvasRenderingContext2D,
+  ctx: CanvasLike,
   x1: number,
   x2: number,
   y1: number,

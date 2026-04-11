@@ -11,13 +11,14 @@ import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 import { draw, drawLocationMarkers } from './components/util.ts'
 import { OP_TO_CIGAR_KEY, lineLimit, oobLimit } from './drawSyntenyUtils.ts'
 
+import type { CanvasLike } from './components/util.ts'
 import type { defaultCigarColors } from './drawSyntenyUtils.ts'
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 
 export function drawRef(
   model: LinearSyntenyDisplayModel,
-  mainCanvas: CanvasRenderingContext2D,
+  mainCanvas: CanvasLike,
 ) {
   const view = getContainingView(model) as LinearSyntenyViewModel
   const drawCurves = view.drawCurves
