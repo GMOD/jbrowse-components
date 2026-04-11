@@ -1,6 +1,7 @@
 export { readConfigValue } from '@jbrowse/core/configuration'
 
 export interface DisplayConfig {
+  [key: string]: unknown
   displayMode: 'normal' | 'compact' | 'reducedRepresentation' | 'collapse'
   geneGlyphMode: 'auto' | 'all' | 'longest' | 'longestCoding'
   subfeatureLabels: 'none' | 'below' | 'overlay'

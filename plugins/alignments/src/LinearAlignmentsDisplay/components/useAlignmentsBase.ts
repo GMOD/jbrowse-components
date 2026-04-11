@@ -58,6 +58,8 @@ export interface LinearAlignmentsDisplayModel {
   coverageHeight: number
   showArcs: boolean
   arcsHeight: number
+  pairedArcsDown: boolean
+  sashimiArcsHeight: number
   coverageDisplayHeight: number
   showInterbaseIndicators: boolean
   showSashimiArcs: boolean
@@ -494,6 +496,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         showOutline: model.showOutlineSetting,
         showArcs: model.showArcs,
         arcsHeight: model.arcsHeight,
+        pairedArcsDown: model.pairedArcsDown,
         canvasWidth: view.width,
         canvasHeight: model.height,
         highlightedFeatureId: model.featureIdUnderMouse,

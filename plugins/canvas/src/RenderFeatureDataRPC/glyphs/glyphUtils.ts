@@ -73,11 +73,7 @@ export function layoutContainerGlyph(
   subfeatures: Feature[],
 ): FeatureLayout {
   const { feature, bpPerPx, config } = args
-  const { heightPx, widthPx } = getFeatureDimensions(
-    feature,
-    bpPerPx,
-    config,
-  )
+  const { heightPx, widthPx } = getFeatureDimensions(feature, bpPerPx, config)
 
   const strand = feature.get('strand') as number
   const arrowPadding = getStrandArrowPadding(strand)

@@ -1,4 +1,5 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -33,13 +34,13 @@ export function readConf(
   if (!slotPath) {
     return config
   }
-  if (typeof slotPath === 'string') {
-    return config[slotPath]
-  }
-  // Array path
+  const keys = typeof slotPath === 'string' ? [slotPath] : slotPath
   let result: any = config
-  for (const key of slotPath) {
+  for (const key of keys) {
     result = result?.[key]
+  }
+  if (typeof result === 'string' && result.startsWith('jexl:')) {
+    return stringToJexlExpression(result).eval({})
   }
   return result
 }
@@ -55,13 +56,15 @@ export function generateDisplayableConfig({
 }) {
   const conf = isStateTreeNode(config) ? readConfObject(config) : config
   const formatAboutConfig = readConf(config, ['formatAbout', 'config']) || {}
+  const sessionFormatAbout =
+    getConf(session, ['formatAbout', 'config'], { config: conf }) || {}
   return pluginManager.evaluateExtensionPoint(
     'Core-customizeAbout',
     {
       config: {
         ...conf,
-        ...getConf(session, ['formatAbout', 'config'], { config: conf }),
-        ...formatAboutConfig,
+        ...(typeof sessionFormatAbout === 'object' ? sessionFormatAbout : {}),
+        ...(typeof formatAboutConfig === 'object' ? formatAboutConfig : {}),
       },
     },
     { session, config },

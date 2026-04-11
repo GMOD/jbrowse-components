@@ -80,9 +80,7 @@ const LinearSyntenyViewImportForm = observer(
           value={viewMode}
           exclusive
           onChange={(_, v: 'pairwise' | 'pangenome') => {
-            if (v) {
-              setViewMode(v)
-            }
+            setViewMode(v)
           }}
           size="small"
           sx={{ mb: 2 }}

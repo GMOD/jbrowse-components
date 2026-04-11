@@ -23,8 +23,8 @@ function getMultiSyntenyTracks(model: LinearSyntenyViewModel) {
     sessionTracks?: AnyConfigurationModel[]
   }
   return [...tracks, ...sessionTracks].filter(
-    t => (t as AnyConfigurationModel).type === 'MultiSyntenyTrack',
-  ) as AnyConfigurationModel[]
+    t => t.type === 'MultiSyntenyTrack',
+  )
 }
 
 function toggleInSet<T>(set: Set<T>, item: T) {
@@ -91,8 +91,8 @@ const PangenomePanel = observer(function PangenomePanel({
       {trackAssemblies.length > 0 ? (
         <>
           <div style={{ marginTop: 16, marginBottom: 8 }}>
-            Assemblies ({selectedAssemblies.length} of{' '}
-            {trackAssemblies.length} selected)
+            Assemblies ({selectedAssemblies.length} of {trackAssemblies.length}{' '}
+            selected)
             <Button
               size="small"
               onClick={() => {

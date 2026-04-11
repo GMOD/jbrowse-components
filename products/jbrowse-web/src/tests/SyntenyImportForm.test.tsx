@@ -73,19 +73,14 @@ test('pangenome mode selects MultiSyntenyTrack and launches', async () => {
   await findByText('volvox/volvox_del GFA (MultiLGV)')
 
   expect(await findByRole('checkbox', { name: 'volvox' })).toBeChecked()
-  expect(
-    await findByRole('checkbox', { name: 'volvox_del' }),
-  ).toBeChecked()
+  expect(await findByRole('checkbox', { name: 'volvox_del' })).toBeChecked()
 
   fireEvent.click(await findByText('Launch'))
 
-  await waitFor(
-    () => {
-      const syntenyView = session.views[1]!
-      expect((syntenyView as any).views.length).toBe(2)
-    },
-    delay,
-  )
+  await waitFor(() => {
+    const syntenyView = session.views[1]!
+    expect((syntenyView as any).views.length).toBe(2)
+  }, delay)
 }, 40000)
 
 test('open local pif', async () => {

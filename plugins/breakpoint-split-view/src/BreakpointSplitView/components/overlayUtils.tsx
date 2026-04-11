@@ -21,7 +21,9 @@ export function useMouseoverElt() {
       setMouseoverElt(undefined)
     }
     window.addEventListener('wheel', clear, { passive: true })
-    return () => window.removeEventListener('wheel', clear)
+    return () => {
+      window.removeEventListener('wheel', clear)
+    }
   }, [])
   return [mouseoverElt, setMouseoverElt] as const
 }

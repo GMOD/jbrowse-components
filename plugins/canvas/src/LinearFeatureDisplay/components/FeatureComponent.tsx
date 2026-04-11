@@ -78,7 +78,7 @@ interface LinearFeatureDisplayModel {
   contextMenuItems: () => { label: string; onClick: () => void }[]
   getFeatureById: (featureId: string) => FlatbushItem | undefined
   setCanvasDrawn: (val: boolean) => void
-  clearFeatureSelection: () => void
+  clearSelection: () => void
 }
 
 export interface Props {
@@ -386,7 +386,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         result.regionNumber,
       )
     } else {
-      model.clearFeatureSelection()
+      model.clearSelection()
     }
   }
 
@@ -397,12 +397,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     }
     const result = hitTestAtEvent(e)
     if (result.feature) {
-      openContextMenu(
-        result.feature,
-        result.regionNumber,
-        e.clientX,
-        e.clientY,
-      )
+      openContextMenu(result.feature, result.regionNumber, e.clientX, e.clientY)
     }
   }
 

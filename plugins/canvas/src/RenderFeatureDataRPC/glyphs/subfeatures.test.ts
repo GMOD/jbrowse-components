@@ -1,6 +1,6 @@
 import { subfeaturesGlyph } from './subfeatures.ts'
-
 import { mockDisplayConfig } from '../testUtils.ts'
+
 import type { Feature } from '@jbrowse/core/util'
 
 function mockFeature(opts: {

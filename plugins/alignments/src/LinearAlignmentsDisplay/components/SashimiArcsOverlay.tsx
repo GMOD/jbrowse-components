@@ -32,18 +32,18 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
     showCoverage,
     coverageHeight,
     sashimiArcsDown,
+    sashimiArcsHeight,
     rpcDataMap,
   } = model
   const { initialized, offsetPx, visibleRegions } = view
-
-  const effectiveHeight = coverageHeight - YSCALEBAR_LABEL_OFFSET
 
   if (!showSashimiArcs || !showCoverage || !initialized) {
     return null
   }
 
-  const baseline = sashimiArcsDown ? effectiveHeight * 0.1 : effectiveHeight * 0.9
-  const peak = sashimiArcsDown ? effectiveHeight * 1.7 : effectiveHeight * 0.1
+  const effectiveHeight = coverageHeight - YSCALEBAR_LABEL_OFFSET
+  const baseline = sashimiArcsDown ? 0 : effectiveHeight * 0.9
+  const peak = sashimiArcsDown ? sashimiArcsHeight * 0.9 : effectiveHeight * 0.1
 
   const paths: {
     d: string
@@ -109,12 +109,12 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
     <svg
       style={{
         position: 'absolute',
-        top: YSCALEBAR_LABEL_OFFSET,
+        top: sashimiArcsDown ? coverageHeight : YSCALEBAR_LABEL_OFFSET,
         left: 0,
         pointerEvents: 'none',
-        height: effectiveHeight,
+        height: sashimiArcsDown ? sashimiArcsHeight : effectiveHeight,
         width: view.width,
-        overflow: 'visible',
+        overflow: sashimiArcsDown ? 'hidden' : 'visible',
       }}
     >
       {paths.map((p, i) => {

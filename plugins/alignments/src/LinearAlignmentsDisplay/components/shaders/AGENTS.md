@@ -36,27 +36,31 @@ no shaders but implements the same logic in TypeScript.
 ### WebGPU / WebGL premultiplied alpha — the rule is the same for both
 
 **Do NOT premultiply RGB in fragment shaders.** Both backends use
-`src-alpha / one-minus-src-alpha` blending against a `(0,0,0,0)` clear.
-That blend equation naturally converts straight-alpha output into
-premultiplied values in the framebuffer:
+`src-alpha / one-minus-src-alpha` blending against a `(0,0,0,0)` clear. That
+blend equation naturally converts straight-alpha output into premultiplied
+values in the framebuffer:
+
 ```
 fb.rgb = src.rgb * src.a + 0 = src.rgb * alpha   ← premultiplied
 fb.a   = src.a                                    = alpha
 ```
+
 The WebGL canvas is created with `premultipliedAlpha: true` and the WebGPU
-canvas uses `alphaMode: 'premultiplied'`, so in both cases the compositor
-reads the framebuffer values directly:
+canvas uses `alphaMode: 'premultiplied'`, so in both cases the compositor reads
+the framebuffer values directly:
+
 ```
 output = fb.rgb + bg * (1 - fb.a)   ← correct
 ```
+
 If you premultiply in the shader (`rgb * alpha`) AND the blend also multiplies
-by `src-alpha`, you get `rgb * alpha²` in the framebuffer — AA edges appear
-too dark and arcs look like they have a darker outline. This is a subtle bug
-that has recurred across refactors; the fix is always to remove the
-premultiplication from the shader.
+by `src-alpha`, you get `rgb * alpha²` in the framebuffer — AA edges appear too
+dark and arcs look like they have a darker outline. This is a subtle bug that
+has recurred across refactors; the fix is always to remove the premultiplication
+from the shader.
 
 **Exception:** some passes outside this plugin (variants, hic, dotplot) use a
-custom `blendState: { srcFactor:'one', dstFactor:'one-minus-src-alpha' }`.
-That blend does NOT multiply by src.a, so those shaders MUST premultiply in
-the fragment shader. The rule: **shader output and blend srcFactor must agree**
-— `src-alpha` blend expects straight alpha, `one` blend expects premultiplied.
+custom `blendState: { srcFactor:'one', dstFactor:'one-minus-src-alpha' }`. That
+blend does NOT multiply by src.a, so those shaders MUST premultiply in the
+fragment shader. The rule: **shader output and blend srcFactor must agree** —
+`src-alpha` blend expects straight alpha, `one` blend expects premultiplied.

@@ -1,7 +1,7 @@
 # Uber Shader Abstraction
 
-A build-time compiler that takes a single shader definition and emits WGSL,
-GLSL ES 3.0, and Canvas2D TypeScript — eliminating the three-way manual sync.
+A build-time compiler that takes a single shader definition and emits WGSL, GLSL
+ES 3.0, and Canvas2D TypeScript — eliminating the three-way manual sync.
 
 ## Problem
 
@@ -30,7 +30,10 @@ over:
 - **Theme colors as uniforms**: The palette lives in the UBO so theme/scheme
   changes are a uniform update, not an instance buffer rebuild. This is correct
   and must be preserved — pre-computing colors on CPU would make scheme
-  switching require rebuilding millions of instances.
+  switching require rebuilding millions of instances (dev note: this is not a
+  major concern though, 'scheme' or 'theme' change as i suspect this is
+  referring to is very rare and a full re-render is fine in this case. so don't
+  put too much weight on this).
 - **Syntax**: WGSL and GLSL differ in type names (`vec3f` vs `vec3`), function
   declarations, control flow, and operator semantics.
 
@@ -107,6 +110,7 @@ const is_orientation_scheme = fn(
 Each emitter walks this AST and produces language-appropriate code:
 
 **WGSL output:**
+
 ```wgsl
 fn strand_color(s: i32) -> vec3f {
   if s > 0 { return color3(32u); }
@@ -116,6 +120,7 @@ fn strand_color(s: i32) -> vec3f {
 ```
 
 **GLSL output:**
+
 ```glsl
 vec3 strand_color(float s) {
   if (s > 0.5) return color3(32u);
@@ -125,6 +130,7 @@ vec3 strand_color(float s) {
 ```
 
 **TypeScript output:**
+
 ```typescript
 function strandColor(s: number, palette: ColorPalette) {
   if (s > 0) return rgb255(palette.colorFwdStrand)
@@ -153,9 +159,9 @@ Similarly for non-color uniforms:
 - **WGSL/GLSL**: `ui(11u)` / `uf(21u)` — integer/float from UBO slot
 - **TypeScript**: explicit parameter passing
 
-The DSL uses `uniform('colorScheme', 'i32')` or `uniform('insertSizeUpper',
-'f32')`. Each emitter knows how to map these to slot indices (WGSL/GLSL) or
-function parameters (TypeScript).
+The DSL uses `uniform('colorScheme', 'i32')` or
+`uniform('insertSizeUpper', 'f32')`. Each emitter knows how to map these to slot
+indices (WGSL/GLSL) or function parameters (TypeScript).
 
 ### Data access abstraction
 
@@ -167,9 +173,9 @@ backends:
   `mod(floor(x/N), 2.0)`)
 - **TypeScript**: `data.readFlags[i]` (typed array index)
 
-The DSL uses `field('flags', 'u32')`. Each emitter knows how to access this
-from its respective data source. The GLSL emitter handles the float-bit
-extraction pattern automatically.
+The DSL uses `field('flags', 'u32')`. Each emitter knows how to access this from
+its respective data source. The GLSL emitter handles the float-bit extraction
+pattern automatically.
 
 ### Build integration
 
@@ -180,8 +186,8 @@ pnpm shadergen
 ```
 
 It reads definition files like
-`plugins/alignments/src/LinearAlignmentsDisplay/shadergen/readColor.def.ts`
-and writes generated output files alongside the existing shader files:
+`plugins/alignments/src/LinearAlignmentsDisplay/shadergen/readColor.def.ts` and
+writes generated output files alongside the existing shader files:
 
 ```
 shadergen/readColor.def.ts          ← source of truth
@@ -211,23 +217,23 @@ ${READ_COLOR_WGSL}
 
 For the alignments read shader as a concrete example:
 
-| Part | Generated? | Why |
-|------|-----------|-----|
-| `strand_color()` | Yes | Identical math in all 3 backends |
-| `mapq_color()` | Yes | Identical HSL→RGB conversion |
-| `insert_size_color()` | Yes | Same threshold logic |
-| `pair_orient_color()` | Yes | Same discrete mapping |
-| `is_orientation_scheme()` | Yes | Override predicate |
-| `get_read_color()` | Yes | Dispatch + override logic |
-| `ReadInst` struct | No | WGSL struct vs GLSL attributes |
-| `vs_main()` / `main()` | No | Geometry is backend-specific |
-| `fs_main()` / fragment | No | Simple, rarely duplicated |
-| UBO preamble | No | Already well-abstracted |
+| Part                      | Generated? | Why                              |
+| ------------------------- | ---------- | -------------------------------- |
+| `strand_color()`          | Yes        | Identical math in all 3 backends |
+| `mapq_color()`            | Yes        | Identical HSL→RGB conversion     |
+| `insert_size_color()`     | Yes        | Same threshold logic             |
+| `pair_orient_color()`     | Yes        | Same discrete mapping            |
+| `is_orientation_scheme()` | Yes        | Override predicate               |
+| `get_read_color()`        | Yes        | Dispatch + override logic        |
+| `ReadInst` struct         | No         | WGSL struct vs GLSL attributes   |
+| `vs_main()` / `main()`    | No         | Geometry is backend-specific     |
+| `fs_main()` / fragment    | No         | Simple, rarely duplicated        |
+| UBO preamble              | No         | Already well-abstracted          |
 
 ### Rollout
 
-Start with the alignments read color functions — the most complex case and
-where bugs keep appearing. If the pattern works well, extend to:
+Start with the alignments read color functions — the most complex case and where
+bugs keep appearing. If the pattern works well, extend to:
 
 1. Alignments CIGAR op colors (gap, mismatch, insertion, softclip, hardclip)
 2. Coverage colors
@@ -248,9 +254,8 @@ This is not a general-purpose shader compiler. It doesn't handle:
 - Coordinate transforms
 - Geometry generation
 
-Those remain hand-written in each shader language. The shadergen only covers
-the pure-function color computation that's currently copy-pasted across
-backends.
+Those remain hand-written in each shader language. The shadergen only covers the
+pure-function color computation that's currently copy-pasted across backends.
 
 ## Adjacent problem: uniform buffer layout
 
@@ -268,41 +273,40 @@ can never be "too small." But the JS-side field offsets
 (`uniformF32[4] = canvasHeight`) are still manual and fragile.
 
 A build-time tool like **wgsl_reflect** (TypeScript, parses WGSL, extracts
-struct member offsets/sizes/alignments) could auto-generate the offset
-constants from the WGSL source, making the TypeScript offsets correct by
-construction. This is complementary to the shadergen — shadergen handles logic
-sync, wgsl_reflect handles layout sync.
+struct member offsets/sizes/alignments) could auto-generate the offset constants
+from the WGSL source, making the TypeScript offsets correct by construction.
+This is complementary to the shadergen — shadergen handles logic sync,
+wgsl_reflect handles layout sync.
 
 ## Alternatives considered
 
-**naga transpilation (WGSL → GLSL)**: naga can transpile WGSL to GLSL, but
-the data access patterns differ (storage buffers vs vertex attributes). Would
-require restructuring all shaders to separate data access from logic, and
-naga's GLSL output may not match the handwritten quality needed for WebGL2
+**naga transpilation (WGSL → GLSL)**: naga can transpile WGSL to GLSL, but the
+data access patterns differ (storage buffers vs vertex attributes). Would
+require restructuring all shaders to separate data access from logic, and naga's
+GLSL output may not match the handwritten quality needed for WebGL2
 compatibility. Targets ES 3.10+, not the ES 3.00 we currently use.
 
 **wgsl_reflect (build-time layout extraction)**: TypeScript library that parses
 WGSL and extracts struct member names, types, byte offsets, sizes, and
 alignments. Could auto-generate UNIFORM_BYTE_SIZE and field offset constants
 from the WGSL source at build time. Lightweight, incremental, solves the layout
-problem without touching shader authoring. Does not help with WGSL/GLSL/TS
-logic sync.
+problem without touching shader authoring. Does not help with WGSL/GLSL/TS logic
+sync.
 
 **TypeGPU (Software Mansion)**: TypeScript-first GPU framework where you define
-data schemas in TS and it generates WGSL. Has `d.sizeOf()` /
-`d.alignmentOf()` for layout computation and an experimental GLSL backend.
-Pre-1.0 with API churn; would couple us to their release cycle. Solves both
-layout and code-gen but requires rewriting shader authoring. Worth watching but
-not adopting yet.
+data schemas in TS and it generates WGSL. Has `d.sizeOf()` / `d.alignmentOf()`
+for layout computation and an experimental GLSL backend. Pre-1.0 with API churn;
+would couple us to their release cycle. Solves both layout and code-gen but
+requires rewriting shader authoring. Worth watching but not adopting yet.
 
 **Pre-compute colors on CPU**: Eliminates shader color logic but makes scheme
 switching require full instance buffer rebuild (currently just a uniform
 update). Also requires plumbing palette data into the RPC worker.
 
 **Template strings**: Writing shader code as TypeScript template strings with
-language switches (`lang === 'wgsl' ? 'vec3f' : 'vec3'`). Brittle, hard to
-read, no type checking of the shader logic.
+language switches (`lang === 'wgsl' ? 'vec3f' : 'vec3'`). Brittle, hard to read,
+no type checking of the shader logic.
 
 **Accept the duplication**: Viable for now (Option G named constants help), but
-each new color scheme or override rule requires changes in 3 places. The
-surface area grows with each display type that adds GPU rendering.
+each new color scheme or override rule requires changes in 3 places. The surface
+area grows with each display type that adds GPU rendering.

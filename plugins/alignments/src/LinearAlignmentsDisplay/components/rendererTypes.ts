@@ -33,6 +33,7 @@ export interface RenderState {
   // Show arcs alongside pileup (between coverage and reads)
   showArcs?: boolean
   arcsHeight?: number
+  pairedArcsDown: boolean
   showOutline?: boolean
 }
 

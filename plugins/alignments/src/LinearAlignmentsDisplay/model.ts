@@ -206,7 +206,9 @@ export default function stateModelFactory(
         arcsState: types.optional(ArcsSubModel, {}),
         showArcs: false,
         arcsHeight: 40,
+        pairedArcsDown: true,
         sashimiArcsDown: false,
+        sashimiArcsHeight: 40,
         showSoftClipping: false,
         jexlFilters: types.optional(types.array(types.string), []),
       }),
@@ -471,7 +473,10 @@ export default function stateModelFactory(
           showMismatches: self.showMismatches,
           topOffset:
             (self.showCoverage ? self.coverageHeight : 0) +
-            (self.showArcs ? self.arcsHeight : 0),
+            (self.showArcs && self.pairedArcsDown ? self.arcsHeight : 0) +
+            (self.showSashimiArcs && self.sashimiArcsDown && self.showCoverage
+              ? self.sashimiArcsHeight
+              : 0),
           rangeY: self.currentRangeY,
         })
       },
@@ -501,7 +506,10 @@ export default function stateModelFactory(
       get coverageDisplayHeight() {
         return (
           (self.showCoverage ? self.coverageHeight : 0) +
-          (self.showArcs ? self.arcsHeight : 0)
+          (self.showArcs && self.pairedArcsDown ? self.arcsHeight : 0) +
+          (self.showSashimiArcs && self.sashimiArcsDown && self.showCoverage
+            ? self.sashimiArcsHeight
+            : 0)
         )
       },
 
@@ -856,6 +864,14 @@ export default function stateModelFactory(
 
         setSashimiArcsDown(flag: boolean) {
           self.sashimiArcsDown = flag
+        },
+
+        setSashimiArcsHeight(height: number) {
+          self.sashimiArcsHeight = height
+        },
+
+        setArcsDown(flag: boolean) {
+          self.pairedArcsDown = flag
         },
 
         setShowMismatches(show: boolean) {

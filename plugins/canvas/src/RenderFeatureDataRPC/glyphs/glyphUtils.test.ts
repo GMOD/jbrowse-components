@@ -9,8 +9,8 @@ import {
 import { findGlyph } from './index.ts'
 import { processedTranscriptGlyph } from './processed.ts'
 import { segmentsGlyph } from './segments.ts'
-
 import { mockDisplayConfig } from '../testUtils.ts'
+
 import type { FeatureLayout } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 

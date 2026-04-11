@@ -1,4 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -166,6 +167,7 @@ export async function executeSyntenyFeaturesAndPositions({
   drawCIGAR = true,
   drawCIGARMatchesOnly = false,
   drawLocationMarkers = false,
+  statusCallback,
 }: {
   pluginManager: PluginManager
   sessionId: string
@@ -179,16 +181,22 @@ export async function executeSyntenyFeaturesAndPositions({
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean
   drawLocationMarkers?: boolean
+  statusCallback?: (msg: string) => void
 }) {
   const dataAdapter = (
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
   const bpPerPx = viewSnaps[level]!.bpPerPx
-  const allFeatures = await firstValueFrom(
-    dataAdapter
-      .getFeaturesInMultipleRegions(regions, { stopToken, bpPerPx })
-      .pipe(toArray()),
+  const allFeatures = await updateStatus(
+    'Fetching synteny features',
+    statusCallback,
+    () =>
+      firstValueFrom(
+        dataAdapter
+          .getFeaturesInMultipleRegions(regions, { stopToken, bpPerPx })
+          .pipe(toArray()),
+      ),
   )
   const seen = new Set<string>()
   const features = allFeatures.filter(f => {
@@ -358,21 +366,25 @@ export async function executeSyntenyFeaturesAndPositions({
         )
   }
 
-  const instanceData = executeSyntenyInstanceData({
-    ...positionData,
-    parsedCigars,
-    colorBy,
-    syriTypes,
-    drawCurves,
-    drawCIGAR,
-    drawCIGARMatchesOnly,
-    drawLocationMarkers,
-    bpPerPxs,
-    level,
-    viewOffsets: viewSnaps.map(v => v.offsetPx),
-    viewWidth: viewSnaps[0]!.width,
-  })
-
+  const instanceData = await updateStatus(
+    'Computing synteny layout',
+    statusCallback,
+    () =>
+      executeSyntenyInstanceData({
+        ...positionData,
+        parsedCigars,
+        colorBy,
+        syriTypes,
+        drawCurves,
+        drawCIGAR,
+        drawCIGARMatchesOnly,
+        drawLocationMarkers,
+        bpPerPxs,
+        level,
+        viewOffsets: viewSnaps.map(v => v.offsetPx),
+        viewWidth: viewSnaps[0]!.width,
+      }),
+  )
   const result = {
     ...positionData,
     instanceData,

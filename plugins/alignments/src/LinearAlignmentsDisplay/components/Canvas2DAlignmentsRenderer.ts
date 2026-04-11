@@ -474,9 +474,11 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       return
     }
 
-    const arcsHeight = state.showArcs && state.arcsHeight ? state.arcsHeight : 0
+    const effectiveArcsHeight =
+      state.showArcs && state.arcsHeight ? state.arcsHeight : 0
     const covH = state.showCoverage ? state.coverageHeight : 0
-    const pileupTop = covH + arcsHeight
+    const arcsSectionHeight = state.pairedArcsDown ? effectiveArcsHeight : 0
+    const pileupTop = covH + arcsSectionHeight
     const mode = state.renderingMode ?? 'pileup'
 
     for (const block of blocks) {
@@ -584,12 +586,38 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
 
       ctx.restore() // pileup clip
 
-      if (arcsHeight > 0) {
+      if (effectiveArcsHeight > 0) {
         ctx.save()
         ctx.beginPath()
-        ctx.rect(scissorX, covH, scissorW, arcsHeight)
-        ctx.clip()
-        this.drawArcs(ctx, region, block, bpLength, fullBlockWidth, state, covH)
+        if (state.pairedArcsDown) {
+          ctx.rect(scissorX, covH, scissorW, effectiveArcsHeight)
+          ctx.clip()
+          this.drawArcs(
+            ctx,
+            region,
+            block,
+            bpLength,
+            fullBlockWidth,
+            state,
+            covH,
+            // @ts-expect-error
+            effectiveArcsHeight,
+          )
+        } else {
+          ctx.rect(scissorX, 0, scissorW, covH)
+          ctx.clip()
+          this.drawArcs(
+            ctx,
+            region,
+            block,
+            bpLength,
+            fullBlockWidth,
+            state,
+            0,
+            // @ts-expect-error
+            covH,
+          )
+        }
         ctx.restore()
       }
 
@@ -600,7 +628,9 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   private covOffset(state: RenderState) {
     return (
       (state.showCoverage ? state.coverageHeight : 0) +
-      (state.showArcs && state.arcsHeight ? state.arcsHeight : 0)
+      (state.showArcs && state.arcsHeight && state.pairedArcsDown
+        ? state.arcsHeight
+        : 0)
     )
   }
 

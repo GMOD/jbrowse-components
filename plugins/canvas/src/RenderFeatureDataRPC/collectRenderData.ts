@@ -11,11 +11,10 @@ import {
 } from './floatingLabels.ts'
 import { getFeatureDescription, getFeatureName } from './labelUtils.ts'
 import { prepareAminoAcidData } from './peptides/prepareAminoAcidData.ts'
+import { isLabelAllowed } from './renderConfig.ts'
 import { getBoxColor, getStrokeColor, isUTR } from './util.ts'
 
 import type { AggregatedAminoAcid } from './peptides/aggregateAminoAcids.ts'
-import { isLabelAllowed } from './renderConfig.ts'
-
 import type { DisplayConfig } from './renderConfig.ts'
 import type {
   AminoAcidOverlayItem,
