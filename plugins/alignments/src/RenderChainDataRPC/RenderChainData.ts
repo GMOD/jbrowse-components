@@ -6,7 +6,7 @@ import type { RenderChainDataArgs } from './types.ts'
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     RenderChainData: {
-      args: Record<string, unknown>
+      args: RenderChainDataArgs
       return: PileupDataResult
     }
   }
@@ -15,12 +15,12 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class RenderChainData extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'RenderChainData'
 
-  async execute(args: Record<string, unknown>, _rpcDriver: string) {
+  async execute(args: RenderChainDataArgs, _rpcDriver: string) {
     const { executeRenderChainData } =
       await import('./executeRenderChainData.ts')
     return executeRenderChainData({
       pluginManager: this.pluginManager,
-      args: args as unknown as RenderChainDataArgs,
+      args,
     })
   }
 }

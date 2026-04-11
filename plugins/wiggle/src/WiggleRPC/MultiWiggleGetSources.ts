@@ -2,13 +2,14 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
 import type { WiggleGetSourcesArgs } from './types.ts'
+import type { Source } from '../util.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     MultiWiggleGetSources: {
       args: WiggleGetSourcesArgs
-      return: { name: string; color?: string; [key: string]: unknown }[]
+      return: Source[]
     }
   }
 }

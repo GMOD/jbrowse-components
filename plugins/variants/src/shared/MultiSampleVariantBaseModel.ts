@@ -32,6 +32,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
 
 import {
+  GENOTYPE_SPLITTER,
   NO_CALL_COLOR,
   OTHER_ALT_COLOR,
   REFERENCE_COLOR,
@@ -65,8 +66,6 @@ const ClusterDialog = lazy(
 const SetRowHeightDialog = lazy(
   () => import('./components/SetRowHeightDialog.tsx'),
 )
-
-const GENOTYPE_SPLITTER = /[/|]/
 
 function encodeGenotype(gt: string) {
   const alleles = gt.split(GENOTYPE_SPLITTER)

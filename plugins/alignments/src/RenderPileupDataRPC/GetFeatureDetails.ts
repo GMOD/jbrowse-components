@@ -8,15 +8,6 @@ import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAda
 import type { Region } from '@jbrowse/core/util'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
-declare module '@jbrowse/core/rpc/RpcRegistry' {
-  interface RpcRegistry {
-    GetPileupFeatureDetails: {
-      args: Record<string, unknown>
-      return: { feature: SimpleFeatureSerialized | undefined }
-    }
-  }
-}
-
 interface GetFeatureDetailsArgs {
   sessionId: string
   adapterConfig: AnyConfigurationModel
@@ -25,12 +16,21 @@ interface GetFeatureDetailsArgs {
   featureId: string
 }
 
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    GetPileupFeatureDetails: {
+      args: GetFeatureDetailsArgs
+      return: { feature: SimpleFeatureSerialized | undefined }
+    }
+  }
+}
+
 export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'GetPileupFeatureDetails'
 
-  async execute(args: Record<string, unknown>, _rpcDriver: string) {
+  async execute(args: GetFeatureDetailsArgs, _rpcDriver: string) {
     const { sessionId, adapterConfig, sequenceAdapter, regions, featureId } =
-      args as unknown as GetFeatureDetailsArgs
+      args
 
     const region = regions[0]!
 
