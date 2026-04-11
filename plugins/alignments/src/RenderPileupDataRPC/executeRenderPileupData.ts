@@ -261,7 +261,7 @@ export async function executeRenderPileupData({
     sessionId,
     adapterConfig,
     sequenceAdapter,
-    region,
+    regions,
     colorBy,
     colorTagMap,
     sortedBy,
@@ -269,6 +269,7 @@ export async function executeRenderPileupData({
     statusCallback = () => {},
     stopToken,
   } = args
+  const region = regions[0]!
 
   const isTagSort = sortedBy?.type === 'tag' && !!sortedBy.tag
 

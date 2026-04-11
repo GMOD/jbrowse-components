@@ -1,20 +1,24 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { WiggleGetGlobalQuantitativeStatsArgs } from './types.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { RectifiedQuantitativeStats } from '@jbrowse/core/util/stats'
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    WiggleGetGlobalQuantitativeStats: {
+      args: WiggleGetGlobalQuantitativeStatsArgs
+      return: Partial<RectifiedQuantitativeStats> | undefined
+    }
+  }
+}
 
 export class WiggleGetGlobalQuantitativeStats extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'WiggleGetGlobalQuantitativeStats'
 
   async execute(
-    args: {
-      adapterConfig: AnyConfigurationModel
-      stopToken?: StopToken
-      headers?: Record<string, string>
-      sessionId: string
-    },
+    args: WiggleGetGlobalQuantitativeStatsArgs,
     rpcDriverClassName: string,
   ) {
     const pm = this.pluginManager

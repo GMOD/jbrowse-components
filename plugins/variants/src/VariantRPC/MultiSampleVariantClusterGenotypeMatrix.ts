@@ -2,6 +2,15 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 
 import type { ClusterGenotypeMatrixArgs } from './types.ts'
 
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    MultiSampleVariantClusterGenotypeMatrix: {
+      args: ClusterGenotypeMatrixArgs
+      return: { order: number[]; tree: string }
+    }
+  }
+}
+
 export class MultiSampleVariantClusterGenotypeMatrix extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'MultiSampleVariantClusterGenotypeMatrix'
 

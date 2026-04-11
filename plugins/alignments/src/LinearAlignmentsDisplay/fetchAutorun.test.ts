@@ -265,7 +265,9 @@ describe('FetchVisibleRegions autorun', () => {
         expect.any(String),
         'RenderPileupData',
         expect.objectContaining({
-          region: expect.objectContaining({ refName: 'ctgA' }),
+          regions: expect.arrayContaining([
+            expect.objectContaining({ refName: 'ctgA' }),
+          ]),
         }),
       )
     })

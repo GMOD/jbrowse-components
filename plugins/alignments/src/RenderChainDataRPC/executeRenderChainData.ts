@@ -35,10 +35,8 @@ import {
   fetchReferenceSequence,
 } from '../shared/processFeatureAlignments.ts'
 
-import type {
-  PileupDataResult,
-  RenderPileupDataArgs,
-} from '../RenderPileupDataRPC/types.ts'
+import type { RenderChainDataArgs } from './types.ts'
+import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
 import type { Mismatch } from '../shared/types'
 import type { ChainStats } from '../shared/types.ts'
 import type {
@@ -57,11 +55,6 @@ import type { Feature } from '@jbrowse/core/util'
 interface ExecuteParams {
   pluginManager: PluginManager
   args: RenderChainDataArgs
-}
-
-export interface RenderChainDataArgs extends RenderPileupDataArgs {
-  drawSingletons?: boolean
-  drawProperPairs?: boolean
 }
 
 function getColorType(f: ChainFeatureData, stats?: ChainStats) {
@@ -121,7 +114,7 @@ export async function executeRenderChainData({
     sessionId,
     adapterConfig,
     sequenceAdapter,
-    region,
+    regions,
     colorBy,
     colorTagMap,
     drawSingletons = true,
@@ -129,6 +122,7 @@ export async function executeRenderChainData({
     statusCallback = () => {},
     stopToken,
   } = args
+  const region = regions[0]!
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 

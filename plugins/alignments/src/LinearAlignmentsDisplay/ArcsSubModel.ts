@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { ArcsDataResult } from '../RenderArcsDataRPC/types.ts'
+import type { ArcsDataResult } from '../shared/computeArcsFromPileupData.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export type ArcColorByType =

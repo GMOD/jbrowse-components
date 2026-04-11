@@ -148,7 +148,7 @@ async function fetchFeatureDetails(
   const { feature } = await session.rpcManager.call(
     sessionId,
     'GetPileupFeatureDetails',
-    { sessionId, adapterConfig, sequenceAdapter, region, featureId },
+    { sessionId, adapterConfig, sequenceAdapter, regions: [region], featureId },
   )
   if (!feature) {
     return undefined
@@ -1043,7 +1043,7 @@ export default function stateModelFactory(
               sessionId,
               adapterConfig,
               sequenceAdapter,
-              region,
+              regions: [region],
               filterBy: self.filterBy,
               colorBy: self.colorBy,
               colorTagMap: self.colorTagMap,
@@ -1074,7 +1074,7 @@ export default function stateModelFactory(
               sessionId,
               adapterConfig,
               sequenceAdapter,
-              region,
+              regions: [region],
               filterBy: self.filterBy,
               colorBy: self.colorBy,
               colorTagMap: self.colorTagMap,

@@ -31,7 +31,7 @@ import {
   insertionBarWidth,
 } from './constants.ts'
 
-import type { ArcsDataResult } from '../RenderArcsDataRPC/types.ts'
+import type { ArcsDataResult } from '../shared/computeArcsFromPileupData.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
 import type { ColorPalette } from './components/shaders/colors.ts'
 import type { LinearAlignmentsDisplayModel } from './model.ts'

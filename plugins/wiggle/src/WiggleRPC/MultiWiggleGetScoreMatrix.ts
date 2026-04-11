@@ -5,6 +5,15 @@ import { getScoreMatrix } from './getScoreMatrix.ts'
 
 import type { GetScoreMatrixArgs } from './types.ts'
 
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    MultiWiggleGetScoreMatrix: {
+      args: GetScoreMatrixArgs
+      return: Record<string, number[]>
+    }
+  }
+}
+
 export class MultiWiggleGetScoreMatrix extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'MultiWiggleGetScoreMatrix'
 

@@ -4,6 +4,23 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    DiagonalizeDotplot: {
+      args: DiagonalizeDotplotArgs
+      return: {
+        newRegions: Region[]
+        stats: {
+          totalAlignments: number
+          regionsProcessed: number
+          regionsReordered: number
+          regionsReversed: number
+        }
+      }
+    }
+  }
+}
+
 // copied from plugins/linear-comparative-view/src/LinearSyntenyView/util/diagonalize.ts
 interface AlignmentData {
   queryRefName: string
@@ -166,7 +183,7 @@ function diagonalizeRegions(
   }
 }
 
-interface DiagonalizeDotplotArgs {
+export interface DiagonalizeDotplotArgs {
   sessionId: string
   view: {
     hview: { displayedRegions: Region[] }
