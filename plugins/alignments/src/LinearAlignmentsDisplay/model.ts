@@ -271,10 +271,11 @@ export default function stateModelFactory(
       },
 
       get renderingMode(): 'pileup' | 'linkedRead' {
-        if (self.showLinkedReads) {
-          return 'linkedRead'
-        }
-        return 'pileup'
+        return self.showLinkedReads ? 'linkedRead' : 'pileup'
+      },
+
+      get isChainMode() {
+        return self.showLinkedReads
       },
 
       /**
@@ -475,7 +476,7 @@ export default function stateModelFactory(
         return undefined
       },
     }))
-    // Core layout views — depend on the delegates above via self.
+    // Layout views — depend on the submodel delegates above via self.
     .views(self => ({
       /**
        * Compatibility getter for BreakpointSplitView overlay which reads
@@ -499,13 +500,6 @@ export default function stateModelFactory(
             : 0)
         )
       },
-
-      get isChainMode() {
-        return self.renderingMode === 'linkedRead'
-      },
-    }))
-    // Views that depend on coverageDisplayHeight and isChainMode.
-    .views(self => ({
       get pileupViewportHeight() {
         return Math.max(0, self.height - self.coverageDisplayHeight)
       },
