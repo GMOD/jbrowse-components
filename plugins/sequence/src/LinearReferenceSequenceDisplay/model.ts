@@ -1,5 +1,3 @@
-import { lazy } from 'react'
-
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -7,10 +5,10 @@ import {
   getContainingTrack,
   getContainingView,
   getSession,
-  makeAbortableReaction,
+  isAbortException,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
@@ -28,6 +26,12 @@ export interface SequenceRegionData {
   end: number
 }
 
+interface LoadedBounds {
+  refName: string
+  start: number
+  end: number
+}
+
 export interface LinearReferenceSequenceDisplayModel {
   height: number
   sequenceData: Map<number, SequenceRegionData>
@@ -41,10 +45,6 @@ export interface LinearReferenceSequenceDisplayModel {
   showLoading: boolean
   reload: () => void
 }
-
-export const WebGLSequenceComponent = lazy(
-  () => import('./components/WebGLSequenceComponent.tsx'),
-)
 
 /**
  * #stateModel LinearReferenceSequenceDisplay
@@ -81,6 +81,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .volatile(() => ({
       sequenceData: new Map<number, SequenceRegionData>(),
+      loadedBounds: new Map<number, LoadedBounds>(),
       computedHeight: 50,
     }))
     .views(self => ({
@@ -155,8 +156,12 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       setComputedHeight(h: number) {
         self.computedHeight = h
       },
-      setSequenceData(data: Map<number, SequenceRegionData>) {
+      setSequenceData(
+        data: Map<number, SequenceRegionData>,
+        bounds: Map<number, LoadedBounds>,
+      ) {
         self.sequenceData = data
+        self.loadedBounds = bounds
       },
       /**
        * #action
@@ -180,86 +185,115 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         self.heightPreConfig = undefined
       },
     }))
-    .actions(self => ({
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            function sequenceHeightAutorun() {
-              const view = getContainingView(self) as LGV
-              if (!view.initialized || view.bpPerPx > 10) {
-                self.setComputedHeight(50)
-              } else {
-                self.setComputedHeight(self.sequenceHeight)
-              }
-            },
-            { name: 'SequenceHeight' },
-          ),
-        )
+    .actions(self => {
+      let fetchGeneration = 0
 
-        makeAbortableReaction(
-          self,
-          () => {
-            const view = getContainingView(self) as LGV
-            if (!view.initialized || view.bpPerPx > 10) {
-              return undefined
-            }
-            const regions = view.mergedVisibleRegions
-            return {
-              adapterConfig: self.adapterConfig,
-              regions,
-              sessionId: getRpcSessionId(self),
-            }
-          },
-          async args => {
-            if (!args) {
-              return undefined
-            }
-            const { rpcManager } = getSession(self)
-            const { adapterConfig, regions, sessionId } = args
-            const result = new Map<number, SequenceRegionData>()
-
-            for (const region of regions) {
-              const rawFeatures = await rpcManager.call(
-                sessionId,
-                'CoreGetFeatures',
-                {
-                  regions: [region],
-                  adapterConfig,
-                },
-              )
-              const features = dedupe(rawFeatures, f => f.id())
-
-              for (const f of features) {
-                const seq = f.get('seq') as string | undefined
-                if (seq) {
-                  result.set(region.regionNumber, {
-                    seq,
-                    start: f.get('start'),
-                    end: f.get('end'),
-                  })
+      return {
+        afterAttach() {
+          addDisposer(
+            self,
+            autorun(
+              function sequenceHeightAutorun() {
+                const view = getContainingView(self) as LGV
+                if (!view.initialized || view.bpPerPx > 10) {
+                  self.setComputedHeight(50)
+                } else {
+                  self.setComputedHeight(self.sequenceHeight)
                 }
-              }
-            }
-            return result
-          },
-          {
-            name: `${self.type} ${self.id} sequence loading`,
-            delay: 300,
-            fireImmediately: true,
-          },
-          () => {},
-          result => {
-            if (result) {
-              self.setSequenceData(result)
-            }
-          },
-          err => {
-            self.setError(err)
-          },
-        )
-      },
-    }))
+              },
+              { name: 'SequenceHeight' },
+            ),
+          )
+
+          addDisposer(
+            self,
+            autorun(
+              function sequenceFetchAutorun() {
+                const view = getContainingView(self) as LGV
+                if (!view.initialized || view.bpPerPx > 10) {
+                  return
+                }
+
+                const visible = view.mergedVisibleRegions
+                let needFetch = false
+                for (const vr of visible) {
+                  const bounds = self.loadedBounds.get(vr.regionNumber)
+                  if (
+                    !bounds ||
+                    bounds.refName !== vr.refName ||
+                    vr.start < bounds.start ||
+                    vr.end > bounds.end
+                  ) {
+                    needFetch = true
+                    break
+                  }
+                }
+                if (!needFetch) {
+                  return
+                }
+
+                const regions = view.bufferedVisibleRegions
+                const adapterConfig = self.adapterConfig
+                const sessionId = getRpcSessionId(self)
+                const myGeneration = ++fetchGeneration
+
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                ;(async () => {
+                  try {
+                    const { rpcManager } = getSession(self)
+                    const data = new Map<number, SequenceRegionData>()
+                    const bounds = new Map<number, LoadedBounds>()
+
+                    for (const { region, regionNumber } of regions) {
+                      if (fetchGeneration !== myGeneration) {
+                        return
+                      }
+                      const rawFeatures = await rpcManager.call(
+                        sessionId,
+                        'CoreGetFeatures',
+                        {
+                          regions: [region],
+                          adapterConfig,
+                        },
+                      )
+                      const features = dedupe(rawFeatures, f => f.id())
+
+                      for (const f of features) {
+                        const seq = f.get('seq') as string | undefined
+                        if (seq) {
+                          data.set(regionNumber, {
+                            seq,
+                            start: f.get('start'),
+                            end: f.get('end'),
+                          })
+                          bounds.set(regionNumber, {
+                            refName: region.refName,
+                            start: f.get('start'),
+                            end: f.get('end'),
+                          })
+                        }
+                      }
+                    }
+
+                    if (fetchGeneration === myGeneration && isAlive(self)) {
+                      self.setSequenceData(data, bounds)
+                    }
+                  } catch (e) {
+                    if (!isAbortException(e) && isAlive(self)) {
+                      self.setError(e)
+                    }
+                  }
+                })()
+              },
+              {
+                name: `${self.type} ${self.id} sequence loading`,
+                delay: 300,
+              },
+            ),
+          )
+        },
+      }
+    })
     .views(self => ({
       async renderSvg(opts?: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
