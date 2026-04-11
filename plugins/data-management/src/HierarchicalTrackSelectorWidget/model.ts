@@ -94,9 +94,7 @@ function sortCategoriesK() {
 
 function localStorageGetJSON<T>(key: string, defaultValue: T) {
   const val = localStorageGetItem(key)
-  return val !== undefined && val !== null && val
-    ? (JSON.parse(val) as T)
-    : defaultValue
+  return val ? (JSON.parse(val) as T) : defaultValue
 }
 
 function localStorageSetJSON(key: string, val: unknown) {
