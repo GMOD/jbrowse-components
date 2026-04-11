@@ -7,6 +7,7 @@ import {
   CIGAR_X,
 } from '@jbrowse/alignments-core'
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { when } from 'mobx'
 
 import { lineLimit, oobLimit } from './drawSyntenyUtils.ts'
@@ -24,35 +25,8 @@ const OP_TO_CIGAR_KEY: Record<number, string> = {
   [CIGAR_X]: 'X',
 }
 
-function svgBezierBox(
-  x1: number,
-  x2: number,
-  y1: number,
-  x3: number,
-  x4: number,
-  y2: number,
-  mid: number,
-) {
-  const len1 = Math.abs(x1 - x2)
-  const len2 = Math.abs(x1 - x2)
-  if (len1 < 5 && len2 < 5 && x2 < x1 && Math.abs(x1 - x3) > 100) {
-    ;[x1, x2] = [x2, x1]
-  }
-  return `M${x1},${y1} L${x2},${y1} C${x2},${mid} ${x3},${mid} ${x3},${y2} L${x4},${y2} C${x4},${mid} ${x1},${mid} ${x1},${y1} Z`
-}
-
-function svgBox(
-  x1: number,
-  x2: number,
-  y1: number,
-  x3: number,
-  x4: number,
-  y2: number,
-) {
-  return `M${x1},${y1} L${x2},${y1} L${x3},${y2} L${x4},${y2} Z`
-}
-
-function svgShape(
+function drawShape(
+  ctx: SvgCanvas,
   x1: number,
   x2: number,
   y1: number,
@@ -61,13 +35,33 @@ function svgShape(
   y2: number,
   mid: number,
   drawCurves: boolean,
+  fillColor: string,
 ) {
-  return drawCurves
-    ? svgBezierBox(x1, x2, y1, x3, x4, y2, mid)
-    : svgBox(x1, x2, y1, x3, x4, y2)
+  ctx.fillStyle = fillColor
+  ctx.beginPath()
+  if (drawCurves) {
+    const len1 = Math.abs(x1 - x2)
+    const len2 = Math.abs(x1 - x2)
+    if (len1 < 5 && len2 < 5 && x2 < x1 && Math.abs(x1 - x3) > 100) {
+      ;[x1, x2] = [x2, x1]
+    }
+    ctx.moveTo(x1, y1)
+    ctx.lineTo(x2, y1)
+    ctx.bezierCurveTo(x2, mid, x3, mid, x3, y2)
+    ctx.lineTo(x4, y2)
+    ctx.bezierCurveTo(x4, mid, x1, mid, x1, y1)
+  } else {
+    ctx.moveTo(x1, y1)
+    ctx.lineTo(x2, y1)
+    ctx.lineTo(x3, y2)
+    ctx.lineTo(x4, y2)
+  }
+  ctx.closePath()
+  ctx.fill()
 }
 
-function svgLocationMarkers(
+function drawLocationMarkers(
+  ctx: SvgCanvas,
   x1: number,
   x2: number,
   y1: number,
@@ -75,15 +69,13 @@ function svgLocationMarkers(
   x4: number,
   y2: number,
   mid: number,
-  bpPerPx1: number,
-  bpPerPx2: number,
   drawCurves: boolean,
 ) {
   const width1 = Math.abs(x2 - x1)
   const width2 = Math.abs(x4 - x3)
   const averageWidth = (width1 + width2) / 2
   if (averageWidth < 30) {
-    return ''
+    return
   }
 
   const targetPixelSpacing = 20
@@ -92,16 +84,21 @@ function svgLocationMarkers(
     Math.floor(averageWidth / targetPixelSpacing) + 1,
   )
 
-  let paths = ''
+  ctx.strokeStyle = 'rgba(0,0,0,0.25)'
+  ctx.lineWidth = 0.5
   for (let step = 0; step < numMarkers; step++) {
     const t = step / numMarkers
     const topX = x1 + (x2 - x1) * t
     const bottomX = x4 + (x3 - x4) * t
-    paths += drawCurves
-      ? `<path d="M${topX},${y1} C${topX},${mid} ${bottomX},${mid} ${bottomX},${y2}" fill="none" stroke="rgba(0,0,0,0.25)" stroke-width="0.5"/>`
-      : `<line x1="${topX}" y1="${y1}" x2="${bottomX}" y2="${y2}" stroke="rgba(0,0,0,0.25)" stroke-width="0.5"/>`
+    ctx.beginPath()
+    ctx.moveTo(topX, y1)
+    if (drawCurves) {
+      ctx.bezierCurveTo(topX, mid, bottomX, mid, bottomX, y2)
+    } else {
+      ctx.lineTo(bottomX, y2)
+    }
+    ctx.stroke()
   }
-  return paths
 }
 
 export async function renderSvg(model: LinearSyntenyDisplayModel) {
@@ -146,7 +143,7 @@ export async function renderSvg(model: LinearSyntenyDisplayModel) {
   const bpPerPxInv0 = 1 / bpPerPx0
   const bpPerPxInv1 = 1 / bpPerPx1
 
-  let content = ''
+  const ctx = new SvgCanvas()
   const defaultColor = colorMapWithAlpha.M
 
   const featureCount = featureData.featureIds.length
@@ -184,9 +181,16 @@ export async function renderSvg(model: LinearSyntenyDisplayModel) {
         strokeColor = getQueryColorWithAlpha(refName)
       }
 
-      content += drawCurves
-        ? `<path d="M${x11},${y1} C${x11},${mid} ${x21},${mid} ${x21},${y2}" fill="none" stroke="${strokeColor}" stroke-width="1"/>`
-        : `<line x1="${x11}" y1="${y1}" x2="${x21}" y2="${y2}" stroke="${strokeColor}" stroke-width="1"/>`
+      ctx.strokeStyle = strokeColor
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(x11, y1)
+      if (drawCurves) {
+        ctx.bezierCurveTo(x11, mid, x21, mid, x21, y2)
+      } else {
+        ctx.lineTo(x21, y2)
+      }
+      ctx.stroke()
     } else if (doesIntersect2(minX, maxX, -oobLimit, view.width + oobLimit)) {
       const s1 = strand
       const k1 = s1 === -1 ? x12 : x11
@@ -271,21 +275,9 @@ export async function renderSvg(model: LinearSyntenyDisplayModel) {
 
               const shouldDraw = drawCIGARMatchesOnly ? letter === 'M' : true
               if (shouldDraw) {
-                const d = svgShape(px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
-                content += `<path d="${d}" fill="${fillColor}"/>`
+                drawShape(ctx, px1, cx1, y1, cx2, px2, y2, mid, drawCurves, fillColor)
                 if (drawLocationMarkersEnabled) {
-                  content += svgLocationMarkers(
-                    px1,
-                    cx1,
-                    y1,
-                    cx2,
-                    px2,
-                    y2,
-                    mid,
-                    bpPerPx0,
-                    bpPerPx1,
-                    drawCurves,
-                  )
+                  drawLocationMarkers(ctx, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
                 }
               }
             }
@@ -299,11 +291,10 @@ export async function renderSvg(model: LinearSyntenyDisplayModel) {
           fillColor = getQueryColorWithAlpha(refName)
         }
 
-        const d = svgShape(x11, x12, y1, x22, x21, y2, mid, drawCurves)
-        content += `<path d="${d}" fill="${fillColor}"/>`
+        drawShape(ctx, x11, x12, y1, x22, x21, y2, mid, drawCurves, fillColor)
       }
     }
   }
 
-  return <g dangerouslySetInnerHTML={{ __html: content }} />
+  return <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
 }

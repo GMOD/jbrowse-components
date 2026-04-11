@@ -3,6 +3,7 @@ import {
   lookupColorRampCSS,
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { getContainingView, max } from '@jbrowse/core/util'
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { when } from 'mobx'
 
 import { LDSVGColorLegend } from './components/LDColorLegend.tsx'
@@ -94,7 +95,7 @@ export async function renderSvg(
     )
   } else {
     const SQRT2_INV = 0.7071067811865476
-    let content = ''
+    const ctx = new SvgCanvas()
 
     for (let i = 0; i < numCells; i++) {
       const px = positions[i * 2]!
@@ -104,24 +105,29 @@ export async function renderSvg(
       const t = computeT(ldValues[i]!, signedLD)
       const { r, g, b, a } = lookupColorRamp(ramp, t)
 
-      const corners = [
+      ctx.fillStyle = `rgb(${r},${g},${b})`
+      ctx.globalAlpha = a
+      ctx.beginPath()
+      let first = true
+      for (const [cx, cy] of [
         [px, py],
         [px + cw, py],
         [px + cw, py + ch],
         [px, py + ch],
-      ] as const
-
-      const pts = corners
-        .map(([cx, cy]) => {
-          const rx = (cx + cy) * SQRT2_INV
-          const ry = (-cx + cy) * SQRT2_INV * yScalar
-          return `${rx},${ry}`
-        })
-        .join(' ')
-
-      content += `<polygon points="${pts}" fill="rgb(${r},${g},${b})" fill-opacity="${a.toFixed(3)}"/>`
+      ] as const) {
+        const rx = (cx + cy) * SQRT2_INV
+        const ry = (-cx + cy) * SQRT2_INV * yScalar
+        if (first) {
+          ctx.moveTo(rx, ry)
+          first = false
+        } else {
+          ctx.lineTo(rx, ry)
+        }
+      }
+      ctx.closePath()
+      ctx.fill()
     }
-    matrixEl = <g dangerouslySetInnerHTML={{ __html: content }} />
+    matrixEl = <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
   }
 
   const clipId = `clip-${self.id}-svg`

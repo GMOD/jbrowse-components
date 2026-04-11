@@ -1,4 +1,5 @@
 import { getContainingView, measureText } from '@jbrowse/core/util'
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { when } from 'mobx'
 
 import type { MatrixCellData } from './components/computeVariantMatrixCells.ts'
@@ -21,17 +22,6 @@ interface RenderSvgModel {
   hierarchy: ClusterHierarchyNode | undefined
   showTree: boolean
   treeAreaWidth: number
-}
-
-function rgbaAttrs(colors: Uint8Array, i: number) {
-  const r = colors[i * 4]!
-  const g = colors[i * 4 + 1]!
-  const b = colors[i * 4 + 2]!
-  const a = colors[i * 4 + 3]!
-  const rgb = `rgb(${r},${g},${b})`
-  return a === 255
-    ? `fill="${rgb}"`
-    : `fill="${rgb}" fill-opacity="${(a / 255).toFixed(3)}"`
 }
 
 export async function renderSvg(
@@ -59,12 +49,15 @@ export async function renderSvg(
   const canvasWidth = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
   const colWidth = canvasWidth / numFeatures
 
-  let content = ''
+  const ctx = new SvgCanvas()
 
   for (let i = 0; i < numCells; i++) {
     const featureIdx = cellFeatureIndices[i]!
     const rowIndex = cellRowIndices[i]!
-    const fillAttrs = rgbaAttrs(cellColors, i)
+    const r = cellColors[i * 4]!
+    const g = cellColors[i * 4 + 1]!
+    const b = cellColors[i * 4 + 2]!
+    const a = cellColors[i * 4 + 3]!
 
     const y = rowIndex * rowHeight - scrollTop
     if (y + rowHeight < 0 || y > availableHeight) {
@@ -75,7 +68,9 @@ export async function renderSvg(
     const w = Math.max(colWidth, 2)
     const h = Math.max(rowHeight, 1)
 
-    content += `<rect x="${x}" y="${y}" width="${w}" height="${h}" ${fillAttrs}/>`
+    ctx.fillStyle = `rgb(${r},${g},${b})`
+    ctx.globalAlpha = a / 255
+    ctx.fillRect(x, y, w, h)
   }
 
   const sources = model.sources ?? []
@@ -131,7 +126,7 @@ export async function renderSvg(
 
   return (
     <>
-      <g dangerouslySetInnerHTML={{ __html: content }} />
+      <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
       {labelsEl}
       {treeEl}
     </>
