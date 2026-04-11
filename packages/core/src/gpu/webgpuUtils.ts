@@ -1,16 +1,18 @@
 /// <reference types="@webgpu/types" />
 
-// Standard alpha blend state used by all WebGPU renderers.
-// Fragment shaders must output STRAIGHT (non-premultiplied) alpha:
+// Standard alpha blend state (src-alpha, one-minus-src-alpha).
+// Fragment shaders using this blend MUST output STRAIGHT (non-premultiplied) alpha:
 //   fragColor = vec4(rgb, alpha)   -- correct
 //   fragColor = vec4(rgb*alpha, alpha) -- WRONG: double-applies alpha at edges
-// The blend equation (src-alpha, one-minus-src-alpha) against the (0,0,0,0)
-// clear converts the straight-alpha output into premultiplied values in the
-// framebuffer (edge pixel: fb.rgb = color*alpha, fb.a = alpha).  The
-// compositor then reads those correctly under alphaMode:'premultiplied':
-//   output = fb.rgb + bg*(1-fb.a) = color*alpha + bg*(1-alpha)
-// Premultiplying in the shader AND using src-alpha blend causes
-// color*alpha^2 -- darker AA edges and overall dimming.
+// The blend multiplies src.rgb by src.a, which converts straight-alpha output
+// into premultiplied values in the framebuffer.  The compositor reads those
+// correctly under alphaMode:'premultiplied' / premultipliedAlpha:true.
+// Premultiplying in the shader AND using src-alpha blend causes color*alpha^2.
+//
+// Some passes override this with { srcFactor:'one', dstFactor:'one-minus-src-alpha' }
+// (premultiplied blend).  Those passes MUST output premultiplied alpha from the
+// shader: vec4(rgb*alpha, alpha).  The two approaches are equivalent as long as
+// the shader output and blend srcFactor agree (src-alpha↔straight, one↔premultiplied).
 export const STANDARD_BLEND_STATE: GPUBlendState = {
   color: {
     srcFactor: 'src-alpha',

@@ -95,21 +95,33 @@ fn modifications_color(flags: u32) -> vec3f {
   return color3(83u);
 }
 
+const CS_NORMAL = 0;
+const CS_INSERT_SIZE = 3;
+const CS_PAIR_ORIENT = 5;
+const CS_IS_AND_ORIENT = 6;
+const CS_IS_GRADIENT = 10;
+const CM_LINKED_READ = 1;
+
+fn is_orientation_scheme(cs: i32) -> bool {
+  return cs == CS_INSERT_SIZE || cs == CS_PAIR_ORIENT || cs == CS_IS_AND_ORIENT || cs == CS_IS_GRADIENT;
+}
+
 fn get_read_color(inst: ReadInst) -> vec3f {
   let cs = ui(11u);
   let cm = ui(14u);
   let is_paired = (inst.flags & 1u) != 0u;
   // chain_supp: 0=no supp, 1=has supp + primary fwd, 2=has supp + primary rev
-  if cm == 1 && inst.chain_supp > 0u && is_paired { return color3(95u); }
-  if cm == 1 && inst.chain_supp > 0u {
+  if cm == CM_LINKED_READ && inst.chain_supp > 0u && is_paired { return color3(95u); }
+  if cm == CM_LINKED_READ && inst.chain_supp > 0u {
     let primary_strand = select(1, -1, inst.chain_supp > 1u);
     let flip = ui(29u);
     let eff = select(inst.strand, inst.strand * primary_strand, flip == 1);
     return strand_color(eff);
   }
-  // Check for unmapped mate (flag 8) — show brown for color schemes that would
-  // otherwise miscolor it (e.g. insert size shows pink because tlen=0)
-  if (inst.flags & 8u) != 0u && (cs == 0 || cs == 3 || cs == 5 || cs == 6 || cs == 10) {
+  // unmapped mate (flag 8) — brown for orientation-aware schemes (tlen=0 would
+  // miscolor as "short insert" pink), or normal scheme in linked-read mode
+  let mate_unmapped = (inst.flags & 8u) != 0u;
+  if mate_unmapped && (is_orientation_scheme(cs) || (cs == CS_NORMAL && cm == CM_LINKED_READ)) {
     return color3(134u);
   }
   if cs == 0 { return color3(41u); }

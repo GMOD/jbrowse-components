@@ -3,6 +3,7 @@ import { SVGErrorBox } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import { bpToScreenPx } from './components/coordinateUtils.ts'
+import { MIN_RECT_WIDTH_PX } from './components/sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -89,7 +90,7 @@ function renderRectsForRegion(
       reversed,
     )
     const x = Math.min(px1, px2)
-    const w = Math.max(Math.abs(px2 - px1), 0.5)
+    const w = Math.max(Math.abs(px2 - px1), MIN_RECT_WIDTH_PX)
     const y = rectYs[i]! - scrollY
     const h = rectHeights[i]!
     content += `<rect x="${x}" y="${y}" width="${w}" height="${h}" ${fillAttrs(rectColors, i)}/>`

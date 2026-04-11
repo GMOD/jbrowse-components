@@ -332,7 +332,7 @@ export class WebGPUHal implements GpuHal {
             resource: {
               buffer: this.uniformRingBuffer,
               offset: 0,
-              size: this.uniformByteSize,
+              size: this.alignedUniformSize,
             },
           },
           { binding: 2, resource: texState.texture.createView() },
@@ -346,7 +346,7 @@ export class WebGPUHal implements GpuHal {
         state.bindGroupLayout,
         storageBuffer,
         this.uniformRingBuffer,
-        this.uniformByteSize,
+        this.alignedUniformSize,
       )
       region.buffers.set(passId, { storageBuffer, bindGroup, count })
     }
@@ -759,7 +759,7 @@ export class WebGPUHal implements GpuHal {
           resource: {
             buffer: this.uniformRingBuffer,
             offset: 0,
-            size: this.uniformByteSize,
+            size: this.alignedUniformSize,
           },
         },
         { binding: 2, resource: texState.texture.createView() },

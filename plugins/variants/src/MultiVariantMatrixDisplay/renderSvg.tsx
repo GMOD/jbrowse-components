@@ -72,7 +72,7 @@ export async function renderSvg(
     }
 
     const x = featureIdx * colWidth
-    const w = Math.max(colWidth, 1)
+    const w = Math.max(colWidth, 2)
     const h = Math.max(rowHeight, 1)
 
     content += `<rect x="${x}" y="${y}" width="${w}" height="${h}" ${fillAttrs}/>`

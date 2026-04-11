@@ -54,3 +54,9 @@ by `src-alpha`, you get `rgb * alpha²` in the framebuffer — AA edges appear
 too dark and arcs look like they have a darker outline. This is a subtle bug
 that has recurred across refactors; the fix is always to remove the
 premultiplication from the shader.
+
+**Exception:** some passes outside this plugin (variants, hic, dotplot) use a
+custom `blendState: { srcFactor:'one', dstFactor:'one-minus-src-alpha' }`.
+That blend does NOT multiply by src.a, so those shaders MUST premultiply in
+the fragment shader. The rule: **shader output and blend srcFactor must agree**
+— `src-alpha` blend expects straight alpha, `one` blend expects premultiplied.

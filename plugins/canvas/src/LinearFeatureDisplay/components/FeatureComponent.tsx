@@ -329,107 +329,88 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     }
   }, [model, view])
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) {
+  const hitTestAtEvent = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const mouseX = e.clientX - rect.left
+    const mouseY = e.clientY - rect.top
+    const scrollTop = scrollContainerRef.current?.scrollTop ?? 0
+    const yPos = mouseY + scrollTop
+    return performMultiRegionHitDetection(
+      flatbushCacheMapRef.current,
+      model.rpcDataMap,
+      view.visibleRegions,
+      mouseX,
+      yPos,
+      model.effectiveShowDescriptions,
+    )
+  }
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (contextMenuCoord) {
+      return
+    }
+    setClientXY([e.clientX, e.clientY])
+    if (model.rpcDataMap.size === 0) {
+      clearHoverState()
       return
     }
 
-    const hitTestAtEvent = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect()
-      const mouseX = e.clientX - rect.left
-      const mouseY = e.clientY - rect.top
-      const scrollTop = scrollContainerRef.current?.scrollTop ?? 0
-      const yPos = mouseY + scrollTop
-      return performMultiRegionHitDetection(
-        flatbushCacheMapRef.current,
-        model.rpcDataMap,
-        view.visibleRegions,
-        mouseX,
-        yPos,
-        model.effectiveShowDescriptions,
+    const result = hitTestAtEvent(e)
+
+    if (result.feature) {
+      if (result.subfeature) {
+        model.setMouseoverExtraInformation(
+          result.subfeature.tooltip ?? result.subfeature.type,
+        )
+        setHoveredSubfeature(result.subfeature)
+      } else {
+        model.setMouseoverExtraInformation(result.feature.tooltip)
+        setHoveredSubfeature(null)
+      }
+      setHoveredFeature(result.feature)
+      model.setFeatureIdUnderMouse(result.feature.featureId)
+    } else {
+      clearHoverState()
+    }
+  }
+
+  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (model.rpcDataMap.size === 0) {
+      return
+    }
+    const result = hitTestAtEvent(e)
+    if (result.feature) {
+      model.selectFeatureById(
+        result.feature,
+        result.subfeature ?? undefined,
+        result.regionNumber,
+      )
+    } else {
+      model.clearFeatureSelection()
+    }
+  }
+
+  const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    if (model.rpcDataMap.size === 0) {
+      return
+    }
+    const result = hitTestAtEvent(e)
+    if (result.feature) {
+      openContextMenu(
+        result.feature,
+        result.regionNumber,
+        e.clientX,
+        e.clientY,
       )
     }
+  }
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (contextMenuCoord) {
-        return
-      }
-      setClientXY([e.clientX, e.clientY])
-      if (model.rpcDataMap.size === 0) {
-        clearHoverState()
-        return
-      }
-
-      const result = hitTestAtEvent(e)
-
-      if (result.feature) {
-        if (result.subfeature) {
-          model.setMouseoverExtraInformation(
-            result.subfeature.tooltip ?? result.subfeature.type,
-          )
-          setHoveredSubfeature(result.subfeature)
-        } else {
-          model.setMouseoverExtraInformation(result.feature.tooltip)
-          setHoveredSubfeature(null)
-        }
-        setHoveredFeature(result.feature)
-        model.setFeatureIdUnderMouse(result.feature.featureId)
-      } else {
-        clearHoverState()
-      }
+  const handleMouseLeave = () => {
+    if (!contextMenuCoord) {
+      clearHoverState()
     }
-
-    const handleClick = (e: MouseEvent) => {
-      if (model.rpcDataMap.size === 0) {
-        return
-      }
-      const result = hitTestAtEvent(e)
-      if (result.feature) {
-        model.selectFeatureById(
-          result.feature,
-          result.subfeature ?? undefined,
-          result.regionNumber,
-        )
-      } else {
-        model.clearFeatureSelection()
-      }
-    }
-
-    const handleContextMenu = (e: MouseEvent) => {
-      e.preventDefault()
-      if (model.rpcDataMap.size === 0) {
-        return
-      }
-      const result = hitTestAtEvent(e)
-      if (result.feature) {
-        openContextMenu(
-          result.feature,
-          result.regionNumber,
-          e.clientX,
-          e.clientY,
-        )
-      }
-    }
-
-    const handleMouseLeave = () => {
-      if (!contextMenuCoord) {
-        clearHoverState()
-      }
-    }
-
-    canvas.addEventListener('mousemove', handleMouseMove)
-    canvas.addEventListener('mouseleave', handleMouseLeave)
-    canvas.addEventListener('click', handleClick)
-    canvas.addEventListener('contextmenu', handleContextMenu)
-    return () => {
-      canvas.removeEventListener('mousemove', handleMouseMove)
-      canvas.removeEventListener('mouseleave', handleMouseLeave)
-      canvas.removeEventListener('click', handleClick)
-      canvas.removeEventListener('contextmenu', handleContextMenu)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, contextMenuCoord])
+  }
 
   const bpPerPx = view.bpPerPx
   const visibleRegions = view.visibleRegions
@@ -540,6 +521,10 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         >
           <canvas
             ref={canvasRef}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            onClick={handleClick}
+            onContextMenu={handleContextMenu}
             style={{
               display: 'block',
               width,

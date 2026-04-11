@@ -111,6 +111,17 @@ vec3 modificationsColor(float flags) {
   return color3(83u);
 }
 
+const int CS_NORMAL = 0;
+const int CS_INSERT_SIZE = 3;
+const int CS_PAIR_ORIENT = 5;
+const int CS_IS_AND_ORIENT = 6;
+const int CS_IS_GRADIENT = 10;
+const int CM_LINKED_READ = 1;
+
+bool isOrientationScheme(int cs) {
+  return cs == CS_INSERT_SIZE || cs == CS_PAIR_ORIENT || cs == CS_IS_AND_ORIENT || cs == CS_IS_GRADIENT;
+}
+
 void main() {
   // Cast integer attributes to float for arithmetic
   float fy = float(a_y);
@@ -222,34 +233,37 @@ void main() {
   }
 
   vec3 color;
+  int cs = ui(11u);
+  int cm = ui(14u);
   bool isPaired = mod(fflags, 2.0) > 0.5;
-  if (ui(14u) == 1 && fchainHasSupp > 0.5 && isPaired) {
+  bool mateUnmapped = mod(floor(fflags / 8.0), 2.0) > 0.5;
+  if (cm == CM_LINKED_READ && fchainHasSupp > 0.5 && isPaired) {
     color = color3(95u);
-  } else if (ui(14u) == 1 && fchainHasSupp > 0.5) {
+  } else if (cm == CM_LINKED_READ && fchainHasSupp > 0.5) {
     float primaryStrand = fchainHasSupp > 1.5 ? -1.0 : 1.0;
     float effectiveStrand = ui(29u) == 1
       ? fstrand * primaryStrand
       : fstrand;
     color = strandColor(effectiveStrand);
-  } else if (mod(floor(fflags / 8.0), 2.0) > 0.5 && (ui(11u) == 0 || ui(11u) == 3 || ui(11u) == 5 || ui(11u) == 6 || ui(11u) == 10)) {
+  } else if (mateUnmapped && (isOrientationScheme(cs) || (cs == CS_NORMAL && cm == CM_LINKED_READ))) {
     color = color3(134u);
-  } else if (ui(11u) == 0) color = color3(41u);
-  else if (ui(11u) == 1) color = strandColor(fstrand);
-  else if (ui(11u) == 2) color = mapqColor(fmapq);
-  else if (ui(11u) == 3) color = insertSizeColor(a_insertSize);
-  else if (ui(11u) == 4) color = firstOfPairColor(fflags, fstrand);
-  else if (ui(11u) == 5) color = pairOrientationColor(fpairOrientation);
-  else if (ui(11u) == 6) color = insertSizeAndOrientationColor(a_insertSize, fpairOrientation);
-  else if (ui(11u) == 7) color = modificationsColor(fflags);
-  else if (ui(11u) == 8) {
+  } else if (cs == 0) color = color3(41u);
+  else if (cs == 1) color = strandColor(fstrand);
+  else if (cs == 2) color = mapqColor(fmapq);
+  else if (cs == 3) color = insertSizeColor(a_insertSize);
+  else if (cs == 4) color = firstOfPairColor(fflags, fstrand);
+  else if (cs == 5) color = pairOrientationColor(fpairOrientation);
+  else if (cs == 6) color = insertSizeAndOrientationColor(a_insertSize, fpairOrientation);
+  else if (cs == 7) color = modificationsColor(fflags);
+  else if (cs == 8) {
     if (a_tagColor.r != 0.0 || a_tagColor.g != 0.0 || a_tagColor.b != 0.0) {
       color = a_tagColor;
     } else {
       color = color3(41u);
     }
   }
-  else if (ui(11u) == 9) color = mapqColor(fbaseQuality);
-  else if (ui(11u) == 10) color = insertSizeGradientColor(a_insertSize);
+  else if (cs == 9) color = mapqColor(fbaseQuality);
+  else if (cs == 10) color = insertSizeGradientColor(a_insertSize);
   else color = color3(41u);
 
   v_color = vec4(color, 1.0);

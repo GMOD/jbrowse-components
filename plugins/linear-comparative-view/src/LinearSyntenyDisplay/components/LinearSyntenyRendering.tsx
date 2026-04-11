@@ -1,7 +1,7 @@
 import type React from 'react'
 import { lazy, useCallback, useEffect, useRef, useState } from 'react'
 
-import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { ErrorMessage, LoadingOverlay } from '@jbrowse/core/ui'
 import {
   getContainingTrack,
   getContainingView,
@@ -22,35 +22,16 @@ import type { LinearSyntenyDisplayModel } from '../model.ts'
 
 const SyntenyTooltip = lazy(() => import('./SyntenyTooltip.tsx'))
 
-const useStyles = makeStyles()(theme => {
-  const bg = theme.palette.action.disabledBackground
-  return {
-    rel: {
-      position: 'relative',
-    },
-    gpuCanvas: {
-      position: 'absolute',
-      imageRendering: 'auto',
-      willChange: 'transform',
-      contain: 'strict',
-    },
-    gpuLoadingOverlay: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-      padding: theme.spacing(0, 2),
-      backgroundColor: theme.palette.background.default,
-      backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${bg} 5px, ${bg} 10px)`,
-    },
-  }
+const useStyles = makeStyles()({
+  rel: {
+    position: 'relative',
+  },
+  gpuCanvas: {
+    position: 'absolute',
+    imageRendering: 'auto',
+    willChange: 'transform',
+    contain: 'strict',
+  },
 })
 
 const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
@@ -74,10 +55,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   const mouseInitialDownX = useRef<number | undefined>(undefined)
 
   const [anchorEl, setAnchorEl] = useState<ClickCoord>()
-  const [gpuStatus, setGpuStatus] = useState<'loading' | 'ready' | 'failed'>(
-    'loading',
-  )
-  const [gpuError, setGpuError] = useState('')
+  const [gpuError, setGpuError] = useState<unknown>()
 
   useTabVisibilityRerender(() => {
     model.bumpTabVisibility()
@@ -171,17 +149,15 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         .then(success => {
           if (!success) {
             console.error('[LinearSyntenyRendering] GPU initialization failed')
-            setGpuError('WebGPU device not available')
+            setGpuError(new Error('WebGPU device not available'))
           }
           model.setGpuRenderer(renderer)
           model.setGpuInitialized(success)
-          setGpuStatus(success ? 'ready' : 'failed')
         })
         .catch((e: unknown) => {
           console.error('[LinearSyntenyRendering] GPU initialization error:', e)
-          setGpuError(e instanceof Error ? e.message : `${e}`)
+          setGpuError(e)
           model.setGpuInitialized(false)
-          setGpuStatus('failed')
         })
     },
     [model],
@@ -311,24 +287,11 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         className={classes.gpuCanvas}
         style={{ width, height }}
       />
-      {gpuStatus === 'failed' ? (
-        <div className={classes.gpuLoadingOverlay}>
-          GPU initialization failed: {gpuError}
-        </div>
-      ) : !model.ready ? (
-        <div className={classes.gpuLoadingOverlay}>
-          <LoadingEllipses
-            message={
-              gpuStatus === 'loading' ? 'Initializing GPU renderer' : undefined
-            }
-          />
-        </div>
-      ) : null}
-      {model.error ? (
-        <div className={classes.gpuLoadingOverlay}>
-          <ErrorMessage error={model.error} />
-        </div>
-      ) : null}
+      {gpuError ? <ErrorMessage error={gpuError} /> : null}
+      <LoadingOverlay
+        statusMessage={model.statusMessage}
+        isVisible={!model.ready}
+      />
       {tooltipText ? <SyntenyTooltip title={tooltipText} /> : null}
       {anchorEl ? (
         <SyntenyContextMenu

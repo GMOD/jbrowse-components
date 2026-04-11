@@ -146,7 +146,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const thisStopToken = createStopToken()
         currentStopToken = thisStopToken
 
-        self.setFetchStopToken(thisStopToken)
         debounceTimer = setTimeout(async () => {
           try {
             const { level, adapterConfig } = self
@@ -193,6 +192,11 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
                 drawCIGAR,
                 drawCIGARMatchesOnly,
                 drawLocationMarkers,
+                statusCallback: (msg: string) => {
+                  if (isAlive(self)) {
+                    self.setStatusMessage(msg)
+                  }
+                },
               },
             )
 
@@ -212,7 +216,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             }
           } finally {
             if (isAlive(self) && thisStopToken === currentStopToken) {
-              self.setFetchStopToken(undefined)
+              self.setStatusMessage(undefined)
             }
           }
         }, 300)
