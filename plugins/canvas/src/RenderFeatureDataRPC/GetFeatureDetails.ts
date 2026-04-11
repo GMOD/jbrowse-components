@@ -66,7 +66,10 @@ export default class GetFeatureDetails extends RpcMethodType {
     const renamed = await this.renameRegionsIfNeeded(
       args as GetFeatureDetailsArgs,
     )
-    return super.serializeArguments(renamed as Record<string, unknown>, rpcDriver)
+    return super.serializeArguments(
+      renamed as Record<string, unknown>,
+      rpcDriver,
+    )
   }
 
   async execute(args: Record<string, unknown>, _rpcDriver: string) {

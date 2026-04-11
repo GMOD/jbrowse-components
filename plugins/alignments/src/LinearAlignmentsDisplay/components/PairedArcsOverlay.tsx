@@ -2,8 +2,8 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { arcColorPalette } from './shaders/arcShaders.ts'
 import { rgb255 } from '../colorUtils.ts'
+import { arcColorPalette } from './shaders/arcShaders.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

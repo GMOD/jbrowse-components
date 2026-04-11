@@ -286,7 +286,9 @@ export default function stateModelFactory(
       },
 
       get geneGlyphMode(): DisplayConfig['geneGlyphMode'] {
-        return self.getConfWithOverride<DisplayConfig['geneGlyphMode']>('geneGlyphMode')
+        return self.getConfWithOverride<DisplayConfig['geneGlyphMode']>(
+          'geneGlyphMode',
+        )
       },
 
       get displayDirectionalChevrons() {
@@ -592,31 +594,27 @@ export default function stateModelFactory(
         const adapterConfig = self.adapterConfigSnapshot
 
         const sessionId = getRpcSessionId(self)
-        const result = await rpcManager.call(
+        const result = await rpcManager.call(sessionId, 'RenderFeatureData', {
           sessionId,
-          'RenderFeatureData',
-          {
-            sessionId,
-            adapterConfig,
-            displayConfig: {
-              ...self.displayConfigSnapshot,
-              // effectiveGeneGlyphMode resolves 'auto' based on zoom level
-              geneGlyphMode: self.effectiveGeneGlyphMode,
-            },
-            region,
-            bpPerPx,
-            maxFeatureDensity: self.maxFeatureDensity,
-            colorByCDS: self.colorByCDS,
-            sequenceAdapter: self.sequenceAdapter,
-            showOnlyGenes: self.showOnlyGenes,
-            stopToken,
-            statusCallback: (msg: string) => {
-              if (isAlive(self)) {
-                self.setStatusMessage(msg)
-              }
-            },
+          adapterConfig,
+          displayConfig: {
+            ...self.displayConfigSnapshot,
+            // effectiveGeneGlyphMode resolves 'auto' based on zoom level
+            geneGlyphMode: self.effectiveGeneGlyphMode,
           },
-        )
+          region,
+          bpPerPx,
+          maxFeatureDensity: self.maxFeatureDensity,
+          colorByCDS: self.colorByCDS,
+          sequenceAdapter: self.sequenceAdapter,
+          showOnlyGenes: self.showOnlyGenes,
+          stopToken,
+          statusCallback: (msg: string) => {
+            if (isAlive(self)) {
+              self.setStatusMessage(msg)
+            }
+          },
+        })
 
         if ('regionTooLarge' in result) {
           return 'regionTooLarge'

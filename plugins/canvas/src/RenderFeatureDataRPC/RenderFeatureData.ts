@@ -65,7 +65,10 @@ export default class RenderFeatureData extends RpcMethodType {
     const renamed = await this.renameRegionsIfNeeded(
       args as RenderFeatureDataArgs,
     )
-    return super.serializeArguments(renamed as Record<string, unknown>, rpcDriver)
+    return super.serializeArguments(
+      renamed as Record<string, unknown>,
+      rpcDriver,
+    )
   }
 
   async execute(args: Record<string, unknown>, _rpcDriver: string) {

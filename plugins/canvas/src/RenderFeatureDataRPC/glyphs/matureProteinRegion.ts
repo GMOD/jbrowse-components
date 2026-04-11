@@ -15,7 +15,9 @@ const MATURE_PROTEIN_TYPES = new Set([
 export function getMatureProteinChildren(feature: Feature): Feature[] {
   const subfeatures = feature.get('subfeatures')
   return (
-    subfeatures?.filter(sub => MATURE_PROTEIN_TYPES.has(sub.get('type') ?? '')) ?? []
+    subfeatures?.filter(sub =>
+      MATURE_PROTEIN_TYPES.has(sub.get('type') ?? ''),
+    ) ?? []
   )
 }
 

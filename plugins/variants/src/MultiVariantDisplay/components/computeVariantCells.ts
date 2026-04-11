@@ -183,13 +183,13 @@ export function computeVariantCells({
     const featureId = feature.id()
     const start = feature.get('start')
     const end = feature.get('end')
-    const featureType = (feature.get('type') as string) || ''
-    const featureStrand = feature.get('strand') as number | undefined
+    const featureType = feature.get('type')! || ''
+    const featureStrand = feature.get('strand')
     const bpLen = end - start
     const shape = getShapeType(featureType, featureStrand)
     const alt = feature.get('ALT') as string[]
     const ref = feature.get('REF') as string
-    const featureName = feature.get('name') as string
+    const featureName = feature.get('name')!
     const description = feature.get('description') as string
     const renderedGenotypes = {} as Record<string, string>
     const renderEnd =

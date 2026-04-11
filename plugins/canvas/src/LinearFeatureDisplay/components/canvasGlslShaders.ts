@@ -10,7 +10,6 @@ import {
   STEM_LENGTH_PX,
 } from './sharedRendererConstants.ts'
 
-
 const UNIFORMS_BLOCK = `
 layout(std140) uniform Uniforms {
   vec3 bp_range_x;

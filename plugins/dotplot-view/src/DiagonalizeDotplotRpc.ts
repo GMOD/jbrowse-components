@@ -241,7 +241,7 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
           queryEnd: feat.get('end'),
           refStart: mate.start,
           refEnd: mate.end,
-          strand: (feat.get('strand') as number) || 1,
+          strand: feat.get('strand')! || 1,
         })
       }
     }

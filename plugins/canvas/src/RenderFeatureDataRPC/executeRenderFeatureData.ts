@@ -88,10 +88,7 @@ export async function executeRenderFeatureData({
   let featuresArray = await updateStatus(
     'Fetching features',
     statusCallback,
-    () =>
-      firstValueFrom(
-        dataAdapter.getFeatures(region).pipe(toArray()),
-      ),
+    () => firstValueFrom(dataAdapter.getFeatures(region).pipe(toArray())),
   )
   checkStopToken2(stopTokenCheck)
 

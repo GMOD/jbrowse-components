@@ -608,8 +608,6 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-
-
   private bpToScreenX(
     absBp: number,
     block: {

@@ -219,8 +219,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
                 for (const vr of visible) {
                   const bounds = self.loadedBounds.get(vr.regionNumber)
                   if (
-                    !bounds ||
-                    bounds.refName !== vr.refName ||
+                    bounds?.refName !== vr.refName ||
                     vr.start < bounds.start ||
                     vr.end > bounds.end
                   ) {

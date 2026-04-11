@@ -19,8 +19,14 @@ import type { Feature, ViewSnap } from '@jbrowse/core/util'
 
 const RPC_DEBOUNCE_MS = 1000
 
-function makeViewSnap(view: { width: number; interRegionPaddingWidth: number; minimumBlockWidth: number }): ViewSnap {
-  const snap = getSnapshot(view as Parameters<typeof getSnapshot>[0]) as ViewSnap
+function makeViewSnap(view: {
+  width: number
+  interRegionPaddingWidth: number
+  minimumBlockWidth: number
+}): ViewSnap {
+  const snap = getSnapshot(
+    view as Parameters<typeof getSnapshot>[0],
+  ) as ViewSnap
   return {
     ...snap,
     width: view.width,
@@ -247,13 +253,7 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
         const scaleY =
           featPositionsBpPerPxV > 0 ? featPositionsBpPerPxV / vBpPerPx : 1
 
-        renderer.render(
-          hview.offsetPx,
-          vview.offsetPx,
-          2,
-          scaleX,
-          scaleY,
-        )
+        renderer.render(hview.offsetPx, vview.offsetPx, 2, scaleX, scaleY)
         if (!self.canvasDrawn && self.features?.length) {
           self.setCanvasDrawn(true)
         }

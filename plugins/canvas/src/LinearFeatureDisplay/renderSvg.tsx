@@ -241,7 +241,7 @@ function renderArrowsForRegion(
 
     content += `<line x1="${stemStartX}" y1="${cy}" x2="${stemEndX}" y2="${cy}" ${arrowStroke} stroke-width="${STEM_HALF_H_PX * 2}"/>`
 
-    const tipX = stemEndX + (STEM_LENGTH_PX * 0.5) * dir
+    const tipX = stemEndX + STEM_LENGTH_PX * 0.5 * dir
     content += `<polygon points="${stemEndX},${cy - headHalf} ${tipX},${cy} ${stemEndX},${cy + headHalf}" ${arrowFill}/>`
   }
   return content

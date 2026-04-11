@@ -21,7 +21,9 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
   const gpuOpts = useMemo(
     () => ({
       onReady: model.setGpuRenderer,
-      onDispose: () => model.setGpuRenderer(null),
+      onDispose: () => {
+        model.setGpuRenderer(null)
+      },
     }),
     [model],
   )

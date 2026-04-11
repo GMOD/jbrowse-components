@@ -11,7 +11,12 @@ import {
   RECT_VERTEX_SHADER,
   SIMPLE_FRAGMENT_SHADER,
 } from './canvasGlslShaders.ts'
-import { ARROW_SHADER, CHEVRON_SHADER, LINE_SHADER, RECT_SHADER } from './canvasShaders.ts'
+import {
+  ARROW_SHADER,
+  CHEVRON_SHADER,
+  LINE_SHADER,
+  RECT_SHADER,
+} from './canvasShaders.ts'
 import {
   ARROW_STRIDE,
   LINE_STRIDE,

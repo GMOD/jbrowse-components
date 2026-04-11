@@ -189,8 +189,11 @@ function drawTranslationRow(
     const isStop = stopsSet.has(upperCodon)
 
     if (showBorders) {
-      const color =
-        isStart ? palette.startColor : isStop ? palette.stopColor : [bgR, bgG, bgB] as const
+      const color = isStart
+        ? palette.startColor
+        : isStop
+          ? palette.stopColor
+          : ([bgR, bgG, bgB] as const)
       ctx.fillStyle = rgbStyle(color)
       ctx.fillRect(x, y, codonWidth, rowHeight)
       ctx.strokeStyle = BORDER_COLOR
@@ -234,8 +237,7 @@ function drawSequence(
   const visStartBp = offsetPx * bpPerPx
   const visEndBp = (offsetPx + trackWidthPx) * bpPerPx
 
-  const forwardFrames: Frame[] =
-    showTranslation && showForward ? [3, 2, 1] : []
+  const forwardFrames: Frame[] = showTranslation && showForward ? [3, 2, 1] : []
   const reverseFrames: Frame[] =
     showTranslation && showReverse ? [-1, -2, -3] : []
 
@@ -249,9 +251,21 @@ function drawSequence(
 
     for (const frame of topFrames) {
       drawTranslationRow(
-        ctx, data.seq, data.start, frame, currentY, rowHeight,
-        bpPerPx, offsetPx, reversed, showBorders, showLetters,
-        palette, textColors, visStartBp, visEndBp,
+        ctx,
+        data.seq,
+        data.start,
+        frame,
+        currentY,
+        rowHeight,
+        bpPerPx,
+        offsetPx,
+        reversed,
+        showBorders,
+        showLetters,
+        palette,
+        textColors,
+        visStartBp,
+        visEndBp,
       )
       currentY += rowHeight
     }
@@ -259,9 +273,20 @@ function drawSequence(
     if (showForward) {
       const fwdSeq = reversed ? complement(data.seq) : data.seq
       drawBaseRow(
-        ctx, fwdSeq, data.start, currentY, rowHeight,
-        bpPerPx, offsetPx, showBorders, showLetters, sequenceType,
-        palette, textColors, visStartBp, visEndBp,
+        ctx,
+        fwdSeq,
+        data.start,
+        currentY,
+        rowHeight,
+        bpPerPx,
+        offsetPx,
+        showBorders,
+        showLetters,
+        sequenceType,
+        palette,
+        textColors,
+        visStartBp,
+        visEndBp,
       )
       currentY += rowHeight
     }
@@ -269,18 +294,41 @@ function drawSequence(
     if (showReverse) {
       const revSeq = reversed ? data.seq : complement(data.seq)
       drawBaseRow(
-        ctx, revSeq, data.start, currentY, rowHeight,
-        bpPerPx, offsetPx, showBorders, showLetters, sequenceType,
-        palette, textColors, visStartBp, visEndBp,
+        ctx,
+        revSeq,
+        data.start,
+        currentY,
+        rowHeight,
+        bpPerPx,
+        offsetPx,
+        showBorders,
+        showLetters,
+        sequenceType,
+        palette,
+        textColors,
+        visStartBp,
+        visEndBp,
       )
       currentY += rowHeight
     }
 
     for (const frame of bottomFrames) {
       drawTranslationRow(
-        ctx, data.seq, data.start, frame, currentY, rowHeight,
-        bpPerPx, offsetPx, !reversed, showBorders, showLetters,
-        palette, textColors, visStartBp, visEndBp,
+        ctx,
+        data.seq,
+        data.start,
+        frame,
+        currentY,
+        rowHeight,
+        bpPerPx,
+        offsetPx,
+        !reversed,
+        showBorders,
+        showLetters,
+        palette,
+        textColors,
+        visStartBp,
+        visEndBp,
       )
       currentY += rowHeight
     }
@@ -364,7 +412,12 @@ const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
         <LoadingOverlay isVisible={showLoading} />
       )}
       {error ? (
-        <ErrorBar error={error} onRetry={() => model.reload()} />
+        <ErrorBar
+          error={error}
+          onRetry={() => {
+            model.reload()
+          }}
+        />
       ) : null}
     </div>
   )
