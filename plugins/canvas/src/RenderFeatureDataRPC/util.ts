@@ -30,9 +30,10 @@ export function getBoxColor({
 }) {
   const { config } = configContext
 
-  let fill = isUTR(feature)
-    ? readConfigValue<string>(config, 'color3', feature)
-    : readConfigValue<string>(config, 'color1', feature)
+  let fill =
+    (isUTR(feature)
+      ? readConfigValue<string>(config, 'color3', feature)
+      : readConfigValue<string>(config, 'color1', feature)) ?? 'goldenrod'
 
   const featureType: string | undefined = feature.get('type')
   const featureStrand: -1 | 1 | undefined = feature.get('strand')
@@ -70,6 +71,7 @@ export function getStrokeColor({
   configContext: RenderConfigContext
   theme: Theme
 }) {
-  const c = readConfigValue<string>(configContext.config, 'color2', feature)
+  const c =
+    readConfigValue<string>(configContext.config, 'color2', feature) ?? '#f0f'
   return c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
 }

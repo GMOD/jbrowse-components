@@ -18,6 +18,31 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         description:
           'Automatically resize the track height to fit all features',
       },
+      color1: {
+        type: 'color',
+        description: 'the main color of each feature',
+        defaultValue: 'goldenrod',
+        contextVariable: ['feature'],
+      },
+      color2: {
+        type: 'color',
+        description:
+          'the secondary color of each feature, used for connecting lines',
+        defaultValue: '#f0f',
+        contextVariable: ['feature'],
+      },
+      color3: {
+        type: 'color',
+        description: 'the tertiary color of each feature, used for UTRs',
+        defaultValue: '#357089',
+        contextVariable: ['feature'],
+      },
+      featureHeight: {
+        type: 'number',
+        description: 'height in pixels of the main body of each feature',
+        defaultValue: 10,
+        contextVariable: ['feature'],
+      },
     },
     {
       baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),

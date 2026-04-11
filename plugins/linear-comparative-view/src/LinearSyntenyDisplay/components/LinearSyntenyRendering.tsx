@@ -311,14 +311,17 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         className={classes.gpuCanvas}
         style={{ width, height }}
       />
-      {gpuStatus === 'loading' ? (
-        <div className={classes.gpuLoadingOverlay}>
-          <LoadingEllipses message="Initializing GPU renderer" />
-        </div>
-      ) : null}
       {gpuStatus === 'failed' ? (
         <div className={classes.gpuLoadingOverlay}>
           GPU initialization failed: {gpuError}
+        </div>
+      ) : !model.ready ? (
+        <div className={classes.gpuLoadingOverlay}>
+          <LoadingEllipses
+            message={
+              gpuStatus === 'loading' ? 'Initializing GPU renderer' : undefined
+            }
+          />
         </div>
       ) : null}
       {model.error ? (

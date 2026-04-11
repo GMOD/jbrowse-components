@@ -61,6 +61,7 @@ export interface LinearAlignmentsDisplayModel {
   coverageDisplayHeight: number
   showInterbaseIndicators: boolean
   showSashimiArcs: boolean
+  sashimiArcsDown: boolean
   totalPileupHeight: number
   scrollableHeight: number
   pileupViewportHeight: number

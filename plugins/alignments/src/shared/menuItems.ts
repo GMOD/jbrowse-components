@@ -438,6 +438,7 @@ interface ShowMenuModel {
   showCoverage: boolean
   showArcs: boolean
   showSashimiArcs: boolean
+  sashimiArcsDown: boolean
   showMismatches: boolean
   showInterbaseIndicators: boolean
   showOutlineSetting: boolean
@@ -448,6 +449,7 @@ interface ShowMenuModel {
   setShowCoverage: (show: boolean) => void
   setShowArcs: (show: boolean) => void
   setShowSashimiArcs: (show: boolean) => void
+  setSashimiArcsDown: (flag: boolean) => void
   setShowMismatches: (show: boolean) => void
   setShowInterbaseIndicators: (show: boolean) => void
   setShowOutline: (show: boolean) => void
@@ -498,6 +500,14 @@ export function getShowMenuItem(model: ShowMenuModel) {
         checked: model.showSashimiArcs,
         onClick: () => {
           model.setShowSashimiArcs(!model.showSashimiArcs)
+        },
+      },
+      {
+        label: 'Sashimi arcs point down',
+        type: 'checkbox' as const,
+        checked: model.sashimiArcsDown,
+        onClick: () => {
+          model.setSashimiArcsDown(!model.sashimiArcsDown)
         },
       },
       {

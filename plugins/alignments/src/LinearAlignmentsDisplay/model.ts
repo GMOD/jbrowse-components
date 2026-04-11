@@ -206,6 +206,7 @@ export default function stateModelFactory(
         arcsState: types.optional(ArcsSubModel, {}),
         showArcs: false,
         arcsHeight: 40,
+        sashimiArcsDown: false,
         showSoftClipping: false,
         jexlFilters: types.optional(types.array(types.string), []),
       }),
@@ -851,6 +852,10 @@ export default function stateModelFactory(
 
         setArcsHeight(height: number) {
           self.arcsHeight = height
+        },
+
+        setSashimiArcsDown(flag: boolean) {
+          self.sashimiArcsDown = flag
         },
 
         setShowMismatches(show: boolean) {

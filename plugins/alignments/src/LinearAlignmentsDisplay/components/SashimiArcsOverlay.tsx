@@ -27,7 +27,13 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
 }) {
   const [selectedArcIdx, setSelectedArcIdx] = useState(-1)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const { showSashimiArcs, showCoverage, coverageHeight, rpcDataMap } = model
+  const {
+    showSashimiArcs,
+    showCoverage,
+    coverageHeight,
+    sashimiArcsDown,
+    rpcDataMap,
+  } = model
   const { initialized, offsetPx, visibleRegions } = view
 
   const effectiveHeight = coverageHeight - YSCALEBAR_LABEL_OFFSET
@@ -36,8 +42,8 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
     return null
   }
 
-  const baseline = effectiveHeight * 0.9
-  const peak = effectiveHeight * 0.1
+  const baseline = sashimiArcsDown ? effectiveHeight * 0.1 : effectiveHeight * 0.9
+  const peak = sashimiArcsDown ? effectiveHeight * 1.7 : effectiveHeight * 0.1
 
   const paths: {
     d: string

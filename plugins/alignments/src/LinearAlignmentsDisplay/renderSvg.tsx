@@ -89,6 +89,7 @@ function evalSashimiCurve(
   blockStartPx: number,
   bpStartOffset: number,
   pxPerBp: number,
+  arcsDown = false,
 ) {
   const mt = 1 - t
   const mt2 = mt * mt
@@ -99,7 +100,10 @@ function evalSashimiCurve(
   const destY = covHeight * (0.8 / 0.75)
   const yPx = 3 * mt2 * t * destY + 3 * mt * t2 * destY
   const screenX = blockStartPx + (xBp - bpStartOffset) * pxPerBp
-  return { x: screenX, y: 0.9 * covHeight - yPx }
+  return {
+    x: screenX,
+    y: arcsDown ? 0.1 * covHeight + yPx : 0.9 * covHeight - yPx,
+  }
 }
 
 const ARC_SEGMENTS = 64
@@ -181,6 +185,7 @@ function drawSashimiArcs(
   blockWidth: number,
   coverageHeight: number,
   coverageOffset: number,
+  arcsDown = false,
 ) {
   const pxPerBp = blockWidth / regionLengthBp
 
@@ -207,6 +212,7 @@ function drawSashimiArcs(
         blockStartPx,
         bpStartOffset,
         pxPerBp,
+        arcsDown,
       )
       if (s === 0) {
         ctx.moveTo(pt.x, pt.y + coverageOffset)
@@ -678,6 +684,7 @@ export async function renderSvg(
     arcsHeight,
     arcsState,
     showSashimiArcs,
+    sashimiArcsDown,
     showLinkedReads,
     showInterbaseIndicators,
     showSoftClipping,
@@ -762,6 +769,7 @@ export async function renderSvg(
           blockWidth,
           coverageHeight,
           0,
+          sashimiArcsDown,
         )
       }
     }

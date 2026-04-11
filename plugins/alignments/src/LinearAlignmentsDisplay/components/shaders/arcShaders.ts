@@ -153,6 +153,10 @@ void main() {
   float d = abs(v_dist);
   float aa = fwidth(v_dist);
   float alpha = clamp((halfWidth - d) / aa + 0.5, 0.0, 1.0);
+  // Output STRAIGHT alpha — do NOT premultiply rgb here.
+  // SRC_ALPHA,ONE_MINUS_SRC_ALPHA blend against the (0,0,0,0) clear converts
+  // this to premultiplied in the framebuffer; premultipliedAlpha:true lets the
+  // compositor read it correctly.  Premultiplying here causes color*alpha^2.
   fragColor = vec4(v_color.rgb, v_color.a * alpha);
 }
 `

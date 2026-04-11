@@ -228,7 +228,7 @@ It almost looks like every paired arc has a little 'outline' which darkens it
 
 ## Add global 'config overrides'
 
-EE.g. allow show paired arcs by default on by default across all tracks
+E.g. allow show paired arcs by default on by default across all tracks
 
 ## Add single cell demo
 

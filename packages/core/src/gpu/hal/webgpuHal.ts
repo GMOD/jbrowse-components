@@ -49,8 +49,8 @@ interface RegionState {
   buffers: Map<string, RegionPassBuffer>
 }
 
-// Per-device shared state: bind group layouts and compiled pipelines.
-// Multiple HAL instances can share a device — pipelines are merged incrementally.
+// Per-device shared state: bind group layouts and pipeline layouts.
+// These are identical across all renderers so safe to share.
 const deviceState = new WeakMap<
   GPUDevice,
   {
@@ -58,7 +58,6 @@ const deviceState = new WeakMap<
     pipelineLayout: GPUPipelineLayout
     texturedBindGroupLayout: GPUBindGroupLayout | null
     texturedPipelineLayout: GPUPipelineLayout | null
-    pipelines: Map<string, GPURenderPipeline>
   }
 >()
 
@@ -74,7 +73,6 @@ function getOrCreateDeviceState(device: GPUDevice) {
       pipelineLayout,
       texturedBindGroupLayout: null,
       texturedPipelineLayout: null,
-      pipelines: new Map(),
     }
     deviceState.set(device, state)
   }
@@ -123,21 +121,16 @@ function getOrCreateTexturedLayout(
   }
 }
 
-async function ensurePipelines(
+async function compilePipelines(
   device: GPUDevice,
   descriptors: PassDescriptor[],
 ) {
   const state = getOrCreateDeviceState(device)
-
-  const missing = descriptors.filter(d => !state.pipelines.has(d.id))
-  if (missing.length === 0) {
-    return
-  }
-
   const preferredFormat = navigator.gpu.getPreferredCanvasFormat()
+  const pipelines = new Map<string, GPURenderPipeline>()
 
   await Promise.all(
-    missing.map(async desc => {
+    descriptors.map(async desc => {
       const module = device.createShaderModule({ code: desc.wgslSource })
       const info = await module.getCompilationInfo()
       const errors = info.messages.filter(m => m.type === 'error')
@@ -173,9 +166,11 @@ async function ensurePipelines(
         primitive: { topology: topo },
         multisample: desc.picking ? undefined : { count: MSAA_SAMPLE_COUNT },
       })
-      state.pipelines.set(desc.id, pipeline)
+      pipelines.set(desc.id, pipeline)
     }),
   )
+
+  return pipelines
 }
 
 interface PassTextureState {
@@ -189,6 +184,7 @@ export class WebGPUHal implements GpuHal {
   private context: GPUCanvasContext
   private regions = new Map<number, RegionState>()
   private descriptors: Map<string, PassDescriptor>
+  private pipelines: ReadonlyMap<string, GPURenderPipeline>
   private passTextures = new Map<string, PassTextureState>()
 
   // Uniform ring buffer: holds up to MAX_UNIFORM_SLOTS sets of uniforms so
@@ -228,11 +224,13 @@ export class WebGPUHal implements GpuHal {
     context: GPUCanvasContext,
     descriptors: PassDescriptor[],
     uniformByteSize: number,
+    pipelines: Map<string, GPURenderPipeline>,
   ) {
     this.device = device
     this.canvas = canvas
     this.context = context
     this.descriptors = new Map(descriptors.map(d => [d.id, d]))
+    this.pipelines = pipelines
     this.uniformByteSize = uniformByteSize
 
     // Align uniform slots to device requirements for dynamic offsets
@@ -257,13 +255,14 @@ export class WebGPUHal implements GpuHal {
     if (!result) {
       return null
     }
-    await ensurePipelines(result.device, descriptors)
+    const pipelines = await compilePipelines(result.device, descriptors)
     return new WebGPUHal(
       result.device,
       canvas,
       result.context,
       descriptors,
       uniformByteSize,
+      pipelines,
     )
   }
 
@@ -510,11 +509,10 @@ export class WebGPUHal implements GpuHal {
   }
 
   drawPass(passId: string, regionKey: number, bufferPassId?: string) {
-    const state = deviceState.get(this.device)
-    if (!state || !this.currentPass) {
+    if (!this.currentPass) {
       return
     }
-    const pipeline = state.pipelines.get(passId)
+    const pipeline = this.pipelines.get(passId)
     if (!pipeline) {
       return
     }
@@ -580,11 +578,7 @@ export class WebGPUHal implements GpuHal {
     instanceCount?: number,
     bufferPassId?: string,
   ) {
-    const state = deviceState.get(this.device)
-    if (!state) {
-      return
-    }
-    const pipeline = state.pipelines.get(passId)
+    const pipeline = this.pipelines.get(passId)
     if (!pipeline) {
       return
     }

@@ -1,4 +1,5 @@
 import {
+  YSCALEBAR_LABEL_OFFSET,
   packIndicatorsForGpu,
   packNoncovSegmentsForGpu,
   packSnpSegmentsForGpu,
@@ -1071,9 +1072,12 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       // Arcs area
       if (arcsHeight > 0) {
         const covHPx = Math.round(covH * dpr)
+        const yscaleOffPx = Math.round(YSCALEBAR_LABEL_OFFSET * dpr)
+        const arcViewportTop = Math.max(0, covHPx - yscaleOffPx)
+        const arcOverlapPx = covHPx - arcViewportTop
         const effectiveArcsHPx = Math.min(
-          Math.round(arcsHeight * dpr),
-          Math.max(0, bufH - covHPx),
+          Math.round(arcsHeight * dpr) + arcOverlapPx,
+          Math.max(0, bufH - arcViewportTop),
         )
         if (effectiveArcsHPx > 0) {
           this.uF32[U_COV_OFFSET] = 0
@@ -1085,13 +1089,13 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
           this.hal.setViewport(
             Math.round(scissorX * dpr),
-            covHPx,
+            arcViewportTop,
             Math.round(scissorW * dpr),
             effectiveArcsHPx,
           )
           this.hal.setScissor(
             Math.round(scissorX * dpr),
-            covHPx,
+            arcViewportTop,
             Math.round(scissorW * dpr),
             effectiveArcsHPx,
           )

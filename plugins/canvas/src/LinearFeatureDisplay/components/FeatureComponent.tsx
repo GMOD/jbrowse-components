@@ -78,6 +78,7 @@ interface LinearFeatureDisplayModel {
   contextMenuItems: () => { label: string; onClick: () => void }[]
   getFeatureById: (featureId: string) => FlatbushItem | undefined
   setCanvasDrawn: (val: boolean) => void
+  clearFeatureSelection: () => void
 }
 
 export interface Props {
@@ -390,6 +391,8 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
           result.subfeature ?? undefined,
           result.regionNumber,
         )
+      } else {
+        model.clearFeatureSelection()
       }
     }
 
