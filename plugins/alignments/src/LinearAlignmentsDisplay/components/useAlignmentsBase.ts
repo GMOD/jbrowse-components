@@ -119,6 +119,7 @@ export interface LinearAlignmentsDisplayModel {
   setCurrentRangeY: (rangeY: [number, number]) => void
   setCoverageHeight: (height: number) => void
   setArcsHeight: (height: number) => void
+  setSashimiArcsHeight: (height: number) => void
   setHighlightedChainIds: (ids: string[]) => void
   setSelectedChainIds: (ids: string[]) => void
   clearHighlights: () => void
@@ -155,6 +156,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [resizeHandleHovered, setResizeHandleHovered] = useState(false)
   const [arcsResizeHovered, setArcsResizeHovered] = useState(false)
+  const [sashimiResizeHovered, setSashimiResizeHovered] = useState(false)
 
   const canvasRectRef = useRef<{ rect: DOMRect; timestamp: number } | null>(
     null,
@@ -270,6 +272,27 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
     const onMouseMove = (moveEvent: MouseEvent) => {
       model.setArcsHeight(
+        Math.max(20, startHeight + moveEvent.clientY - startY),
+      )
+    }
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+    }
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+  }
+
+  function handleSashimiArcsResizeMouseDown(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    const startY = e.clientY
+    const startHeight = model.sashimiArcsHeight
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      model.setSashimiArcsHeight(
         Math.max(20, startHeight + moveEvent.clientY - startY),
       )
     }
@@ -497,6 +520,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         showArcs: model.showArcs,
         arcsHeight: model.arcsHeight,
         pairedArcsDown: model.pairedArcsDown,
+        pileupTopOffset: model.coverageDisplayHeight,
         canvasWidth: view.width,
         canvasHeight: model.height,
         highlightedFeatureId: model.featureIdUnderMouse,
@@ -606,6 +630,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     handleArcsResizeMouseDown,
     arcsResizeHovered,
     setArcsResizeHovered,
+    handleSashimiArcsResizeMouseDown,
+    sashimiResizeHovered,
+    setSashimiResizeHovered,
     handleContextMenu,
     processMouseMove,
     processClick,

@@ -56,7 +56,12 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
     strand: number
   }[] = []
 
-  for (const [, rpcData] of rpcDataMap) {
+  for (const region of visibleRegions) {
+    const rpcData = rpcDataMap.get(region.regionNumber)
+    if (!rpcData || rpcData.numSashimiArcs === 0) {
+      continue
+    }
+    const { refName } = region
     const {
       sashimiX1,
       sashimiX2,
@@ -65,18 +70,6 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
       numSashimiArcs,
       regionStart,
     } = rpcData
-
-    if (numSashimiArcs === 0) {
-      continue
-    }
-
-    let refName = ''
-    for (const r of visibleRegions) {
-      if (rpcDataMap.get(r.regionNumber) === rpcData) {
-        refName = r.refName
-        break
-      }
-    }
 
     for (let i = 0; i < numSashimiArcs; i++) {
       const startBp = regionStart + sashimiX1[i]!

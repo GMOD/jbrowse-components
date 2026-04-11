@@ -19,6 +19,7 @@ export const ArcsSubModel = types
     drawInter: true,
     drawLongRange: true,
     colorByType: types.optional(arcColorByTypes, 'insertSizeAndOrientation'),
+    pairedArcsDown: true,
   })
   .volatile(() => ({
     rpcDataMap: new Map<number, ArcsDataResult>(),
@@ -55,6 +56,9 @@ export const ArcsSubModel = types
     },
     setColorByType(type: ArcColorByType) {
       self.colorByType = type
+    },
+    setArcsDown(flag: boolean) {
+      self.pairedArcsDown = flag
     },
   }))
 

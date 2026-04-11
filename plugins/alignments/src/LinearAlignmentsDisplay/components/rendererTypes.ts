@@ -34,6 +34,7 @@ export interface RenderState {
   showArcs?: boolean
   arcsHeight?: number
   pairedArcsDown: boolean
+  pileupTopOffset: number
   showOutline?: boolean
 }
 

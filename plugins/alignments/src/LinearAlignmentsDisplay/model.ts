@@ -33,6 +33,7 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { autorun, observable } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
+import { SashimiArcsSubModel } from './SashimiArcsSubModel.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import {
   computeLayout,
@@ -194,7 +195,6 @@ export default function stateModelFactory(
         type: types.literal('LinearAlignmentsDisplay'),
         configuration: ConfigurationReference(configSchema),
         showLinkedReads: false,
-        showSashimiArcs: true,
         showCoverage: true,
         coverageHeight: 45,
         showMismatches: true,
@@ -204,11 +204,9 @@ export default function stateModelFactory(
         drawProperPairs: true,
         flipStrandLongReadChains: true,
         arcsState: types.optional(ArcsSubModel, {}),
+        sashimiArcsState: types.optional(SashimiArcsSubModel, {}),
         showArcs: false,
         arcsHeight: 40,
-        pairedArcsDown: true,
-        sashimiArcsDown: false,
-        sashimiArcsHeight: 40,
         showSoftClipping: false,
         jexlFilters: types.optional(types.array(types.string), []),
       }),
@@ -312,10 +310,6 @@ export default function stateModelFactory(
         return self.getConfWithOverride<ColorBy>('colorBy')
       },
 
-      get modificationThreshold() {
-        return this.colorBy.modifications?.threshold ?? 10
-      },
-
       get filterBy(): FilterBy {
         return self.getConfWithOverride<FilterBy>('filterBy')
       },
@@ -369,12 +363,44 @@ export default function stateModelFactory(
         return map
       },
 
+      get mismatchAlpha(): boolean {
+        return !!self.getOverride<boolean>('mismatchAlpha')
+      },
+
+      get showLegend(): boolean | undefined {
+        return self.getOverride<boolean>('showLegend')
+      },
+
+      get regionTooLarge() {
+        return self.regionTooLargeState
+      },
+
+      get sortedBy() {
+        return self.getOverride<SortedBy>('sortedBy')
+      },
+
+      get coverageTicks(): CoverageTicks | undefined {
+        if (!self.showCoverage || self.visibleMaxDepth === 0) {
+          return undefined
+        }
+        return computeCoverageTicks(self.visibleMaxDepth, self.coverageHeight)
+      },
+
+      get legendItems(): LegendItem[] {
+        return getReadDisplayLegendItems(self.getOverride<ColorBy>('colorBy'))
+      },
+    }))
+    // Views derived from colorBy, featureHeightSetting, featureSpacing above.
+    .views(self => ({
+      get modificationThreshold() {
+        return self.colorBy.modifications?.threshold ?? 10
+      },
+
       /**
        * Calculate color scheme index from colorBy setting
        */
       get colorSchemeIndex(): number {
-        const colorBy = this.colorBy
-        switch (colorBy.type) {
+        switch (self.colorBy.type) {
           case 'normal':
             return ColorScheme.normal
           case 'strand':
@@ -404,43 +430,90 @@ export default function stateModelFactory(
         }
       },
 
-      get mismatchAlpha(): boolean {
-        return !!self.getOverride<boolean>('mismatchAlpha')
-      },
-
-      get showLegend(): boolean | undefined {
-        return self.getOverride<boolean>('showLegend')
-      },
-
       get showModifications(): boolean {
-        const t = this.colorBy.type
+        const t = self.colorBy.type
         return t === 'modifications' || t === 'methylation'
       },
 
-      get regionTooLarge() {
-        return self.regionTooLargeState
-      },
-
-      get sortedBy() {
-        return self.getOverride<SortedBy>('sortedBy')
-      },
-
-      get coverageTicks(): CoverageTicks | undefined {
-        if (!self.showCoverage || self.visibleMaxDepth === 0) {
-          return undefined
-        }
-        return computeCoverageTicks(self.visibleMaxDepth, self.coverageHeight)
-      },
-
       get totalPileupHeight() {
-        return self.maxY * (this.featureHeightSetting + this.featureSpacing)
-      },
-
-      get legendItems(): LegendItem[] {
-        return getReadDisplayLegendItems(self.getOverride<ColorBy>('colorBy'))
+        return self.maxY * (self.featureHeightSetting + self.featureSpacing)
       },
     }))
+    // Delegates from submodels — expose arcsState.pairedArcsDown and
+    // sashimiArcsState fields directly on the display for external consumers.
     .views(self => ({
+      get pairedArcsDown() {
+        return self.arcsState.pairedArcsDown
+      },
+      get showSashimiArcs() {
+        return self.sashimiArcsState.showSashimiArcs
+      },
+      get sashimiArcsDown() {
+        return self.sashimiArcsState.sashimiArcsDown
+      },
+      get sashimiArcsHeight() {
+        return self.sashimiArcsState.sashimiArcsHeight
+      },
+
+      /**
+       * Find a feature by ID in rpcDataMap, returning the regionNumber,
+       * index, and rpcData entry. Shared by searchFeatureByID and
+       * getFeatureInfoById.
+       */
+      findFeatureInRpcData(featureId: string) {
+        for (const [regionNumber, rpcData] of self.rpcDataMap) {
+          const idx = rpcData.readIds.indexOf(featureId)
+          if (idx === -1) {
+            continue
+          }
+          const startOffset = rpcData.readPositions[idx * 2]
+          const endOffset = rpcData.readPositions[idx * 2 + 1]
+          if (startOffset !== undefined && endOffset !== undefined) {
+            return { regionNumber, idx, rpcData, startOffset, endOffset }
+          }
+        }
+        return undefined
+      },
+    }))
+    // Core layout views — depend on the delegates above via self.
+    .views(self => ({
+      /**
+       * Compatibility getter for BreakpointSplitView overlay which reads
+       * display.scrollTop to position SVG curves. The WebGL display manages
+       * Y scrolling via currentRangeY[0] rather than the inherited scrollTop.
+       */
+      get scrollTop() {
+        return self.currentRangeY[0]
+      },
+
+      /**
+       * Total pixel height consumed by coverage and arc sections above the
+       * pileup reads. Used as the Y offset for pileup rendering.
+       */
+      get coverageDisplayHeight() {
+        return (
+          (self.showCoverage ? self.coverageHeight : 0) +
+          (self.showArcs && self.pairedArcsDown ? self.arcsHeight : 0) +
+          (self.showSashimiArcs && self.sashimiArcsDown && self.showCoverage
+            ? self.sashimiArcsHeight
+            : 0)
+        )
+      },
+
+      get isChainMode() {
+        return self.renderingMode === 'linkedRead'
+      },
+    }))
+    // Views that depend on coverageDisplayHeight and isChainMode.
+    .views(self => ({
+      get pileupViewportHeight() {
+        return Math.max(0, self.height - self.coverageDisplayHeight)
+      },
+
+      get showOutlineSetting() {
+        return self.getOverride<boolean>('showOutline') ?? self.isChainMode
+      },
+
       get visibleLabels(): VisibleLabel[] {
         const view = getContainingView(self) as LGV
         if (!view.initialized) {
@@ -471,74 +544,9 @@ export default function stateModelFactory(
           featureHeightSetting: self.featureHeightSetting,
           featureSpacing: self.featureSpacing,
           showMismatches: self.showMismatches,
-          topOffset:
-            (self.showCoverage ? self.coverageHeight : 0) +
-            (self.showArcs && self.pairedArcsDown ? self.arcsHeight : 0) +
-            (self.showSashimiArcs && self.sashimiArcsDown && self.showCoverage
-              ? self.sashimiArcsHeight
-              : 0),
+          topOffset: self.coverageDisplayHeight,
           rangeY: self.currentRangeY,
         })
-      },
-
-      get isChainMode() {
-        return self.renderingMode === 'linkedRead'
-      },
-
-      get showOutlineSetting() {
-        return self.getOverride<boolean>('showOutline') ?? this.isChainMode
-      },
-    }))
-    .views(self => ({
-      /**
-       * Compatibility getter for BreakpointSplitView overlay which reads
-       * display.scrollTop to position SVG curves. The WebGL display manages
-       * Y scrolling via currentRangeY[0] rather than the inherited scrollTop.
-       */
-      get scrollTop() {
-        return self.currentRangeY[0]
-      },
-
-      /**
-       * Effective coverage display height for BreakpointSplitView overlay
-       * Y offset. Returns 0 when coverage is hidden.
-       */
-      get coverageDisplayHeight() {
-        return (
-          (self.showCoverage ? self.coverageHeight : 0) +
-          (self.showArcs && self.pairedArcsDown ? self.arcsHeight : 0) +
-          (self.showSashimiArcs && self.sashimiArcsDown && self.showCoverage
-            ? self.sashimiArcsHeight
-            : 0)
-        )
-      },
-
-      get pileupViewportHeight() {
-        return Math.max(0, self.height - this.coverageDisplayHeight)
-      },
-
-      get scrollableHeight() {
-        return Math.max(0, self.totalPileupHeight - this.pileupViewportHeight)
-      },
-
-      /**
-       * Find a feature by ID in rpcDataMap, returning the regionNumber,
-       * index, and rpcData entry. Shared by searchFeatureByID and
-       * getFeatureInfoById.
-       */
-      findFeatureInRpcData(featureId: string) {
-        for (const [regionNumber, rpcData] of self.rpcDataMap) {
-          const idx = rpcData.readIds.indexOf(featureId)
-          if (idx === -1) {
-            continue
-          }
-          const startOffset = rpcData.readPositions[idx * 2]
-          const endOffset = rpcData.readPositions[idx * 2 + 1]
-          if (startOffset !== undefined && endOffset !== undefined) {
-            return { regionNumber, idx, rpcData, startOffset, endOffset }
-          }
-        }
-        return undefined
       },
 
       /**
@@ -548,7 +556,7 @@ export default function stateModelFactory(
       searchFeatureByID(
         featureId: string,
       ): [number, number, number, number] | undefined {
-        const hit = this.findFeatureInRpcData(featureId)
+        const hit = self.findFeatureInRpcData(featureId)
         if (!hit) {
           return undefined
         }
@@ -566,7 +574,7 @@ export default function stateModelFactory(
       },
 
       getFeatureInfoById(featureId: string) {
-        const hit = this.findFeatureInRpcData(featureId)
+        const hit = self.findFeatureInRpcData(featureId)
         if (!hit) {
           return undefined
         }
@@ -583,6 +591,12 @@ export default function stateModelFactory(
           strand: flags !== undefined && flags & 16 ? '-' : '+',
           refName: view.displayedRegions[regionNumber]?.refName ?? 'unknown',
         }
+      },
+    }))
+    // scrollableHeight depends on pileupViewportHeight above.
+    .views(self => ({
+      get scrollableHeight() {
+        return Math.max(0, self.totalPileupHeight - self.pileupViewportHeight)
       },
     }))
     .views(self => ({
@@ -691,7 +705,7 @@ export default function stateModelFactory(
         },
 
         setScrollTop(scrollTop: number) {
-          this.setCurrentRangeY([
+          self.setCurrentRangeY([
             scrollTop,
             scrollTop + self.pileupViewportHeight,
           ])
@@ -843,7 +857,7 @@ export default function stateModelFactory(
         },
 
         setShowSashimiArcs(show: boolean) {
-          self.showSashimiArcs = show
+          self.sashimiArcsState.setShowSashimiArcs(show)
         },
 
         setShowCoverage(show: boolean) {
@@ -863,15 +877,15 @@ export default function stateModelFactory(
         },
 
         setSashimiArcsDown(flag: boolean) {
-          self.sashimiArcsDown = flag
+          self.sashimiArcsState.setSashimiArcsDown(flag)
         },
 
         setSashimiArcsHeight(height: number) {
-          self.sashimiArcsHeight = height
+          self.sashimiArcsState.setSashimiArcsHeight(height)
         },
 
         setArcsDown(flag: boolean) {
-          self.pairedArcsDown = flag
+          self.arcsState.setArcsDown(flag)
         },
 
         setShowMismatches(show: boolean) {

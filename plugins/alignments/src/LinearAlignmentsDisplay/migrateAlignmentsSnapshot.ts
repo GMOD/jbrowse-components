@@ -98,7 +98,7 @@ export function migrateAlignmentsSnapshot(snap: Record<string, unknown>) {
     result = {
       ...rest,
       type: 'LinearAlignmentsDisplay',
-      showSashimiArcs: showArcs ?? true,
+      sashimiArcsState: { showSashimiArcs: showArcs ?? true },
       showInterbaseIndicators: showInterbaseIndicators ?? true,
       showCoverage: true,
       coverageHeight: 45,
@@ -107,6 +107,38 @@ export function migrateAlignmentsSnapshot(snap: Record<string, unknown>) {
       filterBySetting,
       jexlFilters: jexlFilters ?? [],
     }
+  }
+
+  // Migrate flat sashimi/pairedArcsDown properties → submodel paths
+  const {
+    showSashimiArcs,
+    sashimiArcsDown,
+    sashimiArcsHeight,
+    pairedArcsDown,
+    ...stripped
+  } = result
+  result = stripped
+
+  if (
+    showSashimiArcs !== undefined ||
+    sashimiArcsDown !== undefined ||
+    sashimiArcsHeight !== undefined
+  ) {
+    const existing = (result.sashimiArcsState ?? {}) as Record<string, unknown>
+    result = {
+      ...result,
+      sashimiArcsState: {
+        ...existing,
+        ...(showSashimiArcs !== undefined ? { showSashimiArcs } : {}),
+        ...(sashimiArcsDown !== undefined ? { sashimiArcsDown } : {}),
+        ...(sashimiArcsHeight !== undefined ? { sashimiArcsHeight } : {}),
+      },
+    }
+  }
+
+  if (pairedArcsDown !== undefined) {
+    const existing = (result.arcsState ?? {}) as Record<string, unknown>
+    result = { ...result, arcsState: { ...existing, pairedArcsDown } }
   }
 
   // Migrate individual override properties → configOverrides

@@ -477,8 +477,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     const effectiveArcsHeight =
       state.showArcs && state.arcsHeight ? state.arcsHeight : 0
     const covH = state.showCoverage ? state.coverageHeight : 0
-    const arcsSectionHeight = state.pairedArcsDown ? effectiveArcsHeight : 0
-    const pileupTop = covH + arcsSectionHeight
+    const pileupTop = state.pileupTopOffset
     const mode = state.renderingMode ?? 'pileup'
 
     for (const block of blocks) {
@@ -586,38 +585,22 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
 
       ctx.restore() // pileup clip
 
-      if (effectiveArcsHeight > 0) {
+      // Arcs rendered by GPU/Canvas when pairedArcsDown; SVG overlay handles !pairedArcsDown
+      if (effectiveArcsHeight > 0 && state.pairedArcsDown) {
         ctx.save()
         ctx.beginPath()
-        if (state.pairedArcsDown) {
-          ctx.rect(scissorX, covH, scissorW, effectiveArcsHeight)
-          ctx.clip()
-          this.drawArcs(
-            ctx,
-            region,
-            block,
-            bpLength,
-            fullBlockWidth,
-            state,
-            covH,
-            // @ts-expect-error
-            effectiveArcsHeight,
-          )
-        } else {
-          ctx.rect(scissorX, 0, scissorW, covH)
-          ctx.clip()
-          this.drawArcs(
-            ctx,
-            region,
-            block,
-            bpLength,
-            fullBlockWidth,
-            state,
-            0,
-            // @ts-expect-error
-            covH,
-          )
-        }
+        ctx.rect(scissorX, covH, scissorW, effectiveArcsHeight)
+        ctx.clip()
+        this.drawArcs(
+          ctx,
+          region,
+          block,
+          bpLength,
+          fullBlockWidth,
+          state,
+          covH,
+          effectiveArcsHeight,
+        )
         ctx.restore()
       }
 
@@ -625,14 +608,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  private covOffset(state: RenderState) {
-    return (
-      (state.showCoverage ? state.coverageHeight : 0) +
-      (state.showArcs && state.arcsHeight && state.pairedArcsDown
-        ? state.arcsHeight
-        : 0)
-    )
-  }
+
 
   private bpToScreenX(
     absBp: number,
@@ -657,7 +633,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     fullBlockWidth: number,
     state: RenderState,
   ) {
-    const covOffset = this.covOffset(state)
+    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
 
@@ -692,7 +668,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     fullBlockWidth: number,
     state: RenderState,
   ) {
-    const covOffset = this.covOffset(state)
+    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
 
@@ -730,7 +706,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     fullBlockWidth: number,
     state: RenderState,
   ) {
-    const covOffset = this.covOffset(state)
+    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
     const bpPerPx = bpLength / fullBlockWidth
@@ -756,7 +732,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     fullBlockWidth: number,
     state: RenderState,
   ) {
-    const covOffset = this.covOffset(state)
+    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
     const insColor = rgb255(state.colors.colorInsertion)
@@ -803,7 +779,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     if (count === 0) {
       return
     }
-    const covOffset = this.covOffset(state)
+    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
     const bpPerPx = bpLength / fullBlockWidth
@@ -831,7 +807,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     if (region.numSoftclipBases === 0) {
       return
     }
-    const covOffset = this.covOffset(state)
+    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
     const bpPerPx = bpLength / fullBlockWidth
@@ -860,7 +836,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     if (region.numModifications === 0) {
       return
     }
-    const covOffset = this.covOffset(state)
+    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
     const bpPerPx = bpLength / fullBlockWidth
@@ -971,8 +947,8 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     fullBlockWidth: number,
     state: RenderState,
     arcsTop: number,
+    arcsH: number,
   ) {
-    const arcsH = state.arcsHeight ?? 0
     const lineWidth = state.arcLineWidth ?? 1
 
     // Draw filled arcs
@@ -1018,7 +994,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     if (region.numConnectingLines === 0) {
       return
     }
-    const covOffset = this.covOffset(state)
+    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
 
@@ -1052,7 +1028,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     },
     state: RenderState,
   ) {
-    const covOffset = this.covOffset(state)
+    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
     const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
@@ -1098,7 +1074,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     },
     state: RenderState,
   ) {
-    const covOffset = this.covOffset(state)
+    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
     const bpLength = block.bpRangeX[1] - block.bpRangeX[0]

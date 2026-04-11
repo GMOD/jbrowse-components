@@ -682,12 +682,15 @@ export async function renderSvg(
     colorSchemeIndex,
     showArcs,
     arcsHeight,
+    pairedArcsDown,
     arcsState,
     showSashimiArcs,
     sashimiArcsDown,
+    sashimiArcsHeight,
     showLinkedReads,
     showInterbaseIndicators,
     showSoftClipping,
+    coverageDisplayHeight: pileupTopOffset,
   } = model
 
   if (model.error) {
@@ -708,8 +711,6 @@ export async function renderSvg(
   const blocks = view.dynamicBlocks.contentBlocks
   const offset = YSCALEBAR_LABEL_OFFSET
   const effectiveHeight = coverageHeight - offset * 2
-  const pileupTopOffset =
-    (showCoverage ? coverageHeight : 0) + (showArcs ? arcsHeight : 0)
   const rowHeight = featureHeightSetting + featureSpacing
   const arcLineWidth = arcsState.lineWidth
   const rasterize = opts?.rasterizeLayers
@@ -722,13 +723,18 @@ export async function renderSvg(
 
   // Create contexts — either real canvas (rasterize) or SvgCanvas (vector)
   const pileup = createCtx(rasterize, totalWidth, pileupHeight, opts)
+  const arcsCtxHeight = pairedArcsDown ? arcsHeight : coverageHeight
   const arcsCtxObj = showArcs
-    ? createCtx(rasterize, totalWidth, arcsHeight, opts)
+    ? createCtx(rasterize, totalWidth, arcsCtxHeight, opts)
     : undefined
 
   // Coverage + indicators always use SvgCanvas (lightweight, no rasterize needed)
   const covCtx = new SvgCanvas()
   const indicatorCtx = new SvgCanvas()
+  const sashimiCtx =
+    showSashimiArcs && sashimiArcsDown && showCoverage
+      ? new SvgCanvas()
+      : undefined
 
   for (const block of blocks) {
     if (block.regionNumber === undefined) {
@@ -760,17 +766,31 @@ export async function renderSvg(
       )
 
       if (showSashimiArcs && data.numSashimiArcs > 0) {
-        drawSashimiArcs(
-          covCtx,
-          data,
-          blockScreenX,
-          block.start - data.regionStart,
-          regionLengthBp,
-          blockWidth,
-          coverageHeight,
-          0,
-          sashimiArcsDown,
-        )
+        if (sashimiArcsDown && sashimiCtx) {
+          drawSashimiArcs(
+            sashimiCtx,
+            data,
+            blockScreenX,
+            block.start - data.regionStart,
+            regionLengthBp,
+            blockWidth,
+            sashimiArcsHeight,
+            0,
+            true,
+          )
+        } else {
+          drawSashimiArcs(
+            covCtx,
+            data,
+            blockScreenX,
+            block.start - data.regionStart,
+            regionLengthBp,
+            blockWidth,
+            coverageHeight,
+            0,
+            false,
+          )
+        }
       }
     }
 
@@ -784,7 +804,7 @@ export async function renderSvg(
           block.start - arcsData.regionStart,
           regionLengthBp,
           blockWidth,
-          arcsHeight,
+          arcsCtxHeight,
           arcLineWidth,
         )
       }
@@ -866,18 +886,24 @@ export async function renderSvg(
             />
           </>
         ) : null}
+        {sashimiCtx ? (
+          <g
+            transform={`translate(0,${showCoverage ? coverageHeight : 0})`}
+            dangerouslySetInnerHTML={{ __html: sashimiCtx.getSerializedSvg() }}
+          />
+        ) : null}
         {arcsCtxObj ? (
           arcsCtxObj.canvas ? (
             <image
               x={0}
-              y={showCoverage ? coverageHeight : 0}
+              y={pairedArcsDown && showCoverage ? coverageHeight : 0}
               width={totalWidth}
-              height={arcsHeight}
+              height={arcsCtxHeight}
               xlinkHref={arcsCtxObj.canvas.toDataURL('image/png')}
             />
           ) : (
             <g
-              transform={`translate(0,${showCoverage ? coverageHeight : 0})`}
+              transform={`translate(0,${pairedArcsDown && showCoverage ? coverageHeight : 0})`}
               dangerouslySetInnerHTML={{
                 __html: (arcsCtxObj.ctx as SvgCanvas).getSerializedSvg(),
               }}
