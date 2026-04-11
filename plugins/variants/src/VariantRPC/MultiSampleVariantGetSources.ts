@@ -1,4 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { isFeatureAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
 import type { Source } from '../shared/types.ts'
@@ -30,8 +31,9 @@ export class MultiSampleVariantGetSources extends RpcMethodTypeWithFiltersAndRen
       sessionId,
       adapterConfig,
     )
-
-    // @ts-expect-error
-    return dataAdapter.getSources(regions, deserializedArgs)
+    if (!isFeatureAdapter(dataAdapter)) {
+      throw new Error('Expected a feature data adapter')
+    }
+    return dataAdapter.getSources(regions ?? [])
   }
 }
