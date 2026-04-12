@@ -345,7 +345,9 @@ function stateModelFactory(pluginManager: PluginManager) {
           const asm = assemblyManager.get(self.init.assembly)
           return !!(asm?.initialized && asm.regions)
         }
-        return assemblyManager.areAssembliesInitialized(this.assemblyNames)
+        return this.assemblyNames.every(
+          name => assemblyManager.get(name)?.initialized,
+        )
       },
 
       /**

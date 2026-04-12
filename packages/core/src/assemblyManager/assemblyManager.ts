@@ -74,13 +74,6 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       /**
        * #method
        */
-      areAssembliesInitialized(assemblyNames: string[]) {
-        return assemblyNames.every(a => self.assemblyNameMap[a]?.initialized)
-      },
-
-      /**
-       * #method
-       */
       get(asmName: string) {
         if (asmName) {
           const assembly = self.assemblyNameMap[asmName]

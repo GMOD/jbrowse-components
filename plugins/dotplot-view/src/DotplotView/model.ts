@@ -247,8 +247,9 @@ export default function stateModelFactory(pm: PluginManager) {
        * #getter
        */
       get assembliesInitialized() {
-        return getSession(self).assemblyManager.areAssembliesInitialized(
-          self.assemblyNames,
+        const { assemblyManager } = getSession(self)
+        return self.assemblyNames.every(
+          name => assemblyManager.get(name)?.initialized,
         )
       },
     }))
