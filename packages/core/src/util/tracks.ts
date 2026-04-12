@@ -527,9 +527,9 @@ export function showTrackGeneric(
 
   // Allow plugins to preprocess the track config (e.g. to add default displays)
   // Use getSnapshot for MST models, structuredClone for plain objects
-  const confSnapshot = isStateTreeNode(rawConf)
-    ? getSnapshot(rawConf)
-    : structuredClone(rawConf)
+  const confSnapshot = structuredClone(
+    isStateTreeNode(rawConf) ? getSnapshot(rawConf) : rawConf,
+  )
   const conf = pluginManager.evaluateExtensionPoint(
     'Core-preProcessTrackConfig',
     confSnapshot,

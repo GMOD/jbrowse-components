@@ -179,14 +179,73 @@ export async function executeVariantCellData({
 
   const genotypesCache = new Map<string, Record<string, string>>()
 
-  const mafs = await updateStatus('Filtering variants', statusCallback, () =>
-    getFeaturesThatPassMinorAlleleFrequencyFilter({
-      features: rawFeatures,
-      minorAlleleFrequencyFilter,
-      lengthCutoffFilter,
-      genotypesCache,
-    }),
-  )
+  // Group rawFeatures by region using a sorted pointer advance (O(N+R)).
+  // Features from adapters are position-sorted; regions are also sorted.
+  // This avoids any per-feature lookup when computing per-region cells.
+  let perRegionRawFeatures: Map<number, typeof rawFeatures> | undefined
+  if (regionLookup) {
+    const regionsByRefName = new Map<string, typeof regionLookup>()
+    for (const r of regionLookup) {
+      let list = regionsByRefName.get(r.refName)
+      if (!list) {
+        list = []
+        regionsByRefName.set(r.refName, list)
+      }
+      list.push(r)
+    }
+    perRegionRawFeatures = new Map()
+    const ptrs = new Map<string, number>()
+    for (const feature of rawFeatures) {
+      const refName = feature.get('refName') as string
+      const start = feature.get('start') as number
+      const candidates = regionsByRefName.get(refName)
+      if (!candidates) {
+        continue
+      }
+      let p = ptrs.get(refName) ?? 0
+      while (p < candidates.length && candidates[p]!.end <= start) {
+        p++
+      }
+      ptrs.set(refName, p)
+      const region = candidates[p]
+      if (!region || start < region.start) {
+        continue
+      }
+      let list = perRegionRawFeatures.get(region.regionNumber)
+      if (!list) {
+        list = []
+        perRegionRawFeatures.set(region.regionNumber, list)
+      }
+      list.push(feature)
+    }
+  }
+
+  let mafs: MAFFilteredFeature[]
+  let perRegionMafs: Map<number, MAFFilteredFeature[]> | undefined
+  if (perRegionRawFeatures) {
+    perRegionMafs = new Map()
+    const allMafs: MAFFilteredFeature[] = []
+    for (const [regionNum, features] of perRegionRawFeatures) {
+      const regionMafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
+        features,
+        minorAlleleFrequencyFilter,
+        lengthCutoffFilter,
+        genotypesCache,
+      })
+      perRegionMafs.set(regionNum, regionMafs)
+      allMafs.push(...regionMafs)
+    }
+    mafs = allMafs
+  } else {
+    mafs = await updateStatus('Filtering variants', statusCallback, () =>
+      getFeaturesThatPassMinorAlleleFrequencyFilter({
+        features: rawFeatures,
+        minorAlleleFrequencyFilter,
+        lengthCutoffFilter,
+        genotypesCache,
+      }),
+    )
+  }
 
   const { sampleInfo, hasPhased, simplifiedFeatures } = await updateStatus(
     'Computing sample info',
@@ -199,40 +258,9 @@ export async function executeVariantCellData({
       'Computing variant cells',
       statusCallback,
       () => {
-        if (regionLookup) {
-          const grouped = new Map<number, MAFFilteredFeature[]>()
-          const regionsByRefName = new Map<string, typeof regionLookup>()
-          for (const r of regionLookup) {
-            let list = regionsByRefName.get(r.refName)
-            if (!list) {
-              list = []
-              regionsByRefName.set(r.refName, list)
-            }
-            list.push(r)
-          }
-          for (const maf of mafs) {
-            const refName = maf.feature.get('refName')
-            const featureStart = maf.feature.get('start')
-            const candidates = regionsByRefName.get(refName)
-            if (!candidates) {
-              continue
-            }
-            const entry = candidates.find(
-              r => featureStart >= r.start && featureStart < r.end,
-            )
-            if (!entry) {
-              continue
-            }
-            let list = grouped.get(entry.regionNumber)
-            if (!list) {
-              list = []
-              grouped.set(entry.regionNumber, list)
-            }
-            list.push(maf)
-          }
-
+        if (perRegionMafs) {
           const result = {} as Record<number, VariantCellData>
-          for (const [regionNum, regionMafs] of grouped) {
+          for (const [regionNum, regionMafs] of perRegionMafs) {
             result[regionNum] = computeVariantCells({
               mafs: regionMafs,
               sources,

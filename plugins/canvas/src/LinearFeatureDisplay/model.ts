@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import {
   ConfigurationReference,
   getConf,
+  getConfSnapshot,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -17,9 +18,10 @@ import {
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
+  ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -40,12 +42,14 @@ const CollapseIntronsDialog = lazy(
   () => import('./components/CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
 )
 
+import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type {
   FeatureDataResult,
   FlatbushItem,
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -88,6 +92,30 @@ function findSubfeatureById(
 
 export type { MultiRegionRegion as Region } from '@jbrowse/plugin-linear-genome-view'
 
+async function fetchCanvasFeatureDetails(
+  session: {
+    rpcManager: RpcManager
+    notifyError: (msg: string, err?: unknown) => void
+  },
+  sessionId: string,
+  adapterConfig: Record<string, unknown>,
+  featureId: string,
+  region: Region,
+) {
+  try {
+    const result = await session.rpcManager.call(
+      sessionId,
+      'GetCanvasFeatureDetails',
+      { sessionId, adapterConfig, featureId, region },
+    )
+    return result.feature ? new SimpleFeature(result.feature) : undefined
+  } catch (e) {
+    console.error('Failed to fetch feature details:', e)
+    session.notifyError(`${e}`, e)
+    return undefined
+  }
+}
+
 const FeatureComponent = lazy(() => import('./components/FeatureComponent.tsx'))
 
 const DESCRIPTION_DENSITY_THRESHOLD = 0.2
@@ -101,14 +129,10 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
+      ConfigOverrideMixin(),
       types.model({
         type: types.literal('LinearFeatureDisplay'),
         configuration: ConfigurationReference(configSchema),
-        trackShowLabels: types.maybe(types.boolean),
-        trackShowDescriptions: types.maybe(types.boolean),
-        trackSubfeatureLabels: types.maybe(types.string),
-        trackGeneGlyphMode: types.maybe(types.string),
-        trackDisplayMode: types.maybe(types.string),
         showOnlyGenes: false,
       }),
     )
@@ -126,19 +150,51 @@ export default function stateModelFactory(
         userByteSizeLimit,
         // Rewrite "height" from older snapshots to "heightPreConfig"
         height,
+        // Migrate old individual override properties to configOverrides
+        trackShowLabels,
+        trackShowDescriptions,
+        trackSubfeatureLabels,
+        trackGeneGlyphMode,
+        trackDisplayMode,
+        trackDisplayDirectionalChevrons,
         ...rest
       } = snap
+
+      const migrated: Record<string, unknown> = {}
+      if (trackShowLabels !== undefined) {
+        migrated.showLabels = trackShowLabels
+      }
+      if (trackShowDescriptions !== undefined) {
+        migrated.showDescriptions = trackShowDescriptions
+      }
+      if (trackSubfeatureLabels !== undefined) {
+        migrated.subfeatureLabels = trackSubfeatureLabels
+      }
+      if (trackGeneGlyphMode !== undefined) {
+        migrated.geneGlyphMode = trackGeneGlyphMode
+      }
+      if (trackDisplayMode !== undefined) {
+        migrated.displayMode = trackDisplayMode
+      }
+      if (trackDisplayDirectionalChevrons !== undefined) {
+        migrated.displayDirectionalChevrons = trackDisplayDirectionalChevrons
+      }
+
       return {
         ...rest,
         ...(height !== undefined && rest.heightPreConfig === undefined
           ? { heightPreConfig: height }
           : undefined),
+        ...(Object.keys(migrated).length > 0 && {
+          configOverrides: { ...rest.configOverrides, ...migrated },
+        }),
       }
     })
     .volatile(() => ({
       rpcDataMap: new Map<number, FeatureDataResult>(),
       layoutBpPerPxMap: new Map<number, number>(),
       maxY: 0,
+      canvasDrawn: false,
       featureIdUnderMouse: null as string | null,
       mouseoverExtraInformation: undefined as string | undefined,
       contextMenuInfo: undefined as ContextMenuFeatureInfo | undefined,
@@ -167,6 +223,16 @@ export default function stateModelFactory(
         >
       },
 
+      get displayConfigSnapshot(): DisplayConfig {
+        return {
+          ...getConfSnapshot(self.configuration),
+          ...(self.configOverrides as Omit<
+            typeof self.configOverrides,
+            symbol
+          >),
+        } as DisplayConfig
+      },
+
       get DisplayMessageComponent() {
         return FeatureComponent
       },
@@ -188,51 +254,53 @@ export default function stateModelFactory(
         return renderSvg(self, opts)
       },
 
-      get maxHeight(): number {
-        return getConf(self, 'maxHeight') ?? 1200
+      get maxHeight() {
+        return self.getConfWithOverride<number>('maxHeight')
       },
 
-      get autoHeight(): boolean {
-        return getConf(self, 'autoHeight') ?? false
+      get autoHeight() {
+        return self.getConfWithOverride<boolean>('autoHeight')
       },
 
-      get showLabels(): boolean {
-        return self.trackShowLabels ?? (getConf(self, 'showLabels') as boolean)
+      get showLabels() {
+        return self.getConfWithOverride<boolean>('showLabels')
       },
 
-      get showDescriptions(): boolean {
-        return (
-          self.trackShowDescriptions ??
-          (getConf(self, 'showDescriptions') as boolean)
-        )
+      get showDescriptions() {
+        return self.getConfWithOverride<boolean>('showDescriptions')
       },
 
-      get effectiveShowDescriptions(): boolean {
+      get effectiveShowDescriptions() {
         return (
           this.showDescriptions &&
           self.featureDensityPerPx < DESCRIPTION_DENSITY_THRESHOLD
         )
       },
 
-      get subfeatureLabels(): string {
-        return self.trackSubfeatureLabels ?? 'none'
+      get subfeatureLabels() {
+        return self.getConfWithOverride<string>('subfeatureLabels')
       },
 
-      get displayMode(): string {
-        return self.trackDisplayMode ?? 'normal'
+      get displayMode() {
+        return self.getConfWithOverride<string>('displayMode')
       },
 
-      get geneGlyphMode(): string {
-        return self.trackGeneGlyphMode ?? 'auto'
+      get geneGlyphMode(): DisplayConfig['geneGlyphMode'] {
+        return self.getConfWithOverride<DisplayConfig['geneGlyphMode']>(
+          'geneGlyphMode',
+        )
       },
 
-      get effectiveGeneGlyphMode(): string {
-        const mode = this.geneGlyphMode
-        if (mode === 'auto') {
+      get displayDirectionalChevrons() {
+        return self.getConfWithOverride<boolean>('displayDirectionalChevrons')
+      },
+
+      get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {
+        if (this.geneGlyphMode === 'auto') {
           const view = getContainingView(self) as LGV
           return view.bpPerPx > 100 ? 'longestCoding' : 'all'
         }
-        return mode
+        return this.geneGlyphMode
       },
 
       get selectedFeatureId() {
@@ -252,7 +320,7 @@ export default function stateModelFactory(
         }
         return (
           self.userFeatureDensityLimit ??
-          (getConf(self, 'maxFeatureScreenDensity') as number)
+          self.getConfWithOverride<number>('maxFeatureScreenDensity')
         )
       },
 
@@ -320,6 +388,10 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
+      setCanvasDrawn(value: boolean) {
+        self.canvasDrawn = value
+      },
+
       expandToFit() {
         self.heightBeforeExpand = self.height
         self.setHeight(Math.min(self.maxY, self.maxHeight))
@@ -399,27 +471,31 @@ export default function stateModelFactory(
       },
 
       setShowLabels(value: boolean) {
-        self.trackShowLabels = value
+        self.setOverride('showLabels', value)
       },
 
       setShowDescriptions(value: boolean) {
-        self.trackShowDescriptions = value
+        self.setOverride('showDescriptions', value)
       },
 
       setSubfeatureLabels(value: string) {
-        self.trackSubfeatureLabels = value
+        self.setOverride('subfeatureLabels', value)
       },
 
       setGeneGlyphMode(value: string) {
-        self.trackGeneGlyphMode = value
+        self.setOverride('geneGlyphMode', value)
       },
 
       setDisplayMode(value: string) {
-        self.trackDisplayMode = value
+        self.setOverride('displayMode', value)
       },
 
       setShowOnlyGenes(value: boolean) {
         self.showOnlyGenes = value
+      },
+
+      setDisplayDirectionalChevrons(value: boolean) {
+        self.setOverride('displayDirectionalChevrons', value)
       },
 
       showContextMenuForFeature(
@@ -436,99 +512,69 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      fetchFullFeature: flow(function* (
-        featureId: string,
-        regionNumber: number,
-      ) {
-        const session = getSession(self)
-        const { rpcManager } = session
-        const adapterConfig = self.adapterConfigSnapshot
-
+      selectFullFeature(featureId: string, regionNumber: number) {
         const region = self.loadedRegions.get(regionNumber)
         if (!region) {
-          return undefined
+          return
         }
-
-        try {
-          const result = yield rpcManager.call(
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          const feature = await fetchCanvasFeatureDetails(
+            getSession(self),
             getRpcSessionId(self),
-            'GetCanvasFeatureDetails',
-            {
-              adapterConfig,
-              featureId,
-              region,
-            },
+            self.adapterConfigSnapshot,
+            featureId,
+            region,
           )
-
-          if (result.feature && isAlive(self)) {
-            return new SimpleFeature(result.feature)
+          if (feature && isAlive(self)) {
+            self.selectFeature(feature)
           }
-        } catch (e) {
-          console.error('Failed to fetch feature details:', e)
-          session.notifyError(`${e}`, e)
-        }
-        return undefined
-      }),
-    }))
-    .actions(self => ({
-      selectFullFeature: flow(function* (
-        featureId: string,
-        regionNumber: number,
-      ) {
-        const feature: Feature | undefined = yield self.fetchFullFeature(
-          featureId,
-          regionNumber,
-        )
-        if (feature) {
-          self.selectFeature(feature)
-        }
-      }),
+        })()
+      },
 
-      selectFeatureById: flow(function* (
+      selectFeatureById(
         featureInfo: FlatbushItem,
         subfeatureInfo: SubfeatureInfo | undefined,
         regionNumber: number,
       ) {
+        const region = self.loadedRegions.get(regionNumber)
+        if (!region) {
+          return
+        }
         const featureIdToFetch = subfeatureInfo
           ? subfeatureInfo.parentFeatureId
           : featureInfo.featureId
-
-        const parentFeature: Feature | undefined = yield self.fetchFullFeature(
-          featureIdToFetch,
-          regionNumber,
-        )
-
-        if (parentFeature) {
-          const target = subfeatureInfo
-            ? (findSubfeatureById(parentFeature, subfeatureInfo.featureId) ??
-              parentFeature)
-            : parentFeature
-          self.selectFeature(target)
-        }
-      }),
-    }))
-    .actions(self => {
-      return {
-        // Soft reset: clears tracking state (loadedRegions,
-        // layoutBpPerPxMap, error, stopToken) and bumps fetchGeneration to
-        // invalidate in-flight fetches, but intentionally preserves
-        // rpcDataMap so the previous frame's rendered data stays visible
-        // while the new fetch is in progress, avoiding a flash of empty
-        // content. Compare with reload()/clearAllRpcData() which is a
-        // "hard reset" that also wipes rpcDataMap.
-        softReset() {
-          if (self.renderingStopToken) {
-            stopStopToken(self.renderingStopToken)
-            self.renderingStopToken = undefined
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          const parentFeature = await fetchCanvasFeatureDetails(
+            getSession(self),
+            getRpcSessionId(self),
+            self.adapterConfigSnapshot,
+            featureIdToFetch,
+            region,
+          )
+          if (parentFeature && isAlive(self)) {
+            const target = subfeatureInfo
+              ? (findSubfeatureById(parentFeature, subfeatureInfo.featureId) ??
+                parentFeature)
+              : parentFeature
+            self.selectFeature(target)
           }
-          self.error = undefined
-          self.loadedRegions = new Map()
-          self.layoutBpPerPxMap = new Map()
-          self.setRegionTooLarge(false)
-          self.fetchGeneration++
-        },
-      }
-    })
+        })()
+      },
+
+      softReset() {
+        if (self.renderingStopToken) {
+          stopStopToken(self.renderingStopToken)
+          self.renderingStopToken = undefined
+        }
+        self.error = undefined
+        self.loadedRegions = new Map()
+        self.layoutBpPerPxMap = new Map()
+        self.setRegionTooLarge(false)
+        self.fetchGeneration++
+      },
+    }))
     .actions(self => {
       interface FetchResult {
         regionNumber: number
@@ -547,30 +593,28 @@ export default function stateModelFactory(
         const { rpcManager } = session
         const adapterConfig = self.adapterConfigSnapshot
 
-        const result = await rpcManager.call(
-          getRpcSessionId(self),
-          'RenderFeatureData',
-          {
-            adapterConfig,
-            displayConfig: {
-              subfeatureLabels: self.subfeatureLabels,
-              geneGlyphMode: self.effectiveGeneGlyphMode,
-              displayMode: self.displayMode,
-            },
-            region,
-            bpPerPx,
-            maxFeatureDensity: self.maxFeatureDensity,
-            colorByCDS: self.colorByCDS,
-            sequenceAdapter: self.sequenceAdapter,
-            showOnlyGenes: self.showOnlyGenes,
-            stopToken,
-            statusCallback: (msg: string) => {
-              if (isAlive(self)) {
-                self.setStatusMessage(msg)
-              }
-            },
+        const sessionId = getRpcSessionId(self)
+        const result = await rpcManager.call(sessionId, 'RenderFeatureData', {
+          sessionId,
+          adapterConfig,
+          displayConfig: {
+            ...self.displayConfigSnapshot,
+            // effectiveGeneGlyphMode resolves 'auto' based on zoom level
+            geneGlyphMode: self.effectiveGeneGlyphMode,
           },
-        )
+          region,
+          bpPerPx,
+          maxFeatureDensity: self.maxFeatureDensity,
+          colorByCDS: self.colorByCDS,
+          sequenceAdapter: self.sequenceAdapter,
+          showOnlyGenes: self.showOnlyGenes,
+          stopToken,
+          statusCallback: (msg: string) => {
+            if (isAlive(self)) {
+              self.setStatusMessage(msg)
+            }
+          },
+        })
 
         if ('regionTooLarge' in result) {
           return 'regionTooLarge'
@@ -822,7 +866,6 @@ export default function stateModelFactory(
             label: 'Open feature details',
             icon: MenuOpenIcon,
             onClick: () => {
-              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               self.selectFullFeature(featureId, regionNumber)
             },
           },
@@ -846,18 +889,29 @@ export default function stateModelFactory(
             onClick: () => {
               // eslint-disable-next-line @typescript-eslint/no-floating-promises
               ;(async () => {
-                const fullFeature = await self.fetchFullFeature(
+                if (!region) {
+                  return
+                }
+                const session = getSession(self)
+                const fullFeature = await fetchCanvasFeatureDetails(
+                  session,
+                  getRpcSessionId(self),
+                  self.adapterConfigSnapshot,
                   featureId,
-                  regionNumber,
+                  region,
                 )
                 if (!fullFeature) {
                   return
                 }
-                const session = getSession(self)
-                const { uniqueId: _, ...rest } = fullFeature.toJSON()
-                const { default: copy } = await import('copy-to-clipboard')
-                copy(JSON.stringify(rest, null, 4))
-                session.notify('Copied to clipboard', 'success')
+                try {
+                  const { uniqueId: _, ...rest } = fullFeature.toJSON()
+                  const { default: copy } = await import('copy-to-clipboard')
+                  copy(JSON.stringify(rest, null, 4))
+                  session.notify('Copied to clipboard', 'success')
+                } catch (e) {
+                  console.error(e)
+                  session.notifyError(`${e}`, e)
+                }
               })()
             },
           },
@@ -869,14 +923,20 @@ export default function stateModelFactory(
                   onClick: () => {
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     ;(async () => {
-                      const fullFeature = await self.fetchFullFeature(
+                      if (!region) {
+                        return
+                      }
+                      const session = getSession(self)
+                      const fullFeature = await fetchCanvasFeatureDetails(
+                        session,
+                        getRpcSessionId(self),
+                        self.adapterConfigSnapshot,
                         featureId,
-                        regionNumber,
+                        region,
                       )
                       if (!fullFeature) {
                         return
                       }
-                      const session = getSession(self)
                       const transcripts = getTranscripts(fullFeature)
                       if (!hasIntrons(transcripts)) {
                         session.notify(
@@ -886,8 +946,7 @@ export default function stateModelFactory(
                         return
                       }
                       const view = getContainingView(self) as LGV
-                      const { assemblyManager } = session
-                      const assembly = assemblyManager.get(
+                      const assembly = session.assemblyManager.get(
                         view.assemblyNames[0]!,
                       )
                       if (assembly) {
@@ -991,22 +1050,9 @@ export default function stateModelFactory(
       },
     }))
     .postProcessSnapshot(snap => {
-      const {
-        trackShowLabels,
-        trackShowDescriptions,
-        trackSubfeatureLabels,
-        trackGeneGlyphMode,
-        trackDisplayMode,
-        showOnlyGenes,
-        ...rest
-      } = snap as Omit<typeof snap, symbol>
+      const { showOnlyGenes, ...rest } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(trackShowLabels !== undefined && { trackShowLabels }),
-        ...(trackShowDescriptions !== undefined && { trackShowDescriptions }),
-        ...(trackSubfeatureLabels !== undefined && { trackSubfeatureLabels }),
-        ...(trackGeneGlyphMode !== undefined && { trackGeneGlyphMode }),
-        ...(trackDisplayMode !== undefined && { trackDisplayMode }),
         ...(showOnlyGenes && { showOnlyGenes }),
       } as typeof snap
     })

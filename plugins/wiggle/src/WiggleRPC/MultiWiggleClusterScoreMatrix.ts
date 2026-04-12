@@ -5,12 +5,8 @@ import type { GetScoreMatrixArgs } from './types.ts'
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     MultiWiggleClusterScoreMatrix: {
-      args: Record<string, unknown>
+      args: GetScoreMatrixArgs
       return: { order: number[]; tree: string }
-    }
-    MultiWiggleGetScoreMatrix: {
-      args: Record<string, unknown>
-      return: Record<string, number[]>
     }
   }
 }

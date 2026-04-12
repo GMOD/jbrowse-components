@@ -6,8 +6,23 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from './samFlags.ts'
 
-import type { ArcsDataResult } from '../RenderArcsDataRPC/types.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
+
+export interface ArcsDataResult {
+  regionStart: number
+  arcX1: Float32Array
+  arcX2: Float32Array
+  arcColorTypes: Float32Array
+  arcIsArc: Uint8Array
+  numArcs: number
+  linePositions: Uint32Array
+  lineYs: Float32Array
+  lineColorTypes: Float32Array
+  numLines: number
+  coverageDepths: Float32Array
+  coverageMaxDepth: number
+  coverageStartOffset: number
+}
 
 interface RegionInfo {
   refName: string

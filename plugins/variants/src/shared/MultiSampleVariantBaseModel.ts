@@ -17,8 +17,10 @@ import {
 } from '@jbrowse/core/util/tracks'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
+  ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
+  migrateOldSettingSnapshots,
 } from '@jbrowse/plugin-linear-genome-view'
 import { computeHierarchyLayout, parseClusterTree } from '@jbrowse/tree-sidebar'
 import CategoryIcon from '@mui/icons-material/Category'
@@ -30,6 +32,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
 
 import {
+  GENOTYPE_SPLITTER,
   NO_CALL_COLOR,
   OTHER_ALT_COLOR,
   REFERENCE_COLOR,
@@ -63,8 +66,6 @@ const ClusterDialog = lazy(
 const SetRowHeightDialog = lazy(
   () => import('./components/SetRowHeightDialog.tsx'),
 )
-
-const GENOTYPE_SPLITTER = /[/|]/
 
 function encodeGenotype(gt: string) {
   const alleles = gt.split(GENOTYPE_SPLITTER)
@@ -130,87 +131,20 @@ export default function MultiSampleVariantBaseModelF(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
+      ConfigOverrideMixin(),
       types.model({
-        /**
-         * #property
-         */
         type: types.literal('LinearVariantMatrixDisplay'),
-
-        /**
-         * #property
-         */
         layout: types.optional(types.frozen<Source[]>(), []),
-        /**
-         * #property
-         */
         configuration: ConfigurationReference(configSchema),
-
-        /**
-         * #property
-         * When undefined, falls back to config value
-         */
-        minorAlleleFrequencyFilterSetting: types.maybe(types.number),
-
-        /**
-         * #property
-         * When undefined, falls back to config value
-         */
-        showSidebarLabelsSetting: types.maybe(types.boolean),
-
-        /**
-         * #property
-         * When undefined, falls back to config value
-         */
-        showTreeSetting: types.maybe(types.boolean),
-
-        /**
-         * #property
-         * When undefined, falls back to config value
-         */
-        renderingModeSetting: types.maybe(types.string),
-
-        /**
-         * #property
-         * Controls row height: 'auto' calculates from available height,
-         * or a number specifies manual pixel height per row
-         */
         rowHeightMode: types.optional(types.number, 0),
-
-        /**
-         * #property
-         */
         lengthCutoffFilter: types.optional(
           types.number,
           Number.MAX_SAFE_INTEGER,
         ),
-
-        /**
-         * #property
-         */
         jexlFilters: types.maybe(types.array(types.string)),
-
-        /**
-         * #property
-         * When undefined, falls back to config value (showReferenceAlleles)
-         */
-        referenceDrawingModeSetting: types.maybe(types.string),
-        /**
-         * #property
-         */
         clusterTree: types.maybe(types.string),
-        /**
-         * #property
-         */
         treeAreaWidth: types.optional(types.number, 80),
-        /**
-         * #property
-         * Height reserved for elements above the main display (e.g., connecting lines in matrix view)
-         */
         lineZoneHeight: types.optional(types.number, 0),
-        /**
-         * #property
-         * Filter to show only a subtree of samples
-         */
         subtreeFilter: types.maybe(types.array(types.string)),
       }),
     )
@@ -229,7 +163,7 @@ export default function MultiSampleVariantBaseModelF(
         snap = { ...rest, heightPreConfig: height }
       }
 
-      return snap
+      return migrateVariantSettings(snap)
     })
     .volatile(() => ({
       /**
@@ -317,9 +251,7 @@ export default function MultiSampleVariantBaseModelF(
        * Returns the effective rendering mode, falling back to config
        */
       get renderingMode(): string {
-        return (
-          self.renderingModeSetting ?? getConf(self as any, 'renderingMode')
-        )
+        return self.getConfWithOverride<string>('renderingMode')
       },
 
       get featureWidgetType() {
@@ -332,7 +264,7 @@ export default function MultiSampleVariantBaseModelF(
       get fetchSizeLimit() {
         return (
           self.userByteSizeLimit ||
-          (getConf(self as any, 'fetchSizeLimit') as number)
+          self.getConfWithOverride<number>('fetchSizeLimit')
         )
       },
     }))
@@ -493,19 +425,13 @@ export default function MultiSampleVariantBaseModelF(
        * #action
        */
       setMafFilter(arg: number) {
-        self.minorAlleleFrequencyFilterSetting = arg
+        self.setOverride('minorAlleleFrequencyFilter', arg)
       },
-      /**
-       * #action
-       */
       setShowSidebarLabels(arg: boolean) {
-        self.showSidebarLabelsSetting = arg
+        self.setOverride('showSidebarLabels', arg)
       },
-      /**
-       * #action
-       */
       setShowTree(arg: boolean) {
-        self.showTreeSetting = arg
+        self.setOverride('showTree', arg)
       },
       /**
        * #action
@@ -517,13 +443,11 @@ export default function MultiSampleVariantBaseModelF(
        * #action
        */
       setPhasedMode(arg: string) {
-        const currentMode =
-          self.renderingModeSetting ?? getConf(self, 'renderingMode')
-        if (currentMode !== arg) {
+        if (self.renderingMode !== arg) {
           self.layout = []
           self.clusterTree = undefined
         }
-        self.renderingModeSetting = arg
+        self.setOverride('renderingMode', arg)
       },
       /**
        * #action
@@ -565,7 +489,7 @@ export default function MultiSampleVariantBaseModelF(
        * #action
        */
       setReferenceDrawingMode(arg: string) {
-        self.referenceDrawingModeSetting = arg
+        self.setOverride('referenceDrawingMode', arg)
       },
     }))
     .views(self => ({
@@ -574,51 +498,33 @@ export default function MultiSampleVariantBaseModelF(
        * Returns the effective minor allele frequency filter, falling back to config
        */
       get minorAlleleFrequencyFilter() {
-        return (
-          self.minorAlleleFrequencyFilterSetting ??
-          getConf(self, 'minorAlleleFrequencyFilter')
-        )
+        return self.getConfWithOverride<number>('minorAlleleFrequencyFilter')
       },
 
-      /**
-       * #getter
-       * Returns the effective showSidebarLabels setting, falling back to config
-       */
       get showSidebarLabels() {
-        return (
-          self.showSidebarLabelsSetting ?? getConf(self, 'showSidebarLabels')
-        )
+        return self.getConfWithOverride<boolean>('showSidebarLabels')
       },
 
-      /**
-       * #getter
-       * Returns the effective showTree setting, falling back to config
-       */
       get showTree() {
-        return self.showTreeSetting ?? getConf(self, 'showTree')
+        return self.getConfWithOverride<boolean>('showTree')
       },
 
-      /**
-       * #getter
-       * Returns the effective reference drawing mode, derived from config showReferenceAlleles
-       */
       get referenceDrawingMode(): string {
-        if (self.referenceDrawingModeSetting !== undefined) {
-          return self.referenceDrawingModeSetting
+        const override = self.getOverride<string>('referenceDrawingMode')
+        if (override !== undefined) {
+          return override
         }
-        const showRef = getConf(self, 'showReferenceAlleles')
-        return showRef ? 'draw' : 'skip'
+        return self.getConfWithOverride<boolean>('showReferenceAlleles')
+          ? 'draw'
+          : 'skip'
       },
 
-      /**
-       * #method
-       */
       activeFilters() {
-        // config jexlFilters are deferred evaluated so they are prepended with
-        // jexl at runtime rather than being stored with jexl in the config
         return (
           self.jexlFilters ??
-          getConf(self, 'jexlFilters').map((r: string) => `jexl:${r}`)
+          self
+            .getConfWithOverride<string[]>('jexlFilters')
+            .map((r: string) => `jexl:${r}`)
         )
       },
 
@@ -1015,16 +921,10 @@ export default function MultiSampleVariantBaseModelF(
        * #method
        */
       getPortableSettings() {
-        // Note: rowHeightMode is intentionally excluded because Matrix and
-        // Regular displays have different defaults
         return {
-          minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
-          showSidebarLabelsSetting: self.showSidebarLabelsSetting,
-          showTree: self.showTree,
-          renderingMode: self.renderingMode,
+          configOverrides: self.configOverrides,
           lengthCutoffFilter: self.lengthCutoffFilter,
           jexlFilters: self.jexlFilters,
-          referenceDrawingMode: self.referenceDrawingMode,
           clusterTree: self.clusterTree,
           treeAreaWidth: self.treeAreaWidth,
           layout: self.layout,
@@ -1168,14 +1068,9 @@ export default function MultiSampleVariantBaseModelF(
       }
       const {
         layout,
-        minorAlleleFrequencyFilterSetting,
-        showSidebarLabelsSetting,
-        showTreeSetting,
-        renderingModeSetting,
         rowHeightMode,
         lengthCutoffFilter,
         jexlFilters,
-        referenceDrawingModeSetting,
         clusterTree,
         treeAreaWidth,
         lineZoneHeight,
@@ -1185,22 +1080,11 @@ export default function MultiSampleVariantBaseModelF(
       return {
         ...rest,
         ...(layout.length ? { layout } : {}),
-        ...(minorAlleleFrequencyFilterSetting !== undefined
-          ? { minorAlleleFrequencyFilterSetting }
-          : {}),
-        ...(showSidebarLabelsSetting !== undefined
-          ? { showSidebarLabelsSetting }
-          : {}),
-        ...(showTreeSetting !== undefined ? { showTreeSetting } : {}),
-        ...(renderingModeSetting !== undefined ? { renderingModeSetting } : {}),
         ...(rowHeightMode !== 0 ? { rowHeightMode } : {}),
         ...(lengthCutoffFilter !== Number.MAX_SAFE_INTEGER
           ? { lengthCutoffFilter }
           : {}),
         ...(jexlFilters?.length ? { jexlFilters } : {}),
-        ...(referenceDrawingModeSetting !== undefined
-          ? { referenceDrawingModeSetting }
-          : {}),
         ...(clusterTree !== undefined ? { clusterTree } : {}),
         ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
         ...(lineZoneHeight ? { lineZoneHeight } : {}),
@@ -1214,3 +1098,7 @@ export type MultiSampleVariantBaseStateModel = ReturnType<
 >
 export type MultiSampleVariantBaseModel =
   Instance<MultiSampleVariantBaseStateModel>
+
+function migrateVariantSettings(snap: Record<string, unknown>) {
+  return migrateOldSettingSnapshots(snap)
+}

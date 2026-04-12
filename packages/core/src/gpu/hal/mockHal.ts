@@ -133,10 +133,6 @@ export class MockHal implements GpuHal {
     return -1
   }
 
-  pick(_x: number, _y: number) {
-    return -1
-  }
-
   setScissor(x: number, y: number, w: number, h: number) {
     this.record('setScissor', x, y, w, h)
   }
@@ -151,10 +147,6 @@ export class MockHal implements GpuHal {
 
   clearViewport() {
     this.record('clearViewport')
-  }
-
-  getWebGLContext() {
-    return null
   }
 
   dispose() {

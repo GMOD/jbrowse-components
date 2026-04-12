@@ -32,6 +32,36 @@ export function detectRawMode(features: { feature: Feature }[]) {
   }
 }
 
+export function buildAlleleCounts(
+  count0: number,
+  count1: number,
+  count2: number,
+  count3: number,
+  countDot: number,
+  otherCounts: Record<string, number>,
+) {
+  const result = {} as Record<string, number>
+  if (count0 > 0) {
+    result['0'] = count0
+  }
+  if (count1 > 0) {
+    result['1'] = count1
+  }
+  if (count2 > 0) {
+    result['2'] = count2
+  }
+  if (count3 > 0) {
+    result['3'] = count3
+  }
+  if (countDot > 0) {
+    result['.'] = countDot
+  }
+  for (const key in otherCounts) {
+    result[key] = otherCounts[key]!
+  }
+  return result
+}
+
 export function calculateAlleleCountsFromRaw(callGenotype: Int8Array) {
   let count0 = 0
   let count1 = 0
@@ -60,26 +90,7 @@ export function calculateAlleleCountsFromRaw(callGenotype: Int8Array) {
     }
   }
 
-  const result = {} as Record<string, number>
-  if (count0 > 0) {
-    result['0'] = count0
-  }
-  if (count1 > 0) {
-    result['1'] = count1
-  }
-  if (count2 > 0) {
-    result['2'] = count2
-  }
-  if (count3 > 0) {
-    result['3'] = count3
-  }
-  if (countDot > 0) {
-    result['.'] = countDot
-  }
-  for (const key in otherCounts) {
-    result[key] = otherCounts[key]!
-  }
-  return result
+  return buildAlleleCounts(count0, count1, count2, count3, countDot, otherCounts)
 }
 
 export function encodeGenotypeFromRaw(

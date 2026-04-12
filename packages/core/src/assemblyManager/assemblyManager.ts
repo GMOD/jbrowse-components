@@ -77,6 +77,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       areAssembliesInitialized(assemblyNames: string[]) {
         return assemblyNames.every(a => self.assemblyNameMap[a]?.initialized)
       },
+
       /**
        * #method
        */

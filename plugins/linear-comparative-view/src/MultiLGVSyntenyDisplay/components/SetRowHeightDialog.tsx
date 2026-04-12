@@ -33,31 +33,31 @@ const SetRowHeightDialog = observer(function SetRowHeightDialog(props: {
             setHeight(event.target.value)
           }}
         />
-        <DialogActions>
-          <Button
-            variant="contained"
-            color="primary"
-            type="submit"
-            autoFocus
-            disabled={!ok}
-            onClick={() => {
-              model.setRowHeight(+height)
-              handleClose()
-            }}
-          >
-            Submit
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => {
-              handleClose()
-            }}
-          >
-            Cancel
-          </Button>
-        </DialogActions>
       </DialogContent>
+      <DialogActions>
+        <Button
+          variant="contained"
+          color="primary"
+          type="submit"
+          autoFocus
+          disabled={!ok}
+          onClick={() => {
+            model.setRowHeight(+height)
+            handleClose()
+          }}
+        >
+          Submit
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => {
+            handleClose()
+          }}
+        >
+          Cancel
+        </Button>
+      </DialogActions>
     </Dialog>
   )
 })

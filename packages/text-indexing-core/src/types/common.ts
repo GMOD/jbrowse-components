@@ -222,7 +222,7 @@ export function sanitizeForFilename(name: string) {
 /**
  * Generates metadata of index given a filename (trackId or assembly)
  */
-export async function generateMeta({
+export function generateMeta({
   configs,
   attributesToIndex,
   outDir,

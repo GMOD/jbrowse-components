@@ -98,6 +98,11 @@ function regionFromViewport(view: LGV) {
   }
 }
 
+const SUBGRAPH_VIEW_TYPES = [
+  { type: 'GraphGenomeView' as const, label: 'Graph genome', icon: BubbleChartIcon },
+  { type: 'TubeMapView' as const, label: 'Tube map', icon: TimelineIcon },
+]
+
 function regionLabel(region: { refName: string; start: number; end: number }) {
   return `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`
 }
@@ -178,7 +183,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       contextMenuFeature: undefined as Feature | undefined,
       statusMessage: undefined as string | undefined,
       visibleMaxDepth: 0,
-      webglRenderer: null as MultiSyntenyBackend | null,
+      gpuRenderer: null as MultiSyntenyBackend | null,
       colorPalette: null as SyntenyColorPalette | null,
       tabVisibilityVersion: 0,
       canvasDrawn: false,
@@ -319,9 +324,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       setStatusMessage(msg?: string) {
         self.statusMessage = msg
       },
-      setWebGLRenderer(renderer: MultiSyntenyBackend | null) {
-        console.log('[MultiSynteny] setWebGLRenderer:', renderer ? 'renderer' : 'null')
-        self.webglRenderer = renderer
+      setGpuRenderer(renderer: MultiSyntenyBackend | null) {
+        self.gpuRenderer = renderer
       },
       setCanvasDrawn(value: boolean) {
         self.canvasDrawn = value
@@ -333,7 +337,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         console.log('[MultiSynteny] clearDisplaySpecificData, stack:', new Error().stack?.split('\n').slice(1, 4).join(' | '))
         self.rpcDataMap = new Map()
         self.allGenomeNames = []
-        self.webglRenderer?.clearAllBlocks()
+        self.gpuRenderer?.clearAllBlocks()
       },
       selectFeature(feature: Feature) {
         const session = getSession(self)
@@ -433,7 +437,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             self,
             autorun(
               () => {
-                const renderer = self.webglRenderer
+                const renderer = self.gpuRenderer
                 if (!renderer) {
                   return
                 }
@@ -470,7 +474,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             self,
             autorun(
               () => {
-                const renderer = self.webglRenderer
+                const renderer = self.gpuRenderer
                 if (!renderer || !self.showCoverage) {
                   return
                 }
@@ -520,7 +524,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             self,
             autorun(
               () => {
-                const renderer = self.webglRenderer
+                const renderer = self.gpuRenderer
                 const palette = self.colorPalette
                 if (!renderer || !palette) {
                   return
@@ -529,8 +533,22 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 if (!view.initialized) {
                   return
                 }
+                // SYNC across all hook-driven GPU displays (wiggle,
+                // multi-wiggle, variants, alignments, HiC, LD): dataVersion
+                // is a counter incremented by setLoadedRegionForRegion()
+                // after each region's data is committed. Reading it here
+                // creates a MobX dependency so this autorun re-fires at that
+                // point, ensuring renderBlocks() runs with fully-committed
+                // data. See MultiRegionDisplayMixin.withFetchLifecycle.
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const _dv = self.dataVersion
+                // SYNC across model-driven GPU displays (dotplot, linear
+                // synteny, multi-LGV synteny): tabVisibilityVersion is a
+                // counter incremented by bumpTabVisibility() when the tab
+                // becomes visible again (WebGPU discards the swap-chain on
+                // hide). Reading it here creates a MobX dependency so this
+                // draw autorun re-fires on restore.
+                // Component calls useTabVisibilityRerender(() => bumpTabVisibility()).
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const _tvv = self.tabVisibilityVersion
                 const {
@@ -648,10 +666,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               ])
             },
           },
-          ...(['GraphGenomeView', 'TubeMapView'] as const).map(viewType => ({
-            label: `${viewType === 'GraphGenomeView' ? 'Graph genome' : 'Tube map'} view (feature)`,
-            icon:
-              viewType === 'GraphGenomeView' ? BubbleChartIcon : TimelineIcon,
+          ...SUBGRAPH_VIEW_TYPES.map(({ type: viewType, label, icon }) => ({
+            label: `${label} view (feature)`,
+            icon,
             onClick: async () => {
               const session = getSession(self)
               const fallback =
@@ -737,11 +754,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           )
         }
 
-        for (const viewType of ['GraphGenomeView', 'TubeMapView'] as const) {
+        for (const { type: viewType, label, icon } of SUBGRAPH_VIEW_TYPES) {
           launchSubMenu.push({
-            label: `${viewType === 'GraphGenomeView' ? 'Graph genome' : 'Tube map'} view (local)`,
-            icon:
-              viewType === 'GraphGenomeView' ? BubbleChartIcon : TimelineIcon,
+            label: `${label} view (local)`,
+            icon,
             onClick: async () => {
               const session = getSession(self)
               const region = regionFromViewport(view)

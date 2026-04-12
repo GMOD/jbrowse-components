@@ -127,7 +127,7 @@ export function formatFeatWithSubfeatures(
   )
   const newParentId = feature.get('id')
   const newParentType = feature.get('type')
-  const newParentStrand = feature.get('strand')
+  const newParentStrand = feature.get('strand') ?? 0
   const cdsLines =
     cds.length > 0 && newParentId && newParentType
       ? formatCDS(cds, newParentId, newParentType, newParentStrand, min)

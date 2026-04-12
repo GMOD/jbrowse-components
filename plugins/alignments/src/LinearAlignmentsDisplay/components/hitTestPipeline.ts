@@ -58,7 +58,7 @@ export function performHitTest(
     isChainMode,
   } = options
 
-  // 1. Indicator hits (triangles at top of coverage)
+  // Indicator hits (triangles at top of coverage)
   const indicatorHit = hitTestIndicatorFn(
     canvasX,
     canvasY,
@@ -70,7 +70,7 @@ export function performHitTest(
     return { type: 'indicator', hit: indicatorHit, resolved }
   }
 
-  // 2. Coverage area hits
+  // Coverage area hits
   const coverageHit = hitTestCoverageFn(
     canvasX,
     canvasY,
@@ -82,7 +82,7 @@ export function performHitTest(
     return { type: 'coverage', hit: coverageHit, resolved }
   }
 
-  // 4. CIGAR item hits (on top of reads)
+  // CIGAR item hits (on top of reads)
   const coords = resolved
     ? canvasToGenomicCoords(
         canvasX,
@@ -117,7 +117,7 @@ export function performHitTest(
     }
   }
 
-  // 5. Feature/chain hit testing
+  // Feature/chain hit testing
   const hit = isChainMode
     ? hitTestChainFn(coords, resolved?.rpcData)
     : resolved && coords

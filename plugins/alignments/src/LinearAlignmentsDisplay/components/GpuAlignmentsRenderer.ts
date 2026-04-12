@@ -1,10 +1,12 @@
 import {
+  YSCALEBAR_LABEL_OFFSET,
   packIndicatorsForGpu,
   packNoncovSegmentsForGpu,
   packSnpSegmentsForGpu,
 } from '@jbrowse/alignments-core'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
+import { splitInterbasesByType } from './alignmentComponentUtils.ts'
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
 import {
   ARC_FRAGMENT_SHADER,
@@ -148,7 +150,6 @@ import {
   FLAT_QUAD_WGSL,
 } from './wgsl/miscShaders.ts'
 import { READ_WGSL } from './wgsl/readShader.ts'
-import { splitInterbasesByType } from './alignmentComponentUtils.ts'
 
 import type {
   AlignmentsBackend,
@@ -881,9 +882,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     f[U_RANGE_Y0] = state.rangeY[0]
     f[U_CANVAS_H] = state.canvasHeight
     f[U_CANVAS_W] = canvasW
-    const arcsOffset = state.showArcs && state.arcsHeight ? state.arcsHeight : 0
-    f[U_COV_OFFSET] =
-      (state.showCoverage ? state.coverageHeight : 0) + arcsOffset
+    f[U_COV_OFFSET] = state.pileupTopOffset
     f[U_FEAT_H] = state.featureHeight
     f[U_FEAT_SPACING] = state.featureSpacing
     ii[U_COLOR_SCHEME] = state.colorScheme
@@ -993,10 +992,10 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       )
 
       const mode = state.renderingMode ?? 'pileup'
-      const arcsHeight =
+      const effectiveArcsHeight =
         state.showArcs && state.arcsHeight ? state.arcsHeight : 0
       const covH = state.showCoverage ? state.coverageHeight : 0
-      const pileupTop = Math.round((covH + arcsHeight) * dpr)
+      const pileupTop = Math.round(state.pileupTopOffset * dpr)
       const pileupH = Math.max(0, bufH - pileupTop)
 
       // Coverage area: full-height scissor
@@ -1068,16 +1067,19 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         dpr,
       )
 
-      // Arcs area
-      if (arcsHeight > 0) {
+      // Arcs area — only rendered by GPU when pairedArcsDown; otherwise SVG overlay handles it
+      if (effectiveArcsHeight > 0 && state.pairedArcsDown) {
         const covHPx = Math.round(covH * dpr)
-        const effectiveArcsHPx = Math.min(
-          Math.round(arcsHeight * dpr),
-          Math.max(0, bufH - covHPx),
+        const yscaleOffPx = Math.round(YSCALEBAR_LABEL_OFFSET * dpr)
+        const arcViewportTop = Math.max(0, covHPx - yscaleOffPx)
+        const arcOverlapPx = covHPx - arcViewportTop
+        const arcViewportH = Math.min(
+          Math.round(effectiveArcsHeight * dpr) + arcOverlapPx,
+          Math.max(0, bufH - arcViewportTop),
         )
-        if (effectiveArcsHPx > 0) {
+        if (arcViewportH > 0) {
           this.uF32[U_COV_OFFSET] = 0
-          this.uF32[U_CANVAS_H] = effectiveArcsHPx / dpr
+          this.uF32[U_CANVAS_H] = arcViewportH / dpr
           this.writeBlockUniforms(region, block, scissorX, scissorW)
           this.uF32[U_LINE_WIDTH_PX] = state.arcLineWidth ?? 1
           this.uF32[U_GRADIENT_HUE] = 0
@@ -1085,21 +1087,21 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
           this.hal.setViewport(
             Math.round(scissorX * dpr),
-            covHPx,
+            arcViewportTop,
             Math.round(scissorW * dpr),
-            effectiveArcsHPx,
+            arcViewportH,
           )
           this.hal.setScissor(
             Math.round(scissorX * dpr),
-            covHPx,
+            arcViewportTop,
             Math.round(scissorW * dpr),
-            effectiveArcsHPx,
+            arcViewportH,
           )
           this.hal.drawPass(PASS_ARC, block.regionNumber)
           this.hal.drawPass(PASS_ARC_LINE, block.regionNumber)
 
           // Restore uniforms
-          this.uF32[U_COV_OFFSET] = covH + arcsHeight
+          this.uF32[U_COV_OFFSET] = state.pileupTopOffset
           this.uF32[U_CANVAS_H] = state.canvasHeight
           this.hal.writeUniforms(this.uData)
         }
@@ -1203,9 +1205,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         const absStart = region.readPositions[idx * 2]! + region.regionStart
         const absEnd = region.readPositions[idx * 2 + 1]! + region.regionStart
         const y = region.readYs[idx]!
-        const arcsOff =
-          state.showArcs && state.arcsHeight ? state.arcsHeight : 0
-        const covOff = (state.showCoverage ? state.coverageHeight : 0) + arcsOff
+        const covOff = state.pileupTopOffset
         const clip = toClipRect(
           absStart,
           absEnd,
@@ -1269,8 +1269,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
     // Chain overlays
     const quads: number[] = []
-    const arcsOff = state.showArcs && state.arcsHeight ? state.arcsHeight : 0
-    const covOff = (state.showCoverage ? state.coverageHeight : 0) + arcsOff
+    const covOff = state.pileupTopOffset
 
     if (state.highlightedChainIds.length > 0) {
       const bounds = getChainBounds(

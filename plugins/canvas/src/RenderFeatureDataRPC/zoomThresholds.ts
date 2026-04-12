@@ -1,27 +1,10 @@
-/**
- * Zoom thresholds for CDS peptide rendering
- */
+const PEPTIDE_BACKGROUND_MAX_BP_PER_PX = 1
+const PEPTIDE_TEXT_MAX_BP_PER_PX = 1 / 8
 
-/**
- * Minimum zoom level (bp per pixel) to fetch peptide data and render amino acid backgrounds
- */
-export const ZOOM_THRESHOLD_FOR_PEPTIDE_BACKGROUND = 1
-
-/**
- * Minimum zoom level (bp per pixel) to render amino acid text labels
- */
-export const ZOOM_THRESHOLD_FOR_PEPTIDE_TEXT = 8
-
-/**
- * Check if zoomed in enough to render amino acid backgrounds
- */
-export function shouldRenderPeptideBackground(bpPerPx: number): boolean {
-  return 1 / bpPerPx >= ZOOM_THRESHOLD_FOR_PEPTIDE_BACKGROUND
+export function shouldRenderPeptideBackground(bpPerPx: number) {
+  return bpPerPx <= PEPTIDE_BACKGROUND_MAX_BP_PER_PX
 }
 
-/**
- * Check if zoomed in enough to render amino acid text labels
- */
-export function shouldRenderPeptideText(bpPerPx: number): boolean {
-  return 1 / bpPerPx >= ZOOM_THRESHOLD_FOR_PEPTIDE_TEXT
+export function shouldRenderPeptideText(bpPerPx: number) {
+  return bpPerPx <= PEPTIDE_TEXT_MAX_BP_PER_PX
 }

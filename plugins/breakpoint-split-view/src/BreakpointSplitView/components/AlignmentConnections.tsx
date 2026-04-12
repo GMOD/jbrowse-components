@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import { getSession, getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
@@ -10,23 +10,26 @@ import {
   getPairedOrientationColor,
   isAbnormalOrientation,
 } from './getOrientationColor.tsx'
-import { LEFT, RIGHT, getCanonicalRefs, getTestId } from './overlayUtils.tsx'
+import {
+  LEFT,
+  RIGHT,
+  getCanonicalRefs,
+  getTestId,
+  useOverlaySetup,
+} from './overlayUtils.tsx'
 import {
   getBadlyPairedAlignments,
   getMatchedAlignmentFeatures,
   hasPairedReads,
 } from './util.ts'
-import { getPxFromCoordinate, getTrackHeightsCache, yPos } from '../util.ts'
+import { getPxFromCoordinate, yPos } from '../util.ts'
 
 import type { OverlayProps } from './overlayUtils.tsx'
 
-const AlignmentConnections = observer(function AlignmentConnections({
-  model,
-  trackId,
-  getTrackYPosOverride,
-  cachedTrackTops,
-  cachedYOffset,
-}: OverlayProps) {
+const AlignmentConnections = observer(function AlignmentConnections(
+  props: OverlayProps,
+) {
+  const { model, trackId } = props
   const { interactiveOverlay, views, showIntraviewLinks, assembly } = model
   const theme = useTheme()
   const session = getSession(model)
@@ -37,23 +40,17 @@ const AlignmentConnections = observer(function AlignmentConnections({
     const matched = hasPaired
       ? getBadlyPairedAlignments(allFeatures)
       : getMatchedAlignmentFeatures(allFeatures)
-    const layoutMatches = model.getMatchedFeaturesInLayout(trackId, matched)
+    const matches = model.getMatchedFeaturesInLayout(trackId, matched)
     if (!hasPaired) {
-      for (const m of layoutMatches) {
+      for (const m of matches) {
         m.sort((a, b) => a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead)
       }
     }
-    return layoutMatches
+    return matches
   }, [allFeatures, trackId, hasPaired, model])
 
-  const [mouseoverElt, setMouseoverElt] = useState<string>()
-  const yOffset = cachedYOffset ?? 0
-
-  const tracks = views.map(v => v.getTrack(trackId))
-  const hasOverride = !!getTrackYPosOverride
-  const cachedHeights =
-    cachedTrackTops ??
-    getTrackHeightsCache(views, trackId, getTrackYPosOverride)
+  const { mouseoverElt, setMouseoverElt, yOffset, tracks, hasOverride, cachedHeights } =
+    useOverlaySetup(props)
 
   if (!assembly) {
     return null
@@ -61,26 +58,22 @@ const AlignmentConnections = observer(function AlignmentConnections({
 
   return (
     <g fill="none" data-testid={getTestId(trackId, layoutMatches.length > 0)}>
-      {layoutMatches.map(chunk => {
-        const ret = []
-        for (let i = 0; i < chunk.length - 1; i++) {
-          const { layout: c1, feature: f1, level: level1 } = chunk[i]!
+      {layoutMatches.flatMap(chunk =>
+        chunk.slice(0, -1).flatMap((item, i) => {
+          const { layout: c1, feature: f1, level: level1 } = item
           const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]!
 
           if (!showIntraviewLinks && level1 === level2) {
-            return null
+            return []
           }
           const { f1ref, f2ref } = getCanonicalRefs(
             assembly,
             f1.get('refName'),
             f2.get('refName'),
           )
-          const r = {
-            pair_orientation: f1.get('pair_orientation'),
-          }
-
-          const s1 = f1.get('strand')
-          const s2 = f2.get('strand')
+          const r = { pair_orientation: f1.get('pair_orientation') }
+          const s1 = f1.get('strand')!
+          const s2 = f2.get('strand')!
           const sameRef = f1ref === f2ref
           let orientationColor = ''
           let isAbnormal = false
@@ -119,11 +112,11 @@ const AlignmentConnections = observer(function AlignmentConnections({
             x1,
             y1,
             'C',
-            x1 + 200 * f1.get('strand') * rf1,
+            x1 + 200 * s1 * rf1,
             abnormalSpecialRenderFlag
               ? Math.min(y0 - yOffset + trackHeight, y1 + trackHeight)
               : y1,
-            x2 - 200 * f2.get('strand') * rf2 * pf1,
+            x2 - 200 * s2 * rf2 * pf1,
             abnormalSpecialRenderFlag
               ? Math.min(y0 - yOffset + trackHeight, y2 + trackHeight)
               : y2,
@@ -131,7 +124,7 @@ const AlignmentConnections = observer(function AlignmentConnections({
             y2,
           ].join(' ')
           const id = `${f1.id()}-${f2.id()}`
-          ret.push(
+          return [
             <path
               d={path}
               key={id}
@@ -165,10 +158,9 @@ const AlignmentConnections = observer(function AlignmentConnections({
                 setMouseoverElt(undefined)
               }}
             />,
-          )
-        }
-        return ret
-      })}
+          ]
+        }),
+      )}
     </g>
   )
 })

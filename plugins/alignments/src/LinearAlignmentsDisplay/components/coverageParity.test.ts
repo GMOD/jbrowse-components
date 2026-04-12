@@ -206,6 +206,8 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       showCoverage: true,
       showArcs: false,
       arcsHeight: 0,
+      pairedArcsDown: true,
+      pileupTopOffset: covH,
       showMismatches: false,
       showSoftClipping: false,
       showModifications: false,

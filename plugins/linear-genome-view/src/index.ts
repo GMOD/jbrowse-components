@@ -93,6 +93,7 @@ export {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
   BlockMsg,
+  ConfigOverrideMixin,
   FeatureDensityMixin,
   FloatingLegend,
   MultiRegionDisplayMixin,
@@ -106,6 +107,7 @@ export {
   createSubfeatureLabelMetadata,
   drawCanvasImageData,
   getDisplayStr,
+  migrateOldSettingSnapshots,
 } from './BaseLinearDisplay/index.ts'
 export type {
   ByteEstimateConfig,

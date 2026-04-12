@@ -2,51 +2,21 @@ import {
   createFeatureFloatingLabels,
   createTranscriptFloatingLabel,
 } from './floatingLabels.ts'
+import { mockDisplayConfig } from './testUtils.ts'
 
-import type { RenderConfigContext } from './renderConfig.ts'
-
-// Mock feature for testing
 const mockFeature = {
   get: () => 'test',
   id: () => 'test-id',
 } as any
 
-// Mock config that returns the cached value directly
-const mockConfig = {} as any
-
-// Helper to create a mock config context
-function createMockConfigContext(
-  overrides: Partial<RenderConfigContext> = {},
-): RenderConfigContext {
-  return {
-    config: mockConfig,
-    displayMode: 'normal',
-    subfeatureLabels: 'below',
-    transcriptTypes: [],
-    containerTypes: [],
-    geneGlyphMode: 'gene',
-    displayDirectionalChevrons: true,
-    color1: { value: 'goldenrod', isCallback: false },
-    color2: { value: '#f0f', isCallback: false },
-    color3: { value: '#357089', isCallback: false },
-    outline: { value: '', isCallback: false },
-    featureHeight: { value: 10, isCallback: false },
-    fontHeight: { value: 12, isCallback: false },
-    nameColor: { value: 'black', isCallback: false },
-    descriptionColor: { value: 'blue', isCallback: false },
-    labelAllowed: true,
-    heightMultiplier: 1,
-    ...overrides,
-  }
-}
+const baseConfig = mockDisplayConfig()
 
 describe('floatingLabels', () => {
   describe('createFeatureFloatingLabels', () => {
-    it('always creates both name and description labels when text is present', () => {
+    it('creates both name and description labels when text is present', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
-        config: mockConfig,
-        configContext: createMockConfigContext(),
+        config: baseConfig,
         nameColor: 'black',
         descriptionColor: 'blue',
         name: 'Gene1',
@@ -61,8 +31,7 @@ describe('floatingLabels', () => {
     it('returns no labels when name and description are whitespace-only', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
-        config: mockConfig,
-        configContext: createMockConfigContext(),
+        config: baseConfig,
         nameColor: 'black',
         descriptionColor: 'blue',
         name: '   ',
@@ -72,29 +41,23 @@ describe('floatingLabels', () => {
       expect(result.descriptionLabel).toBeUndefined()
     })
 
-    it('returns both labels with correct positioning', () => {
+    it('positions description below name using fontSize from config', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
-        config: mockConfig,
-        configContext: createMockConfigContext(),
+        config: baseConfig,
         nameColor: 'black',
         descriptionColor: 'blue',
         name: 'Gene1',
         description: 'A gene',
       })
-      expect(result.nameLabel).toBeDefined()
-      expect(result.nameLabel!.text).toBe('Gene1')
       expect(result.nameLabel!.relativeY).toBe(0)
-      expect(result.descriptionLabel).toBeDefined()
-      expect(result.descriptionLabel!.text).toBe('A gene')
-      expect(result.descriptionLabel!.relativeY).toBe(12) // fontHeight value from mock
+      expect(result.descriptionLabel!.relativeY).toBe(12)
     })
 
     it('includes textWidth for each label', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
-        config: mockConfig,
-        configContext: createMockConfigContext(),
+        config: baseConfig,
         nameColor: 'black',
         descriptionColor: 'blue',
         name: 'Gene1',
@@ -107,8 +70,7 @@ describe('floatingLabels', () => {
     it('returns only name label when description is empty', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
-        config: mockConfig,
-        configContext: createMockConfigContext(),
+        config: baseConfig,
         nameColor: 'black',
         descriptionColor: 'blue',
         name: 'Gene1',
@@ -121,8 +83,7 @@ describe('floatingLabels', () => {
     it('returns only description label when name is empty', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
-        config: mockConfig,
-        configContext: createMockConfigContext(),
+        config: baseConfig,
         nameColor: 'black',
         descriptionColor: 'blue',
         name: '',
@@ -141,21 +102,17 @@ describe('floatingLabels', () => {
       subfeatureLabels: 'below',
       color: '#000000',
       parentFeatureId: 'parent-gene-123',
-      subfeatureId: 'subfeature-456',
       tooltip: 'Gene: BRCA1',
     }
 
     it('returns undefined when displayLabel is empty', () => {
-      const result = createTranscriptFloatingLabel({
-        ...baseArgs,
-        displayLabel: '',
-      })
-      expect(result).toBeUndefined()
+      expect(
+        createTranscriptFloatingLabel({ ...baseArgs, displayLabel: '' }),
+      ).toBeUndefined()
     })
 
-    it('includes parentFeatureId in the result for mouseover highlight', () => {
+    it('includes parentFeatureId in the result', () => {
       const result = createTranscriptFloatingLabel(baseArgs)
-      expect(result).toBeDefined()
       expect(result!.parentFeatureId).toBe('parent-gene-123')
     })
 
@@ -186,45 +143,6 @@ describe('floatingLabels', () => {
       })
       expect(result!.subfeatureLabel.text.length).toBeLessThan(longLabel.length)
       expect(result!.subfeatureLabel.text).toContain('…')
-    })
-
-    it('includes all required fields', () => {
-      const result = createTranscriptFloatingLabel(baseArgs)
-
-      expect(result).toMatchObject({
-        parentFeatureId: 'parent-gene-123',
-        subfeatureLabel: {
-          text: expect.any(String),
-          relativeY: expect.any(Number),
-          color: '#000000',
-          textWidth: expect.any(Number),
-          isOverlay: false,
-          tooltip: 'Gene: BRCA1',
-        },
-      })
-    })
-
-    it('preserves parentFeatureId for correct highlight rectangle', () => {
-      const result = createTranscriptFloatingLabel({
-        displayLabel: 'mRNA-1',
-        featureHeight: 15,
-        subfeatureLabels: 'overlay',
-        color: '#333',
-        parentFeatureId: 'gene-BRCA1',
-        subfeatureId: 'mRNA-1-id',
-        tooltip: 'BRCA1 tooltip',
-      })
-
-      expect(result!.parentFeatureId).toBe('gene-BRCA1')
-    })
-
-    it('includes parent tooltip for unified mouseover behavior', () => {
-      const result = createTranscriptFloatingLabel({
-        ...baseArgs,
-        tooltip: 'Custom parent tooltip',
-      })
-
-      expect(result!.subfeatureLabel.tooltip).toBe('Custom parent tooltip')
     })
   })
 })

@@ -128,7 +128,7 @@ export default function RootModel({
       /**
        * #volatile
        */
-      version: packageJSON.version,
+      version: `${packageJSON.version} (${process.env.BUILD_GIT_HASH ?? 'dev'})`,
       /**
        * #volatile
        */

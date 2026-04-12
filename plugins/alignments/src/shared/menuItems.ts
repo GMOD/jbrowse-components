@@ -255,7 +255,6 @@ interface MismatchDisplayModel {
 
 interface FeatureHeightModel {
   featureHeightSetting: number
-  noSpacing?: boolean
   noSpacingSetting?: boolean
   setFeatureHeight: (height?: number) => void
   setNoSpacing: (noSpacing?: boolean) => void
@@ -269,7 +268,8 @@ export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
       {
         label: 'Normal',
         type: 'radio' as const,
-        checked: model.featureHeightSetting === 7 && model.noSpacing !== true,
+        checked:
+          model.featureHeightSetting === 7 && model.noSpacingSetting !== true,
         onClick: () => {
           model.setFeatureHeight(7)
           model.setNoSpacing(false)
@@ -437,7 +437,9 @@ interface ShowMenuModel {
   mismatchAlpha?: boolean
   showCoverage: boolean
   showArcs: boolean
+  pairedArcsDown: boolean
   showSashimiArcs: boolean
+  sashimiArcsDown: boolean
   showMismatches: boolean
   showInterbaseIndicators: boolean
   showOutlineSetting: boolean
@@ -447,7 +449,9 @@ interface ShowMenuModel {
   toggleMismatchAlpha: () => void
   setShowCoverage: (show: boolean) => void
   setShowArcs: (show: boolean) => void
+  setArcsDown: (flag: boolean) => void
   setShowSashimiArcs: (show: boolean) => void
+  setSashimiArcsDown: (flag: boolean) => void
   setShowMismatches: (show: boolean) => void
   setShowInterbaseIndicators: (show: boolean) => void
   setShowOutline: (show: boolean) => void
@@ -485,20 +489,43 @@ export function getShowMenuItem(model: ShowMenuModel) {
         },
       },
       {
-        label: 'Show arcs',
-        type: 'checkbox' as const,
-        checked: model.showArcs,
-        onClick: () => {
-          model.setShowArcs(!model.showArcs)
-        },
-      },
-      {
-        label: 'Show sashimi arcs',
-        type: 'checkbox' as const,
-        checked: model.showSashimiArcs,
-        onClick: () => {
-          model.setShowSashimiArcs(!model.showSashimiArcs)
-        },
+        label: 'Arcs...',
+        type: 'subMenu' as const,
+        subMenu: [
+          {
+            label: 'Show paired/supplementary arcs',
+            type: 'checkbox' as const,
+            checked: model.showArcs,
+            onClick: () => {
+              model.setShowArcs(!model.showArcs)
+            },
+          },
+          {
+            label: 'Arcs point down',
+            type: 'checkbox' as const,
+            checked: model.pairedArcsDown,
+            onClick: () => {
+              model.setArcsDown(!model.pairedArcsDown)
+            },
+          },
+          { type: 'divider' as const },
+          {
+            label: 'Show sashimi arcs',
+            type: 'checkbox' as const,
+            checked: model.showSashimiArcs,
+            onClick: () => {
+              model.setShowSashimiArcs(!model.showSashimiArcs)
+            },
+          },
+          {
+            label: 'Sashimi arcs point down',
+            type: 'checkbox' as const,
+            checked: model.sashimiArcsDown,
+            onClick: () => {
+              model.setSashimiArcsDown(!model.sashimiArcsDown)
+            },
+          },
+        ],
       },
       {
         label: 'Show mismatches',

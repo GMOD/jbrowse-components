@@ -1,3 +1,7 @@
+import { useEffect, useState } from 'react'
+
+import { getTrackHeightsCache } from '../util.ts'
+
 import type { BreakpointViewModel } from '../model.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { getSession } from '@jbrowse/core/util'
@@ -10,6 +14,40 @@ export interface OverlayProps {
   getTrackYPosOverride?: (trackId: string, level: number) => number
   cachedTrackTops?: number[]
   cachedYOffset?: number
+}
+
+export function useMouseoverElt() {
+  const [mouseoverElt, setMouseoverElt] = useState<string>()
+  useEffect(() => {
+    function clear() {
+      setMouseoverElt(undefined)
+    }
+    window.addEventListener('wheel', clear, { passive: true })
+    return () => {
+      window.removeEventListener('wheel', clear)
+    }
+  }, [])
+  return [mouseoverElt, setMouseoverElt] as const
+}
+
+export function useOverlaySetup({
+  model,
+  trackId,
+  getTrackYPosOverride,
+  cachedTrackTops,
+  cachedYOffset,
+}: OverlayProps) {
+  const { views } = model
+  const [mouseoverElt, setMouseoverElt] = useMouseoverElt()
+  return {
+    mouseoverElt,
+    setMouseoverElt,
+    yOffset: cachedYOffset ?? 0,
+    tracks: views.map(v => v.getTrack(trackId)),
+    hasOverride: !!getTrackYPosOverride,
+    cachedHeights:
+      cachedTrackTops ?? getTrackHeightsCache(views, trackId, getTrackYPosOverride),
+  }
 }
 
 export function createVariantMouseHandlers(

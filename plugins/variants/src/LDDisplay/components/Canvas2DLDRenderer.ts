@@ -1,18 +1,14 @@
-import {
-  lookupColorRamp,
-  prepareCanvas,
-} from '@jbrowse/core/gpu/canvas2dUtils'
+import { lookupColorRamp, prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
 
-import type { LDBackend, LDRenderState } from './ldBackendTypes.ts'
+import type { LDBackend, LDRenderState, LDUploadData } from './ldBackendTypes.ts'
 
 const COS45 = 0.7071067811865476
 
 export class Canvas2DLDRenderer implements LDBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
-  private positions: Float32Array | null = null
-  private cellSizes: Float32Array | null = null
   private ldValues: Float32Array | null = null
+  private boundaries: Float32Array | null = null
   private numCells = 0
   private colorRamp: Uint8Array | null = null
 
@@ -25,15 +21,9 @@ export class Canvas2DLDRenderer implements LDBackend {
     this.ctx = ctx
   }
 
-  uploadData(data: {
-    positions: Float32Array
-    cellSizes: Float32Array
-    ldValues: Float32Array
-    numCells: number
-  }) {
-    this.positions = data.positions
-    this.cellSizes = data.cellSizes
+  uploadData(data: LDUploadData) {
     this.ldValues = data.ldValues
+    this.boundaries = data.boundaries
     this.numCells = data.numCells
   }
 
@@ -54,62 +44,60 @@ export class Canvas2DLDRenderer implements LDBackend {
     const ctx = this.ctx
     prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
 
-    if (
-      !this.positions ||
-      !this.cellSizes ||
-      !this.ldValues ||
-      !this.colorRamp ||
-      this.numCells === 0
-    ) {
+    const { ldValues, boundaries, colorRamp } = this
+    if (!ldValues || !boundaries || !colorRamp || this.numCells === 0) {
       return
     }
 
-    for (let i = 0; i < this.numCells; i++) {
-      const px = this.positions[i * 2]!
-      const py = this.positions[i * 2 + 1]!
-      const cw = this.cellSizes[i * 2]!
-      const ch = this.cellSizes[i * 2 + 1]!
-      const ldVal = this.ldValues[i]!
+    const n = boundaries.length - 1
+    let k = 0
+    for (let i = 1; i < n; i++) {
+      const py = boundaries[i]!
+      const ch = boundaries[i + 1]! - py
+      for (let j = 0; j < i; j++) {
+        const px = boundaries[j]!
+        const cw = boundaries[j + 1]! - px
+        const ldVal = ldValues[k++]!
 
-      let t = signedLD ? (ldVal + 1) / 2 : ldVal
-      t = Math.max(0, Math.min(1, t))
+        let t = signedLD ? (ldVal + 1) / 2 : ldVal
+        t = Math.max(0, Math.min(1, t))
 
-      const { r, g, b, a } = lookupColorRamp(this.colorRamp, t)
+        const { r, g, b, a } = lookupColorRamp(colorRamp, t)
 
-      if (a < 0.01) {
-        continue
-      }
-
-      const corners = [
-        [px, py],
-        [px + cw, py],
-        [px + cw, py + ch],
-        [px, py + ch],
-      ] as const
-
-      ctx.fillStyle = `rgba(${r},${g},${b},${a})`
-      ctx.beginPath()
-      for (let j = 0; j < 4; j++) {
-        const [cx, cy] = corners[j]!
-        const rx = (cx + cy) * COS45
-        const ry = (-cx + cy) * COS45
-        const sx = rx * viewScale + viewOffsetX
-        const sy = ry * viewScale * yScalar
-        if (j === 0) {
-          ctx.moveTo(sx, sy)
-        } else {
-          ctx.lineTo(sx, sy)
+        if (a < 0.01) {
+          continue
         }
+
+        const corners = [
+          [px, py],
+          [px + cw, py],
+          [px + cw, py + ch],
+          [px, py + ch],
+        ] as const
+
+        ctx.fillStyle = `rgba(${r},${g},${b},${a})`
+        ctx.beginPath()
+        for (let m = 0; m < 4; m++) {
+          const [cx, cy] = corners[m]!
+          const rx = (cx + cy) * COS45
+          const ry = (-cx + cy) * COS45
+          const sx = rx * viewScale + viewOffsetX
+          const sy = ry * viewScale * yScalar
+          if (m === 0) {
+            ctx.moveTo(sx, sy)
+          } else {
+            ctx.lineTo(sx, sy)
+          }
+        }
+        ctx.closePath()
+        ctx.fill()
       }
-      ctx.closePath()
-      ctx.fill()
     }
   }
 
   dispose() {
-    this.positions = null
-    this.cellSizes = null
     this.ldValues = null
+    this.boundaries = null
     this.colorRamp = null
     this.numCells = 0
   }

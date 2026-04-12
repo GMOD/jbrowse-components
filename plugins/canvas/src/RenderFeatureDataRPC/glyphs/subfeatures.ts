@@ -1,6 +1,6 @@
 import { applyLabelDimensions } from '../labelUtils.ts'
-import { readCachedConfig } from '../renderConfig.ts'
-import { findChildGlyph } from './childGlyphs.ts'
+import { findGlyph } from './findGlyph.ts'
+import { getFeatureDimensions } from './glyphUtils.ts'
 
 import type { FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -12,7 +12,7 @@ function hasCodingSubfeature(feature: Feature): boolean {
   const subfeatures = feature.get('subfeatures') || []
   return subfeatures.some(
     (sub: Feature) =>
-      CODING_TYPES.has(sub.get('type')) || hasCodingSubfeature(sub),
+      CODING_TYPES.has(sub.get('type') ?? '') || hasCodingSubfeature(sub),
   )
 }
 
@@ -26,7 +26,7 @@ function filterByGeneGlyphMode(
   }
 
   const transcriptSubfeatures = subfeatures.filter(sub =>
-    transcriptTypes.includes(sub.get('type')),
+    transcriptTypes.includes(sub.get('type') ?? ''),
   )
   let candidates =
     transcriptSubfeatures.length > 0 ? transcriptSubfeatures : subfeatures
@@ -48,24 +48,17 @@ export const subfeaturesGlyph: Glyph = {
   type: 'Subfeatures',
 
   layout(args: LayoutArgs): FeatureLayout {
-    const { feature, bpPerPx, configContext } = args
+    const { feature, bpPerPx, config } = args
+    const { geneGlyphMode, transcriptTypes, subfeatureLabels } = config
+
     const {
-      config,
-      featureHeight,
-      heightMultiplier,
-      geneGlyphMode,
-      transcriptTypes,
-    } = configContext
+      start: featureStart,
+      heightPx,
+      widthPx,
+    } = getFeatureDimensions(feature, bpPerPx, config)
 
-    const featureBp = {
-      start: feature.get('start'),
-      end: feature.get('end'),
-    }
-    const heightPx = readCachedConfig(featureHeight, config, 'height', feature)
-    const baseHeightPx = heightPx * heightMultiplier
-    const widthPx = (featureBp.end - featureBp.start) / bpPerPx
-
-    let subfeatures = [...(feature.get('subfeatures') || [])] as Feature[]
+    // Sort coding transcripts first so they render on top in stacked layout
+    let subfeatures = [...(feature.get('subfeatures') || [])]
     const codingStatus = new Map(
       subfeatures.map(f => [f.id(), hasCodingSubfeature(f)]),
     )
@@ -91,12 +84,11 @@ export const subfeaturesGlyph: Glyph = {
 
     const children: FeatureLayout[] = []
     let currentYPx = 0
-    const { subfeatureLabels } = configContext
 
     for (const [i, child] of subfeatures.entries()) {
-      const childType = child.get('type')
+      const childType = child.get('type') ?? ''
       const isChildTranscript = transcriptTypes.includes(childType)
-      const childGlyph = findChildGlyph(child, configContext)
+      const childGlyph = findGlyph(child, config, false)
 
       const childLayout = childGlyph.layout({
         ...args,
@@ -106,17 +98,12 @@ export const subfeaturesGlyph: Glyph = {
 
       applyLabelDimensions(childLayout, {
         feature: child,
-        configContext,
+        config,
         isNested: true,
         isTranscriptChild: isChildTranscript,
       })
 
-      const childBp = {
-        start: child.get('start'),
-        end: child.get('end'),
-      }
-      const offsetBp = childBp.start - featureBp.start
-      const xRelativePx = offsetBp / bpPerPx
+      const xRelativePx = (child.get('start') - featureStart) / bpPerPx
 
       childLayout.x = xRelativePx
       childLayout.y = currentYPx
@@ -134,7 +121,7 @@ export const subfeaturesGlyph: Glyph = {
       }
     }
 
-    const totalHeightPx = currentYPx > 0 ? currentYPx : baseHeightPx
+    const totalHeightPx = currentYPx > 0 ? currentYPx : heightPx
 
     return {
       feature,

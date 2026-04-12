@@ -4,6 +4,23 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    DiagonalizeDotplot: {
+      args: DiagonalizeDotplotArgs
+      return: {
+        newRegions: Region[]
+        stats: {
+          totalAlignments: number
+          regionsProcessed: number
+          regionsReordered: number
+          regionsReversed: number
+        }
+      }
+    }
+  }
+}
+
 // copied from plugins/linear-comparative-view/src/LinearSyntenyView/util/diagonalize.ts
 interface AlignmentData {
   queryRefName: string
@@ -136,8 +153,9 @@ function diagonalizeRegions(
   const newQueryRegions: Region[] = []
   let regionsReversed = 0
 
+  const regionsByName = new Map(currentRegions.map(r => [r.refName, r]))
   for (const { refName, shouldReverse } of queryOrdering) {
-    const region = currentRegions.find(r => r.refName === refName)
+    const region = regionsByName.get(refName)
     if (region) {
       newQueryRegions.push({
         ...region,
@@ -166,7 +184,7 @@ function diagonalizeRegions(
   }
 }
 
-interface DiagonalizeDotplotArgs {
+export interface DiagonalizeDotplotArgs {
   sessionId: string
   view: {
     hview: { displayedRegions: Region[] }
@@ -241,7 +259,7 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
           queryEnd: feat.get('end'),
           refStart: mate.start,
           refEnd: mate.end,
-          strand: (feat.get('strand') as number) || 1,
+          strand: feat.get('strand')! || 1,
         })
       }
     }

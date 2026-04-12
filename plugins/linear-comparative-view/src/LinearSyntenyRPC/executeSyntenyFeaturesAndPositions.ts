@@ -1,4 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -9,6 +10,7 @@ import { computeSyriTypes } from '@jbrowse/plugin-comparative-adapters'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { chainCollinearAlignments } from './chainCollinearAlignments.ts'
 import { executeSyntenyInstanceData } from './executeSyntenyInstanceData.ts'
 
 import type { SyntenyInstanceData } from './executeSyntenyInstanceData.ts'
@@ -166,6 +168,8 @@ export async function executeSyntenyFeaturesAndPositions({
   drawCIGAR = true,
   drawCIGARMatchesOnly = false,
   drawLocationMarkers = false,
+  chainMerge = false,
+  statusCallback,
 }: {
   pluginManager: PluginManager
   sessionId: string
@@ -179,16 +183,23 @@ export async function executeSyntenyFeaturesAndPositions({
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean
   drawLocationMarkers?: boolean
+  chainMerge?: boolean
+  statusCallback?: (msg: string) => void
 }) {
   const dataAdapter = (
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
   const bpPerPx = viewSnaps[level]!.bpPerPx
-  const allFeatures = await firstValueFrom(
-    dataAdapter
-      .getFeaturesInMultipleRegions(regions, { stopToken, bpPerPx })
-      .pipe(toArray()),
+  const allFeatures = await updateStatus(
+    'Fetching synteny features',
+    statusCallback,
+    () =>
+      firstValueFrom(
+        dataAdapter
+          .getFeaturesInMultipleRegions(regions, { stopToken, bpPerPx })
+          .pipe(toArray()),
+      ),
   )
   const seen = new Set<string>()
   const features = allFeatures.filter(f => {
@@ -202,10 +213,25 @@ export async function executeSyntenyFeaturesAndPositions({
 
   const v1 = viewSnaps[level]!
   const v2 = viewSnaps[level + 1]!
+
+  const processedFeatures = chainMerge
+    ? await updateStatus('Chaining collinear alignments', statusCallback, () => {
+        const maxGap = Math.min(
+          10_000_000,
+          Math.max(v1.bpPerPx, v2.bpPerPx) * 50,
+        )
+        const chained = chainCollinearAlignments(features, maxGap)
+        console.debug(
+          `[synteny] chained ${features.length} → ${chained.length} features (maxGap=${Math.round(maxGap / 1000)}kb)`,
+        )
+        return chained
+      })
+    : features
+
   const v1Index = buildBpToPxIndex(v1)
   const v2Index = buildBpToPxIndex(v2)
 
-  const count = features.length
+  const count = processedFeatures.length
   const p11Array = new Float64Array(count)
   const p12Array = new Float64Array(count)
   const p21Array = new Float64Array(count)
@@ -241,9 +267,9 @@ export async function executeSyntenyFeaturesAndPositions({
 
   const stopTokenChecker = createStopTokenChecker(stopToken)
   let validCount = 0
-  for (const f of features) {
+  for (const f of processedFeatures) {
     checkStopToken2(stopTokenChecker)
-    const strand = f.get('strand') as number
+    const strand = f.get('strand')!
     const mate = f.get('mate') as {
       start: number
       end: number
@@ -303,7 +329,7 @@ export async function executeSyntenyFeaturesAndPositions({
     identitiesArray[validCount] = identity ?? -1
 
     featureIds.push(f.id())
-    names.push((f.get('name') as string) || '')
+    names.push(f.get('name')! || '')
     refNames.push(refName)
     assemblyNames.push((f.get('assemblyName') as string) || '')
     cigars.push((f.get('CIGAR') as string) || '')
@@ -358,21 +384,25 @@ export async function executeSyntenyFeaturesAndPositions({
         )
   }
 
-  const instanceData = executeSyntenyInstanceData({
-    ...positionData,
-    parsedCigars,
-    colorBy,
-    syriTypes,
-    drawCurves,
-    drawCIGAR,
-    drawCIGARMatchesOnly,
-    drawLocationMarkers,
-    bpPerPxs,
-    level,
-    viewOffsets: viewSnaps.map(v => v.offsetPx),
-    viewWidth: viewSnaps[0]!.width,
-  })
-
+  const instanceData = await updateStatus(
+    'Computing synteny layout',
+    statusCallback,
+    () =>
+      executeSyntenyInstanceData({
+        ...positionData,
+        parsedCigars,
+        colorBy,
+        syriTypes,
+        drawCurves,
+        drawCIGAR,
+        drawCIGARMatchesOnly,
+        drawLocationMarkers,
+        bpPerPxs,
+        level,
+        viewOffsets: viewSnaps.map(v => v.offsetPx),
+        viewWidth: viewSnaps[0]!.width,
+      }),
+  )
   const result = {
     ...positionData,
     instanceData,

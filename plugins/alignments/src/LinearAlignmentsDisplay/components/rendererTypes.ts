@@ -1,5 +1,6 @@
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { ColorPalette } from './shaders/colors.ts'
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
 export type { ColorPalette, RGBColor } from './shaders/colors.ts'
 
@@ -33,6 +34,8 @@ export interface RenderState {
   // Show arcs alongside pileup (between coverage and reads)
   showArcs?: boolean
   arcsHeight?: number
+  pairedArcsDown: boolean
+  pileupTopOffset: number
   showOutline?: boolean
 }
 

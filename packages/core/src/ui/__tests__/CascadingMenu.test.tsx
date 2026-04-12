@@ -22,10 +22,7 @@ async function setup(items = menuItems) {
   const user = userEvent.setup()
   const menuItemsArg = Array.isArray(items) ? items : items
   render(
-    <CascadingMenuButton
-      data-testid="menu-button"
-      menuItems={menuItemsArg}
-    >
+    <CascadingMenuButton data-testid="menu-button" menuItems={menuItemsArg}>
       <span>Open Menu</span>
     </CascadingMenuButton>,
   )

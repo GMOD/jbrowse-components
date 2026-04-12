@@ -1,5 +1,20 @@
 import type { ColorPalette, RGBColor } from './components/shaders/colors.ts'
 
+const CS_NORMAL = 0
+const CS_INSERT_SIZE = 3
+const CS_PAIR_ORIENTATION = 5
+const CS_INSERT_SIZE_AND_ORIENTATION = 6
+const CS_INSERT_SIZE_GRADIENT = 10
+
+function isOrientationScheme(cs: number) {
+  return (
+    cs === CS_INSERT_SIZE ||
+    cs === CS_PAIR_ORIENTATION ||
+    cs === CS_INSERT_SIZE_AND_ORIENTATION ||
+    cs === CS_INSERT_SIZE_GRADIENT
+  )
+}
+
 export function rgb255(c: RGBColor) {
   return `rgb(${Math.round(c[0] * 255)},${Math.round(c[1] * 255)},${Math.round(c[2] * 255)})`
 }
@@ -113,15 +128,13 @@ export function getReadColor(
     return strandColor(effectiveStrand, palette)
   }
 
-  // Unmapped mate (flag 8) — brown for color schemes where insert size/orientation
-  // would otherwise miscolor it (tlen=0 shows as "short insert" pink)
+  // unmapped mate (flag 8) — brown for orientation-aware schemes (tlen=0 would
+  // miscolor as "short insert" pink), or normal scheme in linked-read mode
+  const mateUnmapped = (flags & 8) !== 0
   if (
-    (flags & 8) !== 0 &&
-    (colorScheme === 0 ||
-      colorScheme === 3 ||
-      colorScheme === 5 ||
-      colorScheme === 6 ||
-      colorScheme === 10)
+    mateUnmapped &&
+    (isOrientationScheme(colorScheme) ||
+      (colorScheme === CS_NORMAL && opts?.renderingMode === 'linkedRead'))
   ) {
     return rgb255(palette.colorUnmappedMate)
   }

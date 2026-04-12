@@ -1,40 +1,29 @@
 import { measureText } from '@jbrowse/core/util'
 
-import { readCachedConfig } from './renderConfig.ts'
+import { readConfigValue } from './renderConfig.ts'
 import { truncateLabel } from './util.ts'
 
-import type { RenderConfigContext } from './renderConfig.ts'
+import type { DisplayConfig } from './renderConfig.ts'
 import type { LabelItem } from './rpcTypes.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
 const FLOATING_LABEL_FONT_SIZE = 11
 
-/**
- * Create floating labels for a top-level feature (gene, etc.)
- *
- * Labels are positioned relative to the feature's visual bottom.
- * relativeY = 0 means the label starts at the feature's bottom edge.
- */
 export function createFeatureFloatingLabels({
   feature,
   config,
-  configContext,
   nameColor,
   descriptionColor,
   name: rawName,
   description: rawDescription,
 }: {
   feature: Feature
-  config: AnyConfigurationModel
-  configContext: RenderConfigContext
+  config: DisplayConfig
   nameColor: string
   descriptionColor: string
   name: string
   description: string
 }) {
-  const { fontHeight } = configContext
-
   const name = truncateLabel(rawName)
   const description = truncateLabel(rawDescription)
 
@@ -52,12 +41,7 @@ export function createFeatureFloatingLabels({
       color: nameColor,
       textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
     }
-    currentY += readCachedConfig(
-      fontHeight,
-      config,
-      ['labels', 'fontSize'],
-      feature,
-    )
+    currentY += readConfigValue<number>(config, ['labels', 'fontSize'], feature)
   }
 
   if (shouldShowDescription) {
@@ -72,12 +56,6 @@ export function createFeatureFloatingLabels({
   return { nameLabel, descriptionLabel }
 }
 
-/**
- * Create floating labels for a transcript subfeature
- *
- * For 'overlay' mode, labels are positioned at the top of the feature.
- * For 'below' mode, labels are positioned at the bottom.
- */
 export function createTranscriptFloatingLabel({
   displayLabel,
   featureHeight,
@@ -91,7 +69,6 @@ export function createTranscriptFloatingLabel({
   subfeatureLabels: string
   color: string
   parentFeatureId: string
-  subfeatureId: string
   tooltip: string
 }) {
   if (!displayLabel) {

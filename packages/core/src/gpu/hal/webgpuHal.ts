@@ -1,6 +1,5 @@
 /// <reference types="@webgpu/types" />
 
-import getGpuDevice from '../getGpuDevice.ts'
 import { initGpuContext } from '../initGpuContext.ts'
 import {
   STANDARD_BLEND_STATE,
@@ -10,6 +9,13 @@ import {
 } from '../webgpuUtils.ts'
 
 import type { BlendState, GpuHal, PassDescriptor, RegionMeta } from './types.ts'
+
+class ShaderCompileError extends Error {
+  constructor(passId: string, details: string) {
+    super(`WGSL compile error in pass "${passId}": ${details}`)
+    this.name = 'ShaderCompileError'
+  }
+}
 
 // Maximum number of writeUniforms() calls per frame. Each call occupies one
 // aligned slot in the uniform ring buffer. 512 slots × 256-byte alignment =
@@ -45,8 +51,8 @@ interface RegionState {
   buffers: Map<string, RegionPassBuffer>
 }
 
-// Per-device shared state: bind group layouts and compiled pipelines.
-// Multiple HAL instances can share a device — pipelines are merged incrementally.
+// Per-device shared state: bind group layouts and pipeline layouts.
+// These are identical across all renderers so safe to share.
 const deviceState = new WeakMap<
   GPUDevice,
   {
@@ -54,7 +60,6 @@ const deviceState = new WeakMap<
     pipelineLayout: GPUPipelineLayout
     texturedBindGroupLayout: GPUBindGroupLayout | null
     texturedPipelineLayout: GPUPipelineLayout | null
-    pipelines: Map<string, GPURenderPipeline>
   }
 >()
 
@@ -70,7 +75,6 @@ function getOrCreateDeviceState(device: GPUDevice) {
       pipelineLayout,
       texturedBindGroupLayout: null,
       texturedPipelineLayout: null,
-      pipelines: new Map(),
     }
     deviceState.set(device, state)
   }
@@ -119,38 +123,30 @@ function getOrCreateTexturedLayout(
   }
 }
 
-async function ensurePipelines(
+async function compilePipelines(
   device: GPUDevice,
   descriptors: PassDescriptor[],
 ) {
   const state = getOrCreateDeviceState(device)
-
-  const missing = descriptors.filter(d => !state.pipelines.has(d.id))
-  if (missing.length === 0) {
-    return
-  }
-
   const preferredFormat = navigator.gpu.getPreferredCanvasFormat()
-  console.log(`[WebGPUHal] ensurePipelines: ${missing.length} passes, preferredCanvasFormat=${preferredFormat}`)
+  const pipelines = new Map<string, GPURenderPipeline>()
 
   await Promise.all(
-    missing.map(async desc => {
-      console.log(`[WebGPUHal] pass "${desc.id}": createShaderModule`)
+    descriptors.map(async desc => {
       const module = device.createShaderModule({ code: desc.wgslSource })
       console.log(`[WebGPUHal] pass "${desc.id}": getCompilationInfo`)
       const info = await module.getCompilationInfo()
-      for (const msg of info.messages) {
-        if (msg.type === 'error') {
-          console.error(
-            `[WebGPUHal] WGSL error in pass "${desc.id}" ` +
-              `line ${msg.lineNum}: ${msg.message}`,
-          )
-        }
+      const errors = info.messages.filter(m => m.type === 'error')
+      if (errors.length > 0) {
+        const details = errors
+          .map(m => `line ${m.lineNum}: ${m.message}`)
+          .join('; ')
+        throw new ShaderCompileError(desc.id, details)
       }
       const fragEntry = desc.wgslFragmentEntry ?? 'fs_main'
       const format = desc.picking
         ? ('rgba8unorm' as GPUTextureFormat)
-        : (preferredFormat as GPUTextureFormat)
+        : preferredFormat
       const blend = desc.picking
         ? undefined
         : desc.blend
@@ -177,11 +173,11 @@ async function ensurePipelines(
             ? undefined
             : { count: MSAA_SAMPLE_COUNT },
       })
-      console.log(`[WebGPUHal] pass "${desc.id}": pipeline ready`)
-      state.pipelines.set(desc.id, pipeline)
+      pipelines.set(desc.id, pipeline)
     }),
   )
-  console.log('[WebGPUHal] ensurePipelines: all done')
+
+  return pipelines
 }
 
 interface PassTextureState {
@@ -195,6 +191,7 @@ export class WebGPUHal implements GpuHal {
   private context: GPUCanvasContext
   private regions = new Map<number, RegionState>()
   private descriptors: Map<string, PassDescriptor>
+  private pipelines: ReadonlyMap<string, GPURenderPipeline>
   private passTextures = new Map<string, PassTextureState>()
 
   // Uniform ring buffer: holds up to MAX_UNIFORM_SLOTS sets of uniforms so
@@ -228,19 +225,19 @@ export class WebGPUHal implements GpuHal {
   private pickingStagingBuffer: GPUBuffer | null = null
   private cachedPickResult = -1
 
-  private _clearColor = { r: 0, g: 0, b: 0, a: 1 }
-
   private constructor(
     device: GPUDevice,
     canvas: HTMLCanvasElement,
     context: GPUCanvasContext,
     descriptors: PassDescriptor[],
     uniformByteSize: number,
+    pipelines: Map<string, GPURenderPipeline>,
   ) {
     this.device = device
     this.canvas = canvas
     this.context = context
     this.descriptors = new Map(descriptors.map(d => [d.id, d]))
+    this.pipelines = pipelines
     this.uniformByteSize = uniformByteSize
 
     // Align uniform slots to device requirements for dynamic offsets
@@ -261,27 +258,18 @@ export class WebGPUHal implements GpuHal {
     descriptors: PassDescriptor[],
     uniformByteSize: number,
   ) {
-    console.log('[WebGPUHal] create: getGpuDevice...')
-    const device = await getGpuDevice()
-    console.log('[WebGPUHal] create: device=', device)
-    if (!device) {
-      return null
-    }
-    console.log('[WebGPUHal] create: initGpuContext...')
-    const result = await initGpuContext(canvas, { alphaMode: 'opaque' })
-    console.log('[WebGPUHal] create: context=', result)
+    const result = await initGpuContext(canvas, { alphaMode: 'premultiplied' })
     if (!result) {
       return null
     }
-    console.log('[WebGPUHal] create: ensurePipelines...')
-    await ensurePipelines(device, descriptors)
-    console.log('[WebGPUHal] create: done, creating HAL instance')
+    const pipelines = await compilePipelines(result.device, descriptors)
     return new WebGPUHal(
-      device,
+      result.device,
       canvas,
       result.context,
       descriptors,
       uniformByteSize,
+      pipelines,
     )
   }
 
@@ -308,7 +296,7 @@ export class WebGPUHal implements GpuHal {
     if (width > 0 && height > 0) {
       this.msaaTexture = this.device.createTexture({
         size: [width, height],
-        format: navigator.gpu.getPreferredCanvasFormat() as GPUTextureFormat,
+        format: navigator.gpu.getPreferredCanvasFormat(),
         sampleCount: MSAA_SAMPLE_COUNT,
         usage: GPUTextureUsage.RENDER_ATTACHMENT,
       })
@@ -351,7 +339,7 @@ export class WebGPUHal implements GpuHal {
             resource: {
               buffer: this.uniformRingBuffer,
               offset: 0,
-              size: this.uniformByteSize,
+              size: this.alignedUniformSize,
             },
           },
           { binding: 2, resource: texState.texture.createView() },
@@ -365,7 +353,7 @@ export class WebGPUHal implements GpuHal {
         state.bindGroupLayout,
         storageBuffer,
         this.uniformRingBuffer,
-        this.uniformByteSize,
+        this.alignedUniformSize,
       )
       region.buffers.set(passId, { storageBuffer, bindGroup, count })
     }
@@ -505,33 +493,34 @@ export class WebGPUHal implements GpuHal {
   }
 
   beginFrame(clearR: number, clearG: number, clearB: number, clearA = 1) {
-    console.log('[WebGPUHal] beginFrame, canvas:', this.canvas.width, 'x', this.canvas.height, 'msaaView:', !!this.msaaView)
-    // Wrap the entire frame in a validation error scope so that any bad
-    // bind group / pipeline / draw shows up in the console instead of
-    // silently producing a blank canvas.
-    this.device.pushErrorScope('validation')
-    this.device.pushErrorScope('out-of-memory')
+    if (!this.msaaView || this.canvas.width === 0 || this.canvas.height === 0) {
+      return
+    }
+    this.scissorRect = null
+    this.viewportRect = null
     this.currentTextureView = this.context.getCurrentTexture().createView()
     this.currentEncoder = this.device.createCommandEncoder()
     this.uniformSlot = 0
-    this._clearColor = { r: clearR, g: clearG, b: clearB, a: clearA }
-
-    if (!this.msaaView) {
-      console.warn('[WebGPUHal] beginFrame: no msaaView, skipping render pass')
-      return
-    }
 
     this.currentPass = this.currentEncoder.beginRenderPass({
-      colorAttachments: [this.makeColorAttachment('clear')],
+      colorAttachments: [
+        {
+          view: this.msaaView,
+          resolveTarget: this.currentTextureView,
+          loadOp: 'clear',
+          // MSAA content is resolved into resolveTarget; no need to write it back.
+          storeOp: 'discard',
+          clearValue: { r: clearR, g: clearG, b: clearB, a: clearA },
+        },
+      ],
     })
   }
 
   drawPass(passId: string, regionKey: number, bufferPassId?: string) {
-    const state = deviceState.get(this.device)
-    if (!state || !this.currentPass) {
+    if (!this.currentPass) {
       return
     }
-    const pipeline = state.pipelines.get(passId)
+    const pipeline = this.pipelines.get(passId)
     if (!pipeline) {
       return
     }
@@ -547,6 +536,8 @@ export class WebGPUHal implements GpuHal {
       return
     }
 
+    // uniformSlot is post-incremented in writeUniforms, so slot (uniformSlot-1)
+    // holds the uniforms written for this draw call.
     const dynamicOffset =
       Math.max(0, this.uniformSlot - 1) * this.alignedUniformSize
 
@@ -628,11 +619,7 @@ export class WebGPUHal implements GpuHal {
     instanceCount?: number,
     bufferPassId?: string,
   ) {
-    const state = deviceState.get(this.device)
-    if (!state) {
-      return
-    }
-    const pipeline = state.pipelines.get(passId)
+    const pipeline = this.pipelines.get(passId)
     if (!pipeline) {
       return
     }
@@ -712,6 +699,8 @@ export class WebGPUHal implements GpuHal {
       const r = data[0]!
       const g = data[1]!
       const b = data[2]!
+      // RGB(0,0,0) = no feature. Otherwise decode the 1-based 24-bit index and
+      // convert to 0-based.
       result = r === 0 && g === 0 && b === 0 ? -1 : r + g * 256 + b * 65536 - 1
     } finally {
       try {
@@ -738,15 +727,9 @@ export class WebGPUHal implements GpuHal {
     this.viewportRect = null
   }
 
-  pick(_x: number, _y: number) {
-    return -1
-  }
-
-  getWebGLContext() {
-    return null
-  }
-
   dispose() {
+    // eslint-disable-next-line no-console
+    console.log('[GPU] WebGPUHal.dispose() — releasing GPU resources')
     this.deleteAllRegions()
     this.uniformRingBuffer.destroy()
     for (const ts of this.passTextures.values()) {
@@ -758,26 +741,6 @@ export class WebGPUHal implements GpuHal {
     this.pickingStagingBuffer?.destroy()
   }
 
-  private makeColorAttachment(loadOp: GPULoadOp): GPURenderPassColorAttachment {
-    // When MSAA is disabled (sample count 1), render directly to the canvas
-    // texture instead of through an MSAA resolve.
-    if (MSAA_SAMPLE_COUNT === 1) {
-      return {
-        view: this.currentTextureView!,
-        loadOp,
-        storeOp: 'store',
-        ...(loadOp === 'clear' && { clearValue: this._clearColor }),
-      }
-    }
-    return {
-      view: this.msaaView!,
-      resolveTarget: this.currentTextureView!,
-      loadOp,
-      storeOp: 'store',
-      ...(loadOp === 'clear' && { clearValue: this._clearColor }),
-    }
-  }
-
   private ensurePickingTexture() {
     const w = this.canvas.width
     const h = this.canvas.height
@@ -785,11 +748,10 @@ export class WebGPUHal implements GpuHal {
       return
     }
     if (this.pickingTexture) {
-      const existing = this.pickingTexture
-      if (existing.width === w && existing.height === h) {
+      if (this.pickingTexture.width === w && this.pickingTexture.height === h) {
         return
       }
-      existing.destroy()
+      this.pickingTexture.destroy()
     }
     this.pickingTexture = this.device.createTexture({
       size: [w, h],
@@ -838,7 +800,7 @@ export class WebGPUHal implements GpuHal {
           resource: {
             buffer: this.uniformRingBuffer,
             offset: 0,
-            size: this.uniformByteSize,
+            size: this.alignedUniformSize,
           },
         },
         { binding: 2, resource: texState.texture.createView() },

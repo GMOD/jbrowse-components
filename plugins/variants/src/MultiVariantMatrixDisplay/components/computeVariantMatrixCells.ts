@@ -51,7 +51,7 @@ function makeFeatureData(
   return {
     alt: feature.get('ALT') as string[],
     ref: feature.get('REF') as string,
-    name: feature.get('name') as string,
+    name: feature.get('name')!,
     description: feature.get('description') as string,
     length: feature.get('end') - feature.get('start'),
     featureId,

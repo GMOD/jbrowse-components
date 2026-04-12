@@ -57,8 +57,8 @@ export class Canvas2DVariantRenderer implements VariantBackend {
     })
   }
 
-  pruneRegions(activeRegionNumbers: number[]) {
-    pruneRegionMap(this.regions, activeRegionNumbers)
+  pruneRegions(activeRegions: number[]) {
+    pruneRegionMap(this.regions, activeRegions)
   }
 
   renderBlocks(

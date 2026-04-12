@@ -1,25 +1,61 @@
-import { FRAGMENT_SHADER, VERTEX_SHADER } from './ldGlslShaders.ts'
 import {
-  INSTANCE_STRIDE,
+  FRAGMENT_SHADER,
+  GENOMIC_VERTEX_SHADER,
+  UNIFORM_VERTEX_SHADER,
+} from './ldGlslShaders.ts'
+import {
+  GENOMIC_INSTANCE_STRIDE,
+  UNIFORM_INSTANCE_STRIDE,
   interleaveLDInstances,
-  ldShader,
+  ldGenomicShader,
+  ldUniformShader,
 } from './ldShaders.ts'
 
-import type { LDBackend, LDRenderState } from './ldBackendTypes.ts'
+import type { LDBackend, LDRenderState, LDUploadData } from './ldBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_MAIN = 'main'
-const INSTANCE_BYTES = INSTANCE_STRIDE * 4
+const PASS_GENOMIC = 'genomic'
 const UNIFORM_BYTE_SIZE = 32
 const REGION_KEY = 0
+
+const SHARED_TEXTURES = [
+  {
+    textureBinding: 2,
+    samplerBinding: 3,
+    glTextureUnit: 0,
+    glUniformName: 'u_colorRamp',
+    filter: 'linear' as const,
+  },
+]
 
 export const LD_PASSES: PassDescriptor[] = [
   {
     id: PASS_MAIN,
-    wgslSource: ldShader,
-    glslVertex: VERTEX_SHADER,
+    wgslSource: ldUniformShader,
+    glslVertex: UNIFORM_VERTEX_SHADER,
     glslFragment: FRAGMENT_SHADER,
-    instanceStride: INSTANCE_BYTES,
+    instanceStride: UNIFORM_INSTANCE_STRIDE * 4,
+    verticesPerInstance: 6,
+    blend: true,
+    blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
+    glAttributes: [
+      {
+        name: 'a_ldValue',
+        components: 1,
+        type: 'float',
+        offsetBytes: 0,
+        integer: false,
+      },
+    ],
+    textures: SHARED_TEXTURES,
+  },
+  {
+    id: PASS_GENOMIC,
+    wgslSource: ldGenomicShader,
+    glslVertex: GENOMIC_VERTEX_SHADER,
+    glslFragment: FRAGMENT_SHADER,
+    instanceStride: GENOMIC_INSTANCE_STRIDE * 4,
     verticesPerInstance: 6,
     blend: true,
     blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
@@ -46,15 +82,7 @@ export const LD_PASSES: PassDescriptor[] = [
         integer: false,
       },
     ],
-    textures: [
-      {
-        textureBinding: 2,
-        samplerBinding: 3,
-        glTextureUnit: 0,
-        glUniformName: 'u_colorRamp',
-        filter: 'linear',
-      },
-    ],
+    textures: SHARED_TEXTURES,
   },
 ]
 
@@ -70,23 +98,34 @@ export class GpuLDRenderer implements LDBackend {
     this.hal = hal
   }
 
-  uploadData(data: {
-    positions: Float32Array
-    cellSizes: Float32Array
-    ldValues: Float32Array
-    numCells: number
-  }) {
+  uploadData(data: LDUploadData) {
     if (data.numCells === 0) {
       this.hal.deleteRegion(REGION_KEY)
       return
     }
 
-    const buf = interleaveLDInstances(data)
-    this.hal.uploadBuffer(REGION_KEY, PASS_MAIN, buf, data.numCells)
+    if (data.positions && data.cellSizes) {
+      this.hal.deleteBuffer(REGION_KEY, PASS_MAIN)
+      const buf = interleaveLDInstances({
+        positions: data.positions,
+        cellSizes: data.cellSizes,
+        ldValues: data.ldValues,
+        numCells: data.numCells,
+      })
+      this.hal.uploadBuffer(REGION_KEY, PASS_GENOMIC, buf, data.numCells)
+    } else {
+      this.hal.deleteBuffer(REGION_KEY, PASS_GENOMIC)
+      const buf = data.ldValues.buffer.slice(
+        data.ldValues.byteOffset,
+        data.ldValues.byteOffset + data.ldValues.byteLength,
+      )
+      this.hal.uploadBuffer(REGION_KEY, PASS_MAIN, buf, data.numCells)
+    }
   }
 
   uploadColorRamp(colors: Uint8Array) {
     this.hal.uploadTexture(PASS_MAIN, colors, 256, 1)
+    this.hal.uploadTexture(PASS_GENOMIC, colors, 256, 1)
   }
 
   render(state: LDRenderState) {
@@ -95,16 +134,25 @@ export class GpuLDRenderer implements LDBackend {
     this.hal.resize(canvasWidth, canvasHeight)
     this.hal.beginFrame(0, 0, 0, 0)
 
-    if (this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0) {
+    const hasMain = this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0
+    const hasGenomic = this.hal.getBufferCount(REGION_KEY, PASS_GENOMIC) > 0
+
+    if (hasMain || hasGenomic) {
       this.uniformF32[0] = canvasWidth
       this.uniformF32[1] = canvasHeight
       this.uniformF32[2] = state.yScalar
       this.uniformF32[3] = state.viewScale
       this.uniformF32[4] = state.viewOffsetX
       this.uniformU32[5] = state.signedLD ? 1 : 0
+      this.uniformF32[6] = state.uniformW
 
       this.hal.writeUniforms(this.uniformData)
-      this.hal.drawPass(PASS_MAIN, REGION_KEY)
+      if (hasMain) {
+        this.hal.drawPass(PASS_MAIN, REGION_KEY)
+      }
+      if (hasGenomic) {
+        this.hal.drawPass(PASS_GENOMIC, REGION_KEY)
+      }
     }
 
     this.hal.endFrame()

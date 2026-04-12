@@ -9,24 +9,16 @@ import {
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 
 import { draw, drawLocationMarkers } from './components/util.ts'
-import { lineLimit, oobLimit } from './drawSyntenyUtils.ts'
+import { OP_TO_CIGAR_KEY, lineLimit, oobLimit } from './drawSyntenyUtils.ts'
 
+import type { CanvasLike } from './components/util.ts'
 import type { defaultCigarColors } from './drawSyntenyUtils.ts'
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 
-const OP_TO_CIGAR_KEY: Record<number, string> = {
-  [CIGAR_M]: 'M',
-  [CIGAR_I]: 'I',
-  [CIGAR_D]: 'D',
-  [CIGAR_N]: 'N',
-  [CIGAR_EQ]: '=',
-  [CIGAR_X]: 'X',
-}
-
 export function drawRef(
   model: LinearSyntenyDisplayModel,
-  mainCanvas: CanvasRenderingContext2D,
+  mainCanvas: CanvasLike,
 ) {
   const view = getContainingView(model) as LinearSyntenyViewModel
   const drawCurves = view.drawCurves
@@ -63,10 +55,8 @@ export function drawRef(
   const useStrandColor = colorBy === 'strand'
   const useQueryColor = colorBy === 'query'
 
-  const bpPerPx0 = bpPerPxs[level]!
-  const bpPerPx1 = bpPerPxs[level + 1]!
-  const bpPerPxInv0 = 1 / bpPerPx0
-  const bpPerPxInv1 = 1 / bpPerPx1
+  const bpPerPxInv0 = 1 / bpPerPxs[level]!
+  const bpPerPxInv1 = 1 / bpPerPxs[level + 1]!
 
   mainCanvas.fillStyle = colorMapWithAlpha.M
   mainCanvas.strokeStyle = colorMapWithAlpha.M
@@ -196,27 +186,7 @@ export function drawRef(
 
               continuingFlag = false
 
-              if (drawCIGARMatchesOnly) {
-                if (letter === 'M') {
-                  draw(mainCanvas, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
-                  mainCanvas.fill()
-                  if (drawLocationMarkersEnabled) {
-                    drawLocationMarkers(
-                      mainCanvas,
-                      px1,
-                      cx1,
-                      y1,
-                      cx2,
-                      px2,
-                      y2,
-                      mid,
-                      bpPerPx0,
-                      bpPerPx1,
-                      drawCurves,
-                    )
-                  }
-                }
-              } else {
+              if (!drawCIGARMatchesOnly || letter === 'M') {
                 draw(mainCanvas, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
                 mainCanvas.fill()
                 if (drawLocationMarkersEnabled) {
@@ -229,8 +199,6 @@ export function drawRef(
                     px2,
                     y2,
                     mid,
-                    bpPerPx0,
-                    bpPerPx1,
                     drawCurves,
                   )
                 }
@@ -248,10 +216,6 @@ export function drawRef(
 
         draw(mainCanvas, x11, x12, y1, x22, x21, y2, mid, drawCurves)
         mainCanvas.fill()
-
-        if (useStrandColor || useQueryColor) {
-          mainCanvas.fillStyle = colorMapWithAlpha.M
-        }
       }
     }
   }

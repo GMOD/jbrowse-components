@@ -2,12 +2,11 @@ import Plugin from '@jbrowse/core/Plugin'
 
 import AlignmentsFeatureWidgetF from './AlignmentsFeatureDetail/index.ts'
 import AlignmentsTrackF from './AlignmentsTrack/index.ts'
-import CramAdapterF from './BamAdapter/index.ts'
-import BamAdapterF from './CramAdapter/index.ts'
+import BamAdapterF from './BamAdapter/index.ts'
+import CramAdapterF from './CramAdapter/index.ts'
 import GuessAlignmentsTypesF from './GuessAlignmentsTypes/index.ts'
 import HtsgetBamAdapterF from './HtsgetBamAdapter/index.ts'
 import LinearAlignmentsDisplayF from './LinearAlignmentsDisplay/index.ts'
-import ArcsDataRPCMethodsF from './RenderArcsDataRPC/index.ts'
 import ChainDataRPCMethodsF from './RenderChainDataRPC/index.ts'
 import PileupDataRPCMethodsF from './RenderPileupDataRPC/index.ts'
 
@@ -23,12 +22,11 @@ export default class AlignmentsPlugin extends Plugin {
       AlignmentsTrackF,
       HtsgetBamAdapterF,
       PileupDataRPCMethodsF,
-      ArcsDataRPCMethodsF,
       ChainDataRPCMethodsF,
       LinearAlignmentsDisplayF,
       AlignmentsFeatureWidgetF,
       GuessAlignmentsTypesF,
-    ].map(f => {
+    ].forEach(f => {
       f(pluginManager)
     })
   }

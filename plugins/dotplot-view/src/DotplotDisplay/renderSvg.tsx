@@ -1,4 +1,5 @@
 import { getContainingView } from '@jbrowse/core/util'
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { when } from 'mobx'
 
 import { createDotplotColorFunction } from './dotplotWebGLColors.ts'
@@ -54,23 +55,27 @@ export async function renderSvg(model: DotplotRenderModel) {
   const offX = hview.offsetPx
   const offY = vview.offsetPx
 
-  let content = ''
+  const ctx = new SvgCanvas()
+  ctx.lineWidth = 2
   for (let i = 0; i < segments.x1s.length; i++) {
     const ci = i * 4
-    const color = rgbaToCSS(
+    ctx.strokeStyle = rgbaToCSS(
       segments.colors[ci]!,
       segments.colors[ci + 1]!,
       segments.colors[ci + 2]!,
       segments.colors[ci + 3]!,
     )
-    content += `<line x1="${segments.x1s[i]}" y1="${segments.y1s[i]}" x2="${segments.x2s[i]}" y2="${segments.y2s[i]}" stroke="${color}" stroke-width="2"/>`
+    ctx.beginPath()
+    ctx.moveTo(segments.x1s[i]!, segments.y1s[i]!)
+    ctx.lineTo(segments.x2s[i]!, segments.y2s[i]!)
+    ctx.stroke()
   }
 
   return (
     <g
       transform={`translate(0,${viewHeight}) scale(${scaleX},-${scaleY}) translate(${-offX},${-offY})`}
     >
-      <g dangerouslySetInnerHTML={{ __html: content }} />
+      <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
     </g>
   )
 }

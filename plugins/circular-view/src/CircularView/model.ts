@@ -187,13 +187,9 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get circumferencePx() {
-        let elidedBp = 0
-
-        for (const r of this.elidedRegions) {
-          elidedBp += r.widthBp
-        }
-        return (
-          elidedBp / self.bpPerPx + self.spacingPx * this.elidedRegions.length
+        return this.elidedRegions.reduce(
+          (sum, r) => sum + r.widthBp / self.bpPerPx + self.spacingPx,
+          0,
         )
       },
       /**
@@ -218,17 +214,17 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get centerXY(): [number, number] {
-        return [this.radiusPx + self.paddingPx, this.radiusPx + self.paddingPx]
+        const c = this.radiusPx + self.paddingPx
+        return [c, c]
       },
       /**
        * #getter
        */
       get totalBp() {
-        let total = 0
-        for (const region of self.displayedRegions) {
-          total += region.end - region.start
-        }
-        return total
+        return self.displayedRegions.reduce(
+          (sum, r) => sum + r.end - r.start,
+          0,
+        )
       },
       /**
        * #getter
@@ -279,10 +275,8 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get figureDimensions(): [number, number] {
-        return [
-          this.radiusPx * 2 + 2 * self.paddingPx,
-          this.radiusPx * 2 + 2 * self.paddingPx,
-        ]
+        const d = this.radiusPx * 2 + 2 * self.paddingPx
+        return [d, d]
       },
       /**
        * #getter
@@ -326,25 +320,17 @@ function stateModelFactory(pluginManager: PluginManager) {
         }
 
         // remove any single-region elisions
-        for (let i = 0; i < visible.length; i += 1) {
-          const v = visible[i]!
-          if (v.elided && v.regions.length === 1) {
-            visible[i] = { ...v, ...v.regions[0]!, elided: false }
-          }
-        }
-        return visible
+        return visible.map(v =>
+          v.elided && v.regions.length === 1
+            ? { ...v, ...v.regions[0]!, elided: false as const }
+            : v,
+        )
       },
       /**
        * #getter
        */
       get assemblyNames() {
-        const assemblyNames: string[] = []
-        for (const displayedRegion of self.displayedRegions) {
-          if (!assemblyNames.includes(displayedRegion.assemblyName)) {
-            assemblyNames.push(displayedRegion.assemblyName)
-          }
-        }
-        return assemblyNames
+        return [...new Set(self.displayedRegions.map(r => r.assemblyName))]
       },
       /**
        * #getter
@@ -425,7 +411,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         return (
           !!self.displayedRegions.length &&
           !!this.figureWidth &&
-          !!this.figureHeight &&
           this.initialized
         )
       },
@@ -648,6 +633,16 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      openExportDialog() {
+        getSession(self).queueDialog(handleClose => [
+          ExportSvgDialog,
+          { model: self, handleClose },
+        ])
+      },
+
+      /**
+       * #action
+       */
       toggleFitToWindowLock() {
         // when going unlocked -> locked and circle is cut off, set to the
         // locked minBpPerPx
@@ -755,12 +750,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Export SVG',
             icon: PhotoCameraIcon,
-            onClick: () => {
-              getSession(self).queueDialog(handleClose => [
-                ExportSvgDialog,
-                { model: self, handleClose },
-              ])
-            },
+            onClick: self.openExportDialog,
           },
           {
             label: 'Open track selector',

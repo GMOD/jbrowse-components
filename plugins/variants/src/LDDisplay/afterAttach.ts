@@ -115,9 +115,7 @@ export function doAfterAttach(self: SharedLDModel) {
       self.setRpcData(result)
       self.setLastDrawnOffsetPx(view.offsetPx)
       self.setLastDrawnBpPerPx(view.bpPerPx)
-      self.setFlatbushData(
-        result.flatbush,
-        result.items,
+      self.setRenderData(
         result.snps,
         result.maxScore,
         result.yScalar,

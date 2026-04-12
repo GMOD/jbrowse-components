@@ -27,17 +27,23 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
 }) {
   const [selectedArcIdx, setSelectedArcIdx] = useState(-1)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const { showSashimiArcs, showCoverage, coverageHeight, rpcDataMap } = model
+  const {
+    showSashimiArcs,
+    showCoverage,
+    coverageHeight,
+    sashimiArcsDown,
+    sashimiArcsHeight,
+    rpcDataMap,
+  } = model
   const { initialized, offsetPx, visibleRegions } = view
-
-  const effectiveHeight = coverageHeight - YSCALEBAR_LABEL_OFFSET
 
   if (!showSashimiArcs || !showCoverage || !initialized) {
     return null
   }
 
-  const baseline = effectiveHeight * 0.9
-  const peak = effectiveHeight * 0.1
+  const effectiveHeight = coverageHeight - YSCALEBAR_LABEL_OFFSET
+  const baseline = sashimiArcsDown ? 0 : effectiveHeight * 0.9
+  const peak = sashimiArcsDown ? sashimiArcsHeight * 0.9 : effectiveHeight * 0.1
 
   const paths: {
     d: string
@@ -50,7 +56,12 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
     strand: number
   }[] = []
 
-  for (const [, rpcData] of rpcDataMap) {
+  for (const region of visibleRegions) {
+    const rpcData = rpcDataMap.get(region.regionNumber)
+    if (!rpcData || rpcData.numSashimiArcs === 0) {
+      continue
+    }
+    const { refName } = region
     const {
       sashimiX1,
       sashimiX2,
@@ -59,18 +70,6 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
       numSashimiArcs,
       regionStart,
     } = rpcData
-
-    if (numSashimiArcs === 0) {
-      continue
-    }
-
-    let refName = ''
-    for (const r of visibleRegions) {
-      if (rpcDataMap.get(r.regionNumber) === rpcData) {
-        refName = r.refName
-        break
-      }
-    }
 
     for (let i = 0; i < numSashimiArcs; i++) {
       const startBp = regionStart + sashimiX1[i]!
@@ -103,12 +102,12 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
     <svg
       style={{
         position: 'absolute',
-        top: YSCALEBAR_LABEL_OFFSET,
+        top: sashimiArcsDown ? coverageHeight : YSCALEBAR_LABEL_OFFSET,
         left: 0,
         pointerEvents: 'none',
-        height: effectiveHeight,
+        height: sashimiArcsDown ? sashimiArcsHeight : effectiveHeight,
         width: view.width,
-        overflow: 'visible',
+        overflow: sashimiArcsDown ? 'hidden' : 'visible',
       }}
     >
       {paths.map((p, i) => {

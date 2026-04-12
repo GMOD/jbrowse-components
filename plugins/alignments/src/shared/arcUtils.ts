@@ -39,7 +39,7 @@ export function extractCoreFeat(f: Feature): CoreFeat {
     refName: f.get('refName'),
     start: f.get('start'),
     end: f.get('end'),
-    strand: f.get('strand'),
+    strand: f.get('strand') ?? 0,
     tlen: f.get('template_length'),
     pair_orientation: f.get('pair_orientation'),
     next_ref: f.get('next_ref'),
@@ -51,7 +51,7 @@ export function extractCoreFeatBasic(f: Feature): CoreFeat {
     refName: f.get('refName'),
     start: f.get('start'),
     end: f.get('end'),
-    strand: f.get('strand'),
+    strand: f.get('strand') ?? 0,
   }
 }
 

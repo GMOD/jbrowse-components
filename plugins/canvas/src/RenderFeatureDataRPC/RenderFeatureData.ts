@@ -5,17 +5,12 @@ import type {
   RenderFeatureDataArgs,
   RenderFeatureDataResult,
 } from './rpcTypes.ts'
-import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     RenderFeatureData: {
-      args: Record<string, unknown>
+      args: RenderFeatureDataArgs
       return: RenderFeatureDataResult
-    }
-    GetCanvasFeatureDetails: {
-      args: Record<string, unknown>
-      return: { feature?: SimpleFeatureSerialized }
     }
   }
 }
@@ -34,15 +29,10 @@ export default class RenderFeatureData extends RpcMethodType {
 
     const { region, sessionId, adapterConfig } = args
 
-    const regionWithAssembly = {
-      ...region,
-      assemblyName: region.assemblyName ?? '',
-    }
-
     const result = await renameRegionsIfNeeded(assemblyManager, {
       sessionId,
       adapterConfig,
-      regions: [regionWithAssembly],
+      regions: [region],
     })
 
     // single-region RPC: we pass one region in, get one back
@@ -57,7 +47,7 @@ export default class RenderFeatureData extends RpcMethodType {
       const seqResult = await renameRegionsIfNeeded(assemblyManager, {
         sessionId,
         adapterConfig: sequenceAdapter,
-        regions: [regionWithAssembly],
+        regions: [region],
       })
       seqAdapterRefName = seqResult.regions[0]?.refName
     }
@@ -73,10 +63,10 @@ export default class RenderFeatureData extends RpcMethodType {
 
   async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
     const renamed = await this.renameRegionsIfNeeded(
-      args as unknown as RenderFeatureDataArgs,
+      args as RenderFeatureDataArgs,
     )
     return super.serializeArguments(
-      renamed as unknown as Record<string, unknown>,
+      renamed as Record<string, unknown>,
       rpcDriver,
     )
   }
@@ -86,7 +76,7 @@ export default class RenderFeatureData extends RpcMethodType {
       await import('./executeRenderFeatureData.ts')
     return executeRenderFeatureData({
       pluginManager: this.pluginManager,
-      args: args as unknown as RenderFeatureDataArgs,
+      args: args as RenderFeatureDataArgs,
     })
   }
 }

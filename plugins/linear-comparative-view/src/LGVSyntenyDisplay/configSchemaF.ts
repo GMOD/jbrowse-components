@@ -29,7 +29,7 @@ function configSchemaF(pluginManager: PluginManager) {
         end: mate.end,
       })} (${toLocale(mate.end - mate.start)}bp)`,
     ]
-      .filter(f => !!f)
+      .filter(Boolean)
       .join('<br/>')
   })
   return ConfigurationSchema(

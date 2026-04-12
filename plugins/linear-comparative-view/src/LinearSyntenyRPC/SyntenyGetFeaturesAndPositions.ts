@@ -16,6 +16,8 @@ export interface SyntenyGetFeaturesAndPositionsArgs {
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean
   drawLocationMarkers?: boolean
+  chainMerge?: boolean
+  statusCallback?: (msg: string) => void
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

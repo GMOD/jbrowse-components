@@ -8,15 +8,10 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * #config LinearBasicDisplay
  * #category display
  */
-function configSchemaFactory(pluginManager: PluginManager) {
+function configSchemaFactory(_pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearBasicDisplay',
-    {
-      /**
-       * #slot
-       */
-      renderer: pluginManager.pluggableConfigSchemaType('renderer'),
-    },
+    {},
     {
       /**
        * #baseConfiguration

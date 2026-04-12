@@ -5,6 +5,8 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { getClip } from '../BreakpointSplitView/getClip.ts'
+
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderArgs } from '@jbrowse/core/rpc/methods/util'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -17,15 +19,6 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
       return: Feature[]
     }
   }
-}
-
-const startClip = /(\d+)[SH]$/
-const endClip = /^(\d+)([SH])/
-
-function getClip(cigar: string, strand: number) {
-  return strand === -1
-    ? +(startClip.exec(cigar)?.[1] ?? 0)
-    : +(endClip.exec(cigar)?.[1] ?? 0)
 }
 
 // This interface covers features from two different track types:

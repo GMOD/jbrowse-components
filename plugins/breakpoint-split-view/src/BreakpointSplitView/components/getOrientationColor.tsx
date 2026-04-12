@@ -100,13 +100,7 @@ export function getLongReadOrientationColorOrDefault(s1: number, s2: number) {
 }
 
 export function getLongReadOrientationAbnormal(s1: number, s2: number) {
-  if (s1 === -1 && s2 === 1) {
-    return true
-  } else if (s1 === 1 && s2 === -1) {
-    return true
-  } else {
-    return false
-  }
+  return (s1 === -1 && s2 === 1) || (s1 === 1 && s2 === -1)
 }
 
 export function isAbnormalOrientation(f: { pair_orientation?: string }) {

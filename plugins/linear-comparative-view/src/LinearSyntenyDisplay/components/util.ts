@@ -8,8 +8,22 @@ export interface ClickCoord {
   feature: FeatPos
 }
 
+export type CanvasLike = Pick<
+  CanvasRenderingContext2D,
+  | 'fillStyle'
+  | 'strokeStyle'
+  | 'lineWidth'
+  | 'beginPath'
+  | 'moveTo'
+  | 'lineTo'
+  | 'bezierCurveTo'
+  | 'closePath'
+  | 'fill'
+  | 'stroke'
+>
+
 export function draw(
-  ctx: CanvasRenderingContext2D,
+  ctx: CanvasLike,
   x1: number,
   x2: number,
   y1: number,
@@ -27,7 +41,7 @@ export function draw(
 }
 
 export function drawLocationMarkers(
-  ctx: CanvasRenderingContext2D,
+  ctx: CanvasLike,
   x1: number,
   x2: number,
   y1: number,
@@ -35,8 +49,6 @@ export function drawLocationMarkers(
   x4: number,
   y2: number,
   mid: number,
-  bpPerPx1: number,
-  bpPerPx2: number,
   drawCurves?: boolean,
 ) {
   const width1 = Math.abs(x2 - x1)
@@ -88,7 +100,7 @@ export function drawLocationMarkers(
 }
 
 export function drawBox(
-  ctx: CanvasRenderingContext2D,
+  ctx: CanvasLike,
   x1: number,
   x2: number,
   y1: number,
@@ -105,7 +117,7 @@ export function drawBox(
 }
 
 export function drawBezierBox(
-  ctx: CanvasRenderingContext2D,
+  ctx: CanvasLike,
   x1: number,
   x2: number,
   y1: number,
@@ -115,7 +127,7 @@ export function drawBezierBox(
   mid: number,
 ) {
   const len1 = Math.abs(x1 - x2)
-  const len2 = Math.abs(x1 - x2)
+  const len2 = Math.abs(x3 - x4)
 
   // heuristic to not draw hourglass inversions with bezier curves when they
   // are thin and far apart because it results in areas that are not drawn well
@@ -154,6 +166,6 @@ export function getTooltip(
     feat.name ? `Name 1: ${feat.name}` : '',
     feat.mate.name ? `Name 2: ${feat.mate.name}` : '',
   ]
-    .filter(f => !!f)
+    .filter(Boolean)
     .join('<br/>')
 }

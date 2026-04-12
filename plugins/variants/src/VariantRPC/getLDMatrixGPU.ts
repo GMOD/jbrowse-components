@@ -192,15 +192,32 @@ export async function computeLDMatrixGPU(
 
   const { pipeline, bindGroupLayout } = await ensurePipeline(device)
 
-  // Pack genotypes: 4 samples per u32, missing (-1) stored as 0xFF
+  // Pack genotypes: 4 samples per u32, missing (-1) stored as 0xFF.
+  // Build each word in a local variable (1 write vs 4 read-modify-writes).
   const numSamplesPacked = Math.ceil(numSamples / 4)
   const genoPacked = new Uint32Array(n * numSamplesPacked)
+  const fullWords = numSamples >> 2
+  const remainder = numSamples & 3
   for (let snp = 0; snp < n; snp++) {
     const geno = encodedGenotypes[snp]!
-    for (let s = 0; s < numSamples; s++) {
-      const wordIdx = snp * numSamplesPacked + (s >> 2)
-      const byte = geno[s]! < 0 ? 0xff : geno[s]! & 0xff
-      genoPacked[wordIdx] = genoPacked[wordIdx]! | (byte << ((s & 3) * 8))
+    const base = snp * numSamplesPacked
+    for (let w = 0, s = 0; w < fullWords; w++, s += 4) {
+      const b0 = geno[s]! < 0 ? 0xff : geno[s]!
+      const b1 = geno[s + 1]! < 0 ? 0xff : geno[s + 1]!
+      const b2 = geno[s + 2]! < 0 ? 0xff : geno[s + 2]!
+      const b3 = geno[s + 3]! < 0 ? 0xff : geno[s + 3]!
+      genoPacked[base + w] = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24)
+    }
+    if (remainder) {
+      const s = fullWords << 2
+      let word = geno[s]! < 0 ? 0xff : geno[s]!
+      if (remainder > 1) {
+        word |= (geno[s + 1]! < 0 ? 0xff : geno[s + 1]!) << 8
+      }
+      if (remainder > 2) {
+        word |= (geno[s + 2]! < 0 ? 0xff : geno[s + 2]!) << 16
+      }
+      genoPacked[base + fullWords] = word
     }
   }
 

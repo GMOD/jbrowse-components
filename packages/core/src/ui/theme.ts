@@ -563,4 +563,4 @@ function addMissingColors(theme: ThemeOptions = {}) {
   )
 }
 
-export { type Theme as JBrowseTheme } from '@mui/material/styles'
+export type JBrowseTheme = Theme

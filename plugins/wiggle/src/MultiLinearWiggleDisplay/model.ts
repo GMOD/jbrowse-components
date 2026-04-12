@@ -15,6 +15,7 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
+  ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -27,12 +28,7 @@ import { autorun, untracked } from 'mobx'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
 import { getRowHeight, isOverlayMode } from '../shared/wiggleComponentUtils.ts'
-import {
-  MULTI_WIGGLE_RENDERING_TYPES,
-  computeAutoscaleDomain,
-  getNiceDomain,
-  getScale,
-} from '../util.ts'
+import { computeAutoscaleDomain, getNiceDomain, getScale } from '../util.ts'
 
 import type { MultiWiggleDataResult } from '../RenderMultiWiggleDataRPC/types.ts'
 import type { Source, SourceInfo } from '../util.ts'
@@ -81,6 +77,7 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
+      ConfigOverrideMixin(),
       types.model({
         type: types.literal('MultiLinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
@@ -88,17 +85,7 @@ export default function stateModelFactory(
         layout: types.frozen([] as Source[]),
         clusterTree: types.maybe(types.string),
         treeAreaWidth: types.optional(types.number, 80),
-        showTreeSetting: types.maybe(types.boolean),
-        showRowSeparatorsSetting: types.maybe(types.boolean),
         subtreeFilter: types.maybe(types.array(types.string)),
-        scaleTypeSetting: types.maybe(types.string),
-        minScoreSetting: types.maybe(types.number),
-        maxScoreSetting: types.maybe(types.number),
-        renderingTypeSetting: types.maybe(
-          types.enumeration('Rendering', [...MULTI_WIGGLE_RENDERING_TYPES]),
-        ),
-        summaryScoreModeSetting: types.maybe(types.string),
-        autoscaleSetting: types.maybe(types.string),
         displayCrossHatches: types.optional(types.boolean, false),
       }),
     )
@@ -219,31 +206,31 @@ export default function stateModelFactory(
       },
 
       get posColor() {
-        return getConf(self, 'posColor') as string
+        return self.getConfWithOverride<string>('posColor')
       },
 
       get negColor() {
-        return getConf(self, 'negColor') as string
+        return self.getConfWithOverride<string>('negColor')
       },
 
       get bicolorPivot() {
-        return getConf(self, 'bicolorPivot') as number
+        return self.getConfWithOverride<number>('bicolorPivot')
       },
 
       get scaleType() {
-        return self.scaleTypeSetting ?? getConf(self, 'scaleType')
+        return self.getConfWithOverride<string>('scaleType')
       },
 
       get autoscaleType() {
-        return self.autoscaleSetting ?? getConf(self, 'autoscale')
+        return self.getConfWithOverride<string>('autoscale')
       },
 
       get summaryScoreMode() {
-        return self.summaryScoreModeSetting ?? getConf(self, 'summaryScoreMode')
+        return self.getConfWithOverride<string>('summaryScoreMode')
       },
 
       get renderingType() {
-        return self.renderingTypeSetting ?? getConf(self, 'defaultRendering')
+        return self.getConfWithOverride<string>('defaultRendering')
       },
 
       get isDensityMode() {
@@ -255,11 +242,11 @@ export default function stateModelFactory(
       },
 
       get minScore() {
-        return self.minScoreSetting ?? getConf(self, 'minScore')
+        return self.getConfWithOverride<number>('minScore')
       },
 
       get maxScore() {
-        return self.maxScoreSetting ?? getConf(self, 'maxScore')
+        return self.getConfWithOverride<number>('maxScore')
       },
 
       get minScoreConfig() {
@@ -308,7 +295,7 @@ export default function stateModelFactory(
         if (!domain) {
           return undefined
         }
-        const minimalTicks = getConf(self, 'minimalTicks')
+        const minimalTicks = self.getConfWithOverride<boolean>('minimalTicks')
         const ticks = axisPropsFromTickScale(
           getScale({
             scaleType,
@@ -325,11 +312,11 @@ export default function stateModelFactory(
     }))
     .views(self => ({
       get showTree() {
-        return self.showTreeSetting ?? true
+        return self.getOverride<boolean>('showTree') ?? true
       },
 
       get showRowSeparators() {
-        return self.showRowSeparatorsSetting ?? false
+        return self.getOverride<boolean>('showRowSeparators') ?? false
       },
 
       get root() {
@@ -416,11 +403,11 @@ export default function stateModelFactory(
       },
 
       setShowTree(arg: boolean) {
-        self.showTreeSetting = arg
+        self.setOverride('showTree', arg)
       },
 
       setShowRowSeparators(arg: boolean) {
-        self.showRowSeparatorsSetting = arg
+        self.setOverride('showRowSeparators', arg)
       },
 
       setSubtreeFilter(names?: string[]) {
@@ -483,7 +470,7 @@ export default function stateModelFactory(
       },
 
       setAutoscale(val?: string) {
-        self.autoscaleSetting = val
+        self.setOverride('autoscale', val)
       },
 
       toggleCrossHatches() {
@@ -491,23 +478,23 @@ export default function stateModelFactory(
       },
 
       setScaleType(scaleType: string) {
-        self.scaleTypeSetting = scaleType
+        self.setOverride('scaleType', scaleType)
       },
 
       setMinScore(val?: number) {
-        self.minScoreSetting = val
+        self.setOverride('minScore', val)
       },
 
       setMaxScore(val?: number) {
-        self.maxScoreSetting = val
+        self.setOverride('maxScore', val)
       },
 
       setRenderingType(type: string) {
-        self.renderingTypeSetting = type as typeof self.renderingTypeSetting
+        self.setOverride('defaultRendering', type)
       },
 
       setSummaryScoreMode(val: string) {
-        self.summaryScoreModeSetting = val
+        self.setOverride('summaryScoreMode', val)
       },
 
       setResolution(res: number) {
@@ -646,8 +633,8 @@ export default function stateModelFactory(
                   if (!view.initialized) {
                     return
                   }
-                  console.log('[MultiWiggle] VisibleScoreRange autorun firing, rpcDataMap.size:', self.rpcDataMap.size)
-                  const numStdDev = getConf(self, 'numStdDev') || 3
+                  const numStdDev =
+                    self.getConfWithOverride<number>('numStdDev')
                   const visibleEntries = view.dynamicBlocks.contentBlocks
                     .filter(block => block.regionNumber !== undefined)
                     .flatMap(block => {
@@ -895,39 +882,14 @@ export default function stateModelFactory(
       if (!snap) {
         return snap
       }
-      const {
-        layout,
-        clusterTree,
-        treeAreaWidth,
-        showTreeSetting,
-        showRowSeparatorsSetting,
-        subtreeFilter,
-        scaleTypeSetting,
-        minScoreSetting,
-        maxScoreSetting,
-        renderingTypeSetting,
-        summaryScoreModeSetting,
-        autoscaleSetting,
-        ...rest
-      } = snap as Omit<typeof snap, symbol>
+      const { layout, clusterTree, treeAreaWidth, subtreeFilter, ...rest } =
+        snap as Omit<typeof snap, symbol>
       return {
         ...rest,
         ...(layout.length > 0 ? { layout } : {}),
         ...(clusterTree !== undefined ? { clusterTree } : {}),
         ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
-        ...(showTreeSetting !== undefined ? { showTreeSetting } : {}),
-        ...(showRowSeparatorsSetting !== undefined
-          ? { showRowSeparatorsSetting }
-          : {}),
         ...(subtreeFilter?.length ? { subtreeFilter } : {}),
-        ...(scaleTypeSetting !== undefined ? { scaleTypeSetting } : {}),
-        ...(minScoreSetting !== undefined ? { minScoreSetting } : {}),
-        ...(maxScoreSetting !== undefined ? { maxScoreSetting } : {}),
-        ...(renderingTypeSetting !== undefined ? { renderingTypeSetting } : {}),
-        ...(summaryScoreModeSetting !== undefined
-          ? { summaryScoreModeSetting }
-          : {}),
-        ...(autoscaleSetting !== undefined ? { autoscaleSetting } : {}),
       } as typeof snap
     })
 }

@@ -9,13 +9,16 @@ export function sortConfs(
 ) {
   // uses readConfObject instead of getTrackName so that the undefined
   // reference sequence track is sorted to the top
-  const ret = confs.map(c => [
-    c,
-    readConfObject(c, 'name'),
-    readConfObject(c, 'category')?.[0] || '',
-    readConfObject(c, 'category')?.[1] || '',
-    readConfObject(c, 'category')?.[2] || '',
-  ])
+  const ret = confs.map(c => {
+    const category = readConfObject(c, 'category') ?? []
+    return [
+      c,
+      readConfObject(c, 'name'),
+      category[0] || '',
+      category[1] || '',
+      category[2] || '',
+    ]
+  })
   if (sortNames) {
     ret.sort((a, b) => a[1].localeCompare(b[1]))
   }

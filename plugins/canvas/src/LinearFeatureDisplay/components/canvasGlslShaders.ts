@@ -1,9 +1,14 @@
 import { HP_GLSL_CORE } from '@jbrowse/alignments-core'
 
-// SYNC: Hand-written GLSL ES 3.00 for the WebGL2 fallback via HAL.
-// Mirrors the WGSL shaders in canvasShaders.ts (used by WebGPU).
-// Uses a std140 UBO instead of individual uniforms (required by HAL).
-// Uses interleaved vertex attributes matching the storage buffer layout.
+import {
+  CHEVRON_H_PX,
+  CHEVRON_SPACING_PX,
+  CHEVRON_W_PX,
+  HEAD_HALF_H_PX,
+  MIN_RECT_WIDTH_PX,
+  STEM_HALF_H_PX,
+  STEM_LENGTH_PX,
+} from './sharedRendererConstants.ts'
 
 const UNIFORMS_BLOCK = `
 layout(std140) uniform Uniforms {
@@ -48,8 +53,7 @@ void main() {
   float sx1 = snapToPixelX(hpToClipX(hpSplitUint(absStart), bp_range_x, zero));
   float sx2 = snapToPixelX(hpToClipX(hpSplitUint(absEnd), bp_range_x, zero));
 
-  // SYNC: must match MIN_RECT_WIDTH_PX in sharedRendererConstants.ts
-  float minWidth = 4.0 / canvas_width;
+  float minWidth = ${MIN_RECT_WIDTH_PX * 2}.0 / canvas_width;
   float dx = sx2 - sx1;
   if (abs(dx) < minWidth) {
     sx2 = sx1 + (dx < 0.0 ? -minWidth : minWidth);
@@ -122,7 +126,7 @@ void main() {
 
   float lineLengthBp = float(a_start_end.y - a_start_end.x);
   float lineWidthPx = lineLengthBp / bp_per_px;
-  float chevronSpacingPx = 25.0;
+  float chevronSpacingPx = ${CHEVRON_SPACING_PX}.0;
 
   if (a_direction == 0.0 || lineWidthPx < chevronSpacingPx * 0.5) {
     gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
@@ -158,8 +162,8 @@ void main() {
   float yPx = floor(a_y - scroll_y + 0.5) + 0.5;
   float cy = 1.0 - (yPx / canvas_height) * 2.0;
 
-  float halfW = 4.5 / canvas_width;
-  float halfH = 4.5 / canvas_height;
+  float halfW = ${CHEVRON_W_PX} / canvas_width;
+  float halfH = ${CHEVRON_H_PX} / canvas_height;
   float thickness = 1.5 / canvas_height;
   float dir = mix(a_direction, -a_direction, reversed);
 
@@ -191,7 +195,6 @@ in uint a_x;
 in float a_color_a;
 in float a_y;
 in float a_direction;
-in float a_height;
 in float a_color_r;
 in float a_color_g;
 in float a_color_b;
@@ -209,9 +212,9 @@ void main() {
   float yPx = floor(a_y - scroll_y + 0.5) + 0.5;
   float cy = 1.0 - (yPx / canvas_height) * 2.0;
 
-  float stemLength = 7.0 / canvas_width * 2.0;
-  float stemHalf = 0.5 / canvas_height * 2.0;
-  float headHalf = 2.5 / canvas_height * 2.0;
+  float stemLength = ${STEM_LENGTH_PX}.0 / canvas_width * 2.0;
+  float stemHalf = ${STEM_HALF_H_PX} / canvas_height * 2.0;
+  float headHalf = ${HEAD_HALF_H_PX} / canvas_height * 2.0;
 
   float dir = mix(a_direction, -a_direction, reversed);
 

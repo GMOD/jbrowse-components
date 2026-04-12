@@ -31,16 +31,12 @@ function toRelativeFloat32(
   return result
 }
 
-function cssColorToNormalized(color: string): [number, number, number, number] {
-  return cssColorToNormalizedRgba(color)
-}
-
 function hashString(str: string) {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i)
     hash = (hash << 5) - hash + char
-    hash = hash & hash
+    hash |= 0
   }
   return Math.abs(hash)
 }
@@ -54,10 +50,10 @@ const STRAND_NEG: RGBA = [0, 0, 1, 1]
 const DEFAULT_COLOR: RGBA = [1, 0, 0, 1]
 
 const syriColorMap: Record<SyriType, RGBA> = {
-  SYN: cssColorToNormalized(syriColors.SYN),
-  INV: cssColorToNormalized(syriColors.INV),
-  TRANS: cssColorToNormalized(syriColors.TRANS),
-  DUP: cssColorToNormalized(syriColors.DUP),
+  SYN: cssColorToNormalizedRgba(syriColors.SYN),
+  INV: cssColorToNormalizedRgba(syriColors.INV),
+  TRANS: cssColorToNormalizedRgba(syriColors.TRANS),
+  DUP: cssColorToNormalizedRgba(syriColors.DUP),
 }
 
 function createColorFunction(
@@ -103,7 +99,7 @@ function buildIndelColors(colorBy: string) {
   ] as const) {
     const color = cigarColors[key as keyof typeof cigarColors]
     if (color) {
-      indelColors[op] = cssColorToNormalized(color)
+      indelColors[op] = cssColorToNormalizedRgba(color)
     }
   }
   return indelColors
@@ -122,24 +118,14 @@ function getCigarColorByOp(
 
 function estimateInstanceCount(
   featureCount: number,
-  cigars: string[],
+  parsedCigars: number[][],
   drawCIGAR: boolean,
   drawLocationMarkers: boolean,
 ) {
   let estimate = featureCount
   if (drawCIGAR) {
     for (let i = 0; i < featureCount; i++) {
-      const cigarStr = cigars[i]!
-      if (cigarStr) {
-        let opCount = 0
-        for (let j = 0; j < cigarStr.length; j++) {
-          const c = cigarStr.charCodeAt(j)
-          if (c >= 65 && c <= 90) {
-            opCount++
-          }
-        }
-        estimate += opCount
-      }
+      estimate += parsedCigars[i]!.length
     }
   }
   if (drawLocationMarkers) {
@@ -177,7 +163,6 @@ export function executeSyntenyInstanceData({
   strands,
   names,
   refNames,
-  cigars,
   parsedCigars,
   starts,
   ends,
@@ -201,7 +186,6 @@ export function executeSyntenyInstanceData({
   strands: Int8Array
   names: string[]
   refNames: string[]
-  cigars: string[]
   parsedCigars: number[][]
   starts: Float64Array
   ends: Float64Array
@@ -231,7 +215,7 @@ export function executeSyntenyInstanceData({
   // Pre-allocate buffers with estimated capacity
   let capacity = estimateInstanceCount(
     featureCount,
-    cigars,
+    parsedCigars,
     drawCIGAR,
     drawLocationMarkers,
   )
@@ -478,10 +462,7 @@ export function executeSyntenyInstanceData({
         }
       }
     }
-    const pxPerBp0 = fallbackBpPerPxInv0
-    const pxPerBp1 = fallbackBpPerPxInv1
-
-    if (maxIndelLen * Math.max(pxPerBp0, pxPerBp1) < 1) {
+    if (maxIndelLen * Math.max(fallbackBpPerPxInv0, fallbackBpPerPxInv1) < 1) {
       const [cr, cg, cb, ca] = colorFn(strand, refName, i)
       addInstance(
         x11,
@@ -530,8 +511,8 @@ export function executeSyntenyInstanceData({
         px2 = cx2
       }
 
-      const d1 = len * pxPerBp0
-      const d2 = len * pxPerBp1
+      const d1 = len * fallbackBpPerPxInv0
+      const d2 = len * fallbackBpPerPxInv1
 
       if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
         cx1 += d1 * rev1

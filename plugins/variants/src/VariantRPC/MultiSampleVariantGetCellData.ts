@@ -1,6 +1,16 @@
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
+import type { CellDataResult } from './executeVariantCellData.ts'
 import type { GetCellDataArgs } from './types.ts'
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    MultiSampleVariantGetCellData: {
+      args: GetCellDataArgs
+      return: CellDataResult
+    }
+  }
+}
 
 export class MultiSampleVariantGetCellData extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'MultiSampleVariantGetCellData'
@@ -14,7 +24,7 @@ export class MultiSampleVariantGetCellData extends RpcMethodTypeWithFiltersAndRe
       await import('./executeVariantCellData.ts')
     return executeVariantCellData({
       pluginManager: this.pluginManager,
-      args: deserializedArgs as unknown as GetCellDataArgs,
+      args: deserializedArgs,
     })
   }
 }

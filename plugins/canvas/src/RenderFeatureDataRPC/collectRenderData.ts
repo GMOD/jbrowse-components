@@ -1,5 +1,5 @@
 import {
-  cssColorToRgba,
+  cssColorToABGR as colorToUint32,
   formatHEX,
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
@@ -11,10 +11,11 @@ import {
 } from './floatingLabels.ts'
 import { getFeatureDescription, getFeatureName } from './labelUtils.ts'
 import { prepareAminoAcidData } from './peptides/prepareAminoAcidData.ts'
+import { isLabelAllowed } from './renderConfig.ts'
 import { getBoxColor, getStrokeColor, isUTR } from './util.ts'
 
 import type { AggregatedAminoAcid } from './peptides/aggregateAminoAcids.ts'
-import type { RenderConfigContext } from './renderConfig.ts'
+import type { DisplayConfig } from './renderConfig.ts'
 import type {
   AminoAcidOverlayItem,
   FlatbushItem,
@@ -22,7 +23,6 @@ import type {
   SubfeatureInfo,
 } from './rpcTypes.ts'
 import type { FeatureLayout, LayoutRecord, PeptideData } from './types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -55,8 +55,7 @@ export interface ArrowData {
 
 interface RenderContext {
   regionStart: number
-  config: AnyConfigurationModel
-  configContext: RenderConfigContext
+  config: DisplayConfig
   theme: Theme
   colorByCDS: boolean
   peptideDataMap?: Map<string, PeptideData>
@@ -74,9 +73,11 @@ interface Collector {
 
 const UTR_HEIGHT_FRACTION = 0.65
 
-function colorToUint32(colorStr: string) {
-  const [r, g, b, a] = cssColorToRgba(colorStr)
-  return (a << 24) | (b << 16) | (g << 8) | r
+function isTranscriptLayout(layout: FeatureLayout) {
+  return (
+    layout.glyphType === 'ProcessedTranscript' ||
+    layout.glyphType === 'Segments'
+  )
 }
 
 function applyUTRSizing(
@@ -97,15 +98,16 @@ function emitIntronLines(
   transcript: FeatureLayout,
   transcriptTopPx: number,
   strokeUint: number,
-  strand: number,
-  regionStart: number,
   flatbushIdx: number,
+  ctx: RenderContext,
   lines: LineData[],
 ) {
   const feature = transcript.feature
   const start = feature.get('start')
   const end = feature.get('end')
   const lineY = transcriptTopPx + transcript.height / 2
+  const strand = feature.get('strand') ?? 0
+  const { regionStart } = ctx
   const children = transcript.children
 
   if (children.length === 0) {
@@ -203,6 +205,39 @@ function emitCodonRects(
   }
 }
 
+function emitChildRect(
+  childLayout: FeatureLayout,
+  ctx: RenderContext,
+  flatbushIdx: number,
+  rects: RectData[],
+) {
+  const childFeature = childLayout.feature
+  const childStart = childFeature.get('start')
+  const childEnd = childFeature.get('end')
+
+  const childColor = getBoxColor({
+    feature: childFeature,
+    config: ctx.config,
+    colorByCDS: ctx.colorByCDS,
+    theme: ctx.theme,
+  })
+
+  const [childTopPx, childHeight] = applyUTRSizing(
+    childLayout.y,
+    childLayout.height,
+    isUTR(childFeature),
+  )
+
+  rects.push({
+    startOffset: childStart - ctx.regionStart,
+    endOffset: childEnd - ctx.regionStart,
+    y: childTopPx,
+    height: childHeight,
+    color: colorToUint32(childColor),
+    flatbushIdx,
+  })
+}
+
 function emitExonRects(
   transcript: FeatureLayout,
   transcriptTopPx: number,
@@ -211,7 +246,7 @@ function emitExonRects(
   collector: Collector,
 ) {
   const transcriptFeature = transcript.feature
-  const transcriptStrand = (transcriptFeature.get('strand') as number) || 0
+  const transcriptStrand = transcriptFeature.get('strand') ?? 0
   const peptide = ctx.peptideDataMap?.get(transcriptFeature.id())
 
   for (const childLayout of transcript.children) {
@@ -219,12 +254,11 @@ function emitExonRects(
     const childStart = childFeature.get('start')
     const childEnd = childFeature.get('end')
     const childIsUTR = isUTR(childFeature)
-    const childType = childFeature.get('type') as string
+    const childType = childFeature.get('type')
 
     const childColor = getBoxColor({
       feature: childFeature,
       config: ctx.config,
-      configContext: ctx.configContext,
       colorByCDS: ctx.colorByCDS,
       theme: ctx.theme,
     })
@@ -310,19 +344,18 @@ function emitTranscriptMetadata(
     tooltip,
   })
 
-  const { configContext, regionStart } = ctx
+  const { config, regionStart } = ctx
   if (
-    configContext.labelAllowed &&
-    configContext.subfeatureLabels !== 'none' &&
+    isLabelAllowed(config) &&
+    config.subfeatureLabels !== 'none' &&
     transcriptName
   ) {
     const result = createTranscriptFloatingLabel({
       displayLabel: transcriptName,
       featureHeight: transcript.height,
-      subfeatureLabels: configContext.subfeatureLabels,
+      subfeatureLabels: config.subfeatureLabels,
       color: 'black',
       parentFeatureId: parentFeature.id(),
-      subfeatureId: transcriptFeature.id(),
       tooltip,
     })
     if (result) {
@@ -348,11 +381,10 @@ function processTranscriptLayout(
   collector: Collector,
 ) {
   const transcriptFeature = transcript.feature
-  const transcriptStrand = (transcriptFeature.get('strand') as number) || 0
+  const transcriptStrand = transcriptFeature.get('strand') ?? 0
   const strokeColor = getStrokeColor({
     feature: transcriptFeature,
     config: ctx.config,
-    configContext: ctx.configContext,
     theme: ctx.theme,
   })
   const strokeUint = colorToUint32(strokeColor)
@@ -361,9 +393,8 @@ function processTranscriptLayout(
     transcript,
     transcriptTopPx,
     strokeUint,
-    transcriptStrand,
-    ctx.regionStart,
     flatbushIdx,
+    ctx,
     collector.lines,
   )
 
@@ -397,33 +428,16 @@ function processFeatureRecord(
   ctx: RenderContext,
   collector: Collector,
 ) {
-  const { feature, layout, layoutHeight } = record
+  const { feature, layout } = record
   const featureStart = feature.get('start')
   const featureEnd = feature.get('end')
-  const strand = (feature.get('strand') as number) || 0
-
-  const fillColor = getBoxColor({
-    feature,
-    config: ctx.config,
-    configContext: ctx.configContext,
-    colorByCDS: ctx.colorByCDS,
-    theme: ctx.theme,
-  })
-  const strokeColor = getStrokeColor({
-    feature,
-    config: ctx.config,
-    configContext: ctx.configContext,
-    theme: ctx.theme,
-  })
-  const colorUint = colorToUint32(fillColor)
-  const strokeUint = colorToUint32(strokeColor)
+  const strand = feature.get('strand') ?? 0
 
   const name = getFeatureName(feature)
   const description = getFeatureDescription(feature)
   const { nameLabel, descriptionLabel } = createFeatureFloatingLabels({
     feature,
     config: ctx.config,
-    configContext: ctx.configContext,
     nameColor: 'black',
     descriptionColor: 'blue',
     name,
@@ -455,99 +469,101 @@ function processFeatureRecord(
     endBp: featureEnd,
     layoutEndBp: featureEnd,
     topPx: 0,
-    bottomPx: layoutHeight,
-    featureHeightPx: layoutHeight,
+    bottomPx: layout.height,
+    featureHeightPx: layout.height,
     tooltip,
     name: name || undefined,
-    strand: strand || undefined,
+    strand: strand !== 0 ? strand : undefined,
   })
   const flatbushIdx = collector.flatbushItems.length - 1
 
-  if (
-    layout.glyphType === 'ProcessedTranscript' ||
-    layout.glyphType === 'Segments'
-  ) {
+  if (isTranscriptLayout(layout)) {
     processTranscriptLayout(layout, 0, feature, flatbushIdx, ctx, collector)
   } else if (layout.glyphType === 'Subfeatures') {
-    for (const childLayout of layout.children) {
-      if (
-        childLayout.glyphType === 'ProcessedTranscript' ||
-        childLayout.glyphType === 'Segments'
-      ) {
-        processTranscriptLayout(
-          childLayout,
-          childLayout.y,
-          feature,
-          flatbushIdx,
-          ctx,
-          collector,
-        )
-      } else {
-        const childFeature = childLayout.feature
-        const childStart = childFeature.get('start')
-        const childEnd = childFeature.get('end')
-        const childIsUTR = isUTR(childFeature)
-
-        const childColor = getBoxColor({
-          feature: childFeature,
-          config: ctx.config,
-          configContext: ctx.configContext,
-          colorByCDS: ctx.colorByCDS,
-          theme: ctx.theme,
-        })
-
-        const [childTopPx, childHeight] = applyUTRSizing(
-          childLayout.y,
-          childLayout.height,
-          childIsUTR,
-        )
-
-        collector.rects.push({
-          startOffset: childStart - ctx.regionStart,
-          endOffset: childEnd - ctx.regionStart,
-          y: childTopPx,
-          height: childHeight,
-          color: colorToUint32(childColor),
-          flatbushIdx,
-        })
-      }
-    }
+    processSubfeaturesLayout(layout, feature, flatbushIdx, ctx, collector)
   } else {
-    const [rectTopPx, rectHeight] = applyUTRSizing(
-      0,
-      layout.height,
-      isUTR(feature),
-    )
+    processDefaultLayout(layout, feature, flatbushIdx, ctx, collector)
+  }
+}
 
-    collector.rects.push({
-      startOffset: featureStart - ctx.regionStart,
-      endOffset: featureEnd - ctx.regionStart,
-      y: rectTopPx,
-      height: rectHeight,
-      color: colorUint,
+function processSubfeaturesLayout(
+  layout: FeatureLayout,
+  feature: Feature,
+  flatbushIdx: number,
+  ctx: RenderContext,
+  collector: Collector,
+) {
+  for (const childLayout of layout.children) {
+    if (isTranscriptLayout(childLayout)) {
+      processTranscriptLayout(
+        childLayout,
+        childLayout.y,
+        feature,
+        flatbushIdx,
+        ctx,
+        collector,
+      )
+    } else {
+      emitChildRect(childLayout, ctx, flatbushIdx, collector.rects)
+    }
+  }
+}
+
+function processDefaultLayout(
+  layout: FeatureLayout,
+  feature: Feature,
+  flatbushIdx: number,
+  ctx: RenderContext,
+  collector: Collector,
+) {
+  const featureStart = feature.get('start')
+  const featureEnd = feature.get('end')
+  const strand = feature.get('strand') ?? 0
+
+  const fillColor = getBoxColor({
+    feature,
+    config: ctx.config,
+    colorByCDS: ctx.colorByCDS,
+    theme: ctx.theme,
+  })
+
+  const [rectTopPx, rectHeight] = applyUTRSizing(
+    0,
+    layout.height,
+    isUTR(feature),
+  )
+
+  collector.rects.push({
+    startOffset: featureStart - ctx.regionStart,
+    endOffset: featureEnd - ctx.regionStart,
+    y: rectTopPx,
+    height: rectHeight,
+    color: colorToUint32(fillColor),
+    flatbushIdx,
+  })
+
+  if (!feature.parent?.() && strand !== 0) {
+    const strokeColor = getStrokeColor({
+      feature,
+      config: ctx.config,
+      theme: ctx.theme,
+    })
+    const arrowX = strand === 1 ? featureEnd : featureStart
+    collector.arrows.push({
+      x: arrowX - ctx.regionStart,
+      y: layout.height / 2,
+      direction: strand,
+      height: layout.height,
+      color: colorToUint32(strokeColor),
       flatbushIdx,
     })
-
-    const isTopLevel = !feature.parent?.()
-    if (isTopLevel && strand !== 0) {
-      const arrowX = strand === 1 ? featureEnd : featureStart
-      collector.arrows.push({
-        x: arrowX - ctx.regionStart,
-        y: layout.height / 2,
-        direction: strand,
-        height: layout.height,
-        color: strokeUint,
-        flatbushIdx,
-      })
-    }
   }
 }
 
 export function collectRenderData(
   layoutRecords: LayoutRecord[],
   regionStart: number,
-  config: AnyConfigurationModel,
-  configContext: RenderConfigContext,
+  config: DisplayConfig,
   theme: Theme,
   colorByCDS: boolean,
   peptideDataMap?: Map<string, PeptideData>,
@@ -555,7 +571,6 @@ export function collectRenderData(
   const ctx: RenderContext = {
     regionStart,
     config,
-    configContext,
     theme,
     colorByCDS,
     peptideDataMap,

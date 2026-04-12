@@ -3,6 +3,7 @@
 // Uses a std140 UBO instead of individual uniforms (required by HAL).
 export const VERTEX_SHADER = `#version 300 es
 precision highp float;
+precision highp int;
 
 in vec2 a_position;
 in float a_count;
@@ -43,6 +44,7 @@ void main() {
 
 export const FRAGMENT_SHADER = `#version 300 es
 precision highp float;
+precision highp int;
 
 in float v_count;
 

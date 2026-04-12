@@ -76,6 +76,7 @@ down to the internal config:
 ```
 
 Key behaviors:
+
 - Infer adapter type from URL/file extension (partially done already)
 - Infer display/track type from data type + mark
 - Map encoding channels (`color: {field: "strand"}`) to internal colorBy config
@@ -124,6 +125,7 @@ VariantAnnotation) to read the same data files, so the R code is self-contained
 and re-runnable.
 
 **Open questions:**
+
 - How much of the layout engine (pileup stacking, synteny routing) needs to be
   reimplemented in R vs. pre-computed and exported as coordinates?
 - Could a shared "JBrowse Spec" (see above) be the intermediate representation
@@ -143,8 +145,8 @@ jbrowse.view("hg38", "chr17:7,571,720-7,590,868", tracks=["clinvar", "gencode"])
 
 would generate a session-spec URL and render an iframe or embedded React
 component. The `@jbrowse/react-linear-genome-view` package already supports
-embedding, but the config wiring is too complex for notebook use — the spec layer
-would fix that.
+embedding, but the config wiring is too complex for notebook use — the spec
+layer would fix that.
 
 ### P4.4 Automatic Noisiness Scaling for Feature Frequency Thresholds
 
@@ -164,3 +166,8 @@ are real variants that users may want to see at all zoom levels regardless of
 frequency. When enabled, features would render at full opacity whenever they are
 present, bypassing both the zoom-based alpha and the frequency-based importance
 scaling.
+
+## More
+
+Multi-bed e.g. chromatin bed, repeat types on different rows from single file,
+or multiple iles

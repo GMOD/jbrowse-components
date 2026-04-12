@@ -14,10 +14,15 @@ import {
   INTERBASE_SOFTCLIP,
 } from '../../shared/types.ts'
 import { fillColor } from '../../shared/color.ts'
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../../shared/types.ts'
 
 import type { ColorPalette, RGBColor } from './AlignmentsRenderer.ts'
-import type { AlignmentsBackend } from './rendererTypes.ts'
 import type { CigarHitResult, SashimiArcHitResult } from './hitTesting'
+import type { AlignmentsBackend } from './rendererTypes.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 import type { Theme } from '@mui/material'

@@ -114,8 +114,12 @@ fn fs_main(in: ArcOut) -> @location(0) vec4f {
   let aa = fwidth(in.dist);
   let alpha = clamp((hw - d) / aa + 0.5, 0.0, 1.0);
   let a = in.color.a * alpha;
-  // premultiply RGB for WebGPU premultiplied alpha canvas
-  return vec4f(in.color.rgb * a, a);
+  // Output STRAIGHT alpha — do NOT premultiply rgb here.
+  // The blend (src-alpha, one-minus-src-alpha) against the (0,0,0,0) clear
+  // already converts this to premultiplied in the framebuffer, which the
+  // compositor reads correctly under alphaMode:'premultiplied'.
+  // Premultiplying here too causes color*alpha^2 — darker AA edges.
+  return vec4f(in.color.rgb, a);
 }
 `
 

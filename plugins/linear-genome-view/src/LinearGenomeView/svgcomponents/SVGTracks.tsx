@@ -45,17 +45,32 @@ export default function SVGTracks({
             const display = track.displays[0]!
             const x = Math.max(-model.offsetPx, 0)
             const currOffset = prevOffset + display.height + textOffset
+            const clipId = `track-clip-${conf.trackId}`
             return {
               prevOffset: currOffset,
               reactElements: [
                 ...reactElements,
                 <g key={conf.trackId} transform={`translate(0 ${prevOffset})`}>
-                  <g transform={`translate(${trackLabelOffset} ${textOffset})`}>
-                    <SVGRegionSeparators
-                      model={model}
-                      height={display.height}
-                    />
-                    {result}
+                  <defs>
+                    <clipPath id={clipId}>
+                      <rect
+                        x={0}
+                        y={textOffset}
+                        width={model.width + trackLabelOffset}
+                        height={display.height}
+                      />
+                    </clipPath>
+                  </defs>
+                  <g clipPath={`url(#${clipId})`}>
+                    <g
+                      transform={`translate(${trackLabelOffset} ${textOffset})`}
+                    >
+                      <SVGRegionSeparators
+                        model={model}
+                        height={display.height}
+                      />
+                      {result}
+                    </g>
                   </g>
                   <SVGTrackLabel
                     trackName={trackName}

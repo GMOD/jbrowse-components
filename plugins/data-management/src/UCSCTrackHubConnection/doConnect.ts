@@ -8,7 +8,7 @@ import { generateTracks } from './ucscTrackHub.ts'
 import { fetchGenomesFile, fetchTrackDbFile, resolve } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { FileLocation } from '@jbrowse/core/util'
+import type { UriLocation } from '@jbrowse/core/util'
 
 export async function doConnect(self: {
   configuration: AnyConfigurationModel
@@ -18,10 +18,9 @@ export async function doConnect(self: {
   const session = getSession(self)
   const notLoadedAssemblies = [] as string[]
   try {
-    const hubFileLocation = getConf(self, 'hubTxtLocation') as FileLocation
+    const hubFileLocation = getConf(self, 'hubTxtLocation') as UriLocation
     const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
-    // @ts-expect-error
-    const hubUri = resolve(hubFileLocation.uri, hubFileLocation.baseUri)
+    const hubUri = resolve(hubFileLocation.uri, hubFileLocation.baseUri ?? '')
     const { assemblyManager } = session
     if (hubFileText.includes('useOneFile on')) {
       const hub = new SingleFileHub(hubFileText)
@@ -88,8 +87,6 @@ export async function doConnect(self: {
         throw new Error('genomesFile not found on hub')
       }
 
-      // @ts-expect-error
-      const hubUri = resolve(hubFileLocation.uri, hubFileLocation.baseUri)
       const genomesFileLocation = hubUri
         ? {
             uri: resolve(genomeFile, hubUri),

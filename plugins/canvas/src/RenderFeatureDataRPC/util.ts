@@ -1,9 +1,8 @@
 import { getFrame, stripAlpha } from '@jbrowse/core/util'
 
-import { readCachedConfig } from './renderConfig.ts'
+import { readConfigValue } from './renderConfig.ts'
 
-import type { RenderConfigContext } from './renderConfig.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { DisplayConfig } from './renderConfig.ts'
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -21,25 +20,21 @@ export function isUTR(feature: Feature) {
 export function getBoxColor({
   feature,
   config,
-  configContext,
   colorByCDS,
   theme,
 }: {
   feature: Feature
-  config: AnyConfigurationModel
-  configContext: RenderConfigContext
+  config: DisplayConfig
   colorByCDS: boolean
   theme: Theme
 }) {
-  const { color1, color3 } = configContext
-
   let fill = isUTR(feature)
-    ? readCachedConfig(color3, config, 'color3', feature)
-    : readCachedConfig(color1, config, 'color1', feature)
+    ? readConfigValue<string>(config, 'color3', feature)
+    : readConfigValue<string>(config, 'color1', feature)
 
-  const featureType: string | undefined = feature.get('type')
-  const featureStrand: -1 | 1 | undefined = feature.get('strand')
-  const featurePhase: 0 | 1 | 2 | undefined = feature.get('phase')
+  const featureType = feature.get('type')
+  const featureStrand = feature.get('strand') as -1 | 1 | undefined
+  const featurePhase = feature.get('phase')
 
   if (
     colorByCDS &&
@@ -49,7 +44,6 @@ export function getBoxColor({
   ) {
     const featureStart = feature.get('start')
     const featureEnd = feature.get('end')
-
     const frame = getFrame(
       featureStart,
       featureEnd,
@@ -68,15 +62,12 @@ export function getBoxColor({
 export function getStrokeColor({
   feature,
   config,
-  configContext,
   theme,
 }: {
   feature: Feature
-  config: AnyConfigurationModel
-  configContext: RenderConfigContext
+  config: DisplayConfig
   theme: Theme
 }) {
-  const { color2 } = configContext
-  const c = readCachedConfig(color2, config, 'color2', feature)
+  const c = readConfigValue<string>(config, 'color2', feature)
   return c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
 }

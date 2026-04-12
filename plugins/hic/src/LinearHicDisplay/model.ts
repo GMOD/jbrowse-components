@@ -4,6 +4,7 @@ import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
+  ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -37,39 +38,14 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
+      ConfigOverrideMixin(),
       types.model({
-        /**
-         * #property
-         */
         type: types.literal('LinearHicDisplay'),
-        /**
-         * #property
-         */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         */
         resolution: types.optional(types.number, 1),
-        /**
-         * #property
-         */
         useLogScale: false,
-        /**
-         * #property
-         */
-        colorScheme: types.maybe(types.string),
-        /**
-         * #property
-         */
         activeNormalization: 'KR',
-        /**
-         * #property
-         */
         mode: 'triangular',
-        /**
-         * #property
-         */
-        showLegend: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -110,10 +86,33 @@ export default function stateModelFactory(
        */
       yScalar: 1,
     }))
+    .preProcessSnapshot((snap: any) => {
+      if (!snap) {
+        return snap
+      }
+      const { colorScheme, showLegend, ...rest } = snap
+      const overrides: Record<string, unknown> = {}
+      if (colorScheme !== undefined) {
+        overrides.colorScheme = colorScheme
+      }
+      if (showLegend !== undefined) {
+        overrides.showLegend = showLegend
+      }
+      if (Object.keys(overrides).length === 0) {
+        return rest
+      }
+      return {
+        ...rest,
+        configOverrides: { ...rest.configOverrides, ...overrides },
+      }
+    })
     .views(self => ({
-      /**
-       * #getter
-       */
+      get colorScheme(): string | undefined {
+        return self.getOverride<string>('colorScheme')
+      },
+      get showLegend(): boolean | undefined {
+        return self.getOverride<boolean>('showLegend')
+      },
       get rendererTypeName() {
         return 'HicRenderer'
       },
@@ -220,7 +219,7 @@ export default function stateModelFactory(
        * #action
        */
       setColorScheme(f?: string) {
-        self.colorScheme = f
+        self.setOverride('colorScheme', f)
       },
       /**
        * #action
@@ -244,7 +243,7 @@ export default function stateModelFactory(
        * #action
        */
       setShowLegend(arg: boolean) {
-        self.showLegend = arg
+        self.setOverride('showLegend', arg)
       },
     }))
     .views(self => {

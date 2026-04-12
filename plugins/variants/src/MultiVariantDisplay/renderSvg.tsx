@@ -76,7 +76,7 @@ function renderCellsForRegion(
       : region.screenStartPx + frac2 * blockWidth
     const x = Math.min(px1, px2)
     const x2 = Math.max(px1, px2)
-    const w = Math.max(x2 - x, 1)
+    const w = Math.max(x2 - x, 2)
     const h = Math.max(rowHeight, 1)
 
     setFillFromCellColor(ctx, cellColors, i)

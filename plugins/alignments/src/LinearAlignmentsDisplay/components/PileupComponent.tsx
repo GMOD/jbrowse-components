@@ -11,6 +11,7 @@ import {
 import { observer } from 'mobx-react'
 
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
+import PairedArcsOverlay from './PairedArcsOverlay.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import {
@@ -82,6 +83,9 @@ const PileupInner = observer(function PileupInner({
     setResizeHandleHovered,
     arcsResizeHovered,
     setArcsResizeHovered,
+    handleSashimiArcsResizeMouseDown,
+    sashimiResizeHovered,
+    setSashimiResizeHovered,
     width,
     contrastMap,
     handleMouseDown,
@@ -152,6 +156,9 @@ const PileupInner = observer(function PileupInner({
     showArcs,
     isChainMode,
     coverageDisplayHeight: topOffset,
+    showSashimiArcs,
+    sashimiArcsDown,
+    sashimiArcsHeight,
   } = model
 
   function handleCanvasMouseMove(e: React.MouseEvent) {
@@ -239,6 +246,7 @@ const PileupInner = observer(function PileupInner({
         />
 
         <SashimiArcsOverlay model={model} />
+        <PairedArcsOverlay model={model} />
 
         <VisibleLabelsOverlay
           labels={model.visibleLabels}
@@ -291,7 +299,7 @@ const PileupInner = observer(function PileupInner({
           />
         ) : null}
 
-        {showArcs ? (
+        {showArcs && model.pairedArcsDown ? (
           <div
             onMouseDown={handleArcsResizeMouseDown}
             onMouseEnter={() => {
@@ -311,6 +319,31 @@ const PileupInner = observer(function PileupInner({
               zIndex: 10,
             }}
             title="Drag to resize arcs area"
+          />
+        ) : null}
+
+        {showSashimiArcs && sashimiArcsDown && showCoverage ? (
+          <div
+            onMouseDown={handleSashimiArcsResizeMouseDown}
+            onMouseEnter={() => {
+              setSashimiResizeHovered(true)
+            }}
+            onMouseLeave={() => {
+              setSashimiResizeHovered(false)
+            }}
+            style={{
+              position: 'absolute',
+              top: coverageHeight + sashimiArcsHeight - YSCALEBAR_LABEL_OFFSET,
+              left: 0,
+              right: 0,
+              height: YSCALEBAR_LABEL_OFFSET,
+              cursor: 'row-resize',
+              background: sashimiResizeHovered
+                ? 'rgba(0,0,0,0.1)'
+                : 'transparent',
+              zIndex: 10,
+            }}
+            title="Drag to resize sashimi arcs area"
           />
         ) : null}
 

@@ -143,7 +143,7 @@ function BulkAddButton({
           setOpen(true)
         }}
       >
-        Add multiple
+        Add from list
       </Button>
       <Dialog
         open={open}
@@ -151,7 +151,7 @@ function BulkAddButton({
           setOpen(false)
         }}
       >
-        <DialogTitle>Add multiple assemblies</DialogTitle>
+        <DialogTitle>Add assemblies from list</DialogTitle>
         <DialogContent>
           <TextField
             multiline
@@ -224,7 +224,7 @@ const LeftPanel = observer(function LeftPanel({
   return (
     <>
       <div className={classes.mb}>
-        Select assemblies for linear synteny view
+        Select assemblies for multi-way comparison
       </div>
       <AssemblyRows
         model={model}

@@ -1,7 +1,11 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
-import { getContainingView, useGpuRenderer } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  useGpuRenderer,
+  useTabVisibilityRerender,
+} from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 
@@ -58,9 +62,12 @@ export interface LinearAlignmentsDisplayModel {
   coverageHeight: number
   showArcs: boolean
   arcsHeight: number
+  pairedArcsDown: boolean
+  sashimiArcsHeight: number
   coverageDisplayHeight: number
   showInterbaseIndicators: boolean
   showSashimiArcs: boolean
+  sashimiArcsDown: boolean
   totalPileupHeight: number
   scrollableHeight: number
   pileupViewportHeight: number
@@ -116,6 +123,7 @@ export interface LinearAlignmentsDisplayModel {
   setCurrentRangeY: (rangeY: [number, number]) => void
   setCoverageHeight: (height: number) => void
   setArcsHeight: (height: number) => void
+  setSashimiArcsHeight: (height: number) => void
   setHighlightedChainIds: (ids: string[]) => void
   setSelectedChainIds: (ids: string[]) => void
   clearHighlights: () => void
@@ -152,6 +160,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [resizeHandleHovered, setResizeHandleHovered] = useState(false)
   const [arcsResizeHovered, setArcsResizeHovered] = useState(false)
+  const [sashimiResizeHovered, setSashimiResizeHovered] = useState(false)
 
   const canvasRectRef = useRef<{ rect: DOMRect; timestamp: number } | null>(
     null,
@@ -280,6 +289,27 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     document.addEventListener('mouseup', onMouseUp)
   }
 
+  function handleSashimiArcsResizeMouseDown(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    const startY = e.clientY
+    const startHeight = model.sashimiArcsHeight
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      model.setSashimiArcsHeight(
+        Math.max(20, startHeight + moveEvent.clientY - startY),
+      )
+    }
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+    }
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+  }
+
   function handleContextMenu(e: React.MouseEvent) {
     const coords = getCanvasCoords(e, canvasRef, canvasRectRef)
     if (!coords) {
@@ -297,28 +327,25 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       rangeY: model.currentRangeY,
       isChainMode,
     })
-    if (result.type === 'cigar') {
+    if (
+      result.type === 'cigar' ||
+      result.type === 'indicator' ||
+      result.type === 'feature'
+    ) {
       e.preventDefault()
       model.setContextMenuCoord([e.clientX, e.clientY])
-      model.setContextMenuCigarHit(result.hit)
-      model.setContextMenuIndicatorHit(undefined)
       model.setContextMenuRefName(resolved?.refName)
-      if (result.featureHit) {
+      model.setContextMenuCigarHit(
+        result.type === 'cigar' ? result.hit : undefined,
+      )
+      model.setContextMenuIndicatorHit(
+        result.type === 'indicator' ? result.hit : undefined,
+      )
+      if (result.type === 'cigar' && result.featureHit) {
         model.setContextMenuFeatureById(result.featureHit.id)
+      } else if (result.type === 'feature') {
+        model.setContextMenuFeatureById(result.hit.id)
       }
-    } else if (result.type === 'indicator') {
-      e.preventDefault()
-      model.setContextMenuCoord([e.clientX, e.clientY])
-      model.setContextMenuCigarHit(undefined)
-      model.setContextMenuIndicatorHit(result.hit)
-      model.setContextMenuRefName(resolved?.refName)
-    } else if (result.type === 'feature') {
-      e.preventDefault()
-      model.setContextMenuCoord([e.clientX, e.clientY])
-      model.setContextMenuCigarHit(undefined)
-      model.setContextMenuIndicatorHit(undefined)
-      model.setContextMenuRefName(resolved?.refName)
-      model.setContextMenuFeatureById(result.hit.id)
     }
   }
 
@@ -438,9 +465,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
     if (result.type === 'cigar') {
       const refName = result.resolved.refName
-      if (result.featureHit) {
-        model.selectFeatureById(result.featureHit.id)
-      }
       openCigarWidget(model, result.hit, refName)
       return
     }
@@ -499,6 +523,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         showOutline: model.showOutlineSetting,
         showArcs: model.showArcs,
         arcsHeight: model.arcsHeight,
+        pairedArcsDown: model.pairedArcsDown,
+        pileupTopOffset: model.coverageDisplayHeight,
         canvasWidth: view.width,
         canvasHeight: model.height,
         highlightedFeatureId: model.featureIdUnderMouse,
@@ -520,8 +546,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       return
     }
 
-    let lastRpcDataMap: unknown = null
-    let lastArcsDataMap: unknown = null
+    let lastRpcDataMap: Map<number, PileupDataResult> | null = null
+    let lastArcsDataMap: Map<number, unknown> | null = null
 
     return autorun(() => {
       const rpcDataMap = model.rpcDataMap
@@ -569,29 +595,25 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         }
       }
 
+      // SYNC across all hook-driven GPU displays (wiggle, multi-wiggle,
+      // variants, alignments, HiC, LD): dataVersion is a counter incremented
+      // by setLoadedRegionForRegion() after each region's data is committed.
+      // Reading it here creates a MobX dependency so this autorun re-fires at
+      // that point, ensuring renderNow() runs with fully-committed data.
+      // See MultiRegionDisplayMixin.withFetchLifecycle.
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _dv = model.dataVersion
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _adv = model.arcsState.dataVersion
 
       renderNow()
-      if (rpcDataMap.size > 0 && !model.canvasDrawn) {
+      if (rpcDataMap.size > 0) {
         model.setCanvasDrawn(true)
       }
     })
   }, [model, view, ready, rendererRef])
 
-  useEffect(() => {
-    const handle = () => {
-      if (!document.hidden) {
-        renderNow()
-      }
-    }
-    document.addEventListener('visibilitychange', handle)
-    return () => {
-      document.removeEventListener('visibilitychange', handle)
-    }
-  }, [])
+  useTabVisibilityRerender(renderNow)
 
   return {
     canvasRef,
@@ -608,6 +630,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     handleArcsResizeMouseDown,
     arcsResizeHovered,
     setArcsResizeHovered,
+    handleSashimiArcsResizeMouseDown,
+    sashimiResizeHovered,
+    setSashimiResizeHovered,
     handleContextMenu,
     processMouseMove,
     processClick,

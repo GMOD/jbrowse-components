@@ -38,7 +38,6 @@ function makeEmptyFeatureData(regionStart: number): FeatureDataResult {
     arrowXs: new Uint32Array(0),
     arrowYs: new Float32Array(0),
     arrowDirections: new Int8Array(0),
-    arrowHeights: new Float32Array(0),
     arrowColors: new Uint8Array(0),
     numArrows: 0,
     arrowFeatureIndices: new Uint32Array(0),
@@ -49,6 +48,7 @@ function makeEmptyFeatureData(regionStart: number): FeatureDataResult {
 
 function createTestEnvironment() {
   console.warn = jest.fn()
+  console.error = jest.fn()
   const pluginManager = new PluginManager()
 
   const configSchema = configSchemaFactory(pluginManager)

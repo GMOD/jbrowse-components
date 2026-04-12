@@ -55,6 +55,10 @@ export class WebGL2Renderer implements Renderer {
   private arrowBuffers: SubBatchBuffers | null = null
 
   constructor(canvas: HTMLCanvasElement) {
+    // alpha:false gives an opaque canvas with no alpha channel, so
+    // premultipliedAlpha is irrelevant — there is no transparency to composite.
+    // Do NOT change alpha to true without also setting premultipliedAlpha:true
+    // and verifying the blend/compositor math (see webgl2Hal.ts for details).
     const gl = canvas.getContext('webgl2', {
       antialias: true,
       alpha: false,

@@ -1,25 +1,23 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { WiggleGetSourcesArgs } from './types.ts'
+import type { Source } from '../util.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    MultiWiggleGetSources: {
+      args: WiggleGetSourcesArgs
+      return: Source[]
+    }
+  }
+}
 
 export class MultiWiggleGetSources extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'MultiWiggleGetSources'
 
-  async execute(
-    args: {
-      adapterConfig: AnyConfigurationModel
-      stopToken?: StopToken
-      sessionId: string
-      headers?: Record<string, string>
-      regions: Region[]
-      bpPerPx: number
-    },
-    rpcDriverClassName: string,
-  ) {
+  async execute(args: WiggleGetSourcesArgs, rpcDriverClassName: string) {
     const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(
       args,

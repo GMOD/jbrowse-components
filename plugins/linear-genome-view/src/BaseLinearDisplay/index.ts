@@ -22,6 +22,10 @@ export {
   Tooltip,
   default as BaseLinearDisplayComponent,
 } from './components/BaseLinearDisplay.tsx'
+export {
+  default as ConfigOverrideMixin,
+  migrateOldSettingSnapshots,
+} from './models/ConfigOverrideMixin.ts'
 export { default as TrackHeightMixin } from './models/TrackHeightMixin.tsx'
 export { default as FeatureDensityMixin } from './models/FeatureDensityMixin.tsx'
 export {

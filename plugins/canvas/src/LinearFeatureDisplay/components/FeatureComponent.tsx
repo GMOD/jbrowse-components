@@ -1,4 +1,4 @@
-import {
+import React, {
   useCallback,
   useEffect,
   useEffectEvent,
@@ -78,6 +78,7 @@ interface LinearFeatureDisplayModel {
   contextMenuItems: () => { label: string; onClick: () => void }[]
   getFeatureById: (featureId: string) => FlatbushItem | undefined
   setCanvasDrawn: (val: boolean) => void
+  clearSelection: () => void
 }
 
 export interface Props {
@@ -87,6 +88,22 @@ export interface Props {
 type FeatureItemEntry =
   | { item: FlatbushItem; vr: VisibleRegion; data: FeatureDataResult }
   | { item: SubfeatureInfo; vr: VisibleRegion }
+
+const OverlayLayer = ({ children }: { children: React.ReactNode }) =>
+  children ? (
+    <div
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+      }}
+    >
+      {children}
+    </div>
+  ) : null
 
 const ContextMenu = observer(function ContextMenu({
   model,
@@ -123,6 +140,9 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   )
   const [hoveredSubfeature, setHoveredSubfeature] =
     useState<SubfeatureInfo | null>(null)
+  // false positive: omitting <[number,number]> widens to number[] — known tuple issue
+  // https://github.com/typescript-eslint/typescript-eslint/issues/9529
+
   const [clientXY, setClientXY] = useState<[number, number]>([0, 0])
   const [contextMenuCoord, setContextMenuCoord] = useState<
     [number, number] | undefined
@@ -137,6 +157,13 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
   const width = view.initialized ? view.trackWidthPx : undefined
   const height = model.height
+
+  const clearHoverState = useCallback(() => {
+    model.setMouseoverExtraInformation(undefined)
+    setHoveredFeature(null)
+    setHoveredSubfeature(null)
+    model.setFeatureIdUnderMouse(null)
+  }, [model])
 
   const openContextMenu = useCallback(
     (
@@ -217,6 +244,14 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   // WebGL features in sync with the DOM label overlay (which is computed
   // during the same render via useMemo). useEffect would run after paint,
   // causing a frame where labels show new data but WebGL shows old data.
+  //
+  // SYNC: unlike the other GPU displays (which use an autorun and read
+  // dataVersion explicitly), this component uses observer() +
+  // useLayoutEffect([..., rpcDataMap]). The observer re-renders when
+  // rpcDataMap changes reference, which fires this effect and uploads
+  // data. dataVersion is not needed here because rpcDataMap always gets
+  // a new Map reference when work() completes — the reference change is
+  // the sole trigger. See MultiRegionDisplayMixin.withFetchLifecycle.
 
   useLayoutEffect(() => {
     const renderer = rendererRef.current
@@ -252,9 +287,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     }
     renderer.pruneRegions([...rpcDataMap.keys()])
 
-    setHoveredFeature(null)
-    setHoveredSubfeature(null)
-    model.setFeatureIdUnderMouse(null)
+    clearHoverState()
 
     renderWithBlocks()
     if (rpcDataMap.size > 0) {
@@ -302,112 +335,83 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     }
   }, [model, view])
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) {
+  const hitTestAtEvent = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const mouseX = e.clientX - rect.left
+    const mouseY = e.clientY - rect.top
+    const scrollTop = scrollContainerRef.current?.scrollTop ?? 0
+    const yPos = mouseY + scrollTop
+    return performMultiRegionHitDetection(
+      flatbushCacheMapRef.current,
+      model.rpcDataMap,
+      view.visibleRegions,
+      mouseX,
+      yPos,
+      model.effectiveShowDescriptions,
+    )
+  }
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (contextMenuCoord) {
+      return
+    }
+    setClientXY([e.clientX, e.clientY])
+    if (model.rpcDataMap.size === 0) {
+      clearHoverState()
       return
     }
 
-    const hitTestAtEvent = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect()
-      const mouseX = e.clientX - rect.left
-      const mouseY = e.clientY - rect.top
-      const scrollTop = scrollContainerRef.current?.scrollTop ?? 0
-      const yPos = mouseY + scrollTop
-      return performMultiRegionHitDetection(
-        flatbushCacheMapRef.current,
-        model.rpcDataMap,
-        view.visibleRegions,
-        mouseX,
-        yPos,
-        model.effectiveShowDescriptions,
-      )
-    }
+    const result = hitTestAtEvent(e)
 
-    const clearHoverState = () => {
-      model.setMouseoverExtraInformation(undefined)
-      setHoveredFeature(null)
-      setHoveredSubfeature(null)
-      model.setFeatureIdUnderMouse(null)
-    }
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (contextMenuCoord) {
-        return
-      }
-      setClientXY([e.clientX, e.clientY])
-      if (model.rpcDataMap.size === 0) {
-        clearHoverState()
-        return
-      }
-
-      const result = hitTestAtEvent(e)
-
-      if (result.feature) {
-        if (result.subfeature) {
-          model.setMouseoverExtraInformation(
-            result.subfeature.tooltip ?? result.subfeature.type,
-          )
-          setHoveredSubfeature(result.subfeature)
-        } else {
-          model.setMouseoverExtraInformation(result.feature.tooltip)
-          setHoveredSubfeature(null)
-        }
-        setHoveredFeature(result.feature)
-        model.setFeatureIdUnderMouse(result.feature.featureId)
+    if (result.feature) {
+      if (result.subfeature) {
+        model.setMouseoverExtraInformation(
+          result.subfeature.tooltip ?? result.subfeature.type,
+        )
+        setHoveredSubfeature(result.subfeature)
       } else {
-        clearHoverState()
+        model.setMouseoverExtraInformation(result.feature.tooltip)
+        setHoveredSubfeature(null)
       }
+      setHoveredFeature(result.feature)
+      model.setFeatureIdUnderMouse(result.feature.featureId)
+    } else {
+      clearHoverState()
     }
+  }
 
-    const handleClick = (e: MouseEvent) => {
-      if (model.rpcDataMap.size === 0) {
-        return
-      }
-      const result = hitTestAtEvent(e)
-      if (result.feature) {
-        model.selectFeatureById(
-          result.feature,
-          result.subfeature ?? undefined,
-          result.regionNumber,
-        )
-      }
+  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (model.rpcDataMap.size === 0) {
+      return
     }
+    const result = hitTestAtEvent(e)
+    if (result.feature) {
+      model.selectFeatureById(
+        result.feature,
+        result.subfeature ?? undefined,
+        result.regionNumber,
+      )
+    } else {
+      model.clearSelection()
+    }
+  }
 
-    const handleContextMenu = (e: MouseEvent) => {
-      e.preventDefault()
-      if (model.rpcDataMap.size === 0) {
-        return
-      }
-      const result = hitTestAtEvent(e)
-      if (result.feature) {
-        openContextMenu(
-          result.feature,
-          result.regionNumber,
-          e.clientX,
-          e.clientY,
-        )
-      }
+  const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    if (model.rpcDataMap.size === 0) {
+      return
     }
+    const result = hitTestAtEvent(e)
+    if (result.feature) {
+      openContextMenu(result.feature, result.regionNumber, e.clientX, e.clientY)
+    }
+  }
 
-    const handleMouseLeave = () => {
-      if (!contextMenuCoord) {
-        clearHoverState()
-      }
+  const handleMouseLeave = () => {
+    if (!contextMenuCoord) {
+      clearHoverState()
     }
-
-    canvas.addEventListener('mousemove', handleMouseMove)
-    canvas.addEventListener('mouseleave', handleMouseLeave)
-    canvas.addEventListener('click', handleClick)
-    canvas.addEventListener('contextmenu', handleContextMenu)
-    return () => {
-      canvas.removeEventListener('mousemove', handleMouseMove)
-      canvas.removeEventListener('mouseleave', handleMouseLeave)
-      canvas.removeEventListener('click', handleClick)
-      canvas.removeEventListener('contextmenu', handleContextMenu)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, contextMenuCoord])
+  }
 
   const bpPerPx = view.bpPerPx
   const visibleRegions = view.visibleRegions
@@ -472,10 +476,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     model.effectiveShowDescriptions,
   )
 
-  if (model.regionTooLarge) {
-    return <TooLargeMessage model={model} />
-  }
-
   if (error) {
     return (
       <ErrorOverlay
@@ -491,6 +491,10 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   }
 
   const isReady = view.initialized
+
+  if (model.regionTooLarge) {
+    return <TooLargeMessage model={model} />
+  }
 
   return (
     <div
@@ -518,6 +522,10 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         >
           <canvas
             ref={canvasRef}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            onClick={handleClick}
+            onContextMenu={handleContextMenu}
             style={{
               display: 'block',
               width,
@@ -528,27 +536,9 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
             }}
           />
 
-          {[
-            highlightOverlays,
-            floatingLabelElements,
-            aminoAcidOverlayElements,
-          ].map((elements, i) =>
-            elements ? (
-              <div
-                key={i}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  pointerEvents: 'none',
-                }}
-              >
-                {elements}
-              </div>
-            ) : null,
-          )}
+          <OverlayLayer>{highlightOverlays}</OverlayLayer>
+          <OverlayLayer>{floatingLabelElements}</OverlayLayer>
+          <OverlayLayer>{aminoAcidOverlayElements}</OverlayLayer>
         </div>
       </div>
 
@@ -556,12 +546,8 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         <OverflowIndicator
           expanded={model.heightBeforeExpand !== undefined}
           showScrollHint={view.scrollZoom && model.hasOverflow}
-          onExpand={() => {
-            model.expandToFit()
-          }}
-          onRestore={() => {
-            model.collapseFromExpand()
-          }}
+          onExpand={model.expandToFit}
+          onRestore={model.collapseFromExpand}
         />
       ) : null}
 
@@ -584,10 +570,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
           onClose={() => {
             setContextMenuCoord(undefined)
             model.setContextMenuInfo(undefined)
-            setHoveredFeature(null)
-            setHoveredSubfeature(null)
-            model.setFeatureIdUnderMouse(null)
-            model.setMouseoverExtraInformation(undefined)
+            clearHoverState()
           }}
         />
       ) : null}

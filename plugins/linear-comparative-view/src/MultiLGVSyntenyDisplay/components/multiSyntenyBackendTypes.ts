@@ -55,7 +55,6 @@ export interface MultiSyntenyBackend {
   ): void
   clearAllBlocks(): void
   renderBlocks(state: MultiSyntenyRenderState): void
-  pick(x: number, y: number): number
   dispose(): void
 }
 

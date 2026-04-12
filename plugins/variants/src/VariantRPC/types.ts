@@ -8,7 +8,7 @@ interface BaseVariantRpcArgs {
   sessionId: string
   headers?: Record<string, string>
   regions: Region[]
-  bpPerPx: number
+  bpPerPx?: number
   minorAlleleFrequencyFilter: number
   lengthCutoffFilter: number
 }
@@ -34,4 +34,14 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs {
   regionNumbers?: number[]
   statusCallback: (arg: string) => void
   byteSizeLimit?: number
+}
+
+export interface MultiSampleVariantGetSourcesArgs {
+  adapterConfig: AnyConfigurationModel
+  stopToken?: StopToken
+  sessionId: string
+  headers?: Record<string, string>
+  regions?: Region[]
+  bpPerPx?: number
+  statusCallback?: (arg: string) => void
 }

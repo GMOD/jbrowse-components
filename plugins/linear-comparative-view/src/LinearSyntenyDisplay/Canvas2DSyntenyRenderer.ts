@@ -92,6 +92,8 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     const scale1 = data.geometryBpPerPx1 / curBpPerPx1
     const adjOff0 = offset0 / scale0 - data.refOffset0
     const adjOff1 = offset1 / scale1 - data.refOffset1
+    const scaleDiff0 = scale0 - 1
+    const scaleDiff1 = scale1 - 1
 
     for (let i = 0; i < data.instanceCount; i++) {
       if (data.queryTotalLengths[i]! < minAlignmentLength) {
@@ -110,10 +112,10 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
       const padTop = data.padTops[i]!
       const padBottom = data.padBottoms[i]!
 
-      const sx1 = (data.x1[i]! - adjOff0) * scale0 - padTop * (scale0 - 1)
-      const sx2 = (data.x2[i]! - adjOff0) * scale0 - padTop * (scale0 - 1)
-      const sx3 = (data.x3[i]! - adjOff1) * scale1 - padBottom * (scale1 - 1)
-      const sx4 = (data.x4[i]! - adjOff1) * scale1 - padBottom * (scale1 - 1)
+      const sx1 = (data.x1[i]! - adjOff0) * scale0 - padTop * scaleDiff0
+      const sx2 = (data.x2[i]! - adjOff0) * scale0 - padTop * scaleDiff0
+      const sx3 = (data.x3[i]! - adjOff1) * scale1 - padBottom * scaleDiff1
+      const sx4 = (data.x4[i]! - adjOff1) * scale1 - padBottom * scaleDiff1
 
       const minX = Math.min(sx1, sx2, sx3, sx4)
       const maxX = Math.max(sx1, sx2, sx3, sx4)
@@ -202,6 +204,8 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     const scale1 = data.geometryBpPerPx1 / curBpPerPx1
     const adjOff0 = offset0 / scale0 - data.refOffset0
     const adjOff1 = offset1 / scale1 - data.refOffset1
+    const scaleDiff0 = scale0 - 1
+    const scaleDiff1 = scale1 - 1
     const ctx = this.ctx
 
     // iterate in reverse so top-most (last-drawn) features are picked first
@@ -216,10 +220,10 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
 
       const padTop = data.padTops[i]!
       const padBottom = data.padBottoms[i]!
-      const sx1 = (data.x1[i]! - adjOff0) * scale0 - padTop * (scale0 - 1)
-      const sx2 = (data.x2[i]! - adjOff0) * scale0 - padTop * (scale0 - 1)
-      const sx3 = (data.x3[i]! - adjOff1) * scale1 - padBottom * (scale1 - 1)
-      const sx4 = (data.x4[i]! - adjOff1) * scale1 - padBottom * (scale1 - 1)
+      const sx1 = (data.x1[i]! - adjOff0) * scale0 - padTop * scaleDiff0
+      const sx2 = (data.x2[i]! - adjOff0) * scale0 - padTop * scaleDiff0
+      const sx3 = (data.x3[i]! - adjOff1) * scale1 - padBottom * scaleDiff1
+      const sx4 = (data.x4[i]! - adjOff1) * scale1 - padBottom * scaleDiff1
 
       ctx.beginPath()
       if (data.isCurves[i]! > 0.5) {

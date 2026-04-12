@@ -52,7 +52,6 @@ function makeFeatureData(opts: {
     arrowXs: new Uint32Array(0),
     arrowYs: new Float32Array(0),
     arrowDirections: new Int8Array(0),
-    arrowHeights: new Float32Array(0),
     arrowColors: new Uint8Array(0),
     numArrows: 0,
     arrowFeatureIndices: new Uint32Array(0),
@@ -591,7 +590,6 @@ test('relayout handles lines and arrows', () => {
   data.arrowXs = new Uint32Array([600])
   data.arrowYs = new Float32Array([10])
   data.arrowDirections = new Int8Array([1])
-  data.arrowHeights = new Float32Array([20])
   data.arrowColors = new Uint8Array([0, 0, 0, 255])
   data.numArrows = 1
   data.arrowFeatureIndices = new Uint32Array([1])

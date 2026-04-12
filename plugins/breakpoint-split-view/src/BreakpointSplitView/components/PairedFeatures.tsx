@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
@@ -9,19 +9,15 @@ import {
   createVariantMouseHandlers,
   getCanonicalRefs,
   getTestId,
+  useOverlaySetup,
 } from './overlayUtils.tsx'
 import { getMatchedPairedFeatures } from './util.ts'
-import { getPxFromCoordinate, getTrackHeightsCache, yPos } from '../util.ts'
+import { getPxFromCoordinate, yPos } from '../util.ts'
 
 import type { OverlayProps } from './overlayUtils.tsx'
 
-const PairedFeatures = observer(function PairedFeatures({
-  model,
-  trackId,
-  getTrackYPosOverride,
-  cachedTrackTops,
-  cachedYOffset,
-}: OverlayProps) {
+const PairedFeatures = observer(function PairedFeatures(props: OverlayProps) {
+  const { model, trackId } = props
   const { interactiveOverlay, views, assembly } = model
   const session = getSession(model)
   const totalFeatures = model.getTrackFeatures(trackId)
@@ -31,13 +27,8 @@ const PairedFeatures = observer(function PairedFeatures({
     return model.getMatchedFeaturesInLayout(trackId, matchedFeatures)
   }, [totalFeatures, trackId, model])
 
-  const [mouseoverElt, setMouseoverElt] = useState<string>()
-  const yOffset = cachedYOffset ?? 0
-  const tracks = views.map(v => v.getTrack(trackId))
-  const hasOverride = !!getTrackYPosOverride
-  const cachedHeights =
-    cachedTrackTops ??
-    getTrackHeightsCache(views, trackId, getTrackYPosOverride)
+  const { mouseoverElt, setMouseoverElt, yOffset, tracks, hasOverride, cachedHeights } =
+    useOverlaySetup(props)
 
   if (!assembly) {
     return null
@@ -50,10 +41,9 @@ const PairedFeatures = observer(function PairedFeatures({
       fill="none"
       data-testid={getTestId(trackId, layoutMatches.length > 0)}
     >
-      {layoutMatches.map(chunk => {
-        const ret = []
-        for (let i = 0; i < chunk.length - 1; i += 1) {
-          const { layout: c1, feature: f1, level: level1 } = chunk[i]!
+      {layoutMatches.flatMap(chunk =>
+        chunk.slice(0, -1).flatMap((item, i) => {
+          const { layout: c1, feature: f1, level: level1 } = item
           const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]!
           const id = f1.id()
           const { f1ref, f2ref } = getCanonicalRefs(
@@ -70,26 +60,23 @@ const PairedFeatures = observer(function PairedFeatures({
             yPos(level2, tracks, c2, cachedHeights, hasOverride) - yOffset
 
           const path = buildSimplePath(x1, y1, x2, y2)
-          const mouseHandlers = createVariantMouseHandlers(
-            id,
-            setMouseoverElt,
-            session,
-            totalFeatures.get(id)?.toJSON(),
-          )
-
-          ret.push(
+          return [
             <path
               d={path}
               data-testid="r2"
               key={JSON.stringify(path)}
               pointerEvents={interactiveOverlay ? 'auto' : undefined}
               strokeWidth={id === mouseoverElt ? 10 : 5}
-              {...mouseHandlers}
+              {...createVariantMouseHandlers(
+                id,
+                setMouseoverElt,
+                session,
+                totalFeatures.get(id)?.toJSON(),
+              )}
             />,
-          )
-        }
-        return ret
-      })}
+          ]
+        }),
+      )}
     </g>
   )
 })

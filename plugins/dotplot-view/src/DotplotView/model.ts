@@ -698,7 +698,9 @@ export default function stateModelFactory(pm: PluginManager) {
               URL.revokeObjectURL(url)
               canvas.toBlob(blob => {
                 if (blob) {
-                  saveAs(blob, opts.filename || 'image.png', { autoBom: false })
+                  saveAs(blob, opts.filename || 'image.png', {
+                    autoBom: false,
+                  })
                   resolve()
                 } else {
                   reject(

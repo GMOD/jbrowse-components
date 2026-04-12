@@ -1,56 +1,39 @@
 import type React from 'react'
-import { lazy, useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, useEffect, useMemo, useRef, useState } from 'react'
 
-import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { ErrorMessage, LoadingOverlay } from '@jbrowse/core/ui'
 import {
   getContainingTrack,
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
+  useGpuRenderer,
   useTabVisibilityRerender,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { SyntenyRenderer } from '../SyntenyRenderer.ts'
+import { SyntenyRendererFactory } from '../SyntenyRenderer.ts'
 import SyntenyContextMenu from './SyntenyContextMenu.tsx'
 
 import type { ClickCoord } from './util.ts'
+import type { SyntenyBackend } from '../syntenyBackendTypes.ts'
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 import type { LinearSyntenyDisplayModel } from '../model.ts'
 
 const SyntenyTooltip = lazy(() => import('./SyntenyTooltip.tsx'))
 
-const useStyles = makeStyles()(theme => {
-  const bg = theme.palette.action.disabledBackground
-  return {
-    rel: {
-      position: 'relative',
-    },
-    gpuCanvas: {
-      position: 'absolute',
-      imageRendering: 'auto',
-      willChange: 'transform',
-      contain: 'strict',
-    },
-    gpuLoadingOverlay: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-      padding: theme.spacing(0, 2),
-      backgroundColor: theme.palette.background.default,
-      backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${bg} 5px, ${bg} 10px)`,
-    },
-  }
+const useStyles = makeStyles()({
+  rel: {
+    position: 'relative',
+  },
+  gpuCanvas: {
+    position: 'absolute',
+    imageRendering: 'auto',
+    willChange: 'transform',
+    contain: 'strict',
+  },
 })
 
 const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
@@ -64,7 +47,6 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   const width = view.width
 
   const gpuCanvasRef = useRef<HTMLCanvasElement>(null)
-  const initStarted = useRef(false)
   const xOffset = useRef(0)
   const scheduled = useRef(false)
   const zoomDelta = useRef(0)
@@ -74,11 +56,24 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   const mouseInitialDownX = useRef<number | undefined>(undefined)
 
   const [anchorEl, setAnchorEl] = useState<ClickCoord>()
-  const [gpuStatus, setGpuStatus] = useState<'loading' | 'ready' | 'failed'>(
-    'loading',
-  )
-  const [gpuError, setGpuError] = useState('')
 
+  const gpuOpts = useMemo(
+    () => ({
+      onReady: (renderer: SyntenyBackend) => {
+        model.setGpuRenderer(renderer)
+      },
+      onDispose: () => {
+        model.setGpuRenderer(null)
+      },
+    }),
+    [model],
+  )
+  const { error, retry } = useGpuRenderer(gpuCanvasRef, SyntenyRendererFactory, gpuOpts)
+
+  // SYNC across model-driven GPU displays (dotplot, linear synteny,
+  // multi-LGV synteny): bumps tabVisibilityVersion so the model draw autorun
+  // re-fires on tab restore. Hook-driven displays pass renderNow directly to
+  // useTabVisibilityRerender instead.
   useTabVisibilityRerender(() => {
     model.bumpTabVisibility()
   })
@@ -158,35 +153,6 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model])
 
-  const gpuCanvasCallbackRef = useCallback(
-    (canvas: HTMLCanvasElement | null) => {
-      gpuCanvasRef.current = canvas
-      if (!canvas || initStarted.current) {
-        return
-      }
-      initStarted.current = true
-      const renderer = SyntenyRenderer.getOrCreate(canvas)
-      renderer
-        .init()
-        .then(success => {
-          if (!success) {
-            console.error('[LinearSyntenyRendering] GPU initialization failed')
-            setGpuError('WebGPU device not available')
-          }
-          model.setGpuRenderer(renderer)
-          model.setGpuInitialized(success)
-          setGpuStatus(success ? 'ready' : 'failed')
-        })
-        .catch((e: unknown) => {
-          console.error('[LinearSyntenyRendering] GPU initialization error:', e)
-          setGpuError(e instanceof Error ? e.message : `${e}`)
-          model.setGpuInitialized(false)
-          setGpuStatus('failed')
-        })
-    },
-    [model],
-  )
-
   function handleMouseMove(event: React.MouseEvent<HTMLCanvasElement>) {
     if (mouseCurrDownX.current !== undefined) {
       xOffset.current += mouseCurrDownX.current - event.clientX
@@ -230,7 +196,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       Math.abs(evt.clientX - mouseInitialDownX.current) < 5
     ) {
       const coords = getEventCanvasCoords(evt)
-      if (!coords || !model.gpuRenderer || !model.gpuInitialized) {
+      if (!coords || !model.gpuRenderer) {
         return
       }
       const featureIndex = model.gpuRenderer.pick(coords.x, coords.y)
@@ -271,7 +237,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   }
 
   function handleContextMenu(evt: React.MouseEvent<HTMLCanvasElement>) {
-    if (!model.gpuRenderer || !model.gpuInitialized) {
+    if (!model.gpuRenderer) {
       return
     }
     evt.preventDefault()
@@ -299,7 +265,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   return (
     <div className={classes.rel}>
       <canvas
-        ref={gpuCanvasCallbackRef}
+        ref={gpuCanvasRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onMouseDown={handleMouseDown}
@@ -311,21 +277,11 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         className={classes.gpuCanvas}
         style={{ width, height }}
       />
-      {gpuStatus === 'loading' ? (
-        <div className={classes.gpuLoadingOverlay}>
-          <LoadingEllipses message="Initializing GPU renderer" />
-        </div>
-      ) : null}
-      {gpuStatus === 'failed' ? (
-        <div className={classes.gpuLoadingOverlay}>
-          GPU initialization failed: {gpuError}
-        </div>
-      ) : null}
-      {model.error ? (
-        <div className={classes.gpuLoadingOverlay}>
-          <ErrorMessage error={model.error} />
-        </div>
-      ) : null}
+      {error ? <ErrorMessage error={error} onReset={retry} /> : null}
+      <LoadingOverlay
+        statusMessage={model.statusMessage}
+        isVisible={!model.ready}
+      />
       {tooltipText ? <SyntenyTooltip title={tooltipText} /> : null}
       {anchorEl ? (
         <SyntenyContextMenu

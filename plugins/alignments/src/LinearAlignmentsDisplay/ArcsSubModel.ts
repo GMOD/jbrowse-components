@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { ArcsDataResult } from '../RenderArcsDataRPC/types.ts'
+import type { ArcsDataResult } from '../shared/computeArcsFromPileupData.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export type ArcColorByType =
@@ -19,6 +19,7 @@ export const ArcsSubModel = types
     drawInter: true,
     drawLongRange: true,
     colorByType: types.optional(arcColorByTypes, 'insertSizeAndOrientation'),
+    pairedArcsDown: true,
   })
   .volatile(() => ({
     rpcDataMap: new Map<number, ArcsDataResult>(),
@@ -55,6 +56,9 @@ export const ArcsSubModel = types
     },
     setColorByType(type: ArcColorByType) {
       self.colorByType = type
+    },
+    setArcsDown(flag: boolean) {
+      self.pairedArcsDown = flag
     },
   }))
 

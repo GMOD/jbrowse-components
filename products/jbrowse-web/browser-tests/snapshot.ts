@@ -138,6 +138,27 @@ export async function snapshot(page: Page, name: string, threshold = 0.1) {
 }
 
 export async function pageSnapshot(page: Page, name: string, threshold = 0.1) {
+  // Wait for any "Loading" text to clear from view containers
+  // before capturing the full-page snapshot to avoid flakiness
+  try {
+    await page.waitForFunction(
+      () => {
+        const containers = document.querySelectorAll(
+          '[data-testid^="view-container-"]',
+        )
+        for (const c of containers) {
+          if (c.textContent.includes('Loading')) {
+            return false
+          }
+        }
+        return true
+      },
+      { timeout: 30000 },
+    )
+  } catch {
+    // proceed with snapshot even if loading text is still present
+  }
+
   const screenshot = await page.screenshot({ fullPage: true })
   const result = compareImages(name, screenshot, threshold)
   if (!result.passed) {

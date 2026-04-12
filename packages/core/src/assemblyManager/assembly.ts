@@ -1,11 +1,5 @@
 import AbortablePromiseCache from '@gmod/abortable-promise-cache'
-import {
-  addDisposer,
-  getParent,
-  getSnapshot,
-  types,
-} from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
+import { getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/util.ts'
@@ -83,6 +77,7 @@ async function loadRefNameMap(
     'CoreGetRefNames',
     {
       adapterConfig: adapterConfig as Record<string, unknown>,
+      regions: [{ assemblyName: assembly.name }],
       sequenceAdapter: sequenceAdapter as Record<string, unknown> | undefined,
       stopToken,
     },
@@ -213,6 +208,18 @@ export default function assemblyFactory(
        * #volatile
        */
       cytobands: undefined as Feature[] | undefined,
+      /**
+       * #volatile
+       * Precomputed in loadPre to avoid expensive synchronous computation
+       * when MobX triggers the autorun after setLoaded
+       */
+      lowerCaseRefNameAliases: undefined as RefNameAliases | undefined,
+      /**
+       * #volatile
+       * Precomputed in loadPre to avoid expensive synchronous computation
+       * when MobX triggers the autorun after setLoaded
+       */
+      allRefNamesWithLowerCase: undefined as Set<string> | undefined,
     }))
     .views(self => ({
       /**
@@ -220,18 +227,6 @@ export default function assemblyFactory(
        */
       getConf(arg: string) {
         return self.configuration ? getConf(self, arg) : undefined
-      },
-      /**
-       * #getter
-       */
-      get lowerCaseRefNameAliases() {
-        return self.refNameAliases
-          ? Object.fromEntries(
-              Object.entries(self.refNameAliases).map(([key, val]) => {
-                return [key.toLowerCase(), val]
-              }),
-            )
-          : undefined
       },
     }))
     .views(self => ({
@@ -299,23 +294,6 @@ export default function assemblyFactory(
         return !self.refNameAliases
           ? undefined
           : Object.keys(self.refNameAliases)
-      },
-      /**
-       * #getter
-       */
-      get lowerCaseRefNames() {
-        return !self.lowerCaseRefNameAliases
-          ? undefined
-          : Object.keys(self.lowerCaseRefNameAliases)
-      },
-
-      /**
-       * #getter
-       */
-      get allRefNamesWithLowerCase() {
-        return this.allRefNames && this.lowerCaseRefNames
-          ? [...new Set([...this.allRefNames, ...this.lowerCaseRefNames])]
-          : undefined
       },
       /**
        * #getter
@@ -440,6 +418,18 @@ export default function assemblyFactory(
       /**
        * #action
        */
+      setLowerCaseRefNameAliases(aliases: RefNameAliases) {
+        self.lowerCaseRefNameAliases = aliases
+      },
+      /**
+       * #action
+       */
+      setAllRefNamesWithLowerCase(names: Set<string>) {
+        self.allRefNamesWithLowerCase = names
+      },
+      /**
+       * #action
+       */
       setCytobands(cytobands: Feature[]) {
         self.cytobands = cytobands
       },
@@ -504,24 +494,29 @@ export default function assemblyFactory(
             refNameAliases[refName] = refName
           }
         }
-        // add identity to the refNameAliases list
-        for (const region of regions) {
-          // this ||= means that if the refNameAliasAdapter already set a
-          // mapping for the primary region to be an alias
-          refNameAliases[region.refName] ||= region.refName
-        }
-
-        // Build sparse mapping from canonical names to sequence adapter names.
-        // Only stores entries where the names differ (for performance with large
-        // assemblies). getSeqAdapterRefName() falls back to input if not found.
+        // Build lowercase aliases, combined name set, and sparse canonical
+        // mapping in a single pass over regions + refNameAliases
+        const lowerCaseAliases = {} as Record<string, string>
+        const nameSet = new Set<string>()
         const canonicalToSeqAdapterRefNames = {} as Record<string, string>
         for (const region of regions) {
+          // add identity mapping (||= so refNameAliasAdapter can override)
+          refNameAliases[region.refName] ||= region.refName
+
           const canonicalName = refNameAliases[region.refName] || region.refName
           if (canonicalName !== region.refName) {
             canonicalToSeqAdapterRefNames[canonicalName] = region.refName
           }
         }
+        for (const key of Object.keys(refNameAliases)) {
+          nameSet.add(key)
+          const lower = key.toLowerCase()
+          lowerCaseAliases[lower] = refNameAliases[key]!
+          nameSet.add(lower)
+        }
         this.setCanonicalToSeqAdapterRefNames(canonicalToSeqAdapterRefNames)
+        this.setLowerCaseRefNameAliases(lowerCaseAliases)
+        this.setAllRefNamesWithLowerCase(nameSet)
 
         this.setLoaded({
           refNameAliases,
@@ -587,25 +582,6 @@ export default function assemblyFactory(
       ) {
         const map = await this.getAdapterMapEntry(adapterConf, opts)
         return map.reverseMap
-      },
-      afterCreate() {
-        addDisposer(
-          self,
-          autorun(
-            function assemblyRefNamesAutorun() {
-              // force getter not to go stale. helps with very fragmented
-              // assemblies e.g. 1,000,000 scaffolds to avoid recomputing
-              //
-              // xref solution https://github.com/mobxjs/mobx/issues/266#issuecomment-222007278
-              // xref problem https://github.com/GMOD/react-msaview/issues/75
-              // eslint-disable-next-line  @typescript-eslint/no-unused-expressions
-              self.allRefNamesWithLowerCase
-            },
-            {
-              name: 'AssemblyRefNames',
-            },
-          ),
-        )
       },
     }))
 }

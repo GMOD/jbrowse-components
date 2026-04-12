@@ -62,10 +62,18 @@ export class WebGL2Hal implements GpuHal {
   ) {
     this.canvas = canvas
     this.uniformByteSize = uniformByteSize
+    // premultipliedAlpha:true is required for correct AA edge blending.
+    // The canvas is cleared to (0,0,0,0) and drawn with SRC_ALPHA,ONE_MINUS_SRC_ALPHA
+    // blend, which produces premultiplied-alpha values in the framebuffer
+    // (edge pixel: rgb = color*alpha, a = alpha).  With premultipliedAlpha:true
+    // the browser compositor reads those as premultiplied and composites correctly:
+    //   output = fb.rgb + bg*(1-fb.a)
+    // With premultipliedAlpha:false the compositor treats them as straight alpha and
+    // multiplies rgb by alpha a second time, making AA edges appear too dark.
+    // The WebGPU HAL uses alphaMode:'premultiplied' for the same reason.
     const gl = canvas.getContext('webgl2', {
       antialias: true,
-      premultipliedAlpha: false,
-      preserveDrawingBuffer: true,
+      premultipliedAlpha: true,
     })
     if (!gl) {
       throw new Error('WebGL2 not supported')
@@ -311,10 +319,6 @@ export class WebGL2Hal implements GpuHal {
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
   }
 
-  pick(_x: number, _y: number) {
-    return -1
-  }
-
   drawPickingPass(
     passId: string,
     regionKey: number,
@@ -387,12 +391,10 @@ export class WebGL2Hal implements GpuHal {
     return this.readPickingPixel(x, y)
   }
 
-  getWebGLContext() {
-    return this.gl
-  }
-
   dispose() {
     const gl = this.gl
+    // eslint-disable-next-line no-console
+    console.log('[GPU] WebGL2Hal.dispose() — releasing GPU resources')
     this.deleteAllRegions()
     for (const pass of this.passes.values()) {
       gl.deleteVertexArray(pass.vao)
@@ -406,6 +408,14 @@ export class WebGL2Hal implements GpuHal {
     if (this.pickingFbo) {
       gl.deleteFramebuffer(this.pickingFbo)
       gl.deleteTexture(this.pickingTex)
+    }
+
+    // Explicitly release the WebGL context so Chrome's GPU process frees
+    // the memory immediately instead of waiting for GC.  Without this,
+    // long-running test suites accumulate unreleased contexts and OOM.
+    const ext = gl.getExtension('WEBGL_lose_context')
+    if (ext) {
+      ext.loseContext()
     }
   }
 

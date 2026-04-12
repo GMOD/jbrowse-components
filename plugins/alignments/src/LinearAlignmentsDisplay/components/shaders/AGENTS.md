@@ -33,12 +33,34 @@ When changing rendering behavior (thresholds, colors, draw order, outline
 logic), apply the same change to all three backends. The Canvas 2D renderer has
 no shaders but implements the same logic in TypeScript.
 
-### WebGPU premultiplied alpha
+### WebGPU / WebGL premultiplied alpha — the rule is the same for both
 
-The WebGPU canvas uses `alphaMode: 'premultiplied'`. Any fragment shader that
-outputs alpha < 1.0 must premultiply the RGB channels (i.e. `rgb * a`). Opaque
-output (`a = 1.0`) does not need special handling. The WebGL backend also uses
-`premultipliedAlpha: true` but handles blending before canvas compositing, so
-the same straight-alpha fragment output works in both — except for arcs and
-other anti-aliased geometry where the AA produces sub-pixel alpha. When in
-doubt, premultiply in WGSL fragment shaders.
+**Do NOT premultiply RGB in fragment shaders.** Both backends use
+`src-alpha / one-minus-src-alpha` blending against a `(0,0,0,0)` clear. That
+blend equation naturally converts straight-alpha output into premultiplied
+values in the framebuffer:
+
+```
+fb.rgb = src.rgb * src.a + 0 = src.rgb * alpha   ← premultiplied
+fb.a   = src.a                                    = alpha
+```
+
+The WebGL canvas is created with `premultipliedAlpha: true` and the WebGPU
+canvas uses `alphaMode: 'premultiplied'`, so in both cases the compositor reads
+the framebuffer values directly:
+
+```
+output = fb.rgb + bg * (1 - fb.a)   ← correct
+```
+
+If you premultiply in the shader (`rgb * alpha`) AND the blend also multiplies
+by `src-alpha`, you get `rgb * alpha²` in the framebuffer — AA edges appear too
+dark and arcs look like they have a darker outline. This is a subtle bug that
+has recurred across refactors; the fix is always to remove the premultiplication
+from the shader.
+
+**Exception:** some passes outside this plugin (variants, hic, dotplot) use a
+custom `blendState: { srcFactor:'one', dstFactor:'one-minus-src-alpha' }`. That
+blend does NOT multiply by src.a, so those shaders MUST premultiply in the
+fragment shader. The rule: **shader output and blend srcFactor must agree** —
+`src-alpha` blend expects straight alpha, `one` blend expects premultiplied.

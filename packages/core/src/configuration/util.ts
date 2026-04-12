@@ -11,19 +11,7 @@ import {
   isUnionType,
 } from '@jbrowse/mobx-state-tree'
 
-interface ConfigSlot {
-  getValue: (args: Record<string, unknown>) => unknown
-}
-
-// confObject[slotPath] can return:
-// - a config slot model (has getValue method)
-// - a sub-configuration object (nested config schema)
-// - a primitive value (string, number, etc.)
-// - undefined/null
-function isConfigSlot(slot: unknown): slot is ConfigSlot {
-  return typeof (slot as ConfigSlot | undefined)?.getValue === 'function'
-}
-
+import { stringToJexlExpression } from '../util/jexlStrings.ts'
 import {
   getDefaultValue,
   getSubType,
@@ -37,6 +25,22 @@ import type {
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
 } from './types.ts'
+import type { Feature } from '../util/index.ts'
+
+interface ConfigSlot {
+  isCallback: boolean
+  value: unknown
+  getValue: (args?: Record<string, unknown>) => unknown
+}
+
+// confObject[slotPath] can return:
+// - a config slot model (has getValue method)
+// - a sub-configuration object (nested config schema)
+// - a primitive value (string, number, etc.)
+// - undefined/null
+function isConfigSlot(slot: unknown): slot is ConfigSlot {
+  return typeof (slot as ConfigSlot | undefined)?.getValue === 'function'
+}
 
 /**
  * given a configuration model (an instance of a ConfigurationSchema),
@@ -102,6 +106,33 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
     )
   }
   throw new TypeError('slotPath must be a string or array')
+}
+
+/**
+ * Get a plain-object snapshot of a configuration model that includes ALL
+ * values, even defaults. Unlike getSnapshot() which strips default values
+ * via postProcessSnapshot, this returns every slot's current value so the
+ * result can be sent to an RPC worker as a self-contained config object.
+ *
+ * For JEXL callback slots, the raw "jexl:..." string is included so the
+ * worker can evaluate it per-feature.
+ */
+export function getConfSnapshot(confObject: AnyConfigurationModel) {
+  const result: Record<string, unknown> = {}
+  for (const key of Object.keys(confObject)) {
+    const slot = confObject[key]
+    if (isConfigSlot(slot)) {
+      result[key] = slot.isCallback ? String(slot.value) : slot.getValue()
+    } else if (
+      slot &&
+      typeof slot === 'object' &&
+      isStateTreeNode(slot) &&
+      isConfigurationModel(slot)
+    ) {
+      result[key] = getConfSnapshot(slot)
+    }
+  }
+  return result
 }
 
 /**
@@ -229,4 +260,35 @@ export function isConfigurationSlotType(thing: unknown) {
     thing !== null &&
     'isJBrowseConfigurationSlot' in thing
   )
+}
+
+function resolveConfigValue(
+  config: Record<string, unknown>,
+  key: string | string[],
+) {
+  if (Array.isArray(key)) {
+    let val: unknown = config
+    for (const k of key) {
+      val = (val as Record<string, unknown> | null | undefined)?.[k]
+    }
+    return val
+  }
+  return config[key]
+}
+
+/**
+ * Read a value from a plain config snapshot object. Automatically evaluates
+ * "jexl:..." strings per-feature. Works without MST — intended for use in
+ * rendering code (GPU, Canvas2D, workers).
+ */
+export function readConfigValue<T>(
+  config: Record<string, unknown>,
+  key: string | string[],
+  feature: Feature,
+) {
+  const raw = resolveConfigValue(config, key)
+  if (typeof raw === 'string' && raw.startsWith('jexl:')) {
+    return stringToJexlExpression(raw).eval({ feature }) as T
+  }
+  return raw as T
 }

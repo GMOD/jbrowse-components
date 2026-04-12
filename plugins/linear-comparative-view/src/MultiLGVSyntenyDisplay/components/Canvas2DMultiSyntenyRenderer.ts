@@ -370,9 +370,6 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
   clearAllBlocks() {
     this.regions.clear()
   }
-  pick() {
-    return -1
-  }
 
   renderBlocks(state: MultiSyntenyRenderState) {
     const {

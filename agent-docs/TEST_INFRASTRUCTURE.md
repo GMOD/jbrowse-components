@@ -39,7 +39,8 @@ custom-url, redraw, basic-lgv, misc
 
 ## Snapshots
 
-- Golden snapshots stored in `browser-tests/__snapshots__/{webgl,webgpu,canvas2d}/`
+- Golden snapshots stored in
+  `browser-tests/__snapshots__/{webgl,webgpu,canvas2d}/`
 - Screenshot comparison via pixelmatch (threshold 0.1)
 - `compare-backends.ts` for cross-backend visual regression (identical / similar
   <5% / different ≥5%)
@@ -77,7 +78,8 @@ macOS runners also work (real GPU available) but cost ~10× more.
 
 ## Unit tests
 
-157 Jest tests across 15 suites, co-located with source (`*.test.ts`).
-Run with: `pnpm test-ci`
+157 Jest tests across 15 suites, co-located with source (`*.test.ts`). Run with:
+`pnpm test-ci`
 
-Browser test runner forwards `[alignments]` and `[webgl-wiggle]` console logs for debugging.
+Browser test runner forwards `[alignments]` and `[webgl-wiggle]` console logs
+for debugging.

@@ -1,74 +1,38 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { renameRegionsIfNeeded } from '@jbrowse/core/util'
+import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Region } from '@jbrowse/core/util'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
-
-declare module '@jbrowse/core/rpc/RpcRegistry' {
-  interface RpcRegistry {
-    GetPileupFeatureDetails: {
-      args: Record<string, unknown>
-      return: { feature: SimpleFeatureSerialized | undefined }
-    }
-  }
-}
 
 interface GetFeatureDetailsArgs {
   sessionId: string
   adapterConfig: AnyConfigurationModel
   sequenceAdapter?: Record<string, unknown>
-  region: {
-    refName: string
-    start: number
-    end: number
-    assemblyName?: string
-  }
+  regions: Region[]
   featureId: string
 }
 
-export default class GetFeatureDetails extends RpcMethodType {
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    GetPileupFeatureDetails: {
+      args: GetFeatureDetailsArgs
+      return: { feature: SimpleFeatureSerialized | undefined }
+    }
+  }
+}
+
+export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'GetPileupFeatureDetails'
 
-  async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
-    const assemblyManager =
-      this.pluginManager.rootModel?.session?.assemblyManager
-    if (!assemblyManager) {
-      throw new Error('no assembly manager')
-    }
+  async execute(args: GetFeatureDetailsArgs, _rpcDriver: string) {
+    const { sessionId, adapterConfig, sequenceAdapter, regions, featureId } =
+      args
 
-    const typedArgs = args as unknown as GetFeatureDetailsArgs
-    const { region, sessionId, adapterConfig } = typedArgs
-
-    const regionWithAssembly = {
-      ...region,
-      assemblyName: region.assemblyName ?? '',
-    }
-
-    const result = await renameRegionsIfNeeded(assemblyManager, {
-      sessionId,
-      adapterConfig,
-      regions: [regionWithAssembly],
-    })
-
-    // single-region RPC: we pass one region in, get one back
-    const renamedRegion = result.regions[0]
-    const renamed = renamedRegion
-      ? { ...typedArgs, region: renamedRegion }
-      : typedArgs
-
-    return super.serializeArguments(
-      renamed as unknown as Record<string, unknown>,
-      rpcDriver,
-    )
-  }
-
-  async execute(args: Record<string, unknown>, _rpcDriver: string) {
-    const { sessionId, adapterConfig, sequenceAdapter, region, featureId } =
-      args as unknown as GetFeatureDetailsArgs
+    const region = regions[0]!
 
     const dataAdapter = (
       await getAdapter(this.pluginManager, sessionId, adapterConfig)
@@ -87,10 +51,8 @@ export default class GetFeatureDetails extends RpcMethodType {
       dataAdapter.getFeatures(regionWithAssembly, {}).pipe(toArray()),
     )
 
-    const feature = features.find(f => f.id() === featureId)
-
     return {
-      feature: feature?.toJSON(),
+      feature: features.find(f => f.id() === featureId)?.toJSON(),
     }
   }
 }

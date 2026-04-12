@@ -10,6 +10,15 @@ import type DotplotRenderer from '../DotplotRenderer/DotplotRenderer.ts'
 import type { RenderResults } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    ComparativeRender: {
+      args: Record<string, unknown>
+      return: unknown
+    }
+  }
+}
+
 interface RenderArgs extends DotplotRenderArgs {
   rendererType: string
 }

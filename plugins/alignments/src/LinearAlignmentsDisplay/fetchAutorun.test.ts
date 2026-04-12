@@ -265,7 +265,9 @@ describe('FetchVisibleRegions autorun', () => {
         expect.any(String),
         'RenderPileupData',
         expect.objectContaining({
-          region: expect.objectContaining({ refName: 'ctgA' }),
+          regions: expect.arrayContaining([
+            expect.objectContaining({ refName: 'ctgA' }),
+          ]),
         }),
       )
     })
@@ -588,6 +590,7 @@ describe('FetchVisibleRegions autorun', () => {
   })
 
   it('fetch error sets display error and stops retrying', async () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 
     const { display } = createDisplay()
@@ -604,6 +607,7 @@ describe('FetchVisibleRegions autorun', () => {
 
     jest.advanceTimersByTime(2000)
     expect(mockRpcCall.mock.calls.length).toBe(callCount)
+    spy.mockRestore()
   })
 
   it('autorun does not loop when isLoading transitions', async () => {

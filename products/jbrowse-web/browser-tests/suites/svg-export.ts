@@ -4,6 +4,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 import {
+  PORT,
   delay,
   findByTestId,
   findByText,
@@ -178,14 +179,15 @@ const suite: TestSuite = {
             },
           ],
         })
-        await findByTestId(page, 'wiggle-display-done', 60000)
+        await findByTestId(page, 'multi-wiggle-display-done', 60000)
         await waitForLoadingToComplete(page)
 
         const svg = await exportSvgAndSave(page, 'svg-export-multi-wiggle')
-        const rectCount = (svg.match(/<rect/g) || []).length
-        if (rectCount < 10) {
+        // multirowxy renders as lines, not rects
+        const lineCount = (svg.match(/<line/g) || []).length
+        if (lineCount < 10) {
           throw new Error(
-            `Multi-wiggle SVG has too few rects (${rectCount}), expected rendered data`,
+            `Multi-wiggle SVG has too few lines (${lineCount}), expected rendered data`,
           )
         }
       },
@@ -194,12 +196,18 @@ const suite: TestSuite = {
       name: 'exports SVG with gene track (peptide labels)',
       fn: async page => {
         await setupDownloadInterception(page)
+        // Navigate to app first to establish origin, then enable colorByCDS
+        // so amino acid overlays are rendered in SVG
+        await page.goto(`http://localhost:${PORT}/`)
+        await page.evaluate(() => {
+          localStorage.setItem('lgv-colorByCDS', 'true')
+        })
         await navigateWithSessionSpec(page, {
           views: [
             {
               type: 'LinearGenomeView',
               assembly: 'volvox',
-              loc: 'ctgA:1050-1150',
+              loc: 'ctgA:1201-1350',
               tracks: ['gff3tabix_genes'],
             },
           ],

@@ -1,4 +1,3 @@
-import { darkenColor, lightenColor } from './webglUtils.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
@@ -13,6 +12,24 @@ import type {
   SourceRenderData,
   WiggleGPURenderState,
 } from './wiggleBackendTypes.ts'
+
+function lightenColor(
+  rgb: [number, number, number],
+  amount: number,
+): [number, number, number] {
+  return [
+    Math.min(1, rgb[0] + (1 - rgb[0]) * amount),
+    Math.min(1, rgb[1] + (1 - rgb[1]) * amount),
+    Math.min(1, rgb[2] + (1 - rgb[2]) * amount),
+  ]
+}
+
+function darkenColor(
+  rgb: [number, number, number],
+  amount: number,
+): [number, number, number] {
+  return [rgb[0] * (1 - amount), rgb[1] * (1 - amount), rgb[2] * (1 - amount)]
+}
 
 export function getRowHeight(canvasHeight: number, numRows: number) {
   return numRows > 0 ? canvasHeight / numRows : canvasHeight

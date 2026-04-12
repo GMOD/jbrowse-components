@@ -372,9 +372,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get assemblyDisplayNames() {
         const { assemblyManager } = getSession(self)
-        return this.assemblyNames.map(
-          a => assemblyManager.getDisplayName(a),
-        )
+        return this.assemblyNames.map(a => assemblyManager.getDisplayName(a))
       },
       /**
        * #getter
@@ -855,9 +853,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setVolatileGuides(guides: VolatileGuide[]) {
         self.volatileGuides = guides
       },
-      /**
-       * #action
-       */
       /**
        * #action
        */

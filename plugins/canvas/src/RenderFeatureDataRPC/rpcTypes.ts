@@ -7,6 +7,7 @@
  * This is critical for alignment between features and hit detection.
  */
 
+import type { DisplayConfig } from './renderConfig.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface LabelItem {
@@ -17,17 +18,15 @@ export interface LabelItem {
 }
 
 export interface RenderFeatureDataArgs {
+  [key: string]: unknown
   sessionId: string
   adapterConfig: Record<string, unknown>
-  displayConfig: {
-    subfeatureLabels: string
-    geneGlyphMode: string
-  }
+  displayConfig: DisplayConfig
   region: {
     refName: string
     start: number
     end: number
-    assemblyName?: string
+    assemblyName: string
     reversed?: boolean
     seqAdapterRefName?: string
   }
@@ -37,6 +36,7 @@ export interface RenderFeatureDataArgs {
   showOnlyGenes?: boolean
   maxFeatureDensity?: number
   stopToken?: StopToken
+  statusCallback?: (msg: string) => void
 }
 
 export interface FeatureDataResult {
@@ -62,7 +62,6 @@ export interface FeatureDataResult {
   arrowXs: Uint32Array
   arrowYs: Float32Array
   arrowDirections: Int8Array
-  arrowHeights: Float32Array
   arrowColors: Uint8Array
   numArrows: number
 
@@ -104,7 +103,6 @@ export type RegionGpuData = Pick<
   | 'arrowXs'
   | 'arrowYs'
   | 'arrowDirections'
-  | 'arrowHeights'
   | 'arrowColors'
   | 'numArrows'
 >
@@ -127,30 +125,27 @@ export interface AminoAcidOverlayItem {
   flatbushIdx: number
 }
 
-export interface FlatbushItem {
-  kind: 'feature'
+interface HitItemBase {
   featureId: string
   type: string
   startBp: number
   endBp: number
-  layoutEndBp: number
   topPx: number
   bottomPx: number
+}
+
+export interface FlatbushItem extends HitItemBase {
+  kind: 'feature'
+  layoutEndBp: number
   featureHeightPx: number
   tooltip: string
   name?: string
   strand?: number
 }
 
-export interface SubfeatureInfo {
+export interface SubfeatureInfo extends HitItemBase {
   kind: 'subfeature'
-  featureId: string
   parentFeatureId: string
-  type: string
-  startBp: number
-  endBp: number
-  topPx: number
-  bottomPx: number
   displayLabel?: string
   tooltip?: string
 }

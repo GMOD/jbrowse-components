@@ -11,7 +11,6 @@
 
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { updateStatus } from '@jbrowse/core/util'
-import { cssColorToRgba } from '@jbrowse/core/util/colorBits'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -25,7 +24,6 @@ import { layoutFeature } from './layout/layoutFeature.ts'
 import { fetchPeptideData } from './peptides/peptideUtils.ts'
 import { shouldRenderPeptideBackground } from './zoomThresholds.ts'
 
-import type { RenderConfigContext } from './renderConfig.ts'
 import type {
   FeatureDataResult,
   RenderFeatureDataArgs,
@@ -34,7 +32,23 @@ import type {
 import type { LayoutRecord, PeptideData } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
+
+const workerTheme = {
+  palette: {
+    text: { secondary: '#666666' },
+    framesCDS: [
+      null,
+      { main: '#FF8080' },
+      { main: '#80FF80' },
+      { main: '#8080FF' },
+      { main: '#8080FF' },
+      { main: '#80FF80' },
+      { main: '#FF8080' },
+    ],
+  },
+} as Theme
 
 function writeColorBytes(out: Uint8Array, index: number, color: number) {
   const o = index * 4
@@ -43,13 +57,6 @@ function writeColorBytes(out: Uint8Array, index: number, color: number) {
   out[o + 2] = (color >> 16) & 0xff
   out[o + 3] = (color >> 24) & 0xff
 }
-
-function colorToUint32(colorStr: string) {
-  const [r, g, b, a] = cssColorToRgba(colorStr)
-  return (a << 24) | (b << 16) | (g << 8) | r
-}
-
-export { colorToUint32, writeColorBytes }
 
 export async function executeRenderFeatureData({
   pluginManager,
@@ -70,9 +77,7 @@ export async function executeRenderFeatureData({
     maxFeatureDensity,
     stopToken,
     statusCallback = () => {},
-  } = args as RenderFeatureDataArgs & {
-    statusCallback?: (msg: string) => void
-  }
+  } = args
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 
@@ -80,18 +85,10 @@ export async function executeRenderFeatureData({
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
-  const regionWithAssembly = {
-    ...region,
-    assemblyName: region.assemblyName ?? '',
-  }
-
   let featuresArray = await updateStatus(
     'Fetching features',
     statusCallback,
-    () =>
-      firstValueFrom(
-        dataAdapter.getFeatures(regionWithAssembly).pipe(toArray()),
-      ),
+    () => firstValueFrom(dataAdapter.getFeatures(region).pipe(toArray())),
   )
   checkStopToken2(stopTokenCheck)
 
@@ -113,68 +110,6 @@ export async function executeRenderFeatureData({
   const regionStart = Math.floor(region.start)
   const bpPerPx = requestedBpPerPx || 1
 
-  const mockTheme = {
-    palette: {
-      text: { secondary: '#666666' },
-      framesCDS: [
-        null,
-        { main: '#FF8080' },
-        { main: '#80FF80' },
-        { main: '#8080FF' },
-        { main: '#8080FF' },
-        { main: '#80FF80' },
-        { main: '#FF8080' },
-      ],
-    },
-  }
-
-  const mockConfig = {
-    color1: 'goldenrod',
-    color2: '#f0f',
-    color3: '#357089',
-    outline: '',
-    height: 10,
-    displayMode: 'normal',
-    maxHeight: 5000,
-    subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
-    impliedUTRs: false,
-    transcriptTypes: ['mRNA', 'transcript', 'primary_transcript'],
-    containerTypes: ['proteoform_orf'],
-    displayDirectionalChevrons: true,
-    labels: {
-      name: '',
-      nameColor: '#f0f',
-      description: '',
-      descriptionColor: 'blue',
-      fontSize: 12,
-    },
-    ...displayConfig,
-    subfeatureLabels: displayConfig.subfeatureLabels,
-  }
-
-  const configContext: RenderConfigContext = {
-    config: mockConfig as any,
-    displayMode: mockConfig.displayMode,
-    subfeatureLabels: mockConfig.subfeatureLabels,
-    transcriptTypes: mockConfig.transcriptTypes,
-    containerTypes: mockConfig.containerTypes,
-    geneGlyphMode: mockConfig.geneGlyphMode,
-    displayDirectionalChevrons: mockConfig.displayDirectionalChevrons,
-    color1: { value: mockConfig.color1, isCallback: false },
-    color2: { value: mockConfig.color2, isCallback: false },
-    color3: { value: mockConfig.color3, isCallback: false },
-    outline: { value: mockConfig.outline, isCallback: false },
-    featureHeight: { value: mockConfig.height, isCallback: false },
-    fontHeight: { value: mockConfig.labels.fontSize, isCallback: false },
-    nameColor: { value: mockConfig.labels.nameColor, isCallback: false },
-    descriptionColor: {
-      value: mockConfig.labels.descriptionColor,
-      isCallback: false,
-    },
-    labelAllowed: mockConfig.displayMode !== 'collapse',
-    heightMultiplier: mockConfig.displayMode === 'compact' ? 0.6 : 1,
-  }
-
   const features = new Map<string, Feature>()
   for (const f of featuresArray) {
     const id = f.id()
@@ -194,12 +129,11 @@ export async function executeRenderFeatureData({
           feature,
           bpPerPx,
           reversed,
-          configContext,
+          config: displayConfig,
         })
         records.push({
           feature,
           layout: featureLayout,
-          layoutHeight: featureLayout.height,
         })
       }
       return records
@@ -209,23 +143,21 @@ export async function executeRenderFeatureData({
 
   let peptideDataMap: Map<string, PeptideData> | undefined
   if (colorByCDS && sequenceAdapter && shouldRenderPeptideBackground(bpPerPx)) {
-    const mockRenderProps = {
-      sessionId,
-      sequenceAdapter,
-      colorByCDS: true,
-      bpPerPx,
-      regions: [
-        {
-          ...region,
-          assemblyName: region.assemblyName ?? '',
-        },
-      ],
-    }
     peptideDataMap = await updateStatus(
       'Fetching peptide data',
       statusCallback,
       async () =>
-        fetchPeptideData(pluginManager, mockRenderProps as any, features),
+        fetchPeptideData(
+          pluginManager,
+          {
+            sessionId,
+            sequenceAdapter,
+            colorByCDS: true,
+            bpPerPx,
+            regions: [region],
+          },
+          features,
+        ),
     )
   }
 
@@ -243,9 +175,8 @@ export async function executeRenderFeatureData({
     collectRenderData(
       layoutRecords,
       regionStart,
-      mockConfig as any,
-      configContext,
-      mockTheme as any,
+      displayConfig,
+      workerTheme,
       !!colorByCDS,
       peptideDataMap,
     ),
@@ -295,7 +226,6 @@ export async function executeRenderFeatureData({
   const arrowXs = new Uint32Array(visibleArrows.length)
   const arrowYs = new Float32Array(visibleArrows.length)
   const arrowDirections = new Int8Array(visibleArrows.length)
-  const arrowHeights = new Float32Array(visibleArrows.length)
   const arrowColors = new Uint8Array(visibleArrows.length * 4)
   const arrowFeatureIndices = new Uint32Array(visibleArrows.length)
 
@@ -303,7 +233,6 @@ export async function executeRenderFeatureData({
     arrowXs[i] = Math.max(0, arrow.x)
     arrowYs[i] = arrow.y
     arrowDirections[i] = arrow.direction
-    arrowHeights[i] = arrow.height
     writeColorBytes(arrowColors, i, arrow.color)
     arrowFeatureIndices[i] = arrow.flatbushIdx
   }
@@ -326,7 +255,6 @@ export async function executeRenderFeatureData({
     arrowXs,
     arrowYs,
     arrowDirections,
-    arrowHeights,
     arrowColors,
     numArrows: visibleArrows.length,
 
@@ -360,7 +288,6 @@ export async function executeRenderFeatureData({
     result.arrowXs.buffer,
     result.arrowYs.buffer,
     result.arrowDirections.buffer,
-    result.arrowHeights.buffer,
     result.arrowColors.buffer,
     result.arrowFeatureIndices.buffer,
   ] as ArrayBuffer[]

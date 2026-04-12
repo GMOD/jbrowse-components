@@ -64,7 +64,7 @@ export class Canvas2DVariantMatrixRenderer implements VariantMatrixBackend {
 
       const x = featureIdx * cellWidth
       const y = rowIdx * rowHeight - scrollTop
-      const w = Math.max(1, cellWidth)
+      const w = Math.max(2, cellWidth)
 
       if (y + rowHeight < 0 || y > canvasHeight) {
         continue

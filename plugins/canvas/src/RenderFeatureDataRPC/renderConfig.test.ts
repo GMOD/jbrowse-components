@@ -1,89 +1,56 @@
-import { readCachedConfig } from './renderConfig.ts'
+import { isLabelAllowed, readConfigValue } from './renderConfig.ts'
+import { mockDisplayConfig } from './testUtils.ts'
 
-import type { CachedConfig } from './renderConfig.ts'
+function mockFeature(data: Record<string, unknown> = {}) {
+  return {
+    get: (key: string) => data[key],
+    id: () => 'test-id',
+    parent: () => undefined,
+  } as any
+}
 
-describe('CachedConfig', () => {
-  describe('readCachedConfig', () => {
-    const mockFeature = {
-      get: (key: string) => {
-        if (key === 'name') {
-          return 'TestFeature'
-        }
-        return undefined
-      },
-    }
+const anyFeature = mockFeature()
 
-    it('returns cached value when isCallback is false', () => {
-      const cached: CachedConfig<string> = {
-        value: 'cachedColor',
-        isCallback: false,
-      }
-
-      const result = readCachedConfig(
-        cached,
-        {} as any, // config not used when isCallback is false
-        'color1',
-        mockFeature as any,
-      )
-
-      expect(result).toBe('cachedColor')
-    })
-
-    it('calls readConfObject when isCallback is true', () => {
-      const cached: CachedConfig<string> = {
-        value: 'defaultColor',
-        isCallback: true,
-      }
-
-      // Since readConfObject is complex, we test the structure
-      // The actual readConfObject call is tested in core
-      expect(cached.isCallback).toBe(true)
-    })
-
-    it('returns cached number value', () => {
-      const cached: CachedConfig<number> = {
-        value: 10,
-        isCallback: false,
-      }
-
-      const result = readCachedConfig(
-        cached,
-        {} as any,
-        'height',
-        mockFeature as any,
-      )
-
-      expect(result).toBe(10)
-    })
-
-    it('uses default value for cached callbacks', () => {
-      const cached: CachedConfig<number> = {
-        value: 12, // default value used when isCallback is true
-        isCallback: true,
-      }
-
-      // When isCallback is true, the value field contains the default
-      expect(cached.value).toBe(12)
-    })
+describe('readConfigValue', () => {
+  it('returns value when present', () => {
+    expect(readConfigValue({ color1: 'red' }, 'color1', anyFeature)).toBe('red')
   })
 
-  describe('CachedConfig structure', () => {
-    it('has correct shape for non-callback', () => {
-      const config: CachedConfig<string> = {
-        value: 'goldenrod',
-        isCallback: false,
-      }
-      expect(config.value).toBe('goldenrod')
-      expect(config.isCallback).toBe(false)
-    })
+  it('returns undefined when key is missing', () => {
+    expect(readConfigValue({}, 'color1', anyFeature)).toBeUndefined()
+  })
 
-    it('has correct shape for callback', () => {
-      const config: CachedConfig<string> = {
-        value: 'defaultValue',
-        isCallback: true,
-      }
-      expect(config.value).toBe('defaultValue')
-      expect(config.isCallback).toBe(true)
-    })
+  it('evaluates JEXL expression per-feature', () => {
+    const config = {
+      color1: "jexl:get(feature,'type')=='SNV'?'green':'purple'",
+    }
+    expect(
+      readConfigValue(config, 'color1', mockFeature({ type: 'SNV' })),
+    ).toBe('green')
+    expect(
+      readConfigValue(config, 'color1', mockFeature({ type: 'insertion' })),
+    ).toBe('purple')
+  })
+
+  it('resolves nested keys', () => {
+    expect(
+      readConfigValue(
+        { labels: { fontSize: 14 } },
+        ['labels', 'fontSize'],
+        anyFeature,
+      ),
+    ).toBe(14)
+  })
+})
+
+describe('isLabelAllowed', () => {
+  it('returns true for normal mode', () => {
+    expect(isLabelAllowed(mockDisplayConfig())).toBe(true)
+  })
+
+  it('returns false for collapse mode', () => {
+    expect(isLabelAllowed(mockDisplayConfig({ displayMode: 'collapse' }))).toBe(
+      false,
+    )
   })
 })

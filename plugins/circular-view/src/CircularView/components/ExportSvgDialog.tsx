@@ -17,7 +17,6 @@ import {
 } from '@mui/material'
 
 import type { ExportSvgOptions } from '../model.ts'
-import type { TextFieldProps } from '@mui/material'
 
 function LoadingMessage({ format }: { format: string }) {
   return (
@@ -26,14 +25,6 @@ function LoadingMessage({ format }: { format: string }) {
       <Typography sx={{ display: 'inline' }}>
         Creating {format.toUpperCase()}
       </Typography>
-    </div>
-  )
-}
-
-function TextField2({ children, ...rest }: TextFieldProps) {
-  return (
-    <div>
-      <TextField {...rest}>{children}</TextField>
     </div>
   )
 }
@@ -96,23 +87,22 @@ export default function ExportSvgDialog({
         </div>
 
         {session.allThemes ? (
-          <TextField2
-            select
-            label="Theme"
-            value={themeName}
-            onChange={event => {
-              setThemeName(event.target.value)
-            }}
-          >
-            {Object.entries(session.allThemes()).map(([key, val]) => (
-              <MenuItem key={key} value={key}>
-                {
-                  // @ts-expect-error
-                  val.name || '(Unknown name)'
-                }
-              </MenuItem>
-            ))}
-          </TextField2>
+          <div>
+            <TextField
+              select
+              label="Theme"
+              value={themeName}
+              onChange={event => {
+                setThemeName(event.target.value)
+              }}
+            >
+              {Object.entries(session.allThemes()).map(([key, val]) => (
+                <MenuItem key={key} value={key}>
+                  {(val as { name?: string }).name ?? '(Unknown name)'}
+                </MenuItem>
+              ))}
+            </TextField>
+          </div>
         ) : null}
         {offscreenCanvas ? (
           <FormControlLabel

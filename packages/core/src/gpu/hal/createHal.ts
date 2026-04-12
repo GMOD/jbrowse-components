@@ -11,7 +11,7 @@ export async function createGpuHal(
 ): Promise<GpuHal | null> {
   const override = getGpuOverride()
 
-  if (override === 'canvas2d' || override === 'off') {
+  if (override === 'canvas2d' || override === 'canvas') {
     // eslint-disable-next-line no-console
     console.log('[GPU] Rendering disabled via URL parameter')
     return null
@@ -26,8 +26,7 @@ export async function createGpuHal(
         return webgpu
       }
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.log(
+      console.warn(
         '[GPU] WebGPU initialization failed, falling back to WebGL2:',
         e,
       )

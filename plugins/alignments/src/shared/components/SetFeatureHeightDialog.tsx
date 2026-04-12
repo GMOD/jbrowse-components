@@ -17,12 +17,12 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
     setFeatureHeight: (arg?: number) => void
     setNoSpacing: (arg?: boolean) => void
     featureHeightSetting: number
-    noSpacing?: boolean
+    noSpacingSetting?: boolean
   }
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const { featureHeightSetting, noSpacing: noSpacingSetting } = model
+  const { featureHeightSetting, noSpacingSetting } = model
   const [height, setHeight] = useState(`${featureHeightSetting}`)
   const [noSpacing, setNoSpacing] = useState(noSpacingSetting)
 

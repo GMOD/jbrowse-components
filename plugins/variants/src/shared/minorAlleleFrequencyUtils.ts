@@ -1,14 +1,14 @@
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import {
+  buildAlleleCounts,
   calculateAlleleCountsFromRaw,
   getRawCallGenotype,
 } from './rawGenotypes.ts'
+import { GENOTYPE_SPLITTER } from './constants.ts'
 
 import type VcfFeature from '../VcfFeature/index.ts'
 import type { Feature, LastStopTokenCheck } from '@jbrowse/core/util'
-
-const GENOTYPE_SPLIT_REGEX = /[/|]/
 const SLASH = 47
 const PIPE = 124
 
@@ -90,7 +90,7 @@ export function calculateAlleleCountsFast(
 
     // General case: polyploid or multi-digit alleles
     const gt = str.slice(start, end)
-    const alleles = gt.split(GENOTYPE_SPLIT_REGEX)
+    const alleles = gt.split(GENOTYPE_SPLITTER)
     for (const allele of alleles) {
       if (allele === '0') {
         count0++
@@ -108,26 +108,7 @@ export function calculateAlleleCountsFast(
     }
   })
 
-  const result = {} as Record<string, number>
-  if (count0 > 0) {
-    result['0'] = count0
-  }
-  if (count1 > 0) {
-    result['1'] = count1
-  }
-  if (count2 > 0) {
-    result['2'] = count2
-  }
-  if (count3 > 0) {
-    result['3'] = count3
-  }
-  if (countDot > 0) {
-    result['.'] = countDot
-  }
-  for (const key in otherCounts) {
-    result[key] = otherCounts[key]!
-  }
-  return result
+  return buildAlleleCounts(count0, count1, count2, count3, countDot, otherCounts)
 }
 
 /**
@@ -200,7 +181,7 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
     }
 
     // General case: polyploid or multi-digit alleles
-    const alleles = genotype.split(GENOTYPE_SPLIT_REGEX)
+    const alleles = genotype.split(GENOTYPE_SPLITTER)
     for (const allele of alleles) {
       if (allele === '0') {
         count0++
@@ -218,26 +199,7 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
     }
   }
 
-  const result = {} as Record<string, number>
-  if (count0 > 0) {
-    result['0'] = count0
-  }
-  if (count1 > 0) {
-    result['1'] = count1
-  }
-  if (count2 > 0) {
-    result['2'] = count2
-  }
-  if (count3 > 0) {
-    result['3'] = count3
-  }
-  if (countDot > 0) {
-    result['.'] = countDot
-  }
-  for (const key in otherCounts) {
-    result[key] = otherCounts[key]!
-  }
-  return result
+  return buildAlleleCounts(count0, count1, count2, count3, countDot, otherCounts)
 }
 
 export function calculateMinorAlleleFrequency(

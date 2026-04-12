@@ -63,7 +63,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        showHeader: false,
+        showHeader: true,
         /**
          * #property
          */
@@ -545,7 +545,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ...(!showIntraviewLinks ? { showIntraviewLinks } : {}),
         ...(linkViews ? { linkViews } : {}),
         ...(!interactiveOverlay ? { interactiveOverlay } : {}),
-        ...(showHeader ? { showHeader } : {}),
+        ...(!showHeader ? { showHeader } : {}),
       } as typeof snap
     })
 }

@@ -119,6 +119,7 @@ describe('GfaAdapter getSubgraph', () => {
   })
 
   it('returns empty string for non-overlapping region', async () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const adapter = makeAdapter(pangenomePath)
     const result = await adapter.getSubgraph({
       refName: 'chr1',
@@ -126,11 +127,13 @@ describe('GfaAdapter getSubgraph', () => {
       end: 100000,
       assemblyName: 'ref#1',
     })
+    warnSpy.mockRestore()
 
     expect(result).toBe('')
   })
 
   it('returns empty string for nonexistent refName', async () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const adapter = makeAdapter(pangenomePath)
     const result = await adapter.getSubgraph({
       refName: 'nonexistent',
@@ -138,11 +141,13 @@ describe('GfaAdapter getSubgraph', () => {
       end: 1000,
       assemblyName: 'ref#1',
     })
+    warnSpy.mockRestore()
 
     expect(result).toBe('')
   })
 
   it('returns empty string for nonexistent assemblyName', async () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const adapter = makeAdapter(pangenomePath)
     const result = await adapter.getSubgraph({
       refName: 'chr1',
@@ -150,6 +155,7 @@ describe('GfaAdapter getSubgraph', () => {
       end: 1000,
       assemblyName: 'nonexistent',
     })
+    warnSpy.mockRestore()
 
     expect(result).toBe('')
   })

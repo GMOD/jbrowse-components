@@ -35,6 +35,12 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           return
         }
 
+        // SYNC across model-driven GPU displays (dotplot, linear synteny,
+        // multi-LGV synteny): tabVisibilityVersion is a counter incremented
+        // by bumpTabVisibility() when the tab becomes visible again (WebGPU
+        // discards the swap-chain on hide). Reading it here creates a MobX
+        // dependency so this draw autorun re-fires on restore.
+        // Component calls useTabVisibilityRerender(() => bumpTabVisibility()).
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _tvv = self.tabVisibilityVersion
         const {
@@ -49,7 +55,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const height = self.height
         const width = view.width
 
-        if (!self.gpuRenderer || !self.gpuInitialized) {
+        if (!self.gpuRenderer) {
           return
         }
 
@@ -135,6 +141,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const drawCIGAR = view.drawCIGAR
         const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
         const drawLocationMarkers = view.drawLocationMarkers
+        const chainMerge = view.chainMerge
 
         if (debounceTimer) {
           clearTimeout(debounceTimer)
@@ -146,7 +153,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const thisStopToken = createStopToken()
         currentStopToken = thisStopToken
 
-        self.setFetchStopToken(thisStopToken)
         debounceTimer = setTimeout(async () => {
           try {
             const { level, adapterConfig } = self
@@ -193,6 +199,12 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
                 drawCIGAR,
                 drawCIGARMatchesOnly,
                 drawLocationMarkers,
+                chainMerge,
+                statusCallback: (msg: string) => {
+                  if (isAlive(self)) {
+                    self.setStatusMessage(msg)
+                  }
+                },
               },
             )
 
@@ -212,7 +224,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             }
           } finally {
             if (isAlive(self) && thisStopToken === currentStopToken) {
-              self.setFetchStopToken(undefined)
+              self.setStatusMessage(undefined)
             }
           }
         }, 300)

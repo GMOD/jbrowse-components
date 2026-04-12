@@ -6,7 +6,7 @@ import { addRelativeUris } from './addRelativeUris.ts'
 import { resolve } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { FileLocation } from '@jbrowse/core/util'
+import type { UriLocation } from '@jbrowse/core/util'
 
 export async function doConnect(self: {
   configuration: AnyConfigurationModel
@@ -17,16 +17,14 @@ export async function doConnect(self: {
     const configJsonLocation = getConf(
       self,
       'configJsonLocation',
-    ) as FileLocation
+    ) as UriLocation
 
     const configJson = JSON.parse(
       await openLocation(configJsonLocation).readFile('utf8'),
     )
     const configUri = resolve(
-      // @ts-expect-error
       configJsonLocation.uri,
-      // @ts-expect-error
-      configJsonLocation.baseUri,
+      configJsonLocation.baseUri ?? '',
     )
     addRelativeUris(configJson, new URL(configUri))
     if (configJson.assemblies) {

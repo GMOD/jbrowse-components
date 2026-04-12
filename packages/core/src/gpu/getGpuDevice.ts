@@ -1,22 +1,14 @@
 /// <reference types="@webgpu/types" />
 
 let device: GPUDevice | null = null
+// devicePromise serializes concurrent calls during async init and after recovery.
 let devicePromise: Promise<GPUDevice | null> | null = null
-const deviceLostListeners = new WeakMap<GPUDevice, Set<() => void>>()
+const deviceLostListeners = new Set<() => void>()
 
 export function onDeviceLost(listener: () => void) {
-  if (device) {
-    let listeners = deviceLostListeners.get(device)
-    if (!listeners) {
-      listeners = new Set()
-      deviceLostListeners.set(device, listeners)
-    }
-    listeners.add(listener)
-  }
+  deviceLostListeners.add(listener)
   return () => {
-    if (device) {
-      deviceLostListeners.get(device)?.delete(listener)
-    }
+    deviceLostListeners.delete(listener)
   }
 }
 
@@ -60,11 +52,8 @@ async function createDevice(): Promise<GPUDevice | null> {
       console.error('[GPU] Device lost:', info.message)
       device = null
       devicePromise = null
-      const listeners = deviceLostListeners.get(d)
-      if (listeners) {
-        for (const listener of listeners) {
-          listener()
-        }
+      for (const listener of deviceLostListeners) {
+        listener()
       }
     })
     device = d
@@ -79,15 +68,21 @@ let gpuOverride: string | null | undefined
 
 export function getGpuOverride() {
   if (gpuOverride === undefined) {
-    gpuOverride =
-      new URLSearchParams(window.location.search).get('renderer') ?? null
+    // Guarded: workers have no `window`, and this is reachable from the LD
+    // matrix RPC path (plugins/variants/VariantRPC/getLDMatrixGPU.ts).
+    const search = typeof window !== 'undefined' ? window.location.search : ''
+    gpuOverride = new URLSearchParams(search).get('renderer') ?? null
   }
   return gpuOverride
 }
 
 export default function getGpuDevice() {
   const override = getGpuOverride()
-  if (override === 'webgl' || override === 'off' || override === 'canvas2d') {
+  if (
+    override === 'webgl' ||
+    override === 'canvas2d' ||
+    override === 'canvas'
+  ) {
     return Promise.resolve(null)
   }
   if (device) {

@@ -5,7 +5,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { renderSvg } from './renderSvg.tsx'
 
-import type { DotplotRenderer } from './DotplotRenderer.ts'
+import type { DotplotBackend } from './dotplotBackendTypes.ts'
 import type { DotplotFeatPos } from './types.ts'
 import type { ExportSvgOptions } from '../DotplotView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -51,11 +51,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           /**
            * #volatile
            */
-          gpuRenderer: null as DotplotRenderer | null,
-          /**
-           * #volatile
-           */
-          gpuInitialized: false,
+          gpuRenderer: null as DotplotBackend | null,
           /**
            * #volatile
            * alpha transparency value for synteny drawing (0-1)
@@ -77,12 +73,16 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            */
           featPositionsBpPerPxV: 0,
           canvasDrawn: false,
+          tabVisibilityVersion: 0,
           fetchStopToken: undefined as StopToken | undefined,
         })),
     )
     .views(self => ({
       get isLoading() {
-        return self.fetchStopToken !== undefined
+        return self.fetchStopToken !== undefined && !self.features
+      },
+      get isRefetching() {
+        return self.fetchStopToken !== undefined && !!self.features
       },
       /**
        * #getter
@@ -143,17 +143,14 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setGpuRenderer(renderer: DotplotRenderer | null) {
+      setGpuRenderer(renderer: DotplotBackend | null) {
         self.gpuRenderer = renderer
-      },
-      /**
-       * #action
-       */
-      setGpuInitialized(value: boolean) {
-        self.gpuInitialized = value
       },
       setCanvasDrawn(value: boolean) {
         self.canvasDrawn = value
+      },
+      bumpTabVisibility() {
+        self.tabVisibilityVersion++
       },
       /**
        * #action
