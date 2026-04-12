@@ -12,6 +12,7 @@ import {
   RENDERING_TYPE_SCATTER,
   SCALE_TYPE_LOG,
 } from './wiggleShader.ts'
+import { computeNumRows } from './webglUtils.ts'
 
 import type {
   SourceRenderData,
@@ -70,15 +71,11 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
       return
     }
 
-    let numRows = 0
-    for (const [i, source] of sources.entries()) {
-      const r = (source.rowIndex ?? i) + 1
-      if (r > numRows) {
-        numRows = r
-      }
-    }
-
-    this.regions.set(regionNumber, { regionStart, sources, numRows })
+    this.regions.set(regionNumber, {
+      regionStart,
+      sources,
+      numRows: computeNumRows(sources),
+    })
   }
 
   renderBlocks(blocks: WiggleRenderBlock[], renderState: WiggleGPURenderState) {
@@ -109,8 +106,8 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
       const numRows = region.numRows
       const rowHeight = canvasHeight / numRows
 
-      for (const [idx, source] of region.sources.entries()) {
-        const row = source.rowIndex ?? idx
+      for (const source of region.sources) {
+        const row = source.rowIndex
         const [r, g, b] = source.color
         const params: DrawParams = {
           ctx,

@@ -307,9 +307,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
               model.setFeatureUnderMouse(undefined)
             } else {
               const sourceName = sources[rowIdx]!.name
-              const rpcSource = data.sources.find(
-                (s: MultiWiggleSourceData) => s.name === sourceName,
-              )
+              const rpcSource = data.sources.find(s => s.name === sourceName)
               if (!rpcSource) {
                 model.setFeatureUnderMouse(undefined)
               } else {

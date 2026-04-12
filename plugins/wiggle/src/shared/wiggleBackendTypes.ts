@@ -19,7 +19,7 @@ export interface SourceRenderData {
   featureScores: Float32Array
   numFeatures: number
   color: [number, number, number]
-  rowIndex?: number
+  rowIndex: number
 }
 
 export interface WiggleBackend {

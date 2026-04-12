@@ -71,6 +71,7 @@ export function buildSourceRenderData(
         featureScores: scores,
         numFeatures: data.numFeatures,
         color,
+        rowIndex: 0,
       },
     ]
   }

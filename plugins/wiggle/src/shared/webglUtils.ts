@@ -25,7 +25,7 @@ export function interleaveInstances(
   let offset = 0
   for (let idx = 0; idx < sources.length; idx++) {
     const source = sources[idx]!
-    const row = source.rowIndex ?? idx
+    const row = source.rowIndex
     const cr = source.color[0]
     const cg = source.color[1]
     const cb = source.color[2]
@@ -50,8 +50,8 @@ export function interleaveInstances(
 
 export function computeNumRows(sources: SourceRenderData[]) {
   let numRows = 0
-  for (const [i, source] of sources.entries()) {
-    const r = (source.rowIndex ?? i) + 1
+  for (const source of sources) {
+    const r = source.rowIndex + 1
     if (r > numRows) {
       numRows = r
     }
