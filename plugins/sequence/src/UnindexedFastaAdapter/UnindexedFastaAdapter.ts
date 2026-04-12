@@ -6,7 +6,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
-import type { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
+import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 function parseSmallFasta(text: string) {
   return new Map(
@@ -48,9 +48,11 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter {
   }
 
   public async setupPre(_opts?: BaseOptions) {
-    const fastaLocation = this.getConf('fastaLocation') as FileLocation
     const res = parseSmallFasta(
-      await openLocation(fastaLocation, this.pluginManager).readFile('utf8'),
+      await openLocation(
+        this.getConf('fastaLocation'),
+        this.pluginManager,
+      ).readFile('utf8'),
     )
 
     const fasta = new Map<string, { description: string; sequence: string }>()

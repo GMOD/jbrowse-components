@@ -7,9 +7,11 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
+import { refSizesToRegions } from '../chromSizesUtils.ts'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
-import type { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
+import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 interface T {
   refName: string
@@ -36,22 +38,14 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
 
   public async getRegions(_opts?: BaseOptions) {
     const { fasta } = await this.setup()
-    const seqSizes = await fasta.getSequenceSizes()
-    return Object.keys(seqSizes).map(refName => ({
-      refName,
-      start: 0,
-      end: seqSizes[refName]!,
-    }))
+    return refSizesToRegions(await fasta.getSequenceSizes())
   }
 
   public async setupPre() {
-    const fastaLocation = this.getConf('fastaLocation') as FileLocation
-    const faiLocation = this.getConf('faiLocation') as FileLocation
-
     return {
       fasta: new IndexedFasta({
-        fasta: openLocation(fastaLocation, this.pluginManager),
-        fai: openLocation(faiLocation, this.pluginManager),
+        fasta: openLocation(this.getConf('fastaLocation'), this.pluginManager),
+        fai: openLocation(this.getConf('faiLocation'), this.pluginManager),
       }),
     }
   }
