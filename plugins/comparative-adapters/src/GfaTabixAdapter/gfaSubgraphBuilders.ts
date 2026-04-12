@@ -1,4 +1,4 @@
-import { ORIENT_FWD, getEdgesForOrdinals } from './gfaBinaryIO.ts'
+import { getEdgesForOrdinals, orientChar } from './gfaBinaryIO.ts'
 
 import type { IndexedBinaryShard, SegRecord } from './gfaBinaryIO.ts'
 
@@ -15,8 +15,8 @@ export async function buildGfaFromEdges(
     for (const edge of edges) {
       allNodeOrds.add(edge.targetOrd)
       segLens.set(edge.targetOrd, edge.tgtLen)
-      const srcO = edge.srcOrient === ORIENT_FWD ? '+' : '-'
-      const tgtO = edge.tgtOrient === ORIENT_FWD ? '+' : '-'
+      const srcO = orientChar(edge.srcOrient)
+      const tgtO = orientChar(edge.tgtOrient)
       gfaLinks.add(`L\ts${srcOrd}\t${srcO}\ts${edge.targetOrd}\t${tgtO}\t*`)
     }
   }
@@ -28,8 +28,8 @@ export async function buildGfaFromEdges(
     for (const [srcOrd, edges] of altEdgeMap) {
       for (const edge of edges) {
         if (allNodeOrds.has(edge.targetOrd)) {
-          const srcO = edge.srcOrient === ORIENT_FWD ? '+' : '-'
-          const tgtO = edge.tgtOrient === ORIENT_FWD ? '+' : '-'
+          const srcO = orientChar(edge.srcOrient)
+          const tgtO = orientChar(edge.tgtOrient)
           gfaLinks.add(`L\ts${srcOrd}\t${srcO}\ts${edge.targetOrd}\t${tgtO}\t*`)
         }
       }
@@ -131,8 +131,8 @@ export function buildGfaFromPathInference(
     for (let i = 0; i < sorted.length - 1; i++) {
       const a = sorted[i]!
       const b = sorted[i + 1]!
-      const oA = a.orient === ORIENT_FWD ? '+' : '-'
-      const oB = b.orient === ORIENT_FWD ? '+' : '-'
+      const oA = orientChar(a.orient)
+      const oB = orientChar(b.orient)
       links.add(`L\ts${a.segOrd}\t${oA}\ts${b.segOrd}\t${oB}\t*`)
     }
   }
@@ -150,7 +150,7 @@ export function buildGfaFromPathInference(
       continue
     }
     const walk = sorted
-      .map(s => `s${s.segOrd}${s.orient === ORIENT_FWD ? '+' : '-'}`)
+      .map(s => `s${s.segOrd}${orientChar(s.orient)}`)
       .join(',')
     lines.push(`P\t${pathName}\t${walk}\t*`)
   }

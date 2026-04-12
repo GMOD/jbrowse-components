@@ -125,41 +125,23 @@ interface BlastRecord extends BlastColumns {
   send: number
 }
 
+const REQUIRED_COLUMNS = ['qseqid', 'sseqid', 'qstart', 'qend', 'sstart', 'send'] as const
+
 function createBlastLineParser(columns: string) {
   const columnNames = columns.trim().split(' ') as (keyof BlastRecord)[]
-  const qseqidIndex = columnNames.indexOf('qseqid')
-  if (qseqidIndex === -1) {
-    throw new Error('Missing required column "qseqid"')
+  const requiredIndices = {} as Record<(typeof REQUIRED_COLUMNS)[number], number>
+  for (const col of REQUIRED_COLUMNS) {
+    const idx = columnNames.indexOf(col)
+    if (idx === -1) {
+      throw new Error(`Missing required column "${col}"`)
+    }
+    requiredIndices[col] = idx
   }
-  const sseqidIndex = columnNames.indexOf('sseqid')
-  if (sseqidIndex === -1) {
-    throw new Error('Missing required column "sseqid"')
-  }
-  const qstartIndex = columnNames.indexOf('qstart')
-  if (qstartIndex === -1) {
-    throw new Error('Missing required column "qstart"')
-  }
-  const qendIndex = columnNames.indexOf('qend')
-  if (qendIndex === -1) {
-    throw new Error('Missing required column "qend"')
-  }
-  const sstartIndex = columnNames.indexOf('sstart')
-  if (sstartIndex === -1) {
-    throw new Error('Missing required column "sstart"')
-  }
-  const sendIndex = columnNames.indexOf('send')
-  if (sendIndex === -1) {
-    throw new Error('Missing required column "send"')
-  }
+  const { qseqid: qseqidIndex, sseqid: sseqidIndex, qstart: qstartIndex, qend: qendIndex, sstart: sstartIndex, send: sendIndex } = requiredIndices
   const columnNameSet = new Map<string, number>(
     columnNames
       .map((c, idx) => [c, idx] as const)
-      .filter(
-        f =>
-          !['qseqid', 'sseqid', 'qstart', 'qend', 'sstart', 'send'].includes(
-            f[0],
-          ),
-      ),
+      .filter(f => !REQUIRED_COLUMNS.includes(f[0] as (typeof REQUIRED_COLUMNS)[number])),
   )
   return (line: string): BlastRecord | undefined => {
     if (line.startsWith('#')) {

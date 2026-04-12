@@ -3,6 +3,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
+import { parseGfaPathName } from '../GfaTabixAdapter/gfaBinaryIO.ts'
 
 import type { MultiPairFeature } from '../MultiPairFeature.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -38,17 +39,6 @@ interface ParsedGfa {
   paths: GfaPathEntry[]
   genomes: string[]
   chromSizes: Map<string, { refName: string; length: number }[]>
-}
-
-function parseGfaPathName(path: string) {
-  const parts = path.split('#')
-  if (parts.length >= 3) {
-    return {
-      genome: parts.slice(0, -1).join('#'),
-      refName: parts[parts.length - 1]!,
-    }
-  }
-  return { genome: parts[0]!, refName: parts[1] ?? parts[0]! }
 }
 
 function parseGfa(text: string) {

@@ -23,6 +23,10 @@ export interface EdgeRecord {
 
 export const ORIENT_FWD = 0x2b // '+'
 
+export function orientChar(o: number) {
+  return o === ORIENT_FWD ? '+' : '-'
+}
+
 const RECORD_SIZE = 15
 const EDGE_RECORD_SIZE = 10
 const MERGE_GAP = 65_000
@@ -50,7 +54,7 @@ export function parseSegmentsBinary(buf: Uint8Array) {
       pathNameIdx: dv.getUint16(off + 4, true),
       offset: dv.getUint32(off + 6, true),
       segLen: dv.getUint32(off + 10, true),
-      orient: buf[buf.byteOffset + off + 14]!,
+      orient: buf[off + 14]!,
     }
   }
   return records
@@ -64,8 +68,8 @@ export function parseEdgesBinary(buf: Uint8Array) {
     const off = i * EDGE_RECORD_SIZE
     records[i] = {
       targetOrd: dv.getUint32(off, true),
-      srcOrient: buf[buf.byteOffset + off + 4]!,
-      tgtOrient: buf[buf.byteOffset + off + 5]!,
+      srcOrient: buf[off + 4]!,
+      tgtOrient: buf[off + 5]!,
       tgtLen: dv.getUint32(off + 6, true),
     }
   }
