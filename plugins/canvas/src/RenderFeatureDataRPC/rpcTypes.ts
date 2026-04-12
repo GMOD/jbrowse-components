@@ -79,9 +79,6 @@ export interface FeatureDataResult {
 
   // Number of top-level features in this region (used for density calculations)
   featureCount: number
-
-  // Layout info (computed on main thread after layout pass)
-  maxY: number
 }
 
 export type RegionRenderData = Pick<

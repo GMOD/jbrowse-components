@@ -235,14 +235,6 @@ export function fillYArrays(
     }
   }
 
-  let maxY = 0
-  for (const item of data.flatbushItems) {
-    if (item.bottomPx > maxY) {
-      maxY = item.bottomPx
-    }
-  }
-  data.maxY = maxY
-
   data.flatbushItems = [...data.flatbushItems]
   data.subfeatureInfos = [...data.subfeatureInfos]
 }

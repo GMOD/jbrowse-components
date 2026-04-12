@@ -17,8 +17,6 @@ describe('floatingLabels', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
         config: baseConfig,
-        nameColor: 'black',
-        descriptionColor: 'blue',
         name: 'Gene1',
         description: 'A gene',
       })
@@ -32,8 +30,6 @@ describe('floatingLabels', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
         config: baseConfig,
-        nameColor: 'black',
-        descriptionColor: 'blue',
         name: '   ',
         description: '   ',
       })
@@ -45,8 +41,6 @@ describe('floatingLabels', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
         config: baseConfig,
-        nameColor: 'black',
-        descriptionColor: 'blue',
         name: 'Gene1',
         description: 'A gene',
       })
@@ -58,8 +52,6 @@ describe('floatingLabels', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
         config: baseConfig,
-        nameColor: 'black',
-        descriptionColor: 'blue',
         name: 'Gene1',
         description: 'A gene',
       })
@@ -71,8 +63,6 @@ describe('floatingLabels', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
         config: baseConfig,
-        nameColor: 'black',
-        descriptionColor: 'blue',
         name: 'Gene1',
         description: '',
       })
@@ -84,8 +74,6 @@ describe('floatingLabels', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
         config: baseConfig,
-        nameColor: 'black',
-        descriptionColor: 'blue',
         name: '',
         description: 'A gene',
       })
@@ -100,7 +88,6 @@ describe('floatingLabels', () => {
       displayLabel: 'Test Transcript',
       featureHeight: 10,
       subfeatureLabels: 'below',
-      color: '#000000',
       parentFeatureId: 'parent-gene-123',
       tooltip: 'Gene: BRCA1',
     }

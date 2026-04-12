@@ -26,7 +26,7 @@ import type { FeatureLayout, PeptideData } from './types.ts'
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 
-export interface RectData {
+interface RectData {
   startOffset: number
   endOffset: number
   y: number
@@ -35,7 +35,7 @@ export interface RectData {
   flatbushIdx: number
 }
 
-export interface LineData {
+interface LineData {
   startOffset: number
   endOffset: number
   y: number
@@ -44,7 +44,7 @@ export interface LineData {
   flatbushIdx: number
 }
 
-export interface ArrowData {
+interface ArrowData {
   x: number
   y: number
   direction: number
@@ -306,14 +306,35 @@ function emitExonRects(
   }
 }
 
-function emitTranscriptMetadata(
+function processTranscriptLayout(
   transcript: FeatureLayout,
   transcriptTopPx: number,
   parentFeature: Feature,
+  flatbushIdx: number,
   ctx: RenderContext,
   collector: Collector,
 ) {
   const transcriptFeature = transcript.feature
+  const transcriptStrand = transcriptFeature.get('strand') ?? 0
+  const strokeColor = getStrokeColor({
+    feature: transcriptFeature,
+    config: ctx.config,
+    theme: ctx.theme,
+  })
+  const strokeUint = colorToUint32(strokeColor)
+
+  emitIntronLines(
+    transcript,
+    transcriptTopPx,
+    strokeUint,
+    flatbushIdx,
+    ctx,
+    collector.lines,
+  )
+
+  emitExonRects(transcript, transcriptTopPx, ctx, flatbushIdx, collector)
+
+  // Transcript metadata: subfeature hit info + floating label
   const transcriptStart = transcriptFeature.get('start')
   const transcriptEnd = transcriptFeature.get('end')
   const parentName = getFeatureName(parentFeature)
@@ -354,7 +375,6 @@ function emitTranscriptMetadata(
       displayLabel: transcriptName,
       featureHeight: transcript.height,
       subfeatureLabels: config.subfeatureLabels,
-      color: 'black',
       parentFeatureId: parentFeature.id(),
       tooltip,
     })
@@ -370,47 +390,8 @@ function emitTranscriptMetadata(
       }
     }
   }
-}
-
-function processTranscriptLayout(
-  transcript: FeatureLayout,
-  transcriptTopPx: number,
-  parentFeature: Feature,
-  flatbushIdx: number,
-  ctx: RenderContext,
-  collector: Collector,
-) {
-  const transcriptFeature = transcript.feature
-  const transcriptStrand = transcriptFeature.get('strand') ?? 0
-  const strokeColor = getStrokeColor({
-    feature: transcriptFeature,
-    config: ctx.config,
-    theme: ctx.theme,
-  })
-  const strokeUint = colorToUint32(strokeColor)
-
-  emitIntronLines(
-    transcript,
-    transcriptTopPx,
-    strokeUint,
-    flatbushIdx,
-    ctx,
-    collector.lines,
-  )
-
-  emitExonRects(transcript, transcriptTopPx, ctx, flatbushIdx, collector)
-
-  emitTranscriptMetadata(
-    transcript,
-    transcriptTopPx,
-    parentFeature,
-    ctx,
-    collector,
-  )
 
   if (transcriptStrand !== 0) {
-    const transcriptEnd = transcriptFeature.get('end')
-    const transcriptStart = transcriptFeature.get('start')
     const arrowX = transcriptStrand === 1 ? transcriptEnd : transcriptStart
     collector.arrows.push({
       x: arrowX - ctx.regionStart,
@@ -438,8 +419,6 @@ function processFeatureRecord(
   const { nameLabel, descriptionLabel } = createFeatureFloatingLabels({
     feature,
     config: ctx.config,
-    nameColor: 'black',
-    descriptionColor: 'blue',
     name,
     description,
   })
@@ -559,9 +538,18 @@ function processDefaultLayout(
   }
 }
 
+function writeColorBytes(out: Uint8Array, index: number, color: number) {
+  const o = index * 4
+  out[o] = color & 0xff
+  out[o + 1] = (color >> 8) & 0xff
+  out[o + 2] = (color >> 16) & 0xff
+  out[o + 3] = (color >> 24) & 0xff
+}
+
 export function collectRenderData(
   layouts: FeatureLayout[],
   regionStart: number,
+  regionWidth: number,
   config: DisplayConfig,
   theme: Theme,
   colorByCDS: boolean,
@@ -589,5 +577,81 @@ export function collectRenderData(
     processFeatureRecord(layout, ctx, collector)
   }
 
-  return collector
+  const { rects, lines, arrows } = collector
+
+  const visibleRects = rects.filter(
+    r => r.endOffset > 0 && r.startOffset < regionWidth,
+  )
+  const visibleLines = lines.filter(
+    l => l.endOffset > 0 && l.startOffset < regionWidth,
+  )
+  const visibleArrows = arrows.filter(a => a.x >= 0 && a.x < regionWidth)
+
+  const rectPositions = new Uint32Array(visibleRects.length * 2)
+  const rectYs = new Float32Array(visibleRects.length)
+  const rectHeights = new Float32Array(visibleRects.length)
+  const rectColors = new Uint8Array(visibleRects.length * 4)
+  const rectFeatureIndices = new Uint32Array(visibleRects.length)
+
+  for (const [i, rect] of visibleRects.entries()) {
+    rectPositions[i * 2] = Math.max(0, rect.startOffset)
+    rectPositions[i * 2 + 1] = Math.max(0, rect.endOffset)
+    rectYs[i] = rect.y
+    rectHeights[i] = rect.height
+    writeColorBytes(rectColors, i, rect.color)
+    rectFeatureIndices[i] = rect.flatbushIdx
+  }
+
+  const linePositions = new Uint32Array(visibleLines.length * 2)
+  const lineYs = new Float32Array(visibleLines.length)
+  const lineColors = new Uint8Array(visibleLines.length * 4)
+  const lineDirections = new Int8Array(visibleLines.length)
+  const lineFeatureIndices = new Uint32Array(visibleLines.length)
+
+  for (const [i, line] of visibleLines.entries()) {
+    linePositions[i * 2] = Math.max(0, line.startOffset)
+    linePositions[i * 2 + 1] = Math.max(0, line.endOffset)
+    lineYs[i] = line.y
+    writeColorBytes(lineColors, i, line.color)
+    lineDirections[i] = line.direction
+    lineFeatureIndices[i] = line.flatbushIdx
+  }
+
+  const arrowXs = new Uint32Array(visibleArrows.length)
+  const arrowYs = new Float32Array(visibleArrows.length)
+  const arrowDirections = new Int8Array(visibleArrows.length)
+  const arrowColors = new Uint8Array(visibleArrows.length * 4)
+  const arrowFeatureIndices = new Uint32Array(visibleArrows.length)
+
+  for (const [i, arrow] of visibleArrows.entries()) {
+    arrowXs[i] = Math.max(0, arrow.x)
+    arrowYs[i] = arrow.y
+    arrowDirections[i] = arrow.direction
+    writeColorBytes(arrowColors, i, arrow.color)
+    arrowFeatureIndices[i] = arrow.flatbushIdx
+  }
+
+  return {
+    rectPositions,
+    rectYs,
+    rectHeights,
+    rectColors,
+    rectFeatureIndices,
+    linePositions,
+    lineYs,
+    lineColors,
+    lineDirections,
+    lineFeatureIndices,
+    arrowXs,
+    arrowYs,
+    arrowDirections,
+    arrowColors,
+    arrowFeatureIndices,
+    floatingLabelsData: collector.floatingLabelsData,
+    flatbushItems: collector.flatbushItems,
+    subfeatureInfos: collector.subfeatureInfos,
+    aminoAcidOverlay: collector.aminoAcidOverlay.length > 0
+      ? collector.aminoAcidOverlay
+      : undefined as AminoAcidOverlayItem[] | undefined,
+  }
 }

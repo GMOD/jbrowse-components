@@ -8,19 +8,17 @@ import type { LabelItem } from './rpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const FLOATING_LABEL_FONT_SIZE = 11
+const FEATURE_NAME_COLOR = 'black'
+const FEATURE_DESCRIPTION_COLOR = 'blue'
 
 export function createFeatureFloatingLabels({
   feature,
   config,
-  nameColor,
-  descriptionColor,
   name: rawName,
   description: rawDescription,
 }: {
   feature: Feature
   config: DisplayConfig
-  nameColor: string
-  descriptionColor: string
   name: string
   description: string
 }) {
@@ -38,7 +36,7 @@ export function createFeatureFloatingLabels({
     nameLabel = {
       text: name,
       relativeY: currentY,
-      color: nameColor,
+      color: FEATURE_NAME_COLOR,
       textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
     }
     currentY += readConfigValue<number>(config, ['labels', 'fontSize'], feature)
@@ -48,7 +46,7 @@ export function createFeatureFloatingLabels({
     descriptionLabel = {
       text: description,
       relativeY: currentY,
-      color: descriptionColor,
+      color: FEATURE_DESCRIPTION_COLOR,
       textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
     }
   }
@@ -60,14 +58,12 @@ export function createTranscriptFloatingLabel({
   displayLabel,
   featureHeight,
   subfeatureLabels,
-  color,
   parentFeatureId,
   tooltip,
 }: {
   displayLabel: string
   featureHeight: number
   subfeatureLabels: string
-  color: string
   parentFeatureId: string
   tooltip: string
 }) {
@@ -84,7 +80,7 @@ export function createTranscriptFloatingLabel({
     subfeatureLabel: {
       text: truncatedName,
       relativeY,
-      color,
+      color: FEATURE_NAME_COLOR,
       textWidth: measureText(truncatedName, FLOATING_LABEL_FONT_SIZE),
       isOverlay,
       tooltip,

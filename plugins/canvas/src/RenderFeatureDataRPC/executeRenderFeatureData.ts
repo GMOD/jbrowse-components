@@ -50,14 +50,6 @@ const workerTheme = {
   },
 } as Theme
 
-function writeColorBytes(out: Uint8Array, index: number, color: number) {
-  const o = index * 4
-  out[o] = color & 0xff
-  out[o + 1] = (color >> 8) & 0xff
-  out[o + 2] = (color >> 16) & 0xff
-  out[o + 3] = (color >> 24) & 0xff
-}
-
 export async function executeRenderFeatureData({
   pluginManager,
   args,
@@ -108,6 +100,7 @@ export async function executeRenderFeatureData({
   }
 
   const regionStart = Math.floor(region.start)
+  const regionWidth = Math.ceil(region.end - region.start)
   const bpPerPx = requestedBpPerPx || 1
 
   const features = new Map<string, Feature>()
@@ -154,18 +147,11 @@ export async function executeRenderFeatureData({
 
   checkStopToken2(stopTokenCheck)
 
-  const {
-    rects,
-    lines,
-    arrows,
-    floatingLabelsData,
-    flatbushItems,
-    subfeatureInfos,
-    aminoAcidOverlay,
-  } = await updateStatus('Collecting render data', statusCallback, () =>
+  const packed = await updateStatus('Collecting render data', statusCallback, () =>
     collectRenderData(
       layouts,
       regionStart,
+      regionWidth,
       displayConfig,
       workerTheme,
       !!colorByCDS,
@@ -175,91 +161,36 @@ export async function executeRenderFeatureData({
 
   checkStopToken2(stopTokenCheck)
 
-  const regionWidth = Math.ceil(region.end - region.start)
-  const visibleRects = rects.filter(
-    r => r.endOffset > 0 && r.startOffset < regionWidth,
-  )
-  const visibleLines = lines.filter(
-    l => l.endOffset > 0 && l.startOffset < regionWidth,
-  )
-  const visibleArrows = arrows.filter(a => a.x >= 0 && a.x < regionWidth)
-
-  const rectPositions = new Uint32Array(visibleRects.length * 2)
-  const rectYs = new Float32Array(visibleRects.length)
-  const rectHeights = new Float32Array(visibleRects.length)
-  const rectColors = new Uint8Array(visibleRects.length * 4)
-  const rectFeatureIndices = new Uint32Array(visibleRects.length)
-
-  for (const [i, rect] of visibleRects.entries()) {
-    rectPositions[i * 2] = Math.max(0, rect.startOffset)
-    rectPositions[i * 2 + 1] = Math.max(0, rect.endOffset)
-    rectYs[i] = rect.y
-    rectHeights[i] = rect.height
-    writeColorBytes(rectColors, i, rect.color)
-    rectFeatureIndices[i] = rect.flatbushIdx
-  }
-
-  const linePositions = new Uint32Array(visibleLines.length * 2)
-  const lineYs = new Float32Array(visibleLines.length)
-  const lineColors = new Uint8Array(visibleLines.length * 4)
-  const lineDirections = new Int8Array(visibleLines.length)
-  const lineFeatureIndices = new Uint32Array(visibleLines.length)
-
-  for (const [i, line] of visibleLines.entries()) {
-    linePositions[i * 2] = Math.max(0, line.startOffset)
-    linePositions[i * 2 + 1] = Math.max(0, line.endOffset)
-    lineYs[i] = line.y
-    writeColorBytes(lineColors, i, line.color)
-    lineDirections[i] = line.direction
-    lineFeatureIndices[i] = line.flatbushIdx
-  }
-
-  const arrowXs = new Uint32Array(visibleArrows.length)
-  const arrowYs = new Float32Array(visibleArrows.length)
-  const arrowDirections = new Int8Array(visibleArrows.length)
-  const arrowColors = new Uint8Array(visibleArrows.length * 4)
-  const arrowFeatureIndices = new Uint32Array(visibleArrows.length)
-
-  for (const [i, arrow] of visibleArrows.entries()) {
-    arrowXs[i] = Math.max(0, arrow.x)
-    arrowYs[i] = arrow.y
-    arrowDirections[i] = arrow.direction
-    writeColorBytes(arrowColors, i, arrow.color)
-    arrowFeatureIndices[i] = arrow.flatbushIdx
-  }
-
   const result: FeatureDataResult = {
     regionStart,
 
-    rectPositions,
-    rectYs,
-    rectHeights,
-    rectColors,
+    rectPositions: packed.rectPositions,
+    rectYs: packed.rectYs,
+    rectHeights: packed.rectHeights,
+    rectColors: packed.rectColors,
 
-    linePositions,
-    lineYs,
-    lineColors,
-    lineDirections,
+    linePositions: packed.linePositions,
+    lineYs: packed.lineYs,
+    lineColors: packed.lineColors,
+    lineDirections: packed.lineDirections,
 
-    arrowXs,
-    arrowYs,
-    arrowDirections,
-    arrowColors,
+    arrowXs: packed.arrowXs,
+    arrowYs: packed.arrowYs,
+    arrowDirections: packed.arrowDirections,
+    arrowColors: packed.arrowColors,
 
-    flatbushItems,
-    subfeatureInfos,
+    flatbushItems: packed.flatbushItems,
+    subfeatureInfos: packed.subfeatureInfos,
 
-    rectFeatureIndices,
-    lineFeatureIndices,
-    arrowFeatureIndices,
+    rectFeatureIndices: packed.rectFeatureIndices,
+    lineFeatureIndices: packed.lineFeatureIndices,
+    arrowFeatureIndices: packed.arrowFeatureIndices,
 
-    floatingLabelsData,
+    floatingLabelsData: packed.floatingLabelsData,
 
-    aminoAcidOverlay:
-      aminoAcidOverlay.length > 0 ? aminoAcidOverlay : undefined,
+    aminoAcidOverlay: packed.aminoAcidOverlay,
 
     featureCount: features.size,
-    maxY: 0,
   }
 
   const transferables = [

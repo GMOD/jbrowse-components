@@ -39,7 +39,6 @@ function makeEmptyFeatureData(regionStart: number): FeatureDataResult {
     arrowColors: new Uint8Array(0),
     arrowFeatureIndices: new Uint32Array(0),
     featureCount: 0,
-    maxY: 0,
   }
 }
 

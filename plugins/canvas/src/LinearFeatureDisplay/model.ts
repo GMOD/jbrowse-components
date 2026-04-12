@@ -61,13 +61,6 @@ import type {
   MultiRegionRegionWithNumber as RegionWithNumber,
 } from '@jbrowse/plugin-linear-genome-view'
 
-export interface ContextMenuFeatureInfo {
-  featureId: string
-  type: string
-  startBp: number
-  endBp: number
-  regionNumber: number
-}
 
 type LGV = LinearGenomeViewModel
 
@@ -197,7 +190,9 @@ export default function stateModelFactory(
       canvasDrawn: false,
       featureIdUnderMouse: null as string | null,
       mouseoverExtraInformation: undefined as string | undefined,
-      contextMenuInfo: undefined as ContextMenuFeatureInfo | undefined,
+      contextMenuInfo: undefined as
+        | { item: FlatbushItem; regionNumber: number }
+        | undefined,
       userFeatureDensityLimit: undefined as number | undefined,
       featureDensityPerPx: 0,
       heightBeforeExpand: undefined as number | undefined,
@@ -408,7 +403,11 @@ export default function stateModelFactory(
         self.rpcDataMap = dataMap
         let globalMaxY = 0
         for (const d of dataMap.values()) {
-          globalMaxY = Math.max(globalMaxY, d.maxY)
+          for (const item of d.flatbushItems) {
+            if (item.bottomPx > globalMaxY) {
+              globalMaxY = item.bottomPx
+            }
+          }
         }
         self.maxY = globalMaxY
         self.setScrollTop(0)
@@ -446,7 +445,9 @@ export default function stateModelFactory(
         self.mouseoverExtraInformation = info
       },
 
-      setContextMenuInfo(info?: ContextMenuFeatureInfo) {
+      setContextMenuInfo(
+        info?: { item: FlatbushItem; regionNumber: number },
+      ) {
         self.contextMenuInfo = info
       },
     }))
@@ -502,13 +503,7 @@ export default function stateModelFactory(
         featureInfo: FlatbushItem,
         regionNumber: number,
       ) {
-        self.setContextMenuInfo({
-          featureId: featureInfo.featureId,
-          type: featureInfo.type,
-          startBp: featureInfo.startBp,
-          endBp: featureInfo.endBp,
-          regionNumber,
-        })
+        self.setContextMenuInfo({ item: featureInfo, regionNumber })
       },
     }))
     .actions(self => ({
@@ -845,7 +840,7 @@ export default function stateModelFactory(
 
     .views(self => ({
       get isGeneLike() {
-        const type = (self.contextMenuInfo?.type ?? '').toLowerCase()
+        const type = (self.contextMenuInfo?.item.type ?? '').toLowerCase()
         return (
           type.includes('gene') ||
           type.includes('rna') ||
@@ -859,7 +854,7 @@ export default function stateModelFactory(
         if (!info) {
           return []
         }
-        const { featureId, startBp, endBp, regionNumber } = info
+        const { item: { featureId, startBp, endBp }, regionNumber } = info
         const region = self.loadedRegions.get(regionNumber)
         return [
           {
