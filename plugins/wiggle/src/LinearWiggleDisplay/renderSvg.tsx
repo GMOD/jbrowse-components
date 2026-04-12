@@ -6,6 +6,15 @@ import { when } from 'mobx'
 import DensityLegend from '../shared/DensityLegend.tsx'
 import YScaleBar from '../shared/YScaleBar.tsx'
 import { getDensityColor } from '../shared/getDensityColor.ts'
+import {
+  renderingTypeToInt,
+} from '../shared/wiggleComponentUtils.ts'
+import {
+  RENDERING_TYPE_DENSITY,
+  RENDERING_TYPE_LINE,
+  RENDERING_TYPE_SCATTER,
+  RENDERING_TYPE_XYPLOT,
+} from '../shared/wiggleShader.ts'
 import { YSCALEBAR_LABEL_OFFSET, getScale, isDefaultBicolor } from '../util.ts'
 
 import type { LinearWiggleDisplayModel } from './model.ts'
@@ -42,6 +51,7 @@ function renderToCtx(
   const offset = YSCALEBAR_LABEL_OFFSET
   const effectiveHeight = height - offset * 2
   const useBicolor = isDefaultBicolor(color)
+  const renderType = renderingTypeToInt(renderingType)
 
   const scale = getScale({
     scaleType,
@@ -61,7 +71,7 @@ function renderToCtx(
     const { featurePositions, featureScores, regionStart, numFeatures } = data
     const blockScreenX = block.offsetPx - offsetPx
 
-    if (renderingType === 'line') {
+    if (renderType === RENDERING_TYPE_LINE) {
       const strokeColor = useBicolor ? posColor : color
       ctx.beginPath()
       ctx.strokeStyle = strokeColor
@@ -99,7 +109,7 @@ function renderToCtx(
         const x = (featureStart - block.start) / bpPerPx + blockScreenX
         const w = Math.max((featureEnd - featureStart) / bpPerPx, 1)
 
-        if (renderingType === 'xyplot') {
+        if (renderType === RENDERING_TYPE_XYPLOT) {
           const y = scale(score) + offset
           const originY = scale(effectiveBicolorPivot) + offset
           const rectY = Math.min(y, originY)
@@ -110,7 +120,7 @@ function renderToCtx(
               : negColor
             : color
           ctx.fillRect(x, rectY, w + 0.5, rectHeight)
-        } else if (renderingType === 'scatter') {
+        } else if (renderType === RENDERING_TYPE_SCATTER) {
           const y = scale(score) + offset
           ctx.fillStyle = useBicolor
             ? score >= effectiveBicolorPivot
@@ -118,7 +128,7 @@ function renderToCtx(
               : negColor
             : color
           ctx.fillRect(x, y - 1, w, 2)
-        } else if (renderingType === 'density') {
+        } else if (renderType === RENDERING_TYPE_DENSITY) {
           ctx.fillStyle = getDensityColor(
             score,
             minScore,

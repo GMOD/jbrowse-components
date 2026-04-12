@@ -425,19 +425,21 @@ export default function stateModelFactory(
                   return
                 }
                 const numStdDev = self.getConfWithOverride<number>('numStdDev')
-                const visibleEntries = view.dynamicBlocks.contentBlocks
-                  .filter(block => block.regionNumber !== undefined)
-                  .map(block => {
+                const visibleEntries = view.dynamicBlocks.contentBlocks.flatMap(
+                  block => {
                     const data = self.rpcDataMap.get(block.regionNumber!)
-                    return data
-                      ? {
-                          visStart: block.start - data.regionStart,
-                          visEnd: block.end - data.regionStart,
-                          data,
-                        }
-                      : undefined
-                  })
-                  .filter((e): e is NonNullable<typeof e> => !!e)
+                    if (!data) {
+                      return []
+                    }
+                    return [
+                      {
+                        visStart: block.start - data.regionStart,
+                        visEnd: block.end - data.regionStart,
+                        data,
+                      },
+                    ]
+                  },
+                )
                 const allEntries = [...self.rpcDataMap.values()].map(data => ({
                   data,
                 }))

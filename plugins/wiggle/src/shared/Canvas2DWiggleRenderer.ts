@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
-import { WIGGLE_FUDGE_FACTOR } from '../util.ts'
+import { WIGGLE_FUDGE_FACTOR, makeScoreNormalizer } from '../util.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
@@ -143,40 +143,10 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
     }
   }
 
-  private bpToScreenX(
-    absBp: number,
-    block: WiggleRenderBlock,
-    bpLength: number,
-    fullBlockWidth: number,
-  ) {
-    return bpToScreenX(absBp, block, bpLength, fullBlockWidth)
-  }
-
   private makeScoreToY(p: DrawParams) {
     const { rowHeight, domainY, scaleType } = p
-    const isLog = scaleType === SCALE_TYPE_LOG
-    if (isLog) {
-      const logMin = Math.log2(Math.max(domainY[0], 1))
-      const logRange = Math.log2(Math.max(domainY[1], 1)) - logMin
-      if (logRange === 0) {
-        return () => 0
-      }
-      return (score: number) => {
-        const logScore = Math.log2(Math.max(score, 1))
-        const norm = Math.max(0, Math.min(1, (logScore - logMin) / logRange))
-        return (1 - norm) * rowHeight
-      }
-    }
-    const domMin = domainY[0]
-    const domRange = domainY[1] - domMin
-    if (domRange === 0) {
-      return () => 0
-    }
-    const invRange = 1 / domRange
-    return (score: number) => {
-      const norm = Math.max(0, Math.min(1, (score - domMin) * invRange))
-      return (1 - norm) * rowHeight
-    }
+    const normalize = makeScoreNormalizer(domainY[0], domainY[1], scaleType === SCALE_TYPE_LOG)
+    return (score: number) => (1 - normalize(score)) * rowHeight
   }
 
   private drawXYPlot(p: DrawParams) {
@@ -189,8 +159,8 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
     for (let i = 0; i < source.numFeatures; i++) {
       const startBp = source.featurePositions[i * 2]! + regionStart
       const endBp = source.featurePositions[i * 2 + 1]! + regionStart
-      const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
+      const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
+      const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
       const scoreY = scoreToY(source.featureScores[i]!) + rowTop
       const w = Math.max(1.5, x2 - x1 + WIGGLE_FUDGE_FACTOR)
       const h = originY - scoreY
@@ -206,43 +176,21 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
     const { ctx, source, regionStart, block, bpLength, fullBlockWidth } = p
     const { rowHeight, rowTop, domainY, scaleType, r, g, b } = p
     const isLog = scaleType === SCALE_TYPE_LOG
-    const domMin = domainY[0]
-    const domMax = domainY[1]
+    const normalize = makeScoreNormalizer(domainY[0], domainY[1], isLog)
+    const zeroNorm = normalize(0)
+    const maxDist = Math.max(zeroNorm, 1 - zeroNorm)
+    const invMaxDist = maxDist > 0.0001 ? 1 / maxDist : 0
     const rDelta = r - 255
     const gDelta = g - 255
     const bDelta = b - 255
 
-    // Pre-compute normalization parameters to avoid recomputing per feature
-    let normalizeFeature: (score: number) => number
-    let zeroNorm: number
-    if (isLog) {
-      const logMin = Math.log2(Math.max(domMin, 1))
-      const logMax = Math.log2(Math.max(domMax, 1))
-      const logRange = logMax - logMin
-      const invLogRange = logRange > 0 ? 1 / logRange : 0
-      zeroNorm = logRange > 0 ? Math.max(0, Math.min(1, (0 - logMin) * invLogRange)) : 0
-      normalizeFeature = (score: number) => {
-        const logScore = Math.log2(Math.max(score, 1))
-        return Math.max(0, Math.min(1, (logScore - logMin) * invLogRange))
-      }
-    } else {
-      const range = domMax - domMin
-      const invRange = range > 0 ? 1 / range : 0
-      zeroNorm = range > 0 ? Math.max(0, Math.min(1, (0 - domMin) * invRange)) : 0
-      normalizeFeature = (score: number) =>
-        Math.max(0, Math.min(1, (score - domMin) * invRange))
-    }
-    const maxDist = Math.max(zeroNorm, 1 - zeroNorm)
-    const invMaxDist = maxDist > 0.0001 ? 1 / maxDist : 0
-
     for (let i = 0; i < source.numFeatures; i++) {
       const startBp = source.featurePositions[i * 2]! + regionStart
       const endBp = source.featurePositions[i * 2 + 1]! + regionStart
-      const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
+      const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
+      const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
       const w = Math.max(1.5, x2 - x1 + WIGGLE_FUDGE_FACTOR)
-      const norm = normalizeFeature(source.featureScores[i]!)
-      const t = Math.abs(norm - zeroNorm) * invMaxDist
+      const t = Math.abs(normalize(source.featureScores[i]!) - zeroNorm) * invMaxDist
       const cr = (255 + rDelta * t) | 0
       const cg = (255 + gDelta * t) | 0
       const cb = (255 + bDelta * t) | 0
@@ -267,15 +215,14 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
     for (let i = 0; i < source.numFeatures; i++) {
       const startBp = source.featurePositions[i * 2]! + regionStart
       const endBp = source.featurePositions[i * 2 + 1]! + regionStart
-      const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
+      const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
+      const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
       const scoreY = scoreToY(source.featureScores[i]!) + rowTop
-      const prevScore =
-        i === 0 ? source.featureScores[i]! : source.featureScores[i - 1]!
-      const prevY = scoreToY(prevScore) + rowTop
-
-      ctx.moveTo(x1, prevY)
-      ctx.lineTo(x1, scoreY)
+      if (i > 0) {
+        const prevY = scoreToY(source.featureScores[i - 1]!) + rowTop
+        ctx.moveTo(x1, prevY)
+        ctx.lineTo(x1, scoreY)
+      }
       ctx.moveTo(x1, scoreY)
       ctx.lineTo(x2, scoreY)
     }
@@ -293,8 +240,8 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
     for (let i = 0; i < source.numFeatures; i++) {
       const startBp = source.featurePositions[i * 2]! + regionStart
       const endBp = source.featurePositions[i * 2 + 1]! + regionStart
-      const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
+      const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
+      const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
       const scoreY = scoreToY(source.featureScores[i]!) + rowTop
       const w = Math.max(1.5, x2 - x1)
 
