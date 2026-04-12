@@ -74,7 +74,6 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        */
       setDrawerPosition(arg: string) {
         self.drawerPosition = arg
-        localStorage.setItem('drawerPosition', arg)
       },
 
       /**
