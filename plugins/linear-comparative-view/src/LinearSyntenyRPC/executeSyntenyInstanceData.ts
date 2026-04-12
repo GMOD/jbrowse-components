@@ -11,6 +11,7 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import {
   colorSchemes,
+  hashString,
   syriColors,
 } from '../LinearSyntenyDisplay/drawSyntenyUtils.ts'
 
@@ -28,24 +29,17 @@ function toRelativeFloat32(
   return result
 }
 
-function hashString(str: string) {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i)
-    hash = (hash << 5) - hash + char
-    hash |= 0
-  }
-  return Math.abs(hash)
-}
-
 const category10Packed = category10.map(hex => cssColorToABGR(hex))
 
+// Pack normalized [0,1] RGBA into unsigned uint32 in ABGR byte order (R in
+// bits 0-7) to match GPU shader expectations. >>> 0 forces unsigned int32.
 function packRGBA(r: number, g: number, b: number, a: number) {
   return (
-    (Math.round(a * 255) << 24) |
-    (Math.round(b * 255) << 16) |
-    (Math.round(g * 255) << 8) |
-    Math.round(r * 255)
+    ((Math.round(a * 255) << 24) |
+      (Math.round(b * 255) << 16) |
+      (Math.round(g * 255) << 8) |
+      Math.round(r * 255)) >>>
+    0
   )
 }
 

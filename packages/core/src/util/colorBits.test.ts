@@ -1,4 +1,5 @@
 import {
+  cssColorToABGR,
   cssColorToNormalizedRgb,
   cssColorToNormalizedRgba,
   cssColorToRgba,
@@ -131,6 +132,38 @@ describe('colorBits helpers', () => {
       expect(g).toBe(0)
       expect(b).toBe(128)
       expect(a).toBe(255)
+    })
+  })
+
+  describe('cssColorToABGR', () => {
+    // ABGR layout: R in bits 0-7, G in bits 8-15, B in bits 16-23, A in bits 24-31
+
+    test('red', () => {
+      expect(cssColorToABGR('red')).toBe(0xff0000ff)
+    })
+
+    test('blue', () => {
+      // R=0, G=0, B=255, A=255 → 0xFFFF0000
+      expect(cssColorToABGR('blue')).toBe(0xffff0000)
+    })
+
+    test('transparent packs to 0', () => {
+      expect(cssColorToABGR('transparent')).toBe(0)
+    })
+
+    test('always returns a non-negative uint32 for fully opaque colors', () => {
+      // JS << 24 with alpha=255 produces a negative signed int32 without >>> 0
+      expect(cssColorToABGR('red')).toBeGreaterThanOrEqual(0)
+      expect(cssColorToABGR('blue')).toBeGreaterThanOrEqual(0)
+      expect(cssColorToABGR('white')).toBeGreaterThanOrEqual(0)
+    })
+
+    test('semi-transparent color round-trips channel values', () => {
+      const packed = cssColorToABGR('#ff000080')
+      expect(packed & 0xff).toBe(255) // R
+      expect((packed >> 8) & 0xff).toBe(0) // G
+      expect((packed >> 16) & 0xff).toBe(0) // B
+      expect((packed >>> 24) & 0xff).toBe(0x80) // A
     })
   })
 

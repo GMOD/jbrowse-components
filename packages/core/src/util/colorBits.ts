@@ -60,7 +60,9 @@ export function cssColorToABGR(color: string) {
   const g = getGreen(c)
   const b = getBlue(c)
   const a = getAlpha(c)
-  return (a << 24) | (b << 16) | (g << 8) | r
+  // >>> 0 converts signed int32 to unsigned uint32; without it, opaque colors
+  // (alpha=255) set bit 31 and produce a negative JS number
+  return (((a << 24) | (b << 16) | (g << 8) | r) >>> 0)
 }
 
 export function cssColorToNormalizedRgba(
