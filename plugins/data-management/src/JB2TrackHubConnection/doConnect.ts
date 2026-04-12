@@ -22,7 +22,10 @@ export async function doConnect(self: {
     const configJson = JSON.parse(
       await openLocation(configJsonLocation).readFile('utf8'),
     )
-    const configUri = resolve(configJsonLocation.uri, configJsonLocation.baseUri)
+    const configUri = resolve(
+      configJsonLocation.uri,
+      configJsonLocation.baseUri,
+    )
     addRelativeUris(configJson, new URL(configUri))
     if (configJson.assemblies) {
       for (const assembly of configJson.assemblies) {

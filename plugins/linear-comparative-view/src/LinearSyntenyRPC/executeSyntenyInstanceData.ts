@@ -60,7 +60,7 @@ function createColorFunction(
 ): (strand: number, refName: string, index: number) => number {
   if (colorBy === 'syri' && syriTypes) {
     return (_strand: number, _refName: string, index: number) =>
-      syriColorMap[syriTypes[index]!]!
+      syriColorMap[syriTypes[index]!]
   }
 
   if (colorBy === 'strand') {

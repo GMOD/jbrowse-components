@@ -9,7 +9,6 @@ import {
   setup,
 } from './util.tsx'
 
-
 setup()
 
 beforeEach(() => {
@@ -59,7 +58,7 @@ test('launch read vs ref dotplot', async () => {
 
   fireEvent.click(await findByText('Dotplot of read vs ref', {}, delay))
   await waitFor(() => {
-    expect((session).views.length).toBe(2)
-    expect((session).views[1]!.type).toBe('DotplotView')
+    expect(session.views.length).toBe(2)
+    expect(session.views[1]!.type).toBe('DotplotView')
   }, delay)
 }, 40000)

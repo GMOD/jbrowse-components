@@ -133,7 +133,9 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       rearrangePanels,
       addEmptyTab,
       moveViewToNewTab: moveViewToPanel,
-      moveViewToSplitRight: (viewId: string) => moveViewToPanel(viewId, 'right'),
+      moveViewToSplitRight: (viewId: string) => {
+        moveViewToPanel(viewId, 'right')
+      },
     }),
     [api, rearrangePanels, addEmptyTab, moveViewToPanel],
   )

@@ -180,9 +180,9 @@ describe('insertInSubMenu', () => {
       i => 'label' in i && i.label === 'Import',
     )
     expect('subMenu' in importEntry!).toBe(true)
-    const subLabels = (importEntry as { subMenu: { label: string }[] }).subMenu.map(
-      i => i.label,
-    )
+    const subLabels = (
+      importEntry as { subMenu: { label: string }[] }
+    ).subMenu.map(i => i.label)
     expect(subLabels).toEqual(['From File', 'From URL', 'From HTTPS'])
   })
 })

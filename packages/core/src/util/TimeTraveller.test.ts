@@ -3,13 +3,11 @@ import { types } from '@jbrowse/mobx-state-tree'
 import TimeTraveller from './TimeTraveller.ts'
 
 // A minimal store to target. TimeTraveller watches this via env.targetStore.
-const TargetStore = types
-  .model('Target', { value: 0 })
-  .actions(self => ({
-    setValue(v: number) {
-      self.value = v
-    },
-  }))
+const TargetStore = types.model('Target', { value: 0 }).actions(self => ({
+  setValue(v: number) {
+    self.value = v
+  },
+}))
 
 function makeStores() {
   const target = TargetStore.create({ value: 0 })

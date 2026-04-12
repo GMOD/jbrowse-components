@@ -87,7 +87,14 @@ function makeGpuOpsVisitor(
       addInstance(builder, refPos, refPos + len, genomeRow, featureId, color)
     },
     onDeletion(refPos: number, len: number) {
-      addInstance(builder, refPos, refPos + len, genomeRow, featureId, rgba.deletion)
+      addInstance(
+        builder,
+        refPos,
+        refPos + len,
+        genomeRow,
+        featureId,
+        rgba.deletion,
+      )
     },
     onInsertion(refPos: number, _len: number) {
       addInstance(builder, refPos, refPos, genomeRow, featureId, rgba.insertion)

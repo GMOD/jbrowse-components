@@ -38,5 +38,5 @@ export async function getUniqueTags({
       ...opts,
     },
   )
-  return values as string[]
+  return values
 }
