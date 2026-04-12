@@ -914,10 +914,10 @@ export const defaultCodonTable = {
  * take CodonTable above and generate larger codon table that includes all
  * permutations of upper and lower case nucleotides
  */
-export function generateCodonTable(table: any) {
+export function generateCodonTable(table: Record<string, string>) {
   const tempCodonTable: Record<string, string> = {}
   for (const codon of Object.keys(table)) {
-    const aa = table[codon]
+    const aa = table[codon]!
     const nucs: string[][] = []
     for (let i = 0; i < 3; i++) {
       const nuc = codon.charAt(i)
