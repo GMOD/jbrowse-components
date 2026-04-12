@@ -59,13 +59,7 @@ export default function FeatureDetails(props: {
           <Typography>Mate details</Typography>
           <CoreDetails
             {...props}
-            feature={{
-              ...m,
-              start: m.start,
-              end: m.end,
-              refName: m.refName,
-              uniqueId: `${uniqueId}-mate`,
-            }}
+            feature={{ ...m, uniqueId: `${uniqueId}-mate` }}
           />
         </>
       ) : null}

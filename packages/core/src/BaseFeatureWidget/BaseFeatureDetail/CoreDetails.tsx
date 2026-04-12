@@ -25,7 +25,7 @@ export default function CoreDetails(props: BaseProps) {
   const formattedFeat = { ...obj, ...obj.__jbrowsefmt }
   const { start, end } = formattedFeat
 
-  const displayedDetails: Record<string, any> = {
+  const displayedDetails: Record<string, unknown> = {
     ...formattedFeat,
     length: toLocale(end - start),
   }

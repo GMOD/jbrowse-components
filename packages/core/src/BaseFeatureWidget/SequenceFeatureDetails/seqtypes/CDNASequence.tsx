@@ -58,7 +58,7 @@ const CDNASequence = observer(function CDNASequence({
   let currStart = 0
   let currRemainder = 0
 
-  let upstreamChunk = null as React.ReactNode
+  let upstreamChunk: React.ReactNode = null
   if (upstream) {
     const { segments, remainder } = splitString({
       str: toLower(upstream),
@@ -142,7 +142,7 @@ const CDNASequence = observer(function CDNASequence({
     }
   }
 
-  let downstreamChunk = null as React.ReactNode
+  let downstreamChunk: React.ReactNode = null
   if (downstream) {
     const { segments } = splitString({
       str: toLower(downstream),

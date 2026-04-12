@@ -27,11 +27,12 @@ const SequenceDisplay = observer(function SequenceDisplay({
       (idx === 0 && start % charactersPerRow === 0) || idx > 0
         ? `${`${f + idx * strand * charactersPerRow}`.padStart(4)}   `
         : ''
+    const isLastChunk = idx === chunks.length - 1
+    const lastChunkCharCount =
+      (chunks.at(-1)?.replaceAll(' ', '').length ?? 0) +
+      (idx === 0 ? start % charactersPerRow : 0)
     const postfix =
-      idx === chunks.length - 1 &&
-      (chunks.at(-1)?.replaceAll(' ', '').length || 0) +
-        (idx === 0 ? start % charactersPerRow : 0) !==
-        charactersPerRow
+      isLastChunk && lastChunkCharCount !== charactersPerRow
         ? null
         : showCoordinates
           ? ' \n'

@@ -22,7 +22,7 @@ const GenomicSequence = observer(function GenomicSequence({
 }) {
   const { charactersPerRow, showCoordinatesSetting, showCoordinates } = model
   let currStart = 0
-  let upstreamChunk = null as React.ReactNode
+  let upstreamChunk: React.ReactNode = null
   let currRemainder = 0
   const strand = feature.strand === -1 ? -1 : 1
   const fullGenomicCoordinates = showCoordinatesSetting === 'genomic'
@@ -71,7 +71,7 @@ const GenomicSequence = observer(function GenomicSequence({
   currStart += sequence.length * mult
   coordStart = coordStart + sequence.length * mult
 
-  let downstreamChunk = null as React.ReactNode
+  let downstreamChunk: React.ReactNode = null
   if (downstream) {
     const { segments } = splitString({
       str: downstream,
