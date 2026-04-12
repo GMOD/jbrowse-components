@@ -28,16 +28,13 @@ function makeGeometry(count: number) {
   const y1s = new Float32Array(count)
   const x2s = new Float32Array(count)
   const y2s = new Float32Array(count)
-  const colors = new Float32Array(count * 4)
+  // red, full alpha: R=0xFF in bits 0-7, A=0xFF in bits 24-31
+  const colors = new Uint32Array(count).fill(0xFF0000FF)
   for (let i = 0; i < count; i++) {
     x1s[i] = i * 10
     y1s[i] = i * 10
     x2s[i] = i * 10 + 5
     y2s[i] = i * 10 + 5
-    colors[i * 4] = 1
-    colors[i * 4 + 1] = 0
-    colors[i * 4 + 2] = 0
-    colors[i * 4 + 3] = 1
   }
   return { x1s, y1s, x2s, y2s, colors, instanceCount: count }
 }
@@ -79,7 +76,7 @@ describe('Canvas2DDotplotRenderer', () => {
       y1s: new Float32Array([200]),
       x2s: new Float32Array([150]),
       y2s: new Float32Array([250]),
-      colors: new Float32Array([1, 0, 0, 1]),
+      colors: new Uint32Array([0xFF0000FF]),
       instanceCount: 1,
     })
 
@@ -104,7 +101,8 @@ describe('Canvas2DDotplotRenderer', () => {
       y1s: new Float32Array([0]),
       x2s: new Float32Array([1]),
       y2s: new Float32Array([1]),
-      colors: new Float32Array([0.5, 0.25, 0.75, 0.8]),
+      // R=128, G=64, B=191, A=204 (≈0.8): packed as 0xCCBF4080
+      colors: new Uint32Array([0xCCBF4080]),
       instanceCount: 1,
     })
 

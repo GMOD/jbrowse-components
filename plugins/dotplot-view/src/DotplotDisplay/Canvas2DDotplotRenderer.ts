@@ -7,7 +7,7 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
   private y1s: Float32Array | null = null
   private x2s: Float32Array | null = null
   private y2s: Float32Array | null = null
-  private colors: Float32Array | null = null
+  private colors: Uint32Array | null = null
   private instanceCount = 0
   private width = 0
   private height = 0
@@ -37,7 +37,7 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
     y1s: Float32Array
     x2s: Float32Array
     y2s: Float32Array
-    colors: Float32Array
+    colors: Uint32Array
     instanceCount: number
   }) {
     this.x1s = data.x1s
@@ -81,10 +81,11 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
       const sx2 = this.x2s[i]! * scaleX - offsetX
       const sy2 = this.height - (this.y2s[i]! * scaleY - offsetY)
 
-      const r = Math.round(this.colors[i * 4]! * 255)
-      const g = Math.round(this.colors[i * 4 + 1]! * 255)
-      const b = Math.round(this.colors[i * 4 + 2]! * 255)
-      const a = this.colors[i * 4 + 3]!
+      const packed = this.colors[i]!
+      const r = packed & 0xFF
+      const g = (packed >>> 8) & 0xFF
+      const b = (packed >>> 16) & 0xFF
+      const a = (packed >>> 24) / 255
 
       ctx.strokeStyle = `rgba(${r},${g},${b},${a})`
       ctx.beginPath()

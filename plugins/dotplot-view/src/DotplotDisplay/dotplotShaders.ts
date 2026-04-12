@@ -1,4 +1,4 @@
-export const INSTANCE_BYTE_SIZE = 48
+export const INSTANCE_BYTE_SIZE = 32
 export const UNIFORM_BYTE_SIZE = 32
 export const VERTS_PER_INSTANCE = 6
 
@@ -10,7 +10,7 @@ in float a_x1;
 in float a_y1;
 in float a_x2;
 in float a_y2;
-in vec4 a_color;
+in uint a_color;
 
 layout(std140) uniform Uniforms {
   vec2 resolution;
@@ -54,7 +54,12 @@ void main() {
   vec2 pos = vec2(x, y) + normal * side * u.lineWidth * 0.5;
   vec2 clipSpace = (pos / u.resolution) * 2.0 - 1.0;
   gl_Position = vec4(clipSpace.x, -clipSpace.y, 0.0, 1.0);
-  v_color = a_color;
+  v_color = vec4(
+    float(a_color & 0xFFu),
+    float((a_color >> 8u) & 0xFFu),
+    float((a_color >> 16u) & 0xFFu),
+    float(a_color >> 24u)
+  ) / 255.0;
   v_dist = side;
 }
 `
@@ -80,8 +85,8 @@ void main() {
 export const dotplotShader = `
 struct Instance {
   x1: f32, y1: f32, x2: f32, y2: f32,
-  color: vec4f,
-  _pad1: f32, _pad2: f32, _pad3: f32, _pad4: f32,
+  color: u32,
+  _pad1: u32, _pad2: u32, _pad3: u32,
 }
 
 struct Uniforms {
@@ -108,7 +113,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let inst = instances[iid];
 
   var out: VOut;
-  out.color = inst.color;
+  out.color = unpack4x8unorm(inst.color);
   out.dist = 0.0;
 
   let sx1 = inst.x1 * uniforms.scaleX - uniforms.offsetX;

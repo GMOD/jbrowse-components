@@ -10,10 +10,7 @@ export interface LineSegments {
 
 const MIN_CIGAR_PX_WIDTH = 4
 
-type ColorFn = (
-  f: DotplotFeatPos,
-  index: number,
-) => [number, number, number, number]
+type ColorFn = (f: DotplotFeatPos, index: number) => number
 
 function decomposeCigar(
   feat: DotplotFeatPos,
@@ -51,7 +48,7 @@ function decomposeCigar(
   let cy = p21
   let segStartX = cx
   let segStartY = cy
-  const [cr, cg, cb, ca] = colorFn(feat, index)
+  const color = colorFn(feat, index)
 
   for (let j = 0; j < cigar.length; j += 2) {
     const len = +cigar[j]!
@@ -71,7 +68,7 @@ function decomposeCigar(
       out.y1s.push(segStartY)
       out.x2s.push(cx)
       out.y2s.push(cy)
-      out.colors.push(cr, cg, cb, ca)
+      out.colors.push(color)
       segStartX = cx
       segStartY = cy
     }
@@ -121,13 +118,12 @@ export function buildLineSegments(
     if (cigar.length >= 2 && drawCigar && featureWidth >= MIN_CIGAR_PX_WIDTH) {
       decomposeCigar(feat, i, colorFn, hBpPerPx, vBpPerPx, out)
     } else {
-      const [cr, cg, cb, ca] = colorFn(feat, i)
       const { x1, y1, x2, y2 } = ensureMinExtent(p11, p21, p12, p22)
       out.x1s.push(x1)
       out.y1s.push(y1)
       out.x2s.push(x2)
       out.y2s.push(y2)
-      out.colors.push(cr, cg, cb, ca)
+      out.colors.push(colorFn(feat, i))
     }
   }
 

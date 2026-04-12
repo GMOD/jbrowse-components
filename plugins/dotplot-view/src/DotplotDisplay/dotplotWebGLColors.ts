@@ -1,31 +1,38 @@
 import { category10 } from '@jbrowse/core/ui/colors'
-import {
-  cssColorToNormalizedRgb,
-  getBlue,
-  getGreen,
-  getRed,
-  parseCssColor,
-} from '@jbrowse/core/util/colorBits'
+import { getBlue, getGreen, getRed, parseCssColor } from '@jbrowse/core/util/colorBits'
 
 import { hashString } from '../util.ts'
 
 import type { DotplotFeatPos } from './types.ts'
 
-type RGBA = [number, number, number, number]
+// Pack RGBA bytes into a uint32 in ABGR layout (R in bits 0-7) so that
+// WGSL's unpack4x8unorm() and the GLSL manual unpack both decode x→R, y→G,
+// z→B, w→A directly.
+function packColor(r: number, g: number, b: number, alpha: number) {
+  const a = Math.round(alpha * 255)
+  return ((a << 24) | (b << 16) | (g << 8) | r) >>> 0
+}
 
-const category10Normalized = category10.map(hex => cssColorToNormalizedRgb(hex))
+// Pre-extract the RGB bytes for the 10-color categorical palette so we can
+// bake in the alpha at function-creation time.  The palette has 10 slots; the
+// query mode maps chromosome names via hashString(name) % 10, giving a
+// deterministic color per chromosome without needing a global pre-scan.
+const category10Rgb = category10.map(hex => {
+  const c = parseCssColor(hex)
+  return [getRed(c), getGreen(c), getBlue(c)] as const
+})
 
-function hslColor(hue: number, alpha: number): RGBA {
+function hslColor(hue: number, alpha: number) {
   const c = parseCssColor(`hsl(${hue}, 100%, 40%)`)
-  return [getRed(c) / 255, getGreen(c) / 255, getBlue(c) / 255, alpha]
+  return packColor(getRed(c), getGreen(c), getBlue(c), alpha)
 }
 
 function hslColorFn(
   featureField: string,
   hueScale: number,
   alpha: number,
-): (f: DotplotFeatPos) => RGBA {
-  const defaultColor: RGBA = [1, 0, 0, alpha]
+): (f: DotplotFeatPos) => number {
+  const defaultColor = packColor(255, 0, 0, alpha)
   return (f: DotplotFeatPos) => {
     const val = f.f.get(featureField) as number | undefined
     if (val !== undefined) {
@@ -38,23 +45,21 @@ function hslColorFn(
 export function createDotplotColorFunction(
   colorBy: string,
   alpha: number,
-): (f: DotplotFeatPos, index: number) => RGBA {
+): (f: DotplotFeatPos, index: number) => number {
   if (colorBy === 'strand') {
-    const neg: RGBA = [0, 0, 1, alpha]
-    const pos: RGBA = [1, 0, 0, alpha]
+    const neg = packColor(0, 0, 255, alpha)
+    const pos = packColor(255, 0, 0, alpha)
     return (f: DotplotFeatPos) => (f.f.get('strand') === -1 ? neg : pos)
   }
 
   if (colorBy === 'query') {
-    const colorCache = new Map<string, RGBA>()
+    const palette = category10Rgb.map(([r, g, b]) => packColor(r, g, b, alpha))
+    const colorCache = new Map<string, number>()
     return (f: DotplotFeatPos) => {
       const name = f.f.get('refName') || ''
       let color = colorCache.get(name)
       if (!color) {
-        const hash = hashString(name)
-        const [r, g, b] =
-          category10Normalized[hash % category10Normalized.length]!
-        color = [r, g, b, alpha]
+        color = palette[hashString(name) % palette.length]!
         colorCache.set(name, color)
       }
       return color
@@ -73,7 +78,6 @@ export function createDotplotColorFunction(
     return hslColorFn('mappingQual', 1, alpha)
   }
 
-  // Default: red
-  const defaultColor: RGBA = [1, 0, 0, alpha]
+  const defaultColor = packColor(255, 0, 0, alpha)
   return () => defaultColor
 }

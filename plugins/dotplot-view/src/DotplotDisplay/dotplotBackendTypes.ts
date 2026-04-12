@@ -3,7 +3,7 @@ export interface DotplotGeometryData {
   y1s: Float32Array
   x2s: Float32Array
   y2s: Float32Array
-  colors: Float32Array
+  colors: Uint32Array
   instanceCount: number
 }
 

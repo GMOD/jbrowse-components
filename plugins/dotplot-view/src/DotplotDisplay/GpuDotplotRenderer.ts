@@ -57,10 +57,10 @@ export const DOTPLOT_PASSES: PassDescriptor[] = [
       },
       {
         name: 'a_color',
-        components: 4,
-        type: 'float',
+        components: 1,
+        type: 'uint',
         offsetBytes: 16,
-        integer: false,
+        integer: true,
       },
     ],
   },
@@ -92,6 +92,7 @@ export class GpuDotplotRenderer implements DotplotBackend {
     const n = data.instanceCount
     const buf = new ArrayBuffer(n * INSTANCE_BYTE_SIZE)
     const f = new Float32Array(buf)
+    const u = new Uint32Array(buf)
     const stride = INSTANCE_BYTE_SIZE / 4
 
     for (let i = 0; i < n; i++) {
@@ -100,10 +101,7 @@ export class GpuDotplotRenderer implements DotplotBackend {
       f[off + 1] = data.y1s[i]!
       f[off + 2] = data.x2s[i]!
       f[off + 3] = data.y2s[i]!
-      f[off + 4] = data.colors[i * 4]!
-      f[off + 5] = data.colors[i * 4 + 1]!
-      f[off + 6] = data.colors[i * 4 + 2]!
-      f[off + 7] = data.colors[i * 4 + 3]!
+      u[off + 4] = data.colors[i]!
     }
 
     this.hal.uploadBuffer(REGION_KEY, PASS_LINE, buf, n)

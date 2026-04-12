@@ -250,7 +250,7 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
             y1s: new Float32Array(segments.y1s),
             x2s: new Float32Array(segments.x2s),
             y2s: new Float32Array(segments.y2s),
-            colors: new Float32Array(segments.colors),
+            colors: new Uint32Array(segments.colors),
             instanceCount: segments.x1s.length,
           })
           lastFeatPositions = featPositions
