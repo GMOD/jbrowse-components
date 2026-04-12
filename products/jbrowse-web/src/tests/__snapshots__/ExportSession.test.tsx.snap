@@ -25,11 +25,12 @@ exports[`export session with alignments and gff tracks 1`] = `
             "configuration": "volvox_alignments_pileup_coverage",
             "displays": [
               {
-                "arcsHeight": 100,
+                "arcsHeight": 40,
                 "arcsState": {
                   "colorByType": "insertSizeAndOrientation",
                   "drawInter": true,
                   "drawLongRange": true,
+                  "pairedArcsDown": true,
                 },
                 "configuration": "volvox_alignments_pileup_coverage-LinearAlignmentsDisplay",
                 "coverageHeight": 45,
@@ -38,12 +39,16 @@ exports[`export session with alignments and gff tracks 1`] = `
                 "flipStrandLongReadChains": true,
                 "id": "test-id-3",
                 "jexlFilters": [],
+                "sashimiArcsState": {
+                  "sashimiArcsDown": false,
+                  "sashimiArcsHeight": 40,
+                  "showSashimiArcs": true,
+                },
                 "showArcs": false,
                 "showCoverage": true,
                 "showInterbaseIndicators": true,
                 "showLinkedReads": false,
                 "showMismatches": true,
-                "showSashimiArcs": true,
                 "showSoftClipping": false,
                 "showYScalebar": true,
                 "type": "LinearAlignmentsDisplay",

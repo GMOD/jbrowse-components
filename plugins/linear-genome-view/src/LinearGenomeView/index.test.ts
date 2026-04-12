@@ -78,6 +78,16 @@ function initialize() {
     .model({
       assemblies: types.map(Assembly),
     })
+    .views(self => ({
+      get assemblyNameMap() {
+        return Object.fromEntries(
+          [...self.assemblies.entries()].map(([name, assembly]) => [
+            name,
+            assembly,
+          ]),
+        )
+      },
+    }))
     .actions(self => ({
       isValidRefName(str: string) {
         return str === 'ctgA' || str === 'ctgB'

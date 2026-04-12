@@ -21,9 +21,7 @@ exports[`renders all the different types of built-in slots 1`] = `
           <p
             class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
           >
-            <span>
-              Configuration
-            </span>
+            Configuration
           </p>
         </span>
         <span
@@ -762,9 +760,7 @@ exports[`renders with just the required model elements 1`] = `
           <p
             class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
           >
-            <span>
-              Configuration
-            </span>
+            Configuration
           </p>
         </span>
         <span
