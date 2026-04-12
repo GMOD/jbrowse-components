@@ -68,23 +68,27 @@ export default function stateModelFactory(
         displayCrossHatches: types.optional(types.boolean, false),
       }),
     )
-    .preProcessSnapshot((snap: any) => {
-      if (!snap) {
-        return snap
-      }
+    .preProcessSnapshot(
+      (snap: Record<string, unknown> | null | undefined) => {
+        if (!snap) {
+          return snap
+        }
 
-      // Strip properties from old BaseLinearDisplay snapshots
-      const { blockState, showLegend, showTooltips, ...cleaned } = snap
-      snap = cleaned
+        // Strip properties from old BaseLinearDisplay snapshots
+        const { blockState, showLegend, showTooltips, ...withoutLegacy } = snap
 
-      // Rewrite "height" from older snapshots to "heightPreConfig"
-      if (snap.height !== undefined && snap.heightPreConfig === undefined) {
-        const { height, ...rest } = snap
-        snap = { ...rest, heightPreConfig: height }
-      }
+        // Rewrite "height" from older snapshots to "heightPreConfig"
+        if (
+          withoutLegacy.height !== undefined &&
+          withoutLegacy.heightPreConfig === undefined
+        ) {
+          const { height, ...rest } = withoutLegacy
+          return migrateWiggleSnapshot({ ...rest, heightPreConfig: height })
+        }
 
-      return migrateWiggleSnapshot(snap)
-    })
+        return migrateWiggleSnapshot(withoutLegacy)
+      },
+    )
     .volatile(() => ({
       rpcDataMap: new Map<number, WiggleDataResult>(),
       visibleScoreRange: undefined as [number, number] | undefined,

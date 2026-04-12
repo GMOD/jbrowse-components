@@ -211,153 +211,144 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   const handleMouseMove = useCallback(
     (event: React.MouseEvent) => {
       const container = containerRef.current
-      if (!container) {
-        return
-      }
-      const rect = container.getBoundingClientRect()
-      const offsetX = event.clientX - rect.left
-      const offsetY = event.clientY - rect.top
+      if (container) {
+        const rect = container.getBoundingClientRect()
+        const offsetX = event.clientX - rect.left
+        const offsetY = event.clientY - rect.top
 
-      setClientMouseCoord([event.clientX, event.clientY])
-      setOffsetMouseCoord([offsetX, offsetY])
+        setClientMouseCoord([event.clientX, event.clientY])
+        setOffsetMouseCoord([offsetX, offsetY])
 
-      const { rowHeight, sources, rpcDataMap, summaryScoreMode, domain } = model
-      if (sources.length === 0 || rpcDataMap.size === 0) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
+        const { rowHeight, sources, rpcDataMap, summaryScoreMode, domain } =
+          model
+        const visibleRegions = view.visibleRegions
+        const region = visibleRegions.find(
+          r => offsetX >= r.screenStartPx && offsetX < r.screenEndPx,
+        )
+        const data = region ? rpcDataMap.get(region.regionNumber) : undefined
 
-      const visibleRegions = view.visibleRegions
-      const region = visibleRegions.find(
-        r => offsetX >= r.screenStartPx && offsetX < r.screenEndPx,
-      )
-      if (!region) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
-
-      const data = rpcDataMap.get(region.regionNumber)
-      if (!data) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
-
-      const blockWidth = region.screenEndPx - region.screenStartPx
-      const frac = (offsetX - region.screenStartPx) / blockWidth
-      const bp = region.reversed
-        ? Math.round(region.end - frac * (region.end - region.start))
-        : Math.round(region.start + frac * (region.end - region.start))
-      const bpOffset = bp - data.regionStart
-
-      if (model.isOverlay && domain) {
-        let bestSource: MultiWiggleSourceData | undefined
-        let bestScore = 0
-        let bestDist = Infinity
-        let bestIdx = -1
-        const mouseScore =
-          domain[1] - (offsetY / model.height) * (domain[1] - domain[0])
-        const allSources: NonNullable<
-          MultiWiggleDisplayModel['featureUnderMouse']
-        >['allSources'] = []
-
-        for (const src of data.sources) {
-          if (!sources.some(s => s.name === src.name)) {
-            continue
-          }
-          const i = findFeatureAtBp(
-            src.featurePositions,
-            src.numFeatures,
-            bpOffset,
-          )
-          if (i !== -1) {
-            const score = src.featureScores[i]!
-            const minS = src.featureMinScores[i]
-            const maxS = src.featureMaxScores[i]
-            const dist = Math.abs(score - mouseScore)
-            if (dist < bestDist) {
-              bestDist = dist
-              bestSource = src
-              bestScore = score
-              bestIdx = i
-            }
-            allSources.push({
-              source: src.name,
-              score,
-              ...(summaryScoreMode !== 'avg' &&
-              isSummaryFeature(score, minS, maxS)
-                ? { summary: true, minScore: minS, maxScore: maxS }
-                : {}),
-            })
-          }
-        }
-
-        if (!bestSource || bestIdx === -1) {
+        if (sources.length === 0 || rpcDataMap.size === 0 || !region || !data) {
           model.setFeatureUnderMouse(undefined)
-          return
+        } else {
+          const blockWidth = region.screenEndPx - region.screenStartPx
+          const frac = (offsetX - region.screenStartPx) / blockWidth
+          const bp = region.reversed
+            ? Math.round(region.end - frac * (region.end - region.start))
+            : Math.round(region.start + frac * (region.end - region.start))
+          const bpOffset = bp - data.regionStart
+
+          if (model.isOverlay && domain) {
+            let bestSource: MultiWiggleSourceData | undefined
+            let bestScore = 0
+            let bestDist = Infinity
+            let bestIdx = -1
+            const mouseScore =
+              domain[1] - (offsetY / model.height) * (domain[1] - domain[0])
+            const allSources: NonNullable<
+              MultiWiggleDisplayModel['featureUnderMouse']
+            >['allSources'] = []
+
+            for (const src of data.sources) {
+              if (sources.some(s => s.name === src.name)) {
+                const i = findFeatureAtBp(
+                  src.featurePositions,
+                  src.numFeatures,
+                  bpOffset,
+                )
+                if (i !== -1) {
+                  const score = src.featureScores[i]!
+                  const minS = src.featureMinScores[i]
+                  const maxS = src.featureMaxScores[i]
+                  const dist = Math.abs(score - mouseScore)
+                  if (dist < bestDist) {
+                    bestDist = dist
+                    bestSource = src
+                    bestScore = score
+                    bestIdx = i
+                  }
+                  allSources.push({
+                    source: src.name,
+                    score,
+                    ...(summaryScoreMode !== 'avg' &&
+                    isSummaryFeature(score, minS, maxS)
+                      ? { summary: true, minScore: minS, maxScore: maxS }
+                      : {}),
+                  })
+                }
+              }
+            }
+
+            if (!bestSource || bestIdx === -1) {
+              model.setFeatureUnderMouse(undefined)
+            } else {
+              const fStart =
+                bestSource.featurePositions[bestIdx * 2]! + data.regionStart
+              const fEnd =
+                bestSource.featurePositions[bestIdx * 2 + 1]! + data.regionStart
+              const minS = bestSource.featureMinScores[bestIdx]
+              const maxS = bestSource.featureMaxScores[bestIdx]
+
+              model.setFeatureUnderMouse({
+                refName: region.refName,
+                start: fStart,
+                end: fEnd,
+                score: bestScore,
+                source: bestSource.name,
+                ...(summaryScoreMode !== 'avg' &&
+                isSummaryFeature(bestScore, minS, maxS)
+                  ? { summary: true, minScore: minS, maxScore: maxS }
+                  : {}),
+                allSources,
+              })
+            }
+          } else {
+            const rowIdx = Math.floor(offsetY / rowHeight)
+            if (rowIdx < 0 || rowIdx >= sources.length) {
+              model.setFeatureUnderMouse(undefined)
+            } else {
+              const sourceName = sources[rowIdx]!.name
+              const rpcSource = data.sources.find(
+                (s: MultiWiggleSourceData) => s.name === sourceName,
+              )
+              if (!rpcSource) {
+                model.setFeatureUnderMouse(undefined)
+              } else {
+                const { featurePositions, featureScores, numFeatures } =
+                  rpcSource
+                const foundIdx = findFeatureAtBp(
+                  featurePositions,
+                  numFeatures,
+                  bpOffset,
+                )
+
+                if (foundIdx === -1) {
+                  model.setFeatureUnderMouse(undefined)
+                } else {
+                  const fStart =
+                    featurePositions[foundIdx * 2]! + data.regionStart
+                  const fEnd =
+                    featurePositions[foundIdx * 2 + 1]! + data.regionStart
+                  const score = featureScores[foundIdx]!
+                  const minScore = rpcSource.featureMinScores[foundIdx]
+                  const maxScore = rpcSource.featureMaxScores[foundIdx]
+
+                  model.setFeatureUnderMouse({
+                    refName: region.refName,
+                    start: fStart,
+                    end: fEnd,
+                    score,
+                    source: sourceName,
+                    ...(summaryScoreMode !== 'avg' &&
+                    isSummaryFeature(score, minScore, maxScore)
+                      ? { summary: true, minScore, maxScore }
+                      : {}),
+                  })
+                }
+              }
+            }
+          }
         }
-
-        const fStart =
-          bestSource.featurePositions[bestIdx * 2]! + data.regionStart
-        const fEnd =
-          bestSource.featurePositions[bestIdx * 2 + 1]! + data.regionStart
-        const minS = bestSource.featureMinScores[bestIdx]
-        const maxS = bestSource.featureMaxScores[bestIdx]
-
-        model.setFeatureUnderMouse({
-          refName: region.refName,
-          start: fStart,
-          end: fEnd,
-          score: bestScore,
-          source: bestSource.name,
-          ...(summaryScoreMode !== 'avg' &&
-          isSummaryFeature(bestScore, minS, maxS)
-            ? { summary: true, minScore: minS, maxScore: maxS }
-            : {}),
-          allSources,
-        })
-        return
       }
-
-      const rowIdx = Math.floor(offsetY / rowHeight)
-      if (rowIdx < 0 || rowIdx >= sources.length) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
-
-      const sourceName = sources[rowIdx]!.name
-      const rpcSource = data.sources.find(
-        (s: MultiWiggleSourceData) => s.name === sourceName,
-      )
-      if (!rpcSource) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
-
-      const { featurePositions, featureScores, numFeatures } = rpcSource
-      const foundIdx = findFeatureAtBp(featurePositions, numFeatures, bpOffset)
-
-      if (foundIdx === -1) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
-
-      const fStart = featurePositions[foundIdx * 2]! + data.regionStart
-      const fEnd = featurePositions[foundIdx * 2 + 1]! + data.regionStart
-      const score = featureScores[foundIdx]!
-      const minScore = rpcSource.featureMinScores[foundIdx]
-      const maxScore = rpcSource.featureMaxScores[foundIdx]
-
-      model.setFeatureUnderMouse({
-        refName: region.refName,
-        start: fStart,
-        end: fEnd,
-        score,
-        source: sourceName,
-        ...(summaryScoreMode !== 'avg' &&
-        isSummaryFeature(score, minScore, maxScore)
-          ? { summary: true, minScore, maxScore }
-          : {}),
-      })
     },
     [model, view],
   )

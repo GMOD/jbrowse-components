@@ -220,11 +220,11 @@ export function processFeaturesFromArrays(
     featureMinScores,
     featureMaxScores,
     numFeatures: count,
-    posFeaturePositions: posFeaturePositionsBuf.slice(0, posCount * 2),
-    posFeatureScores: posFeatureScoresBuf.slice(0, posCount),
+    posFeaturePositions: posFeaturePositionsBuf.subarray(0, posCount * 2),
+    posFeatureScores: posFeatureScoresBuf.subarray(0, posCount),
     posNumFeatures: posCount,
-    negFeaturePositions: negFeaturePositionsBuf.slice(0, negCount * 2),
-    negFeatureScores: negFeatureScoresBuf.slice(0, negCount),
+    negFeaturePositions: negFeaturePositionsBuf.subarray(0, negCount * 2),
+    negFeatureScores: negFeatureScoresBuf.subarray(0, negCount),
     negNumFeatures: negCount,
   }
 }
@@ -283,11 +283,11 @@ export function processFeatures(
     featureMinScores,
     featureMaxScores,
     numFeatures: n,
-    posFeaturePositions: posFeaturePositionsBuf.slice(0, posCount * 2),
-    posFeatureScores: posFeatureScoresBuf.slice(0, posCount),
+    posFeaturePositions: posFeaturePositionsBuf.subarray(0, posCount * 2),
+    posFeatureScores: posFeatureScoresBuf.subarray(0, posCount),
     posNumFeatures: posCount,
-    negFeaturePositions: negFeaturePositionsBuf.slice(0, negCount * 2),
-    negFeatureScores: negFeatureScoresBuf.slice(0, negCount),
+    negFeaturePositions: negFeaturePositionsBuf.subarray(0, negCount * 2),
+    negFeatureScores: negFeatureScoresBuf.subarray(0, negCount),
     negNumFeatures: negCount,
   }
 }

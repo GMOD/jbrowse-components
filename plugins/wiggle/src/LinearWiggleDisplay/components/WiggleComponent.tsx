@@ -127,66 +127,54 @@ const WiggleComponent = observer(function WiggleComponent({
   const handleMouseMove = useCallback(
     (event: React.MouseEvent) => {
       const container = containerRef.current
-      if (!container) {
-        return
+      if (container) {
+        const rect = container.getBoundingClientRect()
+        const offsetX = event.clientX - rect.left
+        setOffsetMouseCoord([offsetX, event.clientY - rect.top])
+        setClientMouseCoord([event.clientX, event.clientY])
+
+        const { rpcDataMap, summaryScoreMode } = model
+        const visibleRegions = view.visibleRegions
+        const region = visibleRegions.find(
+          r => offsetX >= r.screenStartPx && offsetX < r.screenEndPx,
+        )
+        const data = region ? rpcDataMap.get(region.regionNumber) : undefined
+
+        if (rpcDataMap.size === 0 || !region || !data) {
+          model.setFeatureUnderMouse(undefined)
+        } else {
+          const blockWidth = region.screenEndPx - region.screenStartPx
+          const frac = (offsetX - region.screenStartPx) / blockWidth
+          const bp = region.reversed
+            ? Math.round(region.end - frac * (region.end - region.start))
+            : Math.round(region.start + frac * (region.end - region.start))
+          const bpOffset = bp - data.regionStart
+
+          const { featurePositions, featureScores, numFeatures } = data
+          const foundIdx = findFeatureAtBp(featurePositions, numFeatures, bpOffset)
+
+          if (foundIdx === -1) {
+            model.setFeatureUnderMouse(undefined)
+          } else {
+            const fStart = featurePositions[foundIdx * 2]! + data.regionStart
+            const fEnd = featurePositions[foundIdx * 2 + 1]! + data.regionStart
+            const score = featureScores[foundIdx]!
+            const minScore = data.featureMinScores[foundIdx]
+            const maxScore = data.featureMaxScores[foundIdx]
+
+            model.setFeatureUnderMouse({
+              refName: region.refName,
+              start: fStart,
+              end: fEnd,
+              score,
+              ...(summaryScoreMode !== 'avg' &&
+              isSummaryFeature(score, minScore, maxScore)
+                ? { summary: true, minScore, maxScore }
+                : {}),
+            })
+          }
+        }
       }
-      const rect = container.getBoundingClientRect()
-      const offsetX = event.clientX - rect.left
-      setOffsetMouseCoord([offsetX, event.clientY - rect.top])
-      setClientMouseCoord([event.clientX, event.clientY])
-
-      const { rpcDataMap, summaryScoreMode } = model
-      if (rpcDataMap.size === 0) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
-
-      const visibleRegions = view.visibleRegions
-      const region = visibleRegions.find(
-        r => offsetX >= r.screenStartPx && offsetX < r.screenEndPx,
-      )
-      if (!region) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
-
-      const data = rpcDataMap.get(region.regionNumber)
-      if (!data) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
-
-      const blockWidth = region.screenEndPx - region.screenStartPx
-      const frac = (offsetX - region.screenStartPx) / blockWidth
-      const bp = region.reversed
-        ? Math.round(region.end - frac * (region.end - region.start))
-        : Math.round(region.start + frac * (region.end - region.start))
-      const bpOffset = bp - data.regionStart
-
-      const { featurePositions, featureScores, numFeatures } = data
-      const foundIdx = findFeatureAtBp(featurePositions, numFeatures, bpOffset)
-
-      if (foundIdx === -1) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
-
-      const fStart = featurePositions[foundIdx * 2]! + data.regionStart
-      const fEnd = featurePositions[foundIdx * 2 + 1]! + data.regionStart
-      const score = featureScores[foundIdx]!
-      const minScore = data.featureMinScores[foundIdx]
-      const maxScore = data.featureMaxScores[foundIdx]
-
-      model.setFeatureUnderMouse({
-        refName: region.refName,
-        start: fStart,
-        end: fEnd,
-        score,
-        ...(summaryScoreMode !== 'avg' &&
-        isSummaryFeature(score, minScore, maxScore)
-          ? { summary: true, minScore, maxScore }
-          : {}),
-      })
     },
     [model, view],
   )
