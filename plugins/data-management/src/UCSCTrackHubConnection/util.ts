@@ -39,6 +39,6 @@ export function makeLoc2(first: string, alt?: string) {
       }
 }
 
-export function resolve(uri: string, baseUri: string) {
+export function resolve(uri: string, baseUri?: string) {
   return new URL(uri, baseUri).href
 }

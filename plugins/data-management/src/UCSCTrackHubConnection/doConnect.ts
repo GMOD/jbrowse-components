@@ -20,7 +20,7 @@ export async function doConnect(self: {
   try {
     const hubFileLocation = getConf(self, 'hubTxtLocation') as UriLocation
     const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
-    const hubUri = resolve(hubFileLocation.uri, hubFileLocation.baseUri ?? '')
+    const hubUri = resolve(hubFileLocation.uri, hubFileLocation.baseUri)
     const { assemblyManager } = session
     if (hubFileText.includes('useOneFile on')) {
       const hub = new SingleFileHub(hubFileText)

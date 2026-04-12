@@ -75,6 +75,14 @@ export class SvgCanvas {
     return [w * Math.abs(this.sx), h * Math.abs(this.sy)]
   }
 
+  private textAnchor() {
+    return this.textAlign === 'center'
+      ? 'middle'
+      : this.textAlign === 'right' || this.textAlign === 'end'
+        ? 'end'
+        : 'start'
+  }
+
   private alphaAttr() {
     return this.globalAlpha < 1 ? ` opacity="${this.globalAlpha}"` : ''
   }
@@ -327,12 +335,7 @@ export class SvgCanvas {
   fillText(text: string, x: number, y: number) {
     const [tx, ty] = this.transformPoint(x, y)
     const alpha = this.alphaAttr()
-    const anchor =
-      this.textAlign === 'center'
-        ? 'middle'
-        : this.textAlign === 'right' || this.textAlign === 'end'
-          ? 'end'
-          : 'start'
+    const anchor = this.textAnchor()
     const baseline =
       this.textBaseline === 'middle'
         ? 'middle'
@@ -348,12 +351,7 @@ export class SvgCanvas {
   strokeText(text: string, x: number, y: number) {
     const [tx, ty] = this.transformPoint(x, y)
     const alpha = this.alphaAttr()
-    const anchor =
-      this.textAlign === 'center'
-        ? 'middle'
-        : this.textAlign === 'right' || this.textAlign === 'end'
-          ? 'end'
-          : 'start'
+    const anchor = this.textAnchor()
     const escaped = escapeXml(text)
     this.parts.push(
       `<text x="${tx}" y="${ty}" fill="none"${this.strokeAttrs()}${fontAttrs(this.font)} text-anchor="${anchor}"${alpha}>${escaped}</text>`,
