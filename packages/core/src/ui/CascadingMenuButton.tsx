@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { IconButton } from '@mui/material'
 
@@ -46,10 +46,6 @@ function CascadingMenuButton({
   const [anchorEl, setAnchorEl] = useState<Element | null>(null)
   const open = Boolean(anchorEl)
 
-  useEffect(() => {
-    setOpen?.(open)
-  }, [open, setOpen])
-
   const isDisabled =
     disabled ?? (Array.isArray(menuItems) && menuItems.length === 0)
 
@@ -61,6 +57,7 @@ function CascadingMenuButton({
             event.stopPropagation()
           }
           setAnchorEl(event.currentTarget)
+          setOpen?.(true)
           onClickExtra?.(event)
         }}
         {...rest}
@@ -73,6 +70,7 @@ function CascadingMenuButton({
           open={open}
           onClose={() => {
             setAnchorEl(null)
+            setOpen?.(false)
           }}
           anchorEl={anchorEl}
           anchorOrigin={anchorOrigin}
