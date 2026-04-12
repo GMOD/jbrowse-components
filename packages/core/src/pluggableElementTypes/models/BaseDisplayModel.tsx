@@ -1,6 +1,6 @@
 import type React from 'react'
 
-import { getParent, types } from '@jbrowse/mobx-state-tree'
+import { getParent, hasParent, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../../configuration/index.ts'
 import { getEffectiveTrackConfig } from '../../util/getConfigOverrides.ts'
@@ -94,19 +94,12 @@ function stateModelFactory() {
        * (e.g., PileupDisplay inside LinearAlignmentsDisplay)
        */
       get parentDisplay() {
-        try {
-          const parent = getParent<any>(self)
-          // Check if immediate parent looks like a display
-          // (has type property ending with 'Display')
-          const parentType = parent?.type
-          if (
-            typeof parentType === 'string' &&
-            parentType.endsWith('Display')
-          ) {
-            return parent
-          }
-        } catch {
-          // Ignore errors walking up tree
+        if (!hasParent(self)) {
+          return undefined
+        }
+        const parent = getParent<any>(self)
+        if (typeof parent?.type === 'string' && parent.type.endsWith('Display')) {
+          return parent
         }
         return undefined
       },
@@ -125,11 +118,7 @@ function stateModelFactory() {
         if (this.parentDisplay?.effectiveRpcDriverName) {
           return this.parentDisplay.effectiveRpcDriverName
         }
-        try {
-          return getConf(this.parentTrack, 'rpcDriverName') || undefined
-        } catch {
-          return undefined
-        }
+        return getConf(this.parentTrack, 'rpcDriverName') || undefined
       },
     }))
     .views(self => ({

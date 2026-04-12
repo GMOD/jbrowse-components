@@ -139,6 +139,12 @@ export default function stateModelFactory(
         | undefined,
     }))
     .views(self => ({
+      get adapterConfig() {
+        const track = getContainingTrack(self)
+        return getConf(track, 'adapter')
+      },
+    }))
+    .views(self => ({
       get scalebarOverlapLeft() {
         const view = getContainingView(self) as { trackLabelsSetting?: string }
         if (view.trackLabelsSetting === 'overlapping') {
@@ -193,18 +199,11 @@ export default function stateModelFactory(
         }))
       },
 
-      get adapterConfig() {
-        const track = getContainingTrack(self)
-        return getConf(track, 'adapter')
-      },
-
       get hasResolution() {
-        const track = getContainingTrack(self)
-        const adapterConfig = getConf(track, 'adapter') as { type: string }
         const { pluginManager } = getEnv(self)
         return (
           pluginManager
-            .getAdapterType(adapterConfig.type)
+            .getAdapterType((self.adapterConfig as { type: string }).type)
             ?.adapterCapabilities.includes('hasResolution') ?? false
         )
       },
@@ -515,8 +514,7 @@ export default function stateModelFactory(
       ) {
         const session = getSession(self)
         const { rpcManager } = session
-        const track = getContainingTrack(self)
-        const adapterConfig = getConf(track, 'adapter')
+        const adapterConfig = self.adapterConfig
 
         if (!adapterConfig) {
           return
