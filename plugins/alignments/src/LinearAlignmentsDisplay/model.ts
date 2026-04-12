@@ -36,6 +36,7 @@ import { SashimiArcsSubModel } from './SashimiArcsSubModel.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import {
   computeLayout,
+  computeMultiRegionLayout,
   computeSortedLayout,
 } from '../RenderPileupDataRPC/sortLayout.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
@@ -56,11 +57,6 @@ import {
 import { getColorForModification } from '../util.ts'
 import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
-import {
-  INTERBASE_HARDCLIP,
-  INTERBASE_INSERTION,
-  INTERBASE_SOFTCLIP,
-} from '../shared/types.ts'
 
 import type { ColorPalette } from './components/AlignmentsRenderer.ts'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
@@ -71,14 +67,6 @@ import type {
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 import type { LegendItem } from '../shared/legendUtils.ts'
 import type { ColorBy, FilterBy, SortedBy } from '../shared/types'
-import type {
-  FeatureData,
-  GapData,
-  HardclipData,
-  InsertionData,
-  MismatchData,
-  SoftclipData,
-} from '../shared/webglRpcTypes.ts'
 import type { CoverageTicks } from '@jbrowse/alignments-core'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -1142,128 +1130,61 @@ export default function stateModelFactory(
           }
         }
 
-        function reconstructFromArrays(data: PileupDataResult) {
-          const features: FeatureData[] = []
-          for (let i = 0; i < data.numReads; i++) {
-            features.push({
-              id: data.readIds[i]!,
-              name: data.readNames[i]!,
-              start: data.regionStart + data.readPositions[i * 2]!,
-              end: data.regionStart + data.readPositions[i * 2 + 1]!,
-              flags: data.readFlags[i]!,
-              mapq: data.readMapqs[i]!,
-              avgBaseQuality: data.readAvgBaseQualities[i] ?? 30,
-              insertSize: data.readInsertSizes[i]!,
-              pairOrientation: data.readPairOrientations[i]!,
-              strand: data.readStrands[i]!,
-            })
-          }
-
-          const mismatches: MismatchData[] = []
-          if (data.mismatchReadIndices) {
-            for (let i = 0; i < data.numMismatches; i++) {
-              mismatches.push({
-                featureId: data.readIds[data.mismatchReadIndices[i]!]!,
-                position: data.regionStart + data.mismatchPositions[i]!,
-                base: data.mismatchBases[i]!,
-                strand: data.mismatchStrands[i]!,
-              })
-            }
-          }
-
-          const gaps: GapData[] = []
-          if (data.gapReadIndices) {
-            for (let i = 0; i < data.numGaps; i++) {
-              gaps.push({
-                featureId: data.readIds[data.gapReadIndices[i]!]!,
-                start: data.regionStart + data.gapPositions[i * 2]!,
-                end: data.regionStart + data.gapPositions[i * 2 + 1]!,
-                type: data.gapTypes[i] === 0 ? 'deletion' : 'skip',
-                strand: 0,
-                featureStrand: 0,
-              })
-            }
-          }
-
-          const insertions: InsertionData[] = []
-          const softclips: SoftclipData[] = []
-          const hardclips: HardclipData[] = []
-          if (data.interbaseReadIndices) {
-            for (let i = 0; i < data.numInterbases; i++) {
-              const readIdx = data.interbaseReadIndices[i]!
-              const featureId = data.readIds[readIdx]!
-              const position = data.regionStart + data.interbasePositions[i]!
-              const length = data.interbaseLengths[i]!
-              const interbaseType = data.interbaseTypes[i]!
-              if (interbaseType === INTERBASE_INSERTION) {
-                insertions.push({
-                  featureId,
-                  position,
-                  length,
-                  sequence: data.interbaseSequences[i],
-                })
-              } else if (interbaseType === INTERBASE_SOFTCLIP) {
-                const readStartOffset = data.readPositions[readIdx * 2]!
-                const ibPosOffset = data.interbasePositions[i]!
-                const isLeftClip = ibPosOffset === readStartOffset
-                const clipStart = isLeftClip ? position - length : position
-                softclips.push({ featureId, position, clipStart, length })
-              } else if (interbaseType === INTERBASE_HARDCLIP) {
-                hardclips.push({ featureId, position, length })
-              }
-            }
-          }
-
-          return {
-            features,
-            mismatches,
-            gaps,
-            insertions,
-            softclips,
-            hardclips,
-          }
-        }
-
+        /**
+         * Apply a readYs Uint16Array (indexed by read index) and maxY to all
+         * parallel Y arrays in PileupDataResult. Used after layout computation.
+         */
         function fillYArraysFromLayout(
           data: PileupDataResult,
-          layoutMap: Map<string, number>,
+          readYs: Uint16Array,
           maxY: number,
         ) {
-          const yLookup = new Uint16Array(data.numReads)
           for (let i = 0; i < data.numReads; i++) {
-            yLookup[i] = layoutMap.get(data.readIds[i]!) ?? 0
-            data.readYs[i] = yLookup[i]!
+            data.readYs[i] = readYs[i]!
           }
-
           if (data.gapReadIndices) {
             for (let i = 0; i < data.numGaps; i++) {
-              data.gapYs[i] = yLookup[data.gapReadIndices[i]!]!
+              data.gapYs[i] = readYs[data.gapReadIndices[i]!]!
             }
           }
           if (data.mismatchReadIndices) {
             for (let i = 0; i < data.numMismatches; i++) {
-              data.mismatchYs[i] = yLookup[data.mismatchReadIndices[i]!]!
+              data.mismatchYs[i] = readYs[data.mismatchReadIndices[i]!]!
             }
           }
           if (data.interbaseReadIndices) {
             for (let i = 0; i < data.numInterbases; i++) {
-              data.interbaseYs[i] = yLookup[data.interbaseReadIndices[i]!]!
+              data.interbaseYs[i] = readYs[data.interbaseReadIndices[i]!]!
             }
           }
           if (data.modificationReadIndices) {
             for (let i = 0; i < data.numModifications; i++) {
-              data.modificationYs[i] =
-                yLookup[data.modificationReadIndices[i]!]!
+              data.modificationYs[i] = readYs[data.modificationReadIndices[i]!]!
             }
           }
           if (data.softclipBaseReadIndices) {
             for (let i = 0; i < data.numSoftclipBases; i++) {
               data.softclipBaseYs[i] =
-                yLookup[data.softclipBaseReadIndices[i]!]!
+                readYs[data.softclipBaseReadIndices[i]!]!
             }
           }
-
           data.maxY = maxY
+        }
+
+        /**
+         * Apply a rowMap (featureId → row) to all parallel Y arrays. Used for
+         * multi-region layout where reads can span region boundaries.
+         */
+        function fillYArraysFromLayoutMap(
+          data: PileupDataResult,
+          rowMap: Map<string, number>,
+          maxY: number,
+        ) {
+          const readYs = new Uint16Array(data.numReads)
+          for (let i = 0; i < data.numReads; i++) {
+            readYs[i] = rowMap.get(data.readIds[i]!) ?? 0
+          }
+          fillYArraysFromLayout(data, readYs, maxY)
         }
 
         function computeAndAssignLayoutForData(
@@ -1280,70 +1201,16 @@ export default function stateModelFactory(
 
           if (entries.length === 1) {
             const [regionNumber, data] = entries[0]!
-            const {
-              features,
-              mismatches,
-              gaps,
-              insertions,
-              softclips,
-              hardclips,
-            } = reconstructFromArrays(data)
-
-            const { layoutMap, maxY } =
-              sortedBy && sortedBy.type !== 'tag'
-                ? computeSortedLayout(
-                    features,
-                    mismatches,
-                    gaps,
-                    { insertions, softclips, hardclips },
-                    undefined,
-                    sortedBy,
-                    showSoftClipping ? softclips : undefined,
-                  )
-                : computeLayout(
-                    features,
-                    showSoftClipping ? softclips : undefined,
-                  )
-
-            fillYArraysFromLayout(data, layoutMap, maxY)
+            const { readYs, maxY } =
+              sortedBy
+                ? computeSortedLayout(data, sortedBy, showSoftClipping)
+                : computeLayout(data, showSoftClipping)
+            fillYArraysFromLayout(data, readYs, maxY)
             self.setRpcData(regionNumber, data)
           } else {
-            const allFeatures = new Map<
-              string,
-              { start: number; end: number; strand: number }
-            >()
-            for (const [, data] of entries) {
-              for (let i = 0; i < data.numReads; i++) {
-                const id = data.readIds[i]!
-                if (!allFeatures.has(id)) {
-                  allFeatures.set(id, {
-                    start: data.regionStart + data.readPositions[i * 2]!,
-                    end: data.regionStart + data.readPositions[i * 2 + 1]!,
-                    strand: data.readStrands[i]!,
-                  })
-                }
-              }
-            }
-
-            const features: FeatureData[] = [...allFeatures.entries()].map(
-              ([id, f]) => ({
-                id,
-                name: '',
-                start: f.start,
-                end: f.end,
-                flags: 0,
-                mapq: 0,
-                avgBaseQuality: 30,
-                insertSize: 0,
-                pairOrientation: 0,
-                strand: f.strand,
-              }),
-            )
-
-            const { layoutMap, maxY } = computeLayout(features)
-
+            const { rowMap, maxY } = computeMultiRegionLayout(entries)
             for (const [regionNumber, data] of entries) {
-              fillYArraysFromLayout(data, layoutMap, maxY)
+              fillYArraysFromLayoutMap(data, rowMap, maxY)
               self.setRpcData(regionNumber, data)
             }
           }

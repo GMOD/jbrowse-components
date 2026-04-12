@@ -205,6 +205,10 @@ export interface PileupDataResult {
   // Unique tag values discovered during feature iteration (for colorBy tag mode)
   newTagValues?: string[]
 
+  // Per-read tag values for tag sort, parallel to readIds (only populated when sortedBy.type === 'tag').
+  // Main thread uses these to compute sorted layout without needing a re-fetch.
+  sortTagValues?: string[]
+
   // Per-read mate position (PNEXT) for main-thread arc computation
   readNextPositions?: Uint32Array
 

@@ -8,7 +8,6 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { computeSortedLayout } from './sortLayout.ts'
 import { buildModTooltipData } from '../shared/buildTooltipData.ts'
 import { calculateModificationCounts } from '../shared/calculateModificationCounts.ts'
 import {
@@ -345,9 +344,7 @@ export async function executeRenderPileupData({
     const nextRefs: string[] = []
     const suppAlignments: string[] = []
     const isTagColorMode = colorBy?.type === 'tag' && colorBy.tag && colorTagMap
-    const sortTagValues: Map<string, string> | undefined = isTagSort
-      ? new Map<string, string>()
-      : undefined
+    const sortTagValues: string[] | undefined = isTagSort ? [] : undefined
 
     for (const feature of featuresArray) {
       const featureId = feature.id()
@@ -365,10 +362,7 @@ export async function executeRenderPileupData({
       }
 
       if (sortTagValues) {
-        const val = extractFeatureTagValue(feature, sortedBy!.tag!)
-        if (val !== '') {
-          sortTagValues.set(featureId, val)
-        }
+        sortTagValues.push(extractFeatureTagValue(feature, sortedBy!.tag!))
       }
 
       const featureMismatches = feature.get('mismatches') as
@@ -457,27 +451,14 @@ export async function executeRenderPileupData({
     modificationArrays,
     segmentArrays,
   } = await updateStatus('Building arrays', statusCallback, async () => {
-    let layoutMaxY = 0
-    let getY: (id: string) => number = () => 0
-    if (isTagSort && sortTagValues) {
-      const { layoutMap: layout, maxY } = computeSortedLayout(
-        features,
-        mismatches,
-        gaps,
-        { insertions, softclips, hardclips },
-        sortTagValues,
-        sortedBy,
-        showSoftClipping ? softclips : undefined,
-      )
-      layoutMaxY = maxY
-      getY = (id: string) => layout.get(id) ?? 0
-    }
-
     const featureIdToIndex = new Map<string, number>()
     for (const [i, f] of features.entries()) {
       featureIdToIndex.set(f.id, i)
     }
     const getReadIndex = (id: string) => featureIdToIndex.get(id) ?? 0
+
+    const layoutMaxY = 0
+    const getY: (id: string) => number = () => 0
 
     const readPositions = new Uint32Array(features.length * 2)
     const readYs = new Uint16Array(features.length)
@@ -682,6 +663,7 @@ export async function executeRenderPileupData({
     insertSizeStats,
 
     newTagValues: uniqueTagValues,
+    sortTagValues,
     readNextRefs: nextRefs,
     readNextPositions: new Uint32Array(nextPositions),
     readSuppAlignments: suppAlignments,
