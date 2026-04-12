@@ -116,9 +116,6 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     scale1: 1,
     maxOffScreenPx: 300,
     minAlignmentLength: 0,
-    alpha: 1,
-    hoveredFeatureId: 0,
-    clickedFeatureId: 0,
   }
 
   constructor(hal: GpuHal, canvas: HTMLCanvasElement) {
@@ -187,9 +184,6 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
       scale1,
       maxOffScreenPx,
       minAlignmentLength,
-      alpha,
-      hoveredFeatureId,
-      clickedFeatureId,
     }
     this.pickingDirty = true
 

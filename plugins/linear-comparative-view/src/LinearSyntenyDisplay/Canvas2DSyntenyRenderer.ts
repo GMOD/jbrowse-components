@@ -100,14 +100,14 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
         continue
       }
 
-      const ci = i * 4
-      let r = data.colors[ci]!
-      let g = data.colors[ci + 1]!
-      let b = data.colors[ci + 2]!
-      const a = data.colors[ci + 3]!
+      const packed = data.colors[i]!
+      const a = ((packed >>> 24) & 0xff) / 255
       if (a < 0.01) {
         continue
       }
+      let r = (packed & 0xff) / 255
+      let g = ((packed >> 8) & 0xff) / 255
+      let b = ((packed >> 16) & 0xff) / 255
 
       const padTop = data.padTops[i]!
       const padBottom = data.padBottoms[i]!
@@ -213,8 +213,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
       if (data.queryTotalLengths[i]! < minAlignmentLength) {
         continue
       }
-      const ci = i * 4
-      if (data.colors[ci + 3]! < 0.01) {
+      if (((data.colors[i]! >>> 24) & 0xff) / 255 < 0.01) {
         continue
       }
 

@@ -18,7 +18,7 @@ export const lineLimit = 3
 export const oobLimit = 1600
 
 // Simple hash function to generate consistent colors for query names
-function hashString(str: string) {
+export function hashString(str: string) {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i)

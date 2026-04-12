@@ -40,7 +40,7 @@ function makeInstanceData(
     x2: new Float32Array(count).fill(100),
     x3: new Float32Array(count).fill(110),
     x4: new Float32Array(count).fill(20),
-    colors: new Float32Array(count * 4).fill(0.5),
+    colors: new Uint32Array(count).fill(0x80808080),
     featureIds: new Float32Array(count).fill(1),
     isCurves: new Float32Array(count).fill(0),
     queryTotalLengths: new Float32Array(count).fill(10000),
@@ -134,7 +134,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    const colors = new Float32Array([0.5, 0.5, 0.5, 0])
+    const colors = new Uint32Array([0x00808080]) // grey, alpha=0
     renderer.uploadGeometry(makeInstanceData(1, { colors }))
     renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
 
@@ -263,7 +263,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     renderer.resize(800, 100)
     renderer.uploadGeometry(
       makeInstanceData(1, {
-        colors: new Float32Array([0.5, 0.5, 0.5, 0]),
+        colors: new Uint32Array([0x00808080]), // grey, alpha=0
       }),
     )
     renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
