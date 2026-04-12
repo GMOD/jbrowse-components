@@ -1330,7 +1330,7 @@ export default function stateModelFactory(
           const view = getContainingView(self) as LGV
           return {
             adapterConfig: self.adapterConfigSnapshot,
-            fetchSizeLimit: self.getConfWithOverride<number>('fetchSizeLimit'),
+            fetchSizeLimit: self.fetchSizeLimit,
             userByteSizeLimit: self.userByteSizeLimit,
             visibleBp: view.visibleBp,
           }
