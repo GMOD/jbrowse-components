@@ -663,13 +663,11 @@ export default function stateModelFactory(
                     visibleEntries,
                     allEntries,
                   )
-                  console.log('[MultiWiggle] VisibleScoreRange computed:', JSON.stringify(range), 'prev:', JSON.stringify(self.visibleScoreRange))
                   if (
                     range &&
                     (range[0] !== self.visibleScoreRange?.[0] ||
                       range[1] !== self.visibleScoreRange[1])
                   ) {
-                    console.log('[MultiWiggle] VisibleScoreRange setting new range:', JSON.stringify(range))
                     self.setVisibleScoreRange(range)
                   }
                 } catch (e) {

@@ -117,6 +117,32 @@ export function makeWhiskersSourceData(
   return sources
 }
 
+// Binary search for the feature at a given base-pair offset.
+// featurePositions is sorted by start (featurePositions[i*2]), so we find the
+// rightmost feature whose start <= bpOffset, then confirm bpOffset < its end.
+export function findFeatureAtBp(
+  featurePositions: Uint32Array,
+  numFeatures: number,
+  bpOffset: number,
+) {
+  let lo = 0
+  let hi = numFeatures - 1
+  let found = -1
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1
+    if (featurePositions[mid * 2]! <= bpOffset) {
+      found = mid
+      lo = mid + 1
+    } else {
+      hi = mid - 1
+    }
+  }
+  if (found === -1) {
+    return -1
+  }
+  return bpOffset < featurePositions[found * 2 + 1]! ? found : -1
+}
+
 export function isSummaryFeature(
   score: number,
   minScore: number | undefined,

@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
-import { WIGGLE_FUDGE_FACTOR, normalizeScore } from '../util.ts'
+import { WIGGLE_FUDGE_FACTOR } from '../util.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
@@ -208,12 +208,32 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
     const isLog = scaleType === SCALE_TYPE_LOG
     const domMin = domainY[0]
     const domMax = domainY[1]
-    const zeroNorm = normalizeScore(0, domMin, domMax, isLog)
-    const maxDist = Math.max(zeroNorm, 1 - zeroNorm)
-    const invMaxDist = maxDist > 0.0001 ? 1 / maxDist : 0
     const rDelta = r - 255
     const gDelta = g - 255
     const bDelta = b - 255
+
+    // Pre-compute normalization parameters to avoid recomputing per feature
+    let normalizeFeature: (score: number) => number
+    let zeroNorm: number
+    if (isLog) {
+      const logMin = Math.log2(Math.max(domMin, 1))
+      const logMax = Math.log2(Math.max(domMax, 1))
+      const logRange = logMax - logMin
+      const invLogRange = logRange > 0 ? 1 / logRange : 0
+      zeroNorm = logRange > 0 ? Math.max(0, Math.min(1, (0 - logMin) * invLogRange)) : 0
+      normalizeFeature = (score: number) => {
+        const logScore = Math.log2(Math.max(score, 1))
+        return Math.max(0, Math.min(1, (logScore - logMin) * invLogRange))
+      }
+    } else {
+      const range = domMax - domMin
+      const invRange = range > 0 ? 1 / range : 0
+      zeroNorm = range > 0 ? Math.max(0, Math.min(1, (0 - domMin) * invRange)) : 0
+      normalizeFeature = (score: number) =>
+        Math.max(0, Math.min(1, (score - domMin) * invRange))
+    }
+    const maxDist = Math.max(zeroNorm, 1 - zeroNorm)
+    const invMaxDist = maxDist > 0.0001 ? 1 / maxDist : 0
 
     for (let i = 0; i < source.numFeatures; i++) {
       const startBp = source.featurePositions[i * 2]! + regionStart
@@ -221,15 +241,8 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
       const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
       const w = Math.max(1.5, x2 - x1 + WIGGLE_FUDGE_FACTOR)
-
-      const norm = normalizeScore(
-        source.featureScores[i]!,
-        domMin,
-        domMax,
-        isLog,
-      )
+      const norm = normalizeFeature(source.featureScores[i]!)
       const t = Math.abs(norm - zeroNorm) * invMaxDist
-
       const cr = (255 + rDelta * t) | 0
       const cg = (255 + gDelta * t) | 0
       const cb = (255 + bDelta * t) | 0

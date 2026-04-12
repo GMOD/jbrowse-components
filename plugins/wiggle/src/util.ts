@@ -184,10 +184,12 @@ export function processFeaturesFromArrays(
   const featureScores = new Float32Array(count)
   const featureMinScores = new Float32Array(count)
   const featureMaxScores = new Float32Array(count)
-  const posPositions: number[] = []
-  const posScores: number[] = []
-  const negPositions: number[] = []
-  const negScores: number[] = []
+  const posFeaturePositionsBuf = new Uint32Array(count * 2)
+  const posFeatureScoresBuf = new Float32Array(count)
+  const negFeaturePositionsBuf = new Uint32Array(count * 2)
+  const negFeatureScoresBuf = new Float32Array(count)
+  let posCount = 0
+  let negCount = 0
 
   for (let i = 0; i < count; i++) {
     const score = scores[i]!
@@ -200,11 +202,15 @@ export function processFeaturesFromArrays(
     featureMaxScores[i] = maxScores ? (maxScores[i] ?? score) : score
 
     if (score >= bicolorPivot) {
-      posPositions.push(startOffset, endOffset)
-      posScores.push(score)
+      posFeaturePositionsBuf[posCount * 2] = startOffset
+      posFeaturePositionsBuf[posCount * 2 + 1] = endOffset
+      posFeatureScoresBuf[posCount] = score
+      posCount++
     } else {
-      negPositions.push(startOffset, endOffset)
-      negScores.push(score)
+      negFeaturePositionsBuf[negCount * 2] = startOffset
+      negFeaturePositionsBuf[negCount * 2 + 1] = endOffset
+      negFeatureScoresBuf[negCount] = score
+      negCount++
     }
   }
 
@@ -214,12 +220,12 @@ export function processFeaturesFromArrays(
     featureMinScores,
     featureMaxScores,
     numFeatures: count,
-    posFeaturePositions: new Uint32Array(posPositions),
-    posFeatureScores: new Float32Array(posScores),
-    posNumFeatures: posScores.length,
-    negFeaturePositions: new Uint32Array(negPositions),
-    negFeatureScores: new Float32Array(negScores),
-    negNumFeatures: negScores.length,
+    posFeaturePositions: posFeaturePositionsBuf.slice(0, posCount * 2),
+    posFeatureScores: posFeatureScoresBuf.slice(0, posCount),
+    posNumFeatures: posCount,
+    negFeaturePositions: negFeaturePositionsBuf.slice(0, negCount * 2),
+    negFeatureScores: negFeatureScoresBuf.slice(0, negCount),
+    negNumFeatures: negCount,
   }
 }
 
@@ -228,14 +234,17 @@ export function processFeatures(
   regionStart: number,
   bicolorPivot: number,
 ): WiggleFeatureArrays {
-  const featurePositions = new Uint32Array(features.length * 2)
-  const featureScores = new Float32Array(features.length)
-  const featureMinScores = new Float32Array(features.length)
-  const featureMaxScores = new Float32Array(features.length)
-  const posPositions: number[] = []
-  const posScores: number[] = []
-  const negPositions: number[] = []
-  const negScores: number[] = []
+  const n = features.length
+  const featurePositions = new Uint32Array(n * 2)
+  const featureScores = new Float32Array(n)
+  const featureMinScores = new Float32Array(n)
+  const featureMaxScores = new Float32Array(n)
+  const posFeaturePositionsBuf = new Uint32Array(n * 2)
+  const posFeatureScoresBuf = new Float32Array(n)
+  const negFeaturePositionsBuf = new Uint32Array(n * 2)
+  const negFeatureScoresBuf = new Float32Array(n)
+  let posCount = 0
+  let negCount = 0
 
   for (const [i, feature] of features.entries()) {
     const start = feature.get('start') as number
@@ -256,11 +265,15 @@ export function processFeatures(
       : score
 
     if (score >= bicolorPivot) {
-      posPositions.push(startOffset, endOffset)
-      posScores.push(score)
+      posFeaturePositionsBuf[posCount * 2] = startOffset
+      posFeaturePositionsBuf[posCount * 2 + 1] = endOffset
+      posFeatureScoresBuf[posCount] = score
+      posCount++
     } else {
-      negPositions.push(startOffset, endOffset)
-      negScores.push(score)
+      negFeaturePositionsBuf[negCount * 2] = startOffset
+      negFeaturePositionsBuf[negCount * 2 + 1] = endOffset
+      negFeatureScoresBuf[negCount] = score
+      negCount++
     }
   }
 
@@ -269,13 +282,13 @@ export function processFeatures(
     featureScores,
     featureMinScores,
     featureMaxScores,
-    numFeatures: features.length,
-    posFeaturePositions: new Uint32Array(posPositions),
-    posFeatureScores: new Float32Array(posScores),
-    posNumFeatures: posScores.length,
-    negFeaturePositions: new Uint32Array(negPositions),
-    negFeatureScores: new Float32Array(negScores),
-    negNumFeatures: negScores.length,
+    numFeatures: n,
+    posFeaturePositions: posFeaturePositionsBuf.slice(0, posCount * 2),
+    posFeatureScores: posFeatureScoresBuf.slice(0, posCount),
+    posNumFeatures: posCount,
+    negFeaturePositions: negFeaturePositionsBuf.slice(0, negCount * 2),
+    negFeatureScores: negFeatureScoresBuf.slice(0, negCount),
+    negNumFeatures: negCount,
   }
 }
 

@@ -21,6 +21,7 @@ import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
 import {
+  findFeatureAtBp,
   getRowTop,
   isSummaryFeature,
   makeRenderState,
@@ -117,19 +118,15 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
   const view = getContainingView(model) as LGV
 
-  console.log('[MultiWiggleComponent] RENDER, isLoading:', model.isLoading, 'canvasDrawn:', model.canvasDrawn, 'ready:', ready, 'domain:', !!model.domain)
-
   const renderNow = useEffectEvent(() => {
     const renderer = rendererRef.current
     if (!renderer || !view.initialized) {
-      console.log('[MultiWiggleComponent] renderNow skipped, renderer:', !!renderer, 'view.initialized:', view.initialized)
       return
     }
     const { domain } = model
     const visibleRegions = view.visibleRegions
     const totalWidth = view.trackWidthPx
     if (!domain || visibleRegions.length === 0) {
-      console.log('[MultiWiggleComponent] renderNow: skipping empty render (no domain or no visible regions)')
       return
     }
     const blocks: WiggleRenderBlock[] = visibleRegions.map(vr => ({
@@ -139,53 +136,28 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       screenEndPx: vr.screenEndPx,
       reversed: vr.reversed ?? false,
     }))
-    try {
-      renderer.renderBlocks(
-        blocks,
-        makeRenderState(
-          domain,
-          model.scaleType,
-          model.renderingType,
-          totalWidth,
-          model.height,
-        ),
-      )
-      console.log('[MultiWiggleComponent] renderBlocks done')
-    } catch (e) {
-      console.error('[MultiWiggleComponent] renderBlocks threw:', e)
-    }
+    renderer.renderBlocks(
+      blocks,
+      makeRenderState(
+        domain,
+        model.scaleType,
+        model.renderingType,
+        totalWidth,
+        model.height,
+      ),
+    )
   })
 
   useEffect(() => {
     const renderer = rendererRef.current
-    console.log('[MultiWiggleComponent] upload useEffect running, ready:', ready, 'renderer:', !!renderer, 'isLoading:', model.isLoading)
     if (!renderer || !ready) {
       return
     }
 
-    // Prove rAF works before any WebGPU submission. If this never fires,
-    // rAF was broken from the start (not due to WebGPU stalling the paint
-    // cycle).
-    let preRafBeat = 0
-    const preTick = () => {
-      preRafBeat++
-      console.log(`[MultiWiggleComponent] pre-render rAF heartbeat #${preRafBeat}`)
-      if (preRafBeat < 5) {
-        requestAnimationFrame(preTick)
-      }
-    }
-    requestAnimationFrame(preTick)
-
     let lastDataMap: unknown = null
-    let autorunCount = 0
-    let pendingRaf: number | null = null
-    let renderCallCount = 0
 
-    console.log('[MultiWiggleComponent] creating upload autorun')
     return autorun(() => {
-      const fireIndex = ++autorunCount
       const dataMap = model.rpcDataMap
-      console.log('[MultiWiggleComponent] autorun fired #' + fireIndex + ', dataMap.size:', dataMap.size, 'isLoading:', model.isLoading, 'domain:', !!model.domain)
 
       if (lastDataMap !== dataMap) {
         lastDataMap = dataMap
@@ -226,41 +198,6 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       if (dataMap.size > 0 && model.domain) {
         model.setCanvasDrawn(true)
       }
-      if (dataMap.size > 0 && model.domain) {
-        setTimeout(() => {
-          console.log('[MultiWiggleComponent] health-check setTimeout: JS event loop OK after setCanvasDrawn, isLoading:', model.isLoading, 'canvasDrawn:', model.canvasDrawn)
-        }, 0)
-        setTimeout(() => {
-          console.log('[MultiWiggleComponent] health-check 2s: isLoading:', model.isLoading, 'canvasDrawn:', model.canvasDrawn)
-        }, 2000)
-        // Heartbeat — runs indefinitely. If this stops firing, the main
-        // thread is frozen. If it keeps firing but the canvas is blank,
-        // the browser is running JS fine but WebGPU isn't presenting.
-        let beat = 0
-        setInterval(() => {
-          beat++
-          console.log(
-            `[MultiWiggleComponent] heartbeat #${beat}, isLoading:`,
-            model.isLoading,
-            'canvasDrawn:',
-            model.canvasDrawn,
-          )
-        }, 1000)
-        // rAF chain that runs indefinitely so we can tell whether rAFs
-        // ever resume firing. If this never logs, rAF/paint is stuck.
-        let rafBeat = 0
-        const tick = () => {
-          rafBeat++
-          if (rafBeat <= 5 || rafBeat % 30 === 0) {
-            console.log(
-              `[MultiWiggleComponent] rAF heartbeat #${rafBeat}`,
-            )
-          }
-          requestAnimationFrame(tick)
-        }
-        requestAnimationFrame(tick)
-      }
-      console.log('[MultiWiggleComponent] autorun #' + fireIndex + ' complete')
     })
   }, [model, view, ready, rendererRef])
 
@@ -327,30 +264,26 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
           if (!sources.some(s => s.name === src.name)) {
             continue
           }
-          for (let i = 0; i < src.numFeatures; i++) {
-            const fStart = src.featurePositions[i * 2]!
-            const fEnd = src.featurePositions[i * 2 + 1]!
-            if (bpOffset >= fStart && bpOffset < fEnd) {
-              const score = src.featureScores[i]!
-              const minS = src.featureMinScores[i]
-              const maxS = src.featureMaxScores[i]
-              const dist = Math.abs(score - mouseScore)
-              if (dist < bestDist) {
-                bestDist = dist
-                bestSource = src
-                bestScore = score
-                bestIdx = i
-              }
-              allSources.push({
-                source: src.name,
-                score,
-                ...(summaryScoreMode !== 'avg' &&
-                isSummaryFeature(score, minS, maxS)
-                  ? { summary: true, minScore: minS, maxScore: maxS }
-                  : {}),
-              })
-              break
+          const i = findFeatureAtBp(src.featurePositions, src.numFeatures, bpOffset)
+          if (i !== -1) {
+            const score = src.featureScores[i]!
+            const minS = src.featureMinScores[i]
+            const maxS = src.featureMaxScores[i]
+            const dist = Math.abs(score - mouseScore)
+            if (dist < bestDist) {
+              bestDist = dist
+              bestSource = src
+              bestScore = score
+              bestIdx = i
             }
+            allSources.push({
+              source: src.name,
+              score,
+              ...(summaryScoreMode !== 'avg' &&
+              isSummaryFeature(score, minS, maxS)
+                ? { summary: true, minScore: minS, maxScore: maxS }
+                : {}),
+            })
           }
         }
 
@@ -397,15 +330,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       }
 
       const { featurePositions, featureScores, numFeatures } = rpcSource
-      let foundIdx = -1
-      for (let i = 0; i < numFeatures; i++) {
-        const fStart = featurePositions[i * 2]!
-        const fEnd = featurePositions[i * 2 + 1]!
-        if (bpOffset >= fStart && bpOffset < fEnd) {
-          foundIdx = i
-          break
-        }
-      }
+      const foundIdx = findFeatureAtBp(featurePositions, numFeatures, bpOffset)
 
       if (foundIdx === -1) {
         model.setFeatureUnderMouse(undefined)

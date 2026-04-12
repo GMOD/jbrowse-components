@@ -16,6 +16,7 @@ import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import {
+  findFeatureAtBp,
   isSummaryFeature,
   makeRenderState,
 } from '../../shared/wiggleComponentUtils.ts'
@@ -76,17 +77,14 @@ const WiggleComponent = observer(function WiggleComponent({
 
   useEffect(() => {
     const renderer = rendererRef.current
-    console.log('[WiggleComponent] upload useEffect running, ready:', ready, 'renderer:', !!renderer)
     if (!renderer || !ready) {
       return
     }
 
     let lastDataMap: unknown = null
 
-    console.log('[WiggleComponent] creating data upload autorun')
     return autorun(() => {
       const dataMap = model.rpcDataMap
-      console.log('[WiggleComponent] autorun fired, dataMap.size:', dataMap.size, 'isLoading:', model.isLoading, 'domain:', !!model.domain)
 
       if (lastDataMap !== dataMap) {
         lastDataMap = dataMap
@@ -112,10 +110,8 @@ const WiggleComponent = observer(function WiggleComponent({
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _dv = model.dataVersion
 
-      console.log('[WiggleComponent] calling renderNow')
       renderNow()
       if (dataMap.size > 0 && model.domain) {
-        console.log('[WiggleComponent] setCanvasDrawn(true)')
         model.setCanvasDrawn(true)
       }
     })
@@ -168,15 +164,7 @@ const WiggleComponent = observer(function WiggleComponent({
       const bpOffset = bp - data.regionStart
 
       const { featurePositions, featureScores, numFeatures } = data
-      let foundIdx = -1
-      for (let i = 0; i < numFeatures; i++) {
-        const fStart = featurePositions[i * 2]!
-        const fEnd = featurePositions[i * 2 + 1]!
-        if (bpOffset >= fStart && bpOffset < fEnd) {
-          foundIdx = i
-          break
-        }
-      }
+      const foundIdx = findFeatureAtBp(featurePositions, numFeatures, bpOffset)
 
       if (foundIdx === -1) {
         model.setFeatureUnderMouse(undefined)
