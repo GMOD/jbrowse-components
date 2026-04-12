@@ -24,7 +24,8 @@ export async function testLinkedReadsDisplay({
 
   if (displayMode === 'arc') {
     await user.click(await findByText('Show...'))
-    await user.click(await findByText('Show arcs'))
+    await user.click(await findByText('Arcs...'))
+    await user.click(await findByText('Show paired/supplementary arcs'))
   } else {
     // cloud and stack modes use linked reads
     await user.click(await findByText('Show...'))
