@@ -1,3 +1,27 @@
+## Migrate to pnpm 11 when released
+
+pnpm 11 no longer reads settings from `package.json`. When it is released:
+
+- Remove the `"pnpm"` field from `package.json`
+- In `pnpm-workspace.yaml`, replace `onlyBuiltDependencies` list with an
+  `allowBuilds` map:
+  ```yaml
+  allowBuilds:
+    canvas: true
+    electron: true
+    electron-chromedriver: true
+    esbuild: true
+    puppeteer: true
+  ```
+- Move `minimumReleaseAgeExclude` to `pnpm-workspace.yaml` (drop
+  `minimumReleaseAge: "1440"` — it is the v11 default)
+- In all CI workflows, replace `pnpm install --frozen-lockfile` with `pnpm ci`
+- Bump `version: 10` → `version: 11` in every `pnpm/action-setup` step across
+  `.github/workflows/push.yml`, `release.yml`, `publish.yml`, `update-docs.yml`
+- Check `website/.npmrc` — `ignore-workspace-root-check=true` may need to move
+  out of `.npmrc` (which becomes auth/registry only in v11); find the correct
+  `pnpm-workspace.yaml` key
+
 ## Fix prettier config
 
 - It is saving files with quote and added semicolons. See ~/src/mysetup.nvim

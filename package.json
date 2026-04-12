@@ -31,6 +31,19 @@
     "test:browser:compare": "pnpm --filter @jbrowse/web build && node --experimental-strip-types products/jbrowse-web/browser-tests/compare-backends.ts",
     "test:e2e:desktop": "pnpm --filter @jbrowse/desktop test:e2e"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "canvas",
+      "electron",
+      "electron-chromedriver",
+      "esbuild",
+      "puppeteer"
+    ],
+    "minimumReleaseAge": "1440",
+    "minimumReleaseAgeExclude": [
+      "@gmod/*"
+    ]
+  },
   "devDependencies": {
     "@babel/core": "^7.29.0",
     "@babel/preset-env": "^7.29.2",

@@ -62,7 +62,7 @@ jobs:
           node-version: '24'
           cache: 'pnpm'
       - name: Install deps
-        run: pnpm ci
+        run: pnpm install --frozen-lockfile
       - name: Test codebase
         id: tests
         run: pnpm test-ci
@@ -121,7 +121,7 @@ jobs:
           node-version: '24'
           cache: 'pnpm'
       - name: Install deps
-        run: pnpm ci
+        run: pnpm install --frozen-lockfile
       - name: Check @jbrowse/core exports are up-to-date
         run: |
           node packages/core/scripts/generateExports.mjs
@@ -151,7 +151,7 @@ jobs:
           node-version: '24'
           cache: 'pnpm'
       - name: Install deps
-        run: pnpm ci
+        run: pnpm install --frozen-lockfile
       - name: Check codebase format
         run: pnpm prettier --check .
 
@@ -189,7 +189,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install deps
-        run: pnpm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Pack artifacts for component tests
         run: node --experimental-strip-types scripts/pack.ts
@@ -283,7 +283,7 @@ jobs:
           node-version: '24'
           cache: 'pnpm'
       - name: Install deps
-        run: pnpm ci
+        run: pnpm install --frozen-lockfile
       - name: Validate branch/tag name for S3 path safety
         env:
           REF_NAME: ${{ github.ref_name }}
@@ -368,7 +368,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install deps
-        run: pnpm ci
+        run: pnpm install --frozen-lockfile
         working-directory: website
       - name: Build website
         run: |
@@ -484,7 +484,7 @@ jobs:
           node-version: '22'
           cache: 'pnpm'
       - name: Install deps
-        run: pnpm ci
+        run: pnpm install --frozen-lockfile
       - name: Build and test Electron on Windows
         run: pnpm test:e2e:ci:win
         working-directory: products/jbrowse-desktop
