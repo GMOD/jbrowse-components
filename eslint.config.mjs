@@ -30,6 +30,8 @@ export default defineConfig(
       '**/.storybook',
       '**/umd_plugin.js',
 
+      'plugins/variants/src/VariantRPC/benchmark-genotypes.mjs',
+
       'products/jbrowse-desktop/test/e2e.ts',
 
       // Vendored/external code

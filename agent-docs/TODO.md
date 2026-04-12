@@ -189,3 +189,9 @@ packages/core plugins/gtf plugins/arc packages/app-core products/jbrowse-web
 products/jbrowse-desktop etc.
 
 ImportForm dotplot ImportForm synteny
+
+## Continue benchmark-genotypes work
+
+ld and multi sample
+
+publish hclust also and merge
