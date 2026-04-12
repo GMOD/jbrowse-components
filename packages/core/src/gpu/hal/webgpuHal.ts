@@ -27,9 +27,11 @@ const MAX_UNIFORM_SLOTS = 512
 const MSAA_SAMPLE_COUNT: 1 | 4 = 4
 
 function gpuBlendState(bs: BlendState): GPUBlendState {
+  // RGB uses the caller-supplied factors; alpha always uses ONE / ONE_MINUS_SRC_ALPHA
+  // so the destination alpha accumulates correctly (matches webgl2Hal.applyBlendState).
   return {
     color: { srcFactor: bs.srcFactor, dstFactor: bs.dstFactor, operation: 'add' },
-    alpha: { srcFactor: bs.srcFactor, dstFactor: bs.dstFactor, operation: 'add' },
+    alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' },
   }
 }
 

@@ -480,19 +480,15 @@ export class WebGL2Hal implements GpuHal {
       return
     }
     gl.enable(gl.BLEND)
+    // RGB and alpha get different blend factors (blendFuncSeparate):
+    //   RGB:   out = src_rgb * srcFactor + dst_rgb * dstFactor  (default: src-alpha / 1-src-alpha)
+    //   Alpha: out = src_alpha * 1 + dst_alpha * (1 - src_alpha)
+    // The alpha channel uses ONE/ONE_MINUS_SRC_ALPHA regardless of the custom blend state;
+    // using the RGB srcFactor for alpha too would give out_alpha = src_alpha² + ..., which is wrong.
     const bs = desc.blendState
-    if (bs) {
-      const src = glBlendFactor(gl, bs.srcFactor)
-      const dst = glBlendFactor(gl, bs.dstFactor)
-      gl.blendFunc(src, dst)
-    } else {
-      gl.blendFuncSeparate(
-        gl.SRC_ALPHA,
-        gl.ONE_MINUS_SRC_ALPHA,
-        gl.ONE,
-        gl.ONE_MINUS_SRC_ALPHA,
-      )
-    }
+    const src = bs ? glBlendFactor(gl, bs.srcFactor) : gl.SRC_ALPHA
+    const dst = bs ? glBlendFactor(gl, bs.dstFactor) : gl.ONE_MINUS_SRC_ALPHA
+    gl.blendFuncSeparate(src, dst, gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
   }
 
   private bindTextures(pass: PassState) {
