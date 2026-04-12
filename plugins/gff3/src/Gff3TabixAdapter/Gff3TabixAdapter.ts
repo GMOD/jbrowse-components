@@ -70,16 +70,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { gff, dontRedispatchSet } = await this.configure(opts)
-      const metadata = await gff.getMetadata()
-      await this.getFeaturesHelper(
-        query,
-        opts,
-        gff,
-        dontRedispatchSet,
-        metadata,
-        observer,
-        true,
-      )
+      await this.getFeaturesHelper(query, opts, gff, dontRedispatchSet, observer, true)
     }, opts.stopToken)
   }
 
@@ -88,7 +79,6 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
     opts: BaseOptions,
     gff: TabixIndexedFile,
     dontRedispatchSet: Set<string>,
-    metadata: { columnNumbers: { start: number; end: number } },
     observer: Observer<Feature>,
     allowRedispatch: boolean,
     originalQuery = query,
@@ -145,7 +135,6 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
             opts,
             gff,
             dontRedispatchSet,
-            metadata,
             observer,
             false,
             query,
