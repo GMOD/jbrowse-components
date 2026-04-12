@@ -164,6 +164,14 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
           slotProps={{
             ...paramSlotProps,
             ...TextFieldProps.slotProps,
+            input: {
+              ...paramSlotProps?.input,
+              ...TextFieldProps.slotProps?.input,
+            },
+            htmlInput: {
+              ...paramSlotProps?.htmlInput,
+              ...TextFieldProps.slotProps?.htmlInput,
+            },
           }}
           placeholder="Search for location"
         />
