@@ -34,27 +34,31 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
     const { header, featureMap } = parseGffBuffer(buffer, statusCallback)
 
     const intervalTreeMap = Object.fromEntries(
-      Object.entries(featureMap).map(([refName, lines]) => [
-        refName,
-        (sc?: (arg: string) => void) => {
-          if (!this.calculatedIntervalTreeMap[refName]) {
-            sc?.('Parsing GFF data')
-            const intervalTree = new IntervalTree<Feature>()
-            const features = parseStringSyncJBrowse(lines)
-            for (let i = 0, l = features.length; i < l; i++) {
-              const f = features[i]!
-              const obj = new SimpleFeature({
-                data: f as unknown as Record<string, unknown>,
-                id: `${this.id}-${refName}-${i}`,
-              })
-              intervalTree.insert([f.start, f.end], obj)
-            }
+      Object.entries(featureMap).map(([refName, linesStr]) => {
+        let lines: string | null = linesStr
+        return [
+          refName,
+          (sc?: (arg: string) => void) => {
+            if (!this.calculatedIntervalTreeMap[refName]) {
+              sc?.('Parsing GFF data')
+              const intervalTree = new IntervalTree<Feature>()
+              const features = parseStringSyncJBrowse(lines!)
+              lines = null
+              for (let i = 0, l = features.length; i < l; i++) {
+                const f = features[i]!
+                const obj = new SimpleFeature({
+                  data: f as unknown as Record<string, unknown>,
+                  id: `${this.id}-${refName}-${i}`,
+                })
+                intervalTree.insert([f.start, f.end], obj)
+              }
 
-            this.calculatedIntervalTreeMap[refName] = intervalTree
-          }
-          return this.calculatedIntervalTreeMap[refName]
-        },
-      ]),
+              this.calculatedIntervalTreeMap[refName] = intervalTree
+            }
+            return this.calculatedIntervalTreeMap[refName]
+          },
+        ]
+      }),
     )
 
     return {

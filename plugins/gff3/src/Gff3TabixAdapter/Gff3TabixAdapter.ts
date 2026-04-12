@@ -17,6 +17,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
   private configured?: Promise<{
     gff: TabixIndexedFile
     dontRedispatchSet: Set<string>
+    header: string
   }>
 
   private async configurePre(_opts?: BaseOptions) {
@@ -62,21 +63,31 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
   }
 
   public async getHeader(opts: BaseOptions = {}) {
-    const { gff } = await this.configure(opts)
-    return gff.getHeader()
+    const { header } = await this.configure(opts)
+    return header
   }
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { gff } = await this.configure(opts)
+      const { gff, dontRedispatchSet } = await this.configure(opts)
       const metadata = await gff.getMetadata()
-      await this.getFeaturesHelper(query, opts, metadata, observer, true)
+      await this.getFeaturesHelper(
+        query,
+        opts,
+        gff,
+        dontRedispatchSet,
+        metadata,
+        observer,
+        true,
+      )
     }, opts.stopToken)
   }
 
   private async getFeaturesHelper(
     query: Region,
     opts: BaseOptions,
+    gff: TabixIndexedFile,
+    dontRedispatchSet: Set<string>,
     metadata: { columnNumbers: { start: number; end: number } },
     observer: Observer<Feature>,
     allowRedispatch: boolean,
@@ -86,7 +97,6 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
     try {
       const lines: (LineRecord & { type: string })[] = []
 
-      const { dontRedispatchSet, gff } = await this.configure(opts)
       await updateStatus('Downloading features', statusCallback, () =>
         gff.getLines(
           query.refName,
@@ -133,6 +143,8 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
           await this.getFeaturesHelper(
             { ...query, start: minStart, end: maxEnd },
             opts,
+            gff,
+            dontRedispatchSet,
             metadata,
             observer,
             false,
