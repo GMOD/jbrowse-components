@@ -31,7 +31,7 @@ export function makeLoc2(first: string, alt?: string) {
   return first
     ? {
         uri: first,
-        locationType: 'LocalPath',
+        locationType: 'LocalPathLocation',
       }
     : {
         uri: alt,
