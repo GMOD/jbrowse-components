@@ -23,7 +23,7 @@ export default function SessionWarningDialog({
           This link contains a session that has the following unknown plugins:
           <ul>
             {reason.map(r => (
-              <li key={JSON.stringify(r)}>
+              <li key={pluginUrl(r)}>
                 {pluginDescriptionString(r)} - ({pluginUrl(r)})
               </li>
             ))}

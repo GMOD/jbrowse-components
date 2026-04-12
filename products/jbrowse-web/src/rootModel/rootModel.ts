@@ -232,6 +232,9 @@ export default function RootModel({
                           }
 
                           const ret = await self.sessionDB.get('metadata', s.id)
+                          if (!isAlive(self)) {
+                            return
+                          }
                           await sessionDB.put(
                             'metadata',
                             {
@@ -244,6 +247,9 @@ export default function RootModel({
                             },
                             s.id,
                           )
+                        }
+                        if (!isAlive(self)) {
+                          return
                         }
                         // step 2. refetch the metadata
                         await self.fetchSessionMetadata()

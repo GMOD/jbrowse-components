@@ -46,7 +46,9 @@ const ShareDialog = observer(function ShareDialog({
   const url = session.shareURL
   const currentSetting =
     localStorageGetItem(SHARE_URL_LOCALSTORAGE_KEY) || 'short'
-  const snap = getSnapshot(session)
+  // Capture snapshot once when dialog opens — we don't want to re-upload every
+  // time the session mutates while the dialog is open
+  const [snap] = useState(() => getSnapshot(session))
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -69,7 +71,7 @@ const ShareDialog = observer(function ShareDialog({
           setSessionParam(`share-${result.json.sessionId}`)
           setPasswordParam(result.password)
         } else {
-          const sess = await toUrlSafeB64(JSON.stringify(getSnapshot(session)))
+          const sess = await toUrlSafeB64(JSON.stringify(snap))
           const longUrl = new URL(window.location.href)
           const longParams = new URLSearchParams(longUrl.search)
           longParams.set('session', `encoded-${sess}`)
@@ -84,7 +86,7 @@ const ShareDialog = observer(function ShareDialog({
         setLoading(false)
       }
     })()
-  }, [currentSetting, error, session, url, snap])
+  }, [currentSetting, error, url, snap])
 
   const disabled = (currentSetting === 'short' && loading) || !!error
   return (

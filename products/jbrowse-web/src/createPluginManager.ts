@@ -1,4 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import { pluginUrl } from '@jbrowse/core/PluginLoader'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 import {
   restoreFileHandlesFromSnapshot,
@@ -33,18 +34,12 @@ export function createPluginManager(
     ...(model.runtimePlugins ?? []).map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
-      metadata: {
-        // @ts-expect-error
-        url: definition.url,
-      },
+      metadata: { url: pluginUrl(definition) },
     })),
     ...(model.sessionPlugins ?? []).map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
-      metadata: {
-        // @ts-expect-error
-        url: definition.url,
-      },
+      metadata: { url: pluginUrl(definition) },
     })),
   ]).createPluggableElements()
 
@@ -65,8 +60,10 @@ export function createPluginManager(
 
     rootModel.setReloadPluginManagerCallback(reloadPluginManagerCallback)
 
-    // @ts-expect-error
-    if (!model.configSnapshot.configuration?.rpc?.defaultDriver) {
+    const configWithRpc = model.configSnapshot as {
+      configuration?: { rpc?: { defaultDriver?: unknown } }
+    }
+    if (!configWithRpc.configuration?.rpc?.defaultDriver) {
       rootModel.jbrowse.configuration.rpc.defaultDriver.set(
         'WebWorkerRpcDriver',
       )

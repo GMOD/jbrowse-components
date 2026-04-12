@@ -74,7 +74,7 @@ export interface LayoutNode {
 }
 
 export interface SessionTriagedInfo {
-  snap: unknown
+  snap: Record<string, unknown>
   origin: string
   reason: PluginDefinition[]
 }

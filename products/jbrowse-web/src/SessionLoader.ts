@@ -216,9 +216,7 @@ const SessionLoader = types
      * #getter
      */
     get resolvedConfigPath() {
-      // @ts-expect-error
-      const path = window.__jbrowseConfigPath as string | undefined
-      return self.configPath || path || 'config.json'
+      return self.configPath || window.__jbrowseConfigPath || 'config.json'
     },
   }))
   .actions(self => ({

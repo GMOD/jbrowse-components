@@ -29,9 +29,7 @@ const JBrowse = observer(function JBrowse({
 
   useEffect(() => {
     setQueryParams({ session: `local-${id}` })
-    // @ts-expect-error
     window.JBrowseRootModel = rootModel
-    // @ts-expect-error
     window.JBrowseSession = session
   }, [id, rootModel, session])
 

@@ -24,7 +24,7 @@ export default function ConfigWarningDialog({
           unknown plugins:
           <ul>
             {reason.map(r => (
-              <li key={JSON.stringify(r)}>
+              <li key={pluginUrl(r)}>
                 {pluginDescriptionString(r)} - ({pluginUrl(r)})
               </li>
             ))}
