@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { useState } from 'react'
 
 import ChevronRight from '@mui/icons-material/ChevronRight'
@@ -47,7 +46,7 @@ function CascadingSubmenu({
   onClose,
 }: {
   title: React.ReactNode
-  onMenuItemClick: Function
+  onMenuItemClick: (event: unknown, callback: () => void) => void
   Icon: React.ElementType | undefined
   inset: boolean
   menuItems: JBMenuItem[]
@@ -107,7 +106,7 @@ function CascadingMenuList({
 }: {
   menuItems: JBMenuItem[]
   closeAfterItemClick: boolean
-  onMenuItemClick: Function
+  onMenuItemClick: (event: unknown, callback: () => void) => void
   onCloseRoot: () => void
 }) {
   const [openSubmenuIdx, setOpenSubmenuIdx] = useState<number | undefined>()
