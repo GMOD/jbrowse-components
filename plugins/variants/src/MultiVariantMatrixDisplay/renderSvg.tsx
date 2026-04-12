@@ -3,6 +3,7 @@ import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { when } from 'mobx'
 
 import SvgLabelRows from '../shared/components/SvgLabelRows.tsx'
+import SvgTree from '../shared/components/SvgTree.tsx'
 
 import type { MatrixCellData } from './components/computeVariantMatrixCells.ts'
 import type {
@@ -80,23 +81,6 @@ export async function renderSvg(
   const { hierarchy, showTree, treeAreaWidth } = model
   const labelOffset = showTree && hierarchy ? treeAreaWidth : 0
 
-  let treeEl: React.ReactNode = null
-  if (showTree && hierarchy) {
-    let treePaths = ''
-    for (const link of hierarchy.links()) {
-      const sx = link.source.y!
-      const sy = link.source.x!
-      const tx = link.target.y!
-      const ty = link.target.x!
-      treePaths += `M${sx},${sy}L${sx},${ty}M${sx},${ty}L${tx},${ty}`
-    }
-    treeEl = (
-      <g transform={`translate(0 ${-scrollTop})`}>
-        <path d={treePaths} fill="none" stroke="#0008" strokeWidth={1} />
-      </g>
-    )
-  }
-
   return (
     <>
       <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
@@ -109,7 +93,9 @@ export async function renderSvg(
           labelOffset={labelOffset}
         />
       ) : null}
-      {treeEl}
+      {showTree && hierarchy ? (
+        <SvgTree hierarchy={hierarchy} scrollTop={scrollTop} />
+      ) : null}
     </>
   )
 }
