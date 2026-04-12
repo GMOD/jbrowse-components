@@ -8,9 +8,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 // poke some things for testing (this stuff will eventually be removed)
-// @ts-expect-error
 window.getSnapshot = getSnapshot
-// @ts-expect-error
 window.resolveIdentifier = resolveIdentifier
 
 /**
@@ -37,7 +35,7 @@ export default function JBrowseWeb({
       preProcessor(snapshot: Record<string, unknown>) {
         return migrateConfigSnapshot(snapshot)
       },
-      postProcessor(snapshot: Record<string, any>) {
+      postProcessor(snapshot: Record<string, unknown>) {
         return removeAttr(structuredClone(snapshot), 'baseUri')
       },
     },

@@ -7,4 +7,7 @@ interface Window {
   // Debug globals exposed for browser console access
   JBrowseRootModel?: unknown
   JBrowseSession?: unknown
+  // MST utilities exposed for testing (temporary)
+  getSnapshot?: unknown
+  resolveIdentifier?: unknown
 }

@@ -107,7 +107,7 @@ export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
     const childType = getChildType(map)
     if (isReferenceType(childType)) {
       // filter the map members
-      for (const key in map.keys()) {
+      for (const key of map.keys()) {
         if (!isValidReference(() => map.get(key))) {
           map.delete(key)
         }
@@ -143,12 +143,13 @@ export function addRelativeUris(
   }
 }
 
-export interface Root {
-  configuration?: Record<string, unknown>
-}
-
 // raw readConf alternative for before conf is initialized
-export function readConf({ configuration }: Root, attr: string, def: string) {
+export function readConf(
+  root: Record<string, unknown> | undefined,
+  attr: string,
+  def: string,
+) {
+  const configuration = root?.configuration as Record<string, unknown> | undefined
   return configuration?.[attr] || def
 }
 

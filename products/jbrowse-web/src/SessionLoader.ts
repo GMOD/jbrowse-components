@@ -449,8 +449,9 @@ const SessionLoader = types
      */
     async loadSessionPluginsIfNeeded(sessionSnapshot: Record<string, unknown>) {
       if (!self.sessionPlugins) {
-        // @ts-expect-error
-        await this.loadSession(sessionSnapshot)
+        await this.loadSession(
+          sessionSnapshot as { sessionPlugins?: PluginDefinition[]; id: string },
+        )
       }
     },
     /**
@@ -469,7 +470,6 @@ const SessionLoader = types
     async fetchSharedSession() {
       const defaultURL = 'https://share.jbrowse.org/api/v1/'
       const decryptedSession = await readSessionFromDynamo(
-        // @ts-expect-error
         `${readConf(self.configSnapshot, 'shareURL', defaultURL)}load`,
         self.sessionQuery || '',
         self.password || '',
