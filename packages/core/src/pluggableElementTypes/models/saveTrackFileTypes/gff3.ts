@@ -98,7 +98,7 @@ function formatFeat(f: Feature, parentId?: string, parentRef?: string) {
     f.get('end'),
     score !== undefined && score !== null ? score : '.',
     strand === 1 ? '+' : strand === -1 ? '-' : '.',
-    phase !== undefined && phase !== null ? phase : '.',
+    phase ?? '.',
     formatAttributes(f, parentId),
   ].join('\t')
 }

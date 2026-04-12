@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 
 import { cx, keyframes, makeStyles } from '../util/tss-react/index.ts'
 

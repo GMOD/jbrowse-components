@@ -136,7 +136,6 @@ export function useWheelScroll(
       // of events (e.g. fast trackpad scrolling) don't each trigger expensive
       // model updates
       if (rafId.current === null) {
-        const scheduledAt = performance.now()
         rafId.current = requestAnimationFrame(now => {
           const elapsed = Math.min(
             100,
@@ -150,7 +149,6 @@ export function useWheelScroll(
               -maxZoomDelta,
               Math.min(maxZoomDelta, zoomDelta.current / zoomDivisor.current),
             )
-            const t0 = performance.now()
             model.zoomTo(
               d > 0 ? model.bpPerPx * (1 + d) : model.bpPerPx / (1 - d),
               lastClientX.current - rectLeft.current,

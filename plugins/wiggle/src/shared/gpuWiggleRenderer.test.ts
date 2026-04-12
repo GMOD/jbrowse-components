@@ -29,6 +29,7 @@ function makeSource(overrides?: Partial<SourceRenderData>): SourceRenderData {
     featureScores: new Float32Array([5, 10]),
     numFeatures: 2,
     color: [1, 0, 0],
+    rowIndex: 0,
     ...overrides,
   }
 }
