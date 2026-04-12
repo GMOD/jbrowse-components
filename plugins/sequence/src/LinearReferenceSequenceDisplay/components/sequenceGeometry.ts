@@ -43,10 +43,12 @@ export interface ColorPalette {
 }
 
 export function buildColorPalette(theme: Theme): ColorPalette {
+  const bases = theme.palette.bases as
+    | Record<string, { main: string } | undefined>
+    | undefined
   const baseColors = new Map<string, RGB>()
   for (const base of ['A', 'C', 'G', 'T']) {
-    // @ts-expect-error
-    const color = theme.palette.bases[base] as { main: string } | undefined
+    const color = bases?.[base]
     baseColors.set(base, color ? hexToRGB(color.main) : DEFAULT_BASE_COLOR)
   }
 

@@ -1,5 +1,4 @@
 import { TwoBitFile } from '@gmod/twobit'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -15,19 +14,18 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
   }>
 
   private async initChromSizes() {
-    const conf = readConfObject(this.config, 'chromSizesLocation')
+    const conf = this.getConf('chromSizesLocation')
     if (conf.uri !== '/path/to/default.chrom.sizes' && conf.uri !== '') {
       const file = openLocation(conf, this.pluginManager)
       const data = await file.readFile('utf8')
-      return Object.fromEntries(
-        data
-          .split(/\n|\r\n|\r/)
-          .filter(line => !!line.trim())
-          .map(line => {
-            const [name, length] = line.split('\t')
-            return [name!, +length!] as const
-          }),
-      )
+      const entries: [string, number][] = []
+      for (const line of data.split(/\n|\r\n|\r/)) {
+        const [name, length] = line.split('\t')
+        if (name && length) {
+          entries.push([name, +length])
+        }
+      }
+      return Object.fromEntries(entries)
     }
     return undefined
   }
@@ -100,9 +98,4 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
       observer.complete()
     })
   }
-
-  /**
-   * called to provide a hint that data tied to a certain region will not be
-   * needed for the foreseeable future and can be purged from caches, etc
-   */
 }

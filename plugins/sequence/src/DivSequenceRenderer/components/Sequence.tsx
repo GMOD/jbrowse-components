@@ -29,14 +29,13 @@ export default function Sequence({
   const len = e - s
   const w = Math.max((rightPx - leftPx) / len, 0.8)
 
+  const bases = theme.palette.bases as
+    | Record<string, { main: string } | undefined>
+    | undefined
   let svg = ''
   for (let i = 0, l = seq.length; i < l; i++) {
     const letter = seq[i]!
-    const color =
-      sequenceType === 'dna'
-        ? // @ts-expect-error
-          theme.palette.bases[letter.toUpperCase()]
-        : undefined
+    const color = sequenceType === 'dna' ? bases?.[letter.toUpperCase()] : undefined
     const x = reverse ? rightPx - (i + 1) * w : leftPx + i * w
     const fill = color ? color.main : '#aaa'
     const stroke = render ? '#555' : 'none'
