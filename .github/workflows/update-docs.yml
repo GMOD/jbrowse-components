@@ -36,7 +36,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm ci
         working-directory: website
       - name: Build website
         run: pnpm build
