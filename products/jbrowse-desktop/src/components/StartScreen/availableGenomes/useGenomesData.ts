@@ -89,8 +89,8 @@ export function useGenomesData({
 
   return {
     data: showOnlyFavs
-      ? searchFilteredRows?.filter(row => favs.has(row.id)) || []
-      : searchFilteredRows || [],
+      ? searchFilteredRows?.filter(row => favs.has(row.id)) ?? []
+      : searchFilteredRows ?? [],
     error: dataError,
     favs,
   }

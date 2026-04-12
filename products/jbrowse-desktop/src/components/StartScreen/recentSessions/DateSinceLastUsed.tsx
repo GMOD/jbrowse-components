@@ -13,11 +13,10 @@ export default function DateSinceLastUsed({
 }: {
   row: { updated?: number; showDateTooltip: boolean; lastModified: string }
 }) {
-  const { updated = 0, lastModified } = row
-  const date = new Date(updated)
+  const { updated, lastModified } = row
   const { classes } = useStyles()
-  return row.showDateTooltip ? (
-    <Tooltip title={date.toLocaleString('en-US')}>
+  return row.showDateTooltip && updated !== undefined ? (
+    <Tooltip title={new Date(updated).toLocaleString('en-US')}>
       <div className={classes.cell}>{lastModified}</div>
     </Tooltip>
   ) : (

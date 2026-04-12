@@ -5,6 +5,7 @@ import { isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   type Track,
+  type indexType,
   createTextSearchConf,
   findTrackConfigsToIndex,
 } from '@jbrowse/text-indexing'
@@ -25,7 +26,7 @@ interface TrackTextIndexing {
   exclude: string[]
   assemblies: string[]
   tracks: string[] // trackIds
-  indexType: string
+  indexType: indexType
   timestamp?: string
   name?: string
 }

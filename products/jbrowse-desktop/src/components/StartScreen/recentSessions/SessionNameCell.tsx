@@ -11,6 +11,8 @@ import { loadPluginManager } from '../util.tsx'
 import type { RecentSessionData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
+type SessionRow = RecentSessionData & { showDateTooltip: boolean; lastModified: string }
+
 const useStyles = makeStyles()({
   flexContainer: {
     display: 'flex',
@@ -32,7 +34,7 @@ function SessionNameCell({
   addToQuickstartList,
 }: {
   value: string
-  row: any
+  row: SessionRow
   isFavorite: boolean
   setPluginManager: (pm: PluginManager) => void
   setError: (e: unknown) => void
@@ -51,20 +53,20 @@ function SessionNameCell({
   }, [row.path, setPluginManager, setError])
 
   const handleToggleFavorite = useCallback(() => {
-    toggleFavorite(row.id)
-  }, [row.id, toggleFavorite])
+    toggleFavorite(row.path)
+  }, [row.path, toggleFavorite])
+
+  const sessionData = { path: row.path, name: row.name, updated: row.updated }
 
   const handleRename = useCallback(() => {
-    const { lastModified, ...rest } = row
-    setSessionToRename(rest)
-  }, [row, setSessionToRename])
+    setSessionToRename(sessionData)
+  }, [row.path, row.name, row.updated, setSessionToRename])
 
   const handleAddToQuickstartList = useCallback(async () => {
     if (addToQuickstartList) {
-      const { lastModified, ...rest } = row
-      await addToQuickstartList(rest)
+      await addToQuickstartList(sessionData)
     }
-  }, [row, addToQuickstartList])
+  }, [row.path, row.name, row.updated, addToQuickstartList])
 
   const handleLinkClick = useCallback(
     async (event: React.MouseEvent) => {

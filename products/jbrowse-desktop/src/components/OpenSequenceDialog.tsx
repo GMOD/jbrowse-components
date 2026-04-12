@@ -297,12 +297,18 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
   }
 
   async function createAssemblyConfig() {
-    const { needsIndexing, ...adapterConfig } = getAdapterConfig()
-    let adapter = adapterConfig
-    if (needsIndexing) {
+    const raw = getAdapterConfig()
+    let adapter
+    if (raw.needsIndexing) {
       setLoading('Creating .fai file for FASTA')
       const faiPath = await ipcRenderer.invoke('indexFasta', fastaLocation)
-      adapter = { ...adapterConfig, faiLocation: { localPath: faiPath } }
+      adapter = {
+        type: 'IndexedFastaAdapter' as const,
+        fastaLocation: raw.fastaLocation,
+        faiLocation: { localPath: faiPath, locationType: 'LocalPathLocation' as const },
+      }
+    } else {
+      adapter = raw
     }
     return {
       name: assemblyName,
