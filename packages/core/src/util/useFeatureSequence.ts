@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react'
 
 import { fetchSeq } from './fetchSeq.ts'
 
-import type { AbstractSessionModel, Feature } from './index.ts'
+import type { AbstractSessionModel } from './index.ts'
 
 const BPLIMIT = 20_000_000
 
 export function useFeatureSequence({
   session,
-  feature,
+  start,
+  end,
+  refName,
   upDownBp,
   forceLoad,
   assemblyName,
@@ -16,7 +18,9 @@ export function useFeatureSequence({
 }: {
   assemblyName: string
   session?: AbstractSessionModel
-  feature: Feature
+  start: number
+  end: number
+  refName: string
   upDownBp: number
   forceLoad: boolean
   shouldFetch?: boolean
@@ -32,9 +36,6 @@ export function useFeatureSequence({
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState(false)
 
-  const start = feature.get('start')
-  const end = feature.get('end')
-  const refName = feature.get('refName')
   const sessionId = session?.id ?? 'default'
 
   useEffect(() => {

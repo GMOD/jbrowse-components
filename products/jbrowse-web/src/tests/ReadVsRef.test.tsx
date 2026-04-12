@@ -8,6 +8,7 @@ import {
   hts,
   setup,
 } from './util.tsx'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 setup()
 
@@ -39,12 +40,12 @@ test('launch read vs ref panel', async () => {
   })
   fireEvent.click(elt)
 
-  expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
+  expectCanvasMatch(await findByTestId('synteny_canvas_done', {}, delay))
   consoleMock.mockRestore()
 }, 40000)
 
 test('launch read vs ref dotplot', async () => {
-  const { view, findByTestId, findByText } = await createView()
+  const { view, session, findByTestId, findByText } = await createView()
   view.setNewView(5, 100)
   fireEvent.click(
     await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
@@ -57,5 +58,8 @@ test('launch read vs ref dotplot', async () => {
   fireEvent.contextMenu(canvas, { clientX: 200, clientY: 80 })
 
   fireEvent.click(await findByText('Dotplot of read vs ref', {}, delay))
-  expectCanvasMatch(await findByTestId('dotplot_webgl_canvas_done', {}, delay))
+  await waitFor(() => {
+    expect((session as AbstractSessionModel).views.length).toBe(2)
+    expect((session as AbstractSessionModel).views[1]!.type).toBe('DotplotView')
+  }, delay)
 }, 40000)

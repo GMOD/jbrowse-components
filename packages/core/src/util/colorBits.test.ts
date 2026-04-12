@@ -19,6 +19,38 @@ describe('colorBits helpers', () => {
       expect(getAlpha(c)).toBe(255)
     })
 
+    test('3-digit hex #RGB shorthand', () => {
+      const c = parseCssColor('#f00')
+      expect(getRed(c)).toBe(255)
+      expect(getGreen(c)).toBe(0)
+      expect(getBlue(c)).toBe(0)
+      expect(getAlpha(c)).toBe(255)
+    })
+
+    test('4-digit hex #RGBA shorthand (CSS Color Level 4)', () => {
+      // #ff0a = yellow (255,255,0) with alpha 0xaa
+      const yellow = parseCssColor('#ff0a')
+      expect(getRed(yellow)).toBe(255)
+      expect(getGreen(yellow)).toBe(255)
+      expect(getBlue(yellow)).toBe(0)
+      expect(getAlpha(yellow)).toBe(0xaa)
+
+      // #00fa = blue (0,0,255) with alpha 0xaa
+      const blue = parseCssColor('#00fa')
+      expect(getRed(blue)).toBe(0)
+      expect(getGreen(blue)).toBe(0)
+      expect(getBlue(blue)).toBe(255)
+      expect(getAlpha(blue)).toBe(0xaa)
+    })
+
+    test('8-digit hex #RRGGBBAA', () => {
+      const c = parseCssColor('#ff000080')
+      expect(getRed(c)).toBe(255)
+      expect(getGreen(c)).toBe(0)
+      expect(getBlue(c)).toBe(0)
+      expect(getAlpha(c)).toBe(0x80)
+    })
+
     test('named colors', () => {
       expect(getRed(parseCssColor('red'))).toBe(255)
       expect(getBlue(parseCssColor('blue'))).toBe(255)

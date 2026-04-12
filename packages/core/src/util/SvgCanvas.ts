@@ -1,3 +1,5 @@
+import { measureText as measureTextWidth } from './index.ts'
+
 interface SavedState {
   fillStyle: string
   strokeStyle: string
@@ -23,6 +25,16 @@ function escapeXml(s: string) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
+}
+
+// Parse CSS font shorthand like "10px sans-serif" or "bold 12px monospace"
+// into SVG-compatible font-size and font-family attributes.
+function fontAttrs(font: string) {
+  const m = font.match(/(\d+(?:\.\d+)?)px\s+(.+)/)
+  if (m) {
+    return ` font-size="${m[1]}" font-family="${m[2]}"`
+  }
+  return ` font-size="${Number.parseFloat(font) || 10}"`
 }
 
 export class SvgCanvas {
@@ -329,7 +341,7 @@ export class SvgCanvas {
           : 'auto'
     const escaped = escapeXml(text)
     this.parts.push(
-      `<text x="${tx}" y="${ty}" fill="${this.fillStyle}" font="${this.font}" text-anchor="${anchor}" dominant-baseline="${baseline}"${alpha}>${escaped}</text>`,
+      `<text x="${tx}" y="${ty}" fill="${this.fillStyle}"${fontAttrs(this.font)} text-anchor="${anchor}" dominant-baseline="${baseline}"${alpha}>${escaped}</text>`,
     )
   }
 
@@ -344,7 +356,7 @@ export class SvgCanvas {
           : 'start'
     const escaped = escapeXml(text)
     this.parts.push(
-      `<text x="${tx}" y="${ty}" fill="none"${this.strokeAttrs()} font="${this.font}" text-anchor="${anchor}"${alpha}>${escaped}</text>`,
+      `<text x="${tx}" y="${ty}" fill="none"${this.strokeAttrs()}${fontAttrs(this.font)} text-anchor="${anchor}"${alpha}>${escaped}</text>`,
     )
   }
 
@@ -361,8 +373,9 @@ export class SvgCanvas {
   }
 
   measureText(text: string) {
-    const fontSize = Number.parseFloat(this.font) || 10
-    return { width: text.length * fontSize * 0.6 }
+    const m = this.font.match(/(\d+(?:\.\d+)?)px/)
+    const fontSize = m ? +m[1]! : Number.parseFloat(this.font) || 10
+    return { width: measureTextWidth(text, fontSize) }
   }
 
   getSerializedSvg() {

@@ -10,7 +10,7 @@ import {
   destroySequenceFeatureDetailsModel,
 } from './model.ts'
 import { ErrorMessage, LoadingEllipses } from '../../ui/index.ts'
-import { SimpleFeature, getSession } from '../../util/index.ts'
+import { getSession } from '../../util/index.ts'
 import { useFeatureSequence } from '../../util/useFeatureSequence.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
@@ -50,7 +50,9 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
   const { sequence, error } = useFeatureSequence({
     assemblyName,
     session,
-    feature: new SimpleFeature(feature),
+    start: feature.start,
+    end: feature.end,
+    refName: feature.refName,
     upDownBp,
     forceLoad,
   })

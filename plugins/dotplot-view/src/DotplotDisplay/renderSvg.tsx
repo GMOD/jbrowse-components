@@ -8,8 +8,13 @@ import { buildLineSegments } from './drawDotplotWebGL.ts'
 import type { DotplotRenderModel } from './types.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
 
-function rgbaToCSS(r: number, g: number, b: number, a: number) {
-  return `rgba(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)},${a})`
+// colors are packed as uint32 in ABGR layout (R in bits 0-7)
+function unpackColor(packed: number) {
+  const r = packed & 0xff
+  const g = (packed >> 8) & 0xff
+  const b = (packed >> 16) & 0xff
+  const a = ((packed >>> 24) & 0xff) / 255
+  return `rgba(${r},${g},${b},${a})`
 }
 
 export async function renderSvg(model: DotplotRenderModel) {
@@ -58,13 +63,7 @@ export async function renderSvg(model: DotplotRenderModel) {
   const ctx = new SvgCanvas()
   ctx.lineWidth = 2
   for (let i = 0; i < segments.x1s.length; i++) {
-    const ci = i * 4
-    ctx.strokeStyle = rgbaToCSS(
-      segments.colors[ci]!,
-      segments.colors[ci + 1]!,
-      segments.colors[ci + 2]!,
-      segments.colors[ci + 3]!,
-    )
+    ctx.strokeStyle = unpackColor(segments.colors[i]!)
     ctx.beginPath()
     ctx.moveTo(segments.x1s[i]!, segments.y1s[i]!)
     ctx.lineTo(segments.x2s[i]!, segments.y2s[i]!)

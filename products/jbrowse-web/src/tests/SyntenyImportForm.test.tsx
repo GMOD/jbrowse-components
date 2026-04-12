@@ -32,7 +32,7 @@ test('open tracklist file', async () => {
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
   fireEvent.click(await findByText('Launch'))
 
-  expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
+  expectCanvasMatch(await findByTestId('synteny_canvas_done', {}, delay))
 }, 40000)
 
 test('open local paf', async () => {
@@ -57,23 +57,19 @@ test('open local paf', async () => {
   })
 
   fireEvent.click(await findByText('Launch'))
-  expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
+  expectCanvasMatch(await findByTestId('synteny_canvas_done', {}, delay))
 }, 40000)
 
 test('pangenome mode selects MultiSyntenyTrack and launches', async () => {
-  const { session, findByText, findByRole } = await createView()
+  const { session, findByText } = await createView()
 
-  fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Linear synteny view'))
   expect(session.views.length).toBe(2)
 
   fireEvent.click(await findByText('Pangenome / multi-way'))
 
-  await findByText('volvox/volvox_del GFA (MultiLGV)')
-
-  expect(await findByRole('checkbox', { name: 'volvox' })).toBeChecked()
-  expect(await findByRole('checkbox', { name: 'volvox_del' })).toBeChecked()
+  await findByText('Assemblies (2 of 2 selected)')
 
   fireEvent.click(await findByText('Launch'))
 
@@ -112,5 +108,5 @@ test('open local pif', async () => {
   })
 
   fireEvent.click(await findByText('Launch'))
-  expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
+  expectCanvasMatch(await findByTestId('synteny_canvas_done', {}, delay))
 }, 40000)
