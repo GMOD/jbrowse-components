@@ -7,7 +7,6 @@ import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 // poke some things for testing (this stuff will eventually be removed)
 // @ts-expect-error
 window.getSnapshot = getSnapshot
-
 // @ts-expect-error
 window.resolveIdentifier = resolveIdentifier
 

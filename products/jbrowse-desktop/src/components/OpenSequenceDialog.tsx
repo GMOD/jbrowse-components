@@ -9,7 +9,9 @@ import {
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Alert,
+  Box,
   Button,
+  Chip,
   DialogActions,
   DialogContent,
   MenuItem,
@@ -35,7 +37,7 @@ const useStyles = makeStyles()(theme => ({
   },
   stagedAssemblies: {
     background: theme.palette.success.light,
-    margin: theme.spacing(4),
+    margin: theme.spacing(2),
     padding: theme.spacing(2),
   },
 }))
@@ -46,30 +48,73 @@ function isBlank(location: FileLocation) {
   return 'uri' in location && location.uri === ''
 }
 
+function getFilename(location: FileLocation) {
+  if ('uri' in location) {
+    return location.uri.split('/').pop() ?? ''
+  }
+  if ('localPath' in location) {
+    return location.localPath.split('/').pop() ?? ''
+  }
+  return ''
+}
+
+function getAssemblyNameFromFilename(filename: string) {
+  return filename
+    .replace(/\.(fa|fasta|fna)\.gz$/, '')
+    .replace(/\.(fa|fasta|fna)$/, '')
+    .replace(/\.2bit$/, '')
+}
+
+function detectAdapterType(filename: string): AdapterType | undefined {
+  if (/\.(fa|fasta|fna)\.gz$/.test(filename)) {
+    return 'BgzipFastaAdapter'
+  }
+  if (/\.2bit$/.test(filename)) {
+    return 'TwoBitAdapter'
+  }
+  if (/\.(fa|fasta|fna)$/.test(filename)) {
+    return 'IndexedFastaAdapter'
+  }
+  return undefined
+}
+
+const adapterTypes = [
+  'IndexedFastaAdapter',
+  'BgzipFastaAdapter',
+  'FastaAdapter',
+  'TwoBitAdapter',
+] as const
+
+type AdapterType = (typeof adapterTypes)[number]
+
+const adapterLabels: Record<AdapterType, string> = {
+  IndexedFastaAdapter: 'FASTA with index (.fa + .fai)',
+  BgzipFastaAdapter: 'Compressed FASTA (.fa.gz + .fai + .gzi)',
+  FastaAdapter: 'FASTA (index will be generated)',
+  TwoBitAdapter: '2bit file (.2bit)',
+}
+
 const AdapterSelector = observer(function AdapterSelector({
   adapterSelection,
   setAdapterSelection,
-  adapterTypes,
 }: {
   adapterSelection: AdapterType
   setAdapterSelection: (arg: AdapterType) => void
-  adapterTypes: readonly string[]
 }) {
   return (
     <TextField
       value={adapterSelection}
-      label="Type"
+      label="Format"
       variant="outlined"
       select
-      helperText="Type of adapter to use"
       fullWidth
       onChange={event => {
         setAdapterSelection(event.target.value as AdapterType)
       }}
     >
-      {adapterTypes.map(str => (
-        <MenuItem key={str} value={str}>
-          {str}
+      {adapterTypes.map(type => (
+        <MenuItem key={type} value={type}>
+          {adapterLabels[type]}
         </MenuItem>
       ))}
     </TextField>
@@ -196,19 +241,6 @@ const TwoBitAdapterInput = observer(function TwoBitAdapterInput({
   )
 })
 
-const adapterTypes = [
-  'IndexedFastaAdapter',
-  'BgzipFastaAdapter',
-  'FastaAdapter',
-  'TwoBitAdapter',
-] as const
-
-type AdapterType =
-  | 'IndexedFastaAdapter'
-  | 'BgzipFastaAdapter'
-  | 'FastaAdapter'
-  | 'TwoBitAdapter'
-
 const OpenSequenceDialog = observer(function OpenSequenceDialog({
   onClose,
 }: {
@@ -233,6 +265,28 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
   const [refNameAliasesLocation, setRefNameAliasesLocation] = useState(blank)
   const [cytobandsLocation, setCytobandsLocation] = useState(blank)
   const [showAdvanced, setShowAdvanced] = useState(false)
+
+  function handlePrimaryFileChange(location: FileLocation) {
+    setFastaLocation(location)
+    const filename = getFilename(location)
+    if (filename) {
+      const detected = detectAdapterType(filename)
+      if (detected) {
+        setAdapterSelection(detected)
+      }
+      if (!assemblyName) {
+        setAssemblyName(getAssemblyNameFromFilename(filename))
+      }
+    }
+  }
+
+  function handleTwoBitLocationChange(location: FileLocation) {
+    setTwoBitLocation(location)
+    const filename = getFilename(location)
+    if (filename && !assemblyName) {
+      setAssemblyName(getAssemblyNameFromFilename(filename))
+    }
+  }
 
   function clearState() {
     setFastaLocation(blank)
@@ -282,18 +336,15 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
         gziLocation,
       }
     }
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (adapterSelection === 'TwoBitAdapter') {
-      if (isBlank(twoBitLocation)) {
-        throw new Error('2bit location is required')
-      }
-      return {
-        type: 'TwoBitAdapter',
-        twoBitLocation,
-        chromSizesLocation,
-      }
+    // adapterSelection === 'TwoBitAdapter' at this point
+    if (isBlank(twoBitLocation)) {
+      throw new Error('2bit location is required')
     }
-    throw new Error('Unknown adapter type')
+    return {
+      type: 'TwoBitAdapter',
+      twoBitLocation,
+      chromSizesLocation,
+    }
   }
 
   async function createAssemblyConfig() {
@@ -312,7 +363,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
     }
     return {
       name: assemblyName,
-      displayName: assemblyDisplayName,
+      ...(assemblyDisplayName ? { displayName: assemblyDisplayName } : {}),
       sequence: {
         type: 'ReferenceSequenceTrack',
         trackId: `${assemblyName}-${Date.now()}`,
@@ -340,6 +391,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
         : {}),
     }
   }
+
   return (
     <Dialog
       open
@@ -352,18 +404,22 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
       title="Open genome(s)"
     >
       <DialogContent>
-        <Typography>
-          Use this dialog to open an indexed FASTA file (.fa and .fai),
-          bgzipped+indexed FASTA files (.fa.gz, .fa.gz.fai, and .fa.gz.gzi), or
-          .2bit files. A plaintext FASTA file can also be supplied , which will
-          be indexed on submit.
-        </Typography>
-
         {assemblyConfs.length ? (
-          <Typography className={classes.stagedAssemblies}>
-            Currently staged assemblies:{' '}
-            {assemblyConfs.map(conf => conf.name).join(', ')}
-          </Typography>
+          <Box className={classes.stagedAssemblies}>
+            <Typography variant="body2" gutterBottom>
+              Staged assemblies:
+            </Typography>
+            {assemblyConfs.map((conf, idx) => (
+              <Chip
+                key={conf.name}
+                label={conf.name}
+                onDelete={() => {
+                  setAssemblyConfs(assemblyConfs.filter((_, i) => i !== idx))
+                }}
+                style={{ margin: 2 }}
+              />
+            ))}
+          </Box>
         ) : null}
 
         {loading ? (
@@ -377,6 +433,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
             label="Assembly name"
             helperText="The assembly name e.g. hg38"
             variant="outlined"
+            fullWidth
             value={assemblyName}
             onChange={event => {
               setAssemblyName(event.target.value)
@@ -385,20 +442,19 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
 
           <AdapterSelector
             adapterSelection={adapterSelection}
-            adapterTypes={adapterTypes}
             setAdapterSelection={setAdapterSelection}
           />
 
           {adapterSelection === 'FastaAdapter' ? (
             <FastaAdapterInput
               fastaLocation={fastaLocation}
-              setFastaLocation={setFastaLocation}
+              setFastaLocation={handlePrimaryFileChange}
             />
           ) : adapterSelection === 'IndexedFastaAdapter' ? (
             <IndexedFastaAdapterInput
               fastaLocation={fastaLocation}
               faiLocation={faiLocation}
-              setFastaLocation={setFastaLocation}
+              setFastaLocation={handlePrimaryFileChange}
               setFaiLocation={setFaiLocation}
             />
           ) : adapterSelection === 'BgzipFastaAdapter' ? (
@@ -406,7 +462,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
               fastaLocation={fastaLocation}
               faiLocation={faiLocation}
               gziLocation={gziLocation}
-              setFastaLocation={setFastaLocation}
+              setFastaLocation={handlePrimaryFileChange}
               setFaiLocation={setFaiLocation}
               setGziLocation={setGziLocation}
             />
@@ -414,7 +470,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
             <TwoBitAdapterInput
               twoBitLocation={twoBitLocation}
               chromSizesLocation={chromSizesLocation}
-              setTwoBitLocation={setTwoBitLocation}
+              setTwoBitLocation={handleTwoBitLocationChange}
               setChromSizesLocation={setChromSizesLocation}
             />
           )}
@@ -432,8 +488,9 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
             <>
               <TextField
                 label="Assembly display name"
-                helperText='(optional) A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
+                helperText='(optional) A human readable display name e.g. "Homo sapiens (hg38)"'
                 variant="outlined"
+                fullWidth
                 value={assemblyDisplayName}
                 onChange={event => {
                   setAssemblyDisplayName(event.target.value)
@@ -479,7 +536,14 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
         >
           Add another assembly
         </Button>
-        <Button onClick={() => onClose()} color="secondary" variant="contained">
+        <Button
+          onClick={async () => {
+            await onClose()
+          }}
+          color="secondary"
+          variant="contained"
+          disabled={!!loading}
+        >
           Cancel
         </Button>
         <Button

@@ -247,8 +247,8 @@ export function processFeatures(
   let negCount = 0
 
   for (const [i, feature] of features.entries()) {
-    const start = feature.get('start')
-    const end = feature.get('end')
+    const start = feature.get('start') as number
+    const end = feature.get('end') as number
     const score = (feature.get('score') as number | undefined) ?? 0
     const summary = feature.get('summary')
 

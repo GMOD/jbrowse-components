@@ -35,8 +35,11 @@ export default function JBrowseWeb({
       preProcessor(snapshot: Record<string, unknown>) {
         return migrateConfigSnapshot(snapshot)
       },
-      postProcessor(snapshot: Record<string, unknown>) {
-        return removeAttr(structuredClone(snapshot), 'baseUri')
+      postProcessor(snapshot) {
+        return removeAttr(
+          structuredClone(snapshot) as unknown as Record<string, unknown>,
+          'baseUri',
+        )
       },
     },
   )

@@ -11,8 +11,6 @@ import { loadPluginManager } from '../util.tsx'
 import type { RecentSessionData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-type SessionRow = RecentSessionData & { showDateTooltip: boolean; lastModified: string }
-
 const useStyles = makeStyles()({
   flexContainer: {
     display: 'flex',
@@ -34,7 +32,7 @@ function SessionNameCell({
   addToQuickstartList,
 }: {
   value: string
-  row: SessionRow
+  row: RecentSessionData
   isFavorite: boolean
   setPluginManager: (pm: PluginManager) => void
   setError: (e: unknown) => void

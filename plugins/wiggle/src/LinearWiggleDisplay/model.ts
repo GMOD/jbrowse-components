@@ -69,6 +69,8 @@ export default function stateModelFactory(
       }),
     )
     .preProcessSnapshot(
+      // @ts-expect-error - MST's preProcessSnapshot typing can't verify the
+      // return type against the model creation type
       (snap: Record<string, unknown> | null | undefined) => {
         if (!snap) {
           return snap

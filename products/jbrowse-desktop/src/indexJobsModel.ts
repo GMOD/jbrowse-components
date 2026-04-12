@@ -249,7 +249,6 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             statusCallback: (message: string) => {
               this.setProgressPct(message)
             },
-            timeout: 1000 * ONE_HOUR,
           })
           if (indexType === 'perTrack') {
             for (const trackId of trackIds) {
