@@ -526,6 +526,13 @@ export default function sharedModelFactory(
 export type SharedLDStateModel = ReturnType<typeof sharedModelFactory>
 export type SharedLDModel = Instance<SharedLDStateModel>
 
+export function namedLDDisplayModel(
+  typeName: string,
+  configSchema: AnyConfigurationSchemaType,
+) {
+  return sharedModelFactory(configSchema).named(typeName)
+}
+
 function migrateLDSettings(snap: Record<string, unknown>) {
   return migrateOldSettingSnapshots(snap)
 }

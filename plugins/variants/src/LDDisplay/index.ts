@@ -16,7 +16,7 @@ const LazyLDDisplayComponent = lazy(
 export default function LDDisplayF(pluginManager: PluginManager) {
   // LDDisplay for VariantTrack - computes LD from VCF genotypes
   pluginManager.addDisplayType(() => {
-    const configSchema = configSchemaF1(pluginManager)
+    const configSchema = configSchemaF1()
     return new DisplayType({
       name: 'LDDisplay',
       displayName: 'LD heatmap display',
@@ -32,7 +32,7 @@ export default function LDDisplayF(pluginManager: PluginManager) {
 
   // LDTrackDisplay for LDTrack - uses pre-computed LD from PlinkLDAdapter
   pluginManager.addDisplayType(() => {
-    const configSchema = configSchemaF2(pluginManager)
+    const configSchema = configSchemaF2()
     return new DisplayType({
       name: 'LDTrackDisplay',
       displayName: 'LD heatmap display',

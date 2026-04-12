@@ -1,9 +1,4 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-
-import sharedLDConfigFactory from './SharedLDConfigSchema.ts'
-import configSchema from '../LDRenderer/configSchema.ts'
-
-import type PluginManager from '@jbrowse/core/PluginManager'
+import { makeLDDisplayConfigSchema } from './configSchemaFactory.ts'
 
 /**
  * #config LDTrackDisplay
@@ -13,29 +8,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-export default function configSchemaF(_pluginManager: PluginManager) {
-  return ConfigurationSchema(
-    'LDTrackDisplay',
-    {
-      /**
-       * #slot
-       * LDRenderer
-       */
-      renderer: configSchema,
-      /**
-       * #slot
-       */
-      height: {
-        type: 'number',
-        defaultValue: 400,
-      },
-    },
-    {
-      /**
-       * #baseConfiguration
-       */
-      baseConfiguration: sharedLDConfigFactory(),
-      explicitlyTyped: true,
-    },
-  )
+export default function configSchemaF() {
+  return makeLDDisplayConfigSchema('LDTrackDisplay')
 }
