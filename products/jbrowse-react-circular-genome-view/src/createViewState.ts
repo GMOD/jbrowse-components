@@ -61,9 +61,7 @@ export default function createViewState(opts: ViewStateOptions) {
       tracks,
       internetAccounts,
       aggregateTextSearchAdapters,
-      defaultSession,
     },
-
     session: defaultSession,
   }
   const stateTree = model.create(stateSnapshot, { pluginManager })

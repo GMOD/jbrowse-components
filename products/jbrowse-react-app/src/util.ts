@@ -111,7 +111,7 @@ export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
         }
       }
     }
-    for (const child of map) {
+    for (const child of map.values()) {
       filterSessionInPlace(child, childType)
     }
   } else if (isModelType(type)) {

@@ -2,7 +2,7 @@ import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
-import { getParent, types } from '@jbrowse/mobx-state-tree'
+import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseSessionModel,
   ConnectionManagementSessionMixin,
@@ -115,10 +115,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           throw new Error(`unknown view type ${typeName}`)
         }
 
-        self.view = {
+        self.view = cast({
           ...initialState,
           type: typeName,
-        }
+        })
         return self.view
       },
 
