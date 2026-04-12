@@ -36,10 +36,10 @@ const INST_LAYOUT = [
   },
   {
     name: 'a_inst1',
-    components: 4,
-    type: 'float' as const,
+    components: 1,
+    type: 'uint' as const,
     offsetBytes: 16,
-    integer: false,
+    integer: true,
   },
   {
     name: 'a_inst2',

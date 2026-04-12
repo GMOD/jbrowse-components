@@ -47,7 +47,7 @@ precision highp int;
 
 // Per-instance data (divisor = 1)
 in uvec4 a_data0;  // (startBp, endBp, genomeRow, featureId)
-in vec4 a_color;    // (r, g, b, a)
+in uint a_color;   // packed ABGR uint32
 
 ${UNIFORMS_GLSL}
 
@@ -101,7 +101,12 @@ void main() {
 
   vec2 clipPos = vec2(x, y) / vec2(u.resolutionX, u.resolutionY) * 2.0 - 1.0;
   gl_Position = vec4(clipPos.x, -clipPos.y, 0.0, 1.0);
-  v_color = a_color;
+  v_color = vec4(
+    float(a_color & 0xFFu),
+    float((a_color >> 8u) & 0xFFu),
+    float((a_color >> 16u) & 0xFFu),
+    float(a_color >> 24u)
+  ) / 255.0;
   v_featureId = float(a_data0.w);
 }
 `
@@ -164,7 +169,8 @@ struct Instance {
   endBp: u32,
   genomeRow: u32,
   featureId: u32,
-  color: vec4f,
+  color: u32,
+  _pad0: u32, _pad1: u32, _pad2: u32,
 }
 `
 
@@ -213,7 +219,7 @@ ${HP_WGSL_CORE}
 fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -> VOut {
   let inst = instances[iid];
   var out: VOut;
-  out.color = inst.color;
+  out.color = unpack4x8unorm(inst.color);
   out.featureId = f32(inst.featureId);
 
   let splitStart = hp_split_uint(inst.startBp);

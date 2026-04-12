@@ -480,7 +480,6 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
       // Geometry instances
       if (region.geometry && region.geometry.instanceCount > 0) {
         const u32 = new Uint32Array(region.geometry.buffer)
-        const f32 = new Float32Array(region.geometry.buffer)
         for (let i = 0; i < region.geometry.instanceCount; i++) {
           const off = i * STRIDE
           const x1 = bpToX(u32[off]!)
@@ -492,11 +491,12 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
           const genomeRow = u32[off + 2]!
           const y = coverageHeight + genomeRow * rowHeight + rowPadding
           const h = rowHeight - rowPadding * 2
+          const packed = u32[off + 4]!
           ctx.fillStyle = rgbaString(
-            f32[off + 4]!,
-            f32[off + 5]!,
-            f32[off + 6]!,
-            f32[off + 7]!,
+            (packed & 0xff) / 255,
+            ((packed >> 8) & 0xff) / 255,
+            ((packed >> 16) & 0xff) / 255,
+            ((packed >>> 24) & 0xff) / 255,
           )
           ctx.fillRect(x1, y, w, h)
         }

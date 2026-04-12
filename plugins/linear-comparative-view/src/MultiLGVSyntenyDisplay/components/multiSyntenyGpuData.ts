@@ -6,7 +6,7 @@ import {
   visitCsOps,
 } from '@jbrowse/alignments-core'
 import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
-import { cssColorToNormalizedRgba } from '@jbrowse/core/util/colorBits'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
@@ -37,25 +37,23 @@ export interface BlockCoverageUploadData {
   binCount: number
 }
 
-type RGBA = [number, number, number, number]
-
 function buildColorArrays(colors: SyntenyColors) {
-  const mismatch: RGBA = cssColorToNormalizedRgba(colors.mismatch)
-  const deletion: RGBA = cssColorToNormalizedRgba(colors.deletion)
-  const insertion: RGBA = cssColorToNormalizedRgba(colors.insertion)
-  const aRgba = cssColorToNormalizedRgba(colors.baseA)
-  const cRgba = cssColorToNormalizedRgba(colors.baseC)
-  const gRgba = cssColorToNormalizedRgba(colors.baseG)
-  const tRgba = cssColorToNormalizedRgba(colors.baseT)
-  const bases: Record<string, RGBA> = {
-    A: aRgba,
-    a: aRgba,
-    C: cRgba,
-    c: cRgba,
-    G: gRgba,
-    g: gRgba,
-    T: tRgba,
-    t: tRgba,
+  const mismatch = cssColorToABGR(colors.mismatch)
+  const deletion = cssColorToABGR(colors.deletion)
+  const insertion = cssColorToABGR(colors.insertion)
+  const baseA = cssColorToABGR(colors.baseA)
+  const baseC = cssColorToABGR(colors.baseC)
+  const baseG = cssColorToABGR(colors.baseG)
+  const baseT = cssColorToABGR(colors.baseT)
+  const bases: Record<string, number> = {
+    A: baseA,
+    a: baseA,
+    C: baseC,
+    c: baseC,
+    G: baseG,
+    g: baseG,
+    T: baseT,
+    t: baseT,
   }
   return { mismatch, deletion, insertion, bases }
 }
@@ -66,20 +64,14 @@ function addInstance(
   endBp: number,
   genomeRow: number,
   featureId: number,
-  r: number,
-  g: number,
-  b: number,
-  a: number,
+  color: number,
 ) {
   const off = builder.alloc()
   builder.u32[off] = startBp >>> 0
   builder.u32[off + 1] = endBp >>> 0
   builder.u32[off + 2] = genomeRow >>> 0
   builder.u32[off + 3] = featureId >>> 0
-  builder.f32[off + 4] = r
-  builder.f32[off + 5] = g
-  builder.f32[off + 6] = b
-  builder.f32[off + 7] = a
+  builder.u32[off + 4] = color
 }
 
 function makeGpuOpsVisitor(
@@ -90,43 +82,21 @@ function makeGpuOpsVisitor(
 ) {
   return {
     onMismatch(refPos: number, len: number, queryBase?: string) {
-      const [r, g, b, a] =
+      const color =
         (queryBase ? rgba.bases[queryBase] : undefined) ?? rgba.mismatch
-      addInstance(
-        builder,
-        refPos,
-        refPos + len,
-        genomeRow,
-        featureId,
-        r,
-        g,
-        b,
-        a,
-      )
+      addInstance(builder, refPos, refPos + len, genomeRow, featureId, color)
     },
     onDeletion(refPos: number, len: number) {
-      const [r, g, b, a] = rgba.deletion
-      addInstance(
-        builder,
-        refPos,
-        refPos + len,
-        genomeRow,
-        featureId,
-        r,
-        g,
-        b,
-        a,
-      )
+      addInstance(builder, refPos, refPos + len, genomeRow, featureId, rgba.deletion)
     },
     onInsertion(refPos: number, _len: number) {
-      const [r, g, b, a] = rgba.insertion
-      addInstance(builder, refPos, refPos, genomeRow, featureId, r, g, b, a)
+      addInstance(builder, refPos, refPos, genomeRow, featureId, rgba.insertion)
     },
   }
 }
 
 // SYNC: field layout must match Instance struct in multiSyntenyGpuShaders.ts
-// [startBp: u32, endBp: u32, genomeRow: u32, featureId: u32, r: f32, g: f32, b: f32, a: f32]
+// [startBp: u32, endBp: u32, genomeRow: u32, featureId: u32, color: u32, _pad×3]
 export function prepareBlockGeometry(
   genomeFeatures: [string, MultiPairFeature[]][],
   displayedGenomes: string[],
@@ -155,10 +125,14 @@ export function prepareBlockGeometry(
     }
     for (const feat of features) {
       const fId = ++featureIdx
-      const color = getFeatureColor(feat, colorBy)
-      const [cr, cg, cb, ca] = cssColorToNormalizedRgba(color)
-
-      addInstance(builder, feat.start, feat.end, g, fId, cr, cg, cb, ca)
+      addInstance(
+        builder,
+        feat.start,
+        feat.end,
+        g,
+        fId,
+        cssColorToABGR(getFeatureColor(feat, colorBy)),
+      )
 
       if (showSnps) {
         const visitor = makeGpuOpsVisitor(builder, g, fId, rgba)

@@ -63,10 +63,10 @@ export const SYNTENY_PASSES: PassDescriptor[] = [
       },
       {
         name: 'a_color',
-        components: 4,
-        type: 'float',
+        components: 1,
+        type: 'uint',
         offsetBytes: 16,
-        integer: false,
+        integer: true,
       },
     ],
   },

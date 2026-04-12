@@ -9,7 +9,7 @@ precision highp float;
 precision highp int;
 
 in vec4 a_inst0;
-in vec4 a_inst1;
+in uint a_inst1;
 in vec4 a_inst2;
 in vec4 a_inst3;
 
@@ -67,7 +67,12 @@ bool isCulled(float x1, float x2, float x3, float x4, float padTop, float padBot
 
 void main() {
   float x1 = a_inst0.x, x2 = a_inst0.y, x3 = a_inst0.z, x4 = a_inst0.w;
-  vec4 color = a_inst1;
+  vec4 color = vec4(
+    float(a_inst1 & 0xFFu),
+    float((a_inst1 >> 8u) & 0xFFu),
+    float((a_inst1 >> 16u) & 0xFFu),
+    float(a_inst1 >> 24u)
+  ) / 255.0;
   float featureId = a_inst2.x, isCurve = a_inst2.y;
   float queryTotalLength = a_inst2.z, padTop = a_inst2.w, padBottom = a_inst3.x;
 
@@ -227,7 +232,7 @@ precision highp float;
 precision highp int;
 
 in vec4 a_inst0;
-in vec4 a_inst1;
+in uint a_inst1;
 in vec4 a_inst2;
 in vec4 a_inst3;
 

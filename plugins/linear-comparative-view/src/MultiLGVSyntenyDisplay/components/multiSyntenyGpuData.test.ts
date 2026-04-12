@@ -32,18 +32,18 @@ function feat(overrides: Partial<MultiPairFeature> = {}): MultiPairFeature {
 
 function readInstance(buf: ArrayBuffer, index: number) {
   const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
   const stride = INSTANCE_BYTE_SIZE / 4
   const off = index * stride
+  const packed = u32[off + 4]!
   return {
     startBp: u32[off]!,
     endBp: u32[off + 1]!,
     genomeRow: u32[off + 2]!,
     featureId: u32[off + 3]!,
-    r: f32[off + 4]!,
-    g: f32[off + 5]!,
-    b: f32[off + 6]!,
-    a: f32[off + 7]!,
+    r: (packed & 0xff) / 255,
+    g: ((packed >> 8) & 0xff) / 255,
+    b: ((packed >> 16) & 0xff) / 255,
+    a: ((packed >>> 24) & 0xff) / 255,
   }
 }
 

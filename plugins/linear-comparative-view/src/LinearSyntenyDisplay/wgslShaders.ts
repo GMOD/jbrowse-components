@@ -19,13 +19,13 @@ export const EDGE_VERTS_PER_INSTANCE = 2 * EDGE_SEGMENTS * 6
 const INSTANCE_STRUCT = /* wgsl */ `
 struct Instance {
   x1: f32, x2: f32, x3: f32, x4: f32,
-  color: vec4f,
+  color: u32, _pad0: u32, _pad1: u32, _pad2: u32,
   featureId: f32,
   isCurve: f32,
   queryTotalLength: f32,
   padTop: f32,
   padBottom: f32,
-  _pad1: f32, _pad2: f32, _pad3: f32,
+  _pad3: f32, _pad4: f32, _pad5: f32,
 }
 `
 
@@ -120,7 +120,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let inst = instances[iid];
 
   var out: VOut;
-  out.color = inst.color;
+  out.color = unpack4x8unorm(inst.color);
   out.featureId = inst.featureId;
   out.dist = 0.0;
   out.halfWidth = 0.0;
@@ -359,6 +359,7 @@ export function interleaveInstances(data: SyntenyInstanceData) {
   } = data
   const buf = new ArrayBuffer(n * INSTANCE_BYTE_SIZE)
   const f = new Float32Array(buf)
+  const u32 = new Uint32Array(buf)
   const stride = INSTANCE_BYTE_SIZE / 4
 
   for (let i = 0; i < n; i++) {
@@ -367,10 +368,7 @@ export function interleaveInstances(data: SyntenyInstanceData) {
     f[off + 1] = x2[i]!
     f[off + 2] = x3[i]!
     f[off + 3] = x4[i]!
-    f[off + 4] = colors[i * 4]!
-    f[off + 5] = colors[i * 4 + 1]!
-    f[off + 6] = colors[i * 4 + 2]!
-    f[off + 7] = colors[i * 4 + 3]!
+    u32[off + 4] = colors[i]!
     f[off + 8] = featureIds[i]!
     f[off + 9] = isCurves[i]!
     f[off + 10] = queryTotalLengths[i]!

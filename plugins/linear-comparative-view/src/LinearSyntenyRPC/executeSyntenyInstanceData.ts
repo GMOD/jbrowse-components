@@ -7,10 +7,7 @@ import {
   CIGAR_X,
 } from '@jbrowse/alignments-core'
 import { category10 } from '@jbrowse/core/ui/colors'
-import {
-  cssColorToNormalizedRgb,
-  cssColorToNormalizedRgba,
-} from '@jbrowse/core/util/colorBits'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import {
   colorSchemes,
@@ -41,28 +38,35 @@ function hashString(str: string) {
   return Math.abs(hash)
 }
 
-const category10Normalized = category10.map(hex => cssColorToNormalizedRgb(hex))
+const category10Packed = category10.map(hex => cssColorToABGR(hex))
 
-type RGBA = [number, number, number, number]
+function packRGBA(r: number, g: number, b: number, a: number) {
+  return (
+    (Math.round(a * 255) << 24) |
+    (Math.round(b * 255) << 16) |
+    (Math.round(g * 255) << 8) |
+    Math.round(r * 255)
+  )
+}
 
-const STRAND_POS: RGBA = [1, 0, 0, 1]
-const STRAND_NEG: RGBA = [0, 0, 1, 1]
-const DEFAULT_COLOR: RGBA = [1, 0, 0, 1]
+const STRAND_POS = packRGBA(1, 0, 0, 1)
+const STRAND_NEG = packRGBA(0, 0, 1, 1)
+const DEFAULT_COLOR = packRGBA(1, 0, 0, 1)
 
-const syriColorMap: Record<SyriType, RGBA> = {
-  SYN: cssColorToNormalizedRgba(syriColors.SYN),
-  INV: cssColorToNormalizedRgba(syriColors.INV),
-  TRANS: cssColorToNormalizedRgba(syriColors.TRANS),
-  DUP: cssColorToNormalizedRgba(syriColors.DUP),
+const syriColorMap: Record<SyriType, number> = {
+  SYN: cssColorToABGR(syriColors.SYN),
+  INV: cssColorToABGR(syriColors.INV),
+  TRANS: cssColorToABGR(syriColors.TRANS),
+  DUP: cssColorToABGR(syriColors.DUP),
 }
 
 function createColorFunction(
   colorBy: string,
   syriTypes?: SyriType[],
-): (strand: number, refName: string, index: number) => RGBA {
+): (strand: number, refName: string, index: number) => number {
   if (colorBy === 'syri' && syriTypes) {
     return (_strand: number, _refName: string, index: number) =>
-      syriColorMap[syriTypes[index]!]
+      syriColorMap[syriTypes[index]!]!
   }
 
   if (colorBy === 'strand') {
@@ -70,14 +74,12 @@ function createColorFunction(
   }
 
   if (colorBy === 'query') {
-    const colorCache = new Map<string, RGBA>()
+    const colorCache = new Map<string, number>()
     return (_strand: number, refName: string) => {
       let c = colorCache.get(refName)
-      if (!c) {
+      if (c === undefined) {
         const hash = hashString(refName)
-        const [r, g, b] =
-          category10Normalized[hash % category10Normalized.length]!
-        c = [r, g, b, 1]
+        c = category10Packed[hash % category10Packed.length]!
         colorCache.set(refName, c)
       }
       return c
@@ -91,7 +93,7 @@ function buildIndelColors(colorBy: string) {
   const scheme =
     colorBy === 'strand' ? colorSchemes.strand : colorSchemes.default
   const cigarColors = scheme.cigarColors
-  const indelColors: Partial<Record<number, RGBA>> = {}
+  const indelColors: Partial<Record<number, number>> = {}
   for (const [op, key] of [
     [CIGAR_I, 'I'],
     [CIGAR_D, 'D'],
@@ -99,7 +101,7 @@ function buildIndelColors(colorBy: string) {
   ] as const) {
     const color = cigarColors[key as keyof typeof cigarColors]
     if (color) {
-      indelColors[op] = cssColorToNormalizedRgba(color)
+      indelColors[op] = cssColorToABGR(color)
     }
   }
   return indelColors
@@ -107,8 +109,8 @@ function buildIndelColors(colorBy: string) {
 
 function getCigarColorByOp(
   op: number,
-  indelColors: Partial<Record<number, RGBA>>,
-  colorFn: (strand: number, refName: string, index: number) => RGBA,
+  indelColors: Partial<Record<number, number>>,
+  colorFn: (strand: number, refName: string, index: number) => number,
   strand: number,
   refName: string,
   index: number,
@@ -139,7 +141,7 @@ export interface SyntenyInstanceData {
   x2: Float32Array
   x3: Float32Array
   x4: Float32Array
-  colors: Float32Array
+  colors: Uint32Array
   featureIds: Float32Array
   isCurves: Float32Array
   queryTotalLengths: Float32Array
@@ -224,7 +226,7 @@ export function executeSyntenyInstanceData({
   let x2s = new Float64Array(capacity)
   let x3s = new Float64Array(capacity)
   let x4s = new Float64Array(capacity)
-  let colorsArr = new Float32Array(capacity * 4)
+  let colorsArr = new Uint32Array(capacity)
   let featureIdsArr = new Float32Array(capacity)
   let isCurvesArr = new Float32Array(capacity)
   let queryTotalLengthArr = new Float32Array(capacity)
@@ -238,9 +240,14 @@ export function executeSyntenyInstanceData({
       return
     }
     const newCapacity = Math.max(capacity * 2, idx + needed)
-    const growF32 = (old: Float32Array, perInstance: number) => {
-      const arr = new Float32Array(newCapacity * perInstance)
-      arr.set(old.subarray(0, idx * perInstance))
+    const growF32 = (old: Float32Array) => {
+      const arr = new Float32Array(newCapacity)
+      arr.set(old.subarray(0, idx))
+      return arr
+    }
+    const growU32 = (old: Uint32Array) => {
+      const arr = new Uint32Array(newCapacity)
+      arr.set(old.subarray(0, idx))
       return arr
     }
     const growF64 = (old: Float64Array) => {
@@ -252,12 +259,12 @@ export function executeSyntenyInstanceData({
     x2s = growF64(x2s)
     x3s = growF64(x3s)
     x4s = growF64(x4s)
-    colorsArr = growF32(colorsArr, 4)
-    featureIdsArr = growF32(featureIdsArr, 1)
-    isCurvesArr = growF32(isCurvesArr, 1)
-    queryTotalLengthArr = growF32(queryTotalLengthArr, 1)
-    padTopsArr = growF32(padTopsArr, 1)
-    padBottomsArr = growF32(padBottomsArr, 1)
+    colorsArr = growU32(colorsArr)
+    featureIdsArr = growF32(featureIdsArr)
+    isCurvesArr = growF32(isCurvesArr)
+    queryTotalLengthArr = growF32(queryTotalLengthArr)
+    padTopsArr = growF32(padTopsArr)
+    padBottomsArr = growF32(padBottomsArr)
     capacity = newCapacity
   }
 
@@ -266,10 +273,7 @@ export function executeSyntenyInstanceData({
     topRight: number,
     bottomRight: number,
     bottomLeft: number,
-    cr: number,
-    cg: number,
-    cb: number,
-    ca: number,
+    color: number,
     featureId: number,
     isCurve: number,
     qtl: number,
@@ -281,11 +285,7 @@ export function executeSyntenyInstanceData({
     x2s[idx] = topRight
     x3s[idx] = bottomRight
     x4s[idx] = bottomLeft
-    const ci = idx * 4
-    colorsArr[ci] = cr
-    colorsArr[ci + 1] = cg
-    colorsArr[ci + 2] = cb
-    colorsArr[ci + 3] = ca
+    colorsArr[idx] = color
     featureIdsArr[idx] = featureId
     isCurvesArr[idx] = isCurve
     queryTotalLengthArr[idx] = qtl
@@ -340,10 +340,7 @@ export function executeSyntenyInstanceData({
         markerTopX,
         markerBottomX,
         markerBottomX,
-        0,
-        0,
-        0,
-        1,
+        packRGBA(0, 0, 0, 1),
         featureId,
         isCurve,
         qtl,
@@ -386,16 +383,13 @@ export function executeSyntenyInstanceData({
       }
     }
 
-    const [cr, cg, cb, ca] = colorFn(strand, refName, i)
+    const baseColor = colorFn(strand, refName, i)
     addInstance(
       x11,
       x12,
       x22,
       x21,
-      cr,
-      cg,
-      cb,
-      willDrawCigar ? 0 : ca,
+      willDrawCigar ? baseColor & 0x00ffffff : baseColor,
       featureId,
       isCurve,
       qtl,
@@ -463,16 +457,12 @@ export function executeSyntenyInstanceData({
       }
     }
     if (maxIndelLen * Math.max(fallbackBpPerPxInv0, fallbackBpPerPxInv1) < 1) {
-      const [cr, cg, cb, ca] = colorFn(strand, refName, i)
       addInstance(
         x11,
         x12,
         x22,
         x21,
-        cr,
-        cg,
-        cb,
-        ca,
+        colorFn(strand, refName, i),
         featureId,
         isCurve,
         qtl,
@@ -551,9 +541,9 @@ export function executeSyntenyInstanceData({
             resolvedOp === CIGAR_I ||
             resolvedOp === CIGAR_D ||
             resolvedOp === CIGAR_N
-          const [cr, cg, cb, ca] =
+          const color =
             drawCIGARMatchesOnly && isIndel
-              ? [0, 0, 0, 0]
+              ? 0
               : getCigarColorByOp(
                   resolvedOp,
                   indelColors,
@@ -567,10 +557,7 @@ export function executeSyntenyInstanceData({
             cx1,
             cx2,
             px2,
-            cr,
-            cg,
-            cb,
-            ca,
+            color,
             featureId,
             isCurve,
             qtl,
@@ -605,7 +592,7 @@ export function executeSyntenyInstanceData({
     x2: toRelativeFloat32(x2s, instanceCount, refOffset0),
     x3: toRelativeFloat32(x3s, instanceCount, refOffset1),
     x4: toRelativeFloat32(x4s, instanceCount, refOffset1),
-    colors: colorsArr.subarray(0, instanceCount * 4),
+    colors: colorsArr.subarray(0, instanceCount),
     featureIds: featureIdsArr.subarray(0, instanceCount),
     isCurves: isCurvesArr.subarray(0, instanceCount),
     queryTotalLengths: queryTotalLengthArr.subarray(0, instanceCount),
