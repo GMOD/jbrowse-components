@@ -75,7 +75,7 @@ export async function executeRenderMultiWiggleData({
 
   const featuresBySource = new Map<string, typeof featuresArray>()
   for (const feature of featuresArray) {
-    const source = feature.get('source') || 'default'
+    const source = feature.get('source') ?? 'default'
     const existing = featuresBySource.get(source)
     if (existing) {
       existing.push(feature)
