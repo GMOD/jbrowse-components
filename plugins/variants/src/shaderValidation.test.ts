@@ -3,7 +3,10 @@ import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { ldShader } from './LDDisplay/components/ldShaders.ts'
+import {
+  ldGenomicShader,
+  ldUniformShader,
+} from './LDDisplay/components/ldShaders.ts'
 import { variantShader } from './MultiVariantDisplay/components/variantShaders.ts'
 import { variantMatrixShader } from './MultiVariantMatrixDisplay/components/variantMatrixShaders.ts'
 
@@ -35,7 +38,8 @@ function validateWgsl(name: string, code: string) {
 const wgslShaders: [string, string][] = [
   ['variant', variantShader],
   ['variantMatrix', variantMatrixShader],
-  ['ld', ldShader],
+  ['ld-genomic', ldGenomicShader],
+  ['ld-uniform', ldUniformShader],
 ]
 
 const skipIfNoNaga = hasNaga() ? describe : describe.skip
