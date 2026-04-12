@@ -1,5 +1,5 @@
 import { getContainingView, measureText } from '@jbrowse/core/util'
-import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { when } from 'mobx'
 
 import type { VariantCellData } from './components/computeVariantCells.ts'

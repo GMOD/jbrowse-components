@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/alignments-core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { SVGErrorBox } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 

@@ -1,7 +1,7 @@
 import { MISMATCH_COLOR } from '@jbrowse/alignments-core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { CoverageYScaleBar } from '@jbrowse/plugin-alignments'
 import { when } from 'mobx'
 
