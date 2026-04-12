@@ -98,7 +98,7 @@ const CDNASequence = observer(function CDNASequence({
 
     middleChunks.push(
       <SequenceDisplay
-        key={`${JSON.stringify(chunk)}-mid`}
+        key={`${chunk.start}-${chunk.end}-${chunk.type}-mid`}
         model={model}
         color={chunk.type === 'CDS' ? cdsColor : utrColor}
         strand={mult}
@@ -127,7 +127,7 @@ const CDNASequence = observer(function CDNASequence({
       if (segments.length) {
         middleChunks.push(
           <SequenceDisplay
-            key={`${JSON.stringify(chunk)}-intron`}
+            key={`${chunk.start}-${chunk.end}-${chunk.type}-intron`}
             model={model}
             strand={mult}
             coordStart={coordStart}

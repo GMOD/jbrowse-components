@@ -93,10 +93,13 @@ export default function FeatureDetails(props: {
       ) : null}
 
       {depth < maxDepth && subfeatures?.length ? (
-        <BaseCard title="Subfeatures" defaultExpanded={depth < 1}>
+        <BaseCard
+          title="Subfeatures"
+          defaultExpanded={depth === 0 && subfeatures.length <= 20}
+        >
           {subfeatures.map((sub, idx) => (
             <FeatureDetails
-              key={JSON.stringify(sub)}
+              key={`${uniqueId}_${idx}`}
               feature={{
                 ...sub,
                 uniqueId: `${uniqueId}_${idx}`,

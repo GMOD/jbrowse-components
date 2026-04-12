@@ -9,11 +9,8 @@ import { defaultCodonTable, generateCodonTable } from '../../util/index.ts'
 
 import type { SequenceFeatureDetailsModel } from './model.ts'
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
-import type { SeqState } from '../util.tsx'
+import type { Feat, SeqState } from '../util.tsx'
 
-/**
- * Renders the appropriate sequence component based on the selected mode
- */
 function RenderedSequenceComponent({
   mode,
   feature,
@@ -27,9 +24,9 @@ function RenderedSequenceComponent({
     seq: string
     upstream?: string
     downstream?: string
-    cds: any[]
-    exons: any[]
-    utr: any[]
+    cds: Feat[]
+    exons: Feat[]
+    utr: Feat[]
   }
 }) {
   const { seq, upstream, downstream, cds, exons, utr } = sequenceData
