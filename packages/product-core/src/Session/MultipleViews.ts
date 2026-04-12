@@ -68,22 +68,20 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
        * #action
        */
       moveViewToTop(id: string) {
-        const idx = self.views.findIndex(view => view.id === id)
-        self.views = cast([
-          self.views[idx],
-          ...self.views.filter(view => view.id !== id),
-        ])
+        const view = self.views.find(v => v.id === id)
+        if (view) {
+          self.views = cast([view, ...self.views.filter(v => v.id !== id)])
+        }
       },
 
       /**
        * #action
        */
       moveViewToBottom(id: string) {
-        const idx = self.views.findIndex(view => view.id === id)
-        self.views = cast([
-          ...self.views.filter(view => view.id !== id),
-          self.views[idx],
-        ])
+        const view = self.views.find(v => v.id === id)
+        if (view) {
+          self.views = cast([...self.views.filter(v => v.id !== id), view])
+        }
       },
 
       /**

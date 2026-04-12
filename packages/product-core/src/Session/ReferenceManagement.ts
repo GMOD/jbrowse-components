@@ -101,11 +101,9 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
             // If a configuration editor widget has the track config
             // open, close the widget
             const type = 'configuration editor widget(s)'
-            if (isSessionModelWithWidgets(self)) {
-              callbacks.push(() => {
-                self.hideWidget(node)
-              })
-            }
+            callbacks.push(() => {
+              self.hideWidget(node)
+            })
             dereferenced = true
             if (!dereferenceTypeCount[type]) {
               dereferenceTypeCount[type] = 0

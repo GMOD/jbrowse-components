@@ -141,13 +141,6 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       /**
        * #action
        */
-      hasWidget(widget: WidgetStateModel) {
-        return self.activeWidgets.has(widget.id)
-      },
-
-      /**
-       * #action
-       */
       hideWidget(widget: WidgetStateModel) {
         self.activeWidgets.delete(widget.id)
       },
