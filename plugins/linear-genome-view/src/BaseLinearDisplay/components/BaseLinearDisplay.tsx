@@ -48,7 +48,7 @@ const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
     <div
       ref={ref}
       data-testid={`display-${model.configuration.displayId}${
-        'canvasDrawn' in model && (model as any).canvasDrawn ? '-done' : ''
+        'canvasDrawn' in model && (model as { canvasDrawn: boolean }).canvasDrawn ? '-done' : ''
       }`}
       className={classes.display}
       onContextMenu={

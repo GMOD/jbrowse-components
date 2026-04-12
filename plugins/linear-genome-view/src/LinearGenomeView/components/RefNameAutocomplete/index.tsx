@@ -53,15 +53,12 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
-        if (debouncedSearch === '' || !assemblyName) {
-          return
-        }
-
-        setLoaded(false)
-        const results = await fetchResults(debouncedSearch)
-
-        if (!isCurrent.cancelled) {
-          setSearchOptions(getDeduplicatedResult(results))
+        if (debouncedSearch !== '' && assemblyName) {
+          setLoaded(false)
+          const results = await fetchResults(debouncedSearch)
+          if (!isCurrent.cancelled) {
+            setSearchOptions(getDeduplicatedResult(results))
+          }
         }
       } catch (e) {
         console.error(e)

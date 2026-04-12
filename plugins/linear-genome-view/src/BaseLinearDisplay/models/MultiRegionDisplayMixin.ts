@@ -62,12 +62,6 @@ export default function MultiRegionDisplayMixin() {
       },
 
       setRenderingStopToken(token: StopToken | undefined) {
-        if (token) {
-          console.log('[MultiRegionDisplay] setRenderingStopToken: LOADING fetchGeneration:', self.fetchGeneration)
-          console.trace('[MultiRegionDisplay] setRenderingStopToken LOADING caller')
-        } else {
-          console.log('[MultiRegionDisplay] setRenderingStopToken: DONE fetchGeneration:', self.fetchGeneration)
-        }
         self.renderingStopToken = token
       },
 
@@ -84,7 +78,6 @@ export default function MultiRegionDisplayMixin() {
     }))
     .actions(self => ({
       clearAllRpcData() {
-        console.log('[MultiRegionDisplay] clearAllRpcData, isLoading:', self.isLoading, 'fetchGeneration:', self.fetchGeneration)
         if (self.renderingStopToken) {
           stopStopToken(self.renderingStopToken)
           self.renderingStopToken = undefined
@@ -137,7 +130,6 @@ export default function MultiRegionDisplayMixin() {
     }))
     .actions(self => {
       function finishLoading() {
-        console.log('[MultiRegionDisplay] finishLoading called')
         self.setRenderingStopToken(undefined)
         self.setStatusMessage(undefined)
       }
@@ -147,7 +139,6 @@ export default function MultiRegionDisplayMixin() {
           needed: RegionWithNumber[],
           work: (ctx: FetchContext) => Promise<void>,
         ) {
-          console.log('[MultiRegionDisplay] withFetchLifecycle start, needed:', needed.length, 'isLoading:', self.isLoading, 'fetchGeneration:', self.fetchGeneration)
           if (self.renderingStopToken) {
             stopStopToken(self.renderingStopToken)
           }
@@ -166,7 +157,6 @@ export default function MultiRegionDisplayMixin() {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
             try {
-              console.log('[MultiRegionDisplay] fetch async work starting, generation:', generation)
               const byteEstimateConfig = self.getByteEstimateConfig()
               if (byteEstimateConfig) {
                 const session = getSession(self)
@@ -210,9 +200,7 @@ export default function MultiRegionDisplayMixin() {
                 }
               }
             } finally {
-              const stale = isStale()
-              console.log('[MultiRegionDisplay] fetch finally, isStale:', stale, 'generation:', generation, 'fetchGeneration:', self.fetchGeneration)
-              if (!stale) {
+              if (!isStale()) {
                 finishLoading()
 
                 // DO NOT REMOVE: This re-triggers the fetch autorun so
@@ -332,7 +320,6 @@ export default function MultiRegionDisplayMixin() {
                     needed.push(buffered)
                   }
                 }
-                console.log('[MultiRegionDisplay] fetch autorun: needed.length:', needed.length)
                 if (needed.length > 0) {
                   self.onFetchNeeded(needed)
                 }

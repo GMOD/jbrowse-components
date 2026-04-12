@@ -442,32 +442,24 @@ function stateModelFactory() {
       }
     })
 
-    .actions(self => ({
-      /**
-       * #action
-       * Select a feature by ID, looking up in features map and subfeatures.
-       * Falls back to RPC if not found locally (e.g., for canvas renderer).
-       * @param featureId - The ID of the feature to select
-       * @param parentFeatureId - The immediate parent's ID for subfeature lookup
-       * @param topLevelFeatureId - The top-level feature ID for RPC lookup
-       */
-      selectFeatureById: flow(function* (
+    .actions(self => {
+      // Looks up a feature locally first, then falls back to RPC.
+      // Used by both selectFeatureById and setContextMenuFeatureById.
+      async function lookupFeatureById(
         featureId: string,
         parentFeatureId?: string,
         topLevelFeatureId?: string,
       ) {
-        const feature = self.getFeatureById(featureId, parentFeatureId)
-        if (feature) {
-          self.selectFeature(feature)
-          return
-        }
-        const rpcParentId =
-          topLevelFeatureId && topLevelFeatureId !== featureId
-            ? topLevelFeatureId
-            : parentFeatureId
-        try {
+        const localFeature = self.getFeatureById(featureId, parentFeatureId)
+        if (localFeature) {
+          return localFeature
+        } else {
+          const rpcParentId =
+            topLevelFeatureId && topLevelFeatureId !== featureId
+              ? topLevelFeatureId
+              : parentFeatureId
           const session = getSession(self)
-          const f = yield fetchFeatureByIdRpc({
+          return fetchFeatureByIdRpc({
             rpcManager: session.rpcManager,
             sessionId: getRpcSessionId(self),
             trackId: getContainingTrack(self).id,
@@ -475,55 +467,52 @@ function stateModelFactory() {
             featureId,
             parentFeatureId: rpcParentId,
           })
-          if (f && isAlive(self)) {
-            self.selectFeature(f)
+        }
+      }
+
+      return {
+        /**
+         * #action
+         * Select a feature by ID, looking up in features map and subfeatures.
+         * Falls back to RPC if not found locally (e.g., for canvas renderer).
+         */
+        selectFeatureById: flow(function* (
+          featureId: string,
+          parentFeatureId?: string,
+          topLevelFeatureId?: string,
+        ) {
+          try {
+            const f = yield lookupFeatureById(featureId, parentFeatureId, topLevelFeatureId)
+            if (f && isAlive(self)) {
+              self.selectFeature(f)
+            }
+          } catch (e) {
+            console.error(e)
+            getSession(self).notifyError(`${e}`, e)
           }
-        } catch (e) {
-          console.error(e)
-          getSession(self).notifyError(`${e}`, e)
-        }
-      }),
-      /**
-       * #action
-       * Set context menu feature by ID, looking up in features map and subfeatures.
-       * Falls back to RPC if not found locally (e.g., for canvas renderer).
-       * @param featureId - The ID of the feature to set
-       * @param parentFeatureId - The immediate parent's ID for subfeature lookup
-       * @param topLevelFeatureId - The top-level feature ID for RPC lookup
-       */
-      setContextMenuFeatureById: flow(function* (
-        featureId: string,
-        parentFeatureId?: string,
-        topLevelFeatureId?: string,
-      ) {
-        const feature = self.getFeatureById(featureId, parentFeatureId)
-        if (feature) {
-          self.setContextMenuFeature(feature)
-          return
-        }
-        const rpcParentId =
-          topLevelFeatureId && topLevelFeatureId !== featureId
-            ? topLevelFeatureId
-            : parentFeatureId
-        try {
-          const session = getSession(self)
-          const f = yield fetchFeatureByIdRpc({
-            rpcManager: session.rpcManager,
-            sessionId: getRpcSessionId(self),
-            trackId: getContainingTrack(self).id,
-            rendererType: self.rendererTypeName,
-            featureId,
-            parentFeatureId: rpcParentId,
-          })
-          if (f && isAlive(self)) {
-            self.setContextMenuFeature(f)
+        }),
+        /**
+         * #action
+         * Set context menu feature by ID, looking up in features map and subfeatures.
+         * Falls back to RPC if not found locally (e.g., for canvas renderer).
+         */
+        setContextMenuFeatureById: flow(function* (
+          featureId: string,
+          parentFeatureId?: string,
+          topLevelFeatureId?: string,
+        ) {
+          try {
+            const f = yield lookupFeatureById(featureId, parentFeatureId, topLevelFeatureId)
+            if (f && isAlive(self)) {
+              self.setContextMenuFeature(f)
+            }
+          } catch (e) {
+            console.error(e)
+            getSession(self).notifyError(`${e}`, e)
           }
-        } catch (e) {
-          console.error(e)
-          getSession(self).notifyError(`${e}`, e)
-        }
-      }),
-    }))
+        }),
+      }
+    })
 
     .views(self => ({
       /**

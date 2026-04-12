@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -45,10 +45,6 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   const { classes, cx } = useStyles()
   const { staticBlocks, offsetPx, scalebarDisplayPrefix } = model
   const [menuState, setMenuState] = useState<MenuState>()
-
-  useEffect(() => {
-    model.setIsScalebarRefNameMenuOpen(!!menuState)
-  }, [model, menuState])
 
   // find the block that needs pinning to the left side for context
   // default to first ContentBlock if nothing is scrolled left
@@ -125,6 +121,7 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
             }}
             onClick={event => {
               model.setScalebarRefNameClickPending(false)
+              model.setIsScalebarRefNameMenuOpen(true)
               setMenuState({
                 anchorEl: event.currentTarget,
                 refName,
@@ -142,6 +139,7 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
           model={model}
           menuState={menuState}
           onClose={() => {
+            model.setIsScalebarRefNameMenuOpen(false)
             setMenuState(undefined)
           }}
         />

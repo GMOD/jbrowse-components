@@ -17,7 +17,7 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { reaction, toJS } from 'mobx'
+import { autorun, toJS } from 'mobx'
 
 import { BaseLinearDisplay } from '../BaseLinearDisplay/index.ts'
 
@@ -250,65 +250,28 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          */
         renderingProps() {
           const superProps = superRenderingProps()
-          const session = getSession(self)
           return {
             ...superProps,
-            async onFeatureClick(_: unknown, featureId?: string) {
-              const { rpcManager } = session
-              const { parentTrack } = self
-              try {
-                const f = featureId || self.featureIdUnderMouse
-                if (!f) {
-                  self.clearFeatureSelection()
-                } else {
-                  const sessionId = getRpcSessionId(self)
-                  const { feature } = await rpcManager.call(
-                    sessionId,
-                    'CoreGetFeatureDetails',
-                    {
-                      featureId: f,
-                      sessionId,
-                      trackInstanceId: parentTrack.id,
-                      rendererType: self.rendererTypeName,
-                    },
-                  )
-
-                  if (isAlive(self) && feature) {
-                    self.selectFeature(new SimpleFeature(feature))
-                  }
-                }
-              } catch (e) {
-                console.error(e)
-                session.notifyError(`${e}`, e)
+            onFeatureClick(_: unknown, featureId?: string) {
+              const f = featureId || self.featureIdUnderMouse
+              if (!f) {
+                self.clearFeatureSelection()
+              } else {
+                self.selectFeatureById(f).catch((e: unknown) => {
+                  console.error(e)
+                  getSession(self).notifyError(`${e}`, e)
+                })
               }
             },
-            async onFeatureContextMenu(_: unknown, featureId?: string) {
-              const { rpcManager } = session
-              const { parentTrack } = self
-              try {
-                const f = featureId || self.featureIdUnderMouse
-                if (!f) {
-                  self.clearFeatureSelection()
-                } else {
-                  const sessionId = getRpcSessionId(self)
-                  const { feature } = await rpcManager.call(
-                    sessionId,
-                    'CoreGetFeatureDetails',
-                    {
-                      featureId: f,
-                      sessionId,
-                      trackInstanceId: parentTrack.id,
-                      rendererType: self.rendererTypeName,
-                    },
-                  )
-
-                  if (isAlive(self) && feature) {
-                    self.setContextMenuFeature(new SimpleFeature(feature))
-                  }
-                }
-              } catch (e) {
-                console.error(e)
-                session.notifyError(`${e}`, e)
+            onFeatureContextMenu(_: unknown, featureId?: string) {
+              const f = featureId || self.featureIdUnderMouse
+              if (!f) {
+                self.clearFeatureSelection()
+              } else {
+                self.setContextMenuFeatureById(f).catch((e: unknown) => {
+                  console.error(e)
+                  getSession(self).notifyError(`${e}`, e)
+                })
               }
             },
           }
@@ -412,53 +375,55 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
-    .actions(self => ({
-      afterAttach() {
-        // Set up a reaction to fetch feature details when hovering
-        // This enables custom mouseover jexl expressions that use get(feature, ...)
-        addDisposer(
-          self,
-          reaction(
-            () => self.featureIdUnderMouse,
-            async featureId => {
-              if (!featureId) {
-                self.setFeatureUnderMouse(undefined)
-                return
-              }
-
-              const session = getSession(self)
-              const { rpcManager } = session
-              const { parentTrack } = self
-              try {
-                const sessionId = getRpcSessionId(self)
-                const { feature } = await rpcManager.call(
-                  sessionId,
-                  'CoreGetFeatureDetails',
-                  {
-                    featureId,
-                    sessionId,
-                    trackInstanceId: parentTrack.id,
-                    rendererType: self.rendererTypeName,
-                  },
-                )
-
-                // Only set if still alive and feature ID hasn't changed
-                if (
-                  isAlive(self) &&
-                  feature &&
-                  self.featureIdUnderMouse === featureId
-                ) {
-                  self.setFeatureUnderMouse(new SimpleFeature(feature))
+    .actions(self => {
+      const superAfterAttach = self.afterAttach
+      return {
+        afterAttach() {
+          superAfterAttach()
+          let prevFeatureId: string | undefined
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const featureId = self.featureIdUnderMouse
+                if (featureId !== prevFeatureId) {
+                  prevFeatureId = featureId
+                  if (!featureId) {
+                    self.setFeatureUnderMouse(undefined)
+                  } else {
+                    const session = getSession(self)
+                    const { rpcManager } = session
+                    const { parentTrack } = self
+                    const sessionId = getRpcSessionId(self)
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    ;(async () => {
+                      try {
+                        const { feature } = await rpcManager.call(
+                          sessionId,
+                          'CoreGetFeatureDetails',
+                          {
+                            featureId,
+                            sessionId,
+                            trackInstanceId: parentTrack.id,
+                            rendererType: self.rendererTypeName,
+                          },
+                        )
+                        if (isAlive(self) && feature && self.featureIdUnderMouse === featureId) {
+                          self.setFeatureUnderMouse(new SimpleFeature(feature))
+                        }
+                      } catch (e) {
+                        // Silently ignore errors for mouseover
+                      }
+                    })()
+                  }
                 }
-              } catch (e) {
-                // Silently ignore errors for mouseover - don't spam console
-              }
-            },
-            { delay: 50, name: 'LinearFeatureDisplayMouseoverReaction' },
-          ),
-        )
-      },
-    }))
+              },
+              { delay: 50, name: 'LinearFeatureDisplayMouseoverAutorun' },
+            ),
+          )
+        },
+      }
+    })
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
