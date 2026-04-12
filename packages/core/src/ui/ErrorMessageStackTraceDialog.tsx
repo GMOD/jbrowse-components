@@ -103,16 +103,23 @@ export default function ErrorMessageStackTraceDialog({
   const stackTrace = stripMessage(getStackTrace(error), errorText)
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        setMappedStackTrace(await mapStackTrace(stackTrace))
-      } catch (e) {
+    let cancelled = false
+    mapStackTrace(stackTrace)
+      .then(result => {
+        if (!cancelled) {
+          setMappedStackTrace(result)
+        }
+      })
+      .catch(e => {
         console.error(e)
-        setMappedStackTrace(stackTrace)
-        setSecondaryError(e)
-      }
-    })()
+        if (!cancelled) {
+          setMappedStackTrace(stackTrace)
+          setSecondaryError(e)
+        }
+      })
+    return () => {
+      cancelled = true
+    }
   }, [stackTrace])
 
   // @ts-expect-error

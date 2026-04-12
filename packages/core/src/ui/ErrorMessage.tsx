@@ -32,7 +32,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function parseError(str: string) {
+export function parseError(str: string) {
   let snapshotError = ''
   let message = ''
   const findStr = 'is not assignable'
