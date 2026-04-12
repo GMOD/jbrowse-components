@@ -56,9 +56,15 @@ const Arc = observer(function Arc({
     const col = mouseOvered ? 'black' : c
     const sw = 3
     const events = {
-      onMouseOut: () => setMouseOvered(false),
-      onMouseOver: () => setMouseOvered(true),
-      onClick: () => model.selectFeature(feature),
+      onMouseOut: () => {
+        setMouseOvered(false)
+      },
+      onMouseOver: () => {
+        setMouseOvered(true)
+      },
+      onClick: () => {
+        model.selectFeature(feature)
+      },
     }
 
     return absrad > 1 ? (

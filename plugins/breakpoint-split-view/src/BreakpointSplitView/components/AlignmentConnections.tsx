@@ -49,8 +49,14 @@ const AlignmentConnections = observer(function AlignmentConnections(
     return matches
   }, [allFeatures, trackId, hasPaired, model])
 
-  const { mouseoverElt, setMouseoverElt, yOffset, tracks, hasOverride, cachedHeights } =
-    useOverlaySetup(props)
+  const {
+    mouseoverElt,
+    setMouseoverElt,
+    yOffset,
+    tracks,
+    hasOverride,
+    cachedHeights,
+  } = useOverlaySetup(props)
 
   if (!assembly) {
     return null

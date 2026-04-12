@@ -7,7 +7,13 @@ function makeFeature(props: {
   start: number
   end: number
   strand: number
-  mate: { start: number; end: number; refName: string; name: string; assemblyName: string }
+  mate: {
+    start: number
+    end: number
+    refName: string
+    name: string
+    assemblyName: string
+  }
   name?: string
   identity?: number
 }): FeatureLike {
@@ -28,11 +34,7 @@ function makeFeature(props: {
   }
 }
 
-function mate(
-  refName: string,
-  start: number,
-  end: number,
-) {
+function mate(refName: string, start: number, end: number) {
   return { refName, start, end, name: refName, assemblyName: 'asm2' }
 }
 
@@ -239,19 +241,31 @@ describe('chainCollinearAlignments', () => {
   it('produces multiple chains from one chromosome pair', () => {
     const features = [
       makeFeature({
-        refName: 'chr1', start: 1000, end: 2000, strand: 1,
+        refName: 'chr1',
+        start: 1000,
+        end: 2000,
+        strand: 1,
         mate: mate('chr2', 5000, 6000),
       }),
       makeFeature({
-        refName: 'chr1', start: 3000, end: 4000, strand: 1,
+        refName: 'chr1',
+        start: 3000,
+        end: 4000,
+        strand: 1,
         mate: mate('chr2', 7000, 8000),
       }),
       makeFeature({
-        refName: 'chr1', start: 500_000, end: 501_000, strand: 1,
+        refName: 'chr1',
+        start: 500_000,
+        end: 501_000,
+        strand: 1,
         mate: mate('chr2', 600_000, 601_000),
       }),
       makeFeature({
-        refName: 'chr1', start: 502_000, end: 503_000, strand: 1,
+        refName: 'chr1',
+        start: 502_000,
+        end: 503_000,
+        strand: 1,
         mate: mate('chr2', 602_000, 603_000),
       }),
     ]
@@ -332,15 +346,24 @@ describe('chainCollinearAlignments', () => {
   it('chains three features into one block', () => {
     const features = [
       makeFeature({
-        refName: 'chr1', start: 1000, end: 2000, strand: 1,
+        refName: 'chr1',
+        start: 1000,
+        end: 2000,
+        strand: 1,
         mate: mate('chr2', 1000, 2000),
       }),
       makeFeature({
-        refName: 'chr1', start: 3000, end: 4000, strand: 1,
+        refName: 'chr1',
+        start: 3000,
+        end: 4000,
+        strand: 1,
         mate: mate('chr2', 3000, 4000),
       }),
       makeFeature({
-        refName: 'chr1', start: 5000, end: 6000, strand: 1,
+        refName: 'chr1',
+        start: 5000,
+        end: 6000,
+        strand: 1,
         mate: mate('chr2', 5000, 6000),
       }),
     ]
@@ -356,11 +379,17 @@ describe('chainCollinearAlignments', () => {
   it('merged features have chain- prefixed IDs', () => {
     const features = [
       makeFeature({
-        refName: 'chr1', start: 1000, end: 2000, strand: 1,
+        refName: 'chr1',
+        start: 1000,
+        end: 2000,
+        strand: 1,
         mate: mate('chr2', 1000, 2000),
       }),
       makeFeature({
-        refName: 'chr1', start: 3000, end: 4000, strand: 1,
+        refName: 'chr1',
+        start: 3000,
+        end: 4000,
+        strand: 1,
         mate: mate('chr2', 3000, 4000),
       }),
     ]
@@ -370,15 +399,24 @@ describe('chainCollinearAlignments', () => {
 
   it('maxGap=0 only merges exactly adjacent features', () => {
     const f1 = makeFeature({
-      refName: 'chr1', start: 1000, end: 2000, strand: 1,
+      refName: 'chr1',
+      start: 1000,
+      end: 2000,
+      strand: 1,
       mate: mate('chr2', 1000, 2000),
     })
     const f2 = makeFeature({
-      refName: 'chr1', start: 2000, end: 3000, strand: 1,
+      refName: 'chr1',
+      start: 2000,
+      end: 3000,
+      strand: 1,
       mate: mate('chr2', 2000, 3000),
     })
     const f3 = makeFeature({
-      refName: 'chr1', start: 3001, end: 4000, strand: 1,
+      refName: 'chr1',
+      start: 3001,
+      end: 4000,
+      strand: 1,
       mate: mate('chr2', 3001, 4000),
     })
     const result = chainCollinearAlignments([f1, f2, f3], 0)

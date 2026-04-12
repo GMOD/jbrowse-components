@@ -134,7 +134,9 @@ export async function renderSvg(
         ctx.fill()
       }
     }
-    matrixEl = <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
+    matrixEl = (
+      <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
+    )
   }
 
   const clipId = `clip-${self.id}-svg`

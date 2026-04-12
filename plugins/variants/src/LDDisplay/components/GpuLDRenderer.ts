@@ -11,7 +11,11 @@ import {
   ldUniformShader,
 } from './ldShaders.ts'
 
-import type { LDBackend, LDRenderState, LDUploadData } from './ldBackendTypes.ts'
+import type {
+  LDBackend,
+  LDRenderState,
+  LDUploadData,
+} from './ldBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_MAIN = 'main'

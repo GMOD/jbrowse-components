@@ -215,17 +215,21 @@ export async function executeSyntenyFeaturesAndPositions({
   const v2 = viewSnaps[level + 1]!
 
   const processedFeatures = chainMerge
-    ? await updateStatus('Chaining collinear alignments', statusCallback, () => {
-        const maxGap = Math.min(
-          10_000_000,
-          Math.max(v1.bpPerPx, v2.bpPerPx) * 50,
-        )
-        const chained = chainCollinearAlignments(features, maxGap)
-        console.debug(
-          `[synteny] chained ${features.length} → ${chained.length} features (maxGap=${Math.round(maxGap / 1000)}kb)`,
-        )
-        return chained
-      })
+    ? await updateStatus(
+        'Chaining collinear alignments',
+        statusCallback,
+        () => {
+          const maxGap = Math.min(
+            10_000_000,
+            Math.max(v1.bpPerPx, v2.bpPerPx) * 50,
+          )
+          const chained = chainCollinearAlignments(features, maxGap)
+          console.debug(
+            `[synteny] chained ${features.length} → ${chained.length} features (maxGap=${Math.round(maxGap / 1000)}kb)`,
+          )
+          return chained
+        },
+      )
     : features
 
   const v1Index = buildBpToPxIndex(v1)

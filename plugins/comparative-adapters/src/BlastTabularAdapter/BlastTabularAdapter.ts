@@ -125,11 +125,21 @@ interface BlastRecord extends BlastColumns {
   send: number
 }
 
-const REQUIRED_COLUMNS = ['qseqid', 'sseqid', 'qstart', 'qend', 'sstart', 'send'] as const
+const REQUIRED_COLUMNS = [
+  'qseqid',
+  'sseqid',
+  'qstart',
+  'qend',
+  'sstart',
+  'send',
+] as const
 
 function createBlastLineParser(columns: string) {
   const columnNames = columns.trim().split(' ') as (keyof BlastRecord)[]
-  const requiredIndices = {} as Record<(typeof REQUIRED_COLUMNS)[number], number>
+  const requiredIndices = {} as Record<
+    (typeof REQUIRED_COLUMNS)[number],
+    number
+  >
   for (const col of REQUIRED_COLUMNS) {
     const idx = columnNames.indexOf(col)
     if (idx === -1) {
@@ -137,11 +147,21 @@ function createBlastLineParser(columns: string) {
     }
     requiredIndices[col] = idx
   }
-  const { qseqid: qseqidIndex, sseqid: sseqidIndex, qstart: qstartIndex, qend: qendIndex, sstart: sstartIndex, send: sendIndex } = requiredIndices
+  const {
+    qseqid: qseqidIndex,
+    sseqid: sseqidIndex,
+    qstart: qstartIndex,
+    qend: qendIndex,
+    sstart: sstartIndex,
+    send: sendIndex,
+  } = requiredIndices
   const columnNameSet = new Map<string, number>(
     columnNames
       .map((c, idx) => [c, idx] as const)
-      .filter(f => !REQUIRED_COLUMNS.includes(f[0] as (typeof REQUIRED_COLUMNS)[number])),
+      .filter(
+        f =>
+          !REQUIRED_COLUMNS.includes(f[0] as (typeof REQUIRED_COLUMNS)[number]),
+      ),
   )
   return (line: string): BlastRecord | undefined => {
     if (line.startsWith('#')) {

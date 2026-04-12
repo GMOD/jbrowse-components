@@ -35,7 +35,10 @@ const GLYPH_NAMES = new Map([
   [layoutMatureProteinRegion, 'MatureProteinRegion'],
 ])
 
-function glyphType(feature: ReturnType<typeof createMockFeature>, config = defaultConfig) {
+function glyphType(
+  feature: ReturnType<typeof createMockFeature>,
+  config = defaultConfig,
+) {
   return GLYPH_NAMES.get(findGlyph(feature as any, config))
 }
 

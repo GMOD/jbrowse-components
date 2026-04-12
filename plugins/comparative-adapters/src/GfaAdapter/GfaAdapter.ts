@@ -2,8 +2,8 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import SyntenyFeature from '../SyntenyFeature/index.ts'
 import { parseGfaPathName } from '../GfaTabixAdapter/gfaBinaryIO.ts'
+import SyntenyFeature from '../SyntenyFeature/index.ts'
 
 import type { MultiPairFeature } from '../MultiPairFeature.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'

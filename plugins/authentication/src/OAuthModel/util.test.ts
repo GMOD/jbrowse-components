@@ -4,7 +4,10 @@ describe('processError', () => {
   it('calls callback and returns error_description on invalid_grant', () => {
     const cb = jest.fn()
     const result = processError(
-      JSON.stringify({ error: 'invalid_grant', error_description: 'Token expired' }),
+      JSON.stringify({
+        error: 'invalid_grant',
+        error_description: 'Token expired',
+      }),
       cb,
     )
     expect(cb).toHaveBeenCalledTimes(1)
@@ -14,7 +17,10 @@ describe('processError', () => {
   it('does not call callback for other error types', () => {
     const cb = jest.fn()
     const result = processError(
-      JSON.stringify({ error: 'access_denied', error_description: 'Access denied' }),
+      JSON.stringify({
+        error: 'access_denied',
+        error_description: 'Access denied',
+      }),
       cb,
     )
     expect(cb).not.toHaveBeenCalled()

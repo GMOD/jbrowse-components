@@ -156,8 +156,7 @@ function emitChain(
         },
         name: firstFeat.get('name'),
         assemblyName: firstFeat.get('assemblyName'),
-        identity:
-          totalWeight > 0 ? weightedIdentity / totalWeight : undefined,
+        identity: totalWeight > 0 ? weightedIdentity / totalWeight : undefined,
         CIGAR: '',
         syriType: undefined,
       },

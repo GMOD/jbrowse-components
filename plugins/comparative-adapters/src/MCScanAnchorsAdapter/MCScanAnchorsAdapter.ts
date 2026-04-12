@@ -141,5 +141,4 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       observer.complete()
     })
   }
-
 }

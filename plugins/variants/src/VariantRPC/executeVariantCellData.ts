@@ -196,8 +196,8 @@ export async function executeVariantCellData({
     perRegionRawFeatures = new Map()
     const ptrs = new Map<string, number>()
     for (const feature of rawFeatures) {
-      const refName = feature.get('refName') as string
-      const start = feature.get('start') as number
+      const refName = feature.get('refName')
+      const start = feature.get('start')
       const candidates = regionsByRefName.get(refName)
       if (!candidates) {
         continue

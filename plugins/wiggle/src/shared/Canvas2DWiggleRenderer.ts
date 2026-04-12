@@ -145,7 +145,11 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
 
   private makeScoreToY(p: DrawParams) {
     const { rowHeight, domainY, scaleType } = p
-    const normalize = makeScoreNormalizer(domainY[0], domainY[1], scaleType === SCALE_TYPE_LOG)
+    const normalize = makeScoreNormalizer(
+      domainY[0],
+      domainY[1],
+      scaleType === SCALE_TYPE_LOG,
+    )
     return (score: number) => (1 - normalize(score)) * rowHeight
   }
 
@@ -190,7 +194,8 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
       const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
       const w = Math.max(1.5, x2 - x1 + WIGGLE_FUDGE_FACTOR)
-      const t = Math.abs(normalize(source.featureScores[i]!) - zeroNorm) * invMaxDist
+      const t =
+        Math.abs(normalize(source.featureScores[i]!) - zeroNorm) * invMaxDist
       const cr = (255 + rDelta * t) | 0
       const cg = (255 + gDelta * t) | 0
       const cb = (255 + bDelta * t) | 0

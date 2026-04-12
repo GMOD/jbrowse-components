@@ -1,11 +1,11 @@
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
+import { GENOTYPE_SPLITTER } from './constants.ts'
 import {
   buildAlleleCounts,
   calculateAlleleCountsFromRaw,
   getRawCallGenotype,
 } from './rawGenotypes.ts'
-import { GENOTYPE_SPLITTER } from './constants.ts'
 
 import type VcfFeature from '../VcfFeature/index.ts'
 import type { Feature, LastStopTokenCheck } from '@jbrowse/core/util'
@@ -108,7 +108,14 @@ export function calculateAlleleCountsFast(
     }
   })
 
-  return buildAlleleCounts(count0, count1, count2, count3, countDot, otherCounts)
+  return buildAlleleCounts(
+    count0,
+    count1,
+    count2,
+    count3,
+    countDot,
+    otherCounts,
+  )
 }
 
 /**
@@ -199,7 +206,14 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
     }
   }
 
-  return buildAlleleCounts(count0, count1, count2, count3, countDot, otherCounts)
+  return buildAlleleCounts(
+    count0,
+    count1,
+    count2,
+    count3,
+    countDot,
+    otherCounts,
+  )
 }
 
 export function calculateMinorAlleleFrequency(

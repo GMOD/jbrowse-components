@@ -1,7 +1,7 @@
 import { getBpDisplayStr } from '@jbrowse/core/util'
 
-import { GENOTYPE_SPLITTER } from '../../shared/constants.ts'
 import { getMinimalDesc, makeSimpleAltString } from '../../VcfFeature/util.ts'
+import { GENOTYPE_SPLITTER } from '../../shared/constants.ts'
 
 import type { Filters, InfoFields, VariantSampleGridRow } from './types.ts'
 

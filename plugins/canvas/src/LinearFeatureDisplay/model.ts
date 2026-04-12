@@ -61,7 +61,6 @@ import type {
   MultiRegionRegionWithNumber as RegionWithNumber,
 } from '@jbrowse/plugin-linear-genome-view'
 
-
 type LGV = LinearGenomeViewModel
 
 function findSubfeatureById(
@@ -445,9 +444,7 @@ export default function stateModelFactory(
         self.mouseoverExtraInformation = info
       },
 
-      setContextMenuInfo(
-        info?: { item: FlatbushItem; regionNumber: number },
-      ) {
+      setContextMenuInfo(info?: { item: FlatbushItem; regionNumber: number }) {
         self.contextMenuInfo = info
       },
     }))
@@ -854,7 +851,10 @@ export default function stateModelFactory(
         if (!info) {
           return []
         }
-        const { item: { featureId, startBp, endBp }, regionNumber } = info
+        const {
+          item: { featureId, startBp, endBp },
+          regionNumber,
+        } = info
         const region = self.loadedRegions.get(regionNumber)
         return [
           {

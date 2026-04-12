@@ -46,7 +46,8 @@ export function useOverlaySetup({
     tracks: views.map(v => v.getTrack(trackId)),
     hasOverride: !!getTrackYPosOverride,
     cachedHeights:
-      cachedTrackTops ?? getTrackHeightsCache(views, trackId, getTrackYPosOverride),
+      cachedTrackTops ??
+      getTrackHeightsCache(views, trackId, getTrackYPosOverride),
   }
 }
 

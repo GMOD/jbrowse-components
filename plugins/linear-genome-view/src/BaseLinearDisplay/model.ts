@@ -482,7 +482,11 @@ function stateModelFactory() {
           topLevelFeatureId?: string,
         ) {
           try {
-            const f = yield lookupFeatureById(featureId, parentFeatureId, topLevelFeatureId)
+            const f = yield lookupFeatureById(
+              featureId,
+              parentFeatureId,
+              topLevelFeatureId,
+            )
             if (f && isAlive(self)) {
               self.selectFeature(f)
             }
@@ -502,7 +506,11 @@ function stateModelFactory() {
           topLevelFeatureId?: string,
         ) {
           try {
-            const f = yield lookupFeatureById(featureId, parentFeatureId, topLevelFeatureId)
+            const f = yield lookupFeatureById(
+              featureId,
+              parentFeatureId,
+              topLevelFeatureId,
+            )
             if (f && isAlive(self)) {
               self.setContextMenuFeature(f)
             }

@@ -1,5 +1,10 @@
 import { category10 } from '@jbrowse/core/ui/colors'
-import { getBlue, getGreen, getRed, parseCssColor } from '@jbrowse/core/util/colorBits'
+import {
+  getBlue,
+  getGreen,
+  getRed,
+  parseCssColor,
+} from '@jbrowse/core/util/colorBits'
 
 import { hashString } from '../util.ts'
 

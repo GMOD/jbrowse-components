@@ -28,8 +28,14 @@ const Translocations = observer(function Translocations(props: OverlayProps) {
     return model.getMatchedFeaturesInLayout(trackId, matchedFeatures)
   }, [totalFeatures, trackId, model])
 
-  const { mouseoverElt, setMouseoverElt, yOffset, tracks, hasOverride, cachedHeights } =
-    useOverlaySetup(props)
+  const {
+    mouseoverElt,
+    setMouseoverElt,
+    yOffset,
+    tracks,
+    hasOverride,
+    cachedHeights,
+  } = useOverlaySetup(props)
 
   if (!assembly) {
     return null

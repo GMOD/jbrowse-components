@@ -39,10 +39,7 @@ async function createDevice(): Promise<GPUDevice | null> {
     // results in a blank canvas with no console output.
     d.addEventListener('uncapturederror', (event: unknown) => {
       const e = event as { error?: { message?: string } }
-      console.error(
-        '[GPU] UNCAPTURED ERROR:',
-        e.error?.message ?? event,
-      )
+      console.error('[GPU] UNCAPTURED ERROR:', e.error?.message ?? event)
     })
     void d.lost.then(info => {
       console.error('[GPU] Device lost:', info.message)

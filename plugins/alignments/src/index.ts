@@ -16,7 +16,7 @@ export default class AlignmentsPlugin extends Plugin {
   name = 'AlignmentsPlugin'
 
   install(pluginManager: PluginManager) {
-    ;[
+    for (const f of [
       CramAdapterF,
       BamAdapterF,
       AlignmentsTrackF,
@@ -26,9 +26,9 @@ export default class AlignmentsPlugin extends Plugin {
       LinearAlignmentsDisplayF,
       AlignmentsFeatureWidgetF,
       GuessAlignmentsTypesF,
-    ].forEach(f => {
+    ]) {
       f(pluginManager)
-    })
+    }
   }
 }
 

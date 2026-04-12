@@ -785,7 +785,9 @@ export async function getLDMatrix({
   // Pre-allocate a flat buffer for all encoded genotypes to avoid per-variant
   // Int8Array allocation. Variants that fail filters reuse the same slot
   // (snpIdx is only incremented when a variant passes all filters).
-  const encodedFlat = dataIsPhased ? null : new Int8Array(totalVariants * nSamples)
+  const encodedFlat = dataIsPhased
+    ? null
+    : new Int8Array(totalVariants * nSamples)
   let snpIdx = 0
 
   for (const feature of rawFeatures) {
@@ -831,7 +833,10 @@ export async function getLDMatrix({
         : packHaplotypesWithCounts(genotypes!, samples)
       ;({ nHomRef, nHet, nHomAlt, nValid } = packed)
     } else {
-      encodedSlot = encodedFlat!.subarray(snpIdx * nSamples, (snpIdx + 1) * nSamples)
+      encodedSlot = encodedFlat!.subarray(
+        snpIdx * nSamples,
+        (snpIdx + 1) * nSamples,
+      )
       ;({ nHomRef, nHet, nHomAlt, nValid } = rawGt
         ? fillEncodedFromRaw(encodedSlot, rawGt, ploidy, nSamples)
         : fillEncoded(encodedSlot, genotypes!, samples, splitCache))

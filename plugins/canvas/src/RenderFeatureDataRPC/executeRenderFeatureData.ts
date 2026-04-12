@@ -118,7 +118,9 @@ export async function executeRenderFeatureData({
       const reversed = region.reversed ?? false
       const records: FeatureLayout[] = []
       for (const feature of features.values()) {
-        records.push(layoutFeature({ feature, bpPerPx, reversed, config: displayConfig }))
+        records.push(
+          layoutFeature({ feature, bpPerPx, reversed, config: displayConfig }),
+        )
       }
       return records
     },
@@ -147,16 +149,19 @@ export async function executeRenderFeatureData({
 
   checkStopToken2(stopTokenCheck)
 
-  const packed = await updateStatus('Collecting render data', statusCallback, () =>
-    collectRenderData(
-      layouts,
-      regionStart,
-      regionWidth,
-      displayConfig,
-      workerTheme,
-      !!colorByCDS,
-      peptideDataMap,
-    ),
+  const packed = await updateStatus(
+    'Collecting render data',
+    statusCallback,
+    () =>
+      collectRenderData(
+        layouts,
+        regionStart,
+        regionWidth,
+        displayConfig,
+        workerTheme,
+        !!colorByCDS,
+        peptideDataMap,
+      ),
   )
 
   checkStopToken2(stopTokenCheck)

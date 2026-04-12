@@ -15,13 +15,13 @@ import {
   STEM_LENGTH_PX,
 } from './sharedRendererConstants.ts'
 
-import type { Canvas2DRenderBlock } from '@jbrowse/core/gpu/canvas2dUtils'
-import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import type {
   CanvasFeatureBackend,
   FeatureRenderBlock,
 } from './canvasFeatureBackendTypes.ts'
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { Canvas2DRenderBlock } from '@jbrowse/core/gpu/canvas2dUtils'
+import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
 const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5
 const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5

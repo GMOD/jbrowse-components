@@ -1,7 +1,7 @@
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
-import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 import type { RenderChainDataArgs } from './types.ts'
+import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {

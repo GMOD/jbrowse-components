@@ -2,7 +2,6 @@
 
 When you complete an item in this document, remove from the document
 
-
 ## Migrate to pnpm 11 when released
 
 pnpm 11 no longer reads settings from `package.json`. When it is released:
@@ -159,39 +158,34 @@ there's no clean way to type it without touching the adapter base class.
 
 The `MultiLGVSyntenyDisplay` uses `in vec4 a_color` / `color: vec4f` (same
 pattern as dotplot before the refactor). The instance stride is already 32
-bytes, so changing `color: vec4f` (16 bytes) → `color: u32` (4 bytes) with
-3 padding u32s frees no bytes but keeps the struct clean and consistent.
+bytes, so changing `color: vec4f` (16 bytes) → `color: u32` (4 bytes) with 3
+padding u32s frees no bytes but keeps the struct clean and consistent.
 
-The blocker: `executeSyntenyInstanceData.ts` (in `LinearSyntenyRPC`) feeds
-color data to **both** `LinearSyntenyDisplay` (which packs color into `a_inst1`
-as a `vec4 float`) and `MultiLGVSyntenyDisplay` (which uses a separate `a_color`
+The blocker: `executeSyntenyInstanceData.ts` (in `LinearSyntenyRPC`) feeds color
+data to **both** `LinearSyntenyDisplay` (which packs color into `a_inst1` as a
+`vec4 float`) and `MultiLGVSyntenyDisplay` (which uses a separate `a_color`
 `vec4 float`). Changing the color encoding requires synchronized changes to both
 display paths and their shaders.
 
 Steps:
-- Change `colorsArr` from `Float32Array(capacity * 4)` to `Uint32Array(capacity)`
+
+- Change `colorsArr` from `Float32Array(capacity * 4)` to
+  `Uint32Array(capacity)`
 - Replace `colorsArr[ci], [ci+1], [ci+2], [ci+3]` writes with a single
   `packABGR(r, g, b, a)` call (same helper as dotplot)
 - Update `syntenyBackendTypes.ts`: `colors: Float32Array` → `Uint32Array`
 - Update `multiSyntenyGpuShaders.ts`: `a_color: vec4 float` → `uint integer`,
   manual GLSL unpack; WGSL struct `color: vec4f` → `color: u32` with
   `unpack4x8unorm()`
-- Update `glslShaders.ts` / `wgslShaders.ts` for `LinearSyntenyDisplay` —
-  the color is currently stored in `a_inst1` (a float vec4), needs matching change
-- Update `GpuSyntenyRenderer.ts`, `GpuMultiSyntenyRenderer.ts` attribute descriptors
+- Update `glslShaders.ts` / `wgslShaders.ts` for `LinearSyntenyDisplay` — the
+  color is currently stored in `a_inst1` (a float vec4), needs matching change
+- Update `GpuSyntenyRenderer.ts`, `GpuMultiSyntenyRenderer.ts` attribute
+  descriptors
 - Update `Canvas2DSyntenyRenderer.ts` unpack logic and tests
 
 ## Simpliy and refactor all plugins repeatedly
 
-packages/core
-plugins/gtf
-plugins/arc
-packages/app-core
-products/jbrowse-web
-products/jbrowse-desktop
-etc.
+packages/core plugins/gtf plugins/arc packages/app-core products/jbrowse-web
+products/jbrowse-desktop etc.
 
-ImportForm dotplot
-ImportForm synteny
-
-
+ImportForm dotplot ImportForm synteny

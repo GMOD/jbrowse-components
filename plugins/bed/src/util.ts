@@ -94,7 +94,10 @@ export function parseNamesFromHeader(header: string) {
   const defs = header.split(/\n|\r\n|\r/).filter(f => !!f)
   const defline = defs.at(-1)
   return defline?.includes('\t')
-    ? defline.slice(1).split('\t').map(f => f.trim())
+    ? defline
+        .slice(1)
+        .split('\t')
+        .map(f => f.trim())
     : undefined
 }
 
@@ -183,7 +186,13 @@ export function featureData2({
 }): FeatureData {
   // Check before parsing since generateBedMethylFeature reads from splitLine directly
   if (isBedMethylFeature({ splitLine, start, end })) {
-    return generateBedMethylFeature({ splitLine, uniqueId, refName, start, end })
+    return generateBedMethylFeature({
+      splitLine,
+      uniqueId,
+      refName,
+      start,
+      end,
+    })
   }
 
   const data = names

@@ -8,7 +8,7 @@ import { layoutSegments } from './segments.ts'
 import { layoutSubfeatures } from './subfeatures.ts'
 
 import type { DisplayConfig } from '../renderConfig.ts'
-import type { LayoutArgs, FeatureLayout } from '../types.ts'
+import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // Selects the layout function that best represents a feature's structure.

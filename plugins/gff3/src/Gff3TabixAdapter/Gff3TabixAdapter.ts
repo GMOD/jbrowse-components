@@ -70,7 +70,14 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { gff, dontRedispatchSet } = await this.configure(opts)
-      await this.getFeaturesHelper(query, opts, gff, dontRedispatchSet, observer, true)
+      await this.getFeaturesHelper(
+        query,
+        opts,
+        gff,
+        dontRedispatchSet,
+        observer,
+        true,
+      )
     }, opts.stopToken)
   }
 

@@ -36,9 +36,9 @@ export async function getSAFeatures({
 }) {
   const { assemblyManager } = getSession(view)
   const cigar = feature.get('CIGAR') as string
-  const origStrand = feature.get('strand') as number
+  const origStrand = feature.get('strand')!
   const SA = (feature.get('tags')?.SA as string) || ''
-  const readName = feature.get('name') as string
+  const readName = feature.get('name')!
   const clipLengthAtStartOfRead = getClip(cigar, 1)
 
   // get the canonical refname for the read because if the read.get('refName')

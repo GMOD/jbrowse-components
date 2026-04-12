@@ -97,9 +97,7 @@ function getSequenceAdapter(session: any, region: Region) {
     ? session.assemblyManager.get(region.assemblyName)
     : undefined
   const sequenceAdapterConfig = assembly?.configuration?.sequence?.adapter
-  return sequenceAdapterConfig
-    ? (getSnapshot(sequenceAdapterConfig) as Record<string, unknown>)
-    : undefined
+  return sequenceAdapterConfig ? getSnapshot(sequenceAdapterConfig) : undefined
 }
 
 interface FetchFeatureDetailsSelf {
@@ -1164,8 +1162,7 @@ export default function stateModelFactory(
           }
           if (data.softclipBaseReadIndices) {
             for (let i = 0; i < data.numSoftclipBases; i++) {
-              data.softclipBaseYs[i] =
-                readYs[data.softclipBaseReadIndices[i]!]!
+              data.softclipBaseYs[i] = readYs[data.softclipBaseReadIndices[i]!]!
             }
           }
           data.maxY = maxY
@@ -1201,10 +1198,9 @@ export default function stateModelFactory(
 
           if (entries.length === 1) {
             const [regionNumber, data] = entries[0]!
-            const { readYs, maxY } =
-              sortedBy
-                ? computeSortedLayout(data, sortedBy, showSoftClipping)
-                : computeLayout(data, showSoftClipping)
+            const { readYs, maxY } = sortedBy
+              ? computeSortedLayout(data, sortedBy, showSoftClipping)
+              : computeLayout(data, showSoftClipping)
             fillYArraysFromLayout(data, readYs, maxY)
             self.setRpcData(regionNumber, data)
           } else {

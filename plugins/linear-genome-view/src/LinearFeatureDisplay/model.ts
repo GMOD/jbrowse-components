@@ -408,7 +408,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                             rendererType: self.rendererTypeName,
                           },
                         )
-                        if (isAlive(self) && feature && self.featureIdUnderMouse === featureId) {
+                        if (
+                          isAlive(self) &&
+                          feature &&
+                          self.featureIdUnderMouse === featureId
+                        ) {
                           self.setFeatureUnderMouse(new SimpleFeature(feature))
                         }
                       } catch (e) {

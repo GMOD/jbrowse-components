@@ -6,9 +6,7 @@ import { when } from 'mobx'
 import DensityLegend from '../shared/DensityLegend.tsx'
 import YScaleBar from '../shared/YScaleBar.tsx'
 import { getDensityColor } from '../shared/getDensityColor.ts'
-import {
-  renderingTypeToInt,
-} from '../shared/wiggleComponentUtils.ts'
+import { renderingTypeToInt } from '../shared/wiggleComponentUtils.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,

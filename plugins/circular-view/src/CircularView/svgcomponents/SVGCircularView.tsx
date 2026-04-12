@@ -10,7 +10,10 @@ import Ruler from '../components/Ruler.tsx'
 
 import type { CircularViewModel, ExportSvgOptions } from '../model.ts'
 
-export async function renderToSvg(model: CircularViewModel, opts: ExportSvgOptions) {
+export async function renderToSvg(
+  model: CircularViewModel,
+  opts: ExportSvgOptions,
+) {
   await when(() => model.initialized)
   const { themeName = 'default', Wrapper = ({ children }) => children } = opts
   const session = getSession(model)

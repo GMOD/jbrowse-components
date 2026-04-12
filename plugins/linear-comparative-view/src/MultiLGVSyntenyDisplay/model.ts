@@ -99,7 +99,11 @@ function regionFromViewport(view: LGV) {
 }
 
 const SUBGRAPH_VIEW_TYPES = [
-  { type: 'GraphGenomeView' as const, label: 'Graph genome', icon: BubbleChartIcon },
+  {
+    type: 'GraphGenomeView' as const,
+    label: 'Graph genome',
+    icon: BubbleChartIcon,
+  },
   { type: 'TubeMapView' as const, label: 'Tube map', icon: TimelineIcon },
 ]
 
@@ -334,7 +338,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         self.colorPalette = palette
       },
       clearDisplaySpecificData() {
-        console.log('[MultiSynteny] clearDisplaySpecificData, stack:', new Error().stack?.split('\n').slice(1, 4).join(' | '))
+        console.log(
+          '[MultiSynteny] clearDisplaySpecificData, stack:',
+          new Error().stack?.split('\n').slice(1, 4).join(' | '),
+        )
         self.rpcDataMap = new Map()
         self.allGenomeNames = []
         self.gpuRenderer?.clearAllBlocks()

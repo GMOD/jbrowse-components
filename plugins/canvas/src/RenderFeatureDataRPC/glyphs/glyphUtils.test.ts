@@ -422,7 +422,10 @@ describe('findGlyph', () => {
     const config = mockDisplayConfig()
 
     // feature with parent → non-top-level → Segments, not Subfeatures
-    expect(findGlyph(nested, config)({ feature: nested, config, ...layoutArgs }).glyphType).toBe('Segments')
+    expect(
+      findGlyph(nested, config)({ feature: nested, config, ...layoutArgs })
+        .glyphType,
+    ).toBe('Segments')
   })
 
   it('returns Subfeatures for top-level with nested children', () => {
@@ -441,14 +444,18 @@ describe('findGlyph', () => {
     })
     const config = mockDisplayConfig()
 
-    expect(findGlyph(feature, config)({ feature, config, ...layoutArgs }).glyphType).toBe('Subfeatures')
+    expect(
+      findGlyph(feature, config)({ feature, config, ...layoutArgs }).glyphType,
+    ).toBe('Subfeatures')
   })
 
   it('returns Box for leaf features', () => {
     const feature = mockFeature({ type: 'match', start: 0, end: 100 })
     const config = mockDisplayConfig()
 
-    expect(findGlyph(feature, config)({ feature, config, ...layoutArgs }).glyphType).toBe('Box')
+    expect(
+      findGlyph(feature, config)({ feature, config, ...layoutArgs }).glyphType,
+    ).toBe('Box')
   })
 
   it('respects explicit isTopLevel=false', () => {
@@ -470,6 +477,9 @@ describe('findGlyph', () => {
     const config = mockDisplayConfig()
 
     // explicit false → Segments even though feature has no parent
-    expect(findGlyph(feature, config, false)({ feature, config, ...layoutArgs }).glyphType).toBe('Segments')
+    expect(
+      findGlyph(feature, config, false)({ feature, config, ...layoutArgs })
+        .glyphType,
+    ).toBe('Segments')
   })
 })

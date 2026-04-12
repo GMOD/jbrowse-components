@@ -650,8 +650,9 @@ export function collectRenderData(
     floatingLabelsData: collector.floatingLabelsData,
     flatbushItems: collector.flatbushItems,
     subfeatureInfos: collector.subfeatureInfos,
-    aminoAcidOverlay: collector.aminoAcidOverlay.length > 0
-      ? collector.aminoAcidOverlay
-      : undefined as AminoAcidOverlayItem[] | undefined,
+    aminoAcidOverlay:
+      collector.aminoAcidOverlay.length > 0
+        ? collector.aminoAcidOverlay
+        : (undefined as AminoAcidOverlayItem[] | undefined),
   }
 }

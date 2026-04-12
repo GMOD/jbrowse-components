@@ -40,14 +40,14 @@ function doSubmit({
   model.setError(undefined)
   transaction(() => {
     if (isSessionWithAddTracks(session)) {
-      toJS(importFormSyntenyTrackSelections).forEach((f, idx) => {
+      for (const [idx, f] of toJS(importFormSyntenyTrackSelections).entries()) {
         if (f.type === 'userOpened') {
           session.addTrackConf(f.value)
           model.toggleTrack(f.value?.trackId)
         } else if (f.type === 'preConfigured') {
           model.showTrack(f.value, idx)
         }
-      })
+      }
     }
 
     model.setAssemblyNames(assembly2, assembly1)

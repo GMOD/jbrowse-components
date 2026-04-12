@@ -35,6 +35,8 @@ describe('getDescriptiveErrorMessage', () => {
     const response = new Response(body, { status: 403 })
     const msg = await getDescriptiveErrorMessage(response, 'Fetching file')
     expect(msg).toContain('Fetching file')
-    expect(msg).toContain('The caller is not allowed to access this shared link.')
+    expect(msg).toContain(
+      'The caller is not allowed to access this shared link.',
+    )
   })
 })

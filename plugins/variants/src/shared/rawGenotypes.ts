@@ -90,7 +90,14 @@ export function calculateAlleleCountsFromRaw(callGenotype: Int8Array) {
     }
   }
 
-  return buildAlleleCounts(count0, count1, count2, count3, countDot, otherCounts)
+  return buildAlleleCounts(
+    count0,
+    count1,
+    count2,
+    count3,
+    countDot,
+    otherCounts,
+  )
 }
 
 export function encodeGenotypeFromRaw(

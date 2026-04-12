@@ -1,6 +1,10 @@
 import { lookupColorRamp, prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
 
-import type { LDBackend, LDRenderState, LDUploadData } from './ldBackendTypes.ts'
+import type {
+  LDBackend,
+  LDRenderState,
+  LDUploadData,
+} from './ldBackendTypes.ts'
 
 const COS45 = 0.7071067811865476
 

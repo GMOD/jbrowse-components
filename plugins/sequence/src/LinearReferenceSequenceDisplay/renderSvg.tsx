@@ -205,7 +205,15 @@ export async function renderSvg(
     )
     const basePx = baseBp / bpPerPx - offsetPx
 
-    renderRects(rectCtx, geom.rectBuf, geom.colorBuf, geom.instanceCount, basePx, bpPerPx, showBorders)
+    renderRects(
+      rectCtx,
+      geom.rectBuf,
+      geom.colorBuf,
+      geom.instanceCount,
+      basePx,
+      bpPerPx,
+      showBorders,
+    )
 
     if (showLetters) {
       const [topFrames, bottomFrames] = reversed
@@ -233,13 +241,31 @@ export async function renderSvg(
 
       if (showForwardActual) {
         const fwdSeq = reversed ? complement(data.seq) : data.seq
-        renderBaseLetters(textCtx, fwdSeq, data.start, currentY, rowHeight, bpPerPx, offsetPx, palette.baseColors)
+        renderBaseLetters(
+          textCtx,
+          fwdSeq,
+          data.start,
+          currentY,
+          rowHeight,
+          bpPerPx,
+          offsetPx,
+          palette.baseColors,
+        )
         currentY += rowHeight
       }
 
       if (showReverseActual && isDna) {
         const revSeq = reversed ? data.seq : complement(data.seq)
-        renderBaseLetters(textCtx, revSeq, data.start, currentY, rowHeight, bpPerPx, offsetPx, palette.baseColors)
+        renderBaseLetters(
+          textCtx,
+          revSeq,
+          data.start,
+          currentY,
+          rowHeight,
+          bpPerPx,
+          offsetPx,
+          palette.baseColors,
+        )
         currentY += rowHeight
       }
 

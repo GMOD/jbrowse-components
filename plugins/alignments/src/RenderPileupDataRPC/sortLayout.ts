@@ -1,10 +1,11 @@
-import type { PileupDataResult } from './types'
-import type { SortedBy } from '../shared/types'
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
 } from '../shared/types'
+
+import type { PileupDataResult } from './types'
+import type { SortedBy } from '../shared/types'
 
 // ASCII code for '*' used to represent deletions in base pair sort
 const DELETION_CHAR = 42
@@ -158,8 +159,7 @@ function sortOverlappingByIndex(
       )
     } else {
       overlapping.sort(
-        (a, b) =>
-          Number(sortTagValues[b] ?? 0) - Number(sortTagValues[a] ?? 0),
+        (a, b) => Number(sortTagValues[b] ?? 0) - Number(sortTagValues[a] ?? 0),
       )
     }
   }
@@ -177,7 +177,9 @@ export function computeLayout(
   showSoftClipping?: boolean,
 ) {
   const { numReads, readPositions, regionStart } = data
-  const expansions = showSoftClipping ? buildSoftclipExpansions(data) : undefined
+  const expansions = showSoftClipping
+    ? buildSoftclipExpansions(data)
+    : undefined
 
   const sortedIndices = Array.from({ length: numReads }, (_, i) => i)
   sortedIndices.sort((a, b) => {
@@ -185,8 +187,10 @@ export function computeLayout(
     const bStart = regionStart + readPositions[b * 2]!
     const aExp = expansions?.get(a)
     const bExp = expansions?.get(b)
-    return (aExp ? Math.min(aStart, aExp.start) : aStart) -
+    return (
+      (aExp ? Math.min(aStart, aExp.start) : aStart) -
       (bExp ? Math.min(bStart, bExp.start) : bStart)
+    )
   })
 
   const readYs = new Uint16Array(numReads)
@@ -231,7 +235,9 @@ export function computeSortedLayout(
 ) {
   const { numReads, readPositions, regionStart } = data
   const { pos: sortPos } = sortedBy
-  const expansions = showSoftClipping ? buildSoftclipExpansions(data) : undefined
+  const expansions = showSoftClipping
+    ? buildSoftclipExpansions(data)
+    : undefined
 
   const overlapping: number[] = []
   const nonOverlapping: number[] = []
@@ -303,7 +309,9 @@ export function computeSortedLayout(
  * region boundaries by featureId. Returns a Map<featureId, row> for
  * distributing rows back to each region's readYs array.
  */
-export function computeMultiRegionLayout(entries: [number, PileupDataResult][]) {
+export function computeMultiRegionLayout(
+  entries: [number, PileupDataResult][],
+) {
   const seen = new Set<string>()
   const reads: { id: string; start: number; end: number }[] = []
 

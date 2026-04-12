@@ -92,7 +92,12 @@ function renderLabels(
       if (label.isOverlay) {
         ctx.globalAlpha = 0.8
         ctx.fillStyle = 'rgb(255,255,255)'
-        ctx.fillRect(labelX - 1, labelY, label.textWidth + 2, LABEL_FONT_SIZE + 1)
+        ctx.fillRect(
+          labelX - 1,
+          labelY,
+          label.textWidth + 2,
+          LABEL_FONT_SIZE + 1,
+        )
         ctx.globalAlpha = 1
       }
       ctx.fillStyle = label.color
@@ -234,5 +239,7 @@ export async function renderSvg(
     }
   }
 
-  return <g dangerouslySetInnerHTML={{ __html: svgCanvas.getSerializedSvg() }} />
+  return (
+    <g dangerouslySetInnerHTML={{ __html: svgCanvas.getSerializedSvg() }} />
+  )
 }

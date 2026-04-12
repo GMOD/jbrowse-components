@@ -264,7 +264,11 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
           if (!sources.some(s => s.name === src.name)) {
             continue
           }
-          const i = findFeatureAtBp(src.featurePositions, src.numFeatures, bpOffset)
+          const i = findFeatureAtBp(
+            src.featurePositions,
+            src.numFeatures,
+            bpOffset,
+          )
           if (i !== -1) {
             const score = src.featureScores[i]!
             const minS = src.featureMinScores[i]

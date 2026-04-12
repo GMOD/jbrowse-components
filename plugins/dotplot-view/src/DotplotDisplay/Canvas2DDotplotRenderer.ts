@@ -82,9 +82,9 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
       const sy2 = this.height - (this.y2s[i]! * scaleY - offsetY)
 
       const packed = this.colors[i]!
-      const r = packed & 0xFF
-      const g = (packed >>> 8) & 0xFF
-      const b = (packed >>> 16) & 0xFF
+      const r = packed & 0xff
+      const g = (packed >>> 8) & 0xff
+      const b = (packed >>> 16) & 0xff
       const a = (packed >>> 24) / 255
 
       ctx.strokeStyle = `rgba(${r},${g},${b},${a})`

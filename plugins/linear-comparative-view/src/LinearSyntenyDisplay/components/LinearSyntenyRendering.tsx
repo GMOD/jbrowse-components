@@ -18,9 +18,9 @@ import { SyntenyRendererFactory } from '../SyntenyRenderer.ts'
 import SyntenyContextMenu from './SyntenyContextMenu.tsx'
 
 import type { ClickCoord } from './util.ts'
-import type { SyntenyBackend } from '../syntenyBackendTypes.ts'
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 import type { LinearSyntenyDisplayModel } from '../model.ts'
+import type { SyntenyBackend } from '../syntenyBackendTypes.ts'
 
 const SyntenyTooltip = lazy(() => import('./SyntenyTooltip.tsx'))
 
@@ -68,7 +68,11 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     }),
     [model],
   )
-  const { error, retry } = useGpuRenderer(gpuCanvasRef, SyntenyRendererFactory, gpuOpts)
+  const { error, retry } = useGpuRenderer(
+    gpuCanvasRef,
+    SyntenyRendererFactory,
+    gpuOpts,
+  )
 
   // SYNC across model-driven GPU displays (dotplot, linear synteny,
   // multi-LGV synteny): bumps tabVisibilityVersion so the model draw autorun

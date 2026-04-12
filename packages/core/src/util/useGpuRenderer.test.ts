@@ -16,7 +16,6 @@ function simulateDeviceLost() {
   listener?.()
 }
 
-
 function createMockFactory(shouldReject = false) {
   return (_canvas: HTMLCanvasElement) => {
     if (shouldReject) {
