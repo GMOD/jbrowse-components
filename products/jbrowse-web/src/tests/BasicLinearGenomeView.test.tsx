@@ -1,4 +1,5 @@
 import { createEvent, fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { userEvent } from '@testing-library/user-event'
 
 import { createView, doBeforeEach, hts, setup } from './util.tsx'
 setup()
@@ -159,6 +160,7 @@ test('click to display center line with correct value', async () => {
 }, 30000)
 
 test('test choose option from dropdown refName autocomplete', async () => {
+  const user = userEvent.setup()
   const {
     findAllByText,
     findByPlaceholderText,
@@ -167,8 +169,8 @@ test('test choose option from dropdown refName autocomplete', async () => {
 
   await findAllByText('ctgA', ...opts)
   const input = await findByPlaceholderText('Search for location')
-  fireEvent.mouseDown(input)
-  fireEvent.click(
+  await user.click(input)
+  await user.click(
     within(await screen.findByRole('listbox', ...opts)).getByText(/ctgB/),
   )
 
