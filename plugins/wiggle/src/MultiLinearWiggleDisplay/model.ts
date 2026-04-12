@@ -161,10 +161,8 @@ export default function stateModelFactory(
       },
 
       get sources(): Source[] {
-        const sourceMap = Object.fromEntries(
-          self.sourcesVolatile.map(s => [s.name, s]),
-        )
-        const layoutColors = Object.fromEntries(
+        const sourceMap = new Map(self.sourcesVolatile.map(s => [s.name, s]))
+        const layoutColors = new Map(
           (self.layout as Source[])
             .filter(s => s.color)
             .map(s => [s.name, s.color]),
@@ -178,13 +176,13 @@ export default function stateModelFactory(
 
         return iter.map((s, i) => ({
           source: s.name,
-          ...sourceMap[s.name],
+          ...sourceMap.get(s.name),
           ...s,
           color: resolveOverlayColor(
             i,
             this.isOverlay,
-            sourceMap[s.name]?.color,
-            layoutColors[s.name],
+            sourceMap.get(s.name)?.color,
+            layoutColors.get(s.name),
           ),
         }))
       },
@@ -195,8 +193,7 @@ export default function stateModelFactory(
       },
 
       get hasResolution() {
-        const track = getContainingTrack(self)
-        const adapterConfig = getConf(track, 'adapter') as { type: string }
+        const adapterConfig = this.adapterConfig as { type: string }
         const { pluginManager } = getEnv(self)
         return (
           pluginManager
@@ -419,11 +416,11 @@ export default function stateModelFactory(
       },
 
       setTreeCanvasRef(ref: HTMLCanvasElement | null) {
-        self.treeCanvas = ref || undefined
+        self.treeCanvas = ref ?? undefined
       },
 
       setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
-        self.mouseoverCanvas = ref || undefined
+        self.mouseoverCanvas = ref ?? undefined
       },
 
       setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {
@@ -511,8 +508,7 @@ export default function stateModelFactory(
       ) {
         const session = getSession(self)
         const { rpcManager } = session
-        const track = getContainingTrack(self)
-        const adapterConfig = getConf(track, 'adapter')
+        const { adapterConfig } = self
 
         if (!adapterConfig) {
           return

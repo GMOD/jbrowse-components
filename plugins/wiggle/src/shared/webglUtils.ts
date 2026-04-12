@@ -1,10 +1,8 @@
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
-import { INSTANCE_STRIDE } from './wiggleShader.ts'
+import { INSTANCE_BYTES, INSTANCE_STRIDE } from './wiggleShader.ts'
 
 import type { SourceRenderData } from './wiggleBackendTypes.ts'
-
-const INSTANCE_BYTES = INSTANCE_STRIDE * 4
 
 const parseColorCache = new Map<string, [number, number, number]>()
 

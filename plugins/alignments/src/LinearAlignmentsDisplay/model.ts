@@ -14,7 +14,6 @@ import {
   getSession,
   isFeature,
   isSessionModelWithWidgets,
-  max,
 } from '@jbrowse/core/util'
 import {
   addDisposer,
@@ -442,6 +441,23 @@ export default function stateModelFactory(
         get totalPileupHeight() {
           return self.maxY * (self.featureHeightSetting + self.featureSpacing)
         },
+
+        /**
+         * Cached O(1) index: featureId → {regionNumber, idx}.
+         * Recomputed by MobX only when rpcDataMap changes.
+         */
+        get readIdIndexMap() {
+          const map = new Map<string, { regionNumber: number; idx: number }>()
+          for (const [regionNumber, rpcData] of self.rpcDataMap) {
+            for (let i = 0; i < rpcData.readIds.length; i++) {
+              const id = rpcData.readIds[i]
+              if (id !== undefined) {
+                map.set(id, { regionNumber, idx: i })
+              }
+            }
+          }
+          return map
+        },
       }))
       // Delegates from submodels — expose arcsState.pairedArcsDown and
       // sashimiArcsState fields directly on the display for external consumers.
@@ -465,16 +481,19 @@ export default function stateModelFactory(
          * getFeatureInfoById.
          */
         findFeatureInRpcData(featureId: string) {
-          for (const [regionNumber, rpcData] of self.rpcDataMap) {
-            const idx = rpcData.readIds.indexOf(featureId)
-            if (idx === -1) {
-              continue
-            }
-            const startOffset = rpcData.readPositions[idx * 2]
-            const endOffset = rpcData.readPositions[idx * 2 + 1]
-            if (startOffset !== undefined && endOffset !== undefined) {
-              return { regionNumber, idx, rpcData, startOffset, endOffset }
-            }
+          const entry = self.readIdIndexMap.get(featureId)
+          if (!entry) {
+            return undefined
+          }
+          const { regionNumber, idx } = entry
+          const rpcData = self.rpcDataMap.get(regionNumber)
+          if (!rpcData) {
+            return undefined
+          }
+          const startOffset = rpcData.readPositions[idx * 2]
+          const endOffset = rpcData.readPositions[idx * 2 + 1]
+          if (startOffset !== undefined && endOffset !== undefined) {
+            return { regionNumber, idx, rpcData, startOffset, endOffset }
           }
           return undefined
         },
@@ -770,11 +789,12 @@ export default function stateModelFactory(
               '#bcaaa4',
             ]
             const map = { ...self.colorTagMap }
+            let totalKeys = Object.keys(map).length
             let added = false
             for (const value of uniqueTag) {
               if (!map[value]) {
-                const totalKeys = Object.keys(map).length
                 map[value] = colorPalette[totalKeys % colorPalette.length]!
+                totalKeys++
                 added = true
               }
             }
@@ -1207,6 +1227,7 @@ export default function stateModelFactory(
         function fillYArraysFromLayout(
           data: PileupDataResult,
           layoutMap: Map<string, number>,
+          maxY: number,
         ) {
           const yLookup = new Uint16Array(data.numReads)
           for (let i = 0; i < data.numReads; i++) {
@@ -1242,7 +1263,7 @@ export default function stateModelFactory(
             }
           }
 
-          data.maxY = max(layoutMap.values(), 0) + 1
+          data.maxY = maxY
         }
 
         function computeAndAssignLayoutForData(
@@ -1268,7 +1289,7 @@ export default function stateModelFactory(
               hardclips,
             } = reconstructFromArrays(data)
 
-            const layoutMap =
+            const { layoutMap, maxY } =
               sortedBy && sortedBy.type !== 'tag'
                 ? computeSortedLayout(
                     features,
@@ -1284,7 +1305,7 @@ export default function stateModelFactory(
                     showSoftClipping ? softclips : undefined,
                   )
 
-            fillYArraysFromLayout(data, layoutMap)
+            fillYArraysFromLayout(data, layoutMap, maxY)
             self.setRpcData(regionNumber, data)
           } else {
             const allFeatures = new Map<
@@ -1319,10 +1340,10 @@ export default function stateModelFactory(
               }),
             )
 
-            const layoutMap = computeLayout(features)
+            const { layoutMap, maxY } = computeLayout(features)
 
             for (const [regionNumber, data] of entries) {
-              fillYArraysFromLayout(data, layoutMap)
+              fillYArraysFromLayout(data, layoutMap, maxY)
               self.setRpcData(regionNumber, data)
             }
           }
@@ -1335,6 +1356,7 @@ export default function stateModelFactory(
             end: number
             regionNumber: number
           }[] = []
+          const addedRegionNumbers = new Set<number>()
           for (const [regionNumber, loaded] of self.loadedRegions) {
             allRegionInfos.push({
               refName: loaded.refName,
@@ -1342,9 +1364,10 @@ export default function stateModelFactory(
               end: loaded.end,
               regionNumber,
             })
+            addedRegionNumbers.add(regionNumber)
           }
           for (const { region, regionNumber } of regions) {
-            if (!allRegionInfos.some(ri => ri.regionNumber === regionNumber)) {
+            if (!addedRegionNumbers.has(regionNumber)) {
               allRegionInfos.push({ ...region, regionNumber })
             }
           }

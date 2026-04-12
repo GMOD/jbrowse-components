@@ -19,12 +19,14 @@ export async function createGpuHal(
 
   if (override !== 'webgl') {
     try {
+      console.log('[GPU] Attempting WebGPU init...')
       const webgpu = await WebGPUHal.create(canvas, passes, uniformByteSize)
       if (webgpu) {
         // eslint-disable-next-line no-console
         console.log('[GPU] Using WebGPU renderer')
         return webgpu
       }
+      console.log('[GPU] WebGPU returned null, falling back to WebGL2')
     } catch (e) {
       console.warn(
         '[GPU] WebGPU initialization failed, falling back to WebGL2:',
@@ -34,7 +36,10 @@ export async function createGpuHal(
   }
 
   try {
-    return new WebGL2Hal(canvas, passes, uniformByteSize)
+    console.log('[GPU] Attempting WebGL2 init...')
+    const gl = new WebGL2Hal(canvas, passes, uniformByteSize)
+    console.log('[GPU] WebGL2 init complete')
+    return gl
   } catch (e) {
     console.error('[GPU] WebGL2 initialization failed:', e)
   }

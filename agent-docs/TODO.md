@@ -149,3 +149,18 @@ The @ts-expect-error on dataAdapter.getSources() in
 MultiSampleVariantGetSources.ts is also unavoidable — getSources is a method
 specific to certain adapters, not on the BaseFeatureDataAdapter interface, so
 there's no clean way to type it without touching the adapter base class.
+
+## Simpliy and refactor all plugins repeatedly
+
+packages/core
+plugins/gtf
+plugins/arc
+packages/app-core
+products/jbrowse-web
+products/jbrowse-desktop
+etc.
+
+ImportForm dotplot
+ImportForm synteny
+
+

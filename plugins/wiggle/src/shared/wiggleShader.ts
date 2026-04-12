@@ -1,4 +1,5 @@
 export const INSTANCE_STRIDE = 8 // SYNC: must match sizeof(Instance)/4 in WGSL (32 bytes / 4 = 8 f32 slots)
+export const INSTANCE_BYTES = INSTANCE_STRIDE * 4
 export const UNIFORM_SIZE = 64 // SYNC: must match byte size of WGSL struct Uniforms (padded to 16-byte alignment)
 export const VERTICES_PER_INSTANCE = 6 // SYNC: VERTICES_PER_INSTANCE in WGSL
 export const RENDERING_TYPE_XYPLOT = 0 // SYNC: RENDERING_TYPE_XYPLOT in WGSL

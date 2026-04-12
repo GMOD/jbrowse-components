@@ -21,9 +21,7 @@ class ShaderCompileError extends Error {
 // aligned slot in the uniform ring buffer. 512 slots × 256-byte alignment =
 // 128 KB — negligible GPU memory for eliminating per-draw command submissions.
 const MAX_UNIFORM_SLOTS = 512
-// DEBUG: MSAA disabled to test whether Firefox WebGPU MSAA resolve is the
-// root cause of the blank-canvas problem. Set to 4 to re-enable.
-const MSAA_SAMPLE_COUNT: number = 1
+const MSAA_SAMPLE_COUNT = 4
 
 function gpuBlendState(bs: BlendState): GPUBlendState {
   return {
@@ -168,10 +166,7 @@ async function compilePipelines(
           targets: [{ format, ...(blend && { blend }) }],
         },
         primitive: { topology: topo },
-        multisample:
-          desc.picking || MSAA_SAMPLE_COUNT === 1
-            ? undefined
-            : { count: MSAA_SAMPLE_COUNT },
+        multisample: desc.picking ? undefined : { count: MSAA_SAMPLE_COUNT },
       })
       pipelines.set(desc.id, pipeline)
     }),
@@ -279,6 +274,7 @@ export class WebGPUHal implements GpuHal {
     const ph = Math.round(height * dpr)
     const sizeChanged = this.canvas.width !== pw || this.canvas.height !== ph
     if (sizeChanged) {
+      console.log('[WebGPUHal] resize:', pw, 'x', ph, '(css:', width, 'x', height, 'dpr:', dpr, ')')
       this.canvas.width = pw
       this.canvas.height = ph
       this.canvas.style.width = `${width}px`
@@ -496,6 +492,11 @@ export class WebGPUHal implements GpuHal {
     if (!this.msaaView || this.canvas.width === 0 || this.canvas.height === 0) {
       return
     }
+    // Push error scopes so endFrame can report OOM/validation errors after submit.
+    // Must be pushed here (after the early-return) so endFrame's early-return on
+    // !currentEncoder stays paired: scopes are pushed iff an encoder is created.
+    this.device.pushErrorScope('validation')
+    this.device.pushErrorScope('out-of-memory')
     this.scissorRect = null
     this.viewportRect = null
     this.currentTextureView = this.context.getCurrentTexture().createView()
@@ -579,9 +580,7 @@ export class WebGPUHal implements GpuHal {
     this.device.queue.submit([this.currentEncoder.finish()])
     console.log('[WebGPUHal] endFrame: submitted')
 
-    // Pop the error scopes pushed in beginFrame. Both scopes were pushed
-    // even when msaaView was missing and no render pass was created, so
-    // we must always pop exactly the same number.
+    // Pop the error scopes pushed in beginFrame (after the early-return guard).
     void this.device.popErrorScope().then(err => {
       if (err) {
         console.error(

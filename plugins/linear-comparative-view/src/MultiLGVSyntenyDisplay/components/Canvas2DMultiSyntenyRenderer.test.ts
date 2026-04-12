@@ -5,7 +5,7 @@ import {
   extractIndelsFromCs,
   extractMismatchesFromCs,
 } from '@jbrowse/alignments-core'
-import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { computeCoverage } from '@jbrowse/plugin-alignments'
 
 import { renderMultiSyntenyToCtx } from './Canvas2DMultiSyntenyRenderer.ts'

@@ -135,10 +135,10 @@ export function getNiceDomain({
     }
   }
 
-  if (minScore !== undefined && minScore !== Number.MIN_VALUE) {
+  if (minScore !== undefined) {
     min = minScore
   }
-  if (maxScore !== undefined && maxScore !== Number.MAX_VALUE) {
+  if (maxScore !== undefined) {
     max = maxScore
   }
   const scale = createScaleForType(scaleType)

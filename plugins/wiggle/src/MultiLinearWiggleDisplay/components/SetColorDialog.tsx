@@ -8,7 +8,7 @@ export default function SetColorDialog({
   handleClose,
 }: {
   model: {
-    sources?: Source[]
+    sources: Source[]
     setLayout: (s: Source[]) => void
     clearLayout: () => void
   }

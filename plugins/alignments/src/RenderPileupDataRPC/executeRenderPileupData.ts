@@ -1,5 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { max, updateStatus } from '@jbrowse/core/util'
+import { updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -460,7 +460,7 @@ export async function executeRenderPileupData({
     let layoutMaxY = 0
     let getY: (id: string) => number = () => 0
     if (isTagSort && sortTagValues) {
-      const layout = computeSortedLayout(
+      const { layoutMap: layout, maxY } = computeSortedLayout(
         features,
         mismatches,
         gaps,
@@ -469,7 +469,7 @@ export async function executeRenderPileupData({
         sortedBy,
         showSoftClipping ? softclips : undefined,
       )
-      layoutMaxY = max(layout.values(), 0) + 1
+      layoutMaxY = maxY
       getY = (id: string) => layout.get(id) ?? 0
     }
 

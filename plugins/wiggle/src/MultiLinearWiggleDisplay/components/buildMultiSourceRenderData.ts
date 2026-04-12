@@ -19,13 +19,13 @@ export function buildMultiSourceRenderData(
 ): SourceRenderData[] {
   const overlay = isOverlayMode(renderingType)
   const scatter = isScatterMode(renderingType)
-  const sourcesByName = Object.fromEntries(data.sources.map(s => [s.name, s]))
+  const sourcesByName = new Map(data.sources.map(s => [s.name, s]))
   const orderedSources = modelSources.length > 0 ? modelSources : data.sources
   const result: SourceRenderData[] = []
   let rowCounter = 0
 
   for (const orderedSource of orderedSources) {
-    const rpcSource = sourcesByName[orderedSource.name]
+    const rpcSource = sourcesByName.get(orderedSource.name)
     if (!rpcSource) {
       continue
     }

@@ -28,7 +28,7 @@ function buildClipExpansions(softclips: SoftclipData[]) {
 export function computeLayout(
   features: FeatureData[],
   softclips?: SoftclipData[],
-): Map<string, number> {
+) {
   const expansions = softclips ? buildClipExpansions(softclips) : undefined
   const sorted = [...features].sort((a, b) => a.start - b.start)
   const levels: number[] = []
@@ -40,19 +40,18 @@ export function computeLayout(
       ? Math.min(feature.start, exp.start)
       : feature.start
     const effectiveEnd = exp ? Math.max(feature.end, exp.end) : feature.end
-    let y = 0
-    for (const [i, level] of levels.entries()) {
-      if (level <= effectiveStart) {
+    let y = levels.length
+    for (let i = 0; i < levels.length; i++) {
+      if (levels[i]! <= effectiveStart) {
         y = i
         break
       }
-      y = i + 1
     }
     layoutMap.set(feature.id, y)
     levels[y] = effectiveEnd + 2
   }
 
-  return layoutMap
+  return { layoutMap, maxY: levels.length }
 }
 
 // ASCII code for '*' used to represent deletions in base pair sort
@@ -199,6 +198,7 @@ export function computeSortedLayout(
   const layoutMap = new Map<string, number>()
 
   let nextRow = 0
+  let maxY = 0
   for (const f of overlapping) {
     const exp = expansions?.get(f.id)
     const s = exp ? Math.min(f.start, exp.start) : f.start
@@ -207,6 +207,9 @@ export function computeSortedLayout(
     if (top !== null) {
       layoutMap.set(f.id, top)
       nextRow = top + 1
+      if (top > maxY) {
+        maxY = top
+      }
     }
   }
 
@@ -217,8 +220,11 @@ export function computeSortedLayout(
     const top = layout.addRect(f.id, s, e + 2, 1)
     if (top !== null) {
       layoutMap.set(f.id, top)
+      if (top > maxY) {
+        maxY = top
+      }
     }
   }
 
-  return layoutMap
+  return { layoutMap, maxY: layoutMap.size > 0 ? maxY + 1 : 0 }
 }

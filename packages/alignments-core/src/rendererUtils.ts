@@ -8,7 +8,7 @@ import {
 } from './labelConstants.ts'
 
 import type { CigarOpDrawColors } from './labelConstants.ts'
-import type { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
+import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
 export interface NoncovDrawColors {
   insertion: string

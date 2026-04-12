@@ -24,10 +24,10 @@ function computeStatsFromView(
   targetEnd: number,
 ) {
   const basesCovered = targetEnd - targetStart
-  let scoreMin = Number.MAX_VALUE
-  let scoreMax = Number.MIN_VALUE
-  let scoreMeanMin = Number.MAX_VALUE
-  let scoreMeanMax = Number.MIN_VALUE
+  let scoreMin = Infinity
+  let scoreMax = -Infinity
+  let scoreMeanMin = Infinity
+  let scoreMeanMax = -Infinity
   let scoreSum = 0
   let scoreSumSquares = 0
   let featureCount = 0
@@ -138,31 +138,9 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
   }
 
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
-    const { refName, start, end } = region
-    const {
-      bpPerPx = 0,
-      resolution = 1,
-      stopToken,
-      statusCallback = () => {},
-    } = opts
-    const source = this.getConf('source')
-    const resolutionMultiplier = this.getConf('resolutionMultiplier')
-
+    const { stopToken } = opts
     return ObservableCreate<Feature>(async observer => {
-      const { bigwig } = await this.setup(opts)
-
-      const arrays = await updateStatus(
-        'Downloading bigwig data',
-        statusCallback,
-        () =>
-          bigwig.getFeaturesAsArrays(refName, start, end, {
-            ...opts,
-            basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
-          }),
-      )
-
-      const view = new ArrayFeatureView(arrays, source, refName)
-
+      const view = await this.getArrayFeatureView(region, opts)
       for (let i = 0; i < view.length; i++) {
         observer.next(new BigWigFeature(view, i))
       }

@@ -106,14 +106,5 @@ export function buildSourceRenderData(
       rowIndex: 0,
     })
   }
-  return sources.length > 0
-    ? sources
-    : [
-        {
-          featurePositions: data.posFeaturePositions,
-          featureScores: data.posFeatureScores,
-          numFeatures: data.posNumFeatures,
-          color: baseColor,
-        },
-      ]
+  return sources
 }

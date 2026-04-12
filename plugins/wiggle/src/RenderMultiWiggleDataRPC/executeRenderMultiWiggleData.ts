@@ -53,7 +53,7 @@ export async function executeRenderMultiWiggleData({
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
-  let sourcesList: SourceInfo[] = sourcesArg || []
+  let sourcesList: SourceInfo[] = sourcesArg ?? []
   if (sourcesList.length === 0) {
     const adapterSources = await dataAdapter.getSources([region])
     sourcesList = adapterSources
@@ -92,7 +92,7 @@ export async function executeRenderMultiWiggleData({
   return {
     regionStart,
     sources: sourceNames.map(sourceName => {
-      const features = featuresBySource.get(sourceName) || []
+      const features = featuresBySource.get(sourceName) ?? []
       const sourceInfo = sourcesList.find(s => s.name === sourceName)
       const color = sourceInfo?.color
       return {

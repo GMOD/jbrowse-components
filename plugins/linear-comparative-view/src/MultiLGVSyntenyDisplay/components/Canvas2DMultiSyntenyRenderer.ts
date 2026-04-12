@@ -35,7 +35,7 @@ import type {
   BlockSnpUploadData,
 } from './multiSyntenyGpuData.ts'
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
-import type { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
+import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
 type Ctx = CanvasRenderingContext2D | SvgCanvas
