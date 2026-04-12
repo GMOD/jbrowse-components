@@ -1,14 +1,21 @@
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
+
 import { fetchChains } from './fetchChains.ts'
-import { createAutorun } from './util.ts'
 
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { LinearArcDisplayModel } from './model.ts'
 
-export function doAfterAttach<T extends IAnyStateTreeNode>(self: T) {
-  createAutorun(
+export function doAfterAttach(self: LinearArcDisplayModel) {
+  addDisposer(
     self,
-    async () => {
-      await fetchChains(self)
-    },
-    { delay: 1000 },
+    autorun(async () => {
+      try {
+        await fetchChains(self)
+      } catch (e) {
+        if (isAlive(self)) {
+          self.setError(e)
+        }
+      }
+    }, { delay: 1000 }),
   )
 }

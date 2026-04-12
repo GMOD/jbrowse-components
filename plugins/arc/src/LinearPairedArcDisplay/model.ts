@@ -116,7 +116,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         ;(async () => {
           try {
             const { doAfterAttach } = await import('./afterAttach.tsx')
-            doAfterAttach(self)
+            doAfterAttach(self as LinearArcDisplayModel)
           } catch (e) {
             console.error(e)
             self.setError(e)
@@ -130,8 +130,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         rasterizeLayers?: boolean
       }): Promise<React.ReactNode> {
         const { renderArcSvg } = await import('./renderSvg.tsx')
-        // @ts-expect-error
-        return renderArcSvg(self, opts)
+        return renderArcSvg(self as LinearArcDisplayModel, opts)
       },
     }))
 }

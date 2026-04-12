@@ -55,6 +55,11 @@ const Arc = observer(function Arc({
     const right = p2
     const col = mouseOvered ? 'black' : c
     const sw = 3
+    const events = {
+      onMouseOut: () => setMouseOvered(false),
+      onMouseOver: () => setMouseOvered(true),
+      onClick: () => model.selectFeature(feature),
+    }
 
     return absrad > 1 ? (
       <>
@@ -63,15 +68,7 @@ const Arc = observer(function Arc({
           ref={ref}
           {...getStrokeProps(col)}
           strokeWidth={sw}
-          onMouseOut={() => {
-            setMouseOvered(false)
-          }}
-          onMouseOver={() => {
-            setMouseOvered(true)
-          }}
-          onClick={() => {
-            model.selectFeature(feature)
-          }}
+          {...events}
           fill="none"
           pointerEvents="stroke"
         />
@@ -79,15 +76,7 @@ const Arc = observer(function Arc({
           <line
             {...getStrokeProps(col)}
             strokeWidth={sw}
-            onMouseOut={() => {
-              setMouseOvered(false)
-            }}
-            onMouseOver={() => {
-              setMouseOvered(true)
-            }}
-            onClick={() => {
-              model.selectFeature(feature)
-            }}
+            {...events}
             x1={left}
             x2={left + k1.mateDirection * 20}
             y1={1.5}
@@ -98,15 +87,7 @@ const Arc = observer(function Arc({
           <line
             {...getStrokeProps(col)}
             strokeWidth={sw}
-            onMouseOut={() => {
-              setMouseOvered(false)
-            }}
-            onMouseOver={() => {
-              setMouseOvered(true)
-            }}
-            onClick={() => {
-              model.selectFeature(feature)
-            }}
+            {...events}
             x1={right}
             x2={right + k2.mateDirection * 20}
             y1={1.5}
