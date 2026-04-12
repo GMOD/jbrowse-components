@@ -31,9 +31,6 @@ export function createProgram(
   const vs = createShader(gl, gl.VERTEX_SHADER, vsSource)
   const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource)
   const program = gl.createProgram()
-  if (!program) {
-    throw new Error('Failed to create WebGL program')
-  }
   gl.attachShader(program, vs)
   gl.attachShader(program, fs)
   gl.linkProgram(program)

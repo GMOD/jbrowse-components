@@ -158,3 +158,29 @@ publish hclust also and merge
 ## Make protein letters slightly larger
 
 Unreadable currently
+
+## Simplify the RefNameAutocomplete component signficantly
+
+look at the usage of the component to guide this
+
+the run tests
+
+## The LD heatmap is not displaying
+
+Checking volvox 1000 genomes display
+
+See [mobx] uncaught error in 'Reaction[Autorun]' DOMException:
+GPUQueue.writeBuffer: Byte size must be a multiple of 4 s webgpuUtils.ts:57
+uploadBuffer webgpuHal.ts:329 uploadData GpuLDRenderer.ts:123 A
+LDDisplayComponent.tsx:387 MobX 8
+
+## The multi-sample variant display is not displaying subpixel stuff very great
+
+When resizing vertically, rows blink on and off, due to subpixels becoming
+visible and invisible
+
+Note that we should look at canvas just to see
+
+## Look at the performance trace
+
+Gridlines and useAlignmentsBase uploading to gpu are hot spots
