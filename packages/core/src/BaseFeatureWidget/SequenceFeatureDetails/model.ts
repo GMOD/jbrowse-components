@@ -25,6 +25,7 @@ type SequenceDisplayMode =
   | 'gene'
   | 'gene_collapsed_intron'
   | 'gene_updownstream'
+  | 'gene_updownstream_collapsed_intron'
   | 'cdna'
   | 'cds'
   | 'genomic'

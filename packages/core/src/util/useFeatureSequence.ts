@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { fetchSeq } from './fetchSeq.ts'
 
@@ -32,28 +32,13 @@ export function useFeatureSequence({
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState(false)
 
-  const key = useMemo(() => {
-    if (!session || !shouldFetch) {
-      return null
-    }
-
-    const start = feature.get('start')
-    const end = feature.get('end')
-    const refName = feature.get('refName')
-
-    return {
-      start,
-      end,
-      refName,
-      assemblyName,
-      upDownBp,
-      forceLoad,
-      sessionId: session.id || 'default',
-    }
-  }, [session, feature, assemblyName, upDownBp, forceLoad, shouldFetch])
+  const start = feature.get('start') as number
+  const end = feature.get('end') as number
+  const refName = feature.get('refName') as string
+  const sessionId = session?.id ?? 'default'
 
   useEffect(() => {
-    if (!key) {
+    if (!session || !shouldFetch) {
       setSequence(undefined)
       setError(undefined)
       return
@@ -64,8 +49,6 @@ export function useFeatureSequence({
       try {
         setLoading(true)
         setError(undefined)
-
-        const { start, end, refName, assemblyName, upDownBp, forceLoad } = key
 
         if (!forceLoad && end - start > BPLIMIT) {
           setSequence({
@@ -78,41 +61,25 @@ export function useFeatureSequence({
         const e = end + upDownBp
 
         const [seq, upstream, downstream] = await Promise.all([
-          fetchSeq({
-            start,
-            end,
-            refName,
-            assemblyName,
-            session: session!,
-          }),
+          fetchSeq({ start, end, refName, assemblyName, session }),
           fetchSeq({
             start: Math.max(0, b),
             end: start,
             refName,
             assemblyName,
-            session: session!,
+            session,
           }),
-          fetchSeq({
-            start: end,
-            end: e,
-            refName,
-            assemblyName,
-            session: session!,
-          }),
+          fetchSeq({ start: end, end: e, refName, assemblyName, session }),
         ] as const)
 
-        setSequence({
-          seq,
-          upstream,
-          downstream,
-        })
+        setSequence({ seq, upstream, downstream })
       } catch (err) {
         setError(err)
       } finally {
         setLoading(false)
       }
     })()
-  }, [key, session])
+  }, [session, sessionId, start, end, refName, assemblyName, upDownBp, forceLoad, shouldFetch])
 
   return {
     sequence,
