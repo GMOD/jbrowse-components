@@ -198,7 +198,6 @@ export function performMultiRegionHitDetection(
     if (feature) {
       return { feature, subfeature, regionNumber: vr.regionNumber }
     }
-    return { feature: null, subfeature: null }
   }
   return { feature: null, subfeature: null }
 }

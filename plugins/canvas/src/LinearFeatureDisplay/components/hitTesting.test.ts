@@ -360,6 +360,48 @@ test('multi-region selects correct region', () => {
   expect((hitR1 as any).regionNumber).toBe(1)
 })
 
+test('multi-region continues to next region when first has no hit', () => {
+  // region 0 is within X range but has no feature at Y=999; region 1 has a feature
+  const item1 = makeItem('geneA', 100, 400, 0, 20)
+  const item2 = makeItem('geneB', 100, 400, 0, 20)
+  const data1 = makeData([item1])
+  const data2 = makeData([item2])
+
+  const rpcDataMap = new Map([
+    [0, data1],
+    [1, data2],
+  ])
+  // both regions span x=0..800 so both are candidates for any mouseX in that range
+  const regions = [
+    makeRegion(0, 0, 1000, 0, 800),
+    makeRegion(1, 0, 1000, 0, 800),
+  ]
+
+  // y=999 is outside the feature rect (height=20 at y=0), so region 0 yields no hit
+  // but region 1 should still be checked and also yields no hit at y=999
+  const miss = performMultiRegionHitDetection(
+    freshCacheMap(),
+    rpcDataMap,
+    regions,
+    100,
+    999,
+    false,
+  )
+  expect(miss.feature).toBeNull()
+
+  // y=10 hits in region 0 (first match wins)
+  const hit = performMultiRegionHitDetection(
+    freshCacheMap(),
+    rpcDataMap,
+    regions,
+    100,
+    10,
+    false,
+  )
+  expect(hit.feature!.featureId).toBe('geneA')
+  expect((hit as any).regionNumber).toBe(0)
+})
+
 test('handles reversed region', () => {
   const item = makeItem('gene1', 1000, 5000, 0, 20)
   const data = makeData([item])
