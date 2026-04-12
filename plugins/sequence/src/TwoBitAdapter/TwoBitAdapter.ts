@@ -4,6 +4,8 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
+import { parseChromSizes, refSizesToRegions } from '../chromSizesUtils.ts'
+
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
@@ -16,16 +18,9 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
   private async initChromSizes() {
     const conf = this.getConf('chromSizesLocation')
     if (conf.uri !== '/path/to/default.chrom.sizes' && conf.uri !== '') {
-      const file = openLocation(conf, this.pluginManager)
-      const data = await file.readFile('utf8')
-      const entries: [string, number][] = []
-      for (const line of data.split(/\n|\r\n|\r/)) {
-        const [name, length] = line.split('\t')
-        if (name && length) {
-          entries.push([name, +length])
-        }
-      }
-      return Object.fromEntries(entries)
+      return parseChromSizes(
+        await openLocation(conf, this.pluginManager).readFile('utf8'),
+      )
     }
     return undefined
   }
@@ -60,20 +55,7 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
 
   public async getRegions() {
     const { chromSizesData, twobit } = await this.setup()
-    if (chromSizesData) {
-      return Object.keys(chromSizesData).map(refName => ({
-        refName,
-        start: 0,
-        end: chromSizesData[refName]!,
-      }))
-    } else {
-      const refSizes = await twobit.getSequenceSizes()
-      return Object.keys(refSizes).map(refName => ({
-        refName,
-        start: 0,
-        end: refSizes[refName]!,
-      }))
-    }
+    return refSizesToRegions(chromSizesData ?? (await twobit.getSequenceSizes()))
   }
 
   /**

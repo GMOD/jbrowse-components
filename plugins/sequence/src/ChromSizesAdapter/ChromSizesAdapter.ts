@@ -1,6 +1,8 @@
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 
+import { parseChromSizes, refSizesToRegions } from '../chromSizesUtils.ts'
+
 import type { RegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export default class ChromSizesAdapter
@@ -14,16 +16,7 @@ export default class ChromSizesAdapter
     const pm = this.pluginManager
     const file = openLocation(this.getConf('chromSizesLocation'), pm)
     const data = await file.readFile('utf8')
-    return Object.fromEntries(
-      data
-        .split(/\n|\r\n|\r/)
-        .map(f => f.trim())
-        .filter(f => !!f)
-        .map(line => {
-          const [name, length] = line.split('\t')
-          return [name!, +length!]
-        }),
-    )
+    return parseChromSizes(data)
   }
 
   async setup() {
@@ -37,12 +30,7 @@ export default class ChromSizesAdapter
   }
 
   public async getRegions() {
-    const refSeqs = await this.setup()
-    return Object.keys(refSeqs).map(refName => ({
-      refName,
-      start: 0,
-      end: refSeqs[refName]!,
-    }))
+    return refSizesToRegions(await this.setup())
   }
 
   public getHeader() {

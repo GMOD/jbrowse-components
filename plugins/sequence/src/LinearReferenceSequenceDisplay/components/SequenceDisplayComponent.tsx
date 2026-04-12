@@ -71,7 +71,6 @@ function drawBaseRow(
   bpPerPx: number,
   offsetPx: number,
   showBorders: boolean,
-  showLetters: boolean,
   sequenceType: string,
   palette: ColorPalette,
   textColors: TextColors,
@@ -82,8 +81,10 @@ function drawBaseRow(
   const iStart = Math.max(0, Math.floor(visStartBp - seqStart))
   const iEnd = Math.min(seq.length, Math.ceil(visEndBp - seqStart))
 
-  if (showLetters) {
+  if (showBorders) {
     setLetterFont(ctx, rowHeight)
+    ctx.strokeStyle = BORDER_COLOR
+    ctx.lineWidth = 1
   }
 
   for (let i = iStart; i < iEnd; i++) {
@@ -96,12 +97,7 @@ function drawBaseRow(
     ctx.fillRect(x, y, w, rowHeight)
 
     if (showBorders) {
-      ctx.strokeStyle = BORDER_COLOR
-      ctx.lineWidth = 1
       ctx.strokeRect(x, y, w, rowHeight)
-    }
-
-    if (showLetters) {
       ctx.fillStyle =
         sequenceType === 'dna'
           ? (textColors.baseContrast.get(upper) ?? '#000')
@@ -122,14 +118,13 @@ function drawTranslationRow(
   offsetPx: number,
   reversed: boolean,
   showBorders: boolean,
-  showLetters: boolean,
   palette: ColorPalette,
   textColors: TextColors,
   visStartBp: number,
   visEndBp: number,
 ) {
-  const [bgR, bgG, bgB] = palette.frameColors.get(frame) ?? DEFAULT_FRAME_COLOR
-  const bgStyle = rgbStyle([bgR, bgG, bgB])
+  const bgColor = palette.frameColors.get(frame) ?? DEFAULT_FRAME_COLOR
+  const bgStyle = rgbStyle(bgColor)
 
   const normalizedFrame = Math.abs(frame) - 1
   const seqFrame = seqStart % 3
@@ -171,8 +166,10 @@ function drawTranslationRow(
     }
   }
 
-  if (showLetters) {
+  if (showBorders) {
     setLetterFont(ctx, rowHeight)
+    ctx.strokeStyle = BORDER_COLOR
+    ctx.lineWidth = 1
   }
 
   for (let i = codonAlignedStart; i < Math.min(sliceEnd, clipEnd); i += 3) {
@@ -189,11 +186,9 @@ function drawTranslationRow(
         ? palette.startColor
         : isStop
           ? palette.stopColor
-          : ([bgR, bgG, bgB] as const)
+          : bgColor
       ctx.fillStyle = rgbStyle(color)
       ctx.fillRect(x, y, codonWidth, rowHeight)
-      ctx.strokeStyle = BORDER_COLOR
-      ctx.lineWidth = 1
       ctx.strokeRect(x, y, codonWidth, rowHeight)
     } else if (isStart) {
       ctx.fillStyle = rgbStyle(palette.startColor)
@@ -203,7 +198,7 @@ function drawTranslationRow(
       ctx.fillRect(x, y, codonWidth, rowHeight)
     }
 
-    if (showLetters) {
+    if (showBorders) {
       const letter = codonTable[normalizedCodon] || ''
       ctx.fillStyle = isStart
         ? textColors.startContrast
@@ -229,7 +224,6 @@ function drawSequence(
 ) {
   const { bpPerPx, offsetPx, trackWidthPx } = view
   const showBorders = 1 / bpPerPx >= 12
-  const showLetters = showBorders
   const visStartBp = offsetPx * bpPerPx
   const visEndBp = (offsetPx + trackWidthPx) * bpPerPx
 
@@ -257,7 +251,6 @@ function drawSequence(
         offsetPx,
         reversed,
         showBorders,
-        showLetters,
         palette,
         textColors,
         visStartBp,
@@ -320,7 +313,6 @@ function drawSequence(
         offsetPx,
         !reversed,
         showBorders,
-        showLetters,
         palette,
         textColors,
         visStartBp,

@@ -53,17 +53,13 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter {
       await openLocation(fastaLocation, this.pluginManager).readFile('utf8'),
     )
 
-    return {
-      fasta: new Map(
-        [...res.entries()].map(([refName, val]) => {
-          return [
-            readConfObject(this.config, 'rewriteRefNames', { refName }) ||
-              refName,
-            val,
-          ]
-        }),
-      ),
+    const fasta = new Map<string, { description: string; sequence: string }>()
+    for (const [refName, val] of res) {
+      const name =
+        readConfObject(this.config, 'rewriteRefNames', { refName }) || refName
+      fasta.set(name, val)
     }
+    return { fasta }
   }
 
   public async getHeader() {
