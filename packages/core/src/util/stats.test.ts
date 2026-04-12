@@ -57,6 +57,24 @@ test('scores to stats', async () => {
   expect(ret.scoreMeanMax).toEqual(3)
 })
 
+test('scores to stats with all-negative scores', async () => {
+  // Regression: scoreMax/scoreMeanMax were initialised with Number.MIN_VALUE
+  // (~5e-324, the smallest *positive* float) instead of -Number.MAX_VALUE, so
+  // any negative score would never update scoreMax and the range was wrong.
+  const ret = await scoresToStats(
+    { refName: 'ctgA', start: 0, end: 2 },
+    from([
+      new SimpleFeature({ id: 1, data: { start: 0, end: 1, score: -5 } }),
+      new SimpleFeature({ id: 2, data: { start: 1, end: 2, score: -3 } }),
+      new SimpleFeature({ id: 3, data: { start: 2, end: 3, score: -1 } }),
+    ]),
+  )
+  expect(ret.scoreMax).toEqual(-1)
+  expect(ret.scoreMin).toEqual(-5)
+  expect(ret.scoreMeanMax).toEqual(-1)
+  expect(ret.scoreMeanMin).toEqual(-5)
+})
+
 test('scores to stats with summary features tracks scoreMeanMin/Max', async () => {
   const ret = await scoresToStats(
     { refName: 'ctgA', start: 0, end: 300 },

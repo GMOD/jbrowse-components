@@ -30,7 +30,7 @@ export function TemporaryAssembliesMixin(
         addTemporaryAssembly(conf: AnyConfiguration) {
           const asm = self.temporaryAssemblies.find(f => f.name === conf.name)
           if (asm) {
-            console.warn(`Assembly ${conf.name} was already existing`)
+            console.warn(`Assembly ${conf.name} already exists`)
             return asm
           }
           const length = self.temporaryAssemblies.push(conf)

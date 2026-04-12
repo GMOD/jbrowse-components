@@ -12,7 +12,7 @@ export function getViewsForPanel(
     return []
   }
   const viewIds = session.getViewIdsForPanel(panelId)
-  return [...viewIds]
+  return viewIds
     .map(id => session.views.find(v => v.id === id))
     .filter((v): v is AbstractViewModel => v !== undefined)
 }

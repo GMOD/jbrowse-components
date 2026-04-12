@@ -96,9 +96,9 @@ export async function scoresToStats(
   const { start, end } = region
   const seed = {
     scoreMin: Number.MAX_VALUE,
-    scoreMax: Number.MIN_VALUE,
+    scoreMax: -Number.MAX_VALUE,
     scoreMeanMin: Number.MAX_VALUE,
-    scoreMeanMax: Number.MIN_VALUE,
+    scoreMeanMax: -Number.MAX_VALUE,
     scoreSum: 0,
     scoreSumSquares: 0,
     featureCount: 0,

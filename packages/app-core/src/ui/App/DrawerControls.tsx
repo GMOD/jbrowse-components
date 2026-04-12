@@ -60,7 +60,7 @@ const DrawerControls = observer(function DrawerControls({
         {['left', 'right'].map(option => (
           <MenuItem
             key={option}
-            selected={drawerPosition === 'option'}
+            selected={drawerPosition === option}
             onClick={() => {
               session.setDrawerPosition(option)
               setAnchorEl(null)
