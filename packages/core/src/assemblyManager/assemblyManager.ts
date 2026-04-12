@@ -65,15 +65,6 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       /**
        * #method
        */
-      getAssemblyErrors(assemblyNames: string[]) {
-        return assemblyNames
-          .map(a => self.assemblyNameMap[a]?.error)
-          .filter(f => !!f)
-          .join(', ')
-      },
-      /**
-       * #method
-       */
       get(asmName: string) {
         if (asmName) {
           const assembly = self.assemblyNameMap[asmName]

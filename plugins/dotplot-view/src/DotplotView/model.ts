@@ -239,9 +239,11 @@ export default function stateModelFactory(pm: PluginManager) {
        * #getter
        */
       get assemblyErrors() {
-        return getSession(self).assemblyManager.getAssemblyErrors(
-          self.assemblyNames,
-        )
+        const { assemblyManager } = getSession(self)
+        return self.assemblyNames
+          .map(name => assemblyManager.get(name)?.error)
+          .filter(e => !!e)
+          .join(', ')
       },
       /**
        * #getter

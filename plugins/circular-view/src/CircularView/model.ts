@@ -354,9 +354,11 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get assemblyErrors() {
-        return getSession(self).assemblyManager.getAssemblyErrors(
-          this.assemblyNames,
-        )
+        const { assemblyManager } = getSession(self)
+        return this.assemblyNames
+          .map(name => assemblyManager.get(name)?.error)
+          .filter(e => !!e)
+          .join(', ')
       },
 
       /**
