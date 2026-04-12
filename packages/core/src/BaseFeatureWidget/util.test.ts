@@ -1,6 +1,6 @@
 import {
-  calculateUTRs,
   calculateUTRs2,
+  calculateUTRs,
   filterSuccessiveElementsWithSameStartAndEndCoord,
   formatSubfeatures,
   revlist,
@@ -82,9 +82,7 @@ describe('revlist', () => {
 
 describe('calculateUTRs', () => {
   test('returns empty when no CDS', () => {
-    expect(
-      calculateUTRs([], [{ start: 0, end: 100 }]),
-    ).toStrictEqual([])
+    expect(calculateUTRs([], [{ start: 0, end: 100 }])).toStrictEqual([])
   })
 
   test('returns empty when exons < cds length', () => {
@@ -105,7 +103,11 @@ describe('calculateUTRs', () => {
       expect.objectContaining({ start: 0, end: 50, type: 'five_prime_UTR' }),
     )
     expect(utrs).toContainEqual(
-      expect.objectContaining({ start: 150, end: 200, type: 'three_prime_UTR' }),
+      expect.objectContaining({
+        start: 150,
+        end: 200,
+        type: 'three_prime_UTR',
+      }),
     )
   })
 
@@ -132,19 +134,25 @@ describe('calculateUTRs', () => {
     )
     // 3' UTR: 600-700 from exon3, plus exon4 entirely
     expect(utrs).toContainEqual(
-      expect.objectContaining({ start: 600, end: 700, type: 'three_prime_UTR' }),
+      expect.objectContaining({
+        start: 600,
+        end: 700,
+        type: 'three_prime_UTR',
+      }),
     )
     expect(utrs).toContainEqual(
-      expect.objectContaining({ start: 800, end: 900, type: 'three_prime_UTR' }),
+      expect.objectContaining({
+        start: 800,
+        end: 900,
+        type: 'three_prime_UTR',
+      }),
     )
   })
 })
 
 describe('calculateUTRs2', () => {
   test('returns empty when no CDS', () => {
-    expect(
-      calculateUTRs2([], { start: 0, end: 100 }),
-    ).toStrictEqual([])
+    expect(calculateUTRs2([], { start: 0, end: 100 })).toStrictEqual([])
   })
 
   test('computes UTRs from parent bounds and first/last CDS', () => {

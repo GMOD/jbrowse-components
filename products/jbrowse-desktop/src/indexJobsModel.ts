@@ -5,9 +5,9 @@ import { isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   type Track,
-  type indexType,
   createTextSearchConf,
   findTrackConfigsToIndex,
+  type indexType,
 } from '@jbrowse/text-indexing'
 import { autorun, observable, toJS } from 'mobx'
 
@@ -18,8 +18,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { JobsListModel } from '@jbrowse/plugin-jobs-management'
 
 const { ipcRenderer } = window.require('electron')
-
-const ONE_HOUR = 60 * 60 * 1000
 
 interface TrackTextIndexing {
   attributes: string[]

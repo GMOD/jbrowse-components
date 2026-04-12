@@ -35,7 +35,10 @@ const SessionTriaged = observer(function SessionTriaged({
     <ConfigWarningDialog
       onConfirm={async () => {
         await loader.fetchPlugins(sessionTriaged.snap)
-        loader.setConfigSnapshot({ ...sessionTriaged.snap, id: createElementId() })
+        loader.setConfigSnapshot({
+          ...sessionTriaged.snap,
+          id: createElementId(),
+        })
         loader.setSessionTriaged(undefined)
       }}
       onCancel={async () => {

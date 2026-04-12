@@ -32,9 +32,9 @@ export function useFeatureSequence({
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState(false)
 
-  const start = feature.get('start') as number
-  const end = feature.get('end') as number
-  const refName = feature.get('refName') as string
+  const start = feature.get('start')
+  const end = feature.get('end')
+  const refName = feature.get('refName')
   const sessionId = session?.id ?? 'default'
 
   useEffect(() => {
@@ -79,7 +79,17 @@ export function useFeatureSequence({
         setLoading(false)
       }
     })()
-  }, [session, sessionId, start, end, refName, assemblyName, upDownBp, forceLoad, shouldFetch])
+  }, [
+    session,
+    sessionId,
+    start,
+    end,
+    refName,
+    assemblyName,
+    upDownBp,
+    forceLoad,
+    shouldFetch,
+  ])
 
   return {
     sequence,

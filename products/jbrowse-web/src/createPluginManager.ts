@@ -1,5 +1,5 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 import { pluginUrl } from '@jbrowse/core/PluginLoader'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 import {
   restoreFileHandlesFromSnapshot,

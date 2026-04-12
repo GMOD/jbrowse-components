@@ -450,7 +450,10 @@ const SessionLoader = types
     async loadSessionPluginsIfNeeded(sessionSnapshot: Record<string, unknown>) {
       if (!self.sessionPlugins) {
         await this.loadSession(
-          sessionSnapshot as { sessionPlugins?: PluginDefinition[]; id: string },
+          sessionSnapshot as {
+            sessionPlugins?: PluginDefinition[]
+            id: string
+          },
         )
       }
     },

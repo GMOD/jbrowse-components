@@ -4,7 +4,7 @@ import {
   getAssemblyNameFromFilename,
   getFilename,
   isBlank,
-} from './util'
+} from './util.ts'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
@@ -13,7 +13,10 @@ const fasta = { uri: 'https://example.com/hg38.fa' } as FileLocation
 const fai = { uri: 'https://example.com/hg38.fa.fai' } as FileLocation
 const gzi = { uri: 'https://example.com/hg38.fa.gz.gzi' } as FileLocation
 const twobit = { uri: 'https://example.com/hg38.2bit' } as FileLocation
-const local = { localPath: '/data/hg38.fa', locationType: 'LocalPathLocation' } as FileLocation
+const local = {
+  localPath: '/data/hg38.fa',
+  locationType: 'LocalPathLocation',
+} as FileLocation
 
 describe('isBlank', () => {
   test('returns true for empty uri', () => {
@@ -39,7 +42,11 @@ describe('getFilename', () => {
   })
 
   test('returns empty string for blob location', () => {
-    const blob = { blobId: 'abc', name: 'hg38.fa', locationType: 'BlobLocation' } as FileLocation
+    const blob = {
+      blobId: 'abc',
+      name: 'hg38.fa',
+      locationType: 'BlobLocation',
+    } as FileLocation
     expect(getFilename(blob)).toBe('')
   })
 

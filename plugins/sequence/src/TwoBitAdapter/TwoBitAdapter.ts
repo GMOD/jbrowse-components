@@ -55,7 +55,9 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
 
   public async getRegions() {
     const { chromSizesData, twobit } = await this.setup()
-    return refSizesToRegions(chromSizesData ?? (await twobit.getSequenceSizes()))
+    return refSizesToRegions(
+      chromSizesData ?? (await twobit.getSequenceSizes()),
+    )
   }
 
   /**

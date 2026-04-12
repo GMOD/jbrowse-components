@@ -7,13 +7,16 @@ import { Tooltip } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { formatDistanceToNow } from 'date-fns'
 
-import { useInnerDims } from '../availableGenomes/util.ts'
 import DateSinceLastUsed from './DateSinceLastUsed.tsx'
 import SessionNameCell from './SessionNameCell.tsx'
+import { useInnerDims } from '../availableGenomes/util.ts'
 
 import type { RecentSessionData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { GridRenderCellParams, GridRowSelectionModel } from '@mui/x-data-grid'
+import type {
+  GridRenderCellParams,
+  GridRowSelectionModel,
+} from '@mui/x-data-grid'
 
 const useStyles = makeStyles()({
   cell: {
@@ -51,7 +54,8 @@ function RecentSessionsList({
     return sessions.map(session => {
       const { updated } = session
       const date = updated !== undefined ? new Date(updated) : null
-      const showDateTooltip = date !== null && now - date.getTime() < oneDayLength
+      const showDateTooltip =
+        date !== null && now - date.getTime() < oneDayLength
       let lastModified = 'Unknown'
       if (date !== null) {
         lastModified = showDateTooltip

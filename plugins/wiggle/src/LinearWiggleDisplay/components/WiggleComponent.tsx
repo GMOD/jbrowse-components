@@ -151,7 +151,11 @@ const WiggleComponent = observer(function WiggleComponent({
           const bpOffset = bp - data.regionStart
 
           const { featurePositions, featureScores, numFeatures } = data
-          const foundIdx = findFeatureAtBp(featurePositions, numFeatures, bpOffset)
+          const foundIdx = findFeatureAtBp(
+            featurePositions,
+            numFeatures,
+            bpOffset,
+          )
 
           if (foundIdx === -1) {
             model.setFeatureUnderMouse(undefined)

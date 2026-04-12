@@ -19,8 +19,8 @@ interface FeatureData {
 function prepareSubfeatures(feature: SimpleFeatureSerialized) {
   const { start, subfeatures } = feature
   return (
-    [...(subfeatures ?? [])]
-      .sort((a, b) => a.start - b.start)
+    subfeatures
+      ?.toSorted((a, b) => a.start - b.start)
       .map(sub => ({
         ...sub,
         start: sub.start - start,

@@ -36,7 +36,10 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
+import type {
+  AbstractSessionModel,
+  SessionWithWidgets,
+} from '@jbrowse/core/util'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 import type { SessionWithDialogs } from '@jbrowse/product-core'
 

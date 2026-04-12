@@ -1,6 +1,5 @@
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
-
 import type { BaseCardProps } from '../types.tsx'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface BaseInputProps extends BaseCardProps {
   omit?: string[]

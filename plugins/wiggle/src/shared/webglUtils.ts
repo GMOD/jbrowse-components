@@ -23,7 +23,7 @@ export function interleaveInstances(
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
   let offset = 0
-  for (let idx = 0; idx < sources.length; idx++) {
+  for (let idx = 0, l = sources.length; idx < l; idx++) {
     const source = sources[idx]!
     const row = source.rowIndex
     const cr = source.color[0]

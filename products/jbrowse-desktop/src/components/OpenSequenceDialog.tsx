@@ -29,9 +29,9 @@ import {
   getAssemblyNameFromFilename,
   getFilename,
   isBlank,
-} from './util'
+} from './util.ts'
 
-import type { AdapterType } from './util'
+import type { AdapterType } from './util.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 const { ipcRenderer } = window.require('electron')
@@ -280,7 +280,10 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
       adapter = {
         type: 'IndexedFastaAdapter' as const,
         fastaLocation: raw.fastaLocation,
-        faiLocation: { localPath: faiPath, locationType: 'LocalPathLocation' as const },
+        faiLocation: {
+          localPath: faiPath,
+          locationType: 'LocalPathLocation' as const,
+        },
       }
     } else {
       adapter = raw

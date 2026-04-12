@@ -84,10 +84,7 @@ function RecentSessionCard({
         raised={hovered}
       >
         {screenshot ? (
-          <CardMedia
-            className={classes.media}
-            image={screenshot}
-          />
+          <CardMedia className={classes.media} image={screenshot} />
         ) : null}
         <CardHeader
           action={

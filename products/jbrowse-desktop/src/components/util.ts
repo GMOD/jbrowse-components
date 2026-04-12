@@ -41,7 +41,7 @@ export function detectAdapterType(filename: string): AdapterType | undefined {
   if (/\.(fa|fasta|fna)\.gz$/.test(filename)) {
     return 'BgzipFastaAdapter'
   }
-  if (/\.2bit$/.test(filename)) {
+  if (filename.endsWith('.2bit')) {
     return 'TwoBitAdapter'
   }
   return undefined

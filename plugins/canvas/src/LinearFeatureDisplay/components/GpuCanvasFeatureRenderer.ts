@@ -204,14 +204,18 @@ export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
 
 export { UNIFORM_BYTE_SIZE as CANVAS_FEATURE_UNIFORM_BYTE_SIZE }
 
+interface RegionMeta {
+  start: number
+  hasLines: boolean
+  hasArrows: boolean
+}
+
 export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
   private hal: GpuHal
   private uniformData = new ArrayBuffer(UNIFORM_BYTE_SIZE)
   private uniformF32 = new Float32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
-  private regionStarts = new Map<number, number>()
-  private hasLines = new Map<number, boolean>()
-  private hasArrows = new Map<number, boolean>()
+  private regions = new Map<number, RegionMeta>()
 
   constructor(hal: GpuHal) {
     this.hal = hal
@@ -219,9 +223,7 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
 
   uploadRegion(regionNumber: number, data: RegionRenderData) {
     this.hal.deleteRegion(regionNumber)
-    this.regionStarts.delete(regionNumber)
-    this.hasLines.delete(regionNumber)
-    this.hasArrows.delete(regionNumber)
+    this.regions.delete(regionNumber)
 
     const numRects = data.rectYs.length
     const numLines = data.lineYs.length
@@ -231,7 +233,11 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
       return
     }
 
-    this.regionStarts.set(regionNumber, data.regionStart)
+    this.regions.set(regionNumber, {
+      start: data.regionStart,
+      hasLines: numLines > 0,
+      hasArrows: numArrows > 0,
+    })
 
     if (numRects > 0) {
       const buf = interleaveRects(
@@ -253,7 +259,6 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
         numLines,
       )
       this.hal.uploadBuffer(regionNumber, PASS_LINE, buf, numLines)
-      this.hasLines.set(regionNumber, true)
     }
 
     if (numArrows > 0) {
@@ -265,7 +270,6 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
         numArrows,
       )
       this.hal.uploadBuffer(regionNumber, PASS_ARROW, buf, numArrows)
-      this.hasArrows.set(regionNumber, true)
     }
   }
 
@@ -278,21 +282,21 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
 
     this.hal.resize(canvasWidth, canvasHeight)
 
-    if (this.regionStarts.size === 0) {
+    if (this.regions.size === 0) {
       return
     }
 
     this.hal.beginFrame(0, 0, 0, 0)
 
     for (const block of blocks) {
-      const regionStart = this.regionStarts.get(block.regionNumber)
-      if (regionStart === undefined) {
+      const meta = this.regions.get(block.regionNumber)
+      if (!meta) {
         continue
       }
       if (
         this.hal.getBufferCount(block.regionNumber, PASS_RECT) === 0 &&
-        !this.hasLines.get(block.regionNumber) &&
-        !this.hasArrows.get(block.regionNumber)
+        !meta.hasLines &&
+        !meta.hasArrows
       ) {
         continue
       }
@@ -306,7 +310,7 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
       this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
 
       writeBpRangeUniforms(this.uniformF32, clip, block.reversed)
-      this.uniformU32[U_REGION_START] = Math.floor(regionStart)
+      this.uniformU32[U_REGION_START] = Math.floor(meta.start)
       this.uniformF32[U_CANVAS_HEIGHT] = canvasHeight
       this.uniformF32[U_CANVAS_WIDTH] = clip.scissorW
       this.uniformF32[U_SCROLL_Y] = scrollY
@@ -315,14 +319,14 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
 
       this.hal.writeUniforms(this.uniformData)
 
-      if (this.hasLines.get(block.regionNumber)) {
+      if (meta.hasLines) {
         this.hal.drawPass(PASS_LINE, block.regionNumber)
         this.hal.drawPass(PASS_CHEVRON, block.regionNumber, PASS_LINE)
       }
 
       this.hal.drawPass(PASS_RECT, block.regionNumber)
 
-      if (this.hasArrows.get(block.regionNumber)) {
+      if (meta.hasArrows) {
         this.hal.drawPass(PASS_ARROW, block.regionNumber)
       }
     }
@@ -333,17 +337,13 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
   }
 
   pruneRegions(activeRegions: number[]) {
-    pruneRegionMap(this.regionStarts, activeRegions, n => {
+    pruneRegionMap(this.regions, activeRegions, n => {
       this.hal.deleteRegion(n)
-      this.hasLines.delete(n)
-      this.hasArrows.delete(n)
     })
   }
 
   dispose() {
-    this.regionStarts.clear()
-    this.hasLines.clear()
-    this.hasArrows.clear()
+    this.regions.clear()
     this.hal.dispose()
   }
 }

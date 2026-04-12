@@ -149,7 +149,9 @@ export function readConf(
   attr: string,
   def: string,
 ) {
-  const configuration = root?.configuration as Record<string, unknown> | undefined
+  const configuration = root?.configuration as
+    | Record<string, unknown>
+    | undefined
   return configuration?.[attr] || def
 }
 

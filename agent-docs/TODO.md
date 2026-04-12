@@ -199,3 +199,7 @@ publish hclust also and merge
 ## Refactor plugins/alignments
 
 blank opts args, weird hacky looking rpc data flows
+
+## Make protein letters slightly larger
+
+Unreadable currently

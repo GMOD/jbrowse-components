@@ -84,7 +84,12 @@ export default function RecentSessionPanel({
       ipcRenderer.invoke('listSessions', showAutosaves) as Promise<
         RecentSessionData[]
       >,
-    { onError: e => { console.error(e); setError(e) } },
+    {
+      onError: e => {
+        console.error(e)
+        setError(e)
+      },
+    },
   )
 
   async function addToQuickstartList(arg: RecentSessionData[]) {
