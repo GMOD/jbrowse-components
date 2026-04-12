@@ -249,7 +249,7 @@ export default function RootModel({
                   onClick: (session: SessionWithWidgets) => {
                     if (session.views.length === 0) {
                       session.notify('Please open a view to add a track first')
-                    } else if (session.views.length > 0) {
+                    } else {
                       const widget = session.addWidget(
                         'AddTrackWidget',
                         'addTrackWidget',

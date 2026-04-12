@@ -105,7 +105,7 @@ export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
     const childType = getChildType(map)
     if (isReferenceType(childType)) {
       // filter the map members
-      for (const key in map.keys()) {
+      for (const key of map.keys()) {
         if (!isValidReference(() => map.get(key))) {
           map.delete(key)
         }

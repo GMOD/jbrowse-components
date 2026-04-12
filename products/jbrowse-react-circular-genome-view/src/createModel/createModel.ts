@@ -94,9 +94,7 @@ export default function createModel(
        * #action
        */
       renameCurrentSession(sessionName: string) {
-        const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-        snapshot.name = sessionName
-        this.setSession(snapshot)
+        this.setSession({ ...getSnapshot(self.session), name: sessionName })
       },
       /**
        * #action

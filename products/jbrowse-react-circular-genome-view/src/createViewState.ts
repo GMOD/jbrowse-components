@@ -86,7 +86,7 @@ export default function createViewState(opts: ViewStateOptions) {
     if (!session.view.initialized) {
       return
     }
-    const regions = assemblyManager.get(assembly?.name)?.regions
+    const regions = assemblyManager.get(assembly.name)?.regions
     if (!regions) {
       return
     }

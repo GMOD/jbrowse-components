@@ -18,6 +18,16 @@ describe('function string parsing', () => {
     const result = expr.eval({ a: 5, b: 10, c: 15 })
     expect(result).toEqual(35)
   })
+  it('startsWith is registered and works', async () => {
+    // Regression: startsWith was registered twice; the second registration
+    // silently overwrote the first, but both were identical so it still worked.
+    // This test ensures the function exists and behaves correctly.
+    const expr = stringToJexlExpression('jexl:startsWith("hello", "hel")')
+    expect(await expr.eval({})).toBe(true)
+    const expr2 = stringToJexlExpression('jexl:startsWith("hello", "world")')
+    expect(await expr2.eval({})).toBe(false)
+  })
+
   it('can use the loaded core helper functions to access feature info', () => {
     const feature = new SimpleFeature({
       uniqueId: 'jexlFeature',
