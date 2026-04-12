@@ -8,7 +8,7 @@ import {
   hts,
   setup,
 } from './util.tsx'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+
 
 setup()
 
@@ -59,7 +59,7 @@ test('launch read vs ref dotplot', async () => {
 
   fireEvent.click(await findByText('Dotplot of read vs ref', {}, delay))
   await waitFor(() => {
-    expect((session as AbstractSessionModel).views.length).toBe(2)
-    expect((session as AbstractSessionModel).views[1]!.type).toBe('DotplotView')
+    expect((session).views.length).toBe(2)
+    expect((session).views[1]!.type).toBe('DotplotView')
   }, delay)
 }, 40000)
