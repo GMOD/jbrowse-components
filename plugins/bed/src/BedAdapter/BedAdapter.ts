@@ -9,7 +9,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { featureData } from '../util.ts'
+import { featureData, parseNamesFromHeader } from '../util.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -104,17 +104,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
 
   async getNames() {
     const { header, columnNames } = await this.loadData()
-    if (columnNames.length) {
-      return columnNames
-    }
-    const defs = header.split(/\n|\r\n|\r/).filter(f => !!f)
-    const defline = defs.at(-1)
-    return defline?.includes('\t')
-      ? defline
-          .slice(1)
-          .split('\t')
-          .map(field => field.trim())
-      : undefined
+    return columnNames.length ? columnNames : parseNamesFromHeader(header)
   }
 
   private async loadFeatureIntervalTreeHelper(refName: string) {

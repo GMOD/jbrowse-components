@@ -10,7 +10,7 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
-import { featureData } from '../util.ts'
+import { featureData, parseNamesFromHeader } from '../util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -90,15 +90,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     if (this.columnNames.length) {
       return this.columnNames
     }
-    const header = await this.getHeader()
-    const defs = header.split(/\n|\r\n|\r/).filter(f => !!f)
-    const defline = defs.at(-1)
-    return defline?.includes('\t')
-      ? defline
-          .slice(1)
-          .split('\t')
-          .map(f => f.trim())
-      : undefined
+    return parseNamesFromHeader(await this.getHeader())
   }
 
   public getFeatures(query: Region, opts?: BaseOptions) {

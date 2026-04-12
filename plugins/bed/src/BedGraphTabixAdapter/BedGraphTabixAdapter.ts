@@ -4,6 +4,8 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { parseNamesFromHeader } from '../util.ts'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -49,19 +51,8 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
   }
 
   async getNames() {
-    const { bedGraph, columnNames } = await this.configure()
-    if (columnNames.length) {
-      return columnNames
-    }
-    const header = await bedGraph.getHeader()
-    const defs = header.split(/\n|\r\n|\r/).filter(f => !!f)
-    const defline = defs.at(-1)
-    return defline?.includes('\t')
-      ? defline
-          .slice(1)
-          .split('\t')
-          .map(f => f.trim())
-      : undefined
+    const { header, columnNames } = await this.configure()
+    return columnNames.length ? columnNames : parseNamesFromHeader(header)
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
@@ -103,7 +94,7 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
 
             for (let j = 0; j < rest.length; j++) {
               const uniqueId = `${this.id}-${fileOffset}-${j}`
-              const score = Math.abs(+rest[j]!)
+              const score = +rest[j]!
               const source = names[j] || `col${j}`
               if (score) {
                 observer.next(

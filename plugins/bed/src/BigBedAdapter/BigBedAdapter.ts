@@ -226,16 +226,8 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       }
 
       if (allowRedispatch && parentAggregationFlat.length) {
-        let minStart = Number.POSITIVE_INFINITY
-        let maxEnd = Number.NEGATIVE_INFINITY
-        for (const feat of parentAggregationFlat) {
-          if (feat.start < minStart) {
-            minStart = feat.start
-          }
-          if (feat.end > maxEnd) {
-            maxEnd = feat.end
-          }
-        }
+        const minStart = min(parentAggregationFlat.map(f => f.start))
+        const maxEnd = max(parentAggregationFlat.map(f => f.end))
 
         if (maxEnd > query.end || minStart < query.start) {
           await this.getFeaturesHelper({
@@ -262,21 +254,14 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           const subs = subfeatures.sort((a, b) =>
             a.uniqueId.localeCompare(b.uniqueId),
           )
-          // Check if any features in the subs array overlap with each other.
-          // This helps avoid aggregating features, like in bacterial GFF,
-          // where two genes have the same gene name but are distinct locations
-          // on the genome
-          //
-          // If they do, we'll create a single parent feature with all
-          // subfeatures (use the computed parent aggregation)
-          if (
-            subs.some((a, i) =>
-              subs.some(
-                (b, j) =>
-                  i !== j && doesIntersect2(a.start, a.end, b.start, b.end),
-              ),
-            )
-          ) {
+          // Check if subfeatures overlap each other. If they do, aggregate into
+          // one parent. If not, each sub gets its own parent (handles e.g.
+          // bacterial GFF where two genes share a name but are distinct loci).
+          const sortedByStart = [...subs].sort((a, b) => a.start - b.start)
+          const hasOverlaps = sortedByStart.some(
+            (f, i) => i > 0 && sortedByStart[i - 1]!.end > f.start,
+          )
+          if (hasOverlaps) {
             observer.next(
               new SimpleFeature({
                 id: `${this.id}-${subs[0]?.uniqueId}-parent`,

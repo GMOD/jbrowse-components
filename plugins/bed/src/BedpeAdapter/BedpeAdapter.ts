@@ -3,6 +3,7 @@ import { IntervalTree, fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { parseNamesFromHeader } from '../util.ts'
 import { featureData } from './util.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -85,17 +86,7 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
 
   async getNames() {
     const { header, columnNames } = await this.loadData()
-    if (columnNames.length) {
-      return columnNames
-    }
-    const defs = header.split(/\n|\r\n|\r/).filter(f => !!f)
-    const defline = defs.at(-1)
-    return defline?.includes('\t')
-      ? defline
-          .slice(1)
-          .split('\t')
-          .map(field => field.trim())
-      : undefined
+    return columnNames.length ? columnNames : parseNamesFromHeader(header)
   }
 
   private async loadFeatureTreeP(refName: string) {
@@ -111,7 +102,10 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
         featureData(f, `${this.id}-${refName}-${i}-r2`, true, names),
       ) ?? []
 
-    for (const obj of [...ret1, ...ret2]) {
+    for (const obj of ret1) {
+      intervalTree.insert([obj.get('start'), obj.get('end')], obj)
+    }
+    for (const obj of ret2) {
       intervalTree.insert([obj.get('start'), obj.get('end')], obj)
     }
 

@@ -90,6 +90,14 @@ export function makeBlocks({
   return subfeatures
 }
 
+export function parseNamesFromHeader(header: string) {
+  const defs = header.split(/\n|\r\n|\r/).filter(f => !!f)
+  const defline = defs.at(-1)
+  return defline?.includes('\t')
+    ? defline.slice(1).split('\t').map(f => f.trim())
+    : undefined
+}
+
 export function featureData({
   line,
   colRef,
@@ -173,6 +181,11 @@ export function featureData2({
   names?: string[]
   disableGeneHeuristic?: boolean
 }): FeatureData {
+  // Check before parsing since generateBedMethylFeature reads from splitLine directly
+  if (isBedMethylFeature({ splitLine, start, end })) {
+    return generateBedMethylFeature({ splitLine, uniqueId, refName, start, end })
+  }
+
   const data = names
     ? defaultParser(names, splitLine)
     : parser.parseLine(splitLine, { uniqueId })
@@ -188,28 +201,7 @@ export function featureData2({
   const score = scoreColumn ? +data[scoreColumn] : score2 ? +score2 : undefined
   const strand = parseStrand(strand2)
 
-  const subfeatures = rest.blockCount
-    ? makeBlocks({
-        start,
-        uniqueId,
-        refName,
-        chromStarts: rest.chromStarts,
-        blockCount: rest.blockCount,
-        blockSizes: rest.blockSizes,
-        blockStarts: rest.blockStarts,
-      })
-    : undefined
-
-  if (isBedMethylFeature({ splitLine, start, end })) {
-    return generateBedMethylFeature({
-      splitLine,
-      uniqueId,
-      refName,
-      start,
-      end,
-    })
-  }
-
+  // Check before makeBlocks since generateRepeatMaskerFeature doesn't use subfeatures
   if (isRepeatMaskerDescriptionField(rest.description)) {
     const {
       chromStarts: _4,
@@ -230,9 +222,20 @@ export function featureData2({
       end,
       strand,
       refName,
-      subfeatures,
     })
   }
+
+  const subfeatures = rest.blockCount
+    ? makeBlocks({
+        start,
+        uniqueId,
+        refName,
+        chromStarts: rest.chromStarts,
+        blockCount: rest.blockCount,
+        blockSizes: rest.blockSizes,
+        blockStarts: rest.blockStarts,
+      })
+    : undefined
 
   if (
     !disableGeneHeuristic &&

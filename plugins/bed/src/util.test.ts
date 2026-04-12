@@ -1,6 +1,6 @@
 import BED from '@gmod/bed'
 
-import { featureData2 } from './util.ts'
+import { featureData2, parseNamesFromHeader } from './util.ts'
 
 // a BED12 line that looks like a gene (has thickStart, blockCount, strand)
 function makeTranscriptLikeInput() {
@@ -27,6 +27,42 @@ function makeTranscriptLikeInput() {
     scoreColumn: '',
   }
 }
+
+describe('parseNamesFromHeader', () => {
+  it('returns column names from a tab-separated defline', () => {
+    const header = '#chrom\tstart\tend\tscore\tstrand'
+    expect(parseNamesFromHeader(header)).toEqual([
+      'chrom',
+      'start',
+      'end',
+      'score',
+      'strand',
+    ])
+  })
+
+  it('returns undefined when header has no tabs', () => {
+    expect(parseNamesFromHeader('# some non-tabular header')).toBeUndefined()
+  })
+
+  it('returns undefined for empty header', () => {
+    expect(parseNamesFromHeader('')).toBeUndefined()
+  })
+
+  it('trims whitespace from column names', () => {
+    const header = '# col1 \t col2 \t col3 '
+    expect(parseNamesFromHeader(header)).toEqual(['col1', 'col2', 'col3'])
+  })
+
+  it('uses the last line when there are multiple header lines', () => {
+    const header = '#track type=bedGraph\n#chrom\tstart\tend\tscore'
+    expect(parseNamesFromHeader(header)).toEqual([
+      'chrom',
+      'start',
+      'end',
+      'score',
+    ])
+  })
+})
 
 describe('featureData2', () => {
   it('produces transcript subfeatures by default for BED12 gene-like data', () => {
