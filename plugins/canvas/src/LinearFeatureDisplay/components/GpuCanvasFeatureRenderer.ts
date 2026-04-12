@@ -31,7 +31,7 @@ import type {
   CanvasFeatureBackend,
   FeatureRenderBlock,
 } from './canvasFeatureBackendTypes.ts'
-import type { RegionGpuData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_RECT = 'rect'
@@ -217,7 +217,7 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
     this.hal = hal
   }
 
-  uploadRegion(regionNumber: number, data: RegionGpuData) {
+  uploadRegion(regionNumber: number, data: RegionRenderData) {
     this.hal.deleteRegion(regionNumber)
     this.regionStarts.delete(regionNumber)
     this.hasLines.delete(regionNumber)

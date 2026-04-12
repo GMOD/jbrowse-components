@@ -29,7 +29,7 @@ import type {
   RenderFeatureDataArgs,
   RenderFeatureDataResult,
 } from './rpcTypes.ts'
-import type { LayoutRecord, PeptideData } from './types.ts'
+import type { FeatureLayout, PeptideData } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
@@ -118,23 +118,14 @@ export async function executeRenderFeatureData({
     }
   }
 
-  const layoutRecords = await updateStatus(
+  const layouts = await updateStatus(
     'Computing layout',
     statusCallback,
     async () => {
       const reversed = region.reversed ?? false
-      const records: LayoutRecord[] = []
+      const records: FeatureLayout[] = []
       for (const feature of features.values()) {
-        const featureLayout = layoutFeature({
-          feature,
-          bpPerPx,
-          reversed,
-          config: displayConfig,
-        })
-        records.push({
-          feature,
-          layout: featureLayout,
-        })
+        records.push(layoutFeature({ feature, bpPerPx, reversed, config: displayConfig }))
       }
       return records
     },
@@ -173,7 +164,7 @@ export async function executeRenderFeatureData({
     aminoAcidOverlay,
   } = await updateStatus('Collecting render data', statusCallback, () =>
     collectRenderData(
-      layoutRecords,
+      layouts,
       regionStart,
       displayConfig,
       workerTheme,

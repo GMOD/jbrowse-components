@@ -32,16 +32,6 @@ export interface LayoutArgs {
   parentFeature?: Feature
 }
 
-export interface Glyph {
-  type: GlyphType
-  layout(args: LayoutArgs): FeatureLayout
-}
-
-export interface LayoutRecord {
-  feature: Feature
-  layout: FeatureLayout
-}
-
 export type GlyphType =
   | 'Box'
   | 'ProcessedTranscript'

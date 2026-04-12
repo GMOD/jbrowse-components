@@ -1,4 +1,4 @@
-import type { RegionGpuData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 
 export interface FeatureRenderBlock {
   regionNumber: number
@@ -9,7 +9,7 @@ export interface FeatureRenderBlock {
 }
 
 export interface CanvasFeatureBackend {
-  uploadRegion(regionNumber: number, data: RegionGpuData): void
+  uploadRegion(regionNumber: number, data: RegionRenderData): void
   renderBlocks(
     blocks: FeatureRenderBlock[],
     state: { scrollY: number; canvasWidth: number; canvasHeight: number },

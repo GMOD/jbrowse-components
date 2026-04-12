@@ -1,12 +1,8 @@
 import { layoutContainerGlyph } from './glyphUtils.ts'
 
-import type { FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
+import type { FeatureLayout, LayoutArgs } from '../types.ts'
 
-export const segmentsGlyph: Glyph = {
-  type: 'Segments',
-
-  layout(args: LayoutArgs): FeatureLayout {
-    const subfeatures = args.feature.get('subfeatures') || []
-    return layoutContainerGlyph('Segments', args, subfeatures)
-  },
+export function layoutSegments(args: LayoutArgs): FeatureLayout {
+  const subfeatures = args.feature.get('subfeatures') || []
+  return layoutContainerGlyph('Segments', args, subfeatures)
 }

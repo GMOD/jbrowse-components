@@ -22,7 +22,7 @@ import type {
   FloatingLabelsDataMap,
   SubfeatureInfo,
 } from './rpcTypes.ts'
-import type { FeatureLayout, LayoutRecord, PeptideData } from './types.ts'
+import type { FeatureLayout, PeptideData } from './types.ts'
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -73,7 +73,7 @@ interface Collector {
 
 const UTR_HEIGHT_FRACTION = 0.65
 
-function isTranscriptLayout(layout: FeatureLayout) {
+function isContainerLayout(layout: FeatureLayout) {
   return (
     layout.glyphType === 'ProcessedTranscript' ||
     layout.glyphType === 'Segments'
@@ -424,11 +424,11 @@ function processTranscriptLayout(
 }
 
 function processFeatureRecord(
-  record: LayoutRecord,
+  layout: FeatureLayout,
   ctx: RenderContext,
   collector: Collector,
 ) {
-  const { feature, layout } = record
+  const { feature } = layout
   const featureStart = feature.get('start')
   const featureEnd = feature.get('end')
   const strand = feature.get('strand') ?? 0
@@ -477,7 +477,7 @@ function processFeatureRecord(
   })
   const flatbushIdx = collector.flatbushItems.length - 1
 
-  if (isTranscriptLayout(layout)) {
+  if (isContainerLayout(layout)) {
     processTranscriptLayout(layout, 0, feature, flatbushIdx, ctx, collector)
   } else if (layout.glyphType === 'Subfeatures') {
     processSubfeaturesLayout(layout, feature, flatbushIdx, ctx, collector)
@@ -494,7 +494,7 @@ function processSubfeaturesLayout(
   collector: Collector,
 ) {
   for (const childLayout of layout.children) {
-    if (isTranscriptLayout(childLayout)) {
+    if (isContainerLayout(childLayout)) {
       processTranscriptLayout(
         childLayout,
         childLayout.y,
@@ -561,7 +561,7 @@ function processDefaultLayout(
 }
 
 export function collectRenderData(
-  layoutRecords: LayoutRecord[],
+  layouts: FeatureLayout[],
   regionStart: number,
   config: DisplayConfig,
   theme: Theme,
@@ -586,8 +586,8 @@ export function collectRenderData(
     aminoAcidOverlay: [],
   }
 
-  for (const record of layoutRecords) {
-    processFeatureRecord(record, ctx, collector)
+  for (const layout of layouts) {
+    processFeatureRecord(layout, ctx, collector)
   }
 
   return collector

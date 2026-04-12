@@ -1,4 +1,4 @@
-import { boxGlyph } from './box.ts'
+import { layoutBox } from './box.ts'
 import {
   getFeatureDimensions,
   getStrandArrowPadding,
@@ -7,8 +7,8 @@ import {
   sortByPosition,
 } from './glyphUtils.ts'
 import { findGlyph } from './index.ts'
-import { processedTranscriptGlyph } from './processed.ts'
-import { segmentsGlyph } from './segments.ts'
+import { layoutProcessedTranscript } from './processed.ts'
+import { layoutSegments } from './segments.ts'
 import { mockDisplayConfig } from '../testUtils.ts'
 
 import type { FeatureLayout } from '../types.ts'
@@ -192,7 +192,7 @@ describe('boxGlyph', () => {
     })
     const config = mockDisplayConfig()
 
-    const layout = boxGlyph.layout({
+    const layout = layoutBox({
       feature,
       bpPerPx: 1,
       reversed: false,
@@ -213,7 +213,7 @@ describe('boxGlyph', () => {
     })
     const config = mockDisplayConfig()
 
-    const layout = boxGlyph.layout({
+    const layout = layoutBox({
       feature,
       bpPerPx: 1,
       reversed: false,
@@ -235,7 +235,7 @@ describe('boxGlyph', () => {
     })
     const config = mockDisplayConfig()
 
-    const layout = boxGlyph.layout({
+    const layout = layoutBox({
       feature: child,
       bpPerPx: 1,
       reversed: false,
@@ -257,7 +257,7 @@ describe('boxGlyph for CDS', () => {
     })
     const config = mockDisplayConfig()
 
-    const layout = boxGlyph.layout({
+    const layout = layoutBox({
       feature,
       bpPerPx: 1,
       reversed: false,
@@ -281,7 +281,7 @@ describe('boxGlyph for CDS', () => {
     })
     const config = mockDisplayConfig()
 
-    const layout = boxGlyph.layout({
+    const layout = layoutBox({
       feature,
       bpPerPx: 1,
       reversed: false,
@@ -306,7 +306,7 @@ describe('processedTranscriptGlyph', () => {
     })
     const config = mockDisplayConfig()
 
-    const layout = processedTranscriptGlyph.layout({
+    const layout = layoutProcessedTranscript({
       feature: mrna,
       bpPerPx: 1,
       reversed: false,
@@ -332,7 +332,7 @@ describe('segmentsGlyph', () => {
     })
     const config = mockDisplayConfig()
 
-    const layout = segmentsGlyph.layout({
+    const layout = layoutSegments({
       feature,
       bpPerPx: 1,
       reversed: false,
@@ -359,7 +359,7 @@ describe('segmentsGlyph for repeat_region', () => {
     })
     const config = mockDisplayConfig()
 
-    const layout = segmentsGlyph.layout({
+    const layout = layoutSegments({
       feature,
       bpPerPx: 1,
       reversed: false,
@@ -399,6 +399,8 @@ describe('layoutContainerGlyph', () => {
 })
 
 describe('findGlyph', () => {
+  const layoutArgs = { bpPerPx: 1, reversed: false }
+
   it('auto-detects isTopLevel from feature.parent()', () => {
     const parent = mockFeature({ type: 'gene', start: 0, end: 1000 })
     const nested = mockFeature({
@@ -420,7 +422,7 @@ describe('findGlyph', () => {
     const config = mockDisplayConfig()
 
     // feature with parent → non-top-level → Segments, not Subfeatures
-    expect(findGlyph(nested, config).type).toBe('Segments')
+    expect(findGlyph(nested, config)({ feature: nested, config, ...layoutArgs }).glyphType).toBe('Segments')
   })
 
   it('returns Subfeatures for top-level with nested children', () => {
@@ -439,14 +441,14 @@ describe('findGlyph', () => {
     })
     const config = mockDisplayConfig()
 
-    expect(findGlyph(feature, config).type).toBe('Subfeatures')
+    expect(findGlyph(feature, config)({ feature, config, ...layoutArgs }).glyphType).toBe('Subfeatures')
   })
 
   it('returns Box for leaf features', () => {
     const feature = mockFeature({ type: 'match', start: 0, end: 100 })
     const config = mockDisplayConfig()
 
-    expect(findGlyph(feature, config).type).toBe('Box')
+    expect(findGlyph(feature, config)({ feature, config, ...layoutArgs }).glyphType).toBe('Box')
   })
 
   it('respects explicit isTopLevel=false', () => {
@@ -468,6 +470,6 @@ describe('findGlyph', () => {
     const config = mockDisplayConfig()
 
     // explicit false → Segments even though feature has no parent
-    expect(findGlyph(feature, config, false).type).toBe('Segments')
+    expect(findGlyph(feature, config, false)({ feature, config, ...layoutArgs }).glyphType).toBe('Segments')
   })
 })

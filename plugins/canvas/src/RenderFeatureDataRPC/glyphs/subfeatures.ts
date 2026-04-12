@@ -2,7 +2,7 @@ import { applyLabelDimensions } from '../labelUtils.ts'
 import { findGlyph } from './findGlyph.ts'
 import { getFeatureDimensions } from './glyphUtils.ts'
 
-import type { FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
+import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const TRANSCRIPT_PADDING = 2
@@ -44,11 +44,8 @@ function filterByGeneGlyphMode(
   return [longest]
 }
 
-export const subfeaturesGlyph: Glyph = {
-  type: 'Subfeatures',
-
-  layout(args: LayoutArgs): FeatureLayout {
-    const { feature, bpPerPx, config } = args
+export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
+  const { feature, bpPerPx, config } = args
     const { geneGlyphMode, transcriptTypes, subfeatureLabels } = config
 
     const {
@@ -88,9 +85,7 @@ export const subfeaturesGlyph: Glyph = {
     for (const [i, child] of subfeatures.entries()) {
       const childType = child.get('type') ?? ''
       const isChildTranscript = transcriptTypes.includes(childType)
-      const childGlyph = findGlyph(child, config, false)
-
-      const childLayout = childGlyph.layout({
+      const childLayout = findGlyph(child, config, false)({
         ...args,
         feature: child,
         parentFeature: feature,
@@ -135,5 +130,4 @@ export const subfeaturesGlyph: Glyph = {
       leftPadding: 0,
       children,
     }
-  },
 }

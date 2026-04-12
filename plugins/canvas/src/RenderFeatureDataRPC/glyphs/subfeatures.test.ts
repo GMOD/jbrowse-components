@@ -1,4 +1,4 @@
-import { subfeaturesGlyph } from './subfeatures.ts'
+import { layoutSubfeatures } from './subfeatures.ts'
 import { mockDisplayConfig } from '../testUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -58,7 +58,7 @@ function makeGeneWithTranscripts(transcriptNames: string[]) {
 
 const TRANSCRIPT_PADDING = 2
 
-describe('subfeaturesGlyph layout', () => {
+describe('layoutSubfeatures layout', () => {
   describe('subfeatureLabels = "below"', () => {
     it('allocates extra height for transcript labels', () => {
       const gene = makeGeneWithTranscripts(['mRNA-1', 'mRNA-2'])
@@ -66,7 +66,7 @@ describe('subfeaturesGlyph layout', () => {
         subfeatureLabels: 'below',
       })
 
-      const layout = subfeaturesGlyph.layout({
+      const layout = layoutSubfeatures({
         feature: gene,
         bpPerPx: 1,
         reversed: false,
@@ -93,7 +93,7 @@ describe('subfeaturesGlyph layout', () => {
         subfeatureLabels: 'below',
       })
 
-      const layout = subfeaturesGlyph.layout({
+      const layout = layoutSubfeatures({
         feature: gene,
         bpPerPx: 1,
         reversed: false,
@@ -113,7 +113,7 @@ describe('subfeaturesGlyph layout', () => {
         subfeatureLabels: 'overlay',
       })
 
-      const layout = subfeaturesGlyph.layout({
+      const layout = layoutSubfeatures({
         feature: gene,
         bpPerPx: 1,
         reversed: false,
@@ -135,7 +135,7 @@ describe('subfeaturesGlyph layout', () => {
         subfeatureLabels: 'none',
       })
 
-      const layout = subfeaturesGlyph.layout({
+      const layout = layoutSubfeatures({
         feature: gene,
         bpPerPx: 1,
         reversed: false,
@@ -154,14 +154,14 @@ describe('subfeaturesGlyph layout', () => {
     it('below mode produces taller gene glyph than none mode', () => {
       const gene = makeGeneWithTranscripts(['mRNA-1', 'mRNA-2', 'mRNA-3'])
 
-      const belowLayout = subfeaturesGlyph.layout({
+      const belowLayout = layoutSubfeatures({
         feature: gene,
         bpPerPx: 1,
         reversed: false,
         config: mockDisplayConfig({ subfeatureLabels: 'below' }),
       })
 
-      const noneLayout = subfeaturesGlyph.layout({
+      const noneLayout = layoutSubfeatures({
         feature: gene,
         bpPerPx: 1,
         reversed: false,

@@ -21,7 +21,7 @@ import type {
   CanvasFeatureBackend,
   FeatureRenderBlock,
 } from './canvasFeatureBackendTypes.ts'
-import type { RegionGpuData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 
 const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5
 const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5
@@ -34,7 +34,7 @@ function rgbaString(colors: Uint8Array, i: number) {
 
 export function drawLines(
   ctx: Ctx,
-  region: RegionGpuData,
+  region: RegionRenderData,
   block: Canvas2DRenderBlock,
   bpLength: number,
   fullBlockWidth: number,
@@ -79,7 +79,7 @@ export function drawLines(
 
 export function drawRects(
   ctx: Ctx,
-  region: RegionGpuData,
+  region: RegionRenderData,
   block: Canvas2DRenderBlock,
   bpLength: number,
   fullBlockWidth: number,
@@ -101,7 +101,7 @@ export function drawRects(
 
 export function drawArrows(
   ctx: Ctx,
-  region: RegionGpuData,
+  region: RegionRenderData,
   block: Canvas2DRenderBlock,
   bpLength: number,
   fullBlockWidth: number,
@@ -135,7 +135,7 @@ export function drawArrows(
 export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
-  private regions = new Map<number, RegionGpuData>()
+  private regions = new Map<number, RegionRenderData>()
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -146,7 +146,7 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
     this.ctx = ctx
   }
 
-  uploadRegion(regionNumber: number, data: RegionGpuData) {
+  uploadRegion(regionNumber: number, data: RegionRenderData) {
     this.regions.set(regionNumber, data)
   }
 

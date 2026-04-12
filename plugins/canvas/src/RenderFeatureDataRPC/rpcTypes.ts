@@ -87,7 +87,7 @@ export interface FeatureDataResult {
   maxY: number
 }
 
-export type RegionGpuData = Pick<
+export type RegionRenderData = Pick<
   FeatureDataResult,
   | 'regionStart'
   | 'rectPositions'
