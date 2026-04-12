@@ -1,10 +1,6 @@
 import type { ReactNode } from 'react'
 
-import {
-  complement,
-  defaultCodonTable,
-  generateCodonTable,
-} from '@jbrowse/core/util'
+import { codonTable, complement } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import Sequence from './Sequence.tsx'
@@ -37,7 +33,6 @@ function SequenceSVG({
   rowHeight: number
 }) {
   const region = regions[0]!
-  const codonTable = generateCodonTable(defaultCodonTable)
   const [feature] = [...features.values()]
   if (!feature) {
     return null

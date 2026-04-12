@@ -1,6 +1,9 @@
 import { defaultStarts, defaultStops, revcom } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
+const startsSet = new Set(defaultStarts)
+const stopsSet = new Set(defaultStops)
+
 import type { Frame, Region } from '@jbrowse/core/util'
 
 export default function Translation({
@@ -66,9 +69,9 @@ export default function Translation({
       ? width - (i + 1) * codonWidth - offset
       : codonWidth * i + offset
     const { letter, codon } = element
-    const codonFill = defaultStarts.includes(codon)
+    const codonFill = startsSet.has(codon)
       ? theme.palette.startCodon
-      : defaultStops.includes(codon)
+      : stopsSet.has(codon)
         ? theme.palette.stopCodon
         : undefined
 

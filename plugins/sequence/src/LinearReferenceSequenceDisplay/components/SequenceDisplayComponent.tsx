@@ -2,9 +2,8 @@ import { useEffect, useMemo, useRef } from 'react'
 
 import { ErrorBar } from '@jbrowse/core/ui'
 import {
+  codonTable,
   complement,
-  defaultStarts,
-  defaultStops,
   getContainingView,
   revcom,
 } from '@jbrowse/core/util'
@@ -13,7 +12,7 @@ import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import LoadingOverlay from './LoadingOverlay.tsx'
-import { buildColorPalette, codonTable } from './sequenceGeometry.ts'
+import { buildColorPalette, startsSet, stopsSet } from './sequenceGeometry.ts'
 
 import type {
   LinearReferenceSequenceDisplayModel,
@@ -29,9 +28,6 @@ type RGB = readonly [number, number, number]
 const DEFAULT_BASE_COLOR: RGB = [170, 170, 170]
 const DEFAULT_FRAME_COLOR: RGB = [200, 200, 200]
 const BORDER_COLOR = 'rgb(85,85,85)'
-
-const startsSet = new Set(defaultStarts)
-const stopsSet = new Set(defaultStops)
 
 function contrastColor(rgb: RGB) {
   const lum = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000

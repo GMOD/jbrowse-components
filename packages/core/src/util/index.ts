@@ -940,6 +940,8 @@ export function generateCodonTable(table: any) {
   return tempCodonTable
 }
 
+export const codonTable = generateCodonTable(defaultCodonTable)
+
 // call statusCallback with current status and clear when finished
 export async function updateStatus<U>(
   msg: string,

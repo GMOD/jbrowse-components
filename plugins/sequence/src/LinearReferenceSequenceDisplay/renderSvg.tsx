@@ -1,8 +1,7 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
+  codonTable,
   complement,
-  defaultStarts,
-  defaultStops,
   getContainingView,
   revcom,
 } from '@jbrowse/core/util'
@@ -11,7 +10,8 @@ import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import {
   buildColorPalette,
   buildSequenceGeometry,
-  codonTable,
+  startsSet,
+  stopsSet,
 } from './components/sequenceGeometry.ts'
 
 import type { SequenceRegionData } from './model.ts'
@@ -82,7 +82,8 @@ function renderBaseLetters(
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
 
-  for (const [i, letter] of seq.split('').entries()) {
+  for (let i = 0; i < seq.length; i++) {
+    const letter = seq[i]!
     const x = (seqStart + i) / bpPerPx - offsetPx
     const cx = x + w / 2
     const cy = y + rowHeight / 2
@@ -130,8 +131,8 @@ function renderTranslationLetters(
     const cx = x + codonWidth / 2
     const cy = y + rowHeight / 2
 
-    const isStart = defaultStarts.includes(upperCodon)
-    const isStop = defaultStops.includes(upperCodon)
+    const isStart = startsSet.has(upperCodon)
+    const isStop = stopsSet.has(upperCodon)
     ctx.fillStyle = isStart
       ? startCodonContrastColor
       : isStop
@@ -164,7 +165,7 @@ export async function renderSvg(
   } = model
 
   const showBorders = 1 / bpPerPx >= 12
-  const showLetters = 1 / bpPerPx >= 12
+  const showLetters = showBorders
   const isDna = sequenceType === 'dna'
 
   const settings = {

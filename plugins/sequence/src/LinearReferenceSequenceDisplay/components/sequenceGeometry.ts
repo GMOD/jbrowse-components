@@ -1,9 +1,4 @@
-import {
-  defaultCodonTable,
-  defaultStarts,
-  defaultStops,
-  generateCodonTable,
-} from '@jbrowse/core/util'
+import { defaultStarts, defaultStops } from '@jbrowse/core/util'
 
 import type { SequenceRegionData } from '../model.ts'
 import type { Frame } from '@jbrowse/core/util'
@@ -76,8 +71,6 @@ export function buildColorPalette(theme: Theme): ColorPalette {
   }
 }
 
-const codonTable = generateCodonTable(defaultCodonTable)
-
 const complementMap: Record<string, string> = {
   A: 'T',
   T: 'A',
@@ -89,8 +82,8 @@ const complementMap: Record<string, string> = {
   c: 'g',
 }
 
-const startsSet = new Set(defaultStarts)
-const stopsSet = new Set(defaultStops)
+export const startsSet = new Set(defaultStarts)
+export const stopsSet = new Set(defaultStops)
 
 const BORDER_ALPHA = 255
 const NO_BORDER_ALPHA = 254
@@ -389,5 +382,3 @@ function writeTranslationRects(
     }
   }
 }
-
-export { codonTable }
