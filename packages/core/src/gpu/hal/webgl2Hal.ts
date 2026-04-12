@@ -347,6 +347,7 @@ export class WebGL2Hal implements GpuHal {
     gl.useProgram(pass.program)
     gl.bindVertexArray(pass.vao)
     this.bindAttributes(pass, regionBuf.vbo)
+    this.bindTextures(pass)
     gl.drawArraysInstanced(
       gl.TRIANGLES,
       0,
