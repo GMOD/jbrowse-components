@@ -393,8 +393,6 @@ export class WebGL2Hal implements GpuHal {
 
   dispose() {
     const gl = this.gl
-    // eslint-disable-next-line no-console
-    console.log('[GPU] WebGL2Hal.dispose() — releasing GPU resources')
     this.deleteAllRegions()
     for (const pass of this.passes.values()) {
       gl.deleteVertexArray(pass.vao)

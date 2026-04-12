@@ -17,7 +17,6 @@ export async function initGpuContext(
           format,
           alphaMode: opts?.alphaMode ?? 'premultiplied',
         })
-        console.log('[initGpuContext] configured ok')
         return { device, context }
       }
       console.warn(

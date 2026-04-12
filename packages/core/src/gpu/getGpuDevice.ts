@@ -21,23 +21,19 @@ async function createDevice(): Promise<GPUDevice | null> {
       )
       return null
     }
-    console.log('[GPU] requestAdapter start')
     const adapter = await navigator.gpu.requestAdapter()
-    console.log('[GPU] requestAdapter done', adapter)
     if (!adapter) {
       console.warn(
         '[GPU] No compatible GPU adapter available. This may indicate WebGPU is disabled, unsupported hardware, or a system limitation. Falling back to WebGL2.',
       )
       return null
     }
-    console.log('[GPU] requestDevice start, preferredCanvasFormat:', navigator.gpu.getPreferredCanvasFormat())
     const d = await adapter.requestDevice({
       requiredLimits: {
         maxStorageBufferBindingSize: adapter.limits.maxStorageBufferBindingSize,
         maxBufferSize: adapter.limits.maxBufferSize,
       },
     })
-    console.log('[GPU] requestDevice done', d)
     // Surface any WebGPU validation / out-of-memory / internal errors that
     // would otherwise be silently swallowed. Without this, a bad draw/pipeline
     // results in a blank canvas with no console output.

@@ -79,10 +79,8 @@ export function useGpuRenderer<R extends { dispose(): void }>(
     }
     let cancelled = false
     let backend: R | null = null
-    console.log('[useGpuRenderer] factory start, contextVersion:', contextVersion)
     factory(canvas)
       .then(r => {
-        console.log('[useGpuRenderer] factory resolved, cancelled:', cancelled, 'renderer type:', r?.constructor?.name)
         if (cancelled) {
           r.dispose()
           return
