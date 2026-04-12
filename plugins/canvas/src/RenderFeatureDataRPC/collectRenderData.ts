@@ -184,7 +184,7 @@ function emitCodonRects(
     }
 
     rects.push({
-      startOffset: Math.max(0, startBp - regionStart),
+      startOffset: startBp - regionStart,
       endOffset: endBp - regionStart,
       y,
       height,
