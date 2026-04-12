@@ -64,34 +64,33 @@ export function executeDotplotWebGLGeometry({
 
   let validCount = 0
   for (const feature of features) {
-    const f = feature
-    let f1s = f.start
-    let f1e = f.end
-    const f2s = f.mateStart
-    const f2e = f.mateEnd
+    let f1s = feature.start
+    let f1e = feature.end
+    const f2s = feature.mateStart
+    const f2e = feature.mateEnd
 
-    if (f.strand === -1) {
+    if (feature.strand === -1) {
       ;[f1e, f1s] = [f1s, f1e]
     }
 
     const p11 = bpToPxFloat({
       self: hViewSnap,
-      refName: f.refName,
+      refName: feature.refName,
       coord: f1s,
     })
     const p12 = bpToPxFloat({
       self: hViewSnap,
-      refName: f.refName,
+      refName: feature.refName,
       coord: f1e,
     })
     const p21 = bpToPxFloat({
       self: vViewSnap,
-      refName: f.mateRefName,
+      refName: feature.mateRefName,
       coord: f2s,
     })
     const p22 = bpToPxFloat({
       self: vViewSnap,
-      refName: f.mateRefName,
+      refName: feature.mateRefName,
       coord: f2e,
     })
 
@@ -108,8 +107,8 @@ export function executeDotplotWebGLGeometry({
     p12Array[validCount] = p12.offsetPx
     p21Array[validCount] = p21.offsetPx
     p22Array[validCount] = p22.offsetPx
-    featureIds.push(f.id)
-    cigars.push(f.cigar ?? '')
+    featureIds.push(feature.id)
+    cigars.push(feature.cigar ?? '')
     validCount++
   }
 

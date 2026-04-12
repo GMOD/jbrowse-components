@@ -40,7 +40,7 @@ function doSubmit({
   model.setError(undefined)
   transaction(() => {
     if (isSessionWithAddTracks(session)) {
-      toJS(importFormSyntenyTrackSelections).map((f, idx) => {
+      toJS(importFormSyntenyTrackSelections).forEach((f, idx) => {
         if (f.type === 'userOpened') {
           session.addTrackConf(f.value)
           model.toggleTrack(f.value?.trackId)

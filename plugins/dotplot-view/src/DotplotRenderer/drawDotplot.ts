@@ -11,23 +11,12 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { parseCigar } from '@jbrowse/plugin-alignments'
 
 import { type Warning, clampWithWarnX, clampWithWarnY } from './clamp.ts'
+import { hashString } from '../util.ts'
 
 import type { RenderArgsDeserialized } from './DotplotRenderer.ts'
 import type { Dotplot1DViewModel } from '../DotplotView/model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
-// Simple hash function to generate consistent colors for query names
-function hashString(str: string) {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i)
-    hash = (hash << 5) - hash + char
-    hash = hash & hash // Convert to 32bit integer
-  }
-  return Math.abs(hash)
-}
-
-// Generate a color from a query name using the category10 color palette
 function getQueryColor(queryName: string) {
   const hash = hashString(queryName)
   return category10[hash % category10.length]!
@@ -217,7 +206,7 @@ export async function drawDotplot(
           ctx.moveTo(currX, height - currY)
 
           let lastDrawnX = currX
-          let lastDrawnY = currX
+          let lastDrawnY = currY
           for (let i = 0; i < cigarOps.length; i += 2) {
             const val = +cigarOps[i]!
             const op = cigarOps[i + 1]!

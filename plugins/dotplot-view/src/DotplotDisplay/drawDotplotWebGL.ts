@@ -51,6 +51,7 @@ function decomposeCigar(
   let cy = p21
   let segStartX = cx
   let segStartY = cy
+  const [cr, cg, cb, ca] = colorFn(feat, index)
 
   for (let j = 0; j < cigar.length; j += 2) {
     const len = +cigar[j]!
@@ -66,7 +67,6 @@ function decomposeCigar(
     }
 
     if (Math.abs(cx - segStartX) > 0.5 || Math.abs(cy - segStartY) > 0.5) {
-      const [cr, cg, cb, ca] = colorFn(feat, index)
       out.x1s.push(segStartX)
       out.y1s.push(segStartY)
       out.x2s.push(cx)

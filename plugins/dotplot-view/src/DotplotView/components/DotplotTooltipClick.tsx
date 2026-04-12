@@ -21,8 +21,8 @@ const DotplotTooltipClick = observer(function DotplotTooltipClick({
   ydistance: number
 }) {
   const { hview, vview, viewHeight } = model
-  const x = (mousedownClient?.[0] || 0) - (xdistance < 0 ? 0 : 0)
-  const y = (mousedownClient?.[1] || 0) - (ydistance < 0 ? 0 : 0)
+  const x = mousedownClient?.[0] ?? 0
+  const y = mousedownClient?.[1] ?? 0
 
   return mousedown && Math.abs(xdistance) > 3 && Math.abs(ydistance) > 3 ? (
     <BaseTooltip

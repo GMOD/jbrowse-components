@@ -32,7 +32,6 @@ export function useMouseCoordinates() {
     }
   }, [mousecurrClient, mousedownClient, mouseupClient])
 
-  const svg = rect
   const rootRect = rect
   const mousedown = getOffset(mousedownClient, rect)
   const mousecurr = getOffset(mousecurrClient, rect)
@@ -57,7 +56,6 @@ export function useMouseCoordinates() {
     ref,
     root,
     // Derived values
-    svg,
     rootRect,
     mousedown,
     mousecurr,

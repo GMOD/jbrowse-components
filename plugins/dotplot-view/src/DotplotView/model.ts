@@ -73,11 +73,10 @@ function pxWidthForBlocks(
   bpPerPx: number,
   hide: Set<string>,
 ) {
+  const visible = blocks.filter(b => !hide.has(b.key))
   return max([
-    ...blocks.filter(b => !hide.has(b.key)).map(b => stringLenPx(b.refName)),
-    ...blocks
-      .filter(b => !hide.has(b.key))
-      .map(b => stringLenPx(getTickDisplayStr(b.end, bpPerPx))),
+    ...visible.map(b => stringLenPx(b.refName)),
+    ...visible.map(b => stringLenPx(getTickDisplayStr(b.end, bpPerPx))),
   ])
 }
 

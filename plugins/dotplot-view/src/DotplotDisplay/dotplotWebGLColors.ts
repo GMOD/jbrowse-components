@@ -7,19 +7,11 @@ import {
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
 
+import { hashString } from '../util.ts'
+
 import type { DotplotFeatPos } from './types.ts'
 
 type RGBA = [number, number, number, number]
-
-function hashString(str: string) {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i)
-    hash = (hash << 5) - hash + char
-    hash = hash & hash
-  }
-  return Math.abs(hash)
-}
 
 const category10Normalized = category10.map(hex => cssColorToNormalizedRgb(hex))
 
