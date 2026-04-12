@@ -6,6 +6,7 @@ import {
   ElidedBlock,
   InterRegionPaddingBlock,
 } from './blockTypes.ts'
+import type { BlockData } from './blockTypes.ts'
 import { assembleLocStringFast } from './index.ts'
 
 import type { Region } from './types/index.ts'
@@ -103,7 +104,7 @@ export default function calculateStaticBlocks(
         isRightEndOfDisplayedRegion = end === regionEnd
       }
       const widthPx = (end - start) * invBpPerPx
-      const blockData = {
+      const blockData: BlockData = {
         assemblyName,
         refName,
         start,

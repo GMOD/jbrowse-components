@@ -264,22 +264,31 @@ export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(
   return findParentThat(node, predicate) as TypeTestedByPredicate<T>
 }
 
+function cachedParent<T extends IAnyStateTreeNode>(
+  cache: WeakMap<IAnyStateTreeNode, T>,
+  node: IAnyStateTreeNode,
+  finder: () => T,
+  errorMsg: string,
+): T {
+  const cached = cache.get(node)
+  if (cached && isAlive(cached)) {
+    return cached
+  }
+  try {
+    const result = finder()
+    cache.set(node, result)
+    return result
+  } catch (e) {
+    throw new Error(errorMsg, { cause: e })
+  }
+}
+
 /**
  * get the current JBrowse session model, starting at any node in the state
  * tree. Results are cached for performance.
  */
 export function getSession(node: IAnyStateTreeNode): AbstractSessionModel {
-  const cached = sessionCache.get(node)
-  if (cached && isAlive(cached)) {
-    return cached
-  }
-  try {
-    const result = findParentThatIs(node, isSessionModel)
-    sessionCache.set(node, result)
-    return result
-  } catch (e) {
-    throw new Error('no session model found!', { cause: e })
-  }
+  return cachedParent(sessionCache, node, () => findParentThatIs(node, isSessionModel), 'no session model found!')
 }
 
 /**
@@ -287,56 +296,23 @@ export function getSession(node: IAnyStateTreeNode): AbstractSessionModel {
  * node. Results are cached for performance.
  */
 export function getContainingView(node: IAnyStateTreeNode): AbstractViewModel {
-  const cached = containingViewCache.get(node)
-  // Validate cached result is still alive (handles re-parenting edge cases)
-  if (cached && isAlive(cached)) {
-    return cached
-  }
-  try {
-    const result = findParentThatIs(node, isViewModel)
-    containingViewCache.set(node, result)
-    return result
-  } catch (e) {
-    throw new Error('no containing view found', { cause: e })
-  }
+  return cachedParent(containingViewCache, node, () => findParentThatIs(node, isViewModel), 'no containing view found')
 }
 
 /**
  * get the state model of the track in the state tree that contains the given
  * node. Results are cached for performance.
  */
-export function getContainingTrack(
-  node: IAnyStateTreeNode,
-): AbstractTrackModel {
-  const cached = containingTrackCache.get(node)
-  // Validate cached result is still alive (handles re-parenting edge cases)
-  if (cached && isAlive(cached)) {
-    return cached
-  }
-  const result = findParentThatIs(node, isTrackModel)
-  containingTrackCache.set(node, result)
-  return result
+export function getContainingTrack(node: IAnyStateTreeNode): AbstractTrackModel {
+  return cachedParent(containingTrackCache, node, () => findParentThatIs(node, isTrackModel), 'no containing track found')
 }
 
 /**
  * get the state model of the display in the state tree that contains the given
  * node. Results are cached for performance.
  */
-export function getContainingDisplay(
-  node: IAnyStateTreeNode,
-): AbstractDisplayModel {
-  const cached = containingDisplayCache.get(node)
-  // Validate cached result is still alive (handles re-parenting edge cases)
-  if (cached && isAlive(cached)) {
-    return cached
-  }
-  try {
-    const result = findParentThatIs(node, isDisplayModel)
-    containingDisplayCache.set(node, result)
-    return result
-  } catch (e) {
-    throw new Error('no containing display found', { cause: e })
-  }
+export function getContainingDisplay(node: IAnyStateTreeNode): AbstractDisplayModel {
+  return cachedParent(containingDisplayCache, node, () => findParentThatIs(node, isDisplayModel), 'no containing display found')
 }
 
 /**

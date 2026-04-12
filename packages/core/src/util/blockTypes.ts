@@ -8,6 +8,34 @@ export function makeDisplayedRegionKey(r: {
   return `${r.assemblyName}:${r.refName}:${r.start}:${r.end}${r.reversed ? ':rev' : ''}`
 }
 
+export interface BlockData {
+  assemblyName: string
+  refName: string
+  start: number
+  end: number
+  reversed?: boolean
+  offsetPx: number
+  parentRegion: {
+    assemblyName: string
+    refName: string
+    start: number
+    end: number
+    reversed?: boolean
+  }
+  regionNumber: number
+  widthPx: number
+  isLeftEndOfDisplayedRegion: boolean
+  isRightEndOfDisplayedRegion: boolean
+  key: string
+}
+
+interface PaddingBlockData {
+  key: string
+  widthPx: number
+  offsetPx: number
+  variant?: string
+}
+
 type Func<T> = (value: BaseBlock, index: number, array: BaseBlock[]) => T
 
 export class BlockSet {
@@ -96,40 +124,31 @@ export class BlockSet {
 export class BaseBlock {
   type = 'BaseBlock'
 
-  public regionNumber?: number
+  regionNumber?: number
 
-  public reversed?: boolean
+  reversed?: boolean
 
-  public refName: string
+  // Fields set via Object.assign in constructor; ! asserts definite assignment
+  refName!: string
 
-  public start: number
+  start!: number
 
-  public end: number
+  end!: number
 
-  public assemblyName: string
+  assemblyName!: string
 
-  public key: string
+  key!: string
 
-  public offsetPx: number
+  offsetPx!: number
 
-  public widthPx = 0
+  widthPx = 0
 
-  public variant?: string
+  variant?: string
 
-  public isLeftEndOfDisplayedRegion?: boolean
+  isLeftEndOfDisplayedRegion?: boolean
 
-  /**
-   * a block that should be shown as filled with data
-   */
-
-  constructor(data: Record<string, any>) {
+  constructor(data: BlockData | PaddingBlockData) {
     Object.assign(this, data)
-    this.assemblyName = data.assemblyName
-    this.refName = data.refName
-    this.start = data.start
-    this.end = data.end
-    this.key = data.key
-    this.offsetPx = data.offsetPx
   }
 
   toRegion() {
@@ -158,8 +177,11 @@ export class ElidedBlock extends BaseBlock {
 
   public elidedBlockCount = 0
 
-  constructor(data: Record<string, any>) {
+  constructor(data: BlockData) {
     super(data)
+    // explicit assignment needed: ElidedBlock re-declares widthPx without an
+    // initializer, which in useDefineForClassFields mode would overwrite the
+    // value set by Object.assign in super()
     this.widthPx = data.widthPx
   }
 

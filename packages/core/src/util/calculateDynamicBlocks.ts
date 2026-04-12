@@ -6,6 +6,7 @@ import {
   ElidedBlock,
   InterRegionPaddingBlock,
 } from './blockTypes.ts'
+import type { BlockData } from './blockTypes.ts'
 import { assembleLocStringFast } from './index.ts'
 import { intersection2 } from './range.ts'
 
@@ -59,14 +60,14 @@ export default function calculateDynamicBlocks(
     regionNumber < displayedRegions.length;
     regionNumber++
   ) {
-    const region = displayedRegions[regionNumber]
+    const region = displayedRegions[regionNumber]!
     const {
       assemblyName,
       refName,
       start: regionStart,
       end: regionEnd,
       reversed,
-    } = region!
+    } = region
     const displayedRegionRightPx =
       displayedRegionLeftPx + (regionEnd - regionStart) * invBpPerPx
 
@@ -108,7 +109,7 @@ export default function calculateDynamicBlocks(
           displayedRegionLeftPx + (start - regionStart) * invBpPerPx
       }
       const widthPx = (end - start) * invBpPerPx
-      const blockData = {
+      const blockData: BlockData = {
         assemblyName,
         refName,
         start,
