@@ -194,15 +194,15 @@ export function fillYArrays(
     }
   }
 
-  for (let i = 0; i < data.numRects; i++) {
+  for (let i = 0; i < data.rectYs.length; i++) {
     data.rectYs[i] =
       data.rectYs[i]! + featureDeltas[data.rectFeatureIndices[i]!]!
   }
-  for (let i = 0; i < data.numLines; i++) {
+  for (let i = 0; i < data.lineYs.length; i++) {
     data.lineYs[i] =
       data.lineYs[i]! + featureDeltas[data.lineFeatureIndices[i]!]!
   }
-  for (let i = 0; i < data.numArrows; i++) {
+  for (let i = 0; i < data.arrowYs.length; i++) {
     data.arrowYs[i] =
       data.arrowYs[i]! + featureDeltas[data.arrowFeatureIndices[i]!]!
   }

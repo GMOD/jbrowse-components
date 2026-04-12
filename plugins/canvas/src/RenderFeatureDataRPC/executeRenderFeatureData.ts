@@ -235,19 +235,16 @@ export async function executeRenderFeatureData({
     rectYs,
     rectHeights,
     rectColors,
-    numRects: visibleRects.length,
 
     linePositions,
     lineYs,
     lineColors,
     lineDirections,
-    numLines: visibleLines.length,
 
     arrowXs,
     arrowYs,
     arrowDirections,
     arrowColors,
-    numArrows: visibleArrows.length,
 
     flatbushItems,
     subfeatureInfos,

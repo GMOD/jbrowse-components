@@ -223,44 +223,48 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
     this.hasLines.delete(regionNumber)
     this.hasArrows.delete(regionNumber)
 
-    if (data.numRects === 0 && data.numLines === 0 && data.numArrows === 0) {
+    const numRects = data.rectYs.length
+    const numLines = data.lineYs.length
+    const numArrows = data.arrowYs.length
+
+    if (numRects === 0 && numLines === 0 && numArrows === 0) {
       return
     }
 
     this.regionStarts.set(regionNumber, data.regionStart)
 
-    if (data.numRects > 0) {
+    if (numRects > 0) {
       const buf = interleaveRects(
         data.rectPositions,
         data.rectYs,
         data.rectHeights,
         data.rectColors,
-        data.numRects,
+        numRects,
       )
-      this.hal.uploadBuffer(regionNumber, PASS_RECT, buf, data.numRects)
+      this.hal.uploadBuffer(regionNumber, PASS_RECT, buf, numRects)
     }
 
-    if (data.numLines > 0) {
+    if (numLines > 0) {
       const buf = interleaveLines(
         data.linePositions,
         data.lineYs,
         data.lineDirections,
         data.lineColors,
-        data.numLines,
+        numLines,
       )
-      this.hal.uploadBuffer(regionNumber, PASS_LINE, buf, data.numLines)
+      this.hal.uploadBuffer(regionNumber, PASS_LINE, buf, numLines)
       this.hasLines.set(regionNumber, true)
     }
 
-    if (data.numArrows > 0) {
+    if (numArrows > 0) {
       const buf = interleaveArrows(
         data.arrowXs,
         data.arrowYs,
         data.arrowDirections,
         data.arrowColors,
-        data.numArrows,
+        numArrows,
       )
-      this.hal.uploadBuffer(regionNumber, PASS_ARROW, buf, data.numArrows)
+      this.hal.uploadBuffer(regionNumber, PASS_ARROW, buf, numArrows)
       this.hasArrows.set(regionNumber, true)
     }
   }

@@ -49,21 +49,18 @@ export interface FeatureDataResult {
   rectYs: Float32Array
   rectHeights: Float32Array
   rectColors: Uint8Array
-  numRects: number
 
   // Connecting lines (introns) with strand info for dynamic chevron generation
   linePositions: Uint32Array
   lineYs: Float32Array
   lineColors: Uint8Array
   lineDirections: Int8Array // strand direction: -1, 0, or 1
-  numLines: number
 
   // Strand arrows (at feature ends)
   arrowXs: Uint32Array
   arrowYs: Float32Array
   arrowDirections: Int8Array
   arrowColors: Uint8Array
-  numArrows: number
 
   // Hit detection
   flatbushItems: FlatbushItem[]
@@ -94,17 +91,14 @@ export type RegionRenderData = Pick<
   | 'rectYs'
   | 'rectHeights'
   | 'rectColors'
-  | 'numRects'
   | 'linePositions'
   | 'lineYs'
   | 'lineColors'
   | 'lineDirections'
-  | 'numLines'
   | 'arrowXs'
   | 'arrowYs'
   | 'arrowDirections'
   | 'arrowColors'
-  | 'numArrows'
 >
 
 export interface RegionTooLargeResult {
@@ -136,7 +130,6 @@ interface HitItemBase {
 
 export interface FlatbushItem extends HitItemBase {
   kind: 'feature'
-  layoutEndBp: number
   featureHeightPx: number
   tooltip: string
   name?: string

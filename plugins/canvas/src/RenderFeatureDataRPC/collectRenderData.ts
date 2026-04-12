@@ -467,7 +467,6 @@ function processFeatureRecord(
     type: featureType,
     startBp: featureStart,
     endBp: featureEnd,
-    layoutEndBp: featureEnd,
     topPx: 0,
     bottomPx: layout.height,
     featureHeightPx: layout.height,
@@ -480,19 +479,19 @@ function processFeatureRecord(
   if (isContainerLayout(layout)) {
     processTranscriptLayout(layout, 0, feature, flatbushIdx, ctx, collector)
   } else if (layout.glyphType === 'Subfeatures') {
-    processSubfeaturesLayout(layout, feature, flatbushIdx, ctx, collector)
+    processSubfeaturesLayout(layout, flatbushIdx, ctx, collector)
   } else {
-    processDefaultLayout(layout, feature, flatbushIdx, ctx, collector)
+    processDefaultLayout(layout, flatbushIdx, ctx, collector)
   }
 }
 
 function processSubfeaturesLayout(
   layout: FeatureLayout,
-  feature: Feature,
   flatbushIdx: number,
   ctx: RenderContext,
   collector: Collector,
 ) {
+  const { feature } = layout
   for (const childLayout of layout.children) {
     if (isContainerLayout(childLayout)) {
       processTranscriptLayout(
@@ -511,11 +510,11 @@ function processSubfeaturesLayout(
 
 function processDefaultLayout(
   layout: FeatureLayout,
-  feature: Feature,
   flatbushIdx: number,
   ctx: RenderContext,
   collector: Collector,
 ) {
+  const { feature } = layout
   const featureStart = feature.get('start')
   const featureEnd = feature.get('end')
   const strand = feature.get('strand') ?? 0

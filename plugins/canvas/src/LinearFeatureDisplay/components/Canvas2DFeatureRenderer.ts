@@ -40,7 +40,7 @@ export function drawLines(
   fullBlockWidth: number,
   scrollY: number,
 ) {
-  for (let i = 0; i < region.numLines; i++) {
+  for (let i = 0; i < region.lineYs.length; i++) {
     const startBp = region.linePositions[i * 2]! + region.regionStart
     const endBp = region.linePositions[i * 2 + 1]! + region.regionStart
     const x1 = bpToScreenXUtil(startBp, block, bpLength, fullBlockWidth)
@@ -85,7 +85,7 @@ export function drawRects(
   fullBlockWidth: number,
   scrollY: number,
 ) {
-  for (let i = 0; i < region.numRects; i++) {
+  for (let i = 0; i < region.rectYs.length; i++) {
     const startBp = region.rectPositions[i * 2]! + region.regionStart
     const endBp = region.rectPositions[i * 2 + 1]! + region.regionStart
     const x1 = bpToScreenXUtil(startBp, block, bpLength, fullBlockWidth)
@@ -107,7 +107,7 @@ export function drawArrows(
   fullBlockWidth: number,
   scrollY: number,
 ) {
-  for (let i = 0; i < region.numArrows; i++) {
+  for (let i = 0; i < region.arrowYs.length; i++) {
     const xBp = region.arrowXs[i]! + region.regionStart
     const cx = bpToScreenXUtil(xBp, block, bpLength, fullBlockWidth)
     const y = Math.floor(region.arrowYs[i]! - scrollY + 0.5) + 0.5
