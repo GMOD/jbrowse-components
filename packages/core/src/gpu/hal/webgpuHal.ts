@@ -28,16 +28,8 @@ const MSAA_SAMPLE_COUNT: 1 | 4 = 4
 
 function gpuBlendState(bs: BlendState): GPUBlendState {
   return {
-    color: {
-      srcFactor: bs.srcFactor as GPUBlendFactor,
-      dstFactor: bs.dstFactor as GPUBlendFactor,
-      operation: 'add',
-    },
-    alpha: {
-      srcFactor: bs.srcFactor as GPUBlendFactor,
-      dstFactor: bs.dstFactor as GPUBlendFactor,
-      operation: 'add',
-    },
+    color: { srcFactor: bs.srcFactor, dstFactor: bs.dstFactor, operation: 'add' },
+    alpha: { srcFactor: bs.srcFactor, dstFactor: bs.dstFactor, operation: 'add' },
   }
 }
 

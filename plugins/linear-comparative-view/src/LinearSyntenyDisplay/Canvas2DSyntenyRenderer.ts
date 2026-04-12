@@ -11,6 +11,37 @@ function smoothstep(t: number) {
   return t * t * (3 - 2 * t)
 }
 
+function buildFeaturePath(
+  ctx: CanvasRenderingContext2D,
+  sx1: number,
+  sx2: number,
+  sx3: number,
+  sx4: number,
+  height: number,
+  isCurve: boolean,
+) {
+  ctx.beginPath()
+  if (isCurve) {
+    ctx.moveTo(sx1, 0)
+    for (let s = 1; s <= CURVE_SEGMENTS; s++) {
+      const t = s / CURVE_SEGMENTS
+      const st = smoothstep(t)
+      ctx.lineTo(sx1 + (sx4 - sx1) * st, hermiteY(t, height))
+    }
+    for (let s = CURVE_SEGMENTS; s >= 0; s--) {
+      const t = s / CURVE_SEGMENTS
+      const st = smoothstep(t)
+      ctx.lineTo(sx2 + (sx3 - sx2) * st, hermiteY(t, height))
+    }
+  } else {
+    ctx.moveTo(sx1, 0)
+    ctx.lineTo(sx4, height)
+    ctx.lineTo(sx3, height)
+    ctx.lineTo(sx2, 0)
+  }
+  ctx.closePath()
+}
+
 export class Canvas2DSyntenyRenderer implements SyntenyBackend {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
@@ -26,7 +57,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
   } | null = null
 
   private get dpr() {
-    return typeof window !== 'undefined' ? window.devicePixelRatio : 2
+    return typeof window !== 'undefined' ? window.devicePixelRatio : 1
   }
 
   constructor(canvas: HTMLCanvasElement) {
@@ -144,35 +175,8 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
       ctx.globalAlpha = 1
       ctx.fillStyle = `rgba(${ri},${gi},${bi},${effectiveAlpha})`
 
-      if (data.isCurves[i]! > 0.5) {
-        // Use smoothstep for X interpolation to match GPU shaders
-        ctx.beginPath()
-        ctx.moveTo(sx1, 0)
-        for (let s = 1; s <= CURVE_SEGMENTS; s++) {
-          const t = s / CURVE_SEGMENTS
-          const st = smoothstep(t)
-          const y = hermiteY(t, height)
-          const x = sx1 + (sx4 - sx1) * st
-          ctx.lineTo(x, y)
-        }
-        for (let s = CURVE_SEGMENTS; s >= 0; s--) {
-          const t = s / CURVE_SEGMENTS
-          const st = smoothstep(t)
-          const y = hermiteY(t, height)
-          const x = sx2 + (sx3 - sx2) * st
-          ctx.lineTo(x, y)
-        }
-        ctx.closePath()
-        ctx.fill()
-      } else {
-        ctx.beginPath()
-        ctx.moveTo(sx1, 0)
-        ctx.lineTo(sx4, height)
-        ctx.lineTo(sx3, height)
-        ctx.lineTo(sx2, 0)
-        ctx.closePath()
-        ctx.fill()
-      }
+      buildFeaturePath(ctx, sx1, sx2, sx3, sx4, height, data.isCurves[i]! > 0.5)
+      ctx.fill()
 
       if (isClicked) {
         ctx.strokeStyle = 'rgba(0,0,0,0.4)'
@@ -224,26 +228,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
       const sx3 = (data.x3[i]! - adjOff1) * scale1 - padBottom * scaleDiff1
       const sx4 = (data.x4[i]! - adjOff1) * scale1 - padBottom * scaleDiff1
 
-      ctx.beginPath()
-      if (data.isCurves[i]! > 0.5) {
-        ctx.moveTo(sx1, 0)
-        for (let s = 1; s <= CURVE_SEGMENTS; s++) {
-          const t = s / CURVE_SEGMENTS
-          const st = smoothstep(t)
-          ctx.lineTo(sx1 + (sx4 - sx1) * st, hermiteY(t, height))
-        }
-        for (let s = CURVE_SEGMENTS; s >= 0; s--) {
-          const t = s / CURVE_SEGMENTS
-          const st = smoothstep(t)
-          ctx.lineTo(sx2 + (sx3 - sx2) * st, hermiteY(t, height))
-        }
-      } else {
-        ctx.moveTo(sx1, 0)
-        ctx.lineTo(sx4, height)
-        ctx.lineTo(sx3, height)
-        ctx.lineTo(sx2, 0)
-      }
-      ctx.closePath()
+      buildFeaturePath(ctx, sx1, sx2, sx3, sx4, height, data.isCurves[i]! > 0.5)
 
       if (ctx.isPointInPath(x, y)) {
         onResult?.(i)
