@@ -10,6 +10,7 @@ import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import {
   buildColorPalette,
   buildSequenceGeometry,
+  frameShiftBounds,
   startsSet,
   stopsSet,
 } from './components/sequenceGeometry.ts'
@@ -107,13 +108,7 @@ function renderTranslationLetters(
   startCodonContrastColor: string,
   stopCodonContrastColor: string,
 ) {
-  const normalizedFrame = Math.abs(frame) - 1
-  const seqFrame = seqStart % 3
-  const frameShift = (normalizedFrame - seqFrame + 3) % 3
-  const frameShiftAdjustedSeqLength = seq.length - frameShift
-  const multipleOfThreeLength =
-    frameShiftAdjustedSeqLength - (frameShiftAdjustedSeqLength % 3)
-  const sliceEnd = frameShift + multipleOfThreeLength
+  const { frameShift, sliceEnd } = frameShiftBounds(seq, seqStart, frame)
 
   const codonWidth = 3 / bpPerPx
   const fontSize = rowHeight - 2
@@ -165,7 +160,6 @@ export async function renderSvg(
   } = model
 
   const showBorders = 1 / bpPerPx >= 12
-  const showLetters = showBorders
   const isDna = sequenceType === 'dna'
 
   const settings = {
@@ -174,7 +168,6 @@ export async function renderSvg(
     showTranslation: showTranslationActual,
     sequenceType,
     rowHeight,
-    colorByCDS: false,
     showBorders,
   }
 
@@ -193,7 +186,12 @@ export async function renderSvg(
   const rectCtx = new SvgCanvas()
   const textCtx = new SvgCanvas()
 
-  const baseBp = Math.min(...[...sequenceData.values()].map(d => d.start))
+  let baseBp = Infinity
+  for (const d of sequenceData.values()) {
+    if (d.start < baseBp) {
+      baseBp = d.start
+    }
+  }
 
   for (const [regionNum, data] of sequenceData) {
     const reversed = view.displayedRegions[regionNum]?.reversed ?? false
@@ -216,7 +214,7 @@ export async function renderSvg(
       showBorders,
     )
 
-    if (showLetters) {
+    if (showBorders) {
       const [topFrames, bottomFrames] = reversed
         ? [reverseFrames.toReversed(), forwardFrames.toReversed()]
         : [forwardFrames, reverseFrames]

@@ -72,7 +72,7 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
       if (seq) {
         observer.next(
           new SimpleFeature({
-            id: `${refName} ${start}-${regionEnd}`,
+            id: `${refName}-${start}-${regionEnd}`,
             data: { refName, start, end: regionEnd, seq },
           }),
         )

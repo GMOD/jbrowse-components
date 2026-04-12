@@ -12,7 +12,12 @@ import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import LoadingOverlay from './LoadingOverlay.tsx'
-import { buildColorPalette, startsSet, stopsSet } from './sequenceGeometry.ts'
+import {
+  buildColorPalette,
+  frameShiftBounds,
+  startsSet,
+  stopsSet,
+} from './sequenceGeometry.ts'
 
 import type {
   LinearReferenceSequenceDisplayModel,
@@ -25,8 +30,6 @@ import type { Theme } from '@mui/material'
 
 type RGB = readonly [number, number, number]
 
-const DEFAULT_BASE_COLOR: RGB = [170, 170, 170]
-const DEFAULT_FRAME_COLOR: RGB = [200, 200, 200]
 const BORDER_COLOR = 'rgb(85,85,85)'
 
 function contrastColor(rgb: RGB) {
@@ -90,7 +93,7 @@ function drawBaseRow(
   for (let i = iStart; i < iEnd; i++) {
     const letter = seq[i]!
     const upper = letter.toUpperCase()
-    const rgb = palette.baseColors.get(upper) ?? DEFAULT_BASE_COLOR
+    const rgb = palette.baseColors.get(upper) ?? ([170, 170, 170] as const)
     const x = (seqStart + i) / bpPerPx - offsetPx
 
     ctx.fillStyle = rgbStyle(rgb)
@@ -123,14 +126,9 @@ function drawTranslationRow(
   visStartBp: number,
   visEndBp: number,
 ) {
-  const bgColor = palette.frameColors.get(frame) ?? DEFAULT_FRAME_COLOR
+  const bgColor = palette.frameColors.get(frame)!
   const bgStyle = rgbStyle(bgColor)
-
-  const normalizedFrame = Math.abs(frame) - 1
-  const seqFrame = seqStart % 3
-  const frameShift = (normalizedFrame - seqFrame + 3) % 3
-  const adjLen = seq.length - frameShift
-  const sliceEnd = frameShift + adjLen - (adjLen % 3)
+  const { frameShift, sliceEnd } = frameShiftBounds(seq, seqStart, frame)
 
   const codonWidth = 3 / bpPerPx
 
