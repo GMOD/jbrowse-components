@@ -336,13 +336,13 @@ export default function MultiSampleVariantBaseModelF(
        * #action
        */
       setTreeCanvasRef(ref: HTMLCanvasElement | null) {
-        self.treeCanvas = ref || undefined
+        self.treeCanvas = ref ?? undefined
       },
       /**
        * #action
        */
       setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
-        self.mouseoverCanvas = ref || undefined
+        self.mouseoverCanvas = ref ?? undefined
       },
       /**
        * #action
