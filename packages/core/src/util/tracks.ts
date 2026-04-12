@@ -520,7 +520,7 @@ export function showTrackGeneric(
     return found
   }
 
-  const rawConf = session.getTracksById()[trackId]
+  const rawConf = session.tracksById[trackId]
   if (!rawConf) {
     throw new Error(`Could not resolve identifier "${trackId}"`)
   }

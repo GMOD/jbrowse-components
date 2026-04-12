@@ -63,7 +63,7 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       get visibleWidget() {
         if (isAlive(self)) {
           // returns most recently added item in active widgets
-          return [...self.activeWidgets.values()][self.activeWidgets.size - 1]
+          return [...self.activeWidgets.values()].at(-1)
         }
         return undefined
       },
