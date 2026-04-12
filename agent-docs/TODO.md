@@ -30,11 +30,6 @@ pnpm 11 no longer reads settings from `package.json`. When it is released:
 
 - It is saving files with quote and added semicolons. See ~/src/mysetup.nvim
 
-## Fix test errors, and simplify renderer config significantly
-
-Jest tests fail, in plugins/canvas due to complexity and weird ness about the
-'renderercontext' or 'configcontext'
-
 ## Dark reader doesn't look good sometimes
 
 - with multiwiggle labels, it is white text on light background
@@ -134,13 +129,6 @@ option for now. If desired, implement coloring synteny features by query name
 (hash query name to a color) in LGVSyntenyDisplay similar to how it's done in
 alignments.
 
-## linear-comparative-view: bounds checking on level+1 access
-
-Multiple places access `views[level + 1]` without checking bounds, e.g.
-LinearSyntenyView/model.ts line 398. Would break in edge cases with malformed
-level data. Add guards similar to LinearSyntenyViewHelper which checks
-`self.level + 1 >= p.views.length`.
-
 ## Potential improvements in type checking
 
 An agent said the following, but i think we could improve the types if we tried:
@@ -153,35 +141,6 @@ The @ts-expect-error on dataAdapter.getSources() in
 MultiSampleVariantGetSources.ts is also unavoidable — getSources is a method
 specific to certain adapters, not on the BaseFeatureDataAdapter interface, so
 there's no clean way to type it without touching the adapter base class.
-
-## Refactor multi-LGV synteny color to packed uint32
-
-The `MultiLGVSyntenyDisplay` uses `in vec4 a_color` / `color: vec4f` (same
-pattern as dotplot before the refactor). The instance stride is already 32
-bytes, so changing `color: vec4f` (16 bytes) → `color: u32` (4 bytes) with 3
-padding u32s frees no bytes but keeps the struct clean and consistent.
-
-The blocker: `executeSyntenyInstanceData.ts` (in `LinearSyntenyRPC`) feeds color
-data to **both** `LinearSyntenyDisplay` (which packs color into `a_inst1` as a
-`vec4 float`) and `MultiLGVSyntenyDisplay` (which uses a separate `a_color`
-`vec4 float`). Changing the color encoding requires synchronized changes to both
-display paths and their shaders.
-
-Steps:
-
-- Change `colorsArr` from `Float32Array(capacity * 4)` to
-  `Uint32Array(capacity)`
-- Replace `colorsArr[ci], [ci+1], [ci+2], [ci+3]` writes with a single
-  `packABGR(r, g, b, a)` call (same helper as dotplot)
-- Update `syntenyBackendTypes.ts`: `colors: Float32Array` → `Uint32Array`
-- Update `multiSyntenyGpuShaders.ts`: `a_color: vec4 float` → `uint integer`,
-  manual GLSL unpack; WGSL struct `color: vec4f` → `color: u32` with
-  `unpack4x8unorm()`
-- Update `glslShaders.ts` / `wgslShaders.ts` for `LinearSyntenyDisplay` — the
-  color is currently stored in `a_inst1` (a float vec4), needs matching change
-- Update `GpuSyntenyRenderer.ts`, `GpuMultiSyntenyRenderer.ts` attribute
-  descriptors
-- Update `Canvas2DSyntenyRenderer.ts` unpack logic and tests
 
 ## Simpliy and refactor all plugins repeatedly
 

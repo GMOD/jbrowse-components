@@ -33,6 +33,10 @@ export function drawRef(
     return
   }
 
+  if (level + 1 >= view.views.length) {
+    return
+  }
+
   const parsedCigars = model.parsedCigars
   if (!parsedCigars) {
     return

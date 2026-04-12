@@ -1,14 +1,16 @@
 export function getName(
   sessionTrackData?: { uri: string } | { localPath: string } | { name: string },
 ) {
-  return sessionTrackData
-    ? // @ts-expect-error
-      sessionTrackData.uri ||
-        // @ts-expect-error
-        sessionTrackData.localPath ||
-        // @ts-expect-error
-        sessionTrackData.name
-    : undefined
+  if (!sessionTrackData) {
+    return undefined
+  }
+  if ('uri' in sessionTrackData) {
+    return sessionTrackData.uri
+  }
+  if ('localPath' in sessionTrackData) {
+    return sessionTrackData.localPath
+  }
+  return sessionTrackData.name
 }
 
 export function stripGz(fileName: string) {
