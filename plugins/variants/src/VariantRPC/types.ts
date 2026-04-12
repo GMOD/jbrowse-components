@@ -1,4 +1,4 @@
-import type { Source } from '../shared/types.ts'
+import type { SampleInfo, Source } from '../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region, StopToken } from '@jbrowse/core/util'
 
@@ -20,6 +20,8 @@ export interface GetGenotypeMatrixArgs extends BaseVariantRpcArgs {
 export interface ClusterGenotypeMatrixArgs extends BaseVariantRpcArgs {
   statusCallback: (arg: string) => void
   sources: Source[]
+  renderingMode?: string
+  sampleInfo?: Record<string, SampleInfo>
 }
 
 export interface GetLDMatrixArgs extends BaseVariantRpcArgs {

@@ -128,6 +128,7 @@
     "./util/range": "./src/util/range.ts",
     "./util/rxjs": "./src/util/rxjs.ts",
     "./util/simpleFeature": "./src/util/simpleFeature.ts",
+    "./util/SvgCanvas": "./src/util/SvgCanvas.ts",
     "./util/stats": "./src/util/stats.ts",
     "./util/stopToken": "./src/util/stopToken.ts",
     "./util/TimeTraveller": "./src/util/TimeTraveller.ts",
@@ -616,6 +617,10 @@
         "types": "./esm/util/simpleFeature.d.ts",
         "import": "./esm/util/simpleFeature.js"
       },
+      "./util/SvgCanvas": {
+        "types": "./esm/util/SvgCanvas.d.ts",
+        "import": "./esm/util/SvgCanvas.js"
+      },
       "./util/stats": {
         "types": "./esm/util/stats.d.ts",
         "import": "./esm/util/stats.js"
@@ -994,6 +999,9 @@
         ],
         "util/simpleFeature": [
           "esm/util/simpleFeature.d.ts"
+        ],
+        "util/SvgCanvas": [
+          "esm/util/SvgCanvas.d.ts"
         ],
         "util/stats": [
           "esm/util/stats.d.ts"

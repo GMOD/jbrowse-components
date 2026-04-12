@@ -7,17 +7,16 @@
  * This is critical for alignment between coverage, gaps, and rendered features.
  */
 
-import type { SortedBy } from '../shared/types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { FilterBy, SortedBy } from '../shared/types'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface RenderPileupDataArgs {
   sessionId: string
-  adapterConfig: AnyConfigurationModel
+  adapterConfig: Record<string, unknown>
   sequenceAdapter?: Record<string, unknown>
   regions: Region[]
-  filterBy?: Record<string, unknown>
+  filterBy?: FilterBy
   colorBy?: {
     type: string
     tag?: string

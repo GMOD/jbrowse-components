@@ -115,10 +115,7 @@ export class GpuLDRenderer implements LDBackend {
       this.hal.uploadBuffer(REGION_KEY, PASS_GENOMIC, buf, data.numCells)
     } else {
       this.hal.deleteBuffer(REGION_KEY, PASS_GENOMIC)
-      const buf = data.ldValues.buffer.slice(
-        data.ldValues.byteOffset,
-        data.ldValues.byteOffset + data.ldValues.byteLength,
-      )
+      const buf = new Uint8Array(data.ldValues).buffer
       this.hal.uploadBuffer(REGION_KEY, PASS_MAIN, buf, data.numCells)
     }
   }

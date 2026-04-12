@@ -636,7 +636,12 @@ function stateModelFactory(pluginManager: PluginManager) {
       openExportDialog() {
         getSession(self).queueDialog(handleClose => [
           ExportSvgDialog,
-          { model: self, handleClose },
+          {
+            model: self as unknown as {
+              exportSvg(opts: ExportSvgOptions): Promise<void>
+            },
+            handleClose,
+          },
         ])
       },
 

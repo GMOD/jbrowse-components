@@ -3,14 +3,13 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 interface GetFeatureDetailsArgs {
   sessionId: string
-  adapterConfig: AnyConfigurationModel
+  adapterConfig: Record<string, unknown>
   sequenceAdapter?: Record<string, unknown>
   regions: Region[]
   featureId: string

@@ -23,7 +23,7 @@ export async function executeClusterGenotypeMatrix({
     sessionId: string
     headers?: Record<string, string>
     regions: Region[]
-    bpPerPx: number
+    bpPerPx?: number
     minorAlleleFrequencyFilter: number
     lengthCutoffFilter: number
     statusCallback: (arg: string) => void

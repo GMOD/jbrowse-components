@@ -69,7 +69,7 @@ export default function LoadingOverlay({
 }) {
   const { classes } = useStyles()
   const spanRef = useRef<HTMLSpanElement>(null)
-  const idRef = useRef<number>()
+  const idRef = useRef<number | undefined>(undefined)
   if (idRef.current === undefined) {
     idRef.current = ++debugCounter
   }

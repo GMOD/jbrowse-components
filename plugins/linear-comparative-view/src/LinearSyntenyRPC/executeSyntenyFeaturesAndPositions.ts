@@ -269,7 +269,7 @@ export async function executeSyntenyFeaturesAndPositions({
   let validCount = 0
   for (const f of processedFeatures) {
     checkStopToken2(stopTokenChecker)
-    const strand = f.get('strand')!
+    const strand = f.get('strand') as number
     const mate = f.get('mate') as {
       start: number
       end: number
@@ -277,9 +277,9 @@ export async function executeSyntenyFeaturesAndPositions({
       name: string
       assemblyName: string
     }
-    const refName = f.get('refName')
-    const start = f.get('start')
-    const end = f.get('end')
+    const refName = f.get('refName') as string
+    const start = f.get('start') as number
+    const end = f.get('end') as number
 
     let f1s = start
     let f1e = end
@@ -329,7 +329,7 @@ export async function executeSyntenyFeaturesAndPositions({
     identitiesArray[validCount] = identity ?? -1
 
     featureIds.push(f.id())
-    names.push(f.get('name')! || '')
+    names.push((f.get('name') as string | undefined) ?? '')
     refNames.push(refName)
     assemblyNames.push((f.get('assemblyName') as string) || '')
     cigars.push((f.get('CIGAR') as string) || '')

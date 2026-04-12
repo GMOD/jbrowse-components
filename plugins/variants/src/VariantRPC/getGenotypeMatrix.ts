@@ -29,7 +29,7 @@ export async function getGenotypeMatrix({
     headers?: Record<string, string>
     regions: Region[]
     sources: Source[]
-    bpPerPx: number
+    bpPerPx?: number
     minorAlleleFrequencyFilter: number
     lengthCutoffFilter: number
     statusCallback?: (arg: string) => void

@@ -62,7 +62,7 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
           'MultiWiggleGetScoreMatrix',
           {
             regions: dynamicBlocks.contentBlocks,
-            sources: sourcesWithoutLayout,
+            sources: sourcesWithoutLayout ?? [],
             sessionId,
             adapterConfig,
             bpPerPx: bpPerPx / +samplesPerPixel,

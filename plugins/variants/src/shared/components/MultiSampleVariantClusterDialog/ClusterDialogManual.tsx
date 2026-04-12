@@ -76,8 +76,8 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
           'MultiSampleVariantGetGenotypeMatrix',
           {
             regions: view.dynamicBlocks.contentBlocks,
-            sources: sourcesWithoutLayout,
-            minorAlleleFrequencyFilter,
+            sources: sourcesWithoutLayout ?? [],
+            minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
             lengthCutoffFilter,
             sessionId,
             adapterConfig,

@@ -24,7 +24,7 @@ export async function getPhasedGenotypeMatrix({
     headers?: Record<string, string>
     regions: Region[]
     sources: Source[]
-    bpPerPx: number
+    bpPerPx?: number
     minorAlleleFrequencyFilter: number
     lengthCutoffFilter: number
     sampleInfo: Record<string, SampleInfo>

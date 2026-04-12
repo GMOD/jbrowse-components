@@ -110,7 +110,9 @@ function getSequenceAdapter(session: any, region: Region) {
     ? session.assemblyManager.get(region.assemblyName)
     : undefined
   const sequenceAdapterConfig = assembly?.configuration?.sequence?.adapter
-  return sequenceAdapterConfig ? getSnapshot(sequenceAdapterConfig) : undefined
+  return sequenceAdapterConfig
+    ? (getSnapshot(sequenceAdapterConfig) as Record<string, unknown>)
+    : undefined
 }
 
 interface FetchFeatureDetailsSelf {
@@ -1030,8 +1032,8 @@ export default function stateModelFactory(
       }))
       .actions(self => {
         async function fetchPileupData(
-          adapterConfig: unknown,
-          sequenceAdapter: unknown,
+          adapterConfig: Record<string, unknown>,
+          sequenceAdapter: Record<string, unknown> | undefined,
           region: Region,
           stopToken: StopToken,
         ) {
@@ -1061,8 +1063,8 @@ export default function stateModelFactory(
         }
 
         async function fetchChainData(
-          adapterConfig: unknown,
-          sequenceAdapter: unknown,
+          adapterConfig: Record<string, unknown>,
+          sequenceAdapter: Record<string, unknown> | undefined,
           region: Region,
           stopToken: StopToken,
         ) {
@@ -1091,7 +1093,7 @@ export default function stateModelFactory(
         }
 
         async function fetchFeaturesForRegion(
-          adapterConfig: unknown,
+          adapterConfig: Record<string, unknown>,
           region: Region,
           regionNumber: number,
           stopToken: StopToken,

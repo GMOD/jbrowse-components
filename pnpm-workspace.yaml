@@ -2,3 +2,14 @@ packages:
   - 'packages/*'
   - 'products/*'
   - 'plugins/*'
+
+onlyBuiltDependencies:
+  - canvas
+  - electron
+  - electron-chromedriver
+  - esbuild
+  - puppeteer
+
+minimumReleaseAge: "1440"
+minimumReleaseAgeExclude:
+  - "@gmod/*"
