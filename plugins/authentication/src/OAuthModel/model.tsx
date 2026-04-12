@@ -246,6 +246,11 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           const redirectUrl = new URL(fixedQueryString)
           const queryStringSearch = redirectUrl.search
           const urlParams = new URLSearchParams(queryStringSearch)
+          const expectedState = self.state()
+          if (expectedState && urlParams.get('state') !== expectedState) {
+            reject(new Error('OAuth state mismatch — possible CSRF attack'))
+            return
+          }
           if (urlParams.has('access_token')) {
             const token = urlParams.get('access_token')
             if (!token) {
@@ -395,6 +400,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
                 exchangedTokenPromise = undefined
                 return newToken
               } catch (err) {
+                exchangedTokenPromise = undefined
                 console.error('Token could not be refreshed', err)
                 // let original error be thrown
               }

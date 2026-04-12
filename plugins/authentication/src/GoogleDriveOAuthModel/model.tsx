@@ -17,7 +17,10 @@ export interface RequestInitWithMetadata extends RequestInit {
 
 function getUri(str: string) {
   const urlId = /[-\w]{25,}/.exec(str)
-  return `https://www.googleapis.com/drive/v3/files/${urlId}`
+  if (!urlId) {
+    throw new Error(`Could not extract Google Drive file ID from URL: ${str}`)
+  }
+  return `https://www.googleapis.com/drive/v3/files/${urlId[0]}`
 }
 
 /**
