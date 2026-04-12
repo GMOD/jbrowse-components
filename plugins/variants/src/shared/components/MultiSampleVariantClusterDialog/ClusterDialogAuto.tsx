@@ -89,7 +89,7 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
                   'MultiSampleVariantClusterGenotypeMatrix',
                   {
                     regions: view.dynamicBlocks.contentBlocks,
-                    sources: sourcesVolatile ?? [],
+                    sources: sourcesVolatile,
                     minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
                     lengthCutoffFilter,
                     sessionId,

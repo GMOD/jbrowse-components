@@ -2,10 +2,10 @@ import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
-} from '../shared/types'
+} from '../shared/types.ts'
 
 import type { PileupDataResult } from './types'
-import type { SortedBy } from '../shared/types'
+import type { SortedBy } from '../shared/types.ts'
 
 // ASCII code for '*' used to represent deletions in base pair sort
 const DELETION_CHAR = 42
@@ -267,6 +267,7 @@ export function computeSortedLayout(
 
     let y = Math.max(levels.length, nextRow)
     for (let j = nextRow; j < levels.length; j++) {
+      // eslint-disable-next-line @typescript-eslint/no-confusing-non-null-assertion
       if ((levels[j] ?? 0) <= effectiveStart) {
         y = j
         break

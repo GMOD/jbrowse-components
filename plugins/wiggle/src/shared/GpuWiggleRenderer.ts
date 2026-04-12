@@ -8,7 +8,6 @@ import {
 } from './wiggleGlslShaders.ts'
 import {
   INSTANCE_BYTES,
-  INSTANCE_STRIDE,
   RENDERING_TYPE_LINE,
   UNIFORM_SIZE,
   VERTICES_PER_INSTANCE,

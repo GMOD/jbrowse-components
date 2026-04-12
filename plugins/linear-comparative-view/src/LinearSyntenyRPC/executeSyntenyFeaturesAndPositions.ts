@@ -224,9 +224,7 @@ export async function executeSyntenyFeaturesAndPositions({
             Math.max(v1.bpPerPx, v2.bpPerPx) * 50,
           )
           const chained = chainCollinearAlignments(features, maxGap)
-          console.debug(
-            `[synteny] chained ${features.length} → ${chained.length} features (maxGap=${Math.round(maxGap / 1000)}kb)`,
-          )
+
           return chained
         },
       )

@@ -46,7 +46,6 @@ export async function fetchReferenceSequence({
   pluginManager,
   sessionId,
   sequenceAdapter,
-  regionWithAssembly,
   region,
   featuresArray,
   regionStart,
@@ -54,8 +53,8 @@ export async function fetchReferenceSequence({
   pluginManager: PluginManager
   sessionId: string
   sequenceAdapter: Record<string, unknown>
-  regionWithAssembly: { refName: string; assemblyName: string }
   region: {
+    assemblyName: string
     refName: string
     originalRefName?: string
     start: number
@@ -84,7 +83,7 @@ export async function fetchReferenceSequence({
   const seqFeats = await firstValueFrom(
     seqAdapter
       .getFeatures({
-        ...regionWithAssembly,
+        ...region,
         refName: region.originalRefName || region.refName,
         start: Math.max(0, seqFetchStart - 1),
         end: seqFetchEnd + 1,

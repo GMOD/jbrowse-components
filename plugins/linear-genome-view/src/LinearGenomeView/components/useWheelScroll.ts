@@ -91,10 +91,6 @@ export function useWheelScroll(
       lastWheelTime.current = now
 
       if (tabJustActivated.current || wheelGap > 1000) {
-        console.log(
-          `[useWheelScroll] wheel event after gap=${wheelGap.toFixed(1)}ms, rafPending=${rafId.current !== null}, tabJustActivated=${tabJustActivated.current}`,
-          performance.now().toFixed(1),
-        )
         tabJustActivated.current = false
       }
 
@@ -142,16 +138,11 @@ export function useWheelScroll(
       if (rafId.current === null) {
         const scheduledAt = performance.now()
         rafId.current = requestAnimationFrame(now => {
-          const rafDelay = performance.now() - scheduledAt
           const elapsed = Math.min(
             100,
             lastRafTime.current !== null ? now - lastRafTime.current : 16.67,
           )
-          if (rafDelay > 50) {
-            console.log(
-              `[useWheelScroll] RAF delayed ${rafDelay.toFixed(1)}ms (scheduled→fired), elapsed=${elapsed.toFixed(1)}ms, lastRafTime=${lastRafTime.current?.toFixed(1) ?? 'null'}`,
-            )
-          }
+
           lastRafTime.current = now
           const maxZoomDelta = MAX_ZOOM_RATE_PER_MS * elapsed
           if (zoomDelta.current !== 0) {
@@ -164,12 +155,7 @@ export function useWheelScroll(
               d > 0 ? model.bpPerPx * (1 + d) : model.bpPerPx / (1 - d),
               lastClientX.current - rectLeft.current,
             )
-            const zoomDur = performance.now() - t0
-            if (zoomDur > 10) {
-              console.log(
-                `[useWheelScroll] zoomTo took ${zoomDur.toFixed(1)}ms`,
-              )
-            }
+
             zoomDelta.current = 0
           }
           if (scrollDelta.current !== 0) {
@@ -185,10 +171,6 @@ export function useWheelScroll(
       if (!document.hidden) {
         tabJustActivated.current = true
         lastRafTime.current = null
-        console.log(
-          '[useWheelScroll] tab activated, reset lastRafTime',
-          performance.now().toFixed(1),
-        )
       }
     }
     document.addEventListener('visibilitychange', onVisibilityChange)

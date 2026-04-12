@@ -21,7 +21,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     TextIndexRpcMethod: {
       args: TextIndexRpcMethodArgs
-      return: void
+      return: undefined
     }
   }
 }

@@ -24,9 +24,6 @@ export function useTabVisibilityRerender(renderFn: () => void) {
         // directly from a visibilitychange handler can return a detached
         // texture in WebGPU, causing the GPU timeline to hang.
         rafId = requestAnimationFrame(() => {
-          console.log(
-            '[useTabVisibilityRerender] rAF firing, calling stableRender',
-          )
           rafId = null
           stableRender()
         })

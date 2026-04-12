@@ -282,13 +282,8 @@ export async function executeRenderPileupData({
     dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
   }
 
-  const regionWithAssembly = {
-    ...region,
-    assemblyName: region.assemblyName ?? '',
-  }
-
   const featuresArray = await firstValueFrom(
-    dataAdapter.getFeatures(regionWithAssembly, args).pipe(toArray()),
+    dataAdapter.getFeatures(region, args).pipe(toArray()),
   )
 
   checkStopToken2(stopTokenCheck)
@@ -305,7 +300,6 @@ export async function executeRenderPileupData({
       pluginManager,
       sessionId,
       sequenceAdapter,
-      regionWithAssembly,
       region,
       featuresArray,
       regionStart,

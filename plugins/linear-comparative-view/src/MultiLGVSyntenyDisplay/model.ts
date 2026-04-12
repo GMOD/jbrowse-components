@@ -281,9 +281,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         self.rpcDataMap = next
       },
       setAllGenomeNames(names: string[]) {
-        console.log('[MultiSynteny] setAllGenomeNames:', JSON.stringify(names))
         self.allGenomeNames = names
       },
+
       setColorBy(value: string) {
         self.colorBy = value
       },
@@ -337,15 +337,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       setColorPalette(palette: SyntenyColorPalette | null) {
         self.colorPalette = palette
       },
-      clearDisplaySpecificData() {
-        console.log(
-          '[MultiSynteny] clearDisplaySpecificData, stack:',
-          new Error().stack?.split('\n').slice(1, 4).join(' | '),
-        )
-        self.rpcDataMap = new Map()
-        self.allGenomeNames = []
-        self.gpuRenderer?.clearAllBlocks()
-      },
+
       selectFeature(feature: Feature) {
         const session = getSession(self)
         session.setSelection(feature)

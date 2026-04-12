@@ -41,13 +41,8 @@ export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRename
       dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
     }
 
-    const regionWithAssembly = {
-      ...region,
-      assemblyName: region.assemblyName ?? '',
-    }
-
     const features = await firstValueFrom(
-      dataAdapter.getFeatures(regionWithAssembly, {}).pipe(toArray()),
+      dataAdapter.getFeatures(region, {}).pipe(toArray()),
     )
 
     return {
