@@ -115,6 +115,7 @@ export async function executeRenderChainData({
     adapterConfig,
     sequenceAdapter,
     regions,
+    filterBy,
     colorBy,
     colorTagMap,
     drawSingletons = true,
@@ -135,7 +136,7 @@ export async function executeRenderChainData({
   }
 
   const featuresArray = await firstValueFrom(
-    dataAdapter.getFeatures(region, args).pipe(toArray()),
+    dataAdapter.getFeatures(region, { stopToken, filterBy, statusCallback }).pipe(toArray()),
   )
 
   checkStopToken2(stopTokenCheck)

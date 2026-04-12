@@ -261,6 +261,7 @@ export async function executeRenderPileupData({
     adapterConfig,
     sequenceAdapter,
     regions,
+    filterBy,
     colorBy,
     colorTagMap,
     sortedBy,
@@ -283,7 +284,7 @@ export async function executeRenderPileupData({
   }
 
   const featuresArray = await firstValueFrom(
-    dataAdapter.getFeatures(region, args).pipe(toArray()),
+    dataAdapter.getFeatures(region, { stopToken, filterBy, statusCallback }).pipe(toArray()),
   )
 
   checkStopToken2(stopTokenCheck)
