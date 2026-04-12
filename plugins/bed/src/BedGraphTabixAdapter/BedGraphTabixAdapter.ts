@@ -61,8 +61,8 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
   }
 
   async getHeader() {
-    const { bedGraph } = await this.configure()
-    return bedGraph.getHeader()
+    const { header } = await this.configure()
+    return header
   }
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
