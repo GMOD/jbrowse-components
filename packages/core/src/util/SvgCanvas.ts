@@ -30,7 +30,7 @@ function escapeXml(s: string) {
 // Parse CSS font shorthand like "10px sans-serif" or "bold 12px monospace"
 // into SVG-compatible font-size and font-family attributes.
 function fontAttrs(font: string) {
-  const m = font.match(/(\d+(?:\.\d+)?)px\s+(.+)/)
+  const m = /(\d+(?:\.\d+)?)px\s+(.+)/.exec(font)
   if (m) {
     return ` font-size="${m[1]}" font-family="${m[2]}"`
   }
@@ -373,7 +373,7 @@ export class SvgCanvas {
   }
 
   measureText(text: string) {
-    const m = this.font.match(/(\d+(?:\.\d+)?)px/)
+    const m = /(\d+(?:\.\d+)?)px/.exec(this.font)
     const fontSize = m ? +m[1]! : Number.parseFloat(this.font) || 10
     return { width: measureTextWidth(text, fontSize) }
   }
