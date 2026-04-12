@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import { useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -14,6 +14,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
+import useSWR from 'swr'
 
 import Checkbox2 from '../Checkbox2.tsx'
 import RecentSessionsCards from './RecentSessionsCards.tsx'
@@ -61,9 +62,7 @@ export default function RecentSessionPanel({
 }) {
   const { classes } = useStyles()
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
-  const [sessions, setSessions] = useState<RecentSessions>([])
   const [sessionToRename, setSessionToRename] = useState<RecentSessionData>()
-  const [updateSessionsList, setUpdateSessionsList] = useState(0)
   const [selectedSessions, setSelectedSessions] = useState<RecentSessions>()
   const [sessionsToDelete, setSessionsToDelete] = useState<RecentSessions>()
   const [showAutosaves, setShowAutosaves] = useLocalStorage(
@@ -74,24 +73,19 @@ export default function RecentSessionPanel({
     'showFavoritesOnly',
     false,
   )
-
-  const sortedSessions = useMemo(
-    () => sessions.sort((a, b) => (b.updated || 0) - (a.updated || 0)),
-    [sessions],
+  const [favorites, setFavorites] = useLocalStorage(
+    'startScreen-favoriteSessions',
+    [] as string[],
   )
 
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        const sessions = await ipcRenderer.invoke('listSessions', showAutosaves)
-        setSessions(sessions)
-      } catch (e) {
-        console.error(e)
-        setError(e)
-      }
-    })()
-  }, [setError, updateSessionsList, showAutosaves])
+  const { data: sessions = [], mutate: mutateSessions } = useSWR(
+    ['listSessions', showAutosaves],
+    () =>
+      ipcRenderer.invoke('listSessions', showAutosaves) as Promise<
+        RecentSessionData[]
+      >,
+    { onError: e => { console.error(e); setError(e) } },
+  )
 
   async function addToQuickstartList(arg: RecentSessionData[]) {
     await Promise.all(
@@ -99,15 +93,12 @@ export default function RecentSessionPanel({
     )
   }
 
-  const [favorites, setFavorites] = useLocalStorage(
-    'startScreen-favoriteSessions',
-    [] as string[],
-  )
-
   const favs = new Set(favorites)
-
-  const filteredSessions = sortedSessions.filter(f =>
-    showFavoritesOnly ? favs.has(f.path) : true,
+  const sortedSessions = sessions.toSorted(
+    (a, b) => (b.updated ?? 0) - (a.updated ?? 0),
+  )
+  const filteredSessions = sortedSessions.filter(
+    f => !showFavoritesOnly || favs.has(f.path),
   )
   return (
     <div>
@@ -116,7 +107,8 @@ export default function RecentSessionPanel({
           sessionToRename={sessionToRename}
           onClose={() => {
             setSessionToRename(undefined)
-            setUpdateSessionsList(s => s + 1)
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            mutateSessions()
           }}
         />
       ) : null}
@@ -126,7 +118,8 @@ export default function RecentSessionPanel({
           sessionsToDelete={sessionsToDelete}
           onClose={() => {
             setSessionsToDelete(undefined)
-            setUpdateSessionsList(s => s + 1)
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            mutateSessions()
           }}
         />
       ) : null}

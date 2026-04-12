@@ -298,72 +298,40 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
 
   async function createAssemblyConfig() {
     const { needsIndexing, ...adapterConfig } = getAdapterConfig()
-
+    let adapter = adapterConfig
     if (needsIndexing) {
       setLoading('Creating .fai file for FASTA')
-      const faiLocation = await ipcRenderer.invoke('indexFasta', fastaLocation)
-      return {
-        name: assemblyName,
-        displayName: assemblyDisplayName,
-        sequence: {
-          type: 'ReferenceSequenceTrack',
-          trackId: `${assemblyName}-${Date.now()}`,
-          adapter: {
-            ...adapterConfig,
-            faiLocation: { localPath: faiLocation },
-          },
-        },
-        ...(!isBlank(refNameAliasesLocation)
-          ? {
-              refNameAliases: {
-                adapter: {
-                  type: 'RefNameAliasAdapter',
-                  location: refNameAliasesLocation,
-                },
+      const faiPath = await ipcRenderer.invoke('indexFasta', fastaLocation)
+      adapter = { ...adapterConfig, faiLocation: { localPath: faiPath } }
+    }
+    return {
+      name: assemblyName,
+      displayName: assemblyDisplayName,
+      sequence: {
+        type: 'ReferenceSequenceTrack',
+        trackId: `${assemblyName}-${Date.now()}`,
+        adapter,
+      },
+      ...(!isBlank(refNameAliasesLocation)
+        ? {
+            refNameAliases: {
+              adapter: {
+                type: 'RefNameAliasAdapter',
+                location: refNameAliasesLocation,
               },
-            }
-          : {}),
-        ...(!isBlank(cytobandsLocation)
-          ? {
-              cytobands: {
-                adapter: {
-                  type: 'CytobandAdapter',
-                  cytobandsLocation: cytobandsLocation,
-                },
+            },
+          }
+        : {}),
+      ...(!isBlank(cytobandsLocation)
+        ? {
+            cytobands: {
+              adapter: {
+                type: 'CytobandAdapter',
+                cytobandsLocation,
               },
-            }
-          : {}),
-      }
-    } else {
-      return {
-        name: assemblyName,
-        displayName: assemblyDisplayName,
-        sequence: {
-          type: 'ReferenceSequenceTrack',
-          trackId: `${assemblyName}-${Date.now()}`,
-          adapter: adapterConfig,
-        },
-        ...(!isBlank(refNameAliasesLocation)
-          ? {
-              refNameAliases: {
-                adapter: {
-                  type: 'RefNameAliasAdapter',
-                  location: refNameAliasesLocation,
-                },
-              },
-            }
-          : {}),
-        ...(!isBlank(cytobandsLocation)
-          ? {
-              cytobands: {
-                adapter: {
-                  type: 'CytobandAdapter',
-                  cytobandsLocation: cytobandsLocation,
-                },
-              },
-            }
-          : {}),
-      }
+            },
+          }
+        : {}),
     }
   }
   return (

@@ -34,51 +34,39 @@ export function useGenomesData({
       : undefined,
   )
 
-  const preRows = useMemo(() => {
+  const rows = useMemo(() => {
     if (!data) {
       return undefined
     }
     // Handle both array format and object format with ucscGenomes key
-    if (Array.isArray(data)) {
-      return data
-        .map(r => ({
-          ...r,
-          id: r.accession,
-        }))
-        .filter(f => !!f.id)
-    } else if ('ucscGenomes' in data) {
-      return Object.values(data.ucscGenomes)
-    }
-    return undefined
-  }, [data])
+    const preRows = Array.isArray(data)
+      ? data.map(r => ({ ...r, id: r.accession })).filter(f => !!f.id)
+      : Object.values(data.ucscGenomes)
 
-  const rows = useMemo(() => {
-    return (function () {
-      if (typeOption === 'mainGenomes') {
-        return preRows
-      } else if (filterOption === 'refseq') {
-        return preRows?.filter(
+    let filtered = preRows
+    if (typeOption !== 'mainGenomes') {
+      if (filterOption === 'refseq') {
+        filtered = preRows.filter(
           r => 'ncbiName' in r && r.ncbiName.startsWith('GCF_'),
         )
       } else if (filterOption === 'genbank') {
-        return preRows?.filter(
+        filtered = preRows.filter(
           r => 'ncbiName' in r && r.ncbiName.startsWith('GCA_'),
         )
       } else if (filterOption === 'designatedReference') {
-        return preRows?.filter(
+        filtered = preRows.filter(
           r =>
             'ncbiRefSeqCategory' in r &&
             r.ncbiRefSeqCategory === 'reference genome',
         )
-      } else {
-        return preRows
       }
-    })()?.sort((a, b) =>
+    }
+    return filtered.sort((a, b) =>
       'orderKey' in a && 'orderKey' in b ? a.orderKey - b.orderKey : 0,
     )
-  }, [filterOption, preRows, typeOption])
+  }, [data, filterOption, typeOption])
 
-  const favs = new Set(favorites.map(r => r.id))
+  const favs = useMemo(() => new Set(favorites.map(r => r.id)), [favorites])
   const searchFilteredRows = useMemo(() => {
     const query = searchQuery.toLowerCase().trim()
     return !query
@@ -96,7 +84,7 @@ export function useGenomesData({
             .join(' ')
             .toLowerCase()
             .includes(query),
-        ) || []
+        )
   }, [rows, searchQuery])
 
   return {

@@ -7,12 +7,14 @@ import { Tooltip } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { formatDistanceToNow } from 'date-fns'
 
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { GridRenderCellParams, GridRowSelectionModel } from '@mui/x-data-grid'
+
 import DateSinceLastUsed from './DateSinceLastUsed.tsx'
 import SessionNameCell from './SessionNameCell.tsx'
 import { useInnerDims } from '../availableGenomes/util.ts'
 
 import type { RecentSessionData } from '../types.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles()({
   cell: {
@@ -89,8 +91,8 @@ function RecentSessionsList({
 
   // Memoize callback functions
   const handleRowSelectionChange = useCallback(
-    (args: any) => {
-      setSelectedSessions(sessions.filter(s => args.ids.has(s.path)))
+    (model: GridRowSelectionModel) => {
+      setSelectedSessions(sessions.filter(s => model.ids.has(s.path)))
     },
     [sessions, setSelectedSessions],
   )
@@ -102,9 +104,9 @@ function RecentSessionsList({
         field: 'name',
         headerName: 'Session name',
         width: widths.name,
-        renderCell: ({ value, row }: any) => (
+        renderCell: ({ value, row }: GridRenderCellParams) => (
           <SessionNameCell
-            value={value as string}
+            value={String(value)}
             row={row}
             isFavorite={favs.has(row.id)}
             setPluginManager={setPluginManager}
@@ -119,9 +121,9 @@ function RecentSessionsList({
         field: 'path',
         headerName: 'Session path',
         width: widths.path,
-        renderCell: ({ value }: any) => (
+        renderCell: ({ value }: GridRenderCellParams) => (
           <Tooltip title={String(value)}>
-            <div className={classes.cell}>{value as string}</div>
+            <div className={classes.cell}>{String(value)}</div>
           </Tooltip>
         ),
       },
@@ -129,7 +131,7 @@ function RecentSessionsList({
         field: 'lastModified',
         headerName: 'Last modified',
         width: widths.lastModified,
-        renderCell: ({ value, row }: any) =>
+        renderCell: ({ value, row }: GridRenderCellParams) =>
           !value ? null : <DateSinceLastUsed row={row} />,
       },
     ],

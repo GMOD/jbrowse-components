@@ -36,7 +36,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 import type { SessionWithDialogs } from '@jbrowse/product-core'
 
@@ -213,14 +213,15 @@ export default function rootModelFactory({
                   label: 'Open track...',
                   icon: StorageIcon,
 
-                  onClick: (session: any) => {
-                    if (session.views.length === 0) {
+                  onClick: (session: SessionWithWidgets) => {
+                    const firstView = session.views[0]
+                    if (!firstView) {
                       session.notify('Please open a view to add a track first')
-                    } else if (session.views.length > 0) {
+                    } else {
                       const widget = session.addWidget(
                         'AddTrackWidget',
                         'addTrackWidget',
-                        { view: session.views[0].id },
+                        { view: firstView.id },
                       )
                       session.showWidget(widget)
                       if (session.views.length > 1) {

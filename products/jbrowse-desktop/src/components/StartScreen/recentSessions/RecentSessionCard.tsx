@@ -17,6 +17,8 @@ import {
   Typography,
 } from '@mui/material'
 
+import type { RecentSessionData } from '../types.ts'
+
 const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles()({
@@ -29,13 +31,6 @@ const useStyles = makeStyles()({
     paddingTop: '56.25%', // 16:9
   },
 })
-
-interface RecentSessionData {
-  path: string
-  name: string
-  updated?: number
-  screenshotPath?: string
-}
 
 function RecentSessionCard({
   sessionData,
@@ -91,7 +86,7 @@ function RecentSessionCard({
         {screenshot ? (
           <CardMedia
             className={classes.media}
-            image={screenshot || defaultSessionScreenshot}
+            image={screenshot}
           />
         ) : null}
         <CardHeader
@@ -121,7 +116,9 @@ function RecentSessionCard({
               style={{ width: 178 }}
             >
               Last modified{' '}
-              {new Date(sessionData.updated || 0).toLocaleString('en-US')}
+              {sessionData.updated
+                ? new Date(sessionData.updated).toLocaleString('en-US')
+                : 'Unknown'}
             </Typography>
           }
         />

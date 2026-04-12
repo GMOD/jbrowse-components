@@ -11,6 +11,7 @@ import {
 import { autorun, observable, toJS } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { JobsListModel } from '@jbrowse/plugin-jobs-management'
@@ -73,7 +74,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #getter
        */
       get rpcManager() {
-        return getParent<any>(self).jbrowse.rpcManager
+        return getParent<{ jbrowse: { rpcManager: RpcManager } }>(self).jbrowse
+          .rpcManager
       },
       /**
        * #getter
@@ -93,9 +95,11 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #getter
        */
       get aggregateTextSearchAdapters() {
-        return getParent<any>(self).jbrowse.aggregateTextSearchAdapters as {
-          textSearchAdapterId: string
-        }[]
+        return getParent<{
+          jbrowse: {
+            aggregateTextSearchAdapters: { textSearchAdapterId: string }[]
+          }
+        }>(self).jbrowse.aggregateTextSearchAdapters
       },
     }))
     .actions(self => ({

@@ -58,7 +58,6 @@ export default function QuickstartPanel({
     },
   )
 
-  const e = listError
   return (
     <div>
       <div
@@ -77,7 +76,9 @@ export default function QuickstartPanel({
 
       {isVisible ? (
         <div className={classes.panel}>
-          {e ? <ErrorMessage error={e} /> : null}
+          {listError && !quickstarts ? (
+            <ErrorMessage error={listError} />
+          ) : null}
 
           {quickstarts !== undefined ? (
             quickstarts.length ? (
