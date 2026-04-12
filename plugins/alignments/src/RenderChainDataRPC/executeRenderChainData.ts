@@ -37,7 +37,7 @@ import {
 
 import type { RenderChainDataArgs } from './types.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
-import type { Mismatch } from '../shared/types'
+import type { FilterBy, Mismatch } from '../shared/types'
 import type { ChainStats } from '../shared/types.ts'
 import type {
   ChainFeatureData,
@@ -49,7 +49,7 @@ import type {
   SoftclipData,
 } from '../shared/webglRpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseFeatureDataAdapter, BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 
 interface ExecuteParams {
@@ -135,8 +135,13 @@ export async function executeRenderChainData({
     dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
   }
 
+  const fetchOpts: BaseOptions & { filterBy?: FilterBy } = {
+    stopToken,
+    filterBy,
+    statusCallback,
+  }
   const featuresArray = await firstValueFrom(
-    dataAdapter.getFeatures(region, { stopToken, filterBy, statusCallback }).pipe(toArray()),
+    dataAdapter.getFeatures(region, fetchOpts).pipe(toArray()),
   )
 
   checkStopToken2(stopTokenCheck)

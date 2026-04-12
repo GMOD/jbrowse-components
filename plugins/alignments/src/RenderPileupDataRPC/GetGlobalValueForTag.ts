@@ -13,6 +13,7 @@ interface GetGlobalValueForTagArgs {
   regions: Region[]
   tag: string
   stopToken?: StopToken
+  rpcDriverName?: string
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

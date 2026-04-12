@@ -35,7 +35,7 @@ import {
 } from '../shared/processFeatureAlignments.ts'
 
 import type { PileupDataResult, RenderPileupDataArgs } from './types'
-import type { Mismatch } from '../shared/types'
+import type { FilterBy, Mismatch } from '../shared/types'
 import type {
   FeatureData,
   GapData,
@@ -46,7 +46,7 @@ import type {
   SoftclipData,
 } from '../shared/webglRpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseFeatureDataAdapter, BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 interface SnpCountEntry {
   baseCounts: Record<string, number>
@@ -283,8 +283,13 @@ export async function executeRenderPileupData({
     dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
   }
 
+  const fetchOpts: BaseOptions & { filterBy?: FilterBy } = {
+    stopToken,
+    filterBy,
+    statusCallback,
+  }
   const featuresArray = await firstValueFrom(
-    dataAdapter.getFeatures(region, { stopToken, filterBy, statusCallback }).pipe(toArray()),
+    dataAdapter.getFeatures(region, fetchOpts).pipe(toArray()),
   )
 
   checkStopToken2(stopTokenCheck)
