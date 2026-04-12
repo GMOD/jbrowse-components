@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import {
@@ -489,7 +489,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     model.setColorPalette(colorPalette)
   }, [model, colorPalette])
 
-  const renderNow = useEffectEvent(() => {
+  const renderNow = useCallback(() => {
     const renderer = rendererRef.current
     if (!renderer || !view.initialized) {
       return
@@ -538,7 +538,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         bpRangeX: [0, 0],
       },
     )
-  })
+  }, [model, view, rendererRef])
 
   useEffect(() => {
     const renderer = rendererRef.current
@@ -611,7 +611,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         model.setCanvasDrawn(true)
       }
     })
-  }, [model, view, ready, rendererRef])
+  }, [model, view, ready, rendererRef, renderNow])
 
   useTabVisibilityRerender(renderNow)
 

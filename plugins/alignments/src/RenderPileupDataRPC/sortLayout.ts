@@ -76,7 +76,8 @@ function sortOverlappingByIndex(
     const baseAtPos = new Map<number, number>()
     if (mismatchReadIndices) {
       for (let i = 0; i < numMismatches; i++) {
-        if (regionStart + mismatchPositions[i]! === sortPos) {
+        const mismatchPos = mismatchPositions[i]!
+        if (regionStart + mismatchPos === sortPos) {
           baseAtPos.set(mismatchReadIndices[i]!, mismatchBases[i]!)
         }
       }
@@ -124,7 +125,8 @@ function sortOverlappingByIndex(
         if (interbaseTypes[i] !== targetType) {
           continue
         }
-        if (regionStart + interbasePositions[i]! === sortPos) {
+        const interbasePos = interbasePositions[i]!
+        if (regionStart + interbasePos === sortPos) {
           const readIdx = interbaseReadIndices[i]!
           const len = interbaseLengths[i]!
           const existing = lengthAtPos.get(readIdx) ?? 0
@@ -267,7 +269,6 @@ export function computeSortedLayout(
 
     let y = Math.max(levels.length, nextRow)
     for (let j = nextRow; j < levels.length; j++) {
-      // eslint-disable-next-line @typescript-eslint/no-confusing-non-null-assertion
       if ((levels[j] ?? 0) <= effectiveStart) {
         y = j
         break

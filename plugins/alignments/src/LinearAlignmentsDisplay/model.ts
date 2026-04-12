@@ -97,7 +97,11 @@ function getSequenceAdapter(session: any, region: Region) {
     ? session.assemblyManager.get(region.assemblyName)
     : undefined
   const sequenceAdapterConfig = assembly?.configuration?.sequence?.adapter
-  return sequenceAdapterConfig ? getSnapshot(sequenceAdapterConfig) : undefined
+  if (!sequenceAdapterConfig) {
+    return undefined
+  }
+  const snap: unknown = getSnapshot(sequenceAdapterConfig)
+  return snap as Record<string, unknown>
 }
 
 interface FetchFeatureDetailsSelf {
