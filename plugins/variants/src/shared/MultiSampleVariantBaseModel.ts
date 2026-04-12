@@ -221,11 +221,11 @@ export default function MultiSampleVariantBaseModelF(
       /**
        * #volatile
        */
-      treeCanvas: undefined as HTMLCanvasElement | undefined,
+      treeCanvas: null as HTMLCanvasElement | null,
       /**
        * #volatile
        */
-      mouseoverCanvas: undefined as HTMLCanvasElement | undefined,
+      mouseoverCanvas: null as HTMLCanvasElement | null,
       cellData: undefined as unknown,
       cellDataLoading: false,
       displayError: undefined as unknown,
@@ -336,13 +336,13 @@ export default function MultiSampleVariantBaseModelF(
        * #action
        */
       setTreeCanvasRef(ref: HTMLCanvasElement | null) {
-        self.treeCanvas = ref ?? undefined
+        self.treeCanvas = ref
       },
       /**
        * #action
        */
       setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
-        self.mouseoverCanvas = ref ?? undefined
+        self.mouseoverCanvas = ref
       },
       /**
        * #action

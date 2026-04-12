@@ -36,8 +36,8 @@ export interface TreeSidebarModel {
 }
 
 export interface TreeDrawingModel {
-  treeCanvas?: HTMLCanvasElement
-  mouseoverCanvas?: HTMLCanvasElement
+  treeCanvas?: HTMLCanvasElement | null
+  mouseoverCanvas?: HTMLCanvasElement | null
   hierarchy?: ClusterHierarchyNode
   treeAreaWidth: number
   height: number

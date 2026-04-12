@@ -70,8 +70,8 @@ export interface MultiWiggleDisplayModel {
   showRowSeparators: boolean
   subtreeFilter?: string[]
   hoveredTreeNode?: HoveredTreeNode
-  treeCanvas?: HTMLCanvasElement
-  mouseoverCanvas?: HTMLCanvasElement
+  treeCanvas?: HTMLCanvasElement | null
+  mouseoverCanvas?: HTMLCanvasElement | null
   featureUnderMouse?: {
     refName: string
     start: number

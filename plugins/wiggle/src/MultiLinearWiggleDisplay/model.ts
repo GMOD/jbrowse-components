@@ -121,8 +121,8 @@ export default function stateModelFactory(
       visibleScoreRange: undefined as [number, number] | undefined,
       loadedBpPerPx: new Map<number, number>(),
       hoveredTreeNode: undefined as HoveredTreeNode | undefined,
-      treeCanvas: undefined as HTMLCanvasElement | undefined,
-      mouseoverCanvas: undefined as HTMLCanvasElement | undefined,
+      treeCanvas: null as HTMLCanvasElement | null,
+      mouseoverCanvas: null as HTMLCanvasElement | null,
       featureUnderMouse: undefined as
         | {
             refName: string
@@ -425,11 +425,11 @@ export default function stateModelFactory(
       },
 
       setTreeCanvasRef(ref: HTMLCanvasElement | null) {
-        self.treeCanvas = ref ?? undefined
+        self.treeCanvas = ref
       },
 
       setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
-        self.mouseoverCanvas = ref ?? undefined
+        self.mouseoverCanvas = ref
       },
 
       setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {
