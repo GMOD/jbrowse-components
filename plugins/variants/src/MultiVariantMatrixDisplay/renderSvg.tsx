@@ -1,6 +1,8 @@
-import { getContainingView, measureText } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { when } from 'mobx'
+
+import SvgLabelRows from '../shared/components/SvgLabelRows.tsx'
 
 import type { MatrixCellData } from './components/computeVariantMatrixCells.ts'
 import type {
@@ -18,6 +20,7 @@ interface RenderSvgModel {
   rowHeight: number
   scrollTop: number
   availableHeight: number
+  canDisplayLabels: boolean
   sources: { name: string }[] | undefined
   hierarchy: ClusterHierarchyNode | undefined
   showTree: boolean
@@ -45,7 +48,7 @@ export async function renderSvg(
     numFeatures,
   } = cellData
 
-  const { rowHeight, scrollTop, availableHeight } = model
+  const { rowHeight, scrollTop, availableHeight, canDisplayLabels } = model
   const canvasWidth = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
   const colWidth = canvasWidth / numFeatures
 
@@ -76,36 +79,6 @@ export async function renderSvg(
   const sources = model.sources ?? []
   const { hierarchy, showTree, treeAreaWidth } = model
   const labelOffset = showTree && hierarchy ? treeAreaWidth : 0
-  let labelsEl: React.ReactNode = null
-  if (sources.length > 1) {
-    const labelWidth =
-      Math.max(...sources.map(s => measureText(s.name, 10))) + 10
-    labelsEl = (
-      <g transform={`translate(${labelOffset} 0)`}>
-        {sources.map((source, idx) => {
-          const y = idx * rowHeight - scrollTop
-          if (y + rowHeight < 0 || y > availableHeight) {
-            return null
-          }
-          const boxHeight = Math.min(20, rowHeight)
-          return (
-            <g key={source.name}>
-              <rect
-                x={0}
-                y={y}
-                width={labelWidth}
-                height={boxHeight}
-                fill="rgba(255,255,255,0.8)"
-              />
-              <text x={4} y={y + boxHeight / 2 + 3} fontSize={10}>
-                {source.name}
-              </text>
-            </g>
-          )
-        })}
-      </g>
-    )
-  }
 
   let treeEl: React.ReactNode = null
   if (showTree && hierarchy) {
@@ -127,7 +100,15 @@ export async function renderSvg(
   return (
     <>
       <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
-      {labelsEl}
+      {sources.length > 1 && canDisplayLabels ? (
+        <SvgLabelRows
+          sources={sources}
+          rowHeight={rowHeight}
+          scrollTop={scrollTop}
+          availableHeight={availableHeight}
+          labelOffset={labelOffset}
+        />
+      ) : null}
       {treeEl}
     </>
   )
