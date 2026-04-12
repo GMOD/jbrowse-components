@@ -109,7 +109,6 @@ export class GpuWiggleRenderer implements WiggleBackend {
       totalFeatures += source.numFeatures
     }
 
-    console.log('[GpuWiggleRenderer] uploadRegion', regionNumber, 'totalFeatures:', totalFeatures, 'sources:', sources.length)
     if (totalFeatures === 0 || sources.length === 0) {
       this.hal.deleteRegion(regionNumber)
       this.regionInfo.delete(regionNumber)
@@ -134,8 +133,6 @@ export class GpuWiggleRenderer implements WiggleBackend {
     const { canvasWidth, canvasHeight } = state
     const dpr = window.devicePixelRatio || 1
 
-    console.log('[GpuWiggleRenderer] renderBlocks', JSON.stringify({ blocks: blocks.length, canvasWidth, canvasHeight, dpr, domain: state.domainY }))
-
     this.hal.resize(canvasWidth, canvasHeight)
     this.hal.beginFrame(0, 0, 0, 0)
 
@@ -144,7 +141,6 @@ export class GpuWiggleRenderer implements WiggleBackend {
 
     for (const block of blocks) {
       const bufCount = this.hal.getBufferCount(block.regionNumber, PASS_FILL)
-      console.log('[GpuWiggleRenderer] block regionNumber:', block.regionNumber, 'bufCount:', bufCount)
       if (bufCount === 0) {
         continue
       }

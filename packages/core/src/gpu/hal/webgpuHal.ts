@@ -21,7 +21,10 @@ class ShaderCompileError extends Error {
 // aligned slot in the uniform ring buffer. 512 slots × 256-byte alignment =
 // 128 KB — negligible GPU memory for eliminating per-draw command submissions.
 const MAX_UNIFORM_SLOTS = 512
-const MSAA_SAMPLE_COUNT = 4
+// Set to 1 to disable MSAA (e.g. to debug Firefox compositor stalls).
+// All render-pass, texture, and pipeline setup is conditioned on this value,
+// so changing it will not cause a mismatch.
+const MSAA_SAMPLE_COUNT: 1 | 4 = 4
 
 function gpuBlendState(bs: BlendState): GPUBlendState {
   return {
@@ -132,7 +135,6 @@ async function compilePipelines(
   await Promise.all(
     descriptors.map(async desc => {
       const module = device.createShaderModule({ code: desc.wgslSource })
-      console.log(`[WebGPUHal] pass "${desc.id}": getCompilationInfo`)
       const info = await module.getCompilationInfo()
       const errors = info.messages.filter(m => m.type === 'error')
       if (errors.length > 0) {
@@ -156,7 +158,6 @@ async function compilePipelines(
       const pLayout = desc.textures?.length
         ? getOrCreateTexturedLayout(device, state).pipelineLayout
         : state.pipelineLayout
-      console.log(`[WebGPUHal] pass "${desc.id}": createRenderPipelineAsync format=${format}`)
       const pipeline = await device.createRenderPipelineAsync({
         layout: pLayout,
         vertex: { module, entryPoint: 'vs_main' },
@@ -166,7 +167,10 @@ async function compilePipelines(
           targets: [{ format, ...(blend && { blend }) }],
         },
         primitive: { topology: topo },
-        multisample: desc.picking ? undefined : { count: MSAA_SAMPLE_COUNT },
+        multisample:
+          desc.picking || MSAA_SAMPLE_COUNT === 1
+            ? undefined
+            : { count: MSAA_SAMPLE_COUNT },
       })
       pipelines.set(desc.id, pipeline)
     }),
@@ -274,7 +278,6 @@ export class WebGPUHal implements GpuHal {
     const ph = Math.round(height * dpr)
     const sizeChanged = this.canvas.width !== pw || this.canvas.height !== ph
     if (sizeChanged) {
-      console.log('[WebGPUHal] resize:', pw, 'x', ph, '(css:', width, 'x', height, 'dpr:', dpr, ')')
       this.canvas.width = pw
       this.canvas.height = ph
       this.canvas.style.width = `${width}px`
@@ -289,7 +292,7 @@ export class WebGPUHal implements GpuHal {
     this.msaaTexture?.destroy()
     this.msaaTexture = null
     this.msaaView = null
-    if (width > 0 && height > 0) {
+    if (MSAA_SAMPLE_COUNT > 1 && width > 0 && height > 0) {
       this.msaaTexture = this.device.createTexture({
         size: [width, height],
         format: navigator.gpu.getPreferredCanvasFormat(),
@@ -489,7 +492,7 @@ export class WebGPUHal implements GpuHal {
   }
 
   beginFrame(clearR: number, clearG: number, clearB: number, clearA = 1) {
-    if (!this.msaaView || this.canvas.width === 0 || this.canvas.height === 0) {
+    if (this.canvas.width === 0 || this.canvas.height === 0) {
       return
     }
     // Push error scopes so endFrame can report OOM/validation errors after submit.
@@ -503,16 +506,25 @@ export class WebGPUHal implements GpuHal {
     this.currentEncoder = this.device.createCommandEncoder()
     this.uniformSlot = 0
 
+    // With MSAA: render to multisampled texture, then resolve to the canvas texture.
+    // Without MSAA (MSAA_SAMPLE_COUNT === 1): render directly to the canvas texture.
+    const clearValue = { r: clearR, g: clearG, b: clearB, a: clearA }
     this.currentPass = this.currentEncoder.beginRenderPass({
       colorAttachments: [
-        {
-          view: this.msaaView,
-          resolveTarget: this.currentTextureView,
-          loadOp: 'clear',
-          // MSAA content is resolved into resolveTarget; no need to write it back.
-          storeOp: 'discard',
-          clearValue: { r: clearR, g: clearG, b: clearB, a: clearA },
-        },
+        this.msaaView
+          ? {
+              view: this.msaaView,
+              resolveTarget: this.currentTextureView,
+              loadOp: 'clear',
+              storeOp: 'discard',
+              clearValue,
+            }
+          : {
+              view: this.currentTextureView,
+              loadOp: 'clear',
+              storeOp: 'store',
+              clearValue,
+            },
       ],
     })
   }
@@ -576,9 +588,7 @@ export class WebGPUHal implements GpuHal {
       )
     }
     const slotAtSubmit = this.uniformSlot
-    console.log('[WebGPUHal] endFrame: submitting, uniformSlot:', slotAtSubmit)
     this.device.queue.submit([this.currentEncoder.finish()])
-    console.log('[WebGPUHal] endFrame: submitted')
 
     // Pop the error scopes pushed in beginFrame (after the early-return guard).
     void this.device.popErrorScope().then(err => {
@@ -599,15 +609,6 @@ export class WebGPUHal implements GpuHal {
         )
       }
     })
-    // Confirm the submitted work actually completes on the GPU. If this
-    // promise never resolves, the GPU timeline is stuck.
-    void this.device.queue.onSubmittedWorkDone().then(() => {
-      console.log(
-        '[WebGPUHal] endFrame: onSubmittedWorkDone fired, slot=',
-        slotAtSubmit,
-      )
-    })
-
     this.currentEncoder = null
     this.currentTextureView = null
   }
@@ -727,8 +728,6 @@ export class WebGPUHal implements GpuHal {
   }
 
   dispose() {
-    // eslint-disable-next-line no-console
-    console.log('[GPU] WebGPUHal.dispose() — releasing GPU resources')
     this.deleteAllRegions()
     this.uniformRingBuffer.destroy()
     for (const ts of this.passTextures.values()) {

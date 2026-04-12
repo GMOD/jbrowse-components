@@ -82,13 +82,9 @@ const WiggleComponent = observer(function WiggleComponent({
     }
 
     let lastDataMap: unknown = null
-    let autorunCount = 0
 
-    console.log('[WiggleComponent] creating autorun')
     return autorun(() => {
-      const fireIndex = ++autorunCount
       const dataMap = model.rpcDataMap
-      console.log('[WiggleComponent] autorun #' + fireIndex, JSON.stringify({ dataMapSize: dataMap.size, isLoading: model.isLoading, hasDomain: !!model.domain }))
 
       if (lastDataMap !== dataMap) {
         lastDataMap = dataMap
@@ -114,13 +110,9 @@ const WiggleComponent = observer(function WiggleComponent({
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _dv = model.dataVersion
 
-      const t0 = performance.now()
-      console.log('[WiggleComponent] calling renderNow #' + fireIndex)
       renderNow()
-      console.log('[WiggleComponent] renderNow #' + fireIndex + ' returned in ' + (performance.now() - t0).toFixed(1) + 'ms')
       if (dataMap.size > 0 && model.domain) {
         model.setCanvasDrawn(true)
-        console.log('[WiggleComponent] setCanvasDrawn(true) #' + fireIndex)
       }
     })
   }, [model, view, ready, rendererRef])

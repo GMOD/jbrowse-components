@@ -150,19 +150,14 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
   useEffect(() => {
     const renderer = rendererRef.current
-    console.log('[MultiWiggleComponent] useEffect, ready:', ready, 'renderer:', !!renderer)
     if (!renderer || !ready) {
       return
     }
 
     let lastDataMap: unknown = null
-    let autorunCount = 0
 
-    console.log('[MultiWiggleComponent] creating autorun')
     return autorun(() => {
-      const fireIndex = ++autorunCount
       const dataMap = model.rpcDataMap
-      console.log('[MultiWiggleComponent] autorun #' + fireIndex, JSON.stringify({ dataMapSize: dataMap.size, isLoading: model.isLoading, hasDomain: !!model.domain }))
 
       if (lastDataMap !== dataMap) {
         lastDataMap = dataMap
@@ -199,13 +194,9 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _dv = model.dataVersion
 
-      const t0 = performance.now()
-      console.log('[MultiWiggleComponent] calling renderNow #' + fireIndex)
       renderNow()
-      console.log('[MultiWiggleComponent] renderNow #' + fireIndex + ' returned in ' + (performance.now() - t0).toFixed(1) + 'ms')
       if (dataMap.size > 0 && model.domain) {
         model.setCanvasDrawn(true)
-        console.log('[MultiWiggleComponent] setCanvasDrawn(true) #' + fireIndex)
       }
     })
   }, [model, view, ready, rendererRef])
