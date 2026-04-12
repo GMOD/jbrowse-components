@@ -21,6 +21,17 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import {
+  adapterLabels,
+  adapterTypes,
+  detectAdapterType,
+  getAdapterConfig,
+  getAssemblyNameFromFilename,
+  getFilename,
+  isBlank,
+} from './util'
+
+import type { AdapterType } from './util'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 const { ipcRenderer } = window.require('electron')
@@ -43,56 +54,6 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 const blank = { uri: '' } as FileLocation
-
-function isBlank(location: FileLocation) {
-  return 'uri' in location && location.uri === ''
-}
-
-function getFilename(location: FileLocation) {
-  if ('uri' in location) {
-    return location.uri.split('/').pop() ?? ''
-  }
-  if ('localPath' in location) {
-    return location.localPath.split('/').pop() ?? ''
-  }
-  return ''
-}
-
-function getAssemblyNameFromFilename(filename: string) {
-  return filename
-    .replace(/\.(fa|fasta|fna)\.gz$/, '')
-    .replace(/\.(fa|fasta|fna)$/, '')
-    .replace(/\.2bit$/, '')
-}
-
-function detectAdapterType(filename: string): AdapterType | undefined {
-  if (/\.(fa|fasta|fna)\.gz$/.test(filename)) {
-    return 'BgzipFastaAdapter'
-  }
-  if (/\.2bit$/.test(filename)) {
-    return 'TwoBitAdapter'
-  }
-  if (/\.(fa|fasta|fna)$/.test(filename)) {
-    return 'IndexedFastaAdapter'
-  }
-  return undefined
-}
-
-const adapterTypes = [
-  'IndexedFastaAdapter',
-  'BgzipFastaAdapter',
-  'FastaAdapter',
-  'TwoBitAdapter',
-] as const
-
-type AdapterType = (typeof adapterTypes)[number]
-
-const adapterLabels: Record<AdapterType, string> = {
-  IndexedFastaAdapter: 'FASTA with index (.fa + .fai)',
-  BgzipFastaAdapter: 'Compressed FASTA (.fa.gz + .fai + .gzi)',
-  FastaAdapter: 'FASTA (index will be generated)',
-  TwoBitAdapter: '2bit file (.2bit)',
-}
 
 const AdapterSelector = observer(function AdapterSelector({
   adapterSelection,
@@ -267,16 +228,19 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
   const [showAdvanced, setShowAdvanced] = useState(false)
 
   function handlePrimaryFileChange(location: FileLocation) {
-    setFastaLocation(location)
     const filename = getFilename(location)
-    if (filename) {
-      const detected = detectAdapterType(filename)
+    const detected = filename ? detectAdapterType(filename) : undefined
+    if (detected === 'TwoBitAdapter') {
+      setTwoBitLocation(location)
+      setAdapterSelection('TwoBitAdapter')
+    } else {
+      setFastaLocation(location)
       if (detected) {
         setAdapterSelection(detected)
       }
-      if (!assemblyName) {
-        setAssemblyName(getAssemblyNameFromFilename(filename))
-      }
+    }
+    if (filename && !assemblyName) {
+      setAssemblyName(getAssemblyNameFromFilename(filename))
     }
   }
 
@@ -300,55 +264,15 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
     setAssemblyDisplayName('')
   }
 
-  function getAdapterConfig() {
-    if (adapterSelection === 'FastaAdapter') {
-      if (isBlank(fastaLocation)) {
-        throw new Error('FASTA location is required')
-      }
-      return {
-        type: 'IndexedFastaAdapter',
-        fastaLocation,
-        needsIndexing: true,
-      }
-    }
-    if (adapterSelection === 'IndexedFastaAdapter') {
-      if (isBlank(fastaLocation) || isBlank(faiLocation)) {
-        throw new Error('Both FASTA and FAI locations are required')
-      }
-      return {
-        type: 'IndexedFastaAdapter',
-        fastaLocation,
-        faiLocation,
-      }
-    }
-    if (adapterSelection === 'BgzipFastaAdapter') {
-      if (
-        isBlank(fastaLocation) ||
-        isBlank(faiLocation) ||
-        isBlank(gziLocation)
-      ) {
-        throw new Error('FASTA, FAI, and GZI locations are all required')
-      }
-      return {
-        type: 'BgzipFastaAdapter',
-        fastaLocation,
-        faiLocation,
-        gziLocation,
-      }
-    }
-    // adapterSelection === 'TwoBitAdapter' at this point
-    if (isBlank(twoBitLocation)) {
-      throw new Error('2bit location is required')
-    }
-    return {
-      type: 'TwoBitAdapter',
+  async function createAssemblyConfig() {
+    const raw = getAdapterConfig({
+      adapterSelection,
+      fastaLocation,
+      faiLocation,
+      gziLocation,
       twoBitLocation,
       chromSizesLocation,
-    }
-  }
-
-  async function createAssemblyConfig() {
-    const raw = getAdapterConfig()
+    })
     let adapter
     if (raw.needsIndexing) {
       setLoading('Creating .fai file for FASTA')
