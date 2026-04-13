@@ -107,7 +107,6 @@ export function extractFeatureArrays<T extends FeatureData>(
     )
 
     if (colorBy?.type === 'methylation' && modData) {
-      const beforeLen = modifications.length
       extractMethylation(
         featureId,
         featureStart,
@@ -116,9 +115,6 @@ export function extractFeatureArrays<T extends FeatureData>(
         Math.ceil(region.end),
         modData,
         modifications,
-      )
-      console.log(
-        `[methylation] featureId=${featureId} start=${featureStart} strand=${strand} added=${modifications.length - beforeLen} total=${modifications.length} modData.mods=${modData.modifications.length} flen=${modData.flen}`,
       )
     }
   }

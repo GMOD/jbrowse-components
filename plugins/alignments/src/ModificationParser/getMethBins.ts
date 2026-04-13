@@ -107,10 +107,5 @@ export function getMethBins({
     }
   }
 
-  const totalCpgCount = methBins.filter(Boolean).length
-  console.log(
-    `[getMethBins] fstrand=${fstrand} flen=${flen} mmCpGs=${mmCpgCount} scanCpGs=${totalCpgCount - mmCpgCount} total=${totalCpgCount}`,
-  )
-
   return { methBins, hydroxyMethBins, methProbs, hydroxyMethProbs }
 }
