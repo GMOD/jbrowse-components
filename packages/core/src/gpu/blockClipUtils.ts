@@ -1,6 +1,6 @@
 import { splitPositionWithFrac } from './webglUtils.ts'
 
-export interface RenderBlock {
+interface ClipBlock {
   screenStartPx: number
   screenEndPx: number
   bpRangeX: [number, number]
@@ -37,7 +37,7 @@ export function writeBpRangeUniforms(
 }
 
 export function clipBlock(
-  block: RenderBlock,
+  block: ClipBlock,
   canvasWidth: number,
   canvasHeight: number,
   dpr: number,

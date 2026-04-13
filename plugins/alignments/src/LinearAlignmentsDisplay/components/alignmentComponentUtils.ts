@@ -470,7 +470,7 @@ export function formatFeatureTooltip(
 export function uploadRegionDataToGPU(
   renderer: AlignmentsBackend,
   rpcDataMap: Map<number, PileupDataResult>,
-  lastUploaded: Map<number, PileupDataResult>,
+  lastUploaded: Map<number, unknown>,
 ) {
   let maxYVal = 0
   const activeRegions: number[] = []

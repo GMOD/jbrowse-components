@@ -544,8 +544,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
     let lastRpcDataMap: Map<number, PileupDataResult> | null = null
     let lastArcsDataMap: Map<number, unknown> | null = null
-    const lastUploaded = new Map<number, PileupDataResult>()
-    const lastConnectingUploaded = new Map<number, PileupDataResult>()
+    const lastUploaded = new Map<number, unknown>()
+    const lastConnectingUploaded = new Map<number, unknown>()
     const lastArcsUploaded = new Map<number, unknown>()
 
     return autorun(() => {
