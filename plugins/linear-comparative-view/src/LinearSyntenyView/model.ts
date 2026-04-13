@@ -253,10 +253,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Show all regions',
               onClick: self.showAllRegions,
-              description: 'Show entire genome assemblies',
               icon: VisibilityIcon,
-              helpText:
-                'This command will zoom out all views to display the entire genome assemblies. This is useful when you want to get a high-level overview of syntenic relationships across whole genomes or when you need to reset the view after zooming into specific regions.',
             },
             {
               label: 'Show dynamic controls',
@@ -265,37 +262,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               onClick: () => {
                 self.setShowDynamicControls(!self.showDynamicControls)
               },
-              helpText:
-                'Toggle visibility of dynamic controls like opacity and minimum length sliders. These controls allow you to adjust synteny visualization parameters in real-time.',
-            },
-            {
-              label: 'CIGAR display mode',
-              subMenu: [
-                {
-                  label: 'Colorize indels',
-                  type: 'radio',
-                  checked: self.cigarMode === 'full',
-                  onClick: () => {
-                    self.setCigarMode('full')
-                  },
-                },
-                {
-                  label: "Don't colorize indels",
-                  type: 'radio',
-                  checked: self.cigarMode === 'matches',
-                  onClick: () => {
-                    self.setCigarMode('matches')
-                  },
-                },
-                {
-                  label: "Don't draw CIGAR",
-                  type: 'radio',
-                  checked: self.cigarMode === 'off',
-                  onClick: () => {
-                    self.setCigarMode('off')
-                  },
-                },
-              ],
             },
             {
               label: 'Show curved lines',
@@ -305,8 +271,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               onClick: () => {
                 self.setDrawCurves(!self.drawCurves)
               },
-              helpText:
-                'Toggle between straight lines and smooth bezier curves for synteny connections. Curved lines can make the visualization more aesthetically pleasing and may help reduce visual clutter when many syntenic regions are displayed. Straight lines provide a more direct representation.',
             },
             {
               label: 'Chain collinear alignments',
@@ -315,20 +279,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               onClick: () => {
                 self.setChainMerge(!self.chainMerge)
               },
-              helpText:
-                'Merge adjacent collinear alignment fragments into single blocks. This reduces visual noise from fragmented alignments (e.g. minimap2 whole-genome output) by bundling nearby same-strand alignments on the same chromosome pair into clean ribbons. The merge distance adapts to the current zoom level.',
             },
             {
               label: 'Show location markers',
               type: 'checkbox',
               checked: self.drawLocationMarkers,
-              description:
-                'Draw periodic markers to show location within large matches',
               onClick: () => {
                 self.setDrawLocationMarkers(!self.drawLocationMarkers)
               },
-              helpText:
-                'Location markers add periodic visual indicators along long syntenic blocks, helping you track position and scale within large conserved regions. This is particularly useful when examining very long syntenic matches where it can be difficult to gauge relative position.',
             },
           ]
         },
@@ -426,6 +384,35 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   },
                 ]
               : []),
+            {
+              label: 'CIGAR display mode',
+              subMenu: [
+                {
+                  label: 'Colorize indels',
+                  type: 'radio',
+                  checked: self.cigarMode === 'full',
+                  onClick: () => {
+                    self.setCigarMode('full')
+                  },
+                },
+                {
+                  label: "Don't colorize indels",
+                  type: 'radio',
+                  checked: self.cigarMode === 'matches',
+                  onClick: () => {
+                    self.setCigarMode('matches')
+                  },
+                },
+                {
+                  label: "Don't draw CIGAR",
+                  type: 'radio',
+                  checked: self.cigarMode === 'off',
+                  onClick: () => {
+                    self.setCigarMode('off')
+                  },
+                },
+              ],
+            },
             {
               label: 'Link views',
               type: 'checkbox',
