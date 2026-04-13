@@ -67,11 +67,11 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
   }, [config, rpcManager, trackId, assemblyNames])
 
   const result = (refNames ?? [])
-    .flatMap(([assemblyName, refNames]) => {
+    .flatMap(([assemblyName, names]) => {
       return [
         `--- ${assemblyName} ---`,
-        ...refNames.slice(0, MAX_REF_NAMES),
-        refNames.length > MAX_REF_NAMES
+        ...names.slice(0, MAX_REF_NAMES),
+        names.length > MAX_REF_NAMES
           ? `\nToo many refNames to show in browser for ${assemblyName}, use "Copy ref names" button to copy to clipboard`
           : '',
       ]
@@ -99,9 +99,9 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
                 const { default: copy } = await import('copy-to-clipboard')
                 copy(
                   refNames
-                    .flatMap(([assemblyName, refNames]) => [
+                    .flatMap(([assemblyName, names]) => [
                       `--- ${assemblyName} ---`,
-                      ...refNames,
+                      ...names,
                     ])
                     .filter(f => !!f)
                     .join('\n'),

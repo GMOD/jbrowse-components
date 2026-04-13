@@ -241,7 +241,8 @@ export function insertInSubMenu({
     }
     subMenu = sm.subMenu
   }
-  subMenu.splice(position, 0, menuItem)
+  const insertPosition = position < 0 ? subMenu.length + position : position
+  subMenu.splice(insertPosition, 0, menuItem)
   return subMenu.length
 }
 

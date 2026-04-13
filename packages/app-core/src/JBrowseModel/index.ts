@@ -105,7 +105,7 @@ export function JBrowseModelF({
        */
       deleteConnectionConf(configuration: AnyConfigurationModel) {
         const elt = self.connections.find(conn => conn.id === configuration.id)
-        return self.connections.remove(elt)
+        return elt ? self.connections.remove(elt) : false
       },
       /**
        * #action
@@ -181,7 +181,7 @@ export function JBrowseModelF({
        */
       deleteInternetAccountConf(configuration: AnyConfigurationModel) {
         const elt = self.internetAccounts.find(a => a.id === configuration.id)
-        return self.internetAccounts.remove(elt)
+        return elt ? self.internetAccounts.remove(elt) : false
       },
     }))
 }

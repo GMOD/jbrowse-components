@@ -20,10 +20,16 @@ const DrawerWidget = observer(function DrawerWidget({
   const { visibleWidget } = session
   const { pluginManager } = getEnv(session)
 
-  const DrawerComponent = visibleWidget
+  const widgetType = visibleWidget
+    ? pluginManager.getWidgetType(visibleWidget.type)
+    : null
+  if (visibleWidget && !widgetType) {
+    throw new Error(`unknown widget type ${visibleWidget.type}`)
+  }
+  const DrawerComponent = widgetType
     ? (pluginManager.evaluateExtensionPoint(
         'Core-replaceWidget',
-        pluginManager.getWidgetType(visibleWidget.type)!.ReactComponent,
+        widgetType.ReactComponent,
         {
           session,
           model: visibleWidget,

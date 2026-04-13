@@ -372,7 +372,7 @@ export function BaseWebSession({
       getTrackActions(config: BaseTrackConfig): MenuItem[] {
         const { adminMode, sessionTracks } = self
         const canEdit =
-          adminMode || sessionTracks.find(t => t.trackId === config.trackId)
+          adminMode || sessionTracks.some(t => t.trackId === config.trackId)
         const isRefSeq = config.type === 'ReferenceSequenceTrack'
         return [
           {
@@ -500,7 +500,6 @@ export function BaseWebSession({
           self,
           autorun(
             function sessionLocalStorageAutorun() {
-              localStorageSetItem('drawerPosition', self.drawerPosition)
               localStorageSetItem('themeName', self.themeName)
             },
             { name: 'SessionLocalStorage' },

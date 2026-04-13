@@ -36,9 +36,11 @@ const DrawerAppBar = observer(function DrawerAppBar({
   if (!visibleWidget) {
     return null
   }
-  const { HeadingComponent, heading } = pluginManager.getWidgetType(
-    visibleWidget.type,
-  )
+  const widgetType = pluginManager.getWidgetType(visibleWidget.type)
+  if (!widgetType) {
+    throw new Error(`unknown widget type ${visibleWidget.type}`)
+  }
+  const { HeadingComponent, heading } = widgetType
 
   return (
     <AppBar position="static">
@@ -70,7 +72,11 @@ const ModalWidget = observer(function ModalWidget({
   if (!visibleWidget) {
     return null
   }
-  const { ReactComponent } = pluginManager.getWidgetType(visibleWidget.type)
+  const widgetType = pluginManager.getWidgetType(visibleWidget.type)
+  if (!widgetType) {
+    throw new Error(`unknown widget type ${visibleWidget.type}`)
+  }
+  const { ReactComponent } = widgetType
   const Component = pluginManager.evaluateExtensionPoint(
     'Core-replaceWidget',
     ReactComponent,

@@ -69,7 +69,12 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
           description: '',
           domains: hostUri ? [hostUri] : [],
         }
-        const type = pluginManager.getInternetAccountType(configuration.type)!
+        const type = pluginManager.getInternetAccountType(configuration.type)
+        if (!type) {
+          throw new Error(
+            `unknown internet account type ${configuration.type}`,
+          )
+        }
         const internetAccount = type.stateModel.create({
           ...initialSnapshot,
           type: configuration.type,
@@ -115,7 +120,15 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
             function internetAccountsAutorun() {
               const { jbrowse } = self as typeof self & BaseRootModel
               for (const internetAccount of jbrowse.internetAccounts) {
-                self.initializeInternetAccount(internetAccount)
+                if (
+                  !self.internetAccounts.some(
+                    a =>
+                      a.internetAccountId ===
+                      internetAccount.internetAccountId,
+                  )
+                ) {
+                  self.initializeInternetAccount(internetAccount)
+                }
               }
             },
             { name: 'InternetAccounts' },

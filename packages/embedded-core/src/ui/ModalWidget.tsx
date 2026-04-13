@@ -26,8 +26,11 @@ const ModalWidget = observer(function ModalWidget({
   if (!visibleWidget) {
     return null
   }
-  const { ReactComponent, HeadingComponent, heading } =
-    pluginManager.getWidgetType(visibleWidget.type)
+  const widgetType = pluginManager.getWidgetType(visibleWidget.type)
+  if (!widgetType) {
+    throw new Error(`unknown widget type ${visibleWidget.type}`)
+  }
+  const { ReactComponent, HeadingComponent, heading } = widgetType
 
   const Component = pluginManager.evaluateExtensionPoint(
     'Core-replaceWidget',
