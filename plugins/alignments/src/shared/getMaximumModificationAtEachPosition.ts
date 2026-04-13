@@ -1,5 +1,6 @@
 import { getNextRefPos } from '../MismatchParser/index.ts'
-import { getModPositions } from '../ModificationParser/getModPositions.ts'
+
+import type { getModPositions } from '../ModificationParser/getModPositions.ts'
 
 export function getMaxProbModAtEachPosition(
   modifications: ReturnType<typeof getModPositions>,
@@ -7,7 +8,11 @@ export function getMaxProbModAtEachPosition(
   ops: ArrayLike<number>,
   fstrand: -1 | 0 | 1,
 ) {
-  const maxProbModForPosition = [] as { type: string; base: string; prob: number }[]
+  const maxProbModForPosition = [] as {
+    type: string
+    base: string
+    prob: number
+  }[]
   let probIndex = 0
   for (const { type, base, positions } of modifications) {
     for (const { ref, idx } of getNextRefPos(ops, positions)) {

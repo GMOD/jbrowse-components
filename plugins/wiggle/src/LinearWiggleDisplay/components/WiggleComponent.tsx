@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
 
-import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
 import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { uploadChangedRegions } from '@jbrowse/core/gpu/uploadChangedRegions'
+import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
 import {
   getContainingView,
   useGpuRenderer,
@@ -89,9 +89,17 @@ const WiggleComponent = observer(function WiggleComponent({
           renderer.pruneRegions([])
           lastUploaded.clear()
         } else {
-          const activeRegions = uploadChangedRegions(dataMap, lastUploaded, (regionNumber, data) => {
-            renderer.uploadRegion(regionNumber, data.regionStart, buildSourceRenderData(data, model))
-          })
+          const activeRegions = uploadChangedRegions(
+            dataMap,
+            lastUploaded,
+            (regionNumber, data) => {
+              renderer.uploadRegion(
+                regionNumber,
+                data.regionStart,
+                buildSourceRenderData(data, model),
+              )
+            },
+          )
           renderer.pruneRegions(activeRegions)
         }
       }

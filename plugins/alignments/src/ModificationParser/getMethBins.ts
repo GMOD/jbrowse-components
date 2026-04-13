@@ -1,5 +1,6 @@
-import { getModPositions } from './getModPositions.ts'
 import { getNextRefPos } from '../MismatchParser/index.ts'
+
+import type { getModPositions } from './getModPositions.ts'
 
 export interface ParsedModData {
   modifications: ReturnType<typeof getModPositions>
@@ -44,10 +45,14 @@ export function getMethBins({
       const pos = positions[idx]!
       if (isReverse) {
         const nb = seq[pos - 1]
-        if (nb !== 'C' && nb !== 'c') continue
+        if (nb !== 'C' && nb !== 'c') {
+          continue
+        }
       } else {
         const nb = seq[pos + 1]
-        if (nb !== 'G' && nb !== 'g') continue
+        if (nb !== 'G' && nb !== 'g') {
+          continue
+        }
       }
 
       const idx2 = probIndex + (isReverse ? positions.length - 1 - idx : idx)

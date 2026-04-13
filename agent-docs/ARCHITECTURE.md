@@ -32,11 +32,11 @@ The unit of work for a single render call:
 
 ```ts
 interface RenderBlock {
-  regionNumber: number        // index into the GPU buffer map
+  regionNumber: number // index into the GPU buffer map
   bpRangeX: [number, number] // [start, end] in absolute genomic bp
-  screenStartPx: number      // left edge of this region on screen (CSS px)
-  screenEndPx: number        // right edge
-  reversed: boolean          // strand orientation
+  screenStartPx: number // left edge of this region on screen (CSS px)
+  screenEndPx: number // right edge
+  reversed: boolean // strand orientation
 }
 ```
 
@@ -84,9 +84,9 @@ screen coordinates into physical-pixel scissor/viewport rectangles and
 high-precision BP range fields needed by the vertex shader. Returns `null` if
 the block is entirely off-screen.
 
-`writeBpRangeUniforms(uniformF32, clip, reversed)` writes the first three
-floats of the uniform buffer: `[bpStartHi, bpStartLo, ±clippedLengthBp]`.
-Negative length signals the shader to render right-to-left for reversed blocks.
+`writeBpRangeUniforms(uniformF32, clip, reversed)` writes the first three floats
+of the uniform buffer: `[bpStartHi, bpStartLo, ±clippedLengthBp]`. Negative
+length signals the shader to render right-to-left for reversed blocks.
 
 The BP range is split into hi/lo components to avoid floating-point precision
 loss at genome scale (positions up to ~3×10⁹ bp). The vertex shader's
@@ -101,7 +101,7 @@ interface Canvas2DRenderBlock {
   screenStartPx: number
   screenEndPx: number
   bpRangeX: [number, number]
-  reversed?: boolean  // optional — not all Canvas2D paths need it
+  reversed?: boolean // optional — not all Canvas2D paths need it
 }
 ```
 
@@ -124,6 +124,7 @@ createGpuHal(canvas, passes, uniformByteSize)
 ```
 
 Key GpuHal methods:
+
 - `uploadBuffer(regionKey, passId, data, count)` — write instance data for a
   region/pass
 - `drawPass(passId, regionKey, bufferPassId?)` — emit draw call; `bufferPassId`
@@ -153,8 +154,8 @@ interface XxxBackend {
 }
 ```
 
-The `state` parameter carries per-frame uniforms (domain, scale type,
-canvas dimensions, scroll offset, etc.) that do not change per-region.
+The `state` parameter carries per-frame uniforms (domain, scale type, canvas
+dimensions, scroll offset, etc.) that do not change per-region.
 
 Each plugin also defines a renderer factory:
 
@@ -165,7 +166,7 @@ export function XxxRenderer(canvas: HTMLCanvasElement) {
     XXX_PASSES,
     XXX_UNIFORM_BYTE_SIZE,
     hal => new GpuXxxRenderer(hal),
-    c  => new Canvas2DXxxRenderer(c),
+    c => new Canvas2DXxxRenderer(c),
   )
 }
 ```
@@ -179,12 +180,12 @@ constructed. Otherwise the Canvas2D backend is used. Display components call
 
 Each plugin re-exports `RenderBlock` under its own alias for in-plugin clarity:
 
-| Plugin | Alias | Source |
-|--------|-------|--------|
-| wiggle | `WiggleRenderBlock` | `@jbrowse/core/gpu/renderBlock` |
-| canvas | `FeatureRenderBlock` | `@jbrowse/core/gpu/renderBlock` |
-| variants | `VariantRenderBlock` | `@jbrowse/core/gpu/renderBlock` |
-| alignments | `RenderBlock` | `@jbrowse/core/gpu/renderBlock` (direct) |
+| Plugin     | Alias                | Source                                   |
+| ---------- | -------------------- | ---------------------------------------- |
+| wiggle     | `WiggleRenderBlock`  | `@jbrowse/core/gpu/renderBlock`          |
+| canvas     | `FeatureRenderBlock` | `@jbrowse/core/gpu/renderBlock`          |
+| variants   | `VariantRenderBlock` | `@jbrowse/core/gpu/renderBlock`          |
+| alignments | `RenderBlock`        | `@jbrowse/core/gpu/renderBlock` (direct) |
 
 These are type-only re-exports. Structurally they are all `RenderBlock`.
 
@@ -239,6 +240,7 @@ label overlay computed during the same render cycle.
 `dynamicBlocks.contentBlocks` array. It is stable for a given view state.
 
 It serves as the join key across:
+
 - `model.rpcDataMap: Map<number, T>` — data from the RPC worker
 - `hal.uploadBuffer(regionNumber, passId, ...)` — GPU buffer storage
 - `RenderBlock.regionNumber` — which buffer to draw in `renderBlocks`
@@ -274,12 +276,13 @@ optimizing the subtraction into a single-precision operation.
 ## Shader sync (WGSL ↔ GLSL)
 
 Each plugin maintains two shader files:
+
 - `*Shader.ts` (WGSL for WebGPU)
 - `*GlslShaders.ts` (GLSL for WebGL2)
 
 They must be kept in sync manually. The `compile-shader-utils` script
-(referenced in `CLAUDE.md`) recompiles GLSL from WGSL when a shader changes.
-The uniform struct layout and byte offsets must match `*Renderer.ts` exactly.
+(referenced in `CLAUDE.md`) recompiles GLSL from WGSL when a shader changes. The
+uniform struct layout and byte offsets must match `*Renderer.ts` exactly.
 
 Canvas uniforms are CSS pixels (`canvas_width`, `canvas_height`). The HAL
 manages the `css * dpr` backing store, so shaders do NOT scale by
@@ -300,8 +303,9 @@ manages the `css * dpr` backing store, so shaders do NOT scale by
      - Watch `model.rpcDataMap`; call `uploadChangedRegions` + `pruneRegions`.
      - Read `model.dataVersion` to create the sync dependency.
      - Call `renderNow()`.
-   - `renderNow` calls `renderer.renderBlocks(buildRenderBlocks(view.visibleRegions), state)`.
+   - `renderNow` calls
+     `renderer.renderBlocks(buildRenderBlocks(view.visibleRegions), state)`.
    - `useTabVisibilityRerender(renderNow)` for tab visibility re-renders.
-7. Make the model multi-region: use `Map<number, MyData>` for `rpcDataMap`,
-   not a single `MyData`. Single-region displays are a degenerate case
-   (HiC and LD are pending migration to the multi-region pattern).
+7. Make the model multi-region: use `Map<number, MyData>` for `rpcDataMap`, not
+   a single `MyData`. Single-region displays are a degenerate case (HiC and LD
+   are pending migration to the multi-region pattern).

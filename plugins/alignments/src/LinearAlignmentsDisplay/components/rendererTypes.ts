@@ -1,7 +1,7 @@
 import type { ColorPalette } from './shaders/colors.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
-export type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 export type { ColorPalette, RGBColor } from './shaders/colors.ts'
 
 export interface RenderState {
@@ -38,7 +38,6 @@ export interface RenderState {
   pileupTopOffset: number
   showOutline?: boolean
 }
-
 
 export interface ReadUploadData {
   regionStart: number
@@ -156,3 +155,5 @@ export interface AlignmentsBackend {
   renderBlocks(blocks: RenderBlock[], state: RenderState): void
   dispose(): void
 }
+
+export type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'

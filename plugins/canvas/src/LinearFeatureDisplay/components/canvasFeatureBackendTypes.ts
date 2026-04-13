@@ -1,5 +1,5 @@
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
 export type { RenderBlock as FeatureRenderBlock } from '@jbrowse/core/gpu/renderBlock'
 

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
 
-import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
 import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { uploadChangedRegions } from '@jbrowse/core/gpu/uploadChangedRegions'
+import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
 import {
   getContainingView,
   useGpuRenderer,
@@ -164,21 +164,25 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
           const { summaryScoreMode, renderingType, isDensityMode } = model
           const defaultPosColor = parseColor(model.posColor)
           const defaultNegColor = parseColor(model.negColor)
-          const activeRegions = uploadChangedRegions(dataMap, lastUploaded, (regionNumber, data) => {
-            renderer.uploadRegion(
-              regionNumber,
-              data.regionStart,
-              buildMultiSourceRenderData(
-                data,
-                model.sources,
-                defaultPosColor,
-                defaultNegColor,
-                summaryScoreMode,
-                renderingType,
-                isDensityMode,
-              ),
-            )
-          })
+          const activeRegions = uploadChangedRegions(
+            dataMap,
+            lastUploaded,
+            (regionNumber, data) => {
+              renderer.uploadRegion(
+                regionNumber,
+                data.regionStart,
+                buildMultiSourceRenderData(
+                  data,
+                  model.sources,
+                  defaultPosColor,
+                  defaultNegColor,
+                  summaryScoreMode,
+                  renderingType,
+                  isDensityMode,
+                ),
+              )
+            },
+          )
           renderer.pruneRegions(activeRegions)
         }
       }

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
 import BaseResult, {
   RefSequenceResult,
@@ -7,7 +8,6 @@ import { getSession, measureText, useDebounce } from '@jbrowse/core/util'
 import { Autocomplete, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { CSSProperties, ReactNode } from 'react'
 import type { LinearGenomeViewModel } from '../../model.ts'
 
 interface Option {

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
+import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
+import { uploadChangedRegions } from '@jbrowse/core/gpu/uploadChangedRegions'
 import {
   getContainingView,
   useGpuRenderer,
@@ -9,8 +11,6 @@ import {
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 
-import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
-import { uploadChangedRegions } from '@jbrowse/core/gpu/uploadChangedRegions'
 import { AlignmentsRenderer } from './AlignmentsRenderer.ts'
 import {
   buildColorPaletteFromTheme,
@@ -36,8 +36,8 @@ import type {
   IndicatorHitResult,
   ResolvedBlock,
 } from './hitTesting.ts'
-import type { ArcsDataResult } from '../../shared/computeArcsFromPileupData.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { ArcsDataResult } from '../../shared/computeArcsFromPileupData.ts'
 import type {
   LegendItem,
   LinearGenomeViewModel,
@@ -502,39 +502,36 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       return
     }
     const regions = view.visibleRegions
-    renderer.renderBlocks(
-      buildRenderBlocks(regions),
-      {
-        rangeY: model.currentRangeY,
-        colorScheme: model.colorSchemeIndex,
-        featureHeight: model.featureHeightSetting,
-        featureSpacing: model.featureSpacing,
-        showCoverage: model.showCoverage,
-        coverageHeight: model.coverageHeight,
-        coverageYOffset: YSCALEBAR_LABEL_OFFSET,
-        coverageNicedMax: model.coverageTicks?.nicedMax,
-        showMismatches: model.showMismatches,
-        showSoftClipping: model.showSoftClipping,
-        showInterbaseIndicators: model.showInterbaseIndicators,
-        showModifications: model.showModifications,
-        showOutline: model.showOutlineSetting,
-        showArcs: model.showArcs,
-        arcsHeight: model.arcsHeight,
-        pairedArcsDown: model.pairedArcsDown,
-        pileupTopOffset: model.coverageDisplayHeight,
-        canvasWidth: view.width,
-        canvasHeight: model.height,
-        highlightedFeatureId: model.featureIdUnderMouse,
-        selectedFeatureId: model.selectedFeatureId,
-        highlightedChainIds: model.highlightedChainIds,
-        selectedChainIds: model.selectedChainIds,
-        colors: palette,
-        renderingMode: model.renderingMode,
-        flipStrandLongReadChains: model.flipStrandLongReadChains,
-        arcLineWidth: model.arcsState.lineWidth,
-        bpRangeX: [0, 0],
-      },
-    )
+    renderer.renderBlocks(buildRenderBlocks(regions), {
+      rangeY: model.currentRangeY,
+      colorScheme: model.colorSchemeIndex,
+      featureHeight: model.featureHeightSetting,
+      featureSpacing: model.featureSpacing,
+      showCoverage: model.showCoverage,
+      coverageHeight: model.coverageHeight,
+      coverageYOffset: YSCALEBAR_LABEL_OFFSET,
+      coverageNicedMax: model.coverageTicks?.nicedMax,
+      showMismatches: model.showMismatches,
+      showSoftClipping: model.showSoftClipping,
+      showInterbaseIndicators: model.showInterbaseIndicators,
+      showModifications: model.showModifications,
+      showOutline: model.showOutlineSetting,
+      showArcs: model.showArcs,
+      arcsHeight: model.arcsHeight,
+      pairedArcsDown: model.pairedArcsDown,
+      pileupTopOffset: model.coverageDisplayHeight,
+      canvasWidth: view.width,
+      canvasHeight: model.height,
+      highlightedFeatureId: model.featureIdUnderMouse,
+      selectedFeatureId: model.selectedFeatureId,
+      highlightedChainIds: model.highlightedChainIds,
+      selectedChainIds: model.selectedChainIds,
+      colors: palette,
+      renderingMode: model.renderingMode,
+      flipStrandLongReadChains: model.flipStrandLongReadChains,
+      arcLineWidth: model.arcsState.lineWidth,
+      bpRangeX: [0, 0],
+    })
   }, [model, view, rendererRef])
 
   useEffect(() => {
@@ -554,45 +551,57 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
       if (lastRpcDataMap !== rpcDataMap) {
         lastRpcDataMap = rpcDataMap
-        const maxYVal = uploadRegionDataToGPU(renderer, rpcDataMap, lastUploaded)
+        const maxYVal = uploadRegionDataToGPU(
+          renderer,
+          rpcDataMap,
+          lastUploaded,
+        )
         if (maxYVal > 0) {
           model.setMaxY(maxYVal)
         }
-        uploadChangedRegions(rpcDataMap, lastConnectingUploaded, (regionNumber, data) => {
-          if (
-            data.connectingLinePositions &&
-            data.connectingLineYs &&
-            data.connectingLineColorTypes &&
-            data.numConnectingLines
-          ) {
-            renderer.uploadConnectingLinesForRegion(regionNumber, {
-              regionStart: data.regionStart,
-              connectingLinePositions: data.connectingLinePositions,
-              connectingLineYs: data.connectingLineYs,
-              connectingLineColorTypes: data.connectingLineColorTypes,
-              numConnectingLines: data.numConnectingLines,
-            })
-          }
-        })
+        uploadChangedRegions(
+          rpcDataMap,
+          lastConnectingUploaded,
+          (regionNumber, data) => {
+            if (
+              data.connectingLinePositions &&
+              data.connectingLineYs &&
+              data.connectingLineColorTypes &&
+              data.numConnectingLines
+            ) {
+              renderer.uploadConnectingLinesForRegion(regionNumber, {
+                regionStart: data.regionStart,
+                connectingLinePositions: data.connectingLinePositions,
+                connectingLineYs: data.connectingLineYs,
+                connectingLineColorTypes: data.connectingLineColorTypes,
+                numConnectingLines: data.numConnectingLines,
+              })
+            }
+          },
+        )
       }
 
       const arcsRpcDataMap = model.arcsState.rpcDataMap
       if (lastArcsDataMap !== arcsRpcDataMap) {
         lastArcsDataMap = arcsRpcDataMap
-        uploadChangedRegions(arcsRpcDataMap, lastArcsUploaded, (regionNumber, data) => {
-          renderer.uploadArcsFromTypedArraysForRegion(regionNumber, {
-            regionStart: data.regionStart,
-            arcX1: data.arcX1,
-            arcX2: data.arcX2,
-            arcColorTypes: data.arcColorTypes,
-            arcIsArc: data.arcIsArc,
-            numArcs: data.numArcs,
-            linePositions: data.linePositions,
-            lineYs: data.lineYs,
-            lineColorTypes: data.lineColorTypes,
-            numLines: data.numLines,
-          })
-        })
+        uploadChangedRegions(
+          arcsRpcDataMap,
+          lastArcsUploaded,
+          (regionNumber, data) => {
+            renderer.uploadArcsFromTypedArraysForRegion(regionNumber, {
+              regionStart: data.regionStart,
+              arcX1: data.arcX1,
+              arcX2: data.arcX2,
+              arcColorTypes: data.arcColorTypes,
+              arcIsArc: data.arcIsArc,
+              numArcs: data.numArcs,
+              linePositions: data.linePositions,
+              lineYs: data.lineYs,
+              lineColorTypes: data.lineColorTypes,
+              numLines: data.numLines,
+            })
+          },
+        )
       }
 
       // SYNC across all hook-driven GPU displays (wiggle, multi-wiggle,

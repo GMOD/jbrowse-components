@@ -1,7 +1,7 @@
 import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
 
-import { ErrorBar, ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
+import { ErrorBar, ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
   getContainingView,

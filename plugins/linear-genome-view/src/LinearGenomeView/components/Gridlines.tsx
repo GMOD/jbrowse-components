@@ -132,7 +132,11 @@ export default function Gridlines({
 
       for (const [i, nonContentBlock] of nonContentBlocks.entries()) {
         const blockLeft = nonContentBlock.offsetPx - firstBlockOffset
-        const bg = getBlockBackground(nonContentBlock, disabledBgColor, textDisabledColor)
+        const bg = getBlockBackground(
+          nonContentBlock,
+          disabledBgColor,
+          textDisabledColor,
+        )
         const el = blockContainer.children[i] as HTMLElement
         el.style.cssText = `${BLOCK_STYLE};transform:translateX(${blockLeft}px);width:${nonContentBlock.widthPx}px;${bg}`
       }

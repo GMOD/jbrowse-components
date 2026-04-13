@@ -41,7 +41,10 @@ const ImportSyntenyTrackSelector = observer(
     const resetTrack = filteredTracks[0]?.trackId || ''
     const [value, setValue] = useState(resetTrack)
     useEffect(() => {
-      model.setImportFormSyntenyTrack(0, { type: 'preConfigured', value: resetTrack })
+      model.setImportFormSyntenyTrack(0, {
+        type: 'preConfigured',
+        value: resetTrack,
+      })
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -60,7 +63,10 @@ const ImportSyntenyTrackSelector = observer(
             onChange={event => {
               const v = event.target.value
               setValue(v)
-              model.setImportFormSyntenyTrack(0, { type: 'preConfigured', value: v })
+              model.setImportFormSyntenyTrack(0, {
+                type: 'preConfigured',
+                value: v,
+              })
             }}
           >
             {filteredTracks.map(track => (

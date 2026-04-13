@@ -27,7 +27,6 @@ import {
   INTERBASE_SOFTCLIP,
 } from './types.ts'
 
-import type { ParsedModData } from '../ModificationParser/getMethBins.ts'
 import type { Mismatch } from './types.ts'
 import type {
   FeatureData,
@@ -38,11 +37,10 @@ import type {
   ModificationEntry,
   SoftclipData,
 } from './webglRpcTypes.ts'
+import type { ParsedModData } from '../ModificationParser/getMethBins.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
-
-export type { ParsedModData }
 
 type ColorRgbTuple = [number, number, number]
 
@@ -204,7 +202,12 @@ export function extractModifications(
   const modifications = getModPositions(mmTag, seq, fstrand)
   const probabilities = getModProbabilities(feature)
   const simplexSet = detectSimplexModifications(modifications)
-  const mods = getMaxProbModAtEachPosition(modifications, probabilities, cigarOps, fstrand)
+  const mods = getMaxProbModAtEachPosition(
+    modifications,
+    probabilities,
+    cigarOps,
+    fstrand,
+  )
   const modThreshold = (colorBy?.modifications?.threshold ?? 10) / 100
   // eslint-disable-next-line unicorn/no-array-for-each
   mods.forEach(({ prob, type, base }, refPos) => {
@@ -731,3 +734,5 @@ export function computeFrequenciesAndThresholds(
 
   return { mismatchFrequencies, interbaseFrequencies, gapFrequencies }
 }
+
+export { type ParsedModData } from '../ModificationParser/getMethBins.ts'

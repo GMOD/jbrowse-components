@@ -1,9 +1,9 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { parseCigar2 } from '../MismatchParser/index.ts'
-import { getModProbabilities } from '../ModificationParser/getModProbabilities.ts'
-import { getModPositions } from '../ModificationParser/getModPositions.ts'
 import { extractMethylation } from './processFeatureAlignments.ts'
+import { parseCigar2 } from '../MismatchParser/index.ts'
+import { getModPositions } from '../ModificationParser/getModPositions.ts'
+import { getModProbabilities } from '../ModificationParser/getModProbabilities.ts'
 
 import type { ParsedModData } from './processFeatureAlignments.ts'
 import type { ModificationEntry } from './webglRpcTypes.ts'

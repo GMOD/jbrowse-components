@@ -14,7 +14,11 @@ import {
 import { observer } from 'mobx-react'
 
 import RefNameAutocomplete from './RefNameAutocomplete/index.tsx'
-import { fetchResults, handleSelectedRegion, navToOption } from '../../searchUtils.ts'
+import {
+  fetchResults,
+  handleSelectedRegion,
+  navToOption,
+} from '../../searchUtils.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'

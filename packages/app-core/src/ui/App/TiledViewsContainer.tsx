@@ -22,7 +22,6 @@ import {
   updatePanelParams,
 } from './dockviewUtils.ts'
 import { isSessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
-import type { SessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
 
 import type { DockviewSessionType } from './types.ts'
 import type {
@@ -151,7 +150,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       : undefined
 
     if (initLayout && isSessionWithDockviewLayout(session)) {
-      const dockSession = session as DockviewSessionType & SessionWithDockviewLayout
+      const dockSession = session
       trackedViewIdsRef.current.clear()
       let firstPanelId: string | undefined
 

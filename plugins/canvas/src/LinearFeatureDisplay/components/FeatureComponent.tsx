@@ -8,9 +8,9 @@ import React, {
   useState,
 } from 'react'
 
-import { ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { uploadChangedRegions } from '@jbrowse/core/gpu/uploadChangedRegions'
+import { ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import {
   getContainingView,
   useDebounce,
@@ -208,22 +208,26 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
   const error = gpuError || modelError
 
-  useEffect(() => autorun(() => {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { offsetPx: _op, bpPerPx: _bpp, initialized, width: _w } = view
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _h = model.height
+  useEffect(
+    () =>
+      autorun(() => {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { offsetPx: _op, bpPerPx: _bpp, initialized, width: _w } = view
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const _h = model.height
 
-      if (!initialized) {
-        return
-      }
+          if (!initialized) {
+            return
+          }
 
-      renderWithBlocks()
-    } catch {
-      // Model may have been detached from state tree
-    }
-  }), [view, model])
+          renderWithBlocks()
+        } catch {
+          // Model may have been detached from state tree
+        }
+      }),
+    [view, model],
+  )
 
   // useLayoutEffect ensures GPU data is uploaded before paint, keeping
   // WebGL features in sync with the DOM label overlay (which is computed
@@ -261,9 +265,13 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       return
     }
 
-    const activeRegions = uploadChangedRegions(rpcDataMap, lastUploaded, (regionNumber, data) => {
-      renderer.uploadRegion(regionNumber, data)
-    })
+    const activeRegions = uploadChangedRegions(
+      rpcDataMap,
+      lastUploaded,
+      (regionNumber, data) => {
+        renderer.uploadRegion(regionNumber, data)
+      },
+    )
     for (const key of flatbushCacheMapRef.current.keys()) {
       if (!rpcDataMap.has(key)) {
         flatbushCacheMapRef.current.delete(key)

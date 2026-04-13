@@ -25,9 +25,6 @@ export interface WiggleBackend {
     sources: SourceRenderData[],
   ): void
   pruneRegions(activeRegions: number[]): void
-  renderBlocks(
-    blocks: RenderBlock[],
-    renderState: WiggleGPURenderState,
-  ): void
+  renderBlocks(blocks: RenderBlock[], renderState: WiggleGPURenderState): void
   dispose(): void
 }

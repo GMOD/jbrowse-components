@@ -1,7 +1,7 @@
-import { parseCigar2 } from '../MismatchParser/index.ts'
-import { getModProbabilities } from './getModProbabilities.ts'
 import { getMethBins } from './getMethBins.ts'
 import { getModPositions } from './getModPositions.ts'
+import { getModProbabilities } from './getModProbabilities.ts'
+import { parseCigar2 } from '../MismatchParser/index.ts'
 
 import type { ParsedModData } from './getMethBins.ts'
 
@@ -16,7 +16,14 @@ function makeModData(
   const cigarOps = parseCigar2(cigar)
   const modifications = getModPositions(mm, seq, fstrand)
   const probabilities = ml.map(v => v / 255)
-  return { modifications, probabilities, cigarOps, seq, fstrand, flen: seq.length }
+  return {
+    modifications,
+    probabilities,
+    cigarOps,
+    seq,
+    fstrand,
+    flen: seq.length,
+  }
 }
 
 function bins(

@@ -1,7 +1,7 @@
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 // @ts-expect-error
 import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import { screen, render, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
 import RefNameAutocomplete from './RefNameAutocomplete/index.tsx'
@@ -33,7 +33,7 @@ function setup() {
       adapter: { type: 'FromConfigSequenceAdapter', features: [] },
     },
   })
-  return { model: session.views[0] as any }
+  return { model: session.views[0] }
 }
 
 const patience = { timeout: 5000 }
@@ -54,7 +54,7 @@ describe('RefNameAutocomplete', () => {
   it('is disabled when no assemblyName is provided', () => {
     const { model } = setup()
     render(<RefNameAutocomplete model={model} fetchResults={async () => []} />)
-    expect((screen.getByRole('combobox') as HTMLInputElement).disabled).toBe(true)
+    expect(screen.getByRole('combobox').disabled).toBe(true)
   })
 
   it('calls fetchResults when the user types a query', async () => {
@@ -74,10 +74,9 @@ describe('RefNameAutocomplete', () => {
     await user.click(input)
     await user.type(input, 'ctg')
 
-    await waitFor(
-      () => expect(fetchResults).toHaveBeenCalledWith('ctg'),
-      patience,
-    )
+    await waitFor(() => {
+      expect(fetchResults).toHaveBeenCalledWith('ctg')
+    }, patience)
   })
 
   it('displays results returned by fetchResults', async () => {
@@ -99,10 +98,9 @@ describe('RefNameAutocomplete', () => {
     await user.click(input)
     await user.type(input, 'ctg')
 
-    await waitFor(
-      () => expect(screen.getByText('ctgA:1..100')).toBeTruthy(),
-      patience,
-    )
+    await waitFor(() => {
+      expect(screen.getByText('ctgA:1..100')).toBeTruthy()
+    }, patience)
   })
 
   it('calls onSelect with the chosen result', async () => {
@@ -174,10 +172,9 @@ describe('RefNameAutocomplete', () => {
 
     await user.clear(input)
 
-    await waitFor(
-      () => expect(screen.queryByText('ctgA:1..100')).toBeNull(),
-      patience,
-    )
+    await waitFor(() => {
+      expect(screen.queryByText('ctgA:1..100')).toBeNull()
+    }, patience)
   })
 
   it('deduplicates results with the same display string', async () => {
@@ -228,16 +225,14 @@ describe('RefNameAutocomplete', () => {
     await user.click(input)
     await user.type(input, 'ctg')
 
-    await waitFor(
-      () => expect(screen.getByText('loading results')).toBeTruthy(),
-      patience,
-    )
+    await waitFor(() => {
+      expect(screen.getByText('loading results')).toBeTruthy()
+    }, patience)
 
     resolveSearch([new BaseResult({ label: 'ctgA:1..100' })])
 
-    await waitFor(
-      () => expect(screen.getByText('ctgA:1..100')).toBeTruthy(),
-      patience,
-    )
+    await waitFor(() => {
+      expect(screen.getByText('ctgA:1..100')).toBeTruthy()
+    }, patience)
   })
 })

@@ -158,7 +158,8 @@ const ImportSyntenyOpenCustomTrack = observer(
               setIndexFileLocation={setIndexFileLocation}
               radioOption={radioOption}
             />
-          ) : radioOption === '.anchors' || radioOption === '.anchors.simple' ? (
+          ) : radioOption === '.anchors' ||
+            radioOption === '.anchors.simple' ? (
             <AnchorsSelector
               assembly1={assembly1}
               assembly2={assembly2}
