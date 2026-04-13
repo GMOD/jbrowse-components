@@ -85,12 +85,9 @@ export async function executeRenderFeatureData({
   checkStopToken2(stopTokenCheck)
 
   if (showOnlyGenes) {
-    featuresArray = featuresArray.filter(f => {
-      const t = f.get('type') as string
-      return (
-        t === 'gene' || t === 'mRNA' || t === 'transcript' || t === 'CDS'
-      )
-    })
+    featuresArray = featuresArray.filter(f =>
+      ['gene', 'mRNA', 'transcript', 'CDS'].includes(f.get('type') as string),
+    )
   }
 
   if (maxFeatureDensity !== undefined && requestedBpPerPx) {
@@ -143,8 +140,6 @@ export async function executeRenderFeatureData({
           {
             sessionId,
             sequenceAdapter,
-            colorByCDS: true,
-            bpPerPx,
             regions: [region],
           },
           features,

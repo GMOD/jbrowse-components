@@ -4,17 +4,18 @@ import {
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
 import { darken, lighten } from '@mui/material'
+import { genomeToTranscriptSeqMapping } from 'g2p_mapper'
 
+import { aggregateAminos } from './peptides/aggregateAminoAcids.ts'
 import {
   createFeatureFloatingLabels,
   createTranscriptFloatingLabel,
 } from './floatingLabels.ts'
 import { getFeatureDescription, getFeatureName } from './labelUtils.ts'
-import { prepareAminoAcidData } from './peptides/prepareAminoAcidData.ts'
+import type { AggregatedAminoAcid } from './peptides/aggregateAminoAcids.ts'
 import { isLabelAllowed } from './renderConfig.ts'
 import { getBoxColor, getStrokeColor, isUTR } from './util.ts'
 
-import type { AggregatedAminoAcid } from './peptides/aggregateAminoAcids.ts'
 import type { DisplayConfig } from './renderConfig.ts'
 import type {
   AminoAcidOverlayItem,
@@ -155,9 +156,6 @@ function emitIntronLines(
 function emitCodonRects(
   aminoAcids: AggregatedAminoAcid[],
   baseColor: string,
-  featureStart: number,
-  featureEnd: number,
-  strand: number,
   regionStart: number,
   y: number,
   height: number,
@@ -168,38 +166,25 @@ function emitCodonRects(
   const baseHex = formatHEX(parseCssColor(baseColor))
   const color1 = lighten(baseHex, 0.2)
   const color2 = darken(baseHex, 0.1)
-  const featureLen = featureEnd - featureStart
 
   for (const [i, aa] of aminoAcids.entries()) {
     const bgColor = i % 2 === 1 ? color2 : color1
-
-    let startBp: number
-    let endBp: number
-    if (strand === -1) {
-      startBp = featureStart + (featureLen - aa.endIndex - 1)
-      endBp = featureStart + (featureLen - aa.startIndex)
-    } else {
-      startBp = featureStart + aa.startIndex
-      endBp = featureStart + aa.endIndex + 1
-    }
-
     rects.push({
-      startOffset: startBp - regionStart,
-      endOffset: endBp - regionStart,
+      startOffset: aa.startBp - regionStart,
+      endOffset: aa.endBp - regionStart,
       y,
       height,
       color: colorToUint32(bgColor),
       flatbushIdx,
     })
-
     overlayItems.push({
-      startBp,
-      endBp,
+      startBp: aa.startBp,
+      endBp: aa.endBp,
       aminoAcid: aa.aminoAcid,
       proteinIndex: aa.proteinIndex,
       topPx: y,
       heightPx: height,
-      isStopOrNonTriplet: aa.aminoAcid === '*' || aa.length !== 3,
+      isStopOrNonTriplet: aa.isStopOrNonTriplet,
       flatbushIdx,
     })
   }
@@ -247,7 +232,13 @@ function emitExonRects(
 ) {
   const transcriptFeature = transcript.feature
   const transcriptStrand = transcriptFeature.get('strand') ?? 0
-  const peptide = ctx.peptideDataMap?.get(transcriptFeature.id())
+  const protein = ctx.peptideDataMap?.get(transcriptFeature.id())?.protein
+
+  let g2p: Record<number, number> | undefined
+  if (protein) {
+    // @ts-expect-error - g2p_mapper types
+    g2p = genomeToTranscriptSeqMapping(transcriptFeature.toJSON()).g2p
+  }
 
   for (const childLayout of transcript.children) {
     const childFeature = childLayout.feature
@@ -269,10 +260,10 @@ function emitExonRects(
       childIsUTR,
     )
 
-    if (childType === 'CDS' && peptide?.protein && !childIsUTR) {
-      const aminoAcids = prepareAminoAcidData(
-        transcriptFeature,
-        peptide.protein,
+    if (childType === 'CDS' && g2p && protein && !childIsUTR) {
+      const aminoAcids = aggregateAminos(
+        protein,
+        g2p,
         childStart,
         childEnd,
         transcriptStrand,
@@ -281,9 +272,6 @@ function emitExonRects(
         emitCodonRects(
           aminoAcids,
           childColor,
-          childStart,
-          childEnd,
-          transcriptStrand,
           ctx.regionStart,
           childTopPx,
           childHeight,
@@ -653,6 +641,6 @@ export function collectRenderData(
     aminoAcidOverlay:
       collector.aminoAcidOverlay.length > 0
         ? collector.aminoAcidOverlay
-        : (undefined as AminoAcidOverlayItem[] | undefined),
+        : undefined,
   }
 }
