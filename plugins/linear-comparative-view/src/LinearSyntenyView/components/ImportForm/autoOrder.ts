@@ -74,8 +74,7 @@ export function computeGenomeOrdering(records: PairwiseRecord[]): string[] {
     }
 
     if (!bestNext) {
-      // No coverage data, just pick any remaining
-      bestNext = [...remaining][0]!
+      bestNext = remaining.values().next().value!
     }
 
     ordered.push(bestNext)
