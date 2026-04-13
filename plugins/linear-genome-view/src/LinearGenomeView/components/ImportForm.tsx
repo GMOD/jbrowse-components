@@ -13,8 +13,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ImportFormRefNameAutocomplete from './ImportFormRefNameAutocomplete.tsx'
-import { handleSelectedRegion, navToOption } from '../../searchUtils.ts'
+import RefNameAutocomplete from './RefNameAutocomplete/index.tsx'
+import { fetchResults, handleSelectedRegion, navToOption } from '../../searchUtils.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
@@ -37,7 +37,8 @@ const LinearGenomeViewImportForm = observer(
   function LinearGenomeViewImportForm({ model }: { model: LGV }) {
     const { classes } = useStyles()
     const session = getSession(model)
-    const { assemblyNames, assemblyManager } = session
+    const { assemblyNames, assemblyManager, textSearchManager } = session
+    const { rankSearchResults } = model
     const { initialized, error } = model
     const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0]!)
     const [option, setOption] = useState<BaseResult>()
@@ -51,8 +52,9 @@ const LinearGenomeViewImportForm = observer(
     const [userValue, setUserValue] = useState<string | null>(null)
     const regions = assembly?.regions
     const assemblyLoaded = !!regions
-    const r0 = regions ? regions[0]?.refName || '' : ''
+    const r0 = regions?.[0]?.refName ?? ''
     const value = userValue ?? r0
+    const searchScope = model.searchScope(selectedAsm)
     const setValue = (v: string) => {
       setUserValue(v)
     }
@@ -122,12 +124,23 @@ const LinearGenomeViewImportForm = observer(
                     <CloseIcon style={{ color: 'red' }} />
                   ) : assemblyLoaded ? (
                     <FormControl>
-                      <ImportFormRefNameAutocomplete
-                        value={value}
-                        setValue={setValue}
-                        selectedAsm={selectedAsm}
-                        setOption={setOption}
+                      <RefNameAutocomplete
+                        fetchResults={queryString =>
+                          fetchResults({
+                            queryString,
+                            assembly,
+                            textSearchManager,
+                            rankSearchResults,
+                            searchScope,
+                          })
+                        }
                         model={model}
+                        assemblyName={selectedAsm}
+                        value={value}
+                        minWidth={270}
+                        onChange={setValue}
+                        onSelect={setOption}
+                        helperText="Enter sequence name, feature name, or location"
                       />
                     </FormControl>
                   ) : (

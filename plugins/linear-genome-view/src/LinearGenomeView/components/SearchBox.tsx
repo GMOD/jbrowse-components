@@ -65,7 +65,7 @@ const SearchBox = observer(function SearchBox({
           await onSelect({ model, assemblyName, option })
         } catch (e) {
           console.error(e)
-          getSession(model).notify(`${e}`, 'warning')
+          session.notify(`${e}`, 'warning')
         }
       }}
       assemblyName={assemblyName}
