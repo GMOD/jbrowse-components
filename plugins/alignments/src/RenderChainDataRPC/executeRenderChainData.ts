@@ -32,7 +32,6 @@ import {
   extractMethylation,
   extractMismatchData,
   extractModifications,
-  fetchReferenceSequence,
 } from '../shared/processFeatureAlignments.ts'
 
 import type { RenderChainDataArgs } from './types.ts'
@@ -150,24 +149,6 @@ export async function executeRenderChainData({
   checkStopToken2(stopTokenCheck)
 
   const regionStart = Math.floor(region.start)
-
-  let regionSequence: string | undefined
-  let regionSequenceStart = regionStart
-  if (
-    (colorBy?.type === 'methylation' || colorBy?.type === 'modifications') &&
-    sequenceAdapter
-  ) {
-    const result = await fetchReferenceSequence({
-      pluginManager,
-      sessionId,
-      sequenceAdapter,
-      region,
-      featuresArray,
-      regionStart,
-    })
-    regionSequence = result.regionSequence?.toLowerCase()
-    regionSequenceStart = result.regionSequenceStart
-  }
 
   const detectedModifications = new Set<string>()
   const detectedSimplexModifications = new Set<string>()

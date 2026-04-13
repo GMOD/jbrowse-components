@@ -54,7 +54,9 @@ describe('RefNameAutocomplete', () => {
   it('is disabled when no assemblyName is provided', () => {
     const { model } = setup()
     render(<RefNameAutocomplete model={model} fetchResults={async () => []} />)
-    expect(screen.getByRole('combobox').disabled).toBe(true)
+    expect(
+      (screen.getByRole('combobox') as HTMLInputElement).disabled,
+    ).toBe(true)
   })
 
   it('calls fetchResults when the user types a query', async () => {

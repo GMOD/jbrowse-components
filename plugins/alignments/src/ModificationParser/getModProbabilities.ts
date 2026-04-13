@@ -11,30 +11,16 @@ export function getModProbabilities(feature: Feature) {
   // - if we have MP or Mp it is phred scaled ASCII, which can go up to 90 but
   // has very high likelihood basecalls at that point, we really only care about
   // low qual calls <20 approx
-  const m = (getTagAlt(feature, 'ML', 'Ml') as number[] | string) || []
-  if (m) {
-    const result = []
-    if (typeof m === 'string') {
-      const parts = m.split(',')
-      for (let i = 0, l = parts.length; i < l; i++) {
-        result.push(+parts[i]! / 255)
-      }
-    } else {
-      for (let i = 0, l = m.length; i < l; i++) {
-        result.push(m[i]! / 255)
-      }
+  const ml = getTagAlt(feature, 'ML', 'Ml') as number[] | string | undefined
+  if (ml !== undefined) {
+    if (typeof ml === 'string') {
+      return ml.split(',').map(v => +v / 255)
     }
-    return result
-  } else {
-    const mp = getTagAlt(feature, 'MP', 'Mp') as string | undefined
-    if (mp) {
-      const result = []
-      for (let i = 0, l = mp.length; i < l; i++) {
-        const phred = mp.charCodeAt(i) - 33
-        result.push(Math.min(1, phred / 50))
-      }
-      return result
-    }
-    return undefined
+    return ml.map(v => v / 255)
   }
+  const mp = getTagAlt(feature, 'MP', 'Mp') as string | undefined
+  if (mp) {
+    return Array.from(mp, c => Math.min(1, (c.charCodeAt(0) - 33) / 50))
+  }
+  return undefined
 }

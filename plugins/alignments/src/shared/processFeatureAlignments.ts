@@ -198,7 +198,7 @@ export function extractModifications(
     return
   }
   const cigarOps = parseCigar2(cigarString)
-  const fstrand = feature.get('strand') as -1 | 0 | 1
+  const fstrand = strand as -1 | 0 | 1
   const modifications = getModPositions(mmTag, seq, fstrand)
   const probabilities = getModProbabilities(feature)
   const simplexSet = detectSimplexModifications(modifications)

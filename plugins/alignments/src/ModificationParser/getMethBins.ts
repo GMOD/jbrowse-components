@@ -61,7 +61,7 @@ export function getMethBins({
       if (type === 'm') {
         methBins[ref] = 1
         methProbs[ref] = prob
-      } else if (type === 'h') {
+      } else {
         hydroxyMethBins[ref] = 1
         hydroxyMethProbs[ref] = prob
       }

@@ -10,11 +10,9 @@ import type { AugmentedRegion, Feature } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { IAutorunOptions } from 'mobx'
 
-// use fallback alt tag, used in situations where upper case/lower case tags
-// exist e.g. Mm/MM for base modifications
 export function getTagAlt(feature: Feature, tag: string, alt: string) {
-  const tags = feature.get('tags')
-  return tags !== undefined ? (tags[tag] ?? tags[alt]) : undefined
+  const tags = feature.get('tags') as Record<string, unknown> | undefined
+  return tags?.[tag] ?? tags?.[alt]
 }
 
 // orientation definitions from igv.js, see also

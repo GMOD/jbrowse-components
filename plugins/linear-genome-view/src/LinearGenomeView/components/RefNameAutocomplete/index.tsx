@@ -103,28 +103,28 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
     if (!assemblyName || debouncedSearch === '') {
       return
     }
-    let cancelled = false
+    const guard = { alive: true }
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         setLoaded(false)
         const results = await fetchResultsRef.current(debouncedSearch)
-        if (!cancelled) {
+        if (guard.alive) {
           setSearchOptions(getDeduplicatedResult(results))
         }
       } catch (e) {
         console.error(e)
-        if (!cancelled) {
+        if (guard.alive) {
           session.notifyError(`${e}`, e)
         }
       } finally {
-        if (!cancelled) {
+        if (guard.alive) {
           setLoaded(true)
         }
       }
     })()
     return () => {
-      cancelled = true
+      guard.alive = false
     }
   }, [assemblyName, debouncedSearch, session])
 
@@ -202,7 +202,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
           slotProps={{
             ...paramSlotProps,
             input: {
-              ...paramSlotProps?.input,
+              ...paramSlotProps.input,
               style: inputStyle,
               ...(endAdornment !== undefined && { endAdornment }),
             },
