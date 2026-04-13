@@ -8,10 +8,10 @@ is because the degenerate fallback in the vertex shader uses
 `normal = vec2(0.0, 1.0)`, so the quad only expands vertically.
 
 **Attempted approach**: Add square end caps by displacing vertices along the
-tangent direction by `(t - 0.5) * lineWidth` when `len < lineWidth`. This
-makes zero-length segments render as `lineWidth × lineWidth` squares. However,
-it produced oddly-shaped polygons that looked off even for normal segments,
-so it was reverted.
+tangent direction by `(t - 0.5) * lineWidth` when `len < lineWidth`. This makes
+zero-length segments render as `lineWidth × lineWidth` squares. However, it
+produced oddly-shaped polygons that looked off even for normal segments, so it
+was reverted.
 
 **Better next steps to explore**:
 

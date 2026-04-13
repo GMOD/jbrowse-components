@@ -72,8 +72,6 @@ export function getMethBins({
     probIndex += positions.length
   }
 
-  const mmCpgCount = methBins.filter(Boolean).length
-
   // Scan the full read sequence for ALL CpG dinucleotides and mark any not
   // already detected from the MM tag as unmethylated (prob=0).
   // Forward strand: C at readPos followed by G at readPos+1.
