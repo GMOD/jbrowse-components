@@ -131,9 +131,13 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         }
 
         // access observables to track them (issue #3456)
-        JSON.stringify(view.views.map(v => v.displayedRegions))
-        view.views.map(v => v.bpPerPx)
-        view.views.map(v => v.staticBlocks.contentBlocks.map(b => b.key))
+        for (const v of view.views) {
+          JSON.stringify(v.displayedRegions)
+          void v.bpPerPx
+          for (const b of v.staticBlocks.contentBlocks) {
+            void b.key
+          }
+        }
 
         // Track rendering settings so RPC re-fires when they change
         const colorBy = self.colorBy

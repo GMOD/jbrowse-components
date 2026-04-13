@@ -271,8 +271,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * cached color scheme config based on colorBy
        */
       get colorSchemeConfig() {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        return colorSchemes[self.colorBy as ColorScheme] || colorSchemes.default
+        const key = self.colorBy
+        return key in colorSchemes
+          ? colorSchemes[key as ColorScheme]
+          : colorSchemes.default
       },
 
       /**
@@ -297,9 +299,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * cached positive strand color with alpha
        */
       get posColorWithAlpha() {
-        const posColor =
-          self.colorBy === 'strand' ? colorSchemes.strand.posColor : 'red'
-        return applyAlpha(posColor, self.alpha)
+        return applyAlpha('red', self.alpha)
       },
 
       /**
@@ -307,9 +307,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * cached negative strand color with alpha
        */
       get negColorWithAlpha() {
-        const negColor =
-          self.colorBy === 'strand' ? colorSchemes.strand.negColor : 'blue'
-        return applyAlpha(negColor, self.alpha)
+        return applyAlpha('blue', self.alpha)
       },
 
       /**

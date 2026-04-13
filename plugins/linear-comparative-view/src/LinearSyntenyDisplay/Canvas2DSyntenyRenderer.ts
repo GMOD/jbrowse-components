@@ -60,6 +60,25 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     return typeof window !== 'undefined' ? window.devicePixelRatio : 1
   }
 
+  private computeTransform(
+    data: SyntenyInstanceData,
+    offset0: number,
+    offset1: number,
+    curBpPerPx0: number,
+    curBpPerPx1: number,
+  ) {
+    const scale0 = data.geometryBpPerPx0 / curBpPerPx0
+    const scale1 = data.geometryBpPerPx1 / curBpPerPx1
+    return {
+      scale0,
+      scale1,
+      adjOff0: offset0 / scale0 - data.refOffset0,
+      adjOff1: offset1 / scale1 - data.refOffset1,
+      scaleDiff0: scale0 - 1,
+      scaleDiff1: scale1 - 1,
+    }
+  }
+
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
     const ctx = canvas.getContext('2d')
@@ -119,12 +138,8 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     ctx.fillStyle = '#fff'
     ctx.fillRect(0, 0, logicalW, logicalH)
 
-    const scale0 = data.geometryBpPerPx0 / curBpPerPx0
-    const scale1 = data.geometryBpPerPx1 / curBpPerPx1
-    const adjOff0 = offset0 / scale0 - data.refOffset0
-    const adjOff1 = offset1 / scale1 - data.refOffset1
-    const scaleDiff0 = scale0 - 1
-    const scaleDiff1 = scale1 - 1
+    const { scale0, scale1, adjOff0, adjOff1, scaleDiff0, scaleDiff1 } =
+      this.computeTransform(data, offset0, offset1, curBpPerPx0, curBpPerPx1)
 
     for (let i = 0; i < data.instanceCount; i++) {
       if (data.queryTotalLengths[i]! < minAlignmentLength) {
@@ -204,12 +219,8 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
       curBpPerPx1,
       minAlignmentLength,
     } = params
-    const scale0 = data.geometryBpPerPx0 / curBpPerPx0
-    const scale1 = data.geometryBpPerPx1 / curBpPerPx1
-    const adjOff0 = offset0 / scale0 - data.refOffset0
-    const adjOff1 = offset1 / scale1 - data.refOffset1
-    const scaleDiff0 = scale0 - 1
-    const scaleDiff1 = scale1 - 1
+    const { scale0, scale1, adjOff0, adjOff1, scaleDiff0, scaleDiff1 } =
+      this.computeTransform(data, offset0, offset1, curBpPerPx0, curBpPerPx1)
     const ctx = this.ctx
 
     // iterate in reverse so top-most (last-drawn) features are picked first
