@@ -812,16 +812,8 @@ export default function stateModelFactory(
             ),
           )
 
-          // Autorun: re-fetch when settings that require new RPC data change.
-          // Uses the same prevKey pattern as alignments/wiggle. No conditional
-          // guard needed; refetchForCurrentView() is safe in all states.
-          //
-          // Intentional deviation from alignments/wiggle: uses
-          // refetchForCurrentView() (softReset) instead of clearAllRpcData().
-          // softReset preserves rpcDataMap so the canvas keeps displaying old
-          // features while the new fetch is in flight, avoiding a blank flash.
-          // clearAllRpcData() would clear the canvas immediately (appropriate
-          // for wiggle/alignments where y-scale or read layout must change).
+          // Autorun: invalidate and re-fetch when settings that require new
+          // RPC data change. Same prevKey pattern as alignments/wiggle.
           let prevSettingsKey: string | undefined
           addDisposer(
             self,
@@ -835,7 +827,7 @@ export default function stateModelFactory(
                   displayMode: self.displayMode,
                 })
                 if (prevSettingsKey !== undefined && key !== prevSettingsKey) {
-                  self.refetchForCurrentView()
+                  self.clearAllRpcData()
                 }
                 prevSettingsKey = key
               },

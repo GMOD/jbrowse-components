@@ -477,7 +477,10 @@ describe('SettingsInvalidate autorun', () => {
 
     const callsBefore = mockRpcCall.mock.calls.length
     display.setShowOnlyGenes(true)
-    // Autorun fires synchronously — no timer advancement needed
+    // Autorun fires synchronously — clears rpcDataMap immediately.
+    // FetchVisibleRegions re-fetches after its 300ms delay.
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
 
     await waitFor(() => {
       expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
@@ -498,29 +501,31 @@ describe('SettingsInvalidate autorun', () => {
 
     const callsBefore = mockRpcCall.mock.calls.length
     display.setShowOnlyGenes(true)
-    // Autorun fires synchronously — no timer advancement needed
+    // clearAllRpcData() fires synchronously, cancels the in-flight fetch and
+    // clears rpcDataMap. FetchVisibleRegions re-fetches after 300ms.
+    jest.advanceTimersByTime(400)
 
     expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
     const lastArgs = mockRpcCall.mock.calls.at(-1)![2]
     expect(lastArgs).toMatchObject({ showOnlyGenes: true })
   })
 
-  it('triggers refetch immediately even before the initial FetchVisibleRegions fires', async () => {
+  it('does not double-fetch when settings change before the initial FetchVisibleRegions fires', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
     const { display } = createDisplay()
 
     // Change setting before FetchVisibleRegions fires (delay: 300ms).
-    // The autorun fires synchronously with no guard — refetchForCurrentView()
-    // starts the fetch directly. FetchVisibleRegions at t=300ms sees isLoading=true
-    // and returns early, so no duplicate fetch occurs.
+    // clearAllRpcData() runs synchronously, incrementing fetchGeneration.
+    // FetchVisibleRegions fires once at t=300ms using the current showOnlyGenes.
     display.setShowOnlyGenes(true)
 
+    jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
 
     await waitFor(() => expect(display.loadedRegions.size).toBe(1))
 
-    // Only one RPC call — from the autorun, not a separate FetchVisibleRegions call
+    // Exactly one RPC call from FetchVisibleRegions with the correct setting
     expect(mockRpcCall).toHaveBeenCalledTimes(1)
     expect(mockRpcCall.mock.calls[0]![2]).toMatchObject({ showOnlyGenes: true })
   })
