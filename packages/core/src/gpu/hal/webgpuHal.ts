@@ -308,7 +308,7 @@ export class WebGPUHal implements GpuHal {
   uploadBuffer(
     regionKey: number,
     passId: string,
-    data: ArrayBuffer,
+    data: ArrayBuffer | ArrayBufferView,
     count: number,
   ) {
     const region = this.getOrCreateRegion(regionKey)

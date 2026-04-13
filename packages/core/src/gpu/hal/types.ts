@@ -59,7 +59,7 @@ export interface GpuHal {
   uploadBuffer(
     regionKey: number,
     passId: string,
-    data: ArrayBuffer,
+    data: ArrayBuffer | ArrayBufferView,
     count: number,
   ): void
   setRegionMeta(regionKey: number, meta: Partial<RegionMeta>): void

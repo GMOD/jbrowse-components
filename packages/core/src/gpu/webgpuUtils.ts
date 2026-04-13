@@ -49,7 +49,10 @@ export function createStandardBindGroupLayout(device: GPUDevice) {
 }
 
 // Create a GPU storage buffer and upload data into it.
-export function createStorageBuffer(device: GPUDevice, data: ArrayBuffer) {
+export function createStorageBuffer(
+  device: GPUDevice,
+  data: ArrayBuffer | ArrayBufferView,
+) {
   const buf = device.createBuffer({
     size: Math.max(data.byteLength, 4),
     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,

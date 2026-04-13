@@ -36,14 +36,14 @@ export class MockHal implements GpuHal {
   uploadBuffer(
     regionKey: number,
     passId: string,
-    data: ArrayBuffer,
+    data: ArrayBuffer | ArrayBufferView,
     count: number,
   ) {
     this.record('uploadBuffer', regionKey, passId, data.byteLength, count)
-    this.buffers.set(this.bufferKey(regionKey, passId), {
-      data: data.slice(0),
-      count,
-    })
+    const copy = ArrayBuffer.isView(data)
+      ? data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)
+      : data.slice(0)
+    this.buffers.set(this.bufferKey(regionKey, passId), { data: copy, count })
   }
 
   setRegionMeta(regionKey: number, meta: Partial<RegionMeta>) {

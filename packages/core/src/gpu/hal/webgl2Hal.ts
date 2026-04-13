@@ -137,7 +137,7 @@ export class WebGL2Hal implements GpuHal {
   uploadBuffer(
     regionKey: number,
     passId: string,
-    data: ArrayBuffer,
+    data: ArrayBuffer | ArrayBufferView,
     count: number,
   ) {
     const gl = this.gl
