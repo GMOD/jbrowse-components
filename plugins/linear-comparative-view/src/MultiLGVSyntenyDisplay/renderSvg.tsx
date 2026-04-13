@@ -3,6 +3,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { CoverageYScaleBar } from '@jbrowse/plugin-alignments'
+import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import { renderMultiSyntenyToCtx } from './components/Canvas2DMultiSyntenyRenderer.ts'
@@ -72,13 +73,19 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
   const { coverageTicks } = model
 
   return (
-    <g>
-      <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
+    <>
+      <SvgClipRect
+        id={`multi-synteny-clip-${model.id}`}
+        width={width}
+        height={model.height}
+      >
+        <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
+      </SvgClipRect>
       {showCoverage && coverageTicks ? (
         <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
           <CoverageYScaleBar model={{ coverageTicks }} />
         </g>
       ) : null}
-    </g>
+    </>
   )
 }

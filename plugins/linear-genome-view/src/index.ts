@@ -140,7 +140,10 @@ export {
   SVGTracks,
   renderToSvg,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
-export { ErrorBox as SVGErrorBox } from './LinearGenomeView/SVGErrorBox.tsx'
+export {
+  ErrorBox as SVGErrorBox,
+  SvgClipRect,
+} from './LinearGenomeView/SVGErrorBox.tsx'
 export { totalHeight } from './LinearGenomeView/svgcomponents/util.ts'
 export {
   configSchema as linearBasicDisplayConfigSchemaFactory,

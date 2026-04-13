@@ -85,14 +85,14 @@ export async function fetchReferenceSequence({
       .getFeatures({
         ...region,
         refName: region.originalRefName || region.refName,
-        start: Math.max(0, seqFetchStart - 1),
+        start: Math.max(0, seqFetchStart),
         end: seqFetchEnd + 1,
       })
       .pipe(toArray()),
   )
   return {
     regionSequence: seqFeats[0]?.get('seq') as string | undefined,
-    regionSequenceStart: seqFetchStart,
+    regionSequenceStart: Math.max(0, seqFetchStart),
   }
 }
 
@@ -250,6 +250,8 @@ export function extractMethylation(
   const methStrand = strand === -1 ? -1 : 1
   const iStart = Math.max(0, regionStart - featureStart)
   const iEnd = Math.min(feature.get('end'), regionEnd) - featureStart
+  let cpgCheckHits = 0
+  let cpgCheckMisses = 0
 
   for (let i = iStart; i < iEnd; i++) {
     if (!methBins[i] && !hydroxyMethBins[i]) {
@@ -257,12 +259,26 @@ export function extractMethylation(
     }
 
     const refIdx = i + featureStart - regionSequenceStart
-    if (
-      regionSequenceLower[refIdx] !== 'c' ||
-      regionSequenceLower[refIdx + 1] !== 'g'
-    ) {
+
+    // getMethBins stores methylation at the C position for forward strand reads,
+    // and at the G position for reverse strand reads (because the read's C is
+    // complementary to the reference G at that position). Check accordingly.
+    let isCpG: boolean
+    if (strand === -1) {
+      isCpG =
+        regionSequenceLower[refIdx - 1] === 'c' &&
+        regionSequenceLower[refIdx] === 'g'
+    } else {
+      isCpG =
+        regionSequenceLower[refIdx] === 'c' &&
+        regionSequenceLower[refIdx + 1] === 'g'
+    }
+
+    if (!isCpG) {
+      cpgCheckMisses++
       continue
     }
+    cpgCheckHits++
 
     const genomicPos = i + featureStart
     if (methBins[i]) {
@@ -297,6 +313,9 @@ export function extractMethylation(
       })
     }
   }
+  console.log(
+    `[methylation] feature=${featureId} strand=${strand} cpgHits=${cpgCheckHits} cpgMisses=${cpgCheckMisses} mods=${modificationsData.length}`,
+  )
 }
 
 export function buildTagColors(

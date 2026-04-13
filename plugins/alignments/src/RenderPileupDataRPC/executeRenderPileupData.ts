@@ -157,9 +157,7 @@ function computeModificationCoverage(
     }
 
     const refbase = regionSequence
-      ? (
-          regionSequence[position - regionSequenceStart + 1] ?? 'N'
-        ).toUpperCase()
+      ? regionSequence[position - regionSequenceStart]!.toUpperCase()
       : 'N'
 
     const snpEntry = snpByPosition.get(position)

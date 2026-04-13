@@ -1,6 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
-import { SVGErrorBox } from '@jbrowse/plugin-linear-genome-view'
+import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import {
@@ -20,6 +20,7 @@ import type {
 type LGV = LinearGenomeViewModel
 
 interface RenderSvgModel {
+  id: string
   rpcDataMap: Map<number, FeatureDataResult>
   error: unknown
   regionTooLarge: boolean
@@ -155,10 +156,18 @@ function renderPeptides(
     const centerPx = (px1 + px2) / 2
     const fontSize = Math.min(item.heightPx, 16)
     const y = item.topPx + item.heightPx / 2 + fontSize / 3
+    const cellWidthPx = Math.abs(px2 - px1)
+    const label =
+      cellWidthPx >= 20
+        ? `${item.aminoAcid}${item.proteinIndex + 1}`
+        : item.aminoAcid
 
-    ctx.fillStyle = item.isStopOrNonTriplet ? 'red' : 'black'
     ctx.font = `${fontSize}px monospace`
-    ctx.fillText(`${item.aminoAcid}${item.proteinIndex + 1}`, centerPx, y)
+    ctx.strokeStyle = 'white'
+    ctx.lineWidth = 1
+    ctx.strokeText(label, centerPx, y)
+    ctx.fillStyle = item.isStopOrNonTriplet ? 'red' : 'black'
+    ctx.fillText(label, centerPx, y)
   }
   ctx.textAlign = 'start'
 }
@@ -240,6 +249,12 @@ export async function renderSvg(
   }
 
   return (
-    <g dangerouslySetInnerHTML={{ __html: svgCanvas.getSerializedSvg() }} />
+    <SvgClipRect
+      id={`canvas-features-clip-${model.id}`}
+      width={view.width}
+      height={model.height}
+    >
+      <g dangerouslySetInnerHTML={{ __html: svgCanvas.getSerializedSvg() }} />
+    </SvgClipRect>
   )
 }

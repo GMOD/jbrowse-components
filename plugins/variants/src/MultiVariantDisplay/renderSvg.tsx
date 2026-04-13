@@ -1,5 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
+import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import SvgLabelRows from '../shared/components/SvgLabelRows.tsx'
@@ -174,7 +175,11 @@ export async function renderSvg(
   const labelOffset = showTree && hierarchy ? treeAreaWidth : 0
 
   return (
-    <>
+    <SvgClipRect
+      id={`variant-clip-${model.id}`}
+      width={Math.round(view.width)}
+      height={model.height}
+    >
       <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
       {sources.length > 1 && canDisplayLabels ? (
         <SvgLabelRows
@@ -188,6 +193,6 @@ export async function renderSvg(
       {showTree && hierarchy ? (
         <SvgTree hierarchy={hierarchy} scrollTop={scrollTop} />
       ) : null}
-    </>
+    </SvgClipRect>
   )
 }

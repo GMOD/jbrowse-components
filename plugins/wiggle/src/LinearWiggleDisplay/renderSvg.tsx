@@ -1,6 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
-import { SVGErrorBox } from '@jbrowse/plugin-linear-genome-view'
+import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import DensityLegend from '../shared/DensityLegend.tsx'
@@ -208,18 +208,15 @@ export async function renderSvg(
   const ctx = new SvgCanvas()
   renderToCtx(ctx, model, view)
 
-  const clipId = `wiggle-clip-${model.id}`
   return (
     <>
-      <defs>
-        <clipPath id={clipId}>
-          <rect x={0} y={0} width={view.width} height={height} />
-        </clipPath>
-      </defs>
-      <g
-        dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }}
-        clipPath={`url(#${clipId})`}
-      />
+      <SvgClipRect
+        id={`wiggle-clip-${model.id}`}
+        width={view.width}
+        height={height}
+      >
+        <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
+      </SvgClipRect>
       {legendEl}
     </>
   )

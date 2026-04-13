@@ -7,7 +7,7 @@ import {
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
-import { SVGErrorBox } from '@jbrowse/plugin-linear-genome-view'
+import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import {
@@ -855,17 +855,15 @@ export async function renderSvg(
     }
   }
 
-  const clipId = 'alignments-clip'
   const separatorColor = theme.palette.grey[500]
 
   return (
     <>
-      <defs>
-        <clipPath id={clipId}>
-          <rect x={0} y={0} width={totalWidth} height={displayHeight} />
-        </clipPath>
-      </defs>
-      <g clipPath={`url(#${clipId})`}>
+      <SvgClipRect
+        id={`alignments-clip-${model.id}`}
+        width={totalWidth}
+        height={displayHeight}
+      >
         {showCoverage ? (
           <g dangerouslySetInnerHTML={{ __html: covCtx.getSerializedSvg() }} />
         ) : null}
@@ -925,7 +923,7 @@ export async function renderSvg(
             }}
           />
         )}
-      </g>
+      </SvgClipRect>
       {showCoverage && coverageTicks ? (
         <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
           <CoverageYScaleBar model={model} orientation="left" />
