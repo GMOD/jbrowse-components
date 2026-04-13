@@ -119,10 +119,7 @@ export function prepareBlockGeometry(
 
   const builder = new InstanceBuilder(INSTANCE_BYTE_SIZE, totalFeatures * 2)
 
-  const genomeIndexMap = new Map<string, number>()
-  for (let i = 0; i < displayedGenomes.length; i++) {
-    genomeIndexMap.set(displayedGenomes[i]!, i)
-  }
+  const genomeIndexMap = new Map(displayedGenomes.map((g, i) => [g, i] as const))
 
   let featureIdx = 0
   for (const [genomeName, features] of genomeFeatures) {

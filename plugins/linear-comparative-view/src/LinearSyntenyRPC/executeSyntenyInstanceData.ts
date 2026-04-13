@@ -581,7 +581,7 @@ export function executeSyntenyInstanceData({
   const refOffset0 = viewOffsets[level]!
   const refOffset1 = viewOffsets[level + 1]!
 
-  const result = {
+  return {
     x1: toRelativeFloat32(x1s, instanceCount, refOffset0),
     x2: toRelativeFloat32(x2s, instanceCount, refOffset0),
     x3: toRelativeFloat32(x3s, instanceCount, refOffset1),
@@ -599,6 +599,4 @@ export function executeSyntenyInstanceData({
     refOffset0,
     refOffset1,
   }
-
-  return result
 }

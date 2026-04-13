@@ -18,7 +18,6 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -148,7 +147,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
        * #method
        */
       trackMenuItems() {
-        const items: MenuItem[] = [
+        return [
           getFeatureHeightMenuItem(self),
           getColorByMenuItem(self, {
             colorOptions: [
@@ -159,7 +158,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           }),
           getFiltersMenuItem(self),
         ]
-        return items
       },
     }))
 }
