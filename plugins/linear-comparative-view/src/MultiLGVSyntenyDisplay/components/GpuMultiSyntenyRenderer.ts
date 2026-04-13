@@ -170,10 +170,6 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
     this.hal = hal
   }
 
-  resize(width: number, height: number) {
-    this.hal.resize(width, height)
-  }
-
   uploadGeometryForBlock(
     regionNumber: number,
     data: BlockGeometryData & { regionStart: number },

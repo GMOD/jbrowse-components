@@ -273,11 +273,6 @@ export interface BlockIndicatorUploadData {
 // Indicator byte size: position(f32) = 4 bytes per indicator
 export const INDICATOR_BYTE_SIZE = 4
 
-/**
- * Pack insertion indicator positions for GPU upload.
- * Positions stored as absolute genome coordinates.
- * All indicators are insertion type (no colorType needed).
- */
 export function packIndicatorsForGpu(
   indicatorPositions: Uint32Array,
   numIndicators: number,
