@@ -24,6 +24,7 @@ import {
 } from '../../shared/wiggleComponentUtils.ts'
 
 import type { WiggleDisplayModel } from './buildSourceRenderData.ts'
+import type { WiggleDataResult } from '../../RenderWiggleDataRPC/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -76,8 +77,8 @@ const WiggleComponent = observer(function WiggleComponent({
       return
     }
 
-    let lastDataMap: unknown = null
-    const lastUploaded = new Map<number, unknown>()
+    let lastDataMap: Map<number, WiggleDataResult> | null = null
+    const lastUploaded = new Map<number, WiggleDataResult>()
 
     return autorun(() => {
       const dataMap = model.rpcDataMap

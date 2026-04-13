@@ -1,9 +1,17 @@
 import { uploadChangedRegions } from './uploadChangedRegions.ts'
 
+interface D {
+  id: number
+}
+
+function makeCache() {
+  return new Map<number, D>()
+}
+
 test('uploads all regions on first call', () => {
-  const data0 = {}
-  const data1 = {}
-  const cache = new Map<number, object>()
+  const data0: D = { id: 0 }
+  const data1: D = { id: 1 }
+  const cache = makeCache()
   const calls: number[] = []
 
   uploadChangedRegions(
@@ -18,9 +26,9 @@ test('uploads all regions on first call', () => {
 })
 
 test('skips upload when data reference is unchanged', () => {
-  const data0 = {}
-  const data1 = {}
-  const cache = new Map<number, object>()
+  const data0: D = { id: 0 }
+  const data1: D = { id: 1 }
+  const cache = makeCache()
   const calls: number[] = []
 
   uploadChangedRegions(
@@ -45,10 +53,10 @@ test('skips upload when data reference is unchanged', () => {
 })
 
 test('uploads only the region whose reference changed', () => {
-  const data0a = {}
-  const data0b = {}
-  const data1 = {}
-  const cache = new Map<number, object>()
+  const data0a: D = { id: 0 }
+  const data0b: D = { id: 0 }
+  const data1: D = { id: 1 }
+  const cache = makeCache()
   const calls: number[] = []
 
   uploadChangedRegions(
@@ -75,9 +83,9 @@ test('uploads only the region whose reference changed', () => {
 })
 
 test('prunes stale regions from cache and returns active list', () => {
-  const data0 = {}
-  const data1 = {}
-  const cache = new Map<number, object>()
+  const data0: D = { id: 0 }
+  const data1: D = { id: 1 }
+  const cache = makeCache()
 
   uploadChangedRegions(
     new Map([

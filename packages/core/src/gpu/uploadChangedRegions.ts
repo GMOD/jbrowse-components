@@ -13,7 +13,7 @@
  */
 export function uploadChangedRegions<T>(
   dataMap: Map<number, T>,
-  cache: Map<number, unknown>,
+  cache: Map<number, T>,
   upload: (regionNumber: number, data: T) => void,
 ): number[] {
   const activeRegions: number[] = []

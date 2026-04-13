@@ -149,7 +149,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     [number, number] | undefined
   >()
   const flatbushCacheMapRef = useRef(new Map<number, FlatbushRegionCache>())
-  const lastUploadedRef = useRef(new Map<number, unknown>())
+  const lastUploadedRef = useRef(new Map<number, FeatureDataResult>())
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const view = getContainingView(model) as LGV

@@ -36,6 +36,7 @@ import type {
   IndicatorHitResult,
   ResolvedBlock,
 } from './hitTesting.ts'
+import type { ArcsDataResult } from '../../shared/computeArcsFromPileupData.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type {
   LegendItem,
@@ -543,10 +544,10 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     }
 
     let lastRpcDataMap: Map<number, PileupDataResult> | null = null
-    let lastArcsDataMap: Map<number, unknown> | null = null
-    const lastUploaded = new Map<number, unknown>()
-    const lastConnectingUploaded = new Map<number, unknown>()
-    const lastArcsUploaded = new Map<number, unknown>()
+    let lastArcsDataMap: Map<number, ArcsDataResult> | null = null
+    const lastUploaded = new Map<number, PileupDataResult>()
+    const lastConnectingUploaded = new Map<number, PileupDataResult>()
+    const lastArcsUploaded = new Map<number, ArcsDataResult>()
 
     return autorun(() => {
       const rpcDataMap = model.rpcDataMap

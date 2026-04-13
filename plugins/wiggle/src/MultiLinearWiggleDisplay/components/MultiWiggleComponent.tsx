@@ -149,8 +149,8 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       return
     }
 
-    let lastDataMap: unknown = null
-    const lastUploaded = new Map<number, unknown>()
+    let lastDataMap: Map<number, MultiWiggleDataResult> | null = null
+    const lastUploaded = new Map<number, MultiWiggleDataResult>()
 
     return autorun(() => {
       const dataMap = model.rpcDataMap
