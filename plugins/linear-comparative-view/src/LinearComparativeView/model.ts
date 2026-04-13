@@ -14,6 +14,43 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+
+type Compactness = 'normal' | 'compact' | 'super-compact'
+
+// SYNC: plugins/linear-genome-view/src/LinearGenomeView/menuItems.ts, plugins/breakpoint-split-view/src/BreakpointSplitView/model.ts
+function buildCompactAllTracksMenu(tracks: { displays: unknown[] }[]) {
+  const hasAny = tracks.some(t =>
+    t.displays.some(
+      d => d !== null && typeof d === 'object' && 'setCompactness' in d,
+    ),
+  )
+  if (!hasAny) {
+    return []
+  }
+  function applyCompactness(level: Compactness) {
+    for (const track of tracks) {
+      for (const display of track.displays) {
+        if (
+          display !== null &&
+          typeof display === 'object' &&
+          'setCompactness' in display
+        ) {
+          ;(display as { setCompactness: (v: Compactness) => void }).setCompactness(level)
+        }
+      }
+    }
+  }
+  return [
+    {
+      label: 'Compact all tracks',
+      subMenu: [
+        { label: 'Normal', onClick: () => applyCompactness('normal') },
+        { label: 'Compact', onClick: () => applyCompactness('compact') },
+        { label: 'Super-compact', onClick: () => applyCompactness('super-compact') },
+      ],
+    },
+  ]
+}
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type {
@@ -424,7 +461,9 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       menuItems(): MenuItem[] {
+        const allTracks = self.views.flatMap(v => v.tracks)
         return [
+          ...buildCompactAllTracksMenu(allTracks),
           {
             label: 'Return to import form',
             onClick: () => {

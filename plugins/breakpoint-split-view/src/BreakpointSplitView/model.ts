@@ -15,6 +15,45 @@ import { autorun } from 'mobx'
 
 import { calc, getBlockFeatures, intersect } from './util.ts'
 
+type Compactness = 'normal' | 'compact' | 'super-compact'
+
+// SYNC: plugins/linear-genome-view/src/LinearGenomeView/menuItems.ts, plugins/linear-comparative-view/src/LinearComparativeView/model.ts
+function buildCompactAllTracksMenu(
+  tracks: { displays: unknown[] }[],
+) {
+  const hasAny = tracks.some(t =>
+    t.displays.some(
+      d => d !== null && typeof d === 'object' && 'setCompactness' in d,
+    ),
+  )
+  if (!hasAny) {
+    return []
+  }
+  function applyCompactness(level: Compactness) {
+    for (const track of tracks) {
+      for (const display of track.displays) {
+        if (
+          display !== null &&
+          typeof display === 'object' &&
+          'setCompactness' in display
+        ) {
+          ;(display as { setCompactness: (v: Compactness) => void }).setCompactness(level)
+        }
+      }
+    }
+  }
+  return [
+    {
+      label: 'Compact all tracks',
+      subMenu: [
+        { label: 'Normal', onClick: () => applyCompactness('normal') },
+        { label: 'Compact', onClick: () => applyCompactness('compact') },
+        { label: 'Super-compact', onClick: () => applyCompactness('super-compact') },
+      ],
+    },
+  ]
+}
+
 import type { BreakpointSplitViewInit, ExportSvgOptions } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
@@ -439,7 +478,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       menuItems() {
+        const allTracks = self.views.flatMap(v => v.tracks)
         return [
+          ...buildCompactAllTracksMenu(allTracks),
           ...self.views.map((view, idx) => ({
             label: `Row ${idx + 1} view menu`,
             subMenu: view.menuItems(),

@@ -488,8 +488,11 @@ export default function stateModelFactory(
         self.setOverride('displayMode', value)
       },
 
-      setCompact(compact: boolean) {
-        self.setOverride('displayMode', compact ? 'compact' : 'normal')
+      setCompactness(level: 'normal' | 'compact' | 'super-compact') {
+        self.setOverride(
+          'displayMode',
+          level === 'super-compact' ? 'reducedRepresentation' : level,
+        )
       },
 
       setShowOnlyGenes(value: boolean) {

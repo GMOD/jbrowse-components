@@ -869,6 +869,20 @@ export default function stateModelFactory(
             self.currentRangeY = [0, 0]
           },
 
+          setCompactness(level: 'normal' | 'compact' | 'super-compact') {
+            if (level === 'compact') {
+              self.setOverride('featureHeight', 3)
+              self.setOverride('noSpacing', true)
+            } else if (level === 'super-compact') {
+              self.setOverride('featureHeight', 1)
+              self.setOverride('noSpacing', true)
+            } else {
+              self.setOverride('featureHeight', 7)
+              self.setOverride('noSpacing', false)
+            }
+            self.currentRangeY = [0, 0]
+          },
+
           setShowSashimiArcs(show: boolean) {
             self.sashimiArcsState.setShowSashimiArcs(show)
           },
@@ -1500,6 +1514,40 @@ export default function stateModelFactory(
         }
       })
       .views(self => ({
+        get viewMenuActions(): MenuItem[] {
+          return [
+            {
+              label: 'Feature height',
+              subMenu: [
+                {
+                  label: 'Normal',
+                  type: 'radio' as const,
+                  checked:
+                    self.featureHeightSetting === 7 &&
+                    self.noSpacingSetting !== true,
+                  onClick: () => self.setCompactness('normal'),
+                },
+                {
+                  label: 'Compact',
+                  type: 'radio' as const,
+                  checked:
+                    self.featureHeightSetting === 3 &&
+                    self.noSpacingSetting === true,
+                  onClick: () => self.setCompactness('compact'),
+                },
+                {
+                  label: 'Super-compact',
+                  type: 'radio' as const,
+                  checked:
+                    self.featureHeightSetting === 1 &&
+                    self.noSpacingSetting === true,
+                  onClick: () => self.setCompactness('super-compact'),
+                },
+              ],
+            },
+          ]
+        },
+
         /**
          * Track menu items
          */

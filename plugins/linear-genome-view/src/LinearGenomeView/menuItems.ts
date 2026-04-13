@@ -32,6 +32,16 @@ function toLocaleRounded(n: number) {
   return toLocale(Math.round(n))
 }
 
+export function cloneMenuItems(items: MenuItem[]): MenuItem[] {
+  return items.map(item => {
+    const clone = { ...item }
+    if ('subMenu' in clone && Array.isArray(clone.subMenu)) {
+      clone.subMenu = cloneMenuItems(clone.subMenu)
+    }
+    return clone
+  })
+}
+
 /**
  * Modifies view menu action onClick to apply to all tracks of same type
  */
@@ -55,6 +65,39 @@ export function rewriteOnClicks(
       }
     }
   }
+}
+
+type Compactness = 'normal' | 'compact' | 'super-compact'
+
+// SYNC: plugins/breakpoint-split-view/src/BreakpointSplitView/model.ts, plugins/linear-comparative-view/src/LinearComparativeView/model.ts
+function buildCompactAllTracksMenu(
+  tracks: { displays: unknown[] }[],
+): MenuItem[] {
+  const hasAny = tracks.some(t =>
+    t.displays.some(d => d !== null && typeof d === 'object' && 'setCompactness' in d),
+  )
+  if (!hasAny) {
+    return []
+  }
+  function applyCompactness(level: Compactness) {
+    for (const track of tracks) {
+      for (const display of track.displays) {
+        if (display !== null && typeof display === 'object' && 'setCompactness' in display) {
+          ;(display as { setCompactness: (v: Compactness) => void }).setCompactness(level)
+        }
+      }
+    }
+  }
+  return [
+    {
+      label: 'Compact all tracks',
+      subMenu: [
+        { label: 'Normal', onClick: () => applyCompactness('normal') },
+        { label: 'Compact', onClick: () => applyCompactness('compact') },
+        { label: 'Super-compact', onClick: () => applyCompactness('super-compact') },
+      ],
+    },
+  ]
 }
 
 /**
@@ -246,6 +289,11 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       ],
     },
   ]
+
+  menuItems.push(
+    { type: 'divider' },
+    ...buildCompactAllTracksMenu(self.tracks),
+  )
 
   // add track's view level menu options
   for (const [key, value] of self.trackTypeActions.entries()) {

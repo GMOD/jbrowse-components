@@ -48,6 +48,7 @@ import {
   buildMenuItems,
   buildRubberBandMenuItems,
   buildRubberbandClickMenuItems,
+  cloneMenuItems,
   rewriteOnClicks,
 } from './menuItems.ts'
 import {
@@ -745,7 +746,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         for (const track of self.tracks) {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
-            const viewMenuActions = structuredClone(track.viewMenuActions)
+            const viewMenuActions = cloneMenuItems(track.viewMenuActions)
             rewriteOnClicks(
               self as LinearGenomeViewModel,
               track.type,
