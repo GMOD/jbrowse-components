@@ -145,9 +145,6 @@ export async function executeRenderPileupData({
     segmentArrays,
   } = await updateStatus('Building arrays', statusCallback, async () => {
     const featureIdToIndex = new Map<string, number>()
-    for (const [i, f] of features.entries()) {
-      featureIdToIndex.set(f.id, i)
-    }
     const getReadIndex = (id: string) => featureIdToIndex.get(id) ?? 0
 
     const layoutMaxY = 0
@@ -165,6 +162,7 @@ export async function executeRenderPileupData({
     const readNames: string[] = []
 
     for (const [i, f] of features.entries()) {
+      featureIdToIndex.set(f.id, i)
       readPositions[i * 2] = Math.max(0, f.start - regionStart)
       readPositions[i * 2 + 1] = f.end - regionStart
       readYs[i] = getY(f.id)

@@ -112,12 +112,7 @@ export function extractFeatureArrays<T extends FeatureData>(
   }
 
   const tagColors = isTagColorMode
-    ? buildTagColors(
-        features as FeatureData[],
-        tagColorValues,
-        colorBy!,
-        colorTagMap!,
-      )
+    ? buildTagColors(features, tagColorValues, colorBy!, colorTagMap!)
     : new Uint8Array(0)
 
   modifications.sort((a, b) => a.modType.localeCompare(b.modType))

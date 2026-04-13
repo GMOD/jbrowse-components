@@ -303,6 +303,9 @@ export async function executeRenderChainData({
 
     const getY = (id: string) => featureIdToY.get(id) ?? 0
 
+    const featureIdToIndex = new Map<string, number>()
+    const getReadIndex = (id: string) => featureIdToIndex.get(id) ?? 0
+
     const readPositions = new Uint32Array(features.length * 2)
     const readYs = new Uint16Array(features.length)
     const readFlags = new Uint16Array(features.length)
@@ -318,6 +321,9 @@ export async function executeRenderChainData({
     const readChainIndices = new Uint32Array(features.length)
 
     for (const [i, f] of features.entries()) {
+      if (!featureIdToIndex.has(f.id)) {
+        featureIdToIndex.set(f.id, i)
+      }
       const y = getY(f.id)
       readPositions[i * 2] = Math.max(0, f.start - regionStart)
       readPositions[i * 2 + 1] = f.end - regionStart
@@ -369,14 +375,6 @@ export async function executeRenderChainData({
       connectingLineYs[i] = line.y
       connectingLineColorTypes[i] = line.colorType
     }
-
-    const featureIdToIndex = new Map<string, number>()
-    for (const [i, f] of features.entries()) {
-      if (!featureIdToIndex.has(f.id)) {
-        featureIdToIndex.set(f.id, i)
-      }
-    }
-    const getReadIndex = (id: string) => featureIdToIndex.get(id) ?? 0
 
     let chainFlatbushData: ArrayBuffer | undefined
     const chainFirstReadIndices = new Uint32Array(chainBounds.length)
