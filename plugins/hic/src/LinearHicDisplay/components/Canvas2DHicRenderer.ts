@@ -4,7 +4,7 @@ import { lookupColorRamp } from './colorRamp.ts'
 
 import type { HicBackend, HicRenderState } from './hicBackendTypes.ts'
 
-const SQRT_HALF = 0.7071067811865476
+const SQRT_HALF = Math.SQRT1_2
 
 export class Canvas2DHicRenderer implements HicBackend {
   private ctx: CanvasRenderingContext2D

@@ -1,5 +1,6 @@
 import { toLocale } from '@jbrowse/core/util'
-import { scaleLinear, scaleLog } from '@mui/x-charts-vendor/d3-scale'
+
+import { getNiceScale } from './HicColorLegend.tsx'
 
 const colorStops: Record<string, { offset: string; color: string }[]> = {
   juicebox: [
@@ -31,18 +32,6 @@ const colorStops: Record<string, { offset: string; color: string }[]> = {
     { offset: '88%', color: '#b5de2b' },
     { offset: '100%', color: '#fde725' },
   ],
-}
-
-function getNiceScale(maxScore: number, useLogScale?: boolean) {
-  if (useLogScale) {
-    // Use base 2 for log scale like wiggle plugin does
-    const scale = scaleLog().base(2).domain([1, maxScore]).nice()
-    const [min, max] = scale.domain()
-    return { min, max }
-  }
-  const scale = scaleLinear().domain([0, maxScore]).nice()
-  const [min, max] = scale.domain()
-  return { min, max }
 }
 
 export default function HicSVGColorLegend({

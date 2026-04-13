@@ -4,6 +4,14 @@ import type {
   LDMetric,
 } from '../VariantRPC/getLDMatrix.ts'
 
+export interface LDFlatbushItem {
+  i: number
+  j: number
+  ldValue: number
+  snp1: LDMatrixResult['snps'][0]
+  snp2: LDMatrixResult['snps'][0]
+}
+
 export interface LDDataResult {
   ldValues: Float32Array
   // n+1 boundary positions for hit testing and Canvas2D/SVG rendering.

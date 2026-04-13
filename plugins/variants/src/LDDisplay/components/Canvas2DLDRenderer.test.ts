@@ -2,7 +2,7 @@ import { Canvas2DLDRenderer } from './Canvas2DLDRenderer.ts'
 
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
 
-const COS45 = 0.7071067811865476
+const COS45 = Math.SQRT1_2
 
 function createMockCanvas() {
   const fillRectCalls: [number, number, number, number][] = []

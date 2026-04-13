@@ -3,7 +3,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 
 import type { HicDataResult } from './types.ts'
 import type { MultiRegionContactRecord } from '../HicAdapter/HicAdapter.ts'
-import type { HicFlatbushItem } from '../HicRenderer/types.ts'
+import type { HicFlatbushItem } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util/types'
 
@@ -67,10 +67,7 @@ export async function executeRenderHicData({
     (binOffset, i) => (regionPixelOffsets[i] ?? 0) * pxToBinFactor - binOffset,
   )
 
-  let totalWidthBp = 0
-  for (const region of regions) {
-    totalWidthBp += region.end - region.start
-  }
+  const totalWidthBp = regions.reduce((sum, r) => sum + r.end - r.start, 0)
   const width = totalWidthBp / bpPerPx
   const hyp = width / 2
   const height = mode === 'adjust' ? (displayHeight ?? hyp) : hyp

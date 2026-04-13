@@ -1,8 +1,3 @@
-/**
- * Unified SVG-based color legend for LD displays.
- * Used both in the React app (with SVG wrapper) and SVG export (without wrapper).
- */
-
 const LEGEND_WIDTH = 120
 const LEGEND_HEIGHT = 40
 const BAR_WIDTH = 100
@@ -60,10 +55,6 @@ function getLabels(ldMetric: string, signedLD: boolean) {
   }
 }
 
-/**
- * The core SVG legend content (without the outer <svg> element).
- * Used directly in SVG export and wrapped in <svg> for React app.
- */
 export function LDColorLegendContent({
   ldMetric,
   signedLD = false,
@@ -140,9 +131,6 @@ export function LDColorLegendContent({
   )
 }
 
-/**
- * Wrapper for use in SVG export - positions the legend in the top-right corner.
- */
 export function LDSVGColorLegend({
   ldMetric,
   width,
@@ -159,9 +147,6 @@ export function LDSVGColorLegend({
   )
 }
 
-/**
- * Wrapper for use in React app - wraps the SVG content in an absolutely positioned SVG element.
- */
 export default function LDColorLegend({
   ldMetric,
   signedLD = false,

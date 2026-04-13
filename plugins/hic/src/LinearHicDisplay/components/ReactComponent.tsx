@@ -20,9 +20,9 @@ import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { HicRenderer, generateColorRamp } from './HicRenderer.ts'
-import HicColorLegend from '../../HicRenderer/components/HicColorLegend.tsx'
+import HicColorLegend from './HicColorLegend.tsx'
 
-import type { HicFlatbushItem } from '../../HicRenderer/types.ts'
+import type { HicFlatbushItem } from '../../RenderHicDataRPC/types.ts'
 import type { LinearHicDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

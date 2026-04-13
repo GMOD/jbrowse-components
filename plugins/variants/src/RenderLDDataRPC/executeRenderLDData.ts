@@ -116,10 +116,7 @@ export async function executeRenderLDData({
     return emptyResult(signedLD, ldMetric)
   }
 
-  let totalWidthBp = 0
-  for (const r of regions) {
-    totalWidthBp += r.end - r.start
-  }
+  const totalWidthBp = regions.reduce((sum, r) => sum + r.end - r.start, 0)
   const width = totalWidthBp / bpPerPx
   const hyp = width / 2
   const height = fitToHeight ? (displayHeight ?? hyp) : hyp

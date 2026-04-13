@@ -83,7 +83,6 @@ export async function renderSvg(
       />
     )
   } else {
-    const SQRT2_INV = 0.7071067811865476
     const ctx = new SvgCanvas()
 
     for (let i = 0; i < numContacts; i++) {
@@ -103,8 +102,8 @@ export async function renderSvg(
         [px + binWidth, py + binWidth],
         [px, py + binWidth],
       ] as const) {
-        const rx = (cx + cy) * SQRT2_INV
-        const ry = (-cx + cy) * SQRT2_INV * yScalar
+        const rx = (cx + cy) * Math.SQRT1_2
+        const ry = (-cx + cy) * Math.SQRT1_2 * yScalar
         if (first) {
           ctx.moveTo(rx, ry)
           first = false

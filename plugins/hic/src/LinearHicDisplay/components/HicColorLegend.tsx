@@ -36,9 +36,8 @@ const colorGradients: Record<string, string> = {
     'linear-gradient(to right, #440154, #482878, #3e4a89, #31688e, #26828e, #1f9e89, #35b779, #6ece58, #b5de2b, #fde725)',
 }
 
-function getNiceScale(maxScore: number, useLogScale?: boolean) {
+export function getNiceScale(maxScore: number, useLogScale?: boolean) {
   if (useLogScale) {
-    // Use base 2 for log scale like wiggle plugin does
     const scale = scaleLog().base(2).domain([1, maxScore]).nice()
     const [min, max] = scale.domain()
     return { min, max }

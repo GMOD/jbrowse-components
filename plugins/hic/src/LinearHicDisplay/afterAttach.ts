@@ -125,7 +125,9 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
         self.resolution
         self.activeNormalization
         self.mode
-        self.height
+        if (self.mode === 'adjust') {
+          self.height
+        }
         /* eslint-enable @typescript-eslint/no-unused-expressions */
 
         if (untracked(() => self.error) || !regions.length) {

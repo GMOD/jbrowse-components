@@ -3,7 +3,7 @@ import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { interpolateRgbBasis } from '@mui/x-charts-vendor/d3-interpolate'
 import { scaleSequential } from '@mui/x-charts-vendor/d3-scale'
 
-import type { LDFlatbushItem } from './types.ts'
+import type { LDFlatbushItem } from '../RenderLDDataRPC/types.ts'
 import type { LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
 import type { LastStopTokenCheck, Region } from '@jbrowse/core/util'
 

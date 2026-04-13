@@ -6,7 +6,7 @@ import type {
   LDUploadData,
 } from './ldBackendTypes.ts'
 
-const COS45 = 0.7071067811865476
+const COS45 = Math.SQRT1_2
 
 export class Canvas2DLDRenderer implements LDBackend {
   private ctx: CanvasRenderingContext2D

@@ -1,4 +1,10 @@
-import type { HicFlatbushItem } from '../HicRenderer/types.ts'
+export interface HicFlatbushItem {
+  bin1: number
+  bin2: number
+  counts: number
+  region1Idx: number
+  region2Idx: number
+}
 
 export interface HicDataResult {
   positions: Float32Array
