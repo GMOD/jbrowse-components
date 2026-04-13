@@ -7,7 +7,7 @@ import AboutContents from './AboutDialogContents.tsx'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-export function AboutDialog({
+export default function AboutDialog({
   config,
   session,
   handleClose,
