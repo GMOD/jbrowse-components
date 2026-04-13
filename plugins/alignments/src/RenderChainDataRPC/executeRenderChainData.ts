@@ -271,14 +271,12 @@ export async function executeRenderChainData({
         modificationsData,
       )
 
-      if (colorBy?.type === 'methylation' && regionSequence) {
+      if (colorBy?.type === 'methylation') {
         extractMethylation(
           feature,
           featureId,
           featureStart,
           strand,
-          regionSequence,
-          regionSequenceStart,
           regionStart,
           Math.ceil(region.end),
           modificationsData,

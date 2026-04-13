@@ -233,8 +233,6 @@ export function extractMethylation(
   featureId: string,
   featureStart: number,
   strand: number,
-  regionSequenceLower: string,
-  regionSequenceStart: number,
   regionStart: number,
   regionEnd: number,
   modificationsData: ModificationEntry[],
@@ -250,36 +248,11 @@ export function extractMethylation(
   const methStrand = strand === -1 ? -1 : 1
   const iStart = Math.max(0, regionStart - featureStart)
   const iEnd = Math.min(feature.get('end'), regionEnd) - featureStart
-  let cpgCheckHits = 0
-  let cpgCheckMisses = 0
 
   for (let i = iStart; i < iEnd; i++) {
     if (!methBins[i] && !hydroxyMethBins[i]) {
       continue
     }
-
-    const refIdx = i + featureStart - regionSequenceStart
-
-    // getMethBins stores methylation at the C position for forward strand reads,
-    // and at the G position for reverse strand reads (because the read's C is
-    // complementary to the reference G at that position). Check accordingly.
-    let isCpG: boolean
-    if (strand === -1) {
-      isCpG =
-        regionSequenceLower[refIdx - 1] === 'c' &&
-        regionSequenceLower[refIdx] === 'g'
-    } else {
-      isCpG =
-        regionSequenceLower[refIdx] === 'c' &&
-        regionSequenceLower[refIdx + 1] === 'g'
-    }
-
-    if (!isCpG) {
-      cpgCheckMisses++
-      continue
-    }
-    cpgCheckHits++
-
     const genomicPos = i + featureStart
     if (methBins[i]) {
       const methP = methProbs[i] || 0
@@ -296,7 +269,6 @@ export function extractMethylation(
         prob: methP,
       })
     }
-
     if (hydroxyMethBins[i]) {
       const hydroxyP = hydroxyMethProbs[i] || 0
       modificationsData.push({
@@ -313,9 +285,6 @@ export function extractMethylation(
       })
     }
   }
-  console.log(
-    `[methylation] feature=${featureId} strand=${strand} cpgHits=${cpgCheckHits} cpgMisses=${cpgCheckMisses} mods=${modificationsData.length}`,
-  )
 }
 
 export function buildTagColors(
