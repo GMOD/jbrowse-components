@@ -68,21 +68,17 @@ function evalBezierCurve(
   const absradPx = absrad * pxPerBp
   const destY = Math.min(availableHeight, absradPx)
 
-  let xBp: number
-  let yPx: number
-
   if (isArc) {
     const angle = t * Math.PI
     const cx = x1 + radius
-    xBp = cx + Math.cos(angle) * radius
+    const xBp = cx + Math.cos(angle) * radius
     const rawY = Math.sin(angle) * absradPx
-    yPx = absradPx > 0 ? rawY * (destY / absradPx) : 0
-  } else {
-    ;({ xBp, yPx } = cubicBezierXY(t, x1, x2, destY))
+    const yPx = absradPx > 0 ? rawY * (destY / absradPx) : 0
+    return { x: blockStartPx + (xBp - bpStartOffset) * pxPerBp, y: yPx }
   }
 
-  const screenX = blockStartPx + (xBp - bpStartOffset) * pxPerBp
-  return { x: screenX, y: yPx }
+  const { xBp, yPx } = cubicBezierXY(t, x1, x2, destY)
+  return { x: blockStartPx + (xBp - bpStartOffset) * pxPerBp, y: yPx }
 }
 
 function evalSashimiCurve(
