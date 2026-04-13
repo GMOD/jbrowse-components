@@ -153,7 +153,7 @@ function renderPeptides(
       reversed,
     )
     const centerPx = (px1 + px2) / 2
-    const fontSize = Math.min(item.heightPx - 2, 12)
+    const fontSize = Math.min(item.heightPx, 16)
     const y = item.topPx + item.heightPx / 2 + fontSize / 3
 
     ctx.fillStyle = item.isStopOrNonTriplet ? 'red' : 'black'

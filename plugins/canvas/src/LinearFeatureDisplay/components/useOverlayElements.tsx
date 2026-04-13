@@ -231,7 +231,11 @@ export function useAminoAcidOverlay(
 
         const centerPx = (toScreen(item.startBp) + toScreen(item.endBp)) / 2
         const topPx = item.topPx
-        const fontSize = Math.min(item.heightPx - 2, 12)
+        const fontSize = Math.min(item.heightPx, 16)
+        const cellWidthPx = Math.abs(
+          toScreen(item.endBp) - toScreen(item.startBp),
+        )
+        const showIndex = cellWidthPx >= 20
 
         elements.push(
           <div
@@ -243,14 +247,17 @@ export function useAminoAcidOverlay(
               height: item.heightPx,
               transform: 'translateX(-50%)',
               fontSize,
+              fontFamily: 'monospace',
               lineHeight: `${item.heightPx}px`,
               color: item.isStopOrNonTriplet ? 'red' : 'black',
               pointerEvents: 'none',
+              userSelect: 'none',
               whiteSpace: 'nowrap',
+              WebkitFontSmoothing: 'antialiased',
             }}
           >
             {item.aminoAcid}
-            {item.proteinIndex + 1}
+            {showIndex ? item.proteinIndex + 1 : null}
           </div>,
         )
       }
