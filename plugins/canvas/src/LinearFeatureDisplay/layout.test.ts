@@ -1009,6 +1009,31 @@ test('incremental fetch with subfeatures preserves correct offsets', () => {
   expect(r1.subfeatureInfos[0]!.bottomPx).toBe(15 + gene1Y)
 })
 
+test('spread then relayout (relayoutForCurrentZoom pattern) gives new reference and correct Y', () => {
+  const data = makeFeatureData({
+    regionStart: 0,
+    features: [
+      { featureId: 'f1', startBp: 100, endBp: 500, height: 20 },
+      { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
+    ],
+  })
+  const regionKeys = new Map([[0, 'chr1']])
+  relayoutAllRegions(new Map([[0, data]]), 1, regionKeys, false, false)
+  const f1Y = data.flatbushItems[0]!.topPx
+  const f2Y = data.flatbushItems[1]!.topPx
+  expect(f2Y).toBeGreaterThan(0) // overlapping features on different rows
+
+  // relayoutForCurrentZoom spreads each value to a new object reference
+  // so per-region identity tracking in FeatureComponent sees it as changed
+  const spread = { ...data }
+  expect(spread).not.toBe(data)
+
+  // relayout at same bpPerPx: zero delta, Y values preserved
+  relayoutAllRegions(new Map([[0, spread]]), 1, regionKeys, false, false)
+  expect(spread.flatbushItems[0]!.topPx).toBe(f1Y)
+  expect(spread.flatbushItems[1]!.topPx).toBe(f2Y)
+})
+
 test('incremental fetch: old regions do not get double Y offsets', () => {
   // Simulate collapsed introns: multiple regions on same chromosome,
   // same spanning feature in each, fetched in two batches

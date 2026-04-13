@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
 
 import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
+import { uploadChangedRegions } from '@jbrowse/core/gpu/uploadChangedRegions'
 import {
   getContainingView,
   useGpuRenderer,
@@ -82,6 +83,7 @@ const WiggleComponent = observer(function WiggleComponent({
     }
 
     let lastDataMap: unknown = null
+    const lastUploaded = new Map<number, unknown>()
 
     return autorun(() => {
       const dataMap = model.rpcDataMap
@@ -90,13 +92,11 @@ const WiggleComponent = observer(function WiggleComponent({
         lastDataMap = dataMap
         if (dataMap.size === 0) {
           renderer.pruneRegions([])
+          lastUploaded.clear()
         } else {
-          const activeRegions: number[] = []
-          for (const [regionNumber, data] of dataMap) {
-            activeRegions.push(regionNumber)
-            const sources = buildSourceRenderData(data, model)
-            renderer.uploadRegion(regionNumber, data.regionStart, sources)
-          }
+          const activeRegions = uploadChangedRegions(dataMap, lastUploaded, (regionNumber, data) => {
+            renderer.uploadRegion(regionNumber, data.regionStart, buildSourceRenderData(data, model))
+          })
           renderer.pruneRegions(activeRegions)
         }
       }

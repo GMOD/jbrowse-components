@@ -726,7 +726,10 @@ export default function stateModelFactory(
         if (!view.initialized || self.rpcDataMap.size === 0) {
           return
         }
-        const dataMap = new Map(self.rpcDataMap)
+        const dataMap = new Map<number, FeatureDataResult>()
+        for (const [k, v] of self.rpcDataMap) {
+          dataMap.set(k, { ...v })
+        }
         relayoutAllRegions(
           dataMap,
           view.bpPerPx,

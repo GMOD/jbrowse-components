@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
 
 import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
+import { uploadChangedRegions } from '@jbrowse/core/gpu/uploadChangedRegions'
 import {
   getContainingView,
   useGpuRenderer,
@@ -155,6 +156,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     }
 
     let lastDataMap: unknown = null
+    const lastUploaded = new Map<number, unknown>()
 
     return autorun(() => {
       const dataMap = model.rpcDataMap
@@ -163,24 +165,26 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         lastDataMap = dataMap
         if (dataMap.size === 0) {
           renderer.pruneRegions([])
+          lastUploaded.clear()
         } else {
           const { summaryScoreMode, renderingType, isDensityMode } = model
           const defaultPosColor = parseColor(model.posColor)
           const defaultNegColor = parseColor(model.negColor)
-          const activeRegions: number[] = []
-          for (const [regionNumber, data] of dataMap) {
-            activeRegions.push(regionNumber)
-            const sourcesData = buildMultiSourceRenderData(
-              data,
-              model.sources,
-              defaultPosColor,
-              defaultNegColor,
-              summaryScoreMode,
-              renderingType,
-              isDensityMode,
+          const activeRegions = uploadChangedRegions(dataMap, lastUploaded, (regionNumber, data) => {
+            renderer.uploadRegion(
+              regionNumber,
+              data.regionStart,
+              buildMultiSourceRenderData(
+                data,
+                model.sources,
+                defaultPosColor,
+                defaultNegColor,
+                summaryScoreMode,
+                renderingType,
+                isDensityMode,
+              ),
             )
-            renderer.uploadRegion(regionNumber, data.regionStart, sourcesData)
-          }
+          })
           renderer.pruneRegions(activeRegions)
         }
       }

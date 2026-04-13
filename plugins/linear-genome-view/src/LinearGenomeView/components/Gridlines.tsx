@@ -87,6 +87,20 @@ export default function Gridlines({
   const tickRef = useRef<HTMLDivElement>(null)
   const blockRef = useRef<HTMLDivElement>(null)
 
+  // Fast: fires on every pan/zoom, only updates the container transform
+  useEffect(() => {
+    return autorun(() => {
+      const inner = innerRef.current
+      if (!inner) {
+        return
+      }
+      const { staticBlocks, offsetPx } = model
+      inner.style.transform = `translateX(${staticBlocks.offsetPx - offsetPx - offset}px)`
+      inner.style.width = `${staticBlocks.totalWidthPx}px`
+    })
+  }, [model, offset])
+
+  // Slow: fires only when bpPerPx or blocks change (zoom/region change), not on pan
   useEffect(() => {
     const majorColor = theme.palette.action.disabled
     const minorColor = theme.palette.divider
@@ -94,18 +108,14 @@ export default function Gridlines({
     const disabledBgColor = theme.palette.action.disabledBackground
 
     return autorun(() => {
-      const inner = innerRef.current
       const tickContainer = tickRef.current
       const blockContainer = blockRef.current
-      if (!inner || !tickContainer || !blockContainer) {
+      if (!tickContainer || !blockContainer) {
         return
       }
-      const { staticBlocks, bpPerPx, offsetPx } = model
+      const { staticBlocks, bpPerPx } = model
       const blocks = staticBlocks.blocks
       const firstBlockOffset = blocks[0]?.offsetPx ?? 0
-
-      inner.style.transform = `translateX(${staticBlocks.offsetPx - offsetPx - offset}px)`
-      inner.style.width = `${staticBlocks.totalWidthPx}px`
 
       const ticks = collectTicks(blocks, bpPerPx, firstBlockOffset)
       const nonContentBlocks = blocks.filter(b => b.type !== 'ContentBlock')
@@ -121,14 +131,13 @@ export default function Gridlines({
       }
 
       for (const [i, nonContentBlock] of nonContentBlocks.entries()) {
-        const block = nonContentBlock
-        const blockLeft = block.offsetPx - firstBlockOffset
-        const bg = getBlockBackground(block, disabledBgColor, textDisabledColor)
+        const blockLeft = nonContentBlock.offsetPx - firstBlockOffset
+        const bg = getBlockBackground(nonContentBlock, disabledBgColor, textDisabledColor)
         const el = blockContainer.children[i] as HTMLElement
-        el.style.cssText = `${BLOCK_STYLE};transform:translateX(${blockLeft}px);width:${block.widthPx}px;${bg}`
+        el.style.cssText = `${BLOCK_STYLE};transform:translateX(${blockLeft}px);width:${nonContentBlock.widthPx}px;${bg}`
       }
     })
-  }, [model, theme, offset])
+  }, [model, theme])
 
   return (
     <div className={classes.verticalGuidesZoomContainer}>

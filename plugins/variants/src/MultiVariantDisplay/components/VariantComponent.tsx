@@ -182,25 +182,16 @@ const VariantComponent = observer(function VariantComponent({
       return
     }
 
-    let lastCellData: PerRegionCellData | null = null
     return autorun(() => {
       const cellData = model.cellData
       if (!cellData) {
-        lastCellData = null
-        return
-      }
-
-      if (lastCellData !== cellData) {
-        lastCellData = cellData
-        const activeRegions: number[] = []
-        for (const [regionNumStr, regionData] of Object.entries(
-          cellData.perRegionCellData,
-        )) {
-          const regionNum = Number(regionNumStr)
-          activeRegions.push(regionNum)
-          renderer.uploadRegion(regionNum, regionData)
+        renderer.pruneRegions([])
+      } else {
+        const perRegion = cellData.perRegionCellData
+        for (const [regionNumStr, regionData] of Object.entries(perRegion)) {
+          renderer.uploadRegion(Number(regionNumStr), regionData)
         }
-        renderer.pruneRegions(activeRegions)
+        renderer.pruneRegions(Object.keys(perRegion).map(Number))
       }
 
       // SYNC across all hook-driven GPU displays (wiggle, multi-wiggle,

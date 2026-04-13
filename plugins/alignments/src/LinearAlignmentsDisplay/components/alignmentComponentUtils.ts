@@ -464,23 +464,33 @@ export function formatFeatureTooltip(
 }
 
 /**
- * Upload all per-region pileup data to the backend, skipping empty regions.
- * Returns the max Y across uploaded regions for layout.
+ * Upload per-region pileup data to the backend, skipping unchanged regions.
+ * Returns the max Y across all active regions for layout.
  */
 export function uploadRegionDataToGPU(
   renderer: AlignmentsBackend,
   rpcDataMap: Map<number, PileupDataResult>,
+  lastUploaded: Map<number, PileupDataResult>,
 ) {
   let maxYVal = 0
   const activeRegions: number[] = []
   for (const [regionNumber, data] of rpcDataMap) {
     if (data.numReads === 0) {
+      lastUploaded.delete(regionNumber)
       continue
     }
     activeRegions.push(regionNumber)
-    renderer.uploadRegion(regionNumber, data)
+    if (lastUploaded.get(regionNumber) !== data) {
+      renderer.uploadRegion(regionNumber, data)
+      lastUploaded.set(regionNumber, data)
+    }
     if (data.maxY > maxYVal) {
       maxYVal = data.maxY
+    }
+  }
+  for (const key of lastUploaded.keys()) {
+    if (!rpcDataMap.has(key)) {
+      lastUploaded.delete(key)
     }
   }
   renderer.pruneRegions(activeRegions)

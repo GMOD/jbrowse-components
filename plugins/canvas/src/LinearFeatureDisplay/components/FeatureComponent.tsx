@@ -148,6 +148,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     [number, number] | undefined
   >()
   const flatbushCacheMapRef = useRef(new Map<number, FlatbushRegionCache>())
+  const lastUploadedRef = useRef(new Map<number, FeatureDataResult>())
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const view = getContainingView(model) as LGV
@@ -252,6 +253,11 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   // data. dataVersion is not needed here because rpcDataMap always gets
   // a new Map reference when work() completes — the reference change is
   // the sole trigger. See MultiRegionDisplayMixin.withFetchLifecycle.
+  //
+  // Per-region identity tracking (lastUploadedRef) is safe here because
+  // relayoutForCurrentZoom() spreads each FeatureDataResult into a new
+  // object before mutating it, so changed regions always have a new
+  // object reference.
 
   useLayoutEffect(() => {
     const renderer = rendererRef.current
@@ -263,29 +269,29 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       scrollContainerRef.current.scrollTop = 0
     }
 
+    const lastUploaded = lastUploadedRef.current
     if (rpcDataMap.size === 0) {
       renderer.pruneRegions([])
       flatbushCacheMapRef.current.clear()
+      lastUploaded.clear()
       return
     }
 
-    // DO NOT use an identity check (prevData === data) to skip uploads.
-    //
-    // relayoutForCurrentZoom() mutates data.rectYs and
-    // data.floatingLabelsData[].topY IN PLACE when the user zooms,
-    // then calls setRpcDataMap(new Map(...)) which changes the Map
-    // reference but keeps the same data object references. An identity
-    // check would see the same object and skip the upload, leaving the
-    // GPU with stale Y positions while labels show the updated ones —
-    // causing features and labels to become permanently misaligned.
-    //
-    // This effect only fires when rpcDataMap changes reference (on
-    // fetch completion or relayout), not on every scroll tick, so
-    // always re-uploading is safe and correct.
+    const activeRegions: number[] = []
     for (const [regionNumber, data] of rpcDataMap) {
-      renderer.uploadRegion(regionNumber, data)
+      activeRegions.push(regionNumber)
+      if (lastUploaded.get(regionNumber) !== data) {
+        renderer.uploadRegion(regionNumber, data)
+        lastUploaded.set(regionNumber, data)
+      }
     }
-    renderer.pruneRegions([...rpcDataMap.keys()])
+    for (const key of lastUploaded.keys()) {
+      if (!rpcDataMap.has(key)) {
+        lastUploaded.delete(key)
+        flatbushCacheMapRef.current.delete(key)
+      }
+    }
+    renderer.pruneRegions(activeRegions)
 
     clearHoverState()
 

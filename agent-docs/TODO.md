@@ -129,25 +129,10 @@ option for now. If desired, implement coloring synteny features by query name
 (hash query name to a color) in LGVSyntenyDisplay similar to how it's done in
 alignments.
 
-## Potential improvements in type checking
-
-An agent said the following, but i think we could improve the types if we tried:
-
-- MultiSampleVariantGetCellData.ts line 27 — post-deserializeArguments cast;
-  unavoidable because the base class return type is generic
-- HtsgetBamAdapter.ts — pre-existing, unrelated to our work
-
-The @ts-expect-error on dataAdapter.getSources() in
-MultiSampleVariantGetSources.ts is also unavoidable — getSources is a method
-specific to certain adapters, not on the BaseFeatureDataAdapter interface, so
-there's no clean way to type it without touching the adapter base class.
-
 ## Simpliy and refactor all plugins repeatedly
 
 packages/core plugins/gtf plugins/arc packages/app-core products/jbrowse-web
 products/jbrowse-desktop etc.
-
-ImportForm dotplot ImportForm synteny
 
 ## Continue benchmark-genotypes work
 
@@ -155,32 +140,32 @@ ld and multi sample
 
 publish hclust also and merge
 
-## Make protein letters slightly larger
+## Make HiC display multi-region capable
 
-Unreadable currently
+`plugins/hic/src/LinearHicDisplay/components/` currently uses a single-region
+upload pattern (`lastRpcData !== data` outer guard, calls
+`renderer.uploadData()` once). Needs to become per-region like
+wiggle/alignments:
 
-## Simplify the RefNameAutocomplete component signficantly
+- Switch to `Map<number, HicDataResult>` for `rpcDataMap`
+- Use `uploadChangedRegions` for per-region upload
+- Pass `regionNumber` to `renderer.uploadRegion()` instead of monolithic upload
+- Pass block array to `renderBlocks()` (currently passes a single region)
+- Verify color scheme change still triggers re-upload
 
-look at the usage of the component to guide this
+## Make LD display multi-region capable
 
-the run tests
+`plugins/variants/src/LDDisplay/components/` same situation as HiC — single
+region upload pattern. Steps mirror HiC above.
 
-## The LD heatmap is not displaying
+## MultiVariantDisplay per-region upload optimization
 
-Checking volvox 1000 genomes display
+`VariantComponent.tsx` currently re-uploads ALL regions on every `cellData`
+change (simplified in the last refactor because `perRegionCellData` is a plain
+object, not a `Map`, and it was unclear whether its per-region values preserve
+object identity across updates).
 
-See [mobx] uncaught error in 'Reaction[Autorun]' DOMException:
-GPUQueue.writeBuffer: Byte size must be a multiple of 4 s webgpuUtils.ts:57
-uploadBuffer webgpuHal.ts:329 uploadData GpuLDRenderer.ts:123 A
-LDDisplayComponent.tsx:387 MobX 8
-
-## The multi-sample variant display is not displaying subpixel stuff very great
-
-When resizing vertically, rows blink on and off, due to subpixels becoming
-visible and invisible
-
-Note that we should look at canvas just to see
-
-## Look at the performance trace
-
-Gridlines and useAlignmentsBase uploading to gpu are hot spots
+Investigate: does `computeVariantCells` return the same object reference for an
+unchanged region when a neighboring region's data arrives? If yes, wire up
+`uploadChangedRegions` (or the equivalent manual pattern) so only the changed
+region pays the upload cost.

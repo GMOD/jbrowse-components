@@ -9,6 +9,7 @@ import {
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 
+import { uploadChangedRegions } from '@jbrowse/core/gpu/uploadChangedRegions'
 import { AlignmentsRenderer } from './AlignmentsRenderer.ts'
 import {
   buildColorPaletteFromTheme,
@@ -548,17 +549,20 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
     let lastRpcDataMap: Map<number, PileupDataResult> | null = null
     let lastArcsDataMap: Map<number, unknown> | null = null
+    const lastUploaded = new Map<number, PileupDataResult>()
+    const lastConnectingUploaded = new Map<number, PileupDataResult>()
+    const lastArcsUploaded = new Map<number, unknown>()
 
     return autorun(() => {
       const rpcDataMap = model.rpcDataMap
 
       if (lastRpcDataMap !== rpcDataMap) {
         lastRpcDataMap = rpcDataMap
-        const maxYVal = uploadRegionDataToGPU(renderer, rpcDataMap)
+        const maxYVal = uploadRegionDataToGPU(renderer, rpcDataMap, lastUploaded)
         if (maxYVal > 0) {
           model.setMaxY(maxYVal)
         }
-        for (const [regionNumber, data] of rpcDataMap) {
+        uploadChangedRegions(rpcDataMap, lastConnectingUploaded, (regionNumber, data) => {
           if (
             data.connectingLinePositions &&
             data.connectingLineYs &&
@@ -573,13 +577,13 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
               numConnectingLines: data.numConnectingLines,
             })
           }
-        }
+        })
       }
 
       const arcsRpcDataMap = model.arcsState.rpcDataMap
       if (lastArcsDataMap !== arcsRpcDataMap) {
         lastArcsDataMap = arcsRpcDataMap
-        for (const [regionNumber, data] of arcsRpcDataMap) {
+        uploadChangedRegions(arcsRpcDataMap, lastArcsUploaded, (regionNumber, data) => {
           renderer.uploadArcsFromTypedArraysForRegion(regionNumber, {
             regionStart: data.regionStart,
             arcX1: data.arcX1,
@@ -592,7 +596,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             lineColorTypes: data.lineColorTypes,
             numLines: data.numLines,
           })
-        }
+        })
       }
 
       // SYNC across all hook-driven GPU displays (wiggle, multi-wiggle,

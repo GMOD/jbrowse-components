@@ -34,7 +34,7 @@ function doSubmit({
   transaction(() => {
     if (isSessionWithAddTracks(session)) {
       for (const [idx, f] of toJS(importFormSyntenyTrackSelections).entries()) {
-        if (f.type === 'userOpened') {
+        if (f.type === 'userOpened' && f.value !== undefined) {
           session.addTrackConf(f.value)
           model.toggleTrack(f.value.trackId)
         } else if (f.type === 'preConfigured') {
