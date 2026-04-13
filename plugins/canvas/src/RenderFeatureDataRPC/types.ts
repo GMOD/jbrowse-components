@@ -1,14 +1,8 @@
 import type { DisplayConfig } from './renderConfig.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-export interface SequenceData {
-  seq: string
-  cds: { start: number; end: number }[]
-}
-
 export interface PeptideData {
-  sequenceData: SequenceData
-  protein?: string
+  protein: string
 }
 
 export interface FeatureLayout {

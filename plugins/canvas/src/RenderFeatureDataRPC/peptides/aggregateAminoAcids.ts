@@ -8,7 +8,7 @@ export interface AggregatedAminoAcid {
 
 export function aggregateAminos(
   protein: string,
-  g2p: Record<string, number>,
+  g2p: Record<number, number>,
   featureStart: number,
   featureEnd: number,
   strand: number,

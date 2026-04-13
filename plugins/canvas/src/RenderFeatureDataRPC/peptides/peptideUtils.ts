@@ -7,7 +7,7 @@ import {
 import { convertCodingSequenceToPeptides } from '@jbrowse/core/util/convertCodingSequenceToPeptides'
 import { firstValueFrom, toArray } from 'rxjs'
 
-import type { PeptideData, SequenceData } from '../types.ts'
+import type { PeptideData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -56,11 +56,8 @@ const DEFAULT_TRANSCRIPT_TYPES = [
   'protein_coding_primary_transcript',
 ]
 
-function isTranscriptType(
-  type: string,
-  transcriptTypes = DEFAULT_TRANSCRIPT_TYPES,
-) {
-  return transcriptTypes.includes(type)
+function isTranscriptType(type: string) {
+  return DEFAULT_TRANSCRIPT_TYPES.includes(type)
 }
 
 function hasCDSSubfeatures(feature: Feature) {
@@ -134,21 +131,19 @@ function processTranscriptFromSeq(
       .reverse()
   }
 
-  const sequenceData: SequenceData = { seq: processedSeq, cds }
-
   try {
     const protein = convertCodingSequenceToPeptides({
       cds,
       sequence: processedSeq,
       codonTable,
     })
-    return { sequenceData, protein }
+    return { protein }
   } catch (error) {
     console.warn(
-      `[fetchTranscriptPeptides] Failed to convert sequence to peptides for ${transcript.id()}:`,
+      `[processTranscriptFromSeq] Failed to convert sequence to peptides for ${transcript.id()}:`,
       error,
     )
-    return { sequenceData }
+    return undefined
   }
 }
 

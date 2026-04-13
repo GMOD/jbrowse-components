@@ -197,10 +197,6 @@ In ShareDialog.tsx the share URL becomes: locationUrl.search = params.toString()
 // ?session=share-abc locationUrl.hash = `password=${result.password}` //
 #password=xyz
 
-## No minimim tree width needed in wiggle/others
-
-currently stops at certain point
-
 ## Clusting might not update UI properly in wiggle
 
 investigate, or perhaps e.g. tree drawn before rows are clustered
@@ -221,8 +217,6 @@ IndicatorInst, ConnLineInst, LDInstance). The runtime guard in
 Jest test that parses WGSL sources and asserts
 `sizeof(instanceStruct) % 16 === 0` would catch regressions in CI before they
 reach a browser.
-
-NCBI gene track 1:38,961,598-39,145,227
 
 ## Reduce frequency of check pending files
 
