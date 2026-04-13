@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
 
 import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
+import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { uploadChangedRegions } from '@jbrowse/core/gpu/uploadChangedRegions'
 import {
   getContainingView,
@@ -23,7 +24,6 @@ import {
 } from '../../shared/wiggleComponentUtils.ts'
 
 import type { WiggleDisplayModel } from './buildSourceRenderData.ts'
-import type { WiggleRenderBlock } from '../../shared/wiggleBackendTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -57,13 +57,7 @@ const WiggleComponent = observer(function WiggleComponent({
       )
       return
     }
-    const blocks: WiggleRenderBlock[] = visibleRegions.map(vr => ({
-      regionNumber: vr.regionNumber,
-      bpRangeX: [vr.start, vr.end] as [number, number],
-      screenStartPx: vr.screenStartPx,
-      screenEndPx: vr.screenEndPx,
-      reversed: vr.reversed ?? false,
-    }))
+    const blocks = buildRenderBlocks(visibleRegions)
     renderer.renderBlocks(
       blocks,
       makeRenderState(

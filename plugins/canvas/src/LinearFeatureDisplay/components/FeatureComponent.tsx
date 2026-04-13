@@ -9,6 +9,7 @@ import React, {
 } from 'react'
 
 import { ErrorOverlay, Menu } from '@jbrowse/core/ui'
+import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import {
   getContainingView,
   useDebounce,
@@ -30,7 +31,6 @@ import {
 } from './useOverlayElements.tsx'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 
-import type { FeatureRenderBlock } from './canvasFeatureBackendTypes.ts'
 import type { FlatbushRegionCache, VisibleRegion } from './hitTesting.ts'
 import type {
   FeatureDataResult,
@@ -198,18 +198,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       return
     }
 
-    const blocks: FeatureRenderBlock[] = []
-    for (const vr of visibleRegions) {
-      blocks.push({
-        regionNumber: vr.regionNumber,
-        bpRangeX: [vr.start, vr.end],
-        screenStartPx: vr.screenStartPx,
-        screenEndPx: vr.screenEndPx,
-        reversed: vr.reversed ?? false,
-      })
-    }
-
-    renderer.renderBlocks(blocks, {
+    renderer.renderBlocks(buildRenderBlocks(visibleRegions), {
       scrollY: scrollContainerRef.current?.scrollTop ?? 0,
       canvasWidth: view.trackWidthPx,
       canvasHeight: model.height,

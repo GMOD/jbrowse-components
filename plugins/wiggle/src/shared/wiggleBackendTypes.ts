@@ -1,17 +1,13 @@
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+
+export type { RenderBlock as WiggleRenderBlock } from '@jbrowse/core/gpu/renderBlock'
+
 export interface WiggleGPURenderState {
   domainY: [number, number]
   scaleType: number
   renderingType: number
   canvasWidth: number
   canvasHeight: number
-}
-
-export interface WiggleRenderBlock {
-  regionNumber: number
-  bpRangeX: [number, number]
-  screenStartPx: number
-  screenEndPx: number
-  reversed: boolean
 }
 
 export interface SourceRenderData {
@@ -30,7 +26,7 @@ export interface WiggleBackend {
   ): void
   pruneRegions(activeRegions: number[]): void
   renderBlocks(
-    blocks: WiggleRenderBlock[],
+    blocks: RenderBlock[],
     renderState: WiggleGPURenderState,
   ): void
   dispose(): void

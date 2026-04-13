@@ -9,6 +9,7 @@ import {
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 
+import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { uploadChangedRegions } from '@jbrowse/core/gpu/uploadChangedRegions'
 import { AlignmentsRenderer } from './AlignmentsRenderer.ts'
 import {
@@ -501,13 +502,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     }
     const regions = view.visibleRegions
     renderer.renderBlocks(
-      regions.map(r => ({
-        regionNumber: r.regionNumber,
-        bpRangeX: [r.start, r.end] as [number, number],
-        screenStartPx: r.screenStartPx,
-        screenEndPx: r.screenEndPx,
-        reversed: r.reversed ?? false,
-      })),
+      buildRenderBlocks(regions),
       {
         rangeY: model.currentRangeY,
         colorScheme: model.colorSchemeIndex,

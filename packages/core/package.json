@@ -42,6 +42,7 @@
     "./gpu/initGpuContext": "./src/gpu/initGpuContext.ts",
     "./gpu/blockClipUtils": "./src/gpu/blockClipUtils.ts",
     "./gpu/pruneRegionMap": "./src/gpu/pruneRegionMap.ts",
+    "./gpu/renderBlock": "./src/gpu/renderBlock.ts",
     "./gpu/uploadChangedRegions": "./src/gpu/uploadChangedRegions.ts",
     "./gpu/webglUtils": "./src/gpu/webglUtils.ts",
     "./gpu/webgpuUtils": "./src/gpu/webgpuUtils.ts",
@@ -273,6 +274,10 @@
       "./gpu/pruneRegionMap": {
         "types": "./esm/gpu/pruneRegionMap.d.ts",
         "import": "./esm/gpu/pruneRegionMap.js"
+      },
+      "./gpu/renderBlock": {
+        "types": "./esm/gpu/renderBlock.d.ts",
+        "import": "./esm/gpu/renderBlock.js"
       },
       "./gpu/uploadChangedRegions": {
         "types": "./esm/gpu/uploadChangedRegions.d.ts",
@@ -746,6 +751,9 @@
         ],
         "gpu/pruneRegionMap": [
           "esm/gpu/pruneRegionMap.d.ts"
+        ],
+        "gpu/renderBlock": [
+          "esm/gpu/renderBlock.d.ts"
         ],
         "gpu/uploadChangedRegions": [
           "esm/gpu/uploadChangedRegions.d.ts"

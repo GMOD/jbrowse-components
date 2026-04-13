@@ -1,6 +1,7 @@
 import type { ColorPalette } from './shaders/colors.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
+export type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 export type { ColorPalette, RGBColor } from './shaders/colors.ts'
 
 export interface RenderState {
@@ -38,13 +39,6 @@ export interface RenderState {
   showOutline?: boolean
 }
 
-export interface RenderBlock {
-  regionNumber: number
-  bpRangeX: [number, number]
-  screenStartPx: number
-  screenEndPx: number
-  reversed: boolean
-}
 
 export interface ReadUploadData {
   regionStart: number

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
 
 import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
+import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { uploadChangedRegions } from '@jbrowse/core/gpu/uploadChangedRegions'
 import {
   getContainingView,
@@ -33,7 +34,6 @@ import type {
   MultiWiggleSourceData,
 } from '../../RenderMultiWiggleDataRPC/types.ts'
 import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
-import type { WiggleRenderBlock } from '../../shared/wiggleBackendTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {
   ClusterHierarchyNode,
@@ -130,13 +130,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     if (!domain || visibleRegions.length === 0) {
       return
     }
-    const blocks: WiggleRenderBlock[] = visibleRegions.map(vr => ({
-      regionNumber: vr.regionNumber,
-      bpRangeX: [vr.start, vr.end] as [number, number],
-      screenStartPx: vr.screenStartPx,
-      screenEndPx: vr.screenEndPx,
-      reversed: vr.reversed ?? false,
-    }))
+    const blocks = buildRenderBlocks(visibleRegions)
     renderer.renderBlocks(
       blocks,
       makeRenderState(

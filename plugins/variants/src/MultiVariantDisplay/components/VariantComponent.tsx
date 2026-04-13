@@ -1,6 +1,7 @@
 import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
 
 import { ErrorBar, ErrorOverlay, Menu } from '@jbrowse/core/ui'
+import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import {
   getBpDisplayStr,
   getContainingView,
@@ -161,13 +162,7 @@ const VariantComponent = observer(function VariantComponent({
     if (regions.length === 0) {
       return
     }
-    const blocks = regions.map(r => ({
-      regionNumber: r.regionNumber,
-      bpRangeX: [r.start, r.end] as [number, number],
-      screenStartPx: r.screenStartPx,
-      screenEndPx: r.screenEndPx,
-      reversed: r.reversed ?? false,
-    }))
+    const blocks = buildRenderBlocks(regions)
     renderer.renderBlocks(blocks, {
       canvasWidth: view.trackWidthPx,
       canvasHeight: model.availableHeight,

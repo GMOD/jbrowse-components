@@ -1,10 +1,6 @@
-export interface VariantRenderBlock {
-  regionNumber: number
-  bpRangeX: [number, number]
-  screenStartPx: number
-  screenEndPx: number
-  reversed: boolean
-}
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+
+export type { RenderBlock as VariantRenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
 export interface VariantBackend {
   uploadRegion(
@@ -20,7 +16,7 @@ export interface VariantBackend {
   ): void
   pruneRegions(activeRegions: number[]): void
   renderBlocks(
-    blocks: VariantRenderBlock[],
+    blocks: RenderBlock[],
     state: {
       canvasWidth: number
       canvasHeight: number
