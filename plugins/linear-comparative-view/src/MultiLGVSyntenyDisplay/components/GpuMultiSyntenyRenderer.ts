@@ -245,7 +245,7 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
         }
       }
     }
-    // reserved for future per-region normalization (region.maxDepth / globalMaxDepth); currently unused
+    // always 1 until per-region coverage scaling is implemented (like GpuAlignmentsRenderer: region.maxDepth / globalMaxDepth)
     const depthScale = 1
 
     this.hal.beginFrame(BG_COLOR_GL, BG_COLOR_GL, BG_COLOR_GL)
