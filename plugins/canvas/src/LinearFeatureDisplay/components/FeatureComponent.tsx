@@ -397,12 +397,12 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   }
 
   const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    e.preventDefault()
     if (model.rpcDataMap.size === 0) {
       return
     }
     const result = hitTestAtEvent(e)
     if (result.feature) {
+      e.preventDefault()
       openContextMenu(result.feature, result.regionNumber, e.clientX, e.clientY)
     }
   }
