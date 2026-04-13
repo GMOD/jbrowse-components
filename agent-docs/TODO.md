@@ -265,3 +265,19 @@ Manual action similar to compact all tracks
 ## Slightly more subpixel modifications drawing
 
 Gets a little crowded
+
+## Disabling show descriptions show re-layout
+
+Does not
+
+## Do not want the show only genes on linearvariantdisplay
+
+Might want to reevauate what 'base class' or base mst model is used
+
+## Add super compact for gene glyphs
+
+## Paired arcs 'not pointing down' do not display
+
+## Add the options for draw inter-region arcs/long rang arcs
+
+## Weird lack of 'long range arcs' to right of 1kg demo

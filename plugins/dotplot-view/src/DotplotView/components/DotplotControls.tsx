@@ -1,7 +1,6 @@
 import { lazy, useState } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { getSession } from '@jbrowse/core/util'
 import MoreVert from '@mui/icons-material/MoreVert'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
@@ -49,10 +48,14 @@ const DotplotControls = observer(function DotplotControls({
       </IconButton>
 
       <IconButton
-        onClick={() => model.activateTrackSelector()}
-        title="Open track selector"
+        onClick={() => {
+          model.setCursorMode(
+            model.cursorMode === 'move' ? 'crosshair' : 'move',
+          )
+        }}
+        title="Toggle click and drag mode"
       >
-        <TrackSelectorIcon />
+        {model.cursorMode === 'move' ? <CursorMove /> : <CursorMouse />}
       </IconButton>
 
       <CascadingMenuButton
