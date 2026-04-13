@@ -93,8 +93,8 @@ fn vs_main(
   }
 
   let y_top_px = f32(inst.row_index) * u.row_height - u.scroll_top;
-  let y_top = floor(y_top_px + 0.5);
-  var y_bot = floor(y_top_px + u.row_height + 0.5);
+  var y_top = y_top_px;
+  var y_bot = y_top_px + u.row_height;
   if y_bot - y_top < 1.0 {
     y_bot = y_top + 1.0;
   }

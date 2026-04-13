@@ -35,8 +35,8 @@ void main() {
   float clip_x = mix(cx1, cx2, lx) * 2.0 - 1.0;
 
   float y_top_px = float(a_row_index) * row_height - scroll_top;
-  float y_top = floor(y_top_px + 0.5);
-  float y_bot = floor(y_top_px + row_height + 0.5);
+  float y_top = y_top_px;
+  float y_bot = y_top_px + row_height;
   if (y_bot - y_top < 1.0) {
     y_bot = y_top + 1.0;
   }
