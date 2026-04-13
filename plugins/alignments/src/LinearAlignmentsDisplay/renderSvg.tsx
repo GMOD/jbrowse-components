@@ -43,6 +43,11 @@ import type {
 type LGV = LinearGenomeViewModel
 type Ctx = CanvasRenderingContext2D | SvgCanvas
 
+function blendedAlpha(base: number, freq8bit: number) {
+  const freq = freq8bit / 255
+  return base + freq * (1 - base)
+}
+
 function cubicBezierXY(t: number, x1: number, x2: number, destY: number) {
   const mt = 1 - t
   const mt2 = mt * mt
@@ -482,12 +487,8 @@ function drawPileup(
       const x = (pos - block.start) / bpPerPx + blockScreenX
       const w = Math.max(pxPerBp, 1)
       const y = yOffset + mismatchYs[i]! * rowHeight
-      let mismatchAlpha = 1
-      if (pxPerBp < 1) {
-        const freq = data.mismatchFrequencies[i]! / 255
-        const base = pxPerBp
-        mismatchAlpha = base + freq * (1 - base)
-      }
+      const mismatchAlpha =
+        pxPerBp < 1 ? blendedAlpha(pxPerBp, data.mismatchFrequencies[i]!) : 1
       if (mismatchAlpha > 0) {
         const base = String.fromCharCode(mismatchBases[i]!)
         ctx.globalAlpha = mismatchAlpha
@@ -516,12 +517,10 @@ function drawPileup(
 
       if (gapType === 0) {
         const widthPx = (endBp - startBp) * pxPerBp
-        let alpha = 1
-        if (widthPx < 1) {
-          const freq = data.gapFrequencies[i]! / 255
-          const base = widthPx * widthPx
-          alpha = base + freq * (1 - base)
-        }
+        const alpha =
+          widthPx < 1
+            ? blendedAlpha(widthPx * widthPx, data.gapFrequencies[i]!)
+            : 1
         if (alpha > 0) {
           ctx.globalAlpha = alpha
           ctx.fillStyle = deletionColor
@@ -557,12 +556,10 @@ function drawPileup(
         const isLong = len >= LONG_INSERTION_MIN_LENGTH
         const barW = insertionBarWidth(len, pxPerBp)
         const isLarge = barW > 5
-        let insertionAlpha = 1
-        if (!isLong && pxPerBp < 1) {
-          const freq = data.interbaseFrequencies[i]! / 255
-          const base = pxPerBp * pxPerBp
-          insertionAlpha = base + freq * (1 - base)
-        }
+        const insertionAlpha =
+          !isLong && pxPerBp < 1
+            ? blendedAlpha(pxPerBp * pxPerBp, data.interbaseFrequencies[i]!)
+            : 1
         if (insertionAlpha > 0) {
           ctx.globalAlpha = insertionAlpha
           ctx.fillStyle = insertionColor
@@ -583,12 +580,10 @@ function drawPileup(
       } else {
         const barWidthBp = Math.max(bpPerPx, Math.min(2 * bpPerPx, 1))
         const bw = Math.max(barWidthBp / bpPerPx, 1)
-        let clipAlpha = 1
-        if (pxPerBp < 1) {
-          const freq = data.interbaseFrequencies[i]! / 255
-          const base = pxPerBp
-          clipAlpha = base + freq * (1 - base)
-        }
+        const clipAlpha =
+          pxPerBp < 1
+            ? blendedAlpha(pxPerBp, data.interbaseFrequencies[i]!)
+            : 1
         if (clipAlpha > 0) {
           ctx.globalAlpha = clipAlpha
           ctx.fillStyle =

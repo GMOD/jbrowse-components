@@ -15,7 +15,7 @@ import {
 } from '../../shared/types.ts'
 import { toRgb } from './shaders/colors.ts'
 
-import type { ColorPalette, RGBColor } from './AlignmentsRenderer.ts'
+import type { ColorPalette, RGBColor } from './shaders/colors.ts'
 import type { CigarHitResult, SashimiArcHitResult } from './hitTesting'
 import type { AlignmentsBackend } from './rendererTypes.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types'

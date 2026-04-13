@@ -159,6 +159,24 @@ export interface FeatureHit {
   index: number
 }
 
+function makeResizeHandler(getHeight: () => number, setHeight: (h: number) => void) {
+  return (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const startY = e.clientY
+    const startHeight = getHeight()
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      setHeight(Math.max(20, startHeight + moveEvent.clientY - startY))
+    }
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+    }
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+  }
+}
+
 export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [resizeHandleHovered, setResizeHandleHovered] = useState(false)
@@ -250,68 +268,20 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     model.clearMouseoverState()
   }
 
-  function handleResizeMouseDown(e: React.MouseEvent) {
-    e.preventDefault()
-    e.stopPropagation()
-    const startY = e.clientY
-    const startHeight = coverageHeight
+  const handleResizeMouseDown = makeResizeHandler(
+    () => coverageHeight,
+    h => model.setCoverageHeight(h),
+  )
 
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      model.setCoverageHeight(
-        Math.max(20, startHeight + moveEvent.clientY - startY),
-      )
-    }
+  const handleArcsResizeMouseDown = makeResizeHandler(
+    () => arcsHeight,
+    h => model.setArcsHeight(h),
+  )
 
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-    }
-
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
-  }
-
-  function handleArcsResizeMouseDown(e: React.MouseEvent) {
-    e.preventDefault()
-    e.stopPropagation()
-    const startY = e.clientY
-    const startHeight = arcsHeight
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      model.setArcsHeight(
-        Math.max(20, startHeight + moveEvent.clientY - startY),
-      )
-    }
-
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-    }
-
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
-  }
-
-  function handleSashimiArcsResizeMouseDown(e: React.MouseEvent) {
-    e.preventDefault()
-    e.stopPropagation()
-    const startY = e.clientY
-    const startHeight = model.sashimiArcsHeight
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      model.setSashimiArcsHeight(
-        Math.max(20, startHeight + moveEvent.clientY - startY),
-      )
-    }
-
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-    }
-
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
-  }
+  const handleSashimiArcsResizeMouseDown = makeResizeHandler(
+    () => model.sashimiArcsHeight,
+    h => model.setSashimiArcsHeight(h),
+  )
 
   function handleContextMenu(e: React.MouseEvent) {
     const coords = getCanvasCoords(e, canvasRef, canvasRectRef)
