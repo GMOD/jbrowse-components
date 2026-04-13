@@ -1,5 +1,4 @@
 import { getSession } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -11,12 +10,6 @@ import { SPACING, WIDGET_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-
-const useStyles = makeStyles()({
-  headerRefName: {
-    minWidth: 100,
-  },
-})
 
 async function onSelect({
   option,
@@ -57,10 +50,8 @@ const SearchBox = observer(function SearchBox({
   minWidth?: number
   maxWidth?: number
 }) {
-  const { classes } = useStyles()
   const theme = useTheme()
   const session = getSession(model)
-
   const { textSearchManager, assemblyManager } = session
   const { assemblyNames, rankSearchResults } = model
   const assemblyName = assemblyNames[0]!
@@ -71,11 +62,7 @@ const SearchBox = observer(function SearchBox({
     <RefNameAutocomplete
       onSelect={async option => {
         try {
-          await onSelect({
-            model,
-            assemblyName,
-            option,
-          })
+          await onSelect({ model, assemblyName, option })
         } catch (e) {
           console.error(e)
           getSession(model).notify(`${e}`, 'warning')
@@ -94,22 +81,12 @@ const SearchBox = observer(function SearchBox({
       model={model}
       minWidth={minWidth}
       maxWidth={maxWidth}
-      TextFieldProps={{
-        variant: 'outlined',
-        className: classes.headerRefName,
-        style: {
-          margin: SPACING,
-        },
-        slotProps: {
-          input: {
-            style: {
-              padding: 0,
-              height: WIDGET_HEIGHT,
-              background: alpha(theme.palette.background.paper, 0.8),
-            },
-            endAdornment: <EndAdornment showHelp={showHelp} />,
-          },
-        },
+      style={{ margin: SPACING }}
+      endAdornment={<EndAdornment showHelp={showHelp} />}
+      inputStyle={{
+        padding: 0,
+        height: WIDGET_HEIGHT,
+        background: alpha(theme.palette.background.paper, 0.8),
       }}
     />
   )

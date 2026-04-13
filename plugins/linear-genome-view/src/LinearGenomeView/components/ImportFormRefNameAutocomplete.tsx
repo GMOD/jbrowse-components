@@ -49,10 +49,7 @@ const ImportFormRefNameAutocomplete = observer(
         onSelect={val => {
           setOption(val)
         }}
-        TextFieldProps={{
-          variant: 'outlined',
-          helperText: 'Enter sequence name, feature name, or location',
-        }}
+        helperText="Enter sequence name, feature name, or location"
       />
     )
   },

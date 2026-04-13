@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import BaseResult, {
   RefSequenceResult,
@@ -7,23 +7,65 @@ import { getSession, measureText, useDebounce } from '@jbrowse/core/util'
 import { Autocomplete, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getDeduplicatedResult, getFiltered } from './util.ts'
-
-import type { Option } from './util.ts'
+import type { CSSProperties, ReactNode } from 'react'
 import type { LinearGenomeViewModel } from '../../model.ts'
-import type { TextFieldProps as TFP } from '@mui/material'
+
+interface Option {
+  group?: string
+  result: BaseResult
+}
+
+function getFiltered(options: Option[], inputValue: string) {
+  const query = inputValue.toLocaleLowerCase()
+  const filtered = options.filter(
+    ({ result }) =>
+      result.getLabel().toLowerCase().includes(query) || result.matchedObject,
+  )
+  return [
+    ...filtered.slice(0, 100),
+    ...(filtered.length > 100
+      ? [
+          {
+            group: 'limitOption',
+            result: new BaseResult({ label: 'keep typing for more results' }),
+          },
+        ]
+      : []),
+  ]
+}
+
+function getDeduplicatedResult(results: BaseResult[]) {
+  const m: Record<string, BaseResult[]> = {}
+  for (const result of results) {
+    const key = result.getDisplayString()
+    ;(m[key] ??= []).push(result)
+  }
+  return Object.entries(m).map(([displayString, results]) =>
+    results.length === 1
+      ? { result: results[0]! }
+      : {
+          result: new BaseResult({
+            displayString,
+            results,
+            label: displayString,
+          }),
+        },
+  )
+}
 
 const RefNameAutocomplete = observer(function RefNameAutocomplete({
   model,
   onSelect,
   assemblyName,
-  style,
   fetchResults,
   onChange,
   value,
   minWidth = 200,
   maxWidth = 550,
-  TextFieldProps = {},
+  style,
+  endAdornment,
+  helperText,
+  inputStyle,
 }: {
   model: LinearGenomeViewModel
   onSelect?: (region: BaseResult) => void
@@ -31,14 +73,15 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   assemblyName?: string
   value?: string
   fetchResults: (query: string) => Promise<BaseResult[]>
-  style?: React.CSSProperties
   minWidth?: number
   maxWidth?: number
-  TextFieldProps?: TFP
+  style?: CSSProperties
+  endAdornment?: ReactNode
+  helperText?: string
+  inputStyle?: CSSProperties
 }) {
   const session = getSession(model)
   const { assemblyManager } = session
-  const [open, setOpen] = useState(false)
   const [loaded, setLoaded] = useState(true)
   const [currentSearch, setCurrentSearch] = useState('')
   const [inputValue, setInputValue] = useState('')
@@ -47,41 +90,45 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
 
-  useEffect(() => {
-    const isCurrent = { cancelled: false }
+  const fetchResultsRef = useRef(fetchResults)
+  fetchResultsRef.current = fetchResults
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
+  useEffect(() => {
+    if (debouncedSearch === '') {
+      setSearchOptions(undefined)
+      setLoaded(true)
+      return
+    }
+    let cancelled = false
+    void (async () => {
       try {
-        if (debouncedSearch !== '' && assemblyName) {
+        if (assemblyName) {
           setLoaded(false)
-          const results = await fetchResults(debouncedSearch)
-          if (!isCurrent.cancelled) {
+          const results = await fetchResultsRef.current(debouncedSearch)
+          if (!cancelled) {
             setSearchOptions(getDeduplicatedResult(results))
           }
         }
       } catch (e) {
         console.error(e)
-        if (!isCurrent.cancelled) {
+        if (!cancelled) {
           session.notifyError(`${e}`, e)
         }
       } finally {
-        if (!isCurrent.cancelled) {
+        if (!cancelled) {
           setLoaded(true)
         }
       }
     })()
-
     return () => {
-      isCurrent.cancelled = true
+      cancelled = true
     }
-  }, [assemblyName, fetchResults, debouncedSearch, session])
-  const inputBoxVal = coarseVisibleLocStrings || value || ''
+  }, [assemblyName, debouncedSearch, session])
 
-  const regions = assembly?.regions
+  const inputBoxVal = coarseVisibleLocStrings || value || ''
   const regionOptions = useMemo(
     () =>
-      regions?.map(region => ({
+      assembly?.regions?.map(region => ({
         result: new RefSequenceResult({
           refName: region.refName,
           label: region.refName,
@@ -89,11 +136,9 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
           matchedAttribute: 'refName',
         }),
       })) ?? [],
-    [regions],
+    [assembly?.regions],
   )
 
-  // notes on implementation:
-  // The selectOnFocus setting helps highlight the field when clicked
   return (
     <Autocomplete
       data-testid="autocomplete"
@@ -121,12 +166,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
         }
       }}
       loadingText="loading results"
-      open={open}
-      onOpen={() => {
-        setOpen(true)
-      }}
       onClose={() => {
-        setOpen(false)
         setLoaded(true)
         if (hasDisplayedRegions) {
           setCurrentSearch('')
@@ -137,17 +177,11 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
         if (!selectedOption || !assemblyName) {
           return
         }
-
-        if (typeof selectedOption === 'string') {
-          // handles string inputs on keyPress enter
-          onSelect?.(
-            new BaseResult({
-              label: selectedOption,
-            }),
-          )
-        } else {
-          onSelect?.(selectedOption.result)
-        }
+        onSelect?.(
+          typeof selectedOption === 'string'
+            ? new BaseResult({ label: selectedOption })
+            : selectedOption.result,
+        )
         setInputValue(inputBoxVal)
       }}
       options={searchOptions?.length ? searchOptions : regionOptions}
@@ -159,18 +193,15 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
             setInputValue(inputBoxVal)
           }}
           {...restParams}
-          {...TextFieldProps}
+          variant="outlined"
           size="small"
+          helperText={helperText}
           slotProps={{
             ...paramSlotProps,
-            ...TextFieldProps.slotProps,
             input: {
               ...paramSlotProps?.input,
-              ...TextFieldProps.slotProps?.input,
-            },
-            htmlInput: {
-              ...paramSlotProps?.htmlInput,
-              ...TextFieldProps.slotProps?.htmlInput,
+              style: inputStyle,
+              ...(endAdornment !== undefined && { endAdornment }),
             },
           }}
           placeholder="Search for location"
