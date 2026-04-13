@@ -43,6 +43,7 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
         trackConf,
         saveTrackData ? [saveTrackData] : [],
         effectiveConfig,
+        view,
       ) || []
 
     return [

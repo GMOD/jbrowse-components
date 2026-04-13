@@ -28,6 +28,7 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete'
 import CopyIcon from '@mui/icons-material/FileCopy'
 import InfoIcon from '@mui/icons-material/Info'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { autorun } from 'mobx'
 
@@ -369,11 +370,35 @@ export function BaseWebSession({
        * #method
        * raw track actions (Settings, Copy, Delete) without submenu wrapper
        */
-      getTrackActions(config: BaseTrackConfig): MenuItem[] {
+      getTrackActions(
+        config: BaseTrackConfig,
+        view?: { showTrack: (id: string) => void },
+      ): MenuItem[] {
         const { adminMode, sessionTracks } = self
         const canEdit =
           adminMode || sessionTracks.some(t => t.trackId === config.trackId)
         const isRefSeq = config.type === 'ReferenceSequenceTrack'
+        const makeSnap = () => {
+          const snap = structuredClone(
+            isStateTreeNode(config) ? getSnapshot(config) : config,
+          ) as { [key: string]: unknown; displays?: Display[] }
+          const now = Date.now()
+          snap.trackId += `-${now}`
+          if (snap.displays) {
+            for (const display of snap.displays) {
+              display.displayId += `-${now}`
+            }
+          }
+          // the -sessionTrack suffix to trackId is used as metadata for
+          // the track selector to store the track in a special category,
+          // and default category is also cleared
+          if (!self.adminMode) {
+            snap.trackId += '-sessionTrack'
+            snap.category = undefined
+          }
+          snap.name += ' (copy)'
+          return snap
+        }
         return [
           {
             label: 'Settings',
@@ -387,30 +412,19 @@ export function BaseWebSession({
             label: 'Copy track',
             disabled: isRefSeq,
             onClick: () => {
-              const snap = structuredClone(
-                isStateTreeNode(config) ? getSnapshot(config) : config,
-              ) as {
-                [key: string]: unknown
-                displays?: Display[]
-              }
-              const now = Date.now()
-              snap.trackId += `-${now}`
-              if (snap.displays) {
-                for (const display of snap.displays) {
-                  display.displayId += `-${now}`
-                }
-              }
-              // the -sessionTrack suffix to trackId is used as metadata for
-              // the track selector to store the track in a special category,
-              // and default category is also cleared
-              if (!self.adminMode) {
-                snap.trackId += '-sessionTrack'
-                snap.category = undefined
-              }
-              snap.name += ' (copy)'
-              self.addTrackConf(snap)
+              self.addTrackConf(makeSnap())
             },
             icon: CopyIcon,
+          },
+          {
+            label: 'Copy and open track',
+            disabled: isRefSeq || !view,
+            onClick: () => {
+              const snap = makeSnap()
+              self.addTrackConf(snap)
+              view!.showTrack(snap.trackId as string)
+            },
+            icon: OpenInNewIcon,
           },
           {
             label: 'Delete track',
@@ -428,7 +442,10 @@ export function BaseWebSession({
        * #method
        * flattened menu items for use in hierarchical track selector
        */
-      getTrackListMenuItems(config: BaseTrackConfig): MenuItem[] {
+      getTrackListMenuItems(
+        config: BaseTrackConfig,
+        view?: { showTrack: (id: string) => void },
+      ): MenuItem[] {
         return [
           {
             label: 'About track',
@@ -444,7 +461,7 @@ export function BaseWebSession({
             },
             icon: InfoIcon,
           },
-          ...self.getTrackActions(config),
+          ...self.getTrackActions(config, view),
         ]
       },
 
@@ -457,6 +474,7 @@ export function BaseWebSession({
         config: BaseTrackConfig,
         extraTrackActions?: MenuItem[],
         effectiveConfig?: Record<string, unknown>,
+        view?: { showTrack: (id: string) => void },
       ): MenuItem[] {
         return [
           {
@@ -479,7 +497,7 @@ export function BaseWebSession({
             label: 'Track actions',
             priority: 1001,
             subMenu: [
-              ...self.getTrackActions(config),
+              ...self.getTrackActions(config, view),
               ...(extraTrackActions || []),
             ],
           },
