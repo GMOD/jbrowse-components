@@ -473,7 +473,9 @@ describe('SettingsInvalidate autorun', () => {
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
-    await waitFor(() => expect(display.loadedRegions.size).toBe(1))
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
 
     const callsBefore = mockRpcCall.mock.calls.length
     display.setShowOnlyGenes(true)
@@ -497,7 +499,9 @@ describe('SettingsInvalidate autorun', () => {
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
-    await waitFor(() => expect(display.isLoading).toBe(true))
+    await waitFor(() => {
+      expect(display.isLoading).toBe(true)
+    })
 
     const callsBefore = mockRpcCall.mock.calls.length
     display.setShowOnlyGenes(true)
@@ -523,7 +527,9 @@ describe('SettingsInvalidate autorun', () => {
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
 
-    await waitFor(() => expect(display.loadedRegions.size).toBe(1))
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
 
     // Exactly one RPC call from FetchVisibleRegions with the correct setting
     expect(mockRpcCall).toHaveBeenCalledTimes(1)

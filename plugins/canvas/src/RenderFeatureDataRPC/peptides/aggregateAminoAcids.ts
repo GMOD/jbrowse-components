@@ -24,13 +24,9 @@ export function aggregateAminos(
   const pushGroup = (endI: number) => {
     const length = endI - groupStart + 1
     const startBp =
-      strand === -1
-        ? featureEnd - 1 - endI
-        : featureStart + groupStart
+      strand === -1 ? featureEnd - 1 - endI : featureStart + groupStart
     const endBp =
-      strand === -1
-        ? featureEnd - groupStart
-        : featureStart + endI + 1
+      strand === -1 ? featureEnd - groupStart : featureStart + endI + 1
     aggregated.push({
       aminoAcid: groupAA,
       startBp,

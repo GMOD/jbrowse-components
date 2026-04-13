@@ -1,3 +1,4 @@
+import { getNextRefPos } from '../MismatchParser/index.ts'
 import {
   CIGAR_D,
   CIGAR_EQ,
@@ -7,7 +8,6 @@ import {
   CIGAR_S,
   CIGAR_X,
 } from '../shared/cigarUtil.ts'
-import { getNextRefPos } from '../MismatchParser/index.ts'
 
 import type { getModPositions } from './getModPositions.ts'
 
@@ -82,7 +82,7 @@ export function getMethBins({
   // seq[readPos]='G' preceded by seq[readPos-1]='C' in the stored read.
   let readPos = 0
   let refPos = 0
-  for (let i = 0; i < cigarOps.length; i++) {
+  for (let i = 0, l = cigarOps.length; i < l; i++) {
     const packed = cigarOps[i]!
     const len = packed >> 4
     const op = packed & 0xf

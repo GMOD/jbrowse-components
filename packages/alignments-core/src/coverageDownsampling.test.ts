@@ -158,7 +158,6 @@ describe('computeVisibleMaxDepth', () => {
   })
 })
 
-
 describe('countSnpsAtPosition', () => {
   test('returns empty object when no mismatches at position', () => {
     const mismatches = {

@@ -24,7 +24,9 @@ import type {
   SessionWithTracks,
 } from '@jbrowse/product-core'
 
-type SessionBase = SessionWithDialogs & SessionWithTracks & SessionWithDrawerWidgets
+type SessionBase = SessionWithDialogs &
+  SessionWithTracks &
+  SessionWithDrawerWidgets
 
 const AboutDialog = lazy(() => import('./AboutDialog.tsx'))
 

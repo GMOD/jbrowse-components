@@ -339,8 +339,7 @@ function drawCoverage(
 
       const x = (modStart - block.start) / bpPerPx + blockScreenX
       const w = Math.max(pxPerBp, 1)
-      const barY =
-        coverageHeight - offset - (yOff + segH) * effectiveHeight
+      const barY = coverageHeight - offset - (yOff + segH) * effectiveHeight
       const barH = segH * effectiveHeight
 
       ctx.globalAlpha = a
@@ -373,9 +372,7 @@ function drawCoverage(
       const x = (snpStart - block.start) / bpPerPx + blockScreenX
       const w = Math.max(pxPerBp, 1)
       const barY =
-        coverageHeight -
-        offset -
-        (yOffset + segHeight) * effectiveHeight
+        coverageHeight - offset - (yOffset + segHeight) * effectiveHeight
       const barH = segHeight * effectiveHeight
 
       const baseName = baseNames[colorType - 1]

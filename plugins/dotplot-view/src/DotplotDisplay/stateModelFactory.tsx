@@ -59,6 +59,11 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           minAlignmentLength: 0,
           /**
            * #volatile
+           * width of drawn lines in CSS pixels
+           */
+          lineWidth: 2,
+          /**
+           * #volatile
            * bpPerPx at which featPositions were computed (h-axis)
            */
           featPositionsBpPerPxH: 0,
@@ -161,6 +166,12 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setMinAlignmentLength(value: number) {
         self.minAlignmentLength = value
+      },
+      /**
+       * #action
+       */
+      setLineWidth(value: number) {
+        self.lineWidth = value
       },
       /**
        * #action

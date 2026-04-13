@@ -83,6 +83,6 @@ export function createDotplotColorFunction(
     return hslColorFn('mappingQual', 1, alpha)
   }
 
-  const defaultColor = packColor(255, 0, 0, alpha)
+  const defaultColor = packColor(0, 0, 0, alpha)
   return () => defaultColor
 }

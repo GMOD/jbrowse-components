@@ -859,7 +859,16 @@ export default function stateModelFactory(pm: PluginManager) {
                 return { regionKey, scaleX, scaleY }
               })
 
-              renderer.render(hview.offsetPx, vview.offsetPx, 2, trackScales)
+              const firstDisplay = self.tracks[0]?.displays[0] as
+                | DotplotDisplayModel
+                | undefined
+              const lineWidth = firstDisplay?.lineWidth ?? 2
+              renderer.render(
+                hview.offsetPx,
+                vview.offsetPx,
+                lineWidth,
+                trackScales,
+              )
 
               if (
                 !self.canvasDrawn &&

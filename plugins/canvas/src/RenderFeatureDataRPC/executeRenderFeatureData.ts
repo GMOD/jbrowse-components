@@ -86,7 +86,7 @@ export async function executeRenderFeatureData({
 
   if (showOnlyGenes) {
     featuresArray = featuresArray.filter(f =>
-      ['gene', 'mRNA', 'transcript', 'CDS'].includes(f.get('type') as string),
+      ['gene', 'mRNA', 'transcript', 'CDS'].includes(f.get('type')!),
     )
   }
 

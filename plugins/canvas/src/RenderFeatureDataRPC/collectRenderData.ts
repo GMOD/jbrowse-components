@@ -6,16 +6,16 @@ import {
 import { darken, lighten } from '@mui/material'
 import { genomeToTranscriptSeqMapping } from 'g2p_mapper'
 
-import { aggregateAminos } from './peptides/aggregateAminoAcids.ts'
 import {
   createFeatureFloatingLabels,
   createTranscriptFloatingLabel,
 } from './floatingLabels.ts'
 import { getFeatureDescription, getFeatureName } from './labelUtils.ts'
-import type { AggregatedAminoAcid } from './peptides/aggregateAminoAcids.ts'
+import { aggregateAminos } from './peptides/aggregateAminoAcids.ts'
 import { isLabelAllowed } from './renderConfig.ts'
 import { getBoxColor, getStrokeColor, isUTR } from './util.ts'
 
+import type { AggregatedAminoAcid } from './peptides/aggregateAminoAcids.ts'
 import type { DisplayConfig } from './renderConfig.ts'
 import type {
   AminoAcidOverlayItem,

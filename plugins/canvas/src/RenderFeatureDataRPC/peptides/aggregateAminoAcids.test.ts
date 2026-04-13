@@ -26,8 +26,16 @@ describe('aggregateAminos', () => {
     const g2p = makeForwardG2p(100, 106)
     const result = aggregateAminos('MK', g2p, 100, 106, 1)
     expect(result).toHaveLength(2)
-    expect(result[0]).toMatchObject({ aminoAcid: 'M', startBp: 100, endBp: 103 })
-    expect(result[1]).toMatchObject({ aminoAcid: 'K', startBp: 103, endBp: 106 })
+    expect(result[0]).toMatchObject({
+      aminoAcid: 'M',
+      startBp: 100,
+      endBp: 103,
+    })
+    expect(result[1]).toMatchObject({
+      aminoAcid: 'K',
+      startBp: 103,
+      endBp: 106,
+    })
   })
 
   it('reverse strand: codon genomic ranges are correct', () => {
@@ -36,8 +44,16 @@ describe('aggregateAminos', () => {
     const g2p = makeReverseG2p(100, 106)
     const result = aggregateAminos('MK', g2p, 100, 106, -1)
     expect(result).toHaveLength(2)
-    expect(result[0]).toMatchObject({ aminoAcid: 'M', startBp: 103, endBp: 106 })
-    expect(result[1]).toMatchObject({ aminoAcid: 'K', startBp: 100, endBp: 103 })
+    expect(result[0]).toMatchObject({
+      aminoAcid: 'M',
+      startBp: 103,
+      endBp: 106,
+    })
+    expect(result[1]).toMatchObject({
+      aminoAcid: 'K',
+      startBp: 100,
+      endBp: 103,
+    })
   })
 
   it('reverse strand: featureStart position is included in mapping', () => {

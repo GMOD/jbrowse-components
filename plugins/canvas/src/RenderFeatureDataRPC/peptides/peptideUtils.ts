@@ -49,15 +49,15 @@ async function fetchSequence(
   }
 }
 
-const DEFAULT_TRANSCRIPT_TYPES = [
+const DEFAULT_TRANSCRIPT_TYPES = new Set([
   'mRNA',
   'transcript',
   'primary_transcript',
   'protein_coding_primary_transcript',
-]
+])
 
 function isTranscriptType(type: string) {
-  return DEFAULT_TRANSCRIPT_TYPES.includes(type)
+  return DEFAULT_TRANSCRIPT_TYPES.has(type)
 }
 
 function hasCDSSubfeatures(feature: Feature) {
@@ -162,9 +162,9 @@ export async function fetchPeptideData(
   const baseRegion = props.regions[0]!
   const bulkStart = Math.max(
     0,
-    Math.min(...transcripts.map(t => t.get('start') as number)),
+    Math.min(...transcripts.map(t => t.get('start'))),
   )
-  const bulkEnd = Math.max(...transcripts.map(t => t.get('end') as number))
+  const bulkEnd = Math.max(...transcripts.map(t => t.get('end')))
 
   const wholeSeq = await fetchSequence(pluginManager, props, {
     ...baseRegion,
@@ -176,8 +176,8 @@ export async function fetchPeptideData(
   }
 
   for (const transcript of transcripts) {
-    const tStart = transcript.get('start') as number
-    const tEnd = transcript.get('end') as number
+    const tStart = transcript.get('start')
+    const tEnd = transcript.get('end')
     const seq = wholeSeq.slice(tStart - bulkStart, tEnd - bulkStart)
     const peptideData = processTranscriptFromSeq(seq, transcript)
     if (peptideData) {
