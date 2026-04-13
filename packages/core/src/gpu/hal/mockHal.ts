@@ -9,7 +9,7 @@ export class MockHal implements GpuHal {
   calls: MockCall[] = []
   passes: PassDescriptor[]
 
-  private buffers = new Map<string, { data: ArrayBuffer; count: number }>()
+  private buffers = new Map<string, { data: ArrayBufferLike; count: number }>()
   private regionMeta = new Map<number, RegionMeta>()
   private lastUniforms: ArrayBuffer | null = null
   private width = 0
