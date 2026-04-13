@@ -1,7 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { dedupe, groupBy, max, min, updateStatus } from '@jbrowse/core/util'
-import Flatbush from '@jbrowse/core/util/flatbush'
-import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -72,28 +70,6 @@ function getColorType(f: ChainFeatureData, stats?: ChainStats) {
     default:
       return 0
   }
-}
-
-function computeChainLayout(
-  chains: { minStart: number; maxEnd: number; distance: number }[],
-) {
-  const sorted = chains
-    .map((c, i) => ({ ...c, idx: i }))
-    .sort((a, b) => a.distance - b.distance)
-  const layout = new GranularRectLayout({ pitchX: 1, pitchY: 1 })
-  const layoutMap = new Map<number, number>()
-
-  for (const chain of sorted) {
-    const top = layout.addRect(
-      String(chain.idx),
-      chain.minStart,
-      chain.maxEnd + 2,
-      1,
-    )
-    layoutMap.set(chain.idx, top ?? 0)
-  }
-
-  return layoutMap
 }
 
 export async function executeRenderChainData({
@@ -217,16 +193,25 @@ export async function executeRenderChainData({
     }
   }
 
-  const chainBounds: {
-    minStart: number
-    maxEnd: number
-    distance: number
-    chainIdx: number
-  }[] = []
+  const numChains = chains.length
 
+  // Per-chain metadata — layout is computed on the main thread so that chains
+  // spanning multiple displayedRegions get consistent row assignments.
+  const chainAbsMinStarts = new Uint32Array(numChains)
+  const chainAbsMaxEnds = new Uint32Array(numChains)
+  const chainDistances = new Uint32Array(numChains)
+  const chainNames: string[] = []
+  const chainColorTypes = new Uint8Array(numChains)
+  const chainSuppTypes = new Uint8Array(numChains)
+  const chainHasMultiple = new Uint8Array(numChains)
+  const chainFirstReadIndices = new Uint32Array(numChains)
+
+  const featureIdToChainIdx = new Map<string, number>()
   for (const [chainIdx, chain] of chains.entries()) {
     let minStart = Number.MAX_VALUE
     let maxEnd = Number.MIN_VALUE
+    let hasSupp = false
+    let primaryStrand = 1
     for (const f of chain) {
       if (f.start < minStart) {
         minStart = f.start
@@ -234,8 +219,13 @@ export async function executeRenderChainData({
       if (f.end > maxEnd) {
         maxEnd = f.end
       }
+      if (f.flags & 2048) {
+        hasSupp = true
+      } else {
+        primaryStrand = f.flags & 16 ? -1 : 1
+      }
+      featureIdToChainIdx.set(f.id, chainIdx)
     }
-
     let distance = maxEnd - minStart
     if (chain.length === 1) {
       const tlen = Math.abs(chain[0]!.templateLength || 0)
@@ -243,174 +233,68 @@ export async function executeRenderChainData({
         distance = tlen
       }
     }
-
-    chainBounds.push({ minStart, maxEnd, distance, chainIdx })
+    chainAbsMinStarts[chainIdx] = minStart
+    chainAbsMaxEnds[chainIdx] = maxEnd
+    chainDistances[chainIdx] = distance
+    chainNames.push(chain[0]!.name)
+    chainColorTypes[chainIdx] = getColorType(chain[0]!, chainStats)
+    chainSuppTypes[chainIdx] = hasSupp ? (primaryStrand === -1 ? 2 : 1) : 0
+    chainHasMultiple[chainIdx] = chain.length >= 2 ? 1 : 0
   }
 
-  const featureIdToY = new Map<string, number>()
-  let maxY = 0
+  // Build read arrays with y=0; layout fills real values on the main thread.
+  const readPositions = new Uint32Array(features.length * 2)
+  const readYs = new Uint16Array(features.length)
+  const readFlags = new Uint16Array(features.length)
+  const readMapqs = new Uint8Array(features.length)
+  const readAvgBaseQualities = new Uint8Array(features.length)
+  const readInsertSizes = new Float32Array(features.length)
+  const readPairOrientations = new Uint8Array(features.length)
+  const readStrands = new Int8Array(features.length)
+  const readChainHasSupp = new Uint8Array(features.length)
+  const readIds: string[] = []
+  const readNames: string[] = []
+  const readNextRefs: string[] = []
+  const readChainIndices = new Uint32Array(features.length)
+  const featureIdToIndex = new Map<string, number>()
+  const chainFirstReadSeen = new Uint8Array(numChains)
+
+  for (const [i, f] of features.entries()) {
+    const cIdx = featureIdToChainIdx.get(f.id) ?? 0
+    readPositions[i * 2] = Math.max(0, f.start - regionStart)
+    readPositions[i * 2 + 1] = f.end - regionStart
+    readYs[i] = 0
+    readFlags[i] = f.flags
+    readMapqs[i] = Math.min(255, f.mapq)
+    readAvgBaseQualities[i] = Math.min(255, f.avgBaseQuality)
+    readInsertSizes[i] = f.insertSize
+    readPairOrientations[i] = f.pairOrientation
+    readStrands[i] = f.strand
+    readChainHasSupp[i] = chainSuppTypes[cIdx] ? 1 : 0
+    readChainIndices[i] = cIdx
+    readIds.push(f.id)
+    readNames.push(f.name)
+    readNextRefs.push(f.nextRef ?? '')
+    if (!chainFirstReadSeen[cIdx]) {
+      chainFirstReadSeen[cIdx] = 1
+      chainFirstReadIndices[cIdx] = i
+    }
+    featureIdToIndex.set(f.id, i)
+  }
+
+  const getY = () => 0
+  const getReadIndex = (id: string) => featureIdToIndex.get(id) ?? 0
 
   const {
-    readArrays,
     gapArrays,
     mismatchArrays,
     interbaseArrays,
     modificationArrays,
     segmentArrays,
-    connectingLineArrays,
-    chainFlatbushData,
-    chainFirstReadIndices,
-  } = await updateStatus('Computing chain layout', statusCallback, async () => {
-    const chainLayout = computeChainLayout(chainBounds)
-    for (const cb of chainBounds) {
-      const row = chainLayout.get(cb.chainIdx) ?? 0
-      const chain = chains[cb.chainIdx]!
-      for (const f of chain) {
-        featureIdToY.set(f.id, row)
-      }
-      if (row > maxY) {
-        maxY = row
-      }
-    }
-    maxY += 1
-
-    // Detect chains with supplementary alignments and compute primary strand
-    // per chain. Values: 0=no supp, 1=has supp + primary forward,
-    // 2=has supp + primary reverse
-    const chainSuppInfo = new Map<number, number>()
-    for (const [chainIdx, chain] of chains.entries()) {
-      let hasSupp = false
-      let primaryStrand = 1
-      for (const f of chain) {
-        if (f.flags & 2048) {
-          hasSupp = true
-        } else {
-          // Non-supplementary alignment determines primary strand
-          primaryStrand = f.flags & 16 ? -1 : 1
-        }
-      }
-      if (hasSupp) {
-        chainSuppInfo.set(chainIdx, primaryStrand === -1 ? 2 : 1)
-      }
-    }
-
-    const featureIdToChainIdx = new Map<string, number>()
-    for (const [chainIdx, chain] of chains.entries()) {
-      for (const f of chain) {
-        featureIdToChainIdx.set(f.id, chainIdx)
-      }
-    }
-
-    const getY = (id: string) => featureIdToY.get(id) ?? 0
-
-    const featureIdToIndex = new Map<string, number>()
-    const getReadIndex = (id: string) => featureIdToIndex.get(id) ?? 0
-
-    const readPositions = new Uint32Array(features.length * 2)
-    const readYs = new Uint16Array(features.length)
-    const readFlags = new Uint16Array(features.length)
-    const readMapqs = new Uint8Array(features.length)
-    const readAvgBaseQualities = new Uint8Array(features.length)
-    const readInsertSizes = new Float32Array(features.length)
-    const readPairOrientations = new Uint8Array(features.length)
-    const readStrands = new Int8Array(features.length)
-    const readChainHasSupp = new Uint8Array(features.length)
-    const readIds: string[] = []
-    const readNames: string[] = []
-    const readNextRefs: string[] = []
-    const readChainIndices = new Uint32Array(features.length)
-
-    for (const [i, f] of features.entries()) {
-      if (!featureIdToIndex.has(f.id)) {
-        featureIdToIndex.set(f.id, i)
-      }
-      const y = getY(f.id)
-      readPositions[i * 2] = Math.max(0, f.start - regionStart)
-      readPositions[i * 2 + 1] = f.end - regionStart
-      readYs[i] = y
-      readFlags[i] = f.flags
-      readMapqs[i] = Math.min(255, f.mapq)
-      readAvgBaseQualities[i] = Math.min(255, f.avgBaseQuality)
-      readInsertSizes[i] = f.insertSize
-      readPairOrientations[i] = f.pairOrientation
-      readStrands[i] = f.strand
-      const cIdx = featureIdToChainIdx.get(f.id)
-      readChainHasSupp[i] =
-        cIdx !== undefined ? (chainSuppInfo.get(cIdx) ?? 0) : 0
-      readChainIndices[i] = cIdx ?? 0
-      readIds.push(f.id)
-      readNames.push(f.name)
-      readNextRefs.push(f.nextRef ?? '')
-    }
-
-    const connectingLines: {
-      start: number
-      end: number
-      y: number
-      colorType: number
-    }[] = []
-    for (const cb of chainBounds) {
-      const chain = chains[cb.chainIdx]!
-      if (chain.length < 2) {
-        continue
-      }
-      const y = getY(chain[0]!.id)
-      const colorType = chainSuppInfo.has(cb.chainIdx)
-        ? 5
-        : getColorType(chain[0]!, chainStats)
-      connectingLines.push({
-        start: Math.max(0, cb.minStart - regionStart),
-        end: cb.maxEnd - regionStart,
-        y,
-        colorType,
-      })
-    }
-
-    const connectingLinePositions = new Uint32Array(connectingLines.length * 2)
-    const connectingLineYs = new Uint16Array(connectingLines.length)
-    const connectingLineColorTypes = new Uint8Array(connectingLines.length)
-    for (const [i, line] of connectingLines.entries()) {
-      connectingLinePositions[i * 2] = line.start
-      connectingLinePositions[i * 2 + 1] = line.end
-      connectingLineYs[i] = line.y
-      connectingLineColorTypes[i] = line.colorType
-    }
-
-    let chainFlatbushData: ArrayBuffer | undefined
-    const chainFirstReadIndices = new Uint32Array(chainBounds.length)
-    if (chainBounds.length > 0) {
-      const flatbush = new Flatbush(chainBounds.length)
-      for (const [i, cb] of chainBounds.entries()) {
-        const chain = chains[cb.chainIdx]!
-        const y = getY(chain[0]!.id)
-        flatbush.add(
-          Math.max(0, cb.minStart - regionStart),
-          y,
-          cb.maxEnd - regionStart,
-          y,
-        )
-        chainFirstReadIndices[i] = featureIdToIndex.get(chain[0]!.id) ?? 0
-      }
-      flatbush.finish()
-      chainFlatbushData = flatbush.data
-    }
-
-    return {
-      readArrays: {
-        readPositions,
-        readYs,
-        readFlags,
-        readMapqs,
-        readAvgBaseQualities,
-        readInsertSizes,
-        readPairOrientations,
-        readStrands,
-        readChainHasSupp,
-        readIds,
-        readNames,
-        readNextRefs,
-        readChainIndices,
-      },
+  } = await updateStatus(
+    'Building alignment arrays',
+    statusCallback,
+    async () => ({
       gapArrays: buildGapArrays(gaps, regionStart, getY, getReadIndex),
       mismatchArrays: buildMismatchArrays(
         mismatches,
@@ -439,16 +323,8 @@ export async function executeRenderChainData({
         Math.ceil(region.end),
         getReadIndex,
       ),
-      connectingLineArrays: {
-        connectingLinePositions,
-        connectingLineYs,
-        connectingLineColorTypes,
-        numConnectingLines: connectingLines.length,
-      },
-      chainFlatbushData,
-      chainFirstReadIndices,
-    }
-  })
+    }),
+  )
 
   checkStopToken2(stopTokenCheck)
 
@@ -493,7 +369,19 @@ export async function executeRenderChainData({
   const result: PileupDataResult = {
     regionStart,
 
-    ...readArrays,
+    readPositions,
+    readYs,
+    readFlags,
+    readMapqs,
+    readAvgBaseQualities,
+    readInsertSizes,
+    readPairOrientations,
+    readStrands,
+    readChainHasSupp,
+    readIds,
+    readNames,
+    readNextRefs,
+    readChainIndices,
     ...segmentArrays,
     ...gapArrays,
     gapFrequencies,
@@ -539,12 +427,16 @@ export async function executeRenderChainData({
 
     modTooltipData,
 
-    ...connectingLineArrays,
-
-    chainFlatbushData,
+    chainAbsMinStarts,
+    chainAbsMaxEnds,
+    chainDistances,
+    chainNames,
+    chainColorTypes,
+    chainSuppTypes,
+    chainHasMultiple,
     chainFirstReadIndices,
 
-    maxY,
+    maxY: 0,
     numReads: features.length,
     numGaps: gapArrays.gapPositions.length / 2,
     numMismatches: mismatchArrays.mismatchPositions.length,
@@ -617,12 +509,14 @@ export async function executeRenderChainData({
     result.sashimiScores.buffer,
     result.sashimiColorTypes.buffer,
     result.sashimiCounts.buffer,
-    result.connectingLinePositions!.buffer,
-    result.connectingLineYs!.buffer,
-    result.connectingLineColorTypes!.buffer,
+    result.chainAbsMinStarts!.buffer,
+    result.chainAbsMaxEnds!.buffer,
+    result.chainDistances!.buffer,
     result.chainFirstReadIndices!.buffer,
+    result.chainColorTypes!.buffer,
+    result.chainSuppTypes!.buffer,
+    result.chainHasMultiple!.buffer,
     result.readChainIndices!.buffer,
-    ...(result.chainFlatbushData ? [result.chainFlatbushData] : []),
     result.readNextPositions!.buffer,
     ...(result.gapReadIndices ? [result.gapReadIndices.buffer] : []),
     ...(result.mismatchReadIndices ? [result.mismatchReadIndices.buffer] : []),

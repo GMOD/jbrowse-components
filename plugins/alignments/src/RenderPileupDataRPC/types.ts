@@ -185,14 +185,28 @@ export interface PileupDataResult {
   // Simplex modification types detected in this region (detected during feature processing)
   simplexModifications: string[]
 
+  // Chain layout metadata — returned by RPC, consumed by main-thread layout.
+  // Layout (Y positions) is computed on the main thread so that chains spanning
+  // multiple displayedRegions can be assigned consistent rows across all regions.
+  // One entry per chain, indexed by chain index (== readChainIndices values).
+  chainAbsMinStarts?: Uint32Array // absolute genomic start of each chain
+  chainAbsMaxEnds?: Uint32Array // absolute genomic end of each chain
+  chainDistances?: Uint32Array // chain distance: templateLength or span
+  chainNames?: string[] // read QNAME per chain (for cross-region dedup)
+  chainColorTypes?: Uint8Array // pre-computed color type per chain
+  chainSuppTypes?: Uint8Array // 0=none, 1=supp+fwd, 2=supp+rev per chain
+  chainHasMultiple?: Uint8Array // 1 if chain has ≥2 reads (draw connecting line)
+
   // Connecting line data for chain modes (cloud/linkedRead)
-  // One line per chain, drawn at chain Y between min(start) and max(end)
+  // One line per chain, drawn at chain Y between min(start) and max(end).
+  // Populated by main-thread layout after chain layout is computed.
   connectingLinePositions?: Uint32Array // [startOffset, endOffset] pairs
   connectingLineYs?: Uint16Array // row for each line
   connectingLineColorTypes?: Uint8Array // 0=normal, 1=long insert, 2=short, 3=interchrom, 4=orientation
   numConnectingLines?: number
 
-  // Flatbush R-tree over chain bounding boxes for spatial hit testing
+  // Flatbush R-tree over chain bounding boxes for spatial hit testing.
+  // Populated by main-thread layout after chain layout is computed.
   chainFlatbushData?: ArrayBuffer
   chainFirstReadIndices?: Uint32Array // maps Flatbush item index → first read index
 

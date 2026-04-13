@@ -35,6 +35,12 @@ import { ArcsSubModel } from './ArcsSubModel.ts'
 import { SashimiArcsSubModel } from './SashimiArcsSubModel.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import {
+  buildChainConnectingData,
+  computeChainLayout,
+  computeMultiRegionChainLayout,
+  readYsFromRowMap,
+} from './computeChainLayout.ts'
+import {
   computeLayout,
   computeMultiRegionLayout,
   computeSortedLayout,
@@ -1216,6 +1222,33 @@ export default function stateModelFactory(
           }
         }
 
+        function computeAndAssignChainLayout(
+          rpcDataMap: Map<number, PileupDataResult>,
+        ) {
+          const entries = [...rpcDataMap.entries()].filter(
+            ([, d]) => d.numReads > 0,
+          )
+          if (entries.length === 0) {
+            return
+          }
+
+          if (entries.length === 1) {
+            const [regionNumber, data] = entries[0]!
+            const { readYs, maxY } = computeChainLayout(data)
+            fillYArraysFromLayout(data, readYs, maxY)
+            buildChainConnectingData(data, readYs)
+            self.setRpcData(regionNumber, data)
+          } else {
+            const { rowMap, maxY } = computeMultiRegionChainLayout(entries)
+            for (const [regionNumber, data] of entries) {
+              const readYs = readYsFromRowMap(data, rowMap)
+              fillYArraysFromLayout(data, readYs, maxY)
+              buildChainConnectingData(data, readYs)
+              self.setRpcData(regionNumber, data)
+            }
+          }
+        }
+
         function computeAndSetArcs(regions: RegionWithNumber[]) {
           const allRegionInfos: {
             refName: string
@@ -1318,6 +1351,8 @@ export default function stateModelFactory(
                   self.sortedBy,
                   self.showSoftClipping,
                 )
+              } else if (self.renderingMode === 'linkedRead') {
+                computeAndAssignChainLayout(newDataMap)
               } else {
                 for (const [regionNumber, data] of newDataMap) {
                   self.setRpcData(regionNumber, data)
