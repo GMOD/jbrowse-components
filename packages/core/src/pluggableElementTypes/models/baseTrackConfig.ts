@@ -246,7 +246,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         addDisplayConf(conf: { type: string; displayId: string }) {
           const { type } = conf
           if (!type) {
-            throw new Error(`unknown display type ${type}`)
+            throw new Error('display type not specified')
           }
           const display = self.displays.find(
             (d: any) => d?.displayId === conf.displayId,

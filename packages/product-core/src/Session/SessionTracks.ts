@@ -51,7 +51,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
             trackId: string
           }
           if (!type) {
-            throw new Error(`unknown track type ${type}`)
+            throw new Error(`track type not specified for "${trackId}"`)
           }
           const track = self.sessionTracks.find(t => t.trackId === trackId)
           if (track) {

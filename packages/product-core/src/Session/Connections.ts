@@ -42,7 +42,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
       ) {
         const type = configuration.type as string
         if (!type) {
-          throw new Error('track configuration has no `type` listed')
+          throw new Error('connection configuration has no `type` listed')
         }
         const name = readConfObject(configuration, 'name')
         const connectionType = pluginManager.getConnectionType(type)
