@@ -26,7 +26,6 @@ const useStyles = makeStyles()({
   vertical: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 2,
   },
 })
 

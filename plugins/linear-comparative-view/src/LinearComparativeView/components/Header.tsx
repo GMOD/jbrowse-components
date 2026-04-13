@@ -23,6 +23,9 @@ const useStyles = makeStyles()({
   inline: {
     display: 'inline-flex',
   },
+  vertical: {
+    flexDirection: 'column' as const,
+  },
   searchBoxContainer: {
     display: 'flex',
     overflow: 'hidden',
@@ -143,7 +146,7 @@ const Header = observer(function Header({
 
       {showSearchBoxes ? (
         <span
-          className={`${classes.searchBoxContainer} ${sideBySide ? classes.inline : ''}`}
+          className={`${classes.searchBoxContainer} ${sideBySide ? classes.inline : classes.vertical}`}
         >
           {views.map(view => (
             <HeaderSearchBoxes key={view.id} view={view} />

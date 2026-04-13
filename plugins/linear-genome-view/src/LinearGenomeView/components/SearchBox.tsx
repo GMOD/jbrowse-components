@@ -1,3 +1,4 @@
+import type React from 'react'
 import { getSession } from '@jbrowse/core/util'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -44,11 +45,13 @@ const SearchBox = observer(function SearchBox({
   showHelp = true,
   minWidth = 175,
   maxWidth,
+  style = { margin: SPACING },
 }: {
   showHelp?: boolean
   model: LinearGenomeViewModel
   minWidth?: number
   maxWidth?: number
+  style?: React.CSSProperties
 }) {
   const theme = useTheme()
   const session = getSession(model)
@@ -81,7 +84,7 @@ const SearchBox = observer(function SearchBox({
       model={model}
       minWidth={minWidth}
       maxWidth={maxWidth}
-      style={{ margin: SPACING }}
+      style={style}
       endAdornment={<EndAdornment showHelp={showHelp} />}
       inputStyle={{
         padding: 0,
