@@ -1,13 +1,12 @@
 import { Suspense, lazy } from 'react'
 
+import type { Coord } from '../types.ts'
 import type { DotplotViewModel } from '../model.ts'
 
 const TooltipWhereClicked = lazy(() => import('./DotplotTooltipClick.tsx'))
 const TooltipWhereMouseovered = lazy(
   () => import('./DotplotTooltipMouseover.tsx'),
 )
-
-type Coord = [number, number] | undefined
 
 interface DotplotTooltipsProps {
   model: DotplotViewModel

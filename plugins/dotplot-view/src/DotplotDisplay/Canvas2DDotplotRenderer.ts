@@ -1,14 +1,11 @@
-import type { DotplotBackend } from './dotplotBackendTypes.ts'
+import type { DotplotBackend, DotplotGeometryData, TrackScale } from './dotplotBackendTypes.ts'
+
+type Geometry = DotplotGeometryData
 
 export class Canvas2DDotplotRenderer implements DotplotBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
-  private x1s: Float32Array | null = null
-  private y1s: Float32Array | null = null
-  private x2s: Float32Array | null = null
-  private y2s: Float32Array | null = null
-  private colors: Uint32Array | null = null
-  private instanceCount = 0
+  private geometries = new Map<number, Geometry>()
   private width = 0
   private height = 0
 
@@ -32,75 +29,56 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
     this.canvas.height = Math.round(height * dpr)
   }
 
-  uploadGeometry(data: {
-    x1s: Float32Array
-    y1s: Float32Array
-    x2s: Float32Array
-    y2s: Float32Array
-    colors: Uint32Array
-    instanceCount: number
-  }) {
-    this.x1s = data.x1s
-    this.y1s = data.y1s
-    this.x2s = data.x2s
-    this.y2s = data.y2s
-    this.colors = data.colors
-    this.instanceCount = data.instanceCount
+  uploadGeometry(regionKey: number, data: DotplotGeometryData) {
+    this.geometries.set(regionKey, data)
+  }
+
+  deleteGeometry(regionKey: number) {
+    this.geometries.delete(regionKey)
   }
 
   render(
     offsetX: number,
     offsetY: number,
     lineWidth: number,
-    scaleX: number,
-    scaleY: number,
+    trackScales: readonly TrackScale[],
   ) {
     const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1
     const ctx = this.ctx
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.clearRect(0, 0, this.width, this.height)
-
-    if (
-      this.instanceCount === 0 ||
-      !this.x1s ||
-      !this.y1s ||
-      !this.x2s ||
-      !this.y2s ||
-      !this.colors
-    ) {
-      return
-    }
-
     ctx.lineWidth = lineWidth
     ctx.lineCap = 'round'
 
-    for (let i = 0; i < this.instanceCount; i++) {
-      const sx1 = this.x1s[i]! * scaleX - offsetX
-      const sy1 = this.height - (this.y1s[i]! * scaleY - offsetY)
-      const sx2 = this.x2s[i]! * scaleX - offsetX
-      const sy2 = this.height - (this.y2s[i]! * scaleY - offsetY)
+    for (const { regionKey, scaleX, scaleY } of trackScales) {
+      const geo = this.geometries.get(regionKey)
+      if (!geo || geo.instanceCount === 0) {
+        continue
+      }
 
-      const packed = this.colors[i]!
-      const r = packed & 0xff
-      const g = (packed >>> 8) & 0xff
-      const b = (packed >>> 16) & 0xff
-      const a = (packed >>> 24) / 255
+      for (let i = 0; i < geo.instanceCount; i++) {
+        const sx1 = geo.x1s[i]! * scaleX - offsetX
+        const sy1 = this.height - (geo.y1s[i]! * scaleY - offsetY)
+        const sx2 = geo.x2s[i]! * scaleX - offsetX
+        const sy2 = this.height - (geo.y2s[i]! * scaleY - offsetY)
 
-      ctx.strokeStyle = `rgba(${r},${g},${b},${a})`
-      ctx.beginPath()
-      ctx.moveTo(sx1, sy1)
-      ctx.lineTo(sx2, sy2)
-      ctx.stroke()
+        const packed = geo.colors[i]!
+        const r = packed & 0xff
+        const g = (packed >>> 8) & 0xff
+        const b = (packed >>> 16) & 0xff
+        const a = (packed >>> 24) / 255
+
+        ctx.strokeStyle = `rgba(${r},${g},${b},${a})`
+        ctx.beginPath()
+        ctx.moveTo(sx1, sy1)
+        ctx.lineTo(sx2, sy2)
+        ctx.stroke()
+      }
     }
   }
 
   dispose() {
-    this.x1s = null
-    this.y1s = null
-    this.x2s = null
-    this.y2s = null
-    this.colors = null
-    this.instanceCount = 0
+    this.geometries.clear()
   }
 }

@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 
 import { transaction } from 'mobx'
 
-type Coord = [number, number] | undefined
+import type { Coord } from '../../types.ts'
 
 interface View {
   scroll: (distance: number) => void

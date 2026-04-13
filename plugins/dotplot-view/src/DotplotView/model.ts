@@ -36,6 +36,8 @@ import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview.ts'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util.ts'
 
 import type { DotplotViewInit, ImportFormSyntenyTrack } from './types.ts'
+import type { DotplotBackend } from '../DotplotDisplay/dotplotBackendTypes.ts'
+import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.tsx'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
@@ -48,6 +50,10 @@ const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
 )
 type Coord = [number, number]
+
+const LS_CURSOR_MODE = 'dotplot-cursorMode'
+const LS_SHOW_PAN_BUTTONS = 'dotplot-showPanbuttons'
+const LS_WHEEL_MODE = 'dotplot-wheelMode'
 
 // defaults for postProcessSnapshot filtering
 const defaultHeight = 600
@@ -179,15 +185,15 @@ export default function stateModelFactory(pm: PluginManager) {
        * these are 'personal preferences', stored in volatile and
        * loaded/written to localStorage
        */
-      cursorMode: localStorageGetItem('dotplot-cursorMode') || 'crosshair',
+      cursorMode: localStorageGetItem(LS_CURSOR_MODE) || 'crosshair',
       /**
        * #volatile
        */
-      showPanButtons: localStorageGetBoolean('dotplot-showPanbuttons', true),
+      showPanButtons: localStorageGetBoolean(LS_SHOW_PAN_BUTTONS, true),
       /**
        * #volatile
        */
-      wheelMode: localStorageGetItem('dotplot-wheelMode') || 'zoom',
+      wheelMode: localStorageGetItem(LS_WHEEL_MODE) || 'zoom',
       /**
        * #volatile
        */
@@ -196,6 +202,19 @@ export default function stateModelFactory(pm: PluginManager) {
        * #volatile
        */
       borderY: 100,
+      /**
+       * #volatile
+       * shared GPU renderer owned by the view, used by all track displays
+       */
+      gpuRenderer: null as DotplotBackend | null,
+      /**
+       * #volatile
+       */
+      tabVisibilityVersion: 0,
+      /**
+       * #volatile
+       */
+      canvasDrawn: false,
       /**
        * #volatile
        */
@@ -351,6 +370,15 @@ export default function stateModelFactory(pm: PluginManager) {
       },
     }))
     .actions(self => ({
+      setGpuRenderer(renderer: DotplotBackend | null) {
+        self.gpuRenderer = renderer
+      },
+      bumpTabVisibility() {
+        self.tabVisibilityVersion++
+      },
+      setCanvasDrawn(value: boolean) {
+        self.canvasDrawn = value
+      },
       /**
        * #action
        */
@@ -775,12 +803,9 @@ export default function stateModelFactory(pm: PluginManager) {
               const s = (s: unknown) => JSON.stringify(s)
               const { showPanButtons, wheelMode, cursorMode } = self
               if (typeof localStorage !== 'undefined') {
-                localStorage.setItem(
-                  'dotplot-showPanbuttons',
-                  s(showPanButtons),
-                )
-                localStorage.setItem('dotplot-cursorMode', cursorMode)
-                localStorage.setItem('dotplot-wheelMode', wheelMode)
+                localStorage.setItem(LS_SHOW_PAN_BUTTONS, s(showPanButtons))
+                localStorage.setItem(LS_CURSOR_MODE, cursorMode)
+                localStorage.setItem(LS_WHEEL_MODE, wheelMode)
               }
             },
             { name: 'DotplotLocalStorage' },
@@ -821,6 +846,56 @@ export default function stateModelFactory(pm: PluginManager) {
               self.setBorderY(borderY)
             },
             { name: 'DotplotBorder' },
+          ),
+        )
+        addDisposer(
+          self,
+          autorun(
+            function dotplotViewDrawAutorun() {
+              const renderer = self.gpuRenderer
+              if (!renderer) {
+                return
+              }
+              if (!self.initialized) {
+                return
+              }
+
+              // read tabVisibilityVersion to re-fire on tab restore
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const _tvv = self.tabVisibilityVersion
+
+              const { viewWidth, viewHeight, hview, vview } = self
+              renderer.resize(viewWidth, viewHeight)
+
+              const trackScales = self.tracks.map((track, regionKey) => {
+                const display = track.displays[0] as DotplotDisplayModel
+                // read geometryVersion to re-fire after each upload
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const _gv = display.geometryVersion
+                const scaleX =
+                  display.featPositionsBpPerPxH > 0
+                    ? display.featPositionsBpPerPxH / hview.bpPerPx
+                    : 1
+                const scaleY =
+                  display.featPositionsBpPerPxV > 0
+                    ? display.featPositionsBpPerPxV / vview.bpPerPx
+                    : 1
+                return { regionKey, scaleX, scaleY }
+              })
+
+              renderer.render(hview.offsetPx, vview.offsetPx, 2, trackScales)
+
+              if (
+                !self.canvasDrawn &&
+                self.tracks.some(t => {
+                  const d = t.displays[0] as DotplotDisplayModel
+                  return d.features?.length
+                })
+              ) {
+                self.setCanvasDrawn(true)
+              }
+            },
+            { name: 'DotplotViewDraw' },
           ),
         )
       },

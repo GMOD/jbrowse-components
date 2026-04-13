@@ -2,7 +2,8 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { observer } from 'mobx-react'
 
-import type { DotplotDisplayModel } from '../../DotplotDisplay/stateModelFactory.tsx'
+import { getFirstDotplotDisplay, updateAllDisplays } from './util.ts'
+
 import type { DotplotViewModel } from '../model.ts'
 
 const ColorBySelector = observer(function ColorBySelector({
@@ -10,20 +11,10 @@ const ColorBySelector = observer(function ColorBySelector({
 }: {
   model: DotplotViewModel
 }) {
-  // Get the first display from the first track (if it exists)
-  const firstDisplay = model.tracks[0]?.displays[0] as
-    | DotplotDisplayModel
-    | undefined
-
-  const colorBy = firstDisplay?.colorBy ?? 'default'
+  const colorBy = getFirstDotplotDisplay(model)?.colorBy ?? 'default'
 
   const setColorBy = (value: string) => {
-    // Set colorBy for all displays across all tracks
-    for (const track of model.tracks) {
-      for (const display of track.displays) {
-        ;(display as DotplotDisplayModel).setColorBy(value)
-      }
-    }
+    updateAllDisplays(model, d => d.setColorBy(value))
   }
 
   return (

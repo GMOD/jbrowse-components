@@ -3,9 +3,8 @@ import { observer } from 'mobx-react'
 
 import { locstr } from './util.ts'
 
+import type { Coord } from '../types.ts'
 import type { DotplotViewModel } from '../model.ts'
-
-type Coord = [number, number] | undefined
 
 const DotplotTooltipMouseover = observer(function DotplotTooltipMouseover({
   model,

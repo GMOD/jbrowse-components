@@ -10,11 +10,11 @@ import {
 import type {
   DotplotBackend,
   DotplotGeometryData,
+  TrackScale,
 } from './dotplotBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_LINE = 'line'
-const REGION_KEY = 0
 
 export const DOTPLOT_PASSES: PassDescriptor[] = [
   {
@@ -83,9 +83,9 @@ export class GpuDotplotRenderer implements DotplotBackend {
     this.hal.resize(width, height)
   }
 
-  uploadGeometry(data: DotplotGeometryData) {
+  uploadGeometry(regionKey: number, data: DotplotGeometryData) {
     if (data.instanceCount === 0) {
-      this.hal.deleteRegion(REGION_KEY)
+      this.hal.deleteRegion(regionKey)
       return
     }
 
@@ -104,28 +104,34 @@ export class GpuDotplotRenderer implements DotplotBackend {
       u[off + 4] = data.colors[i]!
     }
 
-    this.hal.uploadBuffer(REGION_KEY, PASS_LINE, buf, n)
+    this.hal.uploadBuffer(regionKey, PASS_LINE, buf, n)
+  }
+
+  deleteGeometry(regionKey: number) {
+    this.hal.deleteRegion(regionKey)
   }
 
   render(
     offsetX: number,
     offsetY: number,
     lineWidth: number,
-    scaleX: number,
-    scaleY: number,
+    trackScales: readonly TrackScale[],
   ) {
-    this.uniformF32[0] = this.width
-    this.uniformF32[1] = this.height
-    this.uniformF32[2] = offsetX
-    this.uniformF32[3] = offsetY
-    this.uniformF32[4] = lineWidth
-    this.uniformF32[5] = scaleX
-    this.uniformF32[6] = scaleY
-    this.uniformF32[7] = 0
-
     this.hal.beginFrame(0, 0, 0, 0)
-    this.hal.writeUniforms(this.uniformData)
-    this.hal.drawPass(PASS_LINE, REGION_KEY)
+
+    for (const { regionKey, scaleX, scaleY } of trackScales) {
+      this.uniformF32[0] = this.width
+      this.uniformF32[1] = this.height
+      this.uniformF32[2] = offsetX
+      this.uniformF32[3] = offsetY
+      this.uniformF32[4] = lineWidth
+      this.uniformF32[5] = scaleX
+      this.uniformF32[6] = scaleY
+      this.uniformF32[7] = 0
+      this.hal.writeUniforms(this.uniformData)
+      this.hal.drawPass(PASS_LINE, regionKey)
+    }
+
     this.hal.endFrame()
   }
 

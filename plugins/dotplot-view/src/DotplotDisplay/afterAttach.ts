@@ -173,14 +173,10 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
     ),
   )
 
-  let lastFeatPositions: DotplotFeatPos[] | undefined
-  let lastUploadSettings = ''
-  let lastRenderer: typeof self.gpuRenderer = null
-
   addDisposer(
     self,
     autorun(
-      function dotplotDrawAutorun() {
+      function dotplotUploadAutorun() {
         let view: DotplotViewModel
         try {
           view = getContainingView(self) as DotplotViewModel
@@ -191,83 +187,50 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
           return
         }
 
-        const {
-          alpha,
-          colorBy,
-          featPositions,
-          featPositionsBpPerPxH,
-          featPositionsBpPerPxV,
-          gpuRenderer: renderer,
-          minAlignmentLength,
-        } = self
-        const { viewWidth, viewHeight, hview, vview, drawCigar } = view
-        const hBpPerPx = hview.bpPerPx
-        const vBpPerPx = vview.bpPerPx
-
+        const { gpuRenderer: renderer } = view
         if (!renderer) {
           return
         }
 
-        // SYNC across model-driven GPU displays (dotplot, linear synteny,
-        // multi-LGV synteny): tabVisibilityVersion is a counter incremented
-        // by bumpTabVisibility() when the tab becomes visible again (WebGPU
-        // discards the swap-chain on hide). Reading it here creates a MobX
-        // dependency so this draw autorun re-fires on restore.
-        // Component calls useTabVisibilityRerender(() => bumpTabVisibility()).
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _tvv = self.tabVisibilityVersion
+        const { alpha, colorBy, featPositions, minAlignmentLength } = self
+        const { drawCigar, hview, vview } = view
+        const hBpPerPx = hview.bpPerPx
+        const vBpPerPx = vview.bpPerPx
 
-        if (renderer !== lastRenderer) {
-          lastFeatPositions = undefined
-          lastUploadSettings = ''
-          lastRenderer = renderer
+        const regionKey = view.tracks.findIndex(t =>
+          (t.displays as unknown[]).includes(self),
+        )
+        if (regionKey < 0) {
+          return
         }
 
-        renderer.resize(viewWidth, viewHeight)
-
-        const settingsKey = `${colorBy}-${alpha}-${drawCigar}-${minAlignmentLength}`
-        if (
-          featPositions !== lastFeatPositions ||
-          settingsKey !== lastUploadSettings
-        ) {
-          let filtered = featPositions
-          if (minAlignmentLength > 0) {
-            filtered = featPositions.filter(fp => {
-              const len = Math.abs(fp.f.get('end') - fp.f.get('start'))
-              return len >= minAlignmentLength
-            })
-          }
-          const colorFn = createDotplotColorFunction(colorBy, alpha)
-          const segments = buildLineSegments(
-            filtered,
-            colorFn,
-            drawCigar,
-            hBpPerPx,
-            vBpPerPx,
-          )
-          renderer.uploadGeometry({
-            x1s: new Float32Array(segments.x1s),
-            y1s: new Float32Array(segments.y1s),
-            x2s: new Float32Array(segments.x2s),
-            y2s: new Float32Array(segments.y2s),
-            colors: new Uint32Array(segments.colors),
-            instanceCount: segments.x1s.length,
+        let filtered = featPositions
+        if (minAlignmentLength > 0) {
+          filtered = featPositions.filter(fp => {
+            const len = Math.abs(fp.f.get('end') - fp.f.get('start'))
+            return len >= minAlignmentLength
           })
-          lastFeatPositions = featPositions
-          lastUploadSettings = settingsKey
         }
 
-        const scaleX =
-          featPositionsBpPerPxH > 0 ? featPositionsBpPerPxH / hBpPerPx : 1
-        const scaleY =
-          featPositionsBpPerPxV > 0 ? featPositionsBpPerPxV / vBpPerPx : 1
-
-        renderer.render(hview.offsetPx, vview.offsetPx, 2, scaleX, scaleY)
-        if (!self.canvasDrawn && self.features?.length) {
-          self.setCanvasDrawn(true)
-        }
+        const colorFn = createDotplotColorFunction(colorBy, alpha)
+        const segments = buildLineSegments(
+          filtered,
+          colorFn,
+          drawCigar,
+          hBpPerPx,
+          vBpPerPx,
+        )
+        renderer.uploadGeometry(regionKey, {
+          x1s: new Float32Array(segments.x1s),
+          y1s: new Float32Array(segments.y1s),
+          x2s: new Float32Array(segments.x2s),
+          y2s: new Float32Array(segments.y2s),
+          colors: new Uint32Array(segments.colors),
+          instanceCount: segments.x1s.length,
+        })
+        self.bumpGeometryVersion()
       },
-      { name: 'DotplotDraw' },
+      { name: 'DotplotUpload' },
     ),
   )
 }

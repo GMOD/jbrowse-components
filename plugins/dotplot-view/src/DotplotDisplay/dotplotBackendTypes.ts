@@ -1,3 +1,9 @@
+export interface TrackScale {
+  regionKey: number
+  scaleX: number
+  scaleY: number
+}
+
 export interface DotplotGeometryData {
   x1s: Float32Array
   y1s: Float32Array
@@ -9,13 +15,13 @@ export interface DotplotGeometryData {
 
 export interface DotplotBackend {
   resize(width: number, height: number): void
-  uploadGeometry(data: DotplotGeometryData): void
+  uploadGeometry(regionKey: number, data: DotplotGeometryData): void
+  deleteGeometry(regionKey: number): void
   render(
     offsetX: number,
     offsetY: number,
     lineWidth: number,
-    scaleX: number,
-    scaleY: number,
+    trackScales: readonly TrackScale[],
   ): void
   dispose(): void
 }

@@ -5,7 +5,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { renderSvg } from './renderSvg.tsx'
 
-import type { DotplotBackend } from './dotplotBackendTypes.ts'
 import type { DotplotFeatPos } from './types.ts'
 import type { ExportSvgOptions } from '../DotplotView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -50,10 +49,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           featPositions: [] as DotplotFeatPos[],
           /**
            * #volatile
-           */
-          gpuRenderer: null as DotplotBackend | null,
-          /**
-           * #volatile
            * alpha transparency value for synteny drawing (0-1)
            */
           alpha: 1,
@@ -72,8 +67,12 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            * bpPerPx at which featPositions were computed (v-axis)
            */
           featPositionsBpPerPxV: 0,
-          canvasDrawn: false,
-          tabVisibilityVersion: 0,
+          /**
+           * #volatile
+           * bumped after each geometry upload to the shared view renderer,
+           * so the view-level draw autorun re-fires after fresh data is ready
+           */
+          geometryVersion: 0,
           fetchStopToken: undefined as StopToken | undefined,
         })),
     )
@@ -140,17 +139,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         self.featPositionsBpPerPxH = bpPerPxH
         self.featPositionsBpPerPxV = bpPerPxV
       },
-      /**
-       * #action
-       */
-      setGpuRenderer(renderer: DotplotBackend | null) {
-        self.gpuRenderer = renderer
-      },
-      setCanvasDrawn(value: boolean) {
-        self.canvasDrawn = value
-      },
-      bumpTabVisibility() {
-        self.tabVisibilityVersion++
+      bumpGeometryVersion() {
+        self.geometryVersion++
       },
       /**
        * #action

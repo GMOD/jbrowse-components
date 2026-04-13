@@ -1,7 +1,25 @@
 import { toLocale } from '@jbrowse/core/util'
 
-import type { Dotplot1DViewModel } from '../model.ts'
+import type { DotplotDisplayModel } from '../../DotplotDisplay/stateModelFactory.tsx'
+import type { Dotplot1DViewModel, DotplotViewModel } from '../model.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+
+export function getFirstDotplotDisplay(
+  model: DotplotViewModel,
+): DotplotDisplayModel | undefined {
+  return model.tracks[0]?.displays[0] as DotplotDisplayModel | undefined
+}
+
+export function updateAllDisplays(
+  model: DotplotViewModel,
+  fn: (display: DotplotDisplayModel) => void,
+) {
+  for (const track of model.tracks) {
+    for (const display of track.displays) {
+      fn(display as DotplotDisplayModel)
+    }
+  }
+}
 
 export function locstr(
   px: number,

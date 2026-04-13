@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 
-type Coord = [number, number] | undefined
+import type { Coord } from '../../types.ts'
 
 interface Rect {
   left: number
