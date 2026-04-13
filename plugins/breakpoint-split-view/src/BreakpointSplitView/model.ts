@@ -510,7 +510,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       menuItems() {
         const allTracks = self.views.flatMap(v => v.tracks)
         return [
-          ...buildCompactAllTracksMenu(allTracks),
           ...self.views.map((view, idx) => ({
             label: `Row ${idx + 1} view menu`,
             subMenu: view.menuItems(),
@@ -536,6 +535,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Show...',
             subMenu: [
+              ...buildCompactAllTracksMenu(allTracks),
               {
                 label: 'Show header',
                 type: 'checkbox',
