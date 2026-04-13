@@ -1,4 +1,5 @@
 import type React from 'react'
+
 import { getSession } from '@jbrowse/core/util'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'

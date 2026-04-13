@@ -15,7 +15,6 @@ import SearchIcon from '@mui/icons-material/Search'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
-import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
 
 import {
   ExportSvgDialog,
@@ -257,7 +256,6 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
           label: 'Scroll zoom on WebGL tracks',
           type: 'checkbox',
           checked: self.scrollZoom,
-          icon: ZoomInMapIcon,
           onClick: () => {
             self.setScrollZoom(!self.scrollZoom)
           },

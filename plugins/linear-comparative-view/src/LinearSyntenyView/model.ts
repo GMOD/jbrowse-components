@@ -8,7 +8,6 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
 import { autorun, observable, when } from 'mobx'
 
-
 import baseModel from '../LinearComparativeView/model.ts'
 
 import type {

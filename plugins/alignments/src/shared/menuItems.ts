@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
+import Palette from '@mui/icons-material/Palette'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
@@ -428,6 +429,7 @@ export function getColorByMenuItem(
 
   return {
     label: 'Color by...',
+    icon: Palette,
     subMenu,
   }
 }
@@ -457,6 +459,7 @@ interface ShowMenuModel {
   setShowOutline: (show: boolean) => void
   setShowLinkedReads: (show: boolean) => void
   setFlipStrandLongReadChains: (flip: boolean) => void
+  setMaxHeight: (n?: number) => void
 }
 
 export function getShowMenuItem(model: ShowMenuModel) {
@@ -488,45 +491,7 @@ export function getShowMenuItem(model: ShowMenuModel) {
           model.setShowCoverage(!model.showCoverage)
         },
       },
-      {
-        label: 'Arcs...',
-        type: 'subMenu' as const,
-        subMenu: [
-          {
-            label: 'Show paired/supplementary arcs',
-            type: 'checkbox' as const,
-            checked: model.showArcs,
-            onClick: () => {
-              model.setShowArcs(!model.showArcs)
-            },
-          },
-          {
-            label: 'Arcs point down',
-            type: 'checkbox' as const,
-            checked: model.pairedArcsDown,
-            onClick: () => {
-              model.setArcsDown(!model.pairedArcsDown)
-            },
-          },
-          { type: 'divider' as const },
-          {
-            label: 'Show sashimi arcs',
-            type: 'checkbox' as const,
-            checked: model.showSashimiArcs,
-            onClick: () => {
-              model.setShowSashimiArcs(!model.showSashimiArcs)
-            },
-          },
-          {
-            label: 'Sashimi arcs point down',
-            type: 'checkbox' as const,
-            checked: model.sashimiArcsDown,
-            onClick: () => {
-              model.setSashimiArcsDown(!model.sashimiArcsDown)
-            },
-          },
-        ],
-      },
+
       {
         label: 'Show mismatches',
         type: 'checkbox' as const,
@@ -552,7 +517,7 @@ export function getShowMenuItem(model: ShowMenuModel) {
         },
       },
       {
-        label: 'Link paired/supplementary reads',
+        label: 'Show paired/supplementary reads as linked',
         type: 'checkbox' as const,
         checked: model.showLinkedReads,
         onClick: () => {
@@ -560,13 +525,52 @@ export function getShowMenuItem(model: ShowMenuModel) {
         },
       },
       {
-        label: 'Flip strand on long read chains',
+        label: 'Show long read strand relative to primary',
         type: 'checkbox' as const,
         checked: model.flipStrandLongReadChains,
         onClick: () => {
           model.setFlipStrandLongReadChains(!model.flipStrandLongReadChains)
         },
       },
+      {
+        label: 'Arcs...',
+        type: 'subMenu' as const,
+        subMenu: [
+          {
+            label: 'Show paired/supplementary arcs',
+            type: 'checkbox' as const,
+            checked: model.showArcs,
+            onClick: () => {
+              model.setShowArcs(!model.showArcs)
+            },
+          },
+          {
+            label: 'Show paired/supplementary arcs pointing down',
+            type: 'checkbox' as const,
+            checked: model.pairedArcsDown,
+            onClick: () => {
+              model.setArcsDown(!model.pairedArcsDown)
+            },
+          },
+          {
+            label: 'Show sashimi arcs',
+            type: 'checkbox' as const,
+            checked: model.showSashimiArcs,
+            onClick: () => {
+              model.setShowSashimiArcs(!model.showSashimiArcs)
+            },
+          },
+          {
+            label: 'Show sashimi arcs as pointing down',
+            type: 'checkbox' as const,
+            checked: model.sashimiArcsDown,
+            onClick: () => {
+              model.setSashimiArcsDown(!model.sashimiArcsDown)
+            },
+          },
+        ],
+      },
+      getSetMaxHeightMenuItem(model),
     ],
   }
 }
@@ -582,7 +586,10 @@ export function getSetMaxHeightMenuItem(model: MaxHeightModel) {
     onClick: () => {
       getSession(model).queueDialog(handleClose => [
         SetMaxHeightDialog,
-        { model, handleClose },
+        {
+          model,
+          handleClose,
+        },
       ])
     },
   }

@@ -53,10 +53,8 @@ import {
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import {
   getColorByMenuItem,
-  getFeatureHeightMenuItem,
   getFiltersMenuItem,
   getGroupByMenuItem,
-  getSetMaxHeightMenuItem,
   getShowMenuItem,
   getSortByMenuItem,
 } from '../shared/menuItems.ts'
@@ -1514,46 +1512,6 @@ export default function stateModelFactory(
         }
       })
       .views(self => ({
-        get viewMenuActions(): MenuItem[] {
-          return [
-            {
-              label: 'Feature height',
-              subMenu: [
-                {
-                  label: 'Normal',
-                  type: 'radio' as const,
-                  checked:
-                    self.featureHeightSetting === 7 &&
-                    self.noSpacingSetting !== true,
-                  onClick: () => {
-                    self.setCompactness('normal')
-                  },
-                },
-                {
-                  label: 'Compact',
-                  type: 'radio' as const,
-                  checked:
-                    self.featureHeightSetting === 3 &&
-                    self.noSpacingSetting === true,
-                  onClick: () => {
-                    self.setCompactness('compact')
-                  },
-                },
-                {
-                  label: 'Super-compact',
-                  type: 'radio' as const,
-                  checked:
-                    self.featureHeightSetting === 1 &&
-                    self.noSpacingSetting === true,
-                  onClick: () => {
-                    self.setCompactness('super-compact')
-                  },
-                },
-              ],
-            },
-          ]
-        },
-
         /**
          * Track menu items
          */
@@ -1566,9 +1524,7 @@ export default function stateModelFactory(
           })
 
           const items: MenuItem[] = [
-            getFeatureHeightMenuItem(self),
             getShowMenuItem(self),
-            getSetMaxHeightMenuItem(self),
             getFiltersMenuItem(self, { showPairFilters: self.isChainMode }),
             getSortByMenuItem(self),
             colorByMenu,

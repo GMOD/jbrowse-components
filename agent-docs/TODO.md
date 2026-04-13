@@ -251,3 +251,8 @@ Clicking on all isoforms
 ## Right padding on features on plugins/canvas
 
 Still needed? maybe excessive
+
+## Organize linearalignmentsdisplay menu
+
+Might have a 'rarely used' menu? Set max track height for example, some rarely
+used show items. I dunno
