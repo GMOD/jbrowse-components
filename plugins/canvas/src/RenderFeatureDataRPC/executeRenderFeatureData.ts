@@ -85,7 +85,12 @@ export async function executeRenderFeatureData({
   checkStopToken2(stopTokenCheck)
 
   if (showOnlyGenes) {
-    featuresArray = featuresArray.filter(f => f.get('type') === 'gene')
+    featuresArray = featuresArray.filter(f => {
+      const t = f.get('type') as string
+      return (
+        t === 'gene' || t === 'mRNA' || t === 'transcript' || t === 'CDS'
+      )
+    })
   }
 
   if (maxFeatureDensity !== undefined && requestedBpPerPx) {

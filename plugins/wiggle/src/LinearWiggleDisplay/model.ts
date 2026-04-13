@@ -356,8 +356,7 @@ export default function stateModelFactory(
 
       const superAfterAttach = self.afterAttach
 
-      let prevPivot: number | undefined
-      let prevResolution: number | undefined
+      let prevSettingsKey: string | undefined
 
       return {
         isCacheValid(regionNumber: number) {
@@ -395,30 +394,16 @@ export default function stateModelFactory(
             self,
             autorun(
               () => {
-                const pivot = self.effectiveBicolorPivot
-                if (prevPivot !== undefined && pivot !== prevPivot) {
+                const key = JSON.stringify({
+                  bicolorPivot: self.effectiveBicolorPivot,
+                  resolution: self.resolution,
+                })
+                if (prevSettingsKey !== undefined && key !== prevSettingsKey) {
                   self.clearAllRpcData()
                 }
-                prevPivot = pivot
+                prevSettingsKey = key
               },
-              { name: 'BicolorPivotChange' },
-            ),
-          )
-
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const { resolution } = self
-                if (
-                  prevResolution !== undefined &&
-                  resolution !== prevResolution
-                ) {
-                  self.clearAllRpcData()
-                }
-                prevResolution = resolution
-              },
-              { name: 'ResolutionChange' },
+              { name: 'LinearWiggleDisplay:SettingsInvalidate' },
             ),
           )
 

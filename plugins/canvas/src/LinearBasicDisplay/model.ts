@@ -812,33 +812,34 @@ export default function stateModelFactory(
             ),
           )
 
-          // Reaction: re-fetch when settings that require new RPC data change
+          // Autorun: re-fetch when settings that require new RPC data change.
+          // Uses the same prevKey pattern as alignments/wiggle. No conditional
+          // guard needed; refetchForCurrentView() is safe in all states.
+          //
+          // Intentional deviation from alignments/wiggle: uses
+          // refetchForCurrentView() (softReset) instead of clearAllRpcData().
+          // softReset preserves rpcDataMap so the canvas keeps displaying old
+          // features while the new fetch is in flight, avoiding a blank flash.
+          // clearAllRpcData() would clear the canvas immediately (appropriate
+          // for wiggle/alignments where y-scale or read layout must change).
+          let prevSettingsKey: string | undefined
           addDisposer(
             self,
-            reaction(
-              () => ({
-                subfeatureLabels: self.subfeatureLabels,
-                colorByCDS: self.colorByCDS,
-                geneGlyphMode: self.effectiveGeneGlyphMode,
-                showOnlyGenes: self.showOnlyGenes,
-                displayMode: self.displayMode,
-              }),
+            autorun(
               () => {
-                if (self.loadedRegions.size > 0 || self.regionTooLarge) {
+                const key = JSON.stringify({
+                  subfeatureLabels: self.subfeatureLabels,
+                  colorByCDS: self.colorByCDS,
+                  geneGlyphMode: self.effectiveGeneGlyphMode,
+                  showOnlyGenes: self.showOnlyGenes,
+                  displayMode: self.displayMode,
+                })
+                if (prevSettingsKey !== undefined && key !== prevSettingsKey) {
                   self.refetchForCurrentView()
                 }
+                prevSettingsKey = key
               },
-              {
-                name: 'SettingsRefetch',
-                delay: 100,
-                fireImmediately: false,
-                equals: (a, b) =>
-                  a.subfeatureLabels === b.subfeatureLabels &&
-                  a.colorByCDS === b.colorByCDS &&
-                  a.geneGlyphMode === b.geneGlyphMode &&
-                  a.showOnlyGenes === b.showOnlyGenes &&
-                  a.displayMode === b.displayMode,
-              },
+              { name: 'LinearBasicDisplay:SettingsInvalidate' },
             ),
           )
         },

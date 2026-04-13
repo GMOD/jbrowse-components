@@ -465,3 +465,63 @@ describe('FetchVisibleRegions autorun', () => {
     expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
   })
 })
+
+describe('SettingsInvalidate autorun', () => {
+  it('triggers refetch when settings change while data is loaded', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => expect(display.loadedRegions.size).toBe(1))
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    display.setShowOnlyGenes(true)
+    // Autorun fires synchronously — no timer advancement needed
+
+    await waitFor(() => {
+      expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+      const lastArgs = mockRpcCall.mock.calls.at(-1)![2]
+      expect(lastArgs).toMatchObject({ showOnlyGenes: true })
+    })
+  })
+
+  it('triggers refetch when settings change while fetch is in progress (regression)', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+
+    // Never resolves — holds the initial fetch in-flight indefinitely
+    mockRpcCall.mockImplementation(() => new Promise(() => {}))
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => expect(display.isLoading).toBe(true))
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    display.setShowOnlyGenes(true)
+    // Autorun fires synchronously — no timer advancement needed
+
+    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    const lastArgs = mockRpcCall.mock.calls.at(-1)![2]
+    expect(lastArgs).toMatchObject({ showOnlyGenes: true })
+  })
+
+  it('triggers refetch immediately even before the initial FetchVisibleRegions fires', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
+    const { display } = createDisplay()
+
+    // Change setting before FetchVisibleRegions fires (delay: 300ms).
+    // The autorun fires synchronously with no guard — refetchForCurrentView()
+    // starts the fetch directly. FetchVisibleRegions at t=300ms sees isLoading=true
+    // and returns early, so no duplicate fetch occurs.
+    display.setShowOnlyGenes(true)
+
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => expect(display.loadedRegions.size).toBe(1))
+
+    // Only one RPC call — from the autorun, not a separate FetchVisibleRegions call
+    expect(mockRpcCall).toHaveBeenCalledTimes(1)
+    expect(mockRpcCall.mock.calls[0]![2]).toMatchObject({ showOnlyGenes: true })
+  })
+})
