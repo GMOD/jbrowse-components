@@ -10,6 +10,7 @@ import React, {
 
 import { ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
+import { uploadChangedRegions } from '@jbrowse/core/gpu/uploadChangedRegions'
 import {
   getContainingView,
   useDebounce,
@@ -148,7 +149,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     [number, number] | undefined
   >()
   const flatbushCacheMapRef = useRef(new Map<number, FlatbushRegionCache>())
-  const lastUploadedRef = useRef(new Map<number, FeatureDataResult>())
+  const lastUploadedRef = useRef(new Map<number, unknown>())
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const view = getContainingView(model) as LGV
@@ -207,28 +208,22 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
   const error = gpuError || modelError
 
-  useEffect(() => {
-    const dispose = autorun(() => {
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { offsetPx: _op, bpPerPx: _bpp, initialized, width: _w } = view
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _h = model.height
+  useEffect(() => autorun(() => {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { offsetPx: _op, bpPerPx: _bpp, initialized, width: _w } = view
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _h = model.height
 
-        if (!initialized) {
-          return
-        }
-
-        renderWithBlocks()
-      } catch {
-        // Model may have been detached from state tree
+      if (!initialized) {
+        return
       }
-    })
 
-    return () => {
-      dispose()
+      renderWithBlocks()
+    } catch {
+      // Model may have been detached from state tree
     }
-  }, [view, model])
+  }), [view, model])
 
   // useLayoutEffect ensures GPU data is uploaded before paint, keeping
   // WebGL features in sync with the DOM label overlay (which is computed
@@ -266,17 +261,11 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       return
     }
 
-    const activeRegions: number[] = []
-    for (const [regionNumber, data] of rpcDataMap) {
-      activeRegions.push(regionNumber)
-      if (lastUploaded.get(regionNumber) !== data) {
-        renderer.uploadRegion(regionNumber, data)
-        lastUploaded.set(regionNumber, data)
-      }
-    }
-    for (const key of lastUploaded.keys()) {
+    const activeRegions = uploadChangedRegions(rpcDataMap, lastUploaded, (regionNumber, data) => {
+      renderer.uploadRegion(regionNumber, data)
+    })
+    for (const key of flatbushCacheMapRef.current.keys()) {
       if (!rpcDataMap.has(key)) {
-        lastUploaded.delete(key)
         flatbushCacheMapRef.current.delete(key)
       }
     }
