@@ -12,6 +12,7 @@ import {
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun } from 'mobx'
 
 import { calc, getBlockFeatures, intersect } from './util.ts'
@@ -534,6 +535,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             : []),
           {
             label: 'Show...',
+            icon: VisibilityIcon,
             subMenu: [
               ...buildCompactAllTracksMenu(allTracks),
               {

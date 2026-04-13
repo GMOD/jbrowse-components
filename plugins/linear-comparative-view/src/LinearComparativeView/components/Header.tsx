@@ -3,6 +3,7 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
 import { FormGroup, ToggleButton } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -95,6 +96,7 @@ const Header = observer(function Header({
           ...model.headerMenuItems(),
           {
             label: 'Show...',
+            icon: VisibilityIcon,
             subMenu: [
               ...model.showMenuItems(),
               {

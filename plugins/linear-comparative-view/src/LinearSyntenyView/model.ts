@@ -6,10 +6,9 @@ import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun, observable, when } from 'mobx'
 
-import { Curves } from './components/Icons.tsx'
+
 import baseModel from '../LinearComparativeView/model.ts'
 
 import type {
@@ -253,7 +252,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Show all regions',
               onClick: self.showAllRegions,
-              icon: VisibilityIcon,
             },
             {
               label: 'Show dynamic controls',
@@ -267,7 +265,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               label: 'Show curved lines',
               type: 'checkbox',
               checked: self.drawCurves,
-              icon: Curves,
               onClick: () => {
                 self.setDrawCurves(!self.drawCurves)
               },
