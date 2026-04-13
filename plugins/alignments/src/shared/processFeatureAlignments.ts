@@ -270,12 +270,12 @@ export function extractMethylation(
         position: genomicPos,
         base: 'C',
         modType: 'm',
-        isSimplex: false,
+        isSimplex: true,
         strand: methStrand,
         r: methP > 0.5 ? 255 : 0,
         g: 0,
         b: methP > 0.5 ? 0 : 255,
-        prob: methP,
+        prob: methP > 0.5 ? methP : 1 - methP,
       })
     }
     if (hydroxyMethBins[i]) {
@@ -285,12 +285,12 @@ export function extractMethylation(
         position: genomicPos,
         base: 'C',
         modType: 'h',
-        isSimplex: false,
+        isSimplex: true,
         strand: methStrand,
         r: hydroxyP > 0.5 ? 255 : 128,
         g: hydroxyP > 0.5 ? 192 : 0,
         b: hydroxyP > 0.5 ? 203 : 128,
-        prob: hydroxyP,
+        prob: hydroxyP > 0.5 ? hydroxyP : 1 - hydroxyP,
       })
     }
   }

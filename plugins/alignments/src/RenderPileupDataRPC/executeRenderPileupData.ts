@@ -231,7 +231,8 @@ export async function executeRenderPileupData({
 
   checkStopToken2(stopTokenCheck)
 
-  const trackStrands = colorBy?.type === 'modifications'
+  const trackStrands =
+    colorBy?.type === 'modifications' || colorBy?.type === 'methylation'
   const coverage = await updateStatus(
     'Computing coverage',
     statusCallback,

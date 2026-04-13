@@ -1,3 +1,12 @@
+import {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_S,
+  CIGAR_X,
+} from '../shared/cigarUtil.ts'
 import { getNextRefPos } from '../MismatchParser/index.ts'
 
 import type { getModPositions } from './getModPositions.ts'
@@ -62,6 +71,46 @@ export function getMethBins({
     }
     probIndex += positions.length
   }
+
+  const mmCpgCount = methBins.filter(Boolean).length
+
+  // Scan the full read sequence for ALL CpG dinucleotides and mark any not
+  // already detected from the MM tag as unmethylated (prob=0).
+  // Forward strand: C at readPos followed by G at readPos+1.
+  // Reverse strand: the CIGAR scan runs in revcomp coordinate space (same
+  // space that getModPositions uses), so a CpG in revcomp appears as
+  // seq[readPos]='G' preceded by seq[readPos-1]='C' in the stored read.
+  let readPos = 0
+  let refPos = 0
+  for (let i = 0; i < cigarOps.length; i++) {
+    const packed = cigarOps[i]!
+    const len = packed >> 4
+    const op = packed & 0xf
+    if (op === CIGAR_S || op === CIGAR_I) {
+      readPos += len
+    } else if (op === CIGAR_D || op === CIGAR_N) {
+      refPos += len
+    } else if (op === CIGAR_M || op === CIGAR_X || op === CIGAR_EQ) {
+      for (let j = 0; j < len; j++) {
+        const rp = readPos + j
+        const rf = refPos + j
+        const isCpG = isReverse
+          ? seq[rp]?.toLowerCase() === 'g' && seq[rp - 1]?.toLowerCase() === 'c'
+          : seq[rp]?.toLowerCase() === 'c' && seq[rp + 1]?.toLowerCase() === 'g'
+        if (isCpG && rf >= 0 && rf < flen && !methBins[rf]) {
+          methBins[rf] = 1
+          methProbs[rf] = 0
+        }
+      }
+      readPos += len
+      refPos += len
+    }
+  }
+
+  const totalCpgCount = methBins.filter(Boolean).length
+  console.log(
+    `[getMethBins] fstrand=${fstrand} flen=${flen} mmCpGs=${mmCpgCount} scanCpGs=${totalCpgCount - mmCpgCount} total=${totalCpgCount}`,
+  )
 
   return { methBins, hydroxyMethBins, methProbs, hydroxyMethProbs }
 }
