@@ -71,9 +71,7 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         }
         const type = pluginManager.getInternetAccountType(configuration.type)
         if (!type) {
-          throw new Error(
-            `unknown internet account type ${configuration.type}`,
-          )
+          throw new Error(`unknown internet account type ${configuration.type}`)
         }
         const internetAccount = type.stateModel.create({
           ...initialSnapshot,
@@ -123,8 +121,7 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
                 if (
                   !self.internetAccounts.some(
                     a =>
-                      a.internetAccountId ===
-                      internetAccount.internetAccountId,
+                      a.internetAccountId === internetAccount.internetAccountId,
                   )
                 ) {
                   self.initializeInternetAccount(internetAccount)

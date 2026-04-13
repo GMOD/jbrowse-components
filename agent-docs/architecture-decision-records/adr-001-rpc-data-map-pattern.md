@@ -9,8 +9,8 @@ Accepted
 Multi-region display models (wiggle, alignments, canvas, synteny) store
 per-region RPC results in a volatile `Map<number, TResult>` field called
 `rpcDataMap`. Because MST volatile fields are plain JS values — not MobX
-observables — direct mutation (`self.rpcDataMap.set(k, v)`) is invisible to
-MobX and won't trigger reactions.
+observables — direct mutation (`self.rpcDataMap.set(k, v)`) is invisible to MobX
+and won't trigger reactions.
 
 The current workaround:
 
@@ -38,8 +38,8 @@ Keep the `new Map()` reassignment pattern. Do not migrate to `observable.map()`.
 
 Every autorun/reaction that reads `rpcDataMap` across all affected display types
 uses a delay (`delay: 400` in wiggle, `delay: 50–100` in canvas). With a delay,
-MobX debounces the reaction — whether the map is reassigned N times or mutated
-N times via `.set()`, the reaction fires exactly once, 400 ms after the last
+MobX debounces the reaction — whether the map is reassigned N times or mutated N
+times via `.set()`, the reaction fires exactly once, 400 ms after the last
 region loads. The behavioral output is identical.
 
 The scenario where `observable.map()` would genuinely win — a zero-delay

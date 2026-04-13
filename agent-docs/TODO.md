@@ -212,15 +212,15 @@ much on small zooms
 
 Plugins/sequence added 'extra fetching' beyond just screen width recently also
 
-
 ## GPU: build-time WGSL struct size validator
 
-6 structs across alignments, LD, and canvas plugins had sizeof not divisible by 16
-and were fixed manually (ArrowInstance, ReadInst, GapInst, CovInst, IndicatorInst,
-ConnLineInst, LDInstance). The runtime guard in `WebGPUHal.create` catches these
-when the WebGPU path is hit, but a build-time Jest test that parses WGSL sources
-and asserts `sizeof(instanceStruct) % 16 === 0` would catch regressions in CI
-before they reach a browser.
+6 structs across alignments, LD, and canvas plugins had sizeof not divisible by
+16 and were fixed manually (ArrowInstance, ReadInst, GapInst, CovInst,
+IndicatorInst, ConnLineInst, LDInstance). The runtime guard in
+`WebGPUHal.create` catches these when the WebGPU path is hit, but a build-time
+Jest test that parses WGSL sources and asserts
+`sizeof(instanceStruct) % 16 === 0` would catch regressions in CI before they
+reach a browser.
 
 NCBI gene track 1:38,961,598-39,145,227
 

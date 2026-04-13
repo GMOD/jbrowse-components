@@ -706,7 +706,7 @@ export class WebGPUHal implements GpuHal {
       this.resetStagingBuffer()
       return -1
     }
-    let result = -1
+    let result: number
     try {
       const data = new Uint8Array(this.pickingStagingBuffer.getMappedRange())
       const r = data[0]!

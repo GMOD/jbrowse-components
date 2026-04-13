@@ -57,7 +57,9 @@ export function buildClusteredLayout<S extends { name: string }>(
   existingLayout: S[],
   order: number[],
 ): S[] {
-  const existingByName = Object.fromEntries(existingLayout.map(s => [s.name, s]))
+  const existingByName = Object.fromEntries(
+    existingLayout.map(s => [s.name, s]),
+  )
   return order.map(idx => {
     const source = baseSources[idx]
     if (!source) {

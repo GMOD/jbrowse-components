@@ -10,6 +10,7 @@ import {
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
+import { buildClusteredLayout } from '@jbrowse/tree-sidebar'
 import {
   Button,
   DialogActions,
@@ -18,8 +19,6 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-
-import { buildClusteredLayout } from '@jbrowse/tree-sidebar'
 
 import type { ReducedModel } from './types.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -127,7 +126,11 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
                 )
 
                 model.setLayoutAndClusterTree(
-                  buildClusteredLayout(sourcesWithoutLayout, model.layout, ret.order),
+                  buildClusteredLayout(
+                    sourcesWithoutLayout,
+                    model.layout,
+                    ret.order,
+                  ),
                   ret.tree,
                 )
               }

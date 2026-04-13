@@ -43,11 +43,7 @@ function validateWgsl(name: string, code: string) {
   try {
     execSync(`naga ${file}`, { stdio: 'pipe' })
   } catch (e) {
-    const msg =
-      e instanceof Error
-        ? ((e as { stderr?: Buffer }).stderr?.toString() ?? e.message)
-        : String(e)
-    throw new Error(`WGSL validation failed for "${name}":\n${msg}`)
+    throw new Error(`WGSL validation failed for "${name}": ${e}`, { cause: e })
   }
 }
 

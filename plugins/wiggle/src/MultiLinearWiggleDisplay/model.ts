@@ -19,10 +19,7 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import {
-  TreeSidebarMixin,
-  computeHierarchyLayout,
-} from '@jbrowse/tree-sidebar'
+import { TreeSidebarMixin, computeHierarchyLayout } from '@jbrowse/tree-sidebar'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'

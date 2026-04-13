@@ -22,10 +22,7 @@ import {
   TrackHeightMixin,
   migrateOldSettingSnapshots,
 } from '@jbrowse/plugin-linear-genome-view'
-import {
-  TreeSidebarMixin,
-  computeHierarchyLayout,
-} from '@jbrowse/tree-sidebar'
+import { TreeSidebarMixin, computeHierarchyLayout } from '@jbrowse/tree-sidebar'
 import CategoryIcon from '@mui/icons-material/Category'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import HeightIcon from '@mui/icons-material/Height'

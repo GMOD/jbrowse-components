@@ -24,7 +24,7 @@ which skips `renderer.uploadRegion()` for any region where
 The variant display does not follow this pattern. It fires a single batch RPC
 call for all visible regions together and calls `setCellData(result)` atomically
 with a plain `Record<number, VariantCellData>`. The typed arrays inside each
-`VariantCellData` are `ArrayBuffer` *transferables* — neutered in the worker and
+`VariantCellData` are `ArrayBuffer` _transferables_ — neutered in the worker and
 recreated on the main thread — so reference equality is always false, even for
 regions whose underlying data did not change.
 
@@ -86,16 +86,16 @@ is structurally impossible here.
   functionally equivalent to the reference-equality pattern used elsewhere, but
   the mechanism differs. Agents reviewing this code should not treat the
   divergence as a bug.
-- The `inputKey` is a lightweight fingerprint (feature count + first/last feature
-  ID), not a cryptographic hash. Collisions (same key, different data) are
-  theoretically possible if the middle features change while count, first, and
-  last stay the same, but this is negligible in practice.
+- The `inputKey` is a lightweight fingerprint (feature count + first/last
+  feature ID), not a cryptographic hash. Collisions (same key, different data)
+  are theoretically possible if the middle features change while count, first,
+  and last stay the same, but this is negligible in practice.
 
 ## Future opportunity
 
-The batch design could be relaxed to align more closely with other display types.
-The global aggregation currently done inside the RPC worker (`maxPloidy`,
-`hasPhased`) could instead be returned *per region* and aggregated on the main
+The batch design could be relaxed to align more closely with other display
+types. The global aggregation currently done inside the RPC worker (`maxPloidy`,
+`hasPhased`) could instead be returned _per region_ and aggregated on the main
 thread:
 
 1. Each region's RPC result includes its own `maxPloidy` and `hasPhased`.
@@ -109,6 +109,6 @@ thread:
 
 This would require splitting `computeSampleInfo` out of the RPC handler,
 rewriting `getVariantCellDataAutorun` to use per-region actions, and verifying
-that the derived globals react correctly when partial results arrive. It is not a
-trivial change, but it would remove the one structural reason the variant display
-diverges from the rest of the GPU display family.
+that the derived globals react correctly when partial results arrive. It is not
+a trivial change, but it would remove the one structural reason the variant
+display diverges from the rest of the GPU display family.

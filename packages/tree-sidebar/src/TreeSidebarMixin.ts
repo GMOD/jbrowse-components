@@ -4,7 +4,9 @@ import { parseClusterTree } from './clusterUtils.ts'
 
 import type { HoveredTreeNode } from './types.ts'
 
-export function TreeSidebarMixin<S extends { name: string } = { name: string }>() {
+export function TreeSidebarMixin<
+  S extends { name: string } = { name: string },
+>() {
   return types
     .model({
       layout: types.optional(types.frozen<S[]>(), []),
