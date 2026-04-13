@@ -1,6 +1,6 @@
 import { toLocale } from '@jbrowse/core/util'
 
-import { getNiceScale } from './HicColorLegend.tsx'
+import { getNiceScale } from './niceScale.ts'
 
 const colorStops: Record<string, { offset: string; color: string }[]> = {
   juicebox: [

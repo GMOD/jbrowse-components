@@ -158,7 +158,9 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     // Build a chromosome → hic-file index map. hic-straw transposes queries
     // when idx(chr1) > idx(chr2), returning bin1/bin2 in the swapped order.
     // We mirror that logic so bin1 always maps back to region[i] coordinates.
-    const chrIndexMap = new Map(metadata.chromosomes.map(c => [c.name, c.index]))
+    const chrIndexMap = new Map(
+      metadata.chromosomes.map(c => [c.name, c.index]),
+    )
     const getChrIndex = (refName: string) => {
       const direct = chrIndexMap.get(refName)
       if (direct !== undefined) {

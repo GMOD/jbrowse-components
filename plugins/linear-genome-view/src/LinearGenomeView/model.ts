@@ -1266,7 +1266,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         cancelLastAnimation()
 
         // Clamp to zoom limits
-        const effectiveTarget = clamp(targetBpPerPx, self.minBpPerPx, self.maxBpPerPx)
+        const effectiveTarget = clamp(
+          targetBpPerPx,
+          self.minBpPerPx,
+          self.maxBpPerPx,
+        )
 
         // If already at limit (or effectively no change), do nothing
         if (effectiveTarget === self.bpPerPx) {

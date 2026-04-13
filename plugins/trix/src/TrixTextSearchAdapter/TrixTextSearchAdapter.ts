@@ -89,7 +89,9 @@ export default class TrixTextSearchAdapter
 
         const labelField = rest.find(elt => !!elt) ?? ''
         const termLower = term.toLowerCase()
-        const contextIdx = rest.findIndex(f => f.toLowerCase().includes(termLower))
+        const contextIdx = rest.findIndex(f =>
+          f.toLowerCase().includes(termLower),
+        )
         const context =
           contextIdx !== -1 ? shorten(rest[contextIdx]!, term) : undefined
         const label = shorten(labelField, term)

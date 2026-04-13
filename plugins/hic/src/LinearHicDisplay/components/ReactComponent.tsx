@@ -19,8 +19,8 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { HicRenderer, generateColorRamp } from './HicRenderer.ts'
 import HicColorLegend from './HicColorLegend.tsx'
+import { HicRenderer, generateColorRamp } from './HicRenderer.ts'
 
 import type { HicFlatbushItem } from '../../RenderHicDataRPC/types.ts'
 import type { LinearHicDisplayModel } from '../model.ts'

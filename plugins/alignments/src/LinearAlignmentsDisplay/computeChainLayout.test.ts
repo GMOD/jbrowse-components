@@ -224,15 +224,11 @@ describe('computeMultiRegionChainLayout — cross-region consistency', () => {
   test('same chain name in two regions gets the same row', () => {
     const region1 = makeChainData({
       regionStart: 1000,
-      chains: [
-        { name: 'readA', minStart: 1000, maxEnd: 1100, distance: 300 },
-      ],
+      chains: [{ name: 'readA', minStart: 1000, maxEnd: 1100, distance: 300 }],
     })
     const region2 = makeChainData({
       regionStart: 1300,
-      chains: [
-        { name: 'readA', minStart: 1300, maxEnd: 1400, distance: 300 },
-      ],
+      chains: [{ name: 'readA', minStart: 1300, maxEnd: 1400, distance: 300 }],
     })
 
     const { rowMap } = computeMultiRegionChainLayout([
@@ -251,9 +247,7 @@ describe('computeMultiRegionChainLayout — cross-region consistency', () => {
     // They must land on different rows.
     const region1 = makeChainData({
       regionStart: 1000,
-      chains: [
-        { name: 'readA', minStart: 1000, maxEnd: 1100, distance: 300 },
-      ],
+      chains: [{ name: 'readA', minStart: 1000, maxEnd: 1100, distance: 300 }],
     })
     const region2 = makeChainData({
       regionStart: 1300,

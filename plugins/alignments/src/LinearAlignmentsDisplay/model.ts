@@ -33,13 +33,13 @@ import { autorun, observable } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import { SashimiArcsSubModel } from './SashimiArcsSubModel.ts'
-import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import {
   buildChainConnectingData,
   computeChainLayout,
   computeMultiRegionChainLayout,
   readYsFromRowMap,
 } from './computeChainLayout.ts'
+import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import {
   computeLayout,
   computeMultiRegionLayout,

@@ -37,7 +37,6 @@ import type {
   ResolvedBlock,
 } from './hitTesting.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
-import type { ArcsDataResult } from '../../shared/computeArcsFromPileupData.ts'
 import type {
   LegendItem,
   LinearGenomeViewModel,
@@ -159,7 +158,10 @@ export interface FeatureHit {
   index: number
 }
 
-function makeResizeHandler(getHeight: () => number, setHeight: (h: number) => void) {
+function makeResizeHandler(
+  getHeight: () => number,
+  setHeight: (h: number) => void,
+) {
   return (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -270,17 +272,23 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   const handleResizeMouseDown = makeResizeHandler(
     () => coverageHeight,
-    h => model.setCoverageHeight(h),
+    h => {
+      model.setCoverageHeight(h)
+    },
   )
 
   const handleArcsResizeMouseDown = makeResizeHandler(
     () => arcsHeight,
-    h => model.setArcsHeight(h),
+    h => {
+      model.setArcsHeight(h)
+    },
   )
 
   const handleSashimiArcsResizeMouseDown = makeResizeHandler(
     () => model.sashimiArcsHeight,
-    h => model.setSashimiArcsHeight(h),
+    h => {
+      model.setSashimiArcsHeight(h)
+    },
   )
 
   function handleContextMenu(e: React.MouseEvent) {

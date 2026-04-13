@@ -1,7 +1,8 @@
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { scaleLinear, scaleLog } from '@mui/x-charts-vendor/d3-scale'
 import { observer } from 'mobx-react'
+
+import { getNiceScale } from './niceScale.ts'
 
 const useStyles = makeStyles()({
   legend: {
@@ -34,17 +35,6 @@ const colorGradients: Record<string, string> = {
   fall: 'linear-gradient(to right, rgb(255,255,255), rgb(255,255,204), rgb(255,237,160), rgb(254,217,118), rgb(254,178,76), rgb(253,141,60), rgb(252,78,42), rgb(227,26,28), rgb(189,0,38), rgb(128,0,38), rgb(0,0,0))',
   viridis:
     'linear-gradient(to right, #440154, #482878, #3e4a89, #31688e, #26828e, #1f9e89, #35b779, #6ece58, #b5de2b, #fde725)',
-}
-
-export function getNiceScale(maxScore: number, useLogScale?: boolean) {
-  if (useLogScale) {
-    const scale = scaleLog().base(2).domain([1, maxScore]).nice()
-    const [min, max] = scale.domain()
-    return { min, max }
-  }
-  const scale = scaleLinear().domain([0, maxScore]).nice()
-  const [min, max] = scale.domain()
-  return { min, max }
 }
 
 const HicColorLegend = observer(function HicColorLegend({

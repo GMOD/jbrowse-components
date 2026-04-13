@@ -12,12 +12,14 @@ simultaneously) solves this without requiring the RPC to process multiple
 regions in a single call, which would be far more complex and wasteful.
 
 ### Pileup layout (`sortLayout.ts`)
+
 - `computeLayout` / `computeSortedLayout` — single-region
 - `computeMultiRegionLayout` — multi-region, rowMap keyed by feature ID
 - Called by `computeAndAssignLayoutForData` in `model.ts`
 - `fillYArraysFromLayout` / `fillYArraysFromLayoutMap` apply the result
 
 ### Chain layout (`computeChainLayout.ts`)
+
 - `computeChainLayout` — single-region, groups by chain name
 - `computeMultiRegionChainLayout` — multi-region, rowMap keyed by chain NAME
   (mates share QNAME, so name-keyed dedup handles cross-region pairs)
@@ -26,19 +28,21 @@ regions in a single call, which would be far more complex and wasteful.
 - Called by `computeAndAssignChainLayout` in `model.ts`
 
 **Why GranularRectLayout, not the greedy levels array from sortLayout.ts:**
-Chain layout sorts by *distance* (insert size), not by start position. The
+Chain layout sorts by _distance_ (insert size), not by start position. The
 simple greedy levels array tracks only the right edge of each row, so it only
 admits a new chain when its start ≥ that edge. When chains are processed in
-distance order (not start order), an early chain can occupy a slot in the
-middle of a row, leaving a gap at the front that a later chain could fill —
-but the levels array misses this. GranularRectLayout uses a 2D occupancy
-bitmap and can fill those gaps regardless of processing order, producing denser
-layouts when chains are sorted by distance. Do not replace it with a levels
-array for chain layout.
+distance order (not start order), an early chain can occupy a slot in the middle
+of a row, leaving a gap at the front that a later chain could fill — but the
+levels array misses this. GranularRectLayout uses a 2D occupancy bitmap and can
+fill those gaps regardless of processing order, producing denser layouts when
+chains are sorted by distance. Do not replace it with a levels array for chain
+layout.
 
 ### Worker contract
-The RPC worker (`executeRenderChainData.ts`) returns chain *metadata* arrays
+
+The RPC worker (`executeRenderChainData.ts`) returns chain _metadata_ arrays
 (`chainAbsMinStarts`, `chainAbsMaxEnds`, `chainDistances`, `chainNames`,
-`chainColorTypes`, `chainSuppTypes`, `chainHasMultiple`, `chainFirstReadIndices`)
-and all read/gap/mismatch Y arrays initialised to 0. The main thread fills in
-real Y values and builds derived data (connecting lines, Flatbush).
+`chainColorTypes`, `chainSuppTypes`, `chainHasMultiple`,
+`chainFirstReadIndices`) and all read/gap/mismatch Y arrays initialised to 0.
+The main thread fills in real Y values and builds derived data (connecting
+lines, Flatbush).

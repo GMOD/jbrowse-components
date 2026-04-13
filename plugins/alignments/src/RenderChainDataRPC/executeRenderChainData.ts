@@ -157,12 +157,13 @@ export async function executeRenderChainData({
       keptFeatures,
       feature => ({
         ...buildBaseFeatureData(feature),
-        refName: feature.get('refName') as string,
+        refName: feature.get('refName'),
         nextRef: feature.get('next_ref') as string | undefined,
         pairOrientationStr: feature.get('pair_orientation') as
           | string
           | undefined,
-        templateLength: (feature.get('template_length') as number) ?? 0,
+        templateLength:
+          (feature.get('template_length') as number | undefined) ?? 0,
       }),
       { colorBy, colorTagMap, showSoftClipping: false, region, regionStart },
     ),

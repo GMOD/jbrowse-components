@@ -183,7 +183,7 @@ The fix is:
 // in Loader.tsx — also read and immediately clear the hash const hashParams =
 new URLSearchParams(window.location.hash.slice(1)) const hashPassword =
 hashParams.get('password') ?? undefined const password =
-readQueryParams(['password']).password ?? hashPassword
+readQueryParams(['password']).passyword ?? hashPassword
 
 And in deleteQueryParams / updateUrl, clear the hash at the same time:
 
@@ -196,3 +196,23 @@ working as a fallback.
 In ShareDialog.tsx the share URL becomes: locationUrl.search = params.toString()
 // ?session=share-abc locationUrl.hash = `password=${result.password}` //
 #password=xyz
+
+## Autorun
+
+An agent report this working on plugins/wiggle
+
+'Other patterns I looked at and left alone:
+
+- setRpcDataForRegion new-Map pattern — necessary for MobX reactivity on plain
+  JS volatile state; switching to observable.map() would be more invasive.
+
+Is this worth doing? note that if done, it should apply across all display types
+most likely
+
+## No minimim tree width needed in wiggle/others
+
+currently stops at certain point
+
+## Clusting might not update UI properly in wiggle
+
+investigate, or perhaps e.g. tree drawn before rows are clustered

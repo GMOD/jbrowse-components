@@ -383,7 +383,9 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       focusLevel(idx: number) {
-        self.levels.forEach((level, i) => level.setCollapsed(i !== idx))
+        for (const [i, level] of self.levels.entries()) {
+          level.setCollapsed(i !== idx)
+        }
       },
       /**
        * #action

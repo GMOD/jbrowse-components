@@ -76,7 +76,11 @@ describe('getMethBins CpG filtering', () => {
   })
 
   test('hydroxymethylation stored separately from methylation', () => {
-    const { methBins, hydroxyMethBins } = bins('AACGAA', 'C+m,0;C+h,0;', [200, 100])
+    const { methBins, hydroxyMethBins } = bins(
+      'AACGAA',
+      'C+m,0;C+h,0;',
+      [200, 100],
+    )
     expect(methBins[2]).toBe(1)
     expect(hydroxyMethBins[2]).toBe(1)
   })

@@ -9,8 +9,10 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
-import type { HicFlatbushItem } from '../RenderHicDataRPC/types.ts'
-import type { HicDataResult } from '../RenderHicDataRPC/types.ts'
+import type {
+  HicDataResult,
+  HicFlatbushItem,
+} from '../RenderHicDataRPC/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {

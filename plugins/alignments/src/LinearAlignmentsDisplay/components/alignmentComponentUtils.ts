@@ -7,17 +7,17 @@
 
 import { countSnpsAtPosition } from '@jbrowse/alignments-core'
 
+import { toRgb } from './shaders/colors.ts'
 import { fillColor } from '../../shared/color.ts'
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
 } from '../../shared/types.ts'
-import { toRgb } from './shaders/colors.ts'
 
-import type { ColorPalette, RGBColor } from './shaders/colors.ts'
 import type { CigarHitResult, SashimiArcHitResult } from './hitTesting'
 import type { AlignmentsBackend } from './rendererTypes.ts'
+import type { ColorPalette } from './shaders/colors.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 import type { Theme } from '@mui/material'

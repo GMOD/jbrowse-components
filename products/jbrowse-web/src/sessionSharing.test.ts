@@ -15,7 +15,11 @@ describe('readSessionFromDynamo', () => {
     it('strips share- prefix and uses remainder as sessionId in the URL', async () => {
       // @ts-expect-error
       fetch.mockResponseOnce(JSON.stringify({ session: 'enc' }))
-      await readSessionFromDynamo('https://api.example.com/', 'share-myId123', 'pass')
+      await readSessionFromDynamo(
+        'https://api.example.com/',
+        'share-myId123',
+        'pass',
+      )
       expect(fetch).toHaveBeenCalledWith(
         'https://api.example.com/?sessionId=myId123',
         expect.anything(),
@@ -25,7 +29,11 @@ describe('readSessionFromDynamo', () => {
     it('URL-encodes the sessionId', async () => {
       // @ts-expect-error
       fetch.mockResponseOnce(JSON.stringify({ session: 'enc' }))
-      await readSessionFromDynamo('https://api.example.com/', 'share-id with spaces', 'pass')
+      await readSessionFromDynamo(
+        'https://api.example.com/',
+        'share-id with spaces',
+        'pass',
+      )
       expect(fetch).toHaveBeenCalledWith(
         'https://api.example.com/?sessionId=id%20with%20spaces',
         expect.anything(),
@@ -36,7 +44,12 @@ describe('readSessionFromDynamo', () => {
       // @ts-expect-error
       fetch.mockResponseOnce(JSON.stringify({ session: 'enc' }))
       const controller = new AbortController()
-      await readSessionFromDynamo('https://api.example.com/', 'share-abc', 'pass', controller.signal)
+      await readSessionFromDynamo(
+        'https://api.example.com/',
+        'share-abc',
+        'pass',
+        controller.signal,
+      )
       expect(fetch).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({ signal: controller.signal }),
@@ -47,7 +60,9 @@ describe('readSessionFromDynamo', () => {
   describe('error message extraction', () => {
     it('uses message field from JSON error body', async () => {
       // @ts-expect-error
-      fetch.mockResponseOnce(JSON.stringify({ message: 'session not found' }), { status: 404 })
+      fetch.mockResponseOnce(JSON.stringify({ message: 'session not found' }), {
+        status: 404,
+      })
       await expect(
         readSessionFromDynamo('https://api.example.com/', 'share-xyz', 'pass'),
       ).rejects.toThrow('session not found')
@@ -55,7 +70,10 @@ describe('readSessionFromDynamo', () => {
 
     it('uses raw body when JSON has no message field', async () => {
       // @ts-expect-error
-      fetch.mockResponseOnce(JSON.stringify({ error: 'something went wrong' }), { status: 500 })
+      fetch.mockResponseOnce(
+        JSON.stringify({ error: 'something went wrong' }),
+        { status: 500 },
+      )
       await expect(
         readSessionFromDynamo('https://api.example.com/', 'share-xyz', 'pass'),
       ).rejects.toThrow('{"error":"something went wrong"}')

@@ -59,8 +59,7 @@ export async function indexTracks(args: {
   checkStopToken(stopToken)
 }
 
-function resolveOutDir(paramOutDir?: string) {
-  const outFlag = paramOutDir || '.'
+function resolveOutDir(outFlag = '.') {
   const isDir = fs.lstatSync(outFlag).isDirectory()
   const confFilePath = isDir ? path.join(outFlag, 'config.json') : outFlag
   const outDir = path.dirname(confFilePath)

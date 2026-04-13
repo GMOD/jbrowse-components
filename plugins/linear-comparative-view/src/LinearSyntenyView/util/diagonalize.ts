@@ -81,7 +81,10 @@ export async function diagonalizeRegions(
     group.strandWeightedSum += direction * alnLength
   }
 
-  await progressCallback?.(50, 'Determining optimal ordering and orientation...')
+  await progressCallback?.(
+    50,
+    'Determining optimal ordering and orientation...',
+  )
 
   const queryOrdering: {
     refName: string
@@ -116,7 +119,10 @@ export async function diagonalizeRegions(
     })
   }
 
-  await progressCallback?.(70, `Sorting ${queryOrdering.length} query regions...`)
+  await progressCallback?.(
+    70,
+    `Sorting ${queryOrdering.length} query regions...`,
+  )
 
   const refOrder = new Map(referenceRegions.map((r, i) => [r.refName, i]))
 

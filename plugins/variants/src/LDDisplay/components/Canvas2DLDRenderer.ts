@@ -48,7 +48,12 @@ export class Canvas2DLDRenderer implements LDBackend {
 
     const ctx = this.ctx
     if (this.canvas) {
-      prepareCanvas(this.canvas, ctx as CanvasRenderingContext2D, canvasWidth, canvasHeight)
+      prepareCanvas(
+        this.canvas,
+        ctx as CanvasRenderingContext2D,
+        canvasWidth,
+        canvasHeight,
+      )
     }
 
     const { ldValues, boundaries, colorRamp } = this

@@ -1,9 +1,8 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import type { HicDataResult } from './types.ts'
+import type { HicDataResult, HicFlatbushItem } from './types.ts'
 import type { MultiRegionContactRecord } from '../HicAdapter/HicAdapter.ts'
-import type { HicFlatbushItem } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util/types'
 

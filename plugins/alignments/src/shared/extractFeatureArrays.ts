@@ -32,8 +32,14 @@ export function extractFeatureArrays<T extends FeatureData>(
   buildFeatureData: (feature: Feature) => T,
   opts: ExtractOpts,
 ) {
-  const { colorBy, colorTagMap, showSoftClipping, region, regionStart, sortTag } =
-    opts
+  const {
+    colorBy,
+    colorTagMap,
+    showSoftClipping,
+    region,
+    regionStart,
+    sortTag,
+  } = opts
   const detectedModifications = new Set<string>()
   const detectedSimplexModifications = new Set<string>()
 
@@ -70,7 +76,9 @@ export function extractFeatureArrays<T extends FeatureData>(
       sortTagValues.push(extractFeatureTagValue(feature, sortTag))
     }
 
-    const featureMismatches = feature.get('mismatches') as Mismatch[] | undefined
+    const featureMismatches = feature.get('mismatches') as
+      | Mismatch[]
+      | undefined
     if (featureMismatches) {
       extractMismatchData(
         featureMismatches,
@@ -112,7 +120,7 @@ export function extractFeatureArrays<T extends FeatureData>(
   }
 
   const tagColors = isTagColorMode
-    ? buildTagColors(features, tagColorValues, colorBy!, colorTagMap!)
+    ? buildTagColors(features, tagColorValues, colorBy, colorTagMap)
     : new Uint8Array(0)
 
   modifications.sort((a, b) => a.modType.localeCompare(b.modType))

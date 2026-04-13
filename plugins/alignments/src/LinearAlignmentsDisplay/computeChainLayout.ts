@@ -4,7 +4,12 @@ import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 
 function buildChainRowMap(
-  chains: { name: string; minStart: number; maxEnd: number; distance: number }[],
+  chains: {
+    name: string
+    minStart: number
+    maxEnd: number
+    distance: number
+  }[],
 ) {
   const sorted = chains.slice().sort((a, b) => a.distance - b.distance)
   const layout = new GranularRectLayout({ pitchX: 1, pitchY: 1 })
@@ -17,10 +22,19 @@ function buildChainRowMap(
 }
 
 function mergeChains(datasets: PileupDataResult[]) {
-  const merged = new Map<string, { minStart: number; maxEnd: number; distance: number }>()
+  const merged = new Map<
+    string,
+    { minStart: number; maxEnd: number; distance: number }
+  >()
   for (const data of datasets) {
-    const { chainNames, chainAbsMinStarts, chainAbsMaxEnds, chainDistances } = data
-    if (!chainNames || !chainAbsMinStarts || !chainAbsMaxEnds || !chainDistances) {
+    const { chainNames, chainAbsMinStarts, chainAbsMaxEnds, chainDistances } =
+      data
+    if (
+      !chainNames ||
+      !chainAbsMinStarts ||
+      !chainAbsMaxEnds ||
+      !chainDistances
+    ) {
       continue
     }
     for (let i = 0; i < chainNames.length; i++) {
@@ -47,7 +61,10 @@ function mergeChains(datasets: PileupDataResult[]) {
   return [...merged.entries()].map(([name, bounds]) => ({ name, ...bounds }))
 }
 
-export function readYsFromRowMap(data: PileupDataResult, rowMap: Map<string, number>) {
+export function readYsFromRowMap(
+  data: PileupDataResult,
+  rowMap: Map<string, number>,
+) {
   const { numReads, readChainIndices, chainNames } = data
   const readYs = new Uint16Array(numReads)
   if (readChainIndices && chainNames) {

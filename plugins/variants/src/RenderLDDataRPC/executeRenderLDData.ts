@@ -137,7 +137,8 @@ export async function executeRenderLDData({
       boundaries[i] = (boundaryPos - region.start) / bpPerPx / Math.SQRT2
     }
     const lastSnpPos = snps[n - 1]!.start
-    boundaries[n] = (lastSnpPos + 50 * bpPerPx - region.start) / bpPerPx / Math.SQRT2
+    boundaries[n] =
+      (lastSnpPos + 50 * bpPerPx - region.start) / bpPerPx / Math.SQRT2
   } else {
     for (let i = 0; i <= n; i++) {
       boundaries[i] = i * uniformW

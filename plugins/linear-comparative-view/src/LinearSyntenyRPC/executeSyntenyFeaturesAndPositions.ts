@@ -215,14 +215,11 @@ export async function executeSyntenyFeaturesAndPositions({
   const v2 = viewSnaps[level + 1]!
 
   const processedFeatures = chainMerge
-    ? await updateStatus(
-        'Chaining collinear alignments',
-        statusCallback,
-        () =>
-          chainCollinearAlignments(
-            features,
-            Math.min(10_000_000, Math.max(v1.bpPerPx, v2.bpPerPx) * 50),
-          ),
+    ? await updateStatus('Chaining collinear alignments', statusCallback, () =>
+        chainCollinearAlignments(
+          features,
+          Math.min(10_000_000, Math.max(v1.bpPerPx, v2.bpPerPx) * 50),
+        ),
       )
     : features
 

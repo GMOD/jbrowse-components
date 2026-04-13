@@ -2,8 +2,7 @@ import path from 'path'
 
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
-import Adapter from './TrixTextSearchAdapter.ts'
-import { shorten } from './TrixTextSearchAdapter.ts'
+import Adapter, { shorten } from './TrixTextSearchAdapter.ts'
 import configSchema from './configSchema.ts'
 
 describe('shorten', () => {
@@ -16,9 +15,9 @@ describe('shorten', () => {
   })
 
   it('shows context window around term in the middle', () => {
-    expect(
-      shorten('the quick brown fox jumped over the lazy dog', 'fox'),
-    ).toBe('...he quick brown fox jumped over...')
+    expect(shorten('the quick brown fox jumped over the lazy dog', 'fox')).toBe(
+      '...he quick brown fox jumped over...',
+    )
   })
 
   it('no leading ellipsis when term is near the start', () => {

@@ -9,13 +9,13 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { buildModTooltipData } from '../shared/buildTooltipData.ts'
-import { computeModificationCoverage } from '../shared/computeModificationCoverage.ts'
 import {
   computeCoverage,
   computeNoncovCoverage,
   computeSNPCoverage,
   computeSashimiJunctions,
 } from '../shared/computeCoverage.ts'
+import { computeModificationCoverage } from '../shared/computeModificationCoverage.ts'
 import { extractFeatureArrays } from '../shared/extractFeatureArrays.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 import {
@@ -126,7 +126,7 @@ export async function executeRenderPileupData({
       showSoftClipping,
       region,
       regionStart,
-      sortTag: isTagSort ? sortedBy!.tag! : undefined,
+      sortTag: isTagSort ? sortedBy.tag! : undefined,
     }),
   )
 

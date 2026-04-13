@@ -581,9 +581,7 @@ function drawPileup(
         const barWidthBp = Math.max(bpPerPx, Math.min(2 * bpPerPx, 1))
         const bw = Math.max(barWidthBp / bpPerPx, 1)
         const clipAlpha =
-          pxPerBp < 1
-            ? blendedAlpha(pxPerBp, data.interbaseFrequencies[i]!)
-            : 1
+          pxPerBp < 1 ? blendedAlpha(pxPerBp, data.interbaseFrequencies[i]!) : 1
         if (clipAlpha > 0) {
           ctx.globalAlpha = clipAlpha
           ctx.fillStyle =

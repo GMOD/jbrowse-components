@@ -52,7 +52,12 @@ export class Canvas2DHicRenderer implements HicBackend {
 
     const ctx = this.ctx
     if (this.canvas) {
-      prepareCanvas(this.canvas, ctx as CanvasRenderingContext2D, canvasWidth, canvasHeight)
+      prepareCanvas(
+        this.canvas,
+        ctx as CanvasRenderingContext2D,
+        canvasWidth,
+        canvasHeight,
+      )
     }
 
     if (

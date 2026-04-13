@@ -1,4 +1,10 @@
-import { addRelativeUris, b64PadSuffix, fromUrlSafeB64, removeAttr, toUrlSafeB64 } from './util.ts'
+import {
+  addRelativeUris,
+  b64PadSuffix,
+  fromUrlSafeB64,
+  removeAttr,
+  toUrlSafeB64,
+} from './util.ts'
 
 describe('b64PadSuffix', () => {
   it('adds no padding when length % 4 === 0', () => {
@@ -30,7 +36,10 @@ describe('toUrlSafeB64 / fromUrlSafeB64 roundtrip', () => {
   })
 
   it('encodes and decodes JSON', async () => {
-    const input = JSON.stringify({ id: 'abc', views: [{ type: 'LinearGenomeView' }] })
+    const input = JSON.stringify({
+      id: 'abc',
+      views: [{ type: 'LinearGenomeView' }],
+    })
     const encoded = await toUrlSafeB64(input)
     expect(await fromUrlSafeB64(encoded)).toBe(input)
   })
@@ -72,7 +81,9 @@ describe('addRelativeUris', () => {
 
   it('handles null input gracefully', () => {
     const base = new URL('https://example.com/')
-    expect(() => addRelativeUris(null, base)).not.toThrow()
+    expect(() => {
+      addRelativeUris(null, base)
+    }).not.toThrow()
   })
 })
 

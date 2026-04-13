@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 // @ts-expect-error
 import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
@@ -17,7 +18,12 @@ function setup() {
           offsetPx: 0,
           bpPerPx: 1,
           displayedRegions: [
-            { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+            {
+              assemblyName: 'volvox',
+              refName: 'ctgA',
+              start: 0,
+              end: 100,
+            },
           ],
           tracks: [],
           configuration: {},
@@ -54,9 +60,7 @@ describe('RefNameAutocomplete', () => {
   it('is disabled when no assemblyName is provided', () => {
     const { model } = setup()
     render(<RefNameAutocomplete model={model} fetchResults={async () => []} />)
-    expect(
-      (screen.getByRole('combobox') as HTMLInputElement).disabled,
-    ).toBe(true)
+    expect(screen.getByRole('combobox')).toBeDisabled()
   })
 
   it('calls fetchResults when the user types a query', async () => {
