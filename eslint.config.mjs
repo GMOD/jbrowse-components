@@ -1,6 +1,6 @@
 import eslint from '@eslint/js'
 import { defineConfig } from 'eslint/config'
-import importPlugin from 'eslint-plugin-import'
+import { importX } from 'eslint-plugin-import-x'
 import eslintPluginReact from 'eslint-plugin-react'
 import reactCompiler from 'eslint-plugin-react-compiler'
 import eslintPluginReactHooks from 'eslint-plugin-react-hooks'
@@ -98,7 +98,10 @@ export default defineConfig(
       react: {
         version: '19.2.4',
       },
-      'import/ignore': ['dockview-react'],
+      'import-x/resolver': {
+        typescript: true,
+        node: true,
+      },
     },
   },
   {
@@ -114,7 +117,7 @@ export default defineConfig(
   ...tseslint.configs.recommended,
   ...tseslint.configs.stylisticTypeChecked,
   ...tseslint.configs.strictTypeChecked,
-  importPlugin.flatConfigs.recommended,
+  importX.flatConfigs.recommended,
   eslintPluginReact.configs.flat.recommended,
   {
     plugins: {
@@ -207,8 +210,8 @@ export default defineConfig(
       'unicorn/expiring-todo-comments': 'off',
       'unicorn/no-array-sort': 'off',
 
-      'import/no-unresolved': 'off',
-      'import/order': [
+      'import-x/no-unresolved': 'off',
+      'import-x/order': [
         'error',
         {
           named: true,
@@ -239,7 +242,7 @@ export default defineConfig(
         },
       ],
 
-      'import/extensions': ['error', 'ignorePackages'],
+      'import-x/extensions': ['error', 'ignorePackages'],
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',

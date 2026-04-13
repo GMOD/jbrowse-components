@@ -817,10 +817,10 @@ export async function getLDMatrix({
       | ReturnType<typeof packHaplotypesWithCounts>
       | undefined
     let encodedSlot: Int8Array | undefined
-    let nHomRef = 0
-    let nHet = 0
-    let nHomAlt = 0
-    let nValid = 0
+    let nHomRef: number
+    let nHet: number
+    let nHomAlt: number
+    let nValid: number
 
     if (dataIsPhased) {
       packed = rawGt

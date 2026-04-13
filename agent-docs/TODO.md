@@ -216,3 +216,54 @@ currently stops at certain point
 ## Clusting might not update UI properly in wiggle
 
 investigate, or perhaps e.g. tree drawn before rows are clustered
+
+## plugins/canvas should try to render some amount of offscreen contents
+
+There is somewhat of a 'cutoff'. this could help avoid re-juggling features too
+much on small zooms
+
+Plugins/sequence added 'extra fetching' beyond just screen width recently also
+
+## Freeze during fast scrolling of plugins/canvas
+
+Potentially due to [WebGPUHal] endFrame: VALIDATION error after submit, slot= 1
+In a draw command, kind: Draw, caused by: In bind group index 0, the buffer
+bound at binding index 0 is bound with size 28 where the shader expects 32. 3
+webgpuHal.ts:492:17 endFrame
+webpack://@jbrowse/web/../../packages/core/src/gpu/hal/webgpuHal.ts?:492
+
+Note that this error resulted in a total browser freeze also which is a very bad
+user experience
+
+We may want to investigate high value linting/static checking or other automated
+systems
+
+NCBI gene track 1:38,961,598-39,145,227
+
+## Reduce frequency of check pending files
+
+not sure if matters but could be useful
+
+## NCBI gene track has lots of collapsed items
+
+Need to fix
+
+## Create more compact display mode
+
+Can consider 'side labels' for genes
+
+## webgl-poc does not have protein3d because of linearbasicdislpay concept. might need to be addressed
+
+## No protein3d for BRCA1
+
+No UniProt entries found for . Try a different identifier above, or search
+UniProt directly and use "Enter manually" above, or use "Search sequence against
+AlphaFoldDB API" if available.
+
+No UniProt ID found
+
+Clicking on all isoforms
+
+## Right padding on features on plugins/canvas
+
+Still needed? maybe excessive

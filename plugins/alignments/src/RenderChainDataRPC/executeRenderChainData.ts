@@ -30,8 +30,7 @@ import {
 
 import type { RenderChainDataArgs } from './types.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
-import type { FilterBy } from '../shared/types'
-import type { ChainStats } from '../shared/types.ts'
+import type { ChainStats, FilterBy } from '../shared/types.ts'
 import type { ChainFeatureData } from '../shared/webglRpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {

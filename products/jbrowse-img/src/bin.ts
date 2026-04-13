@@ -11,7 +11,7 @@ import {
   renderRegion,
   setupEnv,
   standardizeArgv,
-} from './index.js'
+} from './index.ts'
 
 const trackTypes = [
   'bam',
