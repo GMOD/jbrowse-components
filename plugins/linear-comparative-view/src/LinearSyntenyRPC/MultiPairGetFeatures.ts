@@ -96,9 +96,8 @@ export class MultiPairGetFeatures extends RpcMethodType {
       const coverageFeatures: { start: number; end: number }[] = []
       const mismatches: MismatchEntry[] = []
       const indels: IndelEntry[] = []
-      const genomeFeatures: [string, MultiPairFeature[]][] = []
-      for (const [genome, features] of genomeRows) {
-        genomeFeatures.push([genome, features])
+      const genomeFeatures = [...genomeRows]
+      for (const [, features] of genomeFeatures) {
         for (const f of features) {
           coverageFeatures.push({ start: f.start, end: f.end })
           if (f.cs) {

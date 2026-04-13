@@ -218,15 +218,11 @@ export async function executeSyntenyFeaturesAndPositions({
     ? await updateStatus(
         'Chaining collinear alignments',
         statusCallback,
-        () => {
-          const maxGap = Math.min(
-            10_000_000,
-            Math.max(v1.bpPerPx, v2.bpPerPx) * 50,
-          )
-          const chained = chainCollinearAlignments(features, maxGap)
-
-          return chained
-        },
+        () =>
+          chainCollinearAlignments(
+            features,
+            Math.min(10_000_000, Math.max(v1.bpPerPx, v2.bpPerPx) * 50),
+          ),
       )
     : features
 
