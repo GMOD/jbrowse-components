@@ -200,7 +200,7 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
         const regionKey = view.tracks.findIndex(t =>
           (t.displays as unknown[]).includes(self),
         )
-        if (regionKey < 0) {
+        if (regionKey === -1) {
           return
         }
 

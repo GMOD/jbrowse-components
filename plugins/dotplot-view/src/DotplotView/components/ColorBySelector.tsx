@@ -14,7 +14,9 @@ const ColorBySelector = observer(function ColorBySelector({
   const colorBy = getFirstDotplotDisplay(model)?.colorBy ?? 'default'
 
   const setColorBy = (value: string) => {
-    updateAllDisplays(model, d => d.setColorBy(value))
+    updateAllDisplays(model, d => {
+      d.setColorBy(value)
+    })
   }
 
   return (

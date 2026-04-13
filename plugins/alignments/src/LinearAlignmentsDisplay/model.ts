@@ -1525,7 +1525,9 @@ export default function stateModelFactory(
                   checked:
                     self.featureHeightSetting === 7 &&
                     self.noSpacingSetting !== true,
-                  onClick: () => self.setCompactness('normal'),
+                  onClick: () => {
+                    self.setCompactness('normal')
+                  },
                 },
                 {
                   label: 'Compact',
@@ -1533,7 +1535,9 @@ export default function stateModelFactory(
                   checked:
                     self.featureHeightSetting === 3 &&
                     self.noSpacingSetting === true,
-                  onClick: () => self.setCompactness('compact'),
+                  onClick: () => {
+                    self.setCompactness('compact')
+                  },
                 },
                 {
                   label: 'Super-compact',
@@ -1541,7 +1545,9 @@ export default function stateModelFactory(
                   checked:
                     self.featureHeightSetting === 1 &&
                     self.noSpacingSetting === true,
-                  onClick: () => self.setCompactness('super-compact'),
+                  onClick: () => {
+                    self.setCompactness('super-compact')
+                  },
                 },
               ],
             },

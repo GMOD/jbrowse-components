@@ -18,9 +18,7 @@ import { calc, getBlockFeatures, intersect } from './util.ts'
 type Compactness = 'normal' | 'compact' | 'super-compact'
 
 // SYNC: plugins/linear-genome-view/src/LinearGenomeView/menuItems.ts, plugins/linear-comparative-view/src/LinearComparativeView/model.ts
-function buildCompactAllTracksMenu(
-  tracks: { displays: unknown[] }[],
-) {
+function buildCompactAllTracksMenu(tracks: { displays: unknown[] }[]) {
   const hasAny = tracks.some(t =>
     t.displays.some(
       d => d !== null && typeof d === 'object' && 'setCompactness' in d,
@@ -37,7 +35,9 @@ function buildCompactAllTracksMenu(
           typeof display === 'object' &&
           'setCompactness' in display
         ) {
-          ;(display as { setCompactness: (v: Compactness) => void }).setCompactness(level)
+          ;(
+            display as { setCompactness: (v: Compactness) => void }
+          ).setCompactness(level)
         }
       }
     }
@@ -46,9 +46,24 @@ function buildCompactAllTracksMenu(
     {
       label: 'Compact all tracks',
       subMenu: [
-        { label: 'Normal', onClick: () => applyCompactness('normal') },
-        { label: 'Compact', onClick: () => applyCompactness('compact') },
-        { label: 'Super-compact', onClick: () => applyCompactness('super-compact') },
+        {
+          label: 'Normal',
+          onClick: () => {
+            applyCompactness('normal')
+          },
+        },
+        {
+          label: 'Compact',
+          onClick: () => {
+            applyCompactness('compact')
+          },
+        },
+        {
+          label: 'Super-compact',
+          onClick: () => {
+            applyCompactness('super-compact')
+          },
+        },
       ],
     },
   ]

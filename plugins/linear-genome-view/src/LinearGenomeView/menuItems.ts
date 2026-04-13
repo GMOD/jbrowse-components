@@ -74,7 +74,9 @@ function buildCompactAllTracksMenu(
   tracks: { displays: unknown[] }[],
 ): MenuItem[] {
   const hasAny = tracks.some(t =>
-    t.displays.some(d => d !== null && typeof d === 'object' && 'setCompactness' in d),
+    t.displays.some(
+      d => d !== null && typeof d === 'object' && 'setCompactness' in d,
+    ),
   )
   if (!hasAny) {
     return []
@@ -82,8 +84,14 @@ function buildCompactAllTracksMenu(
   function applyCompactness(level: Compactness) {
     for (const track of tracks) {
       for (const display of track.displays) {
-        if (display !== null && typeof display === 'object' && 'setCompactness' in display) {
-          ;(display as { setCompactness: (v: Compactness) => void }).setCompactness(level)
+        if (
+          display !== null &&
+          typeof display === 'object' &&
+          'setCompactness' in display
+        ) {
+          ;(
+            display as { setCompactness: (v: Compactness) => void }
+          ).setCompactness(level)
         }
       }
     }
@@ -92,9 +100,24 @@ function buildCompactAllTracksMenu(
     {
       label: 'Compact all tracks',
       subMenu: [
-        { label: 'Normal', onClick: () => applyCompactness('normal') },
-        { label: 'Compact', onClick: () => applyCompactness('compact') },
-        { label: 'Super-compact', onClick: () => applyCompactness('super-compact') },
+        {
+          label: 'Normal',
+          onClick: () => {
+            applyCompactness('normal')
+          },
+        },
+        {
+          label: 'Compact',
+          onClick: () => {
+            applyCompactness('compact')
+          },
+        },
+        {
+          label: 'Super-compact',
+          onClick: () => {
+            applyCompactness('super-compact')
+          },
+        },
       ],
     },
   ]
@@ -288,12 +311,8 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
         },
       ],
     },
-  ]
-
-  menuItems.push(
-    { type: 'divider' },
     ...buildCompactAllTracksMenu(self.tracks),
-  )
+  ]
 
   // add track's view level menu options
   for (const [key, value] of self.trackTypeActions.entries()) {

@@ -85,7 +85,9 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
               onChange={(_, value) => {
                 const v = typeof value === 'number' ? value : value[0]
                 const newAlpha = sliderToAlpha(v)
-                updateAllDisplays(model, d => d.setAlpha(newAlpha))
+                updateAllDisplays(model, d => {
+                  d.setAlpha(newAlpha)
+                })
               }}
               min={0}
               max={1}
@@ -106,10 +108,10 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
                 setMinLengthValue(val)
               }}
               onChangeCommitted={() => {
-                  const newMinLength = Math.round(2 ** (minLengthValue / 100))
-                updateAllDisplays(model, d =>
-                  d.setMinAlignmentLength(newMinLength),
-                )
+                const newMinLength = Math.round(2 ** (minLengthValue / 100))
+                updateAllDisplays(model, d => {
+                  d.setMinAlignmentLength(newMinLength)
+                })
               }}
               min={0}
               max={Math.log2(1000000) * 100}

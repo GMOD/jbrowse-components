@@ -1,4 +1,8 @@
-import type { DotplotBackend, DotplotGeometryData, TrackScale } from './dotplotBackendTypes.ts'
+import type {
+  DotplotBackend,
+  DotplotGeometryData,
+  TrackScale,
+} from './dotplotBackendTypes.ts'
 
 type Geometry = DotplotGeometryData
 

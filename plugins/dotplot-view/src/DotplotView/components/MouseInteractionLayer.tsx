@@ -2,8 +2,8 @@ import { observer } from 'mobx-react'
 
 import DotplotGrid from './DotplotGrid.tsx'
 
-import type { Coord } from '../types.ts'
 import type { DotplotViewModel } from '../model.ts'
+import type { Coord } from '../types.ts'
 
 interface MouseInteractionLayerProps {
   model: DotplotViewModel

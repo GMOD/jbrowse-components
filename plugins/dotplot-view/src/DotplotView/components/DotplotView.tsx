@@ -1,14 +1,10 @@
 import { useMemo, useRef } from 'react'
 
 import { ErrorMessage, LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
-import {
-  useGpuRenderer,
-  useTabVisibilityRerender,
-} from '@jbrowse/core/util'
+import { useGpuRenderer, useTabVisibilityRerender } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { createDotplotRenderer } from '../../DotplotDisplay/DotplotRenderer.ts'
 import { HorizontalAxis, VerticalAxis } from './Axes.tsx'
 import DotplotTooltips from './DotplotTooltips.tsx'
 import Header from './Header.tsx'
@@ -21,6 +17,7 @@ import { useMouseCoordinates } from './hooks/useMouseCoordinates.ts'
 import { useMouseMoveHandler } from './hooks/useMouseMoveHandler.ts'
 import { useMouseUpHandler } from './hooks/useMouseUpHandler.ts'
 import { useWheelHandler } from './hooks/useWheelHandler.ts'
+import { createDotplotRenderer } from '../../DotplotDisplay/DotplotRenderer.ts'
 
 import type { DotplotViewModel } from '../model.ts'
 
@@ -78,7 +75,9 @@ const DotplotCanvas = observer(function DotplotCanvas({
   const gpuOpts = useMemo(
     () => ({
       onReady: model.setGpuRenderer,
-      onDispose: () => model.setGpuRenderer(null),
+      onDispose: () => {
+        model.setGpuRenderer(null)
+      },
     }),
     [model],
   )

@@ -14,7 +14,12 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-
+import type { MenuItem } from '@jbrowse/core/ui'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type {
+  LinearGenomeViewModel,
+  LinearGenomeViewStateModel,
+} from '@jbrowse/plugin-linear-genome-view'
 type Compactness = 'normal' | 'compact' | 'super-compact'
 
 // SYNC: plugins/linear-genome-view/src/LinearGenomeView/menuItems.ts, plugins/breakpoint-split-view/src/BreakpointSplitView/model.ts
@@ -35,7 +40,9 @@ function buildCompactAllTracksMenu(tracks: { displays: unknown[] }[]) {
           typeof display === 'object' &&
           'setCompactness' in display
         ) {
-          ;(display as { setCompactness: (v: Compactness) => void }).setCompactness(level)
+          ;(
+            display as { setCompactness: (v: Compactness) => void }
+          ).setCompactness(level)
         }
       }
     }
@@ -44,20 +51,28 @@ function buildCompactAllTracksMenu(tracks: { displays: unknown[] }[]) {
     {
       label: 'Compact all tracks',
       subMenu: [
-        { label: 'Normal', onClick: () => applyCompactness('normal') },
-        { label: 'Compact', onClick: () => applyCompactness('compact') },
-        { label: 'Super-compact', onClick: () => applyCompactness('super-compact') },
+        {
+          label: 'Normal',
+          onClick: () => {
+            applyCompactness('normal')
+          },
+        },
+        {
+          label: 'Compact',
+          onClick: () => {
+            applyCompactness('compact')
+          },
+        },
+        {
+          label: 'Super-compact',
+          onClick: () => {
+            applyCompactness('super-compact')
+          },
+        },
       ],
     },
   ]
 }
-import type { MenuItem } from '@jbrowse/core/ui'
-import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
-import type {
-  LinearGenomeViewModel,
-  LinearGenomeViewStateModel,
-} from '@jbrowse/plugin-linear-genome-view'
-
 // lazies
 const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
