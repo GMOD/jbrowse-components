@@ -235,61 +235,36 @@ export function processFeatures(
   bicolorPivot: number,
 ): WiggleFeatureArrays {
   const n = features.length
-  const featurePositions = new Uint32Array(n * 2)
-  const featureScores = new Float32Array(n)
-  const featureMinScores = new Float32Array(n)
-  const featureMaxScores = new Float32Array(n)
-  const posFeaturePositionsBuf = new Uint32Array(n * 2)
-  const posFeatureScoresBuf = new Float32Array(n)
-  const negFeaturePositionsBuf = new Uint32Array(n * 2)
-  const negFeatureScoresBuf = new Float32Array(n)
-  let posCount = 0
-  let negCount = 0
+  const starts = new Int32Array(n)
+  const ends = new Int32Array(n)
+  const scores = new Float32Array(n)
+  const minScores = new Float32Array(n)
+  const maxScores = new Float32Array(n)
 
   for (const [i, feature] of features.entries()) {
-    const start = feature.get('start') as number
-    const end = feature.get('end') as number
+    starts[i] = feature.get('start') as number
+    ends[i] = feature.get('end') as number
     const score = (feature.get('score') as number | undefined) ?? 0
+    scores[i] = score
     const summary = feature.get('summary')
-
-    const startOffset = Math.max(0, Math.floor(start - regionStart))
-    const endOffset = Math.max(0, Math.floor(end - regionStart))
-    featurePositions[i * 2] = startOffset
-    featurePositions[i * 2 + 1] = endOffset
-    featureScores[i] = score
-    featureMinScores[i] = summary
+    minScores[i] = summary
       ? ((feature.get('minScore') as number | undefined) ?? score)
       : score
-    featureMaxScores[i] = summary
+    maxScores[i] = summary
       ? ((feature.get('maxScore') as number | undefined) ?? score)
       : score
-
-    if (score >= bicolorPivot) {
-      posFeaturePositionsBuf[posCount * 2] = startOffset
-      posFeaturePositionsBuf[posCount * 2 + 1] = endOffset
-      posFeatureScoresBuf[posCount] = score
-      posCount++
-    } else {
-      negFeaturePositionsBuf[negCount * 2] = startOffset
-      negFeaturePositionsBuf[negCount * 2 + 1] = endOffset
-      negFeatureScoresBuf[negCount] = score
-      negCount++
-    }
   }
 
-  return {
-    featurePositions,
-    featureScores,
-    featureMinScores,
-    featureMaxScores,
-    numFeatures: n,
-    posFeaturePositions: posFeaturePositionsBuf.subarray(0, posCount * 2),
-    posFeatureScores: posFeatureScoresBuf.subarray(0, posCount),
-    posNumFeatures: posCount,
-    negFeaturePositions: negFeaturePositionsBuf.subarray(0, negCount * 2),
-    negFeatureScores: negFeatureScoresBuf.subarray(0, negCount),
-    negNumFeatures: negCount,
-  }
+  return processFeaturesFromArrays(
+    starts,
+    ends,
+    scores,
+    minScores,
+    maxScores,
+    n,
+    regionStart,
+    bicolorPivot,
+  )
 }
 
 export function getEffectiveScores(
@@ -434,19 +409,5 @@ export function normalizeScore(
   max: number,
   isLog: boolean,
 ) {
-  if (isLog) {
-    const logMin = Math.log2(Math.max(min, 1))
-    const logMax = Math.log2(Math.max(max, 1))
-    const logScore = Math.log2(Math.max(score, 1))
-    const range = logMax - logMin
-    if (range === 0) {
-      return 0
-    }
-    return Math.max(0, Math.min(1, (logScore - logMin) / range))
-  }
-  const range = max - min
-  if (range === 0) {
-    return 0
-  }
-  return Math.max(0, Math.min(1, (score - min) / range))
+  return makeScoreNormalizer(min, max, isLog)(score)
 }

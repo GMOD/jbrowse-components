@@ -71,7 +71,7 @@ export async function makeImageData(
   )
 
   const lastCheck = createStopTokenChecker(stopToken)
-  const w = res / (bpPerPx * Math.sqrt(2))
+  const w = res / (bpPerPx * Math.SQRT2)
   const baseColor = colord(readConfObject(config, 'baseColor'))
 
   // Calculate pixel offset for each region (cumulative)

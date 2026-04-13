@@ -1,11 +1,9 @@
-import {
-  lookupColorRamp,
-  lookupColorRampCSS,
-} from '@jbrowse/core/gpu/canvas2dUtils'
+import { lookupColorRampCSS } from '@jbrowse/core/gpu/canvas2dUtils'
 import { getContainingView, max } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { when } from 'mobx'
 
+import { Canvas2DLDRenderer } from './components/Canvas2DLDRenderer.ts'
 import { LDSVGColorLegend } from './components/LDColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantLabels from './components/VariantLabels.tsx'
@@ -98,43 +96,21 @@ export async function renderSvg(
       />
     )
   } else {
-    const ctx = new SvgCanvas()
-
-    let k = 0
-    for (let i = 1; i < n; i++) {
-      const py = boundaries[i]!
-      const ch = boundaries[i + 1]! - py
-      for (let j = 0; j < i; j++) {
-        const px = boundaries[j]!
-        const cw = boundaries[j + 1]! - px
-        const t = computeT(ldValues[k++]!, signedLD)
-        const { r, g, b, a } = lookupColorRamp(ramp, t)
-
-        ctx.fillStyle = `rgb(${r},${g},${b})`
-        ctx.globalAlpha = a
-        ctx.beginPath()
-        let first = true
-        for (const [cx, cy] of [
-          [px, py],
-          [px + cw, py],
-          [px + cw, py + ch],
-          [px, py + ch],
-        ] as const) {
-          const rx = (cx + cy) * Math.SQRT1_2
-          const ry = (-cx + cy) * Math.SQRT1_2 * yScalar
-          if (first) {
-            ctx.moveTo(rx, ry)
-            first = false
-          } else {
-            ctx.lineTo(rx, ry)
-          }
-        }
-        ctx.closePath()
-        ctx.fill()
-      }
-    }
+    const svgCtx = new SvgCanvas()
+    const renderer = new Canvas2DLDRenderer(svgCtx)
+    renderer.uploadData({ ldValues, boundaries, numCells: rpcData.numCells })
+    renderer.uploadColorRamp(ramp)
+    renderer.render({
+      yScalar: rpcData.yScalar,
+      canvasWidth: visibleWidth,
+      canvasHeight: triangleHeight,
+      signedLD,
+      viewScale: 1,
+      viewOffsetX: 0,
+      uniformW: rpcData.uniformW,
+    })
     matrixEl = (
-      <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
+      <g dangerouslySetInnerHTML={{ __html: svgCtx.getSerializedSvg() }} />
     )
   }
 

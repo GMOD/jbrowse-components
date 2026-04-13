@@ -122,8 +122,7 @@ export async function executeRenderLDData({
   const height = fitToHeight ? (displayHeight ?? hyp) : hyp
   const yScalar = fitToHeight ? height / hyp : 1
 
-  const sqrt2 = Math.sqrt(2)
-  const uniformW = width / (n * sqrt2)
+  const uniformW = width / (n * Math.SQRT2)
   const numCells = (n * (n - 1)) / 2
 
   // Compute n+1 boundary positions.
@@ -135,10 +134,10 @@ export async function executeRenderLDData({
       const snpPos = snps[i]!.start
       const prevPos = i > 0 ? snps[i - 1]!.start : region.start
       const boundaryPos = (prevPos + snpPos) / 2
-      boundaries[i] = (boundaryPos - region.start) / bpPerPx / sqrt2
+      boundaries[i] = (boundaryPos - region.start) / bpPerPx / Math.SQRT2
     }
     const lastSnpPos = snps[n - 1]!.start
-    boundaries[n] = (lastSnpPos + 50 * bpPerPx - region.start) / bpPerPx / sqrt2
+    boundaries[n] = (lastSnpPos + 50 * bpPerPx - region.start) / bpPerPx / Math.SQRT2
   } else {
     for (let i = 0; i <= n; i++) {
       boundaries[i] = i * uniformW

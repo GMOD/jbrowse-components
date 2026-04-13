@@ -1,4 +1,5 @@
 import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
 import { lookupColorRamp } from './colorRamp.ts'
 
@@ -7,20 +8,20 @@ import type { HicBackend, HicRenderState } from './hicBackendTypes.ts'
 const SQRT_HALF = Math.SQRT1_2
 
 export class Canvas2DHicRenderer implements HicBackend {
-  private ctx: CanvasRenderingContext2D
-  private canvas: HTMLCanvasElement
+  private ctx: CanvasRenderingContext2D | SvgCanvas
+  private canvas: HTMLCanvasElement | null = null
   private positions: Float32Array | null = null
   private counts: Float32Array | null = null
   private numContacts = 0
   private colorRamp: Uint8Array | null = null
 
-  constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('Canvas 2D context not available')
+  constructor(canvasOrCtx: HTMLCanvasElement | SvgCanvas) {
+    if (canvasOrCtx instanceof SvgCanvas) {
+      this.ctx = canvasOrCtx
+    } else {
+      this.canvas = canvasOrCtx
+      this.ctx = canvasOrCtx.getContext('2d')!
     }
-    this.ctx = ctx
   }
 
   uploadData(data: {
@@ -50,7 +51,9 @@ export class Canvas2DHicRenderer implements HicBackend {
     } = state
 
     const ctx = this.ctx
-    prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
+    if (this.canvas) {
+      prepareCanvas(this.canvas, ctx as CanvasRenderingContext2D, canvasWidth, canvasHeight)
+    }
 
     if (
       this.numContacts === 0 ||

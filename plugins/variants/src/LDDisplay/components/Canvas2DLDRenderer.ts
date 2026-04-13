@@ -1,4 +1,5 @@
 import { lookupColorRamp, prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
 import type {
   LDBackend,
@@ -9,20 +10,20 @@ import type {
 const COS45 = Math.SQRT1_2
 
 export class Canvas2DLDRenderer implements LDBackend {
-  private ctx: CanvasRenderingContext2D
-  private canvas: HTMLCanvasElement
+  private ctx: CanvasRenderingContext2D | SvgCanvas
+  private canvas: HTMLCanvasElement | null = null
   private ldValues: Float32Array | null = null
   private boundaries: Float32Array | null = null
   private numCells = 0
   private colorRamp: Uint8Array | null = null
 
-  constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('Canvas 2D context not available')
+  constructor(canvasOrCtx: HTMLCanvasElement | SvgCanvas) {
+    if (canvasOrCtx instanceof SvgCanvas) {
+      this.ctx = canvasOrCtx
+    } else {
+      this.canvas = canvasOrCtx
+      this.ctx = canvasOrCtx.getContext('2d')!
     }
-    this.ctx = ctx
   }
 
   uploadData(data: LDUploadData) {
@@ -46,7 +47,9 @@ export class Canvas2DLDRenderer implements LDBackend {
     } = state
 
     const ctx = this.ctx
-    prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
+    if (this.canvas) {
+      prepareCanvas(this.canvas, ctx as CanvasRenderingContext2D, canvasWidth, canvasHeight)
+    }
 
     const { ldValues, boundaries, colorRamp } = this
     if (!ldValues || !boundaries || !colorRamp || this.numCells === 0) {

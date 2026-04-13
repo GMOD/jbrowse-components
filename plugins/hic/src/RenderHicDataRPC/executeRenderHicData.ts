@@ -52,7 +52,7 @@ export async function executeRenderHicData({
   const adapter = dataAdapter as unknown as HicDataAdapter
 
   const res = await adapter.getResolution(bpPerPx / resolution)
-  const w = res / (bpPerPx * Math.sqrt(2))
+  const w = res / (bpPerPx * Math.SQRT2)
 
   const regionPixelOffsets: number[] = []
   let cumulativePixelOffset = 0

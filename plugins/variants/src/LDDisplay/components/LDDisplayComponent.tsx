@@ -25,7 +25,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-const SQRT2 = Math.sqrt(2)
+const SQRT2 = Math.SQRT2
 
 function LDTooltip({
   item,

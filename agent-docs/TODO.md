@@ -165,3 +165,34 @@ Investigate: does `computeVariantCells` return the same object reference for an
 unchanged region when a neighboring region's data arrives? If yes, wire up
 `uploadChangedRegions` (or the equivalent manual pattern) so only the changed
 region pays the upload cost.
+
+## Hash param for password in share links
+
+On hash fragments and why your concern is more solvable than it looks:
+
+The reason updateUrl currently strips the hash is this:
+
+const newUrl = newSearch ? `${window.location.pathname}?${newSearch}` :
+window.location.pathname window.history.replaceState(null, '', newUrl)
+
+But the password is only needed for a single moment — it's read at startup and
+immediately deleted via deleteQueryParams([...paramsToDelete]) (line 102 in
+Loader.tsx). So the hash would only need to survive until that useEffect fires.
+The fix is:
+
+// in Loader.tsx — also read and immediately clear the hash const hashParams =
+new URLSearchParams(window.location.hash.slice(1)) const hashPassword =
+hashParams.get('password') ?? undefined const password =
+readQueryParams(['password']).password ?? hashPassword
+
+And in deleteQueryParams / updateUrl, clear the hash at the same time:
+
+window.history.replaceState(null, '', newUrl) // hash is gone, that's fine
+
+Since the hash is cleared on first navigation (immediately), it's not a
+long-lived thing that updateUrl needs to preserve. Old ?password= links keep
+working as a fallback.
+
+In ShareDialog.tsx the share URL becomes: locationUrl.search = params.toString()
+// ?session=share-abc locationUrl.hash = `password=${result.password}` //
+#password=xyz

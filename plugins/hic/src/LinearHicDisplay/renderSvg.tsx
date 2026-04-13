@@ -2,10 +2,10 @@ import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { when } from 'mobx'
 
+import { Canvas2DHicRenderer } from './components/Canvas2DHicRenderer.ts'
 import HicSVGColorLegend from './components/HicSVGColorLegend.tsx'
 import {
   generateColorRamp,
-  lookupColorRamp,
   lookupColorRampCSS,
 } from './components/colorRamp.ts'
 
@@ -83,39 +83,22 @@ export async function renderSvg(
       />
     )
   } else {
-    const ctx = new SvgCanvas()
-
-    for (let i = 0; i < numContacts; i++) {
-      const px = positions[i * 2]!
-      const py = positions[i * 2 + 1]!
-      const count = counts[i]!
-      const t = computeT(count, m, useLogScale)
-      const { r, g, b, a } = lookupColorRamp(ramp, t)
-
-      ctx.fillStyle = `rgb(${r},${g},${b})`
-      ctx.globalAlpha = a
-      ctx.beginPath()
-      let first = true
-      for (const [cx, cy] of [
-        [px, py],
-        [px + binWidth, py],
-        [px + binWidth, py + binWidth],
-        [px, py + binWidth],
-      ] as const) {
-        const rx = (cx + cy) * Math.SQRT1_2
-        const ry = (-cx + cy) * Math.SQRT1_2 * yScalar
-        if (first) {
-          ctx.moveTo(rx, ry)
-          first = false
-        } else {
-          ctx.lineTo(rx, ry)
-        }
-      }
-      ctx.closePath()
-      ctx.fill()
-    }
+    const svgCtx = new SvgCanvas()
+    const renderer = new Canvas2DHicRenderer(svgCtx)
+    renderer.uploadData({ positions, counts, numContacts })
+    renderer.uploadColorRamp(ramp)
+    renderer.render({
+      binWidth,
+      yScalar,
+      canvasWidth: visibleWidth,
+      canvasHeight: height,
+      maxScore,
+      useLogScale,
+      viewScale: 1,
+      viewOffsetX: 0,
+    })
     matrixEl = (
-      <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
+      <g dangerouslySetInnerHTML={{ __html: svgCtx.getSerializedSvg() }} />
     )
   }
 
