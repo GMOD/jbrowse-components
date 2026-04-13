@@ -18,6 +18,7 @@ import {
   computeSNPCoverage,
   computeSashimiJunctions,
 } from '../shared/computeCoverage.ts'
+import { extractFeatureArrays } from '../shared/extractFeatureArrays.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 import {
   buildBaseFeatureData,
@@ -26,27 +27,14 @@ import {
   buildMismatchArrays,
   buildModificationArrays,
   buildSegmentArrays,
-  buildTagColors,
   computeFrequenciesAndThresholds,
-  extractFeatureTagValue,
-  extractMethylation,
-  extractMismatchData,
-  extractModifications,
 } from '../shared/processFeatureAlignments.ts'
 
 import type { RenderChainDataArgs } from './types.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
-import type { FilterBy, Mismatch } from '../shared/types'
+import type { FilterBy } from '../shared/types'
 import type { ChainStats } from '../shared/types.ts'
-import type {
-  ChainFeatureData,
-  GapData,
-  HardclipData,
-  InsertionData,
-  MismatchData,
-  ModificationEntry,
-  SoftclipData,
-} from '../shared/webglRpcTypes.ts'
+import type { ChainFeatureData } from '../shared/webglRpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   BaseFeatureDataAdapter,
@@ -150,9 +138,6 @@ export async function executeRenderChainData({
 
   const regionStart = Math.floor(region.start)
 
-  const detectedModifications = new Set<string>()
-  const detectedSimplexModifications = new Set<string>()
-
   const deduped = dedupe(featuresArray, (f: Feature) => f.id())
   let keptIds: Set<string> | undefined
   if (!drawSingletons || !drawProperPairs) {
@@ -189,106 +174,23 @@ export async function executeRenderChainData({
     uniqueTagValues,
     nextPositions,
     suppAlignments,
-  } = await updateStatus('Processing alignments', statusCallback, async () => {
-    const featuresData: ChainFeatureData[] = []
-    const gapsData: GapData[] = []
-    const mismatchesData: MismatchData[] = []
-    const insertionsData: InsertionData[] = []
-    const softclipsData: SoftclipData[] = []
-    const hardclipsData: HardclipData[] = []
-    const modificationsData: ModificationEntry[] = []
-    const tagColorValues: string[] = []
-    const nextPositions: number[] = []
-    const suppAlignments: string[] = []
-    const isTagColorMode = colorBy?.type === 'tag' && colorBy.tag && colorTagMap
-
-    for (const feature of keptFeatures) {
-      const featureId = feature.id()
-      const featureStart = feature.get('start')
-      const strand = feature.get('strand')!
-
-      featuresData.push({
+    detectedModifications,
+    detectedSimplexModifications,
+  } = await updateStatus('Processing alignments', statusCallback, async () =>
+    extractFeatureArrays(
+      keptFeatures,
+      feature => ({
         ...buildBaseFeatureData(feature),
-        refName: feature.get('refName'),
-        nextRef: feature.get('next_ref'),
-        pairOrientationStr: feature.get('pair_orientation'),
-        templateLength: feature.get('template_length') ?? 0,
-      })
-
-      nextPositions.push(feature.get('next_pos') ?? 0)
-      suppAlignments.push(feature.get('tags')?.SA ?? feature.get('SA') ?? '')
-
-      if (isTagColorMode) {
-        tagColorValues.push(extractFeatureTagValue(feature, colorBy.tag!))
-      }
-
-      const featureMismatches = feature.get('mismatches') as
-        | Mismatch[]
-        | undefined
-      if (featureMismatches) {
-        extractMismatchData(
-          featureMismatches,
-          featureId,
-          featureStart,
-          strand,
-          feature,
-          gapsData,
-          mismatchesData,
-          insertionsData,
-          softclipsData,
-          hardclipsData,
-          false,
-        )
-      }
-
-      const modData = extractModifications(
-        feature,
-        featureId,
-        featureStart,
-        strand,
-        colorBy,
-        detectedModifications,
-        detectedSimplexModifications,
-        modificationsData,
-      )
-
-      if (colorBy?.type === 'methylation' && modData) {
-        extractMethylation(
-          featureId,
-          featureStart,
-          strand,
-          regionStart,
-          Math.ceil(region.end),
-          modData,
-          modificationsData,
-        )
-      }
-    }
-
-    const readTagColors = isTagColorMode
-      ? buildTagColors(featuresData, tagColorValues, colorBy, colorTagMap)
-      : new Uint8Array(0)
-
-    modificationsData.sort((a, b) => a.modType.localeCompare(b.modType))
-
-    const uniqueTagValues = isTagColorMode
-      ? [...new Set(tagColorValues)].filter(v => v !== '')
-      : undefined
-
-    return {
-      features: featuresData,
-      gaps: gapsData,
-      mismatches: mismatchesData,
-      insertions: insertionsData,
-      softclips: softclipsData,
-      hardclips: hardclipsData,
-      modifications: modificationsData,
-      tagColors: readTagColors,
-      uniqueTagValues,
-      nextPositions,
-      suppAlignments,
-    }
-  })
+        refName: feature.get('refName') as string,
+        nextRef: feature.get('next_ref') as string | undefined,
+        pairOrientationStr: feature.get('pair_orientation') as
+          | string
+          | undefined,
+        templateLength: (feature.get('template_length') as number) ?? 0,
+      }),
+      { colorBy, colorTagMap, showSoftClipping: false, region, regionStart },
+    ),
+  )
 
   checkStopToken2(stopTokenCheck)
 

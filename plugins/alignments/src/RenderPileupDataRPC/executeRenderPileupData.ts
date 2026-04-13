@@ -9,13 +9,14 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { buildModTooltipData } from '../shared/buildTooltipData.ts'
-import { calculateModificationCounts } from '../shared/calculateModificationCounts.ts'
+import { computeModificationCoverage } from '../shared/computeModificationCoverage.ts'
 import {
   computeCoverage,
   computeNoncovCoverage,
   computeSNPCoverage,
   computeSashimiJunctions,
 } from '../shared/computeCoverage.ts'
+import { extractFeatureArrays } from '../shared/extractFeatureArrays.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 import {
   buildBaseFeatureData,
@@ -25,230 +26,17 @@ import {
   buildModificationArrays,
   buildSegmentArrays,
   buildSoftclipBaseArrays,
-  buildTagColors,
   computeFrequenciesAndThresholds,
-  extractFeatureTagValue,
-  extractMethylation,
-  extractMismatchData,
-  extractModifications,
   fetchReferenceSequence,
 } from '../shared/processFeatureAlignments.ts'
 
 import type { PileupDataResult, RenderPileupDataArgs } from './types'
-import type { FilterBy, Mismatch } from '../shared/types'
-import type {
-  FeatureData,
-  GapData,
-  HardclipData,
-  InsertionData,
-  MismatchData,
-  ModificationEntry,
-  SoftclipData,
-} from '../shared/webglRpcTypes.ts'
+import type { FilterBy } from '../shared/types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-
-interface SnpCountEntry {
-  baseCounts: Record<string, number>
-  strandBaseCounts: Record<string, { fwd: number; rev: number }>
-}
-
-interface ModificationColorEntry {
-  r: number
-  g: number
-  b: number
-  probabilityTotal: number
-  probabilityCount: number
-  base: string
-  isSimplex: boolean
-}
-
-function computeModificationCoverage(
-  modifications: ModificationEntry[],
-  mismatches: MismatchData[],
-  depths: Float32Array,
-  regionMaxDepth: number,
-  fwdDepths: Float32Array | undefined,
-  revDepths: Float32Array | undefined,
-  depthStartOffset: number,
-  regionStart: number,
-  regionSequence: string | undefined,
-  regionSequenceStart: number,
-) {
-  if (modifications.length === 0) {
-    return {
-      positions: new Uint32Array(0),
-      yOffsets: new Float32Array(0),
-      heights: new Float32Array(0),
-      colors: new Uint8Array(0),
-      count: 0,
-    }
-  }
-
-  const snpByPosition = new Map<number, SnpCountEntry>()
-  for (const mm of mismatches) {
-    if (mm.position < regionStart) {
-      continue
-    }
-    let entry = snpByPosition.get(mm.position)
-    if (!entry) {
-      entry = { baseCounts: {}, strandBaseCounts: {} }
-      snpByPosition.set(mm.position, entry)
-    }
-    const base = String.fromCharCode(mm.base)
-    entry.baseCounts[base] = (entry.baseCounts[base] ?? 0) + 1
-    if (!entry.strandBaseCounts[base]) {
-      entry.strandBaseCounts[base] = { fwd: 0, rev: 0 }
-    }
-    if (mm.strand === 1) {
-      entry.strandBaseCounts[base].fwd++
-    } else {
-      entry.strandBaseCounts[base].rev++
-    }
-  }
-
-  const byPosition = new Map<number, Map<string, ModificationColorEntry>>()
-
-  for (const mod of modifications) {
-    if (mod.position < regionStart) {
-      continue
-    }
-    let colorMap = byPosition.get(mod.position)
-    if (!colorMap) {
-      colorMap = new Map()
-      byPosition.set(mod.position, colorMap)
-    }
-    const key = `${mod.r},${mod.g},${mod.b}`
-    let entry = colorMap.get(key)
-    if (!entry) {
-      entry = {
-        r: mod.r,
-        g: mod.g,
-        b: mod.b,
-        probabilityTotal: 0,
-        probabilityCount: 0,
-        base: mod.base,
-        isSimplex: mod.isSimplex,
-      }
-      colorMap.set(key, entry)
-    }
-    entry.probabilityTotal += mod.prob
-    entry.probabilityCount++
-  }
-
-  const segments: {
-    position: number
-    yOffset: number
-    height: number
-    r: number
-    g: number
-    b: number
-    alpha: number
-  }[] = []
-
-  for (const [position, colorMap] of byPosition) {
-    const binIdx = Math.floor(position - regionStart - depthStartOffset)
-    const depthAtPosition = depths[binIdx] ?? 0
-    if (depthAtPosition === 0) {
-      continue
-    }
-
-    const refbase = regionSequence
-      ? regionSequence[position - regionSequenceStart]!.toUpperCase()
-      : 'N'
-
-    const snpEntry = snpByPosition.get(position)
-    const snpBaseCounts = snpEntry?.baseCounts ?? {}
-    const snpStrandBaseCounts = snpEntry?.strandBaseCounts ?? {}
-
-    const totalSnp = Object.values(snpBaseCounts).reduce((a, b) => a + b, 0)
-    const refCount = Math.max(0, depthAtPosition - totalSnp)
-
-    const baseCounts: Record<string, number> = { ...snpBaseCounts }
-    baseCounts[refbase] = (baseCounts[refbase] ?? 0) + refCount
-
-    const strandBaseCounts: Record<string, { fwd: number; rev: number }> = {}
-    for (const [base, sc] of Object.entries(snpStrandBaseCounts)) {
-      strandBaseCounts[base] = { ...sc }
-    }
-
-    if (fwdDepths && revDepths) {
-      const fwdDepthAtPosition = fwdDepths[binIdx] ?? 0
-      const revDepthAtPosition = revDepths[binIdx] ?? 0
-      let snpFwd = 0
-      let snpRev = 0
-      for (const sc of Object.values(snpStrandBaseCounts)) {
-        snpFwd += sc.fwd
-        snpRev += sc.rev
-      }
-      const refFwd = Math.max(0, fwdDepthAtPosition - snpFwd)
-      const refRev = Math.max(0, revDepthAtPosition - snpRev)
-      if (!strandBaseCounts[refbase]) {
-        strandBaseCounts[refbase] = { fwd: 0, rev: 0 }
-      }
-      strandBaseCounts[refbase].fwd += refFwd
-      strandBaseCounts[refbase].rev += refRev
-    } else {
-      if (!strandBaseCounts[refbase]) {
-        strandBaseCounts[refbase] = { fwd: 0, rev: 0 }
-      }
-      strandBaseCounts[refbase].fwd += refCount
-    }
-
-    let yOffset = 0
-    for (const entry of colorMap.values()) {
-      const { modifiable, detectable } = calculateModificationCounts({
-        base: entry.base,
-        isSimplex: entry.isSimplex,
-        refbase,
-        baseCounts,
-        strandBaseCounts,
-      })
-
-      const modFraction =
-        (modifiable / depthAtPosition) * (entry.probabilityTotal / detectable)
-      const height = modFraction * (depthAtPosition / regionMaxDepth)
-
-      const avgProbability =
-        entry.probabilityCount > 0
-          ? entry.probabilityTotal / entry.probabilityCount
-          : 0
-
-      if (!Number.isNaN(height)) {
-        segments.push({
-          position,
-          yOffset,
-          height,
-          r: entry.r,
-          g: entry.g,
-          b: entry.b,
-          alpha: Math.round(avgProbability * 255),
-        })
-        yOffset += height
-      }
-    }
-  }
-
-  const positions = new Uint32Array(segments.length)
-  const yOffsets = new Float32Array(segments.length)
-  const heights = new Float32Array(segments.length)
-  const colors = new Uint8Array(segments.length * 4)
-
-  for (const [i, seg] of segments.entries()) {
-    positions[i] = seg.position - regionStart
-    yOffsets[i] = seg.yOffset
-    heights[i] = seg.height
-    colors[i * 4] = seg.r
-    colors[i * 4 + 1] = seg.g
-    colors[i * 4 + 2] = seg.b
-    colors[i * 4 + 3] = seg.alpha
-  }
-
-  return { positions, yOffsets, heights, colors, count: segments.length }
-}
 
 export async function executeRenderPileupData({
   pluginManager,
@@ -315,9 +103,6 @@ export async function executeRenderPileupData({
     regionSequenceStart = result.regionSequenceStart
   }
 
-  const detectedModifications = new Set<string>()
-  const detectedSimplexModifications = new Set<string>()
-
   const {
     features,
     gaps,
@@ -332,109 +117,18 @@ export async function executeRenderPileupData({
     nextRefs,
     nextPositions,
     suppAlignments,
-  } = await updateStatus('Processing alignments', statusCallback, async () => {
-    const featuresData: FeatureData[] = []
-    const gapsData: GapData[] = []
-    const mismatchesData: MismatchData[] = []
-    const insertionsData: InsertionData[] = []
-    const softclipsData: SoftclipData[] = []
-    const hardclipsData: HardclipData[] = []
-    const modificationsData: ModificationEntry[] = []
-    const tagColorValues: string[] = []
-    const nextPositions: number[] = []
-    const nextRefs: string[] = []
-    const suppAlignments: string[] = []
-    const isTagColorMode = colorBy?.type === 'tag' && colorBy.tag && colorTagMap
-    const sortTagValues: string[] | undefined = isTagSort ? [] : undefined
-
-    for (const feature of featuresArray) {
-      const featureId = feature.id()
-      const featureStart = feature.get('start')
-      const strand = feature.get('strand')!
-
-      featuresData.push(buildBaseFeatureData(feature))
-
-      nextPositions.push(feature.get('next_pos') ?? 0)
-      nextRefs.push(feature.get('next_ref') ?? '')
-      suppAlignments.push(feature.get('tags')?.SA ?? feature.get('SA') ?? '')
-
-      if (isTagColorMode) {
-        tagColorValues.push(extractFeatureTagValue(feature, colorBy.tag!))
-      }
-
-      if (sortTagValues) {
-        sortTagValues.push(extractFeatureTagValue(feature, sortedBy!.tag!))
-      }
-
-      const featureMismatches = feature.get('mismatches') as
-        | Mismatch[]
-        | undefined
-      if (featureMismatches) {
-        extractMismatchData(
-          featureMismatches,
-          featureId,
-          featureStart,
-          strand,
-          feature,
-          gapsData,
-          mismatchesData,
-          insertionsData,
-          softclipsData,
-          hardclipsData,
-          showSoftClipping,
-        )
-      }
-
-      const modData = extractModifications(
-        feature,
-        featureId,
-        featureStart,
-        strand,
-        colorBy,
-        detectedModifications,
-        detectedSimplexModifications,
-        modificationsData,
-      )
-
-      if (colorBy?.type === 'methylation' && modData) {
-        extractMethylation(
-          featureId,
-          featureStart,
-          strand,
-          regionStart,
-          Math.ceil(region.end),
-          modData,
-          modificationsData,
-        )
-      }
-    }
-
-    const readTagColors = isTagColorMode
-      ? buildTagColors(featuresData, tagColorValues, colorBy, colorTagMap)
-      : new Uint8Array(0)
-
-    modificationsData.sort((a, b) => a.modType.localeCompare(b.modType))
-
-    const uniqueTagValues = isTagColorMode
-      ? [...new Set(tagColorValues)].filter(v => v !== '')
-      : undefined
-
-    return {
-      features: featuresData,
-      gaps: gapsData,
-      mismatches: mismatchesData,
-      insertions: insertionsData,
-      softclips: softclipsData,
-      hardclips: hardclipsData,
-      modifications: modificationsData,
-      tagColors: readTagColors,
-      sortTagValues,
-      uniqueTagValues,
-      nextRefs,
-      nextPositions,
-      suppAlignments,
-    }
-  })
+    detectedModifications,
+    detectedSimplexModifications,
+  } = await updateStatus('Processing alignments', statusCallback, async () =>
+    extractFeatureArrays(featuresArray, buildBaseFeatureData, {
+      colorBy,
+      colorTagMap,
+      showSoftClipping,
+      region,
+      regionStart,
+      sortTag: isTagSort ? sortedBy!.tag! : undefined,
+    }),
+  )
 
   checkStopToken2(stopTokenCheck)
 
