@@ -113,8 +113,13 @@ export async function fetchResults({
     rankSearchResults,
   )
 
+  const q = queryString.toLowerCase()
   const refNameResults = assembly?.allRefNames
-    ?.filter(ref => ref.toLowerCase().startsWith(queryString.toLowerCase()))
+    ?.filter(ref =>
+      searchType === 'exact'
+        ? ref.toLowerCase() === q
+        : ref.toLowerCase().startsWith(q),
+    )
     .slice(0, 10)
     .map(r => new BaseResult({ label: r }))
 

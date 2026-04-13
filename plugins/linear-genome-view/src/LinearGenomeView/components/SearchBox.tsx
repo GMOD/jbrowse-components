@@ -29,7 +29,7 @@ async function onSelect({
       assemblyName,
     })
   } else if (option.results?.length) {
-    model.setSearchResults(option.results, option.getLabel())
+    model.setSearchResults(option.results, option.getLabel(), assemblyName)
   } else if (assembly) {
     await handleSelectedRegion({
       input: option.getLabel(),

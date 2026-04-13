@@ -21,23 +21,28 @@ function decodeURIComponentNoThrow(uri: string) {
   }
 }
 
-function shorten(str: string, term: string, w = 15) {
+export function shorten(str: string, term: string, w = 15) {
+  if (str.length < 40) {
+    return str
+  }
   const tidx = str.toLowerCase().indexOf(term)
-
-  return str.length < 40
-    ? str
-    : (Math.max(0, tidx - w) > 0 ? '...' : '') +
-        str.slice(Math.max(0, tidx - w), tidx + term.length + w).trim() +
-        (tidx + term.length < str.length ? '...' : '')
+  if (tidx === -1) {
+    return `${str.slice(0, 40).trim()}...`
+  }
+  const start = Math.max(0, tidx - w)
+  const end = tidx + term.length + w
+  return (
+    (start > 0 ? '...' : '') +
+    str.slice(start, end).trim() +
+    (end < str.length ? '...' : '')
+  )
 }
 
 export default class TrixTextSearchAdapter
   extends BaseAdapter
   implements BaseTextSearchAdapter
 {
-  indexingAttributes?: string[]
   trixJs: Trix
-  tracksNames?: string[]
 
   constructor(
     config: AnyConfigurationModel,
@@ -72,26 +77,21 @@ export default class TrixTextSearchAdapter
     const results = await this.trixJs.search(query)
     const formatted = results
       // if multi-word search try to filter out relevant items
-      .filter(([, data]) =>
-        strs.every(r =>
-          decodeURIComponentNoThrow(data).toLowerCase().includes(r),
-        ),
-      )
+      .filter(([, data]) => {
+        const lower = decodeURIComponentNoThrow(data).toLowerCase()
+        return strs.every(r => lower.includes(r))
+      })
       .map(([term, data]) => {
-        const result = JSON.parse(data.replaceAll('|', ',')) as string[]
-        const [loc, trackId, ...rest] = result.map(record =>
-          decodeURIComponentNoThrow(record),
+        const decoded = (JSON.parse(data.replaceAll('|', ',')) as string[]).map(
+          decodeURIComponentNoThrow,
         )
+        const [loc, trackId, ...rest] = decoded
 
-        const labelFieldIdx = rest.findIndex(elt => !!elt)
-        const contextIdx = rest
-          .map(elt => elt.toLowerCase())
-          .findIndex(f => f.includes(term.toLowerCase()))
-
-        const labelField = rest[labelFieldIdx]!
-        const contextField = rest[contextIdx]!
+        const labelField = rest.find(elt => !!elt) ?? ''
+        const termLower = term.toLowerCase()
+        const contextIdx = rest.findIndex(f => f.toLowerCase().includes(termLower))
         const context =
-          contextIdx !== -1 ? shorten(contextField, term) : undefined
+          contextIdx !== -1 ? shorten(rest[contextIdx]!, term) : undefined
         const label = shorten(labelField, term)
 
         const displayString =
@@ -103,7 +103,7 @@ export default class TrixTextSearchAdapter
           locString: loc,
           label: labelField,
           displayString,
-          matchedObject: result.map(record => decodeURIComponent(record)),
+          matchedObject: decoded,
           trackId,
         })
       })

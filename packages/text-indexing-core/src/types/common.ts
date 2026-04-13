@@ -101,24 +101,11 @@ export async function getLocalOrRemoteStream({
   }
 }
 
-export function createReadlineInterface(
-  stream: Readable,
-  inLocation: string,
-): readline.Interface {
-  const isGzipped = /.b?gz$/.exec(inLocation)
-
-  let inputStream: Readable
-  if (isGzipped) {
-    const gunzip = createGunzip()
-    inputStream = stream.pipe(gunzip)
-  } else {
-    inputStream = stream
-  }
-
-  const rl = readline.createInterface({
-    input: inputStream,
-  })
-  return rl
+export function createReadlineInterface(stream: Readable, inLocation: string) {
+  const inputStream = /.b?gz$/.exec(inLocation)
+    ? stream.pipe(createGunzip())
+    : stream
+  return readline.createInterface({ input: inputStream })
 }
 
 // Efficient attribute parsing for GFF3/VCF info fields
@@ -155,7 +142,6 @@ export function makeLocation(location: string, protocol: string) {
 }
 
 export function guessAdapterFromFileName(filePath: string): Track {
-  // const uri = isURL(filePath) ? filePath : path.resolve(filePath)
   const protocol = isURL(filePath) ? 'uri' : 'localPath'
   const name = path.basename(filePath)
   if (/\.vcf\.b?gz$/i.test(filePath)) {

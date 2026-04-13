@@ -36,8 +36,7 @@ export async function* indexVcf({
       continue
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [ref, pos, id, _ref, _alt, _qual, _filter, info] = line.split('\t')
+    const [ref, pos, id, , , , , info] = line.split('\t')
 
     if (id === '.') {
       continue
