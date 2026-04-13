@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { getSession, notEmpty } from '@jbrowse/core/util'
+import { avg, getSession, notEmpty } from '@jbrowse/core/util'
 import {
   addDisposer,
   addMiddleware,
@@ -9,6 +9,7 @@ import {
   getPath,
   types,
 } from '@jbrowse/mobx-state-tree'
+import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import { autorun } from 'mobx'
@@ -402,6 +403,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      squareView() {
+        const average = avg(self.views.map(v => v.bpPerPx))
+        for (const view of self.views) {
+          const center = view.pxToBp(view.width / 2)
+          view.setNewView(average, view.offsetPx)
+          if (center.refName) {
+            view.centerAt(center.coord, center.refName, center.index)
+          }
+        }
+      },
+
+      /**
+       * #action
+       */
       setInit(init?: BreakpointSplitViewInit) {
         self.init = init
       },
@@ -509,31 +524,43 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     self.reverseViewOrder()
                   },
                 },
+                {
+                  label: 'Square view',
+                  icon: CropFreeIcon,
+                  onClick: () => {
+                    self.squareView()
+                  },
+                },
               ]
             : []),
           {
-            label: 'Show header',
-            type: 'checkbox',
-            checked: self.showHeader,
-            onClick: () => {
-              self.setShowHeader(!self.showHeader)
-            },
-          },
-          {
-            label: 'Show intra-view links',
-            type: 'checkbox',
-            checked: self.showIntraviewLinks,
-            onClick: () => {
-              self.setShowIntraviewLinks(!self.showIntraviewLinks)
-            },
-          },
-          {
-            label: 'Allow clicking alignment squiggles?',
-            type: 'checkbox',
-            checked: self.interactiveOverlay,
-            onClick: () => {
-              self.setInteractiveOverlay(!self.interactiveOverlay)
-            },
+            label: 'Show...',
+            subMenu: [
+              {
+                label: 'Show header',
+                type: 'checkbox',
+                checked: self.showHeader,
+                onClick: () => {
+                  self.setShowHeader(!self.showHeader)
+                },
+              },
+              {
+                label: 'Show intra-view links',
+                type: 'checkbox',
+                checked: self.showIntraviewLinks,
+                onClick: () => {
+                  self.setShowIntraviewLinks(!self.showIntraviewLinks)
+                },
+              },
+              {
+                label: 'Allow clicking alignment squiggles',
+                type: 'checkbox',
+                checked: self.interactiveOverlay,
+                onClick: () => {
+                  self.setInteractiveOverlay(!self.interactiveOverlay)
+                },
+              },
+            ],
           },
           {
             label: 'Link views',
