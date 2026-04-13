@@ -86,18 +86,14 @@ fn vs_main(
   let clip_x2 = hp_to_clip_x(split_end, u.bp_range_x, u.zero);
 
   let px_size = 2.0 / u.canvas_width;
-  var cx1 = floor(clip_x1 / px_size + 0.5) * px_size;
-  var cx2 = floor(clip_x2 / px_size + 0.5) * px_size;
-  if cx2 - cx1 < 2.0 * px_size {
-    cx2 = cx1 + 2.0 * px_size;
-  }
+  let cx1 = floor(clip_x1 / px_size + 0.5) * px_size;
+  let cx2 = max(floor(clip_x2 / px_size + 0.5) * px_size, cx1 + 2.0 * px_size);
 
   // fractional y keeps subpixel rows smooth (no rounding = no discrete jumps
   // during resize); max(...,1) is the minimum quad height to avoid GPU-culled
   // zero-height geometry while preserving draw order for variant priority
-  let y_top_px = f32(inst.row_index) * u.row_height - u.scroll_top;
-  let y_top = y_top_px;
-  let y_bot = y_top_px + max(u.row_height, 1.0);
+  let y_top = f32(inst.row_index) * u.row_height - u.scroll_top;
+  let y_bot = y_top + max(u.row_height, 1.0);
   let px_to_clip_y = 2.0 / u.canvas_height;
   let cy_top = 1.0 - y_top * px_to_clip_y;
   let cy_bot = 1.0 - y_bot * px_to_clip_y;
@@ -121,7 +117,7 @@ fn vs_main(
   }
 
   let w_px = (x_right - x_left) * u.canvas_width * 0.5;
-  let h_px = (cy_top - cy_bot) * u.canvas_height * 0.5;
+  let h_px = max(u.row_height, 1.0);
 
   var out: VertexOutput;
   out.position = vec4f(mix(x_left, x_right, lx), mix(cy_bot, cy_top, ly), 0.0, 1.0);

@@ -51,17 +51,13 @@ void main() {
 
   float px_size = 2.0 / canvas_width;
   float cx1 = floor(clip_x1 / px_size + 0.5) * px_size;
-  float cx2 = floor(clip_x2 / px_size + 0.5) * px_size;
-  if (cx2 - cx1 < 2.0 * px_size) {
-    cx2 = cx1 + 2.0 * px_size;
-  }
+  float cx2 = max(floor(clip_x2 / px_size + 0.5) * px_size, cx1 + 2.0 * px_size);
 
   // fractional y keeps subpixel rows smooth (no rounding = no discrete jumps
   // during resize); max(...,1) is the minimum quad height to avoid GPU-culled
   // zero-height geometry while preserving draw order for variant priority
-  float y_top_px = float(a_row_index) * row_height - scroll_top;
-  float y_top = y_top_px;
-  float y_bot = y_top_px + max(row_height, 1.0);
+  float y_top = float(a_row_index) * row_height - scroll_top;
+  float y_bot = y_top + max(row_height, 1.0);
   float px_to_clip_y = 2.0 / canvas_height;
   float cy_top = 1.0 - y_top * px_to_clip_y;
   float cy_bot = 1.0 - y_bot * px_to_clip_y;
@@ -86,7 +82,7 @@ void main() {
   gl_Position = vec4(mix(x_left, x_right, lx), mix(cy_bot, cy_top, ly), 0.0, 1.0);
 
   float w_px = (x_right - x_left) * canvas_width * 0.5;
-  float h_px = (cy_top - cy_bot) * canvas_height * 0.5;
+  float h_px = max(row_height, 1.0);
   v_local_px = vec2(lx * w_px, (1.0 - ly) * h_px);
   v_size_px = vec2(w_px, h_px);
   v_shape_type_f = effective_shape;

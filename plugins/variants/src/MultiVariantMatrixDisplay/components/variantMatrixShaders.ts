@@ -60,19 +60,15 @@ fn vs_main(
   let x1 = inst.feature_index / u.num_features;
   let x2 = (inst.feature_index + 1.0) / u.num_features;
   let px_size_x = 1.0 / u.canvas_width;
-  var cx1 = floor(x1 / px_size_x + 0.5) * px_size_x;
-  var cx2 = floor(x2 / px_size_x + 0.5) * px_size_x;
-  if cx2 - cx1 < px_size_x {
-    cx2 = cx1 + px_size_x;
-  }
+  let cx1 = floor(x1 / px_size_x + 0.5) * px_size_x;
+  let cx2 = max(floor(x2 / px_size_x + 0.5) * px_size_x, cx1 + px_size_x);
   let clip_x = mix(cx1, cx2, lx) * 2.0 - 1.0;
 
   // fractional y keeps subpixel rows smooth (no rounding = no discrete jumps
   // during resize); max(...,1) is the minimum quad height to avoid GPU-culled
   // zero-height geometry while preserving draw order for variant priority
-  let y_top_px = f32(inst.row_index) * u.row_height - u.scroll_top;
-  let y_top = y_top_px;
-  let y_bot = y_top_px + max(u.row_height, 1.0);
+  let y_top = f32(inst.row_index) * u.row_height - u.scroll_top;
+  let y_bot = y_top + max(u.row_height, 1.0);
   let px_to_clip_y = 2.0 / u.canvas_height;
   let clip_y = mix(1.0 - y_bot * px_to_clip_y, 1.0 - y_top * px_to_clip_y, ly);
 
