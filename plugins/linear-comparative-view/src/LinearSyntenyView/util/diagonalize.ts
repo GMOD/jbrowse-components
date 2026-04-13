@@ -38,13 +38,7 @@ export async function diagonalizeRegions(
   currentRegions: Region[],
   progressCallback?: ProgressCallback,
 ): Promise<DiagonalizationResult> {
-  const updateProgress = async (progress: number, message: string) => {
-    if (progressCallback) {
-      await progressCallback(progress, message)
-    }
-  }
-
-  await updateProgress(20, `Grouping ${alignments.length} alignments...`)
+  await progressCallback?.(20, `Grouping ${alignments.length} alignments...`)
 
   const queryGroups = new Map<
     string,
@@ -87,7 +81,7 @@ export async function diagonalizeRegions(
     group.strandWeightedSum += direction * alnLength
   }
 
-  await updateProgress(50, 'Determining optimal ordering and orientation...')
+  await progressCallback?.(50, 'Determining optimal ordering and orientation...')
 
   const queryOrdering: {
     refName: string
@@ -122,7 +116,7 @@ export async function diagonalizeRegions(
     })
   }
 
-  await updateProgress(70, `Sorting ${queryOrdering.length} query regions...`)
+  await progressCallback?.(70, `Sorting ${queryOrdering.length} query regions...`)
 
   const refOrder = new Map(referenceRegions.map((r, i) => [r.refName, i]))
 
@@ -135,7 +129,7 @@ export async function diagonalizeRegions(
     return a.bestRefPos - b.bestRefPos
   })
 
-  await updateProgress(85, 'Building new region layout...')
+  await progressCallback?.(85, 'Building new region layout...')
 
   const newQueryRegions: Region[] = []
   let regionsReversed = 0
@@ -154,7 +148,7 @@ export async function diagonalizeRegions(
     }
   }
 
-  await updateProgress(100, 'Diagonalization complete!')
+  await progressCallback?.(100, 'Diagonalization complete!')
 
   return {
     newRegions: newQueryRegions,
