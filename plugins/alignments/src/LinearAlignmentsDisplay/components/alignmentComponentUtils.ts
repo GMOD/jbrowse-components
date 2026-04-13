@@ -6,7 +6,6 @@
  */
 
 import { countSnpsAtPosition } from '@jbrowse/alignments-core'
-import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
 import { fillColor } from '../../shared/color.ts'
 import {
@@ -14,6 +13,7 @@ import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
 } from '../../shared/types.ts'
+import { toRgb } from './shaders/colors.ts'
 
 import type { ColorPalette, RGBColor } from './AlignmentsRenderer.ts'
 import type { CigarHitResult, SashimiArcHitResult } from './hitTesting'
@@ -21,10 +21,6 @@ import type { AlignmentsBackend } from './rendererTypes.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 import type { Theme } from '@mui/material'
-
-function toRgb(color: string): RGBColor {
-  return cssColorToNormalizedRgb(color)
-}
 
 export function splitInterbasesByType(
   interbaseTypes: Uint8Array,

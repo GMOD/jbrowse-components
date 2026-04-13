@@ -75,17 +75,13 @@ Can see feature labels and there are mouseover rects "work" but they are over
 
 Not sure if it is
 
-## Add header to breakpoint split view
-
-Should show coords
-
 ## Better design for human vs mouse style synteny
 
 Need to design a system for good defaults
 
 Look into circos, or other synteny plotting systems
 
-## Also make it easier to just post arcs and coverage, no reads
+## Also make it easier to just use arcs and coverage, no pileup rectangle reads viz
 
 Want to make it easy to plot megabase scale data
 

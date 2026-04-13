@@ -43,6 +43,16 @@ import type {
 type LGV = LinearGenomeViewModel
 type Ctx = CanvasRenderingContext2D | SvgCanvas
 
+function cubicBezierXY(t: number, x1: number, x2: number, destY: number) {
+  const mt = 1 - t
+  const mt2 = mt * mt
+  const t2 = t * t
+  return {
+    xBp: x1 * mt2 * (mt + 3 * t) + x2 * t2 * (3 * mt + t),
+    yPx: 3 * mt * t * destY,
+  }
+}
+
 function evalBezierCurve(
   t: number,
   x1: number,
@@ -68,13 +78,7 @@ function evalBezierCurve(
     const rawY = Math.sin(angle) * absradPx
     yPx = absradPx > 0 ? rawY * (destY / absradPx) : 0
   } else {
-    const mt = 1 - t
-    const mt2 = mt * mt
-    const mt3 = mt2 * mt
-    const t2 = t * t
-    const t3 = t2 * t
-    xBp = mt3 * x1 + 3 * mt2 * t * x1 + 3 * mt * t2 * x2 + t3 * x2
-    yPx = 3 * mt2 * t * destY + 3 * mt * t2 * destY
+    ;({ xBp, yPx } = cubicBezierXY(t, x1, x2, destY))
   }
 
   const screenX = blockStartPx + (xBp - bpStartOffset) * pxPerBp
@@ -91,14 +95,8 @@ function evalSashimiCurve(
   pxPerBp: number,
   arcsDown = false,
 ) {
-  const mt = 1 - t
-  const mt2 = mt * mt
-  const mt3 = mt2 * mt
-  const t2 = t * t
-  const t3 = t2 * t
-  const xBp = mt3 * x1 + 3 * mt2 * t * x1 + 3 * mt * t2 * x2 + t3 * x2
   const destY = covHeight * (0.8 / 0.75)
-  const yPx = 3 * mt2 * t * destY + 3 * mt * t2 * destY
+  const { xBp, yPx } = cubicBezierXY(t, x1, x2, destY)
   const screenX = blockStartPx + (xBp - bpStartOffset) * pxPerBp
   return {
     x: screenX,

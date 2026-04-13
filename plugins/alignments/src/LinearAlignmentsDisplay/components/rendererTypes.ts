@@ -1,6 +1,5 @@
 import type { ColorPalette } from './shaders/colors.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
-
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 export type { ColorPalette, RGBColor } from './shaders/colors.ts'
 
