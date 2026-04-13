@@ -139,7 +139,7 @@ const blockState = types
        * #action
        */
       doReload() {
-        self.reloadFlag = self.reloadFlag + 1
+        self.reloadFlag++
       },
 
       /**
@@ -239,7 +239,7 @@ const blockState = types
               const { rendererType } = self.cachedDisplay
               await rendererType.freeResourcesInClient(
                 rpcManager,
-                JSON.parse(JSON.stringify(self.renderArgs)),
+                structuredClone(self.renderArgs),
               )
             }
           } catch (e) {

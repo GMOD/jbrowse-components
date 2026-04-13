@@ -650,11 +650,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (self.init) {
           const { assemblyManager } = getSession(self)
           const asm = assemblyManager.get(self.init.assembly)
-          if (asm?.error) {
-            return asm.error
-          }
           if (!asm) {
             return `Assembly ${self.init.assembly} not found`
+          }
+          if (asm.error) {
+            return asm.error
           }
         }
         return undefined
@@ -1111,7 +1111,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       showAllRegions() {
-        self.bpPerPx = clamp(self.maxBpPerPx, self.minBpPerPx, self.maxBpPerPx)
+        self.bpPerPx = self.maxBpPerPx
         self.scrollTo(
           getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
         )
@@ -1266,10 +1266,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         cancelLastAnimation()
 
         // Clamp to zoom limits
-        const effectiveTarget = Math.max(
-          self.minBpPerPx,
-          Math.min(self.maxBpPerPx, targetBpPerPx),
-        )
+        const effectiveTarget = clamp(targetBpPerPx, self.minBpPerPx, self.maxBpPerPx)
 
         // If already at limit (or effectively no change), do nothing
         if (effectiveTarget === self.bpPerPx) {
@@ -1794,18 +1791,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
 
         // Calculate coordinates, using region bounds if not specified
-        let firstStart =
-          firstLocation.start === undefined
-            ? firstRegion.start
-            : firstLocation.start
-        let firstEnd =
-          firstLocation.end === undefined ? firstRegion.end : firstLocation.end
-        let lastStart =
-          lastLocation.start === undefined
-            ? lastRegion.start
-            : lastLocation.start
-        let lastEnd =
-          lastLocation.end === undefined ? lastRegion.end : lastLocation.end
+        let firstStart = firstLocation.start ?? firstRegion.start
+        let firstEnd = firstLocation.end ?? firstRegion.end
+        let lastStart = lastLocation.start ?? lastRegion.start
+        let lastEnd = lastLocation.end ?? lastRegion.end
 
         // Apply grow factor to add padding around the region
         if (grow) {

@@ -109,11 +109,7 @@ function calculateMultiRegionLeftPx(
     }
   }
 
-  if (minLeftPx === Infinity) {
-    return undefined
-  }
-
-  return minLeftPx
+  return minLeftPx === Infinity ? undefined : minLeftPx
 }
 
 function getFeatureLeftPx(
