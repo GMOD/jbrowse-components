@@ -1,7 +1,6 @@
-import { useState } from 'react'
-
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
@@ -45,10 +44,15 @@ const Header = observer(function Header({
 }) {
   const { classes } = useStyles()
   const { views, levels, showDynamicControls } = model
-  const [showSearchBoxes, setShowSearchBoxes] = useState(views.length <= 3)
-  const [sideBySide, setSideBySide] = useState(views.length <= 3)
+  const [showSearchBoxes, setShowSearchBoxes] = useLocalStorage(
+    'lcv-showSearchBoxes',
+    views.length <= 3,
+  )
+  const [sideBySide, setSideBySide] = useLocalStorage(
+    'lcv-sideBySide',
+    views.length <= 3,
+  )
 
-  // Check if we have any displays to show sliders
   const hasDisplays = levels[0]?.tracks[0]?.displays[0]
 
   return (
@@ -106,7 +110,7 @@ const Header = observer(function Header({
                 type: 'radio' as const,
                 checked: sideBySide,
                 onClick: () => {
-                  setSideBySide(!sideBySide)
+                  setSideBySide(true)
                 },
               },
               {
@@ -114,7 +118,7 @@ const Header = observer(function Header({
                 type: 'radio' as const,
                 checked: !sideBySide,
                 onClick: () => {
-                  setSideBySide(!sideBySide)
+                  setSideBySide(false)
                 },
               },
             ],

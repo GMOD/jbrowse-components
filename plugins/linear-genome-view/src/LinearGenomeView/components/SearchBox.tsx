@@ -9,6 +9,8 @@ import { fetchResults } from './util.ts'
 import { handleSelectedRegion, navToOption } from '../../searchUtils.ts'
 import { SPACING, WIDGET_HEIGHT } from '../consts.ts'
 
+const defaultStyle = { margin: SPACING }
+
 import type { LinearGenomeViewModel } from '../model.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
@@ -45,7 +47,7 @@ const SearchBox = observer(function SearchBox({
   showHelp = true,
   minWidth = 175,
   maxWidth,
-  style = { margin: SPACING },
+  style = defaultStyle,
 }: {
   showHelp?: boolean
   model: LinearGenomeViewModel
