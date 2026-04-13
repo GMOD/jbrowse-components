@@ -896,8 +896,8 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     f[U_COV_HEIGHT] = state.coverageHeight
     f[U_COV_Y_OFFSET] = state.coverageYOffset
     f[U_DEPTH_SCALE] =
-      state.coverageNicedMax !== undefined && region.maxDepth > 0
-        ? region.maxDepth / state.coverageNicedMax
+      state.coverageMaxDepth !== undefined && region.maxDepth > 0
+        ? region.maxDepth / state.coverageMaxDepth
         : 1
     f[U_BIN_SIZE] = region.binSize
     f[U_NONCOV_HEIGHT] =

@@ -5,7 +5,6 @@ export interface CoverageTicks {
   ticks: { value: number; y: number }[]
   height: number
   maxDepth: number
-  nicedMax: number
   yTop: number
   yBottom: number
 }

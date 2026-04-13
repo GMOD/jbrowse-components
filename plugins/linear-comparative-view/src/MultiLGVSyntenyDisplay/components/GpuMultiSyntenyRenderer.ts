@@ -1,7 +1,4 @@
-import {
-  computeDepthScale,
-  getDevicePixelRatio,
-} from '@jbrowse/alignments-core'
+import { getDevicePixelRatio } from '@jbrowse/alignments-core'
 
 import { BG_COLOR_GL } from './multiSyntenyBackendTypes.ts'
 import {
@@ -248,7 +245,7 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
         }
       }
     }
-    const depthScale = computeDepthScale(globalMaxDepth)
+    const depthScale = 1
 
     this.hal.beginFrame(BG_COLOR_GL, BG_COLOR_GL, BG_COLOR_GL)
 

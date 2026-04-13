@@ -31,16 +31,10 @@ function makeCtx() {
 }
 
 describe('coverageLayout', () => {
-  it('computes depth scale, effective height, and bottom', () => {
-    const layout = coverageLayout(100, 50)
+  it('computes effective height and bottom', () => {
+    const layout = coverageLayout(50)
     expect(layout.effectiveH).toBe(40) // 50 - 2*5
     expect(layout.bottom).toBe(45) // 50 - 5
-    expect(layout.depthScale).toBe(1) // 100/niceNum(100)=100/100=1
-  })
-
-  it('handles non-nice max depth', () => {
-    const layout = coverageLayout(73, 50)
-    expect(layout.depthScale).toBe(1)
   })
 })
 

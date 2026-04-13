@@ -1,7 +1,4 @@
-import {
-  YSCALEBAR_LABEL_OFFSET,
-  computeDepthScale,
-} from './coverageDownsampling.ts'
+import { YSCALEBAR_LABEL_OFFSET } from './coverageDownsampling.ts'
 import {
   INDICATOR_TRIANGLE_H,
   drawIndicatorTriangle,
@@ -38,11 +35,10 @@ export function resizeCanvas(
   return { pw, ph, changed }
 }
 
-export function coverageLayout(maxDepth: number, coverageHeight: number) {
-  const depthScale = computeDepthScale(maxDepth)
+export function coverageLayout(coverageHeight: number) {
   const effectiveH = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
   const bottom = coverageHeight - YSCALEBAR_LABEL_OFFSET
-  return { depthScale, effectiveH, bottom }
+  return { effectiveH, bottom }
 }
 
 export function snpColorForType(colorType: number, colors: CigarOpDrawColors) {
@@ -74,10 +70,7 @@ export function drawCoverageBins(
     return
   }
 
-  const { depthScale, effectiveH, bottom } = coverageLayout(
-    maxDepth,
-    coverageHeight,
-  )
+  const { effectiveH, bottom } = coverageLayout(coverageHeight)
   const f32 = new Float32Array(buffer)
 
   ctx.fillStyle = coverageColor
@@ -89,8 +82,8 @@ export function drawCoverageBins(
     if (px > viewWidth || px2 < 0) {
       continue
     }
-    const bandBottom = bottom - f32[off + 1]! * depthScale * effectiveH
-    const bandTop = bottom - f32[off + 2]! * depthScale * effectiveH
+    const bandBottom = bottom - f32[off + 1]! * effectiveH
+    const bandTop = bottom - f32[off + 2]! * effectiveH
     ctx.fillRect(px, bandTop, Math.max(px2 - px, 1), bandBottom - bandTop)
   }
 }
@@ -109,10 +102,7 @@ export function drawSnpSegments(
     return
   }
 
-  const { depthScale, effectiveH, bottom } = coverageLayout(
-    maxDepth,
-    coverageHeight,
-  )
+  const { effectiveH, bottom } = coverageLayout(coverageHeight)
   const f32 = new Float32Array(buffer)
 
   for (let i = 0; i < segmentCount; i++) {
@@ -125,8 +115,8 @@ export function drawSnpSegments(
     if (px > viewWidth || px2 < 0) {
       continue
     }
-    const segBottom = bottom - yOff * depthScale * effectiveH
-    const segTop = segBottom - segH * depthScale * effectiveH
+    const segBottom = bottom - yOff * effectiveH
+    const segTop = segBottom - segH * effectiveH
     ctx.fillStyle = snpColorForType(f32[off + 3]!, colors)
     ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segBottom - segTop)
   }
@@ -203,10 +193,7 @@ export function drawModCovSegments(
     return
   }
 
-  const { depthScale, effectiveH, bottom } = coverageLayout(
-    maxDepth,
-    coverageHeight,
-  )
+  const { effectiveH, bottom } = coverageLayout(coverageHeight)
   const f32 = new Float32Array(buffer)
   const u32 = new Uint32Array(buffer)
 
@@ -225,8 +212,8 @@ export function drawModCovSegments(
     const g = (rgba >> 8) & 0xff
     const b = (rgba >> 16) & 0xff
     const a = ((rgba >> 24) & 0xff) / 255
-    const segBottom = bottom - yOffset * depthScale * effectiveH
-    const segTop = segBottom - h * depthScale * effectiveH
+    const segBottom = bottom - yOffset * effectiveH
+    const segTop = segBottom - h * effectiveH
     ctx.fillStyle = `rgba(${r},${g},${b},${a})`
     ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segBottom - segTop)
   }

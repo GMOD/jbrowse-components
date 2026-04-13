@@ -488,7 +488,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       showCoverage: model.showCoverage,
       coverageHeight: model.coverageHeight,
       coverageYOffset: YSCALEBAR_LABEL_OFFSET,
-      coverageNicedMax: model.coverageTicks?.nicedMax,
+      coverageMaxDepth: model.coverageTicks?.maxDepth,
       showMismatches: model.showMismatches,
       showSoftClipping: model.showSoftClipping,
       showInterbaseIndicators: model.showInterbaseIndicators,

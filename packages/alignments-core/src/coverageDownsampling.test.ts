@@ -1,34 +1,15 @@
 import {
   buildCoverageTooltipBin,
   computeCoverageTicks,
-  computeDepthScale,
   computeVisibleMaxDepth,
   countSnpsAtPosition,
   downsampleMinMax,
-  niceNum,
 } from './coverageDownsampling.ts'
-
-describe('niceNum', () => {
-  test('returns 1 for zero or negative', () => {
-    expect(niceNum(0)).toBe(1)
-    expect(niceNum(-5)).toBe(1)
-  })
-
-  test('returns nice numbers', () => {
-    expect(niceNum(7)).toBe(10)
-    expect(niceNum(13)).toBe(20)
-    expect(niceNum(45)).toBe(50)
-    expect(niceNum(99)).toBe(100)
-    expect(niceNum(350)).toBe(500)
-    expect(niceNum(1500)).toBe(2000)
-  })
-})
 
 describe('computeCoverageTicks', () => {
   test('produces ticks with correct structure', () => {
     const result = computeCoverageTicks(100, 150)
     expect(result.maxDepth).toBe(100)
-    expect(result.nicedMax).toBe(100)
     expect(result.ticks.length).toBeGreaterThanOrEqual(2)
     expect(result.yTop).toBe(5)
     expect(result.yBottom).toBe(145)
@@ -177,17 +158,6 @@ describe('computeVisibleMaxDepth', () => {
   })
 })
 
-describe('computeDepthScale', () => {
-  test('returns 1 for zero depth', () => {
-    expect(computeDepthScale(0)).toBe(1)
-  })
-
-  test('returns 1 for all depths', () => {
-    expect(computeDepthScale(7)).toBe(1)
-    expect(computeDepthScale(100)).toBe(1)
-    expect(computeDepthScale(45)).toBe(1)
-  })
-})
 
 describe('countSnpsAtPosition', () => {
   test('returns empty object when no mismatches at position', () => {

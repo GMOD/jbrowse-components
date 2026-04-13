@@ -299,7 +299,6 @@ function drawCoverage(
     return
   }
 
-  const nicedMax = coverageMaxDepth
   const pxPerBp = 1 / bpPerPx
 
   for (let i = 0; i < numCoverageBins; i++) {
@@ -317,15 +316,12 @@ function drawCoverage(
 
     const x = (binStart - block.start) / bpPerPx + blockScreenX
     const w = Math.max(pxPerBp, 1)
-    const normalizedDepth = depth / nicedMax
-    const barHeight = normalizedDepth * effectiveHeight
+    const barHeight = (depth / coverageMaxDepth) * effectiveHeight
     const y = coverageHeight - offset - barHeight
 
     ctx.fillStyle = coverageColor
     ctx.fillRect(x, y, w, barHeight)
   }
-
-  const depthScale = coverageMaxDepth / nicedMax
 
   if (showModifications && data.numModCovSegments > 0) {
     for (let i = 0; i < data.numModCovSegments; i++) {
@@ -344,8 +340,8 @@ function drawCoverage(
       const x = (modStart - block.start) / bpPerPx + blockScreenX
       const w = Math.max(pxPerBp, 1)
       const barY =
-        coverageHeight - offset - (yOff + segH) * depthScale * effectiveHeight
-      const barH = segH * depthScale * effectiveHeight
+        coverageHeight - offset - (yOff + segH) * effectiveHeight
+      const barH = segH * effectiveHeight
 
       ctx.globalAlpha = a
       ctx.fillStyle = `rgb(${r},${g},${b})`
@@ -379,8 +375,8 @@ function drawCoverage(
       const barY =
         coverageHeight -
         offset -
-        (yOffset + segHeight) * depthScale * effectiveHeight
-      const barH = segHeight * depthScale * effectiveHeight
+        (yOffset + segHeight) * effectiveHeight
+      const barH = segHeight * effectiveHeight
 
       const baseName = baseNames[colorType - 1]
       ctx.fillStyle = baseName

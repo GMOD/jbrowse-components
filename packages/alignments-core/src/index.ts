@@ -79,14 +79,12 @@ export {
   YSCALEBAR_LABEL_OFFSET,
   buildCoverageTooltipBin,
   computeCoverageTicks,
-  computeDepthScale,
   computeInsertionIndicators,
   computeSNPCoverage,
   computeVisibleMaxDepth,
   countSnpsAtPosition,
   downsampleMinMax,
   getGlobalMaxCoverageDepth,
-  niceNum,
 } from './coverageDownsampling.ts'
 export type {
   CoverageArrays,

@@ -228,7 +228,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       bpRangeX: [REGION_START, REGION_START + 20] as [number, number],
       rangeY: [0, 200] as [number, number],
       colorScheme: 0,
-      coverageNicedMax: 50,
+      coverageMaxDepth: 50,
     } as unknown as RenderState)
 
     // Coverage bins should produce rectangles
@@ -262,31 +262,17 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
   })
 
   it('drawCoverageBins Y mapping matches GPU shader formula', () => {
-    const maxDepth = 73
     const coverageHeight = 100
-    const normalizedDepth = 0.6 // depth/maxDepth
+    const normalizedDepth = 0.6 // depth/maxDepth, already in [0,1]
 
-    // Shared coverageLayout (used by drawCoverageBins)
-    const { depthScale, effectiveH, bottom } = coverageLayout(
-      maxDepth,
-      coverageHeight,
-    )
+    const { effectiveH, bottom } = coverageLayout(coverageHeight)
 
-    // drawCoverageBins computes: bandTop = bottom - depth * depthScale * effectiveH
-    const sharedTop = bottom - normalizedDepth * depthScale * effectiveH
-    const sharedBottom = bottom
-    const sharedBarH = sharedBottom - sharedTop
+    // drawCoverageBins: bandTop = bottom - normalizedDepth * effectiveH
+    const sharedTop = bottom - normalizedDepth * effectiveH
+    const sharedBarH = bottom - sharedTop
 
-    // GPU shader computes: bar_top = cov_bottom + (depth * depth_scale * eff_height / canvas_height) * 2.0
-    // where cov_bottom = 1.0 - ((covH - covYOffset) / canvasH) * 2.0
-    // Converting from clip space to pixel space:
-    // pixel_bar_top = (1.0 - clip_bar_top) * canvasH / 2.0
-    //               = (1.0 - cov_bottom - (depth * depth_scale * eff_height / canvasH) * 2.0) * canvasH / 2.0
-    // Since canvas2D works in CSS pixels and the coverage area starts at y=0:
-    // GPU effective: bar_top_px = covYOffset + effectiveH - depth * depthScale * effectiveH
-    //              = bottom - depth * depthScale * effectiveH
-    // This is exactly what the shared function computes
-    const gpuBarTopPx = bottom - normalizedDepth * depthScale * effectiveH
+    // GPU shader: same formula in clip space, converted to pixels
+    const gpuBarTopPx = bottom - normalizedDepth * effectiveH
     const gpuBarH = bottom - gpuBarTopPx
 
     expect(sharedTop).toBeCloseTo(gpuBarTopPx)

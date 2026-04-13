@@ -234,10 +234,7 @@ function renderCoverageForSvg(
     return
   }
 
-  const { depthScale, effectiveH, bottom } = coverageLayout(
-    coverageMaxDepth,
-    coverageHeight,
-  )
+  const { effectiveH, bottom } = coverageLayout(coverageHeight)
   const ds = downsampleMinMax(
     coverageDepths,
     coverageStartOffset,
@@ -255,8 +252,8 @@ function renderCoverageForSvg(
     if (px === undefined || px2 === undefined || px > width || px2 < 0) {
       continue
     }
-    const bandBottom = bottom - ds.mins[i]! * depthScale * effectiveH
-    const bandTop = bottom - ds.maxs[i]! * depthScale * effectiveH
+    const bandBottom = bottom - ds.mins[i]! * effectiveH
+    const bandTop = bottom - ds.maxs[i]! * effectiveH
     ctx.fillRect(px, bandTop, Math.max(px2 - px, 1), bandBottom - bandTop)
   }
 
@@ -267,10 +264,8 @@ function renderCoverageForSvg(
       if (px === undefined || px2 === undefined || px > width || px2 < 0) {
         continue
       }
-      const segBottom =
-        bottom - coverage.snpYOffsets[i]! * depthScale * effectiveH
-      const segTop =
-        segBottom - coverage.snpHeights[i]! * depthScale * effectiveH
+      const segBottom = bottom - coverage.snpYOffsets[i]! * effectiveH
+      const segTop = segBottom - coverage.snpHeights[i]! * effectiveH
       ctx.fillStyle = snpColorForType(coverage.snpColorTypes[i]!, snpColors)
       ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segBottom - segTop)
     }
