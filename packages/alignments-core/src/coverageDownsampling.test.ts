@@ -182,10 +182,10 @@ describe('computeDepthScale', () => {
     expect(computeDepthScale(0)).toBe(1)
   })
 
-  test('returns ratio of maxDepth to niced max', () => {
-    expect(computeDepthScale(7)).toBeCloseTo(7 / 10)
+  test('returns 1 for all depths', () => {
+    expect(computeDepthScale(7)).toBe(1)
     expect(computeDepthScale(100)).toBe(1)
-    expect(computeDepthScale(45)).toBeCloseTo(45 / 50)
+    expect(computeDepthScale(45)).toBe(1)
   })
 })
 

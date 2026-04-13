@@ -32,7 +32,7 @@ export function computeCoverageTicks(
   maxDepth: number,
   coverageHeight: number,
 ): CoverageTicks {
-  const nicedMax = niceNum(maxDepth)
+  const nicedMax = maxDepth
   const effectiveHeight = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
 
   const numTicks = coverageHeight < 70 ? 2 : 4
@@ -57,9 +57,8 @@ export function computeCoverageTicks(
   }
 }
 
-export function computeDepthScale(maxDepth: number) {
-  const nicedMax = maxDepth > 0 ? niceNum(maxDepth) : 1
-  return maxDepth > 0 ? maxDepth / nicedMax : 1
+export function computeDepthScale(_maxDepth: number) {
+  return 1
 }
 
 export interface CoverageRegion {

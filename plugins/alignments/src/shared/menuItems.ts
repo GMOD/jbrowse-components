@@ -151,7 +151,7 @@ export function getModificationsSubMenu(
             ? [
                 { type: 'divider' as const },
                 {
-                  label: 'All reference CpGs',
+                  label: 'All read CpGs',
                   type: 'radio' as const,
                   checked: model.colorBy?.type === 'methylation',
                   onClick: () => {

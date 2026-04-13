@@ -40,7 +40,7 @@ describe('coverageLayout', () => {
 
   it('handles non-nice max depth', () => {
     const layout = coverageLayout(73, 50)
-    expect(layout.depthScale).toBeCloseTo(73 / 100) // niceNum(73)=100
+    expect(layout.depthScale).toBe(1)
   })
 })
 
