@@ -245,7 +245,8 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
         }
       }
     }
-    // always 1 until per-region coverage scaling is implemented (like GpuAlignmentsRenderer: region.maxDepth / globalMaxDepth)
+    // depthScale multiplies coverage bar heights in the shader; 1 = no cross-region normalization
+    // (should eventually be region.maxDepth / globalMaxDepth, as GpuAlignmentsRenderer does)
     const depthScale = 1
 
     this.hal.beginFrame(BG_COLOR_GL, BG_COLOR_GL, BG_COLOR_GL)
