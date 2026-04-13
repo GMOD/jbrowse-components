@@ -177,16 +177,29 @@ const VariantComponent = observer(function VariantComponent({
       return
     }
 
+    const uploadedKeys = new Map<number, string>()
+
     return autorun(() => {
       const cellData = model.cellData
       if (!cellData) {
         renderer.pruneRegions([])
+        uploadedKeys.clear()
       } else {
         const perRegion = cellData.perRegionCellData
         for (const [regionNumStr, regionData] of Object.entries(perRegion)) {
-          renderer.uploadRegion(Number(regionNumStr), regionData)
+          const regionNum = Number(regionNumStr)
+          if (uploadedKeys.get(regionNum) !== regionData.inputKey) {
+            renderer.uploadRegion(regionNum, regionData)
+            uploadedKeys.set(regionNum, regionData.inputKey)
+          }
         }
-        renderer.pruneRegions(Object.keys(perRegion).map(Number))
+        const liveNums = new Set(Object.keys(perRegion).map(Number))
+        renderer.pruneRegions([...liveNums])
+        for (const regionNum of uploadedKeys.keys()) {
+          if (!liveNums.has(regionNum)) {
+            uploadedKeys.delete(regionNum)
+          }
+        }
       }
 
       // SYNC across all hook-driven GPU displays (wiggle, multi-wiggle,

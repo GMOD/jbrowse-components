@@ -42,6 +42,7 @@ export interface VariantCellData {
   featureGenotypeMap: Record<string, FeatureGenotypeInfo>
   flatbushData: ArrayBuffer
   flatbushItems: FlatbushItem[]
+  inputKey: string
 }
 
 function getShapeType(featureType: string, featureStrand?: number) {
@@ -113,12 +114,14 @@ export function computeVariantCells({
   renderingMode,
   referenceDrawingMode,
   genotypesCache,
+  inputKey,
 }: {
   mafs: MAFFilteredFeature[]
   sources: Source[]
   renderingMode: string
   referenceDrawingMode: string
   genotypesCache: Map<string, Record<string, string>>
+  inputKey: string
 }): VariantCellData {
   const getCachedRGBA = createCachedRGBA()
 
@@ -495,5 +498,6 @@ export function computeVariantCells({
     featureGenotypeMap,
     flatbushData: flatbush.data,
     flatbushItems: outFlatbushItems,
+    inputKey,
   }
 }

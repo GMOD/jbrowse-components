@@ -261,16 +261,19 @@ export async function executeVariantCellData({
         if (perRegionMafs) {
           const result = {} as Record<number, VariantCellData>
           for (const [regionNum, regionMafs] of perRegionMafs) {
+            const inputKey = `${regionMafs.length}:${regionMafs[0]?.feature.id() ?? ''}:${regionMafs.at(-1)?.feature.id() ?? ''}`
             result[regionNum] = computeVariantCells({
               mafs: regionMafs,
               sources,
               renderingMode,
               referenceDrawingMode: referenceDrawingMode ?? 'skip',
               genotypesCache,
+              inputKey,
             })
           }
           return result
         }
+        const inputKey = `${mafs.length}:${mafs[0]?.feature.id() ?? ''}:${mafs.at(-1)?.feature.id() ?? ''}`
         return {
           0: computeVariantCells({
             mafs,
@@ -278,6 +281,7 @@ export async function executeVariantCellData({
             renderingMode,
             referenceDrawingMode: referenceDrawingMode ?? 'skip',
             genotypesCache,
+            inputKey,
           }),
         }
       },
