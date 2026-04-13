@@ -270,16 +270,21 @@ const SessionLoader = types
     },
   }))
   .actions(self => ({
+    async loadPluginsFromDefinitions(plugins: PluginDefinition[]) {
+      const pluginLoader = new PluginLoader(plugins, {
+        fetchESM: url => import(/* webpackIgnore:true */ url),
+      })
+      pluginLoader.installGlobalReExports(window)
+      return pluginLoader.load(window.location.href)
+    },
     /**
      * #action
      */
     async fetchPlugins(config: { plugins?: PluginDefinition[] }) {
       try {
-        const pluginLoader = new PluginLoader(config.plugins || [], {
-          fetchESM: url => import(/* webpackIgnore:true */ url),
-        })
-        pluginLoader.installGlobalReExports(window)
-        const runtimePlugins = await pluginLoader.load(window.location.href)
+        const runtimePlugins = await this.loadPluginsFromDefinitions(
+          config.plugins || [],
+        )
         self.setRuntimePlugins([...runtimePlugins])
       } catch (e) {
         console.error(e)
@@ -291,14 +296,13 @@ const SessionLoader = types
      */
     async fetchSessionPlugins(snap: { sessionPlugins?: PluginDefinition[] }) {
       try {
-        const pluginLoader = new PluginLoader(snap.sessionPlugins || [], {
-          fetchESM: url => import(/* webpackIgnore:true */ url),
-        }).installGlobalReExports(window)
-        const plugins = await pluginLoader.load(window.location.href)
+        const plugins = await this.loadPluginsFromDefinitions(
+          snap.sessionPlugins || [],
+        )
         self.setSessionPlugins([...plugins])
       } catch (e) {
         console.error(e)
-        self.setConfigError(e)
+        self.setSessionError(e)
       }
     },
 
@@ -324,7 +328,7 @@ const SessionLoader = types
         }
       } catch (e) {
         console.error(e)
-        self.setConfigError(e)
+        self.setSessionError(e)
       }
     },
     /**

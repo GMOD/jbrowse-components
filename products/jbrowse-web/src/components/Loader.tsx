@@ -191,7 +191,11 @@ const Renderer = observer(function Renderer({
       </Suspense>
     )
   } else if (sessionTriaged) {
-    return <SessionTriaged loader={loader} sessionTriaged={sessionTriaged} />
+    return (
+      <Suspense fallback={null}>
+        <SessionTriaged loader={loader} sessionTriaged={sessionTriaged} />
+      </Suspense>
+    )
   } else if (pluginManager) {
     return <JBrowse pluginManager={pluginManager} />
   } else {

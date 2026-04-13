@@ -17,7 +17,7 @@ function generateUID(length: number) {
 function getErrorMsg(err: string) {
   try {
     const obj = JSON.parse(err)
-    return obj.message
+    return obj.message ?? err
   } catch (e) {
     return err
   }
