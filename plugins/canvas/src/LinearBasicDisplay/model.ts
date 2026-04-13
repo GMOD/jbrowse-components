@@ -488,6 +488,10 @@ export default function stateModelFactory(
         self.setOverride('displayMode', value)
       },
 
+      setCompact(compact: boolean) {
+        self.setOverride('displayMode', compact ? 'compact' : 'normal')
+      },
+
       setShowOnlyGenes(value: boolean) {
         self.showOnlyGenes = value
       },
@@ -989,6 +993,16 @@ export default function stateModelFactory(
                 checked: self.showOnlyGenes,
                 onClick: () => {
                   self.setShowOnlyGenes(!self.showOnlyGenes)
+                },
+              },
+              {
+                label: 'Show chevrons',
+                type: 'checkbox',
+                checked: self.displayDirectionalChevrons,
+                onClick: () => {
+                  self.setDisplayDirectionalChevrons(
+                    !self.displayDirectionalChevrons,
+                  )
                 },
               },
             ],
