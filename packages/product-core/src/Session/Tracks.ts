@@ -45,6 +45,10 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
        * Map of trackId → config for all tracks, assemblies, and connections.
        * MobX caches this until any dependency changes.
        */
+      getTracksById(): Record<string, AnyConfigurationModel> {
+        return this.tracksById
+      },
+
       get tracksById(): Record<string, AnyConfigurationModel> {
         const temporaryAssemblies =
           'temporaryAssemblies' in self

@@ -9,6 +9,7 @@ import {
 } from './menus.ts'
 
 import type { Menu } from './menus.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 function makeMenus(): Menu[] {
   return []
@@ -60,14 +61,14 @@ describe('appendToMenu', () => {
   it('appends a menu item to an existing menu', () => {
     const menus = makeMenus()
     appendMenu({ menus, menuName: 'File' })
-    appendToMenu({ menus, menuName: 'File', menuItem: { label: 'Open' } })
+    appendToMenu({ menus, menuName: 'File', menuItem: { label: 'Open' } as unknown as MenuItem })
     expect(menus[0]!.menuItems).toHaveLength(1)
     expect(menus[0]!.menuItems[0]).toMatchObject({ label: 'Open' })
   })
 
   it('creates the menu if it does not exist', () => {
     const menus = makeMenus()
-    appendToMenu({ menus, menuName: 'File', menuItem: { label: 'Open' } })
+    appendToMenu({ menus, menuName: 'File', menuItem: { label: 'Open' } as unknown as MenuItem })
     expect(menus).toHaveLength(1)
     expect(menus[0]!.label).toBe('File')
     expect(menus[0]!.menuItems[0]).toMatchObject({ label: 'Open' })
@@ -76,8 +77,8 @@ describe('appendToMenu', () => {
   it('appends multiple items in order', () => {
     const menus = makeMenus()
     appendMenu({ menus, menuName: 'File' })
-    appendToMenu({ menus, menuName: 'File', menuItem: { label: 'Open' } })
-    appendToMenu({ menus, menuName: 'File', menuItem: { label: 'Save' } })
+    appendToMenu({ menus, menuName: 'File', menuItem: { label: 'Open' } as unknown as MenuItem })
+    appendToMenu({ menus, menuName: 'File', menuItem: { label: 'Save' } as unknown as MenuItem })
     const labels = menus[0]!.menuItems.map(i => ('label' in i ? i.label : ''))
     expect(labels).toEqual(['Open', 'Save'])
   })
@@ -87,12 +88,12 @@ describe('insertInMenu', () => {
   it('inserts a menu item at a specific position', () => {
     const menus = makeMenus()
     appendMenu({ menus, menuName: 'File' })
-    appendToMenu({ menus, menuName: 'File', menuItem: { label: 'Open' } })
-    appendToMenu({ menus, menuName: 'File', menuItem: { label: 'Close' } })
+    appendToMenu({ menus, menuName: 'File', menuItem: { label: 'Open' } as unknown as MenuItem })
+    appendToMenu({ menus, menuName: 'File', menuItem: { label: 'Close' } as unknown as MenuItem })
     insertInMenu({
       menus,
       menuName: 'File',
-      menuItem: { label: 'Save' },
+      menuItem: { label: 'Save' } as unknown as MenuItem,
       position: 1,
     })
     const labels = menus[0]!.menuItems.map(i => ('label' in i ? i.label : ''))
@@ -102,12 +103,12 @@ describe('insertInMenu', () => {
   it('inserts at negative position', () => {
     const menus = makeMenus()
     appendMenu({ menus, menuName: 'File' })
-    appendToMenu({ menus, menuName: 'File', menuItem: { label: 'Open' } })
-    appendToMenu({ menus, menuName: 'File', menuItem: { label: 'Close' } })
+    appendToMenu({ menus, menuName: 'File', menuItem: { label: 'Open' } as unknown as MenuItem })
+    appendToMenu({ menus, menuName: 'File', menuItem: { label: 'Close' } as unknown as MenuItem })
     insertInMenu({
       menus,
       menuName: 'File',
-      menuItem: { label: 'Save' },
+      menuItem: { label: 'Save' } as unknown as MenuItem,
       position: -1,
     })
     const labels = menus[0]!.menuItems.map(i => ('label' in i ? i.label : ''))
@@ -122,7 +123,7 @@ describe('appendToSubMenu', () => {
     appendToSubMenu({
       menus,
       menuPath: ['File', 'Import'],
-      menuItem: { label: 'From URL' },
+      menuItem: { label: 'From URL' } as unknown as MenuItem,
     })
     const fileMenu = menus[0]!
     const importEntry = fileMenu.menuItems.find(
@@ -137,7 +138,7 @@ describe('appendToSubMenu', () => {
     appendToSubMenu({
       menus,
       menuPath: ['File', 'Import'],
-      menuItem: { label: 'From URL' },
+      menuItem: { label: 'From URL' } as unknown as MenuItem,
     })
     expect(menus[0]!.label).toBe('File')
   })
@@ -145,12 +146,12 @@ describe('appendToSubMenu', () => {
   it('throws when path segment is not a subMenu', () => {
     const menus = makeMenus()
     appendMenu({ menus, menuName: 'File' })
-    appendToMenu({ menus, menuName: 'File', menuItem: { label: 'Open' } })
+    appendToMenu({ menus, menuName: 'File', menuItem: { label: 'Open' } as unknown as MenuItem })
     expect(() => {
       appendToSubMenu({
         menus,
         menuPath: ['File', 'Open', 'Nested'],
-        menuItem: { label: 'Item' },
+        menuItem: { label: 'Item' } as unknown as MenuItem,
       })
     }).toThrow()
   })
@@ -163,17 +164,17 @@ describe('insertInSubMenu', () => {
     appendToSubMenu({
       menus,
       menuPath: ['File', 'Import'],
-      menuItem: { label: 'From File' },
+      menuItem: { label: 'From File' } as unknown as MenuItem,
     })
     appendToSubMenu({
       menus,
       menuPath: ['File', 'Import'],
-      menuItem: { label: 'From HTTPS' },
+      menuItem: { label: 'From HTTPS' } as unknown as MenuItem,
     })
     insertInSubMenu({
       menus,
       menuPath: ['File', 'Import'],
-      menuItem: { label: 'From URL' },
+      menuItem: { label: 'From URL' } as unknown as MenuItem,
       position: 1,
     })
     const importEntry = menus[0]!.menuItems.find(
@@ -216,7 +217,7 @@ describe('processMutableMenuActions', () => {
   it('processes appendToMenu action', () => {
     const menus: Menu[] = [{ label: 'File', menuItems: [] }]
     const result = processMutableMenuActions(menus, [
-      { type: 'appendToMenu', menuName: 'File', menuItem: { label: 'Open' } },
+      { type: 'appendToMenu', menuName: 'File', menuItem: { label: 'Open' } as unknown as MenuItem },
     ])
     expect(result[0]!.menuItems[0]).toMatchObject({ label: 'Open' })
   })
@@ -225,14 +226,14 @@ describe('processMutableMenuActions', () => {
     const menus: Menu[] = [
       {
         label: 'File',
-        menuItems: [{ label: 'Open' }, { label: 'Close' }],
+        menuItems: [{ label: 'Open' }, { label: 'Close' }] as unknown as MenuItem[],
       },
     ]
     const result = processMutableMenuActions(menus, [
       {
         type: 'insertInMenu',
         menuName: 'File',
-        menuItem: { label: 'Save' },
+        menuItem: { label: 'Save' } as unknown as MenuItem,
         position: 1,
       },
     ])
@@ -245,7 +246,7 @@ describe('processMutableMenuActions', () => {
     const result = processMutableMenuActions(menus, [
       { type: 'appendMenu', menuName: 'File' },
       { type: 'appendMenu', menuName: 'Edit' },
-      { type: 'appendToMenu', menuName: 'File', menuItem: { label: 'Open' } },
+      { type: 'appendToMenu', menuName: 'File', menuItem: { label: 'Open' } as unknown as MenuItem },
     ])
     expect(result.map(m => m.label)).toEqual(['File', 'Edit'])
     expect(result[0]!.menuItems[0]).toMatchObject({ label: 'Open' })
