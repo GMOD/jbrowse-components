@@ -343,11 +343,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Square view',
               onClick: self.squareView,
-              description:
-                'Makes both views use the same zoom level, adjusting to the average of each',
               icon: CropFreeIcon,
-              helpText:
-                'Square view synchronizes the zoom levels of both genome views by calculating the average zoom level and applying it to both panels. This helps ensure features are displayed at comparable scales, making it easier to compare syntenic regions visually.',
             },
             {
               label: 'Re-order chromosomes',
@@ -361,34 +357,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 ])
               },
               icon: ShuffleIcon,
-              description:
-                "Reorder and reorient query regions to minimize crossing lines, also known as 'diagonalizing'",
-              helpText:
-                "This operation 'diagonalizes' the data which algorithmically reorders and reorients chromosomes to minimize crossing synteny lines, creating a more diagonal pattern. This makes it easier to identify large-scale genomic rearrangements, inversions, and translocations. The process may take a few moments for large genomes.",
-            },
-            {
-              label: 'Link views',
-              type: 'checkbox',
-              checked: self.linkViews,
-              icon: LinkIcon,
-              onClick: () => {
-                self.setLinkViews(!self.linkViews)
-              },
-              helpText:
-                'When linked, panning and zooming in one genome view will automatically adjust the other view to maintain the correspondence shown by synteny lines. This makes it easier to explore syntenic regions interactively. Unlink views to navigate each genome independently.',
-            },
-            {
-              label: 'Export SVG',
-              icon: PhotoCameraIcon,
-              onClick: (): void => {
-                getSession(self).queueDialog(handleClose => [
-                  ExportSvgDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
             },
             ...(self.levels.length > 1
               ? [
@@ -458,6 +426,28 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   },
                 ]
               : []),
+            {
+              label: 'Link views',
+              type: 'checkbox',
+              checked: self.linkViews,
+              icon: LinkIcon,
+              onClick: () => {
+                self.setLinkViews(!self.linkViews)
+              },
+            },
+            {
+              label: 'Export SVG',
+              icon: PhotoCameraIcon,
+              onClick: (): void => {
+                getSession(self).queueDialog(handleClose => [
+                  ExportSvgDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
+            },
           ]
         },
         /**

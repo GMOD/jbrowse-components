@@ -106,20 +106,25 @@ const Header = observer(function Header({
                 },
               },
               {
-                label: 'Search box orientation - Side-by-side',
-                type: 'radio' as const,
-                checked: sideBySide,
-                onClick: () => {
-                  setSideBySide(true)
-                },
-              },
-              {
-                label: 'Search box orientation - Vertical',
-                type: 'radio' as const,
-                checked: !sideBySide,
-                onClick: () => {
-                  setSideBySide(false)
-                },
+                label: 'Search box orientation',
+                subMenu: [
+                  {
+                    label: 'Side-by-side',
+                    type: 'radio' as const,
+                    checked: sideBySide,
+                    onClick: () => {
+                      setSideBySide(true)
+                    },
+                  },
+                  {
+                    label: 'Vertical',
+                    type: 'radio' as const,
+                    checked: !sideBySide,
+                    onClick: () => {
+                      setSideBySide(false)
+                    },
+                  },
+                ],
               },
             ],
           },
