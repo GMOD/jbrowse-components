@@ -537,12 +537,7 @@ const SessionLoader = types
      * #action
      */
     decodeHubSpec() {
-      const { hubURL, sessionTracksParsed: sessionTracks } = self
-
-      self.hubSpec = {
-        sessionTracks,
-        hubURL,
-      }
+      self.hubSpec = { hubURL: self.hubURL }
     },
     /**
      * #action

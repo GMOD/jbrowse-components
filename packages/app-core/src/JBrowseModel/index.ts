@@ -84,7 +84,7 @@ export function JBrowseModelF({
       addTrackConf(trackConf: { trackId: string; type: string }) {
         const { type } = trackConf
         if (!type) {
-          throw new Error(`unknown track type ${type}`)
+          throw new Error(`track type not specified for "${trackConf.trackId}"`)
         }
         self.tracks = [...self.tracks, trackConf]
         return self.tracks.at(-1)
@@ -95,7 +95,7 @@ export function JBrowseModelF({
       addConnectionConf(connectionConf: AnyConfigurationModel) {
         const { type } = connectionConf
         if (!type) {
-          throw new Error(`unknown connection type ${type}`)
+          throw new Error('connection type not specified')
         }
         const length = self.connections.push(connectionConf)
         return self.connections[length - 1]
@@ -160,7 +160,7 @@ export function JBrowseModelF({
             : toJS(sessionConf)
 
         if (!newDefault.name) {
-          throw new Error(`unable to set default session to ${newDefault.name}`)
+          throw new Error('default session must have a name')
         }
 
         self.defaultSession = cast(newDefault)
@@ -171,7 +171,7 @@ export function JBrowseModelF({
       addInternetAccountConf(internetAccountConf: AnyConfigurationModel) {
         const { type } = internetAccountConf
         if (!type) {
-          throw new Error(`unknown internetAccount type ${type}`)
+          throw new Error('internet account type not specified')
         }
         const length = self.internetAccounts.push(internetAccountConf)
         return self.internetAccounts[length - 1]

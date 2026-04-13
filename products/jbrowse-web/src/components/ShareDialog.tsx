@@ -1,4 +1,4 @@
-import { lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import {
@@ -160,13 +160,15 @@ const ShareDialog = observer(function ShareDialog({
         </DialogActions>
       </Dialog>
 
-      <SettingsDialog
-        open={settingsDialogOpen}
-        currentSetting={currentSetting}
-        onClose={() => {
-          setSettingsDialogOpen(false)
-        }}
-      />
+      <Suspense fallback={null}>
+        <SettingsDialog
+          open={settingsDialogOpen}
+          currentSetting={currentSetting}
+          onClose={() => {
+            setSettingsDialogOpen(false)
+          }}
+        />
+      </Suspense>
     </>
   )
 })

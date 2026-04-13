@@ -17,10 +17,7 @@ import { isSessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type {
-  IconButtonProps as IconButtonPropsType,
-  SvgIconProps,
-} from '@mui/material'
+import type { SvgIconProps } from '@mui/material'
 
 function getPanelViewCount(session: unknown, viewId: string) {
   if (!isSessionWithDockviewLayout(session)) {
@@ -39,7 +36,6 @@ const ViewMenu = observer(function ViewMenu({
   IconProps,
 }: {
   model: IBaseViewModel
-  IconButtonProps?: IconButtonPropsType
   IconProps: SvgIconProps
 }) {
   const session = getSession(model) as AbstractSessionModel & {

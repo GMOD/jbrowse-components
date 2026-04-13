@@ -385,14 +385,11 @@ export default function RootModel({
        */
       async favoriteSavedSession(id: string) {
         if (self.sessionDB) {
-          const ret = self.savedSessionMetadata!.find(f => f.id === id)
+          const ret = self.savedSessionMetadata?.find(f => f.id === id)
           if (ret) {
             await self.sessionDB.put(
               'metadata',
-              {
-                ...ret,
-                favorite: true,
-              },
+              { ...ret, favorite: true },
               ret.id,
             )
             await self.fetchSessionMetadata()
@@ -404,18 +401,15 @@ export default function RootModel({
        */
       async unfavoriteSavedSession(id: string) {
         if (self.sessionDB) {
-          const ret = self.savedSessionMetadata!.find(f => f.id === id)
+          const ret = self.savedSessionMetadata?.find(f => f.id === id)
           if (ret) {
             await self.sessionDB.put(
               'metadata',
-              {
-                ...ret,
-                favorite: false,
-              },
+              { ...ret, favorite: false },
               ret.id,
             )
+            await self.fetchSessionMetadata()
           }
-          await self.fetchSessionMetadata()
         }
       },
       /**
