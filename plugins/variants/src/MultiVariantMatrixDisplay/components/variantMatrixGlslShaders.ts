@@ -34,12 +34,12 @@ void main() {
   }
   float clip_x = mix(cx1, cx2, lx) * 2.0 - 1.0;
 
+  // fractional y keeps subpixel rows smooth (no rounding = no discrete jumps
+  // during resize); max(...,1) is the minimum quad height to avoid GPU-culled
+  // zero-height geometry while preserving draw order for variant priority
   float y_top_px = float(a_row_index) * row_height - scroll_top;
   float y_top = y_top_px;
-  float y_bot = y_top_px + row_height;
-  if (y_bot - y_top < 1.0) {
-    y_bot = y_top + 1.0;
-  }
+  float y_bot = y_top_px + max(row_height, 1.0);
   float px_to_clip_y = 2.0 / canvas_height;
   float clip_y = mix(1.0 - y_bot * px_to_clip_y, 1.0 - y_top * px_to_clip_y, ly);
 

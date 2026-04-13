@@ -92,12 +92,12 @@ fn vs_main(
     cx2 = cx1 + 2.0 * px_size;
   }
 
+  // fractional y keeps subpixel rows smooth (no rounding = no discrete jumps
+  // during resize); max(...,1) is the minimum quad height to avoid GPU-culled
+  // zero-height geometry while preserving draw order for variant priority
   let y_top_px = f32(inst.row_index) * u.row_height - u.scroll_top;
-  var y_top = y_top_px;
-  var y_bot = y_top_px + u.row_height;
-  if y_bot - y_top < 1.0 {
-    y_bot = y_top + 1.0;
-  }
+  let y_top = y_top_px;
+  let y_bot = y_top_px + max(u.row_height, 1.0);
   let px_to_clip_y = 2.0 / u.canvas_height;
   let cy_top = 1.0 - y_top * px_to_clip_y;
   let cy_bot = 1.0 - y_bot * px_to_clip_y;
