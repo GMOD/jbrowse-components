@@ -141,7 +141,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
   model: DotplotViewModel
 }) {
   const { classes } = useStyles()
-  const { hview, vview, wheelMode, cursorMode } = model
+  const { hview, vview, cursorMode } = model
 
   // Mouse coordinate tracking
   const {
@@ -175,7 +175,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
   } = useCursorMode(cursorMode)
 
   // Event handlers
-  useWheelHandler(ref, wheelMode, hview, vview, mousecurr, rootRect.height)
+  useWheelHandler(ref, hview, vview, mousecurr, rootRect.height)
   useMouseMoveHandler(
     mousecurrClient,
     mousedownClient,

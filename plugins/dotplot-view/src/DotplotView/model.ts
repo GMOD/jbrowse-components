@@ -8,7 +8,6 @@ import {
   getSession,
   getTickDisplayStr,
   isSessionModelWithWidgets,
-  localStorageGetBoolean,
   localStorageGetItem,
   max,
   measureText,
@@ -52,8 +51,6 @@ const ReturnToImportFormDialog = lazy(
 type Coord = [number, number]
 
 const LS_CURSOR_MODE = 'dotplot-cursorMode'
-const LS_SHOW_PAN_BUTTONS = 'dotplot-showPanbuttons'
-const LS_WHEEL_MODE = 'dotplot-wheelMode'
 
 // defaults for postProcessSnapshot filtering
 const defaultHeight = 600
@@ -189,11 +186,6 @@ export default function stateModelFactory(pm: PluginManager) {
       /**
        * #volatile
        */
-      showPanButtons: localStorageGetBoolean(LS_SHOW_PAN_BUTTONS, true),
-      /**
-       * #volatile
-       */
-      wheelMode: localStorageGetItem(LS_WHEEL_MODE) || 'zoom',
       /**
        * #volatile
        */
@@ -378,18 +370,6 @@ export default function stateModelFactory(pm: PluginManager) {
       },
       setCanvasDrawn(value: boolean) {
         self.canvasDrawn = value
-      },
-      /**
-       * #action
-       */
-      setShowPanButtons(flag: boolean) {
-        self.showPanButtons = flag
-      },
-      /**
-       * #action
-       */
-      setWheelMode(str: string) {
-        self.wheelMode = str
       },
       /**
        * #action
@@ -800,12 +780,8 @@ export default function stateModelFactory(pm: PluginManager) {
           self,
           autorun(
             function dotplotLocalStorageAutorun() {
-              const s = (s: unknown) => JSON.stringify(s)
-              const { showPanButtons, wheelMode, cursorMode } = self
               if (typeof localStorage !== 'undefined') {
-                localStorage.setItem(LS_SHOW_PAN_BUTTONS, s(showPanButtons))
-                localStorage.setItem(LS_CURSOR_MODE, cursorMode)
-                localStorage.setItem(LS_WHEEL_MODE, wheelMode)
+                localStorage.setItem(LS_CURSOR_MODE, self.cursorMode)
               }
             },
             { name: 'DotplotLocalStorage' },

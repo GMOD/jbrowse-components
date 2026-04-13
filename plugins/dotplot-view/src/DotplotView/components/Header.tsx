@@ -5,7 +5,6 @@ import { observer } from 'mobx-react'
 
 import DotplotControls from './DotplotControls.tsx'
 import DotplotWarnings from './DotplotWarnings.tsx'
-import PanButtons from './PanButtons.tsx'
 
 import type { DotplotViewModel } from '../model.ts'
 
@@ -32,7 +31,7 @@ const DotplotHeader = observer(function DotplotHeader({
   selection?: { width: number; height: number }
 }) {
   const { classes } = useStyles()
-  const { hview, vview, showPanButtons } = model
+  const { hview, vview } = model
   return (
     <div className={classes.headerBar}>
       <DotplotControls model={model} />
@@ -53,7 +52,6 @@ const DotplotHeader = observer(function DotplotHeader({
       ) : null}
       <div className={classes.spacer} />
       <DotplotWarnings model={model} />
-      {showPanButtons ? <PanButtons model={model} /> : null}
     </div>
   )
 })
