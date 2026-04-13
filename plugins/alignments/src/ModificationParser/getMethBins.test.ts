@@ -1,30 +1,32 @@
-import { SimpleFeature } from '@jbrowse/core/util'
-
 import { parseCigar2 } from '../MismatchParser/index.ts'
+import { getModProbabilities } from './getModProbabilities.ts'
 import { getMethBins } from './getMethBins.ts'
+import { getModPositions } from './getModPositions.ts'
 
-function makeFeature(
+import type { ParsedModData } from './getMethBins.ts'
+
+function makeModData(
+  seq: string,
+  mm: string,
+  ml: number[],
+  strand: 1 | -1 = 1,
+  cigar = `${seq.length}M`,
+): ParsedModData {
+  const fstrand = strand as -1 | 0 | 1
+  const cigarOps = parseCigar2(cigar)
+  const modifications = getModPositions(mm, seq, fstrand)
+  const probabilities = ml.map(v => v / 255)
+  return { modifications, probabilities, cigarOps, seq, fstrand, flen: seq.length }
+}
+
+function bins(
   seq: string,
   mm: string,
   ml: number[],
   strand: 1 | -1 = 1,
   cigar = `${seq.length}M`,
 ) {
-  return new SimpleFeature({
-    uniqueId: 'f1',
-    refName: 'chr1',
-    start: 100,
-    end: 100 + seq.length,
-    strand,
-    CIGAR: cigar,
-    seq,
-    tags: { MM: mm, ML: ml },
-  })
-}
-
-function bins(feature: ReturnType<typeof makeFeature>) {
-  const cigar = feature.get('CIGAR') as string
-  return getMethBins(feature, parseCigar2(cigar))
+  return getMethBins(makeModData(seq, mm, ml, strand, cigar))
 }
 
 describe('getMethBins CpG filtering', () => {

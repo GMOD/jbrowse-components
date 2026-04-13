@@ -1,7 +1,11 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { parseCigar2 } from '../MismatchParser/index.ts'
+import { getModProbabilities } from '../ModificationParser/getModProbabilities.ts'
+import { getModPositions } from '../ModificationParser/getModPositions.ts'
 import { extractMethylation } from './processFeatureAlignments.ts'
 
+import type { ParsedModData } from './processFeatureAlignments.ts'
 import type { ModificationEntry } from './webglRpcTypes.ts'
 
 // Sequence AACGATCGAA: Cs at read positions 2 and 6
@@ -31,13 +35,38 @@ function run(
   regionEnd: number,
 ) {
   const mods: ModificationEntry[] = []
+  const cigar = feature.get('CIGAR') as string | undefined
+  if (!cigar) {
+    return mods
+  }
+  const seq = feature.get('seq') as string | undefined
+  if (!seq) {
+    return mods
+  }
+  const tags = feature.get('tags') as { MM?: string; Mm?: string } | undefined
+  const mmTag = tags?.MM ?? tags?.Mm
+  if (!mmTag) {
+    return mods
+  }
+  const fstrand = feature.get('strand') as -1 | 0 | 1
+  const cigarOps = parseCigar2(cigar)
+  const modifications = getModPositions(mmTag, seq, fstrand)
+  const probabilities = getModProbabilities(feature)
+  const modData: ParsedModData = {
+    modifications,
+    probabilities,
+    cigarOps,
+    seq,
+    fstrand,
+    flen: feature.get('end') - feature.get('start'),
+  }
   extractMethylation(
-    feature,
     feature.id(),
     feature.get('start'),
-    feature.get('strand'),
+    fstrand,
     regionStart,
     regionEnd,
+    modData,
     mods,
   )
   return mods
@@ -159,8 +188,7 @@ describe('extractMethylation', () => {
       seq: 'AACGATCGAA',
       tags: { MM: 'C+m,0,0;', ML: [230, 50] },
     })
-    const mods: ModificationEntry[] = []
-    extractMethylation(feature, 'nocigar', 100, 1, 100, 110, mods)
+    const mods = run(feature, 100, 110)
     expect(mods.length).toBe(0)
   })
 })

@@ -260,7 +260,7 @@ export async function executeRenderChainData({
         )
       }
 
-      extractModifications(
+      const modData = extractModifications(
         feature,
         featureId,
         featureStart,
@@ -271,14 +271,14 @@ export async function executeRenderChainData({
         modificationsData,
       )
 
-      if (colorBy?.type === 'methylation') {
+      if (colorBy?.type === 'methylation' && modData) {
         extractMethylation(
-          feature,
           featureId,
           featureStart,
           strand,
           regionStart,
           Math.ceil(region.end),
+          modData,
           modificationsData,
         )
       }

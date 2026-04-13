@@ -19,6 +19,7 @@ import { parseCigar2 } from '../MismatchParser/index.ts'
 import { detectSimplexModifications } from '../ModificationParser/detectSimplexModifications.ts'
 import { getMethBins } from '../ModificationParser/getMethBins.ts'
 import { getModPositions } from '../ModificationParser/getModPositions.ts'
+import { getModProbabilities } from '../ModificationParser/getModProbabilities.ts'
 import { getColorForModification, getTagAlt } from '../util.ts'
 import {
   INTERBASE_HARDCLIP,
@@ -26,6 +27,7 @@ import {
   INTERBASE_SOFTCLIP,
 } from './types.ts'
 
+import type { ParsedModData } from '../ModificationParser/getMethBins.ts'
 import type { Mismatch } from './types.ts'
 import type {
   FeatureData,
@@ -39,6 +41,8 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
+
+export type { ParsedModData }
 
 type ColorRgbTuple = [number, number, number]
 
@@ -182,7 +186,7 @@ export function extractModifications(
   detectedModifications: Set<string>,
   detectedSimplexModifications: Set<string>,
   modificationsData: ModificationEntry[],
-) {
+): ParsedModData | undefined {
   const mmTag = getTagAlt(feature, 'MM', 'Mm') as string | undefined
   if (!mmTag) {
     return
@@ -191,17 +195,16 @@ export function extractModifications(
   if (!cigarString) {
     return
   }
-  const cigarOps = parseCigar2(cigarString)
-  const fstrand = feature.get('strand') as -1 | 0 | 1
   const seq = feature.get('seq') as string | undefined
-  const simplexSet = seq
-    ? detectSimplexModifications(getModPositions(mmTag, seq, fstrand))
-    : new Set<string>()
-
-  const mods = getMaxProbModAtEachPosition(feature, cigarOps)
-  if (!mods) {
+  if (!seq) {
     return
   }
+  const cigarOps = parseCigar2(cigarString)
+  const fstrand = feature.get('strand') as -1 | 0 | 1
+  const modifications = getModPositions(mmTag, seq, fstrand)
+  const probabilities = getModProbabilities(feature)
+  const simplexSet = detectSimplexModifications(modifications)
+  const mods = getMaxProbModAtEachPosition(modifications, probabilities, cigarOps, fstrand)
   const modThreshold = (colorBy?.modifications?.threshold ?? 10) / 100
   // eslint-disable-next-line unicorn/no-array-for-each
   mods.forEach(({ prob, type, base }, refPos) => {
@@ -215,7 +218,7 @@ export function extractModifications(
       modificationsData.push({
         featureId,
         position: featureStart + refPos,
-        base: base.toUpperCase(),
+        base,
         modType: type,
         isSimplex,
         strand: strand === -1 ? -1 : 1,
@@ -226,28 +229,31 @@ export function extractModifications(
       })
     }
   })
+  return {
+    modifications,
+    probabilities,
+    cigarOps,
+    seq,
+    fstrand,
+    flen: feature.get('end') - feature.get('start'),
+  }
 }
 
 export function extractMethylation(
-  feature: Feature,
   featureId: string,
   featureStart: number,
   strand: number,
   regionStart: number,
   regionEnd: number,
+  modData: ParsedModData,
   modificationsData: ModificationEntry[],
 ) {
-  const cigarString = feature.get('CIGAR') as string | undefined
-  if (!cigarString) {
-    return
-  }
-  const cigarOps = parseCigar2(cigarString)
   const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
-    getMethBins(feature, cigarOps)
+    getMethBins(modData)
 
   const methStrand = strand === -1 ? -1 : 1
   const iStart = Math.max(0, regionStart - featureStart)
-  const iEnd = Math.min(feature.get('end'), regionEnd) - featureStart
+  const iEnd = Math.min(modData.flen, regionEnd - featureStart)
 
   for (let i = iStart; i < iEnd; i++) {
     if (!methBins[i] && !hydroxyMethBins[i]) {

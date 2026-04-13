@@ -250,6 +250,7 @@ export function useAminoAcidOverlay(
               fontFamily: 'monospace',
               lineHeight: `${item.heightPx}px`,
               color: item.isStopOrNonTriplet ? 'red' : 'black',
+              textShadow: '0 0 1px white',
               pointerEvents: 'none',
               userSelect: 'none',
               whiteSpace: 'nowrap',
