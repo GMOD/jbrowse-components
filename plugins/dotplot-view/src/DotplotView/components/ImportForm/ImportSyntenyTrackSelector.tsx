@@ -35,22 +35,15 @@ const ImportSyntenyTrackSelector = observer(
     assembly2: string
   }) {
     const session = getSession(model)
-    const { tracks, sessionTracks } = session
-    const allTracks = [
-      ...tracks,
-      ...(sessionTracks || []),
-    ] as AnyConfigurationModel[]
-    const filteredTracks = allTracks.filter(t =>
+    const filteredTracks = session.tracks.filter(t =>
       isRelevantTrack(t, assembly2, assembly1),
     )
     const resetTrack = filteredTracks[0]?.trackId || ''
     const [value, setValue] = useState(resetTrack)
     useEffect(() => {
-      model.setImportFormSyntenyTrack(0, {
-        type: 'preConfigured',
-        value,
-      })
-    }, [model, value])
+      model.setImportFormSyntenyTrack(0, { type: 'preConfigured', value: resetTrack })
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     return (
       <Paper style={{ padding: 12 }}>
@@ -65,7 +58,9 @@ const ImportSyntenyTrackSelector = observer(
           <Select
             value={value}
             onChange={event => {
-              setValue(event.target.value)
+              const v = event.target.value
+              setValue(v)
+              model.setImportFormSyntenyTrack(0, { type: 'preConfigured', value: v })
             }}
           >
             {filteredTracks.map(track => (

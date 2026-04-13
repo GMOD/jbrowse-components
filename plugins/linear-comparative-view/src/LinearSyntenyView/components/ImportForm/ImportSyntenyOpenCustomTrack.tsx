@@ -158,7 +158,7 @@ const ImportSyntenyOpenCustomTrack = observer(
               setIndexFileLocation={setIndexFileLocation}
               radioOption={radioOption}
             />
-          ) : value === '.anchors' || value === '.anchors.simple' ? (
+          ) : radioOption === '.anchors' || radioOption === '.anchors.simple' ? (
             <AnchorsSelector
               assembly1={assembly1}
               assembly2={assembly2}
@@ -170,16 +170,14 @@ const ImportSyntenyOpenCustomTrack = observer(
               setBed1Location={setBed1Location}
               bed2Location={bed2Location}
               setBed2Location={setBed2Location}
-              radioOption={value}
+              radioOption={radioOption}
             />
           ) : (
             <FileSelector
               name={value ? `${value} location` : ''}
               description=""
               location={fileLocation}
-              setLocation={loc => {
-                setFileLocation(loc)
-              }}
+              setLocation={setFileLocation}
             />
           )}
         </Grid>

@@ -3,14 +3,7 @@ import { useState } from 'react'
 import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  Button,
-  Container,
-  FormControl,
-  Grid,
-  Paper,
-  Typography,
-} from '@mui/material'
+import { Button, Container, Grid, Paper, Typography } from '@mui/material'
 import { toJS, transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -43,7 +36,7 @@ function doSubmit({
       for (const [idx, f] of toJS(importFormSyntenyTrackSelections).entries()) {
         if (f.type === 'userOpened') {
           session.addTrackConf(f.value)
-          model.toggleTrack(f.value?.trackId)
+          model.toggleTrack(f.value.trackId)
         } else if (f.type === 'preConfigured') {
           model.showTrack(f.value, idx)
         }
@@ -66,7 +59,6 @@ const DotplotImportForm = observer(function DotplotImportForm({
   const [assembly1, setAssembly1] = useState(assemblyNames[0] || '')
   const [error, setError] = useState<unknown>()
 
-  // this is a combination of any displayed error message we have
   const displayError = error || model.error
   return (
     <Container className={classes.importFormContainer}>
@@ -85,42 +77,29 @@ const DotplotImportForm = observer(function DotplotImportForm({
             helperText="x-axis assembly"
             selected={assembly2}
             session={session}
-            onChange={val => {
-              setAssembly2(val)
-            }}
+            onChange={setAssembly2}
           />
           <AssemblySelector
             helperText="y-axis assembly"
             selected={assembly1}
             session={session}
-            onChange={val => {
-              setAssembly1(val)
-            }}
+            onChange={setAssembly1}
           />
-          <FormControl>
-            <Button
-              onClick={() => {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                ;(async () => {
-                  try {
-                    setError(undefined)
-                    doSubmit({
-                      assembly1,
-                      assembly2,
-                      model,
-                    })
-                  } catch (e) {
-                    console.error(e)
-                    setError(e)
-                  }
-                })()
-              }}
-              variant="contained"
-              color="primary"
-            >
-              Launch
-            </Button>
-          </FormControl>
+          <Button
+            onClick={() => {
+              try {
+                setError(undefined)
+                doSubmit({ assembly1, assembly2, model })
+              } catch (e) {
+                console.error(e)
+                setError(e)
+              }
+            }}
+            variant="contained"
+            color="primary"
+          >
+            Launch
+          </Button>
         </Grid>
         <TrackSelector
           assembly2={assembly2}

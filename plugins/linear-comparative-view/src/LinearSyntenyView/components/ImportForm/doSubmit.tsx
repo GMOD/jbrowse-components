@@ -38,10 +38,10 @@ export async function doSubmit({
   if (!isSessionWithAddTracks(session)) {
     session.notify("Can't add tracks", 'warning')
   } else {
-    toJS(importFormSyntenyTrackSelections).map((f, idx) => {
+    toJS(importFormSyntenyTrackSelections).forEach((f, idx) => {
       if (f.type === 'userOpened') {
         session.addTrackConf(f.value)
-        model.toggleTrack(f.value?.trackId, idx)
+        model.toggleTrack(f.value.trackId, idx)
       } else if (f.type === 'preConfigured') {
         model.showTrack(f.value, idx)
       }
