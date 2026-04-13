@@ -117,13 +117,13 @@ export default function stateModelFactory(
 ) {
   return types
     .compose(
-      'LinearFeatureDisplay',
+      'LinearBasicDisplay',
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       ConfigOverrideMixin(),
       types.model({
-        type: types.literal('LinearFeatureDisplay'),
+        type: types.literal('LinearBasicDisplay'),
         configuration: ConfigurationReference(configSchema),
         showOnlyGenes: false,
       }),
@@ -1056,7 +1056,5 @@ export default function stateModelFactory(
     })
 }
 
-export type LinearFeatureDisplayStateModel = ReturnType<
-  typeof stateModelFactory
->
-export type LinearFeatureDisplayModel = Instance<LinearFeatureDisplayStateModel>
+export type LinearBasicDisplayStateModel = ReturnType<typeof stateModelFactory>
+export type LinearBasicDisplayModel = Instance<LinearBasicDisplayStateModel>

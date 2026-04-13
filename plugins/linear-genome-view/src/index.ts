@@ -145,16 +145,3 @@ export {
   SvgClipRect,
 } from './LinearGenomeView/SVGErrorBox.tsx'
 export { totalHeight } from './LinearGenomeView/svgcomponents/util.ts'
-export {
-  configSchema as linearBasicDisplayConfigSchemaFactory,
-  modelFactory as linearBasicDisplayModelFactory,
-} from './LinearBasicDisplay/index.ts'
-export {
-  configSchema as linearFeatureDisplayConfigSchemaFactory,
-  modelFactory as linearFeatureDisplayModelFactory,
-} from './LinearFeatureDisplay/index.ts'
-export type {
-  LinearFeatureDisplayModel,
-  LinearFeatureDisplayStateModel,
-} from './LinearFeatureDisplay/index.ts'
-export { default as LinearBasicDisplayComponent } from './LinearBasicDisplay/components/LinearBasicDisplayComponent.tsx'

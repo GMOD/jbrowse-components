@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
+import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
 import { sharedVariantConfigSlots } from '../shared/SharedVariantConfigSchema.ts'
 
@@ -10,7 +10,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-export default function configSchemaF(pluginManager: PluginManager) {
+export default function configSchemaF(_pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearVariantMatrixDisplay',
     {
@@ -31,7 +31,7 @@ export default function configSchemaF(pluginManager: PluginManager) {
       /**
        * #baseConfiguration
        */
-      baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),
+      baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
     },
   )

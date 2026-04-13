@@ -71,7 +71,7 @@ function createTestEnvironment() {
 
   pluginManager.addDisplayType(() => {
     return new DisplayType({
-      name: 'LinearFeatureDisplay',
+      name: 'LinearBasicDisplay',
       configSchema,
       stateModel: stateModelFactory(configSchema),
       trackType: 'FeatureTrack',
@@ -170,7 +170,7 @@ function createTestEnvironment() {
           {
             type: 'FeatureTrack',
             configuration: 'test_track',
-            displays: [{ type: 'LinearFeatureDisplay' }],
+            displays: [{ type: 'LinearBasicDisplay' }],
           },
         ],
       }),

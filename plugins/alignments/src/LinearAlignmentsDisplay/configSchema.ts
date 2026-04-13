@@ -1,12 +1,12 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
+import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * Configuration schema for the LinearAlignmentsDisplay
  */
-export default function configSchemaFactory(pluginManager: PluginManager) {
+export default function configSchemaFactory(_pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearAlignmentsDisplay',
     {
@@ -47,7 +47,7 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
       /**
        * #baseConfiguration
        */
-      baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),
+      baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
     },
   )

@@ -42,7 +42,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-interface LinearFeatureDisplayModel {
+interface LinearBasicDisplayModel {
   height: number
   rpcDataMap: Map<number, FeatureDataResult>
   visibleRegions: VisibleRegion[]
@@ -83,7 +83,7 @@ interface LinearFeatureDisplayModel {
 }
 
 export interface Props {
-  model: LinearFeatureDisplayModel
+  model: LinearBasicDisplayModel
 }
 
 type FeatureItemEntry =
@@ -111,7 +111,7 @@ const ContextMenu = observer(function ContextMenu({
   contextCoord,
   onClose,
 }: {
-  model: LinearFeatureDisplayModel
+  model: LinearBasicDisplayModel
   contextCoord: [number, number]
   onClose: () => void
 }) {

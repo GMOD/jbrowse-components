@@ -10,7 +10,7 @@ import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapte
  * Composed by both FeatureDensityMixin (block-based server-side rendered
  * displays like LinearBasicDisplay, LinearArcDisplay, LinearLollipopDisplay)
  * and MultiRegionDisplayMixin (canvas/GPU displays like
- * LinearAlignmentsDisplay, LinearWiggleDisplay, LinearFeatureDisplay).
+ * LinearAlignmentsDisplay, LinearWiggleDisplay, LinearBasicDisplay).
  *
  * Owns the state that TooLargeMessage reads: regionTooLarge,
  * regionTooLargeReason, featureDensityStats, setFeatureDensityStatsLimit.

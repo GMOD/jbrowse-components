@@ -8,6 +8,7 @@
  *   LinearSNPCoverageDisplay → LinearAlignmentsDisplay
  *   LinearReadArcsDisplay → LinearAlignmentsDisplay
  *   LinearReadCloudDisplay → LinearAlignmentsDisplay
+ *   LinearFeatureDisplay → LinearBasicDisplay
  */
 
 const displayTypeMap: Record<string, string> = {
@@ -15,6 +16,7 @@ const displayTypeMap: Record<string, string> = {
   LinearSNPCoverageDisplay: 'LinearAlignmentsDisplay',
   LinearReadArcsDisplay: 'LinearAlignmentsDisplay',
   LinearReadCloudDisplay: 'LinearAlignmentsDisplay',
+  LinearFeatureDisplay: 'LinearBasicDisplay',
 }
 
 function migrateDisplaySnapshot(display: Record<string, unknown>) {

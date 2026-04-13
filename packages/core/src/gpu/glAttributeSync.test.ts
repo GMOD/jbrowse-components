@@ -1,4 +1,4 @@
-import { CANVAS_FEATURE_PASSES } from '../../../../plugins/canvas/src/LinearFeatureDisplay/components/GpuCanvasFeatureRenderer.ts'
+import { CANVAS_FEATURE_PASSES } from '../../../../plugins/canvas/src/LinearBasicDisplay/components/GpuCanvasFeatureRenderer.ts'
 import { DOTPLOT_PASSES } from '../../../../plugins/dotplot-view/src/DotplotDisplay/GpuDotplotRenderer.ts'
 import { HIC_PASSES } from '../../../../plugins/hic/src/LinearHicDisplay/components/GpuHicRenderer.ts'
 import { SYNTENY_PASSES } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/GpuSyntenyRenderer.ts'
