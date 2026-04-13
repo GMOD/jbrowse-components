@@ -99,7 +99,7 @@ const TreeSidebar = observer(function TreeSidebar({
 
   const hitTestNode = useCallback(
     (event: React.MouseEvent) => {
-      if (!hierarchy || !nodeIndex) {
+      if (!nodeIndex) {
         return undefined
       }
       const rect = event.currentTarget.getBoundingClientRect()
@@ -108,7 +108,7 @@ const TreeSidebar = observer(function TreeSidebar({
       const results = nodeIndex.search(x, y, x, y)
       return results.length > 0 ? nodeData[results[0]!] : undefined
     },
-    [hierarchy, nodeIndex, nodeData, scrollTop],
+    [nodeIndex, nodeData, scrollTop],
   )
 
   const handleMouseMove = useCallback(
@@ -219,7 +219,7 @@ const TreeSidebar = observer(function TreeSidebar({
       </div>
       <ResizeHandle
         onDrag={distance => {
-          model.setTreeAreaWidth(Math.max(50, treeAreaWidth + distance))
+          model.setTreeAreaWidth(Math.max(10, treeAreaWidth + distance))
           return undefined
         }}
         style={{
