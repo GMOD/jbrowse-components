@@ -22,27 +22,18 @@ type ModificationTypeList = readonly ModificationType[]
 export function detectSimplexModifications(
   modifications: ModificationTypeList,
 ): ReadonlySet<string> {
-  // Use two-pass algorithm for efficiency:
-  // Pass 1: Collect all modification types on minus strand (O(n))
-  // Pass 2: Find plus strand mods without minus strand counterpart (O(n))
-  // Total: O(n) time, O(m) space where m = unique modification types
-
   const minusStrandMods = new Set<string>()
   const simplexModifications = new Set<string>()
 
-  // First pass: collect all modifications on the minus strand
-  for (const modification of modifications) {
-    const mod = modification
-    if (mod.strand === '-') {
-      minusStrandMods.add(mod.type)
+  for (const { strand, type } of modifications) {
+    if (strand === '-') {
+      minusStrandMods.add(type)
     }
   }
 
-  // Second pass: find positive strand modifications without minus strand counterparts
-  for (const modification of modifications) {
-    const mod = modification
-    if (mod.strand === '+' && !minusStrandMods.has(mod.type)) {
-      simplexModifications.add(mod.type)
+  for (const { strand, type } of modifications) {
+    if (strand === '+' && !minusStrandMods.has(type)) {
+      simplexModifications.add(type)
     }
   }
 

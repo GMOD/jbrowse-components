@@ -43,16 +43,10 @@ export function getMethBins({
       //   reverse: revcom(seq)[seqLength-pos] = complement(seq[pos-1])
       //            that equals 'G' iff seq[pos-1] === 'C'
       const pos = positions[idx]!
-      if (isReverse) {
-        const nb = seq[pos - 1]
-        if (nb !== 'C' && nb !== 'c') {
-          continue
-        }
-      } else {
-        const nb = seq[pos + 1]
-        if (nb !== 'G' && nb !== 'g') {
-          continue
-        }
+      const nb = isReverse ? seq[pos - 1] : seq[pos + 1]
+      const wanted = isReverse ? 'c' : 'g'
+      if (nb?.toLowerCase() !== wanted) {
+        continue
       }
 
       const idx2 = probIndex + (isReverse ? positions.length - 1 - idx : idx)
