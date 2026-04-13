@@ -532,45 +532,6 @@ export function getShowMenuItem(model: ShowMenuModel) {
           model.setFlipStrandLongReadChains(!model.flipStrandLongReadChains)
         },
       },
-      {
-        label: 'Arcs...',
-        type: 'subMenu' as const,
-        subMenu: [
-          {
-            label: 'Show paired/supplementary arcs',
-            type: 'checkbox' as const,
-            checked: model.showArcs,
-            onClick: () => {
-              model.setShowArcs(!model.showArcs)
-            },
-          },
-          {
-            label: 'Show paired/supplementary arcs pointing down',
-            type: 'checkbox' as const,
-            checked: model.pairedArcsDown,
-            onClick: () => {
-              model.setArcsDown(!model.pairedArcsDown)
-            },
-          },
-          {
-            label: 'Show sashimi arcs',
-            type: 'checkbox' as const,
-            checked: model.showSashimiArcs,
-            onClick: () => {
-              model.setShowSashimiArcs(!model.showSashimiArcs)
-            },
-          },
-          {
-            label: 'Show sashimi arcs as pointing down',
-            type: 'checkbox' as const,
-            checked: model.sashimiArcsDown,
-            onClick: () => {
-              model.setSashimiArcsDown(!model.sashimiArcsDown)
-            },
-          },
-        ],
-      },
-      getSetMaxHeightMenuItem(model),
     ],
   }
 }

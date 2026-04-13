@@ -55,6 +55,7 @@ import {
   getColorByMenuItem,
   getFiltersMenuItem,
   getGroupByMenuItem,
+  getSetMaxHeightMenuItem,
   getShowMenuItem,
   getSortByMenuItem,
 } from '../shared/menuItems.ts'
@@ -1529,6 +1530,45 @@ export default function stateModelFactory(
             getSortByMenuItem(self),
             colorByMenu,
             getGroupByMenuItem(self),
+            {
+              label: 'Arcs...',
+              type: 'subMenu' as const,
+              subMenu: [
+                {
+                  label: 'Show paired/supplementary arcs',
+                  type: 'checkbox' as const,
+                  checked: self.showArcs,
+                  onClick: () => {
+                    self.setShowArcs(!self.showArcs)
+                  },
+                },
+                {
+                  label: 'Show paired/supplementary arcs pointing down',
+                  type: 'checkbox' as const,
+                  checked: self.pairedArcsDown,
+                  onClick: () => {
+                    self.setArcsDown(!self.pairedArcsDown)
+                  },
+                },
+                {
+                  label: 'Show sashimi arcs',
+                  type: 'checkbox' as const,
+                  checked: self.showSashimiArcs,
+                  onClick: () => {
+                    self.setShowSashimiArcs(!self.showSashimiArcs)
+                  },
+                },
+                {
+                  label: 'Show sashimi arcs as pointing down',
+                  type: 'checkbox' as const,
+                  checked: self.sashimiArcsDown,
+                  onClick: () => {
+                    self.setSashimiArcsDown(!self.sashimiArcsDown)
+                  },
+                },
+              ],
+            },
+            getSetMaxHeightMenuItem(self),
           ]
 
           return items

@@ -256,3 +256,18 @@ Still needed? maybe excessive
 
 Might have a 'rarely used' menu? Set max track height for example, some rarely
 used show items. I dunno
+
+## Methylation mode
+
+In recent changes, we tried to make the 'methylation' mode work in
+plugins/alignments. it changed to looking at read sequence/ but it is not
+drawing reference cpg as blue I believe. please investigate. if needed you can
+add debug logging
+
+## Pack all display heights
+
+Manual action similar to compact all tracks
+
+## Slightly more subpixel modifications drawing
+
+Gets a little crowded
