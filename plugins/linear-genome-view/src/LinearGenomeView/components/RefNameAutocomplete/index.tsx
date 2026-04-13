@@ -104,7 +104,8 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       return
     }
     let cancelled = false
-    void (async () => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    ;(async () => {
       try {
         setLoaded(false)
         const results = await fetchResultsRef.current(debouncedSearch)
