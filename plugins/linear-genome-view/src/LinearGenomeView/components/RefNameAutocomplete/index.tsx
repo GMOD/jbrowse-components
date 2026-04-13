@@ -93,21 +93,23 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   const fetchResultsRef = useRef(fetchResults)
   fetchResultsRef.current = fetchResults
 
+  // Adjust sync state during render rather than in an effect
+  if (debouncedSearch === '' && (searchOptions !== undefined || !loaded)) {
+    setSearchOptions(undefined)
+    setLoaded(true)
+  }
+
   useEffect(() => {
-    if (debouncedSearch === '') {
-      setSearchOptions(undefined)
-      setLoaded(true)
+    if (!assemblyName || debouncedSearch === '') {
       return
     }
     let cancelled = false
     void (async () => {
       try {
-        if (assemblyName) {
-          setLoaded(false)
-          const results = await fetchResultsRef.current(debouncedSearch)
-          if (!cancelled) {
-            setSearchOptions(getDeduplicatedResult(results))
-          }
+        setLoaded(false)
+        const results = await fetchResultsRef.current(debouncedSearch)
+        if (!cancelled) {
+          setSearchOptions(getDeduplicatedResult(results))
         }
       } catch (e) {
         console.error(e)
@@ -160,8 +162,8 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       inputValue={inputValue}
       onInputChange={(_event, newInputValue, reason) => {
         setInputValue(newInputValue)
-        onChange?.(newInputValue)
         if (reason === 'input') {
+          onChange?.(newInputValue)
           setCurrentSearch(newInputValue)
         }
       }}
