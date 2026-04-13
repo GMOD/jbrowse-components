@@ -370,8 +370,7 @@ export async function executeSyntenyFeaturesAndPositions({
     const hasPrecomputed = precomputedSyriTypes.some(t => t !== undefined)
     syriTypes = hasPrecomputed
       ? precomputedSyriTypes.map(
-          // eslint-disable-next-line unicorn/prefer-logical-operator-over-ternary
-          t => (t ? (t as ReturnType<typeof computeSyriTypes>[number]) : 'SYN'),
+          t => (t || 'SYN') as ReturnType<typeof computeSyriTypes>[number],
         )
       : computeSyriTypes(
           Array.from({ length: validCount }, (_, i) => ({

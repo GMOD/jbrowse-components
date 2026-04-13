@@ -366,17 +366,12 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             const { rpcManager } = session
             const view = getContainingView(self) as LGV
 
-            const regions = needed.map(n => ({
-              region: n.region,
-              regionNumber: n.regionNumber,
-            }))
-
             const result = await rpcManager.call(
               sessionId,
               'MultiPairGetFeatures',
               {
                 adapterConfig,
-                regions,
+                regions: needed,
                 bpPerPx: view.bpPerPx,
                 resolution: self.resolution,
                 sessionId,

@@ -190,6 +190,19 @@ function stateModelFactory(pluginManager: PluginManager) {
             next(rawCall)
           }),
         )
+        addDisposer(
+          self,
+          autorun(
+            function comparativeViewWidthAutorun() {
+              if (self.width) {
+                for (const view of self.views) {
+                  view.setWidth(self.width)
+                }
+              }
+            },
+            { name: 'ComparativeViewWidth' },
+          ),
+        )
       },
 
       // automatically removes session assemblies associated with this view
@@ -340,12 +353,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       compactAllViews() {
-        while (self.compactViews.length < self.views.length) {
-          self.compactViews.push(false)
-        }
-        for (let i = 0; i < self.views.length; i++) {
-          self.compactViews[i] = true
-        }
+        self.compactViews.replace(self.views.map(() => true))
       },
       /**
        * #action
@@ -375,9 +383,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       focusLevel(idx: number) {
-        for (let i = 0; i < self.levels.length; i++) {
-          self.levels[i]!.setCollapsed(i !== idx)
-        }
+        self.levels.forEach((level, i) => level.setCollapsed(i !== idx))
       },
       /**
        * #action
@@ -449,23 +455,6 @@ function stateModelFactory(pluginManager: PluginManager) {
             },
           },
         ]
-      },
-    }))
-    .actions(self => ({
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            function comparativeViewWidthAutorun() {
-              if (self.width) {
-                for (const view of self.views) {
-                  view.setWidth(self.width)
-                }
-              }
-            },
-            { name: 'ComparativeViewWidth' },
-          ),
-        )
       },
     }))
     .preProcessSnapshot(snap => {
