@@ -65,13 +65,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * #action
          */
         deleteTrackConf(trackConf: AnyConfigurationModel) {
-          // try to delete it in the main config if in admin mode
-          const found = superDeleteTrackConf(trackConf)
-          if (found) {
-            return found
-          }
-          // if not found or not in admin mode, try to delete it in the
-          // sessionTracks
+          superDeleteTrackConf(trackConf)
           const { trackId } = trackConf
           const idx = self.sessionTracks.findIndex(t => t.trackId === trackId)
           if (idx === -1) {
