@@ -1,5 +1,3 @@
-import { revcom } from '@jbrowse/core/util'
-
 import { getModPositions } from './getModPositions.ts'
 import { getModProbabilities } from './getModProbabilities.ts'
 import { getNextRefPos } from '../MismatchParser/index.ts'
@@ -19,10 +17,7 @@ export function getMethBins(feature: Feature, cigarOps: ArrayLike<number>) {
   const hydroxyMethProbs = []
   const seq = feature.get('seq') as string | undefined
   if (seq) {
-    // For reverse-strand reads getModPositions works in revcomp space, so we
-    // use the same processed sequence here for the CpG context check.
-    const processedSeq = fstrand === -1 ? revcom(seq) : seq
-    const seqLength = seq.length
+    const isReverse = fstrand === -1
     const probabilities = getModProbabilities(feature)
     const modifications = getModPositions(mm, seq, fstrand)
     let probIndex = 0
@@ -37,20 +32,23 @@ export function getMethBins(feature: Feature, cigarOps: ArrayLike<number>) {
           continue
         }
 
-        // Check CpG context from the read sequence (or its revcomp for reverse
-        // strand). For forward strand: pos is the C index in seq, next base is
-        // seq[pos+1]. For reverse strand: pos = seqLength-currPos so the C is
-        // at revcomp index seqLength-pos-1, and the next revcomp base is at
-        // seqLength-pos.
+        // Check CpG context directly from the read sequence without allocating
+        // a revcomp string. getModPositions stores positions as seqLength-currPos
+        // for reverse strand (revcomp space), so:
+        //   forward: pos is the C index in seq → seq[pos+1] must be G
+        //   reverse: revcom(seq)[seqLength-pos] = complement(seq[pos-1])
+        //            that equals 'G' iff seq[pos-1] === 'C'
         const pos = positions[idx]!
-        const nextIdx = fstrand === -1 ? seqLength - pos : pos + 1
-        if (processedSeq[nextIdx]?.toLowerCase() !== 'g') {
-          continue
+        if (isReverse) {
+          const nb = seq[pos - 1]
+          if (nb !== 'C' && nb !== 'c') continue
+        } else {
+          const nb = seq[pos + 1]
+          if (nb !== 'G' && nb !== 'g') continue
         }
 
-        const isReverseStrand = fstrand === -1
         const idx2 =
-          probIndex + (isReverseStrand ? positions.length - 1 - idx : idx)
+          probIndex + (isReverse ? positions.length - 1 - idx : idx)
         const prob = probabilities?.[idx2] || 0
 
         if (type === 'm') {
