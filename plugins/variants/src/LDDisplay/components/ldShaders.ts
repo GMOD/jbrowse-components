@@ -1,5 +1,5 @@
-// GENOMIC positions mode: 6 floats per instance (position, cellSize, ldValue, padding)
-export const GENOMIC_INSTANCE_STRIDE = 6
+// GENOMIC positions mode: 8 floats per instance (position, cellSize, ldValue, 3× padding)
+export const GENOMIC_INSTANCE_STRIDE = 8
 
 export function interleaveLDInstances(data: {
   positions: Float32Array
@@ -108,6 +108,9 @@ struct LDInstance {
   position: vec2f,
   cell_size: vec2f,
   ld_value: f32,
+  _pad0: f32,
+  _pad1: f32,
+  _pad2: f32,
 }
 
 struct Uniforms {

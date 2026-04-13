@@ -197,18 +197,6 @@ In ShareDialog.tsx the share URL becomes: locationUrl.search = params.toString()
 // ?session=share-abc locationUrl.hash = `password=${result.password}` //
 #password=xyz
 
-## Autorun
-
-An agent report this working on plugins/wiggle
-
-'Other patterns I looked at and left alone:
-
-- setRpcDataForRegion new-Map pattern — necessary for MobX reactivity on plain
-  JS volatile state; switching to observable.map() would be more invasive.
-
-Is this worth doing? note that if done, it should apply across all display types
-most likely
-
 ## No minimim tree width needed in wiggle/others
 
 currently stops at certain point
@@ -224,19 +212,15 @@ much on small zooms
 
 Plugins/sequence added 'extra fetching' beyond just screen width recently also
 
-## Freeze during fast scrolling of plugins/canvas
 
-Potentially due to [WebGPUHal] endFrame: VALIDATION error after submit, slot= 1
-In a draw command, kind: Draw, caused by: In bind group index 0, the buffer
-bound at binding index 0 is bound with size 28 where the shader expects 32. 3
-webgpuHal.ts:492:17 endFrame
-webpack://@jbrowse/web/../../packages/core/src/gpu/hal/webgpuHal.ts?:492
+## GPU: build-time WGSL struct size validator
 
-Note that this error resulted in a total browser freeze also which is a very bad
-user experience
-
-We may want to investigate high value linting/static checking or other automated
-systems
+6 structs across alignments, LD, and canvas plugins had sizeof not divisible by 16
+and were fixed manually (ArrowInstance, ReadInst, GapInst, CovInst, IndicatorInst,
+ConnLineInst, LDInstance). The runtime guard in `WebGPUHal.create` catches these
+when the WebGPU path is hit, but a build-time Jest test that parses WGSL sources
+and asserts `sizeof(instanceStruct) % 16 === 0` would catch regressions in CI
+before they reach a browser.
 
 NCBI gene track 1:38,961,598-39,145,227
 

@@ -263,6 +263,7 @@ struct ArrowInstance {
   color_r: f32,
   color_g: f32,
   color_b: f32,
+  _pad: f32,
 }
 
 struct Uniforms {

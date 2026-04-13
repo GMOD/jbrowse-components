@@ -259,6 +259,17 @@ export class WebGPUHal implements GpuHal {
     descriptors: PassDescriptor[],
     uniformByteSize: number,
   ) {
+    // Chrome/Dawn computes minimum buffer binding size for runtime-sized storage
+    // arrays as roundUp(16, structSize). Any instanceStride that is not a
+    // multiple of 16 will fail validation at draw time and can freeze the GPU.
+    for (const desc of descriptors) {
+      if (desc.instanceStride % 16 !== 0) {
+        console.error(
+          `[WebGPUHal] Pass "${desc.id}" instanceStride=${desc.instanceStride} is not a multiple of 16 — ` +
+            'Chrome will reject draws with a binding-size validation error',
+        )
+      }
+    }
     const result = await initGpuContext(canvas, { alphaMode: 'premultiplied' })
     if (!result) {
       return null

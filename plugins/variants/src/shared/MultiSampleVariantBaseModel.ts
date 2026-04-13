@@ -22,7 +22,10 @@ import {
   TrackHeightMixin,
   migrateOldSettingSnapshots,
 } from '@jbrowse/plugin-linear-genome-view'
-import { computeHierarchyLayout, parseClusterTree } from '@jbrowse/tree-sidebar'
+import {
+  TreeSidebarMixin,
+  computeHierarchyLayout,
+} from '@jbrowse/tree-sidebar'
 import CategoryIcon from '@mui/icons-material/Category'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import HeightIcon from '@mui/icons-material/Height'
@@ -52,7 +55,6 @@ import type {
   LegendItem,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { HoveredTreeNode } from '@jbrowse/tree-sidebar'
 
 // lazies
 const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
@@ -132,9 +134,9 @@ export default function MultiSampleVariantBaseModelF(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       ConfigOverrideMixin(),
+      TreeSidebarMixin<Source>(),
       types.model({
         type: types.literal('LinearVariantMatrixDisplay'),
-        layout: types.optional(types.frozen<Source[]>(), []),
         configuration: ConfigurationReference(configSchema),
         rowHeightMode: types.optional(types.number, 0),
         lengthCutoffFilter: types.optional(
@@ -142,10 +144,7 @@ export default function MultiSampleVariantBaseModelF(
           Number.MAX_SAFE_INTEGER,
         ),
         jexlFilters: types.maybe(types.array(types.string)),
-        clusterTree: types.maybe(types.string),
-        treeAreaWidth: types.optional(types.number, 80),
         lineZoneHeight: types.optional(types.number, 0),
-        subtreeFilter: types.maybe(types.array(types.string)),
       }),
     )
     .preProcessSnapshot((snap: any) => {
@@ -217,15 +216,6 @@ export default function MultiSampleVariantBaseModelF(
       /**
        * #volatile
        */
-      hoveredTreeNode: undefined as HoveredTreeNode | undefined,
-      /**
-       * #volatile
-       */
-      treeCanvas: null as HTMLCanvasElement | null,
-      /**
-       * #volatile
-       */
-      mouseoverCanvas: null as HTMLCanvasElement | null,
       cellData: undefined as unknown,
       cellDataLoading: false,
       displayError: undefined as unknown,
@@ -329,30 +319,6 @@ export default function MultiSampleVariantBaseModelF(
       /**
        * #action
        */
-      setHoveredTreeNode(node?: HoveredTreeNode) {
-        self.hoveredTreeNode = node
-      },
-      /**
-       * #action
-       */
-      setTreeCanvasRef(ref: HTMLCanvasElement | null) {
-        self.treeCanvas = ref
-      },
-      /**
-       * #action
-       */
-      setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
-        self.mouseoverCanvas = ref
-      },
-      /**
-       * #action
-       */
-      setTreeAreaWidth(width: number) {
-        self.treeAreaWidth = width
-      },
-      /**
-       * #action
-       */
       setFeatures(f: Feature[]) {
         self.featuresVolatile = f
       },
@@ -364,36 +330,6 @@ export default function MultiSampleVariantBaseModelF(
         self.colorByApplied = value
       },
 
-      /**
-       * #action
-       */
-      setLayout(layout: Source[], clearTree = true) {
-        const orderChanged =
-          clearTree &&
-          self.clusterTree &&
-          self.layout.length === layout.length &&
-          self.layout.some(
-            (source: Source, idx: number) => source.name !== layout[idx]?.name,
-          )
-
-        self.layout = layout
-        if (orderChanged) {
-          self.clusterTree = undefined
-        }
-      },
-      /**
-       * #action
-       */
-      clearLayout() {
-        self.layout = []
-        self.clusterTree = undefined
-      },
-      /**
-       * #action
-       */
-      setClusterTree(tree?: string) {
-        self.clusterTree = tree
-      },
       /**
        * #action
        */
@@ -432,12 +368,6 @@ export default function MultiSampleVariantBaseModelF(
       },
       setShowTree(arg: boolean) {
         self.setOverride('showTree', arg)
-      },
-      /**
-       * #action
-       */
-      setSubtreeFilter(names?: string[]) {
-        self.subtreeFilter = names ? cast(names) : undefined
       },
       /**
        * #action
@@ -559,16 +489,6 @@ export default function MultiSampleVariantBaseModelF(
           result = result.filter(s => filterSet.has(s.sampleName ?? s.name))
         }
         return result
-      },
-      /**
-       * #getter
-       */
-      get root() {
-        const newick = self.clusterTree
-        if (!newick) {
-          return undefined
-        }
-        return parseClusterTree(newick, self.subtreeFilter?.slice())
       },
     }))
     .views(self => {

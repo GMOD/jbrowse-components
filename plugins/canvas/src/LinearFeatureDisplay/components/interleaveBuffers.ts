@@ -1,6 +1,6 @@
 export const RECT_STRIDE = 8
 export const LINE_STRIDE = 8
-export const ARROW_STRIDE = 7
+export const ARROW_STRIDE = 8
 
 export function interleaveRects(
   positions: Uint32Array,

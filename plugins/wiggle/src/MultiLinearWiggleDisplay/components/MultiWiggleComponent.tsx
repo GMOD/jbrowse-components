@@ -150,17 +150,32 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     }
 
     let lastDataMap: Map<number, MultiWiggleDataResult> | null = null
+    let lastSources: typeof model.sources | null = null
     const lastUploaded = new Map<number, MultiWiggleDataResult>()
 
     return autorun(() => {
       const dataMap = model.rpcDataMap
+      // Always read sources so MobX tracks it as a dependency — a layout
+      // reorder changes sources but not the dataMap reference, and we can
+      // re-upload the existing GPU data in the new order without an RPC
+      // round-trip since buildMultiSourceRenderData looks up data by name.
+      const sources = model.sources
 
-      if (lastDataMap !== dataMap) {
+      const dataMapChanged = lastDataMap !== dataMap
+      const sourcesChanged = lastSources !== sources
+
+      if (dataMapChanged || sourcesChanged) {
         lastDataMap = dataMap
+        lastSources = sources
         if (dataMap.size === 0) {
           renderer.pruneRegions([])
           lastUploaded.clear()
         } else {
+          if (sourcesChanged) {
+            // Clear upload cache so every region gets re-uploaded with
+            // the new row ordering (buildMultiSourceRenderData maps by name).
+            lastUploaded.clear()
+          }
           const { summaryScoreMode, renderingType, isDensityMode } = model
           const defaultPosColor = parseColor(model.posColor)
           const defaultNegColor = parseColor(model.negColor)
@@ -173,7 +188,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
                 data.regionStart,
                 buildMultiSourceRenderData(
                   data,
-                  model.sources,
+                  sources,
                   defaultPosColor,
                   defaultNegColor,
                   summaryScoreMode,

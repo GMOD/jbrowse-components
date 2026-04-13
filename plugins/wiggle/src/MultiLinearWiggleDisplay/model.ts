@@ -13,13 +13,16 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { computeHierarchyLayout, parseClusterTree } from '@jbrowse/tree-sidebar'
+import {
+  TreeSidebarMixin,
+  computeHierarchyLayout,
+} from '@jbrowse/tree-sidebar'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -41,7 +44,6 @@ import type {
   LinearGenomeViewModel,
   MultiRegionRegionWithNumber as RegionWithNumber,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { HoveredTreeNode } from '@jbrowse/tree-sidebar'
 
 type LGV = LinearGenomeViewModel
 
@@ -78,14 +80,11 @@ export default function stateModelFactory(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       ConfigOverrideMixin(),
+      TreeSidebarMixin<Source>(),
       types.model({
         type: types.literal('MultiLinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
         resolution: types.optional(types.number, 1),
-        layout: types.frozen([] as Source[]),
-        clusterTree: types.maybe(types.string),
-        treeAreaWidth: types.optional(types.number, 80),
-        subtreeFilter: types.maybe(types.array(types.string)),
         displayCrossHatches: types.optional(types.boolean, false),
       }),
     )
@@ -120,9 +119,6 @@ export default function stateModelFactory(
       sourcesVolatile: [] as SourceInfo[],
       visibleScoreRange: undefined as [number, number] | undefined,
       loadedBpPerPx: new Map<number, number>(),
-      hoveredTreeNode: undefined as HoveredTreeNode | undefined,
-      treeCanvas: null as HTMLCanvasElement | null,
-      mouseoverCanvas: null as HTMLCanvasElement | null,
       featureUnderMouse: undefined as
         | {
             refName: string
@@ -324,14 +320,6 @@ export default function stateModelFactory(
       get showRowSeparators() {
         return self.getOverride<boolean>('showRowSeparators') ?? false
       },
-
-      get root() {
-        const newick = self.clusterTree
-        if (!newick) {
-          return undefined
-        }
-        return parseClusterTree(newick, self.subtreeFilter?.slice())
-      },
     }))
     .views(self => ({
       get hierarchy() {
@@ -380,56 +368,12 @@ export default function stateModelFactory(
         self.sourcesVolatile = sources
       },
 
-      setLayout(layout: Source[], clearTree = true) {
-        const orderChanged =
-          clearTree &&
-          self.clusterTree &&
-          self.layout.length === layout.length &&
-          (self.layout as Source[]).some(
-            (source: Source, idx: number) => source.name !== layout[idx]?.name,
-          )
-
-        self.layout = layout
-        if (orderChanged) {
-          self.clusterTree = undefined
-        }
-      },
-
-      clearLayout() {
-        self.layout = []
-        self.clusterTree = undefined
-      },
-
-      setClusterTree(tree?: string) {
-        self.clusterTree = tree
-      },
-
-      setTreeAreaWidth(width: number) {
-        self.treeAreaWidth = width
-      },
-
       setShowTree(arg: boolean) {
         self.setOverride('showTree', arg)
       },
 
       setShowRowSeparators(arg: boolean) {
         self.setOverride('showRowSeparators', arg)
-      },
-
-      setSubtreeFilter(names?: string[]) {
-        self.subtreeFilter = names ? cast(names) : undefined
-      },
-
-      setHoveredTreeNode(node?: HoveredTreeNode) {
-        self.hoveredTreeNode = node
-      },
-
-      setTreeCanvasRef(ref: HTMLCanvasElement | null) {
-        self.treeCanvas = ref
-      },
-
-      setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
-        self.mouseoverCanvas = ref
       },
 
       setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {

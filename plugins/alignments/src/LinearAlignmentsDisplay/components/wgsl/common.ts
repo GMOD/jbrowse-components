@@ -117,21 +117,21 @@ export const U_COLOR_UNMAPPED_MATE = 134
 
 // SYNC(shaders/*): Stride constants must match GLSL instance attribute layouts.
 // See individual shader files for field-by-field struct documentation.
-export const READ_STRIDE = 17
-export const GAP_STRIDE = 5
+export const READ_STRIDE = 20
+export const GAP_STRIDE = 8
 export const MISMATCH_STRIDE = 4
 export const INSERTION_STRIDE = 4
 export const SOFTCLIP_STRIDE = 4
 export const HARDCLIP_STRIDE = 4
 export const MODIFICATION_STRIDE = 4
-export const COVERAGE_STRIDE = 2
+export const COVERAGE_STRIDE = 4
 export const SNP_COV_STRIDE = 4
 export const MOD_COV_STRIDE = 4
 export const NONCOV_STRIDE = 4
-export const INDICATOR_STRIDE = 2
+export const INDICATOR_STRIDE = 4
 export const ARC_STRIDE = 4
 export const ARC_LINE_STRIDE = 4
-export const CONN_LINE_STRIDE = 3
+export const CONN_LINE_STRIDE = 4
 
 // SYNC(shaders/arcShaders.ts): shared constants
 export const ARC_CURVE_SEGMENTS = 64

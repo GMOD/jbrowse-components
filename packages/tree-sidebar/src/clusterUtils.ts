@@ -52,6 +52,22 @@ export function parseClusterTree(newick: string, subtreeFilter?: string[]) {
   return root
 }
 
+export function buildClusteredLayout<S extends { name: string }>(
+  baseSources: S[],
+  existingLayout: S[],
+  order: number[],
+): S[] {
+  const existingByName = Object.fromEntries(existingLayout.map(s => [s.name, s]))
+  return order.map(idx => {
+    const source = baseSources[idx]
+    if (!source) {
+      throw new Error(`cluster order index ${idx} out of bounds`)
+    }
+    const existing = existingByName[source.name]
+    return existing ? { ...source, ...existing } : source
+  })
+}
+
 export function computeHierarchyLayout(
   root: ClusterHierarchyNode,
   layoutHeight: number,

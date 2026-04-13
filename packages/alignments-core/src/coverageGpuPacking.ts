@@ -38,7 +38,7 @@ export interface IndicatorGpuUpload {
 }
 
 // Pack indicator positions into a GPU buffer.
-// Layout per indicator: [position(f32), colorType(f32)] = 8 bytes.
+// Layout per indicator: [position(f32), colorType(f32), _pad(f32), _pad(f32)] = 16 bytes.
 export function packIndicatorsForGpu(
   positions: Uint32Array,
   colorTypes: Uint8Array | undefined,
@@ -48,11 +48,11 @@ export function packIndicatorsForGpu(
   if (count === 0) {
     return { buffer: new ArrayBuffer(0), indicatorCount: 0 }
   }
-  const buffer = new ArrayBuffer(count * 8)
+  const buffer = new ArrayBuffer(count * 16)
   const f32 = new Float32Array(buffer)
   for (let i = 0; i < count; i++) {
-    f32[i * 2] = positionOffset + positions[i]!
-    f32[i * 2 + 1] = colorTypes ? colorTypes[i]! : 1 // default: insertion type
+    f32[i * 4] = positionOffset + positions[i]!
+    f32[i * 4 + 1] = colorTypes ? colorTypes[i]! : 1 // default: insertion type
   }
   return { buffer, indicatorCount: count }
 }

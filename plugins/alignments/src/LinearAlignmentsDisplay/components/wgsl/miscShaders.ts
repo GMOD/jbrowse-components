@@ -161,7 +161,7 @@ ${ARC_PREAMBLE}
 ${SIMPLE_VERTEX_OUTPUT}
 
 // SYNC(shaders/connectingLineShaders.ts): ConnectingLineInst field order must match GLSL in attributes
-struct ConnLineInst { start_off: u32, end_off: u32, y: f32 }
+struct ConnLineInst { start_off: u32, end_off: u32, y: f32, _pad: f32 }
 @group(0) @binding(0) var<storage, read> instances: array<ConnLineInst>;
 
 @vertex

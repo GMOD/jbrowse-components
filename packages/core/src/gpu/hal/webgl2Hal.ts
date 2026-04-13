@@ -86,6 +86,12 @@ export class WebGL2Hal implements GpuHal {
 
     this.passes = new Map()
     for (const desc of descriptors) {
+      if (desc.instanceStride % 16 !== 0) {
+        console.error(
+          `[WebGL2Hal] Pass "${desc.id}" instanceStride=${desc.instanceStride} is not a multiple of 16 — ` +
+            'Chrome WebGPU will reject draws with a binding-size validation error',
+        )
+      }
       const fragShader = desc.glslFragmentOverride ?? desc.glslFragment
       const program = createProgram(gl, desc.glslVertex, fragShader)
       bindUniformBlock(gl, program, 'Uniforms', 0)

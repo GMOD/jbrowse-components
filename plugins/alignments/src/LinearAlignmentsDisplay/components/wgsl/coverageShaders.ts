@@ -18,7 +18,7 @@ ${COV_PREAMBLE}
 ${COV_DOMAIN}
 
 // SYNC(shaders/coverageShaders.ts): CovInst field order must match GLSL; effectiveHeight/depthScale formulas
-struct CovInst { position: f32, depth: f32 }
+struct CovInst { position: f32, depth: f32, _pad0: f32, _pad1: f32 }
 @group(0) @binding(0) var<storage, read> instances: array<CovInst>;
 
 @vertex
@@ -178,7 +178,7 @@ fn vis_range() -> vec2f { return vec2f(uf(30u), uf(31u)); }
 fn vis_range_len() -> f32 { return uf(31u) - uf(30u); }
 
 // SYNC(shaders/coverageShaders.ts): IndicatorInst field order must match GLSL; triangle 7px wide, 4.5px tall
-struct IndicatorInst { position: f32, color_type: f32 }
+struct IndicatorInst { position: f32, color_type: f32, _pad0: f32, _pad1: f32 }
 @group(0) @binding(0) var<storage, read> instances: array<IndicatorInst>;
 
 @vertex

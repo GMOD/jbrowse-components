@@ -704,8 +704,9 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       const buf = new ArrayBuffer(n * COVERAGE_STRIDE * 4)
       const f32 = new Float32Array(buf)
       for (let i = 0; i < n; i++) {
-        f32[i * 2] = data.coverageStartOffset + i
-        f32[i * 2 + 1] = (data.coverageDepths[i] ?? 0) / data.coverageMaxDepth
+        const o = i * COVERAGE_STRIDE
+        f32[o] = data.coverageStartOffset + i
+        f32[o + 1] = (data.coverageDepths[i] ?? 0) / data.coverageMaxDepth
       }
       this.hal.uploadBuffer(regionNumber, PASS_COVERAGE, buf, n)
       r.maxDepth = data.coverageMaxDepth
