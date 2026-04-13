@@ -147,7 +147,7 @@ export function pluginUrl(d: PluginDefinition) {
     return d.esmUrl ?? d.esmUri ?? d.esmLoc?.uri
   } else if (isCJSPluginDefinition(d)) {
     // @ts-expect-error
-    return d.cjsUrl || d.cjsLoc.uri
+    return d.cjsUrl || d.cjsLoc?.uri
   } else {
     return 'unknown url'
   }
