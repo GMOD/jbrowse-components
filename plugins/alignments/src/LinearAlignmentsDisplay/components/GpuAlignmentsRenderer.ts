@@ -125,12 +125,12 @@ import {
   U_INSERT_UPPER,
   U_LINE_WIDTH_PX,
   U_NONCOV_HEIGHT,
+  U_PAIRED_ARCS_DOWN,
   U_RANGE_Y0,
   U_REGION_START,
   U_REVERSED,
   U_SCROLL_TOP,
   U_SHOW_STROKE,
-  U_PAIRED_ARCS_DOWN,
 } from './wgsl/common.ts'
 import {
   COVERAGE_WGSL,
@@ -1125,7 +1125,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       this.uF32[U_CANVAS_H] = arcViewportH / dpr
       this.writeBlockUniforms(region, block, scissorX, scissorW)
       this.uF32[U_LINE_WIDTH_PX] = state.arcLineWidth ?? 1
-      this.uF32[U_PAIRED_ARCS_DOWN] = state.pairedArcsDown ? 1.0 : 0.0
+      this.uF32[U_PAIRED_ARCS_DOWN] = state.pairedArcsDown ? 1 : 0
       this.hal.writeUniforms(this.uData)
 
       const vpX = Math.round(scissorX * dpr)

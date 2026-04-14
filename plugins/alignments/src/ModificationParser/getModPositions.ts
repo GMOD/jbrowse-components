@@ -15,7 +15,12 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
   const seq = fstrand === -1 ? revcom(fseq) : fseq
   const seqLength = seq.length
   const mods = mm.split(';')
-  const result: { type: string; base: string; strand: string; positions: number[] }[] = []
+  const result: {
+    type: string
+    base: string
+    strand: string
+    positions: number[]
+  }[] = []
 
   for (const mod of mods) {
     // Empty string

@@ -136,9 +136,7 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
         </span>
       </Tooltip>
 
-      <CascadingMenuButton
-        menuItems={() => getZoomMenuItems(model)}
-      >
+      <CascadingMenuButton menuItems={() => getZoomMenuItems(model)}>
         <MoreVert />
       </CascadingMenuButton>
     </div>

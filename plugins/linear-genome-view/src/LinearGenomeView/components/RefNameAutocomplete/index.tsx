@@ -198,6 +198,9 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
           {...restParams}
           variant="outlined"
           size="small"
+          // override global theme default (margin="dense") whose asymmetric
+          // 8/4 top/bottom margins offset the input 2px downward
+          margin="none"
           helperText={helperText}
           slotProps={{
             ...paramSlotProps,

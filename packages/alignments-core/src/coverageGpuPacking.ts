@@ -2,6 +2,34 @@
 // Both MultiLGVSyntenyDisplay and LinearAlignmentsDisplay use these
 // to prepare data for the HAL's uploadBuffer().
 
+export interface CoverageBinsGpuUpload {
+  buffer: ArrayBuffer
+  binCount: number
+}
+
+// Pack per-bp coverage bins for the PASS_COVERAGE GPU buffer (GPU renderer
+// layout). Layout per bin: [positionOffset(f32), normalizedDepth(f32), _pad(f32), _pad(f32)] = 16 bytes.
+// positionOffset is the bp offset from regionStart; maxDepth is used to
+// normalize depth into [0,1].
+export function packCoverageBinsForGpu(
+  depths: Float32Array,
+  maxDepth: number,
+  startOffset: number,
+  binCount: number,
+): CoverageBinsGpuUpload {
+  if (binCount === 0 || maxDepth <= 0) {
+    return { buffer: new ArrayBuffer(0), binCount: 0 }
+  }
+  const buffer = new ArrayBuffer(binCount * 16)
+  const f32 = new Float32Array(buffer)
+  for (let i = 0; i < binCount; i++) {
+    const o = i * 4
+    f32[o] = startOffset + i
+    f32[o + 1] = (depths[i] ?? 0) / maxDepth
+  }
+  return { buffer, binCount }
+}
+
 export interface SnpGpuUpload {
   buffer: ArrayBuffer
   segmentCount: number

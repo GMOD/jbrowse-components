@@ -16,10 +16,12 @@ import type { LinearGenomeViewModel } from '../index.ts'
 const useStyles = makeStyles()({
   headerBar: {
     display: 'flex',
+    alignItems: 'center',
     height: HEADER_BAR_HEIGHT,
   },
   headerForm: {
     flexWrap: 'nowrap',
+    alignItems: 'center',
     marginRight: 7,
   },
   spacer: {

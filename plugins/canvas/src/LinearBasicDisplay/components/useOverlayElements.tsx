@@ -174,11 +174,7 @@ export function useFloatingLabels(
           const relativeY = nameRendered
             ? labelData.descriptionLabel.relativeY
             : 0
-          emitLabel(
-            { ...labelData.descriptionLabel, relativeY },
-            2,
-            'desc',
-          )
+          emitLabel({ ...labelData.descriptionLabel, relativeY }, 2, 'desc')
         }
         if (labelData.subfeatureLabel) {
           emitLabel(labelData.subfeatureLabel, 0, 'sub', true)

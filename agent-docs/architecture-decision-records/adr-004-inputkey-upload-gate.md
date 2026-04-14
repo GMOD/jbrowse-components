@@ -55,10 +55,10 @@ workaround, not a pattern the rest of the tree needs to follow.
 
 For the workload in the trace (continuous zoom):
 
-- Most refetches produce content that differs in the fingerprint fields
-  (feature count, first/last id, bp range) because the viewport actually moved.
-  An `inputKey` gate would recompute, find a different key, and fire the
-  upload anyway.
+- Most refetches produce content that differs in the fingerprint fields (feature
+  count, first/last id, bp range) because the viewport actually moved. An
+  `inputKey` gate would recompute, find a different key, and fire the upload
+  anyway.
 - The narrow case where `inputKey` would win — a refetch that yields
   byte-identical content — arises mainly from settings-flip invalidations that
   then yield the same result. Rare in practice.
@@ -74,23 +74,23 @@ callsite) is not justified by the savings.
    `loaded.start/end`. The buffered margin exists but is small relative to
    active zoom. Widening the initial buffer, or softening the refetch criterion
    (e.g. "skip if the new visible range is still within the previously buffered
-   range"), would cut the number of legitimate uploads during zoom. This is
-   the actual lever for the trace's cost profile.
-2. **Worker-side coverage pack.** `uploadCoverageFromTypedArraysForRegion`
-   (~715 ms self-time in the trace) does not depend on main-thread Y values
-   and could move to the RPC worker without touching layout. Real but bounded
-   win. Not done.
+   range"), would cut the number of legitimate uploads during zoom. This is the
+   actual lever for the trace's cost profile.
+2. **Worker-side coverage pack.** `uploadCoverageFromTypedArraysForRegion` (~715
+   ms self-time in the trace) does not depend on main-thread Y values and could
+   move to the RPC worker without touching layout. Real but bounded win. Not
+   done.
 3. **Read/gap/mismatch pack** depends on main-thread-computed `readYs` (see
    `plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md`), so it can't be
-   trivially moved worker-side. Headline 2.37 s remains on the main thread
-   until that invariant changes.
+   trivially moved worker-side. Headline 2.37 s remains on the main thread until
+   that invariant changes.
 
 ## Consequences
 
 - No code or type changes. `uploadChangedRegions`, `PileupDataResult`,
   `WiggleDataResult`, etc. stay as they are.
-- Future agents investigating "uploads every frame" symptoms on this tree
-  should first run the instrumentation pattern used here (autorun fire-count +
+- Future agents investigating "uploads every frame" symptoms on this tree should
+  first run the instrumentation pattern used here (autorun fire-count +
   `mobx.trace()` + per-region upload/skip log) before assuming the gate is
   broken. The common finding will be that fires are correct and the cost is
   either genuine new-data uploads or `renderNow()` redraws.

@@ -64,12 +64,14 @@ export {
 } from './rendererUtils.ts'
 export type { NoncovDrawColors } from './rendererUtils.ts'
 export {
+  packCoverageBinsForGpu,
   packIndicatorsForGpu,
   packModCovSegmentsForGpu,
   packNoncovSegmentsForGpu,
   packSnpSegmentsForGpu,
 } from './coverageGpuPacking.ts'
 export type {
+  CoverageBinsGpuUpload,
   IndicatorGpuUpload,
   ModCovGpuUpload,
   NoncovGpuUpload,
