@@ -498,7 +498,6 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       ctx.rect(scissorX, 0, scissorW, canvasHeight)
       ctx.clip()
 
-      // Draw upward-pointing arcs behind coverage
       if (effectiveArcsHeight > 0 && !state.pairedArcsDown) {
         this.drawArcs(
           ctx,
@@ -600,7 +599,6 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
 
       ctx.restore() // pileup clip
 
-      // Draw downward-pointing arcs below coverage
       if (effectiveArcsHeight > 0 && state.pairedArcsDown) {
         ctx.save()
         ctx.beginPath()
@@ -966,7 +964,6 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   ) {
     const lineWidth = state.arcLineWidth ?? 1
 
-    // Draw filled arcs
     for (let i = 0; i < region.numArcs; i++) {
       const x1Bp = region.arcX1[i]! + region.regionStart
       const x2Bp = region.arcX2[i]! + region.regionStart
@@ -991,7 +988,6 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       ctx.stroke()
     }
 
-    // Draw arc lines (straight lines between positions)
     for (let i = 0; i < region.numArcLines; i++) {
       const bp = region.arcLinePositions[i]! + region.regionStart
       const x = this.bpToScreenX(bp, block, bpLength, fullBlockWidth)

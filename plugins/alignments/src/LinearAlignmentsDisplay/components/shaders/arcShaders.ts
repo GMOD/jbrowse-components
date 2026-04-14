@@ -4,7 +4,6 @@ import { fillColor } from '../../../shared/color.ts'
 
 import type { RGBColor } from './colors.ts'
 
-// ---- Arc shader constants ----
 export const ARC_CURVE_SEGMENTS = 64
 export const ARC_HEIGHT_MARGIN = 8
 export const NUM_ARC_COLORS = 8

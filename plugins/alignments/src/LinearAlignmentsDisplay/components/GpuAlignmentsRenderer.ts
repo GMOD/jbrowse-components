@@ -1000,7 +1000,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       const pileupTop = Math.round(state.pileupTopOffset * dpr)
       const pileupH = Math.max(0, bufH - pileupTop)
 
-      // Upward-pointing arcs rendered before coverage (behind)
       if (effectiveArcsHeight > 0 && !state.pairedArcsDown) {
         this.drawArcsPass(
           block,
@@ -1016,7 +1015,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         )
       }
 
-      // Coverage area: full-height scissor
       this.hal.setViewport(
         Math.round(scissorX * dpr),
         0,
@@ -1085,7 +1083,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         dpr,
       )
 
-      // Paired arcs rendered by GPU (direction controlled by pairedArcsDown uniform)
       if (effectiveArcsHeight > 0 && state.pairedArcsDown) {
         this.drawArcsPass(
           block,
