@@ -167,7 +167,18 @@ export function useFloatingLabels(
           emitLabel(labelData.nameLabel, 2, 'name', true)
         }
         if (labelData.descriptionLabel && model.effectiveShowDescriptions) {
-          emitLabel(labelData.descriptionLabel, 2, 'desc')
+          // descriptionLabel.relativeY is baked at RPC time assuming the name
+          // label is rendered; when showLabels is off, collapse description
+          // up to the top so it fills the vacated name row.
+          const nameRendered = !!labelData.nameLabel && model.showLabels
+          const relativeY = nameRendered
+            ? labelData.descriptionLabel.relativeY
+            : 0
+          emitLabel(
+            { ...labelData.descriptionLabel, relativeY },
+            2,
+            'desc',
+          )
         }
         if (labelData.subfeatureLabel) {
           emitLabel(labelData.subfeatureLabel, 0, 'sub', true)

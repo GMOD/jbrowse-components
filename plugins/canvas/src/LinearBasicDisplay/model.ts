@@ -398,7 +398,10 @@ export default function stateModelFactory(
         }
       },
 
-      setRpcDataMap(dataMap: Map<number, FeatureDataResult>) {
+      setRpcDataMap(
+        dataMap: Map<number, FeatureDataResult>,
+        { resetScroll = true }: { resetScroll?: boolean } = {},
+      ) {
         self.rpcDataMap = dataMap
         let globalMaxY = 0
         for (const d of dataMap.values()) {
@@ -409,7 +412,9 @@ export default function stateModelFactory(
           }
         }
         self.maxY = globalMaxY
-        self.setScrollTop(0)
+        if (resetScroll) {
+          self.setScrollTop(0)
+        }
         if (self.autoHeight) {
           self.setHeight(Math.min(Math.max(globalMaxY, 50), self.maxHeight))
         }
@@ -733,14 +738,6 @@ export default function stateModelFactory(
         if (!view.initialized || self.rpcDataMap.size === 0) {
           return
         }
-        console.log('[LinearBasicDisplay] relayoutForCurrentZoom', {
-          showLabels: self.showLabels,
-          showDescriptions: self.showDescriptions,
-          effectiveShowDescriptions: self.effectiveShowDescriptions,
-          featureDensityPerPx: self.featureDensityPerPx,
-          bpPerPx: view.bpPerPx,
-          regionCount: self.rpcDataMap.size,
-        })
         const dataMap = new Map<number, FeatureDataResult>()
         for (const [k, v] of self.rpcDataMap) {
           dataMap.set(k, { ...v })
@@ -752,7 +749,7 @@ export default function stateModelFactory(
           self.showLabels,
           self.effectiveShowDescriptions,
         )
-        self.setRpcDataMap(dataMap)
+        self.setRpcDataMap(dataMap, { resetScroll: false })
       },
     }))
     .actions(self => {
@@ -796,32 +793,23 @@ export default function stateModelFactory(
             ),
           )
 
-          // Reaction: relayout when label visibility changes (no refetch needed)
+          // Autorun: relayout when label visibility changes (no refetch needed)
+          let prevLabelVisibilityKey: string | undefined
           addDisposer(
             self,
-            reaction(
-              () => ({
-                showLabels: self.showLabels,
-                showDescriptions: self.showDescriptions,
-              }),
-              (curr, prev) => {
-                console.log('[LinearBasicDisplay] LabelVisibilityRelayout fired', {
-                  prev,
-                  curr,
-                  rpcDataMapSize: self.rpcDataMap.size,
-                })
-                if (self.rpcDataMap.size > 0) {
+            autorun(
+              () => {
+                const key = `${self.showLabels}|${self.showDescriptions}`
+                if (
+                  prevLabelVisibilityKey !== undefined &&
+                  key !== prevLabelVisibilityKey &&
+                  self.rpcDataMap.size > 0
+                ) {
                   self.relayoutForCurrentZoom()
                 }
+                prevLabelVisibilityKey = key
               },
-              {
-                name: 'LabelVisibilityRelayout',
-                delay: 50,
-                fireImmediately: false,
-                equals: (a, b) =>
-                  a.showLabels === b.showLabels &&
-                  a.showDescriptions === b.showDescriptions,
-              },
+              { name: 'LinearBasicDisplay:LabelVisibilityRelayout' },
             ),
           )
 
