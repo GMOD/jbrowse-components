@@ -35,7 +35,7 @@ pnpm 11 no longer reads settings from `package.json`. When it is released:
 - with multiwiggle labels, it is white text on light background
 - the dna letters are similar but it is white text on light color rects
 
-## Occaisionally large inertia for scroll zoom
+## Occasionally large inertia for scroll zoom
 
 Particularly after navigating to another tab, then returning to app, and zooming
 
@@ -49,7 +49,7 @@ Profiling is hard because affect goes away when profiler active?
 
 Might need detailed debug logging
 
-This is exotic but it also makes me wonder whether a more targetted 'mobx class
+This is exotic but it also makes me wonder whether a more targeted 'mobx class
 based' lineargenomeview model would help. We are expecting realtime performance
 out of mobx-state-tree which is tricky
 
@@ -125,7 +125,7 @@ option for now. If desired, implement coloring synteny features by query name
 (hash query name to a color) in LGVSyntenyDisplay similar to how it's done in
 alignments.
 
-## Simpliy and refactor all plugins repeatedly
+## Simplify and refactor all plugins repeatedly
 
 packages/core plugins/gtf plugins/arc packages/app-core products/jbrowse-web
 products/jbrowse-desktop etc.
