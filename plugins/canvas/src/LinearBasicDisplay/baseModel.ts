@@ -705,14 +705,6 @@ export default function baseStateModelFactory(
           if (!view.initialized || self.rpcDataMap.size === 0) {
             return
           }
-          console.log('[LinearCanvasBaseDisplay] relayoutForCurrentZoom', {
-            showLabels: self.showLabels,
-            showDescriptions: self.showDescriptions,
-            effectiveShowDescriptions: self.effectiveShowDescriptions,
-            featureDensityPerPx: self.featureDensityPerPx,
-            bpPerPx: view.bpPerPx,
-            regionCount: self.rpcDataMap.size,
-          })
           const dataMap = new Map<number, FeatureDataResult>()
           for (const [k, v] of self.rpcDataMap) {
             dataMap.set(k, { ...v })
@@ -761,20 +753,14 @@ export default function baseStateModelFactory(
 
             addDisposer(
               self,
-              reaction(
-                () => ({
-                  showLabels: self.showLabels,
-                  showDescriptions: self.showDescriptions,
-                }),
-                (curr, prev) => {
-                  console.log(
-                    '[LinearCanvasBaseDisplay] LabelVisibilityRelayout fired',
-                    {
-                      prev,
-                      curr,
-                      rpcDataMapSize: self.rpcDataMap.size,
-                    },
-                  )
+              autorun(
+                () => {
+                  // force access
+                  // eslint-disable-next-line  @typescript-eslint/no-unused-expressions
+                  self.showLabels
+                  // force access
+                  // eslint-disable-next-line  @typescript-eslint/no-unused-expressions
+                  self.showDescriptions
                   if (self.rpcDataMap.size > 0) {
                     self.relayoutForCurrentZoom()
                   }
@@ -782,10 +768,6 @@ export default function baseStateModelFactory(
                 {
                   name: 'LabelVisibilityRelayout',
                   delay: 50,
-                  fireImmediately: false,
-                  equals: (a, b) =>
-                    a.showLabels === b.showLabels &&
-                    a.showDescriptions === b.showDescriptions,
                 },
               ),
             )

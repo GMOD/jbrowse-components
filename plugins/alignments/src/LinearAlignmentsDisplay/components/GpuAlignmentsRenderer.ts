@@ -1,4 +1,3 @@
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
 import { splitInterbasesByType } from './alignmentComponentUtils.ts'
@@ -117,7 +116,6 @@ import {
   U_FEAT_H,
   U_FEAT_SPACING,
   U_FLIP_STRAND_LONG_READ,
-  U_GRADIENT_HUE,
   U_HIGHLIGHT_IDX,
   U_HIGHLIGHT_ONLY,
   U_HP_ZERO,
