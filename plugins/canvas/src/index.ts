@@ -17,5 +17,7 @@ export default class CanvasPlugin extends Plugin {
 export {
   linearBasicDisplayConfigSchemaFactory,
   linearBasicDisplayStateModelFactory,
+  linearCanvasBaseDisplayConfigSchemaFactory,
+  linearCanvasBaseDisplayStateModelFactory,
 } from './LinearBasicDisplay/index.ts'
 export type { LinearBasicDisplayModel } from './LinearBasicDisplay/index.ts'

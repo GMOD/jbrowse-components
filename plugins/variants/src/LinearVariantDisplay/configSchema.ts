@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-canvas'
+import { linearCanvasBaseDisplayConfigSchemaFactory } from '@jbrowse/plugin-canvas'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -7,7 +7,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config LinearVariantDisplay
  *
- * Extends LinearBasicDisplay for GPU-accelerated rendering.
+ * Extends LinearCanvasBaseDisplay for GPU-accelerated variant rendering.
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -19,7 +19,8 @@ export default function configSchemaF(pluginManager: PluginManager) {
       /**
        * #baseConfiguration
        */
-      baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),
+      baseConfiguration:
+        linearCanvasBaseDisplayConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,
     },
   )

@@ -25,4 +25,6 @@ export default function register(pluginManager: PluginManager) {
 
 export { default as linearBasicDisplayStateModelFactory } from './model.ts'
 export { default as linearBasicDisplayConfigSchemaFactory } from './configSchema.ts'
+export { default as linearCanvasBaseDisplayStateModelFactory } from './baseModel.ts'
+export { default as linearCanvasBaseDisplayConfigSchemaFactory } from './baseConfigSchema.ts'
 export type { LinearBasicDisplayModel } from './model.ts'
