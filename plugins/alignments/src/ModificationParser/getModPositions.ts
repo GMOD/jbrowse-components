@@ -26,6 +26,8 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
     const split = mod.split(',')
     const basemod = split[0]!
     const { base, strand, typestr } = parseModHeader(basemod, mod)
+    // Note: mod field ('.' or '?') indicates how skipped bases are interpreted
+    // but for getModPositions we only need base, strand, and typestr
 
     // Note: Negative strand modifications (e.g., T-a) are now supported
     // They are processed the same way as positive strand modifications

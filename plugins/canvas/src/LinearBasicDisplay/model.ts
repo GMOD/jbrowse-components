@@ -733,6 +733,14 @@ export default function stateModelFactory(
         if (!view.initialized || self.rpcDataMap.size === 0) {
           return
         }
+        console.log('[LinearBasicDisplay] relayoutForCurrentZoom', {
+          showLabels: self.showLabels,
+          showDescriptions: self.showDescriptions,
+          effectiveShowDescriptions: self.effectiveShowDescriptions,
+          featureDensityPerPx: self.featureDensityPerPx,
+          bpPerPx: view.bpPerPx,
+          regionCount: self.rpcDataMap.size,
+        })
         const dataMap = new Map<number, FeatureDataResult>()
         for (const [k, v] of self.rpcDataMap) {
           dataMap.set(k, { ...v })
@@ -796,7 +804,12 @@ export default function stateModelFactory(
                 showLabels: self.showLabels,
                 showDescriptions: self.showDescriptions,
               }),
-              () => {
+              (curr, prev) => {
+                console.log('[LinearBasicDisplay] LabelVisibilityRelayout fired', {
+                  prev,
+                  curr,
+                  rpcDataMapSize: self.rpcDataMap.size,
+                })
                 if (self.rpcDataMap.size > 0) {
                   self.relayoutForCurrentZoom()
                 }

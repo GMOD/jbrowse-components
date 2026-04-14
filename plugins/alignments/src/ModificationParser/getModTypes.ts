@@ -11,6 +11,8 @@ export function getModTypes(mm: string) {
 
     const basemod = mod.split(',')[0]!
     const { base, strand, typestr } = parseModHeader(basemod, mod)
+    // Note: mod field ('.' or '?') indicates how skipped bases are interpreted
+    // but for getModTypes we only need base, strand, and typestr
 
     // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so split,
     // and they can also be chemical codes (ChEBI) e.g. C+16061

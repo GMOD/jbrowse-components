@@ -59,17 +59,18 @@ fn eval_arc(t: f32, inst: ArcInst) -> vec2f {
   let absrad_px = absrad * px_per_bp;
   let avail_h = canvas_height() - coverage_offset() - ${ARC_HEIGHT_MARGIN}.0;
   let dest_y = min(avail_h, absrad_px);
+  let y_dir = select(-1.0, 1.0, uf(34u) > 0.5);
   var x_bp: f32; var y_px: f32;
   if inst.is_arc > 0.5 {
     let angle = t * PI;
     x_bp = cx + cos(angle) * radius;
-    y_px = select(0.0, sin(angle) * absrad_px * (dest_y / absrad_px), absrad_px > 0.0);
+    y_px = select(0.0, sin(angle) * absrad_px * (dest_y / absrad_px) * y_dir, absrad_px > 0.0);
   } else {
     // SYNC(shaders/arcShaders.ts): cubic Bezier basis mt3, 3*mt2*t, 3*mt*t2, t3
     let mt = 1.0 - t; let mt2 = mt*mt; let mt3 = mt2*mt;
     let t2 = t*t; let t3 = t2*t;
     x_bp = mt3*inst.x1 + 3.0*mt2*t*inst.x1 + 3.0*mt*t2*inst.x2 + t3*inst.x2;
-    y_px = 3.0*mt2*t*dest_y + 3.0*mt*t2*dest_y;
+    y_px = (3.0*mt2*t*dest_y + 3.0*mt*t2*dest_y) * y_dir;
   }
   let screen_x = uf(24u) + (x_bp - uf(30u)) * px_per_bp;
   return vec2f(screen_x, y_px);
@@ -142,8 +143,9 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let screen_x = uf(24u) + norm * uf(25u);
   let sx = (screen_x / canvas_width()) * 2.0 - 1.0;
 
+  let y_offset = select(canvas_height() - coverage_offset() - inst.y, inst.y, uf(34u) > 0.5);
   var sy: f32;
-  if v == 0u { sy = 1.0 - ((inst.y + coverage_offset()) / canvas_height()) * 2.0; }
+  if v == 0u { sy = 1.0 - ((y_offset + coverage_offset()) / canvas_height()) * 2.0; }
   else { sy = 1.0 - (coverage_offset() / canvas_height()) * 2.0; }
 
   out.position = vec4f(flip_x(sx), sy, 0.0, 1.0);

@@ -498,6 +498,21 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       ctx.rect(scissorX, 0, scissorW, canvasHeight)
       ctx.clip()
 
+      // Draw upward-pointing arcs behind coverage
+      if (effectiveArcsHeight > 0 && !state.pairedArcsDown) {
+        this.drawArcs(
+          ctx,
+          region,
+          block,
+          bpLength,
+          fullBlockWidth,
+          state,
+          0,
+          effectiveArcsHeight,
+          state.pairedArcsDown,
+        )
+      }
+
       if (state.showCoverage) {
         this.drawCoverage(ctx, region, block, bpLength, fullBlockWidth, state)
       }
@@ -585,7 +600,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
 
       ctx.restore() // pileup clip
 
-      // Arcs rendered by GPU/Canvas when pairedArcsDown; SVG overlay handles !pairedArcsDown
+      // Draw downward-pointing arcs below coverage
       if (effectiveArcsHeight > 0 && state.pairedArcsDown) {
         ctx.save()
         ctx.beginPath()
@@ -600,6 +615,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
           state,
           covH,
           effectiveArcsHeight,
+          state.pairedArcsDown,
         )
         ctx.restore()
       }
@@ -946,6 +962,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     state: RenderState,
     arcsTop: number,
     arcsH: number,
+    pairedArcsDown: boolean,
   ) {
     const lineWidth = state.arcLineWidth ?? 1
 
@@ -964,8 +981,13 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       ctx.strokeStyle = this.paletteColor(arcColorPalette, colorIdx)
       ctx.lineWidth = lineWidth
       ctx.beginPath()
-      ctx.moveTo(sx1, arcsTop + arcsH)
-      ctx.quadraticCurveTo(midX, arcsTop + arcsH - arcH, sx2, arcsTop + arcsH)
+      if (pairedArcsDown) {
+        ctx.moveTo(sx1, arcsTop + arcsH)
+        ctx.quadraticCurveTo(midX, arcsTop + arcsH - arcH, sx2, arcsTop + arcsH)
+      } else {
+        ctx.moveTo(sx1, arcsTop)
+        ctx.quadraticCurveTo(midX, arcsTop + arcH, sx2, arcsTop)
+      }
       ctx.stroke()
     }
 

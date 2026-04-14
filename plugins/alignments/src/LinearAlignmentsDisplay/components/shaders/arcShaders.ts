@@ -88,12 +88,13 @@ vec2 evalCurve(float t) {
   float availableHeight = canvas_height() - coverage_offset() - ${ARC_HEIGHT_MARGIN}.0;
   float destY = min(availableHeight, absradPx);
   float screenX, y_px;
+  float yDir = uf(137u) > 0.5 ? 1.0 : -1.0;
   if (a_isArc > 0.5) {
     float angle = t * PI;
     float cxPx = (startPx + endPx) / 2.0;
     screenX = cxPx + cos(angle) * radiusPx;
     float rawY = sin(angle) * absradPx;
-    y_px = (absradPx > 0.0) ? rawY * (destY / absradPx) : 0.0;
+    y_px = (absradPx > 0.0) ? rawY * (destY / absradPx) * yDir : 0.0;
   } else {
     // SYNC(wgsl/miscShaders.ts): cubic Bezier basis mt3, 3*mt2*t, 3*mt*t2, t3
     float mt = 1.0 - t;
@@ -102,7 +103,7 @@ vec2 evalCurve(float t) {
     float t2 = t * t;
     float t3 = t2 * t;
     screenX = mt3 * startPx + 3.0 * mt2 * t * startPx + 3.0 * mt * t2 * endPx + t3 * endPx;
-    y_px = 3.0 * mt2 * t * destY + 3.0 * mt * t2 * destY;
+    y_px = 3.0 * mt2 * t * destY + 3.0 * mt * t2 * destY * yDir;
   }
   return vec2(screenX, y_px);
 }
@@ -187,7 +188,8 @@ void main() {
   float normalizedBpPos = hp_scale_linear(splitPos, bp_range());
   float screenX = uf(24u) + normalizedBpPos * uf(25u);
   float sx = (screenX / canvas_width()) * 2.0 - 1.0;
-  float sy = 1.0 - ((a_y + coverage_offset()) / canvas_height()) * 2.0;
+  float yOffset = uf(137u) > 0.5 ? a_y : (canvas_height() - coverage_offset() - a_y);
+  float sy = 1.0 - ((yOffset + coverage_offset()) / canvas_height()) * 2.0;
   gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
   int idx = int(a_colorType + 0.5);
   uint ci = uint(min(idx, ${NUM_LINE_COLORS - 1}));

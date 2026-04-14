@@ -6,17 +6,19 @@ import { modificationRegex, parseModHeader } from './consts.ts'
 //   1. Capture strand ([-+]) as group 2 for downstream processing (spec doesn't)
 //   2. Accept uppercase single letters [A-Z] in addition to lowercase (spec forbids this)
 //      - Real-world BAMs contain uppercase codes (e.g., C+A, A+G) not in the spec
-//   3. Use non-capturing group for modifiers (?:[.?]?) instead of capturing (spec captures)
+//   3. Capture modifier flag ([.?]?) as group 4 per spec semantics:
+//      - '?' = modification status of skipped bases is unknown
+//      - '.' or absent = skipped bases should be assumed low probability of modification
 //   4. Only match the header part (caller handles comma-separated deltas and semicolons)
 
 describe('modificationRegex - HTS-specs compliance with documented divergences', () => {
   test('matches base modification code without modifiers', () => {
     const match = modificationRegex.exec('C+m')
-    expect(match).toHaveLength(4)
+    expect(match).toHaveLength(5)
     expect(match?.[1]).toBe('C')
     expect(match?.[2]).toBe('+')
     expect(match?.[3]).toBe('m')
-    expect(match?.[4]).toBeUndefined()
+    expect(match?.[4]).toBe('')
   })
 
   test('matches with ? modifier (unknown status)', () => {
@@ -24,7 +26,7 @@ describe('modificationRegex - HTS-specs compliance with documented divergences',
     expect(match?.[1]).toBe('C')
     expect(match?.[2]).toBe('+')
     expect(match?.[3]).toBe('m')
-    expect(match?.[4]).toBeUndefined()
+    expect(match?.[4]).toBe('?')
   })
 
   test('matches with . modifier (skip-this-base)', () => {
@@ -32,7 +34,7 @@ describe('modificationRegex - HTS-specs compliance with documented divergences',
     expect(match?.[1]).toBe('C')
     expect(match?.[2]).toBe('+')
     expect(match?.[3]).toBe('m')
-    expect(match?.[4]).toBeUndefined()
+    expect(match?.[4]).toBe('.')
   })
 
   test('matches multi-type lowercase codes', () => {
@@ -63,11 +65,16 @@ describe('modificationRegex - HTS-specs compliance with documented divergences',
     expect(match?.[3]).toBe('a')
   })
 
-  test('group 4 is non-capturing (modifier not captured)', () => {
-    const match = modificationRegex.exec('C+m?')
-    // Group 4 should be undefined because it's non-capturing (?:[.?]?)
-    expect(match?.length).toBe(4)
-    expect(match?.[4]).toBeUndefined()
+  test('group 4 captures the modifier flag per spec semantics', () => {
+    const match1 = modificationRegex.exec('C+m')
+    expect(match1?.length).toBe(5)
+    expect(match1?.[4]).toBe('') // no modifier = empty string
+
+    const match2 = modificationRegex.exec('C+m?')
+    expect(match2?.[4]).toBe('?') // unknown status
+
+    const match3 = modificationRegex.exec('C+m.')
+    expect(match3?.[4]).toBe('.') // low probability assumption
   })
 
   // Divergence 1: We capture strand as group 2, spec doesn't
@@ -98,21 +105,33 @@ describe('modificationRegex - HTS-specs compliance with documented divergences',
 })
 
 describe('parseModHeader with modifiers', () => {
-  test('parseModHeader ignores ? modifier', () => {
+  test('parseModHeader captures ? modifier for unknown status', () => {
     const result = parseModHeader('C+m?', 'C+m?,0,1;')
     expect(result).toEqual({
       base: 'C',
       strand: '+',
       typestr: 'm',
+      mod: '?',
     })
   })
 
-  test('parseModHeader ignores . modifier', () => {
+  test('parseModHeader captures . modifier for low probability', () => {
     const result = parseModHeader('C+m.', 'C+m.,0,1;')
     expect(result).toEqual({
       base: 'C',
       strand: '+',
       typestr: 'm',
+      mod: '.',
+    })
+  })
+
+  test('parseModHeader defaults to . when no modifier present', () => {
+    const result = parseModHeader('C+m', 'C+m,0,1;')
+    expect(result).toEqual({
+      base: 'C',
+      strand: '+',
+      typestr: 'm',
+      mod: '.',
     })
   })
 
@@ -122,6 +141,7 @@ describe('parseModHeader with modifiers', () => {
       base: 'C',
       strand: '+',
       typestr: 'mh',
+      mod: '?',
     })
   })
 })

@@ -135,6 +135,7 @@ import {
   U_REVERSED,
   U_SCROLL_TOP,
   U_SHOW_STROKE,
+  U_PAIRED_ARCS_DOWN,
 } from './wgsl/common.ts'
 import {
   COVERAGE_WGSL,
@@ -999,6 +1000,22 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       const pileupTop = Math.round(state.pileupTopOffset * dpr)
       const pileupH = Math.max(0, bufH - pileupTop)
 
+      // Upward-pointing arcs rendered before coverage (behind)
+      if (effectiveArcsHeight > 0 && !state.pairedArcsDown) {
+        this.drawArcsPass(
+          block,
+          region,
+          state,
+          scissorX,
+          scissorW,
+          0,
+          dpr,
+          bufH,
+          effectiveArcsHeight,
+          effectiveArcsHeight,
+        )
+      }
+
       // Coverage area: full-height scissor
       this.hal.setViewport(
         Math.round(scissorX * dpr),
@@ -1068,44 +1085,19 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         dpr,
       )
 
-      // Arcs area — only rendered by GPU when pairedArcsDown; otherwise SVG overlay handles it
+      // Paired arcs rendered by GPU (direction controlled by pairedArcsDown uniform)
       if (effectiveArcsHeight > 0 && state.pairedArcsDown) {
-        const covHPx = Math.round(covH * dpr)
-        const yscaleOffPx = Math.round(YSCALEBAR_LABEL_OFFSET * dpr)
-        const arcViewportTop = Math.max(0, covHPx - yscaleOffPx)
-        const arcOverlapPx = covHPx - arcViewportTop
-        const arcViewportH = Math.min(
-          Math.round(effectiveArcsHeight * dpr) + arcOverlapPx,
-          Math.max(0, bufH - arcViewportTop),
+        this.drawArcsPass(
+          block,
+          region,
+          state,
+          scissorX,
+          scissorW,
+          covH,
+          dpr,
+          bufH,
+          effectiveArcsHeight,
         )
-        if (arcViewportH > 0) {
-          this.uF32[U_COV_OFFSET] = 0
-          this.uF32[U_CANVAS_H] = arcViewportH / dpr
-          this.writeBlockUniforms(region, block, scissorX, scissorW)
-          this.uF32[U_LINE_WIDTH_PX] = state.arcLineWidth ?? 1
-          this.uF32[U_GRADIENT_HUE] = 0
-          this.hal.writeUniforms(this.uData)
-
-          this.hal.setViewport(
-            Math.round(scissorX * dpr),
-            arcViewportTop,
-            Math.round(scissorW * dpr),
-            arcViewportH,
-          )
-          this.hal.setScissor(
-            Math.round(scissorX * dpr),
-            arcViewportTop,
-            Math.round(scissorW * dpr),
-            arcViewportH,
-          )
-          this.hal.drawPass(PASS_ARC, block.regionNumber)
-          this.hal.drawPass(PASS_ARC_LINE, block.regionNumber)
-
-          // Restore uniforms
-          this.uF32[U_COV_OFFSET] = state.pileupTopOffset
-          this.uF32[U_CANVAS_H] = state.canvasHeight
-          this.hal.writeUniforms(this.uData)
-        }
       }
 
       hasDrawn = true
@@ -1146,6 +1138,54 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     this.uF32[U_DOMAIN_START] = block.bpRangeX[0] - r.regionStart
     this.uF32[U_DOMAIN_END] = block.bpRangeX[1] - r.regionStart
     this.uU32[U_REGION_START] = r.regionStart
+  }
+
+  private drawArcsPass(
+    block: RenderBlock,
+    region: LocalRegion,
+    state: RenderState,
+    scissorX: number,
+    scissorW: number,
+    arcTop: number,
+    dpr: number,
+    bufH: number,
+    effectiveArcsHeight: number,
+    arcHeightForOffset?: number,
+  ) {
+    const covHPx = Math.round(arcTop * dpr)
+    const arcViewportTop = covHPx
+    const arcViewportH = Math.min(
+      Math.round(effectiveArcsHeight * dpr),
+      Math.max(0, bufH - arcViewportTop),
+    )
+    if (arcViewportH > 0) {
+      this.uF32[U_COV_OFFSET] = arcHeightForOffset ?? 0
+      this.uF32[U_CANVAS_H] = arcViewportH / dpr
+      this.writeBlockUniforms(region, block, scissorX, scissorW)
+      this.uF32[U_LINE_WIDTH_PX] = state.arcLineWidth ?? 1
+      this.uF32[U_GRADIENT_HUE] = 0
+      this.uF32[U_PAIRED_ARCS_DOWN] = state.pairedArcsDown ? 1.0 : 0.0
+      this.hal.writeUniforms(this.uData)
+
+      this.hal.setViewport(
+        Math.round(scissorX * dpr),
+        arcViewportTop,
+        Math.round(scissorW * dpr),
+        arcViewportH,
+      )
+      this.hal.setScissor(
+        Math.round(scissorX * dpr),
+        arcViewportTop,
+        Math.round(scissorW * dpr),
+        arcViewportH,
+      )
+      this.hal.drawPass(PASS_ARC, block.regionNumber)
+      this.hal.drawPass(PASS_ARC_LINE, block.regionNumber)
+
+      this.uF32[U_COV_OFFSET] = state.pileupTopOffset
+      this.uF32[U_CANVAS_H] = state.canvasHeight
+      this.hal.writeUniforms(this.uData)
+    }
   }
 
   private renderFeatureOverlays(

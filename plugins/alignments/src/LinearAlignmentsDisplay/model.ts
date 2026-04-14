@@ -1543,12 +1543,26 @@ export default function stateModelFactory(
                   },
                 },
                 {
-                  label: 'Show paired/supplementary arcs pointing down',
-                  type: 'checkbox' as const,
-                  checked: self.pairedArcsDown,
-                  onClick: () => {
-                    self.setArcsDown(!self.pairedArcsDown)
-                  },
+                  label: 'Paired arcs direction',
+                  type: 'subMenu' as const,
+                  subMenu: [
+                    {
+                      label: 'Pointing down',
+                      type: 'radio' as const,
+                      checked: self.pairedArcsDown,
+                      onClick: () => {
+                        self.setArcsDown(true)
+                      },
+                    },
+                    {
+                      label: 'Pointing up',
+                      type: 'radio' as const,
+                      checked: !self.pairedArcsDown,
+                      onClick: () => {
+                        self.setArcsDown(false)
+                      },
+                    },
+                  ],
                 },
                 {
                   label: 'Show sashimi arcs',

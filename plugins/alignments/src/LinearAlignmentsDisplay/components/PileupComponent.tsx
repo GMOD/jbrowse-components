@@ -11,7 +11,6 @@ import {
 import { observer } from 'mobx-react'
 
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
-import PairedArcsOverlay from './PairedArcsOverlay.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import {
@@ -246,7 +245,6 @@ const PileupInner = observer(function PileupInner({
         />
 
         <SashimiArcsOverlay model={model} />
-        <PairedArcsOverlay model={model} />
 
         <VisibleLabelsOverlay
           labels={model.visibleLabels}

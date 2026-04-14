@@ -8,24 +8,26 @@
 //    - Spec only allows lowercase or digits, NOT uppercase letters
 //    - Real-world BAMs contain uppercase codes (e.g., C+A, A+G)
 //    - These appear to be undocumented extensions for ambiguity or variant codes
-// 3. Non-capturing modifier group: (?:[.?]?) instead of [.?]?
-//    - The . and ? flags are metadata for other parsers; we don't need them
-//    - Non-capturing clarifies which groups we use (1,2,3)
+// 3. Capture modifier flag as group 4: ([.?]?) instead of non-capturing
+//    - Per spec: '?' = modification status of skipped bases is unknown
+//    - Per spec: '.' or absent = skipped bases should be assumed low probability of modification
+//    - We capture this to support correct interpretation of skipped positions
 // 4. Don't match delta values or semicolon
-//    - We extract just the base modification header (e.g., "C+m" from "C+m,2,1;")
+//    - We extract just the base modification header (e.g., "C+m?" from "C+m?,2,1;")
 //    - Caller splits by ";" and "," to get this header before passing to regex
 //
-// Real-world examples with ? and . modifiers:
-//   C+m?  → uncertain methylation status
-//   C+m.  → skip-this-base marker
+// Real-world examples with modifier flags:
+//   C+m   → skipped bases = low probability modification (default)
+//   C+m.  → skipped bases = low probability modification (explicit)
+//   C+m?  → skipped bases = unknown modification status
 export const modificationRegex = new RegExp(
-  /([ACGTUN])([-+])([a-z]+|[A-Z]|[0-9]+)(?:[.?]?)/,
+  /([ACGTUN])([-+])([a-z]+|[A-Z]|[0-9]+)([.?]?)/,
 )
 
 export function parseModHeader(
   basemod: string,
   fullmod: string,
-): { base: string; strand: string; typestr: string } {
+): { base: string; strand: string; typestr: string; mod: string } {
   const matches = modificationRegex.exec(basemod)
   if (!matches) {
     throw new Error(`bad format for MM tag: "${fullmod}"`)
@@ -34,5 +36,6 @@ export function parseModHeader(
     base: matches[1]!,
     strand: matches[2]!,
     typestr: matches[3]!,
+    mod: matches[4] || '.',
   }
 }
