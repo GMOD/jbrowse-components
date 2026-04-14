@@ -1,6 +1,6 @@
 import { revcom } from '@jbrowse/core/util'
 
-import { modificationRegex } from './consts.ts'
+import { parseModHeader } from './consts.ts'
 
 /**
  * Parse MM tag to extract modification positions on the read sequence.
@@ -15,7 +15,7 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
   const seq = fstrand === -1 ? revcom(fseq) : fseq
   const seqLength = seq.length
   const mods = mm.split(';')
-  const result = []
+  const result: { type: string; base: string; strand: string; positions: number[] }[] = []
 
   for (const mod of mods) {
     // Empty string
@@ -25,26 +25,19 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
 
     const split = mod.split(',')
     const basemod = split[0]!
-    const matches = modificationRegex.exec(basemod)
-    if (!matches) {
-      throw new Error(`bad format for MM tag: "${mod}"`)
-    }
-    const [, base, strand, typestr] = matches
-
-    // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so split,
-    // and they can also be chemical codes (ChEBI) e.g. C+16061
-    const types = typestr!.split(/(\d+|.)/)
+    const { base, strand, typestr } = parseModHeader(basemod, mod)
 
     // Note: Negative strand modifications (e.g., T-a) are now supported
     // They are processed the same way as positive strand modifications
     // The strand information is preserved for simplex/duplex detection
 
-    // this logic based on parse_mm.pl from hts-specs
-    for (const type of types) {
-      if (type === '') {
-        continue
-      }
+    // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so split,
+    // and they can also be chemical codes (ChEBI) e.g. C+16061
+    // Iterate directly over characters to avoid array creation for multi-type
+    const isSingleType = typestr.charCodeAt(0) < 97 || typestr.length === 1
 
+    // this logic based on parse_mm.pl from hts-specs
+    const processType = (type: string) => {
       const splitLength = split.length
       let currPos = 0
 
@@ -86,10 +79,19 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
 
       result.push({
         type,
-        base: base!,
-        strand: strand!,
+        base,
+        strand,
         positions: validPositions,
       })
+    }
+
+    if (isSingleType) {
+      processType(typestr)
+    } else {
+      // Multi-char lowercase: each character is a separate type
+      for (let j = 0, len = typestr.length; j < len; j++) {
+        processType(typestr[j]!)
+      }
     }
   }
 

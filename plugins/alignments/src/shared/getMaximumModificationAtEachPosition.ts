@@ -8,23 +8,23 @@ export function getMaxProbModAtEachPosition(
   ops: ArrayLike<number>,
   fstrand: -1 | 0 | 1,
 ) {
-  const maxProbModForPosition = [] as {
+  const maxProbModForPosition: {
     type: string
     base: string
     prob: number
-  }[]
+  }[] = []
   let probIndex = 0
   for (const { type, base, positions } of modifications) {
-    for (const { ref, idx } of getNextRefPos(ops, positions)) {
+    getNextRefPos(ops, positions, (ref, idx) => {
       const prob =
         probabilities?.[
           probIndex + (fstrand === -1 ? positions.length - 1 - idx : idx)
-        ] || 0
+        ] ?? 0
       const existing = maxProbModForPosition[ref]
       if (!existing || prob > existing.prob) {
         maxProbModForPosition[ref] = { type, base, prob }
       }
-    }
+    })
     probIndex += positions.length
   }
   return maxProbModForPosition

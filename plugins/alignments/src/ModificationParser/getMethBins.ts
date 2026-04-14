@@ -29,10 +29,10 @@ export function getMethBins({
   flen,
 }: ParsedModData) {
   const isReverse = fstrand === -1
-  const methBins = [] as number[]
-  const hydroxyMethBins = [] as number[]
-  const methProbs = [] as number[]
-  const hydroxyMethProbs = [] as number[]
+  const methBins: number[] = []
+  const hydroxyMethBins: number[] = []
+  const methProbs: number[] = []
+  const hydroxyMethProbs: number[] = []
   let probIndex = 0
 
   for (const { type, positions } of modifications) {
@@ -40,9 +40,9 @@ export function getMethBins({
       probIndex += positions.length
       continue
     }
-    for (const { ref, idx } of getNextRefPos(cigarOps, positions)) {
+    getNextRefPos(cigarOps, positions, (ref, idx) => {
       if (ref < 0 || ref >= flen) {
-        continue
+        return
       }
 
       // Check CpG context directly from the read sequence without allocating
@@ -55,11 +55,11 @@ export function getMethBins({
       const nb = isReverse ? seq[pos - 1] : seq[pos + 1]
       const wanted = isReverse ? 'c' : 'g'
       if (nb?.toLowerCase() !== wanted) {
-        continue
+        return
       }
 
       const idx2 = probIndex + (isReverse ? positions.length - 1 - idx : idx)
-      const prob = probabilities?.[idx2] || 0
+      const prob = probabilities?.[idx2] ?? 0
 
       if (type === 'm') {
         methBins[ref] = 1
@@ -68,7 +68,7 @@ export function getMethBins({
         hydroxyMethBins[ref] = 1
         hydroxyMethProbs[ref] = prob
       }
-    }
+    })
     probIndex += positions.length
   }
 
