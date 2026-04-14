@@ -491,7 +491,7 @@ export default function stateModelFactory(
       setCompactness(level: 'normal' | 'compact' | 'super-compact') {
         self.setOverride(
           'displayMode',
-          level === 'super-compact' ? 'reducedRepresentation' : level,
+          level === 'super-compact' ? 'superCompact' : level,
         )
       },
 
@@ -1044,6 +1044,7 @@ export default function stateModelFactory(
               [
                 { value: 'normal', label: 'Normal' },
                 { value: 'compact', label: 'Compact' },
+                { value: 'superCompact', label: 'Super-compact' },
               ] as const
             ).map(({ value, label }) => ({
               label,

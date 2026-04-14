@@ -77,6 +77,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         model: types.enumeration('displayMode', [
           'normal',
           'compact',
+          'superCompact',
           'reducedRepresentation',
           'collapse',
         ]),

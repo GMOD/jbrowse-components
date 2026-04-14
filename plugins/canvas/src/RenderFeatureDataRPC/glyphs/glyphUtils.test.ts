@@ -127,6 +127,15 @@ describe('getFeatureDimensions', () => {
     expect(dims.heightPx).toBe(6) // 10 * 0.6
   })
 
+  it('computes height with super-compact multiplier', () => {
+    const feature = mockFeature({ type: 'exon', start: 100, end: 300 })
+    const config = mockDisplayConfig({ displayMode: 'superCompact' })
+
+    const dims = getFeatureDimensions(feature, 1, config)
+
+    expect(dims.heightPx).toBe(3) // 10 * 0.3
+  })
+
   it('scales width by bpPerPx', () => {
     const feature = mockFeature({ type: 'exon', start: 0, end: 1000 })
     const config = mockDisplayConfig()

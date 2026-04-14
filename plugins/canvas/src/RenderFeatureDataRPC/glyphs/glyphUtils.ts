@@ -2,6 +2,14 @@ import type { DisplayConfig } from '../renderConfig.ts'
 import type { FeatureLayout, GlyphType, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
+const HEIGHT_MULTIPLIERS: Record<string, number> = {
+  normal: 1,
+  compact: 0.6,
+  superCompact: 0.3,
+  reducedRepresentation: 1,
+  collapse: 1,
+}
+
 // Sort children left-to-right; ties broken by longest first
 export function sortByPosition(children: FeatureLayout[]) {
   return [...children].sort((a, b) => {
@@ -21,7 +29,7 @@ export function getFeatureDimensions(
 ) {
   const start = feature.get('start')
   const end = feature.get('end')
-  const heightMultiplier = config.displayMode === 'compact' ? 0.6 : 1
+  const heightMultiplier = HEIGHT_MULTIPLIERS[config.displayMode] ?? 1
   const heightPx = config.featureHeight * heightMultiplier
   const widthPx = (end - start) / bpPerPx
   return { start, end, heightPx, widthPx }
