@@ -59,7 +59,7 @@ fn eval_arc(t: f32, inst: ArcInst) -> vec2f {
   let absrad_px = absrad * px_per_bp;
   let avail_h = canvas_height() - coverage_offset() - ${ARC_HEIGHT_MARGIN}.0;
   let dest_y = min(avail_h, absrad_px);
-  let y_dir = select(-1.0, 1.0, uf(34u) > 0.5);
+  let y_dir = select(-1.0, 1.0, uf(137u) > 0.5);
   var x_bp: f32; var y_px: f32;
   if inst.is_arc > 0.5 {
     let angle = t * PI;
@@ -143,7 +143,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let screen_x = uf(24u) + norm * uf(25u);
   let sx = (screen_x / canvas_width()) * 2.0 - 1.0;
 
-  let y_offset = select(canvas_height() - coverage_offset() - inst.y, inst.y, uf(34u) > 0.5);
+  let y_offset = select(canvas_height() - coverage_offset() - inst.y, inst.y, uf(137u) > 0.5);
   var sy: f32;
   if v == 0u { sy = 1.0 - ((y_offset + coverage_offset()) / canvas_height()) * 2.0; }
   else { sy = 1.0 - (coverage_offset() / canvas_height()) * 2.0; }

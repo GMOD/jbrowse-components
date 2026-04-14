@@ -1152,8 +1152,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     effectiveArcsHeight: number,
     arcHeightForOffset?: number,
   ) {
-    const covHPx = Math.round(arcTop * dpr)
-    const arcViewportTop = covHPx
+    const arcViewportTop = Math.round(arcTop * dpr)
     const arcViewportH = Math.min(
       Math.round(effectiveArcsHeight * dpr),
       Math.max(0, bufH - arcViewportTop),
@@ -1163,22 +1162,14 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       this.uF32[U_CANVAS_H] = arcViewportH / dpr
       this.writeBlockUniforms(region, block, scissorX, scissorW)
       this.uF32[U_LINE_WIDTH_PX] = state.arcLineWidth ?? 1
-      this.uF32[U_GRADIENT_HUE] = 0
       this.uF32[U_PAIRED_ARCS_DOWN] = state.pairedArcsDown ? 1.0 : 0.0
       this.hal.writeUniforms(this.uData)
 
-      this.hal.setViewport(
-        Math.round(scissorX * dpr),
-        arcViewportTop,
-        Math.round(scissorW * dpr),
-        arcViewportH,
-      )
-      this.hal.setScissor(
-        Math.round(scissorX * dpr),
-        arcViewportTop,
-        Math.round(scissorW * dpr),
-        arcViewportH,
-      )
+      const vpX = Math.round(scissorX * dpr)
+      const vpW = Math.round(scissorW * dpr)
+      this.hal.setViewport(vpX, arcViewportTop, vpW, arcViewportH)
+      this.hal.setScissor(vpX, arcViewportTop, vpW, arcViewportH)
+
       this.hal.drawPass(PASS_ARC, block.regionNumber)
       this.hal.drawPass(PASS_ARC_LINE, block.regionNumber)
 
