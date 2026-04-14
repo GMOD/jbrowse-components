@@ -1,7 +1,7 @@
 import { lazy, useState } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { getBpDisplayStr, getSession } from '@jbrowse/core/util'
+import { getBpDisplayStr, getSession, useDebounce } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVert from '@mui/icons-material/MoreVert'
 import ZoomIn from '@mui/icons-material/ZoomIn'
@@ -12,7 +12,6 @@ import { observer } from 'mobx-react'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { SliderValueLabelProps } from '@mui/material'
 
-// lazies
 const RegionWidthEditorDialog = lazy(
   () => import('./RegionWidthEditorDialog.tsx'),
 )
@@ -28,6 +27,7 @@ const useStyles = makeStyles()(theme => ({
     color: theme.palette.text.secondary,
   },
 }))
+
 function ValueLabelComponent(props: SliderValueLabelProps) {
   const { children, open, value } = props
   return (
@@ -42,6 +42,36 @@ function ValueLabelComponent(props: SliderValueLabelProps) {
     </Tooltip>
   )
 }
+
+function getZoomMenuItems(model: LinearGenomeViewModel) {
+  return [
+    ...[100, 50, 10].map(r => ({
+      label: `Zoom in ${r}x`,
+      onClick: () => {
+        model.zoom(model.bpPerPx / r)
+      },
+    })),
+    ...[10, 50, 100].map(r => ({
+      label: `Zoom out ${r}x`,
+      onClick: () => {
+        model.zoom(model.bpPerPx * r)
+      },
+    })),
+    {
+      label: 'Custom zoom',
+      onClick: () => {
+        getSession(model).queueDialog(handleClose => [
+          RegionWidthEditorDialog,
+          {
+            model,
+            handleClose,
+          },
+        ])
+      },
+    },
+  ]
+}
+
 const HeaderZoomControls = observer(function HeaderZoomControls({
   model,
 }: {
@@ -50,9 +80,11 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
   const { classes } = useStyles()
   const { width, bpPerPx, maxBpPerPx, minBpPerPx } = model
   const [dragValue, setDragValue] = useState<number | null>(null)
-  const value = dragValue ?? -Math.log2(bpPerPx) * 100
-  const zoomInDisabled = bpPerPx <= minBpPerPx + 0.0001
-  const zoomOutDisabled = bpPerPx >= maxBpPerPx - 0.0001
+  const debouncedBpPerPx = useDebounce(bpPerPx, 100)
+  const displayBpPerPx = dragValue !== null ? bpPerPx : debouncedBpPerPx
+  const value = dragValue ?? -Math.log2(displayBpPerPx) * 100
+  const zoomInDisabled = debouncedBpPerPx <= minBpPerPx + 0.0001
+  const zoomOutDisabled = debouncedBpPerPx >= maxBpPerPx - 0.0001
   return (
     <div className={classes.container}>
       <Tooltip title="Zoom out 2x">
@@ -105,32 +137,7 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
       </Tooltip>
 
       <CascadingMenuButton
-        menuItems={[
-          ...[100, 50, 10].map(r => ({
-            label: `Zoom in ${r}x`,
-            onClick: () => {
-              model.zoom(model.bpPerPx / r)
-            },
-          })),
-          ...[10, 50, 100].map(r => ({
-            label: `Zoom out ${r}x`,
-            onClick: () => {
-              model.zoom(model.bpPerPx * r)
-            },
-          })),
-          {
-            label: 'Custom zoom',
-            onClick: () => {
-              getSession(model).queueDialog(handleClose => [
-                RegionWidthEditorDialog,
-                {
-                  model,
-                  handleClose,
-                },
-              ])
-            },
-          },
-        ]}
+        menuItems={() => getZoomMenuItems(model)}
       >
         <MoreVert />
       </CascadingMenuButton>
