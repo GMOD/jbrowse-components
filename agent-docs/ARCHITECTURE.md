@@ -1,8 +1,8 @@
 # GPU Rendering Architecture
 
-This document describes the GPU rendering system used by the canvas, wiggle,
-alignments, and variant display plugins. It is intended for anyone adding a new
-display type or modifying an existing one.
+Reference for GPU rendering system (canvas, wiggle, alignments, variants, HiC,
+LD, synteny, dotplot). For display developers adding new types or modifying
+existing ones.
 
 ---
 
@@ -292,20 +292,116 @@ manages the `css * dpr` backing store, so shaders do NOT scale by
 
 ## Adding a new GPU display type
 
-1. Define `MyData` (RPC result type) and `MyRenderState` (per-frame uniforms).
-2. Write `MyBackend` interface with the four standard methods.
-3. Write `GpuMyRenderer` (implements `MyBackend` using a `GpuHal`).
-4. Write `Canvas2DMyRenderer` (implements `MyBackend` using Canvas2D).
-5. Write `MyRenderer(canvas)` factory calling `initDualBackend`.
-6. In the display component:
-   - `useGpuRenderer(canvasRef, MyRenderer)` to get `rendererRef`.
-   - `useEffect(() => autorun(() => { ... }), [model, view, ready, rendererRef])`:
-     - Watch `model.rpcDataMap`; call `uploadChangedRegions` + `pruneRegions`.
-     - Read `model.dataVersion` to create the sync dependency.
-     - Call `renderNow()`.
-   - `renderNow` calls
-     `renderer.renderBlocks(buildRenderBlocks(view.visibleRegions), state)`.
-   - `useTabVisibilityRerender(renderNow)` for tab visibility re-renders.
-7. Make the model multi-region: use `Map<number, MyData>` for `rpcDataMap`, not
-   a single `MyData`. Single-region displays are a degenerate case (HiC and LD
-   are pending migration to the multi-region pattern).
+### Step 1: Types
+```ts
+export interface MyData { regionNumber: number; features: Array<{...}> }
+export interface MyRenderState { bpPerPx: number; width: number; height: number }
+```
+
+### Step 2: Backend interface
+```ts
+export interface MyBackend {
+  uploadRegion(regionNumber: number, data: MyData): void
+  pruneRegions(activeRegions: number[]): void
+  renderBlocks(blocks: RenderBlock[], state: MyRenderState): void
+  dispose(): void
+}
+```
+
+### Step 3: GPU renderer
+```ts
+// myShader.ts (WGSL)
+export const myShaderWGSL = `...`
+
+// myGlslShaders.ts (GLSL — keep in sync with WGSL)
+export const myShaderGLSL = `...`
+
+// myGpuRenderer.ts
+export class GpuMyRenderer implements MyBackend {
+  constructor(hal: GpuHal) { /* register passes, uniforms */ }
+  uploadRegion(regionNumber: number, data: MyData) {
+    this.hal.uploadBuffer(regionNumber, PASS_ID, packedData, count)
+  }
+  renderBlocks(blocks: RenderBlock[], state: MyRenderState) {
+    // Set scissor/viewport, write uniforms, call hal.drawPass()
+  }
+}
+```
+
+### Step 4: Canvas2D renderer
+```ts
+export class Canvas2DMyRenderer implements MyBackend {
+  constructor(canvas: HTMLCanvasElement) { }
+  uploadRegion() { /* optional pre-compute */ }
+  renderBlocks(blocks: RenderBlock[], state: MyRenderState) {
+    // ctx.fillRect, ctx.fillText, etc.
+  }
+}
+```
+
+### Step 5: Renderer factory
+```ts
+export function MyRenderer(canvas: HTMLCanvasElement): MyBackend {
+  return initDualBackend<MyBackend>(
+    canvas, MY_PASSES, MY_UNIFORM_BYTE_SIZE,
+    hal => new GpuMyRenderer(hal),
+    c => new Canvas2DMyRenderer(c),
+  )
+}
+```
+
+### Step 6: Display component
+```ts
+export function MyDisplayComponent(props) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const rendererRef = useGpuRenderer(canvasRef, MyRenderer)
+  
+  useLayoutEffect(() => {
+    return autorun(() => {
+      const activeRegions = uploadChangedRegions(
+        model.rpcDataMap, uploadCache,
+        (regionNumber, data) => renderer.uploadRegion(regionNumber, data),
+      )
+      renderer.pruneRegions(activeRegions)
+      const _unused = model.dataVersion // create MobX dependency
+      renderNow()
+    }, { delay: 50 })
+  }, [model, view, rendererRef])
+  
+  const renderNow = useCallback(() => {
+    renderer.renderBlocks(
+      buildRenderBlocks(view.visibleRegions),
+      { bpPerPx: view.bpPerPx, width: model.width, height: model.height },
+    )
+  }, [view, model])
+  
+  useTabVisibilityRerender(renderNow)
+  return <canvas ref={canvasRef} />
+}
+```
+
+### Step 7: Multi-region model
+```ts
+const MyDisplayModel = types.model({
+  rpcDataMap: types.frozen<Map<number, MyData>>(new Map()),
+  dataVersion: 0,
+}).actions(self => ({
+  setRpcDataForRegion(regionNumber: number, data: MyData) {
+    const next = new Map(self.rpcDataMap)
+    next.set(regionNumber, data)
+    self.rpcDataMap = next
+    self.dataVersion++
+  },
+}))
+```
+
+---
+
+### Shader Notes
+
+- **Uniforms**: `canvas_width`/`canvas_height` are CSS pixels. HAL manages
+  backing store; don't scale by DPR.
+- **High-precision BP coords**: Split into hi/lo `vec2f` to avoid precision
+  loss at chromosome scale. Use `hp_to_clip_x()` in vertex shader.
+- **Picking**: Skip MSAA in picking passes for accurate color-based picking.
+- **WGSL/GLSL sync**: Manual. Both files separate; changes must be ported.

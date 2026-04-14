@@ -1,36 +1,45 @@
 # Config Pattern: Next Steps
 
-## Immediate (this branch)
+## Current
 
-- Run browser-test suite to update snapshots for new green/purple variant colors
-- Verify all existing tracks render correctly after baseTrackConfig
-  preProcessSnapshot change (renderer property promotion)
-- Add e2e test for variant_colors asserting non-goldenrod pixels
+**Update variant color snapshots**  
+Run `--update-snapshots` to regenerate golden images for green/purple variant
+colors (replacing goldenrod).
 
-## Completed
+**Verify renderer property promotion**  
+Test tracks with custom `CanvasFeatureRenderer`, `SvgFeatureRenderer`,
+`ArcRenderer`, `LollipopRenderer` settings (colors, heights). Ensure
+`configuration.renderer.*` → display-level config promotion works.
 
-- ~~Move `readConfigValue` to core~~ — now in
-  `packages/core/src/configuration/util.ts`
-- ~~Eliminate bespoke override properties~~ — `ConfigOverrideMixin` replaces
-  individual `types.maybe()` properties with one `configOverrides` frozen map.
-  Applied to all display types: LinearFeatureDisplay (canvas),
-  LinearWiggleDisplay, MultiLinearWiggleDisplay, LinearAlignmentsDisplay.
-  Migration in `preProcessSnapshot` handles old `track*` and `*Setting` property
-  names.
+**Add variant color e2e test**  
+Browser test asserting non-goldenrod variant colors in new pipeline.
+
+---
 
 ## Short-term
 
-- Verify `geneGlyphMode` default change from 'all' to 'auto' works correctly in
-  browser (config schema updated, auto mode switches based on zoom level)
+**Verify `geneGlyphMode` auto-switching**  
+Default changed `'all'` → `'auto'`. Test zoom in/out on gene track; glyph style
+should switch smoothly at zoom boundaries (triangles when zoomed out, full
+glyphs when zoomed in).
+
+---
 
 ## Medium-term
 
-- Migrate HiC and dotplot displays from `ServerSideRendererType` to the GPU
-  pipeline, adopting `getConfSnapshot` + `readConfigValue`
+**Migrate HiC and dotplot to GPU**  
+Replace `ServerSideRendererType` with GPU pipeline. Define `RenderState` +
+`GpuXxxRenderer` + `Canvas2DXxxRenderer`, wire through `initDualBackend`,
+update components with `useGpuRenderer` + `autorun`. See ARCHITECTURE.md.
+
+---
 
 ## Long-term
 
-- Consider replacing JEXL with a more standard expression language (vega
-  expressions, or a subset of JavaScript) for config callbacks
-- Explore track-level config shortcuts so admins can write
-  `{ "type": "FeatureTrack", "color": "green" }` without the `displays` array
+**Replace JEXL with standard expressions**  
+JEXL (config callbacks like `colorBy`) is non-standard. Consider Vega or
+JavaScript subset for better IDE support.
+
+**Track-level config shortcuts**  
+Allow `{ "type": "FeatureTrack", "color": "green" }` instead of full
+`displays` nesting. Requires spec layer (OTHER_IDEAS.md).

@@ -1,173 +1,91 @@
-### Alignments — Curved Lines for Linked Reads
+# Ideas and Future Directions
 
-The "Link supplementary alignments" mode draws a single straight line between
-reads. The breakpoint split view already has logic to draw curved lines that
-encode read orientation. Consider a mode (e.g. "Link paired/supp reads with
-curved lines") that reuses that curved-line orientation logic inside the normal
-alignments track.
+## Specification Layer
 
-- Track Google Analytics events from users on a fine grained basis. better
-- Ensure `types.refinement` from @jbrowse/mobx-state-tree (see
-  ~/src/mobx-state-tree) v5.6.0 provides fallbacks when state tree fails to load
-- Map all old "renderer" concepts to new display model settings
-- Ensure all demo sessions load without error
-- Diagonalization: yeast works, grape vs peach unclear
-- Opening reference sequence track with `umd_plugin.js` gives
-  `TypeError: Cannot assign to read only property 'metadata'` — need to handle
-  frozen objects from extension points logging of species chosen on desktop for
-  example
-- Hot module reload breaks canvas features
-- Dockview move to right side not working — non-webgl bug
+**Declarative JBrowse Spec** (exploratory)  
+Current config is internal MST serialization. Extend `session-spec` to simpler
+data → encoding → mark grammar (Vega-Lite style). Infer adapter/display types,
+map encoding → colorBy/filterBy, fall back to raw config for advanced features.
+Benefit: end users write clean schemas; plugin authors keep MST power. Also:
+`readConfObject`/`getConf` are hot-path MST traversals—caching would help.
 
-### P4.6 UI/UX Ideas (Unscoped)
+**R/ggplot2 Export** (exploratory, branch exists)  
+Export session as R script using ggplot2/Bioconductor for publication figures
+and reproducibility. Maps alignments→geom_rect, coverage→geom_area, variants→geom_point,
+synteny→geom_segment with Gviz/ggbio where applicable.
 
-- Should not shrink size on linked read resize height
-- Add ability where resize height does actual resize
-- Resize on double-click resize handle
-- Drag entire view to resize
-- Click isoform to expand all
-- Global scrollZoom setting rather than per view
-- Rolling average line plot
-- Zarr VCF support
-- Add legend for alignments
-- Distinguish initialized concepts in linear genome view
+**Jupyter/Quarto Integration**  
+Embed JBrowse in notebooks via simple API (`jbrowse.view()`). Spec layer would
+simplify wiring; currently `@jbrowse/react-linear-genome-view` exists but config
+is too complex.
 
-### P2.3 Synteny / Comparative Views
+---
 
-| Bug                                                   | Notes                                                               |
-| ----------------------------------------------------- | ------------------------------------------------------------------- |
-| Hs1 vs mm39 synteny — excessively slow, causes freeze | Improved (viewport culling added) — further LOD improvements needed |
-| Zoom to full not working?                             | **UNCLEAR** — needs verification                                    |
-| Don't colorize indels not working?                    | **UNCLEAR** — needs verification                                    |
-| Split indels code                                     | Refactoring task                                                    |
-| Linked dotplot and synteny view                       | Idea / future feature                                               |
-| Swap axes dotplot                                     | Idea / future feature                                               |
-| Swap axes linear synteny view                         | Idea / future feature                                               |
+## Alignments
 
-### Declarative "JBrowse Spec" Config Layer
+**Curved read links**  
+Reuse breakpoint logic for "Link with curved lines" mode (better orientation
+encoding than straight connectors).
 
-The current config system is a serialization format for MST internal state —
-users must think in terms of adapters, displays, and renderers rather than what
-they want to see. Vega-Lite, ggplot2, and GenomeSpy use a data → encoding → mark
-grammar that is far more discoverable.
+**Auto-scale noise**  
+Compute per-track noise estimate (mean insertion rate); auto-scale
+`featureFrequencyThreshold` (noisy → strict, clean → lenient).
 
-The session-spec URL format (`assembly`, `loc`, `tracks[]`) is already 80% of
-the way there. The idea is to extend it into a proper spec layer that compiles
-down to the internal config:
+**Quality-aware feature fade**  
+Toggle to disable sub-pixel fade for high-quality reads (Illumina/HiFi):
+most mismatches are real variants, not sequencing errors.
 
-```json
-{
-  "assembly": "hg38",
-  "location": "chr1:1,000,000-2,000,000",
-  "tracks": [
-    {
-      "data": "https://example.com/file.bam",
-      "color": { "field": "strand", "type": "nominal" },
-      "filter": { "mapq": ">= 20" },
-      "height": 300
-    },
-    {
-      "data": "https://example.com/coverage.bw",
-      "mark": "area",
-      "color": "steelblue"
-    }
-  ]
-}
-```
+**Legend**  
+Visual guide: strand colors, paired/unpaired styles, SNP colors.
 
-Key behaviors:
+---
 
-- Infer adapter type from URL/file extension (partially done already)
-- Infer display/track type from data type + mark
-- Map encoding channels (`color: {field: "strand"}`) to internal colorBy config
-- Map `filter` to internal filterBy flags
-- Fall through to raw config for anything the grammar doesn't cover
+## Synteny / Comparative
 
-This is the Vega-Lite → Vega pattern: simple grammar compiles to full spec.
-Plugin authors keep the full MST config power; end users get a clean API.
+**Linked dotplot + linear synteny**  
+Selections/zoom propagate between both views.
 
-Separately, `readConfObject`/`getConf` are expensive (traverse MST nodes each
-call) and are called in hot paths — caching resolved values would help
-performance.
+**Swap axes** (dotplot & linear synteny)  
+Flip comparison perspective or reverse query/reference.
 
-### R/ggplot2 Export System
+---
 
-**Status:** Very ambitious, branch exists with initial work.
+## Data Formats
 
-**Goal:** Export any JBrowse session view as an R script that reproduces the
-visualization using ggplot2/Bioconductor. This serves two purposes:
+**Multi-feature files**  
+Multiple types per row (e.g., chromatin BED with repeat types).
 
-- **Publication-quality figures** — researchers currently screenshot JBrowse and
-  paste into papers. An R export produces vector graphics with full control over
-  fonts, sizing, and journal-specific styling (Nature, Cell, etc.)
-- **Reproducibility** — the exported R script is a complete record of what data
-  was shown and how. It can be checked into a repo alongside a paper's analysis
-  code, re-run on updated data, or modified by reviewers
+**Zarr VCF**  
+Variant rendering from Zarr (more efficient than tabix for large cohorts).
 
-**How it could work:**
+**Rolling average**  
+Smoothing option for wiggle/coverage (compute rolling mean, render as line).
 
-The JBrowse session already knows everything needed: data source URLs, genomic
-region, track types, color schemes, filters, and layout. An export step would
-translate each track type into its R equivalent:
+---
 
-- Alignments pileup → Gviz/ggbio `AlignmentsTrack` or custom `geom_rect` layout
-- Wiggle/coverage → `geom_area` / `geom_line` with the same scale/color settings
-- Features/genes → `geom_rect` + `geom_text` for labels, or ggbio's gene model
-  geoms
-- Variants → `geom_point` or custom VCF geoms
-- Synteny → `geom_segment` / `geom_curve` between faceted panels
-- Color-by schemes → mapped to ggplot2 `scale_color_*` / `scale_fill_*`
-- JEXL callbacks → translated to R expressions where possible, or pre-evaluated
-  and baked into the data frame
+## UI/UX
 
-The exported script would use Bioconductor packages (Rsamtools, rtracklayer,
-VariantAnnotation) to read the same data files, so the R code is self-contained
-and re-runnable.
+**Height resize**  
+Double-click resize handle, drag to resize, prevent shrinking, auto-shrink toggle.
 
-**Open questions:**
+**Global scrollZoom**  
+Per-view → global setting.
 
-- How much of the layout engine (pileup stacking, synteny routing) needs to be
-  reimplemented in R vs. pre-computed and exported as coordinates?
-- Could a shared "JBrowse Spec" (see above) be the intermediate representation
-  that both the browser and the R exporter consume?
-- Integration with Quarto/RMarkdown — generate a notebook that mixes narrative
-  text with JBrowse-exported figures
+**Isoform expansion**  
+Click collapsed isoform to expand all for that gene.
 
-### Notebook Integration Refresh
+**Init/loading feedback**  
+Distinguish initialized vs. loading state in LinearGenomeView.
 
-The `jupyter-jbrowse` project started this but needs a refresh. The session-spec
-format (see "JBrowse Spec" idea above) could be the basis for a cleaner API in
-Jupyter / Observable / Quarto. A notebook cell like:
+---
 
-```python
-jbrowse.view("hg38", "chr17:7,571,720-7,590,868", tracks=["clinvar", "gencode"])
-```
+## Known Issues
 
-would generate a session-spec URL and render an iframe or embedded React
-component. The `@jbrowse/react-linear-genome-view` package already supports
-embedding, but the config wiring is too complex for notebook use — the spec
-layer would fix that.
-
-### P4.4 Automatic Noisiness Scaling for Feature Frequency Thresholds
-
-Compute a per-track noise estimate (e.g., mean insertion rate across sampled
-positions) during coverage computation and use it to automatically scale the
-`featureFrequencyThreshold` curve. Noisy long-read tracks (PacBio CLR) would get
-stricter thresholds while clean short-read tracks stay unchanged. The data is
-already available in `computePositionFrequencies`; main work is threading the
-stat through the RPC boundary and choosing a good baseline expected noise rate.
-
-### P4.5 Option to Disable Sub-Pixel Feature Fade
-
-Add a per-track option to disable the sub-pixel alpha fade that hides
-low-frequency features when zoomed out. High-quality reads (e.g., Illumina,
-PacBio HiFi) have very few sequencing errors, so most mismatches and insertions
-are real variants that users may want to see at all zoom levels regardless of
-frequency. When enabled, features would render at full opacity whenever they are
-present, bypassing both the zoom-based alpha and the frequency-based importance
-scaling.
-
-## More
-
-Multi-bed e.g. chromatin bed, repeat types on different rows from single file,
-or multiple iles
+| Issue                              | Status              |
+| ---------------------------------- | ------------------- |
+| Hot reload breaks canvas features  | Investigate         |
+| Dockview right-side move           | Non-WebGL bug       |
+| Frozen objects (umd_plugin.js)     | Handle read-only    |
+| Zoom to full (synteny)             | Verify              |
+| Indel colorize toggle              | Verify              |
+| Synteny diagonalization (grape)    | Verify (works yeast)|

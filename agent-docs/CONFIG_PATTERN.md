@@ -1,10 +1,11 @@
 # Display Config Pattern
 
+How display settings flow from MST model → rendering code (GPU/Canvas2D/worker).
+MST confined to main thread; renderers work on plain objects.
+
 ## Overview
 
-Display rendering config follows a simple pipeline: MST config model on the main
-thread → plain object snapshot → rendering code (GPU, Canvas2D, or worker). No
-MST dependency at the rendering layer.
+Pipeline: MST config model → plain snapshot → rendering code. No MST at render layer.
 
 ## The pattern
 
@@ -75,9 +76,8 @@ ConfigurationSchema('MyDisplay', {
 
 ### Backward compatibility
 
-The `baseTrackConfig.ts` `preProcessSnapshot` automatically promotes old
-`renderer: { type: "CanvasFeatureRenderer", color1: "..." }` blocks to
-display-level properties. Old configs work without migration.
+`baseTrackConfig.ts` `preProcessSnapshot` promotes old renderer → display-level
+properties. Old configs work without migration.
 
 ## Key functions
 
@@ -97,11 +97,10 @@ display-level properties. Old configs work without migration.
 | Hardcoded `mockConfig` with fallback defaults                   | `getConfSnapshot` includes real values           |
 | Nested `renderer: { type: "X", color1: "..." }` in config       | Direct `color1: "..."` on display config         |
 
-## Current adoption
+## Adoption
 
-- **Canvas plugin** (`LinearFeatureDisplay`, `LinearBasicDisplay`,
-  `LinearVariantDisplay`): fully adopted
-- **Wiggle, alignments, multi-variant**: already have direct config slots,
-  render on main thread — no RPC config issue
-- **Arc, lollipop, chord, HiC, dotplot**: still use old `ServerSideRendererType`
-  pipeline — adopt when migrating to GPU rendering
+- **Canvas** (LinearFeatureDisplay, LinearBasicDisplay, LinearVariantDisplay):
+  fully adopted
+- **Wiggle, alignments, multi-variant**: direct config slots, main-thread render
+- **Arc, lollipop, chord, HiC, dotplot**: still using ServerSideRendererType —
+  adopt on GPU migration
