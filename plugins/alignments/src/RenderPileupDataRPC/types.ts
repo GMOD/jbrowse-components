@@ -120,12 +120,17 @@ export interface PileupDataResult {
   coverageDepths: Float32Array
   coverageMaxDepth: number
   coverageStartOffset: number // offset from regionStart where coverage begins (can be negative)
+  // Pre-packed GPU buffer for PASS_COVERAGE (worker-built, zero-offset
+  // positions). Main thread uploads directly without re-packing.
+  coveragePackedBuffer: ArrayBuffer
 
   // SNP coverage data - offsets from regionStart
   snpPositions: Uint32Array
   snpYOffsets: Float32Array // normalized 0-1
   snpHeights: Float32Array // normalized 0-1
   snpColorTypes: Uint8Array // 1=A, 2=C, 3=G, 4=T
+  // Pre-packed GPU buffer for PASS_SNP_COV (worker-built).
+  snpPackedBuffer: ArrayBuffer
 
   // Noncov (interbase) coverage data - insertion/softclip/hardclip counts by position
   // Bars grow downward from top of coverage area
@@ -134,10 +139,14 @@ export interface PileupDataResult {
   noncovHeights: Float32Array // height of this segment (normalized 0-1)
   noncovColorTypes: Uint8Array // 1=insertion, 2=softclip, 3=hardclip
   noncovMaxCount: number // max total count at any position (for scaling)
+  // Pre-packed GPU buffer for PASS_NONCOV (worker-built).
+  noncovPackedBuffer: ArrayBuffer
 
   // Interbase indicator data - triangles at significant positions
   indicatorPositions: Uint32Array // offsets from regionStart
   indicatorColorTypes: Uint8Array // 1=insertion, 2=softclip, 3=hardclip (dominant type)
+  // Pre-packed GPU buffer for PASS_INDICATOR (worker-built).
+  indicatorPackedBuffer: ArrayBuffer
 
   // Modification tooltip data - only populated when colorBy is modifications/methylation
   modTooltipData?: Record<number, Record<string, ModTooltipEntry>>
@@ -159,6 +168,8 @@ export interface PileupDataResult {
   modCovHeights: Float32Array // segment height (normalized 0-1)
   modCovColors: Uint8Array // packed RGBA, 4 bytes per segment
   numModCovSegments: number
+  // Pre-packed GPU buffer for PASS_MOD_COV (worker-built).
+  modCovPackedBuffer: ArrayBuffer
 
   // Sashimi arc data (splice junctions from skip gaps)
   sashimiX1: Float32Array // bp offsets from regionStart (junction start)

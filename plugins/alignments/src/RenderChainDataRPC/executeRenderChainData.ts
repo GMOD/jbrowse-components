@@ -18,6 +18,7 @@ import {
 } from '../shared/computeCoverage.ts'
 import { extractFeatureArrays } from '../shared/extractFeatureArrays.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
+import { packCoverageAreaForGpu } from '../shared/packCoverageArea.ts'
 import {
   buildBaseFeatureData,
   buildGapArrays,
@@ -366,6 +367,15 @@ export async function executeRenderChainData({
 
   const modTooltipData = buildModTooltipData({ modifications, regionStart })
 
+  // Chain mode has no modCov data; pass `undefined` so the helper emits a
+  // 0-byte buffer for that pass.
+  const coverageAreaPacked = packCoverageAreaForGpu(
+    coverage,
+    snpCoverage,
+    noncovCoverage,
+    undefined,
+  )
+
   const result: PileupDataResult = {
     regionStart,
 
@@ -422,6 +432,8 @@ export async function executeRenderChainData({
     modCovHeights: new Float32Array(0),
     modCovColors: new Uint8Array(0),
     numModCovSegments: 0,
+
+    ...coverageAreaPacked,
 
     ...sashimi,
 
@@ -518,6 +530,12 @@ export async function executeRenderChainData({
     result.chainHasMultiple!.buffer,
     result.readChainIndices!.buffer,
     result.readNextPositions!.buffer,
+    // Worker-packed GPU buffers (see ADR-004 + packCoverageArea.ts).
+    result.coveragePackedBuffer,
+    result.snpPackedBuffer,
+    result.noncovPackedBuffer,
+    result.indicatorPackedBuffer,
+    result.modCovPackedBuffer,
     ...(result.gapReadIndices ? [result.gapReadIndices.buffer] : []),
     ...(result.mismatchReadIndices ? [result.mismatchReadIndices.buffer] : []),
     ...(result.interbaseReadIndices

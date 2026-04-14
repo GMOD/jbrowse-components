@@ -1,9 +1,4 @@
-import {
-  YSCALEBAR_LABEL_OFFSET,
-  packIndicatorsForGpu,
-  packNoncovSegmentsForGpu,
-  packSnpSegmentsForGpu,
-} from '@jbrowse/alignments-core'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
 import { splitInterbasesByType } from './alignmentComponentUtils.ts'
@@ -691,6 +686,9 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
+  // Upload the coverage-area passes (per-bp depth, SNP, noncov histogram,
+  // indicators). The pack loops run in the RPC worker (see packCoverageArea.ts
+  // / ADR-004); here we just hand the pre-packed buffers to the HAL.
   uploadCoverageFromTypedArraysForRegion(
     regionNumber: number,
     data: CoverageUploadData,
@@ -701,90 +699,58 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
 
     if (data.numCoverageBins > 0) {
-      const n = data.numCoverageBins
-      const buf = new ArrayBuffer(n * COVERAGE_STRIDE * 4)
-      const f32 = new Float32Array(buf)
-      for (let i = 0; i < n; i++) {
-        const o = i * COVERAGE_STRIDE
-        f32[o] = data.coverageStartOffset + i
-        f32[o + 1] = (data.coverageDepths[i] ?? 0) / data.coverageMaxDepth
-      }
-      this.hal.uploadBuffer(regionNumber, PASS_COVERAGE, buf, n)
+      this.hal.uploadBuffer(
+        regionNumber,
+        PASS_COVERAGE,
+        data.coveragePackedBuffer,
+        data.numCoverageBins,
+      )
       r.maxDepth = data.coverageMaxDepth
       r.binSize = 1
       this.hal.setRegionMeta(regionNumber, { maxDepth: data.coverageMaxDepth })
     }
 
     if (data.numSnpSegments > 0) {
-      const packed = packSnpSegmentsForGpu(
-        data.snpPositions,
-        data.snpYOffsets,
-        data.snpHeights,
-        data.snpColorTypes,
-        data.numSnpSegments,
-      )
       this.hal.uploadBuffer(
         regionNumber,
         PASS_SNP_COV,
-        packed.buffer,
-        packed.segmentCount,
+        data.snpPackedBuffer,
+        data.numSnpSegments,
       )
     }
 
     if (data.numNoncovSegments > 0) {
-      const packed = packNoncovSegmentsForGpu(
-        data.noncovPositions,
-        data.noncovYOffsets,
-        data.noncovHeights,
-        data.noncovColorTypes,
-        data.numNoncovSegments,
-      )
       this.hal.uploadBuffer(
         regionNumber,
         PASS_NONCOV,
-        packed.buffer,
-        packed.segmentCount,
+        data.noncovPackedBuffer,
+        data.numNoncovSegments,
       )
       r.noncovMaxCount = data.noncovMaxCount
     }
 
     if (data.numIndicators > 0) {
-      const packed = packIndicatorsForGpu(
-        data.indicatorPositions,
-        data.indicatorColorTypes,
-        data.numIndicators,
-      )
       this.hal.uploadBuffer(
         regionNumber,
         PASS_INDICATOR,
-        packed.buffer,
-        packed.indicatorCount,
+        data.indicatorPackedBuffer,
+        data.numIndicators,
       )
     }
   }
 
+  // PASS_MOD_COV is pre-packed by the worker; main thread just forwards it.
   uploadModCoverageFromTypedArraysForRegion(
     regionNumber: number,
     data: ModCoverageUploadData,
   ) {
     if (data.numModCovSegments > 0) {
-      const n = data.numModCovSegments
-      const buf = new ArrayBuffer(n * MOD_COV_STRIDE * 4)
-      const u32 = new Uint32Array(buf)
-      const f32 = new Float32Array(buf)
-      for (let i = 0; i < n; i++) {
-        const o = i * MOD_COV_STRIDE
-        f32[o] = data.modCovPositions[i]!
-        f32[o + 1] = data.modCovYOffsets[i]!
-        f32[o + 2] = data.modCovHeights[i]!
-        const ci = i * 4
-        u32[o + 3] =
-          data.modCovColors[ci]! |
-          (data.modCovColors[ci + 1]! << 8) |
-          (data.modCovColors[ci + 2]! << 16) |
-          (data.modCovColors[ci + 3]! << 24)
-      }
-      this.hal.uploadBuffer(regionNumber, PASS_MOD_COV, buf, n)
+      this.hal.uploadBuffer(
+        regionNumber,
+        PASS_MOD_COV,
+        data.modCovPackedBuffer,
+        data.numModCovSegments,
+      )
     }
   }
 

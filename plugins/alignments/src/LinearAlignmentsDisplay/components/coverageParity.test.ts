@@ -1,4 +1,10 @@
-import { coverageLayout } from '@jbrowse/alignments-core'
+import {
+  coverageLayout,
+  packCoverageBinsForGpu,
+  packIndicatorsForGpu,
+  packNoncovSegmentsForGpu,
+  packSnpSegmentsForGpu,
+} from '@jbrowse/alignments-core'
 import { MockHal } from '@jbrowse/core/gpu/hal'
 
 import { Canvas2DAlignmentsRenderer } from './Canvas2DAlignmentsRenderer.ts'
@@ -25,25 +31,62 @@ const REGION_START = 10000
 const COVERAGE_START_OFFSET = 5
 
 function makeCoverageData(): CoverageUploadData {
+  const coverageDepths = new Float32Array([10, 30, 50, 20, 40])
+  const coverageMaxDepth = 50
+  const snpPositions = new Uint32Array([1, 3])
+  const snpYOffsets = new Float32Array([0, 0.2])
+  const snpHeights = new Float32Array([0.4, 0.3])
+  const snpColorTypes = new Uint8Array([1, 2])
+  const noncovPositions = new Uint32Array([])
+  const noncovYOffsets = new Float32Array([])
+  const noncovHeights = new Float32Array([])
+  const noncovColorTypes = new Uint8Array([])
+  const indicatorPositions = new Uint32Array([2])
+  const indicatorColorTypes = new Uint8Array([1])
   return {
-    coverageDepths: new Float32Array([10, 30, 50, 20, 40]),
-    coverageMaxDepth: 50,
+    coverageDepths,
+    coverageMaxDepth,
     coverageStartOffset: COVERAGE_START_OFFSET,
-    numCoverageBins: 5,
-    snpPositions: new Uint32Array([1, 3]),
-    snpYOffsets: new Float32Array([0, 0.2]),
-    snpHeights: new Float32Array([0.4, 0.3]),
-    snpColorTypes: new Uint8Array([1, 2]),
-    numSnpSegments: 2,
-    noncovPositions: new Uint32Array([]),
-    noncovYOffsets: new Float32Array([]),
-    noncovHeights: new Float32Array([]),
-    noncovColorTypes: new Uint8Array([]),
+    numCoverageBins: coverageDepths.length,
+    coveragePackedBuffer: packCoverageBinsForGpu(
+      coverageDepths,
+      coverageMaxDepth,
+      COVERAGE_START_OFFSET,
+      coverageDepths.length,
+    ).buffer,
+    snpPositions,
+    snpYOffsets,
+    snpHeights,
+    snpColorTypes,
+    numSnpSegments: snpPositions.length,
+    snpPackedBuffer: packSnpSegmentsForGpu(
+      snpPositions,
+      snpYOffsets,
+      snpHeights,
+      snpColorTypes,
+      snpPositions.length,
+    ).buffer,
+    noncovPositions,
+    noncovYOffsets,
+    noncovHeights,
+    noncovColorTypes,
     noncovMaxCount: 0,
     numNoncovSegments: 0,
-    indicatorPositions: new Uint32Array([2]),
-    indicatorColorTypes: new Uint8Array([1]),
-    numIndicators: 1,
+    noncovPackedBuffer: packNoncovSegmentsForGpu(
+      noncovPositions,
+      noncovYOffsets,
+      noncovHeights,
+      noncovColorTypes,
+      0,
+    ).buffer,
+    indicatorPositions,
+    indicatorColorTypes,
+    numIndicators: indicatorPositions.length,
+    indicatorPackedBuffer: packIndicatorsForGpu(
+      indicatorPositions,
+      indicatorColorTypes,
+      indicatorPositions.length,
+    ).buffer,
   }
 }
 

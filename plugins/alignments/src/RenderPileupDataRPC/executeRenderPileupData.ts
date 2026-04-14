@@ -18,6 +18,7 @@ import {
 import { computeModificationCoverage } from '../shared/computeModificationCoverage.ts'
 import { extractFeatureArrays } from '../shared/extractFeatureArrays.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
+import { packCoverageAreaForGpu } from '../shared/packCoverageArea.ts'
 import {
   buildBaseFeatureData,
   buildGapArrays,
@@ -292,6 +293,13 @@ export async function executeRenderPileupData({
       ? getInsertSizeStats(pairedInsertSizes)
       : undefined
 
+  const coverageAreaPacked = packCoverageAreaForGpu(
+    coverage,
+    snpCoverage,
+    noncovCoverage,
+    modCoverage,
+  )
+
   const result: PileupDataResult = {
     regionStart,
 
@@ -333,6 +341,8 @@ export async function executeRenderPileupData({
     modCovHeights: modCoverage.heights,
     modCovColors: modCoverage.colors,
     numModCovSegments: modCoverage.count,
+
+    ...coverageAreaPacked,
 
     ...sashimi,
 
@@ -416,6 +426,12 @@ export async function executeRenderPileupData({
     result.sashimiColorTypes.buffer,
     result.sashimiCounts.buffer,
     result.readNextPositions!.buffer,
+    // Worker-packed GPU buffers (see ADR-004 + packCoverageArea.ts).
+    result.coveragePackedBuffer,
+    result.snpPackedBuffer,
+    result.noncovPackedBuffer,
+    result.indicatorPackedBuffer,
+    result.modCovPackedBuffer,
     ...(result.gapReadIndices ? [result.gapReadIndices.buffer] : []),
     ...(result.mismatchReadIndices ? [result.mismatchReadIndices.buffer] : []),
     ...(result.softclipBaseReadIndices

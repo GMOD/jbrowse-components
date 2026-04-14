@@ -90,25 +90,33 @@ export interface ModificationUploadData {
   numModifications: number
 }
 
+// Coverage-area upload payload. Raw arrays are kept for hit testing / tooltip
+// / Canvas2D rendering; the `*PackedBuffer` fields are pre-packed GPU-layout
+// buffers produced by the RPC worker (see plugins/alignments/src/shared/
+// packCoverageArea.ts and ADR-004) that the GPU renderer uploads directly.
 export interface CoverageUploadData {
   coverageDepths: Float32Array
   coverageMaxDepth: number
   coverageStartOffset: number
   numCoverageBins: number
+  coveragePackedBuffer: ArrayBuffer
   snpPositions: Uint32Array
   snpYOffsets: Float32Array
   snpHeights: Float32Array
   snpColorTypes: Uint8Array
   numSnpSegments: number
+  snpPackedBuffer: ArrayBuffer
   noncovPositions: Uint32Array
   noncovYOffsets: Float32Array
   noncovHeights: Float32Array
   noncovColorTypes: Uint8Array
   noncovMaxCount: number
   numNoncovSegments: number
+  noncovPackedBuffer: ArrayBuffer
   indicatorPositions: Uint32Array
   indicatorColorTypes: Uint8Array
   numIndicators: number
+  indicatorPackedBuffer: ArrayBuffer
 }
 
 export interface ModCoverageUploadData {
@@ -117,6 +125,7 @@ export interface ModCoverageUploadData {
   modCovHeights: Float32Array
   modCovColors: Uint8Array
   numModCovSegments: number
+  modCovPackedBuffer: ArrayBuffer
 }
 
 export interface ArcsUploadData {
