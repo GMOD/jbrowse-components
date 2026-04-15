@@ -34,7 +34,10 @@ export interface GpuUploadStream<BackendType, RegionDataType> {
    * for the rest. Optional — omit when a stream shares pruning with another
    * stream (e.g. alignments' arcs share the pileup backend's region slots).
    */
-  pruneRegionsNotIn?: (backend: BackendType, activeRegionNumbers: number[]) => void
+  pruneRegionsNotIn?: (
+    backend: BackendType,
+    activeRegionNumbers: number[],
+  ) => void
 
   /**
    * Compares identity between passes. Defaults to reference equality. Use
@@ -118,7 +121,6 @@ export interface StartGpuBackendAutorunLifecycleArgs<
   onAfterCommit?: (didHaveUploadedRegions: boolean) => void
 }
 
-
 interface NormalizedStream<BackendType> {
   getDataByRegionNumber: () => Map<number, unknown>
   uploadOneRegion: (
@@ -183,7 +185,8 @@ export function startGpuBackendAutorunLifecycle<
           number,
           unknown
         >,
-        uploadOneRegion: s.uploadOneRegion as NormalizedStream<BackendType>['uploadOneRegion'],
+        uploadOneRegion:
+          s.uploadOneRegion as NormalizedStream<BackendType>['uploadOneRegion'],
         pruneRegionsNotIn: s.pruneRegionsNotIn,
         identityOf: s.identityOf as NormalizedStream<BackendType>['identityOf'],
         getUploadInvalidationToken: s.getUploadInvalidationToken,
@@ -199,9 +202,11 @@ export function startGpuBackendAutorunLifecycle<
         number,
         unknown
       >,
-      uploadOneRegion: args.uploadOneRegion as NormalizedStream<BackendType>['uploadOneRegion'],
+      uploadOneRegion:
+        args.uploadOneRegion as NormalizedStream<BackendType>['uploadOneRegion'],
       pruneRegionsNotIn: args.pruneRegionsNotIn,
-      identityOf: args.identityOf as NormalizedStream<BackendType>['identityOf'],
+      identityOf:
+        args.identityOf as NormalizedStream<BackendType>['identityOf'],
       getUploadInvalidationToken: args.getUploadInvalidationToken,
       deleteOneRegion: args.deleteOneRegion,
       cache: new Map(),

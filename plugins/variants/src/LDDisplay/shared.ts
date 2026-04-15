@@ -334,7 +334,9 @@ export default function sharedModelFactory(
         return {
           yScalar: data.yScalar,
           canvasWidth,
-          canvasHeight: self.fitToHeight ? this.ldCanvasHeight : canvasWidth / 2,
+          canvasHeight: self.fitToHeight
+            ? this.ldCanvasHeight
+            : canvasWidth / 2,
           signedLD: data.signedLD,
           viewScale: scale,
           viewOffsetX: offsetX,

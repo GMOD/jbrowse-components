@@ -1,10 +1,10 @@
 import { lazy } from 'react'
 
 import {
+  YSCALEBAR_LABEL_OFFSET,
   computeCoverageTicks,
   computeVisibleMaxDepth,
 } from '@jbrowse/alignments-core'
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -65,17 +65,17 @@ import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
 
 import type {
-  RenderState as AlignmentsRenderState,
   ColorPalette,
+  RenderState as AlignmentsRenderState,
 } from './components/AlignmentsRenderer.ts'
-import type { AlignmentsBackend } from './components/rendererTypes.ts'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type {
   CigarHitResult,
   IndicatorHitResult,
 } from './components/hitTesting.ts'
-import type { ArcsDataResult } from '../shared/computeArcsFromPileupData.ts'
+import type { AlignmentsBackend } from './components/rendererTypes.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
+import type { ArcsDataResult } from '../shared/computeArcsFromPileupData.ts'
 import type { LegendItem } from '../shared/legendUtils.ts'
 import type { ColorBy, FilterBy, SortedBy } from '../shared/types'
 import type { CoverageTicks } from '@jbrowse/alignments-core'
@@ -997,7 +997,8 @@ export default function stateModelFactory(
                         regionStart: pileup.regionStart,
                         connectingLinePositions: pileup.connectingLinePositions,
                         connectingLineYs: pileup.connectingLineYs,
-                        connectingLineColorTypes: pileup.connectingLineColorTypes,
+                        connectingLineColorTypes:
+                          pileup.connectingLineColorTypes,
                         numConnectingLines: pileup.numConnectingLines,
                       })
                     }

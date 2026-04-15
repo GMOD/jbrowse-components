@@ -5,7 +5,8 @@ MST confined to main thread; renderers work on plain objects.
 
 ## Overview
 
-Pipeline: MST config model → plain snapshot → rendering code. No MST at render layer.
+Pipeline: MST config model → plain snapshot → rendering code. No MST at render
+layer.
 
 ## The pattern
 

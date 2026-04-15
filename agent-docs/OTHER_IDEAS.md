@@ -11,8 +11,8 @@ Benefit: end users write clean schemas; plugin authors keep MST power. Also:
 
 **R/ggplot2 Export** (exploratory, branch exists)  
 Export session as R script using ggplot2/Bioconductor for publication figures
-and reproducibility. Maps alignments→geom_rect, coverage→geom_area, variants→geom_point,
-synteny→geom_segment with Gviz/ggbio where applicable.
+and reproducibility. Maps alignments→geom_rect, coverage→geom_area,
+variants→geom_point, synteny→geom_segment with Gviz/ggbio where applicable.
 
 **Jupyter/Quarto Integration**  
 Embed JBrowse in notebooks via simple API (`jbrowse.view()`). Spec layer would
@@ -32,8 +32,8 @@ Compute per-track noise estimate (mean insertion rate); auto-scale
 `featureFrequencyThreshold` (noisy → strict, clean → lenient).
 
 **Quality-aware feature fade**  
-Toggle to disable sub-pixel fade for high-quality reads (Illumina/HiFi):
-most mismatches are real variants, not sequencing errors.
+Toggle to disable sub-pixel fade for high-quality reads (Illumina/HiFi): most
+mismatches are real variants, not sequencing errors.
 
 **Legend**  
 Visual guide: strand colors, paired/unpaired styles, SNP colors.
@@ -66,7 +66,8 @@ Smoothing option for wiggle/coverage (compute rolling mean, render as line).
 ## UI/UX
 
 **Height resize**  
-Double-click resize handle, drag to resize, prevent shrinking, auto-shrink toggle.
+Double-click resize handle, drag to resize, prevent shrinking, auto-shrink
+toggle.
 
 **Global scrollZoom**  
 Per-view → global setting.
@@ -81,11 +82,11 @@ Distinguish initialized vs. loading state in LinearGenomeView.
 
 ## Known Issues
 
-| Issue                              | Status              |
-| ---------------------------------- | ------------------- |
-| Hot reload breaks canvas features  | Investigate         |
-| Dockview right-side move           | Non-WebGL bug       |
-| Frozen objects (umd_plugin.js)     | Handle read-only    |
-| Zoom to full (synteny)             | Verify              |
-| Indel colorize toggle              | Verify              |
-| Synteny diagonalization (grape)    | Verify (works yeast)|
+| Issue                             | Status               |
+| --------------------------------- | -------------------- |
+| Hot reload breaks canvas features | Investigate          |
+| Dockview right-side move          | Non-WebGL bug        |
+| Frozen objects (umd_plugin.js)    | Handle read-only     |
+| Zoom to full (synteny)            | Verify               |
+| Indel colorize toggle             | Verify               |
+| Synteny diagonalization (grape)   | Verify (works yeast) |

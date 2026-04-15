@@ -28,8 +28,8 @@ node --experimental-strip-types browser-tests/runner.ts --update-snapshots
 
 21 suites, ~120 cases: alignments, bigwig, variants, synteny, dotplot, HiC,
 canvas2d-fallback, canvas2d-variants, rendering-backends, color-by-tag,
-wiggle-color, workspaces, session-spec, demo-inventory, svg-export, authentication,
-main-thread-rpc, custom-url, redraw, basic-lgv, misc.
+wiggle-color, workspaces, session-spec, demo-inventory, svg-export,
+authentication, main-thread-rpc, custom-url, redraw, basic-lgv, misc.
 
 ## Golden Snapshots
 
@@ -44,12 +44,15 @@ Fully supported (Chrome headless / Firefox). Default for CI.
 ## WebGPU
 
 **Local** (Firefox real GPU, no Vulkan setup):
+
 ```sh
 node --experimental-strip-types browser-tests/runner.ts --backend=webgpu --firefox --headed
 ```
+
 Set `FIREFOX_NIGHTLY_PATH` or `--firefox=/path/to/binary`.
 
 **CI** (Linux + lavapipe):
+
 ```yaml
 - run: sudo apt-get install -y mesa-vulkan-drivers
 - run: |
@@ -57,18 +60,22 @@ Set `FIREFOX_NIGHTLY_PATH` or `--firefox=/path/to/binary`.
       VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json \
       node --experimental-strip-types browser-tests/runner.ts --backend=webgpu
 ```
+
 Chrome flags in `runner.ts` already set.
 
 **macOS**: Real GPU, ~10× cost.
 
 ## Debugging
 
-**Visual mismatches**  
+**Visual mismatches**
+
 - Intentional change? → `--update-snapshots`
 - Variance? → Check pixel threshold in `compare-backends.ts`
-- Environment issue? → Run suite in isolation, check `[alignments]` / `[webgl-wiggle]` logs
+- Environment issue? → Run suite in isolation, check `[alignments]` /
+  `[webgl-wiggle]` logs
 
-**Timeout/hang**  
+**Timeout/hang**
+
 - Slow? → Increase timeout in runner config
 - Fetch stuck? → Check network in headed mode
 - WebGPU fail? → Missing Vulkan/GPU

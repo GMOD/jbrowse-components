@@ -110,11 +110,7 @@ test('skips render when getRenderState returns undefined', () => {
   const backend = makeBackend()
   const stateHolder = observable.box<number | undefined>(undefined)
 
-  const handle = startGpuBackendAutorunLifecycle<
-    FakeBackend,
-    string,
-    number
-  >({
+  const handle = startGpuBackendAutorunLifecycle<FakeBackend, string, number>({
     backend,
     getDataByRegionNumber: () => new Map(),
     getRenderBlocks: () => [],
@@ -200,7 +196,11 @@ test('multiple uploadStreams are identity-diffed independently', () => {
   mapA.set(0, 'a0')
   mapB.set(0, 'b0')
 
-  const handle = startGpuBackendAutorunLifecycle<typeof backend, string, number>({
+  const handle = startGpuBackendAutorunLifecycle<
+    typeof backend,
+    string,
+    number
+  >({
     backend,
     uploadStreams: [
       {
@@ -255,7 +255,8 @@ test('identityOf lets non-reference keys drive the identity diff', () => {
       return map
     },
     identityOf: d => d.inputKey,
-    uploadOneRegion: (b, n, d) => b.uploads.push({ regionNumber: n, data: d.inputKey }),
+    uploadOneRegion: (b, n, d) =>
+      b.uploads.push({ regionNumber: n, data: d.inputKey }),
     pruneRegionsNotIn: () => {},
     getRenderBlocks: () => [],
     getRenderState: () => 0,
@@ -373,4 +374,3 @@ test('dispose stops the autorun and renderNow becomes a no-op', () => {
   expect(backend.uploads.length).toBe(0)
   expect(backend.renders.length).toBe(renderCountAtDispose)
 })
-

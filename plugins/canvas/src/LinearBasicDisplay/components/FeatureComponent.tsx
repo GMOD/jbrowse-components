@@ -6,8 +6,8 @@ import {
   useDebounce,
   useGpuModelLifecycle,
 } from '@jbrowse/core/util'
-import { autorun } from 'mobx'
 import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'

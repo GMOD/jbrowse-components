@@ -16,9 +16,9 @@ import { observer } from 'mobx-react'
 
 import { SyntenyRendererFactory } from '../LinearSyntenyDisplay/SyntenyRenderer.ts'
 
+import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type { SyntenyBackend } from '../LinearSyntenyDisplay/syntenyBackendTypes.ts'
-import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()({
@@ -159,7 +159,8 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
           zoomScheduled.current = true
           requestAnimationFrame(() => {
             const d = zoomAccum.current
-            const canvasLeft = canvasRef.current?.getBoundingClientRect().left ?? 0
+            const canvasLeft =
+              canvasRef.current?.getBoundingClientRect().left ?? 0
             transaction(() => {
               for (const v of parentView.views) {
                 v.zoomTo(
@@ -248,9 +249,9 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     const hit = backend.pick(coords.x, coords.y)
     for (const display of model.linearSyntenyDisplays) {
       const isHit = hit && model.displaysByKey.get(hit.key) === display
-      display.setClickedFeatureIdx(isHit ? hit!.featureIndex : -1)
+      display.setClickedFeatureIdx(isHit ? hit.featureIndex : -1)
       if (isHit) {
-        openFeatureWidget(display, hit!.featureIndex)
+        openFeatureWidget(display, hit.featureIndex)
       }
     }
   }

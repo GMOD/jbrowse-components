@@ -94,8 +94,7 @@ test('multi-slot: each slot is identity-diffed independently', () => {
         },
         {
           readData: () => rampBox.get(),
-          commitUpload: b =>
-            b.uploads.push({ slot: 'ramp', v: 0 }),
+          commitUpload: b => b.uploads.push({ slot: 'ramp', v: 0 }),
         },
       ],
       getRenderState: () => 0,
@@ -167,9 +166,7 @@ test('renderNow re-issues render without re-upload, only when all slots have dat
   const handle = startGpuSingleDataBackendAutorunLifecycle<FakeBackend, number>(
     {
       backend,
-      uploadSlots: [
-        { readData: () => dataBox.get(), commitUpload: () => {} },
-      ],
+      uploadSlots: [{ readData: () => dataBox.get(), commitUpload: () => {} }],
       getRenderState: () => 99,
       renderWithState: (b, s) => b.renders.push(s),
     },
@@ -213,4 +210,3 @@ test('dispose stops the autorun', () => {
   })
   expect(backend.uploads).toEqual([])
 })
-

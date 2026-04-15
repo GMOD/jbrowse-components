@@ -51,7 +51,6 @@ export interface StartGpuSingleDataBackendAutorunLifecycleArgs<
   onAfterCommit?: (allSlotsHaveData: boolean) => void
 }
 
-
 /**
  * Lifecycle for GPU backends that hold one or more global (non-regional)
  * datasets rather than a per-region cache. Used by HiC (contact matrix +
@@ -119,11 +118,7 @@ export function startGpuSingleDataBackendAutorunLifecycle<
       allSlotsHaveData = false
     },
     renderNow() {
-      if (
-        isDisposed ||
-        lastRenderState === undefined ||
-        !allSlotsHaveData
-      ) {
+      if (isDisposed || lastRenderState === undefined || !allSlotsHaveData) {
         return
       }
       renderWithState(backend, lastRenderState)

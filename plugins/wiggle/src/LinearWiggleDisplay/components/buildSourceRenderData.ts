@@ -3,9 +3,11 @@ import { makeWhiskersSourceData } from '../../shared/wiggleComponentUtils.ts'
 import { getEffectiveScores, isDefaultBicolor } from '../../util.ts'
 
 import type { WiggleDataResult } from '../../RenderWiggleDataRPC/types.ts'
-import type { WiggleBackend } from '../../shared/wiggleBackendTypes.ts'
 import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
-import type { SourceRenderData } from '../../shared/wiggleBackendTypes.ts'
+import type {
+  SourceRenderData,
+  WiggleBackend,
+} from '../../shared/wiggleBackendTypes.ts'
 
 // Narrow shape that buildSourceRenderData reads from the model — kept
 // separate from WiggleDisplayModel so that MST's self (which may not yet

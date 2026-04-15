@@ -29,8 +29,8 @@ glyphs when zoomed in).
 
 **Migrate HiC and dotplot to GPU**  
 Replace `ServerSideRendererType` with GPU pipeline. Define `RenderState` +
-`GpuXxxRenderer` + `Canvas2DXxxRenderer`, wire through `initDualBackend`,
-update components with `useGpuRenderer` + `autorun`. See ARCHITECTURE.md.
+`GpuXxxRenderer` + `Canvas2DXxxRenderer`, wire through `initDualBackend`, update
+components with `useGpuRenderer` + `autorun`. See ARCHITECTURE.md.
 
 ---
 
@@ -41,5 +41,5 @@ JEXL (config callbacks like `colorBy`) is non-standard. Consider Vega or
 JavaScript subset for better IDE support.
 
 **Track-level config shortcuts**  
-Allow `{ "type": "FeatureTrack", "color": "green" }` instead of full
-`displays` nesting. Requires spec layer (OTHER_IDEAS.md).
+Allow `{ "type": "FeatureTrack", "color": "green" }` instead of full `displays`
+nesting. Requires spec layer (OTHER_IDEAS.md).

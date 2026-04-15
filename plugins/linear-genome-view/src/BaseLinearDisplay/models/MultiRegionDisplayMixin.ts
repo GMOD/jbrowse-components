@@ -126,7 +126,7 @@ export default function MultiRegionDisplayMixin() {
         self.fetchGeneration++
       },
     }))
-    .actions(self => ({
+    .actions(() => ({
       // Overridable hooks — subclasses override these
       onFetchNeeded(_needed: RegionWithNumber[]) {
         // no-op base
@@ -223,16 +223,16 @@ export default function MultiRegionDisplayMixin() {
               if (!isStale()) {
                 finishLoading()
 
-                // DO NOT REMOVE: This re-triggers the fetch autorun so
-                // it re-evaluates whether the viewport is still covered
-                // after the fetch completes. Without this, if the user
-                // pans while a fetch is in flight, the autorun skips
-                // (isLoading=true via untracked), the fetch completes
-                // covering only the old viewport, and nothing triggers
-                // a second fetch for the new viewport — leaving tracks
-                // half-loaded. fetchGeneration is the only tracked
-                // observable we can safely bump here (isLoading is
-                // intentionally untracked to avoid reaction cycles).
+                // DO NOT REMOVE: This re-triggers the fetch autorun so it
+                // re-evaluates whether the viewport is still covered after the
+                // fetch completes. Without this, if the user pans while a
+                // fetch is in flight, the autorun skips (isLoading=true via
+                // untracked), the fetch completes covering only the old
+                // viewport, and nothing triggers a second fetch for the new
+                // viewport — leaving tracks half-loaded. fetchGeneration is
+                // the only tracked observable we can safely bump here
+                // (isLoading is intentionally untracked to avoid reaction
+                // cycles).
                 self.bumpFetchGeneration()
               }
             }

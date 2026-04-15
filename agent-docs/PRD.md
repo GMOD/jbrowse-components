@@ -19,22 +19,25 @@ Most track types working; known bugs/gaps below.
 
 Not running on CI. Chrome flags in `runner.ts` but Vulkan missing.
 
-| Approach | Cost | Setup |
-| --- | --- | --- |
-| Lavapipe | 0 | `apt-get install mesa-vulkan-drivers`, set `VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json`, run under `xvfb-run` |
-| macOS | 10× | Real GPU available |
+| Approach | Cost | Setup                                                                                                                    |
+| -------- | ---- | ------------------------------------------------------------------------------------------------------------------------ |
+| Lavapipe | 0    | `apt-get install mesa-vulkan-drivers`, set `VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json`, run under `xvfb-run` |
+| macOS    | 10×  | Real GPU available                                                                                                       |
 
-**Local**: Firefox headed mode with real GPU — `--backend=webgpu --firefox --headed`. See TEST_INFRASTRUCTURE.md.
+**Local**: Firefox headed mode with real GPU —
+`--backend=webgpu --firefox --headed`. See TEST_INFRASTRUCTURE.md.
 
 ### P1.4 Config Migration: PileupRenderer → display-level
 
-Old configs with `configuration.renderer.type === 'PileupRenderer'` silently lose
-settings (`featureHeight`, `featureSpacing`, `maxHeight`, `colorBy`, `filterBy`).
+Old configs with `configuration.renderer.type === 'PileupRenderer'` silently
+lose settings (`featureHeight`, `featureSpacing`, `maxHeight`, `colorBy`,
+`filterBy`).
 
 **Missing**: `migrateDisplayConfiguration()` to hoist renderer → display-level
 properties in both session and config migration.
 
 **Steps**:
+
 1. In `migrateSessionSnapshot.ts`, add `migrateDisplayConfiguration(display)`
 2. Detect `type === 'PileupRenderer'`, hoist properties, remove `renderer` slot
 3. Wire into `migrateTrackSnapshot`

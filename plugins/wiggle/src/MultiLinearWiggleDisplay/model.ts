@@ -27,12 +27,12 @@ import { autorun, untracked } from 'mobx'
 
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
+import { parseColor } from '../shared/webglUtils.ts'
 import {
   getRowHeight,
   isOverlayMode,
   makeRenderState,
 } from '../shared/wiggleComponentUtils.ts'
-import { parseColor } from '../shared/webglUtils.ts'
 import { computeAutoscaleDomain, getNiceDomain, getScale } from '../util.ts'
 import { buildMultiSourceRenderData } from './components/buildMultiSourceRenderData.ts'
 

@@ -1,10 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 
 import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
-import {
-  getContainingView,
-  useGpuModelLifecycle,
-} from '@jbrowse/core/util'
+import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import WiggleTooltip from './WiggleTooltip.tsx'

@@ -180,7 +180,12 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
 
     const interleaved = interleaveInstances(data)
     this.hal.uploadBuffer(key, PASS_FILL, interleaved, data.instanceCount)
-    this.hal.uploadBuffer(key, PASS_EDGE, interleaved, data.nonCigarInstanceCount)
+    this.hal.uploadBuffer(
+      key,
+      PASS_EDGE,
+      interleaved,
+      data.nonCigarInstanceCount,
+    )
   }
 
   deleteGeometry(key: number) {
@@ -199,7 +204,12 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
       }
       const track = makeTrackState(key, region, params, state.maxOffScreenPx)
       this.tracks.push(track)
-      this.writeUniforms(track, params.hoveredFeatureId, params.clickedFeatureId, params.alpha)
+      this.writeUniforms(
+        track,
+        params.hoveredFeatureId,
+        params.clickedFeatureId,
+        params.alpha,
+      )
       this.hal.drawPass(PASS_FILL, key)
       if (params.clickedFeatureId > 0) {
         this.hal.drawPass(PASS_EDGE, key)

@@ -104,7 +104,10 @@ export function GpuBackendLifecycleSlotMixin() {
       ) {
         const userOnAfterCommit = args.onAfterCommit
         self.assignGpuBackendLifecycleHandle(
-          startGpuSingleDataBackendAutorunLifecycle<BackendType, RenderStateType>({
+          startGpuSingleDataBackendAutorunLifecycle<
+            BackendType,
+            RenderStateType
+          >({
             ...args,
             onAfterCommit:
               userOnAfterCommit ||

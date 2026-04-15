@@ -9,7 +9,6 @@ import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
 import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
 
 import type { ClickCoord } from './components/util.ts'
-
 import type { ColorScheme } from './drawSyntenyUtils.ts'
 import type { SyntenyTrackRenderParams } from './syntenyBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
@@ -71,7 +70,10 @@ export interface FeatPos {
   identity?: number
 }
 
-export function getFeatureAtIndex(data: SyntenyFeatureData, i: number): FeatPos {
+export function getFeatureAtIndex(
+  data: SyntenyFeatureData,
+  i: number,
+): FeatPos {
   const identity = data.identities[i]!
   return {
     id: data.featureIds[i]!,
@@ -339,9 +341,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         }
         if (
           !view.initialized ||
-          !view.views.every(
-            a => a.displayedRegions.length > 0 && a.initialized,
-          )
+          !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
         ) {
           return undefined
         }
@@ -382,7 +382,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
 }
 
-export type LinearSyntenyDisplayStateModel = ReturnType<typeof stateModelFactory>
+export type LinearSyntenyDisplayStateModel = ReturnType<
+  typeof stateModelFactory
+>
 export type LinearSyntenyDisplayModel = Instance<LinearSyntenyDisplayStateModel>
 
 export default stateModelFactory

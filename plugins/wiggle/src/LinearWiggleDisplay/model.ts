@@ -23,7 +23,6 @@ import { autorun, untracked } from 'mobx'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
 import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
-import { buildSourceRenderData } from './components/buildSourceRenderData.ts'
 import {
   YSCALEBAR_LABEL_OFFSET,
   computeAutoscaleDomain,
@@ -31,9 +30,13 @@ import {
   getScale,
   isDefaultBicolor,
 } from '../util.ts'
+import { buildSourceRenderData } from './components/buildSourceRenderData.ts'
 
 import type { WiggleDataResult } from '../RenderWiggleDataRPC/types.ts'
-import type { WiggleBackend, WiggleGPURenderState } from '../shared/wiggleBackendTypes.ts'
+import type {
+  WiggleBackend,
+  WiggleGPURenderState,
+} from '../shared/wiggleBackendTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { StopToken } from '@jbrowse/core/util/stopToken'

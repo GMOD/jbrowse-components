@@ -100,8 +100,14 @@ test('startSingleDataGpuLifecycle marks canvas drawn once every slot has data', 
   model.startSingleDataGpuLifecycle<typeof backend, number>({
     backend,
     uploadSlots: [
-      { readData: () => a.get(), commitUpload: (bk, d) => bk.uploads.push(`a:${d}`) },
-      { readData: () => b.get(), commitUpload: (bk, d) => bk.uploads.push(`b:${d}`) },
+      {
+        readData: () => a.get(),
+        commitUpload: (bk, d) => bk.uploads.push(`a:${d}`),
+      },
+      {
+        readData: () => b.get(),
+        commitUpload: (bk, d) => bk.uploads.push(`b:${d}`),
+      },
     ],
     getRenderState: () => 1,
     renderWithState: () => {},

@@ -1,8 +1,8 @@
 import type React from 'react'
 
 import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { getContainingView } from '@jbrowse/core/util'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   ConfigOverrideMixin,

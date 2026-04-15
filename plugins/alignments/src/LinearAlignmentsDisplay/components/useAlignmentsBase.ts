@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import {
-  getContainingView,
-  useGpuModelLifecycle,
-} from '@jbrowse/core/util'
+import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
 import { AlignmentsRenderer } from './AlignmentsRenderer.ts'
@@ -178,10 +175,11 @@ function makeResizeHandler(
 }
 
 export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
-  const { canvasRef, error: gpuError, retry } = useGpuModelLifecycle(
-    AlignmentsRenderer,
-    model,
-  )
+  const {
+    canvasRef,
+    error: gpuError,
+    retry,
+  } = useGpuModelLifecycle(AlignmentsRenderer, model)
   const [resizeHandleHovered, setResizeHandleHovered] = useState(false)
   const [arcsResizeHovered, setArcsResizeHovered] = useState(false)
   const [sashimiResizeHovered, setSashimiResizeHovered] = useState(false)

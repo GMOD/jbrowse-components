@@ -46,7 +46,11 @@ describe('Canvas2DDotplotRenderer', () => {
     offsetX: number,
     offsetY: number,
     lineWidth: number,
-    trackScales: readonly { regionKey: number; scaleX: number; scaleY: number }[],
+    trackScales: readonly {
+      regionKey: number
+      scaleX: number
+      scaleY: number
+    }[],
   ) {
     return { offsetX, offsetY, lineWidth, trackScales }
   }
