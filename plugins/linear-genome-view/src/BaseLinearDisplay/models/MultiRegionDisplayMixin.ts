@@ -1,3 +1,4 @@
+import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import {
   getContainingTrack,
   getContainingView,
@@ -55,6 +56,17 @@ export default function MultiRegionDisplayMixin() {
       get fullyDrawn() {
         return self.canvasDrawn && !this.isLoading
       },
+
+      // Shared cached view for every LGV-based GPU display. A single
+      // displayedRegion may produce multiple render blocks (shared GPU
+      // buffer, different scissor clips on screen). Plugins that want to
+      // suppress rendering in certain states (e.g. no domain yet) can
+      // override this getter to return [] — the autorun lifecycle will
+      // then issue an empty-blocks render that clears the canvas.
+      get renderBlocks() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return buildRenderBlocks(view.visibleRegions)
+      },
     }))
     .actions(self => ({
       setError(error?: unknown) {
@@ -65,6 +77,13 @@ export default function MultiRegionDisplayMixin() {
         self.renderingStopToken = token
       },
 
+      // Upload-identity contract: the GPU backend autorun (see
+      // startGpuBackendAutorunLifecycle) re-uploads a region only when its
+      // value object reference changes. Subclasses' per-region setters
+      // (setRpcDataForRegion etc.) must therefore produce a FRESH value
+      // object for the updated region — never mutate in place. This method
+      // follows that rule by constructing a new Map; plugin-level data
+      // setters must do the same for their own rpcDataMap entries.
       setLoadedRegionForRegion(regionNumber: number, region: Region) {
         const next = new Map(self.loadedRegions)
         next.set(regionNumber, region)

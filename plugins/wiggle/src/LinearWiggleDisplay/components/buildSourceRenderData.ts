@@ -3,21 +3,28 @@ import { makeWhiskersSourceData } from '../../shared/wiggleComponentUtils.ts'
 import { getEffectiveScores, isDefaultBicolor } from '../../util.ts'
 
 import type { WiggleDataResult } from '../../RenderWiggleDataRPC/types.ts'
+import type { WiggleBackend } from '../../shared/wiggleBackendTypes.ts'
 import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
 import type { SourceRenderData } from '../../shared/wiggleBackendTypes.ts'
 
-export interface WiggleDisplayModel {
-  rpcDataMap: Map<number, WiggleDataResult>
-  dataVersion: number
-  height: number
-  domain: [number, number] | undefined
-  scaleType: string
+// Narrow shape that buildSourceRenderData reads from the model — kept
+// separate from WiggleDisplayModel so that MST's self (which may not yet
+// see later-defined actions at the point of the call) still satisfies it.
+export interface WiggleSourceRenderInputs {
   color: string
   posColor: string
   negColor: string
   renderingType: string
   isDensityMode: boolean
   summaryScoreMode: string
+}
+
+export interface WiggleDisplayModel extends WiggleSourceRenderInputs {
+  rpcDataMap: Map<number, WiggleDataResult>
+  dataVersion: number
+  height: number
+  domain: [number, number] | undefined
+  scaleType: string
   ticks?: ReturnType<typeof axisPropsFromTickScale>
   error: Error | null
   isLoading: boolean
@@ -37,11 +44,14 @@ export interface WiggleDisplayModel {
   reload: () => void
   canvasDrawn: boolean
   setCanvasDrawn: (flag: boolean) => void
+  startGpuBackendLifecycle: (backend: WiggleBackend) => void
+  stopGpuBackendLifecycle: () => void
+  renderNow: () => void
 }
 
 export function buildSourceRenderData(
   data: WiggleDataResult,
-  model: WiggleDisplayModel,
+  model: WiggleSourceRenderInputs,
 ): SourceRenderData[] {
   const useBicolor = isDefaultBicolor(model.color)
   const baseColor = parseColor(model.color)

@@ -1,18 +1,14 @@
-import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
-import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
-import { uploadChangedRegions } from '@jbrowse/core/gpu/uploadChangedRegions'
 import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
 import {
   getContainingView,
   useGpuRenderer,
   useTabVisibilityRerender,
 } from '@jbrowse/core/util'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import WiggleTooltip from './WiggleTooltip.tsx'
-import { buildSourceRenderData } from './buildSourceRenderData.ts'
 import DensityLegend from '../../shared/DensityLegend.tsx'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
@@ -20,11 +16,9 @@ import YScaleBar from '../../shared/YScaleBar.tsx'
 import {
   findFeatureAtBp,
   isSummaryFeature,
-  makeRenderState,
 } from '../../shared/wiggleComponentUtils.ts'
 
 import type { WiggleDisplayModel } from './buildSourceRenderData.ts'
-import type { WiggleDataResult } from '../../RenderWiggleDataRPC/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -36,91 +30,24 @@ const WiggleComponent = observer(function WiggleComponent({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  const { error, ready, rendererRef, retry } = useGpuRenderer(
-    canvasRef,
-    WiggleRenderer,
-  )
+  // The model owns the upload/render autorun and the GPU backend lifecycle —
+  // see startGpuBackendLifecycle / stopGpuBackendLifecycle / renderNow on the
+  // LinearWiggleDisplay model. This component is just a thin bridge that
+  // plugs the canvas and the backend into those model actions.
+  const { error, retry } = useGpuRenderer(canvasRef, WiggleRenderer, {
+    onReady: backend => {
+      model.startGpuBackendLifecycle(backend)
+    },
+    onDispose: () => {
+      model.stopGpuBackendLifecycle()
+    },
+  })
 
   const view = getContainingView(model) as LGV
 
-  const renderNow = useEffectEvent(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !view.initialized) {
-      return
-    }
-    const { domain } = model
-    const visibleRegions = view.visibleRegions
-    const width = view.trackWidthPx
-    if (!domain || visibleRegions.length === 0) {
-      renderer.renderBlocks(
-        [],
-        makeRenderState([0, 1], 'linear', 'xyplot', width, model.height),
-      )
-      return
-    }
-    const blocks = buildRenderBlocks(visibleRegions)
-    renderer.renderBlocks(
-      blocks,
-      makeRenderState(
-        domain,
-        model.scaleType,
-        model.renderingType,
-        width,
-        model.height,
-      ),
-    )
+  useTabVisibilityRerender(() => {
+    model.renderNow()
   })
-
-  useEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !ready) {
-      return
-    }
-
-    let lastDataMap: Map<number, WiggleDataResult> | null = null
-    const lastUploaded = new Map<number, WiggleDataResult>()
-
-    return autorun(() => {
-      const dataMap = model.rpcDataMap
-
-      if (lastDataMap !== dataMap) {
-        lastDataMap = dataMap
-        if (dataMap.size === 0) {
-          renderer.pruneRegions([])
-          lastUploaded.clear()
-        } else {
-          const activeRegions = uploadChangedRegions(
-            dataMap,
-            lastUploaded,
-            (regionNumber, data) => {
-              renderer.uploadRegion(
-                regionNumber,
-                data.regionStart,
-                buildSourceRenderData(data, model),
-              )
-            },
-          )
-          renderer.pruneRegions(activeRegions)
-        }
-      }
-
-      // SYNC across all hook-driven GPU displays (wiggle, multi-wiggle,
-      // variants, alignments, HiC, LD): dataVersion is a counter incremented
-      // by setLoadedRegionForRegion() after each region's data is committed.
-      // Reading it here creates a MobX dependency so this autorun re-fires at
-      // that point, ensuring renderNow() runs with fully-committed data.
-      // See MultiRegionDisplayMixin.withFetchLifecycle.
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _dv = model.dataVersion
-
-      renderNow()
-      if (dataMap.size > 0 && model.domain) {
-        model.setCanvasDrawn(true)
-      }
-    })
-  }, [model, view, ready, rendererRef])
-
-  useTabVisibilityRerender(renderNow)
 
   const coord0: [number, number] = [0, 0]
   const [offsetMouseCoord, setOffsetMouseCoord] = useState(coord0)

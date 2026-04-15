@@ -46,6 +46,9 @@ function makeModel(
     reload: () => {},
     canvasDrawn: false,
     setCanvasDrawn: () => {},
+    startGpuBackendLifecycle: () => {},
+    stopGpuBackendLifecycle: () => {},
+    renderNow: () => {},
     ...overrides,
   }
 }

@@ -2,6 +2,8 @@ import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
+import { startGpuBackendAutorunLifecycle } from '@jbrowse/core/gpu/startGpuBackendAutorunLifecycle'
 import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
 import {
   SimpleFeature,
@@ -27,10 +29,20 @@ import { autorun, untracked } from 'mobx'
 
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
-import { getRowHeight, isOverlayMode } from '../shared/wiggleComponentUtils.ts'
+import {
+  getRowHeight,
+  isOverlayMode,
+  makeRenderState,
+} from '../shared/wiggleComponentUtils.ts'
+import { parseColor } from '../shared/webglUtils.ts'
 import { computeAutoscaleDomain, getNiceDomain, getScale } from '../util.ts'
+import { buildMultiSourceRenderData } from './components/buildMultiSourceRenderData.ts'
 
 import type { MultiWiggleDataResult } from '../RenderMultiWiggleDataRPC/types.ts'
+import type {
+  WiggleBackend,
+  WiggleGPURenderState,
+} from '../shared/wiggleBackendTypes.ts'
 import type { Source, SourceInfo } from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -78,6 +90,7 @@ export default function stateModelFactory(
       MultiRegionDisplayMixin(),
       ConfigOverrideMixin(),
       TreeSidebarMixin<Source>(),
+      GpuBackendLifecycleSlotMixin(),
       types.model({
         type: types.literal('MultiLinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
@@ -308,6 +321,17 @@ export default function stateModelFactory(
           ? { ...ticks, values: domain }
           : ticks
       },
+
+      get renderState() {
+        const view = getContainingView(self) as LGV
+        return makeRenderState(
+          this.domain ?? [0, 1],
+          this.scaleType,
+          this.renderingType,
+          view.trackWidthPx,
+          self.height,
+        )
+      },
     }))
     .views(self => ({
       get showTree() {
@@ -354,6 +378,57 @@ export default function stateModelFactory(
         self.rpcDataMap = new Map()
         self.visibleScoreRange = undefined
         self.loadedBpPerPx = new Map()
+      },
+
+      startGpuBackendLifecycle(backend: WiggleBackend) {
+        self.assignGpuBackendLifecycleHandle(
+          startGpuBackendAutorunLifecycle<
+            WiggleBackend,
+            MultiWiggleDataResult,
+            WiggleGPURenderState
+          >({
+            backend,
+            getDataByRegionNumber: () => self.rpcDataMap,
+            getRenderBlocks: () =>
+              self.domain && self.sources.length > 0 ? self.renderBlocks : [],
+            getRenderState: () => self.renderState,
+            // Changing `sources` re-orders rows inside the instance buffer
+            // without changing rpcDataMap references, so we need a
+            // non-identity signal to force re-upload. Using the `sources`
+            // array reference itself works — the getter builds a fresh
+            // array whenever layout/subtree-filter/override-colors change.
+            getUploadInvalidationToken: () => self.sources,
+            uploadOneRegion: (b, regionNumber, data) => {
+              const { summaryScoreMode, renderingType, isDensityMode } = self
+              const defaultPosColor = parseColor(self.posColor)
+              const defaultNegColor = parseColor(self.negColor)
+              b.uploadRegion(
+                regionNumber,
+                data.regionStart,
+                buildMultiSourceRenderData(
+                  data,
+                  self.sources,
+                  defaultPosColor,
+                  defaultNegColor,
+                  summaryScoreMode,
+                  renderingType,
+                  isDensityMode,
+                ),
+              )
+            },
+            pruneRegionsNotIn: (b, activeRegionNumbers) => {
+              b.pruneRegions(activeRegionNumbers)
+            },
+            renderAllBlocks: (b, blocks, state) => {
+              b.renderBlocks(blocks, state)
+            },
+            onAfterCommit: hadUploads => {
+              if (hadUploads && self.domain) {
+                self.setCanvasDrawn(true)
+              }
+            },
+          }),
+        )
       },
 
       reload() {

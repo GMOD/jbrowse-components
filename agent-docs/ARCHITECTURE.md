@@ -262,21 +262,41 @@ When a tab is hidden, swap-chain textures are discarded; returning shows a black
 
 ---
 
-## regionNumber
+## regionNumber (a.k.a. displayedRegionIndex)
 
-`regionNumber` is the zero-based index of a genomic region in the view's
-`dynamicBlocks.contentBlocks` array. It is stable for a given view state.
+`regionNumber` is the zero-based index into `view.displayedRegions` — the
+user's configured region list (e.g. `[chr1, chr2, chr3]` → indices `0, 1, 2`).
+It is stable as long as the user doesn't add, remove, or reorder regions in the
+view config. A clearer name would be `displayedRegionIndex`; the codebase uses
+`regionNumber` for legacy reasons.
+
+It is **not** an index into `dynamicBlocks.contentBlocks`. Each contentBlock
+carries `regionNumber` as a back-reference to which displayedRegion produced
+it. A single displayedRegion can produce multiple contentBlocks (and therefore
+multiple RenderBlocks) — for example when one region appears in multiple
+on-screen segments. Those multiple blocks all share **one** GPU buffer, keyed
+by their common `regionNumber`, and are drawn with different scissor clips.
 
 It serves as the join key across:
 
-- `model.rpcDataMap: Map<number, T>` — data from the RPC worker
+- `model.rpcDataMap: Map<number, T>` — RPC results, one entry per displayedRegion
 - `hal.uploadBuffer(regionNumber, passId, ...)` — GPU buffer storage
-- `RenderBlock.regionNumber` — which buffer to draw in `renderBlocks`
+- `RenderBlock.regionNumber` — which buffer this on-screen block draws from
 
-Multi-region views (e.g. showing chr1 and chr2 simultaneously) produce multiple
-RenderBlocks, each referencing a different `regionNumber`. Shaders have no
-knowledge of regions; they just receive one uniform block and draw from whatever
-buffer `regionNumber` indexes.
+Shaders have no knowledge of regions; they just receive one uniform block per
+draw call and draw from whatever buffer `regionNumber` selects.
+
+**Conceptually, `regionNumber` is doing three jobs that happen to collapse to
+the same integer in single-LGV displays:**
+
+1. *Fetch key* — which RPC result this is.
+2. *GPU buffer key* — which backend buffer holds this region's uploaded data.
+3. *Render-block back-reference* — which buffer an on-screen segment draws from.
+
+In multi-LGV displays (dotplot, synteny across two views) the buffer key
+becomes a tuple of two displayedRegion indices, which is why those plugins
+invented their own `regionKey`/composite-key concept rather than reusing
+`regionNumber` directly.
 
 ---
 

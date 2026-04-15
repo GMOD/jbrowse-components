@@ -1,7 +1,5 @@
-import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
-import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
-import { uploadChangedRegions } from '@jbrowse/core/gpu/uploadChangedRegions'
 import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
 import {
   getContainingView,
@@ -9,11 +7,9 @@ import {
   useTabVisibilityRerender,
 } from '@jbrowse/core/util'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import MultiWiggleTooltip from './Tooltip.tsx'
-import { buildMultiSourceRenderData } from './buildMultiSourceRenderData.ts'
 import DensityLegend from '../../shared/DensityLegend.tsx'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import MultiRowLabels from '../../shared/MultiRowLabels.tsx'
@@ -21,12 +17,10 @@ import OverlayColorLegend from '../../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
-import { parseColor } from '../../shared/webglUtils.ts'
 import {
   findFeatureAtBp,
   getRowTop,
   isSummaryFeature,
-  makeRenderState,
 } from '../../shared/wiggleComponentUtils.ts'
 
 import type {
@@ -34,6 +28,7 @@ import type {
   MultiWiggleSourceData,
 } from '../../RenderMultiWiggleDataRPC/types.ts'
 import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
+import type { WiggleBackend } from '../../shared/wiggleBackendTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {
   ClusterHierarchyNode,
@@ -103,6 +98,9 @@ export interface MultiWiggleDisplayModel {
   ) => void
   canvasDrawn: boolean
   setCanvasDrawn: (flag: boolean) => void
+  startGpuBackendLifecycle: (backend: WiggleBackend) => void
+  stopGpuBackendLifecycle: () => void
+  renderNow: () => void
 }
 
 const MultiWiggleComponent = observer(function MultiWiggleComponent({
@@ -112,113 +110,24 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  const { error, ready, rendererRef, retry } = useGpuRenderer(
-    canvasRef,
-    WiggleRenderer,
-  )
+  // The model owns the upload/render autorun and the GPU backend lifecycle —
+  // see startGpuBackendLifecycle / stopGpuBackendLifecycle / renderNow on
+  // the MultiLinearWiggleDisplay model. Sources changes trigger a full
+  // re-upload via the lifecycle's `getUploadInvalidationToken`.
+  const { error, retry } = useGpuRenderer(canvasRef, WiggleRenderer, {
+    onReady: backend => {
+      model.startGpuBackendLifecycle(backend)
+    },
+    onDispose: () => {
+      model.stopGpuBackendLifecycle()
+    },
+  })
 
   const view = getContainingView(model) as LGV
 
-  const renderNow = useEffectEvent(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !view.initialized) {
-      return
-    }
-    const { domain } = model
-    const visibleRegions = view.visibleRegions
-    const totalWidth = view.trackWidthPx
-    if (!domain || visibleRegions.length === 0) {
-      return
-    }
-    const blocks = buildRenderBlocks(visibleRegions)
-    renderer.renderBlocks(
-      blocks,
-      makeRenderState(
-        domain,
-        model.scaleType,
-        model.renderingType,
-        totalWidth,
-        model.height,
-      ),
-    )
+  useTabVisibilityRerender(() => {
+    model.renderNow()
   })
-
-  useEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !ready) {
-      return
-    }
-
-    let lastDataMap: Map<number, MultiWiggleDataResult> | null = null
-    let lastSources: typeof model.sources | null = null
-    const lastUploaded = new Map<number, MultiWiggleDataResult>()
-
-    return autorun(() => {
-      const dataMap = model.rpcDataMap
-      // Always read sources so MobX tracks it as a dependency — a layout
-      // reorder changes sources but not the dataMap reference, and we can
-      // re-upload the existing GPU data in the new order without an RPC
-      // round-trip since buildMultiSourceRenderData looks up data by name.
-      const sources = model.sources
-
-      const dataMapChanged = lastDataMap !== dataMap
-      const sourcesChanged = lastSources !== sources
-
-      if (dataMapChanged || sourcesChanged) {
-        lastDataMap = dataMap
-        lastSources = sources
-        if (dataMap.size === 0) {
-          renderer.pruneRegions([])
-          lastUploaded.clear()
-        } else {
-          if (sourcesChanged) {
-            // Clear upload cache so every region gets re-uploaded with
-            // the new row ordering (buildMultiSourceRenderData maps by name).
-            lastUploaded.clear()
-          }
-          const { summaryScoreMode, renderingType, isDensityMode } = model
-          const defaultPosColor = parseColor(model.posColor)
-          const defaultNegColor = parseColor(model.negColor)
-          const activeRegions = uploadChangedRegions(
-            dataMap,
-            lastUploaded,
-            (regionNumber, data) => {
-              renderer.uploadRegion(
-                regionNumber,
-                data.regionStart,
-                buildMultiSourceRenderData(
-                  data,
-                  sources,
-                  defaultPosColor,
-                  defaultNegColor,
-                  summaryScoreMode,
-                  renderingType,
-                  isDensityMode,
-                ),
-              )
-            },
-          )
-          renderer.pruneRegions(activeRegions)
-        }
-      }
-
-      // SYNC across all hook-driven GPU displays (wiggle, multi-wiggle,
-      // variants, alignments, HiC, LD): dataVersion is a counter incremented
-      // by setLoadedRegionForRegion() after each region's data is committed.
-      // Reading it here creates a MobX dependency so this autorun re-fires at
-      // that point, ensuring renderNow() runs with fully-committed data.
-      // See MultiRegionDisplayMixin.withFetchLifecycle.
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _dv = model.dataVersion
-
-      renderNow()
-      if (dataMap.size > 0 && model.domain) {
-        model.setCanvasDrawn(true)
-      }
-    })
-  }, [model, view, ready, rendererRef])
-
-  useTabVisibilityRerender(renderNow)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const coord0: [number, number] = [0, 0]

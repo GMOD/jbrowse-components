@@ -1,15 +1,11 @@
 import React, {
   useCallback,
   useEffect,
-  useEffectEvent,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from 'react'
 
-import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
-import { uploadChangedRegions } from '@jbrowse/core/gpu/uploadChangedRegions'
 import { ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import {
   getContainingView,
@@ -18,7 +14,6 @@ import {
   useTabVisibilityRerender,
 } from '@jbrowse/core/util'
 import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
@@ -59,6 +54,8 @@ interface LinearBasicDisplayModel {
   regionTooLargeReason: string
   featureDensityStats?: { bytes?: number }
   statusMessage: string | undefined
+  scrollTop: number
+  setScrollTop: (n: number) => void
   setFeatureDensityStatsLimit: (s?: { bytes?: number }) => void
   reload: () => void
   expandToFit: () => void
@@ -80,6 +77,11 @@ interface LinearBasicDisplayModel {
   getFeatureById: (featureId: string) => FlatbushItem | undefined
   setCanvasDrawn: (val: boolean) => void
   clearSelection: () => void
+  startGpuBackendLifecycle: (
+    backend: import('./canvasFeatureBackendTypes.ts').CanvasFeatureBackend,
+  ) => void
+  stopGpuBackendLifecycle: () => void
+  renderNow: () => void
 }
 
 export interface Props {
@@ -149,7 +151,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     [number, number] | undefined
   >()
   const flatbushCacheMapRef = useRef(new Map<number, FlatbushRegionCache>())
-  const lastUploadedRef = useRef(new Map<number, FeatureDataResult>())
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const view = getContainingView(model) as LGV
@@ -181,114 +182,47 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     [model],
   )
 
-  const {
-    error: gpuError,
-    ready: rendererReady,
-    rendererRef,
-    retry,
-  } = useGpuRenderer(canvasRef, CanvasFeatureRenderer)
-
-  const renderWithBlocks = useEffectEvent(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !view.initialized || width === undefined) {
-      return
-    }
-
-    const visibleRegions = view.visibleRegions
-    if (visibleRegions.length === 0) {
-      return
-    }
-
-    renderer.renderBlocks(buildRenderBlocks(visibleRegions), {
-      scrollY: scrollContainerRef.current?.scrollTop ?? 0,
-      canvasWidth: view.trackWidthPx,
-      canvasHeight: model.height,
-    })
-  })
+  // The model owns the upload/render autorun and the GPU backend lifecycle —
+  // see startGpuBackendLifecycle / stopGpuBackendLifecycle / renderNow on the
+  // base canvas display model. scrollTop lives on the model (via
+  // TrackHeightMixin); the scroll handler below writes DOM scrollTop into
+  // the model so the autorun picks it up as part of `renderState`.
+  const { error: gpuError, retry } = useGpuRenderer(
+    canvasRef,
+    CanvasFeatureRenderer,
+    {
+      onReady: backend => {
+        model.startGpuBackendLifecycle(backend)
+      },
+      onDispose: () => {
+        model.stopGpuBackendLifecycle()
+      },
+    },
+  )
 
   const error = gpuError || modelError
 
-  useEffect(
-    () =>
-      autorun(() => {
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { offsetPx: _op, bpPerPx: _bpp, initialized, width: _w } = view
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const _h = model.height
-
-          if (!initialized) {
-            return
-          }
-
-          renderWithBlocks()
-        } catch {
-          // Model may have been detached from state tree
-        }
-      }),
-    [view, model],
-  )
-
-  // useLayoutEffect ensures GPU data is uploaded before paint, keeping
-  // WebGL features in sync with the DOM label overlay (which is computed
-  // during the same render via useMemo). useEffect would run after paint,
-  // causing a frame where labels show new data but WebGL shows old data.
-  //
-  // SYNC: unlike the other GPU displays (which use an autorun and read
-  // dataVersion explicitly), this component uses observer() +
-  // useLayoutEffect([..., rpcDataMap]). The observer re-renders when
-  // rpcDataMap changes reference, which fires this effect and uploads
-  // data. dataVersion is not needed here because rpcDataMap always gets
-  // a new Map reference when work() completes — the reference change is
-  // the sole trigger. See MultiRegionDisplayMixin.withFetchLifecycle.
-  //
-  // Per-region identity tracking (lastUploadedRef) is safe here because
-  // relayoutForCurrentZoom() spreads each FeatureDataResult into a new
-  // object before mutating it, so changed regions always have a new
-  // object reference.
-
-  useLayoutEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !rendererReady) {
-      return
-    }
-
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = 0
-    }
-
-    const lastUploaded = lastUploadedRef.current
-    if (rpcDataMap.size === 0) {
-      renderer.pruneRegions([])
-      flatbushCacheMapRef.current.clear()
-      lastUploaded.clear()
-      return
-    }
-
-    const activeRegions = uploadChangedRegions(
-      rpcDataMap,
-      lastUploaded,
-      (regionNumber, data) => {
-        renderer.uploadRegion(regionNumber, data)
-      },
-    )
+  // Keep the flatbush hit-testing cache in sync with rpcDataMap, and reset
+  // hover + DOM scroll when data arrives. These are DOM/React-side concerns
+  // independent of the GPU upload pipeline.
+  useEffect(() => {
     for (const key of flatbushCacheMapRef.current.keys()) {
       if (!rpcDataMap.has(key)) {
         flatbushCacheMapRef.current.delete(key)
       }
     }
-    renderer.pruneRegions(activeRegions)
-
-    clearHoverState()
-
-    renderWithBlocks()
-    if (rpcDataMap.size > 0) {
-      model.setCanvasDrawn(true)
+    if (rpcDataMap.size === 0) {
+      flatbushCacheMapRef.current.clear()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, rpcDataMap, rendererReady])
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0
+    }
+    clearHoverState()
+  }, [rpcDataMap, clearHoverState])
 
-  useTabVisibilityRerender(renderWithBlocks)
+  useTabVisibilityRerender(() => {
+    model.renderNow()
+  })
 
   useEffect(() => {
     const container = scrollContainerRef.current
@@ -297,11 +231,13 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     }
 
     let rafId = 0
-    const scheduleRender = () => {
+    const scheduleSync = () => {
       if (rafId === 0) {
         rafId = requestAnimationFrame(() => {
           rafId = 0
-          renderWithBlocks()
+          // Write DOM scroll position into the model — the autorun watches
+          // self.scrollTop via renderState and re-renders on change.
+          model.setScrollTop(container.scrollTop)
         })
       }
     }
@@ -316,10 +252,10 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       }
     }
 
-    container.addEventListener('scroll', scheduleRender, { passive: true })
+    container.addEventListener('scroll', scheduleSync, { passive: true })
     container.addEventListener('wheel', handleWheel, { passive: false })
     return () => {
-      container.removeEventListener('scroll', scheduleRender)
+      container.removeEventListener('scroll', scheduleSync)
       container.removeEventListener('wheel', handleWheel)
       if (rafId !== 0) {
         cancelAnimationFrame(rafId)

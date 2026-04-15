@@ -44,6 +44,9 @@
     "./gpu/pruneRegionMap": "./src/gpu/pruneRegionMap.ts",
     "./gpu/renderBlock": "./src/gpu/renderBlock.ts",
     "./gpu/uploadChangedRegions": "./src/gpu/uploadChangedRegions.ts",
+    "./gpu/startGpuBackendAutorunLifecycle": "./src/gpu/startGpuBackendAutorunLifecycle.ts",
+    "./gpu/startGpuSingleDataBackendAutorunLifecycle": "./src/gpu/startGpuSingleDataBackendAutorunLifecycle.ts",
+    "./gpu/GpuBackendLifecycleSlotMixin": "./src/gpu/GpuBackendLifecycleSlotMixin.ts",
     "./gpu/webglUtils": "./src/gpu/webglUtils.ts",
     "./gpu/webgpuUtils": "./src/gpu/webgpuUtils.ts",
     "./gpu/hal": "./src/gpu/hal/index.ts",
@@ -282,6 +285,18 @@
       "./gpu/uploadChangedRegions": {
         "types": "./esm/gpu/uploadChangedRegions.d.ts",
         "import": "./esm/gpu/uploadChangedRegions.js"
+      },
+      "./gpu/startGpuBackendAutorunLifecycle": {
+        "types": "./esm/gpu/startGpuBackendAutorunLifecycle.d.ts",
+        "import": "./esm/gpu/startGpuBackendAutorunLifecycle.js"
+      },
+      "./gpu/startGpuSingleDataBackendAutorunLifecycle": {
+        "types": "./esm/gpu/startGpuSingleDataBackendAutorunLifecycle.d.ts",
+        "import": "./esm/gpu/startGpuSingleDataBackendAutorunLifecycle.js"
+      },
+      "./gpu/GpuBackendLifecycleSlotMixin": {
+        "types": "./esm/gpu/GpuBackendLifecycleSlotMixin.d.ts",
+        "import": "./esm/gpu/GpuBackendLifecycleSlotMixin.js"
       },
       "./gpu/canvas2dUtils": {
         "types": "./esm/gpu/canvas2dUtils.d.ts",

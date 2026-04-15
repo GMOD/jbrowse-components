@@ -2,6 +2,8 @@ import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
+import { startGpuBackendAutorunLifecycle } from '@jbrowse/core/gpu/startGpuBackendAutorunLifecycle'
 import {
   getContainingTrack,
   getContainingView,
@@ -22,6 +24,8 @@ import { autorun, untracked } from 'mobx'
 
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
+import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
+import { buildSourceRenderData } from './components/buildSourceRenderData.ts'
 import {
   YSCALEBAR_LABEL_OFFSET,
   computeAutoscaleDomain,
@@ -31,6 +35,7 @@ import {
 } from '../util.ts'
 
 import type { WiggleDataResult } from '../RenderWiggleDataRPC/types.ts'
+import type { WiggleBackend, WiggleGPURenderState } from '../shared/wiggleBackendTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -61,6 +66,7 @@ export default function stateModelFactory(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       ConfigOverrideMixin(),
+      GpuBackendLifecycleSlotMixin(),
       types.model({
         type: types.literal('LinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
@@ -237,6 +243,17 @@ export default function stateModelFactory(
           ? { ...ticks, values: domain }
           : ticks
       },
+
+      get renderState() {
+        const view = getContainingView(self) as LGV
+        return makeRenderState(
+          this.domain ?? [0, 1],
+          this.scaleType,
+          this.renderingType,
+          view.trackWidthPx,
+          self.height,
+        )
+      },
     }))
     .actions(self => ({
       setRpcDataForRegion(regionNumber: number, data: WiggleDataResult) {
@@ -259,6 +276,46 @@ export default function stateModelFactory(
         self.rpcDataMap = new Map()
         self.visibleScoreRange = undefined
         self.loadedBpPerPx = new Map()
+      },
+
+      // Disposal, renderNow and the volatile slot come from
+      // GpuBackendLifecycleSlotMixin. This action starts the upload/render
+      // autorun that tracks self.rpcDataMap, self.renderBlocks,
+      // self.renderState via cached MST getters — so no dataVersion /
+      // lastDataMap bookkeeping is needed in React.
+      startGpuBackendLifecycle(backend: WiggleBackend) {
+        self.assignGpuBackendLifecycleHandle(
+          startGpuBackendAutorunLifecycle<
+            WiggleBackend,
+            WiggleDataResult,
+            WiggleGPURenderState
+          >({
+            backend,
+            getDataByRegionNumber: () => self.rpcDataMap,
+            // Suppress drawing while there's no domain yet — empty blocks
+            // produce a canvas-clearing render pass.
+            getRenderBlocks: () => (self.domain ? self.renderBlocks : []),
+            getRenderState: () => self.renderState,
+            uploadOneRegion: (b, regionNumber, data) => {
+              b.uploadRegion(
+                regionNumber,
+                data.regionStart,
+                buildSourceRenderData(data, self),
+              )
+            },
+            pruneRegionsNotIn: (b, activeRegionNumbers) => {
+              b.pruneRegions(activeRegionNumbers)
+            },
+            renderAllBlocks: (b, blocks, state) => {
+              b.renderBlocks(blocks, state)
+            },
+            onAfterCommit: hadUploads => {
+              if (hadUploads && self.domain) {
+                self.setCanvasDrawn(true)
+              }
+            },
+          }),
+        )
       },
 
       reload() {

@@ -7,6 +7,8 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
+import { startGpuBackendAutorunLifecycle } from '@jbrowse/core/gpu/startGpuBackendAutorunLifecycle'
 import {
   SimpleFeature,
   getContainingTrack,
@@ -34,6 +36,7 @@ import { autorun, reaction, untracked } from 'mobx'
 import { computeAndAssignLayout, relayoutAllRegions } from './layout.ts'
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
+import type { CanvasFeatureBackend } from './components/canvasFeatureBackendTypes.ts'
 import type {
   FeatureDataResult,
   FlatbushItem,
@@ -121,6 +124,7 @@ export default function baseStateModelFactory(
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
         ConfigOverrideMixin(),
+        GpuBackendLifecycleSlotMixin(),
         types.model({
           configuration: ConfigurationReference(configSchema),
         }),
@@ -196,6 +200,15 @@ export default function baseStateModelFactory(
       .views(self => ({
         get hasOverflow() {
           return self.maxY > self.height
+        },
+
+        get renderState() {
+          const view = getContainingView(self) as LGV
+          return {
+            scrollY: self.scrollTop,
+            canvasWidth: view.trackWidthPx,
+            canvasHeight: self.height,
+          }
         },
 
         get scalebarOverlapLeft() {
@@ -426,6 +439,35 @@ export default function baseStateModelFactory(
           self.rpcDataMap = new Map()
           self.layoutBpPerPxMap = new Map()
           self.setRegionTooLarge(false)
+        },
+
+        startGpuBackendLifecycle(backend: CanvasFeatureBackend) {
+          self.assignGpuBackendLifecycleHandle(
+            startGpuBackendAutorunLifecycle<
+              CanvasFeatureBackend,
+              FeatureDataResult,
+              { scrollY: number; canvasWidth: number; canvasHeight: number }
+            >({
+              backend,
+              getDataByRegionNumber: () => self.rpcDataMap,
+              getRenderBlocks: () => self.renderBlocks,
+              getRenderState: () => self.renderState,
+              uploadOneRegion: (b, regionNumber, data) => {
+                b.uploadRegion(regionNumber, data)
+              },
+              pruneRegionsNotIn: (b, activeRegionNumbers) => {
+                b.pruneRegions(activeRegionNumbers)
+              },
+              renderAllBlocks: (b, blocks, state) => {
+                b.renderBlocks(blocks, state)
+              },
+              onAfterCommit: hadUploads => {
+                if (hadUploads) {
+                  self.setCanvasDrawn(true)
+                }
+              },
+            }),
+          )
         },
 
         setFeatureDensityStatsLimit() {
