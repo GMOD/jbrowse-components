@@ -42,12 +42,21 @@ function makeGeometry(count: number) {
 const SCALE_1 = [{ regionKey: 0, scaleX: 1, scaleY: 1 }] as const
 
 describe('Canvas2DDotplotRenderer', () => {
+  function renderState(
+    offsetX: number,
+    offsetY: number,
+    lineWidth: number,
+    trackScales: readonly { regionKey: number; scaleX: number; scaleY: number }[],
+  ) {
+    return { offsetX, offsetY, lineWidth, trackScales }
+  }
+
   test('renders lines for uploaded geometry', () => {
     const { canvas, strokeCalls } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
-    renderer.uploadGeometry(0, makeGeometry(3))
-    renderer.render(0, 0, 2, SCALE_1)
+    renderer.uploadRegion(0, makeGeometry(3))
+    renderer.render(renderState(0, 0, 2, SCALE_1))
     expect(strokeCalls.length).toBe(3)
   })
 
@@ -55,16 +64,16 @@ describe('Canvas2DDotplotRenderer', () => {
     const { canvas, strokeCalls } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
-    renderer.uploadGeometry(0, makeGeometry(0))
-    renderer.render(0, 0, 2, SCALE_1)
+    renderer.uploadRegion(0, makeGeometry(0))
+    renderer.render(renderState(0, 0, 2, SCALE_1))
     expect(strokeCalls.length).toBe(0)
   })
 
-  test('does nothing without uploadGeometry', () => {
+  test('does nothing without uploadRegion', () => {
     const { canvas, strokeCalls } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
-    renderer.render(0, 0, 2, SCALE_1)
+    renderer.render(renderState(0, 0, 2, SCALE_1))
     expect(strokeCalls.length).toBe(0)
   })
 
@@ -73,7 +82,7 @@ describe('Canvas2DDotplotRenderer', () => {
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
 
-    renderer.uploadGeometry(0, {
+    renderer.uploadRegion(0, {
       x1s: new Float32Array([100]),
       y1s: new Float32Array([200]),
       x2s: new Float32Array([150]),
@@ -86,10 +95,10 @@ describe('Canvas2DDotplotRenderer', () => {
     const scaleY = 3
     const offsetX = 10
     const offsetY = 20
-    renderer.render(offsetX, offsetY, 1, [{ regionKey: 0, scaleX, scaleY }])
+    renderer.render(
+      renderState(offsetX, offsetY, 1, [{ regionKey: 0, scaleX, scaleY }]),
+    )
 
-    // sx1 = 100*2 - 10 = 190
-    // sy1 = 600 - (200*3 - 20) = 600 - 580 = 20
     expect(ctx.moveTo).toHaveBeenCalledWith(190, 20)
   })
 
@@ -98,17 +107,16 @@ describe('Canvas2DDotplotRenderer', () => {
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
 
-    renderer.uploadGeometry(0, {
+    renderer.uploadRegion(0, {
       x1s: new Float32Array([0]),
       y1s: new Float32Array([0]),
       x2s: new Float32Array([1]),
       y2s: new Float32Array([1]),
-      // R=128, G=64, B=191, A=204 (≈0.8): packed as 0xCCBF4080
       colors: new Uint32Array([0xccbf4080]),
       instanceCount: 1,
     })
 
-    renderer.render(0, 0, 1, SCALE_1)
+    renderer.render(renderState(0, 0, 1, SCALE_1))
     expect(ctx.strokeStyle).toMatch(/^rgba\(128,64,191,0\.8/)
   })
 
@@ -116,26 +124,30 @@ describe('Canvas2DDotplotRenderer', () => {
     const { canvas, strokeCalls } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
-    renderer.uploadGeometry(0, makeGeometry(2))
-    renderer.uploadGeometry(1, makeGeometry(3))
-    renderer.render(0, 0, 2, [
-      { regionKey: 0, scaleX: 1, scaleY: 1 },
-      { regionKey: 1, scaleX: 1, scaleY: 1 },
-    ])
+    renderer.uploadRegion(0, makeGeometry(2))
+    renderer.uploadRegion(1, makeGeometry(3))
+    renderer.render(
+      renderState(0, 0, 2, [
+        { regionKey: 0, scaleX: 1, scaleY: 1 },
+        { regionKey: 1, scaleX: 1, scaleY: 1 },
+      ]),
+    )
     expect(strokeCalls.length).toBe(5)
   })
 
-  test('deleteGeometry removes a track', () => {
+  test('deleteRegion removes a track', () => {
     const { canvas, strokeCalls } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
-    renderer.uploadGeometry(0, makeGeometry(2))
-    renderer.uploadGeometry(1, makeGeometry(3))
-    renderer.deleteGeometry(0)
-    renderer.render(0, 0, 2, [
-      { regionKey: 0, scaleX: 1, scaleY: 1 },
-      { regionKey: 1, scaleX: 1, scaleY: 1 },
-    ])
+    renderer.uploadRegion(0, makeGeometry(2))
+    renderer.uploadRegion(1, makeGeometry(3))
+    renderer.deleteRegion(0)
+    renderer.render(
+      renderState(0, 0, 2, [
+        { regionKey: 0, scaleX: 1, scaleY: 1 },
+        { regionKey: 1, scaleX: 1, scaleY: 1 },
+      ]),
+    )
     expect(strokeCalls.length).toBe(3)
   })
 
@@ -151,18 +163,18 @@ describe('Canvas2DDotplotRenderer', () => {
     const { canvas } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(400, 300)
-    canvas.width = 999 // mutate to detect if resize overwrites
+    canvas.width = 999
     renderer.resize(400, 300)
-    expect(canvas.width).toBe(999) // should not have been reset
+    expect(canvas.width).toBe(999)
   })
 
   test('dispose clears data so render is a no-op', () => {
     const { canvas, strokeCalls } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
-    renderer.uploadGeometry(0, makeGeometry(2))
+    renderer.uploadRegion(0, makeGeometry(2))
     renderer.dispose()
-    renderer.render(0, 0, 1, SCALE_1)
+    renderer.render(renderState(0, 0, 1, SCALE_1))
     expect(strokeCalls.length).toBe(0)
   })
 })

@@ -1,7 +1,7 @@
 import type {
   DotplotBackend,
   DotplotGeometryData,
-  TrackScale,
+  DotplotRenderState,
 } from './dotplotBackendTypes.ts'
 
 type Geometry = DotplotGeometryData
@@ -33,20 +33,16 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
     this.canvas.height = Math.round(height * dpr)
   }
 
-  uploadGeometry(regionKey: number, data: DotplotGeometryData) {
-    this.geometries.set(regionKey, data)
+  uploadRegion(regionNumber: number, data: DotplotGeometryData) {
+    this.geometries.set(regionNumber, data)
   }
 
-  deleteGeometry(regionKey: number) {
-    this.geometries.delete(regionKey)
+  deleteRegion(regionNumber: number) {
+    this.geometries.delete(regionNumber)
   }
 
-  render(
-    offsetX: number,
-    offsetY: number,
-    lineWidth: number,
-    trackScales: readonly TrackScale[],
-  ) {
+  render(state: DotplotRenderState) {
+    const { offsetX, offsetY, lineWidth, trackScales } = state
     const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1
     const ctx = this.ctx
 

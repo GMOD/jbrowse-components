@@ -5,6 +5,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
+import type { VariantCellData } from './components/computeVariantCells.ts'
+import type { VariantBackend } from './components/variantBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -42,7 +44,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self as MultiLinearVariantDisplayModel, opts)
+          return renderSvg(self, opts)
         },
         showSubmenuItems() {
           return [
@@ -63,6 +65,61 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
+    .actions(self => ({
+      // Uses the util with `identityOf: d => d.inputKey` — `cellData` is
+      // replaced wholesale on every RPC result, so reference-diff would
+      // re-upload unchanged regions. inputKey is a per-region content hash
+      // that stays stable when the underlying data is unchanged.
+      startGpuBackendLifecycle(backend: VariantBackend) {
+        self.startMultiRegionGpuLifecycle<
+          VariantBackend,
+          VariantCellData,
+          {
+            canvasWidth: number
+            canvasHeight: number
+            rowHeight: number
+            scrollTop: number
+          }
+        >({
+          backend,
+          getDataByRegionNumber: () => {
+            const cellData = self.cellData as
+              | { perRegionCellData: Record<number, VariantCellData> }
+              | undefined
+            const map = new Map<number, VariantCellData>()
+            if (cellData) {
+              for (const [k, v] of Object.entries(cellData.perRegionCellData)) {
+                map.set(Number(k), v)
+              }
+            }
+            return map
+          },
+          identityOf: d => d.inputKey,
+          uploadOneRegion: (b, n, d) => {
+            b.uploadRegion(n, d)
+          },
+          pruneRegionsNotIn: (b, active) => {
+            b.pruneRegions(active)
+          },
+          getRenderBlocks: () => self.renderBlocks,
+          getRenderState: () => {
+            const view = getContainingView(self) as LinearGenomeViewModel
+            if (!view.initialized) {
+              return undefined
+            }
+            return {
+              canvasWidth: view.trackWidthPx,
+              canvasHeight: self.availableHeight,
+              rowHeight: self.rowHeight,
+              scrollTop: self.scrollTop,
+            }
+          },
+          renderAllBlocks: (b, blocks, state) => {
+            b.renderBlocks(blocks, state)
+          },
+        })
+      },
+    }))
 }
 
 export type MultiLinearVariantDisplayStateModel = ReturnType<

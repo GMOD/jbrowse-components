@@ -4,6 +4,7 @@ import {
   computeCoverageTicks,
   computeVisibleMaxDepth,
 } from '@jbrowse/alignments-core'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -63,12 +64,17 @@ import { getColorForModification } from '../util.ts'
 import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
 
-import type { ColorPalette } from './components/AlignmentsRenderer.ts'
+import type {
+  RenderState as AlignmentsRenderState,
+  ColorPalette,
+} from './components/AlignmentsRenderer.ts'
+import type { AlignmentsBackend } from './components/rendererTypes.ts'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type {
   CigarHitResult,
   IndicatorHitResult,
 } from './components/hitTesting.ts'
+import type { ArcsDataResult } from '../shared/computeArcsFromPileupData.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 import type { LegendItem } from '../shared/legendUtils.ts'
 import type { ColorBy, FilterBy, SortedBy } from '../shared/types'
@@ -611,6 +617,44 @@ export default function stateModelFactory(
         get scrollableHeight() {
           return Math.max(0, self.totalPileupHeight - self.pileupViewportHeight)
         },
+
+        get renderState(): AlignmentsRenderState | undefined {
+          const view = getContainingView(self) as LGV
+          const palette = self.colorPalette
+          if (!view.initialized || !palette) {
+            return undefined
+          }
+          return {
+            rangeY: self.currentRangeY,
+            colorScheme: self.colorSchemeIndex,
+            featureHeight: self.featureHeightSetting,
+            featureSpacing: self.featureSpacing,
+            showCoverage: self.showCoverage,
+            coverageHeight: self.coverageHeight,
+            coverageYOffset: YSCALEBAR_LABEL_OFFSET,
+            coverageMaxDepth: self.coverageTicks?.maxDepth,
+            showMismatches: self.showMismatches,
+            showSoftClipping: self.showSoftClipping,
+            showInterbaseIndicators: self.showInterbaseIndicators,
+            showModifications: self.showModifications,
+            showOutline: self.showOutlineSetting,
+            showArcs: self.showArcs,
+            arcsHeight: self.arcsHeight,
+            pairedArcsDown: self.pairedArcsDown,
+            pileupTopOffset: self.coverageDisplayHeight,
+            canvasWidth: view.width,
+            canvasHeight: self.height,
+            highlightedFeatureId: self.featureIdUnderMouse,
+            selectedFeatureId: self.selectedFeatureId,
+            highlightedChainIds: self.highlightedChainIds,
+            selectedChainIds: self.selectedChainIds,
+            colors: palette,
+            renderingMode: self.renderingMode,
+            flipStrandLongReadChains: self.flipStrandLongReadChains,
+            arcLineWidth: self.arcsState.lineWidth,
+            bpRangeX: [0, 0],
+          }
+        },
       }))
       .views(self => ({
         get featureUnderMouse() {
@@ -916,6 +960,77 @@ export default function stateModelFactory(
 
           setShowMismatches(show: boolean) {
             self.showMismatches = show
+          },
+
+          // Pileup and arcs are independent upload streams tracked within a
+          // single autorun — each with its own identity-diff cache. Arcs
+          // share the pileup backend's per-region slots, so only the pileup
+          // stream prunes. `AlignmentsRenderState` includes color scheme,
+          // scrollTop, hover highlights, etc.; the util's split autoruns
+          // mean hover-only changes skip the upload cache walk.
+          startGpuBackendLifecycle(backend: AlignmentsBackend) {
+            self.startMultiRegionGpuLifecycle<
+              AlignmentsBackend,
+              unknown,
+              AlignmentsRenderState
+            >({
+              backend,
+              uploadStreams: [
+                {
+                  getDataByRegionNumber: () => self.rpcDataMap,
+                  uploadOneRegion: (b, regionNumber, data) => {
+                    const pileup = data as PileupDataResult
+                    if (pileup.numReads === 0) {
+                      return
+                    }
+                    b.uploadRegion(regionNumber, pileup)
+                    if (pileup.maxY > self.maxY) {
+                      self.maxY = pileup.maxY
+                    }
+                    if (
+                      pileup.connectingLinePositions &&
+                      pileup.connectingLineYs &&
+                      pileup.connectingLineColorTypes &&
+                      pileup.numConnectingLines
+                    ) {
+                      b.uploadConnectingLinesForRegion(regionNumber, {
+                        regionStart: pileup.regionStart,
+                        connectingLinePositions: pileup.connectingLinePositions,
+                        connectingLineYs: pileup.connectingLineYs,
+                        connectingLineColorTypes: pileup.connectingLineColorTypes,
+                        numConnectingLines: pileup.numConnectingLines,
+                      })
+                    }
+                  },
+                  pruneRegionsNotIn: (b, active) => {
+                    b.pruneRegions(active)
+                  },
+                },
+                {
+                  getDataByRegionNumber: () => self.arcsState.rpcDataMap,
+                  uploadOneRegion: (b, regionNumber, data) => {
+                    const arcs = data as ArcsDataResult
+                    b.uploadArcsFromTypedArraysForRegion(regionNumber, {
+                      regionStart: arcs.regionStart,
+                      arcX1: arcs.arcX1,
+                      arcX2: arcs.arcX2,
+                      arcColorTypes: arcs.arcColorTypes,
+                      arcIsArc: arcs.arcIsArc,
+                      numArcs: arcs.numArcs,
+                      linePositions: arcs.linePositions,
+                      lineYs: arcs.lineYs,
+                      lineColorTypes: arcs.lineColorTypes,
+                      numLines: arcs.numLines,
+                    })
+                  },
+                },
+              ],
+              getRenderBlocks: () => self.renderBlocks,
+              getRenderState: () => self.renderState,
+              renderAllBlocks: (b, blocks, state) => {
+                b.renderBlocks(blocks, state)
+              },
+            })
           },
 
           setShowYScalebar(show: boolean) {

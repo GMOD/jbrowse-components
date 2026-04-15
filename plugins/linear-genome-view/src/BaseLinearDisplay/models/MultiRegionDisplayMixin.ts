@@ -1,3 +1,4 @@
+import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
 import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import {
   getContainingTrack,
@@ -39,14 +40,18 @@ export interface FetchContext {
 
 export default function MultiRegionDisplayMixin() {
   return types
-    .compose('MultiRegionDisplayMixin', RegionTooLargeMixin(), types.model({}))
+    .compose(
+      'MultiRegionDisplayMixin',
+      RegionTooLargeMixin(),
+      GpuBackendLifecycleSlotMixin(),
+      types.model({}),
+    )
     .volatile(() => ({
       loadedRegions: new Map<number, Region>(),
       error: undefined as unknown,
       renderingStopToken: undefined as StopToken | undefined,
       fetchGeneration: 0,
       dataVersion: 0,
-      canvasDrawn: false,
     }))
     .views(self => ({
       get isLoading() {
@@ -133,10 +138,6 @@ export default function MultiRegionDisplayMixin() {
 
       beforeFetchCheck() {
         // no-op base
-      },
-
-      setCanvasDrawn(val: boolean) {
-        self.canvasDrawn = val
       },
 
       setStatusMessage(_msg?: string) {

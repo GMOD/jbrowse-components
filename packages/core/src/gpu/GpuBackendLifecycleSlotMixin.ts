@@ -1,40 +1,60 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { GpuBackendAutorunLifecycleHandle } from './startGpuBackendAutorunLifecycle.ts'
-import type { GpuSingleDataBackendAutorunLifecycleHandle } from './startGpuSingleDataBackendAutorunLifecycle.ts'
+import {
+  type StartGpuBackendAutorunLifecycleArgs,
+  startGpuBackendAutorunLifecycle,
+} from './startGpuBackendAutorunLifecycle.ts'
+import {
+  type StartGpuSingleDataBackendAutorunLifecycleArgs,
+  startGpuSingleDataBackendAutorunLifecycle,
+} from './startGpuSingleDataBackendAutorunLifecycle.ts'
+
+import type { GpuBackendLifecycleHandle } from './gpuBackendLifecycleHandle.ts'
 
 /**
- * Small MST mixin that every GPU display composes to own the lifecycle handle
- * produced by `startGpuBackendAutorunLifecycle` or
- * `startGpuSingleDataBackendAutorunLifecycle`.
+ * Owns the GPU draw lifecycle on any display that paints to a canvas. Three
+ * things live here because they share one concern ("a backend is uploading
+ * and rendering; when is its canvas considered drawn?"):
  *
- * Provides:
- *   - volatile `gpuBackendLifecycleHandle` slot,
- *   - `stopGpuBackendLifecycle()` action (dispose + clear),
- *   - `renderNow()` action (imperative re-render escape hatch),
- *   - `assignGpuBackendLifecycleHandle(handle)` action — the plugin's own
- *     `startGpuBackendLifecycle(backend)` calls this with the result of
- *     `startGpu…AutorunLifecycle({ ... })`.
+ *  - `canvasDrawn` — observable flag read by overlays/loading UI,
+ *  - `markCanvasDrawn()` — idempotent write (no observer churn once true),
+ *  - `gpuBackendLifecycleHandle` — the autorun pair produced by either
+ *    family utility (multi-region or single-data global).
  *
- * Plugins only need to define `startGpuBackendLifecycle(backend)` — the rest
- * is inherited. This keeps the three cross-plugin concerns (slot shape,
- * disposal contract, renderNow semantics) unified so they can't drift.
+ * Plugins call `self.startMultiRegionGpuLifecycle({...})` or
+ * `self.startSingleDataGpuLifecycle({...})` in their own
+ * `startGpuBackendLifecycle(backend)` action. The wrapper starts the
+ * underlying utility, auto-wires `markCanvasDrawn` onto the commit hook
+ * (unless the plugin supplies its own `onAfterCommit`), and assigns the
+ * returned handle into the slot. The hand-off is complete in one call —
+ * nothing else leaks into the plugin.
  */
 export function GpuBackendLifecycleSlotMixin() {
   return types
     .model('GpuBackendLifecycleSlot', {})
     .volatile(() => ({
+      canvasDrawn: false,
       gpuBackendLifecycleHandle: undefined as
-        | GpuBackendAutorunLifecycleHandle
-        | GpuSingleDataBackendAutorunLifecycleHandle
+        | GpuBackendLifecycleHandle
         | undefined,
     }))
     .actions(self => ({
-      assignGpuBackendLifecycleHandle(
-        handle:
-          | GpuBackendAutorunLifecycleHandle
-          | GpuSingleDataBackendAutorunLifecycleHandle,
-      ) {
+      setCanvasDrawn(val: boolean) {
+        if (self.canvasDrawn !== val) {
+          self.canvasDrawn = val
+        }
+      },
+
+      // Idempotent "first draw has happened" signal. Guards against the
+      // per-commit observable write + dependent observer churn that a naive
+      // setCanvasDrawn(true) call would produce once the canvas is drawn.
+      markCanvasDrawn() {
+        if (!self.canvasDrawn) {
+          self.canvasDrawn = true
+        }
+      },
+
+      assignGpuBackendLifecycleHandle(handle: GpuBackendLifecycleHandle) {
         self.gpuBackendLifecycleHandle?.dispose()
         self.gpuBackendLifecycleHandle = handle
       },
@@ -44,6 +64,57 @@ export function GpuBackendLifecycleSlotMixin() {
       },
       renderNow() {
         self.gpuBackendLifecycleHandle?.renderNow()
+      },
+    }))
+    .actions(self => ({
+      startMultiRegionGpuLifecycle<
+        BackendType,
+        RegionDataType,
+        RenderStateType,
+      >(
+        args: StartGpuBackendAutorunLifecycleArgs<
+          BackendType,
+          RegionDataType,
+          RenderStateType
+        >,
+      ) {
+        const userOnAfterCommit = args.onAfterCommit
+        self.assignGpuBackendLifecycleHandle(
+          startGpuBackendAutorunLifecycle<
+            BackendType,
+            RegionDataType,
+            RenderStateType
+          >({
+            ...args,
+            onAfterCommit:
+              userOnAfterCommit ||
+              (hadData => {
+                if (hadData) {
+                  self.markCanvasDrawn()
+                }
+              }),
+          }),
+        )
+      },
+      startSingleDataGpuLifecycle<BackendType, RenderStateType>(
+        args: StartGpuSingleDataBackendAutorunLifecycleArgs<
+          BackendType,
+          RenderStateType
+        >,
+      ) {
+        const userOnAfterCommit = args.onAfterCommit
+        self.assignGpuBackendLifecycleHandle(
+          startGpuSingleDataBackendAutorunLifecycle<BackendType, RenderStateType>({
+            ...args,
+            onAfterCommit:
+              userOnAfterCommit ||
+              (ready => {
+                if (ready) {
+                  self.markCanvasDrawn()
+                }
+              }),
+          }),
+        )
       },
     }))
 }

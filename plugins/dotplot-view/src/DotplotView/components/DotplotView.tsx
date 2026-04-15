@@ -19,6 +19,7 @@ import { useMouseUpHandler } from './hooks/useMouseUpHandler.ts'
 import { useWheelHandler } from './hooks/useWheelHandler.ts'
 import { createDotplotRenderer } from '../../DotplotDisplay/DotplotRenderer.ts'
 
+import type { DotplotBackend } from '../../DotplotDisplay/dotplotBackendTypes.ts'
 import type { DotplotViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -74,9 +75,11 @@ const DotplotCanvas = observer(function DotplotCanvas({
 
   const gpuOpts = useMemo(
     () => ({
-      onReady: model.setGpuRenderer,
+      onReady: (backend: DotplotBackend) => {
+        model.startGpuBackendLifecycle(backend)
+      },
       onDispose: () => {
-        model.setGpuRenderer(null)
+        model.stopGpuBackendLifecycle()
       },
     }),
     [model],
@@ -89,7 +92,7 @@ const DotplotCanvas = observer(function DotplotCanvas({
   )
 
   useTabVisibilityRerender(() => {
-    model.bumpTabVisibility()
+    model.renderNow()
   })
 
   return (

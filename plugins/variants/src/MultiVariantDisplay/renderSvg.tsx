@@ -7,13 +7,30 @@ import SvgLabelRows from '../shared/components/SvgLabelRows.tsx'
 import SvgTree from '../shared/components/SvgTree.tsx'
 
 import type { VariantCellData } from './components/computeVariantCells.ts'
-import type { MultiLinearVariantDisplayModel } from './model.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { ClusterHierarchyNode } from '@jbrowse/tree-sidebar'
 
 type LGV = LinearGenomeViewModel
+
+interface RenderSvgModel {
+  id: string
+  cellData: unknown
+  error: unknown
+  regionTooLarge: boolean
+  rowHeight: number
+  scrollTop: number
+  availableHeight: number
+  height: number
+  canDisplayLabels: boolean
+  sources: { name: string }[] | undefined
+  referenceDrawingMode: string
+  hierarchy: ClusterHierarchyNode | undefined
+  showTree: boolean
+  treeAreaWidth: number
+}
 
 function setFillFromCellColor(ctx: SvgCanvas, colors: Uint8Array, i: number) {
   const r = colors[i * 4]!
@@ -118,7 +135,7 @@ function renderCellsForRegion(
 }
 
 export async function renderSvg(
-  model: MultiLinearVariantDisplayModel,
+  model: RenderSvgModel,
   _opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV

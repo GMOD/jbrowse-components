@@ -3,8 +3,7 @@ import { useCallback, useRef, useState } from 'react'
 import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
 import {
   getContainingView,
-  useGpuRenderer,
-  useTabVisibilityRerender,
+  useGpuModelLifecycle,
 } from '@jbrowse/core/util'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
@@ -108,26 +107,16 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 }: {
   model: MultiWiggleDisplayModel
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-
   // The model owns the upload/render autorun and the GPU backend lifecycle —
   // see startGpuBackendLifecycle / stopGpuBackendLifecycle / renderNow on
   // the MultiLinearWiggleDisplay model. Sources changes trigger a full
   // re-upload via the lifecycle's `getUploadInvalidationToken`.
-  const { error, retry } = useGpuRenderer(canvasRef, WiggleRenderer, {
-    onReady: backend => {
-      model.startGpuBackendLifecycle(backend)
-    },
-    onDispose: () => {
-      model.stopGpuBackendLifecycle()
-    },
-  })
+  const { canvasRef, error, retry } = useGpuModelLifecycle(
+    WiggleRenderer,
+    model,
+  )
 
   const view = getContainingView(model) as LGV
-
-  useTabVisibilityRerender(() => {
-    model.renderNow()
-  })
 
   const containerRef = useRef<HTMLDivElement>(null)
   const coord0: [number, number] = [0, 0]

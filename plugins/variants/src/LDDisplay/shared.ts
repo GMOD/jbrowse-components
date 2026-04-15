@@ -1,8 +1,6 @@
 import type React from 'react'
 
 import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
-import { startGpuSingleDataBackendAutorunLifecycle } from '@jbrowse/core/gpu/startGpuSingleDataBackendAutorunLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -45,7 +43,6 @@ export default function sharedModelFactory(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       ConfigOverrideMixin(),
-      GpuBackendLifecycleSlotMixin(),
       types.model({
         configuration: ConfigurationReference(configSchema),
       }),
@@ -353,39 +350,32 @@ export default function sharedModelFactory(
        * both uploads.
        */
       startGpuBackendLifecycle(backend: LDBackend) {
-        self.assignGpuBackendLifecycleHandle(
-          startGpuSingleDataBackendAutorunLifecycle<
-            LDBackend,
-            NonNullable<typeof self.renderState>
-          >({
-            backend,
-            uploadSlots: [
-              {
-                readData: () => self.rpcData,
-                commitUpload: (b, data) => {
-                  const d = data as LDDataResult
-                  b.uploadData({
-                    ldValues: d.ldValues,
-                    boundaries: d.boundaries,
-                    numCells: d.numCells,
-                    positions: d.positions,
-                    cellSizes: d.cellSizes,
-                  })
-                  b.uploadColorRamp(generateLDColorRamp(d.metric, d.signedLD))
-                },
+        self.startSingleDataGpuLifecycle<
+          LDBackend,
+          NonNullable<typeof self.renderState>
+        >({
+          backend,
+          uploadSlots: [
+            {
+              readData: () => self.rpcData,
+              commitUpload: (b, data) => {
+                const d = data as LDDataResult
+                b.uploadData({
+                  ldValues: d.ldValues,
+                  boundaries: d.boundaries,
+                  numCells: d.numCells,
+                  positions: d.positions,
+                  cellSizes: d.cellSizes,
+                })
+                b.uploadColorRamp(generateLDColorRamp(d.metric, d.signedLD))
               },
-            ],
-            getRenderState: () => self.renderState,
-            renderWithState: (b, state) => {
-              b.render(state)
             },
-            onAfterCommit: ready => {
-              if (ready) {
-                self.setCanvasDrawn(true)
-              }
-            },
-          }),
-        )
+          ],
+          getRenderState: () => self.renderState,
+          renderWithState: (b, state) => {
+            b.render(state)
+          },
+        })
       },
     }))
     .views(self => ({

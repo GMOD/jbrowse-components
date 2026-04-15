@@ -1,6 +1,63 @@
-import { autorun } from 'mobx'
+import { autorun, observable, runInAction } from 'mobx'
 
+import type { GpuBackendLifecycleHandle } from './gpuBackendLifecycleHandle.ts'
 import type { RenderBlock } from './renderBlock.ts'
+
+export type { GpuBackendLifecycleHandle } from './gpuBackendLifecycleHandle.ts'
+
+/**
+ * One upload track — a per-region data map with its own identity-diff cache,
+ * upload dispatch, and (optional) prune dispatch. Plugins that have a single
+ * upload stream (wiggle, variants-matrix pileup) use `uploadStreams: [one]`;
+ * plugins that have independent streams (alignments: pileup + arcs) list
+ * them in order.
+ */
+export interface GpuUploadStream<BackendType, RegionDataType> {
+  /**
+   * Per-region data map read inside the autorun. MobX observable reads here
+   * establish the reactive dependency.
+   */
+  getDataByRegionNumber: () => Map<number, RegionDataType>
+
+  /**
+   * Dispatch upload for one region whose identity changed since the last
+   * pass.
+   */
+  uploadOneRegion: (
+    backend: BackendType,
+    regionNumber: number,
+    data: RegionDataType,
+  ) => void
+
+  /**
+   * Tell the backend which regions are still active so it can free buffers
+   * for the rest. Optional — omit when a stream shares pruning with another
+   * stream (e.g. alignments' arcs share the pileup backend's region slots).
+   */
+  pruneRegionsNotIn?: (backend: BackendType, activeRegionNumbers: number[]) => void
+
+  /**
+   * Compares identity between passes. Defaults to reference equality. Use
+   * when data entries are replaced wholesale on every observable change
+   * (e.g. `inputKey` string hash for variants).
+   */
+  identityOf?: (data: RegionDataType) => unknown
+
+  /**
+   * When this token's value changes, the per-region cache is cleared and
+   * every region re-uploads. Used by plugins whose upload bytes depend on
+   * non-region state (multi-wiggle's `sources` array).
+   */
+  getUploadInvalidationToken?: () => unknown
+
+  /**
+   * Fires once per cached key that disappears from dataMap. Use when the
+   * backend is shared across displays and per-key GPU resources must be
+   * freed (pruneRegionsNotIn fires once with the active set — not enough to
+   * know *which* key went away).
+   */
+  deleteOneRegion?: (backend: BackendType, regionNumber: number) => void
+}
 
 export interface StartGpuBackendAutorunLifecycleArgs<
   BackendType,
@@ -10,60 +67,42 @@ export interface StartGpuBackendAutorunLifecycleArgs<
   backend: BackendType
 
   /**
-   * Reads the per-region data currently owned by the model, keyed by
-   * displayedRegionIndex (a.k.a. `regionNumber`). Called inside the autorun,
-   * so MobX observable reads here establish the reactive dependency: when the
-   * map or any observable read during its computation changes, the autorun
-   * re-fires.
-   *
-   * The identity check for re-upload is done against the *values* in this
-   * map, so the model should produce fresh value objects only when a region's
-   * uploaded bytes actually need to change. The MST idiom of replacing the
-   * whole Map reference on every commit (shallow copy) works because individual
-   * value references stay the same for regions whose data didn't change.
+   * One or more independent upload streams. Mutually exclusive with the
+   * top-level `getDataByRegionNumber`/`uploadOneRegion`/`pruneRegionsNotIn`
+   * sugar — which, if present, are wrapped as a single stream.
    */
-  getDataByRegionNumber: () => Map<number, RegionDataType>
+  uploadStreams?: GpuUploadStream<BackendType, any>[]
 
-  /**
-   * Reads the list of on-screen render blocks. Typically a cached MST view
-   * that calls `buildRenderBlocks(view.visibleRegions)`. A single displayed
-   * region may appear in multiple blocks (shared GPU buffer, different
-   * scissor clips).
-   */
-  getRenderBlocks: () => RenderBlock[]
-
-  /**
-   * Reads the per-frame render state, or `undefined` to skip the render pass
-   * for this autorun iteration (upload/prune still happen). Typically a
-   * cached MST view that returns `undefined` while the view isn't
-   * initialized.
-   */
-  getRenderState: () => RenderStateType | undefined
-
-  /**
-   * Bridges the generic upload to the plugin-specific backend API. Called
-   * once per region whose data reference changed since the last pass. This
-   * closure typically also reads other observables (e.g. color scheme) via
-   * `self`; those reads are tracked by the autorun.
-   */
-  uploadOneRegion: (
+  // Single-stream sugar — equivalent to uploadStreams: [{ ... }]
+  getDataByRegionNumber?: () => Map<number, RegionDataType>
+  uploadOneRegion?: (
     backend: BackendType,
     regionNumber: number,
     data: RegionDataType,
   ) => void
-
-  /**
-   * Tells the backend which regions are still active, so it can free GPU
-   * buffers for the ones that aren't.
-   */
-  pruneRegionsNotIn: (
+  pruneRegionsNotIn?: (
     backend: BackendType,
     activeRegionNumbers: number[],
   ) => void
+  identityOf?: (data: RegionDataType) => unknown
+  getUploadInvalidationToken?: () => unknown
+  deleteOneRegion?: (backend: BackendType, regionNumber: number) => void
+
+  /**
+   * Reads the list of on-screen render blocks. Typically a cached MST view
+   * that calls `buildRenderBlocks(view.visibleRegions)`.
+   */
+  getRenderBlocks: () => RenderBlock[]
+
+  /**
+   * Reads the per-frame render state, or `undefined` to skip the render
+   * pass for this iteration (upload/prune still happen).
+   */
+  getRenderState: () => RenderStateType | undefined
 
   /**
    * Issues the draw call(s) for all visible blocks using the current render
-   * state. Called last in each autorun pass after uploads.
+   * state.
    */
   renderAllBlocks: (
     backend: BackendType,
@@ -72,105 +111,153 @@ export interface StartGpuBackendAutorunLifecycleArgs<
   ) => void
 
   /**
-   * Optional post-pass hook, e.g. to call `model.setCanvasDrawn(true)`. The
-   * argument is whether there were any uploaded regions this pass.
+   * Optional post-upload hook. Fires after the upload autorun pass,
+   * regardless of whether the render autorun ran. Argument is whether any
+   * stream had data this pass.
    */
   onAfterCommit?: (didHaveUploadedRegions: boolean) => void
-
-  /**
-   * Optional invalidation token. When its value changes between autorun
-   * iterations, the per-region upload cache is cleared and every region
-   * re-uploads on the next pass. Used by plugins whose upload bytes depend
-   * on model state that isn't part of the per-region data object itself
-   * (e.g. multi-wiggle's `sources` array controls row ordering packed into
-   * the instance buffer). The value is never inspected beyond reference or
-   * `Object.is` comparison — typically a number counter or an array
-   * reference.
-   */
-  getUploadInvalidationToken?: () => unknown
 }
 
-export interface GpuBackendAutorunLifecycleHandle {
-  /** Dispose the autorun. Safe to call multiple times. */
-  dispose: () => void
-  /**
-   * Imperatively re-issue the last render pass using the currently cached
-   * blocks/state. Intended for non-MobX triggers where the autorun wouldn't
-   * naturally re-fire (DOM scroll events on an internal container, tab
-   * visibility, `webglcontextrestored`).
-   *
-   * If the observer pattern naturally re-fires the autorun for a state
-   * change, you do NOT need to call this.
-   */
-  renderNow: () => void
+
+interface NormalizedStream<BackendType> {
+  getDataByRegionNumber: () => Map<number, unknown>
+  uploadOneRegion: (
+    backend: BackendType,
+    regionNumber: number,
+    data: unknown,
+  ) => void
+  pruneRegionsNotIn?: (
+    backend: BackendType,
+    activeRegionNumbers: number[],
+  ) => void
+  identityOf?: (data: unknown) => unknown
+  getUploadInvalidationToken?: () => unknown
+  deleteOneRegion?: (backend: BackendType, regionNumber: number) => void
+  cache: Map<number, unknown>
+  lastInvalidationToken: unknown
 }
 
 /**
- * Wire up the full upload → prune → render lifecycle for a GPU display
- * backend. Returns a handle with a disposer and a `renderNow` escape hatch.
+ * Wire the full upload → render lifecycle for a GPU display backend, owned
+ * by an MST model.
  *
- * This is intentionally NOT a React hook: the lifecycle is owned by the MST
- * display model (in a `.volatile()` slot), which keeps reactivity in one
- * place — MobX observables → cached MST views → this autorun. React
- * components become thin: they just create a canvas, hand the resulting
- * backend to `model.attachGpuBackend(backend)`, and render JSX.
+ * Architecture: two independent autoruns.
  *
- * Upload identity contract: when a region's value in `getDataByRegionNumber()`
- * is the same reference as last pass, the upload is skipped. Plugins must
- * therefore produce a fresh value object whenever a region's uploaded bytes
- * need to change. The MST models in this codebase already obey this via
- * `setLoadedRegionForRegion` etc.
+ * - Upload autorun tracks per-region data and invalidation tokens. Fires
+ *   uploads + prunes + `onAfterCommit`. When anything was uploaded, bumps an
+ *   observable counter that the render autorun observes.
+ * - Render autorun tracks `getRenderBlocks` + `getRenderState` + the upload
+ *   counter. Fires renders. Hover-only state changes that live in
+ *   `getRenderState` re-fire only the render autorun — the upload cache walk
+ *   is skipped.
+ *
+ * Upload identity contract: when a stream's entry for region N is the same
+ * reference (or produces the same `identityOf` token) as last pass, upload
+ * is skipped. MST models in this codebase obey this by reassigning whole
+ * Maps on commit — individual entries keep their reference if unchanged.
  */
 export function startGpuBackendAutorunLifecycle<
   BackendType,
   RegionDataType,
   RenderStateType,
->({
-  backend,
-  getDataByRegionNumber,
-  getRenderBlocks,
-  getRenderState,
-  uploadOneRegion,
-  pruneRegionsNotIn,
-  renderAllBlocks,
-  onAfterCommit,
-  getUploadInvalidationToken,
-}: StartGpuBackendAutorunLifecycleArgs<
-  BackendType,
-  RegionDataType,
-  RenderStateType
->): GpuBackendAutorunLifecycleHandle {
-  const lastUploadedByRegionNumber = new Map<number, RegionDataType>()
+>(
+  args: StartGpuBackendAutorunLifecycleArgs<
+    BackendType,
+    RegionDataType,
+    RenderStateType
+  >,
+): GpuBackendLifecycleHandle {
+  const {
+    backend,
+    getRenderBlocks,
+    getRenderState,
+    renderAllBlocks,
+    onAfterCommit,
+  } = args
+
+  const streams: NormalizedStream<BackendType>[] = []
+  if (args.uploadStreams) {
+    for (const s of args.uploadStreams) {
+      streams.push({
+        getDataByRegionNumber: s.getDataByRegionNumber as () => Map<
+          number,
+          unknown
+        >,
+        uploadOneRegion: s.uploadOneRegion as NormalizedStream<BackendType>['uploadOneRegion'],
+        pruneRegionsNotIn: s.pruneRegionsNotIn,
+        identityOf: s.identityOf as NormalizedStream<BackendType>['identityOf'],
+        getUploadInvalidationToken: s.getUploadInvalidationToken,
+        deleteOneRegion: s.deleteOneRegion,
+        cache: new Map(),
+        lastInvalidationToken: INITIAL_TOKEN,
+      })
+    }
+  }
+  if (args.getDataByRegionNumber && args.uploadOneRegion) {
+    streams.push({
+      getDataByRegionNumber: args.getDataByRegionNumber as () => Map<
+        number,
+        unknown
+      >,
+      uploadOneRegion: args.uploadOneRegion as NormalizedStream<BackendType>['uploadOneRegion'],
+      pruneRegionsNotIn: args.pruneRegionsNotIn,
+      identityOf: args.identityOf as NormalizedStream<BackendType>['identityOf'],
+      getUploadInvalidationToken: args.getUploadInvalidationToken,
+      deleteOneRegion: args.deleteOneRegion,
+      cache: new Map(),
+      lastInvalidationToken: INITIAL_TOKEN,
+    })
+  }
+
+  const uploadSignal = observable.box(0, { deep: false })
   let lastRenderBlocks: RenderBlock[] = []
   let lastRenderState: RenderStateType | undefined
-  let lastUploadInvalidationToken: unknown = Symbol('initial')
 
-  const disposeAutorun = autorun(() => {
-    const dataByRegionNumber = getDataByRegionNumber()
-    const invalidationToken = getUploadInvalidationToken?.()
-    if (
-      getUploadInvalidationToken !== undefined &&
-      !Object.is(invalidationToken, lastUploadInvalidationToken)
-    ) {
-      lastUploadedByRegionNumber.clear()
-      lastUploadInvalidationToken = invalidationToken
-    }
-    const activeRegionNumbers: number[] = []
-
-    for (const [regionNumber, data] of dataByRegionNumber) {
-      activeRegionNumbers.push(regionNumber)
-      if (lastUploadedByRegionNumber.get(regionNumber) !== data) {
-        uploadOneRegion(backend, regionNumber, data)
-        lastUploadedByRegionNumber.set(regionNumber, data)
+  const disposeUpload = autorun(() => {
+    let uploaded = false
+    let anyData = false
+    for (const stream of streams) {
+      const invalidationToken = stream.getUploadInvalidationToken?.()
+      if (
+        stream.getUploadInvalidationToken !== undefined &&
+        !Object.is(invalidationToken, stream.lastInvalidationToken)
+      ) {
+        stream.cache.clear()
+        stream.lastInvalidationToken = invalidationToken
       }
-    }
-    for (const cachedRegionNumber of lastUploadedByRegionNumber.keys()) {
-      if (!dataByRegionNumber.has(cachedRegionNumber)) {
-        lastUploadedByRegionNumber.delete(cachedRegionNumber)
-      }
-    }
-    pruneRegionsNotIn(backend, activeRegionNumbers)
 
+      const dataMap = stream.getDataByRegionNumber()
+      const activeKeys: number[] = []
+      const identityOf = stream.identityOf
+      for (const [regionNumber, data] of dataMap) {
+        activeKeys.push(regionNumber)
+        anyData = true
+        const key = identityOf ? identityOf(data) : data
+        if (stream.cache.get(regionNumber) !== key) {
+          stream.uploadOneRegion(backend, regionNumber, data)
+          stream.cache.set(regionNumber, key)
+          uploaded = true
+        }
+      }
+      for (const cachedKey of stream.cache.keys()) {
+        if (!dataMap.has(cachedKey)) {
+          stream.deleteOneRegion?.(backend, cachedKey)
+          stream.cache.delete(cachedKey)
+          uploaded = true
+        }
+      }
+      stream.pruneRegionsNotIn?.(backend, activeKeys)
+    }
+    if (uploaded) {
+      runInAction(() => {
+        uploadSignal.set(uploadSignal.get() + 1)
+      })
+    }
+    onAfterCommit?.(anyData)
+  })
+
+  const disposeRender = autorun(() => {
+    uploadSignal.get()
     const blocks = getRenderBlocks()
     const state = getRenderState()
     lastRenderBlocks = blocks
@@ -178,7 +265,6 @@ export function startGpuBackendAutorunLifecycle<
     if (state !== undefined) {
       renderAllBlocks(backend, blocks, state)
     }
-    onAfterCommit?.(activeRegionNumbers.length > 0)
   })
 
   let isDisposed = false
@@ -188,8 +274,11 @@ export function startGpuBackendAutorunLifecycle<
         return
       }
       isDisposed = true
-      disposeAutorun()
-      lastUploadedByRegionNumber.clear()
+      disposeRender()
+      disposeUpload()
+      for (const s of streams) {
+        s.cache.clear()
+      }
     },
     renderNow() {
       if (isDisposed || lastRenderState === undefined) {
@@ -199,3 +288,5 @@ export function startGpuBackendAutorunLifecycle<
     },
   }
 }
+
+const INITIAL_TOKEN = Symbol('initial')

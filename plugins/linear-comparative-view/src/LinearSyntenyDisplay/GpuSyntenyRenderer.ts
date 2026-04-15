@@ -6,9 +6,7 @@ import {
   FILL_VERTEX_SHADER,
 } from './glslShaders.ts'
 import {
-  EDGE_SEGMENTS,
   EDGE_VERTS_PER_INSTANCE,
-  FILL_SEGMENTS,
   FILL_VERTS_PER_INSTANCE,
   INSTANCE_BYTE_SIZE,
   UNIFORM_BYTE_SIZE,
@@ -17,14 +15,18 @@ import {
   interleaveInstances,
 } from './wgslShaders.ts'
 
-import type { SyntenyBackend } from './syntenyBackendTypes.ts'
+import type {
+  SyntenyBackend,
+  SyntenyPickResult,
+  SyntenyRenderState,
+  SyntenyTrackRenderParams,
+} from './syntenyBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_FILL = 'fill'
 const PASS_PICKING = 'picking'
 const PASS_EDGE = 'edge'
-const REGION_KEY = 0
 
 const INST_LAYOUT = [
   {
@@ -93,30 +95,69 @@ export const SYNTENY_PASSES: PassDescriptor[] = [
   },
 ]
 
+interface RegionMeta {
+  instanceCount: number
+  nonCigarInstanceCount: number
+  geometryBpPerPx0: number
+  geometryBpPerPx1: number
+  refOffset0: number
+  refOffset1: number
+}
+
+interface TrackState {
+  key: number
+  region: RegionMeta
+  params: SyntenyTrackRenderParams
+  adjOff0: number
+  adjOff1: number
+  scale0: number
+  scale1: number
+  maxOffScreenPx: number
+}
+
+function makeTrackState(
+  key: number,
+  region: RegionMeta,
+  params: SyntenyTrackRenderParams,
+  maxOffScreenPx: number,
+): TrackState {
+  const scale0 = region.geometryBpPerPx0 / params.bpPerPx0
+  const scale1 = region.geometryBpPerPx1 / params.bpPerPx1
+  return {
+    key,
+    region,
+    params,
+    scale0,
+    scale1,
+    adjOff0: params.offset0 / scale0 - region.refOffset0,
+    adjOff1: params.offset1 / scale1 - region.refOffset1,
+    maxOffScreenPx,
+  }
+}
+
 export class GpuSyntenyRenderer implements SyntenyBackend {
   private hal: GpuHal
   private canvas: HTMLCanvasElement
   private uniformData = new ArrayBuffer(UNIFORM_BYTE_SIZE)
   private uniformF32 = new Float32Array(this.uniformData)
-  private uniformU32 = new Uint32Array(this.uniformData)
 
-  private instanceCount = 0
-  private nonCigarInstanceCount = 0
-  private geometryBpPerPx0 = 1
-  private geometryBpPerPx1 = 1
-  private refOffset0 = 0
-  private refOffset1 = 0
-  private pickingDirty = true
+  private regions = new Map<number, RegionMeta>()
+  private tracks: TrackState[] = []
 
-  private lastRenderParams = {
-    height: 0,
-    adjOff0: 0,
-    adjOff1: 0,
-    scale0: 1,
-    scale1: 1,
-    maxOffScreenPx: 300,
-    minAlignmentLength: 0,
-  }
+  // Serialize async picks: the HAL's readback uses a single staging buffer,
+  // so concurrent mapAsync calls race (triggering WebGPU validation errors
+  // and, on some drivers, a tab crash). We run at most one at a time and
+  // coalesce rapid hover requests to the latest coords — intermediate
+  // results are stale before they'd render.
+  private inFlight: Promise<void> | undefined
+  private nextPick:
+    | {
+        x: number
+        y: number
+        onResult: (result: SyntenyPickResult | undefined) => void
+      }
+    | undefined
+  private disposed = false
 
   constructor(hal: GpuHal, canvas: HTMLCanvasElement) {
     this.hal = hal
@@ -127,150 +168,140 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     this.hal.resize(width, height)
   }
 
-  uploadGeometry(data: SyntenyInstanceData) {
-    this.instanceCount = data.instanceCount
-    this.nonCigarInstanceCount = data.nonCigarInstanceCount
-    this.geometryBpPerPx0 = data.geometryBpPerPx0
-    this.geometryBpPerPx1 = data.geometryBpPerPx1
-    this.refOffset0 = data.refOffset0
-    this.refOffset1 = data.refOffset1
+  uploadGeometry(key: number, data: SyntenyInstanceData) {
+    this.regions.set(key, {
+      instanceCount: data.instanceCount,
+      nonCigarInstanceCount: data.nonCigarInstanceCount,
+      geometryBpPerPx0: data.geometryBpPerPx0,
+      geometryBpPerPx1: data.geometryBpPerPx1,
+      refOffset0: data.refOffset0,
+      refOffset1: data.refOffset1,
+    })
 
     const interleaved = interleaveInstances(data)
-
-    // Upload once to PASS_FILL; PASS_PICKING shares the same buffer via drawPickingPass
-    this.hal.uploadBuffer(
-      REGION_KEY,
-      PASS_FILL,
-      interleaved,
-      data.instanceCount,
-    )
-    this.hal.uploadBuffer(
-      REGION_KEY,
-      PASS_EDGE,
-      interleaved,
-      data.nonCigarInstanceCount,
-    )
-    this.pickingDirty = true
+    this.hal.uploadBuffer(key, PASS_FILL, interleaved, data.instanceCount)
+    this.hal.uploadBuffer(key, PASS_EDGE, interleaved, data.nonCigarInstanceCount)
   }
 
-  render(
-    offset0: number,
-    offset1: number,
-    height: number,
-    curBpPerPx0: number,
-    curBpPerPx1: number,
-    maxOffScreenPx: number,
-    minAlignmentLength: number,
-    alpha: number,
-    hoveredFeatureId: number,
-    clickedFeatureId: number,
-  ) {
-    if (this.instanceCount === 0) {
-      this.hal.beginFrame(1, 1, 1, 1)
-      this.hal.endFrame()
-      return
-    }
+  deleteGeometry(key: number) {
+    this.regions.delete(key)
+    this.hal.deleteRegion(key)
+  }
 
-    const scale0 = this.geometryBpPerPx0 / curBpPerPx0
-    const scale1 = this.geometryBpPerPx1 / curBpPerPx1
-    const adjOff0 = offset0 / scale0 - this.refOffset0
-    const adjOff1 = offset1 / scale1 - this.refOffset1
-
-    this.lastRenderParams = {
-      height,
-      adjOff0,
-      adjOff1,
-      scale0,
-      scale1,
-      maxOffScreenPx,
-      minAlignmentLength,
-    }
-    this.pickingDirty = true
-
-    this.writeUniforms(
-      height,
-      adjOff0,
-      adjOff1,
-      scale0,
-      scale1,
-      maxOffScreenPx,
-      minAlignmentLength,
-      alpha,
-      hoveredFeatureId,
-      clickedFeatureId,
-    )
-
+  render(state: SyntenyRenderState) {
     this.hal.beginFrame(1, 1, 1, 1)
-    this.hal.drawPass(PASS_FILL, REGION_KEY)
-    if (clickedFeatureId > 0) {
-      this.hal.drawPass(PASS_EDGE, REGION_KEY)
+    this.tracks = []
+
+    for (const [key, params] of state.perTrack) {
+      const region = this.regions.get(key)
+      if (!region || region.instanceCount === 0) {
+        continue
+      }
+      const track = makeTrackState(key, region, params, state.maxOffScreenPx)
+      this.tracks.push(track)
+      this.writeUniforms(track, params.hoveredFeatureId, params.clickedFeatureId, params.alpha)
+      this.hal.drawPass(PASS_FILL, key)
+      if (params.clickedFeatureId > 0) {
+        this.hal.drawPass(PASS_EDGE, key)
+      }
     }
+
     this.hal.endFrame()
   }
 
-  pick(x: number, y: number, onResult?: (result: number) => void) {
-    if (this.instanceCount === 0) {
-      return -1
+  pick(
+    x: number,
+    y: number,
+    onResult?: (result: SyntenyPickResult | undefined) => void,
+  ): SyntenyPickResult | undefined {
+    if (this.disposed) {
+      onResult?.(undefined)
+      return undefined
     }
+    if (!onResult) {
+      // Sync path (click / context menu): no readback race to worry about.
+      const track = this.trackAtY(y)
+      if (!track) {
+        return undefined
+      }
+      this.writeUniforms(track, 0, 0, 1)
+      this.hal.drawPickingPass(PASS_PICKING, track.key, undefined, PASS_FILL)
+      const idx = this.hal.readPickingPixel(x, y)
+      return idx >= 0 ? { key: track.key, featureIndex: idx } : undefined
+    }
+    this.nextPick = { x, y, onResult }
+    this.drainPickQueue()
+    return undefined
+  }
 
-    if (this.pickingDirty) {
-      const p = this.lastRenderParams
-      this.writeUniforms(
-        p.height,
-        p.adjOff0,
-        p.adjOff1,
-        p.scale0,
-        p.scale1,
-        p.maxOffScreenPx,
-        p.minAlignmentLength,
-        1,
-        0,
-        0,
+  private drainPickQueue() {
+    if (this.inFlight || !this.nextPick || this.disposed) {
+      return
+    }
+    const { x, y, onResult } = this.nextPick
+    this.nextPick = undefined
+    const track = this.trackAtY(y)
+    if (!track) {
+      onResult(undefined)
+      return
+    }
+    this.writeUniforms(track, 0, 0, 1)
+    this.hal.drawPickingPass(PASS_PICKING, track.key, undefined, PASS_FILL)
+    this.inFlight = this.hal
+      .readPickingPixelAsync(x, y)
+      .then(
+        idx => (idx >= 0 ? { key: track.key, featureIndex: idx } : undefined),
+        () => undefined,
       )
-      this.hal.drawPickingPass(PASS_PICKING, REGION_KEY, undefined, PASS_FILL)
-      this.pickingDirty = false
-    }
-
-    if (onResult) {
-      this.hal.readPickingPixelAsync(x, y).then(onResult, () => {})
-      return -1
-    }
-    return this.hal.readPickingPixel(x, y)
+      .then(result => {
+        this.inFlight = undefined
+        if (this.disposed) {
+          return
+        }
+        onResult(result)
+        this.drainPickQueue()
+      })
   }
 
   dispose() {
+    this.disposed = true
+    this.nextPick = undefined
+    this.regions.clear()
+    this.tracks = []
     this.hal.dispose()
   }
 
+  private trackAtY(y: number) {
+    for (const t of this.tracks) {
+      const top = t.params.yTop
+      if (y >= top && y < top + t.params.height) {
+        return t
+      }
+    }
+    return undefined
+  }
+
   private writeUniforms(
-    height: number,
-    adjOff0: number,
-    adjOff1: number,
-    scale0: number,
-    scale1: number,
-    maxOffScreenPx: number,
-    minAlignmentLength: number,
-    alpha: number,
+    t: TrackState,
     hoveredFeatureId: number,
     clickedFeatureId: number,
+    alpha: number,
   ) {
     const dpr = typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
-    this.uniformF32[0] = this.canvas.width / dpr
-    this.uniformF32[1] = this.canvas.height / dpr
-    this.uniformF32[2] = height
-    this.uniformF32[3] = adjOff0
-    this.uniformF32[4] = adjOff1
-    this.uniformF32[5] = scale0
-    this.uniformF32[6] = scale1
-    this.uniformF32[7] = maxOffScreenPx
-    this.uniformF32[8] = minAlignmentLength
-    this.uniformF32[9] = alpha
-    this.uniformU32[10] = this.instanceCount
-    this.uniformU32[11] = FILL_SEGMENTS
-    this.uniformU32[12] = EDGE_SEGMENTS
-    this.uniformF32[13] = hoveredFeatureId
-    this.uniformF32[14] = clickedFeatureId
-    this.uniformF32[15] = 0
+    const u = this.uniformF32
+    u[0] = this.canvas.width / dpr
+    u[1] = this.canvas.height / dpr
+    u[2] = t.params.height
+    u[3] = t.adjOff0
+    u[4] = t.adjOff1
+    u[5] = t.scale0
+    u[6] = t.scale1
+    u[7] = t.maxOffScreenPx
+    u[8] = t.params.minAlignmentLength
+    u[9] = alpha
+    u[10] = hoveredFeatureId
+    u[11] = clickedFeatureId
+    u[12] = t.params.yTop
     this.hal.writeUniforms(this.uniformData)
   }
 }

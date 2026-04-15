@@ -5,8 +5,7 @@ import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import {
   getContainingView,
   reducePrecision,
-  useGpuRenderer,
-  useTabVisibilityRerender,
+  useGpuModelLifecycle,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
@@ -102,7 +101,6 @@ const HicCanvas = observer(function HicCanvas({
     lastDrawnBpPerPx,
   } = model
 
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredItem, setHoveredItem] = useState<HicFlatbushItem>()
   const [mousePosition, setMousePosition] = useState<{
@@ -118,14 +116,7 @@ const HicCanvas = observer(function HicCanvas({
   // the LinearHicDisplay model. The rpcData and colorScheme uploads are
   // identity-diffed independently so a colorScheme change doesn't re-upload
   // the contact matrix.
-  const { error, retry } = useGpuRenderer(canvasRef, HicRenderer, {
-    onReady: backend => {
-      model.startGpuBackendLifecycle(backend)
-    },
-    onDispose: () => {
-      model.stopGpuBackendLifecycle()
-    },
-  })
+  const { canvasRef, error, retry } = useGpuModelLifecycle(HicRenderer, model)
 
   // View transform for hit-test math — mirrors renderState on the model.
   const viewScale =
@@ -139,10 +130,6 @@ const HicCanvas = observer(function HicCanvas({
     () => (flatbush ? Flatbush.from(flatbush) : null),
     [flatbush],
   )
-
-  useTabVisibilityRerender(() => {
-    model.renderNow()
-  })
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {

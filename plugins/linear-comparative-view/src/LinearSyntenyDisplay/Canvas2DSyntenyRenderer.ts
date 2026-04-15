@@ -1,4 +1,9 @@
-import type { SyntenyBackend } from './syntenyBackendTypes.ts'
+import type {
+  SyntenyBackend,
+  SyntenyPickResult,
+  SyntenyRenderState,
+  SyntenyTrackRenderParams,
+} from './syntenyBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 
 const CURVE_SEGMENTS = 16
@@ -42,41 +47,39 @@ function buildFeaturePath(
   ctx.closePath()
 }
 
+interface ComputedTransform {
+  scale0: number
+  scale1: number
+  adjOff0: number
+  adjOff1: number
+  scaleDiff0: number
+  scaleDiff1: number
+}
+
+function computeTransform(
+  data: SyntenyInstanceData,
+  params: SyntenyTrackRenderParams,
+): ComputedTransform {
+  const scale0 = data.geometryBpPerPx0 / params.bpPerPx0
+  const scale1 = data.geometryBpPerPx1 / params.bpPerPx1
+  return {
+    scale0,
+    scale1,
+    adjOff0: params.offset0 / scale0 - data.refOffset0,
+    adjOff1: params.offset1 / scale1 - data.refOffset1,
+    scaleDiff0: scale0 - 1,
+    scaleDiff1: scale1 - 1,
+  }
+}
+
 export class Canvas2DSyntenyRenderer implements SyntenyBackend {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
-  private data: SyntenyInstanceData | null = null
-  private lastRenderParams: {
-    offset0: number
-    offset1: number
-    height: number
-    curBpPerPx0: number
-    curBpPerPx1: number
-    maxOffScreenPx: number
-    minAlignmentLength: number
-  } | null = null
+  private regions = new Map<number, SyntenyInstanceData>()
+  private lastState: SyntenyRenderState | undefined
 
   private get dpr() {
     return typeof window !== 'undefined' ? window.devicePixelRatio : 1
-  }
-
-  private computeTransform(
-    data: SyntenyInstanceData,
-    offset0: number,
-    offset1: number,
-    curBpPerPx0: number,
-    curBpPerPx1: number,
-  ) {
-    const scale0 = data.geometryBpPerPx0 / curBpPerPx0
-    const scale1 = data.geometryBpPerPx1 / curBpPerPx1
-    return {
-      scale0,
-      scale1,
-      adjOff0: offset0 / scale0 - data.refOffset0,
-      adjOff1: offset1 / scale1 - data.refOffset1,
-      scaleDiff0: scale0 - 1,
-      scaleDiff1: scale1 - 1,
-    }
   }
 
   constructor(canvas: HTMLCanvasElement) {
@@ -98,36 +101,16 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     }
   }
 
-  uploadGeometry(data: SyntenyInstanceData) {
-    this.data = data
+  uploadGeometry(key: number, data: SyntenyInstanceData) {
+    this.regions.set(key, data)
   }
 
-  render(
-    offset0: number,
-    offset1: number,
-    height: number,
-    curBpPerPx0: number,
-    curBpPerPx1: number,
-    maxOffScreenPx: number,
-    minAlignmentLength: number,
-    alpha: number,
-    hoveredFeatureId: number,
-    clickedFeatureId: number,
-  ) {
-    this.lastRenderParams = {
-      offset0,
-      offset1,
-      height,
-      curBpPerPx0,
-      curBpPerPx1,
-      maxOffScreenPx,
-      minAlignmentLength,
-    }
+  deleteGeometry(key: number) {
+    this.regions.delete(key)
+  }
 
-    const data = this.data
-    if (!data || data.instanceCount === 0) {
-      return
-    }
+  render(state: SyntenyRenderState) {
+    this.lastState = state
 
     const dpr = this.dpr
     const ctx = this.ctx
@@ -138,8 +121,39 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     ctx.fillStyle = '#fff'
     ctx.fillRect(0, 0, logicalW, logicalH)
 
+    const { maxOffScreenPx } = state
+    for (const [key, params] of state.perTrack) {
+      const data = this.regions.get(key)
+      if (!data || data.instanceCount === 0) {
+        continue
+      }
+      this.renderOne(data, params, logicalW, maxOffScreenPx)
+    }
+
+    ctx.globalAlpha = 1
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+  }
+
+  private renderOne(
+    data: SyntenyInstanceData,
+    params: SyntenyTrackRenderParams,
+    logicalW: number,
+    maxOffScreenPx: number,
+  ) {
+    const ctx = this.ctx
+    const dpr = this.dpr
+    const {
+      yTop,
+      height,
+      alpha,
+      minAlignmentLength,
+      hoveredFeatureId,
+      clickedFeatureId,
+    } = params
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, yTop * dpr)
     const { scale0, scale1, adjOff0, adjOff1, scaleDiff0, scaleDiff1 } =
-      this.computeTransform(data, offset0, offset1, curBpPerPx0, curBpPerPx1)
+      computeTransform(data, params)
 
     for (let i = 0; i < data.instanceCount; i++) {
       if (data.queryTotalLengths[i]! < minAlignmentLength) {
@@ -172,7 +186,6 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
       const isHovered = data.featureIds[i] === hoveredFeatureId
       const isClicked = data.featureIds[i] === clickedFeatureId
 
-      // Match GPU renderer hover behavior: dim RGB and cap alpha
       let effectiveAlpha: number
       if (isHovered) {
         r *= 0.7
@@ -199,60 +212,74 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
         ctx.stroke()
       }
     }
-
-    ctx.globalAlpha = 1
   }
 
-  pick(x: number, y: number, onResult?: (result: number) => void) {
-    const data = this.data
-    const params = this.lastRenderParams
-    if (!data || !params || data.instanceCount === 0) {
-      onResult?.(-1)
-      return -1
+  pick(
+    x: number,
+    y: number,
+    onResult?: (result: SyntenyPickResult | undefined) => void,
+  ): SyntenyPickResult | undefined {
+    const state = this.lastState
+    if (!state) {
+      onResult?.(undefined)
+      return undefined
     }
 
-    const {
-      offset0,
-      offset1,
-      height,
-      curBpPerPx0,
-      curBpPerPx1,
-      minAlignmentLength,
-    } = params
-    const { scale0, scale1, adjOff0, adjOff1, scaleDiff0, scaleDiff1 } =
-      this.computeTransform(data, offset0, offset1, curBpPerPx0, curBpPerPx1)
     const ctx = this.ctx
-
-    // iterate in reverse so top-most (last-drawn) features are picked first
-    for (let i = data.instanceCount - 1; i >= 0; i--) {
-      if (data.queryTotalLengths[i]! < minAlignmentLength) {
+    // Iterate tracks in reverse draw order so top-most wins.
+    const entries = Array.from(state.perTrack.entries()).reverse()
+    for (const [key, params] of entries) {
+      const data = this.regions.get(key)
+      if (!data || data.instanceCount === 0) {
         continue
       }
-      if (((data.colors[i]! >>> 24) & 0xff) / 255 < 0.01) {
+      const { yTop, height, minAlignmentLength } = params
+      if (y < yTop || y > yTop + height) {
         continue
       }
+      const localY = y - yTop
+      const { scale0, scale1, adjOff0, adjOff1, scaleDiff0, scaleDiff1 } =
+        computeTransform(data, params)
 
-      const padTop = data.padTops[i]!
-      const padBottom = data.padBottoms[i]!
-      const sx1 = (data.x1[i]! - adjOff0) * scale0 - padTop * scaleDiff0
-      const sx2 = (data.x2[i]! - adjOff0) * scale0 - padTop * scaleDiff0
-      const sx3 = (data.x3[i]! - adjOff1) * scale1 - padBottom * scaleDiff1
-      const sx4 = (data.x4[i]! - adjOff1) * scale1 - padBottom * scaleDiff1
+      for (let i = data.instanceCount - 1; i >= 0; i--) {
+        if (data.queryTotalLengths[i]! < minAlignmentLength) {
+          continue
+        }
+        if (((data.colors[i]! >>> 24) & 0xff) / 255 < 0.01) {
+          continue
+        }
 
-      buildFeaturePath(ctx, sx1, sx2, sx3, sx4, height, data.isCurves[i]! > 0.5)
+        const padTop = data.padTops[i]!
+        const padBottom = data.padBottoms[i]!
+        const sx1 = (data.x1[i]! - adjOff0) * scale0 - padTop * scaleDiff0
+        const sx2 = (data.x2[i]! - adjOff0) * scale0 - padTop * scaleDiff0
+        const sx3 = (data.x3[i]! - adjOff1) * scale1 - padBottom * scaleDiff1
+        const sx4 = (data.x4[i]! - adjOff1) * scale1 - padBottom * scaleDiff1
 
-      if (ctx.isPointInPath(x, y)) {
-        onResult?.(i)
-        return i
+        buildFeaturePath(
+          ctx,
+          sx1,
+          sx2,
+          sx3,
+          sx4,
+          height,
+          data.isCurves[i]! > 0.5,
+        )
+
+        if (ctx.isPointInPath(x, localY)) {
+          const result = { key, featureIndex: i }
+          onResult?.(result)
+          return result
+        }
       }
     }
 
-    onResult?.(-1)
-    return -1
+    onResult?.(undefined)
+    return undefined
   }
 
   dispose() {
-    this.data = null
-    this.ctx = null!
+    this.regions.clear()
+    this.lastState = undefined
   }
 }

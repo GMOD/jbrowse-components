@@ -213,3 +213,4 @@ test('dispose stops the autorun', () => {
   })
   expect(backend.uploads).toEqual([])
 })
+

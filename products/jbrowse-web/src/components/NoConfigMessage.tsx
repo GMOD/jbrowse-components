@@ -332,7 +332,8 @@ export default function NoConfigMessage() {
   const { config: _config, ...rest } = Object.fromEntries(
     new URLSearchParams(search),
   )
-  const root = 'https://jbrowse.org/code/jb2/webgl-poc/'
+
+  const root = href.split('?')[0] ?? href
 
   const buildConfigUrl = (config: string, params?: Record<string, string>) => {
     return `${root}?${new URLSearchParams(

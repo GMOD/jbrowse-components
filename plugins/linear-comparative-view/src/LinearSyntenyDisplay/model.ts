@@ -1,16 +1,32 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { getContainingView } from '@jbrowse/core/util'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import { getTooltip } from './components/util.ts'
 import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
+import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
+
+import type { ClickCoord } from './components/util.ts'
 
 import type { ColorScheme } from './drawSyntenyUtils.ts'
-import type { SyntenyBackend } from './syntenyBackendTypes.ts'
+import type { SyntenyTrackRenderParams } from './syntenyBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+// Duck-typed view to avoid circular imports. Display only reads LGV-ish
+// fields off the containing view.
+interface SyntenyViewDuck {
+  initialized: boolean
+  views: {
+    initialized: boolean
+    displayedRegions: unknown[]
+    offsetPx: number
+    bpPerPx: number
+  }[]
+}
 
 export interface SyntenyFeatureData {
   p11_offsetPx: Float64Array
@@ -55,10 +71,7 @@ export interface FeatPos {
   identity?: number
 }
 
-export function getFeatureAtIndex(
-  data: SyntenyFeatureData,
-  i: number,
-): FeatPos {
+export function getFeatureAtIndex(data: SyntenyFeatureData, i: number): FeatPos {
   const identity = data.identities[i]!
   return {
     id: data.featureIds[i]!,
@@ -77,6 +90,11 @@ export function getFeatureAtIndex(
  * #stateModel LinearSyntenyDisplay
  * extends
  * - [BaseDisplay](../basedisplay)
+ *
+ * Pure-data model. The containing LinearSyntenyView owns the shared GPU
+ * backend, the upload autorun (which watches every display's `instanceData`
+ * and keys it by `displayKey`), and the render autorun. This display only
+ * carries per-track state and the `renderParams` the view reads out.
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -94,17 +112,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
-         * color scheme to use for rendering synteny features
          */
         colorBy: types.optional(types.string, 'default'),
         /**
          * #property
-         * alpha transparency value for synteny drawing (0-1)
          */
         alpha: types.optional(types.number, 0.2),
         /**
          * #property
-         * minimum alignment length to display (in bp)
          */
         minAlignmentLength: types.optional(types.number, 0),
       }),
@@ -114,45 +129,24 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #volatile
        */
       featureData: undefined as SyntenyFeatureData | undefined,
-
+      /**
+       * #volatile
+       * Raw GPU-instance geometry produced by the RPC. The view observes
+       * this on every display and uploads it to the shared backend keyed by
+       * `displayKey`. Clearing it (undefined) triggers backend eviction.
+       */
+      instanceData: undefined as SyntenyInstanceData | undefined,
       hoveredFeatureIdx: -1,
-
       clickedFeatureIdx: -1,
-
-      /**
-       * #volatile
-       */
-      gpuInstanceData: undefined as SyntenyInstanceData | undefined,
-
-      /**
-       * #volatile
-       */
-      gpuRenderer: null as SyntenyBackend | null,
-
-      canvasDrawn: false,
-
-      /**
-       * #volatile
-       */
-      isScrolling: false,
-
+      contextMenuAnchor: undefined as ClickCoord | undefined,
       statusMessage: undefined as string | undefined,
-
-      /**
-       * #volatile
-       * Incremented on tab visibility restore to re-trigger the draw autorun.
-       */
-      tabVisibilityVersion: 0,
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      bumpTabVisibility() {
-        self.tabVisibilityVersion++
-      },
       setFeatureData(arg: SyntenyFeatureData | undefined) {
         self.featureData = arg
+      },
+      setInstanceData(data: SyntenyInstanceData | undefined) {
+        self.instanceData = data
       },
       setStatusMessage(msg?: string) {
         self.statusMessage = msg
@@ -163,47 +157,22 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setClickedFeatureIdx(idx: number) {
         self.clickedFeatureIdx = idx
       },
-      /**
-       * #action
-       */
+      openContextMenu(anchor: ClickCoord) {
+        self.contextMenuAnchor = anchor
+      },
+      closeContextMenu() {
+        self.contextMenuAnchor = undefined
+      },
       setAlpha(value: number) {
         self.alpha = value
       },
-      /**
-       * #action
-       */
       setMinAlignmentLength(value: number) {
         self.minAlignmentLength = value
       },
-      /**
-       * #action
-       */
       setColorBy(value: string) {
         self.colorBy = value
       },
-      /**
-       * #action
-       */
-      setGpuInstanceData(data: SyntenyInstanceData | undefined) {
-        self.gpuInstanceData = data
-      },
-      /**
-       * #action
-       */
-      setGpuRenderer(renderer: SyntenyBackend | null) {
-        self.gpuRenderer = renderer
-      },
-      setCanvasDrawn(value: boolean) {
-        self.canvasDrawn = value
-      },
-      /**
-       * #action
-       */
-      setIsScrolling(value: boolean) {
-        self.isScrolling = value
-      },
     }))
-
     .views(self => ({
       /**
        * #getter
@@ -218,6 +187,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       get level() {
         return this.parentHelper.level
+      },
+      /**
+       * #getter
+       * Stable backend key under the view-shared backend.
+       */
+      get displayKey() {
+        return syntenyDisplayKey(self.id)
       },
       /**
        * #getter
@@ -239,36 +215,29 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           ...getConf(self.parentTrack, 'adapter'),
         }
       },
-
       /**
        * #getter
        */
       get trackIds() {
         return getConf(self, 'trackIds') as string[]
       },
-
       /**
        * #getter
        */
       get numFeats() {
         return self.featureData?.featureIds.length ?? 0
       },
-
       get parsedCigars() {
         return self.featureData?.cigars.map(s => (s ? parseCigar2(s) : []))
       },
-
       /**
        * #getter
-       * used for synteny svg rendering
        */
       get ready() {
         return this.numFeats > 0
       },
-
       /**
        * #getter
-       * cached color scheme config based on colorBy
        */
       get colorSchemeConfig() {
         const key = self.colorBy
@@ -276,10 +245,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           ? colorSchemes[key as ColorScheme]
           : colorSchemes.default
       },
-
       /**
        * #getter
-       * cached CIGAR colors with alpha applied
        */
       get colorMapWithAlpha() {
         const { alpha } = self
@@ -293,26 +260,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           '=': applyAlpha(activeColorMap['='], alpha),
         }
       },
-
       /**
        * #getter
-       * cached positive strand color with alpha
        */
       get posColorWithAlpha() {
         return applyAlpha('red', self.alpha)
       },
-
       /**
        * #getter
-       * cached negative strand color with alpha
        */
       get negColorWithAlpha() {
         return applyAlpha('blue', self.alpha)
       },
-
       /**
        * #getter
-       * cached query colors with alpha - returns a function that caches results
        */
       get queryColorWithAlphaMap() {
         const { alpha } = self
@@ -325,10 +286,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return cache.get(queryName)!
         }
       },
-
       /**
        * #getter
-       * cached query total lengths for minAlignmentLength filtering
        */
       get queryTotalLengths() {
         const { featureData } = self
@@ -346,14 +305,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         }
         return lengths
       },
-
       getFeature(index: number) {
         if (!self.featureData) {
           return undefined
         }
         return getFeatureAtIndex(self.featureData, index)
       },
-
       get tooltipText() {
         const { hoveredFeatureIdx, featureData } = self
         if (
@@ -364,6 +321,49 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return ''
         }
         return getTooltip(getFeatureAtIndex(featureData, hoveredFeatureIdx))
+      },
+      /**
+       * #getter
+       * Per-track render params consumed by the view's aggregator. The view
+       * substitutes yTop before handing this to the backend.
+       */
+      get renderParams(): SyntenyTrackRenderParams | undefined {
+        if (self.isMinimized || this.isLevelCollapsed) {
+          return undefined
+        }
+        let view: SyntenyViewDuck
+        try {
+          view = getContainingView(self) as unknown as SyntenyViewDuck
+        } catch {
+          return undefined
+        }
+        if (
+          !view.initialized ||
+          !view.views.every(
+            a => a.displayedRegions.length > 0 && a.initialized,
+          )
+        ) {
+          return undefined
+        }
+        const level = this.level
+        if (level + 1 >= view.views.length) {
+          return undefined
+        }
+        const v0 = view.views[level]!
+        const v1 = view.views[level + 1]!
+        const { hoveredFeatureIdx, clickedFeatureIdx } = self
+        return {
+          yTop: 0,
+          height: this.height,
+          alpha: self.alpha,
+          minAlignmentLength: self.minAlignmentLength,
+          hoveredFeatureId: hoveredFeatureIdx >= 0 ? hoveredFeatureIdx + 1 : 0,
+          clickedFeatureId: clickedFeatureIdx >= 0 ? clickedFeatureIdx + 1 : 0,
+          offset0: v0.offsetPx,
+          offset1: v1.offsetPx,
+          bpPerPx0: v0.bpPerPx,
+          bpPerPx1: v1.bpPerPx,
+        }
       },
     }))
     .actions(self => ({
@@ -382,9 +382,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
 }
 
-export type LinearSyntenyDisplayStateModel = ReturnType<
-  typeof stateModelFactory
->
+export type LinearSyntenyDisplayStateModel = ReturnType<typeof stateModelFactory>
 export type LinearSyntenyDisplayModel = Instance<LinearSyntenyDisplayStateModel>
 
 export default stateModelFactory

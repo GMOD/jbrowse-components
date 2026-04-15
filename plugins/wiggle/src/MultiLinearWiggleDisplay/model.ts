@@ -2,8 +2,6 @@ import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
-import { startGpuBackendAutorunLifecycle } from '@jbrowse/core/gpu/startGpuBackendAutorunLifecycle'
 import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
 import {
   SimpleFeature,
@@ -90,7 +88,6 @@ export default function stateModelFactory(
       MultiRegionDisplayMixin(),
       ConfigOverrideMixin(),
       TreeSidebarMixin<Source>(),
-      GpuBackendLifecycleSlotMixin(),
       types.model({
         type: types.literal('MultiLinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
@@ -381,54 +378,55 @@ export default function stateModelFactory(
       },
 
       startGpuBackendLifecycle(backend: WiggleBackend) {
-        self.assignGpuBackendLifecycleHandle(
-          startGpuBackendAutorunLifecycle<
-            WiggleBackend,
-            MultiWiggleDataResult,
-            WiggleGPURenderState
-          >({
-            backend,
-            getDataByRegionNumber: () => self.rpcDataMap,
-            getRenderBlocks: () =>
-              self.domain && self.sources.length > 0 ? self.renderBlocks : [],
-            getRenderState: () => self.renderState,
-            // Changing `sources` re-orders rows inside the instance buffer
-            // without changing rpcDataMap references, so we need a
-            // non-identity signal to force re-upload. Using the `sources`
-            // array reference itself works — the getter builds a fresh
-            // array whenever layout/subtree-filter/override-colors change.
-            getUploadInvalidationToken: () => self.sources,
-            uploadOneRegion: (b, regionNumber, data) => {
-              const { summaryScoreMode, renderingType, isDensityMode } = self
-              const defaultPosColor = parseColor(self.posColor)
-              const defaultNegColor = parseColor(self.negColor)
-              b.uploadRegion(
-                regionNumber,
-                data.regionStart,
-                buildMultiSourceRenderData(
-                  data,
-                  self.sources,
-                  defaultPosColor,
-                  defaultNegColor,
-                  summaryScoreMode,
-                  renderingType,
-                  isDensityMode,
-                ),
-              )
-            },
-            pruneRegionsNotIn: (b, activeRegionNumbers) => {
-              b.pruneRegions(activeRegionNumbers)
-            },
-            renderAllBlocks: (b, blocks, state) => {
-              b.renderBlocks(blocks, state)
-            },
-            onAfterCommit: hadUploads => {
-              if (hadUploads && self.domain) {
-                self.setCanvasDrawn(true)
-              }
-            },
-          }),
-        )
+        self.startMultiRegionGpuLifecycle<
+          WiggleBackend,
+          MultiWiggleDataResult,
+          WiggleGPURenderState
+        >({
+          backend,
+          getDataByRegionNumber: () => self.rpcDataMap,
+          getRenderBlocks: () =>
+            self.domain && self.sources.length > 0 ? self.renderBlocks : [],
+          getRenderState: () => self.renderState,
+          // Changing `sources` re-orders rows inside the instance buffer
+          // without changing rpcDataMap references, so we need a
+          // non-identity signal to force re-upload. Using the `sources`
+          // array reference itself works — the getter builds a fresh
+          // array whenever layout/subtree-filter/override-colors change.
+          getUploadInvalidationToken: () => self.sources,
+          uploadOneRegion: (b, regionNumber, data) => {
+            const { summaryScoreMode, renderingType, isDensityMode } = self
+            const defaultPosColor = parseColor(self.posColor)
+            const defaultNegColor = parseColor(self.negColor)
+            b.uploadRegion(
+              regionNumber,
+              data.regionStart,
+              buildMultiSourceRenderData(
+                data,
+                self.sources,
+                defaultPosColor,
+                defaultNegColor,
+                summaryScoreMode,
+                renderingType,
+                isDensityMode,
+              ),
+            )
+          },
+          pruneRegionsNotIn: (b, activeRegionNumbers) => {
+            b.pruneRegions(activeRegionNumbers)
+          },
+          renderAllBlocks: (b, blocks, state) => {
+            b.renderBlocks(blocks, state)
+          },
+          // Gated on `self.domain` because autoscale may not be resolved
+          // when per-region data first arrives; the wrapper's default
+          // markCanvasDrawn would be too eager.
+          onAfterCommit: hadUploads => {
+            if (hadUploads && self.domain) {
+              self.markCanvasDrawn()
+            }
+          },
+        })
       },
 
       reload() {

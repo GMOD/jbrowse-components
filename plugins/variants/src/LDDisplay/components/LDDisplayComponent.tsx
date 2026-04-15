@@ -5,8 +5,7 @@ import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import {
   getContainingView,
   max,
-  useGpuRenderer,
-  useTabVisibilityRerender,
+  useGpuModelLifecycle,
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -287,7 +286,6 @@ const LDCanvas = observer(function LDCanvas({
     : lineZoneHeight
   const containerHeight = canvasOnlyHeight + effectiveLineZoneHeight
 
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredItem, setHoveredItem] = useState<LDFlatbushItem>()
   const [mousePosition, setMousePosition] = useState<{
@@ -295,14 +293,7 @@ const LDCanvas = observer(function LDCanvas({
     y: number
   }>()
 
-  const { error, retry } = useGpuRenderer(canvasRef, LDRenderer, {
-    onReady: backend => {
-      model.startGpuBackendLifecycle(backend)
-    },
-    onDispose: () => {
-      model.stopGpuBackendLifecycle()
-    },
-  })
+  const { canvasRef, error, retry } = useGpuModelLifecycle(LDRenderer, model)
 
   const region = view.dynamicBlocks.contentBlocks[0]
   const bpPerPx = view.bpPerPx
@@ -343,10 +334,6 @@ const LDCanvas = observer(function LDCanvas({
       view.setVolatileGuides([])
     }
   }, [genomicX1, genomicX2, model.showVerticalGuides, view, viewOffsetX])
-
-  useTabVisibilityRerender(() => {
-    model.renderNow()
-  })
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {

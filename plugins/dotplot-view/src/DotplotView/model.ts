@@ -2,6 +2,7 @@ import type React from 'react'
 import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
+import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
@@ -94,6 +95,7 @@ export default function stateModelFactory(pm: PluginManager) {
     .compose(
       'DotplotView',
       BaseViewModel,
+      GpuBackendLifecycleSlotMixin(),
       types.model({
         /**
          * #property
@@ -196,17 +198,10 @@ export default function stateModelFactory(pm: PluginManager) {
       borderY: 100,
       /**
        * #volatile
-       * shared GPU renderer owned by the view, used by all track displays
+       * shared GPU backend owned by the view, read by displays so they can
+       * start their own upload lifecycles against it
        */
-      gpuRenderer: null as DotplotBackend | null,
-      /**
-       * #volatile
-       */
-      tabVisibilityVersion: 0,
-      /**
-       * #volatile
-       */
-      canvasDrawn: false,
+      gpuBackend: null as DotplotBackend | null,
       /**
        * #volatile
        */
@@ -360,17 +355,78 @@ export default function stateModelFactory(pm: PluginManager) {
           highResolutionScaling: getConf(session, 'highResolutionScaling'),
         }
       },
+
+      /**
+       * #getter
+       * Aggregated per-frame render state for the unified dotplot canvas.
+       * Returns undefined until the view is initialized and at least one
+       * track has computed feature positions, which gates rendering and
+       * markCanvasDrawn correctly.
+       */
+      get dotplotRenderState() {
+        if (!this.initialized) {
+          return undefined
+        }
+        const { hview, vview, tracks } = self
+        if (tracks.length === 0) {
+          return undefined
+        }
+        let anyHasFeatures = false
+        const trackScales = tracks.map((track, regionKey) => {
+          const display = track.displays[0] as DotplotDisplayModel
+          if (display.featPositionsBpPerPxH > 0) {
+            anyHasFeatures = true
+          }
+          const scaleX =
+            display.featPositionsBpPerPxH > 0
+              ? display.featPositionsBpPerPxH / hview.bpPerPx
+              : 1
+          const scaleY =
+            display.featPositionsBpPerPxV > 0
+              ? display.featPositionsBpPerPxV / vview.bpPerPx
+              : 1
+          return { regionKey, scaleX, scaleY }
+        })
+        if (!anyHasFeatures) {
+          return undefined
+        }
+        const lineWidth =
+          (tracks[0]?.displays[0] as DotplotDisplayModel | undefined)
+            ?.lineWidth ?? 2
+        return {
+          offsetX: hview.offsetPx,
+          offsetY: vview.offsetPx,
+          lineWidth,
+          trackScales,
+        }
+      },
     }))
+    // One canvas on the view, shared by all displays. View runs render;
+    // each display uploads its own geometry keyed by track index.
+    .actions(self => {
+      const baseStop = self.stopGpuBackendLifecycle
+      return {
+        startGpuBackendLifecycle(backend: DotplotBackend) {
+          self.gpuBackend = backend
+          self.startSingleDataGpuLifecycle({
+            backend,
+            uploadSlots: [],
+            getRenderState: () => self.dotplotRenderState,
+            renderWithState: (b, state) => {
+              b.resize(self.viewWidth, self.viewHeight)
+              b.render(state)
+              self.markCanvasDrawn()
+            },
+          })
+        },
+        // Also clear gpuBackend so displays' binding autorun stops.
+        stopGpuBackendLifecycle() {
+          baseStop()
+          self.gpuBackend = null
+        },
+      }
+    })
     .actions(self => ({
-      setGpuRenderer(renderer: DotplotBackend | null) {
-        self.gpuRenderer = renderer
-      },
-      bumpTabVisibility() {
-        self.tabVisibilityVersion++
-      },
-      setCanvasDrawn(value: boolean) {
-        self.canvasDrawn = value
-      },
       /**
        * #action
        */
@@ -822,65 +878,6 @@ export default function stateModelFactory(pm: PluginManager) {
               self.setBorderY(borderY)
             },
             { name: 'DotplotBorder' },
-          ),
-        )
-        addDisposer(
-          self,
-          autorun(
-            function dotplotViewDrawAutorun() {
-              const renderer = self.gpuRenderer
-              if (!renderer) {
-                return
-              }
-              if (!self.initialized) {
-                return
-              }
-
-              // read tabVisibilityVersion to re-fire on tab restore
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const _tvv = self.tabVisibilityVersion
-
-              const { viewWidth, viewHeight, hview, vview } = self
-              renderer.resize(viewWidth, viewHeight)
-
-              const trackScales = self.tracks.map((track, regionKey) => {
-                const display = track.displays[0] as DotplotDisplayModel
-                // read geometryVersion to re-fire after each upload
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const _gv = display.geometryVersion
-                const scaleX =
-                  display.featPositionsBpPerPxH > 0
-                    ? display.featPositionsBpPerPxH / hview.bpPerPx
-                    : 1
-                const scaleY =
-                  display.featPositionsBpPerPxV > 0
-                    ? display.featPositionsBpPerPxV / vview.bpPerPx
-                    : 1
-                return { regionKey, scaleX, scaleY }
-              })
-
-              const firstDisplay = self.tracks[0]?.displays[0] as
-                | DotplotDisplayModel
-                | undefined
-              const lineWidth = firstDisplay?.lineWidth ?? 2
-              renderer.render(
-                hview.offsetPx,
-                vview.offsetPx,
-                lineWidth,
-                trackScales,
-              )
-
-              if (
-                !self.canvasDrawn &&
-                self.tracks.some(t => {
-                  const d = t.displays[0] as DotplotDisplayModel
-                  return d.features?.length
-                })
-              ) {
-                self.setCanvasDrawn(true)
-              }
-            },
-            { name: 'DotplotViewDraw' },
           ),
         )
       },

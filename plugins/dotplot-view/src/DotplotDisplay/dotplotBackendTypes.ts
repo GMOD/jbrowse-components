@@ -13,15 +13,17 @@ export interface DotplotGeometryData {
   instanceCount: number
 }
 
+export interface DotplotRenderState {
+  offsetX: number
+  offsetY: number
+  lineWidth: number
+  trackScales: readonly TrackScale[]
+}
+
 export interface DotplotBackend {
   resize(width: number, height: number): void
-  uploadGeometry(regionKey: number, data: DotplotGeometryData): void
-  deleteGeometry(regionKey: number): void
-  render(
-    offsetX: number,
-    offsetY: number,
-    lineWidth: number,
-    trackScales: readonly TrackScale[],
-  ): void
+  uploadRegion(regionNumber: number, data: DotplotGeometryData): void
+  deleteRegion(regionNumber: number): void
+  render(state: DotplotRenderState): void
   dispose(): void
 }

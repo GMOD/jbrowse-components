@@ -10,7 +10,7 @@ import {
 import type {
   DotplotBackend,
   DotplotGeometryData,
-  TrackScale,
+  DotplotRenderState,
 } from './dotplotBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
@@ -83,9 +83,9 @@ export class GpuDotplotRenderer implements DotplotBackend {
     this.hal.resize(width, height)
   }
 
-  uploadGeometry(regionKey: number, data: DotplotGeometryData) {
+  uploadRegion(regionNumber: number, data: DotplotGeometryData) {
     if (data.instanceCount === 0) {
-      this.hal.deleteRegion(regionKey)
+      this.hal.deleteRegion(regionNumber)
       return
     }
 
@@ -104,19 +104,15 @@ export class GpuDotplotRenderer implements DotplotBackend {
       u[off + 4] = data.colors[i]!
     }
 
-    this.hal.uploadBuffer(regionKey, PASS_LINE, buf, n)
+    this.hal.uploadBuffer(regionNumber, PASS_LINE, buf, n)
   }
 
-  deleteGeometry(regionKey: number) {
-    this.hal.deleteRegion(regionKey)
+  deleteRegion(regionNumber: number) {
+    this.hal.deleteRegion(regionNumber)
   }
 
-  render(
-    offsetX: number,
-    offsetY: number,
-    lineWidth: number,
-    trackScales: readonly TrackScale[],
-  ) {
+  render(state: DotplotRenderState) {
+    const { offsetX, offsetY, lineWidth, trackScales } = state
     this.hal.beginFrame(0, 0, 0, 0)
 
     for (const { regionKey, scaleX, scaleY } of trackScales) {

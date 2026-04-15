@@ -111,8 +111,7 @@ Unwanted quote/semicolon insertion (see ~/src/mysetup.nvim).
 **Feature padding & crowding**  
 Right-side canvas padding excessive? Subpixel drawing crowded?
 
-**Show descriptions toggle**  
-Toggling should trigger re-layout (currently doesn't).
+i am seeing that mouseover on features in plugins/canvas rapidly shows mouseover shading and then removes it, when though mouse still hovering
 
 ---
 
@@ -122,3 +121,38 @@ Toggling should trigger re-layout (currently doesn't).
 - Clustering UI not updating?
 - Long-range arcs missing in 1kg demo?
 - Overlay synteny should use single canvas, multiple datasets uploaded. dotplot already added this recently
+
+
+## New issues
+
+synteny mouseover is stuck
+the deletion polygons are extending beyond the linear genome view boundaries, which means it is not properly corresponding to genomic coordinates in 3-way volvox, or if i'm wrong, check against origin/main
+
+  ┌──────────────────────────────────────────────────────────────────────┬───────────────────────────────────────────────────────────────┐
+  │                                Change                                │                            Benefit                            │
+  ├──────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────┤
+  │ Removed dead instanceCount uniform                                   │ -1 uniform write/frame, clearer struct                        │
+  ├──────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────┤
+  │ FILL_SEGMENTS/EDGE_SEGMENTS as shader constants                      │ GPU compiler can unroll segment switch; -2 uniform slots      │
+  ├──────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────┤
+  │ Single hermiteEdges call per vertex (was 2 + select)                 │ ~50% fewer transcendental ops in vertex shader                │
+  ├──────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────┤
+  │ Inline screen-position computation into cull (was duplicated)        │ ~4 mul/sub fewer per vertex                                   │
+  ├──────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────┤
+  │ GLSL: shared UNIFORMS, HELPERS, SEGMENT_CONSTS via template strings  │ 3 copies of uniforms block → 1; isCulled now uses real struct │
+  ├──────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────┤
+  │ Renderer: drop FILL_SEGMENTS/EDGE_SEGMENTS imports + uniformU32 view │ No more u32-slot writes; 13 slots used, 3 reserved for future │
+  └──────────────────────────────────────────────────────────────────────┴───────────────────────────────────────────────────────────────┘
+
+  What I deliberately didn't touch (worth flagging as follow-ups):
+
+  - isCurve moved to uniform — it's per-view, not per-feature (RPC sets all instances to the same value). Would save 4 bytes/feature + enable further Instance-struct shrinking. Needs RPC to stop emitting
+  isCurves[] and the display's renderParams to pass it. ~30-line change across RPC + backend types + renderer.
+  - Shrink Instance struct 64→36 bytes — bundled with the above. Remove the 12 bytes of padding + 4 bytes of isCurve. That's a 44% per-feature bandwidth cut — meaningful for 100K+ features.
+  - Adaptive segment count — straight non-crossing parallelograms need 6 vertices, not 96. Variable-count paths add pipeline complexity; only worth it if profiling shows vertex bottleneck.
+  - Picking pass uses the fill vertex shader — it outputs the same color + featureId varyings the fill shader does. That means we're shading every fragment twice with the fill pipeline's full vertex work
+  just to get the featureId into the picking target. For tight pipelines a leaner picking-only vertex shader could skip the color lookup. Marginal.
+
+  Want me to do #1+#2 (isCurve uniform + struct shrink) as a follow-up? That's the biggest remaining win.
+
+

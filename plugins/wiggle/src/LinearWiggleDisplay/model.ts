@@ -2,8 +2,6 @@ import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
-import { startGpuBackendAutorunLifecycle } from '@jbrowse/core/gpu/startGpuBackendAutorunLifecycle'
 import {
   getContainingTrack,
   getContainingView,
@@ -66,7 +64,6 @@ export default function stateModelFactory(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       ConfigOverrideMixin(),
-      GpuBackendLifecycleSlotMixin(),
       types.model({
         type: types.literal('LinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
@@ -278,44 +275,42 @@ export default function stateModelFactory(
         self.loadedBpPerPx = new Map()
       },
 
-      // Disposal, renderNow and the volatile slot come from
-      // GpuBackendLifecycleSlotMixin. This action starts the upload/render
-      // autorun that tracks self.rpcDataMap, self.renderBlocks,
-      // self.renderState via cached MST getters — so no dataVersion /
-      // lastDataMap bookkeeping is needed in React.
+      // Plugin-supplied `onAfterCommit` gates `markCanvasDrawn` on
+      // `self.domain` — the autoscale domain may not be resolved when the
+      // first per-region data arrives, and we must not claim "drawn" before
+      // an actual pixel is produced. Because an explicit onAfterCommit is
+      // given, the mixin wrapper skips its default markCanvasDrawn wiring.
       startGpuBackendLifecycle(backend: WiggleBackend) {
-        self.assignGpuBackendLifecycleHandle(
-          startGpuBackendAutorunLifecycle<
-            WiggleBackend,
-            WiggleDataResult,
-            WiggleGPURenderState
-          >({
-            backend,
-            getDataByRegionNumber: () => self.rpcDataMap,
-            // Suppress drawing while there's no domain yet — empty blocks
-            // produce a canvas-clearing render pass.
-            getRenderBlocks: () => (self.domain ? self.renderBlocks : []),
-            getRenderState: () => self.renderState,
-            uploadOneRegion: (b, regionNumber, data) => {
-              b.uploadRegion(
-                regionNumber,
-                data.regionStart,
-                buildSourceRenderData(data, self),
-              )
-            },
-            pruneRegionsNotIn: (b, activeRegionNumbers) => {
-              b.pruneRegions(activeRegionNumbers)
-            },
-            renderAllBlocks: (b, blocks, state) => {
-              b.renderBlocks(blocks, state)
-            },
-            onAfterCommit: hadUploads => {
-              if (hadUploads && self.domain) {
-                self.setCanvasDrawn(true)
-              }
-            },
-          }),
-        )
+        self.startMultiRegionGpuLifecycle<
+          WiggleBackend,
+          WiggleDataResult,
+          WiggleGPURenderState
+        >({
+          backend,
+          getDataByRegionNumber: () => self.rpcDataMap,
+          // Suppress drawing while there's no domain yet — empty blocks
+          // produce a canvas-clearing render pass.
+          getRenderBlocks: () => (self.domain ? self.renderBlocks : []),
+          getRenderState: () => self.renderState,
+          uploadOneRegion: (b, regionNumber, data) => {
+            b.uploadRegion(
+              regionNumber,
+              data.regionStart,
+              buildSourceRenderData(data, self),
+            )
+          },
+          pruneRegionsNotIn: (b, activeRegionNumbers) => {
+            b.pruneRegions(activeRegionNumbers)
+          },
+          renderAllBlocks: (b, blocks, state) => {
+            b.renderBlocks(blocks, state)
+          },
+          onAfterCommit: hadUploads => {
+            if (hadUploads && self.domain) {
+              self.markCanvasDrawn()
+            }
+          },
+        })
       },
 
       reload() {

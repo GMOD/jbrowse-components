@@ -2,6 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import LevelSyntenyCanvas from '../../LinearSyntenyViewHelper/LevelSyntenyCanvas.tsx'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { IconButton, Tooltip, Typography } from '@mui/material'
@@ -27,6 +28,7 @@ const useStyles = makeStyles()(theme => ({
   overlay: {
     zIndex: 100,
     gridArea: '1/1',
+    pointerEvents: 'none',
   },
   resizeHandle: {
     height: 4,
@@ -167,6 +169,7 @@ const LevelSection = observer(function LevelSection({
     <>
       <div className={classes.levelWrapper}>
         <div className={classes.container}>
+          <LevelSyntenyCanvas model={level} />
           <Overlays model={model} level={levelIdx} />
         </div>
         <Tooltip title="Collapse this level">

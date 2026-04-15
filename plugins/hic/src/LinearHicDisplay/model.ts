@@ -1,8 +1,6 @@
 import type React from 'react'
 
 import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
-import { startGpuSingleDataBackendAutorunLifecycle } from '@jbrowse/core/gpu/startGpuSingleDataBackendAutorunLifecycle'
 import { getContainingView } from '@jbrowse/core/util'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -48,7 +46,6 @@ export default function stateModelFactory(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       ConfigOverrideMixin(),
-      GpuBackendLifecycleSlotMixin(),
       types.model({
         type: types.literal('LinearHicDisplay'),
         configuration: ConfigurationReference(configSchema),
@@ -214,42 +211,35 @@ export default function stateModelFactory(
        * independently so a colorScheme change doesn't re-upload contact data.
        */
       startGpuBackendLifecycle(backend: HicBackend) {
-        self.assignGpuBackendLifecycleHandle(
-          startGpuSingleDataBackendAutorunLifecycle<
-            HicBackend,
-            NonNullable<typeof self.renderState>
-          >({
-            backend,
-            uploadSlots: [
-              {
-                readData: () => self.rpcData,
-                commitUpload: (b, data) => {
-                  const d = data as HicDataResult
-                  b.uploadData({
-                    positions: d.positions,
-                    counts: d.counts,
-                    numContacts: d.numContacts,
-                  })
-                },
+        self.startSingleDataGpuLifecycle<
+          HicBackend,
+          NonNullable<typeof self.renderState>
+        >({
+          backend,
+          uploadSlots: [
+            {
+              readData: () => self.rpcData,
+              commitUpload: (b, data) => {
+                const d = data as HicDataResult
+                b.uploadData({
+                  positions: d.positions,
+                  counts: d.counts,
+                  numContacts: d.numContacts,
+                })
               },
-              {
-                readData: () => self.colorScheme ?? 'juicebox',
-                commitUpload: (b, scheme) => {
-                  b.uploadColorRamp(generateColorRamp(scheme as string))
-                },
+            },
+            {
+              readData: () => self.colorScheme ?? 'juicebox',
+              commitUpload: (b, scheme) => {
+                b.uploadColorRamp(generateColorRamp(scheme as string))
               },
-            ],
-            getRenderState: () => self.renderState,
-            renderWithState: (b, state) => {
-              b.render(state)
             },
-            onAfterCommit: ready => {
-              if (ready) {
-                self.setCanvasDrawn(true)
-              }
-            },
-          }),
-        )
+          ],
+          getRenderState: () => self.renderState,
+          renderWithState: (b, state) => {
+            b.render(state)
+          },
+        })
       },
       /**
        * #action

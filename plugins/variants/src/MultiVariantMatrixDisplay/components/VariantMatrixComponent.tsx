@@ -4,8 +4,7 @@ import { ErrorBar, ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
   getContainingView,
-  useGpuRenderer,
-  useTabVisibilityRerender,
+  useGpuModelLifecycle,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -17,6 +16,7 @@ import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
 import type { MatrixCellData } from './computeVariantMatrixCells.ts'
+import type { VariantMatrixBackend } from './variantMatrixBackendTypes.ts'
 import type { VariantDisplayModelBase } from '../../shared/VariantDisplayModelInterface.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -28,9 +28,7 @@ export interface VariantMatrixDisplayModel extends VariantDisplayModelBase {
   cellData: MatrixCellData | undefined
   canvasDrawn: boolean
   setCanvasDrawn: (flag: boolean) => void
-  startGpuBackendLifecycle: (
-    backend: import('./variantMatrixBackendTypes.ts').VariantMatrixBackend,
-  ) => void
+  startGpuBackendLifecycle: (backend: VariantMatrixBackend) => void
   stopGpuBackendLifecycle: () => void
   renderNow: () => void
 }
@@ -44,17 +42,12 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
     [number, number] | undefined
   >()
   const lastHoveredRef = useRef<string | undefined>(undefined)
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const { classes } = useStyles()
 
-  const { error, retry } = useGpuRenderer(canvasRef, VariantMatrixRenderer, {
-    onReady: backend => {
-      model.startGpuBackendLifecycle(backend)
-    },
-    onDispose: () => {
-      model.stopGpuBackendLifecycle()
-    },
-  })
+  const { canvasRef, error, retry } = useGpuModelLifecycle(
+    VariantMatrixRenderer,
+    model,
+  )
 
   const view = getContainingView(model) as LGV
 
@@ -70,10 +63,6 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
       nrow: model.nrow,
       setRowHeight: model.setRowHeight,
     })
-
-  useTabVisibilityRerender(() => {
-    model.renderNow()
-  })
 
   function getFeatureUnderMouse(
     rect: DOMRect,

@@ -1,16 +1,13 @@
-import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 
-import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { ErrorBar, ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
   getContainingView,
-  useGpuRenderer,
-  useTabVisibilityRerender,
+  useGpuModelLifecycle,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { VariantRenderer } from './VariantRenderer.ts'
@@ -21,6 +18,7 @@ import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
 import type { VariantCellData } from './computeVariantCells.ts'
+import type { VariantBackend } from './variantBackendTypes.ts'
 import type { VariantDisplayModelBase } from '../../shared/VariantDisplayModelInterface.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -34,6 +32,9 @@ export interface VariantDisplayModel extends VariantDisplayModelBase {
   statusMessage?: string
   canvasDrawn: boolean
   setCanvasDrawn: (flag: boolean) => void
+  startGpuBackendLifecycle: (backend: VariantBackend) => void
+  stopGpuBackendLifecycle: () => void
+  renderNow: () => void
   visibleRegions: {
     refName: string
     regionNumber: number
@@ -129,13 +130,12 @@ const VariantComponent = observer(function VariantComponent({
     | undefined
   >()
   const lastHoveredRef = useRef<string | undefined>(undefined)
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const flatbushCacheRef = useRef(new WeakMap<ArrayBuffer, Flatbush>())
   const { classes } = useStyles()
 
-  const { error, ready, rendererRef, retry } = useGpuRenderer(
-    canvasRef,
+  const { canvasRef, error, retry } = useGpuModelLifecycle(
     VariantRenderer,
+    model,
   )
 
   const view = getContainingView(model) as LGV
@@ -152,71 +152,6 @@ const VariantComponent = observer(function VariantComponent({
       nrow: model.nrow,
       setRowHeight: model.setRowHeight,
     })
-
-  const renderNow = useEffectEvent(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !view.initialized) {
-      return
-    }
-    const regions = model.visibleRegions
-    if (regions.length === 0) {
-      return
-    }
-    const blocks = buildRenderBlocks(regions)
-    renderer.renderBlocks(blocks, {
-      canvasWidth: view.trackWidthPx,
-      canvasHeight: model.availableHeight,
-      rowHeight: model.rowHeight,
-      scrollTop: model.scrollTop,
-    })
-  })
-
-  useEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !ready) {
-      return
-    }
-
-    const uploadedKeys = new Map<number, string>()
-
-    return autorun(() => {
-      const cellData = model.cellData
-      if (!cellData) {
-        renderer.pruneRegions([])
-        uploadedKeys.clear()
-      } else {
-        const perRegion = cellData.perRegionCellData
-        for (const [regionNumStr, regionData] of Object.entries(perRegion)) {
-          const regionNum = Number(regionNumStr)
-          if (uploadedKeys.get(regionNum) !== regionData.inputKey) {
-            renderer.uploadRegion(regionNum, regionData)
-            uploadedKeys.set(regionNum, regionData.inputKey)
-          }
-        }
-        const liveNums = new Set(Object.keys(perRegion).map(Number))
-        renderer.pruneRegions([...liveNums])
-        for (const regionNum of uploadedKeys.keys()) {
-          if (!liveNums.has(regionNum)) {
-            uploadedKeys.delete(regionNum)
-          }
-        }
-      }
-
-      // SYNC across all hook-driven GPU displays (wiggle, multi-wiggle,
-      // variants, alignments, HiC, LD): dataVersion is a counter incremented
-      // by setLoadedRegionForRegion() after each region's data is committed.
-      // Reading it here creates a MobX dependency so this autorun re-fires at
-      // that point, ensuring renderNow() runs with fully-committed data.
-      // See MultiRegionDisplayMixin.withFetchLifecycle.
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _dv = model.dataVersion
-
-      renderNow()
-      model.setCanvasDrawn(true)
-    })
-  }, [model, view, ready, rendererRef])
-
-  useTabVisibilityRerender(renderNow)
 
   function getFeatureUnderMouse(
     rect: DOMRect,

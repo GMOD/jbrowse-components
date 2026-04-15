@@ -1,7 +1,5 @@
 import { lazy } from 'react'
 
-import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
-import { startGpuSingleDataBackendAutorunLifecycle } from '@jbrowse/core/gpu/startGpuSingleDataBackendAutorunLifecycle'
 import { clamp, getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -27,7 +25,6 @@ export default function stateModelFactory(
     .compose(
       'LinearVariantMatrixDisplay',
       MultiSampleVariantBaseModelF(configSchema),
-      GpuBackendLifecycleSlotMixin(),
       types.model({
         type: types.literal('LinearVariantMatrixDisplay'),
         lineZoneHeight: types.optional(types.number, 20),
@@ -85,31 +82,24 @@ export default function stateModelFactory(
        * #action
        */
       startGpuBackendLifecycle(backend: VariantMatrixBackend) {
-        self.assignGpuBackendLifecycleHandle(
-          startGpuSingleDataBackendAutorunLifecycle<
-            VariantMatrixBackend,
-            NonNullable<typeof self.renderState>
-          >({
-            backend,
-            uploadSlots: [
-              {
-                readData: () => self.cellData as MatrixCellData | undefined,
-                commitUpload: (b, data) => {
-                  b.uploadCellData(data as MatrixCellData)
-                },
+        self.startSingleDataGpuLifecycle<
+          VariantMatrixBackend,
+          NonNullable<typeof self.renderState>
+        >({
+          backend,
+          uploadSlots: [
+            {
+              readData: () => self.cellData as MatrixCellData | undefined,
+              commitUpload: (b, data) => {
+                b.uploadCellData(data as MatrixCellData)
               },
-            ],
-            getRenderState: () => self.renderState,
-            renderWithState: (b, state) => {
-              b.render(state)
             },
-            onAfterCommit: ready => {
-              if (ready) {
-                self.setCanvasDrawn(true)
-              }
-            },
-          }),
-        )
+          ],
+          getRenderState: () => self.renderState,
+          renderWithState: (b, state) => {
+            b.render(state)
+          },
+        })
       },
     }))
     .postProcessSnapshot(snap => {

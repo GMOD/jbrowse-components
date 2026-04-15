@@ -190,7 +190,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       gpuRenderer: null as MultiSyntenyBackend | null,
       colorPalette: null as SyntenyColorPalette | null,
       tabVisibilityVersion: 0,
-      canvasDrawn: false,
     }))
     .views(() => ({
       get featureWidgetType() {
@@ -330,9 +329,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
       setGpuRenderer(renderer: MultiSyntenyBackend | null) {
         self.gpuRenderer = renderer
-      },
-      setCanvasDrawn(value: boolean) {
-        self.canvasDrawn = value
       },
       setColorPalette(palette: SyntenyColorPalette | null) {
         self.colorPalette = palette
@@ -567,9 +563,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                   displayedGenomes,
                   labelW,
                 })
-                if (!self.canvasDrawn) {
-                  self.setCanvasDrawn(true)
-                }
+                self.markCanvasDrawn()
               },
               { name: 'MultiLGVSyntenyDisplay:draw' },
             ),

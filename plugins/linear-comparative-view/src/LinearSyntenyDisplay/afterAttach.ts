@@ -9,110 +9,13 @@ import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import type { LinearSyntenyDisplayModel } from './model.ts'
-import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 type LSV = LinearSyntenyViewModel
 
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
-  let lastInstanceData: SyntenyInstanceData | undefined
-  let lastRenderer: unknown = null
   let currentStopToken: StopToken | undefined
-
-  addDisposer(
-    self,
-    autorun(
-      function syntenyDrawAutorun() {
-        if (self.isMinimized || self.isLevelCollapsed) {
-          return
-        }
-        const view = getContainingView(self) as LinearSyntenyViewModel
-        if (
-          !view.initialized ||
-          !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
-        ) {
-          return
-        }
-
-        // SYNC across model-driven GPU displays (dotplot, linear synteny,
-        // multi-LGV synteny): tabVisibilityVersion is a counter incremented
-        // by bumpTabVisibility() when the tab becomes visible again (WebGPU
-        // discards the swap-chain on hide). Reading it here creates a MobX
-        // dependency so this draw autorun re-fires on restore.
-        // Component calls useTabVisibilityRerender(() => bumpTabVisibility()).
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _tvv = self.tabVisibilityVersion
-        const {
-          alpha,
-          featureData,
-          level,
-          minAlignmentLength,
-          hoveredFeatureIdx,
-          clickedFeatureIdx,
-        } = self
-        const gpuInstanceData = self.gpuInstanceData
-        const height = self.height
-        const width = view.width
-
-        if (!self.gpuRenderer) {
-          return
-        }
-
-        try {
-          if (self.gpuRenderer !== lastRenderer) {
-            lastInstanceData = undefined
-            lastRenderer = self.gpuRenderer
-          }
-
-          self.gpuRenderer.resize(width, height)
-
-          if (gpuInstanceData && gpuInstanceData !== lastInstanceData) {
-            lastInstanceData = gpuInstanceData
-            self.gpuRenderer.uploadGeometry(gpuInstanceData)
-          }
-
-          if (!featureData || level + 1 >= view.views.length) {
-            return
-          }
-
-          const v0 = view.views[level]!
-          const v1 = view.views[level + 1]!
-          const maxOffScreenPx = view.maxOffScreenDrawPx
-
-          const hoveredFeatureId =
-            hoveredFeatureIdx >= 0 ? hoveredFeatureIdx + 1 : 0
-          const clickedFeatureId =
-            clickedFeatureIdx >= 0 ? clickedFeatureIdx + 1 : 0
-
-          self.gpuRenderer.render(
-            v0.offsetPx,
-            v1.offsetPx,
-            height,
-            v0.bpPerPx,
-            v1.bpPerPx,
-            maxOffScreenPx,
-            minAlignmentLength,
-            alpha,
-            hoveredFeatureId,
-            clickedFeatureId,
-          )
-          if (!self.canvasDrawn) {
-            self.setCanvasDrawn(true)
-          }
-        } catch (e) {
-          console.error('[synteny] render error:', e)
-          if (isAlive(self)) {
-            self.setError(e)
-          }
-        }
-      },
-      {
-        name: 'SyntenyDraw',
-      },
-    ),
-  )
-
   let debounceTimer: ReturnType<typeof setTimeout> | undefined
 
   addDisposer(
@@ -139,7 +42,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           }
         }
 
-        // Track rendering settings so RPC re-fires when they change
         const colorBy = self.colorBy
         const drawCurves = view.drawCurves
         const drawCIGAR = view.drawCIGAR
@@ -218,7 +120,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
 
             const { instanceData, ...featureData } = result
             self.setFeatureData(featureData)
-            self.setGpuInstanceData(instanceData)
+            self.setInstanceData(instanceData)
           } catch (e) {
             if (!isAbortException(e)) {
               if (isAlive(self)) {

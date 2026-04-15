@@ -1,3 +1,4 @@
+import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
 import {
   hideTrackGeneric,
   showTrackGeneric,
@@ -6,42 +7,69 @@ import {
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 
+import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
+import type {
+  SyntenyBackend,
+  SyntenyRenderState,
+  SyntenyTrackRenderParams,
+} from '../LinearSyntenyDisplay/syntenyBackendTypes.ts'
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// Parent-view shape we read from. Duck-typed to avoid circular imports with
+// the synteny view model.
+interface ParentViewDuck {
+  views: LinearGenomeViewModel[]
+  maxOffScreenDrawPx: number
+}
 
 export function linearSyntenyViewHelperModelFactory(
   pluginManager: PluginManager,
 ) {
   return types
-    .model('LinearSyntenyViewHelper', {
+    .compose(
+      'LinearSyntenyViewHelper',
+      GpuBackendLifecycleSlotMixin(),
+      types.model({
+        /**
+         * #property
+         */
+        id: ElementId,
+        /**
+         * #property
+         */
+        type: 'LinearSyntenyViewHelper',
+        /**
+         * #property
+         */
+        tracks: types.array(
+          pluginManager.pluggableMstType('track', 'stateModel'),
+        ),
+        /**
+         * #property
+         */
+        height: 100,
+        /**
+         * #property
+         */
+        level: types.number,
+        /**
+         * #property
+         */
+        collapsed: false,
+      }),
+    )
+    .volatile(() => ({
       /**
-       * #property
+       * #volatile
+       * Shared GPU backend owned by this level. All synteny displays within
+       * the level upload their geometry to the same backend and render onto
+       * one canvas.
        */
-      id: ElementId,
-      /**
-       * #property
-       */
-      type: 'LinearSyntenyViewHelper',
-      /**
-       * #property
-       */
-      tracks: types.array(
-        pluginManager.pluggableMstType('track', 'stateModel'),
-      ),
-      /**
-       * #property
-       */
-      height: 100,
-      /**
-       * #property
-       */
-      level: types.number,
-      /**
-       * #property
-       */
-      collapsed: false,
-    })
+      gpuBackend: null as SyntenyBackend | null,
+    }))
     .views(self => ({
       get effectiveHeight() {
         return self.collapsed ? 10 : self.height
@@ -67,14 +95,12 @@ export function linearSyntenyViewHelperModelFactory(
       toggleCollapsed() {
         self.collapsed = !self.collapsed
       },
-
       /**
        * #action
        */
       showTrack(trackId: string, initialSnapshot = {}) {
         return showTrackGeneric(self, trackId, initialSnapshot)
       },
-
       /**
        * #action
        */
@@ -89,8 +115,11 @@ export function linearSyntenyViewHelperModelFactory(
       },
     }))
     .views(self => ({
+      get parentView() {
+        return getParent<ParentViewDuck>(self, 2)
+      },
       get assemblyNames() {
-        const p = getParent<{ views: LinearGenomeViewModel[] }>(self, 2)
+        const p = this.parentView
         if (self.level + 1 >= p.views.length) {
           return []
         }
@@ -99,7 +128,106 @@ export function linearSyntenyViewHelperModelFactory(
           p.views[self.level + 1]!.assemblyNames[0],
         ]
       },
+      /**
+       * #getter
+       * All synteny displays under this level's tracks.
+       */
+      get linearSyntenyDisplays() {
+        const out: LinearSyntenyDisplayModel[] = []
+        for (const track of self.tracks) {
+          for (const display of track.displays) {
+            if (display.type === 'LinearSyntenyDisplay') {
+              out.push(display as LinearSyntenyDisplayModel)
+            }
+          }
+        }
+        return out
+      },
     }))
+    .views(self => ({
+      /**
+       * #getter
+       * Per-display GPU geometry keyed by displayKey. The upload autorun
+       * diffs this map — new entries upload, vanished entries evict.
+       */
+      get geometryByDisplayKey() {
+        const m = new Map<number, SyntenyInstanceData>()
+        for (const display of self.linearSyntenyDisplays) {
+          if (display.instanceData) {
+            m.set(display.displayKey, display.instanceData)
+          }
+        }
+        return m
+      },
+      /**
+       * #getter
+       * Aggregated per-frame render state. Every display in the level draws
+       * starting at yTop=0 since each level owns its own canvas.
+       */
+      get syntenyRenderState(): SyntenyRenderState | undefined {
+        const perTrack = new Map<number, SyntenyTrackRenderParams>()
+        for (const display of self.linearSyntenyDisplays) {
+          const params = display.renderParams
+          if (params) {
+            perTrack.set(display.displayKey, params)
+          }
+        }
+        if (perTrack.size === 0) {
+          return undefined
+        }
+        return {
+          maxOffScreenPx: self.parentView.maxOffScreenDrawPx,
+          perTrack,
+        }
+      },
+      /**
+       * #getter
+       * Reverse lookup key → display, used to dispatch pick results.
+       */
+      get displaysByKey() {
+        const m = new Map<number, LinearSyntenyDisplayModel>()
+        for (const display of self.linearSyntenyDisplays) {
+          m.set(display.displayKey, display)
+        }
+        return m
+      },
+    }))
+    .actions(self => {
+      const baseStop = self.stopGpuBackendLifecycle
+      return {
+        /**
+         * #action
+         */
+        startGpuBackendLifecycle(backend: SyntenyBackend) {
+          self.gpuBackend = backend
+          self.startMultiRegionGpuLifecycle<
+            SyntenyBackend,
+            SyntenyInstanceData,
+            SyntenyRenderState
+          >({
+            backend,
+            getDataByRegionNumber: () => self.geometryByDisplayKey,
+            uploadOneRegion: (b, key, data) => {
+              b.uploadGeometry(key, data)
+            },
+            deleteOneRegion: (b, key) => {
+              b.deleteGeometry(key)
+            },
+            getRenderBlocks: () => [],
+            getRenderState: () => self.syntenyRenderState,
+            renderAllBlocks: (b, _blocks, state) => {
+              b.resize(self.parentView.views[0]!.width, self.effectiveHeight)
+              b.render(state)
+              self.markCanvasDrawn()
+            },
+          })
+        },
+        stopGpuBackendLifecycle() {
+          baseStop()
+          self.gpuBackend = null
+        },
+      }
+    })
 }
 
 export type LinearSyntenyViewHelperStateModel = ReturnType<

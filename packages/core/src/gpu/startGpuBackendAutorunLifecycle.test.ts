@@ -189,6 +189,165 @@ test('upload invalidation token clears the cache and forces re-upload', () => {
   handle.dispose()
 })
 
+test('multiple uploadStreams are identity-diffed independently', () => {
+  const backend = {
+    uploadsA: [] as { n: number; d: string }[],
+    uploadsB: [] as { n: number; d: string }[],
+    prunes: [] as number[][],
+  }
+  const mapA = observable.map<number, string>(undefined, { deep: false })
+  const mapB = observable.map<number, string>(undefined, { deep: false })
+  mapA.set(0, 'a0')
+  mapB.set(0, 'b0')
+
+  const handle = startGpuBackendAutorunLifecycle<typeof backend, string, number>({
+    backend,
+    uploadStreams: [
+      {
+        getDataByRegionNumber: () => new Map(mapA),
+        uploadOneRegion: (b, n, d) => b.uploadsA.push({ n, d }),
+        pruneRegionsNotIn: (b, active) => b.prunes.push([...active]),
+      },
+      {
+        getDataByRegionNumber: () => new Map(mapB),
+        uploadOneRegion: (b, n, d) => b.uploadsB.push({ n, d }),
+      },
+    ],
+    getRenderBlocks: () => [],
+    getRenderState: () => 1,
+    renderAllBlocks: () => {},
+  })
+
+  expect(backend.uploadsA).toEqual([{ n: 0, d: 'a0' }])
+  expect(backend.uploadsB).toEqual([{ n: 0, d: 'b0' }])
+
+  // Change only stream B — stream A should not re-upload.
+  runInAction(() => {
+    mapB.set(0, 'b1')
+  })
+  expect(backend.uploadsA.length).toBe(1)
+  expect(backend.uploadsB).toEqual([
+    { n: 0, d: 'b0' },
+    { n: 0, d: 'b1' },
+  ])
+
+  handle.dispose()
+})
+
+test('identityOf lets non-reference keys drive the identity diff', () => {
+  const backend = makeBackend()
+  const data = observable.box<Record<number, { inputKey: string }>>({
+    0: { inputKey: 'v1' },
+  })
+
+  const handle = startGpuBackendAutorunLifecycle<
+    FakeBackend,
+    { inputKey: string },
+    number
+  >({
+    backend,
+    getDataByRegionNumber: () => {
+      const obj = data.get()
+      const map = new Map<number, { inputKey: string }>()
+      for (const [k, v] of Object.entries(obj)) {
+        map.set(Number(k), v)
+      }
+      return map
+    },
+    identityOf: d => d.inputKey,
+    uploadOneRegion: (b, n, d) => b.uploads.push({ regionNumber: n, data: d.inputKey }),
+    pruneRegionsNotIn: () => {},
+    getRenderBlocks: () => [],
+    getRenderState: () => 0,
+    renderAllBlocks: () => {},
+  })
+
+  expect(backend.uploads).toEqual([{ regionNumber: 0, data: 'v1' }])
+
+  // Replace the wrapper object but keep the same inputKey — no re-upload.
+  runInAction(() => {
+    data.set({ 0: { inputKey: 'v1' } })
+  })
+  expect(backend.uploads.length).toBe(1)
+
+  // Change the inputKey — re-upload.
+  runInAction(() => {
+    data.set({ 0: { inputKey: 'v2' } })
+  })
+  expect(backend.uploads).toEqual([
+    { regionNumber: 0, data: 'v1' },
+    { regionNumber: 0, data: 'v2' },
+  ])
+
+  handle.dispose()
+})
+
+test('render autorun re-fires on state change without re-running uploads', () => {
+  const backend = makeBackend()
+  const data = observable.map<number, string>(undefined, { deep: false })
+  data.set(0, 'a')
+  const stateBox = observable.box(1)
+  let uploadCalls = 0
+
+  const handle = startGpuBackendAutorunLifecycle<FakeBackend, string, number>({
+    backend,
+    getDataByRegionNumber: () => new Map(data),
+    uploadOneRegion: (b, n, d) => {
+      uploadCalls++
+      b.uploads.push({ regionNumber: n, data: d })
+    },
+    pruneRegionsNotIn: () => {},
+    getRenderBlocks: () => [makeBlock(0)],
+    getRenderState: () => stateBox.get(),
+    renderAllBlocks: (b, blocks, state) => b.renders.push({ blocks, state }),
+  })
+
+  expect(uploadCalls).toBe(1)
+  expect(backend.renders.length).toBe(1)
+
+  // Change only render state — render re-fires, upload does not.
+  runInAction(() => {
+    stateBox.set(2)
+  })
+  expect(uploadCalls).toBe(1)
+  expect(backend.renders.length).toBe(2)
+  expect(backend.renders.at(-1)!.state).toBe(2)
+
+  handle.dispose()
+})
+
+test('deleteOneRegion fires for each cached key removed from dataMap', () => {
+  const backend = makeBackend()
+  const data = observable.map<number, string>(undefined, { deep: false })
+  data.set(0, 'a')
+  data.set(1, 'b')
+  const deleted: number[] = []
+
+  const handle = startGpuBackendAutorunLifecycle<FakeBackend, string, number>({
+    backend,
+    getDataByRegionNumber: () => new Map(data),
+    getRenderBlocks: () => [],
+    getRenderState: () => 1,
+    uploadOneRegion: (b, n, d) => b.uploads.push({ regionNumber: n, data: d }),
+    deleteOneRegion: (_b, n) => deleted.push(n),
+    renderAllBlocks: () => {},
+  })
+
+  expect(deleted).toEqual([])
+
+  runInAction(() => {
+    data.delete(0)
+  })
+  expect(deleted).toEqual([0])
+
+  runInAction(() => {
+    data.delete(1)
+  })
+  expect(deleted).toEqual([0, 1])
+
+  handle.dispose()
+})
+
 test('dispose stops the autorun and renderNow becomes a no-op', () => {
   const backend = makeBackend()
   const data = observable.map<number, string>(undefined, { deep: false })
@@ -214,3 +373,4 @@ test('dispose stops the autorun and renderNow becomes a no-op', () => {
   expect(backend.uploads.length).toBe(0)
   expect(backend.renders.length).toBe(renderCountAtDispose)
 })
+

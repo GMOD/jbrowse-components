@@ -1,5 +1,9 @@
 import { autorun } from 'mobx'
 
+import type { GpuBackendLifecycleHandle } from './gpuBackendLifecycleHandle.ts'
+
+export type { GpuBackendLifecycleHandle } from './gpuBackendLifecycleHandle.ts'
+
 /**
  * Describes one identity-diffed upload slot for a global (non-regional)
  * GPU display. Each slot is independently tracked: when `readData()`
@@ -41,21 +45,12 @@ export interface StartGpuSingleDataBackendAutorunLifecycleArgs<
   renderWithState: (backend: BackendType, state: RenderStateType) => void
 
   /**
-   * Optional post-pass hook, e.g. to call `model.setCanvasDrawn(true)`.
-   * Receives whether every slot has uploaded data currently on the GPU.
+   * Optional post-pass hook. Receives whether every slot has uploaded data
+   * currently on the GPU.
    */
   onAfterCommit?: (allSlotsHaveData: boolean) => void
 }
 
-export interface GpuSingleDataBackendAutorunLifecycleHandle {
-  dispose: () => void
-  /**
-   * Imperatively re-issue the last render using the currently cached
-   * state. Intended for non-MobX triggers (tab visibility, DOM scroll,
-   * context restored).
-   */
-  renderNow: () => void
-}
 
 /**
  * Lifecycle for GPU backends that hold one or more global (non-regional)
@@ -79,7 +74,7 @@ export function startGpuSingleDataBackendAutorunLifecycle<
 }: StartGpuSingleDataBackendAutorunLifecycleArgs<
   BackendType,
   RenderStateType
->): GpuSingleDataBackendAutorunLifecycleHandle {
+>): GpuBackendLifecycleHandle {
   const lastUploadedPerSlot: unknown[] = uploadSlots.map(() => undefined)
   let lastRenderState: RenderStateType | undefined
   let allSlotsHaveData = false

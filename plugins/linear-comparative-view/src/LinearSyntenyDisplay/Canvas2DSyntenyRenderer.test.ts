@@ -1,5 +1,9 @@
 import { Canvas2DSyntenyRenderer } from './Canvas2DSyntenyRenderer.ts'
 
+import type {
+  SyntenyRenderState,
+  SyntenyTrackRenderParams,
+} from './syntenyBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 
 function createMockCanvas() {
@@ -56,6 +60,31 @@ function makeInstanceData(
   }
 }
 
+function makeParams(
+  overrides?: Partial<SyntenyTrackRenderParams>,
+): SyntenyTrackRenderParams {
+  return {
+    yTop: 0,
+    height: 100,
+    alpha: 1,
+    minAlignmentLength: 0,
+    hoveredFeatureId: 0,
+    clickedFeatureId: 0,
+    offset0: 0,
+    offset1: 0,
+    bpPerPx0: 1,
+    bpPerPx1: 1,
+    ...overrides,
+  }
+}
+
+function makeState(
+  perTrack: [number, SyntenyTrackRenderParams][],
+  maxOffScreenPx = 300,
+): SyntenyRenderState {
+  return { maxOffScreenPx, perTrack: new Map(perTrack) }
+}
+
 describe('Canvas2DSyntenyRenderer', () => {
   beforeEach(() => {
     Object.defineProperty(window, 'devicePixelRatio', {
@@ -73,10 +102,10 @@ describe('Canvas2DSyntenyRenderer', () => {
     )
   })
 
-  test('render with no data does nothing', () => {
+  test('render with no uploaded geometry does nothing', () => {
     const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DSyntenyRenderer(canvas)
-    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
+    renderer.render(makeState([[0, makeParams()]]))
     expect(ctx.beginPath).not.toHaveBeenCalled()
   })
 
@@ -86,10 +115,9 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(makeInstanceData(1))
-    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
+    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.render(makeState([[0, makeParams()]]))
 
-    // Should draw one parallelogram: beginPath, moveTo, 3x lineTo, closePath, fill
     expect(pathOps.filter(op => op === 'beginPath')).toHaveLength(1)
     expect(pathOps.filter(op => op === 'fill')).toHaveLength(1)
     expect(pathOps.filter(op => op === 'closePath')).toHaveLength(1)
@@ -101,13 +129,12 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    const data = makeInstanceData(1, {
-      isCurves: new Float32Array([1]),
-    })
-    renderer.uploadGeometry(data)
-    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
+    renderer.uploadGeometry(
+      0,
+      makeInstanceData(1, { isCurves: new Float32Array([1]) }),
+    )
+    renderer.render(makeState([[0, makeParams()]]))
 
-    // Curve mode: 16 segments for each side → many lineTo calls
     const lineToCount = pathOps.filter(op => op.startsWith('lineTo')).length
     expect(lineToCount).toBeGreaterThan(4)
   })
@@ -119,11 +146,10 @@ describe('Canvas2DSyntenyRenderer', () => {
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(
-      makeInstanceData(1, {
-        queryTotalLengths: new Float32Array([100]),
-      }),
+      0,
+      makeInstanceData(1, { queryTotalLengths: new Float32Array([100]) }),
     )
-    renderer.render(0, 0, 100, 1, 1, 300, 500, 1, 0, 0)
+    renderer.render(makeState([[0, makeParams({ minAlignmentLength: 500 })]]))
 
     expect(pathOps.filter(op => op === 'fill')).toHaveLength(0)
   })
@@ -134,9 +160,11 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    const colors = new Uint32Array([0x00808080]) // grey, alpha=0
-    renderer.uploadGeometry(makeInstanceData(1, { colors }))
-    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
+    renderer.uploadGeometry(
+      0,
+      makeInstanceData(1, { colors: new Uint32Array([0x00808080]) }),
+    )
+    renderer.render(makeState([[0, makeParams()]]))
 
     expect(pathOps.filter(op => op === 'fill')).toHaveLength(0)
   })
@@ -148,6 +176,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(
+      0,
       makeInstanceData(1, {
         x1: new Float32Array([5000]),
         x2: new Float32Array([6000]),
@@ -155,7 +184,7 @@ describe('Canvas2DSyntenyRenderer', () => {
         x4: new Float32Array([5000]),
       }),
     )
-    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
+    renderer.render(makeState([[0, makeParams()]]))
 
     expect(pathOps.filter(op => op === 'fill')).toHaveLength(0)
   })
@@ -166,61 +195,92 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(makeInstanceData(1))
-    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 1)
+    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.render(makeState([[0, makeParams({ clickedFeatureId: 1 })]]))
 
     expect(ctx.stroke).toHaveBeenCalled()
   })
 
-  test('pick returns -1 with no data', () => {
-    const { canvas } = createMockCanvas()
+  test('deleteGeometry removes a track from rendering', () => {
+    const { canvas, pathOps } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
-    expect(renderer.pick(100, 50)).toBe(-1)
+    renderer.resize(800, 100)
+    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.deleteGeometry(0)
+    renderer.render(makeState([[0, makeParams()]]))
+
+    expect(pathOps.filter(op => op === 'fill')).toHaveLength(0)
   })
 
-  test('pick returns -1 before render is called', () => {
-    const { canvas } = createMockCanvas()
+  test('multi-track render iterates all keys', () => {
+    const { canvas, pathOps } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 200
     const renderer = new Canvas2DSyntenyRenderer(canvas)
-    renderer.uploadGeometry(makeInstanceData(1))
-    expect(renderer.pick(50, 50)).toBe(-1)
+    renderer.resize(800, 200)
+    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.uploadGeometry(1, makeInstanceData(1))
+    renderer.render(
+      makeState([
+        [0, makeParams({ yTop: 0, height: 100 })],
+        [1, makeParams({ yTop: 100, height: 100 })],
+      ]),
+    )
+
+    expect(pathOps.filter(op => op === 'fill')).toHaveLength(2)
   })
 
-  test('pick returns feature index when isPointInPath matches', () => {
+  test('pick returns undefined with no state', () => {
+    const { canvas } = createMockCanvas()
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    expect(renderer.pick(100, 50)).toBeUndefined()
+  })
+
+  test('pick returns undefined before render is called', () => {
+    const { canvas } = createMockCanvas()
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.uploadGeometry(0, makeInstanceData(1))
+    expect(renderer.pick(50, 50)).toBeUndefined()
+  })
+
+  test('pick returns hit with key + featureIndex', () => {
     const { canvas, ctx } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
     ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(makeInstanceData(1))
-    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
-    expect(renderer.pick(50, 50)).toBe(0)
+    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.render(makeState([[0, makeParams()]]))
+    expect(renderer.pick(50, 50)).toEqual({ key: 0, featureIndex: 0 })
   })
 
-  test('pick returns -1 when isPointInPath does not match', () => {
+  test('pick returns undefined when isPointInPath does not match', () => {
     const { canvas, ctx } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
     ctx.isPointInPath = jest.fn(() => false)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(makeInstanceData(1))
-    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
-    expect(renderer.pick(50, 50)).toBe(-1)
+    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.render(makeState([[0, makeParams()]]))
+    expect(renderer.pick(50, 50)).toBeUndefined()
   })
 
-  test('pick invokes callback with result', () => {
+  test('pick invokes callback with hit', () => {
     const { canvas, ctx } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
     ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(makeInstanceData(1))
-    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
+    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.render(makeState([[0, makeParams()]]))
     const cb = jest.fn()
     renderer.pick(50, 50, cb)
-    expect(cb).toHaveBeenCalledWith(0)
+    expect(cb).toHaveBeenCalledWith({ key: 0, featureIndex: 0 })
   })
 
   test('pick returns last feature when multiple overlap (top-most wins)', () => {
@@ -230,10 +290,48 @@ describe('Canvas2DSyntenyRenderer', () => {
     ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(makeInstanceData(3))
-    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
-    // last drawn (index 2) should be picked first
-    expect(renderer.pick(50, 50)).toBe(2)
+    renderer.uploadGeometry(0, makeInstanceData(3))
+    renderer.render(makeState([[0, makeParams()]]))
+    expect(renderer.pick(50, 50)).toEqual({ key: 0, featureIndex: 2 })
+  })
+
+  test('pick prefers later track when multiple overlap', () => {
+    const { canvas, ctx } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 200
+    ctx.isPointInPath = jest.fn(() => true)
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 200)
+    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.uploadGeometry(1, makeInstanceData(1))
+    renderer.render(
+      makeState([
+        [0, makeParams({ yTop: 0, height: 200 })],
+        [1, makeParams({ yTop: 0, height: 200 })],
+      ]),
+    )
+    expect(renderer.pick(50, 50)?.key).toBe(1)
+  })
+
+  test('pick respects per-track yTop range', () => {
+    const { canvas, ctx } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 200
+    ctx.isPointInPath = jest.fn(() => true)
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 200)
+    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.uploadGeometry(1, makeInstanceData(1))
+    renderer.render(
+      makeState([
+        [0, makeParams({ yTop: 0, height: 100 })],
+        [1, makeParams({ yTop: 100, height: 100 })],
+      ]),
+    )
+    // y=50 is within track 0 only
+    expect(renderer.pick(50, 50)?.key).toBe(0)
+    // y=150 is within track 1 only
+    expect(renderer.pick(50, 150)?.key).toBe(1)
   })
 
   test('pick skips features below minAlignmentLength', () => {
@@ -244,13 +342,11 @@ describe('Canvas2DSyntenyRenderer', () => {
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(
-      makeInstanceData(1, {
-        queryTotalLengths: new Float32Array([100]),
-      }),
+      0,
+      makeInstanceData(1, { queryTotalLengths: new Float32Array([100]) }),
     )
-    // render with minAlignmentLength=500, which excludes the feature
-    renderer.render(0, 0, 100, 1, 1, 300, 500, 1, 0, 0)
-    expect(renderer.pick(50, 50)).toBe(-1)
+    renderer.render(makeState([[0, makeParams({ minAlignmentLength: 500 })]]))
+    expect(renderer.pick(50, 50)).toBeUndefined()
     expect(ctx.isPointInPath).not.toHaveBeenCalled()
   })
 
@@ -262,12 +358,11 @@ describe('Canvas2DSyntenyRenderer', () => {
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(
-      makeInstanceData(1, {
-        colors: new Uint32Array([0x00808080]), // grey, alpha=0
-      }),
+      0,
+      makeInstanceData(1, { colors: new Uint32Array([0x00808080]) }),
     )
-    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
-    expect(renderer.pick(50, 50)).toBe(-1)
+    renderer.render(makeState([[0, makeParams()]]))
+    expect(renderer.pick(50, 50)).toBeUndefined()
     expect(ctx.isPointInPath).not.toHaveBeenCalled()
   })
 
@@ -279,46 +374,41 @@ describe('Canvas2DSyntenyRenderer', () => {
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(
-      makeInstanceData(1, {
-        isCurves: new Float32Array([1]),
-      }),
+      0,
+      makeInstanceData(1, { isCurves: new Float32Array([1]) }),
     )
-    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
-    expect(renderer.pick(50, 50)).toBe(0)
-    // curve path uses lineTo for segments, not just 4 corners
+    renderer.render(makeState([[0, makeParams()]]))
+    expect(renderer.pick(50, 50)).toEqual({ key: 0, featureIndex: 0 })
     expect(ctx.lineTo.mock.calls.length).toBeGreaterThan(4)
   })
 
-  test('pick returns -1 after dispose', () => {
+  test('pick returns undefined after dispose', () => {
     const { canvas, ctx } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
     ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(makeInstanceData(1))
-    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
+    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.render(makeState([[0, makeParams()]]))
     renderer.dispose()
-    expect(renderer.pick(50, 50)).toBe(-1)
+    expect(renderer.pick(50, 50)).toBeUndefined()
   })
 
   test('pick handles selective matching across multiple features', () => {
     const { canvas, ctx } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
-    // only the second feature (index 1) matches
     let callCount = 0
     ctx.isPointInPath = jest.fn(() => {
       callCount++
-      // reverse iteration: feature 2 checked first, then 1, then 0
       return callCount === 2
     })
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(makeInstanceData(3))
-    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
-    // reverse order: checks index 2 (miss), index 1 (hit)
-    expect(renderer.pick(50, 50)).toBe(1)
+    renderer.uploadGeometry(0, makeInstanceData(3))
+    renderer.render(makeState([[0, makeParams()]]))
+    expect(renderer.pick(50, 50)).toEqual({ key: 0, featureIndex: 1 })
   })
 
   test('dispose cleans up data', () => {
@@ -326,9 +416,9 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.width = 800
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
-    renderer.uploadGeometry(makeInstanceData(1))
+    renderer.uploadGeometry(0, makeInstanceData(1))
     renderer.dispose()
-    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
+    renderer.render(makeState([[0, makeParams()]]))
     expect(pathOps.filter(op => op === 'fill')).toHaveLength(0)
   })
 })

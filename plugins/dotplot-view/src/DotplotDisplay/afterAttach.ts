@@ -62,7 +62,9 @@ function serializeFeatures(
   return serialized
 }
 
-export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
+export function doAfterAttach(
+  self: Omit<DotplotDisplayModel, 'afterAttach' | 'beforeDestroy'>,
+) {
   makeAbortableReaction(
     self,
     () => {
@@ -176,7 +178,7 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
   addDisposer(
     self,
     autorun(
-      function dotplotUploadAutorun() {
+      function dotplotGeometryRecompute() {
         let view: DotplotViewModel
         try {
           view = getContainingView(self) as DotplotViewModel
@@ -184,11 +186,6 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
           return
         }
         if (!view.initialized) {
-          return
-        }
-
-        const { gpuRenderer: renderer } = view
-        if (!renderer) {
           return
         }
 
@@ -220,7 +217,7 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
           hBpPerPx,
           vBpPerPx,
         )
-        renderer.uploadGeometry(regionKey, {
+        self.setRpcDataForRegion(regionKey, {
           x1s: new Float32Array(segments.x1s),
           y1s: new Float32Array(segments.y1s),
           x2s: new Float32Array(segments.x2s),
@@ -228,9 +225,33 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
           colors: new Uint32Array(segments.colors),
           instanceCount: segments.x1s.length,
         })
-        self.bumpGeometryVersion()
       },
-      { name: 'DotplotUpload' },
+      { name: 'DotplotGeometryRecompute' },
+    ),
+  )
+
+  // Wire the display's upload lifecycle to the view's shared GPU backend.
+  // When the view creates/discards the backend, start/stop this display's
+  // upload lifecycle against it. The display owns only uploads keyed by
+  // its track index; the view owns the canvas and render lifecycle.
+  addDisposer(
+    self,
+    autorun(
+      function dotplotDisplayBackendBinding() {
+        let view: DotplotViewModel
+        try {
+          view = getContainingView(self) as DotplotViewModel
+        } catch {
+          return
+        }
+        const backend = view.gpuBackend
+        if (backend) {
+          self.startGpuBackendLifecycle(backend)
+        } else {
+          self.stopGpuBackendLifecycle()
+        }
+      },
+      { name: 'DotplotDisplayBackendBinding' },
     ),
   )
 }
