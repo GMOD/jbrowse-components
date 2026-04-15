@@ -1,41 +1,39 @@
 import { autorun } from 'mobx'
 
 /**
- * Lifecycle for GPU backends that hold a single global dataset rather than
- * a per-region cache. Used by HiC (whole-contact-matrix), LD (whole-matrix),
- * and variant-matrix (whole-heatmap) — displays whose data has no natural
- * "displayed region" breakdown.
+ * Describes one identity-diffed upload slot for a global (non-regional)
+ * GPU display. Each slot is independently tracked: when `readData()`
+ * returns a different object reference than last pass, `commitUpload` is
+ * called with the new data.
  *
- * Mirror of `startGpuBackendAutorunLifecycle` for the regional case, with a
- * simpler shape: one upload function, one render function, identity-diff on
- * the single data object. No prune step, since there's nothing to prune.
+ * A plugin with multiple independent uploads (e.g. HiC: contact matrix
+ * bytes plus color ramp) passes one slot per upload. Plugins with a single
+ * upload pass a one-element list.
  */
+export interface GpuGlobalUploadSlot<BackendType, DataType> {
+  readData: () => DataType | undefined
+  commitUpload: (backend: BackendType, data: DataType) => void
+}
+
 export interface StartGpuSingleDataBackendAutorunLifecycleArgs<
   BackendType,
-  GlobalDataType,
   RenderStateType,
 > {
   backend: BackendType
 
   /**
-   * Returns the single global data object. Called inside the autorun; MobX
-   * reads here establish the reactive dependency. Return `undefined` while
-   * the data hasn't arrived yet — the upload and render passes are both
-   * skipped for that iteration.
+   * One or more independent upload slots. Each slot's data is identity-diffed
+   * separately, and `commitUpload` fires only when its own slot's data
+   * reference changes. All slots run inside the same autorun, so they
+   * share one render pass.
    */
-  getGlobalData: () => GlobalDataType | undefined
+  uploadSlots: GpuGlobalUploadSlot<BackendType, unknown>[]
 
   /**
    * Returns the per-frame render state, or `undefined` to skip the render
-   * pass. The upload pass still runs independently.
+   * pass. Upload slots still run independently of render.
    */
   getRenderState: () => RenderStateType | undefined
-
-  /**
-   * Bridges to the backend's plugin-specific upload method. Called only when
-   * the data reference has changed since the last pass.
-   */
-  uploadGlobalData: (backend: BackendType, data: GlobalDataType) => void
 
   /**
    * Issues the draw call(s) for the current render state.
@@ -44,56 +42,71 @@ export interface StartGpuSingleDataBackendAutorunLifecycleArgs<
 
   /**
    * Optional post-pass hook, e.g. to call `model.setCanvasDrawn(true)`.
-   * Receives whether there is currently uploaded data on the GPU.
+   * Receives whether every slot has uploaded data currently on the GPU.
    */
-  onAfterCommit?: (hasUploadedData: boolean) => void
+  onAfterCommit?: (allSlotsHaveData: boolean) => void
 }
 
 export interface GpuSingleDataBackendAutorunLifecycleHandle {
   dispose: () => void
   /**
-   * Imperatively re-issue the last render using the currently cached state.
-   * Intended for non-MobX triggers (tab visibility, DOM scroll, context
-   * restored).
+   * Imperatively re-issue the last render using the currently cached
+   * state. Intended for non-MobX triggers (tab visibility, DOM scroll,
+   * context restored).
    */
   renderNow: () => void
 }
 
+/**
+ * Lifecycle for GPU backends that hold one or more global (non-regional)
+ * datasets rather than a per-region cache. Used by HiC (contact matrix +
+ * color ramp), LD (matrix), variant-matrix (heatmap), etc.
+ *
+ * Mirror of `startGpuBackendAutorunLifecycle` for the non-regional case.
+ * Supports multiple independently identity-diffed upload slots so plugins
+ * like HiC, which upload both a data buffer and a color ramp, can track
+ * each upload separately without re-uploading everything when one changes.
+ */
 export function startGpuSingleDataBackendAutorunLifecycle<
   BackendType,
-  GlobalDataType,
   RenderStateType,
 >({
   backend,
-  getGlobalData,
+  uploadSlots,
   getRenderState,
-  uploadGlobalData,
   renderWithState,
   onAfterCommit,
 }: StartGpuSingleDataBackendAutorunLifecycleArgs<
   BackendType,
-  GlobalDataType,
   RenderStateType
 >): GpuSingleDataBackendAutorunLifecycleHandle {
-  let lastUploadedData: GlobalDataType | undefined
+  const lastUploadedPerSlot: unknown[] = uploadSlots.map(() => undefined)
   let lastRenderState: RenderStateType | undefined
+  let allSlotsHaveData = false
 
   const disposeAutorun = autorun(() => {
-    const data = getGlobalData()
-
-    if (data !== undefined && data !== lastUploadedData) {
-      uploadGlobalData(backend, data)
-      lastUploadedData = data
-    } else if (data === undefined) {
-      lastUploadedData = undefined
+    let allPresent = true
+    for (let i = 0; i < uploadSlots.length; i++) {
+      const slot = uploadSlots[i]!
+      const data = slot.readData()
+      if (data === undefined) {
+        allPresent = false
+        lastUploadedPerSlot[i] = undefined
+        continue
+      }
+      if (lastUploadedPerSlot[i] !== data) {
+        slot.commitUpload(backend, data)
+        lastUploadedPerSlot[i] = data
+      }
     }
+    allSlotsHaveData = allPresent
 
     const state = getRenderState()
     lastRenderState = state
-    if (state !== undefined && lastUploadedData !== undefined) {
+    if (state !== undefined && allPresent) {
       renderWithState(backend, state)
     }
-    onAfterCommit?.(lastUploadedData !== undefined)
+    onAfterCommit?.(allPresent)
   })
 
   let isDisposed = false
@@ -104,14 +117,17 @@ export function startGpuSingleDataBackendAutorunLifecycle<
       }
       isDisposed = true
       disposeAutorun()
-      lastUploadedData = undefined
+      for (let i = 0; i < lastUploadedPerSlot.length; i++) {
+        lastUploadedPerSlot[i] = undefined
+      }
       lastRenderState = undefined
+      allSlotsHaveData = false
     },
     renderNow() {
       if (
         isDisposed ||
         lastRenderState === undefined ||
-        lastUploadedData === undefined
+        !allSlotsHaveData
       ) {
         return
       }

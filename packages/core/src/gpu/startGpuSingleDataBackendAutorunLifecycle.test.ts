@@ -3,26 +3,30 @@ import { observable, runInAction } from 'mobx'
 import { startGpuSingleDataBackendAutorunLifecycle } from './startGpuSingleDataBackendAutorunLifecycle.ts'
 
 interface FakeBackend {
-  uploads: number[]
+  uploads: { slot: string; v: number }[]
   renders: number[]
 }
 
-test('uploads once and renders when data and state arrive', () => {
+test('single-slot: uploads once and renders when data and state arrive', () => {
   const backend: FakeBackend = { uploads: [], renders: [] }
   const dataBox = observable.box<{ v: number } | undefined>(undefined)
   const stateBox = observable.box<number | undefined>(undefined)
 
-  const handle = startGpuSingleDataBackendAutorunLifecycle<
-    FakeBackend,
-    { v: number },
-    number
-  >({
-    backend,
-    getGlobalData: () => dataBox.get(),
-    getRenderState: () => stateBox.get(),
-    uploadGlobalData: (b, d) => b.uploads.push(d.v),
-    renderWithState: (b, s) => b.renders.push(s),
-  })
+  const handle = startGpuSingleDataBackendAutorunLifecycle<FakeBackend, number>(
+    {
+      backend,
+      uploadSlots: [
+        {
+          readData: () => dataBox.get(),
+          commitUpload: (b, d) => {
+            b.uploads.push({ slot: 'main', v: (d as { v: number }).v })
+          },
+        },
+      ],
+      getRenderState: () => stateBox.get(),
+      renderWithState: (b, s) => b.renders.push(s),
+    },
+  )
 
   expect(backend.uploads).toEqual([])
   expect(backend.renders).toEqual([])
@@ -30,7 +34,7 @@ test('uploads once and renders when data and state arrive', () => {
   runInAction(() => {
     dataBox.set({ v: 1 })
   })
-  expect(backend.uploads).toEqual([1])
+  expect(backend.uploads).toEqual([{ slot: 'main', v: 1 }])
   expect(backend.renders).toEqual([]) // no state yet
 
   runInAction(() => {
@@ -46,17 +50,20 @@ test('does not re-upload when data reference is stable but state changes', () =>
   const data = { v: 1 }
   const stateBox = observable.box(0)
 
-  const handle = startGpuSingleDataBackendAutorunLifecycle<
-    FakeBackend,
-    { v: number },
-    number
-  >({
-    backend,
-    getGlobalData: () => data,
-    getRenderState: () => stateBox.get(),
-    uploadGlobalData: (b, d) => b.uploads.push(d.v),
-    renderWithState: (b, s) => b.renders.push(s),
-  })
+  const handle = startGpuSingleDataBackendAutorunLifecycle<FakeBackend, number>(
+    {
+      backend,
+      uploadSlots: [
+        {
+          readData: () => data,
+          commitUpload: (b, d) =>
+            b.uploads.push({ slot: 'main', v: (d as { v: number }).v }),
+        },
+      ],
+      getRenderState: () => stateBox.get(),
+      renderWithState: (b, s) => b.renders.push(s),
+    },
+  )
 
   runInAction(() => {
     stateBox.set(1)
@@ -65,55 +72,108 @@ test('does not re-upload when data reference is stable but state changes', () =>
     stateBox.set(2)
   })
 
-  expect(backend.uploads).toEqual([1])
+  expect(backend.uploads).toEqual([{ slot: 'main', v: 1 }])
   expect(backend.renders).toEqual([0, 1, 2])
 
   handle.dispose()
 })
 
-test('re-uploads when data reference changes', () => {
+test('multi-slot: each slot is identity-diffed independently', () => {
   const backend: FakeBackend = { uploads: [], renders: [] }
   const dataBox = observable.box<{ v: number }>({ v: 1 })
+  const rampBox = observable.box<{ c: string }>({ c: 'red' })
 
-  const handle = startGpuSingleDataBackendAutorunLifecycle<
-    FakeBackend,
-    { v: number },
-    number
-  >({
-    backend,
-    getGlobalData: () => dataBox.get(),
-    getRenderState: () => 0,
-    uploadGlobalData: (b, d) => b.uploads.push(d.v),
-    renderWithState: () => {},
-  })
+  const handle = startGpuSingleDataBackendAutorunLifecycle<FakeBackend, number>(
+    {
+      backend,
+      uploadSlots: [
+        {
+          readData: () => dataBox.get(),
+          commitUpload: (b, d) =>
+            b.uploads.push({ slot: 'data', v: (d as { v: number }).v }),
+        },
+        {
+          readData: () => rampBox.get(),
+          commitUpload: b =>
+            b.uploads.push({ slot: 'ramp', v: 0 }),
+        },
+      ],
+      getRenderState: () => 0,
+      renderWithState: (b, s) => b.renders.push(s),
+    },
+  )
 
+  // Both uploaded initially.
+  expect(backend.uploads).toEqual([
+    { slot: 'data', v: 1 },
+    { slot: 'ramp', v: 0 },
+  ])
+
+  // Change only the data — ramp should NOT re-upload.
   runInAction(() => {
     dataBox.set({ v: 2 })
   })
-  runInAction(() => {
-    dataBox.set({ v: 3 })
-  })
+  expect(backend.uploads).toEqual([
+    { slot: 'data', v: 1 },
+    { slot: 'ramp', v: 0 },
+    { slot: 'data', v: 2 },
+  ])
 
-  expect(backend.uploads).toEqual([1, 2, 3])
+  // Change only the ramp — data should NOT re-upload.
+  runInAction(() => {
+    rampBox.set({ c: 'blue' })
+  })
+  expect(backend.uploads).toEqual([
+    { slot: 'data', v: 1 },
+    { slot: 'ramp', v: 0 },
+    { slot: 'data', v: 2 },
+    { slot: 'ramp', v: 0 },
+  ])
 
   handle.dispose()
 })
 
-test('renderNow re-issues render without re-upload, only when data exists', () => {
+test('skips render until every slot has data', () => {
+  const backend: FakeBackend = { uploads: [], renders: [] }
+  const dataBox = observable.box<{ v: number } | undefined>({ v: 1 })
+  const rampBox = observable.box<{ c: string } | undefined>(undefined)
+
+  const handle = startGpuSingleDataBackendAutorunLifecycle<FakeBackend, number>(
+    {
+      backend,
+      uploadSlots: [
+        { readData: () => dataBox.get(), commitUpload: () => {} },
+        { readData: () => rampBox.get(), commitUpload: () => {} },
+      ],
+      getRenderState: () => 42,
+      renderWithState: (b, s) => b.renders.push(s),
+    },
+  )
+
+  expect(backend.renders).toEqual([]) // ramp missing
+
+  runInAction(() => {
+    rampBox.set({ c: 'red' })
+  })
+  expect(backend.renders).toEqual([42])
+
+  handle.dispose()
+})
+
+test('renderNow re-issues render without re-upload, only when all slots have data', () => {
   const backend: FakeBackend = { uploads: [], renders: [] }
   const dataBox = observable.box<{ v: number } | undefined>(undefined)
 
-  const handle = startGpuSingleDataBackendAutorunLifecycle<
-    FakeBackend,
-    { v: number },
-    number
-  >({
-    backend,
-    getGlobalData: () => dataBox.get(),
-    getRenderState: () => 99,
-    uploadGlobalData: (b, d) => b.uploads.push(d.v),
-    renderWithState: (b, s) => b.renders.push(s),
-  })
+  const handle = startGpuSingleDataBackendAutorunLifecycle<FakeBackend, number>(
+    {
+      backend,
+      uploadSlots: [
+        { readData: () => dataBox.get(), commitUpload: () => {} },
+      ],
+      getRenderState: () => 99,
+      renderWithState: (b, s) => b.renders.push(s),
+    },
+  )
 
   handle.renderNow() // no data yet
   expect(backend.renders).toEqual([])
@@ -132,17 +192,20 @@ test('dispose stops the autorun', () => {
   const backend: FakeBackend = { uploads: [], renders: [] }
   const dataBox = observable.box<{ v: number } | undefined>(undefined)
 
-  const handle = startGpuSingleDataBackendAutorunLifecycle<
-    FakeBackend,
-    { v: number },
-    number
-  >({
-    backend,
-    getGlobalData: () => dataBox.get(),
-    getRenderState: () => 0,
-    uploadGlobalData: (b, d) => b.uploads.push(d.v),
-    renderWithState: (b, s) => b.renders.push(s),
-  })
+  const handle = startGpuSingleDataBackendAutorunLifecycle<FakeBackend, number>(
+    {
+      backend,
+      uploadSlots: [
+        {
+          readData: () => dataBox.get(),
+          commitUpload: (b, d) =>
+            b.uploads.push({ slot: 'main', v: (d as { v: number }).v }),
+        },
+      ],
+      getRenderState: () => 0,
+      renderWithState: () => {},
+    },
+  )
 
   handle.dispose()
   runInAction(() => {

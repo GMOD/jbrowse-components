@@ -1,13 +1,20 @@
 import { lazy } from 'react'
 
-import { clamp } from '@jbrowse/core/util'
+import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
+import { startGpuSingleDataBackendAutorunLifecycle } from '@jbrowse/core/gpu/startGpuSingleDataBackendAutorunLifecycle'
+import { clamp, getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
+import type { MatrixCellData } from './components/computeVariantMatrixCells.ts'
+import type { VariantMatrixBackend } from './components/variantMatrixBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 const VariantMatrixComponent = lazy(
   () => import('./components/VariantMatrixComponent.tsx'),
@@ -20,6 +27,7 @@ export default function stateModelFactory(
     .compose(
       'LinearVariantMatrixDisplay',
       MultiSampleVariantBaseModelF(configSchema),
+      GpuBackendLifecycleSlotMixin(),
       types.model({
         type: types.literal('LinearVariantMatrixDisplay'),
         lineZoneHeight: types.optional(types.number, 20),
@@ -41,6 +49,28 @@ export default function stateModelFactory(
       renderProps() {
         return { notReady: true }
       },
+      /**
+       * #getter
+       * Per-frame render state for the GPU backend — the autorun reads this
+       * every time any tracked observable (cellData, scrollTop, rowHeight,
+       * canvas width, …) changes.
+       */
+      get renderState() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const cellData = self.cellData as MatrixCellData | undefined
+        if (!cellData) {
+          return undefined
+        }
+        return {
+          canvasWidth: Math.round(
+            view.dynamicBlocks.totalWidthPxWithoutBorders,
+          ),
+          canvasHeight: self.availableHeight,
+          rowHeight: self.rowHeight,
+          scrollTop: self.scrollTop,
+          numFeatures: cellData.numFeatures,
+        }
+      },
       async renderSvg(opts?: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
         return renderSvg(self, opts)
@@ -50,6 +80,36 @@ export default function stateModelFactory(
       setLineZoneHeight(n: number) {
         self.lineZoneHeight = clamp(n, 10, 1000)
         return self.lineZoneHeight
+      },
+      /**
+       * #action
+       */
+      startGpuBackendLifecycle(backend: VariantMatrixBackend) {
+        self.assignGpuBackendLifecycleHandle(
+          startGpuSingleDataBackendAutorunLifecycle<
+            VariantMatrixBackend,
+            NonNullable<typeof self.renderState>
+          >({
+            backend,
+            uploadSlots: [
+              {
+                readData: () => self.cellData as MatrixCellData | undefined,
+                commitUpload: (b, data) => {
+                  b.uploadCellData(data as MatrixCellData)
+                },
+              },
+            ],
+            getRenderState: () => self.renderState,
+            renderWithState: (b, state) => {
+              b.render(state)
+            },
+            onAfterCommit: ready => {
+              if (ready) {
+                self.setCanvasDrawn(true)
+              }
+            },
+          }),
+        )
       },
     }))
     .postProcessSnapshot(snap => {

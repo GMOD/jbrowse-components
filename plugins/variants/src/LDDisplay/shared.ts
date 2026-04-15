@@ -1,8 +1,10 @@
 import type React from 'react'
 
 import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
+import { startGpuSingleDataBackendAutorunLifecycle } from '@jbrowse/core/gpu/startGpuSingleDataBackendAutorunLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { getSession } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   ConfigOverrideMixin,
@@ -11,16 +13,19 @@ import {
   migrateOldSettingSnapshots,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import { generateLDColorRamp } from './components/LDRenderer.ts'
 import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
 import type { LDDataResult } from '../RenderLDDataRPC/types.ts'
 import type { FilterStats, LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
+import type { LDBackend } from './components/ldBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LegendItem,
+  LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
 /**
@@ -40,6 +45,7 @@ export default function sharedModelFactory(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       ConfigOverrideMixin(),
+      GpuBackendLifecycleSlotMixin(),
       types.model({
         configuration: ConfigurationReference(configSchema),
       }),
@@ -304,6 +310,82 @@ export default function sharedModelFactory(
        */
       get ldCanvasHeight() {
         return Math.max(50, self.height - self.lineZoneHeight)
+      },
+      /**
+       * #getter
+       * Per-frame render state for the GPU backend. Read by the upload/render
+       * autorun — every change to any tracked observable (view.bpPerPx,
+       * view.offsetPx, model.fitToHeight, rpcData contents, …) re-fires it.
+       */
+      get renderState() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const data = self.rpcData
+        if (!data) {
+          return undefined
+        }
+        const scale =
+          self.lastDrawnBpPerPx !== undefined
+            ? self.lastDrawnBpPerPx / view.bpPerPx
+            : 1
+        const offsetX =
+          self.lastDrawnOffsetPx !== undefined
+            ? self.lastDrawnOffsetPx * scale - view.offsetPx
+            : 0
+        const canvasWidth = Math.round(
+          view.dynamicBlocks.totalWidthPxWithoutBorders,
+        )
+        return {
+          yScalar: data.yScalar,
+          canvasWidth,
+          canvasHeight: self.fitToHeight ? this.ldCanvasHeight : canvasWidth / 2,
+          signedLD: data.signedLD,
+          viewScale: scale,
+          viewOffsetX: offsetX,
+          uniformW: data.uniformW,
+        }
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Starts the upload/render autorun. Data + color ramp both derive from
+       * the same rpcData object, so a single identity-diffed slot handles
+       * both uploads.
+       */
+      startGpuBackendLifecycle(backend: LDBackend) {
+        self.assignGpuBackendLifecycleHandle(
+          startGpuSingleDataBackendAutorunLifecycle<
+            LDBackend,
+            NonNullable<typeof self.renderState>
+          >({
+            backend,
+            uploadSlots: [
+              {
+                readData: () => self.rpcData,
+                commitUpload: (b, data) => {
+                  const d = data as LDDataResult
+                  b.uploadData({
+                    ldValues: d.ldValues,
+                    boundaries: d.boundaries,
+                    numCells: d.numCells,
+                    positions: d.positions,
+                    cellSizes: d.cellSizes,
+                  })
+                  b.uploadColorRamp(generateLDColorRamp(d.metric, d.signedLD))
+                },
+              },
+            ],
+            getRenderState: () => self.renderState,
+            renderWithState: (b, state) => {
+              b.render(state)
+            },
+            onAfterCommit: ready => {
+              if (ready) {
+                self.setCanvasDrawn(true)
+              }
+            },
+          }),
+        )
       },
     }))
     .views(self => ({

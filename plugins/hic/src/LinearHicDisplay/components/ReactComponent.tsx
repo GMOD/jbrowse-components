@@ -1,11 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useEffectEvent,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
 import { CanvasDisplayWrapper, ErrorOverlay } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
@@ -16,11 +9,10 @@ import {
   useTabVisibilityRerender,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import HicColorLegend from './HicColorLegend.tsx'
-import { HicRenderer, generateColorRamp } from './HicRenderer.ts'
+import { HicRenderer } from './HicRenderer.ts'
 
 import type { HicFlatbushItem } from '../../RenderHicDataRPC/types.ts'
 import type { LinearHicDisplayModel } from '../model.ts'
@@ -122,39 +114,20 @@ const HicCanvas = observer(function HicCanvas({
     y: number
   }>()
 
-  const { error, ready, rendererRef, retry } = useGpuRenderer(
-    canvasRef,
-    HicRenderer,
-  )
-
-  const renderNow = useEffectEvent(() => {
-    const renderer = rendererRef.current
-    const data = model.rpcData
-    if (!renderer || !data) {
-      return
-    }
-    const w = Math.round(view.dynamicBlocks.totalWidthPx)
-    const scale =
-      model.lastDrawnBpPerPx !== undefined
-        ? model.lastDrawnBpPerPx / view.bpPerPx
-        : 1
-    const offsetX =
-      model.lastDrawnOffsetPx !== undefined
-        ? model.lastDrawnOffsetPx * scale - view.offsetPx
-        : 0
-    renderer.render({
-      binWidth: data.binWidth,
-      yScalar: data.yScalar,
-      canvasWidth: w,
-      canvasHeight: model.height,
-      maxScore: data.maxScore,
-      useLogScale: model.useLogScale,
-      viewScale: scale,
-      viewOffsetX: offsetX,
-    })
+  // Model owns the upload/render autorun — see startGpuBackendLifecycle on
+  // the LinearHicDisplay model. The rpcData and colorScheme uploads are
+  // identity-diffed independently so a colorScheme change doesn't re-upload
+  // the contact matrix.
+  const { error, retry } = useGpuRenderer(canvasRef, HicRenderer, {
+    onReady: backend => {
+      model.startGpuBackendLifecycle(backend)
+    },
+    onDispose: () => {
+      model.stopGpuBackendLifecycle()
+    },
   })
 
-  // Compute view transform for smooth zoom/scroll
+  // View transform for hit-test math — mirrors renderState on the model.
   const viewScale =
     lastDrawnBpPerPx !== undefined ? lastDrawnBpPerPx / view.bpPerPx : 1
   const viewOffsetX =
@@ -167,50 +140,9 @@ const HicCanvas = observer(function HicCanvas({
     [flatbush],
   )
 
-  useEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !ready) {
-      return
-    }
-
-    let lastRpcData: unknown = null
-    let lastColorScheme: string | undefined
-
-    return autorun(() => {
-      const data = model.rpcData
-      if (!data) {
-        return
-      }
-
-      if (lastRpcData !== data) {
-        lastRpcData = data
-        renderer.uploadData({
-          positions: data.positions,
-          counts: data.counts,
-          numContacts: data.numContacts,
-        })
-      }
-
-      if (lastColorScheme !== model.colorScheme) {
-        lastColorScheme = model.colorScheme
-        renderer.uploadColorRamp(generateColorRamp(model.colorScheme))
-      }
-
-      // SYNC across all hook-driven GPU displays (wiggle, multi-wiggle,
-      // variants, alignments, HiC, LD): dataVersion is a counter incremented
-      // by setLoadedRegionForRegion() after each region's data is committed.
-      // Reading it here creates a MobX dependency so this autorun re-fires at
-      // that point, ensuring renderNow() runs with fully-committed data.
-      // See MultiRegionDisplayMixin.withFetchLifecycle.
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _dv = model.dataVersion
-
-      renderNow()
-      model.setCanvasDrawn(true)
-    })
-  }, [model, view, ready, rendererRef])
-
-  useTabVisibilityRerender(renderNow)
+  useTabVisibilityRerender(() => {
+    model.renderNow()
+  })
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {

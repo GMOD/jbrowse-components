@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { CanvasDisplayWrapper, ErrorOverlay } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
@@ -8,11 +8,10 @@ import {
   useGpuRenderer,
   useTabVisibilityRerender,
 } from '@jbrowse/core/util'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import LDColorLegend from './LDColorLegend.tsx'
-import { LDRenderer, generateLDColorRamp } from './LDRenderer.ts'
+import { LDRenderer } from './LDRenderer.ts'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantLabels from './VariantLabels.tsx'
 import Wrapper from './Wrapper.tsx'
@@ -296,10 +295,14 @@ const LDCanvas = observer(function LDCanvas({
     y: number
   }>()
 
-  const { error, ready, rendererRef, retry } = useGpuRenderer(
-    canvasRef,
-    LDRenderer,
-  )
+  const { error, retry } = useGpuRenderer(canvasRef, LDRenderer, {
+    onReady: backend => {
+      model.startGpuBackendLifecycle(backend)
+    },
+    onDispose: () => {
+      model.stopGpuBackendLifecycle()
+    },
+  })
 
   const region = view.dynamicBlocks.contentBlocks[0]
   const bpPerPx = view.bpPerPx
@@ -341,81 +344,9 @@ const LDCanvas = observer(function LDCanvas({
     }
   }, [genomicX1, genomicX2, model.showVerticalGuides, view, viewOffsetX])
 
-  const renderNow = useEffectEvent(() => {
-    const renderer = rendererRef.current
-    const data = model.rpcData
-    if (!renderer || !data) {
-      return
-    }
-    const w = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
-    const scale =
-      model.lastDrawnBpPerPx !== undefined
-        ? model.lastDrawnBpPerPx / view.bpPerPx
-        : 1
-    const offsetX =
-      model.lastDrawnOffsetPx !== undefined
-        ? model.lastDrawnOffsetPx * scale - view.offsetPx
-        : 0
-    renderer.render({
-      yScalar: data.yScalar,
-      canvasWidth: w,
-      canvasHeight: model.fitToHeight ? model.ldCanvasHeight : w / 2,
-      signedLD: data.signedLD,
-      viewScale: scale,
-      viewOffsetX: offsetX,
-      uniformW: data.uniformW,
-    })
+  useTabVisibilityRerender(() => {
+    model.renderNow()
   })
-
-  useEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !ready) {
-      return
-    }
-
-    let lastRpcData: unknown = null
-    let lastColorKey: string | undefined
-
-    return autorun(() => {
-      const data = model.rpcData
-      if (!data) {
-        return
-      }
-
-      if (lastRpcData !== data) {
-        lastRpcData = data
-        renderer.uploadData({
-          ldValues: data.ldValues,
-          boundaries: data.boundaries,
-          numCells: data.numCells,
-          positions: data.positions,
-          cellSizes: data.cellSizes,
-        })
-      }
-
-      const colorKey = `${data.metric},${data.signedLD}`
-      if (lastColorKey !== colorKey) {
-        lastColorKey = colorKey
-        renderer.uploadColorRamp(
-          generateLDColorRamp(data.metric, data.signedLD),
-        )
-      }
-
-      // SYNC across all hook-driven GPU displays (wiggle, multi-wiggle,
-      // variants, alignments, HiC, LD): dataVersion is a counter incremented
-      // by setLoadedRegionForRegion() after each region's data is committed.
-      // Reading it here creates a MobX dependency so this autorun re-fires at
-      // that point, ensuring renderNow() runs with fully-committed data.
-      // See MultiRegionDisplayMixin.withFetchLifecycle.
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _dv = model.dataVersion
-
-      renderNow()
-      model.setCanvasDrawn(true)
-    })
-  }, [model, view, ready, rendererRef])
-
-  useTabVisibilityRerender(renderNow)
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {

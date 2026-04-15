@@ -1,4 +1,4 @@
-import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 
 import { ErrorBar, ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import {
@@ -8,7 +8,6 @@ import {
   useTabVisibilityRerender,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
@@ -29,6 +28,11 @@ export interface VariantMatrixDisplayModel extends VariantDisplayModelBase {
   cellData: MatrixCellData | undefined
   canvasDrawn: boolean
   setCanvasDrawn: (flag: boolean) => void
+  startGpuBackendLifecycle: (
+    backend: import('./variantMatrixBackendTypes.ts').VariantMatrixBackend,
+  ) => void
+  stopGpuBackendLifecycle: () => void
+  renderNow: () => void
 }
 
 const VariantMatrixComponent = observer(function VariantMatrixComponent({
@@ -43,10 +47,14 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const { classes } = useStyles()
 
-  const { error, ready, rendererRef, retry } = useGpuRenderer(
-    canvasRef,
-    VariantMatrixRenderer,
-  )
+  const { error, retry } = useGpuRenderer(canvasRef, VariantMatrixRenderer, {
+    onReady: backend => {
+      model.startGpuBackendLifecycle(backend)
+    },
+    onDispose: () => {
+      model.stopGpuBackendLifecycle()
+    },
+  })
 
   const view = getContainingView(model) as LGV
 
@@ -63,55 +71,9 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
       setRowHeight: model.setRowHeight,
     })
 
-  const renderNow = useEffectEvent(() => {
-    const renderer = rendererRef.current
-    const cellData = model.cellData
-    if (!renderer || !view.initialized || !cellData) {
-      return
-    }
-    renderer.render({
-      canvasWidth: Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders),
-      canvasHeight: model.availableHeight,
-      rowHeight: model.rowHeight,
-      scrollTop: model.scrollTop,
-      numFeatures: cellData.numFeatures,
-    })
+  useTabVisibilityRerender(() => {
+    model.renderNow()
   })
-
-  useEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !ready) {
-      return
-    }
-
-    let lastCellData: MatrixCellData | null = null
-    return autorun(() => {
-      const cellData = model.cellData
-      if (!cellData) {
-        lastCellData = null
-        return
-      }
-
-      if (lastCellData !== cellData) {
-        lastCellData = cellData
-        renderer.uploadCellData(cellData)
-      }
-
-      // SYNC across all hook-driven GPU displays (wiggle, multi-wiggle,
-      // variants, alignments, HiC, LD): dataVersion is a counter incremented
-      // by setLoadedRegionForRegion() after each region's data is committed.
-      // Reading it here creates a MobX dependency so this autorun re-fires at
-      // that point, ensuring renderNow() runs with fully-committed data.
-      // See MultiRegionDisplayMixin.withFetchLifecycle.
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _dv = model.dataVersion
-
-      renderNow()
-      model.setCanvasDrawn(true)
-    })
-  }, [model, view, ready, rendererRef])
-
-  useTabVisibilityRerender(renderNow)
 
   function getFeatureUnderMouse(
     rect: DOMRect,

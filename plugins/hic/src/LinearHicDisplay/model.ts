@@ -1,6 +1,9 @@
 import type React from 'react'
 
 import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
+import { startGpuSingleDataBackendAutorunLifecycle } from '@jbrowse/core/gpu/startGpuSingleDataBackendAutorunLifecycle'
+import { getContainingView } from '@jbrowse/core/util'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
@@ -9,15 +12,19 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import { generateColorRamp } from './components/HicRenderer.ts'
+
 import type {
   HicDataResult,
   HicFlatbushItem,
 } from '../RenderHicDataRPC/types.ts'
+import type { HicBackend } from './components/hicBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LegendItem,
+  LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
 /**
@@ -41,6 +48,7 @@ export default function stateModelFactory(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       ConfigOverrideMixin(),
+      GpuBackendLifecycleSlotMixin(),
       types.model({
         type: types.literal('LinearHicDisplay'),
         configuration: ConfigurationReference(configSchema),
@@ -135,6 +143,37 @@ export default function stateModelFactory(
 
       /**
        * #method
+       * Computed per-frame render state for the GPU backend. Read by the
+       * autorun lifecycle on every change to any tracked observable.
+       */
+      get renderState() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const data = self.rpcData
+        if (!data) {
+          return undefined
+        }
+        const scale =
+          self.lastDrawnBpPerPx !== undefined
+            ? self.lastDrawnBpPerPx / view.bpPerPx
+            : 1
+        const offsetX =
+          self.lastDrawnOffsetPx !== undefined
+            ? self.lastDrawnOffsetPx * scale - view.offsetPx
+            : 0
+        return {
+          binWidth: data.binWidth,
+          yScalar: data.yScalar,
+          canvasWidth: Math.round(view.dynamicBlocks.totalWidthPx),
+          canvasHeight: self.height,
+          maxScore: data.maxScore,
+          useLogScale: self.useLogScale,
+          viewScale: scale,
+          viewOffsetX: offsetX,
+        }
+      },
+
+      /**
+       * #method
        * Returns legend items for the Hi-C color scale
        */
       legendItems(): LegendItem[] {
@@ -166,6 +205,51 @@ export default function stateModelFactory(
        */
       setRpcData(data: HicDataResult | null) {
         self.rpcData = data
+      },
+      /**
+       * #action
+       * Called by the React component when useGpuRenderer's factory resolves.
+       * The autorun tracks self.rpcData, self.colorScheme, and self.renderState
+       * via cached MST getters — rpcData and colorScheme are identity-diffed
+       * independently so a colorScheme change doesn't re-upload contact data.
+       */
+      startGpuBackendLifecycle(backend: HicBackend) {
+        self.assignGpuBackendLifecycleHandle(
+          startGpuSingleDataBackendAutorunLifecycle<
+            HicBackend,
+            NonNullable<typeof self.renderState>
+          >({
+            backend,
+            uploadSlots: [
+              {
+                readData: () => self.rpcData,
+                commitUpload: (b, data) => {
+                  const d = data as HicDataResult
+                  b.uploadData({
+                    positions: d.positions,
+                    counts: d.counts,
+                    numContacts: d.numContacts,
+                  })
+                },
+              },
+              {
+                readData: () => self.colorScheme ?? 'juicebox',
+                commitUpload: (b, scheme) => {
+                  b.uploadColorRamp(generateColorRamp(scheme as string))
+                },
+              },
+            ],
+            getRenderState: () => self.renderState,
+            renderWithState: (b, state) => {
+              b.render(state)
+            },
+            onAfterCommit: ready => {
+              if (ready) {
+                self.setCanvasDrawn(true)
+              }
+            },
+          }),
+        )
       },
       /**
        * #action
