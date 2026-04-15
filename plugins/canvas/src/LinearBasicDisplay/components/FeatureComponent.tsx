@@ -1,18 +1,12 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import {
   getContainingView,
   useDebounce,
-  useGpuRenderer,
-  useTabVisibilityRerender,
+  useGpuModelLifecycle,
 } from '@jbrowse/core/util'
+import { autorun } from 'mobx'
 import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
@@ -27,6 +21,7 @@ import {
 } from './useOverlayElements.tsx'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 
+import type { CanvasFeatureBackend } from './canvasFeatureBackendTypes.ts'
 import type { FlatbushRegionCache, VisibleRegion } from './hitTesting.ts'
 import type {
   FeatureDataResult,
@@ -49,18 +44,23 @@ interface LinearBasicDisplayModel {
   showLabels: boolean
   selectedFeatureId: string | undefined
   featureIdUnderMouse: string | null
+  subfeatureIdUnderMouse: string | null
+  hoveredFeature: FlatbushItem | null
+  hoveredSubfeature: SubfeatureInfo | null
+  scrollTop: number
   effectiveShowDescriptions: boolean
   regionTooLarge: boolean
   regionTooLargeReason: string
   featureDensityStats?: { bytes?: number }
   statusMessage: string | undefined
-  scrollTop: number
   setScrollTop: (n: number) => void
   setFeatureDensityStatsLimit: (s?: { bytes?: number }) => void
   reload: () => void
   expandToFit: () => void
   collapseFromExpand: () => void
   setFeatureIdUnderMouse: (featureId: string | null) => void
+  setSubfeatureIdUnderMouse: (featureId: string | null) => void
+  clearHover: () => void
   mouseoverExtraInformation: string | undefined
   setMouseoverExtraInformation: (info: string | undefined) => void
   selectFeatureById: (
@@ -77,9 +77,7 @@ interface LinearBasicDisplayModel {
   getFeatureById: (featureId: string) => FlatbushItem | undefined
   setCanvasDrawn: (val: boolean) => void
   clearSelection: () => void
-  startGpuBackendLifecycle: (
-    backend: import('./canvasFeatureBackendTypes.ts').CanvasFeatureBackend,
-  ) => void
+  startGpuBackendLifecycle: (backend: CanvasFeatureBackend) => void
   stopGpuBackendLifecycle: () => void
   renderNow: () => void
 }
@@ -137,15 +135,8 @@ const ContextMenu = observer(function ContextMenu({
 })
 
 const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [hoveredFeature, setHoveredFeature] = useState<FlatbushItem | null>(
-    null,
-  )
-  const [hoveredSubfeature, setHoveredSubfeature] =
-    useState<SubfeatureInfo | null>(null)
   // false positive: omitting <[number,number]> widens to number[] — known tuple issue
   // https://github.com/typescript-eslint/typescript-eslint/issues/9529
-
   const [clientXY, setClientXY] = useState<[number, number]>([0, 0])
   const [contextMenuCoord, setContextMenuCoord] = useState<
     [number, number] | undefined
@@ -160,13 +151,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
   const width = view.initialized ? view.trackWidthPx : undefined
   const height = model.height
-
-  const clearHoverState = useCallback(() => {
-    model.setMouseoverExtraInformation(undefined)
-    setHoveredFeature(null)
-    setHoveredSubfeature(null)
-    model.setFeatureIdUnderMouse(null)
-  }, [model])
 
   const openContextMenu = useCallback(
     (
@@ -187,42 +171,28 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   // base canvas display model. scrollTop lives on the model (via
   // TrackHeightMixin); the scroll handler below writes DOM scrollTop into
   // the model so the autorun picks it up as part of `renderState`.
-  const { error: gpuError, retry } = useGpuRenderer(
+  const {
     canvasRef,
-    CanvasFeatureRenderer,
-    {
-      onReady: backend => {
-        model.startGpuBackendLifecycle(backend)
-      },
-      onDispose: () => {
-        model.stopGpuBackendLifecycle()
-      },
-    },
-  )
+    error: gpuError,
+    retry,
+  } = useGpuModelLifecycle(CanvasFeatureRenderer, model)
 
   const error = gpuError || modelError
 
-  // Keep the flatbush hit-testing cache in sync with rpcDataMap, and reset
-  // hover + DOM scroll when data arrives. These are DOM/React-side concerns
-  // independent of the GPU upload pipeline.
-  useEffect(() => {
-    for (const key of flatbushCacheMapRef.current.keys()) {
-      if (!rpcDataMap.has(key)) {
-        flatbushCacheMapRef.current.delete(key)
-      }
-    }
-    if (rpcDataMap.size === 0) {
-      flatbushCacheMapRef.current.clear()
-    }
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = 0
-    }
-    clearHoverState()
-  }, [rpcDataMap, clearHoverState])
-
-  useTabVisibilityRerender(() => {
-    model.renderNow()
-  })
+  // Sync model.scrollTop → DOM when it changes programmatically (e.g. on
+  // dataset reset via clearDisplaySpecificData). DOM → model sync lives in
+  // the scroll listener below.
+  useEffect(
+    () =>
+      autorun(() => {
+        const target = model.scrollTop
+        const container = scrollContainerRef.current
+        if (container && container.scrollTop !== target) {
+          container.scrollTop = target
+        }
+      }),
+    [model],
+  )
 
   useEffect(() => {
     const container = scrollContainerRef.current
@@ -269,8 +239,14 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     const mouseY = e.clientY - rect.top
     const scrollTop = scrollContainerRef.current?.scrollTop ?? 0
     const yPos = mouseY + scrollTop
+    const cache = flatbushCacheMapRef.current
+    for (const key of cache.keys()) {
+      if (!model.rpcDataMap.has(key)) {
+        cache.delete(key)
+      }
+    }
     return performMultiRegionHitDetection(
-      flatbushCacheMapRef.current,
+      cache,
       model.rpcDataMap,
       view.visibleRegions,
       mouseX,
@@ -285,7 +261,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     }
     setClientXY([e.clientX, e.clientY])
     if (model.rpcDataMap.size === 0) {
-      clearHoverState()
+      model.clearHover()
       return
     }
 
@@ -296,15 +272,14 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         model.setMouseoverExtraInformation(
           result.subfeature.tooltip ?? result.subfeature.type,
         )
-        setHoveredSubfeature(result.subfeature)
+        model.setSubfeatureIdUnderMouse(result.subfeature.featureId)
       } else {
         model.setMouseoverExtraInformation(result.feature.tooltip)
-        setHoveredSubfeature(null)
+        model.setSubfeatureIdUnderMouse(null)
       }
-      setHoveredFeature(result.feature)
       model.setFeatureIdUnderMouse(result.feature.featureId)
     } else {
-      clearHoverState()
+      model.clearHover()
     }
   }
 
@@ -337,7 +312,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
   const handleMouseLeave = () => {
     if (!contextMenuCoord) {
-      clearHoverState()
+      model.clearHover()
     }
   }
 
@@ -365,9 +340,8 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   const onLabelMouseOver = useCallback(
     (item: FlatbushItem, e: React.MouseEvent) => {
       setClientXY([e.clientX, e.clientY])
-      setHoveredFeature(item)
-      setHoveredSubfeature(null)
       model.setFeatureIdUnderMouse(item.featureId)
+      model.setSubfeatureIdUnderMouse(null)
       model.setMouseoverExtraInformation(item.tooltip)
     },
     [model],
@@ -398,10 +372,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     view.initialized,
     width,
     bpPerPx,
-    hoveredFeature,
-    hoveredSubfeature,
-    model.selectedFeatureId,
-    model.effectiveShowDescriptions,
+    model,
   )
 
   if (error) {
@@ -460,7 +431,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
               height,
               position: 'sticky',
               top: 0,
-              cursor: hoveredFeature ? 'pointer' : 'default',
+              cursor: model.hoveredFeature ? 'pointer' : 'default',
             }}
           />
 
@@ -498,7 +469,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
           onClose={() => {
             setContextMenuCoord(undefined)
             model.setContextMenuInfo(undefined)
-            clearHoverState()
+            model.clearHover()
           }}
         />
       ) : null}

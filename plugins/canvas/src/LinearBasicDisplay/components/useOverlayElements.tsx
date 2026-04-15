@@ -26,6 +26,13 @@ interface OverlayModel {
   ) => void
 }
 
+interface HighlightModel {
+  effectiveShowDescriptions: boolean
+  selectedFeatureId: string | undefined
+  hoveredFeature: FlatbushItem | null
+  hoveredSubfeature: SubfeatureInfo | null
+}
+
 export function useFloatingLabels(
   rpcDataMap: Map<number, FeatureDataResult>,
   visibleRegions: VisibleRegion[],
@@ -281,11 +288,14 @@ export function useHighlightOverlays(
   viewInitialized: boolean,
   width: number | undefined,
   bpPerPx: number,
-  hoveredFeature: FlatbushItem | null,
-  hoveredSubfeature: SubfeatureInfo | null,
-  selectedFeatureId: string | undefined,
-  effectiveShowDescriptions: boolean,
+  model: HighlightModel,
 ) {
+  const {
+    hoveredFeature,
+    hoveredSubfeature,
+    selectedFeatureId,
+    effectiveShowDescriptions,
+  } = model
   return useMemo(() => {
     if (!viewInitialized || !width || !bpPerPx || visibleRegions.length === 0) {
       return null

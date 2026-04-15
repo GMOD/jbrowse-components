@@ -7,8 +7,6 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
-import { startGpuBackendAutorunLifecycle } from '@jbrowse/core/gpu/startGpuBackendAutorunLifecycle'
 import {
   SimpleFeature,
   getContainingTrack,
@@ -31,7 +29,7 @@ import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { autorun, reaction, untracked } from 'mobx'
+import { autorun, untracked } from 'mobx'
 
 import { computeAndAssignLayout, relayoutAllRegions } from './layout.ts'
 
@@ -124,7 +122,6 @@ export default function baseStateModelFactory(
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
         ConfigOverrideMixin(),
-        GpuBackendLifecycleSlotMixin(),
         types.model({
           configuration: ConfigurationReference(configSchema),
         }),
@@ -189,6 +186,7 @@ export default function baseStateModelFactory(
         maxY: 0,
         canvasDrawn: false,
         featureIdUnderMouse: null as string | null,
+        subfeatureIdUnderMouse: null as string | null,
         mouseoverExtraInformation: undefined as string | undefined,
         contextMenuInfo: undefined as
           | { item: FlatbushItem; regionNumber: number }
@@ -291,6 +289,34 @@ export default function baseStateModelFactory(
             }
           }
           return undefined
+        },
+
+        get hoveredFeature() {
+          const id = self.featureIdUnderMouse
+          if (id) {
+            for (const data of self.rpcDataMap.values()) {
+              for (const f of data.flatbushItems) {
+                if (f.featureId === id) {
+                  return f
+                }
+              }
+            }
+          }
+          return null
+        },
+
+        get hoveredSubfeature() {
+          const id = self.subfeatureIdUnderMouse
+          if (id) {
+            for (const data of self.rpcDataMap.values()) {
+              for (const s of data.subfeatureInfos) {
+                if (s.featureId === id) {
+                  return s
+                }
+              }
+            }
+          }
+          return null
         },
 
         get maxFeatureDensity() {
@@ -419,7 +445,6 @@ export default function baseStateModelFactory(
             }
           }
           self.maxY = globalMaxY
-          self.setScrollTop(0)
           if (self.autoHeight) {
             self.setHeight(Math.min(Math.max(globalMaxY, 50), self.maxHeight))
           }
@@ -439,35 +464,29 @@ export default function baseStateModelFactory(
           self.rpcDataMap = new Map()
           self.layoutBpPerPxMap = new Map()
           self.setRegionTooLarge(false)
+          self.setScrollTop(0)
         },
 
         startGpuBackendLifecycle(backend: CanvasFeatureBackend) {
-          self.assignGpuBackendLifecycleHandle(
-            startGpuBackendAutorunLifecycle<
-              CanvasFeatureBackend,
-              FeatureDataResult,
-              { scrollY: number; canvasWidth: number; canvasHeight: number }
-            >({
-              backend,
-              getDataByRegionNumber: () => self.rpcDataMap,
-              getRenderBlocks: () => self.renderBlocks,
-              getRenderState: () => self.renderState,
-              uploadOneRegion: (b, regionNumber, data) => {
-                b.uploadRegion(regionNumber, data)
-              },
-              pruneRegionsNotIn: (b, activeRegionNumbers) => {
-                b.pruneRegions(activeRegionNumbers)
-              },
-              renderAllBlocks: (b, blocks, state) => {
-                b.renderBlocks(blocks, state)
-              },
-              onAfterCommit: hadUploads => {
-                if (hadUploads) {
-                  self.setCanvasDrawn(true)
-                }
-              },
-            }),
-          )
+          self.startMultiRegionGpuLifecycle<
+            CanvasFeatureBackend,
+            FeatureDataResult,
+            { scrollY: number; canvasWidth: number; canvasHeight: number }
+          >({
+            backend,
+            getDataByRegionNumber: () => self.rpcDataMap,
+            getRenderBlocks: () => self.renderBlocks,
+            getRenderState: () => self.renderState,
+            uploadOneRegion: (b, regionNumber, data) => {
+              b.uploadRegion(regionNumber, data)
+            },
+            pruneRegionsNotIn: (b, activeRegionNumbers) => {
+              b.pruneRegions(activeRegionNumbers)
+            },
+            renderAllBlocks: (b, blocks, state) => {
+              b.renderBlocks(blocks, state)
+            },
+          })
         },
 
         setFeatureDensityStatsLimit() {
@@ -477,6 +496,16 @@ export default function baseStateModelFactory(
 
         setFeatureIdUnderMouse(featureId: string | null) {
           self.featureIdUnderMouse = featureId
+        },
+
+        setSubfeatureIdUnderMouse(featureId: string | null) {
+          self.subfeatureIdUnderMouse = featureId
+        },
+
+        clearHover() {
+          self.featureIdUnderMouse = null
+          self.subfeatureIdUnderMouse = null
+          self.mouseoverExtraInformation = undefined
         },
 
         setMouseoverExtraInformation(info: string | undefined) {
@@ -742,7 +771,10 @@ export default function baseStateModelFactory(
         }
       })
       .actions(self => ({
-        relayoutForCurrentZoom() {
+        relayoutForCurrentZoom(
+          showLabels = self.showLabels,
+          effectiveShowDescriptions = self.effectiveShowDescriptions,
+        ) {
           const view = getContainingView(self) as LGV
           if (!view.initialized || self.rpcDataMap.size === 0) {
             return
@@ -755,8 +787,8 @@ export default function baseStateModelFactory(
             dataMap,
             view.bpPerPx,
             self.regionKeys,
-            self.showLabels,
-            self.effectiveShowDescriptions,
+            showLabels,
+            effectiveShowDescriptions,
           )
           self.setRpcDataMap(dataMap)
         },
@@ -773,42 +805,28 @@ export default function baseStateModelFactory(
               }),
             )
 
-            addDisposer(
-              self,
-              reaction(
-                () => {
-                  const view = getContainingView(self) as LGV
-                  return view.initialized ? view.bpPerPx : undefined
-                },
-                () => {
-                  if (self.rpcDataMap.size > 0) {
-                    self.relayoutForCurrentZoom()
-                  }
-                },
-                {
-                  name: 'ZoomRelayout',
-                  delay: 50,
-                  fireImmediately: false,
-                },
-              ),
-            )
-
+            let prevRelayoutKey: string | undefined
             addDisposer(
               self,
               autorun(
                 () => {
-                  // force access
-                  // eslint-disable-next-line  @typescript-eslint/no-unused-expressions
-                  self.showLabels
-                  // force access
-                  // eslint-disable-next-line  @typescript-eslint/no-unused-expressions
-                  self.showDescriptions
-                  if (self.rpcDataMap.size > 0) {
-                    self.relayoutForCurrentZoom()
+                  const view = getContainingView(self) as LGV
+                  const bpPerPx = view.initialized ? view.bpPerPx : undefined
+                  const showLabels = self.showLabels
+                  const showDescriptions = self.showDescriptions
+                  const key = `${bpPerPx}-${showLabels}-${showDescriptions}`
+                  const changed =
+                    prevRelayoutKey !== undefined && key !== prevRelayoutKey
+                  prevRelayoutKey = key
+                  if (changed && self.rpcDataMap.size > 0) {
+                    self.relayoutForCurrentZoom(
+                      showLabels,
+                      self.effectiveShowDescriptions,
+                    )
                   }
                 },
                 {
-                  name: 'LabelVisibilityRelayout',
+                  name: 'RelayoutOnZoomOrLabelChange',
                   delay: 50,
                 },
               ),
