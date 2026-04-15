@@ -4,16 +4,28 @@ Reference for GPU rendering system (canvas, wiggle, alignments, variants, HiC,
 LD, synteny, dotplot). For display developers adding new types or modifying
 existing ones.
 
+**Updated:** 2026-04-14 — reflects actual implementation with error handling,
+context loss recovery, and both upload/render patterns.
+
 ---
 
 ## Layers at a glance
 
 ```
+RPC worker returns data
+    │
+    ▼ model.setLoadedRegionForRegion(regionNumber, data)
+    │ increments dataVersion
 MobX model (rpcDataMap)
-    │  uploadChangedRegions (per-region identity check)
-    ▼
+    │
+    ├─ useGpuRenderer hook
+    │  ├─ Async initialization: factory(canvas)
+    │  ├─ Error handling + retry UI
+    │  └─ Context loss recovery (WebGL) / device loss recovery (WebGPU)
+    │
+    ▼ returns renderer once ready
 Backend interface (uploadRegion / pruneRegions / renderBlocks / dispose)
-    │  initDualBackend picks at canvas creation time
+    │
     ├── GpuXxxRenderer  ──►  GpuHal  ──►  WebGPU or WebGL2
     └── Canvas2DXxxRenderer  ──►  CanvasRenderingContext2D
 ```
@@ -21,6 +33,16 @@ Backend interface (uploadRegion / pruneRegions / renderBlocks / dispose)
 Each display plugin provides one concrete pair (GPU + Canvas2D). The display
 component talks only to the Backend interface; it never knows which path was
 chosen.
+
+**Renderer selection** (query parameter `?renderer=`):
+- `webgpu` — force WebGPU
+- `webgl` — force WebGL2
+- `canvas2d` or `canvas` — force Canvas2D fallback
+- (omitted) — auto-detect: try WebGPU → WebGL2 → Canvas2D
+
+**Note:** The browser test helper (`helpers.ts`) appends `?gpu=` instead of
+`?renderer=`, but the code checks for `?renderer=`. There's a pending issue to
+verify/sync this parameter name (see TODO.md).
 
 ---
 
@@ -112,18 +134,41 @@ arithmetic, since Canvas2D applies the DPR transform via `ctx.setTransform`.
 `bpToScreenX(absBp, block, bpLength, fullBlockWidth)` converts an absolute
 genomic position to a screen pixel, respecting `reversed`.
 
-### GpuHal (`hal/`)
+### Initialization: createGpuHal + useGpuRenderer
 
 The Hardware Abstraction Layer hides the WebGPU/WebGL2 API difference:
 
-```
-createGpuHal(canvas, passes, uniformByteSize)
-  → tries WebGPU (requestAdapter)
-  → falls back to WebGL2 (getContext('webgl2'))
-  → returns null if both fail
+```ts
+// packages/core/src/gpu/hal/createHal.ts
+async function createGpuHal(
+  canvas: HTMLCanvasElement,
+  passes: PassDescriptor[],
+  uniformByteSize: number,
+): Promise<GpuHal | null>
+  → if renderer=canvas2d or renderer=canvas: return null
+  → if not renderer=webgl: try WebGPU (requestAdapter) → WebGPUHal
+  → fallback to WebGL2 (getContext('webgl2')) → WebGL2Hal
+  → if both fail: return null (Canvas2D fallback used by initDualBackend)
 ```
 
-Key GpuHal methods:
+The `useGpuRenderer` hook manages the full lifecycle:
+
+```ts
+export function useGpuRenderer<R extends { dispose(): void }>(
+  canvasRef: React.RefObject<HTMLCanvasElement | null>,
+  factory: (canvas: HTMLCanvasElement) => Promise<R>,  // e.g., WiggleRenderer
+  opts?: { onReady?: (r: R) => void; onDispose?: () => void }
+)
+  → async: calls factory(canvas) and awaits Promise<R>
+  → success: sets ready=true, returns { ready, rendererRef, error, retry }
+  → error: sets error state with retry() function to reinitialize
+  → context loss (WebGL): addEventListener('webglcontextlost'/restored) → bumps contextVersion → re-runs effect
+  → device loss (WebGPU): onDeviceLost listener → bumps contextVersion → re-runs effect
+  → canvas replaced (e.g., regionTooLarge unmount/remount): bumps contextVersion
+  → page hidden (hard navigation): 'pagehide' listener calls backend.dispose()
+```
+
+**GpuHal key methods:**
 
 - `uploadBuffer(regionKey, passId, data, count)` — write instance data for a
   region/pass
@@ -133,11 +178,14 @@ Key GpuHal methods:
 - `setScissor / setViewport` — restrict drawing to the current block's pixels
 - `setRegionMeta / getRegionMeta` — store per-region metadata (regionStart,
   maxDepth) retrieved by GPU renderers at draw time
+- `dispose()` — cleanup GPU resources (buffers, textures, context)
 
-Two implementations: `WebGPUHal` and `WebGL2Hal`. Tests use `MockHal`.
+**Implementations:**
+- `WebGPUHal` — 4× MSAA, storage buffers, device lost recovery
+- `WebGL2Hal` — `antialias: true`, VAO + UBO, context loss recovery
+- `MockHal` (tests) — no-op rendering for unit tests
 
-WebGPU uses 4× MSAA and storage buffers. WebGL2 uses `antialias: true` and
-VAO+UBO. Picking passes skip MSAA in both backends.
+Picking passes skip MSAA in both backends for accurate color-based picking.
 
 ---
 
@@ -193,44 +241,24 @@ These are type-only re-exports. Structurally they are all `RenderBlock`.
 
 ## Upload / render lifecycle
 
-```
-RPC worker returns data
-  │
-  └─► model.setLoadedRegionForRegion(regionNumber, data)
-        writes rpcDataMap[regionNumber] = data
-        increments dataVersion
-              │
-              ▼
-        MobX autorun (in useEffect)
-              │
-              ├─ if rpcDataMap reference changed:
-              │     uploadChangedRegions(rpcDataMap, cache, upload)
-              │     renderer.pruneRegions(activeRegions)
-              │
-              ├─ reads model.dataVersion  (creates MobX dependency)
-              │
-              └─ renderNow()
-                    renderer.renderBlocks(
-                      buildRenderBlocks(view.visibleRegions),
-                      makeRenderState(...model properties...),
-                    )
-```
+Two patterns; canvas uses `useLayoutEffect([..., rpcDataMap])` to sync WebGL with DOM labels before paint. Wiggle/etc. use `autorun(() => { ... model.dataVersion })` to decouple upload from render and ensure fully-committed data even when map reference doesn't change. Both wrap render functions with `useEffectEvent` to avoid dependency explosion.
 
-**Why read `dataVersion` explicitly?**  
-`rpcDataMap` gets a new `Map` reference on every `setRpcData` call (shallow
-copy), so the outer `lastDataMap !== dataMap` guard fires for any region update.
-But `uploadChangedRegions` only uploads the regions that actually changed.
-Reading `dataVersion` creates a separate MobX dependency that fires after the
-final `setLoadedRegionForRegion` call completes, ensuring `renderNow` runs with
-fully-committed data even if the map reference didn't change.
+---
 
-**Canvas plugin exception**  
-`FeatureComponent` uses `useLayoutEffect([..., rpcDataMap])` instead of autorun.
-The observer re-renders when `rpcDataMap` changes reference (which always
-happens on data commit), which fires the layout effect and uploads/renders.
-`dataVersion` is not needed because the map reference is the sole trigger.
-`useLayoutEffect` (vs `useEffect`) keeps the WebGL canvas in sync with the DOM
-label overlay computed during the same render cycle.
+## Error Handling & Recovery
+
+`useGpuRenderer` hook manages initialization, context loss recovery, and cleanup:
+
+- **WebGL context loss** (`webglcontextlost`/`webglcontextrestored` events): bump `contextVersion` → dispose old backend → re-init
+- **WebGPU device loss** (`device.lost` promise): notify via `onDeviceLost()` listeners → same recovery flow
+- **Init failure** (factory rejects): set `error` state → display ErrorBar with `retry()` button → bump `contextVersion` to reinit
+- **Page unload** (`pagehide` event): call `dispose()` immediately to free GPU contexts before JS context destroyed (Chrome caps 16 contexts)
+
+---
+
+## Tab Visibility & WebGPU Texture Quirks
+
+When a tab is hidden, swap-chain textures are discarded; returning shows a black canvas. `useTabVisibilityRerender` listens to `visibilitychange` and calls `requestAnimationFrame(() => renderFn())` to refresh (RAF is needed because calling `getCurrentTexture()` directly from the handler can return a detached texture in WebGPU, hanging the GPU timeline).
 
 ---
 
@@ -273,135 +301,552 @@ optimizing the subtraction into a single-precision operation.
 
 ---
 
-## Shader sync (WGSL ↔ GLSL)
+## Shader structure & WGSL ↔ GLSL sync
 
-Each plugin maintains two shader files:
+Each plugin maintains three closely-synced files:
 
-- `*Shader.ts` (WGSL for WebGPU)
-- `*GlslShaders.ts` (GLSL for WebGL2)
+1. **wiggleShader.ts** (WGSL for WebGPU)
+   ```ts
+   export const UNIFORM_SIZE = 64  // SYNC: must match byte size in WGSL struct
+   export const INSTANCE_STRIDE = 8  // SYNC: sizeof(Instance)/4 in WGSL
+   export const VERTICES_PER_INSTANCE = 6  // SYNC: in WGSL
+   
+   export const wiggleShader = /* wgsl */ `
+     struct Instance {
+       start_end: vec2u,
+       score: f32,
+       prev_score: f32,
+       color: vec3f,  // offset 16
+       row_index: f32,
+     }
+     struct Uniforms {
+       bp_range_x: vec3f,  // offset 0
+       region_start: u32,   // offset 12
+       canvas_height: f32,  // offset 16
+       // ... more fields, total 64 bytes
+     }
+   `
+   ```
 
-They must be kept in sync manually. The `compile-shader-utils` script
-(referenced in `CLAUDE.md`) recompiles GLSL from WGSL when a shader changes. The
-uniform struct layout and byte offsets must match `*Renderer.ts` exactly.
+2. **wiggleGlslShaders.ts** (GLSL for WebGL2)
+   - Hand-written GLSL that mirrors WGSL struct definitions
+   - Vertex and fragment shaders in separate exports
+   - Must match WGSL byte offsets and semantics exactly
 
-Canvas uniforms are CSS pixels (`canvas_width`, `canvas_height`). The HAL
-manages the `css * dpr` backing store, so shaders do NOT scale by
-`devicePixelRatio`.
+3. **GpuWiggleRenderer.ts** (TypeScript setup)
+   ```ts
+   export const WIGGLE_PASSES: PassDescriptor[] = [
+     {
+       id: PASS_FILL,
+       wgslSource: wiggleShader,
+       glslVertex: WIGGLE_VERTEX_SHADER_GLSL,
+       glslFragment: WIGGLE_FRAGMENT_SHADER_GLSL,
+       instanceStride: INSTANCE_BYTES,  // 32 bytes
+       verticesPerInstance: VERTICES_PER_INSTANCE,  // 6
+       glAttributes: [
+         {
+           name: 'a_start_end',
+           components: 2,
+           type: 'uint',
+           offsetBytes: 0,  // SYNC: match struct field offset
+         },
+         // ... more attributes matching struct layout
+       ],
+     },
+   ]
+   
+   export const WIGGLE_UNIFORM_BYTE_SIZE = 64  // SYNC
+   ```
+
+**Sync requirements:**
+- WGSL struct field offsets must match TypeScript `glAttributes` `offsetBytes`
+- Struct byte size (accounting for alignment padding) must match `UNIFORM_SIZE`
+- `instanceStride` must equal `sizeof(Instance)` in WGSL
+- Constant values (`VERTICES_PER_INSTANCE`, rendering types, etc.) must be
+  mirrored in both WGSL and GLSL with `// SYNC:` comments
+- GLSL vertex and fragment logic must be semantically identical to WGSL
+
+**Verification:**
+- Byte offset errors cause vertex data corruption (features shift on-screen)
+- Uniform size mismatch causes uniforms to be read at wrong offsets
+- Constant mismatches cause rendering logic divergence between backends
+
+---
+
+## Uniforms & Canvas Scaling
+
+Shader uniforms use **CSS pixels** for canvas dimensions:
+
+```ts
+// In renderBlocks(), before each draw call:
+renderer.writeUniforms({
+  canvas_width: view.trackWidthPx,    // CSS pixels, NOT physical
+  canvas_height: model.height,        // CSS pixels, NOT physical
+  bpPerPx: view.bpPerPx,
+  // ... other uniforms
+})
+
+// Shader receives CSS pixels and uses them as-is:
+// No manual devicePixelRatio scaling needed
+```
+
+The HAL handles the backing store setup:
+
+```ts
+// In WebGPUHal/WebGL2Hal:
+const physicalWidth = canvas.width = cssWidth * devicePixelRatio
+const physicalHeight = canvas.height = cssHeight * devicePixelRatio
+// Viewport/scissor set to [0, 0, cssWidth, cssHeight] in clip space
+```
+
+This means a pixel at screen position `N` is always `N / canvas_width` in clip
+space, regardless of DPR.
 
 ---
 
 ## Adding a new GPU display type
 
-### Step 1: Types
+1. **Define types** — `MyData`, `MyRenderState`, `MyRenderBlock` (alias of `RenderBlock`)
+2. **Define backend interface** — `MyBackend { uploadRegion, pruneRegions, renderBlocks, dispose }`
+
+3. **Create shaders** — WGSL (`myShader.ts`) + GLSL (`myGlslShaders.ts`); keep `SYNC:` comments for struct offsets and constants matching WGSL
+4. **Implement GPU renderer** — `GpuMyRenderer` class: pack instance data in `uploadRegion()`, use `clipBlock()` to get scissor/viewport, write uniforms, call `hal.drawPass()` in `renderBlocks()`
+5. **Implement Canvas2D renderer** — `Canvas2DMyRenderer` class: cache data in `uploadRegion()`, use `bpToScreenX()` for coordinate conversion in `renderBlocks()`
+6. **Create renderer factory** — call `initDualBackend<MyBackend>(canvas, MY_PASSES, MY_UNIFORM_BYTE_SIZE, hal => new GpuMyRenderer(hal), c => new Canvas2DMyRenderer(c))`
+7. **Create display component** — `observer()` + `useGpuRenderer(canvasRef, MyRenderer)`, use autorun + `dataVersion` pattern (or useLayoutEffect for canvas), call `useTabVisibilityRerender(renderNow)`, show ErrorBar on error
+8. **Define MST model** — `rpcDataMap: Map<number, MyData>`, `dataVersion: 0`, action that spreads map and increments dataVersion
+9. **Test** — Jest unit tests with `MockHal`, Puppeteer tests: `node browser-tests/runner.ts --backend=webgl|webgpu|canvas2d`
+
+---
+
+### Shader file structure (for reference)
+
 ```ts
-export interface MyData { regionNumber: number; features: Array<{...}> }
-export interface MyRenderState { bpPerPx: number; width: number; height: number }
+// myShader.ts (WGSL for WebGPU)
+export const UNIFORM_SIZE = 64  // SYNC: byte size of Uniforms struct
+export const INSTANCE_STRIDE = 4  // SYNC: sizeof(Instance)/4 in WGSL
+export const VERTICES_PER_INSTANCE = 6
+
+export const myShader = /* wgsl */ `
+  struct Instance {
+    start_end: vec2u,  // offset 0
+    score: f32,        // offset 8
+  }
+  
+  struct Uniforms {
+    bp_range: vec3f,      // offset 0
+    domain_y: vec2f,      // offset 12
+    canvas_width: f32,    // offset 20
+    canvas_height: f32,   // offset 24
+    // ... padding to 64 bytes
+  }
+  
+  fn hp_to_clip_x(split_pos: vec2f, bp_range: vec3f, zero: f32) -> f32 {
+    // High-precision BP coordinate conversion (see Shader precision section)
+    let step = 2.0 / bp_range.z
+    let hi = max(split_pos.x - bp_range.x, -1.0/zero)
+    let lo = max(split_pos.y - bp_range.y, -1.0/zero)
+    return dot(vec3f(-1.0, hi, lo), vec3f(1.0, step, step))
+  }
+  
+  @vertex
+  fn vs(...) -> ... { ... }
+  
+  @fragment
+  fn fs(...) -> ... { ... }
+`
+
+// myGlslShaders.ts (GLSL for WebGL2 — must match WGSL exactly)
+export const MY_VERTEX_SHADER_GLSL = /* glsl */ `
+  precision highp float;
+  in uvec2 a_start_end;
+  in float a_score;
+  uniform vec3 bp_range;
+  // ... mirror WGSL struct layout and semantics
+  void main() { ... }
+`
+
+export const MY_FRAGMENT_SHADER_GLSL = /* glsl */ `
+  precision highp float;
+  out vec4 outColor;
+  void main() { ... }
+`
 ```
 
-### Step 2: Backend interface
+### Step 4: GPU renderer
+
 ```ts
-export interface MyBackend {
-  uploadRegion(regionNumber: number, data: MyData): void
-  pruneRegions(activeRegions: number[]): void
-  renderBlocks(blocks: RenderBlock[], state: MyRenderState): void
-  dispose(): void
-}
-```
-
-### Step 3: GPU renderer
-```ts
-// myShader.ts (WGSL)
-export const myShaderWGSL = `...`
-
-// myGlslShaders.ts (GLSL — keep in sync with WGSL)
-export const myShaderGLSL = `...`
-
 // myGpuRenderer.ts
+import { clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
+import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
+import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
+
+const PASS_DEFAULT = 'default'
+
+const MY_GL_ATTRIBUTES: GlAttributeLayout[] = [
+  {
+    name: 'a_start_end',
+    components: 2,
+    type: 'uint',
+    offsetBytes: 0,
+    integer: true,
+  },
+  {
+    name: 'a_score',
+    components: 1,
+    type: 'float',
+    offsetBytes: 8,
+    integer: false,
+  },
+]
+
+export const MY_PASSES: PassDescriptor[] = [
+  {
+    id: PASS_DEFAULT,
+    wgslSource: myShader,
+    glslVertex: MY_VERTEX_SHADER_GLSL,
+    glslFragment: MY_FRAGMENT_SHADER_GLSL,
+    instanceStride: INSTANCE_STRIDE * 4,  // 16 bytes
+    verticesPerInstance: VERTICES_PER_INSTANCE,
+    blend: true,
+    glAttributes: MY_GL_ATTRIBUTES,
+  },
+]
+
+export const MY_UNIFORM_BYTE_SIZE = UNIFORM_SIZE
+
 export class GpuMyRenderer implements MyBackend {
-  constructor(hal: GpuHal) { /* register passes, uniforms */ }
-  uploadRegion(regionNumber: number, data: MyData) {
-    this.hal.uploadBuffer(regionNumber, PASS_ID, packedData, count)
+  private hal: GpuHal
+  private regionMap = new Map<number, MyData>()
+  private uniformData = new ArrayBuffer(UNIFORM_SIZE)
+  private uniformF32 = new Float32Array(this.uniformData)
+
+  constructor(hal: GpuHal) {
+    this.hal = hal
   }
-  renderBlocks(blocks: RenderBlock[], state: MyRenderState) {
-    // Set scissor/viewport, write uniforms, call hal.drawPass()
+
+  uploadRegion(regionNumber: number, data: MyData): void {
+    this.regionMap.set(regionNumber, data)
+    
+    // Pack data into buffer (instance data)
+    const instanceBuffer = new Uint32Array(data.features.length * INSTANCE_STRIDE)
+    for (let i = 0; i < data.features.length; i++) {
+      const f = data.features[i]
+      instanceBuffer[i * INSTANCE_STRIDE + 0] = f.start
+      instanceBuffer[i * INSTANCE_STRIDE + 1] = f.end
+      instanceBuffer[i * INSTANCE_STRIDE + 2] = f.score  // as uint bits
+    }
+    
+    this.hal.uploadBuffer(
+      regionNumber,
+      PASS_DEFAULT,
+      instanceBuffer,
+      data.features.length
+    )
+  }
+
+  pruneRegions(activeRegions: number[]): void {
+    pruneRegionMap(this.regionMap, activeRegions, (regionNumber) => {
+      // Optional: cleanup region-specific GPU resources if needed
+    })
+  }
+
+  renderBlocks(blocks: MyRenderBlock[], state: MyRenderState): void {
+    for (const block of blocks) {
+      const clip = clipBlock(
+        block,
+        state.width,
+        state.height,
+        window.devicePixelRatio
+      )
+      if (!clip) continue  // off-screen
+
+      // Write uniforms for this block
+      this.uniformF32[0] = clip.bpStartHi
+      this.uniformF32[1] = clip.bpStartLo
+      this.uniformF32[2] = clip.clippedLengthBp
+      this.uniformF32[3] = state.domain[0]
+      this.uniformF32[4] = state.domain[1]
+      this.uniformF32[5] = state.width
+      this.uniformF32[6] = state.height
+      this.hal.writeUniforms(this.uniformData)
+
+      // Set scissor/viewport for this block
+      this.hal.setScissor(clip.scissorX, 0, clip.scissorW, state.height)
+      this.hal.setViewport(clip.scissorX, 0, clip.scissorW, state.height)
+
+      // Draw
+      this.hal.drawPass(PASS_DEFAULT, block.regionNumber)
+    }
+  }
+
+  dispose(): void {
+    this.regionMap.clear()
   }
 }
 ```
 
-### Step 4: Canvas2D renderer
+### Step 5: Canvas2D renderer
+
 ```ts
+// Canvas2DMyRenderer.ts
+import { clipBlockForCanvas, bpToScreenX } from '@jbrowse/core/gpu/canvas2dUtils'
+
 export class Canvas2DMyRenderer implements MyBackend {
-  constructor(canvas: HTMLCanvasElement) { }
-  uploadRegion() { /* optional pre-compute */ }
-  renderBlocks(blocks: RenderBlock[], state: MyRenderState) {
-    // ctx.fillRect, ctx.fillText, etc.
+  private ctx: CanvasRenderingContext2D
+  private regionMap = new Map<number, MyData>()
+
+  constructor(canvas: HTMLCanvasElement) {
+    this.ctx = canvas.getContext('2d')!
+  }
+
+  uploadRegion(regionNumber: number, data: MyData): void {
+    // For Canvas2D, just cache the data; no GPU upload needed
+    this.regionMap.set(regionNumber, data)
+  }
+
+  pruneRegions(activeRegions: number[]): void {
+    for (const key of this.regionMap.keys()) {
+      if (!activeRegions.includes(key)) {
+        this.regionMap.delete(key)
+      }
+    }
+  }
+
+  renderBlocks(blocks: MyRenderBlock[], state: MyRenderState): void {
+    this.ctx.clearRect(0, 0, state.width, state.height)
+    
+    for (const block of blocks) {
+      const clip = clipBlockForCanvas(block, state.width)
+      const data = this.regionMap.get(block.regionNumber)
+      if (!data) continue
+
+      for (const feature of data.features) {
+        const screenX = bpToScreenX(feature.start, block, clip.bpLength, clip.fullBlockWidth)
+        const screenW = Math.max(1, bpToScreenX(feature.end, block, clip.bpLength, clip.fullBlockWidth) - screenX)
+        const screenY = state.height * (1 - (feature.score - state.domain[0]) / (state.domain[1] - state.domain[0]))
+
+        this.ctx.fillStyle = 'rgba(0, 100, 200, 0.7)'
+        this.ctx.fillRect(screenX, screenY, screenW, 2)
+      }
+    }
+  }
+
+  dispose(): void {
+    this.regionMap.clear()
   }
 }
 ```
 
-### Step 5: Renderer factory
+### Step 6: Renderer factory
+
 ```ts
-export function MyRenderer(canvas: HTMLCanvasElement): MyBackend {
+// MyRenderer.ts
+import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
+
+export function MyRenderer(canvas: HTMLCanvasElement): Promise<MyBackend> {
   return initDualBackend<MyBackend>(
-    canvas, MY_PASSES, MY_UNIFORM_BYTE_SIZE,
+    canvas,
+    MY_PASSES,
+    MY_UNIFORM_BYTE_SIZE,
     hal => new GpuMyRenderer(hal),
     c => new Canvas2DMyRenderer(c),
   )
 }
 ```
 
-### Step 6: Display component
+### Step 7: Display component
+
 ```ts
-export function MyDisplayComponent(props) {
+// MyDisplayComponent.tsx
+import {
+  useGpuRenderer,
+  useTabVisibilityRerender,
+  getContainingView,
+} from '@jbrowse/core/util'
+import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
+import { uploadChangedRegions } from '@jbrowse/core/gpu/uploadChangedRegions'
+import { autorun } from 'mobx'
+import { observer } from 'mobx-react'
+
+const MyDisplayComponent = observer(function MyDisplay({ model }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const rendererRef = useGpuRenderer(canvasRef, MyRenderer)
-  
-  useLayoutEffect(() => {
-    return autorun(() => {
-      const activeRegions = uploadChangedRegions(
-        model.rpcDataMap, uploadCache,
-        (regionNumber, data) => renderer.uploadRegion(regionNumber, data),
-      )
-      renderer.pruneRegions(activeRegions)
-      const _unused = model.dataVersion // create MobX dependency
-      renderNow()
-    }, { delay: 50 })
-  }, [model, view, rendererRef])
-  
-  const renderNow = useCallback(() => {
-    renderer.renderBlocks(
-      buildRenderBlocks(view.visibleRegions),
-      { bpPerPx: view.bpPerPx, width: model.width, height: model.height },
-    )
-  }, [view, model])
-  
+  const view = getContainingView(model)
+
+  const { error, ready, rendererRef, retry } = useGpuRenderer(
+    canvasRef,
+    MyRenderer,
+  )
+
+  const renderNow = useEffectEvent(() => {
+    const renderer = rendererRef.current
+    if (!renderer || !view.initialized) return
+
+    const blocks = buildRenderBlocks(view.visibleRegions)
+    renderer.renderBlocks(blocks, {
+      bpPerPx: view.bpPerPx,
+      width: view.trackWidthPx,
+      height: model.height,
+      domain: model.domain,
+    })
+  })
+
+  // Use Pattern B (autorun + dataVersion) for this example
+  useEffect(
+    () =>
+      autorun(() => {
+        if (!ready) return
+
+        const dataMap = model.rpcDataMap
+        const activeRegions = uploadChangedRegions(
+          dataMap,
+          new Map(),  // or use ref for identity tracking
+          (regionNumber, data) =>
+            rendererRef.current?.uploadRegion(regionNumber, data),
+        )
+        rendererRef.current?.pruneRegions(activeRegions)
+
+        const _dv = model.dataVersion  // create MobX dependency
+
+        renderNow()
+        if (dataMap.size > 0) {
+          model.setCanvasDrawn(true)
+        }
+      }),
+    [model, view, ready, rendererRef],
+  )
+
   useTabVisibilityRerender(renderNow)
-  return <canvas ref={canvasRef} />
-}
+
+  return (
+    <>
+      {error && (
+        <ErrorBar
+          message="Renderer failed"
+          action={() => retry()}
+        />
+      )}
+      <canvas ref={canvasRef} />
+    </>
+  )
+})
+
+export default MyDisplayComponent
 ```
 
-### Step 7: Multi-region model
+### Step 8: Model integration
+
 ```ts
-const MyDisplayModel = types.model({
-  rpcDataMap: types.frozen<Map<number, MyData>>(new Map()),
-  dataVersion: 0,
-}).actions(self => ({
-  setRpcDataForRegion(regionNumber: number, data: MyData) {
-    const next = new Map(self.rpcDataMap)
-    next.set(regionNumber, data)
-    self.rpcDataMap = next
-    self.dataVersion++
-  },
-}))
+// MyDisplayModel.ts
+import { types } from 'mobx-state-tree'
+
+export const MyDisplayModel = types
+  .model('MyDisplay', {
+    type: types.literal('MyDisplay'),
+    rpcDataMap: types.frozen<Map<number, MyData>>(new Map()),
+    dataVersion: 0,
+    height: 100,
+    domain: [0, 100],
+  })
+  .actions(self => ({
+    setLoadedRegionForRegion(regionNumber: number, data: MyData) {
+      const next = new Map(self.rpcDataMap)
+      next.set(regionNumber, data)
+      self.rpcDataMap = next
+      self.dataVersion++
+    },
+  }))
 ```
+
+### Step 9: Testing
+
+**Unit tests** (Jest + MockHal):
+```ts
+// myGpuRenderer.test.ts
+import { MockHal } from '@jbrowse/core/gpu/hal/mockHal'
+
+test('GpuMyRenderer uploads instance data', () => {
+  const hal = new MockHal()
+  const renderer = new GpuMyRenderer(hal)
+  const data: MyData = { regionNumber: 0, features: [...] }
+  
+  renderer.uploadRegion(0, data)
+  
+  expect(hal.uploadBuffer).toHaveBeenCalledWith(
+    0,
+    'default',
+    expect.any(Uint32Array),
+    expect.any(Number),
+  )
+})
+```
+
+**Browser tests** (Puppeteer):
+```sh
+# Test all backends (default, webgl, webgpu, canvas2d)
+node --experimental-strip-types browser-tests/runner.ts
+
+# Test only WebGL
+node --experimental-strip-types browser-tests/runner.ts --backend=webgl
+
+# Test only Canvas2D
+node --experimental-strip-types browser-tests/runner.ts --backend=canvas2d
+
+# Headed mode for debugging
+node --experimental-strip-types browser-tests/runner.ts --headed
+
+# Update golden snapshots
+node --experimental-strip-types browser-tests/runner.ts --update-snapshots
+```
+
+The test runner passes the `--backend=` flag to the browser via `?renderer=` query
+parameter. Visual regression via snapshot comparison (pixelmatch, threshold 0.1%).
 
 ---
 
-### Shader Notes
+### Quick reference: High-precision BP Coordinates
 
-- **Uniforms**: `canvas_width`/`canvas_height` are CSS pixels. HAL manages
-  backing store; don't scale by DPR.
-- **High-precision BP coords**: Split into hi/lo `vec2f` to avoid precision
-  loss at chromosome scale. Use `hp_to_clip_x()` in vertex shader.
-- **Picking**: Skip MSAA in picking passes for accurate color-based picking.
-- **WGSL/GLSL sync**: Manual. Both files separate; changes must be ported.
+All GPU renderers split genomic positions into hi/lo `vec2f`:
+
+```wgsl
+fn hp_to_clip_x(split_pos: vec2f, bp_range: vec3f, zero: f32) -> f32 {
+  let inf = 1.0 / zero;  // zero MUST be 0.0 at runtime to prevent optimization
+  let step = 2.0 / bp_range.z;
+  let hi = max(split_pos.x - bp_range.x, -inf);
+  let lo = max(split_pos.y - bp_range.y, -inf);
+  return dot(vec3f(-1.0, hi, lo), vec3f(1.0, step, step));
+}
+```
+
+**Why?** Genomic positions (0–3×10⁹ bp) exceed 32-bit float precision (~7 digits).
+Splitting into hi/lo preserves sub-pixel accuracy at chromosome scale.
+
+**Uniforms passed to shader:**
+- `bp_range_x.x` (hi) — integer part of region start
+- `bp_range_x.y` (lo) — fractional part of region start
+- `bp_range_x.z` — clipped BP length of visible window
+
+---
+
+### Browser Support Matrix
+
+| Backend | Chrome | Firefox | Safari | Requirements |
+|---------|--------|---------|--------|--------------|
+| WebGPU  | 113+   | Nightly | No     | Real GPU; on Linux needs Vulkan (Lavapipe for CI) |
+| WebGL2  | 56+    | 51+     | 15+    | None (universally supported) |
+| Canvas2D| All    | All     | All    | Fallback (always works) |
+
+**Query parameter overrides** (`?renderer=`):
+
+Pass one of these values to force a specific backend:
+- `?renderer=webgpu` — force WebGPU (fails if unavailable)
+- `?renderer=webgl` — force WebGL2 (fails if unavailable)
+- `?renderer=canvas2d` or `?renderer=canvas` — force Canvas2D fallback
+- (omitted) — auto-detect: try WebGPU → WebGL2 → Canvas2D
+
+**Example:**
+```
+http://localhost:3000/?config=config.json&renderer=webgl
+```
+
+This forces the app to use WebGL2, skipping WebGPU detection.

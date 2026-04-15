@@ -121,3 +121,4 @@ Toggling should trigger re-layout (currently doesn't).
 - Methylation mode broken?
 - Clustering UI not updating?
 - Long-range arcs missing in 1kg demo?
+- Overlay synteny should use single canvas, multiple datasets uploaded. dotplot already added this recently
