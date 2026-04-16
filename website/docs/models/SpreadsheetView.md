@@ -71,7 +71,7 @@ hideFilterControls: false
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ fileType: IOptionalIType<ISimpleType<string>, [undefined]>; hasColumnNameLine: IType<boolean, boolean, boolean>; columnNameLineNumber: IType<...>; selectedAssemblyName: IMaybe<...>; cachedFileLocation: IType<...>; }, { ...; } & ... 3 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...
+IOptionalIType<IModelType<{ fileType: IOptionalIType<ISimpleType<string>, [undefined]>; hasColumnNameLine: IType<boolean | undefined, boolean, boolean>; columnNameLineNumber: IType<...>; selectedAssemblyName: IMaybe<...>; cachedFileLocation: IType<...>; }, { ...; } & ... 3 more ... & { ...; }, _NotCustomized, _NotCu...
 // code
 importWizard: types.optional(ImportWizardModel, () =>
             ImportWizardModel.create(),
@@ -82,7 +82,7 @@ importWizard: types.optional(ImportWizardModel, () =>
 
 ```js
 // type signature
-IMaybe<IModelType<{ rowSet: IType<RowSet, RowSet, RowSet>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<ISimpleType<string>>; visibleColumns: IType<...>; }, { ...; } & ... 3 more ... & { ...; }, ModelCreationType<...>, _NotCustomized>>
+IMaybe<IModelType<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IType<...>; }, { ...; } & ... 3 more ... & { ...; }, ModelCreationType<...>, _NotCustomized>>
 // code
 spreadsheet: types.maybe(Spreadsheet())
 ```
@@ -93,7 +93,7 @@ used for initializing the view from a session snapshot
 
 ```js
 // type signature
-IType<SpreadsheetViewInit, SpreadsheetViewInit, SpreadsheetViewInit>
+IType<SpreadsheetViewInit | undefined, SpreadsheetViewInit | undefined, SpreadsheetViewInit | undefined>
 // code
 init: types.frozen<SpreadsheetViewInit | undefined>()
 ```
@@ -159,12 +159,12 @@ load a new spreadsheet and set our mode to display it
 
 ```js
 // type signature
-displaySpreadsheet: (spreadsheet?: { rowSet: RowSet & IStateTreeNode<IType<RowSet, RowSet, RowSet>>; columns: { name: string; }[] & IStateTreeNode<IType<{ name: string; }[], { ...; }[], { ...; }[]>>; assemblyName: string; visibleColumns: Record<...> & IStateTreeNode<...>; } & ... 6 more ... & IStateTreeNode<...>) => void
+displaySpreadsheet: (spreadsheet?: ({ rowSet: (RowSet & IStateTreeNode<IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>>) | undefined; columns: { ...; }[] & IStateTreeNode<...>; assemblyName: string | undefined; visibleColumns: Record<...> & IStateTreeNode<...>; } & ... 6 more ... & IStateTreeNode<...>) | undefined) =>...
 ```
 
 #### action: setInit
 
 ```js
 // type signature
-setInit: (init?: SpreadsheetViewInit) => void
+setInit: (init?: SpreadsheetViewInit | undefined) => void
 ```

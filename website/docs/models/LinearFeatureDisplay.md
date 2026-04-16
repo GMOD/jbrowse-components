@@ -78,7 +78,7 @@ trackMaxHeight: types.maybe(types.number)
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -155,7 +155,7 @@ asynchronously via CoreGetFeatureDetails
 
 ```js
 // type
-any
+Feature | undefined
 ```
 
 ### LinearFeatureDisplay - Methods
@@ -178,7 +178,7 @@ renderProps: () => {
     displayMode: any
     maxHeight: any
   }
-  filters: any
+  filters: SerializableFilterChain
   sequenceAdapter: any
 }
 ```
@@ -187,7 +187,7 @@ renderProps: () => {
 
 ```js
 // type signature
-renderingProps: () => { onFeatureClick(_: unknown, featureId?: string): Promise<void>; onFeatureContextMenu(_: unknown, featureId?: string): Promise<void>; displayModel: { [x: string]: any; ... 6 more ...; showTooltips: boolean; } & ... 17 more ... & IStateTreeNode<...>; onMouseMove(_: unknown, featureId?: string): void; onMouseLea...
+renderingProps: () => { onFeatureClick(_: unknown, featureId?: string | undefined): Promise<void>; onFeatureContextMenu(_: unknown, featureId?: string | undefined): Promise<void>; displayModel: { ...; } & ... 3 more ... & IStateTreeNode<...>; }
 ```
 
 #### method: filterMenuItems
@@ -210,14 +210,14 @@ trackMenuItems: () => MenuItem[]
 
 ```js
 // type signature
-setJexlFilters: (f?: string[]) => void
+setJexlFilters: (f?: string[] | undefined) => void
 ```
 
 #### action: setFeatureUnderMouse
 
 ```js
 // type signature
-setFeatureUnderMouse: (feat?: Feature) => void
+setFeatureUnderMouse: (feat?: Feature | undefined) => void
 ```
 
 #### action: toggleShowLabels
@@ -245,5 +245,5 @@ setDisplayMode: (val: string) => void
 
 ```js
 // type signature
-setMaxHeight: (val?: number) => void
+setMaxHeight: (val?: number | undefined) => void
 ```

@@ -95,7 +95,7 @@ determines which webworker to send the track to, currently based on trackId
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: name
@@ -130,7 +130,7 @@ MenuItem[]
 
 ```js
 // type
-boolean | ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)
+boolean | ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) | undefined
 ```
 
 #### getter: adapterType

@@ -200,11 +200,14 @@ function createTestEnvironment() {
         isValidRefName: () => true,
       },
     }))
-    .views(() => ({
-      getTracksById() {
+    .views(self => ({
+      get tracksById() {
         return {
           test_track: trackConfig,
         }
+      },
+      getTracksById() {
+        return self.tracksById
       },
     }))
     .actions(self => ({

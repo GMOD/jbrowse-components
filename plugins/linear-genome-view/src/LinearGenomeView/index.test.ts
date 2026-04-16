@@ -1374,9 +1374,12 @@ describe('TrackInit with display configuration', () => {
           call: async () => {},
         },
       }))
-      .views(() => ({
-        getTracksById() {
+      .views(self => ({
+        get tracksById() {
           return trackConfigs
+        },
+        getTracksById() {
+          return self.tracksById
         },
       }))
       .actions(self => ({

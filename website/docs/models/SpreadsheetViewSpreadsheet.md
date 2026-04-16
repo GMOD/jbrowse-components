@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-IType<RowSet, RowSet, RowSet>
+IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>
 // code
 rowSet: types.frozen<RowSet | undefined>()
 ```
@@ -66,23 +66,23 @@ visibleColumns: types.frozen<Record<string, boolean>>()
 // type
 {
   id: number
-  feature: SimpleFeatureSerialized
+  feature: SimpleFeatureSerialized | undefined
 }
-;[]
+;[] | undefined
 ```
 
 #### getter: initialized
 
 ```js
 // type
-any
+boolean | undefined
 ```
 
 #### getter: dataGridColumns
 
 ```js
 // type
-({ field: string; width: any; type: "number"; } | { field: string; width: any; renderCell: ({ row }: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>) => Element | "N/A"; type?: undefined; valueGetter?: undefined; valueFormatter?: undefined; } | { ...; })[]
+({ field: string; width: number; type: "number" | undefined; } | { field: string; width: number; renderCell: ({ row }: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>) => Element | "N/A"; type?: undefined; valueGetter?: undefined; valueFormatter?: undefined; } | { ...; })[] | undefined
 ```
 
 ### SpreadsheetViewSpreadsheet - Actions
@@ -91,7 +91,7 @@ any
 
 ```js
 // type signature
-setVisibleRows: (arg?: Record<number, boolean>) => void
+setVisibleRows: (arg?: Record<number, boolean> | undefined) => void
 ```
 
 #### action: setVisibleColumns

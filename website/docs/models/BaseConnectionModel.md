@@ -44,7 +44,7 @@ tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
 
 ```js
 // type signature
-ConfigurationSchemaType<{ name: { type: string; defaultValue: string; description: string; }; assemblyNames: { type: string; defaultValue: any[]; description: string; }; }, ConfigurationSchemaOptions<undefined, "connectionId">>
+ConfigurationSchemaType<{ name: { type: string; defaultValue: string; description: string; }; assemblyNames: { type: string; defaultValue: never[]; description: string; }; }, ConfigurationSchemaOptions<undefined, "connectionId">>
 // code
 configuration: ConfigurationReference(configSchema)
 ```

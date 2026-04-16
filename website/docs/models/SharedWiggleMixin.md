@@ -149,7 +149,7 @@ constraints: types.optional(
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -176,7 +176,7 @@ subclasses can define these, as snpcoverage track does
 
 ```js
 // type
-any
+undefined
 ```
 
 #### getter: scaleType
@@ -204,7 +204,7 @@ number
 
 ```js
 // type
-any
+string[]
 ```
 
 #### getter: rendererConfig
@@ -234,7 +234,7 @@ string
 
 ```js
 // type
-number[]
+number[] | undefined
 ```
 
 #### getter: filled
@@ -255,7 +255,7 @@ any
 
 ```js
 // type
-{ domain: number[]; stats: { currStatsBpPerPx: number; scoreMin: number; scoreMax: number; statsRegion?: string; }; autoscaleType: string; scaleType: string; inverted: boolean; }
+{ domain: number[] | undefined; stats: { currStatsBpPerPx: number; scoreMin: number; scoreMax: number; scoreMeanMin?: number | undefined; scoreMeanMax?: number | undefined; statsRegion?: string | undefined; } | undefined; autoscaleType: string; scaleType: string; inverted: boolean; }
 ```
 
 #### getter: canHaveFill
@@ -276,14 +276,14 @@ any
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: hasGlobalStats
 
 ```js
 // type
-any
+boolean
 ```
 
 ### SharedWiggleMixin - Methods
@@ -301,35 +301,35 @@ scoreTrackMenuItems: () => ({ label: string; subMenu: { label: string; onClick: 
 
 ```js
 // type signature
-updateQuantitativeStats: (stats: { currStatsBpPerPx: number; scoreMin: number; scoreMax: number; }, statsRegion?: string) => void
+updateQuantitativeStats: (stats: { currStatsBpPerPx: number; scoreMin: number; scoreMax: number; scoreMeanMin?: number | undefined; scoreMeanMax?: number | undefined; }, statsRegion?: string | undefined) => void
 ```
 
 #### action: setColor
 
 ```js
 // type signature
-setColor: (color?: string) => void
+setColor: (color?: string | undefined) => void
 ```
 
 #### action: setPosColor
 
 ```js
 // type signature
-setPosColor: (color?: string) => void
+setPosColor: (color?: string | undefined) => void
 ```
 
 #### action: setNegColor
 
 ```js
 // type signature
-setNegColor: (color?: string) => void
+setNegColor: (color?: string | undefined) => void
 ```
 
 #### action: setStatsLoading
 
 ```js
 // type signature
-setStatsLoading: (arg?: StopToken) => void
+setStatsLoading: (arg?: string | undefined) => void
 ```
 
 #### action: selectFeature
@@ -368,7 +368,7 @@ toggleLogScale: () => void
 
 ```js
 // type signature
-setScaleType: (scale?: string) => void
+setScaleType: (scale?: string | undefined) => void
 ```
 
 #### action: setSummaryScoreMode
@@ -389,7 +389,7 @@ setAutoscale: (val: string) => void
 
 ```js
 // type signature
-setMaxScore: (val?: number) => void
+setMaxScore: (val?: number | undefined) => void
 ```
 
 #### action: setRendererType
@@ -403,7 +403,7 @@ setRendererType: (val: string) => void
 
 ```js
 // type signature
-setMinScore: (val?: number) => void
+setMinScore: (val?: number | undefined) => void
 ```
 
 #### action: toggleCrossHatches

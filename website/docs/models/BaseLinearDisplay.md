@@ -37,7 +37,7 @@ updated via autorun
 
 ```js
 // type signature
-IMapType<IModelType<{ key: ISimpleType<string>; region: IType<Region, Region, Region>; reloadFlag: IType<number, number, number>; isLeftEndOfDisplayedRegion: IType<boolean, boolean, boolean>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } & ... 2 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+IMapType<IModelType<{ key: ISimpleType<string>; region: IType<Region, Region, Region>; reloadFlag: IType<number | undefined, number, number>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } & ... 2 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 blockState: types.map(BlockState)
 ```
@@ -46,7 +46,7 @@ blockState: types.map(BlockState)
 
 ```js
 // type signature
-any
+ConfigurationSchemaType<{ maxFeatureScreenDensity: { type: string; description: string; defaultValue: number; }; fetchSizeLimit: { type: string; defaultValue: number; description: string; }; height: { type: string; defaultValue: number; description: string; }; mouseover: { ...; }; jexlFilters: { ...; }; }, Configura...
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -78,7 +78,7 @@ return a react component
 
 ```js
 // type
-any
+FC<any> | undefined
 ```
 
 #### getter: blockType
@@ -92,7 +92,7 @@ any
 
 ```js
 // type
-any
+BlockSet
 ```
 
 #### getter: renderDelay
@@ -119,7 +119,7 @@ feature
 
 ```js
 // type
-any
+string | undefined
 ```
 
 #### getter: featureWidgetType
@@ -150,42 +150,42 @@ data for that feature
 
 ```js
 // type
-any
+CompositeMap<string, Feature>
 ```
 
 #### getter: featureUnderMouse
 
 ```js
 // type
-any
+Feature | undefined
 ```
 
 #### getter: layoutFeatures
 
 ```js
 // type
-any
+CompositeMap<string, LayoutRecord>
 ```
 
 #### getter: getFeatureOverlapping
 
 ```js
 // type
-(blockKey: string, x: number, y: number) => string
+(blockKey: string, x: number, y: number) => string | undefined
 ```
 
 #### getter: getFeatureByID
 
 ```js
 // type
-(blockKey: string, id: string) => LayoutRecord
+(blockKey: string, id: string) => LayoutRecord | undefined
 ```
 
 #### getter: searchFeatureByID
 
 ```js
 // type
-(id: string) => LayoutRecord
+(id: string) => LayoutRecord | undefined
 ```
 
 #### getter: floatingLabelData
@@ -205,7 +205,7 @@ Override in subclasses to provide legend items for the display
 
 ```js
 // type signature
-legendItems: (_theme?: Theme) => LegendItem[]
+legendItems: (_theme?: Theme | undefined) => LegendItem[]
 ```
 
 #### method: svgLegendWidth
@@ -215,7 +215,7 @@ SVG export to add extra width for the legend area.
 
 ```js
 // type signature
-svgLegendWidth: (theme?: Theme) => number
+svgLegendWidth: (theme?: Theme | undefined) => number
 ```
 
 #### method: getFeatureById
@@ -225,7 +225,7 @@ parentFeatureId is provided
 
 ```js
 // type signature
-getFeatureById: (featureId: string, parentFeatureId?: string) => any
+getFeatureById: (featureId: string, parentFeatureId?: string | undefined) => Feature | undefined
 ```
 
 #### method: trackMenuItems
@@ -249,7 +249,7 @@ sent to the worker. includes displayModel and callbacks
 
 ```js
 // type signature
-renderingProps: () => { displayModel: { [x: string]: any; heightPreConfig: number; userBpPerPxLimit: number; userByteSizeLimit: number; blockState: IMSTMap<IModelType<{ key: ISimpleType<string>; region: IType<...>; reloadFlag: IType<...>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } &...
+renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string | undefined; heightPreConfig: number | undefined; userBpPerPxLimit: number | undefined; userByteSizeLimit: number | undefined; blockState: IMSTMap<...> & IStateTreeNode<...>; configuration: { ...; } & ... 2 more ... & IStateTreeNode<...>; showLe...
 ```
 
 #### method: renderProps
@@ -309,28 +309,28 @@ clearFeatureSelection: () => void
 
 ```js
 // type signature
-setFeatureIdUnderMouse: (feature?: string) => void
+setFeatureIdUnderMouse: (feature?: string | undefined) => void
 ```
 
 #### action: setSubfeatureIdUnderMouse
 
 ```js
 // type signature
-setSubfeatureIdUnderMouse: (subfeatureId?: string) => void
+setSubfeatureIdUnderMouse: (subfeatureId?: string | undefined) => void
 ```
 
 #### action: setContextMenuFeature
 
 ```js
 // type signature
-setContextMenuFeature: (feature?: Feature) => void
+setContextMenuFeature: (feature?: Feature | undefined) => void
 ```
 
 #### action: setMouseoverExtraInformation
 
 ```js
 // type signature
-setMouseoverExtraInformation: (extra?: string) => void
+setMouseoverExtraInformation: (extra?: string | undefined) => void
 ```
 
 #### action: setShowLegend
@@ -361,7 +361,7 @@ to RPC if not found locally (e.g., for canvas renderer).
 
 ```js
 // type signature
-selectFeatureById: (featureId: string, parentFeatureId?: string, topLevelFeatureId?: string) => Promise<void>
+selectFeatureById: (featureId: string, parentFeatureId?: string | undefined, topLevelFeatureId?: string | undefined) => Promise<void>
 ```
 
 #### action: setContextMenuFeatureById
@@ -371,5 +371,5 @@ Falls back to RPC if not found locally (e.g., for canvas renderer).
 
 ```js
 // type signature
-setContextMenuFeatureById: (featureId: string, parentFeatureId?: string, topLevelFeatureId?: string) => Promise<void>
+setContextMenuFeatureById: (featureId: string, parentFeatureId?: string | undefined, topLevelFeatureId?: string | undefined) => Promise<void>
 ```

@@ -30,7 +30,7 @@ extends
 
 ```js
 // type signature
-any
+IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
@@ -93,7 +93,7 @@ showDynamicControls: true
 
 ```js
 // type signature
-IArrayType<any>
+IArrayType<IAnyModelType>
 // code
 levels: types.array(LinearSyntenyViewHelper!)
 ```
@@ -104,7 +104,7 @@ currently this is limited to an array of two
 
 ```js
 // type signature
-IArrayType<IModelType<ModelProperties & { id: any; type: IType<string, string, string>; offsetPx: IType<number, number, number>; bpPerPx: IType<number, number, number>; ... 13 more ...; init: IType<...>; }, { ...; } & ... 13 more ... & { ...; }, ModelCreationType<...>, ModelSnapshotType<...>>>
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }, { ...; } & ... 16 more ... & { ...; }, ModelCreationType<...>, ModelSnapshotType<...>>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')!
@@ -119,7 +119,7 @@ dotplots where this track would not really apply elsewhere
 
 ```js
 // type signature
-IArrayType<any>
+IArrayType<IAnyModelType>
 // code
 viewTrackConfigs: types.array(
           pluginManager.pluggableConfigSchemaType('track'),
@@ -139,21 +139,21 @@ boolean
 
 ```js
 // type
-any[][]
+string[][]
 ```
 
 #### getter: assemblyNames
 
 ```js
 // type
-any[]
+string[]
 ```
 
 #### getter: loadingMessage
 
 ```js
 // type
-string
+'Loading' | undefined
 ```
 
 #### getter: showLoading
@@ -211,14 +211,14 @@ setIsLoading: (arg: boolean) => void
 
 ```js
 // type signature
-setViews: (views: ModelCreationType<ExtractCFromProps<ModelProperties & { id: any; type: IType<string, string, string>; offsetPx: IType<number, number, number>; bpPerPx: IType<number, number, number>; ... 13 more ...; init: IType<...>; }>>[]) => void
+setViews: (views: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }>>[]) => void
 ```
 
 #### action: removeView
 
 ```js
 // type signature
-removeView: (view: { [x: string]: any; id: any; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>>; ... 12 more ...; init: InitState & IStateTreeNode<...>; } & ... 16 more ... & IStateTreeNode<...>) => void
+removeView: (view: { id: string; displayName: string | undefined; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 12 more ...; init: (InitState & IStateTreeNode<...>) | undefined; } & ... 19 more ......
 ```
 
 #### action: setLevelHeight
@@ -246,7 +246,7 @@ setShowDynamicControls: (arg: boolean) => void
 
 ```js
 // type signature
-activateTrackSelector: (level: number) => any
+activateTrackSelector: (level: number) => Widget
 ```
 
 #### action: toggleTrack

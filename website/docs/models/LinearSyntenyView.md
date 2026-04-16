@@ -87,7 +87,7 @@ used for initializing the view from a session snapshot example:
 
 ```js
 // type signature
-IType<LinearSyntenyViewInit, LinearSyntenyViewInit, LinearSyntenyViewInit>
+IType<LinearSyntenyViewInit | undefined, LinearSyntenyViewInit | undefined, LinearSyntenyViewInit | undefined>
 // code
 init: types.frozen<LinearSyntenyViewInit | undefined>()
 ```
@@ -128,14 +128,14 @@ overwhelming
 
 ```js
 // type signature
-headerMenuItems: () => any[]
+headerMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; } | { ...; })[]
 ```
 
 #### method: menuItems
 
 ```js
 // type signature
-menuItems: () => any[]
+menuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```
 
 ### LinearSyntenyView - Actions
@@ -200,7 +200,7 @@ showAllRegions: () => void
 
 ```js
 // type signature
-setInit: (init?: LinearSyntenyViewInit) => void
+setInit: (init?: LinearSyntenyViewInit | undefined) => void
 ```
 
 #### action: exportSvg

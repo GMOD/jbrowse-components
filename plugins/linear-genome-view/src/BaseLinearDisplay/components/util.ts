@@ -178,10 +178,11 @@ export function deduplicateFeatureLabels(
       continue
     }
 
+    const floorLeftPx = Math.floor(leftPx)
     const existing = featureLabels.get(key)
-    if (!existing || leftPx < existing.leftPx) {
+    if (!existing || floorLeftPx < existing.leftPx) {
       featureLabels.set(key, {
-        leftPx,
+        leftPx: floorLeftPx,
         topPx: effectiveTopPx,
         totalFeatureHeight,
         floatingLabels,
@@ -218,7 +219,7 @@ export function calculateFloatingLabelPosition(
 
   if (labelWidth > featureWidth) {
     // Label doesn't fit within feature - don't float, use fixed position
-    return featureLeftPx - offsetPx
+    return Math.round(featureLeftPx - offsetPx)
   }
 
   // Label fits within feature - apply floating logic
@@ -227,5 +228,5 @@ export function calculateFloatingLabelPosition(
   const leftPx = Math.max(featureLeftPx, viewportLeft)
   const naturalX = leftPx - offsetPx
   const maxX = featureRightPx - offsetPx - labelWidth
-  return clamp(naturalX, 0, maxX)
+  return Math.round(clamp(naturalX, 0, maxX))
 }

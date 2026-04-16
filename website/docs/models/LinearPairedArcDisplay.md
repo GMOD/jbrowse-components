@@ -44,7 +44,7 @@ type: types.literal('LinearPairedArcDisplay')
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -101,5 +101,5 @@ setDisplayMode: (flag: string) => void
 
 ```js
 // type signature
-renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<React.ReactNode>
+renderSvg: (opts: { rasterizeLayers?: boolean | undefined; }) => Promise<ReactNode>
 ```

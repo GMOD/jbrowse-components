@@ -75,7 +75,7 @@ minArcScore: types.optional(types.number, 0)
 
 ```js
 // type signature
-IType<FilterBy, FilterBy, FilterBy>
+IType<FilterBy | undefined, FilterBy | undefined, FilterBy | undefined>
 // code
 filterBySetting: types.frozen<FilterBy | undefined>()
 ```
@@ -84,7 +84,7 @@ filterBySetting: types.frozen<FilterBy | undefined>()
 
 ```js
 // type signature
-IType<ColorBy, ColorBy, ColorBy>
+IType<ColorBy | undefined, ColorBy | undefined, ColorBy | undefined>
 // code
 colorBySetting: types.frozen<ColorBy | undefined>()
 ```
@@ -183,7 +183,7 @@ boolean
 
 ```js
 // type
-LazyExoticComponent<(props: { model: { featureUnderMouse?: Feature; mouseoverExtraInformation?: string; visibleModifications: Map<string, { color: string; base: string; strand: string; }>; simplexModifications?: Set<string>; }; height: number; offsetMouseCoord: [...]; clientMouseCoord: [...]; clientRect?: DOMRect; }...
+LazyExoticComponent<(props: { model: { featureUnderMouse?: Feature | undefined; mouseoverExtraInformation?: string | undefined; visibleModifications: Map<string, { color: string; base: string; strand: string; }>; simplexModifications?: Set<...> | undefined; }; height: number; offsetMouseCoord: [...]; clientMouseCoor...
 ```
 
 #### getter: adapterConfig
@@ -201,7 +201,7 @@ LazyExoticComponent<(props: { model: { featureUnderMouse?: Feature; mouseoverExt
 
 ```js
 // type
-string
+string | undefined
 ```
 
 #### getter: graphType
@@ -215,7 +215,7 @@ boolean
 
 ```js
 // type
-any
+SerializableFilterChain
 ```
 
 ### LinearSNPCoverageDisplay - Methods
@@ -238,7 +238,7 @@ renderProps: () => any
 
 ```js
 // type signature
-renderingProps: () => { displayModel: { [x: string]: any; heightPreConfig: number; userBpPerPxLimit: number; userByteSizeLimit: number; blockState: IMSTMap<IModelType<{ key: ISimpleType<string>; region: IType<...>; reloadFlag: IType<...>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } &...
+renderingProps: () => { displayModel: { id: string; type: never; rpcDriverName: string | undefined; heightPreConfig: number | undefined; userBpPerPxLimit: number | undefined; userByteSizeLimit: number | undefined; ... 24 more ...; jexlFilters: IMSTArray<...> & IStateTreeNode<...>; } & ... 46 more ... & IStateTreeNode<...>; }
 ```
 
 #### method: renderSvg
@@ -254,14 +254,14 @@ renderSvg: (opts: ExportSvgDisplayOptions) => Promise<Element>
 
 ```js
 // type signature
-contextMenuItems: () => any[]
+contextMenuItems: () => never[]
 ```
 
 #### method: trackMenuItems
 
 ```js
 // type signature
-trackMenuItems: () => any[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
 ```
 
 #### method: legendItems
@@ -279,7 +279,7 @@ legendItems: (theme: Theme) => LegendItem[]
 
 ```js
 // type signature
-setConfig: (configuration: AnyConfigurationModel) => void
+setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
 ```
 
 #### action: setFilterBy
@@ -293,7 +293,7 @@ setFilterBy: (filter: FilterBy) => void
 
 ```js
 // type signature
-setColorScheme: (colorBy?: ColorBy) => void
+setColorScheme: (colorBy?: ColorBy | undefined) => void
 ```
 
 #### action: setJexlFilters

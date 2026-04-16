@@ -41,7 +41,7 @@ type: types.literal('LinearReadCloudDisplay')
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -192,7 +192,7 @@ Calculate ticks for the y-axis scalebar in cloud mode
 
 ```js
 // type
-CloudTicks
+CloudTicks | undefined
 ```
 
 ### LinearReadCloudDisplay - Methods
@@ -227,14 +227,14 @@ renderProps: () => any
 
 ```js
 // type signature
-trackMenuItems: () => any[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; } | { ...; })[]
 ```
 
 #### method: renderSvg
 
 ```js
 // type signature
-renderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
 ```
 
 ### LinearReadCloudDisplay - Actions
@@ -254,7 +254,7 @@ Set whether to remove spacing between features
 
 ```js
 // type signature
-setNoSpacing: (flag?: boolean) => void
+setNoSpacing: (flag?: boolean | undefined) => void
 ```
 
 #### action: setMaxHeight
@@ -263,7 +263,7 @@ Set the maximum height for the layout
 
 ```js
 // type signature
-setMaxHeight: (n?: number) => void
+setMaxHeight: (n?: number | undefined) => void
 ```
 
 #### action: setLayoutHeight
@@ -319,7 +319,7 @@ Set the ID of the selected feature for persistent highlighting
 
 ```js
 // type signature
-setSelectedFeatureId: (id: string) => void
+setSelectedFeatureId: (id: string | undefined) => void
 ```
 
 #### action: setHideSmallIndels

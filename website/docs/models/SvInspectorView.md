@@ -35,7 +35,7 @@ extends
 
 ```js
 // type signature
-any
+IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
@@ -71,7 +71,7 @@ onlyDisplayRelevantRegionsInCircularView: false
 
 ```js
 // type signature
-IOptionalIType<IModelType<ModelProperties & { type: ISimpleType<"SpreadsheetView">; offsetPx: IType<number, number, number>; height: IOptionalIType<ISimpleType<number>, [...]>; ... 4 more ...; init: IType<...>; }, { ...; } & ... 3 more ... & { ...; }, _NotCustomized, { ...; } | { ...; }>, [...]>
+IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }, { ...; } & ... 6 more ... & { ...; }, _NotCustomized, { ...; } | { ...; }>, [...]>
 // code
 spreadsheetView: types.optional(SpreadsheetModel, () =>
           SpreadsheetModel.create({
@@ -85,7 +85,7 @@ spreadsheetView: types.optional(SpreadsheetModel, () =>
 
 ```js
 // type signature
-IOptionalIType<IModelType<ModelProperties & { type: ISimpleType<"CircularView">; offsetRadians: IType<number, number, number>; bpPerPx: IType<number, number, number>; ... 16 more ...; init: IType<...>; }, { ...; } & ... 5 more ... & { ...; }, _NotCustomized, ModelSnapshotType<...>>, [...]>
+IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, ModelSnapshotType<...>>, [...]>
 // code
 circularView: types.optional(CircularModel, () =>
           CircularModel.create({
@@ -103,7 +103,7 @@ used for initializing the view from a session snapshot
 
 ```js
 // type signature
-IType<SvInspectorViewInit, SvInspectorViewInit, SvInspectorViewInit>
+IType<SvInspectorViewInit | undefined, SvInspectorViewInit | undefined, SvInspectorViewInit | undefined>
 // code
 init: types.frozen<SvInspectorViewInit | undefined>()
 ```
@@ -114,7 +114,7 @@ init: types.frozen<SvInspectorViewInit | undefined>()
 
 ```js
 // type
-string
+string | undefined
 ```
 
 #### getter: showCircularView
@@ -135,10 +135,7 @@ SimpleFeatureSerialized[]
 
 ```js
 // type
-{
-  type: string
-  features: any
-}
+{ type: string; features: SimpleFeatureSerialized[]; }
 ```
 
 #### getter: featureRefNames
@@ -152,14 +149,14 @@ any[]
 
 ```js
 // type
-Set<unknown>
+Set<any>
 ```
 
 #### getter: featuresCircularTrackConfiguration
 
 ```js
 // type
-{ type: string; trackId: string; name: string; adapter: any; assemblyNames: any[]; displays: { type: string; displayId: string; onChordClick: string; renderer: { type: string; }; }[]; }
+{ type: string; trackId: string; name: string; adapter: { type: string; features: SimpleFeatureSerialized[]; }; assemblyNames: (string | undefined)[]; displays: { type: string; displayId: string; onChordClick: string; renderer: { ...; }; }[]; }
 ```
 
 ### SvInspectorView - Methods
@@ -205,7 +202,7 @@ setOnlyDisplayRelevantRegionsInCircularView: (val: boolean) => void
 
 ```js
 // type signature
-setInit: (init?: SvInspectorViewInit) => void
+setInit: (init?: SvInspectorViewInit | undefined) => void
 ```
 
 #### action: resizeHeight

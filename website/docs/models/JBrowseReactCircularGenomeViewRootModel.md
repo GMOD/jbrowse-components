@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-IModelType<{ configuration: any; assembly: AnyConfigurationSchemaType; tracks: IArrayType<any>; internetAccounts: IArrayType<any>; connections: IArrayType<any>; aggregateTextSearchAdapters: IArrayType<...>; plugins: IType<...>; }, { ...; }, _NotCustomized, _NotCustomized>
+IModelType<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; }; drivers: IOptionalIType<IMapType<ITypeUnion<ModelCreationType<ExtractCFromProps<Record<string, any>>> | undefined, ModelSnapshotType<...>, ({} & ... 1 more...
 // code
 config: createConfigModel(pluginManager, assemblyConfigSchema)
 ```
@@ -35,7 +35,7 @@ config: createConfigModel(pluginManager, assemblyConfigSchema)
 
 ```js
 // type signature
-IModelType<{ id: any; name: ISimpleType<string>; margin: IType<number, number, number>; } & { drawerPosition: IOptionalIType<ISimpleType<string>, [undefined]>; drawerWidth: IOptionalIType<...>; widgets: IMapType<...>; activeWidgets: IMapType<...>; minimized: IOptionalIType<...>; } & { ...; } & ModelProperties & { .....
+IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number | undefined, number, number>; } & { ...; } & { ...; } & { ...; }, { ...; } & ... 21 more ... & { ...; }, _NotCustomized, { ...; } & ... 3 more ... & _NotCustomized>
 // code
 session: Session
 ```
@@ -44,7 +44,7 @@ session: Session
 
 ```js
 // type signature
-IOptionalIType<any, [undefined]>
+IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; canonicalToSeqAdapterRefNames: Record<...> | undefined; cy...
 // code
 assemblyManager: types.optional(assemblyManagerType, {})
 ```
@@ -53,7 +53,7 @@ assemblyManager: types.optional(assemblyManagerType, {})
 
 ```js
 // type signature
-IArrayType<any>
+IArrayType<IAnyType>
 // code
 internetAccounts: types.array(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
@@ -66,14 +66,14 @@ internetAccounts: types.array(
 
 ```js
 // type
-{ configuration: any; assembly: AnyConfigurationSchemaType; tracks: IMSTArray<any> & IStateTreeNode<IArrayType<any>>; internetAccounts: IMSTArray<any> & IStateTreeNode<...>; connections: IMSTArray<...> & IStateTreeNode<...>; aggregateTextSearchAdapters: IMSTArray<...> & IStateTreeNode<...>; plugins: any; } & NonEmpt...
+{ configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 5 more ...; plugins: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>
 ```
 
 #### getter: pluginManager
 
 ```js
 // type
-any
+PluginManager
 ```
 
 ### JBrowseReactCircularGenomeViewRootModel - Actions
@@ -82,7 +82,7 @@ any
 
 ```js
 // type signature
-setSession: (sessionSnapshot: unknown) => void
+setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number | undefined, number, number>; } & { ...; } & { ...; } & { ...; }>>) => void
 ```
 
 #### action: renameCurrentSession

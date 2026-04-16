@@ -26,14 +26,14 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: theme
 
 ```js
 // type
-any
+Theme
 ```
 
 ### ThemeManagerSessionMixin - Methods

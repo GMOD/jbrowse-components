@@ -60,7 +60,7 @@ sessionPath: types.optional(types.string, '')
 
 ```js
 // type signature
-IOptionalIType<any, [undefined]>
+IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; canonicalToSeqAdapterRefNames: Record<...> | undefined; cy...
 // code
 assemblyManager: types.optional(
         assemblyManagerFactory(assemblyConfigSchema, pluginManager),

@@ -36,7 +36,7 @@ composed of
 
 ```js
 // type signature
-any
+IAnyModelType
 // code
 view: pluginManager.getViewType('CircularView')!.stateModel
 ```
@@ -101,7 +101,7 @@ renderProps: () => {
 
 ```js
 // type signature
-getTrackActionMenuItems: (config: any, extraTrackActions?: MenuItem[]) => MenuItem[]
+getTrackActionMenuItems: (config: any, extraTrackActions?: MenuItem[] | undefined) => MenuItem[]
 ```
 
 ### JBrowseReactCircularGenomeViewSessionModel - Actions

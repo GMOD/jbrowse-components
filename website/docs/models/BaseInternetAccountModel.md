@@ -99,7 +99,7 @@ Can use this to customize what is displayed in fileSelector's toggle box
 
 ```js
 // type
-React.ReactNode
+ReactNode
 ```
 
 #### getter: SelectorComponent
@@ -109,7 +109,7 @@ Can use this to customize what the fileSelector. It takes a prop called
 
 ```js
 // type
-any
+AnyReactComponentType | undefined
 ```
 
 #### getter: selectorLabel
@@ -119,7 +119,7 @@ SelectorComponent is supplied
 
 ```js
 // type
-string
+string | undefined
 ```
 
 #### getter: tokenKey
@@ -172,7 +172,7 @@ removeToken: () => void
 
 ```js
 // type signature
-retrieveToken: () => string
+retrieveToken: () => string | null
 ```
 
 #### action: validateToken
@@ -196,14 +196,14 @@ previously cached promise. If token is not available, uses `getTokenFromUser`.
 
 ```js
 // type signature
-getToken: (location?: UriLocation) => Promise<string>
+getToken: (location?: UriLocation | undefined) => Promise<string>
 ```
 
 #### action: addAuthHeaderToInit
 
 ```js
 // type signature
-addAuthHeaderToInit: (init?: RequestInit, token?: string) => { headers: Headers; body?: BodyInit; cache?: RequestCache; credentials?: RequestCredentials; ... 9 more ...; window?: null; }
+addAuthHeaderToInit: (init?: RequestInit | undefined, token?: string | undefined) => { headers: Headers; body?: BodyInit | null | undefined; cache?: RequestCache | undefined; ... 10 more ...; window?: null | undefined; }
 ```
 
 #### action: getPreAuthorizationInformation
@@ -224,7 +224,7 @@ it includes a token in it pre-auth information.
 
 ```js
 // type signature
-getFetcher: (loc?: UriLocation) => (input: RequestInfo, init?: RequestInit) => Promise<Response>
+getFetcher: (loc?: UriLocation | undefined) => (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
 ```
 
 #### action: openLocation

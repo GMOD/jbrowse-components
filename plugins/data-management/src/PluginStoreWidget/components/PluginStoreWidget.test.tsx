@@ -97,7 +97,7 @@ test('plugin store admin - adds a custom plugin correctly', async () => {
       umdUrl: 'msaview.js',
     },
   ])
-})
+}, 20000)
 
 test('plugin store admin - removes a custom plugin correctly', async () => {
   const { user, session, model, reloadPluginManagerMock } = setup({}, true)

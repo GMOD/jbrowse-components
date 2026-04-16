@@ -55,14 +55,14 @@ rpcDriverName: types.maybe(types.string)
 
 ```js
 // type
-React.FC<{ model: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; statusMessage: string; } & IStateTreeNode<IModelType<{ id: IOptionalIType<ISimpleType<string>, [...]>; type: ISimpleType<...>; rpcDriverName: IMaybe<...>; }, { ...; }, _NotCustomized,...
+FC<{ model: { id: string; type: string; rpcDriverName: string | undefined; } & NonEmptyObject & { rendererTypeName: string; error: unknown; statusMessage: string | undefined; } & IStateTreeNode<...>; onHorizontalScroll?: (() => void) | undefined; blockState?: Record<...> | undefined; }>
 ```
 
 #### getter: DisplayBlurb
 
 ```js
 // type
-any
+FC<{ model: { id: string; type: string; rpcDriverName: string | undefined; } & NonEmptyObject & { rendererTypeName: string; error: unknown; statusMessage: string | undefined; } & IStateTreeNode<...>; }> | null
 ```
 
 #### getter: adapterConfig
@@ -86,7 +86,7 @@ like autoruns when track is not visible.
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: parentDisplay
@@ -128,7 +128,7 @@ component
 
 ```js
 // type
-any
+FC<any> | undefined
 ```
 
 #### getter: viewMenuActions
@@ -158,7 +158,7 @@ callbacks
 
 ```js
 // type signature
-renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; statusMessage: string; } & { readonly RenderingComponent: React.FC<...>; ... 5 more ...; readonly effectiveRpcDriverName: any; } & IStateTreeNode<...>; }
+renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string | undefined; } & NonEmptyObject & { rendererTypeName: string; error: unknown; statusMessage: string | undefined; } & { ...; } & IStateTreeNode<...>; }
 ```
 
 #### method: trackMenuItems
@@ -172,7 +172,7 @@ trackMenuItems: () => MenuItem[]
 
 ```js
 // type signature
-regionCannotBeRendered: () => any
+regionCannotBeRendered: () => null
 ```
 
 ### BaseDisplay - Actions
@@ -181,7 +181,7 @@ regionCannotBeRendered: () => any
 
 ```js
 // type signature
-setStatusMessage: (arg?: string) => void
+setStatusMessage: (arg?: string | undefined) => void
 ```
 
 #### action: setError

@@ -40,6 +40,16 @@ categories: {
       }
 ```
 
+#### slot: configuration.hierarchical.defaultFolderCategories
+
+```js
+defaultFolderCategories: {
+      type: 'stringArray',
+      description: 'list of category names to display as folders by default',
+      defaultValue: [],
+    }
+```
+
 #### slot: configuration.hierarchical.defaultCollapsed.categoryNames
 
 ```js

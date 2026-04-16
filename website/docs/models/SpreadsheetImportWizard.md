@@ -64,7 +64,7 @@ used specifically for UriLocation's
 
 ```js
 // type signature
-IType<any, any, any>
+IType<FileLocation | undefined, FileLocation | undefined, FileLocation | undefined>
 // code
 cachedFileLocation: types.frozen<FileLocation | undefined>()
 ```
@@ -98,14 +98,14 @@ any
 
 ```js
 // type signature
-isValidRefName: (refName: string, assemblyName?: string) => any
+isValidRefName: (refName: string, assemblyName?: string | undefined) => boolean
 ```
 
 #### method: tracksForAssembly
 
 ```js
 // type signature
-tracksForAssembly: (selectedAssembly: string) => any[]
+tracksForAssembly: (selectedAssembly: string) => { track: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>; label: string; assemblyNames: any; type: string; loc: FileLocation; }[]
 ```
 
 ### SpreadsheetImportWizard - Actions

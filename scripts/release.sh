@@ -43,9 +43,9 @@ mv tmp.json website/docusaurus.config.json
 # Generate changelog from GitHub PRs
 echo "Generating changelog..."
 CHANGELOG=$(scripts/generate-changelog.sh)
-echo "$CHANGELOG" > tmp_changelog.md
-echo "" >> tmp_changelog.md
-cat CHANGELOG.md >> tmp_changelog.md
+echo "$CHANGELOG" >tmp_changelog.md
+echo "" >>tmp_changelog.md
+cat CHANGELOG.md >>tmp_changelog.md
 mv tmp_changelog.md CHANGELOG.md
 
 # Generate blog post
@@ -76,7 +76,7 @@ for (const ws of ['packages', 'products', 'plugins']) {
 
 # Generate version.ts for packages that export it
 for pkg in products/jbrowse-cli products/jbrowse-react-app products/jbrowse-react-circular-genome-view products/jbrowse-react-linear-genome-view; do
-  echo "export const version = '$VERSION'" > $pkg/src/version.ts
+  echo "export const version = '$VERSION'" >$pkg/src/version.ts
 done
 
 # Commit, tag, push (publishing is handled by GitHub Actions)
@@ -84,6 +84,6 @@ pnpm format
 git add .
 git commit --message "$RELEASE_TAG"
 git tag -a "$RELEASE_TAG" -m "$RELEASE_TAG"
-git push && git push --tags
+git push --follow-tags
 
 echo "✓ Released $RELEASE_TAG"

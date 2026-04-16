@@ -39,7 +39,7 @@ type: types.literal('LinearComparativeDisplay')
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -104,7 +104,7 @@ controlled by a reaction
 
 ```js
 // type signature
-setRendered: (args?: { features: Feature[]; }) => void
+setRendered: (args?: { features: Feature[]; } | undefined) => void
 ```
 
 #### action: setError

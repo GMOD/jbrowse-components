@@ -87,7 +87,7 @@ boolean
 
 ```js
 // type
-{ range: number[]; values: number[]; format: (d: NumberValue) => string; position: ScaleLinear<number, number, never> | ScaleQuantize<number, never>; }
+{ range: number[]; values: number[]; format: (d: NumberValue) => string; position: ScaleLinear<number, number, never> | ScaleQuantize<number, never>; } | undefined
 ```
 
 #### getter: fillSetting
@@ -126,7 +126,7 @@ Base track menu items shared by all wiggle displays (Score submenu)
 
 ```js
 // type signature
-wiggleBaseTrackMenuItems: () => any[]
+wiggleBaseTrackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```
 
 #### method: wiggleOnlyTrackMenuItems
@@ -143,7 +143,7 @@ wiggleOnlyTrackMenuItems: () => ({ label: string; subMenu: { label: string; type
 
 ```js
 // type signature
-trackMenuItems: () => any[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; } | { ...; })[]
 ```
 
 ### LinearWiggleDisplay - Actions

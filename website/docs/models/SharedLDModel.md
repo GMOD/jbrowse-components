@@ -32,7 +32,7 @@ Shared state model for LD displays extends
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -474,7 +474,7 @@ number
 
 ```js
 // type signature
-regionCannotBeRendered: () => any
+regionCannotBeRendered: () => null
 ```
 
 #### method: filterMenuItems
@@ -495,14 +495,14 @@ renderProps: () => any
 
 ```js
 // type signature
-trackMenuItems: () => any[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
 ```
 
 #### method: renderSvg
 
 ```js
 // type signature
-renderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
 ```
 
 ### SharedLDModel - Actions
@@ -511,7 +511,7 @@ renderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>
 
 ```js
 // type signature
-setFlatbushData: (flatbush: ArrayBufferLike, items: LDFlatbushItem[], snps: { id: string; refName: string; start: number; end: number; }[], maxScore: number, yScalar: number, cellWidth: number) => void
+setFlatbushData: (flatbush: ArrayBufferLike | undefined, items: LDFlatbushItem[], snps: { id: string; refName: string; start: number; end: number; }[], maxScore: number, yScalar: number, cellWidth: number) => void
 ```
 
 #### action: setLineZoneHeight
@@ -560,7 +560,7 @@ setLDMetric: (metric: string) => void
 
 ```js
 // type signature
-setColorScheme: (scheme: string) => void
+setColorScheme: (scheme: string | undefined) => void
 ```
 
 #### action: setShowLegend
@@ -616,14 +616,14 @@ setCallRateFilter: (threshold: number) => void
 
 ```js
 // type signature
-setFilterStats: (stats: FilterStats) => void
+setFilterStats: (stats: FilterStats | undefined) => void
 ```
 
 #### action: setRecombination
 
 ```js
 // type signature
-setRecombination: (data: { values: number[]; positions: number[]; }) => void
+setRecombination: (data: { values: number[]; positions: number[]; } | undefined) => void
 ```
 
 #### action: setShowVerticalGuides
@@ -665,5 +665,5 @@ setSignedLD: (value: boolean) => void
 
 ```js
 // type signature
-setJexlFilters: (filters: string[]) => void
+setJexlFilters: (filters: string[] | undefined) => void
 ```

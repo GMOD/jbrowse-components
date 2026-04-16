@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/desktop",
-  "version": "4.1.15",
+  "version": "4.2.0",
   "type": "module",
   "description": "JBrowse desktop application specialized to inspect structural variants",
   "license": "Apache-2.0",
@@ -8,7 +8,11 @@
   "author": "JBrowse Team",
   "main": "build/electron.js",
   "dir": "src",
-  "repository": "https://github.com/GMOD/jbrowse-components.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "products/jbrowse-desktop"
+  },
   "scripts": {
     "start": "cross-env NODE_ENV=development node scripts/start.ts",
     "electron": "electron . --no-sandbox",

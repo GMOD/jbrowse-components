@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-any
+IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
@@ -44,20 +44,11 @@ type: types.literal('HierarchicalTrackSelectorWidget')
 
 ```js
 // type signature
-IMaybe<IReferenceType<any>>
+IMaybe<IReferenceType<IAnyType>>
 // code
 view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       )
-```
-
-#### property: faceted
-
-```js
-// type signature
-IOptionalIType<IModelType<{ filterText: IOptionalIType<ISimpleType<string>, [undefined]>; showSparse: IOptionalIType<ISimpleType<boolean>, [undefined]>; showFilters: IOptionalIType<...>; showOptions: IOptionalIType<...>; panelWidth: IOptionalIType<...>; }, { ...; } & ... 4 more ... & { ...; }, _NotCustomized, ModelS...
-// code
-faceted: types.optional(facetedStateTreeF(), {})
 ```
 
 ### HierarchicalTrackSelectorWidget - Getters
@@ -73,7 +64,7 @@ Set<string>
 
 ```js
 // type
-Set<AnyConfigurationModel>
+Set<{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>>
 ```
 
 #### getter: favoritesSet
@@ -87,7 +78,7 @@ Set<string>
 
 ```js
 // type
-Set<GridRowId>
+Set<string>
 ```
 
 #### getter: assemblyNames
@@ -117,21 +108,21 @@ filter out tracks that don't match the current assembly/display types
 
 ```js
 // type
-any[]
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
 ```
 
 #### getter: allTrackConfigurations
 
 ```js
 // type
-any[]
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
 ```
 
 #### getter: allTrackConfigurationTrackIdSet
 
 ```js
 // type
-Map<unknown, unknown>
+Map<any, { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>>
 ```
 
 #### getter: favoriteTracks
@@ -140,7 +131,7 @@ filters out tracks that are not in the favorites group
 
 ```js
 // type
-unknown[]
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
 ```
 
 #### getter: recentlyUsedTracks
@@ -149,21 +140,21 @@ filters out tracks that are not in the recently used group
 
 ```js
 // type
-unknown[]
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
 ```
 
 #### getter: allTracks
 
 ```js
 // type
-any[]
+{ group: any; tracks: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]; noCategories: boolean; menuItems: never[]; }[]
 ```
 
 #### getter: hierarchy
 
 ```js
 // type
-{ name: string; id: string; type: "category"; children: { name: any; id: any; type: "category"; menuItems: any; nestingLevel: number; children: TreeNode[]; }[]; }
+{ name: string; id: string; type: "category"; children: { name: any; id: any; type: "category"; menuItems: never[]; nestingLevel: number; children: TreeNode[]; }[]; }
 ```
 
 #### getter: hasAnySubcategories
@@ -179,7 +170,7 @@ boolean
 
 ```js
 // type signature
-isSelected: (track: AnyConfigurationModel) => boolean
+isSelected: (track: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => boolean
 ```
 
 #### method: isFavorite
@@ -200,7 +191,7 @@ isRecentlyUsed: (trackId: string) => boolean
 
 ```js
 // type signature
-getRefSeqTrackConf: (assemblyName: string) => any
+getRefSeqTrackConf: (assemblyName: string) => MaybeAnyConfigurationModel
 ```
 
 ### HierarchicalTrackSelectorWidget - Actions
@@ -223,21 +214,21 @@ setSortCategories: (val: boolean) => void
 
 ```js
 // type signature
-setSelection: (elt: AnyConfigurationModel[]) => void
+setSelection: (elt: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => void
 ```
 
 #### action: addToSelection
 
 ```js
 // type signature
-addToSelection: (elt: AnyConfigurationModel[]) => void
+addToSelection: (elt: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => void
 ```
 
 #### action: removeFromSelection
 
 ```js
 // type signature
-removeFromSelection: (elt: AnyConfigurationModel[]) => void
+removeFromSelection: (elt: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => void
 ```
 
 #### action: clearSelection
@@ -300,7 +291,7 @@ setFavoritesCounter: (val: number) => void
 
 ```js
 // type signature
-addToRecentlyUsed: (id: GridRowId) => void
+addToRecentlyUsed: (id: string) => void
 ```
 
 #### action: clearRecentlyUsed
@@ -343,6 +334,20 @@ expandAllCategories: () => void
 ```js
 // type signature
 setCollapsedCategories: (str: [string, boolean][]) => void
+```
+
+#### action: toggleFolderCategory
+
+```js
+// type signature
+toggleFolderCategory: (categoryId: string) => void
+```
+
+#### action: setFolderCategories
+
+```js
+// type signature
+setFolderCategories: (ids: string[]) => void
 ```
 
 #### action: clearFilterText

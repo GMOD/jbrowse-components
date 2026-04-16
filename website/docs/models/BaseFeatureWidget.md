@@ -49,7 +49,7 @@ type: types.literal('BaseFeatureWidget')
 
 ```js
 // type signature
-IType<SimpleFeatureSerialized, SimpleFeatureSerialized, SimpleFeatureSerialized>
+IType<MaybeSerializedFeat, MaybeSerializedFeat, MaybeSerializedFeat>
 // code
 featureData: types.frozen<MaybeSerializedFeat>()
 ```
@@ -67,7 +67,7 @@ formattedFields: types.frozen()
 
 ```js
 // type signature
-IType<SimpleFeatureSerialized, SimpleFeatureSerialized, SimpleFeatureSerialized>
+IType<MaybeSerializedFeat, MaybeSerializedFeat, MaybeSerializedFeat>
 // code
 unformattedFeatureData: types.frozen<MaybeSerializedFeat>()
 ```
@@ -125,7 +125,7 @@ maxDepth: types.maybe(types.number)
 
 ```js
 // type signature
-IOptionalIType<IModelType<{}, { showCoordinatesSetting: string; intronBp: number; upDownBp: number; upperCaseCDS: boolean; charactersPerRow: number; feature: SimpleFeatureSerialized; mode: SequenceDisplayMode; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IModelType<{}, { showCoordinatesSetting: string; intronBp: number; upDownBp: number; upperCaseCDS: boolean; charactersPerRow: number; feature: SimpleFeatureSerialized | undefined; mode: SequenceDisplayMode; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {})
 ```
@@ -134,7 +134,7 @@ sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {})
 
 ```js
 // type signature
-IType<Record<string, unknown>, Record<string, unknown>, Record<string, unknown>>
+IType<Record<string, unknown> | undefined, Record<string, unknown> | undefined, Record<string, unknown> | undefined>
 // code
 descriptions: types.frozen<Record<string, unknown> | undefined>()
 ```
@@ -166,7 +166,7 @@ setFormattedData: (feat: SimpleFeatureSerialized) => void
 
 ```js
 // type signature
-setExtra: (type?: string, trackId?: string, maxDepth?: number) => void
+setExtra: (type?: string | undefined, trackId?: string | undefined, maxDepth?: number | undefined) => void
 ```
 
 #### action: setError

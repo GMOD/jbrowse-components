@@ -59,7 +59,7 @@ bpPerPx: defaultBpPerPx
 
 ```js
 // type signature
-IArrayType<any>
+IArrayType<IAnyType>
 // code
 tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
@@ -198,7 +198,7 @@ used for initializing the view from a session snapshot
 
 ```js
 // type signature
-IType<CircularViewInit, CircularViewInit, CircularViewInit>
+IType<CircularViewInit | undefined, CircularViewInit | undefined, CircularViewInit | undefined>
 // code
 init: types.frozen<CircularViewInit | undefined>()
 ```
@@ -247,7 +247,7 @@ number
 
 ```js
 // type
-any
+number
 ```
 
 #### getter: centerXY
@@ -282,7 +282,7 @@ number
 
 ```js
 // type
-any
+number
 ```
 
 #### getter: atMaxBpPerPx
@@ -317,14 +317,14 @@ boolean
 
 ```js
 // type
-any
+number
 ```
 
 #### getter: figureHeight
 
 ```js
 // type
-any
+number
 ```
 
 #### getter: elidedRegions
@@ -348,14 +348,14 @@ string[]
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: assemblyErrors
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: error
@@ -369,7 +369,7 @@ unknown
 
 ```js
 // type
-string
+'Loading' | undefined
 ```
 
 #### getter: hasSomethingToShow
@@ -385,7 +385,7 @@ Whether to show a loading indicator instead of the import form or view
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: showView
@@ -394,7 +394,7 @@ Whether the view is fully initialized and ready to display
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: showImportForm
@@ -411,14 +411,14 @@ boolean
 
 ```js
 // type
-any[]
+Slice[]
 ```
 
 #### getter: visibleStaticSlices
 
 ```js
 // type
-any[]
+Slice[]
 ```
 
 ### CircularView - Methods
@@ -529,7 +529,7 @@ setDisplayedRegions: (regions: Region[]) => void
 
 ```js
 // type signature
-activateTrackSelector: () => any
+activateTrackSelector: () => Widget
 ```
 
 #### action: toggleTrack
@@ -550,7 +550,7 @@ setError: (error: unknown) => void
 
 ```js
 // type signature
-setInit: (init?: CircularViewInit) => void
+setInit: (init?: CircularViewInit | undefined) => void
 ```
 
 #### action: showTrack
@@ -564,7 +564,7 @@ showTrack: (trackId: string, initialSnapshot?: {}) => void
 
 ```js
 // type signature
-addTrackConf: (configuration: AnyConfigurationModel, initialSnapshot?: {}) => void
+addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>, initialSnapshot?: {}) => void
 ```
 
 #### action: hideTrack

@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-IArrayType<BaseAssemblyConfigSchema>
+IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; refNameAliases: ConfigurationSchemaType<...>; cytobands: ConfigurationSchemaType<...>; displ...
 // code
 sessionAssemblies: types.array(assemblyConfigSchemasType)
 ```
@@ -37,7 +37,7 @@ sessionAssemblies: types.array(assemblyConfigSchemasType)
 
 ```js
 // type signature
-addSessionAssembly: (conf: AnyConfiguration) => BaseAssemblyConfigSchema
+addSessionAssembly: (conf: AnyConfiguration) => { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<...> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>
 ```
 
 #### action: addAssembly

@@ -28,7 +28,7 @@ extends BaseConnectionModel
 
 ```js
 // type signature
-any
+ConfigurationSchemaType<{ hubTxtLocation: { type: string; defaultValue: { uri: string; locationType: string; }; description: string; }; assemblyNames: { type: string; defaultValue: never[]; description: string; }; }, ConfigurationSchemaOptions<ConfigurationSchemaType<...>, undefined>>
 // code
 configuration: ConfigurationReference(configSchema)
 ```

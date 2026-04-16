@@ -35,7 +35,7 @@ type: types.literal('DotplotDisplay')
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -73,7 +73,7 @@ renderProps: () => any
 
 ```js
 // type signature
-renderSvg: (opts: ExportSvgOptions & { theme?: ThemeOptions; }) => Promise<Element>
+renderSvg: (opts: ExportSvgOptions & { theme?: ThemeOptions | undefined; }) => Promise<Element | null>
 ```
 
 ### DotplotDisplay - Actions
@@ -82,7 +82,7 @@ renderSvg: (opts: ExportSvgOptions & { theme?: ThemeOptions; }) => Promise<Eleme
 
 ```js
 // type signature
-setLoading: (stopToken?: StopToken) => void
+setLoading: (stopToken?: string | undefined) => void
 ```
 
 #### action: setMessage
@@ -96,7 +96,7 @@ setMessage: (messageText: string) => void
 
 ```js
 // type signature
-setRendered: (args?: { data: any; reactElement: ReactElement<unknown, string | JSXElementConstructor<any>>; renderingComponent: Component<{}, {}, any>; }) => void
+setRendered: (args?: { data: any; reactElement: ReactElement<unknown, string | JSXElementConstructor<any>>; renderingComponent: Component<{}, {}, any>; } | undefined) => void
 ```
 
 #### action: setError

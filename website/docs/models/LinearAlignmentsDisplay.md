@@ -154,21 +154,21 @@ setShowLegend: (s: boolean) => void
 
 ```js
 // type signature
-setSNPCoverageDisplay: (configuration: AnyConfigurationModel) => void
+setSNPCoverageDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
 ```
 
 #### action: setFeatureDensityStatsLimit
 
 ```js
 // type signature
-setFeatureDensityStatsLimit: (stats?: FeatureDensityStats) => void
+setFeatureDensityStatsLimit: (stats?: FeatureDensityStats | undefined) => void
 ```
 
 #### action: setPileupDisplay
 
 ```js
 // type signature
-setPileupDisplay: (configuration: AnyConfigurationModel) => void
+setPileupDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
 ```
 
 #### action: setHeight

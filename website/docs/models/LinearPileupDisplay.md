@@ -39,7 +39,7 @@ type: types.literal('LinearPileupDisplay')
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -66,7 +66,7 @@ mismatchAlpha: types.maybe(types.boolean)
 
 ```js
 // type signature
-IType<SortedBy, SortedBy, SortedBy>
+IType<SortedBy | undefined, SortedBy | undefined, SortedBy | undefined>
 // code
 sortedBy: types.frozen<SortedBy | undefined>()
 ```
@@ -129,7 +129,7 @@ renderProps: () => any
 
 ```js
 // type signature
-showSubMenuItems: () => ({ label: string; type: "subMenu"; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { label: string; type: string; checked: any; onClick: () => void; })[]
+showSubMenuItems: () => ({ label: string; type: "subMenu"; subMenu: { label: string; type: "radio"; checked: boolean | undefined; onClick: () => void; }[]; } | { label: string; type: string; checked: any; onClick: () => void; })[]
 ```
 
 #### method: trackMenuItems
@@ -180,7 +180,7 @@ toggleMismatchAlpha: () => void
 
 ```js
 // type signature
-setSortedBy: (type: string, tag?: string) => void
+setSortedBy: (type: string, tag?: string | undefined) => void
 ```
 
 #### action: setSortedByAtPosition
@@ -199,7 +199,7 @@ changing feature height destroys the sort-induced layout
 
 ```js
 // type signature
-setFeatureHeight: (n?: number) => void
+setFeatureHeight: (n?: number | undefined) => void
 ```
 
 #### action: reload

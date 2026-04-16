@@ -56,7 +56,7 @@ Initial layout configuration from URL params. Processed once then cleared.
 
 ```js
 // type signature
-IType<DockviewLayoutNode, DockviewLayoutNode, DockviewLayoutNode>
+IType<DockviewLayoutNode | undefined, DockviewLayoutNode | undefined, DockviewLayoutNode | undefined>
 // code
 init: types.frozen<DockviewLayoutNode | undefined>()
 ```
@@ -80,7 +80,7 @@ Get view IDs for a specific panel
 
 ```js
 // type
-(panelId: string) => any[] | (IMSTArray<ISimpleType<string>> & IStateTreeNode<IArrayType<ISimpleType<string>>>)
+(panelId: string) => never[] | (IMSTArray<ISimpleType<string>> & IStateTreeNode<IArrayType<ISimpleType<string>>>)
 ```
 
 ### DockviewLayoutMixin - Actions
@@ -91,7 +91,7 @@ Save the current dockview layout
 
 ```js
 // type signature
-setDockviewLayout: (layout: SerializedDockview) => void
+setDockviewLayout: (layout: SerializedDockview | undefined) => void
 ```
 
 #### action: setActivePanelId
@@ -100,7 +100,7 @@ Set the active panel ID
 
 ```js
 // type signature
-setActivePanelId: (panelId: string) => void
+setActivePanelId: (panelId: string | undefined) => void
 ```
 
 #### action: setInit
@@ -109,7 +109,7 @@ Set the initial layout configuration (from URL params)
 
 ```js
 // type signature
-setInit: (init: DockviewLayoutNode) => void
+setInit: (init: DockviewLayoutNode | undefined) => void
 ```
 
 #### action: assignViewToPanel

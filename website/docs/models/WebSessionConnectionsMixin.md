@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-IArrayType<any>
+IArrayType<IAnyModelType>
 // code
 sessionConnections: types.array(
           pluginManager.pluggableConfigSchemaType('connection'),
@@ -39,12 +39,12 @@ sessionConnections: types.array(
 
 ```js
 // type signature
-addConnectionConf: (connectionConf: BaseConnectionConfigModel) => any
+addConnectionConf: (connectionConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
 ```
 
 #### action: deleteConnection
 
 ```js
 // type signature
-deleteConnection: (configuration: AnyConfigurationModel) => any
+deleteConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
 ```

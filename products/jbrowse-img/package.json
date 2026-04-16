@@ -1,8 +1,13 @@
 {
   "name": "@jbrowse/img",
-  "version": "4.1.15",
+  "version": "4.2.0",
   "main": "esm/index.js",
   "types": "esm/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "products/jbrowse-img"
+  },
   "type": "module",
   "exports": {
     ".": {
