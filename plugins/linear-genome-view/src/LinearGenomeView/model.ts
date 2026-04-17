@@ -55,7 +55,6 @@ import {
   calculateVisibleLocStrings,
   expandRegion,
   generateLocations,
-  parseLocStrings,
 } from './util.ts'
 
 import type {
@@ -68,7 +67,6 @@ import type {
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ParsedLocString } from '@jbrowse/core/util'
 import type { BaseBlock, BlockSet } from '@jbrowse/core/util/blockTypes'
@@ -1594,28 +1592,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (assemblyName) {
           await assemblyManager.waitForAssembly(assemblyName)
         }
-        await this.navToSearchString({
-          input,
-          assemblyName,
-          grow,
-        })
-      },
-
-      /**
-       * #action
-       * Performs a text index search, and navigates to it immediately if a
-       * single result is returned. Will pop up a search dialog if multiple
-       * results are returned
-       */
-      async navToSearchString({
-        input,
-        assemblyName,
-        grow,
-      }: {
-        input: string
-        assemblyName: string
-        grow?: number
-      }) {
         await handleSelectedRegion({
           input,
           assemblyName,

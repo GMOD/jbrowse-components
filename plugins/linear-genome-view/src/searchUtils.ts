@@ -41,11 +41,9 @@ export async function navToOption({
   )
 }
 
-// gets a string as input, or use stored option results from previous query,
-// then re-query and
-// 1) if it has multiple results: pop a dialog
-// 2) if it's a single result navigate to it
-// 3) else assume it's a locstring and navigate to it
+// if input is a known ref or locstring, navigate directly;
+// otherwise search and: pop a dialog for multiple results, navigate for one,
+// or fall back to treating input as a locstring
 export async function handleSelectedRegion({
   input,
   model,
