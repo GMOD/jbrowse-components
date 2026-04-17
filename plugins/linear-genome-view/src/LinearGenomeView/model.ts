@@ -1588,19 +1588,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
         grow?: number,
       ) {
         const { assemblyNames } = self
-        const { assemblyManager } = getSession(self)
+        const session = getSession(self)
+        const { assemblyManager } = session
         const assemblyName = optAssemblyName || assemblyNames[0]!
         if (assemblyName) {
           await assemblyManager.waitForAssembly(assemblyName)
         }
-
-        return this.navToLocations(
-          parseLocStrings(input, assemblyName, (ref, asm) =>
-            assemblyManager.isValidRefName(ref, asm),
-          ),
+        await this.navToSearchString({
+          input,
           assemblyName,
           grow,
-        )
+        })
       },
 
       /**
@@ -1611,14 +1609,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       async navToSearchString({
         input,
-        assembly,
+        assemblyName,
+        grow,
       }: {
         input: string
-        assembly: Assembly
+        assemblyName: string
+        grow?: number
       }) {
         await handleSelectedRegion({
           input,
-          assembly,
+          assemblyName,
+          grow,
           model: self as LinearGenomeViewModel,
         })
       },

@@ -1,6 +1,8 @@
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { dedupe, getEnv, getSession } from '@jbrowse/core/util'
 
+import { parseLocStrings } from './LinearGenomeView/util.ts'
+
 import type { LinearGenomeViewModel } from './LinearGenomeView/index.ts'
 import type { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -16,15 +18,21 @@ export async function navToOption({
   option: BaseResult
   assemblyName: string
 }) {
-  const location = option.getLocation()
+  const location = option.getLocation() || option.getLabel()
   const trackId = option.getTrackId()
-  if (location) {
-    await model.navToLocString(location, assemblyName, 0.2)
-    if (trackId) {
-      model.showTrack(trackId)
-    }
-  }
   const session = getSession(model)
+  const { assemblyManager } = session
+  await model.navToLocations(
+    parseLocStrings(location, assemblyName, (ref, asm) =>
+      assemblyManager.isValidRefName(ref, asm),
+    ),
+    assemblyName,
+    0.2,
+  )
+  if (trackId) {
+    model.showTrack(trackId)
+  }
+
   const { pluginManager } = getEnv(session)
   await pluginManager.evaluateAsyncExtensionPoint(
     'LinearGenomeView-searchResultSelected',
@@ -41,16 +49,27 @@ export async function navToOption({
 export async function handleSelectedRegion({
   input,
   model,
-  assembly,
+  assemblyName,
+  grow,
 }: {
   input: string
   model: LinearGenomeViewModel
-  assembly: Assembly
+  assemblyName: string
+  grow?: number
 }) {
-  const allRefs = assembly.allRefNamesWithLowerCase!
-  const assemblyName = assembly.name
-  if (input.split(' ').every(entry => checkRef(entry, allRefs))) {
-    await model.navToLocString(input, assembly.name)
+  const { assemblyManager } = getSession(model)
+  const assembly = assemblyManager.get(assemblyName)
+  const allRefs = assembly?.allRefNamesWithLowerCase
+
+  if (allRefs && input.split(' ').every(entry => checkRef(entry, allRefs))) {
+    // Use navToLocations directly to avoid circular call through navToLocString
+    await model.navToLocations(
+      parseLocStrings(input, assemblyName, ref =>
+        allRefs.has(ref) || allRefs.has(ref.toLowerCase()),
+      ),
+      assemblyName,
+      grow,
+    )
   } else {
     const searchScope = model.searchScope(assemblyName)
     const { textSearchManager } = getSession(model)
@@ -72,17 +91,21 @@ export async function handleSelectedRegion({
         assemblyName,
       })
     } else {
-      await model.navToLocString(input, assemblyName)
+      // Use navToLocations directly to avoid circular call through navToLocString
+      await model.navToLocations(
+        parseLocStrings(input, assemblyName, (ref, asm) =>
+          assemblyManager.isValidRefName(ref, asm),
+        ),
+        assemblyName,
+        grow,
+      )
     }
   }
 }
 
 export function checkRef(str: string, allRefs: Set<string>) {
   const [ref, rest] = splitLast(str, ':')
-  return (
-    allRefs.has(str) ||
-    (allRefs.has(ref) && !Number.isNaN(Number.parseInt(rest, 10)))
-  )
+  return allRefs.has(str) || (allRefs.has(ref) && /^\d/.test(rest))
 }
 
 export async function fetchResults({

@@ -95,7 +95,7 @@ const LinearGenomeViewImportForm = observer(
                     } else if (assembly) {
                       await handleSelectedRegion({
                         input: value,
-                        assembly,
+                        assemblyName: selectedAsm,
                         model,
                       })
                     }

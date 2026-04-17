@@ -104,6 +104,7 @@
     "electron": "41.2.0",
     "eslint": "^10.2.0",
     "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-baseline-js": "^0.6.2",
     "eslint-plugin-import-x": "^4.16.2",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-react": "^7.37.5",

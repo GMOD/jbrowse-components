@@ -37,7 +37,7 @@ async function onSelect({
   } else if (assembly) {
     await handleSelectedRegion({
       input: option.getLabel(),
-      assembly,
+      assemblyName,
       model,
     })
   }

@@ -508,7 +508,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                       return
                     }
                     if (viewInit.loc) {
-                      await view.navToLocString(viewInit.loc, viewInit.assembly)
+                      await view.navToSearchString({
+                        input: viewInit.loc,
+                        assembly: assemblies[idx]!,
+                      })
                     } else {
                       view.showAllRegionsInAssembly(viewInit.assembly)
                     }

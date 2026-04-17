@@ -23,6 +23,7 @@ type LGV = LinearGenomeViewModel
 // use initializer function to avoid having console.warn jest.fn in a global
 function initialize() {
   console.warn = jest.fn()
+  console.error = jest.fn()
   // a stub linear genome view state model that only accepts base track types.
   // used in unit tests.
   const stubManager = new PluginManager()
@@ -64,6 +65,7 @@ function initialize() {
     .volatile(() => ({
       regions: volvoxDisplayedRegions,
       initialized: true,
+      allRefNamesWithLowerCase: new Set(['ctgA', 'ctgB', 'ctga', 'ctgb']),
     }))
     .views(() => ({
       getCanonicalRefName(refName: string) {
@@ -128,6 +130,7 @@ function initialize() {
         self.view = view
         return view
       },
+      notifyError(_msg: string, _err: unknown) {},
     }))
 
   return { Session, LinearGenomeModel, Assembly }
@@ -1104,6 +1107,7 @@ test('showLoading is true when init is set and becomes false after initializatio
   await waitFor(() => {
     expect(model.initialized).toBe(true)
   })
+  expect(console.error).not.toHaveBeenCalled()
 })
 
 test('showAllRegions accounts for inter-region padding when centering', () => {

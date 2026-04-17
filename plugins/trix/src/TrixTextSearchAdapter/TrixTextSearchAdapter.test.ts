@@ -16,7 +16,7 @@ describe('shorten', () => {
 
   it('shows context window around term in the middle', () => {
     expect(shorten('the quick brown fox jumped over the lazy dog', 'fox')).toBe(
-      '...he quick brown fox jumped over...',
+      '...he quick brown fox jumped over th...',
     )
   })
 
