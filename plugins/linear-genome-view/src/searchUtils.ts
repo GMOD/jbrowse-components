@@ -57,12 +57,11 @@ export async function handleSelectedRegion({
   assemblyName: string
   grow?: number
 }) {
-  const { assemblyManager } = getSession(model)
+  const { assemblyManager, textSearchManager } = getSession(model)
   const assembly = assemblyManager.get(assemblyName)
   const allRefs = assembly?.allRefNamesWithLowerCase
 
   if (allRefs && input.split(' ').every(entry => checkRef(entry, allRefs))) {
-    // Use navToLocations directly to avoid circular call through navToLocString
     await model.navToLocations(
       parseLocStrings(input, assemblyName, ref =>
         allRefs.has(ref) || allRefs.has(ref.toLowerCase()),
@@ -72,7 +71,6 @@ export async function handleSelectedRegion({
     )
   } else {
     const searchScope = model.searchScope(assemblyName)
-    const { textSearchManager } = getSession(model)
     const results = await fetchResults({
       queryString: input,
       searchType: 'exact',
@@ -91,7 +89,6 @@ export async function handleSelectedRegion({
         assemblyName,
       })
     } else {
-      // Use navToLocations directly to avoid circular call through navToLocString
       await model.navToLocations(
         parseLocStrings(input, assemblyName, (ref, asm) =>
           assemblyManager.isValidRefName(ref, asm),
@@ -123,10 +120,6 @@ export async function fetchResults({
   textSearchManager?: TextSearchManager
   assembly?: Assembly
 }) {
-  if (!textSearchManager) {
-    console.warn('No text search manager')
-  }
-
   const textSearchResults = await textSearchManager?.search(
     {
       queryString,
