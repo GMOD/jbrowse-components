@@ -85,9 +85,15 @@ see ADR-005 §"Authoring conventions" for the gotcha:
   bounding quad, not separate passes). Color packed u32 ABGR, stride
   32 B → 20 B. First Slang shader using `nointerpolation` for flat
   varyings (`sizePx`, `shapeType`) — works transparently via slangc.
-- **linear-synteny**:
-  `plugins/linear-comparative-view/src/LinearSyntenyDisplay/{wgslShaders,
-  glslShaders}.ts`.
+- ~~**linear-synteny**~~ — done on `webgl-poc`. Fill + picking + edge
+  passes share a `syntenyTypes.slang` module (Instance struct, Uniforms,
+  `computeCorners`/`isCulled` helpers). Picking kept as a separate
+  `.slang` file so the codegen emits a standalone WGSL/GLSL pair;
+  `glslFragmentOverride` is no longer needed. Stride 64 B → 40 B
+  (padding from the old storage-buffer layout was dead weight).
+  Required adding a `{ a, b, c }` → `Struct(a, b, c)` rewrite in
+  `vulkanGlslToWebgl2.ts` — slangc emits C-style initializers that
+  are only legal in GLSL 4.20+, not GLSL ES 3.00.
 - **multi-synteny**:
   `plugins/linear-comparative-view/src/MultiLGVSyntenyDisplay/components/
   multiSyntenyGpuShaders.ts`. Largest of the remaining set (~600 lines).

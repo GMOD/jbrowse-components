@@ -85,6 +85,14 @@ export function vulkanGlslToWebgl2(
     out = out.replace(/layout\(location\s*=\s*\d+\)\s*\nin\s/g, 'in ')
   }
 
+  // GLSL 4.20+ / HLSL brace initializers aren't legal in GLSL ES 3.00 — rewrite
+  // `Struct_0 v = { a, b, c };` to `Struct_0 v = Struct_0(a, b, c);`. Slang
+  // emits these when a function takes a local struct by value.
+  out = out.replace(
+    /\b(\w+_\d+)\s+(\w+)\s*=\s*\{\s*([^}]*?)\s*\}\s*;/g,
+    (_, type, name, fields) => `${type} ${name} = ${type}(${fields.trim()});`,
+  )
+
   if (renames.uniformBlockName) {
     out = renameUniformBlock(out, renames.uniformBlockName)
   }

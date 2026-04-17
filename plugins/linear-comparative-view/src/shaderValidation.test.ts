@@ -3,10 +3,9 @@ import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import os from 'os'
 import path from 'path'
 
-import {
-  edgeVertexShader,
-  fillVertexShader,
-} from './LinearSyntenyDisplay/wgslShaders.ts'
+import { WGSL_SOURCE as edgeVertexShader } from './LinearSyntenyDisplay/shaders/syntenyEdge.generated.ts'
+import { WGSL_SOURCE as fillVertexShader } from './LinearSyntenyDisplay/shaders/syntenyFill.generated.ts'
+import { WGSL_SOURCE as pickingVertexShader } from './LinearSyntenyDisplay/shaders/syntenyPicking.generated.ts'
 import {
   WGSL_COVERAGE_SHADER,
   WGSL_FILL_SHADER,
@@ -38,6 +37,7 @@ function validateWgsl(name: string, code: string) {
 const wgslShaders: [string, string][] = [
   ['syntenyFill', fillVertexShader],
   ['syntenyEdge', edgeVertexShader],
+  ['syntenyPicking', pickingVertexShader],
   ['multiSyntenyFill', WGSL_FILL_SHADER],
   ['multiSyntenyCoverage', WGSL_COVERAGE_SHADER],
   ['multiSyntenySnpCoverage', WGSL_SNP_COVERAGE_SHADER],
