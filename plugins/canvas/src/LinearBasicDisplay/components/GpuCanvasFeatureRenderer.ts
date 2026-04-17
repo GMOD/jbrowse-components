@@ -3,6 +3,7 @@ import {
   writeBpRangeUniforms,
 } from '@jbrowse/core/gpu/blockClipUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
+import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import {
   interleaveArrows,
@@ -20,11 +21,7 @@ import type {
   FeatureRenderBlock,
 } from './canvasFeatureBackendTypes.ts'
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type {
-  GlAttributeLayout,
-  GpuHal,
-  PassDescriptor,
-} from '@jbrowse/core/gpu/hal'
+import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_RECT = 'rect'
 const PASS_LINE = 'line'
@@ -40,39 +37,6 @@ const U_SCROLL_Y = rectShader.UNIFORM_OFFSET_F32.scrollY
 const U_BP_PER_PX = rectShader.UNIFORM_OFFSET_F32.bpPerPx
 const U_REVERSED = rectShader.UNIFORM_OFFSET_F32.reversed
 const UNIFORMS_SIZE_BYTES = rectShader.UNIFORMS_SIZE_BYTES
-
-// Build a vertex-buffer-instanced pass descriptor from a generated Slang
-// shader module. Every canvas-feature pass follows the same template —
-// pulling stride/attributes/sources straight from the module means adding a
-// new shader is just dropping a .slang file and one line here.
-interface ShaderModule {
-  WGSL_SOURCE: string
-  GLSL_VERTEX: string
-  GLSL_FRAGMENT: string
-  INSTANCE_STRIDE_BYTES: number
-  GL_ATTRIBUTES: readonly GlAttributeLayout[]
-}
-function slangPass(opts: {
-  id: string
-  mod: ShaderModule
-  verticesPerInstance: number
-  // Override if the data buffer comes from another pass (e.g. chevron reads
-  // line's instance buffer).
-  bufferStride?: number
-  bufferAttributes?: readonly GlAttributeLayout[]
-}): PassDescriptor {
-  return {
-    id: opts.id,
-    wgslSource: opts.mod.WGSL_SOURCE,
-    glslVertex: opts.mod.GLSL_VERTEX,
-    glslFragment: opts.mod.GLSL_FRAGMENT,
-    instanceStride: opts.bufferStride ?? opts.mod.INSTANCE_STRIDE_BYTES,
-    verticesPerInstance: opts.verticesPerInstance,
-    blend: true,
-    glAttributes: [...(opts.bufferAttributes ?? opts.mod.GL_ATTRIBUTES)],
-    vertexBuffer: true,
-  }
-}
 
 export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
   slangPass({ id: PASS_RECT, mod: rectShader, verticesPerInstance: 6 }),

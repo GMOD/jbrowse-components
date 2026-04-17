@@ -25,6 +25,9 @@ const REPO_ROOT = resolve(dirname(import.meta.url.replace('file://', '')), '..')
 const SLANGC = process.env.SLANGC ?? `${REPO_ROOT}/.cache/slangc/bin/slangc`
 const NAGA = process.env.NAGA ?? 'naga'
 const GLSLANG = process.env.GLSLANG ?? 'glslangValidator'
+// Shaders live alongside their plugin, but shared modules (hpmath, etc.) live
+// in core so any shader can `import hpmath;`.
+const SHARED_INCLUDE = resolve(REPO_ROOT, 'packages/core/src/gpu/shaders')
 
 function walk(dir: string, out: string[] = []) {
   for (const entry of readdirSync(dir)) {
@@ -155,7 +158,7 @@ function compileOne(slangPath: string) {
     const wgslOut = join(tmp, `${base}.wgsl`)
     const reflectionOut = join(tmp, `${base}.reflection.json`)
 
-    const slangcArgs = [slangPath, '-target', 'wgsl', '-o', wgslOut, '-reflection-json', reflectionOut, '-I', dir]
+    const slangcArgs = [slangPath, '-target', 'wgsl', '-o', wgslOut, '-reflection-json', reflectionOut, '-I', dir, '-I', SHARED_INCLUDE]
     execFileSync(SLANGC, slangcArgs, { stdio: 'pipe' })
     const wgsl = readFileSync(wgslOut, 'utf8')
     execFileSync(NAGA, [wgslOut], { stdio: 'pipe' })
@@ -174,12 +177,12 @@ function compileOne(slangPath: string) {
       const glslFragmentOut = join(tmp, `${base}.frag.glsl`)
       execFileSync(
         SLANGC,
-        [slangPath, '-target', 'glsl', '-stage', 'vertex', '-entry', vsName, '-o', glslVertexOut, '-I', dir],
+        [slangPath, '-target', 'glsl', '-stage', 'vertex', '-entry', vsName, '-o', glslVertexOut, '-I', dir, '-I', SHARED_INCLUDE],
         { stdio: 'pipe' },
       )
       execFileSync(
         SLANGC,
-        [slangPath, '-target', 'glsl', '-stage', 'fragment', '-entry', fsName, '-o', glslFragmentOut, '-I', dir],
+        [slangPath, '-target', 'glsl', '-stage', 'fragment', '-entry', fsName, '-o', glslFragmentOut, '-I', dir, '-I', SHARED_INCLUDE],
         { stdio: 'pipe' },
       )
 

@@ -103,6 +103,13 @@ function isUintField(t: SlangType) {
   return t.elementType.scalarType === 'uint32'
 }
 
+function isIntField(t: SlangType) {
+  if (t.kind === 'scalar') {
+    return t.scalarType === 'int32'
+  }
+  return t.elementType.scalarType === 'int32'
+}
+
 function findVertexStruct(r: Reflection) {
   // Prefer an instance struct read from a StructuredBuffer at module scope —
   // that's the layout the TS side has to pack. Fall back to a vertex-input
@@ -210,16 +217,35 @@ export function emit(inputs: CodegenInputs) {
     lines.push('}')
     lines.push('')
 
+    const uniformFields = u.fields.filter(f => f.binding?.kind === 'uniform')
+    const hasUint = uniformFields.some(f => isUintField(f.type))
+    const hasInt = uniformFields.some(f => isIntField(f.type))
+    const hasFloat = uniformFields.some(
+      f => !isUintField(f.type) && !isIntField(f.type),
+    )
     lines.push('export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {')
-    lines.push('  const f32 = new Float32Array(buf)')
-    lines.push('  const u32 = new Uint32Array(buf)')
+    if (hasFloat) {
+      lines.push('  const f32 = new Float32Array(buf)')
+    }
+    if (hasUint) {
+      lines.push('  const u32 = new Uint32Array(buf)')
+    }
+    if (hasInt) {
+      lines.push('  const i32 = new Int32Array(buf)')
+    }
     for (const f of u.fields) {
       if (f.binding?.kind !== 'uniform') {
         continue
       }
       const off4 = f.binding.offset / 4
-      const uint = isUintField(f.type)
-      const view = uint ? 'u32' : 'f32'
+      let view: 'f32' | 'u32' | 'i32'
+      if (isUintField(f.type)) {
+        view = 'u32'
+      } else if (isIntField(f.type)) {
+        view = 'i32'
+      } else {
+        view = 'f32'
+      }
       if (f.type.kind === 'scalar') {
         lines.push(`  ${view}[${off4}] = uniforms.${f.name}`)
       } else {

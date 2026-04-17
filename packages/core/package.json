@@ -50,6 +50,7 @@
     "./gpu/webglUtils": "./src/gpu/webglUtils.ts",
     "./gpu/webgpuUtils": "./src/gpu/webgpuUtils.ts",
     "./gpu/hal": "./src/gpu/hal/index.ts",
+    "./gpu/slangPass": "./src/gpu/slangPass.ts",
     "./pluggableElementTypes": "./src/pluggableElementTypes/index.ts",
     "./pluggableElementTypes/AdapterType": "./src/pluggableElementTypes/AdapterType.ts",
     "./pluggableElementTypes/ConnectionType": "./src/pluggableElementTypes/ConnectionType.ts",

@@ -17,6 +17,20 @@ Current state of the migration, what's left, and the pattern to follow.
   `rect`, `line`, `chevron` (shares `lineInstance.slang` with line), `arrow`.
   All four now pack color as a single `u32` end-to-end — no more Uint8Array
   → float32×4 intermediate.
+- **wiggle** migrated (`plugins/wiggle/src/shared/shaders/wiggle.slang`).
+  One Slang entry point covers all four rendering modes (xyplot/density/
+  line/scatter) branched on the `renderingType` uniform; the GpuWiggleRenderer
+  reuses a single vertex buffer across PASS_FILL (triangle-list) and PASS_LINE
+  (line-list). Color now packed as u32 ABGR in `interleaveInstances`. Instance
+  stride dropped from 32 B → 24 B.
+- **dotplot** migrated (`plugins/dotplot-view/src/DotplotDisplay/shaders/
+  dotplot.slang`). Single line-segment pass; per-instance struct lost its
+  three `_pad` fields (stride 32 B → 20 B) and the uniform block lost its
+  `_pad` float. Colors were already u32 ABGR upstream so no TS color changes.
+- **Codegen polish**: `scripts/shader-codegen/codegen.ts` now emits
+  `Int32Array` views for `int` uniforms (previously corrupted via f32 view)
+  and only declares typed-array locals actually used (kills unused-var lint
+  errors on shaders whose uniform block has no uint/int fields).
 - `WebGL2Hal.dispose()` no longer calls `WEBGL_lose_context.loseContext()`
   (it was driver-wide on Firefox and took out sibling live contexts).
 
@@ -27,10 +41,8 @@ Rough groupings, in suggested order:
 
 ### Tier A — single-shader pairs (simplest)
 
-- **wiggle**: `plugins/wiggle/src/shared/{wiggleShader,wiggleGlslShaders}.ts`.
-  Uses `hpmath`. One vertex + one fragment shader pair. Good next target.
-- **dotplot**: `plugins/dotplot-view/src/DotplotDisplay/{dotplotShaders,
-  dotplotWebGLColors}.ts`.
+- ~~**wiggle**~~ — done on `webgl-poc`.
+- ~~**dotplot**~~ — done on `webgl-poc`.
 - **hic**: `plugins/hic/src/LinearHicDisplay/components/{hicShaders,
   hicGlslShaders}.ts`.
 

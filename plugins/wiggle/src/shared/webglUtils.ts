@@ -1,6 +1,10 @@
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
-import { INSTANCE_BYTES, INSTANCE_STRIDE } from './wiggleShader.ts'
+import {
+  FIELD_OFFSET_F32,
+  INSTANCE_STRIDE_BYTES,
+  INSTANCE_STRIDE_F32,
+} from './shaders/wiggle.generated.ts'
 
 import type { SourceRenderData } from './wiggleBackendTypes.ts'
 
@@ -15,33 +19,40 @@ export function parseColor(color: string): [number, number, number] {
   return result
 }
 
+function packNormalizedRgbToAbgr(r: number, g: number, b: number) {
+  const ri = Math.round(r * 255) & 0xff
+  const gi = Math.round(g * 255) & 0xff
+  const bi = Math.round(b * 255) & 0xff
+  return ((0xff << 24) | (bi << 16) | (gi << 8) | ri) >>> 0
+}
+
 export function interleaveInstances(
   sources: SourceRenderData[],
   totalFeatures: number,
 ) {
-  const buf = new ArrayBuffer(totalFeatures * INSTANCE_BYTES)
+  const buf = new ArrayBuffer(totalFeatures * INSTANCE_STRIDE_BYTES)
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
   let offset = 0
   for (let idx = 0, l = sources.length; idx < l; idx++) {
     const source = sources[idx]!
     const row = source.rowIndex
-    const cr = source.color[0]
-    const cg = source.color[1]
-    const cb = source.color[2]
+    const colorAbgr = packNormalizedRgbToAbgr(
+      source.color[0],
+      source.color[1],
+      source.color[2],
+    )
     const positions = source.featurePositions
     const scores = source.featureScores
     const n = source.numFeatures
     for (let i = 0; i < n; i++) {
-      const off = (offset + i) * INSTANCE_STRIDE
-      u32[off] = positions[i * 2]!
-      u32[off + 1] = positions[i * 2 + 1]!
-      f32[off + 2] = scores[i]!
-      f32[off + 3] = i === 0 ? scores[i]! : scores[i - 1]!
-      f32[off + 4] = cr
-      f32[off + 5] = cg
-      f32[off + 6] = cb
-      f32[off + 7] = row
+      const off = (offset + i) * INSTANCE_STRIDE_F32
+      u32[off + FIELD_OFFSET_F32.startEnd] = positions[i * 2]!
+      u32[off + FIELD_OFFSET_F32.startEnd + 1] = positions[i * 2 + 1]!
+      f32[off + FIELD_OFFSET_F32.score] = scores[i]!
+      f32[off + FIELD_OFFSET_F32.prevScore] = i === 0 ? scores[i]! : scores[i - 1]!
+      u32[off + FIELD_OFFSET_F32.color] = colorAbgr
+      f32[off + FIELD_OFFSET_F32.rowIndex] = row
     }
     offset += n
   }
