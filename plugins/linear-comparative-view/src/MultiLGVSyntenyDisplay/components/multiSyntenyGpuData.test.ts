@@ -2,11 +2,11 @@ import { DEFAULT_CIGAR_OP_DRAW_COLORS as DEFAULT_SYNTENY_COLORS } from '@jbrowse
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 import {
+  INSTANCE_BYTE_SIZE,
   computeBlockRenderParams,
   packCoverageForGpu,
   prepareBlockGeometry,
 } from './multiSyntenyGpuData.ts'
-import { INSTANCE_BYTE_SIZE } from './multiSyntenyGpuShaders.ts'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 

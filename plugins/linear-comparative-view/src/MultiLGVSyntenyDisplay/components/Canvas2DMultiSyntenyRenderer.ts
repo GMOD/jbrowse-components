@@ -19,8 +19,10 @@ import {
   truncateGenomeName,
 } from './multiSyntenyBackendTypes.ts'
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
-import { computeBlockRenderParams } from './multiSyntenyGpuData.ts'
-import { INSTANCE_BYTE_SIZE } from './multiSyntenyGpuShaders.ts'
+import {
+  INSTANCE_BYTE_SIZE,
+  computeBlockRenderParams,
+} from './multiSyntenyGpuData.ts'
 
 import type {
   MultiSyntenyBackend,

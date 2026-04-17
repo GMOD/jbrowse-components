@@ -94,9 +94,12 @@ see ADR-005 §"Authoring conventions" for the gotcha:
   Required adding a `{ a, b, c }` → `Struct(a, b, c)` rewrite in
   `vulkanGlslToWebgl2.ts` — slangc emits C-style initializers that
   are only legal in GLSL 4.20+, not GLSL ES 3.00.
-- **multi-synteny**:
-  `plugins/linear-comparative-view/src/MultiLGVSyntenyDisplay/components/
-  multiSyntenyGpuShaders.ts`. Largest of the remaining set (~600 lines).
+- ~~**multi-synteny**~~ — done on `webgl-poc`. Four passes (fill +
+  coverage + SNP + indicator) split into four `.slang` files sharing a
+  `multiSyntenyUniforms.slang` module. Fill stride 32 B → 20 B (dropped
+  storage-buffer padding); other passes same size. Deleted
+  `multiSyntenyGpuShaders.ts` entirely — its 500+ lines of hand-written
+  WGSL/GLSL collapse to `slangPass` calls in the renderer.
 - **alignments**:
   `plugins/alignments/src/LinearAlignmentsDisplay/components/wgsl/{read,
   cigar,coverage,misc}Shaders.ts`. Most complex renderer — leave until

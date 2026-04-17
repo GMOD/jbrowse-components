@@ -1,26 +1,13 @@
 import { getDevicePixelRatio } from '@jbrowse/alignments-core'
+import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import { BG_COLOR_GL } from './multiSyntenyBackendTypes.ts'
-import {
-  INDICATOR_BYTE_SIZE,
-  SNP_SEGMENT_BYTE_SIZE,
-  computeBlockRenderParams,
-} from './multiSyntenyGpuData.ts'
-import {
-  COVERAGE_BIN_BYTE_SIZE,
-  COVERAGE_VERTEX_SHADER,
-  FILL_FRAGMENT_SHADER,
-  FILL_VERTEX_SHADER,
-  GLSL_INDICATOR_VERTEX_SHADER,
-  GLSL_SNP_COVERAGE_VERTEX_SHADER,
-  INSTANCE_BYTE_SIZE,
-  UNIFORM_BYTE_SIZE,
-  WGSL_COVERAGE_SHADER,
-  WGSL_FILL_SHADER,
-  WGSL_INDICATOR_SHADER,
-  WGSL_SNP_COVERAGE_SHADER,
-} from './multiSyntenyGpuShaders.ts'
+import { computeBlockRenderParams } from './multiSyntenyGpuData.ts'
 import { fillSyntenyUniforms } from './multiSyntenyGpuUtils.ts'
+import * as coverageShader from './shaders/multiSyntenyCoverage.generated.ts'
+import * as fillShader from './shaders/multiSyntenyFill.generated.ts'
+import * as indicatorShader from './shaders/multiSyntenyIndicator.generated.ts'
+import * as snpShader from './shaders/multiSyntenySnp.generated.ts'
 
 import type {
   MultiSyntenyBackend,
@@ -41,126 +28,34 @@ const PASS_COVERAGE = 'coverage'
 const PASS_SNP = 'snp'
 const PASS_INDICATORS = 'indicators'
 
+const UNIFORMS_SIZE_BYTES = fillShader.UNIFORMS_SIZE_BYTES
+
 export const SYNTENY_PASSES: PassDescriptor[] = [
-  {
+  slangPass({
     id: PASS_FILL,
-    wgslSource: WGSL_FILL_SHADER,
-    glslVertex: FILL_VERTEX_SHADER,
-    glslFragment: FILL_FRAGMENT_SHADER,
-    instanceStride: INSTANCE_BYTE_SIZE,
+    mod: fillShader,
     verticesPerInstance: 6,
-    blend: true,
-    glAttributes: [
-      {
-        name: 'a_data0',
-        components: 4,
-        type: 'uint',
-        offsetBytes: 0,
-        integer: true,
-      },
-      {
-        name: 'a_color',
-        components: 1,
-        type: 'uint',
-        offsetBytes: 16,
-        integer: true,
-      },
-    ],
-  },
-  {
+  }),
+  slangPass({
     id: PASS_COVERAGE,
-    wgslSource: WGSL_COVERAGE_SHADER,
-    glslVertex: COVERAGE_VERTEX_SHADER,
-    glslFragment: FILL_FRAGMENT_SHADER,
-    instanceStride: COVERAGE_BIN_BYTE_SIZE,
+    mod: coverageShader,
     verticesPerInstance: 6,
-    blend: true,
-    glAttributes: [
-      {
-        name: 'a_position',
-        components: 1,
-        type: 'float',
-        offsetBytes: 0,
-        integer: false,
-      },
-      {
-        name: 'a_minDepth',
-        components: 1,
-        type: 'float',
-        offsetBytes: 4,
-        integer: false,
-      },
-      {
-        name: 'a_maxDepth',
-        components: 1,
-        type: 'float',
-        offsetBytes: 8,
-        integer: false,
-      },
-    ],
-  },
-  {
+  }),
+  slangPass({
     id: PASS_SNP,
-    wgslSource: WGSL_SNP_COVERAGE_SHADER,
-    glslVertex: GLSL_SNP_COVERAGE_VERTEX_SHADER,
-    glslFragment: FILL_FRAGMENT_SHADER,
-    instanceStride: SNP_SEGMENT_BYTE_SIZE,
+    mod: snpShader,
     verticesPerInstance: 6,
-    blend: true,
-    glAttributes: [
-      {
-        name: 'a_position',
-        components: 1,
-        type: 'float',
-        offsetBytes: 0,
-        integer: false,
-      },
-      {
-        name: 'a_yOffset',
-        components: 1,
-        type: 'float',
-        offsetBytes: 4,
-        integer: false,
-      },
-      {
-        name: 'a_height',
-        components: 1,
-        type: 'float',
-        offsetBytes: 8,
-        integer: false,
-      },
-      {
-        name: 'a_colorType',
-        components: 1,
-        type: 'float',
-        offsetBytes: 12,
-        integer: false,
-      },
-    ],
-  },
-  {
+  }),
+  slangPass({
     id: PASS_INDICATORS,
-    wgslSource: WGSL_INDICATOR_SHADER,
-    glslVertex: GLSL_INDICATOR_VERTEX_SHADER,
-    glslFragment: FILL_FRAGMENT_SHADER,
-    instanceStride: INDICATOR_BYTE_SIZE,
+    mod: indicatorShader,
     verticesPerInstance: 3,
-    blend: true,
-    glAttributes: [
-      {
-        name: 'a_position',
-        components: 1,
-        type: 'float',
-        offsetBytes: 0,
-        integer: false,
-      },
-    ],
-  },
+  }),
 ]
 
 export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
   private hal: GpuHal
-  private uniformData = new ArrayBuffer(UNIFORM_BYTE_SIZE)
+  private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
   private uniformF32 = new Float32Array(this.uniformData)
 
   constructor(hal: GpuHal) {
@@ -374,4 +269,4 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
   }
 }
 
-export { UNIFORM_BYTE_SIZE as SYNTENY_UNIFORM_BYTE_SIZE } from './multiSyntenyGpuShaders.ts'
+export { UNIFORMS_SIZE_BYTES as SYNTENY_UNIFORM_BYTE_SIZE }
