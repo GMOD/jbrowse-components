@@ -75,6 +75,7 @@ export function vulkanGlslToWebgl2(
   out = out.replace(/^layout\(row_major\)\s*(uniform|buffer);\s*\n/gm, '')
   out = out.replace(/^layout\(binding\s*=\s*\d+\)\s*\n/gm, '')
   out = out.replace(/gl_VertexIndex\s*-\s*gl_BaseVertex/g, 'gl_VertexID')
+  out = out.replace(/gl_InstanceIndex\s*-\s*gl_BaseInstance/g, 'gl_InstanceID')
   out = out.replace(/\bgl_VertexIndex\b/g, 'gl_VertexID')
   out = out.replace(/\bgl_InstanceIndex\b/g, 'gl_InstanceID')
 

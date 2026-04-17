@@ -1,4 +1,8 @@
-export const MATRIX_INSTANCE_STRIDE = 8
+import {
+  FIELD_OFFSET_F32,
+  INSTANCE_STRIDE_BYTES,
+  INSTANCE_STRIDE_F32,
+} from './shaders/variantMatrix.generated.ts'
 
 export function interleaveMatrixInstances(data: {
   cellFeatureIndices: Float32Array
@@ -7,79 +11,22 @@ export function interleaveMatrixInstances(data: {
   numCells: number
 }) {
   const count = data.numCells
-  const buf = new ArrayBuffer(count * MATRIX_INSTANCE_STRIDE * 4)
+  const buf = new ArrayBuffer(count * INSTANCE_STRIDE_BYTES)
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
+  const colors = data.cellColors
   for (let i = 0; i < count; i++) {
-    const off = i * MATRIX_INSTANCE_STRIDE
-    f32[off] = data.cellFeatureIndices[i]!
-    u32[off + 1] = data.cellRowIndices[i]!
-    f32[off + 4] = data.cellColors[i * 4]! / 255
-    f32[off + 5] = data.cellColors[i * 4 + 1]! / 255
-    f32[off + 6] = data.cellColors[i * 4 + 2]! / 255
-    f32[off + 7] = data.cellColors[i * 4 + 3]! / 255
+    const off = i * INSTANCE_STRIDE_F32
+    const c = i * 4
+    f32[off + FIELD_OFFSET_F32.featureIndex] = data.cellFeatureIndices[i]!
+    u32[off + FIELD_OFFSET_F32.rowIndex] = data.cellRowIndices[i]!
+    // RGBA bytes -> ABGR u32 (R at byte 0, A at byte 3), matching unpackRGBA
+    u32[off + FIELD_OFFSET_F32.color] =
+      ((colors[c + 3]! << 24) |
+        (colors[c + 2]! << 16) |
+        (colors[c + 1]! << 8) |
+        colors[c]!) >>>
+      0
   }
   return buf
 }
-
-export const variantMatrixShader = /* wgsl */ `
-struct CellInstance {
-  feature_index: f32,
-  row_index: u32,
-  _pad0: u32,
-  _pad1: u32,
-  color: vec4f,
-}
-
-struct Uniforms {
-  num_features: f32,
-  canvas_width: f32,
-  canvas_height: f32,
-  row_height: f32,
-  scroll_top: f32,
-}
-
-@group(0) @binding(0) var<storage, read> instances: array<CellInstance>;
-@group(0) @binding(1) var<uniform> u: Uniforms;
-
-struct VertexOutput {
-  @builtin(position) position: vec4f,
-  @location(0) color: vec4f,
-}
-
-@vertex
-fn vs_main(
-  @builtin(vertex_index) vertex_index: u32,
-  @builtin(instance_index) instance_index: u32,
-) -> VertexOutput {
-  let inst = instances[instance_index];
-  let vid = vertex_index % 6u;
-  let lx = select(1.0, 0.0, vid == 0u || vid == 2u || vid == 3u);
-  let ly = select(1.0, 0.0, vid == 0u || vid == 1u || vid == 4u);
-
-  let x1 = inst.feature_index / u.num_features;
-  let x2 = (inst.feature_index + 1.0) / u.num_features;
-  let px_size_x = 1.0 / u.canvas_width;
-  let cx1 = floor(x1 / px_size_x + 0.5) * px_size_x;
-  let cx2 = max(floor(x2 / px_size_x + 0.5) * px_size_x, cx1 + px_size_x);
-  let clip_x = mix(cx1, cx2, lx) * 2.0 - 1.0;
-
-  // fractional y keeps subpixel rows smooth (no rounding = no discrete jumps
-  // during resize); max(...,1) is the minimum quad height to avoid GPU-culled
-  // zero-height geometry while preserving draw order for variant priority
-  let y_top = f32(inst.row_index) * u.row_height - u.scroll_top;
-  let y_bot = y_top + max(u.row_height, 1.0);
-  let px_to_clip_y = 2.0 / u.canvas_height;
-  let clip_y = mix(1.0 - y_bot * px_to_clip_y, 1.0 - y_top * px_to_clip_y, ly);
-
-  var out: VertexOutput;
-  out.position = vec4f(clip_x, clip_y, 0.0, 1.0);
-  out.color = inst.color;
-  return out;
-}
-
-@fragment
-fn fs_main(in: VertexOutput) -> @location(0) vec4f {
-  return vec4f(in.color.rgb * in.color.a, in.color.a);
-}
-`

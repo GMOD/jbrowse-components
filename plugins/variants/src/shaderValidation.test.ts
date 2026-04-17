@@ -3,12 +3,10 @@ import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import os from 'os'
 import path from 'path'
 
-import {
-  ldGenomicShader,
-  ldUniformShader,
-} from './LDDisplay/components/ldShaders.ts'
+import { WGSL_SOURCE as ldGenomicShader } from './LDDisplay/components/shaders/ldGenomic.generated.ts'
+import { WGSL_SOURCE as ldUniformShader } from './LDDisplay/components/shaders/ldUniform.generated.ts'
 import { variantShader } from './MultiVariantDisplay/components/variantShaders.ts'
-import { variantMatrixShader } from './MultiVariantMatrixDisplay/components/variantMatrixShaders.ts'
+import { WGSL_SOURCE as variantMatrixShader } from './MultiVariantMatrixDisplay/components/shaders/variantMatrix.generated.ts'
 
 let tmpDir: string
 

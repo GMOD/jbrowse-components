@@ -70,9 +70,13 @@ These use sampled 2D textures (e.g. color ramp lookups). Author with
 Slang's combined `Sampler2D` type (not `Texture2D + SamplerState`) —
 see ADR-005 §"Authoring conventions" for the gotcha:
 
-- **variant-matrix**:
-  `plugins/variants/src/MultiVariantMatrixDisplay/components/variantMatrix*.ts`.
-- **ld**: `plugins/variants/src/LDDisplay/components/ld*.ts`.
+- ~~**variant-matrix**~~ — done on `webgl-poc`.
+- ~~**ld**~~ — done on `webgl-poc`. Two passes (`ldGenomic` for genomic-
+  position cells, `ldUniform` for the triangular uniform-grid path) share
+  one `ldUniforms.slang` module so a single UBO write covers both. The
+  uniform-grid path uses `SV_InstanceID` — required adding a
+  `gl_InstanceIndex - gl_BaseInstance → gl_InstanceID` rewrite in
+  `vulkanGlslToWebgl2.ts` (mirror of the existing vertex-index rewrite).
 
 ### Tier C — multi-pass / complex
 

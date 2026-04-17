@@ -1,9 +1,7 @@
-import { FRAGMENT_SHADER, VERTEX_SHADER } from './variantMatrixGlslShaders.ts'
-import {
-  MATRIX_INSTANCE_STRIDE,
-  interleaveMatrixInstances,
-  variantMatrixShader,
-} from './variantMatrixShaders.ts'
+import { slangPass } from '@jbrowse/core/gpu/slangPass'
+
+import * as variantMatrixShader from './shaders/variantMatrix.generated.ts'
+import { interleaveMatrixInstances } from './variantMatrixShaders.ts'
 
 import type {
   MatrixRenderState,
@@ -13,51 +11,23 @@ import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_MAIN = 'main'
 const REGION_KEY = 0
-const INSTANCE_BYTES = MATRIX_INSTANCE_STRIDE * 4
-const UNIFORM_BYTE_SIZE = 32
+const UNIFORMS_SIZE_BYTES = variantMatrixShader.UNIFORMS_SIZE_BYTES
+const U = variantMatrixShader.UNIFORM_OFFSET_F32
 
 export const VARIANT_MATRIX_PASSES: PassDescriptor[] = [
-  {
+  slangPass({
     id: PASS_MAIN,
-    wgslSource: variantMatrixShader,
-    glslVertex: VERTEX_SHADER,
-    glslFragment: FRAGMENT_SHADER,
-    instanceStride: INSTANCE_BYTES,
+    mod: variantMatrixShader,
     verticesPerInstance: 6,
-    blend: true,
     blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
-    glAttributes: [
-      {
-        name: 'a_feature_index',
-        components: 1,
-        type: 'float',
-        offsetBytes: 0,
-        integer: false,
-      },
-      {
-        name: 'a_row_index',
-        components: 1,
-        type: 'uint',
-        offsetBytes: 4,
-        integer: true,
-      },
-      // offset 8 skips padding (u32x2), then color at offset 16
-      {
-        name: 'a_color',
-        components: 4,
-        type: 'float',
-        offsetBytes: 16,
-        integer: false,
-      },
-    ],
-  },
+  }),
 ]
 
-export { UNIFORM_BYTE_SIZE as VARIANT_MATRIX_UNIFORM_BYTE_SIZE }
+export { UNIFORMS_SIZE_BYTES as VARIANT_MATRIX_UNIFORM_BYTE_SIZE }
 
 export class GpuVariantMatrixRenderer implements VariantMatrixBackend {
   private hal: GpuHal
-  private uniformData = new ArrayBuffer(UNIFORM_BYTE_SIZE)
+  private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
   private uniformF32 = new Float32Array(this.uniformData)
 
   constructor(hal: GpuHal) {
@@ -89,11 +59,11 @@ export class GpuVariantMatrixRenderer implements VariantMatrixBackend {
       this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0 &&
       state.numFeatures > 0
     ) {
-      this.uniformF32[0] = state.numFeatures
-      this.uniformF32[1] = canvasWidth
-      this.uniformF32[2] = canvasHeight
-      this.uniformF32[3] = state.rowHeight
-      this.uniformF32[4] = state.scrollTop
+      this.uniformF32[U.numFeatures] = state.numFeatures
+      this.uniformF32[U.canvasWidth] = canvasWidth
+      this.uniformF32[U.canvasHeight] = canvasHeight
+      this.uniformF32[U.rowHeight] = state.rowHeight
+      this.uniformF32[U.scrollTop] = state.scrollTop
 
       this.hal.writeUniforms(this.uniformData)
       this.hal.drawPass(PASS_MAIN, REGION_KEY)
