@@ -3,13 +3,10 @@ import {
   writeBpRangeUniforms,
 } from '@jbrowse/core/gpu/blockClipUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
+import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
-import { FRAGMENT_SHADER, VERTEX_SHADER } from './variantGlslShaders.ts'
-import {
-  INSTANCE_STRIDE,
-  interleaveVariantInstances,
-  variantShader,
-} from './variantShaders.ts'
+import * as variantShader from './shaders/variant.generated.ts'
+import { interleaveVariantInstances } from './variantShaders.ts'
 
 import type {
   VariantBackend,
@@ -18,57 +15,23 @@ import type {
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_MAIN = 'main'
-const INSTANCE_BYTES = INSTANCE_STRIDE * 4
-const UNIFORM_BYTE_SIZE = 48
+const UNIFORMS_SIZE_BYTES = variantShader.UNIFORMS_SIZE_BYTES
+const U = variantShader.UNIFORM_OFFSET_F32
 
 export const VARIANT_PASSES: PassDescriptor[] = [
-  {
+  slangPass({
     id: PASS_MAIN,
-    wgslSource: variantShader,
-    glslVertex: VERTEX_SHADER,
-    glslFragment: FRAGMENT_SHADER,
-    instanceStride: INSTANCE_BYTES,
+    mod: variantShader,
     verticesPerInstance: 6,
-    blend: true,
     blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
-    glAttributes: [
-      {
-        name: 'a_start_end',
-        components: 2,
-        type: 'uint',
-        offsetBytes: 0,
-        integer: true,
-      },
-      {
-        name: 'a_row_index',
-        components: 1,
-        type: 'uint',
-        offsetBytes: 8,
-        integer: true,
-      },
-      {
-        name: 'a_shape_type',
-        components: 1,
-        type: 'uint',
-        offsetBytes: 12,
-        integer: true,
-      },
-      {
-        name: 'a_color',
-        components: 4,
-        type: 'float',
-        offsetBytes: 16,
-        integer: false,
-      },
-    ],
-  },
+  }),
 ]
 
-export { UNIFORM_BYTE_SIZE as VARIANT_UNIFORM_BYTE_SIZE }
+export { UNIFORMS_SIZE_BYTES as VARIANT_UNIFORM_BYTE_SIZE }
 
 export class GpuVariantRenderer implements VariantBackend {
   private hal: GpuHal
-  private uniformData = new ArrayBuffer(UNIFORM_BYTE_SIZE)
+  private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
   private uniformF32 = new Float32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
   private regionStarts = new Map<number, number>()
@@ -138,12 +101,12 @@ export class GpuVariantRenderer implements VariantBackend {
       this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
 
       writeBpRangeUniforms(this.uniformF32, clip, block.reversed)
-      this.uniformU32[3] = Math.floor(regionStart)
-      this.uniformF32[4] = canvasHeight
-      this.uniformF32[5] = clip.scissorW
-      this.uniformF32[6] = state.rowHeight
-      this.uniformF32[7] = state.scrollTop
-      // uniformF32[8] = 0 (zero) — already 0.0 from ArrayBuffer initialization
+      this.uniformU32[U.regionStart] = Math.floor(regionStart)
+      this.uniformF32[U.canvasHeight] = canvasHeight
+      this.uniformF32[U.canvasWidth] = clip.scissorW
+      this.uniformF32[U.rowHeight] = state.rowHeight
+      this.uniformF32[U.scrollTop] = state.scrollTop
+      // uniformF32[U.zero] = 0 — already 0.0 from ArrayBuffer initialization
 
       this.hal.writeUniforms(this.uniformData)
       this.hal.drawPass(PASS_MAIN, block.regionNumber)

@@ -80,9 +80,11 @@ see ADR-005 §"Authoring conventions" for the gotcha:
 
 ### Tier C — multi-pass / complex
 
-- **variant** (multi-variant display):
-  `plugins/variants/src/MultiVariantDisplay/components/variant*.ts`. Multiple
-  related passes.
+- ~~**variant** (multi-variant display)~~ — done on `webgl-poc`. Turned
+  out to be single-pass (SDF triangles in the fragment shader on a
+  bounding quad, not separate passes). Color packed u32 ABGR, stride
+  32 B → 20 B. First Slang shader using `nointerpolation` for flat
+  varyings (`sizePx`, `shapeType`) — works transparently via slangc.
 - **linear-synteny**:
   `plugins/linear-comparative-view/src/LinearSyntenyDisplay/{wgslShaders,
   glslShaders}.ts`.

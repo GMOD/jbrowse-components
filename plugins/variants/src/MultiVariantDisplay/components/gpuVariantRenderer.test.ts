@@ -1,7 +1,7 @@
 import { MockHal } from '@jbrowse/core/gpu/hal'
 
 import { GpuVariantRenderer, VARIANT_PASSES } from './GpuVariantRenderer.ts'
-import { INSTANCE_STRIDE } from './variantShaders.ts'
+import { INSTANCE_STRIDE_F32 as INSTANCE_STRIDE } from './shaders/variant.generated.ts'
 
 import type { VariantRenderBlock } from './variantBackendTypes.ts'
 
@@ -50,7 +50,6 @@ describe('GpuVariantRenderer', () => {
     expect(buf!.data.byteLength).toBe(2 * INSTANCE_STRIDE * 4)
 
     const u32 = new Uint32Array(buf!.data)
-    const f32 = new Float32Array(buf!.data)
     // first cell: start=100, end=200
     expect(u32[0]).toBe(100)
     expect(u32[1]).toBe(200)
@@ -58,8 +57,8 @@ describe('GpuVariantRenderer', () => {
     expect(u32[2]).toBe(0)
     // shape_type=0
     expect(u32[3]).toBe(0)
-    // color: r=255/255=1.0
-    expect(f32[4]).toBeCloseTo(1)
+    // color ABGR packed (R=255, G=0, B=0, A=255) -> 0xFF0000FF
+    expect(u32[4]).toBe(0xff0000ff)
 
     // second cell: start=300, end=400, row=1, shape=1
     const off = INSTANCE_STRIDE
@@ -67,10 +66,8 @@ describe('GpuVariantRenderer', () => {
     expect(u32[off + 1]).toBe(400)
     expect(u32[off + 2]).toBe(1)
     expect(u32[off + 3]).toBe(1)
-    // green: 255/255=1.0
-    expect(f32[off + 5]).toBeCloseTo(1)
-    // alpha: 128/255
-    expect(f32[off + 7]).toBeCloseTo(128 / 255)
+    // color ABGR packed (R=0, G=255, B=0, A=128) -> 0x8000FF00
+    expect(u32[off + 4]).toBe(0x8000ff00)
   })
 
   it('deletes region on empty upload', () => {
