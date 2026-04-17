@@ -2,7 +2,7 @@ import { Suspense, isValidElement, lazy } from 'react'
 
 import { observer } from 'mobx-react'
 
-import BlockMsg from './BlockMsg.tsx'
+import BlockMsg from '../../shared/BlockMsg.tsx'
 import LoadingOverlay from './LoadingOverlay.tsx'
 
 const BlockErrorMessage = lazy(() => import('./BlockErrorMessage.tsx'))

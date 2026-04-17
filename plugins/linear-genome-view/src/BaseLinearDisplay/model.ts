@@ -24,7 +24,7 @@ import { autorun } from 'mobx'
 
 import { calculateSvgLegendWidth } from './calculateSvgLegendWidth.ts'
 import { deduplicateFeatureLabels } from './components/util.ts'
-import FeatureDensityMixin from './models/FeatureDensityMixin.tsx'
+import FeatureDensityMixin from '../shared/FeatureDensityMixin.tsx'
 import TrackHeightMixin from './models/TrackHeightMixin.tsx'
 import configSchema from './models/configSchema.ts'
 import BlockState from './models/serverSideRenderedBlock.ts'
