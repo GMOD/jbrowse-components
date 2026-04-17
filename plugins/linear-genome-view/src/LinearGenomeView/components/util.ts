@@ -1,7 +1,5 @@
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
-export { fetchResults, splitLast } from '../../searchUtils.ts'
-
 export function getRelativeX(
   event: { clientX: number; target: EventTarget | null },
   element: HTMLElement | null,

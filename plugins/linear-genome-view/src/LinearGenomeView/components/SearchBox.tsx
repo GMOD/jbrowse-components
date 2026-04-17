@@ -6,8 +6,7 @@ import { observer } from 'mobx-react'
 
 import EndAdornment from './RefNameAutocomplete/EndAdornment.tsx'
 import RefNameAutocomplete from './RefNameAutocomplete/index.tsx'
-import { fetchResults } from './util.ts'
-import { handleSelectedRegion, navToOption } from '../../searchUtils.ts'
+import { fetchResults, handleSelectedRegion, navToOption } from '../../searchUtils.ts'
 import { SPACING, WIDGET_HEIGHT } from '../consts.ts'
 
 const defaultStyle = { margin: SPACING }
