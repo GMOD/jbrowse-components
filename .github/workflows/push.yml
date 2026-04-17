@@ -310,7 +310,7 @@ jobs:
           cd products/jbrowse-web/build
           zip -r "jbrowse-web-${REF_NAME}.zip" .
           cp test_data/config.json config.json
-          aws s3 sync --delete --exclude="*.map" . s3://jbrowse.org/code/jb2/${REF_NAME}
+          aws s3 sync --delete . s3://jbrowse.org/code/jb2/${REF_NAME}
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/${REF_NAME}/*"
 
       - name: Build LGV storybook
