@@ -259,11 +259,14 @@ export class WebGPUHal implements GpuHal {
     descriptors: PassDescriptor[],
     uniformByteSize: number,
   ) {
-    // Chrome/Dawn computes minimum buffer binding size for runtime-sized storage
-    // arrays as roundUp(16, structSize). Any instanceStride that is not a
-    // multiple of 16 will fail validation at draw time and can freeze the GPU.
+    // Chrome/Dawn computes minimum buffer binding size for runtime-sized
+    // storage arrays as roundUp(16, structSize). Only applies when the shader
+    // reads instance data via `var<storage, read> array<T>` — vertex buffer
+    // attributes have no such constraint (stride just needs to be a multiple
+    // of 4).
     for (const desc of descriptors) {
-      if (desc.instanceStride % 16 !== 0) {
+      const usesStorageBuffer = /\bvar\s*<\s*storage\b/.test(desc.wgslSource)
+      if (usesStorageBuffer && desc.instanceStride % 16 !== 0) {
         console.error(
           `[WebGPUHal] Pass "${desc.id}" instanceStride=${desc.instanceStride} is not a multiple of 16 — ` +
             'Chrome will reject draws with a binding-size validation error',

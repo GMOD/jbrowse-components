@@ -27,3 +27,4 @@ test_data/soa4
 tools/gfa-to-tabix/target/
 test/data
 *.log
+.cache/
