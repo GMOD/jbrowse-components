@@ -124,9 +124,9 @@ export class WebGL2Hal implements GpuHal {
     this.debug = debugEnabled()
     totalCreated += 1
     this.instanceId = totalCreated
-    // Always log lifecycle (not gated on debug) — we need this to catch the
-    // context-leak class of bugs regardless of debug-mode.
-    console.log(
+    // Always log lifecycle — the context-leak class of bugs needs this even
+    // outside debug mode, which is why these use warn instead of log.
+    console.warn(
       `[WebGL2Hal #${this.instanceId}] init (live=${totalCreated - totalDisposed}/${totalCreated}, passes=${descriptors.length})`,
     )
     canvas.addEventListener(
@@ -134,7 +134,7 @@ export class WebGL2Hal implements GpuHal {
       e => {
         const ev = e as WebGLContextEvent
         console.error(
-          `[WebGL2Hal #${this.instanceId}] context LOST (statusMessage="${ev.statusMessage ?? ''}", live=${totalCreated - totalDisposed})`,
+          `[WebGL2Hal #${this.instanceId}] context LOST (statusMessage="${ev.statusMessage}", live=${totalCreated - totalDisposed})`,
         )
         e.preventDefault()
       },
@@ -192,7 +192,7 @@ export class WebGL2Hal implements GpuHal {
         const pairs = desc.glAttributes.map(
           (a, i) => `${a.name}@${attrLocs[i]}`,
         )
-        console.log(
+        console.warn(
           `[WebGL2Hal] pass "${desc.id}" stride=${desc.instanceStride} attrs: ${pairs.join(', ')}`,
         )
         const missing = desc.glAttributes.filter((_, i) => attrLocs[i]! < 0)
@@ -421,7 +421,7 @@ export class WebGL2Hal implements GpuHal {
     if (this.debug && !this.firstDrawSeen.has(passId)) {
       this.firstDrawSeen.add(passId)
       const err = gl.getError()
-      console.log(
+      console.warn(
         `[WebGL2Hal #${this.instanceId}] first draw pass="${passId}" verts=${pass.descriptor.verticesPerInstance} instances=${regionBuf.count} err=${glErrorName(gl, err)}`,
       )
     }
@@ -511,7 +511,7 @@ export class WebGL2Hal implements GpuHal {
   dispose() {
     const gl = this.gl
     totalDisposed += 1
-    console.log(
+    console.warn(
       `[WebGL2Hal #${this.instanceId}] dispose (live=${totalCreated - totalDisposed}/${totalCreated})`,
     )
     this.deleteAllRegions()

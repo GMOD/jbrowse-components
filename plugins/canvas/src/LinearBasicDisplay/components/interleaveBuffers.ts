@@ -14,20 +14,14 @@ import {
   INSTANCE_STRIDE_F32 as RECT_STRIDE_F32,
 } from './shaders/rect.generated.ts'
 
-// Exported for callers that think in 4-byte "slot" units; new code should
-// prefer the *_BYTES constants directly.
-export const RECT_STRIDE = RECT_STRIDE_F32
-export const LINE_STRIDE = LINE_STRIDE_F32
-export const ARROW_STRIDE = ARROW_STRIDE_F32
-
-// Rect layout is the single source of truth in rect.slang. This function
-// packs parallel arrays (as produced by the feature RPC worker) into the
-// 20-byte-per-instance vertex buffer the rect shader reads. Field offsets
-// come from the shader via generated constants — renaming a rect.slang field
-// would produce a TS compile error here.
+// Each of these packs parallel arrays (produced by the feature RPC worker)
+// into the corresponding shader's vertex buffer layout. Field offsets come
+// from the shader's generated constants — renaming a `.slang` field makes
+// TS compilation fail here.
 //
-// `colors` is already packed RGBA32 (one u32 per rect) so it just gets
-// copied to the color slot. The rect shader unpacks via `unpackRGBA(c)`.
+// `colors` is already packed RGBA32 (one u32 per instance); the shader
+// unpacks via `unpackRGBA`.
+
 export function interleaveRects(
   positions: Uint32Array,
   ys: Float32Array,
@@ -49,9 +43,6 @@ export function interleaveRects(
   return buf
 }
 
-// Line layout is the single source of truth in line.slang (shared with
-// chevron.slang via lineInstance.slang). Field offsets come from the
-// generated constants.
 export function interleaveLines(
   positions: Uint32Array,
   ys: Float32Array,
