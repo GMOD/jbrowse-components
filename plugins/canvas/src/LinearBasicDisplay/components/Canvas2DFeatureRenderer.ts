@@ -29,10 +29,6 @@ const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5
 
 type Ctx = CanvasRenderingContext2D | SvgCanvas
 
-function rgbaString(colors: Uint8Array, i: number) {
-  return `rgba(${colors[i * 4]},${colors[i * 4 + 1]},${colors[i * 4 + 2]},${colors[i * 4 + 3]! / 255})`
-}
-
 export function drawLines(
   ctx: Ctx,
   region: RegionRenderData,
@@ -47,7 +43,7 @@ export function drawLines(
     const x1 = bpToScreenXUtil(startBp, block, bpLength, fullBlockWidth)
     const x2 = bpToScreenXUtil(endBp, block, bpLength, fullBlockWidth)
     const y = Math.floor(region.lineYs[i]! - scrollY + 0.5) + 0.5
-    ctx.strokeStyle = rgbaString(region.lineColors, i)
+    ctx.strokeStyle = abgrToCssRgba(region.lineColors[i]!)
     ctx.lineWidth = 1
     ctx.beginPath()
     ctx.moveTo(x1, y)
@@ -113,7 +109,7 @@ export function drawArrows(
     const cx = bpToScreenXUtil(xBp, block, bpLength, fullBlockWidth)
     const y = Math.floor(region.arrowYs[i]! - scrollY + 0.5) + 0.5
     const dir = region.arrowDirections[i]!
-    ctx.fillStyle = rgbaString(region.arrowColors, i)
+    ctx.fillStyle = abgrToCssRgba(region.arrowColors[i]!)
 
     const stemEndX = cx + STEM_LENGTH_PX * 0.5 * dir
     ctx.fillRect(

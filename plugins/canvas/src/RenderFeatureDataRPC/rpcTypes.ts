@@ -55,14 +55,14 @@ export interface FeatureDataResult {
   // Connecting lines (introns) with strand info for dynamic chevron generation
   linePositions: Uint32Array
   lineYs: Float32Array
-  lineColors: Uint8Array
+  lineColors: Uint32Array
   lineDirections: Int8Array // strand direction: -1, 0, or 1
 
   // Strand arrows (at feature ends)
   arrowXs: Uint32Array
   arrowYs: Float32Array
   arrowDirections: Int8Array
-  arrowColors: Uint8Array
+  arrowColors: Uint32Array
 
   // Hit detection
   flatbushItems: FlatbushItem[]

@@ -526,14 +526,6 @@ function processDefaultLayout(
   }
 }
 
-function writeColorBytes(out: Uint8Array, index: number, color: number) {
-  const o = index * 4
-  out[o] = color & 0xff
-  out[o + 1] = (color >> 8) & 0xff
-  out[o + 2] = (color >> 16) & 0xff
-  out[o + 3] = (color >> 24) & 0xff
-}
-
 export function collectRenderData(
   layouts: FeatureLayout[],
   regionStart: number,
@@ -595,7 +587,7 @@ export function collectRenderData(
 
   const linePositions = new Uint32Array(visibleLines.length * 2)
   const lineYs = new Float32Array(visibleLines.length)
-  const lineColors = new Uint8Array(visibleLines.length * 4)
+  const lineColors = new Uint32Array(visibleLines.length)
   const lineDirections = new Int8Array(visibleLines.length)
   const lineFeatureIndices = new Uint32Array(visibleLines.length)
 
@@ -603,7 +595,7 @@ export function collectRenderData(
     linePositions[i * 2] = Math.max(0, line.startOffset)
     linePositions[i * 2 + 1] = Math.max(0, line.endOffset)
     lineYs[i] = line.y
-    writeColorBytes(lineColors, i, line.color)
+    lineColors[i] = line.color
     lineDirections[i] = line.direction
     lineFeatureIndices[i] = line.flatbushIdx
   }
@@ -611,14 +603,14 @@ export function collectRenderData(
   const arrowXs = new Uint32Array(visibleArrows.length)
   const arrowYs = new Float32Array(visibleArrows.length)
   const arrowDirections = new Int8Array(visibleArrows.length)
-  const arrowColors = new Uint8Array(visibleArrows.length * 4)
+  const arrowColors = new Uint32Array(visibleArrows.length)
   const arrowFeatureIndices = new Uint32Array(visibleArrows.length)
 
   for (const [i, arrow] of visibleArrows.entries()) {
     arrowXs[i] = Math.max(0, arrow.x)
     arrowYs[i] = arrow.y
     arrowDirections[i] = arrow.direction
-    writeColorBytes(arrowColors, i, arrow.color)
+    arrowColors[i] = arrow.color
     arrowFeatureIndices[i] = arrow.flatbushIdx
   }
 

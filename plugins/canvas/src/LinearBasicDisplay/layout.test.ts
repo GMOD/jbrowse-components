@@ -42,13 +42,13 @@ function makeFeatureData(opts: {
     rectFeatureIndices: new Uint32Array(features.map((_, i) => i)),
     linePositions: new Uint32Array(0),
     lineYs: new Float32Array(0),
-    lineColors: new Uint8Array(0),
+    lineColors: new Uint32Array(0),
     lineDirections: new Int8Array(0),
     lineFeatureIndices: new Uint32Array(0),
     arrowXs: new Uint32Array(0),
     arrowYs: new Float32Array(0),
     arrowDirections: new Int8Array(0),
-    arrowColors: new Uint8Array(0),
+    arrowColors: new Uint32Array(0),
     arrowFeatureIndices: new Uint32Array(0),
     featureCount: 0,
   }
@@ -576,14 +576,14 @@ test('relayout handles lines and arrows', () => {
   // Add a line and arrow belonging to f2
   data.linePositions = new Uint32Array([200, 400])
   data.lineYs = new Float32Array([10])
-  data.lineColors = new Uint8Array([0, 0, 0, 255])
+  data.lineColors = new Uint32Array([0xff000000])
   data.lineDirections = new Int8Array([1])
   data.lineFeatureIndices = new Uint32Array([1])
 
   data.arrowXs = new Uint32Array([600])
   data.arrowYs = new Float32Array([10])
   data.arrowDirections = new Int8Array([1])
-  data.arrowColors = new Uint8Array([0, 0, 0, 255])
+  data.arrowColors = new Uint32Array([0xff000000])
   data.arrowFeatureIndices = new Uint32Array([1])
 
   const rpcDataMap = new Map<number, FeatureDataResult>([[0, data]])
@@ -729,7 +729,7 @@ test('fillYArrays is idempotent when called with the same layoutMap', () => {
   })
   data.linePositions = new Uint32Array([200, 400])
   data.lineYs = new Float32Array([7])
-  data.lineColors = new Uint8Array([0, 0, 0, 255])
+  data.lineColors = new Uint32Array([0xff000000])
   data.lineDirections = new Int8Array([1])
   data.lineFeatureIndices = new Uint32Array([1])
 
