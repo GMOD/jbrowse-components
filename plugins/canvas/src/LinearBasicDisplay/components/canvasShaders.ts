@@ -1,81 +1,20 @@
 import { HP_WGSL_CORE } from '@jbrowse/alignments-core'
 
+import { WGSL_SOURCE as RECT_WGSL } from './shaders/rect.generated.ts'
 import {
   CHEVRON_H_PX,
   CHEVRON_SPACING_PX,
   CHEVRON_W_PX,
   HEAD_HALF_H_PX,
-  MIN_RECT_WIDTH_PX,
   STEM_HALF_H_PX,
   STEM_LENGTH_PX,
 } from './sharedRendererConstants.ts'
 
-export const RECT_SHADER = /* wgsl */ `
-${HP_WGSL_CORE}
-
-struct RectInstance {
-  start_end: vec2u,
-  y: f32,
-  height: f32,
-  color: vec4f,
-}
-
-struct Uniforms {
-  bp_range_x: vec3f,
-  region_start: u32,
-  canvas_height: f32,
-  canvas_width: f32,
-  scroll_y: f32,
-  bp_per_px: f32,
-  zero: f32,
-  reversed: f32,
-}
-
-@group(0) @binding(0) var<storage, read> instances: array<RectInstance>;
-@group(0) @binding(1) var<uniform> u: Uniforms;
-
-struct VertexOutput {
-  @builtin(position) position: vec4f,
-  @location(0) color: vec4f,
-}
-
-@vertex
-fn vs_main(
-  @builtin(vertex_index) vid: u32,
-  @builtin(instance_index) iid: u32,
-) -> VertexOutput {
-  let inst = instances[iid];
-  let v = vid % 6u;
-  let local_x = select(1.0, 0.0, v == 0u || v == 2u || v == 3u);
-  let local_y = select(1.0, 0.0, v == 0u || v == 1u || v == 4u);
-
-  let abs_start = inst.start_end.x + u.region_start;
-  let abs_end = inst.start_end.y + u.region_start;
-  let sx1 = snap_to_pixel_x(hp_to_clip_x(hp_split_uint(abs_start), u.bp_range_x, u.zero), u.canvas_width);
-  let sx2 = snap_to_pixel_x(hp_to_clip_x(hp_split_uint(abs_end), u.bp_range_x, u.zero), u.canvas_width);
-
-  let min_width = ${MIN_RECT_WIDTH_PX * 2}.0 / u.canvas_width;
-  let dx = sx2 - sx1;
-  let final_sx2 = select(sx2, sx1 + select(min_width, -min_width, dx < 0.0), abs(dx) < min_width);
-  let sx = mix(sx1, final_sx2, local_x);
-
-  let y_top_px = floor(inst.y - u.scroll_y + 0.5);
-  let y_bot_px = floor(y_top_px + inst.height + 0.5);
-  let sy_top = 1.0 - (y_top_px / u.canvas_height) * 2.0;
-  let sy_bot = 1.0 - (y_bot_px / u.canvas_height) * 2.0;
-  let sy = mix(sy_bot, sy_top, local_y);
-
-  var out: VertexOutput;
-  out.position = vec4f(sx, sy, 0.0, 1.0);
-  out.color = inst.color;
-  return out;
-}
-
-@fragment
-fn fs_main(in: VertexOutput) -> @location(0) vec4f {
-  return in.color;
-}
-`
+// RECT_SHADER is generated from rect.slang (see ADR-005). It uses
+// vertex-attribute instancing — the rect PassDescriptor must set
+// `vertexBuffer: true`. The other canvas-feature shaders below are still
+// hand-written and use storage-buffer instancing until they're migrated.
+export const RECT_SHADER = RECT_WGSL
 
 export const LINE_SHADER = /* wgsl */ `
 ${HP_WGSL_CORE}

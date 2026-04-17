@@ -6,6 +6,10 @@ import {
   createStandardBindGroup,
   createStandardBindGroupLayout,
   createStorageBuffer,
+  createUniformOnlyBindGroup,
+  createUniformOnlyBindGroupLayout,
+  createVertexBuffer,
+  glToGpuVertexFormat,
 } from '../webgpuUtils.ts'
 
 import type { BlendState, GpuHal, PassDescriptor, RegionMeta } from './types.ts'
@@ -43,8 +47,12 @@ function gpuBlendState(bs: BlendState): GPUBlendState {
   }
 }
 
+// One entry per (region, pass). For storage-buffer passes, `dataBuffer` is
+// the storage buffer bound at @group(0)@binding(0). For vertex-buffer passes,
+// `dataBuffer` is the vertex buffer bound via setVertexBuffer(0, ...); the
+// bind group has only the uniform at binding 1.
 interface RegionPassBuffer {
-  storageBuffer: GPUBuffer
+  dataBuffer: GPUBuffer
   bindGroup: GPUBindGroup
   count: number
 }
@@ -55,12 +63,18 @@ interface RegionState {
 }
 
 // Per-device shared state: bind group layouts and pipeline layouts.
-// These are identical across all renderers so safe to share.
+// Identical across renderers so safe to share. We keep three layouts:
+//   - standard: storage buffer (0) + uniform (1) — legacy hand-written shaders
+//   - uniformOnly: uniform (1) only — vertex-buffer passes (Slang-authored)
+//   - textured: storage + uniform + texture + sampler — variant matrix etc.
+// Pipelines select the matching layout when created.
 const deviceState = new WeakMap<
   GPUDevice,
   {
     bindGroupLayout: GPUBindGroupLayout
     pipelineLayout: GPUPipelineLayout
+    uniformOnlyBindGroupLayout: GPUBindGroupLayout
+    uniformOnlyPipelineLayout: GPUPipelineLayout
     texturedBindGroupLayout: GPUBindGroupLayout | null
     texturedPipelineLayout: GPUPipelineLayout | null
   }
@@ -73,9 +87,15 @@ function getOrCreateDeviceState(device: GPUDevice) {
     const pipelineLayout = device.createPipelineLayout({
       bindGroupLayouts: [bindGroupLayout],
     })
+    const uniformOnlyBindGroupLayout = createUniformOnlyBindGroupLayout(device)
+    const uniformOnlyPipelineLayout = device.createPipelineLayout({
+      bindGroupLayouts: [uniformOnlyBindGroupLayout],
+    })
     state = {
       bindGroupLayout,
       pipelineLayout,
+      uniformOnlyBindGroupLayout,
+      uniformOnlyPipelineLayout,
       texturedBindGroupLayout: null,
       texturedPipelineLayout: null,
     }
@@ -157,12 +177,38 @@ async function compilePipelines(
             : STANDARD_BLEND_STATE
           : undefined
       const topo = (desc.topology ?? 'triangle-list') as GPUPrimitiveTopology
+      // Three pipeline layouts, selected per pass — see deviceState docs.
       const pLayout = desc.textures?.length
         ? getOrCreateTexturedLayout(device, state).pipelineLayout
-        : state.pipelineLayout
+        : desc.vertexBuffer
+          ? state.uniformOnlyPipelineLayout
+          : state.pipelineLayout
+
+      // Vertex-buffer passes declare their instance attribute layout here so
+      // WebGPU knows how to feed @location(N) inputs from the bound vertex
+      // buffer. Storage-buffer passes use an empty vertex.buffers (the shader
+      // indexes `instances[iid]` directly).
+      const vertexBuffers: GPUVertexBufferLayout[] = desc.vertexBuffer
+        ? [
+            {
+              arrayStride: desc.instanceStride,
+              stepMode: 'instance',
+              attributes: desc.glAttributes.map((attr, i) => ({
+                shaderLocation: i,
+                offset: attr.offsetBytes,
+                format: glToGpuVertexFormat(attr),
+              })),
+            },
+          ]
+        : []
+
       const pipeline = await device.createRenderPipelineAsync({
         layout: pLayout,
-        vertex: { module, entryPoint: 'vs_main' },
+        vertex: {
+          module,
+          entryPoint: 'vs_main',
+          buffers: vertexBuffers,
+        },
         fragment: {
           module,
           entryPoint: fragEntry,
@@ -328,7 +374,7 @@ export class WebGPUHal implements GpuHal {
     const region = this.getOrCreateRegion(regionKey)
     const existing = region.buffers.get(passId)
     if (existing) {
-      existing.storageBuffer.destroy()
+      existing.dataBuffer.destroy()
     }
 
     if (count === 0) {
@@ -340,15 +386,32 @@ export class WebGPUHal implements GpuHal {
     if (!state) {
       return
     }
-    const storageBuffer = createStorageBuffer(this.device, data)
     const desc = this.descriptors.get(passId)
     const texState = this.passTextures.get(passId)
+
+    // Vertex-buffer passes: data becomes a vertex buffer bound via
+    // setVertexBuffer(0, ...) at draw time; bind group carries only the
+    // uniform (texture-sampling vertex-buffer passes are not yet supported).
+    if (desc?.vertexBuffer) {
+      const dataBuffer = createVertexBuffer(this.device, data)
+      const bindGroup = createUniformOnlyBindGroup(
+        this.device,
+        state.uniformOnlyBindGroupLayout,
+        this.uniformRingBuffer,
+        this.alignedUniformSize,
+      )
+      region.buffers.set(passId, { dataBuffer, bindGroup, count })
+      return
+    }
+
+    // Storage-buffer passes (legacy path): data is bound at @binding(0).
+    const dataBuffer = createStorageBuffer(this.device, data)
     if (desc?.textures?.length && texState) {
       const { layout } = getOrCreateTexturedLayout(this.device, state)
       const bindGroup = this.device.createBindGroup({
         layout,
         entries: [
-          { binding: 0, resource: { buffer: storageBuffer } },
+          { binding: 0, resource: { buffer: dataBuffer } },
           {
             binding: 1,
             resource: {
@@ -361,16 +424,16 @@ export class WebGPUHal implements GpuHal {
           { binding: 3, resource: texState.sampler },
         ],
       })
-      region.buffers.set(passId, { storageBuffer, bindGroup, count })
+      region.buffers.set(passId, { dataBuffer, bindGroup, count })
     } else {
       const bindGroup = createStandardBindGroup(
         this.device,
         state.bindGroupLayout,
-        storageBuffer,
+        dataBuffer,
         this.uniformRingBuffer,
         this.alignedUniformSize,
       )
-      region.buffers.set(passId, { storageBuffer, bindGroup, count })
+      region.buffers.set(passId, { dataBuffer, bindGroup, count })
     }
   }
 
@@ -403,7 +466,7 @@ export class WebGPUHal implements GpuHal {
     if (region) {
       const buf = region.buffers.get(passId)
       if (buf) {
-        buf.storageBuffer.destroy()
+        buf.dataBuffer.destroy()
         region.buffers.delete(passId)
       }
     }
@@ -419,7 +482,7 @@ export class WebGPUHal implements GpuHal {
     const region = this.regions.get(regionKey)
     if (region) {
       for (const buf of region.buffers.values()) {
-        buf.storageBuffer.destroy()
+        buf.dataBuffer.destroy()
       }
       this.regions.delete(regionKey)
     }
@@ -434,7 +497,7 @@ export class WebGPUHal implements GpuHal {
     }
     for (const region of this.regions.values()) {
       for (const buf of region.buffers.values()) {
-        buf.storageBuffer.destroy()
+        buf.dataBuffer.destroy()
       }
     }
     this.regions.clear()
@@ -481,7 +544,7 @@ export class WebGPUHal implements GpuHal {
         this.rebuildTexturedBindGroup(
           regionKey,
           passId,
-          buf.storageBuffer,
+          buf.dataBuffer,
           buf.count,
         )
       }
@@ -580,6 +643,13 @@ export class WebGPUHal implements GpuHal {
     }
     this.currentPass.setPipeline(pipeline)
     this.currentPass.setBindGroup(0, regionBuf.bindGroup, [dynamicOffset])
+    // Vertex-buffer passes feed per-instance data through slot 0 of the
+    // pipeline's vertex.buffers layout (see compilePipelines). Storage-buffer
+    // passes index the bound storage buffer directly from the shader, so no
+    // vertex buffer needs to be bound.
+    if (desc.vertexBuffer) {
+      this.currentPass.setVertexBuffer(0, regionBuf.dataBuffer)
+    }
     this.currentPass.draw(desc.verticesPerInstance, regionBuf.count, 0, 0)
   }
 
@@ -670,6 +740,9 @@ export class WebGPUHal implements GpuHal {
     })
     pass.setPipeline(pipeline)
     pass.setBindGroup(0, regionBuf.bindGroup, [0])
+    if (desc.vertexBuffer) {
+      pass.setVertexBuffer(0, regionBuf.dataBuffer)
+    }
     pass.draw(desc.verticesPerInstance, instanceCount ?? regionBuf.count)
     pass.end()
     this.device.queue.submit([encoder.finish()])
@@ -793,7 +866,7 @@ export class WebGPUHal implements GpuHal {
   private rebuildTexturedBindGroup(
     regionKey: number,
     passId: string,
-    storageBuffer: GPUBuffer,
+    dataBuffer: GPUBuffer,
     count: number,
   ) {
     const state = deviceState.get(this.device)
@@ -808,7 +881,7 @@ export class WebGPUHal implements GpuHal {
     const bindGroup = this.device.createBindGroup({
       layout,
       entries: [
-        { binding: 0, resource: { buffer: storageBuffer } },
+        { binding: 0, resource: { buffer: dataBuffer } },
         {
           binding: 1,
           resource: {
@@ -823,7 +896,7 @@ export class WebGPUHal implements GpuHal {
     })
     const region = this.regions.get(regionKey)
     if (region) {
-      region.buffers.set(passId, { storageBuffer, bindGroup, count })
+      region.buffers.set(passId, { dataBuffer, bindGroup, count })
     }
   }
 

@@ -4,6 +4,7 @@ import {
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
 import {
   CHEVRON_H_PX,
@@ -94,7 +95,7 @@ export function drawRects(
     const h = Math.floor(region.rectHeights[i]! + 0.5)
     const w = Math.max(MIN_RECT_WIDTH_PX, x2 - x1)
 
-    ctx.fillStyle = rgbaString(region.rectColors, i)
+    ctx.fillStyle = abgrToCssRgba(region.rectColors[i]!)
     ctx.fillRect(x1, y, w, h)
   }
 }

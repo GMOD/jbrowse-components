@@ -8,6 +8,7 @@ import {
   ARROW_VERTEX_SHADER,
   CHEVRON_VERTEX_SHADER,
   LINE_VERTEX_SHADER,
+  RECT_FRAGMENT_SHADER,
   RECT_VERTEX_SHADER,
   SIMPLE_FRAGMENT_SHADER,
 } from './canvasGlslShaders.ts'
@@ -25,6 +26,12 @@ import {
   interleaveLines,
   interleaveRects,
 } from './interleaveBuffers.ts'
+import {
+  GL_ATTRIBUTES as RECT_GL_ATTRIBUTES,
+  INSTANCE_STRIDE_BYTES as RECT_INSTANCE_STRIDE_BYTES,
+  UNIFORMS_SIZE_BYTES,
+  UNIFORM_OFFSET_F32,
+} from './shaders/rect.generated.ts'
 import { MAX_VISIBLE_CHEVRONS_PER_LINE } from './sharedRendererConstants.ts'
 
 import type {
@@ -39,15 +46,15 @@ const PASS_LINE = 'line'
 const PASS_CHEVRON = 'chevron'
 const PASS_ARROW = 'arrow'
 
-const UNIFORM_BYTE_SIZE = 48
-
-const U_REGION_START = 3
-const U_CANVAS_HEIGHT = 4
-const U_CANVAS_WIDTH = 5
-const U_SCROLL_Y = 6
-const U_BP_PER_PX = 7
-// U_ZERO = 8 (always 0, never written)
-const U_REVERSED = 9
+// Uniform byte layout lives in rect.slang (shared across all canvas-feature
+// passes — line/chevron/arrow still hand-written WGSL/GLSL use the same
+// uniform block, so rect.slang's reflection is the canonical source).
+const U_REGION_START = UNIFORM_OFFSET_F32.regionStart
+const U_CANVAS_HEIGHT = UNIFORM_OFFSET_F32.canvasHeight
+const U_CANVAS_WIDTH = UNIFORM_OFFSET_F32.canvasWidth
+const U_SCROLL_Y = UNIFORM_OFFSET_F32.scrollY
+const U_BP_PER_PX = UNIFORM_OFFSET_F32.bpPerPx
+const U_REVERSED = UNIFORM_OFFSET_F32.reversed
 
 const LINE_ATTRS = [
   {
@@ -85,40 +92,12 @@ export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
     id: PASS_RECT,
     wgslSource: RECT_SHADER,
     glslVertex: RECT_VERTEX_SHADER,
-    glslFragment: SIMPLE_FRAGMENT_SHADER,
-    instanceStride: RECT_STRIDE * 4,
+    glslFragment: RECT_FRAGMENT_SHADER,
+    instanceStride: RECT_INSTANCE_STRIDE_BYTES,
     verticesPerInstance: 6,
     blend: true,
-    glAttributes: [
-      {
-        name: 'a_start_end',
-        components: 2,
-        type: 'uint',
-        offsetBytes: 0,
-        integer: true,
-      },
-      {
-        name: 'a_y',
-        components: 1,
-        type: 'float',
-        offsetBytes: 8,
-        integer: false,
-      },
-      {
-        name: 'a_height',
-        components: 1,
-        type: 'float',
-        offsetBytes: 12,
-        integer: false,
-      },
-      {
-        name: 'a_color',
-        components: 4,
-        type: 'float',
-        offsetBytes: 16,
-        integer: false,
-      },
-    ],
+    glAttributes: [...RECT_GL_ATTRIBUTES],
+    vertexBuffer: true,
   },
   {
     id: PASS_LINE,
@@ -202,7 +181,7 @@ export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
   },
 ]
 
-export { UNIFORM_BYTE_SIZE as CANVAS_FEATURE_UNIFORM_BYTE_SIZE }
+export { UNIFORMS_SIZE_BYTES as CANVAS_FEATURE_UNIFORM_BYTE_SIZE }
 
 interface RegionMeta {
   start: number
@@ -212,7 +191,7 @@ interface RegionMeta {
 
 export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
   private hal: GpuHal
-  private uniformData = new ArrayBuffer(UNIFORM_BYTE_SIZE)
+  private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
   private uniformF32 = new Float32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
   private regions = new Map<number, RegionMeta>()

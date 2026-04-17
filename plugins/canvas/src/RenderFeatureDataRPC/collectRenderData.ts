@@ -578,7 +578,10 @@ export function collectRenderData(
   const rectPositions = new Uint32Array(visibleRects.length * 2)
   const rectYs = new Float32Array(visibleRects.length)
   const rectHeights = new Float32Array(visibleRects.length)
-  const rectColors = new Uint8Array(visibleRects.length * 4)
+  // Color is already a packed RGBA32 u32 on the producer side — no need to
+  // unpack into bytes here, interleaveRects copies the u32 straight to the
+  // vertex buffer and the shader unpacks.
+  const rectColors = new Uint32Array(visibleRects.length)
   const rectFeatureIndices = new Uint32Array(visibleRects.length)
 
   for (const [i, rect] of visibleRects.entries()) {
@@ -586,7 +589,7 @@ export function collectRenderData(
     rectPositions[i * 2 + 1] = Math.max(0, rect.endOffset)
     rectYs[i] = rect.y
     rectHeights[i] = rect.height
-    writeColorBytes(rectColors, i, rect.color)
+    rectColors[i] = rect.color
     rectFeatureIndices[i] = rect.flatbushIdx
   }
 

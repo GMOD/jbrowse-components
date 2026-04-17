@@ -1,18 +1,20 @@
 // Per-instance rectangle renderer for canvas feature glyphs.
 //
-// Uses a StructuredBuffer for instance data so the emitted WGSL matches the
-// current HAL's storage-buffer-based instancing. GLSL output is not
-// generated — WebGL2 has no SSBO, so the matching WebGL vertex shader
-// stays hand-written in canvasGlslShaders.ts. A follow-up HAL change to
-// support vertex-buffer attributes on WebGPU will let us drop the
-// hand-written GLSL as well.
-//! targets: wgsl
+// Uses vertex-attribute instancing on both backends (see ADR-005). The
+// matching PassDescriptor must set `vertexBuffer: true`. Slang's WGSL output
+// emits `@location(N)` vertex inputs that the WebGPU HAL wires up via
+// vertex.buffers; Slang's GLSL output emits `in T a_field;` declarations
+// that WebGL2 binds via `vertexAttribPointer` / `vertexAttribIPointer`.
+//! targets: wgsl, glsl
 
 import hpmath;
 
 // Mirrors sharedRendererConstants.MIN_RECT_WIDTH_PX (= 2).
 static const float MIN_RECT_WIDTH_PX = 2.0;
 
+// RGBA32 packed into a single u32 (R=byte0 … A=byte3, little-endian).
+// Saves 12 B per instance vs. four f32s and matches the memory-order
+// reinterpretation used by interleaveRects on the TS side.
 float4 unpackRGBA(uint c) {
   return float4(
     float((c >>  0u) & 0xFFu),
@@ -21,19 +23,12 @@ float4 unpackRGBA(uint c) {
     float((c >> 24u) & 0xFFu)) / 255.0;
 }
 
-// Field order matches the hand-written GLSL vertex attribute layout:
-//   start_end (uvec2, 8B) | y (f32, 4B) | height (f32, 4B) | color (u32, 4B)
-// Total 20 B — tight-packed. Avoids vec2u at the first slot so std430 element
-// stride matches exactly (see the canvas hal alignment notes in ADR-005).
 struct RectInstance {
-  uint  start;
-  uint  end;
-  float y;
-  float height;
-  uint  color;
+  uint2 startEnd : ATTR0;
+  float y        : ATTR1;
+  float height   : ATTR2;
+  uint  color    : ATTR3;
 };
-
-StructuredBuffer<RectInstance> instances;
 
 struct Uniforms {
   float3 bpRangeX;
@@ -45,6 +40,9 @@ struct Uniforms {
   float  zero;
   float  reversed;
 };
+// Binding 1 is the uniform across both the standard (storage+uniform) and
+// uniform-only bind group layouts, so this binding annotation works under
+// either HAL path. Binding 0 is left unused for vertex-buffer passes.
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct VsOut {
@@ -53,15 +51,13 @@ struct VsOut {
 };
 
 [shader("vertex")]
-VsOut vs_main(uint vid : SV_VertexID, uint iid : SV_InstanceID) {
-  RectInstance inst = instances[iid];
-
+VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   uint v = vid % 6u;
   float localX = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
   float localY = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
 
-  uint absStart = inst.start + u.regionStart;
-  uint absEnd   = inst.end + u.regionStart;
+  uint absStart = inst.startEnd.x + u.regionStart;
+  uint absEnd   = inst.startEnd.y + u.regionStart;
 
   float sx1 = snapToPixelX(hpToClipX(hpSplitUint(absStart), u.bpRangeX, u.zero), u.canvasWidth);
   float sx2 = snapToPixelX(hpToClipX(hpSplitUint(absEnd),   u.bpRangeX, u.zero), u.canvasWidth);

@@ -1,11 +1,14 @@
 import { HP_GLSL_CORE } from '@jbrowse/alignments-core'
 
 import {
+  GLSL_FRAGMENT as RECT_GLSL_FRAGMENT,
+  GLSL_VERTEX as RECT_GLSL_VERTEX,
+} from './shaders/rect.generated.ts'
+import {
   CHEVRON_H_PX,
   CHEVRON_SPACING_PX,
   CHEVRON_W_PX,
   HEAD_HALF_H_PX,
-  MIN_RECT_WIDTH_PX,
   STEM_HALF_H_PX,
   STEM_LENGTH_PX,
 } from './sharedRendererConstants.ts'
@@ -30,47 +33,8 @@ float snapToPixelX(float clipX) {
 }
 `
 
-export const RECT_VERTEX_SHADER = `#version 300 es
-precision highp float;
-precision highp int;
-
-in uvec2 a_start_end;
-in float a_y;
-in float a_height;
-in vec4 a_color;
-
-out vec4 v_color;
-
-${UNIFORMS_BLOCK}
-
-void main() {
-  uint vid = uint(gl_VertexID) % 6u;
-  float localX = (vid == 0u || vid == 2u || vid == 3u) ? 0.0 : 1.0;
-  float localY = (vid == 0u || vid == 1u || vid == 4u) ? 0.0 : 1.0;
-
-  uint absStart = a_start_end.x + region_start;
-  uint absEnd = a_start_end.y + region_start;
-  float sx1 = snapToPixelX(hpToClipX(hpSplitUint(absStart), bp_range_x, zero));
-  float sx2 = snapToPixelX(hpToClipX(hpSplitUint(absEnd), bp_range_x, zero));
-
-  float minWidth = ${MIN_RECT_WIDTH_PX * 2}.0 / canvas_width;
-  float dx = sx2 - sx1;
-  if (abs(dx) < minWidth) {
-    sx2 = sx1 + (dx < 0.0 ? -minWidth : minWidth);
-  }
-
-  float sx = mix(sx1, sx2, localX);
-
-  float yTopPx = floor(a_y - scroll_y + 0.5);
-  float yBotPx = floor(yTopPx + a_height + 0.5);
-  float syTop = 1.0 - (yTopPx / canvas_height) * 2.0;
-  float syBot = 1.0 - (yBotPx / canvas_height) * 2.0;
-  float sy = mix(syBot, syTop, localY);
-
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
-  v_color = a_color;
-}
-`
+export const RECT_VERTEX_SHADER = RECT_GLSL_VERTEX
+export const RECT_FRAGMENT_SHADER = RECT_GLSL_FRAGMENT
 
 export const LINE_VERTEX_SHADER = `#version 300 es
 precision highp float;

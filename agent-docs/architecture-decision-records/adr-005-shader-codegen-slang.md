@@ -6,6 +6,8 @@ Accepted
 
 ## Context
 
+### The surface-level pain
+
 We currently hand-write every shader twice — once in WGSL (`*Shaders.ts`) for
 the WebGPU backend, once in GLSL ES 3.00 (`*GlslShaders.ts`) for the WebGL2
 fallback — and hand-maintain a third parallel declaration in TypeScript for
@@ -13,6 +15,53 @@ the byte offsets and strides used to pack per-instance buffers
 (`interleaveBuffers.ts`, `GlAttributeLayout[]` arrays in `PassDescriptor`).
 There are ~16 shader sets across the canvas, wiggle, variants, synteny, HiC,
 dotplot, graph, and LD plugins.
+
+### The underlying architectural issue
+
+The hand-written shaders don't just duplicate source — they duplicate
+**fundamentally different data-access patterns** because WebGPU and WebGL2
+disagree on how a shader reads per-instance data:
+
+- **WebGPU / WGSL** natively uses **storage buffers**:
+  `@group(0) @binding(0) var<storage, read> instances : array<Inst>;`
+  then `let inst = instances[iid];` in the vertex shader. Idiomatic, fast,
+  unbounded instance count.
+- **WebGL2 / GLSL ES 3.00** has **no SSBOs** (that's a GLES 3.1+ feature).
+  The only options are vertex attributes (`in vec4 a_color;`) or UBOs
+  (size-limited to ~16-64 KB per binding). Instance data must come in as
+  vertex attributes with `vertexAttribDivisor(loc, 1)`.
+
+Every existing dual-target shader pair resolves this split twice:
+- The WGSL shader declares a `var<storage, read> instances` and indexes
+  `instances[iid]`.
+- The GLSL shader declares `in` vertex attributes and reads them directly.
+- The HAL uploads the same raw byte buffer to both — as a `STORAGE` GPUBuffer
+  on WebGPU, as an `ARRAY_BUFFER` VBO on WebGL2.
+- The TS interleave function packs instance data with byte offsets that
+  match the GLSL `in` attribute locations **and** the WGSL `var<storage>`
+  std430 layout. These two layouts happen to align for simple structs but
+  there's no tooling enforcing it.
+
+The duplication isn't cosmetic — it's a compile-time choice about data
+plumbing. Any single-source authoring must pick *one* pattern that works on
+both backends.
+
+### Why naga's WGSL→GLSL fails
+
+When naga lowers `var<storage, read> instances : array<T>` to GLSL ES 3.00,
+it has no SSBO to target, so it emits a **UBO** containing the array.
+GLSL ES UBOs have a minimum 16 KiB size limit across implementations and
+~64 KiB is the practical cap. A realistic feature render hits that limit at
+a few thousand instances and WebGL silently truncates, or validation
+fails. That's why naga-as-compiler didn't work for us.
+
+### The only viable unifying pattern
+
+Vertex attributes are the intersection: WebGPU supports them cleanly
+(declare `buffers:` on the pipeline), WebGL2 requires them. If we author
+shaders with vertex-attribute inputs — `@location(N) field : T` in WGSL,
+`in T a_field;` in GLSL — the **same data pattern** works on both backends,
+and the TS side packs one byte layout that both consume.
 
 Three hand-maintained descriptions of the same struct is the source of
 recurring pain:
@@ -44,8 +93,53 @@ mature community approaches:
 
 ## Decision
 
-Author all shaders in **Slang** (`.slang` files). A build-time step compiles
-each `.slang` to:
+**Unify both backends on the vertex-attribute instancing pattern, and author
+all shaders in [Slang](https://github.com/shader-slang/slang) (`.slang`
+files).** This has two prerequisites that must be implemented before any
+shader can be migrated:
+
+### Prerequisite A: HAL grows native vertex-buffer support (WebGPU side)
+
+The current `WebGPUHal` hardcodes the storage-buffer pattern — `uploadBuffer`
+creates a `GPUBuffer` with `STORAGE` usage, the bind group layout declares
+`binding(0) = 'read-only-storage'`, pipelines have no `vertex.buffers:`
+entry. This must become a per-pass choice. `PassDescriptor` grows a
+`vertexBuffer?: boolean` flag; when set:
+
+- `compilePipelines` declares `vertex.buffers: [{ arrayStride, stepMode:
+  'instance', attributes }]` from the pass's `glAttributes`, and uses a
+  uniform-only bind group layout (no storage at binding 0).
+- `uploadBuffer` creates a `GPUBuffer` with `VERTEX` usage and the
+  uniform-only bind group.
+- `drawPass` calls `pass.setVertexBuffer(0, regionBuf.dataBuffer)` before the
+  draw call.
+
+The WebGL2 HAL requires no changes — it already uses the vertex-attribute
+pattern for every pass.
+
+During the migration, the HAL keeps supporting storage-buffer passes
+(`vertexBuffer: false`, the default) for any shader that hasn't migrated
+yet. **The long-term goal is to standardize every shader on vertex buffers
+and delete the storage-buffer HAL path entirely** — then only one
+instancing pattern exists, the WebGPU and WebGL2 HALs operate on identical
+buffer uploads, and there's no more "same data, two access styles" split
+anywhere in the codebase. Named access to instance fields (`inst.color`)
+is preserved under vertex buffers by declaring the inputs as an entry-point
+struct (`fn vs_main(inst: RectInstance, ...)`).
+
+### Prerequisite B: the shared uniform binding convention
+
+Both layouts place the uniform at `@binding(1)` so the shader source is
+identical regardless of which path it takes:
+
+    @group(0) @binding(1) var<uniform> u : Uniforms;
+
+Storage-buffer passes additionally have `@binding(0)` for the storage array.
+Vertex-buffer passes leave `@binding(0)` unused.
+
+### Then: author in Slang
+
+A build-time step compiles each `.slang` to:
 
 1. `*.wgsl` — for WebGPU (validated with naga in CI)
 2. `*.vert.glsl` + `*.frag.glsl` — for WebGL2, via Slang's GLSL target +
@@ -74,12 +168,17 @@ shaders, including all canvas feature glyphs, wiggle, dotplot, synteny, HiC,
 variant glyphs:
 
 - Per-instance data as vertex attributes: `: ATTR0`, `: ATTR1`, …
+- Uniform block at explicit `[[vk::binding(1, 0)]]` (so WebGPU bind group
+  layout is uniform-only at binding 1 and `@binding(0)` is unused, matching
+  the HAL's vertex-buffer pipeline layout).
+- `PassDescriptor.vertexBuffer: true` to select the HAL's vertex-buffer
+  path (see Prerequisite A).
 - Textures as `Sampler2D` (combined), **not** `Texture2D + SamplerState`
   (Slang emits Vulkan's separated-sampler pattern for the latter, which isn't
-  WebGL2-compatible)
-- No compute, no atomics, no `groupshared`
+  WebGL2-compatible).
+- No compute, no atomics, no `groupshared`.
 - No `StructuredBuffer` (WebGL2 has no SSBOs — WebGL2 is GLES 3.0, SSBOs are
-  GLES 3.1+)
+  GLES 3.1+).
 
 **WebGPU-only shaders** — LD compute, LD phased compute, future analytics:
 
@@ -163,19 +262,39 @@ the field was renamed/removed. Stride drift is no longer expressible.
 
 ### Migration staging
 
-1. **Infrastructure** (this ADR + initial commit): slangc fetch script,
-   build-shaders script, committed `codegen.ts` + `vulkanGlslToWebgl2.ts`,
-   `.cache/` gitignore entry, pnpm task.
-2. **Canvas feature shaders**: `rect`, `line`, `chevron`, `arrow` — simplest,
-   highest duplication, directly exercises the `PassDescriptor` integration.
-3. **Remaining vertex shaders**: wiggle, dotplot, HiC, synteny (two), variant
-   (three), LD, graph.
-4. **Compute shaders**: LD compute, LD phased compute. WGSL-only, fastest.
-5. **Cleanup**: delete `*Shaders.ts` / `*GlslShaders.ts` / `HP_*_CORE` once
+1. **Tooling infrastructure** ✅ (landed): slangc fetch script, build-shaders
+   script, committed `codegen.ts` + `vulkanGlslToWebgl2.ts`, `.cache/`
+   gitignore entry, pnpm task.
+2. **HAL vertex-buffer support** (current stage): extend `WebGPUHal` per
+   Prerequisite A so it can drive vertex-attribute-based passes. No shader
+   migration yet — just a feature flag that's off by default. Storage-buffer
+   passes continue to work unchanged.
+3. **Canvas feature shaders**: migrate `rect` first as the end-to-end proof
+   of the new pipeline. Then `line`, `chevron`, `arrow`.
+4. **Remaining vertex shaders**: wiggle, dotplot, HiC, synteny (two),
+   variant (three), LD, graph.
+5. **Compute shaders**: LD compute, LD phased compute. WGSL-only, fastest.
+6. **Cleanup**: delete `*Shaders.ts` / `*GlslShaders.ts` / `HP_*_CORE` once
    all shaders are migrated.
 
 Each stage is its own PR and merges independently. Rollback of any stage is
-a revert of that PR; the build infrastructure stays in place.
+a revert of that PR; the build infrastructure stays in place. Critically,
+stage 2 lands without migrating any shader, so a regression there cannot
+affect production rendering.
+
+### Lessons learned (from the rect-first spike)
+
+- Attempting to migrate rect before stage 2 caused WebGPU pipeline
+  validation failures ("Location[0] Uint32x2 is not provided by the
+  previous stage outputs") — the HAL had no concept of vertex buffer
+  layouts, so Slang's vertex-attribute WGSL was uninterpretable.
+- Separately, `WEBGL_lose_context.loseContext()` called from
+  `WebGL2Hal.dispose()` turned out to be effectively driver-wide on
+  Firefox: disposing one HAL knocked out live sibling contexts too.
+  Removed — the browser reclaims contexts on GC.
+- Slang entry-point names default to camelCase (`vsMain`), but the HAL
+  hardcodes `vs_main` / `fs_main`. Authored `.slang` sources use the
+  snake_case form to match.
 
 ## Alternatives considered
 

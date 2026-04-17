@@ -46,6 +46,17 @@ export interface PassDescriptor {
   topology?: 'triangle-list' | 'triangle-strip' | 'line-list'
   // texture bindings for this pass
   textures?: TextureBinding[]
+  // If true, per-instance data is read from a vertex buffer whose attribute
+  // layout is described by `glAttributes`. WebGPU pipelines declare the
+  // vertex buffer layout; WebGL2 already uses this path natively.
+  //
+  // If false/omitted, per-instance data is read from a storage buffer bound
+  // at @group(0) @binding(0) as `var<storage, read> instances : array<T>`.
+  // This is the legacy path for hand-written dual WGSL/GLSL shaders.
+  //
+  // Shaders generated from `.slang` sources with vertex-attribute input
+  // semantics (`: ATTR0`, `: ATTR1`, ...) require `vertexBuffer: true`.
+  vertexBuffer?: boolean
 }
 
 export interface RegionMeta {
