@@ -9,6 +9,7 @@ import tssUnusedClasses from 'eslint-plugin-tss-unused-classes'
 import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
+import baselineJs from 'eslint-plugin-baseline-js'
 
 export default defineConfig(
   {
@@ -119,6 +120,13 @@ export default defineConfig(
   ...tseslint.configs.strictTypeChecked,
   importX.flatConfigs.recommended,
   eslintPluginReact.configs.flat.recommended,
+  {
+    files: ['**/*.{js,ts,jsx,tsx}'],
+    plugins: { 'baseline-js': baselineJs },
+    rules: {
+      'baseline-js/use-baseline': ['error', { available: 'widely' }],
+    },
+  },
   {
     plugins: {
       'react-hooks': eslintPluginReactHooks,

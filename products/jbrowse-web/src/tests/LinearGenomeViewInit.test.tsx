@@ -51,6 +51,30 @@ async function createLinearGenomeViewWithInit(init: {
   return { view, session, rootModel, pluginManager }
 }
 
+afterEach(() => {
+  jest.restoreAllMocks()
+})
+
+test('LinearGenomeView initializes with gene name search', async () => {
+  const { view } = await createLinearGenomeViewWithInit({
+    loc: 'EDEN',
+    assembly: 'volvox',
+  })
+
+  await waitFor(
+    () => {
+      expect(view.initialized).toBe(true)
+      expect(view.displayedRegions.length).toBeGreaterThan(0)
+      expect(view.displayedRegions[0]!.refName).toBe('ctgA')
+    },
+    { timeout: 30000 },
+  )
+
+  expect(view.displayedRegions[0]!.start).toBeLessThan(1050)
+  expect(view.displayedRegions[0]!.end).toBeGreaterThan(9000)
+  expect(view.init).toBeUndefined()
+}, 40000)
+
 test('LinearGenomeView initializes with init property and location', async () => {
   const { view } = await createLinearGenomeViewWithInit({
     loc: 'ctgA:1..1000',

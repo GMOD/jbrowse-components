@@ -16,7 +16,7 @@ export function useFeatureSequence({
   assemblyName,
   shouldFetch = true,
 }: {
-  assemblyName: string
+  assemblyName: string | undefined
   session?: AbstractSessionModel
   start: number
   end: number
@@ -36,10 +36,8 @@ export function useFeatureSequence({
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState(false)
 
-  const sessionId = session?.id ?? 'default'
-
   useEffect(() => {
-    if (!session || !shouldFetch) {
+    if (!session || !shouldFetch || !assemblyName) {
       setSequence(undefined)
       setError(undefined)
       return
@@ -74,15 +72,15 @@ export function useFeatureSequence({
         ] as const)
 
         setSequence({ seq, upstream, downstream })
-      } catch (err) {
-        setError(err)
+      } catch (e) {
+        setError(e)
+        setSequence(undefined)
       } finally {
         setLoading(false)
       }
     })()
   }, [
     session,
-    sessionId,
     start,
     end,
     refName,

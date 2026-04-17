@@ -38,7 +38,6 @@ function PrerenderedCanvas(props: {
     }
     context.clearRect(0, 0, canvas.width, canvas.height)
     drawImageOntoCanvasContext(imageData, context)
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDone(true)
   }, [imageData])
 

@@ -1,5 +1,3 @@
-import { useRef } from 'react'
-
 import { cx, keyframes, makeStyles } from '../util/tss-react/index.ts'
 
 const dot1 = keyframes`
@@ -58,8 +56,6 @@ const useStyles = makeStyles()({
   },
 })
 
-let debugCounter = 0
-
 export default function LoadingOverlay({
   statusMessage,
   isVisible,
@@ -68,18 +64,11 @@ export default function LoadingOverlay({
   isVisible?: boolean
 }) {
   const { classes } = useStyles()
-  const spanRef = useRef<HTMLSpanElement>(null)
-  const idRef = useRef<number | undefined>(undefined)
-  if (idRef.current === undefined) {
-    idRef.current = ++debugCounter
-  }
 
   return (
     <span
-      ref={spanRef}
       className={cx(classes.overlay, isVisible && classes.visible)}
       data-testid={isVisible ? 'loading-overlay' : undefined}
-      data-debug-id={idRef.current}
     >
       <span className={classes.text}>
         {statusMessage || 'Loading'}
