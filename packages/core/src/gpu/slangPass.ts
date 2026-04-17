@@ -15,6 +15,10 @@ export interface ShaderModule {
   GLSL_FRAGMENT: string
   INSTANCE_STRIDE_BYTES: number
   GL_ATTRIBUTES: readonly GlAttributeLayout[]
+  // Present if the shader declares `Sampler2D<T>` bindings. The codegen
+  // derives bindings from reflection so the renderer doesn't hand-maintain
+  // them.
+  TEXTURES?: readonly TextureBinding[]
 }
 
 export interface SlangPassOpts {
@@ -35,6 +39,7 @@ export interface SlangPassOpts {
 }
 
 export function slangPass(opts: SlangPassOpts): PassDescriptor {
+  const modTextures = opts.mod.TEXTURES
   return {
     id: opts.id,
     wgslSource: opts.mod.WGSL_SOURCE,
@@ -48,7 +53,7 @@ export function slangPass(opts: SlangPassOpts): PassDescriptor {
     vertexBuffer: true,
     topology: opts.topology,
     picking: opts.picking,
-    textures: opts.textures,
+    textures: opts.textures ?? (modTextures ? [...modTextures] : undefined),
     wgslFragmentEntry: opts.wgslFragmentEntry,
     glslFragmentOverride: opts.glslFragmentOverride,
   }

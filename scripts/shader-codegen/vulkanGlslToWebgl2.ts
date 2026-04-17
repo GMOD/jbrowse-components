@@ -45,6 +45,19 @@ export interface RenameOptions {
   attributes?: { prefix: string; fieldNames: readonly string[] }
   /** Vertex-stage varying output names, e.g. `entryPointParam_vsMain`. */
   varyings?: { prefix: string; fieldNames: readonly string[] }
+  /** Combined-sampler names (Slang's `Sampler2D<T>` declarations). */
+  samplers?: readonly string[]
+}
+
+// Slang emits `sampler2D <name>_0;` for combined samplers. Rename to
+// `u_<name>` so the TS-side GL uniform lookup uses a predictable name.
+function renameSamplers(source: string, names: readonly string[]) {
+  let out = source
+  for (const n of names) {
+    const re = new RegExp(`\\b${n}_0\\b`, 'g')
+    out = out.replace(re, `u_${n}`)
+  }
+  return out
 }
 
 export function vulkanGlslToWebgl2(
@@ -83,6 +96,9 @@ export function vulkanGlslToWebgl2(
   }
   if (renames.varyings) {
     out = renameVaryings(out, renames.varyings.prefix, renames.varyings.fieldNames)
+  }
+  if (renames.samplers && renames.samplers.length > 0) {
+    out = renameSamplers(out, renames.samplers)
   }
 
   return out

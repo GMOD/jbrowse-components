@@ -31,6 +31,23 @@ Current state of the migration, what's left, and the pattern to follow.
   `Int32Array` views for `int` uniforms (previously corrupted via f32 view)
   and only declares typed-array locals actually used (kills unused-var lint
   errors on shaders whose uniform block has no uint/int fields).
+- **hpmath consolidated**: `hpmath.slang` moved to
+  `packages/core/src/gpu/shaders/`. `build-shaders.ts` passes that dir as a
+  second `-I` by default so any `.slang` file can `import hpmath;` without a
+  per-plugin copy.
+- **`slangPass` helper extracted** to
+  `packages/core/src/gpu/slangPass.ts`. Canvas, wiggle, dotplot, and hic all
+  build `PassDescriptor`s through it. Supports `topology`, `blendState`,
+  `textures`, `picking`, and buffer-sharing overrides.
+- **hic** migrated (`plugins/hic/src/LinearHicDisplay/components/shaders/
+  hic.slang`). First texture-using shader — uses Slang's combined
+  `Sampler2D<float4>`; the codegen auto-discovers combined samplers from
+  reflection and emits `TEXTURES: readonly TextureBinding[]` with the
+  texture+sampler WebGPU binding indices and a `u_<name>` GL uniform name,
+  which `slangPass` forwards into the pass descriptor. GLSL post-processor
+  renames Slang's mangled `<name>_0` sampler identifier to `u_<name>` so
+  the TS side never depends on Slang's name mangling. Instance stride
+  16 B → 12 B (dropped the padding the old storage-buffer layout required).
 - `WebGL2Hal.dispose()` no longer calls `WEBGL_lose_context.loseContext()`
   (it was driver-wide on Firefox and took out sibling live contexts).
 
@@ -43,8 +60,9 @@ Rough groupings, in suggested order:
 
 - ~~**wiggle**~~ — done on `webgl-poc`.
 - ~~**dotplot**~~ — done on `webgl-poc`.
-- **hic**: `plugins/hic/src/LinearHicDisplay/components/{hicShaders,
-  hicGlslShaders}.ts`.
+- ~~**hic**~~ — done on `webgl-poc` (first texture-using shader, pioneered
+  the `Sampler2D` / auto-`TEXTURES` pipeline that the rest of Tier B will
+  reuse).
 
 ### Tier B — shaders with textures
 

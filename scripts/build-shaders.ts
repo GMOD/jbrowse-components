@@ -145,6 +145,42 @@ function findFragmentInputParamName(reflection: {
   return fs.parameters.find(p => p.type.kind === 'struct')?.name
 }
 
+// Combined `Sampler2D<T>` declarations. Each one consumes two WebGPU binding
+// slots (texture at N, sampler at N+1) and emits a single `sampler2D` in
+// GLSL. Returns the shader-author's original name alongside both bindings so
+// the TS side can wire up TextureBinding{textureBinding, samplerBinding,
+// glUniformName}.
+interface ReflectionTexture {
+  name: string
+  textureBinding: number
+  samplerBinding: number
+}
+function findCombinedSamplers(reflection: {
+  parameters: Array<{
+    name: string
+    binding?: { kind: string; index?: number; count?: number }
+    type?: { kind?: string; baseShape?: string; combined?: boolean }
+  }>
+}): ReflectionTexture[] {
+  const out: ReflectionTexture[] = []
+  for (const p of reflection.parameters) {
+    if (
+      p.type?.kind === 'resource' &&
+      p.type.baseShape === 'texture2D' &&
+      p.type.combined &&
+      p.binding?.kind === 'descriptorTableSlot' &&
+      typeof p.binding.index === 'number'
+    ) {
+      out.push({
+        name: p.name,
+        textureBinding: p.binding.index,
+        samplerBinding: p.binding.index + 1,
+      })
+    }
+  }
+  return out
+}
+
 function compileOne(slangPath: string) {
   const source = readFileSync(slangPath, 'utf8')
   if (isModuleFile(source)) {
@@ -190,12 +226,14 @@ function compileOne(slangPath: string) {
       const uniformBlockName = findUniformBlockName(reflection)
       const varyingFieldNames = findVaryingFieldNames(reflection)
       const fragParamName = findFragmentInputParamName(reflection)
+      const samplerNames = findCombinedSamplers(reflection).map(s => s.name)
 
       const rawVert = readFileSync(glslVertexOut, 'utf8')
       const rawFrag = readFileSync(glslFragmentOut, 'utf8')
       glslVertex = vulkanGlslToWebgl2(rawVert, 'vertex', {
         uniformBlockName,
         attributes,
+        samplers: samplerNames,
         varyings:
           varyingFieldNames.length > 0
             ? { prefix: `entryPointParam_${vsName}`, fieldNames: varyingFieldNames }
@@ -204,6 +242,7 @@ function compileOne(slangPath: string) {
       glslFragment = vulkanGlslToWebgl2(rawFrag, 'fragment', {
         uniformBlockName,
         attributes,
+        samplers: samplerNames,
         varyings:
           varyingFieldNames.length > 0 && fragParamName
             ? { prefix: fragParamName, fieldNames: varyingFieldNames }
@@ -225,6 +264,7 @@ function compileOne(slangPath: string) {
       wgsl,
       glslVertex,
       glslFragment,
+      textures: findCombinedSamplers(reflection),
     })
     writeFileSync(generatedPath, generated)
     console.log(`  ok: ${generatedPath.replace(REPO_ROOT + '/', '')}`)
