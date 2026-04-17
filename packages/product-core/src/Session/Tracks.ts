@@ -39,7 +39,8 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
       get assemblies(): { sequence: { trackId: string } }[] {
         return self.jbrowse.assemblies
       },
-
+    }))
+    .views(self => ({
       /**
        * #getter
        * Map of trackId → config for all tracks, assemblies, and connections.
@@ -47,10 +48,6 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
        */
       // method rather than getter so subclasses can override it
       getTracksById(): Record<string, AnyConfigurationModel> {
-        return this.tracksById
-      },
-
-      get tracksById(): Record<string, AnyConfigurationModel> {
         const temporaryAssemblies =
           'temporaryAssemblies' in self
             ? (self.temporaryAssemblies as { sequence: { trackId: string } }[])
@@ -64,16 +61,18 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
             : []
 
         return Object.fromEntries([
-          ...this.tracks.map(t => [t.trackId, t]),
-          // Include assembly sequence tracks so they can be resolved by trackId
-          ...this.assemblies.map(a => [a.sequence.trackId, a.sequence]),
-          // Include temporary assembly sequence tracks
+          ...self.tracks.map(t => [t.trackId, t]),
+          ...self.assemblies.map(a => [a.sequence.trackId, a.sequence]),
           ...temporaryAssemblies.map(a => [a.sequence.trackId, a.sequence]),
-          // Include connection tracks
           ...connectionInstances.flatMap(c =>
             c.tracks.map(t => [t.trackId, t]),
           ),
         ])
+      },
+    }))
+    .views(self => ({
+      get tracksById(): Record<string, AnyConfigurationModel> {
+        return self.getTracksById()
       },
     }))
     .actions(self => ({

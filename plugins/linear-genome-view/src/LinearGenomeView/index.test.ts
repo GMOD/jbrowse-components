@@ -115,6 +115,14 @@ function initialize() {
         },
       }),
     })
+    .views(() => ({
+      getTracksById() {
+        return {}
+      },
+      get tracksById() {
+        return this.getTracksById()
+      },
+    }))
     .actions(self => ({
       setView(view: LGV) {
         self.view = view
@@ -1374,12 +1382,12 @@ describe('TrackInit with display configuration', () => {
           call: async () => {},
         },
       }))
-      .views(self => ({
-        get tracksById() {
+      .views(() => ({
+        getTracksById() {
           return trackConfigs
         },
-        getTracksById() {
-          return self.tracksById
+        get tracksById() {
+          return this.getTracksById()
         },
       }))
       .actions(self => ({
