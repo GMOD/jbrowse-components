@@ -3,7 +3,6 @@ import {
   drawCoverageBins,
   drawIndicators,
   drawSnpSegments,
-  rgbaString,
   snpColorForType,
 } from './rendererUtils.ts'
 
@@ -58,13 +57,6 @@ describe('snpColorForType', () => {
   it('defaults to baseT for unknown types', () => {
     expect(snpColorForType(4, colors)).toBe('yellow')
     expect(snpColorForType(0, colors)).toBe('yellow')
-  })
-})
-
-describe('rgbaString', () => {
-  it('converts normalized floats to CSS rgba', () => {
-    expect(rgbaString(1, 0, 0, 1)).toBe('rgba(255,0,0,1.000)')
-    expect(rgbaString(0.5, 0.5, 0.5, 0.5)).toBe('rgba(128,128,128,0.500)')
   })
 })
 

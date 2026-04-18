@@ -8,9 +8,9 @@ import {
   drawIndicators,
   drawSnpSegments,
   getDevicePixelRatio,
-  rgbaString,
   snpColorForType,
 } from '@jbrowse/alignments-core'
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import {
@@ -488,13 +488,7 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
           const genomeRow = u32[off + 2]!
           const y = coverageHeight + genomeRow * rowHeight + rowPadding
           const h = rowHeight - rowPadding * 2
-          const packed = u32[off + 4]!
-          ctx.fillStyle = rgbaString(
-            (packed & 0xff) / 255,
-            ((packed >> 8) & 0xff) / 255,
-            ((packed >> 16) & 0xff) / 255,
-            ((packed >>> 24) & 0xff) / 255,
-          )
+          ctx.fillStyle = abgrToCssRgba(u32[off + 4]!)
           ctx.fillRect(x1, y, w, h)
         }
       }

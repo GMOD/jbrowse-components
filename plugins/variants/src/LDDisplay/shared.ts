@@ -70,35 +70,6 @@ export default function sharedModelFactory(
        * #volatile
        */
       lastDrawnBpPerPx: undefined as number | undefined,
-      /**
-       * #volatile
-       */
-      snps: [] as LDMatrixResult['snps'],
-      /**
-       * #volatile
-       */
-      maxScore: 1,
-      /**
-       * #volatile
-       */
-      yScalar: 1,
-      /**
-       * #volatile
-       * Width of each cell in the LD matrix (in unrotated coordinates)
-       */
-      cellWidth: 0,
-      /**
-       * #volatile
-       * Stats about filtered variants
-       */
-      filterStats: undefined as FilterStats | undefined,
-      /**
-       * #volatile
-       * Recombination rate estimates between adjacent SNPs
-       */
-      recombination: undefined as
-        | { values: number[]; positions: number[] }
-        | undefined,
     }))
     .actions(self => ({
       setRpcData(data: LDDataResult | null) {
@@ -121,20 +92,6 @@ export default function sharedModelFactory(
        */
       setLastDrawnBpPerPx(bpPerPx: number) {
         self.lastDrawnBpPerPx = bpPerPx
-      },
-      /**
-       * #action
-       */
-      setRenderData(
-        snps: LDMatrixResult['snps'],
-        maxScore: number,
-        yScalar: number,
-        cellWidth: number,
-      ) {
-        self.snps = snps
-        self.maxScore = maxScore
-        self.yScalar = yScalar
-        self.cellWidth = cellWidth
       },
       setLineZoneHeight(n: number) {
         self.setOverride('lineZoneHeight', Math.max(0, n))
@@ -174,18 +131,6 @@ export default function sharedModelFactory(
       },
       setCallRateFilter(threshold: number) {
         self.setOverride('callRateFilter', threshold)
-      },
-      /**
-       * #action
-       */
-      setFilterStats(stats: typeof self.filterStats) {
-        self.filterStats = stats
-      },
-      /**
-       * #action
-       */
-      setRecombination(data: typeof self.recombination) {
-        self.recombination = data
       },
       setShowVerticalGuides(show: boolean) {
         self.setOverride('showVerticalGuides', show)
@@ -290,6 +235,24 @@ export default function sharedModelFactory(
        * Returns true if this display uses pre-computed LD data (PLINK, ldmat)
        * rather than computing LD from VCF genotypes
        */
+      get snps(): LDMatrixResult['snps'] {
+        return self.rpcData?.snps ?? []
+      },
+      get maxScore() {
+        return self.rpcData?.maxScore ?? 1
+      },
+      get yScalar() {
+        return self.rpcData?.yScalar ?? 1
+      },
+      get cellWidth() {
+        return self.rpcData?.uniformW ?? 0
+      },
+      get filterStats(): FilterStats | undefined {
+        return self.rpcData?.filterStats
+      },
+      get recombination() {
+        return self.rpcData?.recombination
+      },
       get isPrecomputedLD() {
         const adapterType = self.adapterConfig?.type as string | undefined
         return (

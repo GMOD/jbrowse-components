@@ -198,12 +198,21 @@ export function executeSyntenyInstanceData({
   const indelColors = buildIndelColors(colorBy)
   const featureCount = p11_offsetPx.length
 
+  // Build per-feature total-length-across-same-query-name. Cache the
+  // fallback name and final length per feature so downstream loops can look
+  // them up by index without repeating the `||` and map get.
+  const queryNames = new Array<string>(featureCount)
   const queryTotalLengths = new Map<string, number>()
   for (let i = 0; i < featureCount; i++) {
     const queryName = names[i] || `feat-${i}`
+    queryNames[i] = queryName
     const alignmentLength = Math.abs(ends[i]! - starts[i]!)
     const current = queryTotalLengths.get(queryName) || 0
     queryTotalLengths.set(queryName, current + alignmentLength)
+  }
+  const qtls = new Float32Array(featureCount)
+  for (let i = 0; i < featureCount; i++) {
+    qtls[i] = queryTotalLengths.get(queryNames[i]!)!
   }
 
   // Pre-allocate buffers with estimated capacity
@@ -360,8 +369,7 @@ export function executeSyntenyInstanceData({
     const x21 = p21_offsetPx[i]!
     const x22 = p22_offsetPx[i]!
     const featureId = i + 1
-    const queryName = names[i] || `feat-${i}`
-    const qtl = queryTotalLengths.get(queryName) || 0
+    const qtl = qtls[i]!
     const strand = strands[i]!
     const refName = refNames[i]!
     const padTop = padTopArr[i]!
@@ -421,8 +429,7 @@ export function executeSyntenyInstanceData({
     const strand = strands[i]!
     const refName = refNames[i]!
     const featureId = i + 1
-    const queryName = names[i] || `feat-${i}`
-    const qtl = queryTotalLengths.get(queryName) || 0
+    const qtl = qtls[i]!
     const padTop = padTopArr[i]!
     const padBottom = padBottomArr[i]!
 

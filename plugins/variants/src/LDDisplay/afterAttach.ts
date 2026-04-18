@@ -115,14 +115,6 @@ export function doAfterAttach(self: SharedLDModel) {
       self.setRpcData(result)
       self.setLastDrawnOffsetPx(view.offsetPx)
       self.setLastDrawnBpPerPx(view.bpPerPx)
-      self.setRenderData(
-        result.snps,
-        result.maxScore,
-        result.yScalar,
-        result.uniformW,
-      )
-      self.setFilterStats(result.filterStats)
-      self.setRecombination(result.recombination)
     } catch (error) {
       if (!isAbortException(error)) {
         console.error(error)

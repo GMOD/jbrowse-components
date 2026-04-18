@@ -243,6 +243,9 @@ export async function executeSyntenyFeaturesAndPositions({
   const refNames: string[] = []
   const assemblyNames: string[] = []
   const cigars: string[] = []
+  // Only collected in syri mode; structural-tier adapters precompute syriType
+  // on the feature and we pass those through directly if present.
+  const collectSyri = colorBy === 'syri'
   const precomputedSyriTypes: (string | undefined)[] = []
   const mates: {
     start: number
@@ -328,7 +331,9 @@ export async function executeSyntenyFeaturesAndPositions({
     refNames.push(refName)
     assemblyNames.push((f.get('assemblyName') as string) || '')
     cigars.push((f.get('CIGAR') as string) || '')
-    precomputedSyriTypes.push(f.get('syriType') as string | undefined)
+    if (collectSyri) {
+      precomputedSyriTypes.push(f.get('syriType') as string | undefined)
+    }
     mates.push(mate)
 
     validCount++

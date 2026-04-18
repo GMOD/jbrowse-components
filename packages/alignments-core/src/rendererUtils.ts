@@ -52,10 +52,6 @@ export function snpColorForType(colorType: number, colors: CigarOpDrawColors) {
   return colors.baseT
 }
 
-export function rgbaString(r: number, g: number, b: number, a: number) {
-  return `rgba(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)},${a.toFixed(3)})`
-}
-
 export function drawCoverageBins(
   ctx: Ctx,
   buffer: ArrayBuffer,

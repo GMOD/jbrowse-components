@@ -16,9 +16,6 @@ export const MULTI_WIGGLE_RENDERING_TYPES = [
   'multiscatter',
 ] as const
 
-export type MultiWiggleRenderingType =
-  (typeof MULTI_WIGGLE_RENDERING_TYPES)[number]
-
 // Default color used by wiggle config schema
 export const WIGGLE_COLOR_DEFAULT = '#f0f'
 export const WIGGLE_POS_COLOR_DEFAULT = '#0068d1'
@@ -27,7 +24,7 @@ export function isDefaultBicolor(color: string) {
   return color === WIGGLE_COLOR_DEFAULT || color === '#ff00ff'
 }
 
-export interface ScaleOpts {
+interface ScaleOpts {
   domain: number[]
   range: number[]
   scaleType: string

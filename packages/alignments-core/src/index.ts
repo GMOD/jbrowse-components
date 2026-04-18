@@ -49,7 +49,6 @@ export {
   drawSnpSegments,
   getDevicePixelRatio,
   resizeCanvas,
-  rgbaString,
   snpColorForType,
 } from './rendererUtils.ts'
 export type { NoncovDrawColors } from './rendererUtils.ts'
