@@ -13,6 +13,7 @@ import {
   scaleSequentialLog,
 } from '@mui/x-charts-vendor/d3-scale'
 
+import { HIC_LINEAR_SCORE_DIVISOR } from '../LinearHicDisplay/components/colorRamp.ts'
 import interpolateViridis from './viridis.ts'
 
 import type { RenderArgsDeserializedWithFeatures } from './HicRenderer.tsx'
@@ -114,7 +115,7 @@ export async function makeImageData(
     ]),
     viridis: interpolateViridis,
   }
-  const m = useLogScale ? maxScore : maxScore / 20
+  const m = useLogScale ? maxScore : maxScore / HIC_LINEAR_SCORE_DIVISOR
 
   // @ts-expect-error
   const x1 = colorSchemes[colorScheme] || colorSchemes.juicebox

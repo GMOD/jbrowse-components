@@ -15,6 +15,7 @@ import YScaleBar from '../../shared/YScaleBar.tsx'
 import {
   findFeatureAtBp,
   getRowTop,
+  hitTestMouse,
   isSummaryFeature,
 } from '../../shared/wiggleComponentUtils.ts'
 
@@ -132,21 +133,15 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
         const { rowHeight, sources, rpcDataMap, summaryScoreMode, domain } =
           model
-        const visibleRegions = view.visibleRegions
-        const region = visibleRegions.find(
-          r => offsetX >= r.screenStartPx && offsetX < r.screenEndPx,
-        )
-        const data = region ? rpcDataMap.get(region.regionNumber) : undefined
+        const hit =
+          sources.length === 0
+            ? undefined
+            : hitTestMouse(view.visibleRegions, rpcDataMap, offsetX)
 
-        if (sources.length === 0 || rpcDataMap.size === 0 || !region || !data) {
+        if (!hit) {
           model.setFeatureUnderMouse(undefined)
         } else {
-          const blockWidth = region.screenEndPx - region.screenStartPx
-          const frac = (offsetX - region.screenStartPx) / blockWidth
-          const bp = region.reversed
-            ? Math.round(region.end - frac * (region.end - region.start))
-            : Math.round(region.start + frac * (region.end - region.start))
-          const bpOffset = bp - data.regionStart
+          const { region, data, bpOffset } = hit
 
           if (model.isOverlay && domain) {
             let bestSource: MultiWiggleSourceData | undefined

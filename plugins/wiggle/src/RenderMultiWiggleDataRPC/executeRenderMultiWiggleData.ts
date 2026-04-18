@@ -57,12 +57,13 @@ export async function executeRenderMultiWiggleData({
     ? sourcesArg
     : await dataAdapter.getSources([region])
 
+  const fetchOpts = { bpPerPx, resolution }
   const featuresArray = await updateStatus(
     'Loading wiggle data',
     statusCallback,
     () =>
       firstValueFrom(
-        dataAdapter.getFeatures(region, { bpPerPx, resolution }).pipe(toArray()),
+        dataAdapter.getFeatures(region, fetchOpts).pipe(toArray()),
       ),
   )
 

@@ -11,6 +11,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { generateColorRamp } from './components/HicRenderer.ts'
+import { HIC_LINEAR_SCORE_DIVISOR } from './components/colorRamp.ts'
 
 import type {
   HicDataResult,
@@ -177,7 +178,7 @@ export default function stateModelFactory(
         const colorScheme = self.colorScheme ?? 'juicebox'
         const displayMax = self.useLogScale
           ? self.maxScore
-          : Math.round(self.maxScore / 20)
+          : Math.round(self.maxScore / HIC_LINEAR_SCORE_DIVISOR)
         const minLabel = self.useLogScale ? '1' : '0'
         const maxLabel = `${displayMax.toLocaleString()}${self.useLogScale ? ' (log)' : ''}`
 

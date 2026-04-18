@@ -1,13 +1,13 @@
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
-import * as syntenyEdgeShader from './shaders/syntenyEdge.generated.ts'
-import * as syntenyFillShader from './shaders/syntenyFill.generated.ts'
-import * as syntenyPickingShader from './shaders/syntenyPicking.generated.ts'
 import {
   EDGE_VERTS_PER_INSTANCE,
   FILL_VERTS_PER_INSTANCE,
   interleaveInstances,
 } from './instanceInterleave.ts'
+import * as syntenyEdgeShader from './shaders/syntenyEdge.generated.ts'
+import * as syntenyFillShader from './shaders/syntenyFill.generated.ts'
+import * as syntenyPickingShader from './shaders/syntenyPicking.generated.ts'
 
 import type {
   SyntenyBackend,

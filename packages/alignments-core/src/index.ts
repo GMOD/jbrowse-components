@@ -41,14 +41,6 @@ export { visitCigarOps, visitCsOps } from './cigarOpsVisitor.ts'
 export type { CigarOpsVisitor } from './cigarOpsVisitor.ts'
 export { InstanceBuilder } from './InstanceBuilder.ts'
 export {
-  PICKING_FS_GLSL,
-  PICKING_FS_WGSL,
-  RECT_LOCALS_WGSL,
-  SIMPLE_FS_GLSL,
-  SIMPLE_FS_WGSL,
-  SIMPLE_VERTEX_OUTPUT_WGSL,
-} from './sharedShaders.ts'
-export {
   coverageLayout,
   drawCoverageBins,
   drawIndicators,

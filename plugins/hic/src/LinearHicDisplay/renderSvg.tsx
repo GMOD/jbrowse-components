@@ -7,6 +7,7 @@ import HicSVGColorLegend from './components/HicSVGColorLegend.tsx'
 import {
   generateColorRamp,
   lookupColorRampCSS,
+  mapHicCount,
 } from './components/colorRamp.ts'
 
 import type { LinearHicDisplayModel } from './model.ts'
@@ -16,13 +17,6 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-function computeT(count: number, m: number, useLogScale: boolean) {
-  const t = useLogScale
-    ? Math.log2(Math.max(count, 1)) / Math.log2(Math.max(m, 1))
-    : count / Math.max(m, 0.001)
-  return Math.max(0, Math.min(1, t))
-}
 
 export async function renderSvg(
   self: LinearHicDisplayModel,
@@ -40,7 +34,6 @@ export async function renderSvg(
   const height = opts.overrideHeight ?? self.height
   const visibleWidth = view.width
 
-  const m = useLogScale ? maxScore : maxScore / 20
   const ramp = generateColorRamp(colorScheme)
   const rasterize = opts.rasterizeLayers
   const clipId = `clip-${self.id}-svg`
@@ -67,7 +60,7 @@ export async function renderSvg(
         const px = positions[i * 2]!
         const py = positions[i * 2 + 1]!
         const count = counts[i]!
-        const t = computeT(count, m, useLogScale)
+        const t = mapHicCount(count, maxScore, useLogScale)
         ctx.fillStyle = lookupColorRampCSS(ramp, t)
         ctx.fillRect(px, py, binWidth, binWidth)
       }

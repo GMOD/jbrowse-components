@@ -14,7 +14,7 @@
 // treated as imports only — no codegen output for them.
 
 import { execFileSync } from 'node:child_process'
-import { readFileSync, readdirSync, statSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs'
+import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
 
@@ -64,22 +64,22 @@ function parseTargets(source: string): ('wgsl' | 'glsl')[] {
 }
 
 function isModuleFile(source: string) {
-  return /^\s*module\s+\w+\s*;/m.test(source) && !/\[shader\(/.test(source)
+  return /^\s*module\s+\w+\s*;/m.test(source) && !source.includes('[shader(')
 }
 
 function findVertexStructMeta(reflection: {
-  entryPoints: Array<{
+  entryPoints: {
     name: string
     stage: string
-    parameters: Array<{
+    parameters: {
       name: string
-      type: { kind: string; name?: string; fields?: Array<{ name: string }> }
-    }>
-  }>
-  parameters: Array<{
+      type: { kind: string; name?: string; fields?: { name: string }[] }
+    }[]
+  }[]
+  parameters: {
     name: string
     type: { kind: string; elementType?: { name?: string } }
-  }>
+  }[]
 }) {
   const vs = reflection.entryPoints.find(e => e.stage === 'vertex')
   if (!vs) {
@@ -97,7 +97,7 @@ function findVertexStructMeta(reflection: {
 }
 
 function findUniformBlockName(reflection: {
-  parameters: Array<{ type: { kind: string; elementType?: { name?: string } } }>
+  parameters: { type: { kind: string; elementType?: { name?: string } } }[]
 }) {
   for (const p of reflection.parameters) {
     if (p.type.kind === 'constantBuffer' && p.type.elementType?.name) {
@@ -108,23 +108,23 @@ function findUniformBlockName(reflection: {
 }
 
 function findEntryPoint(
-  reflection: { entryPoints: Array<{ name: string; stage: string }> },
+  reflection: { entryPoints: { name: string; stage: string }[] },
   stage: 'vertex' | 'fragment' | 'compute',
 ) {
   return reflection.entryPoints.find(e => e.stage === stage)?.name
 }
 
 function findVaryingFieldNames(reflection: {
-  entryPoints: Array<{
+  entryPoints: {
     stage: string
     result?: {
-      type?: { kind: string; fields?: Array<{ name: string; binding?: { kind: string } }> }
+      type?: { kind: string; fields?: { name: string; binding?: { kind: string } }[] }
     }
-  }>
+  }[]
 }): string[] {
   const vs = reflection.entryPoints.find(e => e.stage === 'vertex')
   const t = vs?.result?.type
-  if (!t || t.kind !== 'struct' || !t.fields) {
+  if (t?.kind !== 'struct' || !t.fields) {
     return []
   }
   return t.fields
@@ -133,10 +133,10 @@ function findVaryingFieldNames(reflection: {
 }
 
 function findFragmentInputParamName(reflection: {
-  entryPoints: Array<{
+  entryPoints: {
     stage: string
-    parameters: Array<{ name: string; type: { kind: string } }>
-  }>
+    parameters: { name: string; type: { kind: string } }[]
+  }[]
 }) {
   const fs = reflection.entryPoints.find(e => e.stage === 'fragment')
   if (!fs) {
@@ -156,11 +156,11 @@ interface ReflectionTexture {
   samplerBinding: number
 }
 function findCombinedSamplers(reflection: {
-  parameters: Array<{
+  parameters: {
     name: string
     binding?: { kind: string; index?: number; count?: number }
     type?: { kind?: string; baseShape?: string; combined?: boolean }
-  }>
+  }[]
 }): ReflectionTexture[] {
   const out: ReflectionTexture[] = []
   for (const p of reflection.parameters) {
@@ -267,7 +267,7 @@ function compileOne(slangPath: string) {
       textures: findCombinedSamplers(reflection),
     })
     writeFileSync(generatedPath, generated)
-    console.log(`  ok: ${generatedPath.replace(REPO_ROOT + '/', '')}`)
+    console.log(`  ok: ${generatedPath.replace(`${REPO_ROOT  }/`, '')}`)
   } finally {
     rmSync(tmp, { recursive: true, force: true })
   }
@@ -282,7 +282,7 @@ function main() {
     if (isModuleFile(source)) {
       continue
     }
-    console.log(p.replace(REPO_ROOT + '/', ''))
+    console.log(p.replace(`${REPO_ROOT  }/`, ''))
     compileOne(p)
   }
 }

@@ -7,7 +7,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 
 function renameUniformBlock(source: string, mangled: string, target = 'Uniforms') {
-  const re = new RegExp(`(layout\\(std140\\)\\s*uniform\\s+)${mangled}\\b`, 'g')
+  const re = new RegExp(String.raw`(layout\(std140\)\s*uniform\s+)${mangled}\b`, 'g')
   return source.replace(re, `$1${target}`)
 }
 
@@ -18,7 +18,7 @@ function renameAttributeIdentifiers(
 ) {
   let out = source
   for (const f of fieldNames) {
-    const re = new RegExp(`\\b${prefix}_${f}_0\\b`, 'g')
+    const re = new RegExp(String.raw`\b${prefix}_${f}_0\b`, 'g')
     out = out.replace(re, `a_${f}`)
   }
   return out
@@ -34,7 +34,7 @@ function renameVaryings(
 ) {
   let out = source
   for (const f of fieldNames) {
-    const re = new RegExp(`\\b${prefix}_${f}_0\\b`, 'g')
+    const re = new RegExp(String.raw`\b${prefix}_${f}_0\b`, 'g')
     out = out.replace(re, `v_${f}`)
   }
   return out
@@ -54,7 +54,7 @@ export interface RenameOptions {
 function renameSamplers(source: string, names: readonly string[]) {
   let out = source
   for (const n of names) {
-    const re = new RegExp(`\\b${n}_0\\b`, 'g')
+    const re = new RegExp(String.raw`\b${n}_0\b`, 'g')
     out = out.replace(re, `u_${n}`)
   }
   return out
@@ -79,11 +79,7 @@ export function vulkanGlslToWebgl2(
   out = out.replace(/\bgl_VertexIndex\b/g, 'gl_VertexID')
   out = out.replace(/\bgl_InstanceIndex\b/g, 'gl_InstanceID')
 
-  if (stage === 'vertex') {
-    out = out.replace(/layout\(location\s*=\s*\d+\)\s*\nout\s/g, 'out ')
-  } else {
-    out = out.replace(/layout\(location\s*=\s*\d+\)\s*\nin\s/g, 'in ')
-  }
+  out = stage === 'vertex' ? out.replace(/layout\(location\s*=\s*\d+\)\s*\nout\s/g, 'out ') : out.replace(/layout\(location\s*=\s*\d+\)\s*\nin\s/g, 'in ')
 
   // GLSL 4.20+ / HLSL brace initializers aren't legal in GLSL ES 3.00 — rewrite
   // `Struct_0 v = { a, b, c };` to `Struct_0 v = Struct_0(a, b, c);`. Slang

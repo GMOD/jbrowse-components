@@ -10,6 +10,7 @@ import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import {
   findFeatureAtBp,
+  hitTestMouse,
   isSummaryFeature,
 } from '../../shared/wiggleComponentUtils.ts'
 
@@ -49,42 +50,27 @@ const WiggleComponent = observer(function WiggleComponent({
         setClientMouseCoord([event.clientX, event.clientY])
 
         const { rpcDataMap, summaryScoreMode } = model
-        const visibleRegions = view.visibleRegions
-        const region = visibleRegions.find(
-          r => offsetX >= r.screenStartPx && offsetX < r.screenEndPx,
-        )
-        const data = region ? rpcDataMap.get(region.regionNumber) : undefined
-
-        if (rpcDataMap.size === 0 || !region || !data) {
+        const hit = hitTestMouse(view.visibleRegions, rpcDataMap, offsetX)
+        if (!hit) {
           model.setFeatureUnderMouse(undefined)
         } else {
-          const blockWidth = region.screenEndPx - region.screenStartPx
-          const frac = (offsetX - region.screenStartPx) / blockWidth
-          const bp = region.reversed
-            ? Math.round(region.end - frac * (region.end - region.start))
-            : Math.round(region.start + frac * (region.end - region.start))
-          const bpOffset = bp - data.regionStart
-
+          const { region, data, bpOffset } = hit
           const { featurePositions, featureScores, numFeatures } = data
           const foundIdx = findFeatureAtBp(
             featurePositions,
             numFeatures,
             bpOffset,
           )
-
           if (foundIdx === -1) {
             model.setFeatureUnderMouse(undefined)
           } else {
-            const fStart = featurePositions[foundIdx * 2]! + data.regionStart
-            const fEnd = featurePositions[foundIdx * 2 + 1]! + data.regionStart
             const score = featureScores[foundIdx]!
             const minScore = data.featureMinScores[foundIdx]
             const maxScore = data.featureMaxScores[foundIdx]
-
             model.setFeatureUnderMouse({
               refName: region.refName,
-              start: fStart,
-              end: fEnd,
+              start: featurePositions[foundIdx * 2]! + data.regionStart,
+              end: featurePositions[foundIdx * 2 + 1]! + data.regionStart,
               score,
               ...(summaryScoreMode !== 'avg' &&
               isSummaryFeature(score, minScore, maxScore)

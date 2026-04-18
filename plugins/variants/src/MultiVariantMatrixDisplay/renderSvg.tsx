@@ -1,11 +1,11 @@
 import { getContainingView } from '@jbrowse/core/util'
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import {
   abgrAlpha,
   abgrBlue,
   abgrGreen,
   abgrRed,
 } from '@jbrowse/core/util/colorBits'
-import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 

@@ -155,6 +155,13 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     const { scale0, scale1, adjOff0, adjOff1, scaleDiff0, scaleDiff1 } =
       computeTransform(data, params)
 
+    // Cache rgba() strings per (packed color, alpha bucket). Canvas2D parses
+    // fillStyle on every assignment, so string allocation + parsing dominates
+    // the hot loop when many instances share a color (CIGAR fills).
+    const fillStyleCache = new Map<number, string>()
+    const leftLimit = -maxOffScreenPx
+    const rightLimit = logicalW + maxOffScreenPx
+
     for (let i = 0; i < data.instanceCount; i++) {
       if (data.queryTotalLengths[i]! < minAlignmentLength) {
         continue
@@ -165,9 +172,6 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
       if (a < 0.01) {
         continue
       }
-      let r = (packed & 0xff) / 255
-      let g = ((packed >> 8) & 0xff) / 255
-      let b = ((packed >> 16) & 0xff) / 255
 
       const padTop = data.padTops[i]!
       const padBottom = data.padBottoms[i]!
@@ -179,29 +183,34 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
 
       const minX = Math.min(sx1, sx2, sx3, sx4)
       const maxX = Math.max(sx1, sx2, sx3, sx4)
-      if (maxX < -maxOffScreenPx || minX > logicalW + maxOffScreenPx) {
+      if (maxX < leftLimit || minX > rightLimit) {
         continue
       }
 
       const isHovered = data.featureIds[i] === hoveredFeatureId
       const isClicked = data.featureIds[i] === clickedFeatureId
 
-      let effectiveAlpha: number
+      let fillStyle: string
       if (isHovered) {
-        r *= 0.7
-        g *= 0.7
-        b *= 0.7
-        effectiveAlpha = Math.min(a * alpha * 5, 0.35)
+        const r = ((packed & 0xff) * 0.7) | 0
+        const g = (((packed >> 8) & 0xff) * 0.7) | 0
+        const b = (((packed >> 16) & 0xff) * 0.7) | 0
+        const effectiveAlpha = Math.min(a * alpha * 5, 0.35)
+        fillStyle = `rgba(${r},${g},${b},${effectiveAlpha})`
       } else {
-        effectiveAlpha = a * alpha
+        let cached = fillStyleCache.get(packed)
+        if (cached === undefined) {
+          const r = packed & 0xff
+          const g = (packed >> 8) & 0xff
+          const b = (packed >> 16) & 0xff
+          cached = `rgba(${r},${g},${b},${a * alpha})`
+          fillStyleCache.set(packed, cached)
+        }
+        fillStyle = cached
       }
 
-      const ri = Math.round(r * 255)
-      const gi = Math.round(g * 255)
-      const bi = Math.round(b * 255)
-
       ctx.globalAlpha = 1
-      ctx.fillStyle = `rgba(${ri},${gi},${bi},${effectiveAlpha})`
+      ctx.fillStyle = fillStyle
 
       buildFeaturePath(ctx, sx1, sx2, sx3, sx4, height, data.isCurves[i]! > 0.5)
       ctx.fill()
@@ -255,6 +264,19 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
         const sx2 = (data.x2[i]! - adjOff0) * scale0 - padTop * scaleDiff0
         const sx3 = (data.x3[i]! - adjOff1) * scale1 - padBottom * scaleDiff1
         const sx4 = (data.x4[i]! - adjOff1) * scale1 - padBottom * scaleDiff1
+
+        // AABB reject: skip path construction + isPointInPath when the
+        // pointer is outside the feature's x-extent (y is already inside
+        // since we checked the band above).
+        const minX = Math.min(sx1, sx2)
+        const minX2 = Math.min(sx3, sx4)
+        const aabbMinX = Math.min(minX, minX2)
+        const maxX = Math.max(sx1, sx2)
+        const maxX2 = Math.max(sx3, sx4)
+        const aabbMaxX = Math.max(maxX, maxX2)
+        if (x < aabbMinX || x > aabbMaxX) {
+          continue
+        }
 
         buildFeaturePath(
           ctx,

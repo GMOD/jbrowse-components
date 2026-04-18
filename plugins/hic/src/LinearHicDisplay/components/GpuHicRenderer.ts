@@ -23,8 +23,8 @@ export const HIC_PASSES: PassDescriptor[] = [
 ]
 
 export {
-  UNIFORMS_SIZE_BYTES as HIC_UNIFORM_BYTE_SIZE,
   STRIDE as HIC_INSTANCE_STRIDE_F32,
+  UNIFORMS_SIZE_BYTES as HIC_UNIFORM_BYTE_SIZE,
 }
 
 function interleaveHicInstances(data: {

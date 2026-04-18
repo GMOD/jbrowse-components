@@ -1,7 +1,7 @@
 import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
-import { HIC_LINEAR_SCORE_DIVISOR, lookupColorRamp } from './colorRamp.ts'
+import { lookupColorRamp, mapHicCount } from './colorRamp.ts'
 
 import type { HicBackend, HicRenderState } from './hicBackendTypes.ts'
 
@@ -69,19 +69,12 @@ export class Canvas2DHicRenderer implements HicBackend {
       return
     }
 
-    const logMax = useLogScale ? Math.log2(Math.max(maxScore, 1)) : 1
-    const m = useLogScale ? maxScore : maxScore / HIC_LINEAR_SCORE_DIVISOR
-
     for (let i = 0; i < this.numContacts; i++) {
       const px = this.positions[i * 2]!
       const py = this.positions[i * 2 + 1]!
       const count = this.counts[i]!
 
-      const raw = useLogScale
-        ? Math.log2(Math.max(count, 1)) / Math.max(logMax, 0.001)
-        : count / Math.max(m, 0.001)
-      const t = Math.max(0, Math.min(1, raw))
-
+      const t = mapHicCount(count, maxScore, useLogScale)
       const { r, g, b, a } = lookupColorRamp(this.colorRamp, t)
 
       if (a < 0.01) {

@@ -1,5 +1,11 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import {
+  SHAPE_RECT,
+  SHAPE_TRI_DOWN,
+  SHAPE_TRI_LEFT,
+  SHAPE_TRI_RIGHT,
+} from './variantShape.ts'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import {
   getAlleleColor,
@@ -13,12 +19,6 @@ import {
   getRawCallGenotype,
 } from '../../shared/rawGenotypes.ts'
 import { createCachedABGR } from '../../shared/variantWebglUtils.ts'
-import {
-  SHAPE_RECT,
-  SHAPE_TRI_DOWN,
-  SHAPE_TRI_LEFT,
-  SHAPE_TRI_RIGHT,
-} from './variantShape.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { Source } from '../../shared/types.ts'

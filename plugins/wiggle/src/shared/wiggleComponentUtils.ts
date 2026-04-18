@@ -165,11 +165,12 @@ export function isSummaryFeature(
 }
 
 interface MouseRegion {
+  refName: string
   screenStartPx: number
   screenEndPx: number
   start: number
   end: number
-  reversed: boolean
+  reversed?: boolean
   regionNumber: number
 }
 
@@ -177,11 +178,10 @@ interface MouseRegion {
 // keyed by regionNumber, and the bp offset within that region (relative to
 // data.regionStart). Returns undefined if x is outside any region or no data
 // is loaded for the hit region.
-export function hitTestMouse<R extends MouseRegion, D extends { regionStart: number }>(
-  regions: R[],
-  rpcDataMap: Map<number, D>,
-  offsetX: number,
-) {
+export function hitTestMouse<
+  R extends MouseRegion,
+  D extends { regionStart: number },
+>(regions: R[], rpcDataMap: Map<number, D>, offsetX: number) {
   const region = regions.find(
     r => offsetX >= r.screenStartPx && offsetX < r.screenEndPx,
   )
