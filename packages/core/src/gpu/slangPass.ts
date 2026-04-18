@@ -39,7 +39,6 @@ export interface SlangPassOpts {
 }
 
 export function slangPass(opts: SlangPassOpts): PassDescriptor {
-  const modTextures = opts.mod.TEXTURES
   return {
     id: opts.id,
     wgslSource: opts.mod.WGSL_SOURCE,
@@ -49,11 +48,10 @@ export function slangPass(opts: SlangPassOpts): PassDescriptor {
     verticesPerInstance: opts.verticesPerInstance,
     blend: opts.blend ?? true,
     blendState: opts.blendState,
-    glAttributes: [...(opts.bufferAttributes ?? opts.mod.GL_ATTRIBUTES)],
-    vertexBuffer: true,
+    glAttributes: opts.bufferAttributes ?? opts.mod.GL_ATTRIBUTES,
     topology: opts.topology,
     picking: opts.picking,
-    textures: opts.textures ?? (modTextures ? [...modTextures] : undefined),
+    textures: opts.textures ?? opts.mod.TEXTURES,
     wgslFragmentEntry: opts.wgslFragmentEntry,
     glslFragmentOverride: opts.glslFragmentOverride,
   }

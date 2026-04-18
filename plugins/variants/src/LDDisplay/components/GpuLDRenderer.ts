@@ -3,9 +3,30 @@ import { slangPass } from '@jbrowse/core/gpu/slangPass'
 import * as ldGenomicShader from './shaders/ldGenomic.generated.ts'
 import * as ldUniformShader from './shaders/ldUniform.generated.ts'
 
+import type {
+  LDBackend,
+  LDRenderState,
+  LDUploadData,
+} from './ldBackendTypes.ts'
+import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
+
+const PASS_MAIN = 'main'
+const PASS_GENOMIC = 'genomic'
+const REGION_KEY = 0
+
 const F = ldGenomicShader.FIELD_OFFSET_F32
 const STRIDE = ldGenomicShader.INSTANCE_STRIDE_F32
 const STRIDE_BYTES = ldGenomicShader.INSTANCE_STRIDE_BYTES
+
+// Both shader variants share an identical uniform block (ldUniforms.slang
+// module) — either module's offsets are authoritative.
+const UNIFORMS_SIZE_BYTES = ldGenomicShader.UNIFORMS_SIZE_BYTES
+const U = ldGenomicShader.UNIFORM_OFFSET_F32
+
+const BLEND_PREMUL = {
+  srcFactor: 'one',
+  dstFactor: 'one-minus-src-alpha',
+} as const
 
 function interleaveLDInstances(data: {
   positions: Float32Array
@@ -26,27 +47,6 @@ function interleaveLDInstances(data: {
   }
   return buf
 }
-
-import type {
-  LDBackend,
-  LDRenderState,
-  LDUploadData,
-} from './ldBackendTypes.ts'
-import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
-
-const PASS_MAIN = 'main'
-const PASS_GENOMIC = 'genomic'
-const REGION_KEY = 0
-
-// Both shader variants share an identical uniform block (ldUniforms.slang
-// module) — either module's offsets are authoritative.
-const UNIFORMS_SIZE_BYTES = ldGenomicShader.UNIFORMS_SIZE_BYTES
-const U = ldGenomicShader.UNIFORM_OFFSET_F32
-
-const BLEND_PREMUL = {
-  srcFactor: 'one',
-  dstFactor: 'one-minus-src-alpha',
-} as const
 
 export const LD_PASSES: PassDescriptor[] = [
   slangPass({

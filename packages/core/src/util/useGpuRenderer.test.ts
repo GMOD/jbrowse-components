@@ -25,20 +25,19 @@ function createMockFactory(shouldReject = false) {
   }
 }
 
-function createCanvasRef(canvas?: HTMLCanvasElement) {
-  return { current: canvas ?? document.createElement('canvas') }
-}
-
 describe('useGpuRenderer', () => {
   test('initializes renderer and sets ready on success', async () => {
     const factory = createMockFactory()
-    const canvasRef = createCanvasRef()
+    const canvas = document.createElement('canvas')
 
-    const { result } = renderHook(() => useGpuRenderer(canvasRef, factory))
+    const { result } = renderHook(() => useGpuRenderer(factory))
 
     expect(result.current.ready).toBe(false)
     expect(result.current.error).toBeNull()
 
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
     await act(async () => {})
 
     expect(result.current.ready).toBe(true)
@@ -48,10 +47,12 @@ describe('useGpuRenderer', () => {
 
   test('sets error when factory rejects', async () => {
     const factory = createMockFactory(true)
-    const canvasRef = createCanvasRef()
+    const canvas = document.createElement('canvas')
 
-    const { result } = renderHook(() => useGpuRenderer(canvasRef, factory))
-
+    const { result } = renderHook(() => useGpuRenderer(factory))
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
     await act(async () => {})
 
     expect(result.current.ready).toBe(false)
@@ -60,10 +61,12 @@ describe('useGpuRenderer', () => {
 
   test('retry resets error and ready', async () => {
     const factory = createMockFactory(true)
-    const canvasRef = createCanvasRef()
+    const canvas = document.createElement('canvas')
 
-    const { result } = renderHook(() => useGpuRenderer(canvasRef, factory))
-
+    const { result } = renderHook(() => useGpuRenderer(factory))
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
     await act(async () => {})
     expect(result.current.error).toBeInstanceOf(Error)
 
@@ -77,10 +80,8 @@ describe('useGpuRenderer', () => {
 
   test('does nothing when canvas ref is null', async () => {
     const factory = createMockFactory()
-    const canvasRef = { current: null }
 
-    const { result } = renderHook(() => useGpuRenderer(canvasRef, factory))
-
+    const { result } = renderHook(() => useGpuRenderer(factory))
     await act(async () => {})
 
     expect(result.current.ready).toBe(false)
@@ -90,11 +91,13 @@ describe('useGpuRenderer', () => {
 
   test('disposes old renderer and re-initializes on WebGL context restore', async () => {
     const canvas = document.createElement('canvas')
-    const canvasRef = createCanvasRef(canvas)
     const dispose = jest.fn()
     const factory = jest.fn().mockResolvedValue({ dispose })
 
-    const { result } = renderHook(() => useGpuRenderer(canvasRef, factory))
+    const { result } = renderHook(() => useGpuRenderer(factory))
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
     await act(async () => {})
     expect(result.current.ready).toBe(true)
     expect(factory).toHaveBeenCalledTimes(1)
@@ -112,11 +115,14 @@ describe('useGpuRenderer', () => {
     expect(result.current.ready).toBe(true)
   })
 
-  test('prevents default on webglcontextlost to allow restore', () => {
+  test('prevents default on webglcontextlost to allow restore', async () => {
     const canvas = document.createElement('canvas')
-    renderHook(() =>
-      useGpuRenderer(createCanvasRef(canvas), createMockFactory()),
-    )
+    const factory = createMockFactory()
+    const { result } = renderHook(() => useGpuRenderer(factory))
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
+    await act(async () => {})
 
     const event = new Event('webglcontextlost', { cancelable: true })
     canvas.dispatchEvent(event)
@@ -126,11 +132,13 @@ describe('useGpuRenderer', () => {
 
   test('disposes old renderer and re-initializes on WebGPU device loss', async () => {
     const canvas = document.createElement('canvas')
-    const canvasRef = createCanvasRef(canvas)
     const dispose = jest.fn()
     const factory = jest.fn().mockResolvedValue({ dispose })
 
-    const { result } = renderHook(() => useGpuRenderer(canvasRef, factory))
+    const { result } = renderHook(() => useGpuRenderer(factory))
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
     await act(async () => {})
     expect(result.current.ready).toBe(true)
     expect(factory).toHaveBeenCalledTimes(1)
@@ -148,29 +156,28 @@ describe('useGpuRenderer', () => {
   test('re-initializes when canvas element is replaced after regionTooLarge recovery', async () => {
     const canvas1 = document.createElement('canvas')
     const canvas2 = document.createElement('canvas')
-    const canvasRef: { current: HTMLCanvasElement | null } = {
-      current: canvas1,
-    }
     const dispose = jest.fn()
     const factory = jest.fn().mockResolvedValue({ dispose })
 
-    const { result, rerender } = renderHook(() =>
-      useGpuRenderer(canvasRef, factory),
-    )
+    const { result } = renderHook(() => useGpuRenderer(factory))
+    act(() => {
+      result.current.canvasRef(canvas1)
+    })
     await act(async () => {})
 
     expect(result.current.ready).toBe(true)
     expect(factory).toHaveBeenCalledTimes(1)
 
     // Simulate regionTooLarge: component returns early, canvas unmounts
-    canvasRef.current = null
-    rerender()
+    act(() => {
+      result.current.canvasRef(null)
+    })
     await act(async () => {})
 
-    // Simulate recovery: regionTooLarge cleared, new canvas element mounts
-    // React creates a fresh canvas element on remount — it is not canvas1
-    canvasRef.current = canvas2
-    rerender()
+    // Simulate recovery: new canvas element mounts
+    act(() => {
+      result.current.canvasRef(canvas2)
+    })
     await act(async () => {})
 
     expect(factory).toHaveBeenCalledTimes(2)
@@ -182,9 +189,8 @@ describe('useGpuRenderer', () => {
     const cleanup = jest.fn()
     jest.mocked(onDeviceLost).mockReturnValueOnce(cleanup)
 
-    const { unmount } = renderHook(() =>
-      useGpuRenderer(createCanvasRef(), createMockFactory()),
-    )
+    const factory = createMockFactory()
+    const { unmount } = renderHook(() => useGpuRenderer(factory))
     unmount()
 
     expect(cleanup).toHaveBeenCalledTimes(1)

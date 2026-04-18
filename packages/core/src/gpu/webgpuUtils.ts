@@ -26,55 +26,11 @@ export const STANDARD_BLEND_STATE: GPUBlendState = {
   },
 }
 
-// Standard bind group layout: binding 0 = storage buffer, binding 1 = uniform buffer
-// with dynamic offset for per-draw uniform batching.
-export function createStandardBindGroupLayout(device: GPUDevice) {
-  return device.createBindGroupLayout({
-    entries: [
-      {
-        binding: 0,
-        visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-        buffer: { type: 'read-only-storage' as GPUBufferBindingType },
-      },
-      {
-        binding: 1,
-        visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-        buffer: {
-          type: 'uniform' as GPUBufferBindingType,
-          hasDynamicOffset: true,
-        },
-      },
-    ],
-  })
-}
-
-// -------------------------------------------------------------------------
-// Two instancing patterns, two bind-group layouts.
-//
-// The HAL supports two ways to feed per-instance data to a shader:
-//
-//   1. Storage-buffer instancing (legacy, WGSL-native):
-//        @group(0) @binding(0) var<storage, read> instances : array<T>;
-//        @group(0) @binding(1) var<uniform> u : Uniforms;
-//      Layout: createStandardBindGroupLayout
-//      Data upload: createStorageBuffer
-//      This is what the hand-written canvas/wiggle/variants shaders use.
-//      Does not cross-compile to WebGL2 — WGSL storage buffers lower to SSBOs
-//      which GLSL ES 3.00 doesn't support.
-//
-//   2. Vertex-buffer instancing (new, cross-compile-friendly):
-//        @location(0) startEnd : vec2<u32>,  // etc., in the entry-point
-//        @group(0) @binding(1) var<uniform> u : Uniforms;
-//      Layout: createUniformOnlyBindGroupLayout
-//      Data upload: createVertexBuffer
-//      Pipeline: declares vertex.buffers with attribute layout
-//      This matches the WebGL2 vertex-attribute pattern natively, which is
-//      why shaders authored in Slang use this form — the same source emits
-//      both targets without a UBO-fallback problem.
-//
-// Uniform binding index stays at 1 in both layouts so shaders share the
-// same @binding(1) annotation regardless of which pattern they use.
-// -------------------------------------------------------------------------
+// Per-instance data is always fed through a vertex buffer (matching Slang's
+// vertex-attribute input semantics). The bind group carries only the uniform
+// at binding 1 (and, optionally, a texture + sampler at 2/3). Binding index 1
+// matches what the codegen emits so shaders share the same @binding(1)
+// annotation regardless of whether they sample textures.
 
 export function createUniformOnlyBindGroupLayout(device: GPUDevice) {
   return device.createBindGroupLayout({
@@ -91,7 +47,6 @@ export function createUniformOnlyBindGroupLayout(device: GPUDevice) {
   })
 }
 
-// Bind group with only the uniform (for vertex-buffer passes).
 export function createUniformOnlyBindGroup(
   device: GPUDevice,
   layout: GPUBindGroupLayout,
@@ -113,7 +68,6 @@ export function createUniformOnlyBindGroup(
   })
 }
 
-// Create a GPU vertex buffer and upload data into it.
 export function createVertexBuffer(
   device: GPUDevice,
   data: ArrayBuffer | ArrayBufferView,
@@ -138,42 +92,4 @@ export function glToGpuVertexFormat(attr: {
     return base as GPUVertexFormat
   }
   return `${base}x${attr.components}` as GPUVertexFormat
-}
-
-// Create a GPU storage buffer and upload data into it.
-export function createStorageBuffer(
-  device: GPUDevice,
-  data: ArrayBuffer | ArrayBufferView,
-) {
-  const buf = device.createBuffer({
-    size: Math.max(data.byteLength, 4),
-    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-  })
-  device.queue.writeBuffer(buf, 0, data)
-  return buf
-}
-
-// Create a standard bind group (storage at binding 0, uniform at binding 1).
-// uniformVisibleSize is the byte range visible to the shader at each dynamic offset.
-export function createStandardBindGroup(
-  device: GPUDevice,
-  layout: GPUBindGroupLayout,
-  storageBuffer: GPUBuffer,
-  uniformBuffer: GPUBuffer,
-  uniformVisibleSize: number,
-) {
-  return device.createBindGroup({
-    layout,
-    entries: [
-      { binding: 0, resource: { buffer: storageBuffer } },
-      {
-        binding: 1,
-        resource: {
-          buffer: uniformBuffer,
-          offset: 0,
-          size: uniformVisibleSize,
-        },
-      },
-    ],
-  })
 }

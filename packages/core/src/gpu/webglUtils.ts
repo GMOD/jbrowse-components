@@ -57,25 +57,3 @@ export function bindUniformBlock(
     gl.uniformBlockBinding(program, idx, bindingPoint)
   }
 }
-
-export function enableStandardBlend(gl: WebGL2RenderingContext) {
-  gl.enable(gl.BLEND)
-  gl.blendFuncSeparate(
-    gl.SRC_ALPHA,
-    gl.ONE_MINUS_SRC_ALPHA,
-    gl.ONE,
-    gl.ONE_MINUS_SRC_ALPHA,
-  )
-}
-
-export function cacheUniforms(
-  gl: WebGL2RenderingContext,
-  program: WebGLProgram,
-  names: string[],
-) {
-  const cache: Record<string, WebGLUniformLocation | null> = {}
-  for (const name of names) {
-    cache[name] = gl.getUniformLocation(program, name)
-  }
-  return cache
-}

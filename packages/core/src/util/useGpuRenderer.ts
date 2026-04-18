@@ -1,5 +1,4 @@
-/* eslint-disable react-compiler/react-compiler */
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { onDeviceLost } from '../gpu/getGpuDevice.ts'
 
@@ -13,41 +12,37 @@ interface UseGpuRendererOptions<R> {
  * recovery, and retry. Used by wiggle, variant, hic, synteny, and alignments
  * display components.
  *
- * Pattern:
- * 1. Canvas mounts → useEffect calls factory(canvas) to create and init backend
- * 2. WebGL context loss or WebGPU device loss → contextVersion bumps →
- *    cleanup disposes old backend → effect re-runs creating fresh backend
- * 3. Error → ErrorBar with retry → retry resets state + bumps contextVersion
+ * The returned `canvasRef` is a callback ref — assign it directly to a
+ * `<canvas ref={canvasRef} />`. React invokes it with the DOM node on mount
+ * and with `null` on unmount, so the initialization effect re-runs when the
+ * underlying canvas element is actually replaced (e.g. after regionTooLarge
+ * unmounts then remounts the canvas).
  *
- * For displays with model-driven autoruns (alignments, synteny), pass
- * onReady/onDispose callbacks to store the backend in the MST model
- * volatile so autoruns can track it as a MobX observable.
+ * Pattern:
+ *   1. Canvas mounts → init effect calls factory(canvas)
+ *   2. WebGL context loss or WebGPU device loss → contextVersion bumps →
+ *      cleanup disposes old backend → effect re-runs creating a fresh backend
+ *   3. Error → ErrorBar with retry → retry() clears state + bumps
+ *      contextVersion so the next render reinitializes
+ *
+ * For displays with model-driven autoruns, pass onReady/onDispose callbacks to
+ * stash the backend in an MST volatile so autoruns can observe it.
  */
 export function useGpuRenderer<R extends { dispose(): void }>(
-  canvasRef: React.RefObject<HTMLCanvasElement | null>,
   factory: (canvas: HTMLCanvasElement) => Promise<R>,
   opts?: UseGpuRendererOptions<R>,
 ) {
+  const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
   const [error, setError] = useState<unknown>(null)
   const [ready, setReady] = useState(false)
   const [contextVersion, setContextVersion] = useState(0)
   const rendererRef = useRef<R | null>(null)
-  const lastCanvasRef = useRef<HTMLCanvasElement | null>(null)
-  // No deps: runs every render to detect when canvasRef.current is a new
-  // element (e.g. after regionTooLarge unmounts and remounts the canvas).
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (canvas && lastCanvasRef.current && lastCanvasRef.current !== canvas) {
-      setContextVersion(v => v + 1)
-    }
-    if (canvas) {
-      lastCanvasRef.current = canvas
-    }
-  })
+
+  const canvasRef = useCallback((node: HTMLCanvasElement | null) => {
+    setCanvas(node)
+  }, [])
 
   useEffect(() => {
-    const canvas = canvasRef.current
     if (!canvas) {
       return undefined
     }
@@ -64,18 +59,19 @@ export function useGpuRenderer<R extends { dispose(): void }>(
       canvas.removeEventListener('webglcontextlost', onLost)
       canvas.removeEventListener('webglcontextrestored', onRestored)
     }
-  }, [canvasRef])
+  }, [canvas])
+
+  useEffect(
+    () =>
+      onDeviceLost(() => {
+        setContextVersion(v => v + 1)
+      }),
+    [],
+  )
 
   useEffect(() => {
-    return onDeviceLost(() => {
-      setContextVersion(v => v + 1)
-    })
-  }, [])
-
-  useEffect(() => {
-    const canvas = canvasRef.current
     if (!canvas) {
-      return
+      return undefined
     }
     let cancelled = false
     let backend: R | null = null
@@ -99,14 +95,14 @@ export function useGpuRenderer<R extends { dispose(): void }>(
 
     // When the browser performs a hard navigation (e.g. page.goto() in
     // Puppeteer tests, or the user navigating away), the JS context is
-    // destroyed without running React cleanup effects.  This means the
+    // destroyed without running React cleanup effects. This means the
     // useEffect return function (which calls renderer.dispose()) never
     // fires, and WebGL contexts + all their GPU buffers leak until GC
-    // eventually reclaims them.  Chrome caps active WebGL contexts at
-    // ~16 and its GPU process can OOM well before GC runs.
+    // eventually reclaims them. Chrome caps active WebGL contexts at ~16
+    // and its GPU process can OOM well before GC runs.
     //
-    // The pagehide event fires synchronously during navigation, giving
-    // us a reliable hook to release GPU resources before the page dies.
+    // The pagehide event fires synchronously during navigation, giving us
+    // a reliable hook to release GPU resources before the page dies.
     const handlePageHide = () => {
       if (!cancelled) {
         cancelled = true
@@ -123,10 +119,10 @@ export function useGpuRenderer<R extends { dispose(): void }>(
       setReady(false)
       opts?.onDispose?.()
     }
-    // opts callbacks (onReady/onDispose) are intentionally omitted from deps —
-    // callers must pass stable references (e.g. useMemo)
+    // opts is intentionally omitted — callers must pass a stable identity
+    // (via useMemo) or accept that re-renders reinitialize the backend
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contextVersion, factory, canvasRef])
+  }, [canvas, contextVersion, factory])
 
   function retry() {
     setError(null)
@@ -134,5 +130,5 @@ export function useGpuRenderer<R extends { dispose(): void }>(
     setContextVersion(v => v + 1)
   }
 
-  return { error, ready, rendererRef, retry }
+  return { canvasRef, error, ready, rendererRef, retry }
 }

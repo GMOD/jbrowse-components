@@ -11,7 +11,7 @@ export function WiggleRenderer(canvas: HTMLCanvasElement) {
     canvas,
     WIGGLE_PASSES,
     UNIFORMS_SIZE_BYTES,
-    GpuWiggleRenderer,
-    Canvas2DWiggleRenderer,
+    hal => new GpuWiggleRenderer(hal),
+    c => new Canvas2DWiggleRenderer(c),
   )
 }

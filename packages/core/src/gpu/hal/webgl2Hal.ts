@@ -102,6 +102,11 @@ export class WebGL2Hal implements GpuHal {
   private instanceId = 0
   private firstDrawSeen = new Set<string>()
 
+  // Guards dispose() against double invocation (pagehide + React cleanup can
+  // both fire) so the disposed-counter telemetry stays honest and gl.delete*
+  // isn't called twice on the same handle.
+  private disposed = false
+
   private checkGlError(label: string) {
     if (!this.debug) {
       return
@@ -509,6 +514,10 @@ export class WebGL2Hal implements GpuHal {
   }
 
   dispose() {
+    if (this.disposed) {
+      return
+    }
+    this.disposed = true
     const gl = this.gl
     totalDisposed += 1
     console.warn(

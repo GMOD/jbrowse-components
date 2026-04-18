@@ -12,8 +12,6 @@ export class MockHal implements GpuHal {
   private buffers = new Map<string, { data: ArrayBufferLike; count: number }>()
   private regionMeta = new Map<number, RegionMeta>()
   private lastUniforms: ArrayBuffer | null = null
-  private width = 0
-  private height = 0
 
   constructor(passes: PassDescriptor[]) {
     this.passes = passes
@@ -29,8 +27,6 @@ export class MockHal implements GpuHal {
 
   resize(width: number, height: number) {
     this.record('resize', width, height)
-    this.width = width
-    this.height = height
   }
 
   uploadBuffer(

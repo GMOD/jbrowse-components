@@ -1,6 +1,6 @@
 /// <reference types="@webgpu/types" />
 
-import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+import getGpuDevice, { onDeviceLost } from '@jbrowse/core/gpu/getGpuDevice'
 
 import { ldComputeShader } from './ldComputeShader.ts'
 import { ldPhasedComputeShader } from './ldPhasedComputeShader.ts'
@@ -29,6 +29,15 @@ let computeStatePromise: Promise<ComputeState> | null = null
 
 let phasedComputeState: ComputeState | null = null
 let phasedComputeStatePromise: Promise<ComputeState> | null = null
+
+// Invalidate cached pipelines when the device is lost so the next call
+// re-creates them against a freshly acquired device.
+onDeviceLost(() => {
+  computeState = null
+  computeStatePromise = null
+  phasedComputeState = null
+  phasedComputeStatePromise = null
+})
 
 function makeBindGroupLayout(device: GPUDevice) {
   return device.createBindGroupLayout({
