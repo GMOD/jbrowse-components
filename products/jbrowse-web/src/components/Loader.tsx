@@ -25,6 +25,8 @@ import { deleteQueryParams, readQueryParams } from '../useQueryParam.ts'
 import type { SessionLoaderModel } from '../SessionLoader.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
+setGpuOverride(new URLSearchParams(window.location.search).get('renderer') ?? null)
+
 const SessionTriaged = lazy(() => import('./SessionTriaged.tsx'))
 const StartScreenErrorMessage = lazy(
   () => import('./StartScreenErrorMessage.tsx'),
@@ -65,7 +67,6 @@ export function Loader({
       nav,
       hubURL,
       sessionName,
-      renderer,
     } = readQueryParams([
       'config',
       'session',
@@ -80,9 +81,7 @@ export function Loader({
       'nav',
       'hubURL',
       'sessionName',
-      'renderer',
     ])
-    setGpuOverride(renderer ?? null)
 
     return SessionLoader.create({
       configPath: config,

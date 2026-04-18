@@ -8,13 +8,13 @@ import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import JBrowse from './JBrowse.tsx'
-import { readQueryParams, useQueryParam } from '../useQueryParam.ts'
+import { useQueryParam } from '../useQueryParam.ts'
 import StartScreen from './StartScreen/StartScreen.tsx'
 import { loadPluginManager } from './StartScreen/util.tsx'
 
-setGpuOverride(readQueryParams(['renderer']).renderer ?? null)
-
 import type PluginManager from '@jbrowse/core/PluginManager'
+
+setGpuOverride(new URLSearchParams(window.location.search).get('renderer') ?? null)
 
 const Loader = observer(function Loader() {
   const [pluginManager, setPluginManager] = useState<PluginManager>()

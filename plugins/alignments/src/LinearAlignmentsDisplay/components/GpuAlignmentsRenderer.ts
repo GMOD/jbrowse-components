@@ -827,6 +827,37 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     const needsFeatureSelection =
       state.selectedChainIds.length === 0 && regionSelectIdx >= 0
 
+    const covOff = state.pileupTopOffset
+    // Capture per-block transforms so the 3 toClipRect call sites below
+    // don't each have to repeat the same 7 uniform-derived args.
+    const clipFor = (absStart: number, absEnd: number, y: number) =>
+      toClipRect(
+        absStart,
+        absEnd,
+        y,
+        state,
+        bpHi,
+        bpLo,
+        bpLen,
+        covOff,
+        state.canvasHeight,
+        block.reversed,
+      )
+    const tx = 4 / scissorW
+    const ty = 4 / state.canvasHeight
+    // 4 quads forming a 4px-wide selection frame (top + bottom + two sides).
+    const pushSelectionFrame = (
+      out: number[],
+      c: { sx1: number; sx2: number; syTop: number; syBot: number },
+    ) => {
+      out.push(
+        c.sx1, c.syTop, c.sx2, c.syTop - ty,         0, 0.722, 1, 1,
+        c.sx1, c.syBot + ty, c.sx2, c.syBot,         0, 0.722, 1, 1,
+        c.sx1, c.syTop, c.sx1 + tx, c.syBot,         0, 0.722, 1, 1,
+        c.sx2 - tx, c.syTop, c.sx2, c.syBot,         0, 0.722, 1, 1,
+      )
+    }
+
     if (
       (needsFeatureHighlight || needsFeatureSelection) &&
       this.hal.getBufferCount(block.regionNumber, PASS_READ) > 0
@@ -848,32 +879,15 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
       if (needsFeatureSelection) {
         const idx = regionSelectIdx
-        const absStart = region.readPositions[idx * 2]! + region.regionStart
-        const absEnd = region.readPositions[idx * 2 + 1]! + region.regionStart
-        const y = region.readYs[idx]!
-        const covOff = state.pileupTopOffset
-        const clip = toClipRect(
-          absStart,
-          absEnd,
-          y,
-          state,
-          bpHi,
-          bpLo,
-          bpLen,
-          covOff,
-          state.canvasHeight,
-          block.reversed,
+        const clip = clipFor(
+          region.readPositions[idx * 2]! + region.regionStart,
+          region.readPositions[idx * 2 + 1]! + region.regionStart,
+          region.readYs[idx]!,
         )
-        const tx = 4 / scissorW
-        const ty = 4 / state.canvasHeight
-        const quads = new Float32Array([
-          clip.sx1, clip.syTop, clip.sx2, clip.syTop - ty, 0, 0.722, 1, 1,
-          clip.sx1, clip.syBot + ty, clip.sx2, clip.syBot, 0, 0.722, 1, 1,
-          clip.sx1, clip.syTop, clip.sx1 + tx, clip.syBot, 0, 0.722, 1, 1,
-          clip.sx2 - tx, clip.syTop, clip.sx2, clip.syBot, 0, 0.722, 1, 1,
-        ])
+        const frame: number[] = []
+        pushSelectionFrame(frame, clip)
         this.drawOverlayQuads(
-          quads,
+          new Float32Array(frame),
           4,
           scissorX,
           scissorW,
@@ -886,7 +900,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
 
     const quads: number[] = []
-    const covOff = state.pileupTopOffset
 
     if (state.highlightedChainIds.length > 0) {
       const bounds = getChainBounds(
@@ -896,17 +909,10 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         region.readYs,
       )
       if (bounds) {
-        const clip = toClipRect(
+        const clip = clipFor(
           bounds.minStart + region.regionStart,
           bounds.maxEnd + region.regionStart,
           bounds.y,
-          state,
-          bpHi,
-          bpLo,
-          bpLen,
-          covOff,
-          state.canvasHeight,
-          block.reversed,
         )
         quads.push(clip.sx1, clip.syTop, clip.sx2, clip.syBot, 0, 0, 0, 0.4)
       }
@@ -920,25 +926,13 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         region.readYs,
       )
       if (bounds) {
-        const clip = toClipRect(
-          bounds.minStart + region.regionStart,
-          bounds.maxEnd + region.regionStart,
-          bounds.y,
-          state,
-          bpHi,
-          bpLo,
-          bpLen,
-          covOff,
-          state.canvasHeight,
-          block.reversed,
-        )
-        const tx = 4 / scissorW
-        const ty = 4 / state.canvasHeight
-        quads.push(
-          clip.sx1, clip.syTop, clip.sx2, clip.syTop - ty, 0, 0.722, 1, 1,
-          clip.sx1, clip.syBot + ty, clip.sx2, clip.syBot, 0, 0.722, 1, 1,
-          clip.sx1, clip.syTop, clip.sx1 + tx, clip.syBot, 0, 0.722, 1, 1,
-          clip.sx2 - tx, clip.syTop, clip.sx2, clip.syBot, 0, 0.722, 1, 1,
+        pushSelectionFrame(
+          quads,
+          clipFor(
+            bounds.minStart + region.regionStart,
+            bounds.maxEnd + region.regionStart,
+            bounds.y,
+          ),
         )
       }
     }
