@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { setGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import { localStorageGetItem } from '@jbrowse/core/util'
@@ -7,9 +8,11 @@ import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import JBrowse from './JBrowse.tsx'
-import { useQueryParam } from '../useQueryParam.ts'
+import { readQueryParams, useQueryParam } from '../useQueryParam.ts'
 import StartScreen from './StartScreen/StartScreen.tsx'
 import { loadPluginManager } from './StartScreen/util.tsx'
+
+setGpuOverride(readQueryParams(['renderer']).renderer ?? null)
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

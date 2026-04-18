@@ -12,7 +12,7 @@ export function appendGpuParam(url: string) {
     return url
   }
   const sep = url.includes('?') ? '&' : '?'
-  return `${url}${sep}gpu=${backend}`
+  return `${url}${sep}renderer=${backend}`
 }
 
 export const delay = (ms: number) =>

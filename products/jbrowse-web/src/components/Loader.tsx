@@ -14,6 +14,7 @@ import { observer } from 'mobx-react'
 
 import '@fontsource/roboto'
 
+import { setGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import JBrowse from './JBrowse.tsx'
 import Loading from './Loading.tsx'
 import SessionLoader from '../SessionLoader.ts'
@@ -64,6 +65,7 @@ export function Loader({
       nav,
       hubURL,
       sessionName,
+      renderer,
     } = readQueryParams([
       'config',
       'session',
@@ -78,7 +80,9 @@ export function Loader({
       'nav',
       'hubURL',
       'sessionName',
+      'renderer',
     ])
+    setGpuOverride(renderer ?? null)
 
     return SessionLoader.create({
       configPath: config,

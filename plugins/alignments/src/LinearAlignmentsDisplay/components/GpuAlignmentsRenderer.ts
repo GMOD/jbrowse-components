@@ -168,6 +168,19 @@ export const ALIGNMENTS_PASSES: PassDescriptor[] = [
 
 export { UNIFORMS_SIZE_BYTES }
 
+// Per-block inputs collected before each writeUniforms call. Keeping them
+// in one record avoids a 10-arg method signature and lets downstream
+// overlay passes refer to the same frame without recomputation.
+interface BlockFrame {
+  region: LocalRegion
+  bpHi: number
+  bpLo: number
+  clippedBpStart: number
+  clippedBpEnd: number
+  canvasW: number
+  reversed: boolean
+}
+
 // Per-region data not tracked by the HAL
 interface LocalRegion {
   regionStart: number
@@ -539,27 +552,17 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  private writeUniforms(
-    state: RenderState,
-    bpHi: number,
-    bpLo: number,
-    bpLen: number,
-    regionStart: number,
-    canvasW: number,
-    region: LocalRegion,
-    clippedBpStart: number,
-    clippedBpEnd: number,
-    reversed: boolean,
-  ) {
+  private writeUniforms(state: RenderState, frame: BlockFrame) {
+    const { region } = frame
     const f = this.uF32
     const u = this.uU32
     const ii = this.uI32
-    f[U.bpHi] = bpHi
-    f[U.bpLo] = bpLo
-    f[U.bpLen] = bpLen
+    f[U.bpHi] = frame.bpHi
+    f[U.bpLo] = frame.bpLo
+    f[U.bpLen] = frame.clippedBpEnd - frame.clippedBpStart
     f[U.hpZero] = 0
-    u[U.regionStart] = regionStart
-    f[U.canvasW] = canvasW
+    u[U.regionStart] = region.regionStart
+    f[U.canvasW] = frame.canvasW
     f[U.canvasH] = state.canvasHeight
     f[U.rangeY0] = state.rangeY[0]
     f[U.scrollTop] = state.rangeY[0]
@@ -575,8 +578,8 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     f[U.binSize] = region.binSize
     f[U.noncovHeight] =
       region.noncovMaxCount > 0 ? Math.min(region.noncovMaxCount * 2, 20) : 0
-    f[U.domainStart] = clippedBpStart - regionStart
-    f[U.domainEnd] = clippedBpEnd - regionStart
+    f[U.domainStart] = frame.clippedBpStart - region.regionStart
+    f[U.domainEnd] = frame.clippedBpEnd - region.regionStart
     f[U.insertUpper] = region.insertSizeStats?.upper ?? 999999
     f[U.insertLower] = region.insertSizeStats?.lower ?? 0
     ii[U.colorScheme] = state.colorScheme
@@ -586,7 +589,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     ii[U.showStroke] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
     ii[U.flipStrandLongRead] =
       state.flipStrandLongReadChains !== false ? 1 : 0
-    f[U.reversed] = reversed ? 1 : 0
+    f[U.reversed] = frame.reversed ? 1 : 0
 
     writePaletteToUbo(u, state.colors)
     this.hal.writeUniforms(this.uData)
@@ -622,23 +625,20 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       const pxFromEdge = block.reversed
         ? block.screenEndPx - scissorEnd
         : scissorX - block.screenStartPx
-      const clippedBpLow = block.bpRangeX[0] + pxFromEdge * bpPerPx
-      const clippedBpHigh = clippedBpLow + scissorW * bpPerPx
-      const [bpHi, bpLo] = splitPositionWithFrac(clippedBpLow)
-      const bpLen = clippedBpHigh - clippedBpLow
-
-      this.writeUniforms(
-        state,
+      const clippedBpStart = block.bpRangeX[0] + pxFromEdge * bpPerPx
+      const clippedBpEnd = clippedBpStart + scissorW * bpPerPx
+      const [bpHi, bpLo] = splitPositionWithFrac(clippedBpStart)
+      const frame: BlockFrame = {
+        region,
         bpHi,
         bpLo,
-        bpLen,
-        region.regionStart,
-        scissorW,
-        region,
-        clippedBpLow,
-        clippedBpHigh,
-        block.reversed,
-      )
+        clippedBpStart,
+        clippedBpEnd,
+        canvasW: scissorW,
+        reversed: block.reversed,
+      }
+
+      this.writeUniforms(state, frame)
 
       const mode = state.renderingMode ?? 'pileup'
       const effectiveArcsHeight =
@@ -662,18 +662,10 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         )
       }
 
-      this.hal.setViewport(
-        Math.round(scissorX * dpr),
-        0,
-        Math.round(scissorW * dpr),
-        bufH,
-      )
-      this.hal.setScissor(
-        Math.round(scissorX * dpr),
-        0,
-        Math.round(scissorW * dpr),
-        bufH,
-      )
+      const vpX = Math.round(scissorX * dpr)
+      const vpW = Math.round(scissorW * dpr)
+      this.hal.setViewport(vpX, 0, vpW, bufH)
+      this.hal.setScissor(vpX, 0, vpW, bufH)
 
       if (state.showCoverage) {
         this.hal.drawPass(PASS_COVERAGE, block.regionNumber)
@@ -684,12 +676,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       }
 
       if (pileupH > 0) {
-        this.hal.setScissor(
-          Math.round(scissorX * dpr),
-          pileupTop,
-          Math.round(scissorW * dpr),
-          pileupH,
-        )
+        this.hal.setScissor(vpX, pileupTop, vpW, pileupH)
       }
 
       if (mode === 'linkedRead') {
@@ -714,11 +701,8 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
       this.renderFeatureOverlays(
         block,
-        region,
         state,
-        bpHi,
-        bpLo,
-        bpLen,
+        frame,
         scissorX,
         scissorW,
         bufH,
@@ -819,11 +803,8 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
   private renderFeatureOverlays(
     block: RenderBlock,
-    region: LocalRegion,
     state: RenderState,
-    bpHi: number,
-    bpLo: number,
-    bpLen: number,
+    frame: BlockFrame,
     scissorX: number,
     scissorW: number,
     bufH: number,
@@ -831,6 +812,9 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     pileupH: number,
     dpr: number,
   ) {
+    const { region } = frame
+    const { bpHi, bpLo } = frame
+    const bpLen = frame.clippedBpEnd - frame.clippedBpStart
     const regionHighlightIdx = state.highlightedFeatureId
       ? (region.readIdToIndex.get(state.highlightedFeatureId) ?? -1)
       : -1
@@ -852,18 +836,10 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         this.uI32[U.highlightIdx] = regionHighlightIdx
         this.hal.writeUniforms(this.uData)
 
-        this.hal.setViewport(
-          Math.round(scissorX * dpr),
-          0,
-          Math.round(scissorW * dpr),
-          bufH,
-        )
-        this.hal.setScissor(
-          Math.round(scissorX * dpr),
-          pileupTop,
-          Math.round(scissorW * dpr),
-          pileupH,
-        )
+        const vpX = Math.round(scissorX * dpr)
+        const vpW = Math.round(scissorW * dpr)
+        this.hal.setViewport(vpX, 0, vpW, bufH)
+        this.hal.setScissor(vpX, pileupTop, vpW, pileupH)
         this.hal.drawPass(PASS_READ, block.regionNumber)
 
         this.uI32[U.highlightOnly] = 0
@@ -997,18 +973,10 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       quads.buffer as ArrayBuffer,
       count,
     )
-    this.hal.setViewport(
-      Math.round(scissorX * dpr),
-      0,
-      Math.round(scissorW * dpr),
-      bufH,
-    )
-    this.hal.setScissor(
-      Math.round(scissorX * dpr),
-      pileupTop,
-      Math.round(scissorW * dpr),
-      pileupH,
-    )
+    const vpX = Math.round(scissorX * dpr)
+    const vpW = Math.round(scissorW * dpr)
+    this.hal.setViewport(vpX, 0, vpW, bufH)
+    this.hal.setScissor(vpX, pileupTop, vpW, pileupH)
     this.hal.drawPass(PASS_FLAT_QUAD, OVERLAY_REGION)
   }
 
