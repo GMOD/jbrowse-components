@@ -5,18 +5,9 @@
 import hpmath;
 import colorPack;
 import lineInstance;
+import canvasUniforms;
 
-struct Uniforms {
-  float3 bpRangeX;
-  uint   regionStart;
-  float  canvasHeight;
-  float  canvasWidth;
-  float  scrollY;
-  float  bpPerPx;
-  float  zero;
-  float  reversed;
-};
-[[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+[[vk::binding(1, 0)]] ConstantBuffer<CanvasUniforms> u;
 
 struct VsOut {
   float4 position : SV_Position;

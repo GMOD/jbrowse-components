@@ -11,6 +11,7 @@
 import hpmath;
 import colorPack;
 import lineInstance;
+import canvasUniforms;
 
 // Mirrors sharedRendererConstants.ts — kept as `static const` so Slang
 // constant-folds the divisions into the vertex-shader math.
@@ -18,17 +19,7 @@ static const float CHEVRON_SPACING_PX = 25.0;
 static const float CHEVRON_W_PX       = 4.5;
 static const float CHEVRON_H_PX       = 4.5;
 
-struct Uniforms {
-  float3 bpRangeX;
-  uint   regionStart;
-  float  canvasHeight;
-  float  canvasWidth;
-  float  scrollY;
-  float  bpPerPx;
-  float  zero;
-  float  reversed;
-};
-[[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+[[vk::binding(1, 0)]] ConstantBuffer<CanvasUniforms> u;
 
 struct VsOut {
   float4 position : SV_Position;

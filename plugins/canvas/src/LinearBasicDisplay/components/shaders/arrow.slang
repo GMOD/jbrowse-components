@@ -5,6 +5,7 @@
 
 import hpmath;
 import colorPack;
+import canvasUniforms;
 
 // Mirrors sharedRendererConstants.ts — these are the clip-space geometry
 // factors for the arrow stem and head, in pixels.
@@ -19,17 +20,7 @@ struct ArrowInstance {
   uint  color     : ATTR3;
 };
 
-struct Uniforms {
-  float3 bpRangeX;
-  uint   regionStart;
-  float  canvasHeight;
-  float  canvasWidth;
-  float  scrollY;
-  float  bpPerPx;
-  float  zero;
-  float  reversed;
-};
-[[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+[[vk::binding(1, 0)]] ConstantBuffer<CanvasUniforms> u;
 
 struct VsOut {
   float4 position : SV_Position;

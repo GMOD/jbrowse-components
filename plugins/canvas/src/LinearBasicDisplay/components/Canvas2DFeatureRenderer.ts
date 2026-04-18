@@ -37,6 +37,7 @@ export function drawLines(
   fullBlockWidth: number,
   scrollY: number,
 ) {
+  const dirFlip = block.reversed ? -1 : 1
   for (let i = 0; i < region.lineYs.length; i++) {
     const startBp = region.linePositions[i * 2]! + region.regionStart
     const endBp = region.linePositions[i * 2 + 1]! + region.regionStart
@@ -50,7 +51,10 @@ export function drawLines(
     ctx.lineTo(x2, y)
     ctx.stroke()
 
-    const dir = region.lineDirections[i]!
+    // Directions come from the feature strand; on reversed blocks the render
+    // axis is flipped so chevrons/arrows must point the opposite way (matches
+    // the GPU shader's `lerp(dir, -dir, reversed)`).
+    const dir = region.lineDirections[i]! * dirFlip
     if (dir !== 0) {
       ctx.lineWidth = 1.5
       const lineWidthPx = Math.abs(x2 - x1)
@@ -89,10 +93,13 @@ export function drawRects(
     const x2 = bpToScreenXUtil(endBp, block, bpLength, fullBlockWidth)
     const y = Math.floor(region.rectYs[i]! - scrollY + 0.5)
     const h = Math.floor(region.rectHeights[i]! + 0.5)
-    const w = Math.max(MIN_RECT_WIDTH_PX, x2 - x1)
+    // On reversed blocks bpToScreenX flips so x1 > x2; use abs + min for a
+    // width-agnostic draw that matches the GPU shader's MIN_RECT_WIDTH clamp.
+    const xLeft = Math.min(x1, x2)
+    const w = Math.max(MIN_RECT_WIDTH_PX, Math.abs(x2 - x1))
 
     ctx.fillStyle = abgrToCssRgba(region.rectColors[i]!)
-    ctx.fillRect(x1, y, w, h)
+    ctx.fillRect(xLeft, y, w, h)
   }
 }
 
@@ -104,11 +111,12 @@ export function drawArrows(
   fullBlockWidth: number,
   scrollY: number,
 ) {
+  const dirFlip = block.reversed ? -1 : 1
   for (let i = 0; i < region.arrowYs.length; i++) {
     const xBp = region.arrowXs[i]! + region.regionStart
     const cx = bpToScreenXUtil(xBp, block, bpLength, fullBlockWidth)
     const y = Math.floor(region.arrowYs[i]! - scrollY + 0.5) + 0.5
-    const dir = region.arrowDirections[i]!
+    const dir = region.arrowDirections[i]! * dirFlip
     ctx.fillStyle = abgrToCssRgba(region.arrowColors[i]!)
 
     const stemEndX = cx + STEM_LENGTH_PX * 0.5 * dir
