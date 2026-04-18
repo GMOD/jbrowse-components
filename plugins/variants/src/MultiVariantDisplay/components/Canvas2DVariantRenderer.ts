@@ -65,10 +65,16 @@ export class Canvas2DVariantRenderer implements VariantBackend {
       ctx.clip()
 
       for (let i = 0; i < region.numCells; i++) {
+        // Y-cull first: y depends only on rowIndex + scroll, so off-screen
+        // rows skip all the bp→px math below. Meaningful when scrolling
+        // through a dense matrix where most rows are out of view.
+        const y = region.cellRowIndices[i]! * rowHeight - scrollTop
+        if (y + rowHeight < 0 || y > canvasHeight) {
+          continue
+        }
+
         const startBp = region.cellPositions[i * 2]! + region.regionStart
         const endBp = region.cellPositions[i * 2 + 1]! + region.regionStart
-        const rowIdx = region.cellRowIndices[i]!
-        const shapeType = region.cellShapeTypes[i]!
 
         const frac1 = (startBp - block.bpRangeX[0]) / bpLength
         const frac2 = (endBp - block.bpRangeX[0]) / bpLength
@@ -79,16 +85,17 @@ export class Canvas2DVariantRenderer implements VariantBackend {
           ? block.screenEndPx - frac2 * fullBlockWidth
           : block.screenStartPx + frac2 * fullBlockWidth
         const x1 = Math.min(rawX1, rawX2)
-        const x2 = Math.max(rawX1, rawX2)
-        const y = rowIdx * rowHeight - scrollTop
-        const w = Math.max(2, x2 - x1)
-
-        if (y + rowHeight < 0 || y > canvasHeight) {
-          continue
-        }
+        const w = Math.max(2, Math.max(rawX1, rawX2) - x1)
 
         ctx.fillStyle = abgrToCssRgba(region.cellColors[i]!)
-        drawVariantShape(ctx, shapeType, x1, y, w, rowHeight)
+        drawVariantShape(
+          ctx,
+          region.cellShapeTypes[i]!,
+          x1,
+          y,
+          w,
+          rowHeight,
+        )
       }
 
       ctx.restore()

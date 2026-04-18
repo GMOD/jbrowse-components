@@ -72,24 +72,21 @@ function renderCellsForRegion(
   const blockWidth = region.screenEndPx - region.screenStartPx
   const regionLengthBp = region.end - region.start
 
+  const h = Math.max(rowHeight, 1)
   for (let i = 0; i < numCells; i++) {
-    const cellStart = regionStart + cellPositions[i * 2]!
-    const cellEnd = regionStart + cellPositions[i * 2 + 1]!
-    const rowIndex = cellRowIndices[i]!
-    const shapeType = cellShapeTypes[i]!
-
-    const y = rowIndex * rowHeight - scrollTop
+    const y = cellRowIndices[i]! * rowHeight - scrollTop
     if (y + rowHeight < 0 || y > availableHeight) {
       continue
     }
 
+    const cellStart = regionStart + cellPositions[i * 2]!
+    const cellEnd = regionStart + cellPositions[i * 2 + 1]!
     if (cellEnd < region.start || cellStart > region.end) {
       continue
     }
 
     const clippedStart = Math.max(cellStart, region.start)
     const clippedEnd = Math.min(cellEnd, region.end)
-
     const frac1 = (clippedStart - region.start) / regionLengthBp
     const frac2 = (clippedEnd - region.start) / regionLengthBp
     const px1 = region.reversed
@@ -99,12 +96,10 @@ function renderCellsForRegion(
       ? region.screenEndPx - frac2 * blockWidth
       : region.screenStartPx + frac2 * blockWidth
     const x = Math.min(px1, px2)
-    const x2 = Math.max(px1, px2)
-    const w = Math.max(x2 - x, 2)
-    const h = Math.max(rowHeight, 1)
+    const w = Math.max(Math.max(px1, px2) - x, 2)
 
     setFillFromCellColor(ctx, cellColors, i)
-    drawVariantShape(ctx, shapeType, x, y, w, h)
+    drawVariantShape(ctx, cellShapeTypes[i]!, x, y, w, h)
   }
 }
 
