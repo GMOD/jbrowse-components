@@ -4,13 +4,9 @@ import {
   INSTANCE_STRIDE_F32,
 } from './shaders/variant.generated.ts'
 
-export function interleaveVariantInstances(data: {
-  cellPositions: Uint32Array
-  cellRowIndices: Uint32Array
-  cellColors: Uint32Array
-  cellShapeTypes: Uint8Array
-  numCells: number
-}) {
+import type { VariantUploadData } from './variantBackendTypes.ts'
+
+export function interleaveVariantInstances(data: VariantUploadData) {
   const count = data.numCells
   const buf = new ArrayBuffer(count * INSTANCE_STRIDE_BYTES)
   const u32 = new Uint32Array(buf)

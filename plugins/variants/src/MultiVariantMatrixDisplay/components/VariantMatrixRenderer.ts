@@ -7,12 +7,12 @@ import {
   VARIANT_MATRIX_UNIFORM_BYTE_SIZE,
 } from './GpuVariantMatrixRenderer.ts'
 
+import type { VariantMatrixBackend } from './variantMatrixBackendTypes.ts'
+
 export type {
   MatrixRenderState,
   VariantMatrixBackend,
 } from './variantMatrixBackendTypes.ts'
-
-import type { VariantMatrixBackend } from './variantMatrixBackendTypes.ts'
 
 export function VariantMatrixRenderer(canvas: HTMLCanvasElement) {
   return initDualBackend<VariantMatrixBackend>(

@@ -4,12 +4,9 @@ import {
   INSTANCE_STRIDE_F32,
 } from './shaders/variantMatrix.generated.ts'
 
-export function interleaveMatrixInstances(data: {
-  cellFeatureIndices: Float32Array
-  cellRowIndices: Uint32Array
-  cellColors: Uint32Array
-  numCells: number
-}) {
+import type { VariantMatrixUploadData } from './variantMatrixBackendTypes.ts'
+
+export function interleaveMatrixInstances(data: VariantMatrixUploadData) {
   const count = data.numCells
   const buf = new ArrayBuffer(count * INSTANCE_STRIDE_BYTES)
   const u32 = new Uint32Array(buf)

@@ -6,7 +6,10 @@ import { types } from '@jbrowse/mobx-state-tree'
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
 import type { VariantCellData } from './components/computeVariantCells.ts'
-import type { VariantBackend } from './components/variantBackendTypes.ts'
+import type {
+  VariantBackend,
+  VariantRenderState,
+} from './components/variantBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -74,12 +77,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         self.startMultiRegionGpuLifecycle<
           VariantBackend,
           VariantCellData,
-          {
-            canvasWidth: number
-            canvasHeight: number
-            rowHeight: number
-            scrollTop: number
-          }
+          VariantRenderState
         >({
           backend,
           getDataByRegionNumber: () => {

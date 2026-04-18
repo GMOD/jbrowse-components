@@ -8,21 +8,14 @@ import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import type {
   VariantBackend,
   VariantRenderBlock,
+  VariantRenderState,
+  VariantUploadData,
 } from './variantBackendTypes.ts'
-
-interface Canvas2DRegionData {
-  regionStart: number
-  cellPositions: Uint32Array
-  cellRowIndices: Uint32Array
-  cellColors: Uint32Array
-  cellShapeTypes: Uint8Array
-  numCells: number
-}
 
 export class Canvas2DVariantRenderer implements VariantBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
-  private regions = new Map<number, Canvas2DRegionData>()
+  private regions = new Map<number, VariantUploadData>()
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -33,44 +26,19 @@ export class Canvas2DVariantRenderer implements VariantBackend {
     this.ctx = ctx
   }
 
-  uploadRegion(
-    regionNumber: number,
-    data: {
-      regionStart: number
-      cellPositions: Uint32Array
-      cellRowIndices: Uint32Array
-      cellColors: Uint32Array
-      cellShapeTypes: Uint8Array
-      numCells: number
-    },
-  ) {
+  uploadRegion(regionNumber: number, data: VariantUploadData) {
     if (data.numCells === 0) {
       this.regions.delete(regionNumber)
-      return
+    } else {
+      this.regions.set(regionNumber, data)
     }
-    this.regions.set(regionNumber, {
-      regionStart: data.regionStart,
-      cellPositions: data.cellPositions,
-      cellRowIndices: data.cellRowIndices,
-      cellColors: data.cellColors,
-      cellShapeTypes: data.cellShapeTypes,
-      numCells: data.numCells,
-    })
   }
 
   pruneRegions(activeRegions: number[]) {
     pruneRegionMap(this.regions, activeRegions)
   }
 
-  renderBlocks(
-    blocks: VariantRenderBlock[],
-    state: {
-      canvasWidth: number
-      canvasHeight: number
-      rowHeight: number
-      scrollTop: number
-    },
-  ) {
+  renderBlocks(blocks: VariantRenderBlock[], state: VariantRenderState) {
     const { canvasWidth, canvasHeight, rowHeight, scrollTop } = state
 
     const ctx = this.ctx

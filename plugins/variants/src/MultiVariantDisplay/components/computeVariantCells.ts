@@ -440,11 +440,13 @@ export function computeVariantCells({
     outShapeTypes[w] = shapeTypes[i]!
     outFlatbushItems[w] = flatbushItemsSrc[i]!
   }
-  const w = outCount
 
-  const flatbush = new Flatbush(Math.max(w, 1))
-  if (w > 0) {
-    for (let i = 0; i < w; i++) {
+  // Flatbush requires at least one add() per the constructor-declared count,
+  // so the empty case gets a single degenerate entry that hit-testing will
+  // never match.
+  const flatbush = new Flatbush(Math.max(outCount, 1))
+  if (outCount > 0) {
+    for (let i = 0; i < outCount; i++) {
       const item = outFlatbushItems[i]!
       flatbush.add(
         item.genomicStart,
@@ -464,7 +466,7 @@ export function computeVariantCells({
     cellRowIndices: outRowIndices,
     cellColors: outColors,
     cellShapeTypes: outShapeTypes,
-    numCells: w,
+    numCells: outCount,
     featureGenotypeMap,
     flatbushData: flatbush.data,
     flatbushItems: outFlatbushItems,

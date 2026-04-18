@@ -11,6 +11,8 @@ import { interleaveVariantInstances } from './variantShaders.ts'
 import type {
   VariantBackend,
   VariantRenderBlock,
+  VariantRenderState,
+  VariantUploadData,
 } from './variantBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
@@ -40,17 +42,7 @@ export class GpuVariantRenderer implements VariantBackend {
     this.hal = hal
   }
 
-  uploadRegion(
-    regionNumber: number,
-    data: {
-      regionStart: number
-      cellPositions: Uint32Array
-      cellRowIndices: Uint32Array
-      cellColors: Uint32Array
-      cellShapeTypes: Uint8Array
-      numCells: number
-    },
-  ) {
+  uploadRegion(regionNumber: number, data: VariantUploadData) {
     if (data.numCells === 0) {
       this.hal.deleteRegion(regionNumber)
       this.regionStarts.delete(regionNumber)
@@ -68,15 +60,7 @@ export class GpuVariantRenderer implements VariantBackend {
     })
   }
 
-  renderBlocks(
-    blocks: VariantRenderBlock[],
-    state: {
-      canvasWidth: number
-      canvasHeight: number
-      rowHeight: number
-      scrollTop: number
-    },
-  ) {
+  renderBlocks(blocks: VariantRenderBlock[], state: VariantRenderState) {
     const { canvasWidth, canvasHeight } = state
     const dpr = window.devicePixelRatio || 1
 

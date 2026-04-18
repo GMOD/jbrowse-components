@@ -1,5 +1,3 @@
-import { packAbgr } from '@jbrowse/core/util/colorBits'
-
 import { Canvas2DVariantRenderer } from './Canvas2DVariantRenderer.ts'
 
 import type { VariantRenderBlock } from './variantBackendTypes.ts'
@@ -52,40 +50,32 @@ function makeBlock(
   }
 }
 
+// Default opaque-white cell color (ABGR u32 — A=255 B=255 G=255 R=255).
+const DEFAULT_COLOR = 0xffffffff
+
 function makeRegionData(overrides?: {
   regionStart?: number
   numCells?: number
   cellPositions?: number[]
   cellRowIndices?: number[]
-  // legacy flat-byte form: length numCells*4 with RGBA bytes per cell
   cellColors?: number[]
   cellShapeTypes?: number[]
 }) {
   const numCells = overrides?.numCells ?? 1
-  const cellPositions =
-    overrides?.cellPositions ?? Array.from({ length: numCells * 2 }, () => 0)
-  const cellRowIndices =
-    overrides?.cellRowIndices ?? Array.from({ length: numCells }, () => 0)
-  const src =
-    overrides?.cellColors ?? Array.from({ length: numCells * 4 }, () => 255)
-  const cellColors = new Uint32Array(numCells)
-  for (let i = 0; i < numCells; i++) {
-    cellColors[i] = packAbgr(
-      src[i * 4]!,
-      src[i * 4 + 1]!,
-      src[i * 4 + 2]!,
-      src[i * 4 + 3]!,
-    )
-  }
-  const cellShapeTypes =
-    overrides?.cellShapeTypes ?? Array.from({ length: numCells }, () => 0)
-
   return {
     regionStart: overrides?.regionStart ?? 0,
-    cellPositions: new Uint32Array(cellPositions),
-    cellRowIndices: new Uint32Array(cellRowIndices),
-    cellColors,
-    cellShapeTypes: new Uint8Array(cellShapeTypes),
+    cellPositions: new Uint32Array(
+      overrides?.cellPositions ?? new Array(numCells * 2).fill(0),
+    ),
+    cellRowIndices: new Uint32Array(
+      overrides?.cellRowIndices ?? new Array(numCells).fill(0),
+    ),
+    cellColors: new Uint32Array(
+      overrides?.cellColors ?? new Array(numCells).fill(DEFAULT_COLOR),
+    ),
+    cellShapeTypes: new Uint8Array(
+      overrides?.cellShapeTypes ?? new Array(numCells).fill(0),
+    ),
     numCells,
   }
 }
@@ -166,7 +156,7 @@ describe('Canvas2DVariantRenderer', () => {
           numCells: 1,
           cellPositions: [100, 200],
           cellRowIndices: [0],
-          cellColors: [255, 0, 0, 255],
+          cellColors: [0xff0000ff],
           cellShapeTypes: [0],
         }),
       )
@@ -196,7 +186,7 @@ describe('Canvas2DVariantRenderer', () => {
           numCells: 1,
           cellPositions: [0, 100],
           cellRowIndices: [0],
-          cellColors: [255, 0, 0, 255],
+          cellColors: [0xff0000ff],
           cellShapeTypes: [0],
         }),
       )
@@ -222,7 +212,7 @@ describe('Canvas2DVariantRenderer', () => {
           numCells: 1,
           cellPositions: [0, 100],
           cellRowIndices: [100],
-          cellColors: [255, 0, 0, 255],
+          cellColors: [0xff0000ff],
           cellShapeTypes: [0],
         }),
       )
@@ -250,7 +240,7 @@ describe('Canvas2DVariantRenderer', () => {
           numCells: 1,
           cellPositions: [0, 100],
           cellRowIndices: [0],
-          cellColors: [255, 0, 0, 255],
+          cellColors: [0xff0000ff],
           cellShapeTypes: [1],
         }),
       )
@@ -281,7 +271,7 @@ describe('Canvas2DVariantRenderer', () => {
           numCells: 1,
           cellPositions: [0, 100],
           cellRowIndices: [0],
-          cellColors: [255, 0, 0, 255],
+          cellColors: [0xff0000ff],
           cellShapeTypes: [2],
         }),
       )
@@ -312,7 +302,7 @@ describe('Canvas2DVariantRenderer', () => {
           numCells: 1,
           cellPositions: [0, 100],
           cellRowIndices: [0],
-          cellColors: [255, 0, 0, 255],
+          cellColors: [0xff0000ff],
           cellShapeTypes: [3],
         }),
       )
