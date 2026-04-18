@@ -18,6 +18,7 @@ import {
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
 import { splitInterbasesByType } from './alignmentComponentUtils.ts'
 import { getReadColor, rgb255 } from '../colorUtils.ts'
@@ -49,7 +50,7 @@ interface Canvas2DRegionData {
   readInsertSizes: Float32Array
   readPairOrientations: Uint8Array
   readStrands: Int8Array
-  readTagColors: Uint8Array
+  readTagColors: Uint32Array
   readChainHasSupp: Uint8Array | undefined
   numReads: number
   insertSizeStats?: { upper: number; lower: number }
@@ -88,7 +89,7 @@ interface Canvas2DRegionData {
   // Modifications
   modificationPositions: Uint32Array
   modificationYs: Uint16Array
-  modificationColors: Uint8Array
+  modificationColors: Uint32Array
   numModifications: number
 
   // Coverage — stored in GPU-compatible packed buffer formats
@@ -152,7 +153,7 @@ function emptyRegion(regionStart: number): Canvas2DRegionData {
     readInsertSizes: emptyF32,
     readPairOrientations: empty8,
     readStrands: new Int8Array(0),
-    readTagColors: empty8,
+    readTagColors: empty32,
     readChainHasSupp: undefined,
     numReads: 0,
     gapPositions: empty32,
@@ -186,7 +187,7 @@ function emptyRegion(regionStart: number): Canvas2DRegionData {
     numSoftclipBases: 0,
     modificationPositions: empty32,
     modificationYs: empty16,
-    modificationColors: empty8,
+    modificationColors: empty32,
     numModifications: 0,
     coverageBuffer: new ArrayBuffer(0),
     coverageBinCount: 0,
@@ -859,12 +860,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       const w = Math.max(1, 1 / bpPerPx)
       const yRow = region.modificationYs[i]!
       const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
-      const ci = i * 4
-      const r = region.modificationColors[ci]!
-      const g = region.modificationColors[ci + 1]!
-      const b = region.modificationColors[ci + 2]!
-      const a = region.modificationColors[ci + 3]! / 255
-      ctx.fillStyle = `rgba(${r},${g},${b},${a})`
+      ctx.fillStyle = abgrToCssRgba(region.modificationColors[i]!)
       ctx.fillRect(x, y, w, fH)
     }
   }

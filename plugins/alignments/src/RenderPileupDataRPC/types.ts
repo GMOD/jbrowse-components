@@ -151,14 +151,16 @@ export interface PileupDataResult {
   // Modification tooltip data - only populated when colorBy is modifications/methylation
   modTooltipData?: Record<number, Record<string, ModTooltipEntry>>
 
-  // Tag color data - RGB per read (3 bytes each), only populated when colorBy.type === 'tag'
-  readTagColors: Uint8Array
+  // Tag color per read, packed ABGR u32 (0 = no tag color). Only populated
+  // when colorBy.type === 'tag'.
+  readTagColors: Uint32Array
   numTagColors: number
 
   // Modification data (MM tag) - offsets from regionStart
   modificationPositions: Uint32Array
   modificationYs: Uint16Array
-  modificationColors: Uint8Array // packed RGBA (4 bytes per mod), alpha encodes probability
+  // Packed ABGR u32 per modification; alpha byte = probability * 255.
+  modificationColors: Uint32Array
   modificationReadIndices?: Uint32Array // maps each modification to its parent read index
   numModifications: number
 

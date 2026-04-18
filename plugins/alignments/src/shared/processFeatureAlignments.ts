@@ -311,7 +311,9 @@ export function buildTagColors(
   const revStrandRgb: ColorRgbTuple = [143, 143, 216]
   const nostrandRgb: ColorRgbTuple = [200, 200, 200]
 
-  const readTagColors = new Uint8Array(featuresData.length * 3)
+  // Pack one ABGR u32 per read. Shader reads `uint tagColor` and unpacks;
+  // 0 means "no tag color set" (falls back to the palette).
+  const readTagColors = new Uint32Array(featuresData.length)
   for (const [i, featuresDatum] of featuresData.entries()) {
     const val = tagColorValues[i] ?? ''
     let rgb: ColorRgbTuple
@@ -331,9 +333,7 @@ export function buildTagColors(
     } else {
       rgb = parsedColors.get(val) ?? nostrandRgb
     }
-    readTagColors[i * 3] = rgb[0]
-    readTagColors[i * 3 + 1] = rgb[1]
-    readTagColors[i * 3 + 2] = rgb[2]
+    readTagColors[i] = (rgb[0] | (rgb[1] << 8) | (rgb[2] << 16) | 0xff000000) >>> 0
   }
   return readTagColors
 }
@@ -548,7 +548,10 @@ export function buildModificationArrays(
   const filtered = modifications.filter(m => m.position >= regionStart)
   const modificationPositions = new Uint32Array(filtered.length)
   const modificationYs = new Uint16Array(filtered.length)
-  const modificationColors = new Uint8Array(filtered.length * 4)
+  // Pre-pack each modification's RGB + probability-as-alpha into ABGR u32 so
+  // both the GPU vertex buffer and the Canvas2D shader path can read one
+  // slot instead of four shifted bytes.
+  const modificationColors = new Uint32Array(filtered.length)
   const modificationReadIndices = getReadIndex
     ? new Uint32Array(filtered.length)
     : undefined
@@ -556,10 +559,8 @@ export function buildModificationArrays(
     const y = getY(m.featureId)
     modificationPositions[i] = m.position - regionStart
     modificationYs[i] = y
-    modificationColors[i * 4] = m.r
-    modificationColors[i * 4 + 1] = m.g
-    modificationColors[i * 4 + 2] = m.b
-    modificationColors[i * 4 + 3] = Math.round(m.prob * 255)
+    const a = Math.round(m.prob * 255) & 0xff
+    modificationColors[i] = (m.r | (m.g << 8) | (m.b << 16) | (a << 24)) >>> 0
     if (modificationReadIndices) {
       modificationReadIndices[i] = getReadIndex!(m.featureId)
     }

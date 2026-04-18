@@ -1,3 +1,5 @@
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+
 import type { ColorPalette, RGBColor } from './components/shaders/colors.ts'
 
 const CS_NORMAL = 0
@@ -57,7 +59,7 @@ export interface ReadColorData {
   readAvgBaseQualities: Uint8Array
   readInsertSizes: Float32Array
   readPairOrientations: Uint8Array
-  readTagColors: Uint8Array
+  readTagColors: Uint32Array
   readChainHasSupp?: Uint8Array
   insertSizeStats?: { upper: number; lower: number }
 }
@@ -195,11 +197,9 @@ export function getReadColor(
     // Tag-based coloring
     case 8: {
       if (data.readTagColors.length > 0) {
-        const r = data.readTagColors[i * 3]!
-        const g = data.readTagColors[i * 3 + 1]!
-        const b = data.readTagColors[i * 3 + 2]!
-        if (r !== 0 || g !== 0 || b !== 0) {
-          return `rgb(${r},${g},${b})`
+        const packed = data.readTagColors[i]!
+        if (packed !== 0) {
+          return abgrToCssRgba(packed)
         }
       }
       return rgb255(palette.colorPairLR)

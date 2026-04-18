@@ -257,15 +257,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         f32[o + F.insertSize] = data.readInsertSizes[ri]!
         u32[o + F.pairOrient] = data.readPairOrientations[ri]!
         i32[o + F.strand] = data.readStrands[ri]!
-        f32[o + F.tagColor] = hasTagColors
-          ? data.readTagColors[ri * 3]! / 255
-          : 0
-        f32[o + F.tagColor + 1] = hasTagColors
-          ? data.readTagColors[ri * 3 + 1]! / 255
-          : 0
-        f32[o + F.tagColor + 2] = hasTagColors
-          ? data.readTagColors[ri * 3 + 2]! / 255
-          : 0
+        u32[o + F.tagColor] = hasTagColors ? data.readTagColors[ri]! : 0
         u32[o + F.chainHasSupp] = data.readChainHasSupp?.[ri] ?? 0
         u32[o + F.readIndex] = ri
         u32[o + F.edgeFlags] = data.segmentEdgeFlags[j]!
@@ -411,12 +403,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         const o = i * s32
         u32[o + F.position] = data.modificationPositions[i]!
         u32[o + F.y] = data.modificationYs[i]!
-        const ci = i * 4
-        u32[o + F.packedColor] =
-          data.modificationColors[ci]! |
-          (data.modificationColors[ci + 1]! << 8) |
-          (data.modificationColors[ci + 2]! << 16) |
-          (data.modificationColors[ci + 3]! << 24)
+        u32[o + F.packedColor] = data.modificationColors[i]!
       }
       this.hal.uploadBuffer(regionNumber, PASS_MOD, buf, n)
     }

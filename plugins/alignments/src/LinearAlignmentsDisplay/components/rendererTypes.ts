@@ -48,7 +48,7 @@ export interface ReadUploadData {
   readInsertSizes: Float32Array
   readPairOrientations: Uint8Array
   readStrands: Int8Array
-  readTagColors: Uint8Array
+  readTagColors: Uint32Array
   readChainHasSupp?: Uint8Array
   readIds: string[]
   numReads: number
@@ -86,7 +86,7 @@ export interface CigarUploadData {
 export interface ModificationUploadData {
   modificationPositions: Uint32Array
   modificationYs: Uint16Array
-  modificationColors: Uint8Array
+  modificationColors: Uint32Array
   numModifications: number
 }
 

@@ -101,7 +101,7 @@ function makeMinimalReadData() {
     readInsertSizes: new Float32Array([]),
     readPairOrientations: new Uint8Array([]),
     readStrands: new Int8Array([]),
-    readTagColors: new Uint8Array([]),
+    readTagColors: new Uint32Array(0),
     readChainHasSupp: undefined,
     numReads: 0,
     readIds: [],

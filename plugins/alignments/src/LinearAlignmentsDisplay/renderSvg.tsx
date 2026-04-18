@@ -7,6 +7,12 @@ import {
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
+import {
+  abgrAlpha,
+  abgrBlue,
+  abgrGreen,
+  abgrRed,
+} from '@jbrowse/core/util/colorBits'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
@@ -594,12 +600,9 @@ function drawPileup(
         const mx = (pos - block.start) / bpPerPx + blockScreenX
         const mw = Math.max(pxPerBp, 0.5)
         const my = yOffset + data.modificationYs[i]! * rowHeight
-        const r = data.modificationColors[i * 4]!
-        const g = data.modificationColors[i * 4 + 1]!
-        const b = data.modificationColors[i * 4 + 2]!
-        const a = data.modificationColors[i * 4 + 3]! / 255
-        ctx.globalAlpha = a
-        ctx.fillStyle = `rgb(${r},${g},${b})`
+        const packed = data.modificationColors[i]!
+        ctx.globalAlpha = abgrAlpha(packed) / 255
+        ctx.fillStyle = `rgb(${abgrRed(packed)},${abgrGreen(packed)},${abgrBlue(packed)})`
         ctx.fillRect(mx, my, mw, featureHeightSetting)
       }
       ctx.globalAlpha = 1

@@ -37,7 +37,7 @@ struct Instance {
   float insertSize     : ATTR6;
   uint  pairOrient     : ATTR7;
   int   strand         : ATTR8;
-  float3 tagColor      : ATTR9;
+  uint  tagColor       : ATTR9;   // ABGR u32; 0 = not set
   uint  chainHasSupp   : ATTR10;  // 0=no supp, 1=supp + primary fwd, 2=supp + primary rev
   uint  readIndex      : ATTR11;
   uint  edgeFlags      : ATTR12;  // bit 0 = is_first, bit 1 = is_last
@@ -157,8 +157,8 @@ float3 getReadColor(Instance inst, Uniforms u) {
   if (cs == CS_IS_AND_ORIENT) { return isAndOrientColor(inst.insertSize, inst.pairOrient, u); }
   if (cs == CS_MODIFICATIONS) { return modificationsColor(inst.flags, u); }
   if (cs == CS_TAG) {
-    if (inst.tagColor.x != 0.0 || inst.tagColor.y != 0.0 || inst.tagColor.z != 0.0) {
-      return inst.tagColor;
+    if (inst.tagColor != 0u) {
+      return unpackRGBA(inst.tagColor).xyz;
     }
     return unpackRGBA(u.colorPairLR).xyz;
   }
