@@ -4,15 +4,8 @@
 //! targets: wgsl, glsl
 
 import hpmath;
+import colorPack;
 import multiSyntenyUniforms;
-
-float4 unpackRGBA(uint c) {
-  return float4(
-    float((c >>  0u) & 0xFFu),
-    float((c >>  8u) & 0xFFu),
-    float((c >> 16u) & 0xFFu),
-    float((c >> 24u) & 0xFFu)) / 255.0;
-}
 
 struct Instance {
   uint startBp    : ATTR0;

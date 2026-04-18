@@ -1,158 +1,40 @@
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
+import { slangPass } from '@jbrowse/core/gpu/slangPass'
+import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
+import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
 import { splitInterbasesByType } from './alignmentComponentUtils.ts'
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
 import {
-  ARC_FRAGMENT_SHADER,
-  ARC_LINE_FRAGMENT_SHADER,
-  ARC_LINE_VERTEX_SHADER,
-  ARC_VERTEX_SHADER,
   arcColorPalette,
   arcLineColorPalette,
-} from './shaders/arcShaders.ts'
-import {
-  GAP_FRAGMENT_SHADER,
-  GAP_VERTEX_SHADER,
-  HARDCLIP_FRAGMENT_SHADER,
-  HARDCLIP_VERTEX_SHADER,
-  INSERTION_FRAGMENT_SHADER,
-  INSERTION_VERTEX_SHADER,
-  MISMATCH_FRAGMENT_SHADER,
-  MISMATCH_VERTEX_SHADER,
-  MODIFICATION_FRAGMENT_SHADER,
-  MODIFICATION_VERTEX_SHADER,
-  SOFTCLIP_FRAGMENT_SHADER,
-  SOFTCLIP_VERTEX_SHADER,
-} from './shaders/cigarShaders.ts'
-import {
-  CONNECTING_LINE_FRAGMENT_SHADER,
-  CONNECTING_LINE_VERTEX_SHADER,
-} from './shaders/connectingLineShaders.ts'
-import {
-  COVERAGE_FRAGMENT_SHADER,
-  COVERAGE_VERTEX_SHADER,
-  INDICATOR_FRAGMENT_SHADER,
-  INDICATOR_VERTEX_SHADER,
-  MOD_COVERAGE_FRAGMENT_SHADER,
-  MOD_COVERAGE_VERTEX_SHADER,
-  NONCOV_HISTOGRAM_FRAGMENT_SHADER,
-  NONCOV_HISTOGRAM_VERTEX_SHADER,
-  SNP_COVERAGE_FRAGMENT_SHADER,
-  SNP_COVERAGE_VERTEX_SHADER,
-} from './shaders/coverageShaders.ts'
-import {
-  READ_FRAGMENT_SHADER,
-  READ_VERTEX_SHADER,
-} from './shaders/readShaders.ts'
-import { GLSL_UBO_PREAMBLE } from './shaders/uboCommon.ts'
-import { splitPositionWithFrac } from './shaders/utils.ts'
-import {
-  GAP_WGSL,
-  HARDCLIP_WGSL,
-  INSERTION_WGSL,
-  MISMATCH_WGSL,
-  MODIFICATION_WGSL,
-  SOFTCLIP_WGSL,
-} from './wgsl/cigarShaders.ts'
-import {
-  ARC_CURVE_SEGMENTS,
-  ARC_LINE_STRIDE,
-  ARC_STRIDE,
-  CONN_LINE_STRIDE,
-  COVERAGE_STRIDE,
-  GAP_STRIDE,
-  HARDCLIP_STRIDE,
-  INDICATOR_STRIDE,
-  INSERTION_STRIDE,
-  MISMATCH_STRIDE,
-  MODIFICATION_STRIDE,
-  MOD_COV_STRIDE,
-  NONCOV_STRIDE,
-  READ_STRIDE,
-  SNP_COV_STRIDE,
-  SOFTCLIP_STRIDE,
-  UNIFORM_SIZE,
-  U_ARC_COLORS,
-  U_ARC_LINE_COLORS,
-  U_BIN_SIZE,
-  U_BLOCK_START_PX,
-  U_BLOCK_WIDTH,
-  U_BP_HI,
-  U_BP_LEN,
-  U_BP_LO,
-  U_CANVAS_H,
-  U_CANVAS_W,
-  U_CHAIN_MODE,
-  U_COLOR_BASE_A,
-  U_COLOR_BASE_C,
-  U_COLOR_BASE_G,
-  U_COLOR_BASE_T,
-  U_COLOR_COVERAGE,
-  U_COLOR_DELETION,
-  U_COLOR_FWD,
-  U_COLOR_HARDCLIP,
-  U_COLOR_INSERTION,
-  U_COLOR_LONG_INSERT,
-  U_COLOR_MOD_FWD,
-  U_COLOR_MOD_REV,
-  U_COLOR_NOSTRAND,
-  U_COLOR_PAIR_LL,
-  U_COLOR_PAIR_LR,
-  U_COLOR_PAIR_RL,
-  U_COLOR_PAIR_RR,
-  U_COLOR_REV,
-  U_COLOR_SCHEME,
-  U_COLOR_SHORT_INSERT,
-  U_COLOR_SKIP,
-  U_COLOR_SOFTCLIP,
-  U_COLOR_SUPPLEMENTARY,
-  U_COLOR_UNMAPPED_MATE,
-  U_COV_HEIGHT,
-  U_COV_OFFSET,
-  U_COV_Y_OFFSET,
-  U_DEPTH_SCALE,
-  U_DOMAIN_END,
-  U_DOMAIN_START,
-  U_FEAT_H,
-  U_FEAT_SPACING,
-  U_FLIP_STRAND_LONG_READ,
-  U_HIGHLIGHT_IDX,
-  U_HIGHLIGHT_ONLY,
-  U_HP_ZERO,
-  U_INSERT_LOWER,
-  U_INSERT_UPPER,
-  U_LINE_WIDTH_PX,
-  U_NONCOV_HEIGHT,
-  U_PAIRED_ARCS_DOWN,
-  U_RANGE_Y0,
-  U_REGION_START,
-  U_REVERSED,
-  U_SCROLL_TOP,
-  U_SHOW_STROKE,
-} from './wgsl/common.ts'
-import {
-  COVERAGE_WGSL,
-  INDICATOR_WGSL,
-  MOD_COVERAGE_WGSL,
-  NONCOV_HISTOGRAM_WGSL,
-  SNP_COVERAGE_WGSL,
-} from './wgsl/coverageShaders.ts'
-import {
-  ARC_LINE_WGSL,
-  ARC_WGSL,
-  CONNECTING_LINE_WGSL,
-  FLAT_QUAD_WGSL,
-} from './wgsl/miscShaders.ts'
-import { READ_WGSL } from './wgsl/readShader.ts'
+} from './shaders/palettes.ts'
+import * as arcShader from './shaders/slang/arc.generated.ts'
+import * as arcLineShader from './shaders/slang/arcLine.generated.ts'
+import * as clipShader from './shaders/slang/clip.generated.ts'
+import * as connectingLineShader from './shaders/slang/connectingLine.generated.ts'
+import * as coverageShader from './shaders/slang/coverage.generated.ts'
+import * as flatQuadShader from './shaders/slang/flatQuad.generated.ts'
+import * as gapShader from './shaders/slang/gap.generated.ts'
+import * as indicatorShader from './shaders/slang/indicator.generated.ts'
+import * as insertionShader from './shaders/slang/insertion.generated.ts'
+import * as mismatchShader from './shaders/slang/mismatch.generated.ts'
+import * as modCoverageShader from './shaders/slang/modCoverage.generated.ts'
+import * as modificationShader from './shaders/slang/modification.generated.ts'
+import * as noncovShader from './shaders/slang/noncovHistogram.generated.ts'
+import * as readShader from './shaders/slang/read.generated.ts'
+import * as snpCoverageShader from './shaders/slang/snpCoverage.generated.ts'
 
 import type {
   AlignmentsBackend,
   ArcsUploadData,
   CigarUploadData,
+  ColorPalette,
   ConnectingLinesUploadData,
   CoverageUploadData,
   ModCoverageUploadData,
   ModificationUploadData,
+  RGBColor,
   ReadUploadData,
   RenderBlock,
   RenderState,
@@ -160,35 +42,18 @@ import type {
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
-// Simple GLSL for flat quad overlay (clip-space x1,y1,x2,y2 + RGBA)
-const FLAT_QUAD_VERTEX = `#version 300 es
-precision highp float;
-${GLSL_UBO_PREAMBLE}
-in float a_sx1; in float a_syTop; in float a_sx2; in float a_syBot;
-in vec4 a_color;
-out vec4 v_color;
-void main() {
-  int vid = gl_VertexID % 6;
-  float lx = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
-  float ly = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
-  gl_Position = vec4(mix(a_sx1, a_sx2, lx), mix(a_syBot, a_syTop, ly), 0.0, 1.0);
-  v_color = a_color;
-}
-`
-const FLAT_QUAD_FRAGMENT = `#version 300 es
-precision highp float;
-in vec4 v_color;
-out vec4 fragColor;
-void main() { fragColor = v_color; }
-`
+// Shader strides — every pass shares the same Uniforms struct (see
+// shaders/slang/alignmentsUniforms.slang) so we use any module's
+// UNIFORMS_SIZE_BYTES. Keep one shared ArrayBuffer for the UBO.
+const UNIFORMS_SIZE_BYTES = readShader.UNIFORMS_SIZE_BYTES
+const U = readShader.UNIFORM_OFFSET_F32
 
-// Pass IDs (PASS_* naming matches other HAL renderers)
+// Pass IDs
 const PASS_READ = 'read'
 const PASS_GAP = 'gap'
 const PASS_MISMATCH = 'mismatch'
 const PASS_INSERTION = 'insertion'
-const PASS_SOFTCLIP = 'softclip'
-const PASS_HARDCLIP = 'hardclip'
+const PASS_CLIP = 'clip'           // unified soft+hard clip bars
 const PASS_MOD = 'modification'
 const PASS_COVERAGE = 'coverage'
 const PASS_SNP_COV = 'snpCov'
@@ -201,278 +66,108 @@ const PASS_CONN_LINE = 'connLine'
 const PASS_FLAT_QUAD = 'flatQuad'
 const PASS_SOFTCLIP_BASES = 'softclipBases'
 
-// Helper to define float attributes
-function fattr(name: string, components: number, offsetBytes: number) {
-  return {
-    name,
-    components,
-    type: 'float' as const,
-    offsetBytes,
-    integer: false,
+const CLIP_KIND_SOFT = 0
+const CLIP_KIND_HARD = 1
+
+// Constant slot lookups hoisted so the hot path doesn't rebuild arrays.
+const ARC_COLOR_SLOTS = [
+  U.arcColor0, U.arcColor1, U.arcColor2, U.arcColor3,
+  U.arcColor4, U.arcColor5, U.arcColor6, U.arcColor7,
+] as const
+const ARC_LINE_SLOTS = [U.arcLineColor0, U.arcLineColor1] as const
+
+// Pack every palette color into the UBO as u32 ABGR. Pure — writes through
+// the given u32 view only, no rendering side effects.
+function writePaletteToUbo(u: Uint32Array, c: ColorPalette) {
+  const pack = (rgb: RGBColor) => normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])
+  u[U.colorFwd] = pack(c.colorFwdStrand)
+  u[U.colorRev] = pack(c.colorRevStrand)
+  u[U.colorNostrand] = pack(c.colorNostrand)
+  u[U.colorPairLR] = pack(c.colorPairLR)
+  u[U.colorPairRL] = pack(c.colorPairRL)
+  u[U.colorPairRR] = pack(c.colorPairRR)
+  u[U.colorPairLL] = pack(c.colorPairLL)
+  u[U.colorBaseA] = pack(c.colorBaseA)
+  u[U.colorBaseC] = pack(c.colorBaseC)
+  u[U.colorBaseG] = pack(c.colorBaseG)
+  u[U.colorBaseT] = pack(c.colorBaseT)
+  u[U.colorInsertion] = pack(c.colorInsertion)
+  u[U.colorDeletion] = pack(c.colorDeletion)
+  u[U.colorSkip] = pack(c.colorSkip)
+  u[U.colorSoftclip] = pack(c.colorSoftclip)
+  u[U.colorHardclip] = pack(c.colorHardclip)
+  u[U.colorCoverage] = pack(c.colorCoverage)
+  u[U.colorModFwd] = pack(c.colorModificationFwd)
+  u[U.colorModRev] = pack(c.colorModificationRev)
+  u[U.colorLongInsert] = pack(c.colorLongInsert)
+  u[U.colorShortInsert] = pack(c.colorShortInsert)
+  u[U.colorSupplementary] = pack(c.colorSupplementary)
+  u[U.colorUnmappedMate] = pack(c.colorUnmappedMate)
+  for (let i = 0; i < arcColorPalette.length; i++) {
+    u[ARC_COLOR_SLOTS[i]!] = pack(arcColorPalette[i]!)
+  }
+  for (let i = 0; i < arcLineColorPalette.length; i++) {
+    u[ARC_LINE_SLOTS[i]!] = pack(arcLineColorPalette[i]!)
   }
 }
-function uattr(name: string, components: number, offsetBytes: number) {
-  return { name, components, type: 'uint' as const, offsetBytes, integer: true }
-}
+
+const ARC_CURVE_SEGMENTS = 64
 
 export const ALIGNMENTS_PASSES: PassDescriptor[] = [
-  {
-    id: PASS_READ,
-    wgslSource: READ_WGSL,
-    glslVertex: READ_VERTEX_SHADER,
-    glslFragment: READ_FRAGMENT_SHADER,
-    instanceStride: READ_STRIDE * 4,
-    verticesPerInstance: 9,
-    blend: true,
-    glAttributes: [
-      uattr('a_position', 2, 0), // posHi, posLo (uvec2)
-      uattr('a_y', 1, 8),
-      uattr('a_flags', 1, 12),
-      uattr('a_mapq', 1, 16),
-      uattr('a_baseQuality', 1, 20),
-      fattr('a_insertSize', 1, 24),
-      uattr('a_pairOrientation', 1, 28),
-      {
-        name: 'a_strand',
-        components: 1,
-        type: 'int' as const,
-        offsetBytes: 32,
-        integer: true,
-      },
-      fattr('a_tagColor', 3, 36),
-      uattr('a_chainHasSupp', 1, 48),
-      uattr('a_readIndex', 1, 52),
-      uattr('a_edgeFlags', 1, 56),
-      uattr('a_readSpan', 2, 60),
-    ],
-  },
-  {
-    id: PASS_GAP,
-    wgslSource: GAP_WGSL,
-    glslVertex: GAP_VERTEX_SHADER,
-    glslFragment: GAP_FRAGMENT_SHADER,
-    instanceStride: GAP_STRIDE * 4,
-    verticesPerInstance: 6,
-    blend: true,
-    glAttributes: [
-      uattr('a_position', 2, 0),
-      uattr('a_y', 1, 8),
-      uattr('a_type', 1, 12),
-      fattr('a_frequency', 1, 16),
-    ],
-  },
-  {
-    id: PASS_MISMATCH,
-    wgslSource: MISMATCH_WGSL,
-    glslVertex: MISMATCH_VERTEX_SHADER,
-    glslFragment: MISMATCH_FRAGMENT_SHADER,
-    instanceStride: MISMATCH_STRIDE * 4,
-    verticesPerInstance: 6,
-    blend: true,
-    glAttributes: [
-      uattr('a_position', 1, 0),
-      uattr('a_y', 1, 4),
-      uattr('a_base', 1, 8),
-      fattr('a_frequency', 1, 12),
-    ],
-  },
-  {
+  slangPass({ id: PASS_READ, mod: readShader, verticesPerInstance: 9 }),
+  slangPass({ id: PASS_GAP, mod: gapShader, verticesPerInstance: 6 }),
+  slangPass({ id: PASS_MISMATCH, mod: mismatchShader, verticesPerInstance: 6 }),
+  slangPass({
     id: PASS_INSERTION,
-    wgslSource: INSERTION_WGSL,
-    glslVertex: INSERTION_VERTEX_SHADER,
-    glslFragment: INSERTION_FRAGMENT_SHADER,
-    instanceStride: INSERTION_STRIDE * 4,
+    mod: insertionShader,
     verticesPerInstance: 18,
-    blend: true,
-    glAttributes: [
-      uattr('a_position', 1, 0),
-      uattr('a_y', 1, 4),
-      uattr('a_length', 1, 8),
-      fattr('a_frequency', 1, 12),
-    ],
-  },
-  {
-    id: PASS_SOFTCLIP,
-    wgslSource: SOFTCLIP_WGSL,
-    glslVertex: SOFTCLIP_VERTEX_SHADER,
-    glslFragment: SOFTCLIP_FRAGMENT_SHADER,
-    instanceStride: SOFTCLIP_STRIDE * 4,
-    verticesPerInstance: 6,
-    blend: true,
-    glAttributes: [
-      uattr('a_position', 1, 0),
-      uattr('a_y', 1, 4),
-      uattr('a_length', 1, 8),
-      fattr('a_frequency', 1, 12),
-    ],
-  },
-  {
-    id: PASS_HARDCLIP,
-    wgslSource: HARDCLIP_WGSL,
-    glslVertex: HARDCLIP_VERTEX_SHADER,
-    glslFragment: HARDCLIP_FRAGMENT_SHADER,
-    instanceStride: HARDCLIP_STRIDE * 4,
-    verticesPerInstance: 6,
-    blend: true,
-    glAttributes: [
-      uattr('a_position', 1, 0),
-      uattr('a_y', 1, 4),
-      uattr('a_length', 1, 8),
-      fattr('a_frequency', 1, 12),
-    ],
-  },
-  {
-    id: PASS_MOD,
-    wgslSource: MODIFICATION_WGSL,
-    glslVertex: MODIFICATION_VERTEX_SHADER,
-    glslFragment: MODIFICATION_FRAGMENT_SHADER,
-    instanceStride: MODIFICATION_STRIDE * 4,
-    verticesPerInstance: 6,
-    blend: true,
-    glAttributes: [
-      uattr('a_position', 1, 0),
-      uattr('a_y', 1, 4),
-      uattr('a_packedColor', 1, 8),
-    ],
-  },
-  {
-    id: PASS_COVERAGE,
-    wgslSource: COVERAGE_WGSL,
-    glslVertex: COVERAGE_VERTEX_SHADER,
-    glslFragment: COVERAGE_FRAGMENT_SHADER,
-    instanceStride: COVERAGE_STRIDE * 4,
-    verticesPerInstance: 6,
-    blend: true,
-    glAttributes: [fattr('a_position', 1, 0), fattr('a_depth', 1, 4)],
-  },
-  {
+  }),
+  slangPass({ id: PASS_CLIP, mod: clipShader, verticesPerInstance: 6 }),
+  slangPass({ id: PASS_MOD, mod: modificationShader, verticesPerInstance: 6 }),
+  slangPass({ id: PASS_COVERAGE, mod: coverageShader, verticesPerInstance: 6 }),
+  slangPass({
     id: PASS_SNP_COV,
-    wgslSource: SNP_COVERAGE_WGSL,
-    glslVertex: SNP_COVERAGE_VERTEX_SHADER,
-    glslFragment: SNP_COVERAGE_FRAGMENT_SHADER,
-    instanceStride: SNP_COV_STRIDE * 4,
+    mod: snpCoverageShader,
     verticesPerInstance: 6,
-    blend: true,
-    glAttributes: [
-      fattr('a_position', 1, 0),
-      fattr('a_yOffset', 1, 4),
-      fattr('a_segmentHeight', 1, 8),
-      fattr('a_colorType', 1, 12),
-    ],
-  },
-  {
+  }),
+  slangPass({
     id: PASS_MOD_COV,
-    wgslSource: MOD_COVERAGE_WGSL,
-    glslVertex: MOD_COVERAGE_VERTEX_SHADER,
-    glslFragment: MOD_COVERAGE_FRAGMENT_SHADER,
-    instanceStride: MOD_COV_STRIDE * 4,
+    mod: modCoverageShader,
     verticesPerInstance: 6,
-    blend: true,
-    glAttributes: [
-      fattr('a_position', 1, 0),
-      fattr('a_yOffset', 1, 4),
-      fattr('a_segmentHeight', 1, 8),
-      uattr('a_packedColor', 1, 12),
-    ],
-  },
-  {
-    id: PASS_NONCOV,
-    wgslSource: NONCOV_HISTOGRAM_WGSL,
-    glslVertex: NONCOV_HISTOGRAM_VERTEX_SHADER,
-    glslFragment: NONCOV_HISTOGRAM_FRAGMENT_SHADER,
-    instanceStride: NONCOV_STRIDE * 4,
-    verticesPerInstance: 6,
-    blend: true,
-    glAttributes: [
-      fattr('a_position', 1, 0),
-      fattr('a_yOffset', 1, 4),
-      fattr('a_segmentHeight', 1, 8),
-      fattr('a_colorType', 1, 12),
-    ],
-  },
-  {
+  }),
+  slangPass({ id: PASS_NONCOV, mod: noncovShader, verticesPerInstance: 6 }),
+  slangPass({
     id: PASS_INDICATOR,
-    wgslSource: INDICATOR_WGSL,
-    glslVertex: INDICATOR_VERTEX_SHADER,
-    glslFragment: INDICATOR_FRAGMENT_SHADER,
-    instanceStride: INDICATOR_STRIDE * 4,
+    mod: indicatorShader,
     verticesPerInstance: 3,
-    blend: true,
-    glAttributes: [fattr('a_position', 1, 0), fattr('a_colorType', 1, 4)],
-  },
-  {
+  }),
+  slangPass({
     id: PASS_ARC,
-    wgslSource: ARC_WGSL,
-    glslVertex: ARC_VERTEX_SHADER,
-    glslFragment: ARC_FRAGMENT_SHADER,
-    instanceStride: ARC_STRIDE * 4,
+    mod: arcShader,
     verticesPerInstance: (ARC_CURVE_SEGMENTS + 1) * 2,
-    blend: true,
     topology: 'triangle-strip',
-    glAttributes: [
-      fattr('a_x1', 1, 0),
-      fattr('a_x2', 1, 4),
-      fattr('a_colorType', 1, 8),
-      fattr('a_isArc', 1, 12),
-    ],
-  },
-  {
+  }),
+  slangPass({
     id: PASS_ARC_LINE,
-    wgslSource: ARC_LINE_WGSL,
-    glslVertex: ARC_LINE_VERTEX_SHADER,
-    glslFragment: ARC_LINE_FRAGMENT_SHADER,
-    instanceStride: ARC_LINE_STRIDE * 4,
+    mod: arcLineShader,
     verticesPerInstance: 2,
-    blend: true,
     topology: 'line-list',
-    glAttributes: [
-      uattr('a_position', 1, 0),
-      fattr('a_y', 1, 4),
-      fattr('a_colorType', 1, 8),
-    ],
-  },
-  {
+  }),
+  slangPass({
     id: PASS_CONN_LINE,
-    wgslSource: CONNECTING_LINE_WGSL,
-    glslVertex: CONNECTING_LINE_VERTEX_SHADER,
-    glslFragment: CONNECTING_LINE_FRAGMENT_SHADER,
-    instanceStride: CONN_LINE_STRIDE * 4,
+    mod: connectingLineShader,
     verticesPerInstance: 6,
-    blend: true,
-    glAttributes: [uattr('a_position', 2, 0), fattr('a_y', 1, 8)],
-  },
-  {
+  }),
+  // Softclip-base bases reuse the mismatch pass geometry + colors.
+  slangPass({
     id: PASS_SOFTCLIP_BASES,
-    wgslSource: MISMATCH_WGSL,
-    glslVertex: MISMATCH_VERTEX_SHADER,
-    glslFragment: MISMATCH_FRAGMENT_SHADER,
-    instanceStride: MISMATCH_STRIDE * 4,
+    mod: mismatchShader,
     verticesPerInstance: 6,
-    blend: true,
-    glAttributes: [
-      uattr('a_position', 1, 0),
-      uattr('a_y', 1, 4),
-      uattr('a_base', 1, 8),
-      fattr('a_frequency', 1, 12),
-    ],
-  },
-  {
-    id: PASS_FLAT_QUAD,
-    wgslSource: FLAT_QUAD_WGSL,
-    glslVertex: FLAT_QUAD_VERTEX,
-    glslFragment: FLAT_QUAD_FRAGMENT,
-    instanceStride: 32,
-    verticesPerInstance: 6,
-    blend: true,
-    glAttributes: [
-      fattr('a_sx1', 1, 0),
-      fattr('a_syTop', 1, 4),
-      fattr('a_sx2', 1, 8),
-      fattr('a_syBot', 1, 12),
-      fattr('a_color', 4, 16),
-    ],
-  },
+  }),
+  slangPass({ id: PASS_FLAT_QUAD, mod: flatQuadShader, verticesPerInstance: 6 }),
 ]
+
+export { UNIFORMS_SIZE_BYTES }
 
 // Per-region data not tracked by the HAL
 interface LocalRegion {
@@ -491,7 +186,7 @@ const OVERLAY_REGION = 999999
 
 export class GpuAlignmentsRenderer implements AlignmentsBackend {
   private hal: GpuHal
-  private uData = new ArrayBuffer(UNIFORM_SIZE)
+  private uData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
   private uF32 = new Float32Array(this.uData)
   private uU32 = new Uint32Array(this.uData)
   private uI32 = new Int32Array(this.uData)
@@ -543,31 +238,39 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
     if (data.numSegments > 0) {
       const n = data.numSegments
+      const stride32 = readShader.INSTANCE_STRIDE_F32
+      const F = readShader.FIELD_OFFSET_F32
       const hasTagColors = data.readTagColors.length > 0
-      const buf = new ArrayBuffer(n * READ_STRIDE * 4)
+      const buf = new ArrayBuffer(n * readShader.INSTANCE_STRIDE_BYTES)
       const u32 = new Uint32Array(buf)
       const f32 = new Float32Array(buf)
       const i32 = new Int32Array(buf)
       for (let j = 0; j < n; j++) {
         const ri = data.segmentReadIndices[j]!
-        const o = j * READ_STRIDE
-        u32[o] = data.segmentPositions[j * 2]!
-        u32[o + 1] = data.segmentPositions[j * 2 + 1]!
-        u32[o + 2] = data.readYs[ri]!
-        u32[o + 3] = data.readFlags[ri]!
-        u32[o + 4] = data.readMapqs[ri]!
-        u32[o + 5] = data.readAvgBaseQualities[ri]!
-        f32[o + 6] = data.readInsertSizes[ri]!
-        u32[o + 7] = data.readPairOrientations[ri]!
-        i32[o + 8] = data.readStrands[ri]!
-        f32[o + 9] = hasTagColors ? data.readTagColors[ri * 3]! / 255 : 0
-        f32[o + 10] = hasTagColors ? data.readTagColors[ri * 3 + 1]! / 255 : 0
-        f32[o + 11] = hasTagColors ? data.readTagColors[ri * 3 + 2]! / 255 : 0
-        u32[o + 12] = data.readChainHasSupp?.[ri] ?? 0
-        u32[o + 13] = ri
-        u32[o + 14] = data.segmentEdgeFlags[j]!
-        u32[o + 15] = data.readPositions[ri * 2]!
-        u32[o + 16] = data.readPositions[ri * 2 + 1]!
+        const o = j * stride32
+        u32[o + F.startOff] = data.segmentPositions[j * 2]!
+        u32[o + F.endOff] = data.segmentPositions[j * 2 + 1]!
+        u32[o + F.y] = data.readYs[ri]!
+        u32[o + F.flags] = data.readFlags[ri]!
+        u32[o + F.mapq] = data.readMapqs[ri]!
+        u32[o + F.baseQuality] = data.readAvgBaseQualities[ri]!
+        f32[o + F.insertSize] = data.readInsertSizes[ri]!
+        u32[o + F.pairOrient] = data.readPairOrientations[ri]!
+        i32[o + F.strand] = data.readStrands[ri]!
+        f32[o + F.tagColor] = hasTagColors
+          ? data.readTagColors[ri * 3]! / 255
+          : 0
+        f32[o + F.tagColor + 1] = hasTagColors
+          ? data.readTagColors[ri * 3 + 1]! / 255
+          : 0
+        f32[o + F.tagColor + 2] = hasTagColors
+          ? data.readTagColors[ri * 3 + 2]! / 255
+          : 0
+        u32[o + F.chainHasSupp] = data.readChainHasSupp?.[ri] ?? 0
+        u32[o + F.readIndex] = ri
+        u32[o + F.edgeFlags] = data.segmentEdgeFlags[j]!
+        u32[o + F.readStartOff] = data.readPositions[ri * 2]!
+        u32[o + F.readEndOff] = data.readPositions[ri * 2 + 1]!
       }
       this.hal.uploadBuffer(regionNumber, PASS_READ, buf, n)
     }
@@ -583,30 +286,36 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
 
     if (data.numGaps > 0) {
-      const buf = new ArrayBuffer(data.numGaps * GAP_STRIDE * 4)
+      const F = gapShader.FIELD_OFFSET_F32
+      const s32 = gapShader.INSTANCE_STRIDE_F32
+      const buf = new ArrayBuffer(data.numGaps * gapShader.INSTANCE_STRIDE_BYTES)
       const u32 = new Uint32Array(buf)
       const f32 = new Float32Array(buf)
       for (let i = 0; i < data.numGaps; i++) {
-        const o = i * GAP_STRIDE
-        u32[o] = data.gapPositions[i * 2]!
-        u32[o + 1] = data.gapPositions[i * 2 + 1]!
-        u32[o + 2] = data.gapYs[i]!
-        u32[o + 3] = data.gapTypes[i]!
-        f32[o + 4] = data.gapFrequencies[i]! / 255
+        const o = i * s32
+        u32[o + F.startOff] = data.gapPositions[i * 2]!
+        u32[o + F.endOff] = data.gapPositions[i * 2 + 1]!
+        u32[o + F.y] = data.gapYs[i]!
+        u32[o + F.gapType] = data.gapTypes[i]!
+        f32[o + F.frequency] = data.gapFrequencies[i]! / 255
       }
       this.hal.uploadBuffer(regionNumber, PASS_GAP, buf, data.numGaps)
     }
 
     if (data.numMismatches > 0) {
-      const buf = new ArrayBuffer(data.numMismatches * MISMATCH_STRIDE * 4)
+      const F = mismatchShader.FIELD_OFFSET_F32
+      const s32 = mismatchShader.INSTANCE_STRIDE_F32
+      const buf = new ArrayBuffer(
+        data.numMismatches * mismatchShader.INSTANCE_STRIDE_BYTES,
+      )
       const u32 = new Uint32Array(buf)
       const f32 = new Float32Array(buf)
       for (let i = 0; i < data.numMismatches; i++) {
-        const o = i * MISMATCH_STRIDE
-        u32[o] = data.mismatchPositions[i]!
-        u32[o + 1] = data.mismatchYs[i]!
-        u32[o + 2] = data.mismatchBases[i]!
-        f32[o + 3] = data.mismatchFrequencies[i]! / 255
+        const o = i * s32
+        u32[o + F.position] = data.mismatchPositions[i]!
+        u32[o + F.y] = data.mismatchYs[i]!
+        u32[o + F.base] = data.mismatchBases[i]!
+        f32[o + F.frequency] = data.mismatchFrequencies[i]! / 255
       }
       this.hal.uploadBuffer(
         regionNumber,
@@ -621,36 +330,64 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       data.numInterbases,
     )
 
-    const uploadClip = (indices: number[], stride: number, passId: string) => {
-      if (indices.length === 0) {
-        return
-      }
-      const buf = new ArrayBuffer(indices.length * stride * 4)
+    if (insIdx.length > 0) {
+      const F = insertionShader.FIELD_OFFSET_F32
+      const s32 = insertionShader.INSTANCE_STRIDE_F32
+      const buf = new ArrayBuffer(
+        insIdx.length * insertionShader.INSTANCE_STRIDE_BYTES,
+      )
       const u32 = new Uint32Array(buf)
       const f32 = new Float32Array(buf)
-      for (const [j, index] of indices.entries()) {
-        const o = j * stride
-        u32[o] = data.interbasePositions[index]!
-        u32[o + 1] = data.interbaseYs[index]!
-        u32[o + 2] = data.interbaseLengths[index]!
-        f32[o + 3] = data.interbaseFrequencies[index]! / 255
+      for (const [j, index] of insIdx.entries()) {
+        const o = j * s32
+        u32[o + F.position] = data.interbasePositions[index]!
+        u32[o + F.y] = data.interbaseYs[index]!
+        u32[o + F.length] = data.interbaseLengths[index]!
+        f32[o + F.frequency] = data.interbaseFrequencies[index]! / 255
       }
-      this.hal.uploadBuffer(regionNumber, passId, buf, indices.length)
+      this.hal.uploadBuffer(regionNumber, PASS_INSERTION, buf, insIdx.length)
     }
-    uploadClip(insIdx, INSERTION_STRIDE, PASS_INSERTION)
-    uploadClip(scIdx, SOFTCLIP_STRIDE, PASS_SOFTCLIP)
-    uploadClip(hcIdx, HARDCLIP_STRIDE, PASS_HARDCLIP)
+
+    // Softclip + hardclip share one buffer + pass; `kind` selects the color.
+    const clipCount = scIdx.length + hcIdx.length
+    if (clipCount > 0) {
+      const F = clipShader.FIELD_OFFSET_F32
+      const s32 = clipShader.INSTANCE_STRIDE_F32
+      const buf = new ArrayBuffer(clipCount * clipShader.INSTANCE_STRIDE_BYTES)
+      const u32 = new Uint32Array(buf)
+      const f32 = new Float32Array(buf)
+      const writeClip = (
+        indices: number[],
+        startSlot: number,
+        kind: number,
+      ) => {
+        for (const [j, index] of indices.entries()) {
+          const o = (startSlot + j) * s32
+          u32[o + F.position] = data.interbasePositions[index]!
+          u32[o + F.y] = data.interbaseYs[index]!
+          u32[o + F.length] = data.interbaseLengths[index]!
+          f32[o + F.frequency] = data.interbaseFrequencies[index]! / 255
+          u32[o + F.kind] = kind
+        }
+      }
+      writeClip(scIdx, 0, CLIP_KIND_SOFT)
+      writeClip(hcIdx, scIdx.length, CLIP_KIND_HARD)
+      this.hal.uploadBuffer(regionNumber, PASS_CLIP, buf, clipCount)
+    }
 
     if (data.numSoftclipBases > 0) {
-      const buf = new ArrayBuffer(data.numSoftclipBases * MISMATCH_STRIDE * 4)
+      const F = mismatchShader.FIELD_OFFSET_F32
+      const s32 = mismatchShader.INSTANCE_STRIDE_F32
+      const buf = new ArrayBuffer(
+        data.numSoftclipBases * mismatchShader.INSTANCE_STRIDE_BYTES,
+      )
       const u32 = new Uint32Array(buf)
       for (let i = 0; i < data.numSoftclipBases; i++) {
-        const o = i * MISMATCH_STRIDE
-        u32[o] = data.softclipBasePositions[i]!
-        u32[o + 1] = data.softclipBaseYs[i]!
-        u32[o + 2] = data.softclipBaseBases[i]!
+        const o = i * s32
+        u32[o + F.position] = data.softclipBasePositions[i]!
+        u32[o + F.y] = data.softclipBaseYs[i]!
+        u32[o + F.base] = data.softclipBaseBases[i]!
       }
-      // softclip bases reuse the mismatch pass
       this.hal.uploadBuffer(
         regionNumber,
         PASS_SOFTCLIP_BASES,
@@ -666,27 +403,25 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
   ) {
     if (data.numModifications > 0) {
       const n = data.numModifications
-      const buf = new ArrayBuffer(n * MODIFICATION_STRIDE * 4)
+      const F = modificationShader.FIELD_OFFSET_F32
+      const s32 = modificationShader.INSTANCE_STRIDE_F32
+      const buf = new ArrayBuffer(n * modificationShader.INSTANCE_STRIDE_BYTES)
       const u32 = new Uint32Array(buf)
       for (let i = 0; i < n; i++) {
-        const o = i * MODIFICATION_STRIDE
-        u32[o] = data.modificationPositions[i]!
-        u32[o + 1] = data.modificationYs[i]!
+        const o = i * s32
+        u32[o + F.position] = data.modificationPositions[i]!
+        u32[o + F.y] = data.modificationYs[i]!
         const ci = i * 4
-        u32[o + 2] =
+        u32[o + F.packedColor] =
           data.modificationColors[ci]! |
           (data.modificationColors[ci + 1]! << 8) |
           (data.modificationColors[ci + 2]! << 16) |
           (data.modificationColors[ci + 3]! << 24)
-        u32[o + 3] = 0
       }
       this.hal.uploadBuffer(regionNumber, PASS_MOD, buf, n)
     }
   }
 
-  // Upload the coverage-area passes (per-bp depth, SNP, noncov histogram,
-  // indicators). The pack loops run in the RPC worker (see packCoverageArea.ts
-  // / ADR-004); here we just hand the pre-packed buffers to the HAL.
   uploadCoverageFromTypedArraysForRegion(
     regionNumber: number,
     data: CoverageUploadData,
@@ -737,7 +472,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  // PASS_MOD_COV is pre-packed by the worker; main thread just forwards it.
   uploadModCoverageFromTypedArraysForRegion(
     regionNumber: number,
     data: ModCoverageUploadData,
@@ -765,29 +499,32 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
     if (data.numArcs > 0) {
       const n = data.numArcs
-      const buf = new ArrayBuffer(n * ARC_STRIDE * 4)
+      const F = arcShader.FIELD_OFFSET_F32
+      const s32 = arcShader.INSTANCE_STRIDE_F32
+      const buf = new ArrayBuffer(n * arcShader.INSTANCE_STRIDE_BYTES)
       const f32 = new Float32Array(buf)
       for (let i = 0; i < n; i++) {
-        const o = i * ARC_STRIDE
-        f32[o] = data.arcX1[i]!
-        f32[o + 1] = data.arcX2[i]!
-        f32[o + 2] = data.arcColorTypes[i]!
-        f32[o + 3] = data.arcIsArc[i]!
+        const o = i * s32
+        f32[o + F.x1] = data.arcX1[i]!
+        f32[o + F.x2] = data.arcX2[i]!
+        f32[o + F.colorType] = data.arcColorTypes[i]!
+        f32[o + F.isArc] = data.arcIsArc[i]!
       }
       this.hal.uploadBuffer(regionNumber, PASS_ARC, buf, n)
     }
 
     if (data.numLines > 0) {
       const n = data.numLines
-      const buf = new ArrayBuffer(n * ARC_LINE_STRIDE * 4)
+      const F = arcLineShader.FIELD_OFFSET_F32
+      const s32 = arcLineShader.INSTANCE_STRIDE_F32
+      const buf = new ArrayBuffer(n * arcLineShader.INSTANCE_STRIDE_BYTES)
       const u32 = new Uint32Array(buf)
       const f32 = new Float32Array(buf)
       for (let i = 0; i < n; i++) {
-        const o = i * ARC_LINE_STRIDE
-        u32[o] = data.linePositions[i]!
-        f32[o + 1] = data.lineYs[i]!
-        f32[o + 2] = data.lineColorTypes[i]!
-        f32[o + 3] = 0
+        const o = i * s32
+        u32[o + F.position] = data.linePositions[i]!
+        f32[o + F.y] = data.lineYs[i]!
+        f32[o + F.colorType] = data.lineColorTypes[i]!
       }
       this.hal.uploadBuffer(regionNumber, PASS_ARC_LINE, buf, n)
     }
@@ -804,23 +541,21 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
     if (data.numConnectingLines > 0) {
       const n = data.numConnectingLines
-      const buf = new ArrayBuffer(n * CONN_LINE_STRIDE * 4)
+      const F = connectingLineShader.FIELD_OFFSET_F32
+      const s32 = connectingLineShader.INSTANCE_STRIDE_F32
+      const buf = new ArrayBuffer(
+        n * connectingLineShader.INSTANCE_STRIDE_BYTES,
+      )
       const u32 = new Uint32Array(buf)
       const f32 = new Float32Array(buf)
       for (let i = 0; i < n; i++) {
-        const o = i * CONN_LINE_STRIDE
-        u32[o] = data.connectingLinePositions[i * 2]!
-        u32[o + 1] = data.connectingLinePositions[i * 2 + 1]!
-        f32[o + 2] = data.connectingLineYs[i]!
+        const o = i * s32
+        u32[o + F.startOff] = data.connectingLinePositions[i * 2]!
+        u32[o + F.endOff] = data.connectingLinePositions[i * 2 + 1]!
+        f32[o + F.y] = data.connectingLineYs[i]!
       }
       this.hal.uploadBuffer(regionNumber, PASS_CONN_LINE, buf, n)
     }
-  }
-
-  private writeColor(slot: number, c: [number, number, number]) {
-    this.uF32[slot] = c[0]
-    this.uF32[slot + 1] = c[1]
-    this.uF32[slot + 2] = c[2]
   }
 
   private writeUniforms(
@@ -838,71 +573,41 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     const f = this.uF32
     const u = this.uU32
     const ii = this.uI32
-    f[U_BP_HI] = bpHi
-    f[U_BP_LO] = bpLo
-    f[U_BP_LEN] = bpLen
-    u[U_REGION_START] = regionStart
-    f[U_HP_ZERO] = 0
-    f[U_DOMAIN_START] = clippedBpStart - regionStart
-    f[U_DOMAIN_END] = clippedBpEnd - regionStart
-    f[U_RANGE_Y0] = state.rangeY[0]
-    f[U_CANVAS_H] = state.canvasHeight
-    f[U_CANVAS_W] = canvasW
-    f[U_COV_OFFSET] = state.pileupTopOffset
-    f[U_FEAT_H] = state.featureHeight
-    f[U_FEAT_SPACING] = state.featureSpacing
-    ii[U_COLOR_SCHEME] = state.colorScheme
-    ii[U_HIGHLIGHT_IDX] = -1
-    ii[U_HIGHLIGHT_ONLY] = 0
-    ii[U_CHAIN_MODE] = state.renderingMode === 'linkedRead' ? 1 : 0
-    ii[U_FLIP_STRAND_LONG_READ] =
-      state.flipStrandLongReadChains !== false ? 1 : 0
-    ii[U_SHOW_STROKE] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
-    f[U_COV_HEIGHT] = state.coverageHeight
-    f[U_COV_Y_OFFSET] = state.coverageYOffset
-    f[U_DEPTH_SCALE] =
+    f[U.bpHi] = bpHi
+    f[U.bpLo] = bpLo
+    f[U.bpLen] = bpLen
+    f[U.hpZero] = 0
+    u[U.regionStart] = regionStart
+    f[U.canvasW] = canvasW
+    f[U.canvasH] = state.canvasHeight
+    f[U.rangeY0] = state.rangeY[0]
+    f[U.scrollTop] = state.rangeY[0]
+    f[U.covOffset] = state.pileupTopOffset
+    f[U.featHeight] = state.featureHeight
+    f[U.featSpacing] = state.featureSpacing
+    f[U.covHeight] = state.coverageHeight
+    f[U.covYOffset] = state.coverageYOffset
+    f[U.depthScale] =
       state.coverageMaxDepth !== undefined && region.maxDepth > 0
         ? region.maxDepth / state.coverageMaxDepth
         : 1
-    f[U_BIN_SIZE] = region.binSize
-    f[U_NONCOV_HEIGHT] =
+    f[U.binSize] = region.binSize
+    f[U.noncovHeight] =
       region.noncovMaxCount > 0 ? Math.min(region.noncovMaxCount * 2, 20) : 0
-    f[U_INSERT_UPPER] = region.insertSizeStats?.upper ?? 999999
-    f[U_INSERT_LOWER] = region.insertSizeStats?.lower ?? 0
-    f[U_SCROLL_TOP] = state.rangeY[0]
-    f[U_REVERSED] = reversed ? 1 : 0
-    const c = state.colors
-    this.writeColor(U_COLOR_FWD, c.colorFwdStrand)
-    this.writeColor(U_COLOR_REV, c.colorRevStrand)
-    this.writeColor(U_COLOR_NOSTRAND, c.colorNostrand)
-    this.writeColor(U_COLOR_PAIR_LR, c.colorPairLR)
-    this.writeColor(U_COLOR_PAIR_RL, c.colorPairRL)
-    this.writeColor(U_COLOR_PAIR_RR, c.colorPairRR)
-    this.writeColor(U_COLOR_PAIR_LL, c.colorPairLL)
-    this.writeColor(U_COLOR_BASE_A, c.colorBaseA)
-    this.writeColor(U_COLOR_BASE_C, c.colorBaseC)
-    this.writeColor(U_COLOR_BASE_G, c.colorBaseG)
-    this.writeColor(U_COLOR_BASE_T, c.colorBaseT)
-    this.writeColor(U_COLOR_INSERTION, c.colorInsertion)
-    this.writeColor(U_COLOR_DELETION, c.colorDeletion)
-    this.writeColor(U_COLOR_SKIP, c.colorSkip)
-    this.writeColor(U_COLOR_SOFTCLIP, c.colorSoftclip)
-    this.writeColor(U_COLOR_HARDCLIP, c.colorHardclip)
-    this.writeColor(U_COLOR_COVERAGE, c.colorCoverage)
-    this.writeColor(U_COLOR_MOD_FWD, c.colorModificationFwd)
-    this.writeColor(U_COLOR_MOD_REV, c.colorModificationRev)
-    this.writeColor(U_COLOR_LONG_INSERT, c.colorLongInsert)
-    this.writeColor(U_COLOR_SHORT_INSERT, c.colorShortInsert)
-    this.writeColor(U_COLOR_SUPPLEMENTARY, c.colorSupplementary)
-    this.writeColor(U_COLOR_UNMAPPED_MATE, c.colorUnmappedMate)
+    f[U.domainStart] = clippedBpStart - regionStart
+    f[U.domainEnd] = clippedBpEnd - regionStart
+    f[U.insertUpper] = region.insertSizeStats?.upper ?? 999999
+    f[U.insertLower] = region.insertSizeStats?.lower ?? 0
+    ii[U.colorScheme] = state.colorScheme
+    ii[U.highlightIdx] = -1
+    ii[U.highlightOnly] = 0
+    ii[U.chainMode] = state.renderingMode === 'linkedRead' ? 1 : 0
+    ii[U.showStroke] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
+    ii[U.flipStrandLongRead] =
+      state.flipStrandLongReadChains !== false ? 1 : 0
+    f[U.reversed] = reversed ? 1 : 0
 
-    for (const [i, element] of arcColorPalette.entries()) {
-      this.writeColor(U_ARC_COLORS + i * 3, element)
-    }
-    for (const [i, element] of arcLineColorPalette.entries()) {
-      this.writeColor(U_ARC_LINE_COLORS + i * 3, element)
-    }
-
+    writePaletteToUbo(u, state.colors)
     this.hal.writeUniforms(this.uData)
   }
 
@@ -933,9 +638,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
           ? (block.bpRangeX[1] - block.bpRangeX[0]) / fullBlockWidth
           : 1
 
-      // For reversed blocks the low-bp edge is at the right of the scissor;
-      // measure from screenEndPx instead of screenStartPx so the formula is
-      // the same in both orientations.
       const pxFromEdge = block.reversed
         ? block.screenEndPx - scissorEnd
         : scissorX - block.screenStartPx
@@ -1000,7 +702,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         this.hal.drawPass(PASS_INDICATOR, block.regionNumber)
       }
 
-      // Pileup area: clip to below coverage+arcs
       if (pileupH > 0) {
         this.hal.setScissor(
           Math.round(scissorX * dpr),
@@ -1021,8 +722,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         this.hal.drawPass(PASS_INSERTION, block.regionNumber)
       }
 
-      this.hal.drawPass(PASS_SOFTCLIP, block.regionNumber)
-      this.hal.drawPass(PASS_HARDCLIP, block.regionNumber)
+      this.hal.drawPass(PASS_CLIP, block.regionNumber)
       if (state.showSoftClipping) {
         this.hal.drawPass(PASS_SOFTCLIP_BASES, block.regionNumber)
       }
@@ -1031,7 +731,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         this.hal.drawPass(PASS_MOD, block.regionNumber)
       }
 
-      // Feature highlight/selection overlays
       this.renderFeatureOverlays(
         block,
         region,
@@ -1067,12 +766,9 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     this.hal.clearScissor()
     this.hal.clearViewport()
     this.hal.endFrame()
-    // Clean up transient overlay buffer after submission so the GPU can
-    // finish reading it before it is destroyed.
     this.hal.deleteRegion(OVERLAY_REGION)
 
     if (!hasDrawn) {
-      // Ensure canvas gets cleared even if no blocks
       this.hal.beginFrame(0, 0, 0, 0)
       this.hal.endFrame()
     }
@@ -1090,15 +786,15 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
   ) {
     const blockW = block.screenEndPx - block.screenStartPx
     const [hi, lo] = splitPositionWithFrac(block.bpRangeX[0])
-    this.uF32[U_CANVAS_W] = vpW
-    this.uF32[U_BLOCK_START_PX] = block.screenStartPx - vpX
-    this.uF32[U_BLOCK_WIDTH] = blockW
-    this.uF32[U_BP_HI] = hi
-    this.uF32[U_BP_LO] = lo
-    this.uF32[U_BP_LEN] = block.bpRangeX[1] - block.bpRangeX[0]
-    this.uF32[U_DOMAIN_START] = block.bpRangeX[0] - r.regionStart
-    this.uF32[U_DOMAIN_END] = block.bpRangeX[1] - r.regionStart
-    this.uU32[U_REGION_START] = r.regionStart
+    this.uF32[U.canvasW] = vpW
+    this.uF32[U.blockStartPx] = block.screenStartPx - vpX
+    this.uF32[U.blockWidth] = blockW
+    this.uF32[U.bpHi] = hi
+    this.uF32[U.bpLo] = lo
+    this.uF32[U.bpLen] = block.bpRangeX[1] - block.bpRangeX[0]
+    this.uF32[U.domainStart] = block.bpRangeX[0] - r.regionStart
+    this.uF32[U.domainEnd] = block.bpRangeX[1] - r.regionStart
+    this.uU32[U.regionStart] = r.regionStart
   }
 
   private drawArcsPass(
@@ -1119,11 +815,11 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       Math.max(0, bufH - arcViewportTop),
     )
     if (arcViewportH > 0) {
-      this.uF32[U_COV_OFFSET] = arcHeightForOffset ?? 0
-      this.uF32[U_CANVAS_H] = arcViewportH / dpr
+      this.uF32[U.covOffset] = arcHeightForOffset ?? 0
+      this.uF32[U.canvasH] = arcViewportH / dpr
       this.writeBlockUniforms(region, block, scissorX, scissorW)
-      this.uF32[U_LINE_WIDTH_PX] = state.arcLineWidth ?? 1
-      this.uF32[U_PAIRED_ARCS_DOWN] = state.pairedArcsDown ? 1 : 0
+      this.uF32[U.lineWidthPx] = state.arcLineWidth ?? 1
+      this.uF32[U.pairedArcsDown] = state.pairedArcsDown ? 1 : 0
       this.hal.writeUniforms(this.uData)
 
       const vpX = Math.round(scissorX * dpr)
@@ -1134,8 +830,8 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       this.hal.drawPass(PASS_ARC, block.regionNumber)
       this.hal.drawPass(PASS_ARC_LINE, block.regionNumber)
 
-      this.uF32[U_COV_OFFSET] = state.pileupTopOffset
-      this.uF32[U_CANVAS_H] = state.canvasHeight
+      this.uF32[U.covOffset] = state.pileupTopOffset
+      this.uF32[U.canvasH] = state.canvasHeight
       this.hal.writeUniforms(this.uData)
     }
   }
@@ -1171,8 +867,8 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       this.hal.getBufferCount(block.regionNumber, PASS_READ) > 0
     ) {
       if (needsFeatureHighlight) {
-        this.uI32[U_HIGHLIGHT_ONLY] = 1
-        this.uI32[U_HIGHLIGHT_IDX] = regionHighlightIdx
+        this.uI32[U.highlightOnly] = 1
+        this.uI32[U.highlightIdx] = regionHighlightIdx
         this.hal.writeUniforms(this.uData)
 
         this.hal.setViewport(
@@ -1189,7 +885,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         )
         this.hal.drawPass(PASS_READ, block.regionNumber)
 
-        this.uI32[U_HIGHLIGHT_ONLY] = 0
+        this.uI32[U.highlightOnly] = 0
         this.hal.writeUniforms(this.uData)
       }
 
@@ -1214,38 +910,10 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         const tx = 4 / scissorW
         const ty = 4 / state.canvasHeight
         const quads = new Float32Array([
-          clip.sx1,
-          clip.syTop,
-          clip.sx2,
-          clip.syTop - ty,
-          0,
-          0.722,
-          1,
-          1,
-          clip.sx1,
-          clip.syBot + ty,
-          clip.sx2,
-          clip.syBot,
-          0,
-          0.722,
-          1,
-          1,
-          clip.sx1,
-          clip.syTop,
-          clip.sx1 + tx,
-          clip.syBot,
-          0,
-          0.722,
-          1,
-          1,
-          clip.sx2 - tx,
-          clip.syTop,
-          clip.sx2,
-          clip.syBot,
-          0,
-          0.722,
-          1,
-          1,
+          clip.sx1, clip.syTop, clip.sx2, clip.syTop - ty, 0, 0.722, 1, 1,
+          clip.sx1, clip.syBot + ty, clip.sx2, clip.syBot, 0, 0.722, 1, 1,
+          clip.sx1, clip.syTop, clip.sx1 + tx, clip.syBot, 0, 0.722, 1, 1,
+          clip.sx2 - tx, clip.syTop, clip.sx2, clip.syBot, 0, 0.722, 1, 1,
         ])
         this.drawOverlayQuads(
           quads,
@@ -1260,7 +928,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       }
     }
 
-    // Chain overlays
     const quads: number[] = []
     const covOff = state.pileupTopOffset
 
@@ -1311,38 +978,10 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         const tx = 4 / scissorW
         const ty = 4 / state.canvasHeight
         quads.push(
-          clip.sx1,
-          clip.syTop,
-          clip.sx2,
-          clip.syTop - ty,
-          0,
-          0.722,
-          1,
-          1,
-          clip.sx1,
-          clip.syBot + ty,
-          clip.sx2,
-          clip.syBot,
-          0,
-          0.722,
-          1,
-          1,
-          clip.sx1,
-          clip.syTop,
-          clip.sx1 + tx,
-          clip.syBot,
-          0,
-          0.722,
-          1,
-          1,
-          clip.sx2 - tx,
-          clip.syTop,
-          clip.sx2,
-          clip.syBot,
-          0,
-          0.722,
-          1,
-          1,
+          clip.sx1, clip.syTop, clip.sx2, clip.syTop - ty, 0, 0.722, 1, 1,
+          clip.sx1, clip.syBot + ty, clip.sx2, clip.syBot, 0, 0.722, 1, 1,
+          clip.sx1, clip.syTop, clip.sx1 + tx, clip.syBot, 0, 0.722, 1, 1,
+          clip.sx2 - tx, clip.syTop, clip.sx2, clip.syBot, 0, 0.722, 1, 1,
         )
       }
     }

@@ -100,11 +100,18 @@ see ADR-005 §"Authoring conventions" for the gotcha:
   storage-buffer padding); other passes same size. Deleted
   `multiSyntenyGpuShaders.ts` entirely — its 500+ lines of hand-written
   WGSL/GLSL collapse to `slangPass` calls in the renderer.
-- **alignments**:
-  `plugins/alignments/src/LinearAlignmentsDisplay/components/wgsl/{read,
-  cigar,coverage,misc}Shaders.ts`. Most complex renderer — leave until
-  last. The existing `hpWgsl.ts` / `hpGlsl.ts` modules can be deleted once
-  all WebGL consumers migrate to `import hpmath;`.
+- ~~**alignments**~~ — done on `webgl-poc`. 15 shaders authored as
+  `plugins/alignments/src/LinearAlignmentsDisplay/components/shaders/slang/
+  *.slang` sharing one `alignmentsUniforms.slang` module (typed `Uniforms`
+  struct replaces the old `array<vec4u, 40>` slot-indexed UBO). The whole
+  `wgsl/` directory and hand-written GLSL `*Shaders.ts` files were
+  deleted, as was `uboCommon.ts` / `common.ts` / `utils.ts`. `colorPack.
+  slang` was extracted to `packages/core/src/gpu/shaders/` and is now
+  shared by linear-synteny, multi-synteny, and alignments' modification
+  passes (was duplicated in each). `shared/coverageGpuPacking.ts` strides
+  tightened to match the new Slang layouts (coverage 16B→8B, indicator
+  16B→8B). The remaining `hpWgsl.ts` / `hpGlsl.ts` modules can now be
+  deleted since every alignments shader uses `import hpmath;`.
 
 ### Compute shaders — WebGPU-only, keep storage buffers
 

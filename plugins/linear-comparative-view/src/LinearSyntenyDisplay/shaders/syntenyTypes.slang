@@ -31,14 +31,6 @@ public struct Uniforms {
   public float  yTop;
 };
 
-public float4 unpackRGBA(uint c) {
-  return float4(
-    float((c >>  0u) & 0xFFu),
-    float((c >>  8u) & 0xFFu),
-    float((c >> 16u) & 0xFFu),
-    float((c >> 24u) & 0xFFu)) / 255.0;
-}
-
 public struct Corners {
   public float x1, x2, x3, x4;
 };

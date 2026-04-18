@@ -39,8 +39,6 @@ export {
 } from './cigarConstants.ts'
 export { visitCigarOps, visitCsOps } from './cigarOpsVisitor.ts'
 export type { CigarOpsVisitor } from './cigarOpsVisitor.ts'
-export { HP_GLSL_CORE, HP_GLSL_WITH_UNIFORM } from './hpGlsl.ts'
-export { HP_WGSL_CORE } from './hpWgsl.ts'
 export { InstanceBuilder } from './InstanceBuilder.ts'
 export {
   PICKING_FS_GLSL,

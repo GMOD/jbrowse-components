@@ -24,7 +24,7 @@ import {
   arcColorPalette,
   arcLineColorPalette,
   sashimiColorPalette,
-} from './components/shaders/arcShaders.ts'
+} from './components/shaders/palettes.ts'
 import {
   INSERTION_SERIF_MIN_PX_PER_BP,
   LONG_INSERTION_MIN_LENGTH,

@@ -65,6 +65,16 @@ export function cssColorToABGR(color: string) {
   return ((a << 24) | (b << 16) | (g << 8) | r) >>> 0
 }
 
+// Pack a 0..1 normalized RGB triple into an ABGR u32 (opaque alpha). Inverse
+// of cssColorToNormalizedRgb at the GPU write boundary — the shader side
+// unpacks with unpackRGBA() (see packages/core/src/gpu/shaders/colorPack.slang).
+export function normalizedRgbToABGR(r: number, g: number, b: number) {
+  const rb = Math.round(r * 255) & 0xff
+  const gb = Math.round(g * 255) & 0xff
+  const bb = Math.round(b * 255) & 0xff
+  return (rb | (gb << 8) | (bb << 16) | 0xff000000) >>> 0
+}
+
 // Channel accessors for the ABGR packed layout (R at byte 0, A at byte 3 —
 // the layout produced by cssColorToABGR and consumed by GPU shaders that
 // unpack via bit shifts from a u32 vertex attribute). Mirror of the

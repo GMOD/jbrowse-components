@@ -1,16 +1,15 @@
-// Shared GPU buffer packing for coverage-related passes.
-// Both MultiLGVSyntenyDisplay and LinearAlignmentsDisplay use these
-// to prepare data for the HAL's uploadBuffer().
+// Shared GPU buffer packing for coverage-related passes. Strides match the
+// Slang-generated INSTANCE_STRIDE_BYTES in the alignments plugin. Multi-
+// synteny has its own packers (different layouts — min/max band bars vs
+// single-depth bars).
 
 export interface CoverageBinsGpuUpload {
   buffer: ArrayBuffer
   binCount: number
 }
 
-// Pack per-bp coverage bins for the PASS_COVERAGE GPU buffer (GPU renderer
-// layout). Layout per bin: [positionOffset(f32), normalizedDepth(f32), _pad(f32), _pad(f32)] = 16 bytes.
-// positionOffset is the bp offset from regionStart; maxDepth is used to
-// normalize depth into [0,1].
+// Layout per bin: [position(f32), normalizedDepth(f32)] = 8 bytes.
+// Matches alignments plugin coverage.slang Instance.
 export function packCoverageBinsForGpu(
   depths: Float32Array,
   maxDepth: number,
@@ -20,10 +19,10 @@ export function packCoverageBinsForGpu(
   if (binCount === 0 || maxDepth <= 0) {
     return { buffer: new ArrayBuffer(0), binCount: 0 }
   }
-  const buffer = new ArrayBuffer(binCount * 16)
+  const buffer = new ArrayBuffer(binCount * 8)
   const f32 = new Float32Array(buffer)
   for (let i = 0; i < binCount; i++) {
-    const o = i * 4
+    const o = i * 2
     f32[o] = startOffset + i
     f32[o + 1] = (depths[i] ?? 0) / maxDepth
   }
@@ -35,8 +34,8 @@ export interface SnpGpuUpload {
   segmentCount: number
 }
 
-// Pack SNP coverage segments into a GPU buffer.
-// Layout per segment: [position(f32), yOffset(f32), height(f32), colorType(f32)] = 16 bytes.
+// Layout per segment: [position, yOffset, height, colorType] = 16 bytes.
+// Matches alignments plugin snpCoverage.slang + noncovHistogram.slang.
 export function packSnpSegmentsForGpu(
   positions: Uint32Array,
   yOffsets: Float32Array,
@@ -65,8 +64,8 @@ export interface IndicatorGpuUpload {
   indicatorCount: number
 }
 
-// Pack indicator positions into a GPU buffer.
-// Layout per indicator: [position(f32), colorType(f32), _pad(f32), _pad(f32)] = 16 bytes.
+// Layout per indicator: [position(f32), colorType(f32)] = 8 bytes.
+// Matches alignments plugin indicator.slang.
 export function packIndicatorsForGpu(
   positions: Uint32Array,
   colorTypes: Uint8Array | undefined,
@@ -76,11 +75,12 @@ export function packIndicatorsForGpu(
   if (count === 0) {
     return { buffer: new ArrayBuffer(0), indicatorCount: 0 }
   }
-  const buffer = new ArrayBuffer(count * 16)
+  const buffer = new ArrayBuffer(count * 8)
   const f32 = new Float32Array(buffer)
   for (let i = 0; i < count; i++) {
-    f32[i * 4] = positionOffset + positions[i]!
-    f32[i * 4 + 1] = colorTypes ? colorTypes[i]! : 1 // default: insertion type
+    const o = i * 2
+    f32[o] = positionOffset + positions[i]!
+    f32[o + 1] = colorTypes ? colorTypes[i]! : 1
   }
   return { buffer, indicatorCount: count }
 }
@@ -90,8 +90,8 @@ export interface ModCovGpuUpload {
   segmentCount: number
 }
 
-// Pack mod-coverage segments into a GPU buffer.
-// Layout per segment: [position(f32), yOffset(f32), height(f32), rgbaColor(u32)] = 16 bytes.
+// Layout per segment: [position, yOffset, height, rgbaColor(u32)] = 16 bytes.
+// Matches alignments plugin modCoverage.slang.
 export function packModCovSegmentsForGpu(
   positions: Uint32Array,
   yOffsets: Float32Array,
@@ -125,8 +125,7 @@ export interface NoncovGpuUpload {
   segmentCount: number
 }
 
-// Pack noncov histogram segments into a GPU buffer.
-// Layout: [position(f32), yOffset(f32), height(f32), colorType(f32)] = 16 bytes.
+// Layout: [position, yOffset, height, colorType] = 16 bytes.
 export function packNoncovSegmentsForGpu(
   positions: Uint32Array,
   yOffsets: Float32Array,

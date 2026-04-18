@@ -4,6 +4,7 @@
 // by tessellating unevenly around the crossing point.
 //! targets: wgsl, glsl
 
+import colorPack;
 import syntenyTypes;
 
 static const uint FILL_SEGS = 16u;

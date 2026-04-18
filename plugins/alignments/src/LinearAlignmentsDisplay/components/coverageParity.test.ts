@@ -161,11 +161,11 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     const gpuCovBuf = hal.getBuffer(0, 'coverage')
     expect(gpuCovBuf).toBeDefined()
 
-    // GPU layout per bin: [posOffset(f32), normalizedDepth(f32), _pad, _pad] = 4 floats
+    // GPU layout per bin: [posOffset(f32), normalizedDepth(f32)] = 2 floats
     const gpuF32 = new Float32Array(gpuCovBuf!.data)
     const gpuNormalizedDepths: number[] = []
     for (let i = 0; i < covData.numCoverageBins; i++) {
-      gpuNormalizedDepths.push(gpuF32[i * 4 + 1]!)
+      gpuNormalizedDepths.push(gpuF32[i * 2 + 1]!)
     }
 
     // Canvas2D path: create a mock canvas and upload
