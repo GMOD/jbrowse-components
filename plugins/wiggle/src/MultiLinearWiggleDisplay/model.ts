@@ -400,10 +400,7 @@ export default function stateModelFactory(
       },
 
       startGpuBackendLifecycle(backend: WiggleBackend) {
-        self.startMultiRegionGpuLifecycle<
-          WiggleBackend,
-          WiggleGPURenderState
-        >({
+        self.startMultiRegionGpuLifecycle<WiggleBackend, WiggleGPURenderState>({
           backend,
           uploads: [
             {

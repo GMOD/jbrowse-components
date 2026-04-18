@@ -247,19 +247,17 @@ Not yet migrated: `dotplot-view/DotplotDisplay`. Its only RPC is
 getter would be empty. `makeAbortableReaction` already tracks the exact set of
 inputs that matter. Leaving as-is.
 
-`MultiLGVSyntenyDisplay` migrated to `startMultiRegionGpuLifecycle`.
-Two upload entries (geometry + coverage/snps/indicators), framework
-drives render via `syntenyRenderState` cached getter. Removed:
-`gpuRenderer`/`setGpuRenderer` volatile + action, `tabVisibilityVersion`
-counter + `bumpTabVisibility` action, all three hand-written autoruns
-(`uploadGeometry`, `uploadCoverage`, `draw`). Component uses
-`useTabVisibilityRerender(() => model.renderNow())` and the standard
-`onReady: startGpuBackendLifecycle` / `onDispose: stopGpuBackendLifecycle`
-pattern.
+`MultiLGVSyntenyDisplay` migrated to `startMultiRegionGpuLifecycle`. Two upload
+entries (geometry + coverage/snps/indicators), framework drives render via
+`syntenyRenderState` cached getter. Removed: `gpuRenderer`/`setGpuRenderer`
+volatile + action, `tabVisibilityVersion` counter + `bumpTabVisibility` action,
+all three hand-written autoruns (`uploadGeometry`, `uploadCoverage`, `draw`).
+Component uses `useTabVisibilityRerender(() => model.renderNow())` and the
+standard `onReady: startGpuBackendLifecycle` /
+`onDispose: stopGpuBackendLifecycle` pattern.
 
-With synteny migrated, `dataVersion` on `MultiRegionDisplayMixin` has
-no readers — deleted (both the volatile and the `setLoadedRegionForRegion`
-increment).
+With synteny migrated, `dataVersion` on `MultiRegionDisplayMixin` has no readers
+— deleted (both the volatile and the `setLoadedRegionForRegion` increment).
 
 ### 7. Many tests have pre-existing failures unrelated to this work
 

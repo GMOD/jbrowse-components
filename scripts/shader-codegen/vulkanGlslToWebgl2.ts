@@ -6,8 +6,15 @@
 
 import { readFileSync, writeFileSync } from 'node:fs'
 
-function renameUniformBlock(source: string, mangled: string, target = 'Uniforms') {
-  const re = new RegExp(String.raw`(layout\(std140\)\s*uniform\s+)${mangled}\b`, 'g')
+function renameUniformBlock(
+  source: string,
+  mangled: string,
+  target = 'Uniforms',
+) {
+  const re = new RegExp(
+    String.raw`(layout\(std140\)\s*uniform\s+)${mangled}\b`,
+    'g',
+  )
   return source.replace(re, `$1${target}`)
 }
 
@@ -71,7 +78,10 @@ export function vulkanGlslToWebgl2(
     /^#version\s+4\d\d\s*\n/,
     `#version 300 es\nprecision highp float;\nprecision highp int;\n`,
   )
-  out = out.replace(/^#extension\s+GL_ARB_shader_draw_parameters\s*:\s*require\s*\n/m, '')
+  out = out.replace(
+    /^#extension\s+GL_ARB_shader_draw_parameters\s*:\s*require\s*\n/m,
+    '',
+  )
   out = out.replace(/^layout\(row_major\)\s*(uniform|buffer);\s*\n/gm, '')
   out = out.replace(/^layout\(binding\s*=\s*\d+\)\s*\n/gm, '')
   out = out.replace(/gl_VertexIndex\s*-\s*gl_BaseVertex/g, 'gl_VertexID')
@@ -79,7 +89,10 @@ export function vulkanGlslToWebgl2(
   out = out.replace(/\bgl_VertexIndex\b/g, 'gl_VertexID')
   out = out.replace(/\bgl_InstanceIndex\b/g, 'gl_InstanceID')
 
-  out = stage === 'vertex' ? out.replace(/layout\(location\s*=\s*\d+\)\s*\nout\s/g, 'out ') : out.replace(/layout\(location\s*=\s*\d+\)\s*\nin\s/g, 'in ')
+  out =
+    stage === 'vertex'
+      ? out.replace(/layout\(location\s*=\s*\d+\)\s*\nout\s/g, 'out ')
+      : out.replace(/layout\(location\s*=\s*\d+\)\s*\nin\s/g, 'in ')
 
   // GLSL 4.20+ / HLSL brace initializers aren't legal in GLSL ES 3.00 — rewrite
   // `Struct_0 v = { a, b, c };` to `Struct_0 v = Struct_0(a, b, c);`. Slang
@@ -100,7 +113,11 @@ export function vulkanGlslToWebgl2(
     )
   }
   if (renames.varyings) {
-    out = renameVaryings(out, renames.varyings.prefix, renames.varyings.fieldNames)
+    out = renameVaryings(
+      out,
+      renames.varyings.prefix,
+      renames.varyings.fieldNames,
+    )
   }
   if (renames.samplers && renames.samplers.length > 0) {
     out = renameSamplers(out, renames.samplers)

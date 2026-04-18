@@ -13,8 +13,6 @@ import { getFeatureColor } from './multiSyntenyColorUtils.ts'
 import { INSTANCE_STRIDE_BYTES as COVERAGE_BIN_BYTE_SIZE } from './shaders/multiSyntenyCoverage.generated.ts'
 import { INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE } from './shaders/multiSyntenyFill.generated.ts'
 
-
-
 import type { SyntenyColors } from './multiSyntenyBackendTypes.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
@@ -293,4 +291,4 @@ export function packIndicatorsForGpu(
   return { buffer, indicatorCount: numIndicators }
 }
 
-export {INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE} from './shaders/multiSyntenyFill.generated.ts'
+export { INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE } from './shaders/multiSyntenyFill.generated.ts'

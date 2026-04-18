@@ -528,7 +528,6 @@ function drawPileup(
       }
     }
 
-
     for (let i = 0; i < data.numInterbases; i++) {
       const pos = regionStart + data.interbasePositions[i]!
       if (pos < block.start || pos > block.end) {

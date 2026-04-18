@@ -359,11 +359,11 @@ rendering output**. Each getter is the **single source of truth** used by both
 its data-pipeline consumer and its invalidation mechanism, so adding a field
 auto-wires both jobs:
 
-| Getter        | Consumer                                                                    | Invalidation route                                                                                                                                                                 |
-| ------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `rpcProps`    | `rpcManager.call(..., { ...self.rpcProps, ... })` — literal RPC payload     | Mixin-owned `SettingsInvalidate` autorun reads `void self.rpcProps`; on change → `clearAllRpcData` → fetch re-runs                                                                 |
+| Getter        | Consumer                                                                    | Invalidation route                                                                                                                                                                |
+| ------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `rpcProps`    | `rpcManager.call(..., { ...self.rpcProps, ... })` — literal RPC payload     | Mixin-owned `SettingsInvalidate` autorun reads `void self.rpcProps`; on change → `clearAllRpcData` → fetch re-runs                                                                |
 | `gpuProps()`  | `buildSourceRenderData(data, self.gpuProps())` (typed input to the encoder) | The upload autorun reads `self.gpuProps()` inside `upload()` — any tracked field change re-fires it, re-uploading every region. No RPC roundtrip and no separate token mechanism. |
-| `renderState` | `backend.renderBlocks(blocks, state)` per frame                             | Framework's render autorun fires when `renderState` identity changes                                                                                                               |
+| `renderState` | `backend.renderBlocks(blocks, state)` per frame                             | Framework's render autorun fires when `renderState` identity changes                                                                                                              |
 
 `gpuProps` is only present where the main thread does buffer encoding (wiggle).
 Canvas's worker pre-builds the GPU buffer, so canvas has only `rpcProps`.
@@ -383,30 +383,27 @@ and the RPC call spreads `...self.rpcProps`. The autorun running IS the refetch.
 
 ### Why two mechanisms
 
-Splitting refetch from re-upload removes wasted RPC roundtrips. A wiggle
-color change re-encodes the per-instance buffer but the worker output is
-unchanged — so it should re-upload, not refetch. The upload autorun calls
-`upload()` which reads `self.gpuProps()` — mobx tracks every field read
-inside, so any gpuProps change re-fires the autorun and re-uploads every
-region with no RPC call.
+Splitting refetch from re-upload removes wasted RPC roundtrips. A wiggle color
+change re-encodes the per-instance buffer but the worker output is unchanged —
+so it should re-upload, not refetch. The upload autorun calls `upload()` which
+reads `self.gpuProps()` — mobx tracks every field read inside, so any gpuProps
+change re-fires the autorun and re-uploads every region with no RPC call.
 
 A wiggle `bicolorPivot` change is different — the worker uses it to split
-features into pos/neg arrays, so the data itself changes. That goes
-through the mixin's `SettingsInvalidate` → `clearAllRpcData` → fetch
-re-runs.
+features into pos/neg arrays, so the data itself changes. That goes through the
+mixin's `SettingsInvalidate` → `clearAllRpcData` → fetch re-runs.
 
 ### The structural guarantee
 
-`rpcProps` is **the** RPC payload — the same object is spread into the
-RPC call AND read by the mixin's invalidation autorun. Adding a field
-auto-flows to both.
+`rpcProps` is **the** RPC payload — the same object is spread into the RPC call
+AND read by the mixin's invalidation autorun. Adding a field auto-flows to both.
 
-`gpuProps()` is **the typed input** to `buildSourceRenderData`. The
-function's signature accepts `WiggleGpuProps`, so removing or mistyping a
-field is a TypeScript error at the call site. The upload autorun calls
-`self.gpuProps()` inside `upload()` — so any observable tracked there
-participates in the upload autorun's dependency graph. The chain holds
-end-to-end without a separate invalidation token.
+`gpuProps()` is **the typed input** to `buildSourceRenderData`. The function's
+signature accepts `WiggleGpuProps`, so removing or mistyping a field is a
+TypeScript error at the call site. The upload autorun calls `self.gpuProps()`
+inside `upload()` — so any observable tracked there participates in the upload
+autorun's dependency graph. The chain holds end-to-end without a separate
+invalidation token.
 
 ## Invalidation via `rpcProps`
 

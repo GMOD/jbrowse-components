@@ -310,10 +310,7 @@ export default function stateModelFactory(
       // an actual pixel is produced. Because an explicit onAfterCommit is
       // given, the mixin wrapper skips its default markCanvasDrawn wiring.
       startGpuBackendLifecycle(backend: WiggleBackend) {
-        self.startMultiRegionGpuLifecycle<
-          WiggleBackend,
-          WiggleGPURenderState
-        >({
+        self.startMultiRegionGpuLifecycle<WiggleBackend, WiggleGPURenderState>({
           backend,
           uploads: [
             {

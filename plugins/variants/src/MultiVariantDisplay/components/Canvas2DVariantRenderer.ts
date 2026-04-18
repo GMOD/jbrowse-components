@@ -88,14 +88,7 @@ export class Canvas2DVariantRenderer implements VariantBackend {
         const w = Math.max(2, Math.max(rawX1, rawX2) - x1)
 
         ctx.fillStyle = abgrToCssRgba(region.cellColors[i]!)
-        drawVariantShape(
-          ctx,
-          region.cellShapeTypes[i]!,
-          x1,
-          y,
-          w,
-          rowHeight,
-        )
+        drawVariantShape(ctx, region.cellShapeTypes[i]!, x1, y, w, rowHeight)
       }
 
       ctx.restore()

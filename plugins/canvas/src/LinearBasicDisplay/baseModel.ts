@@ -404,7 +404,6 @@ export default function baseStateModelFactory(
         get extraRpcArgs(): Record<string, unknown> {
           return {}
         },
-
       }))
       .views(self => ({
         // The full payload sent to the RenderFeatureData RPC. Adding a

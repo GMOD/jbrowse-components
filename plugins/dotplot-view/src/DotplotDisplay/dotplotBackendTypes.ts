@@ -1,5 +1,5 @@
 export interface TrackScale {
-  trackIndex: number
+  regionKey: number
   scaleX: number
   scaleY: number
 }

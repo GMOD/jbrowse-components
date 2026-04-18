@@ -4,10 +4,7 @@ import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
-import {
-  arcColorPalette,
-  arcLineColorPalette,
-} from './shaders/palettes.ts'
+import { arcColorPalette, arcLineColorPalette } from './shaders/palettes.ts'
 import * as arcShader from './shaders/slang/arc.generated.ts'
 import * as arcLineShader from './shaders/slang/arcLine.generated.ts'
 import * as clipShader from './shaders/slang/clip.generated.ts'
@@ -52,7 +49,7 @@ const PASS_READ = 'read'
 const PASS_GAP = 'gap'
 const PASS_MISMATCH = 'mismatch'
 const PASS_INSERTION = 'insertion'
-const PASS_CLIP = 'clip'           // unified soft+hard clip bars
+const PASS_CLIP = 'clip' // unified soft+hard clip bars
 const PASS_MOD = 'modification'
 const PASS_COVERAGE = 'coverage'
 const PASS_SNP_COV = 'snpCov'
@@ -70,8 +67,14 @@ const CLIP_KIND_HARD = 1
 
 // Constant slot lookups hoisted so the hot path doesn't rebuild arrays.
 const ARC_COLOR_SLOTS = [
-  U.arcColor0, U.arcColor1, U.arcColor2, U.arcColor3,
-  U.arcColor4, U.arcColor5, U.arcColor6, U.arcColor7,
+  U.arcColor0,
+  U.arcColor1,
+  U.arcColor2,
+  U.arcColor3,
+  U.arcColor4,
+  U.arcColor5,
+  U.arcColor6,
+  U.arcColor7,
 ] as const
 const ARC_LINE_SLOTS = [U.arcLineColor0, U.arcLineColor1] as const
 
@@ -478,7 +481,11 @@ export const ALIGNMENTS_PASSES: PassDescriptor[] = [
     mod: mismatchShader,
     verticesPerInstance: 6,
   }),
-  slangPass({ id: PASS_FLAT_QUAD, mod: flatQuadShader, verticesPerInstance: 6 }),
+  slangPass({
+    id: PASS_FLAT_QUAD,
+    mod: flatQuadShader,
+    verticesPerInstance: 6,
+  }),
 ]
 
 export { UNIFORMS_SIZE_BYTES }
@@ -544,7 +551,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     })
   }
 
-
   uploadRegion(regionNumber: number, data: PileupDataResult) {
     this.uploadFromTypedArraysForRegion(regionNumber, data)
     this.uploadCigarFromTypedArraysForRegion(regionNumber, data)
@@ -584,7 +590,12 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       return
     }
     if (data.numGaps > 0) {
-      this.hal.uploadBuffer(regionNumber, PASS_GAP, packGaps(data), data.numGaps)
+      this.hal.uploadBuffer(
+        regionNumber,
+        PASS_GAP,
+        packGaps(data),
+        data.numGaps,
+      )
     }
     if (data.numMismatches > 0) {
       this.hal.uploadBuffer(
@@ -604,12 +615,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
     const clipCount = data.numSoftclips + data.numHardclips
     if (clipCount > 0) {
-      this.hal.uploadBuffer(
-        regionNumber,
-        PASS_CLIP,
-        packClips(data),
-        clipCount,
-      )
+      this.hal.uploadBuffer(regionNumber, PASS_CLIP, packClips(data), clipCount)
     }
     if (data.numSoftclipBases > 0) {
       this.hal.uploadBuffer(
@@ -712,7 +718,12 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
 
     if (data.numArcs > 0) {
-      this.hal.uploadBuffer(regionNumber, PASS_ARC, packArcs(data), data.numArcs)
+      this.hal.uploadBuffer(
+        regionNumber,
+        PASS_ARC,
+        packArcs(data),
+        data.numArcs,
+      )
     }
     if (data.numLines > 0) {
       this.hal.uploadBuffer(
@@ -989,10 +1000,38 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       c: { sx1: number; sx2: number; syTop: number; syBot: number },
     ) => {
       out.push(
-        c.sx1, c.syTop, c.sx2, c.syTop - ty,         0, 0.722, 1, 1,
-        c.sx1, c.syBot + ty, c.sx2, c.syBot,         0, 0.722, 1, 1,
-        c.sx1, c.syTop, c.sx1 + tx, c.syBot,         0, 0.722, 1, 1,
-        c.sx2 - tx, c.syTop, c.sx2, c.syBot,         0, 0.722, 1, 1,
+        c.sx1,
+        c.syTop,
+        c.sx2,
+        c.syTop - ty,
+        0,
+        0.722,
+        1,
+        1,
+        c.sx1,
+        c.syBot + ty,
+        c.sx2,
+        c.syBot,
+        0,
+        0.722,
+        1,
+        1,
+        c.sx1,
+        c.syTop,
+        c.sx1 + tx,
+        c.syBot,
+        0,
+        0.722,
+        1,
+        1,
+        c.sx2 - tx,
+        c.syTop,
+        c.sx2,
+        c.syBot,
+        0,
+        0.722,
+        1,
+        1,
       )
     }
 

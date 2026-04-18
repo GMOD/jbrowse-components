@@ -399,4 +399,3 @@ export function makeScoreNormalizer(min: number, max: number, isLog: boolean) {
   const invRange = 1 / range
   return (score: number) => Math.max(0, Math.min(1, (score - min) * invRange))
 }
-

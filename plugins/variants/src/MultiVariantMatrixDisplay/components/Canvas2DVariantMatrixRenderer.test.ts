@@ -15,8 +15,12 @@ function createMockCanvas() {
     restore: jest.fn(),
     beginPath: jest.fn(() => pathOps.push('beginPath')),
     closePath: jest.fn(() => pathOps.push('closePath')),
-    moveTo: jest.fn((x: number, y: number) => pathOps.push(`moveTo(${x},${y})`)),
-    lineTo: jest.fn((x: number, y: number) => pathOps.push(`lineTo(${x},${y})`)),
+    moveTo: jest.fn((x: number, y: number) =>
+      pathOps.push(`moveTo(${x},${y})`),
+    ),
+    lineTo: jest.fn((x: number, y: number) =>
+      pathOps.push(`lineTo(${x},${y})`),
+    ),
     fill: jest.fn(() => pathOps.push('fill')),
     fillStyle: '',
     rect: jest.fn(),

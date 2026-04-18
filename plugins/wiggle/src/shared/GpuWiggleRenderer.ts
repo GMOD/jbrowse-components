@@ -7,10 +7,7 @@ import {
   RENDERING_TYPE_LINE,
   VERTICES_PER_INSTANCE,
 } from './wiggleComponentUtils.ts'
-import {
-  computeNumRows,
-  interleaveInstances,
-} from './wiggleInstanceBuffer.ts'
+import { computeNumRows, interleaveInstances } from './wiggleInstanceBuffer.ts'
 
 import type {
   SourceRenderData,

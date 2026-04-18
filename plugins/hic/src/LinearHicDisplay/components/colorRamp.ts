@@ -130,7 +130,9 @@ function rgbaCss([r, g, b, a]: RGBA) {
 
 export function getLegendCssGradient(colorScheme: string | undefined) {
   const stops = getLegendStops(colorScheme)
-  const parts = stops.map(s => `${rgbaCss(s.rgba)} ${(s.offset * 100).toFixed(0)}%`)
+  const parts = stops.map(
+    s => `${rgbaCss(s.rgba)} ${(s.offset * 100).toFixed(0)}%`,
+  )
   return `linear-gradient(to right, ${parts.join(', ')})`
 }
 

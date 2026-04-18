@@ -625,7 +625,6 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-
   private drawReads(
     ctx: CanvasRenderingContext2D,
     region: Canvas2DRegionData,

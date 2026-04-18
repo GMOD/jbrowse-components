@@ -157,8 +157,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
           zoomScheduled.current = true
           requestAnimationFrame(() => {
             const d = zoomAccum.current
-            const canvasLeft =
-              canvas?.getBoundingClientRect().left ?? 0
+            const canvasLeft = canvas?.getBoundingClientRect().left ?? 0
             transaction(() => {
               for (const v of parentView.views) {
                 v.zoomTo(

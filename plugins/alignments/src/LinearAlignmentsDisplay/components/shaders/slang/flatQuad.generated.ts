@@ -3,11 +3,14 @@
 
 import type { GlAttributeLayout } from '@jbrowse/core/gpu/hal'
 
-export const WGSL_SOURCE = "fn quadLocal_0( vid_0 : u32) -> vec2<f32>\n{\n    var v_0 : u32 = vid_0 % u32(6);\n    var _S1 : bool = v_0 == u32(0);\n    var _S2 : bool;\n    if(_S1)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(2);\n    }\n    if(_S2)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(3);\n    }\n    var lx_0 : f32;\n    if(_S2)\n    {\n        lx_0 = 0.0f;\n    }\n    else\n    {\n        lx_0 = 1.0f;\n    }\n    if(_S1)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(1);\n    }\n    if(_S2)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(4);\n    }\n    var ly_0 : f32;\n    if(_S2)\n    {\n        ly_0 = 0.0f;\n    }\n    else\n    {\n        ly_0 = 1.0f;\n    }\n    return vec2<f32>(lx_0, ly_0);\n}\n\nstruct VsOut_0\n{\n    @builtin(position) position_0 : vec4<f32>,\n    @location(0) color_0 : vec4<f32>,\n};\n\nstruct vertexInput_0\n{\n    @location(0) sx1_0 : f32,\n    @location(1) syTop_0 : f32,\n    @location(2) sx2_0 : f32,\n    @location(3) syBot_0 : f32,\n    @location(4) rgba_0 : vec4<f32>,\n};\n\n@vertex\nfn vs_main( _S3 : vertexInput_0, @builtin(vertex_index) vid_1 : u32) -> VsOut_0\n{\n    var local_0 : vec2<f32> = quadLocal_0(vid_1);\n    var o_0 : VsOut_0;\n    o_0.position_0 = vec4<f32>(mix(_S3.sx1_0, _S3.sx2_0, local_0.x), mix(_S3.syBot_0, _S3.syTop_0, local_0.y), 0.0f, 1.0f);\n    o_0.color_0 = _S3.rgba_0;\n    return o_0;\n}\n\nstruct pixelOutput_0\n{\n    @location(0) output_0 : vec4<f32>,\n};\n\nstruct pixelInput_0\n{\n    @location(0) color_1 : vec4<f32>,\n};\n\n@fragment\nfn fs_main( _S4 : pixelInput_0, @builtin(position) position_1 : vec4<f32>) -> pixelOutput_0\n{\n    var _S5 : pixelOutput_0 = pixelOutput_0( _S4.color_1 );\n    return _S5;\n}\n\n"
+export const WGSL_SOURCE =
+  'fn quadLocal_0( vid_0 : u32) -> vec2<f32>\n{\n    var v_0 : u32 = vid_0 % u32(6);\n    var _S1 : bool = v_0 == u32(0);\n    var _S2 : bool;\n    if(_S1)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(2);\n    }\n    if(_S2)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(3);\n    }\n    var lx_0 : f32;\n    if(_S2)\n    {\n        lx_0 = 0.0f;\n    }\n    else\n    {\n        lx_0 = 1.0f;\n    }\n    if(_S1)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(1);\n    }\n    if(_S2)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(4);\n    }\n    var ly_0 : f32;\n    if(_S2)\n    {\n        ly_0 = 0.0f;\n    }\n    else\n    {\n        ly_0 = 1.0f;\n    }\n    return vec2<f32>(lx_0, ly_0);\n}\n\nstruct VsOut_0\n{\n    @builtin(position) position_0 : vec4<f32>,\n    @location(0) color_0 : vec4<f32>,\n};\n\nstruct vertexInput_0\n{\n    @location(0) sx1_0 : f32,\n    @location(1) syTop_0 : f32,\n    @location(2) sx2_0 : f32,\n    @location(3) syBot_0 : f32,\n    @location(4) rgba_0 : vec4<f32>,\n};\n\n@vertex\nfn vs_main( _S3 : vertexInput_0, @builtin(vertex_index) vid_1 : u32) -> VsOut_0\n{\n    var local_0 : vec2<f32> = quadLocal_0(vid_1);\n    var o_0 : VsOut_0;\n    o_0.position_0 = vec4<f32>(mix(_S3.sx1_0, _S3.sx2_0, local_0.x), mix(_S3.syBot_0, _S3.syTop_0, local_0.y), 0.0f, 1.0f);\n    o_0.color_0 = _S3.rgba_0;\n    return o_0;\n}\n\nstruct pixelOutput_0\n{\n    @location(0) output_0 : vec4<f32>,\n};\n\nstruct pixelInput_0\n{\n    @location(0) color_1 : vec4<f32>,\n};\n\n@fragment\nfn fs_main( _S4 : pixelInput_0, @builtin(position) position_1 : vec4<f32>) -> pixelOutput_0\n{\n    var _S5 : pixelOutput_0 = pixelOutput_0( _S4.color_1 );\n    return _S5;\n}\n\n'
 
-export const GLSL_VERTEX = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 154 0\nvec2 quadLocal_0(uint vid_0)\n{\n\n#line 155\n    uint v_0 = vid_0 % 6U;\n    bool _S1 = v_0 == 0U;\n\n#line 156\n    bool _S2;\n\n#line 156\n    if(_S1)\n    {\n\n#line 156\n        _S2 = true;\n\n#line 156\n    }\n    else\n    {\n\n#line 156\n        _S2 = v_0 == 2U;\n\n#line 156\n    }\n\n#line 156\n    if(_S2)\n    {\n\n#line 156\n        _S2 = true;\n\n#line 156\n    }\n    else\n    {\n\n#line 156\n        _S2 = v_0 == 3U;\n\n#line 156\n    }\n\n#line 156\n    float lx_0;\n\n#line 156\n    if(_S2)\n    {\n\n#line 156\n        lx_0 = 0.0;\n\n#line 156\n    }\n    else\n    {\n\n#line 156\n        lx_0 = 1.0;\n\n#line 156\n    }\n    if(_S1)\n    {\n\n#line 157\n        _S2 = true;\n\n#line 157\n    }\n    else\n    {\n\n#line 157\n        _S2 = v_0 == 1U;\n\n#line 157\n    }\n\n#line 157\n    if(_S2)\n    {\n\n#line 157\n        _S2 = true;\n\n#line 157\n    }\n    else\n    {\n\n#line 157\n        _S2 = v_0 == 4U;\n\n#line 157\n    }\n\n#line 157\n    float ly_0;\n\n#line 157\n    if(_S2)\n    {\n\n#line 157\n        ly_0 = 0.0;\n\n#line 157\n    }\n    else\n    {\n\n#line 157\n        ly_0 = 1.0;\n\n#line 157\n    }\n    return vec2(lx_0, ly_0);\n}\n\n\n#line 993 1\nout vec4 v_color;\n\n\n#line 993\nlayout(location = 0)\nin float a_sx1;\n\n\n#line 993\nlayout(location = 1)\nin float a_syTop;\n\n\n#line 993\nlayout(location = 2)\nin float a_sx2;\n\n\n#line 993\nlayout(location = 3)\nin float a_syBot;\n\n\n#line 993\nlayout(location = 4)\nin vec4 a_rgba;\n\n\n#line 17 2\nstruct VsOut_0\n{\n    vec4 position_0;\n    vec4 color_0;\n};\n\nvoid main()\n{\n    vec2 local_0 = quadLocal_0(uint(gl_VertexID));\n\n#line 24\n    VsOut_0 o_0;\n\n    o_0.position_0 = vec4(mix(a_sx1, a_sx2, local_0.x), mix(a_syBot, a_syTop, local_0.y), 0.0, 1.0);\n\n\n\n    o_0.color_0 = a_rgba;\n    VsOut_0 _S3 = o_0;\n\n#line 31\n    gl_Position = o_0.position_0;\n\n#line 31\n    v_color = _S3.color_0;\n\n#line 31\n    return;\n}\n\n"
+export const GLSL_VERTEX =
+  '#version 300 es\nprecision highp float;\nprecision highp int;\n#line 154 0\nvec2 quadLocal_0(uint vid_0)\n{\n\n#line 155\n    uint v_0 = vid_0 % 6U;\n    bool _S1 = v_0 == 0U;\n\n#line 156\n    bool _S2;\n\n#line 156\n    if(_S1)\n    {\n\n#line 156\n        _S2 = true;\n\n#line 156\n    }\n    else\n    {\n\n#line 156\n        _S2 = v_0 == 2U;\n\n#line 156\n    }\n\n#line 156\n    if(_S2)\n    {\n\n#line 156\n        _S2 = true;\n\n#line 156\n    }\n    else\n    {\n\n#line 156\n        _S2 = v_0 == 3U;\n\n#line 156\n    }\n\n#line 156\n    float lx_0;\n\n#line 156\n    if(_S2)\n    {\n\n#line 156\n        lx_0 = 0.0;\n\n#line 156\n    }\n    else\n    {\n\n#line 156\n        lx_0 = 1.0;\n\n#line 156\n    }\n    if(_S1)\n    {\n\n#line 157\n        _S2 = true;\n\n#line 157\n    }\n    else\n    {\n\n#line 157\n        _S2 = v_0 == 1U;\n\n#line 157\n    }\n\n#line 157\n    if(_S2)\n    {\n\n#line 157\n        _S2 = true;\n\n#line 157\n    }\n    else\n    {\n\n#line 157\n        _S2 = v_0 == 4U;\n\n#line 157\n    }\n\n#line 157\n    float ly_0;\n\n#line 157\n    if(_S2)\n    {\n\n#line 157\n        ly_0 = 0.0;\n\n#line 157\n    }\n    else\n    {\n\n#line 157\n        ly_0 = 1.0;\n\n#line 157\n    }\n    return vec2(lx_0, ly_0);\n}\n\n\n#line 993 1\nout vec4 v_color;\n\n\n#line 993\nlayout(location = 0)\nin float a_sx1;\n\n\n#line 993\nlayout(location = 1)\nin float a_syTop;\n\n\n#line 993\nlayout(location = 2)\nin float a_sx2;\n\n\n#line 993\nlayout(location = 3)\nin float a_syBot;\n\n\n#line 993\nlayout(location = 4)\nin vec4 a_rgba;\n\n\n#line 17 2\nstruct VsOut_0\n{\n    vec4 position_0;\n    vec4 color_0;\n};\n\nvoid main()\n{\n    vec2 local_0 = quadLocal_0(uint(gl_VertexID));\n\n#line 24\n    VsOut_0 o_0;\n\n    o_0.position_0 = vec4(mix(a_sx1, a_sx2, local_0.x), mix(a_syBot, a_syTop, local_0.y), 0.0, 1.0);\n\n\n\n    o_0.color_0 = a_rgba;\n    VsOut_0 _S3 = o_0;\n\n#line 31\n    gl_Position = o_0.position_0;\n\n#line 31\n    v_color = _S3.color_0;\n\n#line 31\n    return;\n}\n\n'
 
-export const GLSL_FRAGMENT = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 993 0\nlayout(location = 0)\nout vec4 entryPointParam_fs_main_0;\n\n\n#line 993\nin vec4 v_color;\n\n\n#line 35 1\nvoid main()\n{\n\n#line 35\n    entryPointParam_fs_main_0 = v_color;\n\n#line 35\n    return;\n}\n\n"
+export const GLSL_FRAGMENT =
+  '#version 300 es\nprecision highp float;\nprecision highp int;\n#line 993 0\nlayout(location = 0)\nout vec4 entryPointParam_fs_main_0;\n\n\n#line 993\nin vec4 v_color;\n\n\n#line 35 1\nvoid main()\n{\n\n#line 35\n    entryPointParam_fs_main_0 = v_color;\n\n#line 35\n    return;\n}\n\n'
 
 export const UNIFORMS_SIZE_BYTES = 272
 export const UNIFORMS_SIZE_F32 = 68
@@ -313,11 +316,41 @@ export const FIELD_OFFSET_F32 = {
 } as const
 
 export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
-  { name: 'a_sx1', components: 1, type: 'float', offsetBytes: 0, integer: false },
-  { name: 'a_syTop', components: 1, type: 'float', offsetBytes: 4, integer: false },
-  { name: 'a_sx2', components: 1, type: 'float', offsetBytes: 8, integer: false },
-  { name: 'a_syBot', components: 1, type: 'float', offsetBytes: 12, integer: false },
-  { name: 'a_rgba', components: 4, type: 'float', offsetBytes: 16, integer: false },
+  {
+    name: 'a_sx1',
+    components: 1,
+    type: 'float',
+    offsetBytes: 0,
+    integer: false,
+  },
+  {
+    name: 'a_syTop',
+    components: 1,
+    type: 'float',
+    offsetBytes: 4,
+    integer: false,
+  },
+  {
+    name: 'a_sx2',
+    components: 1,
+    type: 'float',
+    offsetBytes: 8,
+    integer: false,
+  },
+  {
+    name: 'a_syBot',
+    components: 1,
+    type: 'float',
+    offsetBytes: 12,
+    integer: false,
+  },
+  {
+    name: 'a_rgba',
+    components: 4,
+    type: 'float',
+    offsetBytes: 16,
+    integer: false,
+  },
 ]
 
 export interface Instance {
@@ -328,7 +361,11 @@ export interface Instance {
   rgba: [number, number, number, number]
 }
 
-export function writeInstance(buf: ArrayBuffer, instanceIndex: number, inst: Instance) {
+export function writeInstance(
+  buf: ArrayBuffer,
+  instanceIndex: number,
+  inst: Instance,
+) {
   const base = instanceIndex * 32
   const dv = new DataView(buf)
   dv.setFloat32(base + 0, inst.sx1, true)

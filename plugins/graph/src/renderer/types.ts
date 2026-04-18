@@ -1,5 +1,9 @@
 export type SubBatchKey = 'edges' | 'nodes' | 'arrows'
-export const SUB_BATCH_KEYS: readonly SubBatchKey[] = ['edges', 'nodes', 'arrows']
+export const SUB_BATCH_KEYS: readonly SubBatchKey[] = [
+  'edges',
+  'nodes',
+  'arrows',
+]
 
 // Interleaved per-vertex buffer laid out to match graph.generated.ts
 // (stride = INSTANCE_STRIDE_BYTES, fields at FIELD_OFFSET_*). `vertexData`

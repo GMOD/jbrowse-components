@@ -680,9 +680,6 @@ export function brightenColors(
   return slice
 }
 
-export function extractColorSlice(
-  baseColors: Uint32Array,
-  range: VertexRange,
-) {
+export function extractColorSlice(baseColors: Uint32Array, range: VertexRange) {
   return baseColors.slice(range.start, range.start + range.count)
 }

@@ -47,8 +47,7 @@ test('produces non-empty geometry for simple graph', () => {
     batch.nodes.vertexCount * INSTANCE_STRIDE_F32,
   )
   expect(batch.nodes.vertexDataU32.buffer).toBe(batch.nodes.vertexData.buffer)
-  const firstVertexColor =
-    batch.nodes.vertexDataU32[FIELD_OFFSET_F32.color]
+  const firstVertexColor = batch.nodes.vertexDataU32[FIELD_OFFSET_F32.color]
   expect(firstVertexColor).toBe(batch.nodes.colors[0])
 })
 

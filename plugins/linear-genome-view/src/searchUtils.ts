@@ -61,8 +61,10 @@ export async function handleSelectedRegion({
 
   if (allRefs && input.split(' ').every(entry => checkRef(entry, allRefs))) {
     await model.navToLocations(
-      parseLocStrings(input, assemblyName, ref =>
-        allRefs.has(ref) || allRefs.has(ref.toLowerCase()),
+      parseLocStrings(
+        input,
+        assemblyName,
+        ref => allRefs.has(ref) || allRefs.has(ref.toLowerCase()),
       ),
       assemblyName,
       grow,

@@ -14,7 +14,14 @@
 // treated as imports only — no codegen output for them.
 
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import {
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
@@ -121,7 +128,10 @@ function findVaryingFieldNames(reflection: {
   entryPoints: {
     stage: string
     result?: {
-      type?: { kind: string; fields?: { name: string; binding?: { kind: string } }[] }
+      type?: {
+        kind: string
+        fields?: { name: string; binding?: { kind: string } }[]
+      }
     }
   }[]
 }): string[] {
@@ -197,7 +207,19 @@ function compileOne(slangPath: string) {
     const wgslOut = path.join(tmp, `${base}.wgsl`)
     const reflectionOut = path.join(tmp, `${base}.reflection.json`)
 
-    const slangcArgs = [slangPath, '-target', 'wgsl', '-o', wgslOut, '-reflection-json', reflectionOut, '-I', dir, '-I', SHARED_INCLUDE]
+    const slangcArgs = [
+      slangPath,
+      '-target',
+      'wgsl',
+      '-o',
+      wgslOut,
+      '-reflection-json',
+      reflectionOut,
+      '-I',
+      dir,
+      '-I',
+      SHARED_INCLUDE,
+    ]
     execFileSync(SLANGC, slangcArgs, { stdio: 'pipe' })
     const wgsl = readFileSync(wgslOut, 'utf8')
     execFileSync(NAGA, [wgslOut], { stdio: 'pipe' })
@@ -210,18 +232,48 @@ function compileOne(slangPath: string) {
       const vsName = findEntryPoint(reflection, 'vertex')
       const fsName = findEntryPoint(reflection, 'fragment')
       if (!vsName || !fsName) {
-        throw new Error(`${slangPath}: targets 'glsl' but missing vertex or fragment entry point`)
+        throw new Error(
+          `${slangPath}: targets 'glsl' but missing vertex or fragment entry point`,
+        )
       }
       const glslVertexOut = path.join(tmp, `${base}.vert.glsl`)
       const glslFragmentOut = path.join(tmp, `${base}.frag.glsl`)
       execFileSync(
         SLANGC,
-        [slangPath, '-target', 'glsl', '-stage', 'vertex', '-entry', vsName, '-o', glslVertexOut, '-I', dir, '-I', SHARED_INCLUDE],
+        [
+          slangPath,
+          '-target',
+          'glsl',
+          '-stage',
+          'vertex',
+          '-entry',
+          vsName,
+          '-o',
+          glslVertexOut,
+          '-I',
+          dir,
+          '-I',
+          SHARED_INCLUDE,
+        ],
         { stdio: 'pipe' },
       )
       execFileSync(
         SLANGC,
-        [slangPath, '-target', 'glsl', '-stage', 'fragment', '-entry', fsName, '-o', glslFragmentOut, '-I', dir, '-I', SHARED_INCLUDE],
+        [
+          slangPath,
+          '-target',
+          'glsl',
+          '-stage',
+          'fragment',
+          '-entry',
+          fsName,
+          '-o',
+          glslFragmentOut,
+          '-I',
+          dir,
+          '-I',
+          SHARED_INCLUDE,
+        ],
         { stdio: 'pipe' },
       )
 
@@ -239,7 +291,10 @@ function compileOne(slangPath: string) {
         samplers: samplerNames,
         varyings:
           varyingFieldNames.length > 0
-            ? { prefix: `entryPointParam_${vsName}`, fieldNames: varyingFieldNames }
+            ? {
+                prefix: `entryPointParam_${vsName}`,
+                fieldNames: varyingFieldNames,
+              }
             : undefined,
       })
       glslFragment = vulkanGlslToWebgl2(rawFrag, 'fragment', {
@@ -270,7 +325,7 @@ function compileOne(slangPath: string) {
       textures: findCombinedSamplers(reflection),
     })
     writeFileSync(generatedPath, generated)
-    console.log(`  ok: ${generatedPath.replace(`${REPO_ROOT  }/`, '')}`)
+    console.log(`  ok: ${generatedPath.replace(`${REPO_ROOT}/`, '')}`)
   } finally {
     rmSync(tmp, { recursive: true, force: true })
   }
@@ -285,7 +340,7 @@ function main() {
     if (isModuleFile(source)) {
       continue
     }
-    console.log(p.replace(`${REPO_ROOT  }/`, ''))
+    console.log(p.replace(`${REPO_ROOT}/`, ''))
     compileOne(p)
   }
 }

@@ -14,7 +14,9 @@ import { loadPluginManager } from './StartScreen/util.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-setGpuOverride(new URLSearchParams(window.location.search).get('renderer') ?? null)
+setGpuOverride(
+  new URLSearchParams(window.location.search).get('renderer') ?? null,
+)
 
 const Loader = observer(function Loader() {
   const [pluginManager, setPluginManager] = useState<PluginManager>()

@@ -51,7 +51,9 @@ export function migrateWiggleSnapshot(
     (selectedRendering as string | undefined)
   const defaultRendering =
     renderingTypeSetting ??
-    (oldRendering !== undefined && opts?.multiWiggle && oldRendering === 'xyplot'
+    (oldRendering !== undefined &&
+    opts?.multiWiggle &&
+    oldRendering === 'xyplot'
       ? 'multixyplot'
       : oldRendering)
 
