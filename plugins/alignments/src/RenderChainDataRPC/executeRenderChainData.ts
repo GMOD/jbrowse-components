@@ -430,7 +430,7 @@ export async function executeRenderChainData({
     modCovPositions: new Uint32Array(0),
     modCovYOffsets: new Float32Array(0),
     modCovHeights: new Float32Array(0),
-    modCovColors: new Uint8Array(0),
+    modCovColors: new Uint32Array(0),
     numModCovSegments: 0,
 
     ...coverageAreaPacked,

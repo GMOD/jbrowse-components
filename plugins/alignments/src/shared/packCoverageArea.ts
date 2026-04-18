@@ -49,7 +49,7 @@ interface ModCovInput {
   positions: Uint32Array
   yOffsets: Float32Array
   heights: Float32Array
-  colors: Uint8Array
+  colors: Uint32Array
   count: number
 }
 

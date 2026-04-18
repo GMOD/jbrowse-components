@@ -91,12 +91,13 @@ export interface ModCovGpuUpload {
 }
 
 // Layout per segment: [position, yOffset, height, rgbaColor(u32)] = 16 bytes.
-// Matches alignments plugin modCoverage.slang.
+// Matches alignments plugin modCoverage.slang. `colors` is pre-packed ABGR
+// u32 per segment (one slot).
 export function packModCovSegmentsForGpu(
   positions: Uint32Array,
   yOffsets: Float32Array,
   heights: Float32Array,
-  colors: Uint8Array,
+  colors: Uint32Array,
   count: number,
   positionOffset = 0,
 ): ModCovGpuUpload {
@@ -111,11 +112,7 @@ export function packModCovSegmentsForGpu(
     f32[idx] = positionOffset + positions[i]!
     f32[idx + 1] = yOffsets[i]!
     f32[idx + 2] = heights[i]!
-    u32[idx + 3] =
-      colors[idx]! |
-      (colors[idx + 1]! << 8) |
-      (colors[idx + 2]! << 16) |
-      (colors[idx + 3]! << 24)
+    u32[idx + 3] = colors[i]!
   }
   return { buffer, segmentCount: count }
 }

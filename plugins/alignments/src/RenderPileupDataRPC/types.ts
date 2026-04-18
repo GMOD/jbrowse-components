@@ -168,7 +168,7 @@ export interface PileupDataResult {
   modCovPositions: Uint32Array // position offsets from regionStart
   modCovYOffsets: Float32Array // cumulative height below segment (normalized 0-1)
   modCovHeights: Float32Array // segment height (normalized 0-1)
-  modCovColors: Uint8Array // packed RGBA, 4 bytes per segment
+  modCovColors: Uint32Array // ABGR u32 per segment
   numModCovSegments: number
   // Pre-packed GPU buffer for PASS_MOD_COV (worker-built).
   modCovPackedBuffer: ArrayBuffer

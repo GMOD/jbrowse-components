@@ -34,7 +34,7 @@ export function computeModificationCoverage(
       positions: new Uint32Array(0),
       yOffsets: new Float32Array(0),
       heights: new Float32Array(0),
-      colors: new Uint8Array(0),
+      colors: new Uint32Array(0),
       count: 0,
     }
   }
@@ -186,16 +186,14 @@ export function computeModificationCoverage(
   const positions = new Uint32Array(segments.length)
   const yOffsets = new Float32Array(segments.length)
   const heights = new Float32Array(segments.length)
-  const colors = new Uint8Array(segments.length * 4)
+  // Packed ABGR u32 per segment (alpha byte = seg.alpha, 0..255).
+  const colors = new Uint32Array(segments.length)
 
   for (const [i, seg] of segments.entries()) {
     positions[i] = seg.position - regionStart
     yOffsets[i] = seg.yOffset
     heights[i] = seg.height
-    colors[i * 4] = seg.r
-    colors[i * 4 + 1] = seg.g
-    colors[i * 4 + 2] = seg.b
-    colors[i * 4 + 3] = seg.alpha
+    colors[i] = (seg.r | (seg.g << 8) | (seg.b << 16) | (seg.alpha << 24)) >>> 0
   }
 
   return { positions, yOffsets, heights, colors, count: segments.length }

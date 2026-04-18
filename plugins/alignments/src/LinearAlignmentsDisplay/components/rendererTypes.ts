@@ -123,7 +123,7 @@ export interface ModCoverageUploadData {
   modCovPositions: Uint32Array
   modCovYOffsets: Float32Array
   modCovHeights: Float32Array
-  modCovColors: Uint8Array
+  modCovColors: Uint32Array
   numModCovSegments: number
   modCovPackedBuffer: ArrayBuffer
 }
