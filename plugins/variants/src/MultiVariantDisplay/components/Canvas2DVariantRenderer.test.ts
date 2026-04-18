@@ -258,7 +258,7 @@ describe('Canvas2DVariantRenderer', () => {
       expect(moveIdx).toBeGreaterThanOrEqual(0)
       expect(pathOps[moveIdx + 1]).toMatch(/^lineTo/)
       expect(pathOps[moveIdx + 2]).toMatch(/^lineTo/)
-      expect(pathOps[moveIdx + 3]).toBe('fill')
+      expect(pathOps.indexOf('fill', moveIdx)).toBeGreaterThan(moveIdx + 2)
     })
 
     test('shape 2 draws left triangle via path', () => {

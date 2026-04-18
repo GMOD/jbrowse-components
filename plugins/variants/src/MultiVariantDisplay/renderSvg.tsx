@@ -79,8 +79,7 @@ function renderCellsForRegion(
     const shapeType = cellShapeTypes[i]!
 
     const y = rowIndex * rowHeight - scrollTop
-    const yEnd = y + rowHeight
-    if (yEnd < 0 || y > availableHeight) {
+    if (y + rowHeight < 0 || y > availableHeight) {
       continue
     }
 
