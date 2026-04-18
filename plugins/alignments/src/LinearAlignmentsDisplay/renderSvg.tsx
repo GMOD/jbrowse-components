@@ -7,20 +7,17 @@ import {
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
-import {
-  abgrAlpha,
-  abgrBlue,
-  abgrGreen,
-  abgrRed,
-} from '@jbrowse/core/util/colorBits'
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import {
   getBaseColorString,
+  getBaseColorStringWithAlpha,
   getReadColor,
   makeBasePalette,
   rgb255,
+  rgba255,
 } from './colorUtils.ts'
 import CoverageYScaleBar from './components/CoverageYScaleBar.tsx'
 import { buildColorPaletteFromTheme } from './components/alignmentComponentUtils.ts'
@@ -338,21 +335,15 @@ function drawCoverage(
       }
       const yOff = data.modCovYOffsets[i]!
       const segH = data.modCovHeights[i]!
-      const r = data.modCovColors[i * 4]!
-      const g = data.modCovColors[i * 4 + 1]!
-      const b = data.modCovColors[i * 4 + 2]!
-      const a = data.modCovColors[i * 4 + 3]! / 255
 
       const x = (modStart - block.start) / bpPerPx + blockScreenX
       const w = Math.max(pxPerBp, 1)
       const barY = coverageHeight - offset - (yOff + segH) * effectiveHeight
       const barH = segH * effectiveHeight
 
-      ctx.globalAlpha = a
-      ctx.fillStyle = `rgb(${r},${g},${b})`
+      ctx.fillStyle = abgrToCssRgba(data.modCovColors[i]!)
       ctx.fillRect(x, barY, w, barH)
     }
-    ctx.globalAlpha = 1
   } else {
     const baseNames = ['A', 'C', 'G', 'T']
     for (let i = 0; i < numSnpSegments; i++) {
@@ -490,14 +481,16 @@ function drawPileup(
         pxPerBp < 1 ? blendedAlpha(pxPerBp, data.mismatchFrequencies[i]!) : 1
       if (mismatchAlpha > 0) {
         const base = String.fromCharCode(mismatchBases[i]!)
-        ctx.globalAlpha = mismatchAlpha
-        ctx.fillStyle = getBaseColorString(base, basePal, palette)
+        ctx.fillStyle = getBaseColorStringWithAlpha(
+          base,
+          basePal,
+          palette,
+          mismatchAlpha,
+        )
         ctx.fillRect(x, y, w, featureHeightSetting)
-        ctx.globalAlpha = 1
       }
     }
 
-    const deletionColor = rgb255(palette.colorDeletion)
     const skipColor = rgb255(palette.colorSkip)
 
     for (let i = 0; i < data.numGaps; i++) {
@@ -521,10 +514,8 @@ function drawPileup(
             ? blendedAlpha(widthPx * widthPx, data.gapFrequencies[i]!)
             : 1
         if (alpha > 0) {
-          ctx.globalAlpha = alpha
-          ctx.fillStyle = deletionColor
+          ctx.fillStyle = rgba255(palette.colorDeletion, alpha)
           ctx.fillRect(gx, gy, gw, featureHeightSetting)
-          ctx.globalAlpha = 1
         }
       } else {
         const midY = gy + featureHeightSetting * 0.5
@@ -537,9 +528,6 @@ function drawPileup(
       }
     }
 
-    const insertionColor = rgb255(palette.colorInsertion)
-    const softclipColor = rgb255(palette.colorSoftclip)
-    const hardclipColor = rgb255(palette.colorHardclip)
 
     for (let i = 0; i < data.numInterbases; i++) {
       const pos = regionStart + data.interbasePositions[i]!
@@ -560,21 +548,19 @@ function drawPileup(
             ? blendedAlpha(pxPerBp * pxPerBp, data.interbaseFrequencies[i]!)
             : 1
         if (insertionAlpha > 0) {
-          ctx.globalAlpha = insertionAlpha
-          ctx.fillStyle = insertionColor
+          ctx.fillStyle = rgba255(palette.colorInsertion, insertionAlpha)
           ctx.fillRect(cx - barW / 2, ibY, barW, featureHeightSetting)
           if (!isLong && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP) {
             ctx.fillRect(cx - 1.5, ibY, 3, 1)
             ctx.fillRect(cx - 1.5, ibY + featureHeightSetting - 1, 3, 1)
           }
           if (isLarge) {
-            ctx.fillStyle = 'white'
+            ctx.fillStyle = `rgba(255,255,255,${insertionAlpha})`
             ctx.font = '9px sans-serif'
             ctx.textAlign = 'center'
             ctx.textBaseline = 'middle'
             ctx.fillText(`${len}`, cx, ibY + featureHeightSetting / 2)
           }
-          ctx.globalAlpha = 1
         }
       } else {
         const barWidthBp = Math.max(bpPerPx, Math.min(2 * bpPerPx, 1))
@@ -582,11 +568,12 @@ function drawPileup(
         const clipAlpha =
           pxPerBp < 1 ? blendedAlpha(pxPerBp, data.interbaseFrequencies[i]!) : 1
         if (clipAlpha > 0) {
-          ctx.globalAlpha = clipAlpha
-          ctx.fillStyle =
-            ibType === INTERBASE_SOFTCLIP ? softclipColor : hardclipColor
+          const clipColor =
+            ibType === INTERBASE_SOFTCLIP
+              ? palette.colorSoftclip
+              : palette.colorHardclip
+          ctx.fillStyle = rgba255(clipColor, clipAlpha)
           ctx.fillRect(cx - bw / 2, ibY, bw, featureHeightSetting)
-          ctx.globalAlpha = 1
         }
       }
     }
@@ -600,12 +587,9 @@ function drawPileup(
         const mx = (pos - block.start) / bpPerPx + blockScreenX
         const mw = Math.max(pxPerBp, 0.5)
         const my = yOffset + data.modificationYs[i]! * rowHeight
-        const packed = data.modificationColors[i]!
-        ctx.globalAlpha = abgrAlpha(packed) / 255
-        ctx.fillStyle = `rgb(${abgrRed(packed)},${abgrGreen(packed)},${abgrBlue(packed)})`
+        ctx.fillStyle = abgrToCssRgba(data.modificationColors[i]!)
         ctx.fillRect(mx, my, mw, featureHeightSetting)
       }
-      ctx.globalAlpha = 1
     }
   }
 

@@ -75,6 +75,20 @@ export function normalizedRgbToABGR(r: number, g: number, b: number) {
   return (rb | (gb << 8) | (bb << 16) | 0xff000000) >>> 0
 }
 
+// Format a 0..1 normalized RGB triple as a CSS `rgb(r,g,b)` string.
+export function normalizedRgbToCss(c: readonly [number, number, number]) {
+  return `rgb(${Math.round(c[0] * 255)},${Math.round(c[1] * 255)},${Math.round(c[2] * 255)})`
+}
+
+// Format a 0..1 normalized RGB triple + alpha as a CSS `rgba(r,g,b,a)` string.
+// Preferred over `ctx.globalAlpha = a; fillStyle = rgb(...)` bracketing.
+export function normalizedRgbToCssRgba(
+  c: readonly [number, number, number],
+  alpha: number,
+) {
+  return `rgba(${Math.round(c[0] * 255)},${Math.round(c[1] * 255)},${Math.round(c[2] * 255)},${alpha})`
+}
+
 // Channel accessors for the ABGR packed layout (R at byte 0, A at byte 3 —
 // the layout produced by cssColorToABGR and consumed by GPU shaders that
 // unpack via bit shifts from a u32 vertex attribute). Mirror of the

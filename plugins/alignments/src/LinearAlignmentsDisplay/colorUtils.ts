@@ -1,4 +1,8 @@
-import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import {
+  abgrToCssRgba,
+  normalizedRgbToCss,
+  normalizedRgbToCssRgba,
+} from '@jbrowse/core/util/colorBits'
 
 import type { ColorPalette, RGBColor } from './components/shaders/colors.ts'
 
@@ -17,9 +21,9 @@ function isOrientationScheme(cs: number) {
   )
 }
 
-export function rgb255(c: RGBColor) {
-  return `rgb(${Math.round(c[0] * 255)},${Math.round(c[1] * 255)},${Math.round(c[2] * 255)})`
-}
+// Re-exports from core — kept for backwards-compat with call sites.
+export const rgb255 = normalizedRgbToCss
+export const rgba255 = normalizedRgbToCssRgba
 
 export function lerpRgb255(a: RGBColor, b: RGBColor, t: number) {
   const r = Math.round((a[0] + (b[0] - a[0]) * t) * 255)
@@ -246,4 +250,15 @@ export function getBaseColorString(
   return basePalette[base]
     ? rgb255(basePalette[base])
     : rgb255(palette.colorNostrand)
+}
+
+// Same as getBaseColorString but returns rgba() with the given alpha, so
+// callers don't need ctx.globalAlpha bracketing.
+export function getBaseColorStringWithAlpha(
+  base: string,
+  basePalette: Record<string, RGBColor>,
+  palette: ColorPalette,
+  alpha: number,
+) {
+  return rgba255(basePalette[base] ?? palette.colorNostrand, alpha)
 }

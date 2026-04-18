@@ -191,7 +191,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float syBot = yy.y;
   float syMid = (syTop + syBot) * 0.5;
 
-  // SYNC(wgsl/readShader.ts chevron logic): 8px-wide chevron when featHeight>=3 and zoom supports it.
+  // 8px-wide chevron when featHeight>=3 and zoom supports it.
   float chevronClip = 8.0 / u.canvasW * 2.0;
   float bpPerPx = u.bpLen / u.canvasW;
   bool showChev = (u.chainMode == 1 || bpPerPx < 10.0) && u.featHeight >= 3.0;
