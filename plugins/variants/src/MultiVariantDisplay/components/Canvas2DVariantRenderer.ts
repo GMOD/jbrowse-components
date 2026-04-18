@@ -5,6 +5,8 @@ import {
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
+import { drawVariantShape } from './variantShape.ts'
+
 import type {
   VariantBackend,
   VariantRenderBlock,
@@ -86,30 +88,7 @@ export class Canvas2DVariantRenderer implements VariantBackend {
         }
 
         ctx.fillStyle = abgrToCssRgba(region.cellColors[i]!)
-
-        const effectiveShape = shapeType === 3 && w < 1 ? 0 : shapeType
-
-        if (effectiveShape === 0) {
-          ctx.fillRect(x1, y, w, rowHeight)
-        } else if (effectiveShape === 1) {
-          ctx.beginPath()
-          ctx.moveTo(x1, y)
-          ctx.lineTo(x1 + w, y + rowHeight / 2)
-          ctx.lineTo(x1, y + rowHeight)
-          ctx.fill()
-        } else if (effectiveShape === 2) {
-          ctx.beginPath()
-          ctx.moveTo(x1 + w, y)
-          ctx.lineTo(x1, y + rowHeight / 2)
-          ctx.lineTo(x1 + w, y + rowHeight)
-          ctx.fill()
-        } else if (effectiveShape === 3) {
-          ctx.beginPath()
-          ctx.moveTo(x1, y)
-          ctx.lineTo(x1 + w, y)
-          ctx.lineTo(x1 + w / 2, y + rowHeight)
-          ctx.fill()
-        }
+        drawVariantShape(ctx, shapeType, x1, y, w, rowHeight)
       }
 
       ctx.restore()

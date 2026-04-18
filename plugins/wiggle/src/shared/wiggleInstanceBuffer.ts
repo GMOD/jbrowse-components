@@ -27,15 +27,17 @@ export function interleaveInstances(
     const positions = source.featurePositions
     const scores = source.featureScores
     const n = source.numFeatures
+    let prev = scores[0]!
     for (let i = 0; i < n; i++) {
       const off = (offset + i) * INSTANCE_STRIDE_F32
+      const score = scores[i]!
       u32[off + FIELD_OFFSET_F32.startEnd] = positions[i * 2]!
       u32[off + FIELD_OFFSET_F32.startEnd + 1] = positions[i * 2 + 1]!
-      f32[off + FIELD_OFFSET_F32.score] = scores[i]!
-      f32[off + FIELD_OFFSET_F32.prevScore] =
-        i === 0 ? scores[i]! : scores[i - 1]!
+      f32[off + FIELD_OFFSET_F32.score] = score
+      f32[off + FIELD_OFFSET_F32.prevScore] = prev
       u32[off + FIELD_OFFSET_F32.color] = colorAbgr
       f32[off + FIELD_OFFSET_F32.rowIndex] = row
+      prev = score
     }
     offset += n
   }

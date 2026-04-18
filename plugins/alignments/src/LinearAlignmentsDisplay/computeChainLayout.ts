@@ -114,8 +114,6 @@ export function buildChainConnectingData(
     chainHasMultiple,
     chainAbsMinStarts,
     chainAbsMaxEnds,
-    chainColorTypes,
-    chainSuppTypes,
     regionStart,
   } = data
 
@@ -123,9 +121,7 @@ export function buildChainConnectingData(
     !chainFirstReadIndices ||
     !chainHasMultiple ||
     !chainAbsMinStarts ||
-    !chainAbsMaxEnds ||
-    !chainColorTypes ||
-    !chainSuppTypes
+    !chainAbsMaxEnds
   ) {
     return
   }
@@ -142,7 +138,6 @@ export function buildChainConnectingData(
 
   const connectingLinePositions = new Uint32Array(numLines * 2)
   const connectingLineYs = new Uint16Array(numLines)
-  const connectingLineColorTypes = new Uint8Array(numLines)
   let lineIdx = 0
   for (let chainIdx = 0; chainIdx < numChains; chainIdx++) {
     if (!chainHasMultiple[chainIdx]) {
@@ -156,13 +151,10 @@ export function buildChainConnectingData(
     connectingLinePositions[lineIdx * 2 + 1] =
       chainAbsMaxEnds[chainIdx]! - regionStart
     connectingLineYs[lineIdx] = y
-    connectingLineColorTypes[lineIdx] =
-      chainSuppTypes[chainIdx]! > 0 ? 5 : chainColorTypes[chainIdx]!
     lineIdx++
   }
   data.connectingLinePositions = connectingLinePositions
   data.connectingLineYs = connectingLineYs
-  data.connectingLineColorTypes = connectingLineColorTypes
   data.numConnectingLines = numLines
 
   if (numChains > 0) {

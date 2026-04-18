@@ -210,16 +210,13 @@ export interface PileupDataResult {
   chainAbsMaxEnds?: Uint32Array // absolute genomic end of each chain
   chainDistances?: Uint32Array // chain distance: templateLength or span
   chainNames?: string[] // read QNAME per chain (for cross-region dedup)
-  chainColorTypes?: Uint8Array // pre-computed color type per chain
-  chainSuppTypes?: Uint8Array // 0=none, 1=supp+fwd, 2=supp+rev per chain
   chainHasMultiple?: Uint8Array // 1 if chain has ≥2 reads (draw connecting line)
 
-  // Connecting line data for chain modes (cloud/linkedRead)
+  // Connecting line data for chain modes (cloud/linkedRead).
   // One line per chain, drawn at chain Y between min(start) and max(end).
   // Populated by main-thread layout after chain layout is computed.
   connectingLinePositions?: Uint32Array // [startOffset, endOffset] pairs
   connectingLineYs?: Uint16Array // row for each line
-  connectingLineColorTypes?: Uint8Array // 0=normal, 1=long insert, 2=short, 3=interchrom, 4=orientation
   numConnectingLines?: number
 
   // Flatbush R-tree over chain bounding boxes for spatial hit testing.

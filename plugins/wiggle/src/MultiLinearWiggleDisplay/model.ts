@@ -12,7 +12,7 @@ import {
   isSessionModelWithWidgets,
   measureText,
 } from '@jbrowse/core/util'
-import { cssColorToNormalizedRgb as parseColor } from '@jbrowse/core/util/colorBits'
+import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -396,8 +396,8 @@ export default function stateModelFactory(
           getUploadInvalidationToken: () => self.sources,
           uploadOneRegion: (b, regionNumber, data) => {
             const { summaryScoreMode, renderingType, isDensityMode } = self
-            const defaultPosColor = parseColor(self.posColor)
-            const defaultNegColor = parseColor(self.negColor)
+            const defaultPosColor = cssColorToNormalizedRgb(self.posColor)
+            const defaultNegColor = cssColorToNormalizedRgb(self.negColor)
             b.uploadRegion(
               regionNumber,
               data.regionStart,

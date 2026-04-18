@@ -28,8 +28,6 @@ function makeChainData(opts: {
   const chainDistances = new Uint32Array(numChains)
   const chainNames: string[] = []
   const chainHasMultiple = new Uint8Array(numChains)
-  const chainColorTypes = new Uint8Array(numChains)
-  const chainSuppTypes = new Uint8Array(numChains)
   const chainFirstReadIndices = new Uint32Array(numChains)
   const readChainIndices = new Uint32Array(numReads)
 
@@ -41,8 +39,6 @@ function makeChainData(opts: {
     chainDistances[ci] = chain.distance
     chainNames.push(chain.name)
     chainHasMultiple[ci] = n >= 2 ? 1 : 0
-    chainColorTypes[ci] = chain.colorType ?? 0
-    chainSuppTypes[ci] = chain.hasSupp ? 1 : 0
     chainFirstReadIndices[ci] = readIdx
     for (let r = 0; r < n; r++) {
       readChainIndices[readIdx++] = ci
@@ -60,8 +56,6 @@ function makeChainData(opts: {
     chainAbsMaxEnds,
     chainDistances,
     chainHasMultiple,
-    chainColorTypes,
-    chainSuppTypes,
     chainFirstReadIndices,
     maxY: 0,
     readIds,
@@ -453,44 +447,6 @@ describe('buildChainConnectingData', () => {
     expect(data.connectingLineYs?.[0]).toBe(2)
     expect(data.connectingLinePositions?.[0]).toBe(0) // minStart - regionStart
     expect(data.connectingLinePositions?.[1]).toBe(400) // maxEnd - regionStart
-  })
-
-  test('supplementary chain uses colorType 5', () => {
-    const data = makeChainData({
-      regionStart: 1000,
-      chains: [
-        {
-          name: 'readA',
-          minStart: 1000,
-          maxEnd: 1400,
-          distance: 400,
-          numReads: 2,
-          hasSupp: true,
-        },
-      ],
-    })
-    const readYs = new Uint16Array([0, 0])
-    buildChainConnectingData(data, readYs)
-    expect(data.connectingLineColorTypes?.[0]).toBe(5)
-  })
-
-  test('normal chain uses chain colorType', () => {
-    const data = makeChainData({
-      regionStart: 1000,
-      chains: [
-        {
-          name: 'readA',
-          minStart: 1000,
-          maxEnd: 1400,
-          distance: 400,
-          numReads: 2,
-          colorType: 1,
-        },
-      ],
-    })
-    const readYs = new Uint16Array([0, 0])
-    buildChainConnectingData(data, readYs)
-    expect(data.connectingLineColorTypes?.[0]).toBe(1)
   })
 
   test('flatbush spatial index is built for non-empty chains', () => {

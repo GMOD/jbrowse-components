@@ -1,4 +1,4 @@
-import { cssColorToNormalizedRgb as parseColor } from '@jbrowse/core/util/colorBits'
+import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
 import {
   isOverlayMode,
@@ -32,7 +32,7 @@ export function buildMultiSourceRenderData(
     }
 
     const posColor = orderedSource.color
-      ? parseColor(orderedSource.color)
+      ? cssColorToNormalizedRgb(orderedSource.color)
       : defaultPosColor
     const negColor = overlay ? posColor : defaultNegColor
     const row = overlay ? 0 : rowCounter

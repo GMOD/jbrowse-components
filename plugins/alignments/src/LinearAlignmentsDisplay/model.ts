@@ -990,15 +990,12 @@ export default function stateModelFactory(
                     if (
                       pileup.connectingLinePositions &&
                       pileup.connectingLineYs &&
-                      pileup.connectingLineColorTypes &&
                       pileup.numConnectingLines
                     ) {
                       b.uploadConnectingLinesForRegion(regionNumber, {
                         regionStart: pileup.regionStart,
                         connectingLinePositions: pileup.connectingLinePositions,
                         connectingLineYs: pileup.connectingLineYs,
-                        connectingLineColorTypes:
-                          pileup.connectingLineColorTypes,
                         numConnectingLines: pileup.numConnectingLines,
                       })
                     }

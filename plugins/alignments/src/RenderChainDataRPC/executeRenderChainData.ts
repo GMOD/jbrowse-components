@@ -9,7 +9,6 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { buildModTooltipData } from '../shared/buildTooltipData.ts'
-import { PairType, getPairedType } from '../shared/color.ts'
 import {
   computeCoverage,
   computeNoncovCoverage,
@@ -32,7 +31,6 @@ import {
 import type { RenderChainDataArgs } from './types.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
 import type { ChainStats, FilterBy } from '../shared/types.ts'
-import type { ChainFeatureData } from '../shared/webglRpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   BaseFeatureDataAdapter,
@@ -43,33 +41,6 @@ import type { Feature } from '@jbrowse/core/util'
 interface ExecuteParams {
   pluginManager: PluginManager
   args: RenderChainDataArgs
-}
-
-function getColorType(f: ChainFeatureData, stats?: ChainStats) {
-  const pairType = getPairedType({
-    type: 'insertSizeAndOrientation',
-    f: {
-      refName: f.refName,
-      next_ref: f.nextRef,
-      pair_orientation: f.pairOrientationStr,
-      tlen: f.templateLength,
-      flags: f.flags,
-    },
-    stats,
-  })
-
-  switch (pairType) {
-    case PairType.LONG_INSERT:
-      return 1
-    case PairType.SHORT_INSERT:
-      return 2
-    case PairType.INTER_CHROM:
-      return 3
-    case PairType.ABNORMAL_ORIENTATION:
-      return 4
-    default:
-      return 0
-  }
 }
 
 export async function executeRenderChainData({
@@ -202,7 +173,7 @@ export async function executeRenderChainData({
   const chainAbsMaxEnds = new Uint32Array(numChains)
   const chainDistances = new Uint32Array(numChains)
   const chainNames: string[] = []
-  const chainColorTypes = new Uint8Array(numChains)
+  // Worker-local: drives readChainHasSupp below. Not transferred to main.
   const chainSuppTypes = new Uint8Array(numChains)
   const chainHasMultiple = new Uint8Array(numChains)
   const chainFirstReadIndices = new Uint32Array(numChains)
@@ -238,7 +209,6 @@ export async function executeRenderChainData({
     chainAbsMaxEnds[chainIdx] = maxEnd
     chainDistances[chainIdx] = distance
     chainNames.push(chain[0]!.name)
-    chainColorTypes[chainIdx] = getColorType(chain[0]!, chainStats)
     chainSuppTypes[chainIdx] = hasSupp ? (primaryStrand === -1 ? 2 : 1) : 0
     chainHasMultiple[chainIdx] = chain.length >= 2 ? 1 : 0
   }
@@ -443,8 +413,6 @@ export async function executeRenderChainData({
     chainAbsMaxEnds,
     chainDistances,
     chainNames,
-    chainColorTypes,
-    chainSuppTypes,
     chainHasMultiple,
     chainFirstReadIndices,
 
@@ -525,8 +493,6 @@ export async function executeRenderChainData({
     result.chainAbsMaxEnds!.buffer,
     result.chainDistances!.buffer,
     result.chainFirstReadIndices!.buffer,
-    result.chainColorTypes!.buffer,
-    result.chainSuppTypes!.buffer,
     result.chainHasMultiple!.buffer,
     result.readChainIndices!.buffer,
     result.readNextPositions!.buffer,

@@ -12,12 +12,7 @@ import {
   interleaveInstances,
 } from './wiggleInstanceBuffer.ts'
 
-import type {
-  SourceRenderData,
-  WiggleBackend,
-  WiggleGPURenderState,
-  WiggleRenderBlock,
-} from './wiggleBackendTypes.ts'
+import type { WiggleBackend } from './wiggleBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_FILL = 'fill'
@@ -47,104 +42,91 @@ interface RegionInfo {
   numRows: number
 }
 
-export class GpuWiggleRenderer implements WiggleBackend {
-  private hal: GpuHal
-  private uniformData = new ArrayBuffer(wiggleShader.UNIFORMS_SIZE_BYTES)
-  private uniformF32 = new Float32Array(this.uniformData)
-  private uniformI32 = new Int32Array(this.uniformData)
-  private uniformU32 = new Uint32Array(this.uniformData)
-  private regionInfo = new Map<number, RegionInfo>()
+export function GpuWiggleRenderer(hal: GpuHal): WiggleBackend {
+  const uniformData = new ArrayBuffer(wiggleShader.UNIFORMS_SIZE_BYTES)
+  const uniformF32 = new Float32Array(uniformData)
+  const uniformI32 = new Int32Array(uniformData)
+  const uniformU32 = new Uint32Array(uniformData)
+  const regionInfo = new Map<number, RegionInfo>()
 
-  constructor(hal: GpuHal) {
-    this.hal = hal
-  }
+  return {
+    uploadRegion(regionNumber, regionStart, sources) {
+      let totalFeatures = 0
+      for (const source of sources) {
+        totalFeatures += source.numFeatures
+      }
+      if (totalFeatures === 0 || sources.length === 0) {
+        hal.deleteRegion(regionNumber)
+        regionInfo.delete(regionNumber)
+        return
+      }
+      const buf = interleaveInstances(sources, totalFeatures)
+      // Upload once to PASS_FILL; PASS_LINE shares the same buffer via drawPass
+      hal.uploadBuffer(regionNumber, PASS_FILL, buf, totalFeatures)
+      hal.setRegionMeta(regionNumber, { regionStart })
+      regionInfo.set(regionNumber, { numRows: computeNumRows(sources) })
+    },
 
-  uploadRegion(
-    regionNumber: number,
-    regionStart: number,
-    sources: SourceRenderData[],
-  ) {
-    let totalFeatures = 0
-    for (const source of sources) {
-      totalFeatures += source.numFeatures
-    }
+    pruneRegions(activeRegions) {
+      pruneRegionMap(regionInfo, activeRegions, n => {
+        hal.deleteRegion(n)
+      })
+    },
 
-    if (totalFeatures === 0 || sources.length === 0) {
-      this.hal.deleteRegion(regionNumber)
-      this.regionInfo.delete(regionNumber)
-      return
-    }
+    renderBlocks(blocks, state) {
+      const { canvasWidth, canvasHeight } = state
+      const dpr = window.devicePixelRatio || 1
 
-    const buf = interleaveInstances(sources, totalFeatures)
+      hal.resize(canvasWidth, canvasHeight)
+      hal.beginFrame(0, 0, 0, 0)
 
-    // Upload once to PASS_FILL; PASS_LINE shares the same buffer via drawPass
-    this.hal.uploadBuffer(regionNumber, PASS_FILL, buf, totalFeatures)
-    this.hal.setRegionMeta(regionNumber, { regionStart })
-    this.regionInfo.set(regionNumber, { numRows: computeNumRows(sources) })
-  }
+      const passId =
+        state.renderingType === RENDERING_TYPE_LINE ? PASS_LINE : PASS_FILL
 
-  pruneRegions(activeRegions: number[]) {
-    pruneRegionMap(this.regionInfo, activeRegions, n => {
-      this.hal.deleteRegion(n)
-    })
-  }
+      for (const block of blocks) {
+        if (hal.getBufferCount(block.regionNumber, PASS_FILL) === 0) {
+          continue
+        }
+        const meta = hal.getRegionMeta(block.regionNumber)
+        const info = regionInfo.get(block.regionNumber)
+        if (!meta || !info) {
+          continue
+        }
+        const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
+        if (!clip) {
+          continue
+        }
 
-  renderBlocks(blocks: WiggleRenderBlock[], state: WiggleGPURenderState) {
-    const { canvasWidth, canvasHeight } = state
-    const dpr = window.devicePixelRatio || 1
+        hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
+        hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
 
-    this.hal.resize(canvasWidth, canvasHeight)
-    this.hal.beginFrame(0, 0, 0, 0)
+        uniformF32[U.bpRangeX] = clip.bpStartHi
+        uniformF32[U.bpRangeX + 1] = clip.bpStartLo
+        uniformF32[U.bpRangeX + 2] = clip.clippedLengthBp
+        uniformU32[U.regionStart] = Math.floor(meta.regionStart)
+        uniformF32[U.canvasHeight] = canvasHeight
+        uniformI32[U.scaleType] = state.scaleType
+        uniformI32[U.renderingType] = state.renderingType
+        uniformF32[U.numRows] = info.numRows
+        uniformF32[U.domainYMin] = state.domainY[0]
+        uniformF32[U.domainYMax] = state.domainY[1]
+        // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision
+        uniformF32[U.zero] = 0
+        uniformF32[U.viewportWidth] = clip.pxW
+        uniformF32[U.reversed] = block.reversed ? 1 : 0
 
-    const isLine = state.renderingType === RENDERING_TYPE_LINE
-    const passId = isLine ? PASS_LINE : PASS_FILL
-
-    for (const block of blocks) {
-      const bufCount = this.hal.getBufferCount(block.regionNumber, PASS_FILL)
-      if (bufCount === 0) {
-        continue
+        hal.writeUniforms(uniformData)
+        hal.drawPass(passId, block.regionNumber, PASS_FILL)
       }
 
-      const meta = this.hal.getRegionMeta(block.regionNumber)
-      const info = this.regionInfo.get(block.regionNumber)
-      if (!meta || !info) {
-        continue
-      }
+      hal.clearScissor()
+      hal.clearViewport()
+      hal.endFrame()
+    },
 
-      const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
-      if (!clip) {
-        continue
-      }
-
-      this.hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
-      this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
-
-      this.uniformF32[U.bpRangeX] = clip.bpStartHi
-      this.uniformF32[U.bpRangeX + 1] = clip.bpStartLo
-      this.uniformF32[U.bpRangeX + 2] = clip.clippedLengthBp
-      this.uniformU32[U.regionStart] = Math.floor(meta.regionStart)
-      this.uniformF32[U.canvasHeight] = canvasHeight
-      this.uniformI32[U.scaleType] = state.scaleType
-      this.uniformI32[U.renderingType] = state.renderingType
-      this.uniformF32[U.numRows] = info.numRows
-      this.uniformF32[U.domainYMin] = state.domainY[0]
-      this.uniformF32[U.domainYMax] = state.domainY[1]
-      // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision
-      this.uniformF32[U.zero] = 0
-      this.uniformF32[U.viewportWidth] = clip.pxW
-      this.uniformF32[U.reversed] = block.reversed ? 1 : 0
-
-      this.hal.writeUniforms(this.uniformData)
-      this.hal.drawPass(passId, block.regionNumber, PASS_FILL)
-    }
-
-    this.hal.clearScissor()
-    this.hal.clearViewport()
-    this.hal.endFrame()
-  }
-
-  dispose() {
-    this.regionInfo.clear()
-    this.hal.dispose()
+    dispose() {
+      regionInfo.clear()
+      hal.dispose()
+    },
   }
 }

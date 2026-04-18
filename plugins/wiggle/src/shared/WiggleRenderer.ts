@@ -4,13 +4,6 @@ import { Canvas2DWiggleRenderer } from './Canvas2DWiggleRenderer.ts'
 import { GpuWiggleRenderer, WIGGLE_PASSES } from './GpuWiggleRenderer.ts'
 import { UNIFORMS_SIZE_BYTES } from './shaders/wiggle.generated.ts'
 
-export type {
-  SourceRenderData,
-  WiggleBackend,
-  WiggleGPURenderState,
-  WiggleRenderBlock,
-} from './wiggleBackendTypes.ts'
-
 import type { WiggleBackend } from './wiggleBackendTypes.ts'
 
 export function WiggleRenderer(canvas: HTMLCanvasElement) {
@@ -18,7 +11,7 @@ export function WiggleRenderer(canvas: HTMLCanvasElement) {
     canvas,
     WIGGLE_PASSES,
     UNIFORMS_SIZE_BYTES,
-    hal => new GpuWiggleRenderer(hal),
-    c => new Canvas2DWiggleRenderer(c),
+    GpuWiggleRenderer,
+    Canvas2DWiggleRenderer,
   )
 }

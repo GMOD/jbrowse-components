@@ -1,4 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { packAbgr } from '@jbrowse/core/util/colorBits'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -333,7 +334,7 @@ export function buildTagColors(
     } else {
       rgb = parsedColors.get(val) ?? nostrandRgb
     }
-    readTagColors[i] = (rgb[0] | (rgb[1] << 8) | (rgb[2] << 16) | 0xff000000) >>> 0
+    readTagColors[i] = packAbgr(rgb[0], rgb[1], rgb[2], 255)
   }
   return readTagColors
 }
@@ -565,7 +566,7 @@ export function buildModificationArrays(
     modificationPositions[i] = m.position - regionStart
     modificationYs[i] = y
     const a = Math.round(m.prob * 255) & 0xff
-    modificationColors[i] = (m.r | (m.g << 8) | (m.b << 16) | (a << 24)) >>> 0
+    modificationColors[i] = packAbgr(m.r, m.g, m.b, a)
     if (modificationReadIndices) {
       modificationReadIndices[i] = getReadIndex!(m.featureId)
     }

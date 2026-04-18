@@ -1,4 +1,4 @@
-import { cssColorToNormalizedRgb as parseColor } from '@jbrowse/core/util/colorBits'
+import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
 import { makeWhiskersSourceData } from '../../shared/wiggleComponentUtils.ts'
 import { getEffectiveScores, isDefaultBicolor } from '../../util.ts'
@@ -57,9 +57,9 @@ export function buildSourceRenderData(
   model: WiggleSourceRenderInputs,
 ): SourceRenderData[] {
   const useBicolor = isDefaultBicolor(model.color)
-  const baseColor = parseColor(model.color)
-  const posColor = parseColor(model.posColor)
-  const negColor = parseColor(model.negColor)
+  const baseColor = cssColorToNormalizedRgb(model.color)
+  const posColor = cssColorToNormalizedRgb(model.posColor)
+  const negColor = cssColorToNormalizedRgb(model.negColor)
   const { summaryScoreMode } = model
 
   if (summaryScoreMode === 'whiskers') {

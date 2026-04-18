@@ -1,4 +1,4 @@
-import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
+export { cssColorToNormalizedRgb as toRgb } from '@jbrowse/core/util/colorBits'
 
 // RGB color as [r, g, b] where each is 0-1
 export type RGBColor = [number, number, number]
@@ -28,8 +28,4 @@ export interface ColorPalette {
   colorShortInsert: RGBColor
   colorSupplementary: RGBColor
   colorUnmappedMate: RGBColor
-}
-
-export function toRgb(color: string): RGBColor {
-  return cssColorToNormalizedRgb(color)
 }

@@ -13,15 +13,16 @@ import {
   getRawCallGenotype,
 } from '../../shared/rawGenotypes.ts'
 import { createCachedABGR } from '../../shared/variantWebglUtils.ts'
+import {
+  SHAPE_RECT,
+  SHAPE_TRI_DOWN,
+  SHAPE_TRI_LEFT,
+  SHAPE_TRI_RIGHT,
+} from './variantShape.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { Source } from '../../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
-
-const SHAPE_RECT = 0
-const SHAPE_TRI_RIGHT = 1
-const SHAPE_TRI_LEFT = 2
-const SHAPE_TRI_DOWN = 3
 
 export interface FeatureGenotypeInfo {
   alt: string[]

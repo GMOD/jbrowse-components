@@ -9,6 +9,7 @@ import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
+import { drawVariantShape } from './components/variantShape.ts'
 import SvgLabelRows from '../shared/components/SvgLabelRows.tsx'
 import SvgTree from '../shared/components/SvgTree.tsx'
 
@@ -104,36 +105,7 @@ function renderCellsForRegion(
     const h = Math.max(rowHeight, 1)
 
     setFillFromCellColor(ctx, cellColors, i)
-
-    const effectiveShape = shapeType === 3 && w < 1 ? 0 : shapeType
-
-    if (effectiveShape === 0) {
-      ctx.fillRect(x, y, w, h)
-    } else if (effectiveShape === 1) {
-      const midY = y + h / 2
-      ctx.beginPath()
-      ctx.moveTo(x, y)
-      ctx.lineTo(x + w, midY)
-      ctx.lineTo(x, yEnd)
-      ctx.closePath()
-      ctx.fill()
-    } else if (effectiveShape === 2) {
-      const midY = y + h / 2
-      ctx.beginPath()
-      ctx.moveTo(x + w, y)
-      ctx.lineTo(x, midY)
-      ctx.lineTo(x + w, yEnd)
-      ctx.closePath()
-      ctx.fill()
-    } else if (effectiveShape === 3) {
-      const midX = x + w / 2
-      ctx.beginPath()
-      ctx.moveTo(x, y)
-      ctx.lineTo(x + w, y)
-      ctx.lineTo(midX, yEnd)
-      ctx.closePath()
-      ctx.fill()
-    }
+    drawVariantShape(ctx, shapeType, x, y, w, h)
   }
 }
 

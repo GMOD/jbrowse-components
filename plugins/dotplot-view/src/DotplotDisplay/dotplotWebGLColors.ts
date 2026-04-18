@@ -3,6 +3,7 @@ import {
   getBlue,
   getGreen,
   getRed,
+  packAbgr,
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
 
@@ -10,12 +11,10 @@ import { hashString } from '../util.ts'
 
 import type { DotplotFeatPos } from './types.ts'
 
-// Pack RGBA bytes into a uint32 in ABGR layout (R in bits 0-7) so that
-// WGSL's unpack4x8unorm() and the GLSL manual unpack both decode x→R, y→G,
-// z→B, w→A directly.
+// Pack 0..255 RGB + 0..1 alpha into ABGR u32 matching WGSL's
+// unpack4x8unorm / the shader's manual unpack.
 function packColor(r: number, g: number, b: number, alpha: number) {
-  const a = Math.round(alpha * 255)
-  return ((a << 24) | (b << 16) | (g << 8) | r) >>> 0
+  return packAbgr(r, g, b, Math.round(alpha * 255))
 }
 
 // Pre-extract the RGB bytes for the 10-color categorical palette so we can

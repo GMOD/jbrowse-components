@@ -148,7 +148,6 @@ export interface ConnectingLinesUploadData {
   regionStart: number
   connectingLinePositions: Uint32Array
   connectingLineYs: Uint16Array
-  connectingLineColorTypes: Uint8Array
   numConnectingLines: number
 }
 

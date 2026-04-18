@@ -121,7 +121,6 @@ interface Canvas2DRegionData {
   // Connecting lines
   connectingLinePositions: Uint32Array
   connectingLineYs: Uint16Array
-  connectingLineColorTypes: Uint8Array
   numConnectingLines: number
 }
 
@@ -211,7 +210,6 @@ function emptyRegion(regionStart: number): Canvas2DRegionData {
     numArcLines: 0,
     connectingLinePositions: empty32,
     connectingLineYs: empty16,
-    connectingLineColorTypes: empty8,
     numConnectingLines: 0,
   }
 }
@@ -445,7 +443,6 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     }
     r.connectingLinePositions = data.connectingLinePositions
     r.connectingLineYs = data.connectingLineYs
-    r.connectingLineColorTypes = data.connectingLineColorTypes
     r.numConnectingLines = data.numConnectingLines
   }
 

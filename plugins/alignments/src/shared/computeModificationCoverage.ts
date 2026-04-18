@@ -1,3 +1,5 @@
+import { packAbgr } from '@jbrowse/core/util/colorBits'
+
 import { calculateModificationCounts } from './calculateModificationCounts.ts'
 
 import type { MismatchData, ModificationEntry } from './webglRpcTypes.ts'
@@ -193,7 +195,7 @@ export function computeModificationCoverage(
     positions[i] = seg.position - regionStart
     yOffsets[i] = seg.yOffset
     heights[i] = seg.height
-    colors[i] = (seg.r | (seg.g << 8) | (seg.b << 16) | (seg.alpha << 24)) >>> 0
+    colors[i] = packAbgr(seg.r, seg.g, seg.b, seg.alpha)
   }
 
   return { positions, yOffsets, heights, colors, count: segments.length }

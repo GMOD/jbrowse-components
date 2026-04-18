@@ -48,7 +48,7 @@ function makeBlock(overrides?: Partial<WiggleRenderBlock>): WiggleRenderBlock {
 describe('GpuWiggleRenderer', () => {
   it('uploads region data as interleaved buffer', () => {
     const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const renderer = GpuWiggleRenderer(hal)
     const source = makeSource()
 
     renderer.uploadRegion(0, 1000, [source])
@@ -75,7 +75,7 @@ describe('GpuWiggleRenderer', () => {
 
   it('sets region metadata on upload', () => {
     const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const renderer = GpuWiggleRenderer(hal)
 
     renderer.uploadRegion(0, 1000, [makeSource()])
 
@@ -86,7 +86,7 @@ describe('GpuWiggleRenderer', () => {
 
   it('deletes region when uploading empty sources', () => {
     const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const renderer = GpuWiggleRenderer(hal)
 
     renderer.uploadRegion(0, 1000, [makeSource()])
     expect(hal.getBufferCount(0, 'fill')).toBe(2)
@@ -98,7 +98,7 @@ describe('GpuWiggleRenderer', () => {
 
   it('prunes inactive regions', () => {
     const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const renderer = GpuWiggleRenderer(hal)
 
     renderer.uploadRegion(0, 1000, [makeSource()])
     renderer.uploadRegion(1, 2000, [makeSource()])
@@ -116,7 +116,7 @@ describe('GpuWiggleRenderer', () => {
 
   it('renders blocks with correct frame lifecycle', () => {
     const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const renderer = GpuWiggleRenderer(hal)
 
     renderer.uploadRegion(0, 1000, [makeSource()])
 
@@ -155,7 +155,7 @@ describe('GpuWiggleRenderer', () => {
 
   it('writes correct uniforms for XY plot', () => {
     const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const renderer = GpuWiggleRenderer(hal)
 
     renderer.uploadRegion(0, 1000, [makeSource()])
 
@@ -190,7 +190,7 @@ describe('GpuWiggleRenderer', () => {
 
   it('uses line pass for LINE rendering type', () => {
     const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const renderer = GpuWiggleRenderer(hal)
 
     renderer.uploadRegion(0, 1000, [makeSource()])
 
@@ -212,7 +212,7 @@ describe('GpuWiggleRenderer', () => {
 
   it('uses fill pass for XY plot rendering type', () => {
     const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const renderer = GpuWiggleRenderer(hal)
 
     renderer.uploadRegion(0, 1000, [makeSource()])
 
@@ -231,7 +231,7 @@ describe('GpuWiggleRenderer', () => {
 
   it('skips blocks with no uploaded data', () => {
     const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const renderer = GpuWiggleRenderer(hal)
 
     renderer.renderBlocks([makeBlock({ regionNumber: 99 })], {
       canvasWidth: 800,
@@ -248,7 +248,7 @@ describe('GpuWiggleRenderer', () => {
 
   it('renders multiple blocks in one frame', () => {
     const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const renderer = GpuWiggleRenderer(hal)
 
     renderer.uploadRegion(0, 1000, [makeSource()])
     renderer.uploadRegion(1, 2000, [makeSource()])
@@ -281,7 +281,7 @@ describe('GpuWiggleRenderer', () => {
 
   it('handles reversed blocks', () => {
     const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const renderer = GpuWiggleRenderer(hal)
 
     renderer.uploadRegion(0, 1000, [makeSource()])
 
@@ -300,7 +300,7 @@ describe('GpuWiggleRenderer', () => {
 
   it('handles multiple sources with different row indices', () => {
     const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const renderer = GpuWiggleRenderer(hal)
 
     const source0 = makeSource({ rowIndex: 0 })
     const source1 = makeSource({
@@ -326,7 +326,7 @@ describe('GpuWiggleRenderer', () => {
 
   it('disposes cleanly', () => {
     const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const renderer = GpuWiggleRenderer(hal)
 
     renderer.uploadRegion(0, 1000, [makeSource()])
     renderer.dispose()
@@ -336,7 +336,7 @@ describe('GpuWiggleRenderer', () => {
 
   it('handles log scale type in uniforms', () => {
     const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const renderer = GpuWiggleRenderer(hal)
 
     renderer.uploadRegion(0, 1000, [makeSource()])
     renderer.renderBlocks([makeBlock()], {
