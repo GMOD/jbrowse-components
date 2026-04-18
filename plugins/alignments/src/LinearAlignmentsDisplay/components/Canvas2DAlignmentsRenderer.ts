@@ -20,7 +20,6 @@ import {
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
-import { splitInterbasesByType } from './alignmentComponentUtils.ts'
 import { getReadColor, rgb255 } from '../colorUtils.ts'
 import { getChainBounds } from './chainOverlayUtils.ts'
 import { arcColorPalette, arcLineColorPalette } from './shaders/palettes.ts'
@@ -283,40 +282,29 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     r.mismatchFrequencies = data.mismatchFrequencies
     r.numMismatches = data.numMismatches
 
-    const { insIdx, scIdx, hcIdx } = splitInterbasesByType(
-      data.interbaseTypes,
-      data.numInterbases,
-    )
+    // Worker lays out interbases as (insertions, softclips, hardclips);
+    // slice each subrange directly off the merged typed arrays.
+    const insEnd = data.numInsertions
+    const scEnd = insEnd + data.numSoftclips
+    const hcEnd = scEnd + data.numHardclips
 
-    const extractInterbases = (indices: number[]) => ({
-      positions: new Uint32Array(indices.map(i => data.interbasePositions[i]!)),
-      ys: new Uint16Array(indices.map(i => data.interbaseYs[i]!)),
-      lengths: new Uint16Array(indices.map(i => data.interbaseLengths[i]!)),
-      frequencies: new Uint8Array(
-        indices.map(i => data.interbaseFrequencies[i]!),
-      ),
-    })
+    r.insertionPositions = data.interbasePositions.subarray(0, insEnd)
+    r.insertionYs = data.interbaseYs.subarray(0, insEnd)
+    r.insertionLengths = data.interbaseLengths.subarray(0, insEnd)
+    r.insertionFrequencies = data.interbaseFrequencies.subarray(0, insEnd)
+    r.numInsertions = data.numInsertions
 
-    const ins = extractInterbases(insIdx)
-    r.insertionPositions = ins.positions
-    r.insertionYs = ins.ys
-    r.insertionLengths = ins.lengths
-    r.insertionFrequencies = ins.frequencies
-    r.numInsertions = insIdx.length
+    r.softclipPositions = data.interbasePositions.subarray(insEnd, scEnd)
+    r.softclipYs = data.interbaseYs.subarray(insEnd, scEnd)
+    r.softclipLengths = data.interbaseLengths.subarray(insEnd, scEnd)
+    r.softclipFrequencies = data.interbaseFrequencies.subarray(insEnd, scEnd)
+    r.numSoftclips = data.numSoftclips
 
-    const sc = extractInterbases(scIdx)
-    r.softclipPositions = sc.positions
-    r.softclipYs = sc.ys
-    r.softclipLengths = sc.lengths
-    r.softclipFrequencies = sc.frequencies
-    r.numSoftclips = scIdx.length
-
-    const hc = extractInterbases(hcIdx)
-    r.hardclipPositions = hc.positions
-    r.hardclipYs = hc.ys
-    r.hardclipLengths = hc.lengths
-    r.hardclipFrequencies = hc.frequencies
-    r.numHardclips = hcIdx.length
+    r.hardclipPositions = data.interbasePositions.subarray(scEnd, hcEnd)
+    r.hardclipYs = data.interbaseYs.subarray(scEnd, hcEnd)
+    r.hardclipLengths = data.interbaseLengths.subarray(scEnd, hcEnd)
+    r.hardclipFrequencies = data.interbaseFrequencies.subarray(scEnd, hcEnd)
+    r.numHardclips = data.numHardclips
 
     r.softclipBasePositions = data.softclipBasePositions
     r.softclipBaseYs = data.softclipBaseYs

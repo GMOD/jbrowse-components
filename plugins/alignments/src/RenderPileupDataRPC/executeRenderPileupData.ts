@@ -316,7 +316,7 @@ export async function executeRenderPileupData({
     ...modificationArrays,
 
     readTagColors: tagColors,
-    numTagColors: tagColors.length / 3,
+    numTagColors: tagColors.length,
 
     coverageDepths: coverage.depths,
     coverageMaxDepth: coverage.maxDepth,

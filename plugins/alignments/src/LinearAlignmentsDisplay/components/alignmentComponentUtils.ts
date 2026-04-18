@@ -9,11 +9,6 @@ import { countSnpsAtPosition } from '@jbrowse/alignments-core'
 
 import { toRgb } from './shaders/colors.ts'
 import { fillColor } from '../../shared/color.ts'
-import {
-  INTERBASE_HARDCLIP,
-  INTERBASE_INSERTION,
-  INTERBASE_SOFTCLIP,
-} from '../../shared/types.ts'
 
 import type { CigarHitResult, SashimiArcHitResult } from './hitTesting'
 import type { AlignmentsBackend } from './rendererTypes.ts'
@@ -21,26 +16,6 @@ import type { ColorPalette } from './shaders/colors.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 import type { Theme } from '@mui/material'
-
-export function splitInterbasesByType(
-  interbaseTypes: Uint8Array,
-  numInterbases: number,
-) {
-  const insIdx: number[] = []
-  const scIdx: number[] = []
-  const hcIdx: number[] = []
-  for (let i = 0; i < numInterbases; i++) {
-    const t = interbaseTypes[i]
-    if (t === INTERBASE_INSERTION) {
-      insIdx.push(i)
-    } else if (t === INTERBASE_SOFTCLIP) {
-      scIdx.push(i)
-    } else if (t === INTERBASE_HARDCLIP) {
-      hcIdx.push(i)
-    }
-  }
-  return { insIdx, scIdx, hcIdx }
-}
 
 /**
  * Build a ColorPalette from the MUI theme

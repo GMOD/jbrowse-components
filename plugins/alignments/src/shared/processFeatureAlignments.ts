@@ -434,6 +434,11 @@ export function buildInterbaseArrays(
     interbaseTypes,
     interbaseReadIndices,
     interbaseSequences,
+    // Counts per type in the canonical layout (ins, then soft, then hard).
+    // Lets consumers slice subranges directly without re-scanning types.
+    numInsertions: filteredInsertions.length,
+    numSoftclips: filteredSoftclips.length,
+    numHardclips: filteredHardclips.length,
   }
 }
 

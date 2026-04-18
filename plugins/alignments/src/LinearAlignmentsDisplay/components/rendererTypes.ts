@@ -77,6 +77,9 @@ export interface CigarUploadData {
   interbaseTypes: Uint8Array
   interbaseFrequencies: Uint8Array
   numInterbases: number
+  numInsertions: number
+  numSoftclips: number
+  numHardclips: number
   softclipBasePositions: Uint32Array
   softclipBaseYs: Uint16Array
   softclipBaseBases: Uint8Array

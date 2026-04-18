@@ -104,14 +104,18 @@ export interface PileupDataResult {
   softclipBaseReadIndices?: Uint32Array // maps each softclip base to its parent read index
   numSoftclipBases: number
 
-  // Interbase data - insertions, soft clips, and hard clips combined (offsets from regionStart)
-  // These three feature types have identical structure, so combining reduces memory and transfer overhead
+  // Interbase data — insertions, soft clips, and hard clips in one buffer
+  // stored sequentially as (insertions, softclips, hardclips). The three
+  // counts below let consumers slice subranges without re-scanning types.
   interbasePositions: Uint32Array
   interbaseYs: Uint16Array
   interbaseLengths: Uint16Array
   interbaseTypes: Uint8Array // 1=insertion, 2=softclip, 3=hardclip
   interbaseReadIndices?: Uint32Array // maps each interbase to its parent read index
   interbaseSequences: string[] // insertion sequences (empty string for clips or if unavailable)
+  numInsertions: number
+  numSoftclips: number
+  numHardclips: number
   interbaseFrequencies: Uint8Array // 0-255 representing 0-100% frequency
 
   // Coverage data - positions computed from regionStart + coverageStartOffset + index

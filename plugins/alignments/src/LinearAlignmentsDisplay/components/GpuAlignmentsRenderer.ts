@@ -3,7 +3,6 @@ import { slangPass } from '@jbrowse/core/gpu/slangPass'
 import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
-import { splitInterbasesByType } from './alignmentComponentUtils.ts'
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
 import {
   arcColorPalette,
@@ -317,53 +316,48 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       )
     }
 
-    const { insIdx, scIdx, hcIdx } = splitInterbasesByType(
-      data.interbaseTypes,
-      data.numInterbases,
-    )
+    // Interbase buffer is laid out (insertions, softclips, hardclips) by
+    // the worker, so we iterate subranges directly — no per-element type
+    // scan on the main thread.
+    const insStart = 0
+    const insEnd = data.numInsertions
+    const scEnd = insEnd + data.numSoftclips
+    const hcEnd = scEnd + data.numHardclips
 
-    if (insIdx.length > 0) {
+    if (data.numInsertions > 0) {
       const F = insertionShader.FIELD_OFFSET_F32
       const s32 = insertionShader.INSTANCE_STRIDE_F32
       const buf = new ArrayBuffer(
-        insIdx.length * insertionShader.INSTANCE_STRIDE_BYTES,
+        data.numInsertions * insertionShader.INSTANCE_STRIDE_BYTES,
       )
       const u32 = new Uint32Array(buf)
       const f32 = new Float32Array(buf)
-      for (const [j, index] of insIdx.entries()) {
-        const o = j * s32
-        u32[o + F.position] = data.interbasePositions[index]!
-        u32[o + F.y] = data.interbaseYs[index]!
-        u32[o + F.length] = data.interbaseLengths[index]!
-        f32[o + F.frequency] = data.interbaseFrequencies[index]! / 255
+      for (let i = insStart; i < insEnd; i++) {
+        const o = (i - insStart) * s32
+        u32[o + F.position] = data.interbasePositions[i]!
+        u32[o + F.y] = data.interbaseYs[i]!
+        u32[o + F.length] = data.interbaseLengths[i]!
+        f32[o + F.frequency] = data.interbaseFrequencies[i]! / 255
       }
-      this.hal.uploadBuffer(regionNumber, PASS_INSERTION, buf, insIdx.length)
+      this.hal.uploadBuffer(regionNumber, PASS_INSERTION, buf, data.numInsertions)
     }
 
     // Softclip + hardclip share one buffer + pass; `kind` selects the color.
-    const clipCount = scIdx.length + hcIdx.length
+    const clipCount = data.numSoftclips + data.numHardclips
     if (clipCount > 0) {
       const F = clipShader.FIELD_OFFSET_F32
       const s32 = clipShader.INSTANCE_STRIDE_F32
       const buf = new ArrayBuffer(clipCount * clipShader.INSTANCE_STRIDE_BYTES)
       const u32 = new Uint32Array(buf)
       const f32 = new Float32Array(buf)
-      const writeClip = (
-        indices: number[],
-        startSlot: number,
-        kind: number,
-      ) => {
-        for (const [j, index] of indices.entries()) {
-          const o = (startSlot + j) * s32
-          u32[o + F.position] = data.interbasePositions[index]!
-          u32[o + F.y] = data.interbaseYs[index]!
-          u32[o + F.length] = data.interbaseLengths[index]!
-          f32[o + F.frequency] = data.interbaseFrequencies[index]! / 255
-          u32[o + F.kind] = kind
-        }
+      for (let i = insEnd; i < hcEnd; i++) {
+        const o = (i - insEnd) * s32
+        u32[o + F.position] = data.interbasePositions[i]!
+        u32[o + F.y] = data.interbaseYs[i]!
+        u32[o + F.length] = data.interbaseLengths[i]!
+        f32[o + F.frequency] = data.interbaseFrequencies[i]! / 255
+        u32[o + F.kind] = i < scEnd ? CLIP_KIND_SOFT : CLIP_KIND_HARD
       }
-      writeClip(scIdx, 0, CLIP_KIND_SOFT)
-      writeClip(hcIdx, scIdx.length, CLIP_KIND_HARD)
       this.hal.uploadBuffer(regionNumber, PASS_CLIP, buf, clipCount)
     }
 
