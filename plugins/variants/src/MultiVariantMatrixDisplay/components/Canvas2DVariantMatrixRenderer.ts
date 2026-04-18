@@ -4,19 +4,13 @@ import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import type {
   MatrixRenderState,
   VariantMatrixBackend,
+  VariantMatrixUploadData,
 } from './variantMatrixBackendTypes.ts'
-
-interface MatrixData {
-  cellFeatureIndices: Float32Array
-  cellRowIndices: Uint32Array
-  cellColors: Uint32Array
-  numCells: number
-}
 
 export class Canvas2DVariantMatrixRenderer implements VariantMatrixBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
-  private data: MatrixData | undefined
+  private data: VariantMatrixUploadData | undefined
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -27,23 +21,22 @@ export class Canvas2DVariantMatrixRenderer implements VariantMatrixBackend {
     this.ctx = ctx
   }
 
-  uploadCellData(data: MatrixData) {
+  uploadCellData(data: VariantMatrixUploadData) {
     this.data = data.numCells === 0 ? undefined : data
   }
 
   render(state: MatrixRenderState) {
-    const { canvasWidth, canvasHeight, rowHeight, scrollTop, numFeatures } =
-      state
+    const { canvasWidth, canvasHeight, rowHeight, scrollTop } = state
 
     const ctx = this.ctx
     prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
 
     const data = this.data
-    if (!data || numFeatures === 0) {
+    if (!data || data.numFeatures === 0) {
       return
     }
 
-    const cellWidth = canvasWidth / numFeatures
+    const cellWidth = canvasWidth / data.numFeatures
     const w = Math.max(2, cellWidth)
 
     for (let i = 0; i < data.numCells; i++) {

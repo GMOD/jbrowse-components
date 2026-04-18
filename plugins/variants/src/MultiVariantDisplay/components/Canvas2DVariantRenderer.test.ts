@@ -1,3 +1,5 @@
+import { packAbgr } from '@jbrowse/core/util/colorBits'
+
 import { Canvas2DVariantRenderer } from './Canvas2DVariantRenderer.ts'
 
 import type { VariantRenderBlock } from './variantBackendTypes.ts'
@@ -55,6 +57,7 @@ function makeRegionData(overrides?: {
   numCells?: number
   cellPositions?: number[]
   cellRowIndices?: number[]
+  // legacy flat-byte form: length numCells*4 with RGBA bytes per cell
   cellColors?: number[]
   cellShapeTypes?: number[]
 }) {
@@ -63,8 +66,17 @@ function makeRegionData(overrides?: {
     overrides?.cellPositions ?? Array.from({ length: numCells * 2 }, () => 0)
   const cellRowIndices =
     overrides?.cellRowIndices ?? Array.from({ length: numCells }, () => 0)
-  const cellColors =
+  const src =
     overrides?.cellColors ?? Array.from({ length: numCells * 4 }, () => 255)
+  const cellColors = new Uint32Array(numCells)
+  for (let i = 0; i < numCells; i++) {
+    cellColors[i] = packAbgr(
+      src[i * 4]!,
+      src[i * 4 + 1]!,
+      src[i * 4 + 2]!,
+      src[i * 4 + 3]!,
+    )
+  }
   const cellShapeTypes =
     overrides?.cellShapeTypes ?? Array.from({ length: numCells }, () => 0)
 
@@ -72,7 +84,7 @@ function makeRegionData(overrides?: {
     regionStart: overrides?.regionStart ?? 0,
     cellPositions: new Uint32Array(cellPositions),
     cellRowIndices: new Uint32Array(cellRowIndices),
-    cellColors: new Uint8Array(cellColors),
+    cellColors,
     cellShapeTypes: new Uint8Array(cellShapeTypes),
     numCells,
   }

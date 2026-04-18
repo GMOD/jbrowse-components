@@ -65,7 +65,6 @@ export default function stateModelFactory(
           canvasHeight: self.availableHeight,
           rowHeight: self.rowHeight,
           scrollTop: self.scrollTop,
-          numFeatures: cellData.numFeatures,
         }
       },
       async renderSvg(opts?: ExportSvgDisplayOptions) {

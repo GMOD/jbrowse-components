@@ -6,6 +6,7 @@ import { interleaveMatrixInstances } from './variantMatrixShaders.ts'
 import type {
   MatrixRenderState,
   VariantMatrixBackend,
+  VariantMatrixUploadData,
 } from './variantMatrixBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
@@ -29,17 +30,14 @@ export class GpuVariantMatrixRenderer implements VariantMatrixBackend {
   private hal: GpuHal
   private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
   private uniformF32 = new Float32Array(this.uniformData)
+  private numFeatures = 0
 
   constructor(hal: GpuHal) {
     this.hal = hal
   }
 
-  uploadCellData(data: {
-    cellFeatureIndices: Float32Array
-    cellRowIndices: Uint32Array
-    cellColors: Uint32Array
-    numCells: number
-  }) {
+  uploadCellData(data: VariantMatrixUploadData) {
+    this.numFeatures = data.numFeatures
     if (data.numCells === 0) {
       this.hal.deleteRegion(REGION_KEY)
       return
@@ -57,9 +55,9 @@ export class GpuVariantMatrixRenderer implements VariantMatrixBackend {
 
     if (
       this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0 &&
-      state.numFeatures > 0
+      this.numFeatures > 0
     ) {
-      this.uniformF32[U.numFeatures] = state.numFeatures
+      this.uniformF32[U.numFeatures] = this.numFeatures
       this.uniformF32[U.canvasWidth] = canvasWidth
       this.uniformF32[U.canvasHeight] = canvasHeight
       this.uniformF32[U.rowHeight] = state.rowHeight

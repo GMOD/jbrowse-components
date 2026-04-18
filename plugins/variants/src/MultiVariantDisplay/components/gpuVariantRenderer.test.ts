@@ -18,7 +18,9 @@ function makeUploadData() {
     regionStart: 5000,
     cellPositions: new Uint32Array([100, 200, 300, 400]),
     cellRowIndices: new Uint32Array([0, 1]),
-    cellColors: new Uint8Array([255, 0, 0, 255, 0, 255, 0, 128]),
+    // ABGR-packed u32 per cell (R=255 G=0 B=0 A=255) → 0xff0000ff;
+    // (R=0 G=255 B=0 A=128) → 0x8000ff00
+    cellColors: new Uint32Array([0xff0000ff, 0x8000ff00]),
     cellShapeTypes: new Uint8Array([0, 1]),
     numCells: 2,
   }

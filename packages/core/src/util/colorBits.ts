@@ -54,25 +54,28 @@ export function cssColorToRgba(
   return [getRed(c), getGreen(c), getBlue(c), getAlpha(c)]
 }
 
+// Pack 0..255 RGBA channel bytes into an ABGR u32 (R at byte 0, A at byte 3).
+// >>> 0 keeps the result an unsigned 32-bit — bit 31 (alpha's top bit) would
+// otherwise make opaque colors negative in JS.
+export function packAbgr(r: number, g: number, b: number, a: number) {
+  return ((a << 24) | (b << 16) | (g << 8) | r) >>> 0
+}
+
 export function cssColorToABGR(color: string) {
   const c = parseCssColor(color)
-  const r = getRed(c)
-  const g = getGreen(c)
-  const b = getBlue(c)
-  const a = getAlpha(c)
-  // >>> 0 converts signed int32 to unsigned uint32; without it, opaque colors
-  // (alpha=255) set bit 31 and produce a negative JS number
-  return ((a << 24) | (b << 16) | (g << 8) | r) >>> 0
+  return packAbgr(getRed(c), getGreen(c), getBlue(c), getAlpha(c))
 }
 
 // Pack a 0..1 normalized RGB triple into an ABGR u32 (opaque alpha). Inverse
 // of cssColorToNormalizedRgb at the GPU write boundary — the shader side
 // unpacks with unpackRGBA() (see packages/core/src/gpu/shaders/colorPack.slang).
 export function normalizedRgbToABGR(r: number, g: number, b: number) {
-  const rb = Math.round(r * 255) & 0xff
-  const gb = Math.round(g * 255) & 0xff
-  const bb = Math.round(b * 255) & 0xff
-  return (rb | (gb << 8) | (bb << 16) | 0xff000000) >>> 0
+  return packAbgr(
+    Math.round(r * 255),
+    Math.round(g * 255),
+    Math.round(b * 255),
+    255,
+  )
 }
 
 // Format a 0..1 normalized RGB triple as a CSS `rgb(r,g,b)` string.

@@ -14,22 +14,18 @@ function createMockCanvas() {
     save: jest.fn(),
     restore: jest.fn(),
     beginPath: jest.fn(() => pathOps.push('beginPath')),
-    moveTo: jest.fn((...args) => pathOps.push(`moveTo(${args})`)),
-    lineTo: jest.fn((...args) => pathOps.push(`lineTo(${args})`)),
     closePath: jest.fn(() => pathOps.push('closePath')),
+    moveTo: jest.fn((x: number, y: number) => pathOps.push(`moveTo(${x},${y})`)),
+    lineTo: jest.fn((x: number, y: number) => pathOps.push(`lineTo(${x},${y})`)),
     fill: jest.fn(() => pathOps.push('fill')),
+    fillStyle: '',
     rect: jest.fn(),
     clip: jest.fn(),
-    strokeRect: jest.fn(),
-    stroke: jest.fn(),
-    fillStyle: '',
-    strokeStyle: '',
-    lineWidth: 1,
-    globalAlpha: 1,
   }
   const canvas = {
     width: 0,
     height: 0,
+    style: {} as Record<string, string>,
     getContext: jest.fn(() => ctx),
   } as unknown as HTMLCanvasElement
   return { canvas, ctx, fillRectCalls, pathOps }
@@ -44,8 +40,9 @@ describe('Canvas2DVariantMatrixRenderer', () => {
       renderer.uploadCellData({
         cellFeatureIndices: new Float32Array([0, 1]),
         cellRowIndices: new Uint32Array([0, 1]),
-        cellColors: new Uint8Array([255, 0, 0, 255, 0, 255, 0, 255]),
+        cellColors: new Uint32Array([0xff0000ff, 0xff00ff00]),
         numCells: 2,
+        numFeatures: 4,
       })
 
       renderer.render({
@@ -53,7 +50,6 @@ describe('Canvas2DVariantMatrixRenderer', () => {
         canvasHeight: 300,
         rowHeight: 10,
         scrollTop: 0,
-        numFeatures: 4,
       })
 
       expect(fillRectCalls.length).toBe(2)
@@ -68,8 +64,9 @@ describe('Canvas2DVariantMatrixRenderer', () => {
       renderer.uploadCellData({
         cellFeatureIndices: new Float32Array([2]),
         cellRowIndices: new Uint32Array([3]),
-        cellColors: new Uint8Array([128, 64, 32, 255]),
+        cellColors: new Uint32Array([0xff204080]),
         numCells: 1,
+        numFeatures: 4,
       })
 
       renderer.render({
@@ -77,7 +74,6 @@ describe('Canvas2DVariantMatrixRenderer', () => {
         canvasHeight: 600,
         rowHeight: 20,
         scrollTop: 0,
-        numFeatures: 4,
       })
 
       expect(fillRectCalls.length).toBe(1)
@@ -97,8 +93,9 @@ describe('Canvas2DVariantMatrixRenderer', () => {
       renderer.uploadCellData({
         cellFeatureIndices: new Float32Array([0]),
         cellRowIndices: new Uint32Array([0]),
-        cellColors: new Uint8Array([255, 0, 0, 255]),
+        cellColors: new Uint32Array([0xff0000ff]),
         numCells: 1,
+        numFeatures: 4,
       })
 
       // scrollTop=100 means y = 0*10 - 100 = -100, y+rowHeight = -90 < 0
@@ -107,7 +104,6 @@ describe('Canvas2DVariantMatrixRenderer', () => {
         canvasHeight: 300,
         rowHeight: 10,
         scrollTop: 100,
-        numFeatures: 4,
       })
 
       expect(fillRectCalls.length).toBe(0)
@@ -120,8 +116,9 @@ describe('Canvas2DVariantMatrixRenderer', () => {
       renderer.uploadCellData({
         cellFeatureIndices: new Float32Array([0]),
         cellRowIndices: new Uint32Array([50]),
-        cellColors: new Uint8Array([255, 0, 0, 255]),
+        cellColors: new Uint32Array([0xff0000ff]),
         numCells: 1,
+        numFeatures: 4,
       })
 
       // y = 50*10 - 0 = 500 > 300
@@ -130,7 +127,6 @@ describe('Canvas2DVariantMatrixRenderer', () => {
         canvasHeight: 300,
         rowHeight: 10,
         scrollTop: 0,
-        numFeatures: 4,
       })
 
       expect(fillRectCalls.length).toBe(0)
@@ -145,7 +141,6 @@ describe('Canvas2DVariantMatrixRenderer', () => {
         canvasHeight: 300,
         rowHeight: 10,
         scrollTop: 0,
-        numFeatures: 4,
       })
 
       expect(fillRectCalls.length).toBe(0)
@@ -159,8 +154,9 @@ describe('Canvas2DVariantMatrixRenderer', () => {
       renderer.uploadCellData({
         cellFeatureIndices: new Float32Array([0]),
         cellRowIndices: new Uint32Array([0]),
-        cellColors: new Uint8Array([255, 0, 0, 255]),
+        cellColors: new Uint32Array([0xff0000ff]),
         numCells: 1,
+        numFeatures: 0,
       })
 
       renderer.render({
@@ -168,7 +164,6 @@ describe('Canvas2DVariantMatrixRenderer', () => {
         canvasHeight: 300,
         rowHeight: 10,
         scrollTop: 0,
-        numFeatures: 0,
       })
 
       expect(fillRectCalls.length).toBe(0)
@@ -181,8 +176,9 @@ describe('Canvas2DVariantMatrixRenderer', () => {
       renderer.uploadCellData({
         cellFeatureIndices: new Float32Array([0]),
         cellRowIndices: new Uint32Array([0]),
-        cellColors: new Uint8Array([128, 64, 32, 127]),
+        cellColors: new Uint32Array([0x7f204080]),
         numCells: 1,
+        numFeatures: 4,
       })
 
       renderer.render({
@@ -190,7 +186,6 @@ describe('Canvas2DVariantMatrixRenderer', () => {
         canvasHeight: 300,
         rowHeight: 10,
         scrollTop: 0,
-        numFeatures: 4,
       })
 
       expect(ctx.fillStyle).toBe(`rgba(128,64,32,${127 / 255})`)
@@ -205,8 +200,9 @@ describe('Canvas2DVariantMatrixRenderer', () => {
       renderer.uploadCellData({
         cellFeatureIndices: new Float32Array([0]),
         cellRowIndices: new Uint32Array([0]),
-        cellColors: new Uint8Array([255, 0, 0, 255]),
+        cellColors: new Uint32Array([0xff0000ff]),
         numCells: 1,
+        numFeatures: 4,
       })
 
       renderer.dispose()
@@ -216,7 +212,6 @@ describe('Canvas2DVariantMatrixRenderer', () => {
         canvasHeight: 300,
         rowHeight: 10,
         scrollTop: 0,
-        numFeatures: 4,
       })
 
       expect(fillRectCalls.length).toBe(0)
