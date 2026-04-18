@@ -1,3 +1,4 @@
+import { bpToScreenPx } from '@jbrowse/core/gpu/canvas2dUtils'
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
@@ -8,7 +9,6 @@ import {
   drawLines,
   drawRects,
 } from './components/Canvas2DFeatureRenderer.ts'
-import { bpToScreenPx } from './components/coordinateUtils.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -220,12 +220,10 @@ export async function renderSvg(
       bpRangeX: [vr.start, vr.end] as [number, number],
       reversed: vr.reversed ?? false,
     }
-    const bpLength = vr.end - vr.start
-    const fullBlockWidth = vr.screenEndPx - vr.screenStartPx
 
-    drawLines(svgCanvas, data, block, bpLength, fullBlockWidth, 0)
-    drawRects(svgCanvas, data, block, bpLength, fullBlockWidth, 0)
-    drawArrows(svgCanvas, data, block, bpLength, fullBlockWidth, 0)
+    drawLines(svgCanvas, data, block, 0)
+    drawRects(svgCanvas, data, block, 0)
+    drawArrows(svgCanvas, data, block, 0)
     renderLabels(
       svgCanvas,
       data,

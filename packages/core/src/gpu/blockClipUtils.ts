@@ -12,10 +12,27 @@ export interface BlockClipResult {
   pxX: number
   pxW: number
   pxH: number
+  // HP-split of the visible block's start/end bp. `clipBlock` computes both
+  // so renderers handling reversed blocks can pivot on bpEnd without
+  // reconstructing + re-splitting at render time.
   bpStartHi: number
   bpStartLo: number
+  bpEndHi: number
+  bpEndLo: number
   clippedLengthBp: number
   bpPerPx: number
+}
+
+// [hi, lo, ±clippedLengthBp] — the first three floats of the HP uniform buffer
+// used by hpmath.slang's hpToClipX. Reversed blocks pivot on bpEnd with a
+// negated length.
+export function bpRangeXTuple(
+  clip: BlockClipResult,
+  reversed: boolean,
+): [number, number, number] {
+  return reversed
+    ? [clip.bpEndHi, clip.bpEndLo, -clip.clippedLengthBp]
+    : [clip.bpStartHi, clip.bpStartLo, clip.clippedLengthBp]
 }
 
 export function writeBpRangeUniforms(
@@ -23,17 +40,10 @@ export function writeBpRangeUniforms(
   clip: BlockClipResult,
   reversed: boolean,
 ) {
-  if (reversed) {
-    const endBp = clip.bpStartHi + clip.bpStartLo + clip.clippedLengthBp
-    const [endHi, endLo] = splitPositionWithFrac(endBp)
-    uniformF32[0] = endHi
-    uniformF32[1] = endLo
-    uniformF32[2] = -clip.clippedLengthBp
-  } else {
-    uniformF32[0] = clip.bpStartHi
-    uniformF32[1] = clip.bpStartLo
-    uniformF32[2] = clip.clippedLengthBp
-  }
+  const [hi, lo, len] = bpRangeXTuple(clip, reversed)
+  uniformF32[0] = hi
+  uniformF32[1] = lo
+  uniformF32[2] = len
 }
 
 export function clipBlock(
@@ -61,7 +71,7 @@ export function clipBlock(
   const clippedBpEnd =
     block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
   const [bpStartHi, bpStartLo] = splitPositionWithFrac(clippedBpStart)
-  const clippedLengthBp = clippedBpEnd - clippedBpStart
+  const [bpEndHi, bpEndLo] = splitPositionWithFrac(clippedBpEnd)
 
   return {
     scissorX,
@@ -71,7 +81,9 @@ export function clipBlock(
     pxH,
     bpStartHi,
     bpStartLo,
-    clippedLengthBp,
+    bpEndHi,
+    bpEndLo,
+    clippedLengthBp: clippedBpEnd - clippedBpStart,
     bpPerPx,
   }
 }

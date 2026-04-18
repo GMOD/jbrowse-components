@@ -1,5 +1,5 @@
 import {
-  bpToScreenX as bpToScreenXUtil,
+  bpToScreenPx,
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
@@ -29,20 +29,28 @@ const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5
 
 type Ctx = CanvasRenderingContext2D | SvgCanvas
 
+// Builds a bp→screen-px mapper closed over a single block. Centralizes the
+// reversed-block handling so draw functions don't have to thread `reversed`
+// through every call.
+function bpMapper(block: Canvas2DRenderBlock) {
+  const [rStart, rEnd] = block.bpRangeX
+  const { screenStartPx, screenEndPx, reversed } = block
+  return (bp: number) =>
+    bpToScreenPx(bp, rStart, rEnd, screenStartPx, screenEndPx, reversed)
+}
+
 export function drawLines(
   ctx: Ctx,
   region: RegionRenderData,
   block: Canvas2DRenderBlock,
-  bpLength: number,
-  fullBlockWidth: number,
   scrollY: number,
 ) {
-  const dirFlip = block.reversed ? -1 : 1
+  const toX = bpMapper(block)
   for (let i = 0; i < region.lineYs.length; i++) {
     const startBp = region.linePositions[i * 2]! + region.regionStart
     const endBp = region.linePositions[i * 2 + 1]! + region.regionStart
-    const x1 = bpToScreenXUtil(startBp, block, bpLength, fullBlockWidth)
-    const x2 = bpToScreenXUtil(endBp, block, bpLength, fullBlockWidth)
+    const x1 = toX(startBp)
+    const x2 = toX(endBp)
     const y = Math.floor(region.lineYs[i]! - scrollY + 0.5) + 0.5
     ctx.strokeStyle = abgrToCssRgba(region.lineColors[i]!)
     ctx.lineWidth = 1
@@ -51,10 +59,11 @@ export function drawLines(
     ctx.lineTo(x2, y)
     ctx.stroke()
 
-    // Directions come from the feature strand; on reversed blocks the render
-    // axis is flipped so chevrons/arrows must point the opposite way (matches
-    // the GPU shader's `lerp(dir, -dir, reversed)`).
-    const dir = region.lineDirections[i]! * dirFlip
+    // On reversed blocks the render axis flips, so strand-direction glyphs
+    // (chevrons, arrows) flip too — matches the GPU shader's
+    // `lerp(dir, -dir, u.reversed)`.
+    const rawDir = region.lineDirections[i]!
+    const dir = block.reversed ? -rawDir : rawDir
     if (dir !== 0) {
       ctx.lineWidth = 1.5
       const lineWidthPx = Math.abs(x2 - x1)
@@ -82,18 +91,17 @@ export function drawRects(
   ctx: Ctx,
   region: RegionRenderData,
   block: Canvas2DRenderBlock,
-  bpLength: number,
-  fullBlockWidth: number,
   scrollY: number,
 ) {
+  const toX = bpMapper(block)
   for (let i = 0; i < region.rectYs.length; i++) {
     const startBp = region.rectPositions[i * 2]! + region.regionStart
     const endBp = region.rectPositions[i * 2 + 1]! + region.regionStart
-    const x1 = bpToScreenXUtil(startBp, block, bpLength, fullBlockWidth)
-    const x2 = bpToScreenXUtil(endBp, block, bpLength, fullBlockWidth)
+    const x1 = toX(startBp)
+    const x2 = toX(endBp)
     const y = Math.floor(region.rectYs[i]! - scrollY + 0.5)
     const h = Math.floor(region.rectHeights[i]! + 0.5)
-    // On reversed blocks bpToScreenX flips so x1 > x2; use abs + min for a
+    // On reversed blocks bpToScreenPx flips so x1 > x2; use abs + min for a
     // width-agnostic draw that matches the GPU shader's MIN_RECT_WIDTH clamp.
     const xLeft = Math.min(x1, x2)
     const w = Math.max(MIN_RECT_WIDTH_PX, Math.abs(x2 - x1))
@@ -107,16 +115,15 @@ export function drawArrows(
   ctx: Ctx,
   region: RegionRenderData,
   block: Canvas2DRenderBlock,
-  bpLength: number,
-  fullBlockWidth: number,
   scrollY: number,
 ) {
-  const dirFlip = block.reversed ? -1 : 1
+  const toX = bpMapper(block)
   for (let i = 0; i < region.arrowYs.length; i++) {
     const xBp = region.arrowXs[i]! + region.regionStart
-    const cx = bpToScreenXUtil(xBp, block, bpLength, fullBlockWidth)
+    const cx = toX(xBp)
     const y = Math.floor(region.arrowYs[i]! - scrollY + 0.5) + 0.5
-    const dir = region.arrowDirections[i]! * dirFlip
+    const rawDir = region.arrowDirections[i]!
+    const dir = block.reversed ? -rawDir : rawDir
     ctx.fillStyle = abgrToCssRgba(region.arrowColors[i]!)
 
     const stemEndX = cx + STEM_LENGTH_PX * 0.5 * dir
@@ -179,16 +186,14 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
         continue
       }
 
-      const { fullBlockWidth, bpLength } = clip
-
       ctx.save()
       ctx.beginPath()
       ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
       ctx.clip()
 
-      drawLines(ctx, region, block, bpLength, fullBlockWidth, scrollY)
-      drawRects(ctx, region, block, bpLength, fullBlockWidth, scrollY)
-      drawArrows(ctx, region, block, bpLength, fullBlockWidth, scrollY)
+      drawLines(ctx, region, block, scrollY)
+      drawRects(ctx, region, block, scrollY)
+      drawArrows(ctx, region, block, scrollY)
 
       ctx.restore()
     }

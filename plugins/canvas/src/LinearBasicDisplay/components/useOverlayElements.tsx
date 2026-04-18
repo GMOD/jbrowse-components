@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
-import { bpToScreenPx } from './coordinateUtils.ts'
+import { bpToScreenPx } from '@jbrowse/core/gpu/canvas2dUtils'
+
 import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 

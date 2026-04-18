@@ -1,7 +1,6 @@
-import { clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
+import { bpRangeXTuple, clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
-import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 
 import {
   interleaveArrows,
@@ -19,7 +18,6 @@ import type {
   FeatureRenderBlock,
 } from './canvasFeatureBackendTypes.ts'
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { BlockClipResult } from '@jbrowse/core/gpu/blockClipUtils'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_RECT = 'rect'
@@ -28,18 +26,6 @@ const PASS_CHEVRON = 'chevron'
 const PASS_ARROW = 'arrow'
 
 export const CANVAS_FEATURE_UNIFORM_BYTE_SIZE = rectShader.UNIFORMS_SIZE_BYTES
-
-function bpRangeXFor(
-  clip: BlockClipResult,
-  reversed: boolean,
-): [number, number, number] {
-  if (reversed) {
-    const endBp = clip.bpStartHi + clip.bpStartLo + clip.clippedLengthBp
-    const [endHi, endLo] = splitPositionWithFrac(endBp)
-    return [endHi, endLo, -clip.clippedLengthBp]
-  }
-  return [clip.bpStartHi, clip.bpStartLo, clip.clippedLengthBp]
-}
 
 export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
   slangPass({ id: PASS_RECT, mod: rectShader, verticesPerInstance: 6 }),
@@ -155,7 +141,7 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
       this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
 
       rectShader.writeUniforms(this.uniformData, {
-        bpRangeX: bpRangeXFor(clip, block.reversed),
+        bpRangeX: bpRangeXTuple(clip, block.reversed),
         regionStart: Math.floor(meta.start),
         canvasHeight,
         canvasWidth: clip.scissorW,
