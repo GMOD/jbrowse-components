@@ -47,9 +47,9 @@ export default function stateModelFactory() {
       nodeVertexRanges: undefined as Map<string, VertexRange> | undefined,
       edgeVertexRanges: undefined as Map<number, VertexRange> | undefined,
       arrowVertexRanges: undefined as Map<number, VertexRange> | undefined,
-      baseNodeColors: undefined as Float32Array | undefined,
-      baseEdgeColors: undefined as Float32Array | undefined,
-      baseArrowColors: undefined as Float32Array | undefined,
+      baseNodeColors: undefined as Uint32Array | undefined,
+      baseEdgeColors: undefined as Uint32Array | undefined,
+      baseArrowColors: undefined as Uint32Array | undefined,
     }))
     .views(self => ({
       get nodeCount() {
@@ -119,9 +119,9 @@ export default function stateModelFactory() {
         nodeVertexRanges: Map<string, VertexRange>,
         edgeVertexRanges: Map<number, VertexRange>,
         arrowVertexRanges: Map<number, VertexRange>,
-        baseNodeColors: Float32Array,
-        baseEdgeColors: Float32Array,
-        baseArrowColors: Float32Array,
+        baseNodeColors: Uint32Array,
+        baseEdgeColors: Uint32Array,
+        baseArrowColors: Uint32Array,
       ) {
         self.nodeVertexRanges = nodeVertexRanges
         self.edgeVertexRanges = edgeVertexRanges

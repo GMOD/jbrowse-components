@@ -1,57 +1,25 @@
 /// <reference types="@webgpu/types" />
 
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
+import { glToGpuVertexFormat } from '@jbrowse/core/gpu/webgpuUtils'
+
+import * as graphShader from './shaders/graph.generated.ts'
+import { SUB_BATCH_KEYS } from './types.ts'
 
 import type {
   RenderBatch,
   Renderer,
   SubBatch,
+  SubBatchKey,
   TransformUniform,
 } from './types.ts'
 
-const shaderSource = `
-struct Uniforms {
-  scale: vec2f,
-  translate: vec2f,
-  viewport: vec2f,
-}
-
-@group(0) @binding(0) var<uniform> u: Uniforms;
-
-struct VertexInput {
-  @location(0) position: vec2f,
-  @location(1) normal: vec2f,
-  @location(2) thickness: f32,
-  @location(3) color: vec4f,
-}
-
-struct VertexOutput {
-  @builtin(position) position: vec4f,
-  @location(0) color: vec4f,
-}
-
-@vertex
-fn vs_main(input: VertexInput) -> VertexOutput {
-  var out: VertexOutput;
-  let expanded = input.position + input.normal * input.thickness / u.scale.x;
-  let screen = expanded * u.scale + u.translate;
-  let clip = (screen / u.viewport) * 2.0 - 1.0;
-  out.position = vec4f(clip.x, -clip.y, 0.0, 1.0);
-  out.color = input.color;
-  return out;
-}
-
-@fragment
-fn fs_main(input: VertexOutput) -> @location(0) vec4f {
-  return input.color;
-}
-`
+const U = graphShader.UNIFORM_OFFSET_F32
+const STRIDE_BYTES = graphShader.INSTANCE_STRIDE_BYTES
+const COLOR_OFFSET_BYTES = graphShader.FIELD_OFFSET_BYTES.color
 
 interface SubBatchBuffers {
-  positionBuffer: GPUBuffer
-  normalBuffer: GPUBuffer
-  thicknessBuffer: GPUBuffer
-  colorBuffer: GPUBuffer
+  vertexBuffer: GPUBuffer
   indexBuffer: GPUBuffer
   indexCount: number
 }
@@ -62,9 +30,13 @@ export class WebGPURenderer implements Renderer {
   private pipeline: GPURenderPipeline
   private uniformBuffer: GPUBuffer
   private uniformBindGroup: GPUBindGroup
-  private edgeBuffers: SubBatchBuffers | null = null
-  private nodeBuffers: SubBatchBuffers | null = null
-  private arrowBuffers: SubBatchBuffers | null = null
+  private uniformData = new ArrayBuffer(graphShader.UNIFORMS_SIZE_BYTES)
+  private uniformF32 = new Float32Array(this.uniformData)
+  private subBatches: Record<SubBatchKey, SubBatchBuffers | null> = {
+    edges: null,
+    nodes: null,
+    arrows: null,
+  }
 
   private constructor(
     device: GPUDevice,
@@ -87,7 +59,7 @@ export class WebGPURenderer implements Renderer {
     }
     const { device, context } = result
     const format = navigator.gpu.getPreferredCanvasFormat()
-    const module = device.createShaderModule({ code: shaderSource })
+    const module = device.createShaderModule({ code: graphShader.WGSL_SOURCE })
 
     const pipeline = device.createRenderPipeline({
       layout: 'auto',
@@ -96,44 +68,12 @@ export class WebGPURenderer implements Renderer {
         entryPoint: 'vs_main',
         buffers: [
           {
-            arrayStride: 8,
-            attributes: [
-              {
-                shaderLocation: 0,
-                offset: 0,
-                format: 'float32x2' as GPUVertexFormat,
-              },
-            ],
-          },
-          {
-            arrayStride: 8,
-            attributes: [
-              {
-                shaderLocation: 1,
-                offset: 0,
-                format: 'float32x2' as GPUVertexFormat,
-              },
-            ],
-          },
-          {
-            arrayStride: 4,
-            attributes: [
-              {
-                shaderLocation: 2,
-                offset: 0,
-                format: 'float32' as GPUVertexFormat,
-              },
-            ],
-          },
-          {
-            arrayStride: 16,
-            attributes: [
-              {
-                shaderLocation: 3,
-                offset: 0,
-                format: 'float32x4' as GPUVertexFormat,
-              },
-            ],
+            arrayStride: STRIDE_BYTES,
+            attributes: graphShader.GL_ATTRIBUTES.map((a, i) => ({
+              shaderLocation: i,
+              offset: a.offsetBytes,
+              format: glToGpuVertexFormat(a),
+            })),
           },
         ],
       },
@@ -162,13 +102,13 @@ export class WebGPURenderer implements Renderer {
     })
 
     const uniformBuffer = device.createBuffer({
-      size: 32,
+      size: graphShader.UNIFORMS_SIZE_BYTES,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     })
 
     const uniformBindGroup = device.createBindGroup({
       layout: pipeline.getBindGroupLayout(0),
-      entries: [{ binding: 0, resource: { buffer: uniformBuffer } }],
+      entries: [{ binding: 1, resource: { buffer: uniformBuffer } }],
     })
 
     return new WebGPURenderer(
@@ -204,80 +144,59 @@ export class WebGPURenderer implements Renderer {
 
   private createSubBatchBuffers(batch: SubBatch): SubBatchBuffers {
     return {
-      positionBuffer: this.createBuffer(batch.positions, GPUBufferUsage.VERTEX),
-      normalBuffer: this.createBuffer(batch.normals, GPUBufferUsage.VERTEX),
-      thicknessBuffer: this.createBuffer(
-        batch.thicknesses,
-        GPUBufferUsage.VERTEX,
-      ),
-      colorBuffer: this.createBuffer(batch.colors, GPUBufferUsage.VERTEX),
+      vertexBuffer: this.createBuffer(batch.vertexData, GPUBufferUsage.VERTEX),
       indexBuffer: this.createBuffer(batch.indices, GPUBufferUsage.INDEX),
       indexCount: batch.indices.length,
     }
   }
 
   private destroySubBatchBuffers(buffers: SubBatchBuffers) {
-    buffers.positionBuffer.destroy()
-    buffers.normalBuffer.destroy()
-    buffers.thicknessBuffer.destroy()
-    buffers.colorBuffer.destroy()
+    buffers.vertexBuffer.destroy()
     buffers.indexBuffer.destroy()
   }
 
   uploadGeometry(batch: RenderBatch) {
-    if (this.edgeBuffers) {
-      this.destroySubBatchBuffers(this.edgeBuffers)
+    for (const key of SUB_BATCH_KEYS) {
+      const existing = this.subBatches[key]
+      if (existing) {
+        this.destroySubBatchBuffers(existing)
+      }
+      this.subBatches[key] =
+        batch[key].indices.length > 0
+          ? this.createSubBatchBuffers(batch[key])
+          : null
     }
-    if (this.nodeBuffers) {
-      this.destroySubBatchBuffers(this.nodeBuffers)
-    }
-    if (this.arrowBuffers) {
-      this.destroySubBatchBuffers(this.arrowBuffers)
-    }
-
-    this.edgeBuffers =
-      batch.edges.indices.length > 0
-        ? this.createSubBatchBuffers(batch.edges)
-        : null
-    this.nodeBuffers =
-      batch.nodes.indices.length > 0
-        ? this.createSubBatchBuffers(batch.nodes)
-        : null
-    this.arrowBuffers =
-      batch.arrows.indices.length > 0
-        ? this.createSubBatchBuffers(batch.arrows)
-        : null
   }
 
   updateSubBatchColors(
-    target: 'edges' | 'nodes' | 'arrows',
-    colors: Float32Array,
+    target: SubBatchKey,
+    colors: Uint32Array,
     vertexStart: number,
   ) {
-    const buffers =
-      target === 'edges'
-        ? this.edgeBuffers
-        : target === 'nodes'
-          ? this.nodeBuffers
-          : this.arrowBuffers
+    const buffers = this.subBatches[target]
     if (!buffers) {
       return
     }
-    this.device.queue.writeBuffer(buffers.colorBuffer, vertexStart * 16, colors)
+    for (let i = 0; i < colors.length; i++) {
+      this.device.queue.writeBuffer(
+        buffers.vertexBuffer,
+        (vertexStart + i) * STRIDE_BYTES + COLOR_OFFSET_BYTES,
+        colors.buffer,
+        colors.byteOffset + i * 4,
+        4,
+      )
+    }
   }
 
   updateTransform(t: TransformUniform) {
-    const data = new Float32Array([
-      t.scaleX,
-      t.scaleY,
-      t.translateX,
-      t.translateY,
-      t.viewportWidth,
-      t.viewportHeight,
-      0,
-      0,
-    ])
-    this.device.queue.writeBuffer(this.uniformBuffer, 0, data)
+    const f32 = this.uniformF32
+    f32[U.scale] = t.scaleX
+    f32[U.scale + 1] = t.scaleY
+    f32[U.translate] = t.translateX
+    f32[U.translate + 1] = t.translateY
+    f32[U.viewport] = t.viewportWidth
+    f32[U.viewport + 1] = t.viewportHeight
+    this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformData)
   }
 
   render(clearColor: [number, number, number, number]) {
@@ -302,16 +221,10 @@ export class WebGPURenderer implements Renderer {
     pass.setPipeline(this.pipeline)
     pass.setBindGroup(0, this.uniformBindGroup)
 
-    for (const buffers of [
-      this.edgeBuffers,
-      this.nodeBuffers,
-      this.arrowBuffers,
-    ]) {
+    for (const key of SUB_BATCH_KEYS) {
+      const buffers = this.subBatches[key]
       if (buffers && buffers.indexCount > 0) {
-        pass.setVertexBuffer(0, buffers.positionBuffer)
-        pass.setVertexBuffer(1, buffers.normalBuffer)
-        pass.setVertexBuffer(2, buffers.thicknessBuffer)
-        pass.setVertexBuffer(3, buffers.colorBuffer)
+        pass.setVertexBuffer(0, buffers.vertexBuffer)
         pass.setIndexBuffer(buffers.indexBuffer, 'uint32')
         pass.drawIndexed(buffers.indexCount)
       }
@@ -322,18 +235,13 @@ export class WebGPURenderer implements Renderer {
   }
 
   destroy() {
-    if (this.edgeBuffers) {
-      this.destroySubBatchBuffers(this.edgeBuffers)
-    }
-    if (this.nodeBuffers) {
-      this.destroySubBatchBuffers(this.nodeBuffers)
-    }
-    if (this.arrowBuffers) {
-      this.destroySubBatchBuffers(this.arrowBuffers)
+    for (const key of SUB_BATCH_KEYS) {
+      const buffers = this.subBatches[key]
+      if (buffers) {
+        this.destroySubBatchBuffers(buffers)
+        this.subBatches[key] = null
+      }
     }
     this.uniformBuffer.destroy()
-    this.edgeBuffers = null
-    this.nodeBuffers = null
-    this.arrowBuffers = null
   }
 }

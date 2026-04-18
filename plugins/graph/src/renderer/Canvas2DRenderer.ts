@@ -1,16 +1,28 @@
+import * as graphShader from './shaders/graph.generated.ts'
+import { SUB_BATCH_KEYS } from './types.ts'
+
 import type {
   RenderBatch,
   Renderer,
   SubBatch,
+  SubBatchKey,
   TransformUniform,
 } from './types.ts'
+
+const STRIDE_F32 = graphShader.INSTANCE_STRIDE_F32
+const POS_F32 = graphShader.FIELD_OFFSET_F32.position
+const NORMAL_F32 = graphShader.FIELD_OFFSET_F32.normal
+const THICKNESS_F32 = graphShader.FIELD_OFFSET_F32.thickness
+const COLOR_F32 = graphShader.FIELD_OFFSET_F32.color
 
 export class Canvas2DRenderer implements Renderer {
   private ctx: CanvasRenderingContext2D
   private transform: TransformUniform | null = null
-  private edgeBatch: SubBatch | null = null
-  private nodeBatch: SubBatch | null = null
-  private arrowBatch: SubBatch | null = null
+  private subBatches: Record<SubBatchKey, SubBatch | null> = {
+    edges: null,
+    nodes: null,
+    arrows: null,
+  }
 
   constructor(canvas: HTMLCanvasElement) {
     const ctx = canvas.getContext('2d')
@@ -29,26 +41,24 @@ export class Canvas2DRenderer implements Renderer {
   }
 
   uploadGeometry(batch: RenderBatch) {
-    this.edgeBatch = batch.edges
-    this.nodeBatch = batch.nodes
-    this.arrowBatch = batch.arrows
+    for (const key of SUB_BATCH_KEYS) {
+      this.subBatches[key] = batch[key].indices.length > 0 ? batch[key] : null
+    }
   }
 
   updateSubBatchColors(
-    target: 'edges' | 'nodes' | 'arrows',
-    colors: Float32Array,
+    target: SubBatchKey,
+    colors: Uint32Array,
     vertexStart: number,
   ) {
-    const batch =
-      target === 'edges'
-        ? this.edgeBatch
-        : target === 'nodes'
-          ? this.nodeBatch
-          : this.arrowBatch
+    const batch = this.subBatches[target]
     if (!batch) {
       return
     }
-    batch.colors.set(colors, vertexStart * 4)
+    const dst = batch.vertexDataU32
+    for (let i = 0; i < colors.length; i++) {
+      dst[(vertexStart + i) * STRIDE_F32 + COLOR_F32] = colors[i]!
+    }
   }
 
   updateTransform(transform: TransformUniform) {
@@ -65,9 +75,9 @@ export class Canvas2DRenderer implements Renderer {
     ctx.fillStyle = `rgba(${clearColor[0] * 255},${clearColor[1] * 255},${clearColor[2] * 255},${clearColor[3]})`
     ctx.fillRect(0, 0, width, height)
 
-    this.renderSubBatch(this.edgeBatch)
-    this.renderSubBatch(this.nodeBatch)
-    this.renderSubBatch(this.arrowBatch)
+    for (const key of SUB_BATCH_KEYS) {
+      this.renderSubBatch(this.subBatches[key])
+    }
   }
 
   private renderSubBatch(batch: SubBatch | null) {
@@ -76,45 +86,49 @@ export class Canvas2DRenderer implements Renderer {
     }
     const ctx = this.ctx
     const t = this.transform
-    const { positions, normals, thicknesses, colors, indices } = batch
+    const { vertexData, vertexDataU32, indices } = batch
 
     for (let i = 0; i < indices.length; i += 3) {
       const i0 = indices[i]!
       const i1 = indices[i + 1]!
       const i2 = indices[i + 2]!
+      const b0 = i0 * STRIDE_F32
+      const b1 = i1 * STRIDE_F32
+      const b2 = i2 * STRIDE_F32
 
       const x0 =
-        positions[i0 * 2]! * t.scaleX +
-        normals[i0 * 2]! * thicknesses[i0]! +
+        vertexData[b0 + POS_F32]! * t.scaleX +
+        vertexData[b0 + NORMAL_F32]! * vertexData[b0 + THICKNESS_F32]! +
         t.translateX
       const y0 =
         t.viewportHeight -
-        (positions[i0 * 2 + 1]! * t.scaleY +
-          normals[i0 * 2 + 1]! * thicknesses[i0]! +
+        (vertexData[b0 + POS_F32 + 1]! * t.scaleY +
+          vertexData[b0 + NORMAL_F32 + 1]! * vertexData[b0 + THICKNESS_F32]! +
           t.translateY)
       const x1 =
-        positions[i1 * 2]! * t.scaleX +
-        normals[i1 * 2]! * thicknesses[i1]! +
+        vertexData[b1 + POS_F32]! * t.scaleX +
+        vertexData[b1 + NORMAL_F32]! * vertexData[b1 + THICKNESS_F32]! +
         t.translateX
       const y1 =
         t.viewportHeight -
-        (positions[i1 * 2 + 1]! * t.scaleY +
-          normals[i1 * 2 + 1]! * thicknesses[i1]! +
+        (vertexData[b1 + POS_F32 + 1]! * t.scaleY +
+          vertexData[b1 + NORMAL_F32 + 1]! * vertexData[b1 + THICKNESS_F32]! +
           t.translateY)
       const x2 =
-        positions[i2 * 2]! * t.scaleX +
-        normals[i2 * 2]! * thicknesses[i2]! +
+        vertexData[b2 + POS_F32]! * t.scaleX +
+        vertexData[b2 + NORMAL_F32]! * vertexData[b2 + THICKNESS_F32]! +
         t.translateX
       const y2 =
         t.viewportHeight -
-        (positions[i2 * 2 + 1]! * t.scaleY +
-          normals[i2 * 2 + 1]! * thicknesses[i2]! +
+        (vertexData[b2 + POS_F32 + 1]! * t.scaleY +
+          vertexData[b2 + NORMAL_F32 + 1]! * vertexData[b2 + THICKNESS_F32]! +
           t.translateY)
 
-      const r = Math.round(colors[i0 * 4]! * 255)
-      const g = Math.round(colors[i0 * 4 + 1]! * 255)
-      const b = Math.round(colors[i0 * 4 + 2]! * 255)
-      const a = colors[i0 * 4 + 3]!
+      const c = vertexDataU32[b0 + COLOR_F32]!
+      const r = c & 0xff
+      const g = (c >>> 8) & 0xff
+      const b = (c >>> 16) & 0xff
+      const a = ((c >>> 24) & 0xff) / 255
 
       ctx.fillStyle = `rgba(${r},${g},${b},${a})`
       ctx.beginPath()
@@ -127,8 +141,6 @@ export class Canvas2DRenderer implements Renderer {
   }
 
   destroy() {
-    this.edgeBatch = null
-    this.nodeBatch = null
-    this.arrowBatch = null
+    this.subBatches = { edges: null, nodes: null, arrows: null }
   }
 }

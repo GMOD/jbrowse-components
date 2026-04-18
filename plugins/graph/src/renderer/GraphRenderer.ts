@@ -4,7 +4,12 @@ import { Canvas2DRenderer } from './Canvas2DRenderer.ts'
 import { WebGL2Renderer } from './WebGL2Renderer.ts'
 import { WebGPURenderer } from './WebGPURenderer.ts'
 
-import type { RenderBatch, Renderer, TransformUniform } from './types.ts'
+import type {
+  RenderBatch,
+  Renderer,
+  SubBatchKey,
+  TransformUniform,
+} from './types.ts'
 
 export class GraphRenderer {
   private canvas: HTMLCanvasElement
@@ -43,8 +48,8 @@ export class GraphRenderer {
   }
 
   updateSubBatchColors(
-    target: 'edges' | 'nodes' | 'arrows',
-    colors: Float32Array,
+    target: SubBatchKey,
+    colors: Uint32Array,
     vertexStart: number,
   ) {
     this.backend?.updateSubBatchColors(target, colors, vertexStart)

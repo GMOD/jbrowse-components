@@ -1,8 +1,31 @@
+import { packAbgr } from '@jbrowse/core/util/colorBits'
+
 import { computeEdgeCurves } from '../util/geometry.ts'
+import {
+  FIELD_OFFSET_F32,
+  INSTANCE_STRIDE_BYTES,
+  INSTANCE_STRIDE_F32,
+} from './shaders/graph.generated.ts'
 
 import type { ColorScheme, Graph, GraphNode, NodeSegment } from '../types.ts'
 import type { RenderBatch, SubBatch, VertexRange } from './types.ts'
 import type { BezierCurve } from '../util/geometry.ts'
+
+// Colors flow through the geometry builder as ABGR-in-u32 (see colorBits.ts).
+// That matches the shader's uint color attribute so no repacking happens at
+// upload time; CPU-side brighten / recolour utilities operate on the same
+// u32 values.
+const EDGE_DEFAULT_COLOR = packAbgr(119, 119, 119, 217) // rgb(119,119,119) ~ 0.467, alpha 0.85
+const EDGE_PATH_FALLBACK_COLOR = packAbgr(136, 136, 136, 217) // ~0.533, alpha 0.85
+
+function packNorm(r: number, g: number, b: number, a: number) {
+  return packAbgr(
+    Math.round(r * 255),
+    Math.round(g * 255),
+    Math.round(b * 255),
+    Math.round(a * 255),
+  )
+}
 
 export interface BuildOptions {
   nodePositions: Record<string, NodeSegment[]>
@@ -80,10 +103,10 @@ export function getNodeColor(
   node: GraphNode,
   colorScheme: ColorScheme,
   range: ColorSchemeRange,
-): [number, number, number, number] {
+) {
   switch (colorScheme) {
     case 'uniform':
-      return [52 / 255, 152 / 255, 219 / 255, 1]
+      return packAbgr(52, 152, 219, 255)
 
     case 'random': {
       let hash = 0
@@ -92,7 +115,7 @@ export function getNodeColor(
       }
       const hue = Math.abs(hash % 360)
       const [r, g, b] = hslToRgb(hue, 0.7, 0.5)
-      return [r, g, b, 1]
+      return packNorm(r, g, b, 1)
     }
 
     case 'depth': {
@@ -106,26 +129,26 @@ export function getNodeColor(
       let b: number
       if (t < 0.25) {
         const s = t / 0.25
-        r = (68 + (59 - 68) * s) / 255
-        g = (1 + (82 - 1) * s) / 255
-        b = (84 + (139 - 84) * s) / 255
+        r = 68 + (59 - 68) * s
+        g = 1 + (82 - 1) * s
+        b = 84 + (139 - 84) * s
       } else if (t < 0.5) {
         const s = (t - 0.25) / 0.25
-        r = (59 + (33 - 59) * s) / 255
-        g = (82 + (145 - 82) * s) / 255
-        b = (139 + (140 - 139) * s) / 255
+        r = 59 + (33 - 59) * s
+        g = 82 + (145 - 82) * s
+        b = 139 + (140 - 139) * s
       } else if (t < 0.75) {
         const s = (t - 0.5) / 0.25
-        r = (33 + (94 - 33) * s) / 255
-        g = (145 + (201 - 145) * s) / 255
-        b = (140 + (98 - 140) * s) / 255
+        r = 33 + (94 - 33) * s
+        g = 145 + (201 - 145) * s
+        b = 140 + (98 - 140) * s
       } else {
         const s = (t - 0.75) / 0.25
-        r = (94 + (253 - 94) * s) / 255
-        g = (201 + (231 - 201) * s) / 255
-        b = (98 + (37 - 98) * s) / 255
+        r = 94 + (253 - 94) * s
+        g = 201 + (231 - 201) * s
+        b = 98 + (37 - 98) * s
       }
-      return [r!, g!, b!, 1]
+      return packAbgr(Math.round(r), Math.round(g), Math.round(b), 255)
     }
 
     case 'gc-content': {
@@ -135,19 +158,19 @@ export function getNodeColor(
             (range.maxLength - range.minLength)
           : 0.5
       const t = Math.max(0, Math.min(1, normalized))
-      return [
-        (220 + (50 - 220) * t) / 255,
-        (50 + (120 - 50) * t) / 255,
-        (50 + (220 - 50) * t) / 255,
-        1,
-      ]
+      return packAbgr(
+        Math.round(220 + (50 - 220) * t),
+        Math.round(50 + (120 - 50) * t),
+        Math.round(50 + (220 - 50) * t),
+        255,
+      )
     }
 
     case 'grey':
-      return [160 / 255, 160 / 255, 160 / 255, 1]
+      return packAbgr(160, 160, 160, 255)
 
     default:
-      return [52 / 255, 152 / 255, 219 / 255, 1]
+      return packAbgr(52, 152, 219, 255)
   }
 }
 
@@ -274,12 +297,31 @@ function isBezierInBounds(
 }
 
 class MeshBuilder {
-  positions: number[] = []
-  normals: number[] = []
-  thicknesses: number[] = []
-  colors: number[] = []
+  // Grown in-place, freshly allocated when capacity runs out. The final
+  // `toSubBatch` slice is already in the shader's interleaved layout, so
+  // geometry build is one pass with no stride conversion at the end.
+  private capacity = 0
+  private vertexF32 = new Float32Array(0)
+  private vertexU32 = new Uint32Array(0)
+  private colorsU32 = new Uint32Array(0)
   indices: number[] = []
   vertexCount = 0
+
+  private grow(needed: number) {
+    if (needed <= this.capacity) {
+      return
+    }
+    const next = Math.max(this.capacity === 0 ? 64 : this.capacity * 2, needed)
+    const buffer = new ArrayBuffer(next * INSTANCE_STRIDE_BYTES)
+    const f32 = new Float32Array(buffer)
+    f32.set(this.vertexF32)
+    this.vertexF32 = f32
+    this.vertexU32 = new Uint32Array(buffer)
+    const colors = new Uint32Array(next)
+    colors.set(this.colorsU32)
+    this.colorsU32 = colors
+    this.capacity = next
+  }
 
   pushVertex(
     x: number,
@@ -287,12 +329,17 @@ class MeshBuilder {
     nx: number,
     ny: number,
     thickness: number,
-    color: [number, number, number, number],
+    color: number,
   ) {
-    this.positions.push(x, y)
-    this.normals.push(nx, ny)
-    this.thicknesses.push(thickness)
-    this.colors.push(color[0], color[1], color[2], color[3])
+    this.grow(this.vertexCount + 1)
+    const base = this.vertexCount * INSTANCE_STRIDE_F32
+    this.vertexF32[base + FIELD_OFFSET_F32.position] = x
+    this.vertexF32[base + FIELD_OFFSET_F32.position + 1] = y
+    this.vertexF32[base + FIELD_OFFSET_F32.normal] = nx
+    this.vertexF32[base + FIELD_OFFSET_F32.normal + 1] = ny
+    this.vertexF32[base + FIELD_OFFSET_F32.thickness] = thickness
+    this.vertexU32[base + FIELD_OFFSET_F32.color] = color
+    this.colorsU32[this.vertexCount] = color
     this.vertexCount++
   }
 
@@ -301,7 +348,7 @@ class MeshBuilder {
     angle: number,
     startAngleOffset: number,
     thickness: number,
-    color: [number, number, number, number],
+    color: number,
   ) {
     const capSegments = 4
     const centerIdx = this.vertexCount
@@ -326,7 +373,7 @@ class MeshBuilder {
   addPolyline(
     points: { x: number; y: number }[],
     thickness: number,
-    color: [number, number, number, number],
+    color: number,
   ) {
     if (points.length < 2) {
       return
@@ -428,7 +475,7 @@ class MeshBuilder {
     y: number,
     angle: number,
     size: number,
-    color: [number, number, number, number],
+    color: number,
   ) {
     this.pushVertex(x, y, 0, 0, 0, color)
     this.pushVertex(
@@ -455,12 +502,19 @@ class MeshBuilder {
   }
 
   toSubBatch(): SubBatch {
+    // slice (not subarray) detaches the over-allocated capacity buffer so it
+    // can be GC'd once the build finishes. The per-element cost is trivial
+    // compared to the build itself.
+    const vertexData = this.vertexF32.slice(
+      0,
+      this.vertexCount * INSTANCE_STRIDE_F32,
+    )
     return {
-      positions: new Float32Array(this.positions),
-      normals: new Float32Array(this.normals),
-      thicknesses: new Float32Array(this.thicknesses),
-      colors: new Float32Array(this.colors),
+      vertexData,
+      vertexDataU32: new Uint32Array(vertexData.buffer),
+      colors: this.colorsU32.slice(0, this.vertexCount),
       indices: new Uint32Array(this.indices),
+      vertexCount: this.vertexCount,
     }
   }
 }
@@ -490,13 +544,13 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
     nodeById.set(n.id, n)
   }
 
-  const pathColors = new Map<string, [number, number, number, number]>()
+  const pathColors = new Map<string, number>()
   if (graph.paths) {
     const hueStep = 360 / graph.paths.length
     for (let idx = 0; idx < graph.paths.length; idx++) {
       const path = graph.paths[idx]!
       const [r, g, b] = hslToRgb(idx * hueStep, 0.7, 0.5)
-      pathColors.set(path.name, [r, g, b, 0.85])
+      pathColors.set(path.name, packNorm(r, g, b, 0.85))
     }
   }
 
@@ -517,7 +571,7 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
     const buildSingleEdge = (
       offsetX: number,
       offsetY: number,
-      color: [number, number, number, number],
+      color: number,
     ) => {
       const curves = computeEdgeCurves(
         fromSegments,
@@ -549,10 +603,7 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
     const arrowStart = arrowMesh.vertexCount
 
     if (!drawPaths || numPaths === 0) {
-      const edgeColor: [number, number, number, number] = [
-        0.467, 0.467, 0.467, 0.85,
-      ]
-      buildSingleEdge(0, 0, edgeColor)
+      buildSingleEdge(0, 0, EDGE_DEFAULT_COLOR)
     } else {
       const dx = toStart.x - fromEnd.x
       const dy = toStart.y - fromEnd.y
@@ -565,7 +616,7 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
         for (let pathIdx = 0; pathIdx < numPaths; pathIdx++) {
           const offset = (pathIdx - (numPaths - 1) / 2) * offsetDist
           const pathId = edge.pathIds![pathIdx]!
-          const color = pathColors.get(pathId) ?? [0.533, 0.533, 0.533, 0.85]
+          const color = pathColors.get(pathId) ?? EDGE_PATH_FALLBACK_COLOR
           buildSingleEdge(perpX * offset, perpY * offset, color)
         }
       }
@@ -612,57 +663,26 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
   }
 }
 
-export function recolorNodes(
-  graph: Graph,
-  nodeVertexRanges: Map<string, VertexRange>,
-  colorScheme: ColorScheme,
-  baseNodeColors: Float32Array,
-) {
-  const colorRange = computeColorSchemeRange(graph)
-  const nodeById = new Map<string, GraphNode>()
-  for (const n of graph.nodes) {
-    nodeById.set(n.id, n)
-  }
-
-  const result = new Float32Array(baseNodeColors.length)
-  result.set(baseNodeColors)
-
-  for (const [nodeId, range] of nodeVertexRanges) {
-    const node = nodeById.get(nodeId)
-    if (!node) {
-      continue
-    }
-    const color = getNodeColor(node, colorScheme, colorRange)
-    for (let v = 0; v < range.count; v++) {
-      const idx = (range.start + v) * 4
-      result[idx] = color[0]
-      result[idx + 1] = color[1]
-      result[idx + 2] = color[2]
-      result[idx + 3] = color[3]
-    }
-  }
-  return result
-}
-
 export function brightenColors(
-  baseColors: Float32Array,
+  baseColors: Uint32Array,
   range: VertexRange,
   factor: number,
 ) {
-  const slice = new Float32Array(range.count * 4)
+  const slice = new Uint32Array(range.count)
   for (let v = 0; v < range.count; v++) {
-    const srcIdx = (range.start + v) * 4
-    slice[v * 4] = Math.min(1, baseColors[srcIdx]! * factor)
-    slice[v * 4 + 1] = Math.min(1, baseColors[srcIdx + 1]! * factor)
-    slice[v * 4 + 2] = Math.min(1, baseColors[srcIdx + 2]! * factor)
-    slice[v * 4 + 3] = baseColors[srcIdx + 3]!
+    const c = baseColors[range.start + v]!
+    const r = Math.min(255, Math.round((c & 0xff) * factor))
+    const g = Math.min(255, Math.round(((c >>> 8) & 0xff) * factor))
+    const b = Math.min(255, Math.round(((c >>> 16) & 0xff) * factor))
+    const a = (c >>> 24) & 0xff
+    slice[v] = packAbgr(r, g, b, a)
   }
   return slice
 }
 
 export function extractColorSlice(
-  baseColors: Float32Array,
+  baseColors: Uint32Array,
   range: VertexRange,
 ) {
-  return baseColors.slice(range.start * 4, (range.start + range.count) * 4)
+  return baseColors.slice(range.start, range.start + range.count)
 }

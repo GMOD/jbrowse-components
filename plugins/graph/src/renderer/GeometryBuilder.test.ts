@@ -2,8 +2,11 @@ import {
   brightenColors,
   buildGeometry,
   extractColorSlice,
-  recolorNodes,
 } from './GeometryBuilder.ts'
+import {
+  FIELD_OFFSET_F32,
+  INSTANCE_STRIDE_F32,
+} from './shaders/graph.generated.ts'
 
 const simpleGraph = {
   name: 'test',
@@ -35,14 +38,18 @@ test('produces non-empty geometry for simple graph', () => {
     drawPaths: false,
   })
 
-  expect(batch.nodes.positions.length).toBeGreaterThan(0)
+  expect(batch.nodes.vertexCount).toBeGreaterThan(0)
   expect(batch.nodes.colors.length).toBeGreaterThan(0)
   expect(batch.nodes.indices.length).toBeGreaterThan(0)
-  expect(batch.edges.positions.length).toBeGreaterThan(0)
-  // positions are x,y pairs; colors are r,g,b,a; normals are x,y pairs; thicknesses are 1 per vertex
-  expect(batch.nodes.positions.length / 2).toBe(batch.nodes.colors.length / 4)
-  expect(batch.nodes.positions.length / 2).toBe(batch.nodes.thicknesses.length)
-  expect(batch.nodes.positions.length / 2).toBe(batch.nodes.normals.length / 2)
+  expect(batch.edges.vertexCount).toBeGreaterThan(0)
+  expect(batch.nodes.vertexCount).toBe(batch.nodes.colors.length)
+  expect(batch.nodes.vertexData.length).toBe(
+    batch.nodes.vertexCount * INSTANCE_STRIDE_F32,
+  )
+  expect(batch.nodes.vertexDataU32.buffer).toBe(batch.nodes.vertexData.buffer)
+  const firstVertexColor =
+    batch.nodes.vertexDataU32[FIELD_OFFSET_F32.color]
+  expect(firstVertexColor).toBe(batch.nodes.colors[0])
 })
 
 test('produces different geometry for different color schemes', () => {
@@ -60,15 +67,10 @@ test('produces different geometry for different color schemes', () => {
   })
   const depthBatch = buildGeometry({ ...opts, colorScheme: 'depth' as const })
 
-  expect(uniformBatch.nodes.positions.length).toBe(
-    depthBatch.nodes.positions.length,
-  )
+  expect(uniformBatch.nodes.vertexCount).toBe(depthBatch.nodes.vertexCount)
   let colorsDiffer = false
   for (let i = 0; i < uniformBatch.nodes.colors.length; i++) {
-    if (
-      Math.abs(uniformBatch.nodes.colors[i]! - depthBatch.nodes.colors[i]!) >
-      0.01
-    ) {
+    if (uniformBatch.nodes.colors[i] !== depthBatch.nodes.colors[i]) {
       colorsDiffer = true
       break
     }
@@ -107,9 +109,9 @@ test('handles empty node positions gracefully', () => {
     drawPaths: false,
   })
 
-  expect(batch.nodes.positions.length).toBe(0)
+  expect(batch.nodes.vertexCount).toBe(0)
   expect(batch.nodes.indices.length).toBe(0)
-  expect(batch.edges.positions.length).toBe(0)
+  expect(batch.edges.vertexCount).toBe(0)
 })
 
 test('handles graph with paths and drawPaths', () => {
@@ -128,8 +130,8 @@ test('handles graph with paths and drawPaths', () => {
     drawPaths: true,
   })
 
-  expect(batch.nodes.positions.length).toBeGreaterThan(0)
-  expect(batch.edges.positions.length).toBeGreaterThan(0)
+  expect(batch.nodes.vertexCount).toBeGreaterThan(0)
+  expect(batch.edges.vertexCount).toBeGreaterThan(0)
 })
 
 test('stores normals and thicknesses for shader-based expansion', () => {
@@ -142,52 +144,23 @@ test('stores normals and thicknesses for shader-based expansion', () => {
     drawPaths: false,
   })
 
-  // Normals should have values (not all zeros)
+  const { vertexData, vertexCount } = batch.nodes
   let hasNonZeroNormal = false
-  for (const normal of batch.nodes.normals) {
-    if (Math.abs(normal) > 0.001) {
+  let hasPositiveThickness = false
+  for (let i = 0; i < vertexCount; i++) {
+    const base = i * INSTANCE_STRIDE_F32
+    if (
+      Math.abs(vertexData[base + FIELD_OFFSET_F32.normal]!) > 0.001 ||
+      Math.abs(vertexData[base + FIELD_OFFSET_F32.normal + 1]!) > 0.001
+    ) {
       hasNonZeroNormal = true
-      break
+    }
+    if (vertexData[base + FIELD_OFFSET_F32.thickness]! > 0) {
+      hasPositiveThickness = true
     }
   }
   expect(hasNonZeroNormal).toBe(true)
-
-  // Thicknesses should be positive for non-center vertices
-  let hasPositiveThickness = false
-  for (const thickness of batch.nodes.thicknesses) {
-    if (thickness > 0) {
-      hasPositiveThickness = true
-      break
-    }
-  }
   expect(hasPositiveThickness).toBe(true)
-})
-
-test('recolorNodes produces different colors for different schemes', () => {
-  const batch = buildGeometry({
-    nodePositions: simplePositions,
-    graph: simpleGraph,
-    colorScheme: 'uniform',
-    contigThickness: 5,
-    connectorThickness: 1.5,
-    drawPaths: false,
-  })
-
-  const recolored = recolorNodes(
-    simpleGraph,
-    batch.nodeVertexRanges,
-    'depth',
-    batch.nodes.colors,
-  )
-
-  let colorsDiffer = false
-  for (let i = 0; i < recolored.length; i++) {
-    if (Math.abs(recolored[i]! - batch.nodes.colors[i]!) > 0.01) {
-      colorsDiffer = true
-      break
-    }
-  }
-  expect(colorsDiffer).toBe(true)
 })
 
 test('brightenColors produces brighter values', () => {
@@ -205,8 +178,10 @@ test('brightenColors produces brighter values', () => {
   const original = extractColorSlice(batch.nodes.colors, range)
 
   let hasBrighterValue = false
-  for (let i = 0; i < brightened.length; i += 4) {
-    if (brightened[i]! > original[i]! + 0.01) {
+  for (let i = 0; i < brightened.length; i++) {
+    const origR = original[i]! & 0xff
+    const brightR = brightened[i]! & 0xff
+    if (brightR > origR) {
       hasBrighterValue = true
       break
     }
@@ -225,7 +200,6 @@ test('viewport culling skips off-screen nodes', () => {
     viewportBounds: { minX: -5, minY: -5, maxX: 15, maxY: 5 },
   })
 
-  // Only A+ (x: 0-10) should be in bounds, B+ (x: 20-30) should be culled
   expect(batch.nodeVertexRanges.has('A+')).toBe(true)
   expect(batch.nodeVertexRanges.has('B+')).toBe(false)
 })
