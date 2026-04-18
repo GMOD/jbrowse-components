@@ -1,9 +1,7 @@
-import {
-  clipBlock,
-  writeBpRangeUniforms,
-} from '@jbrowse/core/gpu/blockClipUtils'
+import { clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
+import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 
 import {
   interleaveArrows,
@@ -21,6 +19,7 @@ import type {
   FeatureRenderBlock,
 } from './canvasFeatureBackendTypes.ts'
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { BlockClipResult } from '@jbrowse/core/gpu/blockClipUtils'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_RECT = 'rect'
@@ -28,15 +27,19 @@ const PASS_LINE = 'line'
 const PASS_CHEVRON = 'chevron'
 const PASS_ARROW = 'arrow'
 
-// All canvas-feature passes share the same uniform block, so the offsets
-// from any one shader's reflection are authoritative. Using rect.
-const U_REGION_START = rectShader.UNIFORM_OFFSET_F32.regionStart
-const U_CANVAS_HEIGHT = rectShader.UNIFORM_OFFSET_F32.canvasHeight
-const U_CANVAS_WIDTH = rectShader.UNIFORM_OFFSET_F32.canvasWidth
-const U_SCROLL_Y = rectShader.UNIFORM_OFFSET_F32.scrollY
-const U_BP_PER_PX = rectShader.UNIFORM_OFFSET_F32.bpPerPx
-const U_REVERSED = rectShader.UNIFORM_OFFSET_F32.reversed
-const UNIFORMS_SIZE_BYTES = rectShader.UNIFORMS_SIZE_BYTES
+export const CANVAS_FEATURE_UNIFORM_BYTE_SIZE = rectShader.UNIFORMS_SIZE_BYTES
+
+function bpRangeXFor(
+  clip: BlockClipResult,
+  reversed: boolean,
+): [number, number, number] {
+  if (reversed) {
+    const endBp = clip.bpStartHi + clip.bpStartLo + clip.clippedLengthBp
+    const [endHi, endLo] = splitPositionWithFrac(endBp)
+    return [endHi, endLo, -clip.clippedLengthBp]
+  }
+  return [clip.bpStartHi, clip.bpStartLo, clip.clippedLengthBp]
+}
 
 export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
   slangPass({ id: PASS_RECT, mod: rectShader, verticesPerInstance: 6 }),
@@ -53,19 +56,16 @@ export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
   slangPass({ id: PASS_ARROW, mod: arrowShader, verticesPerInstance: 9 }),
 ]
 
-export { UNIFORMS_SIZE_BYTES as CANVAS_FEATURE_UNIFORM_BYTE_SIZE }
-
 interface RegionMeta {
   start: number
+  hasRects: boolean
   hasLines: boolean
   hasArrows: boolean
 }
 
 export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
   private hal: GpuHal
-  private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
-  private uniformF32 = new Float32Array(this.uniformData)
-  private uniformU32 = new Uint32Array(this.uniformData)
+  private uniformData = new ArrayBuffer(CANVAS_FEATURE_UNIFORM_BYTE_SIZE)
   private regions = new Map<number, RegionMeta>()
 
   constructor(hal: GpuHal) {
@@ -86,6 +86,7 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
 
     this.regions.set(regionNumber, {
       start: data.regionStart,
+      hasRects: numRects > 0,
       hasLines: numLines > 0,
       hasArrows: numArrows > 0,
     })
@@ -144,13 +145,6 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
       if (!meta) {
         continue
       }
-      if (
-        this.hal.getBufferCount(block.regionNumber, PASS_RECT) === 0 &&
-        !meta.hasLines &&
-        !meta.hasArrows
-      ) {
-        continue
-      }
 
       const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
       if (!clip) {
@@ -160,13 +154,16 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
       this.hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
       this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
 
-      writeBpRangeUniforms(this.uniformF32, clip, block.reversed)
-      this.uniformU32[U_REGION_START] = Math.floor(meta.start)
-      this.uniformF32[U_CANVAS_HEIGHT] = canvasHeight
-      this.uniformF32[U_CANVAS_WIDTH] = clip.scissorW
-      this.uniformF32[U_SCROLL_Y] = scrollY
-      this.uniformF32[U_BP_PER_PX] = clip.bpPerPx
-      this.uniformF32[U_REVERSED] = block.reversed ? 1 : 0
+      rectShader.writeUniforms(this.uniformData, {
+        bpRangeX: bpRangeXFor(clip, block.reversed),
+        regionStart: Math.floor(meta.start),
+        canvasHeight,
+        canvasWidth: clip.scissorW,
+        scrollY,
+        bpPerPx: clip.bpPerPx,
+        zero: 0,
+        reversed: block.reversed ? 1 : 0,
+      })
 
       this.hal.writeUniforms(this.uniformData)
 
@@ -175,7 +172,9 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
         this.hal.drawPass(PASS_CHEVRON, block.regionNumber, PASS_LINE)
       }
 
-      this.hal.drawPass(PASS_RECT, block.regionNumber)
+      if (meta.hasRects) {
+        this.hal.drawPass(PASS_RECT, block.regionNumber)
+      }
 
       if (meta.hasArrows) {
         this.hal.drawPass(PASS_ARROW, block.regionNumber)

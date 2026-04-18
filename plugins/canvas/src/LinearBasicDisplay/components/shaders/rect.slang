@@ -8,20 +8,10 @@
 //! targets: wgsl, glsl
 
 import hpmath;
+import colorPack;
 
 // Mirrors sharedRendererConstants.MIN_RECT_WIDTH_PX (= 2).
 static const float MIN_RECT_WIDTH_PX = 2.0;
-
-// RGBA32 packed into a single u32 (R=byte0 … A=byte3, little-endian).
-// Saves 12 B per instance vs. four f32s and matches the memory-order
-// reinterpretation used by interleaveRects on the TS side.
-float4 unpackRGBA(uint c) {
-  return float4(
-    float((c >>  0u) & 0xFFu),
-    float((c >>  8u) & 0xFFu),
-    float((c >> 16u) & 0xFFu),
-    float((c >> 24u) & 0xFFu)) / 255.0;
-}
 
 struct RectInstance {
   uint2 startEnd : ATTR0;

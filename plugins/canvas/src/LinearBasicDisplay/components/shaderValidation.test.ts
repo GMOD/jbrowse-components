@@ -3,12 +3,10 @@ import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import os from 'os'
 import path from 'path'
 
-import {
-  ARROW_SHADER,
-  CHEVRON_SHADER,
-  LINE_SHADER,
-  RECT_SHADER,
-} from './canvasShaders.ts'
+import { WGSL_SOURCE as ARROW_SHADER } from './shaders/arrow.generated.ts'
+import { WGSL_SOURCE as CHEVRON_SHADER } from './shaders/chevron.generated.ts'
+import { WGSL_SOURCE as LINE_SHADER } from './shaders/line.generated.ts'
+import { WGSL_SOURCE as RECT_SHADER } from './shaders/rect.generated.ts'
 
 let tmpDir: string
 

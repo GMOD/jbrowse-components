@@ -14,13 +14,17 @@ import {
   INSTANCE_STRIDE_F32 as RECT_STRIDE_F32,
 } from './shaders/rect.generated.ts'
 
-// Each of these packs parallel arrays (produced by the feature RPC worker)
-// into the corresponding shader's vertex buffer layout. Field offsets come
-// from the shader's generated constants — renaming a `.slang` field makes
-// TS compilation fail here.
+// Packs parallel arrays (produced by the feature RPC worker) into a shader's
+// vertex buffer layout. Field offsets come from the shader's generated
+// constants — renaming a `.slang` field makes TS compilation fail here.
 //
 // `colors` is already packed RGBA32 (one u32 per instance); the shader
 // unpacks via `unpackRGBA`.
+
+function makeBuffer(count: number, strideBytes: number) {
+  const buf = new ArrayBuffer(count * strideBytes)
+  return { buf, u32: new Uint32Array(buf), f32: new Float32Array(buf) }
+}
 
 export function interleaveRects(
   positions: Uint32Array,
@@ -29,9 +33,7 @@ export function interleaveRects(
   colors: Uint32Array,
   count: number,
 ) {
-  const buf = new ArrayBuffer(count * RECT_STRIDE_BYTES)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
+  const { buf, u32, f32 } = makeBuffer(count, RECT_STRIDE_BYTES)
   for (let i = 0; i < count; i++) {
     const off = i * RECT_STRIDE_F32
     u32[off + RECT_F32.startEnd] = positions[i * 2]!
@@ -50,9 +52,7 @@ export function interleaveLines(
   colors: Uint32Array,
   count: number,
 ) {
-  const buf = new ArrayBuffer(count * LINE_STRIDE_BYTES)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
+  const { buf, u32, f32 } = makeBuffer(count, LINE_STRIDE_BYTES)
   for (let i = 0; i < count; i++) {
     const off = i * LINE_STRIDE_F32
     u32[off + LINE_F32.startEnd] = positions[i * 2]!
@@ -71,9 +71,7 @@ export function interleaveArrows(
   colors: Uint32Array,
   count: number,
 ) {
-  const buf = new ArrayBuffer(count * ARROW_STRIDE_BYTES)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
+  const { buf, u32, f32 } = makeBuffer(count, ARROW_STRIDE_BYTES)
   for (let i = 0; i < count; i++) {
     const off = i * ARROW_STRIDE_F32
     u32[off + ARROW_F32.x] = xs[i]!
