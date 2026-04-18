@@ -1,17 +1,16 @@
-import {
-  RENDERING_TYPE_DENSITY,
-  RENDERING_TYPE_LINE,
-  RENDERING_TYPE_SCATTER,
-  RENDERING_TYPE_XYPLOT,
-  SCALE_TYPE_LINEAR,
-  SCALE_TYPE_LOG,
-} from './wiggleShader.ts'
-
 import type { FeatureArrays } from '../util.ts'
 import type {
   SourceRenderData,
   WiggleGPURenderState,
 } from './wiggleBackendTypes.ts'
+
+export const VERTICES_PER_INSTANCE = 6
+export const RENDERING_TYPE_XYPLOT = 0
+export const RENDERING_TYPE_DENSITY = 1
+export const RENDERING_TYPE_LINE = 2
+export const RENDERING_TYPE_SCATTER = 3
+export const SCALE_TYPE_LINEAR = 0
+export const SCALE_TYPE_LOG = 1
 
 function lightenColor(
   rgb: [number, number, number],

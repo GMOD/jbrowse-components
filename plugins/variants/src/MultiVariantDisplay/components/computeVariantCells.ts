@@ -12,7 +12,7 @@ import {
   getPhasedColorFromRaw,
   getRawCallGenotype,
 } from '../../shared/rawGenotypes.ts'
-import { createCachedRGBA } from '../../shared/variantWebglUtils.ts'
+import { createCachedABGR } from '../../shared/variantWebglUtils.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { Source } from '../../shared/types.ts'
@@ -36,7 +36,7 @@ export interface VariantCellData {
   regionStart: number
   cellPositions: Uint32Array
   cellRowIndices: Uint32Array
-  cellColors: Uint8Array
+  cellColors: Uint32Array
   cellShapeTypes: Uint8Array
   numCells: number
   featureGenotypeMap: Record<string, FeatureGenotypeInfo>
@@ -81,32 +81,7 @@ export interface FlatbushItem {
   genomicEnd: number
 }
 
-interface CellArrays {
-  positions: Uint32Array
-  rowIndices: Uint32Array
-  colors: Uint8Array
-  shapeTypes: Uint8Array
-  flatbushItems: FlatbushItem[]
-}
-
-function writeCellArrays(
-  dst: CellArrays,
-  w: number,
-  src: CellArrays,
-  i: number,
-) {
-  dst.positions[w * 2] = src.positions[i * 2]!
-  dst.positions[w * 2 + 1] = src.positions[i * 2 + 1]!
-  dst.rowIndices[w] = src.rowIndices[i]!
-  const sOff = i * 4
-  const dOff = w * 4
-  dst.colors[dOff] = src.colors[sOff]!
-  dst.colors[dOff + 1] = src.colors[sOff + 1]!
-  dst.colors[dOff + 2] = src.colors[sOff + 2]!
-  dst.colors[dOff + 3] = src.colors[sOff + 3]!
-  dst.shapeTypes[w] = src.shapeTypes[i]!
-  dst.flatbushItems[w] = src.flatbushItems[i]!
-}
+const BLACK_ABGR = 0xff000000
 
 export function computeVariantCells({
   mafs,
@@ -123,7 +98,7 @@ export function computeVariantCells({
   genotypesCache: Map<string, Record<string, string>>
   inputKey: string
 }): VariantCellData {
-  const getCachedRGBA = createCachedRGBA()
+  const getCachedABGR = createCachedABGR()
 
   const alleleColorCache = {} as Record<string, string | undefined>
   const rawColorCache = {} as Record<string, string>
@@ -133,7 +108,7 @@ export function computeVariantCells({
   const maxCells = mafs.length * numSources
   const positions = new Uint32Array(maxCells * 2)
   const rowIndices = new Uint32Array(maxCells)
-  const colors = new Uint8Array(maxCells * 4)
+  const colors = new Uint32Array(maxCells)
   const shapeTypes = new Uint8Array(maxCells)
   const isRef = new Uint8Array(maxCells)
   const flatbushItemsSrc: FlatbushItem[] = []

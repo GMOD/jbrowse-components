@@ -10,15 +10,13 @@ import ScoreLegend from '../shared/ScoreLegend.tsx'
 import YScaleBar from '../shared/YScaleBar.tsx'
 import { getDensityColor } from '../shared/getDensityColor.ts'
 import {
-  getRowTop,
-  renderingTypeToInt,
-} from '../shared/wiggleComponentUtils.ts'
-import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
   RENDERING_TYPE_SCATTER,
   RENDERING_TYPE_XYPLOT,
-} from '../shared/wiggleShader.ts'
+  getRowTop,
+  renderingTypeToInt,
+} from '../shared/wiggleComponentUtils.ts'
 import { getScale } from '../util.ts'
 
 import type { MultiLinearWiggleDisplayModel } from './model.ts'

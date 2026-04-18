@@ -3,8 +3,14 @@ import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as wiggleShader from './shaders/wiggle.generated.ts'
-import { computeNumRows, interleaveInstances } from './webglUtils.ts'
-import { RENDERING_TYPE_LINE, VERTICES_PER_INSTANCE } from './wiggleShader.ts'
+import {
+  computeNumRows,
+  interleaveInstances,
+} from './wiggleInstanceBuffer.ts'
+import {
+  RENDERING_TYPE_LINE,
+  VERTICES_PER_INSTANCE,
+} from './wiggleComponentUtils.ts'
 
 import type {
   SourceRenderData,
@@ -17,7 +23,6 @@ import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 const PASS_FILL = 'fill'
 const PASS_LINE = 'line'
 
-const UNIFORMS_SIZE_BYTES = wiggleShader.UNIFORMS_SIZE_BYTES
 const U = wiggleShader.UNIFORM_OFFSET_F32
 
 // One shader, two passes: same vertex buffer, different primitive topology.
@@ -44,7 +49,7 @@ interface RegionInfo {
 
 export class GpuWiggleRenderer implements WiggleBackend {
   private hal: GpuHal
-  private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
+  private uniformData = new ArrayBuffer(wiggleShader.UNIFORMS_SIZE_BYTES)
   private uniformF32 = new Float32Array(this.uniformData)
   private uniformI32 = new Int32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
@@ -143,5 +148,3 @@ export class GpuWiggleRenderer implements WiggleBackend {
     this.hal.dispose()
   }
 }
-
-export { UNIFORMS_SIZE_BYTES as WIGGLE_UNIFORM_BYTE_SIZE }

@@ -6,13 +6,13 @@ import {
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
 import { WIGGLE_FUDGE_FACTOR, makeScoreNormalizer } from '../util.ts'
-import { computeNumRows } from './webglUtils.ts'
+import { computeNumRows } from './wiggleInstanceBuffer.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
   RENDERING_TYPE_SCATTER,
   SCALE_TYPE_LOG,
-} from './wiggleShader.ts'
+} from './wiggleComponentUtils.ts'
 
 import type {
   SourceRenderData,

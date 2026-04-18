@@ -1,11 +1,8 @@
 import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
 
 import { Canvas2DWiggleRenderer } from './Canvas2DWiggleRenderer.ts'
-import {
-  GpuWiggleRenderer,
-  WIGGLE_PASSES,
-  WIGGLE_UNIFORM_BYTE_SIZE,
-} from './GpuWiggleRenderer.ts'
+import { GpuWiggleRenderer, WIGGLE_PASSES } from './GpuWiggleRenderer.ts'
+import { UNIFORMS_SIZE_BYTES } from './shaders/wiggle.generated.ts'
 
 export type {
   SourceRenderData,
@@ -20,7 +17,7 @@ export function WiggleRenderer(canvas: HTMLCanvasElement) {
   return initDualBackend<WiggleBackend>(
     canvas,
     WIGGLE_PASSES,
-    WIGGLE_UNIFORM_BYTE_SIZE,
+    UNIFORMS_SIZE_BYTES,
     hal => new GpuWiggleRenderer(hal),
     c => new Canvas2DWiggleRenderer(c),
   )

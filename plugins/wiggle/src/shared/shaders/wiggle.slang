@@ -65,6 +65,14 @@ float scoreToY(float score, float domainMin, float domainMax, float h, int scale
   return (1.0 - normalizeScore(score, domainMin, domainMax, scaleType)) * h;
 }
 
+// Quad vertex layout shared by density, scatter and xyplot branches. The six
+// vertices of a triangle-list quad produce local [0,1]×[0,1] corners.
+float2 quadLocal(uint v) {
+  float localX = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
+  float localY = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
+  return float2(localX, localY);
+}
+
 [shader("vertex")]
 VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
   uint v = vid % 6u;
@@ -93,40 +101,34 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     if (v == 0u) {
       sx = sx1;
       sy = clipPrevY;
-    } else if (v == 1u || v == 2u) {
+    } else if (v < 3u) {
       sx = sx1;
       sy = clipScoreY;
     } else {
       sx = sx2;
       sy = clipScoreY;
     }
-  } else if (u.renderingType == RENDERING_TYPE_DENSITY) {
-    float localX = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
-    float localY = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
-    sx = lerp(sx1, sx2, localX);
-    float rowBot = rowTop + rowHeight;
-    float syTop = 1.0 - rowTop * pxToClip;
-    float syBot = 1.0 - rowBot * pxToClip;
-    sy = lerp(syBot, syTop, localY);
-  } else if (u.renderingType == RENDERING_TYPE_SCATTER) {
-    float localX = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
-    float localY = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
-    float scoreY = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop;
-    float syTop = 1.0 - (scoreY - 1.0) * pxToClip;
-    float syBot = 1.0 - (scoreY + 1.0) * pxToClip;
-    sx = lerp(sx1, sx2, localX);
-    sy = lerp(syBot, syTop, localY);
   } else {
-    float localX = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
-    float localY = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
-    sx = lerp(sx1, sx2, localX);
-    float scoreY  = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType);
-    float originY = scoreToY(0.0,        u.domainYMin, u.domainYMax, rowHeight, u.scaleType);
-    float yTop = min(scoreY, originY) + rowTop;
-    float yBot = max(scoreY, originY) + rowTop;
-    float syTop = 1.0 - yTop * pxToClip;
-    float syBot = 1.0 - yBot * pxToClip;
-    sy = lerp(syBot, syTop, localY);
+    float2 q = quadLocal(v);
+    sx = lerp(sx1, sx2, q.x);
+    if (u.renderingType == RENDERING_TYPE_DENSITY) {
+      float syTop = 1.0 - rowTop * pxToClip;
+      float syBot = 1.0 - (rowTop + rowHeight) * pxToClip;
+      sy = lerp(syBot, syTop, q.y);
+    } else if (u.renderingType == RENDERING_TYPE_SCATTER) {
+      float scoreY = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop;
+      float syTop = 1.0 - (scoreY - 1.0) * pxToClip;
+      float syBot = 1.0 - (scoreY + 1.0) * pxToClip;
+      sy = lerp(syBot, syTop, q.y);
+    } else {
+      float scoreY  = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType);
+      float originY = scoreToY(0.0,        u.domainYMin, u.domainYMax, rowHeight, u.scaleType);
+      float yTop = min(scoreY, originY) + rowTop;
+      float yBot = max(scoreY, originY) + rowTop;
+      float syTop = 1.0 - yTop * pxToClip;
+      float syBot = 1.0 - yBot * pxToClip;
+      sy = lerp(syBot, syTop, q.y);
+    }
   }
 
   float4 instColor = unpackRGBA(inst.color);

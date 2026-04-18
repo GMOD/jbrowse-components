@@ -75,6 +75,264 @@ const ARC_COLOR_SLOTS = [
 ] as const
 const ARC_LINE_SLOTS = [U.arcLineColor0, U.arcLineColor1] as const
 
+// Fill the per-frame UBO slots. Pure — mutates only the given typed-array
+// views. Every field here corresponds to a `u.fieldName` in
+// alignmentsUniforms.slang; adding a new field means updating both.
+function fillFrameUniforms(
+  f: Float32Array,
+  u: Uint32Array,
+  i: Int32Array,
+  state: RenderState,
+  frame: BlockFrame,
+) {
+  const { region } = frame
+  f[U.bpHi] = frame.bpHi
+  f[U.bpLo] = frame.bpLo
+  f[U.bpLen] = frame.clippedBpEnd - frame.clippedBpStart
+  f[U.hpZero] = 0
+  u[U.regionStart] = region.regionStart
+  f[U.canvasW] = frame.canvasW
+  f[U.canvasH] = state.canvasHeight
+  f[U.rangeY0] = state.rangeY[0]
+  f[U.scrollTop] = state.rangeY[0]
+  f[U.covOffset] = state.pileupTopOffset
+  f[U.featHeight] = state.featureHeight
+  f[U.featSpacing] = state.featureSpacing
+  f[U.covHeight] = state.coverageHeight
+  f[U.covYOffset] = state.coverageYOffset
+  f[U.depthScale] =
+    state.coverageMaxDepth !== undefined && region.maxDepth > 0
+      ? region.maxDepth / state.coverageMaxDepth
+      : 1
+  f[U.binSize] = region.binSize
+  f[U.noncovHeight] =
+    region.noncovMaxCount > 0 ? Math.min(region.noncovMaxCount * 2, 20) : 0
+  f[U.domainStart] = frame.clippedBpStart - region.regionStart
+  f[U.domainEnd] = frame.clippedBpEnd - region.regionStart
+  f[U.insertUpper] = region.insertSizeStats?.upper ?? 999999
+  f[U.insertLower] = region.insertSizeStats?.lower ?? 0
+  i[U.colorScheme] = state.colorScheme
+  i[U.highlightIdx] = -1
+  i[U.highlightOnly] = 0
+  i[U.chainMode] = state.renderingMode === 'linkedRead' ? 1 : 0
+  i[U.showStroke] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
+  i[U.flipStrandLongRead] = state.flipStrandLongReadChains !== false ? 1 : 0
+  f[U.reversed] = frame.reversed ? 1 : 0
+}
+
+// ---------------------------------------------------------------------------
+// Pure buffer-pack helpers. Each takes an RPC payload and returns a ready-to-
+// upload ArrayBuffer matching the corresponding Slang shader's instance
+// layout. They live outside the renderer class because they touch no HAL
+// state — and all performance-sensitive inner loops hoist the host-object
+// property accesses to locals so V8 reads through typed-array views directly.
+// ---------------------------------------------------------------------------
+
+function packReadSegments(data: ReadUploadData): ArrayBuffer {
+  const n = data.numSegments
+  const stride32 = readShader.INSTANCE_STRIDE_F32
+  const F = readShader.FIELD_OFFSET_F32
+  const buf = new ArrayBuffer(n * readShader.INSTANCE_STRIDE_BYTES)
+  const u32 = new Uint32Array(buf)
+  const f32 = new Float32Array(buf)
+  const i32 = new Int32Array(buf)
+  const tagColors = data.readTagColors
+  const hasTagColors = tagColors.length > 0
+  const chainHasSupp = data.readChainHasSupp
+  const readPositions = data.readPositions
+  const readYs = data.readYs
+  const readFlags = data.readFlags
+  const readMapqs = data.readMapqs
+  const readAvgBaseQualities = data.readAvgBaseQualities
+  const readInsertSizes = data.readInsertSizes
+  const readPairOrientations = data.readPairOrientations
+  const readStrands = data.readStrands
+  const segmentPositions = data.segmentPositions
+  const segmentReadIndices = data.segmentReadIndices
+  const segmentEdgeFlags = data.segmentEdgeFlags
+  for (let j = 0; j < n; j++) {
+    const ri = segmentReadIndices[j]!
+    const o = j * stride32
+    u32[o + F.startOff] = segmentPositions[j * 2]!
+    u32[o + F.endOff] = segmentPositions[j * 2 + 1]!
+    u32[o + F.y] = readYs[ri]!
+    u32[o + F.flags] = readFlags[ri]!
+    u32[o + F.mapq] = readMapqs[ri]!
+    u32[o + F.baseQuality] = readAvgBaseQualities[ri]!
+    f32[o + F.insertSize] = readInsertSizes[ri]!
+    u32[o + F.pairOrient] = readPairOrientations[ri]!
+    i32[o + F.strand] = readStrands[ri]!
+    u32[o + F.tagColor] = hasTagColors ? tagColors[ri]! : 0
+    u32[o + F.chainHasSupp] = chainHasSupp ? chainHasSupp[ri]! : 0
+    u32[o + F.readIndex] = ri
+    u32[o + F.edgeFlags] = segmentEdgeFlags[j]!
+    u32[o + F.readStartOff] = readPositions[ri * 2]!
+    u32[o + F.readEndOff] = readPositions[ri * 2 + 1]!
+  }
+  return buf
+}
+
+function packGaps(data: CigarUploadData): ArrayBuffer {
+  const n = data.numGaps
+  const F = gapShader.FIELD_OFFSET_F32
+  const s32 = gapShader.INSTANCE_STRIDE_F32
+  const buf = new ArrayBuffer(n * gapShader.INSTANCE_STRIDE_BYTES)
+  const u32 = new Uint32Array(buf)
+  const f32 = new Float32Array(buf)
+  const pos = data.gapPositions
+  const ys = data.gapYs
+  const types = data.gapTypes
+  const freq = data.gapFrequencies
+  for (let i = 0; i < n; i++) {
+    const o = i * s32
+    u32[o + F.startOff] = pos[i * 2]!
+    u32[o + F.endOff] = pos[i * 2 + 1]!
+    u32[o + F.y] = ys[i]!
+    u32[o + F.gapType] = types[i]!
+    f32[o + F.frequency] = freq[i]! / 255
+  }
+  return buf
+}
+
+function packMismatches(data: CigarUploadData): ArrayBuffer {
+  const n = data.numMismatches
+  const F = mismatchShader.FIELD_OFFSET_F32
+  const s32 = mismatchShader.INSTANCE_STRIDE_F32
+  const buf = new ArrayBuffer(n * mismatchShader.INSTANCE_STRIDE_BYTES)
+  const u32 = new Uint32Array(buf)
+  const f32 = new Float32Array(buf)
+  const pos = data.mismatchPositions
+  const ys = data.mismatchYs
+  const bases = data.mismatchBases
+  const freq = data.mismatchFrequencies
+  for (let i = 0; i < n; i++) {
+    const o = i * s32
+    u32[o + F.position] = pos[i]!
+    u32[o + F.y] = ys[i]!
+    u32[o + F.base] = bases[i]!
+    f32[o + F.frequency] = freq[i]! / 255
+  }
+  return buf
+}
+
+function packInsertions(data: CigarUploadData): ArrayBuffer {
+  const n = data.numInsertions
+  const F = insertionShader.FIELD_OFFSET_F32
+  const s32 = insertionShader.INSTANCE_STRIDE_F32
+  const buf = new ArrayBuffer(n * insertionShader.INSTANCE_STRIDE_BYTES)
+  const u32 = new Uint32Array(buf)
+  const f32 = new Float32Array(buf)
+  const pos = data.interbasePositions
+  const ys = data.interbaseYs
+  const lens = data.interbaseLengths
+  const freq = data.interbaseFrequencies
+  for (let i = 0; i < n; i++) {
+    const o = i * s32
+    u32[o + F.position] = pos[i]!
+    u32[o + F.y] = ys[i]!
+    u32[o + F.length] = lens[i]!
+    f32[o + F.frequency] = freq[i]! / 255
+  }
+  return buf
+}
+
+// Worker lays out interbases as (insertions, softclips, hardclips); pack
+// soft+hard into a single clip pass with a per-instance `kind` tag.
+function packClips(data: CigarUploadData): ArrayBuffer {
+  const insEnd = data.numInsertions
+  const scEnd = insEnd + data.numSoftclips
+  const hcEnd = scEnd + data.numHardclips
+  const count = data.numSoftclips + data.numHardclips
+  const F = clipShader.FIELD_OFFSET_F32
+  const s32 = clipShader.INSTANCE_STRIDE_F32
+  const buf = new ArrayBuffer(count * clipShader.INSTANCE_STRIDE_BYTES)
+  const u32 = new Uint32Array(buf)
+  const f32 = new Float32Array(buf)
+  const pos = data.interbasePositions
+  const ys = data.interbaseYs
+  const lens = data.interbaseLengths
+  const freq = data.interbaseFrequencies
+  for (let i = insEnd; i < hcEnd; i++) {
+    const o = (i - insEnd) * s32
+    u32[o + F.position] = pos[i]!
+    u32[o + F.y] = ys[i]!
+    u32[o + F.length] = lens[i]!
+    f32[o + F.frequency] = freq[i]! / 255
+    u32[o + F.kind] = i < scEnd ? CLIP_KIND_SOFT : CLIP_KIND_HARD
+  }
+  return buf
+}
+
+// Softclip-base bases reuse the mismatch pass's geometry. Their frequency
+// slot stays 0 (bases are always fully opaque at this zoom).
+function packSoftclipBases(data: CigarUploadData): ArrayBuffer {
+  const n = data.numSoftclipBases
+  const F = mismatchShader.FIELD_OFFSET_F32
+  const s32 = mismatchShader.INSTANCE_STRIDE_F32
+  const buf = new ArrayBuffer(n * mismatchShader.INSTANCE_STRIDE_BYTES)
+  const u32 = new Uint32Array(buf)
+  const pos = data.softclipBasePositions
+  const ys = data.softclipBaseYs
+  const bases = data.softclipBaseBases
+  for (let i = 0; i < n; i++) {
+    const o = i * s32
+    u32[o + F.position] = pos[i]!
+    u32[o + F.y] = ys[i]!
+    u32[o + F.base] = bases[i]!
+  }
+  return buf
+}
+
+function packModifications(data: ModificationUploadData): ArrayBuffer {
+  const n = data.numModifications
+  const F = modificationShader.FIELD_OFFSET_F32
+  const s32 = modificationShader.INSTANCE_STRIDE_F32
+  const buf = new ArrayBuffer(n * modificationShader.INSTANCE_STRIDE_BYTES)
+  const u32 = new Uint32Array(buf)
+  const pos = data.modificationPositions
+  const ys = data.modificationYs
+  const colors = data.modificationColors
+  for (let i = 0; i < n; i++) {
+    const o = i * s32
+    u32[o + F.position] = pos[i]!
+    u32[o + F.y] = ys[i]!
+    u32[o + F.packedColor] = colors[i]!
+  }
+  return buf
+}
+
+// Arc-pass UBO patch. The arc shader reads the same UBO as the read pass
+// but in a different viewport (above/below pileup), so we overwrite the
+// viewport-sensitive slots before the draw. Pure — mutates only the views.
+interface ArcFrame {
+  region: LocalRegion
+  block: RenderBlock
+  state: RenderState
+  scissorX: number
+  scissorW: number
+  arcViewportH: number
+  dpr: number
+  covOffset: number
+}
+function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
+  const { region, block, state, scissorX, scissorW, arcViewportH, dpr } = a
+  const blockW = block.screenEndPx - block.screenStartPx
+  const [hi, lo] = splitPositionWithFrac(block.bpRangeX[0])
+  f[U.covOffset] = a.covOffset
+  f[U.canvasH] = arcViewportH / dpr
+  f[U.canvasW] = scissorW
+  f[U.blockStartPx] = block.screenStartPx - scissorX
+  f[U.blockWidth] = blockW
+  f[U.bpHi] = hi
+  f[U.bpLo] = lo
+  f[U.bpLen] = block.bpRangeX[1] - block.bpRangeX[0]
+  f[U.domainStart] = block.bpRangeX[0] - region.regionStart
+  f[U.domainEnd] = block.bpRangeX[1] - region.regionStart
+  u[U.regionStart] = region.regionStart
+  f[U.lineWidthPx] = state.arcLineWidth ?? 1
+  f[U.pairedArcsDown] = state.pairedArcsDown ? 1 : 0
+}
+
 // Pack every palette color into the UBO as u32 ABGR. Pure — writes through
 // the given u32 view only, no rendering side effects.
 function writePaletteToUbo(u: Uint32Array, c: ColorPalette) {
@@ -168,6 +426,21 @@ export const ALIGNMENTS_PASSES: PassDescriptor[] = [
 
 export { UNIFORMS_SIZE_BYTES }
 
+// Pure LocalRegion constructor — empty placeholders for typed arrays the
+// read/coverage uploads later overwrite.
+function emptyRegion(regionStart: number): LocalRegion {
+  return {
+    regionStart,
+    readIdToIndex: new Map(),
+    readPositions: new Uint32Array(0),
+    readYs: new Uint16Array(0),
+    readStrands: new Int8Array(0),
+    maxDepth: 0,
+    binSize: 1,
+    noncovMaxCount: 0,
+  }
+}
+
 // Per-block inputs collected before each writeUniforms call. Keeping them
 // in one record avoids a 10-arg method signature and lets downstream
 // overlay passes refer to the same frame without recomputation.
@@ -214,31 +487,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     })
   }
 
-  private emptyRegion(regionStart: number): LocalRegion {
-    return {
-      regionStart,
-      readIdToIndex: new Map(),
-      readPositions: new Uint32Array(0),
-      readYs: new Uint16Array(0),
-      readStrands: new Int8Array(0),
-      maxDepth: 0,
-      binSize: 1,
-      noncovMaxCount: 0,
-    }
-  }
-
-  // uploadArcsFromTypedArraysForRegion and uploadConnectingLinesForRegion
-  // can arrive before the main read upload — lazily create the LocalRegion
-  // so they don't fail; the read upload later overwrites it.
-  private getOrCreateRegion(regionNumber: number, regionStart: number) {
-    let r = this.regions.get(regionNumber)
-    if (!r) {
-      r = this.emptyRegion(regionStart)
-      this.regions.set(regionNumber, r)
-      this.hal.setRegionMeta(regionNumber, { regionStart })
-    }
-    return r
-  }
 
   uploadRegion(regionNumber: number, data: PileupDataResult) {
     this.uploadFromTypedArraysForRegion(regionNumber, data)
@@ -250,7 +498,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
   uploadFromTypedArraysForRegion(regionNumber: number, data: ReadUploadData) {
     this.hal.deleteRegion(regionNumber)
-    const r = this.emptyRegion(data.regionStart)
+    const r = emptyRegion(data.regionStart)
     r.insertSizeStats = data.insertSizeStats
     r.readPositions = data.readPositions
     r.readYs = data.readYs
@@ -262,34 +510,12 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     this.hal.setRegionMeta(regionNumber, { regionStart: data.regionStart })
 
     if (data.numSegments > 0) {
-      const n = data.numSegments
-      const stride32 = readShader.INSTANCE_STRIDE_F32
-      const F = readShader.FIELD_OFFSET_F32
-      const hasTagColors = data.readTagColors.length > 0
-      const buf = new ArrayBuffer(n * readShader.INSTANCE_STRIDE_BYTES)
-      const u32 = new Uint32Array(buf)
-      const f32 = new Float32Array(buf)
-      const i32 = new Int32Array(buf)
-      for (let j = 0; j < n; j++) {
-        const ri = data.segmentReadIndices[j]!
-        const o = j * stride32
-        u32[o + F.startOff] = data.segmentPositions[j * 2]!
-        u32[o + F.endOff] = data.segmentPositions[j * 2 + 1]!
-        u32[o + F.y] = data.readYs[ri]!
-        u32[o + F.flags] = data.readFlags[ri]!
-        u32[o + F.mapq] = data.readMapqs[ri]!
-        u32[o + F.baseQuality] = data.readAvgBaseQualities[ri]!
-        f32[o + F.insertSize] = data.readInsertSizes[ri]!
-        u32[o + F.pairOrient] = data.readPairOrientations[ri]!
-        i32[o + F.strand] = data.readStrands[ri]!
-        u32[o + F.tagColor] = hasTagColors ? data.readTagColors[ri]! : 0
-        u32[o + F.chainHasSupp] = data.readChainHasSupp?.[ri] ?? 0
-        u32[o + F.readIndex] = ri
-        u32[o + F.edgeFlags] = data.segmentEdgeFlags[j]!
-        u32[o + F.readStartOff] = data.readPositions[ri * 2]!
-        u32[o + F.readEndOff] = data.readPositions[ri * 2 + 1]!
-      }
-      this.hal.uploadBuffer(regionNumber, PASS_READ, buf, n)
+      this.hal.uploadBuffer(
+        regionNumber,
+        PASS_READ,
+        packReadSegments(data),
+        data.numSegments,
+      )
     }
   }
 
@@ -297,113 +523,42 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     regionNumber: number,
     data: CigarUploadData,
   ) {
-    const r = this.regions.get(regionNumber)
-    if (!r) {
+    if (!this.regions.has(regionNumber)) {
       return
     }
-
     if (data.numGaps > 0) {
-      const F = gapShader.FIELD_OFFSET_F32
-      const s32 = gapShader.INSTANCE_STRIDE_F32
-      const buf = new ArrayBuffer(data.numGaps * gapShader.INSTANCE_STRIDE_BYTES)
-      const u32 = new Uint32Array(buf)
-      const f32 = new Float32Array(buf)
-      for (let i = 0; i < data.numGaps; i++) {
-        const o = i * s32
-        u32[o + F.startOff] = data.gapPositions[i * 2]!
-        u32[o + F.endOff] = data.gapPositions[i * 2 + 1]!
-        u32[o + F.y] = data.gapYs[i]!
-        u32[o + F.gapType] = data.gapTypes[i]!
-        f32[o + F.frequency] = data.gapFrequencies[i]! / 255
-      }
-      this.hal.uploadBuffer(regionNumber, PASS_GAP, buf, data.numGaps)
+      this.hal.uploadBuffer(regionNumber, PASS_GAP, packGaps(data), data.numGaps)
     }
-
     if (data.numMismatches > 0) {
-      const F = mismatchShader.FIELD_OFFSET_F32
-      const s32 = mismatchShader.INSTANCE_STRIDE_F32
-      const buf = new ArrayBuffer(
-        data.numMismatches * mismatchShader.INSTANCE_STRIDE_BYTES,
-      )
-      const u32 = new Uint32Array(buf)
-      const f32 = new Float32Array(buf)
-      for (let i = 0; i < data.numMismatches; i++) {
-        const o = i * s32
-        u32[o + F.position] = data.mismatchPositions[i]!
-        u32[o + F.y] = data.mismatchYs[i]!
-        u32[o + F.base] = data.mismatchBases[i]!
-        f32[o + F.frequency] = data.mismatchFrequencies[i]! / 255
-      }
       this.hal.uploadBuffer(
         regionNumber,
         PASS_MISMATCH,
-        buf,
+        packMismatches(data),
         data.numMismatches,
       )
     }
-
-    // Interbase buffer is laid out (insertions, softclips, hardclips) by
-    // the worker, so we iterate subranges directly — no per-element type
-    // scan on the main thread.
-    const insStart = 0
-    const insEnd = data.numInsertions
-    const scEnd = insEnd + data.numSoftclips
-    const hcEnd = scEnd + data.numHardclips
-
     if (data.numInsertions > 0) {
-      const F = insertionShader.FIELD_OFFSET_F32
-      const s32 = insertionShader.INSTANCE_STRIDE_F32
-      const buf = new ArrayBuffer(
-        data.numInsertions * insertionShader.INSTANCE_STRIDE_BYTES,
+      this.hal.uploadBuffer(
+        regionNumber,
+        PASS_INSERTION,
+        packInsertions(data),
+        data.numInsertions,
       )
-      const u32 = new Uint32Array(buf)
-      const f32 = new Float32Array(buf)
-      for (let i = insStart; i < insEnd; i++) {
-        const o = (i - insStart) * s32
-        u32[o + F.position] = data.interbasePositions[i]!
-        u32[o + F.y] = data.interbaseYs[i]!
-        u32[o + F.length] = data.interbaseLengths[i]!
-        f32[o + F.frequency] = data.interbaseFrequencies[i]! / 255
-      }
-      this.hal.uploadBuffer(regionNumber, PASS_INSERTION, buf, data.numInsertions)
     }
-
-    // Softclip + hardclip share one buffer + pass; `kind` selects the color.
     const clipCount = data.numSoftclips + data.numHardclips
     if (clipCount > 0) {
-      const F = clipShader.FIELD_OFFSET_F32
-      const s32 = clipShader.INSTANCE_STRIDE_F32
-      const buf = new ArrayBuffer(clipCount * clipShader.INSTANCE_STRIDE_BYTES)
-      const u32 = new Uint32Array(buf)
-      const f32 = new Float32Array(buf)
-      for (let i = insEnd; i < hcEnd; i++) {
-        const o = (i - insEnd) * s32
-        u32[o + F.position] = data.interbasePositions[i]!
-        u32[o + F.y] = data.interbaseYs[i]!
-        u32[o + F.length] = data.interbaseLengths[i]!
-        f32[o + F.frequency] = data.interbaseFrequencies[i]! / 255
-        u32[o + F.kind] = i < scEnd ? CLIP_KIND_SOFT : CLIP_KIND_HARD
-      }
-      this.hal.uploadBuffer(regionNumber, PASS_CLIP, buf, clipCount)
-    }
-
-    if (data.numSoftclipBases > 0) {
-      const F = mismatchShader.FIELD_OFFSET_F32
-      const s32 = mismatchShader.INSTANCE_STRIDE_F32
-      const buf = new ArrayBuffer(
-        data.numSoftclipBases * mismatchShader.INSTANCE_STRIDE_BYTES,
+      this.hal.uploadBuffer(
+        regionNumber,
+        PASS_CLIP,
+        packClips(data),
+        clipCount,
       )
-      const u32 = new Uint32Array(buf)
-      for (let i = 0; i < data.numSoftclipBases; i++) {
-        const o = i * s32
-        u32[o + F.position] = data.softclipBasePositions[i]!
-        u32[o + F.y] = data.softclipBaseYs[i]!
-        u32[o + F.base] = data.softclipBaseBases[i]!
-      }
+    }
+    if (data.numSoftclipBases > 0) {
       this.hal.uploadBuffer(
         regionNumber,
         PASS_SOFTCLIP_BASES,
-        buf,
+        packSoftclipBases(data),
         data.numSoftclipBases,
       )
     }
@@ -414,18 +569,12 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     data: ModificationUploadData,
   ) {
     if (data.numModifications > 0) {
-      const n = data.numModifications
-      const F = modificationShader.FIELD_OFFSET_F32
-      const s32 = modificationShader.INSTANCE_STRIDE_F32
-      const buf = new ArrayBuffer(n * modificationShader.INSTANCE_STRIDE_BYTES)
-      const u32 = new Uint32Array(buf)
-      for (let i = 0; i < n; i++) {
-        const o = i * s32
-        u32[o + F.position] = data.modificationPositions[i]!
-        u32[o + F.y] = data.modificationYs[i]!
-        u32[o + F.packedColor] = data.modificationColors[i]!
-      }
-      this.hal.uploadBuffer(regionNumber, PASS_MOD, buf, n)
+      this.hal.uploadBuffer(
+        regionNumber,
+        PASS_MOD,
+        packModifications(data),
+        data.numModifications,
+      )
     }
   }
 
@@ -497,7 +646,13 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     regionNumber: number,
     data: ArcsUploadData,
   ) {
-    this.getOrCreateRegion(regionNumber, data.regionStart)
+    // Arcs/connectingLines can arrive from their own RPC before the main
+    // read upload has registered this region. Pre-register an empty
+    // LocalRegion so renderBlocks draws them even without reads.
+    if (!this.regions.has(regionNumber)) {
+      this.regions.set(regionNumber, emptyRegion(data.regionStart))
+      this.hal.setRegionMeta(regionNumber, { regionStart: data.regionStart })
+    }
 
     if (data.numArcs > 0) {
       const n = data.numArcs
@@ -536,7 +691,10 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     regionNumber: number,
     data: ConnectingLinesUploadData,
   ) {
-    this.getOrCreateRegion(regionNumber, data.regionStart)
+    if (!this.regions.has(regionNumber)) {
+      this.regions.set(regionNumber, emptyRegion(data.regionStart))
+      this.hal.setRegionMeta(regionNumber, { regionStart: data.regionStart })
+    }
     if (data.numConnectingLines > 0) {
       const n = data.numConnectingLines
       const F = connectingLineShader.FIELD_OFFSET_F32
@@ -557,45 +715,8 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
   }
 
   private writeUniforms(state: RenderState, frame: BlockFrame) {
-    const { region } = frame
-    const f = this.uF32
-    const u = this.uU32
-    const ii = this.uI32
-    f[U.bpHi] = frame.bpHi
-    f[U.bpLo] = frame.bpLo
-    f[U.bpLen] = frame.clippedBpEnd - frame.clippedBpStart
-    f[U.hpZero] = 0
-    u[U.regionStart] = region.regionStart
-    f[U.canvasW] = frame.canvasW
-    f[U.canvasH] = state.canvasHeight
-    f[U.rangeY0] = state.rangeY[0]
-    f[U.scrollTop] = state.rangeY[0]
-    f[U.covOffset] = state.pileupTopOffset
-    f[U.featHeight] = state.featureHeight
-    f[U.featSpacing] = state.featureSpacing
-    f[U.covHeight] = state.coverageHeight
-    f[U.covYOffset] = state.coverageYOffset
-    f[U.depthScale] =
-      state.coverageMaxDepth !== undefined && region.maxDepth > 0
-        ? region.maxDepth / state.coverageMaxDepth
-        : 1
-    f[U.binSize] = region.binSize
-    f[U.noncovHeight] =
-      region.noncovMaxCount > 0 ? Math.min(region.noncovMaxCount * 2, 20) : 0
-    f[U.domainStart] = frame.clippedBpStart - region.regionStart
-    f[U.domainEnd] = frame.clippedBpEnd - region.regionStart
-    f[U.insertUpper] = region.insertSizeStats?.upper ?? 999999
-    f[U.insertLower] = region.insertSizeStats?.lower ?? 0
-    ii[U.colorScheme] = state.colorScheme
-    ii[U.highlightIdx] = -1
-    ii[U.highlightOnly] = 0
-    ii[U.chainMode] = state.renderingMode === 'linkedRead' ? 1 : 0
-    ii[U.showStroke] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
-    ii[U.flipStrandLongRead] =
-      state.flipStrandLongReadChains !== false ? 1 : 0
-    f[U.reversed] = frame.reversed ? 1 : 0
-
-    writePaletteToUbo(u, state.colors)
+    fillFrameUniforms(this.uF32, this.uU32, this.uI32, state, frame)
+    writePaletteToUbo(this.uU32, state.colors)
     this.hal.writeUniforms(this.uData)
   }
 
@@ -743,29 +864,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  private writeBlockUniforms(
-    r: LocalRegion,
-    block: {
-      bpRangeX: [number, number]
-      screenStartPx: number
-      screenEndPx: number
-    },
-    vpX: number,
-    vpW: number,
-  ) {
-    const blockW = block.screenEndPx - block.screenStartPx
-    const [hi, lo] = splitPositionWithFrac(block.bpRangeX[0])
-    this.uF32[U.canvasW] = vpW
-    this.uF32[U.blockStartPx] = block.screenStartPx - vpX
-    this.uF32[U.blockWidth] = blockW
-    this.uF32[U.bpHi] = hi
-    this.uF32[U.bpLo] = lo
-    this.uF32[U.bpLen] = block.bpRangeX[1] - block.bpRangeX[0]
-    this.uF32[U.domainStart] = block.bpRangeX[0] - r.regionStart
-    this.uF32[U.domainEnd] = block.bpRangeX[1] - r.regionStart
-    this.uU32[U.regionStart] = r.regionStart
-  }
-
   private drawArcsPass(
     block: RenderBlock,
     region: LocalRegion,
@@ -783,26 +881,34 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       Math.round(effectiveArcsHeight * dpr),
       Math.max(0, bufH - arcViewportTop),
     )
-    if (arcViewportH > 0) {
-      this.uF32[U.covOffset] = arcHeightForOffset ?? 0
-      this.uF32[U.canvasH] = arcViewportH / dpr
-      this.writeBlockUniforms(region, block, scissorX, scissorW)
-      this.uF32[U.lineWidthPx] = state.arcLineWidth ?? 1
-      this.uF32[U.pairedArcsDown] = state.pairedArcsDown ? 1 : 0
-      this.hal.writeUniforms(this.uData)
-
-      const vpX = Math.round(scissorX * dpr)
-      const vpW = Math.round(scissorW * dpr)
-      this.hal.setViewport(vpX, arcViewportTop, vpW, arcViewportH)
-      this.hal.setScissor(vpX, arcViewportTop, vpW, arcViewportH)
-
-      this.hal.drawPass(PASS_ARC, block.regionNumber)
-      this.hal.drawPass(PASS_ARC_LINE, block.regionNumber)
-
-      this.uF32[U.covOffset] = state.pileupTopOffset
-      this.uF32[U.canvasH] = state.canvasHeight
-      this.hal.writeUniforms(this.uData)
+    if (arcViewportH <= 0) {
+      return
     }
+    // Swap the UBO to arc-strip viewport metrics, draw the two arc passes,
+    // then restore pileup-area metrics so the next block's reads use them.
+    fillArcUniforms(this.uF32, this.uU32, {
+      region,
+      block,
+      state,
+      scissorX,
+      scissorW,
+      arcViewportH,
+      dpr,
+      covOffset: arcHeightForOffset ?? 0,
+    })
+    this.hal.writeUniforms(this.uData)
+
+    const vpX = Math.round(scissorX * dpr)
+    const vpW = Math.round(scissorW * dpr)
+    this.hal.setViewport(vpX, arcViewportTop, vpW, arcViewportH)
+    this.hal.setScissor(vpX, arcViewportTop, vpW, arcViewportH)
+
+    this.hal.drawPass(PASS_ARC, block.regionNumber)
+    this.hal.drawPass(PASS_ARC_LINE, block.regionNumber)
+
+    this.uF32[U.covOffset] = state.pileupTopOffset
+    this.uF32[U.canvasH] = state.canvasHeight
+    this.hal.writeUniforms(this.uData)
   }
 
   private renderFeatureOverlays(

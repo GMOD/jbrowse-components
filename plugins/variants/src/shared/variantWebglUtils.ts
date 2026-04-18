@@ -1,17 +1,13 @@
-import { cssColorToRgba } from '@jbrowse/core/util/colorBits'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
-export function colorToRGBA(color: string): [number, number, number, number] {
-  return cssColorToRgba(color)
-}
-
-export function createCachedRGBA() {
-  const colorCache = new Map<string, [number, number, number, number]>()
-  return function getCachedRGBA(color: string) {
-    let rgba = colorCache.get(color)
-    if (!rgba) {
-      rgba = colorToRGBA(color)
-      colorCache.set(color, rgba)
+export function createCachedABGR() {
+  const cache = new Map<string, number>()
+  return function getCachedABGR(color: string) {
+    let abgr = cache.get(color)
+    if (abgr === undefined) {
+      abgr = cssColorToABGR(color)
+      cache.set(color, abgr)
     }
-    return rgba
+    return abgr
   }
 }
