@@ -43,9 +43,6 @@ export default function stateModelFactory(
       get cellDataMode() {
         return 'matrix' as const
       },
-      renderProps() {
-        return { notReady: true }
-      },
       /**
        * #getter
        * Per-frame render state for the GPU backend — the autorun reads this
@@ -86,16 +83,16 @@ export default function stateModelFactory(
           NonNullable<typeof self.renderState>
         >({
           backend,
-          uploadSlots: [
+          uploads: [
             {
-              readData: () => self.cellData as MatrixCellData | undefined,
-              commitUpload: (b, data) => {
+              getData: () => self.cellData as MatrixCellData | undefined,
+              upload: (b, data) => {
                 b.uploadCellData(data as MatrixCellData)
               },
             },
           ],
-          getRenderState: () => self.renderState,
-          renderWithState: (b, state) => {
+          renderState: () => self.renderState,
+          render: (b, state) => {
             b.render(state)
           },
         })

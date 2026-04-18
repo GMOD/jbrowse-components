@@ -31,14 +31,18 @@ test('startMultiRegionGpuLifecycle marks canvas drawn on commits with data', () 
 
   expect(model.canvasDrawn).toBe(false)
 
-  model.startMultiRegionGpuLifecycle<FakeBackend, string, number>({
+  model.startMultiRegionGpuLifecycle<FakeBackend, number>({
     backend,
-    getDataByRegionNumber: () => new Map(data),
-    getRenderBlocks: () => [block],
-    getRenderState: () => 1,
-    uploadOneRegion: (b, n) => b.uploads.push(n),
-    pruneRegionsNotIn: () => {},
-    renderAllBlocks: b => {
+    uploads: [
+      {
+        getData: () => new Map(data),
+        upload: (b, n) => b.uploads.push(n),
+        prune: () => {},
+      },
+    ],
+    renderBlocks: () => [block],
+    renderState: () => 1,
+    render: b => {
       b.renders++
     },
   })
@@ -68,14 +72,18 @@ test('explicit onAfterCommit suppresses default markCanvasDrawn wiring', () => {
   const backend: FakeBackend = { uploads: [], renders: 0 }
   let userCalls = 0
 
-  model.startMultiRegionGpuLifecycle<FakeBackend, string, number>({
+  model.startMultiRegionGpuLifecycle<FakeBackend, number>({
     backend,
-    getDataByRegionNumber: () => new Map(data),
-    getRenderBlocks: () => [],
-    getRenderState: () => 1,
-    uploadOneRegion: () => {},
-    pruneRegionsNotIn: () => {},
-    renderAllBlocks: () => {},
+    uploads: [
+      {
+        getData: () => new Map(data),
+        upload: () => {},
+        prune: () => {},
+      },
+    ],
+    renderBlocks: () => [],
+    renderState: () => 1,
+    render: () => {},
     // Plugin opts out of default mark; gates manually.
     onAfterCommit: () => {
       userCalls++
@@ -91,7 +99,7 @@ test('explicit onAfterCommit suppresses default markCanvasDrawn wiring', () => {
   model.stopGpuBackendLifecycle()
 })
 
-test('startSingleDataGpuLifecycle marks canvas drawn once every slot has data', () => {
+test('startSingleDataGpuLifecycle marks canvas drawn once every upload has data', () => {
   const model = TestModel.create()
   const a = observable.box<string | undefined>(undefined)
   const b = observable.box<string | undefined>(undefined)
@@ -99,18 +107,18 @@ test('startSingleDataGpuLifecycle marks canvas drawn once every slot has data', 
 
   model.startSingleDataGpuLifecycle<typeof backend, number>({
     backend,
-    uploadSlots: [
+    uploads: [
       {
-        readData: () => a.get(),
-        commitUpload: (bk, d) => bk.uploads.push(`a:${d}`),
+        getData: () => a.get(),
+        upload: (bk, d) => bk.uploads.push(`a:${d}`),
       },
       {
-        readData: () => b.get(),
-        commitUpload: (bk, d) => bk.uploads.push(`b:${d}`),
+        getData: () => b.get(),
+        upload: (bk, d) => bk.uploads.push(`b:${d}`),
       },
     ],
-    getRenderState: () => 1,
-    renderWithState: () => {},
+    renderState: () => 1,
+    render: () => {},
   })
 
   expect(model.canvasDrawn).toBe(false)

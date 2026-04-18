@@ -68,10 +68,11 @@ interface MultiRegionBackend<Data, State> {
 }
 ```
 
-Lifecycle utility: `startGpuBackendAutorunLifecycle<Backend, Data, State>`. Runs
-**two independent autoruns** — one for upload/prune, one for render.
-Render-state-only changes (e.g. hover) re-fire only the render autorun, skipping
-the upload cache walk.
+Lifecycle utility: `startGpuBackendAutorunLifecycle<Backend, State>`. Runs **one
+autorun per upload entry** (reading its data map and calling `upload` for every
+region — mobx tracks every observable `upload` reads) and **one render autorun**
+(reading `renderBlocks`, `renderState`, and a shared upload counter).
+Render-state-only changes (e.g. hover) re-fire only the render autorun.
 
 Plugins call the mixin wrapper, not the util directly — the wrapper auto-wires
 `markCanvasDrawn` onto post-commit, owns the handle slot, and disposes any prior
@@ -80,42 +81,36 @@ handle:
 ```ts
 self.startMultiRegionGpuLifecycle({
   backend,
-  // Single stream — sugar for uploadStreams: [{ … }]
-  getDataByRegionNumber: () => self.rpcDataMap,
-  uploadOneRegion: (b, n, data) => b.uploadRegion(n /* plugin-specific args */),
-  pruneRegionsNotIn: (b, active) => b.pruneRegions(active),
-  identityOf: d => d.inputKey, // optional, defaults to ref
-  getUploadInvalidationToken: () => self.sources, // optional
-  // Render
-  getRenderBlocks: () => self.renderBlocks, // or gated
-  getRenderState: () => self.renderState,
-  renderAllBlocks: (b, blocks, state) => b.renderBlocks(blocks, state),
+  uploads: [
+    {
+      getData: () => self.rpcDataMap,
+      upload: (b, n, data) => b.uploadRegion(n /* plugin-specific args */),
+      prune: (b, active) => b.pruneRegions(active), // optional
+      deleteOne: (b, n) => b.deleteRegion(n), // optional — for shared backends
+    },
+  ],
+  renderBlocks: () => self.renderBlocks, // or gated: domain ? self.renderBlocks : []
+  renderState: () => self.renderState,
+  render: (b, blocks, state) => b.renderBlocks(blocks, state),
   // onAfterCommit: optional — only when default markCanvasDrawn isn't right.
   // Wiggle uses this to gate the mark on `self.domain`.
 })
 ```
 
-**Multiple upload streams** (alignments: pileup + arcs) use the
-`uploadStreams: [{ … }, { … }]` array form. Each stream has its own
-identity-diff cache. Streams that share backend region slots can omit
-`pruneRegionsNotIn` (arcs share pileup's prune).
+**Multiple upload pipelines** (alignments: pileup + arcs) are separate entries
+in the `uploads` array. Each entry's autorun runs independently. Entries that
+share backend region slots (arcs share pileup's prune) can omit `prune`.
+
+**No per-region cache.** Any observable `upload()` reads is tracked — on change
+the upload autorun fires and re-uploads every region in the data map. "Mobx is
+the cache." Plugins whose upload bytes depend on settings (e.g. wiggle colors,
+multi-wiggle sources) read those settings inside `upload` via `self.gpuProps()`
+— no separate invalidation token needed.
 
 **Contract:** per-region value objects must be freshly constructed on update
-(never mutated in place) so identity diffing can detect change. This is enforced
-by convention in `setLoadedRegionForRegion` on `MultiRegionDisplayMixin` —
-plugin setters like `setRpcDataForRegion` follow the same spread-then-assign
-pattern.
-
-When a plugin needs to force a full re-upload because upload bytes depend on
-non-region state (e.g. multi-wiggle's `sources` array reorders row indices
-packed into the instance buffer), pass
-`getUploadInvalidationToken: () => self.sources`. When the token value changes
-(`Object.is` comparison), the per-region cache clears.
-
-**`identityOf`** lets plugins use a content-hash instead of reference for the
-identity diff — e.g. variants' `cellData` is replaced wholesale on every RPC
-result so reference-diff would re-upload everything, but per-region `inputKey`
-strings stay stable when content is unchanged.
+(never mutated in place). Enforced by convention in `setLoadedRegionForRegion`
+on `MultiRegionDisplayMixin` — plugin setters like `setRpcDataForRegion` follow
+the same spread-then-assign pattern.
 
 ### B. Global-upload display (HiC, LD, variant-matrix)
 
@@ -135,23 +130,23 @@ called via the mixin wrapper:
 ```ts
 self.startSingleDataGpuLifecycle({
   backend,
-  uploadSlots: [
-    { readData: () => self.rpcData,    commitUpload: (b, d) => b.uploadData(...) },
-    { readData: () => self.colorScheme, commitUpload: (b, s) => b.uploadColorRamp(...) },
+  uploads: [
+    { getData: () => self.rpcData,     upload: (b, d) => b.uploadData(...) },
+    { getData: () => self.colorScheme, upload: (b, s) => b.uploadColorRamp(...) },
   ],
-  getRenderState: () => self.renderState,
-  renderWithState: (b, state) => b.render(state),
+  renderState: () => self.renderState,
+  render: (b, state) => b.render(state),
   // onAfterCommit: optional — default fires markCanvasDrawn once every slot
   // has data.
 })
 ```
 
-Each slot is independently identity-diffed. Render is only issued after every
-slot has data. A plugin whose uploads are coupled (LD: data + color ramp both
-derive from the same `rpcData` object) can put both in one slot's
-`commitUpload`; a plugin whose uploads are independent (HiC: contact matrix
-bytes vs. color-ramp bytes) should use separate slots so a colorScheme change
-doesn't re-upload contact data.
+Each entry is independently identity-diffed (`lastUploaded[i] !== data`). Render
+is only issued after every entry has data. A plugin whose uploads are coupled
+(LD: data + color ramp both derive from the same `rpcData` object) can put both
+in one entry's `upload`; a plugin whose uploads are independent (HiC: contact
+matrix bytes vs. color-ramp bytes) should use separate entries so a colorScheme
+change doesn't re-upload contact data.
 
 ### C. Geometry-keyed display (dotplot, synteny) — pending migration
 
@@ -175,15 +170,14 @@ draw.
 Migration path lands without naming overrides on the util — both families
 coexist via plugin-supplied callbacks:
 
-- Each display uses `startMultiRegionGpuLifecycle` with `deleteOneRegion` (a
-  small extension to the multi-region util — adds per-deletion dispatch
-  alongside the existing active-set `pruneRegionsNotIn`). Display's
-  `getRenderState` returns `undefined` to disable the render pass at the display
-  level.
-- The view uses `startSingleDataGpuLifecycle` with empty `uploadSlots: []` (a
-  small extension — empty-slot path treats `allPresent` as true so render fires
-  on state alone) and a `getRenderState` that aggregates each display's
-  per-track render parameters.
+- Each display uses `startMultiRegionGpuLifecycle` with `deleteOne` on its
+  upload entry (per-key cleanup for shared backends, alongside the active-set
+  `prune`). Display's `renderState` returns `undefined` to disable the render
+  pass at the display level.
+- The view uses `startSingleDataGpuLifecycle` with empty `uploads: []` (the
+  empty-entry path treats `allPresent` as true so render fires on state alone)
+  and a `renderState` that aggregates each display's per-track render
+  parameters.
 
 See `DOTPLOT_REFACTOR.md` and `SYNTENY_REFACTOR.md` for the per-plugin detail.
 
@@ -220,8 +214,9 @@ free. Provides:
 
 - Cached `renderBlocks` getter = `buildRenderBlocks(view.visibleRegions)`.
   Plugins that want to suppress rendering in some state (e.g. no domain yet) do
-  so in the autorun's `getRenderBlocks` callback — not by overriding the getter.
-  Example: `() => self.domain ? self.renderBlocks : []`.
+  so in the `renderBlocks` callback passed to `startMultiRegionGpuLifecycle` —
+  not by overriding the getter. Example:
+  `renderBlocks: () => self.domain ? self.renderBlocks : []`.
 - `fullyDrawn` getter = `canvasDrawn && !isLoading` (composes the slot mixin's
   `canvasDrawn` with this mixin's RPC fetch state).
 - Documented upload-identity contract on `setLoadedRegionForRegion`.
@@ -347,14 +342,163 @@ plugin author touches — it lives in the utility, tested once.
 **Exemplar migrated plugins** (study in this order when ramping up):
 
 1. `plugins/wiggle/src/LinearWiggleDisplay/model.ts` — simplest
-2. `plugins/wiggle/src/MultiLinearWiggleDisplay/model.ts` — uses invalidation
-   token
+2. `plugins/wiggle/src/MultiLinearWiggleDisplay/model.ts` — multi-source
 3. `plugins/canvas/src/LinearBasicDisplay/baseModel.ts` — uses MST-side
    scrollTop
 4. `plugins/hic/src/LinearHicDisplay/model.ts` — multi-slot global-upload
 5. `plugins/variants/src/LDDisplay/shared.ts` — single-slot global-upload
 6. `plugins/variants/src/MultiVariantMatrixDisplay/model.ts` — composes mixin at
    plugin level (vs. at shared-model level)
+
+---
+
+## The `rpcProps` / `gpuProps` pattern
+
+Every migrated display exposes domain-named getters that name **what affects
+rendering output**. Each getter is the **single source of truth** used by both
+its data-pipeline consumer and its invalidation mechanism, so adding a field
+auto-wires both jobs:
+
+| Getter        | Consumer                                                                    | Invalidation route                                                                                                                                                                 |
+| ------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `rpcProps`    | `rpcManager.call(..., { ...self.rpcProps, ... })` — literal RPC payload     | Mixin-owned `SettingsInvalidate` autorun reads `void self.rpcProps`; on change → `clearAllRpcData` → fetch re-runs                                                                 |
+| `gpuProps()`  | `buildSourceRenderData(data, self.gpuProps())` (typed input to the encoder) | The upload autorun reads `self.gpuProps()` inside `upload()` — any tracked field change re-fires it, re-uploading every region. No RPC roundtrip and no separate token mechanism. |
+| `renderState` | `backend.renderBlocks(blocks, state)` per frame                             | Framework's render autorun fires when `renderState` identity changes                                                                                                               |
+
+`gpuProps` is only present where the main thread does buffer encoding (wiggle).
+Canvas's worker pre-builds the GPU buffer, so canvas has only `rpcProps`.
+Linear-comparative-view also has only `rpcProps`. Alignments folds every
+refetch-invalidating field into a single `rpcProps` (including
+`showLinkedReads`, `showArcs`, `drawInter`, `drawLongRange` which are
+main-thread post-fetch decision fields rather than literal RPC payload) because
+they all need new data when they change — sending the extras to the worker is
+harmless.
+
+HiC, LD, and the multi-sample variants family also expose `rpcProps`, but they
+don't use `MultiRegionDisplayMixin`'s FetchVisibleRegions pipeline. Their fetch
+is a single monolithic `autorun` in `afterAttach.ts` (HiC/LD) or
+`getVariantCellDataAutorun.ts` (variants). The autorun reads
+`void self.rpcProps` once (so every field participates in the dependency graph)
+and the RPC call spreads `...self.rpcProps`. The autorun running IS the refetch.
+
+### Why two mechanisms
+
+Splitting refetch from re-upload removes wasted RPC roundtrips. A wiggle
+color change re-encodes the per-instance buffer but the worker output is
+unchanged — so it should re-upload, not refetch. The upload autorun calls
+`upload()` which reads `self.gpuProps()` — mobx tracks every field read
+inside, so any gpuProps change re-fires the autorun and re-uploads every
+region with no RPC call.
+
+A wiggle `bicolorPivot` change is different — the worker uses it to split
+features into pos/neg arrays, so the data itself changes. That goes
+through the mixin's `SettingsInvalidate` → `clearAllRpcData` → fetch
+re-runs.
+
+### The structural guarantee
+
+`rpcProps` is **the** RPC payload — the same object is spread into the
+RPC call AND read by the mixin's invalidation autorun. Adding a field
+auto-flows to both.
+
+`gpuProps()` is **the typed input** to `buildSourceRenderData`. The
+function's signature accepts `WiggleGpuProps`, so removing or mistyping a
+field is a TypeScript error at the call site. The upload autorun calls
+`self.gpuProps()` inside `upload()` — so any observable tracked there
+participates in the upload autorun's dependency graph. The chain holds
+end-to-end without a separate invalidation token.
+
+## Invalidation via `rpcProps`
+
+`MultiRegionDisplayMixin` owns a single `SettingsInvalidate` autorun:
+
+```ts
+// in MultiRegionDisplayMixin.afterAttach
+autorun(
+  () => {
+    void self.rpcProps
+    self.clearAllRpcData()
+  },
+  { name: 'SettingsInvalidate' },
+)
+```
+
+Plugins (wiggle, canvas, alignments, linear-comparative-view) just override the
+`rpcProps` view; the mixin-owned autorun handles the rest. There is no
+per-plugin invalidation boilerplate. The chain
+`clearAllRpcData → loadedRegions empty → FetchVisibleRegions re-fetches → new rpcDataMap entries → upload autorun re-uploads`
+is identical to before — it's just wired at the mixin layer now.
+
+A subclass that never overrides `rpcProps` inherits the default (returns
+`undefined`), in which case the autorun tracks no observables — it fires once at
+setup on empty data (a no-op) and then never again.
+
+For plugins whose fetch is a monolithic `autorun` (HiC, LD, variants
+multi-sample family), the fetch autorun itself reads `void self.rpcProps` and
+spreads `...self.rpcProps` into the RPC call. These plugins define their own
+`afterAttach()` that does **not** call `superAfterAttach()`, so the mixin's
+`FetchVisibleRegions` and `SettingsInvalidate` autoruns never install — their
+monolithic autorun does the equivalent job inline, owning both the dep-tracking
+and the fetch trigger.
+
+The first run also fires (mobx behavior on creation) and clears an already-empty
+`rpcDataMap` — a no-op that just bumps `fetchGeneration` to 1 before the
+FetchVisibleRegions delay (300ms) elapses.
+
+For plugins whose post-fetch processing requires RPC data (alignments), also
+include `void self.gpuProps` so changes that need different post-fetch data
+still refetch.
+
+## Caveats
+
+**Coupled getters.** A getter consumed by both `rpcProps` and `gpuProps` (e.g.
+wiggle's `effectiveBicolorPivot` reads `color`) means changing the
+"gpuProps-side" field can refetch. This is correct — the worker output genuinely
+changes — but it's worth knowing when reasoning about test behavior. Wiggle's
+test uses `posColor` (uncoupled) to assert the "no-refetch on gpuProps change"
+path.
+
+**Settings consumed only by `renderState` don't go in `rpcProps`/`gpuProps`.**
+Things like `scaleType` in wiggle (which only affects a per-frame uniform) are
+picked up by the GPU render autorun automatically when `renderState`'s identity
+changes — no refetch and no upload needed. `wiggle/.../fetchAutorun.test.ts`
+includes a positive test that `setScaleType` does NOT trigger a refetch.
+
+**Don't enumerate by hand-writing a JSON key.** The pre-migration pattern
+(`const key = JSON.stringify({...}); if (key !== prev) clearAllRpcData()`)
+required maintaining a separate list of fields. The current shape pushes the
+list into the domain-named getter that's _already_ the source of truth for the
+consumer.
+
+**Don't number autoruns** (`Autorun 1: …, Autorun 2: …`). Give each a
+descriptive comment naming its purpose.
+
+## Legacy `renderProps()` / `renderingProps()`
+
+The pre-migration architecture had two getters:
+
+- `renderProps()` — props sent to the worker-side renderer. **Replaced by
+  `rpcProps`**.
+- `renderingProps()` — props passed to the React Rendering component (e.g.
+  `PileupRendering`). Mostly unused in the new architecture: React components
+  observe the model directly via mobx instead.
+
+GPU-migrated displays still expose `renderProps()` returning
+`{ notReady: true }` for SVG-export compatibility (`svgExportUtil.ts`); do not
+add fields to it or rely on it for change detection.
+
+Tested patterns: `fetchAutorun.test.ts` files under
+`plugins/wiggle/src/LinearWiggleDisplay/`,
+`plugins/canvas/src/LinearBasicDisplay/`, and
+`plugins/alignments/src/LinearAlignmentsDisplay/`. Wiggle's suite asserts all
+four invalidation behaviors:
+
+- `bicolorPivot` (rpcProps) → refetch
+- `resolution` (rpcProps) → refetch
+- `summaryScoreMode` (gpuProps) → no refetch
+- `posColor` (gpuProps) → no refetch
+- `scaleType` (renderState only) → no refetch
+- `displayCrossHatches` (UI only) → no refetch
 
 ---
 

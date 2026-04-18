@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 export function useVariantVirtualScroll({
-  canvasRef,
+  canvas,
   scrollTop,
   setScrollTop,
   totalHeight,
@@ -11,7 +11,7 @@ export function useVariantVirtualScroll({
   nrow,
   setRowHeight,
 }: {
-  canvasRef: React.RefObject<HTMLCanvasElement | null>
+  canvas: HTMLCanvasElement | null
   scrollTop: number
   setScrollTop: (n: number) => void
   totalHeight: number
@@ -25,7 +25,6 @@ export function useVariantVirtualScroll({
   const hasOverflow = scrollableHeight > 0
 
   useEffect(() => {
-    const canvas = canvasRef.current
     if (!canvas) {
       return
     }
@@ -69,7 +68,7 @@ export function useVariantVirtualScroll({
       canvas.removeEventListener('wheel', handler)
     }
   }, [
-    canvasRef,
+    canvas,
     scrollTop,
     scrollableHeight,
     viewportHeight,

@@ -131,8 +131,17 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
-      renderProps() {
-        return { notReady: true }
+      // Literal RPC payload for RenderHicData. Adding a field here flows
+      // into both the RPC call (via the fetch autorun in afterAttach.ts)
+      // and into mobx's dependency tracking — the fetch autorun reads
+      // `self.rpcProps` once, so any change refires it.
+      get rpcProps() {
+        return {
+          resolution: self.resolution,
+          normalization: self.activeNormalization,
+          mode: self.mode,
+          displayHeight: self.mode === 'adjust' ? self.height : undefined,
+        }
       },
 
       /**
@@ -213,10 +222,10 @@ export default function stateModelFactory(
           NonNullable<typeof self.renderState>
         >({
           backend,
-          uploadSlots: [
+          uploads: [
             {
-              readData: () => self.rpcData,
-              commitUpload: (b, data) => {
+              getData: () => self.rpcData,
+              upload: (b, data) => {
                 const d = data as HicDataResult
                 b.uploadData({
                   positions: d.positions,
@@ -226,14 +235,14 @@ export default function stateModelFactory(
               },
             },
             {
-              readData: () => self.colorScheme ?? 'juicebox',
-              commitUpload: (b, scheme) => {
+              getData: () => self.colorScheme ?? 'juicebox',
+              upload: (b, scheme) => {
                 b.uploadColorRamp(generateColorRamp(scheme as string))
               },
             },
           ],
-          getRenderState: () => self.renderState,
-          renderWithState: (b, state) => {
+          renderState: () => self.renderState,
+          render: (b, state) => {
             b.render(state)
           },
         })

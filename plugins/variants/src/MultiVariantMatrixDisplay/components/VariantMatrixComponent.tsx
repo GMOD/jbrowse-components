@@ -44,7 +44,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
   const lastHoveredRef = useRef<string | undefined>(undefined)
   const { classes } = useStyles()
 
-  const { canvasRef, error, retry } = useGpuModelLifecycle(
+  const { canvas, canvasRef, error, retry } = useGpuModelLifecycle(
     VariantMatrixRenderer,
     model,
   )
@@ -53,7 +53,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
 
   const { hasOverflow, thumbHeight, thumbTop, handleScrollbarMouseDown } =
     useVariantVirtualScroll({
-      canvasRef,
+      canvas,
       scrollTop: model.scrollTop,
       setScrollTop: model.setScrollTop,
       totalHeight: model.totalHeight,

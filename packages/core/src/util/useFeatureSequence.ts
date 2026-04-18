@@ -36,10 +36,10 @@ export function useFeatureSequence({
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState(false)
 
+  const active = !!(session && shouldFetch && assemblyName)
+
   useEffect(() => {
     if (!session || !shouldFetch || !assemblyName) {
-      setSequence(undefined)
-      setError(undefined)
       return
     }
 
@@ -81,18 +81,18 @@ export function useFeatureSequence({
     })()
   }, [
     session,
+    shouldFetch,
     start,
     end,
     refName,
     assemblyName,
     upDownBp,
     forceLoad,
-    shouldFetch,
   ])
 
   return {
-    sequence,
-    loading,
-    error,
+    sequence: active ? sequence : undefined,
+    loading: active ? loading : false,
+    error: active ? error : undefined,
   }
 }

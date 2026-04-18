@@ -145,7 +145,7 @@ function findVertexStruct(r: Reflection) {
 
 function findConstantBuffer(r: Reflection) {
   for (const p of r.parameters) {
-    if (p.type && 'kind' in p.type && p.type.kind === 'constantBuffer') {
+    if ('kind' in p.type && p.type.kind === 'constantBuffer') {
       return p.type as ConstantBufferType
     }
   }

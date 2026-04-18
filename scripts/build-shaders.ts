@@ -16,18 +16,21 @@
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { basename, dirname, join, resolve } from 'node:path'
+import path from 'node:path'
 
 import { emit as emitLayout } from './shader-codegen/codegen.ts'
 import { vulkanGlslToWebgl2 } from './shader-codegen/vulkanGlslToWebgl2.ts'
 
-const REPO_ROOT = resolve(dirname(import.meta.url.replace('file://', '')), '..')
+const REPO_ROOT = path.resolve(
+  path.dirname(import.meta.url.replace('file://', '')),
+  '..',
+)
 const SLANGC = process.env.SLANGC ?? `${REPO_ROOT}/.cache/slangc/bin/slangc`
 const NAGA = process.env.NAGA ?? 'naga'
 const GLSLANG = process.env.GLSLANG ?? 'glslangValidator'
 // Shaders live alongside their plugin, but shared modules (hpmath, etc.) live
 // in core so any shader can `import hpmath;`.
-const SHARED_INCLUDE = resolve(REPO_ROOT, 'packages/core/src/gpu/shaders')
+const SHARED_INCLUDE = path.resolve(REPO_ROOT, 'packages/core/src/gpu/shaders')
 
 function walk(dir: string, out: string[] = []) {
   for (const entry of readdirSync(dir)) {
@@ -41,12 +44,12 @@ function walk(dir: string, out: string[] = []) {
     ) {
       continue
     }
-    const path = join(dir, entry)
-    const stat = statSync(path)
+    const fullPath = path.join(dir, entry)
+    const stat = statSync(fullPath)
     if (stat.isDirectory()) {
-      walk(path, out)
+      walk(fullPath, out)
     } else if (entry.endsWith('.slang')) {
-      out.push(path)
+      out.push(fullPath)
     }
   }
   return out
@@ -187,12 +190,12 @@ function compileOne(slangPath: string) {
     return
   }
   const targets = parseTargets(source)
-  const base = basename(slangPath, '.slang')
-  const dir = dirname(slangPath)
-  const tmp = mkdtempSync(join(tmpdir(), `build-shaders-${base}-`))
+  const base = path.basename(slangPath, '.slang')
+  const dir = path.dirname(slangPath)
+  const tmp = mkdtempSync(path.join(tmpdir(), `build-shaders-${base}-`))
   try {
-    const wgslOut = join(tmp, `${base}.wgsl`)
-    const reflectionOut = join(tmp, `${base}.reflection.json`)
+    const wgslOut = path.join(tmp, `${base}.wgsl`)
+    const reflectionOut = path.join(tmp, `${base}.reflection.json`)
 
     const slangcArgs = [slangPath, '-target', 'wgsl', '-o', wgslOut, '-reflection-json', reflectionOut, '-I', dir, '-I', SHARED_INCLUDE]
     execFileSync(SLANGC, slangcArgs, { stdio: 'pipe' })
@@ -209,8 +212,8 @@ function compileOne(slangPath: string) {
       if (!vsName || !fsName) {
         throw new Error(`${slangPath}: targets 'glsl' but missing vertex or fragment entry point`)
       }
-      const glslVertexOut = join(tmp, `${base}.vert.glsl`)
-      const glslFragmentOut = join(tmp, `${base}.frag.glsl`)
+      const glslVertexOut = path.join(tmp, `${base}.vert.glsl`)
+      const glslFragmentOut = path.join(tmp, `${base}.frag.glsl`)
       execFileSync(
         SLANGC,
         [slangPath, '-target', 'glsl', '-stage', 'vertex', '-entry', vsName, '-o', glslVertexOut, '-I', dir, '-I', SHARED_INCLUDE],
@@ -249,15 +252,15 @@ function compileOne(slangPath: string) {
             : undefined,
       })
 
-      const processedVertOut = join(tmp, `${base}.vert.es.glsl`)
-      const processedFragOut = join(tmp, `${base}.frag.es.glsl`)
+      const processedVertOut = path.join(tmp, `${base}.vert.es.glsl`)
+      const processedFragOut = path.join(tmp, `${base}.frag.es.glsl`)
       writeFileSync(processedVertOut, glslVertex)
       writeFileSync(processedFragOut, glslFragment)
       execFileSync(GLSLANG, ['-S', 'vert', processedVertOut], { stdio: 'pipe' })
       execFileSync(GLSLANG, ['-S', 'frag', processedFragOut], { stdio: 'pipe' })
     }
 
-    const generatedPath = join(dir, `${base}.generated.ts`)
+    const generatedPath = path.join(dir, `${base}.generated.ts`)
     const generated = emitLayout({
       baseName: base,
       reflection,

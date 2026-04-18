@@ -271,6 +271,27 @@ export default function sharedModelFactory(
       get ldCanvasHeight() {
         return Math.max(50, self.height - self.lineZoneHeight)
       },
+
+      // Literal RPC payload for RenderLDData. Adding a field here
+      // automatically flows into both the RPC call (via the fetch autorun
+      // in afterAttach.ts) and into mobx's dependency tracking — the
+      // fetch autorun reads `self.rpcProps` once, so any change to any
+      // field refires it. No hand-enumerated fields at the top of the
+      // autorun.
+      get rpcProps() {
+        return {
+          ldMetric: self.ldMetric,
+          minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
+          lengthCutoffFilter: self.lengthCutoffFilter,
+          hweFilterThreshold: self.hweFilterThreshold,
+          callRateFilter: self.callRateFilter,
+          jexlFilters: self.jexlFilters,
+          signedLD: self.signedLD,
+          useGenomicPositions: self.useGenomicPositions,
+          fitToHeight: self.fitToHeight,
+          displayHeight: self.fitToHeight ? this.ldCanvasHeight : undefined,
+        }
+      },
       /**
        * #getter
        * Per-frame render state for the GPU backend. Read by the upload/render
@@ -320,10 +341,10 @@ export default function sharedModelFactory(
           NonNullable<typeof self.renderState>
         >({
           backend,
-          uploadSlots: [
+          uploads: [
             {
-              readData: () => self.rpcData,
-              commitUpload: (b, data) => {
+              getData: () => self.rpcData,
+              upload: (b, data) => {
                 const d = data as LDDataResult
                 b.uploadData({
                   ldValues: d.ldValues,
@@ -336,8 +357,8 @@ export default function sharedModelFactory(
               },
             },
           ],
-          getRenderState: () => self.renderState,
-          renderWithState: (b, state) => {
+          renderState: () => self.renderState,
+          render: (b, state) => {
             b.render(state)
           },
         })
@@ -378,9 +399,6 @@ export default function sharedModelFactory(
             },
           },
         ]
-      },
-      renderProps() {
-        return { notReady: true }
       },
       /**
        * #method

@@ -1,7 +1,6 @@
 import type React from 'react'
 
 export interface VariantDisplayModelBase {
-  dataVersion: number
   availableHeight: number
   rowHeight: number
   scrollTop: number

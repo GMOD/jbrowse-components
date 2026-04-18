@@ -119,10 +119,7 @@ export function useGpuRenderer<R extends { dispose(): void }>(
       setReady(false)
       opts?.onDispose?.()
     }
-    // opts is intentionally omitted — callers must pass a stable identity
-    // (via useMemo) or accept that re-renders reinitialize the backend
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canvas, contextVersion, factory])
+  }, [canvas, contextVersion, factory, opts])
 
   function retry() {
     setError(null)
@@ -130,5 +127,5 @@ export function useGpuRenderer<R extends { dispose(): void }>(
     setContextVersion(v => v + 1)
   }
 
-  return { canvasRef, error, ready, rendererRef, retry }
+  return { canvas, canvasRef, error, ready, rendererRef, retry }
 }

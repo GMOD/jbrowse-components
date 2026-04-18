@@ -10,10 +10,13 @@ import type {
   WiggleBackend,
 } from '../../shared/wiggleBackendTypes.ts'
 
-// Narrow shape that buildSourceRenderData reads from the model — kept
-// separate from WiggleDisplayModel so that MST's self (which may not yet
-// see later-defined actions at the point of the call) still satisfies it.
-export interface WiggleSourceRenderInputs {
+// The shape of `model.gpuProps` — the source of truth for "settings that
+// affect the per-instance GPU buffer encoding". buildSourceRenderData
+// consumes this exact type, so TS forces gpuProps and the encoder to stay
+// in sync. The SettingsInvalidate autorun reads `void self.gpuProps`, so
+// adding a field also auto-wires invalidation. Don't read these settings
+// off the model directly — go through gpuProps so the contract holds.
+export interface WiggleGpuProps {
   color: string
   posColor: string
   negColor: string
@@ -22,9 +25,8 @@ export interface WiggleSourceRenderInputs {
   summaryScoreMode: string
 }
 
-export interface WiggleDisplayModel extends WiggleSourceRenderInputs {
+export interface WiggleDisplayModel extends WiggleGpuProps {
   rpcDataMap: Map<number, WiggleDataResult>
-  dataVersion: number
   height: number
   domain: [number, number] | undefined
   scaleType: string
@@ -54,21 +56,21 @@ export interface WiggleDisplayModel extends WiggleSourceRenderInputs {
 
 export function buildSourceRenderData(
   data: WiggleDataResult,
-  model: WiggleSourceRenderInputs,
+  gpuProps: WiggleGpuProps,
 ): SourceRenderData[] {
-  const useBicolor = isDefaultBicolor(model.color)
-  const baseColor = cssColorToNormalizedRgb(model.color)
-  const posColor = cssColorToNormalizedRgb(model.posColor)
-  const negColor = cssColorToNormalizedRgb(model.negColor)
-  const { summaryScoreMode } = model
+  const useBicolor = isDefaultBicolor(gpuProps.color)
+  const baseColor = cssColorToNormalizedRgb(gpuProps.color)
+  const posColor = cssColorToNormalizedRgb(gpuProps.posColor)
+  const negColor = cssColorToNormalizedRgb(gpuProps.negColor)
+  const { summaryScoreMode } = gpuProps
 
   if (summaryScoreMode === 'whiskers') {
     const color = useBicolor ? posColor : baseColor
-    const isScatter = model.renderingType === 'scatter'
+    const isScatter = gpuProps.renderingType === 'scatter'
     return makeWhiskersSourceData(
       data,
       color,
-      model.isDensityMode,
+      gpuProps.isDensityMode,
       isScatter,
       0,
     )
@@ -77,7 +79,7 @@ export function buildSourceRenderData(
   const scores = getEffectiveScores(data, summaryScoreMode)
 
   if (!useBicolor) {
-    const color = model.isDensityMode ? posColor : baseColor
+    const color = gpuProps.isDensityMode ? posColor : baseColor
     return [
       {
         featurePositions: data.featurePositions,

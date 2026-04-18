@@ -133,7 +133,7 @@ const VariantComponent = observer(function VariantComponent({
   const flatbushCacheRef = useRef(new WeakMap<ArrayBuffer, Flatbush>())
   const { classes } = useStyles()
 
-  const { canvasRef, error, retry } = useGpuModelLifecycle(
+  const { canvas, canvasRef, error, retry } = useGpuModelLifecycle(
     VariantRenderer,
     model,
   )
@@ -142,7 +142,7 @@ const VariantComponent = observer(function VariantComponent({
 
   const { hasOverflow, thumbHeight, thumbTop, handleScrollbarMouseDown } =
     useVariantVirtualScroll({
-      canvasRef,
+      canvas,
       scrollTop: model.scrollTop,
       setScrollTop: model.setScrollTop,
       totalHeight: model.totalHeight,

@@ -59,7 +59,7 @@ import {
   getSetMaxHeightMenuItem,
   getShowMenuItem,
   getSortByMenuItem,
-} from '../shared/menuItems.ts'
+} from '../shared/menus/index.ts'
 import { getColorForModification } from '../util.ts'
 import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
@@ -229,7 +229,6 @@ export default function stateModelFactory(
         contextMenuIndicatorHit: undefined as IndicatorHitResult | undefined,
         contextMenuRefName: undefined as string | undefined,
         rpcDataMap: new Map<number, PileupDataResult>(),
-        webglRef: null as unknown,
         currentRangeY: [0, 600] as [number, number],
         maxY: 0,
         highlightedChainIds: [] as string[],
@@ -293,14 +292,6 @@ export default function stateModelFactory(
          */
         get TooltipComponent() {
           return AlignmentsTooltip
-        },
-
-        /**
-         * Override to prevent block rendering - we handle our own rendering
-         * This must be a method (not a getter) that returns notReady: true
-         */
-        renderProps() {
-          return { notReady: true }
         },
 
         /**
@@ -618,6 +609,33 @@ export default function stateModelFactory(
           return Math.max(0, self.totalPileupHeight - self.pileupViewportHeight)
         },
 
+        // All fields that invalidate the fetched data. Includes both
+        // worker-bound fields (filterBy, colorBy, …) and main-thread
+        // post-fetch decision fields (showLinkedReads picks pileup vs
+        // chain RPC; showArcs/drawInter/drawLongRange trigger arcs
+        // recomputation from pileup data). The mixin's SettingsInvalidate
+        // autorun watches this getter and clears all data on change.
+        // Fields that are not literal RPC params (showArcs/drawInter/
+        // drawLongRange/showLinkedReads as a flag) are still declared
+        // here so the invalidation is structural; the RPC call spreads
+        // only the worker-accepted subset (see rpcCallProps).
+        get rpcProps() {
+          return {
+            filterBy: self.filterBy,
+            colorBy: self.colorBy,
+            colorTagMap: self.colorTagMap,
+            sortedBy:
+              self.sortedBy?.type === 'tag' ? self.sortedBy : undefined,
+            showSoftClipping: self.showSoftClipping,
+            drawSingletons: self.drawSingletons,
+            drawProperPairs: self.drawProperPairs,
+            showLinkedReads: self.showLinkedReads,
+            showArcs: self.showArcs,
+            drawInter: self.arcsState.drawInter,
+            drawLongRange: self.arcsState.drawLongRange,
+          }
+        },
+
         get renderState(): AlignmentsRenderState | undefined {
           const view = getContainingView(self) as LGV
           const palette = self.colorPalette
@@ -746,10 +764,6 @@ export default function stateModelFactory(
             self.arcsState.clearAllRpcData()
             self.currentRangeY = [0, 0]
             self.setRegionTooLarge(false)
-          },
-
-          setWebGLRef(ref: unknown) {
-            self.webglRef = ref
           },
 
           setOverCigarItem(flag: boolean) {
@@ -971,61 +985,58 @@ export default function stateModelFactory(
           startGpuBackendLifecycle(backend: AlignmentsBackend) {
             self.startMultiRegionGpuLifecycle<
               AlignmentsBackend,
-              unknown,
               AlignmentsRenderState
             >({
               backend,
-              uploadStreams: [
+              uploads: [
                 {
-                  getDataByRegionNumber: () => self.rpcDataMap,
-                  uploadOneRegion: (b, regionNumber, data) => {
-                    const pileup = data as PileupDataResult
-                    if (pileup.numReads === 0) {
+                  getData: () => self.rpcDataMap,
+                  upload: (b, regionNumber, data: PileupDataResult) => {
+                    if (data.numReads === 0) {
                       return
                     }
-                    b.uploadRegion(regionNumber, pileup)
-                    if (pileup.maxY > self.maxY) {
-                      self.maxY = pileup.maxY
+                    b.uploadRegion(regionNumber, data)
+                    if (data.maxY > self.maxY) {
+                      self.maxY = data.maxY
                     }
                     if (
-                      pileup.connectingLinePositions &&
-                      pileup.connectingLineYs &&
-                      pileup.numConnectingLines
+                      data.connectingLinePositions &&
+                      data.connectingLineYs &&
+                      data.numConnectingLines
                     ) {
                       b.uploadConnectingLinesForRegion(regionNumber, {
-                        regionStart: pileup.regionStart,
-                        connectingLinePositions: pileup.connectingLinePositions,
-                        connectingLineYs: pileup.connectingLineYs,
-                        numConnectingLines: pileup.numConnectingLines,
+                        regionStart: data.regionStart,
+                        connectingLinePositions: data.connectingLinePositions,
+                        connectingLineYs: data.connectingLineYs,
+                        numConnectingLines: data.numConnectingLines,
                       })
                     }
                   },
-                  pruneRegionsNotIn: (b, active) => {
+                  prune: (b, active) => {
                     b.pruneRegions(active)
                   },
                 },
                 {
-                  getDataByRegionNumber: () => self.arcsState.rpcDataMap,
-                  uploadOneRegion: (b, regionNumber, data) => {
-                    const arcs = data as ArcsDataResult
+                  getData: () => self.arcsState.rpcDataMap,
+                  upload: (b, regionNumber, data: ArcsDataResult) => {
                     b.uploadArcsFromTypedArraysForRegion(regionNumber, {
-                      regionStart: arcs.regionStart,
-                      arcX1: arcs.arcX1,
-                      arcX2: arcs.arcX2,
-                      arcColorTypes: arcs.arcColorTypes,
-                      arcIsArc: arcs.arcIsArc,
-                      numArcs: arcs.numArcs,
-                      linePositions: arcs.linePositions,
-                      lineYs: arcs.lineYs,
-                      lineColorTypes: arcs.lineColorTypes,
-                      numLines: arcs.numLines,
+                      regionStart: data.regionStart,
+                      arcX1: data.arcX1,
+                      arcX2: data.arcX2,
+                      arcColorTypes: data.arcColorTypes,
+                      arcIsArc: data.arcIsArc,
+                      numArcs: data.numArcs,
+                      linePositions: data.linePositions,
+                      lineYs: data.lineYs,
+                      lineColorTypes: data.lineColorTypes,
+                      numLines: data.numLines,
                     })
                   },
                 },
               ],
-              getRenderBlocks: () => self.renderBlocks,
-              getRenderState: () => self.renderState,
-              renderAllBlocks: (b, blocks, state) => {
+              renderBlocks: () => self.renderBlocks,
+              renderState: () => self.renderState,
+              render: (b, blocks, state) => {
                 b.renderBlocks(blocks, state)
               },
             })
@@ -1188,12 +1199,7 @@ export default function stateModelFactory(
               adapterConfig,
               sequenceAdapter,
               regions: [region],
-              filterBy: self.filterBy,
-              colorBy: self.colorBy,
-              colorTagMap: self.colorTagMap,
-              sortedBy:
-                self.sortedBy?.type === 'tag' ? self.sortedBy : undefined,
-              showSoftClipping: self.showSoftClipping,
+              ...self.rpcProps,
               stopToken,
               statusCallback: (msg: string) => {
                 if (isAlive(self)) {
@@ -1219,11 +1225,7 @@ export default function stateModelFactory(
               adapterConfig,
               sequenceAdapter,
               regions: [region],
-              filterBy: self.filterBy,
-              colorBy: self.colorBy,
-              colorTagMap: self.colorTagMap,
-              drawSingletons: self.drawSingletons,
-              drawProperPairs: self.drawProperPairs,
+              ...self.rpcProps,
               stopToken,
               statusCallback: (msg: string) => {
                 if (isAlive(self)) {
@@ -1422,7 +1424,6 @@ export default function stateModelFactory(
           }
         }
 
-        let prevInvalidationKey: string | undefined
         const superAfterAttach = self.afterAttach
 
         return {
@@ -1521,39 +1522,13 @@ export default function stateModelFactory(
               ),
             )
 
-            // Autorun: invalidate data when any setting that affects the
-            // worker-side RPC result changes (displayedRegions handled by mixin)
-            addDisposer(
-              self,
-              autorun(
-                () => {
-                  const key = JSON.stringify({
-                    filterBy: self.filterBy,
-                    showLinkedReads: self.showLinkedReads,
-                    showArcs: self.showArcs,
-                    drawInter: self.arcsState.drawInter,
-                    drawLongRange: self.arcsState.drawLongRange,
-                    drawSingletons: self.drawSingletons,
-                    drawProperPairs: self.drawProperPairs,
-                    colorType: self.colorBy.type,
-                    colorTag: self.colorBy.tag,
-                    showSoftClipping: self.showSoftClipping,
-                  })
-                  if (
-                    prevInvalidationKey !== undefined &&
-                    key !== prevInvalidationKey
-                  ) {
-                    self.setError(undefined)
-                    self.clearAllRpcData()
-                  }
-                  prevInvalidationKey = key
-                },
-                { name: 'LinearAlignmentsDisplay:invalidateData' },
-              ),
-            )
-
-            // Autorun: recompute arcs when arc color scheme changes (no
-            // RPC refetch needed — arcs are derived from pileup data)
+            // Recompute arcs when arc color scheme changes (no RPC
+            // refetch needed — arcs are derived from pileup data).
+            // prev-tracking gates on the colorByType change
+            // specifically so that incidental re-fires caused by
+            // tracked reads in the guard/effect (rpcDataMap,
+            // loadedRegions etc.) don't trigger redundant arc
+            // recomputation. N-fire-per-fetch would be O(N²).
             let prevArcColorByType: string | undefined
             addDisposer(
               self,

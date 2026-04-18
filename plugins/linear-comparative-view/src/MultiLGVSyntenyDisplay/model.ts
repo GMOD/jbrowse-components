@@ -269,6 +269,16 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       legendItems() {
         return legendItemsMap[self.colorBy] ?? []
       },
+
+      // Settings sent to the worker via RPC. Adding a field here propagates
+      // both into the RPC payload (via onFetchNeeded) and into the
+      // SettingsInvalidate autorun (which reads this getter), so refetch
+      // happens automatically when any field changes.
+      get rpcProps() {
+        return {
+          resolution: self.resolution,
+        }
+      },
     }))
     .actions(self => ({
       bumpTabVisibility() {
@@ -369,7 +379,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 adapterConfig,
                 regions: needed,
                 bpPerPx: view.bpPerPx,
-                resolution: self.resolution,
+                ...self.rpcProps,
                 sessionId,
                 stopToken: ctx.stopToken,
                 fetchMetadata: self.allGenomeNames.length === 0,
@@ -422,7 +432,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         afterAttach() {
           superAfterAttach()
 
-          // Autorun 1: upload geometry per region
+          // Upload synteny geometry to the GPU per visible region
           addDisposer(
             self,
             autorun(
@@ -459,7 +469,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             ),
           )
 
-          // Autorun 2: upload coverage per region
+          // Upload coverage track to the GPU per visible region
           addDisposer(
             self,
             autorun(
@@ -509,7 +519,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             ),
           )
 
-          // Autorun 3: draw
+          // Drive the GPU draw call when render state or upload state changes
           addDisposer(
             self,
             autorun(
@@ -569,7 +579,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             ),
           )
 
-          // Autorun 4: visible max depth (debounced).
+          // Recompute the visible-region max-depth (debounced) for the
+          // coverage track's autoscaled Y axis
           addDisposer(
             self,
             autorun(
@@ -594,25 +605,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 delay: 400,
                 name: 'MultiLGVSyntenyDisplay:visibleMaxDepth',
               },
-            ),
-          )
-
-          // Autorun 5: data invalidation on resolution change
-          let prevResolution: number | undefined
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const { resolution } = self
-                if (
-                  prevResolution !== undefined &&
-                  resolution !== prevResolution
-                ) {
-                  self.clearAllRpcData()
-                }
-                prevResolution = resolution
-              },
-              { name: 'MultiLGVSyntenyDisplay:invalidateOnResolution' },
             ),
           )
         },

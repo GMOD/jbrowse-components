@@ -7,14 +7,13 @@
  */
 import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 
+import { setGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { destroy, getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import '@fontsource/roboto'
-
-import { setGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 
 import JBrowse from './JBrowse.tsx'
 import Loading from './Loading.tsx'

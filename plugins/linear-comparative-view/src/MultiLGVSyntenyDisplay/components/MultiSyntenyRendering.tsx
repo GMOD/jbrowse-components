@@ -297,7 +297,6 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
 }: {
   model: MultiLGVSyntenyDisplayModel
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const { palette } = useTheme()
   const [tooltip, setTooltip] = useState<{
     content: React.ReactNode
@@ -321,8 +320,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     }),
     [model],
   )
-  const { error, retry } = useGpuRenderer(
-    canvasRef,
+  const { canvasRef, error, retry } = useGpuRenderer(
     MultiSyntenyRenderer,
     gpuOpts,
   )

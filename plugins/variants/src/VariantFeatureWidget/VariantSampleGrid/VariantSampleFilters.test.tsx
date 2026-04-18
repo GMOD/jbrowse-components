@@ -3,7 +3,7 @@ import React from 'react'
 import '@testing-library/jest-dom'
 import { fireEvent, render, screen } from '@testing-library/react'
 
-import VariantSampleFilters from './VariantSampleFilters'
+import VariantSampleFilters from './VariantSampleFilters.tsx'
 
 const columns = [{ field: 'genotype' }, { field: 'alleles' }]
 const filter = { genotype: '0|0', alleles: 'A' }

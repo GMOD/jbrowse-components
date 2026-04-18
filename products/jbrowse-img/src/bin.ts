@@ -145,4 +145,7 @@ async function main() {
   }
 }
 
-await main()
+main().catch((e: unknown) => {
+  console.error(e)
+  process.exit(1)
+})

@@ -55,14 +55,14 @@ describe('Canvas2DWiggleRenderer', () => {
     const canvas = {
       getContext: jest.fn(() => null),
     } as unknown as HTMLCanvasElement
-    expect(() => Canvas2DWiggleRenderer(canvas)).toThrow(
+    expect(() => new Canvas2DWiggleRenderer(canvas)).toThrow(
       'Canvas 2D context not available',
     )
   })
 
   test('uploadRegion stores data and deletes on empty', () => {
     const { canvas } = createMockCanvas()
-    const renderer = Canvas2DWiggleRenderer(canvas)
+    const renderer = new Canvas2DWiggleRenderer(canvas)
     const source = makeSource([5], [0], [100])
 
     renderer.uploadRegion(0, 0, [source])
@@ -98,7 +98,7 @@ describe('Canvas2DWiggleRenderer', () => {
       writable: true,
     })
 
-    const renderer = Canvas2DWiggleRenderer(canvas)
+    const renderer = new Canvas2DWiggleRenderer(canvas)
     const source = makeSource([5, 8], [0, 500], [500, 1000])
 
     renderer.uploadRegion(0, 0, [source])
@@ -136,7 +136,7 @@ describe('Canvas2DWiggleRenderer', () => {
       writable: true,
     })
 
-    const renderer = Canvas2DWiggleRenderer(canvas)
+    const renderer = new Canvas2DWiggleRenderer(canvas)
     renderer.renderBlocks(
       [
         {
@@ -166,7 +166,7 @@ describe('Canvas2DWiggleRenderer', () => {
       writable: true,
     })
 
-    const renderer = Canvas2DWiggleRenderer(canvas)
+    const renderer = new Canvas2DWiggleRenderer(canvas)
     const source = makeSource([5], [0], [1000])
 
     renderer.uploadRegion(0, 0, [source])
@@ -199,7 +199,7 @@ describe('Canvas2DWiggleRenderer', () => {
       writable: true,
     })
 
-    const renderer = Canvas2DWiggleRenderer(canvas)
+    const renderer = new Canvas2DWiggleRenderer(canvas)
     const source = makeSource([5, 8], [0, 500], [500, 1000])
 
     renderer.uploadRegion(0, 0, [source])
@@ -233,7 +233,7 @@ describe('Canvas2DWiggleRenderer', () => {
       writable: true,
     })
 
-    const renderer = Canvas2DWiggleRenderer(canvas)
+    const renderer = new Canvas2DWiggleRenderer(canvas)
     const source = makeSource([5], [0], [1000])
 
     renderer.uploadRegion(0, 0, [source])
@@ -266,7 +266,7 @@ describe('Canvas2DWiggleRenderer', () => {
       writable: true,
     })
 
-    const renderer = Canvas2DWiggleRenderer(canvas)
+    const renderer = new Canvas2DWiggleRenderer(canvas)
     renderer.uploadRegion(0, 0, [makeSource([5], [0], [1000])])
     renderer.uploadRegion(1, 1000, [makeSource([8], [0], [1000])])
 
@@ -304,7 +304,7 @@ describe('Canvas2DWiggleRenderer', () => {
 
   test('dispose clears all regions', () => {
     const { canvas } = createMockCanvas()
-    const renderer = Canvas2DWiggleRenderer(canvas)
+    const renderer = new Canvas2DWiggleRenderer(canvas)
     renderer.uploadRegion(0, 0, [makeSource([5], [0], [1000])])
     renderer.dispose()
     // After dispose, rendering should produce no output
@@ -317,7 +317,7 @@ describe('Canvas2DWiggleRenderer', () => {
       writable: true,
     })
 
-    const renderer = Canvas2DWiggleRenderer(canvas)
+    const renderer = new Canvas2DWiggleRenderer(canvas)
     const source0 = { ...makeSource([5], [0], [1000]), rowIndex: 0 }
     const source1 = { ...makeSource([8], [0], [1000]), rowIndex: 1 }
 

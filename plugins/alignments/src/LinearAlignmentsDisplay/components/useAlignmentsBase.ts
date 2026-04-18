@@ -83,7 +83,6 @@ export interface LinearAlignmentsDisplayModel {
   setOverCigarItem: (flag: boolean) => void
   colorPalette: ColorPalette | null
   colorSchemeIndex: number
-  dataVersion: number
   canvasDrawn: boolean
   arcsState: {
     rpcDataMap: Map<
@@ -101,7 +100,6 @@ export interface LinearAlignmentsDisplayModel {
         numLines: number
       }
     >
-    dataVersion: number
     lineWidth: number
     drawInter: boolean
   }
@@ -176,6 +174,7 @@ function makeResizeHandler(
 
 export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   const {
+    canvas,
     canvasRef,
     error: gpuError,
     retry,
@@ -291,7 +290,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   )
 
   function handleContextMenu(e: React.MouseEvent) {
-    const coords = getCanvasCoords(e, canvasRef, canvasRectRef)
+    const coords = getCanvasCoords(e, canvas, canvasRectRef)
     if (!coords) {
       return
     }
@@ -341,7 +340,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       return
     }
 
-    const coords = getCanvasCoords(e, canvasRef, canvasRectRef)
+    const coords = getCanvasCoords(e, canvas, canvasRectRef)
     if (!coords) {
       return
     }
@@ -407,7 +406,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     onFeature: (hit: FeatureHit, resolved: ResolvedBlock) => void,
     onNoFeature: () => void,
   ) {
-    const coords = getCanvasCoords(e, canvasRef, canvasRectRef)
+    const coords = getCanvasCoords(e, canvas, canvasRectRef)
     if (!coords) {
       return
     }
@@ -463,6 +462,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   }, [model, colorPalette])
 
   return {
+    canvas,
     canvasRef,
     gpuError,
     retry,

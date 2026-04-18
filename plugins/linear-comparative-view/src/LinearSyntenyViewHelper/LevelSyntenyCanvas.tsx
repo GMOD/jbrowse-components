@@ -83,7 +83,6 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   const width = parentView.width
   const height = model.effectiveHeight
 
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const dragStartX = useRef<number | undefined>(undefined)
   const lastDragX = useRef<number | undefined>(undefined)
   const scrollAccumX = useRef(0)
@@ -103,8 +102,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     }),
     [model],
   )
-  const { error, retry } = useGpuRenderer(
-    canvasRef,
+  const { canvas, canvasRef, error, retry } = useGpuRenderer(
     SyntenyRendererFactory,
     gpuOpts,
   )
@@ -113,7 +111,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   })
 
   function canvasCoords(evt: { clientX: number; clientY: number }) {
-    const rect = canvasRef.current?.getBoundingClientRect()
+    const rect = canvas?.getBoundingClientRect()
     if (!rect) {
       return undefined
     }
@@ -160,7 +158,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
           requestAnimationFrame(() => {
             const d = zoomAccum.current
             const canvasLeft =
-              canvasRef.current?.getBoundingClientRect().left ?? 0
+              canvas?.getBoundingClientRect().left ?? 0
             transaction(() => {
               for (const v of parentView.views) {
                 v.zoomTo(
@@ -178,14 +176,13 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
         flushHorizontalScroll()
       }
     }
-    const target = canvasRef.current
-    target?.addEventListener('wheel', onWheel, { passive: false })
+    canvas?.addEventListener('wheel', onWheel, { passive: false })
     return () => {
-      target?.removeEventListener('wheel', onWheel)
+      canvas?.removeEventListener('wheel', onWheel)
       clearTimeout(scrollTimer)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, parentView])
+  }, [canvas, model, parentView])
 
   function dispatchHoverPick(coords: { x: number; y: number }) {
     const backend = model.gpuBackend

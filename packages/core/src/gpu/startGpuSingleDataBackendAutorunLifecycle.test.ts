@@ -15,16 +15,16 @@ test('single-slot: uploads once and renders when data and state arrive', () => {
   const handle = startGpuSingleDataBackendAutorunLifecycle<FakeBackend, number>(
     {
       backend,
-      uploadSlots: [
+      uploads: [
         {
-          readData: () => dataBox.get(),
-          commitUpload: (b, d) => {
+          getData: () => dataBox.get(),
+          upload: (b, d) => {
             b.uploads.push({ slot: 'main', v: (d as { v: number }).v })
           },
         },
       ],
-      getRenderState: () => stateBox.get(),
-      renderWithState: (b, s) => b.renders.push(s),
+      renderState: () => stateBox.get(),
+      render: (b, s) => b.renders.push(s),
     },
   )
 
@@ -53,15 +53,15 @@ test('does not re-upload when data reference is stable but state changes', () =>
   const handle = startGpuSingleDataBackendAutorunLifecycle<FakeBackend, number>(
     {
       backend,
-      uploadSlots: [
+      uploads: [
         {
-          readData: () => data,
-          commitUpload: (b, d) =>
+          getData: () => data,
+          upload: (b, d) =>
             b.uploads.push({ slot: 'main', v: (d as { v: number }).v }),
         },
       ],
-      getRenderState: () => stateBox.get(),
-      renderWithState: (b, s) => b.renders.push(s),
+      renderState: () => stateBox.get(),
+      render: (b, s) => b.renders.push(s),
     },
   )
 
@@ -86,19 +86,19 @@ test('multi-slot: each slot is identity-diffed independently', () => {
   const handle = startGpuSingleDataBackendAutorunLifecycle<FakeBackend, number>(
     {
       backend,
-      uploadSlots: [
+      uploads: [
         {
-          readData: () => dataBox.get(),
-          commitUpload: (b, d) =>
+          getData: () => dataBox.get(),
+          upload: (b, d) =>
             b.uploads.push({ slot: 'data', v: (d as { v: number }).v }),
         },
         {
-          readData: () => rampBox.get(),
-          commitUpload: b => b.uploads.push({ slot: 'ramp', v: 0 }),
+          getData: () => rampBox.get(),
+          upload: b => b.uploads.push({ slot: 'ramp', v: 0 }),
         },
       ],
-      getRenderState: () => 0,
-      renderWithState: (b, s) => b.renders.push(s),
+      renderState: () => 0,
+      render: (b, s) => b.renders.push(s),
     },
   )
 
@@ -140,12 +140,12 @@ test('skips render until every slot has data', () => {
   const handle = startGpuSingleDataBackendAutorunLifecycle<FakeBackend, number>(
     {
       backend,
-      uploadSlots: [
-        { readData: () => dataBox.get(), commitUpload: () => {} },
-        { readData: () => rampBox.get(), commitUpload: () => {} },
+      uploads: [
+        { getData: () => dataBox.get(), upload: () => {} },
+        { getData: () => rampBox.get(), upload: () => {} },
       ],
-      getRenderState: () => 42,
-      renderWithState: (b, s) => b.renders.push(s),
+      renderState: () => 42,
+      render: (b, s) => b.renders.push(s),
     },
   )
 
@@ -166,9 +166,9 @@ test('renderNow re-issues render without re-upload, only when all slots have dat
   const handle = startGpuSingleDataBackendAutorunLifecycle<FakeBackend, number>(
     {
       backend,
-      uploadSlots: [{ readData: () => dataBox.get(), commitUpload: () => {} }],
-      getRenderState: () => 99,
-      renderWithState: (b, s) => b.renders.push(s),
+      uploads: [{ getData: () => dataBox.get(), upload: () => {} }],
+      renderState: () => 99,
+      render: (b, s) => b.renders.push(s),
     },
   )
 
@@ -192,15 +192,15 @@ test('dispose stops the autorun', () => {
   const handle = startGpuSingleDataBackendAutorunLifecycle<FakeBackend, number>(
     {
       backend,
-      uploadSlots: [
+      uploads: [
         {
-          readData: () => dataBox.get(),
-          commitUpload: (b, d) =>
+          getData: () => dataBox.get(),
+          upload: (b, d) =>
             b.uploads.push({ slot: 'main', v: (d as { v: number }).v }),
         },
       ],
-      getRenderState: () => 0,
-      renderWithState: () => {},
+      renderState: () => 0,
+      render: () => {},
     },
   )
 

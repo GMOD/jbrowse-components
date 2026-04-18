@@ -2,7 +2,6 @@ import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { set1 } from '@jbrowse/core/ui/colors'
 import {
   getContainingTrack,
@@ -11,10 +10,7 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
-import {
-  getParentRenderProps,
-  getRpcSessionId,
-} from '@jbrowse/core/util/tracks'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   ConfigOverrideMixin,
@@ -488,77 +484,79 @@ export default function MultiSampleVariantBaseModelF(
         return result
       },
     }))
-    .views(self => {
-      const { renderProps: superRenderProps } = self
+    .views(self => ({
+      // Literal payload shared with MultiSampleVariantGetCellData. Adding
+      // a field here flows into both the RPC call (via
+      // getVariantCellDataAutorun) and into mobx tracking — the autorun
+      // reads `self.rpcProps` once, so any field change refires it.
+      get rpcProps() {
+        return {
+          sources: self.sources,
+          minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
+          lengthCutoffFilter: self.lengthCutoffFilter,
+          renderingMode: self.renderingMode,
+          referenceDrawingMode: self.referenceDrawingMode,
+        }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get sourceMap() {
+        return self.sources
+          ? Object.fromEntries(
+              self.sources.map((source: Source) => [source.name, source]),
+            )
+          : undefined
+      },
+      /**
+       * #getter
+       * Available height for rows (total height minus lineZoneHeight)
+       */
+      get availableHeight() {
+        return self.height - self.lineZoneHeight
+      },
+      /**
+       * #getter
+       */
+      get nrow() {
+        return self.sources?.length || 1
+      },
 
-      return {
-        /**
-         * #getter
-         */
-        get sourceMap() {
-          return self.sources
-            ? Object.fromEntries(
-                self.sources.map((source: Source) => [source.name, source]),
-              )
-            : undefined
-        },
-        /**
-         * #getter
-         * Available height for rows (total height minus lineZoneHeight)
-         */
-        get availableHeight() {
-          return self.height - self.lineZoneHeight
-        },
-        /**
-         * #getter
-         */
-        get nrow() {
-          return self.sources?.length || 1
-        },
+      /**
+       * #getter
+       */
+      get autoRowHeight() {
+        return this.availableHeight / this.nrow
+      },
 
-        /**
-         * #getter
-         */
-        get autoRowHeight() {
-          return this.availableHeight / this.nrow
-        },
-
-        /**
-         * #getter
-         */
-        get rowHeight() {
-          if (self.rowHeightMode === 0) {
-            return this.autoRowHeight
-          }
-          return Math.abs(self.rowHeightMode - this.autoRowHeight) < 0.01
-            ? this.autoRowHeight
-            : self.rowHeightMode
-        },
-        /**
-         * #getter
-         */
-        get hierarchy() {
-          const r = self.root
-          if (!r || !self.sources?.length) {
-            return undefined
-          }
-          return computeHierarchyLayout(
-            r,
-            this.rowHeight * this.nrow,
-            self.treeAreaWidth,
-          )
-        },
-        /**
-         * #method
-         */
-        adapterProps() {
-          return {
-            ...superRenderProps(),
-            ...getParentRenderProps(self),
-          }
-        },
-      }
-    })
+      /**
+       * #getter
+       */
+      get rowHeight() {
+        if (self.rowHeightMode === 0) {
+          return this.autoRowHeight
+        }
+        return Math.abs(self.rowHeightMode - this.autoRowHeight) < 0.01
+          ? this.autoRowHeight
+          : self.rowHeightMode
+      },
+      /**
+       * #getter
+       */
+      get hierarchy() {
+        const r = self.root
+        if (!r || !self.sources?.length) {
+          return undefined
+        }
+        return computeHierarchyLayout(
+          r,
+          this.rowHeight * this.nrow,
+          self.treeAreaWidth,
+        )
+      },
+    }))
     .views(self => ({
       get featureNearestCenter() {
         const view = getContainingView(self) as LinearGenomeViewModel
@@ -850,45 +848,6 @@ export default function MultiSampleVariantBaseModelF(
       },
     }))
     .views(self => ({
-      /**
-       * #method
-       */
-      renderProps() {
-        const superProps = self.adapterProps()
-        return {
-          ...superProps,
-          notReady: superProps.notReady || !self.sources || !self.featuresReady,
-          height: self.height,
-          totalHeight: self.totalHeight,
-          renderingMode: self.renderingMode,
-          minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
-          lengthCutoffFilter: self.lengthCutoffFilter,
-          rowHeight: self.rowHeight,
-          sources: self.sources,
-          scrollTop: self.scrollTop,
-          referenceDrawingMode: self.referenceDrawingMode,
-          filters: new SerializableFilterChain({
-            filters: self.activeFilters(),
-          }),
-        }
-      },
-      /**
-       * #method
-       */
-      renderingProps() {
-        return {
-          displayModel: self,
-          onFeatureClick(_: React.MouseEvent, featureId: string) {
-            const features = self.featuresVolatile
-            if (features) {
-              const feature = features.find(f => f.id() === featureId)
-              if (feature && isAlive(self)) {
-                self.selectFeature(feature)
-              }
-            }
-          },
-        }
-      },
       /**
        * #method
        * Returns legend items for rendering colors based on current mode

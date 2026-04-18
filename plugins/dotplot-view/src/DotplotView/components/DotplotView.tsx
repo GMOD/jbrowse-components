@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 
 import { ErrorMessage, LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
 import { useGpuRenderer, useTabVisibilityRerender } from '@jbrowse/core/util'
@@ -71,7 +71,6 @@ const DotplotCanvas = observer(function DotplotCanvas({
   model: DotplotViewModel
 }) {
   const { viewWidth, viewHeight } = model
-  const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const gpuOpts = useMemo(
     () => ({
@@ -85,8 +84,7 @@ const DotplotCanvas = observer(function DotplotCanvas({
     [model],
   )
 
-  const { error: gpuError } = useGpuRenderer(
-    canvasRef,
+  const { canvasRef, error: gpuError } = useGpuRenderer(
     createDotplotRenderer,
     gpuOpts,
   )

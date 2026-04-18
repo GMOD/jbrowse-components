@@ -724,12 +724,12 @@ export class WebGPUHal implements GpuHal {
     try {
       await this.pickingStagingBuffer.mapAsync(GPUMapMode.READ)
     } catch {
-      if (!this.disposed) {
+      if (!this.isDisposed()) {
         this.resetStagingBuffer()
       }
       return -1
     }
-    if (this.disposed) {
+    if (this.isDisposed()) {
       try {
         this.pickingStagingBuffer.unmap()
       } catch {}
@@ -767,6 +767,10 @@ export class WebGPUHal implements GpuHal {
 
   clearViewport() {
     this.viewportRect = null
+  }
+
+  private isDisposed() {
+    return this.disposed
   }
 
   dispose() {

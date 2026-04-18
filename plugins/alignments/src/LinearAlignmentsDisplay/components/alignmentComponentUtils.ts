@@ -95,10 +95,9 @@ export function canvasToGenomicCoords(
  */
 export function getCanvasCoords(
   e: React.MouseEvent,
-  canvasRef: React.RefObject<HTMLCanvasElement | null>,
+  canvas: HTMLCanvasElement | null,
   canvasRectRef: React.RefObject<{ rect: DOMRect; timestamp: number } | null>,
 ) {
-  const canvas = canvasRef.current
   if (!canvas) {
     return undefined
   }

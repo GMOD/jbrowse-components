@@ -42,9 +42,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         get cellDataMode() {
           return 'regular' as const
         },
-        renderProps() {
-          return { notReady: true }
-        },
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self, opts)
@@ -69,38 +66,35 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       }
     })
     .actions(self => ({
-      // Uses the util with `identityOf: d => d.inputKey` — `cellData` is
-      // replaced wholesale on every RPC result, so reference-diff would
-      // re-upload unchanged regions. inputKey is a per-region content hash
-      // that stays stable when the underlying data is unchanged.
       startGpuBackendLifecycle(backend: VariantBackend) {
-        self.startMultiRegionGpuLifecycle<
-          VariantBackend,
-          VariantCellData,
-          VariantRenderState
-        >({
+        self.startMultiRegionGpuLifecycle<VariantBackend, VariantRenderState>({
           backend,
-          getDataByRegionNumber: () => {
-            const cellData = self.cellData as
-              | { perRegionCellData: Record<number, VariantCellData> }
-              | undefined
-            const map = new Map<number, VariantCellData>()
-            if (cellData) {
-              for (const [k, v] of Object.entries(cellData.perRegionCellData)) {
-                map.set(Number(k), v)
-              }
-            }
-            return map
-          },
-          identityOf: d => d.inputKey,
-          uploadOneRegion: (b, n, d) => {
-            b.uploadRegion(n, d)
-          },
-          pruneRegionsNotIn: (b, active) => {
-            b.pruneRegions(active)
-          },
-          getRenderBlocks: () => self.renderBlocks,
-          getRenderState: () => {
+          uploads: [
+            {
+              getData: () => {
+                const cellData = self.cellData as
+                  | { perRegionCellData: Record<number, VariantCellData> }
+                  | undefined
+                const map = new Map<number, VariantCellData>()
+                if (cellData) {
+                  for (const [k, v] of Object.entries(
+                    cellData.perRegionCellData,
+                  )) {
+                    map.set(Number(k), v)
+                  }
+                }
+                return map
+              },
+              upload: (b, n, d: VariantCellData) => {
+                b.uploadRegion(n, d)
+              },
+              prune: (b, active) => {
+                b.pruneRegions(active)
+              },
+            },
+          ],
+          renderBlocks: () => self.renderBlocks,
+          renderState: () => {
             const view = getContainingView(self) as LinearGenomeViewModel
             if (!view.initialized) {
               return undefined
@@ -112,7 +106,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               scrollTop: self.scrollTop,
             }
           },
-          renderAllBlocks: (b, blocks, state) => {
+          render: (b, blocks, state) => {
             b.renderBlocks(blocks, state)
           },
         })

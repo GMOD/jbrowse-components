@@ -127,10 +127,6 @@ export default function stateModelFactory(
         return WiggleComponent
       },
 
-      renderProps() {
-        return { notReady: true }
-      },
-
       get color() {
         return self.getConfWithOverride<string>('color')
       },
@@ -254,6 +250,36 @@ export default function stateModelFactory(
           self.height,
         )
       },
+
+      // Settings sent to the worker via RPC. Adding a field here propagates
+      // both into the RPC payload (via fetchFeaturesForRegion) and into the
+      // SettingsInvalidate autorun (which reads this getter), so refetch
+      // happens automatically when any field changes — no separate cache
+      // key to maintain.
+      get rpcProps() {
+        return {
+          bicolorPivot: this.effectiveBicolorPivot,
+          resolution: self.resolution,
+        }
+      },
+
+      // Settings consumed during main-thread GPU buffer encoding
+      // (buildSourceRenderData), not sent to the worker. Counterpart to
+      // rpcProps for things that affect the GPU side instead of the RPC
+      // side. Defined as a method (not a getter) so subclasses can
+      // override it via the standard `super` capture pattern in composed
+      // views. The return shape is enforced structurally by
+      // buildSourceRenderData's `WiggleGpuProps` parameter type.
+      gpuProps() {
+        return {
+          color: this.color,
+          posColor: this.posColor,
+          negColor: this.negColor,
+          summaryScoreMode: this.summaryScoreMode,
+          isDensityMode: this.isDensityMode,
+          renderingType: this.renderingType,
+        }
+      },
     }))
     .actions(self => ({
       setRpcDataForRegion(regionNumber: number, data: WiggleDataResult) {
@@ -286,26 +312,37 @@ export default function stateModelFactory(
       startGpuBackendLifecycle(backend: WiggleBackend) {
         self.startMultiRegionGpuLifecycle<
           WiggleBackend,
-          WiggleDataResult,
           WiggleGPURenderState
         >({
           backend,
-          getDataByRegionNumber: () => self.rpcDataMap,
+          uploads: [
+            {
+              getData: () => self.rpcDataMap,
+              // mobx tracks every observable `upload` reads — both
+              // `data` (per-region) and `self.gpuProps()` (color,
+              // summaryScoreMode, ...). When any of them changes the
+              // autorun re-fires and re-uploads. No cache, no diff.
+              //
+              // Worker-affecting settings (rpcProps) take a separate
+              // path: SettingsInvalidate clears rpcDataMap and lets
+              // fetch re-run.
+              upload: (b, regionNumber, data) => {
+                b.uploadRegion(
+                  regionNumber,
+                  data.regionStart,
+                  buildSourceRenderData(data, self.gpuProps()),
+                )
+              },
+              prune: (b, activeRegionNumbers) => {
+                b.pruneRegions(activeRegionNumbers)
+              },
+            },
+          ],
           // Suppress drawing while there's no domain yet — empty blocks
           // produce a canvas-clearing render pass.
-          getRenderBlocks: () => (self.domain ? self.renderBlocks : []),
-          getRenderState: () => self.renderState,
-          uploadOneRegion: (b, regionNumber, data) => {
-            b.uploadRegion(
-              regionNumber,
-              data.regionStart,
-              buildSourceRenderData(data, self),
-            )
-          },
-          pruneRegionsNotIn: (b, activeRegionNumbers) => {
-            b.pruneRegions(activeRegionNumbers)
-          },
-          renderAllBlocks: (b, blocks, state) => {
+          renderBlocks: () => (self.domain ? self.renderBlocks : []),
+          renderState: () => self.renderState,
+          render: (b, blocks, state) => {
             b.renderBlocks(blocks, state)
           },
           onAfterCommit: hadUploads => {
@@ -374,7 +411,6 @@ export default function stateModelFactory(
         region: RegionWithNumber,
         stopToken: StopToken,
         bpPerPx: number,
-        resolution: number,
         generation: number,
       ) {
         const session = getSession(self)
@@ -391,10 +427,9 @@ export default function stateModelFactory(
           {
             adapterConfig,
             region: region.region,
-            bicolorPivot: self.effectiveBicolorPivot,
+            ...self.rpcProps,
             stopToken,
             bpPerPx,
-            resolution,
             statusCallback: (msg: string) => {
               if (isAlive(self)) {
                 self.setStatusMessage(msg)
@@ -411,8 +446,6 @@ export default function stateModelFactory(
 
       const superAfterAttach = self.afterAttach
 
-      let prevSettingsKey: string | undefined
-
       return {
         isCacheValid(regionNumber: number) {
           const view = getContainingView(self) as LGV
@@ -427,14 +460,12 @@ export default function stateModelFactory(
         onFetchNeeded(needed: RegionWithNumber[]) {
           const view = getContainingView(self) as LGV
           const { bpPerPx } = view
-          const { resolution } = self
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
             const promises = needed.map(region =>
               fetchFeaturesForRegion(
                 region,
                 ctx.stopToken,
                 bpPerPx,
-                resolution,
                 ctx.generation,
               ),
             )
@@ -444,23 +475,6 @@ export default function stateModelFactory(
 
         afterAttach() {
           superAfterAttach()
-
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const key = JSON.stringify({
-                  bicolorPivot: self.effectiveBicolorPivot,
-                  resolution: self.resolution,
-                })
-                if (prevSettingsKey !== undefined && key !== prevSettingsKey) {
-                  self.clearAllRpcData()
-                }
-                prevSettingsKey = key
-              },
-              { name: 'LinearWiggleDisplay:SettingsInvalidate' },
-            ),
-          )
 
           addDisposer(
             self,

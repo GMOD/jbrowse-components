@@ -25,7 +25,6 @@ function makeModel(
 ): WiggleDisplayModel {
   return {
     rpcDataMap: new Map(),
-    dataVersion: 0,
     height: 100,
     domain: [0, 10] as [number, number],
     scaleType: 'linear',

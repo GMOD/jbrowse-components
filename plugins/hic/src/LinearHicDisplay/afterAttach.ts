@@ -69,10 +69,7 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
           adapterConfig,
           regions: [...regions],
           bpPerPx,
-          resolution: self.resolution,
-          normalization: self.activeNormalization,
-          displayHeight: self.mode === 'adjust' ? self.height : undefined,
-          mode: self.mode,
+          ...self.rpcProps,
           stopToken,
         },
         {
@@ -115,14 +112,9 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
         const { dynamicBlocks } = view
         const regions = dynamicBlocks.contentBlocks
 
-        /* eslint-disable @typescript-eslint/no-unused-expressions */
-        self.resolution
-        self.activeNormalization
-        self.mode
-        if (self.mode === 'adjust') {
-          self.height
-        }
-        /* eslint-enable @typescript-eslint/no-unused-expressions */
+        // Single tracked read — rpcProps IS the full RPC payload, so any
+        // field change refires this autorun.
+        void self.rpcProps
 
         if (untracked(() => self.error) || !regions.length) {
           return

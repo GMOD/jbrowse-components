@@ -418,9 +418,9 @@ export default function stateModelFactory(pm: PluginManager) {
             self.gpuBackend = backend
             self.startSingleDataGpuLifecycle({
               backend,
-              uploadSlots: [],
-              getRenderState: () => self.dotplotRenderState,
-              renderWithState: (b, state) => {
+              uploads: [],
+              renderState: () => self.dotplotRenderState,
+              render: (b, state) => {
                 b.resize(self.viewWidth, self.viewHeight)
                 b.render(state)
                 self.markCanvasDrawn()

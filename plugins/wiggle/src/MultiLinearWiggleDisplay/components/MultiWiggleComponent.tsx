@@ -33,9 +33,10 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
+const COORD0: [number, number] = [0, 0]
+
 export interface MultiWiggleDisplayModel {
   rpcDataMap: Map<number, MultiWiggleDataResult>
-  dataVersion: number
   sources: { name: string; color?: string; labelColor?: string }[]
   height: number
   domain: [number, number] | undefined
@@ -116,9 +117,8 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   const view = getContainingView(model) as LGV
 
   const containerRef = useRef<HTMLDivElement>(null)
-  const coord0: [number, number] = [0, 0]
-  const [clientMouseCoord, setClientMouseCoord] = useState(coord0)
-  const [offsetMouseCoord, setOffsetMouseCoord] = useState(coord0)
+  const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
+  const [offsetMouseCoord, setOffsetMouseCoord] = useState(COORD0)
 
   const handleMouseMove = useCallback(
     (event: React.MouseEvent) => {

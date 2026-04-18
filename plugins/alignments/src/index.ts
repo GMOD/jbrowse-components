@@ -45,7 +45,7 @@ export {
   getSetMaxHeightMenuItem,
   getShowMenuItem,
   getSortByMenuItem,
-} from './shared/menuItems.ts'
+} from './shared/menus/index.ts'
 export {
   featurizeSA,
   getClip,

@@ -107,10 +107,9 @@ const DESCRIPTION_DENSITY_THRESHOLD = 0.2
 // Handles fetching, layout, the "Show labels" / "Show descriptions" UI, and
 // the fetch-invalidation autorun. Subclasses (LinearBasicDisplay,
 // LinearVariantDisplay, ...) layer their own schema-specific property,
-// menu, and RPC extensions on top via the three extension hooks below
-// (displayConfigOverrides / extraRpcArgs / settingsCacheKey) and the
-// showSubmenuMenuItems / trackMenuItems / contextMenuItems super-extension
-// pattern.
+// menu, and RPC extensions on top via the two extension hooks below
+// (displayConfigOverrides / extraRpcArgs) and the showSubmenuMenuItems /
+// trackMenuItems / contextMenuItems super-extension pattern.
 export default function baseStateModelFactory(
   configSchema: AnyConfigurationSchemaType,
 ) {
@@ -247,10 +246,6 @@ export default function baseStateModelFactory(
 
         get showLegend() {
           return false
-        },
-
-        renderProps() {
-          return { notReady: true }
         },
 
         async renderSvg(opts?: ExportSvgDisplayOptions) {
@@ -410,11 +405,27 @@ export default function baseStateModelFactory(
           return {}
         },
 
-        // Subclasses override to contribute keys to the cache-invalidation
-        // key; any change clears the fetched RPC data so the next view
-        // triggers a refetch.
-        get settingsCacheKey(): Record<string, unknown> {
-          return {}
+      }))
+      .views(self => ({
+        // The full payload sent to the RenderFeatureData RPC. Adding a
+        // field here propagates both into the RPC call (via
+        // fetchFeaturesForRegion) and into the SettingsInvalidate autorun
+        // (which reads this getter), so refetch happens automatically when
+        // any field changes — no separate cache key to maintain. Canvas's
+        // worker does layout on the worker side, so all rendering-affecting
+        // settings live in rpcProps; there is no separate gpuProps.
+        get rpcProps() {
+          return {
+            adapterConfig: self.adapterConfigSnapshot,
+            displayConfig: {
+              ...self.displayConfigSnapshot,
+              ...self.displayConfigOverrides,
+            },
+            maxFeatureDensity: self.maxFeatureDensity,
+            colorByCDS: self.colorByCDS,
+            sequenceAdapter: self.sequenceAdapter,
+            ...self.extraRpcArgs,
+          }
         },
       }))
       .actions(self => ({
@@ -470,20 +481,23 @@ export default function baseStateModelFactory(
         startGpuBackendLifecycle(backend: CanvasFeatureBackend) {
           self.startMultiRegionGpuLifecycle<
             CanvasFeatureBackend,
-            FeatureDataResult,
             { scrollY: number; canvasWidth: number; canvasHeight: number }
           >({
             backend,
-            getDataByRegionNumber: () => self.rpcDataMap,
-            getRenderBlocks: () => self.renderBlocks,
-            getRenderState: () => self.renderState,
-            uploadOneRegion: (b, regionNumber, data) => {
-              b.uploadRegion(regionNumber, data)
-            },
-            pruneRegionsNotIn: (b, activeRegionNumbers) => {
-              b.pruneRegions(activeRegionNumbers)
-            },
-            renderAllBlocks: (b, blocks, state) => {
+            uploads: [
+              {
+                getData: () => self.rpcDataMap,
+                upload: (b, regionNumber, data: FeatureDataResult) => {
+                  b.uploadRegion(regionNumber, data)
+                },
+                prune: (b, activeRegionNumbers) => {
+                  b.pruneRegions(activeRegionNumbers)
+                },
+              },
+            ],
+            renderBlocks: () => self.renderBlocks,
+            renderState: () => self.renderState,
+            render: (b, blocks, state) => {
               b.renderBlocks(blocks, state)
             },
           })
@@ -636,22 +650,13 @@ export default function baseStateModelFactory(
         ): Promise<FetchResult | 'regionTooLarge'> {
           const session = getSession(self)
           const { rpcManager } = session
-          const adapterConfig = self.adapterConfigSnapshot
 
           const sessionId = getRpcSessionId(self)
           const result = await rpcManager.call(sessionId, 'RenderFeatureData', {
             sessionId,
-            adapterConfig,
-            displayConfig: {
-              ...self.displayConfigSnapshot,
-              ...self.displayConfigOverrides,
-            },
+            ...self.rpcProps,
             region,
             bpPerPx,
-            maxFeatureDensity: self.maxFeatureDensity,
-            colorByCDS: self.colorByCDS,
-            sequenceAdapter: self.sequenceAdapter,
-            ...self.extraRpcArgs,
             stopToken,
             statusCallback: (msg: string) => {
               if (isAlive(self)) {
@@ -798,58 +803,40 @@ export default function baseStateModelFactory(
         return {
           afterAttach() {
             superAfterAttach()
-            addDisposer(
-              self,
-              autorun(() => {
-                void self.adapterConfigSnapshot
-              }),
-            )
 
-            let prevRelayoutKey: string | undefined
+            // Relayout on zoom / label-visibility change. Reads
+            // bpPerPx, showLabels, effectiveShowDescriptions as
+            // triggers (effectiveShowDescriptions transitively tracks
+            // showDescriptions + featureDensityPerPx). The rpcDataMap
+            // read is untracked — we don't want the relayout's own
+            // setRpcDataMap call to re-fire this autorun, and we don't
+            // want initial data arrival to trigger a spurious relayout
+            // (the fetch handler already lays out fresh data).
             addDisposer(
               self,
               autorun(
                 () => {
                   const view = getContainingView(self) as LGV
-                  const bpPerPx = view.initialized ? view.bpPerPx : undefined
-                  const showLabels = self.showLabels
-                  const showDescriptions = self.showDescriptions
-                  const key = `${bpPerPx}-${showLabels}-${showDescriptions}`
-                  const changed =
-                    prevRelayoutKey !== undefined && key !== prevRelayoutKey
-                  prevRelayoutKey = key
-                  if (changed && self.rpcDataMap.size > 0) {
-                    self.relayoutForCurrentZoom(
-                      showLabels,
-                      self.effectiveShowDescriptions,
-                    )
+                  if (!view.initialized) {
+                    return
                   }
+                  void view.bpPerPx
+                  const showLabels = self.showLabels
+                  const effectiveShowDescriptions =
+                    self.effectiveShowDescriptions
+                  untracked(() => {
+                    if (self.rpcDataMap.size > 0) {
+                      self.relayoutForCurrentZoom(
+                        showLabels,
+                        effectiveShowDescriptions,
+                      )
+                    }
+                  })
                 },
                 {
                   name: 'RelayoutOnZoomOrLabelChange',
                   delay: 50,
                 },
-              ),
-            )
-
-            let prevSettingsKey: string | undefined
-            addDisposer(
-              self,
-              autorun(
-                () => {
-                  const key = JSON.stringify({
-                    colorByCDS: self.colorByCDS,
-                    ...self.settingsCacheKey,
-                  })
-                  if (
-                    prevSettingsKey !== undefined &&
-                    key !== prevSettingsKey
-                  ) {
-                    self.clearAllRpcData()
-                  }
-                  prevSettingsKey = key
-                },
-                { name: 'LinearCanvasBaseDisplay:SettingsInvalidate' },
               ),
             )
           },

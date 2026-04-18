@@ -91,16 +91,7 @@ export function doAfterAttach(self: SharedLDModel) {
           adapterConfig,
           regions: [...regions],
           bpPerPx,
-          ldMetric: self.ldMetric,
-          minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
-          lengthCutoffFilter: self.lengthCutoffFilter,
-          hweFilterThreshold: self.hweFilterThreshold,
-          callRateFilter: self.callRateFilter,
-          jexlFilters: self.jexlFilters,
-          signedLD: self.signedLD,
-          useGenomicPositions: self.useGenomicPositions,
-          fitToHeight: self.fitToHeight,
-          displayHeight: self.fitToHeight ? self.ldCanvasHeight : undefined,
+          ...self.rpcProps,
           stopToken,
         },
         {
@@ -144,21 +135,11 @@ export function doAfterAttach(self: SharedLDModel) {
         const { dynamicBlocks } = view
         const regions = dynamicBlocks.contentBlocks
 
-        /* eslint-disable @typescript-eslint/no-unused-expressions */
-        self.ldMetric
-        self.minorAlleleFrequencyFilter
-        self.lengthCutoffFilter
-        self.hweFilterThreshold
-        self.callRateFilter
-        self.fitToHeight
-        self.useGenomicPositions
-        self.signedLD
-        self.jexlFilters
-        self.userByteSizeLimit
-        if (self.fitToHeight) {
-          self.ldCanvasHeight
-        }
-        /* eslint-enable @typescript-eslint/no-unused-expressions */
+        // Single tracked read — rpcProps IS the full RPC payload, so every
+        // field it reads participates in this autorun's dependency graph.
+        // Adding an RPC-affecting field to rpcProps auto-wires refetch.
+        void self.rpcProps
+        void self.userByteSizeLimit
 
         if (
           !self.showLDTriangle ||

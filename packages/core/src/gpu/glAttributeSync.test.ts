@@ -59,7 +59,7 @@ function parseGlslAttributes(glsl: string): GlslAttribute[] {
 
 function validateSync(
   passId: string,
-  glAttributes: GlAttributeLayout[],
+  glAttributes: readonly GlAttributeLayout[],
   glslVertex: string,
 ) {
   const glslAttrs = parseGlslAttributes(glslVertex)

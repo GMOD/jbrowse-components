@@ -5,18 +5,17 @@ import type { GpuBackendLifecycleHandle } from './gpuBackendLifecycleHandle.ts'
 export type { GpuBackendLifecycleHandle } from './gpuBackendLifecycleHandle.ts'
 
 /**
- * Describes one identity-diffed upload slot for a global (non-regional)
- * GPU display. Each slot is independently tracked: when `readData()`
- * returns a different object reference than last pass, `commitUpload` is
- * called with the new data.
+ * One identity-diffed upload for a global (non-regional) GPU display. Each
+ * upload is independently tracked: when `getData()` returns a different
+ * object reference than last pass, `upload` is called with the new data.
  *
  * A plugin with multiple independent uploads (e.g. HiC: contact matrix
- * bytes plus color ramp) passes one slot per upload. Plugins with a single
- * upload pass a one-element list.
+ * bytes plus color ramp) passes one entry per upload. Plugins with a
+ * single upload pass a one-element list.
  */
-export interface GpuGlobalUploadSlot<BackendType, DataType> {
-  readData: () => DataType | undefined
-  commitUpload: (backend: BackendType, data: DataType) => void
+export interface GlobalUpload<BackendType, DataType> {
+  getData: () => DataType | undefined
+  upload: (backend: BackendType, data: DataType) => void
 }
 
 export interface StartGpuSingleDataBackendAutorunLifecycleArgs<
@@ -26,29 +25,29 @@ export interface StartGpuSingleDataBackendAutorunLifecycleArgs<
   backend: BackendType
 
   /**
-   * One or more independent upload slots. Each slot's data is identity-diffed
-   * separately, and `commitUpload` fires only when its own slot's data
-   * reference changes. All slots run inside the same autorun, so they
+   * One or more independent uploads. Each entry's data is identity-diffed
+   * separately, and `upload` fires only when its own entry's data
+   * reference changes. All entries run inside the same autorun, so they
    * share one render pass.
    */
-  uploadSlots: GpuGlobalUploadSlot<BackendType, unknown>[]
+  uploads: GlobalUpload<BackendType, unknown>[]
 
   /**
    * Returns the per-frame render state, or `undefined` to skip the render
-   * pass. Upload slots still run independently of render.
+   * pass. Uploads still run independently of render.
    */
-  getRenderState: () => RenderStateType | undefined
+  renderState: () => RenderStateType | undefined
 
   /**
    * Issues the draw call(s) for the current render state.
    */
-  renderWithState: (backend: BackendType, state: RenderStateType) => void
+  render: (backend: BackendType, state: RenderStateType) => void
 
   /**
-   * Optional post-pass hook. Receives whether every slot has uploaded data
+   * Optional post-pass hook. Receives whether every upload has data
    * currently on the GPU.
    */
-  onAfterCommit?: (allSlotsHaveData: boolean) => void
+  onAfterCommit?: (allHaveData: boolean) => void
 }
 
 /**
@@ -57,48 +56,48 @@ export interface StartGpuSingleDataBackendAutorunLifecycleArgs<
  * color ramp), LD (matrix), variant-matrix (heatmap), etc.
  *
  * Mirror of `startGpuBackendAutorunLifecycle` for the non-regional case.
- * Supports multiple independently identity-diffed upload slots so plugins
+ * Supports multiple independently identity-diffed uploads so plugins
  * like HiC, which upload both a data buffer and a color ramp, can track
- * each upload separately without re-uploading everything when one changes.
+ * each separately without re-uploading everything when one changes.
  */
 export function startGpuSingleDataBackendAutorunLifecycle<
   BackendType,
   RenderStateType,
 >({
   backend,
-  uploadSlots,
-  getRenderState,
-  renderWithState,
+  uploads,
+  renderState,
+  render,
   onAfterCommit,
 }: StartGpuSingleDataBackendAutorunLifecycleArgs<
   BackendType,
   RenderStateType
 >): GpuBackendLifecycleHandle {
-  const lastUploadedPerSlot: unknown[] = uploadSlots.map(() => undefined)
+  const lastUploaded: unknown[] = uploads.map(() => undefined)
   let lastRenderState: RenderStateType | undefined
-  let allSlotsHaveData = false
+  let allHaveData = false
 
   const disposeAutorun = autorun(() => {
     let allPresent = true
-    for (let i = 0; i < uploadSlots.length; i++) {
-      const slot = uploadSlots[i]!
-      const data = slot.readData()
+    for (let i = 0; i < uploads.length; i++) {
+      const u = uploads[i]!
+      const data = u.getData()
       if (data === undefined) {
         allPresent = false
-        lastUploadedPerSlot[i] = undefined
+        lastUploaded[i] = undefined
         continue
       }
-      if (lastUploadedPerSlot[i] !== data) {
-        slot.commitUpload(backend, data)
-        lastUploadedPerSlot[i] = data
+      if (lastUploaded[i] !== data) {
+        u.upload(backend, data)
+        lastUploaded[i] = data
       }
     }
-    allSlotsHaveData = allPresent
+    allHaveData = allPresent
 
-    const state = getRenderState()
+    const state = renderState()
     lastRenderState = state
     if (state !== undefined && allPresent) {
-      renderWithState(backend, state)
+      render(backend, state)
     }
     onAfterCommit?.(allPresent)
   })
@@ -111,17 +110,17 @@ export function startGpuSingleDataBackendAutorunLifecycle<
       }
       isDisposed = true
       disposeAutorun()
-      for (let i = 0; i < lastUploadedPerSlot.length; i++) {
-        lastUploadedPerSlot[i] = undefined
+      for (let i = 0; i < lastUploaded.length; i++) {
+        lastUploaded[i] = undefined
       }
       lastRenderState = undefined
-      allSlotsHaveData = false
+      allHaveData = false
     },
     renderNow() {
-      if (isDisposed || lastRenderState === undefined || !allSlotsHaveData) {
+      if (isDisposed || lastRenderState === undefined || !allHaveData) {
         return
       }
-      renderWithState(backend, lastRenderState)
+      render(backend, lastRenderState)
     },
   }
 }

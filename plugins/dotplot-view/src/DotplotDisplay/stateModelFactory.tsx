@@ -165,22 +165,22 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       // Upload-only; the view owns render. Key = track index.
       startGpuBackendLifecycle(backend: DotplotBackend) {
-        // No pruneRegionsNotIn: backend is shared, so a per-display
-        // active-set prune would wipe other displays. Per-key cleanup
-        // happens in beforeDestroy via backend.deleteRegion.
-        self.startMultiRegionGpuLifecycle<
-          DotplotBackend,
-          DotplotGeometryData,
-          undefined
-        >({
+        // No `prune`: backend is shared, so a per-display active-set
+        // prune would wipe other displays. Per-key cleanup happens in
+        // beforeDestroy via backend.deleteRegion.
+        self.startMultiRegionGpuLifecycle<DotplotBackend, undefined>({
           backend,
-          getDataByRegionNumber: () => self.rpcDataMap,
-          uploadOneRegion: (b, n, data) => {
-            b.uploadRegion(n, data)
-          },
-          getRenderBlocks: () => [],
-          getRenderState: () => undefined,
-          renderAllBlocks: () => {},
+          uploads: [
+            {
+              getData: () => self.rpcDataMap,
+              upload: (b, n, data: DotplotGeometryData) => {
+                b.uploadRegion(n, data)
+              },
+            },
+          ],
+          renderBlocks: () => [],
+          renderState: () => undefined,
+          render: () => {},
           // Force a render after upload. Display (upload) and view
           // (render) are separate autoruns reacting to the same commit;
           // if render fires first, the backend is still empty. Only

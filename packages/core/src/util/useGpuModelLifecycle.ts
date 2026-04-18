@@ -42,9 +42,9 @@ export function useGpuModelLifecycle<BackendType extends { dispose(): void }>(
     }),
     [model],
   )
-  const { canvasRef, error, retry } = useGpuRenderer(factory, opts)
+  const { canvas, canvasRef, error, retry } = useGpuRenderer(factory, opts)
   useTabVisibilityRerender(() => {
     model.renderNow()
   })
-  return { canvasRef, error, retry }
+  return { canvas, canvasRef, error, retry }
 }

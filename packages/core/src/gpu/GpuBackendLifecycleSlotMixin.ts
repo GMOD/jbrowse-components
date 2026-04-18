@@ -67,24 +67,12 @@ export function GpuBackendLifecycleSlotMixin() {
       },
     }))
     .actions(self => ({
-      startMultiRegionGpuLifecycle<
-        BackendType,
-        RegionDataType,
-        RenderStateType,
-      >(
-        args: StartGpuBackendAutorunLifecycleArgs<
-          BackendType,
-          RegionDataType,
-          RenderStateType
-        >,
+      startMultiRegionGpuLifecycle<BackendType, RenderStateType>(
+        args: StartGpuBackendAutorunLifecycleArgs<BackendType, RenderStateType>,
       ) {
         const userOnAfterCommit = args.onAfterCommit
         self.assignGpuBackendLifecycleHandle(
-          startGpuBackendAutorunLifecycle<
-            BackendType,
-            RegionDataType,
-            RenderStateType
-          >({
+          startGpuBackendAutorunLifecycle<BackendType, RenderStateType>({
             ...args,
             onAfterCommit:
               userOnAfterCommit ||

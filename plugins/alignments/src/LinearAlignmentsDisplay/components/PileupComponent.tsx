@@ -77,6 +77,7 @@ const PileupInner = observer(function PileupInner({
   const { classes } = useStyles()
   const base = useAlignmentsBase(model)
   const {
+    canvas,
     canvasRef,
     resizeHandleHovered,
     setResizeHandleHovered,
@@ -107,7 +108,6 @@ const PileupInner = observer(function PileupInner({
   } = model
 
   useEffect(() => {
-    const canvas = canvasRef.current
     if (!canvas) {
       return
     }
@@ -136,7 +136,7 @@ const PileupInner = observer(function PileupInner({
       canvas.removeEventListener('wheel', handler)
     }
   }, [
-    canvasRef,
+    canvas,
     scrollZoom,
     scrollableHeight,
     pileupViewportHeight,

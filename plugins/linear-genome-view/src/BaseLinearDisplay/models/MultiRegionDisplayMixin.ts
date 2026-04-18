@@ -72,6 +72,27 @@ export default function MultiRegionDisplayMixin() {
         const view = getContainingView(self) as LinearGenomeViewModel
         return buildRenderBlocks(view.visibleRegions)
       },
+
+      // Default: subclasses override to return the literal RPC payload.
+      // The mixin's afterAttach installs an autorun that reads this
+      // getter — any change to the fields it reads clears all loaded
+      // data, letting FetchVisibleRegions re-fetch. Subclasses that do
+      // not refetch via FetchVisibleRegions (HiC, LD, variants) can
+      // still define `rpcProps` for documentation and consumer use,
+      // but they don't benefit from this mixin-owned invalidation.
+      get rpcProps(): Record<string, unknown> | undefined {
+        return undefined
+      },
+
+      // Every MultiRegionDisplayMixin consumer is GPU-rendered on the
+      // main thread and opts out of the legacy server-side-rendered
+      // block pipeline by returning notReady: true. SVG export paths
+      // check this to skip the block-based exporter in favor of each
+      // display's own renderSvg method. Overrides BaseDisplay's
+      // renderProps.
+      renderProps() {
+        return { notReady: true }
+      },
     }))
     .actions(self => ({
       setError(error?: unknown) {
@@ -348,6 +369,33 @@ export default function MultiRegionDisplayMixin() {
                 name: 'FetchVisibleRegions',
                 delay: 300,
               },
+            ),
+          )
+
+          // SettingsInvalidate: re-fetch whenever any tracked field in
+          // `rpcProps` changes. rpcProps IS the literal RPC payload, so a
+          // single tracked read covers everything sent to the worker —
+          // structurally impossible to add an RPC param without it being
+          // the cache key. The autorun running IS the invalidation
+          // signal — `clearAllRpcData` bumps fetchGeneration and empties
+          // loadedRegions, which triggers FetchVisibleRegions to
+          // re-fetch.
+          //
+          // Subclasses that don't override `rpcProps` get an autorun
+          // with no tracked reads — it fires once at setup (mobx init
+          // behavior) on empty data, a harmless no-op.
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const view = getContainingView(self) as LinearGenomeViewModel
+                if (!view.initialized) {
+                  return
+                }
+                void self.rpcProps
+                self.clearAllRpcData()
+              },
+              { name: 'SettingsInvalidate' },
             ),
           )
 

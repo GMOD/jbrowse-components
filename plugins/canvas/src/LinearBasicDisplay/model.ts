@@ -83,15 +83,6 @@ export default function stateModelFactory(
       get extraRpcArgs(): Record<string, unknown> {
         return { showOnlyGenes: self.showOnlyGenes }
       },
-
-      get settingsCacheKey(): Record<string, unknown> {
-        return {
-          subfeatureLabels: self.subfeatureLabels,
-          geneGlyphMode: self.effectiveGeneGlyphMode,
-          showOnlyGenes: self.showOnlyGenes,
-          displayMode: self.displayMode,
-        }
-      },
     }))
     .actions(self => ({
       setSubfeatureLabels(value: string) {

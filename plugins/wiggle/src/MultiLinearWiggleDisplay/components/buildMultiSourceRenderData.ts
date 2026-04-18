@@ -9,19 +9,38 @@ import {
 import type { MultiWiggleDataResult } from '../../RenderMultiWiggleDataRPC/types.ts'
 import type { SourceRenderData } from '../../shared/wiggleBackendTypes.ts'
 
+// The shape of `model.gpuProps` for MultiLinearWiggleDisplay — the source
+// of truth for "settings that affect the per-instance GPU buffer encoding".
+// buildMultiSourceRenderData consumes this exact type, so TS forces gpuProps
+// and the encoder to stay in sync. The framework reads `self.gpuProps` as
+// getUploadInvalidationToken so a change re-uploads without an RPC roundtrip.
+export interface MultiWiggleGpuProps {
+  sources: { name: string; color?: string }[]
+  posColor: string
+  negColor: string
+  summaryScoreMode: string
+  renderingType: string
+  isDensityMode: boolean
+}
+
 export function buildMultiSourceRenderData(
   data: MultiWiggleDataResult,
-  modelSources: { name: string; color?: string }[],
-  defaultPosColor: [number, number, number],
-  defaultNegColor: [number, number, number],
-  summaryScoreMode: string,
-  renderingType: string,
-  isDensityMode: boolean,
+  gpuProps: MultiWiggleGpuProps,
 ): SourceRenderData[] {
+  const {
+    sources,
+    posColor: defaultPosColorStr,
+    negColor: defaultNegColorStr,
+    summaryScoreMode,
+    renderingType,
+    isDensityMode,
+  } = gpuProps
   const overlay = isOverlayMode(renderingType)
   const scatter = isScatterMode(renderingType)
+  const defaultPosColor = cssColorToNormalizedRgb(defaultPosColorStr)
+  const defaultNegColor = cssColorToNormalizedRgb(defaultNegColorStr)
   const sourcesByName = new Map(data.sources.map(s => [s.name, s]))
-  const orderedSources = modelSources.length > 0 ? modelSources : data.sources
+  const orderedSources = sources.length > 0 ? sources : data.sources
   const result: SourceRenderData[] = []
   let rowCounter = 0
 

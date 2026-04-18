@@ -12,7 +12,6 @@ import {
   isSessionModelWithWidgets,
   measureText,
 } from '@jbrowse/core/util'
-import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -158,10 +157,6 @@ export default function stateModelFactory(
 
       get DisplayMessageComponent() {
         return MultiWiggleComponent
-      },
-
-      renderProps() {
-        return { notReady: true }
       },
 
       get sourcesWithoutLayout() {
@@ -329,6 +324,33 @@ export default function stateModelFactory(
           self.height,
         )
       },
+
+      // Settings sent to the worker via RPC.
+      get rpcProps() {
+        return {
+          bicolorPivot: this.bicolorPivot,
+          resolution: self.resolution,
+        }
+      },
+
+      // Settings consumed during main-thread GPU buffer encoding
+      // (buildMultiSourceRenderData), not sent to the worker. Includes
+      // `sources` because re-ordering / re-coloring sources changes the
+      // per-instance buffer (rowIndex, color) without changing what the
+      // worker returns. Defined as a method (not a getter) so subclasses
+      // can override it via the standard `super` capture pattern. The
+      // return shape is enforced structurally by
+      // buildMultiSourceRenderData's `MultiWiggleGpuProps` parameter type.
+      gpuProps() {
+        return {
+          sources: this.sources,
+          posColor: this.posColor,
+          negColor: this.negColor,
+          summaryScoreMode: this.summaryScoreMode,
+          renderingType: this.renderingType,
+          isDensityMode: this.isDensityMode,
+        }
+      },
     }))
     .views(self => ({
       get showTree() {
@@ -380,42 +402,28 @@ export default function stateModelFactory(
       startGpuBackendLifecycle(backend: WiggleBackend) {
         self.startMultiRegionGpuLifecycle<
           WiggleBackend,
-          MultiWiggleDataResult,
           WiggleGPURenderState
         >({
           backend,
-          getDataByRegionNumber: () => self.rpcDataMap,
-          getRenderBlocks: () =>
+          uploads: [
+            {
+              getData: () => self.rpcDataMap,
+              upload: (b, regionNumber, data) => {
+                b.uploadRegion(
+                  regionNumber,
+                  data.regionStart,
+                  buildMultiSourceRenderData(data, self.gpuProps()),
+                )
+              },
+              prune: (b, activeRegionNumbers) => {
+                b.pruneRegions(activeRegionNumbers)
+              },
+            },
+          ],
+          renderBlocks: () =>
             self.domain && self.sources.length > 0 ? self.renderBlocks : [],
-          getRenderState: () => self.renderState,
-          // Changing `sources` re-orders rows inside the instance buffer
-          // without changing rpcDataMap references, so we need a
-          // non-identity signal to force re-upload. Using the `sources`
-          // array reference itself works — the getter builds a fresh
-          // array whenever layout/subtree-filter/override-colors change.
-          getUploadInvalidationToken: () => self.sources,
-          uploadOneRegion: (b, regionNumber, data) => {
-            const { summaryScoreMode, renderingType, isDensityMode } = self
-            const defaultPosColor = cssColorToNormalizedRgb(self.posColor)
-            const defaultNegColor = cssColorToNormalizedRgb(self.negColor)
-            b.uploadRegion(
-              regionNumber,
-              data.regionStart,
-              buildMultiSourceRenderData(
-                data,
-                self.sources,
-                defaultPosColor,
-                defaultNegColor,
-                summaryScoreMode,
-                renderingType,
-                isDensityMode,
-              ),
-            )
-          },
-          pruneRegionsNotIn: (b, activeRegionNumbers) => {
-            b.pruneRegions(activeRegionNumbers)
-          },
-          renderAllBlocks: (b, blocks, state) => {
+          renderState: () => self.renderState,
+          render: (b, blocks, state) => {
             b.renderBlocks(blocks, state)
           },
           // Gated on `self.domain` because autoscale may not be resolved
@@ -526,7 +534,6 @@ export default function stateModelFactory(
         region: RegionWithNumber,
         stopToken: StopToken,
         bpPerPx: number,
-        resolution: number,
         generation: number,
       ) {
         const session = getSession(self)
@@ -544,10 +551,9 @@ export default function stateModelFactory(
             adapterConfig,
             region: region.region,
             sources: self.sources,
-            bicolorPivot: self.bicolorPivot,
+            ...self.rpcProps,
             stopToken,
             bpPerPx,
-            resolution,
             statusCallback: (msg: string) => {
               if (isAlive(self)) {
                 self.setStatusMessage(msg)
@@ -564,8 +570,6 @@ export default function stateModelFactory(
 
       const superAfterAttach = self.afterAttach
 
-      let prevSettingsKey: string | undefined
-
       return {
         isCacheValid(regionNumber: number) {
           const view = getContainingView(self) as LGV
@@ -580,14 +584,12 @@ export default function stateModelFactory(
         onFetchNeeded(needed: RegionWithNumber[]) {
           const view = getContainingView(self) as LGV
           const { bpPerPx } = view
-          const { resolution } = self
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
             const promises = needed.map(region =>
               fetchFeaturesForRegion(
                 region,
                 ctx.stopToken,
                 bpPerPx,
-                resolution,
                 ctx.generation,
               ),
             )
@@ -607,23 +609,6 @@ export default function stateModelFactory(
           } catch (e) {
             console.error(e)
           }
-
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const key = JSON.stringify({
-                  bicolorPivot: self.bicolorPivot,
-                  resolution: self.resolution,
-                })
-                if (prevSettingsKey !== undefined && key !== prevSettingsKey) {
-                  self.clearAllRpcData()
-                }
-                prevSettingsKey = key
-              },
-              { name: 'MultiLinearWiggleDisplay:SettingsInvalidate' },
-            ),
-          )
 
           addDisposer(
             self,

@@ -24,14 +24,17 @@ export function getVariantCellDataAutorun(self: {
   configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
   sources?: Source[]
-  minorAlleleFrequencyFilter: number
-  lengthCutoffFilter: number
   isMinimized: boolean
-  renderingMode: string
-  referenceDrawingMode: string
   cellDataMode: 'regular' | 'matrix'
   errorRetryCount: number
   fetchSizeLimit: number
+  rpcProps: {
+    sources: Source[] | undefined
+    minorAlleleFrequencyFilter: number
+    lengthCutoffFilter: number
+    renderingMode: string
+    referenceDrawingMode: string
+  }
   setCellData: (data: unknown) => void
   setCellDataLoading: (val: boolean) => void
   setDisplayError: (e: unknown) => void
@@ -60,16 +63,10 @@ export function getVariantCellDataAutorun(self: {
           const stopToken = createStopToken()
           self.setSimplifiedFeaturesLoading(stopToken)
           const { rpcManager } = getSession(self)
-          const {
-            lengthCutoffFilter,
-            sources,
-            minorAlleleFrequencyFilter,
-            adapterConfig,
-            renderingMode,
-            referenceDrawingMode,
-            cellDataMode,
-            fetchSizeLimit,
-          } = self
+          const { adapterConfig, cellDataMode, fetchSizeLimit, rpcProps } = self
+          // rpcProps.sources is Source[] | undefined; narrow it here so the
+          // RPC call receives the required Source[] after the guard below.
+          const { sources } = rpcProps
           const visibleBp = view.dynamicBlocks.contentBlocks.reduce(
             (acc, b) => acc + b.end - b.start,
             0,
@@ -91,11 +88,8 @@ export function getVariantCellDataAutorun(self: {
                     }
                     return b.regionNumber
                   }),
+                  ...rpcProps,
                   sources,
-                  minorAlleleFrequencyFilter,
-                  lengthCutoffFilter,
-                  renderingMode,
-                  referenceDrawingMode,
                   mode: cellDataMode,
                   sessionId,
                   adapterConfig,

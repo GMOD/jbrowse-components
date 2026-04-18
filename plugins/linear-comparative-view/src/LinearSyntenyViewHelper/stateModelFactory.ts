@@ -200,27 +200,29 @@ export function linearSyntenyViewHelperModelFactory(
          */
         startGpuBackendLifecycle(backend: SyntenyBackend) {
           self.gpuBackend = backend
-          self.startMultiRegionGpuLifecycle<
-            SyntenyBackend,
-            SyntenyInstanceData,
-            SyntenyRenderState
-          >({
-            backend,
-            getDataByRegionNumber: () => self.geometryByDisplayKey,
-            uploadOneRegion: (b, key, data) => {
-              b.uploadGeometry(key, data)
+          self.startMultiRegionGpuLifecycle<SyntenyBackend, SyntenyRenderState>(
+            {
+              backend,
+              uploads: [
+                {
+                  getData: () => self.geometryByDisplayKey,
+                  upload: (b, key, data: SyntenyInstanceData) => {
+                    b.uploadGeometry(key, data)
+                  },
+                  deleteOne: (b, key) => {
+                    b.deleteGeometry(key)
+                  },
+                },
+              ],
+              renderBlocks: () => [],
+              renderState: () => self.syntenyRenderState,
+              render: (b, _blocks, state) => {
+                b.resize(self.parentView.views[0]!.width, self.effectiveHeight)
+                b.render(state)
+                self.markCanvasDrawn()
+              },
             },
-            deleteOneRegion: (b, key) => {
-              b.deleteGeometry(key)
-            },
-            getRenderBlocks: () => [],
-            getRenderState: () => self.syntenyRenderState,
-            renderAllBlocks: (b, _blocks, state) => {
-              b.resize(self.parentView.views[0]!.width, self.effectiveHeight)
-              b.render(state)
-              self.markCanvasDrawn()
-            },
-          })
+          )
         },
         stopGpuBackendLifecycle() {
           baseStop()

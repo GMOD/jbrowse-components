@@ -19,6 +19,8 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
+const COORD0: [number, number] = [0, 0]
+
 const WiggleComponent = observer(function WiggleComponent({
   model,
 }: {
@@ -35,9 +37,8 @@ const WiggleComponent = observer(function WiggleComponent({
 
   const view = getContainingView(model) as LGV
 
-  const coord0: [number, number] = [0, 0]
-  const [offsetMouseCoord, setOffsetMouseCoord] = useState(coord0)
-  const [clientMouseCoord, setClientMouseCoord] = useState(coord0)
+  const [offsetMouseCoord, setOffsetMouseCoord] = useState(COORD0)
+  const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const handleMouseMove = useCallback(

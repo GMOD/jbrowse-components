@@ -15,7 +15,6 @@ export function getMultiSampleVariantSourcesAutorun(self: {
   adapterConfig: AnyConfigurationModel
   isMinimized: boolean
   errorRetryCount: number
-  adapterProps: () => Record<string, unknown>
   setSourcesLoading: (aborter: StopToken) => void
   setDisplayError: (error: unknown) => void
   setStatusMessage: (str: string) => void
