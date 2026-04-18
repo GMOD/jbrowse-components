@@ -30,7 +30,7 @@ import {
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
-import { autorun, observable } from 'mobx'
+import { autorun, observable, untracked } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import { SashimiArcsSubModel } from './SashimiArcsSubModel.ts'
@@ -609,30 +609,31 @@ export default function stateModelFactory(
           return Math.max(0, self.totalPileupHeight - self.pileupViewportHeight)
         },
 
-        // All fields that invalidate the fetched data. Includes both
-        // worker-bound fields (filterBy, colorBy, …) and main-thread
-        // post-fetch decision fields (showLinkedReads picks pileup vs
-        // chain RPC; showArcs/drawInter/drawLongRange trigger arcs
-        // recomputation from pileup data). The mixin's SettingsInvalidate
-        // autorun watches this getter and clears all data on change.
-        // Fields that are not literal RPC params (showArcs/drawInter/
-        // drawLongRange/showLinkedReads as a flag) are still declared
-        // here so the invalidation is structural; the RPC call spreads
-        // only the worker-accepted subset (see rpcCallProps).
+        // Stable getter: returns the sortedBy ref only when it's a tag
+        // sort (the only flavor the worker needs), otherwise undefined.
+        // Wrapping this as its own cached getter lets mobx short-circuit
+        // rpcProps re-notification when sortedBy flips between non-tag
+        // values (both map to undefined here, so mobx sees === unchanged).
+        get sortedByForRpc() {
+          return self.sortedBy?.type === 'tag' ? self.sortedBy : undefined
+        },
+
+        // Fields that invalidate the fetched pileup/chain data. Worker-
+        // bound (filterBy, colorBy, …) plus the one main-thread decision
+        // field that selects between pileup and chain RPC
+        // (showLinkedReads). Arc-only fields live on arcsState and
+        // drive the arcs autorun below without refetching pileup.
+        // Non-tag sortedBy changes handled by the sortLayout autorun.
         get rpcProps() {
           return {
             filterBy: self.filterBy,
             colorBy: self.colorBy,
             colorTagMap: self.colorTagMap,
-            sortedBy:
-              self.sortedBy?.type === 'tag' ? self.sortedBy : undefined,
+            sortedBy: this.sortedByForRpc,
             showSoftClipping: self.showSoftClipping,
             drawSingletons: self.drawSingletons,
             drawProperPairs: self.drawProperPairs,
             showLinkedReads: self.showLinkedReads,
-            showArcs: self.showArcs,
-            drawInter: self.arcsState.drawInter,
-            drawLongRange: self.arcsState.drawLongRange,
           }
         },
 
@@ -1522,77 +1523,62 @@ export default function stateModelFactory(
               ),
             )
 
-            // Recompute arcs when arc color scheme changes (no RPC
-            // refetch needed — arcs are derived from pileup data).
-            // prev-tracking gates on the colorByType change
-            // specifically so that incidental re-fires caused by
-            // tracked reads in the guard/effect (rpcDataMap,
-            // loadedRegions etc.) don't trigger redundant arc
-            // recomputation. N-fire-per-fetch would be O(N²).
-            let prevArcColorByType: string | undefined
+            // Recompute arcs when any arc-affecting setting changes (no
+            // RPC refetch needed — arcs are derived from existing pileup
+            // data). `computeAndSetArcs` reads arcsState.colorByType /
+            // drawInter / drawLongRange internally, so those deps are
+            // tracked transitively — no manual `void` pokes needed.
+            // `delay: 50` batches rapid fires from per-region setRpcData
+            // calls during a single fetch into one recompute.
             addDisposer(
               self,
               autorun(
                 () => {
-                  const colorByType = self.arcsState.colorByType
-                  if (prevArcColorByType === undefined) {
-                    prevArcColorByType = colorByType
+                  if (!self.showArcs || self.rpcDataMap.size === 0) {
                     return
                   }
-                  if (colorByType === prevArcColorByType) {
-                    return
-                  }
-                  prevArcColorByType = colorByType
-                  if (self.showArcs && self.rpcDataMap.size > 0) {
-                    const view = getContainingView(self) as LGV
-                    computeAndSetArcs(
-                      view.mergedVisibleRegions.map(vr => ({
-                        region: vr,
-                        regionNumber: vr.regionNumber,
-                      })),
-                    )
-                  }
+                  const view = getContainingView(self) as LGV
+                  computeAndSetArcs(
+                    view.mergedVisibleRegions.map(vr => ({
+                      region: vr,
+                      regionNumber: vr.regionNumber,
+                    })),
+                  )
                 },
-                { name: 'LinearAlignmentsDisplay:recomputeArcColors' },
+                {
+                  name: 'LinearAlignmentsDisplay:recomputeArcs',
+                  delay: 50,
+                },
               ),
             )
 
-            // Autorun: recompute layout when sort changes (no RPC refetch needed
-            // for non-tag sorts). Tag sort falls through to refetch.
-            let prevSortKey: string | undefined
+            // Relayout in place when a non-tag sort changes (no RPC
+            // refetch). Tag-sort changes are handled by rpcProps →
+            // mixin SettingsInvalidate. rpcDataMap read + write happens
+            // inside `untracked` because computeAndAssignLayoutForData
+            // calls self.setRpcData which mutates rpcDataMap — tracking
+            // would make the autorun self-trigger infinitely.
             addDisposer(
               self,
               autorun(
                 () => {
                   const sortedBy = self.sortedBy
                   const showSoftClipping = self.showSoftClipping
-                  const sortKey = JSON.stringify({ sortedBy, showSoftClipping })
-                  if (prevSortKey === undefined) {
-                    prevSortKey = sortKey
+                  if (self.renderingMode === 'linkedRead') {
                     return
                   }
-                  if (sortKey === prevSortKey) {
-                    return
-                  }
-                  prevSortKey = sortKey
-
-                  if (
-                    self.rpcDataMap.size === 0 ||
-                    self.renderingMode === 'linkedRead'
-                  ) {
-                    return
-                  }
-
                   if (sortedBy?.type === 'tag') {
-                    self.clearAllRpcData()
                     return
                   }
-
-                  computeAndAssignLayoutForData(
-                    self.rpcDataMap,
-                    sortedBy,
-                    showSoftClipping,
-                  )
+                  untracked(() => {
+                    if (self.rpcDataMap.size > 0) {
+                      computeAndAssignLayoutForData(
+                        self.rpcDataMap,
+                        sortedBy,
+                        showSoftClipping,
+                      )
+                    }
+                  })
                 },
                 { name: 'LinearAlignmentsDisplay:sortLayout' },
               ),

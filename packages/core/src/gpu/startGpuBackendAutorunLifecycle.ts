@@ -22,7 +22,7 @@ export interface RegionUpload<BackendType, RegionDataType> {
   /**
    * Per-region data map. Re-fires the autorun when its contents change.
    */
-  getData: () => Map<number, RegionDataType>
+  getData: () => ReadonlyMap<number, RegionDataType>
 
   /**
    * Push one region's data to the GPU. Any observable read inside (e.g.

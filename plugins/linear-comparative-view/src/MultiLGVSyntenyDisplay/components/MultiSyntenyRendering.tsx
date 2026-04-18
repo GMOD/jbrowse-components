@@ -308,14 +308,13 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
 
   const view = getContainingView(model) as LinearGenomeViewModel
 
-  // Renderer lifecycle: create, init, store in model
   const gpuOpts = useMemo(
     () => ({
-      onReady: (renderer: MultiSyntenyBackend) => {
-        model.setGpuRenderer(renderer)
+      onReady: (backend: MultiSyntenyBackend) => {
+        model.startGpuBackendLifecycle(backend)
       },
       onDispose: () => {
-        model.setGpuRenderer(null)
+        model.stopGpuBackendLifecycle()
       },
     }),
     [model],
@@ -325,12 +324,8 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     gpuOpts,
   )
 
-  // SYNC across model-driven GPU displays (dotplot, linear synteny,
-  // multi-LGV synteny): bumps tabVisibilityVersion so the model draw autorun
-  // re-fires on tab restore. Hook-driven displays pass renderNow directly to
-  // useTabVisibilityRerender instead.
   useTabVisibilityRerender(() => {
-    model.bumpTabVisibility()
+    model.renderNow()
   })
 
   // Theme color palette sync to model

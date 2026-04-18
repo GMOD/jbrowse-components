@@ -51,7 +51,6 @@ export default function MultiRegionDisplayMixin() {
       error: undefined as unknown,
       renderingStopToken: undefined as StopToken | undefined,
       fetchGeneration: 0,
-      dataVersion: 0,
     }))
     .views(self => ({
       get isLoading() {
@@ -114,7 +113,6 @@ export default function MultiRegionDisplayMixin() {
         const next = new Map(self.loadedRegions)
         next.set(regionNumber, region)
         self.loadedRegions = next
-        self.dataVersion++
       },
 
       clearDisplaySpecificData() {
@@ -224,9 +222,10 @@ export default function MultiRegionDisplayMixin() {
               await work(ctx)
               // Mark regions as loaded AFTER the work callback has
               // populated display-specific data (rpcDataMap, cellData,
-              // etc). setLoadedRegionForRegion bumps dataVersion which
-              // triggers draw autoruns — the data must already be
-              // present when they fire. Displays must NOT call
+              // etc). The GPU upload autorun tracks the plugin's own
+              // data map, so by the time we record loadedRegions here,
+              // the data is already committed and observable reads in
+              // render autoruns see it. Displays must NOT call
               // setLoadedRegionForRegion themselves.
               if (!isStale()) {
                 for (const { regionNumber, region } of needed) {

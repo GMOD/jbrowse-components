@@ -697,6 +697,134 @@ describe('FetchVisibleRegions autorun', () => {
     expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callCount)
   })
 
+  it('does NOT refetch when showArcs toggles (arc-only setting)', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    display.setShowArcs(true)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+  })
+
+  it('does NOT refetch when arc draw settings change', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    const { display } = createDisplay()
+
+    display.setShowArcs(true)
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    display.arcsState.setDrawInter(false)
+    display.arcsState.setDrawLongRange(false)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+  })
+
+  it('refetches when colorBy changes (rpcProps field)', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    display.setColorScheme({ type: 'strand' })
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    })
+  })
+
+  it('refetches when showLinkedReads toggles (switches RPC type)', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    display.setShowLinkedReads(true)
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    })
+  })
+
+  it('does NOT refetch when a non-tag sort is applied', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    // Non-tag sort types relayout in place from existing data.
+    display.setOverride('sortedBy', {
+      type: 'Start Location',
+      pos: 5000,
+      refName: 'ctgA',
+      assemblyName: 'volvox',
+    })
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+  })
+
+  it('refetches when a tag sort is applied (tag sort needs worker data)', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    display.setOverride('sortedBy', {
+      type: 'tag',
+      pos: 5000,
+      refName: 'ctgA',
+      assemblyName: 'volvox',
+      tag: 'HP',
+    })
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    })
+  })
+
   it('adapter fetchSizeLimit is respected over display default', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 

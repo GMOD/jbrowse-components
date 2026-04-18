@@ -150,16 +150,11 @@ const SetRowHeightDialog = lazy(
   () => import('./components/SetRowHeightDialog.tsx'),
 )
 
-// SYNC: This display follows the same fetch + GPU rendering architecture as
-// LinearAlignmentsDisplay (plugins/alignments/src/LinearAlignmentsDisplay/model.ts):
-//
-//   1. Compose with MultiRegionDisplayMixin for viewport-aware fetching
-//   2. Override onFetchNeeded → withFetchLifecycle for stop-token + stale checks
-//   3. Override clearDisplaySpecificData to reset display-specific state
-//   4. Capture superAfterAttach to register the mixin's autoruns
-//   5. GPU autoruns: upload (registered first) then draw (tracks dataVersion)
-//
-// Changes to this pattern should be mirrored in both displays.
+// Follows the canonical GPU display architecture (see
+// agent-docs/NEW_ARCHITECTURE.md): compose MultiRegionDisplayMixin,
+// override onFetchNeeded, and call self.startMultiRegionGpuLifecycle
+// in startGpuBackendLifecycle. The mixin owns fetch invalidation via
+// rpcProps and upload/render lifecycle via startMultiRegionGpuLifecycle.
 
 function stateModelFactory(schema: AnyConfigurationSchemaType) {
   return types
@@ -187,9 +182,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       contextMenuFeature: undefined as Feature | undefined,
       statusMessage: undefined as string | undefined,
       visibleMaxDepth: 0,
-      gpuRenderer: null as MultiSyntenyBackend | null,
       colorPalette: null as SyntenyColorPalette | null,
-      tabVisibilityVersion: 0,
     }))
     .views(() => ({
       get featureWidgetType() {
@@ -272,18 +265,43 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
 
       // Settings sent to the worker via RPC. Adding a field here propagates
       // both into the RPC payload (via onFetchNeeded) and into the
-      // SettingsInvalidate autorun (which reads this getter), so refetch
-      // happens automatically when any field changes.
+      // mixin-owned SettingsInvalidate autorun (which reads this getter),
+      // so refetch happens automatically when any field changes.
       get rpcProps() {
         return {
           resolution: self.resolution,
         }
       },
+
+      // Max coverage depth across all loaded regions; fed into the
+      // per-region coverage upload so heights share a common scale.
+      get coverageGlobalMax() {
+        return getGlobalMaxDepth(self.rpcDataMap)
+      },
+
+      // Per-frame render state. Returns undefined to skip render until
+      // the palette + view are ready.
+      get syntenyRenderState() {
+        const view = getContainingView(self) as LGV
+        const palette = self.colorPalette
+        if (!view.initialized || !palette) {
+          return undefined
+        }
+        return {
+          contentBlocks: view.staticBlocks.contentBlocks,
+          viewOffsetPx: view.offsetPx,
+          width: view.width,
+          height: self.height,
+          rowHeight: this.rowHeight,
+          rowSpacing: self.rowSpacing,
+          coverageHeight: this.syntenyCoverageHeight,
+          palette,
+          displayedGenomes: this.displayedGenomes,
+          labelW: this.rowHeight >= 12 ? LABEL_WIDTH : 0,
+        }
+      },
     }))
     .actions(self => ({
-      bumpTabVisibility() {
-        self.tabVisibilityVersion++
-      },
       setRpcData(regionNumber: number, data: SyntenyRegionData) {
         const next = new Map(self.rpcDataMap)
         next.set(regionNumber, data)
@@ -337,11 +355,100 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       setStatusMessage(msg?: string) {
         self.statusMessage = msg
       },
-      setGpuRenderer(renderer: MultiSyntenyBackend | null) {
-        self.gpuRenderer = renderer
-      },
       setColorPalette(palette: SyntenyColorPalette | null) {
         self.colorPalette = palette
+      },
+
+      startGpuBackendLifecycle(backend: MultiSyntenyBackend) {
+        self.startMultiRegionGpuLifecycle<
+          MultiSyntenyBackend,
+          NonNullable<typeof self.syntenyRenderState>
+        >({
+          backend,
+          uploads: [
+            // Geometry: per-region pack of features + colorBy + palette.
+            // mobx tracks displayedGenomes, colorBy, showSnps, palette
+            // reads inside the upload body, so any of those changing
+            // re-fires all region uploads.
+            {
+              getData: () => self.rpcDataMap,
+              upload: (b, n, data: SyntenyRegionData) => {
+                const palette = self.colorPalette
+                if (!palette) {
+                  return
+                }
+                const geometry = prepareBlockGeometry(
+                  data.genomeFeatures,
+                  self.displayedGenomes,
+                  self.colorBy,
+                  self.showSnps,
+                  palette.syntenyColors,
+                )
+                b.uploadGeometryForBlock(n, {
+                  ...geometry,
+                  regionStart: data.regionStart,
+                })
+              },
+            },
+            // Coverage / SNPs / indicators: gated on showCoverage.
+            // coverageGlobalMax is a cached view that aggregates across
+            // all regions; reading it tracks every entry's max, so any
+            // region's data change re-fires all coverage uploads.
+            {
+              getData: () => self.rpcDataMap,
+              upload: (b, n, data: SyntenyRegionData) => {
+                if (!self.showCoverage) {
+                  return
+                }
+                const view = getContainingView(self) as LGV
+                if (!view.initialized) {
+                  return
+                }
+                const coverage = packCoverageForGpu(
+                  data.coverageDepths,
+                  data.coverageStartOffset,
+                  self.coverageGlobalMax,
+                  data.regionStart,
+                  Math.ceil(view.width),
+                )
+                b.uploadCoverageForBlock(n, {
+                  ...coverage,
+                  regionStart: data.regionStart,
+                  maxDepth: data.coverageMaxDepth,
+                })
+                b.uploadSnpCoverageForBlock(
+                  n,
+                  packSnpCoverageForGpu(
+                    data.snpPositions,
+                    data.snpYOffsets,
+                    data.snpHeights,
+                    data.snpColorTypes,
+                    data.snpCount,
+                    data.regionStart,
+                  ),
+                )
+                b.uploadIndicatorsForBlock(
+                  n,
+                  packIndicatorsForGpu(
+                    data.indicatorPositions,
+                    data.numIndicators,
+                    data.regionStart,
+                  ),
+                )
+              },
+            },
+          ],
+          // Synteny draws against view.staticBlocks.contentBlocks (held
+          // in syntenyRenderState), not framework RenderBlocks.
+          renderBlocks: () => [],
+          renderState: () => self.syntenyRenderState,
+          render: (b, _blocks, state) => {
+            b.renderBlocks(state)
+          },
+          onAfterCommit: () => {
+            self.markCanvasDrawn()
+          },
+        })
       },
 
       selectFeature(feature: Feature) {
@@ -432,155 +539,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         afterAttach() {
           superAfterAttach()
 
-          // Upload synteny geometry to the GPU per visible region
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const renderer = self.gpuRenderer
-                if (!renderer) {
-                  return
-                }
-                const {
-                  rpcDataMap,
-                  displayedGenomes,
-                  colorBy,
-                  showSnps,
-                  colorPalette,
-                } = self
-                if (!colorPalette) {
-                  return
-                }
-                for (const [regionNumber, data] of rpcDataMap) {
-                  const geometry = prepareBlockGeometry(
-                    data.genomeFeatures,
-                    displayedGenomes,
-                    colorBy,
-                    showSnps,
-                    colorPalette.syntenyColors,
-                  )
-                  renderer.uploadGeometryForBlock(regionNumber, {
-                    ...geometry,
-                    regionStart: data.regionStart,
-                  })
-                }
-              },
-              { name: 'MultiLGVSyntenyDisplay:uploadGeometry' },
-            ),
-          )
-
-          // Upload coverage track to the GPU per visible region
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const renderer = self.gpuRenderer
-                if (!renderer || !self.showCoverage) {
-                  return
-                }
-                const { rpcDataMap } = self
-                const view = getContainingView(self) as LGV
-                if (!view.initialized) {
-                  return
-                }
-                const globalMax = getGlobalMaxDepth(rpcDataMap)
-                const viewWidthPx = Math.ceil(view.width)
-                for (const [regionNumber, data] of rpcDataMap) {
-                  const coverage = packCoverageForGpu(
-                    data.coverageDepths,
-                    data.coverageStartOffset,
-                    globalMax,
-                    data.regionStart,
-                    viewWidthPx,
-                  )
-                  renderer.uploadCoverageForBlock(regionNumber, {
-                    ...coverage,
-                    regionStart: data.regionStart,
-                    maxDepth: data.coverageMaxDepth,
-                  })
-                  const snps = packSnpCoverageForGpu(
-                    data.snpPositions,
-                    data.snpYOffsets,
-                    data.snpHeights,
-                    data.snpColorTypes,
-                    data.snpCount,
-                    data.regionStart,
-                  )
-                  renderer.uploadSnpCoverageForBlock(regionNumber, snps)
-                  const indicators = packIndicatorsForGpu(
-                    data.indicatorPositions,
-                    data.numIndicators,
-                    data.regionStart,
-                  )
-                  renderer.uploadIndicatorsForBlock(regionNumber, indicators)
-                }
-              },
-              { name: 'MultiLGVSyntenyDisplay:uploadCoverage' },
-            ),
-          )
-
-          // Drive the GPU draw call when render state or upload state changes
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const renderer = self.gpuRenderer
-                const palette = self.colorPalette
-                if (!renderer || !palette) {
-                  return
-                }
-                const view = getContainingView(self) as LGV
-                if (!view.initialized) {
-                  return
-                }
-                // SYNC across all hook-driven GPU displays (wiggle,
-                // multi-wiggle, variants, alignments, HiC, LD): dataVersion
-                // is a counter incremented by setLoadedRegionForRegion()
-                // after each region's data is committed. Reading it here
-                // creates a MobX dependency so this autorun re-fires at that
-                // point, ensuring renderBlocks() runs with fully-committed
-                // data. See MultiRegionDisplayMixin.withFetchLifecycle.
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const _dv = self.dataVersion
-                // SYNC across model-driven GPU displays (dotplot, linear
-                // synteny, multi-LGV synteny): tabVisibilityVersion is a
-                // counter incremented by bumpTabVisibility() when the tab
-                // becomes visible again (WebGPU discards the swap-chain on
-                // hide). Reading it here creates a MobX dependency so this
-                // draw autorun re-fires on restore.
-                // Component calls useTabVisibilityRerender(() => bumpTabVisibility()).
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const _tvv = self.tabVisibilityVersion
-                const {
-                  height,
-                  rowHeight,
-                  rowSpacing,
-                  syntenyCoverageHeight,
-                  displayedGenomes,
-                } = self
-                const contentBlocks = view.staticBlocks.contentBlocks
-                const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
-
-                renderer.renderBlocks({
-                  contentBlocks,
-                  viewOffsetPx: view.offsetPx,
-                  width: view.width,
-                  height,
-                  rowHeight,
-                  rowSpacing,
-                  coverageHeight: syntenyCoverageHeight,
-                  palette,
-                  displayedGenomes,
-                  labelW,
-                })
-                self.markCanvasDrawn()
-              },
-              { name: 'MultiLGVSyntenyDisplay:draw' },
-            ),
-          )
-
           // Recompute the visible-region max-depth (debounced) for the
-          // coverage track's autoscaled Y axis
+          // coverage track's autoscaled Y axis. Upload / render is
+          // driven by startGpuBackendLifecycle via the framework.
           addDisposer(
             self,
             autorun(
