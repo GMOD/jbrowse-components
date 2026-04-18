@@ -1,11 +1,4 @@
-import { cssColorToRgba } from '@jbrowse/core/util/colorBits'
-
 import type { Feature } from '@jbrowse/core/util'
-
-export function parseCssColor(color: string): [number, number, number] {
-  const [r, g, b] = cssColorToRgba(color)
-  return [r, g, b]
-}
 
 export function baseToAscii(base: string) {
   return base.toUpperCase().charCodeAt(0)

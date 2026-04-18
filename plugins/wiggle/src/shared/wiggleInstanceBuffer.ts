@@ -15,9 +15,8 @@ export function interleaveInstances(
   const buf = new ArrayBuffer(totalFeatures * INSTANCE_STRIDE_BYTES)
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
-  let offset = 0
-  for (let idx = 0, l = sources.length; idx < l; idx++) {
-    const source = sources[idx]!
+  let off = 0
+  for (const source of sources) {
     const row = source.rowIndex
     const colorAbgr = normalizedRgbToABGR(
       source.color[0],
@@ -28,18 +27,19 @@ export function interleaveInstances(
     const scores = source.featureScores
     const n = source.numFeatures
     let prev = scores[0]!
+    let pi = 0
     for (let i = 0; i < n; i++) {
-      const off = (offset + i) * INSTANCE_STRIDE_F32
       const score = scores[i]!
-      u32[off + FIELD_OFFSET_F32.startEnd] = positions[i * 2]!
-      u32[off + FIELD_OFFSET_F32.startEnd + 1] = positions[i * 2 + 1]!
+      u32[off + FIELD_OFFSET_F32.startEnd] = positions[pi]!
+      u32[off + FIELD_OFFSET_F32.startEnd + 1] = positions[pi + 1]!
       f32[off + FIELD_OFFSET_F32.score] = score
       f32[off + FIELD_OFFSET_F32.prevScore] = prev
       u32[off + FIELD_OFFSET_F32.color] = colorAbgr
       f32[off + FIELD_OFFSET_F32.rowIndex] = row
       prev = score
+      off += INSTANCE_STRIDE_F32
+      pi += 2
     }
-    offset += n
   }
   return buf
 }

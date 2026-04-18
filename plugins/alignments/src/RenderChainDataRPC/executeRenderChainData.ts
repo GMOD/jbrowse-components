@@ -377,7 +377,6 @@ export async function executeRenderChainData({
     numSoftclipBases: 0,
 
     readTagColors: tagColors,
-    numTagColors: tagColors.length,
 
     coverageDepths: coverage.depths,
     coverageMaxDepth: coverage.maxDepth,

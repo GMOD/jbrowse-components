@@ -88,7 +88,7 @@ export function makeWhiskersSourceData(
   data: FeatureArrays,
   color: [number, number, number],
   isDensityMode: boolean,
-  isScatterMode: boolean,
+  isScatter: boolean,
   rowIndex: number,
 ): SourceRenderData[] {
   const singleSource = [
@@ -120,7 +120,7 @@ export function makeWhiskersSourceData(
       rowIndex,
     },
   ]
-  if (isScatterMode) {
+  if (isScatter) {
     sources.reverse()
   }
   return sources
@@ -162,6 +162,43 @@ export function isSummaryFeature(
     maxScore !== undefined &&
     (minScore !== score || maxScore !== score)
   )
+}
+
+interface MouseRegion {
+  screenStartPx: number
+  screenEndPx: number
+  start: number
+  end: number
+  reversed: boolean
+  regionNumber: number
+}
+
+// Maps a screen x coordinate to the region containing it, the per-region data
+// keyed by regionNumber, and the bp offset within that region (relative to
+// data.regionStart). Returns undefined if x is outside any region or no data
+// is loaded for the hit region.
+export function hitTestMouse<R extends MouseRegion, D extends { regionStart: number }>(
+  regions: R[],
+  rpcDataMap: Map<number, D>,
+  offsetX: number,
+) {
+  const region = regions.find(
+    r => offsetX >= r.screenStartPx && offsetX < r.screenEndPx,
+  )
+  if (!region) {
+    return undefined
+  }
+  const data = rpcDataMap.get(region.regionNumber)
+  if (!data) {
+    return undefined
+  }
+  const blockWidth = region.screenEndPx - region.screenStartPx
+  const frac = (offsetX - region.screenStartPx) / blockWidth
+  const span = region.end - region.start
+  const bp = Math.round(
+    region.reversed ? region.end - frac * span : region.start + frac * span,
+  )
+  return { region, data, bpOffset: bp - data.regionStart }
 }
 
 export function makeRenderState(

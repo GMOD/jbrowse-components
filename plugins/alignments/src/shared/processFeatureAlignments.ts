@@ -1,5 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { packAbgr } from '@jbrowse/core/util/colorBits'
+import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -13,7 +13,6 @@ import {
   baseToAscii,
   getEffectiveStrand,
   pairOrientationToNum,
-  parseCssColor,
 } from './webglRpcUtils.ts'
 import { featureFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
 import { parseCigar2 } from '../MismatchParser/index.ts'
@@ -218,7 +217,7 @@ export function extractModifications(
       detectedSimplexModifications.add(type)
     }
     if (colorBy?.type === 'modifications' && prob >= modThreshold) {
-      const [r, g, b] = parseCssColor(getColorForModification(type))
+      const [r, g, b] = cssColorToRgb(getColorForModification(type))
       modificationsData.push({
         featureId,
         position: featureStart + refPos,
@@ -306,7 +305,7 @@ export function buildTagColors(
   const tag = colorBy.tag!
   const parsedColors = new Map<string, ColorRgbTuple>()
   for (const [k, v] of Object.entries(colorTagMap)) {
-    parsedColors.set(k, parseCssColor(v))
+    parsedColors.set(k, cssColorToRgb(v))
   }
   const fwdStrandRgb: ColorRgbTuple = [236, 139, 139]
   const revStrandRgb: ColorRgbTuple = [143, 143, 216]

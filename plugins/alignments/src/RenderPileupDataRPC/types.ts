@@ -158,7 +158,6 @@ export interface PileupDataResult {
   // Tag color per read, packed ABGR u32 (0 = no tag color). Only populated
   // when colorBy.type === 'tag'.
   readTagColors: Uint32Array
-  numTagColors: number
 
   // Modification data (MM tag) - offsets from regionStart
   modificationPositions: Uint32Array

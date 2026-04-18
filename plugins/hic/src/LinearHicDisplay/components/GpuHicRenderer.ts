@@ -1,6 +1,5 @@
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
-import { interleaveHicInstances } from './hicShaders.ts'
 import * as hicShader from './shaders/hic.generated.ts'
 
 import type { HicBackend, HicRenderState } from './hicBackendTypes.ts'
@@ -10,6 +9,9 @@ const PASS_MAIN = 'main'
 const REGION_KEY = 0
 const UNIFORMS_SIZE_BYTES = hicShader.UNIFORMS_SIZE_BYTES
 const U = hicShader.UNIFORM_OFFSET_F32
+const F = hicShader.FIELD_OFFSET_F32
+const STRIDE = hicShader.INSTANCE_STRIDE_F32
+const STRIDE_BYTES = hicShader.INSTANCE_STRIDE_BYTES
 
 export const HIC_PASSES: PassDescriptor[] = [
   slangPass({
@@ -20,7 +22,27 @@ export const HIC_PASSES: PassDescriptor[] = [
   }),
 ]
 
-export { UNIFORMS_SIZE_BYTES as HIC_UNIFORM_BYTE_SIZE }
+export {
+  UNIFORMS_SIZE_BYTES as HIC_UNIFORM_BYTE_SIZE,
+  STRIDE as HIC_INSTANCE_STRIDE_F32,
+}
+
+function interleaveHicInstances(data: {
+  positions: Float32Array
+  counts: Float32Array
+  numContacts: number
+}) {
+  const count = data.numContacts
+  const buf = new ArrayBuffer(count * STRIDE_BYTES)
+  const f32 = new Float32Array(buf)
+  for (let i = 0; i < count; i++) {
+    const off = i * STRIDE
+    f32[off + F.position] = data.positions[i * 2]!
+    f32[off + F.position + 1] = data.positions[i * 2 + 1]!
+    f32[off + F.count] = data.counts[i]!
+  }
+  return buf
+}
 
 export class GpuHicRenderer implements HicBackend {
   private hal: GpuHal

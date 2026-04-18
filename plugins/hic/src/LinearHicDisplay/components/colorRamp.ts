@@ -1,3 +1,8 @@
+// Linear (non-log) Hi-C color scaling divides max by this so most cells aren't
+// saturated to the top of the ramp. Mirrored as a literal in hic.slang's
+// fragment shader — keep in sync.
+export const HIC_LINEAR_SCORE_DIVISOR = 20
+
 const FALL_STOPS: [number, number, number][] = [
   [255, 255, 255],
   [255, 255, 204],

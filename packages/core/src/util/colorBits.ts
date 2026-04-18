@@ -47,6 +47,13 @@ export function cssColorToNormalizedRgb(
   return [getRed(c) / 255, getGreen(c) / 255, getBlue(c) / 255]
 }
 
+export function cssColorToRgb(
+  color: string,
+): [number, number, number] {
+  const c = parseCssColor(color)
+  return [getRed(c), getGreen(c), getBlue(c)]
+}
+
 export function cssColorToRgba(
   color: string,
 ): [number, number, number, number] {

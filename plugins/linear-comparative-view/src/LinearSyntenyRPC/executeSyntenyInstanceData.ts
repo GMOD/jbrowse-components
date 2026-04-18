@@ -349,6 +349,7 @@ export function executeSyntenyInstanceData({
   const fallbackBpPerPxInv0 = 1 / bpPerPxs[level]!
   const fallbackBpPerPxInv1 = 1 / bpPerPxs[level + 1]!
   const minCigarPxWidth = 4
+  const willDrawCigarArr = new Uint8Array(featureCount)
 
   // First loop: emit a whole-polygon instance for every feature.
   // Features that will get CIGAR detail are emitted with alpha=0 (invisible
@@ -374,6 +375,7 @@ export function executeSyntenyInstanceData({
         willDrawCigar = true
       }
     }
+    willDrawCigarArr[i] = willDrawCigar ? 1 : 0
 
     const baseColor = colorFn(strand, refName, i)
     addInstance(
@@ -408,18 +410,10 @@ export function executeSyntenyInstanceData({
 
   // Second loop: CIGAR instances (using cached parsed CIGARs)
   for (let i = 0; i < featureCount; i++) {
+    if (!willDrawCigarArr[i]) {
+      continue
+    }
     const cigar = parsedCigars[i]!
-    if (!(cigar.length > 0 && drawCIGAR)) {
-      continue
-    }
-
-    const featureWidth = Math.max(
-      Math.abs(p12_offsetPx[i]! - p11_offsetPx[i]!),
-      Math.abs(p22_offsetPx[i]! - p21_offsetPx[i]!),
-    )
-    if (featureWidth < minCigarPxWidth) {
-      continue
-    }
     const x11 = p11_offsetPx[i]!
     const x12 = p12_offsetPx[i]!
     const x21 = p21_offsetPx[i]!
@@ -584,12 +578,12 @@ export function executeSyntenyInstanceData({
     x2: toRelativeFloat32(x2s, instanceCount, refOffset0),
     x3: toRelativeFloat32(x3s, instanceCount, refOffset1),
     x4: toRelativeFloat32(x4s, instanceCount, refOffset1),
-    colors: colorsArr.subarray(0, instanceCount),
-    featureIds: featureIdsArr.subarray(0, instanceCount),
-    isCurves: isCurvesArr.subarray(0, instanceCount),
-    queryTotalLengths: queryTotalLengthArr.subarray(0, instanceCount),
-    padTops: padTopsArr.subarray(0, instanceCount),
-    padBottoms: padBottomsArr.subarray(0, instanceCount),
+    colors: colorsArr.slice(0, instanceCount),
+    featureIds: featureIdsArr.slice(0, instanceCount),
+    isCurves: isCurvesArr.slice(0, instanceCount),
+    queryTotalLengths: queryTotalLengthArr.slice(0, instanceCount),
+    padTops: padTopsArr.slice(0, instanceCount),
+    padBottoms: padBottomsArr.slice(0, instanceCount),
     instanceCount,
     nonCigarInstanceCount,
     geometryBpPerPx0: bpPerPxs[level]!,

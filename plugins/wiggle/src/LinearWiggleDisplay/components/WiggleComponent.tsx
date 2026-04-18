@@ -1,12 +1,11 @@
 import { useCallback, useRef, useState } from 'react'
 
-import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
+import { ErrorBar, ErrorOverlay, LoadingOverlay } from '@jbrowse/core/ui'
 import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import WiggleTooltip from './WiggleTooltip.tsx'
 import DensityLegend from '../../shared/DensityLegend.tsx'
-import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import {

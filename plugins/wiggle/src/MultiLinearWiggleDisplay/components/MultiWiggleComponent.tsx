@@ -1,13 +1,12 @@
 import { useCallback, useRef, useState } from 'react'
 
-import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
+import { ErrorBar, ErrorOverlay, LoadingOverlay } from '@jbrowse/core/ui'
 import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import MultiWiggleTooltip from './Tooltip.tsx'
 import DensityLegend from '../../shared/DensityLegend.tsx'
-import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import MultiRowLabels from '../../shared/MultiRowLabels.tsx'
 import OverlayColorLegend from '../../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../../shared/ScoreLegend.tsx'

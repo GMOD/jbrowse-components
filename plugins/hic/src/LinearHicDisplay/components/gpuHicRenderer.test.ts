@@ -1,7 +1,10 @@
 import { MockHal } from '@jbrowse/core/gpu/hal'
 
-import { GpuHicRenderer, HIC_PASSES } from './GpuHicRenderer.ts'
-import { INSTANCE_STRIDE } from './hicShaders.ts'
+import {
+  GpuHicRenderer,
+  HIC_INSTANCE_STRIDE_F32,
+  HIC_PASSES,
+} from './GpuHicRenderer.ts'
 
 import type { HicRenderState } from './hicBackendTypes.ts'
 
@@ -33,7 +36,7 @@ describe('GpuHicRenderer', () => {
     const buf = hal.getBuffer(0, 'main')
     expect(buf).toBeDefined()
     expect(buf!.count).toBe(2)
-    expect(buf!.data.byteLength).toBe(2 * INSTANCE_STRIDE * 4)
+    expect(buf!.data.byteLength).toBe(2 * HIC_INSTANCE_STRIDE_F32 * 4)
 
     const f32 = new Float32Array(buf!.data)
     // first contact: px=10, py=20, count=5.0

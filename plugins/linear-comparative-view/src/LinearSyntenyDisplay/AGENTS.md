@@ -1,7 +1,13 @@
 # LinearSyntenyDisplay
 
-- WGSL shaders live in `wgslShaders.ts`, GLSL ES 3.0 shaders live in
-  `glslShaders.ts`. Both must be kept in sync manually.
-- `WebGPUSyntenyRenderer.ts` uses the WGSL shaders, `WebGLSyntenyRenderer.ts`
-  uses the GLSL shaders. Shared constants are exported from `wgslShaders.ts`.
-- Constants marked with `// SYNC:` comments must stay in sync across both files.
+- Shaders are authored in Slang (`shaders/*.slang`). Each source file has a
+  sibling `*.generated.ts` emitted by `pnpm gen:shaders` containing WGSL,
+  GLSL-ES-300, uniform/instance byte offsets, and `GL_ATTRIBUTES`. Never edit
+  the `.generated.ts` files by hand.
+- Shared types (the per-instance vertex layout, the `Uniforms` cbuffer,
+  `computeCorners` and `isCulled`) live in `shaders/syntenyTypes.slang`. Every
+  shader imports from this module so layouts stay in sync.
+- `GpuSyntenyRenderer.ts` wires the three passes (`fill`, `edge`, `picking`)
+  via `slangPass()` from `@jbrowse/core/gpu/slangPass`. `INSTANCE_STRIDE_BYTES`
+  and attribute layout come from the generated module — do not hand-maintain
+  a parallel copy.

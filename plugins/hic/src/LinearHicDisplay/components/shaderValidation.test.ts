@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { hicShader } from './hicShaders.ts'
+import { WGSL_SOURCE as hicShader } from './shaders/hic.generated.ts'
 
 let tmpDir: string
 

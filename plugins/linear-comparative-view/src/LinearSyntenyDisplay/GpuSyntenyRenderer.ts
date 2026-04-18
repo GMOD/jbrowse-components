@@ -7,7 +7,7 @@ import {
   EDGE_VERTS_PER_INSTANCE,
   FILL_VERTS_PER_INSTANCE,
   interleaveInstances,
-} from './wgslShaders.ts'
+} from './instanceInterleave.ts'
 
 import type {
   SyntenyBackend,
