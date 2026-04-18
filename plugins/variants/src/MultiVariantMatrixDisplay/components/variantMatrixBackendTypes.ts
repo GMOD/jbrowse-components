@@ -10,7 +10,7 @@ export interface VariantMatrixBackend {
   uploadCellData(data: {
     cellFeatureIndices: Float32Array
     cellRowIndices: Uint32Array
-    cellColors: Uint8Array
+    cellColors: Uint32Array
     numCells: number
   }): void
   render(state: MatrixRenderState): void

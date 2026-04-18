@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { wiggleShader } from './wiggleShader.ts'
+import { WGSL_SOURCE as wiggleShader } from './shaders/wiggle.generated.ts'
 
 let tmpDir: string
 

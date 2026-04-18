@@ -1,4 +1,8 @@
 import {
+  RENDERING_TYPE_DENSITY,
+  RENDERING_TYPE_LINE,
+  RENDERING_TYPE_SCATTER,
+  RENDERING_TYPE_XYPLOT,
   getRowHeight,
   getRowTop,
   isOverlayMode,
@@ -6,12 +10,6 @@ import {
   makeWhiskersSourceData,
   renderingTypeToInt,
 } from './wiggleComponentUtils.ts'
-import {
-  RENDERING_TYPE_DENSITY,
-  RENDERING_TYPE_LINE,
-  RENDERING_TYPE_SCATTER,
-  RENDERING_TYPE_XYPLOT,
-} from './wiggleShader.ts'
 
 describe('isOverlayMode', () => {
   test('overlay types return true', () => {

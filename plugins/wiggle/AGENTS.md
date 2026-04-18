@@ -12,10 +12,13 @@ updates. Per-block draw call overhead is small relative to the data upload cost.
 
 The wiggle display has three rendering backends that must stay synchronized:
 
-1. **WebGL** (GLSL shaders in `wiggleShader.ts` + `WiggleRenderer.ts`)
-2. **WebGPU** (WGSL shaders in `wiggleWgsl.ts` + `WiggleGPURenderer.ts`)
-3. **Canvas 2D** (`Canvas2DWiggleRenderer.ts`)
+1. **WebGPU / WebGL2** via `GpuWiggleRenderer.ts` — one Slang source
+   (`shaders/wiggle.slang`) is compiled to WGSL and GLSL ES 3.00 by
+   `pnpm gen:shaders`; the result lives in `shaders/wiggle.generated.ts`.
+2. **Canvas 2D** fallback (`Canvas2DWiggleRenderer.ts`). Selected by
+   `WiggleRenderer.ts` via `initDualBackend` when no GPU context is available.
 
 When changing rendering behavior (colors, whisker contrast, draw order, scale
-logic), apply the same change to all three backends. The SVG export path in
-`renderSvg.tsx` must also stay consistent with the canvas renderers.
+logic), apply the same change to the Slang shader and the Canvas 2D fallback,
+then regenerate the shader artifacts. The SVG export path in `renderSvg.tsx`
+must also stay consistent.

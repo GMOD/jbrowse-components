@@ -132,7 +132,7 @@ export function computeVariantCells({
     genomicEnd: number,
     renderEnd: number,
     rowIndex: number,
-    rgba: [number, number, number, number],
+    colorAbgr: number,
     shape: number,
     isReference: boolean,
     featureId: string,
@@ -142,10 +142,7 @@ export function computeVariantCells({
     positions[ci * 2] = genomicStart - regionStart
     positions[ci * 2 + 1] = renderEnd - regionStart
     rowIndices[ci] = rowIndex
-    colors[ci * 4] = rgba[0]
-    colors[ci * 4 + 1] = rgba[1]
-    colors[ci * 4 + 2] = rgba[2]
-    colors[ci * 4 + 3] = rgba[3]
+    colors[ci] = colorAbgr
     shapeTypes[ci] = shape
     isRef[ci] = isReference ? 1 : 0
     flatbushItemsSrc[ci] = { featureId, sourceName, genomicStart, genomicEnd }
@@ -207,7 +204,7 @@ export function computeVariantCells({
                 end,
                 renderEnd,
                 j,
-                getCachedRGBA(c),
+                getCachedABGR(c),
                 shape,
                 c === REFERENCE_COLOR,
                 featureId,
@@ -226,7 +223,7 @@ export function computeVariantCells({
               end,
               renderEnd,
               j,
-              [0, 0, 0, 255],
+              BLACK_ABGR,
               shape,
               false,
               featureId,
@@ -270,7 +267,7 @@ export function computeVariantCells({
                   end,
                   renderEnd,
                   j,
-                  getCachedRGBA(c),
+                  getCachedABGR(c),
                   shape,
                   c === REFERENCE_COLOR,
                   featureId,
@@ -284,7 +281,7 @@ export function computeVariantCells({
                 end,
                 renderEnd,
                 j,
-                [0, 0, 0, 255],
+                BLACK_ABGR,
                 shape,
                 false,
                 featureId,
@@ -354,7 +351,7 @@ export function computeVariantCells({
               end,
               renderEnd,
               j,
-              getCachedRGBA(c),
+              getCachedABGR(c),
               shape,
               c === REFERENCE_COLOR,
               featureId,
@@ -391,7 +388,7 @@ export function computeVariantCells({
                 end,
                 renderEnd,
                 j,
-                getCachedRGBA(c),
+                getCachedABGR(c),
                 shape,
                 c === REFERENCE_COLOR,
                 featureId,
@@ -414,38 +411,36 @@ export function computeVariantCells({
     }
   }
 
-  const src = {
-    positions,
-    rowIndices,
-    colors,
-    shapeTypes,
-    flatbushItems: flatbushItemsSrc,
-  }
-  const outPositions = new Uint32Array(cellCount * 2)
-  const outRowIndices = new Uint32Array(cellCount)
-  const outColors = new Uint8Array(cellCount * 4)
-  const outShapeTypes = new Uint8Array(cellCount)
-  const outFlatbushItems: FlatbushItem[] = new Array(cellCount)
-  const dst = {
-    positions: outPositions,
-    rowIndices: outRowIndices,
-    colors: outColors,
-    shapeTypes: outShapeTypes,
-    flatbushItems: outFlatbushItems,
-  }
-  let w = 0
-  if (drawRef) {
-    for (let i = 0; i < cellCount; i++) {
-      if (isRef[i]) {
-        writeCellArrays(dst, w++, src, i)
-      }
-    }
-  }
+  // Stable two-bucket reorder: ref cells first (when drawn), then non-ref.
+  // Skip ref cells entirely when drawRef is false.
+  let refCount = 0
   for (let i = 0; i < cellCount; i++) {
-    if (!isRef[i]) {
-      writeCellArrays(dst, w++, src, i)
+    if (isRef[i]) {
+      refCount++
     }
   }
+  const outCount = drawRef ? cellCount : cellCount - refCount
+  const outPositions = new Uint32Array(outCount * 2)
+  const outRowIndices = new Uint32Array(outCount)
+  const outColors = new Uint32Array(outCount)
+  const outShapeTypes = new Uint8Array(outCount)
+  const outFlatbushItems: FlatbushItem[] = new Array(outCount)
+  let refPos = 0
+  let nonRefPos = drawRef ? refCount : 0
+  for (let i = 0; i < cellCount; i++) {
+    const ref = isRef[i]
+    if (ref && !drawRef) {
+      continue
+    }
+    const w = ref ? refPos++ : nonRefPos++
+    outPositions[w * 2] = positions[i * 2]!
+    outPositions[w * 2 + 1] = positions[i * 2 + 1]!
+    outRowIndices[w] = rowIndices[i]!
+    outColors[w] = colors[i]!
+    outShapeTypes[w] = shapeTypes[i]!
+    outFlatbushItems[w] = flatbushItemsSrc[i]!
+  }
+  const w = outCount
 
   const flatbush = new Flatbush(Math.max(w, 1))
   if (w > 0) {

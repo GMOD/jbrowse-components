@@ -1,4 +1,5 @@
-import { parseColor } from '../../shared/webglUtils.ts'
+import { cssColorToNormalizedRgb as parseColor } from '@jbrowse/core/util/colorBits'
+
 import {
   isOverlayMode,
   isScatterMode,

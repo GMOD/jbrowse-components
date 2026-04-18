@@ -3,6 +3,7 @@ import {
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
 import type {
   VariantBackend,
@@ -13,7 +14,7 @@ interface Canvas2DRegionData {
   regionStart: number
   cellPositions: Uint32Array
   cellRowIndices: Uint32Array
-  cellColors: Uint8Array
+  cellColors: Uint32Array
   cellShapeTypes: Uint8Array
   numCells: number
 }
@@ -38,7 +39,7 @@ export class Canvas2DVariantRenderer implements VariantBackend {
       regionStart: number
       cellPositions: Uint32Array
       cellRowIndices: Uint32Array
-      cellColors: Uint8Array
+      cellColors: Uint32Array
       cellShapeTypes: Uint8Array
       numCells: number
     },
@@ -116,13 +117,7 @@ export class Canvas2DVariantRenderer implements VariantBackend {
           continue
         }
 
-        const ci = i * 4
-        const r = region.cellColors[ci]!
-        const g = region.cellColors[ci + 1]!
-        const b = region.cellColors[ci + 2]!
-        const a = region.cellColors[ci + 3]! / 255
-
-        ctx.fillStyle = `rgba(${r},${g},${b},${a})`
+        ctx.fillStyle = abgrToCssRgba(region.cellColors[i]!)
 
         const effectiveShape = shapeType === 3 && w < 1 ? 0 : shapeType
 

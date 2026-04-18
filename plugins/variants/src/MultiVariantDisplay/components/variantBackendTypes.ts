@@ -9,7 +9,7 @@ export interface VariantBackend {
       regionStart: number
       cellPositions: Uint32Array
       cellRowIndices: Uint32Array
-      cellColors: Uint8Array
+      cellColors: Uint32Array
       cellShapeTypes: Uint8Array
       numCells: number
     },

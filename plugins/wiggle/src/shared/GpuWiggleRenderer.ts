@@ -4,13 +4,13 @@ import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as wiggleShader from './shaders/wiggle.generated.ts'
 import {
-  computeNumRows,
-  interleaveInstances,
-} from './wiggleInstanceBuffer.ts'
-import {
   RENDERING_TYPE_LINE,
   VERTICES_PER_INSTANCE,
 } from './wiggleComponentUtils.ts'
+import {
+  computeNumRows,
+  interleaveInstances,
+} from './wiggleInstanceBuffer.ts'
 
 import type {
   SourceRenderData,

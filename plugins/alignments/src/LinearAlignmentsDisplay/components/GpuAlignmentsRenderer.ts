@@ -283,6 +283,63 @@ function packSoftclipBases(data: CigarUploadData): ArrayBuffer {
   return buf
 }
 
+function packArcs(data: ArcsUploadData): ArrayBuffer {
+  const n = data.numArcs
+  const F = arcShader.FIELD_OFFSET_F32
+  const s32 = arcShader.INSTANCE_STRIDE_F32
+  const buf = new ArrayBuffer(n * arcShader.INSTANCE_STRIDE_BYTES)
+  const f32 = new Float32Array(buf)
+  const x1 = data.arcX1
+  const x2 = data.arcX2
+  const cts = data.arcColorTypes
+  const isArc = data.arcIsArc
+  for (let i = 0; i < n; i++) {
+    const o = i * s32
+    f32[o + F.x1] = x1[i]!
+    f32[o + F.x2] = x2[i]!
+    f32[o + F.colorType] = cts[i]!
+    f32[o + F.isArc] = isArc[i]!
+  }
+  return buf
+}
+
+function packArcLines(data: ArcsUploadData): ArrayBuffer {
+  const n = data.numLines
+  const F = arcLineShader.FIELD_OFFSET_F32
+  const s32 = arcLineShader.INSTANCE_STRIDE_F32
+  const buf = new ArrayBuffer(n * arcLineShader.INSTANCE_STRIDE_BYTES)
+  const u32 = new Uint32Array(buf)
+  const f32 = new Float32Array(buf)
+  const pos = data.linePositions
+  const ys = data.lineYs
+  const cts = data.lineColorTypes
+  for (let i = 0; i < n; i++) {
+    const o = i * s32
+    u32[o + F.position] = pos[i]!
+    f32[o + F.y] = ys[i]!
+    f32[o + F.colorType] = cts[i]!
+  }
+  return buf
+}
+
+function packConnectingLines(data: ConnectingLinesUploadData): ArrayBuffer {
+  const n = data.numConnectingLines
+  const F = connectingLineShader.FIELD_OFFSET_F32
+  const s32 = connectingLineShader.INSTANCE_STRIDE_F32
+  const buf = new ArrayBuffer(n * connectingLineShader.INSTANCE_STRIDE_BYTES)
+  const u32 = new Uint32Array(buf)
+  const f32 = new Float32Array(buf)
+  const pos = data.connectingLinePositions
+  const ys = data.connectingLineYs
+  for (let i = 0; i < n; i++) {
+    const o = i * s32
+    u32[o + F.startOff] = pos[i * 2]!
+    u32[o + F.endOff] = pos[i * 2 + 1]!
+    f32[o + F.y] = ys[i]!
+  }
+  return buf
+}
+
 function packModifications(data: ModificationUploadData): ArrayBuffer {
   const n = data.numModifications
   const F = modificationShader.FIELD_OFFSET_F32
@@ -655,35 +712,15 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
 
     if (data.numArcs > 0) {
-      const n = data.numArcs
-      const F = arcShader.FIELD_OFFSET_F32
-      const s32 = arcShader.INSTANCE_STRIDE_F32
-      const buf = new ArrayBuffer(n * arcShader.INSTANCE_STRIDE_BYTES)
-      const f32 = new Float32Array(buf)
-      for (let i = 0; i < n; i++) {
-        const o = i * s32
-        f32[o + F.x1] = data.arcX1[i]!
-        f32[o + F.x2] = data.arcX2[i]!
-        f32[o + F.colorType] = data.arcColorTypes[i]!
-        f32[o + F.isArc] = data.arcIsArc[i]!
-      }
-      this.hal.uploadBuffer(regionNumber, PASS_ARC, buf, n)
+      this.hal.uploadBuffer(regionNumber, PASS_ARC, packArcs(data), data.numArcs)
     }
-
     if (data.numLines > 0) {
-      const n = data.numLines
-      const F = arcLineShader.FIELD_OFFSET_F32
-      const s32 = arcLineShader.INSTANCE_STRIDE_F32
-      const buf = new ArrayBuffer(n * arcLineShader.INSTANCE_STRIDE_BYTES)
-      const u32 = new Uint32Array(buf)
-      const f32 = new Float32Array(buf)
-      for (let i = 0; i < n; i++) {
-        const o = i * s32
-        u32[o + F.position] = data.linePositions[i]!
-        f32[o + F.y] = data.lineYs[i]!
-        f32[o + F.colorType] = data.lineColorTypes[i]!
-      }
-      this.hal.uploadBuffer(regionNumber, PASS_ARC_LINE, buf, n)
+      this.hal.uploadBuffer(
+        regionNumber,
+        PASS_ARC_LINE,
+        packArcLines(data),
+        data.numLines,
+      )
     }
   }
 
@@ -696,21 +733,12 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       this.hal.setRegionMeta(regionNumber, { regionStart: data.regionStart })
     }
     if (data.numConnectingLines > 0) {
-      const n = data.numConnectingLines
-      const F = connectingLineShader.FIELD_OFFSET_F32
-      const s32 = connectingLineShader.INSTANCE_STRIDE_F32
-      const buf = new ArrayBuffer(
-        n * connectingLineShader.INSTANCE_STRIDE_BYTES,
+      this.hal.uploadBuffer(
+        regionNumber,
+        PASS_CONN_LINE,
+        packConnectingLines(data),
+        data.numConnectingLines,
       )
-      const u32 = new Uint32Array(buf)
-      const f32 = new Float32Array(buf)
-      for (let i = 0; i < n; i++) {
-        const o = i * s32
-        u32[o + F.startOff] = data.connectingLinePositions[i * 2]!
-        u32[o + F.endOff] = data.connectingLinePositions[i * 2 + 1]!
-        f32[o + F.y] = data.connectingLineYs[i]!
-      }
-      this.hal.uploadBuffer(regionNumber, PASS_CONN_LINE, buf, n)
     }
   }
 

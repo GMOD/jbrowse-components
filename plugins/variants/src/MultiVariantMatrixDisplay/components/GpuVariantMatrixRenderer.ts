@@ -37,7 +37,7 @@ export class GpuVariantMatrixRenderer implements VariantMatrixBackend {
   uploadCellData(data: {
     cellFeatureIndices: Float32Array
     cellRowIndices: Uint32Array
-    cellColors: Uint8Array
+    cellColors: Uint32Array
     numCells: number
   }) {
     if (data.numCells === 0) {

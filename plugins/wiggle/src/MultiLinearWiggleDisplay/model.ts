@@ -12,6 +12,7 @@ import {
   isSessionModelWithWidgets,
   measureText,
 } from '@jbrowse/core/util'
+import { cssColorToNormalizedRgb as parseColor } from '@jbrowse/core/util/colorBits'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -27,7 +28,6 @@ import { autorun, untracked } from 'mobx'
 
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
-import { parseColor } from '../shared/webglUtils.ts'
 import {
   getRowHeight,
   isOverlayMode,

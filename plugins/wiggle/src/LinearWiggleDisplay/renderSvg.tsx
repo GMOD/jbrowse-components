@@ -6,13 +6,13 @@ import { when } from 'mobx'
 import DensityLegend from '../shared/DensityLegend.tsx'
 import YScaleBar from '../shared/YScaleBar.tsx'
 import { getDensityColor } from '../shared/getDensityColor.ts'
-import { renderingTypeToInt } from '../shared/wiggleComponentUtils.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
   RENDERING_TYPE_SCATTER,
   RENDERING_TYPE_XYPLOT,
-} from '../shared/wiggleShader.ts'
+  renderingTypeToInt,
+} from '../shared/wiggleComponentUtils.ts'
 import { YSCALEBAR_LABEL_OFFSET, getScale, isDefaultBicolor } from '../util.ts'
 
 import type { LinearWiggleDisplayModel } from './model.ts'

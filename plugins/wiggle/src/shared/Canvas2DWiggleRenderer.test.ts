@@ -5,7 +5,7 @@ import {
   RENDERING_TYPE_SCATTER,
   RENDERING_TYPE_XYPLOT,
   SCALE_TYPE_LINEAR,
-} from './wiggleShader.ts'
+} from './wiggleComponentUtils.ts'
 
 function createMockCanvas() {
   const fillRectCalls: [number, number, number, number][] = []

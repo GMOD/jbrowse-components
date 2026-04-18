@@ -10,28 +10,13 @@ import {
   getPhasedColorFromRaw,
   getRawCallGenotype,
 } from '../../shared/rawGenotypes.ts'
-import { createCachedRGBA } from '../../shared/variantWebglUtils.ts'
+import { createCachedABGR } from '../../shared/variantWebglUtils.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { Source } from '../../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-interface CellArrays {
-  featureIndices: Float32Array
-  rowIndices: Uint32Array
-  colors: Uint8Array
-}
-
-function writeCell(dst: CellArrays, w: number, src: CellArrays, i: number) {
-  dst.featureIndices[w] = src.featureIndices[i]!
-  dst.rowIndices[w] = src.rowIndices[i]!
-  const sOff = i * 4
-  const dOff = w * 4
-  dst.colors[dOff] = src.colors[sOff]!
-  dst.colors[dOff + 1] = src.colors[sOff + 1]!
-  dst.colors[dOff + 2] = src.colors[sOff + 2]!
-  dst.colors[dOff + 3] = src.colors[sOff + 3]!
-}
+const BLACK_ABGR = 0xff000000
 
 interface FeatureData {
   alt: string[]
@@ -62,7 +47,7 @@ function makeFeatureData(
 export interface MatrixCellData {
   cellFeatureIndices: Float32Array
   cellRowIndices: Uint32Array
-  cellColors: Uint8Array
+  cellColors: Uint32Array
   numCells: number
   numFeatures: number
   featureData: FeatureData[]
@@ -79,7 +64,7 @@ export function computeVariantMatrixCells({
   renderingMode: string
   genotypesCache: Map<string, Record<string, string>>
 }): MatrixCellData {
-  const getCachedRGBA = createCachedRGBA()
+  const getCachedABGR = createCachedABGR()
 
   const alleleColorCache = {} as Record<string, string | undefined>
   const rawColorCache = {} as Record<string, string>
@@ -89,7 +74,7 @@ export function computeVariantMatrixCells({
   const maxCells = numFeatures * numSources
   const featureIndices = new Float32Array(maxCells)
   const rowIndices = new Uint32Array(maxCells)
-  const colors = new Uint8Array(maxCells * 4)
+  const colors = new Uint32Array(maxCells)
   const isRef = new Uint8Array(maxCells)
 
   let cellCount = 0
@@ -97,21 +82,16 @@ export function computeVariantMatrixCells({
   function addCell(
     featureIdx: number,
     rowIdx: number,
-    rgba: [number, number, number, number],
+    colorAbgr: number,
     isReference: boolean,
   ) {
     const ci = cellCount
     featureIndices[ci] = featureIdx
     rowIndices[ci] = rowIdx
-    colors[ci * 4] = rgba[0]
-    colors[ci * 4 + 1] = rgba[1]
-    colors[ci * 4 + 2] = rgba[2]
-    colors[ci * 4 + 3] = rgba[3]
+    colors[ci] = colorAbgr
     isRef[ci] = isReference ? 1 : 0
     cellCount++
   }
-
-  const BLACK_OPAQUE: [number, number, number, number] = [0, 0, 0, 255]
 
   const featureData: FeatureData[] = []
 
@@ -157,10 +137,10 @@ export function computeVariantMatrixCells({
                     : genotype.split('|')
                 const c = getPhasedColor(alleles, HP!, mostFrequentAlt, PS)
                 if (c) {
-                  addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
+                  addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
                 }
               } else {
-                addCell(idx, j, BLACK_OPAQUE, false)
+                addCell(idx, j, BLACK_ABGR, false)
               }
             } else {
               const c = getAlleleColor(
@@ -170,7 +150,7 @@ export function computeVariantMatrixCells({
                 true,
               )
               if (c) {
-                addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
+                addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
               }
             }
           }
@@ -198,7 +178,7 @@ export function computeVariantMatrixCells({
               const allele = callGt[si * ploidy + HP!]!
               const c = getPhasedColorFromRaw(allele, mostFreqAltInt)
               if (c) {
-                addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
+                addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
                 genotypes[name] = genotypeStringFromRaw(
                   callGt,
                   si,
@@ -207,7 +187,7 @@ export function computeVariantMatrixCells({
                 )
               }
             } else {
-              addCell(idx, j, BLACK_OPAQUE, false)
+              addCell(idx, j, BLACK_ABGR, false)
               genotypes[name] = genotypeStringFromRaw(
                 callGt,
                 si,
@@ -256,7 +236,7 @@ export function computeVariantMatrixCells({
               rawColorCache[cacheKey] = c
             }
             if (c) {
-              addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
+              addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
               genotypes[sampleName ?? name] = genotypeStringFromRaw(
                 callGt,
                 si,
@@ -287,10 +267,10 @@ export function computeVariantMatrixCells({
                     : genotype.split('|')
                 const c = getPhasedColor(alleles, HP!, mostFrequentAlt)
                 if (c) {
-                  addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
+                  addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
                 }
               } else {
-                addCell(idx, j, BLACK_OPAQUE, false)
+                addCell(idx, j, BLACK_ABGR, false)
               }
             } else {
               const c = getAlleleColor(
@@ -300,7 +280,7 @@ export function computeVariantMatrixCells({
                 true,
               )
               if (c) {
-                addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
+                addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
               }
             }
           }
@@ -309,25 +289,25 @@ export function computeVariantMatrixCells({
     }
   }
 
-  const src = { featureIndices, rowIndices, colors }
-  const outFeatureIndices = new Float32Array(cellCount)
-  const outRowIndices = new Uint32Array(cellCount)
-  const outColors = new Uint8Array(cellCount * 4)
-  const dst = {
-    featureIndices: outFeatureIndices,
-    rowIndices: outRowIndices,
-    colors: outColors,
-  }
-  let w = 0
+  // Stable two-bucket reorder: ref cells first, then non-ref. Matrix always
+  // draws ref (unlike the regular variant display) so both buckets always
+  // land in the output.
+  let refCount = 0
   for (let i = 0; i < cellCount; i++) {
     if (isRef[i]) {
-      writeCell(dst, w++, src, i)
+      refCount++
     }
   }
+  const outFeatureIndices = new Float32Array(cellCount)
+  const outRowIndices = new Uint32Array(cellCount)
+  const outColors = new Uint32Array(cellCount)
+  let refPos = 0
+  let nonRefPos = refCount
   for (let i = 0; i < cellCount; i++) {
-    if (!isRef[i]) {
-      writeCell(dst, w++, src, i)
-    }
+    const w = isRef[i] ? refPos++ : nonRefPos++
+    outFeatureIndices[w] = featureIndices[i]!
+    outRowIndices[w] = rowIndices[i]!
+    outColors[w] = colors[i]!
   }
 
   return {

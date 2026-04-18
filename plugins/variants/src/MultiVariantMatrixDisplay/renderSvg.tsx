@@ -1,4 +1,10 @@
 import { getContainingView } from '@jbrowse/core/util'
+import {
+  abgrAlpha,
+  abgrBlue,
+  abgrGreen,
+  abgrRed,
+} from '@jbrowse/core/util/colorBits'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
@@ -58,26 +64,17 @@ export async function renderSvg(
 
   const ctx = new SvgCanvas()
 
+  const w = Math.max(colWidth, 2)
+  const h = Math.max(rowHeight, 1)
   for (let i = 0; i < numCells; i++) {
-    const featureIdx = cellFeatureIndices[i]!
-    const rowIndex = cellRowIndices[i]!
-    const r = cellColors[i * 4]!
-    const g = cellColors[i * 4 + 1]!
-    const b = cellColors[i * 4 + 2]!
-    const a = cellColors[i * 4 + 3]!
-
-    const y = rowIndex * rowHeight - scrollTop
+    const y = cellRowIndices[i]! * rowHeight - scrollTop
     if (y + rowHeight < 0 || y > availableHeight) {
       continue
     }
-
-    const x = featureIdx * colWidth
-    const w = Math.max(colWidth, 2)
-    const h = Math.max(rowHeight, 1)
-
-    ctx.fillStyle = `rgb(${r},${g},${b})`
-    ctx.globalAlpha = a / 255
-    ctx.fillRect(x, y, w, h)
+    const c = cellColors[i]!
+    ctx.fillStyle = `rgb(${abgrRed(c)},${abgrGreen(c)},${abgrBlue(c)})`
+    ctx.globalAlpha = abgrAlpha(c) / 255
+    ctx.fillRect(cellFeatureIndices[i]! * colWidth, y, w, h)
   }
 
   const sources = model.sources ?? []

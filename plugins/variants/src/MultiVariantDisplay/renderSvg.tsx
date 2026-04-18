@@ -1,4 +1,10 @@
 import { getContainingView } from '@jbrowse/core/util'
+import {
+  abgrAlpha,
+  abgrBlue,
+  abgrGreen,
+  abgrRed,
+} from '@jbrowse/core/util/colorBits'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
@@ -32,13 +38,10 @@ interface RenderSvgModel {
   treeAreaWidth: number
 }
 
-function setFillFromCellColor(ctx: SvgCanvas, colors: Uint8Array, i: number) {
-  const r = colors[i * 4]!
-  const g = colors[i * 4 + 1]!
-  const b = colors[i * 4 + 2]!
-  const a = colors[i * 4 + 3]!
-  ctx.fillStyle = `rgb(${r},${g},${b})`
-  ctx.globalAlpha = a / 255
+function setFillFromCellColor(ctx: SvgCanvas, colors: Uint32Array, i: number) {
+  const c = colors[i]!
+  ctx.fillStyle = `rgb(${abgrRed(c)},${abgrGreen(c)},${abgrBlue(c)})`
+  ctx.globalAlpha = abgrAlpha(c) / 255
 }
 
 function renderCellsForRegion(

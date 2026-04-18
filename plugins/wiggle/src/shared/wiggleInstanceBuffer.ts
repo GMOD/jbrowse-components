@@ -1,4 +1,4 @@
-import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
+import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
 import {
   FIELD_OFFSET_F32,
@@ -7,24 +7,6 @@ import {
 } from './shaders/wiggle.generated.ts'
 
 import type { SourceRenderData } from './wiggleBackendTypes.ts'
-
-const parseColorCache = new Map<string, [number, number, number]>()
-
-export function parseColor(color: string): [number, number, number] {
-  let result = parseColorCache.get(color)
-  if (!result) {
-    result = cssColorToNormalizedRgb(color)
-    parseColorCache.set(color, result)
-  }
-  return result
-}
-
-function packNormalizedRgbToAbgr(r: number, g: number, b: number) {
-  const ri = Math.round(r * 255) & 0xff
-  const gi = Math.round(g * 255) & 0xff
-  const bi = Math.round(b * 255) & 0xff
-  return ((0xff << 24) | (bi << 16) | (gi << 8) | ri) >>> 0
-}
 
 export function interleaveInstances(
   sources: SourceRenderData[],
@@ -37,7 +19,7 @@ export function interleaveInstances(
   for (let idx = 0, l = sources.length; idx < l; idx++) {
     const source = sources[idx]!
     const row = source.rowIndex
-    const colorAbgr = packNormalizedRgbToAbgr(
+    const colorAbgr = normalizedRgbToABGR(
       source.color[0],
       source.color[1],
       source.color[2],
@@ -50,7 +32,8 @@ export function interleaveInstances(
       u32[off + FIELD_OFFSET_F32.startEnd] = positions[i * 2]!
       u32[off + FIELD_OFFSET_F32.startEnd + 1] = positions[i * 2 + 1]!
       f32[off + FIELD_OFFSET_F32.score] = scores[i]!
-      f32[off + FIELD_OFFSET_F32.prevScore] = i === 0 ? scores[i]! : scores[i - 1]!
+      f32[off + FIELD_OFFSET_F32.prevScore] =
+        i === 0 ? scores[i]! : scores[i - 1]!
       u32[off + FIELD_OFFSET_F32.color] = colorAbgr
       f32[off + FIELD_OFFSET_F32.rowIndex] = row
     }

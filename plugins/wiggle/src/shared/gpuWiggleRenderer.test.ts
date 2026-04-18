@@ -1,13 +1,13 @@
 import { MockHal } from '@jbrowse/core/gpu/hal'
 
 import { GpuWiggleRenderer, WIGGLE_PASSES } from './GpuWiggleRenderer.ts'
+import { INSTANCE_STRIDE_F32 as INSTANCE_STRIDE } from './shaders/wiggle.generated.ts'
 import {
-  INSTANCE_STRIDE,
   RENDERING_TYPE_LINE,
   RENDERING_TYPE_XYPLOT,
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
-} from './wiggleShader.ts'
+} from './wiggleComponentUtils.ts'
 
 import type {
   SourceRenderData,
