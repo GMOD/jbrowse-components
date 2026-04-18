@@ -13,8 +13,8 @@ import {
   scaleSequentialLog,
 } from '@mui/x-charts-vendor/d3-scale'
 
-import { HIC_LINEAR_SCORE_DIVISOR } from '../LinearHicDisplay/components/colorRamp.ts'
 import interpolateViridis from './viridis.ts'
+import { HIC_LINEAR_SCORE_DIVISOR } from '../LinearHicDisplay/components/colorRamp.ts'
 
 import type { RenderArgsDeserializedWithFeatures } from './HicRenderer.tsx'
 import type { HicFlatbushItem } from '../RenderHicDataRPC/types.ts'

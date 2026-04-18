@@ -1,38 +1,7 @@
 import { toLocale } from '@jbrowse/core/util'
 
+import { getLegendSvgStops } from './colorRamp.ts'
 import { getNiceScale } from './niceScale.ts'
-
-const colorStops: Record<string, { offset: string; color: string }[]> = {
-  juicebox: [
-    { offset: '0%', color: 'rgba(0,0,0,0)' },
-    { offset: '100%', color: 'red' },
-  ],
-  fall: [
-    { offset: '0%', color: 'rgb(255,255,255)' },
-    { offset: '10%', color: 'rgb(255,255,204)' },
-    { offset: '20%', color: 'rgb(255,237,160)' },
-    { offset: '30%', color: 'rgb(254,217,118)' },
-    { offset: '40%', color: 'rgb(254,178,76)' },
-    { offset: '50%', color: 'rgb(253,141,60)' },
-    { offset: '60%', color: 'rgb(252,78,42)' },
-    { offset: '70%', color: 'rgb(227,26,28)' },
-    { offset: '80%', color: 'rgb(189,0,38)' },
-    { offset: '90%', color: 'rgb(128,0,38)' },
-    { offset: '100%', color: 'rgb(0,0,0)' },
-  ],
-  viridis: [
-    { offset: '0%', color: '#440154' },
-    { offset: '11%', color: '#482878' },
-    { offset: '22%', color: '#3e4a89' },
-    { offset: '33%', color: '#31688e' },
-    { offset: '44%', color: '#26828e' },
-    { offset: '55%', color: '#1f9e89' },
-    { offset: '66%', color: '#35b779' },
-    { offset: '77%', color: '#6ece58' },
-    { offset: '88%', color: '#b5de2b' },
-    { offset: '100%', color: '#fde725' },
-  ],
-}
 
 export default function HicSVGColorLegend({
   maxScore,
@@ -48,7 +17,7 @@ export default function HicSVGColorLegend({
   legendAreaWidth?: number
 }) {
   const gradientId = `hic-gradient-${colorScheme}`
-  const stops = colorStops[colorScheme] || colorStops.juicebox!
+  const stops = getLegendSvgStops(colorScheme)
   const { min, max } = getNiceScale(maxScore, useLogScale)
   const minLabel = min !== undefined ? toLocale(min) : ''
   const maxLabel = `${max !== undefined ? toLocale(max) : ''}${useLogScale ? ' (log)' : ''}`

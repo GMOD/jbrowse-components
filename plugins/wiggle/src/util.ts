@@ -403,11 +403,3 @@ export function makeScoreNormalizer(min: number, max: number, isLog: boolean) {
   return (score: number) => Math.max(0, Math.min(1, (score - min) * invRange))
 }
 
-export function normalizeScore(
-  score: number,
-  min: number,
-  max: number,
-  isLog: boolean,
-) {
-  return makeScoreNormalizer(min, max, isLog)(score)
-}

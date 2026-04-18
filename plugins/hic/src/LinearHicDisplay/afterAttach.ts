@@ -87,12 +87,6 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
       self.setRpcData(result)
       self.setLastDrawnOffsetPx(view.offsetPx)
       self.setLastDrawnBpPerPx(view.bpPerPx)
-      self.setFlatbushData(
-        result.flatbush,
-        result.items,
-        result.maxScore,
-        result.yScalar,
-      )
     } catch (error) {
       if (!isAbortException(error)) {
         console.error(error)

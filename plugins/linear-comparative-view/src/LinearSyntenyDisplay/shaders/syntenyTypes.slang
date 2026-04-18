@@ -53,3 +53,63 @@ public bool isCulled(Corners c, float queryTotalLength, Uniforms u) {
   return max(c.x1, c.x2) < -mOff || min(c.x1, c.x2) > rW + mOff
       || max(c.x3, c.x4) < -mOff || min(c.x3, c.x4) > rW + mOff;
 }
+
+// SYNC: must match FILL_SEGMENTS in instanceInterleave.ts.
+public static const uint FILL_SEGS = 16u;
+
+// (edge0, edge1, y) at parameter t along the parallelogram. When isCurve is
+// on, uses a cubic Hermite ease-in-out so synteny ribbons don't kink at the
+// endpoints.
+public float3 hermiteEdges(Corners c, float t, float isCurve, Uniforms u) {
+  float edge0, edge1, y;
+  if (isCurve > 0.5) {
+    float s = t * t * (3.0 - 2.0 * t);
+    edge0 = lerp(c.x1, c.x4, s);
+    edge1 = lerp(c.x2, c.x3, s);
+    y = u.yTop + u.height * (1.5 * t * (1.0 - t) + t * t * t);
+  } else {
+    edge0 = lerp(c.x1, c.x4, t);
+    edge1 = lerp(c.x2, c.x3, t);
+    y = u.yTop + t * u.height;
+  }
+  return float3(edge0, edge1, y);
+}
+
+// Two-triangle fan tessellation of one parallelogram: vid maps to (segment,
+// vertex-in-segment), which decides the parameter t and which edge (side).
+// When top/bottom diffs have opposite signs the parallelogram crosses itself
+// (inversion pinch), so we bias tessellation density toward the crossing.
+public void computeFillSegmentT(uint vid, Corners c, out float t, out float side) {
+  uint seg = vid / 6u;
+  uint vertInSeg = vid % 6u;
+  float topDiff = c.x1 - c.x2;
+  float botDiff = c.x4 - c.x3;
+
+  float t0, t1;
+  if (topDiff * botDiff < 0.0) {
+    float tCross = clamp(topDiff / (topDiff - botDiff), 0.01, 0.99);
+    uint nUpper = clamp(uint(round(float(FILL_SEGS) * tCross)), 1u, FILL_SEGS - 1u);
+    if (seg < nUpper) {
+      t0 = float(seg) / float(nUpper) * tCross;
+      t1 = float(seg + 1u) / float(nUpper) * tCross;
+    } else {
+      uint lSeg = seg - nUpper;
+      uint nLower = FILL_SEGS - nUpper;
+      t0 = tCross + float(lSeg) / float(nLower) * (1.0 - tCross);
+      t1 = tCross + float(lSeg + 1u) / float(nLower) * (1.0 - tCross);
+    }
+  } else {
+    t0 = float(seg) / float(FILL_SEGS);
+    t1 = float(seg + 1u) / float(FILL_SEGS);
+  }
+
+  switch (vertInSeg) {
+    case 0u: { t = t0; side = 0.0; break; }
+    case 1u: { t = t0; side = 1.0; break; }
+    case 2u: { t = t1; side = 0.0; break; }
+    case 3u: { t = t1; side = 0.0; break; }
+    case 4u: { t = t0; side = 1.0; break; }
+    case 5u: { t = t1; side = 1.0; break; }
+    default: { t = 0.0; side = 0.0; break; }
+  }
+}

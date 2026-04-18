@@ -77,22 +77,6 @@ export default function stateModelFactory(
        * #volatile
        */
       availableNormalizations: undefined as string[] | undefined,
-      /**
-       * #volatile
-       */
-      flatbush: undefined as ArrayBuffer | undefined,
-      /**
-       * #volatile
-       */
-      flatbushItems: [] as HicFlatbushItem[],
-      /**
-       * #volatile
-       */
-      maxScore: 0,
-      /**
-       * #volatile
-       */
-      yScalar: 1,
     }))
     .preProcessSnapshot((snap: any) => {
       if (!snap) {
@@ -132,6 +116,18 @@ export default function stateModelFactory(
       },
       get loading() {
         return self.isLoading
+      },
+      get flatbush() {
+        return self.rpcData?.flatbush
+      },
+      get flatbushItems(): HicFlatbushItem[] {
+        return self.rpcData?.items ?? []
+      },
+      get maxScore() {
+        return self.rpcData?.maxScore ?? 0
+      },
+      get yScalar() {
+        return self.rpcData?.yScalar ?? 1
       },
     }))
     .views(self => ({
@@ -241,20 +237,6 @@ export default function stateModelFactory(
             b.render(state)
           },
         })
-      },
-      /**
-       * #action
-       */
-      setFlatbushData(
-        flatbush: ArrayBuffer | undefined,
-        items: HicFlatbushItem[],
-        maxScore: number,
-        yScalar: number,
-      ) {
-        self.flatbush = flatbush
-        self.flatbushItems = items
-        self.maxScore = maxScore
-        self.yScalar = yScalar
       },
       /**
        * #action

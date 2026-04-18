@@ -12,13 +12,14 @@
  *   colorSetting, posColorSetting, negColorSetting, scaleTypeSetting,
  *   minScoreSetting, maxScoreSetting, renderingTypeSetting,
  *   summaryScoreModeSetting, autoscaleSetting, showTreeSetting
+ *
+ * Gen2 takes precedence over Gen1 when both are present.
  */
 export function migrateWiggleSnapshot(
   snap: Record<string, unknown>,
   opts?: { multiWiggle?: boolean },
 ) {
   const {
-    // Generation 1 properties
     rendererTypeNameState,
     selectedRendering,
     scale,
@@ -31,7 +32,6 @@ export function migrateWiggleSnapshot(
     posColor: posColorGen1,
     negColor: negColorGen1,
     minSize,
-    // Generation 2 properties
     colorSetting,
     posColorSetting,
     negColorSetting,
@@ -45,77 +45,34 @@ export function migrateWiggleSnapshot(
     ...rest
   } = snap
 
-  const overrides: Record<string, unknown> = {}
-
-  // Generation 1 migrations
+  const cons = constraints as { min?: number; max?: number } | undefined
   const oldRendering =
     (rendererTypeNameState as string | undefined) ??
     (selectedRendering as string | undefined)
-  if (oldRendering !== undefined) {
-    overrides.defaultRendering =
-      opts?.multiWiggle && oldRendering === 'xyplot'
-        ? 'multixyplot'
-        : oldRendering
-  }
-  const cons = constraints as { min?: number; max?: number } | undefined
-  if (scale !== undefined) {
-    overrides.scaleType = scale
-  }
-  if (autoscaleGen1 !== undefined) {
-    overrides.autoscale = autoscaleGen1
-  }
-  if (summaryScoreModeGen1 !== undefined) {
-    overrides.summaryScoreMode = summaryScoreModeGen1
-  }
-  if (cons?.min !== undefined) {
-    overrides.minScore = cons.min
-  }
-  if (cons?.max !== undefined) {
-    overrides.maxScore = cons.max
-  }
-  if (colorGen1 !== undefined) {
-    overrides.color = colorGen1
-  }
-  if (posColorGen1 !== undefined) {
-    overrides.posColor = posColorGen1
-  }
-  if (negColorGen1 !== undefined) {
-    overrides.negColor = negColorGen1
-  }
-  if (showSidebar !== undefined) {
-    overrides.showTree = showSidebar
+  const defaultRendering =
+    renderingTypeSetting ??
+    (oldRendering !== undefined && opts?.multiWiggle && oldRendering === 'xyplot'
+      ? 'multixyplot'
+      : oldRendering)
+
+  const candidates: Record<string, unknown> = {
+    defaultRendering,
+    scaleType: scaleTypeSetting ?? scale,
+    autoscale: autoscaleSetting ?? autoscaleGen1,
+    summaryScoreMode: summaryScoreModeSetting ?? summaryScoreModeGen1,
+    minScore: minScoreSetting ?? cons?.min,
+    maxScore: maxScoreSetting ?? cons?.max,
+    color: colorSetting ?? colorGen1,
+    posColor: posColorSetting ?? posColorGen1,
+    negColor: negColorSetting ?? negColorGen1,
+    showTree: showTreeSetting ?? showSidebar,
   }
 
-  // Generation 2 migrations
-  if (colorSetting !== undefined) {
-    overrides.color = colorSetting
-  }
-  if (posColorSetting !== undefined) {
-    overrides.posColor = posColorSetting
-  }
-  if (negColorSetting !== undefined) {
-    overrides.negColor = negColorSetting
-  }
-  if (scaleTypeSetting !== undefined) {
-    overrides.scaleType = scaleTypeSetting
-  }
-  if (minScoreSetting !== undefined) {
-    overrides.minScore = minScoreSetting
-  }
-  if (maxScoreSetting !== undefined) {
-    overrides.maxScore = maxScoreSetting
-  }
-  if (renderingTypeSetting !== undefined) {
-    overrides.defaultRendering = renderingTypeSetting
-  }
-  if (summaryScoreModeSetting !== undefined) {
-    overrides.summaryScoreMode = summaryScoreModeSetting
-  }
-  if (autoscaleSetting !== undefined) {
-    overrides.autoscale = autoscaleSetting
-  }
-  if (showTreeSetting !== undefined) {
-    overrides.showTree = showTreeSetting
+  const overrides: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(candidates)) {
+    if (value !== undefined) {
+      overrides[key] = value
+    }
   }
 
   if (Object.keys(overrides).length === 0) {

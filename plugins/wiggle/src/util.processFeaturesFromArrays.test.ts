@@ -1,9 +1,16 @@
 import {
   isDefaultBicolor,
-  normalizeScore,
+  makeScoreNormalizer,
   processFeatures,
   processFeaturesFromArrays,
 } from './util.ts'
+
+const normalizeScore = (
+  score: number,
+  min: number,
+  max: number,
+  isLog: boolean,
+) => makeScoreNormalizer(min, max, isLog)(score)
 
 describe('processFeaturesFromArrays', () => {
   test('produces same output as processFeatures for basic features', () => {

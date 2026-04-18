@@ -153,9 +153,10 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
             const allSources: NonNullable<
               MultiWiggleDisplayModel['featureUnderMouse']
             >['allSources'] = []
+            const visibleSourceNames = new Set(sources.map(s => s.name))
 
             for (const src of data.sources) {
-              if (sources.some(s => s.name === src.name)) {
+              if (visibleSourceNames.has(src.name)) {
                 const i = findFeatureAtBp(
                   src.featurePositions,
                   src.numFeatures,
