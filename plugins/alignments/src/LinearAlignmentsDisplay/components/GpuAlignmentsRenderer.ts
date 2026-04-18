@@ -227,6 +227,19 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
+  // uploadArcsFromTypedArraysForRegion and uploadConnectingLinesForRegion
+  // can arrive before the main read upload — lazily create the LocalRegion
+  // so they don't fail; the read upload later overwrites it.
+  private getOrCreateRegion(regionNumber: number, regionStart: number) {
+    let r = this.regions.get(regionNumber)
+    if (!r) {
+      r = this.emptyRegion(regionStart)
+      this.regions.set(regionNumber, r)
+      this.hal.setRegionMeta(regionNumber, { regionStart })
+    }
+    return r
+  }
+
   uploadRegion(regionNumber: number, data: PileupDataResult) {
     this.uploadFromTypedArraysForRegion(regionNumber, data)
     this.uploadCigarFromTypedArraysForRegion(regionNumber, data)
@@ -484,12 +497,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     regionNumber: number,
     data: ArcsUploadData,
   ) {
-    const r = this.regions.get(regionNumber)
-    if (!r) {
-      const nr = this.emptyRegion(data.regionStart)
-      this.regions.set(regionNumber, nr)
-      this.hal.setRegionMeta(regionNumber, { regionStart: data.regionStart })
-    }
+    this.getOrCreateRegion(regionNumber, data.regionStart)
 
     if (data.numArcs > 0) {
       const n = data.numArcs
@@ -528,11 +536,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     regionNumber: number,
     data: ConnectingLinesUploadData,
   ) {
-    if (!this.regions.has(regionNumber)) {
-      const r = this.emptyRegion(data.regionStart)
-      this.regions.set(regionNumber, r)
-      this.hal.setRegionMeta(regionNumber, { regionStart: data.regionStart })
-    }
+    this.getOrCreateRegion(regionNumber, data.regionStart)
     if (data.numConnectingLines > 0) {
       const n = data.numConnectingLines
       const F = connectingLineShader.FIELD_OFFSET_F32
