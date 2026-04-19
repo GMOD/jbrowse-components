@@ -2,17 +2,40 @@
 
 ## Display rendering and RPC
 
-All display types fetch data via RPC workers and render on the main thread. The
-difference is where layout decisions happen:
+All display types fetch data via RPC workers and render on the main thread.
+**All worker output X positions are BP offsets from `regionStart`** — no plugin
+ships pixel coordinates across the worker boundary. What differs per plugin is
+where various layout decisions happen:
 
-- **Canvas plugin**: worker computes layout (feature heights, glyph selection,
-  packing) so it needs config sent as a plain snapshot (`getConfSnapshot` +
-  `readConfigValue`). Returns pre-computed geometry for GPU rendering.
-- **Wiggle/alignments**: worker only fetches and bins data, returns raw arrays.
-  Layout and rendering happen on the main thread because they need cross-region
-  coordination — e.g. wiggle's autoscale aggregates scores across all visible
-  chromosomes to compute a global Y-axis domain, alignments builds a global
-  chain index across regions for linked-read highlighting.
+- **Canvas plugin**: worker does per-feature glyph selection, subfeature
+  breakdown, color computation, and label measurement. Y-row packing is
+  main-thread (`computeLaidOutData` derived view). Output is fully
+  genomic-coord — `rectPositions` are BP offsets, child positions are
+  looked up from `feature.get('start')`, heights are
+  `config.featureHeight` (not zoom-dependent), `floatingLabelsData.minX/maxX`
+  are BP offsets. Several `widthPx`-derived fields on `FeatureLayout`
+  (`x`, `width`, `totalLayoutWidth`, `leftPadding`) are computed but
+  never read — dead-code holdover from earlier pixel-baked iterations.
+  The actual `bpPerPx`-dependent worker decisions are: amino-acid
+  overlay threshold (`shouldRenderPeptideBackground`) and the
+  `maxFeatureDensity` density gate. Worker needs config sent as a plain
+  snapshot (`getConfSnapshot` + `readConfigValue`).
+- **Wiggle**: worker fetches binned data from BigWig at the appropriate
+  zoom level and returns genomic-coord bins (`featurePositions` are BP
+  offsets, scores per-bin). The `bpPerPx` parameter to the worker only
+  picks which BigWig zoom level to read — output positions are always
+  genomic. Main thread does autoscale (aggregating across all visible
+  regions to compute global Y-axis domain) and renders.
+- **Alignments**: worker fetches reads only — no layout. All Y-row
+  packing, chain-connecting lines, and Flatbush spatial indices are
+  main-thread. Worker output is fully genomic.
+- **HiC / LD / variants**: worker returns genomic data; GPU shader
+  handles the zoom transform per frame.
+
+`isCacheValid` overrides exist on wiggle and canvas only — see
+`agent-docs/ARCHITECTURE.md` "Per-region zoom-staleness" for why each one
+is necessary (BigWig discrete zoom levels for wiggle; label-fit drift
+for canvas).
 
 ## GPU rendering (plugins/canvas, packages/core/src/gpu)
 

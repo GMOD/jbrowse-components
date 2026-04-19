@@ -102,14 +102,49 @@ change the upload autorun fires and re-uploads every region. "MobX is the
 cache." Plugins whose upload bytes depend on settings read those settings
 inside `upload` via `self.gpuProps()` — no separate invalidation token.
 
-**Per-region zoom-staleness** (`isCacheValid(regionNumber)`). When the
-worker bakes pixel positions into its output (wiggle bins, canvas glyph
-layout), drift between the fetch's `bpPerPx` and the current viewport
-`bpPerPx` makes per-region data stale. Plugins override the mixin's
-`isCacheValid` hook to compare them — `MultiRegionDisplayMixin`'s
-`FetchVisibleRegions` autorun calls it per region and refetches only the
-stale ones. Genomic-space outputs (alignments, HiC, LD, variants) leave
-the default `() => true` and never zoom-refetch.
+**Per-region zoom-staleness** (`isCacheValid(regionNumber)`). Worker
+output X positions are always BP offsets from `regionStart` — no plugin
+ships pixel coordinates across the worker boundary. The reason wiggle and
+canvas still need a zoom-staleness check is more subtle and differs per
+plugin:
+
+- **Wiggle**: BigWig stores discrete zoom levels (1bp, ~10bp, ~100bp,
+  ~1000bp summaries). The worker picks one based on `bpPerPx / resolution`.
+  Output bins are genomic but their *granularity* is fixed at fetch time.
+  When the user zooms in past 2x (`view.bpPerPx < loadedBpPerPx / 2`),
+  the loaded bins are too coarse for the new viewport and need refetching
+  at a finer zoom level. The reverse (zooming out) is fine — fine bins
+  downsample for free. The check is one-sided in
+  `LinearWiggleDisplay/model.ts`'s `isCacheValid`.
+
+- **Canvas**: worker output positions and heights are fully genomic and
+  config-driven — `rectPositions` are BP offsets, `rectHeights` is
+  `config.featureHeight * heightMultiplier`, child positions are looked up
+  from `feature.get('start')` in `collectRenderData`. Several
+  `bpPerPx`-derived fields on `FeatureLayout` (`x`, `width`,
+  `totalLayoutWidth`, `leftPadding`) are computed by the glyph layer but
+  never read downstream — these are dead-code holdovers from earlier
+  pixel-baked iterations and should be cleaned up. The actual
+  `bpPerPx`-dependent worker decisions are:
+  - `shouldRenderPeptideBackground(bpPerPx)` — amino-acid overlay only
+    fetched at fine zoom; crossing the threshold needs a refetch to
+    populate `aminoAcidOverlay`
+  - `maxFeatureDensity` density gate — early-returns `regionTooLarge`
+    when `featureCount / regionWidthPx > threshold`
+
+  These are *threshold* decisions, not continuous drift. The current 2x
+  `isCacheValid` is a coarse proxy for them. A cleaner architecture would
+  decouple amino-acid overlay loading from the main fetch (so crossing
+  the threshold loads just the overlay) and treat the density gate as a
+  one-shot decision (so panning at any zoom can't repeatedly trigger it).
+
+Plugins override the mixin's `isCacheValid` hook to express their own
+threshold; `MultiRegionDisplayMixin`'s `FetchVisibleRegions` autorun calls
+it per region and refetches only the stale ones. Alignments, HiC, LD,
+and variants leave the default `() => true` because their worker output
+contains no `bpPerPx`-dependent decisions at all (layout is fully
+main-thread for alignments; HiC/LD/variants render genomic data through a
+shader that handles the zoom transform).
 
 **Derived-layout pattern (canvas).** Canvas splits raw fetch results from
 laid-out data:
