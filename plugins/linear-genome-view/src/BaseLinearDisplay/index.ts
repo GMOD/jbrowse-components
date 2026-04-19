@@ -29,10 +29,6 @@ export {
 export { default as TrackHeightMixin } from './models/TrackHeightMixin.tsx'
 export { default as FeatureDensityMixin } from '../shared/FeatureDensityMixin.tsx'
 export {
-  type NonBlockCanvasDisplayMixinType,
-  default as NonBlockCanvasDisplayMixin,
-} from './models/NonBlockCanvasDisplayMixin.tsx'
-export {
   type ByteEstimateConfig,
   type FetchContext,
   type MultiRegionDisplayMixinType,
@@ -40,12 +36,14 @@ export {
   type RegionWithNumber as MultiRegionRegionWithNumber,
   default as MultiRegionDisplayMixin,
 } from './models/MultiRegionDisplayMixin.ts'
+export {
+  type StaleViewportRescaleMixinType,
+  default as StaleViewportRescaleMixin,
+} from './models/StaleViewportRescaleMixin.ts'
 export type { FeatureLabelData } from './components/util.ts'
 export { drawCanvasImageData } from './util.ts'
 export { getDisplayStr } from './models/util.ts'
 export { default as TooLargeMessage } from '../shared/TooLargeMessage.tsx'
 export { default as FloatingLegend } from './components/FloatingLegend.tsx'
-export { default as NonBlockCanvasDisplayComponent } from './components/NonBlockCanvasDisplayComponent.tsx'
-export type { NonBlockCanvasDisplayModel } from './components/NonBlockCanvasDisplayComponent.tsx'
 export { default as SVGLegend } from './SVGLegend.tsx'
 export { calculateSvgLegendWidth } from './calculateSvgLegendWidth.ts'

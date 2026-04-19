@@ -82,21 +82,15 @@ export interface StartGpuBackendAutorunLifecycleArgs<
 
   /**
    * Issues the draw call(s) for all visible blocks using the current render
-   * state.
+   * state. Only invoked once at least one region has uploaded (or when
+   * `uploads` is empty, e.g. an aggregator view with no per-region data of
+   * its own).
    */
   render: (
     backend: BackendType,
     blocks: RenderBlock[],
     state: RenderStateType,
   ) => void
-
-  /**
-   * Optional post-pass hook. Fires after every upload that commits data;
-   * the flag is `true` when a region was uploaded this fire. Per-key
-   * callers (wiggle's domain gate, mixin's markCanvasDrawn) must be
-   * idempotent because this fires per region, not once per pass.
-   */
-  onAfterCommit?: (didHaveUploadedRegions: boolean) => void
 }
 
 /**
@@ -119,8 +113,7 @@ export interface StartGpuBackendAutorunLifecycleArgs<
 export function startGpuBackendAutorunLifecycle<BackendType, RenderStateType>(
   args: StartGpuBackendAutorunLifecycleArgs<BackendType, RenderStateType>,
 ): GpuBackendLifecycleHandle {
-  const { backend, uploads, renderBlocks, renderState, render, onAfterCommit } =
-    args
+  const { backend, uploads, renderBlocks, renderState, render } = args
 
   const uploadSignal = observable.box(0, { deep: false })
   const bumpUploadSignal = action(() => {
@@ -128,6 +121,10 @@ export function startGpuBackendAutorunLifecycle<BackendType, RenderStateType>(
   })
   let lastRenderBlocks: RenderBlock[] = []
   let lastRenderState: RenderStateType | undefined
+  // Suppresses initial render passes that would draw an empty canvas
+  // before any region's bytes are on the GPU. Aggregator lifecycles with
+  // no per-region uploads short-circuit this gate.
+  let hasUploadedAny = uploads.length === 0
 
   const perUploadDisposers = uploads.map(u => {
     const perKeyDisposers = new Map<number, () => void>()
@@ -153,8 +150,8 @@ export function startGpuBackendAutorunLifecycle<BackendType, RenderStateType>(
               return
             }
             u.upload(backend, k, data)
+            hasUploadedAny = true
             bumpUploadSignal()
-            onAfterCommit?.(true)
           })
           perKeyDisposers.set(k, innerDispose)
         }
@@ -173,10 +170,6 @@ export function startGpuBackendAutorunLifecycle<BackendType, RenderStateType>(
         activeKeys.push(k)
       }
       u.prune?.(backend, activeKeys)
-
-      if (currentKeys.size === 0) {
-        onAfterCommit?.(false)
-      }
     })
 
     return () => {
@@ -194,7 +187,7 @@ export function startGpuBackendAutorunLifecycle<BackendType, RenderStateType>(
     const state = renderState()
     lastRenderBlocks = blocks
     lastRenderState = state
-    if (state !== undefined) {
+    if (state !== undefined && hasUploadedAny) {
       render(backend, blocks, state)
     }
   })
@@ -212,7 +205,7 @@ export function startGpuBackendAutorunLifecycle<BackendType, RenderStateType>(
       }
     },
     renderNow() {
-      if (isDisposed || lastRenderState === undefined) {
+      if (isDisposed || lastRenderState === undefined || !hasUploadedAny) {
         return
       }
       render(backend, lastRenderBlocks, lastRenderState)

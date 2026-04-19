@@ -24,10 +24,13 @@ import type { GpuBackendLifecycleHandle } from './gpuBackendLifecycleHandle.ts'
  * Plugins call `self.startMultiRegionGpuLifecycle({...})` or
  * `self.startSingleDataGpuLifecycle({...})` in their own
  * `startGpuBackendLifecycle(backend)` action. The wrapper starts the
- * underlying utility, auto-wires `markCanvasDrawn` onto the commit hook
- * (unless the plugin supplies its own `onAfterCommit`), and assigns the
- * returned handle into the slot. The hand-off is complete in one call —
- * nothing else leaks into the plugin.
+ * underlying utility, wraps the plugin's `render` to fire
+ * `markCanvasDrawn` after each draw call, and assigns the returned handle
+ * into the slot. Because each util only calls `render` once data is
+ * actually on the GPU (multi-region: ≥1 region uploaded; single-data:
+ * every entry has data), `canvasDrawn` flips precisely when the canvas
+ * holds real pixels — plugins gate visibility by returning `undefined`
+ * from `renderState` (see wiggle's domain gate).
  */
 export function GpuBackendLifecycleSlotMixin() {
   return types
@@ -70,17 +73,14 @@ export function GpuBackendLifecycleSlotMixin() {
       startMultiRegionGpuLifecycle<BackendType, RenderStateType>(
         args: StartGpuBackendAutorunLifecycleArgs<BackendType, RenderStateType>,
       ) {
-        const userOnAfterCommit = args.onAfterCommit
+        const userRender = args.render
         self.assignGpuBackendLifecycleHandle(
           startGpuBackendAutorunLifecycle<BackendType, RenderStateType>({
             ...args,
-            onAfterCommit:
-              userOnAfterCommit ||
-              (hadData => {
-                if (hadData) {
-                  self.markCanvasDrawn()
-                }
-              }),
+            render: (b, blocks, state) => {
+              userRender(b, blocks, state)
+              self.markCanvasDrawn()
+            },
           }),
         )
       },
@@ -90,20 +90,17 @@ export function GpuBackendLifecycleSlotMixin() {
           RenderStateType
         >,
       ) {
-        const userOnAfterCommit = args.onAfterCommit
+        const userRender = args.render
         self.assignGpuBackendLifecycleHandle(
           startGpuSingleDataBackendAutorunLifecycle<
             BackendType,
             RenderStateType
           >({
             ...args,
-            onAfterCommit:
-              userOnAfterCommit ||
-              (ready => {
-                if (ready) {
-                  self.markCanvasDrawn()
-                }
-              }),
+            render: (b, state) => {
+              userRender(b, state)
+              self.markCanvasDrawn()
+            },
           }),
         )
       },

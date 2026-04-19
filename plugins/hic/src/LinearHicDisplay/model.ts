@@ -2,11 +2,16 @@ import type React from 'react'
 
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { getContainingView } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
+import {
+  getContainingView,
+  getRpcSessionId,
+  getSession,
+} from '@jbrowse/core/util'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   ConfigOverrideMixin,
   MultiRegionDisplayMixin,
+  StaleViewportRescaleMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
@@ -46,6 +51,7 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
+      StaleViewportRescaleMixin(),
       ConfigOverrideMixin(),
       types.model({
         type: types.literal('LinearHicDisplay'),
@@ -61,18 +67,6 @@ export default function stateModelFactory(
        * #volatile
        */
       rpcData: null as HicDataResult | null,
-      /**
-       * #volatile
-       */
-      statusMessage: undefined as string | undefined,
-      /**
-       * #volatile
-       */
-      lastDrawnOffsetPx: undefined as number | undefined,
-      /**
-       * #volatile
-       */
-      lastDrawnBpPerPx: undefined as number | undefined,
       /**
        * #volatile
        */
@@ -107,15 +101,6 @@ export default function stateModelFactory(
       },
       get rendererTypeName() {
         return 'HicRenderer'
-      },
-      get drawn() {
-        return !!self.rpcData
-      },
-      get fullyDrawn() {
-        return !!self.rpcData
-      },
-      get loading() {
-        return self.isLoading
       },
       get flatbush() {
         return self.rpcData?.flatbush
@@ -155,14 +140,7 @@ export default function stateModelFactory(
         if (!data) {
           return undefined
         }
-        const scale =
-          self.lastDrawnBpPerPx !== undefined
-            ? self.lastDrawnBpPerPx / view.bpPerPx
-            : 1
-        const offsetX =
-          self.lastDrawnOffsetPx !== undefined
-            ? self.lastDrawnOffsetPx * scale - view.offsetPx
-            : 0
+        const { scale, translateX } = self.viewportTransform(view)
         return {
           binWidth: data.binWidth,
           yScalar: data.yScalar,
@@ -171,7 +149,7 @@ export default function stateModelFactory(
           maxScore: data.maxScore,
           useLogScale: self.useLogScale,
           viewScale: scale,
-          viewOffsetX: offsetX,
+          viewOffsetX: translateX,
         }
       },
 
@@ -246,30 +224,6 @@ export default function stateModelFactory(
             b.render(state)
           },
         })
-      },
-      /**
-       * #action
-       */
-      setStatusMessage(msg?: string) {
-        self.statusMessage = msg
-      },
-      /**
-       * #action
-       */
-      setLastDrawnOffsetPx(px: number) {
-        self.lastDrawnOffsetPx = px
-      },
-      /**
-       * #action
-       */
-      setLastDrawnBpPerPx(bpPerPx: number) {
-        self.lastDrawnBpPerPx = bpPerPx
-      },
-      /**
-       * #action
-       */
-      reload() {
-        self.error = undefined
       },
       /**
        * #action
@@ -447,6 +401,61 @@ export default function stateModelFactory(
       }
     })
     .actions(self => ({
+      /**
+       * #action
+       * Re-fetches contact matrix for the current viewport. Both the
+       * autorun (in `afterAttach`) and `reload()` invoke this directly.
+       */
+      performHicFetch() {
+        if (self.isMinimized) {
+          return
+        }
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (!view.initialized) {
+          return
+        }
+        const regions = view.dynamicBlocks.contentBlocks
+        if (!regions.length) {
+          return
+        }
+        const { bpPerPx } = view
+        const { adapterConfig } = self
+        self.withFetchLifecycle([], async ctx => {
+          const { rpcManager } = getSession(self)
+          const result = await rpcManager.call(
+            getRpcSessionId(self),
+            'RenderHicData',
+            {
+              adapterConfig,
+              regions: [...regions],
+              bpPerPx,
+              ...self.rpcProps,
+              stopToken: ctx.stopToken,
+            },
+            {
+              statusCallback: (msg: string) => {
+                if (isAlive(self)) {
+                  self.setStatusMessage(msg)
+                }
+              },
+            },
+          )
+          if (ctx.isStale()) {
+            return
+          }
+          self.setRpcData(result)
+          self.setLastDrawnViewport(view.offsetPx, view.bpPerPx)
+        })
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      reload() {
+        self.setError(undefined)
+        self.performHicFetch()
+      },
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {

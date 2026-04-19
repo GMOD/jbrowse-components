@@ -272,9 +272,8 @@ const LDCanvas = observer(function LDCanvas({
     showRecombination,
     recombinationZoneHeight,
     snps,
-    lastDrawnOffsetPx,
     signedLD,
-    loading,
+    isLoading,
   } = model
 
   const triangleHeight = width / 2
@@ -307,14 +306,8 @@ const LDCanvas = observer(function LDCanvas({
       : undefined
 
   // Compute view transform for smooth zoom/scroll
-  const viewScale =
-    model.lastDrawnBpPerPx !== undefined
-      ? model.lastDrawnBpPerPx / view.bpPerPx
-      : 1
-  const viewOffsetX =
-    lastDrawnOffsetPx !== undefined
-      ? lastDrawnOffsetPx * viewScale - view.offsetPx
-      : 0
+  const { scale: viewScale, translateX: viewOffsetX } =
+    model.viewportTransform(view)
 
   useEffect(() => {
     if (
@@ -339,7 +332,7 @@ const LDCanvas = observer(function LDCanvas({
     (event: React.MouseEvent) => {
       const container = containerRef.current
       const data = model.rpcData
-      if (!container || !data || loading) {
+      if (!container || !data || isLoading) {
         setHoveredItem(undefined)
         setMousePosition(undefined)
         return
@@ -405,7 +398,7 @@ const LDCanvas = observer(function LDCanvas({
       effectiveLineZoneHeight,
       viewScale,
       viewOffsetX,
-      loading,
+      isLoading,
       snps,
     ],
   )

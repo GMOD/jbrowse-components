@@ -39,15 +39,10 @@ export interface StartGpuSingleDataBackendAutorunLifecycleArgs<
   renderState: () => RenderStateType | undefined
 
   /**
-   * Issues the draw call(s) for the current render state.
+   * Issues the draw call(s) for the current render state. Only invoked
+   * once every upload entry has data.
    */
   render: (backend: BackendType, state: RenderStateType) => void
-
-  /**
-   * Optional post-pass hook. Receives whether every upload has data
-   * currently on the GPU.
-   */
-  onAfterCommit?: (allHaveData: boolean) => void
 }
 
 /**
@@ -68,7 +63,6 @@ export function startGpuSingleDataBackendAutorunLifecycle<
   uploads,
   renderState,
   render,
-  onAfterCommit,
 }: StartGpuSingleDataBackendAutorunLifecycleArgs<
   BackendType,
   RenderStateType
@@ -99,7 +93,6 @@ export function startGpuSingleDataBackendAutorunLifecycle<
     if (state !== undefined && allPresent) {
       render(backend, state)
     }
-    onAfterCommit?.(allPresent)
   })
 
   let isDisposed = false

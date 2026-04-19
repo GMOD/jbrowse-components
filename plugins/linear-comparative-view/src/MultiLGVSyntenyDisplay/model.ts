@@ -443,9 +443,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           render: (b, _blocks, state) => {
             b.renderBlocks(state)
           },
-          onAfterCommit: () => {
-            self.markCanvasDrawn()
-          },
         })
       },
 

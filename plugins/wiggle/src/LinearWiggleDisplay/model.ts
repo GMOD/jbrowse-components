@@ -275,9 +275,13 @@ export default function stateModelFactory(
       },
 
       get renderState() {
+        const domain = this.domain
+        if (!domain) {
+          return undefined
+        }
         const view = getContainingView(self) as LGV
         return makeRenderState(
-          this.domain ?? [0, 1],
+          domain,
           this.scaleType,
           this.renderingType,
           view.trackWidthPx,
@@ -329,11 +333,6 @@ export default function stateModelFactory(
         self.loadedBpPerPx.clear()
       },
 
-      // Plugin-supplied `onAfterCommit` gates `markCanvasDrawn` on
-      // `self.domain` — the autoscale domain may not be resolved when the
-      // first per-region data arrives, and we must not claim "drawn" before
-      // an actual pixel is produced. Because an explicit onAfterCommit is
-      // given, the mixin wrapper skips its default markCanvasDrawn wiring.
       startGpuBackendLifecycle(backend: WiggleBackend) {
         self.startMultiRegionGpuLifecycle<WiggleBackend, WiggleGPURenderState>({
           backend,
@@ -360,17 +359,10 @@ export default function stateModelFactory(
               },
             },
           ],
-          // Suppress drawing while there's no domain yet — empty blocks
-          // produce a canvas-clearing render pass.
-          renderBlocks: () => (self.domain ? self.renderBlocks : []),
+          renderBlocks: () => self.renderBlocks,
           renderState: () => self.renderState,
           render: (b, blocks, state) => {
             b.renderBlocks(blocks, state)
-          },
-          onAfterCommit: hadUploads => {
-            if (hadUploads && self.domain) {
-              self.markCanvasDrawn()
-            }
           },
         })
       },

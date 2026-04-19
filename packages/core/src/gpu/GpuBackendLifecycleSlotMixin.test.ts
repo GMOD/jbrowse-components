@@ -66,35 +66,41 @@ test('startMultiRegionGpuLifecycle marks canvas drawn on commits with data', () 
   model.stopGpuBackendLifecycle()
 })
 
-test('explicit onAfterCommit suppresses default markCanvasDrawn wiring', () => {
+test('plugins suppress markCanvasDrawn by gating renderState to undefined', () => {
   const model = TestModel.create()
   const data = observable.map<number, string>(undefined, { deep: false })
+  const ready = observable.box(false)
   const backend: FakeBackend = { uploads: [], renders: 0 }
-  let userCalls = 0
 
   model.startMultiRegionGpuLifecycle<FakeBackend, number>({
     backend,
     uploads: [
       {
         getData: () => new Map(data),
-        upload: () => {},
+        upload: (b, n) => b.uploads.push(n),
         prune: () => {},
       },
     ],
-    renderBlocks: () => [],
-    renderState: () => 1,
-    render: () => {},
-    // Plugin opts out of default mark; gates manually.
-    onAfterCommit: () => {
-      userCalls++
+    renderBlocks: () => [block],
+    renderState: () => (ready.get() ? 1 : undefined),
+    render: b => {
+      b.renders++
     },
   })
 
   runInAction(() => {
     data.set(0, 'a')
   })
-  expect(userCalls).toBeGreaterThan(0)
+  // Upload happened, but renderState is undefined → render skipped → not drawn.
+  expect(backend.uploads).toEqual([0])
+  expect(backend.renders).toBe(0)
   expect(model.canvasDrawn).toBe(false)
+
+  runInAction(() => {
+    ready.set(true)
+  })
+  expect(backend.renders).toBe(1)
+  expect(model.canvasDrawn).toBe(true)
 
   model.stopGpuBackendLifecycle()
 })

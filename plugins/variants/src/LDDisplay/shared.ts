@@ -1,13 +1,20 @@
 import type React from 'react'
 
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { getContainingView, getSession } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
 import {
+  getContainingView,
+  getRpcSessionId,
+  getSession,
+} from '@jbrowse/core/util'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  AUTO_FORCE_LOAD_BP,
   ConfigOverrideMixin,
   MultiRegionDisplayMixin,
+  StaleViewportRescaleMixin,
   TrackHeightMixin,
+  getDisplayStr,
   migrateOldSettingSnapshots,
 } from '@jbrowse/plugin-linear-genome-view'
 
@@ -42,6 +49,7 @@ export default function sharedModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
+      StaleViewportRescaleMixin(),
       ConfigOverrideMixin(),
       types.model({
         configuration: ConfigurationReference(configSchema),
@@ -58,46 +66,13 @@ export default function sharedModelFactory(
        * #volatile
        */
       rpcData: null as LDDataResult | null,
-      /**
-       * #volatile
-       */
-      statusMessage: undefined as string | undefined,
-      /**
-       * #volatile
-       */
-      lastDrawnOffsetPx: undefined as number | undefined,
-      /**
-       * #volatile
-       */
-      lastDrawnBpPerPx: undefined as number | undefined,
     }))
     .actions(self => ({
       setRpcData(data: LDDataResult | null) {
         self.rpcData = data
       },
-      /**
-       * #action
-       */
-      setStatusMessage(msg?: string) {
-        self.statusMessage = msg
-      },
-      /**
-       * #action
-       */
-      setLastDrawnOffsetPx(px: number) {
-        self.lastDrawnOffsetPx = px
-      },
-      /**
-       * #action
-       */
-      setLastDrawnBpPerPx(bpPerPx: number) {
-        self.lastDrawnBpPerPx = bpPerPx
-      },
       setLineZoneHeight(n: number) {
         self.setOverride('lineZoneHeight', Math.max(0, n))
-      },
-      reload() {
-        self.error = undefined
       },
       setMafFilter(arg: number) {
         self.setOverride('minorAlleleFrequencyFilter', arg)
@@ -152,12 +127,6 @@ export default function sharedModelFactory(
       },
     }))
     .views(self => ({
-      get loading() {
-        return self.isLoading
-      },
-      get blockType() {
-        return 'dynamicBlocks'
-      },
       /**
        * #getter
        */
@@ -169,12 +138,6 @@ export default function sharedModelFactory(
        */
       get rendererTypeName() {
         return 'LDRenderer'
-      },
-      get drawn() {
-        return !!self.rpcData
-      },
-      get fullyDrawn() {
-        return !!self.rpcData
       },
       get minorAlleleFrequencyFilter() {
         return self.getConfWithOverride<number>('minorAlleleFrequencyFilter')
@@ -550,6 +513,89 @@ export default function sharedModelFactory(
       }
     })
     .actions(self => ({
+      /**
+       * #action
+       * Re-fetches LD matrix for the current viewport. Both the autorun
+       * (in `afterAttach`) and `reload()` invoke this directly.
+       */
+      performLDFetch() {
+        if (self.isMinimized) {
+          return
+        }
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (!view.initialized) {
+          return
+        }
+        const regions = view.dynamicBlocks.contentBlocks
+        if (
+          !self.showLDTriangle ||
+          self.regionTooLarge ||
+          !regions.length
+        ) {
+          return
+        }
+        const { bpPerPx, visibleBp } = view
+        const { adapterConfig } = self
+        self.withFetchLifecycle([], async ctx => {
+          const { rpcManager } = getSession(self)
+          const sessionId = getRpcSessionId(self)
+          const stats = (await rpcManager.call(
+            sessionId,
+            'CoreGetFeatureDensityStats',
+            { regions: [...regions], adapterConfig },
+          )) as { bytes?: number; fetchSizeLimit?: number }
+          if (ctx.isStale()) {
+            return
+          }
+          self.setFeatureDensityStats(stats)
+          if (visibleBp >= AUTO_FORCE_LOAD_BP) {
+            const fetchSizeLimit =
+              stats.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
+            const limit = self.userByteSizeLimit || fetchSizeLimit
+            if (stats.bytes && stats.bytes > limit) {
+              self.setRegionTooLarge(
+                true,
+                `Requested too much data (${getDisplayStr(stats.bytes)})`,
+              )
+              return
+            }
+          }
+          self.setRegionTooLarge(false)
+
+          const result = await rpcManager.call(
+            sessionId,
+            'RenderLDData',
+            {
+              adapterConfig,
+              regions: [...regions],
+              bpPerPx,
+              ...self.rpcProps,
+              stopToken: ctx.stopToken,
+            },
+            {
+              statusCallback: (msg: string) => {
+                if (isAlive(self)) {
+                  self.setStatusMessage(msg)
+                }
+              },
+            },
+          )
+          if (ctx.isStale()) {
+            return
+          }
+          self.setRpcData(result)
+          self.setLastDrawnViewport(view.offsetPx, view.bpPerPx)
+        })
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      reload() {
+        self.setError(undefined)
+        self.performLDFetch()
+      },
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {

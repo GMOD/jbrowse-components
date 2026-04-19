@@ -16,7 +16,6 @@ import {
   isSessionModelWithWidgets,
   measureText,
 } from '@jbrowse/core/util'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -29,7 +28,7 @@ import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { autorun, observable, untracked } from 'mobx'
+import { autorun, observable } from 'mobx'
 
 import { computeLaidOutData } from './layout.ts'
 
@@ -380,23 +379,6 @@ export default function baseStateModelFactory(
           return map
         },
 
-        // Refetch trigger (not layout): worker output's pixel-space arrays
-        // were fetched at a specific bpPerPx, so when the viewport has
-        // drifted 2x off that scale we ask for fresh data from the worker.
-        get needsRefetchForZoom() {
-          const view = getContainingView(self) as LGV
-          if (!view.initialized || self.fetchedBpPerPxMap.size === 0) {
-            return false
-          }
-          for (const fetchedBpPerPx of self.fetchedBpPerPxMap.values()) {
-            const ratio = view.bpPerPx / fetchedBpPerPx
-            if (ratio > 2 || ratio < 0.5) {
-              return true
-            }
-          }
-          return false
-        },
-
         getFeatureById(featureId: string): FlatbushItem | undefined {
           for (const data of this.rpcDataMap.values()) {
             const found = data.flatbushItems.find(
@@ -651,16 +633,19 @@ export default function baseStateModelFactory(
           })()
         },
 
-        softReset() {
-          if (self.renderingStopToken) {
-            stopStopToken(self.renderingStopToken)
-            self.renderingStopToken = undefined
+        // Worker output is pixel-baked at the request's bpPerPx (feature
+        // heights, glyph positions). Once the viewport has drifted ≥2x
+        // off that scale, the per-region data is stale; the mixin's
+        // FetchVisibleRegions autorun uses this hook to refetch only the
+        // affected regions.
+        isCacheValid(regionNumber: number) {
+          const fetchedBpPerPx = self.fetchedBpPerPxMap.get(regionNumber)
+          if (fetchedBpPerPx === undefined) {
+            return true
           }
-          self.error = undefined
-          self.loadedRegions.clear()
-          self.fetchedBpPerPxMap.clear()
-          self.setRegionTooLarge(false)
-          self.fetchGeneration++
+          const view = getContainingView(self) as LGV
+          const ratio = view.bpPerPx / fetchedBpPerPx
+          return ratio <= 2 && ratio >= 0.5
         },
       }))
       .actions(self => {
@@ -714,39 +699,14 @@ export default function baseStateModelFactory(
           )
         }
 
-        function fetchAllRegions() {
-          const view = getContainingView(self) as LinearGenomeViewModel
-          self.onFetchNeeded(view.bufferedVisibleRegions)
-        }
         return {
-          refetchForCurrentView() {
-            const view = getContainingView(self) as LinearGenomeViewModel
-            if (!view.initialized) {
-              return
-            }
-            self.softReset()
-
-            fetchAllRegions()
-          },
-
           async reload() {
             const view = getContainingView(self) as LinearGenomeViewModel
             if (!view.initialized) {
               return
             }
             self.clearAllRpcData()
-
-            fetchAllRegions()
-          },
-
-          beforeFetchCheck() {
-            if (untracked(() => self.needsRefetchForZoom)) {
-              self.softReset()
-            }
-          },
-
-          getByteEstimateConfig() {
-            return null
+            self.onFetchNeeded(view.bufferedVisibleRegions)
           },
 
           onFetchNeeded(needed: RegionWithNumber[]) {
@@ -809,6 +769,7 @@ export default function baseStateModelFactory(
                 { name: 'CanvasAutoHeight' },
               ),
             )
+
           },
         }
       })

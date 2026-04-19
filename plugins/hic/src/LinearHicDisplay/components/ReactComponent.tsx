@@ -97,8 +97,6 @@ const HicCanvas = observer(function HicCanvas({
     maxScore,
     colorScheme,
     useLogScale,
-    lastDrawnOffsetPx,
-    lastDrawnBpPerPx,
   } = model
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -119,12 +117,8 @@ const HicCanvas = observer(function HicCanvas({
   const { canvasRef, error, retry } = useGpuModelLifecycle(HicRenderer, model)
 
   // View transform for hit-test math — mirrors renderState on the model.
-  const viewScale =
-    lastDrawnBpPerPx !== undefined ? lastDrawnBpPerPx / view.bpPerPx : 1
-  const viewOffsetX =
-    lastDrawnOffsetPx !== undefined
-      ? lastDrawnOffsetPx * viewScale - view.offsetPx
-      : 0
+  const { scale: viewScale, translateX: viewOffsetX } =
+    model.viewportTransform(view)
 
   const flatbushIndex = useMemo(
     () => (flatbush ? Flatbush.from(flatbush) : null),

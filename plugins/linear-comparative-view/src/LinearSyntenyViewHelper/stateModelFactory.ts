@@ -219,7 +219,6 @@ export function linearSyntenyViewHelperModelFactory(
               render: (b, _blocks, state) => {
                 b.resize(self.parentView.views[0]!.width, self.effectiveHeight)
                 b.render(state)
-                self.markCanvasDrawn()
               },
             },
           )

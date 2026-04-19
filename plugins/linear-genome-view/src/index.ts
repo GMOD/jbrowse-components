@@ -97,9 +97,8 @@ export {
   FeatureDensityMixin,
   FloatingLegend,
   MultiRegionDisplayMixin,
-  NonBlockCanvasDisplayComponent,
-  NonBlockCanvasDisplayMixin,
   SVGLegend,
+  StaleViewportRescaleMixin,
   TooLargeMessage,
   TrackHeightMixin,
   baseLinearDisplayConfigSchema,
@@ -115,8 +114,7 @@ export type {
   MultiRegionDisplayMixinType,
   MultiRegionRegion,
   MultiRegionRegionWithNumber,
-  NonBlockCanvasDisplayMixinType,
-  NonBlockCanvasDisplayModel,
+  StaleViewportRescaleMixinType,
 } from './BaseLinearDisplay/index.ts'
 export {
   AUTO_FORCE_LOAD_BP,

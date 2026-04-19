@@ -344,9 +344,13 @@ export default function stateModelFactory(
       },
 
       get renderState() {
+        const domain = this.domain
+        if (!domain || this.sources.length === 0) {
+          return undefined
+        }
         const view = getContainingView(self) as LGV
         return makeRenderState(
-          this.domain ?? [0, 1],
+          domain,
           this.scaleType,
           this.renderingType,
           view.trackWidthPx,
@@ -437,19 +441,10 @@ export default function stateModelFactory(
               },
             },
           ],
-          renderBlocks: () =>
-            self.domain && self.sources.length > 0 ? self.renderBlocks : [],
+          renderBlocks: () => self.renderBlocks,
           renderState: () => self.renderState,
           render: (b, blocks, state) => {
             b.renderBlocks(blocks, state)
-          },
-          // Gated on `self.domain` because autoscale may not be resolved
-          // when per-region data first arrives; the wrapper's default
-          // markCanvasDrawn would be too eager.
-          onAfterCommit: hadUploads => {
-            if (hadUploads && self.domain) {
-              self.markCanvasDrawn()
-            }
           },
         })
       },

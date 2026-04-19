@@ -437,7 +437,6 @@ export default function stateModelFactory(pm: PluginManager) {
               render: (b, _blocks, state) => {
                 b.resize(self.viewWidth, self.viewHeight)
                 b.render(state)
-                self.markCanvasDrawn()
               },
             },
           )

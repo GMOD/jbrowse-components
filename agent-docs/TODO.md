@@ -8,12 +8,6 @@ this file is the categorized backlog.
 
 ## Architecture follow-ups
 
-**`renderProps() { notReady: true }` → explicit opt-out.** Add
-`useBlockRenderer: boolean` to the base display model; GPU-family displays
-override to `false` via the mixin. Update `svgExportUtil.ts`,
-`SVGLinearGenomeView.tsx`, `serverSideRenderedBlock.ts`; delete the misleading
-`renderProps()` stub from the mixin.
-
 **Generalize ADR-006 (preserve stale data across refetch) where safe.**
 Only viewport-agnostic display types should adopt it; viewport-baked
 types keep clearing (the flash is correctness, not UX). Per ADR-006:
@@ -93,10 +87,8 @@ Post-synteny.
 **`regionNumber` → `displayedRegionIndex`.** Mechanical rename (~550 sites,
 73 files). Do **last**.
 
-**Dead code sweep (after synteny).** Delete `uploadChangedRegions.ts`,
-`uploadRegionDataToGPU`, `pruneRegionMap`, unused `renderProps()` on GPU
-displays, `dataVersion` counter. Grep:
-`uploadChangedRegions|uploadRegionDataToGPU|pruneRegionMap`.
+**Dead code sweep (after synteny).** `pruneRegionMap` is still actively
+used by 8 backends — keep it.
 
 **Structural `RenderSvgModel`.** Matrix + variants use the structural form;
 wiggle / alignments / canvas still import the MST type. Mechanical conversion;
@@ -125,15 +117,6 @@ to refresh):
   (same shape canvas already uses). Upload autorun reads the derived
   view; no imperative writeback. Deletes the sortLayout autorun and its
   untracked block. The bigger S1-alignments work — largest payoff.
-
-- `plugins/canvas/.../baseModel.ts:743` (`beforeFetchCheck` reads
-  `needsRefetchForZoom` via untracked).
-  *Fix:* `beforeFetchCheck` is called from inside the mixin's fetch
-  autorun, and a tracked read here would retrigger it on every bpPerPx
-  change. Either make `needsRefetchForZoom` a plain function (not a
-  cached view) so the read is naturally non-reactive, or move the
-  zoom-drift check into the mixin's autorun so it participates in the
-  natural tracking set. Small, contained.
 
 - `plugins/linear-genome-view/.../MultiRegionDisplayMixin.ts:301, 334`
   (fetch autorun reads `isLoading` + `loadedRegions` via untracked).
@@ -164,7 +147,6 @@ Suggested order:
 - Cluster the "monolithic fetch autorun" pattern: HiC + LD + probably
   multi-sample variants at the same time (they all share the shape).
   Drops 4 untracked calls with one refactor.
-- Canvas `beforeFetchCheck` is a 20-line fix; do next.
 - Alignments sortLayout is the big one — unlocks deleting 2 autoruns
   and the untracked block there, and aligns alignments with canvas's
   derived-layout model. Do when ready for a contained PR on the

@@ -11,7 +11,6 @@ import { toRgb } from './shaders/colors.ts'
 import { fillColor } from '../../shared/color.ts'
 
 import type { CigarHitResult, SashimiArcHitResult } from './hitTesting'
-import type { AlignmentsBackend } from './rendererTypes.ts'
 import type { ColorPalette } from './shaders/colors.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
@@ -433,36 +432,3 @@ export function formatFeatureTooltip(
   return undefined
 }
 
-/**
- * Upload per-region pileup data to the backend, skipping unchanged regions.
- * Returns the max Y across all active regions for layout.
- */
-export function uploadRegionDataToGPU(
-  renderer: AlignmentsBackend,
-  rpcDataMap: Map<number, PileupDataResult>,
-  lastUploaded: Map<number, PileupDataResult>,
-) {
-  let maxYVal = 0
-  const activeRegions: number[] = []
-  for (const [regionNumber, data] of rpcDataMap) {
-    if (data.numReads === 0) {
-      lastUploaded.delete(regionNumber)
-      continue
-    }
-    activeRegions.push(regionNumber)
-    if (lastUploaded.get(regionNumber) !== data) {
-      renderer.uploadRegion(regionNumber, data)
-      lastUploaded.set(regionNumber, data)
-    }
-    if (data.maxY > maxYVal) {
-      maxYVal = data.maxY
-    }
-  }
-  for (const key of lastUploaded.keys()) {
-    if (!rpcDataMap.has(key)) {
-      lastUploaded.delete(key)
-    }
-  }
-  renderer.pruneRegions(activeRegions)
-  return maxYVal
-}

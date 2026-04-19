@@ -10,7 +10,7 @@ export interface CanvasDisplayModel {
   error?: unknown
   regionTooLarge?: boolean
   regionCannotBeRendered: () => React.ReactElement | null
-  loading: boolean
+  isLoading: boolean
   statusMessage?: string
 }
 
@@ -60,7 +60,7 @@ const DataDisplay = observer(function DataDisplay({
   return (
     <div>
       {children}
-      {model.loading ? <LoadingBar model={model} /> : null}
+      {model.isLoading ? <LoadingBar model={model} /> : null}
     </div>
   )
 })

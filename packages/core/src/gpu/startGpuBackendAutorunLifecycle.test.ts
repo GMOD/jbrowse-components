@@ -202,15 +202,11 @@ test('skips render when renderState returns undefined', () => {
   const backend = makeBackend()
   const stateHolder = observable.box<number | undefined>(undefined)
 
+  // uploads: [] short-circuits the "wait for first upload" gate so this
+  // test isolates the renderState-undefined behavior.
   const handle = startGpuBackendAutorunLifecycle<FakeBackend, number>({
     backend,
-    uploads: [
-      {
-        getData: () => new Map(),
-        upload: () => {},
-        prune: () => {},
-      },
-    ],
+    uploads: [],
     renderBlocks: () => [],
     renderState: () => stateHolder.get(),
     render: (b, blocks, state) => b.renders.push({ blocks, state }),

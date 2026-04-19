@@ -43,7 +43,6 @@
     "./gpu/blockClipUtils": "./src/gpu/blockClipUtils.ts",
     "./gpu/pruneRegionMap": "./src/gpu/pruneRegionMap.ts",
     "./gpu/renderBlock": "./src/gpu/renderBlock.ts",
-    "./gpu/uploadChangedRegions": "./src/gpu/uploadChangedRegions.ts",
     "./gpu/startGpuBackendAutorunLifecycle": "./src/gpu/startGpuBackendAutorunLifecycle.ts",
     "./gpu/startGpuSingleDataBackendAutorunLifecycle": "./src/gpu/startGpuSingleDataBackendAutorunLifecycle.ts",
     "./gpu/GpuBackendLifecycleSlotMixin": "./src/gpu/GpuBackendLifecycleSlotMixin.ts",
@@ -283,10 +282,6 @@
       "./gpu/renderBlock": {
         "types": "./esm/gpu/renderBlock.d.ts",
         "import": "./esm/gpu/renderBlock.js"
-      },
-      "./gpu/uploadChangedRegions": {
-        "types": "./esm/gpu/uploadChangedRegions.d.ts",
-        "import": "./esm/gpu/uploadChangedRegions.js"
       },
       "./gpu/startGpuBackendAutorunLifecycle": {
         "types": "./esm/gpu/startGpuBackendAutorunLifecycle.d.ts",
@@ -775,9 +770,6 @@
         ],
         "gpu/renderBlock": [
           "esm/gpu/renderBlock.d.ts"
-        ],
-        "gpu/uploadChangedRegions": [
-          "esm/gpu/uploadChangedRegions.d.ts"
         ],
         "gpu/canvas2dUtils": [
           "esm/gpu/canvas2dUtils.d.ts"

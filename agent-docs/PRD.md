@@ -120,8 +120,10 @@ These are correctness contracts. Violating them produces silent bugs.
   (duck-typed) interfaces instead.
 - **Shared backend (dotplot, synteny PR-B) needs per-key delete, not prune.**
   An active-set prune would wipe sibling displays' data.
-- **Split upload/render utils need `onAfterCommit` → `renderNow`.** Otherwise
-  the first paint races the first upload.
+- **Render fires only after data is on the GPU.** Multi-region waits for
+  ≥1 upload; single-data waits for every entry; `renderState` returning
+  `undefined` suppresses both. `markCanvasDrawn` is wired post-render by
+  the slot mixin — never call it inline from plugin code.
 - **`readConfObject` / `getConf` are hot-path traversals.** Cache outside
   loops. Prefer `getConfSnapshot` + `readConfigValue` on plain objects at the
   rendering layer (see `CONFIG_PATTERN.md`).

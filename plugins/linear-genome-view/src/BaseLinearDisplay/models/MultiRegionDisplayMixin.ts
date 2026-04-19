@@ -51,6 +51,7 @@ export default function MultiRegionDisplayMixin() {
       error: undefined as unknown,
       renderingStopToken: undefined as StopToken | undefined,
       fetchGeneration: 0,
+      statusMessage: undefined as string | undefined,
     }))
     .views(self => ({
       get isLoading() {
@@ -131,7 +132,7 @@ export default function MultiRegionDisplayMixin() {
         self.fetchGeneration++
       },
     }))
-    .actions(() => ({
+    .actions(self => ({
       // Overridable hooks — subclasses override these
       onFetchNeeded(_needed: RegionWithNumber[]) {
         // no-op base
@@ -141,12 +142,8 @@ export default function MultiRegionDisplayMixin() {
         return true
       },
 
-      beforeFetchCheck() {
-        // no-op base
-      },
-
-      setStatusMessage(_msg?: string) {
-        // no-op base — subclasses override (e.g. NonBlockCanvasDisplayMixin)
+      setStatusMessage(msg?: string) {
+        self.statusMessage = msg
       },
 
       getByteEstimateConfig(): ByteEstimateConfig | null {
@@ -295,8 +292,6 @@ export default function MultiRegionDisplayMixin() {
                 if (untracked(() => self.isLoading)) {
                   return
                 }
-
-                self.beforeFetchCheck()
 
                 const { assemblyManager } = getSession(self)
                 const trackAssemblyNames = getTrackAssemblyNames(

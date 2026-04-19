@@ -44,14 +44,8 @@ function getGenomicX(
 }
 
 function getViewTransform(model: SharedLDModel, view: LinearGenomeViewModel) {
-  const viewScale =
-    model.lastDrawnBpPerPx !== undefined
-      ? model.lastDrawnBpPerPx / view.bpPerPx
-      : 1
-  const viewOffsetX =
-    model.lastDrawnOffsetPx !== undefined
-      ? model.lastDrawnOffsetPx * viewScale - view.offsetPx
-      : 0
+  const { scale: viewScale, translateX: viewOffsetX } =
+    model.viewportTransform(view)
   return { viewScale, viewOffsetX }
 }
 

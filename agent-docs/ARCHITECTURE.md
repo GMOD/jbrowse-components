@@ -84,11 +84,12 @@ self.startMultiRegionGpuLifecycle({
       deleteOne: (b, n) => b.deleteRegion(n), // optional — for shared backends
     },
   ],
-  renderBlocks: () => self.renderBlocks, // or gated: domain ? self.renderBlocks : []
+  renderBlocks: () => self.renderBlocks,
+  // Return undefined to suppress the render pass entirely (e.g. wiggle
+  // returns undefined until autoscale resolves `self.domain`). The slot
+  // mixin only fires markCanvasDrawn after a real `render()` call.
   renderState: () => self.renderState,
   render: (b, blocks, state) => b.renderBlocks(blocks, state),
-  // onAfterCommit: optional — only when default markCanvasDrawn isn't right.
-  // Wiggle uses this to gate the mark on self.domain.
 })
 ```
 
@@ -100,6 +101,15 @@ backend region slots (arcs share pileup's prune) can omit `prune`.
 change the upload autorun fires and re-uploads every region. "MobX is the
 cache." Plugins whose upload bytes depend on settings read those settings
 inside `upload` via `self.gpuProps()` — no separate invalidation token.
+
+**Per-region zoom-staleness** (`isCacheValid(regionNumber)`). When the
+worker bakes pixel positions into its output (wiggle bins, canvas glyph
+layout), drift between the fetch's `bpPerPx` and the current viewport
+`bpPerPx` makes per-region data stale. Plugins override the mixin's
+`isCacheValid` hook to compare them — `MultiRegionDisplayMixin`'s
+`FetchVisibleRegions` autorun calls it per region and refetches only the
+stale ones. Genomic-space outputs (alignments, HiC, LD, variants) leave
+the default `() => true` and never zoom-refetch.
 
 **Derived-layout pattern (canvas).** Canvas splits raw fetch results from
 laid-out data:
@@ -187,11 +197,14 @@ and by non-region GPU displays directly.
 | `setCanvasDrawn(val)` / `markCanvasDrawn()` | Idempotent — early-return when value unchanged.                                                  |
 | `stopGpuBackendLifecycle()`                 | Disposes the handle + clears the slot.                                                           |
 | `renderNow()`                               | Forwards to the handle's `renderNow`. Called from `useTabVisibilityRerender`.                    |
-| `startMultiRegionGpuLifecycle(args)`        | Wraps `startGpuBackendAutorunLifecycle` — auto-wires `markCanvasDrawn` post-commit.              |
-| `startSingleDataGpuLifecycle(args)`         | Wraps `startGpuSingleDataBackendAutorunLifecycle`.                                               |
+| `startMultiRegionGpuLifecycle(args)`        | Wraps `startGpuBackendAutorunLifecycle` — runs `markCanvasDrawn` after every plugin `render()`. |
+| `startSingleDataGpuLifecycle(args)`         | Wraps `startGpuSingleDataBackendAutorunLifecycle` — same post-render mark.                       |
 
-When a plugin passes its own `onAfterCommit`, the wrapper defers to it (no
-default mark). Wiggle uses this to gate `markCanvasDrawn` on `self.domain`.
+The util only invokes `render()` once data is on the GPU (multi-region:
+≥1 region uploaded; single-data: every entry has data) and `renderState`
+is defined. Plugins that need an additional gate (wiggle's autoscale
+domain) return `undefined` from `renderState` until ready — `render` is
+skipped, so `markCanvasDrawn` is not called.
 
 ### `MultiRegionDisplayMixin`
 
@@ -199,8 +212,22 @@ Every LGV-based display composes this; composes `GpuBackendLifecycleSlotMixin`
 internally. Provides cached `renderBlocks` (from `buildRenderBlocks`),
 `fullyDrawn = canvasDrawn && !isLoading`, the upload-identity contract on
 `setLoadedRegionForRegion`, a single `SettingsInvalidate` autorun that reads
-`void self.rpcProps` → `self.clearAllRpcData()`, and the
-`FetchVisibleRegions` autorun.
+`void self.rpcProps` → `self.clearAllRpcData()`, the `FetchVisibleRegions`
+autorun, and shared volatiles for `error` / `renderingStopToken` /
+`statusMessage`. The `withFetchLifecycle(needed, work)` action wraps a
+fetch with stop-token rotation, `isStale()` cancellation, and error
+handling — used both by per-region displays (alignments, wiggle, canvas,
+variants pileup) and global-data displays (HiC, LD).
+
+### `StaleViewportRescaleMixin`
+
+Composed by displays that hold a single global RPC result rather than
+per-region buffers (HiC, LD). Stores the `(offsetPx, bpPerPx)` of the
+last completed draw, and exposes `viewportTransform(view)` which returns
+`{ scale, translateX }` for the CSS / shader transform that keeps the
+stale canvas aligned with the live viewport while a fresh fetch is in
+flight. Per-region displays don't need this — the GPU shader's per-region
+uniforms handle the alignment.
 
 ---
 
@@ -224,10 +251,14 @@ change re-encodes the per-instance buffer but the worker output is unchanged;
 so it re-uploads without refetching. A `bicolorPivot` change *does* change
 worker output — that flows through `rpcProps` → refetch.
 
-HiC, LD, and multi-sample variants use a monolithic fetch autorun in
-`afterAttach.ts` (not `MultiRegionDisplayMixin`'s `FetchVisibleRegions`). The
-autorun reads `void self.rpcProps` once and spreads `...self.rpcProps` into
-the RPC call. The autorun running IS the refetch.
+HiC and LD don't iterate visible regions — they fetch one global payload
+per viewport. They expose a `performXxxFetch()` action containing the
+RPC body wrapped in `withFetchLifecycle`; an `afterAttach.ts` autorun
+calls it on viewport / `rpcProps` changes, and `reload()` calls it
+directly. There is no `fetchGeneration` retrigger — the autorun re-fires
+on natural observable changes, and explicit reload uses the action path.
+
+Multi-sample variants follows the same single-action pattern.
 
 Tested in `fetchAutorun.test.ts` under
 `plugins/{wiggle,canvas,alignments}/.../LinearWiggleDisplay|LinearBasicDisplay|LinearAlignmentsDisplay/`.
