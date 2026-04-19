@@ -777,9 +777,7 @@ export default function baseStateModelFactory(
                 return
               }
               applyFetchResults(
-                results.filter(
-                  (r): r is FetchResult => r !== 'regionTooLarge',
-                ),
+                results.filter((r): r is FetchResult => r !== 'regionTooLarge'),
               )
             })
           },

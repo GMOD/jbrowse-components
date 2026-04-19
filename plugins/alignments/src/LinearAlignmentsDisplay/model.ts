@@ -383,9 +383,8 @@ export default function stateModelFactory(
           if (!view.initialized) {
             return 0
           }
-          return computeVisibleMaxDepth(
-            view.dynamicBlocks.contentBlocks,
-            b => self.rpcDataMap.get(b.regionNumber!),
+          return computeVisibleMaxDepth(view.dynamicBlocks.contentBlocks, b =>
+            self.rpcDataMap.get(b.regionNumber!),
           )
         },
 

@@ -152,7 +152,10 @@ function makeSortedBy(pos: number, type = 'basePair'): SortedBy {
  * Verify that readYs assigns a valid non-overlapping layout: no two reads
  * in the same row have overlapping [start,end] extents.
  */
-function assertNonOverlappingLayout(data: PileupDataResult, readYs: Uint16Array) {
+function assertNonOverlappingLayout(
+  data: PileupDataResult,
+  readYs: Uint16Array,
+) {
   const { numReads, readPositions, regionStart } = data
   const byRow = new Map<number, { start: number; end: number; idx: number }[]>()
   for (let i = 0; i < numReads; i++) {

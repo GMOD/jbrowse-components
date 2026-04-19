@@ -82,7 +82,6 @@ export default function MultiRegionDisplayMixin() {
       get rpcProps(): Record<string, unknown> | undefined {
         return undefined
       },
-
     }))
     .actions(self => ({
       setError(error?: unknown) {
@@ -248,9 +247,12 @@ export default function MultiRegionDisplayMixin() {
       }
     })
     .actions(self => {
-      let prevDisplayedRegionsStr = ''
       return {
         afterAttach() {
+          // Clear loaded data whenever the displayed-regions list
+          // changes. Tracks refName/start/end of every entry; MobX
+          // re-fires on any change. Fires once at mount as a harmless
+          // no-op (nothing loaded yet).
           addDisposer(
             self,
             autorun(
@@ -259,20 +261,12 @@ export default function MultiRegionDisplayMixin() {
                 if (!view.initialized) {
                   return
                 }
-                const regionStr = JSON.stringify(
-                  view.displayedRegions.map(r => ({
-                    refName: r.refName,
-                    start: r.start,
-                    end: r.end,
-                  })),
-                )
-                if (
-                  prevDisplayedRegionsStr !== '' &&
-                  regionStr !== prevDisplayedRegionsStr
-                ) {
-                  self.clearAllRpcData()
+                for (const r of view.displayedRegions) {
+                  void r.refName
+                  void r.start
+                  void r.end
                 }
-                prevDisplayedRegionsStr = regionStr
+                self.clearAllRpcData()
               },
               { name: 'DisplayedRegionsChange' },
             ),
@@ -385,12 +379,11 @@ export default function MultiRegionDisplayMixin() {
             ),
           )
 
-          // Autorun: when zoom or viewport position changes while
-          // regionTooLarge or error is set, clear so the fetch autorun
-          // retries. This handles "region too large" (zoom in or pan to
-          // a smaller region) and transient errors.
-          let prevBpPerPx: number | undefined
-          let prevVisibleRegionKey: string | undefined
+          // When zoom or viewport position changes while regionTooLarge
+          // or error is set, clear so the fetch autorun retries. Reads
+          // error/regionTooLarge untracked so setting them doesn't
+          // trigger this autorun to immediately wipe them — only the
+          // viewport read should fire it.
           addDisposer(
             self,
             autorun(
@@ -399,21 +392,14 @@ export default function MultiRegionDisplayMixin() {
                 if (!view.initialized) {
                   return
                 }
-                const { bpPerPx } = view
-                const visibleKey = JSON.stringify(
-                  view.mergedVisibleRegions.map(
-                    r => `${r.refName}:${r.regionNumber}`,
-                  ),
-                )
-                const changed =
-                  (prevBpPerPx !== undefined && bpPerPx !== prevBpPerPx) ||
-                  (prevVisibleRegionKey !== undefined &&
-                    visibleKey !== prevVisibleRegionKey)
-                if (changed && (self.regionTooLarge || self.error)) {
+                void view.bpPerPx
+                for (const r of view.mergedVisibleRegions) {
+                  void r.refName
+                  void r.regionNumber
+                }
+                if (untracked(() => self.regionTooLarge || self.error)) {
                   self.clearAllRpcData()
                 }
-                prevBpPerPx = bpPerPx
-                prevVisibleRegionKey = visibleKey
               },
               { name: 'ClearBlockingStateOnViewportChange' },
             ),

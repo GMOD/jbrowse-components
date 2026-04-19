@@ -570,7 +570,7 @@ export default function stateModelFactory(
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
             await Promise.all(
               needed.map(async r => {
-                const result = (await rpcManager.call(
+                const result = await rpcManager.call(
                   sessionId,
                   'RenderMultiWiggleData',
                   {
@@ -587,7 +587,7 @@ export default function stateModelFactory(
                       }
                     },
                   },
-                ))
+                )
                 if (!ctx.isStale()) {
                   self.setRpcDataForRegion(r.regionNumber, result)
                   self.setLoadedBpPerPxForRegion(r.regionNumber, bpPerPx)

@@ -360,9 +360,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * DotplotDisplays under each track, indexed to match `tracks`.
          */
         get dotplotDisplays() {
-          return self.tracks.map(
-            t => t.displays[0] as DotplotDisplayModel,
-          )
+          return self.tracks.map(t => t.displays[0] as DotplotDisplayModel)
         },
         /**
          * #getter

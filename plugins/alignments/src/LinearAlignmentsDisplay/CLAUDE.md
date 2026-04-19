@@ -35,8 +35,8 @@ distance, not start) and for pileup sort-by-base/strand/etc. (overlapping reads
 placed in sort order, non-overlap reads fill remaining gaps) — in both cases
 features arrive out of start order, so a right-edge-only levels array would
 fragment layout. Start-sorted input hits an O(1) per-row fast-path, matching
-end-array performance in the common case. Do not reintroduce a levels array
-for either layout.
+end-array performance in the common case. Do not reintroduce a levels array for
+either layout.
 
 ### Worker contract
 

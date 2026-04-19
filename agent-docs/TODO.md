@@ -347,3 +347,13 @@ the WebGL is not working
 
 Many features are 'collapsed' to y=0 on ncbi (add logging to investigate and i
 can navigate to it)
+
+## plugins/alignments
+
+Need 'Set feature height' in plugins/alignments trackmenuitems
+
+## plugins/dotplot
+
+Need track selector button in header
+
+Need faster scroll in dotplot, kind of 'choppy' (seems somewhat ok, just not quite right somehow but maybe just increase speed a bit. slow in chrome and firefox, could just increase scroll faster)

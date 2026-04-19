@@ -279,7 +279,12 @@ test('subfeatures and floating labels inherit their parent feature offset', () =
       maxX: 600,
       topY: 0,
       featureHeight: 30,
-      nameLabel: { text: 'Gene 2', relativeY: 0, color: 'black', textWidth: 50 },
+      nameLabel: {
+        text: 'Gene 2',
+        relativeY: 0,
+        color: 'black',
+        textWidth: 50,
+      },
     },
   }
 
