@@ -238,7 +238,7 @@ describe('forEachMismatchNumeric', () => {
   })
 
   describe('insertions and deletions', () => {
-    test('reports insertions regardless of MD/ref', () => {
+    test('reports 2-base insertion (len=2 branch, odd soffset)', () => {
       const mismatches = collectMismatches({
         cigar: '5M2I5M',
         seq: 'AAAAATTAAAAA',
@@ -250,6 +250,54 @@ describe('forEachMismatchNumeric', () => {
         start: 5,
         length: 0,
         base: 'TT',
+      })
+    })
+
+    test('reports 1-base insertion at even soffset (len=1 branch)', () => {
+      // soffset=2 after 2M — even, so base is in high nibble
+      const mismatches = collectMismatches({
+        cigar: '2M1I5M',
+        seq: 'AAGAAAAA',
+      })
+
+      expect(mismatches).toHaveLength(1)
+      expect(mismatches[0]).toMatchObject({
+        type: INSERTION_TYPE,
+        start: 2,
+        length: 0,
+        base: 'G',
+      })
+    })
+
+    test('reports 1-base insertion at odd soffset (len=1 branch)', () => {
+      // soffset=1 after 1M — odd, so base is in low nibble
+      const mismatches = collectMismatches({
+        cigar: '1M1I5M',
+        seq: 'ATAAAAA',
+      })
+
+      expect(mismatches).toHaveLength(1)
+      expect(mismatches[0]).toMatchObject({
+        type: INSERTION_TYPE,
+        start: 1,
+        length: 0,
+        base: 'T',
+      })
+    })
+
+    test('reports 3-base insertion (general loop path)', () => {
+      // len=3 exercises the new Array(len)+join path
+      const mismatches = collectMismatches({
+        cigar: '3M3I4M',
+        seq: 'AAATCGAAAA',
+      })
+
+      expect(mismatches).toHaveLength(1)
+      expect(mismatches[0]).toMatchObject({
+        type: INSERTION_TYPE,
+        start: 3,
+        length: 0,
+        base: 'TCG',
       })
     })
 
