@@ -180,7 +180,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       rpcDataMap: observable.map<number, SyntenyRegionData>(),
       allGenomeNames: [] as string[],
       contextMenuFeature: undefined as Feature | undefined,
-      statusMessage: undefined as string | undefined,
       visibleMaxDepth: 0,
       colorPalette: null as SyntenyColorPalette | null,
     }))
@@ -350,11 +349,11 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       setResolution(r: number) {
         self.resolution = r
       },
-      setStatusMessage(msg?: string) {
-        self.statusMessage = msg
-      },
       setColorPalette(palette: SyntenyColorPalette | null) {
         self.colorPalette = palette
+      },
+      clearDisplaySpecificData() {
+        self.rpcDataMap.clear()
       },
 
       startGpuBackendLifecycle(backend: MultiSyntenyBackend) {
@@ -386,6 +385,15 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                   ...geometry,
                   regionStart: data.regionStart,
                 })
+              },
+              // rpcDataMap never shrinks partially — entries are either all
+              // cleared (clearDisplaySpecificData) or grow. Calling
+              // clearAllBlocks on empty active set frees GPU buffers when
+              // the display region changes.
+              prune: (b, activeRegionNumbers) => {
+                if (activeRegionNumbers.length === 0) {
+                  b.clearAllBlocks()
+                }
               },
             },
             // Coverage / SNPs / indicators: gated on showCoverage.

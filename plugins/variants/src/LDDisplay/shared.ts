@@ -11,7 +11,7 @@ import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
   ConfigOverrideMixin,
-  MultiRegionDisplayMixin,
+  GlobalDataDisplayMixin,
   StaleViewportRescaleMixin,
   TrackHeightMixin,
   getDisplayStr,
@@ -48,7 +48,7 @@ export default function sharedModelFactory(
       'SharedLDModel',
       BaseDisplay,
       TrackHeightMixin(),
-      MultiRegionDisplayMixin(),
+      GlobalDataDisplayMixin(),
       StaleViewportRescaleMixin(),
       ConfigOverrideMixin(),
       types.model({
@@ -536,7 +536,7 @@ export default function sharedModelFactory(
         }
         const { bpPerPx, visibleBp } = view
         const { adapterConfig } = self
-        self.withFetchLifecycle([], async ctx => {
+        self.withFetchLifecycle(async ctx => {
           const { rpcManager } = getSession(self)
           const sessionId = getRpcSessionId(self)
           const stats = (await rpcManager.call(

@@ -94,7 +94,6 @@ export interface MultiWiggleDisplayModel {
     feat: NonNullable<MultiWiggleDisplayModel['featureUnderMouse']>,
   ) => void
   canvasDrawn: boolean
-  setCanvasDrawn: (flag: boolean) => void
   startGpuBackendLifecycle: (backend: WiggleBackend) => void
   stopGpuBackendLifecycle: () => void
   renderNow: () => void

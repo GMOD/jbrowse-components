@@ -441,10 +441,6 @@ export default function baseStateModelFactory(
         },
       }))
       .actions(self => ({
-        setCanvasDrawn(value: boolean) {
-          self.canvasDrawn = value
-        },
-
         expandToFit() {
           self.heightBeforeExpand = self.height
           self.setHeight(Math.min(self.maxY, self.maxHeight))

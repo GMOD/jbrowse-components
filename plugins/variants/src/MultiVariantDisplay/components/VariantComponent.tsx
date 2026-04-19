@@ -31,7 +31,6 @@ export interface VariantDisplayModel extends VariantDisplayModelBase {
   cellDataLoading: boolean
   statusMessage?: string
   canvasDrawn: boolean
-  setCanvasDrawn: (flag: boolean) => void
   startGpuBackendLifecycle: (backend: VariantBackend) => void
   stopGpuBackendLifecycle: () => void
   renderNow: () => void

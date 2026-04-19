@@ -103,11 +103,6 @@ export function startGpuSingleDataBackendAutorunLifecycle<
       }
       isDisposed = true
       disposeAutorun()
-      for (let i = 0; i < lastUploaded.length; i++) {
-        lastUploaded[i] = undefined
-      }
-      lastRenderState = undefined
-      allHaveData = false
     },
     renderNow() {
       if (isDisposed || lastRenderState === undefined || !allHaveData) {

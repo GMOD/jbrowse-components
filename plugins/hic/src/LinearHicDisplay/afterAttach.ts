@@ -6,12 +6,19 @@ import {
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { LinearHicDisplayModel } from './model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-export function doAfterAttach(self: LinearHicDisplayModel) {
+interface HicModel {
+  isMinimized: boolean
+  rpcProps: Record<string, unknown>
+  adapterConfig: Record<string, unknown>
+  setAvailableNormalizations(norms: string[]): void
+  performHicFetch(): void
+}
+
+export function doAfterAttach(self: HicModel) {
   // Fetch available normalizations
 
   // eslint-disable-next-line @typescript-eslint/no-floating-promises

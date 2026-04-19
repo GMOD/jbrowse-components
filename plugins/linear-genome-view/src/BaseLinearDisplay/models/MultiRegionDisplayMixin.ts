@@ -16,7 +16,9 @@ import { checkByteEstimate } from './fetchHelpers.ts'
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.tsx'
 
 export type { ByteEstimateConfig } from './fetchHelpers.ts'
+export type { FetchContext } from './GlobalDataDisplayMixin.ts'
 import type { ByteEstimateConfig } from './fetchHelpers.ts'
+import type { FetchContext } from './GlobalDataDisplayMixin.ts'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -30,12 +32,6 @@ export interface Region {
 export interface RegionWithNumber {
   region: Region
   regionNumber: number
-}
-
-export interface FetchContext {
-  stopToken: StopToken
-  generation: number
-  isStale: () => boolean
 }
 
 export default function MultiRegionDisplayMixin() {

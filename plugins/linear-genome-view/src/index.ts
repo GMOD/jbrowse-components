@@ -96,6 +96,7 @@ export {
   ConfigOverrideMixin,
   FeatureDensityMixin,
   FloatingLegend,
+  GlobalDataDisplayMixin,
   MultiRegionDisplayMixin,
   SVGLegend,
   StaleViewportRescaleMixin,
@@ -111,6 +112,7 @@ export {
 export type {
   ByteEstimateConfig,
   FetchContext,
+  GlobalDataDisplayMixinType,
   MultiRegionDisplayMixinType,
   MultiRegionRegion,
   MultiRegionRegionWithNumber,

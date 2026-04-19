@@ -42,15 +42,9 @@ export function GpuBackendLifecycleSlotMixin() {
         | undefined,
     }))
     .actions(self => ({
-      setCanvasDrawn(val: boolean) {
-        if (self.canvasDrawn !== val) {
-          self.canvasDrawn = val
-        }
-      },
-
       // Idempotent "first draw has happened" signal. Guards against the
       // per-commit observable write + dependent observer churn that a naive
-      // setCanvasDrawn(true) call would produce once the canvas is drawn.
+      // assignment would produce once the canvas is drawn.
       markCanvasDrawn() {
         if (!self.canvasDrawn) {
           self.canvasDrawn = true

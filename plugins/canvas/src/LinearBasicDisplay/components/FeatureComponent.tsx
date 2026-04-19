@@ -75,7 +75,6 @@ interface LinearBasicDisplayModel {
   setContextMenuInfo: (info?: unknown) => void
   contextMenuItems: () => { label: string; onClick: () => void }[]
   getFeatureById: (featureId: string) => FlatbushItem | undefined
-  setCanvasDrawn: (val: boolean) => void
   clearSelection: () => void
   startGpuBackendLifecycle: (backend: CanvasFeatureBackend) => void
   stopGpuBackendLifecycle: () => void

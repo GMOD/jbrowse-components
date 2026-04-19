@@ -37,6 +37,10 @@ export {
   default as MultiRegionDisplayMixin,
 } from './models/MultiRegionDisplayMixin.ts'
 export {
+  type GlobalDataDisplayMixinType,
+  default as GlobalDataDisplayMixin,
+} from './models/GlobalDataDisplayMixin.ts'
+export {
   type StaleViewportRescaleMixinType,
   default as StaleViewportRescaleMixin,
 } from './models/StaleViewportRescaleMixin.ts'

@@ -10,7 +10,7 @@ import {
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   ConfigOverrideMixin,
-  MultiRegionDisplayMixin,
+  GlobalDataDisplayMixin,
   StaleViewportRescaleMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -38,7 +38,7 @@ import type {
  * extends
  * - [BaseDisplay](../basedisplay)
  * - [TrackHeightMixin](../trackheightmixin)
- * - [MultiRegionDisplayMixin](../multiregiondisplaymixin)
+ * - [GlobalDataDisplayMixin](../globaldatadisplaymixin)
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -50,7 +50,7 @@ export default function stateModelFactory(
       'LinearHicDisplay',
       BaseDisplay,
       TrackHeightMixin(),
-      MultiRegionDisplayMixin(),
+      GlobalDataDisplayMixin(),
       StaleViewportRescaleMixin(),
       ConfigOverrideMixin(),
       types.model({
@@ -420,7 +420,7 @@ export default function stateModelFactory(
         }
         const { bpPerPx } = view
         const { adapterConfig } = self
-        self.withFetchLifecycle([], async ctx => {
+        self.withFetchLifecycle(async ctx => {
           const { rpcManager } = getSession(self)
           const result = await rpcManager.call(
             getRpcSessionId(self),

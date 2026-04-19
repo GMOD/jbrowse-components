@@ -4,6 +4,21 @@ Moved from PRD.md as items were finished.
 
 ---
 
+## HiC + LDDisplay monolithic-fetch untracked elimination — COMPLETE
+
+Created `GlobalDataDisplayMixin` (`plugins/linear-genome-view/src/BaseLinearDisplay/models/GlobalDataDisplayMixin.ts`) — canonical pattern for GPU displays that fetch one global dataset per viewport rather than per-region. Provides `withFetchLifecycle(work)` cancel-safe wrapper that owns token management, abort-exception swallowing, and `fetchGeneration` bump-on-complete. Both `plugins/hic/src/LinearHicDisplay/afterAttach.ts` and `plugins/variants/src/LDDisplay/afterAttach.ts` were refactored to use it, removing all `untracked` calls from those files. See ADR-007.
+
+---
+
+## plugins/dotplot UX — COMPLETE
+
+- Added track selector button to dotplot header (`DotplotControls.tsx`), guarded
+  by `isSessionModelWithWidgets`, matching the linear-genome-view pattern
+- Increased wheel zoom speed: multiplier `1.03`/`0.97` → `1.07`/`0.935`
+  (`useWheelHandler.ts`)
+
+---
+
 ## P1.1 Canvas Fallback Rendering Backend — COMPLETE
 
 All track types have Canvas 2D fallback renderers.

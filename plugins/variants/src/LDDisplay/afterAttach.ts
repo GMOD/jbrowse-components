@@ -2,12 +2,20 @@ import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { SharedLDModel } from './shared.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-export function doAfterAttach(self: SharedLDModel) {
+interface LDModel {
+  isMinimized: boolean
+  showLDTriangle: boolean
+  regionTooLarge: boolean
+  rpcProps: Record<string, unknown>
+  userByteSizeLimit: number | undefined
+  performLDFetch(): void
+}
+
+export function doAfterAttach(self: LDModel) {
   addDisposer(
     self,
     autorun(

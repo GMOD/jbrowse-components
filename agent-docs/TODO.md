@@ -106,11 +106,9 @@ Currently iterates every read × region on every data update.
 reactivity bypass — a signal that something is structured wrong, not a
 feature. Each one below has a specific target fix.
 
-Inventory of remaining callers (run
-`grep -rn 'untracked' plugins/ packages/ --include='*.ts' --include='*.tsx'`
-to refresh):
+HiC + LDDisplay `untracked` calls eliminated (see ADR-007). Remaining:
 
-- `plugins/alignments/.../LinearAlignmentsDisplay/model.ts:1558`
+- `plugins/alignments/.../LinearAlignmentsDisplay/model.ts:1563`
   (`sortLayout` autorun wraps rpcDataMap-read-then-mutate).
   *Fix:* convert `computeAndAssignLayoutForData` to a pure function that
   returns a fresh laid-out map; expose laid-out data as a cached MST view
@@ -118,69 +116,25 @@ to refresh):
   view; no imperative writeback. Deletes the sortLayout autorun and its
   untracked block. The bigger S1-alignments work — largest payoff.
 
-- `plugins/linear-genome-view/.../MultiRegionDisplayMixin.ts:301, 334`
-  (fetch autorun reads `isLoading` + `loadedRegions` via untracked).
-  *Fix:* `isLoading` is untracked deliberately — tracking it would cause
-  the autorun to retrigger while it's own work is in flight. Pull the
-  isLoading check into a gate function that reads via `reaction`
-  (one-shot), or document these two as load-bearing and name the
-  invariant explicitly in a `// Why:` comment. Low-priority — they work
-  correctly, the bypass is intentional and narrow.
-
-- `plugins/hic/.../afterAttach.ts:57, 119` and
-  `plugins/variants/.../LDDisplay/afterAttach.ts:60, 147` (monolithic
-  fetch autoruns reading `renderingStopToken` and `error` via untracked).
-  *Fix:* identical structural issue — the autorun owns both the fetch
-  trigger and the "cancel previous" side effect. Factor the cancel path
-  into `withFetchLifecycle` (mixin already does this for per-region
-  displays) so the monolithic-fetch plugins can drop the manual
-  `previousToken` dance. Solves both `untracked` calls per plugin.
+- `plugins/linear-genome-view/.../MultiRegionDisplayMixin.ts:288, 319, 391`
+  — all three are load-bearing intentional bypasses (isLoading prevents
+  re-trigger cycle; loadedRegions check avoids redundant fetches;
+  regionTooLarge/error clears only on viewport change). Document with
+  `// Why:` comments; no structural fix needed. Low-priority.
 
 - `plugins/graph/.../GraphCanvas.tsx:186` (`viewportBounds` computed via
   untracked inside a scale/translate update).
   *Fix:* pan/zoom live on React state here, not MST. Move
   `computeViewportBounds` to a `useMemo` keyed on the scale/translate
-  values if they're already React state, or to an MST view if they're
-  model-owned. Either way, no untracked needed.
+  values. Standalone, low urgency.
 
-Suggested order:
-- Cluster the "monolithic fetch autorun" pattern: HiC + LD + probably
-  multi-sample variants at the same time (they all share the shape).
-  Drops 4 untracked calls with one refactor.
-- Alignments sortLayout is the big one — unlocks deleting 2 autoruns
-  and the untracked block there, and aligns alignments with canvas's
-  derived-layout model. Do when ready for a contained PR on the
-  alignments model.
-- Graph canvas viewportBounds: standalone, low urgency.
-- MultiRegionDisplayMixin's two uses: document or leave; they're
-  the most justified of the set.
+Test-file untracked calls (`fetchAutorunIntegration.test.ts:83, 119, 171, 234`)
+are acceptable — tests read state without triggering reactions deliberately.
 
-Acceptance: `grep -rn 'untracked(' plugins/ packages/ --include='*.ts' --include='*.tsx' | grep -v '\.md' | wc -l` returns 0 (currently ~10).
+Acceptance: `grep -rn 'untracked(' plugins/ packages/ --include='*.ts' --include='*.tsx' | grep -v test | grep -v '\.md' | wc -l` returns 0 (currently 5).
 
----
 
-## Infrastructure
 
-**GPU: Build-time WGSL struct size validator** Add Jest test that parses WGSL
-and asserts `sizeof(instanceStruct) % 16 === 0`. Currently only caught at
-runtime in `WebGPUHal.create`.
-
-**Migrate to pnpm 11** (when released) Remove `"pnpm"` from `package.json`,
-update `pnpm-workspace.yaml`, replace `pnpm install --frozen-lockfile` with
-`pnpm ci` in CI, bump `pnpm/action-setup` version to 11.
-
----
-
-## Display Types
-
-**HiC and LD multi-region upload** Switch from single-region to per-region
-pattern: `rpcDataMap: Map<number, Data>`, use `uploadChangedRegions`, pass
-`regionNumber` to `renderer.uploadRegion()`, pass block array to
-`renderBlocks()`.
-
-**MultiVariantDisplay per-region optimization** Check if `computeVariantCells`
-preserves object identity for unchanged regions, then wire up
-`uploadChangedRegions` to skip redundant uploads.
 
 ---
 
@@ -195,17 +149,9 @@ slow). Widen margins or soften refetch criterion.
 **Canvas offscreen buffer** Add margin rendering to avoid feature re-juggling on
 small zooms (like `plugins/sequence`).
 
-**Dotplot re-render** Initial render works; subsequent updates lost. Debug
-lifecycle.
-
 **Protein3D on linearbasicdisplay** Consolidation removed it; may need separate
 display or restoration.
 
-**Alignments menu reorganization** Collapse rarely-used options (max height,
-toggles) into submenu.
-
-**Breakpoint connectors** Smooth out awkward blue/green curves (currently
-arbitrary Y increase/loop).
 
 **Synteny/dotplot UX** Linked views, swap axes, better defaults for human vs
 mouse.
@@ -233,109 +179,49 @@ render).
 
 **Verify `?renderer=X` param** Check URL parameter functioning.
 
----
 
-## Config & Sessions
 
-**Global config overrides** Admin-level defaults (e.g., show paired arcs by
-default) across all tracks.
-
-**Hash password in share links** Password only needed at startup (read then
-deleted). Store in URL hash, clear on first navigation.
-
-**LGVSyntenyDisplay "Query name" coloring** Re-implement removed
-color-by-query-name (hash to color).
-
----
 
 ## Polish
 
 **Dark reader compatibility** Multiwiggle/DNA rendering with light backgrounds.
 
-**Fix prettier config** Unwanted quote/semicolon insertion (see
-~/src/mysetup.nvim).
 
 **Feature padding & crowding** Right-side canvas padding excessive? Subpixel
 drawing crowded?
 
-i am seeing that mouseover on features in plugins/canvas rapidly shows mouseover
-shading and then removes it, when though mouse still hovering
 
 ---
 
 ## Unclear (Verify)
 
-- Methylation mode broken?
 - Clustering UI not updating?
 - Long-range arcs missing in 1kg demo?
-- Overlay synteny should use single canvas, multiple datasets uploaded. dotplot
-  already added this recently
 
 ## New issues
 
-synteny mouseover is stuck the deletion polygons are extending beyond the linear
-genome view boundaries, which means it is not properly corresponding to genomic
-coordinates in 3-way volvox, or if i'm wrong, check against origin/main
+**Synteny mouseover stuck / deletion polygons out of bounds.** Deletion polygons
+extend beyond LGV boundaries in 3-way volvox — check against origin/main to
+confirm regression vs. pre-existing.
 
-┌──────────────────────────────────────────────────────────────────────┬───────────────────────────────────────────────────────────────┐
-│ Change │ Benefit │
-├──────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────┤
-│ Removed dead instanceCount uniform │ -1 uniform write/frame, clearer struct │
-├──────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────┤
-│ FILL_SEGMENTS/EDGE_SEGMENTS as shader constants │ GPU compiler can unroll
-segment switch; -2 uniform slots │
-├──────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────┤
-│ Single hermiteEdges call per vertex (was 2 + select) │ ~50% fewer
-transcendental ops in vertex shader │
-├──────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────┤
-│ Inline screen-position computation into cull (was duplicated) │ ~4 mul/sub
-fewer per vertex │
-├──────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────┤
-│ GLSL: shared UNIFORMS, HELPERS, SEGMENT_CONSTS via template strings │ 3 copies
-of uniforms block → 1; isCulled now uses real struct │
-├──────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────┤
-│ Renderer: drop FILL_SEGMENTS/EDGE_SEGMENTS imports + uniformU32 view │ No more
-u32-slot writes; 13 slots used, 3 reserved for future │
-└──────────────────────────────────────────────────────────────────────┴───────────────────────────────────────────────────────────────┘
-
-What I deliberately didn't touch (worth flagging as follow-ups):
-
-- isCurve moved to uniform — it's per-view, not per-feature (RPC sets all
-  instances to the same value). Would save 4 bytes/feature + enable further
-  Instance-struct shrinking. Needs RPC to stop emitting isCurves[] and the
-  display's renderParams to pass it. ~30-line change across RPC + backend
-  types + renderer.
-- Shrink Instance struct 64→36 bytes — bundled with the above. Remove the 12
-  bytes of padding + 4 bytes of isCurve. That's a 44% per-feature bandwidth cut
-  — meaningful for 100K+ features.
+**Synteny shader follow-ups** (not yet done, profiling needed first):
+- `isCurve` is per-view not per-feature — move to uniform to save 4 bytes/feature
+  and allow Instance struct shrink from 64→36 bytes (44% GPU bandwidth cut for
+  100K+ features). Needs RPC to stop emitting `isCurves[]`.
+- Picking pass uses fill vertex shader — leaner picking-only vertex shader could
+  skip color lookup. Marginal until profiling shows vertex bottleneck.
 - Adaptive segment count — straight non-crossing parallelograms need 6 vertices,
-  not 96. Variable-count paths add pipeline complexity; only worth it if
-  profiling shows vertex bottleneck.
-- Picking pass uses the fill vertex shader — it outputs the same color +
-  featureId varyings the fill shader does. That means we're shading every
-  fragment twice with the fill pipeline's full vertex work just to get the
-  featureId into the picking target. For tight pipelines a leaner picking-only
-  vertex shader could skip the color lookup. Marginal.
-
-Want me to do #1+#2 (isCurve uniform + struct shrink) as a follow-up? That's the
-biggest remaining win.
+  not 96. Pipeline complexity; only worth it if vertex-bound.
 
 ## plugins/canvas
 
-When zooming in, it stalls during some 'rerender, making the feature glyphs
-frozen and not adjust to the active zoom'
+**Features collapsed to y=0 on NCBI.** Add logging to investigate; needs
+reproduction steps (user can navigate to it).
 
-the WebGL is not working
+## Tasks
 
-Many features are 'collapsed' to y=0 on ncbi (add logging to investigate and i
-can navigate to it)
+- Alignments sortLayout → derived view (deferred for its own PR; PileupDataResult
+  has 6+ parallel typed arrays + chain-mode bakes Flatbush, out of scope for sweep)
+- Decouple amino-acid overlay loading + treat density gate as one-shot → drop
+  canvas `isCacheValid` entirely
 
-## plugins/alignments
-
-Need 'Set feature height' in plugins/alignments trackmenuitems
-
-## plugins/dotplot
-
-Need track selector button in header
-
-Need faster scroll in dotplot, kind of 'choppy' (seems somewhat ok, just not quite right somehow but maybe just increase speed a bit. slow in chrome and firefox, could just increase scroll faster)

@@ -96,7 +96,7 @@ function formatFeat(f: Feature, parentId?: string, parentRef?: string) {
     f.get('type') || '.',
     f.get('start') + 1,
     f.get('end'),
-    score !== undefined && score !== null ? score : '.',
+    score ?? '.',
     strand === 1 ? '+' : strand === -1 ? '-' : '.',
     phase ?? '.',
     formatAttributes(f, parentId),
