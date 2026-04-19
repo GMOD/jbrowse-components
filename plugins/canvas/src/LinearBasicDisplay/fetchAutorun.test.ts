@@ -538,4 +538,5 @@ describe('SettingsInvalidate autorun', () => {
     expect(mockRpcCall).toHaveBeenCalledTimes(1)
     expect(mockRpcCall.mock.calls[0]![2]).toMatchObject({ showOnlyGenes: true })
   })
+
 })

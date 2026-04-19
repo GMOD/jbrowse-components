@@ -7,7 +7,6 @@ import { IconButton, Popover, Slider, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import SliderTooltip from './SliderTooltip.tsx'
-import { getFirstDotplotDisplay, updateAllDisplays } from './util.ts'
 
 import type { DotplotViewModel } from '../model.ts'
 
@@ -38,7 +37,8 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
 
-  const firstDisplay = getFirstDotplotDisplay(model)
+  const { dotplotDisplays } = model
+  const firstDisplay = dotplotDisplays[0]
   const alpha = firstDisplay?.alpha ?? 1
   const minAlignmentLength = firstDisplay?.minAlignmentLength ?? 0
   const lineWidth = firstDisplay?.lineWidth ?? 2
@@ -86,9 +86,9 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
               onChange={(_, value) => {
                 const v = typeof value === 'number' ? value : value[0]
                 const newAlpha = sliderToAlpha(v)
-                updateAllDisplays(model, d => {
+                for (const d of dotplotDisplays) {
                   d.setAlpha(newAlpha)
-                })
+                }
               }}
               min={0}
               max={1}
@@ -107,9 +107,9 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
               value={lineWidth}
               onChange={(_, value) => {
                 const v = typeof value === 'number' ? value : value[0]
-                updateAllDisplays(model, d => {
+                for (const d of dotplotDisplays) {
                   d.setLineWidth(v)
-                })
+                }
               }}
               min={0.5}
               max={10}
@@ -130,9 +130,9 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
               }}
               onChangeCommitted={() => {
                 const newMinLength = Math.round(2 ** (minLengthValue / 100))
-                updateAllDisplays(model, d => {
+                for (const d of dotplotDisplays) {
                   d.setMinAlignmentLength(newMinLength)
-                })
+                }
               }}
               min={0}
               max={Math.log2(1000000) * 100}

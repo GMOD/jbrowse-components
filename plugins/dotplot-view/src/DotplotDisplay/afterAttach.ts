@@ -5,34 +5,30 @@ import {
   makeAbortableReaction,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, getSnapshot } from '@jbrowse/mobx-state-tree'
+import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { parseCigar } from '@jbrowse/plugin-alignments'
-import { autorun, reaction } from 'mobx'
+import { autorun } from 'mobx'
 
 import { createDotplotColorFunction } from './dotplotWebGLColors.ts'
 import { buildLineSegments } from './drawDotplotWebGL.ts'
 
 import type { DotplotDisplayModel } from './stateModelFactory.tsx'
 import type { DotplotFeatPos, DotplotFeatureData } from './types.ts'
+import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
 import type { Feature, ViewSnap } from '@jbrowse/core/util'
 
 const RPC_DEBOUNCE_MS = 1000
 
-function makeViewSnap(view: {
-  width: number
-  interRegionPaddingWidth: number
-  minimumBlockWidth: number
-}): ViewSnap {
-  const snap = getSnapshot(
-    view as Parameters<typeof getSnapshot>[0],
-  ) as ViewSnap
+function makeViewSnap(view: Dotplot1DViewModel): ViewSnap {
   return {
-    ...snap,
-    width: view.width,
+    bpPerPx: view.bpPerPx,
+    offsetPx: view.offsetPx,
+    displayedRegions: view.displayedRegions,
     staticBlocks: { contentBlocks: [], blocks: [] },
     interRegionPaddingWidth: view.interRegionPaddingWidth,
     minimumBlockWidth: view.minimumBlockWidth,
+    width: view.width,
   }
 }
 
@@ -106,37 +102,21 @@ export function doAfterAttach(
 
   addDisposer(
     self,
-    reaction(
-      () => {
-        try {
-          const view = getContainingView(self) as DotplotViewModel
-          return {
-            bpPerPx: [view.hview.bpPerPx, view.vview.bpPerPx],
-            displayedRegions: JSON.stringify([
-              view.hview.displayedRegions,
-              view.vview.displayedRegions,
-            ]),
-            features: self.features,
-            initialized: view.initialized,
-          }
-        } catch {
-          return { initialized: false as const }
-        }
-      },
-      async ({ initialized }) => {
-        if (!initialized || !self.features) {
+    autorun(
+      async function dotplotPositionsAutorun() {
+        const view = getContainingView(self) as DotplotViewModel
+        if (!view.initialized || !self.features) {
           return
         }
-        const { assemblyManager, rpcManager } = getSession(self)
-        const view = getContainingView(self) as DotplotViewModel
-        const sessionId = getRpcSessionId(self)
+
         const { hview, vview } = view
-
-        const snapshotBpPerPxH = hview.bpPerPx
-        const snapshotBpPerPxV = vview.bpPerPx
-
+        const bpPerPxH = hview.bpPerPx
+        const bpPerPxV = vview.bpPerPx
         const hViewSnap = makeViewSnap(hview)
         const vViewSnap = makeViewSnap(vview)
+
+        const { assemblyManager, rpcManager } = getSession(self)
+        const sessionId = getRpcSessionId(self)
 
         if (self.features !== cachedFeatures) {
           cachedFeatures = self.features
@@ -169,9 +149,9 @@ export function doAfterAttach(
             })
           }
         }
-        self.setFeatPositions(positions, snapshotBpPerPxH, snapshotBpPerPxV)
+        self.setFeatPositions({ positions, bpPerPxH, bpPerPxV })
       },
-      { fireImmediately: true, delay: RPC_DEBOUNCE_MS },
+      { name: 'DotplotPositions', delay: RPC_DEBOUNCE_MS },
     ),
   )
 
@@ -179,31 +159,17 @@ export function doAfterAttach(
     self,
     autorun(
       function dotplotGeometryRecompute() {
-        let view: DotplotViewModel
-        try {
-          view = getContainingView(self) as DotplotViewModel
-        } catch {
+        const view = getContainingView(self) as DotplotViewModel
+        const { featPositions, alpha, colorBy, minAlignmentLength } = self
+        if (!view.initialized || !featPositions) {
           return
         }
-        if (!view.initialized) {
-          return
-        }
+        const { drawCigar } = view
+        const { positions, bpPerPxH, bpPerPxV } = featPositions
 
-        const { alpha, colorBy, featPositions, minAlignmentLength } = self
-        const { drawCigar, hview, vview } = view
-        const hBpPerPx = hview.bpPerPx
-        const vBpPerPx = vview.bpPerPx
-
-        const regionKey = view.tracks.findIndex(t =>
-          (t.displays as unknown[]).includes(self),
-        )
-        if (regionKey === -1) {
-          return
-        }
-
-        let filtered = featPositions
+        let filtered = positions
         if (minAlignmentLength > 0) {
-          filtered = featPositions.filter(fp => {
+          filtered = positions.filter(fp => {
             const len = Math.abs(fp.f.get('end') - fp.f.get('start'))
             return len >= minAlignmentLength
           })
@@ -214,44 +180,21 @@ export function doAfterAttach(
           filtered,
           colorFn,
           drawCigar,
-          hBpPerPx,
-          vBpPerPx,
+          bpPerPxH,
+          bpPerPxV,
         )
-        self.setRpcDataForRegion(regionKey, {
+        self.setGeometry({
           x1s: new Float32Array(segments.x1s),
           y1s: new Float32Array(segments.y1s),
           x2s: new Float32Array(segments.x2s),
           y2s: new Float32Array(segments.y2s),
           colors: new Uint32Array(segments.colors),
           instanceCount: segments.x1s.length,
+          bpPerPxH,
+          bpPerPxV,
         })
       },
       { name: 'DotplotGeometryRecompute' },
-    ),
-  )
-
-  // Wire the display's upload lifecycle to the view's shared GPU backend.
-  // When the view creates/discards the backend, start/stop this display's
-  // upload lifecycle against it. The display owns only uploads keyed by
-  // its track index; the view owns the canvas and render lifecycle.
-  addDisposer(
-    self,
-    autorun(
-      function dotplotDisplayBackendBinding() {
-        let view: DotplotViewModel
-        try {
-          view = getContainingView(self) as DotplotViewModel
-        } catch {
-          return
-        }
-        const backend = view.gpuBackend
-        if (backend) {
-          self.startGpuBackendLifecycle(backend)
-        } else {
-          self.stopGpuBackendLifecycle()
-        }
-      },
-      { name: 'DotplotDisplayBackendBinding' },
     ),
   )
 }

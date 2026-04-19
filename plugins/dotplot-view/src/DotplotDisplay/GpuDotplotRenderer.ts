@@ -42,9 +42,9 @@ export class GpuDotplotRenderer implements DotplotBackend {
     this.hal.resize(width, height)
   }
 
-  uploadRegion(regionNumber: number, data: DotplotGeometryData) {
+  uploadGeometry(displayKey: number, data: DotplotGeometryData) {
     if (data.instanceCount === 0) {
-      this.hal.deleteRegion(regionNumber)
+      this.hal.deleteRegion(displayKey)
       return
     }
 
@@ -62,18 +62,18 @@ export class GpuDotplotRenderer implements DotplotBackend {
       u[off + F.color] = data.colors[i]!
     }
 
-    this.hal.uploadBuffer(regionNumber, PASS_LINE, buf, n)
+    this.hal.uploadBuffer(displayKey, PASS_LINE, buf, n)
   }
 
-  deleteRegion(regionNumber: number) {
-    this.hal.deleteRegion(regionNumber)
+  deleteGeometry(displayKey: number) {
+    this.hal.deleteRegion(displayKey)
   }
 
   render(state: DotplotRenderState) {
     const { offsetX, offsetY, lineWidth, trackScales } = state
     this.hal.beginFrame(0, 0, 0, 0)
 
-    for (const { regionKey, scaleX, scaleY } of trackScales) {
+    for (const { displayKey, scaleX, scaleY } of trackScales) {
       this.uniformF32[U.resolution] = this.width
       this.uniformF32[U.resolution + 1] = this.height
       this.uniformF32[U.offsetX] = offsetX
@@ -82,7 +82,7 @@ export class GpuDotplotRenderer implements DotplotBackend {
       this.uniformF32[U.scaleX] = scaleX
       this.uniformF32[U.scaleY] = scaleY
       this.hal.writeUniforms(this.uniformData)
-      this.hal.drawPass(PASS_LINE, regionKey)
+      this.hal.drawPass(PASS_LINE, displayKey)
     }
 
     this.hal.endFrame()

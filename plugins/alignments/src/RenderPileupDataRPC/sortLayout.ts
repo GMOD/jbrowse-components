@@ -1,3 +1,5 @@
+import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
+
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
@@ -44,6 +46,23 @@ function buildSoftclipExpansions(data: PileupDataResult) {
     }
   }
   return expansions.size > 0 ? expansions : undefined
+}
+
+/**
+ * Get a read's effective [start,end) including any softclip expansion.
+ */
+function readExtent(
+  data: PileupDataResult,
+  i: number,
+  expansions: Map<number, { start: number; end: number }> | undefined,
+) {
+  const start = data.regionStart + data.readPositions[i * 2]!
+  const end = data.regionStart + data.readPositions[i * 2 + 1]!
+  const exp = expansions?.get(i)
+  return {
+    start: exp ? Math.min(start, exp.start) : start,
+    end: exp ? Math.max(end, exp.end) : end,
+  }
 }
 
 function sortOverlappingByIndex(
@@ -168,67 +187,32 @@ function sortOverlappingByIndex(
 }
 
 /**
- * Compute pileup row layout for a single region, working directly on the
- * typed arrays in PileupDataResult. Uses read index as the layout key,
- * avoiding string-keyed Map operations.
- *
- * Returns readYs[i] = pileup row for read i, and maxY = total row count.
+ * Compute pileup row layout for a single region. Returns
+ * readYs[i] = pileup row for read i, and maxY = total row count.
  */
 export function computeLayout(
   data: PileupDataResult,
   showSoftClipping?: boolean,
 ) {
-  const { numReads, readPositions, regionStart } = data
+  const { numReads } = data
   const expansions = showSoftClipping
     ? buildSoftclipExpansions(data)
     : undefined
 
-  const sortedIndices = Array.from({ length: numReads }, (_, i) => i)
-  sortedIndices.sort((a, b) => {
-    const aStart = regionStart + readPositions[a * 2]!
-    const bStart = regionStart + readPositions[b * 2]!
-    const aExp = expansions?.get(a)
-    const bExp = expansions?.get(b)
-    return (
-      (aExp ? Math.min(aStart, aExp.start) : aStart) -
-      (bExp ? Math.min(bStart, bExp.start) : bStart)
-    )
-  })
-
   const readYs = new Uint16Array(numReads)
-  const levels: number[] = []
-  let maxY = 0
-
-  for (const i of sortedIndices) {
-    const start = regionStart + readPositions[i * 2]!
-    const end = regionStart + readPositions[i * 2 + 1]!
-    const exp = expansions?.get(i)
-    const effectiveStart = exp ? Math.min(start, exp.start) : start
-    const effectiveEnd = exp ? Math.max(end, exp.end) : end
-
-    let y = levels.length
-    for (let j = 0; j < levels.length; j++) {
-      if (levels[j]! <= effectiveStart) {
-        y = j
-        break
-      }
-    }
-    readYs[i] = y
-    levels[y] = effectiveEnd + 2
-    if (y > maxY) {
-      maxY = y
-    }
+  const rows: number[][] = []
+  for (let i = 0; i < numReads; i++) {
+    const { start, end } = readExtent(data, i, expansions)
+    readYs[i] = placeRect(rows, start, end)
   }
-
-  return { readYs, maxY: numReads > 0 ? maxY + 1 : 0 }
+  return { readYs, maxY: rows.length }
 }
 
 /**
- * Compute sorted pileup row layout for a single region. Reads overlapping
- * the sort position are sorted by the given criteria and packed first;
- * non-overlapping reads fill remaining rows.
- *
- * Returns readYs[i] = pileup row for read i, and maxY = total row count.
+ * Compute pileup row layout with a custom sort at `sortedBy.pos`. Reads
+ * overlapping the sort position are placed first in sort-criterion
+ * order (each gets its own row since they all collide pairwise at
+ * sortPos), then non-overlapping reads fill gaps around them.
  */
 export function computeSortedLayout(
   data: PileupDataResult,
@@ -256,59 +240,21 @@ export function computeSortedLayout(
   sortOverlappingByIndex(overlapping, data, sortedBy, data.sortTagValues)
 
   const readYs = new Uint16Array(numReads)
-  const levels: number[] = []
-  let maxY = 0
-  let nextRow = 0
-
+  const rows: number[][] = []
   for (const i of overlapping) {
-    const start = regionStart + readPositions[i * 2]!
-    const end = regionStart + readPositions[i * 2 + 1]!
-    const exp = expansions?.get(i)
-    const effectiveStart = exp ? Math.min(start, exp.start) : start
-    const effectiveEnd = exp ? Math.max(end, exp.end) : end
-
-    let y = Math.max(levels.length, nextRow)
-    for (let j = nextRow; j < levels.length; j++) {
-      if ((levels[j] ?? 0) <= effectiveStart) {
-        y = j
-        break
-      }
-    }
-    readYs[i] = y
-    levels[y] = effectiveEnd + 2
-    nextRow = y + 1
-    if (y > maxY) {
-      maxY = y
-    }
+    const { start, end } = readExtent(data, i, expansions)
+    readYs[i] = placeRect(rows, start, end)
   }
-
   for (const i of nonOverlapping) {
-    const start = regionStart + readPositions[i * 2]!
-    const end = regionStart + readPositions[i * 2 + 1]!
-    const exp = expansions?.get(i)
-    const effectiveStart = exp ? Math.min(start, exp.start) : start
-    const effectiveEnd = exp ? Math.max(end, exp.end) : end
-
-    let y = levels.length
-    for (let j = 0; j < levels.length; j++) {
-      if ((levels[j] ?? 0) <= effectiveStart) {
-        y = j
-        break
-      }
-    }
-    readYs[i] = y
-    levels[y] = effectiveEnd + 2
-    if (y > maxY) {
-      maxY = y
-    }
+    const { start, end } = readExtent(data, i, expansions)
+    readYs[i] = placeRect(rows, start, end)
   }
-
-  return { readYs, maxY: numReads > 0 ? maxY + 1 : 0 }
+  return { readYs, maxY: rows.length }
 }
 
 /**
  * Compute layout across multiple regions, deduplicating reads that span
- * region boundaries by featureId. Returns a Map<featureId, row> for
+ * region boundaries by featureId. Returns rowMap<featureId, row> for
  * distributing rows back to each region's readYs array.
  */
 export function computeMultiRegionLayout(
@@ -316,7 +262,6 @@ export function computeMultiRegionLayout(
 ) {
   const seen = new Set<string>()
   const reads: { id: string; start: number; end: number }[] = []
-
   for (const [, data] of entries) {
     for (let i = 0; i < data.numReads; i++) {
       const id = data.readIds[i]!
@@ -331,22 +276,10 @@ export function computeMultiRegionLayout(
     }
   }
 
-  reads.sort((a, b) => a.start - b.start)
-
   const rowMap = new Map<string, number>()
-  const levels: number[] = []
-
+  const rows: number[][] = []
   for (const { id, start, end } of reads) {
-    let y = levels.length
-    for (let i = 0; i < levels.length; i++) {
-      if (levels[i]! <= start) {
-        y = i
-        break
-      }
-    }
-    rowMap.set(id, y)
-    levels[y] = end + 2
+    rowMap.set(id, placeRect(rows, start, end))
   }
-
-  return { rowMap, maxY: levels.length }
+  return { rowMap, maxY: rows.length }
 }

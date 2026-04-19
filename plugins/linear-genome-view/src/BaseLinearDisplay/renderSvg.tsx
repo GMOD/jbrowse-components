@@ -7,6 +7,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
+import { when } from 'mobx'
 
 import SVGLegend from './SVGLegend.tsx'
 import {
@@ -28,6 +29,11 @@ export async function renderBaseLinearDisplaySvg(
   self: BaseLinearDisplayModel,
   opts: ExportSvgDisplayOptions,
 ) {
+  // Block-rendered SVG pulls from `renderProps()` which stays
+  // `notReady: true` until the feature-density stats are computed.
+  // Wait here so the export path is self-contained.
+  await when(() => !self.renderProps().notReady || !!self.error)
+
   const { height, id } = self
   const { overrideHeight } = opts
   const view = getContainingView(self) as LinearGenomeViewModel

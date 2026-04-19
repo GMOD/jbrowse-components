@@ -1,5 +1,5 @@
 export interface TrackScale {
-  regionKey: number
+  displayKey: number
   scaleX: number
   scaleY: number
 }
@@ -11,6 +11,9 @@ export interface DotplotGeometryData {
   y2s: Float32Array
   colors: Uint32Array
   instanceCount: number
+  // bpPerPx the buffer was built at; render-time scale = bpPerPx / view.bpPerPx
+  bpPerPxH: number
+  bpPerPxV: number
 }
 
 export interface DotplotRenderState {
@@ -22,8 +25,8 @@ export interface DotplotRenderState {
 
 export interface DotplotBackend {
   resize(width: number, height: number): void
-  uploadRegion(regionNumber: number, data: DotplotGeometryData): void
-  deleteRegion(regionNumber: number): void
+  uploadGeometry(displayKey: number, data: DotplotGeometryData): void
+  deleteGeometry(displayKey: number): void
   render(state: DotplotRenderState): void
   dispose(): void
 }

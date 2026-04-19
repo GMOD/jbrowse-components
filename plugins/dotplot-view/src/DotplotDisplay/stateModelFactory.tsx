@@ -1,16 +1,11 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getContainingView } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { renderSvg } from './renderSvg.tsx'
 
-import type {
-  DotplotBackend,
-  DotplotGeometryData,
-} from './dotplotBackendTypes.ts'
+import type { DotplotGeometryData } from './dotplotBackendTypes.ts'
 import type { DotplotFeatPos } from './types.ts'
 import type { ExportSvgOptions } from '../DotplotView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -28,7 +23,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .compose(
       'DotplotDisplay',
       BaseDisplay,
-      GpuBackendLifecycleSlotMixin(),
       types
         .model({
           /**
@@ -52,41 +46,37 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           features: undefined as Feature[] | undefined,
           /**
            * #volatile
+           * RPC-computed feature positions in pixel coords, with the
+           * bpPerPx the conversion was performed at. One bundle so the
+           * geometry recompute reads them atomically.
            */
-          featPositions: [] as DotplotFeatPos[],
+          featPositions: undefined as
+            | {
+                positions: DotplotFeatPos[]
+                bpPerPxH: number
+                bpPerPxV: number
+              }
+            | undefined,
           /**
            * #volatile
-           * alpha transparency value for synteny drawing (0-1)
            */
           alpha: 1,
           /**
            * #volatile
-           * minimum alignment length to display (in bp)
            */
           minAlignmentLength: 0,
           /**
            * #volatile
-           * width of drawn lines in CSS pixels
            */
           lineWidth: 2,
           /**
            * #volatile
-           * bpPerPx at which featPositions were computed (h-axis)
+           * GPU-instance geometry produced from featPositions, self-
+           * describing via embedded bpPerPx. The containing DotplotView
+           * aggregates one of these per display and uploads them to the
+           * shared backend keyed by track index.
            */
-          featPositionsBpPerPxH: 0,
-          /**
-           * #volatile
-           * bpPerPx at which featPositions were computed (v-axis)
-           */
-          featPositionsBpPerPxV: 0,
-          /**
-           * #volatile
-           * Per-track geometry keyed by this display's slot in the view's
-           * tracks array. One entry, rebuilt as a fresh Map reference on
-           * each geometry recompute so identity-diff in the upload autorun
-           * detects the change.
-           */
-          rpcDataMap: new Map<number, DotplotGeometryData>(),
+          geometry: undefined as DotplotGeometryData | undefined,
           fetchStopToken: undefined as StopToken | undefined,
         })),
     )
@@ -144,58 +134,15 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setFeatPositions(
-        positions: DotplotFeatPos[],
-        bpPerPxH: number,
-        bpPerPxV: number,
-      ) {
-        self.featPositions = positions
-        self.featPositionsBpPerPxH = bpPerPxH
-        self.featPositionsBpPerPxV = bpPerPxV
+      setFeatPositions(arg: {
+        positions: DotplotFeatPos[]
+        bpPerPxH: number
+        bpPerPxV: number
+      }) {
+        self.featPositions = arg
       },
-      setRpcDataForRegion(regionNumber: number, data: DotplotGeometryData) {
-        const next = new Map(self.rpcDataMap)
-        next.set(regionNumber, data)
-        self.rpcDataMap = next
-      },
-      clearRpcData() {
-        if (self.rpcDataMap.size > 0) {
-          self.rpcDataMap = new Map()
-        }
-      },
-      // Upload-only; the view owns render. Key = track index.
-      startGpuBackendLifecycle(backend: DotplotBackend) {
-        // No `prune`: backend is shared, so a per-display active-set
-        // prune would wipe other displays. Per-key cleanup happens in
-        // beforeDestroy via backend.deleteRegion.
-        self.startMultiRegionGpuLifecycle<DotplotBackend, undefined>({
-          backend,
-          uploads: [
-            {
-              getData: () => self.rpcDataMap,
-              upload: (b, n, data: DotplotGeometryData) => {
-                b.uploadRegion(n, data)
-              },
-            },
-          ],
-          renderBlocks: () => [],
-          renderState: () => undefined,
-          render: () => {},
-          // Force a render after upload. Display (upload) and view
-          // (render) are separate autoruns reacting to the same commit;
-          // if render fires first, the backend is still empty. Only
-          // needed for the view-owns-canvas split — single-util
-          // displays have an internal upload→render signal.
-          onAfterCommit: hadData => {
-            if (!hadData) {
-              return
-            }
-            const view = getContainingView(self) as unknown as {
-              renderNow: () => void
-            }
-            view.renderNow()
-          },
-        })
+      setGeometry(data: DotplotGeometryData | undefined) {
+        self.geometry = data
       },
       /**
        * #action
@@ -242,18 +189,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             self.setError(e)
           }
         })()
-      },
-      beforeDestroy() {
-        const rpcKeys = Array.from(self.rpcDataMap.keys())
-        self.stopGpuBackendLifecycle()
-        const view = getContainingView(self) as unknown as {
-          gpuBackend: DotplotBackend | null
-        }
-        if (view.gpuBackend) {
-          for (const k of rpcKeys) {
-            view.gpuBackend.deleteRegion(k)
-          }
-        }
       },
     }))
 }

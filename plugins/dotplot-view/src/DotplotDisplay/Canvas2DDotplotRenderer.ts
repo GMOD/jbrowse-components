@@ -33,12 +33,12 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
     this.canvas.height = Math.round(height * dpr)
   }
 
-  uploadRegion(regionNumber: number, data: DotplotGeometryData) {
-    this.geometries.set(regionNumber, data)
+  uploadGeometry(displayKey: number, data: DotplotGeometryData) {
+    this.geometries.set(displayKey, data)
   }
 
-  deleteRegion(regionNumber: number) {
-    this.geometries.delete(regionNumber)
+  deleteGeometry(displayKey: number) {
+    this.geometries.delete(displayKey)
   }
 
   render(state: DotplotRenderState) {
@@ -51,8 +51,8 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
     ctx.lineWidth = lineWidth
     ctx.lineCap = 'round'
 
-    for (const { regionKey, scaleX, scaleY } of trackScales) {
-      const geo = this.geometries.get(regionKey)
+    for (const { displayKey, scaleX, scaleY } of trackScales) {
+      const geo = this.geometries.get(displayKey)
       if (!geo || geo.instanceCount === 0) {
         continue
       }

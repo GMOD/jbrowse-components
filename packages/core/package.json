@@ -125,6 +125,7 @@
     "./util/io/RemoteFileWithRangeCache": "./src/util/io/RemoteFileWithRangeCache.ts",
     "./util/jexlStrings": "./src/util/jexlStrings.ts",
     "./util/layouts/GranularRectLayout": "./src/util/layouts/GranularRectLayout.ts",
+    "./util/layouts/placeRect": "./src/util/layouts/placeRect.ts",
     "./util/librpc": "./src/util/librpc.ts",
     "./util/mst-reflection": "./src/util/mst-reflection.ts",
     "./util/offscreenCanvasPonyfill": "./src/util/offscreenCanvasPonyfill.ts",
@@ -607,6 +608,10 @@
         "types": "./esm/util/layouts/GranularRectLayout.d.ts",
         "import": "./esm/util/layouts/GranularRectLayout.js"
       },
+      "./util/layouts/placeRect": {
+        "types": "./esm/util/layouts/placeRect.d.ts",
+        "import": "./esm/util/layouts/placeRect.js"
+      },
       "./util/librpc": {
         "types": "./esm/util/librpc.d.ts",
         "import": "./esm/util/librpc.js"
@@ -1004,6 +1009,9 @@
         ],
         "util/layouts/GranularRectLayout": [
           "esm/util/layouts/GranularRectLayout.d.ts"
+        ],
+        "util/layouts/placeRect": [
+          "esm/util/layouts/placeRect.d.ts"
         ],
         "util/librpc": [
           "esm/util/librpc.d.ts"

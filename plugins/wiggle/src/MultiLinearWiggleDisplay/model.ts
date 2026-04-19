@@ -13,7 +13,7 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   ConfigOverrideMixin,
   MultiRegionDisplayMixin,
@@ -23,7 +23,7 @@ import { TreeSidebarMixin, computeHierarchyLayout } from '@jbrowse/tree-sidebar'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { autorun, untracked } from 'mobx'
+import { observable } from 'mobx'
 
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
@@ -121,10 +121,9 @@ export default function stateModelFactory(
       },
     )
     .volatile(() => ({
-      rpcDataMap: new Map<number, MultiWiggleDataResult>(),
+      rpcDataMap: observable.map<number, MultiWiggleDataResult>(),
       sourcesVolatile: [] as SourceInfo[],
-      visibleScoreRange: undefined as [number, number] | undefined,
-      loadedBpPerPx: new Map<number, number>(),
+      loadedBpPerPx: observable.map<number, number>(),
       featureUnderMouse: undefined as
         | {
             refName: string
@@ -263,11 +262,42 @@ export default function stateModelFactory(
         return val === Number.MAX_VALUE ? undefined : val
       },
 
-      get domain(): [number, number] | undefined {
-        if (self.rpcDataMap.size === 0) {
+      // See LinearWiggleDisplay's equivalent — walks mergedVisibleRegions
+      // (one entry per regionNumber with the merged on-screen bp span)
+      // and emits one autoscale entry per source per visible region.
+      get visibleScoreRange(): [number, number] | undefined {
+        const view = getContainingView(self) as LGV
+        if (!view.initialized || self.rpcDataMap.size === 0) {
           return undefined
         }
-        const range = self.visibleScoreRange
+        const numStdDev = self.getConfWithOverride<number>('numStdDev')
+        const visibleEntries = view.mergedVisibleRegions.flatMap(vr => {
+          const regionData = self.rpcDataMap.get(vr.regionNumber)
+          if (!regionData) {
+            return []
+          }
+          const visStart = vr.start - regionData.regionStart
+          const visEnd = vr.end - regionData.regionStart
+          return regionData.sources.map(source => ({
+            visStart,
+            visEnd,
+            data: source,
+          }))
+        })
+        const allEntries = [...self.rpcDataMap.values()].flatMap(regionData =>
+          regionData.sources.map(source => ({ data: source })),
+        )
+        return computeAutoscaleDomain(
+          this.autoscaleType,
+          this.summaryScoreMode,
+          numStdDev,
+          visibleEntries,
+          allEntries,
+        )
+      },
+
+      get domain(): [number, number] | undefined {
+        const range = this.visibleScoreRange
         if (!range) {
           return undefined
         }
@@ -372,9 +402,7 @@ export default function stateModelFactory(
     }))
     .actions(self => ({
       setRpcDataForRegion(regionNumber: number, data: MultiWiggleDataResult) {
-        const next = new Map(self.rpcDataMap)
-        next.set(regionNumber, data)
-        self.rpcDataMap = next
+        self.rpcDataMap.set(regionNumber, data)
         if (self.sourcesVolatile.length === 0 && data.sources.length > 0) {
           self.sourcesVolatile = data.sources.map(s => ({
             name: s.name,
@@ -383,20 +411,13 @@ export default function stateModelFactory(
         }
       },
 
-      setVisibleScoreRange(range: [number, number]) {
-        self.visibleScoreRange = range
-      },
-
       setLoadedBpPerPxForRegion(regionNumber: number, bpPerPx: number) {
-        const next = new Map(self.loadedBpPerPx)
-        next.set(regionNumber, bpPerPx)
-        self.loadedBpPerPx = next
+        self.loadedBpPerPx.set(regionNumber, bpPerPx)
       },
 
       clearDisplaySpecificData() {
-        self.rpcDataMap = new Map()
-        self.visibleScoreRange = undefined
-        self.loadedBpPerPx = new Map()
+        self.rpcDataMap.clear()
+        self.loadedBpPerPx.clear()
       },
 
       startGpuBackendLifecycle(backend: WiggleBackend) {
@@ -570,9 +591,7 @@ export default function stateModelFactory(
       return {
         isCacheValid(regionNumber: number) {
           const view = getContainingView(self) as LGV
-          const regionBpPerPx = untracked(() =>
-            self.loadedBpPerPx.get(regionNumber),
-          )
+          const regionBpPerPx = self.loadedBpPerPx.get(regionNumber)
           return (
             regionBpPerPx === undefined || view.bpPerPx >= regionBpPerPx / 2
           )
@@ -606,68 +625,6 @@ export default function stateModelFactory(
           } catch (e) {
             console.error(e)
           }
-
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                try {
-                  if (!isAlive(self)) {
-                    return
-                  }
-                  const view = getContainingView(self) as LGV
-                  if (!view.initialized) {
-                    return
-                  }
-                  const numStdDev =
-                    self.getConfWithOverride<number>('numStdDev')
-                  const visibleEntries = view.dynamicBlocks.contentBlocks
-                    .filter(block => block.regionNumber !== undefined)
-                    .flatMap(block => {
-                      const regionData = self.rpcDataMap.get(
-                        block.regionNumber!,
-                      )
-                      if (!regionData) {
-                        return []
-                      }
-                      const visStart = block.start - regionData.regionStart
-                      const visEnd = block.end - regionData.regionStart
-                      return regionData.sources.map(source => ({
-                        visStart,
-                        visEnd,
-                        data: source,
-                      }))
-                    })
-                  const allEntries = [...self.rpcDataMap.values()].flatMap(
-                    regionData =>
-                      regionData.sources.map(source => ({ data: source })),
-                  )
-                  const range = computeAutoscaleDomain(
-                    self.autoscaleType,
-                    self.summaryScoreMode,
-                    numStdDev,
-                    visibleEntries,
-                    allEntries,
-                  )
-                  if (
-                    range &&
-                    (range[0] !== self.visibleScoreRange?.[0] ||
-                      range[1] !== self.visibleScoreRange[1])
-                  ) {
-                    self.setVisibleScoreRange(range)
-                  }
-                } catch (e) {
-                  if (isAlive(self)) {
-                    console.error(
-                      '[MultiWiggle] VisibleScoreRange autorun error',
-                      e,
-                    )
-                  }
-                }
-              },
-              { delay: 400, name: 'VisibleScoreRange' },
-            ),
-          )
         },
       }
     })

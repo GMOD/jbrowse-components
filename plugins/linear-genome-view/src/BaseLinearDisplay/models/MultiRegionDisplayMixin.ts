@@ -10,7 +10,7 @@ import {
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { autorun, untracked } from 'mobx'
+import { autorun, observable, untracked } from 'mobx'
 
 import { checkByteEstimate } from './fetchHelpers.ts'
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.tsx'
@@ -47,7 +47,7 @@ export default function MultiRegionDisplayMixin() {
       types.model({}),
     )
     .volatile(() => ({
-      loadedRegions: new Map<number, Region>(),
+      loadedRegions: observable.map<number, Region>(),
       error: undefined as unknown,
       renderingStopToken: undefined as StopToken | undefined,
       fetchGeneration: 0,
@@ -83,15 +83,6 @@ export default function MultiRegionDisplayMixin() {
         return undefined
       },
 
-      // Every MultiRegionDisplayMixin consumer is GPU-rendered on the
-      // main thread and opts out of the legacy server-side-rendered
-      // block pipeline by returning notReady: true. SVG export paths
-      // check this to skip the block-based exporter in favor of each
-      // display's own renderSvg method. Overrides BaseDisplay's
-      // renderProps.
-      renderProps() {
-        return { notReady: true }
-      },
     }))
     .actions(self => ({
       setError(error?: unknown) {
@@ -102,17 +93,13 @@ export default function MultiRegionDisplayMixin() {
         self.renderingStopToken = token
       },
 
-      // Upload-identity contract: the GPU backend autorun (see
-      // startGpuBackendAutorunLifecycle) re-uploads a region only when its
-      // value object reference changes. Subclasses' per-region setters
-      // (setRpcDataForRegion etc.) must therefore produce a FRESH value
-      // object for the updated region — never mutate in place. This method
-      // follows that rule by constructing a new Map; plugin-level data
-      // setters must do the same for their own rpcDataMap entries.
+      // Upload-identity contract: the GPU backend autorun re-uploads a
+      // region only when its value changes. With `observable.map`, the
+      // framework tracks per-key reads so an in-place `.set` is enough —
+      // subclasses' per-region setters (setRpcDataForRegion etc.) should
+      // follow the same in-place pattern.
       setLoadedRegionForRegion(regionNumber: number, region: Region) {
-        const next = new Map(self.loadedRegions)
-        next.set(regionNumber, region)
-        self.loadedRegions = next
+        self.loadedRegions.set(regionNumber, region)
       },
 
       clearDisplaySpecificData() {
@@ -127,7 +114,7 @@ export default function MultiRegionDisplayMixin() {
         }
         self.error = undefined
         self.setRegionTooLarge(false)
-        self.loadedRegions = new Map()
+        self.loadedRegions.clear()
         self.fetchGeneration++
         self.clearDisplaySpecificData()
       },
@@ -137,7 +124,7 @@ export default function MultiRegionDisplayMixin() {
           stopStopToken(self.renderingStopToken)
           self.renderingStopToken = undefined
         }
-        self.loadedRegions = new Map()
+        self.loadedRegions.clear()
         self.fetchGeneration++
       },
 

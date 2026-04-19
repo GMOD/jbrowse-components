@@ -23,7 +23,9 @@ export interface SyntenyRegionData {
   numIndicators: number
 }
 
-export function mergeGenomeRows(rpcDataMap: Map<number, SyntenyRegionData>) {
+export function mergeGenomeRows(
+  rpcDataMap: ReadonlyMap<number, SyntenyRegionData>,
+) {
   const merged = new Map<string, MultiPairFeature[]>()
   for (const data of rpcDataMap.values()) {
     for (const [genome, features] of data.genomeFeatures) {
@@ -40,7 +42,9 @@ export function mergeGenomeRows(rpcDataMap: Map<number, SyntenyRegionData>) {
   return merged
 }
 
-export function getGlobalMaxDepth(rpcDataMap: Map<number, SyntenyRegionData>) {
+export function getGlobalMaxDepth(
+  rpcDataMap: ReadonlyMap<number, SyntenyRegionData>,
+) {
   return getGlobalMaxCoverageDepth(rpcDataMap, d => d.coverageMaxDepth)
 }
 

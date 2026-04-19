@@ -1,5 +1,5 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
-import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
+import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
 
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 
@@ -11,14 +11,13 @@ function buildChainRowMap(
     distance: number
   }[],
 ) {
-  const sorted = chains.slice().sort((a, b) => a.distance - b.distance)
-  const layout = new GranularRectLayout({ pitchX: 1, pitchY: 1 })
+  chains.sort((a, b) => a.distance - b.distance)
+  const rows: number[][] = []
   const rowMap = new Map<string, number>()
-  for (const { name, minStart, maxEnd } of sorted) {
-    const top = layout.addRect(name, minStart, maxEnd + 2, 1)
-    rowMap.set(name, top ?? 0)
+  for (const { name, minStart, maxEnd } of chains) {
+    rowMap.set(name, placeRect(rows, minStart, maxEnd))
   }
-  return { rowMap, maxY: layout.totalHeight }
+  return { rowMap, maxY: rows.length }
 }
 
 function mergeChains(datasets: PileupDataResult[]) {

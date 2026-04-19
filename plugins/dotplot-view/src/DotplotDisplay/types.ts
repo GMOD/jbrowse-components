@@ -1,3 +1,4 @@
+import type { DotplotGeometryData } from './dotplotBackendTypes.ts'
 import type { Feature, ViewSnap } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -11,13 +12,8 @@ export interface DotplotFeatPos {
 }
 
 export interface DotplotRenderModel extends IAnyStateTreeNode {
-  featPositions: DotplotFeatPos[]
+  geometry: DotplotGeometryData | undefined
   error: unknown
-  featPositionsBpPerPxH: number
-  featPositionsBpPerPxV: number
-  alpha: number
-  minAlignmentLength: number
-  colorBy: string
 }
 
 export interface DotplotFeatureData {

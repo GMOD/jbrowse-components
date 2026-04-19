@@ -36,7 +36,11 @@ import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview.ts'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util.ts'
 
 import type { DotplotViewInit, ImportFormSyntenyTrack } from './types.ts'
-import type { DotplotBackend } from '../DotplotDisplay/dotplotBackendTypes.ts'
+import type {
+  DotplotBackend,
+  DotplotGeometryData,
+  DotplotRenderState,
+} from '../DotplotDisplay/dotplotBackendTypes.ts'
 import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.tsx'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -199,12 +203,6 @@ export default function stateModelFactory(pm: PluginManager) {
         borderY: 100,
         /**
          * #volatile
-         * shared GPU backend owned by the view, read by displays so they can
-         * start their own upload lifecycles against it
-         */
-        gpuBackend: null as DotplotBackend | null,
-        /**
-         * #volatile
          */
         importFormSyntenyTrackSelections:
           observable.array<ImportFormSyntenyTrack>(),
@@ -359,81 +357,94 @@ export default function stateModelFactory(pm: PluginManager) {
 
         /**
          * #getter
-         * Aggregated per-frame render state for the unified dotplot canvas.
-         * Returns undefined until the view is initialized and at least one
-         * track has computed feature positions, which gates rendering and
-         * markCanvasDrawn correctly.
+         * DotplotDisplays under each track, indexed to match `tracks`.
+         */
+        get dotplotDisplays() {
+          return self.tracks.map(
+            t => t.displays[0] as DotplotDisplayModel,
+          )
+        },
+        /**
+         * #getter
+         * Per-display GPU geometry keyed by track index. The upload autorun
+         * diffs this map: new entries upload, vanished entries evict.
+         */
+        get geometryByTrackIndex() {
+          const m = new Map<number, DotplotGeometryData>()
+          const displays = this.dotplotDisplays
+          for (let idx = 0, l = displays.length; idx < l; idx++) {
+            const g = displays[idx]!.geometry
+            if (g) {
+              m.set(idx, g)
+            }
+          }
+          return m
+        },
+        /**
+         * #getter
+         * Aggregated per-frame render state. Built by walking each
+         * display that has uploaded geometry; returns undefined when none
+         * do, which gates the render pass.
          */
         get dotplotRenderState() {
           if (!this.initialized) {
             return undefined
           }
-          const { hview, vview, tracks } = self
-          if (tracks.length === 0) {
-            return undefined
-          }
-          let anyHasFeatures = false
+          const { hview, vview } = self
+          const displays = this.dotplotDisplays
           const trackScales = []
-          for (let idx = 0, l = tracks.length; idx < l; idx++) {
-            const track = tracks[idx]
-            // TODO get rid of DotplotDisplayModel concept entirely
-            const display = track.displays[0] as DotplotDisplayModel
-            if (display.featPositionsBpPerPxH > 0) {
-              anyHasFeatures = true
+          for (let idx = 0, l = displays.length; idx < l; idx++) {
+            const { geometry } = displays[idx]!
+            if (!geometry) {
+              continue
             }
-            const scaleX =
-              display.featPositionsBpPerPxH > 0
-                ? display.featPositionsBpPerPxH / hview.bpPerPx
-                : 1
-            const scaleY =
-              display.featPositionsBpPerPxV > 0
-                ? display.featPositionsBpPerPxV / vview.bpPerPx
-                : 1
             trackScales.push({
-              // TODO regionKey named badly
-              regionKey: idx,
-              scaleX,
-              scaleY,
+              displayKey: idx,
+              scaleX: geometry.bpPerPxH / hview.bpPerPx,
+              scaleY: geometry.bpPerPxV / vview.bpPerPx,
             })
           }
-
-          return anyHasFeatures
-            ? {
-                offsetX: hview.offsetPx,
-                offsetY: vview.offsetPx,
-                lineWidth:
-                  (tracks[0]?.displays[0] as DotplotDisplayModel | undefined)
-                    ?.lineWidth ?? 2,
-                trackScales,
-              }
-            : undefined
+          if (trackScales.length === 0) {
+            return undefined
+          }
+          return {
+            offsetX: hview.offsetPx,
+            offsetY: vview.offsetPx,
+            lineWidth: displays[0]!.lineWidth,
+            trackScales,
+          }
         },
       }))
-      // One canvas on the view, shared by all displays. View runs render;
-      // each display uploads its own geometry keyed by track index.
-      .actions(self => {
-        const baseStop = self.stopGpuBackendLifecycle
-        return {
-          startGpuBackendLifecycle(backend: DotplotBackend) {
-            self.gpuBackend = backend
-            self.startSingleDataGpuLifecycle({
+      // One canvas on the view, shared by all displays. The view aggregates
+      // per-display geometry from `geometryByTrackIndex` and runs both upload
+      // and render against the shared backend.
+      .actions(self => ({
+        startGpuBackendLifecycle(backend: DotplotBackend) {
+          self.startMultiRegionGpuLifecycle<DotplotBackend, DotplotRenderState>(
+            {
               backend,
-              uploads: [],
+              uploads: [
+                {
+                  getData: () => self.geometryByTrackIndex,
+                  upload: (b, key, data: DotplotGeometryData) => {
+                    b.uploadGeometry(key, data)
+                  },
+                  deleteOne: (b, key) => {
+                    b.deleteGeometry(key)
+                  },
+                },
+              ],
+              renderBlocks: () => [],
               renderState: () => self.dotplotRenderState,
-              render: (b, state) => {
+              render: (b, _blocks, state) => {
                 b.resize(self.viewWidth, self.viewHeight)
                 b.render(state)
                 self.markCanvasDrawn()
               },
-            })
-          },
-          // Also clear gpuBackend so displays' binding autorun stops.
-          stopGpuBackendLifecycle() {
-            baseStop()
-            self.gpuBackend = null
-          },
-        }
-      })
+            },
+          )
+        },
+      }))
       .actions(self => ({
         /**
          * #action

@@ -54,7 +54,7 @@ test('uploads every region in the data map on first run', () => {
   handle.dispose()
 })
 
-test('re-uploads every region when one entry changes (no cache)', () => {
+test('re-uploads only the changed region when one entry mutates', () => {
   const backend = makeBackend()
   const data = observable.map<number, string>(undefined, { deep: false })
   data.set(0, 'a')
@@ -78,11 +78,56 @@ test('re-uploads every region when one entry changes (no cache)', () => {
   // Initial: 2 uploads (one per region).
   expect(backend.uploads.length).toBe(2)
 
-  // Mutate one entry — autorun re-fires, uploads all regions again.
+  // Mutate one entry — per-key autorun re-fires, only that region
+  // re-uploads.
   runInAction(() => {
     data.set(0, 'a2')
   })
+  expect(backend.uploads.length).toBe(3)
+  expect(backend.uploads.at(-1)).toEqual({ regionNumber: 0, data: 'a2' })
+
+  handle.dispose()
+})
+
+test('settings change inside upload fires every per-key autorun', () => {
+  // When an observable that `upload()` reads changes, every per-key
+  // autorun fires (all regions re-upload) because each inner tracks
+  // the same observable. This preserves the "re-encode everyone on
+  // settings change" behavior needed for color/scale changes.
+  const backend = makeBackend()
+  const data = observable.map<number, string>(undefined, { deep: false })
+  data.set(0, 'a')
+  data.set(1, 'b')
+  const colorBox = observable.box('red')
+
+  const handle = startGpuBackendAutorunLifecycle<FakeBackend, number>({
+    backend,
+    uploads: [
+      {
+        getData: () => data,
+        upload: (b, n, d) => {
+          const color = colorBox.get()
+          b.uploads.push({ regionNumber: n, data: `${d as string}:${color}` })
+        },
+        prune: () => {},
+      },
+    ],
+    renderBlocks: () => [],
+    renderState: () => 0,
+    render: () => {},
+  })
+
+  expect(backend.uploads.length).toBe(2)
+
+  runInAction(() => {
+    colorBox.set('blue')
+  })
+  // Both per-key autoruns re-fire — all regions re-upload.
   expect(backend.uploads.length).toBe(4)
+  expect(backend.uploads.slice(-2)).toEqual([
+    { regionNumber: 0, data: 'a:blue' },
+    { regionNumber: 1, data: 'b:blue' },
+  ])
 
   handle.dispose()
 })

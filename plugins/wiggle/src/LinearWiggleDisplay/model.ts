@@ -10,7 +10,7 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   ConfigOverrideMixin,
   MultiRegionDisplayMixin,
@@ -18,7 +18,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
-import { autorun, untracked } from 'mobx'
+import { observable } from 'mobx'
 
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
@@ -98,9 +98,8 @@ export default function stateModelFactory(
       },
     )
     .volatile(() => ({
-      rpcDataMap: new Map<number, WiggleDataResult>(),
-      visibleScoreRange: undefined as [number, number] | undefined,
-      loadedBpPerPx: new Map<number, number>(),
+      rpcDataMap: observable.map<number, WiggleDataResult>(),
+      loadedBpPerPx: observable.map<number, number>(),
       featureUnderMouse: undefined as
         | {
             refName: string
@@ -203,11 +202,47 @@ export default function stateModelFactory(
         return val === Number.MAX_VALUE ? undefined : val
       },
 
-      get domain(): [number, number] | undefined {
-        if (self.rpcDataMap.size === 0) {
+      // Autoscale range = max/min over whatever is currently on screen.
+      // Cached view, recomputes when any input moves. Replaces the
+      // previous VisibleScoreRange autorun + volatile.
+      //
+      // Iterates `mergedVisibleRegions` (one entry per regionNumber with
+      // the merged on-screen bp span) rather than `dynamicBlocks.contentBlocks`
+      // — a single region can appear as multiple content blocks, but for
+      // autoscale we only need the merged visible slice.
+      get visibleScoreRange(): [number, number] | undefined {
+        const view = getContainingView(self) as LGV
+        if (!view.initialized || self.rpcDataMap.size === 0) {
           return undefined
         }
-        const range = self.visibleScoreRange
+        const numStdDev = self.getConfWithOverride<number>('numStdDev')
+        const visibleEntries = view.mergedVisibleRegions.flatMap(vr => {
+          const data = self.rpcDataMap.get(vr.regionNumber)
+          if (!data) {
+            return []
+          }
+          return [
+            {
+              visStart: vr.start - data.regionStart,
+              visEnd: vr.end - data.regionStart,
+              data,
+            },
+          ]
+        })
+        const allEntries = [...self.rpcDataMap.values()].map(data => ({
+          data,
+        }))
+        return computeAutoscaleDomain(
+          this.autoscaleType,
+          this.summaryScoreMode,
+          numStdDev,
+          visibleEntries,
+          allEntries,
+        )
+      },
+
+      get domain(): [number, number] | undefined {
+        const range = this.visibleScoreRange
         if (!range) {
           return undefined
         }
@@ -283,25 +318,16 @@ export default function stateModelFactory(
     }))
     .actions(self => ({
       setRpcDataForRegion(regionNumber: number, data: WiggleDataResult) {
-        const next = new Map(self.rpcDataMap)
-        next.set(regionNumber, data)
-        self.rpcDataMap = next
-      },
-
-      setVisibleScoreRange(range: [number, number]) {
-        self.visibleScoreRange = range
+        self.rpcDataMap.set(regionNumber, data)
       },
 
       setLoadedBpPerPxForRegion(regionNumber: number, bpPerPx: number) {
-        const next = new Map(self.loadedBpPerPx)
-        next.set(regionNumber, bpPerPx)
-        self.loadedBpPerPx = next
+        self.loadedBpPerPx.set(regionNumber, bpPerPx)
       },
 
       clearDisplaySpecificData() {
-        self.rpcDataMap = new Map()
-        self.visibleScoreRange = undefined
-        self.loadedBpPerPx = new Map()
+        self.rpcDataMap.clear()
+        self.loadedBpPerPx.clear()
       },
 
       // Plugin-supplied `onAfterCommit` gates `markCanvasDrawn` on
@@ -441,14 +467,10 @@ export default function stateModelFactory(
         }
       }
 
-      const superAfterAttach = self.afterAttach
-
       return {
         isCacheValid(regionNumber: number) {
           const view = getContainingView(self) as LGV
-          const regionBpPerPx = untracked(() =>
-            self.loadedBpPerPx.get(regionNumber),
-          )
+          const regionBpPerPx = self.loadedBpPerPx.get(regionNumber)
           return (
             regionBpPerPx === undefined || view.bpPerPx >= regionBpPerPx / 2
           )
@@ -468,56 +490,6 @@ export default function stateModelFactory(
             )
             await Promise.all(promises)
           })
-        },
-
-        afterAttach() {
-          superAfterAttach()
-
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const view = getContainingView(self) as LGV
-                if (!view.initialized) {
-                  return
-                }
-                const numStdDev = self.getConfWithOverride<number>('numStdDev')
-                const visibleEntries = view.dynamicBlocks.contentBlocks.flatMap(
-                  block => {
-                    const data = self.rpcDataMap.get(block.regionNumber!)
-                    if (!data) {
-                      return []
-                    }
-                    return [
-                      {
-                        visStart: block.start - data.regionStart,
-                        visEnd: block.end - data.regionStart,
-                        data,
-                      },
-                    ]
-                  },
-                )
-                const allEntries = [...self.rpcDataMap.values()].map(data => ({
-                  data,
-                }))
-                const range = computeAutoscaleDomain(
-                  self.autoscaleType,
-                  self.summaryScoreMode,
-                  numStdDev,
-                  visibleEntries,
-                  allEntries,
-                )
-                if (
-                  range &&
-                  (range[0] !== self.visibleScoreRange?.[0] ||
-                    range[1] !== self.visibleScoreRange[1])
-                ) {
-                  self.setVisibleScoreRange(range)
-                }
-              },
-              { delay: 400, name: 'VisibleScoreRange' },
-            ),
-          )
         },
       }
     })

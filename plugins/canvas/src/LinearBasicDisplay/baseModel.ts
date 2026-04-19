@@ -29,9 +29,9 @@ import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { autorun, untracked } from 'mobx'
+import { autorun, observable, untracked } from 'mobx'
 
-import { computeAndAssignLayout, relayoutAllRegions } from './layout.ts'
+import { computeLaidOutData } from './layout.ts'
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { CanvasFeatureBackend } from './components/canvasFeatureBackendTypes.ts'
@@ -180,9 +180,8 @@ export default function baseStateModelFactory(
         }
       })
       .volatile(() => ({
-        rpcDataMap: new Map<number, FeatureDataResult>(),
-        layoutBpPerPxMap: new Map<number, number>(),
-        maxY: 0,
+        rawRpcDataMap: observable.map<number, FeatureDataResult>(),
+        fetchedBpPerPxMap: observable.map<number, number>(),
         canvasDrawn: false,
         featureIdUnderMouse: null as string | null,
         subfeatureIdUnderMouse: null as string | null,
@@ -195,8 +194,38 @@ export default function baseStateModelFactory(
         heightBeforeExpand: undefined as number | undefined,
       }))
       .views(self => ({
+        // Laid-out data derived from the raw per-region fetch results. Mobx
+        // caches this — it only recomputes when any tracked input changes
+        // (raw data, bpPerPx, label visibility). Every consumer (hit test,
+        // GPU upload, React render) reads this getter and sees the same
+        // cached map until an input moves.
+        get rpcDataMap(): Map<number, FeatureDataResult> {
+          const view = getContainingView(self) as LGV
+          if (!view.initialized || self.rawRpcDataMap.size === 0) {
+            return new Map()
+          }
+          return computeLaidOutData(self.rawRpcDataMap, {
+            bpPerPx: view.bpPerPx,
+            regionKeys: this.regionKeys,
+            showLabels: this.showLabels,
+            showDescriptions: this.effectiveShowDescriptions,
+          })
+        },
+
+        get maxY() {
+          let max = 0
+          for (const data of this.rpcDataMap.values()) {
+            for (const item of data.flatbushItems) {
+              if (item.bottomPx > max) {
+                max = item.bottomPx
+              }
+            }
+          }
+          return max
+        },
+
         get hasOverflow() {
-          return self.maxY > self.height
+          return this.maxY > self.height
         },
 
         get renderState() {
@@ -289,7 +318,7 @@ export default function baseStateModelFactory(
         get hoveredFeature() {
           const id = self.featureIdUnderMouse
           if (id) {
-            for (const data of self.rpcDataMap.values()) {
+            for (const data of this.rpcDataMap.values()) {
               for (const f of data.flatbushItems) {
                 if (f.featureId === id) {
                   return f
@@ -303,7 +332,7 @@ export default function baseStateModelFactory(
         get hoveredSubfeature() {
           const id = self.subfeatureIdUnderMouse
           if (id) {
-            for (const data of self.rpcDataMap.values()) {
+            for (const data of this.rpcDataMap.values()) {
               for (const s of data.subfeatureInfos) {
                 if (s.featureId === id) {
                   return s
@@ -351,13 +380,16 @@ export default function baseStateModelFactory(
           return map
         },
 
-        get needsLayoutRefresh() {
+        // Refetch trigger (not layout): worker output's pixel-space arrays
+        // were fetched at a specific bpPerPx, so when the viewport has
+        // drifted 2x off that scale we ask for fresh data from the worker.
+        get needsRefetchForZoom() {
           const view = getContainingView(self) as LGV
-          if (!view.initialized || self.layoutBpPerPxMap.size === 0) {
+          if (!view.initialized || self.fetchedBpPerPxMap.size === 0) {
             return false
           }
-          for (const layoutBpPerPx of self.layoutBpPerPxMap.values()) {
-            const ratio = view.bpPerPx / layoutBpPerPx
+          for (const fetchedBpPerPx of self.fetchedBpPerPxMap.values()) {
+            const ratio = view.bpPerPx / fetchedBpPerPx
             if (ratio > 2 || ratio < 0.5) {
               return true
             }
@@ -366,7 +398,7 @@ export default function baseStateModelFactory(
         },
 
         getFeatureById(featureId: string): FlatbushItem | undefined {
-          for (const data of self.rpcDataMap.values()) {
+          for (const data of this.rpcDataMap.values()) {
             const found = data.flatbushItems.find(
               f => f.featureId === featureId,
             )
@@ -410,9 +442,7 @@ export default function baseStateModelFactory(
         // field here propagates both into the RPC call (via
         // fetchFeaturesForRegion) and into the SettingsInvalidate autorun
         // (which reads this getter), so refetch happens automatically when
-        // any field changes — no separate cache key to maintain. Canvas's
-        // worker does layout on the worker side, so all rendering-affecting
-        // settings live in rpcProps; there is no separate gpuProps.
+        // any field changes — no separate cache key to maintain.
         get rpcProps() {
           return {
             adapterConfig: self.adapterConfigSnapshot,
@@ -444,35 +474,21 @@ export default function baseStateModelFactory(
           }
         },
 
-        setRpcDataMap(dataMap: Map<number, FeatureDataResult>) {
-          self.rpcDataMap = dataMap
-          let globalMaxY = 0
-          for (const d of dataMap.values()) {
-            for (const item of d.flatbushItems) {
-              if (item.bottomPx > globalMaxY) {
-                globalMaxY = item.bottomPx
-              }
-            }
-          }
-          self.maxY = globalMaxY
-          if (self.autoHeight) {
-            self.setHeight(Math.min(Math.max(globalMaxY, 50), self.maxHeight))
-          }
+        setRawRpcDataForRegion(regionNumber: number, data: FeatureDataResult) {
+          self.rawRpcDataMap.set(regionNumber, data)
         },
 
         setFeatureDensityPerPx(value: number) {
           self.featureDensityPerPx = value
         },
 
-        setLayoutBpPerPxForRegion(regionNumber: number, bpPerPx: number) {
-          const next = new Map(self.layoutBpPerPxMap)
-          next.set(regionNumber, bpPerPx)
-          self.layoutBpPerPxMap = next
+        recordFetchBpPerPx(regionNumber: number, bpPerPx: number) {
+          self.fetchedBpPerPxMap.set(regionNumber, bpPerPx)
         },
 
         clearDisplaySpecificData() {
-          self.rpcDataMap = new Map()
-          self.layoutBpPerPxMap = new Map()
+          self.rawRpcDataMap.clear()
+          self.fetchedBpPerPxMap.clear()
           self.setRegionTooLarge(false)
           self.setScrollTop(0)
         },
@@ -485,6 +501,8 @@ export default function baseStateModelFactory(
             backend,
             uploads: [
               {
+                // Reads the derived laid-out map. Re-fires when raw data,
+                // bpPerPx, or label visibility changes — no other plumbing.
                 getData: () => self.rpcDataMap,
                 upload: (b, regionNumber, data: FeatureDataResult) => {
                   b.uploadRegion(regionNumber, data)
@@ -627,8 +645,8 @@ export default function baseStateModelFactory(
             self.renderingStopToken = undefined
           }
           self.error = undefined
-          self.loadedRegions = new Map()
-          self.layoutBpPerPxMap = new Map()
+          self.loadedRegions.clear()
+          self.fetchedBpPerPxMap.clear()
           self.setRegionTooLarge(false)
           self.fetchGeneration++
         },
@@ -670,45 +688,18 @@ export default function baseStateModelFactory(
           return { regionNumber, data: result, region, bpPerPx }
         }
 
-        function applyFetchResults(
-          results: (FetchResult | undefined)[],
-          bpPerPx: number,
-        ) {
-          const dataMap = new Map(self.rpcDataMap)
-          const regionKeys = new Map(self.regionKeys)
-          const newRegionNumbers = new Set<number>()
-          for (const r of results) {
-            if (r) {
-              dataMap.set(r.regionNumber, r.data)
-              newRegionNumbers.add(r.regionNumber)
-              regionKeys.set(
-                r.regionNumber,
-                `${r.region.assemblyName}:${r.region.refName}`,
-              )
-            }
-          }
+        function applyFetchResults(results: FetchResult[]) {
           let totalFeatures = 0
           let totalSpanPx = 0
           for (const r of results) {
-            if (r) {
-              self.setLayoutBpPerPxForRegion(r.regionNumber, r.bpPerPx)
-              totalFeatures += r.data.featureCount
-              totalSpanPx += (r.region.end - r.region.start) / r.bpPerPx
-            }
+            self.setRawRpcDataForRegion(r.regionNumber, r.data)
+            self.recordFetchBpPerPx(r.regionNumber, r.bpPerPx)
+            totalFeatures += r.data.featureCount
+            totalSpanPx += (r.region.end - r.region.start) / r.bpPerPx
           }
           self.setFeatureDensityPerPx(
             totalSpanPx > 0 ? totalFeatures / totalSpanPx : 0,
           )
-
-          computeAndAssignLayout(
-            dataMap,
-            bpPerPx,
-            regionKeys,
-            newRegionNumbers,
-            self.showLabels,
-            self.effectiveShowDescriptions,
-          )
-          self.setRpcDataMap(dataMap)
         }
 
         function fetchAllRegions() {
@@ -737,7 +728,7 @@ export default function baseStateModelFactory(
           },
 
           beforeFetchCheck() {
-            if (untracked(() => self.needsLayoutRefresh)) {
+            if (untracked(() => self.needsRefetchForZoom)) {
               self.softReset()
             }
           },
@@ -767,75 +758,38 @@ export default function baseStateModelFactory(
                 return
               }
               applyFetchResults(
-                results.filter((r): r is FetchResult => r !== 'regionTooLarge'),
-                bpPerPx,
+                results.filter(
+                  (r): r is FetchResult => r !== 'regionTooLarge',
+                ),
               )
             })
           },
         }
       })
-      .actions(self => ({
-        relayoutForCurrentZoom(
-          showLabels = self.showLabels,
-          effectiveShowDescriptions = self.effectiveShowDescriptions,
-        ) {
-          const view = getContainingView(self) as LGV
-          if (!view.initialized || self.rpcDataMap.size === 0) {
-            return
-          }
-          const dataMap = new Map<number, FeatureDataResult>()
-          for (const [k, v] of self.rpcDataMap) {
-            dataMap.set(k, { ...v })
-          }
-          relayoutAllRegions(
-            dataMap,
-            view.bpPerPx,
-            self.regionKeys,
-            showLabels,
-            effectiveShowDescriptions,
-          )
-          self.setRpcDataMap(dataMap)
-        },
-      }))
       .actions(self => {
         const superAfterAttach = self.afterAttach
         return {
           afterAttach() {
             superAfterAttach()
 
-            // Relayout on zoom / label-visibility change. Reads
-            // bpPerPx, showLabels, effectiveShowDescriptions as
-            // triggers (effectiveShowDescriptions transitively tracks
-            // showDescriptions + featureDensityPerPx). The rpcDataMap
-            // read is untracked — we don't want the relayout's own
-            // setRpcDataMap call to re-fire this autorun, and we don't
-            // want initial data arrival to trigger a spurious relayout
-            // (the fetch handler already lays out fresh data).
+            // Auto-height: snap height to fit the laid-out content. maxY
+            // derives from rpcDataMap, which derives from raw fetch data +
+            // bpPerPx + label visibility — so zoom and label toggles both
+            // flow through here without any extra plumbing.
             addDisposer(
               self,
               autorun(
                 () => {
-                  const view = getContainingView(self) as LGV
-                  if (!view.initialized) {
+                  if (!self.autoHeight) {
                     return
                   }
-                  void view.bpPerPx
-                  const showLabels = self.showLabels
-                  const effectiveShowDescriptions =
-                    self.effectiveShowDescriptions
-                  untracked(() => {
-                    if (self.rpcDataMap.size > 0) {
-                      self.relayoutForCurrentZoom(
-                        showLabels,
-                        effectiveShowDescriptions,
-                      )
-                    }
-                  })
+                  const target = Math.min(
+                    Math.max(self.maxY, 50),
+                    self.maxHeight,
+                  )
+                  self.setHeight(target)
                 },
-                {
-                  name: 'RelayoutOnZoomOrLabelChange',
-                  delay: 50,
-                },
+                { name: 'CanvasAutoHeight' },
               ),
             )
           },

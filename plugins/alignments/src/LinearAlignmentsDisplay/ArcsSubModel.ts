@@ -1,4 +1,5 @@
 import { types } from '@jbrowse/mobx-state-tree'
+import { observable } from 'mobx'
 
 import type { ArcsDataResult } from '../shared/computeArcsFromPileupData.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -22,7 +23,7 @@ export const ArcsSubModel = types
     pairedArcsDown: true,
   })
   .volatile(() => ({
-    rpcDataMap: new Map<number, ArcsDataResult>(),
+    rpcDataMap: observable.map<number, ArcsDataResult>(),
   }))
   .views(self => ({
     get lineWidth(): number {
@@ -31,16 +32,14 @@ export const ArcsSubModel = types
   }))
   .actions(self => ({
     setRpcData(regionNumber: number, data: ArcsDataResult | null) {
-      const next = new Map(self.rpcDataMap)
       if (data) {
-        next.set(regionNumber, data)
+        self.rpcDataMap.set(regionNumber, data)
       } else {
-        next.delete(regionNumber)
+        self.rpcDataMap.delete(regionNumber)
       }
-      self.rpcDataMap = next
     },
     clearAllRpcData() {
-      self.rpcDataMap = new Map()
+      self.rpcDataMap.clear()
     },
     setLineWidth(width: number) {
       self.lineWidthSetting = width

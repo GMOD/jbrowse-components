@@ -25,7 +25,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import TimelineIcon from '@mui/icons-material/Timeline'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
-import { autorun } from 'mobx'
+import { autorun, observable } from 'mobx'
 
 import { LABEL_WIDTH } from './components/multiSyntenyBackendTypes.ts'
 import { legendItems as legendItemsMap } from './components/multiSyntenyColorUtils.ts'
@@ -177,7 +177,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       }),
     )
     .volatile(() => ({
-      rpcDataMap: new Map<number, SyntenyRegionData>(),
+      rpcDataMap: observable.map<number, SyntenyRegionData>(),
       allGenomeNames: [] as string[],
       contextMenuFeature: undefined as Feature | undefined,
       statusMessage: undefined as string | undefined,
@@ -303,9 +303,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
     }))
     .actions(self => ({
       setRpcData(regionNumber: number, data: SyntenyRegionData) {
-        const next = new Map(self.rpcDataMap)
-        next.set(regionNumber, data)
-        self.rpcDataMap = next
+        self.rpcDataMap.set(regionNumber, data)
       },
       setAllGenomeNames(names: string[]) {
         self.allGenomeNames = names

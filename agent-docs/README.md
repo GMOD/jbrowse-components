@@ -1,35 +1,34 @@
 # Agent Documentation
 
-Quick navigation for WebGL/WebGPU migration and GPU rendering architecture.
+Start with `PRD.md`. It is the governing doc for agent work on this branch.
 
-| Doc                                                                  | Purpose                                             | Audience                     |
-| -------------------------------------------------------------------- | --------------------------------------------------- | ---------------------------- |
-| **[PRD.md](PRD.md)**                                                 | Project requirements, priorities, blockers          | Project leads, planning      |
-| **[ARCHITECTURE.md](ARCHITECTURE.md)**                               | GPU rendering pipeline, adding new display types    | Display developers           |
-| **[TEST_INFRASTRUCTURE.md](TEST_INFRASTRUCTURE.md)**                 | Browser/unit tests, debugging, WebGPU CI setup      | Test engineers, developers   |
-| **[CONFIG_PATTERN.md](CONFIG_PATTERN.md)**                           | Display config system, JEXL callbacks, RPC boundary | Config system users          |
-| **[CONFIG_PATTERN_NEXT_STEPS.md](CONFIG_PATTERN_NEXT_STEPS.md)**     | Config tasks (snapshots, migrations, long-term)     | Config implementers          |
-| **[TODO.md](TODO.md)**                                               | Categorized work items, technical debt              | Active developers            |
-| **[OTHER_IDEAS.md](OTHER_IDEAS.md)**                                 | Future features, exploratory concepts               | Designers, research          |
-| **[wiggle-core-plan.md](wiggle-core-plan.md)**                       | Extracting shared wiggle/coverage utilities         | Wiggle/alignments developers |
-| **[architecture-decision-records/](architecture-decision-records/)** | Design decisions (ADR-001 through ADR-004)          | Architecture review          |
+## Current docs
 
-## Common Questions
+| Doc                                                                  | Purpose                                                 | When to read                                  |
+| -------------------------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------- |
+| **[PRD.md](PRD.md)**                                                 | Agent-governing PRD: priorities, invariants, paths      | Always (read first)                           |
+| **[ARCHITECTURE.md](ARCHITECTURE.md)**                               | Canonical GPU lifecycle / shaders / HAL reference       | Touching a display, backend, or shader        |
+| **[CONFIG_PATTERN.md](CONFIG_PATTERN.md)**                           | Display config → MST snapshot → plain object → renderer | Touching config, JEXL callbacks, RPC payloads |
+| **[TEST_INFRASTRUCTURE.md](TEST_INFRASTRUCTURE.md)**                 | Browser + unit test runners, WebGPU CI setup            | Running or writing tests                      |
+| **[TODO.md](TODO.md)**                                               | Categorized backlog (architecture, display, UX, perf)   | Picking up a backlog item                     |
+| **[OTHER_IDEAS.md](OTHER_IDEAS.md)**                                 | Future / exploratory concepts (not current work)        | Brainstorming, product direction              |
+| **[DOTPLOT_REFACTOR.md](DOTPLOT_REFACTOR.md)**                       | Active plan: dotplot → shared MST lifecycle util        | Working on dotplot                            |
+| **[SYNTENY_REFACTOR_PR_B.md](SYNTENY_REFACTOR_PR_B.md)**             | Active plan: synteny view owns one canvas (PR-B)        | Working on synteny                            |
+| **[wiggle-core-plan.md](wiggle-core-plan.md)**                       | Active plan: extract `packages/wiggle-core`             | Touching wiggle scaling / alignments coverage |
+| **[architecture-decision-records/](architecture-decision-records/)** | Design decisions (ADR-001 … ADR-005)                    | Understanding why something is the way it is  |
+| **[completed/](completed/)**                                        | Historical migration state; COMPLETED.md is the archive | Retracing old work                            |
 
-**"How do I add a new GPU display type?"**  
-→ See ARCHITECTURE.md "Adding a new GPU display type" (7-step walkthrough with
-code examples)
+## Common questions
 
-**"How do I debug failing browser tests?"**  
-→ See TEST_INFRASTRUCTURE.md "Debugging" (visual mismatches, timeouts, console
-logs)
+**"What should I work on?"** → `PRD.md` §3.
 
-**"What's the config migration task?"**  
-→ See PRD.md P1.4 + CONFIG_PATTERN_NEXT_STEPS.md (snapshot/property hoisting)
+**"How do I add a new GPU display type?"** → `ARCHITECTURE.md` "Adding a new
+GPU display type".
 
-**"What needs to be done next?"**  
-→ See PRD.md (priorities) or TODO.md (organized by category)
+**"How do I debug failing browser tests?"** → `TEST_INFRASTRUCTURE.md`
+"Debugging".
 
-**"Why does GPU rendering work this way?"**  
-→ See ARCHITECTURE.md (layers, lifecycle, multi-region pattern) or ADR files
-(design decisions)
+**"Why does the worker get what it gets?"** → `CONFIG_PATTERN.md` +
+`ARCHITECTURE.md` §"The `rpcProps` / `gpuProps` pattern".
+
+**"What invariants must I preserve?"** → `PRD.md` §4.

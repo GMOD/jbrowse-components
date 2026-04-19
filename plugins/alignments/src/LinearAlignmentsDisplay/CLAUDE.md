@@ -27,16 +27,16 @@ regions in a single call, which would be far more complex and wasteful.
 - `buildChainConnectingData` — post-layout: builds connecting lines + Flatbush
 - Called by `computeAndAssignChainLayout` in `model.ts`
 
-**Why GranularRectLayout, not the greedy levels array from sortLayout.ts:**
-Chain layout sorts by _distance_ (insert size), not by start position. The
-simple greedy levels array tracks only the right edge of each row, so it only
-admits a new chain when its start ≥ that edge. When chains are processed in
-distance order (not start order), an early chain can occupy a slot in the middle
-of a row, leaving a gap at the front that a later chain could fill — but the
-levels array misses this. GranularRectLayout uses a 2D occupancy bitmap and can
-fill those gaps regardless of processing order, producing denser layouts when
-chains are sorted by distance. Do not replace it with a levels array for chain
-layout.
+**Shared layout primitive:** Both pileup (`sortLayout.ts`) and chain
+(`computeChainLayout.ts`) call `placeRect(rows, start, end)` from
+`sortLayout.ts`. Each row is a sorted `[s1,e1,s2,e2,...]` flat list; placement
+is first-fit with gap-filling. This is essential for chain layout (sorted by
+distance, not start) and for pileup sort-by-base/strand/etc. (overlapping reads
+placed in sort order, non-overlap reads fill remaining gaps) — in both cases
+features arrive out of start order, so a right-edge-only levels array would
+fragment layout. Start-sorted input hits an O(1) per-row fast-path, matching
+end-array performance in the common case. Do not reintroduce a levels array
+for either layout.
 
 ### Worker contract
 

@@ -228,7 +228,7 @@ export default function stateModelFactory(
         contextMenuCigarHit: undefined as CigarHitResult | undefined,
         contextMenuIndicatorHit: undefined as IndicatorHitResult | undefined,
         contextMenuRefName: undefined as string | undefined,
-        rpcDataMap: new Map<number, PileupDataResult>(),
+        rpcDataMap: observable.map<number, PileupDataResult>(),
         currentRangeY: [0, 600] as [number, number],
         maxY: 0,
         highlightedChainIds: [] as string[],
@@ -239,7 +239,6 @@ export default function stateModelFactory(
         modificationsReady: false,
         overCigarItem: false,
         colorPalette: null as ColorPalette | null,
-        visibleMaxDepth: 0,
       }))
       .views(() => ({
         get featureWidgetType() {
@@ -374,11 +373,27 @@ export default function stateModelFactory(
           return self.getOverride<SortedBy>('sortedBy')
         },
 
+        // Max coverage depth across on-screen content blocks. Cached
+        // view, replaces the former visibleMaxDepth autorun + volatile.
+        get visibleMaxDepth() {
+          if (!self.showCoverage) {
+            return 0
+          }
+          const view = getContainingView(self) as LGV
+          if (!view.initialized) {
+            return 0
+          }
+          return computeVisibleMaxDepth(
+            view.dynamicBlocks.contentBlocks,
+            b => self.rpcDataMap.get(b.regionNumber!),
+          )
+        },
+
         get coverageTicks(): CoverageTicks | undefined {
-          if (!self.showCoverage || self.visibleMaxDepth === 0) {
+          if (!this.visibleMaxDepth) {
             return undefined
           }
-          return computeCoverageTicks(self.visibleMaxDepth, self.coverageHeight)
+          return computeCoverageTicks(this.visibleMaxDepth, self.coverageHeight)
         },
 
         get legendItems(): LegendItem[] {
@@ -741,9 +756,8 @@ export default function stateModelFactory(
           },
 
           setRpcData(regionNumber: number, data: PileupDataResult | null) {
-            const next = new Map(self.rpcDataMap)
             if (data) {
-              next.set(regionNumber, data)
+              self.rpcDataMap.set(regionNumber, data)
               for (const modType of data.detectedModifications) {
                 if (!self.visibleModifications.has(modType)) {
                   self.visibleModifications.set(modType, {
@@ -755,13 +769,12 @@ export default function stateModelFactory(
                 }
               }
             } else {
-              next.delete(regionNumber)
+              self.rpcDataMap.delete(regionNumber)
             }
-            self.rpcDataMap = next
           },
 
           clearDisplaySpecificData() {
-            self.rpcDataMap = new Map()
+            self.rpcDataMap.clear()
             self.arcsState.clearAllRpcData()
             self.currentRangeY = [0, 0]
             self.setRegionTooLarge(false)
@@ -775,9 +788,6 @@ export default function stateModelFactory(
             self.colorPalette = palette
           },
 
-          setVisibleMaxDepth(d: number) {
-            self.visibleMaxDepth = d
-          },
           setMaxY(y: number) {
             self.maxY = y
           },
@@ -1497,31 +1507,6 @@ export default function stateModelFactory(
 
           afterAttach() {
             superAfterAttach()
-
-            // Debounced autorun: compute visible max depth from only visible bins.
-            addDisposer(
-              self,
-              autorun(
-                () => {
-                  if (!self.showCoverage) {
-                    return
-                  }
-                  const view = getContainingView(self) as LGV
-                  if (!view.initialized) {
-                    return
-                  }
-                  const maxDepth = computeVisibleMaxDepth(
-                    view.dynamicBlocks.contentBlocks,
-                    b => self.rpcDataMap.get(b.regionNumber!),
-                  )
-                  self.setVisibleMaxDepth(maxDepth)
-                },
-                {
-                  delay: 400,
-                  name: 'LinearAlignmentsDisplay:visibleMaxDepth',
-                },
-              ),
-            )
 
             // Recompute arcs when any arc-affecting setting changes (no
             // RPC refetch needed — arcs are derived from existing pileup

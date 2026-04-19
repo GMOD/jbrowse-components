@@ -14,20 +14,25 @@ export type { GpuBackendLifecycleHandle } from './gpuBackendLifecycleHandle.ts'
  * supply two.
  *
  * Anything `upload()` reads from the model is tracked by mobx — color,
- * scale, summary mode, etc. — and changing any of them re-fires the
- * autorun and re-uploads. There is no cache, no identity diff, no
- * `gpuProps` hook: mobx is the cache.
+ * scale, summary mode, etc. — and changing any of them re-fires only the
+ * affected per-key autoruns. When the data map uses `observable.map`,
+ * changing one region's value re-uploads only that region; when settings
+ * `upload()` reads change, every key's inner autorun fires (all regions
+ * re-upload, which is the desired behavior since every region must be
+ * re-encoded under the new setting).
  */
 export interface RegionUpload<BackendType, RegionDataType> {
   /**
-   * Per-region data map. Re-fires the autorun when its contents change.
+   * Per-region data map. Using `observable.map` here gives per-key
+   * reactivity — changing one entry fires only that key's autorun. A plain
+   * `Map` still works but forfeits per-key selectivity.
    */
   getData: () => ReadonlyMap<number, RegionDataType>
 
   /**
    * Push one region's data to the GPU. Any observable read inside (e.g.
-   * `model.gpuProps()`) is tracked by mobx, so the autorun re-fires and
-   * re-uploads when those settings change.
+   * `model.gpuProps()`) is tracked by mobx, so the per-key autorun re-fires
+   * and re-uploads when those settings change.
    */
   upload: (
     backend: BackendType,
@@ -39,6 +44,7 @@ export interface RegionUpload<BackendType, RegionDataType> {
    * Tell the backend which regions are still active so it can free buffers
    * for the rest. Optional — omit when this upload shares pruning with
    * another (e.g. alignments' arcs share the pileup backend's region slots).
+   * Fires only when the key set changes.
    */
   prune?: (backend: BackendType, activeRegionNumbers: number[]) => void
 
@@ -85,8 +91,10 @@ export interface StartGpuBackendAutorunLifecycleArgs<
   ) => void
 
   /**
-   * Optional post-pass hook. Fires after every upload pass; argument is
-   * whether any upload had data this pass.
+   * Optional post-pass hook. Fires after every upload that commits data;
+   * the flag is `true` when a region was uploaded this fire. Per-key
+   * callers (wiggle's domain gate, mixin's markCanvasDrawn) must be
+   * idempotent because this fires per region, not once per pass.
    */
   onAfterCommit?: (didHaveUploadedRegions: boolean) => void
 }
@@ -94,10 +102,16 @@ export interface StartGpuBackendAutorunLifecycleArgs<
 /**
  * Wire the full upload → render lifecycle for a GPU display backend.
  *
- * One autorun per upload: reads `getData()`, calls `upload()` for every
- * region in the map. Anything `upload()` reads from the model is mobx-
- * tracked — when any of it changes, the autorun re-fires and re-uploads
- * every region. No cache, no identity diff: mobx is the cache.
+ * Per upload pipeline: one outer autorun tracks only the key set in
+ * `getData()`. For each key present, an inner autorun reads that key's
+ * value and calls `upload()`. Key additions spawn a new inner; key
+ * removals dispose the inner and fire `deleteOne`. Value changes at a
+ * single key re-fire only that inner autorun (selective re-upload).
+ *
+ * Observables read inside `upload()` (e.g. `self.gpuProps()`) are tracked
+ * by each inner autorun, so a settings change fires every inner
+ * simultaneously — behaviorally identical to the single-autorun version
+ * for cross-region settings, but selective for per-region data changes.
  *
  * One render autorun: reads `renderBlocks` + `renderState` + a shared
  * upload counter. State-only changes (hover) re-fire only this autorun.
@@ -115,27 +129,44 @@ export function startGpuBackendAutorunLifecycle<BackendType, RenderStateType>(
   let lastRenderBlocks: RenderBlock[] = []
   let lastRenderState: RenderStateType | undefined
 
-  const previousKeys = uploads.map(() => new Set<number>())
+  const perUploadDisposers = uploads.map(u => {
+    const perKeyDisposers = new Map<number, () => void>()
 
-  const disposeUploads = uploads.map((u, idx) =>
-    autorun(() => {
+    const outerDispose = autorun(() => {
       const dataMap = u.getData()
+      // Iterating `.keys()` tracks only the key set on observable.map
+      // (and whole-map identity on plain Map) — values are observed
+      // individually inside each per-key inner autorun below.
       const currentKeys = new Set<number>()
-      let anyData = false
-
-      for (const [regionNumber, data] of dataMap) {
-        currentKeys.add(regionNumber)
-        anyData = true
-        u.upload(backend, regionNumber, data)
+      for (const k of dataMap.keys()) {
+        currentKeys.add(k)
       }
 
-      const prevSet = previousKeys[idx]!
-      for (const regionNumber of prevSet) {
-        if (!currentKeys.has(regionNumber)) {
-          u.deleteOne?.(backend, regionNumber)
+      for (const k of currentKeys) {
+        if (!perKeyDisposers.has(k)) {
+          const innerDispose = autorun(() => {
+            // Re-read via getData() so plugins that still replace their
+            // volatile with `self.x = new Map(...)` (legacy pattern) pick
+            // up the fresh reference rather than the closure-captured one.
+            const data = u.getData().get(k)
+            if (data === undefined) {
+              return
+            }
+            u.upload(backend, k, data)
+            bumpUploadSignal()
+            onAfterCommit?.(true)
+          })
+          perKeyDisposers.set(k, innerDispose)
         }
       }
-      previousKeys[idx] = currentKeys
+
+      for (const [k, dispose] of perKeyDisposers) {
+        if (!currentKeys.has(k)) {
+          dispose()
+          perKeyDisposers.delete(k)
+          u.deleteOne?.(backend, k)
+        }
+      }
 
       const activeKeys: number[] = []
       for (const k of currentKeys) {
@@ -143,10 +174,19 @@ export function startGpuBackendAutorunLifecycle<BackendType, RenderStateType>(
       }
       u.prune?.(backend, activeKeys)
 
-      bumpUploadSignal()
-      onAfterCommit?.(anyData)
-    }),
-  )
+      if (currentKeys.size === 0) {
+        onAfterCommit?.(false)
+      }
+    })
+
+    return () => {
+      outerDispose()
+      for (const dispose of perKeyDisposers.values()) {
+        dispose()
+      }
+      perKeyDisposers.clear()
+    }
+  })
 
   const disposeRender = autorun(() => {
     uploadSignal.get()
@@ -167,7 +207,7 @@ export function startGpuBackendAutorunLifecycle<BackendType, RenderStateType>(
       }
       isDisposed = true
       disposeRender()
-      for (const dispose of disposeUploads) {
+      for (const dispose of perUploadDisposers) {
         dispose()
       }
     },

@@ -333,12 +333,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         if (self.isMinimized || this.isLevelCollapsed) {
           return undefined
         }
-        let view: SyntenyViewDuck
-        try {
-          view = getContainingView(self) as unknown as SyntenyViewDuck
-        } catch {
-          return undefined
-        }
+        const view = getContainingView(self) as unknown as SyntenyViewDuck
         if (
           !view.initialized ||
           !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)

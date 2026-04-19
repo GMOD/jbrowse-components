@@ -2,9 +2,6 @@ import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { when } from 'mobx'
 
-import { createDotplotColorFunction } from './dotplotWebGLColors.ts'
-import { buildLineSegments } from './drawDotplotWebGL.ts'
-
 import type { DotplotRenderModel } from './types.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
 
@@ -18,55 +15,25 @@ function unpackColor(packed: number) {
 }
 
 export async function renderSvg(model: DotplotRenderModel) {
-  await when(() => model.featPositions.length > 0 || !!model.error)
-  const view = getContainingView(model) as DotplotViewModel
-  const { viewHeight, hview, vview, drawCigar } = view
-  const {
-    featPositions,
-    featPositionsBpPerPxH,
-    featPositionsBpPerPxV,
-    alpha,
-    minAlignmentLength,
-    colorBy,
-  } = model
-
-  if (!featPositions.length) {
+  await when(() => !!model.geometry || !!model.error)
+  const { geometry } = model
+  if (!geometry) {
     return null
   }
-
-  let filtered = featPositions
-  if (minAlignmentLength > 0) {
-    filtered = featPositions.filter(
-      fp => Math.abs(fp.f.get('end') - fp.f.get('start')) >= minAlignmentLength,
-    )
-  }
-
-  const hBpPerPx = hview.bpPerPx
-  const vBpPerPx = vview.bpPerPx
-  const colorFn = createDotplotColorFunction(colorBy, alpha)
-  const segments = buildLineSegments(
-    filtered,
-    colorFn,
-    drawCigar,
-    hBpPerPx,
-    vBpPerPx,
-  )
-
-  const scaleX =
-    featPositionsBpPerPxH > 0 ? featPositionsBpPerPxH / hBpPerPx : 1
-  const scaleY =
-    featPositionsBpPerPxV > 0 ? featPositionsBpPerPxV / vBpPerPx : 1
-
+  const view = getContainingView(model) as DotplotViewModel
+  const { viewHeight, hview, vview } = view
+  const scaleX = geometry.bpPerPxH / hview.bpPerPx
+  const scaleY = geometry.bpPerPxV / vview.bpPerPx
   const offX = hview.offsetPx
   const offY = vview.offsetPx
 
   const ctx = new SvgCanvas()
   ctx.lineWidth = 2
-  for (let i = 0; i < segments.x1s.length; i++) {
-    ctx.strokeStyle = unpackColor(segments.colors[i]!)
+  for (let i = 0; i < geometry.instanceCount; i++) {
+    ctx.strokeStyle = unpackColor(geometry.colors[i]!)
     ctx.beginPath()
-    ctx.moveTo(segments.x1s[i]!, segments.y1s[i]!)
-    ctx.lineTo(segments.x2s[i]!, segments.y2s[i]!)
+    ctx.moveTo(geometry.x1s[i]!, geometry.y1s[i]!)
+    ctx.lineTo(geometry.x2s[i]!, geometry.y2s[i]!)
     ctx.stroke()
   }
 

@@ -1,7 +1,105 @@
 # Active Work Items
 
-**Updated:** 2026-04-14 | Move completed items to
-`agent-docs/completed/COMPLETED.md`.
+**Updated:** 2026-04-18 | Move completed items to
+`agent-docs/completed/COMPLETED.md`. Top priorities (P1–P5) live in `PRD.md`;
+this file is the categorized backlog.
+
+---
+
+## Architecture follow-ups
+
+**`renderProps() { notReady: true }` → explicit opt-out.** Add
+`useBlockRenderer: boolean` to the base display model; GPU-family displays
+override to `false` via the mixin. Update `svgExportUtil.ts`,
+`SVGLinearGenomeView.tsx`, `serverSideRenderedBlock.ts`; delete the misleading
+`renderProps()` stub from the mixin.
+
+**Migrate `rpcDataMap` to `observable.map`.** Every plugin's per-region map
+is copied-then-assigned on every setter. Move to
+`observable.map<number, T>()` with in-place `.set(…)`. Prerequisite for
+per-key upload autoruns in `startGpuBackendAutorunLifecycle`.
+
+**Canvas label relayout without refetch.** `showLabels` / `showDescriptions`
+flow through `rpcProps` so changing them refetches, but the worker output
+doesn't depend on label placement (main thread re-derives via the cached
+`rpcDataMap` view — see `plugins/canvas/.../baseModel.ts`). Remove them from
+the RPC payload; add a fetchAutorun assertion that `setShowLabels` does NOT
+trigger RPC.
+
+Blocked by the `ConfigOverrideMixin` reactivity issue below — a targeted
+"destructure label fields out of the RPC payload" fix doesn't work because
+`rpcProps` transitively depends on `configOverrides` as a whole frozen
+object.
+
+**`ConfigOverrideMixin` reactivity + type safety.** `configOverrides` is a
+single `types.frozen<Record<string, unknown>>()` atom. `setOverride('k', v)`
+replaces the whole object, so every consumer that reads any key depends on
+every other key. Concrete consequence in canvas: `SettingsInvalidate` reads
+`rpcProps`, `rpcProps` spreads `displayConfigSnapshot`, `displayConfigSnapshot`
+spreads `configOverrides` — so toggling `showLabels` invalidates `rpcProps`
+and triggers a refetch even when the worker output is label-independent. No
+clean workaround exists inside the current mixin shape (a destructure in
+`rpcProps` still subscribes to the whole frozen object via mobx).
+
+Same latent issue affects every display that uses `ConfigOverrideMixin` +
+SettingsInvalidate-style autoruns: variants `LDDisplay` (19 overrides),
+`MultiSampleVariantBaseModel` (7), alignments. They happen not to feel it
+today only because their overrides all *do* warrant refetches.
+
+Secondary: `getConfWithOverride<T>(key)` is typed by caller assertion —
+rename a config field and nothing warns. `DisplayConfig` (canvas) is
+hand-maintained to parallel `baseConfigSchema.ts` with no compiler
+enforcement that they agree.
+
+Directions considered (none landed in the derived-layout PR — scope was too
+broad and design choices non-obvious):
+- *Per-field typed `*Override` props on one display.* Consistent when every
+  override moves; hacky as a partial split.
+- *Treat UI-toggle fields as non-config state.* Pull `showLabels`/
+  `showDescriptions` out of the schema; make them plain MST props. Small,
+  resolves the canvas-specific issue, but breaks admin config defaults for
+  those two fields.
+- *Retire `ConfigOverrideMixin` plugin-wide, in favor of per-field typed
+  props with config fallback.* Cleanest design; cross-plugin refactor.
+- *Generate `DisplayConfig` (and peers) from the schema at the type level,
+  and have `getConf` return `unknown` by default* — addresses type safety
+  independent of the reactivity problem.
+
+Worth a scoped PR that picks one of the last two directions deliberately.
+
+**Backend conformance test suite.** `packages/core/src/gpu/backendConformance.test.ts`
+with one `describe.each(ALL_BACKENDS)`. Covers idempotent upload,
+render-before-ready no-op, `deleteRegion` / prune absent-key removal,
+`dispose()` buffer release (count via `MockHal`), context-loss reinit
+equivalence. Land before dotplot / synteny PR-B ship.
+
+**Pickable backend mixin.** `Pickable<HitT>` with
+`pick(x, y): Promise<Hit | undefined>`. Synteny needs it. Async-only Promise
+absorbs both sync Canvas2D and async WebGPU readback.
+
+**Tab visibility → HAL.** Move `visibilitychange` into the HAL; drops
+`useTabVisibilityRerender` and `renderNow()` from the public mixin API.
+Post-synteny.
+
+**`regionNumber` → `displayedRegionIndex`.** Mechanical rename (~550 sites,
+73 files). Do **last**.
+
+**Dead code sweep (after synteny).** Delete `uploadChangedRegions.ts`,
+`uploadRegionDataToGPU`, `pruneRegionMap`, unused `renderProps()` on GPU
+displays, `dataVersion` counter. Grep:
+`uploadChangedRegions|uploadRegionDataToGPU|pruneRegionMap`.
+
+**Structural `RenderSvgModel`.** Matrix + variants use the structural form;
+wiggle / alignments / canvas still import the MST type. Mechanical conversion;
+hardens against type circularity across lazy boundaries.
+
+**`chainIdMap` perf.** Gate to `linkedRead + chain highlights active`.
+Currently iterates every read × region on every data update.
+
+**Compute shaders → Slang.** Migrate
+`plugins/variants/src/VariantRPC/ldComputeShader.ts`,
+`ldPhasedComputeShader.ts` to Slang authoring (WebGPU-only; set
+`//! targets: wgsl`). See ADR-005.
 
 ---
 

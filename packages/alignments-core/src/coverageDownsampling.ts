@@ -72,7 +72,7 @@ export function computeVisibleMaxDepth<
 }
 
 export function getGlobalMaxCoverageDepth<K, D>(
-  dataMap: Map<K, D>,
+  dataMap: ReadonlyMap<K, D>,
   getMaxDepth: (data: D) => number,
 ) {
   let max = 0
