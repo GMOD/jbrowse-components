@@ -117,7 +117,7 @@ function getSequenceAdapter(session: any, region: Region) {
 
 interface FetchFeatureDetailsSelf {
   adapterConfigSnapshot: Record<string, unknown>
-  loadedRegions: Map<number, Region>
+  loadedRegions: ReadonlyMap<number, Region>
   getFeatureInfoById: (
     id: string,
   ) => { refName: string; start: number; end: number } | undefined
@@ -1334,7 +1334,7 @@ export default function stateModelFactory(
         }
 
         function computeAndAssignLayoutForData(
-          rpcDataMap: Map<number, PileupDataResult>,
+          rpcDataMap: ReadonlyMap<number, PileupDataResult>,
           sortedBy?: SortedBy,
           showSoftClipping?: boolean,
         ) {
@@ -1362,7 +1362,7 @@ export default function stateModelFactory(
         }
 
         function computeAndAssignChainLayout(
-          rpcDataMap: Map<number, PileupDataResult>,
+          rpcDataMap: ReadonlyMap<number, PileupDataResult>,
         ) {
           const entries = [...rpcDataMap.entries()].filter(
             ([, d]) => d.numReads > 0,

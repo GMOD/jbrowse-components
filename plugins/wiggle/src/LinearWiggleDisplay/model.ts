@@ -39,7 +39,6 @@ import type {
 } from '../shared/wiggleBackendTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -429,70 +428,51 @@ export default function stateModelFactory(
         self.displayCrossHatches = !self.displayCrossHatches
       },
     }))
-    .actions(self => {
-      async function fetchFeaturesForRegion(
-        region: RegionWithNumber,
-        stopToken: StopToken,
-        bpPerPx: number,
-        generation: number,
-      ) {
-        const session = getSession(self)
-        const { rpcManager } = session
-        const { adapterConfig } = self.adapterProps()
+    .actions(self => ({
+      isCacheValid(regionNumber: number) {
+        const view = getContainingView(self) as LGV
+        const regionBpPerPx = self.loadedBpPerPx.get(regionNumber)
+        return regionBpPerPx === undefined || view.bpPerPx >= regionBpPerPx / 2
+      },
 
+      onFetchNeeded(needed: RegionWithNumber[]) {
+        const view = getContainingView(self) as LGV
+        const { bpPerPx } = view
+        const { adapterConfig } = self.adapterProps()
         if (!adapterConfig) {
           return
         }
-
-        const result = await rpcManager.call(
-          getRpcSessionId(self),
-          'RenderWiggleData',
-          {
-            adapterConfig,
-            region: region.region,
-            ...self.rpcProps,
-            stopToken,
-            bpPerPx,
-            statusCallback: (msg: string) => {
-              if (isAlive(self)) {
-                self.setStatusMessage(msg)
+        const sessionId = getRpcSessionId(self)
+        const { rpcManager } = getSession(self)
+        self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
+          await Promise.all(
+            needed.map(async r => {
+              const result = await rpcManager.call(
+                sessionId,
+                'RenderWiggleData',
+                {
+                  sessionId,
+                  adapterConfig,
+                  region: r.region,
+                  ...self.rpcProps,
+                  stopToken: ctx.stopToken,
+                  bpPerPx,
+                  statusCallback: (msg: string) => {
+                    if (isAlive(self)) {
+                      self.setStatusMessage(msg)
+                    }
+                  },
+                },
+              )
+              if (!ctx.isStale()) {
+                self.setRpcDataForRegion(r.regionNumber, result)
+                self.setLoadedBpPerPxForRegion(r.regionNumber, bpPerPx)
               }
-            },
-          },
-        )
-
-        if (isAlive(self) && generation === self.fetchGeneration) {
-          self.setRpcDataForRegion(region.regionNumber, result)
-          self.setLoadedBpPerPxForRegion(region.regionNumber, bpPerPx)
-        }
-      }
-
-      return {
-        isCacheValid(regionNumber: number) {
-          const view = getContainingView(self) as LGV
-          const regionBpPerPx = self.loadedBpPerPx.get(regionNumber)
-          return (
-            regionBpPerPx === undefined || view.bpPerPx >= regionBpPerPx / 2
+            }),
           )
-        },
-
-        onFetchNeeded(needed: RegionWithNumber[]) {
-          const view = getContainingView(self) as LGV
-          const { bpPerPx } = view
-          self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
-            const promises = needed.map(region =>
-              fetchFeaturesForRegion(
-                region,
-                ctx.stopToken,
-                bpPerPx,
-                ctx.generation,
-              ),
-            )
-            await Promise.all(promises)
-          })
-        },
-      }
-    })
+        })
+      },
+    }))
     .views(self => ({
       trackMenuItems() {
         return [

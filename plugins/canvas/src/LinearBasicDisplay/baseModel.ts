@@ -487,10 +487,22 @@ export default function baseStateModelFactory(
         },
 
         clearDisplaySpecificData() {
-          self.rawRpcDataMap.clear()
+          // Deliberately NOT clearing rawRpcDataMap — we keep stale data
+          // visible through the refetch window (labels don't vanish and
+          // reappear). onFetchNeeded prunes regions that are no longer
+          // visible, so this doesn't leak.
           self.fetchedBpPerPxMap.clear()
           self.setRegionTooLarge(false)
           self.setScrollTop(0)
+        },
+
+        pruneRawRpcDataMapToVisible(visibleRegionNumbers: Set<number>) {
+          for (const key of self.rawRpcDataMap.keys()) {
+            if (!visibleRegionNumbers.has(key)) {
+              self.rawRpcDataMap.delete(key)
+              self.fetchedBpPerPxMap.delete(key)
+            }
+          }
         },
 
         startGpuBackendLifecycle(backend: CanvasFeatureBackend) {
@@ -665,23 +677,23 @@ export default function baseStateModelFactory(
           bpPerPx: number,
           stopToken: StopToken,
         ): Promise<FetchResult | 'regionTooLarge'> {
-          const session = getSession(self)
-          const { rpcManager } = session
-
           const sessionId = getRpcSessionId(self)
-          const result = await rpcManager.call(sessionId, 'RenderFeatureData', {
+          const result = await getSession(self).rpcManager.call(
             sessionId,
-            ...self.rpcProps,
-            region,
-            bpPerPx,
-            stopToken,
-            statusCallback: (msg: string) => {
-              if (isAlive(self)) {
-                self.setStatusMessage(msg)
-              }
+            'RenderFeatureData',
+            {
+              sessionId,
+              ...self.rpcProps,
+              region,
+              bpPerPx,
+              stopToken,
+              statusCallback: (msg: string) => {
+                if (isAlive(self)) {
+                  self.setStatusMessage(msg)
+                }
+              },
             },
-          })
-
+          )
           if ('regionTooLarge' in result) {
             return 'regionTooLarge'
           }
@@ -740,6 +752,13 @@ export default function baseStateModelFactory(
           onFetchNeeded(needed: RegionWithNumber[]) {
             const view = getContainingView(self) as LGV
             const bpPerPx = view.bpPerPx
+            // Drop cached regions that are no longer visible. Keeps stale
+            // data for regions still on screen (so labels stay up during
+            // the refetch window) without letting rawRpcDataMap grow
+            // unboundedly as the user pans.
+            self.pruneRawRpcDataMapToVisible(
+              new Set(view.bufferedVisibleRegions.map(b => b.regionNumber)),
+            )
             self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
               const promises = needed.map(({ region, regionNumber }) =>
                 fetchFeaturesForRegion(

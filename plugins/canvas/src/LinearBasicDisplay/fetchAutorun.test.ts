@@ -482,8 +482,9 @@ describe('SettingsInvalidate autorun', () => {
 
     const callsBefore = mockRpcCall.mock.calls.length
     display.setShowOnlyGenes(true)
-    // Autorun fires synchronously — clears rpcDataMap immediately.
-    // FetchVisibleRegions re-fetches after its 300ms delay.
+    // Autorun fires synchronously — invalidates state but keeps raw data
+    // visible through the refetch window. FetchVisibleRegions re-fetches
+    // after its 300ms delay.
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
 
@@ -492,6 +493,23 @@ describe('SettingsInvalidate autorun', () => {
       const lastArgs = mockRpcCall.mock.calls.at(-1)![2]
       expect(lastArgs).toMatchObject({ showOnlyGenes: true })
     })
+  })
+
+  it('keeps stale rawRpcDataMap visible through a settings-change refetch', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+    expect(display.rawRpcDataMap.size).toBe(1)
+
+    // Trigger settings-driven invalidation. clearAllRpcData fires but
+    // must NOT empty rawRpcDataMap — labels would flash off otherwise.
+    display.setShowOnlyGenes(true)
+    expect(display.rawRpcDataMap.size).toBe(1)
   })
 
   it('triggers refetch when settings change while fetch is in progress (regression)', async () => {

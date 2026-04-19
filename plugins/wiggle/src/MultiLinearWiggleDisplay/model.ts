@@ -42,7 +42,6 @@ import type {
 } from '../shared/wiggleBackendTypes.ts'
 import type { Source, SourceInfo } from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -548,44 +547,6 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => {
-      async function fetchFeaturesForRegion(
-        region: RegionWithNumber,
-        stopToken: StopToken,
-        bpPerPx: number,
-        generation: number,
-      ) {
-        const session = getSession(self)
-        const { rpcManager } = session
-        const { adapterConfig } = self
-
-        if (!adapterConfig) {
-          return
-        }
-
-        const result = await rpcManager.call(
-          getRpcSessionId(self),
-          'RenderMultiWiggleData',
-          {
-            adapterConfig,
-            region: region.region,
-            sources: self.sources,
-            ...self.rpcProps,
-            stopToken,
-            bpPerPx,
-            statusCallback: (msg: string) => {
-              if (isAlive(self)) {
-                self.setStatusMessage(msg)
-              }
-            },
-          },
-        )
-
-        if (isAlive(self) && generation === self.fetchGeneration) {
-          self.setRpcDataForRegion(region.regionNumber, result)
-          self.setLoadedBpPerPxForRegion(region.regionNumber, bpPerPx)
-        }
-      }
-
       const superAfterAttach = self.afterAttach
 
       return {
@@ -600,16 +561,39 @@ export default function stateModelFactory(
         onFetchNeeded(needed: RegionWithNumber[]) {
           const view = getContainingView(self) as LGV
           const { bpPerPx } = view
+          const { adapterConfig, sources } = self
+          if (!adapterConfig) {
+            return
+          }
+          const sessionId = getRpcSessionId(self)
+          const { rpcManager } = getSession(self)
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
-            const promises = needed.map(region =>
-              fetchFeaturesForRegion(
-                region,
-                ctx.stopToken,
-                bpPerPx,
-                ctx.generation,
-              ),
+            await Promise.all(
+              needed.map(async r => {
+                const result = (await rpcManager.call(
+                  sessionId,
+                  'RenderMultiWiggleData',
+                  {
+                    sessionId,
+                    adapterConfig,
+                    region: r.region,
+                    sources,
+                    ...self.rpcProps,
+                    stopToken: ctx.stopToken,
+                    bpPerPx,
+                    statusCallback: (msg: string) => {
+                      if (isAlive(self)) {
+                        self.setStatusMessage(msg)
+                      }
+                    },
+                  },
+                ))
+                if (!ctx.isStale()) {
+                  self.setRpcDataForRegion(r.regionNumber, result)
+                  self.setLoadedBpPerPxForRegion(r.regionNumber, bpPerPx)
+                }
+              }),
             )
-            await Promise.all(promises)
           })
         },
 

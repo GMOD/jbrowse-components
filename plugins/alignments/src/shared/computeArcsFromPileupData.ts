@@ -155,7 +155,7 @@ function computeLongRangeThreshold(pendingArcs: PendingArc[]) {
 }
 
 export function computeArcsFromPileupData(
-  rpcDataMap: Map<number, PileupDataResult>,
+  rpcDataMap: ReadonlyMap<number, PileupDataResult>,
   regions: RegionInfo[],
   settings: ArcSettings,
 ) {

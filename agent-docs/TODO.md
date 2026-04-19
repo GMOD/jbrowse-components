@@ -14,10 +14,14 @@ override to `false` via the mixin. Update `svgExportUtil.ts`,
 `SVGLinearGenomeView.tsx`, `serverSideRenderedBlock.ts`; delete the misleading
 `renderProps()` stub from the mixin.
 
-**Migrate `rpcDataMap` to `observable.map`.** Every plugin's per-region map
-is copied-then-assigned on every setter. Move to
-`observable.map<number, T>()` with in-place `.set(…)`. Prerequisite for
-per-key upload autoruns in `startGpuBackendAutorunLifecycle`.
+**Generalize ADR-006 (preserve stale data across refetch) where safe.**
+Only viewport-agnostic display types should adopt it; viewport-baked
+types keep clearing (the flash is correctness, not UX). Per ADR-006:
+
+- Preserve: alignments arcs, probably synteny.
+- Clear (keep current): wiggle tiles (bin widths), alignments pileup
+  compact zoom (pixel-baked glyphs).
+- Audit: `MultiSampleVariantDisplay` (different fetch model).
 
 **Canvas label relayout without refetch.** `showLabels` / `showDescriptions`
 flow through `rpcProps` so changing them refetches, but the worker output
@@ -30,6 +34,11 @@ Blocked by the `ConfigOverrideMixin` reactivity issue below — a targeted
 "destructure label fields out of the RPC payload" fix doesn't work because
 `rpcProps` transitively depends on `configOverrides` as a whole frozen
 object.
+
+*Partial mitigation landed via ADR-006:* the refetch still fires
+spuriously, but `rawRpcDataMap` is no longer cleared during it, so labels
+don't visually disappear. The refetch is wasted work but not user-visible
+as a flash.
 
 **`ConfigOverrideMixin` reactivity + type safety.** `configOverrides` is a
 single `types.frozen<Record<string, unknown>>()` atom. `setOverride('k', v)`
@@ -100,6 +109,71 @@ Currently iterates every read × region on every data update.
 `plugins/variants/src/VariantRPC/ldComputeShader.ts`,
 `ldPhasedComputeShader.ts` to Slang authoring (WebGPU-only; set
 `//! targets: wgsl`). See ADR-005.
+
+**Eliminate remaining `untracked` usage.** Every `untracked` call is a
+reactivity bypass — a signal that something is structured wrong, not a
+feature. Each one below has a specific target fix.
+
+Inventory of remaining callers (run
+`grep -rn 'untracked' plugins/ packages/ --include='*.ts' --include='*.tsx'`
+to refresh):
+
+- `plugins/alignments/.../LinearAlignmentsDisplay/model.ts:1558`
+  (`sortLayout` autorun wraps rpcDataMap-read-then-mutate).
+  *Fix:* convert `computeAndAssignLayoutForData` to a pure function that
+  returns a fresh laid-out map; expose laid-out data as a cached MST view
+  (same shape canvas already uses). Upload autorun reads the derived
+  view; no imperative writeback. Deletes the sortLayout autorun and its
+  untracked block. The bigger S1-alignments work — largest payoff.
+
+- `plugins/canvas/.../baseModel.ts:743` (`beforeFetchCheck` reads
+  `needsRefetchForZoom` via untracked).
+  *Fix:* `beforeFetchCheck` is called from inside the mixin's fetch
+  autorun, and a tracked read here would retrigger it on every bpPerPx
+  change. Either make `needsRefetchForZoom` a plain function (not a
+  cached view) so the read is naturally non-reactive, or move the
+  zoom-drift check into the mixin's autorun so it participates in the
+  natural tracking set. Small, contained.
+
+- `plugins/linear-genome-view/.../MultiRegionDisplayMixin.ts:301, 334`
+  (fetch autorun reads `isLoading` + `loadedRegions` via untracked).
+  *Fix:* `isLoading` is untracked deliberately — tracking it would cause
+  the autorun to retrigger while it's own work is in flight. Pull the
+  isLoading check into a gate function that reads via `reaction`
+  (one-shot), or document these two as load-bearing and name the
+  invariant explicitly in a `// Why:` comment. Low-priority — they work
+  correctly, the bypass is intentional and narrow.
+
+- `plugins/hic/.../afterAttach.ts:57, 119` and
+  `plugins/variants/.../LDDisplay/afterAttach.ts:60, 147` (monolithic
+  fetch autoruns reading `renderingStopToken` and `error` via untracked).
+  *Fix:* identical structural issue — the autorun owns both the fetch
+  trigger and the "cancel previous" side effect. Factor the cancel path
+  into `withFetchLifecycle` (mixin already does this for per-region
+  displays) so the monolithic-fetch plugins can drop the manual
+  `previousToken` dance. Solves both `untracked` calls per plugin.
+
+- `plugins/graph/.../GraphCanvas.tsx:186` (`viewportBounds` computed via
+  untracked inside a scale/translate update).
+  *Fix:* pan/zoom live on React state here, not MST. Move
+  `computeViewportBounds` to a `useMemo` keyed on the scale/translate
+  values if they're already React state, or to an MST view if they're
+  model-owned. Either way, no untracked needed.
+
+Suggested order:
+- Cluster the "monolithic fetch autorun" pattern: HiC + LD + probably
+  multi-sample variants at the same time (they all share the shape).
+  Drops 4 untracked calls with one refactor.
+- Canvas `beforeFetchCheck` is a 20-line fix; do next.
+- Alignments sortLayout is the big one — unlocks deleting 2 autoruns
+  and the untracked block there, and aligns alignments with canvas's
+  derived-layout model. Do when ready for a contained PR on the
+  alignments model.
+- Graph canvas viewportBounds: standalone, low urgency.
+- MultiRegionDisplayMixin's two uses: document or leave; they're
+  the most justified of the set.
+
+Acceptance: `grep -rn 'untracked(' plugins/ packages/ --include='*.ts' --include='*.tsx' | grep -v '\.md' | wc -l` returns 0 (currently ~10).
 
 ---
 
