@@ -82,7 +82,7 @@ export function mdToMismatches2(
           const mismatch = cigarMismatches[k]!
           if (mismatch.type === 'skip' && currStart >= mismatch.start) {
             currStart += mismatch.length
-            lastSkipPos = k
+            lastSkipPos = k + 1
           }
         }
       }

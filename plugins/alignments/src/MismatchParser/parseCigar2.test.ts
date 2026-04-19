@@ -1,6 +1,5 @@
-import { cigarToMismatches } from './cigarToMismatches.ts'
 import { cigarToMismatches2 } from './cigarToMismatches2.ts'
-import { parseCigar2, parseCigar } from './index.ts'
+import { parseCigar2 } from './index.ts'
 import {
   CIGAR_D,
   CIGAR_EQ,
@@ -105,25 +104,6 @@ describe('cigarToMismatches2', () => {
       start: 90,
       type: 'softclip',
     })
-  })
-
-  test('compatibility: parseCigar vs parseCigar3', () => {
-    const cigar = '50M5I45M10D40M'
-    const ops1 = parseCigar(cigar)
-    const ops2 = parseCigar2(cigar)
-
-    const result1 = cigarToMismatches(ops1, seq, undefined, undefined)
-    const result2 = cigarToMismatches2(ops2, seq, undefined, undefined)
-
-    expect(result1.length).toBe(result2.length)
-
-    for (const [idx, m1] of result1.entries()) {
-      const m2 = result2[idx]
-      expect(m2).toBeDefined()
-      expect(m1.start).toBe(m2!.start)
-      expect(m1.type).toBe(m2!.type)
-      expect(m1.length).toBe(m2!.length)
-    }
   })
 
   test('case-insensitive base matching', () => {

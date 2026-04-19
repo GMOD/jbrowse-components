@@ -1,7 +1,8 @@
 import { lazy, useState } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { getSession } from '@jbrowse/core/util'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import MoreVert from '@mui/icons-material/MoreVert'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
 import ZoomIn from '@mui/icons-material/ZoomIn'
@@ -25,12 +26,21 @@ const DotplotControls = observer(function DotplotControls({
   model: DotplotViewModel
 }) {
   const [showDynamicControls, setShowDynamicControls] = useState(true)
+  const session = getSession(model)
 
   // Check if we have any displays to show sliders
   const hasDisplays = model.tracks[0]?.displays[0]
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+      {isSessionModelWithWidgets(session) ? (
+        <IconButton
+          onClick={model.activateTrackSelector}
+          title="Open track selector"
+        >
+          <TrackSelectorIcon />
+        </IconButton>
+      ) : null}
       <IconButton
         onClick={() => {
           model.zoomOut()
@@ -80,7 +90,7 @@ const DotplotControls = observer(function DotplotControls({
             label: 'Re-order chromosomes',
             icon: ShuffleIcon,
             onClick: () => {
-              getSession(model).queueDialog(handleClose => [
+              session.queueDialog(handleClose => [
                 DiagonalizationProgressDialog,
                 {
                   handleClose,

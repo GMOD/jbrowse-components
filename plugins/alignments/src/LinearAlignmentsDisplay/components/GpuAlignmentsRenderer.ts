@@ -818,7 +818,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
           state,
           scissorX,
           scissorW,
-          0,
+          covH,
           dpr,
           bufH,
           effectiveArcsHeight,

@@ -69,7 +69,7 @@ float2 evalArc(float t, Instance inst, Uniforms u) {
   float cx = inst.x1 + radius;
   float pxPerBp = u.blockWidth / u.bpLen;
   float absradPx = absrad * pxPerBp;
-  float availH = u.canvasH - u.covOffset - ARC_HEIGHT_MARGIN;
+  float availH = u.canvasH - ARC_HEIGHT_MARGIN;
   float destY = min(availH, absradPx);
   float yDir = (u.pairedArcsDown > 0.5) ? 1.0 : -1.0;
 

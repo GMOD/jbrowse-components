@@ -502,6 +502,10 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       ctx.clip()
 
       if (effectiveArcsHeight > 0 && !state.pairedArcsDown) {
+        ctx.save()
+        ctx.beginPath()
+        ctx.rect(scissorX, covH, scissorW, effectiveArcsHeight)
+        ctx.clip()
         this.drawArcs(
           ctx,
           region,
@@ -509,10 +513,11 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
           bpLength,
           fullBlockWidth,
           state,
-          0,
+          covH,
           effectiveArcsHeight,
           state.pairedArcsDown,
         )
+        ctx.restore()
       }
 
       if (state.showCoverage) {

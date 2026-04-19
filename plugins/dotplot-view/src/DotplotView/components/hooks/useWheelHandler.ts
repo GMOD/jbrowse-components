@@ -35,7 +35,7 @@ export function useWheelHandler(
               Math.abs(distanceY.current) > Math.abs(distanceX.current) * 2 &&
               mousecurr
             ) {
-              const val = distanceY.current < 0 ? 1.03 : 0.97
+              const val = distanceY.current < 0 ? 1.07 : 0.935
               hview.zoomTo(hview.bpPerPx * val, mousecurr[0])
               vview.zoomTo(vview.bpPerPx * val, rootRectHeight - mousecurr[1])
             }

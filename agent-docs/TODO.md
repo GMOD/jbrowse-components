@@ -1,6 +1,6 @@
 # Active Work Items
 
-**Updated:** 2026-04-18 | Move completed items to
+**Updated:** 2026-04-19 | Move completed items to
 `agent-docs/completed/COMPLETED.md`. Top priorities (P1–P5) live in `PRD.md`;
 this file is the categorized backlog.
 
@@ -77,18 +77,23 @@ render-before-ready no-op, `deleteRegion` / prune absent-key removal,
 equivalence. Land before dotplot / synteny PR-B ship.
 
 **Pickable backend mixin.** `Pickable<HitT>` with
-`pick(x, y): Promise<Hit | undefined>`. Synteny needs it. Async-only Promise
-absorbs both sync Canvas2D and async WebGPU readback.
+`pick(x, y): Promise<Hit | undefined>`. Synteny already has its own pick
+implementation; formalise as a shared interface for the HAL layer. Low urgency
+until a second pickable backend is needed.
 
 **Tab visibility → HAL.** Move `visibilitychange` into the HAL; drops
 `useTabVisibilityRerender` and `renderNow()` from the public mixin API.
-Post-synteny.
+Both still used in synteny (`LevelSyntenyCanvas.tsx`, `MultiSyntenyRendering.tsx`)
+and dotplot. Post-synteny.
 
 **`regionNumber` → `displayedRegionIndex`.** Mechanical rename (~550 sites,
 73 files). Do **last**.
 
-**Dead code sweep (after synteny).** `pruneRegionMap` is still actively
-used by 8 backends — keep it.
+**Dead code sweep.** `setCanvasDrawn(val)` was removed from
+`GpuBackendLifecycleSlotMixin` but still declared in two component interfaces:
+`plugins/alignments/.../useAlignmentsBase.ts:114` and
+`plugins/wiggle/.../buildSourceRenderData.ts:51`. Drop both.
+`pruneRegionMap` is still actively used by 8 backends — keep it.
 
 **Structural `RenderSvgModel`.** Matrix + variants use the structural form;
 wiggle / alignments / canvas still import the MST type. Mechanical conversion;
@@ -159,10 +164,22 @@ mouse.
 **Gene glyph compact modes** Add super-compact for dense layouts; side labels
 for genes.
 
-**Paired arcs visibility** Non-downward-pointing arcs fail to render.
-
 **Long-range inter-region arcs** Add UI toggle to draw arcs between distant
 regions.
+
+**Paired arcs visibility** Upward-pointing arcs (pairedArcsDown=false) render at
+wrong height. WIP fix in `arc.slang`: `availH` was incorrectly subtracting
+`u.covOffset` (coverage strip height), shrinking arc headroom. Uncommitted.
+
+---
+
+## Active WIP (uncommitted)
+
+**MismatchParser → packed NUMERIC_CIGAR.** Replacing string-based
+`cigarToMismatches.ts` / `mdToMismatches.ts` with `cigarToMismatches2.ts` /
+`mdToMismatches2.ts` that work directly on packed `Uint32Array` from `@gmod/bam`.
+Eliminates the string-parse step; avoids the `parseCigar` → string split path.
+Tests updated in `parseCigar2.test.ts`.
 
 ---
 
@@ -198,20 +215,40 @@ drawing crowded?
 - Clustering UI not updating?
 - Long-range arcs missing in 1kg demo?
 
-## New issues
+## Synteny bugs
 
-**Synteny mouseover stuck / deletion polygons out of bounds.** Deletion polygons
-extend beyond LGV boundaries in 3-way volvox — check against origin/main to
-confirm regression vs. pre-existing.
+**Synteny mouseover stuck.** `hoveredFeatureIdx` doesn't clear when moving off
+features. `dispatchHoverPick` fires `backend.pick` async; if `this.inFlight`
+never resolves (e.g. `onResult` throws in the second `.then()` of
+`drainPickQueue`), no further hover picks run. Reproduce with 3-way volvox
+synteny; verify tooltip unsticks on mouse leave.
 
-**Synteny shader follow-ups** (not yet done, profiling needed first):
-- `isCurve` is per-view not per-feature — move to uniform to save 4 bytes/feature
-  and allow Instance struct shrink from 64→36 bytes (44% GPU bandwidth cut for
-  100K+ features). Needs RPC to stop emitting `isCurves[]`.
-- Picking pass uses fill vertex shader — leaner picking-only vertex shader could
-  skip color lookup. Marginal until profiling shows vertex bottleneck.
-- Adaptive segment count — straight non-crossing parallelograms need 6 vertices,
-  not 96. Pipeline complexity; only worth it if vertex-bound.
+**Synteny deletion polygons extend beyond LGV boundaries.** In 3-way volvox,
+CIGAR `D`/`N` polygons visually exceed the LGV coordinate range. Check
+`computeCorners` in `syntenyTypes.slang` against `adjOff`/`scale` uniforms in
+`GpuSyntenyRenderer.writeUniforms`, and the CIGAR `cx1` accumulation in
+`executeSyntenyInstanceData.ts`. Compare against `origin/main` to rule out
+regression.
+
+**LinearSyntenyDisplay GPU leak on chromosome navigation.** The MultiLGV
+variant got `clearDisplaySpecificData()` + prune-on-empty-set in the latest
+commit. `LinearSyntenyDisplay` (2-way synteny) has no equivalent —
+`stateModelFactory.ts` never calls `clearAllBlocks()` when the display navigates
+to a new chromosome. Check whether stale GPU buffers accumulate.
+
+## Synteny GPU follow-ups (post-Slang conversion)
+
+Slang codegen already landed: `instanceCount` removed, `FILL_SEGS` constant,
+single `hermiteEdges` call, shared `syntenyTypes` module.
+
+**`isCurve` → uniform + Instance struct shrink.** `isCurve` is per-view (same
+value for every instance in a draw call). Move to Uniforms; stop emitting
+`isCurves[]` from the RPC; pass via `renderParams`. Remove `isCurve : ATTR6`
+from Instance struct. ~30-line change across RPC, `syntenyBackendTypes`,
+renderer, `syntenyTypes.slang`. Next concrete win.
+
+**Lower-priority:** leaner picking vertex shader (marginal), adaptive segment
+count (only if vertex-bound on profiling).
 
 ## plugins/canvas
 
@@ -225,3 +262,9 @@ reproduction steps (user can navigate to it).
 - Decouple amino-acid overlay loading + treat density gate as one-shot → drop
   canvas `isCacheValid` entirely
 
+
+## Polish (continued)
+
+**Y-scalebar nice tick labels.** Coverage scalebar in `LinearAlignmentsDisplay`
+should use d3-style round labels (0, 5, 10, 15, 20) not raw max-divided values
+(0, 7, 13…). When short: just 0 and max. When taller: ≥3 nice ticks.

@@ -1,6 +1,6 @@
-import { cigarToMismatches } from './cigarToMismatches.ts'
-import { getMismatches, parseCigar } from './index.ts'
-import { mdToMismatches } from './mdToMismatches.ts'
+import { cigarToMismatches2 } from './cigarToMismatches2.ts'
+import { getMismatches, parseCigar, parseCigar2 } from './index.ts'
+import { mdToMismatches2 } from './mdToMismatches2.ts'
 
 import type { Mismatch } from '../shared/types.ts'
 
@@ -104,16 +104,15 @@ function mdToMismatchesOriginal(
 // http://seqanswers.com/forums/showthread.php?t=8978
 
 test('cigar to mismatches', () => {
-  expect(cigarToMismatches(parseCigar('56M1D45M'), seq)).toEqual([
+  expect(cigarToMismatches2(parseCigar2('56M1D45M'), seq)).toEqual([
     { start: 56, type: 'deletion', length: 1 },
   ])
 })
 
 test('md to mismatches', () => {
-  const cigarMismatches = cigarToMismatches(parseCigar('56M1D45M'), seq)
-  expect(
-    mdToMismatches('10A80', parseCigar('56M1D45M'), cigarMismatches, seq),
-  ).toEqual([
+  const ops = parseCigar2('56M1D45M')
+  const cigarMismatches = cigarToMismatches2(ops, seq)
+  expect(mdToMismatches2('10A80', ops, cigarMismatches, seq)).toEqual([
     {
       start: 10,
       type: 'mismatch',
@@ -727,17 +726,14 @@ describe('compatibility: new implementation vs original', () => {
 
   for (const { name, cigar, md, seq } of testCases) {
     test(name, () => {
-      const ops = parseCigar(cigar)
-      const cigarMismatches = cigarToMismatches(ops, seq)
-
-      const resultNew = mdToMismatches(md, ops, cigarMismatches, seq)
-      const resultOld = mdToMismatchesOriginal(md, ops, cigarMismatches, seq)
-
-      // Sort both results by start position for consistent comparison
+      const ops1 = parseCigar(cigar)
+      const ops2 = parseCigar2(cigar)
+      const cigarMismatches = cigarToMismatches2(ops2, seq)
+      const resultNew = mdToMismatches2(md, ops2, cigarMismatches, seq)
+      const resultOld = mdToMismatchesOriginal(md, ops1, cigarMismatches, seq)
       const sortFn = (a: Mismatch, b: Mismatch) => a.start - b.start
       resultNew.sort(sortFn)
       resultOld.sort(sortFn)
-
       expect(resultNew).toEqual(resultOld)
     })
   }
@@ -747,19 +743,11 @@ describe('compatibility: new implementation vs original', () => {
     const md = '5A4'
     const testSeq = 'AAAAATAAAA'
     const qual = new Uint8Array([30, 30, 30, 30, 30, 25, 30, 30, 30, 30])
-
-    const ops = parseCigar(cigar)
-    const cigarMismatches = cigarToMismatches(ops, testSeq)
-
-    const resultNew = mdToMismatches(md, ops, cigarMismatches, testSeq, qual)
-    const resultOld = mdToMismatchesOriginal(
-      md,
-      ops,
-      cigarMismatches,
-      testSeq,
-      qual,
-    )
-
+    const ops1 = parseCigar(cigar)
+    const ops2 = parseCigar2(cigar)
+    const cigarMismatches = cigarToMismatches2(ops2, testSeq)
+    const resultNew = mdToMismatches2(md, ops2, cigarMismatches, testSeq, qual)
+    const resultOld = mdToMismatchesOriginal(md, ops1, cigarMismatches, testSeq, qual)
     expect(resultNew).toEqual(resultOld)
   })
 
@@ -767,13 +755,11 @@ describe('compatibility: new implementation vs original', () => {
     const cigar = '20M'
     const md = '20'
     const testSeq = 'ACGTACGTACGTACGTACGT'
-
-    const ops = parseCigar(cigar)
-    const cigarMismatches = cigarToMismatches(ops, testSeq)
-
-    const resultNew = mdToMismatches(md, ops, cigarMismatches, testSeq)
-    const resultOld = mdToMismatchesOriginal(md, ops, cigarMismatches, testSeq)
-
+    const ops1 = parseCigar(cigar)
+    const ops2 = parseCigar2(cigar)
+    const cigarMismatches = cigarToMismatches2(ops2, testSeq)
+    const resultNew = mdToMismatches2(md, ops2, cigarMismatches, testSeq)
+    const resultOld = mdToMismatchesOriginal(md, ops1, cigarMismatches, testSeq)
     expect(resultNew).toEqual(resultOld)
   })
 })

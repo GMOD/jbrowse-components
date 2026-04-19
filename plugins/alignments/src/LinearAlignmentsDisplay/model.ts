@@ -16,6 +16,7 @@ import {
   isFeature,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 import {
   addDisposer,
   getSnapshot,
@@ -54,6 +55,7 @@ import {
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import {
   getColorByMenuItem,
+  getFeatureHeightMenuItem,
   getFiltersMenuItem,
   getGroupByMenuItem,
   getSetMaxHeightMenuItem,
@@ -77,7 +79,7 @@ import type { AlignmentsBackend } from './components/rendererTypes.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 import type { ArcsDataResult } from '../shared/computeArcsFromPileupData.ts'
 import type { LegendItem } from '../shared/legendUtils.ts'
-import type { ColorBy, FilterBy, SortedBy } from '../shared/types'
+import type { ColorBy, FilterBy, ModificationTypeWithColor, SortedBy } from '../shared/types'
 import type { CoverageTicks } from '@jbrowse/alignments-core'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -103,7 +105,7 @@ export type { InsertionType } from './constants.ts'
 
 export type { MultiRegionRegion as Region } from '@jbrowse/plugin-linear-genome-view'
 
-function getSequenceAdapter(session: any, region: Region) {
+function getSequenceAdapter(session: AbstractSessionModel, region: Region) {
   const assembly = region.assemblyName
     ? session.assemblyManager.get(region.assemblyName)
     : undefined
@@ -214,7 +216,7 @@ export default function stateModelFactory(
           jexlFilters: types.optional(types.array(types.string), []),
         }),
       )
-      .preProcessSnapshot((snap: any) => {
+      .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
         if (!snap) {
           return snap
         }
@@ -234,7 +236,7 @@ export default function stateModelFactory(
         highlightedChainIds: [] as string[],
         selectedChainIds: [] as string[],
         colorTagMap: {} as Record<string, string>,
-        visibleModifications: observable.map<string, any>({}),
+        visibleModifications: observable.map<string, ModificationTypeWithColor>({}),
         simplexModifications: new Set<string>(),
         modificationsReady: false,
         overCigarItem: false,
@@ -521,7 +523,7 @@ export default function stateModelFactory(
         get coverageDisplayHeight() {
           return (
             (self.showCoverage ? self.coverageHeight : 0) +
-            (self.showArcs && self.pairedArcsDown ? self.arcsHeight : 0) +
+            (self.showArcs ? self.arcsHeight : 0) +
             (self.showSashimiArcs && self.sashimiArcsDown && self.showCoverage
               ? self.sashimiArcsHeight
               : 0)
@@ -936,6 +938,10 @@ export default function stateModelFactory(
             self.currentRangeY = [0, 0]
           },
 
+          /**
+           * #action
+           * Called by "Compact all tracks" in LGV/BreakpointSplitView/LinearComparativeView menus via duck-typing
+           */
           setCompactness(level: 'normal' | 'compact' | 'super-compact') {
             if (level === 'compact') {
               self.setOverride('featureHeight', 3)
@@ -1640,6 +1646,7 @@ export default function stateModelFactory(
                 },
               ],
             },
+            getFeatureHeightMenuItem(self),
             getSetMaxHeightMenuItem(self),
           ]
 

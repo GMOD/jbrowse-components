@@ -1,7 +1,6 @@
 import { SAM_FLAG_PAIRED } from './samFlags.ts'
 
 import type { ChainData } from './types.ts'
-import type { Feature } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
 
 /**
@@ -23,26 +22,6 @@ export const defaultFilterFlags = {
   flagExclude: 1540,
 }
 
-export function isDefaultFilterFlags(
-  filterBy:
-    | {
-        flagInclude?: number
-        flagExclude?: number
-        readName?: string
-        tagFilter?: unknown
-      }
-    | undefined,
-) {
-  if (!filterBy) {
-    return true
-  }
-  return (
-    filterBy.flagInclude === 0 &&
-    filterBy.flagExclude === 1540 &&
-    !filterBy.readName &&
-    !filterBy.tagFilter
-  )
-}
 export const negFlags = {
   flagInclude: 16,
   flagExclude: 1540,
@@ -157,16 +136,6 @@ export function getContrastBaseMap(theme: Theme) {
       theme.palette.getContrastText(value),
     ]),
   )
-}
-
-export function shouldDrawSNPsMuted(type?: string) {
-  return ['methylation', 'modifications'].includes(type || '')
-}
-
-export interface LayoutFeature {
-  heightPx: number
-  topPx: number
-  feature: Feature
 }
 
 function isTypedArray(
