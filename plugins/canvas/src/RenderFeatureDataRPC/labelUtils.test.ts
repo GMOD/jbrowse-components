@@ -7,13 +7,9 @@ function createMockLayout(height = 10): FeatureLayout {
   return {
     feature: null as any,
     glyphType: 'ProcessedTranscript',
-    x: 0,
     y: 0,
-    width: 100,
     height,
     totalLayoutHeight: height,
-    totalLayoutWidth: 100,
-    leftPadding: 0,
     children: [],
   }
 }
@@ -68,17 +64,6 @@ describe('applyLabelDimensions', () => {
       expect(layout.totalLayoutHeight).toBe(10)
     })
 
-    it('sets totalLayoutWidth based on label text width', () => {
-      const layout = createMockLayout(10)
-      layout.totalLayoutWidth = 50
-      applyLabelDimensions(layout, {
-        feature: createMockFeature('A_very_long_transcript_name_here'),
-        config: mockDisplayConfig({ subfeatureLabels: 'below' }),
-        isNested: true,
-        isTranscriptChild: true,
-      })
-      expect(layout.totalLayoutWidth).toBeGreaterThan(50)
-    })
   })
 
   describe('transcript children with "overlay" subfeature labels', () => {

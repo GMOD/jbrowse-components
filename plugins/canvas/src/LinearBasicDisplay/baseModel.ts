@@ -31,6 +31,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun, observable } from 'mobx'
 
 import { computeLaidOutData } from './layout.ts'
+import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { CanvasFeatureBackend } from './components/canvasFeatureBackendTypes.ts'
@@ -633,19 +634,22 @@ export default function baseStateModelFactory(
           })()
         },
 
-        // Worker output is pixel-baked at the request's bpPerPx (feature
-        // heights, glyph positions). Once the viewport has drifted ≥2x
-        // off that scale, the per-region data is stale; the mixin's
-        // FetchVisibleRegions autorun uses this hook to refetch only the
-        // affected regions.
+        // Worker output positions and heights are genomic and config-driven
+        // (no continuous bpPerPx dependence). The only `bpPerPx`-driven
+        // worker decision that affects output is whether the amino-acid
+        // overlay was fetched (gated by `shouldRenderPeptideBackground`).
+        // Refetch only when crossing that discrete threshold — never on
+        // continuous zoom drift.
         isCacheValid(regionNumber: number) {
           const fetchedBpPerPx = self.fetchedBpPerPxMap.get(regionNumber)
           if (fetchedBpPerPx === undefined) {
             return true
           }
           const view = getContainingView(self) as LGV
-          const ratio = view.bpPerPx / fetchedBpPerPx
-          return ratio <= 2 && ratio >= 0.5
+          return (
+            shouldRenderPeptideBackground(view.bpPerPx) ===
+            shouldRenderPeptideBackground(fetchedBpPerPx)
+          )
         },
       }))
       .actions(self => {

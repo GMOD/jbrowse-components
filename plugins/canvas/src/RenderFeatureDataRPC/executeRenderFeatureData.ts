@@ -121,7 +121,7 @@ export async function executeRenderFeatureData({
       const records: FeatureLayout[] = []
       for (const feature of features.values()) {
         records.push(
-          layoutFeature({ feature, bpPerPx, reversed, config: displayConfig }),
+          layoutFeature({ feature, reversed, config: displayConfig }),
         )
       }
       return records

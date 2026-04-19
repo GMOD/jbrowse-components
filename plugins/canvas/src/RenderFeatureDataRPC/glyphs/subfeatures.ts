@@ -1,6 +1,6 @@
 import { applyLabelDimensions } from '../labelUtils.ts'
 import { findGlyph } from './findGlyph.ts'
-import { getFeatureDimensions } from './glyphUtils.ts'
+import { getFeatureHeightPx } from './glyphUtils.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -45,14 +45,10 @@ function filterByGeneGlyphMode(
 }
 
 export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
-  const { feature, bpPerPx, config } = args
+  const { feature, config } = args
   const { geneGlyphMode, transcriptTypes, subfeatureLabels } = config
 
-  const {
-    start: featureStart,
-    heightPx,
-    widthPx,
-  } = getFeatureDimensions(feature, bpPerPx, config)
+  const heightPx = getFeatureHeightPx(feature, config)
 
   // Sort coding transcripts first so they render on top in stacked layout
   let subfeatures = [...(feature.get('subfeatures') || [])]
@@ -102,9 +98,6 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
       isTranscriptChild: isChildTranscript,
     })
 
-    const xRelativePx = (child.get('start') - featureStart) / bpPerPx
-
-    childLayout.x = xRelativePx
     childLayout.y = currentYPx
 
     children.push(childLayout)
@@ -125,13 +118,9 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   return {
     feature,
     glyphType: 'Subfeatures',
-    x: 0,
     y: 0,
-    width: widthPx,
     height: totalHeightPx,
     totalLayoutHeight: totalHeightPx,
-    totalLayoutWidth: widthPx,
-    leftPadding: 0,
     children,
   }
 }

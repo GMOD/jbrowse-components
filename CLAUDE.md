@@ -9,17 +9,18 @@ where various layout decisions happen:
 
 - **Canvas plugin**: worker does per-feature glyph selection, subfeature
   breakdown, color computation, and label measurement. Y-row packing is
-  main-thread (`computeLaidOutData` derived view). Output is fully
-  genomic-coord — `rectPositions` are BP offsets, child positions are
-  looked up from `feature.get('start')`, heights are
-  `config.featureHeight` (not zoom-dependent), `floatingLabelsData.minX/maxX`
-  are BP offsets. Several `widthPx`-derived fields on `FeatureLayout`
-  (`x`, `width`, `totalLayoutWidth`, `leftPadding`) are computed but
-  never read — dead-code holdover from earlier pixel-baked iterations.
-  The actual `bpPerPx`-dependent worker decisions are: amino-acid
-  overlay threshold (`shouldRenderPeptideBackground`) and the
-  `maxFeatureDensity` density gate. Worker needs config sent as a plain
-  snapshot (`getConfSnapshot` + `readConfigValue`).
+  main-thread (`computeLaidOutData` derived view); within-feature Y
+  stacking (transcript rows inside a gene, mature-protein rows) is
+  worker-side and config-driven. Output is fully genomic-coord —
+  `rectPositions` are BP offsets, child positions come from
+  `feature.get('start')` in `collectRenderData`, heights are
+  `config.featureHeight * heightMultiplier`, `floatingLabelsData.minX/maxX`
+  are BP offsets. `FeatureLayout` is minimal: `feature`, `glyphType`,
+  `y`, `height`, `totalLayoutHeight`, `children`. The only
+  `bpPerPx`-dependent worker decision is whether to compute the
+  amino-acid overlay (gated by `shouldRenderPeptideBackground`), and
+  `isCacheValid` is a discrete threshold check on that. Worker needs
+  config sent as a plain snapshot (`getConfSnapshot` + `readConfigValue`).
 - **Wiggle**: worker fetches binned data from BigWig at the appropriate
   zoom level and returns genomic-coord bins (`featurePositions` are BP
   offsets, scores per-bin). The `bpPerPx` parameter to the worker only

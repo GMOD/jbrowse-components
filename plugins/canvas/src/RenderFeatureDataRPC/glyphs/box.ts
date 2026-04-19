@@ -1,27 +1,15 @@
-import { getFeatureDimensions, getStrandArrowPadding } from './glyphUtils.ts'
+import { getFeatureHeightPx } from './glyphUtils.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 
 export function layoutBox(args: LayoutArgs): FeatureLayout {
-  const { feature, bpPerPx, config } = args
-  const { heightPx, widthPx } = getFeatureDimensions(feature, bpPerPx, config)
-
-  const isTopLevel = !feature.parent?.()
-  const strand = feature.get('strand')
-  const arrowPadding = isTopLevel
-    ? getStrandArrowPadding(strand)
-    : { left: 0, right: 0 }
-
+  const heightPx = getFeatureHeightPx(args.feature, args.config)
   return {
-    feature,
+    feature: args.feature,
     glyphType: 'Box',
-    x: 0,
     y: 0,
-    width: widthPx,
     height: heightPx,
     totalLayoutHeight: heightPx,
-    totalLayoutWidth: widthPx + arrowPadding.left + arrowPadding.right,
-    leftPadding: arrowPadding.left,
     children: [],
   }
 }

@@ -1,5 +1,5 @@
 import {
-  getFeatureDimensions,
+  getFeatureHeightPx,
   layoutChild,
   sortByPosition,
 } from './glyphUtils.ts'
@@ -26,9 +26,9 @@ export function hasMatureProteinChildren(feature: Feature) {
 }
 
 export function layoutMatureProteinRegion(args: LayoutArgs): FeatureLayout {
-  const { feature, bpPerPx, config } = args
+  const { feature, config } = args
   const { subfeatureLabels } = config
-  const { heightPx, widthPx } = getFeatureDimensions(feature, bpPerPx, config)
+  const heightPx = getFeatureHeightPx(feature, config)
 
   const matureProteins = getMatureProteinChildren(feature)
   const sortedChildren = sortByPosition(
@@ -56,13 +56,9 @@ export function layoutMatureProteinRegion(args: LayoutArgs): FeatureLayout {
   return {
     feature,
     glyphType: 'MatureProteinRegion',
-    x: 0,
     y: 0,
-    width: widthPx,
     height: totalHeight,
     totalLayoutHeight: totalHeight,
-    totalLayoutWidth: widthPx,
-    leftPadding: 0,
     children: sortedChildren,
   }
 }

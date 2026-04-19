@@ -120,23 +120,18 @@ plugin:
 - **Canvas**: worker output positions and heights are fully genomic and
   config-driven — `rectPositions` are BP offsets, `rectHeights` is
   `config.featureHeight * heightMultiplier`, child positions are looked up
-  from `feature.get('start')` in `collectRenderData`. Several
-  `bpPerPx`-derived fields on `FeatureLayout` (`x`, `width`,
-  `totalLayoutWidth`, `leftPadding`) are computed by the glyph layer but
-  never read downstream — these are dead-code holdovers from earlier
-  pixel-baked iterations and should be cleaned up. The actual
-  `bpPerPx`-dependent worker decisions are:
-  - `shouldRenderPeptideBackground(bpPerPx)` — amino-acid overlay only
-    fetched at fine zoom; crossing the threshold needs a refetch to
-    populate `aminoAcidOverlay`
-  - `maxFeatureDensity` density gate — early-returns `regionTooLarge`
-    when `featureCount / regionWidthPx > threshold`
-
-  These are *threshold* decisions, not continuous drift. The current 2x
-  `isCacheValid` is a coarse proxy for them. A cleaner architecture would
-  decouple amino-acid overlay loading from the main fetch (so crossing
-  the threshold loads just the overlay) and treat the density gate as a
-  one-shot decision (so panning at any zoom can't repeatedly trigger it).
+  from `feature.get('start')` in `collectRenderData`. `FeatureLayout`
+  carries only `feature`, `glyphType`, `y`, `height`, `totalLayoutHeight`,
+  `children` — all viewport-independent. The only `bpPerPx`-dependent
+  worker decision that affects output is whether the amino-acid overlay
+  was fetched (gated by `shouldRenderPeptideBackground` — overlay is only
+  computed at fine zoom). `isCacheValid` reflects that: refetch when the
+  current viewport crosses the peptide-background threshold relative to
+  the fetch's `bpPerPx`, never on continuous zoom drift. The
+  `maxFeatureDensity` gate is also `bpPerPx`-driven but only matters at
+  fetch time; treating it as a one-shot decision and decoupling the
+  amino-acid overlay into its own fetch pipeline would let canvas drop
+  `isCacheValid` entirely — that's the long-term direction.
 
 Plugins override the mixin's `isCacheValid` hook to express their own
 threshold; `MultiRegionDisplayMixin`'s `FetchVisibleRegions` autorun calls

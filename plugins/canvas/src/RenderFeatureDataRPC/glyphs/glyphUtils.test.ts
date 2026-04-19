@@ -1,11 +1,5 @@
 import { layoutBox } from './box.ts'
-import {
-  getFeatureDimensions,
-  getStrandArrowPadding,
-  layoutChild,
-  layoutContainerGlyph,
-  sortByPosition,
-} from './glyphUtils.ts'
+import { getFeatureHeightPx, sortByPosition } from './glyphUtils.ts'
 import { findGlyph } from './index.ts'
 import { layoutProcessedTranscript } from './processed.ts'
 import { layoutSegments } from './segments.ts'
@@ -46,13 +40,9 @@ describe('sortByPosition', () => {
     return {
       feature: mockFeature({ type: 'CDS', start, end }),
       glyphType: 'Box' as const,
-      x: 0,
       y: 0,
-      width: end - start,
       height: 10,
       totalLayoutHeight: 10,
-      totalLayoutWidth: end - start,
-      leftPadding: 0,
       children: [],
     } satisfies FeatureLayout
   }
@@ -81,228 +71,44 @@ describe('sortByPosition', () => {
     const layouts = [makeLayout(300, 400), makeLayout(100, 200)]
     const original = [...layouts]
     sortByPosition(layouts)
-    expect(layouts[0]).toBe(original[0])
-    expect(layouts[1]).toBe(original[1])
-  })
-
-  it('returns empty array for empty input', () => {
-    expect(sortByPosition([])).toEqual([])
+    expect(layouts).toEqual(original)
   })
 })
 
-describe('getStrandArrowPadding', () => {
-  it('returns left padding for reverse strand', () => {
-    const pad = getStrandArrowPadding(-1)
-    expect(pad.left).toBeGreaterThan(0)
-    expect(pad.right).toBe(0)
-    expect(pad.visualSide).toBe('left')
+describe('getFeatureHeightPx', () => {
+  it('returns config.featureHeight by default', () => {
+    const feature = mockFeature({ type: 'exon', start: 0, end: 100 })
+    expect(getFeatureHeightPx(feature, mockDisplayConfig())).toBe(10)
   })
 
-  it('returns right padding for forward strand', () => {
-    const pad = getStrandArrowPadding(1)
-    expect(pad.left).toBe(0)
-    expect(pad.right).toBeGreaterThan(0)
-    expect(pad.visualSide).toBe('right')
-  })
-
-  it('returns no padding for unstranded', () => {
-    const pad = getStrandArrowPadding(0)
-    expect(pad.left).toBe(0)
-    expect(pad.right).toBe(0)
-    expect(pad.visualSide).toBeNull()
-    expect(pad.width).toBe(0)
-  })
-})
-
-describe('getFeatureDimensions', () => {
-  it('computes height with multiplier and width from bp range', () => {
-    const feature = mockFeature({ type: 'exon', start: 100, end: 300 })
+  it('applies the compact multiplier', () => {
+    const feature = mockFeature({ type: 'exon', start: 0, end: 100 })
     const config = mockDisplayConfig({ displayMode: 'compact' })
-
-    const dims = getFeatureDimensions(feature, 1, config)
-
-    expect(dims.start).toBe(100)
-    expect(dims.end).toBe(300)
-    expect(dims.widthPx).toBe(200)
-    expect(dims.heightPx).toBe(6) // 10 * 0.6
+    expect(getFeatureHeightPx(feature, config)).toBe(6) // 10 * 0.6
   })
 
-  it('computes height with super-compact multiplier', () => {
-    const feature = mockFeature({ type: 'exon', start: 100, end: 300 })
+  it('applies the super-compact multiplier', () => {
+    const feature = mockFeature({ type: 'exon', start: 0, end: 100 })
     const config = mockDisplayConfig({ displayMode: 'superCompact' })
-
-    const dims = getFeatureDimensions(feature, 1, config)
-
-    expect(dims.heightPx).toBe(3) // 10 * 0.3
-  })
-
-  it('scales width by bpPerPx', () => {
-    const feature = mockFeature({ type: 'exon', start: 0, end: 1000 })
-    const config = mockDisplayConfig()
-
-    const dims = getFeatureDimensions(feature, 10, config)
-
-    expect(dims.widthPx).toBe(100)
+    expect(getFeatureHeightPx(feature, config)).toBe(3) // 10 * 0.3
   })
 })
 
-describe('layoutChild', () => {
-  it('computes x offset relative to parent start', () => {
-    const parent = mockFeature({ type: 'mRNA', start: 100, end: 500 })
-    const child = mockFeature({
-      type: 'CDS',
-      start: 200,
-      end: 300,
-      parentFeature: parent,
-    })
-    const config = mockDisplayConfig()
-
-    const result = layoutChild(child, parent, {
-      feature: parent,
-      bpPerPx: 1,
-      reversed: false,
-      config,
-    })
-
-    expect(result.x).toBe(100)
-    expect(result.width).toBe(100)
-    expect(result.leftPadding).toBe(0)
-  })
-
-  it('scales by bpPerPx', () => {
-    const parent = mockFeature({ type: 'mRNA', start: 100, end: 500 })
-    const child = mockFeature({
-      type: 'CDS',
-      start: 200,
-      end: 400,
-      parentFeature: parent,
-    })
-    const config = mockDisplayConfig()
-
-    const result = layoutChild(child, parent, {
-      feature: parent,
-      bpPerPx: 2,
-      reversed: false,
-      config,
-    })
-
-    expect(result.x).toBe(50)
-    expect(result.width).toBe(100)
-  })
-})
-
-describe('boxGlyph', () => {
-  it('uses Px-suffixed naming convention (layout returns correct dimensions)', () => {
-    const feature = mockFeature({
-      type: 'match',
-      start: 100,
-      end: 300,
-      strand: 1,
-    })
-    const config = mockDisplayConfig()
-
+describe('layoutBox', () => {
+  it('returns the feature, height, and Box glyph type', () => {
+    const feature = mockFeature({ type: 'match', start: 100, end: 300 })
     const layout = layoutBox({
       feature,
-      bpPerPx: 1,
       reversed: false,
-      config,
+      config: mockDisplayConfig(),
     })
-
-    expect(layout.width).toBe(200)
     expect(layout.height).toBe(10)
     expect(layout.glyphType).toBe('Box')
-  })
-
-  it('adds arrow padding for top-level forward strand features', () => {
-    const feature = mockFeature({
-      type: 'match',
-      start: 100,
-      end: 300,
-      strand: 1,
-    })
-    const config = mockDisplayConfig()
-
-    const layout = layoutBox({
-      feature,
-      bpPerPx: 1,
-      reversed: false,
-      config,
-    })
-
-    expect(layout.leftPadding).toBe(0)
-    expect(layout.totalLayoutWidth).toBeGreaterThan(layout.width)
-  })
-
-  it('skips arrow padding for child features', () => {
-    const parent = mockFeature({ type: 'gene', start: 100, end: 500 })
-    const child = mockFeature({
-      type: 'exon',
-      start: 100,
-      end: 300,
-      strand: 1,
-      parentFeature: parent,
-    })
-    const config = mockDisplayConfig()
-
-    const layout = layoutBox({
-      feature: child,
-      bpPerPx: 1,
-      reversed: false,
-      config,
-    })
-
-    expect(layout.leftPadding).toBe(0)
-    expect(layout.totalLayoutWidth).toBe(layout.width)
+    expect(layout.children).toEqual([])
   })
 })
 
-describe('boxGlyph for CDS', () => {
-  it('adds arrow padding for top-level CDS (same as any top-level feature)', () => {
-    const feature = mockFeature({
-      type: 'CDS',
-      start: 200,
-      end: 400,
-      strand: 1,
-    })
-    const config = mockDisplayConfig()
-
-    const layout = layoutBox({
-      feature,
-      bpPerPx: 1,
-      reversed: false,
-      config,
-    })
-
-    expect(layout.width).toBe(200)
-    expect(layout.height).toBe(10)
-    expect(layout.glyphType).toBe('Box')
-    expect(layout.totalLayoutWidth).toBeGreaterThan(layout.width)
-  })
-
-  it('skips arrow padding for child CDS', () => {
-    const parent = mockFeature({ type: 'mRNA', start: 100, end: 500 })
-    const feature = mockFeature({
-      type: 'CDS',
-      start: 200,
-      end: 400,
-      strand: 1,
-      parentFeature: parent,
-    })
-    const config = mockDisplayConfig()
-
-    const layout = layoutBox({
-      feature,
-      bpPerPx: 1,
-      reversed: false,
-      config,
-    })
-
-    expect(layout.leftPadding).toBe(0)
-    expect(layout.totalLayoutWidth).toBe(layout.width)
-  })
-})
-
-describe('processedTranscriptGlyph', () => {
+describe('layoutProcessedTranscript', () => {
   it('sorts children by position', () => {
     const cds1 = mockFeature({ type: 'CDS', start: 300, end: 400 })
     const cds2 = mockFeature({ type: 'CDS', start: 100, end: 200 })
@@ -310,25 +116,20 @@ describe('processedTranscriptGlyph', () => {
       type: 'mRNA',
       start: 100,
       end: 400,
-      strand: 1,
       subfeatures: [cds1, cds2],
     })
-    const config = mockDisplayConfig()
-
     const layout = layoutProcessedTranscript({
       feature: mrna,
-      bpPerPx: 1,
       reversed: false,
-      config,
+      config: mockDisplayConfig(),
     })
-
     expect(layout.children).toHaveLength(2)
     expect(layout.children[0]!.feature.get('start')).toBe(100)
     expect(layout.children[1]!.feature.get('start')).toBe(300)
   })
 })
 
-describe('segmentsGlyph', () => {
+describe('layoutSegments', () => {
   it('sorts children by position', () => {
     const sub1 = mockFeature({ type: 'exon', start: 500, end: 600 })
     const sub2 = mockFeature({ type: 'exon', start: 100, end: 200 })
@@ -336,79 +137,21 @@ describe('segmentsGlyph', () => {
       type: 'match',
       start: 100,
       end: 600,
-      strand: -1,
       subfeatures: [sub1, sub2],
     })
-    const config = mockDisplayConfig()
-
     const layout = layoutSegments({
       feature,
-      bpPerPx: 1,
       reversed: false,
-      config,
+      config: mockDisplayConfig(),
     })
-
     expect(layout.children).toHaveLength(2)
     expect(layout.children[0]!.feature.get('start')).toBe(100)
     expect(layout.children[1]!.feature.get('start')).toBe(500)
-    expect(layout.leftPadding).toBeGreaterThan(0)
-  })
-})
-
-describe('segmentsGlyph for repeat_region', () => {
-  it('repeat_region uses segments glyph and sorts children', () => {
-    const sub1 = mockFeature({ type: 'repeat_unit', start: 200, end: 250 })
-    const sub2 = mockFeature({ type: 'repeat_unit', start: 100, end: 150 })
-    const feature = mockFeature({
-      type: 'repeat_region',
-      start: 100,
-      end: 300,
-      strand: 0,
-      subfeatures: [sub1, sub2],
-    })
-    const config = mockDisplayConfig()
-
-    const layout = layoutSegments({
-      feature,
-      bpPerPx: 1,
-      reversed: false,
-      config,
-    })
-
-    expect(layout.children).toHaveLength(2)
-    expect(layout.children[0]!.feature.get('start')).toBe(100)
-    expect(layout.children[1]!.feature.get('start')).toBe(200)
-    expect(layout.glyphType).toBe('Segments')
-    expect(layout.leftPadding).toBe(0)
-  })
-})
-
-describe('layoutContainerGlyph', () => {
-  it('sorts children and adds strand arrow padding', () => {
-    const sub1 = mockFeature({ type: 'exon', start: 300, end: 400 })
-    const sub2 = mockFeature({ type: 'CDS', start: 100, end: 200 })
-    const feature = mockFeature({
-      type: 'mRNA',
-      start: 100,
-      end: 400,
-      strand: 1,
-    })
-    const config = mockDisplayConfig()
-    const args = { feature, bpPerPx: 1, reversed: false, config }
-
-    const layout = layoutContainerGlyph('Segments', args, [sub1, sub2])
-
-    expect(layout.children).toHaveLength(2)
-    expect(layout.children[0]!.glyphType).toBe('Box')
-    expect(layout.children[0]!.feature.get('start')).toBe(100)
-    expect(layout.children[1]!.glyphType).toBe('Box')
-    expect(layout.children[1]!.feature.get('start')).toBe(300)
-    expect(layout.totalLayoutWidth).toBeGreaterThan(layout.width)
   })
 })
 
 describe('findGlyph', () => {
-  const layoutArgs = { bpPerPx: 1, reversed: false }
+  const layoutArgs = { reversed: false }
 
   it('auto-detects isTopLevel from feature.parent()', () => {
     const parent = mockFeature({ type: 'gene', start: 0, end: 1000 })
@@ -429,7 +172,6 @@ describe('findGlyph', () => {
       ],
     })
     const config = mockDisplayConfig()
-
     // feature with parent → non-top-level → Segments, not Subfeatures
     expect(
       findGlyph(nested, config)({ feature: nested, config, ...layoutArgs })
@@ -452,7 +194,6 @@ describe('findGlyph', () => {
       ],
     })
     const config = mockDisplayConfig()
-
     expect(
       findGlyph(feature, config)({ feature, config, ...layoutArgs }).glyphType,
     ).toBe('Subfeatures')
@@ -461,7 +202,6 @@ describe('findGlyph', () => {
   it('returns Box for leaf features', () => {
     const feature = mockFeature({ type: 'match', start: 0, end: 100 })
     const config = mockDisplayConfig()
-
     expect(
       findGlyph(feature, config)({ feature, config, ...layoutArgs }).glyphType,
     ).toBe('Box')
@@ -484,8 +224,6 @@ describe('findGlyph', () => {
       ],
     })
     const config = mockDisplayConfig()
-
-    // explicit false → Segments even though feature has no parent
     expect(
       findGlyph(feature, config, false)({ feature, config, ...layoutArgs })
         .glyphType,

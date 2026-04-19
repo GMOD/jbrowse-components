@@ -1,5 +1,3 @@
-import { measureText } from '@jbrowse/core/util'
-
 import { isLabelAllowed, readConfigValue } from './renderConfig.ts'
 import { truncateLabel } from './util.ts'
 
@@ -56,27 +54,15 @@ export function applyLabelDimensions(
   )
 
   let extraHeightPx = 0
-  let maxLabelWidthPx = 0
-
   if (shouldShowName) {
     extraHeightPx += actualFontHeight
-    maxLabelWidthPx = Math.max(
-      maxLabelWidthPx,
-      measureText(name, actualFontHeight),
-    )
   }
   if (shouldShowDescription) {
     extraHeightPx += actualFontHeight
-    maxLabelWidthPx = Math.max(
-      maxLabelWidthPx,
-      measureText(description, actualFontHeight),
-    )
   }
 
   const isOverlayMode = isTranscriptChild && subfeatureLabels === 'overlay'
   if (!isOverlayMode) {
     layout.totalLayoutHeight = layout.height + extraHeightPx
   }
-
-  layout.totalLayoutWidth = Math.max(layout.totalLayoutWidth, maxLabelWidthPx)
 }
