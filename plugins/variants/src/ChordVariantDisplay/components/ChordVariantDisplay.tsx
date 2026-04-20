@@ -1,11 +1,13 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import SVChordsReactComponent from '../../StructuralVariantChordRenderer/ReactComponent.tsx'
+import SVChordsReactComponent from '@jbrowse/plugin-circular-view/src/ChordRenderer/ReactComponent.tsx'
 import DisplayError from './DisplayError.tsx'
 import Loading from './Loading.tsx'
 
-import type { Block } from '../../StructuralVariantChordRenderer/types.ts'
+import type { MouseEvent } from 'react'
+
+import type { AnyRegion, Block } from '@jbrowse/plugin-circular-view'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
@@ -15,11 +17,16 @@ interface DisplayModel {
   filled: boolean
   error: unknown
   features: Map<string, Feature> | undefined
-  cachedSlices: Block[] | undefined
+  blockDefinitions: Block[]
   selectedFeatureId: string | undefined
   configuration: { renderer: AnyConfigurationModel }
   bezierRadiusRatio: number
-  onChordClick: (...args: unknown[]) => void
+  onChordClick: (
+    feature: Feature,
+    reg: AnyRegion,
+    endBlock: AnyRegion,
+    evt: MouseEvent<SVGPathElement>,
+  ) => void
 }
 
 const ChordVariantDisplay = observer(function ChordVariantDisplay({
@@ -33,26 +40,19 @@ const ChordVariantDisplay = observer(function ChordVariantDisplay({
   if (display.error) {
     return <DisplayError model={display} radius={radius} />
   }
-  if (!display.filled || !display.features || !display.cachedSlices) {
+  if (!display.filled || !display.features) {
     return <Loading radius={radius} />
   }
 
   return (
     <SVChordsReactComponent
       features={display.features}
-      blockDefinitions={display.cachedSlices}
+      blockDefinitions={display.blockDefinitions}
       radius={radius}
       bezierRadius={radius * display.bezierRadiusRatio}
       config={display.configuration.renderer}
       displayModel={display}
-      onChordClick={
-        display.onChordClick as (
-          feat: Feature,
-          reg: unknown,
-          end: unknown,
-          evt: unknown,
-        ) => void
-      }
+      onChordClick={display.onChordClick}
     />
   )
 })

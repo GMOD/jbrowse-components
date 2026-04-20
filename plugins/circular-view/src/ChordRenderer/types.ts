@@ -13,7 +13,7 @@ export interface ElidedRegion {
 export type AnyRegion = Region | ElidedRegion
 
 export interface Block {
-  flipped: boolean
+  flipped?: boolean
   bpPerRadian: number
   startRadians: number
   region: AnyRegion

@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
 
+import type { MouseEvent } from 'react'
+
 import { observer } from 'mobx-react'
 
 import Chord from './Chord.tsx'
@@ -32,12 +34,12 @@ const SVChordsReactComponent = observer(function SVChordsReactComponent({
     feature: Feature,
     reg: AnyRegion,
     endBlock: AnyRegion,
-    evt: unknown,
+    evt: MouseEvent<SVGPathElement>,
   ) => void
 }) {
   const { selectedFeatureId } = displayModel || {}
   const blocksForRefsMemo = useMemo(() => {
-    const blocksForRefs = {} as Record<string, Block>
+    const blocksForRefs: Record<string, Block> = {}
     for (const block of blockDefinitions) {
       const regions = block.region.elided
         ? block.region.regions

@@ -2,6 +2,7 @@ import Plugin from '@jbrowse/core/Plugin'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
 import DataUsageIcon from '@mui/icons-material/DataUsage'
 
+import ChordRendererF from './ChordRenderer/index.ts'
 import CircularViewF from './CircularView/index.ts'
 import LaunchCircularViewF from './LaunchCircularView/index.ts'
 
@@ -14,6 +15,7 @@ export default class CircularViewPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     CircularViewF(pluginManager)
     LaunchCircularViewF(pluginManager)
+    ChordRendererF(pluginManager)
   }
 
   configure(pluginManager: PluginManager) {
@@ -34,3 +36,5 @@ export {
   type CircularViewStateModel,
   type ExportSvgOptions,
 } from './CircularView/model.ts'
+
+export type { AnyRegion, Block } from './ChordRenderer/types.ts'

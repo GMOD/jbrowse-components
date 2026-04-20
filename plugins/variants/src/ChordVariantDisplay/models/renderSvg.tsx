@@ -1,39 +1,43 @@
-import {
-  getContainingTrack,
-  getContainingView,
-  getSession,
-} from '@jbrowse/core/util'
-import { ReactRendering } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { getContainingView } from '@jbrowse/core/util'
 
-import type { ExportSvgOptions } from '@jbrowse/plugin-circular-view'
+import SVChordsReactComponent from '@jbrowse/plugin-circular-view/src/ChordRenderer/ReactComponent.tsx'
+
+import type { MouseEvent } from 'react'
+
+import type { AnyRegion, Block } from '@jbrowse/plugin-circular-view'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
-import type { ThemeOptions } from '@mui/material'
 
-export async function renderSvg(
-  self: any,
-  opts: ExportSvgOptions & { theme?: ThemeOptions },
-) {
+type RenderSvgModel = IAnyStateTreeNode & {
+  features: Map<string, Feature> | undefined
+  blockDefinitions: Block[]
+  bezierRadiusRatio: number
+  // configuration typed as unknown — MST's index signature hides subfields
+  configuration: unknown
+  id: string
+  selectedFeatureId: string | undefined
+  onChordClick: (
+    feature: Feature,
+    reg: AnyRegion,
+    endBlock: AnyRegion,
+    evt: MouseEvent<SVGPathElement>,
+  ) => void
+}
+
+export function renderSvg(self: RenderSvgModel) {
   const view = getContainingView(self) as CircularViewModel
-  const { rpcManager } = getSession(view)
-  const { rendererType } = self
-
-  const result = await rendererType.renderInClient(rpcManager, {
-    assemblyName: view.displayedRegions[0]!.assemblyName,
-    adapterConfig: structuredClone(self.adapterConfig),
-    rendererType: rendererType.name,
-    regions: structuredClone(view.displayedRegions),
-    sessionId: getRpcSessionId(self),
-    trackInstanceId: getContainingTrack(self).id,
-    timeout: 1000000,
-    ...self.renderProps(),
-    radius: view.radiusPx,
-    bezierRadius: view.radiusPx * self.bezierRadiusRatio,
-    blockDefinitions: self.blockDefinitions,
-    renderingProps: { displayModel: self },
-    exportSVG: opts,
-    theme: opts.theme,
-  })
-
-  return <ReactRendering rendering={result} />
+  const radius = view.radiusPx
+  return (
+    <SVChordsReactComponent
+      features={self.features!}
+      blockDefinitions={self.blockDefinitions}
+      radius={radius}
+      bezierRadius={radius * self.bezierRadiusRatio}
+      config={(self.configuration as { renderer: AnyConfigurationModel }).renderer}
+      displayModel={self}
+      onChordClick={self.onChordClick}
+    />
+  )
 }

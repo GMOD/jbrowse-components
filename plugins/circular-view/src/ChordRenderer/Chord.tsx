@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import type { MouseEvent } from 'react'
+
 import { parseBreakend } from '@gmod/vcf'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getStrokeProps, polarToCartesian } from '@jbrowse/core/util'
@@ -57,7 +59,12 @@ const Chord = observer(function Chord({
   bezierRadius: number
   strokeWidth?: number
   selected: boolean
-  onClick: (feat: Feature, reg: AnyRegion, end: AnyRegion, evt: unknown) => void
+  onClick: (
+    feat: Feature,
+    reg: AnyRegion,
+    end: AnyRegion,
+    evt: MouseEvent<SVGPathElement>,
+  ) => void
 }) {
   const [hovered, setHovered] = useState(false)
   const startBlock = blocksForRefs[feature.get('refName')]
