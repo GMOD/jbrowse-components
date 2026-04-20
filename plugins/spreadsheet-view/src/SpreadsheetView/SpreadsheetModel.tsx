@@ -23,7 +23,7 @@ export interface RowSet {
   rows: Row[]
 }
 
-interface GridRow {
+export interface GridRow {
   id: number
   feature?: SimpleFeatureSerialized
   [key: string]: unknown
@@ -151,7 +151,7 @@ export default function stateModelFactory() {
       get visibleRows() {
         const { visibleRowFlags } = self
         return visibleRowFlags
-          ? self.rows?.filter((_f, idx) => visibleRowFlags[idx] !== false)
+          ? self.rows?.filter(row => visibleRowFlags[row.id as number] !== false)
           : self.rows
       },
     }))
