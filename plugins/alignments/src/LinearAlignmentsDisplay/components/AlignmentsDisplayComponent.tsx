@@ -2,7 +2,7 @@ import { Suspense, useRef, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
-import { getContainingView, useDebounce } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -33,7 +33,6 @@ const AlignmentsDisplayComponent = observer(
     const [offsetMouseCoord, setOffsetMouseCoord] = useState(coord0)
     const [clientMouseCoord, setClientMouseCoord] = useState(coord0)
     const view = getContainingView(model) as LinearGenomeViewModel
-    const debouncedLoading = useDebounce(model.isLoading, 500)
 
     if (!view.initialized) {
       return (
@@ -66,10 +65,7 @@ const AlignmentsDisplayComponent = observer(
         }}
       >
         <DisplayMessageComponent model={model} />
-        <LoadingOverlay
-          statusMessage={model.statusMessage ?? 'Loading features'}
-          isVisible={debouncedLoading && !model.regionTooLarge}
-        />
+        <AlignmentsLoadingOverlay model={model} />
         <Suspense fallback={null}>
           <TooltipComponent
             model={model}
@@ -113,5 +109,18 @@ const AlignmentsDisplayComponent = observer(
     )
   },
 )
+
+const AlignmentsLoadingOverlay = observer(function AlignmentsLoadingOverlay({
+  model,
+}: {
+  model: Pick<LinearAlignmentsDisplayModel, 'isLoading' | 'statusMessage' | 'regionTooLarge'>
+}) {
+  return (
+    <LoadingOverlay
+      statusMessage={model.statusMessage ?? 'Loading features'}
+      isVisible={model.isLoading && !model.regionTooLarge}
+    />
+  )
+})
 
 export default AlignmentsDisplayComponent

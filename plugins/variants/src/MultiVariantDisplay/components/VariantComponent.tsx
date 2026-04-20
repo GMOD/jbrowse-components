@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react'
 
-import { ErrorBar, ErrorOverlay, Menu } from '@jbrowse/core/ui'
+import { ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
   getContainingView,
@@ -12,8 +12,11 @@ import { observer } from 'mobx-react'
 
 import { VariantRenderer } from './VariantRenderer.ts'
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
-import LoadingOverlay from '../../shared/components/LoadingOverlay.tsx'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
+import {
+  VariantErrorBar,
+  VariantLoadingOverlay,
+} from '../../shared/components/VariantStatusOverlays.tsx'
 import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
@@ -29,6 +32,7 @@ interface PerRegionCellData {
 export interface VariantDisplayModel extends VariantDisplayModelBase {
   cellData: PerRegionCellData | undefined
   cellDataLoading: boolean
+  isDisplayLoading: boolean
   statusMessage?: string
   canvasDrawn: boolean
   startGpuBackendLifecycle: (backend: VariantBackend) => void
@@ -359,30 +363,9 @@ const VariantComponent = observer(function VariantComponent({
           />
         </div>
       ) : null}
-      <LoadingOverlay
-        statusMessage={
-          model.statusMessage ||
-          (!model.sources
-            ? 'Loading samples'
-            : !model.featuresReady
-              ? 'Loading features'
-              : 'Computing display data')
-        }
-        isVisible={
-          !model.displayError &&
-          !model.regionTooLarge &&
-          (!model.cellData || model.cellDataLoading)
-        }
-      />
+      <VariantErrorBar model={model} />
       {model.regionTooLarge ? model.regionCannotBeRendered() : null}
-      {model.displayError ? (
-        <ErrorBar
-          error={model.displayError}
-          onRetry={() => {
-            model.reload()
-          }}
-        />
-      ) : null}
+      <VariantLoadingOverlay model={model} />
       {contextMenuCoord ? (
         <Menu
           open

@@ -1,9 +1,6 @@
 import { Suspense, useRef } from 'react'
 
-import {
-  FloatingLegend,
-  TooLargeMessage,
-} from '@jbrowse/plugin-linear-genome-view'
+import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
@@ -41,7 +38,7 @@ const MultiSampleVariantBaseDisplayComponent = observer(
           }
           style={{ position: 'relative', height: availableHeight }}
         >
-          <TooLargeMessage model={model} />
+          {model.regionCannotBeRendered()}
         </div>
       )
     }

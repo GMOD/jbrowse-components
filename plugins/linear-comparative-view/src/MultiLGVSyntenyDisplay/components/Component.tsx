@@ -1,5 +1,4 @@
 import { ErrorMessage, LoadingOverlay } from '@jbrowse/core/ui'
-import { useDebounce } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import MultiSyntenyRendering from './MultiSyntenyRendering.tsx'
@@ -12,8 +11,6 @@ const MultiLGVSyntenyDisplayComponent = observer(
   }: {
     model: MultiLGVSyntenyDisplayModel
   }) {
-    const debouncedLoading = useDebounce(model.isLoading, 500)
-
     if (model.error) {
       return <ErrorMessage error={model.error} />
     }
@@ -29,13 +26,20 @@ const MultiLGVSyntenyDisplayComponent = observer(
     return (
       <div style={{ position: 'relative' }}>
         <MultiSyntenyRendering model={model} />
-        <LoadingOverlay
-          statusMessage={model.statusMessage}
-          isVisible={debouncedLoading}
-        />
+        <SyntenyLoadingOverlay model={model} />
       </div>
     )
   },
 )
+
+const SyntenyLoadingOverlay = observer(function SyntenyLoadingOverlay({
+  model,
+}: {
+  model: Pick<MultiLGVSyntenyDisplayModel, 'isLoading' | 'statusMessage'>
+}) {
+  return (
+    <LoadingOverlay statusMessage={model.statusMessage} isVisible={model.isLoading} />
+  )
+})
 
 export default MultiLGVSyntenyDisplayComponent

@@ -832,6 +832,14 @@ export default function MultiSampleVariantBaseModelF(
       get featuresReady() {
         return !!self.featuresVolatile
       },
+
+      get isDisplayLoading() {
+        return (
+          !self.displayError &&
+          !self.regionTooLarge &&
+          (!self.cellData || self.cellDataLoading)
+        )
+      },
       /**
        * #method
        */

@@ -3,10 +3,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import {
   getContainingView,
-  useDebounce,
   useGpuModelLifecycle,
 } from '@jbrowse/core/util'
-import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -146,7 +144,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   const view = getContainingView(model) as LGV
 
   const { laidOutDataMap, isLoading, error: modelError } = model
-  const debouncedLoading = useDebounce(isLoading, 500)
 
   const width = view.initialized ? view.trackWidthPx : undefined
   const height = model.height
@@ -393,10 +390,8 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     )
   }
 
-  const isReady = view.initialized
-
   if (model.regionTooLarge) {
-    return <TooLargeMessage model={model} />
+    return model.regionCannotBeRendered()
   }
 
   return (
@@ -454,14 +449,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         />
       ) : null}
 
-      <LoadingOverlay
-        statusMessage={
-          debouncedLoading
-            ? model.statusMessage || 'Loading features'
-            : 'Initializing'
-        }
-        isVisible={debouncedLoading || !isReady}
-      />
+      <CanvasLoadingOverlay model={model} />
       <FeatureTooltip
         info={model.mouseoverExtraInformation}
         clientMouseCoord={clientXY}
@@ -478,6 +466,20 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         />
       ) : null}
     </div>
+  )
+})
+
+const CanvasLoadingOverlay = observer(function CanvasLoadingOverlay({
+  model,
+}: {
+  model: Pick<LinearBasicDisplayModel, 'isLoading' | 'statusMessage'>
+}) {
+  const view = getContainingView(model) as LGV
+  return (
+    <LoadingOverlay
+      statusMessage={model.statusMessage || 'Loading'}
+      isVisible={model.isLoading || !view.initialized}
+    />
   )
 })
 

@@ -252,7 +252,7 @@ export default function MultiRegionDisplayMixin() {
               },
               {
                 name: 'FetchVisibleRegions',
-                delay: 300,
+                delay: 600,
               },
             ),
           )

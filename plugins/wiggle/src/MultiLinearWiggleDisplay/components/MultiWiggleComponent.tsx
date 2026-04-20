@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 
-import { ErrorBar, ErrorOverlay, LoadingOverlay } from '@jbrowse/core/ui'
+import { ErrorOverlay } from '@jbrowse/core/ui'
 import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
@@ -12,6 +12,10 @@ import OverlayColorLegend from '../../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
+import {
+  WiggleErrorBar,
+  WiggleLoadingOverlay,
+} from '../../shared/WiggleStatusOverlays.tsx'
 import {
   findFeatureAtBp,
   getRowTop,
@@ -449,18 +453,8 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         offsetMouseCoord={offsetMouseCoord}
       />
 
-      {model.error ? (
-        <ErrorBar
-          error={model.error}
-          onRetry={() => {
-            model.reload()
-          }}
-        />
-      ) : null}
-      <LoadingOverlay
-        statusMessage={model.statusMessage || 'Loading'}
-        isVisible={model.isLoading}
-      />
+      <WiggleErrorBar model={model} />
+      <WiggleLoadingOverlay model={model} />
     </div>
   )
 })

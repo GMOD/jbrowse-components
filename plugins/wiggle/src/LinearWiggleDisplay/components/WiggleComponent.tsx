@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 
-import { ErrorBar, ErrorOverlay, LoadingOverlay } from '@jbrowse/core/ui'
+import { ErrorOverlay } from '@jbrowse/core/ui'
 import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -8,6 +8,10 @@ import WiggleTooltip from './WiggleTooltip.tsx'
 import DensityLegend from '../../shared/DensityLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
+import {
+  WiggleErrorBar,
+  WiggleLoadingOverlay,
+} from '../../shared/WiggleStatusOverlays.tsx'
 import {
   findFeatureAtBp,
   hitTestMouse,
@@ -193,18 +197,8 @@ const WiggleComponent = observer(function WiggleComponent({
         offsetMouseCoord={offsetMouseCoord}
         height={height}
       />
-      {model.error ? (
-        <ErrorBar
-          error={model.error}
-          onRetry={() => {
-            model.reload()
-          }}
-        />
-      ) : null}
-      <LoadingOverlay
-        statusMessage={model.statusMessage || 'Loading'}
-        isVisible={model.isLoading}
-      />
+      <WiggleErrorBar model={model} />
+      <WiggleLoadingOverlay model={model} />
     </div>
   )
 })
