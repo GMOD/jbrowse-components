@@ -66,8 +66,8 @@ export function computeVariantMatrixCells({
 }): MatrixCellData {
   const getCachedABGR = createCachedABGR()
 
-  const alleleColorCache = {} as Record<string, string | undefined>
-  const rawColorCache = {} as Record<string, string>
+  const alleleColorCache : Record<string, string | undefined> = {}
+  const rawColorCache : Record<string, string> = {}
 
   const numFeatures = mafs.length
   const numSources = sources.length
@@ -112,7 +112,7 @@ export function computeVariantMatrixCells({
         string,
         Record<string, string[]>
       >
-      const genotypes = {} as Record<string, string>
+      const genotypes : Record<string, string> = {}
       for (const sampleName in samp) {
         const gt = samp[sampleName]!.GT?.[0]
         if (gt) {
@@ -164,7 +164,7 @@ export function computeVariantMatrixCells({
           | undefined
         const ploidy = feature.get('ploidy') as number
         const mostFreqAltInt = Number.parseInt(mostFrequentAlt, 10)
-        const genotypes = {} as Record<string, string>
+        const genotypes : Record<string, string> = {}
 
         for (let j = 0; j < numSources; j++) {
           const { name, HP, sampleName } = sources[j]!

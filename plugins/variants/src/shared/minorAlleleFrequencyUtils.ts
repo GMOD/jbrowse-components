@@ -24,7 +24,7 @@ export function calculateAlleleCountsFast(
   let count2 = 0
   let count3 = 0
   let countDot = 0
-  const otherCounts = {} as Record<string, number>
+  const otherCounts : Record<string, number> = {}
 
   feature.processGenotypes((str, start, end) => {
     const len = end - start
@@ -127,7 +127,7 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
   let count2 = 0
   let count3 = 0
   let countDot = 0
-  const otherCounts = {} as Record<string, number>
+  const otherCounts : Record<string, number> = {}
 
   for (const key in genotypes) {
     const genotype = genotypes[key]!
@@ -290,15 +290,13 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
         }
       }
 
+      const mostFrequentAlt = getMostFrequentAlt(alleleCounts)
       if (
+        mostFrequentAlt !== undefined &&
         calculateMinorAlleleFrequency(alleleCounts) >=
-        minorAlleleFrequencyFilter
+          minorAlleleFrequencyFilter
       ) {
-        results.push({
-          feature,
-          mostFrequentAlt: getMostFrequentAlt(alleleCounts)!,
-          alleleCounts,
-        })
+        results.push({ feature, mostFrequentAlt, alleleCounts })
       }
     }
     checkStopToken2(stopTokenCheck)

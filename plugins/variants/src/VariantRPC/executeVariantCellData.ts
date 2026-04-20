@@ -49,7 +49,7 @@ function computeSampleInfo(
   mafs: MAFFilteredFeature[],
   genotypesCache: Map<string, Record<string, string>>,
 ) {
-  const sampleInfo = {} as Record<string, SampleInfo>
+  const sampleInfo : Record<string, SampleInfo> = {}
   let hasPhased = false
 
   for (const { feature } of mafs) {
@@ -259,7 +259,7 @@ export async function executeVariantCellData({
       statusCallback,
       () => {
         if (perRegionMafs) {
-          const result = {} as Record<number, VariantCellData>
+          const result : Record<number, VariantCellData> = {}
           for (const [regionNum, regionMafs] of perRegionMafs) {
             const inputKey = `${regionMafs.length}:${regionMafs[0]?.feature.id() ?? ''}:${regionMafs.at(-1)?.feature.id() ?? ''}`
             result[regionNum] = computeVariantCells({

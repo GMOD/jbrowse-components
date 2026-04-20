@@ -40,7 +40,7 @@ export function buildAlleleCounts(
   countDot: number,
   otherCounts: Record<string, number>,
 ) {
-  const result = {} as Record<string, number>
+  const result : Record<string, number> = {}
   if (count0 > 0) {
     result['0'] = count0
   }
@@ -68,7 +68,7 @@ export function calculateAlleleCountsFromRaw(callGenotype: Int8Array) {
   let count2 = 0
   let count3 = 0
   let countDot = 0
-  const otherCounts = {} as Record<string, number>
+  const otherCounts : Record<string, number> = {}
 
   for (const a of callGenotype) {
     if (a === -2) {

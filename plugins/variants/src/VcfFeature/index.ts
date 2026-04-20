@@ -13,7 +13,7 @@ function dataFromVariant(variant: Variant, parser: VCFParser) {
   const [type, description] = getSOTermAndDescription(REF, ALT, parser)
 
   return {
-    refName: CHROM,
+    refName: CHROM!,
     start,
     end: getEnd(variant),
     description,
@@ -37,19 +37,16 @@ function getEnd(variant: Variant) {
   }
   if (isSymbolic) {
     const info = variant.INFO
-    if (info.END && !isTRA) {
-      return +(info.END as string[])[0]!
+    if (!isTRA && Array.isArray(info.END) && info.END.length > 0) {
+      return +info.END[0]
     }
     const lens = []
-    if (info.SVLEN && !isTRA) {
-      const svlens = info.SVLEN as string[]
-
-      for (let i = 0; i < svlens.length; i++) {
-        const svlen = svlens[i]!
+    if (!isTRA && Array.isArray(info.SVLEN)) {
+      for (let i = 0; i < info.SVLEN.length; i++) {
         if (ALT[i]?.startsWith('<INS')) {
           lens.push(1)
         } else {
-          lens.push(Math.abs(+svlen))
+          lens.push(Math.abs(+info.SVLEN[i]))
         }
       }
       return start + max(lens)
@@ -98,7 +95,7 @@ export default class VCFFeature implements Feature {
     this.variant.processGenotypes(callback)
   }
 
-  toJSON(): any {
+  toJSON() {
     return {
       uniqueId: this._id,
       ...this.variant.toJSON(),

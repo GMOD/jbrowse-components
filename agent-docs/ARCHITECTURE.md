@@ -1,3 +1,14 @@
+# Architecture
+
+## Coordinate system
+
+JBrowse uses **0-based half-open intervals** `[start, end)` internally for
+all genomic features and regions. This matches BED/BAM convention. Adapters
+that read 1-based formats (VCF `POS`, GFF `start`) subtract 1 on ingest;
+exporters that write 1-based formats add 1 on output.
+
+---
+
 # GPU Rendering Architecture
 
 Canonical reference for the GPU rendering lifecycle across all display types.

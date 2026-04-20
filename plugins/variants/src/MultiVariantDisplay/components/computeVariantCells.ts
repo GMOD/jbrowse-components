@@ -66,8 +66,8 @@ function getInsertionRenderEnd(
   for (const a of alt) {
     maxLen = Math.max(maxLen, a.length)
   }
-  const info = feature.get('INFO') as Record<string, string[]> | undefined
-  if (info?.SVLEN) {
+  const info = feature.get('INFO')
+  if (Array.isArray(info?.SVLEN)) {
     for (const sv of info.SVLEN) {
       maxLen = Math.max(maxLen, Math.abs(+sv))
     }
@@ -101,8 +101,8 @@ export function computeVariantCells({
 }): VariantCellData {
   const getCachedABGR = createCachedABGR()
 
-  const alleleColorCache = {} as Record<string, string | undefined>
-  const rawColorCache = {} as Record<string, string>
+  const alleleColorCache : Record<string, string | undefined> = {}
+  const rawColorCache : Record<string, string> = {}
   const drawRef = referenceDrawingMode === 'draw'
 
   const numSources = sources.length
@@ -125,7 +125,7 @@ export function computeVariantCells({
     regionStart = 0
   }
 
-  const featureGenotypeMap = {} as Record<string, FeatureGenotypeInfo>
+  const featureGenotypeMap : Record<string, FeatureGenotypeInfo> = {}
   let cellCount = 0
 
   function addCell(
@@ -167,7 +167,7 @@ export function computeVariantCells({
     const ref = feature.get('REF') as string
     const featureName = feature.get('name')!
     const description = feature.get('description') as string
-    const renderedGenotypes = {} as Record<string, string>
+    const renderedGenotypes : Record<string, string> = {}
     const renderEnd =
       shape === SHAPE_TRI_DOWN
         ? getInsertionRenderEnd(start, end, alt, feature)
