@@ -261,6 +261,5 @@ umd_plugin.js  pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', s
 Adding LinearReadCloudDisplay with drawCloud:true for volvox_sv_cram seems to repeatedly call "If it's a frozen/plain object, we need to instantiate it"
 
 
-When paired arcs are pointing up, pileup rects disappear
 
 Mouseover shading and clicking on pileup read rectangles not working

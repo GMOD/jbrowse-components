@@ -375,10 +375,10 @@ interface ArcFrame {
   covOffset: number
 }
 function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
-  const { region, block, state, scissorX, scissorW, arcViewportH, dpr } = a
+  const { region, block, state, scissorX, scissorW, arcViewportH, dpr, covOffset } = a
   const blockW = block.screenEndPx - block.screenStartPx
   const [hi, lo] = splitPositionWithFrac(block.bpRangeX[0])
-  f[U.covOffset] = a.covOffset
+  f[U.covOffset] = covOffset
   f[U.canvasH] = arcViewportH / dpr
   f[U.canvasW] = scissorW
   f[U.blockStartPx] = block.screenStartPx - scissorX
@@ -852,7 +852,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
           dpr,
           bufH,
           arcCovH,
-          arcCovH,
         )
       }
 
@@ -930,7 +929,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     dpr: number,
     bufH: number,
     effectiveArcsHeight: number,
-    arcHeightForOffset?: number,
   ) {
     const arcViewportTop = Math.round(arcTop * dpr)
     const arcViewportH = Math.min(
@@ -940,8 +938,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     if (arcViewportH <= 0) {
       return
     }
-    // Swap the UBO to arc-strip viewport metrics, draw the two arc passes,
-    // then restore pileup-area metrics so the next block's reads use them.
     fillArcUniforms(this.uF32, this.uU32, {
       region,
       block,
@@ -950,7 +946,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       scissorW,
       arcViewportH,
       dpr,
-      covOffset: arcHeightForOffset ?? 0,
+      covOffset: arcTop === 0 ? effectiveArcsHeight : 0,
     })
     this.hal.writeUniforms(this.uData)
 
@@ -964,6 +960,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
     this.uF32[U.covOffset] = state.pileupTopOffset
     this.uF32[U.canvasH] = state.canvasHeight
+    this.hal.setViewport(vpX, 0, vpW, bufH)
     this.hal.writeUniforms(this.uData)
   }
 
