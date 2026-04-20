@@ -150,10 +150,11 @@ const SetRowHeightDialog = lazy(
 )
 
 // Follows the canonical GPU display architecture (see
-// agent-docs/NEW_ARCHITECTURE.md): compose MultiRegionDisplayMixin,
-// override onFetchNeeded, and call self.startMultiRegionGpuLifecycle
-// in startGpuBackendLifecycle. The mixin owns fetch invalidation via
-// rpcProps and upload/render lifecycle via startMultiRegionGpuLifecycle.
+// agent-docs/ARCHITECTURE.md): compose MultiRegionDisplayMixin,
+// override onFetchNeeded, and call self.installGpuDisplay(backend,
+// {upload, render}) in startGpuBackendLifecycle. The mixin owns fetch
+// invalidation via rpcProps and the upload/render autorun pair via
+// installGpuDisplay.
 
 function stateModelFactory(schema: AnyConfigurationSchemaType) {
   return types

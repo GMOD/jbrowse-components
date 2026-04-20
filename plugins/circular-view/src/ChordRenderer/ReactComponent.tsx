@@ -16,20 +16,18 @@ const SVChordsReactComponent = observer(function SVChordsReactComponent({
   blockDefinitions,
   radius,
   bezierRadius,
-  strokeWidth = 1,
   displayModel,
   onChordClick,
 }: {
   features: Map<string, Feature>
   radius: number
   config: AnyConfigurationModel
-  displayModel?: {
+  displayModel: {
     id: string
     selectedFeatureId: string | undefined
   }
   blockDefinitions: Block[]
   bezierRadius: number
-  strokeWidth?: number
   onChordClick: (
     feature: Feature,
     reg: AnyRegion,
@@ -37,7 +35,7 @@ const SVChordsReactComponent = observer(function SVChordsReactComponent({
     evt: MouseEvent<SVGPathElement>,
   ) => void
 }) {
-  const { selectedFeatureId } = displayModel || {}
+  const { selectedFeatureId } = displayModel
   const blocksForRefsMemo = useMemo(() => {
     const blocksForRefs: Record<string, Block> = {}
     for (const block of blockDefinitions) {
@@ -63,7 +61,6 @@ const SVChordsReactComponent = observer(function SVChordsReactComponent({
             config={config}
             radius={radius}
             bezierRadius={bezierRadius}
-            strokeWidth={strokeWidth}
             blocksForRefs={blocksForRefsMemo}
             selected={selected}
             onClick={onChordClick}

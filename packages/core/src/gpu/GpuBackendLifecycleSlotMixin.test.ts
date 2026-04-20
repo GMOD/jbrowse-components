@@ -61,6 +61,7 @@ test('renderNow bumps renderBump so render autorun re-fires', () => {
     upload: () => {},
     render: b => {
       b.renders += 1
+      return true
     },
   })
 
@@ -84,6 +85,7 @@ test('stopGpuBackendLifecycle clears backend — autoruns idle', () => {
     },
     render: b => {
       b.renders += 1
+      return true
     },
   })
 

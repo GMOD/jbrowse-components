@@ -3,7 +3,15 @@ import { autorun } from 'mobx'
 
 export interface InstallGpuDisplayCallbacks<B> {
   upload: (backend: B) => void
-  render: (backend: B) => boolean | void
+  /**
+   * Issue draw calls for the current frame. Return `true` if something was
+   * actually drawn (flips `canvasDrawn`), `false` to skip this tick
+   * (e.g. `renderState` not yet computed). Returning `true` without
+   * having drawn — or forgetting a return branch — will flip the
+   * `canvasDrawn` flag spuriously, which test selectors and overlay UI
+   * depend on.
+   */
+  render: (backend: B) => boolean
 }
 
 /**
@@ -91,8 +99,7 @@ export function GpuBackendLifecycleSlotMixin() {
               if (b === undefined) {
                 return
               }
-              const drew = cbs.render(b)
-              if (drew !== false) {
+              if (cbs.render(b)) {
                 self.markCanvasDrawn()
               }
             },

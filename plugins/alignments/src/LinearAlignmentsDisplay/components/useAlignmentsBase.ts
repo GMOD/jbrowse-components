@@ -1,3 +1,4 @@
+import type React from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
@@ -67,6 +68,7 @@ export interface LinearAlignmentsDisplayModel {
   pileupViewportHeight: number
   regionTooLarge: boolean
   regionTooLargeReason: string
+  regionCannotBeRendered: () => React.ReactNode
   setFeatureDensityStatsLimit: (s?: unknown) => void
   reload: () => void
   featureIdUnderMouse: string | undefined
