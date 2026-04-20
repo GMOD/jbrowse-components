@@ -288,25 +288,16 @@ export interface FeatureArrays {
   featureMaxScores: Float32Array
   numFeatures: number
 }
-
-let computeStatsCallCount = 0
-let computeStatsLastLogTime = 0
-
+export interface Dataset {
+  data: FeatureArrays
+  visStart?: number
+  visEnd?: number
+}
 function computeStats(
   summaryScoreMode: string,
-  datasets: { data: FeatureArrays; visStart?: number; visEnd?: number }[],
+  datasets: Dataset[],
   filterVisible: boolean,
 ) {
-  computeStatsCallCount++
-  const now = Date.now()
-  if (now - computeStatsLastLogTime > 1000) {
-    const totalFeatures = datasets.reduce((s, d) => s + d.data.numFeatures, 0)
-    console.log(
-      `[computeStats] ${computeStatsCallCount} calls, ${totalFeatures} features scanned, autoscale=${filterVisible ? 'local' : 'global'}, mode=${summaryScoreMode}`,
-    )
-    computeStatsCallCount = 0
-    computeStatsLastLogTime = now
-  }
   const useWhiskers = summaryScoreMode === 'whiskers'
   const useMin = summaryScoreMode === 'min'
   const useMax = summaryScoreMode === 'max'

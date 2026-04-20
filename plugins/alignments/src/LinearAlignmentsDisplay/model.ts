@@ -1478,10 +1478,10 @@ export default function stateModelFactory(
             }
           },
 
-          onFetchNeeded(
+          async onFetchNeeded(
             needed: { region: Region; displayedRegionIndex: number }[],
           ) {
-            self.fetchRegions(needed, async (ctx: FetchContext) => {
+            await self.fetchRegions(needed, async (ctx: FetchContext) => {
               const promises = needed.map(({ region, displayedRegionIndex }) =>
                 fetchFeaturesForRegion(
                   self.adapterConfigSnapshot,

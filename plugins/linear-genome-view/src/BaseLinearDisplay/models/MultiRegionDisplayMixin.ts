@@ -96,7 +96,8 @@ export default function MultiRegionDisplayMixin() {
         // no-op base
       },
 
-      isCacheValid(_displayedRegionIndex: number) {
+      isCacheValid(_displayedRegionIndex: number): boolean {
+        // can be overridden by derived classes
         return true
       },
 
@@ -110,11 +111,11 @@ export default function MultiRegionDisplayMixin() {
       // specific data (rpcDataMap, cellData, etc) so the GPU upload
       // autorun sees committed data when it observes loadedRegions.
       // Displays must NOT call setLoadedRegion themselves.
-      fetchRegions(
+      async fetchRegions(
         needed: { region: Region; displayedRegionIndex: number }[],
         work: (ctx: FetchContext) => Promise<void>,
       ) {
-        self.runFetch(async ctx => {
+        await self.runFetch(async ctx => {
           const byteEstimateConfig = self.getByteEstimateConfig()
           if (byteEstimateConfig) {
             const session = getSession(self)

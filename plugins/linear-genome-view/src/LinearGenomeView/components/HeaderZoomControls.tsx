@@ -72,9 +72,6 @@ function getZoomMenuItems(model: LinearGenomeViewModel) {
   ]
 }
 
-let headerZoomRenderCount = 0
-let headerZoomLastLogTime = 0
-
 const HeaderZoomControls = observer(function HeaderZoomControls({
   model,
 }: {
@@ -82,15 +79,7 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
 }) {
   const { classes } = useStyles()
   const { width, maxBpPerPx, minBpPerPx, coarseBpPerPx } = model
-  headerZoomRenderCount++
-  const now = Date.now()
-  if (now - headerZoomLastLogTime > 1000) {
-    console.log(
-      `[HeaderZoomControls] ${headerZoomRenderCount} renders/s, coarseBpPerPx=${coarseBpPerPx.toFixed(4)}`,
-    )
-    headerZoomRenderCount = 0
-    headerZoomLastLogTime = now
-  }
+
   const [dragValue, setDragValue] = useState<number | null>(null)
   const value = dragValue ?? -Math.log2(coarseBpPerPx) * 100
   const zoomInDisabled = coarseBpPerPx <= minBpPerPx + 0.0001

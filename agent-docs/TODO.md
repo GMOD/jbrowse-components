@@ -266,3 +266,5 @@ Subpixel drawing crowded?
 - `?renderer=X` URL parameter working?
 
 Wiggle scale ticks not visible despite yscalebaroffset
+
+Unclear if log scale working on hic

@@ -38,13 +38,24 @@ export function computeCoverageTicks(
 
   const ticks: { value: number; y: number }[] = []
   if (coverageHeight < 70) {
-    ticks.push({ value: 0, y: yOf(0) })
-    ticks.push({ value: maxDepth, y: yOf(maxDepth) })
+    ticks.push(
+      {
+        value: 0,
+        y: yOf(0),
+      },
+      {
+        value: maxDepth,
+        y: yOf(maxDepth),
+      },
+    )
   } else {
     const step = niceStep(maxDepth)
     const stepCount = Math.floor(maxDepth / step)
     for (let i = 0; i <= stepCount; i++) {
-      ticks.push({ value: i * step, y: yOf(i * step) })
+      ticks.push({
+        value: i * step,
+        y: yOf(i * step),
+      })
     }
   }
 

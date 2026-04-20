@@ -75,7 +75,6 @@ export default function FetchMixin() {
           stopStopToken(self.activeStopToken)
           self.activeStopToken = undefined
           self.statusMessage = undefined
-          console.log('[FetchMixin] cancelFetch → isLoading=false')
         }
         self.fetchSignal++
       },
@@ -93,7 +92,6 @@ export default function FetchMixin() {
         const startSignal = self.fetchSignal
         self.activeStopToken = stopToken
         self.error = undefined
-        console.log('[FetchMixin] runFetch started → isLoading=true')
 
         const isStale = () =>
           !isAlive(self as object) ||

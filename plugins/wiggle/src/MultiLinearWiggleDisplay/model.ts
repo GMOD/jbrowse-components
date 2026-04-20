@@ -19,11 +19,7 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import {
-  type ClusterHierarchyNode,
-  TreeSidebarMixin,
-  computeHierarchyLayout,
-} from '@jbrowse/tree-sidebar'
+import { TreeSidebarMixin, computeHierarchyLayout } from '@jbrowse/tree-sidebar'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -268,9 +264,6 @@ export default function stateModelFactory(
 
       get visibleScoreRange(): [number, number] | undefined {
         const view = getContainingView(self) as LGV
-        console.log(
-          `[visibleScoreRange] recomputing, coarseBpPerPx=${view.coarseBpPerPx.toFixed(4)}, rpcDataMap.size=${self.rpcDataMap.size}`,
-        )
         if (!view.initialized || self.rpcDataMap.size === 0) {
           return undefined
         }

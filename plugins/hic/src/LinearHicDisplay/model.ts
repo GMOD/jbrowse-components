@@ -406,7 +406,7 @@ export default function stateModelFactory(
        * Re-fetches contact matrix for the current viewport. Both the
        * autorun (in `afterAttach`) and `reload()` invoke this directly.
        */
-      performHicFetch() {
+      async performHicFetch() {
         if (self.isMinimized) {
           return
         }
@@ -420,7 +420,7 @@ export default function stateModelFactory(
         }
         const { bpPerPx } = view
         const { adapterConfig } = self
-        self.runFetch(async ctx => {
+        await self.runFetch(async ctx => {
           const { rpcManager } = getSession(self)
           const result = await rpcManager.call(
             getRpcSessionId(self),
@@ -454,7 +454,8 @@ export default function stateModelFactory(
        */
       reload() {
         self.setError(undefined)
-        self.performHicFetch()
+        // TODO find way to avoid manually triggering fetch here instead just bumping a redraw counter or something
+        void self.performHicFetch()
       },
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises

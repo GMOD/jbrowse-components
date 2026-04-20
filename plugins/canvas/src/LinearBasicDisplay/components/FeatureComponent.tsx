@@ -140,7 +140,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
   const view = getContainingView(model) as LGV
 
-  const { laidOutDataMap, isLoading, error: modelError } = model
+  const { laidOutDataMap, error: modelError } = model
 
   const width = view.initialized ? view.trackWidthPx : undefined
   const height = model.height

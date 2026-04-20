@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { types } from '@jbrowse/mobx-state-tree'
 
 import FetchMixin from './FetchMixin.ts'

@@ -518,7 +518,7 @@ export default function sharedModelFactory(
        * Re-fetches LD matrix for the current viewport. Both the autorun
        * (in `afterAttach`) and `reload()` invoke this directly.
        */
-      performLDFetch() {
+      async performLDFetch() {
         if (self.isMinimized) {
           return
         }
@@ -532,7 +532,7 @@ export default function sharedModelFactory(
         }
         const { bpPerPx, visibleBp } = view
         const { adapterConfig } = self
-        self.runFetch(async ctx => {
+        await self.runFetch(async ctx => {
           const { rpcManager } = getSession(self)
           const sessionId = getRpcSessionId(self)
           const stats = (await rpcManager.call(
@@ -590,7 +590,8 @@ export default function sharedModelFactory(
        */
       reload() {
         self.setError(undefined)
-        self.performLDFetch()
+        // TODO should just auto-rerun via 'some state resetting' rather than manually call here
+        void self.performLDFetch()
       },
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
