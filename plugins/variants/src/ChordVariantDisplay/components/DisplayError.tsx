@@ -2,13 +2,12 @@ import { observer } from 'mobx-react'
 
 const DisplayError = observer(function DisplayError({
   model,
+  radius,
 }: {
-  model: { renderProps: { radius: number }; error: unknown }
+  model: { error: unknown }
+  radius: number
 }) {
-  const {
-    renderProps: { radius },
-    error,
-  } = model
+  const { error } = model
   return (
     <g>
       <defs>

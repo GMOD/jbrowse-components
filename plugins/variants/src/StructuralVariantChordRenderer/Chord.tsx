@@ -46,6 +46,7 @@ const Chord = observer(function Chord({
   radius,
   config,
   bezierRadius,
+  strokeWidth = 1,
   selected,
   onClick,
 }: {
@@ -54,6 +55,7 @@ const Chord = observer(function Chord({
   radius: number
   config: AnyConfigurationModel
   bezierRadius: number
+  strokeWidth?: number
   selected: boolean
   onClick: (feat: Feature, reg: AnyRegion, end: AnyRegion, evt: unknown) => void
 }) {
@@ -95,7 +97,7 @@ const Chord = observer(function Chord({
       fill="none"
       d={`M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`}
       {...getStrokeProps(stroke)}
-      strokeWidth={hovered ? 3 : 1}
+      strokeWidth={hovered ? strokeWidth * 3 : strokeWidth}
       onClick={evt => {
         onClick(feature, startBlock.region, endBlock.region, evt)
       }}

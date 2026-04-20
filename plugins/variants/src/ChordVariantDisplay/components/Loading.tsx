@@ -18,11 +18,9 @@ const useStyles = makeStyles()(() => {
 })
 
 const Loading = observer(function Loading({
-  model: {
-    renderProps: { radius },
-  },
+  radius,
 }: {
-  model: { renderProps: { radius: number } }
+  radius: number
 }) {
   const { classes } = useStyles()
 

@@ -14,6 +14,7 @@ const SVChordsReactComponent = observer(function SVChordsReactComponent({
   blockDefinitions,
   radius,
   bezierRadius,
+  strokeWidth = 1,
   displayModel,
   onChordClick,
 }: {
@@ -22,10 +23,11 @@ const SVChordsReactComponent = observer(function SVChordsReactComponent({
   config: AnyConfigurationModel
   displayModel?: {
     id: string
-    selectedFeatureId: string
+    selectedFeatureId: string | undefined
   }
   blockDefinitions: Block[]
   bezierRadius: number
+  strokeWidth?: number
   onChordClick: (
     feature: Feature,
     reg: AnyRegion,
@@ -59,6 +61,7 @@ const SVChordsReactComponent = observer(function SVChordsReactComponent({
             config={config}
             radius={radius}
             bezierRadius={bezierRadius}
+            strokeWidth={strokeWidth}
             blocksForRefs={blocksForRefsMemo}
             selected={selected}
             onClick={onChordClick}

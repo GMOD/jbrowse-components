@@ -83,6 +83,8 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     figureWidth,
     figureHeight,
     hideVerticalResizeHandle,
+    panX,
+    panY,
   } = model
   const { classes } = useStyles()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -97,25 +99,22 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       return
     }
     const onWheel = (event: WheelEvent) => {
-      // Snap the cursor to the ring: project it onto the circumference at the
-      // same angle. Only intercept if the cursor is within the figure area
-      // (i.e. close enough to the circle to be intentional).
       const rect = el.getBoundingClientRect()
       const [cx, cy] = model.centerXY
-      const dx = event.clientX - rect.left - cx
-      const dy = event.clientY - rect.top - cy
+      const dx = event.clientX - rect.left - cx - model.panX
+      const dy = event.clientY - rect.top - cy - model.panY
       const distFromCenter = Math.sqrt(dx * dx + dy * dy)
-      // ignore if cursor is outside the padded figure entirely
       if (distFromCenter > model.radiusPx + model.paddingPx) {
         return
       }
       event.preventDefault()
-      // vertical scroll → zoom; horizontal scroll → rotate
       if (event.deltaY !== 0) {
-        model.setBpPerPx(model.bpPerPx * Math.exp(event.deltaY * 0.001))
+        const cursorAngle = Math.atan2(dy, dx)
+        model.zoomToPoint(
+          model.bpPerPx * Math.exp(event.deltaY * 0.001),
+          cursorAngle,
+        )
       }
-      // only rotate when scroll is predominantly horizontal, to avoid accidental
-      // rotation bleeding in from vertical trackpad scrolls
       if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
         model.rotate(event.deltaX * 0.003)
       }
@@ -129,7 +128,10 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
   const angleFromCenter = (clientX: number, clientY: number) => {
     const rect = containerRef.current!.getBoundingClientRect()
     const [cx, cy] = centerXY
-    return Math.atan2(clientY - rect.top - cy, clientX - rect.left - cx)
+    return Math.atan2(
+      clientY - rect.top - cy - panY,
+      clientX - rect.left - cx - panX,
+    )
   }
 
   const handlePointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
@@ -168,27 +170,36 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       style={{ width, height }}
       data-testid={id}
     >
-      <svg
+      <div
         style={{
-          transform: `rotate(${offsetRadians}rad)`,
-          transition: isDragging ? 'none' : 'transform 0.5s',
-          transformOrigin: centerXY.map(x => `${x}px`).join(' '),
+          transform: `translate(${panX}px,${panY}px)`,
           position: 'absolute',
           left: 0,
           top: 0,
-          cursor: isDragging ? 'grabbing' : 'grab',
-          userSelect: 'none',
         }}
-        width={figureWidth}
-        height={figureHeight}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
       >
-        <g transform={`translate(${centerXY})`}>
-          <Slices model={model} />
-        </g>
-      </svg>
+        <svg
+          style={{
+            transform: `rotate(${offsetRadians}rad)`,
+            transition: isDragging ? 'none' : 'transform 0.5s',
+            transformOrigin: centerXY.map(x => `${x}px`).join(' '),
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            cursor: isDragging ? 'grabbing' : 'grab',
+            userSelect: 'none',
+          }}
+          width={figureWidth}
+          height={figureHeight}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+        >
+          <g transform={`translate(${centerXY})`}>
+            <Slices model={model} />
+          </g>
+        </svg>
+      </div>
       <Controls model={model} />
       {hideVerticalResizeHandle ? null : (
         <ResizeHandle

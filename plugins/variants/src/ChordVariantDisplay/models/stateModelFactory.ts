@@ -17,7 +17,7 @@ import { getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { renderReactionData, renderReactionEffect } from './renderReaction.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type {
   CircularViewModel,
   ExportSvgOptions,
@@ -61,23 +61,18 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
       /**
        * #volatile
        */
-      reactElement: undefined as React.ReactElement | undefined,
+      features: undefined as Map<string, Feature> | undefined,
       /**
        * #volatile
+       * block definitions captured at fetch time — zoom-independent
        */
-      data: undefined,
-      /**
-       * #volatile
-       */
-      html: undefined as string | undefined,
+      cachedSlices: undefined as
+        | { bpPerRadian: number; startRadians: number; region: unknown; flipped: boolean }[]
+        | undefined,
       /**
        * #volatile
        */
       message: '',
-      /**
-       * #volatile
-       */
-      renderingComponent: undefined as undefined | AnyReactComponentType,
       /**
        * #volatile
        */
@@ -149,29 +144,14 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
 
       /**
        * #method
+       * zoom-independent render props — radius/bezierRadius/blockDefinitions are
+       * read live from the view by the observer display component instead
        */
       renderProps() {
-        const view = getContainingView(self) as CircularViewModel
         return {
           ...getParentRenderProps(self),
           rpcDriverName: self.rpcDriverName,
-          bezierRadius: view.radiusPx * self.bezierRadiusRatio,
-          radius: view.radiusPx,
-          blockDefinitions: this.blockDefinitions,
           config: self.configuration.renderer,
-          onChordClick: self.onChordClick,
-        }
-      },
-
-      /**
-       * #method
-       */
-      renderingProps() {
-        return {
-          displayModel: self,
-          onChordClick: (arg: Feature) => {
-            self.onChordClick(arg)
-          },
         }
       },
     }))
@@ -180,46 +160,37 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
        * #action
        */
       renderStarted() {
+        console.log('[chord renderStarted] display blanked')
         self.filled = false
         self.message = ''
-        self.reactElement = undefined
-        self.data = undefined
-        self.html = undefined
+        self.features = undefined
+        self.cachedSlices = undefined
         self.error = undefined
-        self.renderingComponent = undefined
       },
       /**
        * #action
        */
       renderSuccess({
         message,
-        data,
-        reactElement,
-        html,
-        renderingComponent,
+        features,
+        cachedSlices,
       }: {
         message?: string
-        data?: any
-        html?: string
-        reactElement?: React.ReactElement
-        renderingComponent?: AnyReactComponentType
+        features?: Map<string, Feature>
+        cachedSlices?: typeof self.cachedSlices
       }) {
         if (message) {
           self.filled = false
           self.message = message
-          self.reactElement = undefined
-          self.data = undefined
-          self.html = undefined
+          self.features = undefined
+          self.cachedSlices = undefined
           self.error = undefined
-          self.renderingComponent = undefined
         } else {
           self.filled = true
           self.message = ''
-          self.reactElement = reactElement
-          self.data = data
-          self.html = html
+          self.features = features
+          self.cachedSlices = cachedSlices
           self.error = undefined
-          self.renderingComponent = renderingComponent
         }
       },
       /**
@@ -229,11 +200,8 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
         console.error(error)
         self.filled = false
         self.message = ''
-        self.reactElement = undefined
-        self.html = undefined
-        self.data = undefined
+        self.features = undefined
         self.error = error
-        self.renderingComponent = undefined
       },
 
       /**

@@ -140,6 +140,8 @@ function stateModelFactory(pluginManager: PluginManager) {
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
       volatileError: undefined as unknown,
+      panX: 0 as number,
+      panY: 0 as number,
     }))
     .views(self => ({
       /**
@@ -433,6 +435,8 @@ function stateModelFactory(pluginManager: PluginManager) {
         this.setBpPerPx(
           self.totalBp / (2 * Math.PI * Math.max(r, self.minimumRadiusPx)),
         )
+        self.panX = 0
+        self.panY = 0
       },
       setWidth(newWidth: number) {
         self.volatileWidth = Math.max(newWidth, minWidth)
@@ -517,6 +521,19 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setBpPerPx(newVal: number) {
         self.bpPerPx = clamp(newVal, self.minBpPerPx, self.maxBpPerPx)
+      },
+
+      /**
+       * #action
+       * zoom toward/away from a specific angle on the circle, keeping the
+       * genome position at that angle visually fixed under the cursor
+       */
+      zoomToPoint(newBpPerPx: number, cursorAngle: number) {
+        const oldRadius = self.radiusPx
+        self.bpPerPx = clamp(newBpPerPx, self.minBpPerPx, self.maxBpPerPx)
+        const dr = oldRadius - self.radiusPx
+        self.panX += dr * (1 + Math.cos(cursorAngle))
+        self.panY += dr * (1 + Math.sin(cursorAngle))
       },
 
       /**
