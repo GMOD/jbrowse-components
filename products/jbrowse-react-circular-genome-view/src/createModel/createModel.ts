@@ -26,8 +26,7 @@ export default function createModel(
 ) {
   const pluginManager = new PluginManager(
     [...corePlugins, ...runtimePlugins].map(P => new P()),
-  )
-  pluginManager.createPluggableElements()
+  ).createPluggableElements()
   const Session = createSessionModel(pluginManager)
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   const assemblyManagerType = assemblyManagerFactory(
