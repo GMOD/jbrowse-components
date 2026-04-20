@@ -1,5 +1,6 @@
-import type { JexlExpression, JexlInstance } from '../../../util/jexlStrings.ts'
 import { stringToJexlExpression } from '../../../util/jexlStrings.ts'
+
+import type { JexlExpression, JexlInstance } from '../../../util/jexlStrings.ts'
 
 interface Filter {
   string: string

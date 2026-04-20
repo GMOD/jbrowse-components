@@ -6,7 +6,14 @@ export {
   parseClusterTree,
 } from './clusterUtils.ts'
 export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
-export { cluster, hierarchy } from './d3-hierarchy2/index.ts'
+export {
+  clusterLayout,
+  descendants,
+  hierarchy,
+  leaves,
+  links,
+  renderTreeSVG,
+} from './hierarchy.ts'
 export type {
   ClusterHierarchyNode,
   ClusterNodeData,

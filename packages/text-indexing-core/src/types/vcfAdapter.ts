@@ -1,10 +1,11 @@
-import type { IndexerOptions } from '../util.ts'
 import { decodeURIComponentNoThrow } from '../util.ts'
 import {
   createReadlineInterface,
   getLocalOrRemoteStream,
   parseAttributes,
 } from './common.ts'
+
+import type { IndexerOptions } from '../util.ts'
 
 export async function* indexVcf({
   config,

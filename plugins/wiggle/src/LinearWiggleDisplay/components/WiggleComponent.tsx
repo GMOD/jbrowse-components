@@ -7,11 +7,11 @@ import { observer } from 'mobx-react'
 import WiggleTooltip from './WiggleTooltip.tsx'
 import DensityLegend from '../../shared/DensityLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
-import YScaleBar from '../../shared/YScaleBar.tsx'
 import {
   WiggleErrorBar,
   WiggleLoadingOverlay,
 } from '../../shared/WiggleStatusOverlays.tsx'
+import YScaleBar from '../../shared/YScaleBar.tsx'
 import {
   findFeatureAtBp,
   hitTestMouse,

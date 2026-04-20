@@ -11,11 +11,11 @@ import MultiRowLabels from '../../shared/MultiRowLabels.tsx'
 import OverlayColorLegend from '../../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
-import YScaleBar from '../../shared/YScaleBar.tsx'
 import {
   WiggleErrorBar,
   WiggleLoadingOverlay,
 } from '../../shared/WiggleStatusOverlays.tsx'
+import YScaleBar from '../../shared/YScaleBar.tsx'
 import {
   findFeatureAtBp,
   getRowTop,

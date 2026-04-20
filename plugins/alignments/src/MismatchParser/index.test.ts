@@ -1,5 +1,5 @@
 import { cigarToMismatches2 } from './cigarToMismatches2.ts'
-import { getMismatches, parseCigar, parseCigar2 } from './index.ts'
+import { getMismatches, parseCigar2, parseCigar } from './index.ts'
 import { mdToMismatches2 } from './mdToMismatches2.ts'
 
 import type { Mismatch } from '../shared/types.ts'

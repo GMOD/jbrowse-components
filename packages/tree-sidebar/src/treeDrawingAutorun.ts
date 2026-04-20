@@ -2,6 +2,8 @@ import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import { links } from './hierarchy.ts'
+
 import type { TreeDrawingModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -41,7 +43,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         ctx.lineWidth = 1
 
         ctx.beginPath()
-        for (const link of hierarchy.links()) {
+        for (const link of links(hierarchy)) {
           const { source, target } = link
           const sy = source.x!
           const ty = target.x!

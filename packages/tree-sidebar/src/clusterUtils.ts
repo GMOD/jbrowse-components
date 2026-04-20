@@ -1,8 +1,8 @@
 import { fromNewick } from '@gmod/hclust'
 
-import { cluster, hierarchy } from './d3-hierarchy2/index.ts'
+import { clusterLayout, hierarchy, sort, sum } from './hierarchy.ts'
 
-import type { ClusterHierarchyNode } from './types.ts'
+import type { ClusterHierarchyNode, ClusterNodeData } from './types.ts'
 
 export function getLeafNames(node: ClusterHierarchyNode): string[] {
   if (!node.children?.length) {
@@ -34,13 +34,10 @@ function findSubtree(
 }
 
 export function parseClusterTree(newick: string, subtreeFilter?: string[]) {
-  const tree = fromNewick(newick)
-  let root = hierarchy(tree, (d: ClusterHierarchyNode) => d.children)
-    .sum((d: ClusterHierarchyNode) => (d.children ? 0 : 1))
-    .sort(
-      (a: ClusterHierarchyNode, b: ClusterHierarchyNode) =>
-        (a.data.height || 1) - (b.data.height || 1),
-    )
+  const tree = fromNewick(newick) as ClusterNodeData
+  let root = hierarchy<ClusterNodeData>(tree, d => d.children)
+  sum(root, d => (d.children ? 0 : 1))
+  sort(root, (a, b) => (a.data.height || 1) - (b.data.height || 1))
 
   if (subtreeFilter?.length) {
     const filterSet = new Set(subtreeFilter)
@@ -73,8 +70,6 @@ export function computeHierarchyLayout(
   layoutHeight: number,
   layoutWidth: number,
 ) {
-  cluster()
-    .size([layoutHeight, layoutWidth])
-    .separation(() => 1)(root)
+  clusterLayout(root, layoutHeight, layoutWidth)
   return root
 }

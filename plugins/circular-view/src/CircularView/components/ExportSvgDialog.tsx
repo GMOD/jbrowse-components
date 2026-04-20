@@ -2,7 +2,6 @@ import { useState } from 'react'
 
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession, useLocalStorage } from '@jbrowse/core/util'
-import { observer } from 'mobx-react'
 import {
   Button,
   Checkbox,
@@ -16,6 +15,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { ExportSvgOptions } from '../model.ts'
 

@@ -39,8 +39,8 @@ import type {
 } from '../shared/wiggleBackendTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { Region } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   FetchContext,

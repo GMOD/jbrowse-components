@@ -12,11 +12,11 @@ import { observer } from 'mobx-react'
 
 import { VariantRenderer } from './VariantRenderer.ts'
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
-import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import {
   VariantErrorBar,
   VariantLoadingOverlay,
 } from '../../shared/components/VariantStatusOverlays.tsx'
+import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 

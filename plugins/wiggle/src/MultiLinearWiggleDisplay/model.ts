@@ -19,7 +19,11 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { TreeSidebarMixin, computeHierarchyLayout } from '@jbrowse/tree-sidebar'
+import {
+  type ClusterHierarchyNode,
+  TreeSidebarMixin,
+  computeHierarchyLayout,
+} from '@jbrowse/tree-sidebar'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -42,8 +46,8 @@ import type {
 } from '../shared/wiggleBackendTypes.ts'
 import type { Source, SourceInfo } from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { Region } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   FetchContext,

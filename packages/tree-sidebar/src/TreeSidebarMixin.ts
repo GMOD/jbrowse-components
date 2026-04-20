@@ -2,7 +2,7 @@ import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import { parseClusterTree } from './clusterUtils.ts'
 
-import type { HoveredTreeNode } from './types.ts'
+import type { ClusterHierarchyNode, HoveredTreeNode } from './types.ts'
 
 export function TreeSidebarMixin<
   S extends { name: string } = { name: string },
@@ -20,7 +20,7 @@ export function TreeSidebarMixin<
       mouseoverCanvas: null as HTMLCanvasElement | null,
     }))
     .views(self => ({
-      get root() {
+      get root(): ClusterHierarchyNode | undefined {
         const { clusterTree } = self
         if (!clusterTree) {
           return undefined

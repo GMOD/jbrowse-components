@@ -4,6 +4,7 @@ import {
 } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
+
 import { FormatAboutConfigSchemaFactory } from './FormatAbout.ts'
 import { FormatDetailsConfigSchemaFactory } from './FormatDetails.ts'
 import { HierarchicalConfigSchemaFactory } from './HierarchicalConfig.ts'

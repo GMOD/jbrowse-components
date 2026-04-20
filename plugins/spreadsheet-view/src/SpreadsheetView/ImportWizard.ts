@@ -41,9 +41,13 @@ function isFileLocation(loc: unknown): loc is FileLocation {
 
 function getAdapterInfo(adapter: Record<string, unknown>) {
   const { type } = adapter
-  if (typeof type !== 'string') return undefined
+  if (typeof type !== 'string') {
+    return undefined
+  }
   const entry = adapterTypeMap[type]
-  if (!entry) return undefined
+  if (!entry) {
+    return undefined
+  }
   const rawLoc = adapter[entry.locationKey] ?? adapter
   return isFileLocation(rawLoc)
     ? { fileType: entry.fileType, loc: rawLoc }

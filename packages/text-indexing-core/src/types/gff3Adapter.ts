@@ -1,10 +1,11 @@
-import type { Gff3IndexerOptions } from '../util.ts'
 import { decodeURIComponentNoThrow } from '../util.ts'
 import {
   createReadlineInterface,
   getLocalOrRemoteStream,
   parseAttributes,
 } from './common.ts'
+
+import type { Gff3IndexerOptions } from '../util.ts'
 
 export async function* indexGff3({
   config,

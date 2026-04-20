@@ -16,7 +16,6 @@ import {
   isFeature,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
 import {
   addDisposer,
   getSnapshot,
@@ -88,7 +87,7 @@ import type {
 import type { CoverageTicks } from '@jbrowse/alignments-core'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {

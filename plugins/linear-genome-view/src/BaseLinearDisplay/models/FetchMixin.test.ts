@@ -184,7 +184,9 @@ describe('FetchMixin: status message', () => {
     let resolve!: () => void
     m.runFetch(async () => {
       m.setStatusMessage('working...')
-      setStatusFromWork = () => m.setStatusMessage('almost done')
+      setStatusFromWork = () => {
+        m.setStatusMessage('almost done')
+      }
       await new Promise<void>(r => (resolve = r))
     })
     await tick()

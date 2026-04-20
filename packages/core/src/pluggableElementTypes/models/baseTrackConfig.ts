@@ -224,7 +224,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
                 type: _rendererType,
                 height: rendererHeight,
                 ...rendererProps
-              } = renderer ?? {}
+              } = renderer
               return {
                 ...rendererProps,
                 ...(rendererHeight !== undefined

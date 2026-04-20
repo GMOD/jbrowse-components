@@ -8,6 +8,7 @@ import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { getLeafNames } from './clusterUtils.ts'
+import { descendants } from './hierarchy.ts'
 
 import type { ClusterHierarchyNode, TreeSidebarModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -68,7 +69,7 @@ const TreeSidebar = observer(function TreeSidebar({
         void model.treeAreaWidth
         void model.totalHeight
         if (h) {
-          const nodes = h.descendants().filter(node => node.children?.length)
+          const nodes = descendants(h).filter(node => node.children?.length)
           const index = new Flatbush(nodes.length)
           const hitRadius = 8
           for (const node of nodes) {
@@ -176,7 +177,9 @@ const TreeSidebar = observer(function TreeSidebar({
         />
         <div
           onMouseMove={handleMouseMove}
-          onMouseLeave={() => model.setHoveredTreeNode(undefined)}
+          onMouseLeave={() => {
+            model.setHoveredTreeNode(undefined)
+          }}
           onClick={handleClick}
           style={{
             position: 'absolute',
@@ -206,7 +209,9 @@ const TreeSidebar = observer(function TreeSidebar({
       />
       <Menu
         open={!!menuAnchor}
-        onClose={() => setMenuAnchor(null)}
+        onClose={() => {
+          setMenuAnchor(null)
+        }}
         anchorReference="anchorPosition"
         anchorPosition={
           menuAnchor ? { top: menuAnchor.y, left: menuAnchor.x } : undefined

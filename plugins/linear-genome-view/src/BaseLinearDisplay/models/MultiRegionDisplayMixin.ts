@@ -16,8 +16,8 @@ import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.tsx'
 
 export type { ByteEstimateConfig } from './fetchHelpers.ts'
 export type { FetchContext } from './FetchMixin.ts'
-import type { ByteEstimateConfig } from './fetchHelpers.ts'
 import type { FetchContext } from './FetchMixin.ts'
+import type { ByteEstimateConfig } from './fetchHelpers.ts'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { Region } from '@jbrowse/core/util'
 
@@ -234,7 +234,7 @@ export default function MultiRegionDisplayMixin() {
                     loaded?.refName === vr.refName &&
                     Math.floor(vr.start) >= loaded.start &&
                     Math.ceil(vr.end) <= loaded.end
-                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
                   if (
                     boundsValid &&
                     self.isCacheValid(vr.displayedRegionIndex)

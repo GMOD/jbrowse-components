@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react'
 
-import type { GridRowSelectionModel } from '@mui/x-data-grid'
 
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import {
@@ -17,6 +16,7 @@ import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
 import type { AddTrackModel } from '@jbrowse/plugin-data-management'
+import type { GridRowSelectionModel } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
