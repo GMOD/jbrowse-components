@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react'
 
+import type { GridRowSelectionModel } from '@mui/x-data-grid'
+
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import {
   getSession,
@@ -112,6 +114,7 @@ const MultiWiggleAddTrackWorkflow = observer(
     const [inputVal, setInputVal] = useState('')
     const [tracks, setTracks] = useState<TrackRow[]>([])
     const [trackName, setTrackName] = useState(`MultiWiggle${Date.now()}`)
+    const [selection, setSelection] = useState<GridRowSelectionModel>({ type: 'include', ids: new Set() })
     const counter = useRef(0)
 
     function addTracks(items: TrackItem[]) {
@@ -163,37 +166,54 @@ const MultiWiggleAddTrackWorkflow = observer(
           />
         </Button>
         {tracks.length > 0 ? (
-          <div style={{ height: 300, width: '100%', marginTop: 8 }}>
-            <DataGrid
-              rows={tracks}
-              columns={[
-                {
-                  field: 'name',
-                  headerName: 'Name',
-                  flex: 1,
-                  renderCell: ({ value }) => <SanitizedHTML html={value} />,
-                },
-                {
-                  field: 'remove',
-                  headerName: '',
-                  width: 50,
-                  sortable: false,
-                  renderCell: ({ row }) => (
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setTracks(prev => prev.filter(t => t.id !== row.id))
-                      }}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  ),
-                },
-              ]}
-              rowHeight={25}
-              columnHeaderHeight={33}
-              hideFooter
-            />
+          <div style={{ marginTop: 8 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<DeleteIcon />}
+              disabled={selection.ids.size === 0}
+              onClick={() => {
+                setTracks(prev => prev.filter(t => !selection.ids.has(t.id)))
+                setSelection({ type: 'include', ids: new Set() })
+              }}
+            >
+              Delete selected
+            </Button>
+            <div style={{ height: 300, width: '100%', marginTop: 4 }}>
+              <DataGrid
+                rows={tracks}
+                columns={[
+                  {
+                    field: 'name',
+                    headerName: 'Name',
+                    flex: 1,
+                    renderCell: ({ value }) => <SanitizedHTML html={value} />,
+                  },
+                  {
+                    field: 'remove',
+                    headerName: '',
+                    width: 50,
+                    sortable: false,
+                    renderCell: ({ row }) => (
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          setTracks(prev => prev.filter(t => t.id !== row.id))
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    ),
+                  },
+                ]}
+                rowHeight={25}
+                columnHeaderHeight={33}
+                hideFooter
+                checkboxSelection
+                rowSelectionModel={selection}
+                onRowSelectionModelChange={setSelection}
+              />
+            </div>
           </div>
         ) : null}
         <TextField
