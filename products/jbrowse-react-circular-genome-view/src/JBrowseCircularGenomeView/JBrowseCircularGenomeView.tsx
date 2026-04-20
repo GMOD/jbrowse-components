@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { EmbeddedViewContainer, ModalWidget } from '@jbrowse/embedded-core'
 import { ThemeProvider } from '@mui/material'
@@ -17,11 +17,7 @@ const JBrowseCircularGenomeView = observer(function JBrowseCircularGenomeView({
   const { session } = viewState
   const { view } = session
   const { pluginManager } = getEnv(session)
-  const viewType = pluginManager.getViewType(view.type)
-  if (!viewType) {
-    throw new Error(`unknown view type ${view.type}`)
-  }
-  const { ReactComponent } = viewType
+  const { ReactComponent } = pluginManager.getViewType(view.type)!
   const theme = createJBrowseTheme(
     readConfObject(viewState.config.configuration, 'theme'),
   )
@@ -29,7 +25,7 @@ const JBrowseCircularGenomeView = observer(function JBrowseCircularGenomeView({
   return (
     <ThemeProvider theme={theme}>
       <EmbeddedViewContainer key={`view-${view.id}`} view={view}>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<LoadingEllipses />}>
           <ReactComponent model={view} session={session} />
         </Suspense>
       </EmbeddedViewContainer>

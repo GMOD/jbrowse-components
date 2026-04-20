@@ -2,8 +2,8 @@ import { Suspense } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
+import { getEnv } from '@jbrowse/core/util'
 import { EmbeddedViewContainer, ModalWidget } from '@jbrowse/embedded-core'
-import { getEnv } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
