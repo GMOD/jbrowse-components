@@ -564,19 +564,26 @@ export default function baseStateModelFactory(
         },
       }))
       .actions(self => ({
-        selectFullFeature(featureId: string, displayedRegionIndex: number) {
+        async fetchFullFeature(featureId: string, displayedRegionIndex: number) {
           const region = self.loadedRegions.get(displayedRegionIndex)
           if (!region) {
-            return
+            return undefined
           }
+          return fetchCanvasFeatureDetails(
+            getSession(self),
+            getRpcSessionId(self),
+            self.adapterConfigSnapshot,
+            featureId,
+            region,
+          )
+        },
+
+        selectFullFeature(featureId: string, displayedRegionIndex: number) {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
-            const feature = await fetchCanvasFeatureDetails(
-              getSession(self),
-              getRpcSessionId(self),
-              self.adapterConfigSnapshot,
+            const feature = await self.fetchFullFeature(
               featureId,
-              region,
+              displayedRegionIndex,
             )
             if (feature && isAlive(self)) {
               self.selectFeature(feature)

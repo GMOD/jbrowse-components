@@ -1,13 +1,10 @@
 import { lazy } from 'react'
 
 import { getContainingView, getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 
-import baseStateModelFactory, {
-  fetchCanvasFeatureDetails,
-} from './baseModel.ts'
+import baseStateModelFactory from './baseModel.ts'
 import {
   getTranscripts,
   hasIntrons,
@@ -213,7 +210,6 @@ export default function stateModelFactory(
             item: { featureId },
             displayedRegionIndex,
           } = info
-          const region = self.loadedRegions.get(displayedRegionIndex)
           return [
             ...base,
             {
@@ -222,16 +218,10 @@ export default function stateModelFactory(
               onClick: () => {
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 ;(async () => {
-                  if (!region) {
-                    return
-                  }
                   const session = getSession(self)
-                  const fullFeature = await fetchCanvasFeatureDetails(
-                    session,
-                    getRpcSessionId(self),
-                    self.adapterConfigSnapshot,
+                  const fullFeature = await self.fetchFullFeature(
                     featureId,
-                    region,
+                    displayedRegionIndex,
                   )
                   if (!fullFeature) {
                     return
