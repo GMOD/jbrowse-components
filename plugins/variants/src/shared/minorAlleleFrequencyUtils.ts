@@ -24,7 +24,7 @@ export function calculateAlleleCountsFast(
   let count2 = 0
   let count3 = 0
   let countDot = 0
-  const otherCounts : Record<string, number> = {}
+  const otherCounts: Record<string, number> = {}
 
   feature.processGenotypes((str, start, end) => {
     const len = end - start
@@ -127,7 +127,7 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
   let count2 = 0
   let count3 = 0
   let countDot = 0
-  const otherCounts : Record<string, number> = {}
+  const otherCounts: Record<string, number> = {}
 
   for (const key in genotypes) {
     const genotype = genotypes[key]!

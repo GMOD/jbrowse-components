@@ -1158,7 +1158,10 @@ export default function stateModelFactory(
               // self.laidOutPileupMap (Y arrays filled from main-thread
               // layout, or pass-through rpcDataMap for chain mode).
               const active: number[] = []
-              for (const [displayedRegionIndex, data] of self.laidOutPileupMap) {
+              for (const [
+                displayedRegionIndex,
+                data,
+              ] of self.laidOutPileupMap) {
                 active.push(displayedRegionIndex)
                 if (data.numReads === 0) {
                   continue
@@ -1181,10 +1184,8 @@ export default function stateModelFactory(
               // Arcs: independent source. Changes here re-fire the whole
               // upload pass (including pileup), which is fine because the
               // backend treats identity-stable pileup uploads as idempotent.
-              for (const [
-                displayedRegionIndex,
-                data,
-              ] of self.arcsState.rpcDataMap) {
+              for (const [displayedRegionIndex, data] of self.arcsState
+                .rpcDataMap) {
                 b.uploadArcsFromTypedArraysForRegion(displayedRegionIndex, {
                   regionStart: data.regionStart,
                   arcX1: data.arcX1,
@@ -1462,7 +1463,6 @@ export default function stateModelFactory(
                 },
               ),
             )
-
           },
         }
       })

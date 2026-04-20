@@ -36,10 +36,7 @@ import { computeAutoscaleDomain, getNiceDomain, getScale } from '../util.ts'
 import { buildMultiSourceRenderData } from './components/buildMultiSourceRenderData.ts'
 
 import type { MultiWiggleDataResult } from '../RenderMultiWiggleDataRPC/types.ts'
-import type {
-  WiggleBackend,
-  WiggleGPURenderState,
-} from '../shared/wiggleBackendTypes.ts'
+import type { WiggleBackend } from '../shared/wiggleBackendTypes.ts'
 import type { Source, SourceInfo } from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
@@ -554,7 +551,7 @@ export default function stateModelFactory(
           return view.bpPerPx === self.loadedBpPerPx
         },
 
-        onFetchNeeded(
+        async onFetchNeeded(
           needed: { region: Region; displayedRegionIndex: number }[],
         ) {
           const view = getContainingView(self) as LGV
@@ -565,7 +562,7 @@ export default function stateModelFactory(
           const { bpPerPx } = view
           const sessionId = getRpcSessionId(self)
           const { rpcManager } = getSession(self)
-          self.fetchRegions(needed, async (ctx: FetchContext) => {
+          await self.fetchRegions(needed, async (ctx: FetchContext) => {
             await Promise.all(
               needed.map(async r => {
                 const result = await rpcManager.call(

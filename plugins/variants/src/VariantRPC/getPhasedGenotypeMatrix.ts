@@ -45,7 +45,7 @@ export async function getPhasedGenotypeMatrix({
   const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
-  const rows : Record<string, number[]> = {}
+  const rows: Record<string, number[]> = {}
 
   for (const { name } of sources) {
     const info = sampleInfo[name]

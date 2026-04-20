@@ -485,21 +485,14 @@ export default function baseStateModelFactory(
           self.installGpuDisplay<CanvasFeatureBackend>(backend, {
             upload: b => {
               const active: number[] = []
-              for (const [
-                displayedRegionIndex,
-                data,
-              ] of self.laidOutDataMap) {
+              for (const [displayedRegionIndex, data] of self.laidOutDataMap) {
                 b.uploadRegion(displayedRegionIndex, data)
                 active.push(displayedRegionIndex)
               }
               b.pruneRegions(active)
             },
             render: b => {
-              const state = self.renderState
-              if (!state) {
-                return false
-              }
-              b.renderBlocks(self.renderBlocks, state)
+              b.renderBlocks(self.renderBlocks, self.renderState)
               return true
             },
           })
@@ -707,15 +700,16 @@ export default function baseStateModelFactory(
           ) {
             const view = getContainingView(self) as LGV
             const bpPerPx = view.bpPerPx
-            // Drop cached regions that are no longer visible. Keeps stale
-            // data for regions still on screen (so labels stay up during
-            // the refetch window) without letting rpcDataMap grow
-            // unboundedly as the user pans.
+            // Drop cached regions that are no longer visible. Keeps stale data
+            // for regions still on screen (so labels stay up during the
+            // refetch window) without letting rpcDataMap grow unboundedly as
+            // the user pans.
             self.pruneRpcDataMapToVisible(
               new Set(
                 view.bufferedVisibleRegions.map(b => b.displayedRegionIndex),
               ),
             )
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             self.fetchRegions(needed, async (ctx: FetchContext) => {
               const promises = needed.map(({ region, displayedRegionIndex }) =>
                 fetchFeaturesForRegion(

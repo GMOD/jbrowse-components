@@ -39,7 +39,6 @@ import type { DotplotViewInit, ImportFormSyntenyTrack } from './types.ts'
 import type {
   DotplotBackend,
   DotplotGeometryData,
-  DotplotRenderState,
 } from '../DotplotDisplay/dotplotBackendTypes.ts'
 import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.tsx'
 import type PluginManager from '@jbrowse/core/PluginManager'

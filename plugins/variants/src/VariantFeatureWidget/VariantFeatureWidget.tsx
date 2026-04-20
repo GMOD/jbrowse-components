@@ -12,7 +12,11 @@ import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid.tsx'
 import { variantFieldDescriptions } from './variantFieldDescriptions.ts'
 
 import type { VariantFeatureWidgetModel } from './stateModelFactory.ts'
-import type { Descriptions, ReducedFeature, VCFFeatureSerialized } from './types.ts'
+import type {
+  Descriptions,
+  ReducedFeature,
+  VCFFeatureSerialized,
+} from './types.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // lazies
@@ -164,8 +168,7 @@ const VariantFeatureWidget = observer(function VariantFeatureWidget(props: {
 }) {
   const { model } = props
   const { featureData } = model
-  const feat = structuredClone(featureData) as VCFFeatureSerialized
-
+  const feat = structuredClone(featureData) as VCFFeatureSerialized | undefined
   return feat ? (
     <FeatDefined feat={feat} {...props} />
   ) : (

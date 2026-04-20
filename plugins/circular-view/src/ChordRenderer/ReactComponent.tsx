@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-
 import type { MouseEvent } from 'react'
 
 import { observer } from 'mobx-react'

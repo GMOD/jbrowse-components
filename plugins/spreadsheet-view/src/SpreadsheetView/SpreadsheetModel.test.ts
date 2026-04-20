@@ -17,7 +17,13 @@ test('rows returns undefined when no rowSet', () => {
 })
 
 test('rows maps cellData format to GridRow', () => {
-  const feature = { refName: 'chr1', start: 0, end: 100, name: 'f1', uniqueId: 'f1' }
+  const feature = {
+    refName: 'chr1',
+    start: 0,
+    end: 100,
+    name: 'f1',
+    uniqueId: 'f1',
+  }
   const model = makeModel({
     rowSet: { rows: [{ feature, cellData: { score: 99, name: 'foo' } }] },
     columns: [{ name: 'score' }, { name: 'name' }],
@@ -30,13 +36,19 @@ test('rows handles legacy cells format', () => {
     rowSet: { rows: [{ cells: [{ text: 'chrX' }, { text: 42 }] }] },
     columns: [{ name: 'chr' }, { name: 'pos' }],
   })
-  expect(model.rows).toEqual([{ id: 0, feature: undefined, chr: 'chrX', pos: 42 }])
+  expect(model.rows).toEqual([
+    { id: 0, feature: undefined, chr: 'chrX', pos: 42 },
+  ])
 })
 
 test('rows assigns sequential ids across multiple rows', () => {
   const model = makeModel({
     rowSet: {
-      rows: [{ cellData: { x: 1 } }, { cellData: { x: 2 } }, { cellData: { x: 3 } }],
+      rows: [
+        { cellData: { x: 1 } },
+        { cellData: { x: 2 } },
+        { cellData: { x: 3 } },
+      ],
     },
     columns: [{ name: 'x' }],
   })

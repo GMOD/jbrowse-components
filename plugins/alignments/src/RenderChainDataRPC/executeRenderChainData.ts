@@ -268,7 +268,11 @@ export async function executeRenderChainData({
     statusCallback,
     async () => ({
       gapArrays: buildGapArrays(gaps, regionStart, getReadIndex),
-      mismatchArrays: buildMismatchArrays(mismatches, regionStart, getReadIndex),
+      mismatchArrays: buildMismatchArrays(
+        mismatches,
+        regionStart,
+        getReadIndex,
+      ),
       interbaseArrays: buildInterbaseArrays(
         insertions,
         softclips,

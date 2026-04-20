@@ -21,7 +21,6 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import { observable } from 'mobx'
 
 import { buildSourceRenderData } from './components/buildSourceRenderData.ts'
-
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
 import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
@@ -405,6 +404,7 @@ export default function stateModelFactory(
         const { bpPerPx } = view
         const sessionId = getRpcSessionId(self)
         const { rpcManager } = getSession(self)
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         self.fetchRegions(needed, async (ctx: FetchContext) => {
           await Promise.all(
             needed.map(async r => {

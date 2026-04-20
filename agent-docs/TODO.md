@@ -268,3 +268,7 @@ Subpixel drawing crowded?
 Wiggle scale ticks not visible despite yscalebaroffset
 
 Unclear if log scale working on hic
+
+umd_plugin.js  pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap => { is relogged very rapidly on e.g. every mouse move in alignments drawcloud Adding LinearReadCloudDisplay with drawCloud:true for volvox_sv_cram
+Adding LinearReadCloudDisplay with drawCloud:true for volvox_sv_cram
+

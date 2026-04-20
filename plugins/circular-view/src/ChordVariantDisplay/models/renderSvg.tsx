@@ -1,14 +1,14 @@
+import type { MouseEvent } from 'react'
+
 import { getContainingView } from '@jbrowse/core/util'
 
 import SVChordsReactComponent from '../../ChordRenderer/ReactComponent.tsx'
 
-import type { MouseEvent } from 'react'
-
 import type { AnyRegion, Block } from '../../ChordRenderer/types.ts'
+import type { CircularViewModel } from '../../CircularView/model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { CircularViewModel } from '../../CircularView/model.ts'
 
 type RenderSvgModel = IAnyStateTreeNode & {
   features: Map<string, Feature> | undefined
@@ -35,7 +35,9 @@ export function renderSvg(self: RenderSvgModel) {
       blockDefinitions={self.blockDefinitions}
       radius={radius}
       bezierRadius={radius * self.bezierRadiusRatio}
-      config={(self.configuration as { renderer: AnyConfigurationModel }).renderer}
+      config={
+        (self.configuration as { renderer: AnyConfigurationModel }).renderer
+      }
       displayModel={self}
       onChordClick={self.onChordClick}
     />

@@ -9,7 +9,7 @@ const TestModel = types.compose(
   types.model({}),
 )
 
-type FakeBackend = {
+interface FakeBackend {
   uploads: number[]
   renders: number
 }

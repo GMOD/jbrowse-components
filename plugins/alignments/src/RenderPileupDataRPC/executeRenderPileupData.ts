@@ -187,7 +187,11 @@ export async function executeRenderPileupData({
         readNames,
       },
       gapArrays: buildGapArrays(gaps, regionStart, getReadIndex),
-      mismatchArrays: buildMismatchArrays(mismatches, regionStart, getReadIndex),
+      mismatchArrays: buildMismatchArrays(
+        mismatches,
+        regionStart,
+        getReadIndex,
+      ),
       softclipBaseArrays: showSoftClipping
         ? buildSoftclipBaseArrays(softclips, regionStart, getReadIndex)
         : {

@@ -740,7 +740,7 @@ export async function getLDMatrix({
     }
   }
 
-  const splitCache : Record<string, string[]> = {}
+  const splitCache: Record<string, string[]> = {}
 
   const rawFeatures = await updateStatus(
     'Loading features',

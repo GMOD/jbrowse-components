@@ -145,18 +145,28 @@ backend is constructed, otherwise Canvas 2D.
 
 Domain-named getters that enumerate **what affects rendering output**.
 
-| Getter        | Consumer                                                                    | Invalidation route                                                                                 |
-| ------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `rpcProps`    | `rpcManager.call(..., { ...self.rpcProps, ... })` — literal RPC payload     | Mixin `SettingsInvalidate` autorun reads `void self.rpcProps` → `clearAllRpcData` → refetch        |
-| `gpuProps()`  | `buildSourceRenderData(data, self.gpuProps())` — typed input to the encoder | Upload callback reads `self.gpuProps()` — MobX tracks the reads, re-uploads without RPC round-trip |
-| `renderState` | `backend.render(state)` per frame                                           | Render callback reads `renderState` — re-fires when its deps shift                                 |
+| Getter             | Consumer                                                                 | Invalidation route                                                                          |
+| ------------------ | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| `rpcProps`         | `rpcManager.call(..., { ...self.rpcProps, ... })` — RPC payload          | Mixin `SettingsInvalidate` autorun reads `void self.rpcProps` → `clearAllRpcData` → refetch |
+| `gpuProps()`       | `buildSourceRenderData(data, self.gpuProps())` — encoder input           | Upload callback reads it — MobX re-uploads without an RPC roundtrip                         |
+| Derived region map | Upload callback iterates it in place of raw `rpcDataMap`                 | Upload autorun reads it — MobX re-uploads without an RPC roundtrip                          |
+| `renderState`      | `backend.render(state)` per frame                                        | Render callback reads it — re-fires when deps shift                                         |
 
 `gpuProps` exists only where the main thread encodes the GPU buffer
 (wiggle, multi-wiggle). Canvas's worker pre-builds the buffer, so canvas
 has only `rpcProps`. Splitting refetch from re-upload avoids wasted RPC
-roundtrips: wiggle color change → re-encode the per-instance buffer (worker
-output unchanged) → upload only. `bicolorPivot` change → worker output
-differs → flows through `rpcProps` → refetch.
+roundtrips: wiggle color change → re-encode only. `bicolorPivot` change →
+worker output differs → `rpcProps` → refetch.
+
+Derived region maps apply when upload needs *whole fresh per-region
+payloads*, not just extra encoder parameters. Alignments' `laidOutPileupMap`
+returns shallow clones of `rpcDataMap` entries with freshly-allocated Y
+arrays from main-thread pileup/chain layout (+ connecting-line / Flatbush
+in chain mode). Upload iterates the derived map; sort or chain-mode changes
+invalidate the getter and re-fire upload. Raw `rpcDataMap` is never
+mutated, honoring the freshly-constructed-values invariant in `PRD.md`.
+Use this when settings change the shape/contents of per-region data; use
+`gpuProps` for scalars fed to an encoder.
 
 ---
 

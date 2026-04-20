@@ -130,7 +130,7 @@ export function useRangeSelect(
       handleMenuItemClick,
     }
   }
-  const right = anchorPosition ? anchorPosition.offsetX : currentX ?? 0
+  const right = anchorPosition ? anchorPosition.offsetX : (currentX ?? 0)
   const left = Math.min(right, startX)
   const width = Math.abs(right - startX)
   const leftBpOffset = model.views.map(view => view.pxToBp(left))

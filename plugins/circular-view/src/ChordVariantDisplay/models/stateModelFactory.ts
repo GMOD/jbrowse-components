@@ -7,22 +7,27 @@ import {
   isAbortException,
   isFeature,
 } from '@jbrowse/core/util'
-import {
-  createStopToken,
-  stopStopToken,
-} from '@jbrowse/core/util/stopToken'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   getRpcSessionId,
   getTrackAssemblyNames,
 } from '@jbrowse/core/util/tracks'
-import { addDisposer, getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  getParent,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import type {
+  CircularViewModel,
+  ExportSvgOptions,
+} from '../../CircularView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { CircularViewModel, ExportSvgOptions } from '../../CircularView/model.ts'
 import type { ThemeOptions } from '@mui/material'
 
 /**

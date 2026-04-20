@@ -375,10 +375,7 @@ describe('computeSortedLayout', () => {
         { start: 440, end: 740, tagValue: '0' },
       ],
     })
-    const { readYs } = computeSortedLayout(
-      data,
-      makeSortedBy(500, 'tag', 'HP'),
-    )
+    const { readYs } = computeSortedLayout(data, makeSortedBy(500, 'tag', 'HP'))
     expect(readYs[0]).toBe(0)
     assertNonOverlappingLayout(data, readYs)
   })
@@ -415,10 +412,7 @@ describe('computeSortedLayout', () => {
         { start: 420, end: 720, tagValue: 'sampleB' },
       ],
     })
-    const { readYs } = computeSortedLayout(
-      data,
-      makeSortedBy(500, 'tag', 'RG'),
-    )
+    const { readYs } = computeSortedLayout(data, makeSortedBy(500, 'tag', 'RG'))
     // 'sampleB' > 'sampleA' → sampleB gets row 0
     expect(readYs[1]).toBe(0)
     expect(readYs[0]).toBe(1)

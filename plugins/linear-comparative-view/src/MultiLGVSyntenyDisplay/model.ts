@@ -450,6 +450,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         onFetchNeeded(
           needed: { region: Region; displayedRegionIndex: number }[],
         ) {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           self.fetchRegions(needed, async (ctx: FetchContext) => {
             const track = getContainingTrack(self)
             const adapterConfig = getConf(track, 'adapter')

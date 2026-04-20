@@ -6,7 +6,7 @@ import { GENOTYPE_SPLITTER } from '../../shared/constants.ts'
 import type { Filters, InfoFields, VariantSampleGridRow } from './types.ts'
 
 function gtToAlleleCounts(gt: string) {
-  const alleleCounts : Record<string, number> = {}
+  const alleleCounts: Record<string, number> = {}
   const alleles = gt.split(GENOTYPE_SPLITTER)
   for (const allele of alleles) {
     alleleCounts[allele] = (alleleCounts[allele] || 0) + 1
@@ -17,7 +17,7 @@ function gtToAlleleCounts(gt: string) {
 }
 
 function genotypeToAlleleCounts(gt: string, ref: string, alt: string[]) {
-  const alleleCounts : Record<string, number> = {}
+  const alleleCounts: Record<string, number> = {}
   const alleles = gt.split(GENOTYPE_SPLITTER)
   for (const allele of alleles) {
     if (allele === '.') {

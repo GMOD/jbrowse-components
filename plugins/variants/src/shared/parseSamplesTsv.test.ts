@@ -1,6 +1,11 @@
 import { parseSamplesTsv } from './parseSamplesTsv.ts'
 
-const tsv = ['name\tpop\tsuper_pop', 'NA12878\tCEU\tEUR', 'NA19240\tYRI\tAFR', 'UNKNOWN\tXXX\tXXX'].join('\n')
+const tsv = [
+  'name\tpop\tsuper_pop',
+  'NA12878\tCEU\tEUR',
+  'NA19240\tYRI\tAFR',
+  'UNKNOWN\tXXX\tXXX',
+].join('\n')
 
 test('returns rows matching VCF samples', () => {
   const result = parseSamplesTsv(tsv, ['NA12878', 'NA19240'])

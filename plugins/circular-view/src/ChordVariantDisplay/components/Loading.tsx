@@ -17,11 +17,7 @@ const useStyles = makeStyles()(() => {
   }
 })
 
-const Loading = observer(function Loading({
-  radius,
-}: {
-  radius: number
-}) {
+const Loading = observer(function Loading({ radius }: { radius: number }) {
   const { classes } = useStyles()
 
   // only show the loading message after 400ms to prevent excessive flickering

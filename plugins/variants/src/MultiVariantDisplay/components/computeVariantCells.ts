@@ -101,8 +101,8 @@ export function computeVariantCells({
 }): VariantCellData {
   const getCachedABGR = createCachedABGR()
 
-  const alleleColorCache : Record<string, string | undefined> = {}
-  const rawColorCache : Record<string, string> = {}
+  const alleleColorCache: Record<string, string | undefined> = {}
+  const rawColorCache: Record<string, string> = {}
   const drawRef = referenceDrawingMode === 'draw'
 
   const numSources = sources.length
@@ -125,7 +125,7 @@ export function computeVariantCells({
     regionStart = 0
   }
 
-  const featureGenotypeMap : Record<string, FeatureGenotypeInfo> = {}
+  const featureGenotypeMap: Record<string, FeatureGenotypeInfo> = {}
   let cellCount = 0
 
   function addCell(
@@ -167,7 +167,7 @@ export function computeVariantCells({
     const ref = feature.get('REF') as string
     const featureName = feature.get('name')!
     const description = feature.get('description') as string
-    const renderedGenotypes : Record<string, string> = {}
+    const renderedGenotypes: Record<string, string> = {}
     const renderEnd =
       shape === SHAPE_TRI_DOWN
         ? getInsertionRenderEnd(start, end, alt, feature)
