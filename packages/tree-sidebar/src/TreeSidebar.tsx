@@ -7,6 +7,8 @@ import { Menu, MenuItem, alpha } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
+import { getLeafNames } from './clusterUtils.ts'
+
 import type { ClusterHierarchyNode, TreeSidebarModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -14,13 +16,6 @@ interface MenuAnchor {
   x: number
   y: number
   names: string[]
-}
-
-function getDescendantNames(node: ClusterHierarchyNode): string[] {
-  if (!node.children?.length) {
-    return [node.data.name]
-  }
-  return node.children.flatMap(child => getDescendantNames(child))
 }
 
 const SIDEBAR_BACKGROUND_OPACITY = 0.8
@@ -31,8 +26,10 @@ const TreeSidebar = observer(function TreeSidebar({
   model: TreeSidebarModel
 }) {
   const { width: viewWidth } = getContainingView(model) as LinearGenomeViewModel
-  const [nodeIndex, setNodeIndex] = useState<Flatbush | null>(null)
-  const [nodeData, setNodeData] = useState<ClusterHierarchyNode[]>([])
+  const [spatialIndex, setSpatialIndex] = useState<{
+    index: Flatbush
+    nodes: ClusterHierarchyNode[]
+  } | null>(null)
   const [menuAnchor, setMenuAnchor] = useState<MenuAnchor | null>(null)
 
   const {
@@ -66,87 +63,57 @@ const TreeSidebar = observer(function TreeSidebar({
   useEffect(() => {
     return autorun(
       function treeSpatialIndexAutorun() {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { treeAreaWidth: _t, hierarchy: h, totalHeight: th } = model
-        // IMPORTANT: We must access these observables for MobX to track them as
-        // dependencies. Without this, the autorun won't re-run when they change.
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        th
-        if (!h) {
-          setNodeIndex(null)
-          setNodeData([])
-          return
+        const h = model.hierarchy
+        // touch treeAreaWidth and totalHeight so MobX tracks them as dependencies
+        void model.treeAreaWidth
+        void model.totalHeight
+        if (h) {
+          const nodes = h.descendants().filter(node => node.children?.length)
+          const index = new Flatbush(nodes.length)
+          const hitRadius = 8
+          for (const node of nodes) {
+            const x = node.y!
+            const y = node.x!
+            index.add(x - hitRadius, y - hitRadius, x + hitRadius, y + hitRadius)
+          }
+          index.finish()
+          setSpatialIndex({ index, nodes })
+        } else {
+          setSpatialIndex(null)
         }
-
-        const nodes = h.descendants().filter(node => node.children?.length)
-
-        const index = new Flatbush(nodes.length)
-        const hitRadius = 8
-
-        for (const node of nodes) {
-          const x = node.y!
-          const y = node.x!
-          index.add(x - hitRadius, y - hitRadius, x + hitRadius, y + hitRadius)
-        }
-
-        index.finish()
-        setNodeIndex(index)
-        setNodeData(nodes)
       },
       { name: 'TreeSpatialIndex' },
     )
   }, [model])
 
-  const hitTestNode = useCallback(
-    (event: React.MouseEvent) => {
-      if (!nodeIndex) {
-        return undefined
-      }
+  function hitTestNode(event: React.MouseEvent) {
+    if (spatialIndex) {
       const rect = event.currentTarget.getBoundingClientRect()
       const x = event.clientX - rect.left
       const y = event.clientY - rect.top + scrollTop
-      const results = nodeIndex.search(x, y, x, y)
-      return results.length > 0 ? nodeData[results[0]!] : undefined
-    },
-    [nodeIndex, nodeData, scrollTop],
-  )
+      const results = spatialIndex.index.search(x, y, x, y)
+      return results.length > 0 ? spatialIndex.nodes[results[0]!] : undefined
+    }
+    return undefined
+  }
 
-  const handleMouseMove = useCallback(
-    (event: React.MouseEvent) => {
-      const node = hitTestNode(event)
-      if (node) {
-        model.setHoveredTreeNode({
-          node,
-          descendantNames: getDescendantNames(node),
-        })
-      } else {
-        model.setHoveredTreeNode(undefined)
-      }
-    },
-    [hitTestNode, model],
-  )
+  function handleMouseMove(event: React.MouseEvent) {
+    const node = hitTestNode(event)
+    model.setHoveredTreeNode(
+      node ? { node, descendantNames: getLeafNames(node) } : undefined,
+    )
+  }
 
-  const handleMouseLeave = useCallback(() => {
-    model.setHoveredTreeNode(undefined)
-  }, [model])
-
-  const handleClick = useCallback(
-    (event: React.MouseEvent) => {
-      const node = hitTestNode(event)
-      if (node) {
-        setMenuAnchor({
-          x: event.clientX,
-          y: event.clientY,
-          names: getDescendantNames(node),
-        })
-      }
-    },
-    [hitTestNode],
-  )
-
-  const handleCloseMenu = useCallback(() => {
-    setMenuAnchor(null)
-  }, [])
+  function handleClick(event: React.MouseEvent) {
+    const node = hitTestNode(event)
+    if (node) {
+      setMenuAnchor({
+        x: event.clientX,
+        y: event.clientY,
+        names: getLeafNames(node),
+      })
+    }
+  }
 
   if (!hierarchy || !showTree || !sources?.length) {
     return null
@@ -204,7 +171,7 @@ const TreeSidebar = observer(function TreeSidebar({
         />
         <div
           onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
+          onMouseLeave={() => model.setHoveredTreeNode(undefined)}
           onClick={handleClick}
           style={{
             position: 'absolute',
@@ -234,7 +201,7 @@ const TreeSidebar = observer(function TreeSidebar({
       />
       <Menu
         open={!!menuAnchor}
-        onClose={handleCloseMenu}
+        onClose={() => setMenuAnchor(null)}
         anchorReference="anchorPosition"
         anchorPosition={
           menuAnchor ? { top: menuAnchor.y, left: menuAnchor.x } : undefined
@@ -244,7 +211,7 @@ const TreeSidebar = observer(function TreeSidebar({
           <MenuItem
             onClick={() => {
               model.setSubtreeFilter(undefined)
-              handleCloseMenu()
+              setMenuAnchor(null)
             }}
           >
             Clear subtree filter
@@ -255,7 +222,7 @@ const TreeSidebar = observer(function TreeSidebar({
             if (menuAnchor) {
               model.setSubtreeFilter(menuAnchor.names)
             }
-            handleCloseMenu()
+            setMenuAnchor(null)
           }}
         >
           Show only subtree ({menuAnchor?.names.length} samples)

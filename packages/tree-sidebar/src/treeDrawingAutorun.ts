@@ -13,18 +13,10 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         if (!isAlive(self) || self.isMinimized) {
           return
         }
-        const {
-          treeCanvas,
-          hierarchy,
-          treeAreaWidth,
-          height,
-          scrollTop = 0,
-          // IMPORTANT: We must access totalHeight for MobX to track it as a
-          // dependency. Without this, the autorun won't re-run when row height
-          // changes.
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          totalHeight: _totalHeight,
-        } = self
+        // touch totalHeight so MobX tracks it as a dependency (row height changes)
+        void self.totalHeight
+        const { treeCanvas, hierarchy, treeAreaWidth, height, scrollTop = 0 } =
+          self
 
         if (!treeCanvas || !hierarchy) {
           return
@@ -70,6 +62,8 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         if (!isAlive(self) || self.isMinimized) {
           return
         }
+        // touch totalHeight so MobX tracks it as a dependency (row height changes)
+        void self.totalHeight
         const {
           mouseoverCanvas,
           hierarchy,
@@ -78,8 +72,6 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           height,
           scrollTop = 0,
           sources,
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          totalHeight,
         } = self
         if (!mouseoverCanvas) {
           return

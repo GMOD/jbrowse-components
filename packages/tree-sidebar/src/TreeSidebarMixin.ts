@@ -25,7 +25,7 @@ export function TreeSidebarMixin<
         if (!clusterTree) {
           return undefined
         }
-        return parseClusterTree(clusterTree, self.subtreeFilter?.slice())
+        return parseClusterTree(clusterTree, self.subtreeFilter)
       },
     }))
     .actions(self => ({

@@ -4,7 +4,7 @@ import { cluster, hierarchy } from './d3-hierarchy2/index.ts'
 
 import type { ClusterHierarchyNode } from './types.ts'
 
-function getLeafNames(node: ClusterHierarchyNode): string[] {
+export function getLeafNames(node: ClusterHierarchyNode): string[] {
   if (!node.children?.length) {
     return [node.data.name]
   }
@@ -57,15 +57,13 @@ export function buildClusteredLayout<S extends { name: string }>(
   existingLayout: S[],
   order: number[],
 ): S[] {
-  const existingByName = Object.fromEntries(
-    existingLayout.map(s => [s.name, s]),
-  )
+  const existingByName = new Map(existingLayout.map(s => [s.name, s]))
   return order.map(idx => {
     const source = baseSources[idx]
     if (!source) {
       throw new Error(`cluster order index ${idx} out of bounds`)
     }
-    const existing = existingByName[source.name]
+    const existing = existingByName.get(source.name)
     return existing ? { ...source, ...existing } : source
   })
 }
@@ -75,9 +73,6 @@ export function computeHierarchyLayout(
   layoutHeight: number,
   layoutWidth: number,
 ) {
-  const clust = cluster()
-  clust.size([layoutHeight, layoutWidth])
-  clust.separation(() => 1)
-  clust(root)
+  cluster().size([layoutHeight, layoutWidth]).separation(() => 1)(root)
   return root
 }
