@@ -225,49 +225,32 @@ describe('fetch autorun region determination', () => {
   })
 
   describe('wiggle resolution cache validity', () => {
+    // Strict equality: any bpPerPx change invalidates the cache so every
+    // visible region refetches together at a consistent bigwig zoom.
     function wiggleIsCacheValid(
-      displayedRegionIndex: number,
-      loadedBpPerPx: Map<number, number>,
+      loadedBpPerPx: number | undefined,
       currentBpPerPx: number,
     ) {
-      const regionBpPerPx = loadedBpPerPx.get(displayedRegionIndex)
-      return regionBpPerPx === undefined || currentBpPerPx >= regionBpPerPx / 2
+      return loadedBpPerPx === undefined || currentBpPerPx === loadedBpPerPx
     }
 
     test('cache valid when not yet loaded (first fetch)', () => {
-      expect(wiggleIsCacheValid(0, new Map(), 10)).toBe(true)
+      expect(wiggleIsCacheValid(undefined, 10)).toBe(true)
     })
 
     test('cache valid at same zoom level', () => {
-      const loaded = new Map([[0, 10]])
-      expect(wiggleIsCacheValid(0, loaded, 10)).toBe(true)
+      expect(wiggleIsCacheValid(10, 10)).toBe(true)
     })
 
-    test('cache valid when zoomed out (coarser data ok)', () => {
-      const loaded = new Map([[0, 5]])
-      expect(wiggleIsCacheValid(0, loaded, 20)).toBe(true)
+    test('cache invalid on any zoom-out', () => {
+      expect(wiggleIsCacheValid(5, 20)).toBe(false)
     })
 
-    test('cache valid when zoomed in slightly (less than 2x)', () => {
-      const loaded = new Map([[0, 10]])
-      expect(wiggleIsCacheValid(0, loaded, 6)).toBe(true)
+    test('cache invalid on any zoom-in', () => {
+      expect(wiggleIsCacheValid(10, 6)).toBe(false)
     })
 
-    test('cache invalid when zoomed in more than 2x', () => {
-      const loaded = new Map([[0, 10]])
-      expect(wiggleIsCacheValid(0, loaded, 4)).toBe(false)
-    })
-
-    test('cache invalid at exactly 2x zoom-in boundary', () => {
-      const loaded = new Map([[0, 10]])
-      // bpPerPx=5 is exactly loadedBpPerPx/2, >=5 passes
-      expect(wiggleIsCacheValid(0, loaded, 5)).toBe(true)
-      // bpPerPx=4.99 is just below loadedBpPerPx/2
-      expect(wiggleIsCacheValid(0, loaded, 4.99)).toBe(false)
-    })
-
-    test('scenario: zoom from 10 to 2.5 bpPerPx triggers re-fetch', () => {
-      const loaded = new Map([[0, 10]])
+    test('scenario: every bpPerPx change triggers re-fetch', () => {
       const loadedRegions = new Map<number, Region>([
         [
           0,
@@ -280,19 +263,19 @@ describe('fetch autorun region determination', () => {
         ],
       ])
 
-      // At 10 bpPerPx (original): cache valid
+      // At 10 bpPerPx (same as load): cache valid
       const needed1 = computeNeededRegions(
         [makeRegion(0, 10000, 50000)],
         loadedRegions,
-        rn => wiggleIsCacheValid(rn, loaded, 10),
+        () => wiggleIsCacheValid(10, 10),
       )
       expect(needed1).toHaveLength(0)
 
-      // At 2.5 bpPerPx (4x zoom in): cache invalid, re-fetch
+      // At any different bpPerPx (even small change): re-fetch
       const needed2 = computeNeededRegions(
         [makeRegion(0, 20000, 30000)],
         loadedRegions,
-        rn => wiggleIsCacheValid(rn, loaded, 2.5),
+        () => wiggleIsCacheValid(10, 9),
       )
       expect(needed2).toHaveLength(1)
     })

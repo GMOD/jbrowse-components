@@ -122,10 +122,7 @@ export default function stateModelFactory(
     .volatile(() => ({
       rpcDataMap: observable.map<number, MultiWiggleDataResult>(),
       sourcesVolatile: [] as SourceInfo[],
-      // The bpPerPx at which all currently-loaded regions were fetched.
-      // One value for the whole model, not per-region — this is what
-      // structurally guarantees adjacent regions render at the same
-      // resolution. Updated atomically with rpcDataMap inside fetchRegions.
+      // See LinearWiggleDisplay.loadedBpPerPx and adr-008.
       loadedBpPerPx: undefined as number | undefined,
       featureUnderMouse: undefined as
         | {
@@ -546,12 +543,13 @@ export default function stateModelFactory(
       const superAfterAttach = self.afterAttach
 
       return {
+        // Strict equality; see adr-008.
         isCacheValid(_displayedRegionIndex: number) {
           if (self.loadedBpPerPx === undefined) {
             return true
           }
           const view = getContainingView(self) as LGV
-          return view.bpPerPx >= self.loadedBpPerPx / 2
+          return view.bpPerPx === self.loadedBpPerPx
         },
 
         onFetchNeeded(
@@ -562,14 +560,7 @@ export default function stateModelFactory(
           if (!adapterConfig) {
             return
           }
-          // See LinearWiggleDisplay.onFetchNeeded for the rationale: keep
-          // existing resolution if cache is still valid (so newly-visible
-          // regions match what's on screen), else refetch all at view's
-          // bpPerPx.
-          const cacheValid =
-            self.loadedBpPerPx !== undefined &&
-            view.bpPerPx >= self.loadedBpPerPx / 2
-          const bpPerPx = cacheValid ? self.loadedBpPerPx! : view.bpPerPx
+          const { bpPerPx } = view
           const sessionId = getRpcSessionId(self)
           const { rpcManager } = getSession(self)
           self.fetchRegions(needed, async (ctx: FetchContext) => {

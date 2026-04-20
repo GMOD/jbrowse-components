@@ -98,10 +98,9 @@ export default function stateModelFactory(
     )
     .volatile(() => ({
       rpcDataMap: observable.map<number, WiggleDataResult>(),
-      // The bpPerPx at which all currently-loaded regions were fetched.
-      // One value for the whole model, not per-region — this is what
-      // structurally guarantees adjacent regions render at the same
-      // resolution. Updated atomically with rpcDataMap inside fetchRegions.
+      // bpPerPx of the most recent fetch. isCacheValid compares strictly
+      // so any zoom change refetches every visible region together. See
+      // adr-008-wiggle-strict-bpperpx-equality.md.
       loadedBpPerPx: undefined as number | undefined,
       featureUnderMouse: undefined as
         | {
@@ -420,12 +419,13 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
+      // Strict equality; see adr-008.
       isCacheValid(_displayedRegionIndex: number) {
         if (self.loadedBpPerPx === undefined) {
           return true
         }
         const view = getContainingView(self) as LGV
-        return view.bpPerPx >= self.loadedBpPerPx / 2
+        return view.bpPerPx === self.loadedBpPerPx
       },
 
       onFetchNeeded(
@@ -436,16 +436,7 @@ export default function stateModelFactory(
         if (!adapterConfig) {
           return
         }
-        // Pick the bpPerPx for this fetch: if existing loaded data is
-        // still within the 2x cache threshold, fetch at the same
-        // resolution so newly-visible regions match what's already on
-        // screen. Otherwise the cache is stale and the autorun has
-        // queued every visible region — fetch them all at the new
-        // viewport resolution.
-        const cacheValid =
-          self.loadedBpPerPx !== undefined &&
-          view.bpPerPx >= self.loadedBpPerPx / 2
-        const bpPerPx = cacheValid ? self.loadedBpPerPx! : view.bpPerPx
+        const { bpPerPx } = view
         const sessionId = getRpcSessionId(self)
         const { rpcManager } = getSession(self)
         self.fetchRegions(needed, async (ctx: FetchContext) => {

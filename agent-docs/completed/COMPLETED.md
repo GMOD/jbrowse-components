@@ -4,6 +4,42 @@ Moved from PRD.md as items were finished.
 
 ---
 
+## Dotplot — adopt shared MST autorun lifecycle — COMPLETE
+
+`DotplotView/model.ts` now drives its lifecycle through
+`self.startMultiRegionGpuLifecycle<DotplotBackend, DotplotRenderState>(...)`
+and the open-coded `dotplotViewDrawAutorun` / `dotplotUploadAutorun` are gone.
+Plan archived: `DOTPLOT_REFACTOR.md`.
+
+---
+
+## Synteny PR-B — view owns one canvas + backend — COMPLETE
+
+`LinearSyntenyViewHelper/stateModelFactory.ts` and
+`MultiLGVSyntenyDisplay/model.ts` both run through
+`startMultiRegionGpuLifecycle` against the keyed `SyntenyBackend`
+(`uploadGeometry(key, …)` / `deleteGeometry(key)`). `y_top` uniform and
+per-track render state shipped with the shader changes. Plan archived:
+`SYNTENY_REFACTOR_PR_B.md`.
+
+---
+
+## MismatchParser → packed NUMERIC_CIGAR — COMPLETE
+
+`cigarToMismatches2.ts` and `mdToMismatches2.ts` operate directly on packed
+`Uint32Array` from `@gmod/bam`, eliminating the string-parse step. Coverage
+in `parseCigar2.test.ts`. Shipped in 808246bbb5.
+
+---
+
+## P5 dead-code sweep — COMPLETE (partial)
+
+Removed from source: `uploadChangedRegions.ts`, `uploadRegionDataToGPU`,
+`dataVersion` debug counter, `renderProps()` on GPU displays. `pruneRegionMap`
+intentionally kept — still used by 8 backends.
+
+---
+
 ## `FetchMixin` extraction + `displayedRegionIndex` rename — COMPLETE
 
 Extracted `FetchMixin` from `MultiRegionDisplayMixin` into

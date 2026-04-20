@@ -13,7 +13,7 @@ function createMockDisplayModel() {
     error: undefined as unknown,
     regionTooLargeState: false,
     loadedRegions: new Map<number, Region>(),
-    loadedBpPerPx: new Map<number, number>(),
+    loadedBpPerPx: undefined as number | undefined,
     fetchLog: [] as DisplayedRegionWithIndex[][],
   })
 
@@ -60,13 +60,13 @@ function computeStaticRegions(view: ReturnType<typeof createMockView>) {
   return regions
 }
 
+// Strict equality — any bpPerPx change invalidates so every visible
+// region refetches together at a consistent bigwig zoom level.
 function wiggleIsCacheValid(
-  displayedRegionIndex: number,
-  loadedBpPerPx: Map<number, number>,
+  loadedBpPerPx: number | undefined,
   currentBpPerPx: number,
 ) {
-  const regionBpPerPx = loadedBpPerPx.get(displayedRegionIndex)
-  return regionBpPerPx === undefined || currentBpPerPx >= regionBpPerPx / 2
+  return loadedBpPerPx === undefined || currentBpPerPx === loadedBpPerPx
 }
 
 describe('fetch autorun integration with MobX observables', () => {
@@ -162,7 +162,7 @@ describe('fetch autorun integration with MobX observables', () => {
     dispose()
   })
 
-  test('zoom-in triggers re-fetch when isCacheValid returns false', () => {
+  test('any bpPerPx change (zoom in or out) triggers re-fetch', () => {
     const model = createMockDisplayModel()
     const view = createMockView()
     const fetches: number[] = []
@@ -186,11 +186,7 @@ describe('fetch autorun integration with MobX observables', () => {
           vr.region.end <= loaded.end
         if (
           boundsValid &&
-          wiggleIsCacheValid(
-            vr.displayedRegionIndex,
-            model.loadedBpPerPx,
-            view.bpPerPx,
-          )
+          wiggleIsCacheValid(model.loadedBpPerPx, view.bpPerPx)
         ) {
           continue
         }
@@ -213,88 +209,32 @@ describe('fetch autorun integration with MobX observables', () => {
           end: 1000000,
           assemblyName: vr.region.assemblyName,
         })
-        model.loadedBpPerPx.set(vr.displayedRegionIndex, 10)
       }
+      model.loadedBpPerPx = 10
       model.fetchGeneration++
     })
 
     expect(fetches).toHaveLength(1)
 
-    // Zoom in 4x (bpPerPx 10 → 2.5)
-    // isCacheValid: 2.5 >= 10/2=5? → false → re-fetch
+    // Zoom in — any change invalidates
     runInAction(() => {
       view.bpPerPx = 2.5
     })
 
     expect(fetches).toHaveLength(2)
 
-    dispose()
-  })
-
-  test('zoom-out does not re-fetch when data covers larger region', () => {
-    const model = createMockDisplayModel()
-    const view = createMockView()
-    const fetches: number[] = []
-
-    const dispose = autorun(() => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      model.fetchGeneration
-      if (!view.initialized || model.error || model.regionTooLargeState) {
-        return
-      }
-
-      const staticRegions = computeStaticRegions(view)
-      const needed: DisplayedRegionWithIndex[] = []
-      for (const vr of staticRegions) {
-        const loaded = untracked(() =>
-          model.loadedRegions.get(vr.displayedRegionIndex),
-        )
-        const boundsValid =
-          loaded?.refName === vr.region.refName &&
-          vr.region.start >= loaded.start &&
-          vr.region.end <= loaded.end
-        if (
-          boundsValid &&
-          wiggleIsCacheValid(
-            vr.displayedRegionIndex,
-            model.loadedBpPerPx,
-            view.bpPerPx,
-          )
-        ) {
-          continue
-        }
-        needed.push(vr)
-      }
-      if (needed.length > 0) {
-        fetches.push(needed.length)
-      }
-    })
-
-    expect(fetches).toHaveLength(1)
-
-    // Load data covering entire chromosome at bpPerPx=10
+    // Simulate fetch completing at 2.5
     runInAction(() => {
-      model.loadedRegions.set(0, {
-        refName: 'chr1',
-        start: 0,
-        end: 1000000,
-        assemblyName: 'test',
-      })
-      model.loadedBpPerPx.set(0, 10)
+      model.loadedBpPerPx = 2.5
       model.fetchGeneration++
     })
 
-    expect(fetches).toHaveLength(1)
-
-    // Zoom out 2x (bpPerPx 10 → 20)
-    // isCacheValid: 20 >= 10/2=5? → true → no re-fetch
-    // boundsValid: loaded covers 0-1M, static region is within → true
+    // Zoom out — also invalidates (strict equality)
     runInAction(() => {
       view.bpPerPx = 20
     })
 
-    // Should still be 1 — no re-fetch needed
-    expect(fetches).toHaveLength(1)
+    expect(fetches).toHaveLength(3)
 
     dispose()
   })

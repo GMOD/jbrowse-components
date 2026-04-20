@@ -102,12 +102,14 @@ separate invalidation token.
 output is always BP offsets from `regionStart` (no pixel coordinates cross
 the worker boundary), so most plugins never need a zoom check. Two do:
 
-- **Wiggle**: BigWig has discrete zoom levels (1/10/100/1000bp summaries).
-  The worker picks one based on `bpPerPx / resolution`, baking *granularity*
-  into the fetch. Zooming in past 2× (`view.bpPerPx < loadedBpPerPx / 2`)
-  leaves bins too coarse and forces a refetch; zooming out reuses the data
-  (fine bins downsample for free). One-sided check in
-  `LinearWiggleDisplay/model.ts`.
+- **Wiggle**: BigWig has discrete zoom levels; the worker picks one based
+  on `bpPerPx / resolution`, baking granularity into the fetch.
+  `isCacheValid` uses strict equality (`view.bpPerPx === loadedBpPerPx`)
+  — any zoom change invalidates every region so `FetchVisibleRegions`
+  refetches all visible regions in one batch, keeping adjacent regions
+  at the same bigwig zoom level. `@gmod/bbi`'s block cache and
+  `RemoteFileWithRangeCache`'s 256 KiB chunks absorb the per-zoom
+  refetch cost. See `architecture-decision-records/adr-008-wiggle-strict-bpperpx-equality.md`.
 
 - **Canvas**: the only `bpPerPx`-dependent worker decision is the amino-acid
   overlay (`shouldRenderPeptideBackground`). `isCacheValid` refetches only
@@ -118,6 +120,23 @@ worker output has no `bpPerPx`-dependent decisions (alignments layout is
 main-thread; HiC/LD/variants apply the zoom transform in the shader).
 `MultiRegionDisplayMixin`'s `FetchVisibleRegions` autorun calls the override
 per region and refetches stale ones.
+
+**Refresh without blanking.** `FetchVisibleRegions` re-queues stale
+regions but leaves `rpcDataMap` populated; `setRpcData` overwrites
+entries in place when results arrive, so each region swaps atomically
+with no empty frame. Two paths exist for *explicit* wipes, used only
+when prior data would be wrong to show:
+
+- `invalidateLoadedRegions` — clears bounds and cancels in-flight
+  fetches, but preserves `rpcDataMap`. Old pixels stay until the
+  refetch lands.
+- `clearAllRpcData` — the aggressive wipe: cancels, clears bounds,
+  clears `rpcDataMap`. Canvas goes empty. Used by `SettingsInvalidate`
+  and `DisplayedRegionsChange`, where stale data under new settings
+  would mislead.
+
+Wiggle's `bpPerPx` path stays in the first category: old bins upsample
+visually until new data streams in.
 
 **Derived-layout pattern.** Canvas splits raw fetch from laid-out data:
 `volatile rawRpcDataMap` → cached view `rpcDataMap` calls pure
