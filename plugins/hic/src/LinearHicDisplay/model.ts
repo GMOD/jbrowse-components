@@ -189,39 +189,30 @@ export default function stateModelFactory(
       },
       /**
        * #action
-       * Called by the React component when useGpuRenderer's factory resolves.
-       * The autorun tracks self.rpcData, self.colorScheme, and self.renderState
-       * via cached MST getters — rpcData and colorScheme are identity-diffed
-       * independently so a colorScheme change doesn't re-upload contact data.
+       * Called by the React hook (`useGpuModelLifecycle`) when the HAL
+       * resolves. Wires the backend into the mixin-owned autorun pair via
+       * `installGpuDisplay`.
        */
       startGpuBackendLifecycle(backend: HicBackend) {
-        self.startSingleDataGpuLifecycle<
-          HicBackend,
-          NonNullable<typeof self.renderState>
-        >({
-          backend,
-          uploads: [
-            {
-              getData: () => self.rpcData,
-              upload: (b, data) => {
-                const d = data as HicDataResult
-                b.uploadData({
-                  positions: d.positions,
-                  counts: d.counts,
-                  numContacts: d.numContacts,
-                })
-              },
-            },
-            {
-              getData: () => self.colorScheme ?? 'juicebox',
-              upload: (b, scheme) => {
-                b.uploadColorRamp(generateColorRamp(scheme as string))
-              },
-            },
-          ],
-          renderState: () => self.renderState,
-          render: (b, state) => {
+        self.installGpuDisplay<HicBackend>(backend, {
+          upload: b => {
+            const data = self.rpcData
+            if (data) {
+              b.uploadData({
+                positions: data.positions,
+                counts: data.counts,
+                numContacts: data.numContacts,
+              })
+            }
+            b.uploadColorRamp(generateColorRamp(self.colorScheme ?? 'juicebox'))
+          },
+          render: b => {
+            const state = self.renderState
+            if (!state) {
+              return false
+            }
             b.render(state)
+            return true
           },
         })
       },

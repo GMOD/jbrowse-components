@@ -200,28 +200,34 @@ export function linearSyntenyViewHelperModelFactory(
          */
         startGpuBackendLifecycle(backend: SyntenyBackend) {
           self.gpuBackend = backend
-          self.startMultiRegionGpuLifecycle<SyntenyBackend, SyntenyRenderState>(
-            {
-              backend,
-              uploads: [
-                {
-                  getData: () => self.geometryByDisplayKey,
-                  upload: (b, key, data: SyntenyInstanceData) => {
-                    b.uploadGeometry(key, data)
-                  },
-                  deleteOne: (b, key) => {
-                    b.deleteGeometry(key)
-                  },
-                },
-              ],
-              renderBlocks: () => [],
-              renderState: () => self.syntenyRenderState,
-              render: (b, _blocks, state) => {
-                b.resize(self.parentView.views[0]!.width, self.effectiveHeight)
-                b.render(state)
-              },
+          const lastKeys = new Set<number>()
+          self.installGpuDisplay<SyntenyBackend>(backend, {
+            upload: b => {
+              const currentKeys = new Set<number>()
+              for (const [key, data] of self.geometryByDisplayKey) {
+                b.uploadGeometry(key, data)
+                currentKeys.add(key)
+              }
+              for (const key of lastKeys) {
+                if (!currentKeys.has(key)) {
+                  b.deleteGeometry(key)
+                }
+              }
+              lastKeys.clear()
+              for (const key of currentKeys) {
+                lastKeys.add(key)
+              }
             },
-          )
+            render: b => {
+              const state = self.syntenyRenderState
+              if (!state) {
+                return false
+              }
+              b.resize(self.parentView.views[0]!.width, self.effectiveHeight)
+              b.render(state)
+              return true
+            },
+          })
         },
         stopGpuBackendLifecycle() {
           baseStop()

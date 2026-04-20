@@ -424,27 +424,27 @@ export default function stateModelFactory(
       },
 
       startGpuBackendLifecycle(backend: WiggleBackend) {
-        self.startMultiRegionGpuLifecycle<WiggleBackend, WiggleGPURenderState>({
-          backend,
-          uploads: [
-            {
-              getData: () => self.rpcDataMap,
-              upload: (b, displayedRegionIndex, data) => {
-                b.uploadRegion(
-                  displayedRegionIndex,
-                  data.regionStart,
-                  buildMultiSourceRenderData(data, self.gpuProps()),
-                )
-              },
-              prune: (b, activeDisplayedRegionIndices) => {
-                b.pruneRegions(activeDisplayedRegionIndices)
-              },
-            },
-          ],
-          renderBlocks: () => self.renderBlocks,
-          renderState: () => self.renderState,
-          render: (b, blocks, state) => {
-            b.renderBlocks(blocks, state)
+        self.installGpuDisplay<WiggleBackend>(backend, {
+          upload: b => {
+            const props = self.gpuProps()
+            const active: number[] = []
+            for (const [displayedRegionIndex, data] of self.rpcDataMap) {
+              b.uploadRegion(
+                displayedRegionIndex,
+                data.regionStart,
+                buildMultiSourceRenderData(data, props),
+              )
+              active.push(displayedRegionIndex)
+            }
+            b.pruneRegions(active)
+          },
+          render: b => {
+            const state = self.renderState
+            if (!state) {
+              return false
+            }
+            b.renderBlocks(self.renderBlocks, state)
+            return true
           },
         })
       },

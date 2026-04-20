@@ -78,22 +78,20 @@ export default function stateModelFactory(
        * #action
        */
       startGpuBackendLifecycle(backend: VariantMatrixBackend) {
-        self.startSingleDataGpuLifecycle<
-          VariantMatrixBackend,
-          NonNullable<typeof self.renderState>
-        >({
-          backend,
-          uploads: [
-            {
-              getData: () => self.cellData as MatrixCellData | undefined,
-              upload: (b, data) => {
-                b.uploadCellData(data as MatrixCellData)
-              },
-            },
-          ],
-          renderState: () => self.renderState,
-          render: (b, state) => {
+        self.installGpuDisplay<VariantMatrixBackend>(backend, {
+          upload: b => {
+            const data = self.cellData as MatrixCellData | undefined
+            if (data) {
+              b.uploadCellData(data)
+            }
+          },
+          render: b => {
+            const state = self.renderState
+            if (!state) {
+              return false
+            }
             b.render(state)
+            return true
           },
         })
       },

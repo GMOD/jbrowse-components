@@ -482,28 +482,25 @@ export default function baseStateModelFactory(
         },
 
         startGpuBackendLifecycle(backend: CanvasFeatureBackend) {
-          self.startMultiRegionGpuLifecycle<
-            CanvasFeatureBackend,
-            { scrollY: number; canvasWidth: number; canvasHeight: number }
-          >({
-            backend,
-            uploads: [
-              {
-                // Reads the derived laid-out map. Re-fires when raw data,
-                // bpPerPx, or label visibility changes — no other plumbing.
-                getData: () => self.laidOutDataMap,
-                upload: (b, displayedRegionIndex, data: FeatureDataResult) => {
-                  b.uploadRegion(displayedRegionIndex, data)
-                },
-                prune: (b, activeDisplayedRegionIndices) => {
-                  b.pruneRegions(activeDisplayedRegionIndices)
-                },
-              },
-            ],
-            renderBlocks: () => self.renderBlocks,
-            renderState: () => self.renderState,
-            render: (b, blocks, state) => {
-              b.renderBlocks(blocks, state)
+          self.installGpuDisplay<CanvasFeatureBackend>(backend, {
+            upload: b => {
+              const active: number[] = []
+              for (const [
+                displayedRegionIndex,
+                data,
+              ] of self.laidOutDataMap) {
+                b.uploadRegion(displayedRegionIndex, data)
+                active.push(displayedRegionIndex)
+              }
+              b.pruneRegions(active)
+            },
+            render: b => {
+              const state = self.renderState
+              if (!state) {
+                return false
+              }
+              b.renderBlocks(self.renderBlocks, state)
+              return true
             },
           })
         },

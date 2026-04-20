@@ -67,47 +67,33 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     })
     .actions(self => ({
       startGpuBackendLifecycle(backend: VariantBackend) {
-        self.startMultiRegionGpuLifecycle<VariantBackend, VariantRenderState>({
-          backend,
-          uploads: [
-            {
-              getData: () => {
-                const cellData = self.cellData as
-                  | { perRegionCellData: Record<number, VariantCellData> }
-                  | undefined
-                const map = new Map<number, VariantCellData>()
-                if (cellData) {
-                  for (const [k, v] of Object.entries(
-                    cellData.perRegionCellData,
-                  )) {
-                    map.set(Number(k), v)
-                  }
-                }
-                return map
-              },
-              upload: (b, n, d: VariantCellData) => {
-                b.uploadRegion(n, d)
-              },
-              prune: (b, active) => {
-                b.pruneRegions(active)
-              },
-            },
-          ],
-          renderBlocks: () => self.renderBlocks,
-          renderState: () => {
+        self.installGpuDisplay<VariantBackend>(backend, {
+          upload: b => {
+            const cellData = self.cellData as
+              | { perRegionCellData: Record<number, VariantCellData> }
+              | undefined
+            const active: number[] = []
+            if (cellData) {
+              for (const [k, v] of Object.entries(cellData.perRegionCellData)) {
+                const n = Number(k)
+                b.uploadRegion(n, v)
+                active.push(n)
+              }
+            }
+            b.pruneRegions(active)
+          },
+          render: b => {
             const view = getContainingView(self) as LinearGenomeViewModel
             if (!view.initialized) {
-              return undefined
+              return false
             }
-            return {
+            b.renderBlocks(self.renderBlocks, {
               canvasWidth: view.trackWidthPx,
               canvasHeight: self.availableHeight,
               rowHeight: self.rowHeight,
               scrollTop: self.scrollTop,
-            }
-          },
-          render: (b, blocks, state) => {
-            b.renderBlocks(blocks, state)
+            })
+            return true
           },
         })
       },

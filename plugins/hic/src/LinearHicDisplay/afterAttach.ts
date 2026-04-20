@@ -19,8 +19,6 @@ interface HicModel {
 }
 
 export function doAfterAttach(self: HicModel) {
-  // Fetch available normalizations
-
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   ;(async () => {
     try {

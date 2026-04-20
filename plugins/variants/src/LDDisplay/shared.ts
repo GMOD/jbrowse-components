@@ -299,30 +299,28 @@ export default function sharedModelFactory(
        * both uploads.
        */
       startGpuBackendLifecycle(backend: LDBackend) {
-        self.startSingleDataGpuLifecycle<
-          LDBackend,
-          NonNullable<typeof self.renderState>
-        >({
-          backend,
-          uploads: [
-            {
-              getData: () => self.rpcData,
-              upload: (b, data) => {
-                const d = data as LDDataResult
-                b.uploadData({
-                  ldValues: d.ldValues,
-                  boundaries: d.boundaries,
-                  numCells: d.numCells,
-                  positions: d.positions,
-                  cellSizes: d.cellSizes,
-                })
-                b.uploadColorRamp(generateLDColorRamp(d.metric, d.signedLD))
-              },
-            },
-          ],
-          renderState: () => self.renderState,
-          render: (b, state) => {
+        self.installGpuDisplay<LDBackend>(backend, {
+          upload: b => {
+            const d = self.rpcData as LDDataResult | undefined
+            if (!d) {
+              return
+            }
+            b.uploadData({
+              ldValues: d.ldValues,
+              boundaries: d.boundaries,
+              numCells: d.numCells,
+              positions: d.positions,
+              cellSizes: d.cellSizes,
+            })
+            b.uploadColorRamp(generateLDColorRamp(d.metric, d.signedLD))
+          },
+          render: b => {
+            const state = self.renderState
+            if (!state) {
+              return false
+            }
             b.render(state)
+            return true
           },
         })
       },

@@ -1016,66 +1016,6 @@ export default function stateModelFactory(
           // stream prunes. `AlignmentsRenderState` includes color scheme,
           // scrollTop, hover highlights, etc.; the util's split autoruns
           // mean hover-only changes skip the upload cache walk.
-          startGpuBackendLifecycle(backend: AlignmentsBackend) {
-            self.startMultiRegionGpuLifecycle<
-              AlignmentsBackend,
-              AlignmentsRenderState
-            >({
-              backend,
-              uploads: [
-                {
-                  getData: () => self.rpcDataMap,
-                  upload: (b, displayedRegionIndex, data: PileupDataResult) => {
-                    if (data.numReads === 0) {
-                      return
-                    }
-                    b.uploadRegion(displayedRegionIndex, data)
-                    if (data.maxY > self.maxY) {
-                      self.maxY = data.maxY
-                    }
-                    if (
-                      data.connectingLinePositions &&
-                      data.connectingLineYs &&
-                      data.numConnectingLines
-                    ) {
-                      b.uploadConnectingLinesForRegion(displayedRegionIndex, {
-                        regionStart: data.regionStart,
-                        connectingLinePositions: data.connectingLinePositions,
-                        connectingLineYs: data.connectingLineYs,
-                        numConnectingLines: data.numConnectingLines,
-                      })
-                    }
-                  },
-                  prune: (b, active) => {
-                    b.pruneRegions(active)
-                  },
-                },
-                {
-                  getData: () => self.arcsState.rpcDataMap,
-                  upload: (b, displayedRegionIndex, data: ArcsDataResult) => {
-                    b.uploadArcsFromTypedArraysForRegion(displayedRegionIndex, {
-                      regionStart: data.regionStart,
-                      arcX1: data.arcX1,
-                      arcX2: data.arcX2,
-                      arcColorTypes: data.arcColorTypes,
-                      arcIsArc: data.arcIsArc,
-                      numArcs: data.numArcs,
-                      linePositions: data.linePositions,
-                      lineYs: data.lineYs,
-                      lineColorTypes: data.lineColorTypes,
-                      numLines: data.numLines,
-                    })
-                  },
-                },
-              ],
-              renderBlocks: () => self.renderBlocks,
-              renderState: () => self.renderState,
-              render: (b, blocks, state) => {
-                b.renderBlocks(blocks, state)
-              },
-            })
-          },
-
           setShowYScalebar(show: boolean) {
             self.showYScalebar = show
           },
@@ -1190,6 +1130,68 @@ export default function stateModelFactory(
           },
         }
       })
+      .actions(self => ({
+        startGpuBackendLifecycle(backend: AlignmentsBackend) {
+          self.installGpuDisplay<AlignmentsBackend>(backend, {
+            upload: b => {
+              // Pileup + connecting lines: one entry per region from
+              // self.rpcDataMap.
+              const active: number[] = []
+              for (const [displayedRegionIndex, data] of self.rpcDataMap) {
+                active.push(displayedRegionIndex)
+                if (data.numReads === 0) {
+                  continue
+                }
+                b.uploadRegion(displayedRegionIndex, data)
+                if (data.maxY > self.maxY) {
+                  self.setMaxY(data.maxY)
+                }
+                if (
+                  data.connectingLinePositions &&
+                  data.connectingLineYs &&
+                  data.numConnectingLines
+                ) {
+                  b.uploadConnectingLinesForRegion(displayedRegionIndex, {
+                    regionStart: data.regionStart,
+                    connectingLinePositions: data.connectingLinePositions,
+                    connectingLineYs: data.connectingLineYs,
+                    numConnectingLines: data.numConnectingLines,
+                  })
+                }
+              }
+              b.pruneRegions(active)
+              // Arcs: independent source. Changes here re-fire the whole
+              // upload pass (including pileup), which is fine because the
+              // backend treats identity-stable pileup uploads as idempotent.
+              for (const [
+                displayedRegionIndex,
+                data,
+              ] of self.arcsState.rpcDataMap) {
+                b.uploadArcsFromTypedArraysForRegion(displayedRegionIndex, {
+                  regionStart: data.regionStart,
+                  arcX1: data.arcX1,
+                  arcX2: data.arcX2,
+                  arcColorTypes: data.arcColorTypes,
+                  arcIsArc: data.arcIsArc,
+                  numArcs: data.numArcs,
+                  linePositions: data.linePositions,
+                  lineYs: data.lineYs,
+                  lineColorTypes: data.lineColorTypes,
+                  numLines: data.numLines,
+                })
+              }
+            },
+            render: b => {
+              const state = self.renderState
+              if (!state) {
+                return false
+              }
+              b.renderBlocks(self.renderBlocks, state)
+              return true
+            },
+          })
+        },
+      }))
       .actions(self => ({
         async selectFeatureById(featureId: string) {
           const session = getSession(self)

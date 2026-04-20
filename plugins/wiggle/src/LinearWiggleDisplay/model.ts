@@ -20,6 +20,8 @@ import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { observable } from 'mobx'
 
+import { buildSourceRenderData } from './components/buildSourceRenderData.ts'
+
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
 import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
@@ -30,13 +32,9 @@ import {
   getScale,
   isDefaultBicolor,
 } from '../util.ts'
-import { buildSourceRenderData } from './components/buildSourceRenderData.ts'
 
 import type { WiggleDataResult } from '../RenderWiggleDataRPC/types.ts'
-import type {
-  WiggleBackend,
-  WiggleGPURenderState,
-} from '../shared/wiggleBackendTypes.ts'
+import type { WiggleBackend } from '../shared/wiggleBackendTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
@@ -333,40 +331,6 @@ export default function stateModelFactory(
         self.loadedBpPerPx = undefined
       },
 
-      startGpuBackendLifecycle(backend: WiggleBackend) {
-        self.startMultiRegionGpuLifecycle<WiggleBackend, WiggleGPURenderState>({
-          backend,
-          uploads: [
-            {
-              getData: () => self.rpcDataMap,
-              // mobx tracks every observable `upload` reads — both
-              // `data` (per-region) and `self.gpuProps()` (color,
-              // summaryScoreMode, ...). When any of them changes the
-              // autorun re-fires and re-uploads. No cache, no diff.
-              //
-              // Worker-affecting settings (rpcProps) take a separate
-              // path: SettingsInvalidate clears rpcDataMap and lets
-              // fetch re-run.
-              upload: (b, displayedRegionIndex, data) => {
-                b.uploadRegion(
-                  displayedRegionIndex,
-                  data.regionStart,
-                  buildSourceRenderData(data, self.gpuProps()),
-                )
-              },
-              prune: (b, activeDisplayedRegionIndices) => {
-                b.pruneRegions(activeDisplayedRegionIndices)
-              },
-            },
-          ],
-          renderBlocks: () => self.renderBlocks,
-          renderState: () => self.renderState,
-          render: (b, blocks, state) => {
-            b.renderBlocks(blocks, state)
-          },
-        })
-      },
-
       reload() {
         self.setError(null)
         self.clearAllRpcData()
@@ -631,6 +595,31 @@ export default function stateModelFactory(
       async renderSvg(opts?: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
         return renderSvg(self as LinearWiggleDisplayModel, opts)
+      },
+      startGpuBackendLifecycle(backend: WiggleBackend) {
+        self.installGpuDisplay<WiggleBackend>(backend, {
+          upload: b => {
+            const props = self.gpuProps()
+            const active: number[] = []
+            for (const [displayedRegionIndex, data] of self.rpcDataMap) {
+              b.uploadRegion(
+                displayedRegionIndex,
+                data.regionStart,
+                buildSourceRenderData(data, props),
+              )
+              active.push(displayedRegionIndex)
+            }
+            b.pruneRegions(active)
+          },
+          render: b => {
+            const state = self.renderState
+            if (!state) {
+              return false
+            }
+            b.renderBlocks(self.renderBlocks, state)
+            return true
+          },
+        })
       },
     }))
 }

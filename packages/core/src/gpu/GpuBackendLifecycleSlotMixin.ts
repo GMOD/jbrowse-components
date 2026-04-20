@@ -1,101 +1,103 @@
-import { types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
-import {
-  type StartGpuBackendAutorunLifecycleArgs,
-  startGpuBackendAutorunLifecycle,
-} from './startGpuBackendAutorunLifecycle.ts'
-import {
-  type StartGpuSingleDataBackendAutorunLifecycleArgs,
-  startGpuSingleDataBackendAutorunLifecycle,
-} from './startGpuSingleDataBackendAutorunLifecycle.ts'
-
-import type { GpuBackendLifecycleHandle } from './gpuBackendLifecycleHandle.ts'
+export interface InstallGpuDisplayCallbacks<B> {
+  upload: (backend: B) => void
+  render: (backend: B) => boolean | void
+}
 
 /**
- * Owns the GPU draw lifecycle on any display that paints to a canvas. Three
- * things live here because they share one concern ("a backend is uploading
- * and rendering; when is its canvas considered drawn?"):
+ * Owns the GPU draw lifecycle for any display that paints to a canvas.
  *
- *  - `canvasDrawn` — observable flag read by overlays/loading UI,
- *  - `markCanvasDrawn()` — idempotent write (no observer churn once true),
- *  - `gpuBackendLifecycleHandle` — the autorun pair produced by either
- *    family utility (multi-region or single-data global).
+ * Plugins compose this mixin (directly or via `MultiRegionDisplayMixin` /
+ * `GlobalDataDisplayMixin`) and call
+ * `self.installGpuDisplay(backend, { upload, render })` from their own
+ * `startGpuBackendLifecycle(backend)` action. The mixin owns:
  *
- * Plugins call `self.startMultiRegionGpuLifecycle({...})` or
- * `self.startSingleDataGpuLifecycle({...})` in their own
- * `startGpuBackendLifecycle(backend)` action. The wrapper starts the
- * underlying utility, wraps the plugin's `render` to fire
- * `markCanvasDrawn` after each draw call, and assigns the returned handle
- * into the slot. Because each util only calls `render` once data is
- * actually on the GPU (multi-region: ≥1 region uploaded; single-data:
- * every entry has data), `canvasDrawn` flips precisely when the canvas
- * holds real pixels — plugins gate visibility by returning `undefined`
- * from `renderState` (see wiggle's domain gate).
+ *  - `canvasDrawn` — observable flag read by overlays / loading UI.
+ *  - `currentGpuBackend` — the backend reference, updated on context-loss
+ *    recovery. Autoruns read it each tick so they re-fire against the new
+ *    one without being reinstalled.
+ *  - `renderBump` — counter the render autorun observes; bumped by
+ *    `renderNow()` (tab-visibility restore) and after every upload
+ *    (ensures render re-fires when an upload happens but renderState
+ *    identity stays stable).
+ *  - `gpuAutorunsInstalled` — guards `installGpuDisplay` so the autorun
+ *    pair is spawned once per model instance, not once per backend
+ *    assignment.
+ *
+ * The `upload` callback runs in one autorun, `render` in another. Inside
+ * each, every observable read is auto-tracked by MobX — no getter-layer
+ * indirection, no multi-entry config. `render` returns `false` to skip
+ * this tick (e.g. `renderState` not yet computed); any other return marks
+ * the canvas drawn.
  */
 export function GpuBackendLifecycleSlotMixin() {
   return types
     .model('GpuBackendLifecycleSlot', {})
     .volatile(() => ({
       canvasDrawn: false,
-      gpuBackendLifecycleHandle: undefined as
-        | GpuBackendLifecycleHandle
-        | undefined,
+      currentGpuBackend: undefined as unknown,
+      renderBump: 0,
+      gpuAutorunsInstalled: false,
     }))
     .actions(self => ({
-      // Idempotent "first draw has happened" signal. Guards against the
-      // per-commit observable write + dependent observer churn that a naive
-      // assignment would produce once the canvas is drawn.
       markCanvasDrawn() {
         if (!self.canvasDrawn) {
           self.canvasDrawn = true
         }
       },
-
-      assignGpuBackendLifecycleHandle(handle: GpuBackendLifecycleHandle) {
-        self.gpuBackendLifecycleHandle?.dispose()
-        self.gpuBackendLifecycleHandle = handle
-      },
       stopGpuBackendLifecycle() {
-        self.gpuBackendLifecycleHandle?.dispose()
-        self.gpuBackendLifecycleHandle = undefined
+        self.currentGpuBackend = undefined
       },
       renderNow() {
-        self.gpuBackendLifecycleHandle?.renderNow()
+        self.renderBump += 1
       },
     }))
     .actions(self => ({
-      startMultiRegionGpuLifecycle<BackendType, RenderStateType>(
-        args: StartGpuBackendAutorunLifecycleArgs<BackendType, RenderStateType>,
-      ) {
-        const userRender = args.render
-        self.assignGpuBackendLifecycleHandle(
-          startGpuBackendAutorunLifecycle<BackendType, RenderStateType>({
-            ...args,
-            render: (b, blocks, state) => {
-              userRender(b, blocks, state)
-              self.markCanvasDrawn()
+      installGpuDisplay<B>(backend: B, cbs: InstallGpuDisplayCallbacks<B>) {
+        self.currentGpuBackend = backend
+        if (self.gpuAutorunsInstalled) {
+          return
+        }
+        self.gpuAutorunsInstalled = true
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              const b = self.currentGpuBackend as B | undefined
+              if (b === undefined) {
+                return
+              }
+              cbs.upload(b)
+              // Force the render autorun to re-fire after each upload.
+              // Needed when the render callback's observable dependencies
+              // stay identity-stable across an upload (e.g. renderState
+              // returning undefined before and after the first data
+              // arrives because autoscale hasn't resolved). Without this,
+              // first paint can be delayed until a user interaction
+              // shifts a render dep.
+              self.renderNow()
             },
-          }),
+            { name: 'GpuBackendLifecycleSlot:upload' },
+          ),
         )
-      },
-      startSingleDataGpuLifecycle<BackendType, RenderStateType>(
-        args: StartGpuSingleDataBackendAutorunLifecycleArgs<
-          BackendType,
-          RenderStateType
-        >,
-      ) {
-        const userRender = args.render
-        self.assignGpuBackendLifecycleHandle(
-          startGpuSingleDataBackendAutorunLifecycle<
-            BackendType,
-            RenderStateType
-          >({
-            ...args,
-            render: (b, state) => {
-              userRender(b, state)
-              self.markCanvasDrawn()
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              const b = self.currentGpuBackend as B | undefined
+              void self.renderBump
+              if (b === undefined) {
+                return
+              }
+              const drew = cbs.render(b)
+              if (drew !== false) {
+                self.markCanvasDrawn()
+              }
             },
-          }),
+            { name: 'GpuBackendLifecycleSlot:render' },
+          ),
         )
       },
     }))

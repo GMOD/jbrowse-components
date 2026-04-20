@@ -356,23 +356,16 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
 
       startGpuBackendLifecycle(backend: MultiSyntenyBackend) {
-        self.startMultiRegionGpuLifecycle<
-          MultiSyntenyBackend,
-          NonNullable<typeof self.syntenyRenderState>
-        >({
-          backend,
-          uploads: [
-            // Geometry: per-region pack of features + colorBy + palette.
-            // mobx tracks displayedGenomes, colorBy, showSnps, palette
-            // reads inside the upload body, so any of those changing
-            // re-fires all region uploads.
-            {
-              getData: () => self.rpcDataMap,
-              upload: (b, n, data: SyntenyRegionData) => {
-                const palette = self.colorPalette
-                if (!palette) {
-                  return
-                }
+        self.installGpuDisplay<MultiSyntenyBackend>(backend, {
+          upload: b => {
+            // Geometry + coverage/SNPs/indicators share one autorun; any
+            // observable read inside re-fires the whole pass. Backend
+            // methods are idempotent against unchanged inputs.
+            const palette = self.colorPalette
+            const view = getContainingView(self) as LGV
+            const activeCount = self.rpcDataMap.size
+            for (const [n, data] of self.rpcDataMap) {
+              if (palette) {
                 const geometry = prepareBlockGeometry(
                   data.genomeFeatures,
                   self.displayedGenomes,
@@ -384,31 +377,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                   ...geometry,
                   regionStart: data.regionStart,
                 })
-              },
-              // rpcDataMap never shrinks partially — entries are either all
-              // cleared (clearDisplaySpecificData) or grow. Calling
-              // clearAllBlocks on empty active set frees GPU buffers when
-              // the display region changes.
-              prune: (b, activeDisplayedRegionIndices) => {
-                if (activeDisplayedRegionIndices.length === 0) {
-                  b.clearAllBlocks()
-                }
-              },
-            },
-            // Coverage / SNPs / indicators: gated on showCoverage.
-            // coverageGlobalMax is a cached view that aggregates across
-            // all regions; reading it tracks every entry's max, so any
-            // region's data change re-fires all coverage uploads.
-            {
-              getData: () => self.rpcDataMap,
-              upload: (b, n, data: SyntenyRegionData) => {
-                if (!self.showCoverage) {
-                  return
-                }
-                const view = getContainingView(self) as LGV
-                if (!view.initialized) {
-                  return
-                }
+              }
+              if (self.showCoverage && view.initialized) {
                 const coverage = packCoverageForGpu(
                   data.coverageDepths,
                   data.coverageStartOffset,
@@ -440,15 +410,19 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                     data.regionStart,
                   ),
                 )
-              },
-            },
-          ],
-          // Synteny draws against view.staticBlocks.contentBlocks (held
-          // in syntenyRenderState), not framework RenderBlocks.
-          renderBlocks: () => [],
-          renderState: () => self.syntenyRenderState,
-          render: (b, _blocks, state) => {
+              }
+            }
+            if (activeCount === 0) {
+              b.clearAllBlocks()
+            }
+          },
+          render: b => {
+            const state = self.syntenyRenderState
+            if (!state) {
+              return false
+            }
             b.renderBlocks(state)
+            return true
           },
         })
       },

@@ -418,28 +418,36 @@ export default function stateModelFactory(pm: PluginManager) {
       // and render against the shared backend.
       .actions(self => ({
         startGpuBackendLifecycle(backend: DotplotBackend) {
-          self.startMultiRegionGpuLifecycle<DotplotBackend, DotplotRenderState>(
-            {
-              backend,
-              uploads: [
-                {
-                  getData: () => self.geometryByTrackIndex,
-                  upload: (b, key, data: DotplotGeometryData) => {
-                    b.uploadGeometry(key, data)
-                  },
-                  deleteOne: (b, key) => {
-                    b.deleteGeometry(key)
-                  },
-                },
-              ],
-              renderBlocks: () => [],
-              renderState: () => self.dotplotRenderState,
-              render: (b, _blocks, state) => {
-                b.resize(self.viewWidth, self.viewHeight)
-                b.render(state)
-              },
+          // Previously-uploaded keys, so we can fire deleteGeometry for
+          // entries that disappear between autorun ticks.
+          const lastKeys = new Set<number>()
+          self.installGpuDisplay<DotplotBackend>(backend, {
+            upload: b => {
+              const currentKeys = new Set<number>()
+              for (const [key, data] of self.geometryByTrackIndex) {
+                b.uploadGeometry(key, data)
+                currentKeys.add(key)
+              }
+              for (const key of lastKeys) {
+                if (!currentKeys.has(key)) {
+                  b.deleteGeometry(key)
+                }
+              }
+              lastKeys.clear()
+              for (const key of currentKeys) {
+                lastKeys.add(key)
+              }
             },
-          )
+            render: b => {
+              const state = self.dotplotRenderState
+              if (!state) {
+                return false
+              }
+              b.resize(self.viewWidth, self.viewHeight)
+              b.render(state)
+              return true
+            },
+          })
         },
       }))
       .actions(self => ({
