@@ -48,7 +48,7 @@ interface FeatureInfo {
 
 export interface LinearAlignmentsDisplayModel {
   height: number
-  rpcDataMap: Map<number, PileupDataResult>
+  laidOutPileupMap: Map<number, PileupDataResult>
   isLoading: boolean
   error: Error | null
   featureHeightSetting: number
@@ -212,7 +212,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     }
 
     const regions = view.visibleRegions
-    const dataMap = model.rpcDataMap
+    const dataMap = model.laidOutPileupMap
 
     for (const r of regions) {
       if (canvasX >= r.screenStartPx && canvasX < r.screenEndPx) {
