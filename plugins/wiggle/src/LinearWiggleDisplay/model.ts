@@ -208,26 +208,21 @@ export default function stateModelFactory(
       // Autoscale range = max/min over whatever is currently on screen.
       // Cached view, recomputes when any input moves. Replaces the
       // previous VisibleScoreRange autorun + volatile.
-      //
-      // Iterates `mergedVisibleRegions` (one entry per displayedRegionIndex with
-      // the merged on-screen bp span) rather than `dynamicBlocks.contentBlocks`
-      // — a single region can appear as multiple content blocks, but for
-      // autoscale we only need the merged visible slice.
       get visibleScoreRange(): [number, number] | undefined {
         const view = getContainingView(self) as LGV
         if (!view.initialized || self.rpcDataMap.size === 0) {
           return undefined
         }
         const numStdDev = self.getConfWithOverride<number>('numStdDev')
-        const visibleEntries = view.mergedVisibleRegions.flatMap(vr => {
+        const visibleEntries = view.visibleRegions.flatMap(vr => {
           const data = self.rpcDataMap.get(vr.displayedRegionIndex)
           if (!data) {
             return []
           }
           return [
             {
-              visStart: vr.start - data.regionStart,
-              visEnd: vr.end - data.regionStart,
+              visStart: Math.floor(vr.start) - data.regionStart,
+              visEnd: Math.ceil(vr.end) - data.regionStart,
               data,
             },
           ]

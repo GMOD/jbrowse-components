@@ -27,6 +27,10 @@ is too complex.
 Reuse breakpoint logic for "Link with curved lines" mode (better orientation
 encoding than straight connectors).
 
+**Long-range inter-region arcs**
+UI toggle to draw arcs between distant regions. Missing in 1kg demo — may be a
+bug or an unimplemented feature; needs reproduction.
+
 **Auto-scale noise**
 Compute per-track noise estimate (mean insertion rate); auto-scale
 `featureFrequencyThreshold` (noisy → strict, clean → lenient).
@@ -68,6 +72,10 @@ Smoothing option for wiggle/coverage (compute rolling mean, render as line).
 **Height resize**
 Double-click resize handle, drag to resize, prevent shrinking, auto-shrink
 toggle.
+
+**Canvas offscreen buffer**
+Add margin rendering to avoid feature re-juggling on small pans/zooms (like
+`plugins/sequence`).
 
 **Global scrollZoom**
 Per-view → global setting.

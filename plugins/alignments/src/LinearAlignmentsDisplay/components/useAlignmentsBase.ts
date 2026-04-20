@@ -111,7 +111,6 @@ export interface LinearAlignmentsDisplayModel {
   flipStrandLongReadChains: boolean
   setMaxY: (val: number) => void
   setColorPalette: (palette: ColorPalette | null) => void
-  setCanvasDrawn: (val: boolean) => void
   setCurrentRangeY: (rangeY: [number, number]) => void
   setCoverageHeight: (height: number) => void
   setArcsHeight: (height: number) => void

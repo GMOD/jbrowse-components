@@ -1,24 +1,23 @@
 # JBrowse 2 — Agent PRD (root)
 
-This is the governing document for agent work on the `webgl-poc` branch.
-Read this first. It tells you **what to work on, what rules to follow, and
-where to look for detail**.
+Governs agent work on `webgl-poc`. Read first: what to work on, rules to
+follow, where to look for detail.
 
-**Branch:** `webgl-poc` | **Updated:** 2026-04-18
+**Branch:** `webgl-poc` | **Updated:** 2026-04-20
 
 ---
 
 ## 1. Mission
 
-Migrate JBrowse 2 from block-based HTML canvas rendering to a GPU-accelerated
-pipeline with three backends (WebGPU → WebGL2 → Canvas 2D fallback; SVG export
-via Canvas 2D). Keep all existing track types working across all backends.
+Migrate JBrowse 2 from block-based HTML canvas rendering to a GPU pipeline
+(WebGPU → WebGL2 → Canvas 2D; SVG export via Canvas 2D). Keep every existing
+track type working on every backend.
 
 ---
 
 ## 2. Where the code lives
 
-Agents should prefer verifying against source over memory.
+Verify against source, not memory.
 
 | Concern                     | Path                                                     |
 | --------------------------- | -------------------------------------------------------- |
@@ -41,121 +40,108 @@ Agents should prefer verifying against source over memory.
 
 ## 3. Active priorities
 
-Work in this order unless the user requests otherwise.
+Work top-down unless the user redirects.
 
 ### P1 — In-flight refactors
 
-- **Dotplot: adopt shared MST autorun lifecycle.** Currently has an open-coded
+- **Dotplot: adopt shared MST autorun lifecycle.** Today: open-coded
   view-level draw autorun + per-display upload autorun. Plan:
   `DOTPLOT_REFACTOR.md`.
 - **Synteny PR-B: view owns one canvas + backend.** PR-A (keyed backend +
-  MST-driven autorun) has landed. Plan: `SYNTENY_REFACTOR_PR_B.md`.
-- **Backend conformance test suite** before shipping dotplot/synteny to catch
-  per-backend drift. One `describe.each(ALL_BACKENDS)` covering idempotent
-  upload, no-op render-before-ready, prune/delete, `dispose()` buffer release,
-  context-loss reinit. Lives at `packages/core/src/gpu/backendConformance.test.ts`.
-- **Pickable backend mixin** (`Pickable<HitT>` with
-  `pick(x, y): Promise<Hit | undefined>`). Synteny needs it; unifies async
+  MST-driven autorun) landed. Plan: `SYNTENY_REFACTOR_PR_B.md`.
+- **Backend conformance suite** before shipping dotplot/synteny — one
+  `describe.each(ALL_BACKENDS)` covering idempotent upload, no-op
+  render-before-ready, prune/delete, `dispose()` buffer release, context-loss
+  reinit. Target: `packages/core/src/gpu/backendConformance.test.ts`.
+- **Pickable backend mixin** — `Pickable<HitT>` with
+  `pick(x, y): Promise<Hit | undefined>`. Synteny needs it; unifies async
   WebGPU readback with sync Canvas2D picking.
 
 ### P2 — Config migration
 
-- **PileupRenderer → display-level config migration.** Old configs with
-  `configuration.renderer.type === 'PileupRenderer'` silently drop settings
-  (`featureHeight`, `featureSpacing`, `maxHeight`, `colorBy`, `filterBy`). Add
-  `migrateDisplayConfiguration()` in `migrateSessionSnapshot.ts`; wire into
+- **PileupRenderer → display-level config.** Old configs with
+  `configuration.renderer.type === 'PileupRenderer'` silently drop
+  `featureHeight`, `featureSpacing`, `maxHeight`, `colorBy`, `filterBy`. Add
+  `migrateDisplayConfiguration()` in `migrateSessionSnapshot.ts` and wire into
   `migrateTrackSnapshot`. Verify `config_demo.json` and `volvox/config.json`
   load with JEXL color expressions intact. See `CONFIG_PATTERN.md`.
-- **Verify renderer property promotion** for `CanvasFeatureRenderer`,
+- **Renderer property promotion check** for `CanvasFeatureRenderer`,
   `SvgFeatureRenderer`, `ArcRenderer`, `LollipopRenderer` — no migration
-  needed, but check promotion path works.
+  expected, but confirm promotion works.
 
 ### P3 — Shader authoring
 
-All production draw shaders are now Slang-authored. Remaining:
+Draw shaders are all Slang. Remaining:
 
-- **Compute shaders** (`plugins/variants/src/VariantRPC/ldComputeShader.ts`,
-  `ldPhasedComputeShader.ts`) can migrate to Slang authoring (WebGPU-only, set
-  `//! targets: wgsl`). Not urgent — they work as hand-written WGSL.
-- **Build-time WGSL struct size validator** — Jest test asserting
-  `sizeof(instanceStruct) % 16 === 0`. Currently only caught at runtime in
+- **Compute shaders** (`plugins/variants/src/VariantRPC/{ldComputeShader,
+  ldPhasedComputeShader}.ts`) can migrate to Slang (WebGPU-only,
+  `//! targets: wgsl`). Not urgent.
+- **Build-time WGSL struct-size validator** — Jest test asserting
+  `sizeof(instanceStruct) % 16 === 0`. Currently caught only at runtime in
   `WebGPUHal.create`.
 
 ### P4 — CI / Test infrastructure
 
-- **WebGPU CI.** Chrome flags set in `runner.ts` but Vulkan missing. Add
+- **WebGPU CI.** Chrome flags set in `runner.ts`, Vulkan missing. Add
   Lavapipe (`mesa-vulkan-drivers`) + `xvfb-run` with
   `VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json`. See
   `TEST_INFRASTRUCTURE.md`.
-- **Test suite speed & stability.** Browser suite is slow; some flakes.
+- **Browser suite speed & flake reduction.**
 
 ### P5 — Cleanup (after P1 ships)
 
-- `displayedRegionIndex` → `displayedRegionIndex` rename (~550 sites, 73 files).
-  Mechanical. Do **last** so other migrations don't churn it mid-flight.
 - Delete dead code: `uploadChangedRegions.ts`, `uploadRegionDataToGPU`,
   `pruneRegionMap` helpers, `renderProps()` on GPU displays, `dataVersion`
   debug counter.
 - Move tab-visibility listener into the HAL (drops `useTabVisibilityRerender`
-  hook and `renderNow()` from the public mixin API).
-- See `TODO.md` for the full category-organized list.
+  + `renderNow()` from the public mixin API).
+- Full backlog in `TODO.md`.
 
 ---
 
 ## 4. Non-negotiable invariants
 
-These are correctness contracts. Violating them produces silent bugs.
+Correctness contracts — violations cause silent bugs.
 
 - **MST owns the render autorun.** Lifecycle flows through cached getters +
   util autoruns, not React `useEffect`.
-- **Per-region upload values must be freshly constructed, never mutated.**
-  The upload autorun's identity diff depends on reference inequality.
+- **Per-region upload values must be freshly constructed, never mutated** —
+  the upload autorun diffs by reference identity.
 - **Render-state changes don't re-run upload.** The util splits upload and
-  render autoruns precisely to keep hover/selection cheap. Don't fold them.
-- **Plugins only call `startGpuBackendLifecycle(backend)`.** The rest (handle
-  slot, dispose, `markCanvasDrawn`, tab-visibility rerender) lives in the
+  render autoruns to keep hover/selection cheap; don't fold them.
+- **Plugins only call `startGpuBackendLifecycle(backend)`.** Handle slot,
+  dispose, `markCanvasDrawn`, tab-visibility rerender all live in the
   mixin/util.
 - **Structural types across lazy boundaries.** Importing MST model types
-  across lazy imports is a circular-reference trap — use structural
-  (duck-typed) interfaces instead.
-- **Shared backend (dotplot, synteny PR-B) needs per-key delete, not prune.**
-  An active-set prune would wipe sibling displays' data.
+  across lazy imports is a circular-reference trap — use duck-typed
+  interfaces.
+- **Shared backends (dotplot, synteny PR-B) use per-key delete, not prune.**
+  Active-set prune would wipe sibling displays' data.
 - **Render fires only after data is on the GPU.** Multi-region waits for
-  ≥1 upload; single-data waits for every entry; `renderState` returning
-  `undefined` suppresses both. `markCanvasDrawn` is wired post-render by
-  the slot mixin — never call it inline from plugin code.
+  ≥1 upload, single-data waits for every entry, `renderState: undefined`
+  suppresses both. The slot mixin wires `markCanvasDrawn` post-render —
+  never call it inline.
 - **`readConfObject` / `getConf` are hot-path traversals.** Cache outside
-  loops. Prefer `getConfSnapshot` + `readConfigValue` on plain objects at the
-  rendering layer (see `CONFIG_PATTERN.md`).
+  loops; prefer `getConfSnapshot` + `readConfigValue` on plain objects at
+  the rendering layer (`CONFIG_PATTERN.md`).
 
-Coding rules from `CLAUDE.md`:
-
-- No explicit TypeScript return types; no `any`/typecasts.
-- Minimal comments; self-explanatory code.
-- Do not "early return"; nest `if` instead.
-- Do not `push(...list)` (stack overflow) — loop and push.
-- Prefer MobX `autorun` over `reaction`. Be wary of `useEffect` with MST.
-- Do not add try/catch inside MST getters; push to time-of-use.
-- Prefer `node --experimental-strip-types` over `tsx` / `ts-node`.
-- `tsc` and tests are slow — keep scope narrow.
+Coding conventions live in `CLAUDE.md` (root) and `~/.claude/CLAUDE.md` —
+follow them.
 
 ---
 
 ## 5. Definition of done
 
-Before declaring a task complete:
-
-1. **Type check** narrowly: `pnpm tsc -b` scoped to the touched packages, or
-   project-wide once locally.
-2. **Relevant unit tests** pass (`pnpm test -- <path>`).
-3. **Browser test** where UI behavior changed. Run with the backend(s) you
-   touched: `node --experimental-strip-types browser-tests/runner.ts
-   --filter=<suite>` (see `TEST_INFRASTRUCTURE.md` for backend flags).
-4. **Lint** with `--cache --fix` on the changed files.
-5. **Snapshots** regenerated only when the change is intentional and visually
-   verified (`--update-snapshots`).
-6. **Invariants above** preserved. If you changed a lifecycle or upload path,
-   re-read §4.
+- **Type check** the touched packages (`pnpm tsc -b` scoped), full project
+  once locally.
+- **Unit tests** for changed paths (`pnpm test -- <path>`).
+- **Browser test** when UI behavior changed, on the backend(s) you touched
+  (`node --experimental-strip-types browser-tests/runner.ts --filter=<suite>`;
+  flags in `TEST_INFRASTRUCTURE.md`).
+- **Lint** with `--cache --fix` on changed files.
+- **Snapshots** regenerated only after intentional, visually verified change
+  (`--update-snapshots`).
+- **§4 invariants** preserved — re-read §4 after lifecycle or upload changes.
 
 Do **not** open a PR (`gh pr create`) unless explicitly asked.
 
@@ -163,27 +149,24 @@ Do **not** open a PR (`gh pr create`) unless explicitly asked.
 
 ## 6. Reading order for new agents
 
-1. This file (PRD.md).
-2. `ARCHITECTURE.md` — current GPU lifecycle pattern (canonical).
-3. `CONFIG_PATTERN.md` — how config flows from MST to renderers / workers.
-4. `TEST_INFRASTRUCTURE.md` — how to run browser and unit tests.
-5. `TODO.md` — categorized backlog.
-6. `architecture-decision-records/` — design decisions (ADR-001 … ADR-005).
-7. Active plans only if the task touches them:
-   `DOTPLOT_REFACTOR.md`, `SYNTENY_REFACTOR_PR_B.md`, `wiggle-core-plan.md`.
-8. `OTHER_IDEAS.md` — future directions, not current work.
-9. `completed/` — historical migration state; consult if the change retraces
-   old ground.
+- `PRD.md` (this file).
+- `ARCHITECTURE.md` — canonical GPU lifecycle.
+- `CONFIG_PATTERN.md` — config flow from MST → renderers / workers.
+- `TEST_INFRASTRUCTURE.md` — browser + unit test invocation.
+- `TODO.md` — categorized backlog.
+- `architecture-decision-records/` — ADR-001 … ADR-005.
+- Active plans only when relevant: `DOTPLOT_REFACTOR.md`,
+  `SYNTENY_REFACTOR_PR_B.md`, `wiggle-core-plan.md`.
+- `OTHER_IDEAS.md` — future directions.
+- `completed/` — historical migration state.
 
 ---
 
 ## 7. When to update this PRD
 
-- A P1 item ships → move to `completed/COMPLETED.md`, promote the next priority.
-- A new invariant is discovered (a subtle bug whose fix is a contract) → add
-  to §4 with a one-line reason.
-- A plan in §3 completes → archive the plan doc under `completed/` and
-  remove the bullet.
-- A directory in §2 moves → update the path.
+- P1 item ships → move to `completed/COMPLETED.md`, promote next priority.
+- New invariant discovered → add to §4 with one-line reason.
+- Plan in §3 completes → archive plan doc in `completed/`, drop the bullet.
+- Path in §2 moves → update.
 
-Keep the doc under 200 lines. Detail belongs in the referenced docs, not here.
+Keep under 200 lines. Detail belongs in the referenced docs.

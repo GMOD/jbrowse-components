@@ -265,22 +265,19 @@ export default function stateModelFactory(
         return val === Number.MAX_VALUE ? undefined : val
       },
 
-      // See LinearWiggleDisplay's equivalent — walks mergedVisibleRegions
-      // (one entry per displayedRegionIndex with the merged on-screen bp span)
-      // and emits one autoscale entry per source per visible region.
       get visibleScoreRange(): [number, number] | undefined {
         const view = getContainingView(self) as LGV
         if (!view.initialized || self.rpcDataMap.size === 0) {
           return undefined
         }
         const numStdDev = self.getConfWithOverride<number>('numStdDev')
-        const visibleEntries = view.mergedVisibleRegions.flatMap(vr => {
+        const visibleEntries = view.visibleRegions.flatMap(vr => {
           const regionData = self.rpcDataMap.get(vr.displayedRegionIndex)
           if (!regionData) {
             return []
           }
-          const visStart = vr.start - regionData.regionStart
-          const visEnd = vr.end - regionData.regionStart
+          const visStart = Math.floor(vr.start) - regionData.regionStart
+          const visEnd = Math.ceil(vr.end) - regionData.regionStart
           return regionData.sources.map(source => ({
             visStart,
             visEnd,

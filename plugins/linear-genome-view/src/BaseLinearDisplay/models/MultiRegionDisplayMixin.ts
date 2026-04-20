@@ -173,9 +173,7 @@ export default function MultiRegionDisplayMixin() {
           )
 
           // Autorun: fetch data when the visible viewport isn't covered
-          // by loaded data. Uses mergedVisibleRegions (exact viewport) for
-          // the coverage check, and adds an explicit buffer when fetching
-          // so the loaded data extends beyond the viewport for smooth
+          // by loaded data. Fetches with an explicit buffer for smooth
           // scrolling without blank gaps.
           addDisposer(
             self,
@@ -200,8 +198,8 @@ export default function MultiRegionDisplayMixin() {
                 const trackAssemblyNames = getTrackAssemblyNames(
                   getContainingTrack(self),
                 )
-                const visibleMerged = view.mergedVisibleRegions
-                for (const vr of visibleMerged) {
+                const visibleBlocks = view.visibleRegions
+                for (const vr of visibleBlocks) {
                   const regionAsm = vr.assemblyName
                   if (
                     !trackAssemblyNames.includes(regionAsm) &&
@@ -228,14 +226,14 @@ export default function MultiRegionDisplayMixin() {
                   region: Region
                   displayedRegionIndex: number
                 }[] = []
-                for (const vr of visibleMerged) {
+                for (const vr of visibleBlocks) {
                   const loaded = untracked(() =>
                     self.loadedRegions.get(vr.displayedRegionIndex),
                   )
                   const boundsValid =
                     loaded?.refName === vr.refName &&
-                    vr.start >= loaded.start &&
-                    vr.end <= loaded.end
+                    Math.floor(vr.start) >= loaded.start &&
+                    Math.ceil(vr.end) <= loaded.end
                   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                   if (
                     boundsValid &&
@@ -300,10 +298,7 @@ export default function MultiRegionDisplayMixin() {
                   return
                 }
                 void view.bpPerPx
-                for (const r of view.mergedVisibleRegions) {
-                  void r.refName
-                  void r.displayedRegionIndex
-                }
+                void view.visibleRegions
                 if (untracked(() => self.regionTooLarge || self.error)) {
                   self.clearAllRpcData()
                 }

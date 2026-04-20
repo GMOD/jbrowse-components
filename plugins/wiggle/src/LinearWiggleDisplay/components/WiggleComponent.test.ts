@@ -44,7 +44,6 @@ function makeModel(
     setFeatureUnderMouse: () => {},
     reload: () => {},
     canvasDrawn: false,
-    setCanvasDrawn: () => {},
     startGpuBackendLifecycle: () => {},
     stopGpuBackendLifecycle: () => {},
     renderNow: () => {},

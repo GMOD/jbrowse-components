@@ -7,18 +7,31 @@ import {
 } from './coverageDownsampling.ts'
 
 describe('computeCoverageTicks', () => {
-  test('produces ticks with correct structure', () => {
+  test('produces nice round tick values', () => {
     const result = computeCoverageTicks(100, 150)
     expect(result.maxDepth).toBe(100)
-    expect(result.ticks.length).toBeGreaterThanOrEqual(2)
     expect(result.yTop).toBe(5)
     expect(result.yBottom).toBe(145)
+    // step = 50 for maxDepth=100; ticks at 0, 50, 100
+    expect(result.ticks.map(t => t.value)).toEqual([0, 50, 100])
   })
 
-  test('fewer ticks for small height', () => {
+  test('short height uses only 0 and max ticks', () => {
+    const small = computeCoverageTicks(50, 50)
+    expect(small.ticks.length).toBe(2)
+    expect(small.ticks[0]!.value).toBe(0)
+    expect(small.ticks[1]!.value).toBe(50)
+  })
+
+  test('tall height uses nice step (more ticks than short)', () => {
     const small = computeCoverageTicks(50, 50)
     const large = computeCoverageTicks(50, 150)
-    expect(small.ticks.length).toBeLessThanOrEqual(large.ticks.length)
+    expect(large.ticks.length).toBeGreaterThan(small.ticks.length)
+    // all values are multiples of a nice step
+    const step = large.ticks[1]!.value - large.ticks[0]!.value
+    for (const tick of large.ticks) {
+      expect(tick.value % step).toBe(0)
+    }
   })
 
   test('tick y values are within bounds', () => {

@@ -214,14 +214,14 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
                   return
                 }
 
-                const visible = view.mergedVisibleRegions
+                const visible = view.visibleRegions
                 let needFetch = false
                 for (const vr of visible) {
                   const bounds = self.loadedBounds.get(vr.displayedRegionIndex)
                   if (
                     bounds?.refName !== vr.refName ||
-                    vr.start < bounds.start ||
-                    vr.end > bounds.end
+                    Math.floor(vr.start) < bounds.start ||
+                    Math.ceil(vr.end) > bounds.end
                   ) {
                     needFetch = true
                     break

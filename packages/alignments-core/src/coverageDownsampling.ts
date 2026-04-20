@@ -8,22 +8,44 @@ export interface CoverageTicks {
   yBottom: number
 }
 
+function niceStep(maxDepth: number) {
+  const rough = maxDepth / 3
+  const exp = Math.floor(Math.log10(rough))
+  const pow = Math.pow(10, exp)
+  const frac = rough / pow
+  let niceFrac
+  if (frac < 1.5) {
+    niceFrac = 1
+  } else if (frac < 3) {
+    niceFrac = 2
+  } else if (frac < 7) {
+    niceFrac = 5
+  } else {
+    niceFrac = 10
+  }
+  return niceFrac * pow
+}
+
 export function computeCoverageTicks(
   maxDepth: number,
   coverageHeight: number,
 ): CoverageTicks {
   const effectiveHeight = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
+  const yOf = (value: number) =>
+    coverageHeight -
+    YSCALEBAR_LABEL_OFFSET -
+    (value / maxDepth) * effectiveHeight
 
-  const numTicks = coverageHeight < 70 ? 2 : 4
-  const tickStep = maxDepth / (numTicks - 1)
   const ticks: { value: number; y: number }[] = []
-  for (let i = 0; i < numTicks; i++) {
-    const value = Math.round(i * tickStep)
-    const y =
-      coverageHeight -
-      YSCALEBAR_LABEL_OFFSET -
-      (value / maxDepth) * effectiveHeight
-    ticks.push({ value, y })
+  if (coverageHeight < 70) {
+    ticks.push({ value: 0, y: yOf(0) })
+    ticks.push({ value: maxDepth, y: yOf(maxDepth) })
+  } else {
+    const step = niceStep(maxDepth)
+    const stepCount = Math.floor(maxDepth / step)
+    for (let i = 0; i <= stepCount; i++) {
+      ticks.push({ value: i * step, y: yOf(i * step) })
+    }
   }
 
   return {

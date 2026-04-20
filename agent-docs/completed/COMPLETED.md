@@ -4,6 +4,21 @@ Moved from PRD.md as items were finished.
 
 ---
 
+## `FetchMixin` extraction + `displayedRegionIndex` rename — COMPLETE
+
+Extracted `FetchMixin` from `MultiRegionDisplayMixin` into
+`plugins/linear-genome-view/src/BaseLinearDisplay/models/FetchMixin.ts`.
+The mixin owns `runFetch`, `cancelFetch`, `fetchSignal`, `isLoading`,
+`error`, `statusMessage` — the entire cancel-safe fetch state machine.
+`MultiRegionDisplayMixin` and `GlobalDataDisplayMixin` both compose it.
+The old `withFetchLifecycle(needed, work)` method is replaced by
+`self.runFetch(async ctx => { ... })`.
+
+`regionNumber` renamed to `displayedRegionIndex` site-wide (~550 sites,
+73 files) in the same commit.
+
+---
+
 ## HiC + LDDisplay monolithic-fetch untracked elimination — COMPLETE
 
 Created `GlobalDataDisplayMixin` (`plugins/linear-genome-view/src/BaseLinearDisplay/models/GlobalDataDisplayMixin.ts`) — canonical pattern for GPU displays that fetch one global dataset per viewport rather than per-region. Provides `withFetchLifecycle(work)` cancel-safe wrapper that owns token management, abort-exception swallowing, and `fetchGeneration` bump-on-complete. Both `plugins/hic/src/LinearHicDisplay/afterAttach.ts` and `plugins/variants/src/LDDisplay/afterAttach.ts` were refactored to use it, removing all `untracked` calls from those files. See ADR-007.
@@ -322,3 +337,57 @@ About track dialog includes user-modified display settings:
   `getTrackActionMenuItems` which forwards it to the About dialog.
 - Integration tests (6 tests) verify override inclusion, track property
   preservation, and cross-display-type behavior.
+
+---
+
+## 2026-04-19 Housekeeping
+
+**Dead code sweep — `setCanvasDrawn`**
+
+`setCanvasDrawn(val)` was declared in two component interfaces but never called
+(removed from `GpuBackendLifecycleSlotMixin` in an earlier refactor). Removed
+from `useAlignmentsBase.ts`, `buildSourceRenderData.ts`, and the
+`WiggleComponent.test.ts` mock object.
+
+**MultiRegionDisplayMixin `untracked` documentation**
+
+All three load-bearing `untracked` calls in `MultiRegionDisplayMixin.ts` now
+have `// Why:` comments:
+- `isLoading` — prevents re-trigger cycle
+- `loadedRegions` — avoids redundant fetch check when data arrives
+- `regionTooLarge/error` — clears only on viewport change, not when set
+
+**Y-scalebar nice tick labels**
+
+`computeCoverageTicks` (`packages/alignments-core/src/coverageDownsampling.ts`)
+now uses a `niceStep` function that rounds to 1/2/5×10ⁿ — producing labels like
+0, 50, 100 instead of 0, 33, 67, 100. Short height (<70px): 0 and max only.
+Tall height: step-aligned ticks from 0 to `floor(maxDepth/step)*step`.
+Tests updated to assert on specific nice values.
+
+**Paired arcs visibility** (committed 808246bbb5)
+
+Upward-pointing arcs (pairedArcsDown=false) were rendering at wrong height
+because `arc.slang` subtracted `u.covOffset` (coverage strip height) from
+`availH`, shrinking arc headroom. Removed the subtraction; arc baseline now
+aligns with the visual bottom of coverage bars.
+
+**`mergedVisibleRegions` removal**
+
+`mergedVisibleRegions` was a computed getter on `LinearGenomeViewModel` that
+iterated `dynamicBlocks.contentBlocks` and built a `Map` keying blocks by
+`displayedRegionIndex`, merging coordinates with `min(start)/max(end)`.
+
+Investigation showed the merge branch is dead code: `calculateDynamicBlocks`
+iterates once per `displayedRegions` entry and produces at most one
+`ContentBlock` per `displayedRegionIndex` (via a single `intersection2` call).
+Multiple blocks per index only occur in `calculateStaticBlocks` (which
+subdivides regions into fixed-size tiles for the scalebar UI), but
+`mergedVisibleRegions` read from `dynamicBlocks`, not `staticBlocks`.
+
+Removed `mergedVisibleRegions` entirely. All six call sites updated to use
+`view.visibleRegions` directly (which is just `dynamicBlocks.contentBlocks`
+mapped to include pixel fields). `bufferedVisibleRegions` updated to derive
+from `visibleRegions` with `Math.floor`/`Math.ceil` on the buffer arithmetic.
+The dead `void r.refName` / `void r.displayedRegionIndex` loops in
+`ClearBlockingStateOnViewportChange` replaced with `void view.visibleRegions`.

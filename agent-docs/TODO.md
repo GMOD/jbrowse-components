@@ -1,6 +1,6 @@
 # Active Work Items
 
-**Updated:** 2026-04-19 | Move completed items to
+**Updated:** 2026-04-19 (housekeeping pass) | Move completed items to
 `agent-docs/completed/COMPLETED.md`. Top priorities (P1–P5) live in `PRD.md`;
 this file is the categorized backlog.
 
@@ -76,24 +76,12 @@ render-before-ready no-op, `deleteRegion` / prune absent-key removal,
 `dispose()` buffer release (count via `MockHal`), context-loss reinit
 equivalence. Land before dotplot / synteny PR-B ship.
 
-**Pickable backend mixin.** `Pickable<HitT>` with
-`pick(x, y): Promise<Hit | undefined>`. Synteny already has its own pick
-implementation; formalise as a shared interface for the HAL layer. Low urgency
-until a second pickable backend is needed.
-
 **Tab visibility → HAL.** Move `visibilitychange` into the HAL; drops
 `useTabVisibilityRerender` and `renderNow()` from the public mixin API.
 Both still used in synteny (`LevelSyntenyCanvas.tsx`, `MultiSyntenyRendering.tsx`)
 and dotplot. Post-synteny.
 
-**`displayedRegionIndex` → `displayedRegionIndex`.** Mechanical rename (~550 sites,
-73 files). Do **last**.
-
-**Dead code sweep.** `setCanvasDrawn(val)` was removed from
-`GpuBackendLifecycleSlotMixin` but still declared in two component interfaces:
-`plugins/alignments/.../useAlignmentsBase.ts:114` and
-`plugins/wiggle/.../buildSourceRenderData.ts:51`. Drop both.
-`pruneRegionMap` is still actively used by 8 backends — keep it.
+**Dead code sweep.** `pruneRegionMap` is still actively used by 8 backends — keep it.
 
 **Structural `RenderSvgModel`.** Matrix + variants use the structural form;
 wiggle / alignments / canvas still import the MST type. Mechanical conversion;
@@ -102,10 +90,6 @@ hardens against type circularity across lazy boundaries.
 **`chainIdMap` perf.** Gate to `linkedRead + chain highlights active`.
 Currently iterates every read × region on every data update.
 
-**Compute shaders → Slang.** Migrate
-`plugins/variants/src/VariantRPC/ldComputeShader.ts`,
-`ldPhasedComputeShader.ts` to Slang authoring (WebGPU-only; set
-`//! targets: wgsl`). See ADR-005.
 
 **Eliminate remaining `untracked` usage.** Every `untracked` call is a
 reactivity bypass — a signal that something is structured wrong, not a
@@ -120,12 +104,6 @@ HiC + LDDisplay `untracked` calls eliminated (see ADR-007). Remaining:
   (same shape canvas already uses). Upload autorun reads the derived
   view; no imperative writeback. Deletes the sortLayout autorun and its
   untracked block. The bigger S1-alignments work — largest payoff.
-
-- `plugins/linear-genome-view/.../MultiRegionDisplayMixin.ts:288, 319, 391`
-  — all three are load-bearing intentional bypasses (isLoading prevents
-  re-trigger cycle; loadedRegions check avoids redundant fetches;
-  regionTooLarge/error clears only on viewport change). Document with
-  `// Why:` comments; no structural fix needed. Low-priority.
 
 - `plugins/graph/.../GraphCanvas.tsx:186` (`viewportBounds` computed via
   untracked inside a scale/translate update).
@@ -145,14 +123,8 @@ Acceptance: `grep -rn 'untracked(' plugins/ packages/ --include='*.ts' --include
 
 ## Features & UX
 
-**Alignments curved read links** Reuse breakpoint split view logic in new "Link
-with curved lines" mode.
-
 **Synteny viewport culling** LOD improvements for large comparisons (Hs1 vs mm39
 slow). Widen margins or soften refetch criterion.
-
-**Canvas offscreen buffer** Add margin rendering to avoid feature re-juggling on
-small zooms (like `plugins/sequence`).
 
 **Protein3D on linearbasicdisplay** Consolidation removed it; may need separate
 display or restoration.
@@ -163,13 +135,6 @@ mouse.
 
 **Gene glyph compact modes** Add super-compact for dense layouts; side labels
 for genes.
-
-**Long-range inter-region arcs** Add UI toggle to draw arcs between distant
-regions.
-
-**Paired arcs visibility** Upward-pointing arcs (pairedArcsDown=false) render at
-wrong height. WIP fix in `arc.slang`: `availH` was incorrectly subtracting
-`u.covOffset` (coverage strip height), shrinking arc headroom. Uncommitted.
 
 ---
 
@@ -213,7 +178,6 @@ drawing crowded?
 ## Unclear (Verify)
 
 - Clustering UI not updating?
-- Long-range arcs missing in 1kg demo?
 
 ## Synteny bugs
 
@@ -247,9 +211,6 @@ value for every instance in a draw call). Move to Uniforms; stop emitting
 from Instance struct. ~30-line change across RPC, `syntenyBackendTypes`,
 renderer, `syntenyTypes.slang`. Next concrete win.
 
-**Lower-priority:** leaner picking vertex shader (marginal), adaptive segment
-count (only if vertex-bound on profiling).
-
 ## plugins/canvas
 
 **Features collapsed to y=0 on NCBI.** Add logging to investigate; needs
@@ -265,6 +226,5 @@ reproduction steps (user can navigate to it).
 
 ## Polish (continued)
 
-**Y-scalebar nice tick labels.** Coverage scalebar in `LinearAlignmentsDisplay`
-should use d3-style round labels (0, 5, 10, 15, 20) not raw max-divided values
-(0, 7, 13…). When short: just 0 and max. When taller: ≥3 nice ticks.
+
+Add log scale to plugins/alignments  there is example of this on origin/main

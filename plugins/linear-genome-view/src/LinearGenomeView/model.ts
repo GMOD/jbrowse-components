@@ -1451,51 +1451,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
-         * Merges visibleRegions (exact viewport content) by displayedRegionIndex.
-         * Used by the fetch autorun to decide WHEN data needs re-fetching.
-         * The actual fetch region is expanded with an explicit buffer.
-         */
-        get mergedVisibleRegions() {
-          const regionMap = new Map<
-            number,
-            Region & { displayedRegionIndex: number }
-          >()
-          for (const block of this.dynamicBlocks.contentBlocks) {
-            const displayedRegionIndex = block.displayedRegionIndex!
-            const existing = regionMap.get(displayedRegionIndex)
-            if (existing) {
-              existing.start = Math.min(existing.start, Math.floor(block.start))
-              existing.end = Math.max(existing.end, Math.ceil(block.end))
-            } else {
-              regionMap.set(displayedRegionIndex, {
-                refName: block.refName,
-                start: Math.floor(block.start),
-                end: Math.ceil(block.end),
-                assemblyName: block.assemblyName,
-                displayedRegionIndex,
-                reversed: block.reversed,
-              })
-            }
-          }
-          return [...regionMap.values()]
-        },
-
-        /**
-         * #getter
-         * mergedVisibleRegions expanded by a half-screen buffer on each side,
+         * visibleRegions expanded by a half-screen buffer on each side,
          * clamped to displayedRegion bounds, with integer-rounded coordinates.
          * Use this when fetching data that should extend slightly beyond the
          * viewport for smooth scrolling.
          */
         get bufferedVisibleRegions() {
           const bufferBp = Math.ceil(self.width * self.bpPerPx * 0.5)
-          return this.mergedVisibleRegions.map(vr => {
+          return this.visibleRegions.map(vr => {
             const dr = self.displayedRegions[vr.displayedRegionIndex]!
             return {
               region: {
                 refName: vr.refName,
-                start: Math.max(dr.start, vr.start - bufferBp),
-                end: Math.min(dr.end, vr.end + bufferBp),
+                start: Math.max(dr.start, Math.floor(vr.start) - bufferBp),
+                end: Math.min(dr.end, Math.ceil(vr.end) + bufferBp),
                 assemblyName: vr.assemblyName,
               },
               displayedRegionIndex: vr.displayedRegionIndex,

@@ -1552,7 +1552,7 @@ export default function stateModelFactory(
                   }
                   const view = getContainingView(self) as LGV
                   computeAndSetArcs(
-                    view.mergedVisibleRegions.map(vr => ({
+                    view.visibleRegions.map(vr => ({
                       region: vr,
                       displayedRegionIndex: vr.displayedRegionIndex,
                     })),
