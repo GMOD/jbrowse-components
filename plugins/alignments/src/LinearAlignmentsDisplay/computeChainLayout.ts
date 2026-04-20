@@ -1,6 +1,8 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
 
+import { cloneWithLayout } from '../RenderPileupDataRPC/sortLayout.ts'
+
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 
 function buildChainRowMap(
@@ -182,59 +184,15 @@ export function buildChainConnectingData(
   }
 }
 
-// Shallow clone of a PileupDataResult with freshly-computed Y arrays and
-// chain connecting-line / Flatbush data layered on top.
+// Pileup clone + chain connecting-line / Flatbush data layered on top.
 function cloneWithChainLayout(
   data: PileupDataResult,
   readYs: Uint16Array,
   maxY: number,
 ): PileupDataResult {
-  const gapYs = new Uint16Array(data.numGaps)
-  const mismatchYs = new Uint16Array(data.numMismatches)
-  const interbaseYs = new Uint16Array(data.numInterbases)
-  const modificationYs = new Uint16Array(data.numModifications)
-  const softclipBaseYs = new Uint16Array(data.numSoftclipBases)
-  if (data.gapReadIndices) {
-    const src = data.gapReadIndices
-    for (let i = 0; i < data.numGaps; i++) {
-      gapYs[i] = readYs[src[i]!]!
-    }
-  }
-  if (data.mismatchReadIndices) {
-    const src = data.mismatchReadIndices
-    for (let i = 0; i < data.numMismatches; i++) {
-      mismatchYs[i] = readYs[src[i]!]!
-    }
-  }
-  if (data.interbaseReadIndices) {
-    const src = data.interbaseReadIndices
-    for (let i = 0; i < data.numInterbases; i++) {
-      interbaseYs[i] = readYs[src[i]!]!
-    }
-  }
-  if (data.modificationReadIndices) {
-    const src = data.modificationReadIndices
-    for (let i = 0; i < data.numModifications; i++) {
-      modificationYs[i] = readYs[src[i]!]!
-    }
-  }
-  if (data.softclipBaseReadIndices) {
-    const src = data.softclipBaseReadIndices
-    for (let i = 0; i < data.numSoftclipBases; i++) {
-      softclipBaseYs[i] = readYs[src[i]!]!
-    }
-  }
-  const chainDerived = buildChainConnectingData(data, readYs)
   return {
-    ...data,
-    readYs,
-    gapYs,
-    mismatchYs,
-    interbaseYs,
-    modificationYs,
-    softclipBaseYs,
-    maxY,
-    ...chainDerived,
+    ...cloneWithLayout(data, readYs, maxY),
+    ...buildChainConnectingData(data, readYs),
   }
 }
 

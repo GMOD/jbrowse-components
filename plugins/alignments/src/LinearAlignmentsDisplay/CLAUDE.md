@@ -11,12 +11,22 @@ Moving all layout to the main thread (where all region results are available
 simultaneously) solves this without requiring the RPC to process multiple
 regions in a single call, which would be far more complex and wasteful.
 
+Layout flows entirely through the `laidOutPileupMap` getter on the display
+model. Raw fetched data lives in `rpcDataMap` with zero-filled Y arrays; the
+getter returns a parallel map of shallow clones with Y arrays, `maxY`, and (in
+chain mode) connecting-line / Flatbush data derived per-frame. MobX caches
+this so layout recomputes only when `rpcDataMap`, `sortedBy`,
+`showSoftClipping`, or `renderingMode` change — and nothing mutates the raw
+entries. `self.maxY` is a pure view over the laid-out map.
+
 ### Pileup layout (`sortLayout.ts`)
 
 - `computeLayout` / `computeSortedLayout` — single-region
 - `computeMultiRegionLayout` — multi-region, rowMap keyed by feature ID
-- Called by `computeAndAssignLayoutForData` in `model.ts`
-- `fillYArraysFromLayout` / `fillYArraysFromLayoutMap` apply the result
+- `cloneWithLayout` — shallow-clones a `PileupDataResult` with freshly
+  allocated Y arrays propagated from a per-read `readYs`
+- `buildLaidOutPileupMap` — combines the above; called from the
+  `laidOutPileupMap` getter in non-chain modes
 
 ### Chain layout (`computeChainLayout.ts`)
 
@@ -24,8 +34,10 @@ regions in a single call, which would be far more complex and wasteful.
 - `computeMultiRegionChainLayout` — multi-region, rowMap keyed by chain NAME
   (mates share QNAME, so name-keyed dedup handles cross-region pairs)
 - `readYsFromRowMap` — converts a name-keyed rowMap to a per-read Uint16Array
-- `buildChainConnectingData` — post-layout: builds connecting lines + Flatbush
-- Called by `computeAndAssignChainLayout` in `model.ts`
+- `buildChainConnectingData` — builds connecting lines + Flatbush and returns
+  them (does not mutate its input)
+- `buildLaidOutChainMap` — combines the above and reuses `cloneWithLayout`
+  for Y propagation; called from the `laidOutPileupMap` getter in chain mode
 
 **Shared layout primitive:** Both pileup (`sortLayout.ts`) and chain
 (`computeChainLayout.ts`) call `placeRect(rows, start, end)` from

@@ -284,9 +284,13 @@ export function computeMultiRegionLayout(
   return { rowMap, maxY: rows.length }
 }
 
-// Shallow clone of a PileupDataResult with freshly-computed Y arrays
-// propagated from a per-read readYs. All other typed arrays are shared.
-function cloneWithLayout(
+/**
+ * Shallow clone of a PileupDataResult with freshly-computed Y arrays
+ * propagated from a per-read readYs. All other typed arrays are shared.
+ *
+ * Exported so chain-mode layout can reuse the same Y propagation.
+ */
+export function cloneWithLayout(
   data: PileupDataResult,
   readYs: Uint16Array,
   maxY: number,
