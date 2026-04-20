@@ -825,6 +825,40 @@ describe('FetchVisibleRegions autorun', () => {
     })
   })
 
+  it('does NOT refetch when tag-sort position changes (same tag)', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    const { display } = createDisplay()
+
+    display.setOverride('sortedBy', {
+      type: 'tag',
+      pos: 5000,
+      refName: 'ctgA',
+      assemblyName: 'volvox',
+      tag: 'HP',
+    })
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    // Moving the sort position within the same tag sort re-runs main-
+    // thread layout via laidOutPileupMap; the worker data (per-read tag
+    // values) is unchanged.
+    display.setOverride('sortedBy', {
+      type: 'tag',
+      pos: 6000,
+      refName: 'ctgA',
+      assemblyName: 'volvox',
+      tag: 'HP',
+    })
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+  })
+
   it('adapter fetchSizeLimit is respected over display default', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 

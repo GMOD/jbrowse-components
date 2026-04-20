@@ -639,7 +639,7 @@ export async function renderSvg(
   )
   const { offsetPx, bpPerPx } = view
   const {
-    rpcDataMap,
+    laidOutPileupMap: rpcDataMap,
     showCoverage,
     coverageHeight,
     coverageTicks,

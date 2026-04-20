@@ -11,6 +11,7 @@ interface Read {
   start: number
   end: number
   baseAtSortPos?: string
+  tagValue?: string
 }
 
 function makePileupData(opts: {
@@ -20,6 +21,10 @@ function makePileupData(opts: {
 }): PileupDataResult {
   const { regionStart, reads, sortPos } = opts
   const numReads = reads.length
+  const hasAnyTagValue = reads.some(r => r.tagValue !== undefined)
+  const sortTagValues = hasAnyTagValue
+    ? reads.map(r => r.tagValue ?? '')
+    : undefined
 
   const readPositions = new Uint32Array(numReads * 2)
   const readIds: string[] = []
@@ -141,11 +146,12 @@ function makePileupData(opts: {
     detectedModifications: [],
     simplexModifications: [],
     maxY: 0,
+    sortTagValues,
   }
 }
 
-function makeSortedBy(pos: number, type = 'basePair'): SortedBy {
-  return { type, pos, refName: 'chr1', assemblyName: 'a' }
+function makeSortedBy(pos: number, type = 'basePair', tag?: string): SortedBy {
+  return { type, pos, refName: 'chr1', assemblyName: 'a', tag }
 }
 
 /**
@@ -328,6 +334,94 @@ describe('computeSortedLayout', () => {
     const rows = new Set([readYs[0], readYs[1], readYs[2]])
     expect(rows.size).toBe(3)
     expect(maxY).toBe(3)
+  })
+
+  // HP-tag phased-read sort: overlapping reads at sortPos are grouped by
+  // haplotype (HP=1 above HP=0) before non-overlap reads fill rows. Numeric
+  // tag values sort descending (Number(b) - Number(a)).
+  test('tag sort (HP): HP=1 reads placed above HP=0 reads', () => {
+    const data = makePileupData({
+      regionStart: 0,
+      sortPos: 500,
+      reads: [
+        { start: 400, end: 700, tagValue: '0' },
+        { start: 420, end: 720, tagValue: '1' },
+        { start: 440, end: 740, tagValue: '0' },
+        { start: 460, end: 760, tagValue: '1' },
+      ],
+    })
+    const { readYs, maxY } = computeSortedLayout(
+      data,
+      makeSortedBy(500, 'tag', 'HP'),
+    )
+    expect(maxY).toBe(4)
+    const hp1Rows = [readYs[1]!, readYs[3]!].sort()
+    const hp0Rows = [readYs[0]!, readYs[2]!].sort()
+    expect(hp1Rows).toEqual([0, 1])
+    expect(hp0Rows).toEqual([2, 3])
+    assertNonOverlappingLayout(data, readYs)
+  })
+
+  test('tag sort (HP): reads without HP tag sort after tagged reads', () => {
+    // Missing tag coerces to Number('') = 0 in the numeric branch, so it
+    // ties with HP=0 rather than going last. This codifies current
+    // behavior — change this test if the tie-break rule changes.
+    const data = makePileupData({
+      regionStart: 0,
+      sortPos: 500,
+      reads: [
+        { start: 400, end: 700, tagValue: '1' },
+        { start: 420, end: 720 },
+        { start: 440, end: 740, tagValue: '0' },
+      ],
+    })
+    const { readYs } = computeSortedLayout(
+      data,
+      makeSortedBy(500, 'tag', 'HP'),
+    )
+    expect(readYs[0]).toBe(0)
+    assertNonOverlappingLayout(data, readYs)
+  })
+
+  test('tag sort (HP): non-overlapping read gap-fills around tag-sorted block', () => {
+    const data = makePileupData({
+      regionStart: 0,
+      sortPos: 500,
+      reads: [
+        { start: 400, end: 700, tagValue: '1' }, // overlap HP=1
+        { start: 420, end: 720, tagValue: '0' }, // overlap HP=0
+        { start: 10, end: 100 }, // non-overlap before
+        { start: 800, end: 900 }, // non-overlap after
+      ],
+    })
+    const { readYs, maxY } = computeSortedLayout(
+      data,
+      makeSortedBy(500, 'tag', 'HP'),
+    )
+    expect(readYs[0]).toBe(0)
+    expect(readYs[1]).toBe(1)
+    expect(maxY).toBe(2)
+    assertNonOverlappingLayout(data, readYs)
+  })
+
+  test('tag sort with string values uses lexicographic descending order', () => {
+    // For string tag values (e.g. RG=sampleA/sampleB), the comparator
+    // falls back to localeCompare descending.
+    const data = makePileupData({
+      regionStart: 0,
+      sortPos: 500,
+      reads: [
+        { start: 400, end: 700, tagValue: 'sampleA' },
+        { start: 420, end: 720, tagValue: 'sampleB' },
+      ],
+    })
+    const { readYs } = computeSortedLayout(
+      data,
+      makeSortedBy(500, 'tag', 'RG'),
+    )
+    // 'sampleB' > 'sampleA' → sampleB gets row 0
+    expect(readYs[1]).toBe(0)
+    expect(readYs[0]).toBe(1)
   })
 })
 

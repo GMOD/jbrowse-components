@@ -30,7 +30,7 @@ import {
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
-import { autorun, observable, untracked } from 'mobx'
+import { autorun, observable } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import { SashimiArcsSubModel } from './SashimiArcsSubModel.ts'
@@ -41,11 +41,7 @@ import {
   readYsFromRowMap,
 } from './computeChainLayout.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
-import {
-  computeLayout,
-  computeMultiRegionLayout,
-  computeSortedLayout,
-} from '../RenderPileupDataRPC/sortLayout.ts'
+import { buildLaidOutPileupMap } from '../RenderPileupDataRPC/sortLayout.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import {
   arcsToRegionResult,
@@ -76,7 +72,6 @@ import type {
 } from './components/hitTesting.ts'
 import type { AlignmentsBackend } from './components/rendererTypes.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
-import type { ArcsDataResult } from '../shared/computeArcsFromPileupData.ts'
 import type { LegendItem } from '../shared/legendUtils.ts'
 import type {
   ColorBy,
@@ -404,6 +399,30 @@ export default function stateModelFactory(
         get legendItems(): LegendItem[] {
           return getReadDisplayLegendItems(self.getOverride<ColorBy>('colorBy'))
         },
+
+        /**
+         * Pileup data with per-read Y rows applied from main-thread layout.
+         *
+         * Chain mode passes through `rpcDataMap` unchanged — chain layout
+         * is applied imperatively when fetched data arrives. For pileup
+         * mode (including tag sort) this returns a new map whose entries
+         * are shallow clones of the raw data with freshly-allocated
+         * `readYs/gapYs/mismatchYs/interbaseYs/modificationYs/
+         * softclipBaseYs` and the pileup-layout `maxY`.
+         *
+         * MobX caches this so layout is recomputed only when `rpcDataMap`,
+         * `sortedBy`, `showSoftClipping`, or `renderingMode` change.
+         */
+        get laidOutPileupMap() {
+          if (this.renderingMode === 'linkedRead') {
+            return self.rpcDataMap
+          }
+          return buildLaidOutPileupMap({
+            dataMap: self.rpcDataMap,
+            sortedBy: this.sortedBy,
+            showSoftClipping: self.showSoftClipping,
+          })
+        },
       }))
       // Views derived from colorBy, featureHeightSetting, featureSpacing above.
       .views(self => ({
@@ -501,7 +520,7 @@ export default function stateModelFactory(
             return undefined
           }
           const { displayedRegionIndex, idx } = entry
-          const rpcData = self.rpcDataMap.get(displayedRegionIndex)
+          const rpcData = self.laidOutPileupMap.get(displayedRegionIndex)
           if (!rpcData) {
             return undefined
           }
@@ -565,7 +584,7 @@ export default function stateModelFactory(
             if (block.displayedRegionIndex === undefined) {
               continue
             }
-            const data = self.rpcDataMap.get(block.displayedRegionIndex)
+            const data = self.laidOutPileupMap.get(block.displayedRegionIndex)
             if (data) {
               blocks.push({
                 rpcData: data,
@@ -640,27 +659,27 @@ export default function stateModelFactory(
           return Math.max(0, self.totalPileupHeight - self.pileupViewportHeight)
         },
 
-        // Stable getter: returns the sortedBy ref only when it's a tag
-        // sort (the only flavor the worker needs), otherwise undefined.
-        // Wrapping this as its own cached getter lets mobx short-circuit
-        // rpcProps re-notification when sortedBy flips between non-tag
-        // values (both map to undefined here, so mobx sees === unchanged).
-        get sortedByForRpc() {
-          return self.sortedBy?.type === 'tag' ? self.sortedBy : undefined
+        // Only the tag NAME is sent to the worker (to extract per-read
+        // sortTagValues). Wrapping as its own getter means rpcProps only
+        // re-notifies when the tag itself changes — not when sort
+        // position or sort type flips between non-tag flavors.
+        get sortTag() {
+          return self.sortedBy?.type === 'tag' ? self.sortedBy.tag : undefined
         },
 
         // Fields that invalidate the fetched pileup/chain data. Worker-
         // bound (filterBy, colorBy, …) plus the one main-thread decision
         // field that selects between pileup and chain RPC
         // (showLinkedReads). Arc-only fields live on arcsState and
-        // drive the arcs autorun below without refetching pileup.
-        // Non-tag sortedBy changes handled by the sortLayout autorun.
+        // drive the arcs autorun below without refetching pileup. All
+        // non-tag sort changes are handled main-thread by the
+        // laidOutPileupMap getter.
         get rpcProps() {
           return {
             filterBy: self.filterBy,
             colorBy: self.colorBy,
             colorTagMap: self.colorTagMap,
-            sortedBy: this.sortedByForRpc,
+            sortTag: this.sortTag,
             showSoftClipping: self.showSoftClipping,
             drawSingletons: self.drawSingletons,
             drawProperPairs: self.drawProperPairs,
@@ -1135,9 +1154,10 @@ export default function stateModelFactory(
           self.installGpuDisplay<AlignmentsBackend>(backend, {
             upload: b => {
               // Pileup + connecting lines: one entry per region from
-              // self.rpcDataMap.
+              // self.laidOutPileupMap (Y arrays filled from main-thread
+              // layout, or pass-through rpcDataMap for chain/tag-sort).
               const active: number[] = []
-              for (const [displayedRegionIndex, data] of self.rpcDataMap) {
+              for (const [displayedRegionIndex, data] of self.laidOutPileupMap) {
                 active.push(displayedRegionIndex)
                 if (data.numReads === 0) {
                   continue
@@ -1342,50 +1362,6 @@ export default function stateModelFactory(
           data.maxY = maxY
         }
 
-        /**
-         * Apply a rowMap (featureId → row) to all parallel Y arrays. Used for
-         * multi-region layout where reads can span region boundaries.
-         */
-        function fillYArraysFromLayoutMap(
-          data: PileupDataResult,
-          rowMap: Map<string, number>,
-          maxY: number,
-        ) {
-          const readYs = new Uint16Array(data.numReads)
-          for (let i = 0; i < data.numReads; i++) {
-            readYs[i] = rowMap.get(data.readIds[i]!) ?? 0
-          }
-          fillYArraysFromLayout(data, readYs, maxY)
-        }
-
-        function computeAndAssignLayoutForData(
-          rpcDataMap: ReadonlyMap<number, PileupDataResult>,
-          sortedBy?: SortedBy,
-          showSoftClipping?: boolean,
-        ) {
-          const entries = [...rpcDataMap.entries()].filter(
-            ([, d]) => d.numReads > 0,
-          )
-          if (entries.length === 0) {
-            return
-          }
-
-          if (entries.length === 1) {
-            const [displayedRegionIndex, data] = entries[0]!
-            const { readYs, maxY } = sortedBy
-              ? computeSortedLayout(data, sortedBy, showSoftClipping)
-              : computeLayout(data, showSoftClipping)
-            fillYArraysFromLayout(data, readYs, maxY)
-            self.setRpcData(displayedRegionIndex, data)
-          } else {
-            const { rowMap, maxY } = computeMultiRegionLayout(entries)
-            for (const [displayedRegionIndex, data] of entries) {
-              fillYArraysFromLayoutMap(data, rowMap, maxY)
-              self.setRpcData(displayedRegionIndex, data)
-            }
-          }
-        }
-
         function computeAndAssignChainLayout(
           rpcDataMap: ReadonlyMap<number, PileupDataResult>,
         ) {
@@ -1509,18 +1485,13 @@ export default function stateModelFactory(
                 self.setSimplexModifications(r.result.simplexModifications)
                 newDataMap.set(r.displayedRegionIndex, r.result)
               }
-              if (
-                self.renderingMode !== 'linkedRead' &&
-                self.sortedBy?.type !== 'tag'
-              ) {
-                computeAndAssignLayoutForData(
-                  newDataMap,
-                  self.sortedBy,
-                  self.showSoftClipping,
-                )
-              } else if (self.renderingMode === 'linkedRead') {
+              if (self.renderingMode === 'linkedRead') {
                 computeAndAssignChainLayout(newDataMap)
               } else {
+                // Pileup (non-tag) layout is derived by the
+                // `laidOutPileupMap` getter from `rpcDataMap`. Tag-sort
+                // Ys come pre-filled from the worker. Either way, we
+                // just commit raw results here.
                 for (const [displayedRegionIndex, data] of newDataMap) {
                   self.setRpcData(displayedRegionIndex, data)
                 }
@@ -1566,37 +1537,6 @@ export default function stateModelFactory(
               ),
             )
 
-            // Relayout in place when a non-tag sort changes (no RPC
-            // refetch). Tag-sort changes are handled by rpcProps →
-            // mixin SettingsInvalidate. rpcDataMap read + write happens
-            // inside `untracked` because computeAndAssignLayoutForData
-            // calls self.setRpcData which mutates rpcDataMap — tracking
-            // would make the autorun self-trigger infinitely.
-            addDisposer(
-              self,
-              autorun(
-                () => {
-                  const sortedBy = self.sortedBy
-                  const showSoftClipping = self.showSoftClipping
-                  if (self.renderingMode === 'linkedRead') {
-                    return
-                  }
-                  if (sortedBy?.type === 'tag') {
-                    return
-                  }
-                  untracked(() => {
-                    if (self.rpcDataMap.size > 0) {
-                      computeAndAssignLayoutForData(
-                        self.rpcDataMap,
-                        sortedBy,
-                        showSoftClipping,
-                      )
-                    }
-                  })
-                },
-                { name: 'LinearAlignmentsDisplay:sortLayout' },
-              ),
-            )
           },
         }
       })

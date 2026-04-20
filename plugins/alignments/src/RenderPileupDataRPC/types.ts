@@ -7,7 +7,7 @@
  * This is critical for alignment between coverage, gaps, and rendered features.
  */
 
-import type { FilterBy, SortedBy } from '../shared/types'
+import type { FilterBy } from '../shared/types'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -23,7 +23,10 @@ export interface RenderPileupDataArgs {
     modifications?: { threshold?: number }
   }
   colorTagMap?: Record<string, string>
-  sortedBy?: SortedBy
+  // Tag name for tag-sort. Only the tag is sent to the worker (not the
+  // full SortedBy), so changing sort position within a tag sort doesn't
+  // invalidate the fetched data — main-thread layout re-runs instead.
+  sortTag?: string
   showSoftClipping?: boolean
   statusCallback?: (status: string) => void
   stopToken?: StopToken

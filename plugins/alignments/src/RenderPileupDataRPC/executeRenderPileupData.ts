@@ -54,14 +54,12 @@ export async function executeRenderPileupData({
     filterBy,
     colorBy,
     colorTagMap,
-    sortedBy,
+    sortTag,
     showSoftClipping = false,
     statusCallback = () => {},
     stopToken,
   } = args
   const region = regions[0]!
-
-  const isTagSort = sortedBy?.type === 'tag' && !!sortedBy.tag
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 
@@ -127,7 +125,7 @@ export async function executeRenderPileupData({
       showSoftClipping,
       region,
       regionStart,
-      sortTag: isTagSort ? sortedBy.tag! : undefined,
+      sortTag,
     }),
   )
 
@@ -135,8 +133,10 @@ export async function executeRenderPileupData({
 
   const regionEnd = Math.ceil(region.end)
 
+  // Layout (readYs/gapYs/mismatchYs/etc.) is computed on the main thread
+  // via `laidOutPileupMap` in the display model — the worker emits
+  // zero-filled Y arrays.
   const {
-    layoutMaxY,
     readArrays,
     gapArrays,
     mismatchArrays,
@@ -147,9 +147,6 @@ export async function executeRenderPileupData({
   } = await updateStatus('Building arrays', statusCallback, async () => {
     const featureIdToIndex = new Map<string, number>()
     const getReadIndex = (id: string) => featureIdToIndex.get(id) ?? 0
-
-    const layoutMaxY = 0
-    const getY: (id: string) => number = () => 0
 
     const readPositions = new Uint32Array(features.length * 2)
     const readYs = new Uint16Array(features.length)
@@ -166,7 +163,6 @@ export async function executeRenderPileupData({
       featureIdToIndex.set(f.id, i)
       readPositions[i * 2] = Math.max(0, f.start - regionStart)
       readPositions[i * 2 + 1] = f.end - regionStart
-      readYs[i] = getY(f.id)
       readFlags[i] = f.flags
       readMapqs[i] = Math.min(255, f.mapq)
       readAvgBaseQualities[i] = Math.min(255, f.avgBaseQuality)
@@ -178,7 +174,6 @@ export async function executeRenderPileupData({
     }
 
     return {
-      layoutMaxY,
       readArrays: {
         readPositions,
         readYs,
@@ -191,15 +186,10 @@ export async function executeRenderPileupData({
         readIds,
         readNames,
       },
-      gapArrays: buildGapArrays(gaps, regionStart, getY, getReadIndex),
-      mismatchArrays: buildMismatchArrays(
-        mismatches,
-        regionStart,
-        getY,
-        getReadIndex,
-      ),
+      gapArrays: buildGapArrays(gaps, regionStart, getReadIndex),
+      mismatchArrays: buildMismatchArrays(mismatches, regionStart, getReadIndex),
       softclipBaseArrays: showSoftClipping
-        ? buildSoftclipBaseArrays(softclips, regionStart, getY, getReadIndex)
+        ? buildSoftclipBaseArrays(softclips, regionStart, getReadIndex)
         : {
             softclipBasePositions: new Uint32Array(0),
             softclipBaseYs: new Uint16Array(0),
@@ -211,13 +201,11 @@ export async function executeRenderPileupData({
         softclips,
         hardclips,
         regionStart,
-        getY,
         getReadIndex,
       ),
       modificationArrays: buildModificationArrays(
         modifications,
         regionStart,
-        getY,
         getReadIndex,
       ),
       segmentArrays: buildSegmentArrays(
@@ -347,7 +335,7 @@ export async function executeRenderPileupData({
 
     modTooltipData,
 
-    maxY: layoutMaxY,
+    maxY: 0,
     numReads: features.length,
     numGaps: gapArrays.gapPositions.length / 2,
     numMismatches: mismatchArrays.mismatchPositions.length,

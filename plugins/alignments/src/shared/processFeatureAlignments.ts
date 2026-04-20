@@ -384,7 +384,6 @@ export function buildInterbaseArrays(
   softclips: SoftclipData[],
   hardclips: HardclipData[],
   regionStart: number,
-  getY: (featureId: string) => number,
   getReadIndex?: (featureId: string) => number,
 ) {
   const filteredInsertions = insertions.filter(
@@ -410,9 +409,7 @@ export function buildInterbaseArrays(
   let idx = 0
   function addItems(items: InterbaseInput[], type: number) {
     for (const item of items) {
-      const y = getY(item.featureId)
       interbasePositions[idx] = item.position - regionStart
-      interbaseYs[idx] = y
       interbaseLengths[idx] = Math.min(65535, item.length)
       interbaseTypes[idx] = type
       if (interbaseReadIndices) {
@@ -445,7 +442,6 @@ export function buildInterbaseArrays(
 export function buildMismatchArrays(
   mismatches: MismatchData[],
   regionStart: number,
-  getY: (featureId: string) => number,
   getReadIndex?: (featureId: string) => number,
 ) {
   const filtered = mismatches.filter(mm => mm.position >= regionStart)
@@ -457,9 +453,7 @@ export function buildMismatchArrays(
     ? new Uint32Array(filtered.length)
     : undefined
   for (const [i, mm] of filtered.entries()) {
-    const y = getY(mm.featureId)
     mismatchPositions[i] = mm.position - regionStart
-    mismatchYs[i] = y
     mismatchBases[i] = mm.base
     mismatchStrands[i] = mm.strand
     if (mismatchReadIndices) {
@@ -478,7 +472,6 @@ export function buildMismatchArrays(
 export function buildSoftclipBaseArrays(
   softclips: SoftclipData[],
   regionStart: number,
-  getY: (featureId: string) => number,
   getReadIndex?: (featureId: string) => number,
 ) {
   const count = softclips.reduce(
@@ -496,11 +489,9 @@ export function buildSoftclipBaseArrays(
     if (!sc.sequence) {
       continue
     }
-    const y = getY(sc.featureId)
     const ri = getReadIndex ? getReadIndex(sc.featureId) : 0
     for (let k = 0; k < sc.sequence.length; k++) {
       softclipBasePositions[i] = sc.clipStart + k - regionStart
-      softclipBaseYs[i] = y
       softclipBaseBases[i] = sc.sequence.charCodeAt(k)
       if (softclipBaseReadIndices) {
         softclipBaseReadIndices[i] = ri
@@ -519,7 +510,6 @@ export function buildSoftclipBaseArrays(
 export function buildGapArrays(
   gaps: GapData[],
   regionStart: number,
-  getY: (featureId: string) => number,
   getReadIndex?: (featureId: string) => number,
 ) {
   const filtered = gaps.filter(g => g.end > regionStart)
@@ -531,10 +521,8 @@ export function buildGapArrays(
     ? new Uint32Array(filtered.length)
     : undefined
   for (const [i, g] of filtered.entries()) {
-    const y = getY(g.featureId)
     gapPositions[i * 2] = Math.max(0, g.start - regionStart)
     gapPositions[i * 2 + 1] = g.end - regionStart
-    gapYs[i] = y
     gapLengths[i] = Math.min(65535, g.end - g.start)
     gapTypes[i] = g.type === 'deletion' ? 0 : 1
     if (gapReadIndices) {
@@ -547,7 +535,6 @@ export function buildGapArrays(
 export function buildModificationArrays(
   modifications: ModificationEntry[],
   regionStart: number,
-  getY: (featureId: string) => number,
   getReadIndex?: (featureId: string) => number,
 ) {
   const filtered = modifications.filter(m => m.position >= regionStart)
@@ -561,9 +548,7 @@ export function buildModificationArrays(
     ? new Uint32Array(filtered.length)
     : undefined
   for (const [i, m] of filtered.entries()) {
-    const y = getY(m.featureId)
     modificationPositions[i] = m.position - regionStart
-    modificationYs[i] = y
     const a = Math.round(m.prob * 255) & 0xff
     modificationColors[i] = packAbgr(m.r, m.g, m.b, a)
     if (modificationReadIndices) {

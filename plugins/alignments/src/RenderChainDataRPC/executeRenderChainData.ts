@@ -253,9 +253,10 @@ export async function executeRenderChainData({
     featureIdToIndex.set(f.id, i)
   }
 
-  const getY = () => 0
   const getReadIndex = (id: string) => featureIdToIndex.get(id) ?? 0
 
+  // Layout Ys are filled by the main thread (see computeChainLayout.ts);
+  // the worker emits zero-filled Y arrays here.
   const {
     gapArrays,
     mismatchArrays,
@@ -266,25 +267,18 @@ export async function executeRenderChainData({
     'Building alignment arrays',
     statusCallback,
     async () => ({
-      gapArrays: buildGapArrays(gaps, regionStart, getY, getReadIndex),
-      mismatchArrays: buildMismatchArrays(
-        mismatches,
-        regionStart,
-        getY,
-        getReadIndex,
-      ),
+      gapArrays: buildGapArrays(gaps, regionStart, getReadIndex),
+      mismatchArrays: buildMismatchArrays(mismatches, regionStart, getReadIndex),
       interbaseArrays: buildInterbaseArrays(
         insertions,
         softclips,
         hardclips,
         regionStart,
-        getY,
         getReadIndex,
       ),
       modificationArrays: buildModificationArrays(
         modifications,
         regionStart,
-        getY,
         getReadIndex,
       ),
       segmentArrays: buildSegmentArrays(

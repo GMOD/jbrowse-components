@@ -283,3 +283,105 @@ export function computeMultiRegionLayout(
   }
   return { rowMap, maxY: rows.length }
 }
+
+// Shallow clone of a PileupDataResult with freshly-computed Y arrays
+// propagated from a per-read readYs. All other typed arrays are shared.
+function cloneWithLayout(
+  data: PileupDataResult,
+  readYs: Uint16Array,
+  maxY: number,
+): PileupDataResult {
+  const gapYs = new Uint16Array(data.numGaps)
+  const mismatchYs = new Uint16Array(data.numMismatches)
+  const interbaseYs = new Uint16Array(data.numInterbases)
+  const modificationYs = new Uint16Array(data.numModifications)
+  const softclipBaseYs = new Uint16Array(data.numSoftclipBases)
+  if (data.gapReadIndices) {
+    const src = data.gapReadIndices
+    for (let i = 0; i < data.numGaps; i++) {
+      gapYs[i] = readYs[src[i]!]!
+    }
+  }
+  if (data.mismatchReadIndices) {
+    const src = data.mismatchReadIndices
+    for (let i = 0; i < data.numMismatches; i++) {
+      mismatchYs[i] = readYs[src[i]!]!
+    }
+  }
+  if (data.interbaseReadIndices) {
+    const src = data.interbaseReadIndices
+    for (let i = 0; i < data.numInterbases; i++) {
+      interbaseYs[i] = readYs[src[i]!]!
+    }
+  }
+  if (data.modificationReadIndices) {
+    const src = data.modificationReadIndices
+    for (let i = 0; i < data.numModifications; i++) {
+      modificationYs[i] = readYs[src[i]!]!
+    }
+  }
+  if (data.softclipBaseReadIndices) {
+    const src = data.softclipBaseReadIndices
+    for (let i = 0; i < data.numSoftclipBases; i++) {
+      softclipBaseYs[i] = readYs[src[i]!]!
+    }
+  }
+  return {
+    ...data,
+    readYs,
+    gapYs,
+    mismatchYs,
+    interbaseYs,
+    modificationYs,
+    softclipBaseYs,
+    maxY,
+  }
+}
+
+/**
+ * Build a laid-out pileup map from raw fetched data. The raw map's entries
+ * keep zero-filled Y arrays (from the worker); this returns a parallel map
+ * whose entries have Y arrays and maxY derived from pileup layout.
+ *
+ * Intended to be called from a MobX-cached getter so layout recomputes only
+ * when `rpcDataMap`, `sortedBy`, or `showSoftClipping` change.
+ */
+export function buildLaidOutPileupMap({
+  dataMap,
+  sortedBy,
+  showSoftClipping,
+}: {
+  dataMap: ReadonlyMap<number, PileupDataResult>
+  sortedBy: SortedBy | undefined
+  showSoftClipping: boolean | undefined
+}): Map<number, PileupDataResult> {
+  const out = new Map<number, PileupDataResult>()
+  const withReads: [number, PileupDataResult][] = []
+  for (const [k, v] of dataMap) {
+    if (v.numReads === 0) {
+      out.set(k, v)
+    } else {
+      withReads.push([k, v])
+    }
+  }
+  if (withReads.length === 0) {
+    return out
+  }
+  if (withReads.length === 1) {
+    const [idx, data] = withReads[0]!
+    const { readYs, maxY } = sortedBy
+      ? computeSortedLayout(data, sortedBy, showSoftClipping)
+      : computeLayout(data, showSoftClipping)
+    out.set(idx, cloneWithLayout(data, readYs, maxY))
+  } else {
+    const { rowMap, maxY } = computeMultiRegionLayout(withReads)
+    for (const [idx, data] of withReads) {
+      const readYs = new Uint16Array(data.numReads)
+      for (let i = 0; i < data.numReads; i++) {
+        readYs[i] = rowMap.get(data.readIds[i]!) ?? 0
+      }
+      out.set(idx, cloneWithLayout(data, readYs, maxY))
+    }
+  }
+  return out
+}
