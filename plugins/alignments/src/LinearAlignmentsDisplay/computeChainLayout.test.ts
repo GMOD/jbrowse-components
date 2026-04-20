@@ -422,9 +422,9 @@ describe('buildChainConnectingData', () => {
       chains: [{ name: 'readA', minStart: 1000, maxEnd: 1100, distance: 100 }],
     })
     const readYs = new Uint16Array([3])
-    buildChainConnectingData(data, readYs)
-    expect(data.numConnectingLines).toBe(0)
-    expect(data.connectingLinePositions?.length).toBe(0)
+    const out = buildChainConnectingData(data, readYs)
+    expect(out.numConnectingLines).toBe(0)
+    expect(out.connectingLinePositions.length).toBe(0)
   })
 
   test('connecting line emitted for chain with multiple reads', () => {
@@ -441,11 +441,11 @@ describe('buildChainConnectingData', () => {
       ],
     })
     const readYs = new Uint16Array([2, 2])
-    buildChainConnectingData(data, readYs)
-    expect(data.numConnectingLines).toBe(1)
-    expect(data.connectingLineYs?.[0]).toBe(2)
-    expect(data.connectingLinePositions?.[0]).toBe(0) // minStart - regionStart
-    expect(data.connectingLinePositions?.[1]).toBe(400) // maxEnd - regionStart
+    const out = buildChainConnectingData(data, readYs)
+    expect(out.numConnectingLines).toBe(1)
+    expect(out.connectingLineYs[0]).toBe(2)
+    expect(out.connectingLinePositions[0]).toBe(0) // minStart - regionStart
+    expect(out.connectingLinePositions[1]).toBe(400) // maxEnd - regionStart
   })
 
   test('flatbush spatial index is built for non-empty chains', () => {
@@ -454,9 +454,9 @@ describe('buildChainConnectingData', () => {
       chains: [{ name: 'readA', minStart: 1000, maxEnd: 1200, distance: 200 }],
     })
     const readYs = new Uint16Array([0])
-    buildChainConnectingData(data, readYs)
-    expect(data.chainFlatbushData).toBeDefined()
-    expect(data.chainFlatbushData!.byteLength).toBeGreaterThan(0)
+    const out = buildChainConnectingData(data, readYs)
+    expect(out.chainFlatbushData).toBeDefined()
+    expect(out.chainFlatbushData!.byteLength).toBeGreaterThan(0)
   })
 
   test('line start is clamped to zero when chain extends before regionStart', () => {
@@ -473,8 +473,8 @@ describe('buildChainConnectingData', () => {
       ],
     })
     const readYs = new Uint16Array([0, 0])
-    buildChainConnectingData(data, readYs)
-    expect(data.connectingLinePositions?.[0]).toBe(0) // clamped
-    expect(data.connectingLinePositions?.[1]).toBe(200) // 1200 - 1000
+    const out = buildChainConnectingData(data, readYs)
+    expect(out.connectingLinePositions[0]).toBe(0) // clamped
+    expect(out.connectingLinePositions[1]).toBe(200) // 1200 - 1000
   })
 })

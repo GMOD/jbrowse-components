@@ -100,9 +100,10 @@ export function computeMultiRegionChainLayout(
 }
 
 /**
- * After fillYArraysFromLayout() has populated data.readYs, build the
- * chain-specific derived arrays: connecting lines and the Flatbush spatial
- * index for hit testing.
+ * Build chain-specific derived arrays from a read Y layout: connecting
+ * lines between mates in each chain plus a Flatbush spatial index for
+ * hit testing. Returns empty-arrays/undefined when the input has no
+ * chain metadata.
  */
 export function buildChainConnectingData(
   data: PileupDataResult,
@@ -122,12 +123,16 @@ export function buildChainConnectingData(
     !chainAbsMinStarts ||
     !chainAbsMaxEnds
   ) {
-    return
+    return {
+      connectingLinePositions: new Uint32Array(0),
+      connectingLineYs: new Uint16Array(0),
+      numConnectingLines: 0,
+      chainFlatbushData: undefined as ArrayBuffer | undefined,
+    }
   }
 
   const numChains = chainFirstReadIndices.length
 
-  // Count multi-read chains first so we can allocate exact-size arrays.
   let numLines = 0
   for (let chainIdx = 0; chainIdx < numChains; chainIdx++) {
     if (chainHasMultiple[chainIdx]) {
@@ -152,10 +157,8 @@ export function buildChainConnectingData(
     connectingLineYs[lineIdx] = y
     lineIdx++
   }
-  data.connectingLinePositions = connectingLinePositions
-  data.connectingLineYs = connectingLineYs
-  data.numConnectingLines = numLines
 
+  let chainFlatbushData: ArrayBuffer | undefined
   if (numChains > 0) {
     const flatbush = new Flatbush(numChains)
     for (let chainIdx = 0; chainIdx < numChains; chainIdx++) {
@@ -168,6 +171,106 @@ export function buildChainConnectingData(
       )
     }
     flatbush.finish()
-    data.chainFlatbushData = flatbush.data
+    chainFlatbushData = flatbush.data
   }
+
+  return {
+    connectingLinePositions,
+    connectingLineYs,
+    numConnectingLines: numLines,
+    chainFlatbushData,
+  }
+}
+
+// Shallow clone of a PileupDataResult with freshly-computed Y arrays and
+// chain connecting-line / Flatbush data layered on top.
+function cloneWithChainLayout(
+  data: PileupDataResult,
+  readYs: Uint16Array,
+  maxY: number,
+): PileupDataResult {
+  const gapYs = new Uint16Array(data.numGaps)
+  const mismatchYs = new Uint16Array(data.numMismatches)
+  const interbaseYs = new Uint16Array(data.numInterbases)
+  const modificationYs = new Uint16Array(data.numModifications)
+  const softclipBaseYs = new Uint16Array(data.numSoftclipBases)
+  if (data.gapReadIndices) {
+    const src = data.gapReadIndices
+    for (let i = 0; i < data.numGaps; i++) {
+      gapYs[i] = readYs[src[i]!]!
+    }
+  }
+  if (data.mismatchReadIndices) {
+    const src = data.mismatchReadIndices
+    for (let i = 0; i < data.numMismatches; i++) {
+      mismatchYs[i] = readYs[src[i]!]!
+    }
+  }
+  if (data.interbaseReadIndices) {
+    const src = data.interbaseReadIndices
+    for (let i = 0; i < data.numInterbases; i++) {
+      interbaseYs[i] = readYs[src[i]!]!
+    }
+  }
+  if (data.modificationReadIndices) {
+    const src = data.modificationReadIndices
+    for (let i = 0; i < data.numModifications; i++) {
+      modificationYs[i] = readYs[src[i]!]!
+    }
+  }
+  if (data.softclipBaseReadIndices) {
+    const src = data.softclipBaseReadIndices
+    for (let i = 0; i < data.numSoftclipBases; i++) {
+      softclipBaseYs[i] = readYs[src[i]!]!
+    }
+  }
+  const chainDerived = buildChainConnectingData(data, readYs)
+  return {
+    ...data,
+    readYs,
+    gapYs,
+    mismatchYs,
+    interbaseYs,
+    modificationYs,
+    softclipBaseYs,
+    maxY,
+    ...chainDerived,
+  }
+}
+
+/**
+ * Build a laid-out chain-mode pileup map from raw fetched data.
+ *
+ * Pass-through for entries with no reads. For a single region the layout
+ * uses `computeChainLayout`; for multiple regions `computeMultiRegionChainLayout`
+ * assigns a shared rowMap keyed by chain name so mates across region
+ * boundaries share a row.
+ */
+export function buildLaidOutChainMap(
+  dataMap: ReadonlyMap<number, PileupDataResult>,
+): Map<number, PileupDataResult> {
+  const out = new Map<number, PileupDataResult>()
+  const withReads: [number, PileupDataResult][] = []
+  for (const [k, v] of dataMap) {
+    if (v.numReads === 0) {
+      out.set(k, v)
+    } else {
+      withReads.push([k, v])
+    }
+  }
+  if (withReads.length === 0) {
+    return out
+  }
+  if (withReads.length === 1) {
+    const [idx, data] = withReads[0]!
+    const { readYs, maxY } = computeChainLayout(data)
+    out.set(idx, cloneWithChainLayout(data, readYs, maxY))
+  } else {
+    const { rowMap, maxY } = computeMultiRegionChainLayout(withReads)
+    for (const [idx, data] of withReads) {
+      const readYs = readYsFromRowMap(data, rowMap)
+      out.set(idx, cloneWithChainLayout(data, readYs, maxY))
+    }
+  }
+  return out
 }

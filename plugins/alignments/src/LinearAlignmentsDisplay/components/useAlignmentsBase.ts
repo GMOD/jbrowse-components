@@ -111,7 +111,6 @@ export interface LinearAlignmentsDisplayModel {
   showOutlineSetting: boolean
   selectedFeatureId: string | undefined
   flipStrandLongReadChains: boolean
-  setMaxY: (val: number) => void
   setColorPalette: (palette: ColorPalette | null) => void
   setCurrentRangeY: (rangeY: [number, number]) => void
   setCoverageHeight: (height: number) => void

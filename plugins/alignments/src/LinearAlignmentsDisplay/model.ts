@@ -34,12 +34,7 @@ import { autorun, observable } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import { SashimiArcsSubModel } from './SashimiArcsSubModel.ts'
-import {
-  buildChainConnectingData,
-  computeChainLayout,
-  computeMultiRegionChainLayout,
-  readYsFromRowMap,
-} from './computeChainLayout.ts'
+import { buildLaidOutChainMap } from './computeChainLayout.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import { buildLaidOutPileupMap } from '../RenderPileupDataRPC/sortLayout.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
@@ -229,7 +224,6 @@ export default function stateModelFactory(
         contextMenuRefName: undefined as string | undefined,
         rpcDataMap: observable.map<number, PileupDataResult>(),
         currentRangeY: [0, 600] as [number, number],
-        maxY: 0,
         highlightedChainIds: [] as string[],
         selectedChainIds: [] as string[],
         colorTagMap: {} as Record<string, string>,
@@ -403,25 +397,36 @@ export default function stateModelFactory(
         /**
          * Pileup data with per-read Y rows applied from main-thread layout.
          *
-         * Chain mode passes through `rpcDataMap` unchanged — chain layout
-         * is applied imperatively when fetched data arrives. For pileup
-         * mode (including tag sort) this returns a new map whose entries
-         * are shallow clones of the raw data with freshly-allocated
-         * `readYs/gapYs/mismatchYs/interbaseYs/modificationYs/
-         * softclipBaseYs` and the pileup-layout `maxY`.
+         * Pileup or chain-mode layout derived from raw `rpcDataMap`.
+         * Entries are shallow clones of the raw data with freshly
+         * allocated `readYs/gapYs/mismatchYs/interbaseYs/modificationYs/
+         * softclipBaseYs` (and, in chain mode, `connectingLinePositions`,
+         * `connectingLineYs`, `chainFlatbushData`) and the layout `maxY`.
          *
-         * MobX caches this so layout is recomputed only when `rpcDataMap`,
+         * MobX caches this so layout recomputes only when `rpcDataMap`,
          * `sortedBy`, `showSoftClipping`, or `renderingMode` change.
          */
         get laidOutPileupMap() {
           if (this.renderingMode === 'linkedRead') {
-            return self.rpcDataMap
+            return buildLaidOutChainMap(self.rpcDataMap)
           }
           return buildLaidOutPileupMap({
             dataMap: self.rpcDataMap,
             sortedBy: this.sortedBy,
             showSoftClipping: self.showSoftClipping,
           })
+        },
+
+        // Max pileup row across all laid-out regions. Drives
+        // totalPileupHeight → scroll range.
+        get maxY() {
+          let max = 0
+          for (const data of this.laidOutPileupMap.values()) {
+            if (data.maxY > max) {
+              max = data.maxY
+            }
+          }
+          return max
         },
       }))
       // Views derived from colorBy, featureHeightSetting, featureSpacing above.
@@ -826,10 +831,6 @@ export default function stateModelFactory(
             self.colorPalette = palette
           },
 
-          setMaxY(y: number) {
-            self.maxY = y
-          },
-
           setScrollTop(scrollTop: number) {
             setCurrentRangeY([scrollTop, scrollTop + self.pileupViewportHeight])
           },
@@ -1155,7 +1156,7 @@ export default function stateModelFactory(
             upload: b => {
               // Pileup + connecting lines: one entry per region from
               // self.laidOutPileupMap (Y arrays filled from main-thread
-              // layout, or pass-through rpcDataMap for chain/tag-sort).
+              // layout, or pass-through rpcDataMap for chain mode).
               const active: number[] = []
               for (const [displayedRegionIndex, data] of self.laidOutPileupMap) {
                 active.push(displayedRegionIndex)
@@ -1163,9 +1164,6 @@ export default function stateModelFactory(
                   continue
                 }
                 b.uploadRegion(displayedRegionIndex, data)
-                if (data.maxY > self.maxY) {
-                  self.setMaxY(data.maxY)
-                }
                 if (
                   data.connectingLinePositions &&
                   data.connectingLineYs &&
@@ -1322,73 +1320,6 @@ export default function stateModelFactory(
           }
         }
 
-        /**
-         * Apply a readYs Uint16Array (indexed by read index) and maxY to all
-         * parallel Y arrays in PileupDataResult. Used after layout computation.
-         */
-        function fillYArraysFromLayout(
-          data: PileupDataResult,
-          readYs: Uint16Array,
-          maxY: number,
-        ) {
-          for (let i = 0; i < data.numReads; i++) {
-            data.readYs[i] = readYs[i]!
-          }
-          if (data.gapReadIndices) {
-            for (let i = 0; i < data.numGaps; i++) {
-              data.gapYs[i] = readYs[data.gapReadIndices[i]!]!
-            }
-          }
-          if (data.mismatchReadIndices) {
-            for (let i = 0; i < data.numMismatches; i++) {
-              data.mismatchYs[i] = readYs[data.mismatchReadIndices[i]!]!
-            }
-          }
-          if (data.interbaseReadIndices) {
-            for (let i = 0; i < data.numInterbases; i++) {
-              data.interbaseYs[i] = readYs[data.interbaseReadIndices[i]!]!
-            }
-          }
-          if (data.modificationReadIndices) {
-            for (let i = 0; i < data.numModifications; i++) {
-              data.modificationYs[i] = readYs[data.modificationReadIndices[i]!]!
-            }
-          }
-          if (data.softclipBaseReadIndices) {
-            for (let i = 0; i < data.numSoftclipBases; i++) {
-              data.softclipBaseYs[i] = readYs[data.softclipBaseReadIndices[i]!]!
-            }
-          }
-          data.maxY = maxY
-        }
-
-        function computeAndAssignChainLayout(
-          rpcDataMap: ReadonlyMap<number, PileupDataResult>,
-        ) {
-          const entries = [...rpcDataMap.entries()].filter(
-            ([, d]) => d.numReads > 0,
-          )
-          if (entries.length === 0) {
-            return
-          }
-
-          if (entries.length === 1) {
-            const [displayedRegionIndex, data] = entries[0]!
-            const { readYs, maxY } = computeChainLayout(data)
-            fillYArraysFromLayout(data, readYs, maxY)
-            buildChainConnectingData(data, readYs)
-            self.setRpcData(displayedRegionIndex, data)
-          } else {
-            const { rowMap, maxY } = computeMultiRegionChainLayout(entries)
-            for (const [displayedRegionIndex, data] of entries) {
-              const readYs = readYsFromRowMap(data, rowMap)
-              fillYArraysFromLayout(data, readYs, maxY)
-              buildChainConnectingData(data, readYs)
-              self.setRpcData(displayedRegionIndex, data)
-            }
-          }
-        }
-
         function computeAndSetArcs(
           regions: { region: Region; displayedRegionIndex: number }[],
         ) {
@@ -1485,16 +1416,11 @@ export default function stateModelFactory(
                 self.setSimplexModifications(r.result.simplexModifications)
                 newDataMap.set(r.displayedRegionIndex, r.result)
               }
-              if (self.renderingMode === 'linkedRead') {
-                computeAndAssignChainLayout(newDataMap)
-              } else {
-                // Pileup (non-tag) layout is derived by the
-                // `laidOutPileupMap` getter from `rpcDataMap`. Tag-sort
-                // Ys come pre-filled from the worker. Either way, we
-                // just commit raw results here.
-                for (const [displayedRegionIndex, data] of newDataMap) {
-                  self.setRpcData(displayedRegionIndex, data)
-                }
+              // Layout (pileup or chain) is derived by the
+              // `laidOutPileupMap` getter from `rpcDataMap`. Just commit
+              // raw results here.
+              for (const [displayedRegionIndex, data] of newDataMap) {
+                self.setRpcData(displayedRegionIndex, data)
               }
               if (self.showArcs) {
                 computeAndSetArcs(needed)
