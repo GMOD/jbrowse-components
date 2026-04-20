@@ -215,19 +215,9 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
                   ...d,
                   displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
                 }
-              } else {
-                // Promote renderer properties to display level so they survive
-                // even when the renderer type is no longer registered.
-                //
-                // Rename 'height' to 'featureHeight' to avoid collision with
-                // the display-level track height setting.
-                //
-                // TODO check if that featureheight rename truly needed and
-                // what for
+              } else if (renderer) {
                 const {
-                  // @ts-expect-error
                   type: _rendererType,
-                  // @ts-expect-error
                   height: rendererHeight,
                   ...rendererProps
                 } = renderer
@@ -236,6 +226,11 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
                   ...(rendererHeight !== undefined
                     ? { featureHeight: rendererHeight }
                     : undefined),
+                  ...rest,
+                  displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
+                }
+              } else {
+                return {
                   ...rest,
                   displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
                 }
