@@ -523,7 +523,7 @@ export default function stateModelFactory(
         get coverageDisplayHeight() {
           return (
             (self.showCoverage ? self.coverageHeight : 0) +
-            (self.showArcs ? self.arcsHeight : 0) +
+            (self.showArcs && self.pairedArcsDown ? self.arcsHeight : 0) +
             (self.showSashimiArcs && self.sashimiArcsDown && self.showCoverage
               ? self.sashimiArcsHeight
               : 0)
@@ -1599,50 +1599,68 @@ export default function stateModelFactory(
               type: 'subMenu' as const,
               subMenu: [
                 {
-                  label: 'Show paired/supplementary arcs',
-                  type: 'checkbox' as const,
-                  checked: self.showArcs,
-                  onClick: () => {
-                    self.setShowArcs(!self.showArcs)
-                  },
-                },
-                {
-                  label: 'Paired arcs direction',
+                  label: 'Paired arcs',
                   type: 'subMenu' as const,
                   subMenu: [
                     {
-                      label: 'Pointing down',
+                      label: 'Off',
                       type: 'radio' as const,
-                      checked: self.pairedArcsDown,
+                      checked: !self.showArcs,
                       onClick: () => {
-                        self.setArcsDown(true)
+                        self.setShowArcs(false)
                       },
                     },
                     {
                       label: 'Pointing up',
                       type: 'radio' as const,
-                      checked: !self.pairedArcsDown,
+                      checked: self.showArcs && !self.pairedArcsDown,
                       onClick: () => {
+                        self.setShowArcs(true)
                         self.setArcsDown(false)
+                      },
+                    },
+                    {
+                      label: 'Pointing down',
+                      type: 'radio' as const,
+                      checked: self.showArcs && self.pairedArcsDown,
+                      onClick: () => {
+                        self.setShowArcs(true)
+                        self.setArcsDown(true)
                       },
                     },
                   ],
                 },
                 {
-                  label: 'Show sashimi arcs',
-                  type: 'checkbox' as const,
-                  checked: self.showSashimiArcs,
-                  onClick: () => {
-                    self.setShowSashimiArcs(!self.showSashimiArcs)
-                  },
-                },
-                {
-                  label: 'Show sashimi arcs as pointing down',
-                  type: 'checkbox' as const,
-                  checked: self.sashimiArcsDown,
-                  onClick: () => {
-                    self.setSashimiArcsDown(!self.sashimiArcsDown)
-                  },
+                  label: 'Sashimi arcs',
+                  type: 'subMenu' as const,
+                  subMenu: [
+                    {
+                      label: 'Off',
+                      type: 'radio' as const,
+                      checked: !self.showSashimiArcs,
+                      onClick: () => {
+                        self.setShowSashimiArcs(false)
+                      },
+                    },
+                    {
+                      label: 'Pointing up',
+                      type: 'radio' as const,
+                      checked: self.showSashimiArcs && !self.sashimiArcsDown,
+                      onClick: () => {
+                        self.setShowSashimiArcs(true)
+                        self.setSashimiArcsDown(false)
+                      },
+                    },
+                    {
+                      label: 'Pointing down',
+                      type: 'radio' as const,
+                      checked: self.showSashimiArcs && self.sashimiArcsDown,
+                      onClick: () => {
+                        self.setShowSashimiArcs(true)
+                        self.setSashimiArcsDown(true)
+                      },
+                    },
+                  ],
                 },
               ],
             },

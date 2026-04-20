@@ -297,7 +297,7 @@ const PileupInner = observer(function PileupInner({
           />
         ) : null}
 
-        {showArcs ? (
+        {showArcs && model.pairedArcsDown ? (
           <div
             onMouseDown={handleArcsResizeMouseDown}
             onMouseEnter={() => {

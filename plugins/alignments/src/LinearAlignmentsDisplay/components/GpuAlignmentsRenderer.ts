@@ -811,21 +811,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       const pileupTop = Math.round(state.pileupTopOffset * dpr)
       const pileupH = Math.max(0, bufH - pileupTop)
 
-      if (effectiveArcsHeight > 0 && !state.pairedArcsDown) {
-        this.drawArcsPass(
-          block,
-          region,
-          state,
-          scissorX,
-          scissorW,
-          covH,
-          dpr,
-          bufH,
-          effectiveArcsHeight,
-          effectiveArcsHeight,
-        )
-      }
-
       const vpX = Math.round(scissorX * dpr)
       const vpW = Math.round(scissorW * dpr)
       this.hal.setViewport(vpX, 0, vpW, bufH)
@@ -837,6 +822,22 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         this.hal.drawPass(PASS_MOD_COV, block.regionNumber)
         this.hal.drawPass(PASS_NONCOV, block.regionNumber)
         this.hal.drawPass(PASS_INDICATOR, block.regionNumber)
+      }
+
+      if (effectiveArcsHeight > 0 && !state.pairedArcsDown && covH > 0) {
+        const arcCovH = covH - state.coverageYOffset
+        this.drawArcsPass(
+          block,
+          region,
+          state,
+          scissorX,
+          scissorW,
+          0,
+          dpr,
+          bufH,
+          arcCovH,
+          arcCovH,
+        )
       }
 
       if (pileupH > 0) {
