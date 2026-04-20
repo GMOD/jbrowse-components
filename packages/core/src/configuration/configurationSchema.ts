@@ -128,7 +128,7 @@ function makeConfigurationSchemaModel<
     }
   }
 
-  const volatileConstants: Record<string, any> = {
+  const volatileConstants: Record<string, unknown> = {
     isJBrowseConfigurationSchema: true,
     jbrowseSchema: {
       modelName,

@@ -1,5 +1,4 @@
 import {
-  assembleLocString,
   getFillProps,
   getSession,
   getStrokeProps,
@@ -34,15 +33,10 @@ function sliceArcPath(
   startBase: number,
   endBase: number,
 ) {
-  // A rx ry x-axis-rotation large-arc-flag sweep-flag x y
-  if (slice.flipped) {
-    ;[startBase, endBase] = [endBase, startBase]
-  }
   const startXY = slice.bpToXY(startBase, radiusPx)
   const endXY = slice.bpToXY(endBase, radiusPx)
   const largeArc =
     Math.abs(endBase - startBase) / slice.bpPerRadian > Math.PI ? '1' : '0'
-  const sweepFlag = '1'
   return [
     'M',
     ...startXY,
@@ -51,7 +45,7 @@ function sliceArcPath(
     radiusPx,
     '0',
     largeArc,
-    sweepFlag,
+    '1',
     ...endXY,
   ].join(' ')
 }
@@ -211,7 +205,6 @@ const RegionRulerArc = observer(function RegionRulerArc({
     color = theme.palette.text.primary
   }
 
-  // TODO: slice flipping
   return (
     <>
       <RulerLabel
@@ -240,19 +233,9 @@ const Ruler = observer(function Ruler({
   slice: Slice
 }) {
   return slice.region.elided ? (
-    <ElisionRulerArc
-      key={assembleLocString(slice.region.regions[0]!)}
-      model={model}
-      region={slice.region}
-      slice={slice}
-    />
+    <ElisionRulerArc model={model} region={slice.region} slice={slice} />
   ) : (
-    <RegionRulerArc
-      key={assembleLocString(slice.region)}
-      region={slice.region}
-      model={model}
-      slice={slice}
-    />
+    <RegionRulerArc region={slice.region} model={model} slice={slice} />
   )
 })
 

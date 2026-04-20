@@ -154,7 +154,7 @@ const LevelSection = observer(function LevelSection({
   if (isCollapsed) {
     return (
       <Tooltip
-        title={`Expand level ${levelIdx + 1} (${model.views[levelIdx]!.assemblyNames[0]} ↔ ${model.views[levelIdx + 1]!.assemblyNames[0]})`}
+        title={`Expand level ${levelIdx + 1} (${model.views[levelIdx]!.assemblyNames[0] ?? ''} ↔ ${model.views[levelIdx + 1]!.assemblyNames[0] ?? ''})`}
       >
         <div
           className={classes.collapsedBar}

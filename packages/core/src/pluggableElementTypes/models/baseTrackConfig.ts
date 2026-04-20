@@ -249,7 +249,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
             throw new Error('display type not specified')
           }
           const display = self.displays.find(
-            (d: any) => d?.displayId === conf.displayId,
+            (d: { displayId?: string }) => d?.displayId === conf.displayId,
           )
           if (display) {
             return display

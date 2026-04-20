@@ -411,9 +411,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       expandAllViews() {
-        for (let i = 0; i < self.compactViews.length; i++) {
-          self.compactViews[i] = false
-        }
+        self.compactViews.clear()
       },
       /**
        * #action

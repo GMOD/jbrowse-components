@@ -35,7 +35,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
 
         // access observables to track them (issue #3456)
         for (const v of view.views) {
-          JSON.stringify(v.displayedRegions)
+          void v.displayedRegions
           void v.bpPerPx
           for (const b of v.staticBlocks.contentBlocks) {
             void b.key

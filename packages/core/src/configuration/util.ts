@@ -173,10 +173,11 @@ export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: unknown) {
           typeName = [def.type]
         }
         if (!typeName[0]) {
-          // debugger
           throw new Error(`invalid config schema type ${type}`)
         }
-        typeNames.push(...typeName)
+        for (const name of typeName) {
+          typeNames.push(name)
+        }
       }
       return typeNames
     }

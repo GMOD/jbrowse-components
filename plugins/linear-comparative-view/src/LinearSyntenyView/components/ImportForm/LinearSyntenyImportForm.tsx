@@ -46,7 +46,7 @@ const LinearSyntenyViewImportForm = observer(
     const { classes } = useStyles()
     const session = getSession(model)
     const { assemblyNames } = session
-    const defaultAssemblyName = assemblyNames[0] || ''
+    const defaultAssemblyName = assemblyNames[0] ?? ''
     const [selectedAssemblyNames, setSelectedAssemblyNames] = useState([
       defaultAssemblyName,
       defaultAssemblyName,

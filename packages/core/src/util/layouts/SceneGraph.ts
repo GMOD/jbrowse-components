@@ -18,7 +18,7 @@ export default class SceneGraph {
   top: number
   width: number
   height: number
-  data?: Record<string, any>
+  data?: Record<string, unknown>
 
   /**
    * note: all coordinates are inter-base or inter-pixel coordinates
@@ -29,7 +29,7 @@ export default class SceneGraph {
     top: number,
     width: number,
     height: number,
-    data?: Record<string, any>,
+    data?: Record<string, unknown>,
   ) {
     this.name = name
     this.left = left
@@ -48,7 +48,7 @@ export default class SceneGraph {
     width: number,
     height: number,
 
-    data?: Record<string, any>,
+    data?: Record<string, unknown>,
   ) {
     const child =
       nameOrSceneGraph instanceof SceneGraph

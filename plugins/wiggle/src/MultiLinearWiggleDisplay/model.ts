@@ -264,17 +264,22 @@ export default function stateModelFactory(
 
       get visibleScoreRange(): [number, number] | undefined {
         const view = getContainingView(self) as LGV
+        console.log(
+          `[visibleScoreRange] recomputing, coarseBpPerPx=${view.coarseBpPerPx.toFixed(4)}, rpcDataMap.size=${self.rpcDataMap.size}`,
+        )
         if (!view.initialized || self.rpcDataMap.size === 0) {
           return undefined
         }
         const numStdDev = self.getConfWithOverride<number>('numStdDev')
-        const visibleEntries = view.visibleRegions.flatMap(vr => {
-          const regionData = self.rpcDataMap.get(vr.displayedRegionIndex)
+        // Use coarseDynamicBlocks (500ms debounced) instead of visibleRegions
+        // so autoscale doesn't recompute on every animation frame during zoom.
+        const visibleEntries = view.coarseDynamicBlocks.flatMap(block => {
+          const regionData = self.rpcDataMap.get(block.displayedRegionIndex!)
           if (!regionData) {
             return []
           }
-          const visStart = Math.floor(vr.start) - regionData.regionStart
-          const visEnd = Math.ceil(vr.end) - regionData.regionStart
+          const visStart = Math.floor(block.start) - regionData.regionStart
+          const visEnd = Math.ceil(block.end) - regionData.regionStart
           return regionData.sources.map(source => ({
             visStart,
             visEnd,

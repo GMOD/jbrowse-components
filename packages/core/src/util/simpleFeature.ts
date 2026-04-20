@@ -131,7 +131,7 @@ export default class SimpleFeature implements Feature {
               data: {
                 strand: this.data.strand,
                 ...f,
-              } as Record<string, any>,
+              } as Record<string, unknown>,
               parent: this,
             })
           : f,
@@ -156,7 +156,7 @@ export default class SimpleFeature implements Feature {
    * Set an item of data.
    */
 
-  public set(name: string, val: any): void {
+  public set(name: string, val: unknown): void {
     this.data[name] = val
   }
 

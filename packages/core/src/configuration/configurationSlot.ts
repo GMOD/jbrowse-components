@@ -4,12 +4,16 @@ import { getEnv } from '../util/index.ts'
 import { stringToJexlExpression } from '../util/jexlStrings.ts'
 import { FileLocation } from '../util/types/mst.ts'
 
-import type { IAnyComplexType, IAnyModelType } from '@jbrowse/mobx-state-tree'
+import type {
+  IAnyComplexType,
+  IAnyModelType,
+  IAnyType,
+} from '@jbrowse/mobx-state-tree'
 
 function isValidColorString(_str: string) {
   return true
 }
-const typeModels: Record<string, any> = {
+const typeModels: Record<string, IAnyType> = {
   stringArray: types.array(types.string),
   stringArrayMap: types.map(types.array(types.string)),
   numberMap: types.map(types.number),
@@ -24,7 +28,7 @@ const typeModels: Record<string, any> = {
 }
 
 // default values we use if the defaultValue is malformed or does not work
-const fallbackDefaults: Record<string, any> = {
+const fallbackDefaults: Record<string, unknown> = {
   stringArray: [],
   stringArrayMap: {},
   numberMap: {},
@@ -38,7 +42,7 @@ const fallbackDefaults: Record<string, any> = {
   frozen: {},
 }
 
-const literalJSON = (self: { value: any }) => ({
+const literalJSON = (self: { value: unknown }) => ({
   views: {
     get valueJSON() {
       return self.value
@@ -46,7 +50,7 @@ const literalJSON = (self: { value: any }) => ({
   },
 })
 
-const objectJSON = (self: { value: any }) => ({
+const objectJSON = (self: { value: unknown }) => ({
   views: {
     get valueJSON() {
       return JSON.stringify(self.value)
@@ -87,7 +91,7 @@ const typeModelExtensions: Record<string, (self: any) => any> = {
       },
     },
     actions: {
-      add(key: string, val: any) {
+      add(key: string, val: string[]) {
         self.value.set(key, val)
       },
       remove(key: string) {
@@ -153,7 +157,7 @@ export interface ConfigSlotDefinition {
   /** name of the type of slot, e.g. "string", "number", "stringArray" */
   type: string
   /** default value of the slot */
-  defaultValue: any
+  defaultValue: unknown
   /** parameter names of the function callback */
   contextVariable?: string[]
 }
@@ -214,14 +218,18 @@ export default function ConfigSlot(
               getEnv(self).pluginManager.jexl,
             )
           : {
-              eval: () => self.value,
+              eval: (_arg?: unknown) => self.value,
             }
       },
 
       // JS representation of the value of this slot, suitable
       // for embedding in either JSON or a JS function string.
       // many of the data types override this in typeModelExtensions
-      get valueJSON(): any[] | Record<string, any> | string | undefined {
+      get valueJSON():
+        | unknown[]
+        | Record<string, unknown>
+        | string
+        | undefined {
         return self.isCallback ? undefined : json(self.value)
       },
     }))
@@ -253,7 +261,7 @@ export default function ConfigSlot(
       return snap.value !== defaultValue ? snap.value : undefined
     })
     .actions(self => ({
-      set(newVal: any) {
+      set(newVal: unknown) {
         self.value = newVal
       },
       reset() {

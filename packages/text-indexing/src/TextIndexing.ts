@@ -207,8 +207,7 @@ async function* indexFiles({
     checkStopToken(stopToken)
     const { adapter, textSearching } = track
     const { type } = adapter || {}
-    const resolvedAttrs =
-      textSearching?.indexingAttributes ?? attributesToIndex
+    const resolvedAttrs = textSearching?.indexingAttributes ?? attributesToIndex
     const resolvedExcludes =
       textSearching?.indexingFeatureTypesToExclude ?? featureTypesToExclude
     let myTotalBytes: number | undefined
@@ -246,9 +245,7 @@ function getLoc(attr: string, config: Track) {
     | { uri: string; localPath: string }
     | undefined
   if (!elt) {
-    throw new Error(
-      `Track ${config.trackId} missing adapter location: ${attr}`,
-    )
+    throw new Error(`Track ${config.trackId} missing adapter location: ${attr}`)
   }
   return elt.uri || elt.localPath
 }

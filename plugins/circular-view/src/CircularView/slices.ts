@@ -29,8 +29,6 @@ export class Slice {
 
   bpPerRadian: number
 
-  flipped: boolean
-
   constructor(
     view: { bpPerRadian: number },
     public region: SliceRegion,
@@ -43,28 +41,17 @@ export class Slice {
         ? JSON.stringify(region.regions)
         : assembleLocString(region)
     this.bpPerRadian = bpPerRadian
-    this.flipped = false
-
     this.startRadians = offsetRadians
     this.endRadians = region.widthBp / this.bpPerRadian + offsetRadians
     Object.freeze(this)
   }
 
   bpToXY(bp: number, radiusPx: number) {
-    let offsetBp: number | undefined
-    if (this.region.elided) {
-      offsetBp = this.region.widthBp / 2
-    } else if (this.flipped) {
-      offsetBp = this.region.end - bp
-    } else {
-      offsetBp = bp - this.region.start
-    }
+    const offsetBp = this.region.elided
+      ? this.region.widthBp / 2
+      : bp - this.region.start
     const totalRadians = offsetBp / this.bpPerRadian + this.offsetRadians
     return polarToCartesian(radiusPx, totalRadians)
-  }
-
-  toJSON() {
-    return Object.fromEntries(Object.entries(this))
   }
 }
 

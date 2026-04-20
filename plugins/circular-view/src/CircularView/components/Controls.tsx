@@ -1,7 +1,5 @@
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import LockIcon from '@mui/icons-material/Lock'
-import LockOpenIcon from '@mui/icons-material/LockOpen'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import RotateLeftIcon from '@mui/icons-material/RotateLeft'
 import RotateRightIcon from '@mui/icons-material/RotateRight'
@@ -32,8 +30,8 @@ const Controls = observer(function Controls({
     <div className={classes.controls}>
       <IconButton
         onClick={model.zoomOutButton}
-        title={model.lockedFitToWindow ? 'unlock to zoom out' : 'zoom out'}
-        disabled={model.atMaxBpPerPx || model.lockedFitToWindow}
+        title="zoom out"
+        disabled={model.atMaxBpPerPx}
       >
         <ZoomOutIcon />
       </IconButton>
@@ -58,18 +56,6 @@ const Controls = observer(function Controls({
         title="rotate clockwise"
       >
         <RotateRightIcon />
-      </IconButton>
-
-      <IconButton
-        onClick={model.toggleFitToWindowLock}
-        title={
-          model.lockedFitToWindow
-            ? 'locked model to window size'
-            : 'unlocked model to zoom further'
-        }
-        disabled={model.tooSmallToLock}
-      >
-        {model.lockedFitToWindow ? <LockIcon /> : <LockOpenIcon />}
       </IconButton>
 
       <IconButton onClick={model.openExportDialog} title="Export SVG">

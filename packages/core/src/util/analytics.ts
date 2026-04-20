@@ -30,7 +30,7 @@ export async function writeAWSAnalytics(
     const stats: AnalyticsObj = {
       ver,
       'plugins-count': plugins?.length || 0,
-      'plugin-names': plugins?.map((p: any) => p.name).join(','),
+      'plugin-names': plugins?.map((p: { name?: string }) => p.name).join(','),
       'assemblies-count': assemblies.length,
       'tracks-count': tracks.length,
       'session-tracks-count': session?.sessionTracks.length || 0,
@@ -90,7 +90,9 @@ export async function writeGAAnalytics(
     electron: isElectron,
     loadTime: Date.now() - initialTimestamp,
     pluginNames:
-      rootModel.jbrowse.plugins?.map((plugin: any) => plugin.name) || '',
+      rootModel.jbrowse.plugins?.map(
+        (plugin: { name?: string }) => plugin.name,
+      ) || '',
   }
 
   // create script

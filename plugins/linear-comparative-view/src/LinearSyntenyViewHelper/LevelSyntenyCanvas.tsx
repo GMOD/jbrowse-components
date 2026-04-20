@@ -38,7 +38,7 @@ const useStyles = makeStyles()({
 interface ParentViewDuck {
   width: number
   views: LinearGenomeViewModel[]
-  scrollZoom?: boolean
+  scrollZoom: boolean
 }
 
 function openFeatureWidget(

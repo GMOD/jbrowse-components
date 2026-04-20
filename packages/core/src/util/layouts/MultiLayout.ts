@@ -3,7 +3,7 @@ import type { BaseLayout, SerializedLayout } from './BaseLayout.ts'
 export default class MultiLayout<SUB_LAYOUT_CLASS extends BaseLayout<T>, T> {
   subLayouts = new Map<string, SUB_LAYOUT_CLASS>()
   SubLayoutClass: new (...args: any[]) => SUB_LAYOUT_CLASS
-  subLayoutConstructorArgs: Record<string, any>
+  subLayoutConstructorArgs: Record<string, unknown>
 
   /**
    * layout class that just keeps a number of named sub-layouts.
@@ -12,7 +12,7 @@ export default class MultiLayout<SUB_LAYOUT_CLASS extends BaseLayout<T>, T> {
    */
   constructor(
     SubLayoutClass: new (...args: any[]) => SUB_LAYOUT_CLASS,
-    subLayoutConstructorArgs: Record<string, any> = {},
+    subLayoutConstructorArgs: Record<string, unknown> = {},
   ) {
     this.SubLayoutClass = SubLayoutClass
     this.subLayoutConstructorArgs = subLayoutConstructorArgs

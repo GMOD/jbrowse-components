@@ -331,8 +331,8 @@ export async function executeSyntenyFeaturesAndPositions({
     featureIds.push(f.id())
     names.push((f.get('name') as string | undefined) ?? '')
     refNames.push(refName)
-    assemblyNames.push((f.get('assemblyName') as string) || '')
-    cigars.push((f.get('CIGAR') as string) || '')
+    assemblyNames.push((f.get('assemblyName') as string | undefined) ?? '')
+    cigars.push((f.get('CIGAR') as string | undefined) ?? '')
     if (collectSyri) {
       precomputedSyriTypes.push(f.get('syriType') as string | undefined)
     }

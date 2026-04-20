@@ -30,7 +30,7 @@ const ImportSyntenyTrackSelector = observer(
         track.type.includes('Synteny')
       )
     })
-    const resetTrack = filteredTracks[0]?.trackId || ''
+    const resetTrack = filteredTracks[0]?.trackId ?? ''
     const [value, setValue] = useState(resetTrack)
     useEffect(() => {
       model.setImportFormSyntenyTrack(selectedRow, {

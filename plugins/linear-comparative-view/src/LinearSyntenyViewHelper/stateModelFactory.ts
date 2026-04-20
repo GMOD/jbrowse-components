@@ -118,14 +118,14 @@ export function linearSyntenyViewHelperModelFactory(
       get parentView() {
         return getParent<ParentViewDuck>(self, 2)
       },
-      get assemblyNames() {
+      get assemblyNames(): string[] {
         const p = this.parentView
         if (self.level + 1 >= p.views.length) {
           return []
         }
         return [
-          p.views[self.level]!.assemblyNames[0],
-          p.views[self.level + 1]!.assemblyNames[0],
+          p.views[self.level]!.assemblyNames[0] ?? '',
+          p.views[self.level + 1]!.assemblyNames[0] ?? '',
         ]
       },
       /**

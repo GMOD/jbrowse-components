@@ -15,8 +15,13 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         }
         // touch totalHeight so MobX tracks it as a dependency (row height changes)
         void self.totalHeight
-        const { treeCanvas, hierarchy, treeAreaWidth, height, scrollTop = 0 } =
-          self
+        const {
+          treeCanvas,
+          hierarchy,
+          treeAreaWidth,
+          height,
+          scrollTop = 0,
+        } = self
 
         if (!treeCanvas || !hierarchy) {
           return

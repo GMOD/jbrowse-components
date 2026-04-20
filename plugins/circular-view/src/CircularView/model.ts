@@ -1,5 +1,5 @@
-import type React from 'react'
 import { lazy } from 'react'
+import type { FC, ReactNode } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
@@ -40,7 +40,7 @@ export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   format?: 'svg' | 'png'
   filename?: string
-  Wrapper?: React.FC<{ children: React.ReactNode }>
+  Wrapper?: FC<{ children: ReactNode }>
   themeName?: string
 }
 
@@ -58,7 +58,6 @@ function stateModelFactory(pluginManager: PluginManager) {
   const defaultMinimumRadiusPx = 25
   const defaultSpacingPx = 10
   const defaultPaddingPx = 80
-  const defaultLockedPaddingPx = 100
   const defaultMinVisibleWidth = 6
   const defaultMinimumBlockWidth = 20
   return types
@@ -97,10 +96,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        lockedFitToWindow: true,
-        /**
-         * #property
-         */
         disableImportForm: false,
 
         /**
@@ -114,15 +109,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        scrollX: 0,
-        /**
-         * #property
-         */
-        scrollY: 0,
-
-        /**
-         * #property
-         */
         minimumRadiusPx: defaultMinimumRadiusPx,
         /**
          * #property
@@ -132,10 +118,6 @@ function stateModelFactory(pluginManager: PluginManager) {
          * #property
          */
         paddingPx: defaultPaddingPx,
-        /**
-         * #property
-         */
-        lockedPaddingPx: defaultLockedPaddingPx,
         /**
          * #property
          */
@@ -176,9 +158,9 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get visibleSection() {
-        const { scrollX, scrollY, width, height } = self
+        const { width, height } = self
         return viewportVisibleSection(
-          [scrollX, scrollX + width, scrollY, scrollY + height],
+          [0, width, 0, height],
           this.centerXY,
           this.radiusPx,
         )
@@ -230,9 +212,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get maximumRadiusPx() {
-        return self.lockedFitToWindow
-          ? Math.min(self.width, self.height) / 2 - self.lockedPaddingPx
-          : 1000000
+        return 5000
       },
       /**
        * #getter
@@ -264,12 +244,6 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get atMinBpPerPx() {
         return self.bpPerPx <= this.minBpPerPx
-      },
-      /**
-       * #getter
-       */
-      get tooSmallToLock() {
-        return this.minBpPerPx <= 0.0000000001
       },
       /**
        * #getter
@@ -451,8 +425,18 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      fitToWindow() {
+        if (!self.displayedRegions.length) {
+          return
+        }
+        const r = Math.min(self.width, self.height) / 2 - self.paddingPx
+        this.setBpPerPx(
+          self.totalBp / (2 * Math.PI * Math.max(r, self.minimumRadiusPx)),
+        )
+      },
       setWidth(newWidth: number) {
         self.volatileWidth = Math.max(newWidth, minWidth)
+        this.fitToWindow()
         return self.volatileWidth
       },
       /**
@@ -460,6 +444,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setHeight(newHeight: number) {
         self.height = Math.max(newHeight, minHeight)
+        this.fitToWindow()
         return self.height
       },
       /**
@@ -468,7 +453,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       resizeHeight(distance: number) {
         const oldHeight = self.height
         const newHeight = this.setHeight(self.height + distance)
-        this.setModelViewWhenAdjust(!self.tooSmallToLock)
         return newHeight - oldHeight
       },
       /**
@@ -477,7 +461,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       resizeWidth(distance: number) {
         const oldWidth = self.width
         const newWidth = this.setWidth(self.width + distance)
-        this.setModelViewWhenAdjust(!self.tooSmallToLock)
         return newWidth - oldWidth
       },
       /**
@@ -492,6 +475,13 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       rotateCounterClockwiseButton() {
         this.rotateCounterClockwise(Math.PI / 6)
+      },
+
+      /**
+       * #action
+       */
+      rotate(delta: number) {
+        self.offsetRadians += delta
       },
 
       /**
@@ -532,43 +522,26 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setModelViewWhenAdjust(secondCondition: boolean) {
-        if (self.lockedFitToWindow && secondCondition) {
-          this.setBpPerPx(self.minBpPerPx)
-        }
-      },
-
-      /**
-       * #action
-       */
       setDisplayedRegions(regions: Region[]) {
-        const previouslyEmpty = self.displayedRegions.length === 0
         self.displayedRegions = cast(regions)
-
-        if (previouslyEmpty) {
-          this.setBpPerPx(self.minBpPerPx)
-        } else {
-          this.setBpPerPx(self.bpPerPx)
-        }
+        this.fitToWindow()
       },
 
       /**
        * #action
        */
       activateTrackSelector() {
-        if (self.trackSelectorType === 'hierarchical') {
-          const session = getSession(self)
-          if (isSessionModelWithWidgets(session)) {
-            const selector = session.addWidget(
-              'HierarchicalTrackSelectorWidget',
-              'hierarchicalTrackSelector',
-              { view: self },
-            )
-            session.showWidget(selector)
-            return selector
-          }
+        const session = getSession(self)
+        if (!isSessionModelWithWidgets(session)) {
+          return
         }
-        throw new Error(`invalid track selector type ${self.trackSelectorType}`)
+        const selector = session.addWidget(
+          'HierarchicalTrackSelectorWidget',
+          'hierarchicalTrackSelector',
+          { view: self },
+        )
+        session.showWidget(selector)
+        return selector
       },
 
       /**
@@ -649,16 +622,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         ])
       },
 
-      /**
-       * #action
-       */
-      toggleFitToWindowLock() {
-        // when going unlocked -> locked and circle is cut off, set to the
-        // locked minBpPerPx
-        self.lockedFitToWindow = !self.lockedFitToWindow
-        this.setModelViewWhenAdjust(self.atMinBpPerPx)
-        return self.lockedFitToWindow
-      },
       /**
        * #action
        * creates an svg export and save using FileSaver
@@ -780,16 +743,12 @@ function stateModelFactory(pluginManager: PluginManager) {
         bpPerPx,
         hideVerticalResizeHandle,
         hideTrackSelectorButton,
-        lockedFitToWindow,
         disableImportForm,
         height,
         displayedRegions,
-        scrollX,
-        scrollY,
         minimumRadiusPx,
         spacingPx,
         paddingPx,
-        lockedPaddingPx,
         minVisibleWidth,
         minimumBlockWidth,
         trackSelectorType,
@@ -801,20 +760,14 @@ function stateModelFactory(pluginManager: PluginManager) {
         ...(bpPerPx !== defaultBpPerPx ? { bpPerPx } : {}),
         ...(hideVerticalResizeHandle ? { hideVerticalResizeHandle } : {}),
         ...(hideTrackSelectorButton ? { hideTrackSelectorButton } : {}),
-        ...(!lockedFitToWindow ? { lockedFitToWindow } : {}),
         ...(disableImportForm ? { disableImportForm } : {}),
         ...(height !== defaultHeight ? { height } : {}),
         ...(displayedRegions.length ? { displayedRegions } : {}),
-        ...(scrollX ? { scrollX } : {}),
-        ...(scrollY ? { scrollY } : {}),
         ...(minimumRadiusPx !== defaultMinimumRadiusPx
           ? { minimumRadiusPx }
           : {}),
         ...(spacingPx !== defaultSpacingPx ? { spacingPx } : {}),
         ...(paddingPx !== defaultPaddingPx ? { paddingPx } : {}),
-        ...(lockedPaddingPx !== defaultLockedPaddingPx
-          ? { lockedPaddingPx }
-          : {}),
         ...(minVisibleWidth !== defaultMinVisibleWidth
           ? { minVisibleWidth }
           : {}),

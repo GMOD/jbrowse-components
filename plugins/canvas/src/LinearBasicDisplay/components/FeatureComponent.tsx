@@ -1,10 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { ErrorOverlay, Menu } from '@jbrowse/core/ui'
-import {
-  getContainingView,
-  useGpuModelLifecycle,
-} from '@jbrowse/core/util'
+import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 

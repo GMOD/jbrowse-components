@@ -302,7 +302,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           const alignmentLength = Math.abs(
             featureData.ends[i]! - featureData.starts[i]!,
           )
-          const currentTotal = lengths.get(queryName) || 0
+          const currentTotal = lengths.get(queryName) ?? 0
           lengths.set(queryName, currentTotal + alignmentLength)
         }
         return lengths

@@ -63,8 +63,8 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
     setMinLengthValue(Math.log2(Math.max(1, minAlignmentLength)) * 100)
   }, [minAlignmentLength])
 
+  const hasOffScreen = 'maxOffScreenDrawPx' in model
   const view = model as unknown as LinearSyntenyViewModel
-  const hasOffScreen = 'maxOffScreenDrawPx' in view
 
   return (
     <>

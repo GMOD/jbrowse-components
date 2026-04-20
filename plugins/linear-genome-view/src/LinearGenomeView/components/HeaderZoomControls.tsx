@@ -1,7 +1,7 @@
 import { lazy, useState } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { getBpDisplayStr, getSession, useDebounce } from '@jbrowse/core/util'
+import { getBpDisplayStr, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVert from '@mui/icons-material/MoreVert'
 import ZoomIn from '@mui/icons-material/ZoomIn'
@@ -72,19 +72,29 @@ function getZoomMenuItems(model: LinearGenomeViewModel) {
   ]
 }
 
+let headerZoomRenderCount = 0
+let headerZoomLastLogTime = 0
+
 const HeaderZoomControls = observer(function HeaderZoomControls({
   model,
 }: {
   model: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const { width, bpPerPx, maxBpPerPx, minBpPerPx } = model
+  const { width, maxBpPerPx, minBpPerPx, coarseBpPerPx } = model
+  headerZoomRenderCount++
+  const now = Date.now()
+  if (now - headerZoomLastLogTime > 1000) {
+    console.log(
+      `[HeaderZoomControls] ${headerZoomRenderCount} renders/s, coarseBpPerPx=${coarseBpPerPx.toFixed(4)}`,
+    )
+    headerZoomRenderCount = 0
+    headerZoomLastLogTime = now
+  }
   const [dragValue, setDragValue] = useState<number | null>(null)
-  const debouncedBpPerPx = useDebounce(bpPerPx, 100)
-  const displayBpPerPx = dragValue !== null ? bpPerPx : debouncedBpPerPx
-  const value = dragValue ?? -Math.log2(displayBpPerPx) * 100
-  const zoomInDisabled = debouncedBpPerPx <= minBpPerPx + 0.0001
-  const zoomOutDisabled = debouncedBpPerPx >= maxBpPerPx - 0.0001
+  const value = dragValue ?? -Math.log2(coarseBpPerPx) * 100
+  const zoomInDisabled = coarseBpPerPx <= minBpPerPx + 0.0001
+  const zoomOutDisabled = coarseBpPerPx >= maxBpPerPx - 0.0001
   return (
     <div className={classes.container}>
       <Tooltip title="Zoom out 2x">
@@ -93,7 +103,7 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
             data-testid="zoom_out"
             disabled={zoomOutDisabled}
             onClick={() => {
-              model.zoom(bpPerPx * 2)
+              model.zoom(model.bpPerPx * 2)
             }}
           >
             <ZoomOut />

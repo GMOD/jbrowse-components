@@ -74,7 +74,12 @@ const TreeSidebar = observer(function TreeSidebar({
           for (const node of nodes) {
             const x = node.y!
             const y = node.x!
-            index.add(x - hitRadius, y - hitRadius, x + hitRadius, y + hitRadius)
+            index.add(
+              x - hitRadius,
+              y - hitRadius,
+              x + hitRadius,
+              y + hitRadius,
+            )
           }
           index.finish()
           setSpatialIndex({ index, nodes })

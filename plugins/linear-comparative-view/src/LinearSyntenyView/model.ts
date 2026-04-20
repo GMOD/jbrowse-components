@@ -337,7 +337,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                       },
                       { label: '', type: 'divider' as const },
                       ...self.levels.map((level, idx) => ({
-                        label: `Focus: ${self.views[idx]!.assemblyNames[0]} ↔ ${self.views[idx + 1]!.assemblyNames[0]}`,
+                        label: `Focus: ${self.views[idx]!.assemblyNames[0] ?? ''} ↔ ${self.views[idx + 1]!.assemblyNames[0] ?? ''}`,
                         type: 'radio' as const,
                         checked:
                           !level.collapsed &&

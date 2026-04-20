@@ -19,7 +19,11 @@ const DotplotDisplay = observer(function DotplotDisplay({
 
   return (
     <>
-      <DotplotLoadingIndicator model={model} width={viewWidth} height={viewHeight} />
+      <DotplotLoadingIndicator
+        model={model}
+        width={viewWidth}
+        height={viewHeight}
+      />
       <DotplotRefetchingIndicator model={model} />
     </>
   )
@@ -52,16 +56,18 @@ const DotplotLoadingIndicator = observer(function DotplotLoadingIndicator({
   ) : null
 })
 
-const DotplotRefetchingIndicator = observer(function DotplotRefetchingIndicator({
-  model,
-}: {
-  model: Pick<DotplotDisplayModel, 'isRefetching'>
-}) {
-  return model.isRefetching ? (
-    <div style={{ position: 'absolute', bottom: 4, right: 4, opacity: 0.7 }}>
-      <LoadingEllipses />
-    </div>
-  ) : null
-})
+const DotplotRefetchingIndicator = observer(
+  function DotplotRefetchingIndicator({
+    model,
+  }: {
+    model: Pick<DotplotDisplayModel, 'isRefetching'>
+  }) {
+    return model.isRefetching ? (
+      <div style={{ position: 'absolute', bottom: 4, right: 4, opacity: 0.7 }}>
+        <LoadingEllipses />
+      </div>
+    ) : null
+  },
+)
 
 export default DotplotDisplay

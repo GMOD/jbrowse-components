@@ -5,6 +5,9 @@ import type axisPropsFromTickScale from './axisPropsFromTickScale.ts'
 
 type Ticks = ReturnType<typeof axisPropsFromTickScale>
 
+let yScaleBarRenderCount = 0
+let yScaleBarLastLogTime = 0
+
 const YScaleBar = observer(function YScaleBar({
   model,
   orientation,
@@ -12,6 +15,13 @@ const YScaleBar = observer(function YScaleBar({
   model: { ticks?: Ticks }
   orientation?: string
 }) {
+  yScaleBarRenderCount++
+  const now = Date.now()
+  if (now - yScaleBarLastLogTime > 1000) {
+    console.log(`[YScaleBar] ${yScaleBarRenderCount} renders/s`)
+    yScaleBarRenderCount = 0
+    yScaleBarLastLogTime = now
+  }
   const { ticks } = model
   const theme = useTheme()
   if (!ticks) {

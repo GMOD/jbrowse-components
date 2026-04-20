@@ -114,7 +114,10 @@ const MultiWiggleAddTrackWorkflow = observer(
     const [inputVal, setInputVal] = useState('')
     const [tracks, setTracks] = useState<TrackRow[]>([])
     const [trackName, setTrackName] = useState(`MultiWiggle${Date.now()}`)
-    const [selection, setSelection] = useState<GridRowSelectionModel>({ type: 'include', ids: new Set() })
+    const [selection, setSelection] = useState<GridRowSelectionModel>({
+      type: 'include',
+      ids: new Set(),
+    })
     const counter = useRef(0)
 
     function addTracks(items: TrackItem[]) {

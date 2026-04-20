@@ -1,6 +1,6 @@
 import type React from 'react'
 
-import { getParent, types } from '@jbrowse/mobx-state-tree'
+import { getParent, hasParent, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../../configuration/index.ts'
 import { getEffectiveTrackConfig } from '../../util/getConfigOverrides.ts'
@@ -47,14 +47,14 @@ function stateModelFactory() {
       get RenderingComponent(): React.FC<{
         model: typeof self
         onHorizontalScroll?: () => void
-        blockState?: Record<string, any>
+        blockState?: Record<string, unknown>
       }> {
         const { pluginManager } = getEnv(self)
         return pluginManager.getDisplayType(self.type)!
           .ReactComponent as React.FC<{
           model: typeof self
           onHorizontalScroll?: () => void
-          blockState?: Record<string, any>
+          blockState?: Record<string, unknown>
         }>
       },
 
@@ -94,19 +94,17 @@ function stateModelFactory() {
        * (e.g., PileupDisplay inside LinearAlignmentsDisplay)
        */
       get parentDisplay() {
-        try {
-          const parent = getParent<any>(self)
-          // Check if immediate parent looks like a display
-          // (has type property ending with 'Display')
-          const parentType = parent?.type
+        if (hasParent(self)) {
+          const parent = getParent<{
+            type?: string
+            effectiveRpcDriverName?: string
+          }>(self)
           if (
-            typeof parentType === 'string' &&
-            parentType.endsWith('Display')
+            typeof parent.type === 'string' &&
+            parent.type.endsWith('Display')
           ) {
             return parent
           }
-        } catch {
-          // Ignore errors walking up tree
         }
         return undefined
       },
@@ -125,11 +123,7 @@ function stateModelFactory() {
         if (this.parentDisplay?.effectiveRpcDriverName) {
           return this.parentDisplay.effectiveRpcDriverName
         }
-        try {
-          return getConf(this.parentTrack, 'rpcDriverName') || undefined
-        } catch {
-          return undefined
-        }
+        return getConf(this.parentTrack, 'rpcDriverName')
       },
     }))
     .views(self => ({

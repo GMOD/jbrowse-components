@@ -73,6 +73,8 @@ export function computeHierarchyLayout(
   layoutHeight: number,
   layoutWidth: number,
 ) {
-  cluster().size([layoutHeight, layoutWidth]).separation(() => 1)(root)
+  cluster()
+    .size([layoutHeight, layoutWidth])
+    .separation(() => 1)(root)
   return root
 }

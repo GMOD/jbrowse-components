@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession, useLocalStorage } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
 import {
   Button,
   Checkbox,
@@ -32,7 +33,7 @@ function useSvgLocal<T>(key: string, val: T) {
   return useLocalStorage(`svg-${key}`, val)
 }
 
-export default function ExportSvgDialog({
+const ExportSvgDialog = observer(function ExportSvgDialog({
   model,
   handleClose,
 }: {
@@ -161,4 +162,6 @@ export default function ExportSvgDialog({
       </DialogActions>
     </Dialog>
   )
-}
+})
+
+export default ExportSvgDialog

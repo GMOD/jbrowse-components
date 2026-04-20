@@ -113,7 +113,10 @@ const AlignmentsDisplayComponent = observer(
 const AlignmentsLoadingOverlay = observer(function AlignmentsLoadingOverlay({
   model,
 }: {
-  model: Pick<LinearAlignmentsDisplayModel, 'isLoading' | 'statusMessage' | 'regionTooLarge'>
+  model: Pick<
+    LinearAlignmentsDisplayModel,
+    'isLoading' | 'statusMessage' | 'regionTooLarge'
+  >
 }) {
   return (
     <LoadingOverlay

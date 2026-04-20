@@ -213,15 +213,17 @@ export default function stateModelFactory(
           return undefined
         }
         const numStdDev = self.getConfWithOverride<number>('numStdDev')
-        const visibleEntries = view.visibleRegions.flatMap(vr => {
-          const data = self.rpcDataMap.get(vr.displayedRegionIndex)
+        // Use coarseDynamicBlocks (500ms debounced) instead of visibleRegions
+        // so autoscale doesn't recompute on every animation frame during zoom.
+        const visibleEntries = view.coarseDynamicBlocks.flatMap(block => {
+          const data = self.rpcDataMap.get(block.displayedRegionIndex!)
           if (!data) {
             return []
           }
           return [
             {
-              visStart: Math.floor(vr.start) - data.regionStart,
-              visEnd: Math.ceil(vr.end) - data.regionStart,
+              visStart: Math.floor(block.start) - data.regionStart,
+              visEnd: Math.ceil(block.end) - data.regionStart,
               data,
             },
           ]

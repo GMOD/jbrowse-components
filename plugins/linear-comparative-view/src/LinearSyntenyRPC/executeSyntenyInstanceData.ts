@@ -207,7 +207,7 @@ export function executeSyntenyInstanceData({
     const queryName = names[i] || `feat-${i}`
     queryNames[i] = queryName
     const alignmentLength = Math.abs(ends[i]! - starts[i]!)
-    const current = queryTotalLengths.get(queryName) || 0
+    const current = queryTotalLengths.get(queryName) ?? 0
     queryTotalLengths.set(queryName, current + alignmentLength)
   }
   const qtls = new Float32Array(featureCount)

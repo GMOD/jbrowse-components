@@ -72,7 +72,7 @@ export function drawRef(
 
     if (queryTotalLengths) {
       const queryName = featureData.names[fi] || featureData.featureIds[fi]!
-      const totalLength = queryTotalLengths.get(queryName) || 0
+      const totalLength = queryTotalLengths.get(queryName) ?? 0
       if (totalLength < minAlignmentLength) {
         continue
       }

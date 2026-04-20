@@ -38,7 +38,10 @@ const SyntenyLoadingOverlay = observer(function SyntenyLoadingOverlay({
   model: Pick<MultiLGVSyntenyDisplayModel, 'isLoading' | 'statusMessage'>
 }) {
   return (
-    <LoadingOverlay statusMessage={model.statusMessage} isVisible={model.isLoading} />
+    <LoadingOverlay
+      statusMessage={model.statusMessage}
+      isVisible={model.isLoading}
+    />
   )
 })
 
