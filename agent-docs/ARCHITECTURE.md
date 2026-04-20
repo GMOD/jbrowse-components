@@ -24,7 +24,7 @@ canvas, hand the resulting backend to the model, render JSX.
 ```
 RPC worker returns data
         │
-        ▼ self.setLoadedRegionForRegion(n, data)   (or equivalent)
+        ▼ self.setLoadedRegion(n, data)   (or equivalent)
 MST model
   ├─ .volatile rpcDataMap: Map<number, Data>
   ├─ .volatile gpuBackendLifecycleHandle, canvasDrawn
@@ -58,8 +58,8 @@ React component (observer, ~30 lines)
 
 ```ts
 interface MultiRegionBackend<Data, State> {
-  uploadRegion(regionNumber: number, data: Data): void
-  pruneRegions(activeRegionNumbers: number[]): void
+  uploadRegion(displayedRegionIndex: number, data: Data): void
+  pruneRegions(activeDisplayedRegionIndices: number[]): void
   renderBlocks(blocks: RenderBlock[], state: State): void
   dispose(): void
 }
@@ -102,7 +102,7 @@ change the upload autorun fires and re-uploads every region. "MobX is the
 cache." Plugins whose upload bytes depend on settings read those settings
 inside `upload` via `self.gpuProps()` — no separate invalidation token.
 
-**Per-region zoom-staleness** (`isCacheValid(regionNumber)`). Worker
+**Per-region zoom-staleness** (`isCacheValid(displayedRegionIndex)`). Worker
 output X positions are always BP offsets from `regionStart` — no plugin
 ships pixel coordinates across the worker boundary. The reason wiggle and
 canvas still need a zoom-staleness check is more subtle and differs per
@@ -155,7 +155,7 @@ and pileup layout share state across regions (see
 
 **Contract:** per-region value objects must be freshly constructed on update
 (never mutated in place). Plugin setters follow the spread-then-assign pattern
-used by `setLoadedRegionForRegion` on `MultiRegionDisplayMixin`.
+used by `setLoadedRegion` on `MultiRegionDisplayMixin`.
 
 ### B. Global-upload display (HiC, LD, variant-matrix)
 
@@ -241,7 +241,7 @@ skipped, so `markCanvasDrawn` is not called.
 Every LGV-based display composes this; composes `GpuBackendLifecycleSlotMixin`
 internally. Provides cached `renderBlocks` (from `buildRenderBlocks`),
 `fullyDrawn = canvasDrawn && !isLoading`, the upload-identity contract on
-`setLoadedRegionForRegion`, a single `SettingsInvalidate` autorun that reads
+`setLoadedRegion`, a single `SettingsInvalidate` autorun that reads
 `void self.rpcProps` → `self.clearAllRpcData()`, the `FetchVisibleRegions`
 autorun, and shared volatiles for `error` / `renderingStopToken` /
 `statusMessage`. The `withFetchLifecycle(needed, work)` action wraps a
@@ -385,7 +385,7 @@ DPR. **Do not manually scale by `devicePixelRatio`.**
 
 ---
 
-## `regionNumber`
+## `displayedRegionIndex`
 
 Zero-based index into `view.displayedRegions` — the user's configured region
 list. Stable unless regions are added, removed, or reordered. **Not** an
@@ -393,8 +393,8 @@ index into `dynamicBlocks.contentBlocks`. One displayedRegion can produce
 multiple render blocks sharing one GPU buffer, drawn with different scissor
 clips.
 
-Join key across `model.rpcDataMap`, `hal.uploadBuffer(regionNumber, passId,
-...)`, `RenderBlock.regionNumber`. In multi-LGV displays (dotplot, synteny)
+Join key across `model.rpcDataMap`, `hal.uploadBuffer(displayedRegionIndex, passId,
+...)`, `RenderBlock.displayedRegionIndex`. In multi-LGV displays (dotplot, synteny)
 the buffer key becomes a tuple of two displayedRegion indices — those plugins
 use composite keys.
 

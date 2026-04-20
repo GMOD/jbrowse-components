@@ -61,7 +61,7 @@ Move `useTabVisibilityRerender` + `renderNow()` into the HAL's own
 
 Search: `grep -r 'uploadChangedRegions\|uploadRegionDataToGPU\|pruneRegionMap' packages/ plugins/`
 
-### `regionNumber` → `displayedRegionIndex`
+### `displayedRegionIndex` → `displayedRegionIndex`
 
 ~550 occurrences, 73 files. Scripted sed + tsc. Do last — mechanical
 pass shouldn't overlap active migrations.
@@ -91,7 +91,7 @@ Rewrite `ARCHITECTURE.md`: "Upload/render lifecycle" and
 2. Pickable mixin
 3. Synteny
 
-Separate: regionNumber rename (last), doc rewrite (once stable),
+Separate: displayedRegionIndex rename (last), doc rewrite (once stable),
 tab-visibility → HAL (post-synteny), dead code deletion.
 
 ---

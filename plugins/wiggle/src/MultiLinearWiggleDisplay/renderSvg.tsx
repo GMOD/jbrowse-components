@@ -174,10 +174,10 @@ function renderToCtx(
   })
 
   for (const block of view.dynamicBlocks.contentBlocks) {
-    if (block.regionNumber === undefined) {
+    if (block.displayedRegionIndex === undefined) {
       continue
     }
-    const data = rpcDataMap.get(block.regionNumber)
+    const data = rpcDataMap.get(block.displayedRegionIndex)
     if (!data) {
       continue
     }

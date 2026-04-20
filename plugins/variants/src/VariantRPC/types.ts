@@ -33,7 +33,7 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs {
   renderingMode: string
   referenceDrawingMode?: string
   mode: 'regular' | 'matrix'
-  regionNumbers?: number[]
+  displayedRegionIndices?: number[]
   statusCallback: (arg: string) => void
   byteSizeLimit?: number
 }

@@ -36,7 +36,7 @@ export interface RegionUpload<BackendType, RegionDataType> {
    */
   upload: (
     backend: BackendType,
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: RegionDataType,
   ) => void
 
@@ -46,15 +46,15 @@ export interface RegionUpload<BackendType, RegionDataType> {
    * another (e.g. alignments' arcs share the pileup backend's region slots).
    * Fires only when the key set changes.
    */
-  prune?: (backend: BackendType, activeRegionNumbers: number[]) => void
+  prune?: (backend: BackendType, activeDisplayedRegionIndices: number[]) => void
 
   /**
-   * Fires once per regionNumber that disappears from the data map. Use
+   * Fires once per displayedRegionIndex that disappears from the data map. Use
    * when the backend is shared across displays and per-key GPU resources
    * must be freed (`prune` fires once with the active set — not enough to
    * know *which* key went away).
    */
-  deleteOne?: (backend: BackendType, regionNumber: number) => void
+  deleteOne?: (backend: BackendType, displayedRegionIndex: number) => void
 }
 
 export interface StartGpuBackendAutorunLifecycleArgs<

@@ -527,16 +527,12 @@ export default function sharedModelFactory(
           return
         }
         const regions = view.dynamicBlocks.contentBlocks
-        if (
-          !self.showLDTriangle ||
-          self.regionTooLarge ||
-          !regions.length
-        ) {
+        if (!self.showLDTriangle || self.regionTooLarge || !regions.length) {
           return
         }
         const { bpPerPx, visibleBp } = view
         const { adapterConfig } = self
-        self.withFetchLifecycle(async ctx => {
+        self.runFetch(async ctx => {
           const { rpcManager } = getSession(self)
           const sessionId = getRpcSessionId(self)
           const stats = (await rpcManager.call(

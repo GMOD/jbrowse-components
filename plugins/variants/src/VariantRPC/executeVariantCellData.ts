@@ -137,16 +137,16 @@ export async function executeVariantCellData({
     adapterConfig,
     sessionId,
     statusCallback,
-    regionNumbers,
+    displayedRegionIndices,
     byteSizeLimit,
   } = args
 
-  const regionLookup = regionNumbers
+  const regionLookup = displayedRegionIndices
     ? regions.map((r, i) => ({
         refName: r.refName,
         start: r.start,
         end: r.end,
-        regionNumber: regionNumbers[i]!,
+        displayedRegionIndex: displayedRegionIndices[i]!,
       }))
     : undefined
 
@@ -211,10 +211,10 @@ export async function executeVariantCellData({
       if (!region || start < region.start) {
         continue
       }
-      let list = perRegionRawFeatures.get(region.regionNumber)
+      let list = perRegionRawFeatures.get(region.displayedRegionIndex)
       if (!list) {
         list = []
-        perRegionRawFeatures.set(region.regionNumber, list)
+        perRegionRawFeatures.set(region.displayedRegionIndex, list)
       }
       list.push(feature)
     }

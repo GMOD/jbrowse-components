@@ -31,11 +31,11 @@ export const ArcsSubModel = types
     },
   }))
   .actions(self => ({
-    setRpcData(regionNumber: number, data: ArcsDataResult | null) {
+    setRpcData(displayedRegionIndex: number, data: ArcsDataResult | null) {
       if (data) {
-        self.rpcDataMap.set(regionNumber, data)
+        self.rpcDataMap.set(displayedRegionIndex, data)
       } else {
-        self.rpcDataMap.delete(regionNumber)
+        self.rpcDataMap.delete(displayedRegionIndex)
       }
     },
     clearAllRpcData() {

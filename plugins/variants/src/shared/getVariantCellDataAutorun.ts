@@ -80,14 +80,16 @@ export function getVariantCellDataAutorun(self: {
                 'MultiSampleVariantGetCellData',
                 {
                   regions: view.dynamicBlocks.contentBlocks,
-                  regionNumbers: view.dynamicBlocks.contentBlocks.map(b => {
-                    if (b.regionNumber === undefined) {
-                      throw new Error(
-                        `Content block for ${b.refName} has no regionNumber`,
-                      )
-                    }
-                    return b.regionNumber
-                  }),
+                  displayedRegionIndices: view.dynamicBlocks.contentBlocks.map(
+                    b => {
+                      if (b.displayedRegionIndex === undefined) {
+                        throw new Error(
+                          `Content block for ${b.refName} has no displayedRegionIndex`,
+                        )
+                      }
+                      return b.displayedRegionIndex
+                    },
+                  ),
                   ...rpcProps,
                   sources,
                   mode: cellDataMode,

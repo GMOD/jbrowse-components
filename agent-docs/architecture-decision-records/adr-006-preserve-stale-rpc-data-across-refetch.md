@@ -56,7 +56,7 @@ pruneRawRpcDataMapToVisible(visible: Set<number>) {
 
 onFetchNeeded(needed) {
   self.pruneRawRpcDataMapToVisible(
-    new Set(view.bufferedVisibleRegions.map(b => b.regionNumber)),
+    new Set(view.bufferedVisibleRegions.map(b => b.displayedRegionIndex)),
   )
   self.withFetchLifecycle(needed, /* ... */)
 },

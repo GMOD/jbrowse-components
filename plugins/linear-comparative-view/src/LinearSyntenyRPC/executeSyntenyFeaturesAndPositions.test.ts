@@ -174,7 +174,7 @@ describe('bpToPxFromIndex matches bpToPx', () => {
     expect(result).toEqual(expected)
   })
 
-  it('handles duplicate refNames with regionNumber disambiguation', () => {
+  it('handles duplicate refNames with displayedRegionIndex disambiguation', () => {
     const self = makeViewSnap([
       { refName: 'chr1', start: 0, end: 1000 },
       { refName: 'chr1', start: 2000, end: 3000 },
@@ -186,7 +186,7 @@ describe('bpToPxFromIndex matches bpToPx', () => {
       self,
       refName: 'chr1',
       coord: 500,
-      regionNumber: 0,
+      displayedRegionIndex: 0,
     })
     expect(r0).toEqual(r0Expected)
 
@@ -195,7 +195,7 @@ describe('bpToPxFromIndex matches bpToPx', () => {
       self,
       refName: 'chr1',
       coord: 2500,
-      regionNumber: 1,
+      displayedRegionIndex: 1,
     })
     expect(r1).toEqual(r1Expected)
   })

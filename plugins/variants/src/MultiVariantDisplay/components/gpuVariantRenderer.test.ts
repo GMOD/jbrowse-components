@@ -30,7 +30,7 @@ function makeBlock(
   overrides?: Partial<VariantRenderBlock>,
 ): VariantRenderBlock {
   return {
-    regionNumber: 0,
+    displayedRegionIndex: 0,
     bpRangeX: [0, 10000],
     screenStartPx: 0,
     screenEndPx: 800,
@@ -138,7 +138,7 @@ describe('GpuVariantRenderer', () => {
     const hal = new MockHal(VARIANT_PASSES)
     const renderer = new GpuVariantRenderer(hal)
 
-    renderer.renderBlocks([makeBlock({ regionNumber: 99 })], {
+    renderer.renderBlocks([makeBlock({ displayedRegionIndex: 99 })], {
       canvasWidth: 800,
       canvasHeight: 600,
       rowHeight: 20,
@@ -157,8 +157,16 @@ describe('GpuVariantRenderer', () => {
 
     renderer.renderBlocks(
       [
-        makeBlock({ regionNumber: 0, screenStartPx: 0, screenEndPx: 400 }),
-        makeBlock({ regionNumber: 1, screenStartPx: 400, screenEndPx: 800 }),
+        makeBlock({
+          displayedRegionIndex: 0,
+          screenStartPx: 0,
+          screenEndPx: 400,
+        }),
+        makeBlock({
+          displayedRegionIndex: 1,
+          screenStartPx: 400,
+          screenEndPx: 800,
+        }),
       ],
       {
         canvasWidth: 800,

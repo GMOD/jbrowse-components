@@ -50,7 +50,7 @@ export function getGlobalMaxDepth(
 
 export interface MultiPairGetFeaturesArgs {
   adapterConfig: Record<string, unknown>
-  regions: { region: Region; regionNumber: number }[]
+  regions: { region: Region; displayedRegionIndex: number }[]
   bpPerPx: number
   resolution?: number
   sessionId: string

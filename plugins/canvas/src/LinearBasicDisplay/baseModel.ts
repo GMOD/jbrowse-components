@@ -42,17 +42,17 @@ import type {
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type {
   ExportSvgDisplayOptions,
   FetchContext,
   LinearGenomeViewModel,
-  MultiRegionRegion as Region,
-  MultiRegionRegionWithNumber as RegionWithNumber,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
+
+type LoadedFeatureData = FeatureDataResult & { loadedBpPerPx: number }
 
 function findSubfeatureById(
   feature: Feature,
@@ -73,7 +73,7 @@ function findSubfeatureById(
   return undefined
 }
 
-export type { MultiRegionRegion as Region } from '@jbrowse/plugin-linear-genome-view'
+export type { Region } from '@jbrowse/core/util'
 
 export async function fetchCanvasFeatureDetails(
   session: {
@@ -180,14 +180,13 @@ export default function baseStateModelFactory(
         }
       })
       .volatile(() => ({
-        rawRpcDataMap: observable.map<number, FeatureDataResult>(),
-        fetchedBpPerPxMap: observable.map<number, number>(),
+        rpcDataMap: observable.map<number, LoadedFeatureData>(),
         canvasDrawn: false,
         featureIdUnderMouse: null as string | null,
         subfeatureIdUnderMouse: null as string | null,
         mouseoverExtraInformation: undefined as string | undefined,
         contextMenuInfo: undefined as
-          | { item: FlatbushItem; regionNumber: number }
+          | { item: FlatbushItem; displayedRegionIndex: number }
           | undefined,
         userFeatureDensityLimit: undefined as number | undefined,
         featureDensityPerPx: 0,
@@ -199,12 +198,12 @@ export default function baseStateModelFactory(
         // (raw data, bpPerPx, label visibility). Every consumer (hit test,
         // GPU upload, React render) reads this getter and sees the same
         // cached map until an input moves.
-        get rpcDataMap(): Map<number, FeatureDataResult> {
+        get laidOutDataMap(): Map<number, FeatureDataResult> {
           const view = getContainingView(self) as LGV
-          if (!view.initialized || self.rawRpcDataMap.size === 0) {
+          if (!view.initialized || self.rpcDataMap.size === 0) {
             return new Map()
           }
-          return computeLaidOutData(self.rawRpcDataMap, {
+          return computeLaidOutData(self.rpcDataMap, {
             bpPerPx: view.bpPerPx,
             regionKeys: this.regionKeys,
             showLabels: this.showLabels,
@@ -214,7 +213,7 @@ export default function baseStateModelFactory(
 
         get maxY() {
           let max = 0
-          for (const data of this.rpcDataMap.values()) {
+          for (const data of this.laidOutDataMap.values()) {
             for (const item of data.flatbushItems) {
               if (item.bottomPx > max) {
                 max = item.bottomPx
@@ -318,7 +317,7 @@ export default function baseStateModelFactory(
         get hoveredFeature() {
           const id = self.featureIdUnderMouse
           if (id) {
-            for (const data of this.rpcDataMap.values()) {
+            for (const data of this.laidOutDataMap.values()) {
               for (const f of data.flatbushItems) {
                 if (f.featureId === id) {
                   return f
@@ -332,7 +331,7 @@ export default function baseStateModelFactory(
         get hoveredSubfeature() {
           const id = self.subfeatureIdUnderMouse
           if (id) {
-            for (const data of this.rpcDataMap.values()) {
+            for (const data of this.laidOutDataMap.values()) {
               for (const s of data.subfeatureInfos) {
                 if (s.featureId === id) {
                   return s
@@ -381,7 +380,7 @@ export default function baseStateModelFactory(
         },
 
         getFeatureById(featureId: string): FlatbushItem | undefined {
-          for (const data of this.rpcDataMap.values()) {
+          for (const data of this.laidOutDataMap.values()) {
             const found = data.flatbushItems.find(
               f => f.featureId === featureId,
             )
@@ -453,33 +452,31 @@ export default function baseStateModelFactory(
           }
         },
 
-        setRawRpcDataForRegion(regionNumber: number, data: FeatureDataResult) {
-          self.rawRpcDataMap.set(regionNumber, data)
+        setRpcData(
+          displayedRegionIndex: number,
+          data: FeatureDataResult,
+          loadedBpPerPx: number,
+        ) {
+          self.rpcDataMap.set(displayedRegionIndex, { ...data, loadedBpPerPx })
         },
 
         setFeatureDensityPerPx(value: number) {
           self.featureDensityPerPx = value
         },
 
-        recordFetchBpPerPx(regionNumber: number, bpPerPx: number) {
-          self.fetchedBpPerPxMap.set(regionNumber, bpPerPx)
-        },
-
         clearDisplaySpecificData() {
-          // Deliberately NOT clearing rawRpcDataMap — we keep stale data
+          // Deliberately NOT clearing rpcDataMap — we keep stale data
           // visible through the refetch window (labels don't vanish and
           // reappear). onFetchNeeded prunes regions that are no longer
           // visible, so this doesn't leak.
-          self.fetchedBpPerPxMap.clear()
           self.setRegionTooLarge(false)
           self.setScrollTop(0)
         },
 
-        pruneRawRpcDataMapToVisible(visibleRegionNumbers: Set<number>) {
-          for (const key of self.rawRpcDataMap.keys()) {
-            if (!visibleRegionNumbers.has(key)) {
-              self.rawRpcDataMap.delete(key)
-              self.fetchedBpPerPxMap.delete(key)
+        pruneRpcDataMapToVisible(visibleDisplayedRegionIndices: Set<number>) {
+          for (const key of self.rpcDataMap.keys()) {
+            if (!visibleDisplayedRegionIndices.has(key)) {
+              self.rpcDataMap.delete(key)
             }
           }
         },
@@ -494,12 +491,12 @@ export default function baseStateModelFactory(
               {
                 // Reads the derived laid-out map. Re-fires when raw data,
                 // bpPerPx, or label visibility changes — no other plumbing.
-                getData: () => self.rpcDataMap,
-                upload: (b, regionNumber, data: FeatureDataResult) => {
-                  b.uploadRegion(regionNumber, data)
+                getData: () => self.laidOutDataMap,
+                upload: (b, displayedRegionIndex, data: FeatureDataResult) => {
+                  b.uploadRegion(displayedRegionIndex, data)
                 },
-                prune: (b, activeRegionNumbers) => {
-                  b.pruneRegions(activeRegionNumbers)
+                prune: (b, activeDisplayedRegionIndices) => {
+                  b.pruneRegions(activeDisplayedRegionIndices)
                 },
               },
             ],
@@ -536,7 +533,7 @@ export default function baseStateModelFactory(
 
         setContextMenuInfo(info?: {
           item: FlatbushItem
-          regionNumber: number
+          displayedRegionIndex: number
         }) {
           self.contextMenuInfo = info
         },
@@ -571,14 +568,14 @@ export default function baseStateModelFactory(
 
         showContextMenuForFeature(
           featureInfo: FlatbushItem,
-          regionNumber: number,
+          displayedRegionIndex: number,
         ) {
-          self.setContextMenuInfo({ item: featureInfo, regionNumber })
+          self.setContextMenuInfo({ item: featureInfo, displayedRegionIndex })
         },
       }))
       .actions(self => ({
-        selectFullFeature(featureId: string, regionNumber: number) {
-          const region = self.loadedRegions.get(regionNumber)
+        selectFullFeature(featureId: string, displayedRegionIndex: number) {
+          const region = self.loadedRegions.get(displayedRegionIndex)
           if (!region) {
             return
           }
@@ -600,9 +597,9 @@ export default function baseStateModelFactory(
         selectFeatureById(
           featureInfo: FlatbushItem,
           subfeatureInfo: SubfeatureInfo | undefined,
-          regionNumber: number,
+          displayedRegionIndex: number,
         ) {
-          const region = self.loadedRegions.get(regionNumber)
+          const region = self.loadedRegions.get(displayedRegionIndex)
           if (!region) {
             return
           }
@@ -636,21 +633,21 @@ export default function baseStateModelFactory(
         // overlay was fetched (gated by `shouldRenderPeptideBackground`).
         // Refetch only when crossing that discrete threshold — never on
         // continuous zoom drift.
-        isCacheValid(regionNumber: number) {
-          const fetchedBpPerPx = self.fetchedBpPerPxMap.get(regionNumber)
-          if (fetchedBpPerPx === undefined) {
+        isCacheValid(displayedRegionIndex: number) {
+          const regionData = self.rpcDataMap.get(displayedRegionIndex)
+          if (regionData === undefined) {
             return true
           }
           const view = getContainingView(self) as LGV
           return (
             shouldRenderPeptideBackground(view.bpPerPx) ===
-            shouldRenderPeptideBackground(fetchedBpPerPx)
+            shouldRenderPeptideBackground(regionData.loadedBpPerPx)
           )
         },
       }))
       .actions(self => {
         interface FetchResult {
-          regionNumber: number
+          displayedRegionIndex: number
           data: FeatureDataResult
           region: Region
           bpPerPx: number
@@ -658,7 +655,7 @@ export default function baseStateModelFactory(
 
         async function fetchFeaturesForRegion(
           region: Region,
-          regionNumber: number,
+          displayedRegionIndex: number,
           bpPerPx: number,
           stopToken: StopToken,
         ): Promise<FetchResult | 'regionTooLarge'> {
@@ -682,15 +679,14 @@ export default function baseStateModelFactory(
           if ('regionTooLarge' in result) {
             return 'regionTooLarge'
           }
-          return { regionNumber, data: result, region, bpPerPx }
+          return { displayedRegionIndex, data: result, region, bpPerPx }
         }
 
         function applyFetchResults(results: FetchResult[]) {
           let totalFeatures = 0
           let totalSpanPx = 0
           for (const r of results) {
-            self.setRawRpcDataForRegion(r.regionNumber, r.data)
-            self.recordFetchBpPerPx(r.regionNumber, r.bpPerPx)
+            self.setRpcData(r.displayedRegionIndex, r.data, r.bpPerPx)
             totalFeatures += r.data.featureCount
             totalSpanPx += (r.region.end - r.region.start) / r.bpPerPx
           }
@@ -709,21 +705,25 @@ export default function baseStateModelFactory(
             self.onFetchNeeded(view.bufferedVisibleRegions)
           },
 
-          onFetchNeeded(needed: RegionWithNumber[]) {
+          onFetchNeeded(
+            needed: { region: Region; displayedRegionIndex: number }[],
+          ) {
             const view = getContainingView(self) as LGV
             const bpPerPx = view.bpPerPx
             // Drop cached regions that are no longer visible. Keeps stale
             // data for regions still on screen (so labels stay up during
-            // the refetch window) without letting rawRpcDataMap grow
+            // the refetch window) without letting rpcDataMap grow
             // unboundedly as the user pans.
-            self.pruneRawRpcDataMapToVisible(
-              new Set(view.bufferedVisibleRegions.map(b => b.regionNumber)),
+            self.pruneRpcDataMapToVisible(
+              new Set(
+                view.bufferedVisibleRegions.map(b => b.displayedRegionIndex),
+              ),
             )
-            self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
-              const promises = needed.map(({ region, regionNumber }) =>
+            self.fetchRegions(needed, async (ctx: FetchContext) => {
+              const promises = needed.map(({ region, displayedRegionIndex }) =>
                 fetchFeaturesForRegion(
                   region,
-                  regionNumber,
+                  displayedRegionIndex,
                   bpPerPx,
                   ctx.stopToken,
                 ),
@@ -750,7 +750,7 @@ export default function baseStateModelFactory(
             superAfterAttach()
 
             // Auto-height: snap height to fit the laid-out content. maxY
-            // derives from rpcDataMap, which derives from raw fetch data +
+            // derives from laidOutDataMap, which derives from raw fetch data +
             // bpPerPx + label visibility — so zoom and label toggles both
             // flow through here without any extra plumbing.
             addDisposer(
@@ -769,7 +769,6 @@ export default function baseStateModelFactory(
                 { name: 'CanvasAutoHeight' },
               ),
             )
-
           },
         }
       })
@@ -805,15 +804,15 @@ export default function baseStateModelFactory(
           }
           const {
             item: { featureId, startBp, endBp },
-            regionNumber,
+            displayedRegionIndex,
           } = info
-          const region = self.loadedRegions.get(regionNumber)
+          const region = self.loadedRegions.get(displayedRegionIndex)
           return [
             {
               label: 'Open feature details',
               icon: MenuOpenIcon,
               onClick: () => {
-                self.selectFullFeature(featureId, regionNumber)
+                self.selectFullFeature(featureId, displayedRegionIndex)
               },
             },
             {

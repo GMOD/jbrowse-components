@@ -79,19 +79,22 @@ import type { AlignmentsBackend } from './components/rendererTypes.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 import type { ArcsDataResult } from '../shared/computeArcsFromPileupData.ts'
 import type { LegendItem } from '../shared/legendUtils.ts'
-import type { ColorBy, FilterBy, ModificationTypeWithColor, SortedBy } from '../shared/types'
+import type {
+  ColorBy,
+  FilterBy,
+  ModificationTypeWithColor,
+  SortedBy,
+} from '../shared/types'
 import type { CoverageTicks } from '@jbrowse/alignments-core'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   FetchContext,
   LinearGenomeViewModel,
-  MultiRegionRegion as Region,
-  MultiRegionRegionWithNumber as RegionWithNumber,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -103,7 +106,7 @@ export {
 } from './constants.ts'
 export type { InsertionType } from './constants.ts'
 
-export type { MultiRegionRegion as Region } from '@jbrowse/plugin-linear-genome-view'
+export type { Region } from '@jbrowse/core/util'
 
 function getSequenceAdapter(session: AbstractSessionModel, region: Region) {
   const assembly = region.assemblyName
@@ -236,7 +239,9 @@ export default function stateModelFactory(
         highlightedChainIds: [] as string[],
         selectedChainIds: [] as string[],
         colorTagMap: {} as Record<string, string>,
-        visibleModifications: observable.map<string, ModificationTypeWithColor>({}),
+        visibleModifications: observable.map<string, ModificationTypeWithColor>(
+          {},
+        ),
         simplexModifications: new Set<string>(),
         modificationsReady: false,
         overCigarItem: false,
@@ -386,7 +391,7 @@ export default function stateModelFactory(
             return 0
           }
           return computeVisibleMaxDepth(view.dynamicBlocks.contentBlocks, b =>
-            self.rpcDataMap.get(b.regionNumber!),
+            self.rpcDataMap.get(b.displayedRegionIndex!),
           )
         },
 
@@ -451,16 +456,19 @@ export default function stateModelFactory(
         },
 
         /**
-         * Cached O(1) index: featureId → {regionNumber, idx}.
+         * Cached O(1) index: featureId → {displayedRegionIndex, idx}.
          * Recomputed by MobX only when rpcDataMap changes.
          */
         get readIdIndexMap() {
-          const map = new Map<string, { regionNumber: number; idx: number }>()
-          for (const [regionNumber, rpcData] of self.rpcDataMap) {
+          const map = new Map<
+            string,
+            { displayedRegionIndex: number; idx: number }
+          >()
+          for (const [displayedRegionIndex, rpcData] of self.rpcDataMap) {
             for (let i = 0; i < rpcData.readIds.length; i++) {
               const id = rpcData.readIds[i]
               if (id !== undefined) {
-                map.set(id, { regionNumber, idx: i })
+                map.set(id, { displayedRegionIndex, idx: i })
               }
             }
           }
@@ -484,7 +492,7 @@ export default function stateModelFactory(
         },
 
         /**
-         * Find a feature by ID in rpcDataMap, returning the regionNumber,
+         * Find a feature by ID in rpcDataMap, returning the displayedRegionIndex,
          * index, and rpcData entry. Shared by searchFeatureByID and
          * getFeatureInfoById.
          */
@@ -493,15 +501,21 @@ export default function stateModelFactory(
           if (!entry) {
             return undefined
           }
-          const { regionNumber, idx } = entry
-          const rpcData = self.rpcDataMap.get(regionNumber)
+          const { displayedRegionIndex, idx } = entry
+          const rpcData = self.rpcDataMap.get(displayedRegionIndex)
           if (!rpcData) {
             return undefined
           }
           const startOffset = rpcData.readPositions[idx * 2]
           const endOffset = rpcData.readPositions[idx * 2 + 1]
           if (startOffset !== undefined && endOffset !== undefined) {
-            return { regionNumber, idx, rpcData, startOffset, endOffset }
+            return {
+              displayedRegionIndex,
+              idx,
+              rpcData,
+              startOffset,
+              endOffset,
+            }
           }
           return undefined
         },
@@ -549,10 +563,10 @@ export default function stateModelFactory(
           const bpPerPx = view.bpPerPx
           const blocks = []
           for (const block of contentBlocks) {
-            if (block.regionNumber === undefined) {
+            if (block.displayedRegionIndex === undefined) {
               continue
             }
-            const data = self.rpcDataMap.get(block.regionNumber)
+            const data = self.rpcDataMap.get(block.displayedRegionIndex)
             if (data) {
               blocks.push({
                 rpcData: data,
@@ -604,7 +618,8 @@ export default function stateModelFactory(
           if (!hit) {
             return undefined
           }
-          const { regionNumber, idx, rpcData, startOffset, endOffset } = hit
+          const { displayedRegionIndex, idx, rpcData, startOffset, endOffset } =
+            hit
           const view = getContainingView(self) as LGV
           const flags = rpcData.readFlags[idx]
           return {
@@ -615,7 +630,8 @@ export default function stateModelFactory(
             flags,
             mapq: rpcData.readMapqs[idx],
             strand: flags !== undefined && flags & 16 ? '-' : '+',
-            refName: view.displayedRegions[regionNumber]?.refName ?? 'unknown',
+            refName:
+              view.displayedRegions[displayedRegionIndex]?.refName ?? 'unknown',
           }
         },
       }))
@@ -756,9 +772,12 @@ export default function stateModelFactory(
             }
           },
 
-          setRpcData(regionNumber: number, data: PileupDataResult | null) {
+          setRpcData(
+            displayedRegionIndex: number,
+            data: PileupDataResult | null,
+          ) {
             if (data) {
-              self.rpcDataMap.set(regionNumber, data)
+              self.rpcDataMap.set(displayedRegionIndex, data)
               for (const modType of data.detectedModifications) {
                 if (!self.visibleModifications.has(modType)) {
                   self.visibleModifications.set(modType, {
@@ -770,7 +789,7 @@ export default function stateModelFactory(
                 }
               }
             } else {
-              self.rpcDataMap.delete(regionNumber)
+              self.rpcDataMap.delete(displayedRegionIndex)
             }
           },
 
@@ -1007,11 +1026,11 @@ export default function stateModelFactory(
               uploads: [
                 {
                   getData: () => self.rpcDataMap,
-                  upload: (b, regionNumber, data: PileupDataResult) => {
+                  upload: (b, displayedRegionIndex, data: PileupDataResult) => {
                     if (data.numReads === 0) {
                       return
                     }
-                    b.uploadRegion(regionNumber, data)
+                    b.uploadRegion(displayedRegionIndex, data)
                     if (data.maxY > self.maxY) {
                       self.maxY = data.maxY
                     }
@@ -1020,7 +1039,7 @@ export default function stateModelFactory(
                       data.connectingLineYs &&
                       data.numConnectingLines
                     ) {
-                      b.uploadConnectingLinesForRegion(regionNumber, {
+                      b.uploadConnectingLinesForRegion(displayedRegionIndex, {
                         regionStart: data.regionStart,
                         connectingLinePositions: data.connectingLinePositions,
                         connectingLineYs: data.connectingLineYs,
@@ -1034,8 +1053,8 @@ export default function stateModelFactory(
                 },
                 {
                   getData: () => self.arcsState.rpcDataMap,
-                  upload: (b, regionNumber, data: ArcsDataResult) => {
-                    b.uploadArcsFromTypedArraysForRegion(regionNumber, {
+                  upload: (b, displayedRegionIndex, data: ArcsDataResult) => {
+                    b.uploadArcsFromTypedArraysForRegion(displayedRegionIndex, {
                       regionStart: data.regionStart,
                       arcX1: data.arcX1,
                       arcX2: data.arcX2,
@@ -1255,7 +1274,7 @@ export default function stateModelFactory(
         async function fetchFeaturesForRegion(
           adapterConfig: Record<string, unknown>,
           region: Region,
-          regionNumber: number,
+          displayedRegionIndex: number,
           stopToken: StopToken,
         ) {
           const session = getSession(self)
@@ -1271,7 +1290,7 @@ export default function stateModelFactory(
               ))
 
           return {
-            regionNumber,
+            displayedRegionIndex,
             result,
             region: {
               refName: region.refName,
@@ -1351,17 +1370,17 @@ export default function stateModelFactory(
           }
 
           if (entries.length === 1) {
-            const [regionNumber, data] = entries[0]!
+            const [displayedRegionIndex, data] = entries[0]!
             const { readYs, maxY } = sortedBy
               ? computeSortedLayout(data, sortedBy, showSoftClipping)
               : computeLayout(data, showSoftClipping)
             fillYArraysFromLayout(data, readYs, maxY)
-            self.setRpcData(regionNumber, data)
+            self.setRpcData(displayedRegionIndex, data)
           } else {
             const { rowMap, maxY } = computeMultiRegionLayout(entries)
-            for (const [regionNumber, data] of entries) {
+            for (const [displayedRegionIndex, data] of entries) {
               fillYArraysFromLayoutMap(data, rowMap, maxY)
-              self.setRpcData(regionNumber, data)
+              self.setRpcData(displayedRegionIndex, data)
             }
           }
         }
@@ -1377,42 +1396,44 @@ export default function stateModelFactory(
           }
 
           if (entries.length === 1) {
-            const [regionNumber, data] = entries[0]!
+            const [displayedRegionIndex, data] = entries[0]!
             const { readYs, maxY } = computeChainLayout(data)
             fillYArraysFromLayout(data, readYs, maxY)
             buildChainConnectingData(data, readYs)
-            self.setRpcData(regionNumber, data)
+            self.setRpcData(displayedRegionIndex, data)
           } else {
             const { rowMap, maxY } = computeMultiRegionChainLayout(entries)
-            for (const [regionNumber, data] of entries) {
+            for (const [displayedRegionIndex, data] of entries) {
               const readYs = readYsFromRowMap(data, rowMap)
               fillYArraysFromLayout(data, readYs, maxY)
               buildChainConnectingData(data, readYs)
-              self.setRpcData(regionNumber, data)
+              self.setRpcData(displayedRegionIndex, data)
             }
           }
         }
 
-        function computeAndSetArcs(regions: RegionWithNumber[]) {
+        function computeAndSetArcs(
+          regions: { region: Region; displayedRegionIndex: number }[],
+        ) {
           const allRegionInfos: {
             refName: string
             start: number
             end: number
-            regionNumber: number
+            displayedRegionIndex: number
           }[] = []
-          const addedRegionNumbers = new Set<number>()
-          for (const [regionNumber, loaded] of self.loadedRegions) {
+          const addedDisplayedRegionIndices = new Set<number>()
+          for (const [displayedRegionIndex, loaded] of self.loadedRegions) {
             allRegionInfos.push({
               refName: loaded.refName,
               start: loaded.start,
               end: loaded.end,
-              regionNumber,
+              displayedRegionIndex,
             })
-            addedRegionNumbers.add(regionNumber)
+            addedDisplayedRegionIndices.add(displayedRegionIndex)
           }
-          for (const { region, regionNumber } of regions) {
-            if (!addedRegionNumbers.has(regionNumber)) {
-              allRegionInfos.push({ ...region, regionNumber })
+          for (const { region, displayedRegionIndex } of regions) {
+            if (!addedDisplayedRegionIndices.has(displayedRegionIndex)) {
+              allRegionInfos.push({ ...region, displayedRegionIndex })
             }
           }
           const { arcs, lines } = computeArcsFromPileupData(
@@ -1425,7 +1446,7 @@ export default function stateModelFactory(
             },
           )
           for (const ri of allRegionInfos) {
-            const data = self.rpcDataMap.get(ri.regionNumber)
+            const data = self.rpcDataMap.get(ri.displayedRegionIndex)
             if (!data) {
               continue
             }
@@ -1436,15 +1457,15 @@ export default function stateModelFactory(
               data.regionStart,
               self.height,
             )
-            self.arcsState.setRpcData(ri.regionNumber, result)
+            self.arcsState.setRpcData(ri.displayedRegionIndex, result)
           }
         }
 
         const superAfterAttach = self.afterAttach
 
         return {
-          async fetchFeatures(region: Region, regionNumber = 0) {
-            self.onFetchNeeded([{ region, regionNumber }])
+          async fetchFeatures(region: Region, displayedRegionIndex = 0) {
+            self.onFetchNeeded([{ region, displayedRegionIndex }])
           },
 
           getByteEstimateConfig() {
@@ -1458,13 +1479,15 @@ export default function stateModelFactory(
             }
           },
 
-          onFetchNeeded(needed: RegionWithNumber[]) {
-            self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
-              const promises = needed.map(({ region, regionNumber }) =>
+          onFetchNeeded(
+            needed: { region: Region; displayedRegionIndex: number }[],
+          ) {
+            self.fetchRegions(needed, async (ctx: FetchContext) => {
+              const promises = needed.map(({ region, displayedRegionIndex }) =>
                 fetchFeaturesForRegion(
                   self.adapterConfigSnapshot,
                   region,
-                  regionNumber,
+                  displayedRegionIndex,
                   ctx.stopToken,
                 ),
               )
@@ -1483,7 +1506,7 @@ export default function stateModelFactory(
                 }
                 self.setModificationsReady(true)
                 self.setSimplexModifications(r.result.simplexModifications)
-                newDataMap.set(r.regionNumber, r.result)
+                newDataMap.set(r.displayedRegionIndex, r.result)
               }
               if (
                 self.renderingMode !== 'linkedRead' &&
@@ -1497,8 +1520,8 @@ export default function stateModelFactory(
               } else if (self.renderingMode === 'linkedRead') {
                 computeAndAssignChainLayout(newDataMap)
               } else {
-                for (const [regionNumber, data] of newDataMap) {
-                  self.setRpcData(regionNumber, data)
+                for (const [displayedRegionIndex, data] of newDataMap) {
+                  self.setRpcData(displayedRegionIndex, data)
                 }
               }
               if (self.showArcs) {
@@ -1531,7 +1554,7 @@ export default function stateModelFactory(
                   computeAndSetArcs(
                     view.mergedVisibleRegions.map(vr => ({
                       region: vr,
-                      regionNumber: vr.regionNumber,
+                      displayedRegionIndex: vr.displayedRegionIndex,
                     })),
                   )
                 },

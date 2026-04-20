@@ -747,7 +747,13 @@ describe('compatibility: new implementation vs original', () => {
     const ops2 = parseCigar2(cigar)
     const cigarMismatches = cigarToMismatches2(ops2, testSeq)
     const resultNew = mdToMismatches2(md, ops2, cigarMismatches, testSeq, qual)
-    const resultOld = mdToMismatchesOriginal(md, ops1, cigarMismatches, testSeq, qual)
+    const resultOld = mdToMismatchesOriginal(
+      md,
+      ops1,
+      cigarMismatches,
+      testSeq,
+      qual,
+    )
     expect(resultNew).toEqual(resultOld)
   })
 

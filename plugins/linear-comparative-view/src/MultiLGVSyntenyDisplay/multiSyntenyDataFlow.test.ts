@@ -121,8 +121,8 @@ describe('collapsed intron view: same refName, different regions', () => {
   })
 })
 
-describe('regionNumber round-trip: fetch stores and render looks up by number', () => {
-  test('data stored by regionNumber is retrievable', () => {
+describe('displayedRegionIndex round-trip: fetch stores and render looks up by number', () => {
+  test('data stored by displayedRegionIndex is retrievable', () => {
     const displayedRegions = [
       { assemblyName: 'hg38', refName: 'chr1', start: 0, end: 248956422 },
       { assemblyName: 'hg38', refName: 'chr2', start: 0, end: 242193529 },
@@ -140,11 +140,11 @@ describe('regionNumber round-trip: fetch stores and render looks up by number', 
     }
 
     for (
-      let regionNumber = 0;
-      regionNumber < displayedRegions.length;
-      regionNumber++
+      let displayedRegionIndex = 0;
+      displayedRegionIndex < displayedRegions.length;
+      displayedRegionIndex++
     ) {
-      const data = rpcDataMap.get(regionNumber)
+      const data = rpcDataMap.get(displayedRegionIndex)
       expect(data).toBeDefined()
     }
   })

@@ -93,7 +93,7 @@ that calls
   in some state (e.g. no domain yet) does that in the autorun's
   `getRenderBlocks` callback (`() => self.domain ? self.renderBlocks : []`), not
   by overriding the getter.
-- Upload-identity contract documented on `setLoadedRegionForRegion`: per-region
+- Upload-identity contract documented on `setLoadedRegion`: per-region
   value objects must be freshly constructed when updated — never mutated in
   place — since the autorun's identity diff depends on reference inequality.
 
@@ -264,7 +264,7 @@ bug later.
 completes, no production code will import these. Delete. Search:
 `grep -r 'uploadChangedRegions\|pruneRegionMap' packages/ plugins/`.
 
-**6. Rename `regionNumber` → `displayedRegionIndex`.** ~550 occurrences across
+**6. Rename `displayedRegionIndex` → `displayedRegionIndex`.** ~550 occurrences across
 73 files (documented in
 `plugins/linear-genome-view/src/LinearGenomeView/model.ts:1460-1503` and
 elsewhere). Do this in **one focused pass, last**, so we're not churning code
@@ -292,7 +292,7 @@ From the review earlier in the conversation, not yet acted on:
 
 - **`render()` positional signatures** in dotplot (4 args) and synteny (10 args)
   should become `(state: object)` for extensibility. Part of Tier 1.3.
-- **`regionKey` vs `regionNumber`** naming mismatch between dotplot and the
+- **`regionKey` vs `displayedRegionIndex`** naming mismatch between dotplot and the
   rest. Fix during Tier 3.6 rename (consider whether dotplot's composite key
   should also rename, or stay distinct).
 - **`pick(x, y)` on synteny** doesn't fit any family cleanly. Consider a

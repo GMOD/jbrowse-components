@@ -137,7 +137,13 @@ describe('computeAutoscaleDomain', () => {
     const data = makeFeatureArrays([1, 100, 5])
     const visEntries = [{ data, visStart: 0, visEnd: 100 }]
     const allEntries = [{ data }]
-    const result = computeAutoscaleDomain('localsd', 'avg', 3, visEntries, allEntries)
+    const result = computeAutoscaleDomain(
+      'localsd',
+      'avg',
+      3,
+      visEntries,
+      allEntries,
+    )
     expect(result).toBeDefined()
     // only score=1 visible; stddev=0 → max = 1+3*0 = 1
     expect(result![0]).toBe(0)

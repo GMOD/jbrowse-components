@@ -11,7 +11,7 @@ upload-skip pattern:
 
 > "SYNC across all hook-driven GPU displays (wiggle, multi-wiggle, variants,
 > alignments, HiC, LD): dataVersion is a counter incremented by
-> setLoadedRegionForRegion()…"
+> setLoadedRegion()…"
 
 Wiggle, multi-wiggle, and alignments all store per-region RPC results in a
 persistent `Map<number, DataResult>` on the model. When a new region's data

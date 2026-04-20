@@ -63,12 +63,14 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
   }
 
   uploadGeometryForBlock(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: BlockGeometryData & { regionStart: number },
   ) {
-    this.hal.setRegionMeta(regionNumber, { regionStart: data.regionStart })
+    this.hal.setRegionMeta(displayedRegionIndex, {
+      regionStart: data.regionStart,
+    })
     this.hal.uploadBuffer(
-      regionNumber,
+      displayedRegionIndex,
       PASS_FILL,
       data.buffer,
       data.instanceCount,
@@ -76,21 +78,24 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
   }
 
   uploadCoverageForBlock(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: BlockCoverageUploadData & { regionStart: number; maxDepth: number },
   ) {
-    this.hal.setRegionMeta(regionNumber, { maxDepth: data.maxDepth })
+    this.hal.setRegionMeta(displayedRegionIndex, { maxDepth: data.maxDepth })
     this.hal.uploadBuffer(
-      regionNumber,
+      displayedRegionIndex,
       PASS_COVERAGE,
       data.buffer,
       data.binCount,
     )
   }
 
-  uploadSnpCoverageForBlock(regionNumber: number, data: BlockSnpUploadData) {
+  uploadSnpCoverageForBlock(
+    displayedRegionIndex: number,
+    data: BlockSnpUploadData,
+  ) {
     this.hal.uploadBuffer(
-      regionNumber,
+      displayedRegionIndex,
       PASS_SNP,
       data.buffer,
       data.segmentCount,
@@ -98,11 +103,11 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
   }
 
   uploadIndicatorsForBlock(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: BlockIndicatorUploadData,
   ) {
     this.hal.uploadBuffer(
-      regionNumber,
+      displayedRegionIndex,
       PASS_INDICATORS,
       data.buffer,
       data.indicatorCount,
@@ -133,8 +138,8 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
 
     let globalMaxDepth = 0
     for (const block of contentBlocks) {
-      if (block.regionNumber !== undefined) {
-        const meta = this.hal.getRegionMeta(block.regionNumber)
+      if (block.displayedRegionIndex !== undefined) {
+        const meta = this.hal.getRegionMeta(block.displayedRegionIndex)
         if (meta && meta.maxDepth > globalMaxDepth) {
           globalMaxDepth = meta.maxDepth
         }
@@ -251,10 +256,10 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
     viewWidth: number,
   ): Generator<[number, BlockRenderParams]> {
     for (const block of contentBlocks) {
-      if (block.regionNumber === undefined) {
+      if (block.displayedRegionIndex === undefined) {
         continue
       }
-      if (!this.hal.getRegionMeta(block.regionNumber)) {
+      if (!this.hal.getRegionMeta(block.displayedRegionIndex)) {
         continue
       }
       const params = computeBlockRenderParams(block, viewOffsetPx)
@@ -264,7 +269,7 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
       ) {
         continue
       }
-      yield [block.regionNumber, params]
+      yield [block.displayedRegionIndex, params]
     }
   }
 }

@@ -83,7 +83,7 @@ export class MultiPairGetFeatures extends RpcMethodType {
 
     const regionData: [number, SyntenyRegionData][] = []
 
-    for (const { region, regionNumber } of regions) {
+    for (const { region, displayedRegionIndex } of regions) {
       const { genomeRows } = await adapter.getMultiPairFeatures(region, {
         bpPerPx,
         stopToken,
@@ -130,7 +130,7 @@ export class MultiPairGetFeatures extends RpcMethodType {
       }
 
       regionData.push([
-        regionNumber,
+        displayedRegionIndex,
         {
           refName: region.refName,
           regionStart,

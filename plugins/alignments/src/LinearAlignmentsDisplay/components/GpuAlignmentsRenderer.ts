@@ -551,16 +551,19 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     })
   }
 
-  uploadRegion(regionNumber: number, data: PileupDataResult) {
-    this.uploadFromTypedArraysForRegion(regionNumber, data)
-    this.uploadCigarFromTypedArraysForRegion(regionNumber, data)
-    this.uploadModificationsFromTypedArraysForRegion(regionNumber, data)
-    this.uploadCoverageFromTypedArraysForRegion(regionNumber, data)
-    this.uploadModCoverageFromTypedArraysForRegion(regionNumber, data)
+  uploadRegion(displayedRegionIndex: number, data: PileupDataResult) {
+    this.uploadFromTypedArraysForRegion(displayedRegionIndex, data)
+    this.uploadCigarFromTypedArraysForRegion(displayedRegionIndex, data)
+    this.uploadModificationsFromTypedArraysForRegion(displayedRegionIndex, data)
+    this.uploadCoverageFromTypedArraysForRegion(displayedRegionIndex, data)
+    this.uploadModCoverageFromTypedArraysForRegion(displayedRegionIndex, data)
   }
 
-  uploadFromTypedArraysForRegion(regionNumber: number, data: ReadUploadData) {
-    this.hal.deleteRegion(regionNumber)
+  uploadFromTypedArraysForRegion(
+    displayedRegionIndex: number,
+    data: ReadUploadData,
+  ) {
+    this.hal.deleteRegion(displayedRegionIndex)
     const r = emptyRegion(data.regionStart)
     r.insertSizeStats = data.insertSizeStats
     r.readPositions = data.readPositions
@@ -569,12 +572,14 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     for (let i = 0; i < data.numReads; i++) {
       r.readIdToIndex.set(data.readIds[i]!, i)
     }
-    this.regions.set(regionNumber, r)
-    this.hal.setRegionMeta(regionNumber, { regionStart: data.regionStart })
+    this.regions.set(displayedRegionIndex, r)
+    this.hal.setRegionMeta(displayedRegionIndex, {
+      regionStart: data.regionStart,
+    })
 
     if (data.numSegments > 0) {
       this.hal.uploadBuffer(
-        regionNumber,
+        displayedRegionIndex,
         PASS_READ,
         packReadSegments(data),
         data.numSegments,
@@ -583,15 +588,15 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
   }
 
   uploadCigarFromTypedArraysForRegion(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: CigarUploadData,
   ) {
-    if (!this.regions.has(regionNumber)) {
+    if (!this.regions.has(displayedRegionIndex)) {
       return
     }
     if (data.numGaps > 0) {
       this.hal.uploadBuffer(
-        regionNumber,
+        displayedRegionIndex,
         PASS_GAP,
         packGaps(data),
         data.numGaps,
@@ -599,7 +604,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
     if (data.numMismatches > 0) {
       this.hal.uploadBuffer(
-        regionNumber,
+        displayedRegionIndex,
         PASS_MISMATCH,
         packMismatches(data),
         data.numMismatches,
@@ -607,7 +612,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
     if (data.numInsertions > 0) {
       this.hal.uploadBuffer(
-        regionNumber,
+        displayedRegionIndex,
         PASS_INSERTION,
         packInsertions(data),
         data.numInsertions,
@@ -615,11 +620,16 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
     const clipCount = data.numSoftclips + data.numHardclips
     if (clipCount > 0) {
-      this.hal.uploadBuffer(regionNumber, PASS_CLIP, packClips(data), clipCount)
+      this.hal.uploadBuffer(
+        displayedRegionIndex,
+        PASS_CLIP,
+        packClips(data),
+        clipCount,
+      )
     }
     if (data.numSoftclipBases > 0) {
       this.hal.uploadBuffer(
-        regionNumber,
+        displayedRegionIndex,
         PASS_SOFTCLIP_BASES,
         packSoftclipBases(data),
         data.numSoftclipBases,
@@ -628,12 +638,12 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
   }
 
   uploadModificationsFromTypedArraysForRegion(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: ModificationUploadData,
   ) {
     if (data.numModifications > 0) {
       this.hal.uploadBuffer(
-        regionNumber,
+        displayedRegionIndex,
         PASS_MOD,
         packModifications(data),
         data.numModifications,
@@ -642,29 +652,31 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
   }
 
   uploadCoverageFromTypedArraysForRegion(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: CoverageUploadData,
   ) {
-    const r = this.regions.get(regionNumber)
+    const r = this.regions.get(displayedRegionIndex)
     if (!r) {
       return
     }
 
     if (data.numCoverageBins > 0) {
       this.hal.uploadBuffer(
-        regionNumber,
+        displayedRegionIndex,
         PASS_COVERAGE,
         data.coveragePackedBuffer,
         data.numCoverageBins,
       )
       r.maxDepth = data.coverageMaxDepth
       r.binSize = 1
-      this.hal.setRegionMeta(regionNumber, { maxDepth: data.coverageMaxDepth })
+      this.hal.setRegionMeta(displayedRegionIndex, {
+        maxDepth: data.coverageMaxDepth,
+      })
     }
 
     if (data.numSnpSegments > 0) {
       this.hal.uploadBuffer(
-        regionNumber,
+        displayedRegionIndex,
         PASS_SNP_COV,
         data.snpPackedBuffer,
         data.numSnpSegments,
@@ -673,7 +685,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
     if (data.numNoncovSegments > 0) {
       this.hal.uploadBuffer(
-        regionNumber,
+        displayedRegionIndex,
         PASS_NONCOV,
         data.noncovPackedBuffer,
         data.numNoncovSegments,
@@ -683,7 +695,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
     if (data.numIndicators > 0) {
       this.hal.uploadBuffer(
-        regionNumber,
+        displayedRegionIndex,
         PASS_INDICATOR,
         data.indicatorPackedBuffer,
         data.numIndicators,
@@ -692,12 +704,12 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
   }
 
   uploadModCoverageFromTypedArraysForRegion(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: ModCoverageUploadData,
   ) {
     if (data.numModCovSegments > 0) {
       this.hal.uploadBuffer(
-        regionNumber,
+        displayedRegionIndex,
         PASS_MOD_COV,
         data.modCovPackedBuffer,
         data.numModCovSegments,
@@ -706,20 +718,22 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
   }
 
   uploadArcsFromTypedArraysForRegion(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: ArcsUploadData,
   ) {
     // Arcs/connectingLines can arrive from their own RPC before the main
     // read upload has registered this region. Pre-register an empty
     // LocalRegion so renderBlocks draws them even without reads.
-    if (!this.regions.has(regionNumber)) {
-      this.regions.set(regionNumber, emptyRegion(data.regionStart))
-      this.hal.setRegionMeta(regionNumber, { regionStart: data.regionStart })
+    if (!this.regions.has(displayedRegionIndex)) {
+      this.regions.set(displayedRegionIndex, emptyRegion(data.regionStart))
+      this.hal.setRegionMeta(displayedRegionIndex, {
+        regionStart: data.regionStart,
+      })
     }
 
     if (data.numArcs > 0) {
       this.hal.uploadBuffer(
-        regionNumber,
+        displayedRegionIndex,
         PASS_ARC,
         packArcs(data),
         data.numArcs,
@@ -727,7 +741,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
     if (data.numLines > 0) {
       this.hal.uploadBuffer(
-        regionNumber,
+        displayedRegionIndex,
         PASS_ARC_LINE,
         packArcLines(data),
         data.numLines,
@@ -736,16 +750,18 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
   }
 
   uploadConnectingLinesForRegion(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: ConnectingLinesUploadData,
   ) {
-    if (!this.regions.has(regionNumber)) {
-      this.regions.set(regionNumber, emptyRegion(data.regionStart))
-      this.hal.setRegionMeta(regionNumber, { regionStart: data.regionStart })
+    if (!this.regions.has(displayedRegionIndex)) {
+      this.regions.set(displayedRegionIndex, emptyRegion(data.regionStart))
+      this.hal.setRegionMeta(displayedRegionIndex, {
+        regionStart: data.regionStart,
+      })
     }
     if (data.numConnectingLines > 0) {
       this.hal.uploadBuffer(
-        regionNumber,
+        displayedRegionIndex,
         PASS_CONN_LINE,
         packConnectingLines(data),
         data.numConnectingLines,
@@ -768,7 +784,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
     let hasDrawn = false
     for (const block of blocks) {
-      const region = this.regions.get(block.regionNumber)
+      const region = this.regions.get(block.displayedRegionIndex)
       if (!region) {
         continue
       }
@@ -817,11 +833,11 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       this.hal.setScissor(vpX, 0, vpW, bufH)
 
       if (state.showCoverage) {
-        this.hal.drawPass(PASS_COVERAGE, block.regionNumber)
-        this.hal.drawPass(PASS_SNP_COV, block.regionNumber)
-        this.hal.drawPass(PASS_MOD_COV, block.regionNumber)
-        this.hal.drawPass(PASS_NONCOV, block.regionNumber)
-        this.hal.drawPass(PASS_INDICATOR, block.regionNumber)
+        this.hal.drawPass(PASS_COVERAGE, block.displayedRegionIndex)
+        this.hal.drawPass(PASS_SNP_COV, block.displayedRegionIndex)
+        this.hal.drawPass(PASS_MOD_COV, block.displayedRegionIndex)
+        this.hal.drawPass(PASS_NONCOV, block.displayedRegionIndex)
+        this.hal.drawPass(PASS_INDICATOR, block.displayedRegionIndex)
       }
 
       if (effectiveArcsHeight > 0 && !state.pairedArcsDown && covH > 0) {
@@ -845,23 +861,23 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       }
 
       if (mode === 'linkedRead') {
-        this.hal.drawPass(PASS_CONN_LINE, block.regionNumber)
+        this.hal.drawPass(PASS_CONN_LINE, block.displayedRegionIndex)
       }
-      this.hal.drawPass(PASS_READ, block.regionNumber)
+      this.hal.drawPass(PASS_READ, block.displayedRegionIndex)
 
       if (state.showMismatches) {
-        this.hal.drawPass(PASS_GAP, block.regionNumber)
-        this.hal.drawPass(PASS_MISMATCH, block.regionNumber)
-        this.hal.drawPass(PASS_INSERTION, block.regionNumber)
+        this.hal.drawPass(PASS_GAP, block.displayedRegionIndex)
+        this.hal.drawPass(PASS_MISMATCH, block.displayedRegionIndex)
+        this.hal.drawPass(PASS_INSERTION, block.displayedRegionIndex)
       }
 
-      this.hal.drawPass(PASS_CLIP, block.regionNumber)
+      this.hal.drawPass(PASS_CLIP, block.displayedRegionIndex)
       if (state.showSoftClipping) {
-        this.hal.drawPass(PASS_SOFTCLIP_BASES, block.regionNumber)
+        this.hal.drawPass(PASS_SOFTCLIP_BASES, block.displayedRegionIndex)
       }
 
       if (state.showModifications) {
-        this.hal.drawPass(PASS_MOD, block.regionNumber)
+        this.hal.drawPass(PASS_MOD, block.displayedRegionIndex)
       }
 
       this.renderFeatureOverlays(
@@ -943,8 +959,8 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     this.hal.setViewport(vpX, arcViewportTop, vpW, arcViewportH)
     this.hal.setScissor(vpX, arcViewportTop, vpW, arcViewportH)
 
-    this.hal.drawPass(PASS_ARC, block.regionNumber)
-    this.hal.drawPass(PASS_ARC_LINE, block.regionNumber)
+    this.hal.drawPass(PASS_ARC, block.displayedRegionIndex)
+    this.hal.drawPass(PASS_ARC_LINE, block.displayedRegionIndex)
 
     this.uF32[U.covOffset] = state.pileupTopOffset
     this.uF32[U.canvasH] = state.canvasHeight
@@ -1038,7 +1054,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
     if (
       (needsFeatureHighlight || needsFeatureSelection) &&
-      this.hal.getBufferCount(block.regionNumber, PASS_READ) > 0
+      this.hal.getBufferCount(block.displayedRegionIndex, PASS_READ) > 0
     ) {
       if (needsFeatureHighlight) {
         this.uI32[U.highlightOnly] = 1
@@ -1049,7 +1065,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         const vpW = Math.round(scissorW * dpr)
         this.hal.setViewport(vpX, 0, vpW, bufH)
         this.hal.setScissor(vpX, pileupTop, vpW, pileupH)
-        this.hal.drawPass(PASS_READ, block.regionNumber)
+        this.hal.drawPass(PASS_READ, block.displayedRegionIndex)
 
         this.uI32[U.highlightOnly] = 0
         this.hal.writeUniforms(this.uData)

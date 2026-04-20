@@ -40,14 +40,14 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { Region } from '@jbrowse/core/util'
 import type {
   ExportSvgDisplayOptions,
   FetchContext,
   LinearGenomeViewModel,
-  MultiRegionRegionWithNumber as RegionWithNumber,
 } from '@jbrowse/plugin-linear-genome-view'
 
-export type { MultiRegionRegion as Region } from '@jbrowse/plugin-linear-genome-view'
+export type { Region } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
 
@@ -98,7 +98,11 @@ export default function stateModelFactory(
     )
     .volatile(() => ({
       rpcDataMap: observable.map<number, WiggleDataResult>(),
-      loadedBpPerPx: observable.map<number, number>(),
+      // The bpPerPx at which all currently-loaded regions were fetched.
+      // One value for the whole model, not per-region — this is what
+      // structurally guarantees adjacent regions render at the same
+      // resolution. Updated atomically with rpcDataMap inside fetchRegions.
+      loadedBpPerPx: undefined as number | undefined,
       featureUnderMouse: undefined as
         | {
             refName: string
@@ -205,7 +209,7 @@ export default function stateModelFactory(
       // Cached view, recomputes when any input moves. Replaces the
       // previous VisibleScoreRange autorun + volatile.
       //
-      // Iterates `mergedVisibleRegions` (one entry per regionNumber with
+      // Iterates `mergedVisibleRegions` (one entry per displayedRegionIndex with
       // the merged on-screen bp span) rather than `dynamicBlocks.contentBlocks`
       // — a single region can appear as multiple content blocks, but for
       // autoscale we only need the merged visible slice.
@@ -216,7 +220,7 @@ export default function stateModelFactory(
         }
         const numStdDev = self.getConfWithOverride<number>('numStdDev')
         const visibleEntries = view.mergedVisibleRegions.flatMap(vr => {
-          const data = self.rpcDataMap.get(vr.regionNumber)
+          const data = self.rpcDataMap.get(vr.displayedRegionIndex)
           if (!data) {
             return []
           }
@@ -320,17 +324,17 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      setRpcDataForRegion(regionNumber: number, data: WiggleDataResult) {
-        self.rpcDataMap.set(regionNumber, data)
+      setRpcData(displayedRegionIndex: number, data: WiggleDataResult) {
+        self.rpcDataMap.set(displayedRegionIndex, data)
       },
 
-      setLoadedBpPerPxForRegion(regionNumber: number, bpPerPx: number) {
-        self.loadedBpPerPx.set(regionNumber, bpPerPx)
+      setLoadedBpPerPx(bpPerPx: number | undefined) {
+        self.loadedBpPerPx = bpPerPx
       },
 
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
-        self.loadedBpPerPx.clear()
+        self.loadedBpPerPx = undefined
       },
 
       startGpuBackendLifecycle(backend: WiggleBackend) {
@@ -347,15 +351,15 @@ export default function stateModelFactory(
               // Worker-affecting settings (rpcProps) take a separate
               // path: SettingsInvalidate clears rpcDataMap and lets
               // fetch re-run.
-              upload: (b, regionNumber, data) => {
+              upload: (b, displayedRegionIndex, data) => {
                 b.uploadRegion(
-                  regionNumber,
+                  displayedRegionIndex,
                   data.regionStart,
                   buildSourceRenderData(data, self.gpuProps()),
                 )
               },
-              prune: (b, activeRegionNumbers) => {
-                b.pruneRegions(activeRegionNumbers)
+              prune: (b, activeDisplayedRegionIndices) => {
+                b.pruneRegions(activeDisplayedRegionIndices)
               },
             },
           ],
@@ -421,22 +425,35 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      isCacheValid(regionNumber: number) {
+      isCacheValid(_displayedRegionIndex: number) {
+        if (self.loadedBpPerPx === undefined) {
+          return true
+        }
         const view = getContainingView(self) as LGV
-        const regionBpPerPx = self.loadedBpPerPx.get(regionNumber)
-        return regionBpPerPx === undefined || view.bpPerPx >= regionBpPerPx / 2
+        return view.bpPerPx >= self.loadedBpPerPx / 2
       },
 
-      onFetchNeeded(needed: RegionWithNumber[]) {
+      onFetchNeeded(
+        needed: { region: Region; displayedRegionIndex: number }[],
+      ) {
         const view = getContainingView(self) as LGV
-        const { bpPerPx } = view
         const { adapterConfig } = self.adapterProps()
         if (!adapterConfig) {
           return
         }
+        // Pick the bpPerPx for this fetch: if existing loaded data is
+        // still within the 2x cache threshold, fetch at the same
+        // resolution so newly-visible regions match what's already on
+        // screen. Otherwise the cache is stale and the autorun has
+        // queued every visible region — fetch them all at the new
+        // viewport resolution.
+        const cacheValid =
+          self.loadedBpPerPx !== undefined &&
+          view.bpPerPx >= self.loadedBpPerPx / 2
+        const bpPerPx = cacheValid ? self.loadedBpPerPx! : view.bpPerPx
         const sessionId = getRpcSessionId(self)
         const { rpcManager } = getSession(self)
-        self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
+        self.fetchRegions(needed, async (ctx: FetchContext) => {
           await Promise.all(
             needed.map(async r => {
               const result = await rpcManager.call(
@@ -457,11 +474,13 @@ export default function stateModelFactory(
                 },
               )
               if (!ctx.isStale()) {
-                self.setRpcDataForRegion(r.regionNumber, result)
-                self.setLoadedBpPerPxForRegion(r.regionNumber, bpPerPx)
+                self.setRpcData(r.displayedRegionIndex, result)
               }
             }),
           )
+          if (!ctx.isStale()) {
+            self.setLoadedBpPerPx(bpPerPx)
+          }
         })
       },
     }))

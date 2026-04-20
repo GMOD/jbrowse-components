@@ -703,10 +703,10 @@ export async function renderSvg(
       : undefined
 
   for (const block of blocks) {
-    if (block.regionNumber === undefined) {
+    if (block.displayedRegionIndex === undefined) {
       continue
     }
-    const data = rpcDataMap.get(block.regionNumber)
+    const data = rpcDataMap.get(block.displayedRegionIndex)
     if (!data) {
       continue
     }
@@ -761,7 +761,7 @@ export async function renderSvg(
     }
 
     if (showArcs && arcsCtxObj?.ctx) {
-      const arcsData = arcsState.rpcDataMap.get(block.regionNumber)
+      const arcsData = arcsState.rpcDataMap.get(block.displayedRegionIndex)
       if (arcsData && arcsData.numArcs > 0) {
         drawPairedArcs(
           arcsCtxObj.ctx,

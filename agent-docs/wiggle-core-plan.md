@@ -199,7 +199,7 @@ autorun(
   () => {
     const stats = computeVisibleCoverageStats(
       view.dynamicBlocks.contentBlocks,
-      b => self.rpcDataMap.get(b.regionNumber!),
+      b => self.rpcDataMap.get(b.displayedRegionIndex!),
     )
     self.setVisibleCoverageStats(stats)
   },

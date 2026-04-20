@@ -49,7 +49,7 @@ function renderCellsForRegion(
   ctx: SvgCanvas,
   cellData: VariantCellData,
   region: {
-    regionNumber: number
+    displayedRegionIndex: number
     start: number
     end: number
     reversed?: boolean
@@ -126,7 +126,7 @@ export async function renderSvg(
     canDisplayLabels,
   } = model
   const regions = view.visibleRegions as {
-    regionNumber: number
+    displayedRegionIndex: number
     start: number
     end: number
     reversed?: boolean
@@ -143,7 +143,8 @@ export async function renderSvg(
   }
 
   for (const region of regions) {
-    const regionCellData = cellData.perRegionCellData[region.regionNumber]
+    const regionCellData =
+      cellData.perRegionCellData[region.displayedRegionIndex]
     if (regionCellData && regionCellData.numCells > 0) {
       renderCellsForRegion(
         ctx,

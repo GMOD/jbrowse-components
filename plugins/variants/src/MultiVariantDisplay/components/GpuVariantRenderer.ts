@@ -42,16 +42,16 @@ export class GpuVariantRenderer implements VariantBackend {
     this.hal = hal
   }
 
-  uploadRegion(regionNumber: number, data: VariantUploadData) {
+  uploadRegion(displayedRegionIndex: number, data: VariantUploadData) {
     if (data.numCells === 0) {
-      this.hal.deleteRegion(regionNumber)
-      this.regionStarts.delete(regionNumber)
+      this.hal.deleteRegion(displayedRegionIndex)
+      this.regionStarts.delete(displayedRegionIndex)
       return
     }
 
     const buf = interleaveVariantInstances(data)
-    this.hal.uploadBuffer(regionNumber, PASS_MAIN, buf, data.numCells)
-    this.regionStarts.set(regionNumber, data.regionStart)
+    this.hal.uploadBuffer(displayedRegionIndex, PASS_MAIN, buf, data.numCells)
+    this.regionStarts.set(displayedRegionIndex, data.regionStart)
   }
 
   pruneRegions(activeRegions: number[]) {
@@ -68,10 +68,12 @@ export class GpuVariantRenderer implements VariantBackend {
     this.hal.beginFrame(0, 0, 0, 0)
 
     for (const block of blocks) {
-      if (this.hal.getBufferCount(block.regionNumber, PASS_MAIN) === 0) {
+      if (
+        this.hal.getBufferCount(block.displayedRegionIndex, PASS_MAIN) === 0
+      ) {
         continue
       }
-      const regionStart = this.regionStarts.get(block.regionNumber)
+      const regionStart = this.regionStarts.get(block.displayedRegionIndex)
       if (regionStart === undefined) {
         continue
       }
@@ -93,7 +95,7 @@ export class GpuVariantRenderer implements VariantBackend {
       // uniformF32[U.zero] = 0 — already 0.0 from ArrayBuffer initialization
 
       this.hal.writeUniforms(this.uniformData)
-      this.hal.drawPass(PASS_MAIN, block.regionNumber)
+      this.hal.drawPass(PASS_MAIN, block.displayedRegionIndex)
     }
 
     this.hal.clearScissor()

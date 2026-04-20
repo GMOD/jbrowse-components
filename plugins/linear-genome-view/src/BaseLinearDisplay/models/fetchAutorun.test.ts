@@ -1,27 +1,32 @@
-import type { Region, RegionWithNumber } from './MultiRegionDisplayMixin.ts'
+import type { Region } from '@jbrowse/core/util'
+
+interface DisplayedRegionWithIndex {
+  region: Region
+  displayedRegionIndex: number
+}
 
 function shouldFetchRegion(
-  vr: RegionWithNumber,
+  vr: DisplayedRegionWithIndex,
   loadedRegions: Map<number, Region>,
-  isCacheValid: (regionNumber: number) => boolean,
+  isCacheValid: (displayedRegionIndex: number) => boolean,
 ) {
-  const loaded = loadedRegions.get(vr.regionNumber)
+  const loaded = loadedRegions.get(vr.displayedRegionIndex)
   const boundsValid =
     loaded?.refName === vr.region.refName &&
     vr.region.start >= loaded.start &&
     vr.region.end <= loaded.end
-  if (boundsValid && isCacheValid(vr.regionNumber)) {
+  if (boundsValid && isCacheValid(vr.displayedRegionIndex)) {
     return false
   }
   return true
 }
 
 function computeNeededRegions(
-  staticRegions: RegionWithNumber[],
+  staticRegions: DisplayedRegionWithIndex[],
   loadedRegions: Map<number, Region>,
-  isCacheValid: (regionNumber: number) => boolean,
+  isCacheValid: (displayedRegionIndex: number) => boolean,
 ) {
-  const needed: RegionWithNumber[] = []
+  const needed: DisplayedRegionWithIndex[] = []
   for (const vr of staticRegions) {
     if (shouldFetchRegion(vr, loadedRegions, isCacheValid)) {
       needed.push(vr)
@@ -31,12 +36,15 @@ function computeNeededRegions(
 }
 
 function makeRegion(
-  regionNumber: number,
+  displayedRegionIndex: number,
   start: number,
   end: number,
   refName = 'chr1',
-): RegionWithNumber {
-  return { region: { refName, start, end, assemblyName: 'test' }, regionNumber }
+): DisplayedRegionWithIndex {
+  return {
+    region: { refName, start, end, assemblyName: 'test' },
+    displayedRegionIndex,
+  }
 }
 
 describe('fetch autorun region determination', () => {
@@ -154,7 +162,7 @@ describe('fetch autorun region determination', () => {
         () => true,
       )
       expect(needed).toHaveLength(1)
-      expect(needed[0]!.regionNumber).toBe(1)
+      expect(needed[0]!.displayedRegionIndex).toBe(1)
     })
   })
 
@@ -218,11 +226,11 @@ describe('fetch autorun region determination', () => {
 
   describe('wiggle resolution cache validity', () => {
     function wiggleIsCacheValid(
-      regionNumber: number,
+      displayedRegionIndex: number,
       loadedBpPerPx: Map<number, number>,
       currentBpPerPx: number,
     ) {
-      const regionBpPerPx = loadedBpPerPx.get(regionNumber)
+      const regionBpPerPx = loadedBpPerPx.get(displayedRegionIndex)
       return regionBpPerPx === undefined || currentBpPerPx >= regionBpPerPx / 2
     }
 

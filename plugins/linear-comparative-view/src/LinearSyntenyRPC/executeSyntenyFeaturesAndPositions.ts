@@ -32,12 +32,12 @@ export function bpToPx({
   self,
   refName,
   coord,
-  regionNumber,
+  displayedRegionIndex,
 }: {
   self: ViewSnap
   refName: string
   coord: number
-  regionNumber?: number
+  displayedRegionIndex?: number
 }) {
   let bpSoFar = 0
   const {
@@ -56,7 +56,7 @@ export function bpToPx({
       refName === r.refName &&
       coord >= r.start &&
       coord <= r.end &&
-      (regionNumber !== undefined ? regionNumber === i : true)
+      (displayedRegionIndex !== undefined ? displayedRegionIndex === i : true)
     ) {
       bpSoFar += r.reversed ? r.end - coord : coord - r.start
       break
@@ -130,7 +130,7 @@ export function bpToPxFromIndex(
   idx: BpToPxIndex,
   refName: string,
   coord: number,
-  regionNumber?: number,
+  displayedRegionIndex?: number,
 ) {
   const list = idx.entries.get(refName)
   if (!list) {
@@ -141,7 +141,9 @@ export function bpToPxFromIndex(
     if (
       coord >= r.start &&
       coord <= r.end &&
-      (regionNumber !== undefined ? regionNumber === entry.index : true)
+      (displayedRegionIndex !== undefined
+        ? displayedRegionIndex === entry.index
+        : true)
     ) {
       const bpOffset = r.reversed ? r.end - coord : coord - r.start
       return {

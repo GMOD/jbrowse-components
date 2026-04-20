@@ -57,7 +57,7 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
   }[] = []
 
   for (const region of visibleRegions) {
-    const rpcData = rpcDataMap.get(region.regionNumber)
+    const rpcData = rpcDataMap.get(region.displayedRegionIndex)
     if (!rpcData || rpcData.numSashimiArcs === 0) {
       continue
     }

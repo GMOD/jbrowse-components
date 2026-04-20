@@ -63,7 +63,6 @@ describe('applyLabelDimensions', () => {
       })
       expect(layout.totalLayoutHeight).toBe(10)
     })
-
   })
 
   describe('transcript children with "overlay" subfeature labels', () => {

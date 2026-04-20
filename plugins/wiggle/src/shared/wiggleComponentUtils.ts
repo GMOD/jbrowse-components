@@ -171,11 +171,11 @@ interface MouseRegion {
   start: number
   end: number
   reversed?: boolean
-  regionNumber: number
+  displayedRegionIndex: number
 }
 
 // Maps a screen x coordinate to the region containing it, the per-region data
-// keyed by regionNumber, and the bp offset within that region (relative to
+// keyed by displayedRegionIndex, and the bp offset within that region (relative to
 // data.regionStart). Returns undefined if x is outside any region or no data
 // is loaded for the hit region.
 export function hitTestMouse<
@@ -188,7 +188,7 @@ export function hitTestMouse<
   if (!region) {
     return undefined
   }
-  const data = rpcDataMap.get(region.regionNumber)
+  const data = rpcDataMap.get(region.displayedRegionIndex)
   if (!data) {
     return undefined
   }

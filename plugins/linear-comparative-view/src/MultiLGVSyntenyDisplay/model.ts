@@ -47,11 +47,10 @@ import type {
 } from './components/multiSyntenyBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type {
   FetchContext,
   LinearGenomeViewModel,
-  MultiRegionRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
 
 export interface SyntenyColorPalette {
@@ -301,8 +300,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
     }))
     .actions(self => ({
-      setRpcData(regionNumber: number, data: SyntenyRegionData) {
-        self.rpcDataMap.set(regionNumber, data)
+      setRpcData(displayedRegionIndex: number, data: SyntenyRegionData) {
+        self.rpcDataMap.set(displayedRegionIndex, data)
       },
       setAllGenomeNames(names: string[]) {
         self.allGenomeNames = names
@@ -390,8 +389,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               // cleared (clearDisplaySpecificData) or grow. Calling
               // clearAllBlocks on empty active set frees GPU buffers when
               // the display region changes.
-              prune: (b, activeRegionNumbers) => {
-                if (activeRegionNumbers.length === 0) {
+              prune: (b, activeDisplayedRegionIndices) => {
+                if (activeDisplayedRegionIndices.length === 0) {
                   b.clearAllBlocks()
                 }
               },
@@ -473,8 +472,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       const superAfterAttach = self.afterAttach
 
       return {
-        onFetchNeeded(needed: { region: Region; regionNumber: number }[]) {
-          self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
+        onFetchNeeded(
+          needed: { region: Region; displayedRegionIndex: number }[],
+        ) {
+          self.fetchRegions(needed, async (ctx: FetchContext) => {
             const track = getContainingTrack(self)
             const adapterConfig = getConf(track, 'adapter')
             const session = getSession(self)
@@ -533,8 +534,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               self.setAllGenomeNames(result.sources.map(s => s.name))
             }
 
-            for (const [regionNumber, data] of result.regionData) {
-              self.setRpcData(regionNumber, data)
+            for (const [displayedRegionIndex, data] of result.regionData) {
+              self.setRpcData(displayedRegionIndex, data)
             }
           })
         },
@@ -559,8 +560,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 const maxDepth = computeVisibleMaxDepth(
                   view.dynamicBlocks.contentBlocks,
                   b =>
-                    b.regionNumber !== undefined
-                      ? self.rpcDataMap.get(b.regionNumber)
+                    b.displayedRegionIndex !== undefined
+                      ? self.rpcDataMap.get(b.displayedRegionIndex)
                       : undefined,
                 )
                 self.setVisibleMaxDepth(maxDepth)

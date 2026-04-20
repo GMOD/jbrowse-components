@@ -210,7 +210,7 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
   }
 
   uploadRegion(
-    regionNumber: number,
+    displayedRegionIndex: number,
     regionStart: number,
     sources: SourceRenderData[],
   ) {
@@ -219,10 +219,10 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
       totalFeatures += source.numFeatures
     }
     if (totalFeatures === 0 || sources.length === 0) {
-      this.regions.delete(regionNumber)
+      this.regions.delete(displayedRegionIndex)
       return
     }
-    this.regions.set(regionNumber, {
+    this.regions.set(displayedRegionIndex, {
       regionStart,
       sources,
       numRows: computeNumRows(sources),
@@ -236,7 +236,7 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
     prepareCanvas(canvas, ctx, canvasWidth, canvasHeight)
 
     for (const block of blocks) {
-      const region = regions.get(block.regionNumber)
+      const region = regions.get(block.displayedRegionIndex)
       if (!region || region.sources.length === 0) {
         continue
       }

@@ -143,7 +143,7 @@ migrate to mobx `observable.map<number, T>()` and mutate in place
 (`self.rpcDataMap.set(n, data)`). This is what enables true per-key reactivity.
 
 **Rough scope per plugin**: 2–3 lines (volatile declaration +
-`setRpcDataForRegion` action body). Not done in this PR.
+`setRpcData` action body). Not done in this PR.
 
 ### 2. Alignments — all refetch fields now in `rpcProps` (resolved)
 
@@ -257,7 +257,7 @@ standard `onReady: startGpuBackendLifecycle` /
 `onDispose: stopGpuBackendLifecycle` pattern.
 
 With synteny migrated, `dataVersion` on `MultiRegionDisplayMixin` has no readers
-— deleted (both the volatile and the `setLoadedRegionForRegion` increment).
+— deleted (both the volatile and the `setLoadedRegion` increment).
 
 ### 7. Many tests have pre-existing failures unrelated to this work
 

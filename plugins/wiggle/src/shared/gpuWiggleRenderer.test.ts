@@ -36,7 +36,7 @@ function makeSource(overrides?: Partial<SourceRenderData>): SourceRenderData {
 
 function makeBlock(overrides?: Partial<WiggleRenderBlock>): WiggleRenderBlock {
   return {
-    regionNumber: 0,
+    displayedRegionIndex: 0,
     bpRangeX: [0, 1000],
     screenStartPx: 0,
     screenEndPx: 800,
@@ -233,7 +233,7 @@ describe('GpuWiggleRenderer', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
 
-    renderer.renderBlocks([makeBlock({ regionNumber: 99 })], {
+    renderer.renderBlocks([makeBlock({ displayedRegionIndex: 99 })], {
       canvasWidth: 800,
       canvasHeight: 400,
       renderingType: RENDERING_TYPE_XYPLOT,
@@ -255,9 +255,13 @@ describe('GpuWiggleRenderer', () => {
 
     renderer.renderBlocks(
       [
-        makeBlock({ regionNumber: 0, screenStartPx: 0, screenEndPx: 400 }),
         makeBlock({
-          regionNumber: 1,
+          displayedRegionIndex: 0,
+          screenStartPx: 0,
+          screenEndPx: 400,
+        }),
+        makeBlock({
+          displayedRegionIndex: 1,
           screenStartPx: 400,
           screenEndPx: 800,
           bpRangeX: [1000, 2000],

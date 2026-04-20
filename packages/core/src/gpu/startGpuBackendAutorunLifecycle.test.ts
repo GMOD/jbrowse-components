@@ -5,7 +5,7 @@ import { startGpuBackendAutorunLifecycle } from './startGpuBackendAutorunLifecyc
 import type { RenderBlock } from './renderBlock.ts'
 
 interface FakeBackend {
-  uploads: { regionNumber: number; data: string }[]
+  uploads: { displayedRegionIndex: number; data: string }[]
   prunes: number[][]
   renders: { blocks: RenderBlock[]; state: number }[]
 }
@@ -14,9 +14,9 @@ function makeBackend(): FakeBackend {
   return { uploads: [], prunes: [], renders: [] }
 }
 
-function makeBlock(regionNumber: number): RenderBlock {
+function makeBlock(displayedRegionIndex: number): RenderBlock {
   return {
-    regionNumber,
+    displayedRegionIndex,
     bpRangeX: [0, 100],
     screenStartPx: 0,
     screenEndPx: 100,
@@ -36,7 +36,7 @@ test('uploads every region in the data map on first run', () => {
       {
         getData: () => data,
         upload: (b, n, d) =>
-          b.uploads.push({ regionNumber: n, data: d as string }),
+          b.uploads.push({ displayedRegionIndex: n, data: d as string }),
         prune: (b, active) => b.prunes.push(active),
       },
     ],
@@ -46,8 +46,8 @@ test('uploads every region in the data map on first run', () => {
   })
 
   expect(backend.uploads).toEqual([
-    { regionNumber: 0, data: 'a' },
-    { regionNumber: 1, data: 'b' },
+    { displayedRegionIndex: 0, data: 'a' },
+    { displayedRegionIndex: 1, data: 'b' },
   ])
   expect(backend.renders.length).toBe(1)
 
@@ -66,7 +66,7 @@ test('re-uploads only the changed region when one entry mutates', () => {
       {
         getData: () => data,
         upload: (b, n, d) =>
-          b.uploads.push({ regionNumber: n, data: d as string }),
+          b.uploads.push({ displayedRegionIndex: n, data: d as string }),
         prune: () => {},
       },
     ],
@@ -84,7 +84,10 @@ test('re-uploads only the changed region when one entry mutates', () => {
     data.set(0, 'a2')
   })
   expect(backend.uploads.length).toBe(3)
-  expect(backend.uploads.at(-1)).toEqual({ regionNumber: 0, data: 'a2' })
+  expect(backend.uploads.at(-1)).toEqual({
+    displayedRegionIndex: 0,
+    data: 'a2',
+  })
 
   handle.dispose()
 })
@@ -107,7 +110,10 @@ test('settings change inside upload fires every per-key autorun', () => {
         getData: () => data,
         upload: (b, n, d) => {
           const color = colorBox.get()
-          b.uploads.push({ regionNumber: n, data: `${d as string}:${color}` })
+          b.uploads.push({
+            displayedRegionIndex: n,
+            data: `${d as string}:${color}`,
+          })
         },
         prune: () => {},
       },
@@ -125,8 +131,8 @@ test('settings change inside upload fires every per-key autorun', () => {
   // Both per-key autoruns re-fire — all regions re-upload.
   expect(backend.uploads.length).toBe(4)
   expect(backend.uploads.slice(-2)).toEqual([
-    { regionNumber: 0, data: 'a:blue' },
-    { regionNumber: 1, data: 'b:blue' },
+    { displayedRegionIndex: 0, data: 'a:blue' },
+    { displayedRegionIndex: 1, data: 'b:blue' },
   ])
 
   handle.dispose()
@@ -147,7 +153,10 @@ test('re-uploads when an observable read inside upload changes', () => {
         // autorun re-fires and re-uploads.
         upload: (b, n, d) => {
           const color = colorBox.get()
-          b.uploads.push({ regionNumber: n, data: `${d as string}:${color}` })
+          b.uploads.push({
+            displayedRegionIndex: n,
+            data: `${d as string}:${color}`,
+          })
         },
         prune: () => {},
       },
@@ -157,14 +166,14 @@ test('re-uploads when an observable read inside upload changes', () => {
     render: () => {},
   })
 
-  expect(backend.uploads).toEqual([{ regionNumber: 0, data: 'a:red' }])
+  expect(backend.uploads).toEqual([{ displayedRegionIndex: 0, data: 'a:red' }])
 
   runInAction(() => {
     colorBox.set('blue')
   })
   expect(backend.uploads).toEqual([
-    { regionNumber: 0, data: 'a:red' },
-    { regionNumber: 0, data: 'a:blue' },
+    { displayedRegionIndex: 0, data: 'a:red' },
+    { displayedRegionIndex: 0, data: 'a:blue' },
   ])
 
   handle.dispose()
@@ -234,7 +243,7 @@ test('renderNow re-issues the last render without re-uploading', () => {
       {
         getData: () => data,
         upload: (b, n, d) =>
-          b.uploads.push({ regionNumber: n, data: d as string }),
+          b.uploads.push({ displayedRegionIndex: n, data: d as string }),
         prune: () => {},
       },
     ],
@@ -310,7 +319,7 @@ test('render autorun re-fires on state change without re-running uploads', () =>
         getData: () => data,
         upload: (b, n, d) => {
           uploadCalls++
-          b.uploads.push({ regionNumber: n, data: d as string })
+          b.uploads.push({ displayedRegionIndex: n, data: d as string })
         },
         prune: () => {},
       },
@@ -347,7 +356,7 @@ test('deleteOne fires for each cached key removed from dataMap', () => {
       {
         getData: () => data,
         upload: (b, n, d) =>
-          b.uploads.push({ regionNumber: n, data: d as string }),
+          b.uploads.push({ displayedRegionIndex: n, data: d as string }),
         deleteOne: (_b, n) => deleted.push(n),
       },
     ],
@@ -381,7 +390,7 @@ test('dispose stops the autorun and renderNow becomes a no-op', () => {
       {
         getData: () => data,
         upload: (b, n, d) =>
-          b.uploads.push({ regionNumber: n, data: d as string }),
+          b.uploads.push({ displayedRegionIndex: n, data: d as string }),
         prune: () => {},
       },
     ],

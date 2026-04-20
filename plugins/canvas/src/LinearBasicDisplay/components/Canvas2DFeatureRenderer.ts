@@ -158,8 +158,8 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
     this.ctx = ctx
   }
 
-  uploadRegion(regionNumber: number, data: RegionRenderData) {
-    this.regions.set(regionNumber, data)
+  uploadRegion(displayedRegionIndex: number, data: RegionRenderData) {
+    this.regions.set(displayedRegionIndex, data)
   }
 
   renderBlocks(
@@ -176,7 +176,7 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
     prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
 
     for (const block of blocks) {
-      const region = this.regions.get(block.regionNumber)
+      const region = this.regions.get(block.displayedRegionIndex)
       if (!region) {
         continue
       }

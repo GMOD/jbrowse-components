@@ -159,9 +159,9 @@ Every plugin's per-region data map is a **plain JS `Map`** stored as MST
 volatile. Updates construct a new Map on every insert:
 
 ```ts
-setRpcDataForRegion(regionNumber, data) {
+setRpcData(displayedRegionIndex, data) {
   const next = new Map(self.rpcDataMap)
-  next.set(regionNumber, data)
+  next.set(displayedRegionIndex, data)
   self.rpcDataMap = next
 }
 ```
@@ -175,8 +175,8 @@ write.
 Use `observable.map<number, T>()` and mutate in place:
 
 ```ts
-setRpcDataForRegion(regionNumber, data) {
-  self.rpcDataMap.set(regionNumber, data)
+setRpcData(displayedRegionIndex, data) {
+  self.rpcDataMap.set(displayedRegionIndex, data)
 }
 ```
 

@@ -114,8 +114,6 @@ export type {
   FetchContext,
   GlobalDataDisplayMixinType,
   MultiRegionDisplayMixinType,
-  MultiRegionRegion,
-  MultiRegionRegionWithNumber,
   StaleViewportRescaleMixinType,
 } from './BaseLinearDisplay/index.ts'
 export {

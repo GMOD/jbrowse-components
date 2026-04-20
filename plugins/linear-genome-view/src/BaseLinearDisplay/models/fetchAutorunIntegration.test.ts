@@ -1,6 +1,11 @@
 import { autorun, observable, runInAction, untracked } from 'mobx'
 
-import type { Region, RegionWithNumber } from './MultiRegionDisplayMixin.ts'
+import type { Region } from '@jbrowse/core/util'
+
+interface DisplayedRegionWithIndex {
+  region: Region
+  displayedRegionIndex: number
+}
 
 function createMockDisplayModel() {
   const state = observable({
@@ -9,7 +14,7 @@ function createMockDisplayModel() {
     regionTooLargeState: false,
     loadedRegions: new Map<number, Region>(),
     loadedBpPerPx: new Map<number, number>(),
-    fetchLog: [] as RegionWithNumber[][],
+    fetchLog: [] as DisplayedRegionWithIndex[][],
   })
 
   return state
@@ -34,7 +39,7 @@ function computeStaticRegions(view: ReturnType<typeof createMockView>) {
   const windowLeftBp = view.offsetPx * view.bpPerPx
   const windowRightBp = (view.offsetPx + view.width) * view.bpPerPx
 
-  const regions: RegionWithNumber[] = []
+  const regions: DisplayedRegionWithIndex[] = []
   for (const [idx, dr] of view.displayedRegions.entries()) {
     const blockStart = Math.floor((windowLeftBp - 0) / blockSizeBp)
     const blockEnd = Math.floor((windowRightBp - 0) / blockSizeBp)
@@ -48,7 +53,7 @@ function computeStaticRegions(view: ReturnType<typeof createMockView>) {
           end,
           assemblyName: dr.assemblyName,
         },
-        regionNumber: idx,
+        displayedRegionIndex: idx,
       })
     }
   }
@@ -56,11 +61,11 @@ function computeStaticRegions(view: ReturnType<typeof createMockView>) {
 }
 
 function wiggleIsCacheValid(
-  regionNumber: number,
+  displayedRegionIndex: number,
   loadedBpPerPx: Map<number, number>,
   currentBpPerPx: number,
 ) {
-  const regionBpPerPx = loadedBpPerPx.get(regionNumber)
+  const regionBpPerPx = loadedBpPerPx.get(displayedRegionIndex)
   return regionBpPerPx === undefined || currentBpPerPx >= regionBpPerPx / 2
 }
 
@@ -68,7 +73,7 @@ describe('fetch autorun integration with MobX observables', () => {
   test('initial load triggers fetch for all regions', () => {
     const model = createMockDisplayModel()
     const view = createMockView()
-    const fetches: RegionWithNumber[][] = []
+    const fetches: DisplayedRegionWithIndex[][] = []
 
     const dispose = autorun(() => {
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -78,9 +83,11 @@ describe('fetch autorun integration with MobX observables', () => {
       }
 
       const staticRegions = computeStaticRegions(view)
-      const needed: RegionWithNumber[] = []
+      const needed: DisplayedRegionWithIndex[] = []
       for (const vr of staticRegions) {
-        const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
+        const loaded = untracked(() =>
+          model.loadedRegions.get(vr.displayedRegionIndex),
+        )
         const boundsValid =
           loaded?.refName === vr.region.refName &&
           vr.region.start >= loaded.start &&
@@ -114,9 +121,11 @@ describe('fetch autorun integration with MobX observables', () => {
       }
 
       const staticRegions = computeStaticRegions(view)
-      const needed: RegionWithNumber[] = []
+      const needed: DisplayedRegionWithIndex[] = []
       for (const vr of staticRegions) {
-        const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
+        const loaded = untracked(() =>
+          model.loadedRegions.get(vr.displayedRegionIndex),
+        )
         const boundsValid =
           loaded?.refName === vr.region.refName &&
           vr.region.start >= loaded.start &&
@@ -137,7 +146,7 @@ describe('fetch autorun integration with MobX observables', () => {
     runInAction(() => {
       const staticRegions = computeStaticRegions(view)
       for (const vr of staticRegions) {
-        model.loadedRegions.set(vr.regionNumber, {
+        model.loadedRegions.set(vr.displayedRegionIndex, {
           refName: vr.region.refName,
           start: vr.region.start,
           end: vr.region.end,
@@ -166,16 +175,22 @@ describe('fetch autorun integration with MobX observables', () => {
       }
 
       const staticRegions = computeStaticRegions(view)
-      const needed: RegionWithNumber[] = []
+      const needed: DisplayedRegionWithIndex[] = []
       for (const vr of staticRegions) {
-        const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
+        const loaded = untracked(() =>
+          model.loadedRegions.get(vr.displayedRegionIndex),
+        )
         const boundsValid =
           loaded?.refName === vr.region.refName &&
           vr.region.start >= loaded.start &&
           vr.region.end <= loaded.end
         if (
           boundsValid &&
-          wiggleIsCacheValid(vr.regionNumber, model.loadedBpPerPx, view.bpPerPx)
+          wiggleIsCacheValid(
+            vr.displayedRegionIndex,
+            model.loadedBpPerPx,
+            view.bpPerPx,
+          )
         ) {
           continue
         }
@@ -192,13 +207,13 @@ describe('fetch autorun integration with MobX observables', () => {
     runInAction(() => {
       const staticRegions = computeStaticRegions(view)
       for (const vr of staticRegions) {
-        model.loadedRegions.set(vr.regionNumber, {
+        model.loadedRegions.set(vr.displayedRegionIndex, {
           refName: vr.region.refName,
           start: 0,
           end: 1000000,
           assemblyName: vr.region.assemblyName,
         })
-        model.loadedBpPerPx.set(vr.regionNumber, 10)
+        model.loadedBpPerPx.set(vr.displayedRegionIndex, 10)
       }
       model.fetchGeneration++
     })
@@ -229,16 +244,22 @@ describe('fetch autorun integration with MobX observables', () => {
       }
 
       const staticRegions = computeStaticRegions(view)
-      const needed: RegionWithNumber[] = []
+      const needed: DisplayedRegionWithIndex[] = []
       for (const vr of staticRegions) {
-        const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
+        const loaded = untracked(() =>
+          model.loadedRegions.get(vr.displayedRegionIndex),
+        )
         const boundsValid =
           loaded?.refName === vr.region.refName &&
           vr.region.start >= loaded.start &&
           vr.region.end <= loaded.end
         if (
           boundsValid &&
-          wiggleIsCacheValid(vr.regionNumber, model.loadedBpPerPx, view.bpPerPx)
+          wiggleIsCacheValid(
+            vr.displayedRegionIndex,
+            model.loadedBpPerPx,
+            view.bpPerPx,
+          )
         ) {
           continue
         }

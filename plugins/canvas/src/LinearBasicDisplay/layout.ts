@@ -42,7 +42,7 @@ function effectiveLabelWidthPx(
 // Regions sharing the same `assembly:refName` key share one layout so spanning
 // features get the same Y in every region they appear in.
 export function computeLaidOutData(
-  rawRpcDataMap: ReadonlyMap<number, FeatureDataResult>,
+  rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
   inputs: LayoutInputs,
 ): Map<number, FeatureDataResult> {
   const {
@@ -54,22 +54,22 @@ export function computeLaidOutData(
   } = inputs
 
   const out = new Map<number, FeatureDataResult>()
-  for (const [n, raw] of rawRpcDataMap) {
+  for (const [n, raw] of rpcDataMap) {
     out.set(n, cloneMutableFields(raw))
   }
 
   const refGroups = new Map<string, [number, FeatureDataResult][]>()
-  for (const [regionNumber, data] of out) {
+  for (const [displayedRegionIndex, data] of out) {
     if (data.flatbushItems.length === 0) {
       continue
     }
-    const key = regionKeys.get(regionNumber) ?? ''
+    const key = regionKeys.get(displayedRegionIndex) ?? ''
     let group = refGroups.get(key)
     if (!group) {
       group = []
       refGroups.set(key, group)
     }
-    group.push([regionNumber, data])
+    group.push([displayedRegionIndex, data])
   }
 
   for (const [, regions] of refGroups) {

@@ -36,7 +36,7 @@ export interface VariantDisplayModel extends VariantDisplayModelBase {
   renderNow: () => void
   visibleRegions: {
     refName: string
-    regionNumber: number
+    displayedRegionIndex: number
     start: number
     end: number
     reversed?: boolean
@@ -70,12 +70,12 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
     rowIndex: number
     genomicStart: number
     genomicEnd: number
-    regionNumber: number
+    displayedRegionIndex: number
   }
   model: VariantDisplayModel
 }) {
   const region = model.visibleRegions.find(
-    r => r.regionNumber === cell.regionNumber,
+    r => r.displayedRegionIndex === cell.displayedRegionIndex,
   )
   if (!region) {
     return null
@@ -124,7 +124,7 @@ const VariantComponent = observer(function VariantComponent({
         rowIndex: number
         genomicStart: number
         genomicEnd: number
-        regionNumber: number
+        displayedRegionIndex: number
       }
     | undefined
   >()
@@ -172,7 +172,8 @@ const VariantComponent = observer(function VariantComponent({
       return undefined
     }
 
-    const regionCellData = cellData.perRegionCellData[region.regionNumber]
+    const regionCellData =
+      cellData.perRegionCellData[region.displayedRegionIndex]
     if (!regionCellData) {
       return undefined
     }
@@ -237,7 +238,7 @@ const VariantComponent = observer(function VariantComponent({
           rowIndex: regionCellData.cellRowIndices[bestIdx]!,
           genomicStart: item.genomicStart,
           genomicEnd: item.genomicEnd,
-          regionNumber: region.regionNumber,
+          displayedRegionIndex: region.displayedRegionIndex,
         },
       }
     }

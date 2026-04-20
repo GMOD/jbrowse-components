@@ -420,7 +420,7 @@ export default function stateModelFactory(
         }
         const { bpPerPx } = view
         const { adapterConfig } = self
-        self.withFetchLifecycle(async ctx => {
+        self.runFetch(async ctx => {
           const { rpcManager } = getSession(self)
           const result = await rpcManager.call(
             getRpcSessionId(self),

@@ -193,12 +193,12 @@ export function pxToBp(
 export function bpToPx({
   refName,
   coord,
-  regionNumber,
+  displayedRegionIndex,
   self,
 }: {
   refName: string
   coord: number
-  regionNumber?: number
+  displayedRegionIndex?: number
   self: ViewSnap
 }) {
   let bpSoFar = 0
@@ -219,7 +219,7 @@ export function bpToPx({
       refName === r.refName &&
       coord >= r.start &&
       coord <= r.end &&
-      (regionNumber !== undefined ? regionNumber === i : true)
+      (displayedRegionIndex !== undefined ? displayedRegionIndex === i : true)
     ) {
       bpSoFar += r.reversed ? r.end - coord : coord - r.start
       break

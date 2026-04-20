@@ -11,7 +11,7 @@ A Chrome performance trace of several alignments tracks during continuous zoom
 main thread pegged on GPU upload work — ~4.5 s of `upload*ForRegion` and
 `writeBuffer` self-time, with 62–94 % of every rendered frame spent inside the
 upload path. Initial read: the per-region reference-identity gate
-(`lastUploaded.get(regionNumber) !== data` in `uploadChangedRegions.ts` and
+(`lastUploaded.get(displayedRegionIndex) !== data` in `uploadChangedRegions.ts` and
 `alignmentComponentUtils.uploadRegionDataToGPU`) was failing because the RPC
 worker always returns fresh objects (transferables neuter the originals), so
 identity-based cache hits are impossible across refetches.

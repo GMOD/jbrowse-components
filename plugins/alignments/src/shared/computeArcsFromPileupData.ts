@@ -28,7 +28,7 @@ interface RegionInfo {
   refName: string
   start: number
   end: number
-  regionNumber: number
+  displayedRegionIndex: number
 }
 
 interface ArcSettings {
@@ -164,7 +164,7 @@ export function computeArcsFromPileupData(
   const readsByName = new Map<
     string,
     {
-      regionNumber: number
+      displayedRegionIndex: number
       refName: string
       readIdx: number
       data: PileupDataResult
@@ -172,7 +172,7 @@ export function computeArcsFromPileupData(
   >()
 
   for (const region of regions) {
-    const data = rpcDataMap.get(region.regionNumber)
+    const data = rpcDataMap.get(region.displayedRegionIndex)
     if (!data) {
       continue
     }
@@ -184,7 +184,7 @@ export function computeArcsFromPileupData(
         readsByName.set(name, list)
       }
       list.push({
-        regionNumber: region.regionNumber,
+        displayedRegionIndex: region.displayedRegionIndex,
         refName: region.refName,
         readIdx: i,
         data,

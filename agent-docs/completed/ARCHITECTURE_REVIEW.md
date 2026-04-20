@@ -108,7 +108,7 @@ Unclear if worth it. Leave as-is unless we touch the util for another reason.
 
 ## 6. Lock down the upload-identity contract
 
-`MultiRegionDisplayMixin.setLoadedRegionForRegion` documents:
+`MultiRegionDisplayMixin.setLoadedRegion` documents:
 
 > per-region value objects must be freshly constructed when updated — never
 > mutated in place — since the autorun's identity diff depends on reference
@@ -173,7 +173,7 @@ server-side rendering era; the new GPU lifecycle doesn't read it. Some view code
 
 **Cost:** small grep-and-delete pass. **Risk:** low if grep is thorough.
 
-## 10. `regionNumber` rename
+## 10. `displayedRegionIndex` rename
 
 NEXT_STEPS.md Tier 3.6. ~550 sites across 73 files. Mechanical, but high churn.
 Should land **last** so other migrations don't churn it mid-flight. The
@@ -184,7 +184,7 @@ Decision: rename to `displayedRegionIndex` once nothing else is moving.
 ## 11. `dataVersion` debug counter cleanup
 
 `MultiRegionDisplayMixin` still bumps `dataVersion` in
-`setLoadedRegionForRegion`. The util doesn't observe it; nothing reads it in
+`setLoadedRegion`. The util doesn't observe it; nothing reads it in
 production. It exists for debug logs. Either:
 
 - Keep, document as debug-only.
@@ -235,7 +235,7 @@ value once the codebase ships.
 5. **#7** (PickableBackendMixin) alongside synteny.
 6. **#8** (backend conformance suite) before dotplot/synteny ship.
 7. **#2** (HAL-owned tab visibility) post-synteny.
-8. **#10** (regionNumber rename) last.
+8. **#10** (displayedRegionIndex rename) last.
 9. **#9, #11, #12, #6** as opportunistic cleanups.
 
 `#5` (sugar removal) and `#6` (frozen contract) are low-value alone; defer until

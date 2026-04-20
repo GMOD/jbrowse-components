@@ -38,19 +38,19 @@ export interface MultiSyntenyRenderState {
 
 export interface MultiSyntenyBackend {
   uploadGeometryForBlock(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: BlockGeometryData & { regionStart: number },
   ): void
   uploadCoverageForBlock(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: BlockCoverageUploadData & { regionStart: number; maxDepth: number },
   ): void
   uploadSnpCoverageForBlock(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: BlockSnpUploadData,
   ): void
   uploadIndicatorsForBlock(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: BlockIndicatorUploadData,
   ): void
   clearAllBlocks(): void

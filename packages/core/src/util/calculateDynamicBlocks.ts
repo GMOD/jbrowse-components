@@ -55,11 +55,11 @@ export default function calculateDynamicBlocks(
   const windowLeftPx = offsetPx
   const windowRightPx = windowLeftPx + width
   for (
-    let regionNumber = 0;
-    regionNumber < displayedRegions.length;
-    regionNumber++
+    let displayedRegionIndex = 0;
+    displayedRegionIndex < displayedRegions.length;
+    displayedRegionIndex++
   ) {
-    const region = displayedRegions[regionNumber]
+    const region = displayedRegions[displayedRegionIndex]
     const {
       assemblyName,
       refName,
@@ -116,7 +116,7 @@ export default function calculateDynamicBlocks(
         reversed,
         offsetPx: blockOffsetPx,
         parentRegion,
-        regionNumber,
+        displayedRegionIndex,
         widthPx,
         isLeftEndOfDisplayedRegion,
         isRightEndOfDisplayedRegion,
@@ -126,7 +126,7 @@ export default function calculateDynamicBlocks(
           start,
           end,
           reversed,
-        })}-${regionNumber}${reversed ? '-reversed' : ''}`,
+        })}-${displayedRegionIndex}${reversed ? '-reversed' : ''}`,
       }
 
       if (padding && blocks.length === 0 && isLeftEndOfDisplayedRegion) {
@@ -150,7 +150,7 @@ export default function calculateDynamicBlocks(
         if (
           regionWidthPx >= minimumBlockWidth &&
           blockData.isRightEndOfDisplayedRegion &&
-          regionNumber < displayedRegions.length - 1
+          displayedRegionIndex < displayedRegions.length - 1
         ) {
           blocks.push(
             new InterRegionPaddingBlock({
@@ -164,7 +164,7 @@ export default function calculateDynamicBlocks(
         }
 
         if (
-          regionNumber === displayedRegions.length - 1 &&
+          displayedRegionIndex === displayedRegions.length - 1 &&
           blockData.isRightEndOfDisplayedRegion
         ) {
           blockOffsetPx = blockData.offsetPx + blockData.widthPx
@@ -183,7 +183,7 @@ export default function calculateDynamicBlocks(
       padding &&
       !paddingAddedInLoop &&
       regionWidthPx >= minimumBlockWidth &&
-      regionNumber < displayedRegions.length - 1
+      displayedRegionIndex < displayedRegions.length - 1
     ) {
       displayedRegionLeftPx += interRegionPaddingWidth
     }

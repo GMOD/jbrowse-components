@@ -1431,7 +1431,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #getter
          * Returns the currently visible content blocks with screen pixel
-         * positions and regionNumber guaranteed.
+         * positions and displayedRegionIndex guaranteed.
          * Used by WebGL displays for per-region data fetching and rendering.
          */
         get visibleRegions() {
@@ -1441,7 +1441,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             end: block.end,
             assemblyName: block.assemblyName,
             reversed: block.reversed,
-            regionNumber: block.regionNumber!,
+            displayedRegionIndex: block.displayedRegionIndex!,
             offsetPx: block.offsetPx,
             widthPx: block.widthPx,
             screenStartPx: block.offsetPx - self.offsetPx,
@@ -1451,25 +1451,28 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
-         * Merges visibleRegions (exact viewport content) by regionNumber.
+         * Merges visibleRegions (exact viewport content) by displayedRegionIndex.
          * Used by the fetch autorun to decide WHEN data needs re-fetching.
          * The actual fetch region is expanded with an explicit buffer.
          */
         get mergedVisibleRegions() {
-          const regionMap = new Map<number, Region & { regionNumber: number }>()
+          const regionMap = new Map<
+            number,
+            Region & { displayedRegionIndex: number }
+          >()
           for (const block of this.dynamicBlocks.contentBlocks) {
-            const regionNumber = block.regionNumber!
-            const existing = regionMap.get(regionNumber)
+            const displayedRegionIndex = block.displayedRegionIndex!
+            const existing = regionMap.get(displayedRegionIndex)
             if (existing) {
               existing.start = Math.min(existing.start, Math.floor(block.start))
               existing.end = Math.max(existing.end, Math.ceil(block.end))
             } else {
-              regionMap.set(regionNumber, {
+              regionMap.set(displayedRegionIndex, {
                 refName: block.refName,
                 start: Math.floor(block.start),
                 end: Math.ceil(block.end),
                 assemblyName: block.assemblyName,
-                regionNumber,
+                displayedRegionIndex,
                 reversed: block.reversed,
               })
             }
@@ -1487,7 +1490,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         get bufferedVisibleRegions() {
           const bufferBp = Math.ceil(self.width * self.bpPerPx * 0.5)
           return this.mergedVisibleRegions.map(vr => {
-            const dr = self.displayedRegions[vr.regionNumber]!
+            const dr = self.displayedRegions[vr.displayedRegionIndex]!
             return {
               region: {
                 refName: vr.refName,
@@ -1495,7 +1498,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 end: Math.min(dr.end, vr.end + bufferBp),
                 assemblyName: vr.assemblyName,
               },
-              regionNumber: vr.regionNumber,
+              displayedRegionIndex: vr.displayedRegionIndex,
             }
           })
         },
@@ -1858,13 +1861,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       bpToPx({
         refName,
         coord,
-        regionNumber,
+        displayedRegionIndex,
       }: {
         refName: string
         coord: number
-        regionNumber?: number
+        displayedRegionIndex?: number
       }) {
-        return bpToPx({ refName, coord, regionNumber, self })
+        return bpToPx({ refName, coord, displayedRegionIndex, self })
       },
 
       /**
@@ -1874,13 +1877,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
        *
        * @param coord - basepair at which you want to center the view
        * @param refName - refName of the displayedRegion you are centering at
-       * @param regionNumber - index of the displayedRegion
+       * @param displayedRegionIndex - index of the displayedRegion
        */
-      centerAt(coord: number, refName: string, regionNumber?: number) {
+      centerAt(coord: number, refName: string, displayedRegionIndex?: number) {
         const centerPx = this.bpToPx({
           refName,
           coord,
-          regionNumber,
+          displayedRegionIndex,
         })
         if (centerPx !== undefined) {
           self.scrollTo(Math.round(centerPx.offsetPx - self.width / 2))

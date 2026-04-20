@@ -216,7 +216,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
     for (const r of regions) {
       if (canvasX >= r.screenStartPx && canvasX < r.screenEndPx) {
-        const data = dataMap.get(r.regionNumber)
+        const data = dataMap.get(r.displayedRegionIndex)
         if (data) {
           return {
             rpcData: data,

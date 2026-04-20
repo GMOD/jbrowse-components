@@ -15,9 +15,9 @@ and won't trigger reactions.
 The current workaround:
 
 ```typescript
-setRpcDataForRegion(regionNumber: number, data: WiggleDataResult) {
+setRpcData(displayedRegionIndex: number, data: WiggleDataResult) {
   const next = new Map(self.rpcDataMap)
-  next.set(regionNumber, data)
+  next.set(displayedRegionIndex, data)
   self.rpcDataMap = next
 }
 ```
@@ -67,7 +67,7 @@ per data-load cycle — negligible for the region counts in practice.
 
 ## Consequences
 
-- `setRpcDataForRegion` remains the standard action name and pattern across
+- `setRpcData` remains the standard action name and pattern across
   multi-region display types.
 - New display types that store per-region volatile data should follow the same
   pattern.

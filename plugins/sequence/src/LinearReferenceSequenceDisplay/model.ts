@@ -217,7 +217,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
                 const visible = view.mergedVisibleRegions
                 let needFetch = false
                 for (const vr of visible) {
-                  const bounds = self.loadedBounds.get(vr.regionNumber)
+                  const bounds = self.loadedBounds.get(vr.displayedRegionIndex)
                   if (
                     bounds?.refName !== vr.refName ||
                     vr.start < bounds.start ||
@@ -243,7 +243,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
                     const data = new Map<number, SequenceRegionData>()
                     const bounds = new Map<number, LoadedBounds>()
 
-                    for (const { region, regionNumber } of regions) {
+                    for (const { region, displayedRegionIndex } of regions) {
                       if (fetchGeneration !== myGeneration) {
                         return
                       }
@@ -260,12 +260,12 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
                       for (const f of features) {
                         const seq = f.get('seq') as string | undefined
                         if (seq) {
-                          data.set(regionNumber, {
+                          data.set(displayedRegionIndex, {
                             seq,
                             start: f.get('start'),
                             end: f.get('end'),
                           })
-                          bounds.set(regionNumber, {
+                          bounds.set(displayedRegionIndex, {
                             refName: region.refName,
                             start: f.get('start'),
                             end: f.get('end'),

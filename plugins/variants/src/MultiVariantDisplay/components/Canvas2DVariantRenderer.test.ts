@@ -41,7 +41,7 @@ function makeBlock(
   overrides?: Partial<VariantRenderBlock>,
 ): VariantRenderBlock {
   return {
-    regionNumber: 0,
+    displayedRegionIndex: 0,
     bpRangeX: [0, 1000],
     screenStartPx: 0,
     screenEndPx: 800,
@@ -91,7 +91,7 @@ describe('Canvas2DVariantRenderer', () => {
       // Verify data was stored by rendering a block that references it
       createMockCanvas()
       // The region is stored internally; we verify by rendering
-      renderer.renderBlocks([makeBlock({ regionNumber: 0 })], {
+      renderer.renderBlocks([makeBlock({ displayedRegionIndex: 0 })], {
         canvasWidth: 800,
         canvasHeight: 600,
         rowHeight: 10,
@@ -109,7 +109,7 @@ describe('Canvas2DVariantRenderer', () => {
 
       // Render with the block - since the region was removed, save should
       // not be called (the block is skipped)
-      renderer.renderBlocks([makeBlock({ regionNumber: 0 })], {
+      renderer.renderBlocks([makeBlock({ displayedRegionIndex: 0 })], {
         canvasWidth: 800,
         canvasHeight: 600,
         rowHeight: 10,
@@ -133,9 +133,9 @@ describe('Canvas2DVariantRenderer', () => {
       // Region 0 and 2 should be gone; rendering blocks for them should skip
       renderer.renderBlocks(
         [
-          makeBlock({ regionNumber: 0 }),
-          makeBlock({ regionNumber: 1 }),
-          makeBlock({ regionNumber: 2 }),
+          makeBlock({ displayedRegionIndex: 0 }),
+          makeBlock({ displayedRegionIndex: 1 }),
+          makeBlock({ displayedRegionIndex: 2 }),
         ],
         { canvasWidth: 800, canvasHeight: 600, rowHeight: 10, scrollTop: 0 },
       )
@@ -330,7 +330,7 @@ describe('Canvas2DVariantRenderer', () => {
       renderer.uploadRegion(0, makeRegionData())
       renderer.dispose()
 
-      renderer.renderBlocks([makeBlock({ regionNumber: 0 })], {
+      renderer.renderBlocks([makeBlock({ displayedRegionIndex: 0 })], {
         canvasWidth: 800,
         canvasHeight: 600,
         rowHeight: 10,

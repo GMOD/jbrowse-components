@@ -1,5 +1,5 @@
 export interface RenderBlock {
-  regionNumber: number
+  displayedRegionIndex: number
   bpRangeX: [number, number]
   screenStartPx: number
   screenEndPx: number
@@ -8,7 +8,7 @@ export interface RenderBlock {
 
 export function buildRenderBlocks(
   regions: {
-    regionNumber: number
+    displayedRegionIndex: number
     start: number
     end: number
     screenStartPx: number
@@ -17,7 +17,7 @@ export function buildRenderBlocks(
   }[],
 ): RenderBlock[] {
   return regions.map(r => ({
-    regionNumber: r.regionNumber,
+    displayedRegionIndex: r.displayedRegionIndex,
     bpRangeX: [r.start, r.end],
     screenStartPx: r.screenStartPx,
     screenEndPx: r.screenEndPx,

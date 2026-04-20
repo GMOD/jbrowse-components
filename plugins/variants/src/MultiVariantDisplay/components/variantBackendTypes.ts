@@ -19,7 +19,7 @@ export interface VariantRenderState {
 }
 
 export interface VariantBackend {
-  uploadRegion(regionNumber: number, data: VariantUploadData): void
+  uploadRegion(displayedRegionIndex: number, data: VariantUploadData): void
   pruneRegions(activeRegions: number[]): void
   renderBlocks(blocks: RenderBlock[], state: VariantRenderState): void
   dispose(): void

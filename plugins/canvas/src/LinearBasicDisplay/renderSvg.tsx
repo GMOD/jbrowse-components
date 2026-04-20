@@ -21,7 +21,7 @@ type LGV = LinearGenomeViewModel
 
 interface RenderSvgModel {
   id: string
-  rpcDataMap: Map<number, FeatureDataResult>
+  laidOutDataMap: Map<number, FeatureDataResult>
   error: unknown
   regionTooLarge: boolean
   height: number
@@ -178,9 +178,10 @@ export async function renderSvg(
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
   await when(
-    () => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge,
+    () =>
+      model.laidOutDataMap.size > 0 || !!model.error || model.regionTooLarge,
   )
-  const { rpcDataMap } = model
+  const { laidOutDataMap } = model
 
   if (model.error) {
     return (
@@ -192,12 +193,12 @@ export async function renderSvg(
     )
   }
 
-  if (rpcDataMap.size === 0) {
+  if (laidOutDataMap.size === 0) {
     return null
   }
 
   const visibleRegions = view.visibleRegions as {
-    regionNumber: number
+    displayedRegionIndex: number
     start: number
     end: number
     reversed?: boolean
@@ -209,7 +210,7 @@ export async function renderSvg(
   const svgCanvas = new SvgCanvas()
 
   for (const vr of visibleRegions) {
-    const data = rpcDataMap.get(vr.regionNumber)
+    const data = laidOutDataMap.get(vr.displayedRegionIndex)
     if (!data) {
       continue
     }

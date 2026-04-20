@@ -17,7 +17,7 @@ interface FakeBackend {
 }
 
 const block: RenderBlock = {
-  regionNumber: 0,
+  displayedRegionIndex: 0,
   bpRangeX: [0, 100],
   screenStartPx: 0,
   screenEndPx: 100,

@@ -7,14 +7,14 @@
  */
 export function pruneRegionMap<T>(
   regionMap: Map<number, T>,
-  activeRegionNumbers: number[],
-  onRemove?: (regionNumber: number) => void,
+  activeDisplayedRegionIndices: number[],
+  onRemove?: (displayedRegionIndex: number) => void,
 ) {
-  const active = new Set(activeRegionNumbers)
-  for (const regionNumber of regionMap.keys()) {
-    if (!active.has(regionNumber)) {
-      onRemove?.(regionNumber)
-      regionMap.delete(regionNumber)
+  const active = new Set(activeDisplayedRegionIndices)
+  for (const displayedRegionIndex of regionMap.keys()) {
+    if (!active.has(displayedRegionIndex)) {
+      onRemove?.(displayedRegionIndex)
+      regionMap.delete(displayedRegionIndex)
     }
   }
 }

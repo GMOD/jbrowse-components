@@ -245,19 +245,22 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     this.ctx = ctx
   }
 
-  uploadRegion(regionNumber: number, data: PileupDataResult) {
-    this.uploadFromTypedArraysForRegion(regionNumber, data)
-    this.uploadCigarFromTypedArraysForRegion(regionNumber, data)
-    this.uploadModificationsFromTypedArraysForRegion(regionNumber, data)
-    this.uploadCoverageFromTypedArraysForRegion(regionNumber, data)
-    this.uploadModCoverageFromTypedArraysForRegion(regionNumber, data)
+  uploadRegion(displayedRegionIndex: number, data: PileupDataResult) {
+    this.uploadFromTypedArraysForRegion(displayedRegionIndex, data)
+    this.uploadCigarFromTypedArraysForRegion(displayedRegionIndex, data)
+    this.uploadModificationsFromTypedArraysForRegion(displayedRegionIndex, data)
+    this.uploadCoverageFromTypedArraysForRegion(displayedRegionIndex, data)
+    this.uploadModCoverageFromTypedArraysForRegion(displayedRegionIndex, data)
   }
 
-  uploadFromTypedArraysForRegion(regionNumber: number, data: ReadUploadData) {
-    let r = this.regions.get(regionNumber)
+  uploadFromTypedArraysForRegion(
+    displayedRegionIndex: number,
+    data: ReadUploadData,
+  ) {
+    let r = this.regions.get(displayedRegionIndex)
     if (!r) {
       r = emptyRegion(data.regionStart)
-      this.regions.set(regionNumber, r)
+      this.regions.set(displayedRegionIndex, r)
     }
     r.regionStart = data.regionStart
     r.readPositions = data.readPositions
@@ -279,10 +282,10 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   uploadCigarFromTypedArraysForRegion(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: CigarUploadData,
   ) {
-    const r = this.regions.get(regionNumber)
+    const r = this.regions.get(displayedRegionIndex)
     if (!r) {
       return
     }
@@ -328,10 +331,10 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   uploadModificationsFromTypedArraysForRegion(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: ModificationUploadData,
   ) {
-    const r = this.regions.get(regionNumber)
+    const r = this.regions.get(displayedRegionIndex)
     if (!r) {
       return
     }
@@ -342,10 +345,10 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   uploadCoverageFromTypedArraysForRegion(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: CoverageUploadData,
   ) {
-    const r = this.regions.get(regionNumber)
+    const r = this.regions.get(displayedRegionIndex)
     if (!r) {
       return
     }
@@ -408,10 +411,10 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   uploadModCoverageFromTypedArraysForRegion(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: ModCoverageUploadData,
   ) {
-    const r = this.regions.get(regionNumber)
+    const r = this.regions.get(displayedRegionIndex)
     if (!r) {
       return
     }
@@ -430,13 +433,13 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   uploadArcsFromTypedArraysForRegion(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: ArcsUploadData,
   ) {
-    let r = this.regions.get(regionNumber)
+    let r = this.regions.get(displayedRegionIndex)
     if (!r) {
       r = emptyRegion(data.regionStart)
-      this.regions.set(regionNumber, r)
+      this.regions.set(displayedRegionIndex, r)
     }
     r.arcX1 = data.arcX1
     r.arcX2 = data.arcX2
@@ -450,13 +453,13 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   uploadConnectingLinesForRegion(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: ConnectingLinesUploadData,
   ) {
-    let r = this.regions.get(regionNumber)
+    let r = this.regions.get(displayedRegionIndex)
     if (!r) {
       r = emptyRegion(data.regionStart)
-      this.regions.set(regionNumber, r)
+      this.regions.set(displayedRegionIndex, r)
     }
     r.connectingLinePositions = data.connectingLinePositions
     r.connectingLineYs = data.connectingLineYs
@@ -484,7 +487,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     const mode = state.renderingMode ?? 'pileup'
 
     for (const block of blocks) {
-      const region = this.regions.get(block.regionNumber)
+      const region = this.regions.get(block.displayedRegionIndex)
       if (!region) {
         continue
       }
@@ -506,7 +509,17 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
         ctx.beginPath()
         ctx.rect(scissorX, 0, scissorW, covH)
         ctx.clip()
-        this.drawArcs(ctx, region, block, bpLength, fullBlockWidth, state, 0, covH, true)
+        this.drawArcs(
+          ctx,
+          region,
+          block,
+          bpLength,
+          fullBlockWidth,
+          state,
+          0,
+          covH,
+          true,
+        )
         ctx.restore()
       }
 

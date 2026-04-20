@@ -153,13 +153,13 @@ export interface ConnectingLinesUploadData {
 
 export interface AlignmentsBackend {
   pruneRegions(activeRegions: number[]): void
-  uploadRegion(regionNumber: number, data: PileupDataResult): void
+  uploadRegion(displayedRegionIndex: number, data: PileupDataResult): void
   uploadArcsFromTypedArraysForRegion(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: ArcsUploadData,
   ): void
   uploadConnectingLinesForRegion(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: ConnectingLinesUploadData,
   ): void
   renderBlocks(blocks: RenderBlock[], state: RenderState): void

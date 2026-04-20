@@ -70,7 +70,7 @@ describe('Canvas2DWiggleRenderer', () => {
     renderer.renderBlocks(
       [
         {
-          regionNumber: 0,
+          displayedRegionIndex: 0,
           bpRangeX: [0, 1000],
           screenStartPx: 0,
           screenEndPx: 800,
@@ -105,7 +105,7 @@ describe('Canvas2DWiggleRenderer', () => {
     renderer.renderBlocks(
       [
         {
-          regionNumber: 0,
+          displayedRegionIndex: 0,
           bpRangeX: [0, 1000],
           screenStartPx: 0,
           screenEndPx: 800,
@@ -140,7 +140,7 @@ describe('Canvas2DWiggleRenderer', () => {
     renderer.renderBlocks(
       [
         {
-          regionNumber: 99,
+          displayedRegionIndex: 99,
           bpRangeX: [0, 1000],
           screenStartPx: 0,
           screenEndPx: 800,
@@ -173,7 +173,7 @@ describe('Canvas2DWiggleRenderer', () => {
     renderer.renderBlocks(
       [
         {
-          regionNumber: 0,
+          displayedRegionIndex: 0,
           bpRangeX: [0, 1000],
           screenStartPx: 0,
           screenEndPx: 800,
@@ -206,7 +206,7 @@ describe('Canvas2DWiggleRenderer', () => {
     renderer.renderBlocks(
       [
         {
-          regionNumber: 0,
+          displayedRegionIndex: 0,
           bpRangeX: [0, 1000],
           screenStartPx: 0,
           screenEndPx: 800,
@@ -240,7 +240,7 @@ describe('Canvas2DWiggleRenderer', () => {
     renderer.renderBlocks(
       [
         {
-          regionNumber: 0,
+          displayedRegionIndex: 0,
           bpRangeX: [0, 1000],
           screenStartPx: 0,
           screenEndPx: 800,
@@ -275,14 +275,14 @@ describe('Canvas2DWiggleRenderer', () => {
     renderer.renderBlocks(
       [
         {
-          regionNumber: 0,
+          displayedRegionIndex: 0,
           bpRangeX: [0, 1000],
           screenStartPx: 0,
           screenEndPx: 400,
           reversed: false,
         },
         {
-          regionNumber: 1,
+          displayedRegionIndex: 1,
           bpRangeX: [1000, 2000],
           screenStartPx: 400,
           screenEndPx: 800,
@@ -325,7 +325,7 @@ describe('Canvas2DWiggleRenderer', () => {
     renderer.renderBlocks(
       [
         {
-          regionNumber: 0,
+          displayedRegionIndex: 0,
           bpRangeX: [0, 1000],
           screenStartPx: 0,
           screenEndPx: 800,

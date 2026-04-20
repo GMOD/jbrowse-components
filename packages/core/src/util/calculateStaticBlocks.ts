@@ -49,11 +49,11 @@ export default function calculateStaticBlocks(
   let regionBpOffset = 0
   const blocks = new BlockSet()
   for (
-    let regionNumber = 0;
-    regionNumber < displayedRegions.length;
-    regionNumber++
+    let displayedRegionIndex = 0;
+    displayedRegionIndex < displayedRegions.length;
+    displayedRegionIndex++
   ) {
-    const region = displayedRegions[regionNumber]!
+    const region = displayedRegions[displayedRegionIndex]!
     const {
       assemblyName,
       refName,
@@ -111,7 +111,7 @@ export default function calculateStaticBlocks(
         reversed,
         offsetPx: (regionBpOffset + blockNum * blockSizeBp) * invBpPerPx,
         parentRegion,
-        regionNumber,
+        displayedRegionIndex,
         widthPx,
         isLeftEndOfDisplayedRegion,
         isRightEndOfDisplayedRegion,
@@ -121,10 +121,10 @@ export default function calculateStaticBlocks(
           start,
           end,
           reversed,
-        })}-${regionNumber}${reversed ? '-reversed' : ''}`,
+        })}-${displayedRegionIndex}${reversed ? '-reversed' : ''}`,
       }
 
-      if (padding && regionNumber === 0 && blockNum === 0) {
+      if (padding && displayedRegionIndex === 0 && blockNum === 0) {
         blocks.push(
           new InterRegionPaddingBlock({
             key: `${blockData.key}-beforeFirstRegion`,
@@ -145,7 +145,7 @@ export default function calculateStaticBlocks(
         if (
           regionWidthPx >= minimumBlockWidth &&
           blockData.isRightEndOfDisplayedRegion &&
-          regionNumber < displayedRegions.length - 1
+          displayedRegionIndex < displayedRegions.length - 1
         ) {
           regionBpOffset += interRegionPaddingWidth * bpPerPx
           paddingAddedInLoop = true
@@ -158,7 +158,7 @@ export default function calculateStaticBlocks(
           )
         }
         if (
-          regionNumber === displayedRegions.length - 1 &&
+          displayedRegionIndex === displayedRegions.length - 1 &&
           blockData.isRightEndOfDisplayedRegion
         ) {
           regionBpOffset += interRegionPaddingWidth * bpPerPx
@@ -177,7 +177,7 @@ export default function calculateStaticBlocks(
       padding &&
       !paddingAddedInLoop &&
       regionWidthPx >= minimumBlockWidth &&
-      regionNumber < displayedRegions.length - 1
+      displayedRegionIndex < displayedRegions.length - 1
     ) {
       regionBpOffset += interRegionPaddingWidth * bpPerPx
     }

@@ -34,7 +34,7 @@ type LGV = LinearGenomeViewModel
 
 interface LinearBasicDisplayModel {
   height: number
-  rpcDataMap: Map<number, FeatureDataResult>
+  laidOutDataMap: Map<number, FeatureDataResult>
   visibleRegions: VisibleRegion[]
   isLoading: boolean
   error: Error | null
@@ -66,11 +66,11 @@ interface LinearBasicDisplayModel {
   selectFeatureById: (
     featureInfo: FlatbushItem,
     subfeatureInfo: SubfeatureInfo | undefined,
-    regionNumber: number,
+    displayedRegionIndex: number,
   ) => void
   showContextMenuForFeature: (
     featureInfo: FlatbushItem,
-    regionNumber: number,
+    displayedRegionIndex: number,
   ) => void
   setContextMenuInfo: (info?: unknown) => void
   contextMenuItems: () => { label: string; onClick: () => void }[]
@@ -145,7 +145,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
   const view = getContainingView(model) as LGV
 
-  const { rpcDataMap, isLoading, error: modelError } = model
+  const { laidOutDataMap, isLoading, error: modelError } = model
   const debouncedLoading = useDebounce(isLoading, 500)
 
   const width = view.initialized ? view.trackWidthPx : undefined
@@ -154,11 +154,11 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   const openContextMenu = useCallback(
     (
       feature: FlatbushItem,
-      regionNumber: number,
+      displayedRegionIndex: number,
       clientX: number,
       clientY: number,
     ) => {
-      model.showContextMenuForFeature(feature, regionNumber)
+      model.showContextMenuForFeature(feature, displayedRegionIndex)
       model.setMouseoverExtraInformation(undefined)
       setContextMenuCoord([clientX, clientY])
     },
@@ -240,13 +240,13 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     const yPos = mouseY + scrollTop
     const cache = flatbushCacheMapRef.current
     for (const key of cache.keys()) {
-      if (!model.rpcDataMap.has(key)) {
+      if (!model.laidOutDataMap.has(key)) {
         cache.delete(key)
       }
     }
     return performMultiRegionHitDetection(
       cache,
-      model.rpcDataMap,
+      model.laidOutDataMap,
       view.visibleRegions,
       mouseX,
       yPos,
@@ -259,7 +259,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       return
     }
     setClientXY([e.clientX, e.clientY])
-    if (model.rpcDataMap.size === 0) {
+    if (model.laidOutDataMap.size === 0) {
       model.clearHover()
       return
     }
@@ -283,7 +283,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   }
 
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (model.rpcDataMap.size === 0) {
+    if (model.laidOutDataMap.size === 0) {
       return
     }
     const result = hitTestAtEvent(e)
@@ -291,7 +291,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       model.selectFeatureById(
         result.feature,
         result.subfeature ?? undefined,
-        result.regionNumber,
+        result.displayedRegionIndex,
       )
     } else {
       model.clearSelection()
@@ -299,13 +299,18 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   }
 
   const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (model.rpcDataMap.size === 0) {
+    if (model.laidOutDataMap.size === 0) {
       return
     }
     const result = hitTestAtEvent(e)
     if (result.feature) {
       e.preventDefault()
-      openContextMenu(result.feature, result.regionNumber, e.clientX, e.clientY)
+      openContextMenu(
+        result.feature,
+        result.displayedRegionIndex,
+        e.clientX,
+        e.clientY,
+      )
     }
   }
 
@@ -321,7 +326,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   const featureItemMap = useMemo(() => {
     const map = new Map<string, FeatureItemEntry>()
     for (const vr of visibleRegions) {
-      const data = rpcDataMap.get(vr.regionNumber)
+      const data = laidOutDataMap.get(vr.displayedRegionIndex)
       if (data) {
         for (const f of data.flatbushItems) {
           map.set(f.featureId, { item: f, vr, data })
@@ -334,7 +339,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       }
     }
     return map
-  }, [rpcDataMap, visibleRegions])
+  }, [laidOutDataMap, visibleRegions])
 
   const onLabelMouseOver = useCallback(
     (item: FlatbushItem, e: React.MouseEvent) => {
@@ -347,7 +352,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   )
 
   const floatingLabelElements = useFloatingLabels(
-    rpcDataMap,
+    laidOutDataMap,
     visibleRegions,
     view.initialized,
     width,
@@ -358,7 +363,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   )
 
   const aminoAcidOverlayElements = useAminoAcidOverlay(
-    rpcDataMap,
+    laidOutDataMap,
     visibleRegions,
     view.initialized,
     width,

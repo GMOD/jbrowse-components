@@ -43,11 +43,11 @@ import type {
 import type { Source, SourceInfo } from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { Region } from '@jbrowse/core/util'
 import type {
   ExportSvgDisplayOptions,
   FetchContext,
   LinearGenomeViewModel,
-  MultiRegionRegionWithNumber as RegionWithNumber,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -122,7 +122,11 @@ export default function stateModelFactory(
     .volatile(() => ({
       rpcDataMap: observable.map<number, MultiWiggleDataResult>(),
       sourcesVolatile: [] as SourceInfo[],
-      loadedBpPerPx: observable.map<number, number>(),
+      // The bpPerPx at which all currently-loaded regions were fetched.
+      // One value for the whole model, not per-region — this is what
+      // structurally guarantees adjacent regions render at the same
+      // resolution. Updated atomically with rpcDataMap inside fetchRegions.
+      loadedBpPerPx: undefined as number | undefined,
       featureUnderMouse: undefined as
         | {
             refName: string
@@ -262,7 +266,7 @@ export default function stateModelFactory(
       },
 
       // See LinearWiggleDisplay's equivalent — walks mergedVisibleRegions
-      // (one entry per regionNumber with the merged on-screen bp span)
+      // (one entry per displayedRegionIndex with the merged on-screen bp span)
       // and emits one autoscale entry per source per visible region.
       get visibleScoreRange(): [number, number] | undefined {
         const view = getContainingView(self) as LGV
@@ -271,7 +275,7 @@ export default function stateModelFactory(
         }
         const numStdDev = self.getConfWithOverride<number>('numStdDev')
         const visibleEntries = view.mergedVisibleRegions.flatMap(vr => {
-          const regionData = self.rpcDataMap.get(vr.regionNumber)
+          const regionData = self.rpcDataMap.get(vr.displayedRegionIndex)
           if (!regionData) {
             return []
           }
@@ -404,8 +408,8 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      setRpcDataForRegion(regionNumber: number, data: MultiWiggleDataResult) {
-        self.rpcDataMap.set(regionNumber, data)
+      setRpcData(displayedRegionIndex: number, data: MultiWiggleDataResult) {
+        self.rpcDataMap.set(displayedRegionIndex, data)
         if (self.sourcesVolatile.length === 0 && data.sources.length > 0) {
           self.sourcesVolatile = data.sources.map(s => ({
             name: s.name,
@@ -414,13 +418,13 @@ export default function stateModelFactory(
         }
       },
 
-      setLoadedBpPerPxForRegion(regionNumber: number, bpPerPx: number) {
-        self.loadedBpPerPx.set(regionNumber, bpPerPx)
+      setLoadedBpPerPx(bpPerPx: number | undefined) {
+        self.loadedBpPerPx = bpPerPx
       },
 
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
-        self.loadedBpPerPx.clear()
+        self.loadedBpPerPx = undefined
       },
 
       startGpuBackendLifecycle(backend: WiggleBackend) {
@@ -429,15 +433,15 @@ export default function stateModelFactory(
           uploads: [
             {
               getData: () => self.rpcDataMap,
-              upload: (b, regionNumber, data) => {
+              upload: (b, displayedRegionIndex, data) => {
                 b.uploadRegion(
-                  regionNumber,
+                  displayedRegionIndex,
                   data.regionStart,
                   buildMultiSourceRenderData(data, self.gpuProps()),
                 )
               },
-              prune: (b, activeRegionNumbers) => {
-                b.pruneRegions(activeRegionNumbers)
+              prune: (b, activeDisplayedRegionIndices) => {
+                b.pruneRegions(activeDisplayedRegionIndices)
               },
             },
           ],
@@ -545,24 +549,33 @@ export default function stateModelFactory(
       const superAfterAttach = self.afterAttach
 
       return {
-        isCacheValid(regionNumber: number) {
+        isCacheValid(_displayedRegionIndex: number) {
+          if (self.loadedBpPerPx === undefined) {
+            return true
+          }
           const view = getContainingView(self) as LGV
-          const regionBpPerPx = self.loadedBpPerPx.get(regionNumber)
-          return (
-            regionBpPerPx === undefined || view.bpPerPx >= regionBpPerPx / 2
-          )
+          return view.bpPerPx >= self.loadedBpPerPx / 2
         },
 
-        onFetchNeeded(needed: RegionWithNumber[]) {
+        onFetchNeeded(
+          needed: { region: Region; displayedRegionIndex: number }[],
+        ) {
           const view = getContainingView(self) as LGV
-          const { bpPerPx } = view
           const { adapterConfig, sources } = self
           if (!adapterConfig) {
             return
           }
+          // See LinearWiggleDisplay.onFetchNeeded for the rationale: keep
+          // existing resolution if cache is still valid (so newly-visible
+          // regions match what's on screen), else refetch all at view's
+          // bpPerPx.
+          const cacheValid =
+            self.loadedBpPerPx !== undefined &&
+            view.bpPerPx >= self.loadedBpPerPx / 2
+          const bpPerPx = cacheValid ? self.loadedBpPerPx! : view.bpPerPx
           const sessionId = getRpcSessionId(self)
           const { rpcManager } = getSession(self)
-          self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
+          self.fetchRegions(needed, async (ctx: FetchContext) => {
             await Promise.all(
               needed.map(async r => {
                 const result = await rpcManager.call(
@@ -584,11 +597,13 @@ export default function stateModelFactory(
                   },
                 )
                 if (!ctx.isStale()) {
-                  self.setRpcDataForRegion(r.regionNumber, result)
-                  self.setLoadedBpPerPxForRegion(r.regionNumber, bpPerPx)
+                  self.setRpcData(r.displayedRegionIndex, result)
                 }
               }),
             )
+            if (!ctx.isStale()) {
+              self.setLoadedBpPerPx(bpPerPx)
+            }
           })
         },
 

@@ -58,9 +58,9 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
     this.hal = hal
   }
 
-  uploadRegion(regionNumber: number, data: RegionRenderData) {
-    this.hal.deleteRegion(regionNumber)
-    this.regions.delete(regionNumber)
+  uploadRegion(displayedRegionIndex: number, data: RegionRenderData) {
+    this.hal.deleteRegion(displayedRegionIndex)
+    this.regions.delete(displayedRegionIndex)
 
     const numRects = data.rectYs.length
     const numLines = data.lineYs.length
@@ -70,7 +70,7 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
       return
     }
 
-    this.regions.set(regionNumber, {
+    this.regions.set(displayedRegionIndex, {
       start: data.regionStart,
       hasRects: numRects > 0,
       hasLines: numLines > 0,
@@ -85,7 +85,7 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
         data.rectColors,
         numRects,
       )
-      this.hal.uploadBuffer(regionNumber, PASS_RECT, buf, numRects)
+      this.hal.uploadBuffer(displayedRegionIndex, PASS_RECT, buf, numRects)
     }
 
     if (numLines > 0) {
@@ -96,7 +96,7 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
         data.lineColors,
         numLines,
       )
-      this.hal.uploadBuffer(regionNumber, PASS_LINE, buf, numLines)
+      this.hal.uploadBuffer(displayedRegionIndex, PASS_LINE, buf, numLines)
     }
 
     if (numArrows > 0) {
@@ -107,7 +107,7 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
         data.arrowColors,
         numArrows,
       )
-      this.hal.uploadBuffer(regionNumber, PASS_ARROW, buf, numArrows)
+      this.hal.uploadBuffer(displayedRegionIndex, PASS_ARROW, buf, numArrows)
     }
   }
 
@@ -127,7 +127,7 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
     this.hal.beginFrame(0, 0, 0, 0)
 
     for (const block of blocks) {
-      const meta = this.regions.get(block.regionNumber)
+      const meta = this.regions.get(block.displayedRegionIndex)
       if (!meta) {
         continue
       }
@@ -154,16 +154,16 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
       this.hal.writeUniforms(this.uniformData)
 
       if (meta.hasLines) {
-        this.hal.drawPass(PASS_LINE, block.regionNumber)
-        this.hal.drawPass(PASS_CHEVRON, block.regionNumber, PASS_LINE)
+        this.hal.drawPass(PASS_LINE, block.displayedRegionIndex)
+        this.hal.drawPass(PASS_CHEVRON, block.displayedRegionIndex, PASS_LINE)
       }
 
       if (meta.hasRects) {
-        this.hal.drawPass(PASS_RECT, block.regionNumber)
+        this.hal.drawPass(PASS_RECT, block.displayedRegionIndex)
       }
 
       if (meta.hasArrows) {
-        this.hal.drawPass(PASS_ARROW, block.regionNumber)
+        this.hal.drawPass(PASS_ARROW, block.displayedRegionIndex)
       }
     }
 

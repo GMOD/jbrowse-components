@@ -373,7 +373,7 @@ describe('FetchVisibleRegions autorun', () => {
     expect(mockRpcCall.mock.calls.length).toBe(callCount)
   })
 
-  it('preserves rpcDataMap during layout refresh (soft reset)', async () => {
+  it('preserves laidOutDataMap during layout refresh (soft reset)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 
     const featureData = makeEmptyFeatureData(0)
@@ -388,7 +388,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     // Verify data is loaded
-    expect(display.rpcDataMap.size).toBe(1)
+    expect(display.laidOutDataMap.size).toBe(1)
 
     // Simulate zoom that triggers needsLayoutRefresh:
     // The layout was done at bpPerPx ~12.5 (10000bp / 800px).
@@ -399,8 +399,8 @@ describe('FetchVisibleRegions autorun', () => {
     // beforeFetchCheck should do a soft reset
     jest.advanceTimersByTime(400)
 
-    // rpcDataMap should still have the old data (soft reset preserves it)
-    expect(display.rpcDataMap.size).toBe(1)
+    // laidOutDataMap should still have the old data (soft reset preserves it)
+    expect(display.laidOutDataMap.size).toBe(1)
 
     // But loadedRegions should be cleared (triggering refetch)
     // and eventually new data arrives
@@ -495,7 +495,7 @@ describe('SettingsInvalidate autorun', () => {
     })
   })
 
-  it('keeps stale rawRpcDataMap visible through a settings-change refetch', async () => {
+  it('keeps stale rpcDataMap visible through a settings-change refetch', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
     const { display } = createDisplay()
@@ -504,12 +504,12 @@ describe('SettingsInvalidate autorun', () => {
     await waitFor(() => {
       expect(display.loadedRegions.size).toBe(1)
     })
-    expect(display.rawRpcDataMap.size).toBe(1)
+    expect(display.rpcDataMap.size).toBe(1)
 
     // Trigger settings-driven invalidation. clearAllRpcData fires but
-    // must NOT empty rawRpcDataMap — labels would flash off otherwise.
+    // must NOT empty rpcDataMap — labels would flash off otherwise.
     display.setShowOnlyGenes(true)
-    expect(display.rawRpcDataMap.size).toBe(1)
+    expect(display.rpcDataMap.size).toBe(1)
   })
 
   it('triggers refetch when settings change while fetch is in progress (regression)', async () => {
@@ -527,7 +527,7 @@ describe('SettingsInvalidate autorun', () => {
     const callsBefore = mockRpcCall.mock.calls.length
     display.setShowOnlyGenes(true)
     // clearAllRpcData() fires synchronously, cancels the in-flight fetch and
-    // clears rpcDataMap. FetchVisibleRegions re-fetches after 300ms.
+    // clears laidOutDataMap. FetchVisibleRegions re-fetches after 300ms.
     jest.advanceTimersByTime(400)
 
     expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)

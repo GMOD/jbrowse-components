@@ -86,7 +86,7 @@ until a second pickable backend is needed.
 Both still used in synteny (`LevelSyntenyCanvas.tsx`, `MultiSyntenyRendering.tsx`)
 and dotplot. Post-synteny.
 
-**`regionNumber` → `displayedRegionIndex`.** Mechanical rename (~550 sites,
+**`displayedRegionIndex` → `displayedRegionIndex`.** Mechanical rename (~550 sites,
 73 files). Do **last**.
 
 **Dead code sweep.** `setCanvasDrawn(val)` was removed from

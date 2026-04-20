@@ -76,7 +76,7 @@ function makeData(
 }
 
 function makeRegion(
-  regionNumber: number,
+  displayedRegionIndex: number,
   start: number,
   end: number,
   screenStartPx: number,
@@ -84,7 +84,7 @@ function makeRegion(
 ): VisibleRegion {
   return {
     refName: 'ctgA',
-    regionNumber,
+    displayedRegionIndex,
     start,
     end,
     assemblyName: 'volvox',
@@ -101,12 +101,12 @@ test('hits feature at correct coordinates', () => {
   const item = makeItem('gene1', 1000, 5000, 0, 20)
   const data = makeData([item])
 
-  const rpcDataMap = new Map([[0, data]])
+  const laidOutDataMap = new Map([[0, data]])
   const region = makeRegion(0, 0, 10000, 0, 800)
 
   const result = performMultiRegionHitDetection(
     freshCacheMap(),
-    rpcDataMap,
+    laidOutDataMap,
     [region],
     320,
     10,
@@ -121,12 +121,12 @@ test('misses when clicking outside feature bounds', () => {
   const item = makeItem('gene1', 1000, 5000, 0, 20)
   const data = makeData([item])
 
-  const rpcDataMap = new Map([[0, data]])
+  const laidOutDataMap = new Map([[0, data]])
   const region = makeRegion(0, 0, 10000, 0, 800)
 
   const result = performMultiRegionHitDetection(
     freshCacheMap(),
-    rpcDataMap,
+    laidOutDataMap,
     [region],
     10,
     10,
@@ -140,12 +140,12 @@ test('misses when clicking below feature', () => {
   const item = makeItem('gene1', 1000, 5000, 0, 20)
   const data = makeData([item])
 
-  const rpcDataMap = new Map([[0, data]])
+  const laidOutDataMap = new Map([[0, data]])
   const region = makeRegion(0, 0, 10000, 0, 800)
 
   const result = performMultiRegionHitDetection(
     freshCacheMap(),
-    rpcDataMap,
+    laidOutDataMap,
     [region],
     320,
     25,
@@ -155,16 +155,16 @@ test('misses when clicking below feature', () => {
   expect(result.feature).toBeNull()
 })
 
-test('returns correct regionNumber', () => {
+test('returns correct displayedRegionIndex', () => {
   const item = makeItem('gene1', 1000, 5000, 0, 20)
   const data = makeData([item])
 
-  const rpcDataMap = new Map([[7, data]])
+  const laidOutDataMap = new Map([[7, data]])
   const region = makeRegion(7, 0, 10000, 0, 800)
 
   const result = performMultiRegionHitDetection(
     freshCacheMap(),
-    rpcDataMap,
+    laidOutDataMap,
     [region],
     320,
     10,
@@ -172,19 +172,19 @@ test('returns correct regionNumber', () => {
   )
 
   expect(result.feature).not.toBeNull()
-  expect((result as any).regionNumber).toBe(7)
+  expect((result as any).displayedRegionIndex).toBe(7)
 })
 
 test('skips regions where mouseX is outside screen bounds', () => {
   const item = makeItem('gene1', 1000, 5000, 0, 20)
   const data = makeData([item])
 
-  const rpcDataMap = new Map([[0, data]])
+  const laidOutDataMap = new Map([[0, data]])
   const region = makeRegion(0, 0, 10000, 100, 500)
 
   const outside = performMultiRegionHitDetection(
     freshCacheMap(),
-    rpcDataMap,
+    laidOutDataMap,
     [region],
     50,
     10,
@@ -194,7 +194,7 @@ test('skips regions where mouseX is outside screen bounds', () => {
 
   const inside = performMultiRegionHitDetection(
     freshCacheMap(),
-    rpcDataMap,
+    laidOutDataMap,
     [region],
     250,
     10,
@@ -208,12 +208,12 @@ test('hits subfeature when within subfeature bounds', () => {
   const sub = makeSub('mRNA1', 'gene1', 2000, 3000, 5, 15)
   const data = makeData([parent], [sub])
 
-  const rpcDataMap = new Map([[0, data]])
+  const laidOutDataMap = new Map([[0, data]])
   const region = makeRegion(0, 0, 10000, 0, 800)
 
   const result = performMultiRegionHitDetection(
     freshCacheMap(),
-    rpcDataMap,
+    laidOutDataMap,
     [region],
     200,
     10,
@@ -231,12 +231,12 @@ test('returns null subfeature when outside subfeature but inside feature', () =>
   const sub = makeSub('mRNA1', 'gene1', 2000, 3000, 5, 15)
   const data = makeData([parent], [sub])
 
-  const rpcDataMap = new Map([[0, data]])
+  const laidOutDataMap = new Map([[0, data]])
   const region = makeRegion(0, 0, 10000, 0, 800)
 
   const result = performMultiRegionHitDetection(
     freshCacheMap(),
-    rpcDataMap,
+    laidOutDataMap,
     [region],
     120,
     25,
@@ -248,7 +248,7 @@ test('returns null subfeature when outside subfeature but inside feature', () =>
   expect(result.subfeature).toBeNull()
 })
 
-test('returns no hit when rpcDataMap is empty', () => {
+test('returns no hit when laidOutDataMap is empty', () => {
   const region = makeRegion(0, 0, 10000, 0, 800)
 
   const result = performMultiRegionHitDetection(
@@ -283,11 +283,18 @@ test('caches flatbush index across calls', () => {
   const item = makeItem('gene1', 1000, 5000, 0, 20)
   const data = makeData([item])
 
-  const rpcDataMap = new Map([[0, data]])
+  const laidOutDataMap = new Map([[0, data]])
   const region = makeRegion(0, 0, 10000, 0, 800)
   const cacheMap = freshCacheMap()
 
-  performMultiRegionHitDetection(cacheMap, rpcDataMap, [region], 320, 10, false)
+  performMultiRegionHitDetection(
+    cacheMap,
+    laidOutDataMap,
+    [region],
+    320,
+    10,
+    false,
+  )
 
   const cache = cacheMap.get(0)!
   expect(cache.featureIndex).not.toBeNull()
@@ -295,7 +302,14 @@ test('caches flatbush index across calls', () => {
 
   const savedIndex = cache.featureIndex
 
-  performMultiRegionHitDetection(cacheMap, rpcDataMap, [region], 320, 10, false)
+  performMultiRegionHitDetection(
+    cacheMap,
+    laidOutDataMap,
+    [region],
+    320,
+    10,
+    false,
+  )
 
   expect(cacheMap.get(0)!.featureIndex).toBe(savedIndex)
 })
@@ -304,19 +318,33 @@ test('rebuilds cache when data changes', () => {
   const item1 = makeItem('gene1', 1000, 5000, 0, 20)
   const data1 = makeData([item1])
 
-  const rpcDataMap = new Map([[0, data1]])
+  const laidOutDataMap = new Map([[0, data1]])
   const region = makeRegion(0, 0, 10000, 0, 800)
   const cacheMap = freshCacheMap()
 
-  performMultiRegionHitDetection(cacheMap, rpcDataMap, [region], 320, 10, false)
+  performMultiRegionHitDetection(
+    cacheMap,
+    laidOutDataMap,
+    [region],
+    320,
+    10,
+    false,
+  )
 
   const savedIndex = cacheMap.get(0)!.featureIndex
 
   const item2 = makeItem('gene2', 6000, 9000, 0, 20)
   const data2 = makeData([item2])
-  rpcDataMap.set(0, data2)
+  laidOutDataMap.set(0, data2)
 
-  performMultiRegionHitDetection(cacheMap, rpcDataMap, [region], 560, 10, false)
+  performMultiRegionHitDetection(
+    cacheMap,
+    laidOutDataMap,
+    [region],
+    560,
+    10,
+    false,
+  )
 
   expect(cacheMap.get(0)!.featureIndex).not.toBe(savedIndex)
   expect(cacheMap.get(0)!.cachedItems).toBe(data2.flatbushItems)
@@ -328,7 +356,7 @@ test('multi-region selects correct region', () => {
   const data1 = makeData([item1])
   const data2 = makeData([item2])
 
-  const rpcDataMap = new Map([
+  const laidOutDataMap = new Map([
     [0, data1],
     [1, data2],
   ])
@@ -339,25 +367,25 @@ test('multi-region selects correct region', () => {
 
   const hitR0 = performMultiRegionHitDetection(
     freshCacheMap(),
-    rpcDataMap,
+    laidOutDataMap,
     regions,
     100,
     10,
     false,
   )
   expect(hitR0.feature!.featureId).toBe('geneA')
-  expect((hitR0 as any).regionNumber).toBe(0)
+  expect((hitR0 as any).displayedRegionIndex).toBe(0)
 
   const hitR1 = performMultiRegionHitDetection(
     freshCacheMap(),
-    rpcDataMap,
+    laidOutDataMap,
     regions,
     500,
     10,
     false,
   )
   expect(hitR1.feature!.featureId).toBe('geneB')
-  expect((hitR1 as any).regionNumber).toBe(1)
+  expect((hitR1 as any).displayedRegionIndex).toBe(1)
 })
 
 test('multi-region continues to next region when first has no hit', () => {
@@ -367,7 +395,7 @@ test('multi-region continues to next region when first has no hit', () => {
   const data1 = makeData([item1])
   const data2 = makeData([item2])
 
-  const rpcDataMap = new Map([
+  const laidOutDataMap = new Map([
     [0, data1],
     [1, data2],
   ])
@@ -381,7 +409,7 @@ test('multi-region continues to next region when first has no hit', () => {
   // but region 1 should still be checked and also yields no hit at y=999
   const miss = performMultiRegionHitDetection(
     freshCacheMap(),
-    rpcDataMap,
+    laidOutDataMap,
     regions,
     100,
     999,
@@ -392,26 +420,26 @@ test('multi-region continues to next region when first has no hit', () => {
   // y=10 hits in region 0 (first match wins)
   const hit = performMultiRegionHitDetection(
     freshCacheMap(),
-    rpcDataMap,
+    laidOutDataMap,
     regions,
     100,
     10,
     false,
   )
   expect(hit.feature!.featureId).toBe('geneA')
-  expect((hit as any).regionNumber).toBe(0)
+  expect((hit as any).displayedRegionIndex).toBe(0)
 })
 
 test('handles reversed region', () => {
   const item = makeItem('gene1', 1000, 5000, 0, 20)
   const data = makeData([item])
 
-  const rpcDataMap = new Map([[0, data]])
+  const laidOutDataMap = new Map([[0, data]])
   const reversed = makeRegion(0, 10000, 0, 0, 800)
 
   const result = performMultiRegionHitDetection(
     freshCacheMap(),
-    rpcDataMap,
+    laidOutDataMap,
     [reversed],
     500,
     10,

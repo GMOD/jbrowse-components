@@ -23,7 +23,7 @@ export interface SourceRenderData {
 
 export interface WiggleBackend {
   uploadRegion(
-    regionNumber: number,
+    displayedRegionIndex: number,
     regionStart: number,
     sources: SourceRenderData[],
   ): void

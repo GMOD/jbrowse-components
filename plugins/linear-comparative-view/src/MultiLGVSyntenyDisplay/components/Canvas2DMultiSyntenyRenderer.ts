@@ -310,8 +310,8 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
     this.ctx = ctx
   }
 
-  private ensureRegion(regionNumber: number) {
-    let r = this.regions.get(regionNumber)
+  private ensureRegion(displayedRegionIndex: number) {
+    let r = this.regions.get(displayedRegionIndex)
     if (!r) {
       r = {
         regionStart: 0,
@@ -320,25 +320,25 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
         snp: null,
         indicators: null,
       }
-      this.regions.set(regionNumber, r)
+      this.regions.set(displayedRegionIndex, r)
     }
     return r
   }
 
   uploadGeometryForBlock(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: BlockGeometryData & { regionStart: number },
   ) {
-    const r = this.ensureRegion(regionNumber)
+    const r = this.ensureRegion(displayedRegionIndex)
     r.regionStart = data.regionStart
     r.geometry = { buffer: data.buffer, instanceCount: data.instanceCount }
   }
 
   uploadCoverageForBlock(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: BlockCoverageUploadData & { regionStart: number; maxDepth: number },
   ) {
-    const r = this.ensureRegion(regionNumber)
+    const r = this.ensureRegion(displayedRegionIndex)
     r.regionStart = data.regionStart
     r.coverage = {
       buffer: data.buffer,
@@ -347,18 +347,21 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
     }
   }
 
-  uploadSnpCoverageForBlock(regionNumber: number, data: BlockSnpUploadData) {
-    this.ensureRegion(regionNumber).snp = {
+  uploadSnpCoverageForBlock(
+    displayedRegionIndex: number,
+    data: BlockSnpUploadData,
+  ) {
+    this.ensureRegion(displayedRegionIndex).snp = {
       buffer: data.buffer,
       segmentCount: data.segmentCount,
     }
   }
 
   uploadIndicatorsForBlock(
-    regionNumber: number,
+    displayedRegionIndex: number,
     data: BlockIndicatorUploadData,
   ) {
-    this.ensureRegion(regionNumber).indicators = {
+    this.ensureRegion(displayedRegionIndex).indicators = {
       buffer: data.buffer,
       indicatorCount: data.indicatorCount,
     }
@@ -407,10 +410,10 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
     }
 
     for (const block of contentBlocks) {
-      if (block.regionNumber === undefined) {
+      if (block.displayedRegionIndex === undefined) {
         continue
       }
-      const region = this.regions.get(block.regionNumber)
+      const region = this.regions.get(block.displayedRegionIndex)
       if (!region) {
         continue
       }

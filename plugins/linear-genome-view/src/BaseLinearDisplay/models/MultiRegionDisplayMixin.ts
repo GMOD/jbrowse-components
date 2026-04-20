@@ -5,34 +5,21 @@ import {
   getContainingView,
   getRpcSessionId,
   getSession,
-  isAbortException,
 } from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun, observable, untracked } from 'mobx'
 
+import FetchMixin from './FetchMixin.ts'
 import { checkByteEstimate } from './fetchHelpers.ts'
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.tsx'
 
 export type { ByteEstimateConfig } from './fetchHelpers.ts'
-export type { FetchContext } from './GlobalDataDisplayMixin.ts'
+export type { FetchContext } from './FetchMixin.ts'
 import type { ByteEstimateConfig } from './fetchHelpers.ts'
-import type { FetchContext } from './GlobalDataDisplayMixin.ts'
+import type { FetchContext } from './FetchMixin.ts'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
-
-export interface Region {
-  refName: string
-  start: number
-  end: number
-  assemblyName: string
-}
-
-export interface RegionWithNumber {
-  region: Region
-  regionNumber: number
-}
+import type { Region } from '@jbrowse/core/util'
 
 export default function MultiRegionDisplayMixin() {
   return types
@@ -40,22 +27,15 @@ export default function MultiRegionDisplayMixin() {
       'MultiRegionDisplayMixin',
       RegionTooLargeMixin(),
       GpuBackendLifecycleSlotMixin(),
+      FetchMixin(),
       types.model({}),
     )
     .volatile(() => ({
       loadedRegions: observable.map<number, Region>(),
-      error: undefined as unknown,
-      renderingStopToken: undefined as StopToken | undefined,
-      fetchGeneration: 0,
-      statusMessage: undefined as string | undefined,
     }))
     .views(self => ({
-      get isLoading() {
-        return self.renderingStopToken !== undefined
-      },
-
       get fullyDrawn() {
-        return self.canvasDrawn && !this.isLoading
+        return self.canvasDrawn && !self.isLoading
       },
 
       // Shared cached view for every LGV-based GPU display. A single
@@ -81,21 +61,13 @@ export default function MultiRegionDisplayMixin() {
       },
     }))
     .actions(self => ({
-      setError(error?: unknown) {
-        self.error = error
-      },
-
-      setRenderingStopToken(token: StopToken | undefined) {
-        self.renderingStopToken = token
-      },
-
       // Upload-identity contract: the GPU backend autorun re-uploads a
       // region only when its value changes. With `observable.map`, the
       // framework tracks per-key reads so an in-place `.set` is enough —
-      // subclasses' per-region setters (setRpcDataForRegion etc.) should
+      // subclasses' per-region setters (setRpcData etc.) should
       // follow the same in-place pattern.
-      setLoadedRegionForRegion(regionNumber: number, region: Region) {
-        self.loadedRegions.set(regionNumber, region)
+      setLoadedRegion(displayedRegionIndex: number, region: Region) {
+        self.loadedRegions.set(displayedRegionIndex, region)
       },
 
       clearDisplaySpecificData() {
@@ -104,141 +76,76 @@ export default function MultiRegionDisplayMixin() {
     }))
     .actions(self => ({
       clearAllRpcData() {
-        if (self.renderingStopToken) {
-          stopStopToken(self.renderingStopToken)
-          self.renderingStopToken = undefined
-        }
-        self.error = undefined
+        self.cancelFetch()
+        self.setError(undefined)
         self.setRegionTooLarge(false)
         self.loadedRegions.clear()
-        self.fetchGeneration++
         self.clearDisplaySpecificData()
       },
 
       invalidateLoadedRegions() {
-        if (self.renderingStopToken) {
-          stopStopToken(self.renderingStopToken)
-          self.renderingStopToken = undefined
-        }
+        self.cancelFetch()
         self.loadedRegions.clear()
-        self.fetchGeneration++
-      },
-
-      bumpFetchGeneration() {
-        self.fetchGeneration++
       },
     }))
-    .actions(self => ({
+    .actions(_self => ({
       // Overridable hooks — subclasses override these
-      onFetchNeeded(_needed: RegionWithNumber[]) {
+      onFetchNeeded(
+        _needed: { region: Region; displayedRegionIndex: number }[],
+      ) {
         // no-op base
       },
 
-      isCacheValid(_regionNumber: number) {
+      isCacheValid(_displayedRegionIndex: number) {
         return true
-      },
-
-      setStatusMessage(msg?: string) {
-        self.statusMessage = msg
       },
 
       getByteEstimateConfig(): ByteEstimateConfig | null {
         return null
       },
     }))
-    .actions(self => {
-      function finishLoading() {
-        self.setRenderingStopToken(undefined)
-        self.setStatusMessage(undefined)
-      }
-
-      return {
-        withFetchLifecycle(
-          needed: RegionWithNumber[],
-          work: (ctx: FetchContext) => Promise<void>,
-        ) {
-          if (self.renderingStopToken) {
-            stopStopToken(self.renderingStopToken)
-          }
-          const stopToken = createStopToken()
-          const generation = self.fetchGeneration
-          self.setRenderingStopToken(stopToken)
-          self.setError(undefined)
-
-          const isStale = () =>
-            !isAlive(self) ||
-            self.fetchGeneration !== generation ||
-            self.renderingStopToken !== stopToken
-
-          const ctx: FetchContext = { stopToken, generation, isStale }
-
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          ;(async () => {
-            try {
-              const byteEstimateConfig = self.getByteEstimateConfig()
-              if (byteEstimateConfig) {
-                const session = getSession(self)
-                const result = await checkByteEstimate(
-                  session.rpcManager,
-                  getRpcSessionId(self),
-                  needed.map(r => r.region),
-                  byteEstimateConfig,
-                  ctx,
-                )
-                if (isStale()) {
-                  return
-                }
-                if (result) {
-                  self.setFeatureDensityStats(result.stats)
-                  if (result.tooLarge) {
-                    self.setRegionTooLarge(true, result.reason)
-                    finishLoading()
-                    return
-                  }
-                }
-              }
-              self.setRegionTooLarge(false)
-              await work(ctx)
-              // Mark regions as loaded AFTER the work callback has
-              // populated display-specific data (rpcDataMap, cellData,
-              // etc). The GPU upload autorun tracks the plugin's own
-              // data map, so by the time we record loadedRegions here,
-              // the data is already committed and observable reads in
-              // render autoruns see it. Displays must NOT call
-              // setLoadedRegionForRegion themselves.
-              if (!isStale()) {
-                for (const { regionNumber, region } of needed) {
-                  self.setLoadedRegionForRegion(regionNumber, region)
-                }
-              }
-            } catch (e) {
-              if (!isAbortException(e)) {
-                console.error('Fetch failed:', e)
-                if (!isStale()) {
-                  self.setError(e)
-                }
-              }
-            } finally {
-              if (!isStale()) {
-                finishLoading()
-
-                // DO NOT REMOVE: This re-triggers the fetch autorun so it
-                // re-evaluates whether the viewport is still covered after the
-                // fetch completes. Without this, if the user pans while a
-                // fetch is in flight, the autorun skips (isLoading=true via
-                // untracked), the fetch completes covering only the old
-                // viewport, and nothing triggers a second fetch for the new
-                // viewport — leaving tracks half-loaded. fetchGeneration is
-                // the only tracked observable we can safely bump here
-                // (isLoading is intentionally untracked to avoid reaction
-                // cycles).
-                self.bumpFetchGeneration()
+    .actions(self => ({
+      // Run a per-region fetch with byte-estimate gating. Marks regions
+      // as loaded only AFTER the work callback has populated display-
+      // specific data (rpcDataMap, cellData, etc) so the GPU upload
+      // autorun sees committed data when it observes loadedRegions.
+      // Displays must NOT call setLoadedRegion themselves.
+      fetchRegions(
+        needed: { region: Region; displayedRegionIndex: number }[],
+        work: (ctx: FetchContext) => Promise<void>,
+      ) {
+        self.runFetch(async ctx => {
+          const byteEstimateConfig = self.getByteEstimateConfig()
+          if (byteEstimateConfig) {
+            const session = getSession(self)
+            const result = await checkByteEstimate(
+              session.rpcManager,
+              getRpcSessionId(self),
+              needed.map(r => r.region),
+              byteEstimateConfig,
+              ctx,
+            )
+            if (ctx.isStale()) {
+              return
+            }
+            if (result) {
+              self.setFeatureDensityStats(result.stats)
+              if (result.tooLarge) {
+                self.setRegionTooLarge(true, result.reason)
+                return
               }
             }
-          })()
-        },
-      }
-    })
+          }
+          self.setRegionTooLarge(false)
+          await work(ctx)
+          if (!ctx.isStale()) {
+            for (const { displayedRegionIndex, region } of needed) {
+              self.setLoadedRegion(displayedRegionIndex, region)
+            }
+          }
+        })
+      },
+    }))
     .actions(self => {
       return {
         afterAttach() {
@@ -276,7 +183,7 @@ export default function MultiRegionDisplayMixin() {
               () => {
                 const view = getContainingView(self) as LinearGenomeViewModel
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                self.fetchGeneration
+                self.fetchSignal
                 if (!view.initialized || self.error || self.regionTooLarge) {
                   return
                 }
@@ -312,22 +219,31 @@ export default function MultiRegionDisplayMixin() {
                 }
 
                 const bufferedByRegion = new Map(
-                  view.bufferedVisibleRegions.map(b => [b.regionNumber, b]),
+                  view.bufferedVisibleRegions.map(b => [
+                    b.displayedRegionIndex,
+                    b,
+                  ]),
                 )
-                const needed: RegionWithNumber[] = []
+                const needed: {
+                  region: Region
+                  displayedRegionIndex: number
+                }[] = []
                 for (const vr of visibleMerged) {
                   const loaded = untracked(() =>
-                    self.loadedRegions.get(vr.regionNumber),
+                    self.loadedRegions.get(vr.displayedRegionIndex),
                   )
                   const boundsValid =
                     loaded?.refName === vr.refName &&
                     vr.start >= loaded.start &&
                     vr.end <= loaded.end
                   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                  if (boundsValid && self.isCacheValid(vr.regionNumber)) {
+                  if (
+                    boundsValid &&
+                    self.isCacheValid(vr.displayedRegionIndex)
+                  ) {
                     continue
                   }
-                  const buffered = bufferedByRegion.get(vr.regionNumber)
+                  const buffered = bufferedByRegion.get(vr.displayedRegionIndex)
                   if (buffered) {
                     needed.push(buffered)
                   }
@@ -348,9 +264,9 @@ export default function MultiRegionDisplayMixin() {
           // single tracked read covers everything sent to the worker —
           // structurally impossible to add an RPC param without it being
           // the cache key. The autorun running IS the invalidation
-          // signal — `clearAllRpcData` bumps fetchGeneration and empties
-          // loadedRegions, which triggers FetchVisibleRegions to
-          // re-fetch.
+          // signal — `clearAllRpcData` cancels the in-flight fetch (which
+          // bumps fetchSignal) and empties loadedRegions, which triggers
+          // FetchVisibleRegions to re-fetch.
           //
           // Subclasses that don't override `rpcProps` get an autorun
           // with no tracked reads — it fires once at setup (mobx init
@@ -386,7 +302,7 @@ export default function MultiRegionDisplayMixin() {
                 void view.bpPerPx
                 for (const r of view.mergedVisibleRegions) {
                   void r.refName
-                  void r.regionNumber
+                  void r.displayedRegionIndex
                 }
                 if (untracked(() => self.regionTooLarge || self.error)) {
                   self.clearAllRpcData()

@@ -28,11 +28,11 @@ export class Canvas2DVariantRenderer implements VariantBackend {
     this.ctx = ctx
   }
 
-  uploadRegion(regionNumber: number, data: VariantUploadData) {
+  uploadRegion(displayedRegionIndex: number, data: VariantUploadData) {
     if (data.numCells === 0) {
-      this.regions.delete(regionNumber)
+      this.regions.delete(displayedRegionIndex)
     } else {
-      this.regions.set(regionNumber, data)
+      this.regions.set(displayedRegionIndex, data)
     }
   }
 
@@ -47,7 +47,7 @@ export class Canvas2DVariantRenderer implements VariantBackend {
     prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
 
     for (const block of blocks) {
-      const region = this.regions.get(block.regionNumber)
+      const region = this.regions.get(block.displayedRegionIndex)
       if (!region || region.numCells === 0) {
         continue
       }

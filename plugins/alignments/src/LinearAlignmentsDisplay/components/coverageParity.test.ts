@@ -231,7 +231,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
 
     const covH = 100
     const block = {
-      regionNumber: 0,
+      displayedRegionIndex: 0,
       bpRangeX: [REGION_START, REGION_START + 20] as [number, number],
       screenStartPx: 0,
       screenEndPx: 200,

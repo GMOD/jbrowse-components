@@ -10,7 +10,7 @@ import type {
 
 export interface VisibleRegion {
   refName: string
-  regionNumber: number
+  displayedRegionIndex: number
   start: number
   end: number
   reversed?: boolean
@@ -32,7 +32,7 @@ export type HitResult =
   | {
       feature: FlatbushItem
       subfeature: SubfeatureInfo | null
-      regionNumber: number
+      displayedRegionIndex: number
     }
 
 function buildFeatureIndex(
@@ -152,7 +152,7 @@ function performHitDetection(
 
 export function performMultiRegionHitDetection(
   cacheMap: Map<number, FlatbushRegionCache>,
-  rpcDataMap: Map<number, FeatureDataResult>,
+  laidOutDataMap: Map<number, FeatureDataResult>,
   visibleRegions: VisibleRegion[],
   mouseXPx: number,
   yPos: number,
@@ -162,11 +162,11 @@ export function performMultiRegionHitDetection(
     if (mouseXPx < vr.screenStartPx || mouseXPx > vr.screenEndPx) {
       continue
     }
-    const data = rpcDataMap.get(vr.regionNumber)
+    const data = laidOutDataMap.get(vr.displayedRegionIndex)
     if (!data) {
       continue
     }
-    let cache = cacheMap.get(vr.regionNumber)
+    let cache = cacheMap.get(vr.displayedRegionIndex)
     if (!cache) {
       cache = {
         featureIndex: null,
@@ -174,7 +174,7 @@ export function performMultiRegionHitDetection(
         cachedItems: null,
         cachedSubInfos: null,
       }
-      cacheMap.set(vr.regionNumber, cache)
+      cacheMap.set(vr.displayedRegionIndex, cache)
     }
 
     const blockWidth = vr.screenEndPx - vr.screenStartPx
@@ -196,7 +196,11 @@ export function performMultiRegionHitDetection(
     )
 
     if (feature) {
-      return { feature, subfeature, regionNumber: vr.regionNumber }
+      return {
+        feature,
+        subfeature,
+        displayedRegionIndex: vr.displayedRegionIndex,
+      }
     }
   }
   return { feature: null, subfeature: null }

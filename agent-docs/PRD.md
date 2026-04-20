@@ -91,7 +91,7 @@ All production draw shaders are now Slang-authored. Remaining:
 
 ### P5 — Cleanup (after P1 ships)
 
-- `regionNumber` → `displayedRegionIndex` rename (~550 sites, 73 files).
+- `displayedRegionIndex` → `displayedRegionIndex` rename (~550 sites, 73 files).
   Mechanical. Do **last** so other migrations don't churn it mid-flight.
 - Delete dead code: `uploadChangedRegions.ts`, `uploadRegionDataToGPU`,
   `pruneRegionMap` helpers, `renderProps()` on GPU displays, `dataVersion`

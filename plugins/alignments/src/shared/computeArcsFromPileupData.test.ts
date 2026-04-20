@@ -129,7 +129,7 @@ describe('computeArcsFromPileupData', () => {
 
     const rpcDataMap = new Map([[0, data]])
     const regions = [
-      { refName: 'chr1', start: 1000, end: 2000, regionNumber: 0 },
+      { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'insertSizeAndOrientation',
@@ -160,7 +160,7 @@ describe('computeArcsFromPileupData', () => {
 
     const rpcDataMap = new Map([[0, data]])
     const regions = [
-      { refName: 'chr1', start: 1000, end: 2000, regionNumber: 0 },
+      { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'insertSizeAndOrientation',
@@ -192,7 +192,7 @@ describe('computeArcsFromPileupData', () => {
 
     const rpcDataMap = new Map([[0, data]])
     const regions = [
-      { refName: 'chr1', start: 1000, end: 2000, regionNumber: 0 },
+      { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'insertSizeAndOrientation',
@@ -220,7 +220,7 @@ describe('computeArcsFromPileupData', () => {
 
     const rpcDataMap = new Map([[0, data]])
     const regions = [
-      { refName: 'chr1', start: 1000, end: 2000, regionNumber: 0 },
+      { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'insertSizeAndOrientation',
@@ -246,7 +246,7 @@ describe('computeArcsFromPileupData', () => {
 
     const rpcDataMap = new Map([[0, data]])
     const regions = [
-      { refName: 'chr1', start: 1000, end: 2000, regionNumber: 0 },
+      { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'insertSizeAndOrientation',
@@ -273,7 +273,7 @@ describe('computeArcsFromPileupData', () => {
 
     const rpcDataMap = new Map([[0, data]])
     const regions = [
-      { refName: 'chr1', start: 1000, end: 2000, regionNumber: 0 },
+      { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'normal',
@@ -313,8 +313,8 @@ describe('computeArcsFromPileupData', () => {
       [1, data1],
     ])
     const regions = [
-      { refName: 'chr1', start: 1000, end: 2000, regionNumber: 0 },
-      { refName: 'chr1', start: 5000, end: 6000, regionNumber: 1 },
+      { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
+      { refName: 'chr1', start: 5000, end: 6000, displayedRegionIndex: 1 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'insertSizeAndOrientation',
@@ -342,7 +342,9 @@ describe('computeArcsFromPileupData', () => {
     })
 
     const rpcDataMap = new Map([[0, data]])
-    const regions = [{ refName: 'chr1', start: 0, end: 1000, regionNumber: 0 }]
+    const regions = [
+      { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
+    ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'orientation',
       drawInter: false,
@@ -368,7 +370,9 @@ describe('computeArcsFromPileupData', () => {
     })
 
     const rpcDataMap = new Map([[0, data]])
-    const regions = [{ refName: 'chr1', start: 0, end: 1000, regionNumber: 0 }]
+    const regions = [
+      { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
+    ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'gradient',
       drawInter: false,
@@ -395,7 +399,9 @@ describe('computeArcsFromPileupData', () => {
     })
 
     const rpcDataMap = new Map([[0, data]])
-    const regions = [{ refName: 'chr1', start: 0, end: 1000, regionNumber: 0 }]
+    const regions = [
+      { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
+    ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'insertSize',
       drawInter: false,
@@ -423,7 +429,7 @@ describe('computeArcsFromPileupData', () => {
 
     const rpcDataMap = new Map([[0, data]])
     const regions = [
-      { refName: 'chr1', start: 0, end: 600000, regionNumber: 0 },
+      { refName: 'chr1', start: 0, end: 600000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'insertSizeAndOrientation',

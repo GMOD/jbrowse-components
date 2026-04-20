@@ -120,7 +120,7 @@ interface GpuUploadStream<...> {
    *  current dataMap. Use when the backend is shared across displays so
    *  per-display teardown can't rely on dispose() to free GPU resources.
    *  Independent of pruneRegionsNotIn (which dispatches once per pass). */
-  deleteOneRegion?: (backend: BackendType, regionNumber: number) => void
+  deleteOneRegion?: (backend: BackendType, displayedRegionIndex: number) => void
 }
 ```
 

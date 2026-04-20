@@ -96,7 +96,7 @@ export class BlockSet {
 export class BaseBlock {
   type = 'BaseBlock'
 
-  public regionNumber?: number
+  public displayedRegionIndex?: number
 
   public reversed?: boolean
 

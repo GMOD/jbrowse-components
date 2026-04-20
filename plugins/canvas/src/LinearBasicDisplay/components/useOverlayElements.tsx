@@ -23,7 +23,7 @@ interface OverlayModel {
   selectFeatureById: (
     featureInfo: FlatbushItem,
     subfeatureInfo: SubfeatureInfo | undefined,
-    regionNumber: number,
+    displayedRegionIndex: number,
   ) => void
 }
 
@@ -35,7 +35,7 @@ interface HighlightModel {
 }
 
 export function useFloatingLabels(
-  rpcDataMap: Map<number, FeatureDataResult>,
+  laidOutDataMap: Map<number, FeatureDataResult>,
   visibleRegions: VisibleRegion[],
   viewInitialized: boolean,
   width: number | undefined,
@@ -43,7 +43,7 @@ export function useFloatingLabels(
   model: OverlayModel,
   openContextMenu: (
     feature: FlatbushItem,
-    regionNumber: number,
+    displayedRegionIndex: number,
     clientX: number,
     clientY: number,
   ) => void,
@@ -58,7 +58,7 @@ export function useFloatingLabels(
     const renderedLabels = new Set<string>()
 
     for (const vr of visibleRegions) {
-      const data = rpcDataMap.get(vr.regionNumber)
+      const data = laidOutDataMap.get(vr.displayedRegionIndex)
       if (!data?.floatingLabelsData) {
         continue
       }
@@ -105,14 +105,19 @@ export function useFloatingLabels(
         const item = flatbushItemById.get(featureId)
         const handleLabelClick = item
           ? () => {
-              model.selectFeatureById(item, undefined, vr.regionNumber)
+              model.selectFeatureById(item, undefined, vr.displayedRegionIndex)
             }
           : undefined
 
         const handleLabelContextMenu = item
           ? (e: React.MouseEvent) => {
               e.preventDefault()
-              openContextMenu(item, vr.regionNumber, e.clientX, e.clientY)
+              openContextMenu(
+                item,
+                vr.displayedRegionIndex,
+                e.clientX,
+                e.clientY,
+              )
             }
           : undefined
 
@@ -145,7 +150,7 @@ export function useFloatingLabels(
 
           elements.push(
             <div
-              key={`${vr.regionNumber}-${featureId}-${key}`}
+              key={`${vr.displayedRegionIndex}-${featureId}-${key}`}
               data-testid={
                 clickable ? `feature-${key}-${label.text}` : undefined
               }
@@ -192,7 +197,7 @@ export function useFloatingLabels(
 
     return elements.length > 0 ? elements : null
   }, [
-    rpcDataMap,
+    laidOutDataMap,
     viewInitialized,
     width,
     bpPerPx,
@@ -204,7 +209,7 @@ export function useFloatingLabels(
 }
 
 export function useAminoAcidOverlay(
-  rpcDataMap: Map<number, FeatureDataResult>,
+  laidOutDataMap: Map<number, FeatureDataResult>,
   visibleRegions: VisibleRegion[],
   viewInitialized: boolean,
   width: number | undefined,
@@ -224,7 +229,7 @@ export function useAminoAcidOverlay(
     const elements: React.ReactElement[] = []
 
     for (const vr of visibleRegions) {
-      const data = rpcDataMap.get(vr.regionNumber)
+      const data = laidOutDataMap.get(vr.displayedRegionIndex)
       if (!data?.aminoAcidOverlay) {
         continue
       }
@@ -254,7 +259,7 @@ export function useAminoAcidOverlay(
 
         elements.push(
           <div
-            key={`${vr.regionNumber}-${i}`}
+            key={`${vr.displayedRegionIndex}-${i}`}
             style={{
               position: 'absolute',
               left: centerPx,
@@ -280,7 +285,7 @@ export function useAminoAcidOverlay(
     }
 
     return elements.length > 0 ? elements : null
-  }, [rpcDataMap, viewInitialized, width, bpPerPx, visibleRegions])
+  }, [laidOutDataMap, viewInitialized, width, bpPerPx, visibleRegions])
 }
 
 export function useHighlightOverlays(
@@ -363,7 +368,7 @@ export function useHighlightOverlays(
         if (rect) {
           overlays.push(
             <div
-              key={`${key}-${vr.regionNumber}`}
+              key={`${key}-${vr.displayedRegionIndex}`}
               style={{
                 position: 'absolute',
                 left: rect.leftPx - padding,

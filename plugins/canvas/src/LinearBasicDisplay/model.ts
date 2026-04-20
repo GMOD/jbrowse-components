@@ -24,7 +24,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-export type { MultiRegionRegion as Region } from '@jbrowse/plugin-linear-genome-view'
+export type { Region } from '@jbrowse/core/util'
 
 /**
  * #stateModel LinearBasicDisplay
@@ -211,9 +211,9 @@ export default function stateModelFactory(
           const info = self.contextMenuInfo!
           const {
             item: { featureId },
-            regionNumber,
+            displayedRegionIndex,
           } = info
-          const region = self.loadedRegions.get(regionNumber)
+          const region = self.loadedRegions.get(displayedRegionIndex)
           return [
             ...base,
             {

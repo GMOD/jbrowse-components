@@ -26,7 +26,7 @@ canvas, hand the resulting backend to the model, and render JSX — nothing more
 ```
 RPC worker returns data
         │
-        ▼ self.setRpcDataForRegion(n, data)   (or equivalent)
+        ▼ self.setRpcData(n, data)   (or equivalent)
 MST model
   ├─ .volatile rpcDataMap: Map<number, Data>
   ├─ .volatile gpuBackendLifecycleHandle, canvasDrawn   (from GpuBackendLifecycleSlotMixin,
@@ -61,8 +61,8 @@ Backend shape:
 
 ```ts
 interface MultiRegionBackend<Data, State> {
-  uploadRegion(regionNumber: number, data: Data): void
-  pruneRegions(activeRegionNumbers: number[]): void
+  uploadRegion(displayedRegionIndex: number, data: Data): void
+  pruneRegions(activeDisplayedRegionIndices: number[]): void
   renderBlocks(blocks: RenderBlock[], state: State): void
   dispose(): void
 }
@@ -108,8 +108,8 @@ multi-wiggle sources) read those settings inside `upload` via `self.gpuProps()`
 — no separate invalidation token needed.
 
 **Contract:** per-region value objects must be freshly constructed on update
-(never mutated in place). Enforced by convention in `setLoadedRegionForRegion`
-on `MultiRegionDisplayMixin` — plugin setters like `setRpcDataForRegion` follow
+(never mutated in place). Enforced by convention in `setLoadedRegion`
+on `MultiRegionDisplayMixin` — plugin setters like `setRpcData` follow
 the same spread-then-assign pattern.
 
 ### B. Global-upload display (HiC, LD, variant-matrix)
@@ -219,7 +219,7 @@ free. Provides:
   `renderBlocks: () => self.domain ? self.renderBlocks : []`.
 - `fullyDrawn` getter = `canvasDrawn && !isLoading` (composes the slot mixin's
   `canvasDrawn` with this mixin's RPC fetch state).
-- Documented upload-identity contract on `setLoadedRegionForRegion`.
+- Documented upload-identity contract on `setLoadedRegion`.
 
 ---
 
@@ -270,18 +270,18 @@ util's generic `RenderStateType` keeps each plugin's type local.
 
 ---
 
-## Where `regionNumber` lives
+## Where `displayedRegionIndex` lives
 
-`regionNumber` is the zero-based index into `view.displayedRegions` — the user's
+`displayedRegionIndex` is the zero-based index into `view.displayedRegions` — the user's
 configured region list. **Not** an index into `dynamicBlocks.contentBlocks`. A
 single displayedRegion can produce multiple on-screen render blocks sharing one
 GPU buffer (different scissor clips).
 
-See `agent-docs/ARCHITECTURE.md`'s "regionNumber" section for the full
+See `agent-docs/ARCHITECTURE.md`'s "displayedRegionIndex" section for the full
 explanation — that section was rewritten to be accurate.
 
 Pending: rename to `displayedRegionIndex` across ~550 sites (Tier 3 of the
-migration plan). The name stays `regionNumber` for now to minimize churn
+migration plan). The name stays `displayedRegionIndex` for now to minimize churn
 mid-migration.
 
 ---

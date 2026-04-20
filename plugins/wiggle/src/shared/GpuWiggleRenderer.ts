@@ -57,7 +57,7 @@ export class GpuWiggleRenderer implements WiggleBackend {
   }
 
   uploadRegion(
-    regionNumber: number,
+    displayedRegionIndex: number,
     regionStart: number,
     sources: SourceRenderData[],
   ) {
@@ -66,15 +66,17 @@ export class GpuWiggleRenderer implements WiggleBackend {
       totalFeatures += source.numFeatures
     }
     if (totalFeatures === 0 || sources.length === 0) {
-      this.hal.deleteRegion(regionNumber)
-      this.regionInfo.delete(regionNumber)
+      this.hal.deleteRegion(displayedRegionIndex)
+      this.regionInfo.delete(displayedRegionIndex)
       return
     }
     const buf = interleaveInstances(sources, totalFeatures)
     // Upload once to PASS_FILL; PASS_LINE shares the same buffer via drawPass
-    this.hal.uploadBuffer(regionNumber, PASS_FILL, buf, totalFeatures)
-    this.hal.setRegionMeta(regionNumber, { regionStart })
-    this.regionInfo.set(regionNumber, { numRows: computeNumRows(sources) })
+    this.hal.uploadBuffer(displayedRegionIndex, PASS_FILL, buf, totalFeatures)
+    this.hal.setRegionMeta(displayedRegionIndex, { regionStart })
+    this.regionInfo.set(displayedRegionIndex, {
+      numRows: computeNumRows(sources),
+    })
   }
 
   pruneRegions(activeRegions: number[]) {
@@ -94,11 +96,13 @@ export class GpuWiggleRenderer implements WiggleBackend {
       state.renderingType === RENDERING_TYPE_LINE ? PASS_LINE : PASS_FILL
 
     for (const block of blocks) {
-      if (this.hal.getBufferCount(block.regionNumber, PASS_FILL) === 0) {
+      if (
+        this.hal.getBufferCount(block.displayedRegionIndex, PASS_FILL) === 0
+      ) {
         continue
       }
-      const meta = this.hal.getRegionMeta(block.regionNumber)
-      const info = this.regionInfo.get(block.regionNumber)
+      const meta = this.hal.getRegionMeta(block.displayedRegionIndex)
+      const info = this.regionInfo.get(block.displayedRegionIndex)
       if (!meta || !info) {
         continue
       }
@@ -126,7 +130,7 @@ export class GpuWiggleRenderer implements WiggleBackend {
       this.uniformF32[U.reversed] = block.reversed ? 1 : 0
 
       this.hal.writeUniforms(this.uniformData)
-      this.hal.drawPass(passId, block.regionNumber, PASS_FILL)
+      this.hal.drawPass(passId, block.displayedRegionIndex, PASS_FILL)
     }
 
     this.hal.clearScissor()

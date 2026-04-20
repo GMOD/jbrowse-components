@@ -431,4 +431,3 @@ export function formatFeatureTooltip(
   }
   return undefined
 }
-

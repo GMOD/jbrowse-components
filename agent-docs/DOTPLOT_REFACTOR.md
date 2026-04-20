@@ -109,8 +109,8 @@ interface DotplotRenderState {
 
 interface DotplotBackend {
   resize(width: number, height: number): void
-  uploadRegion(regionNumber: number, data: DotplotGeometryData): void
-  pruneRegions(activeRegionNumbers: number[]): void
+  uploadRegion(displayedRegionIndex: number, data: DotplotGeometryData): void
+  pruneRegions(activeDisplayedRegionIndices: number[]): void
   render(state: DotplotRenderState): void
   dispose(): void
 }
@@ -131,11 +131,11 @@ In `DotplotDisplay/stateModelFactory.tsx`:
 - Add `volatile rpcDataMap: Map<number, DotplotUploadData>` (single entry keyed
   by the display's track index — analogous to multi-region's per-region map but
   with one entry).
-- Add `setRpcDataForRegion(key, data)` action that writes a fresh Map reference
+- Add `setRpcData(key, data)` action that writes a fresh Map reference
   (matches the upload-identity contract).
 - Replace the body of `dotplotUploadAutorun` with a `geometryRecompute` autorun
   that reads `featPositions` etc. and calls
-  `setRpcDataForRegion(trackIndex, { x1s, y1s, ... })`.
+  `setRpcData(trackIndex, { x1s, y1s, ... })`.
 - Add `startGpuBackendLifecycle(backend: DotplotBackend)` that wraps:
   ```ts
   self.startMultiRegionGpuLifecycle({
@@ -245,11 +245,11 @@ disposing the backend itself.
 - `plugins/dotplot-view/src/DotplotDisplay/GpuDotplotRenderer.ts` and
   `Canvas2DDotplotRenderer.ts` — update `render` to destructure state.
 - `plugins/dotplot-view/src/DotplotDisplay/stateModelFactory.tsx` — compose slot
-  mixin, add `rpcDataMap` + `setRpcDataForRegion`, add
+  mixin, add `rpcDataMap` + `setRpcData`, add
   `startGpuBackendLifecycle`.
 - `plugins/dotplot-view/src/DotplotDisplay/afterAttach.ts` — replace
   `dotplotUploadAutorun` with `geometryRecompute` autorun that calls
-  `setRpcDataForRegion`. Drop `bumpGeometryVersion`.
+  `setRpcData`. Drop `bumpGeometryVersion`.
 - `plugins/dotplot-view/src/DotplotView/model.ts` — compose slot mixin, remove
   duplicate state, replace `dotplotViewDrawAutorun` with
   `startGpuBackendLifecycle` action.
