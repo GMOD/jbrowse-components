@@ -58,6 +58,23 @@ export default ConfigurationSchema(
       defaultValue: 'multirowxy',
       description: 'Default rendering type',
     },
+    autoscale: {
+      type: 'stringEnum',
+      model: types.enumeration('Autoscale type', [
+        'local',
+        'global',
+        'globalsd',
+        'localsd',
+      ]),
+      defaultValue: 'local',
+      description: 'Autoscale type',
+    },
+    numStdDev: {
+      type: 'number',
+      defaultValue: 3,
+      description:
+        'Number of standard deviations to use for autoscale types globalsd or localsd',
+    },
   },
   { explicitlyTyped: true },
 )

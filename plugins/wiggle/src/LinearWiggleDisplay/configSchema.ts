@@ -65,6 +65,23 @@ export default ConfigurationSchema(
         'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
       defaultValue: 'whiskers',
     },
+    autoscale: {
+      type: 'stringEnum',
+      model: types.enumeration('Autoscale type', [
+        'local',
+        'global',
+        'globalsd',
+        'localsd',
+      ]),
+      defaultValue: 'local',
+      description: 'Autoscale type',
+    },
+    numStdDev: {
+      type: 'number',
+      defaultValue: 3,
+      description:
+        'Number of standard deviations to use for autoscale types globalsd or localsd',
+    },
   },
   { explicitlyTyped: true },
 )
