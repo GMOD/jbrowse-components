@@ -124,3 +124,9 @@ arbitrary Y increase/loop).
 update `pnpm-workspace.yaml`, replace `pnpm install --frozen-lockfile` with
 `pnpm ci` in CI, bump `pnpm/action-setup` version to 11.
 
+
+
+**Compute shaders to Slang.** `plugins/variants/src/VariantRPC/{ldComputeShader,
+ldPhasedComputeShader}.ts` are hand-written WGSL (WebGPU-only). Migrate to
+Slang with `//! targets: wgsl`. Not urgent — they work.
+

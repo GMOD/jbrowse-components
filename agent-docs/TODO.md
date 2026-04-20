@@ -153,21 +153,10 @@ Worth a scoped PR picking one of the last two deliberately.
 Verify `config_demo.json` and `volvox/config.json` load with JEXL color
 expressions intact. See `CONFIG_PATTERN.md`.
 
-**Renderer property promotion check** for `CanvasFeatureRenderer`,
-`SvgFeatureRenderer`, `ArcRenderer`, `LollipopRenderer` — no migration
-expected, but confirm promotion works.
 
----
 
 ## Shader work
 
-**Compute shaders to Slang.** `plugins/variants/src/VariantRPC/{ldComputeShader,
-ldPhasedComputeShader}.ts` are hand-written WGSL (WebGPU-only). Migrate to
-Slang with `//! targets: wgsl`. Not urgent — they work.
-
-**Build-time WGSL struct-size validator.** Jest test asserting
-`sizeof(instanceStruct) % 16 === 0`. Currently caught only at runtime in
-`WebGPUHal.create`.
 
 **Synteny: `isCurve` → uniform + Instance struct shrink.** `isCurve` is
 per-view (same value for every instance in a draw call). Move to Uniforms;
@@ -265,10 +254,13 @@ Subpixel drawing crowded?
 - Clustering UI not updating?
 - `?renderer=X` URL parameter working?
 
-Wiggle scale ticks not visible despite yscalebaroffset
 
 Unclear if log scale working on hic
 
 umd_plugin.js  pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap => { is relogged very rapidly on e.g. every mouse move in alignments drawcloud Adding LinearReadCloudDisplay with drawCloud:true for volvox_sv_cram
-Adding LinearReadCloudDisplay with drawCloud:true for volvox_sv_cram
+Adding LinearReadCloudDisplay with drawCloud:true for volvox_sv_cram seems to repeatedly call "If it's a frozen/plain object, we need to instantiate it"
 
+
+When paired arcs are pointing up, pileup rects disappear
+
+Mouseover shading and clicking on pileup read rectangles not working

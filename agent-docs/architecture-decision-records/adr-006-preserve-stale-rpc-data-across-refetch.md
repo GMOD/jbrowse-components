@@ -87,7 +87,7 @@ still stands — we just stop clearing *data* along with *state*.
 
 ## Revisit if
 
-Someone complains that stale non-gene features visible for 300ms after
+Someone complains that stale non-gene features visible for 600ms after
 `setShowOnlyGenes(true)` is worse than the flash. Fix: split settings
 into "data-shape" (clear) vs "rendering" (preserve). Not worth building
 preemptively.

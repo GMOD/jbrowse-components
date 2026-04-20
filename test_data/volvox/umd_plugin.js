@@ -328,16 +328,17 @@
       // This now works because showTrackGeneric calls Core-preProcessTrackConfig
       // and spreads display config properties into the display state
       pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap => {
+        // console.log('wtf')
         if (snap.type === 'AlignmentsTrack' && snap.trackId?.includes('_sv')) {
           const displays = snap.displays || []
           const hasReadCloud = displays.some(
             d => d.type === 'LinearReadCloudDisplay',
           )
           if (!hasReadCloud) {
-            console.log(
-              'Adding LinearReadCloudDisplay with drawCloud:true for',
-              snap.trackId,
-            )
+            // console.log(
+            //   'Adding LinearReadCloudDisplay with drawCloud:true for',
+            //   snap.trackId,
+            // )
             return {
               ...snap,
               displays: [

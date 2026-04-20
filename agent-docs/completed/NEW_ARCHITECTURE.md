@@ -440,7 +440,7 @@ and the fetch trigger.
 
 The first run also fires (mobx behavior on creation) and clears an already-empty
 `rpcDataMap` — a no-op that just bumps `fetchGeneration` to 1 before the
-FetchVisibleRegions delay (300ms) elapses.
+FetchVisibleRegions delay (600ms) elapses.
 
 For plugins whose post-fetch processing requires RPC data (alignments), also
 include `void self.gpuProps` so changes that need different post-fetch data

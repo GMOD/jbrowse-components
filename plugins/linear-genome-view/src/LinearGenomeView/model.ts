@@ -1483,7 +1483,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
-         * same as visibleLocStrings, but only updated every 300ms
+         * same as visibleLocStrings, but only updated every 500ms
          */
         get coarseVisibleLocStrings() {
           return calculateVisibleLocStrings(self.coarseDynamicBlocks)

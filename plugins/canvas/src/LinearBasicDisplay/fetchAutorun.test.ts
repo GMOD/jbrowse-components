@@ -211,8 +211,8 @@ describe('FetchVisibleRegions autorun', () => {
     expect(display.regionTooLarge).toBe(false)
     expect(display.error).toBeUndefined()
 
-    // The autorun has delay: 300
-    jest.advanceTimersByTime(400)
+    // The autorun has delay: 600
+    jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
     await waitFor(() => {
@@ -240,7 +240,7 @@ describe('FetchVisibleRegions autorun', () => {
     const { display } = createDisplay()
 
     // Trigger the autorun
-    jest.advanceTimersByTime(400)
+    jest.advanceTimersByTime(800)
 
     await waitFor(() => {
       expect(display.isLoading).toBe(true)
@@ -267,7 +267,7 @@ describe('FetchVisibleRegions autorun', () => {
       featureCount: 10_000,
     })
 
-    jest.advanceTimersByTime(400)
+    jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
     await waitFor(() => {
@@ -295,7 +295,7 @@ describe('FetchVisibleRegions autorun', () => {
       featureCount: 10_000,
     })
 
-    jest.advanceTimersByTime(400)
+    jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
     await waitFor(() => {
@@ -308,7 +308,7 @@ describe('FetchVisibleRegions autorun', () => {
     mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
     display.reload()
 
-    jest.advanceTimersByTime(400)
+    jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
     await waitFor(() => {
@@ -339,7 +339,7 @@ describe('FetchVisibleRegions autorun', () => {
       return Promise.resolve({})
     })
 
-    jest.advanceTimersByTime(400)
+    jest.advanceTimersByTime(800)
 
     await waitFor(() => {
       expect(display.isLoading).toBe(false)
@@ -360,7 +360,7 @@ describe('FetchVisibleRegions autorun', () => {
 
     mockRpcCall.mockRejectedValue(new Error('network failure'))
 
-    jest.advanceTimersByTime(400)
+    jest.advanceTimersByTime(800)
 
     await waitFor(() => {
       expect(display.error).toBeTruthy()
@@ -381,7 +381,7 @@ describe('FetchVisibleRegions autorun', () => {
 
     const { display, view } = createDisplay()
 
-    jest.advanceTimersByTime(400)
+    jest.advanceTimersByTime(800)
 
     await waitFor(() => {
       expect(display.loadedRegions.size).toBe(1)
@@ -397,7 +397,7 @@ describe('FetchVisibleRegions autorun', () => {
     view.zoomTo(originalBpPerPx * 3)
 
     // beforeFetchCheck should do a soft reset
-    jest.advanceTimersByTime(400)
+    jest.advanceTimersByTime(800)
 
     // laidOutDataMap should still have the old data (soft reset preserves it)
     expect(display.laidOutDataMap.size).toBe(1)
@@ -418,7 +418,7 @@ describe('FetchVisibleRegions autorun', () => {
     // First fetch fails
     mockRpcCall.mockRejectedValue(new Error('network failure'))
 
-    jest.advanceTimersByTime(400)
+    jest.advanceTimersByTime(800)
 
     await waitFor(() => {
       expect(display.error).toBeTruthy()
@@ -428,7 +428,7 @@ describe('FetchVisibleRegions autorun', () => {
     mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
     display.reload()
 
-    jest.advanceTimersByTime(400)
+    jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
     await waitFor(() => {
@@ -444,7 +444,7 @@ describe('FetchVisibleRegions autorun', () => {
 
     const { display } = createDisplay()
 
-    jest.advanceTimersByTime(400)
+    jest.advanceTimersByTime(800)
 
     await waitFor(() => {
       expect(display.loadedRegions.size).toBe(1)
@@ -458,7 +458,7 @@ describe('FetchVisibleRegions autorun', () => {
     expect(display.loadedRegions.size).toBe(0)
     expect(display.isLoading).toBe(false)
 
-    jest.advanceTimersByTime(400)
+    jest.advanceTimersByTime(800)
 
     await waitFor(() => {
       expect(display.loadedRegions.size).toBe(1)
@@ -475,7 +475,7 @@ describe('SettingsInvalidate autorun', () => {
     mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
     const { display } = createDisplay()
 
-    jest.advanceTimersByTime(400)
+    jest.advanceTimersByTime(800)
     await waitFor(() => {
       expect(display.loadedRegions.size).toBe(1)
     })
@@ -484,8 +484,8 @@ describe('SettingsInvalidate autorun', () => {
     display.setShowOnlyGenes(true)
     // Autorun fires synchronously — invalidates state but keeps raw data
     // visible through the refetch window. FetchVisibleRegions re-fetches
-    // after its 300ms delay.
-    jest.advanceTimersByTime(400)
+    // after its 600ms delay.
+    jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
     await waitFor(() => {
@@ -500,7 +500,7 @@ describe('SettingsInvalidate autorun', () => {
     mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
     const { display } = createDisplay()
 
-    jest.advanceTimersByTime(400)
+    jest.advanceTimersByTime(800)
     await waitFor(() => {
       expect(display.loadedRegions.size).toBe(1)
     })
@@ -519,7 +519,7 @@ describe('SettingsInvalidate autorun', () => {
     mockRpcCall.mockImplementation(() => new Promise(() => {}))
     const { display } = createDisplay()
 
-    jest.advanceTimersByTime(400)
+    jest.advanceTimersByTime(800)
     await waitFor(() => {
       expect(display.isLoading).toBe(true)
     })
@@ -527,8 +527,8 @@ describe('SettingsInvalidate autorun', () => {
     const callsBefore = mockRpcCall.mock.calls.length
     display.setShowOnlyGenes(true)
     // clearAllRpcData() fires synchronously, cancels the in-flight fetch and
-    // clears laidOutDataMap. FetchVisibleRegions re-fetches after 300ms.
-    jest.advanceTimersByTime(400)
+    // clears laidOutDataMap. FetchVisibleRegions re-fetches after 600ms.
+    jest.advanceTimersByTime(800)
 
     expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
     const lastArgs = mockRpcCall.mock.calls.at(-1)![2]
@@ -540,12 +540,12 @@ describe('SettingsInvalidate autorun', () => {
     mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
     const { display } = createDisplay()
 
-    // Change setting before FetchVisibleRegions fires (delay: 300ms).
+    // Change setting before FetchVisibleRegions fires (delay: 600ms).
     // clearAllRpcData() runs synchronously, incrementing fetchGeneration.
-    // FetchVisibleRegions fires once at t=300ms using the current showOnlyGenes.
+    // FetchVisibleRegions fires once at t=600ms using the current showOnlyGenes.
     display.setShowOnlyGenes(true)
 
-    jest.advanceTimersByTime(400)
+    jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
     await waitFor(() => {
