@@ -1,3 +1,4 @@
+import type { Gff3IndexerOptions } from '../util.ts'
 import { decodeURIComponentNoThrow } from '../util.ts'
 import {
   createReadlineInterface,
@@ -13,15 +14,7 @@ export async function* indexGff3({
   featureTypesToExclude,
   onStart,
   onUpdate,
-}: {
-  config: { trackId: string }
-  attributesToIndex: string[]
-  inLocation: string
-  outDir: string
-  featureTypesToExclude: string[]
-  onStart: (totalBytes: number) => void
-  onUpdate: (progressBytes: number) => void
-}) {
+}: Gff3IndexerOptions) {
   const { trackId } = config
 
   const stream = await getLocalOrRemoteStream({

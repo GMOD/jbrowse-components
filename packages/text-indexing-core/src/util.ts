@@ -47,11 +47,23 @@ export interface Track {
   trackId: string
 }
 
+export interface IndexerOptions {
+  config: { trackId: string }
+  attributesToIndex: string[]
+  inLocation: string
+  outDir: string
+  onStart: (totalBytes: number) => void
+  onUpdate: (progressBytes: number) => void
+}
+
+export interface Gff3IndexerOptions extends IndexerOptions {
+  featureTypesToExclude: string[]
+}
+
 export function decodeURIComponentNoThrow(uri: string) {
   try {
     return decodeURIComponent(uri)
-  } catch (e) {
-    // avoid throwing exception on a failure to decode URI component
+  } catch {
     return uri
   }
 }

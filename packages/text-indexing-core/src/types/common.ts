@@ -7,21 +7,15 @@ import { createGunzip } from 'zlib'
 
 import type { LocalPathLocation, Track, UriLocation } from '../util.ts'
 
-// Checks if the passed in string is a valid URL.
-// Returns a boolean.
-export function isURL(FileName: string) {
-  let url: URL | undefined
-
+export function isURL(fileName: string) {
   try {
-    url = new URL(FileName)
-  } catch (_) {
+    const url = new URL(fileName)
+    return url.protocol === 'http:' || url.protocol === 'https:'
+  } catch {
     return false
   }
-
-  return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
-// Convert file:// URLs to local paths (handles Windows paths correctly)
 function convertFileUrlToPath(fileUrl: string): string | undefined {
   try {
     const url = new URL(fileUrl)
@@ -108,7 +102,6 @@ export function createReadlineInterface(stream: Readable, inLocation: string) {
   return readline.createInterface({ input: inputStream })
 }
 
-// Efficient attribute parsing for GFF3/VCF info fields
 export function parseAttributes(
   infoString: string,
   decodeFunc: (s: string) => string,
@@ -147,7 +140,7 @@ export function guessAdapterFromFileName(filePath: string): Track {
   if (/\.vcf\.b?gz$/i.test(filePath)) {
     return {
       trackId: name,
-      name: name,
+      name,
       assemblyNames: [],
       adapter: {
         type: 'VcfTabixAdapter',
@@ -199,15 +192,11 @@ export function guessAdapterFromFileName(filePath: string): Track {
   }
 }
 
-// Sanitize a string to be safe for use in filenames on all platforms
-// Replaces characters that are invalid in Windows filenames: \ / : * ? " < > |
+// replaces characters invalid in Windows filenames: \ / : * ? " < > |
 export function sanitizeForFilename(name: string) {
   return name.replace(/[\\/:*?"<>|]/g, '_')
 }
 
-/**
- * Generates metadata of index given a filename (trackId or assembly)
- */
 export function generateMeta({
   configs,
   attributesToIndex,
@@ -234,9 +223,9 @@ export function generateMeta({
           return {
             trackId,
             attributesIndexed:
-              textSearching?.indexingAttributes || attributesToIndex,
+              textSearching?.indexingAttributes ?? attributesToIndex,
             excludedTypes:
-              textSearching?.indexingFeatureTypesToExclude ||
+              textSearching?.indexingFeatureTypesToExclude ??
               featureTypesToExclude,
             adapterConf: adapter,
           }

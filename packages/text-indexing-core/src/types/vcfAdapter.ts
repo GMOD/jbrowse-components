@@ -1,3 +1,4 @@
+import type { IndexerOptions } from '../util.ts'
 import { decodeURIComponentNoThrow } from '../util.ts'
 import {
   createReadlineInterface,
@@ -12,14 +13,7 @@ export async function* indexVcf({
   outDir,
   onStart,
   onUpdate,
-}: {
-  config: { trackId: string }
-  attributesToIndex: string[]
-  inLocation: string
-  outDir: string
-  onStart: (totalBytes: number) => void
-  onUpdate: (progressBytes: number) => void
-}) {
+}: IndexerOptions) {
   const { trackId } = config
   const stream = await getLocalOrRemoteStream({
     file: inLocation,

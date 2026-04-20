@@ -67,12 +67,15 @@ function resolveOutDir(outFlag = '.') {
   return outDir
 }
 
+const defaultAttributesToIndex = ['Name', 'ID']
+const defaultFeatureTypesToExclude = ['exon', 'CDS']
+
 async function perTrackIndex({
   tracks,
   statusCallback,
   outDir: paramOutDir,
-  attributesToIndex = ['Name', 'ID'],
-  featureTypesToExclude = ['exon', 'CDS'],
+  attributesToIndex = defaultAttributesToIndex,
+  featureTypesToExclude = defaultFeatureTypesToExclude,
   stopToken,
 }: {
   tracks: Track[]
@@ -105,8 +108,8 @@ async function aggregateIndex({
   tracks,
   statusCallback,
   outDir: paramOutDir,
-  attributesToIndex = ['Name', 'ID'],
-  featureTypesToExclude = ['exon', 'CDS'],
+  attributesToIndex = defaultAttributesToIndex,
+  featureTypesToExclude = defaultFeatureTypesToExclude,
   stopToken,
   assemblyNames,
 }: {
@@ -185,11 +188,18 @@ async function indexDriver({
   checkStopToken(stopToken)
 }
 
+const adapterLocationKey: Record<string, string> = {
+  Gff3Adapter: 'gffLocation',
+  Gff3TabixAdapter: 'gffGzLocation',
+  VcfAdapter: 'vcfLocation',
+  VcfTabixAdapter: 'vcfGzLocation',
+}
+
 async function* indexFiles({
   tracks,
-  attributesToIndex: idx1,
+  attributesToIndex,
   outDir,
-  featureTypesToExclude: edx1,
+  featureTypesToExclude,
   statusCallback,
   stopToken,
 }: {
@@ -204,10 +214,10 @@ async function* indexFiles({
     checkStopToken(stopToken)
     const { adapter, textSearching } = track
     const { type } = adapter || {}
-    const {
-      indexingFeatureTypesToExclude: featureTypesToExclude = edx1,
-      indexingAttributes: attributesToIndex = idx1,
-    } = textSearching || {}
+    const resolvedAttrs =
+      textSearching?.indexingAttributes ?? attributesToIndex
+    const resolvedExcludes =
+      textSearching?.indexingFeatureTypesToExclude ?? featureTypesToExclude
     let myTotalBytes: number | undefined
     const onStart = (totalBytes: number) => {
       myTotalBytes = totalBytes
@@ -218,24 +228,18 @@ async function* indexFiles({
     if (type === 'Gff3Adapter' || type === 'Gff3TabixAdapter') {
       yield* indexGff3({
         config: track,
-        attributesToIndex,
-        inLocation: getLoc(
-          type === 'Gff3Adapter' ? 'gffLocation' : 'gffGzLocation',
-          track,
-        ),
+        attributesToIndex: resolvedAttrs,
+        inLocation: getLoc(adapterLocationKey[type]!, track),
         outDir,
-        featureTypesToExclude,
+        featureTypesToExclude: resolvedExcludes,
         onStart,
         onUpdate,
       })
     } else if (type === 'VcfAdapter' || type === 'VcfTabixAdapter') {
       yield* indexVcf({
         config: track,
-        attributesToIndex,
-        inLocation: getLoc(
-          type === 'VcfAdapter' ? 'vcfLocation' : 'vcfGzLocation',
-          track,
-        ),
+        attributesToIndex: resolvedAttrs,
+        inLocation: getLoc(adapterLocationKey[type]!, track),
         outDir,
         onStart,
         onUpdate,
@@ -250,7 +254,7 @@ function getLoc(attr: string, config: Track) {
     | undefined
   if (!elt) {
     throw new Error(
-      `can't find ${attr} from ${config.adapter} for text indexing`,
+      `Track ${config.trackId} missing adapter location: ${attr}`,
     )
   }
   return elt.uri || elt.localPath
