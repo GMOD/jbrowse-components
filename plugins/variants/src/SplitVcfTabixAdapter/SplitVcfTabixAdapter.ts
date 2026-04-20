@@ -6,6 +6,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import VcfFeature from '../VcfFeature/index.ts'
+import { parseSamplesTsv } from '../shared/parseSamplesTsv.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
@@ -87,23 +88,8 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter {
       const txt = await fetchAndMaybeUnzipText(
         openLocation(conf, this.pluginManager),
       )
-      const lines = txt.split(/\n|\r\n|\r/)
-      const header = lines[0]!.split('\t')
       const { parser } = await this.configure(r)
-      const s = new Set(parser.samples)
-      return lines
-        .slice(1)
-        .map(line => {
-          const cols = line.split('\t')
-          return {
-            name: cols[0]!,
-            ...Object.fromEntries(
-              // force col 0 to be called name
-              cols.slice(1).map((c, idx) => [header[idx + 1]!, c] as const),
-            ),
-          }
-        })
-        .filter(f => s.has(f.name))
+      return parseSamplesTsv(txt, parser.samples)
     }
   }
 }

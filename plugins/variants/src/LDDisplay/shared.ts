@@ -217,7 +217,7 @@ export default function sharedModelFactory(
         return self.rpcData?.recombination
       },
       get isPrecomputedLD() {
-        const adapterType = self.adapterConfig?.type as string | undefined
+        const adapterType = self.adapterConfig?.type
         return (
           adapterType === 'PlinkLDAdapter' ||
           adapterType === 'PlinkLDTabixAdapter' ||
