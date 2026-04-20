@@ -47,6 +47,16 @@ export interface Track {
   trackId: string
 }
 
+export const defaultAttributesToIndex = ['Name', 'ID']
+export const defaultFeatureTypesToExclude = ['exon', 'CDS']
+
+export const adapterLocationKey: Record<string, string> = {
+  Gff3Adapter: 'gffLocation',
+  Gff3TabixAdapter: 'gffGzLocation',
+  VcfAdapter: 'vcfLocation',
+  VcfTabixAdapter: 'vcfGzLocation',
+}
+
 export interface IndexerOptions {
   config: { trackId: string }
   attributesToIndex: string[]

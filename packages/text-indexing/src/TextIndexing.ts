@@ -5,6 +5,9 @@ import { Readable } from 'stream'
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import {
+  adapterLocationKey,
+  defaultAttributesToIndex,
+  defaultFeatureTypesToExclude,
   generateMeta,
   indexGff3,
   indexVcf,
@@ -66,9 +69,6 @@ function resolveOutDir(outFlag = '.') {
   fs.mkdirSync(path.join(outDir, 'trix'), { recursive: true })
   return outDir
 }
-
-const defaultAttributesToIndex = ['Name', 'ID']
-const defaultFeatureTypesToExclude = ['exon', 'CDS']
 
 async function perTrackIndex({
   tracks,
@@ -186,13 +186,6 @@ async function indexDriver({
     assemblyNames,
   })
   checkStopToken(stopToken)
-}
-
-const adapterLocationKey: Record<string, string> = {
-  Gff3Adapter: 'gffLocation',
-  Gff3TabixAdapter: 'gffGzLocation',
-  VcfAdapter: 'vcfLocation',
-  VcfTabixAdapter: 'vcfGzLocation',
 }
 
 async function* indexFiles({
