@@ -1,6 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
 
-import ChordVariantDisplayF from './ChordVariantDisplay/index.ts'
 import LDDisplayF from './LDDisplay/index.ts'
 import LDRendererF from './LDRenderer/index.ts'
 import LDTrackF from './LDTrack/index.ts'
@@ -44,7 +43,6 @@ export default class VariantsPlugin extends Plugin {
     MultiVariantMatrixDisplayF(pluginManager)
     LDDisplayF(pluginManager)
     LDRendererF(pluginManager)
-    ChordVariantDisplayF(pluginManager)
     LDDataRPCMethodsF(pluginManager)
 
     pluginManager.addRpcMethod(

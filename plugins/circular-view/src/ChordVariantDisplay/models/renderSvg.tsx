@@ -1,14 +1,14 @@
 import { getContainingView } from '@jbrowse/core/util'
 
-import SVChordsReactComponent from '@jbrowse/plugin-circular-view/src/ChordRenderer/ReactComponent.tsx'
+import SVChordsReactComponent from '../../ChordRenderer/ReactComponent.tsx'
 
 import type { MouseEvent } from 'react'
 
-import type { AnyRegion, Block } from '@jbrowse/plugin-circular-view'
+import type { AnyRegion, Block } from '../../ChordRenderer/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
+import type { CircularViewModel } from '../../CircularView/model.ts'
 
 type RenderSvgModel = IAnyStateTreeNode & {
   features: Map<string, Feature> | undefined

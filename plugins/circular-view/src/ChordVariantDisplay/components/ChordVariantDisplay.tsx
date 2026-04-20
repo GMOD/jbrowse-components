@@ -1,16 +1,16 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import SVChordsReactComponent from '@jbrowse/plugin-circular-view/src/ChordRenderer/ReactComponent.tsx'
+import SVChordsReactComponent from '../../ChordRenderer/ReactComponent.tsx'
 import DisplayError from './DisplayError.tsx'
 import Loading from './Loading.tsx'
 
 import type { MouseEvent } from 'react'
 
-import type { AnyRegion, Block } from '@jbrowse/plugin-circular-view'
+import type { AnyRegion, Block } from '../../ChordRenderer/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
+import type { CircularViewModel } from '../../CircularView/model.ts'
 
 interface DisplayModel {
   id: string
