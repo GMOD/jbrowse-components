@@ -14,29 +14,38 @@ const TrackSelector = observer(function TrackSelector({
   model: ImportWizardModel
   selectedAssembly: string
 }) {
-  const filteredTracks = selectedAssembly
-    ? model.tracksForAssembly(selectedAssembly)
-    : undefined
-  const resetTrack = filteredTracks?.[0]?.track.trackId || ''
-  const [selectedTrack, setSelectedTrack] = useState(resetTrack)
+  const filteredTracks = model.tracksForAssembly(selectedAssembly)
+  const firstTrack = filteredTracks[0]
+  const firstTrackId = firstTrack?.track.trackId ?? ''
+  const [selectedTrackId, setSelectedTrackId] = useState(firstTrackId)
+
+  // firstTrackId is a string primitive — stable dep that changes only when the
+  // assembly changes, avoiding the "new array ref on every render" problem
   useEffect(() => {
-    const entry = filteredTracks?.find(f => selectedTrack === f.track.trackId)
-    if (entry) {
-      model.setFileSource(entry.loc)
-      model.setFileType(entry.type)
+    setSelectedTrackId(firstTrackId)
+    if (firstTrack) {
+      model.setFileSource(firstTrack.loc)
+      model.setFileType(firstTrack.type)
     }
-  }, [model, selectedTrack, filteredTracks])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firstTrackId])
 
   return (
     <div>
-      {filteredTracks?.length ? (
+      {filteredTracks.length ? (
         <TextField
           select
           label="Tracks"
           variant="outlined"
-          value={selectedTrack}
+          value={selectedTrackId}
           onChange={event => {
-            setSelectedTrack(event.target.value)
+            const id = event.target.value
+            setSelectedTrackId(id)
+            const entry = filteredTracks.find(f => f.track.trackId === id)
+            if (entry) {
+              model.setFileSource(entry.loc)
+              model.setFileType(entry.type)
+            }
           }}
         >
           {filteredTracks.map(({ track, label }) => (

@@ -276,15 +276,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               const session = getSession(self)
 
               try {
-                const exts = init.uri.split('.')
-                let ext = exts.pop()?.toUpperCase()
-                if (ext === 'GZ') {
-                  ext = exts.pop()?.toUpperCase()
-                }
-
-                self.spreadsheetView.importWizard.setFileType(
-                  init.fileType || ext || '',
-                )
                 self.spreadsheetView.importWizard.setSelectedAssemblyName(
                   init.assembly,
                 )
@@ -292,13 +283,14 @@ function SvInspectorViewF(pluginManager: PluginManager) {
                   uri: init.uri,
                   locationType: 'UriLocation',
                 })
+                if (init.fileType) {
+                  self.spreadsheetView.importWizard.setFileType(init.fileType)
+                }
                 await self.spreadsheetView.importWizard.import(init.assembly)
-
-                // Clear init state
-                self.setInit(undefined)
               } catch (e) {
                 console.error(e)
                 session.notifyError(`${e}`, e)
+              } finally {
                 self.setInit(undefined)
               }
             },
@@ -414,8 +406,9 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
+      // xref https://github.com/mobxjs/mobx-state-tree/issues/1524
       const { init, circularView, ...rest } = snap as Omit<typeof snap, symbol>
-      return rest as Omit<typeof rest, symbol>
+      return rest
     })
 }
 

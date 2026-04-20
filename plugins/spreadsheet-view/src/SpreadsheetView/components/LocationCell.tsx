@@ -14,12 +14,16 @@ export default function LocationCell({
   model: { assemblyName?: string }
   feature: SimpleFeatureSerialized
 }) {
+  const session = getSession(model)
+  const spreadsheetViewId = getParent<any>(model).id
+  const assemblyName = model.assemblyName!
+  const locString = assembleLocString(feature)
   return (
     <>
       <FeatureMenu
-        session={getSession(model)}
-        spreadsheetViewId={getParent<any>(model).id}
-        assemblyName={model.assemblyName!}
+        session={session}
+        spreadsheetViewId={spreadsheetViewId}
+        assemblyName={assemblyName}
         feature={feature}
       />
       <Link
@@ -28,18 +32,18 @@ export default function LocationCell({
           try {
             event.preventDefault()
             await locationLinkClick({
-              spreadsheetViewId: getParent<any>(model).id,
-              session: getSession(model),
-              locString: assembleLocString(feature),
-              assemblyName: model.assemblyName!,
+              spreadsheetViewId,
+              session,
+              locString,
+              assemblyName,
             })
           } catch (e) {
             console.error(e)
-            getSession(model).notifyError(`${e}`, e)
+            session.notifyError(`${e}`, e)
           }
         }}
       >
-        {assembleLocString(feature)}
+        {locString}
       </Link>
     </>
   )

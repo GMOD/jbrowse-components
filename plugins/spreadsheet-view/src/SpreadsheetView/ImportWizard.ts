@@ -10,7 +10,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const IMPORT_SIZE_LIMIT = 100_000_000
 
-const fileTypes = ['VCF', 'BED', 'BEDPE', 'STAR-Fusion']
+const fileTypes = ['VCF', 'BED', 'BEDPE', 'STAR-Fusion'] as const
 const fileTypeParsers = {
   VCF: () =>
     import('./importAdapters/VcfImport.ts').then(r => r.parseVcfBuffer),
@@ -35,22 +35,46 @@ const adapterTypeMap: Record<
   BedpeAdapter: { fileType: 'BEDPE', locationKey: 'bedpeLocation' },
 }
 
-function getAdapterInfo(adapter: Record<string, unknown>) {
-  const entry = adapterTypeMap[adapter.type as string]
-  if (!entry) {
-    return undefined
-  }
-  const loc =
-    (adapter[entry.locationKey] as FileLocation | undefined) ??
-    (adapter as unknown as FileLocation)
-  return { fileType: entry.fileType, loc }
+function isFileLocation(loc: unknown): loc is FileLocation {
+  return !!loc && typeof loc === 'object' && 'locationType' in loc
 }
 
-// regexp used to guess the type of a file or URL from its file extension
+function getAdapterInfo(adapter: Record<string, unknown>) {
+  const { type } = adapter
+  if (typeof type !== 'string') return undefined
+  const entry = adapterTypeMap[type]
+  if (!entry) return undefined
+  const rawLoc = adapter[entry.locationKey] ?? adapter
+  return isFileLocation(rawLoc)
+    ? { fileType: entry.fileType, loc: rawLoc }
+    : undefined
+}
+
+// matches a file extension against the supported file types (case-insensitive)
 const fileTypesRegexp = new RegExp(
   String.raw`\.(${fileTypes.join('|')})(\.gz)?$`,
   'i',
 )
+
+export function getFileSourceName(src: FileLocation): string | undefined {
+  return 'uri' in src
+    ? src.uri
+    : 'localPath' in src
+      ? src.localPath
+      : 'blobId' in src
+        ? src.name
+        : undefined
+}
+
+// case-insensitive match against the canonical list to handle e.g. STAR-Fusion
+export function detectFileType(
+  name: string,
+): (typeof fileTypes)[number] | undefined {
+  const match = fileTypesRegexp.exec(name)?.[1]
+  return match
+    ? fileTypes.find(t => t.toLowerCase() === match.toLowerCase())
+    : undefined
+}
 
 /**
  * #stateModel SpreadsheetImportWizard
@@ -92,7 +116,7 @@ export default function stateModelFactory() {
       /**
        * #volatile
        */
-      fileSource: undefined as any,
+      fileSource: undefined as FileLocation | undefined,
       /**
        * #volatile
        */
@@ -107,11 +131,12 @@ export default function stateModelFactory() {
        * #getter
        */
       get isReadyToOpen() {
-        return (
-          self.fileSource &&
-          (self.fileSource.blobId ||
-            self.fileSource.localPath ||
-            self.fileSource.uri)
+        const src = self.fileSource
+        return !!(
+          src &&
+          (('blobId' in src && src.blobId) ||
+            ('localPath' in src && src.localPath) ||
+            ('uri' in src && src.uri))
         )
       },
 
@@ -119,18 +144,15 @@ export default function stateModelFactory() {
        * #getter
        */
       get fileName() {
-        return (
-          self.fileSource.uri ||
-          self.fileSource.localPath ||
-          (self.fileSource.blobId && self.fileSource.name)
-        )
+        return self.fileSource ? getFileSourceName(self.fileSource) : undefined
       },
 
       /**
        * #getter
        */
       get requiresUnzip() {
-        return this.fileName.endsWith('gz')
+        const name = this.fileName
+        return typeof name === 'string' && name.endsWith('gz')
       },
 
       /**
@@ -174,7 +196,6 @@ export default function stateModelFactory() {
               ]
                 .filter(f => !!f)
                 .join(' '),
-              assemblyNames,
               type: info.fileType,
               loc: info.loc,
             }
@@ -192,23 +213,14 @@ export default function stateModelFactory() {
       /**
        * #action
        */
-      setFileSource(newSource: unknown) {
+      setFileSource(newSource: FileLocation | undefined) {
         self.fileSource = newSource
         self.error = undefined
 
-        if (self.fileSource) {
-          // try to autodetect the file type, ignore errors
-          const name = self.fileName
-
-          if (name) {
-            const firstMatch = fileTypesRegexp.exec(name)?.[1]
-            if (firstMatch) {
-              self.fileType =
-                firstMatch === 'tsv' && name.includes('star-fusion')
-                  ? 'STAR-Fusion'
-                  : firstMatch.toUpperCase()
-            }
-          }
+        const name = self.fileName
+        const detected = name ? detectFileType(name) : undefined
+        if (detected) {
+          self.fileType = detected
         }
       },
 
@@ -225,7 +237,10 @@ export default function stateModelFactory() {
        * #action
        */
       setFileType(typeName: string) {
-        self.fileType = typeName
+        const valid = fileTypes.find(t => t === typeName)
+        if (valid) {
+          self.fileType = valid
+        }
       },
 
       /**
@@ -245,13 +260,6 @@ export default function stateModelFactory() {
       /**
        * #action
        */
-      cancelButton() {
-        self.error = undefined
-        getParent<any>(self).setDisplayMode()
-      },
-      /**
-       * #action
-       */
       setCachedFileHandle(arg: FileLocation) {
         self.cachedFileLocation = arg
       },
@@ -268,38 +276,30 @@ export default function stateModelFactory() {
         }
 
         self.selectedAssemblyName = assemblyName
-        const type = self.fileType as keyof typeof fileTypeParsers
-        const typeParser = await fileTypeParsers[type]()
+        const typeParser = await fileTypeParsers[self.fileType]()
 
         const { fetchAndMaybeUnzip } = await import('@jbrowse/core/util')
         const { pluginManager } = getEnv(self)
         const filehandle = openLocation(self.fileSource, pluginManager)
         self.setLoading(true)
         try {
-          const stat = await filehandle.stat()
-          if (stat.size > IMPORT_SIZE_LIMIT) {
-            self.setError(
-              `File is too big. Tabular files are limited to at most ${(
-                IMPORT_SIZE_LIMIT / 1000
-              ).toLocaleString()}kb.`,
-            )
-            return
+          try {
+            const stat = await filehandle.stat()
+            if (stat.size > IMPORT_SIZE_LIMIT) {
+              self.setError(
+                `File is too big. Tabular files are limited to at most ${(
+                  IMPORT_SIZE_LIMIT / 1000
+                ).toLocaleString()}kb.`,
+              )
+              return
+            }
+          } catch (e) {
+            // not required for stat to succeed to proceed, but it is helpful
+            console.warn(e)
           }
-        } catch (e) {
-          // not required for stat to succeed to proceed, but it is helpful
-          console.warn(e)
-        } finally {
-          self.setLoading(false)
-        }
 
-        self.setLoading(true)
-        try {
-          if (self.fileSource.uri) {
-            self.setCachedFileHandle({
-              uri: self.fileSource.uri,
-              baseUri: self.fileSource.baseUri,
-              locationType: 'UriLocation',
-            })
+          if ('uri' in self.fileSource) {
+            self.setCachedFileHandle(self.fileSource)
           }
           const data = await fetchAndMaybeUnzip(filehandle)
           getParent<any>(self).displaySpreadsheet({
