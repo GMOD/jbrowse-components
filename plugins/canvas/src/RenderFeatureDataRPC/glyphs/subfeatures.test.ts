@@ -68,7 +68,6 @@ describe('layoutSubfeatures layout', () => {
 
       const layout = layoutSubfeatures({
         feature: gene,
-        bpPerPx: 1,
         reversed: false,
         config,
       })
@@ -95,7 +94,6 @@ describe('layoutSubfeatures layout', () => {
 
       const layout = layoutSubfeatures({
         feature: gene,
-        bpPerPx: 1,
         reversed: false,
         config,
       })
@@ -115,7 +113,6 @@ describe('layoutSubfeatures layout', () => {
 
       const layout = layoutSubfeatures({
         feature: gene,
-        bpPerPx: 1,
         reversed: false,
         config,
       })
@@ -137,7 +134,6 @@ describe('layoutSubfeatures layout', () => {
 
       const layout = layoutSubfeatures({
         feature: gene,
-        bpPerPx: 1,
         reversed: false,
         config,
       })
@@ -156,14 +152,12 @@ describe('layoutSubfeatures layout', () => {
 
       const belowLayout = layoutSubfeatures({
         feature: gene,
-        bpPerPx: 1,
         reversed: false,
         config: mockDisplayConfig({ subfeatureLabels: 'below' }),
       })
 
       const noneLayout = layoutSubfeatures({
         feature: gene,
-        bpPerPx: 1,
         reversed: false,
         config: mockDisplayConfig({ subfeatureLabels: 'none' }),
       })

@@ -14,8 +14,15 @@
  *   - Individual override properties → configOverrides map
  *   - Strips removed properties: blockState, showTooltips
  */
-export function migrateAlignmentsSnapshot(snap: Record<string, unknown>) {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+export function migrateAlignmentsSnapshot(
+  snap: Record<string, unknown>,
+): Record<string, unknown>
+export function migrateAlignmentsSnapshot(
+  snap: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined
+export function migrateAlignmentsSnapshot(
+  snap: Record<string, unknown> | undefined,
+) {
   if (!snap) {
     return snap
   }

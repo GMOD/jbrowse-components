@@ -216,12 +216,12 @@ export default function stateModelFactory(
           jexlFilters: types.optional(types.array(types.string), []),
         }),
       )
-      .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
-        if (!snap) {
-          return snap
-        }
-        return migrateAlignmentsSnapshot(snap)
-      })
+      .preProcessSnapshot(
+        // @ts-expect-error - MST's preProcessSnapshot typing can't verify the
+        // return type against the model creation type
+        (snap: Record<string, unknown> | undefined) =>
+          migrateAlignmentsSnapshot(snap),
+      )
       .volatile(() => ({
         featureIdUnderMouse: undefined as undefined | string,
         mouseoverExtraInformation: undefined as string | undefined,
