@@ -12,7 +12,7 @@ const MATURE_PROTEIN_TYPES = new Set([
   'mature_protein_region',
 ])
 
-export function getMatureProteinChildren(feature: Feature): Feature[] {
+function getMatureProteinChildren(feature: Feature): Feature[] {
   const subfeatures = feature.get('subfeatures')
   return (
     subfeatures?.filter(sub =>

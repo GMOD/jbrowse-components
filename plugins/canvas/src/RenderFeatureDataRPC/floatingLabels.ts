@@ -2,12 +2,11 @@ import { measureText } from '@jbrowse/core/util'
 
 import { readConfigValue } from './renderConfig.ts'
 import { truncateLabel } from './util.ts'
+import { LABEL_FONT_SIZE } from '../LinearBasicDisplay/components/sharedRendererConstants.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
 import type { LabelItem } from './rpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
-
-const FLOATING_LABEL_FONT_SIZE = 11
 const FEATURE_NAME_COLOR = 'black'
 const FEATURE_DESCRIPTION_COLOR = 'blue'
 
@@ -37,7 +36,7 @@ export function createFeatureFloatingLabels({
       text: name,
       relativeY: currentY,
       color: FEATURE_NAME_COLOR,
-      textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
+      textWidth: measureText(name, LABEL_FONT_SIZE),
     }
     currentY += readConfigValue<number>(config, ['labels', 'fontSize'], feature)
   }
@@ -47,7 +46,7 @@ export function createFeatureFloatingLabels({
       text: description,
       relativeY: currentY,
       color: FEATURE_DESCRIPTION_COLOR,
-      textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
+      textWidth: measureText(description, LABEL_FONT_SIZE),
     }
   }
 
@@ -81,7 +80,7 @@ export function createTranscriptFloatingLabel({
       text: truncatedName,
       relativeY,
       color: FEATURE_NAME_COLOR,
-      textWidth: measureText(truncatedName, FLOATING_LABEL_FONT_SIZE),
+      textWidth: measureText(truncatedName, LABEL_FONT_SIZE),
       isOverlay,
       tooltip,
     },

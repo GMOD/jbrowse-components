@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { bpToScreenPx } from '@jbrowse/core/gpu/canvas2dUtils'
 
 import { computeLabelExtraWidth } from './highlightUtils.ts'
+import { LABEL_FONT_SIZE } from './sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { VisibleRegion } from './hitTesting.ts'
@@ -12,7 +13,7 @@ import type {
   SubfeatureInfo,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 
-type FeatureItemEntry =
+export type FeatureItemEntry =
   | { item: FlatbushItem; vr: VisibleRegion; data: FeatureDataResult }
   | { item: SubfeatureInfo; vr: VisibleRegion }
 
@@ -160,7 +161,7 @@ export function useFloatingLabels(
               style={{
                 position: 'absolute',
                 transform: `translate(${labelX}px, ${labelY}px)`,
-                fontSize: 11,
+                fontSize: LABEL_FONT_SIZE,
                 lineHeight: 1,
                 color: label.color,
                 pointerEvents: clickable ? 'auto' : 'none',

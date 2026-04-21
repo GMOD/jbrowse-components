@@ -108,6 +108,11 @@ export function drawRects(
 
     ctx.fillStyle = abgrToCssRgba(region.rectColors[i]!)
     ctx.fillRect(xLeft, y, w, h)
+    if (region.outlineColor && w > 2) {
+      ctx.strokeStyle = abgrToCssRgba(region.outlineColor)
+      ctx.lineWidth = 1
+      ctx.strokeRect(xLeft + 0.5, y + 0.5, w - 1, h - 1)
+    }
   }
 }
 

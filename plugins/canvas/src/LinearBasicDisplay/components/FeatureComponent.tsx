@@ -14,8 +14,9 @@ import {
   useAminoAcidOverlay,
   useFloatingLabels,
   useHighlightOverlays,
+  type FeatureItemEntry,
 } from './useOverlayElements.tsx'
-import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
+import { LoadingOverlay } from '@jbrowse/core/ui'
 
 import type { CanvasFeatureBackend } from './canvasFeatureBackendTypes.ts'
 import type { FlatbushRegionCache, VisibleRegion } from './hitTesting.ts'
@@ -87,10 +88,6 @@ interface LinearBasicDisplayModel {
 export interface Props {
   model: LinearBasicDisplayModel
 }
-
-type FeatureItemEntry =
-  | { item: FlatbushItem; vr: VisibleRegion; data: FeatureDataResult }
-  | { item: SubfeatureInfo; vr: VisibleRegion }
 
 const OverlayLayer = ({ children }: { children: React.ReactNode }) =>
   children ? (

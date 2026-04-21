@@ -20,7 +20,7 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { collectRenderData } from './collectRenderData.ts'
-import { layoutFeature } from './layout/layoutFeature.ts'
+import { findGlyph } from './glyphs/findGlyph.ts'
 import { fetchPeptideData } from './peptides/peptideUtils.ts'
 import { shouldRenderPeptideBackground } from './zoomThresholds.ts'
 
@@ -121,7 +121,7 @@ export async function executeRenderFeatureData({
       const records: FeatureLayout[] = []
       for (const feature of features.values()) {
         records.push(
-          layoutFeature({ feature, reversed, config: displayConfig }),
+          findGlyph(feature, displayConfig)({ feature, reversed, config: displayConfig }),
         )
       }
       return records
@@ -173,6 +173,7 @@ export async function executeRenderFeatureData({
     rectYs: packed.rectYs,
     rectHeights: packed.rectHeights,
     rectColors: packed.rectColors,
+    outlineColor: packed.outlineColor,
 
     linePositions: packed.linePositions,
     lineYs: packed.lineYs,

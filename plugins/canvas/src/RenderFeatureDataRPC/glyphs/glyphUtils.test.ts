@@ -1,6 +1,6 @@
 import { layoutBox } from './box.ts'
 import { getFeatureHeightPx, sortByPosition } from './glyphUtils.ts'
-import { findGlyph } from './index.ts'
+import { findGlyph } from './findGlyph.ts'
 import { layoutProcessedTranscript } from './processed.ts'
 import { layoutSegments } from './segments.ts'
 import { mockDisplayConfig } from '../testUtils.ts'

@@ -56,9 +56,8 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       },
       outline: {
         type: 'color',
-        description: 'the outline for features',
+        description: 'outline color for features (empty string = no outline)',
         defaultValue: '',
-        contextVariable: ['feature'],
       },
       featureHeight: {
         type: 'number',

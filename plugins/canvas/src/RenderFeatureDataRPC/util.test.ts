@@ -1,5 +1,5 @@
 import { layoutBox } from './glyphs/box.ts'
-import { findGlyph } from './glyphs/index.ts'
+import { findGlyph } from './glyphs/findGlyph.ts'
 import { layoutMatureProteinRegion } from './glyphs/matureProteinRegion.ts'
 import { layoutProcessedTranscript } from './glyphs/processed.ts'
 import { layoutSegments } from './glyphs/segments.ts'

@@ -49,7 +49,6 @@ interface ArrowData {
   x: number
   y: number
   direction: number
-  height: number
   color: number
   flatbushIdx: number
 }
@@ -385,7 +384,6 @@ function processTranscriptLayout(
       x: arrowX - ctx.regionStart,
       y: transcriptTopPx + transcript.height / 2,
       direction: transcriptStrand,
-      height: transcript.height,
       color: strokeUint,
       flatbushIdx,
     })
@@ -445,7 +443,10 @@ function processFeatureRecord(
 
   if (isContainerLayout(layout)) {
     processTranscriptLayout(layout, 0, feature, flatbushIdx, ctx, collector)
-  } else if (layout.glyphType === 'Subfeatures') {
+  } else if (
+    layout.glyphType === 'Subfeatures' ||
+    layout.glyphType === 'MatureProteinRegion'
+  ) {
     processSubfeaturesLayout(layout, flatbushIdx, ctx, collector)
   } else {
     processDefaultLayout(layout, flatbushIdx, ctx, collector)
@@ -519,7 +520,6 @@ function processDefaultLayout(
       x: arrowX - ctx.regionStart,
       y: layout.height / 2,
       direction: strand,
-      height: layout.height,
       color: colorToUint32(strokeColor),
       flatbushIdx,
     })
@@ -552,6 +552,8 @@ export function collectRenderData(
     subfeatureInfos: [],
     aminoAcidOverlay: [],
   }
+
+  const outlineColor = config.outline ? colorToUint32(config.outline) : 0
 
   for (const layout of layouts) {
     processFeatureRecord(layout, ctx, collector)
@@ -619,6 +621,7 @@ export function collectRenderData(
     rectYs,
     rectHeights,
     rectColors,
+    outlineColor,
     rectFeatureIndices,
     linePositions,
     lineYs,

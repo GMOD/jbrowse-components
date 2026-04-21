@@ -16,6 +16,7 @@ export function mockDisplayConfig(
     color1: 'goldenrod',
     color2: '#f0f',
     color3: '#357089',
+    outline: '',
     labels: {
       name: '',
       nameColor: '#f0f',

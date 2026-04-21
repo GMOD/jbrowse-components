@@ -81,6 +81,9 @@ export interface FeatureDataResult {
 
   // Number of top-level features in this region (used for density calculations)
   featureCount: number
+
+  // Packed RGBA outline color for all rects (0 = no outline)
+  outlineColor: number
 }
 
 export type RegionRenderData = Pick<
@@ -90,6 +93,7 @@ export type RegionRenderData = Pick<
   | 'rectYs'
   | 'rectHeights'
   | 'rectColors'
+  | 'outlineColor'
   | 'linePositions'
   | 'lineYs'
   | 'lineColors'

@@ -47,6 +47,7 @@ interface RegionMeta {
   hasRects: boolean
   hasLines: boolean
   hasArrows: boolean
+  outlineColor: number
 }
 
 export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
@@ -75,6 +76,7 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
       hasRects: numRects > 0,
       hasLines: numLines > 0,
       hasArrows: numArrows > 0,
+      outlineColor: data.outlineColor,
     })
 
     if (numRects > 0) {
@@ -149,6 +151,7 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
         bpPerPx: clip.bpPerPx,
         zero: 0,
         reversed: block.reversed ? 1 : 0,
+        outlineColor: meta.outlineColor,
       })
 
       this.hal.writeUniforms(this.uniformData)

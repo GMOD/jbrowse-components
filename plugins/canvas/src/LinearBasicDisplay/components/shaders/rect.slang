@@ -29,6 +29,8 @@ struct RectInstance {
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
+  float2 localPos : TEXCOORD0;
+  float2 featSizePx : TEXCOORD1;
 };
 
 [shader("vertex")]
@@ -56,13 +58,29 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float syBot = 1.0 - (yBotPx / u.canvasHeight) * 2.0;
   float sy = lerp(syBot, syTop, localY);
 
+  float widthPx  = abs(sx2 - sx1) * u.canvasWidth * 0.5;
+  float heightPx = abs(yBotPx - yTopPx);
+
   VsOut o;
-  o.position = float4(sx, sy, 0.0, 1.0);
-  o.color = unpackRGBA(inst.color);
+  o.position   = float4(sx, sy, 0.0, 1.0);
+  o.color      = unpackRGBA(inst.color);
+  o.localPos   = float2(localX, localY);
+  o.featSizePx = float2(widthPx, heightPx);
   return o;
 }
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
+  if (u.outlineColor != 0u) {
+    float4 outlineRGBA = unpackRGBA(u.outlineColor);
+    if (outlineRGBA.a > 0.0 && fragIn.featSizePx.x > 2.0 && fragIn.featSizePx.y > 2.0) {
+      float dxL = fragIn.localPos.x * fragIn.featSizePx.x;
+      float dxR = (1.0 - fragIn.localPos.x) * fragIn.featSizePx.x;
+      float dy  = min(fragIn.localPos.y, 1.0 - fragIn.localPos.y) * fragIn.featSizePx.y;
+      if (min(min(dxL, dxR), dy) < 1.0) {
+        return outlineRGBA;
+      }
+    }
+  }
   return fragIn.color;
 }

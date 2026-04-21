@@ -9,6 +9,7 @@ import {
   drawLines,
   drawRects,
 } from './components/Canvas2DFeatureRenderer.ts'
+import { LABEL_FONT_SIZE } from './components/sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -26,8 +27,6 @@ interface RenderSvgModel {
   regionTooLarge: boolean
   height: number
 }
-
-const LABEL_FONT_SIZE = 11
 
 function renderLabels(
   ctx: SvgCanvas,

@@ -75,7 +75,7 @@ function findSubfeatureById(
 
 export type { Region } from '@jbrowse/core/util'
 
-export async function fetchCanvasFeatureDetails(
+async function fetchCanvasFeatureDetails(
   session: {
     rpcManager: RpcManager
     notifyError: (msg: string, err?: unknown) => void

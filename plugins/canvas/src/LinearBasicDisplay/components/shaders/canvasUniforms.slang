@@ -14,4 +14,5 @@ public struct CanvasUniforms {
   public float  bpPerPx;
   public float  zero;
   public float  reversed;
+  public uint   outlineColor;
 };

@@ -75,12 +75,13 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     )
   }
 
+  const transcriptTypeSet = new Set(transcriptTypes)
   const children: FeatureLayout[] = []
   let currentYPx = 0
 
   for (const [i, child] of subfeatures.entries()) {
     const childType = child.get('type') ?? ''
-    const isChildTranscript = transcriptTypes.includes(childType)
+    const isChildTranscript = transcriptTypeSet.has(childType)
     const childLayout = findGlyph(
       child,
       config,

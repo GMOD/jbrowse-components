@@ -4,11 +4,16 @@ import { isUTR } from './util.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
 
-function makeSubpartsFilter(subParts: string) {
-  const lowerRet = new Set(subParts.split(/\s*,\s*/).map(t => t.toLowerCase()))
+const subpartsFilterCache = new Map<string, (f: Feature) => boolean>()
 
-  return (feature: Feature) =>
-    lowerRet.has(feature.get('type')?.toLowerCase() ?? '')
+function makeSubpartsFilter(subParts: string) {
+  let f = subpartsFilterCache.get(subParts)
+  if (!f) {
+    const lowerRet = new Set(subParts.split(/\s*,\s*/).map(t => t.toLowerCase()))
+    f = (feature: Feature) => lowerRet.has(feature.get('type')?.toLowerCase() ?? '')
+    subpartsFilterCache.set(subParts, f)
+  }
+  return f
 }
 
 function utrType(strand: number, isFivePrime: boolean) {

@@ -1,3 +1,6 @@
+// Label rendering
+export const LABEL_FONT_SIZE = 11
+
 // Instancing limits
 export const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
 
