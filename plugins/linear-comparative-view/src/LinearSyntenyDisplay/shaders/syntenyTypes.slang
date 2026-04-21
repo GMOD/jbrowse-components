@@ -10,10 +10,9 @@ public struct Instance {
   public float x4                : ATTR3;
   public uint  color             : ATTR4;
   public float featureId         : ATTR5;
-  public float isCurve           : ATTR6;
-  public float queryTotalLength  : ATTR7;
-  public float padTop            : ATTR8;
-  public float padBottom         : ATTR9;
+  public float queryTotalLength  : ATTR6;
+  public float padTop            : ATTR7;
+  public float padBottom         : ATTR8;
 };
 
 public struct Uniforms {
@@ -29,6 +28,7 @@ public struct Uniforms {
   public float  hoveredFeatureId;
   public float  clickedFeatureId;
   public float  yTop;
+  public float  isCurve;
 };
 
 public struct Corners {
@@ -60,9 +60,9 @@ public static const uint FILL_SEGS = 16u;
 // (edge0, edge1, y) at parameter t along the parallelogram. When isCurve is
 // on, uses a cubic Hermite ease-in-out so synteny ribbons don't kink at the
 // endpoints.
-public float3 hermiteEdges(Corners c, float t, float isCurve, Uniforms u) {
+public float3 hermiteEdges(Corners c, float t, Uniforms u) {
   float edge0, edge1, y;
-  if (isCurve > 0.5) {
+  if (u.isCurve > 0.5) {
     float s = t * t * (3.0 - 2.0 * t);
     edge0 = lerp(c.x1, c.x4, s);
     edge1 = lerp(c.x2, c.x3, s);

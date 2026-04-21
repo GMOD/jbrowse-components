@@ -166,7 +166,6 @@ export async function executeSyntenyFeaturesAndPositions({
   level,
   stopToken,
   colorBy = 'default',
-  drawCurves = true,
   drawCIGAR = true,
   drawCIGARMatchesOnly = false,
   drawLocationMarkers = false,
@@ -181,7 +180,6 @@ export async function executeSyntenyFeaturesAndPositions({
   level: number
   stopToken?: StopToken
   colorBy?: string
-  drawCurves?: boolean
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean
   drawLocationMarkers?: boolean
@@ -394,7 +392,6 @@ export async function executeSyntenyFeaturesAndPositions({
         parsedCigars,
         colorBy,
         syriTypes,
-        drawCurves,
         drawCIGAR,
         drawCIGARMatchesOnly,
         drawLocationMarkers,
@@ -426,7 +423,6 @@ export async function executeSyntenyFeaturesAndPositions({
     instanceData.x4.buffer,
     instanceData.colors.buffer,
     instanceData.featureIds.buffer,
-    instanceData.isCurves.buffer,
     instanceData.queryTotalLengths.buffer,
     instanceData.padTops.buffer,
     instanceData.padBottoms.buffer,

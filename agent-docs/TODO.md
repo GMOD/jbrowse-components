@@ -1,8 +1,12 @@
 # Active Work Items
 
-**Updated:** 2026-04-20 | Move completed items to
-`agent-docs/completed/COMPLETED.md`. PRD.md holds invariants; this file is
-the categorized backlog.
+**Updated:** 2026-04-20
+
+Important: Move completed items to
+`agent-docs/completed/COMPLETED.md`.
+
+Look at PRD.md to see project overview; this file is
+todo items.
 
 Sections roughly in working order — high-leverage architectural items first,
 then config / shaders / tests, then bugs and polish.
@@ -21,81 +25,42 @@ equivalence. Catches per-backend drift.
 `pick(x, y): Promise<Hit | undefined>`. Unifies async WebGPU readback with
 sync Canvas2D picking; synteny needs it.
 
-**`packages/wiggle-core` + alignments coverage scaling.** Alignments
-coverage on this branch has no scaling config — `origin/main` inherited it
-via `LinearSNPCoverageDisplay extends linearWiggleDisplayModelFactory`,
-and that inheritance was dropped when coverage moved into
-`LinearAlignmentsDisplay`.
+**Alignments coverage scaling (Phase 3).** Phases 1+2 done (see
+COMPLETED.md). Wire scale config into `LinearAlignmentsDisplay`: spread
+`autoscale`/`minScore`/`maxScore`/`scaleType`/`numStdDev` into the coverage
+sub-schema, add `coverageDomain` getter (`domainFromStats` → `getNiceDomain`
+clamped by configured min/max), replace `visibleMaxDepth` with
+`coverageStats` autorun. Render-state carries `coverageDomain` +
+`coverageIsLog`. CPU-side normalization: run `makeScoreNormalizer` at upload
+time, drop `U_DEPTH_SCALE` uniform, re-upload on domain/scale change. Move
+`SetMinMaxDialog.tsx` to `wiggle-core` and wire into the coverage menu.
+`autoscale: 'global'` initially omitted — needs all-regions data.
 
-*Phase 1 — `packages/wiggle-core`:* extract `getNiceDomain`, `getScale`,
-`getOrigin`, `makeScoreNormalizer` from `plugins/wiggle/src/util.ts`.
-Add `domainFromStats({scoreMin, scoreMax, scoreMean, scoreStdDev},
-autoscaleType, numStdDev)` (the inner half of wiggle's
-`computeAutoscaleDomain`). Add `sharedScaleConfigFields()` returning the
-shared MST schema (`autoscale`, `minScore`, `maxScore`, `scaleType`,
-`numStdDev`). Move `SetMinMaxDialog.tsx` over unchanged. Wiggle re-imports.
-
-*Phase 2 — coverage stats in `packages/alignments-core`:* add
-`computeVisibleCoverageStats` + `computeGlobalCoverageStats` over
-`Float32Array` depths (two passes: min/max/sum/count, then variance).
-Extend `computeCoverageTicks` with `scaleType`.
-
-*Phase 3 — wire into `LinearAlignmentsDisplay`:* spread
-`sharedScaleConfigFields()` into the coverage sub-schema, add
-`coverageDomain` getter (`domainFromStats` → `getNiceDomain({niced:false})`
-clamped by configured min/max), replace the `visibleMaxDepth` autorun with
-a `coverageStats` autorun. Render-state carries `coverageDomain` +
-`coverageIsLog`.
-
-*Key design call: CPU-side normalization.* Run `makeScoreNormalizer` at
-upload time, drop `U_DEPTH_SCALE` uniform, no shader change needed for log
-scale. Buffers are small (one float per visible bp). Re-upload on
-`coverageDomain`/`coverageIsLog` change. Mirror in Canvas2D + SVG
-renderers (`drawCoverageBins`, `drawSnpSegments`, `drawModCovSegments`
-already accept `[0,1]`-normalized values).
-
-`getNiceDomain` adds an opt-in `niced` flag (default `true` for wiggle
-back-compat); alignments passes `false`. `autoscale: 'global'` initially
-omitted from the alignments menu — needs all-regions data which may not be
-fetched.
-
-**Tab visibility → HAL.** Move `visibilitychange` into the HAL; drops
-`useTabVisibilityRerender` and `renderNow()` from the public mixin API.
-Both still used in synteny (`LevelSyntenyCanvas.tsx`,
-`MultiSyntenyRendering.tsx`) and dotplot.
 
 **Structural `RenderSvgModel`.** Matrix + variants use the structural form;
 wiggle / alignments / canvas still import the MST type. Mechanical
 conversion; hardens against type circularity across lazy boundaries.
 
-**Generalize ADR-006 (preserve stale data across refetch) where safe.**
-Only viewport-agnostic display types should adopt it; viewport-baked types
-keep clearing (the flash is correctness, not UX).
-
-- Preserve: alignments arcs, probably synteny.
-- Clear (keep current): wiggle tiles (bin widths), alignments pileup compact
-  zoom (pixel-baked glyphs).
-- Audit: `MultiSampleVariantDisplay` (different fetch model).
-
 ---
 
 ## Reactivity cleanup
 
-**Eliminate remaining `untracked()` usage.** Each call is a reactivity
-bypass — a sign something is structured wrong. Acceptance:
+**Eliminate remaining `untracked()` usage.** Acceptance:
 `grep -rn 'untracked(' plugins/ packages/ --include='*.ts' --include='*.tsx'
-| grep -v test | grep -v '\.md' | wc -l` returns 0 (currently 5).
+| grep -v test | grep -v '\.md' | wc -l` returns 0 (currently 4).
 
-- `plugins/alignments/.../LinearAlignmentsDisplay/model.ts:1563`
-  (`sortLayout` autorun wraps rpcDataMap-read-then-mutate). *Fix:* convert
-  `computeAndAssignLayoutForData` to a pure function returning a fresh
-  laid-out map; expose laid-out data as a cached MST view (canvas's pattern).
-  Upload autorun reads the derived view; no imperative writeback. Largest
-  payoff.
 - `plugins/graph/.../GraphCanvas.tsx:186` (`viewportBounds` via untracked
   inside a scale/translate update). *Fix:* pan/zoom live on React state
   here, not MST. Move `computeViewportBounds` to a `useMemo` keyed on the
   scale/translate values. Standalone, low urgency.
+- `MultiRegionDisplayMixin.ts:194,231,303` — three `untracked` guards in
+  the fetch autorun. All intentional: line 194 prevents `isLoading` from
+  being a tracked dependency (would cause the autorun to re-fire when a
+  fetch completes, creating a busy-loop); line 231 reads `loadedRegions`
+  without tracking (completion of one region fetch should not re-trigger
+  the "what needs fetching" scan); line 303 reads `error`/`regionTooLarge`
+  without tracking (only viewport changes should fire the clear). These are
+  structural, not accidental — accept or find a reaction-based alternative.
 
 Test-file `untracked` calls (`fetchAutorunIntegration.test.ts`) are
 intentional — leave alone.
@@ -153,16 +118,9 @@ Worth a scoped PR picking one of the last two deliberately.
 Verify `config_demo.json` and `volvox/config.json` load with JEXL color
 expressions intact. See `CONFIG_PATTERN.md`.
 
-
+---
 
 ## Shader work
-
-
-**Synteny: `isCurve` → uniform + Instance struct shrink.** `isCurve` is
-per-view (same value for every instance in a draw call). Move to Uniforms;
-stop emitting `isCurves[]` from the RPC; pass via `renderParams`. Remove
-`isCurve : ATTR6` from Instance struct. ~30-line change across RPC,
-`syntenyBackendTypes`, renderer, `syntenyTypes.slang`.
 
 ---
 
@@ -173,8 +131,9 @@ Lavapipe (`mesa-vulkan-drivers`) + `xvfb-run` with
 `VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json`. See
 `TEST_INFRASTRUCTURE.md`.
 
-**Browser suite speed & flake reduction.** Slow runtime, intermittent
-failures.
+**Browser suite speed & flake reduction.** See `TEST_INFRASTRUCTURE.md` for
+known slow tests and flake sources. Fresh-tab approach and analytics blocking
+documented in `project_browser_test_perf.md` memory.
 
 ---
 
@@ -212,9 +171,6 @@ variant got `clearDisplaySpecificData()` + prune-on-empty-set.
 `stateModelFactory.ts` never calls `clearAllBlocks()` when navigating to a
 new chromosome. Check whether stale GPU buffers accumulate.
 
-**Canvas: features collapsed to y=0 on NCBI.** Add logging to investigate;
-needs reproduction steps.
-
 ---
 
 ## Features & UX
@@ -235,17 +191,83 @@ labels for genes.
 wiggle-core extraction above.
 
 **Decouple amino-acid overlay loading**, treat density gate as one-shot →
-drop canvas `isCacheValid` entirely.
+drop canvas `isCacheValid` entirely. See implementation plan below.
 
 ---
 
-## Polish
+## Amino-acid overlay decoupling — implementation plan
 
-**Dark reader compatibility.** Multiwiggle/DNA rendering with light
-backgrounds.
+Goal: make the amino-acid overlay a separate lazy fetch so crossing the
+`shouldRenderPeptideBackground` threshold (1 bpPerPx) no longer invalidates
+the main feature cache and triggers a full region refetch.
 
-**Feature padding & crowding.** Right-side canvas padding excessive?
-Subpixel drawing crowded?
+**Step 1 — Extract `buildAminoAcidOverlay` from `collectRenderData`.**
+The peptide overlay items are currently built inside `collectRenderData` as a
+side-effect of processing each transcript (`collectRenderData.ts:231–283`,
+writing into `collector.aminoAcidOverlay`). Pull that logic into a standalone
+`buildAminoAcidOverlay(layouts, peptideDataMap, config, theme, regionStart):
+AminoAcidOverlayItem[]` function in the peptides directory so it can be called
+independently.
+
+**Step 2 — Add `FetchPeptideOverlay` RPC.**
+New worker entry point (mirroring the structure of `executeRenderFeatureData`)
+that: fetches features for the region, builds layouts via `layoutFeature`,
+calls `fetchPeptideData`, then calls `buildAminoAcidOverlay`. Returns
+`AminoAcidOverlayItem[]`. Register alongside `RenderFeatureData` in
+`canvasRpcMethods.ts`. Note: this re-fetches features from the adapter, but
+the adapter's in-memory cache means no extra network round-trips for most
+sources.
+
+**Step 3 — Remove peptide fetch from main RPC.**
+In `executeRenderFeatureData`: delete the `peptideDataMap` block (lines
+132–148). Pass `undefined` for `peptideDataMap` in the `collectRenderData`
+call. Drop `aminoAcidOverlay` from `FeatureDataResult` and `rpcTypes.ts`.
+`collectRenderData` still accepts optional `peptideDataMap` (now always
+undefined from the main path) — clean it up or leave for now.
+
+**Step 4 — Add `peptideOverlayMap` volatile to canvas model.**
+In `baseModel.ts`: add `peptideOverlayMap: observable.map<number,
+AminoAcidOverlayItem[]>()` as a volatile. Add a second autorun (alongside the
+existing fetch autorun) that watches `shouldRenderPeptideBackground(view.bpPerPx)`
+and `colorByCDS`:
+- When above threshold: clear `peptideOverlayMap`.
+- When below threshold: for each `displayedRegionIndex` present in `rpcDataMap`
+  but absent from `peptideOverlayMap`, call `FetchPeptideOverlay` and store the
+  result. This is the "one-shot" — already-loaded regions skip the fetch.
+
+**Step 5 — Wire overlay into `computeLaidOutData`.**
+In `layout.ts`, `computeLaidOutData` currently reads `raw.aminoAcidOverlay` from
+the RPC result and adjusts `topPx` via `featureOffsets[aa.flatbushIdx]`. Change
+it to read from `self.peptideOverlayMap.get(displayedRegionIndex)` instead.
+The `featureOffsets` adjustment stays the same.
+
+**Step 6 — Update SVG renderer.**
+`renderSvg.tsx` reads `data.aminoAcidOverlay` from the per-region data object.
+Plumb the overlay in as a separate argument sourced from `peptideOverlayMap`.
+
+**Step 7 — Drop canvas `isCacheValid`.**
+Remove the override from `baseModel.ts` (lines 626–636). Canvas now uses the
+base-class default (`() => true`). Update `CLAUDE.md` and
+`agent-docs/ARCHITECTURE.md` to remove the canvas exception from the
+"Per-region zoom-staleness" section.
+
+**Step 8 — Clean up types and tests.**
+Remove `aminoAcidOverlay` from `FeatureDataResult`. Update `fetchAutorun.test.ts`
+if any canvas-specific `isCacheValid` tests existed. Add a unit test for the new
+autorun: loads a region, zooms past threshold, verifies `FetchPeptideOverlay`
+was called once and result cached; zooms back out, verifies map cleared; zooms
+in again, verifies called again.
+
+---
+
+## Bugs (continued)
+
+**ReadCloud: excessive `Core-preProcessTrackConfig` log spam.** Adding a
+`LinearReadCloudDisplay` with `drawCloud:true` for `volvox_sv_cram` causes
+`pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', ...)` to be
+called repeatedly on every mouse move. Also triggers repeated "If it's a
+frozen/plain object, we need to instantiate it" warnings. Investigate why
+track config pre-processing is running in a hot path.
 
 ---
 
@@ -253,13 +275,5 @@ Subpixel drawing crowded?
 
 - Clustering UI not updating?
 - `?renderer=X` URL parameter working?
-
-
-Unclear if log scale working on hic
-
-umd_plugin.js  pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap => { is relogged very rapidly on e.g. every mouse move in alignments drawcloud Adding LinearReadCloudDisplay with drawCloud:true for volvox_sv_cram
-Adding LinearReadCloudDisplay with drawCloud:true for volvox_sv_cram seems to repeatedly call "If it's a frozen/plain object, we need to instantiate it"
-
-
-
-Mouseover shading and clicking on pileup read rectangles not working
+- Canvas: right-side padding excessive? Subpixel drawing crowded at dense zoom?
+- Canvas: features collapsed to y=0 on NCBI (needs reproduction steps).

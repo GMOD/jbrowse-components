@@ -43,7 +43,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         }
 
         const colorBy = self.colorBy
-        const drawCurves = view.drawCurves
         const drawCIGAR = view.drawCIGAR
         const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
         const drawLocationMarkers = view.drawLocationMarkers
@@ -101,7 +100,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
                 sessionId,
                 stopToken: thisStopToken,
                 colorBy,
-                drawCurves,
                 drawCIGAR,
                 drawCIGARMatchesOnly,
                 drawLocationMarkers,

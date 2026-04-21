@@ -212,7 +212,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
       ctx.globalAlpha = 1
       ctx.fillStyle = fillStyle
 
-      buildFeaturePath(ctx, sx1, sx2, sx3, sx4, height, data.isCurves[i]! > 0.5)
+      buildFeaturePath(ctx, sx1, sx2, sx3, sx4, height, params.drawCurves)
       ctx.fill()
 
       if (isClicked) {
@@ -285,7 +285,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
           sx3,
           sx4,
           height,
-          data.isCurves[i]! > 0.5,
+          params.drawCurves,
         )
 
         if (ctx.isPointInPath(x, localY)) {

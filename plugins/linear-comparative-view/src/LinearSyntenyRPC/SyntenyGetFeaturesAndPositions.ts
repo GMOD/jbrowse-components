@@ -12,7 +12,6 @@ export interface SyntenyGetFeaturesAndPositionsArgs {
   sessionId: string
   stopToken?: StopToken
   colorBy?: string
-  drawCurves?: boolean
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean
   drawLocationMarkers?: boolean

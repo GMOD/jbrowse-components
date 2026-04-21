@@ -99,6 +99,12 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
   // and, on some drivers, a tab crash). We run at most one at a time and
   // coalesce rapid hover requests to the latest coords — intermediate
   // results are stale before they'd render.
+  //
+  // hoverGeneration guards against a race where the mouse leaves the canvas
+  // while a readback is in flight: each call to pick() with a callback
+  // captures the generation at call time; when the async result arrives it is
+  // discarded if the generation has since advanced (i.e. a newer pick was
+  // queued, typically the cancel-pick from handleMouseLeave).
   private inFlight: Promise<void> | undefined
   private nextPick:
     | {
@@ -107,6 +113,7 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
         onResult: (result: SyntenyPickResult | undefined) => void
       }
     | undefined
+  private hoverGeneration = 0
   private disposed = false
 
   constructor(hal: GpuHal, canvas: HTMLCanvasElement) {
@@ -189,7 +196,16 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
       const idx = this.hal.readPickingPixel(x, y)
       return idx >= 0 ? { key: track.key, featureIndex: idx } : undefined
     }
-    this.nextPick = { x, y, onResult }
+    const thisGen = ++this.hoverGeneration
+    this.nextPick = {
+      x,
+      y,
+      onResult: result => {
+        if (this.hoverGeneration === thisGen) {
+          onResult(result)
+        }
+      },
+    }
     this.drainPickQueue()
     return undefined
   }
@@ -262,6 +278,7 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     u[U.hoveredFeatureId] = hoveredFeatureId
     u[U.clickedFeatureId] = clickedFeatureId
     u[U.yTop] = t.params.yTop
+    u[U.isCurve] = t.params.drawCurves ? 1 : 0
     this.hal.writeUniforms(this.uniformData)
   }
 }

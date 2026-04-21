@@ -28,7 +28,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   float t, side;
   computeFillSegmentT(vid, c, t, side);
-  float3 e = hermiteEdges(c, t, inst.isCurve, u);
+  float3 e = hermiteEdges(c, t, u);
   float edgeX = side > 0.5 ? e.y : e.x;
   float2 clipSpace = float2(edgeX, e.z) / u.resolution * 2.0 - 1.0;
   o.position = float4(clipSpace.x, -clipSpace.y, 0.0, 1.0);

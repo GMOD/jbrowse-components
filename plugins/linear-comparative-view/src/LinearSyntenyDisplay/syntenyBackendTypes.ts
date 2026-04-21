@@ -13,6 +13,7 @@ export interface SyntenyTrackRenderParams {
   offset1: number
   bpPerPx0: number
   bpPerPx1: number
+  drawCurves: boolean
 }
 
 export interface SyntenyRenderState {

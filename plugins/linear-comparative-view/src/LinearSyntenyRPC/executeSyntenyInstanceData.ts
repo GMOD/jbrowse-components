@@ -135,7 +135,6 @@ export interface SyntenyInstanceData {
   x4: Float32Array
   colors: Uint32Array
   featureIds: Float32Array
-  isCurves: Float32Array
   queryTotalLengths: Float32Array
   padTops: Float32Array
   padBottoms: Float32Array
@@ -162,7 +161,6 @@ export function executeSyntenyInstanceData({
   ends,
   colorBy,
   syriTypes,
-  drawCurves,
   drawCIGAR,
   drawCIGARMatchesOnly,
   drawLocationMarkers,
@@ -185,7 +183,6 @@ export function executeSyntenyInstanceData({
   ends: Float64Array
   colorBy: string
   syriTypes?: SyriType[]
-  drawCurves: boolean
   drawCIGAR: boolean
   drawCIGARMatchesOnly: boolean
   drawLocationMarkers: boolean
@@ -229,7 +226,6 @@ export function executeSyntenyInstanceData({
   let x4s = new Float64Array(capacity)
   let colorsArr = new Uint32Array(capacity)
   let featureIdsArr = new Float32Array(capacity)
-  let isCurvesArr = new Float32Array(capacity)
   let queryTotalLengthArr = new Float32Array(capacity)
   let padTopsArr = new Float32Array(capacity)
   let padBottomsArr = new Float32Array(capacity)
@@ -262,7 +258,6 @@ export function executeSyntenyInstanceData({
     x4s = growF64(x4s)
     colorsArr = growU32(colorsArr)
     featureIdsArr = growF32(featureIdsArr)
-    isCurvesArr = growF32(isCurvesArr)
     queryTotalLengthArr = growF32(queryTotalLengthArr)
     padTopsArr = growF32(padTopsArr)
     padBottomsArr = growF32(padBottomsArr)
@@ -276,7 +271,6 @@ export function executeSyntenyInstanceData({
     bottomLeft: number,
     color: number,
     featureId: number,
-    isCurve: number,
     qtl: number,
     padTop: number,
     padBottom: number,
@@ -288,7 +282,6 @@ export function executeSyntenyInstanceData({
     x4s[idx] = bottomLeft
     colorsArr[idx] = color
     featureIdsArr[idx] = featureId
-    isCurvesArr[idx] = isCurve
     queryTotalLengthArr[idx] = qtl
     padTopsArr[idx] = padTop
     padBottomsArr[idx] = padBottom
@@ -301,7 +294,6 @@ export function executeSyntenyInstanceData({
     bottomRight: number,
     bottomLeft: number,
     featureId: number,
-    isCurve: number,
     qtl: number,
     padTop: number,
     padBottom: number,
@@ -343,7 +335,6 @@ export function executeSyntenyInstanceData({
         markerBottomX,
         packRGBA(0, 0, 0, 1),
         featureId,
-        isCurve,
         qtl,
         padTop,
         padBottom,
@@ -354,7 +345,6 @@ export function executeSyntenyInstanceData({
   const viewOff0 = viewOffsets[level]!
   const viewOff1 = viewOffsets[level + 1]!
   const offScreenMargin = viewWidth + 1000
-  const isCurve = drawCurves ? 1 : 0
   const fallbackBpPerPxInv0 = 1 / bpPerPxs[level]!
   const fallbackBpPerPxInv1 = 1 / bpPerPxs[level + 1]!
   const minCigarPxWidth = 4
@@ -393,7 +383,6 @@ export function executeSyntenyInstanceData({
       x21,
       willDrawCigar ? baseColor & 0x00ffffff : baseColor,
       featureId,
-      isCurve,
       qtl,
       padTop,
       padBottom,
@@ -406,7 +395,6 @@ export function executeSyntenyInstanceData({
         x22,
         x21,
         featureId,
-        isCurve,
         qtl,
         padTop,
         padBottom,
@@ -457,7 +445,6 @@ export function executeSyntenyInstanceData({
         x21,
         colorFn(strand, refName, i),
         featureId,
-        isCurve,
         qtl,
         padTop,
         padBottom,
@@ -469,7 +456,6 @@ export function executeSyntenyInstanceData({
           x22,
           x21,
           featureId,
-          isCurve,
           qtl,
           padTop,
           padBottom,
@@ -552,7 +538,6 @@ export function executeSyntenyInstanceData({
             px2,
             color,
             featureId,
-            isCurve,
             qtl,
             padTop,
             padBottom,
@@ -565,7 +550,6 @@ export function executeSyntenyInstanceData({
               cx2,
               px2,
               featureId,
-              isCurve,
               qtl,
               padTop,
               padBottom,
@@ -587,7 +571,6 @@ export function executeSyntenyInstanceData({
     x4: toRelativeFloat32(x4s, instanceCount, refOffset1),
     colors: colorsArr.subarray(0, instanceCount),
     featureIds: featureIdsArr.subarray(0, instanceCount),
-    isCurves: isCurvesArr.subarray(0, instanceCount),
     queryTotalLengths: queryTotalLengthArr.subarray(0, instanceCount),
     padTops: padTopsArr.subarray(0, instanceCount),
     padBottoms: padBottomsArr.subarray(0, instanceCount),

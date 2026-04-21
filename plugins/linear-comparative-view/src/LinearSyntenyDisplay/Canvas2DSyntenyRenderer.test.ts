@@ -46,7 +46,6 @@ function makeInstanceData(
     x4: new Float32Array(count).fill(20),
     colors: new Uint32Array(count).fill(0x80808080),
     featureIds: new Float32Array(count).fill(1),
-    isCurves: new Float32Array(count).fill(0),
     queryTotalLengths: new Float32Array(count).fill(10000),
     padTops: new Float32Array(count).fill(0),
     padBottoms: new Float32Array(count).fill(0),
@@ -74,6 +73,7 @@ function makeParams(
     offset1: 0,
     bpPerPx0: 1,
     bpPerPx1: 1,
+    drawCurves: false,
     ...overrides,
   }
 }
@@ -129,11 +129,8 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(
-      0,
-      makeInstanceData(1, { isCurves: new Float32Array([1]) }),
-    )
-    renderer.render(makeState([[0, makeParams()]]))
+    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.render(makeState([[0, makeParams({ drawCurves: true })]]))
 
     const lineToCount = pathOps.filter(op => op.startsWith('lineTo')).length
     expect(lineToCount).toBeGreaterThan(4)
@@ -373,11 +370,8 @@ describe('Canvas2DSyntenyRenderer', () => {
     ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(
-      0,
-      makeInstanceData(1, { isCurves: new Float32Array([1]) }),
-    )
-    renderer.render(makeState([[0, makeParams()]]))
+    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.render(makeState([[0, makeParams({ drawCurves: true })]]))
     expect(renderer.pick(50, 50)).toEqual({ key: 0, featureIndex: 0 })
     expect(ctx.lineTo.mock.calls.length).toBeGreaterThan(4)
   })

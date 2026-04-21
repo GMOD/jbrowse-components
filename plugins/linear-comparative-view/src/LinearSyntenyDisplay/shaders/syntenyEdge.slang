@@ -55,7 +55,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float edge0_x, edge1_x, y;
   float2 tangent;
 
-  if (inst.isCurve > 0.5) {
+  if (u.isCurve > 0.5) {
     float s = t * t * (3.0 - 2.0 * t);
     edge0_x = lerp(c.x1, c.x4, s);
     edge1_x = lerp(c.x2, c.x3, s);

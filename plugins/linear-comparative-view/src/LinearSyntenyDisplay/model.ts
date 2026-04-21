@@ -19,6 +19,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // fields off the containing view.
 interface SyntenyViewDuck {
   initialized: boolean
+  drawCurves: boolean
   views: {
     initialized: boolean
     displayedRegions: unknown[]
@@ -358,6 +359,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           offset1: v1.offsetPx,
           bpPerPx0: v0.bpPerPx,
           bpPerPx1: v1.bpPerPx,
+          drawCurves: view.drawCurves,
         }
       },
     }))

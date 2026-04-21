@@ -22,7 +22,6 @@ export function interleaveInstances(data: SyntenyInstanceData) {
     x4,
     colors,
     featureIds,
-    isCurves,
     queryTotalLengths,
     padTops,
     padBottoms,
@@ -40,7 +39,6 @@ export function interleaveInstances(data: SyntenyInstanceData) {
     f[off + FIELD_OFFSET_F32.x4] = x4[i]!
     u32[off + FIELD_OFFSET_F32.color] = colors[i]!
     f[off + FIELD_OFFSET_F32.featureId] = featureIds[i]!
-    f[off + FIELD_OFFSET_F32.isCurve] = isCurves[i]!
     f[off + FIELD_OFFSET_F32.queryTotalLength] = queryTotalLengths[i]!
     f[off + FIELD_OFFSET_F32.padTop] = padTops[i]!
     f[off + FIELD_OFFSET_F32.padBottom] = padBottoms[i]!
