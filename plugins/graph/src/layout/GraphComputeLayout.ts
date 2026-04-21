@@ -54,7 +54,10 @@ async function ensureModule(baseUrl: string) {
       layoutModule = await mod.default({
         locateFile: () => wasmUrl,
       })
-    })()
+    })().catch(e => {
+      initPromise = null
+      throw e
+    })
   }
   await initPromise
 }

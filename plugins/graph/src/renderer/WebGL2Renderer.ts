@@ -140,10 +140,11 @@ export class WebGL2Renderer implements Renderer {
 
   resize(width: number, height: number) {
     const dpr = window.devicePixelRatio || 1
-    this.gl.canvas.width = width * dpr
-    this.gl.canvas.height = height * dpr
-    ;(this.gl.canvas as HTMLCanvasElement).style.width = `${width}px`
-    ;(this.gl.canvas as HTMLCanvasElement).style.height = `${height}px`
+    const canvas = this.gl.canvas as HTMLCanvasElement
+    canvas.width = width * dpr
+    canvas.height = height * dpr
+    canvas.style.width = `${width}px`
+    canvas.style.height = `${height}px`
     this.gl.viewport(0, 0, width * dpr, height * dpr)
   }
 

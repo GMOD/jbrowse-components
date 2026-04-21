@@ -72,7 +72,7 @@ export class Canvas2DRenderer implements Renderer {
     const ctx = this.ctx
     const { width, height } = ctx.canvas
 
-    ctx.fillStyle = `rgba(${clearColor[0] * 255},${clearColor[1] * 255},${clearColor[2] * 255},${clearColor[3]})`
+    ctx.fillStyle = `rgba(${Math.round(clearColor[0] * 255)},${Math.round(clearColor[1] * 255)},${Math.round(clearColor[2] * 255)},${clearColor[3]})`
     ctx.fillRect(0, 0, width, height)
 
     for (const key of SUB_BATCH_KEYS) {

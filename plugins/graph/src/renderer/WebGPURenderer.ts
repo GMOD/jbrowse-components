@@ -16,11 +16,15 @@ import type {
 
 const U = graphShader.UNIFORM_OFFSET_F32
 const STRIDE_BYTES = graphShader.INSTANCE_STRIDE_BYTES
-const COLOR_OFFSET_BYTES = graphShader.FIELD_OFFSET_BYTES.color
+const STRIDE_F32 = graphShader.INSTANCE_STRIDE_F32
+const COLOR_OFFSET_F32 = graphShader.FIELD_OFFSET_F32.color
 
 interface SubBatchBuffers {
   vertexBuffer: GPUBuffer
   indexBuffer: GPUBuffer
+  // Shadow copy of vertex data in u32 so colour slots can be mutated and
+  // uploaded in one contiguous writeBuffer instead of N per-vertex writes.
+  shadow: Uint32Array
   indexCount: number
 }
 
@@ -146,6 +150,7 @@ export class WebGPURenderer implements Renderer {
     return {
       vertexBuffer: this.createBuffer(batch.vertexData, GPUBufferUsage.VERTEX),
       indexBuffer: this.createBuffer(batch.indices, GPUBufferUsage.INDEX),
+      shadow: batch.vertexDataU32.slice(),
       indexCount: batch.indices.length,
     }
   }
@@ -177,15 +182,19 @@ export class WebGPURenderer implements Renderer {
     if (!buffers) {
       return
     }
-    for (let i = 0; i < colors.length; i++) {
-      this.device.queue.writeBuffer(
-        buffers.vertexBuffer,
-        (vertexStart + i) * STRIDE_BYTES + COLOR_OFFSET_BYTES,
-        colors.buffer,
-        colors.byteOffset + i * 4,
-        4,
-      )
+    const { shadow } = buffers
+    const count = colors.length
+    for (let i = 0; i < count; i++) {
+      shadow[(vertexStart + i) * STRIDE_F32 + COLOR_OFFSET_F32] = colors[i]!
     }
+    this.device.queue.writeBuffer(
+      buffers.vertexBuffer,
+      vertexStart * STRIDE_BYTES,
+      shadow.subarray(
+        vertexStart * STRIDE_F32,
+        (vertexStart + count) * STRIDE_F32,
+      ),
+    )
   }
 
   updateTransform(t: TransformUniform) {

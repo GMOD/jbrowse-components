@@ -30,6 +30,7 @@ function packNorm(r: number, g: number, b: number, a: number) {
 export interface BuildOptions {
   nodePositions: Record<string, NodeSegment[]>
   graph: Graph
+  nodeById: Map<string, GraphNode>
   colorScheme: ColorScheme
   contigThickness: number
   connectorThickness: number
@@ -523,6 +524,7 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
   const {
     nodePositions,
     graph,
+    nodeById,
     colorScheme,
     contigThickness,
     connectorThickness,
@@ -539,17 +541,16 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
   const arrowVertexRanges = new Map<number, VertexRange>()
 
   const colorRange = computeColorSchemeRange(graph)
-  const nodeById = new Map<string, GraphNode>()
-  for (const n of graph.nodes) {
-    nodeById.set(n.id, n)
-  }
 
   const pathColors = new Map<string, number>()
   if (graph.paths) {
-    const hueStep = 360 / graph.paths.length
-    for (let idx = 0; idx < graph.paths.length; idx++) {
-      const path = graph.paths[idx]!
-      const [r, g, b] = hslToRgb(idx * hueStep, 0.7, 0.5)
+    for (const path of graph.paths) {
+      let hash = 0
+      for (let i = 0; i < path.name.length; i++) {
+        hash = path.name.charCodeAt(i) + ((hash << 5) - hash)
+      }
+      const hue = Math.abs(hash % 360)
+      const [r, g, b] = hslToRgb(hue, 0.7, 0.5)
       pathColors.set(path.name, packNorm(r, g, b, 0.85))
     }
   }

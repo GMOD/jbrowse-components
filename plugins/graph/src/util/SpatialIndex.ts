@@ -119,22 +119,10 @@ export class EdgeSpatialIndex {
       let maxX = -Infinity
       let maxY = -Infinity
       for (const c of curves) {
-        for (const x of [c.x0, c.cx0, c.cx1, c.x1]) {
-          if (x < minX) {
-            minX = x
-          }
-          if (x > maxX) {
-            maxX = x
-          }
-        }
-        for (const y of [c.y0, c.cy0, c.cy1, c.y1]) {
-          if (y < minY) {
-            minY = y
-          }
-          if (y > maxY) {
-            maxY = y
-          }
-        }
+        minX = Math.min(minX, c.x0, c.cx0, c.cx1, c.x1)
+        maxX = Math.max(maxX, c.x0, c.cx0, c.cx1, c.x1)
+        minY = Math.min(minY, c.y0, c.cy0, c.cy1, c.y1)
+        maxY = Math.max(maxY, c.y0, c.cy0, c.cy1, c.y1)
       }
 
       const numPaths = edge.pathIds?.length ?? 0

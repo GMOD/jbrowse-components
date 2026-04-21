@@ -48,12 +48,8 @@ export function convertGFAToGraph(gfaGraph: GFAGraph, name = 'Imported GFA') {
   const hasReferences = usedStrands.size > 0
 
   for (const gfaNode of gfaGraph.nodes) {
-    const depth =
-      (gfaNode.tags.dp as number) ||
-      (gfaNode.tags.RC as number) ||
-      (gfaNode.tags.FC as number) ||
-      (gfaNode.tags.KC as number) ||
-      1
+    const dp = gfaNode.tags.dp ?? gfaNode.tags.RC ?? gfaNode.tags.FC ?? gfaNode.tags.KC
+    const depth = typeof dp === 'number' ? dp || 1 : 1
 
     if (!hasReferences || usedStrands.has(`${gfaNode.id}+`)) {
       nodes.push({

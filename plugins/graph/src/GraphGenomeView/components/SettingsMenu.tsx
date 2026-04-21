@@ -23,8 +23,7 @@ const SettingsMenu = observer(function SettingsMenu({
           checked: model.layoutQuality === i,
           onClick: () => {
             model.setLayoutQuality(i)
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            model.recomputeLayout()
+            void model.recomputeLayout()
           },
         })),
         { type: 'divider' as const },

@@ -17,6 +17,8 @@ const simpleGraph = {
   edges: [{ from: 'A+', to: 'B+', overlap: 0 }],
 }
 
+const simpleNodeById = new Map(simpleGraph.nodes.map(n => [n.id, n]))
+
 const simplePositions = {
   'A+': [
     { x: 0, y: 0 },
@@ -32,6 +34,7 @@ test('produces non-empty geometry for simple graph', () => {
   const batch = buildGeometry({
     nodePositions: simplePositions,
     graph: simpleGraph,
+    nodeById: simpleNodeById,
     colorScheme: 'uniform',
     contigThickness: 5,
     connectorThickness: 1.5,
@@ -55,6 +58,7 @@ test('produces different geometry for different color schemes', () => {
   const opts = {
     nodePositions: simplePositions,
     graph: simpleGraph,
+    nodeById: simpleNodeById,
     contigThickness: 5,
     connectorThickness: 1.5,
     drawPaths: false,
@@ -81,6 +85,7 @@ test('tracks vertex ranges for nodes and edges', () => {
   const batch = buildGeometry({
     nodePositions: simplePositions,
     graph: simpleGraph,
+    nodeById: simpleNodeById,
     colorScheme: 'uniform',
     contigThickness: 5,
     connectorThickness: 1.5,
@@ -102,6 +107,7 @@ test('handles empty node positions gracefully', () => {
   const batch = buildGeometry({
     nodePositions: {},
     graph: simpleGraph,
+    nodeById: simpleNodeById,
     colorScheme: 'uniform',
     contigThickness: 5,
     connectorThickness: 1.5,
@@ -123,6 +129,7 @@ test('handles graph with paths and drawPaths', () => {
   const batch = buildGeometry({
     nodePositions: simplePositions,
     graph: graphWithPaths,
+    nodeById: simpleNodeById,
     colorScheme: 'uniform',
     contigThickness: 5,
     connectorThickness: 1.5,
@@ -137,6 +144,7 @@ test('stores normals and thicknesses for shader-based expansion', () => {
   const batch = buildGeometry({
     nodePositions: simplePositions,
     graph: simpleGraph,
+    nodeById: simpleNodeById,
     colorScheme: 'uniform',
     contigThickness: 10,
     connectorThickness: 4,
@@ -166,6 +174,7 @@ test('brightenColors produces brighter values', () => {
   const batch = buildGeometry({
     nodePositions: simplePositions,
     graph: simpleGraph,
+    nodeById: simpleNodeById,
     colorScheme: 'uniform',
     contigThickness: 5,
     connectorThickness: 1.5,
@@ -192,6 +201,7 @@ test('viewport culling skips off-screen nodes', () => {
   const batch = buildGeometry({
     nodePositions: simplePositions,
     graph: simpleGraph,
+    nodeById: simpleNodeById,
     colorScheme: 'uniform',
     contigThickness: 5,
     connectorThickness: 1.5,

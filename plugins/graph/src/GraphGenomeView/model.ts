@@ -1,12 +1,18 @@
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { flow, types } from '@jbrowse/mobx-state-tree'
 
 import { convertGFAToGraph } from '../gfa/gfaConverter.ts'
 import { parseGFA } from '../gfa/gfaParser.ts'
 
 import type { VertexRange } from '../renderer/types.ts'
-import type { ColorScheme, Graph, LayoutResult, NodeSegment } from '../types.ts'
+import type {
+  ColorScheme,
+  Graph,
+  GraphNode,
+  LayoutResult,
+} from '../types.ts'
 
 const MIN_ZOOM = 0.001
 const MAX_ZOOM = 100
@@ -27,9 +33,9 @@ export default function stateModelFactory() {
     .volatile(() => ({
       graph: undefined as Graph | undefined,
       layoutResult: undefined as LayoutResult | undefined,
-      error: undefined as string | undefined,
+      error: undefined as unknown,
       isLoading: false,
-      statusMessage: '' as string,
+      statusMessage: '',
       layoutQuality: 1,
       linearLayout: false,
       colorScheme: 'uniform' as ColorScheme,
@@ -52,6 +58,16 @@ export default function stateModelFactory() {
       baseArrowColors: undefined as Uint32Array | undefined,
     }))
     .views(self => ({
+      get nodeById(): Map<string, GraphNode> | undefined {
+        if (!self.graph) {
+          return undefined
+        }
+        const map = new Map<string, GraphNode>()
+        for (const n of self.graph.nodes) {
+          map.set(n.id, n)
+        }
+        return map
+      },
       get nodeCount() {
         return self.graph?.nodes.length ?? 0
       },
@@ -64,7 +80,7 @@ export default function stateModelFactory() {
       get hasGraph() {
         return self.graph !== undefined
       },
-      get nodePositions(): Record<string, NodeSegment[]> | undefined {
+      get nodePositions() {
         return self.layoutResult?.nodePositions
       },
       get zoomPercent() {
@@ -72,7 +88,7 @@ export default function stateModelFactory() {
       },
     }))
     .actions(self => ({
-      setError(error: string) {
+      setError(error: unknown) {
         self.error = error
         self.isLoading = false
       },
@@ -141,18 +157,10 @@ export default function stateModelFactory() {
         let maxY = -Infinity
         for (const segments of Object.values(positions)) {
           for (const seg of segments) {
-            if (seg.x < minX) {
-              minX = seg.x
-            }
-            if (seg.y < minY) {
-              minY = seg.y
-            }
-            if (seg.x > maxX) {
-              maxX = seg.x
-            }
-            if (seg.y > maxY) {
-              maxY = seg.y
-            }
+            minX = Math.min(minX, seg.x)
+            minY = Math.min(minY, seg.y)
+            maxX = Math.max(maxX, seg.x)
+            maxY = Math.max(maxY, seg.y)
           }
         }
         const graphWidth = maxX - minX
@@ -178,6 +186,8 @@ export default function stateModelFactory() {
         self.graph = undefined
         self.layoutResult = undefined
         self.error = undefined
+        self.isLoading = false
+        self.statusMessage = ''
         self.hoveredNode = null
         self.hoveredEdge = null
         self.selectedNode = null
@@ -189,75 +199,67 @@ export default function stateModelFactory() {
         self.baseArrowColors = undefined
       },
     }))
-    .actions(self => ({
-      loadGFA: flow(function* (text: string, name = 'Imported GFA') {
-        self.isLoading = true
-        self.error = undefined
-        self.setStatusMessage('Parsing GFA')
-        const gfaGraph = parseGFA(text)
-        const graph = convertGFAToGraph(gfaGraph, name)
-        self.graph = graph
-        self.setStatusMessage('Computing layout')
+    .actions(self => {
+      function callLayout(graph: Graph) {
+        const session = getSession(self)
+        const { rpcManager } = session
+        const sessionId = getRpcSessionId(self)
+        return rpcManager.call(sessionId, 'GraphComputeLayout', {
+          sessionId,
+          graph: { nodes: graph.nodes, edges: graph.edges },
+          options: {
+            quality: self.layoutQuality,
+            linearLayout: self.linearLayout,
+          },
+          statusCallback: (message: string) => {
+            self.setStatusMessage(message)
+          },
+        }) as Promise<{ result: LayoutResult }>
+      }
 
-        try {
-          const session = getSession(self)
-          const { rpcManager } = session
-          const { result } = yield rpcManager.call(
-            session.id ?? '',
-            'GraphComputeLayout',
-            {
-              sessionId: session.id ?? '',
-              graph: { nodes: graph.nodes, edges: graph.edges },
-              options: {
-                quality: self.layoutQuality,
-                linearLayout: self.linearLayout,
-              },
-              statusCallback: (message: string) => {
-                self.setStatusMessage(message)
-              },
-            },
-          )
-          self.layoutResult = result
-        } catch (e) {
-          console.error('[GraphGenomeView.loadGFA] Layout error:', e)
-          self.error = `Layout failed: ${e instanceof Error ? e.message : e}`
-        } finally {
-          self.isLoading = false
-        }
-      }),
-      recomputeLayout: flow(function* () {
-        if (!self.graph) {
-          return
-        }
-        self.isLoading = true
-        self.setStatusMessage('Computing layout')
+      return {
+        loadGFA: flow(function* (text: string, name = 'Imported GFA') {
+          self.isLoading = true
+          self.error = undefined
+          self.setStatusMessage('Parsing GFA')
+          const gfaGraph = parseGFA(text)
+          const graph = convertGFAToGraph(gfaGraph, name)
+          self.graph = graph
+          self.setStatusMessage('Computing layout')
 
-        try {
-          const session = getSession(self)
-          const { rpcManager } = session
-          const { result } = yield rpcManager.call(
-            session.id ?? '',
-            'GraphComputeLayout',
-            {
-              sessionId: session.id ?? '',
-              graph: { nodes: self.graph.nodes, edges: self.graph.edges },
-              options: {
-                quality: self.layoutQuality,
-                linearLayout: self.linearLayout,
-              },
-              statusCallback: (message: string) => {
-                self.setStatusMessage(message)
-              },
-            },
-          )
-          self.layoutResult = result
-        } catch (e) {
-          self.error = `Layout failed: ${e instanceof Error ? e.message : e}`
-        } finally {
-          self.isLoading = false
-        }
-      }),
-    }))
+          try {
+            const { result } = yield callLayout(graph)
+            if (self.graph === graph) {
+              self.layoutResult = result
+            }
+          } catch (e) {
+            console.error('[GraphGenomeView.loadGFA] Layout error:', e)
+            self.error = e
+          } finally {
+            self.isLoading = false
+          }
+        }),
+        recomputeLayout: flow(function* () {
+          const graph = self.graph
+          if (!graph) {
+            return
+          }
+          self.isLoading = true
+          self.setStatusMessage('Computing layout')
+
+          try {
+            const { result } = yield callLayout(graph)
+            if (self.graph === graph) {
+              self.layoutResult = result
+            }
+          } catch (e) {
+            self.error = e
+          } finally {
+            self.isLoading = false
+          }
+        }),
+      }
+    })
 }
 
 export type GraphGenomeViewModel = ReturnType<

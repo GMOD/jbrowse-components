@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { LinearProgress, Typography } from '@mui/material'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import { autorun, untracked } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -67,10 +68,9 @@ const HoverTooltips = observer(function HoverTooltips({
 }: {
   model: GraphGenomeViewModel
 }) {
-  const hoveredNodeData =
-    model.hoveredNode && model.graph
-      ? model.graph.nodes.find(n => n.id === model.hoveredNode)
-      : null
+  const hoveredNodeData = model.hoveredNode
+    ? model.nodeById?.get(model.hoveredNode)
+    : null
 
   const hoveredEdgeData =
     model.hoveredEdge !== null && model.graph
@@ -123,8 +123,7 @@ const GraphCanvas = observer(function GraphCanvas({
     const renderer = new GraphRenderer(canvas)
     let destroyed = false
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    renderer.init().then(() => {
+    void renderer.init().then(() => {
       if (destroyed) {
         renderer.destroy()
         return
@@ -132,6 +131,10 @@ const GraphCanvas = observer(function GraphCanvas({
       renderer.resize(model.width, CANVAS_HEIGHT)
       rendererRef.current = renderer
       setRendererReady(true)
+    }).catch((e: unknown) => {
+      if (!destroyed) {
+        model.setError(e)
+      }
     })
 
     return () => {
@@ -174,11 +177,11 @@ const GraphCanvas = observer(function GraphCanvas({
       if (!renderer || !model.nodePositions || !model.graph) {
         return
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      model.viewportDirty
+      void model.viewportDirty
       const batch = buildGeometry({
         nodePositions: model.nodePositions,
         graph: model.graph,
+        nodeById: model.nodeById!,
         colorScheme: model.colorScheme,
         contigThickness: model.contigThickness,
         connectorThickness: model.connectorThickness,
@@ -340,14 +343,10 @@ const GraphCanvas = observer(function GraphCanvas({
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | null = null
     let first = true
-    return autorun(() => {
-      // Read scale/translate to track them as dependencies
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      model.scale
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      model.translateX
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      model.translateY
+    const dispose = autorun(() => {
+      void model.scale
+      void model.translateX
+      void model.translateY
       if (first) {
         first = false
         return
@@ -359,6 +358,12 @@ const GraphCanvas = observer(function GraphCanvas({
         model.setViewportDirty()
       }, VIEWPORT_DEBOUNCE_MS)
     })
+    return () => {
+      dispose()
+      if (timer) {
+        clearTimeout(timer)
+      }
+    }
   }, [model])
 
   function screenToGraph(screenX: number, screenY: number) {
@@ -501,11 +506,7 @@ const GraphCanvas = observer(function GraphCanvas({
 
       <HoverTooltips model={model} />
 
-      {model.error ? (
-        <Typography color="error" variant="body2" style={{ padding: 8 }}>
-          {model.error}
-        </Typography>
-      ) : null}
+      {model.error ? <ErrorMessage error={model.error} /> : null}
     </div>
   )
 })

@@ -7,6 +7,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import { observer } from 'mobx-react'
 
 import type { GraphGenomeViewModel } from '../model.ts'
@@ -34,13 +35,17 @@ const ImportForm = observer(function ImportForm({
       return
     }
     setFetchError('')
-    const response = await fetch(url)
-    if (!response.ok) {
-      setFetchError(`Failed to fetch: ${response.statusText}`)
-      return
+    try {
+      const response = await fetch(url)
+      if (!response.ok) {
+        setFetchError(`Failed to fetch: ${response.statusText}`)
+        return
+      }
+      const text = await response.text()
+      await model.loadGFA(text, url.split('/').pop() ?? 'GFA')
+    } catch (e) {
+      setFetchError(`Failed to fetch: ${e instanceof Error ? e.message : String(e)}`)
     }
-    const text = await response.text()
-    await model.loadGFA(text, url.split('/').pop() ?? 'GFA')
   }
 
   function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
@@ -52,13 +57,12 @@ const ImportForm = observer(function ImportForm({
       .text()
       .then(text => model.loadGFA(text, file.name))
       .catch((err: unknown) => {
-        model.setError(`Failed to read file: ${err}`)
+        model.setError(err)
       })
   }
 
   function handleExampleLoad() {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    model.loadGFA(EXAMPLE_GFA, 'Example graph')
+    void model.loadGFA(EXAMPLE_GFA, 'Example graph')
   }
 
   return (
@@ -99,8 +103,7 @@ const ImportForm = observer(function ImportForm({
             }}
             onKeyDown={e => {
               if (e.key === 'Enter') {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                handleUrlLoad()
+                void handleUrlLoad()
               }
             }}
           />
@@ -137,11 +140,7 @@ const ImportForm = observer(function ImportForm({
         </div>
       ) : null}
 
-      {model.error ? (
-        <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
-          {model.error}
-        </Typography>
-      ) : null}
+      {model.error ? <ErrorMessage error={model.error} /> : null}
     </Paper>
   )
 })
