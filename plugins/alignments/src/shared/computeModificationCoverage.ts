@@ -192,7 +192,7 @@ export function computeModificationCoverage(
   const colors = new Uint32Array(segments.length)
 
   for (const [i, seg] of segments.entries()) {
-    positions[i] = seg.position - regionStart
+    positions[i] = seg.position
     yOffsets[i] = seg.yOffset
     heights[i] = seg.height
     colors[i] = packAbgr(seg.r, seg.g, seg.b, seg.alpha)

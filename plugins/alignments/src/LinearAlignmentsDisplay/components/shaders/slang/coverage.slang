@@ -1,6 +1,7 @@
 // Coverage pass: one bar per coverage bin, colored with the palette's
 // coverage color. Bar height is normalizeDepth(depth, u) * effectiveHeight.
 //! targets: wgsl, glsl
+//! layout-out: packages/alignments-core/src/coverageLayout.generated.ts
 
 import alignmentsUniforms;
 import colorPack;

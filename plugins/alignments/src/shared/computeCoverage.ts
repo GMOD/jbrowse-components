@@ -432,7 +432,7 @@ export function computeNoncovCoverage(
   const colorTypes = new Uint8Array(filteredSegments.length)
 
   for (const [i, seg] of filteredSegments.entries()) {
-    positions[i] = seg.position - regionStart
+    positions[i] = seg.position
     yOffsets[i] = seg.yOffset
     heights[i] = seg.height
     colorTypes[i] = seg.colorType
@@ -441,7 +441,7 @@ export function computeNoncovCoverage(
   const indicatorPositions = new Uint32Array(filteredIndicators.length)
   const indicatorColorTypes = new Uint8Array(filteredIndicators.length)
   for (const [i, ind] of filteredIndicators.entries()) {
-    indicatorPositions[i] = ind.position - regionStart
+    indicatorPositions[i] = ind.position
     indicatorColorTypes[i] = ind.colorType
   }
 

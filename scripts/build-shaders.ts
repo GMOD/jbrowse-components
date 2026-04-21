@@ -25,7 +25,7 @@ import {
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
-import { emit as emitLayout } from './shader-codegen/codegen.ts'
+import { emit as emitLayout, emitLayoutOnly } from './shader-codegen/codegen.ts'
 import { vulkanGlslToWebgl2 } from './shader-codegen/vulkanGlslToWebgl2.ts'
 
 const REPO_ROOT = path.resolve(
@@ -60,6 +60,11 @@ function walk(dir: string, out: string[] = []) {
     }
   }
   return out
+}
+
+function parseLayoutOut(source: string) {
+  const match = /^\/\/!\s*layout-out:\s*(\S+)/m.exec(source)
+  return match ? match[1]! : undefined
 }
 
 function parseTargets(source: string): ('wgsl' | 'glsl')[] {
@@ -326,6 +331,13 @@ function compileOne(slangPath: string) {
     })
     writeFileSync(generatedPath, generated)
     console.log(`  ok: ${generatedPath.replace(`${REPO_ROOT}/`, '')}`)
+
+    const layoutOut = parseLayoutOut(source)
+    if (layoutOut) {
+      const layoutPath = path.join(REPO_ROOT, layoutOut)
+      writeFileSync(layoutPath, emitLayoutOnly({ baseName: base, reflection }))
+      console.log(`  ok: ${layoutOut}`)
+    }
   } finally {
     rmSync(tmp, { recursive: true, force: true })
   }

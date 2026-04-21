@@ -160,90 +160,13 @@ new chromosome. Check whether stale GPU buffers accumulate.
 **Synteny viewport culling LOD** for large comparisons (Hs1 vs mm39 slow).
 Widen margins or soften refetch criterion.
 
-**Protein3D on linearbasicdisplay.** Consolidation removed it; may need
-separate display or restoration.
-
 **Synteny / dotplot UX.** Linked views, swap axes, better defaults for
 human vs mouse.
 
 **Gene glyph compact modes.** Add super-compact for dense layouts; side
 labels for genes.
 
-**Alignments log scale (GPU).** Done (Phase 4). Coverage bars are
-log-normalized in the shader via `normalizeDepth()`. SNP overlay still uses
-linear `depthScale` (see Architecture item above for the remaining work).
 
-**Decouple amino-acid overlay loading**, treat density gate as one-shot →
-drop canvas `isCacheValid` entirely. See implementation plan below.
-
----
-
-## Amino-acid overlay decoupling — implementation plan
-
-Goal: make the amino-acid overlay a separate lazy fetch so crossing the
-`shouldRenderPeptideBackground` threshold (1 bpPerPx) no longer invalidates
-the main feature cache and triggers a full region refetch.
-
-**Step 1 — Extract `buildAminoAcidOverlay` from `collectRenderData`.**
-The peptide overlay items are currently built inside `collectRenderData` as a
-side-effect of processing each transcript (`collectRenderData.ts:231–283`,
-writing into `collector.aminoAcidOverlay`). Pull that logic into a standalone
-`buildAminoAcidOverlay(layouts, peptideDataMap, config, theme, regionStart):
-AminoAcidOverlayItem[]` function in the peptides directory so it can be called
-independently.
-
-**Step 2 — Add `FetchPeptideOverlay` RPC.**
-New worker entry point (mirroring the structure of `executeRenderFeatureData`)
-that: fetches features for the region, builds layouts via `layoutFeature`,
-calls `fetchPeptideData`, then calls `buildAminoAcidOverlay`. Returns
-`AminoAcidOverlayItem[]`. Register alongside `RenderFeatureData` in
-`canvasRpcMethods.ts`. Note: this re-fetches features from the adapter, but
-the adapter's in-memory cache means no extra network round-trips for most
-sources.
-
-**Step 3 — Remove peptide fetch from main RPC.**
-In `executeRenderFeatureData`: delete the `peptideDataMap` block (lines
-132–148). Pass `undefined` for `peptideDataMap` in the `collectRenderData`
-call. Drop `aminoAcidOverlay` from `FeatureDataResult` and `rpcTypes.ts`.
-`collectRenderData` still accepts optional `peptideDataMap` (now always
-undefined from the main path) — clean it up or leave for now.
-
-**Step 4 — Add `peptideOverlayMap` volatile to canvas model.**
-In `baseModel.ts`: add `peptideOverlayMap: observable.map<number,
-AminoAcidOverlayItem[]>()` as a volatile. Add a second autorun (alongside the
-existing fetch autorun) that watches `shouldRenderPeptideBackground(view.bpPerPx)`
-and `colorByCDS`:
-- When above threshold: clear `peptideOverlayMap`.
-- When below threshold: for each `displayedRegionIndex` present in `rpcDataMap`
-  but absent from `peptideOverlayMap`, call `FetchPeptideOverlay` and store the
-  result. This is the "one-shot" — already-loaded regions skip the fetch.
-
-**Step 5 — Wire overlay into `computeLaidOutData`.**
-In `layout.ts`, `computeLaidOutData` currently reads `raw.aminoAcidOverlay` from
-the RPC result and adjusts `topPx` via `featureOffsets[aa.flatbushIdx]`. Change
-it to read from `self.peptideOverlayMap.get(displayedRegionIndex)` instead.
-The `featureOffsets` adjustment stays the same.
-
-**Step 6 — Update SVG renderer.**
-`renderSvg.tsx` reads `data.aminoAcidOverlay` from the per-region data object.
-Plumb the overlay in as a separate argument sourced from `peptideOverlayMap`.
-
-**Step 7 — Drop canvas `isCacheValid`.**
-Remove the override from `baseModel.ts` (lines 626–636). Canvas now uses the
-base-class default (`() => true`). Update `CLAUDE.md` and
-`agent-docs/ARCHITECTURE.md` to remove the canvas exception from the
-"Per-region zoom-staleness" section.
-
-**Step 8 — Clean up types and tests.**
-Remove `aminoAcidOverlay` from `FeatureDataResult`. Update `fetchAutorun.test.ts`
-if any canvas-specific `isCacheValid` tests existed. Add a unit test for the new
-autorun: loads a region, zooms past threshold, verifies `FetchPeptideOverlay`
-was called once and result cached; zooms back out, verifies map cleared; zooms
-in again, verifies called again.
-
----
-
-## Bugs (continued)
 
 **ReadCloud: excessive `Core-preProcessTrackConfig` log spam.** Adding a
 `LinearReadCloudDisplay` with `drawCloud:true` for `volvox_sv_cram` causes
@@ -261,48 +184,5 @@ track config pre-processing is running in a hot path.
 - Canvas: right-side padding excessive? Subpixel drawing crowded at dense zoom?
 - Canvas: features collapsed to y=0 on NCBI (needs reproduction steps).
 
-
-## Possible shader refactorings
-
-Now I have the full picture. Let me synthesize what I found:
-
-  The situation:
-
-  The Slang codegen already generates type-safe layout constants for the GPU path —
-  INSTANCE_STRIDE_F32, FIELD_OFFSET_F32, writeInstance — for every shader. The Canvas2D path is
-  separately hand-coded with magic numbers that happen to match, anchored only by comments like //
-  Matches alignments plugin snpCoverage.slang.
-
-  Concretely:
-  - packSnpSegmentsForGpu uses i * 4, idx + 1/2/3 — matches snpCoverage.generated.ts's
-  INSTANCE_STRIDE_F32 = 4, FIELD_OFFSET_F32 = { yOffset: 1, segHeight: 2, colorType: 3 } but doesn't
-  import them
-  - drawSnpSegments / drawModCovSegments in rendererUtils.ts do the same
-  - packCoverageBinsForGpu uses i * 2 matching coverage.generated.ts's INSTANCE_STRIDE_F32 = 2 — but
-  the Canvas2D coverage format is different (3 floats: pos/0/rawDepth) because Canvas2D normalizes at
-  draw time, not pack time
-
-  The wrinkle: packages/alignments-core can't import from plugins/alignments (wrong direction in the
-  dependency graph). So coverageGpuPacking.ts and rendererUtils.ts can't directly use the
-  .generated.ts constants even though they mirror them.
-
-  The options:
-
-  1. Export layout constants from coverageGpuPacking.ts, import in rendererUtils.ts. Single source of
-  truth lives in the packing file. Simple, no restructuring. Doesn't use Slang directly but eliminates
-   duplicate magic numbers.
-  2. Move draw functions to plugins/alignments. Co-locate them with the .generated.ts files so they
-  can import constants directly. Requires moving drawSnpSegments etc. out of packages/alignments-core
-  — breaks the synteny plugin which also imports them.
-  3. Add a test that asserts packing constants match generated constants. Belt-and-suspenders: keep
-  both, but a test in plugins/alignments imports both and asserts equality. Drift becomes a test
-  failure not a silent bug.
-  4. Align the Canvas2D coverage format with the GPU format (2 floats). Drop the bandBottom=0 field
-  from the Canvas2D coverage buffer, simplify drawCoverageBins to just use bottom directly, then
-  coverage packing and reading can share constants. The synteny 3-float min-max buffer becomes a
-  separate code path with its own constants.
-
-  Option 1 is the quick win. Option 4 + 1 together is the cleanest long-term state — aligns the
-  formats and centralizes constants. Want me to implement one of these?
 
 

@@ -172,9 +172,9 @@ Use this when settings change the shape/contents of per-region data; use
 
 ## Per-region zoom-staleness
 
-Worker output is always BP offsets from `regionStart` — no pixel
-coordinates cross the worker boundary, so most plugins' data stays valid
-under zoom. Two exceptions:
+Most worker output is BP offsets from `regionStart` — no pixel
+coordinates cross the worker boundary, so data stays valid under zoom.
+Two exceptions:
 
 - **Wiggle**: BigWig has discrete zoom levels; the worker picks one based
   on `bpPerPx / resolution`. `isCacheValid` uses strict equality
@@ -244,6 +244,38 @@ each BP position into hi/lo halves: `position_bp = hi + lo`.
 `blockClipUtils.clipBlock` emits `[bpStartHi, bpStartLo]` for the visible
 window; `hp_to_clip_x` in `hpmath.slang` reconstructs precision at draw
 time.
+
+---
+
+## Coverage segment coordinate convention
+
+Most `PileupDataResult` position arrays (reads, gaps, mismatches,
+interbase) store **regionStart-relative** uint32 offsets so that features
+starting before `regionStart` can be represented without negative numbers
+(uint32 wrapping), and so float32 GPU buffers stay precise (small offsets
+have no rounding error).
+
+Coverage segment arrays are different:
+
+| Array | Format | Rationale |
+|---|---|---|
+| `snpPositions` | absolute uint32 | written as uint32 by Canvas2D packer; GPU subtracts `regionStart` |
+| `noncovPositions` | absolute uint32 | same |
+| `indicatorPositions` | absolute uint32 | same |
+| `modCovPositions` | absolute uint32 | same |
+| `coverageStartOffset` | relative (offset from `regionStart`) | used as depth-array index alongside other relative positions |
+
+**Why absolute for segment arrays?** Canvas2D stores positions directly as
+uint32 in packed buffers (no float32 cast). At positions > 16 Mbp a
+float32 would lose integer precision (~8 bp error); uint32 is exact up to
+4 Gbp (> T2T chromosome lengths). For Canvas2D no coordinate transform is
+needed at pack time. The GPU pack path (`packCoverageAreaForGpu`) subtracts
+`regionStart` before writing float32, maintaining the small-relative-value
+precision used by shaders.
+
+This convention is display-orientation-agnostic: `bpToX` and GPU shaders
+handle reversed blocks via their own logic; absolute positions require no
+special casing for reversed regions.
 
 ---
 

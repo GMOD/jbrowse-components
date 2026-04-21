@@ -2,7 +2,11 @@ import { DEFAULT_CIGAR_OP_DRAW_COLORS as DEFAULT_SYNTENY_COLORS } from '@jbrowse
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 import {
-  INSTANCE_BYTE_SIZE,
+  FIELD_OFFSET_F32 as FILL_FIELD,
+  INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE,
+  INSTANCE_STRIDE_F32 as FILL_STRIDE,
+} from './shaders/multiSyntenyFill.generated.ts'
+import {
   computeBlockRenderParams,
   packCoverageForGpu,
   prepareBlockGeometry,
@@ -32,14 +36,13 @@ function feat(overrides: Partial<MultiPairFeature> = {}): MultiPairFeature {
 
 function readInstance(buf: ArrayBuffer, index: number) {
   const u32 = new Uint32Array(buf)
-  const stride = INSTANCE_BYTE_SIZE / 4
-  const off = index * stride
-  const packed = u32[off + 4]!
+  const off = index * FILL_STRIDE
+  const packed = u32[off + FILL_FIELD.color]!
   return {
-    startBp: u32[off]!,
-    endBp: u32[off + 1]!,
-    genomeRow: u32[off + 2]!,
-    featureId: u32[off + 3]!,
+    startBp: u32[off + FILL_FIELD.startBp]!,
+    endBp: u32[off + FILL_FIELD.endBp]!,
+    genomeRow: u32[off + FILL_FIELD.genomeRow]!,
+    featureId: u32[off + FILL_FIELD.featureId]!,
     r: (packed & 0xff) / 255,
     g: ((packed >> 8) & 0xff) / 255,
     b: ((packed >> 16) & 0xff) / 255,

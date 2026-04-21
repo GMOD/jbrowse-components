@@ -3,8 +3,12 @@
 ## Display rendering and RPC
 
 All display types fetch data via RPC workers and render on the main thread.
-**All worker output X positions are BP offsets from `regionStart`** — no plugin
-ships pixel coordinates across the worker boundary. What differs per plugin is
+No plugin ships pixel coordinates across the worker boundary. Worker output
+positions are genomic coordinates; most are **BP offsets from `regionStart`**
+(relative), but alignments coverage segment arrays (`snpPositions`,
+`noncovPositions`, `indicatorPositions`, `modCovPositions`) are **absolute
+uint32 genomic coordinates** — see `agent-docs/ARCHITECTURE.md` "Coverage
+segment coordinate convention" for the rationale. What differs per plugin is
 where various layout decisions happen:
 
 - **Canvas plugin**: worker does per-feature glyph selection, subfeature

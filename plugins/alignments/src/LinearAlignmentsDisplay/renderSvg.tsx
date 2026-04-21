@@ -328,8 +328,7 @@ function drawCoverage(
 
   if (showModifications && data.numModCovSegments > 0) {
     for (let i = 0; i < data.numModCovSegments; i++) {
-      const pos = data.modCovPositions[i]!
-      const modStart = regionStart + pos
+      const modStart = data.modCovPositions[i]!
       if (modStart < block.start || modStart > block.end) {
         continue
       }
@@ -361,12 +360,11 @@ function drawCoverage(
         continue
       }
 
-      const snpStart = regionStart + pos
-      if (snpStart < block.start || snpStart > block.end) {
+      if (pos < block.start || pos > block.end) {
         continue
       }
 
-      const x = (snpStart - block.start) / bpPerPx + blockScreenX
+      const x = (pos - block.start) / bpPerPx + blockScreenX
       const w = Math.max(pxPerBp, 1)
       const barY =
         coverageHeight - offset - (yOffset + segHeight) * effectiveHeight
@@ -400,7 +398,7 @@ function drawInterbaseIndicators(
   const indicatorTriangleH = 4.5
 
   for (let i = 0; i < data.numNoncovSegments; i++) {
-    const pos = regionStart + data.noncovPositions[i]!
+    const pos = data.noncovPositions[i]!
     if (pos < block.start || pos > block.end) {
       continue
     }
@@ -417,7 +415,7 @@ function drawInterbaseIndicators(
   }
 
   for (let i = 0; i < data.numIndicators; i++) {
-    const pos = regionStart + data.indicatorPositions[i]!
+    const pos = data.indicatorPositions[i]!
     if (pos < block.start || pos > block.end) {
       continue
     }

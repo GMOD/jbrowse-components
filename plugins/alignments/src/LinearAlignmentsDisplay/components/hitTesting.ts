@@ -508,24 +508,19 @@ export function hitTestIndicator(
   }
 
   const blockData = resolved.rpcData
-  const { posOffset, bpPerPx } = canvasXToPosOffset(canvasX, resolved)
+  const { genomicPos, bpPerPx } = canvasXToPosOffset(canvasX, resolved)
   const hitToleranceBp = Math.max(1, bpPerPx * 5)
 
-  const {
-    indicatorPositions,
-    indicatorColorTypes,
-    numIndicators,
-    regionStart,
-  } = blockData
+  const { indicatorPositions, indicatorColorTypes, numIndicators } = blockData
 
   for (let i = 0; i < numIndicators; i++) {
     const pos = indicatorPositions[i]
-    if (pos !== undefined && Math.abs(posOffset - pos) < hitToleranceBp) {
+    if (pos !== undefined && Math.abs(genomicPos - pos) < hitToleranceBp) {
       const colorType = indicatorColorTypes[i]
       const indicatorType = getInterbaseTypeName(colorType ?? 1)
       return {
         type: 'indicator',
-        position: regionStart + pos,
+        position: pos,
         indicatorType,
       }
     }

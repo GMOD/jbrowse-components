@@ -497,7 +497,7 @@ export function computeSNPCoverage(
   const colorTypes = new Uint8Array(filteredSegments.length)
 
   for (const [i, seg] of filteredSegments.entries()) {
-    positions[i] = seg.position - regionStart
+    positions[i] = seg.position
     yOffsets[i] = seg.yOffset
     heights[i] = seg.height
     colorTypes[i] = seg.colorType

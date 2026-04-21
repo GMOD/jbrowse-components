@@ -2,6 +2,7 @@
 // coverage bars. Uses per-instance packed ABGR color because modifications
 // have many possible types + strengths that don't fit in palette slots.
 //! targets: wgsl, glsl
+//! layout-out: packages/alignments-core/src/modCoverageLayout.generated.ts
 
 import alignmentsUniforms;
 import colorPack;

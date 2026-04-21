@@ -1,6 +1,7 @@
 // Non-coverage histogram: slim 1-bp-wide bars indicating insertion /
 // softclip / hardclip density across the coverage strip.
 //! targets: wgsl, glsl
+//! layout-out: packages/alignments-core/src/noncovHistogramLayout.generated.ts
 
 import alignmentsUniforms;
 import colorPack;

@@ -1,3 +1,27 @@
+import {
+  FIELD_OFFSET_F32 as INDICATOR_FIELD,
+  INSTANCE_STRIDE_F32 as INDICATOR_STRIDE,
+} from './indicatorLayout.generated.ts'
+import {
+  FIELD_OFFSET_F32 as MOD_COV_FIELD,
+  INSTANCE_STRIDE_F32 as MOD_COV_STRIDE,
+} from './modCoverageLayout.generated.ts'
+import {
+  FIELD_OFFSET_F32 as NONCOV_FIELD,
+  INSTANCE_STRIDE_F32 as NONCOV_STRIDE,
+} from './noncovHistogramLayout.generated.ts'
+import {
+  FIELD_OFFSET_F32 as SNP_FIELD,
+  INSTANCE_STRIDE_F32 as SNP_STRIDE,
+} from './snpCoverageLayout.generated.ts'
+
+import type {
+  CoverageBinsGpuUpload,
+  IndicatorGpuUpload,
+  ModCovGpuUpload,
+  NoncovGpuUpload,
+  SnpGpuUpload,
+} from './coverageGpuPacking.ts'
 import { YSCALEBAR_LABEL_OFFSET } from './coverageDownsampling.ts'
 import {
   INDICATOR_TRIANGLE_H,
@@ -52,6 +76,15 @@ export function snpColorForType(colorType: number, colors: CigarOpDrawColors) {
   return colors.baseT
 }
 
+// Canvas2D coverage buffer defers normalization to draw time to support log
+// scaling without repacking. The GPU path pre-normalizes to 2 floats.
+// Position is stored as uint32 (exact integer genomic coord) in the position
+// slot; bandBottom and bandTop are raw depth values stored as float32.
+export const CANVAS2D_COVERAGE = {
+  STRIDE_F32: 3,
+  FIELD: { position: 0, bandBottom: 1, bandTop: 2 },
+} as const
+
 export function drawCoverageBins(
   ctx: Ctx,
   buffer: ArrayBuffer,
@@ -67,19 +100,21 @@ export function drawCoverageBins(
   }
 
   const { effectiveH, bottom } = coverageLayout(coverageHeight)
+  const u32 = new Uint32Array(buffer)
   const f32 = new Float32Array(buffer)
 
   ctx.fillStyle = coverageColor
+  const { STRIDE_F32, FIELD } = CANVAS2D_COVERAGE
   for (let i = 0; i < binCount; i++) {
-    const off = i * 3
-    const pos = f32[off]!
+    const off = i * STRIDE_F32
+    const pos = u32[off + FIELD.position]!
     const px = bpToX(pos)
     const px2 = bpToX(pos + 1)
     if (px > viewWidth || px2 < 0) {
       continue
     }
-    const bandBottom = bottom - normalizeDepth(f32[off + 1]!) * effectiveH
-    const bandTop = bottom - normalizeDepth(f32[off + 2]!) * effectiveH
+    const bandBottom = bottom - normalizeDepth(f32[off + FIELD.bandBottom]!) * effectiveH
+    const bandTop = bottom - normalizeDepth(f32[off + FIELD.bandTop]!) * effectiveH
     ctx.fillRect(px, bandTop, Math.max(px2 - px, 1), bandBottom - bandTop)
   }
 }
@@ -99,13 +134,14 @@ export function drawSnpSegments(
   }
 
   const { effectiveH, bottom } = coverageLayout(coverageHeight)
+  const u32 = new Uint32Array(buffer)
   const f32 = new Float32Array(buffer)
 
   for (let i = 0; i < segmentCount; i++) {
-    const off = i * 4
-    const pos = f32[off]!
-    const yOff = f32[off + 1]!
-    const segH = f32[off + 2]!
+    const off = i * SNP_STRIDE
+    const pos = u32[off + SNP_FIELD.position]!
+    const yOff = f32[off + SNP_FIELD.yOffset]!
+    const segH = f32[off + SNP_FIELD.segHeight]!
     const px = bpToX(pos)
     const px2 = bpToX(pos + 1)
     if (px > viewWidth || px2 < 0) {
@@ -113,7 +149,7 @@ export function drawSnpSegments(
     }
     const segBottom = bottom - yOff * depthScale * effectiveH
     const segTop = segBottom - segH * depthScale * effectiveH
-    ctx.fillStyle = snpColorForType(f32[off + 3]!, colors)
+    ctx.fillStyle = snpColorForType(f32[off + SNP_FIELD.colorType]!, colors)
     ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segBottom - segTop)
   }
 }
@@ -130,12 +166,14 @@ export function drawIndicators(
     return
   }
 
+  const u32 = new Uint32Array(buffer)
   const f32 = new Float32Array(buffer)
   const colorLut = [colors.insertion, colors.softclip, colors.hardclip]
   for (let i = 0; i < indicatorCount; i++) {
-    const px = bpToX(f32[i * 2]!)
+    const off = i * INDICATOR_STRIDE
+    const px = bpToX(u32[off + INDICATOR_FIELD.position]!)
     if (px >= 0 && px < viewWidth) {
-      ctx.fillStyle = colorLut[f32[i * 2 + 1]! - 1] ?? colorLut[0]!
+      ctx.fillStyle = colorLut[f32[off + INDICATOR_FIELD.colorType]! - 1] ?? colorLut[0]!
       drawIndicatorTriangle(ctx, px)
     }
   }
@@ -155,20 +193,21 @@ export function drawNoncovSegments(
   }
 
   const noncovHeight = Math.min(noncovMaxCount * 2, 20)
+  const u32 = new Uint32Array(buffer)
   const f32 = new Float32Array(buffer)
   const colorLut = [colors.insertion, colors.softclip, colors.hardclip]
 
   for (let i = 0; i < segmentCount; i++) {
-    const off = i * 4
-    const pos = f32[off]!
+    const off = i * NONCOV_STRIDE
+    const pos = u32[off + NONCOV_FIELD.position]!
     const px = bpToX(pos)
     const px2 = bpToX(pos + 1)
     if (px > viewWidth || px2 < 0) {
       continue
     }
-    const yOffset = f32[off + 1]!
-    const segH = f32[off + 2]!
-    const colorType = f32[off + 3]!
+    const yOffset = f32[off + NONCOV_FIELD.yOffset]!
+    const segH = f32[off + NONCOV_FIELD.segHeight]!
+    const colorType = f32[off + NONCOV_FIELD.colorType]!
     const segTop = INDICATOR_TRIANGLE_H + yOffset * noncovHeight
     const segHeight = segH * noncovHeight
     ctx.fillStyle = colorLut[colorType - 1] ?? colorLut[0]!
@@ -190,20 +229,20 @@ export function drawModCovSegments(
   }
 
   const { effectiveH, bottom } = coverageLayout(coverageHeight)
-  const f32 = new Float32Array(buffer)
   const u32 = new Uint32Array(buffer)
+  const f32 = new Float32Array(buffer)
 
   for (let i = 0; i < segmentCount; i++) {
-    const off = i * 4
-    const pos = f32[off]!
+    const off = i * MOD_COV_STRIDE
+    const pos = u32[off + MOD_COV_FIELD.position]!
     const px = bpToX(pos)
     const px2 = bpToX(pos + 1)
     if (px > viewWidth || px2 < 0) {
       continue
     }
-    const yOffset = f32[off + 1]!
-    const h = f32[off + 2]!
-    const rgba = u32[off + 3]!
+    const yOffset = f32[off + MOD_COV_FIELD.yOffset]!
+    const h = f32[off + MOD_COV_FIELD.segHeight]!
+    const rgba = u32[off + MOD_COV_FIELD.packedColor]!
     const r = rgba & 0xff
     const g = (rgba >> 8) & 0xff
     const b = (rgba >> 16) & 0xff

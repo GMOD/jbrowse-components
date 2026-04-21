@@ -33,7 +33,7 @@ const COVERAGE_START_OFFSET = 5
 function makeCoverageData(): CoverageUploadData {
   const coverageDepths = new Float32Array([10, 30, 50, 20, 40])
   const coverageMaxDepth = 50
-  const snpPositions = new Uint32Array([1, 3])
+  const snpPositions = new Uint32Array([REGION_START + 1, REGION_START + 3])
   const snpYOffsets = new Float32Array([0, 0.2])
   const snpHeights = new Float32Array([0.4, 0.3])
   const snpColorTypes = new Uint8Array([1, 2])
@@ -41,7 +41,7 @@ function makeCoverageData(): CoverageUploadData {
   const noncovYOffsets = new Float32Array([])
   const noncovHeights = new Float32Array([])
   const noncovColorTypes = new Uint8Array([])
-  const indicatorPositions = new Uint32Array([2])
+  const indicatorPositions = new Uint32Array([REGION_START + 2])
   const indicatorColorTypes = new Uint8Array([1])
   return {
     coverageDepths,
@@ -65,6 +65,7 @@ function makeCoverageData(): CoverageUploadData {
       snpHeights,
       snpColorTypes,
       snpPositions.length,
+      -REGION_START,
     ).buffer,
     noncovPositions,
     noncovYOffsets,
@@ -86,6 +87,7 @@ function makeCoverageData(): CoverageUploadData {
       indicatorPositions,
       indicatorColorTypes,
       indicatorPositions.length,
+      -REGION_START,
     ).buffer,
   }
 }

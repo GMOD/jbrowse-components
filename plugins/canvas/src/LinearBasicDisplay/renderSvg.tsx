@@ -22,10 +22,10 @@ type LGV = LinearGenomeViewModel
 
 interface RenderSvgModel {
   id: string
-  laidOutDataMap: Map<number, FeatureDataResult>
+  height: number
   error: unknown
   regionTooLarge: boolean
-  height: number
+  laidOutDataMap: Map<number, FeatureDataResult>
 }
 
 function renderLabels(

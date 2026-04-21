@@ -290,6 +290,7 @@ export async function executeRenderPileupData({
     snpCoverage,
     noncovCoverage,
     modCoverage,
+    regionStart,
   )
 
   const result: PileupDataResult = {

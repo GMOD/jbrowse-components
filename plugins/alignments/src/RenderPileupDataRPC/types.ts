@@ -1,10 +1,21 @@
 /**
  * Pileup Data RPC Types
  *
- * COORDINATE SYSTEM REQUIREMENT:
+ * COORDINATE SYSTEM:
  * regionStart must be an integer (use Math.floor of view region start).
- * All position arrays store integer offsets from regionStart.
- * This is critical for alignment between coverage, gaps, and rendered features.
+ *
+ * Read/gap/mismatch/interbase/modification positions are integer offsets from
+ * regionStart (kept relative so Uint32Array can represent negative-side
+ * features via wrapping, and to avoid float32 precision issues in GPU shaders).
+ *
+ * Coverage segment positions (snpPositions, noncovPositions, indicatorPositions,
+ * modCovPositions) are absolute genomic coordinates (uint32). These are stored
+ * as absolute so Canvas2D can write them directly as uint32 without precision
+ * loss. The GPU pack path subtracts regionStart before writing float32 for
+ * the shaders (see packCoverageAreaForGpu).
+ *
+ * coverageStartOffset remains relative (used as an index into coverageDepths
+ * for depth-lookup functions that work with other relative positions).
  */
 
 import type { FilterBy } from '../shared/types'
@@ -58,9 +69,7 @@ export interface ModificationEntry {
 }
 
 export interface PileupDataResult {
-  // Integer reference point for all positions (floor of view region start).
-  // All position data in this result is stored as integer offsets from regionStart.
-  regionStart: number
+  regionStart: number // floor of view region start; reference for relative position arrays
 
   // Read data - positions are offsets from regionStart
   readPositions: Uint32Array // [startOffset, endOffset] pairs
@@ -131,7 +140,7 @@ export interface PileupDataResult {
   // positions). Main thread uploads directly without re-packing.
   coveragePackedBuffer: ArrayBuffer
 
-  // SNP coverage data - offsets from regionStart
+  // SNP coverage data - absolute genomic coordinates
   snpPositions: Uint32Array
   snpYOffsets: Float32Array // normalized 0-1
   snpHeights: Float32Array // normalized 0-1
@@ -141,7 +150,7 @@ export interface PileupDataResult {
 
   // Noncov (interbase) coverage data - insertion/softclip/hardclip counts by position
   // Bars grow downward from top of coverage area
-  noncovPositions: Uint32Array // offsets from regionStart
+  noncovPositions: Uint32Array // absolute genomic coordinates
   noncovYOffsets: Float32Array // cumulative height below this segment (normalized 0-1)
   noncovHeights: Float32Array // height of this segment (normalized 0-1)
   noncovColorTypes: Uint8Array // 1=insertion, 2=softclip, 3=hardclip
@@ -150,7 +159,7 @@ export interface PileupDataResult {
   noncovPackedBuffer: ArrayBuffer
 
   // Interbase indicator data - triangles at significant positions
-  indicatorPositions: Uint32Array // offsets from regionStart
+  indicatorPositions: Uint32Array // absolute genomic coordinates
   indicatorColorTypes: Uint8Array // 1=insertion, 2=softclip, 3=hardclip (dominant type)
   // Pre-packed GPU buffer for PASS_INDICATOR (worker-built).
   indicatorPackedBuffer: ArrayBuffer
@@ -171,7 +180,7 @@ export interface PileupDataResult {
   numModifications: number
 
   // Modification coverage data - stacked colored bars in coverage area
-  modCovPositions: Uint32Array // position offsets from regionStart
+  modCovPositions: Uint32Array // absolute genomic coordinates
   modCovYOffsets: Float32Array // cumulative height below segment (normalized 0-1)
   modCovHeights: Float32Array // segment height (normalized 0-1)
   modCovColors: Uint32Array // ABGR u32 per segment

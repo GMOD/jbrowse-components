@@ -41,6 +41,7 @@ export { visitCigarOps, visitCsOps } from './cigarOpsVisitor.ts'
 export type { CigarOpsVisitor } from './cigarOpsVisitor.ts'
 export { InstanceBuilder } from './InstanceBuilder.ts'
 export {
+  CANVAS2D_COVERAGE,
   coverageLayout,
   drawCoverageBins,
   drawIndicators,
@@ -54,9 +55,13 @@ export {
 export type { NoncovDrawColors } from './rendererUtils.ts'
 export {
   packCoverageBinsForGpu,
+  packIndicatorsForCanvas2D,
   packIndicatorsForGpu,
+  packModCovSegmentsForCanvas2D,
   packModCovSegmentsForGpu,
+  packNoncovSegmentsForCanvas2D,
   packNoncovSegmentsForGpu,
+  packSnpSegmentsForCanvas2D,
   packSnpSegmentsForGpu,
 } from './coverageGpuPacking.ts'
 export type {

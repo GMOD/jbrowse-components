@@ -1,6 +1,7 @@
 // SNP coverage pass: segments stacked on the coverage bars showing A/C/G/T
 // fraction per bin. colorType encodes 1=A 2=C 3=G 4=T.
 //! targets: wgsl, glsl
+//! layout-out: packages/alignments-core/src/snpCoverageLayout.generated.ts
 
 import alignmentsUniforms;
 import colorPack;

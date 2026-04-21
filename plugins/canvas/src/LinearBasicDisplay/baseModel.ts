@@ -277,11 +277,6 @@ export default function baseStateModelFactory(
           return false
         },
 
-        async renderSvg(opts?: ExportSvgDisplayOptions) {
-          const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self as any, opts)
-        },
-
         get maxHeight() {
           return self.getConfWithOverride<number>('maxHeight')
         },
@@ -296,6 +291,10 @@ export default function baseStateModelFactory(
 
         get showDescriptions() {
           return self.getConfWithOverride<boolean>('showDescriptions')
+        },
+
+        get showOutline() {
+          return !!self.getConfWithOverride<string>('outline')
         },
 
         get effectiveShowDescriptions() {
@@ -418,6 +417,12 @@ export default function baseStateModelFactory(
         // RenderFeatureData RPC call (e.g. showOnlyGenes).
         get extraRpcArgs(): Record<string, unknown> {
           return {}
+        },
+      }))
+      .views(self => ({
+        async renderSvg(opts?: ExportSvgDisplayOptions) {
+          const { renderSvg } = await import('./renderSvg.tsx')
+          return renderSvg(self, opts)
         },
       }))
       .views(self => ({
@@ -562,6 +567,10 @@ export default function baseStateModelFactory(
 
         setShowDescriptions(value: boolean) {
           self.setOverride('showDescriptions', value)
+        },
+
+        setShowOutline(value: boolean) {
+          self.setOverride('outline', value ? 'rgba(0,0,0,0.3)' : '')
         },
 
         showContextMenuForFeature(
@@ -801,6 +810,14 @@ export default function baseStateModelFactory(
               checked: self.showDescriptions,
               onClick: () => {
                 self.setShowDescriptions(!self.showDescriptions)
+              },
+            },
+            {
+              label: 'Show outline',
+              type: 'checkbox' as const,
+              checked: self.showOutline,
+              onClick: () => {
+                self.setShowOutline(!self.showOutline)
               },
             },
           ]

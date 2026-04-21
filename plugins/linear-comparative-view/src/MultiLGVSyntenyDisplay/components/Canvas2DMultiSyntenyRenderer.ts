@@ -20,9 +20,10 @@ import {
 } from './multiSyntenyBackendTypes.ts'
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
 import {
-  INSTANCE_BYTE_SIZE,
-  computeBlockRenderParams,
-} from './multiSyntenyGpuData.ts'
+  FIELD_OFFSET_F32 as FILL_FIELD,
+  INSTANCE_STRIDE_F32 as FILL_STRIDE,
+} from './shaders/multiSyntenyFill.generated.ts'
+import { computeBlockRenderParams } from './multiSyntenyGpuData.ts'
 
 import type {
   MultiSyntenyBackend,
@@ -294,7 +295,7 @@ interface RegionData {
   indicators: { buffer: ArrayBuffer; indicatorCount: number } | null
 }
 
-const STRIDE = INSTANCE_BYTE_SIZE / 4
+const STRIDE = FILL_STRIDE
 
 export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
   private canvas: HTMLCanvasElement
@@ -482,16 +483,16 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
         const u32 = new Uint32Array(region.geometry.buffer)
         for (let i = 0; i < region.geometry.instanceCount; i++) {
           const off = i * STRIDE
-          const x1 = bpToX(u32[off]!)
-          const x2 = bpToX(u32[off + 1]!)
+          const x1 = bpToX(u32[off + FILL_FIELD.startBp]!)
+          const x2 = bpToX(u32[off + FILL_FIELD.endBp]!)
           const w = Math.max(x2 - x1, 1)
           if (x1 + w < 0 || x1 > width) {
             continue
           }
-          const genomeRow = u32[off + 2]!
+          const genomeRow = u32[off + FILL_FIELD.genomeRow]!
           const y = coverageHeight + genomeRow * rowHeight + rowPadding
           const h = rowHeight - rowPadding * 2
-          ctx.fillStyle = abgrToCssRgba(u32[off + 4]!)
+          ctx.fillStyle = abgrToCssRgba(u32[off + FILL_FIELD.color]!)
           ctx.fillRect(x1, y, w, h)
         }
       }

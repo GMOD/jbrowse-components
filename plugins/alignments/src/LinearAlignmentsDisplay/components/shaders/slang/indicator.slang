@@ -2,6 +2,7 @@
 // of the coverage area. Barycentric coords in the fragment shader give
 // cheap diagonal-edge anti-aliasing.
 //! targets: wgsl, glsl
+//! layout-out: packages/alignments-core/src/indicatorLayout.generated.ts
 
 import alignmentsUniforms;
 import colorPack;

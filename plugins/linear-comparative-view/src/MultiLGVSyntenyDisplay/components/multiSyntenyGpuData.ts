@@ -10,8 +10,16 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
-import { INSTANCE_STRIDE_BYTES as COVERAGE_BIN_BYTE_SIZE } from './shaders/multiSyntenyCoverage.generated.ts'
-import { INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE } from './shaders/multiSyntenyFill.generated.ts'
+import {
+  FIELD_OFFSET_F32 as COVERAGE_FIELD,
+  INSTANCE_STRIDE_F32 as COVERAGE_STRIDE,
+} from './shaders/multiSyntenyCoverage.generated.ts'
+import {
+  FIELD_OFFSET_F32 as FILL_FIELD,
+  INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE,
+  INSTANCE_STRIDE_F32 as FILL_STRIDE,
+} from './shaders/multiSyntenyFill.generated.ts'
+import { INSTANCE_STRIDE_BYTES as INDICATOR_STRIDE_BYTES } from './shaders/multiSyntenyIndicator.generated.ts'
 
 import type { SyntenyColors } from './multiSyntenyBackendTypes.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -65,11 +73,11 @@ function addInstance(
   color: number,
 ) {
   const off = builder.alloc()
-  builder.u32[off] = startBp >>> 0
-  builder.u32[off + 1] = endBp >>> 0
-  builder.u32[off + 2] = genomeRow >>> 0
-  builder.u32[off + 3] = featureId >>> 0
-  builder.u32[off + 4] = color
+  builder.u32[off + FILL_FIELD.startBp] = startBp >>> 0
+  builder.u32[off + FILL_FIELD.endBp] = endBp >>> 0
+  builder.u32[off + FILL_FIELD.genomeRow] = genomeRow >>> 0
+  builder.u32[off + FILL_FIELD.featureId] = featureId >>> 0
+  builder.u32[off + FILL_FIELD.color] = color
 }
 
 function makeGpuOpsVisitor(
@@ -158,15 +166,13 @@ export function prepareBlockGeometry(
     indices[i] = i
   }
   const u32View = new Uint32Array(rawBuf)
-  const stride = INSTANCE_BYTE_SIZE / 4
-
   indices.sort((a, b) => {
-    const rowA = u32View[a * stride + 2]!
-    const rowB = u32View[b * stride + 2]!
+    const rowA = u32View[a * FILL_STRIDE + FILL_FIELD.genomeRow]!
+    const rowB = u32View[b * FILL_STRIDE + FILL_FIELD.genomeRow]!
     if (rowA !== rowB) {
       return rowA - rowB
     }
-    return u32View[a * stride]! - u32View[b * stride]!
+    return u32View[a * FILL_STRIDE + FILL_FIELD.startBp]! - u32View[b * FILL_STRIDE + FILL_FIELD.startBp]!
   })
 
   const sortedBuf = new ArrayBuffer(n * INSTANCE_BYTE_SIZE)
@@ -223,15 +229,15 @@ export function packCoverageForGpu(
     return { buffer: new ArrayBuffer(0), binCount: 0 }
   }
 
-  const buffer = new ArrayBuffer(ds.count * COVERAGE_BIN_BYTE_SIZE)
+  const buffer = new ArrayBuffer(ds.count * COVERAGE_STRIDE * 4)
   const f32 = new Float32Array(buffer)
   for (let i = 0; i < ds.count; i++) {
-    const binIdx = i * 3
+    const o = i * COVERAGE_STRIDE
     // Store absolute genome coordinates so the shader can map bins to
     // any content block by subtracting block.start (bpRangeHi+bpRangeLo)
-    f32[binIdx] = regionStart + ds.positions[i]!
-    f32[binIdx + 1] = ds.mins[i]!
-    f32[binIdx + 2] = ds.maxs[i]!
+    f32[o + COVERAGE_FIELD.position] = regionStart + ds.positions[i]!
+    f32[o + COVERAGE_FIELD.minDepth] = ds.mins[i]!
+    f32[o + COVERAGE_FIELD.maxDepth] = ds.maxs[i]!
   }
 
   return { buffer, binCount: ds.count }
@@ -241,9 +247,6 @@ export interface BlockSnpUploadData {
   buffer: ArrayBuffer
   segmentCount: number
 }
-
-// SNP segment byte size: position(f32) + yOffset(f32) + height(f32) + colorType(f32) = 16 bytes
-export const SNP_SEGMENT_BYTE_SIZE = 16
 
 // Pack SNP coverage segments for GPU upload.
 // Positions stored as absolute genome coordinates (regionStart + offset).
@@ -270,9 +273,6 @@ export interface BlockIndicatorUploadData {
   indicatorCount: number
 }
 
-// Indicator byte size: position(f32) = 4 bytes per indicator
-export const INDICATOR_BYTE_SIZE = 4
-
 export function packIndicatorsForGpu(
   indicatorPositions: Uint32Array,
   numIndicators: number,
@@ -282,7 +282,7 @@ export function packIndicatorsForGpu(
     return { buffer: new ArrayBuffer(0), indicatorCount: 0 }
   }
 
-  const buffer = new ArrayBuffer(numIndicators * INDICATOR_BYTE_SIZE)
+  const buffer = new ArrayBuffer(numIndicators * INDICATOR_STRIDE_BYTES)
   const f32 = new Float32Array(buffer)
   for (let i = 0; i < numIndicators; i++) {
     f32[i] = regionStart + indicatorPositions[i]!

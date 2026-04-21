@@ -342,6 +342,7 @@ export async function executeRenderChainData({
     snpCoverage,
     noncovCoverage,
     undefined,
+    regionStart,
   )
 
   const result: PileupDataResult = {

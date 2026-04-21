@@ -3,15 +3,16 @@ import {
   BASE_C_COLOR,
   BASE_G_COLOR,
   BASE_T_COLOR,
+  CANVAS2D_COVERAGE,
   drawCoverageBins,
   drawIndicators,
   drawModCovSegments,
   drawNoncovSegments,
   drawSnpSegments,
-  packIndicatorsForGpu,
-  packModCovSegmentsForGpu,
-  packNoncovSegmentsForGpu,
-  packSnpSegmentsForGpu,
+  packIndicatorsForCanvas2D,
+  packModCovSegmentsForCanvas2D,
+  packNoncovSegmentsForCanvas2D,
+  packSnpSegmentsForCanvas2D,
 } from '@jbrowse/alignments-core'
 import {
   clipBlockForCanvas,
@@ -358,39 +359,39 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
 
     if (data.numCoverageBins > 0 && data.coverageMaxDepth > 0) {
       const n = data.numCoverageBins
-      const buf = new ArrayBuffer(n * 12)
+      const { STRIDE_F32, FIELD } = CANVAS2D_COVERAGE
+      const buf = new ArrayBuffer(n * STRIDE_F32 * 4)
+      const u32 = new Uint32Array(buf)
       const f32 = new Float32Array(buf)
       for (let i = 0; i < n; i++) {
-        const off = i * 3
-        f32[off] = data.coverageStartOffset + i + r.regionStart
-        f32[off + 1] = 0
-        f32[off + 2] = data.coverageDepths[i]!
+        const off = i * STRIDE_F32
+        u32[off + FIELD.position] = data.coverageStartOffset + i + r.regionStart
+        f32[off + FIELD.bandBottom] = 0
+        f32[off + FIELD.bandTop] = data.coverageDepths[i]!
       }
       r.coverageBuffer = buf
       r.coverageBinCount = n
     }
 
     if (data.numSnpSegments > 0) {
-      const packed = packSnpSegmentsForGpu(
+      const packed = packSnpSegmentsForCanvas2D(
         data.snpPositions,
         data.snpYOffsets,
         data.snpHeights,
         data.snpColorTypes,
         data.numSnpSegments,
-        r.regionStart,
       )
       r.snpBuffer = packed.buffer
       r.snpSegmentCount = packed.segmentCount
     }
 
     if (data.numNoncovSegments > 0) {
-      const packed = packNoncovSegmentsForGpu(
+      const packed = packNoncovSegmentsForCanvas2D(
         data.noncovPositions,
         data.noncovYOffsets,
         data.noncovHeights,
         data.noncovColorTypes,
         data.numNoncovSegments,
-        r.regionStart,
       )
       r.noncovBuffer = packed.buffer
       r.noncovSegmentCount = packed.segmentCount
@@ -398,11 +399,10 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     r.noncovMaxCount = data.noncovMaxCount
 
     if (data.numIndicators > 0) {
-      const packed = packIndicatorsForGpu(
+      const packed = packIndicatorsForCanvas2D(
         data.indicatorPositions,
         data.indicatorColorTypes,
         data.numIndicators,
-        r.regionStart,
       )
       r.indicatorBuffer = packed.buffer
       r.indicatorCount = packed.indicatorCount
@@ -418,13 +418,12 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       return
     }
     if (data.numModCovSegments > 0) {
-      const packed = packModCovSegmentsForGpu(
+      const packed = packModCovSegmentsForCanvas2D(
         data.modCovPositions,
         data.modCovYOffsets,
         data.modCovHeights,
         data.modCovColors,
         data.numModCovSegments,
-        r.regionStart,
       )
       r.modCovBuffer = packed.buffer
       r.modCovSegmentCount = packed.segmentCount

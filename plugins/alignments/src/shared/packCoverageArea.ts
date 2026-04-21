@@ -58,6 +58,7 @@ export function packCoverageAreaForGpu(
   snp: SnpInput,
   noncov: NoncovInput,
   modCov: ModCovInput | undefined,
+  regionStart: number,
 ): CoverageAreaPackedBuffers {
   return {
     coveragePackedBuffer: packCoverageBinsForGpu(
@@ -72,6 +73,7 @@ export function packCoverageAreaForGpu(
       snp.heights,
       snp.colorTypes,
       snp.count,
+      -regionStart,
     ).buffer,
     noncovPackedBuffer: packNoncovSegmentsForGpu(
       noncov.positions,
@@ -79,11 +81,13 @@ export function packCoverageAreaForGpu(
       noncov.heights,
       noncov.colorTypes,
       noncov.segmentCount,
+      -regionStart,
     ).buffer,
     indicatorPackedBuffer: packIndicatorsForGpu(
       noncov.indicatorPositions,
       noncov.indicatorColorTypes,
       noncov.indicatorCount,
+      -regionStart,
     ).buffer,
     modCovPackedBuffer: modCov
       ? packModCovSegmentsForGpu(
@@ -92,6 +96,7 @@ export function packCoverageAreaForGpu(
           modCov.heights,
           modCov.colors,
           modCov.count,
+          -regionStart,
         ).buffer
       : new ArrayBuffer(0),
   }
