@@ -119,11 +119,10 @@ function canvasXToPosOffset(
   canvasX: number,
   resolved: ResolvedBlock,
 ): { genomicPos: number; posOffset: number; bpPerPx: number } {
-  const { bpRange, blockWidth, rpcData } = resolved
+  const { bpRange, blockWidth } = resolved
   const bpPerPx = calculateBpPerPx(bpRange, blockWidth)
   const genomicPos = canvasXToGenomicPosition(canvasX, resolved)
-  const posOffset = genomicPos - rpcData.regionStart
-  return { genomicPos, posOffset, bpPerPx }
+  return { genomicPos, posOffset: genomicPos, bpPerPx }
 }
 
 /**
@@ -258,7 +257,6 @@ export function hitTestCigarItem(
     gapPositions,
     gapYs,
     numGaps,
-    regionStart,
   } = blockData
 
   const pxPerBp = 1 / bpPerPx
@@ -279,7 +277,7 @@ export function hitTestCigarItem(
             return {
               type: 'insertion' as const,
               index: i,
-              position: regionStart + pos,
+              position: pos,
               length: len,
               sequence: interbaseSequences[i] || undefined,
             }
@@ -308,7 +306,7 @@ export function hitTestCigarItem(
         return {
           type: label,
           index: i,
-          position: regionStart + pos,
+          position: pos,
           length: len,
         }
       }
@@ -334,7 +332,7 @@ export function hitTestCigarItem(
       return {
         type: 'mismatch',
         index: i,
-        position: regionStart + pos,
+        position: pos,
         base: String.fromCharCode(baseCode),
       }
     }
@@ -364,7 +362,7 @@ export function hitTestCigarItem(
       return {
         type: gapType === 1 ? 'skip' : 'deletion',
         index: i,
-        position: regionStart + startPos,
+        position: startPos,
         length: endPos - startPos,
       }
     }
@@ -447,7 +445,7 @@ export function hitTestCoverage(
   const blockData = resolved.rpcData
   const { posOffset, bpPerPx } = canvasXToPosOffset(canvasX, resolved)
 
-  const { coverageDepths, coverageStartOffset, regionStart } = blockData
+  const { coverageDepths, coverageStartOffset } = blockData
   const binIndex = Math.floor(posOffset - coverageStartOffset)
   if (binIndex < 0 || binIndex >= coverageDepths.length) {
     return undefined
@@ -467,7 +465,7 @@ export function hitTestCoverage(
     if (snpOffsets.length > 0) {
       const snpOffset = findInBin(snpOffsets, binStartOffset, binEndOffset)
       if (snpOffset !== undefined) {
-        return { type: 'coverage', position: regionStart + snpOffset }
+        return { type: 'coverage', position: snpOffset }
       }
     }
 
@@ -485,12 +483,12 @@ export function hitTestCoverage(
         binEndOffset,
       )
       if (noncovOffset !== undefined) {
-        return { type: 'coverage', position: regionStart + noncovOffset }
+        return { type: 'coverage', position: noncovOffset }
       }
     }
   }
 
-  return { type: 'coverage', position: regionStart + binStartOffset }
+  return { type: 'coverage', position: binStartOffset }
 }
 
 /**

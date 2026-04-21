@@ -5,11 +5,12 @@
 
 import alignmentsUniforms;
 import colorPack;
+import hpmath;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct Instance {
-  float position : ATTR0;
+  uint  position : ATTR0;
   float depth    : ATTR1;
 };
 
@@ -23,10 +24,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
   float2 local = quadLocal(vid);
 
-  float dw = u.domainEnd - u.domainStart;
-  float2 dom = float2(u.domainStart, u.domainEnd);
-  float x1 = (inst.position - dom.x) / dw * 2.0 - 1.0;
-  float x2 = (inst.position + u.binSize - dom.x) / dw * 2.0 - 1.0;
+  float x1 = hpClipX(hpSplitUint(inst.position), u);
+  float x2 = hpClipX(hpSplitUint(inst.position + uint(u.binSize)), u);
   float minW = 2.0 / u.canvasW;
   if (x2 - x1 < minW) {
     float mid = (x1 + x2) * 0.5;

@@ -30,8 +30,8 @@ function makePileupData(opts: {
   const readIds: string[] = []
   const readNames: string[] = []
   for (const [i, r] of reads.entries()) {
-    readPositions[i * 2] = r.start - regionStart
-    readPositions[i * 2 + 1] = r.end - regionStart
+    readPositions[i * 2] = r.start
+    readPositions[i * 2 + 1] = r.end
     readIds.push(`id${i}`)
     readNames.push(`id${i}`)
   }
@@ -42,7 +42,7 @@ function makePileupData(opts: {
       if (r.baseAtSortPos) {
         mismatchEntries.push({
           readIdx: i,
-          pos: sortPos - regionStart,
+          pos: sortPos,
           base: r.baseAtSortPos.charCodeAt(0),
         })
       }
@@ -127,8 +127,8 @@ function makePileupData(opts: {
     modCovColors: new Uint32Array(0),
     numModCovSegments: 0,
     modCovPackedBuffer: new ArrayBuffer(0),
-    sashimiX1: new Float32Array(0),
-    sashimiX2: new Float32Array(0),
+    sashimiX1: new Uint32Array(0),
+    sashimiX2: new Uint32Array(0),
     sashimiScores: new Float32Array(0),
     sashimiColorTypes: new Uint8Array(0),
     sashimiCounts: new Uint32Array(0),
@@ -162,12 +162,12 @@ function assertNonOverlappingLayout(
   data: PileupDataResult,
   readYs: Uint16Array,
 ) {
-  const { numReads, readPositions, regionStart } = data
+  const { numReads, readPositions } = data
   const byRow = new Map<number, { start: number; end: number; idx: number }[]>()
   for (let i = 0; i < numReads; i++) {
     const row = readYs[i]!
-    const start = regionStart + readPositions[i * 2]!
-    const end = regionStart + readPositions[i * 2 + 1]!
+    const start = readPositions[i * 2]!
+    const end = readPositions[i * 2 + 1]!
     if (!byRow.has(row)) {
       byRow.set(row, [])
     }

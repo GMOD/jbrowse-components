@@ -103,7 +103,7 @@ export function computeModificationCoverage(
   }[] = []
 
   for (const [position, colorMap] of byPosition) {
-    const binIdx = Math.floor(position - regionStart - depthStartOffset)
+    const binIdx = Math.floor(position - depthStartOffset)
     const depthAtPosition = depths[binIdx] ?? 0
     if (depthAtPosition === 0) {
       continue

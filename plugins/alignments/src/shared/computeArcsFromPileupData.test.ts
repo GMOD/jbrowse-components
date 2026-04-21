@@ -76,8 +76,8 @@ function makePileupData(
     modCovColors: new Uint32Array(0),
     numModCovSegments: 0,
     modCovPackedBuffer: new ArrayBuffer(0),
-    sashimiX1: new Float32Array(0),
-    sashimiX2: new Float32Array(0),
+    sashimiX1: new Uint32Array(0),
+    sashimiX2: new Uint32Array(0),
     sashimiScores: new Float32Array(0),
     sashimiColorTypes: new Uint8Array(0),
     sashimiCounts: new Uint32Array(0),
@@ -117,7 +117,7 @@ describe('computeArcsFromPileupData', () => {
     const data = makePileupData({
       numReads: 1,
       regionStart: 1000,
-      readPositions: new Uint32Array([0, 100]),
+      readPositions: new Uint32Array([1000, 1100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([500]),
@@ -262,7 +262,7 @@ describe('computeArcsFromPileupData', () => {
     const data = makePileupData({
       numReads: 1,
       regionStart: 1000,
-      readPositions: new Uint32Array([0, 500]),
+      readPositions: new Uint32Array([1000, 1500]),
       readFlags: new Uint16Array([0]),
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([0]),
@@ -290,7 +290,7 @@ describe('computeArcsFromPileupData', () => {
     const data0 = makePileupData({
       numReads: 1,
       regionStart: 1000,
-      readPositions: new Uint32Array([0, 100]),
+      readPositions: new Uint32Array([1000, 1100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([500]),
@@ -300,7 +300,7 @@ describe('computeArcsFromPileupData', () => {
     const data1 = makePileupData({
       numReads: 1,
       regionStart: 5000,
-      readPositions: new Uint32Array([0, 100]),
+      readPositions: new Uint32Array([5000, 5100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([500]),
@@ -467,10 +467,10 @@ describe('arcsToRegionResult', () => {
     const result = arcsToRegionResult(arcs, lines, 'chr1', 1000, 200)
 
     expect(result.numArcs).toBe(1)
-    expect(result.arcX1[0]).toBe(100)
-    expect(result.arcX2[0]).toBe(500)
+    expect(result.arcX1[0]).toBe(1100)
+    expect(result.arcX2[0]).toBe(1500)
     expect(result.numLines).toBe(1)
-    expect(result.linePositions[0]).toBe(200)
+    expect(result.linePositions[0]).toBe(1200)
   })
 
   test('returns empty arrays when no arcs match region', () => {

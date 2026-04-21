@@ -2,15 +2,15 @@ import { DEFAULT_CIGAR_OP_DRAW_COLORS as DEFAULT_SYNTENY_COLORS } from '@jbrowse
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 import {
-  FIELD_OFFSET_F32 as FILL_FIELD,
-  INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE,
-  INSTANCE_STRIDE_F32 as FILL_STRIDE,
-} from './shaders/multiSyntenyFill.generated.ts'
-import {
   computeBlockRenderParams,
   packCoverageForGpu,
   prepareBlockGeometry,
 } from './multiSyntenyGpuData.ts'
+import {
+  FIELD_OFFSET_F32 as FILL_FIELD,
+  INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE,
+  INSTANCE_STRIDE_F32 as FILL_STRIDE,
+} from './shaders/multiSyntenyFill.generated.ts'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
@@ -392,17 +392,16 @@ describe('packCoverageForGpu', () => {
 
   test('packs non-zero bins into 12-byte records', () => {
     const depths = new Float32Array([0, 5, 10, 0])
-    const result = packCoverageForGpu(depths, 100, 10, 0, 1000)
+    const result = packCoverageForGpu(depths, 100, 10, 1000)
     expect(result.binCount).toBeGreaterThan(0)
     expect(result.buffer.byteLength).toBe(result.binCount * 12)
   })
 
-  test('positions include regionStart + startOffset', () => {
+  test('positions are absolute genomic coords', () => {
     const depths = new Float32Array([5])
-    const result = packCoverageForGpu(depths, 500, 5, 1000, 1000)
+    const result = packCoverageForGpu(depths, 1500, 5, 1000)
     expect(result.binCount).toBe(1)
     const f32 = new Float32Array(result.buffer)
-    // position = regionStart(1000) + startOffset(500) + index(0) = 1500
     expect(f32[0]).toBe(1500)
   })
 })

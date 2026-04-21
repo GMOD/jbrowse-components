@@ -6,6 +6,7 @@
 
 import alignmentsUniforms;
 import colorPack;
+import hpmath;
 
 // SYNC(@jbrowse/alignments-core labelConstants.ts)
 static const float TRIANGLE_HW = 3.5;
@@ -14,7 +15,7 @@ static const float TRIANGLE_H  = 4.5;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct Instance {
-  float position  : ATTR0;
+  uint  position  : ATTR0;
   float colorType : ATTR1;  // 1=insertion 2=softclip 3=hardclip
 };
 
@@ -36,8 +37,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
   uint v = vid % 3u;
 
-  float dw = u.domainEnd - u.domainStart;
-  float cx = (inst.position - u.domainStart) / dw * 2.0 - 1.0;
+  float cx = hpClipX(hpSplitUint(inst.position), u);
   float tw = TRIANGLE_HW * 2.0 * 2.0 / u.canvasW;  // full triangle width in clip-x
   float th = TRIANGLE_H * 2.0 / u.canvasH;
 

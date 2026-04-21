@@ -5,11 +5,12 @@
 
 import alignmentsUniforms;
 import colorPack;
+import hpmath;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct Instance {
-  float position  : ATTR0;
+  uint  position  : ATTR0;
   float yOffset   : ATTR1;
   float segHeight : ATTR2;
   float colorType : ATTR3;  // 1=insertion 2=softclip 3=hardclip
@@ -32,9 +33,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
   float2 local = quadLocal(vid);
 
-  float dw = u.domainEnd - u.domainStart;
-  float2 dom = float2(u.domainStart, u.domainEnd);
-  float cx = (inst.position - dom.x) / dw * 2.0 - 1.0;
+  float cx = hpClipX(hpSplitUint(inst.position), u);
   float barW = 2.0 / u.canvasW;
 
   // Sits just above the bottom coverage-area edge, below the indicator row.

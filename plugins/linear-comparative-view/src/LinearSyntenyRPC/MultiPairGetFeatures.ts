@@ -119,7 +119,6 @@ export class MultiPairGetFeatures extends RpcMethodType {
         indels,
         coverage.depths,
         coverage.startOffset,
-        regionStart,
       )
 
       const mismatchPositions = new Uint32Array(mismatches.length)

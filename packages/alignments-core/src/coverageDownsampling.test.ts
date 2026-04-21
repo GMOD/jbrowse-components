@@ -125,9 +125,8 @@ describe('computeVisibleMaxDepth', () => {
   function region(
     coverageDepths: Float32Array,
     coverageStartOffset: number,
-    regionStart: number,
   ) {
-    return { coverageDepths, coverageStartOffset, regionStart }
+    return { coverageDepths, coverageStartOffset }
   }
 
   test('returns 0 for empty blocks', () => {
@@ -140,28 +139,28 @@ describe('computeVisibleMaxDepth', () => {
   })
 
   test('finds max depth in visible range', () => {
-    const data = region(new Float32Array([5, 10, 20, 8, 3]), 0, 100)
+    const data = region(new Float32Array([5, 10, 20, 8, 3]), 100)
     const dataMap = new Map([['region1', data]])
     const blocks = [{ start: 100, end: 105, key: 'region1' }]
     expect(computeVisibleMaxDepth(blocks, b => dataMap.get(b.key))).toBe(20)
   })
 
   test('only scans bins within visible block range', () => {
-    const data = region(new Float32Array([100, 5, 3, 2, 1]), 0, 0)
+    const data = region(new Float32Array([100, 5, 3, 2, 1]), 0)
     const dataMap = new Map([['region1', data]])
     const blocks = [{ start: 2, end: 5, key: 'region1' }]
     expect(computeVisibleMaxDepth(blocks, b => dataMap.get(b.key))).toBe(3)
   })
 
   test('handles coverageStartOffset correctly', () => {
-    const data = region(new Float32Array([10, 20, 30]), 50, 1000)
+    const data = region(new Float32Array([10, 20, 30]), 1050)
     const dataMap = new Map([['region1', data]])
     const blocks = [{ start: 1050, end: 1053, key: 'region1' }]
     expect(computeVisibleMaxDepth(blocks, b => dataMap.get(b.key))).toBe(30)
   })
 
   test('skips blocks with no matching data', () => {
-    const data = region(new Float32Array([5, 10]), 0, 0)
+    const data = region(new Float32Array([5, 10]), 0)
     const dataMap = new Map([['region1', data]])
     const blocks = [
       { start: 0, end: 2, key: 'region1' },
@@ -238,9 +237,8 @@ describe('buildCoverageTooltipBin', () => {
     const mm = mismatches ?? []
     return {
       coverageDepths: new Float32Array(depths),
-      coverageStartOffset: 0,
-      regionStart: 100,
-      mismatchPositions: new Uint32Array(mm.map(m => m.pos - 100)),
+      coverageStartOffset: 100,
+      mismatchPositions: new Uint32Array(mm.map(m => m.pos)),
       mismatchBases: new Uint8Array(mm.map(m => m.base)),
       numMismatches: mm.length,
     }

@@ -121,8 +121,8 @@ function makeChainData(opts: {
     modCovColors: new Uint32Array(0),
     numModCovSegments: 0,
     modCovPackedBuffer: new ArrayBuffer(0),
-    sashimiX1: new Float32Array(0),
-    sashimiX2: new Float32Array(0),
+    sashimiX1: new Uint32Array(0),
+    sashimiX2: new Uint32Array(0),
     sashimiScores: new Float32Array(0),
     sashimiColorTypes: new Uint8Array(0),
     sashimiCounts: new Uint32Array(0),
@@ -444,8 +444,8 @@ describe('buildChainConnectingData', () => {
     const out = buildChainConnectingData(data, readYs)
     expect(out.numConnectingLines).toBe(1)
     expect(out.connectingLineYs[0]).toBe(2)
-    expect(out.connectingLinePositions[0]).toBe(0) // minStart - regionStart
-    expect(out.connectingLinePositions[1]).toBe(400) // maxEnd - regionStart
+    expect(out.connectingLinePositions[0]).toBe(1000) // absolute minStart
+    expect(out.connectingLinePositions[1]).toBe(1400) // absolute maxEnd
   })
 
   test('flatbush spatial index is built for non-empty chains', () => {
@@ -474,7 +474,7 @@ describe('buildChainConnectingData', () => {
     })
     const readYs = new Uint16Array([0, 0])
     const out = buildChainConnectingData(data, readYs)
-    expect(out.connectingLinePositions[0]).toBe(0) // clamped
-    expect(out.connectingLinePositions[1]).toBe(200) // 1200 - 1000
+    expect(out.connectingLinePositions[0]).toBe(1000) // clamped to regionStart
+    expect(out.connectingLinePositions[1]).toBe(1200) // absolute maxEnd
   })
 })

@@ -53,12 +53,13 @@ interface ModCovInput {
   count: number
 }
 
+// All packed buffers store absolute genomic uint32 positions. Shaders
+// read via hp-math (hpSplitUint + hpClipX) for precision at 3+ Gbp.
 export function packCoverageAreaForGpu(
   coverage: CoverageInput,
   snp: SnpInput,
   noncov: NoncovInput,
   modCov: ModCovInput | undefined,
-  regionStart: number,
 ): CoverageAreaPackedBuffers {
   return {
     coveragePackedBuffer: packCoverageBinsForGpu(
@@ -73,7 +74,6 @@ export function packCoverageAreaForGpu(
       snp.heights,
       snp.colorTypes,
       snp.count,
-      -regionStart,
     ).buffer,
     noncovPackedBuffer: packNoncovSegmentsForGpu(
       noncov.positions,
@@ -81,13 +81,11 @@ export function packCoverageAreaForGpu(
       noncov.heights,
       noncov.colorTypes,
       noncov.segmentCount,
-      -regionStart,
     ).buffer,
     indicatorPackedBuffer: packIndicatorsForGpu(
       noncov.indicatorPositions,
       noncov.indicatorColorTypes,
       noncov.indicatorCount,
-      -regionStart,
     ).buffer,
     modCovPackedBuffer: modCov
       ? packModCovSegmentsForGpu(
@@ -96,7 +94,6 @@ export function packCoverageAreaForGpu(
           modCov.heights,
           modCov.colors,
           modCov.count,
-          -regionStart,
         ).buffer
       : new ArrayBuffer(0),
   }

@@ -80,7 +80,6 @@ export function computeCoverageTicks(
 export interface CoverageRegion {
   coverageDepths: Float32Array
   coverageStartOffset: number
-  regionStart: number
 }
 
 export function computeVisibleMaxDepth<
@@ -97,11 +96,11 @@ export function computeVisibleMaxDepth<
     }
     const startBin = Math.max(
       0,
-      Math.floor(block.start - cov.regionStart - cov.coverageStartOffset),
+      Math.floor(block.start - cov.coverageStartOffset),
     )
     const endBin = Math.min(
       cov.coverageDepths.length,
-      Math.ceil(block.end - cov.regionStart - cov.coverageStartOffset),
+      Math.ceil(block.end - cov.coverageStartOffset),
     )
     for (let i = startBin; i < endBin; i++) {
       const d = cov.coverageDepths[i]!
@@ -145,11 +144,11 @@ export function computeVisibleCoverageStats<
     }
     const startBin = Math.max(
       0,
-      Math.floor(block.start - cov.regionStart - cov.coverageStartOffset),
+      Math.floor(block.start - cov.coverageStartOffset),
     )
     const endBin = Math.min(
       cov.coverageDepths.length,
-      Math.ceil(block.end - cov.regionStart - cov.coverageStartOffset),
+      Math.ceil(block.end - cov.coverageStartOffset),
     )
     for (let i = startBin; i < endBin; i++) {
       const d = cov.coverageDepths[i]!
@@ -337,7 +336,6 @@ export interface MismatchArrays {
 export interface CoverageArrays {
   coverageDepths: Float32Array
   coverageStartOffset: number
-  regionStart: number
 }
 
 export function countSnpsAtPosition(
@@ -369,13 +367,12 @@ export function buildCoverageTooltipBin(
   coverage: CoverageArrays,
   mismatches: MismatchArrays,
 ): CoverageTooltipBin | undefined {
-  const posOffset = position - coverage.regionStart
-  const binIdx = Math.floor(posOffset - coverage.coverageStartOffset)
+  const binIdx = Math.floor(position - coverage.coverageStartOffset)
   const depth = coverage.coverageDepths[binIdx] ?? 0
   if (depth === 0) {
     return undefined
   }
-  const snps = countSnpsAtPosition(posOffset, mismatches)
+  const snps = countSnpsAtPosition(position, mismatches)
   return {
     position,
     depth,
@@ -527,7 +524,6 @@ export function computeInsertionIndicators(
   indels: IndelEntry[],
   coverageDepths: Float32Array,
   coverageStartOffset: number,
-  regionStart: number,
   threshold = 0.15,
 ): InsertionIndicatorResult {
   if (indels.length === 0) {
@@ -546,7 +542,7 @@ export function computeInsertionIndicators(
 
   const resultPositions: number[] = []
   for (const [pos, count] of insertionCountByPos) {
-    const depthIdx = pos - regionStart - coverageStartOffset
+    const depthIdx = pos - coverageStartOffset
     const localDepth =
       depthIdx >= 0 && depthIdx < coverageDepths.length
         ? coverageDepths[depthIdx]!
@@ -560,7 +556,7 @@ export function computeInsertionIndicators(
 
   const positions = new Uint32Array(resultPositions.length)
   for (let i = 0; i < resultPositions.length; i++) {
-    positions[i] = resultPositions[i]! - regionStart
+    positions[i] = resultPositions[i]!
   }
 
   return { positions, count: resultPositions.length }

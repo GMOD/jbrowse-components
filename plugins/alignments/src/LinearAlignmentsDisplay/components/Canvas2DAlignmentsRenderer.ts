@@ -110,8 +110,8 @@ interface Canvas2DRegionData {
   modCovSegmentCount: number
 
   // Arcs
-  arcX1: Float32Array
-  arcX2: Float32Array
+  arcX1: Uint32Array
+  arcX2: Uint32Array
   arcColorTypes: Float32Array
   arcIsArc: Uint8Array
   numArcs: number
@@ -365,7 +365,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       const f32 = new Float32Array(buf)
       for (let i = 0; i < n; i++) {
         const off = i * STRIDE_F32
-        u32[off + FIELD.position] = data.coverageStartOffset + i + r.regionStart
+        u32[off + FIELD.position] = data.coverageStartOffset + i
         f32[off + FIELD.bandBottom] = 0
         f32[off + FIELD.bandTop] = data.coverageDepths[i]!
       }
@@ -556,7 +556,6 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
         region.softclipYs,
         region.softclipLengths,
         region.numSoftclips,
-        region.regionStart,
         rgb255(state.colors.colorSoftclip),
         block,
         bpLength,
@@ -569,7 +568,6 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
         region.hardclipYs,
         region.hardclipLengths,
         region.numHardclips,
-        region.regionStart,
         rgb255(state.colors.colorHardclip),
         block,
         bpLength,
@@ -644,8 +642,8 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     const fSpacing = state.featureSpacing
 
     for (let i = 0; i < region.numReads; i++) {
-      const startBp = region.readPositions[i * 2]! + region.regionStart
-      const endBp = region.readPositions[i * 2 + 1]! + region.regionStart
+      const startBp = region.readPositions[i * 2]!
+      const endBp = region.readPositions[i * 2 + 1]!
       const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
       const y =
@@ -679,8 +677,8 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     const fSpacing = state.featureSpacing
 
     for (let i = 0; i < region.numGaps; i++) {
-      const startBp = region.gapPositions[i * 2]! + region.regionStart
-      const endBp = region.gapPositions[i * 2 + 1]! + region.regionStart
+      const startBp = region.gapPositions[i * 2]!
+      const endBp = region.gapPositions[i * 2 + 1]!
       const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
       const yRow = region.gapYs[i]!
@@ -718,7 +716,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     const bpPerPx = bpLength / fullBlockWidth
 
     for (let i = 0; i < region.numMismatches; i++) {
-      const bp = region.mismatchPositions[i]! + region.regionStart
+      const bp = region.mismatchPositions[i]!
       const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
       const w = Math.max(1, 1 / bpPerPx)
       const yRow = region.mismatchYs[i]!
@@ -744,7 +742,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     const insColor = rgb255(state.colors.colorInsertion)
 
     for (let i = 0; i < region.numInsertions; i++) {
-      const bp = region.insertionPositions[i]! + region.regionStart
+      const bp = region.insertionPositions[i]!
       const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
       const yRow = region.insertionYs[i]!
       const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
@@ -775,7 +773,6 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     ys: Uint16Array,
     lengths: Uint16Array,
     count: number,
-    regionStart: number,
     color: string,
     block: { bpRangeX: [number, number]; screenStartPx: number },
     bpLength: number,
@@ -792,7 +789,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
 
     ctx.fillStyle = color
     for (let i = 0; i < count; i++) {
-      const bp = positions[i]! + regionStart
+      const bp = positions[i]!
       const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
       const yRow = ys[i]!
       const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
@@ -819,7 +816,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     const bpPerPx = bpLength / fullBlockWidth
 
     for (let i = 0; i < region.numSoftclipBases; i++) {
-      const bp = region.softclipBasePositions[i]! + region.regionStart
+      const bp = region.softclipBasePositions[i]!
       const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
       const w = Math.max(1, 1 / bpPerPx)
       const yRow = region.softclipBaseYs[i]!
@@ -848,7 +845,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     const bpPerPx = bpLength / fullBlockWidth
 
     for (let i = 0; i < region.numModifications; i++) {
-      const bp = region.modificationPositions[i]! + region.regionStart
+      const bp = region.modificationPositions[i]!
       const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
       const w = Math.max(1, 1 / bpPerPx)
       const yRow = region.modificationYs[i]!
@@ -959,8 +956,8 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     const lineWidth = state.arcLineWidth ?? 1
 
     for (let i = 0; i < region.numArcs; i++) {
-      const x1Bp = region.arcX1[i]! + region.regionStart
-      const x2Bp = region.arcX2[i]! + region.regionStart
+      const x1Bp = region.arcX1[i]!
+      const x2Bp = region.arcX2[i]!
       const colorIdx = Math.round(region.arcColorTypes[i]!)
 
       const sx1 = bpToScreenX(x1Bp, block, bpLength, fullBlockWidth)
@@ -983,7 +980,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     }
 
     for (let i = 0; i < region.numArcLines; i++) {
-      const bp = region.arcLinePositions[i]! + region.regionStart
+      const bp = region.arcLinePositions[i]!
       const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
       const y = arcsTop + region.arcLineYs[i]! * arcsH
       const colorIdx = Math.round(region.arcLineColorTypes[i]!)
@@ -1013,9 +1010,9 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
 
     for (let i = 0; i < region.numConnectingLines; i++) {
       const startBp =
-        region.connectingLinePositions[i * 2]! + region.regionStart
+        region.connectingLinePositions[i * 2]!
       const endBp =
-        region.connectingLinePositions[i * 2 + 1]! + region.regionStart
+        region.connectingLinePositions[i * 2 + 1]!
       const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
       const yRow = region.connectingLineYs[i]!
@@ -1047,8 +1044,8 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     if (state.highlightedChainIds.length === 0 && state.highlightedFeatureId) {
       const idx = region.readIdToIndex.get(state.highlightedFeatureId)
       if (idx !== undefined && idx < region.numReads) {
-        const startBp = region.readPositions[idx * 2]! + region.regionStart
-        const endBp = region.readPositions[idx * 2 + 1]! + region.regionStart
+        const startBp = region.readPositions[idx * 2]!
+        const endBp = region.readPositions[idx * 2 + 1]!
         const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
         const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
         const y =
@@ -1061,8 +1058,8 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     if (state.selectedChainIds.length === 0 && state.selectedFeatureId) {
       const idx = region.readIdToIndex.get(state.selectedFeatureId)
       if (idx !== undefined && idx < region.numReads) {
-        const startBp = region.readPositions[idx * 2]! + region.regionStart
-        const endBp = region.readPositions[idx * 2 + 1]! + region.regionStart
+        const startBp = region.readPositions[idx * 2]!
+        const endBp = region.readPositions[idx * 2 + 1]!
         const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
         const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
         const y =
@@ -1098,8 +1095,8 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
         region.readYs,
       )
       if (bounds) {
-        const startBp = bounds.minStart + region.regionStart
-        const endBp = bounds.maxEnd + region.regionStart
+        const startBp = bounds.minStart
+        const endBp = bounds.maxEnd
         const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
         const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
         const y = bounds.y * (fH + fSpacing) + covOffset - state.rangeY[0]
@@ -1116,8 +1113,8 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
         region.readYs,
       )
       if (bounds) {
-        const startBp = bounds.minStart + region.regionStart
-        const endBp = bounds.maxEnd + region.regionStart
+        const startBp = bounds.minStart
+        const endBp = bounds.maxEnd
         const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
         const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
         const y = bounds.y * (fH + fSpacing) + covOffset - state.rangeY[0]

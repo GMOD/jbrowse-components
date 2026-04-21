@@ -22,8 +22,7 @@ public struct Uniforms {
   // the compiler folding hi/lo combination. MUST always be uploaded as 0.0.
   public float hpZero;
 
-  // Canvas + region metadata
-  public uint  regionStart;
+  // Canvas metadata
   public float canvasW;
   public float canvasH;
   public float rangeY0;
@@ -39,10 +38,6 @@ public struct Uniforms {
   public float binSize;
   public float noncovHeight;
   public float depthDomainMax; // coverage domain maximum (for log scale normalization)
-
-  // Visible domain for cigar/coverage x conversion
-  public float domainStart;
-  public float domainEnd;
 
   // Insert-size thresholds
   public float insertUpper;
@@ -133,14 +128,6 @@ public float2 pileupY(float row, Uniforms u) {
   float px2clip = 2.0 / u.canvasH;
   float topClip = 1.0 - (u.covOffset / u.canvasH) * 2.0;
   return float2(topClip - yTop * px2clip, topClip - yBot * px2clip);
-}
-
-public float2 cigarDomain(Uniforms u) {
-  return float2(u.domainStart, u.domainEnd);
-}
-
-public float cigarDomainLen(Uniforms u) {
-  return u.domainEnd - u.domainStart;
 }
 
 public float effHeight(Uniforms u) {

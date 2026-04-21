@@ -79,12 +79,11 @@ export function computeCoverage(
   const extent = getFeatureExtent(features, regionStart, regionEnd)
 
   // Clamp actualStart to regionStart so coverage doesn't extend before it.
-  // Read positions are stored as Uint32 offsets from regionStart and can't
-  // represent negative values, so coverage must be consistent.
   const actualStart = Math.max(extent.actualStart, regionStart)
   const actualEnd = extent.actualEnd
 
-  const startOffset = actualStart - regionStart
+  // Absolute genomic coordinate where coverage depths[0] begins.
+  const startOffset = actualStart
   const regionLength = actualEnd - actualStart
   const binSize = 1
   const numBins = regionLength
@@ -393,8 +392,7 @@ export function computeNoncovCoverage(
     }
     let localDepth = maxDepth
     if (coverageDepths !== undefined && coverageStartOffset !== undefined) {
-      const posOffset = entry.position - regionStart
-      const depthIdx = posOffset - coverageStartOffset
+      const depthIdx = entry.position - coverageStartOffset
       const leftDepth =
         depthIdx - 1 >= 0 ? (coverageDepths[depthIdx - 1] ?? 0) : 0
       const rightDepth =
@@ -461,10 +459,7 @@ export function computeNoncovCoverage(
 /**
  * Compute sashimi junction arcs from skip gaps
  */
-export function computeSashimiJunctions(
-  gaps: CoverageGap[],
-  regionStart: number,
-) {
+export function computeSashimiJunctions(gaps: CoverageGap[]) {
   const junctions = new Map<
     string,
     { start: number; end: number; fwd: number; rev: number }
@@ -503,16 +498,16 @@ export function computeSashimiJunctions(
   }
 
   const n = arcs.length
-  const sashimiX1 = new Float32Array(n)
-  const sashimiX2 = new Float32Array(n)
+  const sashimiX1 = new Uint32Array(n)
+  const sashimiX2 = new Uint32Array(n)
   const sashimiScores = new Float32Array(n)
   const sashimiColorTypes = new Uint8Array(n)
   const sashimiCounts = new Uint32Array(n)
 
   for (let i = 0; i < n; i++) {
     const arc = arcs[i]!
-    sashimiX1[i] = arc.start - regionStart
-    sashimiX2[i] = arc.end - regionStart
+    sashimiX1[i] = arc.start
+    sashimiX2[i] = arc.end
     sashimiScores[i] = Math.log(arc.count + 1)
     sashimiColorTypes[i] = arc.colorType
     sashimiCounts[i] = arc.count

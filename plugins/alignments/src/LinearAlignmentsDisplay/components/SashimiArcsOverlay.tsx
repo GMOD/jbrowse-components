@@ -68,12 +68,11 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
       sashimiCounts,
       sashimiColorTypes,
       numSashimiArcs,
-      regionStart,
     } = rpcData
 
     for (let i = 0; i < numSashimiArcs; i++) {
-      const startBp = regionStart + sashimiX1[i]!
-      const endBp = regionStart + sashimiX2[i]!
+      const startBp = sashimiX1[i]!
+      const endBp = sashimiX2[i]!
       const count = sashimiCounts[i]!
       const strand = sashimiColorTypes[i] === 0 ? 1 : -1
       const startPxResult = view.bpToPx({ refName, coord: startBp })

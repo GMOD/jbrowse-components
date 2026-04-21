@@ -1,21 +1,17 @@
 /**
  * Pileup Data RPC Types
  *
- * COORDINATE SYSTEM:
+ * COORDINATE SYSTEM: all position arrays are absolute genomic uint32.
+ *
  * regionStart must be an integer (use Math.floor of view region start).
+ * It is carried for filter/clamp logic only; no consumer should add it to
+ * any position array. See agent-docs/ARCHITECTURE.md "Coordinate convention".
  *
- * Read/gap/mismatch/interbase/modification positions are integer offsets from
- * regionStart (kept relative so Uint32Array can represent negative-side
- * features via wrapping, and to avoid float32 precision issues in GPU shaders).
- *
- * Coverage segment positions (snpPositions, noncovPositions, indicatorPositions,
- * modCovPositions) are absolute genomic coordinates (uint32). These are stored
- * as absolute so Canvas2D can write them directly as uint32 without precision
- * loss. The GPU pack path subtracts regionStart before writing float32 for
- * the shaders (see packCoverageAreaForGpu).
- *
- * coverageStartOffset remains relative (used as an index into coverageDepths
- * for depth-lookup functions that work with other relative positions).
+ * Every GPU shader in the alignments pipeline consumes absolute uint32
+ * positions via hp-math, EXCEPT the arc shader (paired-end bezier curves),
+ * which uses relative float32 because the bezier interpolation runs in
+ * float on the GPU and can't preserve 3-Gbp precision through that math.
+ * `packArcs` is the only place that subtracts regionStart at pack time.
  */
 
 import type { FilterBy } from '../shared/types'
@@ -69,10 +65,10 @@ export interface ModificationEntry {
 }
 
 export interface PileupDataResult {
-  regionStart: number // floor of view region start; reference for relative position arrays
+  regionStart: number // floor of view region start; carried for filter/clamp only
 
-  // Read data - positions are offsets from regionStart
-  readPositions: Uint32Array // [startOffset, endOffset] pairs
+  // Read data - positions are absolute genomic uint32
+  readPositions: Uint32Array // [start, end] pairs
   readYs: Uint16Array // pileup row (0-65535 sufficient)
   readFlags: Uint16Array // BAM flags are 16-bit
   readMapqs: Uint8Array // 0-255
@@ -92,15 +88,15 @@ export interface PileupDataResult {
   segmentEdgeFlags: Uint8Array // bit 0=first segment, bit 1=last segment
   numSegments: number
 
-  // Gap data (deletions/skips) - offsets from regionStart
-  gapPositions: Uint32Array // [startOffset, endOffset] pairs
+  // Gap data (deletions/skips) - absolute genomic uint32
+  gapPositions: Uint32Array // [start, end] pairs
   gapYs: Uint16Array
   gapLengths: Uint16Array // length of each gap in bp
   gapTypes: Uint8Array // 0=deletion, 1=skip
   gapReadIndices?: Uint32Array // maps each gap to its parent read index
   gapFrequencies: Uint8Array // 0-255 representing 0-100% frequency at start position
 
-  // Mismatch data - offsets from regionStart
+  // Mismatch data - absolute genomic uint32
   mismatchPositions: Uint32Array
   mismatchYs: Uint16Array
   mismatchBases: Uint8Array // ASCII character code (e.g. 65='A', 67='C', 71='G', 84='T')
@@ -130,12 +126,11 @@ export interface PileupDataResult {
   numHardclips: number
   interbaseFrequencies: Uint8Array // 0-255 representing 0-100% frequency
 
-  // Coverage data - positions computed from regionStart + coverageStartOffset + index
-  // (bin size is always 1bp)
-  // Coverage may extend beyond the requested region to cover full feature extents
+  // Coverage data - depths[i] covers [coverageStartOffset + i, coverageStartOffset + i + 1)
+  // (bin size is always 1bp). Coverage may extend beyond the requested region.
   coverageDepths: Float32Array
   coverageMaxDepth: number
-  coverageStartOffset: number // offset from regionStart where coverage begins (can be negative)
+  coverageStartOffset: number // absolute genomic bp where coverage depths[0] begins
   // Pre-packed GPU buffer for PASS_COVERAGE (worker-built, zero-offset
   // positions). Main thread uploads directly without re-packing.
   coveragePackedBuffer: ArrayBuffer
@@ -171,7 +166,7 @@ export interface PileupDataResult {
   // when colorBy.type === 'tag'.
   readTagColors: Uint32Array
 
-  // Modification data (MM tag) - offsets from regionStart
+  // Modification data (MM tag) - absolute genomic uint32
   modificationPositions: Uint32Array
   modificationYs: Uint16Array
   // Packed ABGR u32 per modification; alpha byte = probability * 255.
@@ -189,8 +184,8 @@ export interface PileupDataResult {
   modCovPackedBuffer: ArrayBuffer
 
   // Sashimi arc data (splice junctions from skip gaps)
-  sashimiX1: Float32Array // bp offsets from regionStart (junction start)
-  sashimiX2: Float32Array // bp offsets from regionStart (junction end)
+  sashimiX1: Uint32Array // absolute genomic bp (junction start)
+  sashimiX2: Uint32Array // absolute genomic bp (junction end)
   sashimiScores: Float32Array // per-arc line width = Math.log(count + 1)
   sashimiColorTypes: Uint8Array // 0=forward, 1=reverse
   sashimiCounts: Uint32Array // actual read counts per junction
@@ -226,7 +221,7 @@ export interface PileupDataResult {
   // Connecting line data for chain modes (cloud/linkedRead).
   // One line per chain, drawn at chain Y between min(start) and max(end).
   // Populated by main-thread layout after chain layout is computed.
-  connectingLinePositions?: Uint32Array // [startOffset, endOffset] pairs
+  connectingLinePositions?: Uint32Array // [start, end] absolute genomic uint32 pairs
   connectingLineYs?: Uint16Array // row for each line
   numConnectingLines?: number
 

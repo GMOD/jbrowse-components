@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { ErrorOverlay, Menu } from '@jbrowse/core/ui'
+import { ErrorOverlay, LoadingOverlay, Menu  } from '@jbrowse/core/ui'
 import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -11,12 +11,11 @@ import FeatureTooltip from './FeatureTooltip.tsx'
 import OverflowIndicator from './OverflowIndicator.tsx'
 import { performMultiRegionHitDetection } from './hitTesting.ts'
 import {
+  type FeatureItemEntry,
   useAminoAcidOverlay,
   useFloatingLabels,
   useHighlightOverlays,
-  type FeatureItemEntry,
 } from './useOverlayElements.tsx'
-import { LoadingOverlay } from '@jbrowse/core/ui'
 
 import type { CanvasFeatureBackend } from './canvasFeatureBackendTypes.ts'
 import type { FlatbushRegionCache, VisibleRegion } from './hitTesting.ts'

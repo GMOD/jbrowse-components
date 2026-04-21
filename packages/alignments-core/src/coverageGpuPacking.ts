@@ -29,8 +29,10 @@ export interface CoverageBinsGpuUpload {
   binCount: number
 }
 
-// Layout per bin: [position(f32), normalizedDepth(f32)] = 8 bytes.
-// Matches alignments plugin coverage.slang Instance.
+// Layout per bin: [position(u32), normalizedDepth(f32)] = 8 bytes.
+// Matches alignments plugin coverage.slang Instance. Position is absolute
+// genomic uint32 (exact up to 4 Gbp); shader uses hp-math for clip-space
+// conversion.
 export function packCoverageBinsForGpu(
   depths: Float32Array,
   maxDepth: number,
@@ -42,9 +44,10 @@ export function packCoverageBinsForGpu(
   }
   const buffer = new ArrayBuffer(binCount * COVERAGE_STRIDE * 4)
   const f32 = new Float32Array(buffer)
+  const u32 = new Uint32Array(buffer)
   for (let i = 0; i < binCount; i++) {
     const o = i * COVERAGE_STRIDE
-    f32[o + COVERAGE_FIELD.position] = startOffset + i
+    u32[o + COVERAGE_FIELD.position] = startOffset + i
     f32[o + COVERAGE_FIELD.depth] = (depths[i] ?? 0) / maxDepth
   }
   return { buffer, binCount }
@@ -55,24 +58,25 @@ export interface SnpGpuUpload {
   segmentCount: number
 }
 
-// Layout per segment: [position, yOffset, height, colorType] = 16 bytes.
-// Matches alignments plugin snpCoverage.slang.
+// Layout per segment: [position(u32), yOffset(f32), height(f32), colorType(f32)]
+// = 16 bytes. Matches alignments plugin snpCoverage.slang. Position is
+// absolute genomic uint32.
 export function packSnpSegmentsForGpu(
   positions: Uint32Array,
   yOffsets: Float32Array,
   heights: Float32Array,
   colorTypes: Uint8Array,
   count: number,
-  positionOffset = 0,
 ): SnpGpuUpload {
   if (count === 0) {
     return { buffer: new ArrayBuffer(0), segmentCount: 0 }
   }
   const buffer = new ArrayBuffer(count * SNP_STRIDE * 4)
   const f32 = new Float32Array(buffer)
+  const u32 = new Uint32Array(buffer)
   for (let i = 0; i < count; i++) {
     const o = i * SNP_STRIDE
-    f32[o + SNP_FIELD.position] = positionOffset + positions[i]!
+    u32[o + SNP_FIELD.position] = positions[i]!
     f32[o + SNP_FIELD.yOffset] = yOffsets[i]!
     f32[o + SNP_FIELD.segHeight] = heights[i]!
     f32[o + SNP_FIELD.colorType] = colorTypes[i]!
@@ -85,22 +89,22 @@ export interface IndicatorGpuUpload {
   indicatorCount: number
 }
 
-// Layout per indicator: [position(f32), colorType(f32)] = 8 bytes.
-// Matches alignments plugin indicator.slang.
+// Layout per indicator: [position(u32), colorType(f32)] = 8 bytes.
+// Matches alignments plugin indicator.slang. Position is absolute uint32.
 export function packIndicatorsForGpu(
   positions: Uint32Array,
   colorTypes: Uint8Array | undefined,
   count: number,
-  positionOffset = 0,
 ): IndicatorGpuUpload {
   if (count === 0) {
     return { buffer: new ArrayBuffer(0), indicatorCount: 0 }
   }
   const buffer = new ArrayBuffer(count * INDICATOR_STRIDE * 4)
   const f32 = new Float32Array(buffer)
+  const u32 = new Uint32Array(buffer)
   for (let i = 0; i < count; i++) {
     const o = i * INDICATOR_STRIDE
-    f32[o + INDICATOR_FIELD.position] = positionOffset + positions[i]!
+    u32[o + INDICATOR_FIELD.position] = positions[i]!
     f32[o + INDICATOR_FIELD.colorType] = colorTypes ? colorTypes[i]! : 1
   }
   return { buffer, indicatorCount: count }
@@ -111,16 +115,15 @@ export interface ModCovGpuUpload {
   segmentCount: number
 }
 
-// Layout per segment: [position, yOffset, height, rgbaColor(u32)] = 16 bytes.
-// Matches alignments plugin modCoverage.slang. `colors` is pre-packed ABGR
-// u32 per segment (one slot).
+// Layout per segment: [position(u32), yOffset(f32), height(f32), rgbaColor(u32)]
+// = 16 bytes. Matches alignments plugin modCoverage.slang. Position is
+// absolute uint32; `colors` is pre-packed ABGR u32.
 export function packModCovSegmentsForGpu(
   positions: Uint32Array,
   yOffsets: Float32Array,
   heights: Float32Array,
   colors: Uint32Array,
   count: number,
-  positionOffset = 0,
 ): ModCovGpuUpload {
   if (count === 0) {
     return { buffer: new ArrayBuffer(0), segmentCount: 0 }
@@ -130,7 +133,7 @@ export function packModCovSegmentsForGpu(
   const u32 = new Uint32Array(buffer)
   for (let i = 0; i < count; i++) {
     const o = i * MOD_COV_STRIDE
-    f32[o + MOD_COV_FIELD.position] = positionOffset + positions[i]!
+    u32[o + MOD_COV_FIELD.position] = positions[i]!
     f32[o + MOD_COV_FIELD.yOffset] = yOffsets[i]!
     f32[o + MOD_COV_FIELD.segHeight] = heights[i]!
     u32[o + MOD_COV_FIELD.packedColor] = colors[i]!
@@ -143,24 +146,25 @@ export interface NoncovGpuUpload {
   segmentCount: number
 }
 
-// Layout per segment: [position, yOffset, height, colorType] = 16 bytes.
-// Matches alignments plugin noncovHistogram.slang.
+// Layout per segment: [position(u32), yOffset(f32), height(f32), colorType(f32)]
+// = 16 bytes. Matches alignments plugin noncovHistogram.slang. Position is
+// absolute uint32.
 export function packNoncovSegmentsForGpu(
   positions: Uint32Array,
   yOffsets: Float32Array,
   heights: Float32Array,
   colorTypes: Uint8Array,
   count: number,
-  positionOffset = 0,
 ): NoncovGpuUpload {
   if (count === 0) {
     return { buffer: new ArrayBuffer(0), segmentCount: 0 }
   }
   const buffer = new ArrayBuffer(count * NONCOV_STRIDE * 4)
   const f32 = new Float32Array(buffer)
+  const u32 = new Uint32Array(buffer)
   for (let i = 0; i < count; i++) {
     const o = i * NONCOV_STRIDE
-    f32[o + NONCOV_FIELD.position] = positionOffset + positions[i]!
+    u32[o + NONCOV_FIELD.position] = positions[i]!
     f32[o + NONCOV_FIELD.yOffset] = yOffsets[i]!
     f32[o + NONCOV_FIELD.segHeight] = heights[i]!
     f32[o + NONCOV_FIELD.colorType] = colorTypes[i]!

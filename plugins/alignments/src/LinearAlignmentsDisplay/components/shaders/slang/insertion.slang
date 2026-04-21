@@ -5,6 +5,7 @@
 
 import alignmentsUniforms;
 import colorPack;
+import hpmath;
 
 // SYNC(@jbrowse/alignments-core labelConstants.ts)
 static const uint  LONG_INSERTION_MIN_LENGTH = 10u;
@@ -42,11 +43,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   uint rectIdx = vid / 6u;
   float2 local = quadLocal(vid);
 
-  float domLen = cigarDomainLen(u);
-  float2 dom = cigarDomain(u);
-  float pxPerBp = u.canvasW / domLen;
-  float pos = float(inst.position);
-  float cx = (pos - dom.x) / domLen * 2.0 - 1.0;
+  float pxPerBp = u.canvasW / u.bpLen;
+  float cx = hpClipX(hpSplitUint(inst.position), u);
 
   bool isLong = inst.length >= LONG_INSERTION_MIN_LENGTH;
   float insWPx = float(inst.length) * pxPerBp;

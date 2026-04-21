@@ -28,7 +28,8 @@ afterAll(() => {
 })
 
 const REGION_START = 10000
-const COVERAGE_START_OFFSET = 5
+// Absolute genomic position where coverage depths[0] begins.
+const COVERAGE_START_OFFSET = REGION_START + 5
 
 function makeCoverageData(): CoverageUploadData {
   const coverageDepths = new Float32Array([10, 30, 50, 20, 40])
@@ -65,7 +66,6 @@ function makeCoverageData(): CoverageUploadData {
       snpHeights,
       snpColorTypes,
       snpPositions.length,
-      -REGION_START,
     ).buffer,
     noncovPositions,
     noncovYOffsets,
@@ -87,7 +87,6 @@ function makeCoverageData(): CoverageUploadData {
       indicatorPositions,
       indicatorColorTypes,
       indicatorPositions.length,
-      -REGION_START,
     ).buffer,
   }
 }

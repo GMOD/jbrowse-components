@@ -28,8 +28,8 @@ static const int CM_LINKED_READ = 1;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct Instance {
-  uint  startOff       : ATTR0;   // bp offset from regionStart (lo)
-  uint  endOff         : ATTR1;   // bp offset from regionStart (hi — see pair below)
+  uint  startOff       : ATTR0;   // absolute genomic bp
+  uint  endOff         : ATTR1;   // absolute genomic bp
   uint  y              : ATTR2;
   uint  flags          : ATTR3;
   uint  mapq           : ATTR4;
@@ -41,8 +41,8 @@ struct Instance {
   uint  chainHasSupp   : ATTR10;  // 0=no supp, 1=supp + primary fwd, 2=supp + primary rev
   uint  readIndex      : ATTR11;
   uint  edgeFlags      : ATTR12;  // bit 0 = is_first, bit 1 = is_last
-  uint  readStartOff   : ATTR13;  // full-read-span start (for highlight overlay)
-  uint  readEndOff     : ATTR14;
+  uint  readStartOff   : ATTR13;  // full-read-span start absolute bp (for highlight overlay)
+  uint  readEndOff     : ATTR14;  // absolute bp
 };
 
 struct VsOut {
@@ -181,10 +181,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   }
 
   uint v = vid % 9u;
-  uint absStart = inst.startOff + u.regionStart;
-  uint absEnd = inst.endOff + u.regionStart;
-  float sx1 = hpClipX(hpSplitUint(absStart), u);
-  float sx2 = hpClipX(hpSplitUint(absEnd), u);
+  float sx1 = hpClipX(hpSplitUint(inst.startOff), u);
+  float sx2 = hpClipX(hpSplitUint(inst.endOff), u);
 
   float2 yy = pileupY(float(inst.y), u);
   float syTop = yy.x;
@@ -204,10 +202,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   if (u.highlightOnly == 1) {
     // Overlay spans full read (incl. introns) for cross-segment highlight.
-    uint hlAbsStart = inst.readStartOff + u.regionStart;
-    uint hlAbsEnd = inst.readEndOff + u.regionStart;
-    float hlSx1 = hpClipX(hpSplitUint(hlAbsStart), u);
-    float hlSx2 = hpClipX(hpSplitUint(hlAbsEnd), u);
+    float hlSx1 = hpClipX(hpSplitUint(inst.readStartOff), u);
+    float hlSx2 = hpClipX(hpSplitUint(inst.readEndOff), u);
     lx = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
     ly = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
     sx = lerp(hlSx1, hlSx2, lx);

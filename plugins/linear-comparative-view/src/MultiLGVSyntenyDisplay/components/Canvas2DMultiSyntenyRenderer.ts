@@ -19,11 +19,11 @@ import {
   truncateGenomeName,
 } from './multiSyntenyBackendTypes.ts'
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
+import { computeBlockRenderParams } from './multiSyntenyGpuData.ts'
 import {
   FIELD_OFFSET_F32 as FILL_FIELD,
   INSTANCE_STRIDE_F32 as FILL_STRIDE,
 } from './shaders/multiSyntenyFill.generated.ts'
-import { computeBlockRenderParams } from './multiSyntenyGpuData.ts'
 
 import type {
   MultiSyntenyBackend,
@@ -230,7 +230,6 @@ function renderCoverageForSvg(
     coverageDepths,
     coverageMaxDepth,
     coverageStartOffset,
-    regionStart,
     refName,
   } = coverage
   if (coverageMaxDepth === 0) {
@@ -249,7 +248,7 @@ function renderCoverageForSvg(
 
   ctx.fillStyle = coverageColor
   for (let i = 0; i < ds.count; i++) {
-    const binPos = regionStart + ds.positions[i]!
+    const binPos = ds.positions[i]!
     const px = refBpToPx(binPos)
     const px2 = refBpToPx(binPos + 1)
     if (px === undefined || px2 === undefined || px > width || px2 < 0) {
@@ -262,8 +261,8 @@ function renderCoverageForSvg(
 
   if (coverage.snpCount <= width * 4) {
     for (let i = 0; i < coverage.snpCount; i++) {
-      const px = refBpToPx(regionStart + coverage.snpPositions[i]!)
-      const px2 = refBpToPx(regionStart + coverage.snpPositions[i]! + 1)
+      const px = refBpToPx(coverage.snpPositions[i]!)
+      const px2 = refBpToPx(coverage.snpPositions[i]! + 1)
       if (px === undefined || px2 === undefined || px > width || px2 < 0) {
         continue
       }
@@ -276,7 +275,7 @@ function renderCoverageForSvg(
 
   ctx.fillStyle = snpColors.insertion
   for (let i = 0; i < coverage.numIndicators; i++) {
-    const px = refBpToPx(regionStart + coverage.indicatorPositions[i]!)
+    const px = refBpToPx(coverage.indicatorPositions[i]!)
     if (px === undefined || px < 0 || px > width) {
       continue
     }

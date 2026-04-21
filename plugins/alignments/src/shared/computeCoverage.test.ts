@@ -17,7 +17,7 @@ describe('computeCoverage', () => {
   it('computes depth for a single feature within region', () => {
     const features = [{ start: 100, end: 110 }]
     const result = computeCoverage(features, [], 100, 200)
-    expect(result.startOffset).toBe(0)
+    expect(result.startOffset).toBe(100)
     for (let i = 0; i < 10; i++) {
       expect(result.depths[i]).toBe(1)
     }
@@ -30,18 +30,15 @@ describe('computeCoverage', () => {
       { start: 100, end: 120 },
     ]
     const result = computeCoverage(features, [], 100, 200)
-    // startOffset should be 0 (clamped to regionStart), not -10
-    expect(result.startOffset).toBe(0)
-    // First bin is at regionStart=100, where the first feature already
-    // overlaps (started at 90), so depth should be >= 1
+    // startOffset is absolute, clamped to regionStart=100
+    expect(result.startOffset).toBe(100)
     expect(result.depths[0]).toBeGreaterThanOrEqual(1)
   })
 
   it('extends coverage past regionEnd for features that overlap', () => {
     const features = [{ start: 100, end: 250 }]
     const result = computeCoverage(features, [], 100, 200)
-    expect(result.startOffset).toBe(0)
-    // Coverage should extend to feature end (250), 150 bins past regionStart
+    expect(result.startOffset).toBe(100)
     expect(result.depths.length).toBe(150)
     expect(result.maxDepth).toBe(1)
   })
@@ -189,7 +186,7 @@ describe('computeNoncovCoverage (indicator triangles)', () => {
       length: 5,
     }))
     const depths = new Float32Array(20).fill(20)
-    const result = computeNoncovCoverage(insertions, [], [], 20, 100, depths, 0)
+    const result = computeNoncovCoverage(insertions, [], [], 20, 100, depths, 100)
     // 10 insertions > 20 * 0.3 = 6, localDepth=20 >= 7
     expect(result.indicatorCount).toBe(1)
     expect(result.indicatorColorTypes[0]).toBe(1) // insertion type
@@ -202,7 +199,7 @@ describe('computeNoncovCoverage (indicator triangles)', () => {
       { position: 105, length: 3 },
     ]
     const depths = new Float32Array(20).fill(20)
-    const result = computeNoncovCoverage(insertions, [], [], 20, 100, depths, 0)
+    const result = computeNoncovCoverage(insertions, [], [], 20, 100, depths, 100)
     // 2 insertions <= 20 * 0.3 = 6, below threshold
     expect(result.indicatorCount).toBe(0)
   })
@@ -214,7 +211,7 @@ describe('computeNoncovCoverage (indicator triangles)', () => {
       length: 5,
     }))
     const depths = new Float32Array(20).fill(5)
-    const result = computeNoncovCoverage(insertions, [], [], 5, 100, depths, 0)
+    const result = computeNoncovCoverage(insertions, [], [], 5, 100, depths, 100)
     // localDepth=5 < MINIMUM_INDICATOR_READ_DEPTH=8
     expect(result.indicatorCount).toBe(0)
   })
@@ -227,7 +224,7 @@ describe('computeNoncovCoverage (indicator triangles)', () => {
       length: 5,
     }))
     const depths = new Float32Array(20).fill(50)
-    const result = computeNoncovCoverage(insertions, [], [], 50, 100, depths, 0)
+    const result = computeNoncovCoverage(insertions, [], [], 50, 100, depths, 100)
     expect(result.indicatorCount).toBe(1)
   })
 
@@ -249,7 +246,7 @@ describe('computeNoncovCoverage (indicator triangles)', () => {
       20,
       100,
       depths,
-      0,
+      100,
     )
     // Total = 10 > 20 * 0.3 = 6; softclip (6) > insertion (4), so type = 2
     expect(result.indicatorCount).toBe(1)
@@ -262,7 +259,7 @@ describe('computeNoncovCoverage (indicator triangles)', () => {
       length: 5,
     }))
     const depths = new Float32Array(20).fill(7)
-    const result = computeNoncovCoverage(insertions, [], [], 7, 100, depths, 0)
+    const result = computeNoncovCoverage(insertions, [], [], 7, 100, depths, 100)
     expect(result.indicatorCount).toBe(0)
   })
 
@@ -272,7 +269,7 @@ describe('computeNoncovCoverage (indicator triangles)', () => {
       length: 5,
     }))
     const depths = new Float32Array(20).fill(8)
-    const result = computeNoncovCoverage(insertions, [], [], 8, 100, depths, 0)
+    const result = computeNoncovCoverage(insertions, [], [], 8, 100, depths, 100)
     // 5 > 8 * 0.3 = 2.4, localDepth=8 >= 8
     expect(result.indicatorCount).toBe(1)
   })

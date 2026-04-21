@@ -10,8 +10,8 @@ import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
 
 export interface ArcsDataResult {
   regionStart: number
-  arcX1: Float32Array
-  arcX2: Float32Array
+  arcX1: Uint32Array
+  arcX2: Uint32Array
   arcColorTypes: Float32Array
   arcIsArc: Uint8Array
   numArcs: number
@@ -219,8 +219,8 @@ export function computeArcsFromPileupData(
       const { data, readIdx, refName } = entry
       const flags = data.readFlags[readIdx]!
       const strand = data.readStrands[readIdx]!
-      const start = data.regionStart + data.readPositions[readIdx * 2]!
-      const end = data.regionStart + data.readPositions[readIdx * 2 + 1]!
+      const start = data.readPositions[readIdx * 2]!
+      const end = data.readPositions[readIdx * 2 + 1]!
       const isMateUnmapped = flags & SAM_FLAG_MATE_UNMAPPED
 
       if (hasPaired && !isMateUnmapped) {
@@ -278,14 +278,10 @@ export function computeArcsFromPileupData(
         const e2 = filtered[j + 1]!
         const s1 = e1.data.readStrands[e1.readIdx]!
         const s2 = e2.data.readStrands[e2.readIdx]!
-        const start1 =
-          e1.data.regionStart + e1.data.readPositions[e1.readIdx * 2]!
-        const end1 =
-          e1.data.regionStart + e1.data.readPositions[e1.readIdx * 2 + 1]!
-        const start2 =
-          e2.data.regionStart + e2.data.readPositions[e2.readIdx * 2]!
-        const end2 =
-          e2.data.regionStart + e2.data.readPositions[e2.readIdx * 2 + 1]!
+        const start1 = e1.data.readPositions[e1.readIdx * 2]!
+        const end1 = e1.data.readPositions[e1.readIdx * 2 + 1]!
+        const start2 = e2.data.readPositions[e2.readIdx * 2]!
+        const end2 = e2.data.readPositions[e2.readIdx * 2 + 1]!
         const p1 = s1 === -1 ? start1 : end1
         const p2 = hasPaired
           ? s2 === -1
@@ -423,14 +419,14 @@ export function arcsToRegionResult(
   const regionArcs = arcs.filter(
     a => a.p1.refName === regionRefName && a.p2.refName === regionRefName,
   )
-  const arcX1 = new Float32Array(regionArcs.length)
-  const arcX2 = new Float32Array(regionArcs.length)
+  const arcX1 = new Uint32Array(regionArcs.length)
+  const arcX2 = new Uint32Array(regionArcs.length)
   const arcColorTypes = new Float32Array(regionArcs.length)
   const arcIsArc = new Uint8Array(regionArcs.length)
 
   for (const [i, arc] of regionArcs.entries()) {
-    arcX1[i] = arc.p1.bp - regionStart
-    arcX2[i] = arc.p2.bp - regionStart
+    arcX1[i] = arc.p1.bp
+    arcX2[i] = arc.p2.bp
     arcColorTypes[i] = arc.colorType
     arcIsArc[i] = arc.isArc
   }
@@ -441,9 +437,8 @@ export function arcsToRegionResult(
   const lineColorTypes = new Float32Array(regionLines.length * 2)
 
   for (const [i, line] of regionLines.entries()) {
-    const xOffset = line.x.bp - regionStart
-    linePositions[i * 2] = xOffset
-    linePositions[i * 2 + 1] = xOffset
+    linePositions[i * 2] = line.x.bp
+    linePositions[i * 2 + 1] = line.x.bp
     lineYs[i * 2] = 0
     lineYs[i * 2 + 1] = height
     lineColorTypes[i * 2] = line.colorType

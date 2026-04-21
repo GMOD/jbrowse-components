@@ -409,7 +409,7 @@ export function buildInterbaseArrays(
   let idx = 0
   function addItems(items: InterbaseInput[], type: number) {
     for (const item of items) {
-      interbasePositions[idx] = item.position - regionStart
+      interbasePositions[idx] = item.position
       interbaseLengths[idx] = Math.min(65535, item.length)
       interbaseTypes[idx] = type
       if (interbaseReadIndices) {
@@ -453,7 +453,7 @@ export function buildMismatchArrays(
     ? new Uint32Array(filtered.length)
     : undefined
   for (const [i, mm] of filtered.entries()) {
-    mismatchPositions[i] = mm.position - regionStart
+    mismatchPositions[i] = mm.position
     mismatchBases[i] = mm.base
     mismatchStrands[i] = mm.strand
     if (mismatchReadIndices) {
@@ -491,7 +491,7 @@ export function buildSoftclipBaseArrays(
     }
     const ri = getReadIndex ? getReadIndex(sc.featureId) : 0
     for (let k = 0; k < sc.sequence.length; k++) {
-      softclipBasePositions[i] = sc.clipStart + k - regionStart
+      softclipBasePositions[i] = sc.clipStart + k
       softclipBaseBases[i] = sc.sequence.charCodeAt(k)
       if (softclipBaseReadIndices) {
         softclipBaseReadIndices[i] = ri
@@ -521,8 +521,8 @@ export function buildGapArrays(
     ? new Uint32Array(filtered.length)
     : undefined
   for (const [i, g] of filtered.entries()) {
-    gapPositions[i * 2] = Math.max(0, g.start - regionStart)
-    gapPositions[i * 2 + 1] = g.end - regionStart
+    gapPositions[i * 2] = Math.max(regionStart, g.start)
+    gapPositions[i * 2 + 1] = g.end
     gapLengths[i] = Math.min(65535, g.end - g.start)
     gapTypes[i] = g.type === 'deletion' ? 0 : 1
     if (gapReadIndices) {
@@ -548,7 +548,7 @@ export function buildModificationArrays(
     ? new Uint32Array(filtered.length)
     : undefined
   for (const [i, m] of filtered.entries()) {
-    modificationPositions[i] = m.position - regionStart
+    modificationPositions[i] = m.position
     const a = Math.round(m.prob * 255) & 0xff
     modificationColors[i] = packAbgr(m.r, m.g, m.b, a)
     if (modificationReadIndices) {
@@ -565,10 +565,9 @@ export function buildModificationArrays(
 
 // Splits each read into per-exon segments at CIGAR skip (N) gaps.
 // Reads without skips produce one segment. Segment starts are clamped
-// to 0 (features starting before regionStart), but ends are NOT clipped
-// to regionEnd — the GPU rasterizer handles viewport clipping. This
-// ensures segments match the full read extent used by readPositions,
-// preventing mismatches from rendering without backing read rectangles.
+// to regionStart (features starting before regionStart), but ends are
+// NOT clipped to regionEnd — the GPU rasterizer handles viewport clipping.
+// Positions are absolute genomic uint32 matching readPositions.
 // Edge flags encode whether the read's true start/end falls within
 // this region (bit 0 = first, bit 1 = last) — used for chevron drawing.
 export function buildSegmentArrays(
@@ -603,8 +602,8 @@ export function buildSegmentArrays(
   let segIdx = 0
   for (const f of features) {
     const readIdx = getReadIndex(f.id)
-    const readStart = Math.max(0, f.start - regionStart)
-    const readEnd = f.end - regionStart
+    const readStart = Math.max(regionStart, f.start)
+    const readEnd = f.end
     const skips = skipsByFeature.get(f.id)
 
     // Chevron only at the true read start/end, not at region-clipped edges
@@ -625,11 +624,11 @@ export function buildSegmentArrays(
       for (const skip of skips) {
         const gapStart = Math.min(
           readEnd,
-          Math.max(readStart, skip.start - regionStart),
+          Math.max(readStart, skip.start),
         )
         const gapEnd = Math.min(
           readEnd,
-          Math.max(readStart, skip.end - regionStart),
+          Math.max(readStart, skip.end),
         )
 
         // Exon segment before this gap

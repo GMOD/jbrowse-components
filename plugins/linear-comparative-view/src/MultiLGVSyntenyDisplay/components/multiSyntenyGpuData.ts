@@ -217,7 +217,6 @@ export function packCoverageForGpu(
   depths: Float32Array,
   startOffset: number,
   maxDepth: number,
-  regionStart: number,
   viewWidthPx = 2000,
 ): BlockCoverageUploadData {
   if (maxDepth === 0 || depths.length === 0) {
@@ -235,7 +234,7 @@ export function packCoverageForGpu(
     const o = i * COVERAGE_STRIDE
     // Store absolute genome coordinates so the shader can map bins to
     // any content block by subtracting block.start (bpRangeHi+bpRangeLo)
-    f32[o + COVERAGE_FIELD.position] = regionStart + ds.positions[i]!
+    f32[o + COVERAGE_FIELD.position] = ds.positions[i]!
     f32[o + COVERAGE_FIELD.minDepth] = ds.mins[i]!
     f32[o + COVERAGE_FIELD.maxDepth] = ds.maxs[i]!
   }
@@ -249,14 +248,13 @@ export interface BlockSnpUploadData {
 }
 
 // Pack SNP coverage segments for GPU upload.
-// Positions stored as absolute genome coordinates (regionStart + offset).
+// Positions are absolute genome coordinates from the worker.
 export function packSnpCoverageForGpu(
   snpPositions: Uint32Array,
   snpYOffsets: Float32Array,
   snpHeights: Float32Array,
   snpColorTypes: Uint8Array,
   snpCount: number,
-  regionStart: number,
 ): BlockSnpUploadData {
   return packSnpSegmentsForGpu(
     snpPositions,
@@ -264,7 +262,6 @@ export function packSnpCoverageForGpu(
     snpHeights,
     snpColorTypes,
     snpCount,
-    regionStart,
   )
 }
 
@@ -276,7 +273,6 @@ export interface BlockIndicatorUploadData {
 export function packIndicatorsForGpu(
   indicatorPositions: Uint32Array,
   numIndicators: number,
-  regionStart: number,
 ): BlockIndicatorUploadData {
   if (numIndicators === 0) {
     return { buffer: new ArrayBuffer(0), indicatorCount: 0 }
@@ -285,7 +281,7 @@ export function packIndicatorsForGpu(
   const buffer = new ArrayBuffer(numIndicators * INDICATOR_STRIDE_BYTES)
   const f32 = new Float32Array(buffer)
   for (let i = 0; i < numIndicators; i++) {
-    f32[i] = regionStart + indicatorPositions[i]!
+    f32[i] = indicatorPositions[i]!
   }
 
   return { buffer, indicatorCount: numIndicators }

@@ -384,7 +384,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                   data.coverageDepths,
                   data.coverageStartOffset,
                   self.coverageGlobalMax,
-                  data.regionStart,
                   Math.ceil(view.width),
                 )
                 b.uploadCoverageForBlock(n, {
@@ -400,7 +399,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                     data.snpHeights,
                     data.snpColorTypes,
                     data.snpCount,
-                    data.regionStart,
                   ),
                 )
                 b.uploadIndicatorsForBlock(
@@ -408,7 +406,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                   packIndicatorsForGpu(
                     data.indicatorPositions,
                     data.numIndicators,
-                    data.regionStart,
                   ),
                 )
               }

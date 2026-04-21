@@ -23,10 +23,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
   float2 local = quadLocal(vid);
 
-  uint absStart = inst.startOff + u.regionStart;
-  uint absEnd = inst.endOff + u.regionStart;
-  float sx1 = hpClipX(hpSplitUint(absStart), u);
-  float sx2 = hpClipX(hpSplitUint(absEnd), u);
+  float sx1 = hpClipX(hpSplitUint(inst.startOff), u);
+  float sx2 = hpClipX(hpSplitUint(inst.endOff), u);
 
   float rowH = u.featHeight + u.featSpacing;
   float rowCenter = u.covOffset + inst.y * rowH + u.featHeight * 0.5 - u.scrollTop;

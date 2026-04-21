@@ -172,9 +172,10 @@ Use this when settings change the shape/contents of per-region data; use
 
 ## Per-region zoom-staleness
 
-Most worker output is BP offsets from `regionStart` — no pixel
-coordinates cross the worker boundary, so data stays valid under zoom.
-Two exceptions:
+All worker position output is **absolute genomic uint32** — no pixel
+coordinates cross the worker boundary, so data stays valid under zoom
+without reference to the current region anchor. Two exceptions for
+zoom-dependent *content* (not coords):
 
 - **Wiggle**: BigWig has discrete zoom levels; the worker picks one based
   on `bpPerPx / resolution`. `isCacheValid` uses strict equality
@@ -186,7 +187,7 @@ Two exceptions:
   crosses `shouldRenderPeptideBackground`'s discrete threshold.
 
 All other plugins leave the default `() => true` — worker output is
-genomic-coord and zoom-agnostic.
+absolute genomic-coord and zoom-agnostic.
 
 `MultiRegionDisplayMixin`'s `FetchVisibleRegions` autorun calls the
 override per region and refetches stale ones.
@@ -247,35 +248,49 @@ time.
 
 ---
 
-## Coverage segment coordinate convention
+## Coordinate convention (all alignments data)
 
-Most `PileupDataResult` position arrays (reads, gaps, mismatches,
-interbase) store **regionStart-relative** uint32 offsets so that features
-starting before `regionStart` can be represented without negative numbers
-(uint32 wrapping), and so float32 GPU buffers stay precise (small offsets
-have no rounding error).
+**Every** position array emitted by the alignments worker is stored as
+**absolute genomic uint32** — reads, gaps, mismatches, interbase (ins/soft/
+hardclip), softclip bases, modifications, SNP/noncov/indicator/modCov
+segments, sashimi junctions, chain connecting lines, `coverageStartOffset`,
+and `readNextPositions`. One convention across the whole pipeline.
 
-Coverage segment arrays are different:
+**Why absolute, not regionStart-relative:**
 
-| Array | Format | Rationale |
+1. GPU smooth zoom: region boundaries change on zoom-out. Anything keyed to
+   `regionStart` is silently invalidated when the anchor shifts. Absolute
+   values have no anchor to invalidate.
+2. No signed offsets needed. Genomic positions are always ≥0; no uint32
+   wrapping trick is required for features starting before the region.
+3. Reversed regions are transformed by the drawing layer (`bpToX` on
+   Canvas2D, `flipX` on GPU), not the coord convention. Absolute coords
+   mean one unambiguous genomic bp; reversal is orthogonal.
+4. Consumers (SVG export, Canvas2D, hit testing, tooltips,
+   `findFeatureInRpcData`, main-thread layout) all compare against other
+   absolute bp values. No `regionStart +` arithmetic in any consumer.
+
+**Precision across the GPU boundary:**
+
+Canvas2D writes `uint32` directly to packed buffers — exact up to 4 Gbp,
+well beyond T2T chromosome lengths. No transform needed.
+
+For GPU, a single unified approach: every shader consumes absolute uint32
+positions and converts to clip space via hp-math.
+
+| Shader group | Attribute | Precision technique |
 |---|---|---|
-| `snpPositions` | absolute uint32 | written as uint32 by Canvas2D packer; GPU subtracts `regionStart` |
-| `noncovPositions` | absolute uint32 | same |
-| `indicatorPositions` | absolute uint32 | same |
-| `modCovPositions` | absolute uint32 | same |
-| `coverageStartOffset` | relative (offset from `regionStart`) | used as depth-array index alongside other relative positions |
+| Point/edge shaders: read, gap, mismatch, insertion, modification, clip, connectingLine, arcLine, coverage, snpCoverage, noncovHistogram, indicator, modCoverage | `uint position` | `hpClipX(hpSplitUint(absPos), u)` — integer split into hi/lo halves, compared against `bpHi`/`bpLo` (split `clippedBpStart`). Exact at 3 Gbp. |
+| arc (paired-end bezier curves) | `uint x1, x2` | `hpLinear(hpSplitUint(absPos), u)` returns normalized [0,1] within the visible window; bezier interpolation runs on those small floats, then `screenX = blockStartPx + norm * blockWidth`. Same precision floor as point shaders. |
 
-**Why absolute for segment arrays?** Canvas2D stores positions directly as
-uint32 in packed buffers (no float32 cast). At positions > 16 Mbp a
-float32 would lose integer precision (~8 bp error); uint32 is exact up to
-4 Gbp (> T2T chromosome lengths). For Canvas2D no coordinate transform is
-needed at pack time. The GPU pack path (`packCoverageAreaForGpu`) subtracts
-`regionStart` before writing float32, maintaining the small-relative-value
-precision used by shaders.
+The alignments UBO has **no `regionStart`**, **no `domainStart`/`domainEnd`**.
+All shaders convert bp → clip via hp-math against `bpHi`/`bpLo` (split
+`clippedBpStart`) and `bpLen`.
 
-This convention is display-orientation-agnostic: `bpToX` and GPU shaders
-handle reversed blocks via their own logic; absolute positions require no
-special casing for reversed regions.
+**Reversed regions:** Both shader families call `flipX(sx, u)` after
+computing clip-space x. `flipX(x) = lerp(x, -x, u.reversed)` negates in
+clip space, mapping the absolute position to visual left-edge=`region.end`,
+right-edge=`region.start`. Absolute-vs-relative is orthogonal to reversal.
 
 ---
 

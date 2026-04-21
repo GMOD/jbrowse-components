@@ -5,6 +5,7 @@
 
 import alignmentsUniforms;
 import colorPack;
+import hpmath;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -26,9 +27,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
   float2 local = quadLocal(vid);
 
-  float domLen = cigarDomainLen(u);
-  float2 dom = cigarDomain(u);
-  float pxPerBp = u.canvasW / domLen;
+  float pxPerBp = u.canvasW / u.bpLen;
 
   float alpha = 1.0;
   if (pxPerBp < 1.0) {
@@ -40,11 +39,12 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     return o;
   }
 
-  float pos = float(inst.position);
+  float clipCx = hpClipX(hpSplitUint(inst.position), u);
   float bpPerPx = 1.0 / pxPerBp;
   float barW = max(bpPerPx, min(bpPerPx, 1.0));
-  float sx1 = (pos - barW * 0.5 - dom.x) / domLen * 2.0 - 1.0;
-  float sx2 = (pos + barW * 0.5 - dom.x) / domLen * 2.0 - 1.0;
+  float halfWClip = (barW * 0.5 / u.bpLen) * 2.0;
+  float sx1 = clipCx - halfWClip;
+  float sx2 = clipCx + halfWClip;
   float minW = 2.0 / u.canvasW;
   if (sx2 - sx1 < minW) {
     float mid = (sx1 + sx2) * 0.5;

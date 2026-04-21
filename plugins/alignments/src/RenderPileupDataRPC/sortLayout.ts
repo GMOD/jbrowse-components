@@ -27,11 +27,10 @@ function buildSoftclipExpansions(data: PileupDataResult) {
       continue
     }
     const readIdx = data.interbaseReadIndices[i]!
-    const ibPosOffset = data.interbasePositions[i]!
+    const pos = data.interbasePositions[i]!
     const len = data.interbaseLengths[i]!
-    const pos = data.regionStart + ibPosOffset
-    const readStartOffset = data.readPositions[readIdx * 2]!
-    const clipStart = ibPosOffset === readStartOffset ? pos - len : pos
+    const readStart = data.readPositions[readIdx * 2]!
+    const clipStart = pos === readStart ? pos - len : pos
     const clipEnd = clipStart + len
     const existing = expansions.get(readIdx)
     if (!existing) {
@@ -56,8 +55,8 @@ function readExtent(
   i: number,
   expansions: Map<number, { start: number; end: number }> | undefined,
 ) {
-  const start = data.regionStart + data.readPositions[i * 2]!
-  const end = data.regionStart + data.readPositions[i * 2 + 1]!
+  const start = data.readPositions[i * 2]!
+  const end = data.readPositions[i * 2 + 1]!
   const exp = expansions?.get(i)
   return {
     start: exp ? Math.min(start, exp.start) : start,
@@ -73,7 +72,6 @@ function sortOverlappingByIndex(
 ) {
   const { type, pos: sortPos } = sortedBy
   const {
-    regionStart,
     readPositions,
     readStrands,
     mismatchReadIndices,
@@ -95,8 +93,7 @@ function sortOverlappingByIndex(
     const baseAtPos = new Map<number, number>()
     if (mismatchReadIndices) {
       for (let i = 0; i < numMismatches; i++) {
-        const mismatchPos = mismatchPositions[i]!
-        if (regionStart + mismatchPos === sortPos) {
+        if (mismatchPositions[i] === sortPos) {
           baseAtPos.set(mismatchReadIndices[i]!, mismatchBases[i]!)
         }
       }
@@ -106,8 +103,8 @@ function sortOverlappingByIndex(
         if (gapTypes[i] !== 0) {
           continue
         }
-        const gapStart = regionStart + gapPositions[i * 2]!
-        const gapEnd = regionStart + gapPositions[i * 2 + 1]!
+        const gapStart = gapPositions[i * 2]!
+        const gapEnd = gapPositions[i * 2 + 1]!
         if (gapStart <= sortPos && gapEnd > sortPos) {
           const readIdx = gapReadIndices[i]!
           if (!baseAtPos.has(readIdx)) {
@@ -144,8 +141,7 @@ function sortOverlappingByIndex(
         if (interbaseTypes[i] !== targetType) {
           continue
         }
-        const interbasePos = interbasePositions[i]!
-        if (regionStart + interbasePos === sortPos) {
+        if (interbasePositions[i] === sortPos) {
           const readIdx = interbaseReadIndices[i]!
           const len = interbaseLengths[i]!
           const existing = lengthAtPos.get(readIdx) ?? 0
@@ -219,7 +215,7 @@ export function computeSortedLayout(
   sortedBy: SortedBy,
   showSoftClipping?: boolean,
 ) {
-  const { numReads, readPositions, regionStart } = data
+  const { numReads, readPositions } = data
   const { pos: sortPos } = sortedBy
   const expansions = showSoftClipping
     ? buildSoftclipExpansions(data)
@@ -228,8 +224,8 @@ export function computeSortedLayout(
   const overlapping: number[] = []
   const nonOverlapping: number[] = []
   for (let i = 0; i < numReads; i++) {
-    const start = regionStart + readPositions[i * 2]!
-    const end = regionStart + readPositions[i * 2 + 1]!
+    const start = readPositions[i * 2]!
+    const end = readPositions[i * 2 + 1]!
     if (start <= sortPos && end > sortPos) {
       overlapping.push(i)
     } else {
@@ -269,8 +265,8 @@ export function computeMultiRegionLayout(
         seen.add(id)
         reads.push({
           id,
-          start: data.regionStart + data.readPositions[i * 2]!,
-          end: data.regionStart + data.readPositions[i * 2 + 1]!,
+          start: data.readPositions[i * 2]!,
+          end: data.readPositions[i * 2 + 1]!,
         })
       }
     }

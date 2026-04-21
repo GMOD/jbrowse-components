@@ -72,19 +72,18 @@ export function canvasToGenomicCoords(
   topOffset: number,
   rangeY: [number, number],
 ) {
-  const { bpRange, blockStartPx, blockWidth, rpcData } = resolved
+  const { bpRange, blockStartPx, blockWidth } = resolved
   const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
   const frac = (canvasX - blockStartPx) / blockWidth
   const genomicPos = resolved.reversed
     ? bpRange[1] - frac * (bpRange[1] - bpRange[0])
     : bpRange[0] + frac * (bpRange[1] - bpRange[0])
-  const posOffset = genomicPos - rpcData.regionStart
   const rowHeight = featureHeight + featureSpacing
   const scrolledY = canvasY + rangeY[0]
   const adjustedY = scrolledY - topOffset
   const row = Math.floor(adjustedY / rowHeight)
   const yWithinRow = adjustedY - row * rowHeight
-  return { bpPerPx, genomicPos, posOffset, row, adjustedY, yWithinRow }
+  return { bpPerPx, genomicPos, row, adjustedY, yWithinRow }
 }
 
 /**
@@ -182,11 +181,8 @@ export function formatChainTooltip(
   refName: string,
 ) {
   const name = rpcData.readNames[idx] ?? ''
-  const startOffset = rpcData.readPositions[idx * 2]
-  const endOffset = rpcData.readPositions[idx * 2 + 1]
-  const start =
-    startOffset !== undefined ? rpcData.regionStart + startOffset : 0
-  const end = endOffset !== undefined ? rpcData.regionStart + endOffset : 0
+  const start = rpcData.readPositions[idx * 2] ?? 0
+  const end = rpcData.readPositions[idx * 2 + 1] ?? 0
   const flags = rpcData.readFlags[idx] ?? 0
   const insertSize = rpcData.readInsertSizes[idx] ?? 0
   const pairOrientation = rpcData.readPairOrientations[idx] ?? 0

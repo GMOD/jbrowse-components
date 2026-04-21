@@ -1,7 +1,12 @@
+import { YSCALEBAR_LABEL_OFFSET } from './coverageDownsampling.ts'
 import {
   FIELD_OFFSET_F32 as INDICATOR_FIELD,
   INSTANCE_STRIDE_F32 as INDICATOR_STRIDE,
 } from './indicatorLayout.generated.ts'
+import {
+  INDICATOR_TRIANGLE_H,
+  drawIndicatorTriangle,
+} from './labelConstants.ts'
 import {
   FIELD_OFFSET_F32 as MOD_COV_FIELD,
   INSTANCE_STRIDE_F32 as MOD_COV_STRIDE,
@@ -22,12 +27,6 @@ import type {
   NoncovGpuUpload,
   SnpGpuUpload,
 } from './coverageGpuPacking.ts'
-import { YSCALEBAR_LABEL_OFFSET } from './coverageDownsampling.ts'
-import {
-  INDICATOR_TRIANGLE_H,
-  drawIndicatorTriangle,
-} from './labelConstants.ts'
-
 import type { CigarOpDrawColors } from './labelConstants.ts'
 import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 

@@ -3,6 +3,7 @@
 
 import alignmentsUniforms;
 import colorPack;
+import hpmath;
 
 static const uint GAP_DELETION = 0u;
 static const uint GAP_SKIP     = 1u;
@@ -27,10 +28,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
   float2 local = quadLocal(vid);
 
-  float domLen = cigarDomainLen(u);
-  float2 dom = cigarDomain(u);
-  float sx1 = (float(inst.startOff) - dom.x) / domLen * 2.0 - 1.0;
-  float sx2 = (float(inst.endOff) - dom.x) / domLen * 2.0 - 1.0;
+  float sx1 = hpClipX(hpSplitUint(inst.startOff), u);
+  float sx2 = hpClipX(hpSplitUint(inst.endOff), u);
 
   float2 yy = pileupY(float(inst.y), u);
   float yTop = yy.x;
@@ -46,7 +45,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   float alpha = 1.0;
   if (inst.gapType == GAP_DELETION) {
-    float widthPx = float(inst.endOff - inst.startOff) * u.canvasW / domLen;
+    float widthPx = float(inst.endOff - inst.startOff) * u.canvasW / u.bpLen;
     if (widthPx < 1.0) {
       float base = widthPx * widthPx;
       alpha = base + inst.frequency * (1.0 - base);

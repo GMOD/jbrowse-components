@@ -4,11 +4,12 @@
 
 import alignmentsUniforms;
 import colorPack;
+import hpmath;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct Instance {
-  uint  position  : ATTR0;   // bp offset from regionStart
+  uint  position  : ATTR0;   // absolute genomic bp
   uint  y         : ATTR1;   // pileup row
   uint  base      : ATTR2;   // ASCII: A=65/97 C=67/99 G=71/103 T=84/116
   float frequency : ATTR3;   // 0..1, fraction of reads with this base
@@ -32,9 +33,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
   float2 local = quadLocal(vid);
 
-  float domLen = cigarDomainLen(u);
-  float2 dom = cigarDomain(u);
-  float pxPerBp = u.canvasW / domLen;
+  float pxPerBp = u.canvasW / u.bpLen;
 
   // Sub-pixel alpha: at <1 px/bp, blend toward full-row alpha based on the
   // per-site frequency so thinly-covered mismatches fade out.
@@ -48,11 +47,10 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     return o;
   }
 
-  float pos = float(inst.position);
-  float px1 = floor((pos - dom.x) / domLen * u.canvasW);
-  float px2 = max(px1 + 1.0, floor((pos + 1.0 - dom.x) / domLen * u.canvasW));
-  float sx1 = px1 / u.canvasW * 2.0 - 1.0;
-  float sx2 = px2 / u.canvasW * 2.0 - 1.0;
+  float clip1 = hpClipX(hpSplitUint(inst.position), u);
+  float clip2 = hpClipX(hpSplitUint(inst.position + 1u), u);
+  float sx1 = snapToPixelX(clip1, u.canvasW);
+  float sx2 = max(sx1 + 2.0 / u.canvasW, snapToPixelX(clip2, u.canvasW));
   float sx = lerp(sx1, sx2, local.x);
 
   float2 yy = pileupY(float(inst.y), u);

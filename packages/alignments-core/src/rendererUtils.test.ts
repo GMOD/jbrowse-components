@@ -66,12 +66,13 @@ describe('drawCoverageBins', () => {
   it('draws bins as rectangles', () => {
     const buf = new ArrayBuffer(2 * 12)
     const f32 = new Float32Array(buf)
+    const u32 = new Uint32Array(buf)
     // bin 0: pos=100, yOffset=0.2, depth=0.8
-    f32[0] = 100
+    u32[0] = 100
     f32[1] = 0.2
     f32[2] = 0.8
     // bin 1: pos=101, yOffset=0.1, depth=0.5
-    f32[3] = 101
+    u32[3] = 101
     f32[4] = 0.1
     f32[5] = 0.5
 
@@ -87,7 +88,8 @@ describe('drawCoverageBins', () => {
   it('skips bins outside viewport', () => {
     const buf = new ArrayBuffer(12)
     const f32 = new Float32Array(buf)
-    f32[0] = 1000
+    const u32 = new Uint32Array(buf)
+    u32[0] = 1000
     f32[1] = 0.5
     f32[2] = 0.5
 
@@ -120,7 +122,8 @@ describe('drawSnpSegments', () => {
   it('draws segments with correct colors', () => {
     const buf = new ArrayBuffer(16)
     const f32 = new Float32Array(buf)
-    f32[0] = 100
+    const u32 = new Uint32Array(buf)
+    u32[0] = 100
     f32[1] = 0.5
     f32[2] = 0.3
     f32[3] = 1 // colorType=1 → baseA
@@ -152,9 +155,10 @@ describe('drawIndicators', () => {
   it('draws triangles at positions with correct colors', () => {
     const buf = new ArrayBuffer(16)
     const f32 = new Float32Array(buf)
-    f32[0] = 50
+    const u32 = new Uint32Array(buf)
+    u32[0] = 50
     f32[1] = 1 // insertion
-    f32[2] = 150
+    u32[2] = 150
     f32[3] = 2 // softclip
 
     const { ctx, calls } = makeCtx()

@@ -4,12 +4,12 @@
 
 All display types fetch data via RPC workers and render on the main thread.
 No plugin ships pixel coordinates across the worker boundary. Worker output
-positions are genomic coordinates; most are **BP offsets from `regionStart`**
-(relative), but alignments coverage segment arrays (`snpPositions`,
-`noncovPositions`, `indicatorPositions`, `modCovPositions`) are **absolute
-uint32 genomic coordinates** — see `agent-docs/ARCHITECTURE.md` "Coverage
-segment coordinate convention" for the rationale. What differs per plugin is
-where various layout decisions happen:
+positions are **absolute genomic uint32**; no regionStart-relative arithmetic
+crosses the worker boundary in the alignments plugin — see
+`agent-docs/ARCHITECTURE.md` "Coordinate convention" for the rationale.
+Wiggle's `featurePositions` are still BP offsets from `regionStart` (pending
+the same refactor). What differs per plugin is where various layout decisions
+happen:
 
 - **Canvas plugin**: worker does per-feature glyph selection, subfeature
   breakdown, color computation, and label measurement. Y-row packing is
@@ -32,7 +32,8 @@ where various layout decisions happen:
   domain) and renders.
 - **Alignments**: worker fetches reads only — no layout. All Y-row packing,
   chain-connecting lines, and Flatbush spatial indices are main-thread. Worker
-  output is fully genomic.
+  output positions are fully absolute genomic uint32 (no regionStart-relative
+  offsets anywhere in the data stream).
 - **HiC / LD / variants**: worker returns genomic data; GPU shader handles the
   zoom transform per frame.
 

@@ -31,8 +31,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
   uint v = vid % 2u;
 
-  uint absPos = inst.position + u.regionStart;
-  float norm = hpLinear(hpSplitUint(absPos), u);
+  float norm = hpLinear(hpSplitUint(inst.position), u);
   float screenX = u.blockStartPx + norm * u.blockWidth;
   float sx = (screenX / u.canvasW) * 2.0 - 1.0;
 

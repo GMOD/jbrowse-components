@@ -134,8 +134,8 @@ export interface ModCoverageUploadData {
 
 export interface ArcsUploadData {
   regionStart: number
-  arcX1: Float32Array
-  arcX2: Float32Array
+  arcX1: Uint32Array
+  arcX2: Uint32Array
   arcColorTypes: Float32Array
   arcIsArc: Uint8Array
   numArcs: number

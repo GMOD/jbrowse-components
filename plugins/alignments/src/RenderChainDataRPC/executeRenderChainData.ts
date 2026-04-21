@@ -232,8 +232,8 @@ export async function executeRenderChainData({
 
   for (const [i, f] of features.entries()) {
     const cIdx = featureIdToChainIdx.get(f.id) ?? 0
-    readPositions[i * 2] = Math.max(0, f.start - regionStart)
-    readPositions[i * 2 + 1] = f.end - regionStart
+    readPositions[i * 2] = Math.max(regionStart, f.start)
+    readPositions[i * 2 + 1] = f.end
     readYs[i] = 0
     readFlags[i] = f.flags
     readMapqs[i] = Math.min(255, f.mapq)
@@ -331,7 +331,7 @@ export async function executeRenderChainData({
     coverage.startOffset,
   )
 
-  const sashimi = computeSashimiJunctions(gaps, regionStart)
+  const sashimi = computeSashimiJunctions(gaps)
 
   const modTooltipData = buildModTooltipData({ modifications, regionStart })
 
@@ -342,7 +342,6 @@ export async function executeRenderChainData({
     snpCoverage,
     noncovCoverage,
     undefined,
-    regionStart,
   )
 
   const result: PileupDataResult = {

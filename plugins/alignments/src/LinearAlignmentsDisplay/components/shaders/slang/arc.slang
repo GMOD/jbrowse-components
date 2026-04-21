@@ -6,6 +6,7 @@
 
 import alignmentsUniforms;
 import colorPack;
+import hpmath;
 
 // Must match (ARC_CURVE_SEGMENTS + 1) * 2 verts per instance. Keep in sync
 // with the verticesPerInstance argument on the CPU side.
@@ -16,8 +17,8 @@ static const float PI = 3.14159265359;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct Instance {
-  float x1        : ATTR0;
-  float x2        : ATTR1;
+  uint  x1        : ATTR0;
+  uint  x2        : ATTR1;
   float colorType : ATTR2;
   float isArc     : ATTR3;
 };
@@ -63,30 +64,36 @@ float3 arcColor(float ct, Uniforms u) {
 }
 
 // Evaluates the curve at parameter t ∈ [0,1] in screen pixels.
+// x1/x2 are absolute genomic uint32. Convert each to a normalized fraction
+// in the visible window via hp-math (preserves 3-Gbp precision), then run
+// the bezier in that small-float space.
 float2 evalArc(float t, Instance inst, Uniforms u) {
-  float radius = (inst.x2 - inst.x1) / 2.0;
+  float x1Norm = hpLinear(hpSplitUint(inst.x1), u);
+  float x2Norm = hpLinear(hpSplitUint(inst.x2), u);
+  float radius = (x2Norm - x1Norm) * 0.5 * u.bpLen;
   float absrad = abs(radius);
-  float cx = inst.x1 + radius;
   float pxPerBp = u.blockWidth / u.bpLen;
   float absradPx = absrad * pxPerBp;
   float availH = u.canvasH - ARC_HEIGHT_MARGIN;
   float destY = min(availH, absradPx);
   float yDir = (u.pairedArcsDown > 0.5) ? 1.0 : -1.0;
 
-  float xBp, yPx;
+  float xNorm, yPx;
   if (inst.isArc > 0.5) {
     float angle = t * PI;
-    xBp = cx + cos(angle) * radius;
-    yPx = (absradPx > 0.0) ? sin(angle) * absradPx * (destY / absradPx) * yDir : 0.0;
+    float cxNorm = (x1Norm + x2Norm) * 0.5;
+    float rNorm = (x2Norm - x1Norm) * 0.5;
+    xNorm = cxNorm + cos(angle) * rNorm;
+    yPx = (absradPx > 0.0) ? sin(angle) * destY * yDir : 0.0;
   } else {
     // Cubic Bezier with control points at x1,x1,x2,x2 (so the curve
     // approaches each anchor tangent to the x-axis).
     float mt = 1.0 - t; float mt2 = mt*mt; float mt3 = mt2*mt;
     float t2 = t*t;     float t3 = t2*t;
-    xBp = mt3*inst.x1 + 3.0*mt2*t*inst.x1 + 3.0*mt*t2*inst.x2 + t3*inst.x2;
+    xNorm = mt3*x1Norm + 3.0*mt2*t*x1Norm + 3.0*mt*t2*x2Norm + t3*x2Norm;
     yPx = (3.0*mt2*t*destY + 3.0*mt*t2*destY) * yDir;
   }
-  float screenX = u.blockStartPx + (xBp - u.domainStart) * pxPerBp;
+  float screenX = u.blockStartPx + xNorm * u.blockWidth;
   return float2(screenX, yPx);
 }
 

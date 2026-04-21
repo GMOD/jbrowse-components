@@ -93,7 +93,6 @@ function fillFrameUniforms(
   f[U.bpLo] = frame.bpLo
   f[U.bpLen] = frame.clippedBpEnd - frame.clippedBpStart
   f[U.hpZero] = 0
-  u[U.regionStart] = region.regionStart
   f[U.canvasW] = frame.canvasW
   f[U.canvasH] = state.canvasHeight
   f[U.rangeY0] = state.rangeY[0]
@@ -113,8 +112,6 @@ function fillFrameUniforms(
   f[U.binSize] = region.binSize
   f[U.noncovHeight] =
     region.noncovMaxCount > 0 ? Math.min(region.noncovMaxCount * 2, 20) : 0
-  f[U.domainStart] = frame.clippedBpStart - region.regionStart
-  f[U.domainEnd] = frame.clippedBpEnd - region.regionStart
   f[U.insertUpper] = region.insertSizeStats?.upper ?? 999999
   f[U.insertLower] = region.insertSizeStats?.lower ?? 0
   i[U.colorScheme] = state.colorScheme
@@ -295,14 +292,15 @@ function packArcs(data: ArcsUploadData): ArrayBuffer {
   const s32 = arcShader.INSTANCE_STRIDE_F32
   const buf = new ArrayBuffer(n * arcShader.INSTANCE_STRIDE_BYTES)
   const f32 = new Float32Array(buf)
+  const u32 = new Uint32Array(buf)
   const x1 = data.arcX1
   const x2 = data.arcX2
   const cts = data.arcColorTypes
   const isArc = data.arcIsArc
   for (let i = 0; i < n; i++) {
     const o = i * s32
-    f32[o + F.x1] = x1[i]!
-    f32[o + F.x2] = x2[i]!
+    u32[o + F.x1] = x1[i]!
+    u32[o + F.x2] = x2[i]!
     f32[o + F.colorType] = cts[i]!
     f32[o + F.isArc] = isArc[i]!
   }
@@ -398,9 +396,6 @@ function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
   f[U.bpHi] = hi
   f[U.bpLo] = lo
   f[U.bpLen] = block.bpRangeX[1] - block.bpRangeX[0]
-  f[U.domainStart] = block.bpRangeX[0] - region.regionStart
-  f[U.domainEnd] = block.bpRangeX[1] - region.regionStart
-  u[U.regionStart] = region.regionStart
   f[U.lineWidthPx] = state.arcLineWidth ?? 1
   f[U.pairedArcsDown] = state.pairedArcsDown ? 1 : 0
 }

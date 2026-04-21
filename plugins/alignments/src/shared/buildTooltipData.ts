@@ -21,11 +21,10 @@ export function buildModTooltipData({
     if (mod.position < regionStart) {
       continue
     }
-    const posOffset = mod.position - regionStart
-    let posEntry = result[posOffset]
+    let posEntry = result[mod.position]
     if (!posEntry) {
       posEntry = {}
-      result[posOffset] = posEntry
+      result[mod.position] = posEntry
     }
     const modKey = mod.modType
     let entry = posEntry[modKey]

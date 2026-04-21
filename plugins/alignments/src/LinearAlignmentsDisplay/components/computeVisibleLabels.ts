@@ -79,7 +79,6 @@ export function computeVisibleLabels(
     const charWidth = 6.5
     const canRenderText =
       pxPerBp >= charWidth && featureHeightSetting >= MIN_HEIGHT_FOR_TEXT
-    const { regionStart } = rpcData
 
     // Process deletions (gaps)
     const { gapPositions, gapYs, gapLengths, gapTypes, numGaps } = rpcData
@@ -89,13 +88,10 @@ export function computeVisibleLabels(
           continue
         }
 
-        const startOffset = gapPositions[i * 2]!
-        const endOffset = gapPositions[i * 2 + 1]!
+        const gapStart = gapPositions[i * 2]!
+        const gapEnd = gapPositions[i * 2 + 1]!
         const length = gapLengths[i]!
         const y = gapYs[i]!
-
-        const gapStart = regionStart + startOffset
-        const gapEnd = regionStart + endOffset
 
         if (gapEnd < blockStart || gapStart > blockEnd) {
           continue
@@ -142,12 +138,10 @@ export function computeVisibleLabels(
     } = rpcData
 
     for (let i = 0; i < numInterbases; i++) {
-      const posOffset = interbasePositions[i]!
+      const pos = interbasePositions[i]!
       const length = interbaseLengths[i]!
       const y = interbaseYs[i]!
       const type = interbaseTypes[i]!
-
-      const pos = regionStart + posOffset
 
       if (pos < blockStart || pos > blockEnd) {
         continue
@@ -216,11 +210,9 @@ export function computeVisibleLabels(
       rpcData
     if (canRenderText) {
       for (let i = 0; i < numMismatches; i++) {
-        const posOffset = mismatchPositions[i]!
+        const pos = mismatchPositions[i]!
         const baseCode = mismatchBases[i]!
         const y = mismatchYs[i]!
-
-        const pos = regionStart + posOffset
 
         if (pos < blockStart || pos + 1 > blockEnd) {
           continue

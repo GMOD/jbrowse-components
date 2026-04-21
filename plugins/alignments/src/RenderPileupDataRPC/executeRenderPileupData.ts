@@ -161,8 +161,8 @@ export async function executeRenderPileupData({
 
     for (const [i, f] of features.entries()) {
       featureIdToIndex.set(f.id, i)
-      readPositions[i * 2] = Math.max(0, f.start - regionStart)
-      readPositions[i * 2 + 1] = f.end - regionStart
+      readPositions[i * 2] = Math.max(regionStart, f.start)
+      readPositions[i * 2 + 1] = f.end
       readFlags[i] = f.flags
       readMapqs[i] = Math.min(255, f.mapq)
       readAvgBaseQualities[i] = Math.min(255, f.avgBaseQuality)
@@ -274,7 +274,7 @@ export async function executeRenderPileupData({
 
   const modTooltipData = buildModTooltipData({ modifications, regionStart })
 
-  const sashimi = computeSashimiJunctions(gaps, regionStart)
+  const sashimi = computeSashimiJunctions(gaps)
 
   const pairedInsertSizes = features
     .filter(f => f.flags & 2 && !(f.flags & 256) && !(f.flags & 2048))
@@ -290,7 +290,6 @@ export async function executeRenderPileupData({
     snpCoverage,
     noncovCoverage,
     modCoverage,
-    regionStart,
   )
 
   const result: PileupDataResult = {

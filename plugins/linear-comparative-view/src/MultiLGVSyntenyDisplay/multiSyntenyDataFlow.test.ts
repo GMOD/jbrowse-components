@@ -55,7 +55,6 @@ function buildRegionData(
     indels,
     coverage.depths,
     coverage.startOffset,
-    regionStart,
   )
   const mismatchPositions = new Uint32Array(mismatches.length)
   const mismatchBases = new Uint8Array(mismatches.length)
@@ -226,10 +225,8 @@ describe('coverage correctness for overlapping synteny features', () => {
     expect(data.coverageMaxDepth).toBe(1)
 
     // Check actual depths at specific positions
-    const depthAt150 =
-      data.coverageDepths[150 - data.regionStart - data.coverageStartOffset]
-    const depthAt250 =
-      data.coverageDepths[250 - data.regionStart - data.coverageStartOffset]
+    const depthAt150 = data.coverageDepths[150 - data.coverageStartOffset]
+    const depthAt250 = data.coverageDepths[250 - data.coverageStartOffset]
     expect(depthAt150).toBe(1)
     // Gap between features should be 0
     expect(depthAt250).toBe(0)
@@ -245,11 +242,11 @@ describe('coverage correctness for overlapping synteny features', () => {
     expect(data.coverageMaxDepth).toBe(3)
 
     // At position 275, all three features overlap
-    const idx275 = 275 - data.regionStart - data.coverageStartOffset
+    const idx275 = 275 - data.coverageStartOffset
     expect(data.coverageDepths[idx275]).toBe(3)
 
     // At position 150, only the first feature
-    const idx150 = 150 - data.regionStart - data.coverageStartOffset
+    const idx150 = 150 - data.coverageStartOffset
     expect(idx150).toBeGreaterThanOrEqual(0)
     expect(data.coverageDepths[idx150]).toBe(1)
   })

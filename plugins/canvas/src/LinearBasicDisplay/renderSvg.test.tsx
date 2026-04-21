@@ -2,8 +2,8 @@ import { jest } from '@jest/globals'
 
 import { renderSvg } from './renderSvg.tsx'
 
-import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { RenderSvgModel } from './renderSvg.ts'
+import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
 // renderSvg calls getContainingView(model) to reach the LGV. Since the model
 // is a plain object in tests (not an MST node), we intercept the call.

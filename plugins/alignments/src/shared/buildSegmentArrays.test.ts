@@ -61,10 +61,13 @@ function segments(
   return segs
 }
 
+// Segment positions are absolute genomic coordinates.
 describe('buildSegmentArrays', () => {
   test('read without skips produces one segment', () => {
     const result = segments([feat('r1', 1000, 1200)], [], 1000, 1200)
-    expect(result).toEqual([{ start: 0, end: 200, readIdx: 0, edge: 0b11 }])
+    expect(result).toEqual([
+      { start: 1000, end: 1200, readIdx: 0, edge: 0b11 },
+    ])
   })
 
   test('deletions are ignored (only skips split reads)', () => {
@@ -74,7 +77,9 @@ describe('buildSegmentArrays', () => {
       1000,
       1200,
     )
-    expect(result).toEqual([{ start: 0, end: 200, readIdx: 0, edge: 0b11 }])
+    expect(result).toEqual([
+      { start: 1000, end: 1200, readIdx: 0, edge: 0b11 },
+    ])
   })
 
   test('single skip splits read into two exon segments', () => {
@@ -85,8 +90,8 @@ describe('buildSegmentArrays', () => {
       2000,
     )
     expect(result).toEqual([
-      { start: 0, end: 200, readIdx: 0, edge: 0b01 },
-      { start: 800, end: 1000, readIdx: 0, edge: 0b10 },
+      { start: 1000, end: 1200, readIdx: 0, edge: 0b01 },
+      { start: 1800, end: 2000, readIdx: 0, edge: 0b10 },
     ])
   })
 
@@ -98,9 +103,9 @@ describe('buildSegmentArrays', () => {
       5000,
     )
     expect(result).toEqual([
-      { start: 0, end: 200, readIdx: 0, edge: 0b01 },
-      { start: 800, end: 1100, readIdx: 0, edge: 0 },
-      { start: 3800, end: 4000, readIdx: 0, edge: 0b10 },
+      { start: 1000, end: 1200, readIdx: 0, edge: 0b01 },
+      { start: 1800, end: 2100, readIdx: 0, edge: 0 },
+      { start: 4800, end: 5000, readIdx: 0, edge: 0b10 },
     ])
   })
 
@@ -112,53 +117,47 @@ describe('buildSegmentArrays', () => {
       2000,
     )
     expect(result).toEqual([
-      { start: 0, end: 200, readIdx: 0, edge: 0b01 },
-      { start: 800, end: 1000, readIdx: 0, edge: 0b10 },
-      { start: 0, end: 500, readIdx: 1, edge: 0b11 },
+      { start: 1000, end: 1200, readIdx: 0, edge: 0b01 },
+      { start: 1800, end: 2000, readIdx: 0, edge: 0b10 },
+      { start: 1000, end: 1500, readIdx: 1, edge: 0b11 },
     ])
   })
 
   describe('collapsed intron mode (read extends beyond region)', () => {
     test('segments extend to full feature end (GPU handles clipping)', () => {
-      // Read spans 1000-50000 with skip 1200-49800, region is first exon area
       const result = segments(
         [feat('r1', 1000, 50000)],
         [skip('r1', 1200, 49800)],
         1000,
         1300,
       )
-      // Both exons are emitted — GPU rasterizer clips off-screen segments
       expect(result).toEqual([
-        { start: 0, end: 200, readIdx: 0, edge: 0b01 },
-        { start: 48800, end: 49000, readIdx: 0, edge: 0 },
+        { start: 1000, end: 1200, readIdx: 0, edge: 0b01 },
+        { start: 49800, end: 50000, readIdx: 0, edge: 0 },
       ])
     })
 
     test('read starting before region has no first-edge flag', () => {
-      // Region covers second exon, read started way before
       const result = segments(
         [feat('r1', 1000, 50000)],
         [skip('r1', 1200, 49800)],
         49700,
         50100,
       )
-      // Exon is at [100, 300] relative to regionStart=49700
-      expect(result).toEqual([{ start: 100, end: 300, readIdx: 0, edge: 0b10 }])
+      expect(result).toEqual([
+        { start: 49800, end: 50000, readIdx: 0, edge: 0b10 },
+      ])
     })
 
     test('read entirely intronic produces off-screen exon segments', () => {
-      // Region is fully within the intron — exon segments still emitted
-      // but will be off-screen (GPU clips them)
       const result = segments(
         [feat('r1', 1000, 50000)],
         [skip('r1', 1200, 49800)],
         5000,
         5300,
       )
-      // Exon at offset [0-200] from feature start = [-4000, -3800] from regionStart → clamped
-      // Second exon at [44800, 45000] relative to regionStart=5000
       expect(result).toEqual([
-        { start: 44800, end: 45000, readIdx: 0, edge: 0 },
+        { start: 49800, end: 50000, readIdx: 0, edge: 0 },
       ])
     })
 
@@ -169,9 +168,9 @@ describe('buildSegmentArrays', () => {
         2000,
         2300,
       )
-      // Skip gap offsets from regionStart=2000: start=max(0,-800)=0, end=max(0,-200)=0
-      // Both clamped to 0, so single segment [0, 48000]
-      expect(result).toEqual([{ start: 0, end: 48000, readIdx: 0, edge: 0 }])
+      expect(result).toEqual([
+        { start: 2000, end: 50000, readIdx: 0, edge: 0 },
+      ])
     })
 
     test('skip gap entirely after region — full segments emitted', () => {
@@ -181,11 +180,9 @@ describe('buildSegmentArrays', () => {
         1000,
         1300,
       )
-      // Skip gap offsets: start=48000, end=48800
-      // Segments: [0, 48000] and [48800, 49000]
       expect(result).toEqual([
-        { start: 0, end: 48000, readIdx: 0, edge: 0b01 },
-        { start: 48800, end: 49000, readIdx: 0, edge: 0 },
+        { start: 1000, end: 49000, readIdx: 0, edge: 0b01 },
+        { start: 49800, end: 50000, readIdx: 0, edge: 0 },
       ])
     })
   })
@@ -231,9 +228,9 @@ describe('buildSegmentArrays', () => {
       5000,
     )
     expect(result).toEqual([
-      { start: 0, end: 200, readIdx: 0, edge: 0b01 },
-      { start: 800, end: 1100, readIdx: 0, edge: 0 },
-      { start: 3800, end: 4000, readIdx: 0, edge: 0b10 },
+      { start: 1000, end: 1200, readIdx: 0, edge: 0b01 },
+      { start: 1800, end: 2100, readIdx: 0, edge: 0 },
+      { start: 4800, end: 5000, readIdx: 0, edge: 0b10 },
     ])
   })
 })

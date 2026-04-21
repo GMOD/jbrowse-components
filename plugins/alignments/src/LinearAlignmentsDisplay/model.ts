@@ -585,15 +585,15 @@ export default function stateModelFactory(
           if (!rpcData) {
             return undefined
           }
-          const startOffset = rpcData.readPositions[idx * 2]
-          const endOffset = rpcData.readPositions[idx * 2 + 1]
-          if (startOffset !== undefined && endOffset !== undefined) {
+          const start = rpcData.readPositions[idx * 2]
+          const end = rpcData.readPositions[idx * 2 + 1]
+          if (start !== undefined && end !== undefined) {
             return {
               displayedRegionIndex,
               idx,
               rpcData,
-              startOffset,
-              endOffset,
+              start,
+              end,
             }
           }
           return undefined
@@ -679,14 +679,14 @@ export default function stateModelFactory(
           if (!hit) {
             return undefined
           }
-          const { rpcData, idx, startOffset, endOffset } = hit
+          const { rpcData, idx, start, end } = hit
           const yRow = rpcData.readYs[idx]
           if (yRow === undefined) {
             return undefined
           }
           const rowHeight = self.featureHeightSetting + self.featureSpacing
-          const left = rpcData.regionStart + startOffset
-          const right = rpcData.regionStart + endOffset
+          const left = start
+          const right = end
           const top = yRow * rowHeight
           const bottom = top + self.featureHeightSetting
           return [left, top, right, bottom]
@@ -697,15 +697,14 @@ export default function stateModelFactory(
           if (!hit) {
             return undefined
           }
-          const { displayedRegionIndex, idx, rpcData, startOffset, endOffset } =
-            hit
+          const { displayedRegionIndex, idx, rpcData, start, end } = hit
           const view = getContainingView(self) as LGV
           const flags = rpcData.readFlags[idx]
           return {
             id: featureId,
             name: rpcData.readNames[idx] ?? '',
-            start: rpcData.regionStart + startOffset,
-            end: rpcData.regionStart + endOffset,
+            start,
+            end,
             flags,
             mapq: rpcData.readMapqs[idx],
             strand: flags !== undefined && flags & 16 ? '-' : '+',

@@ -158,7 +158,7 @@ function drawPairedArcs(
   }
 
   for (let i = 0; i < arcsData.numLines; i++) {
-    const xPos = arcsData.regionStart + arcsData.linePositions[i * 2]!
+    const xPos = arcsData.linePositions[i * 2]!
     const y0 = arcsData.lineYs[i * 2]!
     const y1 = arcsData.lineYs[i * 2 + 1]!
     const colorType = Math.round(arcsData.lineColorTypes[i * 2]!)
@@ -169,8 +169,7 @@ function drawPairedArcs(
         : 'grey'
     ctx.lineWidth = 1
 
-    const screenX =
-      blockStartPx + (xPos - arcsData.regionStart - bpStartOffset) * pxPerBp
+    const screenX = blockStartPx + (xPos - bpStartOffset) * pxPerBp
     ctx.beginPath()
     ctx.moveTo(screenX, y0)
     ctx.lineTo(screenX, y1)
@@ -244,13 +243,12 @@ function drawConnectingLines(
     return
   }
 
-  const regionStart = data.regionStart
   ctx.strokeStyle = 'rgba(0,0,0,0.45)'
   ctx.lineWidth = 1
 
   for (let i = 0; i < numLines; i++) {
-    const startBp = regionStart + positions[i * 2]!
-    const endBp = regionStart + positions[i * 2 + 1]!
+    const startBp = positions[i * 2]!
+    const endBp = positions[i * 2 + 1]!
 
     if (endBp < blockStart || startBp > blockEnd) {
       continue
@@ -290,7 +288,6 @@ function drawCoverage(
     coverageMaxDepth,
     coverageStartOffset,
     numCoverageBins,
-    regionStart,
     snpPositions,
     snpYOffsets,
     snpHeights,
@@ -310,7 +307,7 @@ function drawCoverage(
       continue
     }
 
-    const binStart = regionStart + coverageStartOffset + i
+    const binStart = coverageStartOffset + i
     const binEnd = binStart + 1
 
     if (binEnd < block.start || binStart > block.end) {
@@ -388,7 +385,6 @@ function drawInterbaseIndicators(
   bpPerPx: number,
   palette: ColorPalette,
 ) {
-  const { regionStart } = data
   const insertionColor = rgb255(palette.colorInsertion)
   const softclipColor = rgb255(palette.colorSoftclip)
   const hardclipColor = rgb255(palette.colorHardclip)
@@ -442,13 +438,13 @@ function drawPileup(
   showModifications: boolean,
   showSoftClipping: boolean,
 ) {
-  const { regionStart, numReads, readPositions, readYs } = data
+  const { numReads, readPositions, readYs } = data
   const basePal = makeBasePalette(palette)
   const pxPerBp = 1 / bpPerPx
 
   for (let i = 0; i < numReads; i++) {
-    const startBp = regionStart + readPositions[i * 2]!
-    const endBp = regionStart + readPositions[i * 2 + 1]!
+    const startBp = readPositions[i * 2]!
+    const endBp = readPositions[i * 2 + 1]!
     if (endBp < block.start || startBp > block.end) {
       continue
     }
@@ -468,7 +464,7 @@ function drawPileup(
     const { mismatchPositions, mismatchYs, mismatchBases, numMismatches } = data
 
     for (let i = 0; i < numMismatches; i++) {
-      const pos = regionStart + mismatchPositions[i]!
+      const pos = mismatchPositions[i]!
       if (pos < block.start || pos > block.end) {
         continue
       }
@@ -492,8 +488,8 @@ function drawPileup(
     const skipColor = rgb255(palette.colorSkip)
 
     for (let i = 0; i < data.numGaps; i++) {
-      const startBp = regionStart + data.gapPositions[i * 2]!
-      const endBp = regionStart + data.gapPositions[i * 2 + 1]!
+      const startBp = data.gapPositions[i * 2]!
+      const endBp = data.gapPositions[i * 2 + 1]!
       if (endBp < block.start || startBp > block.end) {
         continue
       }
@@ -527,7 +523,7 @@ function drawPileup(
     }
 
     for (let i = 0; i < data.numInterbases; i++) {
-      const pos = regionStart + data.interbasePositions[i]!
+      const pos = data.interbasePositions[i]!
       if (pos < block.start || pos > block.end) {
         continue
       }
@@ -577,7 +573,7 @@ function drawPileup(
 
     if (showModifications && data.numModifications > 0) {
       for (let i = 0; i < data.numModifications; i++) {
-        const pos = regionStart + data.modificationPositions[i]!
+        const pos = data.modificationPositions[i]!
         if (pos < block.start || pos > block.end) {
           continue
         }
@@ -592,7 +588,7 @@ function drawPileup(
 
   if (showSoftClipping && data.numSoftclipBases > 0) {
     for (let i = 0; i < data.numSoftclipBases; i++) {
-      const pos = regionStart + data.softclipBasePositions[i]!
+      const pos = data.softclipBasePositions[i]!
       if (pos < block.start || pos > block.end) {
         continue
       }
@@ -735,7 +731,7 @@ export async function renderSvg(
             sashimiCtx,
             data,
             blockScreenX,
-            block.start - data.regionStart,
+            block.start,
             regionLengthBp,
             blockWidth,
             sashimiArcsHeight,
@@ -747,7 +743,7 @@ export async function renderSvg(
             covCtx,
             data,
             blockScreenX,
-            block.start - data.regionStart,
+            block.start,
             regionLengthBp,
             blockWidth,
             coverageHeight,
@@ -765,7 +761,7 @@ export async function renderSvg(
           arcsCtxObj.ctx,
           arcsData,
           blockScreenX,
-          block.start - arcsData.regionStart,
+          block.start,
           regionLengthBp,
           blockWidth,
           arcsCtxHeight,
