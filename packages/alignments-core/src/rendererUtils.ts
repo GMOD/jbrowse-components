@@ -78,7 +78,7 @@ export function drawCoverageBins(
     if (px > viewWidth || px2 < 0) {
       continue
     }
-    const bandBottom = bottom - f32[off + 1]! * effectiveH
+    const bandBottom = bottom - normalizeDepth(f32[off + 1]!) * effectiveH
     const bandTop = bottom - normalizeDepth(f32[off + 2]!) * effectiveH
     ctx.fillRect(px, bandTop, Math.max(px2 - px, 1), bandBottom - bandTop)
   }
