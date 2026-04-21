@@ -13,6 +13,7 @@ export interface RenderState {
   coverageHeight: number
   coverageYOffset: number // padding at top/bottom of coverage area for scalebar labels
   coverageMaxDepth: number | undefined
+  coverageIsLog: boolean
   showMismatches: boolean
   showSoftClipping: boolean
   showInterbaseIndicators: boolean

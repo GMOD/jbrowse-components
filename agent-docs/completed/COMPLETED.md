@@ -4,6 +4,35 @@ Moved from PRD.md as items were finished.
 
 ---
 
+## wiggle-core extraction — Phases 1 + 2 — COMPLETE
+
+**Phase 1 — `packages/wiggle-core`:** `getNiceDomain`, `getScale`,
+`getOrigin`, `makeScoreNormalizer`, `computeAutoscaleDomain` extracted to
+`packages/wiggle-core/src/` (`scale.ts`, `normalize.ts`, `autoscale.ts`).
+Added `domainFromStats(stats, autoscaleType, numStdDev)`. `plugins/wiggle/src/util.ts`
+re-exports everything so no callers changed.
+
+**Phase 2 — coverage stats in `packages/alignments-core`:** Added
+`computeVisibleCoverageStats` + `computeGlobalCoverageStats` returning
+`ScoreStats` from wiggle-core (single pass: min/max/sum/sumSq/count → mean
++ stdDev). Extended `computeCoverageTicks` with optional `scaleType`
+(`'log'` uses log₂ y-positions and power-of-2 ticks). Added
+`@jbrowse/wiggle-core` dep to alignments-core.
+
+**Phase 3 — wire into `LinearAlignmentsDisplay`:** Added
+`autoscale`/`minScore`/`maxScore`/`scaleType`/`numStdDev` to
+`LinearAlignmentsDisplay` config schema. Added `coverageStats`,
+`coverageDomain`, `coverageIsLog`, `coverageScaleType`, `coverageAutoscaleType`
+getters. Updated `coverageTicks` to use domain + scaleType.
+Updated `renderState.coverageMaxDepth` to use `coverageDomain[1]`.
+Added setters `setCoverageScaleType`/`setCoverageAutoscaleType`/
+`setCoverageMinScore`/`setCoverageMaxScore`. Exported `SetMinMaxDialog`
+from `@jbrowse/plugin-wiggle`. Added "Coverage score" track menu with
+Scale type / Autoscale type / Set min/max items. Added `@jbrowse/wiggle-core`
+dep to alignments plugin.
+
+---
+
 ## Dotplot — adopt shared MST autorun lifecycle — COMPLETE
 
 `DotplotView/model.ts` now drives its lifecycle through
@@ -373,6 +402,28 @@ About track dialog includes user-modified display settings:
   `getTrackActionMenuItems` which forwards it to the About dialog.
 - Integration tests (6 tests) verify override inclusion, track property
   preservation, and cross-display-type behavior.
+
+---
+
+## 2026-04-20 Housekeeping
+
+**Tab visibility → HAL — COMPLETE**
+
+All three remaining call sites that used `useTabVisibilityRerender` + `renderNow`
+directly (`LevelSyntenyCanvas.tsx`, `MultiSyntenyRendering.tsx`,
+`DotplotView.tsx`) replaced with `useGpuModelLifecycle`. Dropped unused `gpuOpts`
+memos and backend type imports. `useTabVisibilityRerender` un-exported from
+`@jbrowse/core/util/index.ts` — now an internal detail of `useGpuModelLifecycle`
+only.
+
+**Pileup read hit detection root cause identified + fixed**
+
+`hitTesting.ts` checks `readYs[i] !== row` to match cursor row, but
+`resolveBlockForCanvasX` in `useAlignmentsBase.ts` was reading from `rpcDataMap`
+whose `readYs` are all zeros until main-thread layout runs. Fixed by switching
+`resolveBlockForCanvasX` to read from `laidOutPileupMap` (which has real Y arrays
+from the derived-layout pass). Also removed stale `rpcDataMap` entry from the
+`LinearAlignmentsDisplayModel` duck-typed interface. Needs browser verification.
 
 ---
 

@@ -1,3 +1,6 @@
+import type { IndelEntry } from './labelConstants.ts'
+import type { ScoreStats } from '@jbrowse/wiggle-core'
+
 export const YSCALEBAR_LABEL_OFFSET = 5
 
 export interface CoverageTicks {
@@ -29,33 +32,39 @@ function niceStep(maxDepth: number) {
 export function computeCoverageTicks(
   maxDepth: number,
   coverageHeight: number,
+  scaleType = 'linear',
 ): CoverageTicks {
   const effectiveHeight = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
-  const yOf = (value: number) =>
-    coverageHeight -
-    YSCALEBAR_LABEL_OFFSET -
-    (value / maxDepth) * effectiveHeight
+  const logMax = Math.log2(Math.max(1, maxDepth))
+  const yOf =
+    scaleType === 'log'
+      ? (value: number) =>
+          coverageHeight -
+          YSCALEBAR_LABEL_OFFSET -
+          (Math.log2(Math.max(1, value)) / logMax) * effectiveHeight
+      : (value: number) =>
+          coverageHeight -
+          YSCALEBAR_LABEL_OFFSET -
+          (value / maxDepth) * effectiveHeight
 
   const ticks: { value: number; y: number }[] = []
-  if (coverageHeight < 70) {
-    ticks.push(
-      {
-        value: 0,
-        y: yOf(0),
-      },
-      {
-        value: maxDepth,
-        y: yOf(maxDepth),
-      },
-    )
+  if (scaleType === 'log') {
+    ticks.push({ value: 1, y: yOf(1) })
+    let tick = 2
+    while (tick <= maxDepth) {
+      ticks.push({ value: tick, y: yOf(tick) })
+      tick *= 2
+    }
+    if (ticks.length < 2) {
+      ticks.push({ value: maxDepth, y: yOf(maxDepth) })
+    }
+  } else if (coverageHeight < 70) {
+    ticks.push({ value: 0, y: yOf(0) }, { value: maxDepth, y: yOf(maxDepth) })
   } else {
     const step = niceStep(maxDepth)
     const stepCount = Math.floor(maxDepth / step)
     for (let i = 0; i <= stepCount; i++) {
-      ticks.push({
-        value: i * step,
-        y: yOf(i * step),
-      })
+      ticks.push({ value: i * step, y: yOf(i * step) })
     }
   }
 
@@ -116,6 +125,86 @@ export function getGlobalMaxCoverageDepth<K, D>(
     }
   }
   return max
+}
+
+export function computeVisibleCoverageStats<
+  B extends { start: number; end: number },
+>(
+  visibleBlocks: B[],
+  getCoverageForBlock: (block: B) => CoverageRegion | undefined,
+): ScoreStats | undefined {
+  let min = Infinity
+  let max = -Infinity
+  let sum = 0
+  let sumSq = 0
+  let count = 0
+  for (const block of visibleBlocks) {
+    const cov = getCoverageForBlock(block)
+    if (!cov) {
+      continue
+    }
+    const startBin = Math.max(
+      0,
+      Math.floor(block.start - cov.regionStart - cov.coverageStartOffset),
+    )
+    const endBin = Math.min(
+      cov.coverageDepths.length,
+      Math.ceil(block.end - cov.regionStart - cov.coverageStartOffset),
+    )
+    for (let i = startBin; i < endBin; i++) {
+      const d = cov.coverageDepths[i]!
+      if (d < min) {
+        min = d
+      }
+      if (d > max) {
+        max = d
+      }
+      sum += d
+      sumSq += d * d
+      count++
+    }
+  }
+  if (count === 0 || !Number.isFinite(max)) {
+    return undefined
+  }
+  const mean = sum / count
+  const stdDev = Math.sqrt(Math.max(0, sumSq / count - mean * mean))
+  return { scoreMin: min, scoreMax: max, scoreMean: mean, scoreStdDev: stdDev }
+}
+
+export function computeGlobalCoverageStats<K, D>(
+  dataMap: ReadonlyMap<K, D>,
+  getCoverage: (data: D) => CoverageRegion | undefined,
+): ScoreStats | undefined {
+  let min = Infinity
+  let max = -Infinity
+  let sum = 0
+  let sumSq = 0
+  let count = 0
+  for (const data of dataMap.values()) {
+    const cov = getCoverage(data)
+    if (!cov) {
+      continue
+    }
+    for (let i = 0, l = cov.coverageDepths.length; i < l; i++) {
+      const d = cov.coverageDepths[i]!
+      if (d < min) {
+        min = d
+      }
+      if (d > max) {
+        max = d
+      }
+      sum += d
+      sumSq += d * d
+      count++
+    }
+  }
+  if (count === 0 || !Number.isFinite(max)) {
+    return undefined
+  }
+  const mean = sum / count
+  const stdDev = Math.sqrt(Math.max(0, sumSq / count - mean * mean))
+  return { scoreMin: min, scoreMax: max, scoreMean: mean, scoreStdDev: stdDev }
 }
 
 export interface DownsampledBins {
@@ -422,8 +511,6 @@ export function computeSNPCoverage(
     count: filteredSegments.length,
   }
 }
-
-import type { IndelEntry } from './labelConstants.ts'
 
 export interface InsertionIndicatorResult {
   positions: Uint32Array

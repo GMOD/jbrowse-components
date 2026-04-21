@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import {
   YSCALEBAR_LABEL_OFFSET,
   computeCoverageTicks,
-  computeVisibleMaxDepth,
+  computeVisibleCoverageStats,
 } from '@jbrowse/alignments-core'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -27,7 +27,9 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import EqualizerIcon from '@mui/icons-material/Equalizer'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { autorun, observable } from 'mobx'
@@ -159,6 +161,11 @@ const AlignmentsComponent = lazy(
 const AlignmentsTooltip = lazy(
   () => import('./components/AlignmentsTooltip.tsx'),
 )
+
+const SetMinMaxDialog = lazy(async () => {
+  const { SetMinMaxDialog: Cmp } = await import('@jbrowse/plugin-wiggle')
+  return { default: Cmp }
+})
 
 export const ColorScheme = {
   normal: 0,
@@ -368,26 +375,75 @@ export default function stateModelFactory(
           return self.getOverride<SortedBy>('sortedBy')
         },
 
-        // Max coverage depth across on-screen content blocks. Cached
-        // view, replaces the former visibleMaxDepth autorun + volatile.
-        get visibleMaxDepth() {
+        get coverageScaleType() {
+          return self.getConfWithOverride<string>('scaleType')
+        },
+
+        get coverageAutoscaleType() {
+          return self.getConfWithOverride<string>('autoscale')
+        },
+
+        get coverageMinScore() {
+          const v = self.getConfWithOverride<number>('minScore')
+          return v !== Number.MIN_VALUE ? v : undefined
+        },
+
+        get coverageMaxScore() {
+          const v = self.getConfWithOverride<number>('maxScore')
+          return v !== Number.MAX_VALUE ? v : undefined
+        },
+
+        get coverageNumStdDev() {
+          return self.getConfWithOverride<number>('numStdDev')
+        },
+
+        get coverageIsLog() {
+          return this.coverageScaleType === 'log'
+        },
+
+        // Coverage stats across visible content blocks. MobX-cached.
+        get coverageStats() {
           if (!self.showCoverage) {
-            return 0
+            return undefined
           }
           const view = getContainingView(self) as LGV
           if (!view.initialized) {
-            return 0
+            return undefined
           }
-          return computeVisibleMaxDepth(view.dynamicBlocks.contentBlocks, b =>
-            self.rpcDataMap.get(b.displayedRegionIndex!),
+          return computeVisibleCoverageStats(
+            view.dynamicBlocks.contentBlocks,
+            b => self.rpcDataMap.get(b.displayedRegionIndex!),
           )
         },
 
-        get coverageTicks(): CoverageTicks | undefined {
-          if (!this.visibleMaxDepth) {
+        // [min, max] domain for the coverage Y axis.
+        get coverageDomain(): [number, number] | undefined {
+          const stats = this.coverageStats
+          if (!stats) {
             return undefined
           }
-          return computeCoverageTicks(this.visibleMaxDepth, self.coverageHeight)
+          const raw = domainFromStats(
+            stats,
+            this.coverageAutoscaleType,
+            this.coverageNumStdDev,
+          )
+          return getNiceDomain({
+            domain: raw,
+            bounds: [this.coverageMinScore, this.coverageMaxScore],
+            scaleType: this.coverageScaleType,
+          })
+        },
+
+        get coverageTicks(): CoverageTicks | undefined {
+          const domain = this.coverageDomain
+          if (!domain) {
+            return undefined
+          }
+          return computeCoverageTicks(
+            domain[1],
+            self.coverageHeight,
+            this.coverageScaleType,
+          )
         },
 
         get legendItems(): LegendItem[] {
@@ -706,7 +762,8 @@ export default function stateModelFactory(
             showCoverage: self.showCoverage,
             coverageHeight: self.coverageHeight,
             coverageYOffset: YSCALEBAR_LABEL_OFFSET,
-            coverageMaxDepth: self.coverageTicks?.maxDepth,
+            coverageMaxDepth: self.coverageDomain?.[1],
+            coverageIsLog: self.coverageIsLog,
             showMismatches: self.showMismatches,
             showSoftClipping: self.showSoftClipping,
             showInterbaseIndicators: self.showInterbaseIndicators,
@@ -964,6 +1021,22 @@ export default function stateModelFactory(
 
           setMaxHeight(n?: number) {
             self.setOverride('maxHeight', n)
+          },
+
+          setCoverageScaleType(val: string) {
+            self.setOverride('scaleType', val)
+          },
+
+          setCoverageAutoscaleType(val: string) {
+            self.setOverride('autoscale', val)
+          },
+
+          setCoverageMinScore(val?: number) {
+            self.setOverride('minScore', val)
+          },
+
+          setCoverageMaxScore(val?: number) {
+            self.setOverride('maxScore', val)
           },
 
           setFeatureHeight(height?: number) {
@@ -1556,6 +1629,74 @@ export default function stateModelFactory(
             },
             getFeatureHeightMenuItem(self),
             getSetMaxHeightMenuItem(self),
+            {
+              label: 'Coverage score',
+              icon: EqualizerIcon,
+              type: 'subMenu' as const,
+              subMenu: [
+                {
+                  label: 'Scale type',
+                  type: 'subMenu' as const,
+                  subMenu: [
+                    {
+                      label: 'Linear scale',
+                      type: 'radio' as const,
+                      checked: self.coverageScaleType === 'linear',
+                      onClick: () => {
+                        self.setCoverageScaleType('linear')
+                      },
+                    },
+                    {
+                      label: 'Log scale',
+                      type: 'radio' as const,
+                      checked: self.coverageScaleType === 'log',
+                      onClick: () => {
+                        self.setCoverageScaleType('log')
+                      },
+                    },
+                  ],
+                },
+                {
+                  label: 'Autoscale type',
+                  type: 'subMenu' as const,
+                  subMenu: (
+                    [
+                      ['local', 'Local'],
+                      ['localsd', 'Local ± 3σ'],
+                    ] as const
+                  ).map(([val, label]) => ({
+                    label,
+                    type: 'radio' as const,
+                    checked: self.coverageAutoscaleType === val,
+                    onClick: () => {
+                      self.setCoverageAutoscaleType(val)
+                    },
+                  })),
+                },
+                {
+                  label: 'Set min/max score',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      SetMinMaxDialog,
+                      {
+                        model: {
+                          minScore: self.coverageMinScore ?? Number.MIN_VALUE,
+                          maxScore: self.coverageMaxScore ?? Number.MAX_VALUE,
+                          scaleType: self.coverageScaleType,
+                          setMinScore: (v?: number) => {
+                            self.setCoverageMinScore(v)
+                          },
+                          setMaxScore: (v?: number) => {
+                            self.setCoverageMaxScore(v)
+                          },
+                        },
+                        handleClose,
+                      },
+                    ])
+                  },
+                },
+              ],
+            },
           ]
 
           return items

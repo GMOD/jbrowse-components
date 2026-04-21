@@ -137,13 +137,13 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
   return (
     <div style={{ position: 'relative', width, height }}>
       {/* The canvas must remain mounted even when regionTooLarge is true.
-          useGpuRenderer binds the WebGL/WebGPU context to this specific
-          canvas element during init(). If the canvas were conditionally
-          unmounted (e.g. replaced by TooLargeMessage), a new canvas would
-          mount after force-load but the renderer would still reference the
-          old unmounted one, causing all draw calls to go to a detached
-          canvas. We use visibility:'hidden' instead so the canvas stays
-          in the DOM and the renderer connection is preserved. */}
+          The GPU renderer binds its context to this specific canvas element
+          during init(). If the canvas were conditionally unmounted (e.g.
+          replaced by TooLargeMessage), a new canvas would mount after
+          force-load but the renderer would still reference the old unmounted
+          one, causing all draw calls to go to a detached canvas. We use
+          visibility:'hidden' instead so the canvas stays in the DOM and the
+          renderer connection is preserved. */}
       <canvas
         ref={canvasRef}
         style={{

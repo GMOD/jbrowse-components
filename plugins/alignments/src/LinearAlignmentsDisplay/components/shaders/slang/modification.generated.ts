@@ -4,10 +4,10 @@
 import type { GlAttributeLayout } from '@jbrowse/core/gpu/hal'
 
 export const WGSL_SOURCE =
-  'struct Uniforms_std140_0\n{\n    @align(16) bpHi_0 : f32,\n    @align(4) bpLo_0 : f32,\n    @align(8) bpLen_0 : f32,\n    @align(4) hpZero_0 : f32,\n    @align(16) regionStart_0 : u32,\n    @align(4) canvasW_0 : f32,\n    @align(8) canvasH_0 : f32,\n    @align(4) rangeY0_0 : f32,\n    @align(16) scrollTop_0 : f32,\n    @align(4) covOffset_0 : f32,\n    @align(8) featHeight_0 : f32,\n    @align(4) featSpacing_0 : f32,\n    @align(16) covHeight_0 : f32,\n    @align(4) covYOffset_0 : f32,\n    @align(8) depthScale_0 : f32,\n    @align(4) binSize_0 : f32,\n    @align(16) noncovHeight_0 : f32,\n    @align(4) domainStart_0 : f32,\n    @align(8) domainEnd_0 : f32,\n    @align(4) insertUpper_0 : f32,\n    @align(16) insertLower_0 : f32,\n    @align(4) blockStartPx_0 : f32,\n    @align(8) blockWidth_0 : f32,\n    @align(4) lineWidthPx_0 : f32,\n    @align(16) gradientHue_0 : f32,\n    @align(4) pairedArcsDown_0 : f32,\n    @align(8) colorScheme_0 : i32,\n    @align(4) highlightIdx_0 : i32,\n    @align(16) highlightOnly_0 : i32,\n    @align(4) chainMode_0 : i32,\n    @align(8) showStroke_0 : i32,\n    @align(4) flipStrandLongRead_0 : i32,\n    @align(16) reversed_0 : f32,\n    @align(4) colorFwd_0 : u32,\n    @align(8) colorRev_0 : u32,\n    @align(4) colorNostrand_0 : u32,\n    @align(16) colorPairLR_0 : u32,\n    @align(4) colorPairRL_0 : u32,\n    @align(8) colorPairRR_0 : u32,\n    @align(4) colorPairLL_0 : u32,\n    @align(16) colorBaseA_0 : u32,\n    @align(4) colorBaseC_0 : u32,\n    @align(8) colorBaseG_0 : u32,\n    @align(4) colorBaseT_0 : u32,\n    @align(16) colorInsertion_0 : u32,\n    @align(4) colorDeletion_0 : u32,\n    @align(8) colorSkip_0 : u32,\n    @align(4) colorSoftclip_0 : u32,\n    @align(16) colorHardclip_0 : u32,\n    @align(4) colorCoverage_0 : u32,\n    @align(8) colorModFwd_0 : u32,\n    @align(4) colorModRev_0 : u32,\n    @align(16) colorLongInsert_0 : u32,\n    @align(4) colorShortInsert_0 : u32,\n    @align(8) colorSupplementary_0 : u32,\n    @align(4) colorUnmappedMate_0 : u32,\n    @align(16) arcColor0_0 : u32,\n    @align(4) arcColor1_0 : u32,\n    @align(8) arcColor2_0 : u32,\n    @align(4) arcColor3_0 : u32,\n    @align(16) arcColor4_0 : u32,\n    @align(4) arcColor5_0 : u32,\n    @align(8) arcColor6_0 : u32,\n    @align(4) arcColor7_0 : u32,\n    @align(16) arcLineColor0_0 : u32,\n    @align(4) arcLineColor1_0 : u32,\n};\n\n@binding(1) @group(0) var<uniform> u_0 : Uniforms_std140_0;\nfn quadLocal_0( vid_0 : u32) -> vec2<f32>\n{\n    var v_0 : u32 = vid_0 % u32(6);\n    var _S1 : bool = v_0 == u32(0);\n    var _S2 : bool;\n    if(_S1)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(2);\n    }\n    if(_S2)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(3);\n    }\n    var lx_0 : f32;\n    if(_S2)\n    {\n        lx_0 = 0.0f;\n    }\n    else\n    {\n        lx_0 = 1.0f;\n    }\n    if(_S1)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(1);\n    }\n    if(_S2)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(4);\n    }\n    var ly_0 : f32;\n    if(_S2)\n    {\n        ly_0 = 0.0f;\n    }\n    else\n    {\n        ly_0 = 1.0f;\n    }\n    return vec2<f32>(lx_0, ly_0);\n}\n\nfn unpackRGBA_0( c_0 : u32) -> vec4<f32>\n{\n    return vec4<f32>(f32((((c_0 >> (u32(0)))) & (u32(255)))), f32((((c_0 >> (u32(8)))) & (u32(255)))), f32((((c_0 >> (u32(16)))) & (u32(255)))), f32((((c_0 >> (u32(24)))) & (u32(255))))) / vec4<f32>(255.0f);\n}\n\nstruct VsOut_0\n{\n    @builtin(position) position_0 : vec4<f32>,\n    @location(0) color_0 : vec4<f32>,\n};\n\nstruct vertexInput_0\n{\n    @location(0) position_1 : u32,\n    @location(1) y_0 : u32,\n    @location(2) packedColor_0 : u32,\n};\n\nfn cigarDomainLen_0() -> f32\n{\n    return u_0.domainEnd_0 - u_0.domainStart_0;\n}\n\nfn cigarDomain_0() -> vec2<f32>\n{\n    return vec2<f32>(u_0.domainStart_0, u_0.domainEnd_0);\n}\n\nfn pileupY_0( _S3 : f32) -> vec2<f32>\n{\n    var yTop_0 : f32 = _S3 * (u_0.featHeight_0 + u_0.featSpacing_0) - u_0.rangeY0_0;\n    var px2clip_0 : f32 = 2.0f / u_0.canvasH_0;\n    var topClip_0 : f32 = 1.0f - u_0.covOffset_0 / u_0.canvasH_0 * 2.0f;\n    return vec2<f32>(topClip_0 - yTop_0 * px2clip_0, topClip_0 - (yTop_0 + u_0.featHeight_0) * px2clip_0);\n}\n\nfn flipX_0( _S4 : f32) -> f32\n{\n    return mix(_S4, - _S4, u_0.reversed_0);\n}\n\n@vertex\nfn vs_main( _S5 : vertexInput_0, @builtin(vertex_index) vid_1 : u32) -> VsOut_0\n{\n    var o_0 : VsOut_0;\n    var local_0 : vec2<f32> = quadLocal_0(vid_1);\n    var _S6 : f32 = cigarDomainLen_0();\n    var pos_0 : f32 = f32(_S5.position_1);\n    var _S7 : f32 = cigarDomain_0().x;\n    var sx1_0 : f32 = (pos_0 - _S7) / _S6 * 2.0f - 1.0f;\n    var sx2_0 : f32 = (pos_0 + 1.0f - _S7) / _S6 * 2.0f - 1.0f;\n    var minW_0 : f32 = 2.0f / u_0.canvasW_0;\n    var sx1_1 : f32;\n    var sx2_1 : f32;\n    if((sx2_0 - sx1_0) < minW_0)\n    {\n        var mid_0 : f32 = (sx1_0 + sx2_0) * 0.5f;\n        var _S8 : f32 = minW_0 * 0.5f;\n        var _S9 : f32 = mid_0 + _S8;\n        sx1_1 = mid_0 - _S8;\n        sx2_1 = _S9;\n    }\n    else\n    {\n        sx1_1 = sx1_0;\n        sx2_1 = sx2_0;\n    }\n    var _S10 : vec2<f32> = pileupY_0(f32(_S5.y_0));\n    o_0.position_0 = vec4<f32>(flipX_0(mix(sx1_1, sx2_1, local_0.x)), mix(_S10.y, _S10.x, local_0.y), 0.0f, 1.0f);\n    o_0.color_0 = unpackRGBA_0(_S5.packedColor_0);\n    return o_0;\n}\n\nstruct pixelOutput_0\n{\n    @location(0) output_0 : vec4<f32>,\n};\n\nstruct pixelInput_0\n{\n    @location(0) color_1 : vec4<f32>,\n};\n\n@fragment\nfn fs_main( _S11 : pixelInput_0, @builtin(position) position_2 : vec4<f32>) -> pixelOutput_0\n{\n    var _S12 : pixelOutput_0 = pixelOutput_0( _S11.color_1 );\n    return _S12;\n}\n\n'
+  'struct Uniforms_std140_0\n{\n    @align(16) bpHi_0 : f32,\n    @align(4) bpLo_0 : f32,\n    @align(8) bpLen_0 : f32,\n    @align(4) hpZero_0 : f32,\n    @align(16) regionStart_0 : u32,\n    @align(4) canvasW_0 : f32,\n    @align(8) canvasH_0 : f32,\n    @align(4) rangeY0_0 : f32,\n    @align(16) scrollTop_0 : f32,\n    @align(4) covOffset_0 : f32,\n    @align(8) featHeight_0 : f32,\n    @align(4) featSpacing_0 : f32,\n    @align(16) covHeight_0 : f32,\n    @align(4) covYOffset_0 : f32,\n    @align(8) depthScale_0 : f32,\n    @align(4) binSize_0 : f32,\n    @align(16) noncovHeight_0 : f32,\n    @align(4) depthDomainMax_0 : f32,\n    @align(8) domainStart_0 : f32,\n    @align(4) domainEnd_0 : f32,\n    @align(16) insertUpper_0 : f32,\n    @align(4) insertLower_0 : f32,\n    @align(8) blockStartPx_0 : f32,\n    @align(4) blockWidth_0 : f32,\n    @align(16) lineWidthPx_0 : f32,\n    @align(4) gradientHue_0 : f32,\n    @align(8) pairedArcsDown_0 : f32,\n    @align(4) colorScheme_0 : i32,\n    @align(16) highlightIdx_0 : i32,\n    @align(4) highlightOnly_0 : i32,\n    @align(8) chainMode_0 : i32,\n    @align(4) showStroke_0 : i32,\n    @align(16) flipStrandLongRead_0 : i32,\n    @align(4) coverageScaleType_0 : i32,\n    @align(8) reversed_0 : f32,\n    @align(4) colorFwd_0 : u32,\n    @align(16) colorRev_0 : u32,\n    @align(4) colorNostrand_0 : u32,\n    @align(8) colorPairLR_0 : u32,\n    @align(4) colorPairRL_0 : u32,\n    @align(16) colorPairRR_0 : u32,\n    @align(4) colorPairLL_0 : u32,\n    @align(8) colorBaseA_0 : u32,\n    @align(4) colorBaseC_0 : u32,\n    @align(16) colorBaseG_0 : u32,\n    @align(4) colorBaseT_0 : u32,\n    @align(8) colorInsertion_0 : u32,\n    @align(4) colorDeletion_0 : u32,\n    @align(16) colorSkip_0 : u32,\n    @align(4) colorSoftclip_0 : u32,\n    @align(8) colorHardclip_0 : u32,\n    @align(4) colorCoverage_0 : u32,\n    @align(16) colorModFwd_0 : u32,\n    @align(4) colorModRev_0 : u32,\n    @align(8) colorLongInsert_0 : u32,\n    @align(4) colorShortInsert_0 : u32,\n    @align(16) colorSupplementary_0 : u32,\n    @align(4) colorUnmappedMate_0 : u32,\n    @align(8) arcColor0_0 : u32,\n    @align(4) arcColor1_0 : u32,\n    @align(16) arcColor2_0 : u32,\n    @align(4) arcColor3_0 : u32,\n    @align(8) arcColor4_0 : u32,\n    @align(4) arcColor5_0 : u32,\n    @align(16) arcColor6_0 : u32,\n    @align(4) arcColor7_0 : u32,\n    @align(8) arcLineColor0_0 : u32,\n    @align(4) arcLineColor1_0 : u32,\n};\n\n@binding(1) @group(0) var<uniform> u_0 : Uniforms_std140_0;\nfn quadLocal_0( vid_0 : u32) -> vec2<f32>\n{\n    var v_0 : u32 = vid_0 % u32(6);\n    var _S1 : bool = v_0 == u32(0);\n    var _S2 : bool;\n    if(_S1)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(2);\n    }\n    if(_S2)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(3);\n    }\n    var lx_0 : f32;\n    if(_S2)\n    {\n        lx_0 = 0.0f;\n    }\n    else\n    {\n        lx_0 = 1.0f;\n    }\n    if(_S1)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(1);\n    }\n    if(_S2)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(4);\n    }\n    var ly_0 : f32;\n    if(_S2)\n    {\n        ly_0 = 0.0f;\n    }\n    else\n    {\n        ly_0 = 1.0f;\n    }\n    return vec2<f32>(lx_0, ly_0);\n}\n\nfn unpackRGBA_0( c_0 : u32) -> vec4<f32>\n{\n    return vec4<f32>(f32((((c_0 >> (u32(0)))) & (u32(255)))), f32((((c_0 >> (u32(8)))) & (u32(255)))), f32((((c_0 >> (u32(16)))) & (u32(255)))), f32((((c_0 >> (u32(24)))) & (u32(255))))) / vec4<f32>(255.0f);\n}\n\nstruct VsOut_0\n{\n    @builtin(position) position_0 : vec4<f32>,\n    @location(0) color_0 : vec4<f32>,\n};\n\nstruct vertexInput_0\n{\n    @location(0) position_1 : u32,\n    @location(1) y_0 : u32,\n    @location(2) packedColor_0 : u32,\n};\n\nfn cigarDomainLen_0() -> f32\n{\n    return u_0.domainEnd_0 - u_0.domainStart_0;\n}\n\nfn cigarDomain_0() -> vec2<f32>\n{\n    return vec2<f32>(u_0.domainStart_0, u_0.domainEnd_0);\n}\n\nfn pileupY_0( _S3 : f32) -> vec2<f32>\n{\n    var yTop_0 : f32 = _S3 * (u_0.featHeight_0 + u_0.featSpacing_0) - u_0.rangeY0_0;\n    var px2clip_0 : f32 = 2.0f / u_0.canvasH_0;\n    var topClip_0 : f32 = 1.0f - u_0.covOffset_0 / u_0.canvasH_0 * 2.0f;\n    return vec2<f32>(topClip_0 - yTop_0 * px2clip_0, topClip_0 - (yTop_0 + u_0.featHeight_0) * px2clip_0);\n}\n\nfn flipX_0( _S4 : f32) -> f32\n{\n    return mix(_S4, - _S4, u_0.reversed_0);\n}\n\n@vertex\nfn vs_main( _S5 : vertexInput_0, @builtin(vertex_index) vid_1 : u32) -> VsOut_0\n{\n    var o_0 : VsOut_0;\n    var local_0 : vec2<f32> = quadLocal_0(vid_1);\n    var _S6 : f32 = cigarDomainLen_0();\n    var pos_0 : f32 = f32(_S5.position_1);\n    var _S7 : f32 = cigarDomain_0().x;\n    var sx1_0 : f32 = (pos_0 - _S7) / _S6 * 2.0f - 1.0f;\n    var sx2_0 : f32 = (pos_0 + 1.0f - _S7) / _S6 * 2.0f - 1.0f;\n    var minW_0 : f32 = 2.0f / u_0.canvasW_0;\n    var sx1_1 : f32;\n    var sx2_1 : f32;\n    if((sx2_0 - sx1_0) < minW_0)\n    {\n        var mid_0 : f32 = (sx1_0 + sx2_0) * 0.5f;\n        var _S8 : f32 = minW_0 * 0.5f;\n        var _S9 : f32 = mid_0 + _S8;\n        sx1_1 = mid_0 - _S8;\n        sx2_1 = _S9;\n    }\n    else\n    {\n        sx1_1 = sx1_0;\n        sx2_1 = sx2_0;\n    }\n    var _S10 : vec2<f32> = pileupY_0(f32(_S5.y_0));\n    o_0.position_0 = vec4<f32>(flipX_0(mix(sx1_1, sx2_1, local_0.x)), mix(_S10.y, _S10.x, local_0.y), 0.0f, 1.0f);\n    o_0.color_0 = unpackRGBA_0(_S5.packedColor_0);\n    return o_0;\n}\n\nstruct pixelOutput_0\n{\n    @location(0) output_0 : vec4<f32>,\n};\n\nstruct pixelInput_0\n{\n    @location(0) color_1 : vec4<f32>,\n};\n\n@fragment\nfn fs_main( _S11 : pixelInput_0, @builtin(position) position_2 : vec4<f32>) -> pixelOutput_0\n{\n    var _S12 : pixelOutput_0 = pixelOutput_0( _S11.color_1 );\n    return _S12;\n}\n\n'
 
 export const GLSL_VERTEX =
-  '#version 300 es\nprecision highp float;\nprecision highp int;\n#line 14 0\nstruct Uniforms_0\n{\n    float bpHi_0;\n    float bpLo_0;\n    float bpLen_0;\n    float hpZero_0;\n    uint regionStart_0;\n    float canvasW_0;\n    float canvasH_0;\n    float rangeY0_0;\n    float scrollTop_0;\n    float covOffset_0;\n    float featHeight_0;\n    float featSpacing_0;\n    float covHeight_0;\n    float covYOffset_0;\n    float depthScale_0;\n    float binSize_0;\n    float noncovHeight_0;\n    float domainStart_0;\n    float domainEnd_0;\n    float insertUpper_0;\n    float insertLower_0;\n    float blockStartPx_0;\n    float blockWidth_0;\n    float lineWidthPx_0;\n    float gradientHue_0;\n    float pairedArcsDown_0;\n    int colorScheme_0;\n    int highlightIdx_0;\n    int highlightOnly_0;\n    int chainMode_0;\n    int showStroke_0;\n    int flipStrandLongRead_0;\n    float reversed_0;\n    uint colorFwd_0;\n    uint colorRev_0;\n    uint colorNostrand_0;\n    uint colorPairLR_0;\n    uint colorPairRL_0;\n    uint colorPairRR_0;\n    uint colorPairLL_0;\n    uint colorBaseA_0;\n    uint colorBaseC_0;\n    uint colorBaseG_0;\n    uint colorBaseT_0;\n    uint colorInsertion_0;\n    uint colorDeletion_0;\n    uint colorSkip_0;\n    uint colorSoftclip_0;\n    uint colorHardclip_0;\n    uint colorCoverage_0;\n    uint colorModFwd_0;\n    uint colorModRev_0;\n    uint colorLongInsert_0;\n    uint colorShortInsert_0;\n    uint colorSupplementary_0;\n    uint colorUnmappedMate_0;\n    uint arcColor0_0;\n    uint arcColor1_0;\n    uint arcColor2_0;\n    uint arcColor3_0;\n    uint arcColor4_0;\n    uint arcColor5_0;\n    uint arcColor6_0;\n    uint arcColor7_0;\n    uint arcLineColor0_0;\n    uint arcLineColor1_0;\n};\n\n\n#line 8 1\nlayout(std140) uniform Uniforms\n{\n    float bpHi_0;\n    float bpLo_0;\n    float bpLen_0;\n    float hpZero_0;\n    uint regionStart_0;\n    float canvasW_0;\n    float canvasH_0;\n    float rangeY0_0;\n    float scrollTop_0;\n    float covOffset_0;\n    float featHeight_0;\n    float featSpacing_0;\n    float covHeight_0;\n    float covYOffset_0;\n    float depthScale_0;\n    float binSize_0;\n    float noncovHeight_0;\n    float domainStart_0;\n    float domainEnd_0;\n    float insertUpper_0;\n    float insertLower_0;\n    float blockStartPx_0;\n    float blockWidth_0;\n    float lineWidthPx_0;\n    float gradientHue_0;\n    float pairedArcsDown_0;\n    int colorScheme_0;\n    int highlightIdx_0;\n    int highlightOnly_0;\n    int chainMode_0;\n    int showStroke_0;\n    int flipStrandLongRead_0;\n    float reversed_0;\n    uint colorFwd_0;\n    uint colorRev_0;\n    uint colorNostrand_0;\n    uint colorPairLR_0;\n    uint colorPairRL_0;\n    uint colorPairRR_0;\n    uint colorPairLL_0;\n    uint colorBaseA_0;\n    uint colorBaseC_0;\n    uint colorBaseG_0;\n    uint colorBaseT_0;\n    uint colorInsertion_0;\n    uint colorDeletion_0;\n    uint colorSkip_0;\n    uint colorSoftclip_0;\n    uint colorHardclip_0;\n    uint colorCoverage_0;\n    uint colorModFwd_0;\n    uint colorModRev_0;\n    uint colorLongInsert_0;\n    uint colorShortInsert_0;\n    uint colorSupplementary_0;\n    uint colorUnmappedMate_0;\n    uint arcColor0_0;\n    uint arcColor1_0;\n    uint arcColor2_0;\n    uint arcColor3_0;\n    uint arcColor4_0;\n    uint arcColor5_0;\n    uint arcColor6_0;\n    uint arcColor7_0;\n    uint arcLineColor0_0;\n    uint arcLineColor1_0;\n}u_0;\n\n#line 154 0\nvec2 quadLocal_0(uint vid_0)\n{\n\n#line 155\n    uint v_0 = vid_0 % 6U;\n    bool _S1 = v_0 == 0U;\n\n#line 156\n    bool _S2;\n\n#line 156\n    if(_S1)\n    {\n\n#line 156\n        _S2 = true;\n\n#line 156\n    }\n    else\n    {\n\n#line 156\n        _S2 = v_0 == 2U;\n\n#line 156\n    }\n\n#line 156\n    if(_S2)\n    {\n\n#line 156\n        _S2 = true;\n\n#line 156\n    }\n    else\n    {\n\n#line 156\n        _S2 = v_0 == 3U;\n\n#line 156\n    }\n\n#line 156\n    float lx_0;\n\n#line 156\n    if(_S2)\n    {\n\n#line 156\n        lx_0 = 0.0;\n\n#line 156\n    }\n    else\n    {\n\n#line 156\n        lx_0 = 1.0;\n\n#line 156\n    }\n    if(_S1)\n    {\n\n#line 157\n        _S2 = true;\n\n#line 157\n    }\n    else\n    {\n\n#line 157\n        _S2 = v_0 == 1U;\n\n#line 157\n    }\n\n#line 157\n    if(_S2)\n    {\n\n#line 157\n        _S2 = true;\n\n#line 157\n    }\n    else\n    {\n\n#line 157\n        _S2 = v_0 == 4U;\n\n#line 157\n    }\n\n#line 157\n    float ly_0;\n\n#line 157\n    if(_S2)\n    {\n\n#line 157\n        ly_0 = 0.0;\n\n#line 157\n    }\n    else\n    {\n\n#line 157\n        ly_0 = 1.0;\n\n#line 157\n    }\n    return vec2(lx_0, ly_0);\n}\n\n\n#line 7 2\nvec4 unpackRGBA_0(uint c_0)\n{\n\n#line 8\n    return vec4(float((c_0 >> 0U) & 255U), float((c_0 >> 8U) & 255U), float((c_0 >> 16U) & 255U), float((c_0 >> 24U) & 255U)) / 255.0;\n}\n\n\n#line 8\nout vec4 v_color;\n\n\n#line 8\nlayout(location = 0)\nin uint a_position;\n\n\n#line 8\nlayout(location = 1)\nin uint a_y;\n\n\n#line 8\nlayout(location = 2)\nin uint a_packedColor;\n\n\n#line 16 1\nstruct VsOut_0\n{\n    vec4 position_0;\n    vec4 color_0;\n};\n\n\n#line 16\nfloat cigarDomainLen_0()\n{\n\n#line 141 0\n    return u_0.domainEnd_0 - u_0.domainStart_0;\n}\n\n\n#line 141\nvec2 cigarDomain_0()\n{\n\n#line 137\n    return vec2(u_0.domainStart_0, u_0.domainEnd_0);\n}\n\n\n#line 137\nvec2 pileupY_0(float _S3)\n{\n\n#line 129\n    float yTop_0 = _S3 * (u_0.featHeight_0 + u_0.featSpacing_0) - u_0.rangeY0_0;\n\n    float px2clip_0 = 2.0 / u_0.canvasH_0;\n    float topClip_0 = 1.0 - u_0.covOffset_0 / u_0.canvasH_0 * 2.0;\n    return vec2(topClip_0 - yTop_0 * px2clip_0, topClip_0 - (yTop_0 + u_0.featHeight_0) * px2clip_0);\n}\n\n\n#line 133\nfloat flipX_0(float _S4)\n{\n\n#line 123\n    return mix(_S4, - _S4, u_0.reversed_0);\n}\n\n\n#line 22 1\nvoid main()\n{\n\n#line 23\n    VsOut_0 o_0;\n    vec2 local_0 = quadLocal_0(uint(gl_VertexID));\n\n#line 24\n    float _S5 = cigarDomainLen_0();\n\n\n\n    float pos_0 = float(a_position);\n\n    float _S6 = cigarDomain_0().x;\n\n#line 30\n    float sx1_0 = (pos_0 - _S6) / _S5 * 2.0 - 1.0;\n    float sx2_0 = (pos_0 + 1.0 - _S6) / _S5 * 2.0 - 1.0;\n    float minW_0 = 2.0 / u_0.canvasW_0;\n\n#line 32\n    float sx1_1;\n\n#line 32\n    float sx2_1;\n    if((sx2_0 - sx1_0) < minW_0)\n    {\n\n#line 34\n        float mid_0 = (sx1_0 + sx2_0) * 0.5;\n        float _S7 = minW_0 * 0.5;\n        float _S8 = mid_0 + _S7;\n\n#line 36\n        sx1_1 = mid_0 - _S7;\n\n#line 36\n        sx2_1 = _S8;\n\n#line 33\n    }\n    else\n    {\n\n#line 33\n        sx1_1 = sx1_0;\n\n#line 33\n        sx2_1 = sx2_0;\n\n#line 33\n    }\n\n#line 33\n    vec2 _S9 = pileupY_0(float(a_y));\n\n#line 40\n    o_0.position_0 = vec4(flipX_0(mix(sx1_1, sx2_1, local_0.x)), mix(_S9.y, _S9.x, local_0.y), 0.0, 1.0);\n    o_0.color_0 = unpackRGBA_0(a_packedColor);\n    VsOut_0 _S10 = o_0;\n\n#line 42\n    gl_Position = o_0.position_0;\n\n#line 42\n    v_color = _S10.color_0;\n\n#line 42\n    return;\n}\n\n'
+  '#version 300 es\nprecision highp float;\nprecision highp int;\n#line 14 0\nstruct Uniforms_0\n{\n    float bpHi_0;\n    float bpLo_0;\n    float bpLen_0;\n    float hpZero_0;\n    uint regionStart_0;\n    float canvasW_0;\n    float canvasH_0;\n    float rangeY0_0;\n    float scrollTop_0;\n    float covOffset_0;\n    float featHeight_0;\n    float featSpacing_0;\n    float covHeight_0;\n    float covYOffset_0;\n    float depthScale_0;\n    float binSize_0;\n    float noncovHeight_0;\n    float depthDomainMax_0;\n    float domainStart_0;\n    float domainEnd_0;\n    float insertUpper_0;\n    float insertLower_0;\n    float blockStartPx_0;\n    float blockWidth_0;\n    float lineWidthPx_0;\n    float gradientHue_0;\n    float pairedArcsDown_0;\n    int colorScheme_0;\n    int highlightIdx_0;\n    int highlightOnly_0;\n    int chainMode_0;\n    int showStroke_0;\n    int flipStrandLongRead_0;\n    int coverageScaleType_0;\n    float reversed_0;\n    uint colorFwd_0;\n    uint colorRev_0;\n    uint colorNostrand_0;\n    uint colorPairLR_0;\n    uint colorPairRL_0;\n    uint colorPairRR_0;\n    uint colorPairLL_0;\n    uint colorBaseA_0;\n    uint colorBaseC_0;\n    uint colorBaseG_0;\n    uint colorBaseT_0;\n    uint colorInsertion_0;\n    uint colorDeletion_0;\n    uint colorSkip_0;\n    uint colorSoftclip_0;\n    uint colorHardclip_0;\n    uint colorCoverage_0;\n    uint colorModFwd_0;\n    uint colorModRev_0;\n    uint colorLongInsert_0;\n    uint colorShortInsert_0;\n    uint colorSupplementary_0;\n    uint colorUnmappedMate_0;\n    uint arcColor0_0;\n    uint arcColor1_0;\n    uint arcColor2_0;\n    uint arcColor3_0;\n    uint arcColor4_0;\n    uint arcColor5_0;\n    uint arcColor6_0;\n    uint arcColor7_0;\n    uint arcLineColor0_0;\n    uint arcLineColor1_0;\n};\n\n\n#line 8 1\nlayout(std140) uniform Uniforms\n{\n    float bpHi_0;\n    float bpLo_0;\n    float bpLen_0;\n    float hpZero_0;\n    uint regionStart_0;\n    float canvasW_0;\n    float canvasH_0;\n    float rangeY0_0;\n    float scrollTop_0;\n    float covOffset_0;\n    float featHeight_0;\n    float featSpacing_0;\n    float covHeight_0;\n    float covYOffset_0;\n    float depthScale_0;\n    float binSize_0;\n    float noncovHeight_0;\n    float depthDomainMax_0;\n    float domainStart_0;\n    float domainEnd_0;\n    float insertUpper_0;\n    float insertLower_0;\n    float blockStartPx_0;\n    float blockWidth_0;\n    float lineWidthPx_0;\n    float gradientHue_0;\n    float pairedArcsDown_0;\n    int colorScheme_0;\n    int highlightIdx_0;\n    int highlightOnly_0;\n    int chainMode_0;\n    int showStroke_0;\n    int flipStrandLongRead_0;\n    int coverageScaleType_0;\n    float reversed_0;\n    uint colorFwd_0;\n    uint colorRev_0;\n    uint colorNostrand_0;\n    uint colorPairLR_0;\n    uint colorPairRL_0;\n    uint colorPairRR_0;\n    uint colorPairLL_0;\n    uint colorBaseA_0;\n    uint colorBaseC_0;\n    uint colorBaseG_0;\n    uint colorBaseT_0;\n    uint colorInsertion_0;\n    uint colorDeletion_0;\n    uint colorSkip_0;\n    uint colorSoftclip_0;\n    uint colorHardclip_0;\n    uint colorCoverage_0;\n    uint colorModFwd_0;\n    uint colorModRev_0;\n    uint colorLongInsert_0;\n    uint colorShortInsert_0;\n    uint colorSupplementary_0;\n    uint colorUnmappedMate_0;\n    uint arcColor0_0;\n    uint arcColor1_0;\n    uint arcColor2_0;\n    uint arcColor3_0;\n    uint arcColor4_0;\n    uint arcColor5_0;\n    uint arcColor6_0;\n    uint arcColor7_0;\n    uint arcLineColor0_0;\n    uint arcLineColor1_0;\n}u_0;\n\n#line 156 0\nvec2 quadLocal_0(uint vid_0)\n{\n\n#line 157\n    uint v_0 = vid_0 % 6U;\n    bool _S1 = v_0 == 0U;\n\n#line 158\n    bool _S2;\n\n#line 158\n    if(_S1)\n    {\n\n#line 158\n        _S2 = true;\n\n#line 158\n    }\n    else\n    {\n\n#line 158\n        _S2 = v_0 == 2U;\n\n#line 158\n    }\n\n#line 158\n    if(_S2)\n    {\n\n#line 158\n        _S2 = true;\n\n#line 158\n    }\n    else\n    {\n\n#line 158\n        _S2 = v_0 == 3U;\n\n#line 158\n    }\n\n#line 158\n    float lx_0;\n\n#line 158\n    if(_S2)\n    {\n\n#line 158\n        lx_0 = 0.0;\n\n#line 158\n    }\n    else\n    {\n\n#line 158\n        lx_0 = 1.0;\n\n#line 158\n    }\n    if(_S1)\n    {\n\n#line 159\n        _S2 = true;\n\n#line 159\n    }\n    else\n    {\n\n#line 159\n        _S2 = v_0 == 1U;\n\n#line 159\n    }\n\n#line 159\n    if(_S2)\n    {\n\n#line 159\n        _S2 = true;\n\n#line 159\n    }\n    else\n    {\n\n#line 159\n        _S2 = v_0 == 4U;\n\n#line 159\n    }\n\n#line 159\n    float ly_0;\n\n#line 159\n    if(_S2)\n    {\n\n#line 159\n        ly_0 = 0.0;\n\n#line 159\n    }\n    else\n    {\n\n#line 159\n        ly_0 = 1.0;\n\n#line 159\n    }\n    return vec2(lx_0, ly_0);\n}\n\n\n#line 7 2\nvec4 unpackRGBA_0(uint c_0)\n{\n\n#line 8\n    return vec4(float((c_0 >> 0U) & 255U), float((c_0 >> 8U) & 255U), float((c_0 >> 16U) & 255U), float((c_0 >> 24U) & 255U)) / 255.0;\n}\n\n\n#line 8\nout vec4 v_color;\n\n\n#line 8\nlayout(location = 0)\nin uint a_position;\n\n\n#line 8\nlayout(location = 1)\nin uint a_y;\n\n\n#line 8\nlayout(location = 2)\nin uint a_packedColor;\n\n\n#line 16 1\nstruct VsOut_0\n{\n    vec4 position_0;\n    vec4 color_0;\n};\n\n\n#line 16\nfloat cigarDomainLen_0()\n{\n\n#line 143 0\n    return u_0.domainEnd_0 - u_0.domainStart_0;\n}\n\n\n#line 143\nvec2 cigarDomain_0()\n{\n\n#line 139\n    return vec2(u_0.domainStart_0, u_0.domainEnd_0);\n}\n\n\n#line 139\nvec2 pileupY_0(float _S3)\n{\n\n#line 131\n    float yTop_0 = _S3 * (u_0.featHeight_0 + u_0.featSpacing_0) - u_0.rangeY0_0;\n\n    float px2clip_0 = 2.0 / u_0.canvasH_0;\n    float topClip_0 = 1.0 - u_0.covOffset_0 / u_0.canvasH_0 * 2.0;\n    return vec2(topClip_0 - yTop_0 * px2clip_0, topClip_0 - (yTop_0 + u_0.featHeight_0) * px2clip_0);\n}\n\n\n#line 135\nfloat flipX_0(float _S4)\n{\n\n#line 125\n    return mix(_S4, - _S4, u_0.reversed_0);\n}\n\n\n#line 22 1\nvoid main()\n{\n\n#line 23\n    VsOut_0 o_0;\n    vec2 local_0 = quadLocal_0(uint(gl_VertexID));\n\n#line 24\n    float _S5 = cigarDomainLen_0();\n\n\n\n    float pos_0 = float(a_position);\n\n    float _S6 = cigarDomain_0().x;\n\n#line 30\n    float sx1_0 = (pos_0 - _S6) / _S5 * 2.0 - 1.0;\n    float sx2_0 = (pos_0 + 1.0 - _S6) / _S5 * 2.0 - 1.0;\n    float minW_0 = 2.0 / u_0.canvasW_0;\n\n#line 32\n    float sx1_1;\n\n#line 32\n    float sx2_1;\n    if((sx2_0 - sx1_0) < minW_0)\n    {\n\n#line 34\n        float mid_0 = (sx1_0 + sx2_0) * 0.5;\n        float _S7 = minW_0 * 0.5;\n        float _S8 = mid_0 + _S7;\n\n#line 36\n        sx1_1 = mid_0 - _S7;\n\n#line 36\n        sx2_1 = _S8;\n\n#line 33\n    }\n    else\n    {\n\n#line 33\n        sx1_1 = sx1_0;\n\n#line 33\n        sx2_1 = sx2_0;\n\n#line 33\n    }\n\n#line 33\n    vec2 _S9 = pileupY_0(float(a_y));\n\n#line 40\n    o_0.position_0 = vec4(flipX_0(mix(sx1_1, sx2_1, local_0.x)), mix(_S9.y, _S9.x, local_0.y), 0.0, 1.0);\n    o_0.color_0 = unpackRGBA_0(a_packedColor);\n    VsOut_0 _S10 = o_0;\n\n#line 42\n    gl_Position = o_0.position_0;\n\n#line 42\n    v_color = _S10.color_0;\n\n#line 42\n    return;\n}\n\n'
 
 export const GLSL_FRAGMENT =
   '#version 300 es\nprecision highp float;\nprecision highp int;\n#line 993 0\nlayout(location = 0)\nout vec4 entryPointParam_fs_main_0;\n\n\n#line 993\nin vec4 v_color;\n\n\n#line 46 1\nvoid main()\n{\n\n#line 46\n    entryPointParam_fs_main_0 = v_color;\n\n#line 46\n    return;\n}\n\n'
@@ -34,55 +34,57 @@ export const UNIFORM_OFFSET_BYTES = {
   depthScale: 56,
   binSize: 60,
   noncovHeight: 64,
-  domainStart: 68,
-  domainEnd: 72,
-  insertUpper: 76,
-  insertLower: 80,
-  blockStartPx: 84,
-  blockWidth: 88,
-  lineWidthPx: 92,
-  gradientHue: 96,
-  pairedArcsDown: 100,
-  colorScheme: 104,
-  highlightIdx: 108,
-  highlightOnly: 112,
-  chainMode: 116,
-  showStroke: 120,
-  flipStrandLongRead: 124,
-  reversed: 128,
-  colorFwd: 132,
-  colorRev: 136,
-  colorNostrand: 140,
-  colorPairLR: 144,
-  colorPairRL: 148,
-  colorPairRR: 152,
-  colorPairLL: 156,
-  colorBaseA: 160,
-  colorBaseC: 164,
-  colorBaseG: 168,
-  colorBaseT: 172,
-  colorInsertion: 176,
-  colorDeletion: 180,
-  colorSkip: 184,
-  colorSoftclip: 188,
-  colorHardclip: 192,
-  colorCoverage: 196,
-  colorModFwd: 200,
-  colorModRev: 204,
-  colorLongInsert: 208,
-  colorShortInsert: 212,
-  colorSupplementary: 216,
-  colorUnmappedMate: 220,
-  arcColor0: 224,
-  arcColor1: 228,
-  arcColor2: 232,
-  arcColor3: 236,
-  arcColor4: 240,
-  arcColor5: 244,
-  arcColor6: 248,
-  arcColor7: 252,
-  arcLineColor0: 256,
-  arcLineColor1: 260,
+  depthDomainMax: 68,
+  domainStart: 72,
+  domainEnd: 76,
+  insertUpper: 80,
+  insertLower: 84,
+  blockStartPx: 88,
+  blockWidth: 92,
+  lineWidthPx: 96,
+  gradientHue: 100,
+  pairedArcsDown: 104,
+  colorScheme: 108,
+  highlightIdx: 112,
+  highlightOnly: 116,
+  chainMode: 120,
+  showStroke: 124,
+  flipStrandLongRead: 128,
+  coverageScaleType: 132,
+  reversed: 136,
+  colorFwd: 140,
+  colorRev: 144,
+  colorNostrand: 148,
+  colorPairLR: 152,
+  colorPairRL: 156,
+  colorPairRR: 160,
+  colorPairLL: 164,
+  colorBaseA: 168,
+  colorBaseC: 172,
+  colorBaseG: 176,
+  colorBaseT: 180,
+  colorInsertion: 184,
+  colorDeletion: 188,
+  colorSkip: 192,
+  colorSoftclip: 196,
+  colorHardclip: 200,
+  colorCoverage: 204,
+  colorModFwd: 208,
+  colorModRev: 212,
+  colorLongInsert: 216,
+  colorShortInsert: 220,
+  colorSupplementary: 224,
+  colorUnmappedMate: 228,
+  arcColor0: 232,
+  arcColor1: 236,
+  arcColor2: 240,
+  arcColor3: 244,
+  arcColor4: 248,
+  arcColor5: 252,
+  arcColor6: 256,
+  arcColor7: 260,
+  arcLineColor0: 264,
+  arcLineColor1: 268,
 } as const
 
 // Indices into a Float32Array / Uint32Array view.
@@ -104,55 +106,57 @@ export const UNIFORM_OFFSET_F32 = {
   depthScale: 14,
   binSize: 15,
   noncovHeight: 16,
-  domainStart: 17,
-  domainEnd: 18,
-  insertUpper: 19,
-  insertLower: 20,
-  blockStartPx: 21,
-  blockWidth: 22,
-  lineWidthPx: 23,
-  gradientHue: 24,
-  pairedArcsDown: 25,
-  colorScheme: 26,
-  highlightIdx: 27,
-  highlightOnly: 28,
-  chainMode: 29,
-  showStroke: 30,
-  flipStrandLongRead: 31,
-  reversed: 32,
-  colorFwd: 33,
-  colorRev: 34,
-  colorNostrand: 35,
-  colorPairLR: 36,
-  colorPairRL: 37,
-  colorPairRR: 38,
-  colorPairLL: 39,
-  colorBaseA: 40,
-  colorBaseC: 41,
-  colorBaseG: 42,
-  colorBaseT: 43,
-  colorInsertion: 44,
-  colorDeletion: 45,
-  colorSkip: 46,
-  colorSoftclip: 47,
-  colorHardclip: 48,
-  colorCoverage: 49,
-  colorModFwd: 50,
-  colorModRev: 51,
-  colorLongInsert: 52,
-  colorShortInsert: 53,
-  colorSupplementary: 54,
-  colorUnmappedMate: 55,
-  arcColor0: 56,
-  arcColor1: 57,
-  arcColor2: 58,
-  arcColor3: 59,
-  arcColor4: 60,
-  arcColor5: 61,
-  arcColor6: 62,
-  arcColor7: 63,
-  arcLineColor0: 64,
-  arcLineColor1: 65,
+  depthDomainMax: 17,
+  domainStart: 18,
+  domainEnd: 19,
+  insertUpper: 20,
+  insertLower: 21,
+  blockStartPx: 22,
+  blockWidth: 23,
+  lineWidthPx: 24,
+  gradientHue: 25,
+  pairedArcsDown: 26,
+  colorScheme: 27,
+  highlightIdx: 28,
+  highlightOnly: 29,
+  chainMode: 30,
+  showStroke: 31,
+  flipStrandLongRead: 32,
+  coverageScaleType: 33,
+  reversed: 34,
+  colorFwd: 35,
+  colorRev: 36,
+  colorNostrand: 37,
+  colorPairLR: 38,
+  colorPairRL: 39,
+  colorPairRR: 40,
+  colorPairLL: 41,
+  colorBaseA: 42,
+  colorBaseC: 43,
+  colorBaseG: 44,
+  colorBaseT: 45,
+  colorInsertion: 46,
+  colorDeletion: 47,
+  colorSkip: 48,
+  colorSoftclip: 49,
+  colorHardclip: 50,
+  colorCoverage: 51,
+  colorModFwd: 52,
+  colorModRev: 53,
+  colorLongInsert: 54,
+  colorShortInsert: 55,
+  colorSupplementary: 56,
+  colorUnmappedMate: 57,
+  arcColor0: 58,
+  arcColor1: 59,
+  arcColor2: 60,
+  arcColor3: 61,
+  arcColor4: 62,
+  arcColor5: 63,
+  arcColor6: 64,
+  arcColor7: 65,
+  arcLineColor0: 66,
+  arcLineColor1: 67,
 } as const
 
 export interface Uniforms {
@@ -173,6 +177,7 @@ export interface Uniforms {
   depthScale: number
   binSize: number
   noncovHeight: number
+  depthDomainMax: number
   domainStart: number
   domainEnd: number
   insertUpper: number
@@ -188,6 +193,7 @@ export interface Uniforms {
   chainMode: number
   showStroke: number
   flipStrandLongRead: number
+  coverageScaleType: number
   reversed: number
   colorFwd: number
   colorRev: number
@@ -245,55 +251,57 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[14] = uniforms.depthScale
   f32[15] = uniforms.binSize
   f32[16] = uniforms.noncovHeight
-  f32[17] = uniforms.domainStart
-  f32[18] = uniforms.domainEnd
-  f32[19] = uniforms.insertUpper
-  f32[20] = uniforms.insertLower
-  f32[21] = uniforms.blockStartPx
-  f32[22] = uniforms.blockWidth
-  f32[23] = uniforms.lineWidthPx
-  f32[24] = uniforms.gradientHue
-  f32[25] = uniforms.pairedArcsDown
-  i32[26] = uniforms.colorScheme
-  i32[27] = uniforms.highlightIdx
-  i32[28] = uniforms.highlightOnly
-  i32[29] = uniforms.chainMode
-  i32[30] = uniforms.showStroke
-  i32[31] = uniforms.flipStrandLongRead
-  f32[32] = uniforms.reversed
-  u32[33] = uniforms.colorFwd
-  u32[34] = uniforms.colorRev
-  u32[35] = uniforms.colorNostrand
-  u32[36] = uniforms.colorPairLR
-  u32[37] = uniforms.colorPairRL
-  u32[38] = uniforms.colorPairRR
-  u32[39] = uniforms.colorPairLL
-  u32[40] = uniforms.colorBaseA
-  u32[41] = uniforms.colorBaseC
-  u32[42] = uniforms.colorBaseG
-  u32[43] = uniforms.colorBaseT
-  u32[44] = uniforms.colorInsertion
-  u32[45] = uniforms.colorDeletion
-  u32[46] = uniforms.colorSkip
-  u32[47] = uniforms.colorSoftclip
-  u32[48] = uniforms.colorHardclip
-  u32[49] = uniforms.colorCoverage
-  u32[50] = uniforms.colorModFwd
-  u32[51] = uniforms.colorModRev
-  u32[52] = uniforms.colorLongInsert
-  u32[53] = uniforms.colorShortInsert
-  u32[54] = uniforms.colorSupplementary
-  u32[55] = uniforms.colorUnmappedMate
-  u32[56] = uniforms.arcColor0
-  u32[57] = uniforms.arcColor1
-  u32[58] = uniforms.arcColor2
-  u32[59] = uniforms.arcColor3
-  u32[60] = uniforms.arcColor4
-  u32[61] = uniforms.arcColor5
-  u32[62] = uniforms.arcColor6
-  u32[63] = uniforms.arcColor7
-  u32[64] = uniforms.arcLineColor0
-  u32[65] = uniforms.arcLineColor1
+  f32[17] = uniforms.depthDomainMax
+  f32[18] = uniforms.domainStart
+  f32[19] = uniforms.domainEnd
+  f32[20] = uniforms.insertUpper
+  f32[21] = uniforms.insertLower
+  f32[22] = uniforms.blockStartPx
+  f32[23] = uniforms.blockWidth
+  f32[24] = uniforms.lineWidthPx
+  f32[25] = uniforms.gradientHue
+  f32[26] = uniforms.pairedArcsDown
+  i32[27] = uniforms.colorScheme
+  i32[28] = uniforms.highlightIdx
+  i32[29] = uniforms.highlightOnly
+  i32[30] = uniforms.chainMode
+  i32[31] = uniforms.showStroke
+  i32[32] = uniforms.flipStrandLongRead
+  i32[33] = uniforms.coverageScaleType
+  f32[34] = uniforms.reversed
+  u32[35] = uniforms.colorFwd
+  u32[36] = uniforms.colorRev
+  u32[37] = uniforms.colorNostrand
+  u32[38] = uniforms.colorPairLR
+  u32[39] = uniforms.colorPairRL
+  u32[40] = uniforms.colorPairRR
+  u32[41] = uniforms.colorPairLL
+  u32[42] = uniforms.colorBaseA
+  u32[43] = uniforms.colorBaseC
+  u32[44] = uniforms.colorBaseG
+  u32[45] = uniforms.colorBaseT
+  u32[46] = uniforms.colorInsertion
+  u32[47] = uniforms.colorDeletion
+  u32[48] = uniforms.colorSkip
+  u32[49] = uniforms.colorSoftclip
+  u32[50] = uniforms.colorHardclip
+  u32[51] = uniforms.colorCoverage
+  u32[52] = uniforms.colorModFwd
+  u32[53] = uniforms.colorModRev
+  u32[54] = uniforms.colorLongInsert
+  u32[55] = uniforms.colorShortInsert
+  u32[56] = uniforms.colorSupplementary
+  u32[57] = uniforms.colorUnmappedMate
+  u32[58] = uniforms.arcColor0
+  u32[59] = uniforms.arcColor1
+  u32[60] = uniforms.arcColor2
+  u32[61] = uniforms.arcColor3
+  u32[62] = uniforms.arcColor4
+  u32[63] = uniforms.arcColor5
+  u32[64] = uniforms.arcColor6
+  u32[65] = uniforms.arcColor7
+  u32[66] = uniforms.arcLineColor0
+  u32[67] = uniforms.arcLineColor1
 }
 
 export const INSTANCE_STRIDE_BYTES = 12

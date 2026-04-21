@@ -10,15 +10,14 @@ import {
   useGpuModelLifecycle,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { transaction } from 'mobx'
-import { isAlive } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import { SyntenyRendererFactory } from '../LinearSyntenyDisplay/SyntenyRenderer.ts'
 
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
-
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()({

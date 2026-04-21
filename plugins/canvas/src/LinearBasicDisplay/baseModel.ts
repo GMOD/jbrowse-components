@@ -185,6 +185,7 @@ export default function baseStateModelFactory(
         featureIdUnderMouse: null as string | null,
         subfeatureIdUnderMouse: null as string | null,
         mouseoverExtraInformation: undefined as string | undefined,
+        contextMenuFeature: undefined as Feature | undefined,
         contextMenuInfo: undefined as
           | { item: FlatbushItem; displayedRegionIndex: number }
           | undefined,
@@ -521,11 +522,18 @@ export default function baseStateModelFactory(
           self.mouseoverExtraInformation = info
         },
 
+        setContextMenuFeature(feature?: Feature) {
+          self.contextMenuFeature = feature
+        },
+
         setContextMenuInfo(info?: {
           item: FlatbushItem
           displayedRegionIndex: number
         }) {
           self.contextMenuInfo = info
+          if (!info) {
+            self.contextMenuFeature = undefined
+          }
         },
       }))
       .actions(self => ({
@@ -564,7 +572,10 @@ export default function baseStateModelFactory(
         },
       }))
       .actions(self => ({
-        async fetchFullFeature(featureId: string, displayedRegionIndex: number) {
+        async fetchFullFeature(
+          featureId: string,
+          displayedRegionIndex: number,
+        ) {
           const region = self.loadedRegions.get(displayedRegionIndex)
           if (!region) {
             return undefined
@@ -576,19 +587,6 @@ export default function baseStateModelFactory(
             featureId,
             region,
           )
-        },
-
-        selectFullFeature(featureId: string, displayedRegionIndex: number) {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          ;(async () => {
-            const feature = await self.fetchFullFeature(
-              featureId,
-              displayedRegionIndex,
-            )
-            if (feature && isAlive(self)) {
-              self.selectFeature(feature)
-            }
-          })()
         },
 
         selectFeatureById(
@@ -640,6 +638,20 @@ export default function baseStateModelFactory(
             shouldRenderPeptideBackground(view.bpPerPx) ===
             shouldRenderPeptideBackground(regionData.loadedBpPerPx)
           )
+        },
+      }))
+      .actions(self => ({
+        selectFullFeature(featureId: string, displayedRegionIndex: number) {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          ;(async () => {
+            const feature = await self.fetchFullFeature(
+              featureId,
+              displayedRegionIndex,
+            )
+            if (feature && isAlive(self)) {
+              self.selectFeature(feature)
+            }
+          })()
         },
       }))
       .actions(self => {

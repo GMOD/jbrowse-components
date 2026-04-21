@@ -102,7 +102,16 @@ describe('drawCoverageBins', () => {
 
   it('does nothing with zero bins', () => {
     const { ctx, calls } = makeCtx()
-    drawCoverageBins(ctx, new ArrayBuffer(0), 0, identity, 50, 'blue', () => 0, 200)
+    drawCoverageBins(
+      ctx,
+      new ArrayBuffer(0),
+      0,
+      identity,
+      50,
+      'blue',
+      () => 0,
+      200,
+    )
     expect(calls.length).toBe(0)
   })
 })

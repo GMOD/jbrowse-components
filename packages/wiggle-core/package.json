@@ -1,14 +1,13 @@
 {
-  "name": "@jbrowse/alignments-core",
+  "name": "@jbrowse/wiggle-core",
   "version": "4.1.14",
   "type": "module",
-  "description": "Shared GPU rendering utilities for alignments and synteny displays",
+  "description": "Shared scale and autoscale utilities for wiggle and coverage displays",
   "keywords": [
     "jbrowse",
     "jbrowse2",
-    "gpu",
-    "webgl",
-    "webgpu"
+    "wiggle",
+    "scale"
   ],
   "license": "Apache-2.0",
   "homepage": "https://jbrowse.org",
@@ -16,7 +15,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/GMOD/jbrowse-components.git",
-    "directory": "packages/alignments-core"
+    "directory": "packages/wiggle-core"
   },
   "author": "JBrowse Team",
   "main": "src/index.ts",
@@ -26,14 +25,13 @@
   "scripts": {
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "build": "pnpm build:esm",
-    "test": "cd ../..; jest --passWithNoTests packages/alignments-core",
+    "test": "cd ../..; jest --passWithNoTests packages/wiggle-core",
     "clean": "rimraf esm *.tsbuildinfo",
     "prebuild": "pnpm clean",
     "prepack": "pnpm build"
   },
   "dependencies": {
-    "@jbrowse/core": "workspace:^",
-    "@jbrowse/wiggle-core": "workspace:^"
+    "@mui/x-charts-vendor": "^8.26.0"
   },
   "publishConfig": {
     "access": "public",

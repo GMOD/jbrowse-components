@@ -389,16 +389,7 @@ export function executeSyntenyInstanceData({
     )
 
     if (!willDrawCigar && drawLocationMarkers) {
-      addLocationMarkers(
-        x11,
-        x12,
-        x22,
-        x21,
-        featureId,
-        qtl,
-        padTop,
-        padBottom,
-      )
+      addLocationMarkers(x11, x12, x22, x21, featureId, qtl, padTop, padBottom)
     }
   }
 

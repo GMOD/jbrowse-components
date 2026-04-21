@@ -103,10 +103,13 @@ function fillFrameUniforms(
   f[U.featSpacing] = state.featureSpacing
   f[U.covHeight] = state.coverageHeight
   f[U.covYOffset] = state.coverageYOffset
+  const domainMax = state.coverageMaxDepth
   f[U.depthScale] =
-    state.coverageMaxDepth !== undefined && region.maxDepth > 0
-      ? region.maxDepth / state.coverageMaxDepth
+    domainMax !== undefined && region.maxDepth > 0
+      ? region.maxDepth / domainMax
       : 1
+  f[U.depthDomainMax] = domainMax ?? 0
+  i[U.coverageScaleType] = state.coverageIsLog ? 1 : 0
   f[U.binSize] = region.binSize
   f[U.noncovHeight] =
     region.noncovMaxCount > 0 ? Math.min(region.noncovMaxCount * 2, 20) : 0
@@ -375,7 +378,16 @@ interface ArcFrame {
   covOffset: number
 }
 function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
-  const { region, block, state, scissorX, scissorW, arcViewportH, dpr, covOffset } = a
+  const {
+    region,
+    block,
+    state,
+    scissorX,
+    scissorW,
+    arcViewportH,
+    dpr,
+    covOffset,
+  } = a
   const blockW = block.screenEndPx - block.screenStartPx
   const [hi, lo] = splitPositionWithFrac(block.bpRangeX[0])
   f[U.covOffset] = covOffset

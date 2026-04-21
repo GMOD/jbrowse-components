@@ -1,4 +1,6 @@
-import { types } from '@jbrowse/mobx-state-tree'
+import { isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
+
+const warnedTrackIds = new Set<string>()
 
 import { BaseSessionModel, isBaseSession } from './BaseSession.ts'
 import { ReferenceManagementSessionMixin } from './ReferenceManagement.ts'
@@ -48,6 +50,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
        */
       // method rather than getter so subclasses can override it
       getTracksById(): Record<string, AnyConfigurationModel> {
+        console.log('[getTracksById] recomputing')
         const temporaryAssemblies =
           'temporaryAssemblies' in self
             ? (self.temporaryAssemblies as { sequence: { trackId: string } }[])
@@ -60,14 +63,32 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
               }[])
             : []
 
-        return Object.fromEntries([
-          ...self.tracks.map(t => [t.trackId, t]),
-          ...self.assemblies.map(a => [a.sequence.trackId, a.sequence]),
-          ...temporaryAssemblies.map(a => [a.sequence.trackId, a.sequence]),
-          ...connectionInstances.flatMap(c =>
-            c.tracks.map(t => [t.trackId, t]),
+        const allEntries: [string, unknown][] = [
+          ...self.tracks.map(t => [t.trackId, t] as [string, unknown]),
+          ...self.assemblies.map(
+            a => [a.sequence.trackId, a.sequence] as [string, unknown],
           ),
-        ])
+          ...temporaryAssemblies.map(
+            a => [a.sequence.trackId, a.sequence] as [string, unknown],
+          ),
+          ...connectionInstances.flatMap(c =>
+            c.tracks.map(t => [t.trackId, t] as [string, unknown]),
+          ),
+        ]
+        for (const [id, val] of allEntries) {
+          if (!isStateTreeNode(val as object) && !warnedTrackIds.has(id)) {
+            warnedTrackIds.add(id)
+            console.warn(
+              '[getTracksById] plain object (not MST node) for trackId:',
+              id,
+              'keys:',
+              typeof val === 'object' && val !== null
+                ? Object.keys(val).join(',')
+                : val,
+            )
+          }
+        }
+        return Object.fromEntries(allEntries)
       },
     }))
     .views(self => ({

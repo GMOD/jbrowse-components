@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -68,7 +69,13 @@ interface LinearBasicDisplayModel {
     featureInfo: FlatbushItem,
     displayedRegionIndex: number,
   ) => void
+  contextMenuInfo: unknown
   setContextMenuInfo: (info?: unknown) => void
+  setContextMenuFeature: (feature?: unknown) => void
+  fetchFullFeature: (
+    featureId: string,
+    displayedRegionIndex: number,
+  ) => Promise<unknown>
   contextMenuItems: () => { label: string; onClick: () => void }[]
   getFeatureById: (featureId: string) => FlatbushItem | undefined
   clearSelection: () => void
@@ -147,14 +154,24 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   const height = model.height
 
   const openContextMenu = useCallback(
-    (
+    async (
       feature: FlatbushItem,
       displayedRegionIndex: number,
       clientX: number,
       clientY: number,
     ) => {
+      // Set contextMenuInfo synchronously so hover guards below can see it
+      // during the async fetch window (before contextMenuCoord is set).
       model.showContextMenuForFeature(feature, displayedRegionIndex)
       model.setMouseoverExtraInformation(undefined)
+      const fullFeature = await model.fetchFullFeature(
+        feature.featureId,
+        displayedRegionIndex,
+      )
+      if (!isAlive(model)) {
+        return
+      }
+      model.setContextMenuFeature(fullFeature ?? undefined)
       setContextMenuCoord([clientX, clientY])
     },
     [model],
@@ -250,7 +267,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (contextMenuCoord) {
+    if (contextMenuCoord || model.contextMenuInfo) {
       return
     }
     setClientXY([e.clientX, e.clientY])
@@ -300,6 +317,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     const result = hitTestAtEvent(e)
     if (result.feature) {
       e.preventDefault()
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       openContextMenu(
         result.feature,
         result.displayedRegionIndex,
@@ -310,7 +328,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   }
 
   const handleMouseLeave = () => {
-    if (!contextMenuCoord) {
+    if (!contextMenuCoord && !model.contextMenuInfo) {
       model.clearHover()
     }
   }

@@ -1,12 +1,11 @@
+import { GpuSyntenyRenderer, SYNTENY_PASSES } from './GpuSyntenyRenderer.ts'
 import { MockHal } from '../../../../packages/core/src/gpu/hal/mockHal.ts'
 
-import { GpuSyntenyRenderer, SYNTENY_PASSES } from './GpuSyntenyRenderer.ts'
-
-import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 import type {
   SyntenyRenderState,
   SyntenyTrackRenderParams,
 } from './syntenyBackendTypes.ts'
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 
 // Extends MockHal so readPickingPixelAsync returns a manually-resolved promise,
 // letting tests control exactly when the GPU readback "completes".

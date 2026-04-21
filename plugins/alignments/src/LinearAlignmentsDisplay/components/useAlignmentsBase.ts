@@ -86,6 +86,16 @@ export interface LinearAlignmentsDisplayModel {
   colorPalette: ColorPalette | null
   colorSchemeIndex: number
   canvasDrawn: boolean
+  rpcDataMap: Map<number, PileupDataResult>
+  coverageDomain: [number, number] | undefined
+  coverageScaleType: string
+  coverageAutoscaleType: string
+  coverageMinScore: number | undefined
+  coverageMaxScore: number | undefined
+  setCoverageScaleType: (val: string) => void
+  setCoverageAutoscaleType: (val: string) => void
+  setCoverageMinScore: (val?: number) => void
+  setCoverageMaxScore: (val?: number) => void
   arcsState: {
     rpcDataMap: Map<
       number,
@@ -265,7 +275,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   function handleMouseLeave() {
     dragRef.current.isDragging = false
-    model.clearMouseoverState()
+    if (!model.contextMenuCoord) {
+      model.clearMouseoverState()
+    }
   }
 
   const handleResizeMouseDown = makeResizeHandler(

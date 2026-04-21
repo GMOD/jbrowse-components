@@ -305,12 +305,17 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     bpPerPx: number
     offsetPx: number
   } | null>(null)
-  const [hoveredHitState, setHoveredHitState] = useState<{
-    hit: FeatureHitResult
-    bpPerPx: number
-    offsetPx: number
-  } | undefined>()
-  const [selectedFeatureId, setSelectedFeatureId] = useState<string | undefined>()
+  const [hoveredHitState, setHoveredHitState] = useState<
+    | {
+        hit: FeatureHitResult
+        bpPerPx: number
+        offsetPx: number
+      }
+    | undefined
+  >()
+  const [selectedFeatureId, setSelectedFeatureId] = useState<
+    string | undefined
+  >()
   const view = getContainingView(model) as LinearGenomeViewModel
 
   const { canvasRef, error, retry } = useGpuModelLifecycle(
@@ -360,7 +365,8 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     tooltipState.bpPerPx === bpPerPx &&
     tooltipState.offsetPx === offsetPx
   const hoveredHit =
-    hoveredHitState?.bpPerPx === bpPerPx && hoveredHitState.offsetPx === offsetPx
+    hoveredHitState?.bpPerPx === bpPerPx &&
+    hoveredHitState.offsetPx === offsetPx
       ? hoveredHitState.hit
       : undefined
 
@@ -377,7 +383,11 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       if (featureIdx !== -1) {
         const feature = spatialIndex.features[featureIdx]!
         const genomeName = spatialIndex.genomeNames[featureIdx]!
-        return { feature, genomeName, sampleIdx: displayedGenomes.indexOf(genomeName) }
+        return {
+          feature,
+          genomeName,
+          sampleIdx: displayedGenomes.indexOf(genomeName),
+        }
       }
     }
     return undefined
@@ -438,7 +448,9 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       const curBpPerPx = view.bpPerPx
       const curOffsetPx = view.offsetPx
       const hit = doHitTest(e)
-      setHoveredHitState(hit ? { hit, bpPerPx: curBpPerPx, offsetPx: curOffsetPx } : undefined)
+      setHoveredHitState(
+        hit ? { hit, bpPerPx: curBpPerPx, offsetPx: curOffsetPx } : undefined,
+      )
       if (hit) {
         setTooltipState({
           content: (

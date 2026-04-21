@@ -278,15 +278,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
           continue
         }
 
-        buildFeaturePath(
-          ctx,
-          sx1,
-          sx2,
-          sx3,
-          sx4,
-          height,
-          params.drawCurves,
-        )
+        buildFeaturePath(ctx, sx1, sx2, sx3, sx4, height, params.drawCurves)
 
         if (ctx.isPointInPath(x, localY)) {
           const result = { key, featureIndex: i }

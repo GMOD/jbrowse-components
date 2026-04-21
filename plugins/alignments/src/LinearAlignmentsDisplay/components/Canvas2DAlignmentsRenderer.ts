@@ -13,13 +13,13 @@ import {
   packNoncovSegmentsForGpu,
   packSnpSegmentsForGpu,
 } from '@jbrowse/alignments-core'
-import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 import {
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import { getReadColor, rgb255 } from '../colorUtils.ts'
 import { getChainBounds } from './chainOverlayUtils.ts'

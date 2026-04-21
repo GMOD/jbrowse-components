@@ -18,13 +18,16 @@ equivalence. Catches per-backend drift.
 `pick(x, y): Promise<Hit | undefined>`. Unifies async WebGPU readback with
 sync Canvas2D picking; synteny needs it.
 
-**Alignments coverage scaling (remaining).** Phases 1–3 done (see
-COMPLETED.md). Remaining: CPU-side normalization — run `makeScoreNormalizer`
-at upload time and re-upload coverage buffers on domain/scale change so the
-GPU shader doesn't need `depthScale` (enables true log scale GPU rendering).
-Add `uploadCoverage(idx, data)` to `AlignmentsBackend`; add a separate
-autorun in model that watches `coverageDomain`/`coverageIsLog` and
-re-uploads. Drop `U_DEPTH_SCALE` uniform from shader after.
+**Alignments coverage scaling (remaining).** Phases 1–4 done (see
+COMPLETED.md). Phase 4: GPU-side log normalization via `normalizeDepth()`
+helper in the shader (mirrors wiggle's `normalizeScore`), `depthDomainMax` +
+`coverageScaleType` uniforms. Canvas2D path stores raw depths and applies
+`makeScoreNormalizer` at render time. `coverageIsLog` wired into `renderState`.
+Remaining: SNP coverage segments still use linear `depthScale` — yOffsets/heights
+are stored as fractions of `regionMaxDepth` (worker side), so log-scaling them
+requires the worker to emit raw cumulative depths rather than pre-normalized
+fractions. Low priority; SNP bars look slightly off under log scale but
+coverage bars are correct.
 
 **Structural `RenderSvgModel`.** Matrix + variants use the structural form;
 wiggle / alignments / canvas still import the MST type. Mechanical
@@ -166,10 +169,9 @@ human vs mouse.
 **Gene glyph compact modes.** Add super-compact for dense layouts; side
 labels for genes.
 
-**Alignments log scale (GPU).** UI wiring done (Phase 3: scaleType config,
-`coverageIsLog` getter, Scale type menu). GPU rendering still uses the
-linear `depthScale` uniform — log scale visually wrong on GPU path. Blocked
-by CPU normalization item above (the remaining coverage work).
+**Alignments log scale (GPU).** Done (Phase 4). Coverage bars are
+log-normalized in the shader via `normalizeDepth()`. SNP overlay still uses
+linear `depthScale` (see Architecture item above for the remaining work).
 
 **Decouple amino-acid overlay loading**, treat density gate as one-shot →
 drop canvas `isCacheValid` entirely. See implementation plan below.

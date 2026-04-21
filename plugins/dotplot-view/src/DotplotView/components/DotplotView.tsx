@@ -1,7 +1,5 @@
-import { useMemo } from 'react'
-
 import { ErrorMessage, LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
-import { useGpuRenderer, useTabVisibilityRerender } from '@jbrowse/core/util'
+import { useGpuModelLifecycle } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -19,7 +17,6 @@ import { useMouseUpHandler } from './hooks/useMouseUpHandler.ts'
 import { useWheelHandler } from './hooks/useWheelHandler.ts'
 import { createDotplotRenderer } from '../../DotplotDisplay/DotplotRenderer.ts'
 
-import type { DotplotBackend } from '../../DotplotDisplay/dotplotBackendTypes.ts'
 import type { DotplotViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -72,26 +69,10 @@ const DotplotCanvas = observer(function DotplotCanvas({
 }) {
   const { viewWidth, viewHeight } = model
 
-  const gpuOpts = useMemo(
-    () => ({
-      onReady: (backend: DotplotBackend) => {
-        model.startGpuBackendLifecycle(backend)
-      },
-      onDispose: () => {
-        model.stopGpuBackendLifecycle()
-      },
-    }),
-    [model],
-  )
-
-  const { canvasRef, error: gpuError } = useGpuRenderer(
+  const { canvasRef, error: gpuError } = useGpuModelLifecycle(
     createDotplotRenderer,
-    gpuOpts,
+    model,
   )
-
-  useTabVisibilityRerender(() => {
-    model.renderNow()
-  })
 
   return (
     <>

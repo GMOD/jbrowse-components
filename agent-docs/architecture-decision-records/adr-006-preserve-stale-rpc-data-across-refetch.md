@@ -11,7 +11,7 @@ keep clearing — see "When to preserve vs clear" below.
 **Preserve** if the display's per-region data is viewport-agnostic —
 stale data rendered at a new `bpPerPx` still looks correct, just
 potentially laid out differently. Examples: canvas features
-(bp-space coordinates, layout re-derived main-thread), alignments arcs.
+(bp-space coordinates, layout re-derived main-thread).
 
 **Clear** if the data is viewport-baked — rasterized or binned at
 fetch-time `bpPerPx` so rendering at a different scale visibly mis-sizes
@@ -84,6 +84,27 @@ ADR-003's two premises were both shaky:
 Net: "honest blank" overfit `showOnlyGenes` and ignored the default case.
 ADR-003's consolidation of `clearAllRpcData` over `refetchForCurrentView`
 still stands — we just stop clearing *data* along with *state*.
+
+## Rejected extensions
+
+**Alignments arcs.** Arc data (`arcX1/arcX2` as bp offsets) is viewport-agnostic
+and could in principle be preserved. Not done: arcs are computed *from pileup
+data* inside `onFetchNeeded`, not fetched independently. Pileup must keep
+clearing (compact-zoom pixel geometry is viewport-baked). Preserving arcs while
+pileup is blank would show arc curves floating over empty space — worse than a
+clean flash.
+
+**MultiLGVSyntenyDisplay.** `SyntenyRegionData` is bp-space (genomeFeatures,
+snpPositions as bp offsets) — data is viewport-agnostic. Not done: the pattern
+would only help during settings-driven refetch. Settings refetch fires only on
+`resolution` changes (rare, deliberate). Panning already doesn't clear data —
+`FetchVisibleRegions` only appends new regions. The dominant clear trigger is
+chromosome navigation (`DisplayedRegionsChange` autorun), which is a correctness
+scenario where clearing is correct. Net benefit too small to justify splitting
+`rpcDataMap` → `rawRpcDataMap` + derived view.
+
+**MultiSampleVariantDisplay.** `clearDisplaySpecificData` is the base no-op.
+Nothing to change.
 
 ## Revisit if
 

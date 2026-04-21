@@ -1,5 +1,5 @@
 // Coverage pass: one bar per coverage bin, colored with the palette's
-// coverage color. Bar height is `depth * depthScale * effectiveHeight`.
+// coverage color. Bar height is normalizeDepth(depth, u) * effectiveHeight.
 //! targets: wgsl, glsl
 
 import alignmentsUniforms;
@@ -35,7 +35,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   float eh = effHeight(u);
   float bottom = covBottom(u);
-  float barTop = bottom + (inst.depth * u.depthScale * eh / u.canvasH) * 2.0;
+  float barTop = bottom + (normalizeDepth(inst.depth, u) * eh / u.canvasH) * 2.0;
   o.position = float4(
     flipX(lerp(x1, x2, local.x), u),
     lerp(bottom, barTop, local.y),

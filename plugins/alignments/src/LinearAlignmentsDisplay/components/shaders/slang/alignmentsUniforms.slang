@@ -38,6 +38,7 @@ public struct Uniforms {
   public float depthScale;
   public float binSize;
   public float noncovHeight;
+  public float depthDomainMax; // coverage domain maximum (for log scale normalization)
 
   // Visible domain for cigar/coverage x conversion
   public float domainStart;
@@ -61,6 +62,7 @@ public struct Uniforms {
   public int chainMode;
   public int showStroke;
   public int flipStrandLongRead;
+  public int coverageScaleType; // 0 = linear, 1 = log2
   public float reversed;
 
   // Color palette — each uint is a packed ABGR value (1 byte per channel,
@@ -156,4 +158,18 @@ public float2 quadLocal(uint vid) {
   float lx = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
   float ly = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
   return float2(lx, ly);
+}
+
+// Normalize a coverage depth value (relDepth = rawDepth / regionMaxDepth) to [0,1]
+// using the current coverage scale type. depthScale = regionMaxDepth / domainMax.
+// Linear: relDepth * depthScale = rawDepth / domainMax.
+// Log: log2(max(rawDepth,1)) / log2(max(domainMax,1)).
+public float normalizeDepth(float relDepth, Uniforms u) {
+  if (u.coverageScaleType == 1) {
+    float rawDepth = relDepth * u.depthScale * u.depthDomainMax;
+    float logMax = log2(max(u.depthDomainMax, 1.0));
+    if (logMax <= 0.0) { return 0.0; }
+    return clamp(log2(max(rawDepth, 1.0)) / logMax, 0.0, 1.0);
+  }
+  return relDepth * u.depthScale;
 }
