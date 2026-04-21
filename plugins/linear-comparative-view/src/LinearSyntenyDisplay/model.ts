@@ -11,7 +11,7 @@ import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
 import type { ClickCoord } from './components/util.ts'
 import type { ColorScheme } from './drawSyntenyUtils.ts'
 import type { SyntenyTrackRenderParams } from './syntenyBackendTypes.ts'
-import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 

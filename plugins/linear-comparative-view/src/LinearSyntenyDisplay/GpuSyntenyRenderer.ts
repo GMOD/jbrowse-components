@@ -15,7 +15,7 @@ import type {
   SyntenyRenderState,
   SyntenyTrackRenderParams,
 } from './syntenyBackendTypes.ts'
-import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_FILL = 'fill'

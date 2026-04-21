@@ -1,4 +1,4 @@
-import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
 export interface SyntenyTrackRenderParams {
   /** y offset (CSS px) from the top of the canvas to the top of this track */

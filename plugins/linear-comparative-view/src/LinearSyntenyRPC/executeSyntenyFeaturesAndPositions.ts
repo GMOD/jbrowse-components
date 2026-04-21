@@ -11,9 +11,9 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { chainCollinearAlignments } from './chainCollinearAlignments.ts'
-import { executeSyntenyInstanceData } from './executeSyntenyInstanceData.ts'
+import { buildSyntenyGeometry } from './buildSyntenyGeometry.ts'
 
-import type { SyntenyInstanceData } from './executeSyntenyInstanceData.ts'
+import type { SyntenyInstanceData } from './buildSyntenyGeometry.ts'
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -387,7 +387,7 @@ export async function executeSyntenyFeaturesAndPositions({
     'Computing synteny layout',
     statusCallback,
     () =>
-      executeSyntenyInstanceData({
+      buildSyntenyGeometry({
         ...positionData,
         parsedCigars,
         colorBy,

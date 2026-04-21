@@ -4,7 +4,7 @@ import type {
   SyntenyRenderState,
   SyntenyTrackRenderParams,
 } from './syntenyBackendTypes.ts'
-import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
 const CURVE_SEGMENTS = 16
 
@@ -155,9 +155,9 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     const { scale0, scale1, adjOff0, adjOff1, scaleDiff0, scaleDiff1 } =
       computeTransform(data, params)
 
-    // Cache rgba() strings per (packed color, alpha bucket). Canvas2D parses
-    // fillStyle on every assignment, so string allocation + parsing dominates
-    // the hot loop when many instances share a color (CIGAR fills).
+    // Cache rgba() strings per packed color within this render call. Canvas2D
+    // parses fillStyle on every assignment, so reusing the string for the
+    // common case of many instances sharing a color (CIGAR fills) saves work.
     const fillStyleCache = new Map<number, string>()
     const leftLimit = -maxOffScreenPx
     const rightLimit = logicalW + maxOffScreenPx
@@ -236,8 +236,9 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
 
     const ctx = this.ctx
     // Iterate tracks in reverse draw order so top-most wins.
-    const entries = Array.from(state.perTrack.entries()).reverse()
-    for (const [key, params] of entries) {
+    const entries = Array.from(state.perTrack.entries())
+    for (let ei = entries.length - 1; ei >= 0; ei--) {
+      const [key, params] = entries[ei]!
       const data = this.regions.get(key)
       if (!data || data.instanceCount === 0) {
         continue

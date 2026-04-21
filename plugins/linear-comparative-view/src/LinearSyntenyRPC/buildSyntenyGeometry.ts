@@ -110,6 +110,24 @@ function getCigarColorByOp(
   return indelColors[op] ?? colorFn(strand, refName, index)
 }
 
+function growF32(old: Float32Array, count: number, newCapacity: number) {
+  const arr = new Float32Array(newCapacity)
+  arr.set(old.subarray(0, count))
+  return arr
+}
+
+function growU32(old: Uint32Array, count: number, newCapacity: number) {
+  const arr = new Uint32Array(newCapacity)
+  arr.set(old.subarray(0, count))
+  return arr
+}
+
+function growF64(old: Float64Array, count: number, newCapacity: number) {
+  const arr = new Float64Array(newCapacity)
+  arr.set(old.subarray(0, count))
+  return arr
+}
+
 function estimateInstanceCount(
   featureCount: number,
   parsedCigars: number[][],
@@ -146,7 +164,7 @@ export interface SyntenyInstanceData {
   refOffset1: number
 }
 
-export function executeSyntenyInstanceData({
+export function buildSyntenyGeometry({
   p11_offsetPx,
   p12_offsetPx,
   p21_offsetPx,
@@ -237,30 +255,15 @@ export function executeSyntenyInstanceData({
       return
     }
     const newCapacity = Math.max(capacity * 2, idx + needed)
-    const growF32 = (old: Float32Array) => {
-      const arr = new Float32Array(newCapacity)
-      arr.set(old.subarray(0, idx))
-      return arr
-    }
-    const growU32 = (old: Uint32Array) => {
-      const arr = new Uint32Array(newCapacity)
-      arr.set(old.subarray(0, idx))
-      return arr
-    }
-    const growF64 = (old: Float64Array) => {
-      const arr = new Float64Array(newCapacity)
-      arr.set(old.subarray(0, idx))
-      return arr
-    }
-    x1s = growF64(x1s)
-    x2s = growF64(x2s)
-    x3s = growF64(x3s)
-    x4s = growF64(x4s)
-    colorsArr = growU32(colorsArr)
-    featureIdsArr = growF32(featureIdsArr)
-    queryTotalLengthArr = growF32(queryTotalLengthArr)
-    padTopsArr = growF32(padTopsArr)
-    padBottomsArr = growF32(padBottomsArr)
+    x1s = growF64(x1s, idx, newCapacity)
+    x2s = growF64(x2s, idx, newCapacity)
+    x3s = growF64(x3s, idx, newCapacity)
+    x4s = growF64(x4s, idx, newCapacity)
+    colorsArr = growU32(colorsArr, idx, newCapacity)
+    featureIdsArr = growF32(featureIdsArr, idx, newCapacity)
+    queryTotalLengthArr = growF32(queryTotalLengthArr, idx, newCapacity)
+    padTopsArr = growF32(padTopsArr, idx, newCapacity)
+    padBottomsArr = growF32(padBottomsArr, idx, newCapacity)
     capacity = newCapacity
   }
 

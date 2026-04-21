@@ -140,7 +140,10 @@ export async function diagonalizeRegions(
   const newQueryRegions: Region[] = []
   let regionsReversed = 0
 
-  const regionsByName = new Map(currentRegions.map(r => [r.refName, r]))
+  const regionsByName = new Map<string, Region>()
+  for (const r of currentRegions) {
+    regionsByName.set(r.refName, r)
+  }
   for (const { refName, shouldReverse } of queryOrdering) {
     const region = regionsByName.get(refName)
     if (region) {

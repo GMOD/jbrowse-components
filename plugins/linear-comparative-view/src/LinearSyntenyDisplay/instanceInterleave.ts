@@ -4,7 +4,7 @@ import {
   INSTANCE_STRIDE_F32,
 } from './shaders/syntenyFill.generated.ts'
 
-import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
 // SYNC: must match FILL_SEGS in syntenyFill.slang / syntenyPicking.slang.
 const FILL_SEGMENTS = 16

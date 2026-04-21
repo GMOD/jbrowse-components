@@ -5,7 +5,7 @@ import type {
   SyntenyRenderState,
   SyntenyTrackRenderParams,
 } from './syntenyBackendTypes.ts'
-import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
 // Extends MockHal so readPickingPixelAsync returns a manually-resolved promise,
 // letting tests control exactly when the GPU readback "completes".

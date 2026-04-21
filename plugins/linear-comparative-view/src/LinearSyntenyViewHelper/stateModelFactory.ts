@@ -13,7 +13,7 @@ import type {
   SyntenyRenderState,
   SyntenyTrackRenderParams,
 } from '../LinearSyntenyDisplay/syntenyBackendTypes.ts'
-import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -200,7 +200,7 @@ export function linearSyntenyViewHelperModelFactory(
          */
         startGpuBackendLifecycle(backend: SyntenyBackend) {
           self.gpuBackend = backend
-          const lastKeys = new Set<number>()
+          let lastKeys = new Set<number>()
           self.installGpuDisplay<SyntenyBackend>(backend, {
             upload: b => {
               const currentKeys = new Set<number>()
@@ -213,10 +213,7 @@ export function linearSyntenyViewHelperModelFactory(
                   b.deleteGeometry(key)
                 }
               }
-              lastKeys.clear()
-              for (const key of currentKeys) {
-                lastKeys.add(key)
-              }
+              lastKeys = currentKeys
             },
             render: b => {
               const state = self.syntenyRenderState
