@@ -12,13 +12,17 @@ export interface BlockClip {
   bpLength: number
 }
 
+export function getDpr() {
+  return typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
+}
+
 export function prepareCanvas(
   canvas: HTMLCanvasElement,
   ctx: CanvasRenderingContext2D,
   canvasWidth: number,
   canvasHeight: number,
 ) {
-  const dpr = typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
+  const dpr = getDpr()
   const bufW = Math.round(canvasWidth * dpr)
   const bufH = Math.round(canvasHeight * dpr)
 

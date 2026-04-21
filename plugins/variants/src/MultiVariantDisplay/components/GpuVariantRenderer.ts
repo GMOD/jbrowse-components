@@ -2,6 +2,7 @@ import {
   clipBlock,
   writeBpRangeUniforms,
 } from '@jbrowse/core/gpu/blockClipUtils'
+import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
@@ -62,7 +63,7 @@ export class GpuVariantRenderer implements VariantBackend {
 
   renderBlocks(blocks: VariantRenderBlock[], state: VariantRenderState) {
     const { canvasWidth, canvasHeight } = state
-    const dpr = window.devicePixelRatio || 1
+    const dpr = getDpr()
 
     this.hal.resize(canvasWidth, canvasHeight)
     this.hal.beginFrame(0, 0, 0, 0)

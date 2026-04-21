@@ -17,13 +17,10 @@ import type {
   WiggleRenderBlock,
 } from './wiggleBackendTypes.ts'
 
-// GpuWiggleRenderer reads window.devicePixelRatio
-beforeAll(() => {
-  ;(globalThis as Record<string, unknown>).window = { devicePixelRatio: 1 }
-})
-
-afterAll(() => {
-  delete (globalThis as Record<string, unknown>).window
+Object.defineProperty(globalThis, 'devicePixelRatio', {
+  value: 1,
+  writable: true,
+  configurable: true,
 })
 
 function makeSource(overrides?: Partial<SourceRenderData>): SourceRenderData {

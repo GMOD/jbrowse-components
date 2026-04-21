@@ -1,3 +1,4 @@
+import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
@@ -764,7 +765,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
   renderBlocks(blocks: RenderBlock[], state: RenderState) {
     const { canvasWidth, canvasHeight } = state
-    const dpr = window.devicePixelRatio || 1
+    const dpr = getDpr()
     const bufH = Math.round(canvasHeight * dpr)
     this.hal.resize(canvasWidth, canvasHeight)
     this.hal.beginFrame(0, 0, 0, 0)

@@ -19,12 +19,10 @@ import type {
   RenderState,
 } from './rendererTypes.ts'
 
-beforeAll(() => {
-  ;(globalThis as Record<string, unknown>).window = { devicePixelRatio: 1 }
-})
-
-afterAll(() => {
-  delete (globalThis as Record<string, unknown>).window
+Object.defineProperty(globalThis, 'devicePixelRatio', {
+  value: 1,
+  writable: true,
+  configurable: true,
 })
 
 const REGION_START = 10000

@@ -1,4 +1,5 @@
 import { bpRangeXTuple, clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
+import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
@@ -118,7 +119,7 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
     state: { scrollY: number; canvasWidth: number; canvasHeight: number },
   ) {
     const { canvasWidth, canvasHeight, scrollY } = state
-    const dpr = window.devicePixelRatio || 1
+    const dpr = getDpr()
 
     this.hal.resize(canvasWidth, canvasHeight)
 

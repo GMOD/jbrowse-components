@@ -1,5 +1,6 @@
 /// <reference types="@webgpu/types" />
 
+import { getDpr } from '../canvas2dUtils.ts'
 import { initGpuContext } from '../initGpuContext.ts'
 import {
   STANDARD_BLEND_STATE,
@@ -295,7 +296,7 @@ export class WebGPUHal implements GpuHal {
   }
 
   resize(width: number, height: number) {
-    const dpr = typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
+    const dpr = getDpr()
     const pw = Math.round(width * dpr)
     const ph = Math.round(height * dpr)
     const sizeChanged = this.canvas.width !== pw || this.canvas.height !== ph
@@ -693,7 +694,7 @@ export class WebGPUHal implements GpuHal {
     if (this.disposed || !this.pickingTexture || !this.pickingStagingBuffer) {
       return -1
     }
-    const dpr = typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
+    const dpr = getDpr()
     const px = Math.floor(x * dpr)
     const py = Math.floor(y * dpr)
     if (

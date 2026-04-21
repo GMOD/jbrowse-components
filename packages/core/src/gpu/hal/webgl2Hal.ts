@@ -1,3 +1,4 @@
+import { getDpr } from '../canvas2dUtils.ts'
 import { bindUniformBlock, createProgram } from '../webglUtils.ts'
 
 import type { BlendState, GpuHal, PassDescriptor, RegionMeta } from './types.ts'
@@ -235,7 +236,7 @@ export class WebGL2Hal implements GpuHal {
   }
 
   resize(width: number, height: number) {
-    const dpr = typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
+    const dpr = getDpr()
     const pw = Math.round(width * dpr)
     const ph = Math.round(height * dpr)
     if (this.canvas.width !== pw || this.canvas.height !== ph) {
@@ -484,7 +485,7 @@ export class WebGL2Hal implements GpuHal {
     if (!this.pickingFbo) {
       return -1
     }
-    const dpr = typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
+    const dpr = getDpr()
     const px = Math.floor(x * dpr)
     const py = Math.floor(y * dpr)
     if (px < 0 || px >= this.pickingW || py < 0 || py >= this.pickingH) {

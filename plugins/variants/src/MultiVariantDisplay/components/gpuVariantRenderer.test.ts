@@ -5,12 +5,10 @@ import { INSTANCE_STRIDE_F32 as INSTANCE_STRIDE } from './shaders/variant.genera
 
 import type { VariantRenderBlock } from './variantBackendTypes.ts'
 
-beforeAll(() => {
-  ;(globalThis as Record<string, unknown>).window = { devicePixelRatio: 1 }
-})
-
-afterAll(() => {
-  delete (globalThis as Record<string, unknown>).window
+Object.defineProperty(globalThis, 'devicePixelRatio', {
+  value: 1,
+  writable: true,
+  configurable: true,
 })
 
 function makeUploadData() {
