@@ -13,6 +13,7 @@ import {
   packNoncovSegmentsForGpu,
   packSnpSegmentsForGpu,
 } from '@jbrowse/alignments-core'
+import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 import {
   clipBlockForCanvas,
   prepareCanvas,
@@ -361,11 +362,9 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       const f32 = new Float32Array(buf)
       for (let i = 0; i < n; i++) {
         const off = i * 3
-        const normalizedDepth =
-          (data.coverageDepths[i] ?? 0) / data.coverageMaxDepth
         f32[off] = data.coverageStartOffset + i + r.regionStart
         f32[off + 1] = 0
-        f32[off + 2] = normalizedDepth
+        f32[off + 2] = data.coverageDepths[i]!
       }
       r.coverageBuffer = buf
       r.coverageBinCount = n
@@ -890,21 +889,26 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       hardclip: rgb255(state.colors.colorHardclip),
     }
 
+    const domainMax = state.coverageMaxDepth
+    if (!domainMax) {
+      return
+    }
     drawCoverageBins(
       ctx,
       region.coverageBuffer,
       region.coverageBinCount,
-      region.coverageMaxDepth,
+      makeScoreNormalizer(0, domainMax, state.coverageIsLog),
       covH,
       covColor,
       bpToX,
       viewWidth,
     )
+    const snpDepthScale = region.coverageMaxDepth / domainMax
     drawSnpSegments(
       ctx,
       region.snpBuffer,
       region.snpSegmentCount,
-      region.coverageMaxDepth,
+      snpDepthScale,
       covH,
       snpColors,
       bpToX,
@@ -914,7 +918,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       ctx,
       region.modCovBuffer,
       region.modCovSegmentCount,
-      region.coverageMaxDepth,
+      snpDepthScale,
       covH,
       bpToX,
       viewWidth,

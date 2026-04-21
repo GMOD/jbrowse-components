@@ -61,14 +61,16 @@ describe('snpColorForType', () => {
 })
 
 describe('drawCoverageBins', () => {
+  const identity = (d: number) => d
+
   it('draws bins as rectangles', () => {
     const buf = new ArrayBuffer(2 * 12)
     const f32 = new Float32Array(buf)
-    // bin 0: pos=100, min=0.2, max=0.8
+    // bin 0: pos=100, yOffset=0.2, depth=0.8
     f32[0] = 100
     f32[1] = 0.2
     f32[2] = 0.8
-    // bin 1: pos=101, min=0.1, max=0.5
+    // bin 1: pos=101, yOffset=0.1, depth=0.5
     f32[3] = 101
     f32[4] = 0.1
     f32[5] = 0.5
@@ -76,7 +78,7 @@ describe('drawCoverageBins', () => {
     const { ctx, calls } = makeCtx()
     const bpToX = (bp: number) => (bp - 100) * 10
 
-    drawCoverageBins(ctx, buf, 2, 100, 50, 'blue', bpToX, 200)
+    drawCoverageBins(ctx, buf, 2, identity, 50, 'blue', bpToX, 200)
 
     const fillCalls = calls.filter(c => c.method === 'fillRect')
     expect(fillCalls.length).toBe(2)
@@ -92,17 +94,15 @@ describe('drawCoverageBins', () => {
     const { ctx, calls } = makeCtx()
     const bpToX = (bp: number) => (bp - 1000) * 10 + 500
 
-    drawCoverageBins(ctx, buf, 1, 100, 50, 'blue', bpToX, 200)
+    drawCoverageBins(ctx, buf, 1, identity, 50, 'blue', bpToX, 200)
 
     const fillCalls = calls.filter(c => c.method === 'fillRect')
     expect(fillCalls.length).toBe(0)
   })
 
-  it('does nothing with zero bins or zero maxDepth', () => {
+  it('does nothing with zero bins', () => {
     const { ctx, calls } = makeCtx()
-    drawCoverageBins(ctx, new ArrayBuffer(0), 0, 100, 50, 'blue', () => 0, 200)
-    expect(calls.length).toBe(0)
-    drawCoverageBins(ctx, new ArrayBuffer(12), 1, 0, 50, 'blue', () => 0, 200)
+    drawCoverageBins(ctx, new ArrayBuffer(0), 0, identity, 50, 'blue', () => 0, 200)
     expect(calls.length).toBe(0)
   })
 })
@@ -126,7 +126,7 @@ describe('drawSnpSegments', () => {
       insertion: '',
     }
     const { ctx, calls } = makeCtx()
-    drawSnpSegments(ctx, buf, 1, 100, 50, colors, bp => bp - 100, 200)
+    drawSnpSegments(ctx, buf, 1, 1, 50, colors, bp => bp - 100, 200)
 
     const styleCalls = calls.filter(c => c.method === 'fillStyle')
     expect(styleCalls.some(c => c.args[0] === 'red')).toBe(true)

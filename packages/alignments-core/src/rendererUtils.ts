@@ -56,13 +56,13 @@ export function drawCoverageBins(
   ctx: Ctx,
   buffer: ArrayBuffer,
   binCount: number,
-  maxDepth: number,
+  normalizeDepth: (depth: number) => number,
   coverageHeight: number,
   coverageColor: string,
   bpToX: (bp: number) => number,
   viewWidth: number,
 ) {
-  if (binCount === 0 || maxDepth === 0) {
+  if (binCount === 0) {
     return
   }
 
@@ -79,7 +79,7 @@ export function drawCoverageBins(
       continue
     }
     const bandBottom = bottom - f32[off + 1]! * effectiveH
-    const bandTop = bottom - f32[off + 2]! * effectiveH
+    const bandTop = bottom - normalizeDepth(f32[off + 2]!) * effectiveH
     ctx.fillRect(px, bandTop, Math.max(px2 - px, 1), bandBottom - bandTop)
   }
 }
@@ -88,13 +88,13 @@ export function drawSnpSegments(
   ctx: Ctx,
   buffer: ArrayBuffer,
   segmentCount: number,
-  maxDepth: number,
+  depthScale: number,
   coverageHeight: number,
   colors: CigarOpDrawColors,
   bpToX: (bp: number) => number,
   viewWidth: number,
 ) {
-  if (segmentCount === 0 || maxDepth === 0) {
+  if (segmentCount === 0) {
     return
   }
 
@@ -111,8 +111,8 @@ export function drawSnpSegments(
     if (px > viewWidth || px2 < 0) {
       continue
     }
-    const segBottom = bottom - yOff * effectiveH
-    const segTop = segBottom - segH * effectiveH
+    const segBottom = bottom - yOff * depthScale * effectiveH
+    const segTop = segBottom - segH * depthScale * effectiveH
     ctx.fillStyle = snpColorForType(f32[off + 3]!, colors)
     ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segBottom - segTop)
   }
@@ -180,12 +180,12 @@ export function drawModCovSegments(
   ctx: Ctx,
   buffer: ArrayBuffer,
   segmentCount: number,
-  maxDepth: number,
+  depthScale: number,
   coverageHeight: number,
   bpToX: (bp: number) => number,
   viewWidth: number,
 ) {
-  if (segmentCount === 0 || maxDepth === 0) {
+  if (segmentCount === 0) {
     return
   }
 
@@ -208,8 +208,8 @@ export function drawModCovSegments(
     const g = (rgba >> 8) & 0xff
     const b = (rgba >> 16) & 0xff
     const a = ((rgba >> 24) & 0xff) / 255
-    const segBottom = bottom - yOffset * effectiveH
-    const segTop = segBottom - h * effectiveH
+    const segBottom = bottom - yOffset * depthScale * effectiveH
+    const segTop = segBottom - h * depthScale * effectiveH
     ctx.fillStyle = `rgba(${r},${g},${b},${a})`
     ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segBottom - segTop)
   }
