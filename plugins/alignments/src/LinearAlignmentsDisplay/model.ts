@@ -1275,8 +1275,7 @@ export default function stateModelFactory(
               if (!state) {
                 return false
               }
-              b.renderBlocks(self.renderBlocks, state)
-              return true
+              return b.renderBlocks(self.renderBlocks, state)
             },
           })
         },

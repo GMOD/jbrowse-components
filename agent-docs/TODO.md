@@ -18,17 +18,6 @@ equivalence. Catches per-backend drift.
 `pick(x, y): Promise<Hit | undefined>`. Unifies async WebGPU readback with
 sync Canvas2D picking; synteny needs it.
 
-**Alignments coverage scaling (remaining).** Phases 1–4 done (see
-COMPLETED.md). Phase 4: GPU-side log normalization via `normalizeDepth()`
-helper in the shader (mirrors wiggle's `normalizeScore`), `depthDomainMax` +
-`coverageScaleType` uniforms. Canvas2D path stores raw depths and applies
-`makeScoreNormalizer` at render time. `coverageIsLog` wired into `renderState`.
-Remaining: SNP coverage segments still use linear `depthScale` — yOffsets/heights
-are stored as fractions of `regionMaxDepth` (worker side), so log-scaling them
-requires the worker to emit raw cumulative depths rather than pre-normalized
-fractions. Low priority; SNP bars look slightly off under log scale but
-coverage bars are correct.
-
 **Structural `RenderSvgModel`.** Matrix + variants use the structural form;
 wiggle / alignments / canvas still import the MST type. Mechanical
 conversion; hardens against type circularity across lazy boundaries.
@@ -168,14 +157,6 @@ labels for genes.
 
 
 
-**ReadCloud: excessive `Core-preProcessTrackConfig` log spam.** Adding a
-`LinearReadCloudDisplay` with `drawCloud:true` for `volvox_sv_cram` causes
-`pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', ...)` to be
-called repeatedly on every mouse move. Also triggers repeated "If it's a
-frozen/plain object, we need to instantiate it" warnings. Investigate why
-track config pre-processing is running in a hot path.
-
----
 
 ## Verify
 
@@ -185,4 +166,4 @@ track config pre-processing is running in a hot path.
 - Canvas: features collapsed to y=0 on NCBI (needs reproduction steps).
 
 
-
+Look at mui v9 migration checklist https://mui.com/material-ui/migration/upgrade-to-v9

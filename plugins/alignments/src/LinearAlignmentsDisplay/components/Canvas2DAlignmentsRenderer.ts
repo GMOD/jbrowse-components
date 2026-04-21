@@ -1,8 +1,4 @@
 import {
-  BASE_A_COLOR,
-  BASE_C_COLOR,
-  BASE_G_COLOR,
-  BASE_T_COLOR,
   CANVAS2D_COVERAGE,
   drawCoverageBins,
   drawIndicators,
@@ -146,12 +142,6 @@ function bpToScreenX(
   return block.screenStartPx + (offset / bpLength) * fullBlockWidth
 }
 
-const BASE_COLORS: Record<number, string> = {
-  0: BASE_A_COLOR,
-  1: BASE_C_COLOR,
-  2: BASE_G_COLOR,
-  3: BASE_T_COLOR,
-}
 
 function emptyRegion(): Canvas2DRegionData {
   const empty32 = new Uint32Array(0)
@@ -472,7 +462,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
 
     if (this.regions.size === 0) {
-      return
+      return false
     }
 
     const effectiveArcsHeight =
@@ -624,6 +614,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
 
       ctx.restore() // block clip
     }
+    return true
   }
 
   private drawReads(
@@ -711,6 +702,14 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
     const bpPerPx = bpLength / fullBlockWidth
+    const { colors } = state
+    // ASCII char code → theme color (65='A', 67='C', 71='G', 84='T')
+    const baseColors: Record<number, string> = {
+      65: rgb255(colors.colorBaseA),
+      67: rgb255(colors.colorBaseC),
+      71: rgb255(colors.colorBaseG),
+      84: rgb255(colors.colorBaseT),
+    }
 
     for (let i = 0; i < region.numMismatches; i++) {
       const bp = region.mismatchPositions[i]!
@@ -719,9 +718,11 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       const yRow = region.mismatchYs[i]!
       const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
       const base = region.mismatchBases[i]!
-      const color = BASE_COLORS[base] ?? '#999'
-      ctx.fillStyle = color
-      ctx.fillRect(x, y, w, fH)
+      const color = baseColors[base]
+      if (color) {
+        ctx.fillStyle = color
+        ctx.fillRect(x, y, w, fH)
+      }
     }
   }
 
@@ -811,6 +812,13 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
     const bpPerPx = bpLength / fullBlockWidth
+    const { colors } = state
+    const baseColors: Record<number, string> = {
+      65: rgb255(colors.colorBaseA),
+      67: rgb255(colors.colorBaseC),
+      71: rgb255(colors.colorBaseG),
+      84: rgb255(colors.colorBaseT),
+    }
 
     for (let i = 0; i < region.numSoftclipBases; i++) {
       const bp = region.softclipBasePositions[i]!
@@ -819,9 +827,11 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       const yRow = region.softclipBaseYs[i]!
       const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
       const base = region.softclipBaseBases[i]!
-      const color = BASE_COLORS[base] ?? '#999'
-      ctx.fillStyle = color
-      ctx.fillRect(x, y, w, fH)
+      const color = baseColors[base]
+      if (color) {
+        ctx.fillStyle = color
+        ctx.fillRect(x, y, w, fH)
+      }
     }
   }
 

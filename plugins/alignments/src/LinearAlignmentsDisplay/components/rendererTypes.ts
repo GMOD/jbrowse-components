@@ -160,7 +160,7 @@ export interface AlignmentsBackend {
     displayedRegionIndex: number,
     data: ConnectingLinesUploadData,
   ): void
-  renderBlocks(blocks: RenderBlock[], state: RenderState): void
+  renderBlocks(blocks: RenderBlock[], state: RenderState): boolean
   dispose(): void
 }
 

@@ -52,9 +52,10 @@ startGpuBackendLifecycle(backend: Backend) {
     },
     render: b => {
       const state = self.renderState
-      if (!state) return false       // skip this tick; canvas not drawn
-      b.renderBlocks(self.renderBlocks, state)
-      return true                     // drew; mixin sets canvasDrawn
+      if (!state) return false              // renderState not ready
+      return b.renderBlocks(self.renderBlocks, state)
+      // backend returns true only if it drew something
+      // mixin sets canvasDrawn on true
     },
   })
 }
@@ -94,8 +95,9 @@ lives in the mixin.
 4. Upload autorun fires: reads `currentGpuBackend`, calls `cbs.upload(b)`,
    bumps `renderBump` so render re-fires after any upload.
 5. Render autorun fires: reads `currentGpuBackend` + `renderBump`, calls
-   `cbs.render(b)`. If it returns anything but `false`, flips
-   `canvasDrawn` to `true`.
+   `cbs.render(b)`. If it returns `true`, flips `canvasDrawn` to `true`.
+   `clearAllRpcData` resets `canvasDrawn = false` so the flag is only set
+   after the canvas has real content.
 6. Any observable touched by `upload` or `render` becomes a dep — when it
    changes, MobX re-fires that autorun. No manual invalidation.
 

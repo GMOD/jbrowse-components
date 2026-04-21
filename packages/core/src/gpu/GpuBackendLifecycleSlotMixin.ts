@@ -36,9 +36,9 @@ export interface InstallGpuDisplayCallbacks<B> {
  *
  * The `upload` callback runs in one autorun, `render` in another. Inside
  * each, every observable read is auto-tracked by MobX — no getter-layer
- * indirection, no multi-entry config. `render` returns `false` to skip
- * this tick (e.g. `renderState` not yet computed); any other return marks
- * the canvas drawn.
+ * indirection, no multi-entry config. `render` returns `true` when the
+ * backend actually painted content (flips `canvasDrawn`), `false` to skip
+ * this tick (e.g. `renderState` not yet computed or no regions loaded).
  */
 export function GpuBackendLifecycleSlotMixin() {
   return types

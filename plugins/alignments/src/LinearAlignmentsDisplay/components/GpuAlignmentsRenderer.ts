@@ -904,6 +904,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       this.hal.beginFrame(0, 0, 0, 0)
       this.hal.endFrame()
     }
+    return hasDrawn
   }
 
   private drawArcsPass(
