@@ -1,15 +1,8 @@
 # Active Work Items
 
-**Updated:** 2026-04-20
+**Updated:** 2026-04-20 | Move completed items to `agent-docs/completed/COMPLETED.md`. PRD.md holds invariants; this file is the categorized backlog.
 
-Important: Move completed items to
-`agent-docs/completed/COMPLETED.md`.
-
-Look at PRD.md to see project overview; this file is
-todo items.
-
-Sections roughly in working order — high-leverage architectural items first,
-then config / shaders / tests, then bugs and polish.
+Sections roughly in working order — high-leverage architectural items first, then config / tests, then bugs and polish.
 
 ---
 
@@ -25,17 +18,13 @@ equivalence. Catches per-backend drift.
 `pick(x, y): Promise<Hit | undefined>`. Unifies async WebGPU readback with
 sync Canvas2D picking; synteny needs it.
 
-**Alignments coverage scaling (Phase 3).** Phases 1+2 done (see
-COMPLETED.md). Wire scale config into `LinearAlignmentsDisplay`: spread
-`autoscale`/`minScore`/`maxScore`/`scaleType`/`numStdDev` into the coverage
-sub-schema, add `coverageDomain` getter (`domainFromStats` → `getNiceDomain`
-clamped by configured min/max), replace `visibleMaxDepth` with
-`coverageStats` autorun. Render-state carries `coverageDomain` +
-`coverageIsLog`. CPU-side normalization: run `makeScoreNormalizer` at upload
-time, drop `U_DEPTH_SCALE` uniform, re-upload on domain/scale change. Move
-`SetMinMaxDialog.tsx` to `wiggle-core` and wire into the coverage menu.
-`autoscale: 'global'` initially omitted — needs all-regions data.
-
+**Alignments coverage scaling (remaining).** Phases 1–3 done (see
+COMPLETED.md). Remaining: CPU-side normalization — run `makeScoreNormalizer`
+at upload time and re-upload coverage buffers on domain/scale change so the
+GPU shader doesn't need `depthScale` (enables true log scale GPU rendering).
+Add `uploadCoverage(idx, data)` to `AlignmentsBackend`; add a separate
+autorun in model that watches `coverageDomain`/`coverageIsLog` and
+re-uploads. Drop `U_DEPTH_SCALE` uniform from shader after.
 
 **Structural `RenderSvgModel`.** Matrix + variants use the structural form;
 wiggle / alignments / canvas still import the MST type. Mechanical
@@ -120,10 +109,6 @@ expressions intact. See `CONFIG_PATTERN.md`.
 
 ---
 
-## Shader work
-
----
-
 ## CI / Test infrastructure
 
 **WebGPU CI.** Chrome flags set in `runner.ts`, Vulkan missing. Add
@@ -151,12 +136,6 @@ reason to render).
 ---
 
 ## Bugs
-
-**Synteny mouseover stuck.** `hoveredFeatureIdx` doesn't clear when moving
-off features. `dispatchHoverPick` fires `backend.pick` async; if
-`this.inFlight` never resolves (e.g. `onResult` throws in the second
-`.then()` of `drainPickQueue`), no further hover picks run. Reproduce with
-3-way volvox synteny.
 
 **Synteny deletion polygons extend beyond LGV boundaries.** In 3-way
 volvox, CIGAR `D`/`N` polygons visually exceed the LGV coordinate range.
@@ -187,8 +166,10 @@ human vs mouse.
 **Gene glyph compact modes.** Add super-compact for dense layouts; side
 labels for genes.
 
-**Alignments log scale.** Example exists on `origin/main`. Folds into the
-wiggle-core extraction above.
+**Alignments log scale (GPU).** UI wiring done (Phase 3: scaleType config,
+`coverageIsLog` getter, Scale type menu). GPU rendering still uses the
+linear `depthScale` uniform — log scale visually wrong on GPU path. Blocked
+by CPU normalization item above (the remaining coverage work).
 
 **Decouple amino-acid overlay loading**, treat density gate as one-shot →
 drop canvas `isCacheValid` entirely. See implementation plan below.

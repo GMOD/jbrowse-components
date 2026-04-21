@@ -234,7 +234,11 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
         if (this.disposed) {
           return
         }
-        onResult(result)
+        try {
+          onResult(result)
+        } catch (e) {
+          console.error(e)
+        }
         this.drainPickQueue()
       })
   }

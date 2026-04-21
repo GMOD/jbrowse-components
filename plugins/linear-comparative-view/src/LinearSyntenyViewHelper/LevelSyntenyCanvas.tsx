@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { ErrorMessage } from '@jbrowse/core/ui'
 import {
@@ -7,18 +7,18 @@ import {
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
-  useGpuRenderer,
-  useTabVisibilityRerender,
+  useGpuModelLifecycle,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { transaction } from 'mobx'
+import { isAlive } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import { SyntenyRendererFactory } from '../LinearSyntenyDisplay/SyntenyRenderer.ts'
 
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
-import type { SyntenyBackend } from '../LinearSyntenyDisplay/syntenyBackendTypes.ts'
+
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()({
@@ -91,24 +91,10 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   const zoomScheduled = useRef(false)
   const lastZoomClientX = useRef(0)
 
-  const gpuOpts = useMemo(
-    () => ({
-      onReady: (backend: SyntenyBackend) => {
-        model.startGpuBackendLifecycle(backend)
-      },
-      onDispose: () => {
-        model.stopGpuBackendLifecycle()
-      },
-    }),
-    [model],
-  )
-  const { canvas, canvasRef, error, retry } = useGpuRenderer(
+  const { canvas, canvasRef, error, retry } = useGpuModelLifecycle(
     SyntenyRendererFactory,
-    gpuOpts,
+    model,
   )
-  useTabVisibilityRerender(() => {
-    model.renderNow()
-  })
 
   function canvasCoords(evt: { clientX: number; clientY: number }) {
     const rect = canvas?.getBoundingClientRect()
@@ -191,9 +177,11 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     backend.pick(coords.x, coords.y, hit => {
       const hitDisplay = hit ? model.displaysByKey.get(hit.key) : undefined
       for (const display of model.linearSyntenyDisplays) {
-        display.setHoveredFeatureIdx(
-          display === hitDisplay ? hit!.featureIndex : -1,
-        )
+        if (isAlive(display)) {
+          display.setHoveredFeatureIdx(
+            display === hitDisplay ? hit!.featureIndex : -1,
+          )
+        }
       }
     })
   }
@@ -220,6 +208,9 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     }
     dragStartX.current = undefined
     lastDragX.current = undefined
+    // Advance the GPU pick generation so any in-flight async readback result
+    // is discarded rather than re-setting hover state after the mouse left.
+    dispatchHoverPick({ x: -99999, y: -99999 })
   }
 
   function handleMouseDown(event: React.MouseEvent) {
