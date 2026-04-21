@@ -40,7 +40,6 @@ export interface RenderState {
 }
 
 export interface ReadUploadData {
-  regionStart: number
   readPositions: Uint32Array
   readYs: Uint16Array
   readFlags: Uint16Array
@@ -133,7 +132,6 @@ export interface ModCoverageUploadData {
 }
 
 export interface ArcsUploadData {
-  regionStart: number
   arcX1: Uint32Array
   arcX2: Uint32Array
   arcColorTypes: Float32Array
@@ -146,7 +144,6 @@ export interface ArcsUploadData {
 }
 
 export interface ConnectingLinesUploadData {
-  regionStart: number
   connectingLinePositions: Uint32Array
   connectingLineYs: Uint16Array
   numConnectingLines: number

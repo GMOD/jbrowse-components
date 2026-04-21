@@ -177,7 +177,6 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     opts: WiggleOptions & { bicolorPivot?: number } = {},
   ): Promise<WiggleFeatureArrays> {
     const view = await this.getArrayFeatureView(region, opts)
-    const regionStart = Math.floor(region.start)
     return processFeaturesFromArrays(
       view.starts,
       view.ends,
@@ -185,7 +184,6 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
       view.minScores,
       view.maxScores,
       view.length,
-      regionStart,
       opts.bicolorPivot ?? 0,
     )
   }

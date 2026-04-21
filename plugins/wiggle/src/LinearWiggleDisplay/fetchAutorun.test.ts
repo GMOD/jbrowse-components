@@ -19,9 +19,8 @@ import stateModelFactory from './model.ts'
 import type { WiggleDataResult } from '../RenderWiggleDataRPC/types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-function makeEmptyWiggleData(regionStart: number): WiggleDataResult {
+function makeEmptyWiggleData(): WiggleDataResult {
   return {
-    regionStart,
     featurePositions: new Uint32Array(0),
     featureScores: new Float32Array(0),
     featureMinScores: new Float32Array(0),
@@ -210,7 +209,7 @@ afterEach(() => {
 describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
   it('refetches when bicolorPivot changes (rpcProps field)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyWiggleData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
@@ -230,7 +229,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
 
   it('refetches when resolution changes (rpcProps field)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyWiggleData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
@@ -253,7 +252,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
   // doesn't change, so no refetch should happen.
   it('does NOT refetch when summaryScoreMode changes (gpuProps re-uploads)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyWiggleData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
@@ -274,7 +273,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
   // (an rpcProps field), so changing color *can* legitimately refetch.
   it('does NOT refetch when posColor changes (gpuProps re-uploads)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyWiggleData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
@@ -292,7 +291,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
 
   it('does not refetch when an unrelated property is touched', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyWiggleData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
@@ -313,7 +312,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
   // and don't need a re-upload either.
   it('does NOT refetch when scaleType changes (handled by render autorun)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyWiggleData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)

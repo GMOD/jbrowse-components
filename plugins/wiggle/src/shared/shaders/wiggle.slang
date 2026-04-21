@@ -33,7 +33,6 @@ struct WiggleInstance {
 
 struct Uniforms {
   float3 bpRangeX;
-  uint   regionStart;
   float  canvasHeight;
   int    scaleType;
   int    renderingType;
@@ -77,10 +76,8 @@ float2 quadLocal(uint v) {
 VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
   uint v = vid % 6u;
 
-  uint absStart = inst.startEnd.x + u.regionStart;
-  uint absEnd   = inst.startEnd.y + u.regionStart;
-  float sx1 = hpToClipX(hpSplitUint(absStart), u.bpRangeX, u.zero);
-  float sx2 = hpToClipX(hpSplitUint(absEnd),   u.bpRangeX, u.zero);
+  float sx1 = hpToClipX(hpSplitUint(inst.startEnd.x), u.bpRangeX, u.zero);
+  float sx2 = hpToClipX(hpSplitUint(inst.startEnd.y), u.bpRangeX, u.zero);
   float minClipW = 3.0 / u.viewportWidth;
   if (sx2 - sx1 < minClipW) {
     sx2 = sx1 + minClipW;

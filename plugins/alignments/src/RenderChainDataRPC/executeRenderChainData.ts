@@ -345,8 +345,6 @@ export async function executeRenderChainData({
   )
 
   const result: PileupDataResult = {
-    regionStart,
-
     readPositions,
     readYs,
     readFlags,

@@ -76,7 +76,6 @@ export function processFeaturesFromArrays(
   minScores: Float32Array | undefined,
   maxScores: Float32Array | undefined,
   count: number,
-  regionStart: number,
   bicolorPivot: number,
 ): WiggleFeatureArrays {
   const featurePositions = new Uint32Array(count * 2)
@@ -92,22 +91,22 @@ export function processFeaturesFromArrays(
 
   for (let i = 0; i < count; i++) {
     const score = scores[i]!
-    const startOffset = Math.max(0, starts[i]! - regionStart) | 0
-    const endOffset = Math.max(0, ends[i]! - regionStart) | 0
-    featurePositions[i * 2] = startOffset
-    featurePositions[i * 2 + 1] = endOffset
+    const startPos = starts[i]! | 0
+    const endPos = ends[i]! | 0
+    featurePositions[i * 2] = startPos
+    featurePositions[i * 2 + 1] = endPos
     featureScores[i] = score
     featureMinScores[i] = minScores ? (minScores[i] ?? score) : score
     featureMaxScores[i] = maxScores ? (maxScores[i] ?? score) : score
 
     if (score >= bicolorPivot) {
-      posFeaturePositionsBuf[posCount * 2] = startOffset
-      posFeaturePositionsBuf[posCount * 2 + 1] = endOffset
+      posFeaturePositionsBuf[posCount * 2] = startPos
+      posFeaturePositionsBuf[posCount * 2 + 1] = endPos
       posFeatureScoresBuf[posCount] = score
       posCount++
     } else {
-      negFeaturePositionsBuf[negCount * 2] = startOffset
-      negFeaturePositionsBuf[negCount * 2 + 1] = endOffset
+      negFeaturePositionsBuf[negCount * 2] = startPos
+      negFeaturePositionsBuf[negCount * 2 + 1] = endPos
       negFeatureScoresBuf[negCount] = score
       negCount++
     }
@@ -130,7 +129,6 @@ export function processFeaturesFromArrays(
 
 export function processFeatures(
   features: { get: (key: string) => unknown }[],
-  regionStart: number,
   bicolorPivot: number,
 ): WiggleFeatureArrays {
   const n = features.length
@@ -161,7 +159,6 @@ export function processFeatures(
     minScores,
     maxScores,
     n,
-    regionStart,
     bicolorPivot,
   )
 }

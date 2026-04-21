@@ -499,9 +499,8 @@ export { UNIFORMS_SIZE_BYTES }
 
 // Pure LocalRegion constructor — empty placeholders for typed arrays the
 // read/coverage uploads later overwrite.
-function emptyRegion(regionStart: number): LocalRegion {
+function emptyRegion(): LocalRegion {
   return {
-    regionStart,
     readIdToIndex: new Map(),
     readPositions: new Uint32Array(0),
     readYs: new Uint16Array(0),
@@ -527,7 +526,6 @@ interface BlockFrame {
 
 // Per-region data not tracked by the HAL
 interface LocalRegion {
-  regionStart: number
   readIdToIndex: Map<string, number>
   readPositions: Uint32Array
   readYs: Uint16Array
@@ -571,7 +569,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     data: ReadUploadData,
   ) {
     this.hal.deleteRegion(displayedRegionIndex)
-    const r = emptyRegion(data.regionStart)
+    const r = emptyRegion()
     r.insertSizeStats = data.insertSizeStats
     r.readPositions = data.readPositions
     r.readYs = data.readYs
@@ -580,9 +578,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       r.readIdToIndex.set(data.readIds[i]!, i)
     }
     this.regions.set(displayedRegionIndex, r)
-    this.hal.setRegionMeta(displayedRegionIndex, {
-      regionStart: data.regionStart,
-    })
 
     if (data.numSegments > 0) {
       this.hal.uploadBuffer(
@@ -732,10 +727,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     // read upload has registered this region. Pre-register an empty
     // LocalRegion so renderBlocks draws them even without reads.
     if (!this.regions.has(displayedRegionIndex)) {
-      this.regions.set(displayedRegionIndex, emptyRegion(data.regionStart))
-      this.hal.setRegionMeta(displayedRegionIndex, {
-        regionStart: data.regionStart,
-      })
+      this.regions.set(displayedRegionIndex, emptyRegion())
     }
 
     if (data.numArcs > 0) {
@@ -761,10 +753,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     data: ConnectingLinesUploadData,
   ) {
     if (!this.regions.has(displayedRegionIndex)) {
-      this.regions.set(displayedRegionIndex, emptyRegion(data.regionStart))
-      this.hal.setRegionMeta(displayedRegionIndex, {
-        regionStart: data.regionStart,
-      })
+      this.regions.set(displayedRegionIndex, emptyRegion())
     }
     if (data.numConnectingLines > 0) {
       this.hal.uploadBuffer(

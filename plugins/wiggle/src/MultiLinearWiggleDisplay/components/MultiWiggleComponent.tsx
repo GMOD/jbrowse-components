@@ -143,7 +143,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         if (!hit) {
           model.setFeatureUnderMouse(undefined)
         } else {
-          const { region, data, bpOffset } = hit
+          const { region, data, bp } = hit
 
           if (model.isOverlay && domain) {
             let bestSource: MultiWiggleSourceData | undefined
@@ -162,7 +162,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
                 const i = findFeatureAtBp(
                   src.featurePositions,
                   src.numFeatures,
-                  bpOffset,
+                  bp,
                 )
                 if (i !== -1) {
                   const score = src.featureScores[i]!
@@ -190,10 +190,8 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
             if (!bestSource || bestIdx === -1) {
               model.setFeatureUnderMouse(undefined)
             } else {
-              const fStart =
-                bestSource.featurePositions[bestIdx * 2]! + data.regionStart
-              const fEnd =
-                bestSource.featurePositions[bestIdx * 2 + 1]! + data.regionStart
+              const fStart = bestSource.featurePositions[bestIdx * 2]!
+              const fEnd = bestSource.featurePositions[bestIdx * 2 + 1]!
               const minS = bestSource.featureMinScores[bestIdx]
               const maxS = bestSource.featureMaxScores[bestIdx]
 
@@ -222,19 +220,13 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
               } else {
                 const { featurePositions, featureScores, numFeatures } =
                   rpcSource
-                const foundIdx = findFeatureAtBp(
-                  featurePositions,
-                  numFeatures,
-                  bpOffset,
-                )
+                const foundIdx = findFeatureAtBp(featurePositions, numFeatures, bp)
 
                 if (foundIdx === -1) {
                   model.setFeatureUnderMouse(undefined)
                 } else {
-                  const fStart =
-                    featurePositions[foundIdx * 2]! + data.regionStart
-                  const fEnd =
-                    featurePositions[foundIdx * 2 + 1]! + data.regionStart
+                  const fStart = featurePositions[foundIdx * 2]!
+                  const fEnd = featurePositions[foundIdx * 2 + 1]!
                   const score = featureScores[foundIdx]!
                   const minScore = rpcSource.featureMinScores[foundIdx]
                   const maxScore = rpcSource.featureMaxScores[foundIdx]

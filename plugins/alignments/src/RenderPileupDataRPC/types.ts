@@ -65,8 +65,6 @@ export interface ModificationEntry {
 }
 
 export interface PileupDataResult {
-  regionStart: number // floor of view region start; carried for filter/clamp only
-
   // Read data - positions are absolute genomic uint32
   readPositions: Uint32Array // [start, end] pairs
   readYs: Uint16Array // pileup row (0-65535 sufficient)

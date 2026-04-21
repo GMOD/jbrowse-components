@@ -175,13 +175,13 @@ interface MouseRegion {
 }
 
 // Maps a screen x coordinate to the region containing it, the per-region data
-// keyed by displayedRegionIndex, and the bp offset within that region (relative to
-// data.regionStart). Returns undefined if x is outside any region or no data
-// is loaded for the hit region.
-export function hitTestMouse<
-  R extends MouseRegion,
-  D extends { regionStart: number },
->(regions: R[], rpcDataMap: Map<number, D>, offsetX: number) {
+// keyed by displayedRegionIndex, and the absolute genomic bp under the cursor.
+// Returns undefined if x is outside any region or no data is loaded.
+export function hitTestMouse<R extends MouseRegion, D>(
+  regions: R[],
+  rpcDataMap: Map<number, D>,
+  offsetX: number,
+) {
   const region = regions.find(
     r => offsetX >= r.screenStartPx && offsetX < r.screenEndPx,
   )
@@ -198,7 +198,7 @@ export function hitTestMouse<
   const bp = Math.round(
     region.reversed ? region.end - frac * span : region.start + frac * span,
   )
-  return { region, data, bpOffset: bp - data.regionStart }
+  return { region, data, bp }
 }
 
 export function makeRenderState(

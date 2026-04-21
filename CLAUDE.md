@@ -25,11 +25,11 @@ happen:
   discrete threshold check on that. Worker needs config sent as a plain snapshot
   (`getConfSnapshot` + `readConfigValue`).
 - **Wiggle**: worker fetches binned data from BigWig at the appropriate zoom
-  level and returns genomic-coord bins (`featurePositions` are BP offsets,
-  scores per-bin). The `bpPerPx` parameter to the worker only picks which BigWig
-  zoom level to read — output positions are always genomic. Main thread does
-  autoscale (aggregating across all visible regions to compute global Y-axis
-  domain) and renders.
+  level and returns genomic-coord bins (`featurePositions` are **absolute
+  uint32** genomic positions, same convention as alignments). The `bpPerPx`
+  parameter to the worker only picks which BigWig zoom level to read — output
+  positions are always genomic. Main thread does autoscale (aggregating across
+  all visible regions to compute global Y-axis domain) and renders.
 - **Alignments**: worker fetches reads only — no layout. All Y-row packing,
   chain-connecting lines, and Flatbush spatial indices are main-thread. Worker
   output positions are fully absolute genomic uint32 (no regionStart-relative
@@ -52,3 +52,7 @@ WebGPU uses 4x MSAA; WebGL2 uses `antialias: true`. Picking passes skip MSAA.
 WGSL (`canvasShaders.ts`) and GLSL (`canvasGlslShaders.ts`) must stay in sync.
 The Uniforms struct/UBO layout must match the byte offsets in
 `GpuCanvasFeatureRenderer.ts`.
+
+**Never hand-edit `*.generated.ts` shader files.** They are auto-generated from
+the corresponding `.slang` source via `pnpm gen:shaders`. Edit the `.slang`
+source and re-run the command to regenerate.

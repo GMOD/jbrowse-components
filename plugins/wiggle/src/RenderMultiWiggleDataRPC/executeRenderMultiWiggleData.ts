@@ -69,8 +69,6 @@ export async function executeRenderMultiWiggleData({
 
   checkStopToken2(stopTokenCheck)
 
-  const regionStart = Math.floor(region.start)
-
   const featuresBySource = new Map<string, typeof featuresArray>()
   for (const feature of featuresArray) {
     const source = feature.get('source') ?? 'default'
@@ -88,15 +86,10 @@ export async function executeRenderMultiWiggleData({
       : Array.from(featuresBySource.keys(), name => ({ name }))
 
   return {
-    regionStart,
     sources: orderedSources.map(({ name, color }) => ({
       name,
       color,
-      ...processFeatures(
-        featuresBySource.get(name) ?? [],
-        regionStart,
-        bicolorPivot,
-      ),
+      ...processFeatures(featuresBySource.get(name) ?? [], bicolorPivot),
     })),
   }
 }

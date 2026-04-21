@@ -1245,7 +1245,6 @@ export default function stateModelFactory(
                   data.numConnectingLines
                 ) {
                   b.uploadConnectingLinesForRegion(displayedRegionIndex, {
-                    regionStart: data.regionStart,
                     connectingLinePositions: data.connectingLinePositions,
                     connectingLineYs: data.connectingLineYs,
                     numConnectingLines: data.numConnectingLines,
@@ -1259,7 +1258,6 @@ export default function stateModelFactory(
               for (const [displayedRegionIndex, data] of self.arcsState
                 .rpcDataMap) {
                 b.uploadArcsFromTypedArraysForRegion(displayedRegionIndex, {
-                  regionStart: data.regionStart,
                   arcX1: data.arcX1,
                   arcX2: data.arcX2,
                   arcColorTypes: data.arcColorTypes,
@@ -1435,7 +1433,6 @@ export default function stateModelFactory(
               arcs,
               lines,
               ri.refName,
-              data.regionStart,
               self.height,
             )
             self.arcsState.setRpcData(ri.displayedRegionIndex, result)

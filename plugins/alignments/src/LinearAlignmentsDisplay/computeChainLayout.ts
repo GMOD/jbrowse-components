@@ -116,7 +116,6 @@ export function buildChainConnectingData(
     chainHasMultiple,
     chainAbsMinStarts,
     chainAbsMaxEnds,
-    regionStart,
   } = data
 
   if (
@@ -150,10 +149,7 @@ export function buildChainConnectingData(
       continue
     }
     const y = readYs[chainFirstReadIndices[chainIdx]!]!
-    connectingLinePositions[lineIdx * 2] = Math.max(
-      regionStart,
-      chainAbsMinStarts[chainIdx]!,
-    )
+    connectingLinePositions[lineIdx * 2] = chainAbsMinStarts[chainIdx]!
     connectingLinePositions[lineIdx * 2 + 1] = chainAbsMaxEnds[chainIdx]!
     connectingLineYs[lineIdx] = y
     lineIdx++
@@ -165,9 +161,9 @@ export function buildChainConnectingData(
     for (let chainIdx = 0; chainIdx < numChains; chainIdx++) {
       const y = readYs[chainFirstReadIndices[chainIdx]!]!
       flatbush.add(
-        Math.max(regionStart, chainAbsMinStarts[chainIdx]!),
+        chainAbsMinStarts[chainIdx]!,
         y,
-        chainAbsMaxEnds[chainIdx],
+        chainAbsMaxEnds[chainIdx]!,
         y,
       )
     }

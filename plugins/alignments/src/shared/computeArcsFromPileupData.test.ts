@@ -464,7 +464,7 @@ describe('arcsToRegionResult', () => {
       { x: { refName: 'chr2', bp: 5500 }, colorType: 3 },
     ]
 
-    const result = arcsToRegionResult(arcs, lines, 'chr1', 1000, 200)
+    const result = arcsToRegionResult(arcs, lines, 'chr1', 200)
 
     expect(result.numArcs).toBe(1)
     expect(result.arcX1[0]).toBe(1100)
@@ -482,7 +482,7 @@ describe('arcsToRegionResult', () => {
         isArc: 0,
       },
     ]
-    const result = arcsToRegionResult(arcs, [], 'chr1', 1000, 200)
+    const result = arcsToRegionResult(arcs, [], 'chr1', 200)
 
     expect(result.numArcs).toBe(0)
     expect(result.arcX1.length).toBe(0)
@@ -491,7 +491,7 @@ describe('arcsToRegionResult', () => {
 
   test('line Y values span 0 to height', () => {
     const lines = [{ x: { refName: 'chr1', bp: 1500 }, colorType: 3 }]
-    const result = arcsToRegionResult([], lines, 'chr1', 1000, 300)
+    const result = arcsToRegionResult([], lines, 'chr1', 300)
 
     expect(result.numLines).toBe(1)
     expect(result.lineYs[0]).toBe(0)

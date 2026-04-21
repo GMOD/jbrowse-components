@@ -41,7 +41,6 @@ import type {
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
 interface Canvas2DRegionData {
-  regionStart: number
   readIdToIndex: Map<string, number>
   readPositions: Uint32Array
   readYs: Uint16Array
@@ -154,13 +153,12 @@ const BASE_COLORS: Record<number, string> = {
   3: BASE_T_COLOR,
 }
 
-function emptyRegion(regionStart: number): Canvas2DRegionData {
+function emptyRegion(): Canvas2DRegionData {
   const empty32 = new Uint32Array(0)
   const empty16 = new Uint16Array(0)
   const empty8 = new Uint8Array(0)
   const emptyF32 = new Float32Array(0)
   return {
-    regionStart,
     readIdToIndex: new Map(),
     readPositions: empty32,
     readYs: empty16,
@@ -218,8 +216,8 @@ function emptyRegion(regionStart: number): Canvas2DRegionData {
     indicatorCount: 0,
     modCovBuffer: new ArrayBuffer(0),
     modCovSegmentCount: 0,
-    arcX1: emptyF32,
-    arcX2: emptyF32,
+    arcX1: empty32,
+    arcX2: empty32,
     arcColorTypes: emptyF32,
     arcIsArc: empty8,
     numArcs: 0,
@@ -261,10 +259,9 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   ) {
     let r = this.regions.get(displayedRegionIndex)
     if (!r) {
-      r = emptyRegion(data.regionStart)
+      r = emptyRegion()
       this.regions.set(displayedRegionIndex, r)
     }
-    r.regionStart = data.regionStart
     r.readPositions = data.readPositions
     r.readYs = data.readYs
     r.readFlags = data.readFlags
@@ -436,7 +433,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   ) {
     let r = this.regions.get(displayedRegionIndex)
     if (!r) {
-      r = emptyRegion(data.regionStart)
+      r = emptyRegion()
       this.regions.set(displayedRegionIndex, r)
     }
     r.arcX1 = data.arcX1
@@ -456,7 +453,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   ) {
     let r = this.regions.get(displayedRegionIndex)
     if (!r) {
-      r = emptyRegion(data.regionStart)
+      r = emptyRegion()
       this.regions.set(displayedRegionIndex, r)
     }
     r.connectingLinePositions = data.connectingLinePositions

@@ -196,8 +196,8 @@ export default function stateModelFactory(
           }
           return [
             {
-              visStart: Math.floor(block.start) - data.regionStart,
-              visEnd: Math.ceil(block.end) - data.regionStart,
+              visStart: Math.floor(block.start),
+              visEnd: Math.ceil(block.end),
               data,
             },
           ]
@@ -514,7 +514,6 @@ export default function stateModelFactory(
             for (const [displayedRegionIndex, data] of self.rpcDataMap) {
               b.uploadRegion(
                 displayedRegionIndex,
-                data.regionStart,
                 buildSourceRenderData(data, props),
               )
               active.push(displayedRegionIndex)

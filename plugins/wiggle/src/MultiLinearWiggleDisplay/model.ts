@@ -246,8 +246,8 @@ export default function stateModelFactory(
           if (!regionData) {
             return []
           }
-          const visStart = Math.floor(block.start) - regionData.regionStart
-          const visEnd = Math.ceil(block.end) - regionData.regionStart
+          const visStart = Math.floor(block.start)
+          const visEnd = Math.ceil(block.end)
           return regionData.sources.map(source => ({
             visStart,
             visEnd,
@@ -402,7 +402,6 @@ export default function stateModelFactory(
             for (const [displayedRegionIndex, data] of self.rpcDataMap) {
               b.uploadRegion(
                 displayedRegionIndex,
-                data.regionStart,
                 buildMultiSourceRenderData(data, props),
               )
               active.push(displayedRegionIndex)

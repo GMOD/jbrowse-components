@@ -24,7 +24,6 @@ export interface SourceRenderData {
 export interface WiggleBackend {
   uploadRegion(
     displayedRegionIndex: number,
-    regionStart: number,
     sources: SourceRenderData[],
   ): void
   pruneRegions(activeRegions: number[]): void

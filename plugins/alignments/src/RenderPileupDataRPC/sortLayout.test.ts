@@ -61,7 +61,6 @@ function makePileupData(opts: {
   }
 
   return {
-    regionStart,
     numReads,
     readIds,
     readNames,

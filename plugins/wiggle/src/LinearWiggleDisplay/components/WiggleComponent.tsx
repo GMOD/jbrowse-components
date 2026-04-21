@@ -59,13 +59,9 @@ const WiggleComponent = observer(function WiggleComponent({
         if (!hit) {
           model.setFeatureUnderMouse(undefined)
         } else {
-          const { region, data, bpOffset } = hit
+          const { region, data, bp } = hit
           const { featurePositions, featureScores, numFeatures } = data
-          const foundIdx = findFeatureAtBp(
-            featurePositions,
-            numFeatures,
-            bpOffset,
-          )
+          const foundIdx = findFeatureAtBp(featurePositions, numFeatures, bp)
           if (foundIdx === -1) {
             model.setFeatureUnderMouse(undefined)
           } else {
@@ -74,8 +70,8 @@ const WiggleComponent = observer(function WiggleComponent({
             const maxScore = data.featureMaxScores[foundIdx]
             model.setFeatureUnderMouse({
               refName: region.refName,
-              start: featurePositions[foundIdx * 2]! + data.regionStart,
-              end: featurePositions[foundIdx * 2 + 1]! + data.regionStart,
+              start: featurePositions[foundIdx * 2]!,
+              end: featurePositions[foundIdx * 2 + 1]!,
               score,
               ...(summaryScoreMode !== 'avg' &&
               isSummaryFeature(score, minScore, maxScore)

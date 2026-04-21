@@ -293,8 +293,6 @@ export async function executeRenderPileupData({
   )
 
   const result: PileupDataResult = {
-    regionStart,
-
     ...readArrays,
     ...segmentArrays,
     ...gapArrays,

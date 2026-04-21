@@ -48,7 +48,6 @@ function makeChainData(opts: {
   const readIds = Array.from({ length: numReads }, (_, i) => `id${i}`)
 
   return {
-    regionStart,
     numReads,
     readChainIndices,
     chainNames,
@@ -459,13 +458,13 @@ describe('buildChainConnectingData', () => {
     expect(out.chainFlatbushData!.byteLength).toBeGreaterThan(0)
   })
 
-  test('line start is clamped to zero when chain extends before regionStart', () => {
+  test('line uses absolute chain extents, GPU scissor handles off-screen clipping', () => {
     const data = makeChainData({
       regionStart: 1000,
       chains: [
         {
           name: 'readA',
-          minStart: 900, // before regionStart
+          minStart: 900,
           maxEnd: 1200,
           distance: 300,
           numReads: 2,
@@ -474,7 +473,7 @@ describe('buildChainConnectingData', () => {
     })
     const readYs = new Uint16Array([0, 0])
     const out = buildChainConnectingData(data, readYs)
-    expect(out.connectingLinePositions[0]).toBe(1000) // clamped to regionStart
+    expect(out.connectingLinePositions[0]).toBe(900) // absolute minStart
     expect(out.connectingLinePositions[1]).toBe(1200) // absolute maxEnd
   })
 })

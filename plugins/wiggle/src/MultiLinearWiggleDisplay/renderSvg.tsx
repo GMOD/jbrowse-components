@@ -64,7 +64,6 @@ function getFeatureSlices(
 function renderFeatureSlice(
   ctx: CanvasRenderingContext2D | SvgCanvas,
   slice: FeatureSlice,
-  regionStart: number,
   block: { start: number; end: number },
   blockScreenX: number,
   bpPerPx: number,
@@ -86,8 +85,8 @@ function renderFeatureSlice(
     let started = false
     for (let i = 0; i < numFeatures; i++) {
       const posIdx = i * 2
-      const featureStart = regionStart + positions[posIdx]!
-      const featureEnd = regionStart + positions[posIdx + 1]!
+      const featureStart = positions[posIdx]!
+      const featureEnd = positions[posIdx + 1]!
       const score = scores[i]!
       if (featureEnd < block.start || featureStart > block.end) {
         continue
@@ -107,8 +106,8 @@ function renderFeatureSlice(
   } else {
     for (let i = 0; i < numFeatures; i++) {
       const posIdx = i * 2
-      const featureStart = regionStart + positions[posIdx]!
-      const featureEnd = regionStart + positions[posIdx + 1]!
+      const featureStart = positions[posIdx]!
+      const featureEnd = positions[posIdx + 1]!
       const score = scores[i]!
       if (featureEnd < block.start || featureStart > block.end) {
         continue
@@ -201,7 +200,6 @@ function renderToCtx(
         renderFeatureSlice(
           ctx,
           slice,
-          data.regionStart,
           block,
           blockScreenX,
           bpPerPx,

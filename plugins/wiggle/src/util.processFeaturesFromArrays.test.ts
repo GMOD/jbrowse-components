@@ -17,7 +17,6 @@ describe('processFeaturesFromArrays', () => {
     const starts = new Int32Array([100, 200, 300])
     const ends = new Int32Array([200, 300, 400])
     const scores = new Float32Array([5, -3, 8])
-    const regionStart = 50
     const bicolorPivot = 0
 
     const fromArrays = processFeaturesFromArrays(
@@ -27,7 +26,6 @@ describe('processFeaturesFromArrays', () => {
       undefined,
       undefined,
       3,
-      regionStart,
       bicolorPivot,
     )
 
@@ -47,7 +45,7 @@ describe('processFeaturesFromArrays', () => {
         }
       },
     }))
-    const fromFeatures = processFeatures(features, regionStart, bicolorPivot)
+    const fromFeatures = processFeatures(features, bicolorPivot)
 
     expect(fromArrays.numFeatures).toBe(fromFeatures.numFeatures)
     expect(Array.from(fromArrays.featurePositions)).toEqual(
@@ -110,8 +108,8 @@ describe('processFeaturesFromArrays', () => {
     expect(Array.from(result.negFeatureScores)).toEqual([-3])
   })
 
-  test('clamps offsets to zero when features start before region', () => {
-    const starts = new Int32Array([-50])
+  test('stores absolute positions', () => {
+    const starts = new Int32Array([50])
     const ends = new Int32Array([100])
     const scores = new Float32Array([5])
 
@@ -123,10 +121,9 @@ describe('processFeaturesFromArrays', () => {
       undefined,
       1,
       0,
-      0,
     )
 
-    expect(result.featurePositions[0]).toBe(0)
+    expect(result.featurePositions[0]).toBe(50)
     expect(result.featurePositions[1]).toBe(100)
   })
 })

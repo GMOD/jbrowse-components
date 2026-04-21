@@ -26,7 +26,7 @@ export interface CoverageAreaPackedBuffers {
 interface CoverageInput {
   depths: Float32Array
   maxDepth: number
-  startOffset: number
+  startPos: number
 }
 interface SnpInput {
   positions: Uint32Array

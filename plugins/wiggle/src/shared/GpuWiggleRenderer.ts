@@ -56,11 +56,7 @@ export class GpuWiggleRenderer implements WiggleBackend {
     this.hal = hal
   }
 
-  uploadRegion(
-    displayedRegionIndex: number,
-    regionStart: number,
-    sources: SourceRenderData[],
-  ) {
+  uploadRegion(displayedRegionIndex: number, sources: SourceRenderData[]) {
     let totalFeatures = 0
     for (const source of sources) {
       totalFeatures += source.numFeatures
@@ -73,7 +69,6 @@ export class GpuWiggleRenderer implements WiggleBackend {
     const buf = interleaveInstances(sources, totalFeatures)
     // Upload once to PASS_FILL; PASS_LINE shares the same buffer via drawPass
     this.hal.uploadBuffer(displayedRegionIndex, PASS_FILL, buf, totalFeatures)
-    this.hal.setRegionMeta(displayedRegionIndex, { regionStart })
     this.regionInfo.set(displayedRegionIndex, {
       numRows: computeNumRows(sources),
     })
@@ -101,9 +96,8 @@ export class GpuWiggleRenderer implements WiggleBackend {
       ) {
         continue
       }
-      const meta = this.hal.getRegionMeta(block.displayedRegionIndex)
       const info = this.regionInfo.get(block.displayedRegionIndex)
-      if (!meta || !info) {
+      if (!info) {
         continue
       }
       const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
@@ -117,7 +111,6 @@ export class GpuWiggleRenderer implements WiggleBackend {
       this.uniformF32[U.bpRangeX] = clip.bpStartHi
       this.uniformF32[U.bpRangeX + 1] = clip.bpStartLo
       this.uniformF32[U.bpRangeX + 2] = clip.clippedLengthBp
-      this.uniformU32[U.regionStart] = Math.floor(meta.regionStart)
       this.uniformF32[U.canvasHeight] = canvasHeight
       this.uniformI32[U.scaleType] = state.scaleType
       this.uniformI32[U.renderingType] = state.renderingType

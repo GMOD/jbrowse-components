@@ -5,7 +5,7 @@ import type { WiggleDataResult } from '../../RenderWiggleDataRPC/types.ts'
 
 function makeData(numFeatures = 2): WiggleDataResult {
   return {
-    regionStart: 0,
+
     featurePositions: new Uint32Array([0, 10, 10, 20]),
     featureScores: new Float32Array([5, 8]),
     featureMinScores: new Float32Array([5, 8]),
@@ -98,7 +98,7 @@ describe('buildSourceRenderData', () => {
 
   it('produces different colors when negColor changes in bicolor mode', () => {
     const data: WiggleDataResult = {
-      regionStart: 0,
+  
       featurePositions: new Uint32Array([0, 10, 10, 20]),
       featureScores: new Float32Array([5, -3]),
       featureMinScores: new Float32Array([5, -3]),

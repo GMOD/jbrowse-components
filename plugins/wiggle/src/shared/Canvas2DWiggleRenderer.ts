@@ -22,7 +22,6 @@ import type {
 } from './wiggleBackendTypes.ts'
 
 interface Canvas2DRegionData {
-  regionStart: number
   sources: SourceRenderData[]
   numRows: number
 }
@@ -49,11 +48,10 @@ function makeScoreToY(
 function featureAt(
   source: SourceRenderData,
   i: number,
-  regionStart: number,
   block: WiggleRenderBlock,
 ): FeatureBounds {
-  const startBp = source.featurePositions[i * 2]! + regionStart
-  const endBp = source.featurePositions[i * 2 + 1]! + regionStart
+  const startBp = source.featurePositions[i * 2]!
+  const endBp = source.featurePositions[i * 2 + 1]!
   const [bpStart, bpEnd] = block.bpRangeX
   return {
     x1: bpToScreenPx(
@@ -79,7 +77,6 @@ function featureAt(
 function drawXYPlot(
   ctx: CanvasRenderingContext2D,
   source: SourceRenderData,
-  regionStart: number,
   block: WiggleRenderBlock,
   rowHeight: number,
   rowTop: number,
@@ -91,7 +88,7 @@ function drawXYPlot(
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
   const originY = scoreToY(0) + rowTop
   for (let i = 0; i < source.numFeatures; i++) {
-    const f = featureAt(source, i, regionStart, block)
+    const f = featureAt(source, i, block)
     const scoreY = scoreToY(f.score) + rowTop
     const w = Math.max(1.5, f.x2 - f.x1 + WIGGLE_FUDGE_FACTOR)
     const h = originY - scoreY
@@ -106,7 +103,6 @@ function drawXYPlot(
 function drawDensity(
   ctx: CanvasRenderingContext2D,
   source: SourceRenderData,
-  regionStart: number,
   block: WiggleRenderBlock,
   rowHeight: number,
   rowTop: number,
@@ -129,7 +125,7 @@ function drawDensity(
   const bDelta = b - 255
 
   for (let i = 0; i < source.numFeatures; i++) {
-    const f = featureAt(source, i, regionStart, block)
+    const f = featureAt(source, i, block)
     const w = Math.max(1.5, f.x2 - f.x1 + WIGGLE_FUDGE_FACTOR)
     const t = Math.abs(normalize(f.score) - zeroNorm) * invMaxDist
     const cr = (255 + rDelta * t) | 0
@@ -143,7 +139,6 @@ function drawDensity(
 function drawLine(
   ctx: CanvasRenderingContext2D,
   source: SourceRenderData,
-  regionStart: number,
   block: WiggleRenderBlock,
   rowHeight: number,
   rowTop: number,
@@ -161,7 +156,7 @@ function drawLine(
 
   let prevY = scoreToY(source.featureScores[0]!) + rowTop
   for (let i = 0; i < source.numFeatures; i++) {
-    const f = featureAt(source, i, regionStart, block)
+    const f = featureAt(source, i, block)
     const scoreY = scoreToY(f.score) + rowTop
     if (i > 0) {
       ctx.moveTo(f.x1, prevY)
@@ -177,7 +172,6 @@ function drawLine(
 function drawScatter(
   ctx: CanvasRenderingContext2D,
   source: SourceRenderData,
-  regionStart: number,
   block: WiggleRenderBlock,
   rowHeight: number,
   rowTop: number,
@@ -188,7 +182,7 @@ function drawScatter(
   ctx.fillStyle = rgb
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
   for (let i = 0; i < source.numFeatures; i++) {
-    const f = featureAt(source, i, regionStart, block)
+    const f = featureAt(source, i, block)
     const scoreY = scoreToY(f.score) + rowTop
     const w = Math.max(1.5, f.x2 - f.x1)
     ctx.fillRect(f.x1, scoreY - 1, w, 2)
@@ -209,11 +203,7 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
     this.ctx = ctx
   }
 
-  uploadRegion(
-    displayedRegionIndex: number,
-    regionStart: number,
-    sources: SourceRenderData[],
-  ) {
+  uploadRegion(displayedRegionIndex: number, sources: SourceRenderData[]) {
     let totalFeatures = 0
     for (const source of sources) {
       totalFeatures += source.numFeatures
@@ -223,7 +213,6 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
       return
     }
     this.regions.set(displayedRegionIndex, {
-      regionStart,
       sources,
       numRows: computeNumRows(sources),
     })
@@ -260,55 +249,13 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
         const rgb = `rgb(${r},${g},${b})`
 
         if (renderingType === RENDERING_TYPE_LINE) {
-          drawLine(
-            ctx,
-            source,
-            region.regionStart,
-            block,
-            rowHeight,
-            rowTop,
-            domainY,
-            scaleType,
-            rgb,
-          )
+          drawLine(ctx, source, block, rowHeight, rowTop, domainY, scaleType, rgb)
         } else if (renderingType === RENDERING_TYPE_DENSITY) {
-          drawDensity(
-            ctx,
-            source,
-            region.regionStart,
-            block,
-            rowHeight,
-            rowTop,
-            domainY,
-            scaleType,
-            r,
-            g,
-            b,
-          )
+          drawDensity(ctx, source, block, rowHeight, rowTop, domainY, scaleType, r, g, b)
         } else if (renderingType === RENDERING_TYPE_SCATTER) {
-          drawScatter(
-            ctx,
-            source,
-            region.regionStart,
-            block,
-            rowHeight,
-            rowTop,
-            domainY,
-            scaleType,
-            rgb,
-          )
+          drawScatter(ctx, source, block, rowHeight, rowTop, domainY, scaleType, rgb)
         } else {
-          drawXYPlot(
-            ctx,
-            source,
-            region.regionStart,
-            block,
-            rowHeight,
-            rowTop,
-            domainY,
-            scaleType,
-            rgb,
-          )
+          drawXYPlot(ctx, source, block, rowHeight, rowTop, domainY, scaleType, rgb)
         }
       }
       ctx.restore()

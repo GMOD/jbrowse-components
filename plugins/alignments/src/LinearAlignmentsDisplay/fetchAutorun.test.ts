@@ -19,7 +19,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 function makeEmptyPileupData(regionStart: number): PileupDataResult {
   return {
-    regionStart,
     readPositions: new Uint32Array(0),
     readYs: new Uint16Array(0),
     readFlags: new Uint16Array(0),

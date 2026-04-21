@@ -62,8 +62,6 @@ export async function executeRenderWiggleData({
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
-  const regionStart = Math.floor(region.start)
-
   if (hasFeatureArrays(dataAdapter)) {
     const featureArrays = await updateStatus(
       'Loading wiggle data',
@@ -76,7 +74,7 @@ export async function executeRenderWiggleData({
         }),
     )
     checkStopToken2(stopTokenCheck)
-    return { regionStart, ...featureArrays }
+    return featureArrays
   }
 
   const fetchOpts = { bpPerPx, resolution }
@@ -91,8 +89,5 @@ export async function executeRenderWiggleData({
 
   checkStopToken2(stopTokenCheck)
 
-  return {
-    regionStart,
-    ...processFeatures(featuresArray, regionStart, bicolorPivot),
-  }
+  return processFeatures(featuresArray, bicolorPivot)
 }

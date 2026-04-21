@@ -237,14 +237,76 @@ Authoring conventions and gotchas: ADR-005.
 
 ---
 
-## BP precision
+## BP precision: why both uint32 storage AND hi/lo float math
 
-Genomic positions exceed 3×10⁹ on T2T assemblies; 32-bit float's ~7
-decimal digits are insufficient at chromosome scale. GPU renderers split
-each BP position into hi/lo halves: `position_bp = hi + lo`.
+Genomic positions exceed 3×10⁹ on T2T assemblies; 32-bit float's 24-bit
+mantissa (~7 decimal digits) cannot represent every integer past 2²⁴ ≈
+16.7 Mbp. Storing a 3-Gbp position as `float` loses ~256 bp of precision,
+which is catastrophic for bp-accurate rendering (1-bp mismatches, 1-bp
+coverage bins). We can't avoid float entirely — GPU clip-space coordinates
+are float32 and the rasterizer ultimately works in float — so the question
+is *where* precision loss can happen without corrupting the output.
+
+The answer is a **two-stage representation**:
+
+### Stage 1 — storage as uint32
+
+Absolute genomic positions are stored in GPU vertex buffers as `uint32`
+attributes (`inst.position`, `inst.startOff`, `inst.endOff`, etc.). Uint32
+is exact for every integer in `[0, 2³²)` = 4.29 Gbp, comfortably beyond
+T2T chromosome lengths. The JS `Uint32Array` → WebGL/WebGPU upload path
+preserves every bit. No precision loss here.
+
+### Stage 2 — conversion to clip-space via hi/lo split
+
+In the shader, the uint32 is split into a **high** half (bits 12..31,
+already aligned to 4096-bp boundaries) and a **low** half (bits 0..11,
+values 0..4095):
+
+```wgsl
+uint lo = value & 0xFFFu;
+uint hi = value - lo;
+float2 split = float2(float(hi), float(lo));
+```
+
+Both halves fit in float32 exactly — `hi` is always a multiple of 4096 and
+at 3 Gbp has value ~3×10⁹ which, while >2²⁴, is still an *exact* multiple
+of 4096 so `float(hi)` has no rounding error; `lo` is always in `[0, 4096)`
+which is trivially exact.
+
+The visible window's start (`clippedBpStart`) is split the same way on
+the CPU (`splitPositionWithFrac`) and uploaded as two UBO scalars:
+`bpHi`, `bpLo`. The shader then subtracts hi-from-hi and lo-from-lo
+*separately*:
+
+```wgsl
+float dHi = split.x - u.bpHi;  // exact: large-large = small
+float dLo = split.y - u.bpLo;  // exact: small-small = small
+float clipX = (dHi + dLo) / bpLen * 2.0 - 1.0;
+```
+
+The two differences are each small (at most ~block width in bp), so their
+float32 representation is exact. Summing them is also exact. The final
+division into clip space happens on a *small* float value, well within
+float32's precision envelope.
+
+### Why we need both representations
+
+- **Store as uint32 only** (no split): the shader would have to convert
+  uint32 → float directly for clip-space math, losing precision at 3 Gbp.
+  Would work only below ~16 Mbp.
+- **Store as float hi/lo pre-split** (no uint32): works for precision,
+  but doubles the per-vertex memory footprint (8 bytes instead of 4) and
+  pushes the split logic onto the CPU, making every packer heavier.
+- **Store as uint32, split in shader** (current approach): 4 bytes per
+  vertex, precision preserved, CPU packers just copy absolute positions
+  through. The split is 2 integer ops in the shader (one mask, one
+  subtract) — essentially free.
+
+`hpmath.slang` provides `hpSplitUint`, `hpToClipX`, `hpScaleLinear`.
 `blockClipUtils.clipBlock` emits `[bpStartHi, bpStartLo]` for the visible
-window; `hp_to_clip_x` in `hpmath.slang` reconstructs precision at draw
-time.
+window; `splitPositionWithFrac` is the CPU equivalent used when writing
+UBO fields. Every alignments shader and the wiggle shader use this path.
 
 ---
 

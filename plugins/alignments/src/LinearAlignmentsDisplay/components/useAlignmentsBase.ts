@@ -100,7 +100,6 @@ export interface LinearAlignmentsDisplayModel {
     rpcDataMap: Map<
       number,
       {
-        regionStart: number
         arcX1: Uint32Array
         arcX2: Uint32Array
         arcColorTypes: Float32Array

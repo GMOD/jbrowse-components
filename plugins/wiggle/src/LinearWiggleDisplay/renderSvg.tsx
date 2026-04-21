@@ -66,7 +66,7 @@ function renderToCtx(
     if (!data) {
       continue
     }
-    const { featurePositions, featureScores, regionStart, numFeatures } = data
+    const { featurePositions, featureScores, numFeatures } = data
     const blockScreenX = block.offsetPx - offsetPx
 
     if (renderType === RENDERING_TYPE_LINE) {
@@ -77,8 +77,8 @@ function renderToCtx(
       let started = false
       for (let i = 0; i < numFeatures; i++) {
         const posIdx = i * 2
-        const featureStart = regionStart + featurePositions[posIdx]!
-        const featureEnd = regionStart + featurePositions[posIdx + 1]!
+        const featureStart = featurePositions[posIdx]!
+        const featureEnd = featurePositions[posIdx + 1]!
         const score = featureScores[i]!
         if (featureEnd < block.start || featureStart > block.end) {
           continue
@@ -98,8 +98,8 @@ function renderToCtx(
     } else {
       for (let i = 0; i < numFeatures; i++) {
         const posIdx = i * 2
-        const featureStart = regionStart + featurePositions[posIdx]!
-        const featureEnd = regionStart + featurePositions[posIdx + 1]!
+        const featureStart = featurePositions[posIdx]!
+        const featureEnd = featurePositions[posIdx + 1]!
         const score = featureScores[i]!
         if (featureEnd < block.start || featureStart > block.end) {
           continue
