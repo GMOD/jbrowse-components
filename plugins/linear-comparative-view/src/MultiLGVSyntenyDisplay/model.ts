@@ -382,7 +382,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               if (self.showCoverage && view.initialized) {
                 const coverage = packCoverageForGpu(
                   data.coverageDepths,
-                  data.coverageStartOffset,
+                  data.coverageStartPos,
                   self.coverageGlobalMax,
                   Math.ceil(view.width),
                 )

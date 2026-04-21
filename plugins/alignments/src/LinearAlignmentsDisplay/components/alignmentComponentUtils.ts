@@ -247,11 +247,10 @@ export function getTooltipBin(
   if (!blockRpcData) {
     return undefined
   }
-  const posOffset = position - blockRpcData.regionStart
-  const binIdx = Math.floor(posOffset - blockRpcData.coverageStartOffset)
+  const binIdx = Math.floor(position - blockRpcData.coverageStartPos)
   const depth = blockRpcData.coverageDepths[binIdx] ?? 0
 
-  const snps = countSnpsAtPosition(posOffset, blockRpcData)
+  const snps = countSnpsAtPosition(position, blockRpcData)
 
   const interbase: CoverageTooltipBin['interbase'] = {}
   const {
@@ -265,7 +264,7 @@ export function getTooltipBin(
   const interbaseSums = new Map<string, number>()
   const seqCounts = new Map<string, Map<string, number>>()
   for (let i = 0; i < numInterbases; i++) {
-    if (interbasePositions[i] === posOffset) {
+    if (interbasePositions[i] === position) {
       const typeName = typeNames[interbaseTypes[i]!] ?? 'insertion'
       const len = interbaseLengths[i]!
       if (!interbase[typeName]) {
@@ -324,7 +323,7 @@ export function getTooltipBin(
     }
     const start = gapPositions[i * 2]!
     const end = gapPositions[i * 2 + 1]!
-    if (posOffset >= start && posOffset < end) {
+    if (position >= start && position < end) {
       const len = end - start
       if (!deletions) {
         deletions = { count: 0, minLen: len, maxLen: len, avgLen: 0 }
@@ -343,8 +342,8 @@ export function getTooltipBin(
     deletions.avgLen = deletionLenSum / deletions.count
   }
 
-  const modifications = blockRpcData.modTooltipData?.[posOffset]
-    ? { ...blockRpcData.modTooltipData[posOffset] }
+  const modifications = blockRpcData.modTooltipData?.[position]
+    ? { ...blockRpcData.modTooltipData[position] }
     : undefined
 
   const hasData =

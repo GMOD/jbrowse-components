@@ -229,7 +229,7 @@ function renderCoverageForSvg(
   const {
     coverageDepths,
     coverageMaxDepth,
-    coverageStartOffset,
+    coverageStartPos,
     refName,
   } = coverage
   if (coverageMaxDepth === 0) {
@@ -239,7 +239,7 @@ function renderCoverageForSvg(
   const { effectiveH, bottom } = coverageLayout(coverageHeight)
   const ds = downsampleMinMax(
     coverageDepths,
-    coverageStartOffset,
+    coverageStartPos,
     Math.ceil(width),
     coverageMaxDepth,
   )

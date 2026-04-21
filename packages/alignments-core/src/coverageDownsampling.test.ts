@@ -124,9 +124,9 @@ describe('downsampleMinMax', () => {
 describe('computeVisibleMaxDepth', () => {
   function region(
     coverageDepths: Float32Array,
-    coverageStartOffset: number,
+    coverageStartPos: number,
   ) {
-    return { coverageDepths, coverageStartOffset }
+    return { coverageDepths, coverageStartPos }
   }
 
   test('returns 0 for empty blocks', () => {
@@ -152,7 +152,7 @@ describe('computeVisibleMaxDepth', () => {
     expect(computeVisibleMaxDepth(blocks, b => dataMap.get(b.key))).toBe(3)
   })
 
-  test('handles coverageStartOffset correctly', () => {
+  test('handles coverageStartPos correctly', () => {
     const data = region(new Float32Array([10, 20, 30]), 1050)
     const dataMap = new Map([['region1', data]])
     const blocks = [{ start: 1050, end: 1053, key: 'region1' }]
@@ -237,7 +237,7 @@ describe('buildCoverageTooltipBin', () => {
     const mm = mismatches ?? []
     return {
       coverageDepths: new Float32Array(depths),
-      coverageStartOffset: 100,
+      coverageStartPos: 100,
       mismatchPositions: new Uint32Array(mm.map(m => m.pos)),
       mismatchBases: new Uint8Array(mm.map(m => m.base)),
       numMismatches: mm.length,

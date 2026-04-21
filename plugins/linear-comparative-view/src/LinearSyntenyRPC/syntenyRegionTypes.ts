@@ -10,7 +10,7 @@ export interface SyntenyRegionData {
   genomeFeatures: [string, MultiPairFeature[]][]
   coverageDepths: Float32Array
   coverageMaxDepth: number
-  coverageStartOffset: number
+  coverageStartPos: number
   snpPositions: Uint32Array
   snpYOffsets: Float32Array
   snpHeights: Float32Array

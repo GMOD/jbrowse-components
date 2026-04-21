@@ -55,7 +55,7 @@ function buildRegion(
   const indicators = computeInsertionIndicators(
     indels,
     coverage.depths,
-    coverage.startOffset,
+    coverage.startPos,
   )
   const mismatchPositions = new Uint32Array(mismatches.length)
   const mismatchBases = new Uint8Array(mismatches.length)
@@ -69,7 +69,7 @@ function buildRegion(
     genomeFeatures: [['genomeA', features]],
     coverageDepths: coverage.depths,
     coverageMaxDepth: coverage.maxDepth,
-    coverageStartOffset: coverage.startOffset,
+    coverageStartPos: coverage.startPos,
     snpPositions: snp.positions,
     snpYOffsets: snp.yOffsets,
     snpHeights: snp.heights,

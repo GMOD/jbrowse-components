@@ -11,13 +11,13 @@ describe('computeCoverage', () => {
     const result = computeCoverage([], [], 100, 200)
     expect(result.depths.length).toBe(0)
     expect(result.maxDepth).toBe(0)
-    expect(result.startOffset).toBe(0)
+    expect(result.startPos).toBe(0)
   })
 
   it('computes depth for a single feature within region', () => {
     const features = [{ start: 100, end: 110 }]
     const result = computeCoverage(features, [], 100, 200)
-    expect(result.startOffset).toBe(100)
+    expect(result.startPos).toBe(100)
     for (let i = 0; i < 10; i++) {
       expect(result.depths[i]).toBe(1)
     }
@@ -30,15 +30,15 @@ describe('computeCoverage', () => {
       { start: 100, end: 120 },
     ]
     const result = computeCoverage(features, [], 100, 200)
-    // startOffset is absolute, clamped to regionStart=100
-    expect(result.startOffset).toBe(100)
+    // startPos is absolute, clamped to regionStart=100
+    expect(result.startPos).toBe(100)
     expect(result.depths[0]).toBeGreaterThanOrEqual(1)
   })
 
   it('extends coverage past regionEnd for features that overlap', () => {
     const features = [{ start: 100, end: 250 }]
     const result = computeCoverage(features, [], 100, 200)
-    expect(result.startOffset).toBe(100)
+    expect(result.startPos).toBe(100)
     expect(result.depths.length).toBe(150)
     expect(result.maxDepth).toBe(1)
   })
@@ -112,9 +112,9 @@ describe('computePositionFrequencies (interbase depth)', () => {
     expect(freqs[1]).toBe(Math.round(0.1 * 255))
   })
 
-  it('handles coverageStartOffset correctly', () => {
+  it('handles coverageStartPos correctly', () => {
     const coverageDepths = new Float32Array([5, 10, 15])
-    // coverageStartOffset=10 means position 12 maps to depthIdx=2
+    // coverageStartPos=10 means position 12 maps to depthIdx=2
     const positions = new Uint32Array([12])
     const freqs = computePositionFrequencies(positions, coverageDepths, 10)
     // depthIdx = 12 - 10 = 2, left=depth[1]=10, right=depth[2]=15

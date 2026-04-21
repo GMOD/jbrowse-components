@@ -65,7 +65,7 @@ export function packCoverageAreaForGpu(
     coveragePackedBuffer: packCoverageBinsForGpu(
       coverage.depths,
       coverage.maxDepth,
-      coverage.startOffset,
+      coverage.startPos,
       coverage.depths.length,
     ).buffer,
     snpPackedBuffer: packSnpSegmentsForGpu(

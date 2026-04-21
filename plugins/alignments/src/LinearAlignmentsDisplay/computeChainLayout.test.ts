@@ -95,7 +95,7 @@ function makeChainData(opts: {
     interbaseFrequencies: new Uint8Array(0),
     coverageDepths: new Float32Array(0),
     coverageMaxDepth: 0,
-    coverageStartOffset: 0,
+    coverageStartPos: 0,
     coveragePackedBuffer: new ArrayBuffer(0),
     snpPositions: new Uint32Array(0),
     snpYOffsets: new Float32Array(0),

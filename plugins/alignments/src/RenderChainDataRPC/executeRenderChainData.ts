@@ -313,7 +313,7 @@ export async function executeRenderChainData({
       interbaseArrays,
       gapArrays,
       coverage.depths,
-      coverage.startOffset,
+      coverage.startPos,
     )
 
   const snpCoverage = computeSNPCoverage(
@@ -328,7 +328,7 @@ export async function executeRenderChainData({
     coverage.maxDepth,
     regionStart,
     coverage.depths,
-    coverage.startOffset,
+    coverage.startPos,
   )
 
   const sashimi = computeSashimiJunctions(gaps)
@@ -378,7 +378,7 @@ export async function executeRenderChainData({
 
     coverageDepths: coverage.depths,
     coverageMaxDepth: coverage.maxDepth,
-    coverageStartOffset: coverage.startOffset,
+    coverageStartPos: coverage.startPos,
 
     snpPositions: snpCoverage.positions,
     snpYOffsets: snpCoverage.yOffsets,

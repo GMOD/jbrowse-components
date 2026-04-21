@@ -253,7 +253,7 @@ time.
 **Every** position array emitted by the alignments worker is stored as
 **absolute genomic uint32** — reads, gaps, mismatches, interbase (ins/soft/
 hardclip), softclip bases, modifications, SNP/noncov/indicator/modCov
-segments, sashimi junctions, chain connecting lines, `coverageStartOffset`,
+segments, sashimi junctions, chain connecting lines, `coverageStartPos`,
 and `readNextPositions`. One convention across the whole pipeline.
 
 **Why absolute, not regionStart-relative:**

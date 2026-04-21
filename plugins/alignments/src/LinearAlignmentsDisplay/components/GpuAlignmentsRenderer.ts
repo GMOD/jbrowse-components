@@ -1078,8 +1078,8 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       if (needsFeatureSelection) {
         const idx = regionSelectIdx
         const clip = clipFor(
-          region.readPositions[idx * 2]! + region.regionStart,
-          region.readPositions[idx * 2 + 1]! + region.regionStart,
+          region.readPositions[idx * 2]!,
+          region.readPositions[idx * 2 + 1]!,
           region.readYs[idx]!,
         )
         const frame: number[] = []
@@ -1108,8 +1108,8 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       )
       if (bounds) {
         const clip = clipFor(
-          bounds.minStart + region.regionStart,
-          bounds.maxEnd + region.regionStart,
+          bounds.minStart,
+          bounds.maxEnd,
           bounds.y,
         )
         quads.push(clip.sx1, clip.syTop, clip.sx2, clip.syBot, 0, 0, 0, 0.4)
@@ -1127,8 +1127,8 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         pushSelectionFrame(
           quads,
           clipFor(
-            bounds.minStart + region.regionStart,
-            bounds.maxEnd + region.regionStart,
+            bounds.minStart,
+            bounds.maxEnd,
             bounds.y,
           ),
         )

@@ -118,7 +118,7 @@ export class MultiPairGetFeatures extends RpcMethodType {
       const indicators = computeInsertionIndicators(
         indels,
         coverage.depths,
-        coverage.startOffset,
+        coverage.startPos,
       )
 
       const mismatchPositions = new Uint32Array(mismatches.length)
@@ -136,7 +136,7 @@ export class MultiPairGetFeatures extends RpcMethodType {
           genomeFeatures,
           coverageDepths: coverage.depths,
           coverageMaxDepth: coverage.maxDepth,
-          coverageStartOffset: coverage.startOffset,
+          coverageStartPos: coverage.startPos,
           snpPositions: snp.positions,
           snpYOffsets: snp.yOffsets,
           snpHeights: snp.heights,

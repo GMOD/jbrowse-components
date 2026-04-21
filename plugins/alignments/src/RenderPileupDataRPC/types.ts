@@ -83,7 +83,7 @@ export interface PileupDataResult {
   readChainIndices?: Uint32Array // chain index per read (only in chain mode)
 
   // Segment data - per-exon segments for GPU instancing (reads split at skip gaps)
-  segmentPositions: Uint32Array // [startOffset, endOffset] pairs per segment
+  segmentPositions: Uint32Array // [start, end] absolute pairs per segment
   segmentReadIndices: Uint32Array // parent read index per segment
   segmentEdgeFlags: Uint8Array // bit 0=first segment, bit 1=last segment
   numSegments: number
@@ -105,7 +105,7 @@ export interface PileupDataResult {
   mismatchFrequencies: Uint8Array // 0-255 representing 0-100% frequency at position
 
   // Soft clip base data - per-base rendering for showSoftClipping feature
-  // Positions may wrap (uint32) for bases that extend before regionStart
+  // Absolute genomic uint32 position for each base
   softclipBasePositions: Uint32Array
   softclipBaseYs: Uint16Array
   softclipBaseBases: Uint8Array // ASCII character code
@@ -126,11 +126,11 @@ export interface PileupDataResult {
   numHardclips: number
   interbaseFrequencies: Uint8Array // 0-255 representing 0-100% frequency
 
-  // Coverage data - depths[i] covers [coverageStartOffset + i, coverageStartOffset + i + 1)
+  // Coverage data - depths[i] covers [coverageStartPos + i, coverageStartPos + i + 1)
   // (bin size is always 1bp). Coverage may extend beyond the requested region.
   coverageDepths: Float32Array
   coverageMaxDepth: number
-  coverageStartOffset: number // absolute genomic bp where coverage depths[0] begins
+  coverageStartPos: number // absolute genomic bp where coverage depths[0] begins
   // Pre-packed GPU buffer for PASS_COVERAGE (worker-built, zero-offset
   // positions). Main thread uploads directly without re-packing.
   coveragePackedBuffer: ArrayBuffer

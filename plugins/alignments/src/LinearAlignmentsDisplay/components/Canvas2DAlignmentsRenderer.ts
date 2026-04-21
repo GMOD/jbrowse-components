@@ -365,7 +365,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       const f32 = new Float32Array(buf)
       for (let i = 0; i < n; i++) {
         const off = i * STRIDE_F32
-        u32[off + FIELD.position] = data.coverageStartOffset + i
+        u32[off + FIELD.position] = data.coverageStartPos + i
         f32[off + FIELD.bandBottom] = 0
         f32[off + FIELD.bandTop] = data.coverageDepths[i]!
       }

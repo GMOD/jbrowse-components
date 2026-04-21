@@ -1,8 +1,7 @@
 /**
  * Shared coverage computation functions used by pileup, chain, and arcs RPCs.
  *
- * COORDINATE SYSTEM: All positions are absolute genomic coordinates.
- * Callers convert to offsets from regionStart when building typed arrays.
+ * COORDINATE SYSTEM: all positions in and out are absolute genomic coordinates.
  */
 
 export interface CoverageFeature {
@@ -72,7 +71,7 @@ export function computeCoverage(
       revDepths: undefined as Float32Array | undefined,
       maxDepth: 0,
       binSize: 1,
-      startOffset: 0,
+      startPos: 0,
     }
   }
 
@@ -83,7 +82,7 @@ export function computeCoverage(
   const actualEnd = extent.actualEnd
 
   // Absolute genomic coordinate where coverage depths[0] begins.
-  const startOffset = actualStart
+  const startPos = actualStart
   const regionLength = actualEnd - actualStart
   const binSize = 1
   const numBins = regionLength
@@ -171,7 +170,7 @@ export function computeCoverage(
     revDepths,
     maxDepth: maxDepth || 1,
     binSize,
-    startOffset,
+    startPos,
   }
 }
 
@@ -183,7 +182,7 @@ export function computeMismatchFrequencies(
   mismatchPositions: Uint32Array,
   mismatchBases: Uint8Array,
   coverageDepths: Float32Array,
-  coverageStartOffset: number,
+  coverageStartPos: number,
 ) {
   const n = mismatchPositions.length
   const frequencies = new Uint8Array(n)
@@ -193,13 +192,13 @@ export function computeMismatchFrequencies(
     posBaseCounts.set(key, (posBaseCounts.get(key) ?? 0) + 1)
   }
   for (let i = 0; i < n; i++) {
-    const posOffset = mismatchPositions[i]!
-    const depthIdx = posOffset - coverageStartOffset
+    const pos = mismatchPositions[i]!
+    const depthIdx = pos - coverageStartPos
     const depth =
       depthIdx >= 0 && depthIdx < coverageDepths.length
         ? coverageDepths[depthIdx]!
         : 1
-    const key = posOffset * 256 + mismatchBases[i]!
+    const key = pos * 256 + mismatchBases[i]!
     const count = posBaseCounts.get(key) ?? 1
     const freq = depth > 0 ? count / depth : 0
     frequencies[i] = Math.min(255, Math.round(freq * 255))
@@ -242,7 +241,7 @@ function getInterbaseDepth(
 export function computePositionFrequencies(
   positions: Uint32Array,
   coverageDepths: Float32Array,
-  coverageStartOffset: number,
+  coverageStartPos: number,
 ) {
   const n = positions.length
   const frequencies = new Uint8Array(n)
@@ -252,10 +251,10 @@ export function computePositionFrequencies(
     posCounts.set(pos, (posCounts.get(pos) ?? 0) + 1)
   }
   for (let i = 0; i < n; i++) {
-    const posOffset = positions[i]!
-    const depthIdx = posOffset - coverageStartOffset
+    const pos = positions[i]!
+    const depthIdx = pos - coverageStartPos
     const depth = getInterbaseDepth(coverageDepths, depthIdx, 1)
-    const count = posCounts.get(posOffset) ?? 1
+    const count = posCounts.get(pos) ?? 1
     const freq = depth > 0 ? count / depth : 0
     frequencies[i] = Math.min(255, Math.round(freq * 255))
   }
@@ -269,13 +268,13 @@ export function applyDepthDependentThreshold(
   frequencies: Uint8Array,
   positions: Uint32Array,
   coverageDepths: Float32Array,
-  coverageStartOffset: number,
+  coverageStartPos: number,
   thresholdFn: (depth: number) => number,
   interbase?: boolean,
 ) {
   for (let i = 0; i < frequencies.length; i++) {
-    const posOffset = positions[i]!
-    const depthIdx = posOffset - coverageStartOffset
+    const pos = positions[i]!
+    const depthIdx = pos - coverageStartPos
     const depth = interbase
       ? getInterbaseDepth(coverageDepths, depthIdx, 0)
       : getDepthAt(coverageDepths, depthIdx, 0)
@@ -302,7 +301,7 @@ export function computeNoncovCoverage(
   maxDepth: number,
   regionStart: number,
   coverageDepths?: Float32Array,
-  coverageStartOffset?: number,
+  coverageStartPos?: number,
 ) {
   const noncovByPosition = new Map<
     number,
@@ -391,8 +390,8 @@ export function computeNoncovCoverage(
       })
     }
     let localDepth = maxDepth
-    if (coverageDepths !== undefined && coverageStartOffset !== undefined) {
-      const depthIdx = entry.position - coverageStartOffset
+    if (coverageDepths !== undefined && coverageStartPos !== undefined) {
+      const depthIdx = entry.position - coverageStartPos
       const leftDepth =
         depthIdx - 1 >= 0 ? (coverageDepths[depthIdx - 1] ?? 0) : 0
       const rightDepth =

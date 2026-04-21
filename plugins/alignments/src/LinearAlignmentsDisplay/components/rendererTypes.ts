@@ -101,7 +101,7 @@ export interface ModificationUploadData {
 export interface CoverageUploadData {
   coverageDepths: Float32Array
   coverageMaxDepth: number
-  coverageStartOffset: number
+  coverageStartPos: number
   numCoverageBins: number
   coveragePackedBuffer: ArrayBuffer
   snpPositions: Uint32Array

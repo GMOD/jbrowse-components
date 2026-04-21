@@ -77,7 +77,7 @@ export interface ResolvedBlock {
 
 export interface CigarCoords {
   bpPerPx: number
-  posOffset: number
+  genomicPos: number
   row: number
   adjustedY: number
   yWithinRow: number
@@ -115,14 +115,14 @@ function canvasXToGenomicPosition(
 /**
  * Helper: Convert canvas X coordinate to position offset within region
  */
-function canvasXToPosOffset(
+function canvasXToGenomicPos(
   canvasX: number,
   resolved: ResolvedBlock,
-): { genomicPos: number; posOffset: number; bpPerPx: number } {
+): { genomicPos: number; bpPerPx: number } {
   const { bpRange, blockWidth } = resolved
   const bpPerPx = calculateBpPerPx(bpRange, blockWidth)
   const genomicPos = canvasXToGenomicPosition(canvasX, resolved)
-  return { genomicPos, posOffset: genomicPos, bpPerPx }
+  return { genomicPos, bpPerPx }
 }
 
 /**
@@ -161,13 +161,13 @@ export function hitTestChain(
     return undefined
   }
 
-  const { adjustedY, posOffset, row } = coords
+  const { adjustedY, genomicPos, row } = coords
   if (adjustedY < 0) {
     return undefined
   }
 
   const fb = getOrCreateFlatbush(rpcData.chainFlatbushData)
-  const hits = fb.search(posOffset, row, posOffset, row)
+  const hits = fb.search(genomicPos, row, genomicPos, row)
   if (hits.length === 0) {
     return undefined
   }
@@ -190,7 +190,7 @@ export function hitTestFeature(
     return undefined
   }
 
-  const { adjustedY, yWithinRow, posOffset, row } = coords
+  const { adjustedY, yWithinRow, genomicPos, row } = coords
 
   if (adjustedY < 0) {
     return undefined
@@ -206,13 +206,13 @@ export function hitTestFeature(
     if (readYs[i] !== row) {
       continue
     }
-    const startOffset = readPositions[i * 2]
-    const endOffset = readPositions[i * 2 + 1]
+    const readStart = readPositions[i * 2]
+    const readEnd = readPositions[i * 2 + 1]
     if (
-      startOffset !== undefined &&
-      endOffset !== undefined &&
-      posOffset >= startOffset &&
-      posOffset <= endOffset
+      readStart !== undefined &&
+      readEnd !== undefined &&
+      genomicPos >= readStart &&
+      genomicPos <= readEnd
     ) {
       return { id: readIds[i]!, index: i }
     }
@@ -232,7 +232,7 @@ export function hitTestCigarItem(
     return undefined
   }
 
-  const { bpPerPx, posOffset, row, adjustedY, yWithinRow } = coords
+  const { bpPerPx, genomicPos, row, adjustedY, yWithinRow } = coords
 
   if (adjustedY < 0 || yWithinRow > featureHeightSetting) {
     return undefined
@@ -273,7 +273,7 @@ export function hitTestCigarItem(
         if (sizeFilter === 'small' ? isSmall : !isSmall) {
           const rectWidthPx = getInsertionRectWidthPx(len, pxPerBp) + 4
           const rectHalfWidthBp = (rectWidthPx / 2) * bpPerPx
-          if (Math.abs(posOffset - pos) < rectHalfWidthBp) {
+          if (Math.abs(genomicPos - pos) < rectHalfWidthBp) {
             return {
               type: 'insertion' as const,
               index: i,
@@ -301,7 +301,7 @@ export function hitTestCigarItem(
       if (
         pos !== undefined &&
         len !== undefined &&
-        Math.abs(posOffset - pos) < hitToleranceBp
+        Math.abs(genomicPos - pos) < hitToleranceBp
       ) {
         return {
           type: label,
@@ -321,13 +321,13 @@ export function hitTestCigarItem(
   }
 
   // Mismatches (1bp features - use floor to determine which base mouse is over)
-  const mouseBaseOffset = Math.floor(posOffset)
+  const mousePos = Math.floor(genomicPos)
   for (let i = 0; i < numMismatches; i++) {
     if (mismatchYs[i] !== row) {
       continue
     }
     const pos = mismatchPositions[i]
-    if (pos !== undefined && mouseBaseOffset === pos) {
+    if (pos !== undefined && mousePos === pos) {
       const baseCode = mismatchBases[i]!
       return {
         type: 'mismatch',
@@ -355,8 +355,8 @@ export function hitTestCigarItem(
     if (
       startPos !== undefined &&
       endPos !== undefined &&
-      posOffset >= startPos &&
-      posOffset <= endPos
+      genomicPos >= startPos &&
+      genomicPos <= endPos
     ) {
       const gapType = gapTypes[i]
       return {
@@ -374,61 +374,34 @@ export function hitTestCigarItem(
   )
 }
 
-const significantOffsetsCache = new WeakMap<Uint32Array, number[]>()
-
-function lowerBound(arr: number[], value: number) {
-  let lo = 0
-  let hi = arr.length
-  while (lo < hi) {
-    const mid = (lo + hi) >>> 1
-    if (arr[mid]! < value) {
-      lo = mid + 1
-    } else {
-      hi = mid
-    }
-  }
-  return lo
-}
-
-function findInBin(
-  offsets: number[],
-  binStartOffset: number,
-  binEndOffset: number,
-) {
-  const idx = lowerBound(offsets, binStartOffset)
-  const offset = offsets[idx]
-  return offset !== undefined && offset < binEndOffset ? offset : undefined
-}
-
-function getSignificantOffsets(
+// Find the first significant position in [binStart, binEnd). "Significant"
+// = at least `threshold` fraction of reads at that position, relative to
+// the local coverage depth.
+function findSignificantInBin(
   positions: Uint32Array,
   count: number,
   coverageDepths: Float32Array,
-  coverageStartOffset: number,
+  coverageStartPos: number,
+  binStart: number,
+  binEnd: number,
   threshold: number,
 ) {
-  const cached = significantOffsetsCache.get(positions)
-  if (cached) {
-    return cached
-  }
-
-  const counts = new Map<number, number>()
+  const hitsByPos = new Map<number, number>()
   for (let i = 0; i < count; i++) {
     const pos = positions[i]!
-    counts.set(pos, (counts.get(pos) ?? 0) + 1)
-  }
-
-  const result: number[] = []
-  for (const [posOffset, n] of counts) {
-    const binIdx = Math.floor(posOffset - coverageStartOffset)
-    const depth = coverageDepths[binIdx]
-    if (depth && n / depth > threshold) {
-      result.push(posOffset)
+    if (pos >= binStart && pos < binEnd) {
+      hitsByPos.set(pos, (hitsByPos.get(pos) ?? 0) + 1)
     }
   }
-  result.sort((a, b) => a - b)
-  significantOffsetsCache.set(positions, result)
-  return result
+  let best = -1
+  for (const [pos, n] of hitsByPos) {
+    const binIdx = Math.floor(pos - coverageStartPos)
+    const depth = coverageDepths[binIdx]
+    if (depth && n / depth > threshold && (best < 0 || pos < best)) {
+      best = pos
+    }
+  }
+  return best < 0 ? undefined : best
 }
 
 export function hitTestCoverage(
@@ -443,52 +416,44 @@ export function hitTestCoverage(
   }
 
   const blockData = resolved.rpcData
-  const { posOffset, bpPerPx } = canvasXToPosOffset(canvasX, resolved)
+  const { genomicPos, bpPerPx } = canvasXToGenomicPos(canvasX, resolved)
 
-  const { coverageDepths, coverageStartOffset } = blockData
-  const binIndex = Math.floor(posOffset - coverageStartOffset)
+  const { coverageDepths, coverageStartPos } = blockData
+  const binIndex = Math.floor(genomicPos - coverageStartPos)
   if (binIndex < 0 || binIndex >= coverageDepths.length) {
     return undefined
   }
 
-  const binStartOffset = coverageStartOffset + binIndex
+  const binStart = coverageStartPos + binIndex
   if (bpPerPx > 1) {
-    const binEndOffset = binStartOffset + Math.ceil(bpPerPx)
-
-    const snpOffsets = getSignificantOffsets(
+    const binEnd = binStart + Math.ceil(bpPerPx)
+    const snpHit = findSignificantInBin(
       blockData.mismatchPositions,
       blockData.numMismatches,
       coverageDepths,
-      coverageStartOffset,
+      coverageStartPos,
+      binStart,
+      binEnd,
       0.05,
     )
-    if (snpOffsets.length > 0) {
-      const snpOffset = findInBin(snpOffsets, binStartOffset, binEndOffset)
-      if (snpOffset !== undefined) {
-        return { type: 'coverage', position: snpOffset }
-      }
+    if (snpHit !== undefined) {
+      return { type: 'coverage', position: snpHit }
     }
-
-    const noncovOffsets = getSignificantOffsets(
+    const noncovHit = findSignificantInBin(
       blockData.interbasePositions,
       blockData.numInterbases,
       coverageDepths,
-      coverageStartOffset,
+      coverageStartPos,
+      binStart,
+      binEnd,
       0.2,
     )
-    if (noncovOffsets.length > 0) {
-      const noncovOffset = findInBin(
-        noncovOffsets,
-        binStartOffset,
-        binEndOffset,
-      )
-      if (noncovOffset !== undefined) {
-        return { type: 'coverage', position: noncovOffset }
-      }
+    if (noncovHit !== undefined) {
+      return { type: 'coverage', position: noncovHit }
     }
   }
 
-  return { type: 'coverage', position: binStartOffset }
+  return { type: 'coverage', position: binStart }
 }
 
 /**
@@ -506,7 +471,7 @@ export function hitTestIndicator(
   }
 
   const blockData = resolved.rpcData
-  const { genomicPos, bpPerPx } = canvasXToPosOffset(canvasX, resolved)
+  const { genomicPos, bpPerPx } = canvasXToGenomicPos(canvasX, resolved)
   const hitToleranceBp = Math.max(1, bpPerPx * 5)
 
   const { indicatorPositions, indicatorColorTypes, numIndicators } = blockData

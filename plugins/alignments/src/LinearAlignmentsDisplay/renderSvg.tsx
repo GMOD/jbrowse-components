@@ -286,7 +286,7 @@ function drawCoverage(
   const {
     coverageDepths,
     coverageMaxDepth,
-    coverageStartOffset,
+    coverageStartPos,
     numCoverageBins,
     snpPositions,
     snpYOffsets,
@@ -307,7 +307,7 @@ function drawCoverage(
       continue
     }
 
-    const binStart = coverageStartOffset + i
+    const binStart = coverageStartPos + i
     const binEnd = binStart + 1
 
     if (binEnd < block.start || binStart > block.end) {

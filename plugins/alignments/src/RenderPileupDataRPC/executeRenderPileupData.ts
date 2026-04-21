@@ -241,7 +241,7 @@ export async function executeRenderPileupData({
       interbaseArrays,
       gapArrays,
       coverage.depths,
-      coverage.startOffset,
+      coverage.startPos,
     )
 
   const snpCoverage = computeSNPCoverage(
@@ -256,7 +256,7 @@ export async function executeRenderPileupData({
     coverage.maxDepth,
     regionStart,
     coverage.depths,
-    coverage.startOffset,
+    coverage.startPos,
   )
 
   const modCoverage = computeModificationCoverage(
@@ -266,7 +266,7 @@ export async function executeRenderPileupData({
     coverage.maxDepth,
     coverage.fwdDepths,
     coverage.revDepths,
-    coverage.startOffset,
+    coverage.startPos,
     regionStart,
     regionSequence,
     regionSequenceStart,
@@ -311,7 +311,7 @@ export async function executeRenderPileupData({
 
     coverageDepths: coverage.depths,
     coverageMaxDepth: coverage.maxDepth,
-    coverageStartOffset: coverage.startOffset,
+    coverageStartPos: coverage.startPos,
 
     snpPositions: snpCoverage.positions,
     snpYOffsets: snpCoverage.yOffsets,

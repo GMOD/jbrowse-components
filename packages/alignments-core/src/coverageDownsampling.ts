@@ -79,7 +79,7 @@ export function computeCoverageTicks(
 
 export interface CoverageRegion {
   coverageDepths: Float32Array
-  coverageStartOffset: number
+  coverageStartPos: number
 }
 
 export function computeVisibleMaxDepth<
@@ -96,11 +96,11 @@ export function computeVisibleMaxDepth<
     }
     const startBin = Math.max(
       0,
-      Math.floor(block.start - cov.coverageStartOffset),
+      Math.floor(block.start - cov.coverageStartPos),
     )
     const endBin = Math.min(
       cov.coverageDepths.length,
-      Math.ceil(block.end - cov.coverageStartOffset),
+      Math.ceil(block.end - cov.coverageStartPos),
     )
     for (let i = startBin; i < endBin; i++) {
       const d = cov.coverageDepths[i]!
@@ -144,11 +144,11 @@ export function computeVisibleCoverageStats<
     }
     const startBin = Math.max(
       0,
-      Math.floor(block.start - cov.coverageStartOffset),
+      Math.floor(block.start - cov.coverageStartPos),
     )
     const endBin = Math.min(
       cov.coverageDepths.length,
-      Math.ceil(block.end - cov.coverageStartOffset),
+      Math.ceil(block.end - cov.coverageStartPos),
     )
     for (let i = startBin; i < endBin; i++) {
       const d = cov.coverageDepths[i]!
@@ -335,7 +335,7 @@ export interface MismatchArrays {
 
 export interface CoverageArrays {
   coverageDepths: Float32Array
-  coverageStartOffset: number
+  coverageStartPos: number
 }
 
 export function countSnpsAtPosition(
@@ -367,7 +367,7 @@ export function buildCoverageTooltipBin(
   coverage: CoverageArrays,
   mismatches: MismatchArrays,
 ): CoverageTooltipBin | undefined {
-  const binIdx = Math.floor(position - coverage.coverageStartOffset)
+  const binIdx = Math.floor(position - coverage.coverageStartPos)
   const depth = coverage.coverageDepths[binIdx] ?? 0
   if (depth === 0) {
     return undefined
@@ -523,7 +523,7 @@ export interface InsertionIndicatorResult {
 export function computeInsertionIndicators(
   indels: IndelEntry[],
   coverageDepths: Float32Array,
-  coverageStartOffset: number,
+  coverageStartPos: number,
   threshold = 0.15,
 ): InsertionIndicatorResult {
   if (indels.length === 0) {
@@ -542,7 +542,7 @@ export function computeInsertionIndicators(
 
   const resultPositions: number[] = []
   for (const [pos, count] of insertionCountByPos) {
-    const depthIdx = pos - coverageStartOffset
+    const depthIdx = pos - coverageStartPos
     const localDepth =
       depthIdx >= 0 && depthIdx < coverageDepths.length
         ? coverageDepths[depthIdx]!

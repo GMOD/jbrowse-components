@@ -21,7 +21,7 @@ export interface ArcsDataResult {
   numLines: number
   coverageDepths: Float32Array
   coverageMaxDepth: number
-  coverageStartOffset: number
+  coverageStartPos: number
 }
 
 interface RegionInfo {
@@ -458,6 +458,6 @@ export function arcsToRegionResult(
     numLines: regionLines.length,
     coverageDepths: new Float32Array(0),
     coverageMaxDepth: 0,
-    coverageStartOffset: 0,
+    coverageStartPos: 0,
   }
 }
