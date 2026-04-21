@@ -267,6 +267,36 @@ describe('configuration schemas', () => {
     expect(getConf(model, ['mySubConfiguration', 'someNumber'])).toEqual(12)
   })
 
+  test('clearing a frozen or stringArray slot to empty preserves the empty value in snapshot', () => {
+    // Regression: isEmptyObject/isEmptyArray in postProcessSnapshot was applied
+    // to all slot values, so clearing a non-empty default to [] or {} would be
+    // silently dropped from the snapshot and revert to the default on next load.
+    const container = types.model({
+      configuration: ConfigurationSchema('Tester', {
+        frozenSlot: {
+          type: 'frozen',
+          defaultValue: { key: 'original' },
+        },
+        listSlot: {
+          type: 'stringArray',
+          defaultValue: ['original'],
+        },
+      }),
+    })
+
+    const model = container.create(undefined, { pluginManager })
+    model.configuration.frozenSlot.set({})
+    model.configuration.listSlot.set([])
+
+    const snap = getSnapshot(model)
+    expect(snap).toEqual({ configuration: { frozenSlot: {}, listSlot: [] } })
+
+    // round-trip: snapshot must restore the empty values, not the original defaults
+    const model2 = container.create(snap, { pluginManager })
+    expect(getConf(model2, 'frozenSlot')).toEqual({})
+    expect(getConf(model2, 'listSlot')).toEqual([])
+  })
+
   test('re-check instantiation of slots (issue #797)', () => {
     const configSchema = ConfigurationSchema(
       'Gff3TabixAdapter',
