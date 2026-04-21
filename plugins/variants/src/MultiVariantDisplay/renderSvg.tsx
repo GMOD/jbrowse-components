@@ -2,9 +2,10 @@ import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { when } from 'mobx'
 
+import { setAbgrFill } from '@jbrowse/core/util/colorBits'
+
 import { REFERENCE_COLOR } from '../shared/constants.ts'
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
-import { setAbgrFill } from '../shared/renderSvgUtils.ts'
 import { drawVariantShape } from './components/variantShape.ts'
 
 import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
@@ -113,7 +114,6 @@ export async function renderSvg(
 
   if (referenceDrawingMode === 'skip') {
     ctx.fillStyle = REFERENCE_COLOR
-    ctx.globalAlpha = 1
     ctx.fillRect(0, 0, Math.round(view.width), availableHeight)
   }
 

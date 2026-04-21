@@ -2,8 +2,9 @@ import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { when } from 'mobx'
 
+import { setAbgrFill } from '@jbrowse/core/util/colorBits'
+
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
-import { setAbgrFill } from '../shared/renderSvgUtils.ts'
 
 import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
 

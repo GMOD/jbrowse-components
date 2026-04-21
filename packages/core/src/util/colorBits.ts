@@ -97,6 +97,14 @@ export function normalizedRgbToCssRgba(
   return `rgba(${Math.round(c[0] * 255)},${Math.round(c[1] * 255)},${Math.round(c[2] * 255)},${alpha})`
 }
 
+// Set fillStyle from an ABGR-packed u32.
+export function setAbgrFill(
+  ctx: { fillStyle: string | CanvasGradient | CanvasPattern },
+  c: number,
+) {
+  ctx.fillStyle = abgrToCssRgba(c)
+}
+
 // Channel accessors for the ABGR packed layout (R at byte 0, A at byte 3 —
 // the layout produced by cssColorToABGR and consumed by GPU shaders that
 // unpack via bit shifts from a u32 vertex attribute). Mirror of the
