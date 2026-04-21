@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import { openLocation } from '@jbrowse/core/util/io'
 import {
   Button,
   CircularProgress,
@@ -7,7 +9,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import { observer } from 'mobx-react'
 
 import type { GraphGenomeViewModel } from '../model.ts'
@@ -28,23 +29,21 @@ const ImportForm = observer(function ImportForm({
   model: GraphGenomeViewModel
 }) {
   const [url, setUrl] = useState('')
-  const [fetchError, setFetchError] = useState('')
+  const [urlError, setUrlError] = useState<unknown>()
 
   async function handleUrlLoad() {
     if (!url.trim()) {
       return
     }
-    setFetchError('')
+    setUrlError(undefined)
     try {
-      const response = await fetch(url)
-      if (!response.ok) {
-        setFetchError(`Failed to fetch: ${response.statusText}`)
-        return
-      }
-      const text = await response.text()
+      const text = await openLocation({
+        uri: url,
+        locationType: 'UriLocation',
+      }).readFile('utf8')
       await model.loadGFA(text, url.split('/').pop() ?? 'GFA')
     } catch (e) {
-      setFetchError(`Failed to fetch: ${e instanceof Error ? e.message : String(e)}`)
+      setUrlError(e)
     }
   }
 
@@ -115,11 +114,7 @@ const ImportForm = observer(function ImportForm({
             Load
           </Button>
         </div>
-        {fetchError ? (
-          <Typography color="error" variant="body2" style={{ marginTop: 4 }}>
-            {fetchError}
-          </Typography>
-        ) : null}
+        {urlError ? <ErrorMessage error={urlError} /> : null}
       </div>
 
       <div style={{ marginBottom: 16 }}>
