@@ -218,7 +218,7 @@ export interface DownsampledBins {
 // When depthCount > targetBins, aggregates into targetBins bins.
 export function downsampleMinMax(
   depths: Float32Array,
-  startOffset: number,
+  startPos: number,
   targetBins: number,
   globalMaxDepth: number,
 ): DownsampledBins {
@@ -246,7 +246,7 @@ export function downsampleMinMax(
     for (let i = 0; i < n; i++) {
       const d = depths[i]!
       if (d > 0) {
-        positions[idx] = startOffset + i
+        positions[idx] = startPos + i
         mins[idx] = 0
         maxs[idx] = d / globalMaxDepth
         idx++
@@ -276,7 +276,7 @@ export function downsampleMinMax(
       }
     }
     if (hi > 0) {
-      positions[count] = startOffset + from
+      positions[count] = startPos + from
       mins[count] = (lo === Infinity ? 0 : lo) / globalMaxDepth
       maxs[count] = hi / globalMaxDepth
       count++

@@ -299,7 +299,7 @@ export function computeNoncovCoverage(
   softclips: ClipEntry[],
   hardclips: ClipEntry[],
   maxDepth: number,
-  regionStart: number,
+  startPos: number,
   coverageDepths?: Float32Array,
   coverageStartPos?: number,
 ) {
@@ -418,10 +418,8 @@ export function computeNoncovCoverage(
     }
   }
 
-  const filteredSegments = segments.filter(seg => seg.position >= regionStart)
-  const filteredIndicators = indicators.filter(
-    ind => ind.position >= regionStart,
-  )
+  const filteredSegments = segments.filter(seg => seg.position >= startPos)
+  const filteredIndicators = indicators.filter(ind => ind.position >= startPos)
 
   const positions = new Uint32Array(filteredSegments.length)
   const yOffsets = new Float32Array(filteredSegments.length)

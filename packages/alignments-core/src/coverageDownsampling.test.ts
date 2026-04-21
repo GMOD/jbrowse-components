@@ -113,7 +113,7 @@ describe('downsampleMinMax', () => {
     expect(result.count).toBe(0)
   })
 
-  test('startOffset is applied to positions', () => {
+  test('startPos is applied to positions', () => {
     const depths = new Float32Array([5, 10])
     const result = downsampleMinMax(depths, 1000, 100, 10)
     expect(result.positions[0]).toBe(1000)

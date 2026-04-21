@@ -2,16 +2,9 @@
  * Pileup Data RPC Types
  *
  * COORDINATE SYSTEM: all position arrays are absolute genomic uint32.
- *
- * regionStart must be an integer (use Math.floor of view region start).
- * It is carried for filter/clamp logic only; no consumer should add it to
- * any position array. See agent-docs/ARCHITECTURE.md "Coordinate convention".
- *
- * Every GPU shader in the alignments pipeline consumes absolute uint32
- * positions via hp-math, EXCEPT the arc shader (paired-end bezier curves),
- * which uses relative float32 because the bezier interpolation runs in
- * float on the GPU and can't preserve 3-Gbp precision through that math.
- * `packArcs` is the only place that subtracts regionStart at pack time.
+ * Every GPU shader consumes absolute uint32 positions and converts to
+ * clip space via hp-math. See agent-docs/ARCHITECTURE.md "Coordinate
+ * convention" and "BP precision" for details.
  */
 
 import type { FilterBy } from '../shared/types'

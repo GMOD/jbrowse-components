@@ -386,9 +386,7 @@ export function buildInterbaseArrays(
   regionStart: number,
   getReadIndex?: (featureId: string) => number,
 ) {
-  const filteredInsertions = insertions.filter(
-    ins => ins.position >= regionStart,
-  )
+  const filteredInsertions = insertions.filter(ins => ins.position >= regionStart)
   const filteredSoftclips = softclips.filter(sc => sc.position >= regionStart)
   const filteredHardclips = hardclips.filter(hc => hc.position >= regionStart)
 
@@ -565,8 +563,8 @@ export function buildModificationArrays(
 
 // Splits each read into per-exon segments at CIGAR skip (N) gaps.
 // Reads without skips produce one segment. Segment starts are clamped
-// to regionStart (features starting before regionStart), but ends are
-// NOT clipped to regionEnd — the GPU rasterizer handles viewport clipping.
+// to regionStart (features starting before regionStart), but ends are NOT
+// clipped to regionEnd — the GPU rasterizer handles viewport clipping.
 // Positions are absolute genomic uint32 matching readPositions.
 // Edge flags encode whether the read's true start/end falls within
 // this region (bit 0 = first, bit 1 = last) — used for chevron drawing.
@@ -676,31 +674,31 @@ export function computeFrequenciesAndThresholds(
   interbaseArrays: { interbasePositions: Uint32Array },
   gapArrays: { gapPositions: Uint32Array },
   depths: Float32Array,
-  startOffset: number,
+  coverageStartPos: number,
 ) {
   const mismatchFrequencies = computeMismatchFrequencies(
     mismatchArrays.mismatchPositions,
     mismatchArrays.mismatchBases,
     depths,
-    startOffset,
+    coverageStartPos,
   )
   applyDepthDependentThreshold(
     mismatchFrequencies,
     mismatchArrays.mismatchPositions,
     depths,
-    startOffset,
+    coverageStartPos,
     featureFrequencyThreshold,
   )
   const interbaseFrequencies = computePositionFrequencies(
     interbaseArrays.interbasePositions,
     depths,
-    startOffset,
+    coverageStartPos,
   )
   applyDepthDependentThreshold(
     interbaseFrequencies,
     interbaseArrays.interbasePositions,
     depths,
-    startOffset,
+    coverageStartPos,
     featureFrequencyThreshold,
     true,
   )
@@ -711,13 +709,13 @@ export function computeFrequenciesAndThresholds(
   const gapFrequencies = computePositionFrequencies(
     gapStartPositions,
     depths,
-    startOffset,
+    coverageStartPos,
   )
   applyDepthDependentThreshold(
     gapFrequencies,
     gapStartPositions,
     depths,
-    startOffset,
+    coverageStartPos,
     featureFrequencyThreshold,
     true,
   )

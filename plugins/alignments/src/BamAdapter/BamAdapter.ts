@@ -123,20 +123,20 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
         // Pre-fetch reference sequence for all records that need it
         let regionSeq: string | undefined
-        let regionStart = Infinity
-        let regionEnd = 0
+        let seqFetchStart = Infinity
+        let seqFetchEnd = 0
         if (sequenceAdapter) {
           for (const record of records) {
             if (!record.NUMERIC_MD) {
-              regionStart = Math.min(regionStart, record.start)
-              regionEnd = Math.max(regionEnd, record.end)
+              seqFetchStart = Math.min(seqFetchStart, record.start)
+              seqFetchEnd = Math.max(seqFetchEnd, record.end)
             }
           }
-          if (regionEnd > 0) {
+          if (seqFetchEnd > 0) {
             regionSeq = await sequenceAdapter.getSequence({
               refName: originalRefName || refName,
-              start: regionStart,
-              end: regionEnd,
+              start: seqFetchStart,
+              end: seqFetchEnd,
             })
           }
         }
@@ -152,8 +152,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           // Only fetch reference sequence if MD tag is missing
           if (!record.NUMERIC_MD && regionSeq) {
             record.ref = regionSeq.slice(
-              record.start - regionStart,
-              record.end - regionStart,
+              record.start - seqFetchStart,
+              record.end - seqFetchStart,
             )
           }
 
