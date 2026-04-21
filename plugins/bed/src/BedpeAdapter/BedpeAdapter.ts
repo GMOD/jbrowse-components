@@ -30,7 +30,7 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
       opts,
     )
 
-    const lines = data.split(/\n|\r\n|\r/).filter(f => !!f)
+    const lines = data.split(/\n|\r\n|\r/).filter(Boolean)
     const headerLines = []
     let i = 0
     for (; i < lines.length && lines[i]!.startsWith('#'); i++) {

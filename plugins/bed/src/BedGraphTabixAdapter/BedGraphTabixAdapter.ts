@@ -96,7 +96,7 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
               const uniqueId = `${this.id}-${fileOffset}-${j}`
               const score = +rest[j]!
               const source = names[j] || `col${j}`
-              if (score) {
+              if (!Number.isNaN(score)) {
                 observer.next(
                   new SimpleFeature({
                     id: uniqueId,

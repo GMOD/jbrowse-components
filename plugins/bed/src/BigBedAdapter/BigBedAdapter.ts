@@ -15,8 +15,9 @@ import { firstValueFrom, toArray } from 'rxjs'
 import { featureData2 } from '../util.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
+import type { FeatureData } from '../util.ts'
 import type { Observer } from 'rxjs'
 
 export default class BigBedAdapter extends BaseFeatureDataAdapter {
@@ -152,8 +153,8 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     )
 
     await updateStatus('Processing features', statusCallback, async () => {
-      const parentAggregation = {} as Record<string, SimpleFeatureSerialized[]>
-      const parentAggregationFlat = []
+      const parentAggregation = {} as Record<string, FeatureData[]>
+      const parentAggregationFlat = [] as FeatureData[]
 
       if (feats.some(f => f.uniqueId === undefined)) {
         throw new Error('found uniqueId undefined')
@@ -165,46 +166,23 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           `${feat.end}`,
           ...(feat.rest?.split('\t') || []),
         ]
-        const data = parser.parseLine(splitLine, {
-          uniqueId: feat.uniqueId!,
-        })
-
-        const aggr = data[aggregateField]
-        const aggrIsNotNone = aggr && aggr !== 'none'
-        if (aggrIsNotNone && !parentAggregation[aggr]) {
-          parentAggregation[aggr] = []
-        }
-        const {
-          uniqueId,
-          type,
-          chrom,
-          chromStart,
-          chromEnd,
-          description,
-          chromStarts: chromStarts2,
-          blockStarts: blockStarts2,
-          blockSizes: blockSizes2,
-          score: score2,
-          blockCount,
-          thickStart,
-          thickEnd,
-          strand,
-          ...rest
-        } = data
-
         const f = featureData2({
-          ...rest,
           scoreColumn,
           splitLine,
           parser,
-          uniqueId,
+          uniqueId: feat.uniqueId!,
           start: feat.start,
           end: feat.end,
           refName: query.refName,
           disableGeneHeuristic,
         })
+        const aggr = f[aggregateField]
+        const aggrIsNotNone = typeof aggr === 'string' && aggr && aggr !== 'none'
         if (aggrIsNotNone) {
-          parentAggregation[aggr]!.push(f)
+          if (!parentAggregation[aggr]) {
+            parentAggregation[aggr] = []
+          }
+          parentAggregation[aggr].push(f)
           parentAggregationFlat.push(f)
         } else {
           if (
@@ -217,7 +195,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           ) {
             observer.next(
               new SimpleFeature({
-                id: `${this.id}-${uniqueId}`,
+                id: `${this.id}-${feat.uniqueId}`,
                 data: f,
               }),
             )
@@ -268,7 +246,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
                 data: {
                   type: 'gene',
                   subfeatures: subs,
-                  strand: subs[0]?.strand || 1,
+                  strand: subs.find(s => s.strand !== 0)?.strand ?? 1,
                   name,
                   start: s,
                   end: e,
@@ -287,7 +265,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
                   data: {
                     type: 'gene',
                     subfeatures: [sub],
-                    strand: subs[0]?.strand || 1,
+                    strand: subs.find(s => s.strand !== 0)?.strand ?? 1,
                     name,
                     start: sub.start,
                     end: sub.end,

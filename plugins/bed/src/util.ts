@@ -91,7 +91,7 @@ export function makeBlocks({
 }
 
 export function parseNamesFromHeader(header: string) {
-  const defs = header.split(/\n|\r\n|\r/).filter(f => !!f)
+  const defs = header.split(/\n|\r\n|\r/).filter(Boolean)
   const defline = defs.at(-1)
   return defline?.includes('\t')
     ? defline
@@ -151,7 +151,7 @@ function parseStrand(strand: unknown) {
   return 0
 }
 
-interface FeatureData {
+export interface FeatureData {
   uniqueId: string
   refName: string
   start: number
@@ -207,7 +207,8 @@ export function featureData2({
     ...rest
   } = data
 
-  const score = scoreColumn ? +data[scoreColumn] : score2 ? +score2 : undefined
+  const score =
+    scoreColumn ? +data[scoreColumn] : score2 !== undefined ? +score2 : undefined
   const strand = parseStrand(strand2)
 
   // Check before makeBlocks since generateRepeatMaskerFeature doesn't use subfeatures
@@ -253,6 +254,7 @@ export function featureData2({
       strand,
       blockCount: rest.blockCount,
       thickStart: rest.thickStart,
+      thickEnd: rest.thickEnd,
     })
   ) {
     return generateUcscTranscript({

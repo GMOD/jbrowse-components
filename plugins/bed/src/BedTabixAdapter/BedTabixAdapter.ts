@@ -29,9 +29,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  setupP?: Promise<{
-    meta: Awaited<ReturnType<TabixIndexedFile['getMetadata']>>
-  }>
+  setupP?: Promise<Awaited<ReturnType<TabixIndexedFile['getMetadata']>>>
 
   public constructor(
     config: AnyConfigurationModel,
@@ -64,9 +62,9 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     return this.bed.getHeader(opts)
   }
 
-  async getMetadataPre2(_opts?: BaseOptions) {
+  private async configure() {
     if (!this.setupP) {
-      this.setupP = this.getMetadataPre().catch((e: unknown) => {
+      this.setupP = this.bed.getMetadata().catch((e: unknown) => {
         this.setupP = undefined
         throw e
       })
@@ -74,15 +72,10 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     return this.setupP
   }
 
-  async getMetadataPre() {
-    const meta = await this.bed.getMetadata()
-    return { meta }
-  }
-
   async getMetadata(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
     return updateStatus('Downloading index', statusCallback, () =>
-      this.getMetadataPre2(opts),
+      this.configure(),
     )
   }
 
@@ -96,8 +89,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   public getFeatures(query: Region, opts?: BaseOptions) {
     const { stopToken, statusCallback = () => {} } = opts || {}
     return ObservableCreate<Feature>(async observer => {
-      const { meta } = await this.getMetadata()
-      const { columnNumbers } = meta
+      const { columnNumbers } = await this.getMetadata()
       const colRef = columnNumbers.ref - 1
       const colStart = columnNumbers.start - 1
       const colEnd = columnNumbers.end - 1

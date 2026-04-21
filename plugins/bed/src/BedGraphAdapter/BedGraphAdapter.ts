@@ -47,7 +47,7 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
         const end = +e!
         const score = +rest[j]!
         const source = names[j] || `col${j}`
-        if (score) {
+        if (!Number.isNaN(score)) {
           intervalTree.insert(
             [start, end],
             new SimpleFeature({
@@ -126,7 +126,7 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
 
     return this.bedFeatures
   }
-  public getFeatures(query: Region, _opts: BaseOptions = {}) {
+  public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName } = query
       const intervalTree = await this.loadFeatureIntervalTree(refName)
@@ -134,6 +134,6 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
         observer.next(feature)
       }
       observer.complete()
-    })
+    }, opts.stopToken)
   }
 }

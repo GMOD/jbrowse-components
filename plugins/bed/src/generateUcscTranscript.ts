@@ -2,14 +2,23 @@ import type { MinimalFeature } from './types.ts'
 
 export function isUcscTranscript({
   thickStart,
+  thickEnd,
   blockCount,
   strand,
 }: {
   thickStart?: number
+  thickEnd?: number
   blockCount?: number
   strand?: number
 }) {
-  return thickStart && blockCount && strand !== 0
+  // strand===0 means unstranded - likely not a gene
+  return (
+    thickStart !== undefined &&
+    thickEnd !== undefined &&
+    thickStart !== thickEnd &&
+    blockCount &&
+    strand !== 0
+  )
 }
 
 /**
