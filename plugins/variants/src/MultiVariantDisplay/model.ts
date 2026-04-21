@@ -81,7 +81,10 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           },
           render: b => {
             const view = getContainingView(self) as LinearGenomeViewModel
-            if (!view.initialized) {
+            const cellData = self.cellData as
+              | { perRegionCellData: Record<number, VariantCellData> }
+              | undefined
+            if (!view.initialized || !cellData) {
               return false
             }
             b.renderBlocks(self.renderBlocks, {
