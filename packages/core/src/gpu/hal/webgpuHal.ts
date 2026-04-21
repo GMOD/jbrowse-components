@@ -58,41 +58,32 @@ interface RegionState {
   buffers: Map<string, RegionPassBuffer>
 }
 
-// Per-device shared state: bind group layouts and pipeline layouts. Identical
-// across renderers so safe to share. Two layouts, both @group(0):
-//   - uniformOnly: uniform (1) only
-//   - textured: uniform (1) + texture (2) + sampler (3)
+// Per-HAL bind group and pipeline layouts. Two layouts, both @group(0):
+//   - uniformOnly: uniform buffer (binding 1) only
+//   - textured: uniform (1) + texture (2) + sampler (3), created lazily on first use
 // Every pass reads per-instance data from a vertex buffer (no storage binding
 // at 0) because Slang-generated shaders cross-compile to GLSL ES, which has
-// no SSBOs. Pipelines select the matching layout when created.
-interface DeviceState {
+// no SSBOs.
+interface LayoutState {
   uniformOnlyBindGroupLayout: GPUBindGroupLayout
   uniformOnlyPipelineLayout: GPUPipelineLayout
   texturedBindGroupLayout: GPUBindGroupLayout | null
   texturedPipelineLayout: GPUPipelineLayout | null
 }
 
-const deviceState = new WeakMap<GPUDevice, DeviceState>()
-
-function getOrCreateDeviceState(device: GPUDevice): DeviceState {
-  let state = deviceState.get(device)
-  if (!state) {
-    const uniformOnlyBindGroupLayout = createUniformOnlyBindGroupLayout(device)
-    const uniformOnlyPipelineLayout = device.createPipelineLayout({
+function createLayoutState(device: GPUDevice): LayoutState {
+  const uniformOnlyBindGroupLayout = createUniformOnlyBindGroupLayout(device)
+  return {
+    uniformOnlyBindGroupLayout,
+    uniformOnlyPipelineLayout: device.createPipelineLayout({
       bindGroupLayouts: [uniformOnlyBindGroupLayout],
-    })
-    state = {
-      uniformOnlyBindGroupLayout,
-      uniformOnlyPipelineLayout,
-      texturedBindGroupLayout: null,
-      texturedPipelineLayout: null,
-    }
-    deviceState.set(device, state)
+    }),
+    texturedBindGroupLayout: null,
+    texturedPipelineLayout: null,
   }
-  return state
 }
 
-function getOrCreateTexturedLayout(device: GPUDevice, state: DeviceState) {
+function getOrCreateTexturedLayout(device: GPUDevice, state: LayoutState) {
   if (!state.texturedBindGroupLayout) {
     state.texturedBindGroupLayout = device.createBindGroupLayout({
       entries: [
@@ -129,8 +120,8 @@ function getOrCreateTexturedLayout(device: GPUDevice, state: DeviceState) {
 async function compilePipelines(
   device: GPUDevice,
   descriptors: PassDescriptor[],
+  state: LayoutState,
 ) {
-  const state = getOrCreateDeviceState(device)
   const preferredFormat = navigator.gpu.getPreferredCanvasFormat()
   const pipelines = new Map<string, GPURenderPipeline>()
 
@@ -217,7 +208,7 @@ export class WebGPUHal implements GpuHal {
   private descriptors: Map<string, PassDescriptor>
   private pipelines: ReadonlyMap<string, GPURenderPipeline>
   private passTextures = new Map<string, PassTextureState>()
-  private deviceState: DeviceState
+  private layoutState: LayoutState
 
   // Uniform ring buffer: holds up to MAX_UNIFORM_SLOTS sets of uniforms so
   // that all draw calls in a frame can reference different uniform data via
@@ -259,13 +250,14 @@ export class WebGPUHal implements GpuHal {
     descriptors: PassDescriptor[],
     uniformByteSize: number,
     pipelines: Map<string, GPURenderPipeline>,
+    layoutState: LayoutState,
   ) {
     this.device = device
     this.canvas = canvas
     this.context = context
     this.descriptors = new Map(descriptors.map(d => [d.id, d]))
     this.pipelines = pipelines
-    this.deviceState = getOrCreateDeviceState(device)
+    this.layoutState = layoutState
 
     // Align uniform slots to device requirements for dynamic offsets
     const alignment = device.limits.minUniformBufferOffsetAlignment
@@ -289,7 +281,8 @@ export class WebGPUHal implements GpuHal {
     if (!result) {
       return null
     }
-    const pipelines = await compilePipelines(result.device, descriptors)
+    const layoutState = createLayoutState(result.device)
+    const pipelines = await compilePipelines(result.device, descriptors, layoutState)
     return new WebGPUHal(
       result.device,
       canvas,
@@ -297,6 +290,7 @@ export class WebGPUHal implements GpuHal {
       descriptors,
       uniformByteSize,
       pipelines,
+      layoutState,
     )
   }
 
@@ -367,7 +361,7 @@ export class WebGPUHal implements GpuHal {
       if (!texState) {
         return null
       }
-      const { layout } = getOrCreateTexturedLayout(this.device, this.deviceState)
+      const { layout } = getOrCreateTexturedLayout(this.device, this.layoutState)
       return this.device.createBindGroup({
         layout,
         entries: [
@@ -386,7 +380,7 @@ export class WebGPUHal implements GpuHal {
     }
     return createUniformOnlyBindGroup(
       this.device,
-      this.deviceState.uniformOnlyBindGroupLayout,
+      this.layoutState.uniformOnlyBindGroupLayout,
       this.uniformRingBuffer,
       this.alignedUniformSize,
     )
