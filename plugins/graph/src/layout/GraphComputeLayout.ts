@@ -30,36 +30,31 @@ const DEFAULT_LAYOUT_URL = 'https://jbrowse.org/demos/bandage'
 
 // Lazily initialized WASM module, shared across calls within same worker
 let layoutModule: BandageModule | null = null
-let initPromise: Promise<void> | null = null
+let initPromise: Promise<BandageModule> | null = null
 let lastBaseUrl = ''
 
-async function ensureModule(baseUrl: string) {
+async function ensureModule(baseUrl: string): Promise<BandageModule> {
   if (layoutModule && lastBaseUrl === baseUrl) {
-    return
+    return layoutModule
   }
-
-  // Reset if URL changed
   if (lastBaseUrl !== baseUrl) {
     layoutModule = null
     initPromise = null
     lastBaseUrl = baseUrl
   }
-
   if (!initPromise) {
     initPromise = (async () => {
       const jsUrl = `${baseUrl}/bandage-layout.js`
       const wasmUrl = `${baseUrl}/bandage-layout.wasm`
-
       const mod = await import(/* webpackIgnore: true */ jsUrl)
-      layoutModule = await mod.default({
-        locateFile: () => wasmUrl,
-      })
+      return mod.default({ locateFile: () => wasmUrl }) as Promise<BandageModule>
     })().catch(e => {
       initPromise = null
       throw e
     })
   }
-  await initPromise
+  layoutModule = await initPromise
+  return layoutModule
 }
 
 export default class GraphComputeLayout extends RpcMethodType {
@@ -70,11 +65,11 @@ export default class GraphComputeLayout extends RpcMethodType {
     const baseUrl = (layoutUrl || DEFAULT_LAYOUT_URL).replace(/\/$/, '')
 
     statusCallback?.('Downloading layout engine')
-    await ensureModule(baseUrl)
+    const module = await ensureModule(baseUrl)
 
     statusCallback?.('Computing layout')
     const startTime = performance.now()
-    const result = layoutModule!.computeLayout(graph, options)
+    const result = module.computeLayout(graph, options)
     const duration = performance.now() - startTime
 
     return { result, duration }

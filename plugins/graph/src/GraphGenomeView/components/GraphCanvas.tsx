@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { LinearProgress, Typography } from '@mui/material'
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import { LinearProgress, Typography } from '@mui/material'
 import { autorun, untracked } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -13,6 +13,7 @@ import {
 } from '../../renderer/GeometryBuilder.ts'
 import { GraphRenderer } from '../../renderer/GraphRenderer.ts'
 import { findHoveredEdge, findHoveredNode } from '../../util/hitDetection.ts'
+import useDebouncedCallback from '../../util/useDebouncedCallback.ts'
 import useRafCallback from '../../util/useRafCallback.ts'
 
 import type { GraphGenomeViewModel } from '../model.ts'
@@ -114,34 +115,36 @@ const GraphCanvas = observer(function GraphCanvas({
     }
   })
 
+  const scheduleViewportDirty = useDebouncedCallback(() => {
+    model.setViewportDirty()
+  }, VIEWPORT_DEBOUNCE_MS)
+
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas) {
-      return
-    }
+    if (canvas) {
+      const renderer = new GraphRenderer(canvas)
+      let destroyed = false
 
-    const renderer = new GraphRenderer(canvas)
-    let destroyed = false
+      void renderer.init().then(() => {
+        if (destroyed) {
+          renderer.destroy()
+        } else {
+          renderer.resize(model.width, CANVAS_HEIGHT)
+          rendererRef.current = renderer
+          setRendererReady(true)
+        }
+      }).catch((e: unknown) => {
+        if (!destroyed) {
+          model.setError(e)
+        }
+      })
 
-    void renderer.init().then(() => {
-      if (destroyed) {
-        renderer.destroy()
-        return
+      return () => {
+        destroyed = true
+        rendererRef.current?.destroy()
+        rendererRef.current = null
+        setRendererReady(false)
       }
-      renderer.resize(model.width, CANVAS_HEIGHT)
-      rendererRef.current = renderer
-      setRendererReady(true)
-    }).catch((e: unknown) => {
-      if (!destroyed) {
-        model.setError(e)
-      }
-    })
-
-    return () => {
-      destroyed = true
-      rendererRef.current?.destroy()
-      rendererRef.current = null
-      setRendererReady(false)
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -157,9 +160,7 @@ const GraphCanvas = observer(function GraphCanvas({
       const lr = model.layoutResult
       if (first) {
         first = false
-        return
-      }
-      if (lr) {
+      } else if (lr) {
         model.zoomToFit(CANVAS_HEIGHT)
       }
     })
@@ -169,202 +170,182 @@ const GraphCanvas = observer(function GraphCanvas({
   // computeViewportBounds is wrapped in untracked so scale/translate changes
   // don't trigger a rebuild — only the debounced viewportDirty flag does.
   useEffect(() => {
-    if (!rendererReady) {
-      return
-    }
-    return autorun(() => {
-      const renderer = rendererRef.current
-      if (!renderer || !model.nodePositions || !model.graph) {
-        return
-      }
-      void model.viewportDirty
-      const batch = buildGeometry({
-        nodePositions: model.nodePositions,
-        graph: model.graph,
-        nodeById: model.nodeById!,
-        colorScheme: model.colorScheme,
-        contigThickness: model.contigThickness,
-        connectorThickness: model.connectorThickness,
-        drawPaths: model.drawPaths,
-        viewportBounds: untracked(() => computeViewportBounds(model)),
+    if (rendererReady) {
+      return autorun(() => {
+        const renderer = rendererRef.current
+        if (renderer && model.nodePositions && model.graph) {
+          void model.viewportDirty
+          const batch = buildGeometry({
+            nodePositions: model.nodePositions,
+            graph: model.graph,
+            nodeById: model.nodeById!,
+            colorScheme: model.colorScheme,
+            contigThickness: model.contigThickness,
+            connectorThickness: model.connectorThickness,
+            drawPaths: model.drawPaths,
+            viewportBounds: untracked(() => computeViewportBounds(model)),
+          })
+          model.storeRenderBatchMeta(
+            batch.nodeVertexRanges,
+            batch.edgeVertexRanges,
+            batch.arrowVertexRanges,
+            batch.nodes.colors,
+            batch.edges.colors,
+            batch.arrows.colors,
+          )
+          renderer.uploadGeometry(batch)
+          scheduleRender()
+        }
       })
-      model.storeRenderBatchMeta(
-        batch.nodeVertexRanges,
-        batch.edgeVertexRanges,
-        batch.arrowVertexRanges,
-        batch.nodes.colors,
-        batch.edges.colors,
-        batch.arrows.colors,
-      )
-      renderer.uploadGeometry(batch)
-      scheduleRender()
-    })
+    }
   }, [model, rendererReady, scheduleRender])
 
   // Autorun 2: Hover/select color-only updates — no geometry rebuild.
   useEffect(() => {
-    if (!rendererReady) {
-      return
+    if (rendererReady) {
+      let prevHoveredNode: string | null = null
+      let prevHoveredEdge: number | null = null
+      let prevSelectedNode: string | null = null
+
+      return autorun(() => {
+        const hoveredNode = model.hoveredNode
+        const hoveredEdge = model.hoveredEdge
+        const selectedNode = model.selectedNode
+        const renderer = rendererRef.current
+        if (renderer) {
+          // Restore previous node highlights
+          if (prevHoveredNode && model.baseNodeColors && model.nodeVertexRanges) {
+            const range = model.nodeVertexRanges.get(prevHoveredNode)
+            if (range) {
+              const original = extractColorSlice(model.baseNodeColors, range)
+              renderer.updateSubBatchColors('nodes', original, range.start)
+            }
+          }
+          if (
+            prevSelectedNode &&
+            prevSelectedNode !== prevHoveredNode &&
+            model.baseNodeColors &&
+            model.nodeVertexRanges
+          ) {
+            const range = model.nodeVertexRanges.get(prevSelectedNode)
+            if (range) {
+              const original = extractColorSlice(model.baseNodeColors, range)
+              renderer.updateSubBatchColors('nodes', original, range.start)
+            }
+          }
+
+          // Restore previous edge highlights
+          if (prevHoveredEdge !== null) {
+            if (model.baseEdgeColors && model.edgeVertexRanges) {
+              const range = model.edgeVertexRanges.get(prevHoveredEdge)
+              if (range) {
+                const original = extractColorSlice(model.baseEdgeColors, range)
+                renderer.updateSubBatchColors('edges', original, range.start)
+              }
+            }
+            if (model.baseArrowColors && model.arrowVertexRanges) {
+              const range = model.arrowVertexRanges.get(prevHoveredEdge)
+              if (range) {
+                const original = extractColorSlice(model.baseArrowColors, range)
+                renderer.updateSubBatchColors('arrows', original, range.start)
+              }
+            }
+          }
+
+          // Apply selected node highlight
+          if (selectedNode && model.baseNodeColors && model.nodeVertexRanges) {
+            const range = model.nodeVertexRanges.get(selectedNode)
+            if (range) {
+              const brightened = brightenColors(
+                model.baseNodeColors,
+                range,
+                SELECT_BRIGHTEN,
+              )
+              renderer.updateSubBatchColors('nodes', brightened, range.start)
+            }
+          }
+
+          // Apply hovered node highlight
+          if (
+            hoveredNode &&
+            hoveredNode !== selectedNode &&
+            model.baseNodeColors &&
+            model.nodeVertexRanges
+          ) {
+            const range = model.nodeVertexRanges.get(hoveredNode)
+            if (range) {
+              const brightened = brightenColors(
+                model.baseNodeColors,
+                range,
+                HOVER_BRIGHTEN,
+              )
+              renderer.updateSubBatchColors('nodes', brightened, range.start)
+            }
+          }
+
+          // Apply hovered edge highlight
+          if (hoveredEdge !== null) {
+            if (model.baseEdgeColors && model.edgeVertexRanges) {
+              const range = model.edgeVertexRanges.get(hoveredEdge)
+              if (range) {
+                const brightened = brightenColors(
+                  model.baseEdgeColors,
+                  range,
+                  HOVER_BRIGHTEN,
+                )
+                renderer.updateSubBatchColors('edges', brightened, range.start)
+              }
+            }
+            if (model.baseArrowColors && model.arrowVertexRanges) {
+              const range = model.arrowVertexRanges.get(hoveredEdge)
+              if (range) {
+                const brightened = brightenColors(
+                  model.baseArrowColors,
+                  range,
+                  HOVER_BRIGHTEN,
+                )
+                renderer.updateSubBatchColors('arrows', brightened, range.start)
+              }
+            }
+          }
+
+          prevHoveredNode = hoveredNode
+          prevHoveredEdge = hoveredEdge
+          prevSelectedNode = selectedNode
+
+          scheduleRender()
+        }
+      })
     }
-
-    let prevHoveredNode: string | null = null
-    let prevHoveredEdge: number | null = null
-    let prevSelectedNode: string | null = null
-
-    return autorun(() => {
-      const hoveredNode = model.hoveredNode
-      const hoveredEdge = model.hoveredEdge
-      const selectedNode = model.selectedNode
-      const renderer = rendererRef.current
-      if (!renderer) {
-        return
-      }
-
-      // Restore previous node highlights
-      if (prevHoveredNode && model.baseNodeColors && model.nodeVertexRanges) {
-        const range = model.nodeVertexRanges.get(prevHoveredNode)
-        if (range) {
-          const original = extractColorSlice(model.baseNodeColors, range)
-          renderer.updateSubBatchColors('nodes', original, range.start)
-        }
-      }
-      if (
-        prevSelectedNode &&
-        prevSelectedNode !== prevHoveredNode &&
-        model.baseNodeColors &&
-        model.nodeVertexRanges
-      ) {
-        const range = model.nodeVertexRanges.get(prevSelectedNode)
-        if (range) {
-          const original = extractColorSlice(model.baseNodeColors, range)
-          renderer.updateSubBatchColors('nodes', original, range.start)
-        }
-      }
-
-      // Restore previous edge highlights
-      if (prevHoveredEdge !== null) {
-        if (model.baseEdgeColors && model.edgeVertexRanges) {
-          const range = model.edgeVertexRanges.get(prevHoveredEdge)
-          if (range) {
-            const original = extractColorSlice(model.baseEdgeColors, range)
-            renderer.updateSubBatchColors('edges', original, range.start)
-          }
-        }
-        if (model.baseArrowColors && model.arrowVertexRanges) {
-          const range = model.arrowVertexRanges.get(prevHoveredEdge)
-          if (range) {
-            const original = extractColorSlice(model.baseArrowColors, range)
-            renderer.updateSubBatchColors('arrows', original, range.start)
-          }
-        }
-      }
-
-      // Apply selected node highlight
-      if (selectedNode && model.baseNodeColors && model.nodeVertexRanges) {
-        const range = model.nodeVertexRanges.get(selectedNode)
-        if (range) {
-          const brightened = brightenColors(
-            model.baseNodeColors,
-            range,
-            SELECT_BRIGHTEN,
-          )
-          renderer.updateSubBatchColors('nodes', brightened, range.start)
-        }
-      }
-
-      // Apply hovered node highlight
-      if (
-        hoveredNode &&
-        hoveredNode !== selectedNode &&
-        model.baseNodeColors &&
-        model.nodeVertexRanges
-      ) {
-        const range = model.nodeVertexRanges.get(hoveredNode)
-        if (range) {
-          const brightened = brightenColors(
-            model.baseNodeColors,
-            range,
-            HOVER_BRIGHTEN,
-          )
-          renderer.updateSubBatchColors('nodes', brightened, range.start)
-        }
-      }
-
-      // Apply hovered edge highlight
-      if (hoveredEdge !== null) {
-        if (model.baseEdgeColors && model.edgeVertexRanges) {
-          const range = model.edgeVertexRanges.get(hoveredEdge)
-          if (range) {
-            const brightened = brightenColors(
-              model.baseEdgeColors,
-              range,
-              HOVER_BRIGHTEN,
-            )
-            renderer.updateSubBatchColors('edges', brightened, range.start)
-          }
-        }
-        if (model.baseArrowColors && model.arrowVertexRanges) {
-          const range = model.arrowVertexRanges.get(hoveredEdge)
-          if (range) {
-            const brightened = brightenColors(
-              model.baseArrowColors,
-              range,
-              HOVER_BRIGHTEN,
-            )
-            renderer.updateSubBatchColors('arrows', brightened, range.start)
-          }
-        }
-      }
-
-      prevHoveredNode = hoveredNode
-      prevHoveredEdge = hoveredEdge
-      prevSelectedNode = selectedNode
-
-      scheduleRender()
-    })
   }, [model, rendererReady, scheduleRender])
 
   // Autorun 3: Re-render on pan/zoom/darkMode without rebuilding geometry (cheap).
   // Uses autorun so MobX automatically tracks all observables read by renderFrame.
   useEffect(() => {
-    if (!rendererReady) {
-      return
+    if (rendererReady) {
+      return autorun(() => {
+        const renderer = rendererRef.current
+        if (renderer && model.nodePositions) {
+          renderFrame(renderer, model)
+        }
+      })
     }
-    return autorun(() => {
-      const renderer = rendererRef.current
-      if (!renderer || !model.nodePositions) {
-        return
-      }
-      renderFrame(renderer, model)
-    })
   }, [model, rendererReady])
 
   // Autorun 4: Debounced viewport culling — rebuild geometry after pan/zoom settles
   useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | null = null
     let first = true
-    const dispose = autorun(() => {
+    return autorun(() => {
       void model.scale
       void model.translateX
       void model.translateY
       if (first) {
         first = false
-        return
+      } else {
+        scheduleViewportDirty()
       }
-      if (timer) {
-        clearTimeout(timer)
-      }
-      timer = setTimeout(() => {
-        model.setViewportDirty()
-      }, VIEWPORT_DEBOUNCE_MS)
     })
-    return () => {
-      dispose()
-      if (timer) {
-        clearTimeout(timer)
-      }
-    }
-  }, [model])
+  }, [model, scheduleViewportDirty])
 
   function screenToGraph(screenX: number, screenY: number) {
     return {
@@ -393,28 +374,26 @@ const GraphCanvas = observer(function GraphCanvas({
       )
     } else if (model.nodePositions && model.graph) {
       const rect = canvasRef.current?.getBoundingClientRect()
-      if (!rect) {
-        return
+      if (rect) {
+        const { x, y } = screenToGraph(
+          e.clientX - rect.left,
+          e.clientY - rect.top,
+        )
+        const node = findHoveredNode(model.nodePositions, x, y, model.scale)
+        model.setHoveredNode(node)
+        model.setHoveredEdge(
+          node
+            ? null
+            : findHoveredEdge(
+                model.nodePositions,
+                model.graph,
+                x,
+                y,
+                model.scale,
+                model.drawPaths,
+              ),
+        )
       }
-      const { x, y } = screenToGraph(
-        e.clientX - rect.left,
-        e.clientY - rect.top,
-      )
-
-      const node = findHoveredNode(model.nodePositions, x, y, model.scale)
-      model.setHoveredNode(node)
-      model.setHoveredEdge(
-        node
-          ? null
-          : findHoveredEdge(
-              model.nodePositions,
-              model.graph,
-              x,
-              y,
-              model.scale,
-              model.drawPaths,
-            ),
-      )
     }
   }
 
@@ -433,36 +412,34 @@ const GraphCanvas = observer(function GraphCanvas({
   function handleClick(e: React.MouseEvent) {
     if (model.nodePositions) {
       const rect = canvasRef.current?.getBoundingClientRect()
-      if (!rect) {
-        return
+      if (rect) {
+        const { x, y } = screenToGraph(
+          e.clientX - rect.left,
+          e.clientY - rect.top,
+        )
+        model.setSelectedNode(
+          findHoveredNode(model.nodePositions, x, y, model.scale),
+        )
       }
-      const { x, y } = screenToGraph(
-        e.clientX - rect.left,
-        e.clientY - rect.top,
-      )
-      model.setSelectedNode(
-        findHoveredNode(model.nodePositions, x, y, model.scale),
-      )
     }
   }
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas) {
-      return undefined
-    }
-    function handleWheel(e: WheelEvent) {
-      e.preventDefault()
-      const rect = canvas!.getBoundingClientRect()
-      model.zoom(
-        e.deltaY < 0 ? 1.1 : 1 / 1.1,
-        e.clientX - rect.left,
-        e.clientY - rect.top,
-      )
-    }
-    canvas.addEventListener('wheel', handleWheel, { passive: false })
-    return () => {
-      canvas.removeEventListener('wheel', handleWheel)
+    if (canvas) {
+      function handleWheel(e: WheelEvent) {
+        e.preventDefault()
+        const rect = canvas.getBoundingClientRect()
+        model.zoom(
+          e.deltaY < 0 ? 1.1 : 1 / 1.1,
+          e.clientX - rect.left,
+          e.clientY - rect.top,
+        )
+      }
+      canvas.addEventListener('wheel', handleWheel, { passive: false })
+      return () => {
+        canvas.removeEventListener('wheel', handleWheel)
+      }
     }
   }, [model])
 

@@ -32,32 +32,30 @@ const ImportForm = observer(function ImportForm({
   const [urlError, setUrlError] = useState<unknown>()
 
   async function handleUrlLoad() {
-    if (!url.trim()) {
-      return
-    }
-    setUrlError(undefined)
-    try {
-      const text = await openLocation({
-        uri: url,
-        locationType: 'UriLocation',
-      }).readFile('utf8')
-      await model.loadGFA(text, url.split('/').pop() ?? 'GFA')
-    } catch (e) {
-      setUrlError(e)
+    if (url.trim()) {
+      setUrlError(undefined)
+      try {
+        const text = await openLocation({
+          uri: url,
+          locationType: 'UriLocation',
+        }).readFile('utf8')
+        await model.loadGFA(text, url.split('/').pop() ?? 'GFA')
+      } catch (e) {
+        setUrlError(e)
+      }
     }
   }
 
   function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
-    if (!file) {
-      return
+    if (file) {
+      file
+        .text()
+        .then(text => model.loadGFA(text, file.name))
+        .catch((err: unknown) => {
+          model.setError(err)
+        })
     }
-    file
-      .text()
-      .then(text => model.loadGFA(text, file.name))
-      .catch((err: unknown) => {
-        model.setError(err)
-      })
   }
 
   function handleExampleLoad() {

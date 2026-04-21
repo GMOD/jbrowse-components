@@ -96,8 +96,7 @@ export function parseGFA(file: string) {
     if (line.startsWith('H')) {
       const [, ...rest] = line.split('\t')
       graph.header.push(parseTags(rest))
-    }
-    if (line.startsWith('S')) {
+    } else if (line.startsWith('S')) {
       const [, name, ...rest] = line.split('\t')
       let len: number
       let seq: string
