@@ -117,6 +117,7 @@ test('re-calling installGpuDisplay swaps backend without re-installing autoruns'
     },
     render: (b: FakeBackend) => {
       b.renders += 1
+      return true
     },
   }
 

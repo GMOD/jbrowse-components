@@ -14,6 +14,11 @@ exporters that write 1-based formats add 1 on output.
 Canonical reference for the GPU rendering lifecycle across all display types.
 Read `PRD.md` first for invariants and active priorities.
 
+
+## Glossary
+
+- HAL - hardware abstraction layer, used for abstracting WebGL and WebGPU calls. This is architecture we created.
+
 ---
 
 ## One-liner
@@ -55,11 +60,6 @@ startGpuBackendLifecycle(backend: Backend) {
 }
 ```
 
-That's the entire surface. There's no config-object DSL, no multi-entry
-`uploads[]`, no "three families" split. Single-value backends (hic),
-multi-region backends (wiggle / canvas / alignments), and geometry-keyed
-backends (dotplot / synteny) all use the same shape — what varies is what
-the plugin reads inside the two callbacks.
 
 ---
 

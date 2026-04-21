@@ -260,3 +260,49 @@ track config pre-processing is running in a hot path.
 - `?renderer=X` URL parameter working?
 - Canvas: right-side padding excessive? Subpixel drawing crowded at dense zoom?
 - Canvas: features collapsed to y=0 on NCBI (needs reproduction steps).
+
+
+## Possible shader refactorings
+
+Now I have the full picture. Let me synthesize what I found:
+
+  The situation:
+
+  The Slang codegen already generates type-safe layout constants for the GPU path —
+  INSTANCE_STRIDE_F32, FIELD_OFFSET_F32, writeInstance — for every shader. The Canvas2D path is
+  separately hand-coded with magic numbers that happen to match, anchored only by comments like //
+  Matches alignments plugin snpCoverage.slang.
+
+  Concretely:
+  - packSnpSegmentsForGpu uses i * 4, idx + 1/2/3 — matches snpCoverage.generated.ts's
+  INSTANCE_STRIDE_F32 = 4, FIELD_OFFSET_F32 = { yOffset: 1, segHeight: 2, colorType: 3 } but doesn't
+  import them
+  - drawSnpSegments / drawModCovSegments in rendererUtils.ts do the same
+  - packCoverageBinsForGpu uses i * 2 matching coverage.generated.ts's INSTANCE_STRIDE_F32 = 2 — but
+  the Canvas2D coverage format is different (3 floats: pos/0/rawDepth) because Canvas2D normalizes at
+  draw time, not pack time
+
+  The wrinkle: packages/alignments-core can't import from plugins/alignments (wrong direction in the
+  dependency graph). So coverageGpuPacking.ts and rendererUtils.ts can't directly use the
+  .generated.ts constants even though they mirror them.
+
+  The options:
+
+  1. Export layout constants from coverageGpuPacking.ts, import in rendererUtils.ts. Single source of
+  truth lives in the packing file. Simple, no restructuring. Doesn't use Slang directly but eliminates
+   duplicate magic numbers.
+  2. Move draw functions to plugins/alignments. Co-locate them with the .generated.ts files so they
+  can import constants directly. Requires moving drawSnpSegments etc. out of packages/alignments-core
+  — breaks the synteny plugin which also imports them.
+  3. Add a test that asserts packing constants match generated constants. Belt-and-suspenders: keep
+  both, but a test in plugins/alignments imports both and asserts equality. Drift becomes a test
+  failure not a silent bug.
+  4. Align the Canvas2D coverage format with the GPU format (2 floats). Drop the bandBottom=0 field
+  from the Canvas2D coverage buffer, simplify drawCoverageBins to just use bottom directly, then
+  coverage packing and reading can share constants. The synteny 3-float min-max buffer becomes a
+  separate code path with its own constants.
+
+  Option 1 is the quick win. Option 4 + 1 together is the cleanest long-term state — aligns the
+  formats and centralizes constants. Want me to implement one of these?
+
+

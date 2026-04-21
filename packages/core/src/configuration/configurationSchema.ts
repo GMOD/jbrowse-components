@@ -16,7 +16,11 @@ import { ElementId } from '../util/types/mst.ts'
 
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type { AnyConfigurationSchemaType } from './types.ts'
-import type { IAnyType, SnapshotOut } from '@jbrowse/mobx-state-tree'
+import type {
+  IAnyStateTreeNode,
+  IAnyType,
+  SnapshotOut,
+} from '@jbrowse/mobx-state-tree'
 
 export type {
   AnyConfigurationModel,
@@ -287,28 +291,35 @@ export function ConfigurationSchema<
  * - Always serializes as just the trackId string in snapshots
  * - Works with both frozen tracks (plain objects) and MST model tracks
  */
+// Per-track-state-model cache of the instantiated config. Tracks (in
+// JBrowseConfig) are stored as frozen plain objects; the first access via the
+// reference resolver instantiates an MST model and we keep it bound to the
+// owning state model so subsequent accesses (including mouse-move recomputes)
+// return the same instance instead of re-running preProcessSnapshot.
+const configByStateNode = new WeakMap<IAnyStateTreeNode, unknown>()
+
 export function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(id, parent) {
-      const session = getSession(parent)
+      const existing = configByStateNode.get(parent)
+      if (existing) {
+        return existing
+      }
 
-      // Try session.tracksById first (works for frozen tracks)
+      const session = getSession(parent)
       let ret = session.tracksById[id]
       if (!ret) {
-        // Fall back to resolveIdentifier for view-specific tracks (e.g. viewTrackConfigs)
-        // that are MST models but not in session.tracks
         // @ts-expect-error
         ret = resolveIdentifier(schemaType, getRoot(parent), id)
       }
       if (!ret) {
         throw new Error(`Could not resolve identifier "${id}"`)
       }
-      // If it's a frozen/plain object, we need to instantiate it
-      if (!isStateTreeNode(ret)) {
-        console.warn('[TrackConfigRef] plain obj for', id)
-        return schemaType.create(ret, getEnv(parent))
-      }
-      return ret
+      const model = isStateTreeNode(ret)
+        ? ret
+        : schemaType.create(ret, getEnv(parent))
+      configByStateNode.set(parent, model)
+      return model
     },
     set(value) {
       return value.trackId
@@ -356,9 +367,13 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
 export function DisplayConfigurationReference(schemaType: IAnyType) {
   const displayRef = types.reference(schemaType, {
     get(id, parent) {
+      const existing = configByStateNode.get(parent)
+      if (existing) {
+        return existing
+      }
+
       const track = getContainingTrack(parent)
       const displays = track.configuration.displays
-      // Find in the track's displays array (may be frozen/plain objects)
       let ret = displays.find((d: { displayId: string }) => d.displayId === id)
 
       // If not found by displayId, fall back to matching by display type.
@@ -378,8 +393,11 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
       if (!ret) {
         throw new Error(`Display configuration "${id}" not found`)
       }
-      // If it's a frozen/plain object, instantiate it as an MST model
-      return isStateTreeNode(ret) ? ret : schemaType.create(ret, getEnv(parent))
+      const model = isStateTreeNode(ret)
+        ? ret
+        : schemaType.create(ret, getEnv(parent))
+      configByStateNode.set(parent, model)
+      return model
     },
     set(value) {
       return value.displayId
