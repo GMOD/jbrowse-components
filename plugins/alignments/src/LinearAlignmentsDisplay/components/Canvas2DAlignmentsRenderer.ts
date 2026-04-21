@@ -142,7 +142,6 @@ function bpToScreenX(
   return block.screenStartPx + (offset / bpLength) * fullBlockWidth
 }
 
-
 function emptyRegion(): Canvas2DRegionData {
   const empty32 = new Uint32Array(0)
   const empty16 = new Uint16Array(0)

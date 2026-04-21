@@ -1,0 +1,125 @@
+digraph wiggle_gpu_arch {
+  rankdir=TB
+  node [shape=box, fontname="Courier", fontsize=11]
+  edge [fontname="Courier", fontsize=10]
+
+  // ── React layer ──────────────────────────────────────────────────
+  subgraph cluster_react {
+    label="React Component\nWiggleComponent.tsx"
+    style=filled; fillcolor="#f0f4ff"
+
+    useGpuModelLifecycle [label="useGpuModelLifecycle(\n  WiggleRenderer, model\n)"]
+    createDualRenderer    [label="createDualRenderer(canvas)\nWebGPU → WebGL2 → Canvas2D"]
+  }
+
+  // ── Model ────────────────────────────────────────────────────────
+  subgraph cluster_model {
+    label="Model  model.ts"
+    style=filled; fillcolor="#fff8e1"
+
+    rpcDataMap   [label="volatile:\nrpcDataMap\nobservable.map<regionIndex,\n  WiggleDataResult>"]
+    renderState  [label="view (cached):\nrenderState\n→ WiggleGPURenderState\n{ domainY, scaleType,\n  renderingType,\n  canvasWidth, canvasHeight }"]
+    domain       [label="view (cached):\ndomain\nfrom visibleScoreRange\n+ user y-axis bounds"]
+    gpuProps     [label="view (cached):\ngpuProps\n{ bicolorPivot, resolution }"]
+    startLifecycle [label="startGpuBackendLifecycle(backend)\n  upload: buildSourceRenderData\n          + uploadRegion per region\n  render: renderBlocks(renderBlocks,\n          renderState)"]
+  }
+
+  // ── Mixins ───────────────────────────────────────────────────────
+  subgraph cluster_fetch_mixin {
+    label="MultiRegionDisplayMixin"
+    style=filled; fillcolor="#e8f5e9"
+
+    fetchAutorun   [label="autorun: FetchVisibleRegions\nobserves: viewport\ncalls isCacheValid()\ncalls onFetchNeeded()"]
+    cacheValid     [label="isCacheValid()\nbpPerPx strict equality"]
+    settingsInval  [label="autorun: SettingsInvalidate\nobserves: rpcProps\ncalls clearAllRpcData()"]
+    onFetchNeeded  [label="onFetchNeeded(regions)\nrpcManager.call(\n  'RenderWiggleData',\n  { region, bpPerPx,\n    adapterConfig, ... }\n)"]
+  }
+
+  subgraph cluster_gpu_lifecycle {
+    label="GpuBackendLifecycleSlotMixin"
+    style=filled; fillcolor="#fce4ec"
+
+    uploadAutorun [label="autorun: upload\nobserves: rpcDataMap\ncalls upload callback"]
+    renderAutorun [label="autorun: render\nobserves: renderBump\ncalls render callback"]
+    installGpu    [label="installGpuDisplay()\nwires upload + render\nautoruns to backend"]
+  }
+
+  // ── RPC worker ───────────────────────────────────────────────────
+  subgraph cluster_worker {
+    label="RPC Worker"
+    style=filled; fillcolor="#ede7f6"
+
+    rpcMethod  [label="RenderWiggleData.ts\n→ executeRenderWiggleData.ts"]
+    getAdapter [label="getAdapter(sessionId,\n  adapterConfig)"]
+    getFeatures [label="adapter.getFeatureArrays(\n  region, { bpPerPx }\n)\npicks BigWig zoom level"]
+    dataResult  [label="WiggleDataResult\n{ featurePositions: Uint32Array\n  featureScores:    Float32Array\n  featureMin/MaxScores\n  posFeature*/negFeature* }"]
+  }
+
+  // ── CPU encoding ─────────────────────────────────────────────────
+  subgraph cluster_encoding {
+    label="CPU Encoding"
+    style=filled; fillcolor="#e0f7fa"
+
+    buildSourceData [label="buildSourceRenderData(\n  WiggleDataResult, gpuProps\n)\n→ SourceRenderData[]\n{ featurePositions,\n  featureScores,\n  color: [r,g,b],\n  rowIndex }"]
+  }
+
+  // ── GPU backend ──────────────────────────────────────────────────
+  subgraph cluster_backend {
+    label="WiggleBackend  (GpuWiggleRenderer | Canvas2DWiggleRenderer)"
+    style=filled; fillcolor="#fff3e0"
+
+    uploadRegion  [label="uploadRegion(regionIndex,\n  SourceRenderData[])\ninterleaveInstances()\nhal.uploadBuffer()"]
+    renderBlocks  [label="renderBlocks(blocks,\n  WiggleGPURenderState)\nset uniforms per block:\n  bpRangeX [hi,lo]\n  domainYMin/Max\n  scaleType, renderingType\nhal.drawPass()"]
+  }
+
+  // ── HAL ──────────────────────────────────────────────────────────
+  subgraph cluster_hal {
+    label="HAL  (webgpuHal | webgl2Hal | mockHal)"
+    style=filled; fillcolor="#f3e5f5"
+
+    halBuffers [label="GPU buffers\nkeyed by (regionIndex, passId)"]
+    shader     [label="wiggle.generated.ts\n(WGSL/GLSL from .slang)\nvertex: bp → clip space\nfragment: color + alpha"]
+    canvas     [label="canvas pixels"]
+  }
+
+  // ── Edges ────────────────────────────────────────────────────────
+
+  useGpuModelLifecycle -> createDualRenderer [label="creates"]
+  useGpuModelLifecycle -> startLifecycle     [label="calls with backend"]
+
+  startLifecycle -> installGpu [label="calls"]
+  installGpu -> uploadAutorun  [label="wires"]
+  installGpu -> renderAutorun  [label="wires"]
+
+  domain -> renderState [label="input"]
+  renderState -> startLifecycle [label="used in render callback"]
+  gpuProps -> startLifecycle    [label="used in upload callback"]
+
+  fetchAutorun -> cacheValid    [label="checks"]
+  fetchAutorun -> onFetchNeeded [label="calls"]
+  settingsInval -> fetchAutorun [label="clears data\ntriggers refetch"]
+
+  onFetchNeeded -> rpcMethod [label="RPC call\n(serialized)"]
+
+  rpcMethod -> getAdapter  [label=""]
+  getAdapter -> getFeatures [label=""]
+  getFeatures -> dataResult [label="returns"]
+
+  dataResult -> rpcDataMap   [label="setRpcData()\n(back on main thread)"]
+  rpcDataMap -> uploadAutorun [label="observes\n(MobX)"]
+
+  uploadAutorun -> buildSourceData [label="calls per region"]
+  buildSourceData -> uploadRegion  [label="passes SourceRenderData[]"]
+
+  rpcDataMap -> buildSourceData [label="WiggleDataResult"]
+  gpuProps -> buildSourceData   [label="gpuProps"]
+
+  uploadRegion -> halBuffers [label="hal.uploadBuffer()"]
+
+  renderAutorun -> renderBlocks [label="calls"]
+  renderState -> renderBlocks   [label="WiggleGPURenderState"]
+  renderBlocks -> halBuffers    [label="hal.drawPass()"]
+
+  halBuffers -> shader [label=""]
+  shader -> canvas    [label="output"]
+}

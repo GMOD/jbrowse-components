@@ -63,3 +63,36 @@ test('can convert a slot with a default function value to a scalar value', () =>
   expect(instance.value).toBe('')
   expect(instance.expr.eval()).toEqual('')
 })
+
+test('convertToCallback preserves falsy values (false, 0)', () => {
+  // regression: || instead of ?? caused false/0 to become jexl:'' instead of
+  // jexl:false / jexl:0
+  const boolModel = ConfigSlot('tester', {
+    type: 'boolean',
+    defaultValue: true,
+  })
+  const boolInstance = boolModel.create(undefined, { pluginManager })
+  boolInstance.set(false)
+  boolInstance.convertToCallback()
+  expect(boolInstance.value).toBe('jexl:false')
+
+  const numModel = ConfigSlot('tester', { type: 'number', defaultValue: 1 })
+  const numInstance = numModel.create(undefined, { pluginManager })
+  numInstance.set(0)
+  numInstance.convertToCallback()
+  expect(numInstance.value).toBe('jexl:0')
+})
+
+test('convertToValue uses defaultValue when eval returns undefined, not type fallback', () => {
+  // regression: convertToValue was unconditionally overwriting defaultValue with
+  // fallbackDefaults[type]; should only do so when defaultValue is itself jexl
+  const model = ConfigSlot('tester', {
+    type: 'string',
+    defaultValue: 'myDefault',
+  })
+  const instance = model.create(undefined, { pluginManager })
+  // 'jexl:undeclaredVar' evaluates to undefined with no context args
+  instance.set('jexl:undeclaredVar')
+  instance.convertToValue()
+  expect(instance.value).toBe('myDefault') // not '' (the string type fallback)
+})
