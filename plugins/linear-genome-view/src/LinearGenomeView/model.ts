@@ -1973,7 +1973,8 @@ export {
   default as ReactComponent,
 } from './components/LinearGenomeView.tsx'
 
-export { default as RefNameAutocomplete } from './components/RefNameAutocomplete/index.tsx'
+// RefNameAutocomplete moved to @jbrowse/core/ui; re-exported for back-compat.
+export { RefNameAutocomplete } from '@jbrowse/core/ui'
 export { default as SearchBox } from './components/SearchBox.tsx'
 
 export { renderToSvg } from './svgcomponents/SVGLinearGenomeView.tsx'

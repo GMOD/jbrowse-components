@@ -40,7 +40,11 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
       })
       this.configured = gff
         .getHeader()
-        .then(header => ({ gff, dontRedispatchSet: new Set(dontRedispatch), header }))
+        .then(header => ({
+          gff,
+          dontRedispatchSet: new Set(dontRedispatch),
+          header,
+        }))
         .catch((e: unknown) => {
           this.configured = undefined
           throw e

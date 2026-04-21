@@ -172,9 +172,7 @@ export default class GridBookmarkPlugin extends Plugin {
                  * #method
                  */
                 highlightMenuItems(
-                  highlight: Parameters<
-                    typeof superHighlightMenuItems
-                  >[0],
+                  highlight: Parameters<typeof superHighlightMenuItems>[0],
                 ) {
                   return [
                     ...superHighlightMenuItems(highlight),

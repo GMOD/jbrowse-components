@@ -1,5 +1,5 @@
 import { EdgeSpatialIndex, SpatialIndex } from './SpatialIndex.ts'
-import { computeEdgeCurves } from './geometry.ts'
+import { translateCurves } from './geometry.ts'
 
 import type { Graph, NodeSegment } from '../types.ts'
 import type { BezierCurve } from './geometry.ts'
@@ -164,19 +164,15 @@ export function findHoveredEdge(
       continue
     }
 
-    const isSelfLoop = edge.from === edge.to
     const numPaths = edge.pathIds?.length ?? 0
+    const baseCurves = edgeIndex.getCurves(edgeIdx)
+    if (!baseCurves) {
+      continue
+    }
     let dist: number
 
     if (!drawPaths || numPaths === 0) {
-      const curves = computeEdgeCurves(
-        fromSegments,
-        toSegments,
-        isSelfLoop,
-        0,
-        0,
-      )
-      dist = distanceToEdgeCurves(graphX, graphY, curves)
+      dist = distanceToEdgeCurves(graphX, graphY, baseCurves)
     } else {
       const fromEnd = fromSegments[fromSegments.length - 1]!
       const toStart = toSegments[0]!
@@ -194,13 +190,14 @@ export function findHoveredEdge(
       let minDist = Infinity
       for (let pathIdx = 0; pathIdx < numPaths; pathIdx++) {
         const pathOffset = (pathIdx - (numPaths - 1) / 2) * offsetDist
-        const curves = computeEdgeCurves(
-          fromSegments,
-          toSegments,
-          isSelfLoop,
-          perpX * pathOffset,
-          perpY * pathOffset,
-        )
+        const curves =
+          pathOffset === 0
+            ? baseCurves
+            : translateCurves(
+                baseCurves,
+                perpX * pathOffset,
+                perpY * pathOffset,
+              )
         const d = distanceToEdgeCurves(graphX, graphY, curves)
         if (d < minDist) {
           minDist = d

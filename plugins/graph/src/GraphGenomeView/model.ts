@@ -5,17 +5,17 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
-import { brightenColors, buildGeometry, extractColorSlice } from '../renderer/GeometryBuilder.ts'
-import { GraphRenderer } from '../renderer/GraphRenderer.ts'
 import { convertGFAToGraph } from '../gfa/gfaConverter.ts'
 import { parseGFA } from '../gfa/gfaParser.ts'
+import {
+  brightenColors,
+  buildGeometry,
+  extractColorSlice,
+} from '../renderer/GeometryBuilder.ts'
 
+import type { GraphRenderer } from '../renderer/GraphRenderer.ts'
 import type { SubBatchKey, VertexRange } from '../renderer/types.ts'
-import type {
-  ColorScheme,
-  Graph,
-  LayoutResult,
-} from '../types.ts'
+import type { ColorScheme, Graph, LayoutResult } from '../types.ts'
 
 const DEFAULT_CANVAS_HEIGHT = 600
 const HOVER_BRIGHTEN = 1.4
@@ -61,7 +61,11 @@ function restoreVertexColors<K extends string | number>(
   if (key !== null && ranges && baseColors) {
     const range = ranges.get(key)
     if (range) {
-      renderer.updateSubBatchColors(target, extractColorSlice(baseColors, range), range.start)
+      renderer.updateSubBatchColors(
+        target,
+        extractColorSlice(baseColors, range),
+        range.start,
+      )
     }
   }
 }
@@ -77,7 +81,11 @@ function brightenVertexColors<K extends string | number>(
   if (key !== null && ranges && baseColors) {
     const range = ranges.get(key)
     if (range) {
-      renderer.updateSubBatchColors(target, brightenColors(baseColors, range, factor), range.start)
+      renderer.updateSubBatchColors(
+        target,
+        brightenColors(baseColors, range, factor),
+        range.start,
+      )
     }
   }
 }
@@ -119,7 +127,9 @@ export default function stateModelFactory() {
       baseNodeColors: undefined as Uint32Array | undefined,
       baseEdgeColors: undefined as Uint32Array | undefined,
       baseArrowColors: undefined as Uint32Array | undefined,
-      viewportDirtyTimer: undefined as ReturnType<typeof setTimeout> | undefined,
+      viewportDirtyTimer: undefined as
+        | ReturnType<typeof setTimeout>
+        | undefined,
     }))
     .views(self => ({
       get nodeById() {
@@ -316,19 +326,71 @@ export default function stateModelFactory() {
               const hoveredEdge = self.hoveredEdge
               const selectedNode = self.selectedNode
               if (b) {
-                restoreVertexColors(b, 'nodes', self.nodeVertexRanges, self.baseNodeColors, prevHoveredNode)
+                restoreVertexColors(
+                  b,
+                  'nodes',
+                  self.nodeVertexRanges,
+                  self.baseNodeColors,
+                  prevHoveredNode,
+                )
                 if (prevSelectedNode !== prevHoveredNode) {
-                  restoreVertexColors(b, 'nodes', self.nodeVertexRanges, self.baseNodeColors, prevSelectedNode)
+                  restoreVertexColors(
+                    b,
+                    'nodes',
+                    self.nodeVertexRanges,
+                    self.baseNodeColors,
+                    prevSelectedNode,
+                  )
                 }
-                restoreVertexColors(b, 'edges', self.edgeVertexRanges, self.baseEdgeColors, prevHoveredEdge)
-                restoreVertexColors(b, 'arrows', self.arrowVertexRanges, self.baseArrowColors, prevHoveredEdge)
+                restoreVertexColors(
+                  b,
+                  'edges',
+                  self.edgeVertexRanges,
+                  self.baseEdgeColors,
+                  prevHoveredEdge,
+                )
+                restoreVertexColors(
+                  b,
+                  'arrows',
+                  self.arrowVertexRanges,
+                  self.baseArrowColors,
+                  prevHoveredEdge,
+                )
 
-                brightenVertexColors(b, 'nodes', self.nodeVertexRanges, self.baseNodeColors, selectedNode, SELECT_BRIGHTEN)
+                brightenVertexColors(
+                  b,
+                  'nodes',
+                  self.nodeVertexRanges,
+                  self.baseNodeColors,
+                  selectedNode,
+                  SELECT_BRIGHTEN,
+                )
                 if (hoveredNode !== selectedNode) {
-                  brightenVertexColors(b, 'nodes', self.nodeVertexRanges, self.baseNodeColors, hoveredNode, HOVER_BRIGHTEN)
+                  brightenVertexColors(
+                    b,
+                    'nodes',
+                    self.nodeVertexRanges,
+                    self.baseNodeColors,
+                    hoveredNode,
+                    HOVER_BRIGHTEN,
+                  )
                 }
-                brightenVertexColors(b, 'edges', self.edgeVertexRanges, self.baseEdgeColors, hoveredEdge, HOVER_BRIGHTEN)
-                brightenVertexColors(b, 'arrows', self.arrowVertexRanges, self.baseArrowColors, hoveredEdge, HOVER_BRIGHTEN)
+                brightenVertexColors(
+                  b,
+                  'edges',
+                  self.edgeVertexRanges,
+                  self.baseEdgeColors,
+                  hoveredEdge,
+                  HOVER_BRIGHTEN,
+                )
+                brightenVertexColors(
+                  b,
+                  'arrows',
+                  self.arrowVertexRanges,
+                  self.baseArrowColors,
+                  hoveredEdge,
+                  HOVER_BRIGHTEN,
+                )
 
                 prevHoveredNode = hoveredNode
                 prevHoveredEdge = hoveredEdge
@@ -394,7 +456,7 @@ export default function stateModelFactory() {
       function callLayout(graph: Graph) {
         const session = getSession(self)
         const { rpcManager } = session
-        const sessionId = getRpcSessionId(self)
+        const sessionId = 'graph' //getRpcSessionId(self) no 'rpcSessionId' getter
         return rpcManager.call(sessionId, 'GraphComputeLayout', {
           sessionId,
           graph: { nodes: graph.nodes, edges: graph.edges },
@@ -408,23 +470,61 @@ export default function stateModelFactory() {
         }) as Promise<{ result: LayoutResult }>
       }
 
+      function* parseAndLayout(text: string, name: string) {
+        self.setStatusMessage('Parsing GFA')
+        const gfaGraph = parseGFA(text)
+        const graph = convertGFAToGraph(gfaGraph, name)
+        self.graph = graph
+        self.setStatusMessage('Computing layout')
+        const { result } = (yield callLayout(graph)) as { result: LayoutResult }
+        if (self.graph === graph) {
+          self.layoutResult = result
+        }
+      }
+
       return {
         loadGFA: flow(function* (text: string, name = 'Imported GFA') {
           self.isLoading = true
           self.error = undefined
-          self.setStatusMessage('Parsing GFA')
-          const gfaGraph = parseGFA(text)
-          const graph = convertGFAToGraph(gfaGraph, name)
-          self.graph = graph
-          self.setStatusMessage('Computing layout')
-
           try {
-            const { result } = yield callLayout(graph)
-            if (self.graph === graph) {
-              self.layoutResult = result
-            }
+            yield* parseAndLayout(text, name)
           } catch (e) {
-            console.error('[GraphGenomeView.loadGFA] Layout error:', e)
+            console.error('[GraphGenomeView.loadGFA]', e)
+            self.error = e
+          } finally {
+            self.isLoading = false
+          }
+        }),
+        loadFromTabixSubgraph: flow(function* (
+          adapterConfig: Record<string, unknown>,
+          region: {
+            refName: string
+            assemblyName: string
+            start: number
+            end: number
+          },
+        ) {
+          self.isLoading = true
+          self.error = undefined
+          self.setStatusMessage('Fetching subgraph')
+          try {
+            const session = getSession(self)
+            const { rpcManager } = session
+            const sessionId = 'graph' //getRpcSessionId(self) no rpcSessionId getter
+            const gfaText = (yield rpcManager.call(sessionId, 'GetSubgraph', {
+              adapterConfig,
+              region,
+              sessionId,
+            })) as string
+            if (!gfaText) {
+              throw new Error(
+                'Adapter returned no GFA — region may be outside indexed data or the adapter does not implement getSubgraph',
+              )
+            }
+            const label = `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`
+            yield* parseAndLayout(gfaText, label)
+          } catch (e) {
+            console.error('[GraphGenomeView.loadFromTabixSubgraph]', e)
             self.error = e
           } finally {
             self.isLoading = false

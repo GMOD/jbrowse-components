@@ -81,8 +81,10 @@ export async function renderBaseLinearDisplaySvg(
         rendererType,
         displayError,
       } = blockData
-      if (displayError || !renderProps || !renderArgs || !rendererType || !rpcManager) {
-        throw displayError ?? new Error('render data unavailable')
+      if (displayError || !renderProps || !rendererType) {
+        throw displayError instanceof Error
+          ? displayError
+          : new Error(`${displayError || 'Unknown'}`)
       }
 
       return [

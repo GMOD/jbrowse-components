@@ -1,11 +1,13 @@
 import type React from 'react'
 
+import {
+  RefNameAutocomplete,
+  RefNameAutocompleteEndAdornment,
+} from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import EndAdornment from './RefNameAutocomplete/EndAdornment.tsx'
-import RefNameAutocomplete from './RefNameAutocomplete/index.tsx'
 import {
   fetchResults,
   handleSelectedRegion,
@@ -87,11 +89,12 @@ const SearchBox = observer(function SearchBox({
           assembly,
         })
       }
-      model={model}
+      session={session}
+      value={model.coarseVisibleLocStrings}
       minWidth={minWidth}
       maxWidth={maxWidth}
       style={style}
-      endAdornment={<EndAdornment showHelp={showHelp} />}
+      endAdornment={<RefNameAutocompleteEndAdornment showHelp={showHelp} />}
       inputStyle={{
         padding: 0,
         height: WIDGET_HEIGHT,

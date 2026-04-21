@@ -14,10 +14,10 @@ import { firstValueFrom, toArray } from 'rxjs'
 
 import { featureData2 } from '../util.ts'
 
+import type { FeatureData } from '../util.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
-import type { FeatureData } from '../util.ts'
 import type { Observer } from 'rxjs'
 
 export default class BigBedAdapter extends BaseFeatureDataAdapter {
@@ -175,7 +175,8 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           disableGeneHeuristic,
         })
         const aggr = f[aggregateField]
-        const aggrIsNotNone = typeof aggr === 'string' && aggr && aggr !== 'none'
+        const aggrIsNotNone =
+          typeof aggr === 'string' && aggr && aggr !== 'none'
         if (aggrIsNotNone) {
           if (!parentAggregation[aggr]) {
             parentAggregation[aggr] = []
@@ -252,9 +253,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
                 },
               }),
             )
-          }
-
-          else {
+          } else {
             for (const sub of subs) {
               observer.next(
                 new SimpleFeature({

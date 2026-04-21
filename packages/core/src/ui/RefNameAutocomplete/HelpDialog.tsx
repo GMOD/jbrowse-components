@@ -1,5 +1,6 @@
-import { Dialog } from '@jbrowse/core/ui'
 import { Button, DialogActions, DialogContent, Divider } from '@mui/material'
+
+import Dialog from '../Dialog.tsx'
 
 export default function HelpDialog({
   handleClose,

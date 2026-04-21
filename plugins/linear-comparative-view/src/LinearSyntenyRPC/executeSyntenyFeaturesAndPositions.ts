@@ -6,12 +6,11 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
-import { computeSyriTypes } from '@jbrowse/plugin-comparative-adapters'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { chainCollinearAlignments } from './chainCollinearAlignments.ts'
 import { buildSyntenyGeometry } from './buildSyntenyGeometry.ts'
+import { chainCollinearAlignments } from './chainCollinearAlignments.ts'
 
 import type { SyntenyInstanceData } from './buildSyntenyGeometry.ts'
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
@@ -165,7 +164,6 @@ export async function executeSyntenyFeaturesAndPositions({
   viewSnaps,
   level,
   stopToken,
-  colorBy = 'default',
   drawCIGAR = true,
   drawCIGARMatchesOnly = false,
   drawLocationMarkers = false,
@@ -179,7 +177,6 @@ export async function executeSyntenyFeaturesAndPositions({
   viewSnaps: ViewSnap[]
   level: number
   stopToken?: StopToken
-  colorBy?: string
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean
   drawLocationMarkers?: boolean
@@ -243,9 +240,9 @@ export async function executeSyntenyFeaturesAndPositions({
   const refNames: string[] = []
   const assemblyNames: string[] = []
   const cigars: string[] = []
-  // Only collected in syri mode; structural-tier adapters precompute syriType
-  // on the feature and we pass those through directly if present.
-  const collectSyri = colorBy === 'syri'
+  // Always collect syriType; main-thread colorBy='syri' reads this directly
+  // so the RPC doesn't refetch on a color-scheme change. Undefined entries
+  // fall back to main-thread computeSyriTypes when the scheme is active.
   const precomputedSyriTypes: (string | undefined)[] = []
   const mates: {
     start: number
@@ -331,9 +328,7 @@ export async function executeSyntenyFeaturesAndPositions({
     refNames.push(refName)
     assemblyNames.push((f.get('assemblyName') as string | undefined) ?? '')
     cigars.push((f.get('CIGAR') as string | undefined) ?? '')
-    if (collectSyri) {
-      precomputedSyriTypes.push(f.get('syriType') as string | undefined)
-    }
+    precomputedSyriTypes.push(f.get('syriType') as string | undefined)
     mates.push(mate)
 
     validCount++
@@ -355,33 +350,17 @@ export async function executeSyntenyFeaturesAndPositions({
     refNames,
     assemblyNames,
     cigars,
+    syriTypes: precomputedSyriTypes,
     mates,
   }
 
   const parsedCigars = cigars.map(s => (s ? parseCigar2(s) : []))
   const bpPerPxs = viewSnaps.map(v => v.bpPerPx)
 
-  // Compute SyRI types when colorBy='syri'
-  // If features already carry syriType from structural tier, use those directly
-  let syriTypes: ReturnType<typeof computeSyriTypes> | undefined
-  if (colorBy === 'syri') {
-    const hasPrecomputed = precomputedSyriTypes.some(t => t !== undefined)
-    syriTypes = hasPrecomputed
-      ? precomputedSyriTypes.map(
-          t => (t || 'SYN') as ReturnType<typeof computeSyriTypes>[number],
-        )
-      : computeSyriTypes(
-          Array.from({ length: validCount }, (_, i) => ({
-            qname: names[i]!,
-            qstart: positionData.starts[i]!,
-            qend: positionData.ends[i]!,
-            tname: mates[i]!.refName,
-            tstart: mates[i]!.start,
-            tend: mates[i]!.end,
-            strand: positionData.strands[i]!,
-          })),
-        )
-  }
+  // colorBy lives on the main thread now; the worker always emits
+  // geometry + per-instance `kinds`/`instanceFeatureIdx` descriptors, and
+  // the display model recomputes `colors` on colorBy change. SyRI types
+  // are likewise computed on the main thread when needed.
 
   const instanceData = await updateStatus(
     'Computing synteny layout',
@@ -390,8 +369,6 @@ export async function executeSyntenyFeaturesAndPositions({
       buildSyntenyGeometry({
         ...positionData,
         parsedCigars,
-        colorBy,
-        syriTypes,
         drawCIGAR,
         drawCIGARMatchesOnly,
         drawLocationMarkers,
@@ -422,6 +399,8 @@ export async function executeSyntenyFeaturesAndPositions({
     instanceData.x3.buffer,
     instanceData.x4.buffer,
     instanceData.colors.buffer,
+    instanceData.kinds.buffer,
+    instanceData.instanceFeatureIdx.buffer,
     instanceData.featureIds.buffer,
     instanceData.queryTotalLengths.buffer,
     instanceData.padTops.buffer,

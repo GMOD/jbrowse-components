@@ -47,8 +47,10 @@ async function ensureModule(baseUrl: string): Promise<BandageModule> {
       const jsUrl = `${baseUrl}/bandage-layout.js`
       const wasmUrl = `${baseUrl}/bandage-layout.wasm`
       const mod = await import(/* webpackIgnore: true */ jsUrl)
-      return mod.default({ locateFile: () => wasmUrl }) as Promise<BandageModule>
-    })().catch(e => {
+      return mod.default({
+        locateFile: () => wasmUrl,
+      }) as Promise<BandageModule>
+    })().catch((e: unknown) => {
       initPromise = null
       throw e
     })

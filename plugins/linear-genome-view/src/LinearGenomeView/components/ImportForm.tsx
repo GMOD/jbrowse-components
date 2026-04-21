@@ -1,6 +1,10 @@
 import { useState } from 'react'
 
-import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
+import {
+  AssemblySelector,
+  ErrorMessage,
+  RefNameAutocomplete,
+} from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
@@ -13,7 +17,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import RefNameAutocomplete from './RefNameAutocomplete/index.tsx'
 import {
   fetchResults,
   handleSelectedRegion,
@@ -138,7 +141,7 @@ const LinearGenomeViewImportForm = observer(
                             searchScope,
                           })
                         }
-                        model={model}
+                        session={session}
                         assemblyName={selectedAsm}
                         value={value}
                         minWidth={270}

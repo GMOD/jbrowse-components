@@ -4,7 +4,6 @@ import HelpIcon from '@mui/icons-material/Help'
 import SearchIcon from '@mui/icons-material/Search'
 import { IconButton, InputAdornment } from '@mui/material'
 
-// lazy
 const HelpDialog = lazy(() => import('./HelpDialog.tsx'))
 
 function HelpAdornment() {
@@ -34,11 +33,9 @@ function HelpAdornment() {
 
 export default function EndAdornment({ showHelp }: { showHelp?: boolean }) {
   return (
-    <>
-      <InputAdornment position="end" style={{ marginRight: 7 }}>
-        <SearchIcon fontSize="small" />
-        {showHelp ? <HelpAdornment /> : null}
-      </InputAdornment>
-    </>
+    <InputAdornment position="end" style={{ marginRight: 7 }}>
+      <SearchIcon fontSize="small" />
+      {showHelp ? <HelpAdornment /> : null}
+    </InputAdornment>
   )
 }

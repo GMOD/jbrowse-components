@@ -1,7 +1,7 @@
 import { computeTubeMapLayout } from './tubeMapLayout.ts'
 
-import type { GFAGraph } from '../gfa/gfaParser.ts'
 import type { TubeMapLayout } from './types.ts'
+import type { GFAGraph } from '../gfa/gfaParser.ts'
 
 export function layoutGFA(gfa: GFAGraph, widthPerBp = 10): TubeMapLayout {
   const inputNodes = gfa.nodes.map(n => ({

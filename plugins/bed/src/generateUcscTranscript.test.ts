@@ -6,37 +6,66 @@ import {
 describe('isUcscTranscript', () => {
   it('returns true when thickStart, thickEnd, blockCount, and non-zero strand are present', () => {
     expect(
-      isUcscTranscript({ thickStart: 100, thickEnd: 200, blockCount: 3, strand: 1 }),
+      isUcscTranscript({
+        thickStart: 100,
+        thickEnd: 200,
+        blockCount: 3,
+        strand: 1,
+      }),
     ).toBe(true)
     expect(
-      isUcscTranscript({ thickStart: 100, thickEnd: 200, blockCount: 3, strand: -1 }),
+      isUcscTranscript({
+        thickStart: 100,
+        thickEnd: 200,
+        blockCount: 3,
+        strand: -1,
+      }),
     ).toBe(true)
   })
 
   it('returns true when thickStart is 0 (valid CDS at chrom start)', () => {
     expect(
-      isUcscTranscript({ thickStart: 0, thickEnd: 100, blockCount: 3, strand: 1 }),
+      isUcscTranscript({
+        thickStart: 0,
+        thickEnd: 100,
+        blockCount: 3,
+        strand: 1,
+      }),
     ).toBe(true)
   })
 
   it('returns false when strand is 0 (unstranded is likely not a gene)', () => {
     expect(
-      isUcscTranscript({ thickStart: 100, thickEnd: 200, blockCount: 3, strand: 0 }),
+      isUcscTranscript({
+        thickStart: 100,
+        thickEnd: 200,
+        blockCount: 3,
+        strand: 0,
+      }),
     ).toBe(false)
   })
 
   it('returns false when thickStart === thickEnd (no CDS)', () => {
     expect(
-      isUcscTranscript({ thickStart: 100, thickEnd: 100, blockCount: 3, strand: 1 }),
+      isUcscTranscript({
+        thickStart: 100,
+        thickEnd: 100,
+        blockCount: 3,
+        strand: 1,
+      }),
     ).toBe(false)
   })
 
   it('returns false when thickStart is missing', () => {
-    expect(isUcscTranscript({ thickEnd: 200, blockCount: 3, strand: 1 })).toBeFalsy()
+    expect(
+      isUcscTranscript({ thickEnd: 200, blockCount: 3, strand: 1 }),
+    ).toBeFalsy()
   })
 
   it('returns false when blockCount is missing', () => {
-    expect(isUcscTranscript({ thickStart: 100, thickEnd: 200, strand: 1 })).toBeFalsy()
+    expect(
+      isUcscTranscript({ thickStart: 100, thickEnd: 200, strand: 1 }),
+    ).toBeFalsy()
   })
 })
 

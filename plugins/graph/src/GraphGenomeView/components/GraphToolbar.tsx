@@ -8,6 +8,7 @@ import ColorSchemeSelect from './ColorSchemeSelect.tsx'
 import GraphStats from './GraphStats.tsx'
 import LinearLayoutToggle from './LinearLayoutToggle.tsx'
 import SettingsMenu from './SettingsMenu.tsx'
+
 import type { GraphGenomeViewModel } from '../model.ts'
 
 const ZoomDisplay = observer(function ZoomDisplay({

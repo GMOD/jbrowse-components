@@ -1,6 +1,10 @@
 export * from './theme.ts'
 export { LogoFull, Logomark } from './Logo.tsx'
 export { default as AssemblySelector } from './AssemblySelector.tsx'
+export {
+  RefNameAutocompleteEndAdornment,
+  default as RefNameAutocomplete,
+} from './RefNameAutocomplete/index.tsx'
 export { default as CascadingMenu } from './CascadingMenu.tsx'
 export { default as CascadingMenuButton } from './CascadingMenuButton.tsx'
 export { default as Dialog } from './Dialog.tsx'

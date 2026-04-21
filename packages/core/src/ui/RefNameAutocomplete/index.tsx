@@ -1,14 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 
-import BaseResult, {
-  RefSequenceResult,
-} from '@jbrowse/core/TextSearch/BaseResults'
-import { getSession, measureText, useDebounce } from '@jbrowse/core/util'
 import { Autocomplete, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { LinearGenomeViewModel } from '../../model.ts'
+import BaseResult, { RefSequenceResult } from '../../TextSearch/BaseResults.ts'
+import { measureText, useDebounce } from '../../util/index.ts'
+
+import type { AbstractSessionModel } from '../../util/index.ts'
 
 interface Option {
   group?: string
@@ -54,12 +53,12 @@ function getDeduplicatedResult(results: BaseResult[]) {
 }
 
 const RefNameAutocomplete = observer(function RefNameAutocomplete({
-  model,
-  onSelect,
+  session,
   assemblyName,
-  fetchResults,
-  onChange,
   value,
+  fetchResults,
+  onSelect,
+  onChange,
   minWidth = 200,
   maxWidth = 550,
   style,
@@ -67,12 +66,14 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   helperText,
   inputStyle,
 }: {
-  model: LinearGenomeViewModel
-  onSelect?: (region: BaseResult) => void
-  onChange?: (val: string) => void
+  session: AbstractSessionModel
   assemblyName?: string
+  // Current display value (e.g. the view's visible locstring). If absent,
+  // the input shows only what the user has typed.
   value?: string
   fetchResults: (query: string) => Promise<BaseResult[]>
+  onSelect?: (region: BaseResult) => void
+  onChange?: (val: string) => void
   minWidth?: number
   maxWidth?: number
   style?: CSSProperties
@@ -80,7 +81,6 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   helperText?: string
   inputStyle?: CSSProperties
 }) {
-  const session = getSession(model)
   const { assemblyManager } = session
   const [loaded, setLoaded] = useState(true)
   const [currentSearch, setCurrentSearch] = useState('')
@@ -88,7 +88,6 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   const [searchOptions, setSearchOptions] = useState<Option[]>()
   const debouncedSearch = useDebounce(currentSearch, 50)
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
-  const { coarseVisibleLocStrings, hasDisplayedRegions } = model
 
   const fetchResultsRef = useRef(fetchResults)
   fetchResultsRef.current = fetchResults
@@ -128,7 +127,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
     }
   }, [assemblyName, debouncedSearch, session])
 
-  const inputBoxVal = coarseVisibleLocStrings || value || ''
+  const inputBoxVal = value ?? ''
   const regionOptions = useMemo(
     () =>
       assembly?.regions?.map(region => ({
@@ -171,10 +170,8 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       loadingText="loading results"
       onClose={() => {
         setLoaded(true)
-        if (hasDisplayedRegions) {
-          setCurrentSearch('')
-          setSearchOptions(undefined)
-        }
+        setCurrentSearch('')
+        setSearchOptions(undefined)
       }}
       onChange={(_event, selectedOption) => {
         if (!selectedOption || !assemblyName) {
@@ -221,3 +218,4 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
 })
 
 export default RefNameAutocomplete
+export { default as RefNameAutocompleteEndAdornment } from './EndAdornment.tsx'

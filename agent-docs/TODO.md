@@ -146,8 +146,47 @@ new chromosome. Check whether stale GPU buffers accumulate.
 
 ## Features & UX
 
-**Synteny viewport culling LOD** for large comparisons (Hs1 vs mm39 slow).
-Widen margins or soften refetch criterion.
+**Synteny large-data interactivity.** Four independently-landable items,
+ordered by ROI for whole-genome alignment (millions of features). `colorBy`
+is already main-thread (see recent `LinearSyntenyDisplay` refactor: per-
+instance `kinds`/`instanceFeatureIdx` + `renderInstanceData` getter); the
+items below tackle pan/zoom/pick.
+
+1. *Canvas2D picking spatial index.* `Canvas2DSyntenyRenderer.pick()` is
+   O(n) per hover across all tracks + instances. Build a Flatbush over
+   `(min(x1..x4), 0, max(x1..x4), height)` AABBs at `uploadGeometry`
+   time; query returns a short candidate list for `isPointInPath`.
+   Pattern mirrors alignments chain-mode. Small scope, GPU path
+   unaffected. Low risk.
+
+2. *Pan-cache via widened worker cull + range check.* Today worker culls
+   at `0.5× viewWidth`; every pan fires RPC + debounced rebuild. Grow
+   margin to ~`2× viewWidth` per side, return the actual emitted genomic
+   range, have `afterAttach` skip the RPC when new viewport ⊂ loaded
+   range and `bpPerPx` is unchanged. Medium scope. Subsumed by #3 if
+   that lands, but a good interim.
+
+3. *GPU-smooth-zoom (full alignments-style architecture).* Worker emits
+   absolute genomic uint32 per vertex (not float32 pixel offsets). Shader
+   converts bp → clip via `hpMath` against per-view `bpHi/bpLo/bpLen`
+   uniforms — top verts use view-A, bottom verts use view-B. Pan and zoom
+   become zero-CPU uniform updates; RPC only fires on feature-set change.
+   Touches `syntenyTypes.slang`, `syntenyFill/Edge/Picking.slang`,
+   `instanceInterleave.ts`, `buildSyntenyGeometry.ts` (CIGAR layout in bp
+   not pixels), `GpuSyntenyRenderer.writeUniforms`,
+   `Canvas2DSyntenyRenderer` (bp→pixel per frame),
+   `executeSyntenyFeaturesAndPositions.ts`. Medium risk; needs browser-
+   test coverage. Makes #2 moot; this is the architecturally correct
+   endgame and matches the pattern documented in ARCHITECTURE.md.
+
+4. *`drawCIGAR` / `drawCIGARMatchesOnly` / `drawLocationMarkers` →
+   gpuProps.* Worker always emits full CIGAR + marker geometry; per-
+   instance `kind` already distinguishes them. Add shader uniform bit
+   flags gating draw; `computeSyntenyColors` respects the same flags.
+   Payload always pays CIGAR cost — only worth it if users toggle these
+   frequently. Optional polish.
+
+Recommended sequence: **1 → 3**. Skip 2 if committing to 3. 4 is optional.
 
 **Synteny / dotplot UX.** Linked views, swap axes, better defaults for
 human vs mouse.
@@ -165,5 +204,15 @@ labels for genes.
 - Canvas: right-side padding excessive? Subpixel drawing crowded at dense zoom?
 - Canvas: features collapsed to y=0 on NCBI (needs reproduction steps).
 
+## Internal
+
+- getRpcSessionId for plugins/graph, maybe use view id
+
+## Cleanup
 
 Look at mui v9 migration checklist https://mui.com/material-ui/migration/upgrade-to-v9
+
+## Features
+
+- Add ability to drag individual nodes around in plugins/graph
+

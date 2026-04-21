@@ -1,12 +1,23 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import { fetchResults } from '@jbrowse/core/TextSearch/fetchResults'
+import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  AssemblySelector,
+  ErrorMessage,
+  LoadingEllipses,
+  RefNameAutocomplete,
+} from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import {
   Button,
-  CircularProgress,
+  MenuItem,
   Paper,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -23,26 +34,173 @@ L\t1\t+\t3\t+\t0M
 L\t2\t+\t4\t+\t0M
 L\t3\t+\t4\t+\t0M`
 
-const ImportForm = observer(function ImportForm({
+// Parses `chr1:1,000-2,000`. Returns 0-based half-open [start, end).
+function parseRegion(input: string) {
+  const s = input.replaceAll(/\s/g, '')
+  const lastColon = s.lastIndexOf(':')
+  if (lastColon === -1) {
+    throw new Error('expected format refName:start-end')
+  }
+  const refName = s.slice(0, lastColon)
+  const coords = s.slice(lastColon + 1).replaceAll(',', '')
+  const m = /^(\d+)[-–](\d+)$/.exec(coords)
+  if (!m) {
+    throw new Error('expected format refName:start-end')
+  }
+  const start = +m[1]!
+  const end = +m[2]!
+  if (!(start < end)) {
+    throw new Error('start must be less than end')
+  }
+  return { refName, start, end }
+}
+
+type Mode = 'track' | 'file'
+
+const TrackMode = observer(function TrackMode({
   model,
 }: {
   model: GraphGenomeViewModel
 }) {
+  const session = getSession(model)
+  const { assemblyNames } = session
+  const [assembly, setAssembly] = useState(assemblyNames[0] ?? '')
+  const [trackId, setTrackId] = useState('')
+  const [loc, setLoc] = useState('')
+  const [error, setError] = useState<unknown>()
+
+  const gfaTabixTracks = useMemo(
+    () =>
+      session.tracks.filter(track => {
+        const adapterType = readConfObject(track, ['adapter', 'type']) as
+          | string
+          | undefined
+        if (adapterType !== 'GfaTabixAdapter') {
+          return false
+        }
+        const trackAssemblies = readConfObject(track, 'assemblyNames') as
+          | string[]
+          | undefined
+        return !assembly || !trackAssemblies?.length
+          ? true
+          : trackAssemblies.includes(assembly)
+      }),
+    [session.tracks, assembly],
+  )
+
+  const selectedTrack = gfaTabixTracks.find(t => t.trackId === trackId)
+
+  async function handleLoad() {
+    setError(undefined)
+    try {
+      if (!selectedTrack) {
+        throw new Error('Pick a GfaTabix track')
+      }
+      // If the user picked a feature (e.g. a gene) from the autocomplete,
+      // prefer its resolved location; else parse whatever they typed.
+      const { refName, start, end } = parseRegion(loc)
+      const adapterNode = readConfObject(selectedTrack, 'adapter') as unknown
+      const adapterConfig = getSnapshot(
+        adapterNode as Parameters<typeof getSnapshot>[0],
+      ) as Record<string, unknown>
+      await model.loadFromTabixSubgraph(adapterConfig, {
+        refName,
+        assemblyName: assembly,
+        start,
+        end,
+      })
+    } catch (e) {
+      setError(e)
+    }
+  }
+
+  if (assemblyNames.length === 0) {
+    return <ErrorMessage error="No assemblies configured in this session" />
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+        <AssemblySelector
+          session={session}
+          selected={assembly}
+          onChange={v => {
+            setAssembly(v)
+            setTrackId('')
+          }}
+        />
+        <TextField
+          select
+          size="small"
+          label="GFA track"
+          value={trackId}
+          onChange={e => {
+            setTrackId(e.target.value)
+          }}
+          disabled={gfaTabixTracks.length === 0}
+          style={{ flex: 1, minWidth: 180 }}
+          helperText={
+            gfaTabixTracks.length === 0
+              ? `No GfaTabixAdapter tracks for ${assembly || 'this assembly'}`
+              : ' '
+          }
+        >
+          {gfaTabixTracks.map(track => (
+            <MenuItem key={track.trackId} value={track.trackId}>
+              {readConfObject(track, 'name') as string}
+            </MenuItem>
+          ))}
+        </TextField>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+        <RefNameAutocomplete
+          session={session}
+          assemblyName={assembly}
+          value={loc}
+          fetchResults={q =>
+            fetchResults({ queryString: q, session, assemblyName: assembly })
+          }
+          onChange={setLoc}
+          onSelect={result => {
+            setLoc(result.getLocation() ?? result.getLabel())
+          }}
+          minWidth={240}
+          maxWidth={400}
+          style={{ flex: 1 }}
+          helperText="Refname, gene/feature name, or refname:start-end"
+        />
+        <Button
+          variant="contained"
+          onClick={handleLoad}
+          disabled={!trackId || !loc.trim() || model.isLoading}
+        >
+          Open
+        </Button>
+      </div>
+
+      {error ? <ErrorMessage error={error} /> : null}
+    </div>
+  )
+})
+
+function FileMode({ model }: { model: GraphGenomeViewModel }) {
   const [url, setUrl] = useState('')
-  const [urlError, setUrlError] = useState<unknown>()
+  const [error, setError] = useState<unknown>()
 
   async function handleUrlLoad() {
-    if (url.trim()) {
-      setUrlError(undefined)
-      try {
-        const text = await openLocation({
-          uri: url,
-          locationType: 'UriLocation',
-        }).readFile('utf8')
-        await model.loadGFA(text, url.split('/').pop() ?? 'GFA')
-      } catch (e) {
-        setUrlError(e)
-      }
+    if (!url.trim()) {
+      return
+    }
+    setError(undefined)
+    try {
+      const text = await openLocation({
+        uri: url,
+        locationType: 'UriLocation',
+      }).readFile('utf8')
+      await model.loadGFA(text, url.split('/').pop() ?? 'GFA')
+    } catch (e) {
+      setError(e)
     }
   }
 
@@ -58,24 +216,11 @@ const ImportForm = observer(function ImportForm({
     }
   }
 
-  function handleExampleLoad() {
-    void model.loadGFA(EXAMPLE_GFA, 'Example graph')
-  }
-
   return (
-    <Paper
-      style={{ padding: 24, margin: 8, maxWidth: 600, marginInline: 'auto' }}
-    >
-      <Typography variant="h6" gutterBottom>
-        Load a GFA graph
-      </Typography>
-
-      <div style={{ marginBottom: 16 }}>
-        <Typography variant="subtitle2" gutterBottom>
-          From file
-        </Typography>
-        <Button variant="outlined" component="label">
-          Choose GFA file
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <Button variant="outlined" component="label" size="small">
+          Choose file
           <input
             type="file"
             accept=".gfa,.gfa1,.gfa2"
@@ -83,54 +228,104 @@ const ImportForm = observer(function ImportForm({
             onChange={handleFileUpload}
           />
         </Button>
+        <Typography variant="caption" color="textSecondary">
+          Whole-file GFA; best for small/medium graphs.
+        </Typography>
       </div>
 
-      <div style={{ marginBottom: 16 }}>
-        <Typography variant="subtitle2" gutterBottom>
-          From URL
-        </Typography>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <TextField
-            size="small"
-            fullWidth
-            placeholder="https://example.com/graph.gfa"
-            value={url}
-            onChange={e => {
-              setUrl(e.target.value)
-            }}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                void handleUrlLoad()
-              }
-            }}
-          />
-          <Button
-            variant="contained"
-            onClick={handleUrlLoad}
-            disabled={!url.trim() || model.isLoading}
-          >
-            Load
-          </Button>
-        </div>
-        {urlError ? <ErrorMessage error={urlError} /> : null}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+        <TextField
+          size="small"
+          label="URL"
+          placeholder="https://example.com/graph.gfa"
+          value={url}
+          onChange={e => {
+            setUrl(e.target.value)
+          }}
+          onKeyDown={e => {
+            if (e.key === 'Enter') {
+              void handleUrlLoad()
+            }
+          }}
+          style={{ flex: 1 }}
+        />
+        <Button
+          variant="contained"
+          onClick={handleUrlLoad}
+          disabled={!url.trim() || model.isLoading}
+        >
+          Open
+        </Button>
       </div>
 
-      <div style={{ marginBottom: 16 }}>
-        <Typography variant="subtitle2" gutterBottom>
-          Example
-        </Typography>
-        <Button variant="outlined" onClick={handleExampleLoad}>
-          Load example graph (4 nodes)
+      {error ? <ErrorMessage error={error} /> : null}
+    </div>
+  )
+}
+
+const ImportForm = observer(function ImportForm({
+  model,
+}: {
+  model: GraphGenomeViewModel
+}) {
+  const [mode, setMode] = useState<Mode>('track')
+
+  return (
+    <Paper
+      style={{ padding: 16, margin: 8, maxWidth: 560, marginInline: 'auto' }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 12,
+        }}
+      >
+        <Typography variant="h6">Load a GFA graph</Typography>
+        <ToggleButtonGroup
+          value={mode}
+          exclusive
+          size="small"
+          onChange={(_, v: Mode | null) => {
+            if (v) {
+              setMode(v)
+            }
+          }}
+        >
+          <ToggleButton value="track">Track</ToggleButton>
+          <ToggleButton value="file">File / URL</ToggleButton>
+        </ToggleButtonGroup>
+      </div>
+
+      {mode === 'track' ? (
+        <TrackMode model={model} />
+      ) : (
+        <FileMode model={model} />
+      )}
+
+      <div
+        style={{
+          marginTop: 12,
+          display: 'flex',
+          justifyContent: 'flex-end',
+        }}
+      >
+        <Button
+          size="small"
+          onClick={() => {
+            void model.loadGFA(EXAMPLE_GFA, 'Example graph')
+          }}
+        >
+          Load 4-node example
         </Button>
       </div>
 
       {model.isLoading ? (
-        <div style={{ textAlign: 'center', marginTop: 16 }}>
-          <CircularProgress size={24} />
-          <Typography variant="body2" style={{ marginTop: 8 }}>
-            Loading...
-          </Typography>
-        </div>
+        <LoadingEllipses
+          variant="body2"
+          message={model.statusMessage || 'Loading'}
+        />
       ) : null}
 
       {model.error ? <ErrorMessage error={model.error} /> : null}

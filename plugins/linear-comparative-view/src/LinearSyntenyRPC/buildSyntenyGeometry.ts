@@ -6,16 +6,18 @@ import {
   CIGAR_N,
   CIGAR_X,
 } from '@jbrowse/alignments-core'
-import { category10 } from '@jbrowse/core/ui/colors'
-import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
 
 import {
-  colorSchemes,
-  hashString,
-  syriColors,
-} from '../LinearSyntenyDisplay/drawSyntenyUtils.ts'
-
-import type { SyriType } from '@jbrowse/plugin-comparative-adapters'
+  KIND_BASE,
+  KIND_BASE_HIDDEN,
+  KIND_CIGAR_D,
+  KIND_CIGAR_HIDDEN,
+  KIND_CIGAR_I,
+  KIND_CIGAR_MATCH,
+  KIND_CIGAR_N,
+  KIND_MARKER,
+  computeSyntenyColors,
+} from './syntenyColors.ts'
 
 function toRelativeFloat32(
   values: Float64Array,
@@ -29,87 +31,6 @@ function toRelativeFloat32(
   return result
 }
 
-const category10Packed = category10.map(hex => cssColorToABGR(hex))
-
-// Pack normalized [0,1] RGBA into unsigned uint32 in ABGR byte order.
-function packRGBA(r: number, g: number, b: number, a: number) {
-  return packAbgr(
-    Math.round(r * 255),
-    Math.round(g * 255),
-    Math.round(b * 255),
-    Math.round(a * 255),
-  )
-}
-
-const STRAND_POS = packRGBA(1, 0, 0, 1)
-const STRAND_NEG = packRGBA(0, 0, 1, 1)
-const DEFAULT_COLOR = packRGBA(1, 0, 0, 1)
-
-const syriColorMap: Record<SyriType, number> = {
-  SYN: cssColorToABGR(syriColors.SYN),
-  INV: cssColorToABGR(syriColors.INV),
-  TRANS: cssColorToABGR(syriColors.TRANS),
-  DUP: cssColorToABGR(syriColors.DUP),
-}
-
-function createColorFunction(
-  colorBy: string,
-  syriTypes?: SyriType[],
-): (strand: number, refName: string, index: number) => number {
-  if (colorBy === 'syri' && syriTypes) {
-    return (_strand: number, _refName: string, index: number) =>
-      syriColorMap[syriTypes[index]!]
-  }
-
-  if (colorBy === 'strand') {
-    return (strand: number) => (strand === -1 ? STRAND_NEG : STRAND_POS)
-  }
-
-  if (colorBy === 'query') {
-    const colorCache = new Map<string, number>()
-    return (_strand: number, refName: string) => {
-      let c = colorCache.get(refName)
-      if (c === undefined) {
-        const hash = hashString(refName)
-        c = category10Packed[hash % category10Packed.length]!
-        colorCache.set(refName, c)
-      }
-      return c
-    }
-  }
-
-  return () => DEFAULT_COLOR
-}
-
-function buildIndelColors(colorBy: string) {
-  const scheme =
-    colorBy === 'strand' ? colorSchemes.strand : colorSchemes.default
-  const cigarColors = scheme.cigarColors
-  const indelColors: Partial<Record<number, number>> = {}
-  for (const [op, key] of [
-    [CIGAR_I, 'I'],
-    [CIGAR_D, 'D'],
-    [CIGAR_N, 'N'],
-  ] as const) {
-    const color = cigarColors[key as keyof typeof cigarColors]
-    if (color) {
-      indelColors[op] = cssColorToABGR(color)
-    }
-  }
-  return indelColors
-}
-
-function getCigarColorByOp(
-  op: number,
-  indelColors: Partial<Record<number, number>>,
-  colorFn: (strand: number, refName: string, index: number) => number,
-  strand: number,
-  refName: string,
-  index: number,
-) {
-  return indelColors[op] ?? colorFn(strand, refName, index)
-}
-
 function growF32(old: Float32Array, count: number, newCapacity: number) {
   const arr = new Float32Array(newCapacity)
   arr.set(old.subarray(0, count))
@@ -118,6 +39,12 @@ function growF32(old: Float32Array, count: number, newCapacity: number) {
 
 function growU32(old: Uint32Array, count: number, newCapacity: number) {
   const arr = new Uint32Array(newCapacity)
+  arr.set(old.subarray(0, count))
+  return arr
+}
+
+function growU8(old: Uint8Array, count: number, newCapacity: number) {
+  const arr = new Uint8Array(newCapacity)
   arr.set(old.subarray(0, count))
   return arr
 }
@@ -152,6 +79,12 @@ export interface SyntenyInstanceData {
   x3: Float32Array
   x4: Float32Array
   colors: Uint32Array
+  // Per-instance descriptors driving main-thread color recomputation on
+  // colorBy change. `kinds` is one of the `KIND_*` constants from
+  // syntenyColors.ts; `instanceFeatureIdx` is the parent feature index in
+  // SyntenyFeatureData (strands/refNames/...).
+  kinds: Uint8Array
+  instanceFeatureIdx: Uint32Array
   featureIds: Float32Array
   queryTotalLengths: Float32Array
   padTops: Float32Array
@@ -177,8 +110,6 @@ export function buildSyntenyGeometry({
   parsedCigars,
   starts,
   ends,
-  colorBy,
-  syriTypes,
   drawCIGAR,
   drawCIGARMatchesOnly,
   drawLocationMarkers,
@@ -199,8 +130,6 @@ export function buildSyntenyGeometry({
   parsedCigars: number[][]
   starts: Float64Array
   ends: Float64Array
-  colorBy: string
-  syriTypes?: SyriType[]
   drawCIGAR: boolean
   drawCIGARMatchesOnly: boolean
   drawLocationMarkers: boolean
@@ -209,8 +138,6 @@ export function buildSyntenyGeometry({
   viewOffsets: number[]
   viewWidth: number
 }): SyntenyInstanceData {
-  const colorFn = createColorFunction(colorBy, syriTypes)
-  const indelColors = buildIndelColors(colorBy)
   const featureCount = p11_offsetPx.length
 
   // Build per-feature total-length-across-same-query-name. Cache the
@@ -242,7 +169,8 @@ export function buildSyntenyGeometry({
   let x2s = new Float64Array(capacity)
   let x3s = new Float64Array(capacity)
   let x4s = new Float64Array(capacity)
-  let colorsArr = new Uint32Array(capacity)
+  let kindsArr = new Uint8Array(capacity)
+  let featIdxArr = new Uint32Array(capacity)
   let featureIdsArr = new Float32Array(capacity)
   let queryTotalLengthArr = new Float32Array(capacity)
   let padTopsArr = new Float32Array(capacity)
@@ -259,7 +187,8 @@ export function buildSyntenyGeometry({
     x2s = growF64(x2s, idx, newCapacity)
     x3s = growF64(x3s, idx, newCapacity)
     x4s = growF64(x4s, idx, newCapacity)
-    colorsArr = growU32(colorsArr, idx, newCapacity)
+    kindsArr = growU8(kindsArr, idx, newCapacity)
+    featIdxArr = growU32(featIdxArr, idx, newCapacity)
     featureIdsArr = growF32(featureIdsArr, idx, newCapacity)
     queryTotalLengthArr = growF32(queryTotalLengthArr, idx, newCapacity)
     padTopsArr = growF32(padTopsArr, idx, newCapacity)
@@ -272,8 +201,8 @@ export function buildSyntenyGeometry({
     topRight: number,
     bottomRight: number,
     bottomLeft: number,
-    color: number,
-    featureId: number,
+    kind: number,
+    featureIdx: number,
     qtl: number,
     padTop: number,
     padBottom: number,
@@ -283,8 +212,9 @@ export function buildSyntenyGeometry({
     x2s[idx] = topRight
     x3s[idx] = bottomRight
     x4s[idx] = bottomLeft
-    colorsArr[idx] = color
-    featureIdsArr[idx] = featureId
+    kindsArr[idx] = kind
+    featIdxArr[idx] = featureIdx
+    featureIdsArr[idx] = featureIdx + 1
     queryTotalLengthArr[idx] = qtl
     padTopsArr[idx] = padTop
     padBottomsArr[idx] = padBottom
@@ -296,7 +226,7 @@ export function buildSyntenyGeometry({
     topRight: number,
     bottomRight: number,
     bottomLeft: number,
-    featureId: number,
+    featureIdx: number,
     qtl: number,
     padTop: number,
     padBottom: number,
@@ -336,8 +266,8 @@ export function buildSyntenyGeometry({
         markerTopX,
         markerBottomX,
         markerBottomX,
-        packRGBA(0, 0, 0, 1),
-        featureId,
+        KIND_MARKER,
+        featureIdx,
         qtl,
         padTop,
         padBottom,
@@ -354,17 +284,14 @@ export function buildSyntenyGeometry({
   const willDrawCigarArr = new Uint8Array(featureCount)
 
   // First loop: emit a whole-polygon instance for every feature.
-  // Features that will get CIGAR detail are emitted with alpha=0 (invisible
-  // in the fill pass but still usable by the edge/outline pass).
+  // Features that will get CIGAR detail are emitted with KIND_BASE_HIDDEN
+  // (alpha-zero in the fill pass but still usable by the edge/outline pass).
   for (let i = 0; i < featureCount; i++) {
     const x11 = p11_offsetPx[i]!
     const x12 = p12_offsetPx[i]!
     const x21 = p21_offsetPx[i]!
     const x22 = p22_offsetPx[i]!
-    const featureId = i + 1
     const qtl = qtls[i]!
-    const strand = strands[i]!
-    const refName = refNames[i]!
     const padTop = padTopArr[i]!
     const padBottom = padBottomArr[i]!
 
@@ -378,21 +305,20 @@ export function buildSyntenyGeometry({
     }
     willDrawCigarArr[i] = willDrawCigar ? 1 : 0
 
-    const baseColor = colorFn(strand, refName, i)
     addInstance(
       x11,
       x12,
       x22,
       x21,
-      willDrawCigar ? baseColor & 0x00ffffff : baseColor,
-      featureId,
+      willDrawCigar ? KIND_BASE_HIDDEN : KIND_BASE,
+      i,
       qtl,
       padTop,
       padBottom,
     )
 
     if (!willDrawCigar && drawLocationMarkers) {
-      addLocationMarkers(x11, x12, x22, x21, featureId, qtl, padTop, padBottom)
+      addLocationMarkers(x11, x12, x22, x21, i, qtl, padTop, padBottom)
     }
   }
 
@@ -409,8 +335,6 @@ export function buildSyntenyGeometry({
     const x21 = p21_offsetPx[i]!
     const x22 = p22_offsetPx[i]!
     const strand = strands[i]!
-    const refName = refNames[i]!
-    const featureId = i + 1
     const qtl = qtls[i]!
     const padTop = padTopArr[i]!
     const padBottom = padBottomArr[i]!
@@ -432,28 +356,9 @@ export function buildSyntenyGeometry({
       }
     }
     if (maxIndelLen * Math.max(fallbackBpPerPxInv0, fallbackBpPerPxInv1) < 1) {
-      addInstance(
-        x11,
-        x12,
-        x22,
-        x21,
-        colorFn(strand, refName, i),
-        featureId,
-        qtl,
-        padTop,
-        padBottom,
-      )
+      addInstance(x11, x12, x22, x21, KIND_BASE, i, qtl, padTop, padBottom)
       if (drawLocationMarkers) {
-        addLocationMarkers(
-          x11,
-          x12,
-          x22,
-          x21,
-          featureId,
-          qtl,
-          padTop,
-          padBottom,
-        )
+        addLocationMarkers(x11, x12, x22, x21, i, qtl, padTop, padBottom)
       }
       continue
     }
@@ -514,40 +419,22 @@ export function buildSyntenyGeometry({
             resolvedOp === CIGAR_I ||
             resolvedOp === CIGAR_D ||
             resolvedOp === CIGAR_N
-          const color =
-            drawCIGARMatchesOnly && isIndel
-              ? 0
-              : getCigarColorByOp(
-                  resolvedOp,
-                  indelColors,
-                  colorFn,
-                  strand,
-                  refName,
-                  i,
-                )
-          addInstance(
-            px1,
-            cx1,
-            cx2,
-            px2,
-            color,
-            featureId,
-            qtl,
-            padTop,
-            padBottom,
-          )
+          let kind: number
+          if (drawCIGARMatchesOnly && isIndel) {
+            kind = KIND_CIGAR_HIDDEN
+          } else if (resolvedOp === CIGAR_I) {
+            kind = KIND_CIGAR_I
+          } else if (resolvedOp === CIGAR_D) {
+            kind = KIND_CIGAR_D
+          } else if (resolvedOp === CIGAR_N) {
+            kind = KIND_CIGAR_N
+          } else {
+            kind = KIND_CIGAR_MATCH
+          }
+          addInstance(px1, cx1, cx2, px2, kind, i, qtl, padTop, padBottom)
 
           if (drawLocationMarkers && !(drawCIGARMatchesOnly && isIndel)) {
-            addLocationMarkers(
-              px1,
-              cx1,
-              cx2,
-              px2,
-              featureId,
-              qtl,
-              padTop,
-              padBottom,
-            )
+            addLocationMarkers(px1, cx1, cx2, px2, i, qtl, padTop, padBottom)
           }
         }
       }
@@ -557,13 +444,28 @@ export function buildSyntenyGeometry({
   const instanceCount = idx
   const refOffset0 = viewOffsets[level]!
   const refOffset1 = viewOffsets[level + 1]!
+  const kinds = kindsArr.subarray(0, instanceCount)
+  const instanceFeatureIdx = featIdxArr.subarray(0, instanceCount)
+  // Worker emits default-scheme colors as a usable initial fill; the
+  // display model overrides via `renderInstanceData` whenever colorBy
+  // changes, so these serve only the first paint and Canvas2D fallback.
+  const colors = computeSyntenyColors({
+    kinds,
+    featureIdx: instanceFeatureIdx,
+    strands,
+    refNames,
+    instanceCount,
+    colorBy: 'default',
+  })
 
   return {
     x1: toRelativeFloat32(x1s, instanceCount, refOffset0),
     x2: toRelativeFloat32(x2s, instanceCount, refOffset0),
     x3: toRelativeFloat32(x3s, instanceCount, refOffset1),
     x4: toRelativeFloat32(x4s, instanceCount, refOffset1),
-    colors: colorsArr.subarray(0, instanceCount),
+    colors,
+    kinds,
+    instanceFeatureIdx,
     featureIds: featureIdsArr.subarray(0, instanceCount),
     queryTotalLengths: queryTotalLengthArr.subarray(0, instanceCount),
     padTops: padTopsArr.subarray(0, instanceCount),

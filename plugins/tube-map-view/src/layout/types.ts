@@ -31,7 +31,6 @@ export interface PathSegment {
   y: number
 }
 
-
 export interface TubeMapLayout {
   nodes: TubeMapNode[]
   tracks: TubeMapTrack[]

@@ -133,7 +133,7 @@ describe('featureData2', () => {
       names: bigGenePredNames,
     })
     expect(result.type).toBe('mRNA')
-    expect(result['geneName2']).toBe('EDEN')
+    expect(result.geneName2).toBe('EDEN')
   })
 
   it('preserves extra fields through the plain-blocks path (disableGeneHeuristic)', () => {
@@ -162,7 +162,7 @@ describe('featureData2', () => {
       names: bigGenePredNames,
       disableGeneHeuristic: true,
     })
-    expect(result['geneName2']).toBe('EDEN')
+    expect(result.geneName2).toBe('EDEN')
   })
 
   it('preserves extra fields when strand is 0 (unstranded, not treated as gene)', () => {
@@ -192,6 +192,6 @@ describe('featureData2', () => {
     })
     // strand=0 means isUcscTranscript returns false
     expect(result.type).toBeUndefined()
-    expect(result['geneName2']).toBe('MYGENE')
+    expect(result.geneName2).toBe('MYGENE')
   })
 })

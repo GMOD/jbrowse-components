@@ -3,10 +3,12 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView } from '@jbrowse/core/util'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
+import { computeSyriTypes } from '@jbrowse/plugin-comparative-adapters'
 
 import { getTooltip } from './components/util.ts'
 import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
 import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
+import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
 
 import type { ClickCoord } from './components/util.ts'
 import type { ColorScheme } from './drawSyntenyUtils.ts'
@@ -14,6 +16,7 @@ import type { SyntenyTrackRenderParams } from './syntenyBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { SyriType } from '@jbrowse/plugin-comparative-adapters'
 
 // Duck-typed view to avoid circular imports. Display only reads LGV-ish
 // fields off the containing view.
@@ -44,6 +47,11 @@ export interface SyntenyFeatureData {
   refNames: string[]
   assemblyNames: string[]
   cigars: string[]
+  // Per-feature SyRI type precomputed by structural-tier adapters. Populated
+  // for every feature (undefined where the adapter didn't provide one) so
+  // main-thread colorBy='syri' can short-circuit to precomputed values
+  // without a worker round-trip.
+  syriTypes: (string | undefined)[]
   mates: {
     start: number
     end: number
@@ -313,6 +321,96 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return undefined
         }
         return getFeatureAtIndex(self.featureData, index)
+      },
+      /**
+       * #getter
+       * SyRI types array aligned with featureData. Only computed when
+       * colorBy='syri'; otherwise undefined so computedColors skips the work.
+       * Uses adapter-precomputed values when present, else runs
+       * computeSyriTypes on the main thread.
+       */
+      get syriTypesForColoring(): SyriType[] | undefined {
+        if (self.colorBy !== 'syri') {
+          return undefined
+        }
+        const { featureData } = self
+        if (!featureData) {
+          return undefined
+        }
+        const { syriTypes, names, starts, ends, mates, strands } = featureData
+        const n = names.length
+        let hasPrecomputed = false
+        for (let i = 0; i < n; i++) {
+          if (syriTypes[i] !== undefined) {
+            hasPrecomputed = true
+            break
+          }
+        }
+        if (hasPrecomputed) {
+          const out = new Array<SyriType>(n)
+          for (let i = 0; i < n; i++) {
+            out[i] = (syriTypes[i] || 'SYN') as SyriType
+          }
+          return out
+        }
+        const input = new Array<{
+          qname: string
+          qstart: number
+          qend: number
+          tname: string
+          tstart: number
+          tend: number
+          strand: number
+        }>(n)
+        for (let i = 0; i < n; i++) {
+          const mate = mates[i]!
+          input[i] = {
+            qname: names[i]!,
+            qstart: starts[i]!,
+            qend: ends[i]!,
+            tname: mate.refName,
+            tstart: mate.start,
+            tend: mate.end,
+            strand: strands[i]!,
+          }
+        }
+        return computeSyriTypes(input)
+      },
+      /**
+       * #getter
+       * Main-thread-computed per-instance colors. Recomputes whenever
+       * colorBy, featureData, or instanceData descriptors change — this is
+       * the gpuProps half of the rpcProps/gpuProps split. colorBy changes
+       * flow through here without touching the RPC.
+       */
+      get computedColors(): Uint32Array | undefined {
+        const { instanceData, featureData, colorBy } = self
+        if (!instanceData || !featureData) {
+          return undefined
+        }
+        return computeSyntenyColors({
+          kinds: instanceData.kinds,
+          featureIdx: instanceData.instanceFeatureIdx,
+          strands: featureData.strands,
+          refNames: featureData.refNames,
+          instanceCount: instanceData.instanceCount,
+          colorBy,
+          syriTypes: this.syriTypesForColoring,
+        })
+      },
+      /**
+       * #getter
+       * Instance data with main-thread-computed colors substituted in. The
+       * view's upload autorun reads this, so any colorBy change re-fires
+       * upload without an RPC round-trip.
+       */
+      get renderInstanceData(): SyntenyInstanceData | undefined {
+        const { instanceData } = self
+        const colors = this.computedColors
+        if (!instanceData || !colors) {
+          return undefined
+        }
+        return { ...instanceData, colors }
       },
       get tooltipText() {
         const { hoveredFeatureIdx, featureData } = self

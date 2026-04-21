@@ -27,6 +27,28 @@ export interface BezierCurve {
   y1: number
 }
 
+export function translateCurves(
+  curves: BezierCurve[],
+  dx: number,
+  dy: number,
+): BezierCurve[] {
+  const out: BezierCurve[] = new Array(curves.length)
+  for (let i = 0; i < curves.length; i++) {
+    const c = curves[i]!
+    out[i] = {
+      x0: c.x0 + dx,
+      y0: c.y0 + dy,
+      cx0: c.cx0 + dx,
+      cy0: c.cy0 + dy,
+      cx1: c.cx1 + dx,
+      cy1: c.cy1 + dy,
+      x1: c.x1 + dx,
+      y1: c.y1 + dy,
+    }
+  }
+  return out
+}
+
 export function computeEdgeCurves(
   fromSegments: NodeSegment[],
   toSegments: NodeSegment[],

@@ -79,6 +79,7 @@
     "./rpc/RpcManager": "./src/rpc/RpcManager.ts",
     "./rpc/RpcRegistry": "./src/rpc/RpcRegistry.ts",
     "./TextSearch/BaseResults": "./src/TextSearch/BaseResults.ts",
+    "./TextSearch/fetchResults": "./src/TextSearch/fetchResults.ts",
     "./TextSearch/TextSearchManager": "./src/TextSearch/TextSearchManager.ts",
     "./ui": "./src/ui/index.ts",
     "./ui/AppLogo": "./src/ui/AppLogo.tsx",
@@ -426,6 +427,10 @@
       "./TextSearch/BaseResults": {
         "types": "./esm/TextSearch/BaseResults.d.ts",
         "import": "./esm/TextSearch/BaseResults.js"
+      },
+      "./TextSearch/fetchResults": {
+        "types": "./esm/TextSearch/fetchResults.d.ts",
+        "import": "./esm/TextSearch/fetchResults.js"
       },
       "./TextSearch/TextSearchManager": {
         "types": "./esm/TextSearch/TextSearchManager.d.ts",
@@ -869,6 +874,9 @@
         ],
         "TextSearch/BaseResults": [
           "esm/TextSearch/BaseResults.d.ts"
+        ],
+        "TextSearch/fetchResults": [
+          "esm/TextSearch/fetchResults.d.ts"
         ],
         "TextSearch/TextSearchManager": [
           "esm/TextSearch/TextSearchManager.d.ts"

@@ -146,7 +146,12 @@ const ImportForm = observer(function ImportForm({
         <Typography variant="subtitle2" gutterBottom>
           Example
         </Typography>
-        <Button variant="outlined" onClick={() => model.loadGFA(EXAMPLE_GFA)}>
+        <Button
+          variant="outlined"
+          onClick={() => {
+            model.loadGFA(EXAMPLE_GFA)
+          }}
+        >
           Load example (tiny pangenome, 15 nodes, 2 haplotypes)
         </Button>
       </div>

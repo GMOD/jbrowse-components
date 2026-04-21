@@ -42,7 +42,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           }
         }
 
-        const colorBy = self.colorBy
+        // colorBy is NOT read here: colors are computed main-side via
+        // `display.renderInstanceData`, so a colorBy change re-uploads
+        // without refetching from the worker.
         const drawCIGAR = view.drawCIGAR
         const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
         const drawLocationMarkers = view.drawLocationMarkers
@@ -99,7 +101,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
                 level,
                 sessionId,
                 stopToken: thisStopToken,
-                colorBy,
                 drawCIGAR,
                 drawCIGARMatchesOnly,
                 drawLocationMarkers,

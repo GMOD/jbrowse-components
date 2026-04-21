@@ -49,7 +49,11 @@ function NodeRect({
   const nodeHeight = Math.max(node.contentHeight, 6)
   const seq = screenWidth > MIN_SEQ_DISPLAY_WIDTH ? node.sequence : undefined
   const fontSize = seq
-    ? Math.min(10, nodeHeight * 0.7, (node.pixelWidth / node.sequenceLength) * 0.9)
+    ? Math.min(
+        10,
+        nodeHeight * 0.7,
+        (node.pixelWidth / node.sequenceLength) * 0.9,
+      )
     : 0
   const maxChars = seq ? Math.floor(node.pixelWidth / (fontSize * 0.6)) : 0
   const displaySeq = seq ? seq.slice(0, maxChars) : ''

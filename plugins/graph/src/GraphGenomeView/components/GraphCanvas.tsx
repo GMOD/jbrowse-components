@@ -113,7 +113,9 @@ const GraphCanvas = observer(function GraphCanvas({
         model.translateY + dy,
       )
     } else if (model.nodePositions && model.graph) {
-      const rect = (e.currentTarget as HTMLCanvasElement).getBoundingClientRect()
+      const rect = (
+        e.currentTarget as HTMLCanvasElement
+      ).getBoundingClientRect()
       const { x, y } = screenToGraph(
         e.clientX - rect.left,
         e.clientY - rect.top,
@@ -149,7 +151,9 @@ const GraphCanvas = observer(function GraphCanvas({
 
   function handleClick(e: React.MouseEvent) {
     if (model.nodePositions) {
-      const rect = (e.currentTarget as HTMLCanvasElement).getBoundingClientRect()
+      const rect = (
+        e.currentTarget as HTMLCanvasElement
+      ).getBoundingClientRect()
       const { x, y } = screenToGraph(
         e.clientX - rect.left,
         e.clientY - rect.top,

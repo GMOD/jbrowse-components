@@ -153,8 +153,11 @@ export function linearSyntenyViewHelperModelFactory(
       get geometryByDisplayKey() {
         const m = new Map<number, SyntenyInstanceData>()
         for (const display of self.linearSyntenyDisplays) {
-          if (display.instanceData) {
-            m.set(display.displayKey, display.instanceData)
+          // Read renderInstanceData (main-thread-recolored) not instanceData,
+          // so colorBy changes re-upload without an RPC refetch.
+          const data = display.renderInstanceData
+          if (data) {
+            m.set(display.displayKey, data)
           }
         }
         return m

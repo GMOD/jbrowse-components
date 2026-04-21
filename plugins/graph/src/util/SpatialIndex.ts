@@ -1,6 +1,7 @@
 import { computeEdgeCurves } from './geometry.ts'
 
 import type { Graph, NodeSegment } from '../types.ts'
+import type { BezierCurve } from './geometry.ts'
 
 interface CellEntry {
   nodeId: string
@@ -89,6 +90,10 @@ export class SpatialIndex {
 export class EdgeSpatialIndex {
   private cellSize: number
   private cells = new Map<number, Map<number, number[]>>()
+  // Base curves (offset 0) by edge index — retained here because we already
+  // compute them to derive each edge's bbox. findHoveredEdge reuses them on
+  // every mousemove; path-offset variants translate them (pure translation).
+  private edgeCurves = new Map<number, BezierCurve[]>()
 
   constructor(
     nodePositions: Record<string, NodeSegment[]>,
@@ -113,6 +118,7 @@ export class EdgeSpatialIndex {
         0,
         0,
       )
+      this.edgeCurves.set(ei, curves)
 
       let minX = Infinity
       let minY = Infinity
@@ -144,6 +150,10 @@ export class EdgeSpatialIndex {
         }
       }
     }
+  }
+
+  getCurves(ei: number) {
+    return this.edgeCurves.get(ei)
   }
 
   query(x: number, y: number, radius: number) {

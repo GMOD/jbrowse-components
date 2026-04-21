@@ -113,7 +113,7 @@ function getOrCreateTexturedLayout(device: GPUDevice, state: LayoutState) {
     })
   }
   return {
-    layout: state.texturedBindGroupLayout!,
+    layout: state.texturedBindGroupLayout,
     pipelineLayout: state.texturedPipelineLayout!,
   }
 }
@@ -138,7 +138,9 @@ async function compilePipelines(
         throw new ShaderCompileError(desc.id, details)
       }
       const fragEntry = desc.wgslFragmentEntry ?? 'fs_main'
-      const format: GPUTextureFormat = desc.picking ? 'rgba8unorm' : preferredFormat
+      const format: GPUTextureFormat = desc.picking
+        ? 'rgba8unorm'
+        : preferredFormat
       const blend = desc.picking
         ? undefined
         : desc.blend
@@ -283,7 +285,11 @@ export class WebGPUHal implements GpuHal {
       return null
     }
     const layoutState = createLayoutState(result.device)
-    const pipelines = await compilePipelines(result.device, descriptors, layoutState)
+    const pipelines = await compilePipelines(
+      result.device,
+      descriptors,
+      layoutState,
+    )
     return new WebGPUHal(
       result.device,
       canvas,
@@ -362,7 +368,10 @@ export class WebGPUHal implements GpuHal {
       if (!texState) {
         return null
       }
-      const { layout } = getOrCreateTexturedLayout(this.device, this.layoutState)
+      const { layout } = getOrCreateTexturedLayout(
+        this.device,
+        this.layoutState,
+      )
       return this.device.createBindGroup({
         layout,
         entries: [
@@ -708,8 +717,14 @@ export class WebGPUHal implements GpuHal {
 
     const encoder = this.device.createCommandEncoder()
     encoder.copyTextureToBuffer(
-      { texture: this.pickingTexture, origin: [px, py, 0] },
-      { buffer: this.pickingStagingBuffer, bytesPerRow: 256 },
+      {
+        texture: this.pickingTexture,
+        origin: [px, py, 0],
+      },
+      {
+        buffer: this.pickingStagingBuffer,
+        bytesPerRow: 256,
+      },
       [1, 1, 1],
     )
     this.device.queue.submit([encoder.finish()])
@@ -717,11 +732,13 @@ export class WebGPUHal implements GpuHal {
     try {
       await this.pickingStagingBuffer.mapAsync(GPUMapMode.READ)
     } catch {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!this.disposed) {
         this.resetStagingBuffer()
       }
       return -1
     }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (this.disposed) {
       try {
         this.pickingStagingBuffer.unmap()
@@ -817,7 +834,10 @@ export class WebGPUHal implements GpuHal {
     let region = this.regions.get(regionKey)
     if (!region) {
       region = {
-        meta: { regionStart: 0, maxDepth: 0 },
+        meta: {
+          regionStart: 0,
+          maxDepth: 0,
+        },
         buffers: new Map(),
       }
       this.regions.set(regionKey, region)

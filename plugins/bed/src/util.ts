@@ -207,8 +207,11 @@ export function featureData2({
     ...rest
   } = data
 
-  const score =
-    scoreColumn ? +data[scoreColumn] : score2 !== undefined ? +score2 : undefined
+  const score = scoreColumn
+    ? +data[scoreColumn]
+    : score2 !== undefined
+      ? +score2
+      : undefined
   const strand = parseStrand(strand2)
 
   // Check before makeBlocks since generateRepeatMaskerFeature doesn't use subfeatures

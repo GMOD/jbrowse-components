@@ -21,7 +21,12 @@ test('adapter aggregates transcripts sharing the same geneName into a gene paren
 
   const features = await firstValueFrom(
     adapter
-      .getFeatures({ assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 20000 })
+      .getFeatures({
+        assemblyName: 'volvox',
+        refName: 'ctgA',
+        start: 0,
+        end: 20000,
+      })
       .pipe(toArray()),
   )
 
@@ -31,7 +36,11 @@ test('adapter aggregates transcripts sharing the same geneName into a gene paren
   const subs = eden!.get('subfeatures') as { get(k: string): unknown }[]
   // EDEN.1, EDEN.2, EDEN.3 should all be under the EDEN gene
   expect(subs.length).toBe(3)
-  expect(subs.map(s => s.get('name')).sort()).toEqual(['EDEN.1', 'EDEN.2', 'EDEN.3'])
+  expect(subs.map(s => s.get('name')).sort()).toEqual([
+    'EDEN.1',
+    'EDEN.2',
+    'EDEN.3',
+  ])
   // Each sub should be an mRNA
   for (const sub of subs) {
     expect(sub.get('type')).toBe('mRNA')

@@ -1,11 +1,11 @@
 import '@testing-library/jest-dom'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import { RefNameAutocomplete } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 // @ts-expect-error
 import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-
-import RefNameAutocomplete from './RefNameAutocomplete/index.tsx'
 
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
@@ -39,17 +39,18 @@ function setup() {
       adapter: { type: 'FromConfigSequenceAdapter', features: [] },
     },
   })
-  return { model: session.views[0] }
+  const model = session.views[0]
+  return { model, session: getSession(model) }
 }
 
 const patience = { timeout: 5000 }
 
 describe('RefNameAutocomplete', () => {
   it('renders the search input', () => {
-    const { model } = setup()
+    const { session } = setup()
     render(
       <RefNameAutocomplete
-        model={model}
+        session={session}
         assemblyName="volvox"
         fetchResults={async () => []}
       />,
@@ -58,19 +59,21 @@ describe('RefNameAutocomplete', () => {
   })
 
   it('is disabled when no assemblyName is provided', () => {
-    const { model } = setup()
-    render(<RefNameAutocomplete model={model} fetchResults={async () => []} />)
+    const { session } = setup()
+    render(
+      <RefNameAutocomplete session={session} fetchResults={async () => []} />,
+    )
     expect(screen.getByRole('combobox')).toBeDisabled()
   })
 
   it('calls fetchResults when the user types a query', async () => {
     const user = userEvent.setup()
-    const { model } = setup()
+    const { session } = setup()
     const fetchResults = jest.fn(async () => [])
 
     render(
       <RefNameAutocomplete
-        model={model}
+        session={session}
         assemblyName="volvox"
         fetchResults={fetchResults}
       />,
@@ -87,14 +90,14 @@ describe('RefNameAutocomplete', () => {
 
   it('displays results returned by fetchResults', async () => {
     const user = userEvent.setup()
-    const { model } = setup()
+    const { session } = setup()
     const fetchResults = jest.fn(async () => [
       new BaseResult({ label: 'ctgA:1..100' }),
     ])
 
     render(
       <RefNameAutocomplete
-        model={model}
+        session={session}
         assemblyName="volvox"
         fetchResults={fetchResults}
       />,
@@ -111,14 +114,14 @@ describe('RefNameAutocomplete', () => {
 
   it('calls onSelect with the chosen result', async () => {
     const user = userEvent.setup()
-    const { model } = setup()
+    const { session } = setup()
     const result = new BaseResult({ label: 'ctgA:1..100' })
     const fetchResults = jest.fn(async () => [result])
     const onSelect = jest.fn()
 
     render(
       <RefNameAutocomplete
-        model={model}
+        session={session}
         assemblyName="volvox"
         fetchResults={fetchResults}
         onSelect={onSelect}
@@ -136,12 +139,12 @@ describe('RefNameAutocomplete', () => {
 
   it('calls onChange for each typed character', async () => {
     const user = userEvent.setup()
-    const { model } = setup()
+    const { session } = setup()
     const onChange = jest.fn()
 
     render(
       <RefNameAutocomplete
-        model={model}
+        session={session}
         assemblyName="volvox"
         fetchResults={async () => []}
         onChange={onChange}
@@ -158,14 +161,14 @@ describe('RefNameAutocomplete', () => {
 
   it('clears results when the input is emptied', async () => {
     const user = userEvent.setup()
-    const { model } = setup()
+    const { session } = setup()
     const fetchResults = jest.fn(async () => [
       new BaseResult({ label: 'ctgA:1..100' }),
     ])
 
     render(
       <RefNameAutocomplete
-        model={model}
+        session={session}
         assemblyName="volvox"
         fetchResults={fetchResults}
       />,
@@ -185,7 +188,7 @@ describe('RefNameAutocomplete', () => {
 
   it('deduplicates results with the same display string', async () => {
     const user = userEvent.setup()
-    const { model } = setup()
+    const { session } = setup()
     const fetchResults = jest.fn(async () => [
       new BaseResult({ label: 'ctgA', displayString: 'ctgA:1..100' }),
       new BaseResult({ label: 'ctgA', displayString: 'ctgA:1..100' }),
@@ -193,7 +196,7 @@ describe('RefNameAutocomplete', () => {
 
     render(
       <RefNameAutocomplete
-        model={model}
+        session={session}
         assemblyName="volvox"
         fetchResults={fetchResults}
       />,
@@ -209,7 +212,7 @@ describe('RefNameAutocomplete', () => {
 
   it('shows loading text while fetch is in progress, then results when done', async () => {
     const user = userEvent.setup()
-    const { model } = setup()
+    const { session } = setup()
 
     let resolveSearch!: (r: BaseResult[]) => void
     const fetchResults = jest.fn(
@@ -221,7 +224,7 @@ describe('RefNameAutocomplete', () => {
 
     render(
       <RefNameAutocomplete
-        model={model}
+        session={session}
         assemblyName="volvox"
         fetchResults={fetchResults}
       />,

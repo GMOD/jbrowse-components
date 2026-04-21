@@ -1,7 +1,4 @@
 import { getConf } from '@jbrowse/core/configuration'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-
-type WithConfiguration = { configuration: AnyConfigurationModel }
 import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -17,6 +14,7 @@ import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
 
 import type { FeatureDensityModel } from './autorunFeatureDensityStats.ts'
 import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util/types'
 
@@ -24,6 +22,9 @@ type LGV = LinearGenomeViewModel
 
 type FeatureDensityStatsSelf = Parameters<typeof getFeatureDensityStatsPre>[0]
 
+interface WithConfiguration {
+  configuration: AnyConfigurationModel
+}
 /**
  * Block-based display mixin that adds reactive density-stats checking
  * on top of RegionTooLargeMixin.
@@ -60,7 +61,10 @@ export default function FeatureDensityMixin() {
       },
 
       get maxFeatureScreenDensity() {
-        return getConf(self as unknown as WithConfiguration, 'maxFeatureScreenDensity')
+        return getConf(
+          self as unknown as WithConfiguration,
+          'maxFeatureScreenDensity',
+        )
       },
 
       get featureDensityStatsReady() {
@@ -75,7 +79,10 @@ export default function FeatureDensityMixin() {
         return (
           self.userByteSizeLimit ||
           self.featureDensityStats?.fetchSizeLimit ||
-          (getConf(self as unknown as WithConfiguration, 'fetchSizeLimit') as number)
+          (getConf(
+            self as unknown as WithConfiguration,
+            'fetchSizeLimit',
+          ) as number)
         )
       },
     }))

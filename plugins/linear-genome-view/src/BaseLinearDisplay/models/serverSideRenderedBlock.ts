@@ -1,7 +1,6 @@
 import type React from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import {
   assembleLocString,
   getContainingDisplay,
@@ -18,11 +17,12 @@ import { getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent.tsx'
 
+import type { LayoutRecord } from '../types.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { AbstractDisplayModel, Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LayoutRecord } from '../types.ts'
 
 export interface BlockLayoutData {
   getRectangles(): Map<string, LayoutRecord>
@@ -272,7 +272,9 @@ const blockState = types
   .views(self => ({
     get statusMessage() {
       return self.isRenderingPending
-        ? self.blockStatusMessage || self.cachedDisplay?.statusMessage || 'Loading'
+        ? self.blockStatusMessage ||
+            self.cachedDisplay?.statusMessage ||
+            'Loading'
         : undefined
     },
     get displayHeight() {
@@ -410,7 +412,7 @@ async function renderBlockEffect(
     self.setMessage(cannotBeRenderedReason)
     return undefined
   }
-  if (!renderProps || renderProps.notReady || !renderArgs) {
+  if (!renderProps || renderProps.notReady) {
     return undefined
   }
   const results = await rendererType.renderInClient(rpcManager, {
