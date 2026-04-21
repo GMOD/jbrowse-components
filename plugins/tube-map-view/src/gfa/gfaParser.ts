@@ -86,14 +86,13 @@ export function parseGFA(file: string) {
 
   for (const line of file.split('\n')) {
     if (line.startsWith('H')) {
-      const headerLine = {} as Record<string, string | number>
+      const headerLine: Record<string, string | number> = {}
       const [, ...rest] = line.split('\t')
       for (const tag of rest) {
         parseTag(tag, headerLine)
       }
       graph.header.push(headerLine)
-    }
-    if (line.startsWith('S')) {
+    } else if (line.startsWith('S')) {
       const [, name, ...rest] = line.split('\t')
       let len: number
       let seq: string
@@ -109,7 +108,7 @@ export function parseGFA(file: string) {
         len = seq.length
         tagfields = rest.slice(1)
       }
-      const tags = {} as Record<string, string | number>
+      const tags: Record<string, string | number> = {}
       for (const tagfield of tagfields) {
         parseTag(tagfield, tags)
       }
@@ -123,7 +122,7 @@ export function parseGFA(file: string) {
       const target1 = target!.slice(0, -1)
       const strand1 = source!.at(-1)
       const strand2 = target!.at(-1)
-      const tags = {} as Record<string, string | number>
+      const tags: Record<string, string | number> = {}
       for (const element of rest) {
         parseTag(element, tags)
       }
@@ -139,7 +138,7 @@ export function parseGFA(file: string) {
     } else if (line.startsWith('L')) {
       const [, source, strand1, target, strand2, cigar, ...rest] =
         line.split('\t')
-      const tags = {} as Record<string, string | number>
+      const tags: Record<string, string | number> = {}
       for (const element of rest) {
         parseTag(element, tags)
       }
@@ -154,7 +153,7 @@ export function parseGFA(file: string) {
     } else if (line.startsWith('W')) {
       const [, sample, hap, contig, start, end, body, ...rest] =
         line.split('\t')
-      const tags = {} as Record<string, string | number>
+      const tags: Record<string, string | number> = {}
       for (const element of rest) {
         parseTag(element, tags)
       }

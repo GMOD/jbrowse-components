@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "test": "cd ../..; jest --passWithNoTests plugins/tube-map-view",
+    "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/tube-map-view",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",

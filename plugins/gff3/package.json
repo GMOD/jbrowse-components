@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "test": "cd ../..; jest --passWithNoTests plugins/gff3 --passWithNoTests",
+    "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/gff3 --passWithNoTests",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",

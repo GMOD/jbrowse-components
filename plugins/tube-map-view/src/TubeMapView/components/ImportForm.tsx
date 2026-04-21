@@ -85,10 +85,6 @@ const ImportForm = observer(function ImportForm({
     }
   }
 
-  function handleExampleLoad() {
-    model.loadGFA(EXAMPLE_GFA)
-  }
-
   return (
     <Paper
       style={{ padding: 24, margin: 8, maxWidth: 600, marginInline: 'auto' }}
@@ -150,7 +146,7 @@ const ImportForm = observer(function ImportForm({
         <Typography variant="subtitle2" gutterBottom>
           Example
         </Typography>
-        <Button variant="outlined" onClick={handleExampleLoad}>
+        <Button variant="outlined" onClick={() => model.loadGFA(EXAMPLE_GFA)}>
           Load example (tiny pangenome, 15 nodes, 2 haplotypes)
         </Button>
       </div>

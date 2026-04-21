@@ -9,12 +9,25 @@
 // 5. X coordinate calculation
 
 import type {
-  NodeAssignment,
   PathSegment,
   TubeMapLayout,
   TubeMapNode,
   TubeMapTrack,
 } from './types.ts'
+
+interface NodeAssignment {
+  node: number | null
+  tracks: TrackAssignment[]
+  idealLane: number
+}
+
+interface TrackAssignment {
+  trackID: number
+  segmentID: number
+  lane: number
+  idealLane: number
+  idealY: number | null
+}
 
 const NODE_GAP = 10
 const TRACK_WIDTH = 7
@@ -122,8 +135,7 @@ function maxOrder(nodes: TubeMapNode[]) {
 function generateNodeOrder(nodes: TubeMapNode[], tracks: TubeMapTrack[]) {
   let nextOrder = 0
 
-  for (let t = 0; t < tracks.length; t++) {
-    const track = tracks[t]!
+  for (const [t, track] of tracks.entries()) {
     const seq = track.sequence
 
     if (t === 0) {
@@ -218,8 +230,7 @@ function generateLaneAssignment(
   // map from (order, nodeIdx) → index in assignments[order] for O(1) lookup
   const slotIndex = new Map<string, number>()
 
-  for (let t = 0; t < tracks.length; t++) {
-    const track = tracks[t]!
+  for (const [t, track] of tracks.entries()) {
     const seq = track.sequence
     const path: PathSegment[] = []
     track.path = path
@@ -303,16 +314,13 @@ function addToAssignment(
     const existingIdx = slotIndex.get(key)
     if (existingIdx !== undefined) {
       slot[existingIdx]!.tracks.push(ta)
-      return
+    } else {
+      slotIndex.set(key, slot.length)
+      slot.push({ node: nodeIdx, tracks: [ta], idealLane: 0 })
     }
-    slotIndex.set(key, slot.length)
+  } else {
+    slot.push({ node: null, tracks: [ta], idealLane: 0 })
   }
-
-  slot.push({
-    node: nodeIdx,
-    tracks: [ta],
-    idealLane: 0,
-  })
 }
 
 function assignLanesAtOrder(slot: NodeAssignment[]) {
@@ -370,7 +378,7 @@ function applyVerticalPositions(
         const node = nodes[assignment.node]!
         const lastTrack = assignment.tracks.at(-1)
         node.contentHeight =
-          lastTrack?.idealY !== undefined && lastTrack.idealY !== null
+          lastTrack?.idealY != null
             ? lastTrack.idealY - node.y + TRACK_WIDTH
             : TRACK_WIDTH
       }

@@ -10,40 +10,31 @@ export function layoutGFA(gfa: GFAGraph, widthPerBp = 10): TubeMapLayout {
     sequence: n.sequence === '*' ? undefined : n.sequence,
   }))
 
-  const inputTracks = []
-
-  // convert P (path) lines
-  for (const p of gfa.paths) {
-    const segmentStrs = p.path.split(',')
-    const segments = segmentStrs.map(s => {
-      const orient = s.at(-1)
-      const name = s.slice(0, -1)
-      return { name, isForward: orient === '+' }
-    })
-    inputTracks.push({
+  const inputTracks = [
+    ...gfa.paths.map(p => ({
       id: `path:${p.name}`,
       name: p.name,
-      segments,
+      segments: p.path.split(',').map(s => ({
+        name: s.slice(0, -1),
+        isForward: s.at(-1) === '+',
+      })),
       type: 'haplotype' as const,
       indexOfFirstBase: 0,
-    })
-  }
-
-  // convert W (walk) lines
-  for (const w of gfa.walks) {
-    const segments = w.segments.map(s => ({
-      name: s.id,
-      isForward: s.strand === '+',
-    }))
-    const name = `${w.sample}#${w.haplotype}#${w.contig}`
-    inputTracks.push({
-      id: `walk:${name}`,
-      name,
-      segments,
-      type: 'haplotype' as const,
-      indexOfFirstBase: Math.max(w.start, 0),
-    })
-  }
+    })),
+    ...gfa.walks.map(w => {
+      const name = `${w.sample}#${w.haplotype}#${w.contig}`
+      return {
+        id: `walk:${name}`,
+        name,
+        segments: w.segments.map(s => ({
+          name: s.id,
+          isForward: s.strand === '+',
+        })),
+        type: 'haplotype' as const,
+        indexOfFirstBase: Math.max(w.start, 0),
+      }
+    }),
+  ]
 
   return computeTubeMapLayout(inputNodes, inputTracks, widthPerBp)
 }

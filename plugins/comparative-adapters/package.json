@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "test": "cd ../..; jest --passWithNoTests plugins/comparative-adapters",
+    "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/comparative-adapters",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",

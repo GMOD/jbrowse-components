@@ -25,7 +25,6 @@ export default function stateModelFactory() {
     )
     .volatile(() => ({
       layout: undefined as TubeMapLayout | undefined,
-      gfaText: undefined as string | undefined,
       graphName: '',
       error: undefined as string | undefined,
       isLoading: false,
@@ -92,7 +91,6 @@ export default function stateModelFactory() {
       loadGFA(text: string, name = 'Imported GFA') {
         self.isLoading = true
         self.error = undefined
-        self.gfaText = text
         self.graphName = name
         const gfa = parseGFA(text)
         self.layout = layoutGFA(gfa, self.widthPerBp)
@@ -103,7 +101,6 @@ export default function stateModelFactory() {
       },
       clearGraph() {
         self.layout = undefined
-        self.gfaText = undefined
         self.error = undefined
         self.hoveredNode = null
         self.hoveredTrack = null
