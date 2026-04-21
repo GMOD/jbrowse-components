@@ -1,12 +1,14 @@
-import { type ClusterHierarchyNode, renderTreeSVG } from '@jbrowse/tree-sidebar'
+import { renderTreeSVG } from './hierarchy.ts'
 
-const SvgTree = ({
+import type { ClusterHierarchyNode } from './types.ts'
+
+export function SvgTreePath({
   hierarchy,
-  scrollTop,
+  scrollTop = 0,
 }: {
   hierarchy: ClusterHierarchyNode
-  scrollTop: number
-}) => {
+  scrollTop?: number
+}) {
   return (
     <g transform={`translate(0 ${-scrollTop})`}>
       <path
@@ -18,5 +20,3 @@ const SvgTree = ({
     </g>
   )
 }
-
-export default SvgTree

@@ -1,48 +1,23 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
-import {
-  abgrAlpha,
-  abgrBlue,
-  abgrGreen,
-  abgrRed,
-} from '@jbrowse/core/util/colorBits'
-import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
+import { REFERENCE_COLOR } from '../shared/constants.ts'
+import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
+import { setAbgrFill } from '../shared/renderSvgUtils.ts'
 import { drawVariantShape } from './components/variantShape.ts'
-import SvgLabelRows from '../shared/components/SvgLabelRows.tsx'
-import SvgTree from '../shared/components/SvgTree.tsx'
 
+import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
 import type { VariantCellData } from './components/computeVariantCells.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { ClusterHierarchyNode } from '@jbrowse/tree-sidebar'
 
 type LGV = LinearGenomeViewModel
 
-interface RenderSvgModel {
-  id: string
-  cellData: unknown
-  error: unknown
-  regionTooLarge: boolean
-  rowHeight: number
-  scrollTop: number
-  availableHeight: number
-  height: number
-  canDisplayLabels: boolean
-  sources: { name: string }[] | undefined
+interface RenderSvgModel extends RenderSvgBaseModel {
   referenceDrawingMode: string
-  hierarchy: ClusterHierarchyNode | undefined
-  showTree: boolean
-  treeAreaWidth: number
-}
-
-function setFillFromCellColor(ctx: SvgCanvas, colors: Uint32Array, i: number) {
-  const c = colors[i]!
-  ctx.fillStyle = `rgb(${abgrRed(c)},${abgrGreen(c)},${abgrBlue(c)})`
-  ctx.globalAlpha = abgrAlpha(c) / 255
 }
 
 function renderCellsForRegion(
@@ -98,7 +73,7 @@ function renderCellsForRegion(
     const x = Math.min(px1, px2)
     const w = Math.max(Math.max(px1, px2) - x, 2)
 
-    setFillFromCellColor(ctx, cellColors, i)
+    setAbgrFill(ctx, cellColors[i]!)
     drawVariantShape(ctx, cellShapeTypes[i]!, x, y, w, h)
   }
 }
@@ -137,7 +112,7 @@ export async function renderSvg(
   const ctx = new SvgCanvas()
 
   if (referenceDrawingMode === 'skip') {
-    ctx.fillStyle = '#ccc'
+    ctx.fillStyle = REFERENCE_COLOR
     ctx.globalAlpha = 1
     ctx.fillRect(0, 0, Math.round(view.width), availableHeight)
   }
@@ -158,28 +133,20 @@ export async function renderSvg(
   }
 
   const sources = model.sources ?? []
-  const { hierarchy, showTree, treeAreaWidth } = model
-  const labelOffset = showTree && hierarchy ? treeAreaWidth : 0
-
   return (
-    <SvgClipRect
+    <SvgVariantOverlay
       id={`variant-clip-${model.id}`}
       width={Math.round(view.width)}
       height={model.height}
-    >
-      <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
-      {sources.length > 1 && canDisplayLabels ? (
-        <SvgLabelRows
-          sources={sources}
-          rowHeight={rowHeight}
-          scrollTop={scrollTop}
-          availableHeight={availableHeight}
-          labelOffset={labelOffset}
-        />
-      ) : null}
-      {showTree && hierarchy ? (
-        <SvgTree hierarchy={hierarchy} scrollTop={scrollTop} />
-      ) : null}
-    </SvgClipRect>
+      svgContent={ctx.getSerializedSvg()}
+      sources={sources}
+      rowHeight={rowHeight}
+      scrollTop={scrollTop}
+      availableHeight={availableHeight}
+      canDisplayLabels={canDisplayLabels}
+      hierarchy={model.hierarchy}
+      showTree={model.showTree}
+      treeAreaWidth={model.treeAreaWidth}
+    />
   )
 }

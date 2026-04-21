@@ -1,44 +1,22 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
-import {
-  abgrAlpha,
-  abgrBlue,
-  abgrGreen,
-  abgrRed,
-} from '@jbrowse/core/util/colorBits'
-import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
-import SvgLabelRows from '../shared/components/SvgLabelRows.tsx'
-import SvgTree from '../shared/components/SvgTree.tsx'
+import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
+import { setAbgrFill } from '../shared/renderSvgUtils.ts'
+
+import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
 
 import type { MatrixCellData } from './components/computeVariantMatrixCells.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { ClusterHierarchyNode } from '@jbrowse/tree-sidebar'
 
 type LGV = LinearGenomeViewModel
 
-interface RenderSvgModel {
-  id: string
-  cellData: unknown
-  error: unknown
-  regionTooLarge: boolean
-  rowHeight: number
-  scrollTop: number
-  availableHeight: number
-  height: number
-  canDisplayLabels: boolean
-  sources: { name: string }[] | undefined
-  hierarchy: ClusterHierarchyNode | undefined
-  showTree: boolean
-  treeAreaWidth: number
-}
-
 export async function renderSvg(
-  model: RenderSvgModel,
+  model: RenderSvgBaseModel,
   _opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
@@ -71,35 +49,25 @@ export async function renderSvg(
     if (y + rowHeight < 0 || y > availableHeight) {
       continue
     }
-    const c = cellColors[i]!
-    ctx.fillStyle = `rgb(${abgrRed(c)},${abgrGreen(c)},${abgrBlue(c)})`
-    ctx.globalAlpha = abgrAlpha(c) / 255
+    setAbgrFill(ctx, cellColors[i]!)
     ctx.fillRect(cellFeatureIndices[i]! * colWidth, y, w, h)
   }
 
   const sources = model.sources ?? []
-  const { hierarchy, showTree, treeAreaWidth } = model
-  const labelOffset = showTree && hierarchy ? treeAreaWidth : 0
-
   return (
-    <SvgClipRect
+    <SvgVariantOverlay
       id={`variant-matrix-clip-${model.id}`}
       width={canvasWidth}
       height={model.height}
-    >
-      <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
-      {sources.length > 1 && canDisplayLabels ? (
-        <SvgLabelRows
-          sources={sources}
-          rowHeight={rowHeight}
-          scrollTop={scrollTop}
-          availableHeight={availableHeight}
-          labelOffset={labelOffset}
-        />
-      ) : null}
-      {showTree && hierarchy ? (
-        <SvgTree hierarchy={hierarchy} scrollTop={scrollTop} />
-      ) : null}
-    </SvgClipRect>
+      svgContent={ctx.getSerializedSvg()}
+      sources={sources}
+      rowHeight={rowHeight}
+      scrollTop={scrollTop}
+      availableHeight={availableHeight}
+      canDisplayLabels={canDisplayLabels}
+      hierarchy={model.hierarchy}
+      showTree={model.showTree}
+      treeAreaWidth={model.treeAreaWidth}
+    />
   )
 }

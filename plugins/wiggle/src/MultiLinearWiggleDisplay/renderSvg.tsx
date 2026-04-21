@@ -1,11 +1,10 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
-import { renderTreeSVG } from '@jbrowse/tree-sidebar'
+import { SvgRowLabels, SvgTreePath } from '@jbrowse/tree-sidebar'
 import { when } from 'mobx'
 
 import DensityLegend from '../shared/DensityLegend.tsx'
-import MultiRowLabels from '../shared/MultiRowLabels.tsx'
 import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../shared/ScoreLegend.tsx'
 import YScaleBar from '../shared/YScaleBar.tsx'
@@ -305,7 +304,7 @@ export async function renderSvg(
         canvasWidth={canvasWidth}
       />
     ) : (
-      <MultiRowLabels
+      <SvgRowLabels
         sources={sources}
         rowHeight={rowHeight}
         labelOffset={labelOffset}
@@ -313,17 +312,8 @@ export async function renderSvg(
     )
   }
 
-  let treeEl: React.ReactNode = null
-  if (showTree && hierarchy) {
-    treeEl = (
-      <path
-        d={renderTreeSVG(hierarchy)}
-        fill="none"
-        stroke="#0008"
-        strokeWidth={1}
-      />
-    )
-  }
+  const treeEl =
+    showTree && hierarchy ? <SvgTreePath hierarchy={hierarchy} /> : null
 
   const totalWidth = view.dynamicBlocks.totalWidthPx
 

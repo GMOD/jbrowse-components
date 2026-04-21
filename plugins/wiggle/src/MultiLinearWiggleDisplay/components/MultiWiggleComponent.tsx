@@ -2,12 +2,11 @@ import { useCallback, useRef, useState } from 'react'
 
 import { ErrorOverlay } from '@jbrowse/core/ui'
 import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
-import { TreeSidebar } from '@jbrowse/tree-sidebar'
+import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import MultiWiggleTooltip from './Tooltip.tsx'
 import DensityLegend from '../../shared/DensityLegend.tsx'
-import MultiRowLabels from '../../shared/MultiRowLabels.tsx'
 import OverlayColorLegend from '../../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
@@ -342,7 +341,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
               canvasWidth={totalWidth}
             />
           ) : (
-            <MultiRowLabels
+            <SvgRowLabels
               sources={displaySources}
               rowHeight={rowHeight}
               labelOffset={labelOffset}

@@ -1,29 +1,35 @@
 import { measureText } from '@jbrowse/core/util'
 
-import { getRowTop } from './wiggleComponentUtils.ts'
-
-export default function MultiRowLabels({
+export function SvgRowLabels({
   sources,
   rowHeight,
   labelOffset,
+  scrollTop = 0,
+  availableHeight,
 }: {
   sources: { name: string; labelColor?: string }[]
   rowHeight: number
   labelOffset: number
+  scrollTop?: number
+  availableHeight?: number
 }) {
-  let labelWidth = 0
+  const fontSize = Math.min(rowHeight, 12)
+  const boxHeight = Math.min(rowHeight, 20)
+  let maxWidth = 0
   for (const s of sources) {
-    const w = measureText(s.name, 10)
-    if (w > labelWidth) {
-      labelWidth = w
+    const w = measureText(s.name, fontSize)
+    if (w > maxWidth) {
+      maxWidth = w
     }
   }
-  labelWidth += 10
+  const labelWidth = maxWidth + 10
   return (
     <g transform={`translate(${labelOffset} 0)`}>
       {sources.map((source, idx) => {
-        const y = getRowTop(idx, rowHeight)
-        const boxHeight = Math.min(20, rowHeight)
+        const y = idx * rowHeight - scrollTop
+        if (availableHeight !== undefined && (y + rowHeight < 0 || y > availableHeight)) {
+          return null
+        }
         const lc = source.labelColor
         return (
           <g key={source.name}>
@@ -36,8 +42,9 @@ export default function MultiRowLabels({
             />
             <text
               x={4}
-              y={y + boxHeight / 2 + 3}
-              fontSize={10}
+              y={y + boxHeight / 2}
+              fontSize={fontSize}
+              dominantBaseline="central"
               fill={lc ? 'white' : 'black'}
             >
               {source.name}

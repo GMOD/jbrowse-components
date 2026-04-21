@@ -957,7 +957,6 @@ export default function MultiSampleVariantBaseModelF(
         jexlFilters,
         clusterTree,
         treeAreaWidth,
-        lineZoneHeight,
         subtreeFilter,
         ...rest
       } = snap as Omit<typeof snap, symbol>
@@ -971,7 +970,6 @@ export default function MultiSampleVariantBaseModelF(
         ...(jexlFilters?.length ? { jexlFilters } : {}),
         ...(clusterTree !== undefined ? { clusterTree } : {}),
         ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
-        ...(lineZoneHeight ? { lineZoneHeight } : {}),
         ...(subtreeFilter?.length ? { subtreeFilter } : {}),
       } as typeof snap
     })
