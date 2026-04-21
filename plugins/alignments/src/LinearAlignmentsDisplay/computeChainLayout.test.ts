@@ -19,7 +19,7 @@ function makeChainData(opts: {
     colorType?: number
   }[]
 }): PileupDataResult {
-  const { regionStart, chains } = opts
+  const { chains } = opts
   const numChains = chains.length
   const numReads = chains.reduce((n, c) => n + (c.numReads ?? 1), 0)
 

@@ -41,10 +41,13 @@ async function setupView(trackIds: string[]) {
     },
   }) as LinearGenomeViewModel
   view.setWidth(800)
-  await waitFor(() => {
-    expect(view.initialized).toBe(true)
-    expect(view.tracks.length).toBe(trackIds.length)
-  }, { timeout: 30000 })
+  await waitFor(
+    () => {
+      expect(view.initialized).toBe(true)
+      expect(view.tracks.length).toBe(trackIds.length)
+    },
+    { timeout: 30000 },
+  )
   return { rootModel, session, view }
 }
 

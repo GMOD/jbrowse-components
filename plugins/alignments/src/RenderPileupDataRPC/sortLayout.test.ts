@@ -19,7 +19,7 @@ function makePileupData(opts: {
   reads: Read[]
   sortPos?: number
 }): PileupDataResult {
-  const { regionStart, reads, sortPos } = opts
+  const { reads, sortPos } = opts
   const numReads = reads.length
   const hasAnyTagValue = reads.some(r => r.tagValue !== undefined)
   const sortTagValues = hasAnyTagValue

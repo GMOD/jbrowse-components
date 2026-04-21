@@ -249,13 +249,51 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
         const rgb = `rgb(${r},${g},${b})`
 
         if (renderingType === RENDERING_TYPE_LINE) {
-          drawLine(ctx, source, block, rowHeight, rowTop, domainY, scaleType, rgb)
+          drawLine(
+            ctx,
+            source,
+            block,
+            rowHeight,
+            rowTop,
+            domainY,
+            scaleType,
+            rgb,
+          )
         } else if (renderingType === RENDERING_TYPE_DENSITY) {
-          drawDensity(ctx, source, block, rowHeight, rowTop, domainY, scaleType, r, g, b)
+          drawDensity(
+            ctx,
+            source,
+            block,
+            rowHeight,
+            rowTop,
+            domainY,
+            scaleType,
+            r,
+            g,
+            b,
+          )
         } else if (renderingType === RENDERING_TYPE_SCATTER) {
-          drawScatter(ctx, source, block, rowHeight, rowTop, domainY, scaleType, rgb)
+          drawScatter(
+            ctx,
+            source,
+            block,
+            rowHeight,
+            rowTop,
+            domainY,
+            scaleType,
+            rgb,
+          )
         } else {
-          drawXYPlot(ctx, source, block, rowHeight, rowTop, domainY, scaleType, rgb)
+          drawXYPlot(
+            ctx,
+            source,
+            block,
+            rowHeight,
+            rowTop,
+            domainY,
+            scaleType,
+            rgb,
+          )
         }
       }
       ctx.restore()

@@ -79,7 +79,6 @@ describe('processFeaturesFromArrays', () => {
       maxScores,
       2,
       0,
-      0,
     )
 
     expect(Array.from(result.featureMinScores)).toEqual([2, 7])
@@ -98,7 +97,6 @@ describe('processFeaturesFromArrays', () => {
       undefined,
       undefined,
       3,
-      0,
       0,
     )
 

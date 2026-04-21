@@ -20,7 +20,7 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-interface RenderSvgModel {
+export interface RenderSvgModel {
   id: string
   height: number
   error: unknown

@@ -3,7 +3,6 @@ import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { setAbgrFill } from '@jbrowse/core/util/colorBits'
 import { when } from 'mobx'
 
-
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
 import { drawVariantShape } from './components/variantShape.ts'

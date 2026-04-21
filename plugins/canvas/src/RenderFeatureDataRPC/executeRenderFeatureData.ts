@@ -121,7 +121,10 @@ export async function executeRenderFeatureData({
       const records: FeatureLayout[] = []
       for (const feature of features.values()) {
         records.push(
-          findGlyph(feature, displayConfig)({ feature, reversed, config: displayConfig }),
+          findGlyph(
+            feature,
+            displayConfig,
+          )({ feature, reversed, config: displayConfig }),
         )
       }
       return records

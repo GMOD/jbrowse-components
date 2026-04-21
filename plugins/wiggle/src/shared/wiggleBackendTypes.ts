@@ -22,10 +22,7 @@ export interface SourceRenderData {
 }
 
 export interface WiggleBackend {
-  uploadRegion(
-    displayedRegionIndex: number,
-    sources: SourceRenderData[],
-  ): void
+  uploadRegion(displayedRegionIndex: number, sources: SourceRenderData[]): void
   pruneRegions(activeRegions: number[]): void
   renderBlocks(blocks: RenderBlock[], renderState: WiggleGPURenderState): void
   dispose(): void

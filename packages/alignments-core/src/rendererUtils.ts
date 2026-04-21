@@ -20,13 +20,6 @@ import {
   INSTANCE_STRIDE_F32 as SNP_STRIDE,
 } from './snpCoverageLayout.generated.ts'
 
-import type {
-  CoverageBinsGpuUpload,
-  IndicatorGpuUpload,
-  ModCovGpuUpload,
-  NoncovGpuUpload,
-  SnpGpuUpload,
-} from './coverageGpuPacking.ts'
 import type { CigarOpDrawColors } from './labelConstants.ts'
 import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
@@ -112,8 +105,10 @@ export function drawCoverageBins(
     if (px > viewWidth || px2 < 0) {
       continue
     }
-    const bandBottom = bottom - normalizeDepth(f32[off + FIELD.bandBottom]!) * effectiveH
-    const bandTop = bottom - normalizeDepth(f32[off + FIELD.bandTop]!) * effectiveH
+    const bandBottom =
+      bottom - normalizeDepth(f32[off + FIELD.bandBottom]!) * effectiveH
+    const bandTop =
+      bottom - normalizeDepth(f32[off + FIELD.bandTop]!) * effectiveH
     ctx.fillRect(px, bandTop, Math.max(px2 - px, 1), bandBottom - bandTop)
   }
 }
@@ -172,7 +167,8 @@ export function drawIndicators(
     const off = i * INDICATOR_STRIDE
     const px = bpToX(u32[off + INDICATOR_FIELD.position]!)
     if (px >= 0 && px < viewWidth) {
-      ctx.fillStyle = colorLut[f32[off + INDICATOR_FIELD.colorType]! - 1] ?? colorLut[0]!
+      ctx.fillStyle =
+        colorLut[f32[off + INDICATOR_FIELD.colorType]! - 1] ?? colorLut[0]!
       drawIndicatorTriangle(ctx, px)
     }
   }

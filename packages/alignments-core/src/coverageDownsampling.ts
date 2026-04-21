@@ -94,10 +94,7 @@ export function computeVisibleMaxDepth<
     if (!cov) {
       continue
     }
-    const startBin = Math.max(
-      0,
-      Math.floor(block.start - cov.coverageStartPos),
-    )
+    const startBin = Math.max(0, Math.floor(block.start - cov.coverageStartPos))
     const endBin = Math.min(
       cov.coverageDepths.length,
       Math.ceil(block.end - cov.coverageStartPos),
@@ -142,10 +139,7 @@ export function computeVisibleCoverageStats<
     if (!cov) {
       continue
     }
-    const startBin = Math.max(
-      0,
-      Math.floor(block.start - cov.coverageStartPos),
-    )
+    const startBin = Math.max(0, Math.floor(block.start - cov.coverageStartPos))
     const endBin = Math.min(
       cov.coverageDepths.length,
       Math.ceil(block.end - cov.coverageStartPos),

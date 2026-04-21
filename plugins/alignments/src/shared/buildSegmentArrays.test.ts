@@ -65,9 +65,7 @@ function segments(
 describe('buildSegmentArrays', () => {
   test('read without skips produces one segment', () => {
     const result = segments([feat('r1', 1000, 1200)], [], 1000, 1200)
-    expect(result).toEqual([
-      { start: 1000, end: 1200, readIdx: 0, edge: 0b11 },
-    ])
+    expect(result).toEqual([{ start: 1000, end: 1200, readIdx: 0, edge: 0b11 }])
   })
 
   test('deletions are ignored (only skips split reads)', () => {
@@ -77,9 +75,7 @@ describe('buildSegmentArrays', () => {
       1000,
       1200,
     )
-    expect(result).toEqual([
-      { start: 1000, end: 1200, readIdx: 0, edge: 0b11 },
-    ])
+    expect(result).toEqual([{ start: 1000, end: 1200, readIdx: 0, edge: 0b11 }])
   })
 
   test('single skip splits read into two exon segments', () => {
@@ -168,9 +164,7 @@ describe('buildSegmentArrays', () => {
         2000,
         2300,
       )
-      expect(result).toEqual([
-        { start: 2000, end: 50000, readIdx: 0, edge: 0 },
-      ])
+      expect(result).toEqual([{ start: 2000, end: 50000, readIdx: 0, edge: 0 }])
     })
 
     test('skip gap entirely after region — full segments emitted', () => {

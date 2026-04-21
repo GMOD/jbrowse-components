@@ -226,12 +226,8 @@ function renderCoverageForSvg(
   coverageColor: string,
   snpColors: SyntenyColors,
 ) {
-  const {
-    coverageDepths,
-    coverageMaxDepth,
-    coverageStartPos,
-    refName,
-  } = coverage
+  const { coverageDepths, coverageMaxDepth, coverageStartPos, refName } =
+    coverage
   if (coverageMaxDepth === 0) {
     return
   }

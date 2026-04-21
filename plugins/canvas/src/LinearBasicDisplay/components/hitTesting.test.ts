@@ -71,6 +71,7 @@ function makeData(
     arrowDirections: new Int8Array(0),
     arrowColors: new Uint32Array(0),
     arrowFeatureIndices: new Uint32Array(0),
+    outlineColor: 0,
     featureCount: 0,
   }
 }

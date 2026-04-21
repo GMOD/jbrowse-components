@@ -1006,10 +1006,8 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     ctx.lineWidth = 1
 
     for (let i = 0; i < region.numConnectingLines; i++) {
-      const startBp =
-        region.connectingLinePositions[i * 2]!
-      const endBp =
-        region.connectingLinePositions[i * 2 + 1]!
+      const startBp = region.connectingLinePositions[i * 2]!
+      const endBp = region.connectingLinePositions[i * 2 + 1]!
       const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
       const yRow = region.connectingLineYs[i]!

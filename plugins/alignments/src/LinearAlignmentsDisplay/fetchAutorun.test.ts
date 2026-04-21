@@ -17,7 +17,7 @@ import stateModelFactory from './model.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-function makeEmptyPileupData(regionStart: number): PileupDataResult {
+function makeEmptyPileupData(_regionStart: number): PileupDataResult {
   return {
     readPositions: new Uint32Array(0),
     readYs: new Uint16Array(0),

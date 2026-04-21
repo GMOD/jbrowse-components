@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { ErrorOverlay, LoadingOverlay, Menu  } from '@jbrowse/core/ui'
+import { ErrorOverlay, LoadingOverlay, Menu } from '@jbrowse/core/ui'
 import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'

@@ -9,8 +9,11 @@ const subpartsFilterCache = new Map<string, (f: Feature) => boolean>()
 function makeSubpartsFilter(subParts: string) {
   let f = subpartsFilterCache.get(subParts)
   if (!f) {
-    const lowerRet = new Set(subParts.split(/\s*,\s*/).map(t => t.toLowerCase()))
-    f = (feature: Feature) => lowerRet.has(feature.get('type')?.toLowerCase() ?? '')
+    const lowerRet = new Set(
+      subParts.split(/\s*,\s*/).map(t => t.toLowerCase()),
+    )
+    f = (feature: Feature) =>
+      lowerRet.has(feature.get('type')?.toLowerCase() ?? '')
     subpartsFilterCache.set(subParts, f)
   }
   return f

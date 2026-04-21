@@ -220,7 +220,11 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
               } else {
                 const { featurePositions, featureScores, numFeatures } =
                   rpcSource
-                const foundIdx = findFeatureAtBp(featurePositions, numFeatures, bp)
+                const foundIdx = findFeatureAtBp(
+                  featurePositions,
+                  numFeatures,
+                  bp,
+                )
 
                 if (foundIdx === -1) {
                   model.setFeatureUnderMouse(undefined)

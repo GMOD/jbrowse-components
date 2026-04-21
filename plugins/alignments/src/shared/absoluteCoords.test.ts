@@ -19,7 +19,12 @@ describe('absolute coords → pixel mapping, forward vs reversed', () => {
   }
 
   // GPU: (abs - start) / bpLen * 2 - 1 for clip-x, then flipX negates on reversed
-  function gpuClipX(absBp: number, start: number, bpLen: number, reversed: boolean) {
+  function gpuClipX(
+    absBp: number,
+    start: number,
+    bpLen: number,
+    reversed: boolean,
+  ) {
     const clip = ((absBp - start) / bpLen) * 2 - 1
     return reversed ? -clip : clip
   }
@@ -56,7 +61,8 @@ describe('absolute coords → pixel mapping, forward vs reversed', () => {
       for (const bp of [1100, 1500, 1900]) {
         const canvasFrac =
           canvas2dBpToScreenX(bp, bpRange, 0, blockWidth, reversed) / blockWidth
-        const gpuFrac = (gpuClipX(bp, bpRange[0], bpRange[1] - bpRange[0], reversed) + 1) / 2
+        const gpuFrac =
+          (gpuClipX(bp, bpRange[0], bpRange[1] - bpRange[0], reversed) + 1) / 2
         expect(canvasFrac).toBeCloseTo(gpuFrac)
       }
     }

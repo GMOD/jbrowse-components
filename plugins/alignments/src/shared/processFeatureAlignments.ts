@@ -386,7 +386,9 @@ export function buildInterbaseArrays(
   regionStart: number,
   getReadIndex?: (featureId: string) => number,
 ) {
-  const filteredInsertions = insertions.filter(ins => ins.position >= regionStart)
+  const filteredInsertions = insertions.filter(
+    ins => ins.position >= regionStart,
+  )
   const filteredSoftclips = softclips.filter(sc => sc.position >= regionStart)
   const filteredHardclips = hardclips.filter(hc => hc.position >= regionStart)
 
@@ -620,14 +622,8 @@ export function buildSegmentArrays(
       const firstSegIdx = segIdx
       let cur = readStart
       for (const skip of skips) {
-        const gapStart = Math.min(
-          readEnd,
-          Math.max(readStart, skip.start),
-        )
-        const gapEnd = Math.min(
-          readEnd,
-          Math.max(readStart, skip.end),
-        )
+        const gapStart = Math.min(readEnd, Math.max(readStart, skip.start))
+        const gapEnd = Math.min(readEnd, Math.max(readStart, skip.end))
 
         // Exon segment before this gap
         if (gapStart > cur) {

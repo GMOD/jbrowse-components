@@ -27,7 +27,10 @@ export function SvgRowLabels({
     <g transform={`translate(${labelOffset} 0)`}>
       {sources.map((source, idx) => {
         const y = idx * rowHeight - scrollTop
-        if (availableHeight !== undefined && (y + rowHeight < 0 || y > availableHeight)) {
+        if (
+          availableHeight !== undefined &&
+          (y + rowHeight < 0 || y > availableHeight)
+        ) {
           return null
         }
         const lc = source.labelColor

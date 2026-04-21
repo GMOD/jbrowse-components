@@ -172,7 +172,10 @@ export function prepareBlockGeometry(
     if (rowA !== rowB) {
       return rowA - rowB
     }
-    return u32View[a * FILL_STRIDE + FILL_FIELD.startBp]! - u32View[b * FILL_STRIDE + FILL_FIELD.startBp]!
+    return (
+      u32View[a * FILL_STRIDE + FILL_FIELD.startBp]! -
+      u32View[b * FILL_STRIDE + FILL_FIELD.startBp]!
+    )
   })
 
   const sortedBuf = new ArrayBuffer(n * INSTANCE_BYTE_SIZE)

@@ -122,10 +122,7 @@ describe('downsampleMinMax', () => {
 })
 
 describe('computeVisibleMaxDepth', () => {
-  function region(
-    coverageDepths: Float32Array,
-    coverageStartPos: number,
-  ) {
+  function region(coverageDepths: Float32Array, coverageStartPos: number) {
     return { coverageDepths, coverageStartPos }
   }
 

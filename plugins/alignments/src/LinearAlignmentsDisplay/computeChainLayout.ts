@@ -163,7 +163,7 @@ export function buildChainConnectingData(
       flatbush.add(
         chainAbsMinStarts[chainIdx]!,
         y,
-        chainAbsMaxEnds[chainIdx]!,
+        chainAbsMaxEnds[chainIdx],
         y,
       )
     }

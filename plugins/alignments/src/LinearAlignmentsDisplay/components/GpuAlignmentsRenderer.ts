@@ -376,16 +376,7 @@ interface ArcFrame {
   covOffset: number
 }
 function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
-  const {
-    region,
-    block,
-    state,
-    scissorX,
-    scissorW,
-    arcViewportH,
-    dpr,
-    covOffset,
-  } = a
+  const { block, state, scissorX, scissorW, arcViewportH, dpr, covOffset } = a
   const blockW = block.screenEndPx - block.screenStartPx
   const [hi, lo] = splitPositionWithFrac(block.bpRangeX[0])
   f[U.covOffset] = covOffset
@@ -1096,11 +1087,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         region.readYs,
       )
       if (bounds) {
-        const clip = clipFor(
-          bounds.minStart,
-          bounds.maxEnd,
-          bounds.y,
-        )
+        const clip = clipFor(bounds.minStart, bounds.maxEnd, bounds.y)
         quads.push(clip.sx1, clip.syTop, clip.sx2, clip.syBot, 0, 0, 0, 0.4)
       }
     }
@@ -1115,11 +1102,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       if (bounds) {
         pushSelectionFrame(
           quads,
-          clipFor(
-            bounds.minStart,
-            bounds.maxEnd,
-            bounds.y,
-          ),
+          clipFor(bounds.minStart, bounds.maxEnd, bounds.y),
         )
       }
     }

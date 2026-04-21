@@ -1,8 +1,8 @@
-import { jest } from '@jest/globals'
+import { renderToString } from 'react-dom/server'
 
 import { renderSvg } from './renderSvg.tsx'
 
-import type { RenderSvgModel } from './renderSvg.ts'
+import type { RenderSvgModel } from './renderSvg.tsx'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
 // renderSvg calls getContainingView(model) to reach the LGV. Since the model
@@ -22,13 +22,23 @@ const mockView = {
   width: 800,
 }
 
-jest.mock('@jbrowse/core/util', async () => {
-  const actual = await jest.importActual<typeof import('@jbrowse/core/util')>(
-    '@jbrowse/core/util',
-  )
+jest.mock('@jbrowse/core/util', () => ({
+  getContainingView: () => mockView,
+}))
+
+jest.mock('mobx', () => {
+  const actual = jest.requireActual('mobx')
   return {
     ...actual,
-    getContainingView: () => mockView,
+    when: async (condition: () => boolean) => {
+      // For tests, immediately resolve if condition is true, otherwise wait a bit
+      for (let i = 0; i < 100; i++) {
+        if (condition()) {
+          return Promise.resolve()
+        }
+        await new Promise(r => setTimeout(r, 10))
+      }
+    },
   }
 })
 
@@ -84,33 +94,32 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
 
 describe('renderSvg', () => {
   it('returns null when laidOutDataMap is empty', async () => {
-    const result = await renderSvg(
-      makeModel({ laidOutDataMap: new Map() }),
-    )
+    const result = await renderSvg(makeModel({ laidOutDataMap: new Map() }))
     expect(result).toBeNull()
   })
 
   it('returns an error element when model.error is set', async () => {
     const result = await renderSvg(
-      makeModel({ laidOutDataMap: new Map(), error: new Error('fetch failed') }),
+      makeModel({
+        laidOutDataMap: new Map(),
+        error: new Error('fetch failed'),
+      }),
     )
     expect(result).not.toBeNull()
-    // SVGErrorBox renders as a React element
-    const element = result as React.ReactElement
-    expect(element.props).toBeDefined()
+    // SVGErrorBox renders an error message in SVG format
+    const html = renderToString(result as React.ReactElement)
+    expect(html).toContain('fetch failed')
   })
 
-  it('returns SVG content when there is feature data', async () => {
+  it('produces SVG with correct dimensions', async () => {
     const result = await renderSvg(makeModel())
     expect(result).not.toBeNull()
-    const element = result as React.ReactElement
-    // SvgClipRect wraps the output
-    expect(element.type).toBeDefined()
-    expect(element.props.width).toBe(800)
-    expect(element.props.height).toBe(100)
+    const html = renderToString(result as React.ReactElement)
+    expect(html).toContain('width="800"')
+    expect(html).toContain('height="100"')
   })
 
-  it('renders rects for features in visible region', async () => {
+  it('renders rect elements for features in visible region', async () => {
     const data = makeData([
       { startBp: 1100, endBp: 1200 },
       { startBp: 1400, endBp: 1600 },
@@ -118,18 +127,22 @@ describe('renderSvg', () => {
     const result = await renderSvg(
       makeModel({ laidOutDataMap: new Map([[0, data]]) }),
     )
-    const element = result as React.ReactElement
-    const svg: string = element.props.children.props.dangerouslySetInnerHTML.__html
-    expect(svg).toContain('<rect')
+    expect(result).not.toBeNull()
+    const html = renderToString(result as React.ReactElement)
+    expect(html).toContain('<rect')
   })
 
-  it('skips regions not in laidOutDataMap', async () => {
-    // displayedRegionIndex=99 has no data, so output should be empty SVG
+  it('does not render feature rect elements when data is not in visible region', async () => {
+    // displayedRegionIndex=99 has no data, so output should not contain feature rects
+    // (the clip path itself has a rect, but we're checking for the inner content)
     const result = await renderSvg(
       makeModel({ laidOutDataMap: new Map([[99, makeData()]]) }),
     )
-    const element = result as React.ReactElement
-    const svg: string = element.props.children.props.dangerouslySetInnerHTML.__html
-    expect(svg).not.toContain('<rect')
+    expect(result).not.toBeNull()
+    const html = renderToString(result as React.ReactElement)
+    // The clip definition has a rect, but there should be no content rects inside the g element
+    const contentMatch = html.match(/<g clip-path="[^"]*">(.*?)<\/g>/s)
+    const content = contentMatch?.[1] ?? ''
+    expect(content).not.toContain('<rect')
   })
 })
