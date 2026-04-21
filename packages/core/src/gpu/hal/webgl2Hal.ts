@@ -43,7 +43,7 @@ function glErrorName(gl: WebGL2RenderingContext, code: number) {
 function glBlendFactor(
   gl: WebGL2RenderingContext,
   factor: BlendState['srcFactor'],
-) {
+): number {
   switch (factor) {
     case 'one':
       return gl.ONE
@@ -92,7 +92,6 @@ export class WebGL2Hal implements GpuHal {
   private passes: Map<string, PassState>
   private regions = new Map<number, RegionState>()
   private ubo: WebGLBuffer
-  private uniformByteSize: number
   private pickingFbo: WebGLFramebuffer | null = null
   private pickingTex: WebGLTexture | null = null
   private pickingW = 0
@@ -125,7 +124,6 @@ export class WebGL2Hal implements GpuHal {
     uniformByteSize: number,
   ) {
     this.canvas = canvas
-    this.uniformByteSize = uniformByteSize
     this.debug = debugEnabled()
     totalCreated += 1
     this.instanceId = totalCreated
@@ -221,7 +219,7 @@ export class WebGL2Hal implements GpuHal {
       if (desc.textures?.length) {
         const tb = desc.textures[0]!
         const uniformLoc = gl.getUniformLocation(program, tb.glUniformName)
-        textureState = { texture: null!, unit: tb.glTextureUnit, uniformLoc }
+        textureState = { texture: null, unit: tb.glTextureUnit, uniformLoc }
       }
 
       this.passes.set(desc.id, {
@@ -641,12 +639,7 @@ export class WebGL2Hal implements GpuHal {
       }
       const attr = desc.glAttributes[i]!
       if (attr.integer) {
-        const glType =
-          attr.type === 'uint'
-            ? gl.UNSIGNED_INT
-            : attr.type === 'int'
-              ? gl.INT
-              : gl.UNSIGNED_INT
+        const glType = attr.type === 'uint' ? gl.UNSIGNED_INT : gl.INT
         gl.vertexAttribIPointer(
           loc,
           attr.components,

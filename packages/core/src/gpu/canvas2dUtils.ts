@@ -18,7 +18,7 @@ export function prepareCanvas(
   canvasWidth: number,
   canvasHeight: number,
 ) {
-  const dpr = window.devicePixelRatio || 1
+  const dpr = typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
   const bufW = Math.round(canvasWidth * dpr)
   const bufH = Math.round(canvasHeight * dpr)
 

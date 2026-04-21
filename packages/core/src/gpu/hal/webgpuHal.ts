@@ -65,17 +65,16 @@ interface RegionState {
 // Every pass reads per-instance data from a vertex buffer (no storage binding
 // at 0) because Slang-generated shaders cross-compile to GLSL ES, which has
 // no SSBOs. Pipelines select the matching layout when created.
-const deviceState = new WeakMap<
-  GPUDevice,
-  {
-    uniformOnlyBindGroupLayout: GPUBindGroupLayout
-    uniformOnlyPipelineLayout: GPUPipelineLayout
-    texturedBindGroupLayout: GPUBindGroupLayout | null
-    texturedPipelineLayout: GPUPipelineLayout | null
-  }
->()
+interface DeviceState {
+  uniformOnlyBindGroupLayout: GPUBindGroupLayout
+  uniformOnlyPipelineLayout: GPUPipelineLayout
+  texturedBindGroupLayout: GPUBindGroupLayout | null
+  texturedPipelineLayout: GPUPipelineLayout | null
+}
 
-function getOrCreateDeviceState(device: GPUDevice) {
+const deviceState = new WeakMap<GPUDevice, DeviceState>()
+
+function getOrCreateDeviceState(device: GPUDevice): DeviceState {
   let state = deviceState.get(device)
   if (!state) {
     const uniformOnlyBindGroupLayout = createUniformOnlyBindGroupLayout(device)
@@ -93,10 +92,7 @@ function getOrCreateDeviceState(device: GPUDevice) {
   return state
 }
 
-function getOrCreateTexturedLayout(
-  device: GPUDevice,
-  state: ReturnType<typeof getOrCreateDeviceState>,
-) {
+function getOrCreateTexturedLayout(device: GPUDevice, state: DeviceState) {
   if (!state.texturedBindGroupLayout) {
     state.texturedBindGroupLayout = device.createBindGroupLayout({
       entries: [
@@ -104,7 +100,7 @@ function getOrCreateTexturedLayout(
           binding: 1,
           visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
           buffer: {
-            type: 'uniform' as GPUBufferBindingType,
+            type: 'uniform',
             hasDynamicOffset: true,
           },
         },
@@ -125,7 +121,7 @@ function getOrCreateTexturedLayout(
     })
   }
   return {
-    layout: state.texturedBindGroupLayout,
+    layout: state.texturedBindGroupLayout!,
     pipelineLayout: state.texturedPipelineLayout!,
   }
 }
@@ -150,9 +146,7 @@ async function compilePipelines(
         throw new ShaderCompileError(desc.id, details)
       }
       const fragEntry = desc.wgslFragmentEntry ?? 'fs_main'
-      const format = desc.picking
-        ? ('rgba8unorm' as GPUTextureFormat)
-        : preferredFormat
+      const format: GPUTextureFormat = desc.picking ? 'rgba8unorm' : preferredFormat
       const blend = desc.picking
         ? undefined
         : desc.blend
@@ -160,7 +154,7 @@ async function compilePipelines(
             ? gpuBlendState(desc.blendState)
             : STANDARD_BLEND_STATE
           : undefined
-      const topo = (desc.topology ?? 'triangle-list') as GPUPrimitiveTopology
+      const topo: GPUPrimitiveTopology = desc.topology ?? 'triangle-list'
       const pLayout = desc.textures?.length
         ? getOrCreateTexturedLayout(device, state).pipelineLayout
         : state.uniformOnlyPipelineLayout
@@ -208,6 +202,13 @@ interface PassTextureState {
   sampler: GPUSampler
 }
 
+interface Rect {
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
 export class WebGPUHal implements GpuHal {
   private device: GPUDevice
   private canvas: HTMLCanvasElement
@@ -216,11 +217,11 @@ export class WebGPUHal implements GpuHal {
   private descriptors: Map<string, PassDescriptor>
   private pipelines: ReadonlyMap<string, GPURenderPipeline>
   private passTextures = new Map<string, PassTextureState>()
+  private deviceState: DeviceState
 
   // Uniform ring buffer: holds up to MAX_UNIFORM_SLOTS sets of uniforms so
   // that all draw calls in a frame can reference different uniform data via
   // dynamic offsets, enabling a single command encoder + submit per frame.
-  private uniformByteSize: number
   private alignedUniformSize: number
   private uniformRingBuffer: GPUBuffer
   private uniformStaging: ArrayBuffer
@@ -238,10 +239,8 @@ export class WebGPUHal implements GpuHal {
   private currentPass: GPURenderPassEncoder | null = null
 
   // Scissor/viewport state (physical pixels, top-left origin)
-  private scissorRect: { x: number; y: number; w: number; h: number } | null =
-    null
-  private viewportRect: { x: number; y: number; w: number; h: number } | null =
-    null
+  private scissorRect: Rect | null = null
+  private viewportRect: Rect | null = null
 
   // Picking state
   private pickingTexture: GPUTexture | null = null
@@ -266,7 +265,7 @@ export class WebGPUHal implements GpuHal {
     this.context = context
     this.descriptors = new Map(descriptors.map(d => [d.id, d]))
     this.pipelines = pipelines
-    this.uniformByteSize = uniformByteSize
+    this.deviceState = getOrCreateDeviceState(device)
 
     // Align uniform slots to device requirements for dynamic offsets
     const alignment = device.limits.minUniformBufferOffsetAlignment
@@ -360,8 +359,7 @@ export class WebGPUHal implements GpuHal {
   // texture arrives.
   private buildBindGroupForPass(passId: string): GPUBindGroup | null {
     const desc = this.descriptors.get(passId)
-    const state = deviceState.get(this.device)
-    if (!desc || !state) {
+    if (!desc) {
       return null
     }
     if (desc.textures?.length) {
@@ -369,7 +367,7 @@ export class WebGPUHal implements GpuHal {
       if (!texState) {
         return null
       }
-      const { layout } = getOrCreateTexturedLayout(this.device, state)
+      const { layout } = getOrCreateTexturedLayout(this.device, this.deviceState)
       return this.device.createBindGroup({
         layout,
         entries: [
@@ -388,7 +386,7 @@ export class WebGPUHal implements GpuHal {
     }
     return createUniformOnlyBindGroup(
       this.device,
-      state.uniformOnlyBindGroupLayout,
+      this.deviceState.uniformOnlyBindGroupLayout,
       this.uniformRingBuffer,
       this.alignedUniformSize,
     )
@@ -597,7 +595,7 @@ export class WebGPUHal implements GpuHal {
     this.currentPass.setPipeline(pipeline)
     this.currentPass.setBindGroup(0, regionBuf.bindGroup, [dynamicOffset])
     this.currentPass.setVertexBuffer(0, regionBuf.dataBuffer)
-    this.currentPass.draw(desc.verticesPerInstance, regionBuf.count, 0, 0)
+    this.currentPass.draw(desc.verticesPerInstance, regionBuf.count)
   }
 
   endFrame() {
@@ -679,8 +677,8 @@ export class WebGPUHal implements GpuHal {
       colorAttachments: [
         {
           view: this.pickingTexture.createView(),
-          loadOp: 'clear' as GPULoadOp,
-          storeOp: 'store' as GPUStoreOp,
+          loadOp: 'clear',
+          storeOp: 'store',
           clearValue: { r: 0, g: 0, b: 0, a: 0 },
         },
       ],
@@ -724,12 +722,12 @@ export class WebGPUHal implements GpuHal {
     try {
       await this.pickingStagingBuffer.mapAsync(GPUMapMode.READ)
     } catch {
-      if (!this.isDisposed()) {
+      if (!this.disposed) {
         this.resetStagingBuffer()
       }
       return -1
     }
-    if (this.isDisposed()) {
+    if (this.disposed) {
       try {
         this.pickingStagingBuffer.unmap()
       } catch {}
@@ -767,10 +765,6 @@ export class WebGPUHal implements GpuHal {
 
   clearViewport() {
     this.viewportRect = null
-  }
-
-  private isDisposed() {
-    return this.disposed
   }
 
   dispose() {

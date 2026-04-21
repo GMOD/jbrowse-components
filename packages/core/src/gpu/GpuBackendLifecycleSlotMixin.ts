@@ -56,7 +56,9 @@ export function GpuBackendLifecycleSlotMixin() {
         }
       },
       resetCanvasDrawn() {
-        self.canvasDrawn = false
+        if (self.canvasDrawn) {
+          self.canvasDrawn = false
+        }
       },
       stopGpuBackendLifecycle() {
         self.currentGpuBackend = undefined

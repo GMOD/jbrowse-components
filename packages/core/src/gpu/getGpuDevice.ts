@@ -37,9 +37,8 @@ async function createDevice(): Promise<GPUDevice | null> {
     // Surface any WebGPU validation / out-of-memory / internal errors that
     // would otherwise be silently swallowed. Without this, a bad draw/pipeline
     // results in a blank canvas with no console output.
-    d.addEventListener('uncapturederror', (event: unknown) => {
-      const e = event as { error?: { message?: string } }
-      console.error('[GPU] UNCAPTURED ERROR:', e.error?.message ?? event)
+    d.addEventListener('uncapturederror', (event: GPUUncapturedErrorEvent) => {
+      console.error('[GPU] UNCAPTURED ERROR:', event.error.message)
     })
     void d.lost.then(info => {
       console.error('[GPU] Device lost:', info.message)
