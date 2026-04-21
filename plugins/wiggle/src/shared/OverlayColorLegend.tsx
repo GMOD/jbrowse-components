@@ -9,7 +9,14 @@ export default function OverlayColorLegend({
   fallbackColor: string
   canvasWidth: number
 }) {
-  const labelWidth = Math.max(...sources.map(s => measureText(s.name, 10))) + 10
+  let labelWidth = 0
+  for (const s of sources) {
+    const w = measureText(s.name, 10)
+    if (w > labelWidth) {
+      labelWidth = w
+    }
+  }
+  labelWidth += 10
   const totalWidth = labelWidth + 14
   const x = canvasWidth - totalWidth - 4
   return (

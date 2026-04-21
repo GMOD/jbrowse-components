@@ -10,7 +10,6 @@ import {
   getEnv,
   getSession,
   isSessionModelWithWidgets,
-  measureText,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -25,13 +24,19 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { observable } from 'mobx'
 
+import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
-import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
+import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
 import {
   getRowHeight,
   isOverlayMode,
   makeRenderState,
 } from '../shared/wiggleComponentUtils.ts'
+import {
+  makeAutoscaleTypeSubMenu,
+  makeResolutionAndSummarySubMenus,
+  makeScaleTypeSubMenu,
+} from '../shared/wiggleMenuItems.ts'
 import { computeAutoscaleDomain, getNiceDomain, getScale } from '../util.ts'
 import { buildMultiSourceRenderData } from './components/buildMultiSourceRenderData.ts'
 
@@ -82,39 +87,17 @@ export default function stateModelFactory(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       ConfigOverrideMixin(),
+      WiggleCommonMixin(),
       TreeSidebarMixin<Source>(),
       types.model({
         type: types.literal('MultiLinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
-        resolution: types.optional(types.number, 1),
-        displayCrossHatches: types.optional(types.boolean, false),
       }),
     )
     .preProcessSnapshot(
       // @ts-expect-error - MST's preProcessSnapshot typing can't verify the
       // return type against the model creation type
-      (snap: Record<string, unknown> | null | undefined) => {
-        if (!snap) {
-          return snap
-        }
-
-        // Strip properties from old BaseLinearDisplay snapshots
-        const { blockState, showLegend, showTooltips, ...withoutLegacy } = snap
-
-        // Rewrite "height" from older snapshots to "heightPreConfig"
-        if (
-          withoutLegacy.height !== undefined &&
-          withoutLegacy.heightPreConfig === undefined
-        ) {
-          const { height, ...rest } = withoutLegacy
-          return migrateWiggleSnapshot(
-            { ...rest, heightPreConfig: height },
-            { multiWiggle: true },
-          )
-        }
-
-        return migrateWiggleSnapshot(withoutLegacy, { multiWiggle: true })
-      },
+      makeWigglePreProcessSnapshot({ multiWiggle: true }),
     )
     .volatile(() => ({
       rpcDataMap: observable.map<number, MultiWiggleDataResult>(),
@@ -142,15 +125,6 @@ export default function stateModelFactory(
         | undefined,
     }))
     .views(self => ({
-      get scalebarOverlapLeft() {
-        const view = getContainingView(self) as { trackLabelsSetting?: string }
-        if (view.trackLabelsSetting === 'overlapping') {
-          const track = getContainingTrack(self)
-          return measureText(getConf(track, 'name'), 12.8) + 100
-        }
-        return 0
-      },
-
       get DisplayMessageComponent() {
         return MultiWiggleComponent
       },
@@ -510,10 +484,6 @@ export default function stateModelFactory(
         self.setOverride('autoscale', val)
       },
 
-      toggleCrossHatches() {
-        self.displayCrossHatches = !self.displayCrossHatches
-      },
-
       setScaleType(scaleType: string) {
         self.setOverride('scaleType', scaleType)
       },
@@ -532,10 +502,6 @@ export default function stateModelFactory(
 
       setSummaryScoreMode(val: string) {
         self.setOverride('summaryScoreMode', val)
-      },
-
-      setResolution(res: number) {
-        self.resolution = res
       },
     }))
     .actions(self => {
@@ -649,79 +615,9 @@ export default function stateModelFactory(
             label: 'Score',
             icon: EqualizerIcon,
             subMenu: [
-              ...(self.hasResolution
-                ? [
-                    {
-                      label: 'Resolution',
-                      subMenu: [
-                        {
-                          label: 'Finer resolution',
-                          onClick: () => {
-                            self.setResolution(self.resolution * 5)
-                          },
-                        },
-                        {
-                          label: 'Coarser resolution',
-                          onClick: () => {
-                            self.setResolution(self.resolution / 5)
-                          },
-                        },
-                      ],
-                    },
-                    {
-                      label: 'Summary score mode',
-                      subMenu: (['min', 'max', 'avg', 'whiskers'] as const).map(
-                        elt => ({
-                          label: elt,
-                          type: 'radio' as const,
-                          checked: self.summaryScoreMode === elt,
-                          onClick: () => {
-                            self.setSummaryScoreMode(elt)
-                          },
-                        }),
-                      ),
-                    },
-                  ]
-                : []),
-              {
-                label: 'Scale type',
-                subMenu: [
-                  {
-                    label: 'Linear scale',
-                    type: 'radio',
-                    checked: self.scaleType === 'linear',
-                    onClick: () => {
-                      self.setScaleType('linear')
-                    },
-                  },
-                  {
-                    label: 'Log scale',
-                    type: 'radio',
-                    checked: self.scaleType === 'log',
-                    onClick: () => {
-                      self.setScaleType('log')
-                    },
-                  },
-                ],
-              },
-              {
-                label: 'Autoscale type',
-                subMenu: (
-                  [
-                    ['local', 'Local'],
-                    ['global', 'Global'],
-                    ['globalsd', 'Global ± 3σ'],
-                    ['localsd', 'Local ± 3σ'],
-                  ] as const
-                ).map(([val, label]) => ({
-                  label,
-                  type: 'radio' as const,
-                  checked: self.autoscaleType === val,
-                  onClick: () => {
-                    self.setAutoscale(val)
-                  },
-                })),
-              },
+              ...makeResolutionAndSummarySubMenus(self),
+              makeScaleTypeSubMenu(self),
+              makeAutoscaleTypeSubMenu(self),
               {
                 label: 'Set min/max score',
                 onClick: () => {

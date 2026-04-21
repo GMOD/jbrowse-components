@@ -18,6 +18,38 @@ const useStyles = makeStyles()({
   },
 })
 
+function parseCsv(val: string, currLayout: Source[]) {
+  const lines = val
+    .split('\n')
+    .map(f => f.trim())
+    .filter(f => !!f)
+  const fields = lines[0]!.split(/[,\t]/gm)
+  if (!fields.includes('name')) {
+    throw new Error('No "name" column found on line 1')
+  }
+  const oldLayout = Object.fromEntries(
+    currLayout.map(record => [record.name, record]),
+  )
+  return {
+    oldLayout,
+    newData: Object.fromEntries(
+      lines.slice(1).map(line => {
+        const cols = line.split(/[,\t]/gm)
+        const newRecord = Object.fromEntries(
+          cols.map((col, idx) => [fields[idx], col]),
+        )
+        return [
+          newRecord.name,
+          {
+            ...newRecord,
+            ...oldLayout[newRecord.name],
+          },
+        ]
+      }),
+    ),
+  }
+}
+
 export default function SetColorDialogBulkEditPanel({
   onClose,
   currLayout,
@@ -66,40 +98,18 @@ export default function SetColorDialogBulkEditPanel({
           variant="contained"
           color="secondary"
           onClick={() => {
-            const lines = val
-              .split('\n')
-              .map(f => f.trim())
-              .filter(f => !!f)
-            const fields = lines[0]!.split(/[,\t]/gm)
-            if (fields.includes('name')) {
+            try {
               setError('')
-              const oldLayout = Object.fromEntries(
-                currLayout.map(record => [record.name, record]),
-              )
-              const newData = Object.fromEntries(
-                lines.slice(1).map(line => {
-                  const cols = line.split(/[,\t]/gm)
-                  const newRecord = Object.fromEntries(
-                    cols.map((col, idx) => [fields[idx], col]),
-                  )
-                  return [
-                    newRecord.name,
-                    {
-                      ...newRecord,
-                      ...oldLayout[newRecord.name],
-                    },
-                  ]
-                }),
-              )
-
+              const { newData } = parseCsv(val, currLayout)
               onClose(
                 currLayout.map(record => ({
                   ...record,
                   ...newData[record.name],
                 })),
               )
-            } else {
-              setError(new Error('No "name" column found on line 1'))
+            } catch (e) {
+              console.error(e)
+              setError(e)
             }
           }}
         >
@@ -109,39 +119,16 @@ export default function SetColorDialogBulkEditPanel({
           variant="contained"
           color="primary"
           onClick={() => {
-            const lines = val
-              .split('\n')
-              .map(f => f.trim())
-              .filter(f => !!f)
-            const fields = lines[0]!.split(/[,\t]/gm)
-            if (fields.includes('name')) {
+            try {
               setError('')
-              const oldLayout = Object.fromEntries(
-                currLayout.map(record => [record.name, record]),
-              )
-              const newData = Object.fromEntries(
-                lines.slice(1).map(line => {
-                  const cols = line.split(/[,\t]/gm)
-                  const newRecord = Object.fromEntries(
-                    cols.map((col, idx) => [fields[idx], col]),
-                  )
-                  return [
-                    newRecord.name,
-                    {
-                      ...newRecord,
-                      ...oldLayout[newRecord.name],
-                    },
-                  ]
-                }),
-              )
-
+              const { newData } = parseCsv(val, currLayout)
               onClose(
                 currLayout.map(record => ({
                   ...newData[record.name],
                 })) as Source[],
               )
-            } else {
-              setError(new Error('No "name" column found on line 1'))
+            } catch (e) {
+              setError(e)
             }
           }}
         >

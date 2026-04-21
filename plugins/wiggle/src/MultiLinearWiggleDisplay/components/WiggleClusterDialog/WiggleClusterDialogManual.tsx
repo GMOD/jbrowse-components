@@ -53,16 +53,22 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
         setRet(undefined)
         setLoading(true)
         const view = getContainingView(model) as LinearGenomeViewModel
+        if (!view.initialized) {
+          return
+        }
         const { dynamicBlocks, bpPerPx } = view
         const { rpcManager } = getSession(model)
         const { sourcesWithoutLayout, adapterConfig } = model
+        if (!sourcesWithoutLayout?.length) {
+          return
+        }
         const sessionId = getRpcSessionId(model)
         const ret = await rpcManager.call(
           sessionId,
           'MultiWiggleGetScoreMatrix',
           {
             regions: dynamicBlocks.contentBlocks,
-            sources: sourcesWithoutLayout ?? [],
+            sources: sourcesWithoutLayout,
             sessionId,
             adapterConfig,
             bpPerPx: bpPerPx / +samplesPerPixel,

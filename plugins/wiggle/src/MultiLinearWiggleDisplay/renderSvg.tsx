@@ -76,6 +76,7 @@ function renderFeatureSlice(
   minScore: number,
   maxScore: number,
   scaleType: string,
+  bicolorPivot: number,
 ) {
   const { positions, scores, numFeatures, color } = slice
 
@@ -118,7 +119,7 @@ function renderFeatureSlice(
 
       if (renderType === RENDERING_TYPE_XYPLOT) {
         const y = scale(score) + rowY
-        const originY = scale(0) + rowY
+        const originY = scale(bicolorPivot) + rowY
         const rectY = Math.min(y, originY)
         const rectHeight = Math.abs(originY - y) || 1
         ctx.fillStyle = color
@@ -155,6 +156,7 @@ function renderToCtx(
     sources: modelSources,
     isOverlay,
     rowHeight,
+    bicolorPivot,
   } = model
   const defaultPosColor = model.posColor
   const defaultNegColor = model.negColor
@@ -184,15 +186,16 @@ function renderToCtx(
     }
     const blockScreenX = block.offsetPx - offsetPx
 
-    for (let sourceIdx = 0; sourceIdx < data.sources.length; sourceIdx++) {
-      const source = data.sources[sourceIdx]!
-      const modelSource = modelSources.find(s => s.name === source.name)
-      if (!modelSource) {
+    // Iterate modelSources so row positions follow display order, not RPC data order
+    for (let modelIdx = 0; modelIdx < modelSources.length; modelIdx++) {
+      const modelSource = modelSources[modelIdx]!
+      const source = data.sources.find(s => s.name === modelSource.name)
+      if (!source) {
         continue
       }
       const posColor = modelSource.color ?? defaultPosColor
       const negColor = overlay ? posColor : defaultNegColor
-      const rowY = overlay ? 0 : getRowTop(sourceIdx, rowHeight)
+      const rowY = overlay ? 0 : getRowTop(modelIdx, rowHeight)
 
       const slices = getFeatureSlices(source, posColor, negColor, overlay)
       for (const slice of slices) {
@@ -210,6 +213,7 @@ function renderToCtx(
           minScore,
           maxScore,
           scaleType,
+          bicolorPivot,
         )
       }
     }
