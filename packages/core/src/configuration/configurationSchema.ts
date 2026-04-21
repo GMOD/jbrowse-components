@@ -209,7 +209,6 @@ function makeConfigurationSchemaModel<
   completeModel = completeModel.postProcessSnapshot(snap => {
     const newSnap: SnapshotOut<typeof completeModel> = {}
     let matchesDefault = true
-    // let keyCount = 0
     for (const [key, value] of Object.entries(snap)) {
       if (matchesDefault) {
         if (typeof defaultSnap[key] === 'object' && typeof value === 'object') {
@@ -220,13 +219,17 @@ function makeConfigurationSchemaModel<
           matchesDefault = false
         }
       }
+      // Omit undefined values and volatile constants.
+      // Only skip empty objects/arrays for sub-schema keys — slot values of []
+      // or {} must be preserved even when empty, since they may differ from a
+      // non-empty default (isEmptyArray/isEmptyObject on a slot value would
+      // cause it to silently revert to the default on next load).
+      const isSubSchema = isConfigurationSchemaType(modelDefinition[key])
       if (
         value !== undefined &&
         volatileConstants[key] === undefined &&
-        !isEmptyObject(value) &&
-        !isEmptyArray(value)
+        !(isSubSchema && (isEmptyObject(value) || isEmptyArray(value)))
       ) {
-        // keyCount += 1
         newSnap[key] = value
       }
     }

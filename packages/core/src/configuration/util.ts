@@ -81,9 +81,8 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
     if (val === null || typeof val !== 'object') {
       return val
     }
-    // For objects, clone to prevent mutation of config state
-    // Use structuredClone for MST snapshots (faster than JSON.parse/stringify)
-    return isStateTreeNode(val) ? structuredClone(getSnapshot(val)) : val
+    // Clone to prevent mutation of config state
+    return structuredClone(isStateTreeNode(val) ? getSnapshot(val) : val)
   } else if (Array.isArray(slotPath)) {
     const slotName = slotPath[0]!
     if (slotPath.length > 1) {
@@ -148,7 +147,6 @@ export function getConf<CONFMODEL extends AnyConfigurationModel>(
   slotPath?: Parameters<typeof readConfObject<CONFMODEL>>[1],
   args?: Parameters<typeof readConfObject<CONFMODEL>>[2],
 ) {
-  // Trust TypeScript types - the generic constraint ensures configuration is valid
   return readConfObject(model.configuration, slotPath, args)
 }
 
