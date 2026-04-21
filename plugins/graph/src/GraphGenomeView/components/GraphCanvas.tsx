@@ -8,7 +8,6 @@ import { observer } from 'mobx-react'
 import GraphToolbar from './GraphToolbar.tsx'
 import { createGraphRenderer } from '../../renderer/GraphRenderer.ts'
 import { findHoveredEdge, findHoveredNode } from '../../util/hitDetection.ts'
-import { CANVAS_HEIGHT } from '../model.ts'
 
 import type { GraphGenomeViewModel } from '../model.ts'
 
@@ -163,7 +162,7 @@ const GraphCanvas = observer(function GraphCanvas({
 
   return (
     <div style={{ position: 'relative' }}>
-      <GraphToolbar model={model} canvasHeight={CANVAS_HEIGHT} />
+      <GraphToolbar model={model} />
 
       {model.isLoading ? (
         <div
@@ -188,7 +187,7 @@ const GraphCanvas = observer(function GraphCanvas({
         ref={canvasRef}
         style={{
           width: model.width,
-          height: CANVAS_HEIGHT,
+          height: model.canvasHeight,
           cursor: isDragging ? 'grabbing' : 'grab',
           display: 'block',
         }}

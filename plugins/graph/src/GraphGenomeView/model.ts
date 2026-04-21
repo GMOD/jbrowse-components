@@ -17,7 +17,7 @@ import type {
   LayoutResult,
 } from '../types.ts'
 
-export const CANVAS_HEIGHT = 600
+const DEFAULT_CANVAS_HEIGHT = 600
 const HOVER_BRIGHTEN = 1.4
 const SELECT_BRIGHTEN = 1.6
 const VIEWPORT_DEBOUNCE_MS = 150
@@ -34,12 +34,13 @@ function computeViewportBounds(model: {
   translateY: number
   width: number
   scale: number
+  canvasHeight: number
 }) {
   const padding = 0.2
   const minX = -model.translateX / model.scale
   const minY = -model.translateY / model.scale
   const maxX = (model.width - model.translateX) / model.scale
-  const maxY = (CANVAS_HEIGHT - model.translateY) / model.scale
+  const maxY = (model.canvasHeight - model.translateY) / model.scale
   const w = maxX - minX
   const h = maxY - minY
   return {
@@ -110,6 +111,7 @@ export default function stateModelFactory() {
       translateX: 0,
       translateY: 0,
       drawPaths: false,
+      canvasHeight: DEFAULT_CANVAS_HEIGHT,
       viewportDirty: 0,
       nodeVertexRanges: undefined as Map<string, VertexRange> | undefined,
       edgeVertexRanges: undefined as Map<number, VertexRange> | undefined,
@@ -185,6 +187,9 @@ export default function stateModelFactory() {
         self.translateX = centerX - (centerX - self.translateX) * ratio
         self.translateY = centerY - (centerY - self.translateY) * ratio
       },
+      setCanvasHeight(height: number) {
+        self.canvasHeight = height
+      },
       setViewportDirty() {
         self.viewportDirty++
       },
@@ -203,7 +208,7 @@ export default function stateModelFactory() {
         self.baseEdgeColors = baseEdgeColors
         self.baseArrowColors = baseArrowColors
       },
-      zoomToFit(canvasHeight: number) {
+      zoomToFit() {
         if (!self.layoutResult) {
           return
         }
@@ -227,7 +232,7 @@ export default function stateModelFactory() {
         }
         const padding = 40
         const scaleX = (self.width - padding * 2) / graphWidth
-        const scaleY = (canvasHeight - padding * 2) / graphHeight
+        const scaleY = (self.canvasHeight - padding * 2) / graphHeight
         const newScale = clampZoom(Math.min(scaleX, scaleY))
         self.scale = newScale
         self.translateX =
@@ -237,7 +242,7 @@ export default function stateModelFactory() {
         self.translateY =
           padding -
           minY * newScale +
-          (canvasHeight - padding * 2 - graphHeight * newScale) / 2
+          (self.canvasHeight - padding * 2 - graphHeight * newScale) / 2
       },
       clearGraph() {
         self.graph = undefined
@@ -278,7 +283,7 @@ export default function stateModelFactory() {
               if (firstLayout) {
                 firstLayout = false
               } else if (lr) {
-                self.zoomToFit(CANVAS_HEIGHT)
+                self.zoomToFit()
               }
             }),
           )
@@ -340,7 +345,7 @@ export default function stateModelFactory() {
           // scale/translate are untracked so they don't trigger a full rebuild —
           // only the debounced viewportDirty flag does.
           upload: b => {
-            b.resize(self.width, CANVAS_HEIGHT)
+            b.resize(self.width, self.canvasHeight)
             const nodeById = self.nodeById
             if (self.nodePositions && self.graph && nodeById) {
               void self.viewportDirty
@@ -377,7 +382,7 @@ export default function stateModelFactory() {
               translateX: self.translateX * dpr,
               translateY: self.translateY * dpr,
               viewportWidth: self.width * dpr,
-              viewportHeight: CANVAS_HEIGHT * dpr,
+              viewportHeight: self.canvasHeight * dpr,
             })
             b.render(self.darkMode ? [0.12, 0.12, 0.12, 1] : [1, 1, 1, 1])
             return true

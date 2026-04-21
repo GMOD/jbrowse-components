@@ -8,7 +8,6 @@ import ColorSchemeSelect from './ColorSchemeSelect.tsx'
 import GraphStats from './GraphStats.tsx'
 import LinearLayoutToggle from './LinearLayoutToggle.tsx'
 import SettingsMenu from './SettingsMenu.tsx'
-
 import type { GraphGenomeViewModel } from '../model.ts'
 
 const ZoomDisplay = observer(function ZoomDisplay({
@@ -21,10 +20,8 @@ const ZoomDisplay = observer(function ZoomDisplay({
 
 const GraphToolbar = observer(function GraphToolbar({
   model,
-  canvasHeight,
 }: {
   model: GraphGenomeViewModel
-  canvasHeight: number
 }) {
   return (
     <div
@@ -42,7 +39,7 @@ const GraphToolbar = observer(function GraphToolbar({
         <IconButton
           size="small"
           onClick={() => {
-            model.zoom(1.5, model.width / 2, canvasHeight / 2)
+            model.zoom(1.5, model.width / 2, model.canvasHeight / 2)
           }}
         >
           <ZoomInIcon />
@@ -52,7 +49,7 @@ const GraphToolbar = observer(function GraphToolbar({
         <IconButton
           size="small"
           onClick={() => {
-            model.zoom(1 / 1.5, model.width / 2, canvasHeight / 2)
+            model.zoom(1 / 1.5, model.width / 2, model.canvasHeight / 2)
           }}
         >
           <ZoomOutIcon />
@@ -62,7 +59,7 @@ const GraphToolbar = observer(function GraphToolbar({
         <IconButton
           size="small"
           onClick={() => {
-            model.zoomToFit(canvasHeight)
+            model.zoomToFit()
           }}
         >
           <CropFreeIcon />
