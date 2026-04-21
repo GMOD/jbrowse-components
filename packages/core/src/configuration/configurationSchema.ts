@@ -16,11 +16,7 @@ import { ElementId } from '../util/types/mst.ts'
 
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type { AnyConfigurationSchemaType } from './types.ts'
-import type {
-  IAnyStateTreeNode,
-  IAnyType,
-  SnapshotOut,
-} from '@jbrowse/mobx-state-tree'
+import type { IAnyType, SnapshotOut } from '@jbrowse/mobx-state-tree'
 
 export type {
   AnyConfigurationModel,
@@ -289,37 +285,23 @@ export function ConfigurationSchema<
  * Creates a reference type for track configurations that:
  * - Resolves trackId strings to configuration objects at runtime
  * - Always serializes as just the trackId string in snapshots
- * - Works with both frozen tracks (plain objects) and MST model tracks
+ *
+ * Hydration of frozen track snapshots into MST models happens in
+ * session.tracksById (see TracksManagerSessionMixin). This resolver just
+ * returns the already-hydrated node, so track.configuration is a stable MST
+ * instance across reads.
  */
-// Per-track-state-model cache of the instantiated config. Tracks (in
-// JBrowseConfig) are stored as frozen plain objects; the first access via the
-// reference resolver instantiates an MST model and we keep it bound to the
-// owning state model so subsequent accesses (including mouse-move recomputes)
-// return the same instance instead of re-running preProcessSnapshot.
-const configByStateNode = new WeakMap<IAnyStateTreeNode, unknown>()
-
 export function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(id, parent) {
-      const existing = configByStateNode.get(parent)
-      if (existing) {
-        return existing
-      }
-
-      const session = getSession(parent)
-      let ret = session.tracksById[id]
-      if (!ret) {
+      const ret =
+        getSession(parent).tracksById[id] ??
         // @ts-expect-error
-        ret = resolveIdentifier(schemaType, getRoot(parent), id)
-      }
+        (resolveIdentifier(schemaType, getRoot(parent), id) as unknown)
       if (!ret) {
         throw new Error(`Could not resolve identifier "${id}"`)
       }
-      const model = isStateTreeNode(ret)
-        ? ret
-        : schemaType.create(ret, getEnv(parent))
-      configByStateNode.set(parent, model)
-      return model
+      return ret
     },
     set(value) {
       return value.trackId
@@ -367,37 +349,33 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
 export function DisplayConfigurationReference(schemaType: IAnyType) {
   const displayRef = types.reference(schemaType, {
     get(id, parent) {
-      const existing = configByStateNode.get(parent)
-      if (existing) {
-        return existing
-      }
-
+      // track.configuration is already a hydrated MST node (see
+      // TracksManagerSessionMixin.tracksById), so its displays array contains
+      // MST display-config nodes directly.
       const track = getContainingTrack(parent)
       const displays = track.configuration.displays
       let ret = displays.find((d: { displayId: string }) => d.displayId === id)
 
-      // If not found by displayId, fall back to matching by display type.
-      // This handles cases where the display state model's type doesn't match
-      // any displayId in the track config (e.g. newly added display types).
+      // Fallback: match by display type when the displayId isn't found.
+      // This handles state models whose display type wasn't registered when
+      // the track config was written.
       if (!ret) {
         const displayType = (parent as { type?: string }).type
         ret = displays.find(
           (d: unknown) => (d as { type?: string }).type === displayType,
         )
         if (!ret && displayType) {
-          // @ts-expect-error
-          ret = { displayId: `${id}`, type: displayType }
+          ret = schemaType.create(
+            { displayId: `${id}`, type: displayType },
+            getEnv(parent),
+          )
         }
       }
 
       if (!ret) {
         throw new Error(`Display configuration "${id}" not found`)
       }
-      const model = isStateTreeNode(ret)
-        ? ret
-        : schemaType.create(ret, getEnv(parent))
-      configByStateNode.set(parent, model)
-      return model
+      return ret
     },
     set(value) {
       return value.displayId
