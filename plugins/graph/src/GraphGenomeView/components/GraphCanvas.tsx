@@ -173,12 +173,13 @@ const GraphCanvas = observer(function GraphCanvas({
     if (rendererReady) {
       return autorun(() => {
         const renderer = rendererRef.current
-        if (renderer && model.nodePositions && model.graph) {
+        const nodeById = model.nodeById
+        if (renderer && model.nodePositions && model.graph && nodeById) {
           void model.viewportDirty
           const batch = buildGeometry({
             nodePositions: model.nodePositions,
             graph: model.graph,
-            nodeById: model.nodeById!,
+            nodeById,
             colorScheme: model.colorScheme,
             contigThickness: model.contigThickness,
             connectorThickness: model.connectorThickness,
