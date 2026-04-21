@@ -136,3 +136,22 @@ test('re-calling installGpuDisplay swaps backend without re-installing autoruns'
   expect(backend2.uploads).toEqual([0])
   expect(backend2.renders).toBeGreaterThan(0)
 })
+
+test('canvasDrawn resets to false when directly cleared (clearAllRpcData contract)', () => {
+  const model = TestModel.create()
+  const backend: FakeBackend = { uploads: [], renders: 0 }
+
+  model.installGpuDisplay<FakeBackend>(backend, {
+    upload: () => {},
+    render: b => {
+      b.renders += 1
+      return true
+    },
+  })
+
+  expect(model.canvasDrawn).toBe(true)
+
+  model.resetCanvasDrawn()
+
+  expect(model.canvasDrawn).toBe(false)
+})

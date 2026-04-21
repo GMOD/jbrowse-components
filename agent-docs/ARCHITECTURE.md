@@ -74,7 +74,8 @@ GpuBackendLifecycleSlotMixin
     renderBump: number            bumped by renderNow() and after every upload
     gpuAutorunsInstalled: boolean guards installGpuDisplay (idempotent)
   .actions
-    markCanvasDrawn()             idempotent flip
+    markCanvasDrawn()             idempotent flip to true
+    resetCanvasDrawn()            flip to false (called by clearAllRpcData)
     stopGpuBackendLifecycle()     clears currentGpuBackend → autoruns idle
     renderNow()                   bumps renderBump → render autorun re-fires
     installGpuDisplay(b, cbs)     spawns upload + render autoruns (once)
@@ -420,7 +421,7 @@ synteny) key on a tuple of two displayedRegion indices.
 - Don't mutate per-region values in place; emit fresh objects.
 - Don't add per-plugin `backend` / `renderBump` / install-flag volatiles
   — the slot mixin owns those.
-- Don't redefine `canvasDrawn` / `markCanvasDrawn` / `renderNow` /
+- Don't redefine `canvasDrawn` / `markCanvasDrawn` / `resetCanvasDrawn` / `renderNow` /
   `stopGpuBackendLifecycle` on a plugin model — the slot mixin owns
   them.
 - Don't hand-maintain WGSL/GLSL/offset tables next to generated modules;

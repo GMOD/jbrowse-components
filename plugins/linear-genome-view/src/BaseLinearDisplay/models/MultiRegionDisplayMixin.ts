@@ -81,7 +81,7 @@ export default function MultiRegionDisplayMixin() {
         self.setRegionTooLarge(false)
         self.loadedRegions.clear()
         self.clearDisplaySpecificData()
-        self.canvasDrawn = false
+        self.resetCanvasDrawn()
       },
 
       invalidateLoadedRegions() {
