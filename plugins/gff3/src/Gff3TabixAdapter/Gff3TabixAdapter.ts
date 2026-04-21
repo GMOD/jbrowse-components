@@ -20,33 +20,31 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
     header: string
   }>
 
-  private async configurePre(_opts?: BaseOptions) {
-    const gffGzLocation = this.getConf('gffGzLocation')
-    const indexType = this.getConf(['index', 'indexType'])
-    const loc = this.getConf(['index', 'location'])
-    const dontRedispatch = this.getConf('dontRedispatch') as string[]
-    const gff = new TabixIndexedFile({
-      filehandle: openLocation(gffGzLocation, this.pluginManager),
-      csiFilehandle:
-        indexType === 'CSI' ? openLocation(loc, this.pluginManager) : undefined,
-      tbiFilehandle:
-        indexType !== 'CSI' ? openLocation(loc, this.pluginManager) : undefined,
-      chunkCacheSize: 50 * 2 ** 20,
-    })
-
-    return {
-      gff,
-      dontRedispatchSet: new Set(dontRedispatch),
-      header: await gff.getHeader(),
-    }
-  }
-
-  protected async configurePre2() {
+  protected configureOnce() {
     if (!this.configured) {
-      this.configured = this.configurePre().catch((e: unknown) => {
-        this.configured = undefined
-        throw e
+      const gffGzLocation = this.getConf('gffGzLocation')
+      const indexType = this.getConf(['index', 'indexType'])
+      const loc = this.getConf(['index', 'location'])
+      const dontRedispatch = this.getConf('dontRedispatch') as string[]
+      const gff = new TabixIndexedFile({
+        filehandle: openLocation(gffGzLocation, this.pluginManager),
+        csiFilehandle:
+          indexType === 'CSI'
+            ? openLocation(loc, this.pluginManager)
+            : undefined,
+        tbiFilehandle:
+          indexType !== 'CSI'
+            ? openLocation(loc, this.pluginManager)
+            : undefined,
+        chunkCacheSize: 50 * 2 ** 20,
       })
+      this.configured = gff
+        .getHeader()
+        .then(header => ({ gff, dontRedispatchSet: new Set(dontRedispatch), header }))
+        .catch((e: unknown) => {
+          this.configured = undefined
+          throw e
+        })
     }
     return this.configured
   }
@@ -54,7 +52,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
   async configure(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
     return updateStatus('Downloading index', statusCallback, () =>
-      this.configurePre2(),
+      this.configureOnce(),
     )
   }
   public async getRefNames(opts: BaseOptions = {}) {

@@ -238,9 +238,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           if (
             event.data.name !== `JBrowseAuthWindow-${self.internetAccountId}`
           ) {
-            this.deleteMessageChannel()
             return
           }
+          this.deleteMessageChannel()
           const redirectUriWithInfo = event.data.redirectUri
           const fixedQueryString = redirectUriWithInfo.replace('#', '?')
           const redirectUrl = new URL(fixedQueryString)
@@ -292,7 +292,6 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             reject(new Error(`OAuth flow error: ${queryStringSearch}`))
             return
           }
-          this.deleteMessageChannel()
         },
         /**
          * #action
@@ -313,8 +312,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             token_access_type: 'offline',
           }
 
-          if (self.state()) {
-            data.state = self.state()
+          const state = self.state()
+          if (state) {
+            data.state = state
           }
 
           if (self.scopes) {

@@ -97,10 +97,7 @@ export default function stateModelFactory(
        */
       async validateToken(token: string, location: UriLocation) {
         const response = await fetch(getUri(location.uri), {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
+          headers: { Authorization: `Bearer ${token}` },
         })
         if (!response.ok) {
           throw new Error(

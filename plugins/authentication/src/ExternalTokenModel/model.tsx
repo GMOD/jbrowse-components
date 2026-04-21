@@ -3,6 +3,7 @@ import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { getRoot, types } from '@jbrowse/mobx-state-tree'
 
 import { ExternalTokenEntryForm } from './ExternalTokenEntryForm.tsx'
+import { getResponseError } from '../util.ts'
 
 import type { ExternalTokenInternetAccountConfigModel } from './configSchema.ts'
 import type { UriLocation } from '@jbrowse/core/util/types'
@@ -49,14 +50,11 @@ const stateModelFactory = (
         const newInit = self.addAuthHeaderToInit({ method: 'HEAD' }, token)
         const response = await fetch(location.uri, newInit)
         if (!response.ok) {
-          let errorMessage: string
-          try {
-            errorMessage = await response.text()
-          } catch (error) {
-            errorMessage = ''
-          }
           throw new Error(
-            `Token could not be validated — ${response.status} ${errorMessage ? ` (${errorMessage})` : ''}`,
+            await getResponseError({
+              response,
+              reason: 'Error validating token',
+            }),
           )
         }
         return token
