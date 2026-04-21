@@ -419,7 +419,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       scalebarDisplayPrefix() {
-        return getParent<any>(self, 2).type === 'LinearSyntenyView'
+        return getParent<{ type: string }>(self, 2).type === 'LinearSyntenyView'
           ? self.assemblyDisplayNames[0]
           : ''
       },
@@ -1874,8 +1874,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ? this.pxToBp(self.width / 2)
           : undefined
       },
-
-      /**
     }))
     .views(self => ({
       /**
@@ -1886,6 +1884,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self as LinearGenomeViewModel,
           clickOffset,
         )
+      },
+
+      /**
+       * #method
+       * returns menu items for a highlight context menu. plugins can extend
+       * this via Core-extendPluggableElement to add their own items
+       */
+      highlightMenuItems(_highlight: HighlightType): MenuItem[] {
+        return []
       },
     }))
     .actions(self => ({

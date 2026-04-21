@@ -1,6 +1,7 @@
 import type React from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import {
   assembleLocString,
   getContainingDisplay,
@@ -21,14 +22,33 @@ import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { AbstractDisplayModel, Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { LayoutRecord } from '../types.ts'
+
+export interface BlockLayoutData {
+  getRectangles(): Map<string, LayoutRecord>
+  getByCoord(x: number, y: number): string | undefined
+  getByID(id: string): LayoutRecord | undefined
+  getTotalHeight(): number
+}
 
 export interface RenderedProps {
   reactElement: React.ReactElement
   features: Map<string, Feature>
-  layout: any
+  layout: BlockLayoutData
   maxHeightReached: boolean
-  renderProps: any
+  renderProps: Record<string, unknown>
   renderArgs: Record<string, unknown>
+}
+
+export interface BlockDisplay extends AbstractDisplayModel {
+  statusMessage?: string
+  height?: number
+  reload(): void
+  adapterConfig: unknown
+  error: unknown
+  renderProps(): Record<string, unknown>
+  renderingProps?(): Record<string, unknown>
+  regionCannotBeRendered(region: Region): React.ReactNode
 }
 // the MST state of a single server-side-rendered block in a display
 const blockState = types
@@ -74,7 +94,7 @@ const blockState = types
     /**
      * #volatile
      */
-    layout: undefined as any,
+    layout: undefined as BlockLayoutData | undefined,
     /**
      * #volatile
      */
@@ -86,7 +106,7 @@ const blockState = types
     /**
      * #volatile
      */
-    message: undefined as string | undefined,
+    message: undefined as React.ReactNode,
     /**
      * #volatile
      */
@@ -98,7 +118,7 @@ const blockState = types
     /**
      * #volatile
      */
-    renderProps: undefined as any,
+    renderProps: undefined as Record<string, unknown> | undefined,
     /**
      * #volatile
      */
@@ -114,7 +134,7 @@ const blockState = types
      * Avoids expensive getContainingDisplay() tree traversal in statusMessage
      * getter which is called frequently during rendering.
      */
-    cachedDisplay: undefined as AbstractDisplayModel | undefined,
+    cachedDisplay: undefined as BlockDisplay | undefined,
   }))
   .actions(self => {
     function stopCurrentToken() {
@@ -164,7 +184,7 @@ const blockState = types
       /**
        * #action
        */
-      setMessage(messageText: string) {
+      setMessage(messageText: React.ReactNode) {
         stopCurrentToken()
         self.isRenderingPending = false
         self.message = messageText
@@ -222,10 +242,10 @@ const blockState = types
         self.message = undefined
         self.ReactComponent = ServerSideRenderedBlockContent
         clearRenderState()
-        getParent<any>(self, 2).reload()
+        getParent<{ reload(): void }>(self, 2).reload()
       },
       setCachedDisplay(display: AbstractDisplayModel) {
-        self.cachedDisplay = display
+        self.cachedDisplay = display as BlockDisplay
       },
       beforeDestroy() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -252,15 +272,11 @@ const blockState = types
   .views(self => ({
     get statusMessage() {
       return self.isRenderingPending
-        ? self.blockStatusMessage ||
-            // @ts-expect-error
-            self.cachedDisplay?.statusMessage ||
-            'Loading'
+        ? self.blockStatusMessage || self.cachedDisplay?.statusMessage || 'Loading'
         : undefined
     },
     get displayHeight() {
-      // @ts-expect-error
-      return self.cachedDisplay?.height as number | undefined
+      return self.cachedDisplay?.height
     },
   }))
   .actions(self => ({
@@ -301,7 +317,7 @@ export function renderBlockData(
     // fall back to tree traversal
     const display = (optDisplay ||
       self.cachedDisplay ||
-      getContainingDisplay(self)) as any
+      getContainingDisplay(self)) as BlockDisplay
 
     const { assemblyManager, rpcManager } = getSession(display)
     const { adapterConfig, rendererType, error, parentTrack } = display
@@ -317,14 +333,11 @@ export function renderBlockData(
     }
 
     const renderProps = display.renderProps()
-    const renderingProps = display.renderingProps?.() as
-      | Record<string, unknown>
-      | undefined
+    const renderingProps = display.renderingProps?.()
     const { config } = renderProps
 
-    // This line is to trigger the mobx reaction when the config changes It
-    // won't trigger the reaction if it doesn't think we're accessing it
-    readConfObject(config)
+    // trigger mobx reaction when config changes
+    readConfObject(config as AnyConfigurationModel)
 
     const sessionId = getRpcSessionId(display)
     const trackInstanceId = parentTrack.id
@@ -397,21 +410,20 @@ async function renderBlockEffect(
     self.setMessage(cannotBeRenderedReason)
     return undefined
   }
-  if (renderProps.notReady || !renderArgs) {
+  if (!renderProps || renderProps.notReady || !renderArgs) {
     return undefined
   }
-  const { reactElement, features, layout, maxHeightReached } =
-    await rendererType.renderInClient(rpcManager, {
-      ...renderArgs,
-      ...renderProps,
-      renderingProps,
-      stopToken,
-    })
+  const results = await rendererType.renderInClient(rpcManager, {
+    ...renderArgs,
+    ...renderProps,
+    renderingProps,
+    stopToken,
+  })
   return {
-    reactElement,
-    features,
-    layout,
-    maxHeightReached,
+    reactElement: results.reactElement as React.ReactElement,
+    features: results.features as Map<string, Feature>,
+    layout: results.layout as BlockLayoutData,
+    maxHeightReached: results.maxHeightReached as boolean,
     renderProps,
     renderArgs,
   }

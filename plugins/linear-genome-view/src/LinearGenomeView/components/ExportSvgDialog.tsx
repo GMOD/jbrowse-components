@@ -17,7 +17,7 @@ import {
 } from '@mui/material'
 
 import type { ExportSvgOptions } from '../types.ts'
-import type { TextFieldProps } from '@mui/material'
+import type { TextFieldProps, ThemeOptions } from '@mui/material'
 
 function LoadingMessage({ format }: { format: string }) {
   return (
@@ -124,10 +124,8 @@ export default function ExportSvgDialog({
           >
             {Object.entries(session.allThemes()).map(([key, val]) => (
               <MenuItem key={key} value={key}>
-                {
-                  // @ts-expect-error
-                  val.name || '(Unknown name)'
-                }
+                {(val as ThemeOptions & { name?: string }).name ||
+                  '(Unknown name)'}
               </MenuItem>
             ))}
           </TextField2>

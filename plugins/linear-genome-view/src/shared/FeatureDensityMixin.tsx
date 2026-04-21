@@ -1,4 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+
+type WithConfiguration = { configuration: AnyConfigurationModel }
 import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -57,8 +60,7 @@ export default function FeatureDensityMixin() {
       },
 
       get maxFeatureScreenDensity() {
-        // @ts-expect-error
-        return getConf(self, 'maxFeatureScreenDensity')
+        return getConf(self as unknown as WithConfiguration, 'maxFeatureScreenDensity')
       },
 
       get featureDensityStatsReady() {
@@ -73,8 +75,7 @@ export default function FeatureDensityMixin() {
         return (
           self.userByteSizeLimit ||
           self.featureDensityStats?.fetchSizeLimit ||
-          // @ts-expect-error
-          (getConf(self, 'fetchSizeLimit') as number)
+          (getConf(self as unknown as WithConfiguration, 'fetchSizeLimit') as number)
         )
       },
     }))

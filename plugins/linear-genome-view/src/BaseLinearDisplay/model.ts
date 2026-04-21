@@ -253,9 +253,7 @@ function stateModelFactory() {
       get layoutFeatures() {
         const featureMaps = []
         for (const block of self.blockState.values()) {
-          if (block.layout?.getRectangles) {
-            // Use getRectangles() to get consistent tuple format [left, top, right, bottom, data]
-            // This works for both GranularRectLayout (raw) and PrecomputedLayout (serialized)
+          if (block.layout) {
             featureMaps.push(block.layout.getRectangles())
           }
         }
@@ -696,10 +694,8 @@ function stateModelFactory() {
       if (!snap) {
         return snap
       }
-      // rewrite "height" from older snapshots to "heightPreConfig", this allows
-      // us to maintain a height "getter" going forward
-      // @ts-expect-error
-      const { height, ...rest } = snap
+      // rewrite "height" from older snapshots to "heightPreConfig"
+      const { height, ...rest } = snap as typeof snap & { height?: number }
       return { heightPreConfig: height, ...rest }
     })
     .postProcessSnapshot(snap => {

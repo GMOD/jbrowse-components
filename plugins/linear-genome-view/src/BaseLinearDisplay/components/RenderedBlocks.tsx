@@ -29,7 +29,7 @@ const RenderedBlocks = observer(function RenderedBlocks({
           {state?.ReactComponent ? (
             <state.ReactComponent model={state} />
           ) : null}
-          {state?.maxHeightReached ? (
+          {state?.maxHeightReached && state.layout ? (
             <MaxHeightReached top={state.layout.getTotalHeight() - 16} />
           ) : null}
         </ContentBlockComponent>
