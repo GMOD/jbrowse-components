@@ -1,4 +1,5 @@
 const baseConfig = {
+  maxWorkers: '25%',
   moduleNameMapper: {
     '^@jbrowse/core/util/useMeasure$':
       '<rootDir>/packages/__mocks__/@jbrowse/core/util/useMeasure.ts',

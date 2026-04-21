@@ -26,7 +26,7 @@
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "peerDependencies": {

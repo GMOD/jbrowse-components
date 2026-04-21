@@ -23,7 +23,7 @@
   "scripts": {
     "prebuild": "pnpm clean",
     "build": "pnpm run /^build:/",
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo",
     "test": "cd ../..; jest --passWithNoTests plugins/linear-genome-view",
     "prepublishOnly": "pnpm test",

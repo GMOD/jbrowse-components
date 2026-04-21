@@ -31,7 +31,7 @@
     "clean": "rm -rf esm *.tsbuildinfo",
     "prebuild": "pnpm clean",
     "build": "pnpm run /^build:/",
-    "build:esm": "tsc --build tsconfig.build.esm.json",
+    "build:esm": "tsgo --build tsconfig.build.esm.json",
     "prepack": "pnpm build",
     "preversion": "pnpm build"
   },
