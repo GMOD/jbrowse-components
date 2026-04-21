@@ -141,7 +141,7 @@ export function featureData({
   })
 }
 
-function parseStrand(strand: unknown) {
+export function parseStrand(strand: unknown) {
   if (strand === '-' || strand === -1) {
     return -1
   }
@@ -156,7 +156,7 @@ export interface FeatureData {
   refName: string
   start: number
   end: number
-  strand?: number | string
+  strand?: number
   score?: number
   type?: string
   subfeatures?: MinimalFeature[]

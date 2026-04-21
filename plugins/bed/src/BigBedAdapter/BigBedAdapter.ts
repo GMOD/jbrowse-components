@@ -154,11 +154,9 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
 
     await updateStatus('Processing features', statusCallback, async () => {
       const parentAggregation = {} as Record<string, FeatureData[]>
-      const parentAggregationFlat = [] as FeatureData[]
+      let minAggStart = Infinity
+      let maxAggEnd = -Infinity
 
-      if (feats.some(f => f.uniqueId === undefined)) {
-        throw new Error('found uniqueId undefined')
-      }
       for (const feat of feats) {
         const splitLine = [
           query.refName,
@@ -183,7 +181,12 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
             parentAggregation[aggr] = []
           }
           parentAggregation[aggr].push(f)
-          parentAggregationFlat.push(f)
+          if (f.start < minAggStart) {
+            minAggStart = f.start
+          }
+          if (f.end > maxAggEnd) {
+            maxAggEnd = f.end
+          }
         } else {
           if (
             doesIntersect2(
@@ -203,18 +206,14 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
         }
       }
 
-      if (allowRedispatch && parentAggregationFlat.length) {
-        const minStart = min(parentAggregationFlat.map(f => f.start))
-        const maxEnd = max(parentAggregationFlat.map(f => f.end))
-
-        if (maxEnd > query.end || minStart < query.start) {
+      if (allowRedispatch && maxAggEnd > -Infinity) {
+        if (maxAggEnd > query.end || minAggStart < query.start) {
           await this.getFeaturesHelper({
             query: {
               ...query,
-              // re-query with 500kb added onto start and end, in order to catch
-              // gene subfeatures that may not overlap your view
-              start: minStart - 500_000,
-              end: maxEnd + 500_000,
+              // extend query to catch gene subfeatures outside the current view
+              start: minAggStart - 500_000,
+              end: maxAggEnd + 500_000,
             },
             opts,
             observer,
@@ -232,9 +231,8 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           const subs = subfeatures.sort((a, b) =>
             a.uniqueId.localeCompare(b.uniqueId),
           )
-          // Check if subfeatures overlap each other. If they do, aggregate into
-          // one parent. If not, each sub gets its own parent (handles e.g.
-          // bacterial GFF where two genes share a name but are distinct loci).
+          // overlapping subs → one gene parent; non-overlapping → separate parents
+          // (handles bacterial GFF where two genes share a name but are distinct loci)
           const sortedByStart = [...subs].sort((a, b) => a.start - b.start)
           const hasOverlaps = sortedByStart.some(
             (f, i) => i > 0 && sortedByStart[i - 1]!.end > f.start,
@@ -256,7 +254,6 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
             )
           }
 
-          // Otherwise, we'll create individual parent features for each subfeature (remove parent aggregation)
           else {
             for (const sub of subs) {
               observer.next(
