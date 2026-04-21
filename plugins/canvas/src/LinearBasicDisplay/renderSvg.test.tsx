@@ -1,3 +1,6 @@
+import { mkdirSync, writeFileSync } from 'fs'
+import path from 'path'
+
 import { renderToString } from 'react-dom/server'
 
 import { renderSvg } from './renderSvg.tsx'
@@ -7,7 +10,7 @@ import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
 // renderSvg calls getContainingView(model) to reach the LGV. Since the model
 // is a plain object in tests (not an MST node), we intercept the call.
-const mockView = {
+let mockView = {
   visibleRegions: [
     {
       displayedRegionIndex: 0,
@@ -26,6 +29,33 @@ jest.mock('@jbrowse/core/util', () => ({
   getContainingView: () => mockView,
 }))
 
+function resetMockView() {
+  mockView = {
+    visibleRegions: [
+      {
+        displayedRegionIndex: 0,
+        start: 1000,
+        end: 2000,
+        reversed: false,
+        screenStartPx: 0,
+        screenEndPx: 800,
+      },
+    ],
+    bpPerPx: 1,
+    width: 800,
+  }
+}
+
+function extractAndWriteSvg(html: string, filename: string) {
+  // Write the generated SVG content to a file for visual inspection
+  const outputDir = path.join(__dirname, '__test-outputs__')
+  mkdirSync(outputDir, { recursive: true })
+  const svgPath = path.join(outputDir, filename)
+
+  const content = `<svg width="800" height="100" xmlns="http://www.w3.org/2000/svg">${html}</svg>`
+  writeFileSync(svgPath, content, 'utf-8')
+}
+
 jest.mock('mobx', () => {
   const actual = jest.requireActual('mobx')
   return {
@@ -34,7 +64,7 @@ jest.mock('mobx', () => {
       // For tests, immediately resolve if condition is true, otherwise wait a bit
       for (let i = 0; i < 100; i++) {
         if (condition()) {
-          return Promise.resolve()
+          return
         }
         await new Promise(r => setTimeout(r, 10))
       }
@@ -106,20 +136,12 @@ describe('renderSvg', () => {
       }),
     )
     expect(result).not.toBeNull()
-    // SVGErrorBox renders an error message in SVG format
     const html = renderToString(result as React.ReactElement)
-    expect(html).toContain('fetch failed')
+    extractAndWriteSvg(html, 'error.svg')
+    expect(html).toMatchSnapshot()
   })
 
-  it('produces SVG with correct dimensions', async () => {
-    const result = await renderSvg(makeModel())
-    expect(result).not.toBeNull()
-    const html = renderToString(result as React.ReactElement)
-    expect(html).toContain('width="800"')
-    expect(html).toContain('height="100"')
-  })
-
-  it('renders rect elements for features in visible region', async () => {
+  it('generates SVG with features in visible region', async () => {
     const data = makeData([
       { startBp: 1100, endBp: 1200 },
       { startBp: 1400, endBp: 1600 },
@@ -129,20 +151,48 @@ describe('renderSvg', () => {
     )
     expect(result).not.toBeNull()
     const html = renderToString(result as React.ReactElement)
-    expect(html).toContain('<rect')
+    extractAndWriteSvg(html, 'with-features.svg')
+    expect(html).toMatchSnapshot()
   })
 
-  it('does not render feature rect elements when data is not in visible region', async () => {
-    // displayedRegionIndex=99 has no data, so output should not contain feature rects
-    // (the clip path itself has a rect, but we're checking for the inner content)
+  it('generates empty SVG when data is not in visible region', async () => {
     const result = await renderSvg(
       makeModel({ laidOutDataMap: new Map([[99, makeData()]]) }),
     )
     expect(result).not.toBeNull()
     const html = renderToString(result as React.ReactElement)
-    // The clip definition has a rect, but there should be no content rects inside the g element
-    const contentMatch = html.match(/<g clip-path="[^"]*">(.*?)<\/g>/s)
-    const content = contentMatch?.[1] ?? ''
-    expect(content).not.toContain('<rect')
+    extractAndWriteSvg(html, 'empty.svg')
+    expect(html).toMatchSnapshot()
+  })
+
+  it('generates SVG with reversed region', async () => {
+    mockView = {
+      visibleRegions: [
+        {
+          displayedRegionIndex: 0,
+          start: 1000,
+          end: 2000,
+          reversed: true,
+          screenStartPx: 0,
+          screenEndPx: 800,
+        },
+      ],
+      bpPerPx: 1,
+      width: 800,
+    }
+
+    const data = makeData([
+      { startBp: 1100, endBp: 1200 },
+      { startBp: 1400, endBp: 1600 },
+    ])
+    const result = await renderSvg(
+      makeModel({ laidOutDataMap: new Map([[0, data]]) }),
+    )
+    expect(result).not.toBeNull()
+    const html = renderToString(result as React.ReactElement)
+    extractAndWriteSvg(html, 'reversed.svg')
+    expect(html).toMatchSnapshot()
+
+    resetMockView()
   })
 })

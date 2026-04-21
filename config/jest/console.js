@@ -35,7 +35,8 @@ console.warn = (...args) => {
   const r = String(args)
   if (
     r.includes('The `anchorEl` prop provided to the component is invalid') ||
-    r.includes('[GPU]')
+    r.includes('[GPU]') ||
+    r.includes('WebGL2Hal')
   ) {
     return undefined
   }

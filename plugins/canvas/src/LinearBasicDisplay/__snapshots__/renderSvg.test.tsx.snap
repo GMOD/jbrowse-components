@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`renderSvg generates SVG with features in visible region 1`] = `"<defs><clipPath id="canvas-features-clip-test"><rect x="0" y="0" width="800" height="100"></rect></clipPath></defs><g clip-path="url(#canvas-features-clip-test)"><g><rect x="80" y="0" width="80" height="10" fill="rgba(255,64,128,1)"/><rect x="320" y="0" width="160" height="10" fill="rgba(255,64,128,1)"/></g></g>"`;
+
+exports[`renderSvg generates SVG with reversed region 1`] = `"<defs><clipPath id="canvas-features-clip-test"><rect x="0" y="0" width="800" height="100"></rect></clipPath></defs><g clip-path="url(#canvas-features-clip-test)"><g><rect x="640" y="0" width="80" height="10" fill="rgba(255,64,128,1)"/><rect x="320" y="0" width="160" height="10" fill="rgba(255,64,128,1)"/></g></g>"`;
+
+exports[`renderSvg generates empty SVG when data is not in visible region 1`] = `"<defs><clipPath id="canvas-features-clip-test"><rect x="0" y="0" width="800" height="100"></rect></clipPath></defs><g clip-path="url(#canvas-features-clip-test)"><g></g></g>"`;
+
+exports[`renderSvg returns an error element when model.error is set 1`] = `"<rect x="0" y="0" width="800" height="100" fill="#ffdddd"></rect><text x="10" y="50" fill="#cc0000" font-size="14">Error: fetch failed</text>"`;
