@@ -61,9 +61,9 @@ exports[`export session with alignments and gff tracks 1`] = `
             "configuration": "gff3tabix_genes",
             "displays": [
               {
-                "configuration": "gff3tabix_genes-LinearFeatureDisplay",
+                "configuration": "gff3tabix_genes-LinearBasicDisplay",
                 "id": "test-id-5",
-                "type": "LinearFeatureDisplay",
+                "type": "LinearBasicDisplay",
               },
             ],
             "id": "test-id-4",
