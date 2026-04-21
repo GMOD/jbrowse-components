@@ -1,17 +1,26 @@
+import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { flow, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { autorun, untracked } from 'mobx'
 
+import { brightenColors, buildGeometry, extractColorSlice } from '../renderer/GeometryBuilder.ts'
+import { GraphRenderer } from '../renderer/GraphRenderer.ts'
 import { convertGFAToGraph } from '../gfa/gfaConverter.ts'
 import { parseGFA } from '../gfa/gfaParser.ts'
 
-import type { VertexRange } from '../renderer/types.ts'
+import type { SubBatchKey, VertexRange } from '../renderer/types.ts'
 import type {
   ColorScheme,
   Graph,
   LayoutResult,
 } from '../types.ts'
+
+export const CANVAS_HEIGHT = 600
+const HOVER_BRIGHTEN = 1.4
+const SELECT_BRIGHTEN = 1.6
+const VIEWPORT_DEBOUNCE_MS = 150
 
 const MIN_ZOOM = 0.001
 const MAX_ZOOM = 100
@@ -20,11 +29,64 @@ function clampZoom(zoom: number) {
   return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom))
 }
 
+function computeViewportBounds(model: {
+  translateX: number
+  translateY: number
+  width: number
+  scale: number
+}) {
+  const padding = 0.2
+  const minX = -model.translateX / model.scale
+  const minY = -model.translateY / model.scale
+  const maxX = (model.width - model.translateX) / model.scale
+  const maxY = (CANVAS_HEIGHT - model.translateY) / model.scale
+  const w = maxX - minX
+  const h = maxY - minY
+  return {
+    minX: minX - w * padding,
+    minY: minY - h * padding,
+    maxX: maxX + w * padding,
+    maxY: maxY + h * padding,
+  }
+}
+
+function restoreVertexColors<K extends string | number>(
+  renderer: GraphRenderer,
+  target: SubBatchKey,
+  ranges: Map<K, VertexRange> | undefined,
+  baseColors: Uint32Array | undefined,
+  key: K | null,
+) {
+  if (key !== null && ranges && baseColors) {
+    const range = ranges.get(key)
+    if (range) {
+      renderer.updateSubBatchColors(target, extractColorSlice(baseColors, range), range.start)
+    }
+  }
+}
+
+function brightenVertexColors<K extends string | number>(
+  renderer: GraphRenderer,
+  target: SubBatchKey,
+  ranges: Map<K, VertexRange> | undefined,
+  baseColors: Uint32Array | undefined,
+  key: K | null,
+  factor: number,
+) {
+  if (key !== null && ranges && baseColors) {
+    const range = ranges.get(key)
+    if (range) {
+      renderer.updateSubBatchColors(target, brightenColors(baseColors, range, factor), range.start)
+    }
+  }
+}
+
 export default function stateModelFactory() {
   return types
     .compose(
       'GraphGenomeView',
       BaseViewModel,
+      GpuBackendLifecycleSlotMixin(),
       types.model({
         type: types.literal('GraphGenomeView'),
       }),
@@ -55,6 +117,7 @@ export default function stateModelFactory() {
       baseNodeColors: undefined as Uint32Array | undefined,
       baseEdgeColors: undefined as Uint32Array | undefined,
       baseArrowColors: undefined as Uint32Array | undefined,
+      viewportDirtyTimer: undefined as ReturnType<typeof setTimeout> | undefined,
     }))
     .views(self => ({
       get nodeById() {
@@ -191,6 +254,135 @@ export default function stateModelFactory() {
         self.baseNodeColors = undefined
         self.baseEdgeColors = undefined
         self.baseArrowColors = undefined
+      },
+    }))
+    .actions(self => ({
+      scheduleViewportDirty() {
+        clearTimeout(self.viewportDirtyTimer)
+        self.viewportDirtyTimer = setTimeout(() => {
+          if (isAlive(self)) {
+            self.setViewportDirty()
+          }
+        }, VIEWPORT_DEBOUNCE_MS)
+      },
+    }))
+    .actions(self => ({
+      startGpuBackendLifecycle(backend: GraphRenderer) {
+        if (!self.gpuAutorunsInstalled) {
+          // Autorun: zoom to fit when a new layout result arrives (skip first run)
+          let firstLayout = true
+          addDisposer(
+            self,
+            autorun(() => {
+              const lr = self.layoutResult
+              if (firstLayout) {
+                firstLayout = false
+              } else if (lr) {
+                self.zoomToFit(CANVAS_HEIGHT)
+              }
+            }),
+          )
+
+          // Autorun: debounce viewport dirty flag on pan/zoom (skip first run)
+          let firstViewport = true
+          addDisposer(
+            self,
+            autorun(() => {
+              void self.scale
+              void self.translateX
+              void self.translateY
+              if (firstViewport) {
+                firstViewport = false
+              } else {
+                self.scheduleViewportDirty()
+              }
+            }),
+          )
+
+          // Autorun: hover/select color-only updates — no geometry rebuild
+          let prevHoveredNode: string | null = null
+          let prevHoveredEdge: number | null = null
+          let prevSelectedNode: string | null = null
+          addDisposer(
+            self,
+            autorun(() => {
+              const b = self.currentGpuBackend as GraphRenderer | undefined
+              const hoveredNode = self.hoveredNode
+              const hoveredEdge = self.hoveredEdge
+              const selectedNode = self.selectedNode
+              if (b) {
+                restoreVertexColors(b, 'nodes', self.nodeVertexRanges, self.baseNodeColors, prevHoveredNode)
+                if (prevSelectedNode !== prevHoveredNode) {
+                  restoreVertexColors(b, 'nodes', self.nodeVertexRanges, self.baseNodeColors, prevSelectedNode)
+                }
+                restoreVertexColors(b, 'edges', self.edgeVertexRanges, self.baseEdgeColors, prevHoveredEdge)
+                restoreVertexColors(b, 'arrows', self.arrowVertexRanges, self.baseArrowColors, prevHoveredEdge)
+
+                brightenVertexColors(b, 'nodes', self.nodeVertexRanges, self.baseNodeColors, selectedNode, SELECT_BRIGHTEN)
+                if (hoveredNode !== selectedNode) {
+                  brightenVertexColors(b, 'nodes', self.nodeVertexRanges, self.baseNodeColors, hoveredNode, HOVER_BRIGHTEN)
+                }
+                brightenVertexColors(b, 'edges', self.edgeVertexRanges, self.baseEdgeColors, hoveredEdge, HOVER_BRIGHTEN)
+                brightenVertexColors(b, 'arrows', self.arrowVertexRanges, self.baseArrowColors, hoveredEdge, HOVER_BRIGHTEN)
+
+                prevHoveredNode = hoveredNode
+                prevHoveredEdge = hoveredEdge
+                prevSelectedNode = selectedNode
+
+                self.renderNow()
+              }
+            }),
+          )
+        }
+
+        self.installGpuDisplay<GraphRenderer>(backend, {
+          // Autorun: rebuild geometry when graph data or display options change.
+          // scale/translate are untracked so they don't trigger a full rebuild —
+          // only the debounced viewportDirty flag does.
+          upload: b => {
+            b.resize(self.width, CANVAS_HEIGHT)
+            const nodeById = self.nodeById
+            if (self.nodePositions && self.graph && nodeById) {
+              void self.viewportDirty
+              const batch = buildGeometry({
+                nodePositions: self.nodePositions,
+                graph: self.graph,
+                nodeById,
+                colorScheme: self.colorScheme,
+                contigThickness: self.contigThickness,
+                connectorThickness: self.connectorThickness,
+                drawPaths: self.drawPaths,
+                viewportBounds: untracked(() => computeViewportBounds(self)),
+              })
+              self.storeRenderBatchMeta(
+                batch.nodeVertexRanges,
+                batch.edgeVertexRanges,
+                batch.arrowVertexRanges,
+                batch.nodes.colors,
+                batch.edges.colors,
+                batch.arrows.colors,
+              )
+              b.uploadGeometry(batch)
+            }
+          },
+          // Autorun: re-render on pan/zoom/darkMode without rebuilding geometry
+          render: b => {
+            if (!self.nodePositions) {
+              return false
+            }
+            const dpr = window.devicePixelRatio || 1
+            b.updateTransform({
+              scaleX: self.scale * dpr,
+              scaleY: self.scale * dpr,
+              translateX: self.translateX * dpr,
+              translateY: self.translateY * dpr,
+              viewportWidth: self.width * dpr,
+              viewportHeight: CANVAS_HEIGHT * dpr,
+            })
+            b.render(self.darkMode ? [0.12, 0.12, 0.12, 1] : [1, 1, 1, 1])
+            return true
+          },
+        })
       },
     }))
     .actions(self => {

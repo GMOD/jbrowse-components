@@ -63,8 +63,16 @@ export class GraphRenderer {
     this.backend?.render(clearColor)
   }
 
-  destroy() {
+  dispose() {
     this.backend?.destroy()
     this.backend = null
   }
+}
+
+export async function createGraphRenderer(
+  canvas: HTMLCanvasElement,
+): Promise<GraphRenderer> {
+  const r = new GraphRenderer(canvas)
+  await r.init()
+  return r
 }
