@@ -42,6 +42,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       configuration: ConfigurationReference(configSchema),
     })
     .views(() => {
+      // Closure variable rather than MST state so it survives model re-renders
+      // without being serialized to the snapshot.
       let codeVerifier: string | undefined = undefined
       return {
         /**
@@ -204,6 +206,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
     }))
     .actions(self => {
       let listener: (event: MessageEvent) => undefined
+      // Shared across concurrent validateToken calls so parallel 401s all wait
+      // on the same refresh request rather than each triggering a separate one.
       let exchangedTokenPromise: Promise<string> | undefined = undefined
       return {
         /**
@@ -240,6 +244,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           ) {
             return
           }
+          // Remove listener before any branching so it's guaranteed to run
+          // exactly once — every exit path below either resolves or rejects.
           this.deleteMessageChannel()
           const redirectUriWithInfo = event.data.redirectUri
           const fixedQueryString = redirectUriWithInfo.replace('#', '?')
