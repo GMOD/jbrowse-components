@@ -10,7 +10,6 @@ import type { VertexRange } from '../renderer/types.ts'
 import type {
   ColorScheme,
   Graph,
-  GraphNode,
   LayoutResult,
 } from '../types.ts'
 
@@ -58,15 +57,10 @@ export default function stateModelFactory() {
       baseArrowColors: undefined as Uint32Array | undefined,
     }))
     .views(self => ({
-      get nodeById(): Map<string, GraphNode> | undefined {
-        if (!self.graph) {
-          return undefined
-        }
-        const map = new Map<string, GraphNode>()
-        for (const n of self.graph.nodes) {
-          map.set(n.id, n)
-        }
-        return map
+      get nodeById() {
+        return self.graph
+          ? new Map(self.graph.nodes.map(n => [n.id, n] as const))
+          : undefined
       },
       get nodeCount() {
         return self.graph?.nodes.length ?? 0

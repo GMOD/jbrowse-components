@@ -16,6 +16,7 @@ import { findHoveredEdge, findHoveredNode } from '../../util/hitDetection.ts'
 import useDebouncedCallback from '../../util/useDebouncedCallback.ts'
 import useRafCallback from '../../util/useRafCallback.ts'
 
+import type { SubBatchKey, VertexRange } from '../../renderer/types.ts'
 import type { GraphGenomeViewModel } from '../model.ts'
 
 const CANVAS_HEIGHT = 600
@@ -61,6 +62,37 @@ function computeViewportBounds(model: GraphGenomeViewModel) {
     minY: minY - h * padding,
     maxX: maxX + w * padding,
     maxY: maxY + h * padding,
+  }
+}
+
+function restoreVertexColors<K extends string | number>(
+  renderer: GraphRenderer,
+  target: SubBatchKey,
+  ranges: Map<K, VertexRange> | undefined,
+  baseColors: Uint32Array | undefined,
+  key: K | null,
+) {
+  if (key !== null && ranges && baseColors) {
+    const range = ranges.get(key)
+    if (range) {
+      renderer.updateSubBatchColors(target, extractColorSlice(baseColors, range), range.start)
+    }
+  }
+}
+
+function brightenVertexColors<K extends string | number>(
+  renderer: GraphRenderer,
+  target: SubBatchKey,
+  ranges: Map<K, VertexRange> | undefined,
+  baseColors: Uint32Array | undefined,
+  key: K | null,
+  factor: number,
+) {
+  if (key !== null && ranges && baseColors) {
+    const range = ranges.get(key)
+    if (range) {
+      renderer.updateSubBatchColors(target, brightenColors(baseColors, range, factor), range.start)
+    }
   }
 }
 
@@ -214,101 +246,21 @@ const GraphCanvas = observer(function GraphCanvas({
         const selectedNode = model.selectedNode
         const renderer = rendererRef.current
         if (renderer) {
-          // Restore previous node highlights
-          if (prevHoveredNode && model.baseNodeColors && model.nodeVertexRanges) {
-            const range = model.nodeVertexRanges.get(prevHoveredNode)
-            if (range) {
-              const original = extractColorSlice(model.baseNodeColors, range)
-              renderer.updateSubBatchColors('nodes', original, range.start)
-            }
+          // Restore previous highlights
+          restoreVertexColors(renderer, 'nodes', model.nodeVertexRanges, model.baseNodeColors, prevHoveredNode)
+          if (prevSelectedNode !== prevHoveredNode) {
+            restoreVertexColors(renderer, 'nodes', model.nodeVertexRanges, model.baseNodeColors, prevSelectedNode)
           }
-          if (
-            prevSelectedNode &&
-            prevSelectedNode !== prevHoveredNode &&
-            model.baseNodeColors &&
-            model.nodeVertexRanges
-          ) {
-            const range = model.nodeVertexRanges.get(prevSelectedNode)
-            if (range) {
-              const original = extractColorSlice(model.baseNodeColors, range)
-              renderer.updateSubBatchColors('nodes', original, range.start)
-            }
-          }
+          restoreVertexColors(renderer, 'edges', model.edgeVertexRanges, model.baseEdgeColors, prevHoveredEdge)
+          restoreVertexColors(renderer, 'arrows', model.arrowVertexRanges, model.baseArrowColors, prevHoveredEdge)
 
-          // Restore previous edge highlights
-          if (prevHoveredEdge !== null) {
-            if (model.baseEdgeColors && model.edgeVertexRanges) {
-              const range = model.edgeVertexRanges.get(prevHoveredEdge)
-              if (range) {
-                const original = extractColorSlice(model.baseEdgeColors, range)
-                renderer.updateSubBatchColors('edges', original, range.start)
-              }
-            }
-            if (model.baseArrowColors && model.arrowVertexRanges) {
-              const range = model.arrowVertexRanges.get(prevHoveredEdge)
-              if (range) {
-                const original = extractColorSlice(model.baseArrowColors, range)
-                renderer.updateSubBatchColors('arrows', original, range.start)
-              }
-            }
+          // Apply current highlights
+          brightenVertexColors(renderer, 'nodes', model.nodeVertexRanges, model.baseNodeColors, selectedNode, SELECT_BRIGHTEN)
+          if (hoveredNode !== selectedNode) {
+            brightenVertexColors(renderer, 'nodes', model.nodeVertexRanges, model.baseNodeColors, hoveredNode, HOVER_BRIGHTEN)
           }
-
-          // Apply selected node highlight
-          if (selectedNode && model.baseNodeColors && model.nodeVertexRanges) {
-            const range = model.nodeVertexRanges.get(selectedNode)
-            if (range) {
-              const brightened = brightenColors(
-                model.baseNodeColors,
-                range,
-                SELECT_BRIGHTEN,
-              )
-              renderer.updateSubBatchColors('nodes', brightened, range.start)
-            }
-          }
-
-          // Apply hovered node highlight
-          if (
-            hoveredNode &&
-            hoveredNode !== selectedNode &&
-            model.baseNodeColors &&
-            model.nodeVertexRanges
-          ) {
-            const range = model.nodeVertexRanges.get(hoveredNode)
-            if (range) {
-              const brightened = brightenColors(
-                model.baseNodeColors,
-                range,
-                HOVER_BRIGHTEN,
-              )
-              renderer.updateSubBatchColors('nodes', brightened, range.start)
-            }
-          }
-
-          // Apply hovered edge highlight
-          if (hoveredEdge !== null) {
-            if (model.baseEdgeColors && model.edgeVertexRanges) {
-              const range = model.edgeVertexRanges.get(hoveredEdge)
-              if (range) {
-                const brightened = brightenColors(
-                  model.baseEdgeColors,
-                  range,
-                  HOVER_BRIGHTEN,
-                )
-                renderer.updateSubBatchColors('edges', brightened, range.start)
-              }
-            }
-            if (model.baseArrowColors && model.arrowVertexRanges) {
-              const range = model.arrowVertexRanges.get(hoveredEdge)
-              if (range) {
-                const brightened = brightenColors(
-                  model.baseArrowColors,
-                  range,
-                  HOVER_BRIGHTEN,
-                )
-                renderer.updateSubBatchColors('arrows', brightened, range.start)
-              }
-            }
-          }
+          brightenVertexColors(renderer, 'edges', model.edgeVertexRanges, model.baseEdgeColors, hoveredEdge, HOVER_BRIGHTEN)
+          brightenVertexColors(renderer, 'arrows', model.arrowVertexRanges, model.baseArrowColors, hoveredEdge, HOVER_BRIGHTEN)
 
           prevHoveredNode = hoveredNode
           prevHoveredEdge = hoveredEdge

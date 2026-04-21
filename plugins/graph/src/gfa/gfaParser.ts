@@ -113,7 +113,7 @@ export function parseGFA(file: string) {
         tagfields = rest.slice(1)
       }
       const tags = parseTags(tagfields)
-      if (gfa1 && tags.LN) {
+      if (gfa1 && 'LN' in tags) {
         len = +tags.LN
       }
       graph.nodes.push({ id: name!, length: len, sequence: seq, tags })
