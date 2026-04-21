@@ -39,6 +39,21 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         get cellDataMode() {
           return 'regular' as const
         },
+        get renderState() {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          const cellData = self.cellData as
+            | { perRegionCellData: Record<number, VariantCellData> }
+            | undefined
+          if (!view.initialized || !cellData) {
+            return undefined
+          }
+          return {
+            canvasWidth: view.trackWidthPx,
+            canvasHeight: self.availableHeight,
+            rowHeight: self.rowHeight,
+            scrollTop: self.scrollTop,
+          }
+        },
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self, opts)
@@ -80,19 +95,11 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             b.pruneRegions(active)
           },
           render: b => {
-            const view = getContainingView(self) as LinearGenomeViewModel
-            const cellData = self.cellData as
-              | { perRegionCellData: Record<number, VariantCellData> }
-              | undefined
-            if (!view.initialized || !cellData) {
+            const state = self.renderState
+            if (!state) {
               return false
             }
-            b.renderBlocks(self.renderBlocks, {
-              canvasWidth: view.trackWidthPx,
-              canvasHeight: self.availableHeight,
-              rowHeight: self.rowHeight,
-              scrollTop: self.scrollTop,
-            })
+            b.renderBlocks(self.renderBlocks, state)
             return true
           },
         })
