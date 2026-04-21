@@ -1,6 +1,8 @@
 import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { CANVAS_HEIGHT } from '../model.ts'
+
 import type { TubeMapViewModel } from '../model.ts'
 
 const TubeMapToolbar = observer(function TubeMapToolbar({
@@ -31,7 +33,7 @@ const TubeMapToolbar = observer(function TubeMapToolbar({
         size="small"
         variant="outlined"
         onClick={() => {
-          model.zoomToFit(500)
+          model.zoomToFit(CANVAS_HEIGHT)
         }}
       >
         Zoom to fit
@@ -40,7 +42,7 @@ const TubeMapToolbar = observer(function TubeMapToolbar({
         size="small"
         variant="outlined"
         onClick={() => {
-          model.zoom(1.3, model.width / 2, 250)
+          model.zoom(1.3, model.width / 2, CANVAS_HEIGHT / 2)
         }}
       >
         +
@@ -49,7 +51,7 @@ const TubeMapToolbar = observer(function TubeMapToolbar({
         size="small"
         variant="outlined"
         onClick={() => {
-          model.zoom(0.7, model.width / 2, 250)
+          model.zoom(0.7, model.width / 2, CANVAS_HEIGHT / 2)
         }}
       >
         -

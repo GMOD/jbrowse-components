@@ -1,45 +1,7 @@
-// Converts parsed GFA data into tube map layout input
-
 import { computeTubeMapLayout } from './tubeMapLayout.ts'
 
+import type { GFAGraph } from '../gfa/gfaParser.ts'
 import type { TubeMapLayout } from './types.ts'
-
-interface GFANode {
-  id: string
-  length: number
-  sequence: string
-  tags: Record<string, string | number>
-}
-
-interface GFAPath {
-  name: string
-  path: string
-  rest: string[]
-}
-
-interface GFAWalkSegment {
-  id: string
-  strand: string
-}
-
-interface GFAWalk {
-  sample: string
-  haplotype: number
-  contig: string
-  start: number
-  end: number
-  segments: GFAWalkSegment[]
-  tags: Record<string, string | number>
-}
-
-interface GFAGraph {
-  nodes: GFANode[]
-  links: unknown[]
-  paths: GFAPath[]
-  walks: GFAWalk[]
-  header: Record<string, string | number>[]
-  id: string
-}
 
 export function layoutGFA(gfa: GFAGraph, widthPerBp = 10): TubeMapLayout {
   const inputNodes = gfa.nodes.map(n => ({

@@ -22,7 +22,7 @@ const TRACK_COLORS = [
 ]
 
 function getTrackColor(idx: number) {
-  return TRACK_COLORS[idx % TRACK_COLORS.length]!
+  return TRACK_COLORS[idx % TRACK_COLORS.length]
 }
 
 const NODE_RADIUS = 4
@@ -277,7 +277,7 @@ function TrackLegend({
   )
 }
 
-function useVisibleRange(
+function getVisibleRange(
   scale: number,
   translateX: number,
   translateY: number,
@@ -300,7 +300,7 @@ const TubeMapCanvas = observer(function TubeMapCanvas({
   const svgRef = useRef<SVGSVGElement>(null)
   const isPanning = useRef(false)
   const lastPos = useRef({ x: 0, y: 0 })
-  const { xMin, xMax, yMin, yMax } = useVisibleRange(
+  const { xMin, xMax, yMin, yMax } = getVisibleRange(
     model.scale,
     model.translateX,
     model.translateY,

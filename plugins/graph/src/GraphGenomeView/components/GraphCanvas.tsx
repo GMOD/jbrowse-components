@@ -178,6 +178,7 @@ const GraphCanvas = observer(function GraphCanvas({
         setRendererReady(false)
       }
     }
+    return undefined
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -231,6 +232,7 @@ const GraphCanvas = observer(function GraphCanvas({
         }
       })
     }
+    return undefined
   }, [model, rendererReady, scheduleRender])
 
   // Autorun 2: Hover/select color-only updates — no geometry rebuild.
@@ -270,6 +272,7 @@ const GraphCanvas = observer(function GraphCanvas({
         }
       })
     }
+    return undefined
   }, [model, rendererReady, scheduleRender])
 
   // Autorun 3: Re-render on pan/zoom/darkMode without rebuilding geometry (cheap).
@@ -283,6 +286,7 @@ const GraphCanvas = observer(function GraphCanvas({
         }
       })
     }
+    return undefined
   }, [model, rendererReady])
 
   // Autorun 4: Debounced viewport culling — rebuild geometry after pan/zoom settles
@@ -382,18 +386,22 @@ const GraphCanvas = observer(function GraphCanvas({
     if (canvas) {
       function handleWheel(e: WheelEvent) {
         e.preventDefault()
-        const rect = canvas.getBoundingClientRect()
-        model.zoom(
-          e.deltaY < 0 ? 1.1 : 1 / 1.1,
-          e.clientX - rect.left,
-          e.clientY - rect.top,
-        )
+        const c = canvasRef.current
+        if (c) {
+          const rect = c.getBoundingClientRect()
+          model.zoom(
+            e.deltaY < 0 ? 1.1 : 1 / 1.1,
+            e.clientX - rect.left,
+            e.clientY - rect.top,
+          )
+        }
       }
       canvas.addEventListener('wheel', handleWheel, { passive: false })
       return () => {
         canvas.removeEventListener('wheel', handleWheel)
       }
     }
+    return undefined
   }, [model])
 
   return (

@@ -26,7 +26,7 @@ export default function stateModelFactory() {
     .volatile(() => ({
       layout: undefined as TubeMapLayout | undefined,
       gfaText: undefined as string | undefined,
-      graphName: '' as string,
+      graphName: '',
       error: undefined as string | undefined,
       isLoading: false,
       scale: 1,
@@ -75,19 +75,19 @@ export default function stateModelFactory() {
         self.translateY = centerY - (centerY - self.translateY) * ratio
       },
       zoomToFit(containerHeight: number) {
-        if (!self.layout) {
-          return
+        if (self.layout) {
+          const padding = 40
+          const scaleX = (self.width - padding * 2) / self.layout.maxX
+          const scaleY = (containerHeight - padding * 2) / self.layout.maxY
+          const newScale = clampZoom(Math.min(scaleX, scaleY))
+          self.scale = newScale
+          self.translateX =
+            padding +
+            (self.width - padding * 2 - self.layout.maxX * newScale) / 2
+          self.translateY =
+            padding +
+            (containerHeight - padding * 2 - self.layout.maxY * newScale) / 2
         }
-        const padding = 40
-        const scaleX = (self.width - padding * 2) / self.layout.maxX
-        const scaleY = (containerHeight - padding * 2) / self.layout.maxY
-        const newScale = clampZoom(Math.min(scaleX, scaleY))
-        self.scale = newScale
-        self.translateX =
-          padding + (self.width - padding * 2 - self.layout.maxX * newScale) / 2
-        self.translateY =
-          padding +
-          (containerHeight - padding * 2 - self.layout.maxY * newScale) / 2
       },
       loadGFA(text: string, name = 'Imported GFA') {
         self.isLoading = true
@@ -97,7 +97,6 @@ export default function stateModelFactory() {
         const gfa = parseGFA(text)
         self.layout = layoutGFA(gfa, self.widthPerBp)
         self.isLoading = false
-        // auto zoom-to-fit so the graph fills the view
         if (self.width > 0) {
           this.zoomToFit(CANVAS_HEIGHT)
         }

@@ -59,32 +59,30 @@ const ImportForm = observer(function ImportForm({
   const [fetchError, setFetchError] = useState('')
 
   async function handleUrlLoad() {
-    if (!url.trim()) {
-      return
+    if (url.trim()) {
+      setFetchError('')
+      const response = await fetch(url)
+      if (response.ok) {
+        const text = await response.text()
+        model.loadGFA(text)
+      } else {
+        setFetchError(`Failed to fetch: ${response.statusText}`)
+      }
     }
-    setFetchError('')
-    const response = await fetch(url)
-    if (!response.ok) {
-      setFetchError(`Failed to fetch: ${response.statusText}`)
-      return
-    }
-    const text = await response.text()
-    model.loadGFA(text)
   }
 
   function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
-    if (!file) {
-      return
+    if (file) {
+      file
+        .text()
+        .then(text => {
+          model.loadGFA(text)
+        })
+        .catch((err: unknown) => {
+          model.setError(`Failed to read file: ${err}`)
+        })
     }
-    file
-      .text()
-      .then(text => {
-        model.loadGFA(text)
-      })
-      .catch((err: unknown) => {
-        model.setError(`Failed to read file: ${err}`)
-      })
   }
 
   function handleExampleLoad() {
@@ -129,8 +127,7 @@ const ImportForm = observer(function ImportForm({
             }}
             onKeyDown={e => {
               if (e.key === 'Enter') {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                handleUrlLoad()
+                void handleUrlLoad()
               }
             }}
           />
