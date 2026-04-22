@@ -1,7 +1,6 @@
 import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
@@ -127,6 +126,7 @@ export default function stateModelFactory() {
       baseNodeColors: undefined as Uint32Array | undefined,
       baseEdgeColors: undefined as Uint32Array | undefined,
       baseArrowColors: undefined as Uint32Array | undefined,
+      draggingNode: null as string | null,
       viewportDirtyTimer: undefined as
         | ReturnType<typeof setTimeout>
         | undefined,
@@ -184,6 +184,19 @@ export default function stateModelFactory() {
       },
       setSelectedNode(nodeId: string | null) {
         self.selectedNode = nodeId
+      },
+      setDraggingNode(nodeId: string | null) {
+        self.draggingNode = nodeId
+      },
+      moveNode(nodeId: string, dx: number, dy: number) {
+        const positions = self.layoutResult?.nodePositions
+        if (positions?.[nodeId]) {
+          for (const seg of positions[nodeId]) {
+            seg.x += dx
+            seg.y += dy
+          }
+          self.setViewportDirty()
+        }
       },
       setTransform(s: number, tx: number, ty: number) {
         self.scale = clampZoom(s)
@@ -456,7 +469,7 @@ export default function stateModelFactory() {
       function callLayout(graph: Graph) {
         const session = getSession(self)
         const { rpcManager } = session
-        const sessionId = 'graph' //getRpcSessionId(self) no 'rpcSessionId' getter
+        const sessionId = 'graph' // getRpcSessionId(self) no 'rpcSessionId' getter
         return rpcManager.call(sessionId, 'GraphComputeLayout', {
           sessionId,
           graph: { nodes: graph.nodes, edges: graph.edges },
@@ -510,7 +523,7 @@ export default function stateModelFactory() {
           try {
             const session = getSession(self)
             const { rpcManager } = session
-            const sessionId = 'graph' //getRpcSessionId(self) no rpcSessionId getter
+            const sessionId = 'graph' // getRpcSessionId(self) no rpcSessionId getter
             const gfaText = (yield rpcManager.call(sessionId, 'GetSubgraph', {
               adapterConfig,
               region,

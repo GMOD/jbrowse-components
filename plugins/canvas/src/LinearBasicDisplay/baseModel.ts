@@ -195,17 +195,17 @@ export default function baseStateModelFactory(
       }))
       .views(self => ({
         // Laid-out data derived from the raw per-region fetch results. Mobx
-        // caches this — it only recomputes when any tracked input changes
-        // (raw data, bpPerPx, label visibility). Every consumer (hit test,
-        // GPU upload, React render) reads this getter and sees the same
-        // cached map until an input moves.
+        // caches this — it only recomputes when any tracked input changes (raw
+        // data, bpPerPx, label visibility). Every consumer (hit test, GPU
+        // upload, React render) reads this getter and sees the same cached map
+        // until an input moves.
         get laidOutDataMap(): Map<number, FeatureDataResult> {
           const view = getContainingView(self) as LGV
           if (!view.initialized || self.rpcDataMap.size === 0) {
             return new Map()
           }
           return computeLaidOutData(self.rpcDataMap, {
-            bpPerPx: view.bpPerPx,
+            bpPerPx: view.coarseBpPerPx,
             regionKeys: this.regionKeys,
             showLabels: this.showLabels,
             showDescriptions: this.effectiveShowDescriptions,

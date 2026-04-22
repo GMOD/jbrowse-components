@@ -90,30 +90,6 @@ const TrackMode = observer(function TrackMode({
 
   const selectedTrack = gfaTabixTracks.find(t => t.trackId === trackId)
 
-  async function handleLoad() {
-    setError(undefined)
-    try {
-      if (!selectedTrack) {
-        throw new Error('Pick a GfaTabix track')
-      }
-      // If the user picked a feature (e.g. a gene) from the autocomplete,
-      // prefer its resolved location; else parse whatever they typed.
-      const { refName, start, end } = parseRegion(loc)
-      const adapterNode = readConfObject(selectedTrack, 'adapter') as unknown
-      const adapterConfig = getSnapshot(
-        adapterNode as Parameters<typeof getSnapshot>[0],
-      ) as Record<string, unknown>
-      await model.loadFromTabixSubgraph(adapterConfig, {
-        refName,
-        assemblyName: assembly,
-        start,
-        end,
-      })
-    } catch (e) {
-      setError(e)
-    }
-  }
-
   if (assemblyNames.length === 0) {
     return <ErrorMessage error="No assemblies configured in this session" />
   }
@@ -133,6 +109,7 @@ const TrackMode = observer(function TrackMode({
           select
           size="small"
           label="GFA track"
+          variant="outlined"
           value={trackId}
           onChange={e => {
             setTrackId(e.target.value)
@@ -141,7 +118,7 @@ const TrackMode = observer(function TrackMode({
           style={{ flex: 1, minWidth: 180 }}
           helperText={
             gfaTabixTracks.length === 0
-              ? `No GfaTabixAdapter tracks for ${assembly || 'this assembly'}`
+              ? `No GFA tracks for ${assembly || 'this assembly'}`
               : ' '
           }
         >
@@ -172,7 +149,32 @@ const TrackMode = observer(function TrackMode({
         />
         <Button
           variant="contained"
-          onClick={handleLoad}
+          onClick={async () => {
+            setError(undefined)
+            try {
+              if (!selectedTrack) {
+                throw new Error('Pick a GfaTabix track')
+              }
+              // If the user picked a feature (e.g. a gene) from the autocomplete,
+              // prefer its resolved location; else parse whatever they typed.
+              const { refName, start, end } = parseRegion(loc)
+              const adapterNode = readConfObject(
+                selectedTrack,
+                'adapter',
+              ) as unknown
+              const adapterConfig = getSnapshot(
+                adapterNode as Parameters<typeof getSnapshot>[0],
+              ) as Record<string, unknown>
+              await model.loadFromTabixSubgraph(adapterConfig, {
+                refName,
+                assemblyName: assembly,
+                start,
+                end,
+              })
+            } catch (e) {
+              setError(e)
+            }
+          }}
           disabled={!trackId || !loc.trim() || model.isLoading}
         >
           Open
