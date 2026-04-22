@@ -80,7 +80,7 @@ function RecentSessionsList({
               ) + 40,
         ]),
       ),
-    } as Record<string, number>
+    }
   }, [rows])
 
   const favs = useMemo(() => new Set(favorites), [favorites])

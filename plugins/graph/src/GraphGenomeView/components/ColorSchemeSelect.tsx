@@ -1,7 +1,6 @@
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { ColorScheme } from '../../types.ts'
 import type { GraphGenomeViewModel } from '../model.ts'
 
 const ColorSchemeSelect = observer(function ColorSchemeSelect({
@@ -16,7 +15,7 @@ const ColorSchemeSelect = observer(function ColorSchemeSelect({
         value={model.colorScheme}
         label="Color"
         onChange={e => {
-          model.setColorScheme(e.target.value as ColorScheme)
+          model.setColorScheme(e.target.value)
         }}
       >
         <MenuItem value="uniform">Uniform</MenuItem>

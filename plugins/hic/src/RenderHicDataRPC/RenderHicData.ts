@@ -43,7 +43,7 @@ export default class RenderHicData extends RpcMethodType {
         {
           ...typedArgs,
           regions: result.regions,
-        } as unknown as Record<string, unknown>,
+        },
         rpcDriver,
       )
     }

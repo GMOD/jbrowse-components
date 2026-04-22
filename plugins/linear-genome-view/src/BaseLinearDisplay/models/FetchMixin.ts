@@ -52,7 +52,10 @@ export default function FetchMixin() {
     .volatile(() => ({
       activeStopToken: undefined as StopToken | undefined,
       fetchSignal: 0,
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
+
       statusMessage: undefined as string | undefined,
     }))
     .views(self => ({
@@ -94,7 +97,7 @@ export default function FetchMixin() {
         self.error = undefined
 
         const isStale = () =>
-          !isAlive(self as object) ||
+          !isAlive(self) ||
           self.fetchSignal !== startSignal ||
           self.activeStopToken !== stopToken
 

@@ -209,8 +209,11 @@ export default function MultiSampleVariantBaseModelF(
       /**
        * #volatile
        */
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       cellData: undefined as unknown,
       cellDataLoading: false,
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       displayError: undefined as unknown,
       errorRetryCount: 0,
     }))

@@ -10,6 +10,8 @@ interface DisplayedRegionWithIndex {
 function createMockDisplayModel() {
   const state = observable({
     fetchGeneration: 0,
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     error: undefined as unknown,
     regionTooLargeState: false,
     loadedRegions: new Map<number, Region>(),

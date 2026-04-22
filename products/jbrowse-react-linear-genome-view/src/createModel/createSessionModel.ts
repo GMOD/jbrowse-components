@@ -49,6 +49,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       view: pluginManager.getViewType('LinearGenomeView')!
         .stateModel as LinearGenomeViewStateModel,
       /**

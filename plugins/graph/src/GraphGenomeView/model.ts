@@ -102,11 +102,15 @@ export default function stateModelFactory() {
     .volatile(() => ({
       graph: undefined as Graph | undefined,
       layoutResult: undefined as LayoutResult | undefined,
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
       isLoading: false,
       statusMessage: '',
       layoutQuality: 1,
       linearLayout: false,
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       colorScheme: 'uniform' as ColorScheme,
       contigThickness: 10,
       connectorThickness: 4,
@@ -435,16 +439,14 @@ export default function stateModelFactory() {
         }
 
         self.installGpuDisplay<GraphRenderer>(backend, {
-          // Autorun: rebuild geometry when graph data or display options change.
-          // scale/translate are untracked so they don't trigger a full rebuild —
-          // only the debounced viewportDirty flag does.
+          // Autorun: rebuild geometry when graph data or display options
+          // change. scale/translate are untracked so they don't trigger a full
+          // rebuild — only the debounced viewportDirty flag does.
           upload: b => {
-            const start = performance.now()
             b.resize(self.width, self.canvasHeight)
             const nodeById = self.nodeById
             if (self.nodePositions && self.graph && nodeById) {
               void self.viewportDirty
-              const buildStart = performance.now()
               const batch = buildGeometry({
                 nodePositions: self.nodePositions,
                 graph: self.graph,
@@ -457,8 +459,6 @@ export default function stateModelFactory() {
                 viewportBounds: untracked(() => computeViewportBounds(self)),
               })
 
-              const buildEnd = performance.now()
-
               self.storeRenderBatchMeta(
                 batch.nodeVertexRanges,
                 batch.edgeVertexRanges,
@@ -467,20 +467,6 @@ export default function stateModelFactory() {
                 batch.edges.colors,
                 batch.arrows.colors,
               )
-
-              const uploadStart = performance.now()
-              b.uploadGeometry(batch)
-              const uploadEnd = performance.now()
-
-              if (self.draggingNode) {
-                console.log(
-                  `[Graph Performance] Rebuilding geometry for DRAG. ` +
-                    `Nodes: ${self.nodeCount}, Edges: ${self.edgeCount}. ` +
-                    `Build: ${(buildEnd - buildStart).toFixed(2)}ms, ` +
-                    `Upload: ${(uploadEnd - uploadStart).toFixed(2)}ms, ` +
-                    `Total: ${(performance.now() - start).toFixed(2)}ms`,
-                )
-              }
             }
           },
           // Autorun: re-render on pan/zoom/darkMode without rebuilding geometry

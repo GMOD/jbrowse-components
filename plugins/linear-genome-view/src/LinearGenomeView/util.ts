@@ -164,7 +164,7 @@ export async function generateLocations({
           ? expandRegion(start, end, grow)
           : undefined
       return {
-        ...(region as Omit<typeof region, symbol>),
+        ...region,
         ...(expanded ? { start: expanded.start, end: expanded.end } : {}),
         assemblyName: asmName,
         parentRegion,

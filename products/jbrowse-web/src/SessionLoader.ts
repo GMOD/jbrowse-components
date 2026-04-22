@@ -117,10 +117,14 @@ const SessionLoader = types
     /**
      * #volatile
      */
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     sessionError: undefined as unknown,
     /**
      * #volatile
      */
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     configError: undefined as unknown,
   }))
   .views(self => ({

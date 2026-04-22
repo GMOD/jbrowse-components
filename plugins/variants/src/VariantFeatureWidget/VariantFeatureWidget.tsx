@@ -168,7 +168,7 @@ const VariantFeatureWidget = observer(function VariantFeatureWidget(props: {
 }) {
   const { model } = props
   const { featureData } = model
-  const feat = structuredClone(featureData) as VCFFeatureSerialized | undefined
+  const feat = structuredClone(featureData)
   return feat ? (
     <FeatDefined feat={feat} {...props} />
   ) : (

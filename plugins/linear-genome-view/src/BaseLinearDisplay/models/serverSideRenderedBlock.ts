@@ -102,6 +102,7 @@ const blockState = types
     /**
      * #volatile
      */
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     error: undefined as unknown,
     /**
      * #volatile

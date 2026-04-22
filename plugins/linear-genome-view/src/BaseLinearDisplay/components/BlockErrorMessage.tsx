@@ -38,7 +38,7 @@ const BlockErrorMessage = observer(function BlockErrorMessage({
                   ErrorMessageStackTraceDialog,
                   {
                     onClose,
-                    error: model.error as Error,
+                    error: model.error,
                   },
                 ])
               }}
