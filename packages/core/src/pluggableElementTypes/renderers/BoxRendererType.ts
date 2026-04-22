@@ -103,7 +103,7 @@ export default class BoxRendererType extends FeatureRendererType {
       {
         ...result,
         layout,
-      } as FeatureResultsSerialized,
+      },
       args,
     ) as ResultsDeserialized
   }

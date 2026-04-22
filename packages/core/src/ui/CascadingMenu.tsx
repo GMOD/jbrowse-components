@@ -160,49 +160,46 @@ function CascadingMenuList({
           )
         }
 
-        const actionItem = item as ActionableMenuItem
-        const helpText = actionItem.helpText
-        const isCheckOrRadio =
-          actionItem.type === 'checkbox' || actionItem.type === 'radio'
-        const itemTestId = labelToTestId(actionItem.label)
-
+        const helpText = item.helpText
+        const isCheckOrRadio = item.type === 'checkbox' || item.type === 'radio'
+        const itemTestId = labelToTestId(item.label)
         return (
           <MenuItem
-            key={`${actionItem.label}-${idx}`}
+            key={`${item.label}-${idx}`}
             data-testid={
               itemTestId ? `cascading-menuitem-${itemTestId}` : undefined
             }
-            disabled={Boolean(actionItem.disabled)}
+            disabled={Boolean(item.disabled)}
             onClick={event => {
               if (closeAfterItemClick) {
                 onCloseRoot()
               }
-              onMenuItemClick(event, actionItem.onClick)
+              onMenuItemClick(event, item.onClick)
             }}
             onMouseOver={closeSubmenu}
           >
-            {actionItem.icon ? (
+            {item.icon ? (
               <ListItemIcon>
-                <actionItem.icon />
+                <item.icon />
               </ListItemIcon>
             ) : null}
             <ListItemText
-              primary={actionItem.label}
-              secondary={actionItem.subLabel}
-              inset={hasIcon && !actionItem.icon}
+              primary={item.label}
+              secondary={item.subLabel}
+              inset={hasIcon && !item.icon}
             />
             <div style={{ flexGrow: 1, minWidth: 10 }} />
             {isCheckOrRadio ? (
               <MenuItemEndDecoration
-                type={actionItem.type}
-                checked={actionItem.checked}
-                disabled={actionItem.disabled}
+                type={item.type}
+                checked={item.checked}
+                disabled={item.disabled}
               />
             ) : null}
             {helpText ? (
               <CascadingMenuHelpIconButton
                 helpText={helpText}
-                label={actionItem.label}
+                label={item.label}
               />
             ) : isCheckOrRadio && hasCheckboxOrRadioWithHelp ? (
               <div

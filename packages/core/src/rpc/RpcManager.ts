@@ -152,7 +152,7 @@ export default class RpcManager {
       sessionId,
       functionName,
       a,
-      opts as { rpcDriverName?: string } | undefined,
+      opts,
     )
     return driverForCall.call(
       this.pluginManager,

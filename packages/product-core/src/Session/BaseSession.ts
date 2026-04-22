@@ -39,6 +39,8 @@ export function BaseSessionModel<
        * wants to deal with this should examine it to see what kind of thing it
        * is.
        */
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       selection: undefined as unknown,
       /**
        * #volatile
@@ -46,6 +48,7 @@ export function BaseSessionModel<
        * wants to deal with this should examine it to see what kind of thing it
        * is.
        */
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       hovered: undefined as unknown,
     }))
     .views(self => ({

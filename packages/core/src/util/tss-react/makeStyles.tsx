@@ -49,6 +49,7 @@ export function createMakeStyles<Theme>(params: { useTheme: () => Theme }) {
             result[ruleName] = css(cssObject)
           }
 
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
           return result as Record<RuleName, string>
         }, [css, theme])
 

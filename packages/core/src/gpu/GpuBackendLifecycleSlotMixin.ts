@@ -45,6 +45,8 @@ export function GpuBackendLifecycleSlotMixin() {
     .model('GpuBackendLifecycleSlot', {})
     .volatile(() => ({
       canvasDrawn: false,
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       currentGpuBackend: undefined as unknown,
       renderBump: 0,
       gpuAutorunsInstalled: false,

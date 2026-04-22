@@ -37,6 +37,7 @@ function stateModelFactory() {
     })
     .volatile(() => ({
       rendererTypeName: '',
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
       statusMessage: undefined as string | undefined,
     }))

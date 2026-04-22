@@ -89,8 +89,7 @@ export function glToGpuVertexFormat(attr: {
 }): GPUVertexFormat {
   const base =
     attr.type === 'uint' ? 'uint32' : attr.type === 'int' ? 'sint32' : 'float32'
-  if (attr.components === 1) {
-    return base as GPUVertexFormat
-  }
-  return `${base}x${attr.components}` as GPUVertexFormat
+  return attr.components === 1
+    ? base
+    : (`${base}x${attr.components}` as GPUVertexFormat)
 }

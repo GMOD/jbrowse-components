@@ -100,7 +100,7 @@ export default class ServerSideRenderer extends RendererType {
     const results = await this.render({
       ...rest,
       config,
-    } as RenderArgsDeserialized)
+    })
 
     if (isRpcResult(results)) {
       return this.deserializeResultsInClient(
@@ -112,10 +112,7 @@ export default class ServerSideRenderer extends RendererType {
     const { reactElement, ...resultRest } = results
     return {
       ...resultRest,
-      reactElement: this.createReactElement(
-        resultRest as ResultsSerialized,
-        args,
-      ),
+      reactElement: this.createReactElement(resultRest, args),
     }
   }
 

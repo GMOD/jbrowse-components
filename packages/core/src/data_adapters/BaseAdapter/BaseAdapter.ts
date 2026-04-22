@@ -33,7 +33,7 @@ export class BaseAdapter {
     this.pluginManager = pluginManager
     if (typeof jest === 'undefined') {
       const data = isStateTreeNode(config) ? getSnapshot(config) : config
-      this.id = idMaker(data as Record<string, unknown>)
+      this.id = idMaker(data)
     } else {
       this.id = 'test'
     }
