@@ -246,3 +246,24 @@ Look at mui v9 migration checklist https://mui.com/material-ui/migration/upgrade
 - Make SVPlaudit but with jbrowse
 - Static renderings of jbrowse still needed with jbrowse-img
 - Command line tool that can do this for many many variants quickly
+
+## Alignments
+
+- Modifications and methylation coloy by modes does not want to color snps, it should color snps grey
+
+- Potentially weird for our demo data but saw : Fetch failed: TypeError: can't access property "toUpperCase", regionSequence[(position - regionSequenceStart)] is undefined
+    computeModificationCoverage webpack://@jbrowse/web/../../plugins/alignments/src/shared/computeModificationCoverage.ts?:80
+    executeRenderPileupData webpack://@jbrowse/web/../../plugins/alignments/src/RenderPileupDataRPC/executeRenderPileupData.ts?:178
+FetchMixin.ts:98:19
+
+- Error boundary message is narrow, why not show entire message, also stack trace needed in error banner
+- Clicking on snpcoverage modifications needs to get details in sidebar widget. clicking on modifications on pileup reads also
+
+
+## Synteny
+
+- Very poor synteny anti aliasing right now, please review, may be recent regression on this branch
+
+- Dotplot sort of slow or debounced feature requests, review
+
+- Speed up paf_chain2paf, parseCigar2
