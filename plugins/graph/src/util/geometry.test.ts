@@ -36,7 +36,7 @@ describe('computeEdgeCurves', () => {
       { x: 20, y: 0 },
       { x: 30, y: 0 },
     ]
-    const curves = computeEdgeCurves(from, to, false, 0, 0)
+    const curves = computeEdgeCurves(from, to, false, 0, 0, 1)
 
     expect(curves).toHaveLength(1)
     expect(curves[0]!.x0).toBeCloseTo(10)
@@ -50,7 +50,7 @@ describe('computeEdgeCurves', () => {
       { x: 0, y: 0 },
       { x: 10, y: 0 },
     ]
-    const curves = computeEdgeCurves(segments, segments, true, 0, 0)
+    const curves = computeEdgeCurves(segments, segments, true, 0, 0, 1)
 
     expect(curves).toHaveLength(2)
     expect(curves[0]!.x1).toBeCloseTo(curves[1]!.x0)
@@ -66,7 +66,7 @@ describe('computeEdgeCurves', () => {
       { x: 20, y: 0 },
       { x: 30, y: 0 },
     ]
-    const curves = computeEdgeCurves(from, to, false, 0, 5)
+    const curves = computeEdgeCurves(from, to, false, 0, 5, 1)
 
     expect(curves[0]!.y0).toBeCloseTo(5)
     expect(curves[0]!.y1).toBeCloseTo(5)
@@ -130,10 +130,10 @@ describe('translateCurves matches computeEdgeCurves offset', () => {
   test.each(cases)(
     '%s: translation equals offset compute',
     (_name, from, to, selfLoop) => {
-      const base = computeEdgeCurves(from, to, selfLoop, 0, 0)
+      const base = computeEdgeCurves(from, to, selfLoop, 0, 0, 1)
       for (const [dx, dy] of offsets) {
         const translated = translateCurves(base, dx!, dy!)
-        const direct = computeEdgeCurves(from, to, selfLoop, dx!, dy!)
+        const direct = computeEdgeCurves(from, to, selfLoop, dx!, dy!, 1)
         expect(translated).toHaveLength(direct.length)
         for (let i = 0; i < direct.length; i++) {
           const t = translated[i]!

@@ -26,3 +26,4 @@ NEXT_STEPS.md
 COMPLETED.md
 IDEAS.md
 agent-docs
+*.generated.ts

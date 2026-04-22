@@ -14,7 +14,7 @@ potentially laid out differently. Examples: canvas features
 (bp-space coordinates, layout re-derived main-thread).
 
 **Clear** if the data is viewport-baked — rasterized or binned at
-fetch-time `bpPerPx` so rendering at a different scale visibly mis-sizes
+fetch-time `bpPerPx` so rendering at a different scale visibly incorrectly sizes
 the output. Examples: wiggle tiles (bin widths stretch), alignments
 pileup (glyph pixel geometry baked for compact zooms).
 

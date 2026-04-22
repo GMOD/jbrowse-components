@@ -35,6 +35,7 @@ export interface BuildOptions {
   contigThickness: number
   connectorThickness: number
   drawPaths: boolean
+  scale: number
   viewportBounds?: { minX: number; minY: number; maxX: number; maxY: number }
 }
 
@@ -538,6 +539,7 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
     contigThickness,
     connectorThickness,
     drawPaths,
+    scale,
     viewportBounds,
   } = options
 
@@ -589,6 +591,7 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
         isSelfLoop,
         offsetX,
         offsetY,
+        scale,
       )
 
       if (viewportBounds && !isBezierInBounds(curves, viewportBounds)) {

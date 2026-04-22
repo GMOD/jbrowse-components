@@ -455,9 +455,9 @@ export default function stateModelFactory() {
                 contigThickness: self.contigThickness,
                 connectorThickness: self.connectorThickness,
                 drawPaths: self.drawPaths,
+                scale: self.scale,
                 viewportBounds: untracked(() => computeViewportBounds(self)),
-              })
-              const buildEnd = performance.now()
+              })              const buildEnd = performance.now()
 
               self.storeRenderBatchMeta(
                 batch.nodeVertexRanges,

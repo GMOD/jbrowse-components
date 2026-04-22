@@ -55,6 +55,7 @@ export function computeEdgeCurves(
   isSelfLoop: boolean,
   offsetX: number,
   offsetY: number,
+  scale: number,
 ): BezierCurve[] {
   const fromEnd = fromSegments[fromSegments.length - 1]!
   const toStart = toSegments[0]!
@@ -79,7 +80,7 @@ export function computeEdgeCurves(
       }
     }
 
-    const ext = 50
+    const ext = Math.min(50, 20 / scale)
     const perpX = -segDirY
     const perpY = segDirX
     const midX = (fromEnd.x + toStart.x) / 2 + offsetX + perpX * ext

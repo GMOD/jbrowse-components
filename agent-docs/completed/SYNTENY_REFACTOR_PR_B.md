@@ -136,7 +136,7 @@ for (const cachedKey of stream.cache.keys()) {
 }
 ```
 
-For PR-B, the dispalys' lifecycle uses this to call
+For PR-B, the displays' lifecycle uses this to call
 `backend.deleteGeometry(key)` when their entry is removed.
 
 Also: confirm `startGpuSingleDataBackendAutorunLifecycle` already handles
