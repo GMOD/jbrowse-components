@@ -15,16 +15,9 @@ import CascadingMenuHelpIconButton from './CascadingMenuHelpIconButton.tsx'
 import HoverMenu from './HoverMenu.tsx'
 import { MenuItemEndDecoration } from './MenuItems.tsx'
 
-import type {
-  CheckboxMenuItem,
-  MenuItem as JBMenuItem,
-  MenuItemsGetter,
-  NormalMenuItem,
-  RadioMenuItem,
-} from './MenuTypes.ts'
+import type { MenuItem as JBMenuItem, MenuItemsGetter } from './MenuTypes.ts'
 
 export type { MenuItemsGetter } from './MenuTypes.ts'
-type ActionableMenuItem = NormalMenuItem | CheckboxMenuItem | RadioMenuItem
 
 // Helper to create a data-testid from a label
 function labelToTestId(label: React.ReactNode) {
