@@ -96,17 +96,37 @@ const GraphCanvas = observer(function GraphCanvas({
 
   function handleMouseDown(e: React.MouseEvent) {
     if (e.button === 0) {
-      isDraggingRef.current = true
-      setIsDragging(true)
+      if (model.nodePositions) {
+        const rect = (
+          e.currentTarget as HTMLCanvasElement
+        ).getBoundingClientRect()
+        const { x, y } = screenToGraph(
+          e.clientX - rect.left,
+          e.clientY - rect.top,
+        )
+        const node = findHoveredNode(model.nodePositions, x, y, model.scale)
+        if (node) {
+          model.setDraggingNode(node)
+        } else {
+          isDraggingRef.current = true
+          setIsDragging(true)
+        }
+      } else {
+        isDraggingRef.current = true
+        setIsDragging(true)
+      }
       lastMouseRef.current = { x: e.clientX, y: e.clientY }
     }
   }
 
   function handleMouseMove(e: React.MouseEvent) {
-    if (isDraggingRef.current) {
-      const dx = e.clientX - lastMouseRef.current.x
-      const dy = e.clientY - lastMouseRef.current.y
-      lastMouseRef.current = { x: e.clientX, y: e.clientY }
+    const dx = e.clientX - lastMouseRef.current.x
+    const dy = e.clientY - lastMouseRef.current.y
+    lastMouseRef.current = { x: e.clientX, y: e.clientY }
+
+    if (model.draggingNode) {
+      model.moveNode(model.draggingNode, dx / model.scale, dy / model.scale)
+    } else if (isDraggingRef.current) {
       model.setTransform(
         model.scale,
         model.translateX + dx,
@@ -140,11 +160,13 @@ const GraphCanvas = observer(function GraphCanvas({
   function handleMouseUp() {
     isDraggingRef.current = false
     setIsDragging(false)
+    model.setDraggingNode(null)
   }
 
   function handleMouseLeave() {
     isDraggingRef.current = false
     setIsDragging(false)
+    model.setDraggingNode(null)
     model.setHoveredNode(null)
     model.setHoveredEdge(null)
   }
@@ -192,7 +214,7 @@ const GraphCanvas = observer(function GraphCanvas({
         style={{
           width: model.width,
           height: model.canvasHeight,
-          cursor: isDragging ? 'grabbing' : 'grab',
+          cursor: isDragging || model.draggingNode ? 'grabbing' : 'grab',
           display: 'block',
         }}
         onMouseDown={handleMouseDown}
