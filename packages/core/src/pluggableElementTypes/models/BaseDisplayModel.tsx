@@ -200,13 +200,7 @@ function stateModelFactory() {
 
       get effectiveTrackConfig() {
         const track = getContainingTrack(self)
-        return getEffectiveTrackConfig(
-          track.configuration,
-          self as unknown as {
-            configuration: Record<string, unknown>
-            [key: string]: unknown
-          },
-        )
+        return getEffectiveTrackConfig(track.configuration, self)
       },
     }))
     .actions(self => ({

@@ -157,7 +157,7 @@ export default class ServerSideRenderer extends RendererType {
     _args: RenderArgsDeserialized,
   ): ResultsSerialized {
     const { reactElement, ...rest } = results
-    return rest as ResultsSerialized
+    return rest
   }
 
   async renderInClient(rpcManager: RpcManager, args: RenderArgs) {

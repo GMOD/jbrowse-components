@@ -67,7 +67,7 @@ describe('getEffectiveTrackConfig', () => {
     )
     const display = mockDisplay(dc, 'track-1-display', { color: '#f0f' })
 
-    const result = getEffectiveTrackConfig(trackConfig as any, display as any)
+    const result = getEffectiveTrackConfig(trackConfig, display)
     expect(result.displays).toEqual([
       { type: 'LinearWiggleDisplay', displayId: 'track-1-display' },
     ])
@@ -78,7 +78,7 @@ describe('getEffectiveTrackConfig', () => {
     const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
     const display = mockDisplay(dc, 'd1', { color: '#ff0000' })
 
-    const result = getEffectiveTrackConfig(trackConfig as any, display as any)
+    const result = getEffectiveTrackConfig(trackConfig, display)
     expect((result.displays as any)[0].color).toBe('#ff0000')
   })
 
@@ -94,7 +94,7 @@ describe('getEffectiveTrackConfig', () => {
     )
     const display = mockDisplay(dc, 'd1')
 
-    const result = getEffectiveTrackConfig(trackConfig as any, display as any)
+    const result = getEffectiveTrackConfig(trackConfig, display)
     expect(result.trackId).toBe('track-1')
     expect(result.name).toBe('My Track')
     expect(result.adapter).toEqual({ type: 'BigWigAdapter' })
@@ -106,7 +106,7 @@ describe('getEffectiveTrackConfig', () => {
     const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc1, dc2])
     const display = mockDisplay(dc1, 'd1', { color: '#ff0000' })
 
-    const result = getEffectiveTrackConfig(trackConfig as any, display as any)
+    const result = getEffectiveTrackConfig(trackConfig, display)
     const displays = result.displays as any[]
     expect(displays[0].color).toBe('#ff0000')
     expect(displays[1].color).toBeUndefined()
@@ -125,7 +125,7 @@ describe('getEffectiveTrackConfig', () => {
       minScore: 0,
     })
 
-    const result = getEffectiveTrackConfig(trackConfig as any, display as any)
+    const result = getEffectiveTrackConfig(trackConfig, display)
     const d = (result.displays as any)[0]
     expect(d.color).toBe('#ff0000')
     expect(d.scaleType).toBe('log')
@@ -137,7 +137,7 @@ describe('getEffectiveTrackConfig', () => {
     const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
     const display = mockDisplay(dc, 'd1', { color: undefined })
 
-    const result = getEffectiveTrackConfig(trackConfig as any, display as any)
+    const result = getEffectiveTrackConfig(trackConfig, display)
     expect((result.displays as any)[0].color).toBeUndefined()
   })
 
@@ -149,7 +149,7 @@ describe('getEffectiveTrackConfig', () => {
     }
     const display = mockDisplay(dc, 'd1')
 
-    const result = getEffectiveTrackConfig(trackConfig as any, display as any)
+    const result = getEffectiveTrackConfig(trackConfig, display)
     expect(result.trackId).toBe('track-1')
     expect(result.displays).toBeUndefined()
   })
@@ -160,7 +160,7 @@ describe('getEffectiveTrackConfig', () => {
     const originalSnapshot = { ...trackConfig.__snapshot }
     const display = mockDisplay(dc, 'd1', { color: '#ff0000' })
 
-    getEffectiveTrackConfig(trackConfig as any, display as any)
+    getEffectiveTrackConfig(trackConfig, display)
     expect(trackConfig.__snapshot).toEqual(originalSnapshot)
   })
 
@@ -177,7 +177,7 @@ describe('getEffectiveTrackConfig', () => {
     const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
     const display = mockDisplay(dc, 'd1', { color: '#ff0000' })
 
-    const result = getEffectiveTrackConfig(trackConfig as any, display as any)
+    const result = getEffectiveTrackConfig(trackConfig, display)
     const d = (result.displays as any)[0]
     expect(d.color).toBeUndefined()
     expect(d.displayId).toBe('d1')
@@ -191,7 +191,7 @@ describe('getEffectiveTrackConfig', () => {
       scaleType: 'linear',
     })
 
-    const result = getEffectiveTrackConfig(trackConfig as any, display as any)
+    const result = getEffectiveTrackConfig(trackConfig, display)
     const d = (result.displays as any)[0]
     expect(d.displayId).toBe('d1')
     expect(d.type).toBe('LinearWiggleDisplay')
@@ -204,7 +204,7 @@ describe('getEffectiveTrackConfig', () => {
     const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
     const display = mockDisplay(dc, 'd1', { showLabels: false })
 
-    const result = getEffectiveTrackConfig(trackConfig as any, display as any)
+    const result = getEffectiveTrackConfig(trackConfig, display)
     expect((result.displays as any)[0].showLabels).toBe(false)
   })
 
@@ -213,7 +213,7 @@ describe('getEffectiveTrackConfig', () => {
     const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
     const display = mockDisplay(dc, 'd1', { minScore: 5, maxScore: 100 })
 
-    const result = getEffectiveTrackConfig(trackConfig as any, display as any)
+    const result = getEffectiveTrackConfig(trackConfig, display)
     const d = (result.displays as any)[0]
     expect(d.minScore).toBe(5)
     expect(d.maxScore).toBeUndefined()
@@ -224,8 +224,7 @@ describe('getEffectiveTrackConfig', () => {
     const dc2 = mockDisplayConf({ color: '#000' }, 'LinearBasicDisplay')
     const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc1, dc2])
     const display = mockDisplay(dc1, 'd1', { color: '#ff0000' })
-
-    const result = getEffectiveTrackConfig(trackConfig as any, display as any)
+    const result = getEffectiveTrackConfig(trackConfig, display)
     const displays = result.displays as any[]
     expect(displays[1]).toEqual({ type: 'LinearBasicDisplay' })
   })
