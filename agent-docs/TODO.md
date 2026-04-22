@@ -249,6 +249,8 @@ Look at mui v9 migration checklist https://mui.com/material-ui/migration/upgrade
 
 ## Alignments
 
+- snP tooltips should add +1 to coord
+
 - Modifications and methylation coloy by modes does not want to color snps, it should color snps grey
 
 - Potentially weird for our demo data but saw : Fetch failed: TypeError: can't access property "toUpperCase", regionSequence[(position - regionSequenceStart)] is undefined
@@ -259,6 +261,7 @@ FetchMixin.ts:98:19
 - Error boundary message is narrow, why not show entire message, also stack trace needed in error banner
 - Clicking on snpcoverage modifications needs to get details in sidebar widget. clicking on modifications on pileup reads also
 
+- Modifications track - use smoothed line for wiggle coverage of methylation using matrix style view https://github.com/GMOD/jbrowse-components/issues/5510
 
 ## Synteny
 
