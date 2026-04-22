@@ -44,6 +44,7 @@ const BreakpointSplitViewOverlay = observer(
     const lastRafTime = useRef<number | null>(null)
     const [positionCache, setPositionCache] = useState({
       svgTop: 0,
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       tracks: {} as Record<string, number[]>,
     })
 

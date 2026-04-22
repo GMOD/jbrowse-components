@@ -120,7 +120,7 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
             fill="none"
             style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
             onMouseEnter={e => {
-              ;(e.currentTarget as SVGPathElement).setAttribute(
+              e.currentTarget.setAttribute(
                 'stroke-width',
                 String(p.strokeWidth + 2),
               )
@@ -136,7 +136,7 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
             }}
             onMouseLeave={e => {
               if (!isSelected) {
-                ;(e.currentTarget as SVGPathElement).setAttribute(
+                e.currentTarget.setAttribute(
                   'stroke-width',
                   String(p.strokeWidth),
                 )

@@ -13,7 +13,7 @@ const GfaTabixAdapter = ConfigurationSchema(
      */
     assemblyNameMap: {
       type: 'frozen',
-      defaultValue: {} as Record<string, string>,
+      defaultValue: {},
       description:
         'Map from file genome names (e.g. GRCh38#0) to JBrowse assembly names (e.g. hg38)',
     },

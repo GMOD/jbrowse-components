@@ -70,10 +70,7 @@ const TreeItem = observer(function TreeItem({
   const isFolder = isCategory && model.folderCategories.has(item.id)
   const useAccordionStyle = isCategory && !isFolder
   const { nestingLevel } = item
-  const height = getItemHeight(
-    item,
-    model.folderCategories as unknown as Set<string>,
-  )
+  const height = getItemHeight(item, model.folderCategories)
   const marginLeft = nestingLevel * levelWidth + (isCategory ? 0 : levelWidth)
 
   return (

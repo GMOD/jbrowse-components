@@ -243,7 +243,9 @@ const GroupByDialog = observer(function GroupByDialog(props: {
           autoFocus
           onClick={() => {
             const track = getContainingTrack(model)
-            const trackConf = isStateTreeNode(track.configuration)
+            const trackConf: Record<string, unknown> = isStateTreeNode(
+              track.configuration,
+            )
               ? structuredClone(getSnapshot(track.configuration))
               : track.configuration
             const session = getSession(model) as SessionWithAddTracks
@@ -251,7 +253,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
 
             if (type === 'tag' && tagSet) {
               createTagBasedTracks({
-                trackConf: trackConf as Record<string, unknown>,
+                trackConf,
                 tag,
                 tagSet,
                 session,
@@ -259,7 +261,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
               })
             } else if (type === 'strand') {
               createStrandBasedTracks({
-                trackConf: trackConf as Record<string, unknown>,
+                trackConf,
                 session,
                 view,
               })

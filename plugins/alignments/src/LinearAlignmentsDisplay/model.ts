@@ -233,6 +233,8 @@ export default function stateModelFactory(
         currentRangeY: [0, 600] as [number, number],
         highlightedChainIds: [] as string[],
         selectedChainIds: [] as string[],
+
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         colorTagMap: {} as Record<string, string>,
         visibleModifications: observable.map<string, ModificationTypeWithColor>(
           {},

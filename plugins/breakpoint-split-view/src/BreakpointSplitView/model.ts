@@ -142,6 +142,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       matchedTrackFeatures: {} as Record<string, Feature[][]>,
     }))
     .views(self => ({

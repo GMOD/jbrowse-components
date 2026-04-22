@@ -267,3 +267,7 @@ FetchMixin.ts:98:19
 - Dotplot sort of slow or debounced feature requests, review
 
 - Speed up paf_chain2paf, parseCigar2
+
+## Breakpoint
+
+- Closing tracks or something else to see if it works

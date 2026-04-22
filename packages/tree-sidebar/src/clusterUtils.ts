@@ -34,8 +34,7 @@ function findSubtree(
 }
 
 export function parseClusterTree(newick: string, subtreeFilter?: string[]) {
-  const tree = fromNewick(newick) as ClusterNodeData
-  let root = hierarchy<ClusterNodeData>(tree, d => d.children)
+  let root = hierarchy<ClusterNodeData>(fromNewick(newick), d => d.children)
   sum(root, d => (d.children ? 0 : 1))
   sort(root, (a, b) => (a.data.height || 1) - (b.data.height || 1))
 

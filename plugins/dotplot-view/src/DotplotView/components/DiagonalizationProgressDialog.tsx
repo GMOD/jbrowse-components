@@ -17,24 +17,6 @@ import type { DotplotViewModel } from '../model.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
-interface Region {
-  refName: string
-  start: number
-  end: number
-  reversed?: boolean
-  assemblyName: string
-}
-
-interface DiagonalizationResult {
-  newRegions: Region[]
-  stats: {
-    totalAlignments: number
-    regionsProcessed: number
-    regionsReordered: number
-    regionsReversed: number
-  }
-}
-
 interface RunDiagonalizationArgs {
   model: Pick<
     DotplotViewModel,
@@ -68,44 +50,40 @@ async function runDiagonalization({
   }
 
   // Call RPC method to run diagonalization on worker
-  const result = (await session.rpcManager.call(
-    model.id,
-    'DiagonalizeDotplot',
-    {
-      sessionId: `diagonalize-${Date.now()}`,
-      view: {
-        hview: model.hview,
-        vview: model.vview,
-      },
-      adapterConfig: display.adapterConfig,
-      stopToken,
-      statusCallback: (msg: string) => {
-        setMessage(msg)
-        // Estimate progress based on message
-        if (msg.includes('Initializing')) {
-          setProgress(5)
-        } else if (msg.includes('Getting renderer')) {
-          setProgress(10)
-        } else if (msg.includes('Fetching features')) {
-          setProgress(20)
-        } else if (msg.includes('Extracting')) {
-          setProgress(30)
-        } else if (msg.includes('Running diagonalization')) {
-          setProgress(40)
-        } else if (msg.includes('Grouping')) {
-          setProgress(50)
-        } else if (msg.includes('Determining')) {
-          setProgress(65)
-        } else if (msg.includes('Sorting')) {
-          setProgress(80)
-        } else if (msg.includes('Building')) {
-          setProgress(90)
-        } else if (msg.includes('complete')) {
-          setProgress(100)
-        }
-      },
+  const result = await session.rpcManager.call(model.id, 'DiagonalizeDotplot', {
+    sessionId: `diagonalize-${Date.now()}`,
+    view: {
+      hview: model.hview,
+      vview: model.vview,
     },
-  )) as DiagonalizationResult
+    adapterConfig: display.adapterConfig,
+    stopToken,
+    statusCallback: (msg: string) => {
+      setMessage(msg)
+      // Estimate progress based on message
+      if (msg.includes('Initializing')) {
+        setProgress(5)
+      } else if (msg.includes('Getting renderer')) {
+        setProgress(10)
+      } else if (msg.includes('Fetching features')) {
+        setProgress(20)
+      } else if (msg.includes('Extracting')) {
+        setProgress(30)
+      } else if (msg.includes('Running diagonalization')) {
+        setProgress(40)
+      } else if (msg.includes('Grouping')) {
+        setProgress(50)
+      } else if (msg.includes('Determining')) {
+        setProgress(65)
+      } else if (msg.includes('Sorting')) {
+        setProgress(80)
+      } else if (msg.includes('Building')) {
+        setProgress(90)
+      } else if (msg.includes('complete')) {
+        setProgress(100)
+      }
+    },
+  })
 
   setMessage('Applying new layout...')
   setProgress(95)
