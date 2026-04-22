@@ -1,6 +1,6 @@
 import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
@@ -192,33 +192,21 @@ export default function stateModelFactory() {
         const node = self.nodeById?.get(nodeId)
         if (node) {
           const session = getSession(self)
-          const feature = {
-            id: node.id,
-            name: node.name,
-            length: node.length,
-            depth: node.depth,
-          }
-          session.addWidget('BaseFeatureWidget', 'baseFeature', {
-            featureData: feature,
-          })
-          session.showWidget(
-            session.widgets.get('baseFeature') ||
+          if (isSessionModelWithWidgets(session)) {
+            session.showWidget(
               session.addWidget('BaseFeatureWidget', 'baseFeature', {
-                featureData: feature,
+                featureData: {
+                  id: node.id,
+                  name: node.name,
+                  length: node.length,
+                  depth: node.depth,
+                },
               }),
-          )
-        }
-      },
-      moveNode(nodeId: string, dx: number, dy: number) {
-        const positions = self.layoutResult?.nodePositions
-        if (positions?.[nodeId]) {
-          for (const seg of positions[nodeId]) {
-            seg.x += dx
-            seg.y += dy
+            )
           }
-          self.setViewportDirty()
         }
       },
+
       setTransform(s: number, tx: number, ty: number) {
         self.scale = clampZoom(s)
         self.translateX = tx
@@ -306,6 +294,16 @@ export default function stateModelFactory() {
       },
     }))
     .actions(self => ({
+      moveNode(nodeId: string, dx: number, dy: number) {
+        const positions = self.layoutResult?.nodePositions
+        if (positions?.[nodeId]) {
+          for (const seg of positions[nodeId]) {
+            seg.x += dx
+            seg.y += dy
+          }
+          self.setViewportDirty()
+        }
+      },
       scheduleViewportDirty() {
         clearTimeout(self.viewportDirtyTimer)
         self.viewportDirtyTimer = setTimeout(() => {
@@ -457,7 +455,9 @@ export default function stateModelFactory() {
                 drawPaths: self.drawPaths,
                 scale: self.scale,
                 viewportBounds: untracked(() => computeViewportBounds(self)),
-              })              const buildEnd = performance.now()
+              })
+
+              const buildEnd = performance.now()
 
               self.storeRenderBatchMeta(
                 batch.nodeVertexRanges,

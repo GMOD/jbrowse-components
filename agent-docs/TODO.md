@@ -221,6 +221,9 @@ labels for genes.
 ## Alignments
 
 - True samplot style plots
+  - [ ] Implement samplot color palette (Phase 1)
+  - [ ] Update arc computation for SV classification (Phase 2)
+  - [ ] Update GPU renderer for stacked arc layout (Phase 3)
 
 ## Cleanup
 

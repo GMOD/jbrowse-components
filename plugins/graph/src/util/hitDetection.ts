@@ -105,23 +105,33 @@ let cachedEdgeGraph: Graph | null = null
 let cachedEdgeDrawPaths = false
 let cachedEdgeVersion = 0
 
+let cachedEdgeScale = 0
+
 function getEdgeSpatialIndex(
   nodePositions: Record<string, NodeSegment[]>,
   graph: Graph,
   drawPaths: boolean,
+  scale: number,
   version: number,
 ) {
   if (
     cachedEdgePositions !== nodePositions ||
     cachedEdgeGraph !== graph ||
     cachedEdgeDrawPaths !== drawPaths ||
+    cachedEdgeScale !== scale ||
     cachedEdgeVersion !== version
   ) {
     cachedEdgePositions = nodePositions
     cachedEdgeGraph = graph
     cachedEdgeDrawPaths = drawPaths
+    cachedEdgeScale = scale
     cachedEdgeVersion = version
-    cachedEdgeIndex = new EdgeSpatialIndex(nodePositions, graph, drawPaths)
+    cachedEdgeIndex = new EdgeSpatialIndex(
+      nodePositions,
+      graph,
+      drawPaths,
+      scale,
+    )
   }
   return cachedEdgeIndex!
 }
@@ -168,6 +178,7 @@ export function findHoveredEdge(
     nodePositions,
     graph,
     drawPaths,
+    scale,
     version,
   )
   const candidates = edgeIndex.query(graphX, graphY, edgeThreshold)

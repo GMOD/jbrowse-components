@@ -99,6 +99,7 @@ export class EdgeSpatialIndex {
     nodePositions: Record<string, NodeSegment[]>,
     graph: Graph,
     drawPaths: boolean,
+    scale = 1,
     cellSize = 100,
   ) {
     this.cellSize = cellSize
@@ -117,6 +118,7 @@ export class EdgeSpatialIndex {
         isSelfLoop,
         0,
         0,
+        scale,
       )
       this.edgeCurves.set(ei, curves)
 

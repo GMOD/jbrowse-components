@@ -32,6 +32,7 @@ const simplePositions = {
 
 test('produces non-empty geometry for simple graph', () => {
   const batch = buildGeometry({
+    scale: 1,
     nodePositions: simplePositions,
     graph: simpleGraph,
     nodeById: simpleNodeById,
@@ -62,6 +63,7 @@ test('produces different geometry for different color schemes', () => {
     contigThickness: 5,
     connectorThickness: 1.5,
     drawPaths: false,
+    scale: 1,
   }
 
   const uniformBatch = buildGeometry({
@@ -87,6 +89,7 @@ test('tracks vertex ranges for nodes and edges', () => {
     graph: simpleGraph,
     nodeById: simpleNodeById,
     colorScheme: 'uniform',
+    scale: 1,
     contigThickness: 5,
     connectorThickness: 1.5,
     drawPaths: false,
@@ -106,6 +109,7 @@ test('tracks vertex ranges for nodes and edges', () => {
 test('handles empty node positions gracefully', () => {
   const batch = buildGeometry({
     nodePositions: {},
+    scale: 1,
     graph: simpleGraph,
     nodeById: simpleNodeById,
     colorScheme: 'uniform',
@@ -128,6 +132,7 @@ test('handles graph with paths and drawPaths', () => {
 
   const batch = buildGeometry({
     nodePositions: simplePositions,
+    scale: 1,
     graph: graphWithPaths,
     nodeById: simpleNodeById,
     colorScheme: 'uniform',
@@ -142,6 +147,7 @@ test('handles graph with paths and drawPaths', () => {
 
 test('stores normals and thicknesses for shader-based expansion', () => {
   const batch = buildGeometry({
+    scale: 1,
     nodePositions: simplePositions,
     graph: simpleGraph,
     nodeById: simpleNodeById,
@@ -174,6 +180,7 @@ test('brightenColors produces brighter values', () => {
   const batch = buildGeometry({
     nodePositions: simplePositions,
     graph: simpleGraph,
+    scale: 1,
     nodeById: simpleNodeById,
     colorScheme: 'uniform',
     contigThickness: 5,
@@ -199,6 +206,7 @@ test('brightenColors produces brighter values', () => {
 
 test('viewport culling skips off-screen nodes', () => {
   const batch = buildGeometry({
+    scale: 1,
     nodePositions: simplePositions,
     graph: simpleGraph,
     nodeById: simpleNodeById,

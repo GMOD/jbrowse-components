@@ -80,7 +80,7 @@ export function computeEdgeCurves(
       }
     }
 
-    const ext = Math.min(50, 20 / scale)
+    const ext = Math.min(50, 50 * scale)
     const perpX = -segDirY
     const perpY = segDirX
     const midX = (fromEnd.x + toStart.x) / 2 + offsetX + perpX * ext
