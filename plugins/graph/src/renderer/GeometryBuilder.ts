@@ -331,15 +331,25 @@ class MeshBuilder {
     ny: number,
     thickness: number,
     color: number,
+    edgeDist: number,
   ) {
     this.grow(this.vertexCount + 1)
     const base = this.vertexCount * INSTANCE_STRIDE_F32
-    this.vertexF32[base + FIELD_OFFSET_F32.position] = x
-    this.vertexF32[base + FIELD_OFFSET_F32.position + 1] = y
-    this.vertexF32[base + FIELD_OFFSET_F32.normal] = nx
-    this.vertexF32[base + FIELD_OFFSET_F32.normal + 1] = ny
-    this.vertexF32[base + FIELD_OFFSET_F32.thickness] = thickness
-    this.vertexU32[base + FIELD_OFFSET_F32.color] = color
+    const {
+      position,
+      normal,
+      thickness: thickOff,
+      color: colOff,
+      edge_dist,
+    } = FIELD_OFFSET_F32
+
+    this.vertexF32[base + position] = x
+    this.vertexF32[base + position + 1] = y
+    this.vertexF32[base + normal] = nx
+    this.vertexF32[base + normal + 1] = ny
+    this.vertexF32[base + thickOff] = thickness
+    this.vertexU32[base + colOff] = color
+    this.vertexF32[base + edge_dist] = edgeDist
     this.colorsU32[this.vertexCount] = color
     this.vertexCount++
   }
@@ -353,18 +363,13 @@ class MeshBuilder {
   ) {
     const capSegments = 4
     const centerIdx = this.vertexCount
-    this.pushVertex(center.x, center.y, 0, 0, 0, color)
+    const { x, y } = center
+
+    this.pushVertex(x, y, 0, 0, 0, color, 0)
 
     for (let i = 0; i <= capSegments; i++) {
       const a = angle + startAngleOffset + (Math.PI * i) / capSegments
-      this.pushVertex(
-        center.x,
-        center.y,
-        Math.cos(a),
-        Math.sin(a),
-        thickness,
-        color,
-      )
+      this.pushVertex(x, y, Math.cos(a), Math.sin(a), thickness, color, 1)
       if (i > 0) {
         this.indices.push(centerIdx, this.vertexCount - 2, this.vertexCount - 1)
       }
@@ -379,6 +384,7 @@ class MeshBuilder {
     if (points.length < 2) {
       return
     }
+    // ... rest of method (logic for pointNormals and start/end caps is the same, just adding edgeDist)
 
     const pointNormals: { nx: number; ny: number }[] = []
     for (let i = 0; i < points.length; i++) {
@@ -448,8 +454,8 @@ class MeshBuilder {
     for (let i = 0; i < points.length; i++) {
       const p = points[i]!
       const n = pointNormals[i]!
-      this.pushVertex(p.x, p.y, n.nx, n.ny, thickness, color)
-      this.pushVertex(p.x, p.y, -n.nx, -n.ny, thickness, color)
+      this.pushVertex(p.x, p.y, n.nx, n.ny, thickness, color, 1)
+      this.pushVertex(p.x, p.y, -n.nx, -n.ny, thickness, color, -1)
     }
 
     for (let i = 0; i < points.length - 1; i++) {
@@ -478,7 +484,7 @@ class MeshBuilder {
     size: number,
     color: number,
   ) {
-    this.pushVertex(x, y, 0, 0, 0, color)
+    this.pushVertex(x, y, 0, 0, 0, color, 0)
     this.pushVertex(
       x,
       y,
@@ -486,6 +492,7 @@ class MeshBuilder {
       -Math.sin(angle - 0.5),
       size,
       color,
+      1,
     )
     this.pushVertex(
       x,
@@ -494,7 +501,9 @@ class MeshBuilder {
       -Math.sin(angle + 0.5),
       size,
       color,
+      1,
     )
+
     this.indices.push(
       this.vertexCount - 3,
       this.vertexCount - 2,

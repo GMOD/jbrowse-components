@@ -65,6 +65,8 @@ const GraphCanvas = observer(function GraphCanvas({
   const [isDragging, setIsDragging] = useState(false)
   const lastMouseRef = useRef({ x: 0, y: 0 })
 
+  const hasMovedRef = useRef(false)
+
   // wheel events need passive:false to call preventDefault — React registers
   // wheel listeners as passive, so we must add this imperatively
   useEffect(() => {
@@ -94,17 +96,23 @@ const GraphCanvas = observer(function GraphCanvas({
     }
   }
 
+  function getMouseCoord(e: React.MouseEvent) {
+    const rect = (e.currentTarget as HTMLCanvasElement).getBoundingClientRect()
+    return screenToGraph(e.clientX - rect.left, e.clientY - rect.top)
+  }
+
   function handleMouseDown(e: React.MouseEvent) {
     if (e.button === 0) {
+      hasMovedRef.current = false
       if (model.nodePositions) {
-        const rect = (
-          e.currentTarget as HTMLCanvasElement
-        ).getBoundingClientRect()
-        const { x, y } = screenToGraph(
-          e.clientX - rect.left,
-          e.clientY - rect.top,
+        const { x, y } = getMouseCoord(e)
+        const node = findHoveredNode(
+          model.nodePositions,
+          x,
+          y,
+          model.scale,
+          model.viewportDirty,
         )
-        const node = findHoveredNode(model.nodePositions, x, y, model.scale)
         if (node) {
           model.setDraggingNode(node)
         } else {
@@ -124,6 +132,10 @@ const GraphCanvas = observer(function GraphCanvas({
     const dy = e.clientY - lastMouseRef.current.y
     lastMouseRef.current = { x: e.clientX, y: e.clientY }
 
+    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+      hasMovedRef.current = true
+    }
+
     if (model.draggingNode) {
       model.moveNode(model.draggingNode, dx / model.scale, dy / model.scale)
     } else if (isDraggingRef.current) {
@@ -133,14 +145,14 @@ const GraphCanvas = observer(function GraphCanvas({
         model.translateY + dy,
       )
     } else if (model.nodePositions && model.graph) {
-      const rect = (
-        e.currentTarget as HTMLCanvasElement
-      ).getBoundingClientRect()
-      const { x, y } = screenToGraph(
-        e.clientX - rect.left,
-        e.clientY - rect.top,
+      const { x, y } = getMouseCoord(e)
+      const node = findHoveredNode(
+        model.nodePositions,
+        x,
+        y,
+        model.scale,
+        model.viewportDirty,
       )
-      const node = findHoveredNode(model.nodePositions, x, y, model.scale)
       model.setHoveredNode(node)
       model.setHoveredEdge(
         node
@@ -152,6 +164,7 @@ const GraphCanvas = observer(function GraphCanvas({
               y,
               model.scale,
               model.drawPaths,
+              model.viewportDirty,
             ),
       )
     }
@@ -172,17 +185,22 @@ const GraphCanvas = observer(function GraphCanvas({
   }
 
   function handleClick(e: React.MouseEvent) {
+    if (hasMovedRef.current) {
+      return
+    }
     if (model.nodePositions) {
-      const rect = (
-        e.currentTarget as HTMLCanvasElement
-      ).getBoundingClientRect()
-      const { x, y } = screenToGraph(
-        e.clientX - rect.left,
-        e.clientY - rect.top,
+      const { x, y } = getMouseCoord(e)
+      const node = findHoveredNode(
+        model.nodePositions,
+        x,
+        y,
+        model.scale,
+        model.viewportDirty,
       )
-      model.setSelectedNode(
-        findHoveredNode(model.nodePositions, x, y, model.scale),
-      )
+      model.setSelectedNode(node)
+      if (node) {
+        model.showNodeDetails(node)
+      }
     }
   }
 

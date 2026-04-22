@@ -188,6 +188,27 @@ export default function stateModelFactory() {
       setDraggingNode(nodeId: string | null) {
         self.draggingNode = nodeId
       },
+      showNodeDetails(nodeId: string) {
+        const node = self.nodeById?.get(nodeId)
+        if (node) {
+          const session = getSession(self)
+          const feature = {
+            id: node.id,
+            name: node.name,
+            length: node.length,
+            depth: node.depth,
+          }
+          session.addWidget('BaseFeatureWidget', 'baseFeature', {
+            featureData: feature,
+          })
+          session.showWidget(
+            session.widgets.get('baseFeature') ||
+              session.addWidget('BaseFeatureWidget', 'baseFeature', {
+                featureData: feature,
+              }),
+          )
+        }
+      },
       moveNode(nodeId: string, dx: number, dy: number) {
         const positions = self.layoutResult?.nodePositions
         if (positions?.[nodeId]) {
@@ -420,10 +441,12 @@ export default function stateModelFactory() {
           // scale/translate are untracked so they don't trigger a full rebuild —
           // only the debounced viewportDirty flag does.
           upload: b => {
+            const start = performance.now()
             b.resize(self.width, self.canvasHeight)
             const nodeById = self.nodeById
             if (self.nodePositions && self.graph && nodeById) {
               void self.viewportDirty
+              const buildStart = performance.now()
               const batch = buildGeometry({
                 nodePositions: self.nodePositions,
                 graph: self.graph,
@@ -434,6 +457,8 @@ export default function stateModelFactory() {
                 drawPaths: self.drawPaths,
                 viewportBounds: untracked(() => computeViewportBounds(self)),
               })
+              const buildEnd = performance.now()
+
               self.storeRenderBatchMeta(
                 batch.nodeVertexRanges,
                 batch.edgeVertexRanges,
@@ -442,7 +467,20 @@ export default function stateModelFactory() {
                 batch.edges.colors,
                 batch.arrows.colors,
               )
+
+              const uploadStart = performance.now()
               b.uploadGeometry(batch)
+              const uploadEnd = performance.now()
+
+              if (self.draggingNode) {
+                console.log(
+                  `[Graph Performance] Rebuilding geometry for DRAG. ` +
+                    `Nodes: ${self.nodeCount}, Edges: ${self.edgeCount}. ` +
+                    `Build: ${(buildEnd - buildStart).toFixed(2)}ms, ` +
+                    `Upload: ${(uploadEnd - uploadStart).toFixed(2)}ms, ` +
+                    `Total: ${(performance.now() - start).toFixed(2)}ms`,
+                )
+              }
             }
           },
           // Autorun: re-render on pan/zoom/darkMode without rebuilding geometry

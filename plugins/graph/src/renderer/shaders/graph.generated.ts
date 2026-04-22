@@ -3,14 +3,11 @@
 
 import type { GlAttributeLayout } from '@jbrowse/core/gpu/hal'
 
-export const WGSL_SOURCE =
-  'struct Uniforms_std140_0\n{\n    @align(16) scale_0 : vec2<f32>,\n    @align(8) translate_0 : vec2<f32>,\n    @align(16) viewport_0 : vec2<f32>,\n};\n\n@binding(1) @group(0) var<uniform> u_0 : Uniforms_std140_0;\nfn unpackRGBA_0( c_0 : u32) -> vec4<f32>\n{\n    return vec4<f32>(f32((((c_0 >> (u32(0)))) & (u32(255)))), f32((((c_0 >> (u32(8)))) & (u32(255)))), f32((((c_0 >> (u32(16)))) & (u32(255)))), f32((((c_0 >> (u32(24)))) & (u32(255))))) / vec4<f32>(255.0f);\n}\n\nstruct VsOut_0\n{\n    @builtin(position) position_0 : vec4<f32>,\n    @location(0) color_0 : vec4<f32>,\n};\n\nstruct vertexInput_0\n{\n    @location(0) position_1 : vec2<f32>,\n    @location(1) normal_0 : vec2<f32>,\n    @location(2) thickness_0 : f32,\n    @location(3) color_1 : u32,\n};\n\n@vertex\nfn vs_main( _S1 : vertexInput_0) -> VsOut_0\n{\n    var clip_0 : vec2<f32> = ((_S1.position_1 + _S1.normal_0 * vec2<f32>(_S1.thickness_0) / vec2<f32>(u_0.scale_0.x)) * u_0.scale_0 + u_0.translate_0) / u_0.viewport_0 * vec2<f32>(2.0f) - vec2<f32>(1.0f);\n    var o_0 : VsOut_0;\n    o_0.position_0 = vec4<f32>(clip_0.x, - clip_0.y, 0.0f, 1.0f);\n    o_0.color_0 = unpackRGBA_0(_S1.color_1);\n    return o_0;\n}\n\nstruct pixelOutput_0\n{\n    @location(0) output_0 : vec4<f32>,\n};\n\nstruct pixelInput_0\n{\n    @location(0) color_2 : vec4<f32>,\n};\n\n@fragment\nfn fs_main( _S2 : pixelInput_0, @builtin(position) position_2 : vec4<f32>) -> pixelOutput_0\n{\n    var _S3 : pixelOutput_0 = pixelOutput_0( _S2.color_2 );\n    return _S3;\n}\n\n'
+export const WGSL_SOURCE = "struct Uniforms_std140_0\n{\n    @align(16) scale_0 : vec2<f32>,\n    @align(8) translate_0 : vec2<f32>,\n    @align(16) viewport_0 : vec2<f32>,\n};\n\n@binding(1) @group(0) var<uniform> u_0 : Uniforms_std140_0;\nfn unpackRGBA_0( c_0 : u32) -> vec4<f32>\n{\n    return vec4<f32>(f32((((c_0 >> (u32(0)))) & (u32(255)))), f32((((c_0 >> (u32(8)))) & (u32(255)))), f32((((c_0 >> (u32(16)))) & (u32(255)))), f32((((c_0 >> (u32(24)))) & (u32(255))))) / vec4<f32>(255.0f);\n}\n\nstruct VsOut_0\n{\n    @builtin(position) position_0 : vec4<f32>,\n    @location(0) color_0 : vec4<f32>,\n    @location(1) edge_dist_0 : f32,\n};\n\nstruct vertexInput_0\n{\n    @location(0) position_1 : vec2<f32>,\n    @location(1) normal_0 : vec2<f32>,\n    @location(2) thickness_0 : f32,\n    @location(3) color_1 : u32,\n    @location(4) edge_dist_1 : f32,\n};\n\n@vertex\nfn vs_main( _S1 : vertexInput_0) -> VsOut_0\n{\n    var _S2 : f32 = _S1.thickness_0 + 1.0f;\n    var clip_0 : vec2<f32> = ((_S1.position_1 + _S1.normal_0 * vec2<f32>(_S2) / vec2<f32>(u_0.scale_0.x)) * u_0.scale_0 + u_0.translate_0) / u_0.viewport_0 * vec2<f32>(2.0f) - vec2<f32>(1.0f);\n    var o_0 : VsOut_0;\n    o_0.position_0 = vec4<f32>(clip_0.x, - clip_0.y, 0.0f, 1.0f);\n    o_0.color_0 = unpackRGBA_0(_S1.color_1);\n    o_0.edge_dist_0 = _S1.edge_dist_1 * (_S2 / max(_S1.thickness_0, 0.00100000004749745f));\n    return o_0;\n}\n\nstruct pixelOutput_0\n{\n    @location(0) output_0 : vec4<f32>,\n};\n\nstruct pixelInput_0\n{\n    @location(0) color_2 : vec4<f32>,\n    @location(1) edge_dist_2 : f32,\n};\n\n@fragment\nfn fs_main( _S3 : pixelInput_0, @builtin(position) position_2 : vec4<f32>) -> pixelOutput_0\n{\n    var d_0 : f32 = abs(_S3.edge_dist_2);\n    var af_0 : f32 = (fwidth((d_0)));\n    var _S4 : pixelOutput_0 = pixelOutput_0( vec4<f32>(_S3.color_2.xyz, _S3.color_2.w * (1.0f - smoothstep(1.0f - af_0, 1.0f + af_0, d_0))) );\n    return _S4;\n}\n\n"
 
-export const GLSL_VERTEX =
-  '#version 300 es\nprecision highp float;\nprecision highp int;\n#line 18 0\nstruct Uniforms_0\n{\n    vec2 scale_0;\n    vec2 translate_0;\n    vec2 viewport_0;\n};\n\n\n#line 23\nlayout(std140) uniform Uniforms\n{\n    vec2 scale_0;\n    vec2 translate_0;\n    vec2 viewport_0;\n}u_0;\n\n#line 7 1\nvec4 unpackRGBA_0(uint c_0)\n{\n\n#line 8\n    return vec4(float((c_0 >> 0U) & 255U), float((c_0 >> 8U) & 255U), float((c_0 >> 16U) & 255U), float((c_0 >> 24U) & 255U)) / 255.0;\n}\n\n\n#line 8\nout vec4 v_color;\n\n\n#line 8\nlayout(location = 0)\nin vec2 a_position;\n\n\n#line 8\nlayout(location = 1)\nin vec2 a_normal;\n\n\n#line 8\nlayout(location = 2)\nin float a_thickness;\n\n\n#line 8\nlayout(location = 3)\nin uint a_color;\n\n\n#line 25 0\nstruct VsOut_0\n{\n    vec4 position_0;\n    vec4 color_0;\n};\n\nvoid main()\n{\n\n    vec2 clip_0 = ((a_position + a_normal * a_thickness / u_0.scale_0.x) * u_0.scale_0 + u_0.translate_0) / u_0.viewport_0 * 2.0 - 1.0;\n    VsOut_0 o_0;\n    o_0.position_0 = vec4(clip_0.x, - clip_0.y, 0.0, 1.0);\n    o_0.color_0 = unpackRGBA_0(a_color);\n    VsOut_0 _S1 = o_0;\n\n#line 38\n    gl_Position = o_0.position_0;\n\n#line 38\n    v_color = _S1.color_0;\n\n#line 38\n    return;\n}\n\n'
+export const GLSL_VERTEX = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 19 0\nstruct Uniforms_0\n{\n    vec2 scale_0;\n    vec2 translate_0;\n    vec2 viewport_0;\n};\n\n\n#line 24\nlayout(std140) uniform Uniforms\n{\n    vec2 scale_0;\n    vec2 translate_0;\n    vec2 viewport_0;\n}u_0;\n\n#line 7 1\nvec4 unpackRGBA_0(uint c_0)\n{\n\n#line 8\n    return vec4(float((c_0 >> 0U) & 255U), float((c_0 >> 8U) & 255U), float((c_0 >> 16U) & 255U), float((c_0 >> 24U) & 255U)) / 255.0;\n}\n\n\n#line 12517 2\nout vec4 v_color;\n\n\n#line 12517\nout float v_edge_dist;\n\n\n#line 12517\nlayout(location = 0)\nin vec2 a_position;\n\n\n#line 12517\nlayout(location = 1)\nin vec2 a_normal;\n\n\n#line 12517\nlayout(location = 2)\nin float a_thickness;\n\n\n#line 12517\nlayout(location = 3)\nin uint a_color;\n\n\n#line 12517\nlayout(location = 4)\nin float a_edge_dist;\n\n\n#line 26 0\nstruct VsOut_0\n{\n    vec4 position_0;\n    vec4 color_0;\n    float edge_dist_0;\n};\n\n\n\nvoid main()\n{\n\n\n    vec2 clip_0 = ((a_position + a_normal * (a_thickness + 1.0) / u_0.scale_0.x) * u_0.scale_0 + u_0.translate_0) / u_0.viewport_0 * 2.0 - 1.0;\n\n    VsOut_0 o_0;\n    o_0.position_0 = vec4(clip_0.x, - clip_0.y, 0.0, 1.0);\n    o_0.color_0 = unpackRGBA_0(a_color);\n\n#line 48\n    o_0.edge_dist_0 = a_edge_dist * ((a_thickness + 1.0) / max(a_thickness, 0.00100000004749745));\n    VsOut_0 _S1 = o_0;\n\n#line 49\n    gl_Position = o_0.position_0;\n\n#line 49\n    v_color = _S1.color_0;\n\n#line 49\n    v_edge_dist = _S1.edge_dist_0;\n\n#line 49\n    return;\n}\n\n"
 
-export const GLSL_FRAGMENT =
-  '#version 300 es\nprecision highp float;\nprecision highp int;\n#line 993 0\nlayout(location = 0)\nout vec4 entryPointParam_fs_main_0;\n\n\n#line 993\nin vec4 v_color;\n\n\n#line 42 1\nvoid main()\n{\n\n#line 42\n    entryPointParam_fs_main_0 = v_color;\n\n#line 42\n    return;\n}\n\n'
+export const GLSL_FRAGMENT = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 993 0\nlayout(location = 0)\nout vec4 entryPointParam_fs_main_0;\n\n\n#line 993\nin vec4 v_color;\n\n\n#line 993\nin float v_edge_dist;\n\n\n#line 53 1\nvoid main()\n{\n\n#line 54\n    float d_0 = abs(v_edge_dist);\n    float af_0 = (fwidth((d_0)));\n\n#line 55\n    entryPointParam_fs_main_0 = vec4(v_color.xyz, v_color.w * (1.0 - smoothstep(1.0 - af_0, 1.0 + af_0, d_0)));\n\n#line 55\n    return;\n}\n\n"
 
 export const UNIFORMS_SIZE_BYTES = 32
 export const UNIFORMS_SIZE_F32 = 8
@@ -45,14 +42,15 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[5] = uniforms.viewport[1]
 }
 
-export const INSTANCE_STRIDE_BYTES = 24
-export const INSTANCE_STRIDE_F32 = 6
+export const INSTANCE_STRIDE_BYTES = 28
+export const INSTANCE_STRIDE_F32 = 7
 
 export const FIELD_OFFSET_BYTES = {
   position: 0,
   normal: 8,
   thickness: 16,
   color: 20,
+  edge_dist: 24,
 } as const
 
 export const FIELD_OFFSET_F32 = {
@@ -60,37 +58,15 @@ export const FIELD_OFFSET_F32 = {
   normal: 2,
   thickness: 4,
   color: 5,
+  edge_dist: 6,
 } as const
 
 export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
-  {
-    name: 'a_position',
-    components: 2,
-    type: 'float',
-    offsetBytes: 0,
-    integer: false,
-  },
-  {
-    name: 'a_normal',
-    components: 2,
-    type: 'float',
-    offsetBytes: 8,
-    integer: false,
-  },
-  {
-    name: 'a_thickness',
-    components: 1,
-    type: 'float',
-    offsetBytes: 16,
-    integer: false,
-  },
-  {
-    name: 'a_color',
-    components: 1,
-    type: 'uint',
-    offsetBytes: 20,
-    integer: true,
-  },
+  { name: 'a_position', components: 2, type: 'float', offsetBytes: 0, integer: false },
+  { name: 'a_normal', components: 2, type: 'float', offsetBytes: 8, integer: false },
+  { name: 'a_thickness', components: 1, type: 'float', offsetBytes: 16, integer: false },
+  { name: 'a_color', components: 1, type: 'uint', offsetBytes: 20, integer: true },
+  { name: 'a_edge_dist', components: 1, type: 'float', offsetBytes: 24, integer: false },
 ]
 
 export interface GraphVertex {
@@ -98,14 +74,11 @@ export interface GraphVertex {
   normal: [number, number]
   thickness: number
   color: number
+  edge_dist: number
 }
 
-export function writeGraphVertex(
-  buf: ArrayBuffer,
-  instanceIndex: number,
-  inst: GraphVertex,
-) {
-  const base = instanceIndex * 24
+export function writeGraphVertex(buf: ArrayBuffer, instanceIndex: number, inst: GraphVertex) {
+  const base = instanceIndex * 28
   const dv = new DataView(buf)
   dv.setFloat32(base + 0, inst.position[0], true)
   dv.setFloat32(base + 4, inst.position[1], true)
@@ -113,4 +86,5 @@ export function writeGraphVertex(
   dv.setFloat32(base + 12, inst.normal[1], true)
   dv.setFloat32(base + 16, inst.thickness, true)
   dv.setUint32(base + 20, inst.color, true)
+  dv.setFloat32(base + 24, inst.edge_dist, true)
 }

@@ -99,6 +99,15 @@ Created `GlobalDataDisplayMixin` (`plugins/linear-genome-view/src/BaseLinearDisp
 
 ---
 
+## plugins/graph Node Dragging & Interactivity — COMPLETE
+
+- Added ability to click and drag individual nodes in the graph view.
+- Added feature details display on single click (opens `BaseFeatureWidget`).
+- Implemented `version` parameter in `findHoveredNode` and `findHoveredEdge` to invalidate spatial index cache when positions change in-place.
+- Added performance instrumentation logging for `buildGeometry` and `uploadGeometry` during dragging.
+
+---
+
 ## P1.1 Canvas Fallback Rendering Backend — COMPLETE
 
 All track types have Canvas 2D fallback renderers.

@@ -85,10 +85,15 @@ function distanceToEdgeCurves(px: number, py: number, curves: BezierCurve[]) {
 
 let cachedIndex: SpatialIndex | null = null
 let cachedPositions: Record<string, NodeSegment[]> | null = null
+let cachedVersion = 0
 
-function getSpatialIndex(nodePositions: Record<string, NodeSegment[]>) {
-  if (cachedPositions !== nodePositions) {
+function getSpatialIndex(
+  nodePositions: Record<string, NodeSegment[]>,
+  version: number,
+) {
+  if (cachedPositions !== nodePositions || cachedVersion !== version) {
     cachedPositions = nodePositions
+    cachedVersion = version
     cachedIndex = new SpatialIndex(nodePositions)
   }
   return cachedIndex!
@@ -98,20 +103,24 @@ let cachedEdgeIndex: EdgeSpatialIndex | null = null
 let cachedEdgePositions: Record<string, NodeSegment[]> | null = null
 let cachedEdgeGraph: Graph | null = null
 let cachedEdgeDrawPaths = false
+let cachedEdgeVersion = 0
 
 function getEdgeSpatialIndex(
   nodePositions: Record<string, NodeSegment[]>,
   graph: Graph,
   drawPaths: boolean,
+  version: number,
 ) {
   if (
     cachedEdgePositions !== nodePositions ||
     cachedEdgeGraph !== graph ||
-    cachedEdgeDrawPaths !== drawPaths
+    cachedEdgeDrawPaths !== drawPaths ||
+    cachedEdgeVersion !== version
   ) {
     cachedEdgePositions = nodePositions
     cachedEdgeGraph = graph
     cachedEdgeDrawPaths = drawPaths
+    cachedEdgeVersion = version
     cachedEdgeIndex = new EdgeSpatialIndex(nodePositions, graph, drawPaths)
   }
   return cachedEdgeIndex!
@@ -122,9 +131,10 @@ export function findHoveredNode(
   graphX: number,
   graphY: number,
   scale: number,
+  version = 0,
 ) {
   const nodeThreshold = 5 / scale
-  const index = getSpatialIndex(nodePositions)
+  const index = getSpatialIndex(nodePositions, version)
   const candidates = index.query(graphX, graphY, nodeThreshold)
 
   for (const { nodeId, segmentIdx } of candidates) {
@@ -151,9 +161,15 @@ export function findHoveredEdge(
   graphY: number,
   scale: number,
   drawPaths: boolean,
+  version = 0,
 ) {
   const edgeThreshold = 10 / scale
-  const edgeIndex = getEdgeSpatialIndex(nodePositions, graph, drawPaths)
+  const edgeIndex = getEdgeSpatialIndex(
+    nodePositions,
+    graph,
+    drawPaths,
+    version,
+  )
   const candidates = edgeIndex.query(graphX, graphY, edgeThreshold)
 
   for (const edgeIdx of candidates) {
