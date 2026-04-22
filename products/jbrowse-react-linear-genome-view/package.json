@@ -33,7 +33,7 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "build:esm": "tsgo --build tsconfig.build.esm.json",
+    "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:webpack": "webpack -c webpack.config.mjs",
     "clean": "rimraf esm *.tsbuildinfo",
     "storybook": "storybook dev --port 6006",

@@ -11,7 +11,7 @@
     "build": "docusaurus build",
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
-    "typecheck": "tsgo",
+    "typecheck": "tsc",
     "predeploy": "pnpm build",
     "deploy": "aws s3 sync --delete build s3://jbrowse.org/jb2/",
     "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/jb2/*\""
