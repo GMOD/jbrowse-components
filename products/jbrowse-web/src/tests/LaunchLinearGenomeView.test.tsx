@@ -39,6 +39,17 @@ test('can use a spec url for lgv', async () => {
   await findByText('volvox-sorted.bam (contigA LinearPileupDisplay)')
 }, 60000)
 
+test('can use a spec gene name for lgv', async () => {
+  const { findByPlaceholderText } = render(
+    <App search="?config=test_data/volvox/config_main_thread.json&loc=EDEN&assembly=volvox&tracks=volvox_bam_pileup" />,
+  )
+
+  const elt = await findByPlaceholderText('Search for location', {}, delay)
+  await waitFor(() => {
+    expect((elt as HTMLInputElement).value).toBe('ctgA:1..10,590')
+  }, delay)
+}, 60000)
+
 test('nonexist', async () => {
   console.error = jest.fn()
   const { findByText, findByPlaceholderText } = render(
