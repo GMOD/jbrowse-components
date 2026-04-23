@@ -60,7 +60,9 @@ function initialize() {
   stubManager.configure()
 
   const Assembly = types
-    .model({})
+    .model({
+      name: types.maybe(types.string),
+    })
     .volatile(() => ({
       regions: volvoxDisplayedRegions,
       initialized: true,
@@ -99,6 +101,7 @@ function initialize() {
       assemblyManager: types.optional(AssemblyManager, {
         assemblies: {
           volvox: {
+            name: 'volvox',
             // @ts-expect-error
             regions: volvoxDisplayedRegions,
           },
@@ -109,6 +112,9 @@ function initialize() {
       setView(view: LGV) {
         self.view = view
         return view
+      },
+      notifyError(message: string, _error?: unknown) {
+        console.error(message)
       },
     }))
 
