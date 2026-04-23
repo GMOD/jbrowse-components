@@ -41,7 +41,14 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
 
           try {
             if (init.loc) {
-              await self.navToLocString(init.loc, init.assembly)
+              const asm = await assemblyManager.waitForAssembly(init.assembly)
+              if (!asm) {
+                throw new Error('Assembly not found')
+              }
+              await self.navToSearchString({
+                input: init.loc,
+                assembly: asm,
+              })
             } else {
               self.showAllRegionsInAssembly(init.assembly)
             }
