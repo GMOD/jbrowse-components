@@ -59,6 +59,9 @@ const Translocations = observer(function Translocations(props: OverlayProps) {
       {layoutMatches.flatMap(chunk =>
         chunk.flatMap(({ layout: c1, feature: f1, level: level1 }) => {
           const level2 = level1 === 0 ? 1 : 0
+          if (tracks[level1]?.minimized || tracks[level2]?.minimized) {
+            return []
+          }
           const id = f1.id()
 
           const info = f1.get('INFO')

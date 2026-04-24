@@ -51,6 +51,10 @@ const PairedFeatures = observer(function PairedFeatures(props: OverlayProps) {
         chunk.slice(0, -1).flatMap((item, i) => {
           const { layout: c1, feature: f1, level: level1 } = item
           const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]!
+
+          if (tracks[level1]?.minimized || tracks[level2]?.minimized) {
+            return []
+          }
           const id = f1.id()
           const { f1ref, f2ref } = getCanonicalRefs(
             assembly,

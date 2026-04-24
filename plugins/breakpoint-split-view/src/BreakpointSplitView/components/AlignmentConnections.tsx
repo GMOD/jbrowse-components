@@ -69,6 +69,9 @@ const AlignmentConnections = observer(function AlignmentConnections(
           const { layout: c1, feature: f1, level: level1 } = item
           const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]!
 
+          if (tracks[level1]?.minimized || tracks[level2]?.minimized) {
+            return []
+          }
           if (!showIntraviewLinks && level1 === level2) {
             return []
           }
