@@ -117,7 +117,7 @@ export function doAfterAttach(
       function dotplotGeometryRecompute() {
         const view = getContainingView(self) as DotplotViewModel
         const { rpcData, alpha, colorBy, minAlignmentLength } = self
-        if (!view.initialized || !rpcData) {
+        if (!rpcData) {
           return
         }
         const { drawCigar } = view

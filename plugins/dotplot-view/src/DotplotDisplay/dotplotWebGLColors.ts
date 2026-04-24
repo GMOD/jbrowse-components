@@ -53,9 +53,9 @@ export function createDotplotColorFunction(
     const palette = category10Rgb.map(([r, g, b]) => packColor(r, g, b, alpha))
     const colorCache = new Map<string, number>()
     return (d, i) => {
-      const name = d.refNames[i] || ''
+      const name = d.refNames[i]!
       let color = colorCache.get(name)
-      if (!color) {
+      if (color === undefined) {
         color = palette[hashString(name) % palette.length]!
         colorCache.set(name, color)
       }

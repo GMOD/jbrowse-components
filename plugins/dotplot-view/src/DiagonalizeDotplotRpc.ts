@@ -1,6 +1,11 @@
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
+import { dedupe } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -213,36 +218,30 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
     statusCallback?.('Initializing diagonalization...')
 
     checkStopToken(stopToken)
-    statusCallback?.('Getting renderer...')
-
-    const rendererType = this.pluginManager.getRendererType('DotplotRenderer')
-    if (!rendererType) {
-      throw new Error('DotplotRenderer not found')
-    }
-
-    checkStopToken(stopToken)
     statusCallback?.('Fetching features...')
 
-    const feats = await (
-      rendererType as unknown as {
-        getFeatures: (args: {
-          regions: Region[]
-          adapterConfig: Record<string, unknown>
-          sessionId: string
-        }) => Promise<Map<string, Feature>>
-      }
-    ).getFeatures({
-      regions: view.hview.displayedRegions,
-      adapterConfig,
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
       sessionId,
-    })
+      adapterConfig,
+    )
+    const feats = dedupe(
+      await firstValueFrom(
+        (dataAdapter as BaseFeatureDataAdapter)
+          .getFeaturesInMultipleRegions(view.hview.displayedRegions, {
+            sessionId,
+          })
+          .pipe(toArray()),
+      ),
+      f => f.id(),
+    )
 
     checkStopToken(stopToken)
     statusCallback?.('Extracting alignment data...')
 
     const alignments: AlignmentData[] = []
 
-    for (const feat of feats.values()) {
+    for (const feat of feats) {
       const mate = feat.get('mate') as
         | {
             refName: string

@@ -2,12 +2,10 @@ import Plugin from '@jbrowse/core/Plugin'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
 import TimelineIcon from '@mui/icons-material/Timeline'
 
-import ComparativeRenderer from './ComparativeRenderer/index.ts'
 import DiagonalizeDotplotRpc from './DiagonalizeDotplotRpc.ts'
 import { DotplotGetFeaturesAndPositions } from './DotplotDisplay/DotplotGetFeaturesAndPositions.ts'
 import DotplotDisplayF from './DotplotDisplay/index.ts'
 import DotplotReadVsRefMenuItem from './DotplotReadVsRef/index.ts'
-import DotplotRendererF from './DotplotRenderer/index.ts'
 import DotplotViewF from './DotplotView/index.ts'
 import LaunchDotplotViewF from './LaunchDotplotView.ts'
 
@@ -22,12 +20,9 @@ export default class DotplotPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     DotplotViewF(pluginManager)
     DotplotDisplayF(pluginManager)
-    DotplotRendererF(pluginManager)
     LaunchDotplotViewF(pluginManager)
     DotplotReadVsRefMenuItem(pluginManager)
 
-    // install our comparative rendering rpc callback
-    pluginManager.addRpcMethod(() => new ComparativeRenderer(pluginManager))
     pluginManager.addRpcMethod(() => new DiagonalizeDotplotRpc(pluginManager))
     pluginManager.addRpcMethod(
       () => new DotplotGetFeaturesAndPositions(pluginManager),

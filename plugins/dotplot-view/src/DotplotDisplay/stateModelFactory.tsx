@@ -1,6 +1,5 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { renderSvg } from './renderSvg.tsx'
@@ -9,7 +8,6 @@ import type { DotplotGeometryData } from './dotplotBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
 import type { ExportSvgOptions } from '../DotplotView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
@@ -42,10 +40,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         .volatile(() => ({
           /**
            * #volatile
-           */
-          features: undefined as Feature[] | undefined,
-          /**
-           * #volatile
            * RPC-computed feature data
            */
           rpcData: undefined as DotplotRpcData | undefined,
@@ -74,26 +68,10 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .views(self => ({
       get isLoading() {
-        return self.fetchStopToken !== undefined && !self.features
+        return self.fetchStopToken !== undefined && !self.rpcData
       },
       get isRefetching() {
-        return self.fetchStopToken !== undefined && !!self.features
-      },
-      /**
-       * #getter
-       */
-      get rendererTypeName() {
-        return getConf(self, ['renderer', 'type'])
-      },
-      /**
-       * #method
-       */
-      renderProps() {
-        return {
-          ...getParentRenderProps(self),
-          rpcDriverName: self.rpcDriverName,
-          config: self.configuration.renderer,
-        }
+        return self.fetchStopToken !== undefined && !!self.rpcData
       },
     }))
     .views(self => ({
@@ -108,19 +86,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setLoading(stopToken?: StopToken) {
+      setLoading(stopToken: StopToken) {
         self.fetchStopToken = stopToken
-        self.error = undefined
-      },
-      /**
-       * #action
-       */
-      setFeatures(args?: { features: Feature[] }) {
-        if (!args) {
-          return
-        }
-        self.features = args.features
-        self.fetchStopToken = undefined
         self.error = undefined
       },
       /**
@@ -128,6 +95,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setRpcData(data: DotplotRpcData) {
         self.rpcData = data
+        self.fetchStopToken = undefined
       },
       setGeometry(data: DotplotGeometryData | undefined) {
         self.geometry = data
@@ -181,5 +149,4 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
 }
 
-export type DotplotDisplayStateModel = ReturnType<typeof stateModelFactory>
-export type DotplotDisplayModel = Instance<DotplotDisplayStateModel>
+export type DotplotDisplayModel = Instance<ReturnType<typeof stateModelFactory>>
