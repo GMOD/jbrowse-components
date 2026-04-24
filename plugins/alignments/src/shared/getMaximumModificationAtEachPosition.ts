@@ -1,4 +1,5 @@
 import { getNextRefPos } from '../MismatchParser/index.ts'
+import { modProbAt } from '../ModificationParser/getModProbabilities.ts'
 
 import type { getModPositions } from '../ModificationParser/getModPositions.ts'
 
@@ -16,10 +17,7 @@ export function getMaxProbModAtEachPosition(
   let probIndex = 0
   for (const { type, base, positions } of modifications) {
     getNextRefPos(ops, positions, (ref, idx) => {
-      const prob =
-        probabilities?.[
-          probIndex + (fstrand === -1 ? positions.length - 1 - idx : idx)
-        ] ?? 0
+      const prob = modProbAt(probabilities, probIndex, fstrand === -1, idx, positions.length)
       const existing = maxProbModForPosition[ref]
       if (!existing || prob > existing.prob) {
         maxProbModForPosition[ref] = { type, base, prob }

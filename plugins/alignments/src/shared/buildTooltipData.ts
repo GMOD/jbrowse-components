@@ -1,5 +1,4 @@
 import { getModificationName } from './modificationData.ts'
-import { getColorForModification } from '../util.ts'
 
 import type { ModificationEntry } from './webglRpcTypes.ts'
 import type { ModTooltipEntry } from '../RenderPileupDataRPC/types'
@@ -26,7 +25,7 @@ export function buildModTooltipData({
       posEntry = {}
       result[mod.position] = posEntry
     }
-    const modKey = mod.modType
+    const modKey = `${mod.modType}_${mod.r}_${mod.g}_${mod.b}`
     let entry = posEntry[modKey]
     if (!entry) {
       entry = {
@@ -34,7 +33,7 @@ export function buildModTooltipData({
         fwd: 0,
         rev: 0,
         probabilityTotal: 0,
-        color: getColorForModification(mod.modType),
+        color: `rgb(${mod.r},${mod.g},${mod.b})`,
         name: getModificationName(mod.modType),
       }
       posEntry[modKey] = entry

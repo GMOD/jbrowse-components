@@ -1,4 +1,10 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import {
+  methylated5mC,
+  methylated5hmC,
+  unmethylated5mC,
+  unmethylated5hmC,
+} from '@jbrowse/core/ui/theme'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -242,6 +248,24 @@ export function extractModifications(
   }
 }
 
+// Methylated/unmethylated display colors for bisulfite/ONT methylation mode.
+// These differ from the modification-mode colors in modificationData.ts.
+// Source of truth is theme.ts; converted once here for the worker context.
+const METH_5MC_METHYLATED_RGB = cssColorToRgb(methylated5mC)
+const METH_5MC_UNMETHYLATED_RGB = cssColorToRgb(unmethylated5mC)
+const METH_5HMC_METHYLATED_RGB = cssColorToRgb(methylated5hmC)
+const METH_5HMC_UNMETHYLATED_RGB = cssColorToRgb(unmethylated5hmC)
+
+function methColorAndProb(
+  methP: number,
+  methylatedRgb: readonly [number, number, number],
+  unmethylatedRgb: readonly [number, number, number],
+) {
+  const isMeth = methP > 0.5
+  const [r, g, b] = isMeth ? methylatedRgb : unmethylatedRgb
+  return { r, g, b, prob: isMeth ? methP : 1 - methP }
+}
+
 export function extractMethylation(
   featureId: string,
   featureStart: number,
@@ -264,7 +288,6 @@ export function extractMethylation(
     }
     const genomicPos = i + featureStart
     if (methBins[i]) {
-      const methP = methProbs[i] || 0
       modificationsData.push({
         featureId,
         position: genomicPos,
@@ -272,14 +295,10 @@ export function extractMethylation(
         modType: 'm',
         isSimplex: true,
         strand: methStrand,
-        r: methP > 0.5 ? 255 : 0,
-        g: 0,
-        b: methP > 0.5 ? 0 : 255,
-        prob: methP > 0.5 ? methP : 1 - methP,
+        ...methColorAndProb(methProbs[i] ?? 0, METH_5MC_METHYLATED_RGB, METH_5MC_UNMETHYLATED_RGB),
       })
     }
     if (hydroxyMethBins[i]) {
-      const hydroxyP = hydroxyMethProbs[i] || 0
       modificationsData.push({
         featureId,
         position: genomicPos,
@@ -287,10 +306,7 @@ export function extractMethylation(
         modType: 'h',
         isSimplex: true,
         strand: methStrand,
-        r: hydroxyP > 0.5 ? 255 : 128,
-        g: hydroxyP > 0.5 ? 192 : 0,
-        b: hydroxyP > 0.5 ? 203 : 128,
-        prob: hydroxyP > 0.5 ? hydroxyP : 1 - hydroxyP,
+        ...methColorAndProb(hydroxyMethProbs[i] ?? 0, METH_5HMC_METHYLATED_RGB, METH_5HMC_UNMETHYLATED_RGB),
       })
     }
   }
@@ -545,6 +561,7 @@ export function buildModificationArrays(
   // both the GPU vertex buffer and the Canvas2D shader path can read one
   // slot instead of four shifted bytes.
   const modificationColors = new Uint32Array(filtered.length)
+  const modificationProbabilities = new Uint8Array(filtered.length)
   const modificationReadIndices = getReadIndex
     ? new Uint32Array(filtered.length)
     : undefined
@@ -560,6 +577,7 @@ export function buildModificationArrays(
     // high-prob mods are strongly opaque (matches main branch alphaColor).
     const a = Math.round(Math.min(1, m.prob * m.prob + 0.1) * 255) & 0xff
     modificationColors[i] = packAbgr(m.r, m.g, m.b, a)
+    modificationProbabilities[i] = Math.round(m.prob * 255) & 0xff
     if (modificationReadIndices) {
       modificationReadIndices[i] = getReadIndex!(m.featureId)
     }
@@ -571,6 +589,7 @@ export function buildModificationArrays(
     modificationPositions,
     modificationYs,
     modificationColors,
+    modificationProbabilities,
     modificationReadIndices,
     modificationTypeIndices,
   }

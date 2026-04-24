@@ -1,3 +1,7 @@
+import {
+  methylated5mC,
+  unmethylated5mC,
+} from '@jbrowse/core/ui/theme'
 import { fillColor } from './color.ts'
 
 import type { ColorBy, ModificationTypeWithColor } from './types.ts'
@@ -123,8 +127,8 @@ export function getSNPCoverageLegendItems(
 ): LegendItem[] {
   if (colorBy?.type === 'methylation') {
     return [
-      { color: 'red', label: 'CpG methylated' },
-      { color: 'blue', label: 'CpG unmethylated' },
+      { color: methylated5mC, label: 'CpG methylated' },
+      { color: unmethylated5mC, label: 'CpG unmethylated' },
     ]
   } else if (colorBy?.type === 'modifications') {
     const items: LegendItem[] = []

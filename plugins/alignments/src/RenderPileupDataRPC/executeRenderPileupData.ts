@@ -405,6 +405,9 @@ export async function executeRenderPileupData({
     result.modificationPositions.buffer,
     result.modificationYs.buffer,
     result.modificationColors.buffer,
+    ...(result.modificationProbabilities
+      ? [result.modificationProbabilities.buffer]
+      : []),
     result.modCovPositions.buffer,
     result.modCovYOffsets.buffer,
     result.modCovHeights.buffer,

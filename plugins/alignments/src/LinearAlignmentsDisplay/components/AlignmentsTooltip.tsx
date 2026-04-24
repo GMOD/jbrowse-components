@@ -179,11 +179,11 @@ export function CoverageTooltipContents({
           {hasStrands && <td />}
         </tr>
         {hasModifications
-          ? modEntries.map(([, data]) => {
+          ? modEntries.map(([modKey, data]) => {
               const avgProb =
                 data.count > 0 ? data.probabilityTotal / data.count : 0
               return (
-                <tr key={data.name}>
+                <tr key={modKey}>
                   <td>
                     <div
                       style={{

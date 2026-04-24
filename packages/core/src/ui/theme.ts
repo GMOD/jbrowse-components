@@ -118,6 +118,10 @@ const skip = '#009a8a'
 const modificationFwd = '#c8c8c8'
 const modificationRev = '#c8dcc8'
 const mutedSnpBase = '#888'
+export const methylated5mC = '#ff0000'
+export const unmethylated5mC = '#0000ff'
+export const methylated5hmC = '#ffc0cb'
+export const unmethylated5hmC = '#800080'
 
 const defaults = {
   primary: midnight,

@@ -161,9 +161,8 @@ export function computeModificationCoverage(
         strandBaseCounts,
       })
 
-      const modFraction =
-        (modifiable / depthAtPosition) * (entry.probabilityTotal / detectable)
-      const height = modFraction * (depthAtPosition / regionMaxDepth)
+      // depthAtPosition cancels: (mod/depth * probTotal/det) * (depth/maxDepth)
+      const height = (modifiable * entry.probabilityTotal) / (detectable * regionMaxDepth)
 
       const avgProbability =
         entry.probabilityCount > 0

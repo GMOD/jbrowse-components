@@ -161,8 +161,10 @@ export interface PileupDataResult {
   // Modification data (MM tag) - absolute genomic uint32
   modificationPositions: Uint32Array
   modificationYs: Uint16Array
-  // Packed ABGR u32 per modification; alpha byte = probability * 255.
+  // Packed ABGR u32 per modification; alpha byte encodes visual opacity (quadratic).
   modificationColors: Uint32Array
+  // Raw probability 0-255; separate from alpha to avoid lossy quadratic roundtrip in tooltip.
+  modificationProbabilities?: Uint8Array
   modificationReadIndices?: Uint32Array // maps each modification to its parent read index
   modificationTypeIndices?: Uint8Array // maps each modification to index in detectedModifications
   numModifications: number

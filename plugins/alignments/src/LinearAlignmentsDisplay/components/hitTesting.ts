@@ -12,7 +12,7 @@
  * for tooltip and selection purposes.
  */
 
-import { abgrAlpha, abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
+import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import {
@@ -529,6 +529,7 @@ export function hitTestModification(
   const {
     modificationPositions,
     modificationColors,
+    modificationProbabilities,
     modificationTypeIndices,
     detectedModifications,
   } = resolved.rpcData
@@ -537,8 +538,7 @@ export function hitTestModification(
   return {
     position: modificationPositions[idx]!,
     modType: typeIdx !== undefined ? detectedModifications[typeIdx] : undefined,
-    // Invert the visual alpha mapping (alpha = p²+0.1) to recover raw ML prob
-    probability: Math.sqrt(Math.max(0, abgrAlpha(colorPacked) / 255 - 0.1)),
+    probability: (modificationProbabilities?.[idx] ?? 255) / 255,
     color: `rgb(${abgrRed(colorPacked)},${abgrGreen(colorPacked)},${abgrBlue(colorPacked)})`,
   }
 }

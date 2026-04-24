@@ -8,8 +8,18 @@ import {
   CIGAR_S,
   CIGAR_X,
 } from '../shared/cigarUtil.ts'
+import { modProbAt } from './getModProbabilities.ts'
 
 import type { getModPositions } from './getModPositions.ts'
+
+// Check CpG dinucleotide context at a read sequence position.
+// getModPositions stores reverse-strand positions in revcomp space, where
+// a CpG appears as seq[pos]='G' preceded by seq[pos-1]='C'.
+function isCpGAt(seq: string, pos: number, isReverse: boolean) {
+  return isReverse
+    ? seq[pos]?.toLowerCase() === 'g' && seq[pos - 1]?.toLowerCase() === 'c'
+    : seq[pos]?.toLowerCase() === 'c' && seq[pos + 1]?.toLowerCase() === 'g'
+}
 
 export interface ParsedModData {
   modifications: ReturnType<typeof getModPositions>
@@ -41,26 +51,10 @@ export function getMethBins({
       continue
     }
     getNextRefPos(cigarOps, positions, (ref, idx) => {
-      if (ref < 0 || ref >= flen) {
+      if (ref < 0 || ref >= flen || !isCpGAt(seq, positions[idx]!, isReverse)) {
         return
       }
-
-      // Check CpG context directly from the read sequence without allocating
-      // a revcomp string. getModPositions stores positions as seqLength-currPos
-      // for reverse strand (revcomp space), so:
-      //   forward: pos is the C index in seq → seq[pos+1] must be G
-      //   reverse: revcom(seq)[seqLength-pos] = complement(seq[pos-1])
-      //            that equals 'G' iff seq[pos-1] === 'C'
-      const pos = positions[idx]!
-      const nb = isReverse ? seq[pos - 1] : seq[pos + 1]
-      const wanted = isReverse ? 'c' : 'g'
-      if (nb?.toLowerCase() !== wanted) {
-        return
-      }
-
-      const idx2 = probIndex + (isReverse ? positions.length - 1 - idx : idx)
-      const prob = probabilities?.[idx2] ?? 0
-
+      const prob = modProbAt(probabilities, probIndex, isReverse, idx, positions.length)
       if (type === 'm') {
         methBins[ref] = 1
         methProbs[ref] = prob
@@ -92,10 +86,7 @@ export function getMethBins({
       for (let j = 0; j < len; j++) {
         const rp = readPos + j
         const rf = refPos + j
-        const isCpG = isReverse
-          ? seq[rp]?.toLowerCase() === 'g' && seq[rp - 1]?.toLowerCase() === 'c'
-          : seq[rp]?.toLowerCase() === 'c' && seq[rp + 1]?.toLowerCase() === 'g'
-        if (isCpG && rf >= 0 && rf < flen && !methBins[rf]) {
+        if (isCpGAt(seq, rp, isReverse) && rf >= 0 && rf < flen && !methBins[rf]) {
           methBins[rf] = 1
           methProbs[rf] = 0
         }

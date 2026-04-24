@@ -2,6 +2,24 @@ import { getTagAlt } from '../util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
+/**
+ * Returns the probability value from the flat probabilities array at the
+ * correct offset for a given modification position, handling the reverse-strand
+ * index reversal that getModPositions applies (positions stored in descending
+ * order for reverse-strand reads).
+ */
+export function modProbAt(
+  probabilities: number[] | undefined,
+  probIndex: number,
+  isReverse: boolean,
+  idx: number,
+  posLen: number,
+) {
+  return (
+    probabilities?.[probIndex + (isReverse ? posLen - 1 - idx : idx)] ?? 0
+  )
+}
+
 export function getModProbabilities(feature: Feature) {
   // ML stores probabilities as array of numerics and MP is scaled phred scores
   // https://github.com/samtools/hts-specs/pull/418/files#diff-e765c6479316309f56b636f88189cdde8c40b854c7bdcce9ee7fe87a4e76febcR596
