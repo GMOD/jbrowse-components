@@ -52,7 +52,9 @@ export function getTrackYOffset(views: LGV[], trackId: string, level: number) {
     y += views[i]!.height + VIEW_DIVIDER_HEIGHT
   }
   y += view.headerHeight + view.scalebarHeight
-  for (const track of view.tracks) {
+  // Pinned tracks render before unpinned tracks in the DOM, so iterate in that order
+  const tracksInDomOrder = [...view.pinnedTracks, ...view.unpinnedTracks]
+  for (const track of tracksInDomOrder) {
     if (track.configuration.trackId === trackId) {
       break
     }
