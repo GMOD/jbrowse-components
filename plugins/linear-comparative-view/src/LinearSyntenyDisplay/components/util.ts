@@ -1,6 +1,7 @@
 import { assembleLocString, toLocale } from '@jbrowse/core/util'
 
 import type { FeatPos } from '../model.ts'
+import type { DupConflict, SyriType } from '@jbrowse/plugin-comparative-adapters'
 
 export interface ClickCoord {
   clientX: number
@@ -148,8 +149,8 @@ export function drawBezierBox(
 
 export function getTooltip(
   feat: FeatPos,
-  cigarOp?: string,
-  cigarOpLen?: string,
+  syriType?: SyriType,
+  dupConflict?: DupConflict,
 ) {
   const l1 = feat.end - feat.start
   const l2 = feat.mate.end - feat.mate.start
@@ -162,7 +163,10 @@ export function getTooltip(
     feat.identity !== undefined
       ? `Identity: ${feat.identity.toPrecision(2)}`
       : '',
-    cigarOp ? `CIGAR operator: ${toLocale(+cigarOpLen!)}${cigarOp}` : '',
+    syriType ? `SyRI type: ${syriType}` : '',
+    dupConflict
+      ? `Overlaps (target): ${assembleLocString({ refName: dupConflict.tname, start: dupConflict.tstart, end: dupConflict.tend })}`
+      : '',
     feat.name ? `Name 1: ${feat.name}` : '',
     feat.mate.name ? `Name 2: ${feat.mate.name}` : '',
   ]

@@ -76,6 +76,7 @@ function makeParams(
     bpPerPx0: 1,
     bpPerPx1: 1,
     drawCurves: false,
+    isSyriMode: false,
     ...overrides,
   }
 }

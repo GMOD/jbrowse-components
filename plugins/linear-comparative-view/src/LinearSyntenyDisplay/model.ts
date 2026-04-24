@@ -16,7 +16,7 @@ import type { SyntenyTrackRenderParams } from './syntenyBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { SyriType } from '@jbrowse/plugin-comparative-adapters'
+import type { DupConflict, SyriClassification, SyriType } from '@jbrowse/plugin-comparative-adapters'
 
 // Duck-typed view to avoid circular imports. Display only reads LGV-ish
 // fields off the containing view.
@@ -307,12 +307,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         }
         const lengths = new Map<string, number>()
         for (let i = 0; i < featureData.featureIds.length; i++) {
-          const queryName = featureData.names[i] || featureData.featureIds[i]!
-          const alignmentLength = Math.abs(
-            featureData.ends[i]! - featureData.starts[i]!,
-          )
-          const currentTotal = lengths.get(queryName) ?? 0
-          lengths.set(queryName, currentTotal + alignmentLength)
+          const name = featureData.names[i]!
+          if (name !== '') {
+            const alignmentLength = Math.abs(
+              featureData.ends[i]! - featureData.starts[i]!,
+            )
+            const currentTotal = lengths.get(name) ?? 0
+            lengths.set(name, currentTotal + alignmentLength)
+          }
         }
         return lengths
       },
@@ -324,12 +326,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
-       * SyRI types array aligned with featureData. Only computed when
-       * colorBy='syri'; otherwise undefined so computedColors skips the work.
-       * Uses adapter-precomputed values when present, else runs
-       * computeSyriTypes on the main thread.
+       * Full SyRI classification (types + DUP conflict locations). Only
+       * computed when colorBy='syri'. Uses adapter-precomputed values when
+       * present; adapter path has no conflict info so dupConflicts is all
+       * undefined in that case.
        */
-      get syriTypesForColoring(): SyriType[] | undefined {
+      get syriClassification(): SyriClassification | undefined {
         if (self.colorBy !== 'syri') {
           return undefined
         }
@@ -347,11 +349,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           }
         }
         if (hasPrecomputed) {
-          const out = new Array<SyriType>(n)
+          const types = new Array<SyriType>(n)
           for (let i = 0; i < n; i++) {
-            out[i] = (syriTypes[i] || 'SYN') as SyriType
+            types[i] = (syriTypes[i] || 'SYN') as SyriType
           }
-          return out
+          return { types, dupConflicts: new Array<DupConflict | undefined>(n).fill(undefined) }
         }
         const input = new Array<{
           qname: string
@@ -375,6 +377,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           }
         }
         return computeSyriTypes(input)
+      },
+      /**
+       * #getter
+       * SyRI types array aligned with featureData. Only computed when
+       * colorBy='syri'; otherwise undefined so computedColors skips the work.
+       */
+      get syriTypesForColoring(): SyriType[] | undefined {
+        return this.syriClassification?.types
       },
       /**
        * #getter
@@ -421,7 +431,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         ) {
           return ''
         }
-        return getTooltip(getFeatureAtIndex(featureData, hoveredFeatureIdx))
+        const syriType = this.syriClassification?.types[hoveredFeatureIdx]
+        const dupConflict = this.syriClassification?.dupConflicts[hoveredFeatureIdx]
+        return getTooltip(getFeatureAtIndex(featureData, hoveredFeatureIdx), syriType, dupConflict)
       },
       /**
        * #getter
@@ -458,6 +470,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           bpPerPx0: v0.bpPerPx,
           bpPerPx1: v1.bpPerPx,
           drawCurves: view.drawCurves,
+          isSyriMode: self.colorBy === 'syri',
         }
       },
     }))

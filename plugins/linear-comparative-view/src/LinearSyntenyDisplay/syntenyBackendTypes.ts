@@ -14,6 +14,8 @@ export interface SyntenyTrackRenderParams {
   bpPerPx0: number
   bpPerPx1: number
   drawCurves: boolean
+  /** true when colorBy='syri'; enables SYN-first z-ordering in renderers */
+  isSyriMode: boolean
 }
 
 export interface SyntenyRenderState {

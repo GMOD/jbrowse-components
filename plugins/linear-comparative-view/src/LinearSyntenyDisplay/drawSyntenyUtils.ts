@@ -58,12 +58,12 @@ export const strandCigarColors = {
   '=': '#f00',
 }
 
-// SyRI structural type colors (plotsr-compatible)
+// SyRI structural type colors matching plotsr defaults exactly
 export const syriColors = {
-  SYN: '#CCCCCC',
+  SYN: '#DEDEDE',
   INV: '#FFA500',
-  TRANS: '#6495ED',
-  DUP: '#00CED1',
+  TRANS: '#9ACD32',
+  DUP: '#00BBFF',
 }
 
 // Color scheme configuration. `query` and `syri` reuse the default CIGAR

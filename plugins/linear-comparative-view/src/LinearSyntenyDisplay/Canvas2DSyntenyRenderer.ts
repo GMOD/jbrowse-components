@@ -1,3 +1,7 @@
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+
+import { syriColors } from './drawSyntenyUtils.ts'
+
 import type {
   SyntenyBackend,
   SyntenyPickResult,
@@ -5,6 +9,8 @@ import type {
   SyntenyTrackRenderParams,
 } from './syntenyBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+
+const PACKED_SYN = cssColorToABGR(syriColors.SYN)
 
 const CURVE_SEGMENTS = 16
 
@@ -164,39 +170,30 @@ export interface CanvasLike {
   stroke(): void
 }
 
-export function drawSyntenyTrack(
+function drawInstances(
   ctx: CanvasLike,
   data: SyntenyInstanceData,
-  params: SyntenyTrackRenderParams,
-  logicalW: number,
-  maxOffScreenPx: number,
-  dpr = 1,
+  transform: ReturnType<typeof computeTransform>,
+  alpha: number,
+  height: number,
+  minAlignmentLength: number,
+  hoveredFeatureId: number,
+  clickedFeatureId: number,
+  drawCurves: boolean,
+  leftLimit: number,
+  rightLimit: number,
+  fillStyleCache: Map<number, string>,
+  synOnly: boolean | undefined,
 ) {
-  const {
-    yTop,
-    height,
-    alpha,
-    minAlignmentLength,
-    hoveredFeatureId,
-    clickedFeatureId,
-    drawCurves,
-  } = params
-
-  ctx.setTransform(dpr, 0, 0, dpr, 0, yTop * dpr)
-  ctx.globalAlpha = 1
-
-  const transform = computeTransform(data, params)
-  // Canvas2D parses fillStyle on every assignment, so reuse the rgba string
-  // for the common case of many instances sharing a color (CIGAR fills).
-  const fillStyleCache = new Map<number, string>()
-  const leftLimit = -maxOffScreenPx
-  const rightLimit = logicalW + maxOffScreenPx
-
   for (let i = 0; i < data.instanceCount; i++) {
     if (data.queryTotalLengths[i]! < minAlignmentLength) {
       continue
     }
     const packed = data.colors[i]!
+    const isSyn = packed === PACKED_SYN
+    if (synOnly !== undefined && isSyn !== synOnly) {
+      continue
+    }
     const a = ((packed >>> 24) & 0xff) / 255
     if (a < 0.01) {
       continue
@@ -239,6 +236,57 @@ export function drawSyntenyTrack(
       ctx.lineWidth = 1
       ctx.stroke()
     }
+  }
+}
+
+export function drawSyntenyTrack(
+  ctx: CanvasLike,
+  data: SyntenyInstanceData,
+  params: SyntenyTrackRenderParams,
+  logicalW: number,
+  maxOffScreenPx: number,
+  dpr = 1,
+) {
+  const {
+    yTop,
+    height,
+    alpha,
+    minAlignmentLength,
+    hoveredFeatureId,
+    clickedFeatureId,
+    drawCurves,
+    isSyriMode,
+  } = params
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, yTop * dpr)
+  ctx.globalAlpha = 1
+
+  const transform = computeTransform(data, params)
+  // Canvas2D parses fillStyle on every assignment, so reuse the rgba string
+  // for the common case of many instances sharing a color (CIGAR fills).
+  const fillStyleCache = new Map<number, string>()
+  const leftLimit = -maxOffScreenPx
+  const rightLimit = logicalW + maxOffScreenPx
+  const args = [
+    data,
+    transform,
+    alpha,
+    height,
+    minAlignmentLength,
+    hoveredFeatureId,
+    clickedFeatureId,
+    drawCurves,
+    leftLimit,
+    rightLimit,
+    fillStyleCache,
+  ] as const
+
+  if (isSyriMode) {
+    // plotsr draws SYN first so that INV/TRANS/DUP ribbons appear on top
+    drawInstances(ctx, ...args, true)
+    drawInstances(ctx, ...args, false)
+  } else {
+    drawInstances(ctx, ...args, undefined)
   }
 }
 

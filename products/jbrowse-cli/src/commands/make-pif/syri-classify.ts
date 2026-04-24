@@ -70,17 +70,21 @@ export function computeSyriTypes(records: AlignmentRecord[]): SyriType[] {
     }
   }
 
+  // Only SYN alignments participate in duplication detection; INV/TRANS must
+  // not be overwritten — an inversion's target coords are typically nested
+  // inside the surrounding syntenic block, which would otherwise trigger a
+  // false DUP.
   for (const group of targetGroups.values()) {
-    let maxEnd = 0
+    let maxEndRec: AlignmentRecord | undefined
     for (const { idx, rec } of group) {
-      if (types[idx] === 'TRANS') {
+      if (types[idx] !== 'SYN') {
         continue
       }
-      if (rec.tstart < maxEnd) {
+      if (maxEndRec && rec.tstart < maxEndRec.tend) {
         types[idx] = 'DUP'
       }
-      if (rec.tend > maxEnd) {
-        maxEnd = rec.tend
+      if (!maxEndRec || rec.tend > maxEndRec.tend) {
+        maxEndRec = rec
       }
     }
   }

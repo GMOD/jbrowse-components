@@ -299,3 +299,39 @@ FetchMixin.ts:98:19
 
 - Speed up paf_chain2paf, parseCigar2
 
+**SyRI adapter (browser).** Add a `SyriOutAdapter` that reads raw `syri.out`
+files directly in the browser (or a bgzipped + tabix-indexed version). The
+CLI already has `make-pif/parsers/syri-parser.ts` with the correct column
+mapping (`refChr refStart refEnd - - qryChr qryStart qryEnd ID parent type`).
+A browser adapter would emit `syriType` directly from column 10, bypassing the
+`computeSyriTypes` inference entirely and giving exact classifications including
+`INVTR` (inverted translocation) which the inference currently maps to TRANS.
+Acceptance: load the test file at
+`test/data/synteny-demo/plotsr/syri.out` and confirm SYN / INV / TRANS / DUP /
+INVTR / INVDP are all colored correctly.
+
+**SyRI z-ordering in GPU path.** Canvas2D and SVG export now draw SYN first so
+INV / TRANS / DUP ribbons appear on top (plotsr-compatible). The WebGL2 and
+WebGPU paths do not yet respect this order — instances are drawn in arrival
+order. To fix: sort the `SyntenyInstanceData` arrays at `uploadGeometry` time
+so SYN instances come first; or use depth-buffer values (SYN = 0.5, others =
+0.0) in `syntenyFill.slang`. The latter avoids re-sorting but requires a shader
+change.
+
+**SyRI `computeSyriTypes` cross-validation.** Add a test that parses a real
+`syri.out` file (e.g. `test/data/synteny-demo/plotsr/syri.out`), extracts the
+SYNAL/INVAL/TRANSAL/DUPAL alignment rows, feeds them into `computeSyriTypes`
+as PAF-like records, and checks that the inferred types match the types
+declared in the file. This will surface any remaining cases where the
+inference diverges from true SyRI output.
+
+**SyRI `INVTR` / `INVDP` types.** `computeSyriTypes` and `SyriType` currently
+do not model inverted translocation (`INVTR`) or inverted duplication (`INVDP`).
+These are real SyRI output types (plotsr handles them by folding `INVTR` →
+`TRANS` and `INVDP` → `DUP`). Consider adding them as first-class types with
+distinct colors, or explicitly document the fold in the code.
+
+
+## Collapse in synteny view
+
+A button to collapse the 'synteny area' in the linearsyntenyview was added but a key notion to make compact views is actually the inverse: literalyl collapsing the linear genoem view to a single thin line. the linear genome view by default takes 150px at least of random stuff, which strongly limits the number of synteny rows that can be compared at once

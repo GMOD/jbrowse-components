@@ -10,6 +10,18 @@ interface AlignmentRecord {
   strand: number
 }
 
+export interface DupConflict {
+  tname: string
+  tstart: number
+  tend: number
+}
+
+export interface SyriClassification {
+  types: SyriType[]
+  // For DUP features: the target-coords of the SYN alignment they overlap
+  dupConflicts: (DupConflict | undefined)[]
+}
+
 // Classifies PAF alignments into SyRI-style structural types.
 // Algorithm:
 // 1. Group alignments by (query chromosome, target chromosome)
@@ -18,8 +30,11 @@ interface AlignmentRecord {
 //    chromosome from primary mapping), and duplications (overlapping
 //    regions on the same chromosome)
 // 4. Everything else is syntenic (SYN)
-export function computeSyriTypes(records: AlignmentRecord[]): SyriType[] {
+// Only SYN alignments participate in duplication detection; INV/TRANS are
+// already classified and are not overwritten.
+export function computeSyriTypes(records: AlignmentRecord[]): SyriClassification {
   const types = new Array<SyriType>(records.length).fill('SYN')
+  const dupConflicts: (DupConflict | undefined)[] = new Array(records.length).fill(undefined)
 
   // Build a map of query chromosome -> target chromosome with most coverage
   const queryCoverage = new Map<string, Map<string, number>>()
@@ -85,22 +100,29 @@ export function computeSyriTypes(records: AlignmentRecord[]): SyriType[] {
     }
   }
 
-  // Duplication detection: find overlapping regions on same target chromosome
+  // Duplication detection: sweep SYN alignments only.
+  // INV/TRANS are already classified and must not be overwritten — an
+  // inversion's target coords are typically nested inside the surrounding
+  // syntenic block, which would otherwise trigger a false DUP.
   for (const group of targetGroups.values()) {
-    let maxEnd = 0
+    let maxEndRec: AlignmentRecord | undefined
     for (const { idx, rec } of group) {
-      if (types[idx] === 'TRANS') {
+      if (types[idx] !== 'SYN') {
         continue
       }
-      if (rec.tstart < maxEnd) {
-        // This alignment overlaps with a previous one on the same target
+      if (maxEndRec && rec.tstart < maxEndRec.tend) {
         types[idx] = 'DUP'
+        dupConflicts[idx] = {
+          tname: maxEndRec.tname,
+          tstart: maxEndRec.tstart,
+          tend: maxEndRec.tend,
+        }
       }
-      if (rec.tend > maxEnd) {
-        maxEnd = rec.tend
+      if (!maxEndRec || rec.tend > maxEndRec.tend) {
+        maxEndRec = rec
       }
     }
   }
 
-  return types
+  return { types, dupConflicts }
 }
