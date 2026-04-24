@@ -72,6 +72,68 @@ function computeTransform(
   }
 }
 
+interface ProjectedCorners {
+  sx1: number
+  sx2: number
+  sx3: number
+  sx4: number
+}
+
+function projectCorners(
+  data: SyntenyInstanceData,
+  i: number,
+  t: ComputedTransform,
+): ProjectedCorners {
+  const padTop = data.padTops[i]!
+  const padBottom = data.padBottoms[i]!
+  return {
+    sx1: (data.x1[i]! - t.adjOff0) * t.scale0 - padTop * t.scaleDiff0,
+    sx2: (data.x2[i]! - t.adjOff0) * t.scale0 - padTop * t.scaleDiff0,
+    sx3: (data.x3[i]! - t.adjOff1) * t.scale1 - padBottom * t.scaleDiff1,
+    sx4: (data.x4[i]! - t.adjOff1) * t.scale1 - padBottom * t.scaleDiff1,
+  }
+}
+
+// Widen sub-pixel trapezoid corners so thin features render and pick at a
+// consistent visual width across both Canvas2D and GPU backends. Slope-aware
+// so shallow (near-horizontal) trapezoids stay visible perpendicular to their
+// direction. Must match the formula in syntenyFill.slang's vertex shader.
+function widenCorners(c: ProjectedCorners, height: number): ProjectedCorners {
+  const xTopMid = (c.sx1 + c.sx2) * 0.5
+  const xBotMid = (c.sx3 + c.sx4) * 0.5
+  const slope = Math.abs(xBotMid - xTopMid) / Math.max(height, 1)
+  const minW = Math.min(1 + Math.max(0, slope - 1) * 0.25, 3)
+  let { sx1, sx2, sx3, sx4 } = c
+  if (Math.abs(sx2 - sx1) < minW) {
+    const half = (sx1 < sx2 ? minW : -minW) * 0.5
+    sx1 = xTopMid - half
+    sx2 = xTopMid + half
+  }
+  if (Math.abs(sx4 - sx3) < minW) {
+    const half = (sx3 < sx4 ? minW : -minW) * 0.5
+    sx3 = xBotMid - half
+    sx4 = xBotMid + half
+  }
+  return { sx1, sx2, sx3, sx4 }
+}
+
+function isEdgeCulled(
+  c: ProjectedCorners,
+  leftLimit: number,
+  rightLimit: number,
+) {
+  const topMin = Math.min(c.sx1, c.sx2)
+  const topMax = Math.max(c.sx1, c.sx2)
+  const botMin = Math.min(c.sx3, c.sx4)
+  const botMax = Math.max(c.sx3, c.sx4)
+  return (
+    topMax < leftLimit ||
+    topMin > rightLimit ||
+    botMax < leftLimit ||
+    botMin > rightLimit
+  )
+}
+
 export class Canvas2DSyntenyRenderer implements SyntenyBackend {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
@@ -152,8 +214,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     } = params
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, yTop * dpr)
-    const { scale0, scale1, adjOff0, adjOff1, scaleDiff0, scaleDiff1 } =
-      computeTransform(data, params)
+    const transform = computeTransform(data, params)
 
     // Cache rgba() strings per packed color within this render call. Canvas2D
     // parses fillStyle on every assignment, so reusing the string for the
@@ -161,6 +222,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     const fillStyleCache = new Map<number, string>()
     const leftLimit = -maxOffScreenPx
     const rightLimit = logicalW + maxOffScreenPx
+    ctx.globalAlpha = 1
 
     for (let i = 0; i < data.instanceCount; i++) {
       if (data.queryTotalLengths[i]! < minAlignmentLength) {
@@ -173,24 +235,8 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
         continue
       }
 
-      const padTop = data.padTops[i]!
-      const padBottom = data.padBottoms[i]!
-
-      const sx1 = (data.x1[i]! - adjOff0) * scale0 - padTop * scaleDiff0
-      const sx2 = (data.x2[i]! - adjOff0) * scale0 - padTop * scaleDiff0
-      const sx3 = (data.x3[i]! - adjOff1) * scale1 - padBottom * scaleDiff1
-      const sx4 = (data.x4[i]! - adjOff1) * scale1 - padBottom * scaleDiff1
-
-      const topMin = sx1 < sx2 ? sx1 : sx2
-      const topMax = sx1 < sx2 ? sx2 : sx1
-      const botMin = sx3 < sx4 ? sx3 : sx4
-      const botMax = sx3 < sx4 ? sx4 : sx3
-      if (
-        topMax < leftLimit ||
-        topMin > rightLimit ||
-        botMax < leftLimit ||
-        botMin > rightLimit
-      ) {
+      const c = projectCorners(data, i, transform)
+      if (isEdgeCulled(c, leftLimit, rightLimit)) {
         continue
       }
 
@@ -216,30 +262,9 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
         fillStyle = cached
       }
 
-      ctx.globalAlpha = 1
       ctx.fillStyle = fillStyle
-
-      const xTopMid = (sx1 + sx2) * 0.5
-      const xBotMid = (sx3 + sx4) * 0.5
-      const slope = Math.abs(xBotMid - xTopMid) / Math.max(height, 1)
-      const minW = Math.min(1 + Math.max(0, slope - 1) * 0.25, 3)
-      const wTop = Math.abs(sx2 - sx1)
-      const wBot = Math.abs(sx4 - sx3)
-      let tx1 = sx1
-      let tx2 = sx2
-      let tx3 = sx3
-      let tx4 = sx4
-      if (wTop < minW) {
-        const half = (sx1 < sx2 ? minW : -minW) * 0.5
-        tx1 = xTopMid - half
-        tx2 = xTopMid + half
-      }
-      if (wBot < minW) {
-        const half = (sx3 < sx4 ? minW : -minW) * 0.5
-        tx3 = xBotMid - half
-        tx4 = xBotMid + half
-      }
-      buildFeaturePath(ctx, tx1, tx2, tx3, tx4, height, params.drawCurves)
+      const w = widenCorners(c, height)
+      buildFeaturePath(ctx, w.sx1, w.sx2, w.sx3, w.sx4, height, params.drawCurves)
       ctx.fill()
 
       if (isClicked) {
@@ -262,10 +287,18 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     }
 
     const ctx = this.ctx
+    const leftLimit = -state.maxOffScreenPx
+    const rightLimit = this.canvas.width / this.dpr + state.maxOffScreenPx
+
     // Iterate tracks in reverse draw order so top-most wins.
-    const entries = Array.from(state.perTrack.entries())
-    for (let ei = entries.length - 1; ei >= 0; ei--) {
-      const [key, params] = entries[ei]!
+    let topHit: SyntenyPickResult | undefined
+    const trackKeys: number[] = []
+    for (const k of state.perTrack.keys()) {
+      trackKeys.push(k)
+    }
+    for (let ei = trackKeys.length - 1; ei >= 0; ei--) {
+      const key = trackKeys[ei]!
+      const params = state.perTrack.get(key)!
       const data = this.regions.get(key)
       if (!data || data.instanceCount === 0) {
         continue
@@ -275,10 +308,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
         continue
       }
       const localY = y - yTop
-      const { scale0, scale1, adjOff0, adjOff1, scaleDiff0, scaleDiff1 } =
-        computeTransform(data, params)
-      const leftLimit = -state.maxOffScreenPx
-      const rightLimit = this.canvas.width / this.dpr + state.maxOffScreenPx
+      const transform = computeTransform(data, params)
 
       for (let i = data.instanceCount - 1; i >= 0; i--) {
         if (data.queryTotalLengths[i]! < minAlignmentLength) {
@@ -288,41 +318,32 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
           continue
         }
 
-        const padTop = data.padTops[i]!
-        const padBottom = data.padBottoms[i]!
-        const sx1 = (data.x1[i]! - adjOff0) * scale0 - padTop * scaleDiff0
-        const sx2 = (data.x2[i]! - adjOff0) * scale0 - padTop * scaleDiff0
-        const sx3 = (data.x3[i]! - adjOff1) * scale1 - padBottom * scaleDiff1
-        const sx4 = (data.x4[i]! - adjOff1) * scale1 - padBottom * scaleDiff1
-
-        const topMin = sx1 < sx2 ? sx1 : sx2
-        const topMax = sx1 < sx2 ? sx2 : sx1
-        const botMin = sx3 < sx4 ? sx3 : sx4
-        const botMax = sx3 < sx4 ? sx4 : sx3
-        if (
-          topMax < leftLimit ||
-          topMin > rightLimit ||
-          botMax < leftLimit ||
-          botMin > rightLimit
-        ) {
-          continue
-        }
-        if (x < Math.min(topMin, botMin) || x > Math.max(topMax, botMax)) {
+        const c = projectCorners(data, i, transform)
+        if (isEdgeCulled(c, leftLimit, rightLimit)) {
           continue
         }
 
-        buildFeaturePath(ctx, sx1, sx2, sx3, sx4, height, params.drawCurves)
+        const w = widenCorners(c, height)
+        const minX = Math.min(w.sx1, w.sx2, w.sx3, w.sx4)
+        const maxX = Math.max(w.sx1, w.sx2, w.sx3, w.sx4)
+        if (x < minX || x > maxX) {
+          continue
+        }
+
+        buildFeaturePath(ctx, w.sx1, w.sx2, w.sx3, w.sx4, height, params.drawCurves)
 
         if (ctx.isPointInPath(x, localY)) {
-          const result = { key, featureIndex: i }
-          onResult?.(result)
-          return result
+          topHit = { key, featureIndex: i }
+          break
         }
+      }
+      if (topHit) {
+        break
       }
     }
 
-    onResult?.(undefined)
-    return undefined
+    onResult?.(topHit)
+    return topHit
   }
 
   dispose() {
