@@ -38,7 +38,6 @@ export function useOverlaySetup({
   return {
     mouseoverElt,
     setMouseoverElt,
-    yOffset: 0,
     tracks: views.map(v => v.getTrack(trackId)),
     hasOverride: !!getTrackYPosOverride,
     cachedHeights: getTrackYPosOverride

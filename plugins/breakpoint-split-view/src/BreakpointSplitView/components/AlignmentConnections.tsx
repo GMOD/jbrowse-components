@@ -52,7 +52,6 @@ const AlignmentConnections = observer(function AlignmentConnections(
   const {
     mouseoverElt,
     setMouseoverElt,
-    yOffset,
     tracks,
     hasOverride,
     cachedHeights,
@@ -104,10 +103,8 @@ const AlignmentConnections = observer(function AlignmentConnections(
           const reversed2 = views[level2]!.pxToBp(x2).reversed
           const rf1 = reversed1 ? -1 : 1
           const rf2 = reversed2 ? -1 : 1
-          const y1 =
-            yPos(level1, tracks, c1, cachedHeights, hasOverride) - yOffset
-          const y2 =
-            yPos(level2, tracks, c2, cachedHeights, hasOverride) - yOffset
+          const y1 = yPos(level1, tracks, c1, cachedHeights, hasOverride)
+          const y2 = yPos(level2, tracks, c2, cachedHeights, hasOverride)
           const sameLevel = level1 === level2
           const abnormalSpecialRenderFlag = sameLevel && isAbnormal
           const trackHeight = abnormalSpecialRenderFlag
@@ -123,11 +120,11 @@ const AlignmentConnections = observer(function AlignmentConnections(
             'C',
             x1 + 200 * s1 * rf1,
             abnormalSpecialRenderFlag
-              ? Math.min(y0 - yOffset + trackHeight, y1 + trackHeight)
+              ? Math.min(y0 + trackHeight, y1 + trackHeight)
               : y1,
             x2 - 200 * s2 * rf2 * pf1,
             abnormalSpecialRenderFlag
-              ? Math.min(y0 - yOffset + trackHeight, y2 + trackHeight)
+              ? Math.min(y0 + trackHeight, y2 + trackHeight)
               : y2,
             x2,
             y2,

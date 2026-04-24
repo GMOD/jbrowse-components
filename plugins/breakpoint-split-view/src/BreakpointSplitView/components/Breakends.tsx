@@ -30,7 +30,6 @@ const Breakends = observer(function Breakends(props: OverlayProps) {
   const {
     mouseoverElt,
     setMouseoverElt,
-    yOffset,
     tracks,
     hasOverride,
     cachedHeights,
@@ -73,11 +72,8 @@ const Breakends = observer(function Breakends(props: OverlayProps) {
           const reversed1 = views[level1]!.pxToBp(x1).reversed
           const reversed2 = views[level2]!.pxToBp(x2).reversed
 
-          const y1 =
-            yPos(level1, tracks, c1, cachedHeights, hasOverride) - yOffset
-          const y2 =
-            yPos(level2, tracks, c2, cachedHeights, hasOverride) - yOffset
-
+          const y1 = yPos(level1, tracks, c1, cachedHeights, hasOverride)
+          const y2 = yPos(level2, tracks, c2, cachedHeights, hasOverride)
           const x1Tick =
             x1 -
             20 * (relevantAlt.Join === 'left' ? -1 : 1) * (reversed1 ? -1 : 1)

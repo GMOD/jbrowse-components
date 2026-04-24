@@ -30,7 +30,6 @@ const PairedFeatures = observer(function PairedFeatures(props: OverlayProps) {
   const {
     mouseoverElt,
     setMouseoverElt,
-    yOffset,
     tracks,
     hasOverride,
     cachedHeights,
@@ -64,11 +63,8 @@ const PairedFeatures = observer(function PairedFeatures(props: OverlayProps) {
           const x1 = getPxFromCoordinate(views[level1]!, f1ref, c1[LEFT])
           const x2 = getPxFromCoordinate(views[level2]!, f2ref, c2[LEFT])
 
-          const y1 =
-            yPos(level1, tracks, c1, cachedHeights, hasOverride) - yOffset
-          const y2 =
-            yPos(level2, tracks, c2, cachedHeights, hasOverride) - yOffset
-
+          const y1 = yPos(level1, tracks, c1, cachedHeights, hasOverride)
+          const y2 = yPos(level2, tracks, c2, cachedHeights, hasOverride)
           const path = buildSimplePath(x1, y1, x2, y2)
           return [
             <path
