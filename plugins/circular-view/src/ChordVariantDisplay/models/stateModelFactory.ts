@@ -12,12 +12,7 @@ import {
   getRpcSessionId,
   getTrackAssemblyNames,
 } from '@jbrowse/core/util/tracks'
-import {
-  addDisposer,
-  getParent,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import type {
@@ -203,7 +198,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
             self,
             autorun(async () => {
               const assemblyNames = getTrackAssemblyNames(self.parentTrack)
-              const adapter = getConf(getParent<any>(self, 2), 'adapter')
+              const adapter = getConf(self.parentTrack, 'adapter')
               const { assemblyManager } = getSession(self)
               const sessionId = getRpcSessionId(self)
 

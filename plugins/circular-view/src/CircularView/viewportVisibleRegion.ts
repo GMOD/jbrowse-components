@@ -6,14 +6,14 @@ function findCircleIntersectionX(
   resultArray: [number, number][],
 ) {
   const d = Math.abs(y - cy)
-  if (d > r) {
-    return
+  if (d <= r) {
+    if (d === r) {
+      resultArray.push([cx, y])
+    } else {
+      const solution = Math.sqrt(r * r - d * d)
+      resultArray.push([cx - solution, y], [cx + solution, y])
+    }
   }
-  if (d === r) {
-    resultArray.push([cx, y])
-  }
-  const solution = Math.sqrt(r * r - d * d)
-  resultArray.push([cx - solution, y], [cx + solution, y])
 }
 
 function findCircleIntersectionY(
@@ -24,26 +24,18 @@ function findCircleIntersectionY(
   resultArray: [number, number][],
 ) {
   const d = Math.abs(x - cx)
-  if (d > r) {
-    return
+  if (d <= r) {
+    if (d === r) {
+      resultArray.push([x, cy])
+    } else {
+      const solution = Math.sqrt(r * r - d * d)
+      resultArray.push([x, cy - solution], [x, cy + solution])
+    }
   }
-  if (d === r) {
-    resultArray.push([x, cy])
-  }
-  const solution = Math.sqrt(r * r - d * d)
-  resultArray.push([x, cy - solution], [x, cy + solution])
 }
 
 function cartesianToTheta(x: number, y: number) {
-  let theta = (Math.atan(y / x) + 2 * Math.PI) % (2 * Math.PI)
-  if (x < 0) {
-    if (y <= 0) {
-      theta += Math.PI
-    } else {
-      theta -= Math.PI
-    }
-  }
-  return theta
+  return (Math.atan2(y, x) + 2 * Math.PI) % (2 * Math.PI)
 }
 
 export function cartesianToPolar(x: number, y: number) {

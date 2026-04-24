@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
-import { assembleLocString } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -30,9 +29,7 @@ const Slices = observer(function Slices({
     <>
       {model.staticSlices.map(slice => (
         <Ruler
-          key={assembleLocString(
-            slice.region.elided ? slice.region.regions[0]! : slice.region,
-          )}
+          key={slice.key}
           model={model}
           slice={slice}
         />
