@@ -23,6 +23,7 @@ import { getContrastBaseMap } from '../../shared/util.ts'
 
 import type { ColorPalette } from './AlignmentsRenderer.ts'
 import type { CoverageTicks } from './CoverageYScaleBar.tsx'
+import type { YScaleTicks } from './YScaleBar.tsx'
 import type { VisibleLabel } from './computeVisibleLabels.ts'
 import type {
   CigarHitResult,
@@ -115,7 +116,10 @@ export interface LinearAlignmentsDisplayModel {
     >
     lineWidth: number
     drawInter: boolean
+    colorByType: string
   }
+  arcsYDomainBp: number | undefined
+  insertSizeTicks: YScaleTicks | undefined
   showMismatches: boolean
   showSoftClipping: boolean
   showModifications: boolean

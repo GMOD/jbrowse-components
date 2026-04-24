@@ -307,38 +307,38 @@ smoothness vs. zoom precision), not substitutes. 4 is optional.
   which limits the number of synteny rows visible at once; collapsing rows
   would dramatically increase capacity for multi-way comparisons.
 
-### Synteny adapters & classification
-
-**SyRI adapter (browser).** Add a `SyriOutAdapter` that reads raw `syri.out`
-files directly in the browser (or a bgzipped + tabix-indexed version). The
-CLI already has `make-pif/parsers/syri-parser.ts` with the correct column
-mapping (`refChr refStart refEnd - - qryChr qryStart qryEnd ID parent type`).
-A browser adapter would emit `syriType` directly from column 10, bypassing the
-`computeSyriTypes` inference entirely and giving exact classifications including
-`INVTR` (inverted translocation) which the inference currently maps to TRANS.
-Acceptance: load `test/data/synteny-demo/plotsr/syri.out` and confirm SYN /
-INV / TRANS / DUP / INVTR / INVDP are all colored correctly.
-
-**SyRI `computeSyriTypes` cross-validation.** Add a test that parses a real
-`syri.out` file, extracts the SYNAL/INVAL/TRANSAL/DUPAL alignment rows, feeds
-them into `computeSyriTypes` as PAF-like records, and checks that the inferred
-types match the types declared in the file. Surfaces any remaining inference
-divergence.
-
-**SyRI `INVTR` / `INVDP` types.** `computeSyriTypes` and `SyriType` currently
-do not model inverted translocation (`INVTR`) or inverted duplication (`INVDP`).
-These are real SyRI output types (plotsr folds `INVTR` → `TRANS` and `INVDP` →
-`DUP`). Consider adding them as first-class types with distinct colors, or
-explicitly document the fold in the code.
 
 ### Alignments
 
-- True samplot-style plots:
-  - Implement samplot color palette (Phase 1)
-  - Update arc computation for SV classification (Phase 2)
-  - Update GPU renderer for stacked arc layout (Phase 3)
+
 - Modifications track: use smoothed line for wiggle coverage of methylation
   (matrix-style view, see [#5510](https://github.com/GMOD/jbrowse-components/issues/5510))
+
+**Samplot mode follow-ups.** Phase 1+2 landed (flat lines, Y = |tlen|, SV-type
+palette, shared Canvas2D ⇄ SVG rasterizer). Remaining:
+
+- *BND coloring.* Interchrom pairs bypass the samplot arc path and render as
+  grey vertical lines via `arcLineColorPalette` — which only has 2 slots,
+  so `colorType: 3` (interchrom) falls off the end. Grow the line palette or
+  reclassify interchrom as samplot arcs with a custom shape. Today the
+  samplot legend intentionally omits BND because the color doesn't work.
+- *SVG export ignores `pairedArcsDown`.* The live canvas flips arc Y based on
+  the setting; `renderSvg.tsx:drawPairedArcs` always passes
+  `pairedArcsDown: false`. Pre-existing (the deleted `evalBezierCurve`
+  was also always-down). Fixing requires coordinating with the
+  `arcsCtxHeight` / `<image y=…>` placement in the export — currently the
+  arcs sub-canvas height and its SVG placement change based on the flag,
+  but the drawing doesn't.
+- *Y-axis jitter for stacked samplot lines.* Samplot.py applies
+  matplotlib-style jitter (`jitter_bounds`) to de-occlude overlapping
+  events at the same |tlen|. Cheap to add as a per-instance deterministic
+  offset in the shader (hash of instance index → small delta), but skipped
+  until it's clear the occlusion actually hurts readability.
+- *Discardable samplot strand fallback.* `getSamplotColorIndex`'s
+  strand-only branch (split reads with no `pairOrientationNum`) collapses
+  to same-strand→INV, else→DEL. Proper DUP classification for split reads
+  requires reading query order + genomic order together; left un-wired
+  because the rare case has limited signal-to-noise.
 
 ### Graph view
 
@@ -351,51 +351,15 @@ explicitly document the fold in the code.
 - Customizable layout (e.g. choose d3-force layout at runtime)
 - Interactive mouseover connection between LinearGenomeView and graph
 
-### Gene glyphs
+---
 
+## investigate
+
+- Clustering UI not updating?
+## Canvas
+
+- Canvas: right-side padding excessive? Subpixel drawing crowded at dense zoom?
+- Canvas: features collapsed to y=0 on NCBI (needs reproduction steps).
 - Add super-compact mode for dense layouts
 - Side labels for genes
 
----
-
-## Verify
-
-- Clustering UI not updating?
-- `?renderer=X` URL parameter working?
-- Canvas: right-side padding excessive? Subpixel drawing crowded at dense zoom?
-- Canvas: features collapsed to y=0 on NCBI (needs reproduction steps).
-
----
-
-## Backlog / stretch
-
-- MUI v9 migration: review checklist at https://mui.com/material-ui/migration/upgrade-to-v9
-- SVPlaudit-style game but with JBrowse
-- Static renderings via `jbrowse-img`; command-line tool for batch variant rendering
-
-## SyRI coloring
-
-- Assess whether interspecies alignments work with syri assumptions
-- Investigate how popular papers in nature, science, etc make pangenome and synteny diagrams
-
-
-## Stride
-
-- Avoid manual strides like const base = instanceIndex * 20 use slang codegen
-
-## MUI v9 migration
-
-
-  Manual todos from the migration guide:
-
-  - color="textSecondary" / color="textPrimary" on <Typography> — 18 occurrences across plugins. These palette string shorthands are deprecated; the fix is color="text.secondary" / color="text.primary".
-  The typography-props codemod didn't catch them because they already work at runtime but may emit TS warnings.
-  - inputProps on <InputBase> in packages/core/src/ui/EditableTypography.tsx:74 — should be slotProps={{ htmlInput: {...} }}. This one was not caught by the codemod.
-  - ButtonBase click event type change — click events from Enter/Space now fire MouseEvent instead of KeyboardEvent. Worth auditing any onClick handlers on ButtonBase-based components that check event.key.
-  - TablePagination locale formatting — numbers now use locale formatting by default. If any tests assert on raw numbers in pagination labels they may break.
-  - Stepper/Step semantic HTML change — Stepper is now <ol>, Step is <li>. Only matters if there are CSS selectors or tests targeting div in those components.
-
-
-## Dotplot
-
-- Shows infinite loading bar

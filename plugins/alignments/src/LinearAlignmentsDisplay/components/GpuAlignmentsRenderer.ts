@@ -5,7 +5,11 @@ import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
-import { arcLineColorPalette, getArcPalette } from './shaders/palettes.ts'
+import {
+  ARC_HEIGHT_MARGIN,
+  arcLineColorPalette,
+  getArcPalette,
+} from './shaders/palettes.ts'
 import * as arcShader from './shaders/slang/arc.generated.ts'
 import * as arcLineShader from './shaders/slang/arcLine.generated.ts'
 import * as clipShader from './shaders/slang/clip.generated.ts'
@@ -392,6 +396,12 @@ function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
   f[U.bpLen] = block.bpRangeX[1] - block.bpRangeX[0]
   f[U.lineWidthPx] = state.arcLineWidth ?? 1
   f[U.pairedArcsDown] = state.pairedArcsDown ? 1 : 0
+  // Samplot picks its own domain (autoscaled |tlen|); arc mode defaults to
+  // the bp-span that fits availH at the current zoom, reproducing the prior
+  // `yBp * pxPerBp` math.
+  const availH = a.arcViewportH / dpr - ARC_HEIGHT_MARGIN
+  const pxPerBp = blockW / (block.bpRangeX[1] - block.bpRangeX[0])
+  f[U.arcsYDomainBp] = state.arcsYDomainBp ?? (pxPerBp > 0 ? availH / pxPerBp : 1)
 }
 
 // Pack every palette color into the UBO as u32 ABGR. Pure — writes through

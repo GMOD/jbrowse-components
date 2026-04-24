@@ -32,6 +32,10 @@ export interface RenderState {
   reversed?: boolean
   arcLineWidth?: number
   arcColorByType?: string
+  // Genomic bp that map to the arcs band's vertical extent. Arc/bezier mode
+  // passes availH/pxPerBp (zoom-proportional); samplot mode passes the
+  // autoscaled max |tlen| so Y is zoom-stable. See arc.slang `arcsYDomainBp`.
+  arcsYDomainBp?: number
   // Show arcs alongside pileup (between coverage and reads)
   showArcs?: boolean
   arcsHeight?: number

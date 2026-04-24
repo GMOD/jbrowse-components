@@ -41,6 +41,7 @@ import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import { buildLaidOutPileupMap } from '../RenderPileupDataRPC/sortLayout.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import {
+  ARC_SHAPE_FLAT,
   arcsToRegionResult,
   computeArcsFromPileupData,
 } from '../shared/computeArcsFromPileupData.ts'
@@ -54,6 +55,7 @@ import {
   getShowMenuItem,
   getSortByMenuItem,
 } from '../shared/menus/index.ts'
+import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import { getColorForModification } from '../util.ts'
 import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
@@ -63,6 +65,7 @@ import type {
   RenderState as AlignmentsRenderState,
 } from './components/AlignmentsRenderer.ts'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
+import type { YScaleTicks } from './components/YScaleBar.tsx'
 import type {
   CigarHitResult,
   IndicatorHitResult,
@@ -785,8 +788,53 @@ export default function stateModelFactory(
             flipStrandLongReadChains: self.flipStrandLongReadChains,
             arcLineWidth: self.arcsState.lineWidth,
             arcColorByType: self.arcsState.colorByType,
+            arcsYDomainBp: this.arcsYDomainBp,
             bpRangeX: [0, 0],
           }
+        },
+
+        // Samplot-only: autoscale the Y axis to the largest visible |tlen|
+        // so arc Y positions are stable across genomic zoom. undefined in
+        // arc/bezier mode — the renderer falls back to a zoom-dependent
+        // default. Floored at 1000bp to avoid a near-zero division when the
+        // data set happens to only contain concordant pairs.
+        get arcsYDomainBp(): number | undefined {
+          if (self.arcsState.colorByType !== 'samplot') {
+            return undefined
+          }
+          let maxBp = 0
+          for (const data of self.arcsState.rpcDataMap.values()) {
+            const shapes = data.arcShapeTypes
+            const yBp = data.arcYBp
+            for (let i = 0; i < data.numArcs; i++) {
+              if (shapes[i] === ARC_SHAPE_FLAT && yBp[i]! > maxBp) {
+                maxBp = yBp[i]!
+              }
+            }
+          }
+          return Math.max(1000, maxBp)
+        },
+
+        // Samplot insert-size Y axis, in display coordinate space — consumed
+        // by the right-side YScaleBar in PileupComponent. `undefined` outside
+        // samplot so the scalebar simply doesn't render.
+        get insertSizeTicks(): YScaleTicks | undefined {
+          const domain = this.arcsYDomainBp
+          if (!self.showArcs || domain === undefined) {
+            return undefined
+          }
+          // Match the renderer's arcsCtxHeight / arcTop: pointing-up overlays
+          // the coverage area (band = coverageHeight, top = 0), pointing-down
+          // gets its own band below coverage (band = arcsHeight, top = covH).
+          // Fall back to 0 when coverage is hidden.
+          const covH = self.showCoverage ? self.coverageHeight : 0
+          const arcsBandHeight = self.pairedArcsDown ? self.arcsHeight : covH
+          return computeInsertSizeTicks({
+            arcsYDomainBp: domain,
+            arcsHeight: arcsBandHeight,
+            pairedArcsDown: self.pairedArcsDown,
+            arcsTop: self.pairedArcsDown ? covH : 0,
+          })
         },
       }))
       .views(self => ({
@@ -1592,7 +1640,7 @@ export default function stateModelFactory(
                     },
                     { type: 'divider' as const },
                     {
-                      label: 'Samplot SV coloring',
+                      label: 'Samplot mode (flat lines, Y = |insert size|)',
                       type: 'checkbox' as const,
                       checked: self.arcsState.colorByType === 'samplot',
                       onClick: () => {

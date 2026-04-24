@@ -49,6 +49,11 @@ public struct Uniforms {
   public float lineWidthPx;
   public float gradientHue;
   public float pairedArcsDown;
+  // Domain in bp that maps to the arcs band's vertical extent (availH).
+  // Arc/bezier mode sets this to availH/pxPerBp so the apex tracks genomic
+  // zoom; samplot mode sets it to the autoscaled max |insert size| so the
+  // line Y is zoom-stable. One code path, mode-dependent value.
+  public float arcsYDomainBp;
 
   // Flags (ints / float-as-bool)
   public int colorScheme;

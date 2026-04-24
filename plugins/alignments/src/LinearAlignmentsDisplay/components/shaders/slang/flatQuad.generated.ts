@@ -5,7 +5,7 @@ import type { GlAttributeLayout } from '@jbrowse/core/gpu/hal'
 
 export const WGSL_SOURCE = "fn quadLocal_0( vid_0 : u32) -> vec2<f32>\n{\n    var v_0 : u32 = vid_0 % u32(6);\n    var _S1 : bool = v_0 == u32(0);\n    var _S2 : bool;\n    if(_S1)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(2);\n    }\n    if(_S2)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(3);\n    }\n    var lx_0 : f32;\n    if(_S2)\n    {\n        lx_0 = 0.0f;\n    }\n    else\n    {\n        lx_0 = 1.0f;\n    }\n    if(_S1)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(1);\n    }\n    if(_S2)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(4);\n    }\n    var ly_0 : f32;\n    if(_S2)\n    {\n        ly_0 = 0.0f;\n    }\n    else\n    {\n        ly_0 = 1.0f;\n    }\n    return vec2<f32>(lx_0, ly_0);\n}\n\nstruct VsOut_0\n{\n    @builtin(position) position_0 : vec4<f32>,\n    @location(0) color_0 : vec4<f32>,\n};\n\nstruct vertexInput_0\n{\n    @location(0) sx1_0 : f32,\n    @location(1) syTop_0 : f32,\n    @location(2) sx2_0 : f32,\n    @location(3) syBot_0 : f32,\n    @location(4) rgba_0 : vec4<f32>,\n};\n\n@vertex\nfn vs_main( _S3 : vertexInput_0, @builtin(vertex_index) vid_1 : u32) -> VsOut_0\n{\n    var local_0 : vec2<f32> = quadLocal_0(vid_1);\n    var o_0 : VsOut_0;\n    o_0.position_0 = vec4<f32>(mix(_S3.sx1_0, _S3.sx2_0, local_0.x), mix(_S3.syBot_0, _S3.syTop_0, local_0.y), 0.0f, 1.0f);\n    o_0.color_0 = _S3.rgba_0;\n    return o_0;\n}\n\nstruct pixelOutput_0\n{\n    @location(0) output_0 : vec4<f32>,\n};\n\nstruct pixelInput_0\n{\n    @location(0) color_1 : vec4<f32>,\n};\n\n@fragment\nfn fs_main( _S4 : pixelInput_0, @builtin(position) position_1 : vec4<f32>) -> pixelOutput_0\n{\n    var _S5 : pixelOutput_0 = pixelOutput_0( _S4.color_1 );\n    return _S5;\n}\n\n"
 
-export const GLSL_VERTEX = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 143 0\nvec2 quadLocal_0(uint vid_0)\n{\n\n#line 144\n    uint v_0 = vid_0 % 6U;\n    bool _S1 = v_0 == 0U;\n\n#line 145\n    bool _S2;\n\n#line 145\n    if(_S1)\n    {\n\n#line 145\n        _S2 = true;\n\n#line 145\n    }\n    else\n    {\n\n#line 145\n        _S2 = v_0 == 2U;\n\n#line 145\n    }\n\n#line 145\n    if(_S2)\n    {\n\n#line 145\n        _S2 = true;\n\n#line 145\n    }\n    else\n    {\n\n#line 145\n        _S2 = v_0 == 3U;\n\n#line 145\n    }\n\n#line 145\n    float lx_0;\n\n#line 145\n    if(_S2)\n    {\n\n#line 145\n        lx_0 = 0.0;\n\n#line 145\n    }\n    else\n    {\n\n#line 145\n        lx_0 = 1.0;\n\n#line 145\n    }\n    if(_S1)\n    {\n\n#line 146\n        _S2 = true;\n\n#line 146\n    }\n    else\n    {\n\n#line 146\n        _S2 = v_0 == 1U;\n\n#line 146\n    }\n\n#line 146\n    if(_S2)\n    {\n\n#line 146\n        _S2 = true;\n\n#line 146\n    }\n    else\n    {\n\n#line 146\n        _S2 = v_0 == 4U;\n\n#line 146\n    }\n\n#line 146\n    float ly_0;\n\n#line 146\n    if(_S2)\n    {\n\n#line 146\n        ly_0 = 0.0;\n\n#line 146\n    }\n    else\n    {\n\n#line 146\n        ly_0 = 1.0;\n\n#line 146\n    }\n    return vec2(lx_0, ly_0);\n}\n\n\n#line 993 1\nout vec4 v_color;\n\n\n#line 993\nlayout(location = 0)\nin float a_sx1;\n\n\n#line 993\nlayout(location = 1)\nin float a_syTop;\n\n\n#line 993\nlayout(location = 2)\nin float a_sx2;\n\n\n#line 993\nlayout(location = 3)\nin float a_syBot;\n\n\n#line 993\nlayout(location = 4)\nin vec4 a_rgba;\n\n\n#line 17 2\nstruct VsOut_0\n{\n    vec4 position_0;\n    vec4 color_0;\n};\n\nvoid main()\n{\n    vec2 local_0 = quadLocal_0(uint(gl_VertexID));\n\n#line 24\n    VsOut_0 o_0;\n\n    o_0.position_0 = vec4(mix(a_sx1, a_sx2, local_0.x), mix(a_syBot, a_syTop, local_0.y), 0.0, 1.0);\n\n\n\n    o_0.color_0 = a_rgba;\n    VsOut_0 _S3 = o_0;\n\n#line 31\n    gl_Position = o_0.position_0;\n\n#line 31\n    v_color = _S3.color_0;\n\n#line 31\n    return;\n}\n\n"
+export const GLSL_VERTEX = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 148 0\nvec2 quadLocal_0(uint vid_0)\n{\n\n#line 149\n    uint v_0 = vid_0 % 6U;\n    bool _S1 = v_0 == 0U;\n\n#line 150\n    bool _S2;\n\n#line 150\n    if(_S1)\n    {\n\n#line 150\n        _S2 = true;\n\n#line 150\n    }\n    else\n    {\n\n#line 150\n        _S2 = v_0 == 2U;\n\n#line 150\n    }\n\n#line 150\n    if(_S2)\n    {\n\n#line 150\n        _S2 = true;\n\n#line 150\n    }\n    else\n    {\n\n#line 150\n        _S2 = v_0 == 3U;\n\n#line 150\n    }\n\n#line 150\n    float lx_0;\n\n#line 150\n    if(_S2)\n    {\n\n#line 150\n        lx_0 = 0.0;\n\n#line 150\n    }\n    else\n    {\n\n#line 150\n        lx_0 = 1.0;\n\n#line 150\n    }\n    if(_S1)\n    {\n\n#line 151\n        _S2 = true;\n\n#line 151\n    }\n    else\n    {\n\n#line 151\n        _S2 = v_0 == 1U;\n\n#line 151\n    }\n\n#line 151\n    if(_S2)\n    {\n\n#line 151\n        _S2 = true;\n\n#line 151\n    }\n    else\n    {\n\n#line 151\n        _S2 = v_0 == 4U;\n\n#line 151\n    }\n\n#line 151\n    float ly_0;\n\n#line 151\n    if(_S2)\n    {\n\n#line 151\n        ly_0 = 0.0;\n\n#line 151\n    }\n    else\n    {\n\n#line 151\n        ly_0 = 1.0;\n\n#line 151\n    }\n    return vec2(lx_0, ly_0);\n}\n\n\n#line 993 1\nout vec4 v_color;\n\n\n#line 993\nlayout(location = 0)\nin float a_sx1;\n\n\n#line 993\nlayout(location = 1)\nin float a_syTop;\n\n\n#line 993\nlayout(location = 2)\nin float a_sx2;\n\n\n#line 993\nlayout(location = 3)\nin float a_syBot;\n\n\n#line 993\nlayout(location = 4)\nin vec4 a_rgba;\n\n\n#line 17 2\nstruct VsOut_0\n{\n    vec4 position_0;\n    vec4 color_0;\n};\n\nvoid main()\n{\n    vec2 local_0 = quadLocal_0(uint(gl_VertexID));\n\n#line 24\n    VsOut_0 o_0;\n\n    o_0.position_0 = vec4(mix(a_sx1, a_sx2, local_0.x), mix(a_syBot, a_syTop, local_0.y), 0.0, 1.0);\n\n\n\n    o_0.color_0 = a_rgba;\n    VsOut_0 _S3 = o_0;\n\n#line 31\n    gl_Position = o_0.position_0;\n\n#line 31\n    v_color = _S3.color_0;\n\n#line 31\n    return;\n}\n\n"
 
 export const GLSL_FRAGMENT = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 993 0\nlayout(location = 0)\nout vec4 entryPointParam_fs_main_0;\n\n\n#line 993\nin vec4 v_color;\n\n\n#line 35 1\nvoid main()\n{\n\n#line 35\n    entryPointParam_fs_main_0 = v_color;\n\n#line 35\n    return;\n}\n\n"
 
@@ -38,47 +38,48 @@ export const UNIFORM_OFFSET_BYTES = {
   lineWidthPx: 84,
   gradientHue: 88,
   pairedArcsDown: 92,
-  colorScheme: 96,
-  highlightIdx: 100,
-  highlightOnly: 104,
-  chainMode: 108,
-  showStroke: 112,
-  flipStrandLongRead: 116,
-  coverageScaleType: 120,
-  reversed: 124,
-  colorFwd: 128,
-  colorRev: 132,
-  colorNostrand: 136,
-  colorPairLR: 140,
-  colorPairRL: 144,
-  colorPairRR: 148,
-  colorPairLL: 152,
-  colorBaseA: 156,
-  colorBaseC: 160,
-  colorBaseG: 164,
-  colorBaseT: 168,
-  colorInsertion: 172,
-  colorDeletion: 176,
-  colorSkip: 180,
-  colorSoftclip: 184,
-  colorHardclip: 188,
-  colorCoverage: 192,
-  colorModFwd: 196,
-  colorModRev: 200,
-  colorLongInsert: 204,
-  colorShortInsert: 208,
-  colorSupplementary: 212,
-  colorUnmappedMate: 216,
-  arcColor0: 220,
-  arcColor1: 224,
-  arcColor2: 228,
-  arcColor3: 232,
-  arcColor4: 236,
-  arcColor5: 240,
-  arcColor6: 244,
-  arcColor7: 248,
-  arcLineColor0: 252,
-  arcLineColor1: 256,
+  arcsYDomainBp: 96,
+  colorScheme: 100,
+  highlightIdx: 104,
+  highlightOnly: 108,
+  chainMode: 112,
+  showStroke: 116,
+  flipStrandLongRead: 120,
+  coverageScaleType: 124,
+  reversed: 128,
+  colorFwd: 132,
+  colorRev: 136,
+  colorNostrand: 140,
+  colorPairLR: 144,
+  colorPairRL: 148,
+  colorPairRR: 152,
+  colorPairLL: 156,
+  colorBaseA: 160,
+  colorBaseC: 164,
+  colorBaseG: 168,
+  colorBaseT: 172,
+  colorInsertion: 176,
+  colorDeletion: 180,
+  colorSkip: 184,
+  colorSoftclip: 188,
+  colorHardclip: 192,
+  colorCoverage: 196,
+  colorModFwd: 200,
+  colorModRev: 204,
+  colorLongInsert: 208,
+  colorShortInsert: 212,
+  colorSupplementary: 216,
+  colorUnmappedMate: 220,
+  arcColor0: 224,
+  arcColor1: 228,
+  arcColor2: 232,
+  arcColor3: 236,
+  arcColor4: 240,
+  arcColor5: 244,
+  arcColor6: 248,
+  arcColor7: 252,
+  arcLineColor0: 256,
+  arcLineColor1: 260,
 } as const
 
 // Indices into a Float32Array / Uint32Array view.
@@ -107,47 +108,48 @@ export const UNIFORM_OFFSET_F32 = {
   lineWidthPx: 21,
   gradientHue: 22,
   pairedArcsDown: 23,
-  colorScheme: 24,
-  highlightIdx: 25,
-  highlightOnly: 26,
-  chainMode: 27,
-  showStroke: 28,
-  flipStrandLongRead: 29,
-  coverageScaleType: 30,
-  reversed: 31,
-  colorFwd: 32,
-  colorRev: 33,
-  colorNostrand: 34,
-  colorPairLR: 35,
-  colorPairRL: 36,
-  colorPairRR: 37,
-  colorPairLL: 38,
-  colorBaseA: 39,
-  colorBaseC: 40,
-  colorBaseG: 41,
-  colorBaseT: 42,
-  colorInsertion: 43,
-  colorDeletion: 44,
-  colorSkip: 45,
-  colorSoftclip: 46,
-  colorHardclip: 47,
-  colorCoverage: 48,
-  colorModFwd: 49,
-  colorModRev: 50,
-  colorLongInsert: 51,
-  colorShortInsert: 52,
-  colorSupplementary: 53,
-  colorUnmappedMate: 54,
-  arcColor0: 55,
-  arcColor1: 56,
-  arcColor2: 57,
-  arcColor3: 58,
-  arcColor4: 59,
-  arcColor5: 60,
-  arcColor6: 61,
-  arcColor7: 62,
-  arcLineColor0: 63,
-  arcLineColor1: 64,
+  arcsYDomainBp: 24,
+  colorScheme: 25,
+  highlightIdx: 26,
+  highlightOnly: 27,
+  chainMode: 28,
+  showStroke: 29,
+  flipStrandLongRead: 30,
+  coverageScaleType: 31,
+  reversed: 32,
+  colorFwd: 33,
+  colorRev: 34,
+  colorNostrand: 35,
+  colorPairLR: 36,
+  colorPairRL: 37,
+  colorPairRR: 38,
+  colorPairLL: 39,
+  colorBaseA: 40,
+  colorBaseC: 41,
+  colorBaseG: 42,
+  colorBaseT: 43,
+  colorInsertion: 44,
+  colorDeletion: 45,
+  colorSkip: 46,
+  colorSoftclip: 47,
+  colorHardclip: 48,
+  colorCoverage: 49,
+  colorModFwd: 50,
+  colorModRev: 51,
+  colorLongInsert: 52,
+  colorShortInsert: 53,
+  colorSupplementary: 54,
+  colorUnmappedMate: 55,
+  arcColor0: 56,
+  arcColor1: 57,
+  arcColor2: 58,
+  arcColor3: 59,
+  arcColor4: 60,
+  arcColor5: 61,
+  arcColor6: 62,
+  arcColor7: 63,
+  arcLineColor0: 64,
+  arcLineColor1: 65,
 } as const
 
 export interface Uniforms {
@@ -175,6 +177,7 @@ export interface Uniforms {
   lineWidthPx: number
   gradientHue: number
   pairedArcsDown: number
+  arcsYDomainBp: number
   colorScheme: number
   highlightIdx: number
   highlightOnly: number
@@ -246,47 +249,48 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[21] = uniforms.lineWidthPx
   f32[22] = uniforms.gradientHue
   f32[23] = uniforms.pairedArcsDown
-  i32[24] = uniforms.colorScheme
-  i32[25] = uniforms.highlightIdx
-  i32[26] = uniforms.highlightOnly
-  i32[27] = uniforms.chainMode
-  i32[28] = uniforms.showStroke
-  i32[29] = uniforms.flipStrandLongRead
-  i32[30] = uniforms.coverageScaleType
-  f32[31] = uniforms.reversed
-  u32[32] = uniforms.colorFwd
-  u32[33] = uniforms.colorRev
-  u32[34] = uniforms.colorNostrand
-  u32[35] = uniforms.colorPairLR
-  u32[36] = uniforms.colorPairRL
-  u32[37] = uniforms.colorPairRR
-  u32[38] = uniforms.colorPairLL
-  u32[39] = uniforms.colorBaseA
-  u32[40] = uniforms.colorBaseC
-  u32[41] = uniforms.colorBaseG
-  u32[42] = uniforms.colorBaseT
-  u32[43] = uniforms.colorInsertion
-  u32[44] = uniforms.colorDeletion
-  u32[45] = uniforms.colorSkip
-  u32[46] = uniforms.colorSoftclip
-  u32[47] = uniforms.colorHardclip
-  u32[48] = uniforms.colorCoverage
-  u32[49] = uniforms.colorModFwd
-  u32[50] = uniforms.colorModRev
-  u32[51] = uniforms.colorLongInsert
-  u32[52] = uniforms.colorShortInsert
-  u32[53] = uniforms.colorSupplementary
-  u32[54] = uniforms.colorUnmappedMate
-  u32[55] = uniforms.arcColor0
-  u32[56] = uniforms.arcColor1
-  u32[57] = uniforms.arcColor2
-  u32[58] = uniforms.arcColor3
-  u32[59] = uniforms.arcColor4
-  u32[60] = uniforms.arcColor5
-  u32[61] = uniforms.arcColor6
-  u32[62] = uniforms.arcColor7
-  u32[63] = uniforms.arcLineColor0
-  u32[64] = uniforms.arcLineColor1
+  f32[24] = uniforms.arcsYDomainBp
+  i32[25] = uniforms.colorScheme
+  i32[26] = uniforms.highlightIdx
+  i32[27] = uniforms.highlightOnly
+  i32[28] = uniforms.chainMode
+  i32[29] = uniforms.showStroke
+  i32[30] = uniforms.flipStrandLongRead
+  i32[31] = uniforms.coverageScaleType
+  f32[32] = uniforms.reversed
+  u32[33] = uniforms.colorFwd
+  u32[34] = uniforms.colorRev
+  u32[35] = uniforms.colorNostrand
+  u32[36] = uniforms.colorPairLR
+  u32[37] = uniforms.colorPairRL
+  u32[38] = uniforms.colorPairRR
+  u32[39] = uniforms.colorPairLL
+  u32[40] = uniforms.colorBaseA
+  u32[41] = uniforms.colorBaseC
+  u32[42] = uniforms.colorBaseG
+  u32[43] = uniforms.colorBaseT
+  u32[44] = uniforms.colorInsertion
+  u32[45] = uniforms.colorDeletion
+  u32[46] = uniforms.colorSkip
+  u32[47] = uniforms.colorSoftclip
+  u32[48] = uniforms.colorHardclip
+  u32[49] = uniforms.colorCoverage
+  u32[50] = uniforms.colorModFwd
+  u32[51] = uniforms.colorModRev
+  u32[52] = uniforms.colorLongInsert
+  u32[53] = uniforms.colorShortInsert
+  u32[54] = uniforms.colorSupplementary
+  u32[55] = uniforms.colorUnmappedMate
+  u32[56] = uniforms.arcColor0
+  u32[57] = uniforms.arcColor1
+  u32[58] = uniforms.arcColor2
+  u32[59] = uniforms.arcColor3
+  u32[60] = uniforms.arcColor4
+  u32[61] = uniforms.arcColor5
+  u32[62] = uniforms.arcColor6
+  u32[63] = uniforms.arcColor7
+  u32[64] = uniforms.arcLineColor0
+  u32[65] = uniforms.arcLineColor1
 }
 
 export const INSTANCE_STRIDE_BYTES = 32

@@ -20,12 +20,14 @@ import {
   rgba255,
 } from './colorUtils.ts'
 import CoverageYScaleBar from './components/CoverageYScaleBar.tsx'
+import YScaleBar from './components/YScaleBar.tsx'
 import { buildColorPaletteFromTheme } from './components/alignmentComponentUtils.ts'
 import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from '../shared/types.ts'
+import { drawArcsToCtx } from './components/drawArcs.ts'
 import {
   ARC_HEIGHT_MARGIN,
-  arcColorPalette,
   arcLineColorPalette,
+  getArcPalette,
   sashimiColorPalette,
 } from './components/shaders/palettes.ts'
 import {
@@ -61,34 +63,6 @@ function cubicBezierXY(t: number, x1: number, x2: number, destY: number) {
   }
 }
 
-function evalBezierCurve(
-  t: number,
-  x1: number,
-  x2: number,
-  availableHeight: number,
-  blockStartPx: number,
-  bpStartOffset: number,
-  pxPerBp: number,
-  isArc: boolean,
-) {
-  const radius = (x2 - x1) / 2
-  const absrad = Math.abs(radius)
-  const absradPx = absrad * pxPerBp
-  const destY = Math.min(availableHeight, absradPx)
-
-  if (isArc) {
-    const angle = t * Math.PI
-    const cx = x1 + radius
-    const xBp = cx + Math.cos(angle) * radius
-    const rawY = Math.sin(angle) * absradPx
-    const yPx = absradPx > 0 ? rawY * (destY / absradPx) : 0
-    return { x: blockStartPx + (xBp - bpStartOffset) * pxPerBp, y: yPx }
-  }
-
-  const { xBp, yPx } = cubicBezierXY(t, x1, x2, destY)
-  return { x: blockStartPx + (xBp - bpStartOffset) * pxPerBp, y: yPx }
-}
-
 function evalSashimiCurve(
   t: number,
   x1: number,
@@ -119,43 +93,22 @@ function drawPairedArcs(
   blockWidth: number,
   arcsHeight: number,
   lineWidth: number,
+  arcColorByType: string | undefined,
+  arcsYDomainBp: number | undefined,
 ) {
   const pxPerBp = blockWidth / regionLengthBp
-  const availableHeight = arcsHeight - ARC_HEIGHT_MARGIN
+  const availH = arcsHeight - ARC_HEIGHT_MARGIN
+  const fallbackDomain = pxPerBp > 0 ? availH / pxPerBp : 1
 
-  for (let i = 0; i < arcsData.numArcs; i++) {
-    const x1 = arcsData.arcX1[i]!
-    const x2 = arcsData.arcX2[i]!
-    const colorType = Math.round(arcsData.arcColorTypes[i]!)
-    const isArc = arcsData.arcIsArc[i]! > 0
-
-    ctx.strokeStyle =
-      colorType < arcColorPalette.length
-        ? rgb255(arcColorPalette[colorType]!)
-        : 'grey'
-    ctx.lineWidth = lineWidth
-
-    ctx.beginPath()
-    for (let s = 0; s <= ARC_SEGMENTS; s++) {
-      const t = s / ARC_SEGMENTS
-      const pt = evalBezierCurve(
-        t,
-        x1,
-        x2,
-        availableHeight,
-        blockStartPx,
-        bpStartOffset,
-        pxPerBp,
-        isArc,
-      )
-      if (s === 0) {
-        ctx.moveTo(pt.x, pt.y)
-      } else {
-        ctx.lineTo(pt.x, pt.y)
-      }
-    }
-    ctx.stroke()
-  }
+  drawArcsToCtx(ctx, arcsData, {
+    bpToScreenX: bp => blockStartPx + (bp - bpStartOffset) * pxPerBp,
+    arcsYDomainBp: arcsYDomainBp ?? fallbackDomain,
+    arcsTop: 0,
+    arcsH: availH,
+    pairedArcsDown: false,
+    lineWidth,
+    palette: getArcPalette(arcColorByType),
+  })
 
   for (let i = 0; i < arcsData.numLines; i++) {
     const xPos = arcsData.linePositions[i * 2]!
@@ -673,6 +626,8 @@ export async function renderSvg(
   const effectiveHeight = coverageHeight - offset * 2
   const rowHeight = featureHeightSetting + featureSpacing
   const arcLineWidth = arcsState.lineWidth
+  const arcColorByType = arcsState.colorByType
+  const arcsYDomainBp = model.arcsYDomainBp
   const rasterize = opts?.rasterizeLayers
   const totalWidth = Math.round(view.dynamicBlocks.totalWidthPx)
   const pileupHeight = Math.max(0, model.height - pileupTopOffset)
@@ -766,6 +721,8 @@ export async function renderSvg(
           blockWidth,
           arcsCtxHeight,
           arcLineWidth,
+          arcColorByType,
+          arcsYDomainBp,
         )
       }
     }
@@ -887,6 +844,11 @@ export async function renderSvg(
       {showCoverage && coverageTicks ? (
         <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
           <CoverageYScaleBar model={model} orientation="left" />
+        </g>
+      ) : null}
+      {model.insertSizeTicks ? (
+        <g transform={`translate(${totalWidth - 50})`}>
+          <YScaleBar ticks={model.insertSizeTicks} orientation="right" />
         </g>
       ) : null}
     </>

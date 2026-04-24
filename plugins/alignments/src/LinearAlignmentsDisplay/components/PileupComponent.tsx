@@ -8,6 +8,7 @@ import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
+import YScaleBar from './YScaleBar.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import {
@@ -263,6 +264,26 @@ const PileupInner = observer(function PileupInner({
           >
             <g transform="translate(45, 0)">
               <CoverageYScaleBar model={model} orientation="left" />
+            </g>
+          </svg>
+        ) : null}
+
+        {model.insertSizeTicks ? (
+          <svg
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              pointerEvents: 'none',
+              height: model.height,
+              width: 50,
+            }}
+          >
+            <g transform="translate(0, 0)">
+              <YScaleBar
+                ticks={model.insertSizeTicks}
+                orientation="right"
+              />
             </g>
           </svg>
         ) : null}

@@ -83,6 +83,7 @@ export {
   countSnpsAtPosition,
   downsampleMinMax,
   getGlobalMaxCoverageDepth,
+  niceStep,
 } from './coverageDownsampling.ts'
 export type {
   CoverageArrays,

@@ -8,11 +8,17 @@ import {
 
 import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
 
+// Arc shape enum. Values are shared with arc.slang (which checks them via
+// `> 0.5` / `> 1.5` thresholds); keep in lockstep.
+export const ARC_SHAPE_BEZIER = 0
+export const ARC_SHAPE_SEMICIRCLE = 1
+export const ARC_SHAPE_FLAT = 2
+
 export interface ArcsDataResult {
   arcX1: Uint32Array
   arcX2: Uint32Array
   arcColorTypes: Float32Array
-  // Shape: 0 = bezier, 1 = semicircle, 2 = flat (samplot)
+  // See ARC_SHAPE_* constants.
   arcShapeTypes: Uint8Array
   // Target Y in genomic bp (|tlen| for samplot, |(x2-x1)/2| otherwise)
   arcYBp: Uint32Array
@@ -57,19 +63,15 @@ function getOrientationColorIndex(pairOrientationNum: number) {
   }
 }
 
-// Samplot palette: 0=DEL/normal (black), 1=DUP (red), 2=INV (blue), 3=BND
-// Matches samplotArcColorPalette order. Classification follows samplot's
-// event_by_strand: FR→normal/DEL, RF→DUP, FF/RR→INV, interchrom→BND.
+// Samplot palette: 0=DEL/normal (black), 1=DUP (red), 2=INV (blue). Matches
+// samplotArcColorPalette order. Classification follows samplot.py's
+// event_by_strand table: FR→normal/DEL, RF→DUP, FF/RR→INV. Interchrom pairs
+// never reach here — they `continue` at the arc loop's p1Ref !== p2Ref guard.
 function getSamplotColorIndex(
-  p1Ref: string,
-  p2Ref: string,
   pairOrientationNum: number,
   p1Strand: number,
   p2Strand: number,
 ) {
-  if (p1Ref !== p2Ref) {
-    return 3
-  }
   if (pairOrientationNum === 2) {
     return 1
   }
@@ -79,11 +81,9 @@ function getSamplotColorIndex(
   if (pairOrientationNum === 1) {
     return 0
   }
-  // Split-read / SA-tag fallback: classify by strand pair directly.
-  if (p1Strand === 1 && p2Strand === -1) {
-    return 1
-  }
-  if (p1Strand === p2Strand) {
+  // Strand-only fallback for split reads / SA-tag arcs (no pair orientation).
+  // Same-strand → INV; opposite strand → DEL (normal FR shape); unknown → DEL.
+  if (p1Strand !== 0 && p2Strand !== 0 && p1Strand === p2Strand) {
     return 2
   }
   return 0
@@ -374,8 +374,6 @@ export function computeArcsFromPileupData(
     let colorType: number
     if (colorByType === 'samplot') {
       colorType = getSamplotColorIndex(
-        p1Ref,
-        p2Ref,
         pairOrientationNum ?? 0,
         p1Strand,
         p2Strand,
@@ -418,51 +416,37 @@ export function computeArcsFromPileupData(
       }
     }
 
-    // Samplot mode: flat line at Y = |tlen|. Fall through to the normal
-    // shape rules otherwise; the arc's apex tracks |radius|.
+    // Samplot skips the vertical-line threshold — flat lines above the
+    // arcs band cap look correct for long-range pairs and samplot.py has no
+    // equivalent cutoff.
     const samplot = colorByType === 'samplot'
-    const yBp = samplot ? Math.abs(tlen ?? 0) || absrad : absrad
-
-    if (absrad < 1 && !samplot) {
-      arcs.push({
-        p1: { refName: p1Ref, bp: p1Bp },
-        p2: { refName: p1Ref, bp: p2Bp },
-        colorType,
-        shapeType: 0,
-        yBp,
-      })
-    } else if (samplot) {
-      arcs.push({
-        p1: { refName: p1Ref, bp: p1Bp },
-        p2: { refName: p1Ref, bp: p2Bp },
-        colorType,
-        shapeType: 2,
-        yBp,
-      })
-    } else if (longRange && absrad > VERTICAL_LINE_THRESHOLD) {
+    if (!samplot && longRange && absrad > VERTICAL_LINE_THRESHOLD) {
       if (drawLongRange) {
         lines.push(
           { x: { refName: p1Ref, bp: p1Bp }, colorType: 1 },
           { x: { refName: p1Ref, bp: p2Bp }, colorType: 1 },
         )
       }
-    } else if (longRange && drawArcInsteadOfBezier) {
-      arcs.push({
-        p1: { refName: p1Ref, bp: p1Bp },
-        p2: { refName: p1Ref, bp: p2Bp },
-        colorType,
-        shapeType: 1,
-        yBp,
-      })
-    } else {
-      arcs.push({
-        p1: { refName: p1Ref, bp: p1Bp },
-        p2: { refName: p1Ref, bp: p2Bp },
-        colorType,
-        shapeType: 0,
-        yBp,
-      })
+      continue
     }
+
+    let shapeType: number
+    if (samplot) {
+      shapeType = ARC_SHAPE_FLAT
+    } else if (longRange && drawArcInsteadOfBezier) {
+      shapeType = ARC_SHAPE_SEMICIRCLE
+    } else {
+      shapeType = ARC_SHAPE_BEZIER
+    }
+    const yBp = samplot && tlen !== undefined ? Math.abs(tlen) : absrad
+
+    arcs.push({
+      p1: { refName: p1Ref, bp: p1Bp },
+      p2: { refName: p1Ref, bp: p2Bp },
+      colorType,
+      shapeType,
+      yBp,
+    })
   }
 
   return { arcs, lines }

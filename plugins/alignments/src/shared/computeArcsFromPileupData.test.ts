@@ -464,25 +464,55 @@ describe('computeArcsFromPileupData', () => {
       drawInter: false,
       drawLongRange: true,
     }
+    const run = (orient: number) =>
+      computeArcsFromPileupData(new Map([[0, mkData(orient)]]), regions, opts)
+
     // LR/normal → DEL slot 0
+    const del = run(1)
+    expect(del.arcs).toHaveLength(1)
+    expect(del.arcs[0]!.colorType).toBe(0)
+    // Flat shape + Y = |tlen|
+    expect(del.arcs[0]!.shapeType).toBe(2)
+    expect(del.arcs[0]!.yBp).toBe(500)
+
+    // RL/everted → DUP slot 1
+    expect(run(2).arcs[0]!.colorType).toBe(1)
+    // FF/RR same-strand → INV slot 2
+    expect(run(3).arcs[0]!.colorType).toBe(2)
+    expect(run(4).arcs[0]!.colorType).toBe(2)
+  })
+
+  test('samplot SA-tag arcs fall back to strand-pair classification', () => {
+    const mkSplit = (primaryStrand: number, saStrand: '+' | '-') =>
+      makePileupData({
+        numReads: 1,
+        regionStart: 1000,
+        readPositions: new Uint32Array([1000, 1500]),
+        readFlags: new Uint16Array([0]),
+        readStrands: new Int8Array([primaryStrand]),
+        readInsertSizes: new Float32Array([0]),
+        readPairOrientations: new Uint8Array([0]),
+        readNames: ['readA'],
+        readSuppAlignments: [`chr1,3001,${saStrand},200M,60,0;`],
+      })
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
+    ]
+    const opts = {
+      colorByType: 'samplot' as const,
+      drawInter: false,
+      drawLongRange: true,
+    }
+    // Same strand (+/+) → INV
     expect(
-      computeArcsFromPileupData(new Map([[0, mkData(1)]]), regions, opts)
+      computeArcsFromPileupData(new Map([[0, mkSplit(1, '+')]]), regions, opts)
+        .arcs[0]!.colorType,
+    ).toBe(2)
+    // Opposite strand (+/-) → DEL/normal fallback
+    expect(
+      computeArcsFromPileupData(new Map([[0, mkSplit(1, '-')]]), regions, opts)
         .arcs[0]!.colorType,
     ).toBe(0)
-    // RL/everted → DUP slot 1
-    expect(
-      computeArcsFromPileupData(new Map([[0, mkData(2)]]), regions, opts)
-        .arcs[0]!.colorType,
-    ).toBe(1)
-    // FF/RR same-strand → INV slot 2
-    expect(
-      computeArcsFromPileupData(new Map([[0, mkData(3)]]), regions, opts)
-        .arcs[0]!.colorType,
-    ).toBe(2)
-    expect(
-      computeArcsFromPileupData(new Map([[0, mkData(4)]]), regions, opts)
-        .arcs[0]!.colorType,
-    ).toBe(2)
   })
 })
 

@@ -62,7 +62,8 @@ const samplotLegendItems: LegendItem[] = [
   { color: fillColor.color_samplot_del, label: 'Deletion / normal (FR)' },
   { color: fillColor.color_samplot_dup, label: 'Duplication (RF)' },
   { color: fillColor.color_samplot_inv, label: 'Inversion (FF / RR)' },
-  { color: fillColor.color_samplot_bnd, label: 'Translocation / BND' },
+  // Interchrom/BND pairs render through a separate 2-slot line palette,
+  // not as samplot arcs, so BND isn't advertised here.
 ]
 
 function getBaseItems(theme: Theme): LegendItem[] {

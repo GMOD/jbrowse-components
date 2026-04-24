@@ -79,11 +79,12 @@ float3 arcColor(float ct, Uniforms u) {
 float2 evalArc(float t, Instance inst, Uniforms u) {
   float x1Norm = hpLinear(hpSplitUint(inst.x1), u);
   float x2Norm = hpLinear(hpSplitUint(inst.x2), u);
-  float pxPerBp = u.blockWidth / u.bpLen;
-  float absYPx = float(inst.yBp) * pxPerBp;
   float availH = u.canvasH - ARC_HEIGHT_MARGIN;
-  float destY = min(availH, absYPx);
   float yDir = (u.pairedArcsDown > 0.5) ? 1.0 : -1.0;
+
+  // Y scale: availH pixels = arcsYDomainBp genomic bp. CPU chooses the
+  // domain (zoom-proportional for arcs, autoscaled |tlen| for samplot).
+  float destY = min(availH, (float(inst.yBp) / u.arcsYDomainBp) * availH);
 
   float xNorm, yPx;
   if (inst.shapeType > 1.5) {
@@ -95,7 +96,7 @@ float2 evalArc(float t, Instance inst, Uniforms u) {
     float cxNorm = (x1Norm + x2Norm) * 0.5;
     float rNorm = (x2Norm - x1Norm) * 0.5;
     xNorm = cxNorm + cos(angle) * rNorm;
-    yPx = (absYPx > 0.0) ? sin(angle) * destY * yDir : 0.0;
+    yPx = (destY > 0.0) ? sin(angle) * destY * yDir : 0.0;
   } else {
     // Cubic Bezier with control points at x1,x1,x2,x2 (so the curve
     // approaches each anchor tangent to the x-axis).

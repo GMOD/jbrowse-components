@@ -20,6 +20,7 @@ import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import { getReadColor, rgb255 } from '../colorUtils.ts'
 import { getChainBounds } from './chainOverlayUtils.ts'
+import { drawArcsToCtx } from './drawArcs.ts'
 import { arcLineColorPalette, getArcPalette } from './shaders/palettes.ts'
 
 import type {
@@ -505,7 +506,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
           state,
           0,
           covH,
-          true,
+          false,
         )
         ctx.restore()
       }
@@ -968,38 +969,20 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     arcsH: number,
     pairedArcsDown: boolean,
   ) {
-    const lineWidth = state.arcLineWidth ?? 1
-
+    // Samplot autoscales via state.arcsYDomainBp; arc mode falls back to the
+    // bp-span that fits availH at the current zoom.
+    const availH = arcsH - 2
     const pxPerBp = fullBlockWidth / bpLength
-    for (let i = 0; i < region.numArcs; i++) {
-      const x1Bp = region.arcX1[i]!
-      const x2Bp = region.arcX2[i]!
-      const colorIdx = Math.round(region.arcColorTypes[i]!)
-      const shape = region.arcShapeTypes[i] ?? 0
-      const yBp = region.arcYBp[i] ?? Math.abs(x2Bp - x1Bp) / 2
-
-      const sx1 = bpToScreenX(x1Bp, block, bpLength, fullBlockWidth)
-      const sx2 = bpToScreenX(x2Bp, block, bpLength, fullBlockWidth)
-      const midX = (sx1 + sx2) / 2
-      const arcH = Math.min(yBp * pxPerBp, arcsH - 2)
-
-      ctx.strokeStyle = this.paletteColor(
-        getArcPalette(state.arcColorByType),
-        colorIdx,
-      )
-      ctx.lineWidth = lineWidth
-      ctx.beginPath()
-      const baseY = pairedArcsDown ? arcsTop + arcsH : arcsTop
-      const apexY = pairedArcsDown ? baseY - arcH : baseY + arcH
-      if (shape === 2) {
-        ctx.moveTo(sx1, apexY)
-        ctx.lineTo(sx2, apexY)
-      } else {
-        ctx.moveTo(sx1, baseY)
-        ctx.quadraticCurveTo(midX, apexY, sx2, baseY)
-      }
-      ctx.stroke()
-    }
+    const fallbackDomain = pxPerBp > 0 ? availH / pxPerBp : 1
+    drawArcsToCtx(ctx, region, {
+      bpToScreenX: bp => bpToScreenX(bp, block, bpLength, fullBlockWidth),
+      arcsYDomainBp: state.arcsYDomainBp ?? fallbackDomain,
+      arcsTop,
+      arcsH,
+      pairedArcsDown,
+      lineWidth: state.arcLineWidth ?? 1,
+      palette: getArcPalette(state.arcColorByType),
+    })
 
     for (let i = 0; i < region.numArcLines; i++) {
       const bp = region.arcLinePositions[i]!

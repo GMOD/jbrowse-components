@@ -11,7 +11,7 @@ export interface CoverageTicks {
   yBottom: number
 }
 
-function niceStep(maxDepth: number) {
+export function niceStep(maxDepth: number) {
   const rough = maxDepth / 3
   const exp = Math.floor(Math.log10(rough))
   const pow = Math.pow(10, exp)
