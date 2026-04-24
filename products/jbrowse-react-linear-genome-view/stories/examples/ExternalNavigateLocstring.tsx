@@ -2,7 +2,7 @@
 // import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
 import { useEffect, useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 
 import { getVolvoxConfig } from './util.ts'
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
@@ -65,7 +65,7 @@ export const ExternalNavigateLocstring = () => {
           </option>
         ))}
       </select>
-      {error ? <ErrorMessage error={error} /> : null}
+      {error ? <ErrorBanner error={error} /> : null}
       <JBrowseLinearGenomeView viewState={viewState} />
       <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/ExternalNavigateLocstring.tsx">
         Source code

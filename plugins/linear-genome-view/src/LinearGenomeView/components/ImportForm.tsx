@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import {
   AssemblySelector,
-  ErrorMessage,
+  ErrorBanner,
   RefNameAutocomplete,
 } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -70,7 +70,7 @@ const LinearGenomeViewImportForm = observer(
     // having this wrapped in a form allows intuitive use of enter key to submit
     return (
       <div className={classes.container}>
-        {displayError ? <ErrorMessage error={displayError} /> : null}
+        {displayError ? <ErrorBanner error={displayError} /> : null}
         {initialized ? (
           <Container className={classes.importFormContainer}>
             <form

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
+import { AssemblySelector, ErrorBanner } from '@jbrowse/core/ui'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, Container, Grid, Paper, Typography } from '@mui/material'
@@ -62,7 +62,7 @@ const DotplotImportForm = observer(function DotplotImportForm({
   const displayError = error || model.error
   return (
     <Container className={classes.importFormContainer}>
-      {displayError ? <ErrorMessage error={displayError} /> : null}
+      {displayError ? <ErrorBanner error={displayError} /> : null}
 
       <Paper style={{ padding: 12 }}>
         <Typography style={{ textAlign: 'center' }}>

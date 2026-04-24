@@ -105,7 +105,7 @@ function ErrorButtons({
   )
 }
 
-function ErrorMessage({
+function ErrorBanner({
   error,
   onReset,
 }: {
@@ -131,4 +131,4 @@ function ErrorMessage({
   )
 }
 
-export default ErrorMessage
+export default ErrorBanner

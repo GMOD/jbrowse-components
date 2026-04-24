@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { Dialog, ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import { complement, reverse, toLocale } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -122,7 +122,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
     >
       <DialogContent>
         {error ? (
-          <ErrorMessage error={error} />
+          <ErrorBanner error={error} />
         ) : loading ? (
           <LoadingEllipses message="Retrieving sequences" />
         ) : null}

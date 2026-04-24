@@ -4,7 +4,7 @@ import { fetchResults } from '@jbrowse/core/TextSearch/fetchResults'
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   AssemblySelector,
-  ErrorMessage,
+  ErrorBanner,
   LoadingEllipses,
   RefNameAutocomplete,
 } from '@jbrowse/core/ui'
@@ -91,7 +91,7 @@ const TrackMode = observer(function TrackMode({
   const selectedTrack = gfaTabixTracks.find(t => t.trackId === trackId)
 
   if (assemblyNames.length === 0) {
-    return <ErrorMessage error="No assemblies configured in this session" />
+    return <ErrorBanner error="No assemblies configured in this session" />
   }
 
   return (
@@ -181,7 +181,7 @@ const TrackMode = observer(function TrackMode({
         </Button>
       </div>
 
-      {error ? <ErrorMessage error={error} /> : null}
+      {error ? <ErrorBanner error={error} /> : null}
     </div>
   )
 })
@@ -260,7 +260,7 @@ function FileMode({ model }: { model: GraphGenomeViewModel }) {
         </Button>
       </div>
 
-      {error ? <ErrorMessage error={error} /> : null}
+      {error ? <ErrorBanner error={error} /> : null}
     </div>
   )
 }
@@ -330,7 +330,7 @@ const ImportForm = observer(function ImportForm({
         />
       ) : null}
 
-      {model.error ? <ErrorMessage error={model.error} /> : null}
+      {model.error ? <ErrorBanner error={model.error} /> : null}
     </Paper>
   )
 })

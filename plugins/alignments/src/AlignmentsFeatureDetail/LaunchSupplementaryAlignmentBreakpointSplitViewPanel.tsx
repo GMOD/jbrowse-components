@@ -1,6 +1,6 @@
 import { lazy, useEffect, useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
 import { getAssemblyName } from '@jbrowse/sv-core'
 import { Link, Typography } from '@mui/material'
@@ -52,7 +52,7 @@ export default function LaunchBreakpointSplitViewPanel({
   return ret.length && assemblyName ? (
     <div>
       <Typography>Launch split view</Typography>
-      {error ? <ErrorMessage error={error} /> : null}
+      {error ? <ErrorBanner error={error} /> : null}
       <ul>
         {ret.map((arg, index) => {
           const [f1, f2] = arg

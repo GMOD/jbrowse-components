@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
 import { getSession, isSessionWithShareURL } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
@@ -98,7 +98,7 @@ const ShareBookmarksDialog = observer(function ShareBookmarksDialog({
           Copy the URL below to share your bookmarks.
         </DialogContentText>
         {error ? (
-          <ErrorMessage error={error} />
+          <ErrorBanner error={error} />
         ) : loading ? (
           <Typography>Generating short URL...</Typography>
         ) : (

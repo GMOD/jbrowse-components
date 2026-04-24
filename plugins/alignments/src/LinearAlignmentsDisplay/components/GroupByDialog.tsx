@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { Dialog, ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import {
   type SessionWithAddTracks,
   getContainingTrack,
@@ -221,7 +221,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
               }}
             />
             {error ? (
-              <ErrorMessage error={error} />
+              <ErrorBanner error={error} />
             ) : loading ? (
               <LoadingEllipses message="Loading unique tags" />
             ) : tagSet ? (

@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { ErrorMessage, LoadingOverlay } from '@jbrowse/core/ui'
+import { ErrorBanner, LoadingOverlay } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 import SyntenyContextMenu from './SyntenyContextMenu.tsx'
@@ -21,7 +21,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
 
   return (
     <>
-      {error ? <ErrorMessage error={error} /> : null}
+      {error ? <ErrorBanner error={error} /> : null}
       <LoadingOverlay statusMessage={statusMessage} isVisible={!ready} />
       {tooltipText ? <SyntenyTooltip title={tooltipText} /> : null}
       {contextMenuAnchor ? (

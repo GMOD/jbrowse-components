@@ -5,7 +5,7 @@ import BaseCard from './BaseCard.tsx'
 import CoreDetails from './CoreDetails.tsx'
 import { generateTitle } from './util.ts'
 import { ErrorBoundary } from '../../ui/ErrorBoundary.tsx'
-import { ErrorMessage } from '../../ui/index.ts'
+import { ErrorBanner } from '../../ui/index.ts' 
 import { getEnv, getSession } from '../../util/index.ts'
 import SequenceFeatureDetails from '../SequenceFeatureDetails/index.tsx'
 
@@ -73,7 +73,7 @@ export default function FeatureDetails(props: {
         omitSingleLevel={coreDetails}
       />
 
-      <ErrorBoundary FallbackComponent={e => <ErrorMessage error={e.error} />}>
+      <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
         <SequenceFeatureDetails {...props} />
       </ErrorBoundary>
 

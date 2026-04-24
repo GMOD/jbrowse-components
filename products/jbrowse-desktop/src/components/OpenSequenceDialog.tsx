@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import {
   Dialog,
-  ErrorMessage,
+  ErrorBanner,
   FileSelector,
   LoadingEllipses,
 } from '@jbrowse/core/ui'
@@ -353,7 +353,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
           <LoadingEllipses className={classes.message} message={loading} />
         ) : null}
 
-        {error ? <ErrorMessage error={error} /> : null}
+        {error ? <ErrorBanner error={error} /> : null}
 
         <Paper className={classes.paper}>
           <TextField

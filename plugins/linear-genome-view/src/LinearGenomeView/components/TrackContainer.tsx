@@ -1,4 +1,4 @@
-import { ErrorMessage, ResizeHandle } from '@jbrowse/core/ui'
+import { ErrorBanner, ResizeHandle } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
@@ -74,7 +74,7 @@ const TrackContainer = observer(function TrackContainer({
       {/* offset 1px since for left track border */}
       {track.pinned ? <Gridlines model={model} offset={1} /> : null}
       <TrackLabelContainer track={track} view={model} />
-      <ErrorBoundary FallbackComponent={e => <ErrorMessage error={e.error} />}>
+      <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
         <TrackRenderingContainer model={model} track={track} />
       </ErrorBoundary>
       <ResizeHandle

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import {
   getSession,
   isSessionModelWithWidgets,
@@ -32,7 +32,7 @@ const PasteConfigAddTrackWorkflow = observer(
 
     return (
       <div>
-        {error ? <ErrorMessage error={error} /> : null}
+        {error ? <ErrorBanner error={error} /> : null}
         <TextField
           multiline
           rows={10}

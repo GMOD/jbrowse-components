@@ -1,4 +1,4 @@
-import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -14,7 +14,7 @@ const DotplotDisplay = observer(function DotplotDisplay({
   const { viewWidth, viewHeight } = view
 
   if (model.error) {
-    return <ErrorMessage error={model.error} />
+    return <ErrorBanner error={model.error} />
   }
 
   return (

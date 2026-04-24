@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
 import { getSession, useLocalStorage } from '@jbrowse/core/util'
 import {
   Button,
@@ -57,7 +57,7 @@ export default function ExportSvgDialog({
     <Dialog open onClose={handleClose} title="Export image">
       <DialogContent>
         {error ? (
-          <ErrorMessage error={error} />
+          <ErrorBanner error={error} />
         ) : loading ? (
           <LoadingMessage format={format} />
         ) : null}

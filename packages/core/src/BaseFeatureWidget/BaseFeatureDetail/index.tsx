@@ -2,7 +2,7 @@ import { observer } from 'mobx-react'
 
 import FeatureDetails from './FeatureDetails.tsx'
 import { isEmpty } from './util.ts'
-import { ErrorMessage } from '../../ui/index.ts'
+import { ErrorBanner } from '../../ui/index.ts' 
 import { replaceUndefinedWithNull } from '../util.tsx'
 
 import type { BaseInputProps } from './types.ts'
@@ -13,7 +13,7 @@ const BaseFeatureDetail = observer(function BaseFeatureDetail({
   const { error, descriptions, featureData } = model
 
   if (error) {
-    return <ErrorMessage error={error} />
+    return <ErrorBanner error={error} />
   } else if (!featureData) {
     return null
   } else {

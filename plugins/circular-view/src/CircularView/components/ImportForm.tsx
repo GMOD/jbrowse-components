@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
+import { AssemblySelector, ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, Container, Grid } from '@mui/material'
@@ -39,7 +39,7 @@ const ImportForm = observer(function ImportForm({
           spacing={1}
           sx={{ justifyContent: 'center', alignItems: 'center' }}
         >
-          <ErrorMessage error={err} />
+          <ErrorBanner error={err} />
         </Grid>
       ) : null}
       <Grid

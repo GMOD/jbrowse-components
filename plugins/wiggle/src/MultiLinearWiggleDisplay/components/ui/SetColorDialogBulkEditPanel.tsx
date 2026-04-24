@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
@@ -70,7 +70,7 @@ export default function SetColorDialogBulkEditPanel({
           to IDs in the table, otherwise it uses the first column no.
         </Typography>
 
-        {error ? <ErrorMessage error={error} /> : null}
+        {error ? <ErrorBanner error={error} /> : null}
         <TextField
           variant="outlined"
           multiline

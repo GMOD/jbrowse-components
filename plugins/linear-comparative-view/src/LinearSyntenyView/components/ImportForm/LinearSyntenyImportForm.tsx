@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
@@ -74,7 +74,7 @@ const LinearSyntenyViewImportForm = observer(
 
     return (
       <Container className={classes.importFormContainer}>
-        {error ? <ErrorMessage error={error} /> : null}
+        {error ? <ErrorBanner error={error} /> : null}
 
         <ToggleButtonGroup
           value={viewMode}

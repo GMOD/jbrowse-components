@@ -1,4 +1,4 @@
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 
 import NoConfigMessage from './NoConfigMessage.tsx'
 
@@ -27,7 +27,7 @@ export default function StartScreenErrorMessage({ error }: { error: unknown }) {
   ) : (
     <div>
       <h1>JBrowse Error</h1>
-      <ErrorMessage error={error} />
+      <ErrorBanner error={error} />
     </div>
   )
 }

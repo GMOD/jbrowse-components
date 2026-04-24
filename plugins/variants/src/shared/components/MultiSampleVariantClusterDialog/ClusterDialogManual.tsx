@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import {
   getContainingView,
   getSession,
@@ -214,7 +214,7 @@ cat(resultClusters$order,sep='\n')`
                 message="Generating genotype matrix"
               />
             ) : error ? (
-              <ErrorMessage error={error} />
+              <ErrorBanner error={error} />
             ) : null}
           </div>
 

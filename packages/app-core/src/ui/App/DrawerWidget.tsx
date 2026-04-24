@@ -1,6 +1,6 @@
 import { Suspense, lazy, useState } from 'react'
 
-import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
@@ -54,7 +54,7 @@ const DrawerWidget = observer(function DrawerWidget({
       />
       <Suspense fallback={<LoadingEllipses />}>
         <ErrorBoundary
-          FallbackComponent={({ error }) => <ErrorMessage error={error} />}
+          FallbackComponent={({ error }) => <ErrorBanner error={error} />}
         >
           {DrawerComponent ? (
             popoutDrawer ? (

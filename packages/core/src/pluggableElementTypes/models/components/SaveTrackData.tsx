@@ -22,7 +22,7 @@ import { saveAs } from 'file-saver-es'
 import { observer } from 'mobx-react'
 
 import { getConf } from '../../../configuration/index.ts'
-import { Dialog, ErrorMessage } from '../../../ui/index.ts'
+import { Dialog, ErrorBanner } from '../../../ui/index.ts'
 import { getContainingView, getEnv, getSession } from '../../../util/index.ts'
 import { getRpcSessionId } from '../../../util/tracks.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
@@ -171,7 +171,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   return (
     <Dialog maxWidth="xl" open onClose={handleClose} title="Save track data">
       <DialogContent className={classes.root}>
-        {error ? <ErrorMessage error={error} /> : null}
+        {error ? <ErrorBanner error={error} /> : null}
 
         <div>
           <TextField

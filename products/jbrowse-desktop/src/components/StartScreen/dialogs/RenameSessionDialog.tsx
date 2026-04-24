@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
 import { DialogContentText, Input } from '@mui/material'
 const { ipcRenderer } = window.require('electron')
@@ -46,7 +46,7 @@ const RenameSessionDialog = ({
           setNewSessionName(event.target.value)
         }}
       />
-      {error ? <ErrorMessage error={error} /> : null}
+      {error ? <ErrorBanner error={error} /> : null}
     </ConfirmDialog>
   )
 }

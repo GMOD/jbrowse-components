@@ -1,7 +1,7 @@
 import type React from 'react'
 import { useEffect, useRef } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import {
   getContainingTrack,
   getContainingView,
@@ -282,7 +282,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
         className={classes.canvas}
         style={{ width, height }}
       />
-      {error ? <ErrorMessage error={error} onReset={retry} /> : null}
+      {error ? <ErrorBanner error={error} onReset={retry} /> : null}
     </div>
   )
 })

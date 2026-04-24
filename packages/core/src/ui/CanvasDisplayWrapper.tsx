@@ -2,7 +2,7 @@ import React from 'react'
 
 import { observer } from 'mobx-react'
 
-import ErrorMessage from './ErrorMessage.tsx'
+import ErrorBanner from './ErrorBanner.tsx'
 import LoadingEllipses from './LoadingEllipses.tsx'
 import { makeStyles } from '../util/tss-react/index.ts'
 
@@ -74,7 +74,7 @@ const CanvasDisplayWrapper = observer(function CanvasDisplayWrapper({
 }) {
   const { error, regionTooLarge } = model
   return error ? (
-    <ErrorMessage error={error} />
+    <ErrorBanner error={error} />
   ) : regionTooLarge ? (
     model.regionCannotBeRendered()
   ) : (

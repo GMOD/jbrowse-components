@@ -1,4 +1,4 @@
-import { ErrorMessage, LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
+import { ErrorBanner, LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
 import { useGpuModelLifecycle } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -89,7 +89,7 @@ const DotplotCanvas = observer(function DotplotCanvas({
           imageRendering: 'auto',
         }}
       />
-      {gpuError ? <ErrorMessage error={gpuError} /> : null}
+      {gpuError ? <ErrorBanner error={gpuError} /> : null}
     </>
   )
 })

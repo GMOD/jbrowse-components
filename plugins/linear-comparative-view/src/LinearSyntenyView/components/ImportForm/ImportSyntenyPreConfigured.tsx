@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { MenuItem, Paper, Select, Typography } from '@mui/material'
@@ -65,7 +65,7 @@ const ImportSyntenyTrackSelector = observer(
             ))}
           </Select>
         ) : (
-          <ErrorMessage
+          <ErrorBanner
             error={`No synteny tracks found for ${assembly1},${assembly2}`}
           />
         )}

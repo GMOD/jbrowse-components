@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 
 // in your code:
 // import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
@@ -31,7 +31,7 @@ export const WithErrorHandler = () => {
   return (
     <div>
       {error ? (
-        <ErrorMessage error={error} />
+        <ErrorBanner error={error} />
       ) : viewState ? (
         <JBrowseLinearGenomeView viewState={viewState} />
       ) : (

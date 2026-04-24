@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 
-import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -35,7 +35,7 @@ function BlockMessage({ messageText }: { messageText: string }) {
 }
 
 function BlockError({ error }: { error: unknown }) {
-  return <ErrorMessage error={error} />
+  return <ErrorBanner error={error} />
 }
 
 const ServerSideRenderedDotplotContent = observer(

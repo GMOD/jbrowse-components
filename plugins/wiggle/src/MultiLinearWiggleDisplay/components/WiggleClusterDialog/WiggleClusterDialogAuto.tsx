@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import {
   getContainingView,
   getSession,
@@ -87,7 +87,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
               </Button>
             </div>
           ) : null}
-          {error ? <ErrorMessage error={error} /> : null}
+          {error ? <ErrorBanner error={error} /> : null}
         </div>
       </DialogContent>
       <DialogActions>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { Dialog, ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -88,7 +88,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
     >
       <DialogContent className={classes.container}>
         {error ? (
-          <ErrorMessage error={error} />
+          <ErrorBanner error={error} />
         ) : refNames === undefined ? (
           <LoadingEllipses message="Loading refNames" />
         ) : (

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
+import { ErrorBanner, FileSelector } from '@jbrowse/core/ui'
 import {
   FormControlLabel,
   Grid,
@@ -101,7 +101,7 @@ const ImportSyntenyOpenCustomTrack = observer(
     ])
     return (
       <Paper style={{ padding: 12 }}>
-        {error ? <ErrorMessage error={error} /> : null}
+        {error ? <ErrorBanner error={error} /> : null}
         <Typography style={{ textAlign: 'center' }}>
           Add a .paf (minimap2), .delta (Mummer), .chain (UCSC liftover),
           .anchors or .anchors.simple (MCScan), or .pif.gz (jbrowse CLI

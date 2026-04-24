@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import { coarseStripHTML } from '@jbrowse/core/util'
 import { MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -55,7 +55,7 @@ const TrackSelector = observer(function TrackSelector({
           ))}
         </TextField>
       ) : (
-        <ErrorMessage error={`No tracks found for ${selectedAssembly}`} />
+        <ErrorBanner error={`No tracks found for ${selectedAssembly}`} />
       )}
     </div>
   )

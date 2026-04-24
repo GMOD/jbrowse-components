@@ -1,4 +1,4 @@
-import { ErrorMessage, LoadingOverlay } from '@jbrowse/core/ui'
+import { ErrorBanner, LoadingOverlay } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 import MultiSyntenyRendering from './MultiSyntenyRendering.tsx'
@@ -12,7 +12,7 @@ const MultiLGVSyntenyDisplayComponent = observer(
     model: MultiLGVSyntenyDisplayModel
   }) {
     if (model.error) {
-      return <ErrorMessage error={model.error} />
+      return <ErrorBanner error={model.error} />
     }
 
     if (model.allGenomeNames.length === 0) {

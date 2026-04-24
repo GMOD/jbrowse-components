@@ -9,7 +9,7 @@ import {
   createSequenceFeatureDetailsModel,
   destroySequenceFeatureDetailsModel,
 } from './model.ts'
-import { ErrorMessage, LoadingEllipses } from '../../ui/index.ts'
+import { ErrorBanner, LoadingEllipses } from '../../ui/index.ts' 
 import { getSession } from '../../util/index.ts'
 import { useFeatureSequence } from '../../util/useFeatureSequence.ts'
 
@@ -96,7 +96,7 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
             </Typography>
           ) : null}
           {error ? (
-            <ErrorMessage error={error} />
+            <ErrorBanner error={error} />
           ) : !sequence ? (
             <LoadingEllipses />
           ) : 'error' in sequence ? (

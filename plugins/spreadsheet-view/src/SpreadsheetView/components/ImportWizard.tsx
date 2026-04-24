@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import {
   AssemblySelector,
-  ErrorMessage,
+  ErrorBanner,
   FileSelector,
   LoadingEllipses,
 } from '@jbrowse/core/ui'
@@ -51,7 +51,7 @@ const ImportWizard = observer(function ImportWizard({
 
   return (
     <div>
-      {err ? <ErrorMessage error={err} /> : null}
+      {err ? <ErrorBanner error={err} /> : null}
       <Paper className={classes.container}>
         {loading ? <LoadingEllipses variant="h6" /> : null}
         <div>

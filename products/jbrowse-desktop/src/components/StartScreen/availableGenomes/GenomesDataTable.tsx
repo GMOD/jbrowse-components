@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import { CascadingMenuButton, ErrorMessage } from '@jbrowse/core/ui'
+import { CascadingMenuButton, ErrorBanner } from '@jbrowse/core/ui'
 import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Help from '@mui/icons-material/Help'
@@ -350,7 +350,7 @@ export default function GenomesDataTable({
         </IconButton>
       </div>
 
-      {error ? <ErrorMessage error={error} /> : null}
+      {error ? <ErrorBanner error={error} /> : null}
 
       {categoriesLoading ? (
         <SkeletonLoader />

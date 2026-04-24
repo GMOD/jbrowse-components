@@ -6,7 +6,7 @@ import LoadingBar from './LoadingBar.tsx'
 
 import type { LinearArcDisplayModel } from '../model.ts'
 
-const ErrorMessage = lazy(() => import('./ErrorMessage.tsx'))
+const ArcErrorDisplay = lazy(() => import('./ArcErrorDisplay.tsx'))
 
 const BaseDisplayComponent = observer(function BaseDisplayComponent({
   model,
@@ -18,7 +18,7 @@ const BaseDisplayComponent = observer(function BaseDisplayComponent({
   const { error, regionTooLarge } = model
   return error ? (
     <Suspense fallback={null}>
-      <ErrorMessage model={model} />
+      <ArcErrorDisplay model={model} />
     </Suspense>
   ) : regionTooLarge ? (
     model.regionCannotBeRendered()

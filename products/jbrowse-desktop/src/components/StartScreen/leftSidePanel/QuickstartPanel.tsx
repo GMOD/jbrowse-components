@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import {
   CascadingMenuButton,
-  ErrorMessage,
+  ErrorBanner,
   LoadingEllipses,
 } from '@jbrowse/core/ui'
 import { useLocalStorage } from '@jbrowse/core/util'
@@ -77,7 +77,7 @@ export default function QuickstartPanel({
       {isVisible ? (
         <div className={classes.panel}>
           {listError && !quickstarts ? (
-            <ErrorMessage error={listError} />
+            <ErrorBanner error={listError} />
           ) : null}
 
           {quickstarts !== undefined ? (

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
@@ -171,7 +171,7 @@ const DiagonalizationProgressDialog = observer(
       >
         <DialogContent style={{ minWidth: 400 }}>
           {message ? <Typography>{message}</Typography> : null}
-          {error ? <ErrorMessage error={error} /> : null}
+          {error ? <ErrorBanner error={error} /> : null}
           {isRunning ? (
             <>
               <LinearProgress

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import ErrorBanner from '@jbrowse/core/ui/ErrorBanner'
 import { useGpuModelLifecycle } from '@jbrowse/core/util'
 import { LinearProgress, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -244,7 +244,7 @@ const GraphCanvas = observer(function GraphCanvas({
 
       <HoverTooltips model={model} />
 
-      {model.error ? <ErrorMessage error={model.error} /> : null}
+      {model.error ? <ErrorBanner error={model.error} /> : null}
     </div>
   )
 })

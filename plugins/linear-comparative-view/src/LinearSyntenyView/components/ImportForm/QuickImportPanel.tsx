@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
+import { ErrorBanner, FileSelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { Alert, Box, Button, Chip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -147,7 +147,7 @@ const QuickImportPanel = observer(function QuickImportPanel({
 
   return (
     <Box sx={{ p: 2 }}>
-      {error ? <ErrorMessage error={error} /> : null}
+      {error ? <ErrorBanner error={error} /> : null}
 
       <Typography variant="body2" sx={{ mb: 2 }}>
         Select a synteny data file to auto-configure the view. Supported

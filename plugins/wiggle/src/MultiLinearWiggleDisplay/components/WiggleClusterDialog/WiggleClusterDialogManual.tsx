@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import {
   getContainingView,
   getSession,
@@ -219,7 +219,7 @@ cat(resultClusters$order,sep='\n')`
             ) : loading ? (
               <LoadingEllipses variant="h6" message="Generating score matrix" />
             ) : error ? (
-              <ErrorMessage error={error} />
+              <ErrorBanner error={error} />
             ) : null}
           </div>
 
