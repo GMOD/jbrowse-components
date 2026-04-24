@@ -41,7 +41,6 @@ const TreeSidebar = observer(function TreeSidebar({
     sources,
   } = model
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
   const treeCanvasRef = useCallback(
     (ref: HTMLCanvasElement | null) => {
       model.setTreeCanvasRef(ref)
@@ -49,7 +48,6 @@ const TreeSidebar = observer(function TreeSidebar({
     [model, treeAreaWidth, height, lineZoneHeight],
   )
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
   const mouseoverCanvasRef = useCallback(
     (ref: HTMLCanvasElement | null) => {
       model.setMouseoverCanvasRef(ref)

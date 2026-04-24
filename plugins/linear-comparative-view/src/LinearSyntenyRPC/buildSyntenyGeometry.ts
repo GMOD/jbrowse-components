@@ -243,7 +243,7 @@ export function buildSyntenyGeometry({
     let px1 = 0
     let px2 = 0
 
-    for (let j = 0; j < cigar.length; j++) {
+    for (let j = 0, l = cigar.length; j < l; j++) {
       const packed = cigar[j]!
       const len = packed >>> 4
       const op = packed & 0xf

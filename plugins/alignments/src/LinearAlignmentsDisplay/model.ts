@@ -1851,11 +1851,16 @@ export default function stateModelFactory(
                 label: 'Copy info to clipboard',
                 icon: ContentCopyIcon,
                 onClick: async () => {
-                  const { uniqueId, ...rest } = feat.toJSON()
-                  const session = getSession(self)
-                  const { default: copy } = await import('copy-to-clipboard')
-                  copy(JSON.stringify(rest, null, 4))
-                  session.notify('Copied to clipboard', 'success')
+                  try {
+                    const { uniqueId, ...rest } = feat.toJSON()
+                    const session = getSession(self)
+                    const { default: copy } = await import('copy-to-clipboard')
+                    await copy(JSON.stringify(rest, null, 4))
+                    session.notify('Copied to clipboard', 'success')
+                  } catch (e) {
+                    console.error(e)
+                    session.notifyError(`${e}`, e)
+                  }
                 },
               },
             )
