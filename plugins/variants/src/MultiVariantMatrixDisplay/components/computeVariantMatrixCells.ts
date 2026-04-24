@@ -141,12 +141,7 @@ export function computeVariantMatrixCells({
                 addCell(idx, j, BLACK_ABGR, false)
               }
             } else {
-              const c = getAlleleColor(
-                genotype,
-                mostFrequentAlt,
-                alleleColorCache,
-                true,
-              )
+              const c = getAlleleColor(genotype, mostFrequentAlt, alleleColorCache)
               if (c) {
                 addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
               }
@@ -271,12 +266,7 @@ export function computeVariantMatrixCells({
                 addCell(idx, j, BLACK_ABGR, false)
               }
             } else {
-              const c = getAlleleColor(
-                genotype,
-                mostFrequentAlt,
-                alleleColorCache,
-                true,
-              )
+              const c = getAlleleColor(genotype, mostFrequentAlt, alleleColorCache)
               if (c) {
                 addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
               }

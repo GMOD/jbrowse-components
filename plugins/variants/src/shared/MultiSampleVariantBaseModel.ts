@@ -216,10 +216,15 @@ export default function MultiSampleVariantBaseModelF(
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       displayError: undefined as unknown,
       errorRetryCount: 0,
+      pendingClusterTree: undefined as string | undefined,
     }))
     .actions(self => ({
       setCellData(data: unknown) {
         self.cellData = data
+        if (self.pendingClusterTree !== undefined) {
+          self.clusterTree = self.pendingClusterTree
+          self.pendingClusterTree = undefined
+        }
       },
       setCellDataLoading(val: boolean) {
         self.cellDataLoading = val
@@ -364,6 +369,15 @@ export default function MultiSampleVariantBaseModelF(
       },
       setShowTree(arg: boolean) {
         self.setOverride('showTree', arg)
+      },
+      setLayoutAndClusterTree(layout: Source[], tree?: string) {
+        self.layout = layout
+        if (tree !== undefined) {
+          self.pendingClusterTree = tree
+        } else {
+          self.clusterTree = undefined
+          self.pendingClusterTree = undefined
+        }
       },
       /**
        * #action

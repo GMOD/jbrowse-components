@@ -12,7 +12,7 @@ export function getAlleleColor(
   genotype: string,
   mostFrequentAlt: string,
   colorCache: Record<string, string | undefined>,
-  drawRef: boolean,
+  drawRef = true,
 ) {
   const cacheKey = `${genotype}:${mostFrequentAlt}`
   let c = colorCache[cacheKey]
