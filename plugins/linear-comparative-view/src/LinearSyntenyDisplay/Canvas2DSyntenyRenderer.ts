@@ -174,15 +174,18 @@ export function drawSyntenyTrack(
     minAlignmentLength,
     hoveredFeatureId,
     clickedFeatureId,
+    drawCurves,
   } = params
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, yTop * dpr)
-  const transform = computeTransform(data, params)
+  ctx.globalAlpha = 1
 
+  const transform = computeTransform(data, params)
+  // Canvas2D parses fillStyle on every assignment, so reuse the rgba string
+  // for the common case of many instances sharing a color (CIGAR fills).
   const fillStyleCache = new Map<number, string>()
   const leftLimit = -maxOffScreenPx
   const rightLimit = logicalW + maxOffScreenPx
-  ctx.globalAlpha = 1
 
   for (let i = 0; i < data.instanceCount; i++) {
     if (data.queryTotalLengths[i]! < minAlignmentLength) {
@@ -199,31 +202,28 @@ export function drawSyntenyTrack(
       continue
     }
 
-    const isHovered = data.featureIds[i] === hoveredFeatureId
-    const isClicked = data.featureIds[i] === clickedFeatureId
+    const featureId = data.featureIds[i]
+    const isHovered = featureId === hoveredFeatureId
+    const isClicked = featureId === clickedFeatureId
 
-    let fillStyle: string
+    let fillStyle = fillStyleCache.get(packed)
     if (isHovered) {
       const r = ((packed & 0xff) * 0.7) | 0
       const g = (((packed >> 8) & 0xff) * 0.7) | 0
       const b = (((packed >> 16) & 0xff) * 0.7) | 0
       const effectiveAlpha = Math.min(a * alpha * 5, 0.35)
       fillStyle = `rgba(${r},${g},${b},${effectiveAlpha})`
-    } else {
-      let cached = fillStyleCache.get(packed)
-      if (cached === undefined) {
-        const r = packed & 0xff
-        const g = (packed >> 8) & 0xff
-        const b = (packed >> 16) & 0xff
-        cached = `rgba(${r},${g},${b},${a * alpha})`
-        fillStyleCache.set(packed, cached)
-      }
-      fillStyle = cached
+    } else if (fillStyle === undefined) {
+      const r = packed & 0xff
+      const g = (packed >> 8) & 0xff
+      const b = (packed >> 16) & 0xff
+      fillStyle = `rgba(${r},${g},${b},${a * alpha})`
+      fillStyleCache.set(packed, fillStyle)
     }
 
     ctx.fillStyle = fillStyle
     const w = widenCorners(c, height)
-    buildFeaturePath(ctx, w.sx1, w.sx2, w.sx3, w.sx4, height, params.drawCurves)
+    buildFeaturePath(ctx, w.sx1, w.sx2, w.sx3, w.sx4, height, drawCurves)
     ctx.fill()
 
     if (isClicked) {
@@ -313,13 +313,9 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
 
     // Iterate tracks in reverse draw order so top-most wins.
     let topHit: SyntenyPickResult | undefined
-    const trackKeys: number[] = []
-    for (const k of state.perTrack.keys()) {
-      trackKeys.push(k)
-    }
-    for (let ei = trackKeys.length - 1; ei >= 0; ei--) {
-      const key = trackKeys[ei]!
-      const params = state.perTrack.get(key)!
+    const entries = Array.from(state.perTrack)
+    for (let ei = entries.length - 1; ei >= 0; ei--) {
+      const [key, params] = entries[ei]!
       const data = this.regions.get(key)
       if (!data || data.instanceCount === 0) {
         continue
