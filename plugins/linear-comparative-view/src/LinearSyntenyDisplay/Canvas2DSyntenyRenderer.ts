@@ -117,6 +117,11 @@ function widenCorners(c: ProjectedCorners, height: number): ProjectedCorners {
   return { sx1, sx2, sx3, sx4 }
 }
 
+// Per-edge cull (not combined AABB): drop the instance when EITHER the top
+// edge OR the bottom edge is fully off-screen. Matches isCulled() in
+// syntenyTypes.slang so Canvas2D and GPU honor the maxOffScreenPx slider
+// the same way; an AABB-only check would keep drawing trapezoids spanning
+// huge horizontal travel into off-screen space.
 function isEdgeCulled(
   c: ProjectedCorners,
   leftLimit: number,
@@ -208,6 +213,9 @@ export function drawSyntenyTrack(
 
     let fillStyle = fillStyleCache.get(packed)
     if (isHovered) {
+      // SYNC: 0.7 darkening + 5x alpha boost capped at 0.35 must match
+      // syntenyFill.slang's hover branch so the highlight looks identical
+      // across all backends.
       const r = ((packed & 0xff) * 0.7) | 0
       const g = (((packed >> 8) & 0xff) * 0.7) | 0
       const b = (((packed >> 16) & 0xff) * 0.7) | 0

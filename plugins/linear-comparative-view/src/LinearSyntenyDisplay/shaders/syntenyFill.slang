@@ -60,6 +60,9 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   float3 rgb = fragIn.color.rgb;
+  // SYNC: 0.7 darkening + 5x alpha boost capped at 0.35 must match
+  // Canvas2DSyntenyRenderer.ts's hover branch so the highlight looks
+  // identical across all backends.
   bool isHovered = u.hoveredFeatureId > 0.0 && abs(fragIn.featureId - u.hoveredFeatureId) < 0.5;
   float baseAlpha = fragIn.color.a * u.alpha;
   float finalAlpha = isHovered ? min(baseAlpha * 5.0, 0.35) : baseAlpha;
