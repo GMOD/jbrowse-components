@@ -34,24 +34,28 @@ export function getQueryColor(queryName: string) {
   return category10[hash % category10.length]!
 }
 
-// Default CIGAR operation colors
+// CIGAR operation colors. Kept opaque — every consumer either runs them
+// through applyAlpha() (model.ts) or packs them via cssColorToABGR() and
+// applies u.alpha in the shader / `a * alpha` in Canvas2D. A non-opaque
+// literal here would multiply with that uniform and render fainter than
+// intended.
 export const defaultCigarColors = {
-  I: '#ff0a',
-  N: '#0a0a',
-  D: '#00fa',
+  I: '#ff0',
+  N: '#0a0',
+  D: '#00f',
   X: 'brown',
-  M: '#f00a',
-  '=': '#f00a',
+  M: '#f00',
+  '=': '#f00',
 }
 
 // Strand-specific CIGAR operation colors (purple deletion instead of blue)
 export const strandCigarColors = {
-  I: '#ff0a',
+  I: '#ff0',
   N: '#a020f0',
   D: '#a020f0',
   X: 'brown',
-  M: '#f00a',
-  '=': '#f00a',
+  M: '#f00',
+  '=': '#f00',
 }
 
 // SyRI structural type colors (plotsr-compatible)

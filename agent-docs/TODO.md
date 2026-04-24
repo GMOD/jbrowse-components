@@ -249,9 +249,7 @@ Look at mui v9 migration checklist https://mui.com/material-ui/migration/upgrade
 
 ## Alignments
 
-- snP tooltips should add +1 to coord
 
-- Modifications and methylation coloy by modes does not want to color snps, it should color snps grey
 
 - Potentially weird for our demo data but saw : Fetch failed: TypeError: can't access property "toUpperCase", regionSequence[(position - regionSequenceStart)] is undefined
     computeModificationCoverage webpack://@jbrowse/web/../../plugins/alignments/src/shared/computeModificationCoverage.ts?:80
@@ -263,7 +261,6 @@ FetchMixin.ts:98:19
 
 ## Synteny
 
-- Very poor synteny anti aliasing right now, please review, may be recent regression on this branch
 
 - Dotplot sort of slow or debounced feature requests, review
 
