@@ -46,7 +46,7 @@ export async function getBlockFeatures(
   const sessionId = getRpcSessionId(track)
 
   return Promise.all(
-    views.flatMap(async view =>
+    views.map(async view =>
       rpcManager.call(sessionId, 'BreakpointGetFeatures', {
         adapterConfig: getConf(track, ['adapter']),
         sessionId,

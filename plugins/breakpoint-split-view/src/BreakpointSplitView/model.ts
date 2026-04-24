@@ -432,40 +432,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      afterAttach() {
-        addDisposer(
-          self,
-          addMiddleware(self, (rawCall, next) => {
-            if (rawCall.type === 'action' && rawCall.id === rawCall.rootId) {
-              const syncActions = [
-                'horizontalScroll',
-                'zoomTo',
-                'showTrack',
-                'toggleTrack',
-                'hideTrack',
-                'setTrackLabels',
-                'toggleCenterLine',
-              ]
-
-              if (self.linkViews && syncActions.includes(rawCall.name)) {
-                const sourcePath = getPath(rawCall.context)
-                next(rawCall)
-                // Sync to all other views
-                for (const view of self.views) {
-                  const viewPath = getPath(view)
-                  if (viewPath !== sourcePath) {
-                    // @ts-expect-error
-                    view[rawCall.name](rawCall.args[0])
-                  }
-                }
-                return
-              }
-            }
-            next(rawCall)
-          }),
-        )
-      },
-
       /**
        * #action
        */
@@ -559,7 +525,36 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       afterAttach() {
-        // Init autorun for initializing from session snapshot
+        addDisposer(
+          self,
+          addMiddleware(self, (rawCall, next) => {
+            if (rawCall.type === 'action' && rawCall.id === rawCall.rootId) {
+              const syncActions = [
+                'horizontalScroll',
+                'zoomTo',
+                'showTrack',
+                'toggleTrack',
+                'hideTrack',
+                'setTrackLabels',
+                'toggleCenterLine',
+              ]
+
+              if (self.linkViews && syncActions.includes(rawCall.name)) {
+                const sourcePath = getPath(rawCall.context)
+                next(rawCall)
+                for (const view of self.views) {
+                  const viewPath = getPath(view)
+                  if (viewPath !== sourcePath) {
+                    // @ts-expect-error
+                    view[rawCall.name](rawCall.args[0])
+                  }
+                }
+                return
+              }
+            }
+            next(rawCall)
+          }),
+        )
         addDisposer(
           self,
           autorun(
@@ -569,11 +564,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 return
               }
 
-              // Set up the views with their init properties
-              // The child LinearGenomeViews will handle their own initialization
               self.setViews(init.views)
-
-              // Clear init state
               self.setInit(undefined)
             },
             { name: 'BreakpointSplitViewInit' },
@@ -584,11 +575,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           autorun(
             async () => {
               try {
-                // check all views 'initialized'
                 if (!self.views.every(view => view.initialized)) {
                   return
                 }
-                // check that tracks are 'ready' (not notReady or regionTooLarge)
                 if (
                   self.matchedTracks.some(track => {
                     const display = track.displays[0]

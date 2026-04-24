@@ -104,13 +104,15 @@ export function getMatchedBreakendFeatures(feats: Map<string, Feature>) {
         for (const a of alts) {
           const cur = `${f.get('refName')}:${f.get('start') + 1}`
           const bnd = parseBreakend(a)
-          if (bnd) {
-            const val = candidates.get(cur)
+          if (bnd?.MatePosition) {
+            // canonical key so feature A→B and feature B→A land in the same bucket
+            const key = [cur, bnd.MatePosition].sort().join('\t')
+            let val = candidates.get(key)
             if (!val) {
-              candidates.set(bnd.MatePosition || 'none', [f])
-            } else {
-              val.push(f)
+              val = []
+              candidates.set(key, val)
             }
+            val.push(f)
           }
         }
       }
