@@ -1,5 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { clamp, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import type { LayoutRecord } from './types.ts'
@@ -7,13 +7,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-type LGV = LinearGenomeViewModel
-
 interface Display {
-  height: number
-  scrollTop: number
-  coverageDisplayHeight?: number
-  notReady?: () => boolean
   searchFeatureByID?: (str: string) => LayoutRecord
 }
 
@@ -22,63 +16,12 @@ interface Track {
   configuration: AnyConfigurationModel
 }
 
-const [, TOP, , BOTTOM] = [0, 1, 2, 3] as const
-
-function cheight(chunk: LayoutRecord) {
-  return chunk[BOTTOM] - chunk[TOP]
-}
-
-export function getPxFromCoordinate(view: LGV, refName: string, coord: number) {
-  return (view.bpToPx({ refName, coord })?.offsetPx || 0) - view.offsetPx
-}
-
-export function getTrackHeightsCache(
-  views: LGV[],
-  trackId: string,
-  getYPosOverride: (trackId: string, level: number) => number,
-) {
-  return views.map((_, level) => getYPosOverride(trackId, level))
-}
-
 // Must match the CSS height of viewDivider in BreakpointSplitView.tsx
-const VIEW_DIVIDER_HEIGHT = 3
+export const VIEW_DIVIDER_HEIGHT = 3
 // Must match RESIZE_HANDLE_HEIGHT in @jbrowse/plugin-linear-genome-view
-const TRACK_RESIZE_HANDLE_HEIGHT = 3
-
-export function getTrackYOffset(views: LGV[], trackId: string, level: number) {
-  const view = views[level]!
-  let y = 0
-  for (let i = 0; i < level; i++) {
-    y += views[i]!.height + VIEW_DIVIDER_HEIGHT
-  }
-  y += view.headerHeight + view.scalebarHeight
-  // Pinned tracks render before unpinned tracks in the DOM, so iterate in that order
-  const tracksInDomOrder = [...view.pinnedTracks, ...view.unpinnedTracks]
-  for (const track of tracksInDomOrder) {
-    if (track.configuration.trackId === trackId) {
-      break
-    }
-    y += track.displays[0]!.height + TRACK_RESIZE_HANDLE_HEIGHT
-  }
-  return y
-}
-
-export function yPos(
-  level: number,
-  tracks: Track[],
-  c: LayoutRecord,
-  cachedHeights: number[],
-  hasYPosOverride?: boolean,
-) {
-  const display = tracks[level]!.displays[0]!
-  const max = display.height
-  const offset = display.coverageDisplayHeight ?? 0
-  const scrollTop = hasYPosOverride ? 0 : display.scrollTop
-  return (
-    clamp(c[TOP] - scrollTop + cheight(c) / 2 + offset, offset, max) +
-    cachedHeights[level]!
-  )
-}
+export const TRACK_RESIZE_HANDLE_HEIGHT = 3
+// Must match the minimized track height in TrackRenderingContainer.tsx
+export const MINIMIZED_TRACK_HEIGHT = 20
 
 // https://stackoverflow.com/a/49186706/2129219 the array-intersection package
 // on npm has a large kb size, and we are just intersecting open track ids so

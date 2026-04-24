@@ -152,14 +152,17 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
             transform={`translate(${trackLabelOffset + shift})`}
             clipPath="url(#clip-bsv)"
           >
-            {model.matchedTracks.map(track => (
-              <Overlay
-                key={track.configuration.trackId}
-                model={model}
-                trackId={track.configuration.trackId}
-                getTrackYPosOverride={(id, level) => trackOffsets[level]![id]!}
-              />
-            ))}
+            {model.matchedTracks.map(track => {
+              const id = track.configuration.trackId
+              return (
+                <Overlay
+                  key={id}
+                  model={model}
+                  trackId={id}
+                  yOffsetsOverride={trackOffsets.map(o => o[id]!)}
+                />
+              )
+            })}
           </g>
         </svg>
       </Wrapper>

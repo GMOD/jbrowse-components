@@ -136,6 +136,26 @@ export function getMatchedTranslocationFeatures(feats: Map<string, Feature>) {
   return ret
 }
 
+export function classifyVariantFeatures(features: Map<string, Feature>) {
+  let hasTranslocation = false
+  let hasPaired = false
+  for (const f of features.values()) {
+    if (!hasTranslocation) {
+      const t = f.get('type')
+      if (t === 'translocation') {
+        hasTranslocation = true
+      } else if (t === 'paired_feature') {
+        hasPaired = true
+      }
+    }
+  }
+  return hasTranslocation
+    ? ('translocation' as const)
+    : hasPaired
+      ? ('paired' as const)
+      : ('breakend' as const)
+}
+
 // Getting "matched" TRA means just return all TRA
 export function getMatchedPairedFeatures(feats: Map<string, Feature>) {
   const candidates = new Map<string, Feature[]>()

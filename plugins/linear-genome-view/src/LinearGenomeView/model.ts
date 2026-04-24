@@ -550,7 +550,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get trackHeights() {
-        return sum(self.tracks.map(t => t.displays[0].height))
+        return sum(
+          self.tracks.map(t => (t.minimized ? 0 : t.displays[0].height)),
+        )
       },
 
       /**

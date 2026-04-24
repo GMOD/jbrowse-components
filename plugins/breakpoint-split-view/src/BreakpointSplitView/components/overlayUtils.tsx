@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react'
 
-import { getTrackHeightsCache, getTrackYOffset } from '../util.ts'
-
 import type { BreakpointViewModel } from '../model.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { getSession } from '@jbrowse/core/util'
@@ -11,7 +9,7 @@ export const [LEFT, , RIGHT] = [0, 1, 2, 3] as const
 export interface OverlayProps {
   model: BreakpointViewModel
   trackId: string
-  getTrackYPosOverride?: (trackId: string, level: number) => number
+  yOffsetsOverride?: number[]
 }
 
 export function useMouseoverElt() {
@@ -26,24 +24,6 @@ export function useMouseoverElt() {
     }
   }, [])
   return [mouseoverElt, setMouseoverElt] as const
-}
-
-export function useOverlaySetup({
-  model,
-  trackId,
-  getTrackYPosOverride,
-}: OverlayProps) {
-  const { views } = model
-  const [mouseoverElt, setMouseoverElt] = useMouseoverElt()
-  return {
-    mouseoverElt,
-    setMouseoverElt,
-    tracks: views.map(v => v.getTrack(trackId)),
-    hasOverride: !!getTrackYPosOverride,
-    cachedHeights: getTrackYPosOverride
-      ? getTrackHeightsCache(views, trackId, getTrackYPosOverride)
-      : views.map((_, level) => getTrackYOffset(views, trackId, level)),
-  }
 }
 
 export function createVariantMouseHandlers(

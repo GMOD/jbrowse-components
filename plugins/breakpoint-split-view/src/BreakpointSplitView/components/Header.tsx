@@ -1,6 +1,7 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import LinkIcon from '@mui/icons-material/Link'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import TuneIcon from '@mui/icons-material/Tune'
 import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
@@ -54,6 +55,27 @@ const ScrollZoomButton = observer(function ScrollZoomButton({
   )
 })
 
+const LinkViewsButton = observer(function LinkViewsButton({
+  model,
+}: {
+  model: BreakpointViewModel
+}) {
+  return (
+    <ToggleButton
+      value="linkViews"
+      selected={model.linkViews}
+      onChange={() => {
+        model.setLinkViews(!model.linkViews)
+      }}
+      title="Link views (sync scroll/zoom across views)"
+      sx={{ border: 'none' }}
+      size="small"
+    >
+      <LinkIcon />
+    </ToggleButton>
+  )
+})
+
 const Header = observer(function Header({
   model,
 }: {
@@ -80,6 +102,7 @@ const Header = observer(function Header({
           <MoreVertIcon />
         </CascadingMenuButton>
         <ScrollZoomButton model={model} />
+        <LinkViewsButton model={model} />
         <CascadingMenuButton
           size="small"
           title="Display settings"

@@ -10,12 +10,27 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 import CropFreeIcon from '@mui/icons-material/CropFree'
-import LinkIcon from '@mui/icons-material/Link'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun } from 'mobx'
 
-import { calc, getBlockFeatures, intersect } from './util.ts'
+import {
+  classifyVariantFeatures,
+  getBadlyPairedAlignments,
+  getMatchedAlignmentFeatures,
+  getMatchedBreakendFeatures,
+  getMatchedPairedFeatures,
+  getMatchedTranslocationFeatures,
+  hasPairedReads,
+} from './components/util.ts'
+import {
+  MINIMIZED_TRACK_HEIGHT,
+  TRACK_RESIZE_HANDLE_HEIGHT,
+  VIEW_DIVIDER_HEIGHT,
+  calc,
+  getBlockFeatures,
+  intersect,
+} from './util.ts'
 
 type Compactness = 'normal' | 'compact' | 'super-compact'
 
@@ -71,7 +86,12 @@ function buildCompactAllTracksMenu(tracks: { displays: unknown[] }[]) {
   ]
 }
 
-import type { BreakpointSplitViewInit, ExportSvgOptions } from './types.ts'
+import type {
+  BreakpointSplitViewInit,
+  ExportSvgOptions,
+  LayoutRecord,
+  OverlayMatch,
+} from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -259,27 +279,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       * Translocation features are handled differently since they do not have
-       * a mate e.g. they are one sided
-       */
-      hasTranslocations(trackConfigId: string) {
-        return [...this.getTrackFeatures(trackConfigId).values()].some(
-          f => f.get('type') === 'translocation',
-        )
-      },
-
-      /**
-       * #method
-       * Paired features similar to breakends, but simpler, like BEDPE
-       */
-      hasPairedFeatures(trackConfigId: string) {
-        return [...this.getTrackFeatures(trackConfigId).values()].some(
-          f => f.get('type') === 'paired_feature',
-        )
-      },
-
-      /**
-       * #method
        * Get a composite map of featureId-\>feature map for a track across
        * multiple views
        */
@@ -293,7 +292,87 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
+       * Per-render precompute for an overlay track: in a single O(views ×
+       * tracks) pass, gathers every reactive value the overlay loop needs
+       * (per-level track top, scroll top, display height, coverage offset,
+       * view offsetPx) into plain arrays, plus closures that do the hot-path
+       * math with array indexing only. Call once at the top of an observer
+       * render; the observer subscribes to every reactive read performed here
+       * so re-renders fire on any relevant change.
+       *
+       * Pass `yOffsetsOverride` during SVG export to substitute fixed track
+       * tops and disable scroll compensation.
        */
+      getTrackOverlayData(trackId: string, yOffsetsOverride?: number[]) {
+        const { views } = self
+        const tracks = this.getMatchedTracks(trackId)
+        const n = views.length
+        const displays = new Array(n)
+        const scrollTops = new Array(n)
+        const heights = new Array(n)
+        const coverageOffsets = new Array(n)
+        const viewOffsetPxs = new Array(n)
+        const yOffsets = yOffsetsOverride ?? new Array(n)
+
+        let viewTop = 0
+        for (let level = 0; level < n; level++) {
+          const view = views[level]!
+          const d = tracks[level]!.displays[0]!
+          displays[level] = d
+          scrollTops[level] = yOffsetsOverride ? 0 : (d.scrollTop ?? 0)
+          heights[level] = d.height
+          coverageOffsets[level] = d.coverageDisplayHeight ?? 0
+          viewOffsetPxs[level] = view.offsetPx
+
+          if (!yOffsetsOverride) {
+            let y = viewTop + view.headerHeight + view.scalebarHeight
+            let found = false
+            for (const t of view.pinnedTracks) {
+              if (t.configuration.trackId === trackId) {
+                found = true
+                break
+              }
+              y +=
+                (t.minimized
+                  ? MINIMIZED_TRACK_HEIGHT
+                  : t.displays[0]!.height) + TRACK_RESIZE_HANDLE_HEIGHT
+            }
+            if (!found) {
+              for (const t of view.unpinnedTracks) {
+                if (t.configuration.trackId === trackId) {
+                  break
+                }
+                y +=
+                  (t.minimized
+                    ? MINIMIZED_TRACK_HEIGHT
+                    : t.displays[0]!.height) + TRACK_RESIZE_HANDLE_HEIGHT
+              }
+            }
+            yOffsets[level] = y
+          }
+          viewTop += view.height + VIEW_DIVIDER_HEIGHT
+        }
+
+        function getY(level: number, c: LayoutRecord) {
+          const off = coverageOffsets[level]
+          const top = c[1]
+          const mid = top - scrollTops[level] + (c[3] - top) / 2 + off
+          const max = heights[level]
+          return (
+            yOffsets[level] + (mid < off ? off : Math.min(mid, max))
+          )
+        }
+
+        function getX(level: number, refName: string, coord: number) {
+          return (
+            (views[level]!.bpToPx({ refName, coord })?.offsetPx || 0) -
+            viewOffsetPxs[level]
+          )
+        }
+
+        return { tracks, displays, yOffsets, heights, getX, getY }
+      },
+
       getMatchedFeaturesInLayout(trackConfigId: string, features: Feature[][]) {
         const tracks = this.getMatchedTracks(trackConfigId)
         return features.map(c =>
@@ -315,6 +394,67 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             })
             .filter(notEmpty),
         )
+      },
+
+      /**
+       * #getter
+       * Zero-arg cached getter: classifies each matched track, pairs its
+       * features, looks up layout rectangles, and returns a Map keyed by
+       * trackId. Mobx caches this across renders and only invalidates when
+       * the underlying feature or layout reads change — so horizontal/vertical
+       * scrolling and track resizing do NOT trigger re-pairing or re-lookup.
+       */
+      get overlayMatches(): Map<string, OverlayMatch> {
+        const result = new Map<string, OverlayMatch>()
+        for (const track of this.matchedTracks) {
+          const trackId = track.configuration.trackId
+          const featureArrays = self.matchedTrackFeatures[trackId]
+          if (!featureArrays) {
+            continue
+          }
+          const allFeatures = new Map(
+            featureArrays.flat().map(f => [f.id(), f] as const),
+          )
+          const type = track.type
+          if (type === 'AlignmentsTrack') {
+            const paired = hasPairedReads(allFeatures)
+            const matched = paired
+              ? getBadlyPairedAlignments(allFeatures)
+              : getMatchedAlignmentFeatures(allFeatures)
+            const layoutMatches = this.getMatchedFeaturesInLayout(
+              trackId,
+              matched,
+            )
+            if (!paired) {
+              for (const m of layoutMatches) {
+                m.sort(
+                  (a, b) =>
+                    a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead,
+                )
+              }
+            }
+            result.set(trackId, {
+              kind: 'alignment',
+              allFeatures,
+              layoutMatches,
+              hasPairedReads: paired,
+            })
+          } else if (type === 'VariantTrack') {
+            const kind = classifyVariantFeatures(allFeatures)
+            const matched =
+              kind === 'translocation'
+                ? getMatchedTranslocationFeatures(allFeatures)
+                : kind === 'paired'
+                  ? getMatchedPairedFeatures(allFeatures)
+                  : getMatchedBreakendFeatures(allFeatures)
+            result.set(trackId, {
+              kind,
+              allFeatures,
+              layoutMatches: this.getMatchedFeaturesInLayout(trackId, matched),
+            })
+          }
+        }
+        return result
       },
     }))
     .actions(self => ({
@@ -565,15 +705,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 },
               },
             ],
-          },
-          {
-            label: 'Link views',
-            type: 'checkbox',
-            icon: LinkIcon,
-            checked: self.linkViews,
-            onClick: () => {
-              self.setLinkViews(!self.linkViews)
-            },
           },
           {
             label: 'Export SVG',

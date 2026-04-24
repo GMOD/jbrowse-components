@@ -10,26 +10,22 @@ import type { OverlayProps } from './overlayUtils.tsx'
 const Overlay = observer(function Overlay(props: OverlayProps) {
   const { model, trackId } = props
   const tracks = model.getMatchedTracks(trackId)
-  const type = tracks[0]?.type
-
   if (tracks.some(t => t.displays[0]?.regionTooLarge)) {
     return null
   }
-
-  if (type === 'AlignmentsTrack') {
+  const kind = model.overlayMatches.get(trackId)?.kind
+  if (kind === 'alignment') {
     return <AlignmentConnections {...props} />
   }
-
-  if (type === 'VariantTrack') {
-    return model.hasTranslocations(trackId) ? (
-      <Translocations {...props} />
-    ) : model.hasPairedFeatures(trackId) ? (
-      <PairedFeatures {...props} />
-    ) : (
-      <Breakends {...props} />
-    )
+  if (kind === 'translocation') {
+    return <Translocations {...props} />
   }
-
+  if (kind === 'paired') {
+    return <PairedFeatures {...props} />
+  }
+  if (kind === 'breakend') {
+    return <Breakends {...props} />
+  }
   return null
 })
 

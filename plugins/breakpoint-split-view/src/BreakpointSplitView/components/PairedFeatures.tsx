@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -9,37 +7,28 @@ import {
   createVariantMouseHandlers,
   getCanonicalRefs,
   getTestId,
-  useOverlaySetup,
+  useMouseoverElt,
 } from './overlayUtils.tsx'
-import { getMatchedPairedFeatures } from './util.ts'
-import { getPxFromCoordinate, yPos } from '../util.ts'
 
 import type { OverlayProps } from './overlayUtils.tsx'
 
-const PairedFeatures = observer(function PairedFeatures(props: OverlayProps) {
-  const { model, trackId } = props
-  const { interactiveOverlay, views, assembly } = model
+const PairedFeatures = observer(function PairedFeatures({
+  model,
+  trackId,
+  yOffsetsOverride,
+}: OverlayProps) {
+  const { interactiveOverlay, assembly } = model
   const session = getSession(model)
-  const totalFeatures = model.getTrackFeatures(trackId)
+  const [mouseoverElt, setMouseoverElt] = useMouseoverElt()
+  const match = model.overlayMatches.get(trackId)
+  const { tracks, getX, getY } = model.getTrackOverlayData(
+    trackId,
+    yOffsetsOverride,
+  )
+  const layoutMatches = match?.layoutMatches ?? []
+  const totalFeatures = match?.allFeatures
 
-  const layoutMatches = useMemo(() => {
-    const matchedFeatures = getMatchedPairedFeatures(totalFeatures)
-    return model.getMatchedFeaturesInLayout(trackId, matchedFeatures)
-  }, [totalFeatures, trackId, model])
-
-  const {
-    mouseoverElt,
-    setMouseoverElt,
-    tracks,
-    hasOverride,
-    cachedHeights,
-  } = useOverlaySetup(props)
-
-  if (!assembly) {
-    return null
-  }
-
-  return (
+  return assembly && match ? (
     <g
       stroke="green"
       strokeWidth={5}
@@ -60,11 +49,10 @@ const PairedFeatures = observer(function PairedFeatures(props: OverlayProps) {
             f1.get('refName'),
             f2.get('refName'),
           )
-          const x1 = getPxFromCoordinate(views[level1]!, f1ref, c1[LEFT])
-          const x2 = getPxFromCoordinate(views[level2]!, f2ref, c2[LEFT])
-
-          const y1 = yPos(level1, tracks, c1, cachedHeights, hasOverride)
-          const y2 = yPos(level2, tracks, c2, cachedHeights, hasOverride)
+          const x1 = getX(level1, f1ref, c1[LEFT])
+          const x2 = getX(level2, f2ref, c2[LEFT])
+          const y1 = getY(level1, c1)
+          const y2 = getY(level2, c2)
           const path = buildSimplePath(x1, y1, x2, y2)
           return [
             <path
@@ -77,14 +65,14 @@ const PairedFeatures = observer(function PairedFeatures(props: OverlayProps) {
                 id,
                 setMouseoverElt,
                 session,
-                totalFeatures.get(id)?.toJSON(),
+                totalFeatures?.get(id)?.toJSON(),
               )}
             />,
           ]
         }),
       )}
     </g>
-  )
+  ) : null
 })
 
 export default PairedFeatures

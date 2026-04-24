@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -9,37 +7,29 @@ import {
   createVariantMouseHandlers,
   getCanonicalRefs,
   getTestId,
-  useOverlaySetup,
+  useMouseoverElt,
 } from './overlayUtils.tsx'
-import { findMatchingAlt, getMatchedBreakendFeatures } from './util.ts'
-import { getPxFromCoordinate, yPos } from '../util.ts'
+import { findMatchingAlt } from './util.ts'
 
 import type { OverlayProps } from './overlayUtils.tsx'
 
-const Breakends = observer(function Breakends(props: OverlayProps) {
-  const { model, trackId } = props
+const Breakends = observer(function Breakends({
+  model,
+  trackId,
+  yOffsetsOverride,
+}: OverlayProps) {
   const { interactiveOverlay, views, assembly } = model
   const session = getSession(model)
-  const totalFeatures = model.getTrackFeatures(trackId)
+  const [mouseoverElt, setMouseoverElt] = useMouseoverElt()
+  const match = model.overlayMatches.get(trackId)
+  const { tracks, getX, getY } = model.getTrackOverlayData(
+    trackId,
+    yOffsetsOverride,
+  )
+  const layoutMatches = match?.layoutMatches ?? []
+  const totalFeatures = match?.allFeatures
 
-  const layoutMatches = useMemo(() => {
-    const matchedFeatures = getMatchedBreakendFeatures(totalFeatures)
-    return model.getMatchedFeaturesInLayout(trackId, matchedFeatures)
-  }, [totalFeatures, trackId, model])
-
-  const {
-    mouseoverElt,
-    setMouseoverElt,
-    tracks,
-    hasOverride,
-    cachedHeights,
-  } = useOverlaySetup(props)
-
-  if (!assembly) {
-    return null
-  }
-
-  return (
+  return assembly && match ? (
     <g
       stroke="green"
       strokeWidth={5}
@@ -67,13 +57,13 @@ const Breakends = observer(function Breakends(props: OverlayProps) {
             f1.get('refName'),
             f2.get('refName'),
           )
-          const x1 = getPxFromCoordinate(views[level1]!, f1ref, c1[LEFT])
-          const x2 = getPxFromCoordinate(views[level2]!, f2ref, c2[LEFT])
+          const x1 = getX(level1, f1ref, c1[LEFT])
+          const x2 = getX(level2, f2ref, c2[LEFT])
           const reversed1 = views[level1]!.pxToBp(x1).reversed
           const reversed2 = views[level2]!.pxToBp(x2).reversed
 
-          const y1 = yPos(level1, tracks, c1, cachedHeights, hasOverride)
-          const y2 = yPos(level2, tracks, c2, cachedHeights, hasOverride)
+          const y1 = getY(level1, c1)
+          const y2 = getY(level2, c2)
           const x1Tick =
             x1 -
             20 * (relevantAlt.Join === 'left' ? -1 : 1) * (reversed1 ? -1 : 1)
@@ -95,14 +85,14 @@ const Breakends = observer(function Breakends(props: OverlayProps) {
                 id,
                 setMouseoverElt,
                 session,
-                totalFeatures.get(id)?.toJSON(),
+                totalFeatures?.get(id)?.toJSON(),
               )}
             />,
           ]
         }),
       )}
     </g>
-  )
+  ) : null
 })
 
 export default Breakends
