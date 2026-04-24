@@ -10,7 +10,7 @@ type Ctx = CanvasRenderingContext2D | SvgCanvas
 interface ArcFields {
   arcX1: Uint32Array
   arcX2: Uint32Array
-  arcColorTypes: Float32Array
+  arcColorTypes: Uint8Array
   arcShapeTypes: Uint8Array
   arcYBp: Uint32Array
   numArcs: number
@@ -63,7 +63,7 @@ export function drawArcsToCtx(
   for (let i = 0; i < data.numArcs; i++) {
     const x1Bp = data.arcX1[i]!
     const x2Bp = data.arcX2[i]!
-    const colorIdx = Math.round(data.arcColorTypes[i]!)
+    const colorIdx = data.arcColorTypes[i]!
     const shape = data.arcShapeTypes[i]!
     const yBp = data.arcYBp[i]!
 

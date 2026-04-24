@@ -17,15 +17,18 @@ export const ARC_SHAPE_FLAT = 2
 export interface ArcsDataResult {
   arcX1: Uint32Array
   arcX2: Uint32Array
-  arcColorTypes: Float32Array
+  arcColorTypes: Uint8Array
   // See ARC_SHAPE_* constants.
   arcShapeTypes: Uint8Array
   // Target Y in genomic bp (|tlen| for samplot, |(x2-x1)/2| otherwise)
   arcYBp: Uint32Array
   numArcs: number
+  // Max `arcYBp` across `arcShapeTypes === ARC_SHAPE_FLAT` entries. Precomputed
+  // so the `arcsYDomainBp` view reduces over regions, not over every arc.
+  maxFlatArcYBp: number
   linePositions: Uint32Array
   lineYs: Float32Array
-  lineColorTypes: Float32Array
+  lineColorTypes: Uint8Array
   numLines: number
   coverageDepths: Float32Array
   coverageMaxDepth: number
@@ -357,8 +360,8 @@ export function computeArcsFromPileupData(
     if (p1Ref !== p2Ref) {
       if (drawInter) {
         lines.push(
-          { x: { refName: p1Ref, bp: p1Bp }, colorType: 3 },
-          { x: { refName: p2Ref, bp: p2Bp }, colorType: 3 },
+          { x: { refName: p1Ref, bp: p1Bp }, colorType: 0 },
+          { x: { refName: p2Ref, bp: p2Bp }, colorType: 0 },
         )
       }
       continue
@@ -463,22 +466,26 @@ export function arcsToRegionResult(
   )
   const arcX1 = new Uint32Array(regionArcs.length)
   const arcX2 = new Uint32Array(regionArcs.length)
-  const arcColorTypes = new Float32Array(regionArcs.length)
+  const arcColorTypes = new Uint8Array(regionArcs.length)
   const arcShapeTypes = new Uint8Array(regionArcs.length)
   const arcYBp = new Uint32Array(regionArcs.length)
 
+  let maxFlatArcYBp = 0
   for (const [i, arc] of regionArcs.entries()) {
     arcX1[i] = arc.p1.bp
     arcX2[i] = arc.p2.bp
     arcColorTypes[i] = arc.colorType
     arcShapeTypes[i] = arc.shapeType
     arcYBp[i] = arc.yBp
+    if (arc.shapeType === ARC_SHAPE_FLAT && arc.yBp > maxFlatArcYBp) {
+      maxFlatArcYBp = arc.yBp
+    }
   }
 
   const regionLines = lines.filter(l => l.x.refName === regionRefName)
   const linePositions = new Uint32Array(regionLines.length * 2)
   const lineYs = new Float32Array(regionLines.length * 2)
-  const lineColorTypes = new Float32Array(regionLines.length * 2)
+  const lineColorTypes = new Uint8Array(regionLines.length * 2)
 
   for (const [i, line] of regionLines.entries()) {
     linePositions[i * 2] = line.x.bp
@@ -496,6 +503,7 @@ export function arcsToRegionResult(
     arcShapeTypes,
     arcYBp,
     numArcs: regionArcs.length,
+    maxFlatArcYBp,
     linePositions,
     lineYs,
     lineColorTypes,

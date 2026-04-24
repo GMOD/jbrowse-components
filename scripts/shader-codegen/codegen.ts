@@ -12,7 +12,7 @@
 // FIELD_OFFSET_F32 / FIELD_OFFSET_U32 (constant indices into Float32Array /
 // Uint32Array) rather than hard-coding offsets. Renaming or reordering fields
 // in the .slang source then either propagates cleanly (if fields are still
-// named the same) or raises a tsc error.
+// named the same) or raises a tsgo error.
 
 import { readFileSync, writeFileSync } from 'node:fs'
 

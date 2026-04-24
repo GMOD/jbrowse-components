@@ -53,37 +53,6 @@ function blendedAlpha(base: number, freq8bit: number) {
   return base + freq * (1 - base)
 }
 
-function cubicBezierXY(t: number, x1: number, x2: number, destY: number) {
-  const mt = 1 - t
-  const mt2 = mt * mt
-  const t2 = t * t
-  return {
-    xBp: x1 * mt2 * (mt + 3 * t) + x2 * t2 * (3 * mt + t),
-    yPx: 3 * mt * t * destY,
-  }
-}
-
-function evalSashimiCurve(
-  t: number,
-  x1: number,
-  x2: number,
-  covHeight: number,
-  blockStartPx: number,
-  bpStartOffset: number,
-  pxPerBp: number,
-  arcsDown = false,
-) {
-  const destY = covHeight * (0.8 / 0.75)
-  const { xBp, yPx } = cubicBezierXY(t, x1, x2, destY)
-  const screenX = blockStartPx + (xBp - bpStartOffset) * pxPerBp
-  return {
-    x: screenX,
-    y: arcsDown ? 0.1 * covHeight + yPx : 0.9 * covHeight - yPx,
-  }
-}
-
-const ARC_SEGMENTS = 64
-
 function drawPairedArcs(
   ctx: Ctx,
   arcsData: ArcsDataResult,
@@ -95,6 +64,7 @@ function drawPairedArcs(
   lineWidth: number,
   arcColorByType: string | undefined,
   arcsYDomainBp: number | undefined,
+  pairedArcsDown: boolean,
 ) {
   const pxPerBp = blockWidth / regionLengthBp
   const availH = arcsHeight - ARC_HEIGHT_MARGIN
@@ -105,7 +75,7 @@ function drawPairedArcs(
     arcsYDomainBp: arcsYDomainBp ?? fallbackDomain,
     arcsTop: 0,
     arcsH: availH,
-    pairedArcsDown: false,
+    pairedArcsDown,
     lineWidth,
     palette: getArcPalette(arcColorByType),
   })
@@ -114,7 +84,7 @@ function drawPairedArcs(
     const xPos = arcsData.linePositions[i * 2]!
     const y0 = arcsData.lineYs[i * 2]!
     const y1 = arcsData.lineYs[i * 2 + 1]!
-    const colorType = Math.round(arcsData.lineColorTypes[i * 2]!)
+    const colorType = arcsData.lineColorTypes[i * 2]!
 
     ctx.strokeStyle =
       colorType < arcLineColorPalette.length
@@ -142,10 +112,15 @@ function drawSashimiArcs(
   arcsDown = false,
 ) {
   const pxPerBp = blockWidth / regionLengthBp
+  const anchorY = (arcsDown ? 0.1 : 0.9) * coverageHeight + coverageOffset
+  const apexY = (arcsDown ? 0.9 : 0.1) * coverageHeight + coverageOffset
+  // Quadratic bezier with control at cy reaches its peak at (anchor+cy)/2, so
+  // cy = 2*apex - anchor makes the rendered peak actually touch apexY.
+  const controlY = 2 * apexY - anchorY
 
   for (let i = 0; i < data.numSashimiArcs; i++) {
-    const x1 = data.sashimiX1[i]!
-    const x2 = data.sashimiX2[i]!
+    const x1Bp = data.sashimiX1[i]!
+    const x2Bp = data.sashimiX2[i]!
     const colorType = data.sashimiColorTypes[i]!
     const lw = data.sashimiScores[i]!
 
@@ -155,25 +130,13 @@ function drawSashimiArcs(
         : rgb255(sashimiColorPalette[0]!)
     ctx.lineWidth = lw
 
+    const sx1 = blockStartPx + (x1Bp - bpStartOffset) * pxPerBp
+    const sx2 = blockStartPx + (x2Bp - bpStartOffset) * pxPerBp
+    const midX = (sx1 + sx2) / 2
+
     ctx.beginPath()
-    for (let s = 0; s <= ARC_SEGMENTS; s++) {
-      const t = s / ARC_SEGMENTS
-      const pt = evalSashimiCurve(
-        t,
-        x1,
-        x2,
-        coverageHeight,
-        blockStartPx,
-        bpStartOffset,
-        pxPerBp,
-        arcsDown,
-      )
-      if (s === 0) {
-        ctx.moveTo(pt.x, pt.y + coverageOffset)
-      } else {
-        ctx.lineTo(pt.x, pt.y + coverageOffset)
-      }
-    }
+    ctx.moveTo(sx1, anchorY)
+    ctx.quadraticCurveTo(midX, controlY, sx2, anchorY)
     ctx.stroke()
   }
 }
@@ -723,6 +686,7 @@ export async function renderSvg(
           arcLineWidth,
           arcColorByType,
           arcsYDomainBp,
+          pairedArcsDown,
         )
       }
     }

@@ -37,11 +37,11 @@ import { autorun, observable } from 'mobx'
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import { SashimiArcsSubModel } from './SashimiArcsSubModel.ts'
 import { buildLaidOutChainMap } from './computeChainLayout.ts'
+import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import { buildLaidOutPileupMap } from '../RenderPileupDataRPC/sortLayout.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import {
-  ARC_SHAPE_FLAT,
   arcsToRegionResult,
   computeArcsFromPileupData,
 } from '../shared/computeArcsFromPileupData.ts'
@@ -55,7 +55,6 @@ import {
   getShowMenuItem,
   getSortByMenuItem,
 } from '../shared/menus/index.ts'
-import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import { getColorForModification } from '../util.ts'
 import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
@@ -64,8 +63,8 @@ import type {
   ColorPalette,
   RenderState as AlignmentsRenderState,
 } from './components/AlignmentsRenderer.ts'
-import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type { YScaleTicks } from './components/YScaleBar.tsx'
+import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type {
   CigarHitResult,
   IndicatorHitResult,
@@ -804,12 +803,8 @@ export default function stateModelFactory(
           }
           let maxBp = 0
           for (const data of self.arcsState.rpcDataMap.values()) {
-            const shapes = data.arcShapeTypes
-            const yBp = data.arcYBp
-            for (let i = 0; i < data.numArcs; i++) {
-              if (shapes[i] === ARC_SHAPE_FLAT && yBp[i]! > maxBp) {
-                maxBp = yBp[i]!
-              }
+            if (data.maxFlatArcYBp > maxBp) {
+              maxBp = data.maxFlatArcYBp
             }
           }
           return Math.max(1000, maxBp)

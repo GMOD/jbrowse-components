@@ -72,7 +72,7 @@ follow them.
 
 ## Definition of done
 
-- **Type check** the touched packages (`pnpm tsc -b` scoped), full project
+- **Type check** the touched packages (`pnpm tsgo -b` scoped), full project
   once locally.
 - **Unit tests** for changed paths (`pnpm test -- <path>`).
 - **Browser test** when UI behavior changed, on the backend(s) you touched

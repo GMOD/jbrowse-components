@@ -228,7 +228,7 @@ For each migrated shader set:
 
 If `*.slang` changes in a way that shifts byte offsets, `*.generated.ts`
 changes, and `interleaveBuffers.ts` (which imports named field offsets like
-`FIELD_OFFSET_F32.y`) either keeps working transparently or fails at tsc if the
+`FIELD_OFFSET_F32.y`) either keeps working transparently or fails at tsgo if the
 field was renamed/removed. Stride drift is no longer expressible.
 
 ## Consequences

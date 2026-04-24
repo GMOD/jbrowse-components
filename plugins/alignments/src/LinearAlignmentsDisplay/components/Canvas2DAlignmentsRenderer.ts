@@ -108,13 +108,13 @@ interface Canvas2DRegionData {
   // Arcs
   arcX1: Uint32Array
   arcX2: Uint32Array
-  arcColorTypes: Float32Array
+  arcColorTypes: Uint8Array
   arcShapeTypes: Uint8Array
   arcYBp: Uint32Array
   numArcs: number
   arcLinePositions: Uint32Array
   arcLineYs: Float32Array
-  arcLineColorTypes: Float32Array
+  arcLineColorTypes: Uint8Array
   numArcLines: number
 
   // Connecting lines
@@ -209,13 +209,13 @@ function emptyRegion(): Canvas2DRegionData {
     modCovSegmentCount: 0,
     arcX1: empty32,
     arcX2: empty32,
-    arcColorTypes: emptyF32,
+    arcColorTypes: empty8,
     arcShapeTypes: empty8,
     arcYBp: empty32,
     numArcs: 0,
     arcLinePositions: empty32,
     arcLineYs: emptyF32,
-    arcLineColorTypes: emptyF32,
+    arcLineColorTypes: empty8,
     numArcLines: 0,
     connectingLinePositions: empty32,
     connectingLineYs: empty16,
@@ -988,7 +988,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       const bp = region.arcLinePositions[i]!
       const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
       const y = arcsTop + region.arcLineYs[i]! * arcsH
-      const colorIdx = Math.round(region.arcLineColorTypes[i]!)
+      const colorIdx = region.arcLineColorTypes[i]!
 
       ctx.fillStyle = this.paletteColor(arcLineColorPalette, colorIdx)
       ctx.fillRect(x - 1, y - 1, 2, 2)

@@ -6,7 +6,7 @@ import {
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
+import { autorun, untracked } from 'mobx'
 
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
@@ -29,31 +29,47 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         ) {
           return
         }
-        const { level, adapterConfig } = self
+        const level = self.level
         if (level + 1 >= view.views.length) {
           return
         }
 
-        // Snapshot every RPC input synchronously. All reads here track,
-        // but `delay: 500` on this autorun debounces pan/zoom firehoses
-        // into one fire per ~500ms of quiet.
-        const viewSnaps = view.views.map(v => ({
-          bpPerPx: v.bpPerPx,
-          offsetPx: v.offsetPx,
-          displayedRegions: v.displayedRegions,
-          staticBlocks: {
-            contentBlocks: v.staticBlocks.contentBlocks,
-            blocks: v.staticBlocks.blocks,
-          },
-          interRegionPaddingWidth: v.interRegionPaddingWidth,
-          minimumBlockWidth: v.minimumBlockWidth,
-          width: v.width,
-        }))
-        const regions = view.views[level]!.staticBlocks.contentBlocks
+        // Tracked reads — mobx re-fires this autorun only when one of
+        // these changes. `displayedRegions` is a frozen type so a shallow
+        // read of the reference is enough — it's replaced atomically on
+        // nav. Deliberately absent: bpPerPx (read only through
+        // `chainMergeLodBucket`, which value-memoizes), offsetPx, width,
+        // staticBlocks. Those are viewport concerns handled by GPU
+        // reproject uniforms — they must not invalidate the fetch.
+        const v0 = view.views[level]!
+        const v1 = view.views[level + 1]!
+        void v0.displayedRegions
+        void v1.displayedRegions
         const drawCIGAR = view.drawCIGAR
         const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
         const drawLocationMarkers = view.drawLocationMarkers
         const chainMerge = view.chainMerge
+        void self.chainMergeLodBucket
+
+        // Everything else is untracked — the worker still needs per-view
+        // bpPerPx/offsetPx/etc in Phase 1 for pixel-space arithmetic, but
+        // those reads must not retrigger the fetch.
+        const { adapterConfig, regions, viewSnaps } = untracked(() => ({
+          adapterConfig: self.adapterConfig,
+          regions: v0.displayedRegions,
+          viewSnaps: view.views.map(v => ({
+            bpPerPx: v.bpPerPx,
+            offsetPx: v.offsetPx,
+            displayedRegions: v.displayedRegions,
+            staticBlocks: {
+              contentBlocks: v.staticBlocks.contentBlocks,
+              blocks: v.staticBlocks.blocks,
+            },
+            interRegionPaddingWidth: v.interRegionPaddingWidth,
+            minimumBlockWidth: v.minimumBlockWidth,
+            width: v.width,
+          })),
+        }))
 
         if (currentStopToken) {
           stopStopToken(currentStopToken)

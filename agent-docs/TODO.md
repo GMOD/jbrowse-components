@@ -317,18 +317,6 @@ smoothness vs. zoom precision), not substitutes. 4 is optional.
 **Samplot mode follow-ups.** Phase 1+2 landed (flat lines, Y = |tlen|, SV-type
 palette, shared Canvas2D ⇄ SVG rasterizer). Remaining:
 
-- *BND coloring.* Interchrom pairs bypass the samplot arc path and render as
-  grey vertical lines via `arcLineColorPalette` — which only has 2 slots,
-  so `colorType: 3` (interchrom) falls off the end. Grow the line palette or
-  reclassify interchrom as samplot arcs with a custom shape. Today the
-  samplot legend intentionally omits BND because the color doesn't work.
-- *SVG export ignores `pairedArcsDown`.* The live canvas flips arc Y based on
-  the setting; `renderSvg.tsx:drawPairedArcs` always passes
-  `pairedArcsDown: false`. Pre-existing (the deleted `evalBezierCurve`
-  was also always-down). Fixing requires coordinating with the
-  `arcsCtxHeight` / `<image y=…>` placement in the export — currently the
-  arcs sub-canvas height and its SVG placement change based on the flag,
-  but the drawing doesn't.
 - *Y-axis jitter for stacked samplot lines.* Samplot.py applies
   matplotlib-style jitter (`jitter_bounds`) to de-occlude overlapping
   events at the same |tlen|. Cheap to add as a per-instance deterministic

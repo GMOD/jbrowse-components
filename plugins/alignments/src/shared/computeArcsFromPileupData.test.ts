@@ -172,8 +172,8 @@ describe('computeArcsFromPileupData', () => {
     expect(result.lines.length).toBe(2)
     expect(result.lines[0]!.x.refName).toBe('chr1')
     expect(result.lines[1]!.x.refName).toBe('chr2')
-    expect(result.lines[0]!.colorType).toBe(3)
-    expect(result.lines[1]!.colorType).toBe(3)
+    expect(result.lines[0]!.colorType).toBe(0)
+    expect(result.lines[1]!.colorType).toBe(0)
   })
 
   test('inter-chromosomal produces nothing when drawInter=false', () => {
@@ -523,18 +523,20 @@ describe('arcsToRegionResult', () => {
         p1: { refName: 'chr1', bp: 1100 },
         p2: { refName: 'chr1', bp: 1500 },
         colorType: 0,
-        isArc: 0,
+        shapeType: 0,
+        yBp: 200,
       },
       {
         p1: { refName: 'chr2', bp: 5000 },
         p2: { refName: 'chr2', bp: 6000 },
         colorType: 1,
-        isArc: 1,
+        shapeType: 1,
+        yBp: 500,
       },
     ]
     const lines = [
-      { x: { refName: 'chr1', bp: 1200 }, colorType: 3 },
-      { x: { refName: 'chr2', bp: 5500 }, colorType: 3 },
+      { x: { refName: 'chr1', bp: 1200 }, colorType: 0 },
+      { x: { refName: 'chr2', bp: 5500 }, colorType: 0 },
     ]
 
     const result = arcsToRegionResult(arcs, lines, 'chr1', 200)
@@ -552,7 +554,8 @@ describe('arcsToRegionResult', () => {
         p1: { refName: 'chr2', bp: 5000 },
         p2: { refName: 'chr2', bp: 6000 },
         colorType: 0,
-        isArc: 0,
+        shapeType: 0,
+        yBp: 500,
       },
     ]
     const result = arcsToRegionResult(arcs, [], 'chr1', 200)
@@ -563,7 +566,7 @@ describe('arcsToRegionResult', () => {
   })
 
   test('line Y values span 0 to height', () => {
-    const lines = [{ x: { refName: 'chr1', bp: 1500 }, colorType: 3 }]
+    const lines = [{ x: { refName: 'chr1', bp: 1500 }, colorType: 0 }]
     const result = arcsToRegionResult([], lines, 'chr1', 300)
 
     expect(result.numLines).toBe(1)
