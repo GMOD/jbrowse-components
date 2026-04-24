@@ -1,7 +1,14 @@
+import { Suspense, lazy, useState } from 'react'
+
 import RefreshIcon from '@mui/icons-material/Refresh'
+import ReportIcon from '@mui/icons-material/Report'
 import { Alert, IconButton, Tooltip } from '@mui/material'
 
 import { makeStyles } from '../util/tss-react/index.ts'
+
+const ErrorMessageStackTraceDialog = lazy(
+  () => import('./ErrorMessageStackTraceDialog.tsx'),
+)
 
 const useStyles = makeStyles()({
   content: {
@@ -18,6 +25,7 @@ export default function ErrorBar({
   onRetry: () => void
 }) {
   const { classes } = useStyles()
+  const [showStack, setShowStack] = useState(false)
   const message = `${error}`
   return (
     <div
@@ -32,11 +40,26 @@ export default function ErrorBar({
       <Alert
         severity="error"
         action={
-          <Tooltip title="Retry">
-            <IconButton data-testid="reload_button" onClick={onRetry}>
-              <RefreshIcon />
-            </IconButton>
-          </Tooltip>
+          <>
+            <Tooltip title="Show stack trace">
+              <IconButton onClick={() => setShowStack(true)}>
+                <ReportIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Retry">
+              <IconButton data-testid="reload_button" onClick={onRetry}>
+                <RefreshIcon />
+              </IconButton>
+            </Tooltip>
+            {showStack ? (
+              <Suspense fallback={null}>
+                <ErrorMessageStackTraceDialog
+                  error={error}
+                  onClose={() => setShowStack(false)}
+                />
+              </Suspense>
+            ) : null}
+          </>
         }
       >
         <Tooltip title={message}>
