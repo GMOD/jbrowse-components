@@ -47,7 +47,6 @@ interface MinimalFeature {
   // Variant-specific fields
   INFO?: Record<string, unknown>
   ALT?: unknown[]
-  mate?: Record<string, unknown>
   type?: string
 }
 

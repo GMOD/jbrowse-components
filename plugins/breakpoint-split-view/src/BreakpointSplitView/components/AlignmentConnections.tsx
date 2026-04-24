@@ -117,12 +117,8 @@ const AlignmentConnections = observer(function AlignmentConnections({
                   'breakpointAlignments',
                   {
                     featureData: {
-                      feature1: (
-                        allFeatures?.get(f1.id()) || { toJSON: () => ({}) }
-                      ).toJSON(),
-                      feature2: (
-                        allFeatures?.get(f2.id()) || { toJSON: () => ({}) }
-                      ).toJSON(),
+                      feature1: allFeatures?.get(f1.id())?.toJSON(),
+                      feature2: allFeatures?.get(f2.id())?.toJSON(),
                     },
                   },
                 )
