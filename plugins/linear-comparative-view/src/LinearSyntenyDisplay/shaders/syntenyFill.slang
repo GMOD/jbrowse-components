@@ -12,6 +12,11 @@ struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
   nointerpolation float featureId : COLOR1;
+  // side interpolates 0 at the left edge to 1 at the right edge of the
+  // trapezoid, continuously across the 16 stacked segments (left/right
+  // align between adjacent segments). Used for analytic edge AA in the
+  // fragment — MSAA alone misses shallow diagonals on steep trapezoids.
+  float side : COLOR2;
 };
 
 [shader("vertex")]
@@ -23,15 +28,33 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   Corners c = computeCorners(inst, u);
   if (isCulled(c, inst.queryTotalLength, u)) {
     o.position = float4(0.0);
+    o.side = 0.0;
     return o;
   }
 
   float t, side;
   computeFillSegmentT(vid, c, t, side);
   float3 e = hermiteEdges(c, t, u);
+  // Enforce minimum visual horizontal width so sub-pixel trapezoids render
+  // like canvas-main's thin-feature stroke path. Bump the min more for
+  // shallow (near-horizontal) slopes so the perpendicular thickness stays
+  // visible at low angles — matches the slope-aware lineWidth in the
+  // Canvas2D backend.
+  float w = abs(e.x - e.y);
+  float topMid = (c.x1 + c.x2) * 0.5;
+  float botMid = (c.x3 + c.x4) * 0.5;
+  float slope = abs(botMid - topMid) / max(u.height, 1.0);
+  float minW = min(1.0 + max(0.0, slope - 1.0) * 0.25, 3.0);
+  if (w < minW) {
+    float mid = (e.x + e.y) * 0.5;
+    float half = e.x < e.y ? -minW * 0.5 : minW * 0.5;
+    e.x = mid + half;
+    e.y = mid - half;
+  }
   float edgeX = side > 0.5 ? e.y : e.x;
   float2 clipSpace = float2(edgeX, e.z) / u.resolution * 2.0 - 1.0;
   o.position = float4(clipSpace.x, -clipSpace.y, 0.0, 1.0);
+  o.side = side;
   return o;
 }
 
