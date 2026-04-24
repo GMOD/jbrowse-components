@@ -1,7 +1,15 @@
 import { alpha } from '@mui/material'
+
 // orientation definitions from igv.js, see also
 // https://software.broadinstitute.org/software/igv/interpreting_pair_orientations
-export const orientationTypes = {
+type PairDirection = 'LR' | 'LL' | 'RR' | 'RL'
+type OrientationMap = Partial<Record<string, PairDirection>>
+
+export const orientationTypes: {
+  fr: OrientationMap
+  rf: OrientationMap
+  ff: OrientationMap
+} = {
   fr: {
     F1R2: 'LR',
     F2R1: 'LR',
@@ -14,7 +22,7 @@ export const orientationTypes = {
 
     R1F2: 'RL',
     R2F1: 'RL',
-  } as Record<string, string>,
+  },
 
   rf: {
     R1F2: 'LR',
@@ -28,7 +36,7 @@ export const orientationTypes = {
 
     F1R2: 'RL',
     F2R1: 'RL',
-  } as Record<string, string>,
+  },
 
   ff: {
     F2F1: 'LR',
@@ -42,7 +50,7 @@ export const orientationTypes = {
 
     R2R1: 'RL',
     F1F2: 'RL',
-  } as Record<string, string>,
+  },
 }
 
 export const pairMap = {
@@ -50,7 +58,7 @@ export const pairMap = {
   LL: 'color_pair_ll',
   RR: 'color_pair_rr',
   RL: 'color_pair_rl',
-} as const
+} as const satisfies Record<PairDirection, string>
 
 // manually calculated by running
 // const color = require('color')
@@ -83,10 +91,11 @@ const defaultColor = strokeColor.color_unknown
 export function getPairedOrientationColorOrDefault(f: {
   pair_orientation?: string
 }) {
-  const type = orientationTypes.fr
-  const r = type[f.pair_orientation || ''] as keyof typeof pairMap
-  const type2 = pairMap[r] as keyof typeof strokeColor
-  return r === 'LR' ? undefined : strokeColor[type2]
+  const r = orientationTypes.fr[f.pair_orientation ?? '']
+  if (!r || r === 'LR') {
+    return undefined
+  }
+  return strokeColor[pairMap[r]]
 }
 
 export function getLongReadOrientationColorOrDefault(s1: number, s2: number) {
@@ -104,11 +113,10 @@ export function getLongReadOrientationAbnormal(s1: number, s2: number) {
 }
 
 export function isAbnormalOrientation(f: { pair_orientation?: string }) {
-  const type = orientationTypes.fr
-  const r = type[f.pair_orientation || ''] as keyof typeof pairMap
-  return r !== 'LR'
+  const r = orientationTypes.fr[f.pair_orientation ?? '']
+  return r !== undefined && r !== 'LR'
 }
 
 export function getPairedOrientationColor(f: { pair_orientation?: string }) {
-  return getPairedOrientationColorOrDefault(f) || defaultColor
+  return getPairedOrientationColorOrDefault(f) ?? defaultColor
 }

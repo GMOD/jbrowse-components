@@ -26,7 +26,9 @@ function getMateInfo(feature: Feature, alt: string | undefined) {
     return { mateRefName: mate.refName, matePos: mate.start }
   }
 
-  return { mateRefName: feature.get('refName'), matePos: feature.get('end') }
+  throw new Error(
+    `feature ${feature.id()} has no breakend ALT, no <TRA> INFO, and no mate field`,
+  )
 }
 
 export default class BreakpointSplitViewType extends ViewType {

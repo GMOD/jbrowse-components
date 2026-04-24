@@ -116,7 +116,7 @@ const Header = observer(function Header({
               },
             },
             {
-              label: 'Orientation - Side-by-side',
+              label: 'Search boxes - side-by-side',
               type: 'radio',
               checked: sideBySide,
               onClick: () => {
@@ -124,7 +124,7 @@ const Header = observer(function Header({
               },
             },
             {
-              label: 'Orientation - Vertical',
+              label: 'Search boxes - stacked',
               type: 'radio',
               checked: !sideBySide,
               onClick: () => {

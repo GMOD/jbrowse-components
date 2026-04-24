@@ -43,16 +43,17 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   const displayResults = await Promise.all(
     views.map(
       async view =>
-        ({
+        (({
           view,
+
           data: await Promise.all(
             view.tracks.map(async track => {
               const d = track.displays[0]
               await when(() => (d.ready !== undefined ? d.ready : true))
               return { track, result: await d.renderSvg({ ...opts, theme }) }
             }),
-          ),
-        }) as const,
+          )
+        }) as const),
     ),
   )
 
