@@ -375,7 +375,7 @@ export function buildRubberBandMenuItems(
       icon: ContentCopyIcon,
       onClick: async () => {
         const { default: copy } = await import('copy-to-clipboard')
-        copy(rangeString)
+        await copy(rangeString)
       },
     },
   ]
@@ -414,7 +414,7 @@ export function buildRubberbandClickMenuItems(
       icon: ContentCopyIcon,
       onClick: async () => {
         const { default: copy } = await import('copy-to-clipboard')
-        copy(locString)
+        await copy(locString)
       },
     },
   ]

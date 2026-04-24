@@ -37,7 +37,7 @@ const SequenceFeatureMenu = observer(
                 const { default: copy } = await import('copy-to-clipboard')
                 const r = ref?.current
                 if (r) {
-                  copy(r.textContent || '', { format: 'text/plain' })
+                  await copy(r.textContent || '', { format: 'text/plain' })
                 }
               },
             },
@@ -47,7 +47,7 @@ const SequenceFeatureMenu = observer(
                 const { default: copy } = await import('copy-to-clipboard')
                 const r = ref?.current
                 if (r) {
-                  copy(r.outerHTML, { format: 'text/html' })
+                  await copy(r.outerHTML, { format: 'text/html' })
                 }
               },
             },

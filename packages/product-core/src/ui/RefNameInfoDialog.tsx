@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Dialog, ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogContent } from '@mui/material'
+import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
 
 import { readConf } from './util.ts'
@@ -96,8 +97,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
             <Button
               variant="contained"
               onClick={async () => {
-                const { default: copy } = await import('copy-to-clipboard')
-                copy(
+                await copy(
                   refNames
                     .flatMap(([assemblyName, names]) => [
                       `--- ${assemblyName} ---`,

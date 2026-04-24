@@ -879,7 +879,7 @@ export default function baseStateModelFactory(
                   try {
                     const { uniqueId: _, ...rest } = fullFeature.toJSON()
                     const { default: copy } = await import('copy-to-clipboard')
-                    copy(JSON.stringify(rest, null, 4))
+                    await copy(JSON.stringify(rest, null, 4))
                     session.notify('Copied to clipboard', 'success')
                   } catch (e) {
                     console.error(e)

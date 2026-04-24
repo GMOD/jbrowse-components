@@ -558,7 +558,7 @@ function stateModelFactory() {
                   const { uniqueId, ...rest } = feat.toJSON()
                   const session = getSession(self)
                   const { default: copy } = await import('copy-to-clipboard')
-                  copy(JSON.stringify(rest, null, 4))
+                  await copy(JSON.stringify(rest, null, 4))
                   session.notify('Copied to clipboard', 'success')
                 },
               },

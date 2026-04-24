@@ -250,7 +250,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
         <Button
           disabled={loading || !!error}
           onClick={() => {
-            copy(str)
+            await copy(str)
             setCopied(true)
             setTimeout(() => {
               setCopied(false)

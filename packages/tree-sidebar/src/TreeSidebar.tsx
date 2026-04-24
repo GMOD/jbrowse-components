@@ -1,16 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-import Flatbush from '@jbrowse/core/util/flatbush'
 import { Menu, MenuItem, alpha } from '@mui/material'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { getLeafNames } from './clusterUtils.ts'
-import { descendants } from './hierarchy.ts'
 
-import type { ClusterHierarchyNode, TreeSidebarModel } from './types.ts'
+import type { TreeSidebarModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface MenuAnchor {
@@ -25,10 +22,6 @@ const TreeSidebar = observer(function TreeSidebar({
   model: TreeSidebarModel
 }) {
   const { width: viewWidth } = getContainingView(model) as LinearGenomeViewModel
-  const [spatialIndex, setSpatialIndex] = useState<{
-    index: Flatbush
-    nodes: ClusterHierarchyNode[]
-  } | null>(null)
   const [menuAnchor, setMenuAnchor] = useState<MenuAnchor | null>(null)
 
   const {
@@ -39,6 +32,7 @@ const TreeSidebar = observer(function TreeSidebar({
     scrollTop = 0,
     showTree,
     sources,
+    spatialIndex,
   } = model
 
   const treeCanvasRef = useCallback(
@@ -54,37 +48,6 @@ const TreeSidebar = observer(function TreeSidebar({
     },
     [model, viewWidth, height, lineZoneHeight],
   )
-
-  useEffect(() => {
-    return autorun(
-      function treeSpatialIndexAutorun() {
-        const h = model.hierarchy
-        // touch treeAreaWidth and totalHeight so MobX tracks them as dependencies
-        void model.treeAreaWidth
-        void model.totalHeight
-        if (h) {
-          const nodes = descendants(h).filter(node => node.children?.length)
-          const index = new Flatbush(nodes.length)
-          const hitRadius = 8
-          for (const node of nodes) {
-            const x = node.y!
-            const y = node.x!
-            index.add(
-              x - hitRadius,
-              y - hitRadius,
-              x + hitRadius,
-              y + hitRadius,
-            )
-          }
-          index.finish()
-          setSpatialIndex({ index, nodes })
-        } else {
-          setSpatialIndex(null)
-        }
-      },
-      { name: 'TreeSpatialIndex' },
-    )
-  }, [model])
 
   function hitTestNode(event: React.MouseEvent) {
     if (spatialIndex) {

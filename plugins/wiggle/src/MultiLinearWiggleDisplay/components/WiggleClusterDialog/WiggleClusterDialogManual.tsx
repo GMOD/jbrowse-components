@@ -19,6 +19,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
 
 import type { ReducedModel } from './types.ts'
@@ -139,8 +140,7 @@ cat(resultClusters$order,sep='\n')`
               <Button
                 variant="contained"
                 onClick={async () => {
-                  const { default: copy } = await import('copy-to-clipboard')
-                  copy(results || '')
+                  await copy(results || '')
                 }}
               >
                 Copy Rscript to clipboard

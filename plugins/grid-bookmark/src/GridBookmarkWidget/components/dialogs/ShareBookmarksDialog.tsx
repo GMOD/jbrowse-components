@@ -14,6 +14,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
 
 import { shareSessionToDynamo } from '../../sessionSharing.ts'
@@ -132,8 +133,7 @@ const ShareBookmarksDialog = observer(function ShareBookmarksDialog({
           disabled={loading}
           startIcon={<ContentCopyIcon />}
           onClick={async () => {
-            const { default: copy } = await import('copy-to-clipboard')
-            copy(url)
+            await copy(url)
             session.notify('Copied to clipboard', 'success')
             onClose()
           }}

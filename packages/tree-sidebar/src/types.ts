@@ -1,4 +1,5 @@
 import type { HierarchyNode } from './hierarchy.ts'
+import type Flatbush from '@jbrowse/core/util/flatbush'
 
 export interface ClusterNodeData {
   name: string
@@ -28,6 +29,10 @@ export interface TreeSidebarModel {
   showTree: boolean
   sources?: TreeSource[]
   subtreeFilter?: string[]
+  spatialIndex?: {
+    index: Flatbush
+    nodes: ClusterHierarchyNode[]
+  }
   setTreeCanvasRef: (ref: HTMLCanvasElement | null) => void
   setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
   setHoveredTreeNode: (node?: HoveredTreeNode) => void

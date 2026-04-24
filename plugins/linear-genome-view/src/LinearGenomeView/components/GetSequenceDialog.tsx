@@ -180,7 +180,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         <Button
           onClick={async () => {
             const { default: copy } = await import('copy-to-clipboard')
-            copy(sequence)
+            await copy(sequence)
             setCopied(true)
             setTimeout(() => {
               setCopied(false)
