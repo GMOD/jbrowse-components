@@ -46,6 +46,15 @@ export const UNIFORM_OFFSET_F32 = {
   isCurve: 13,
 } as const
 
+
+// Palette-group slot arrays: offsets of consecutive <prefix>0..N
+// fields, indexed into the 4-byte-word uniform buffer (works with
+// either Uint32Array or Float32Array views — the field kind picks).
+export const UNIFORM_SLOT_ARRAYS = {
+  adjOff: [3, 4] as const,
+  scale: [5, 6] as const,
+} as const
+
 export interface Uniforms {
   resolution: [number, number]
   height: number

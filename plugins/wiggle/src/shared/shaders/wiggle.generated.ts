@@ -40,6 +40,7 @@ export const UNIFORM_OFFSET_F32 = {
   reversed: 11,
 } as const
 
+
 export interface Uniforms {
   bpRangeX: [number, number, number]
   canvasHeight: number

@@ -232,7 +232,56 @@ export function emit(inputs: CodegenInputs) {
         lines.push(`  ${f.name}: ${f.binding.offset / 4},`)
       }
     }
-    lines.push('} as const', '', 'export interface Uniforms {')
+    lines.push('} as const', '')
+
+    // Auto-detect palette groups: fields with a shared prefix and consecutive
+    // integer suffixes starting at 0 (e.g. arcColor0..7, arcLineColor0..1).
+    // Emits `UNIFORM_SLOT_ARRAYS_F32.<prefix>` so TS callers iterate without
+    // maintaining parallel hand-rolled slot arrays.
+    const groups = new Map<string, Map<number, number>>()
+    for (const f of u.fields) {
+      if (f.binding?.kind !== 'uniform') {
+        continue
+      }
+      const m = /^(.+?)(\d+)$/.exec(f.name)
+      if (!m) {
+        continue
+      }
+      const prefix = m[1]!
+      const n = Number(m[2]!)
+      if (!groups.has(prefix)) {
+        groups.set(prefix, new Map())
+      }
+      groups.get(prefix)!.set(n, f.binding.offset / 4)
+    }
+    const emittedGroups: { prefix: string; offsets: number[] }[] = []
+    for (const [prefix, idxMap] of groups) {
+      if (idxMap.size < 2 || !idxMap.has(0)) {
+        continue
+      }
+      const offsets: number[] = []
+      for (let i = 0; idxMap.has(i); i++) {
+        offsets.push(idxMap.get(i)!)
+      }
+      if (offsets.length === idxMap.size) {
+        emittedGroups.push({ prefix, offsets })
+      }
+    }
+    if (emittedGroups.length > 0) {
+      lines.push(
+        '',
+        '// Palette-group slot arrays: offsets of consecutive <prefix>0..N',
+        '// fields, indexed into the 4-byte-word uniform buffer (works with',
+        '// either Uint32Array or Float32Array views — the field kind picks).',
+        'export const UNIFORM_SLOT_ARRAYS = {',
+      )
+      for (const g of emittedGroups) {
+        lines.push(`  ${g.prefix}: [${g.offsets.join(', ')}] as const,`)
+      }
+      lines.push('} as const')
+    }
+
+    lines.push('', 'export interface Uniforms {')
     for (const f of u.fields) {
       lines.push(`  ${f.name}: ${tsFieldType(f.type)}`)
     }

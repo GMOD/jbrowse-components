@@ -152,6 +152,15 @@ export const UNIFORM_OFFSET_F32 = {
   arcLineColor1: 65,
 } as const
 
+
+// Palette-group slot arrays: offsets of consecutive <prefix>0..N
+// fields, indexed into the 4-byte-word uniform buffer (works with
+// either Uint32Array or Float32Array views — the field kind picks).
+export const UNIFORM_SLOT_ARRAYS = {
+  arcColor: [56, 57, 58, 59, 60, 61, 62, 63] as const,
+  arcLineColor: [64, 65] as const,
+} as const
+
 export interface Uniforms {
   bpHi: number
   bpLo: number

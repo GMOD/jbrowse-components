@@ -32,6 +32,7 @@ export const UNIFORM_OFFSET_F32 = {
   uniformW: 6,
 } as const
 
+
 export interface Uniforms {
   canvasSize: [number, number]
   yScalar: number

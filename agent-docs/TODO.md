@@ -343,7 +343,8 @@ palette, shared Canvas2D ⇄ SVG rasterizer). Remaining:
 
 ## investigate
 
-- Clustering UI not updating?
+- Clustering tree is drawn before the Ui has 'updated' with the drawing
+
 ## Canvas
 
 - Canvas: right-side padding excessive? Subpixel drawing crowded at dense zoom?

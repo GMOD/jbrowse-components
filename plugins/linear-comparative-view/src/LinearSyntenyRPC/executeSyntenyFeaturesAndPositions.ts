@@ -16,7 +16,7 @@ import type { SyntenyInstanceData } from './buildSyntenyGeometry.ts'
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region, ViewSnap } from '@jbrowse/core/util'
+import type { ViewSnap } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface SyntenyRpcResult extends SyntenyFeatureData {
@@ -160,7 +160,6 @@ export async function executeSyntenyFeaturesAndPositions({
   pluginManager,
   sessionId,
   adapterConfig,
-  regions,
   viewSnaps,
   level,
   stopToken,
@@ -173,7 +172,6 @@ export async function executeSyntenyFeaturesAndPositions({
   pluginManager: PluginManager
   sessionId: string
   adapterConfig: Record<string, unknown>
-  regions: Region[]
   viewSnaps: ViewSnap[]
   level: number
   stopToken?: StopToken
@@ -194,7 +192,10 @@ export async function executeSyntenyFeaturesAndPositions({
     () =>
       firstValueFrom(
         dataAdapter
-          .getFeaturesInMultipleRegions(regions, { stopToken, bpPerPx })
+          .getFeaturesInMultipleRegions(viewSnaps[level]!.displayedRegions, {
+            stopToken,
+            bpPerPx,
+          })
           .pipe(toArray()),
       ),
   )

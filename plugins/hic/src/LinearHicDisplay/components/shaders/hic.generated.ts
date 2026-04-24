@@ -34,6 +34,7 @@ export const UNIFORM_OFFSET_F32 = {
   useLogScale: 7,
 } as const
 
+
 export interface Uniforms {
   canvasSize: [number, number]
   binWidth: number

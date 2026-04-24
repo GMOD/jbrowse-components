@@ -30,6 +30,7 @@ export const UNIFORM_OFFSET_F32 = {
   scrollTop: 4,
 } as const
 
+
 export interface Uniforms {
   numFeatures: number
   canvasWidth: number

@@ -48,6 +48,7 @@ import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 // UNIFORMS_SIZE_BYTES. Keep one shared ArrayBuffer for the UBO.
 const UNIFORMS_SIZE_BYTES = readShader.UNIFORMS_SIZE_BYTES
 const U = readShader.UNIFORM_OFFSET_F32
+const USLOTS = readShader.UNIFORM_SLOT_ARRAYS
 
 // Pass IDs
 const PASS_READ = 'read'
@@ -69,19 +70,6 @@ const PASS_SOFTCLIP_BASES = 'softclipBases'
 
 const CLIP_KIND_SOFT = 0
 const CLIP_KIND_HARD = 1
-
-// Constant slot lookups hoisted so the hot path doesn't rebuild arrays.
-const ARC_COLOR_SLOTS = [
-  U.arcColor0,
-  U.arcColor1,
-  U.arcColor2,
-  U.arcColor3,
-  U.arcColor4,
-  U.arcColor5,
-  U.arcColor6,
-  U.arcColor7,
-] as const
-const ARC_LINE_SLOTS = [U.arcLineColor0, U.arcLineColor1] as const
 
 // Fill the per-frame UBO slots. Pure — mutates only the given typed-array
 // views. Every field here corresponds to a `u.fieldName` in
@@ -437,10 +425,10 @@ function writePaletteToUbo(
   u[U.colorUnmappedMate] = pack(c.colorUnmappedMate)
   const arcPal = getArcPalette(arcColorByType)
   for (let i = 0; i < arcPal.length; i++) {
-    u[ARC_COLOR_SLOTS[i]!] = pack(arcPal[i]!)
+    u[USLOTS.arcColor[i]!] = pack(arcPal[i]!)
   }
   for (let i = 0; i < arcLineColorPalette.length; i++) {
-    u[ARC_LINE_SLOTS[i]!] = pack(arcLineColorPalette[i]!)
+    u[USLOTS.arcLineColor[i]!] = pack(arcLineColorPalette[i]!)
   }
 }
 

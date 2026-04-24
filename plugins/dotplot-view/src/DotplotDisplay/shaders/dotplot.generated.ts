@@ -32,6 +32,7 @@ export const UNIFORM_OFFSET_F32 = {
   scaleY: 6,
 } as const
 
+
 export interface Uniforms {
   resolution: [number, number]
   offsetX: number

@@ -26,6 +26,7 @@ export const UNIFORM_OFFSET_F32 = {
   viewport: 4,
 } as const
 
+
 export interface Uniforms {
   scale: [number, number]
   translate: [number, number]

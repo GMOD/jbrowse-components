@@ -13,6 +13,7 @@ import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
 import type { ClickCoord } from './components/util.ts'
 import type { ColorScheme } from './drawSyntenyUtils.ts'
 import type { SyntenyTrackRenderParams } from './syntenyBackendTypes.ts'
+import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -22,29 +23,6 @@ import type {
   SyriClassification,
   SyriType,
 } from '@jbrowse/plugin-comparative-adapters'
-
-// Duck-typed view to avoid circular imports. Display only reads LGV-ish
-// fields off the containing view.
-interface SyntenyViewDuck {
-  initialized: boolean
-  drawCurves: boolean
-  drawCIGAR: boolean
-  drawCIGARMatchesOnly: boolean
-  drawLocationMarkers: boolean
-  chainMerge: boolean
-  views: {
-    initialized: boolean
-    displayedRegions: {
-      refName: string
-      start: number
-      end: number
-      reversed?: boolean
-      assemblyName: string
-    }[]
-    offsetPx: number
-    bpPerPx: number
-  }[]
-}
 
 export interface SyntenyFeatureData {
   p11_offsetPx: Float64Array
@@ -264,7 +242,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * through this getter. Phase 2 may quantize further (power-of-2).
        */
       get chainMergeLodBucket() {
-        const view = getContainingView(self) as unknown as SyntenyViewDuck
+        const view = getContainingView(self) as LinearSyntenyViewModel
         if (!view.chainMerge) {
           return 0
         }
@@ -479,7 +457,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         if (self.isMinimized || this.isLevelCollapsed) {
           return undefined
         }
-        const view = getContainingView(self) as unknown as SyntenyViewDuck
+        const view = getContainingView(self) as LinearSyntenyViewModel
         if (
           !view.initialized ||
           !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)

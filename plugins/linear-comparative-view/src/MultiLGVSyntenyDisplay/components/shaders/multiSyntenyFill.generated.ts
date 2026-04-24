@@ -76,6 +76,7 @@ export const UNIFORM_OFFSET_F32 = {
   baseTB: 27,
 } as const
 
+
 export interface Uniforms {
   resolutionX: number
   resolutionY: number

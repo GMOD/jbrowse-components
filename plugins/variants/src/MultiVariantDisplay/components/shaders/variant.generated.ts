@@ -34,6 +34,7 @@ export const UNIFORM_OFFSET_F32 = {
   zero: 8,
 } as const
 
+
 export interface Uniforms {
   bpRangeX: [number, number, number]
   regionStart: number

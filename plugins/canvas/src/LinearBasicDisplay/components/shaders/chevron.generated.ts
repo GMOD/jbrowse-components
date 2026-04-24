@@ -38,6 +38,7 @@ export const UNIFORM_OFFSET_F32 = {
   outlineColor: 10,
 } as const
 
+
 export interface Uniforms {
   bpRangeX: [number, number, number]
   regionStart: number

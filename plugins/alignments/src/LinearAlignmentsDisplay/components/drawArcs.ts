@@ -78,9 +78,11 @@ export function drawArcsToCtx(
       ctx.moveTo(sx1, apexY)
       ctx.lineTo(sx2, apexY)
     } else {
-      const midX = (sx1 + sx2) / 2
+      // Cubic bezier with control points at (x1,apex) and (x2,apex) — matches
+      // arc.slang's `evalArc` so GPU and Canvas2D arcs render identically.
+      // Peak reaches 0.75·arcH (not apexY itself) by bezier math.
       ctx.moveTo(sx1, anchorY)
-      ctx.quadraticCurveTo(midX, apexY, sx2, anchorY)
+      ctx.bezierCurveTo(sx1, apexY, sx2, apexY, sx2, anchorY)
     }
     ctx.stroke()
   }
