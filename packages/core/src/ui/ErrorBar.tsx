@@ -4,15 +4,8 @@ import { Alert, IconButton, Tooltip } from '@mui/material'
 import { makeStyles } from '../util/tss-react/index.ts'
 
 const useStyles = makeStyles()({
-  ellipses: {
-    textOverflow: 'ellipsis',
-    overflow: 'hidden',
-  },
   content: {
-    textOverflow: 'ellipsis',
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    maxWidth: '80%',
+    wordBreak: 'break-word',
     textAlign: 'center',
   },
 })
@@ -38,7 +31,6 @@ export default function ErrorBar({
     >
       <Alert
         severity="error"
-        classes={{ message: classes.ellipses }}
         action={
           <Tooltip title="Retry">
             <IconButton data-testid="reload_button" onClick={onRetry}>
