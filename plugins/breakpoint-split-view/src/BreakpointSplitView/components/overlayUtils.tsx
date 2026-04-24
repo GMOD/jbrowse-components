@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { getTrackHeightsCache } from '../util.ts'
+import { getTrackHeightsCache, getTrackYOffset } from '../util.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -12,8 +12,6 @@ export interface OverlayProps {
   model: BreakpointViewModel
   trackId: string
   getTrackYPosOverride?: (trackId: string, level: number) => number
-  cachedTrackTops?: number[]
-  cachedYOffset?: number
 }
 
 export function useMouseoverElt() {
@@ -34,20 +32,18 @@ export function useOverlaySetup({
   model,
   trackId,
   getTrackYPosOverride,
-  cachedTrackTops,
-  cachedYOffset,
 }: OverlayProps) {
   const { views } = model
   const [mouseoverElt, setMouseoverElt] = useMouseoverElt()
   return {
     mouseoverElt,
     setMouseoverElt,
-    yOffset: cachedYOffset ?? 0,
+    yOffset: 0,
     tracks: views.map(v => v.getTrack(trackId)),
     hasOverride: !!getTrackYPosOverride,
-    cachedHeights:
-      cachedTrackTops ??
-      getTrackHeightsCache(views, trackId, getTrackYPosOverride),
+    cachedHeights: getTrackYPosOverride
+      ? getTrackHeightsCache(views, trackId, getTrackYPosOverride)
+      : views.map((_, level) => getTrackYOffset(views, trackId, level)),
   }
 }
 

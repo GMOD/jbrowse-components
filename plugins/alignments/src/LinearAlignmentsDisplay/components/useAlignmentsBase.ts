@@ -10,6 +10,7 @@ import {
   formatCigarTooltip,
   formatCoverageTooltip,
   formatIndicatorTooltip,
+  formatModificationTooltip,
   getCanvasCoords,
 } from './alignmentComponentUtils.ts'
 import { performHitTest } from './hitTestPipeline.ts'
@@ -396,6 +397,24 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       return
     }
 
+    if (result.type === 'modification') {
+      model.setOverCigarItem(true)
+      model.setFeatureIdUnderMouse(result.featureHit?.id)
+      const snpBase =
+        result.cigarHit?.type === 'mismatch' ? result.cigarHit.base : undefined
+      model.setMouseoverExtraInformation(
+        formatModificationTooltip(
+          result.hit.position,
+          result.hit.modType,
+          result.hit.probability,
+          result.hit.color,
+          result.resolved.refName,
+          snpBase,
+        ),
+      )
+      return
+    }
+
     if (result.type === 'cigar') {
       model.setOverCigarItem(true)
       model.setMouseoverExtraInformation(formatCigarTooltip(result.hit))
@@ -456,6 +475,17 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     if (result.type === 'cigar') {
       const refName = result.resolved.refName
       openCigarWidget(model, result.hit, refName)
+      return
+    }
+
+    if (result.type === 'modification') {
+      openCoverageWidget(
+        model,
+        result.hit.position,
+        result.resolved.refName,
+        result.resolved.rpcData,
+        result.hit.modType,
+      )
       return
     }
 

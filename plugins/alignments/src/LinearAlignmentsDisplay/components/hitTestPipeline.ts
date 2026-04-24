@@ -5,12 +5,14 @@ import {
   hitTestCoverage as hitTestCoverageFn,
   hitTestFeature as hitTestFeatureFn,
   hitTestIndicator as hitTestIndicatorFn,
+  hitTestModification as hitTestModificationFn,
 } from './hitTesting.ts'
 
 import type {
   CigarHitResult,
   CoverageHitResult,
   IndicatorHitResult,
+  ModificationHitResult,
   ResolvedBlock,
 } from './hitTesting.ts'
 
@@ -21,6 +23,13 @@ export type HitTestResult =
       type: 'cigar'
       hit: CigarHitResult
       featureHit?: { id: string; index: number }
+      resolved: ResolvedBlock
+    }
+  | {
+      type: 'modification'
+      hit: ModificationHitResult
+      featureHit?: { id: string; index: number }
+      cigarHit?: CigarHitResult
       resolved: ResolvedBlock
     }
   | {
@@ -94,6 +103,24 @@ export function performHitTest(
         rangeY,
       )
     : undefined
+
+  // Modification hit testing before CIGAR: in modification mode a modified+
+  // mismatched base should resolve as a modification hit, not a mismatch hit.
+  // When not in modification mode modFlatbush is undefined so this is a no-op.
+  const modificationHit =
+    resolved && coords
+      ? hitTestModificationFn(resolved, coords, featureHeightSetting)
+      : undefined
+  if (modificationHit && resolved && coords) {
+    return {
+      type: 'modification',
+      hit: modificationHit,
+      featureHit: hitTestFeatureFn(canvasX, canvasY, resolved, coords, featureHeightSetting),
+      cigarHit: hitTestCigarItemFn(resolved, coords, featureHeightSetting),
+      resolved,
+    }
+  }
+
   const cigarHit =
     resolved && coords
       ? hitTestCigarItemFn(resolved, coords, featureHeightSetting)
@@ -112,7 +139,7 @@ export function performHitTest(
     return {
       type: 'cigar',
       hit: cigarHit,
-      featureHit: featureHit ?? undefined,
+      featureHit,
       resolved,
     }
   }

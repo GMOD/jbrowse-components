@@ -41,6 +41,7 @@ declare module '@mui/material/styles' {
     deletion: string
     modificationFwd: string
     modificationRev: string
+    mutedSnpBase: string
     bases: {
       A: PaletteColor
       C: PaletteColor
@@ -64,6 +65,7 @@ declare module '@mui/material/styles' {
     deletion?: string
     modificationFwd?: string
     modificationRev?: string
+    mutedSnpBase?: string
     bases?: {
       A?: PaletteColorOptions
       C?: PaletteColorOptions
@@ -115,6 +117,7 @@ const softclip = '#00f'
 const skip = '#009a8a'
 const modificationFwd = '#c8c8c8'
 const modificationRev = '#c8dcc8'
+const mutedSnpBase = '#888'
 
 const defaults = {
   primary: midnight,
@@ -131,6 +134,7 @@ const defaults = {
   hardclip,
   modificationFwd,
   modificationRev,
+  mutedSnpBase,
   bases,
   frames,
   framesCDS,
@@ -553,6 +557,7 @@ function addMissingColors(theme: ThemeOptions = {}) {
         deletion: palette?.deletion || deletion,
         modificationFwd: palette?.modificationFwd || modificationFwd,
         modificationRev: palette?.modificationRev || modificationRev,
+        mutedSnpBase: palette?.mutedSnpBase || mutedSnpBase,
         startCodon: palette?.startCodon || startCodon,
         stopCodon: palette?.stopCodon || stopCodon,
         bases: palette?.bases || bases,

@@ -12,6 +12,7 @@
  * for tooltip and selection purposes.
  */
 
+import { abgrAlpha, abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import {
@@ -48,6 +49,13 @@ export interface CigarHitResult {
 export interface CoverageHitResult {
   type: 'coverage'
   position: number
+}
+
+export interface ModificationHitResult {
+  position: number
+  modType: string | undefined
+  probability: number
+  color: string
 }
 
 export interface IndicatorHitResult {
@@ -490,4 +498,47 @@ export function hitTestIndicator(
   }
 
   return undefined
+}
+
+export function hitTestModification(
+  resolved: ResolvedBlock | undefined,
+  coords: CigarCoords | undefined,
+  featureHeightSetting: number,
+): ModificationHitResult | undefined {
+  if (!resolved || !coords) {
+    return undefined
+  }
+  const { row, yWithinRow, genomicPos, bpPerPx } = coords
+  if (yWithinRow > featureHeightSetting || !resolved.rpcData.modFlatbush) {
+    return undefined
+  }
+  const hitToleranceBp = Math.max(0.5, bpPerPx * 2)
+  // Mods are stored at integer positions (left edge of base); visual center is
+  // at pos+0.5, so shift the query left by 0.5 so the hit peaks at the center.
+  const queryCenter = genomicPos - 0.5
+  const hits = resolved.rpcData.modFlatbush.search(
+    queryCenter - hitToleranceBp,
+    row,
+    queryCenter + hitToleranceBp,
+    row,
+  )
+  if (hits.length === 0) {
+    return undefined
+  }
+  const idx = hits[0]!
+  const {
+    modificationPositions,
+    modificationColors,
+    modificationTypeIndices,
+    detectedModifications,
+  } = resolved.rpcData
+  const colorPacked = modificationColors[idx]!
+  const typeIdx = modificationTypeIndices?.[idx]
+  return {
+    position: modificationPositions[idx]!,
+    modType: typeIdx !== undefined ? detectedModifications[typeIdx] : undefined,
+    // Invert the visual alpha mapping (alpha = p²+0.1) to recover raw ML prob
+    probability: Math.sqrt(Math.max(0, abgrAlpha(colorPacked) / 255 - 0.1)),
+    color: `rgb(${abgrRed(colorPacked)},${abgrGreen(colorPacked)},${abgrBlue(colorPacked)})`,
+  }
 }

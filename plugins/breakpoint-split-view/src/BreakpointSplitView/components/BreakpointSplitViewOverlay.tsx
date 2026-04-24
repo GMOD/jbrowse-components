@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -34,7 +34,6 @@ const BreakpointSplitViewOverlay = observer(
   }) {
     const { classes } = useStyles()
     const { matchedTracks, views } = model
-    const ref = useRef<SVGSVGElement>(null)
     const divRef = useRef<HTMLDivElement>(null)
     const zoomDelta = useRef(0)
     const zoomDivisor = useRef(0)
@@ -42,57 +41,6 @@ const BreakpointSplitViewOverlay = observer(
     const lastViewIndex = useRef(0)
     const rafId = useRef<number | null>(null)
     const lastRafTime = useRef<number | null>(null)
-    const [positionCache, setPositionCache] = useState({
-      svgTop: 0,
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      tracks: {} as Record<string, number[]>,
-    })
-
-    const measurePositions = useCallback(() => {
-      const svgEl = ref.current
-      if (!svgEl) {
-        return
-      }
-      const svgTop = svgEl.getBoundingClientRect().top
-      const tracks: Record<string, number[]> = {}
-      for (const track of matchedTracks) {
-        const trackId = track.configuration.trackId
-        const tops: number[] = []
-        for (const view of views) {
-          const trackRef = view.trackRefs[trackId]
-          tops.push(trackRef?.getBoundingClientRect().top ?? 0)
-        }
-        tracks[trackId] = tops
-      }
-      setPositionCache({ svgTop, tracks })
-    }, [matchedTracks, views])
-
-    useEffect(() => {
-      const hasRO = typeof window !== 'undefined' && 'ResizeObserver' in window
-      const observer = hasRO
-        ? new ResizeObserver(() => {
-            measurePositions()
-          })
-        : undefined
-
-      for (const view of views) {
-        for (const track of matchedTracks) {
-          const trackRef = view.trackRefs[track.configuration.trackId]
-          if (trackRef) {
-            observer?.observe(trackRef)
-          }
-        }
-      }
-      if (ref.current) {
-        observer?.observe(ref.current)
-      }
-
-      measurePositions()
-
-      return () => {
-        observer?.disconnect()
-      }
-    }, [views, matchedTracks, measurePositions])
 
     useEffect(() => {
       const div = divRef.current
@@ -226,18 +174,10 @@ const BreakpointSplitViewOverlay = observer(
 
     return (
       <div ref={divRef} className={classes.overlay}>
-        <svg ref={ref} className={classes.base}>
+        <svg className={classes.base}>
           {matchedTracks.map(track => {
             const trackId = track.configuration.trackId
-            return (
-              <Overlay
-                key={trackId}
-                model={model}
-                trackId={trackId}
-                cachedTrackTops={positionCache.tracks[trackId]}
-                cachedYOffset={positionCache.svgTop}
-              />
-            )
+            return <Overlay key={trackId} model={model} trackId={trackId} />
           })}
         </svg>
       </div>

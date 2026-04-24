@@ -24,6 +24,7 @@ export interface ColorPalette {
   colorCoverage: RGBColor
   colorModificationFwd: RGBColor
   colorModificationRev: RGBColor
+  colorMutedSnpBase: RGBColor
   colorLongInsert: RGBColor
   colorShortInsert: RGBColor
   colorSupplementary: RGBColor

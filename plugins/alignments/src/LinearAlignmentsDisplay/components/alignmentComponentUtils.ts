@@ -45,6 +45,7 @@ export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
     // Modification mode read colors
     colorModificationFwd: toRgb(palette.modificationFwd),
     colorModificationRev: toRgb(palette.modificationRev),
+    colorMutedSnpBase: toRgb(palette.mutedSnpBase),
     // Insert size colors
     colorLongInsert: toRgb(fillColor.color_longinsert),
     colorShortInsert: toRgb(fillColor.color_shortinsert),
@@ -350,7 +351,8 @@ export function getTooltipBin(
     depth > 0 ||
     Object.keys(snps).length > 0 ||
     Object.keys(interbase).length > 0 ||
-    deletions !== undefined
+    deletions !== undefined ||
+    modifications !== undefined
   if (!hasData) {
     return undefined
   }
@@ -386,12 +388,46 @@ export function formatCoverageTooltip(
   position: number,
   blockRpcData: PileupDataResult | undefined,
   refName: string | undefined,
+  modType?: string,
 ) {
   const bin = getTooltipBin(position, blockRpcData)
-  if (bin) {
-    return JSON.stringify({ type: 'coverage', bin, refName })
+  if (!bin) {
+    return undefined
   }
-  return undefined
+  const filteredBin =
+    modType && bin.modifications?.[modType]
+      ? { ...bin, modifications: { [modType]: bin.modifications[modType] } }
+      : bin
+  return JSON.stringify({ type: 'coverage', bin: filteredBin, refName })
+}
+
+export function formatModificationTooltip(
+  position: number,
+  modType: string | undefined,
+  probability: number,
+  color: string,
+  refName: string | undefined,
+  snpBase?: string,
+) {
+  return JSON.stringify({
+    type: 'modification',
+    modType,
+    probability,
+    color,
+    refName,
+    position,
+    snpBase,
+  } satisfies ModificationTooltipPayload)
+}
+
+export interface ModificationTooltipPayload {
+  type: 'modification'
+  modType?: string
+  probability: number
+  color: string
+  refName?: string
+  position: number
+  snpBase?: string
 }
 
 export function formatSashimiTooltip(sashimiHit: SashimiArcHitResult) {

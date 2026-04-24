@@ -536,6 +536,7 @@ export function buildModificationArrays(
   modifications: ModificationEntry[],
   regionStart: number,
   getReadIndex?: (featureId: string) => number,
+  detectedModifications?: Set<string> | string[],
 ) {
   const filtered = modifications.filter(m => m.position >= regionStart)
   const modificationPositions = new Uint32Array(filtered.length)
@@ -547,12 +548,23 @@ export function buildModificationArrays(
   const modificationReadIndices = getReadIndex
     ? new Uint32Array(filtered.length)
     : undefined
+  const modTypeToIdx = detectedModifications
+    ? new Map([...detectedModifications].map((t, i) => [t, i]))
+    : undefined
+  const modificationTypeIndices = modTypeToIdx
+    ? new Uint8Array(filtered.length)
+    : undefined
   for (const [i, m] of filtered.entries()) {
     modificationPositions[i] = m.position
-    const a = Math.round(m.prob * 255) & 0xff
+    // Quadratic curve with 0.1 floor: low-prob mods stay faintly visible,
+    // high-prob mods are strongly opaque (matches main branch alphaColor).
+    const a = Math.round(Math.min(1, m.prob * m.prob + 0.1) * 255) & 0xff
     modificationColors[i] = packAbgr(m.r, m.g, m.b, a)
     if (modificationReadIndices) {
       modificationReadIndices[i] = getReadIndex!(m.featureId)
+    }
+    if (modificationTypeIndices && modTypeToIdx) {
+      modificationTypeIndices[i] = modTypeToIdx.get(m.modType) ?? 0
     }
   }
   return {
@@ -560,6 +572,7 @@ export function buildModificationArrays(
     modificationYs,
     modificationColors,
     modificationReadIndices,
+    modificationTypeIndices,
   }
 }
 

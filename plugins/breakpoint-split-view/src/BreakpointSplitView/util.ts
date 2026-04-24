@@ -35,13 +35,30 @@ export function getPxFromCoordinate(view: LGV, refName: string, coord: number) {
 export function getTrackHeightsCache(
   views: LGV[],
   trackId: string,
-  getYPosOverride?: (trackId: string, level: number) => number,
+  getYPosOverride: (trackId: string, level: number) => number,
 ) {
-  return views.map((_, level) =>
-    getYPosOverride
-      ? getYPosOverride(trackId, level)
-      : views[level]!.trackRefs[trackId]?.getBoundingClientRect().top || 0,
-  )
+  return views.map((_, level) => getYPosOverride(trackId, level))
+}
+
+// Must match the CSS height of viewDivider in BreakpointSplitView.tsx
+const VIEW_DIVIDER_HEIGHT = 3
+// Must match RESIZE_HANDLE_HEIGHT in @jbrowse/plugin-linear-genome-view
+const TRACK_RESIZE_HANDLE_HEIGHT = 3
+
+export function getTrackYOffset(views: LGV[], trackId: string, level: number) {
+  const view = views[level]!
+  let y = 0
+  for (let i = 0; i < level; i++) {
+    y += views[i]!.height + VIEW_DIVIDER_HEIGHT
+  }
+  y += view.headerHeight + view.scalebarHeight
+  for (const track of view.tracks) {
+    if (track.configuration.trackId === trackId) {
+      break
+    }
+    y += track.displays[0]!.height + TRACK_RESIZE_HANDLE_HEIGHT
+  }
+  return y
 }
 
 export function yPos(

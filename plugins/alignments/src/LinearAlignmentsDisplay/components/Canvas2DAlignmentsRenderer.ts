@@ -702,13 +702,16 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     const fSpacing = state.featureSpacing
     const bpPerPx = bpLength / fullBlockWidth
     const { colors } = state
+    const mutedBase = rgb255(colors.colorMutedSnpBase)
     // ASCII char code → theme color (65='A', 67='C', 71='G', 84='T')
-    const baseColors: Record<number, string> = {
-      65: rgb255(colors.colorBaseA),
-      67: rgb255(colors.colorBaseC),
-      71: rgb255(colors.colorBaseG),
-      84: rgb255(colors.colorBaseT),
-    }
+    const baseColors: Record<number, string> = state.showModifications
+      ? { 65: mutedBase, 67: mutedBase, 71: mutedBase, 84: mutedBase }
+      : {
+          65: rgb255(colors.colorBaseA),
+          67: rgb255(colors.colorBaseC),
+          71: rgb255(colors.colorBaseG),
+          84: rgb255(colors.colorBaseT),
+        }
 
     for (let i = 0; i < region.numMismatches; i++) {
       const bp = region.mismatchPositions[i]!
@@ -812,12 +815,15 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     const fSpacing = state.featureSpacing
     const bpPerPx = bpLength / fullBlockWidth
     const { colors } = state
-    const baseColors: Record<number, string> = {
-      65: rgb255(colors.colorBaseA),
-      67: rgb255(colors.colorBaseC),
-      71: rgb255(colors.colorBaseG),
-      84: rgb255(colors.colorBaseT),
-    }
+    const mutedBase = rgb255(colors.colorMutedSnpBase)
+    const baseColors: Record<number, string> = state.showModifications
+      ? { 65: mutedBase, 67: mutedBase, 71: mutedBase, 84: mutedBase }
+      : {
+          65: rgb255(colors.colorBaseA),
+          67: rgb255(colors.colorBaseC),
+          71: rgb255(colors.colorBaseG),
+          84: rgb255(colors.colorBaseT),
+        }
 
     for (let i = 0; i < region.numSoftclipBases; i++) {
       const bp = region.softclipBasePositions[i]!
