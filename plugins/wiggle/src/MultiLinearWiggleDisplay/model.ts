@@ -18,7 +18,7 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { TreeSidebarMixin, computeHierarchyLayout } from '@jbrowse/tree-sidebar'
+import { TreeSidebarMixin, clusterLayout } from '@jbrowse/tree-sidebar'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -371,7 +371,7 @@ export default function stateModelFactory(
         if (!r || !self.sources.length) {
           return undefined
         }
-        return computeHierarchyLayout(r, self.height, self.treeAreaWidth)
+        return clusterLayout(r, self.height, self.treeAreaWidth)
       },
     }))
     .actions(self => ({

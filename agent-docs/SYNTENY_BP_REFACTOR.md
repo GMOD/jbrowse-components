@@ -1,6 +1,75 @@
 # Synteny bp-coordinate refactor (Phase 2 + 3)
 
-Status: **Phase 1 landed, Phase 2+3 planned but not started.**
+Status: **Phase 1 landed. Phase 2+3 code-complete on `webgl-poc` (uncommitted).
+Typechecks clean across the workspace. Not yet exercised in a browser;
+straddler split deferred. Dotplot follow-up not started.**
+
+## Current state (implementation log)
+
+- `executeSyntenyFeaturesAndPositions.ts` emits `p11_bp..p22_bp` (Uint32) +
+  `topRegionIdx`/`botRegionIdx` (Uint8). Viewport culling / `padTop` /
+  `padBottom` / `v.offsetPx` / `v.width` dependencies removed.
+- `buildSyntenyGeometry.ts` outputs `x1..x4: Uint32` + per-instance
+  `topRegionIdx`/`botRegionIdx: Uint8`. CIGAR accumulator runs in integer bp.
+  Dropped `viewOffsets`/`viewWidth`/marker emission/`geometryBpPerPx`/
+  `refOffset`. **Region-boundary straddler split NOT implemented** — CIGAR
+  walks keep the initial instance's (topReg, botReg) even if bp overflows.
+  Correct iff an alignment stays within one region per side, which is the
+  common case; misrenders at inter-region padding when it doesn't. See
+  "Follow-up: straddler split" below.
+- `syntenyTypes.slang`: Instance reshaped (x1..x4 → uint, add
+  topRegionIdx/botRegionIdx, drop padTop/padBottom). Uniforms: add
+  `bpPerPx0/1`, 32 scalar `regionOffsetA0..15`/`regionOffsetB0..15`,
+  `hpZero`; drop `adjOff0/1`/`scale0/1`. `computeCorners` uses `hpSplitUint`
+  + `hpScaleLinear` + `regionOffsetA(u, idx)` lookup. Individual scalars
+  instead of slang arrays — the codegen reflection only supports scalars +
+  vectors, and its palette-group detector already bundles them into
+  `UNIFORM_SLOT_ARRAYS.regionOffsetA`/`regionOffsetB` for TS consumers.
+- `instanceInterleave.ts`: stride is now `36` bytes (9 × 4), all of
+  x1..x4/topRegionIdx/botRegionIdx/color packed as uint32; featureId and
+  queryTotalLength as float32.
+- `GpuSyntenyRenderer.ts`: `RegionMeta` trimmed to
+  `{instanceCount, nonCigarInstanceCount}`. `writeUniforms` walks
+  `SLOTS.regionOffsetA`/`B` to pack `proj.regionOffsetPx[]` into the uniform
+  scalars; `MAX_REGIONS = SLOTS.regionOffsetA.length` (= 16). No
+  re-upload on zoom/pan.
+- `Canvas2DSyntenyRenderer.ts` and `drawRef.ts` use
+  `buildViewProjection(view)` + `projectBpToScreenPx` per frame.
+- `syntenyBackendTypes.ts`: `SyntenyTrackRenderParams` now carries
+  `projTop`/`projBot` (ViewProjection). `offset0/1`/`bpPerPx0/1` dropped.
+- `model.ts`: `SyntenyFeatureData` renamed to bp+regionIdx shape.
+  `renderParams` builds the ViewProjection pair via `buildViewProjection`.
+- Tests: `executeSyntenyFeaturesAndPositions.test.ts` deleted (tested
+  removed exports; `syntenyProjection.test.ts` covers the replacement).
+  Renderer test fixtures updated to the new shape (no new tests yet).
+
+## Follow-up: straddler split (deferred)
+
+The plan called for splitting CIGAR walks at region boundaries so a
+straddling alignment renders as N fragments sharing `featureId`. This
+landing keeps the simpler "use initial region for all fragments" approach.
+Symptoms when the shortcut bites:
+- Alignment spans two displayed regions with the same refName ⇒ bp >
+  region.end ⇒ `hpScaleLinear(bp, bpPerPx)` over-shoots, misrendering across
+  the inter-region pad.
+
+To implement correctly:
+- Track `(cx1_bp, topRegIdx)` and `(cx2_bp, botRegIdx)` as the CIGAR walk
+  accumulator advances.
+- When cx crosses out of `[0, regionLen]` on a step, clamp to the boundary,
+  emit the partial, compute the absolute genomic coord at the boundary
+  (`region.start + cx_bp` forward / `region.end - cx_bp` reversed), re-look
+  up via `bpInRegionFromIndex`, reset accumulator in the new region.
+- Drop the feature if the lookup fails.
+- Unit test: PAF alignment crossing a displayed-region boundary yields N
+  instances with the same `featureId`.
+
+## Follow-up: browser testing
+
+Not yet run. The whole point of this refactor is Float32 drift at deep
+zoom; needs pixel-exact regression at 1×/4×/16×/256× of initial `bpPerPx`
+on T2T-scale data. Straddler hover should resolve to a single logical
+alignment once the split above is in place.
 
 ## Motivation
 
@@ -252,19 +321,77 @@ wrapper to pass the new projections through.
 - Straddler hover: feature crossing a region boundary must resolve to
   a single logical alignment on hover.
 
-## Dotplot (follow-up PR)
+## Dotplot (follow-up PR — not started)
 
-Dotplot has the same problem (`Float64Array p11..p22`). Apply the same
-refactor:
+Dotplot has the same problem (`Float64Array p11..p22` + `scaleX`/`scaleY`
+papered over Float32 drift). The synteny-side pattern carries over directly:
 
-- `executeDotplotFeaturesAndPositions.ts` — mechanical change.
-- `dotplot.slang` — same hpmath pattern (simpler because one view per axis).
-- `GpuDotplotRenderer` / `Canvas2DDotplotRenderer` — same projection swap.
+**Worker** (`executeDotplotFeaturesAndPositions.ts`):
+- Reuse `buildBpInRegionIndex` / `bpInRegionFromIndex` from
+  `plugins/linear-comparative-view/src/LinearSyntenyDisplay/syntenyProjection.ts`.
+  Either extract to a shared location (e.g. `packages/core/src/util/`) or
+  import cross-plugin — the helper is deliberately view-agnostic.
+- Replace `p11_offsetPx..p22_offsetPx: Float64Array` with `p11_bp..p22_bp:
+  Uint32Array` + `p11_xRegionIdx..p22_xRegionIdx`/`...yRegionIdx: Uint8Array`
+  (dotplot corners are on two orthogonal axes — x uses H regions, y uses V).
+- Drop the file-local `buildBpToPxIndex` copy (lines 11–71 today) — delete
+  the 73-77 sub-pixel-rounding comment along with it.
+- Drop `bpPerPxH`/`bpPerPxV` from the RPC payload; the renderer reads them
+  from the live view.
 
-Delete the `executeDotplotFeaturesAndPositions.ts:73-77` comment about
-sub-pixel rounding — obsolete.
+**Geometry** (`drawDotplotWebGL.ts`):
+- `buildLineSegments` and `decomposeCigar` currently run in pixel space —
+  port to bp space. The per-op accumulator becomes integer bp advancement,
+  same pattern as `buildSyntenyGeometry`. Emit `x1s/y1s/x2s/y2s: Uint32Array`
+  + `xRegionIdx`/`yRegionIdx: Uint8Array` instead of Float32 pixels.
+- `ensureMinExtent` moves to the main-thread projection step (it's a
+  pixel-space concern).
+- `MIN_CIGAR_PX_WIDTH` gating becomes an LOD-approximate bucket at the
+  worker's fetch-time bpPerPx (same compromise as synteny).
 
-Ship synteny first; dotplot as a follow-up PR. They share no rendering code.
+**Shader** (`dotplot.slang`):
+- Instance: `x1/y1/x2/y2` → `uint`, add `xRegionIdx`/`yRegionIdx` uint.
+- Uniforms: add `bpPerPxH`, `bpPerPxV`, `regionOffsetH0..15`,
+  `regionOffsetV0..15`, `hpZero`. Drop `scaleX`, `scaleY`, `offsetX`,
+  `offsetY` (pad becomes unneeded — per-region offsets fold it in).
+- Vertex shader:
+  ```
+  float sx1 = regionOffsetH(u, inst.xRegionIdx)
+            + hpScaleLinear(hpSplitUint(inst.x1), float3(0,0,u.bpPerPxH), u.hpZero);
+  float sy1 = u.resolution.y
+            - (regionOffsetV(u, inst.yRegionIdx)
+               + hpScaleLinear(hpSplitUint(inst.y1), float3(0,0,u.bpPerPxV), u.hpZero));
+  ```
+- Two helper functions `regionOffsetH/V(u, idx)` — same switch pattern as
+  `regionOffsetA/B` in `syntenyTypes.slang`.
+
+**Renderers** (`GpuDotplotRenderer.ts`, `Canvas2DDotplotRenderer.ts`,
+`renderSvg.tsx`):
+- `DotplotRenderState` carries per-track `{displayKey, projH, projV}`
+  instead of `{displayKey, scaleX, scaleY}`. `offsetX`/`offsetY` drop out
+  (folded into `ViewProjection.regionOffsetPx`).
+- `Canvas2DDotplotRenderer.render` projects via `projectBpToScreenPx` per
+  segment corner. `this.height - (...)` y-flip stays.
+- `GpuDotplotRenderer.render` writes `regionOffsetH/V` arrays with
+  `SLOTS.regionOffsetH/V` (auto-emitted by the shader codegen once the
+  slang palette fields exist).
+- `renderSvg.tsx` drops the `transform=translate...scale...translate`
+  trick — the bp-to-pixel projection happens per line now.
+- `DotplotView/model.ts` ~line 394: the trackScales block becomes
+  per-track `{displayKey, projH, projV}` built via `buildViewProjection`
+  against `hview`/`vview`.
+- `types.ts` / `dotplotBackendTypes.ts` updated alongside.
+
+**Suggested order**: worker → geometry → shader (+ gen:shaders) →
+renderers → types/model. Landed synteny is the reference implementation.
+Size estimate ~400-800 LOC across ~8 files.
+
+Ship synteny first; dotplot as a follow-up PR. They share no rendering
+code but would benefit from extracting `syntenyProjection.ts`'s
+`buildBpInRegionIndex`/`bpInRegionFromIndex`/`ViewProjection`/
+`buildViewProjection`/`projectBpToScreenPx` to
+`packages/core/src/util/bpProjection.ts` before dotplot lands, since
+dotplot will consume them too.
 
 ## Risks
 

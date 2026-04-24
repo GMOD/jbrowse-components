@@ -18,7 +18,7 @@ import {
   TrackHeightMixin,
   migrateOldSettingSnapshots,
 } from '@jbrowse/plugin-linear-genome-view'
-import { TreeSidebarMixin, computeHierarchyLayout } from '@jbrowse/tree-sidebar'
+import { TreeSidebarMixin, clusterLayout } from '@jbrowse/tree-sidebar'
 import CategoryIcon from '@mui/icons-material/Category'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import HeightIcon from '@mui/icons-material/Height'
@@ -567,11 +567,7 @@ export default function MultiSampleVariantBaseModelF(
         if (!r || !self.sources?.length) {
           return undefined
         }
-        return computeHierarchyLayout(
-          r,
-          this.rowHeight * this.nrow,
-          self.treeAreaWidth,
-        )
+        return clusterLayout(r, this.rowHeight * this.nrow, self.treeAreaWidth)
       },
     }))
     .views(self => ({
@@ -918,10 +914,16 @@ export default function MultiSampleVariantBaseModelF(
           }
           return items
         }
-        const hasSecondaryAlt = self.featuresVolatile?.some(f => {
-          const alt = f.get('ALT') as string[] | undefined
-          return alt && alt.length > 1
-        })
+        let hasSecondaryAlt = false
+        if (self.featuresVolatile) {
+          for (const f of self.featuresVolatile) {
+            const alt = f.get('ALT') as string[] | undefined
+            if (alt && alt.length > 1) {
+              hasSecondaryAlt = true
+              break
+            }
+          }
+        }
         const items: LegendItem[] = [
           { color: REFERENCE_COLOR, label: 'Homozygous reference' },
           { color: getAltColorForDosage(0.5), label: 'Heterozygous alt' },

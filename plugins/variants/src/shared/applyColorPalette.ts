@@ -23,23 +23,21 @@ export function applyColorPalette(sources: Source[], attribute: string) {
     return sources
   }
 
-  // Count occurrences of each value
+  const keys = sources.map(source => String(source[attribute] ?? ''))
+
   const counts = new Map<string, number>()
-  for (const source of sources) {
-    const key = String(source[attribute] ?? '')
+  for (const key of keys) {
     counts.set(key, (counts.get(key) || 0) + 1)
   }
 
-  // Create color map, sorting by frequency (least common first gets colors first)
   const colorMap = Object.fromEntries(
     [...counts.entries()]
       .sort((a, b) => a[1] - b[1])
       .map(([key], idx) => [key, set1[idx] || randomColor(key)]),
   )
 
-  // Apply colors to sources
-  return sources.map(source => ({
+  return sources.map((source, i) => ({
     ...source,
-    color: colorMap[String(source[attribute] ?? '')],
+    color: colorMap[keys[i]!],
   }))
 }

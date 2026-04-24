@@ -10,6 +10,7 @@ import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 
 import { draw, drawLocationMarkers } from './components/util.ts'
 import { OP_TO_CIGAR_KEY, lineLimit, oobLimit } from './drawSyntenyUtils.ts'
+import { buildViewProjection, projectBpToScreenPx } from './syntenyProjection.ts'
 
 import type { CanvasLike } from './components/util.ts'
 import type { defaultCigarColors } from './drawSyntenyUtils.ts'
@@ -27,7 +28,6 @@ export function drawRef(
   const drawLocationMarkersEnabled = view.drawLocationMarkers
   const { level, height, featureData, minAlignmentLength, colorBy } = model
   const width = view.width
-  const bpPerPxs = view.views.map(v => v.bpPerPx)
 
   if (!featureData) {
     return
@@ -48,9 +48,10 @@ export function drawRef(
   const getQueryColorWithAlpha = model.queryColorWithAlphaMap
   const queryTotalLengths = model.queryTotalLengths
 
-  const offsets = view.views.map(v => v.offsetPx)
-  const offsetsL0 = offsets[level]!
-  const offsetsL1 = offsets[level + 1]!
+  const v0 = view.views[level]!
+  const v1 = view.views[level + 1]!
+  const projTop = buildViewProjection(v0)
+  const projBot = buildViewProjection(v1)
 
   const y1 = 0
   const y2 = height
@@ -59,8 +60,8 @@ export function drawRef(
   const useStrandColor = colorBy === 'strand'
   const useQueryColor = colorBy === 'query'
 
-  const bpPerPxInv0 = 1 / bpPerPxs[level]!
-  const bpPerPxInv1 = 1 / bpPerPxs[level + 1]!
+  const bpPerPxInv0 = 1 / v0.bpPerPx
+  const bpPerPxInv1 = 1 / v1.bpPerPx
 
   mainCanvas.fillStyle = colorMapWithAlpha.M
   mainCanvas.strokeStyle = colorMapWithAlpha.M
@@ -81,10 +82,12 @@ export function drawRef(
       }
     }
 
-    const x11 = featureData.p11_offsetPx[fi]! - offsetsL0
-    const x12 = featureData.p12_offsetPx[fi]! - offsetsL0
-    const x21 = featureData.p21_offsetPx[fi]! - offsetsL1
-    const x22 = featureData.p22_offsetPx[fi]! - offsetsL1
+    const topIdx = featureData.topRegionIdx[fi]!
+    const botIdx = featureData.botRegionIdx[fi]!
+    const x11 = projectBpToScreenPx(featureData.p11_bp[fi]!, topIdx, projTop)
+    const x12 = projectBpToScreenPx(featureData.p12_bp[fi]!, topIdx, projTop)
+    const x21 = projectBpToScreenPx(featureData.p21_bp[fi]!, botIdx, projBot)
+    const x22 = projectBpToScreenPx(featureData.p22_bp[fi]!, botIdx, projBot)
     const l1 = Math.abs(x12 - x11)
     const l2 = Math.abs(x22 - x21)
     const minX = Math.min(x21, x22)
@@ -125,10 +128,7 @@ export function drawRef(
       let cx2 = s1 === -1 ? x22 : x21
       const cigar = parsedCigars[fi]!
       if (cigar.length > 0 && drawCIGAR) {
-        // NOTE: the accumulator (small-indel merge, op classification,
-        // cull) mirrors the worker loop in
-        // LinearSyntenyRPC/buildSyntenyGeometry.ts. Keep them in sync —
-        // any fix here needs the same fix there.
+        // NOTE: mirrors the worker loop in buildSyntenyGeometry.ts. Keep in sync.
         let continuingFlag = false
         let px1 = 0
         let px2 = 0

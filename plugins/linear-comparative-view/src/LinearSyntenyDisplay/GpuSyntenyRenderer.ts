@@ -15,6 +15,7 @@ import type {
   SyntenyRenderState,
   SyntenyTrackRenderParams,
 } from './syntenyBackendTypes.ts'
+import type { ViewProjection } from './syntenyProjection.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
@@ -24,6 +25,9 @@ const PASS_EDGE = 'edge'
 
 const UNIFORMS_SIZE_BYTES = syntenyFillShader.UNIFORMS_SIZE_BYTES
 const U = syntenyFillShader.UNIFORM_OFFSET_F32
+const SLOTS = syntenyFillShader.UNIFORM_SLOT_ARRAYS
+
+const MAX_REGIONS = SLOTS.regionOffsetA.length
 
 export const SYNTENY_PASSES: PassDescriptor[] = [
   slangPass({
@@ -48,41 +52,13 @@ export const SYNTENY_PASSES: PassDescriptor[] = [
 interface RegionMeta {
   instanceCount: number
   nonCigarInstanceCount: number
-  geometryBpPerPx0: number
-  geometryBpPerPx1: number
-  refOffset0: number
-  refOffset1: number
 }
 
 interface TrackState {
   key: number
   region: RegionMeta
   params: SyntenyTrackRenderParams
-  adjOff0: number
-  adjOff1: number
-  scale0: number
-  scale1: number
   maxOffScreenPx: number
-}
-
-function makeTrackState(
-  key: number,
-  region: RegionMeta,
-  params: SyntenyTrackRenderParams,
-  maxOffScreenPx: number,
-): TrackState {
-  const scale0 = region.geometryBpPerPx0 / params.bpPerPx0
-  const scale1 = region.geometryBpPerPx1 / params.bpPerPx1
-  return {
-    key,
-    region,
-    params,
-    scale0,
-    scale1,
-    adjOff0: params.offset0 / scale0 - region.refOffset0,
-    adjOff1: params.offset1 / scale1 - region.refOffset1,
-    maxOffScreenPx,
-  }
 }
 
 export class GpuSyntenyRenderer implements SyntenyBackend {
@@ -94,17 +70,6 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
   private regions = new Map<number, RegionMeta>()
   private tracks: TrackState[] = []
 
-  // Serialize async picks: the HAL's readback uses a single staging buffer,
-  // so concurrent mapAsync calls race (triggering WebGPU validation errors
-  // and, on some drivers, a tab crash). We run at most one at a time and
-  // coalesce rapid hover requests to the latest coords — intermediate
-  // results are stale before they'd render.
-  //
-  // hoverGeneration guards against a race where the mouse leaves the canvas
-  // while a readback is in flight: each call to pick() with a callback
-  // captures the generation at call time; when the async result arrives it is
-  // discarded if the generation has since advanced (i.e. a newer pick was
-  // queued, typically the cancel-pick from handleMouseLeave).
   private inFlight: Promise<void> | undefined
   private nextPick:
     | {
@@ -129,10 +94,6 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     this.regions.set(key, {
       instanceCount: data.instanceCount,
       nonCigarInstanceCount: data.nonCigarInstanceCount,
-      geometryBpPerPx0: data.geometryBpPerPx0,
-      geometryBpPerPx1: data.geometryBpPerPx1,
-      refOffset0: data.refOffset0,
-      refOffset1: data.refOffset1,
     })
     const interleaved = interleaveInstances(data)
     this.hal.uploadBuffer(key, PASS_FILL, interleaved, data.instanceCount)
@@ -157,7 +118,12 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
       if (!region || region.instanceCount === 0) {
         continue
       }
-      const track = makeTrackState(key, region, params, state.maxOffScreenPx)
+      const track: TrackState = {
+        key,
+        region,
+        params,
+        maxOffScreenPx: state.maxOffScreenPx,
+      }
       this.tracks.push(track)
       this.writeUniforms(
         track,
@@ -183,7 +149,6 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
       return undefined
     }
     if (!onResult) {
-      // Sync path (click / context menu): no readback race to worry about.
       const track = this.trackAtY(y)
       if (!track) {
         return undefined
@@ -258,6 +223,21 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     return undefined
   }
 
+  private writeProjection(
+    proj: ViewProjection,
+    slotsU32: readonly number[],
+    u: Float32Array,
+  ) {
+    const { regionOffsetPx } = proj
+    const n = Math.min(regionOffsetPx.length, MAX_REGIONS)
+    for (let i = 0; i < n; i++) {
+      u[slotsU32[i]!] = regionOffsetPx[i]!
+    }
+    for (let i = n; i < MAX_REGIONS; i++) {
+      u[slotsU32[i]!] = 0
+    }
+  }
+
   private writeUniforms(
     t: TrackState,
     hoveredFeatureId: number,
@@ -269,10 +249,8 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     u[U.resolution] = this.canvas.width / dpr
     u[U.resolution + 1] = this.canvas.height / dpr
     u[U.height] = t.params.height
-    u[U.adjOff0] = t.adjOff0
-    u[U.adjOff1] = t.adjOff1
-    u[U.scale0] = t.scale0
-    u[U.scale1] = t.scale1
+    u[U.bpPerPx0] = t.params.projTop.bpPerPx
+    u[U.bpPerPx1] = t.params.projBot.bpPerPx
     u[U.maxOffScreenPx] = t.maxOffScreenPx
     u[U.minAlignmentLength] = t.params.minAlignmentLength
     u[U.alpha] = alpha
@@ -280,6 +258,9 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     u[U.clickedFeatureId] = clickedFeatureId
     u[U.yTop] = t.params.yTop
     u[U.isCurve] = t.params.drawCurves ? 1 : 0
+    u[U.hpZero] = 0
+    this.writeProjection(t.params.projTop, SLOTS.regionOffsetA, u)
+    this.writeProjection(t.params.projBot, SLOTS.regionOffsetB, u)
     this.hal.writeUniforms(this.uniformData)
   }
 }
