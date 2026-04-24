@@ -13,6 +13,11 @@ const useStyles = makeStyles()(theme => ({
     background: theme.palette.secondary.main,
     height: 3,
   },
+  // CSS grid with both children at gridArea 1/1 makes the overlay sit exactly
+  // on top of the views without any JS coordinate translation. The downside is
+  // that the overlay becomes a DOM sibling of the views rather than a child, so
+  // the wheel handler cannot use event.target to identify which view was
+  // scrolled — it must fall back to a querySelectorAll + Y-coordinate scan.
   container: {
     display: 'grid',
   },

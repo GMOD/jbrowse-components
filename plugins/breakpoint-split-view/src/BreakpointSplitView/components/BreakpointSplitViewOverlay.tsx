@@ -81,8 +81,9 @@ const BreakpointSplitViewOverlay = observer(
           return
         }
 
-        // Overlay is a sibling of views, so find view by Y-coordinate matching
-        // instead of DOM hierarchy traversal
+        // The overlay is a CSS grid sibling of the views, not a child, so
+        // event.target doesn't identify which view was scrolled. We resolve
+        // the view by scanning all track containers and matching Y-coordinate.
         const allContainers = document.querySelectorAll(
           '[data-testid="tracksContainer"]',
         )
