@@ -15,9 +15,7 @@ const useStyles = makeStyles()({
     overflow: 'hidden',
   },
   text: {
-    textOverflow: 'ellipsis',
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
+    wordBreak: 'break-word',
   },
 })
 
