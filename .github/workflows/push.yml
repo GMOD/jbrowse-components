@@ -134,6 +134,37 @@ jobs:
       - name: Lint codebase
         run: pnpm lint
 
+  check_shaders:
+    name: Check shaders up to date
+    needs: check_commit_message
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        with:
+          version: 10
+      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+      - name: Install glslangValidator
+        run: sudo apt-get install -y glslang-tools
+      - name: Regenerate shaders
+        run: NAGA= pnpm gen:shaders
+      - name: Check generated files are up to date
+        run: |
+          if ! git diff --quiet -- '**/*.generated.ts'; then
+            echo "Error: shader generated files are out of date."
+            echo "Run 'pnpm gen:shaders' and commit the changes."
+            git diff -- '**/*.generated.ts'
+            exit 1
+          fi
+
   format:
     name: Format
     needs: check_commit_message

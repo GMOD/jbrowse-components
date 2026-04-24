@@ -13,16 +13,19 @@
 // Module files (those whose Slang source begins with `module <name>;`) are
 // treated as imports only — no codegen output for them.
 
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
 import {
+  chmodSync,
+  existsSync,
   mkdtempSync,
+  mkdirSync,
   readFileSync,
   readdirSync,
   rmSync,
   statSync,
   writeFileSync,
 } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { tmpdir, homedir } from 'node:os'
 import path from 'node:path'
 
 import { emit as emitLayout, emitLayoutOnly } from './shader-codegen/codegen.ts'
@@ -32,12 +35,54 @@ const REPO_ROOT = path.resolve(
   path.dirname(import.meta.url.replace('file://', '')),
   '..',
 )
-const SLANGC = process.env.SLANGC ?? `${REPO_ROOT}/.cache/slangc/bin/slangc`
-const NAGA = process.env.NAGA ?? 'naga'
+
+const SLANG_VERSION = 'v2026.5.2'
+const SLANGC_CACHE = `${REPO_ROOT}/.cache/slangc/bin/slangc`
+const NAGA = process.env.NAGA !== undefined ? process.env.NAGA : 'naga'
 const GLSLANG = process.env.GLSLANG ?? 'glslangValidator'
 // Shaders live alongside their plugin, but shared modules (hpmath, etc.) live
 // in core so any shader can `import hpmath;`.
 const SHARED_INCLUDE = path.resolve(REPO_ROOT, 'packages/core/src/gpu/shaders')
+
+function ensureSlangc() {
+  if (process.env.SLANGC) {
+    return process.env.SLANGC
+  }
+  const ver = SLANG_VERSION.replace(/^v/, '')
+  if (existsSync(SLANGC_CACHE)) {
+    const result = spawnSync(SLANGC_CACHE, ['-v'], { encoding: 'utf8' })
+    if ((result.stdout ?? result.stderr ?? '').trim() === ver) {
+      return SLANGC_CACHE
+    }
+  }
+  const platform = process.platform
+  const arch = process.arch
+  let asset: string
+  if (platform === 'linux' && arch === 'x64') {
+    asset = `slang-${ver}-linux-x86_64.tar.gz`
+  } else if (platform === 'linux' && arch === 'arm64') {
+    asset = `slang-${ver}-linux-aarch64.tar.gz`
+  } else if (platform === 'darwin' && arch === 'arm64') {
+    asset = `slang-${ver}-macos-aarch64.tar.gz`
+  } else if (platform === 'darwin' && arch === 'x64') {
+    asset = `slang-${ver}-macos-x86_64.tar.gz`
+  } else {
+    throw new Error(`Unsupported platform: ${platform}-${arch}`)
+  }
+  const cacheDir = path.dirname(path.dirname(SLANGC_CACHE))
+  mkdirSync(cacheDir, { recursive: true })
+  const url = `https://github.com/shader-slang/slang/releases/download/${SLANG_VERSION}/${asset}`
+  const tarPath = path.join(cacheDir, asset)
+  console.log(`Downloading slangc ${SLANG_VERSION}...`)
+  execFileSync('curl', ['-fsSL', '-o', tarPath, url], { stdio: 'inherit' })
+  execFileSync('tar', ['xzf', tarPath, '-C', cacheDir], { stdio: 'inherit' })
+  rmSync(tarPath)
+  chmodSync(SLANGC_CACHE, 0o755)
+  console.log(`slangc ${SLANG_VERSION} installed at ${SLANGC_CACHE}`)
+  return SLANGC_CACHE
+}
+
+const SLANGC = ensureSlangc()
 
 function walk(dir: string, out: string[] = []) {
   for (const entry of readdirSync(dir)) {
@@ -227,7 +272,9 @@ function compileOne(slangPath: string) {
     ]
     execFileSync(SLANGC, slangcArgs, { stdio: 'pipe' })
     const wgsl = readFileSync(wgslOut, 'utf8')
-    execFileSync(NAGA, [wgslOut], { stdio: 'pipe' })
+    if (NAGA) {
+      execFileSync(NAGA, [wgslOut], { stdio: 'pipe' })
+    }
 
     const reflection = JSON.parse(readFileSync(reflectionOut, 'utf8'))
     let glslVertex: string | undefined

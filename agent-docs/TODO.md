@@ -258,8 +258,6 @@ Look at mui v9 migration checklist https://mui.com/material-ui/migration/upgrade
     executeRenderPileupData webpack://@jbrowse/web/../../plugins/alignments/src/RenderPileupDataRPC/executeRenderPileupData.ts?:178
 FetchMixin.ts:98:19
 
-- Error boundary message is narrow, why not show entire message, also stack trace needed in error banner
-- Clicking on snpcoverage modifications needs to get details in sidebar widget. clicking on modifications on pileup reads also
 
 - Modifications track - use smoothed line for wiggle coverage of methylation using matrix style view https://github.com/GMOD/jbrowse-components/issues/5510
 
@@ -271,6 +269,3 @@ FetchMixin.ts:98:19
 
 - Speed up paf_chain2paf, parseCigar2
 
-## Breakpoint
-
-- Closing tracks or something else to see if it works
