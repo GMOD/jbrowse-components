@@ -7,9 +7,9 @@
  * convention" and "BP precision" for details.
  */
 
-import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { FilterBy } from '../shared/types'
 import type { Region } from '@jbrowse/core/util'
+import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface RenderPileupDataArgs {

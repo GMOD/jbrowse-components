@@ -17,15 +17,15 @@ import { execFileSync, spawnSync } from 'node:child_process'
 import {
   chmodSync,
   existsSync,
-  mkdtempSync,
   mkdirSync,
+  mkdtempSync,
   readFileSync,
   readdirSync,
   rmSync,
   statSync,
   writeFileSync,
 } from 'node:fs'
-import { tmpdir, homedir } from 'node:os'
+import { tmpdir } from 'node:os'
 import path from 'node:path'
 
 import { emit as emitLayout, emitLayoutOnly } from './shader-codegen/codegen.ts'

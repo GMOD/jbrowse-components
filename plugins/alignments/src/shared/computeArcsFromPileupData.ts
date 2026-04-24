@@ -12,7 +12,10 @@ export interface ArcsDataResult {
   arcX1: Uint32Array
   arcX2: Uint32Array
   arcColorTypes: Float32Array
-  arcIsArc: Uint8Array
+  // Shape: 0 = bezier, 1 = semicircle, 2 = flat (samplot)
+  arcShapeTypes: Uint8Array
+  // Target Y in genomic bp (|tlen| for samplot, |(x2-x1)/2| otherwise)
+  arcYBp: Uint32Array
   numArcs: number
   linePositions: Uint32Array
   lineYs: Float32Array
@@ -54,6 +57,38 @@ function getOrientationColorIndex(pairOrientationNum: number) {
   }
 }
 
+// Samplot palette: 0=DEL/normal (black), 1=DUP (red), 2=INV (blue), 3=BND
+// Matches samplotArcColorPalette order. Classification follows samplot's
+// event_by_strand: FR→normal/DEL, RF→DUP, FF/RR→INV, interchrom→BND.
+function getSamplotColorIndex(
+  p1Ref: string,
+  p2Ref: string,
+  pairOrientationNum: number,
+  p1Strand: number,
+  p2Strand: number,
+) {
+  if (p1Ref !== p2Ref) {
+    return 3
+  }
+  if (pairOrientationNum === 2) {
+    return 1
+  }
+  if (pairOrientationNum === 3 || pairOrientationNum === 4) {
+    return 2
+  }
+  if (pairOrientationNum === 1) {
+    return 0
+  }
+  // Split-read / SA-tag fallback: classify by strand pair directly.
+  if (p1Strand === 1 && p2Strand === -1) {
+    return 1
+  }
+  if (p1Strand === p2Strand) {
+    return 2
+  }
+  return 0
+}
+
 function getInsertSizeColorIndex(
   refName: string,
   nextRef: string | undefined,
@@ -91,7 +126,8 @@ interface ComputedArc {
   p1: ArcEndpoint
   p2: ArcEndpoint
   colorType: number
-  isArc: number
+  shapeType: number
+  yBp: number
 }
 
 interface ComputedLine {
@@ -336,7 +372,15 @@ export function computeArcsFromPileupData(
     // console.log('processArc', { p1Ref, p1Bp, p2Ref, p2Bp, longRange, absrad, longRangeThreshold, drawArcInsteadOfBezier, pairOrientationNum, tlen, hasPaired, colorByType })
 
     let colorType: number
-    if (longRange && drawArcInsteadOfBezier) {
+    if (colorByType === 'samplot') {
+      colorType = getSamplotColorIndex(
+        p1Ref,
+        p2Ref,
+        pairOrientationNum ?? 0,
+        p1Strand,
+        p2Strand,
+      )
+    } else if (longRange && drawArcInsteadOfBezier) {
       colorType = 1
     } else if (hasPaired) {
       if (
@@ -374,12 +418,26 @@ export function computeArcsFromPileupData(
       }
     }
 
-    if (absrad < 1) {
+    // Samplot mode: flat line at Y = |tlen|. Fall through to the normal
+    // shape rules otherwise; the arc's apex tracks |radius|.
+    const samplot = colorByType === 'samplot'
+    const yBp = samplot ? Math.abs(tlen ?? 0) || absrad : absrad
+
+    if (absrad < 1 && !samplot) {
       arcs.push({
         p1: { refName: p1Ref, bp: p1Bp },
         p2: { refName: p1Ref, bp: p2Bp },
         colorType,
-        isArc: 0,
+        shapeType: 0,
+        yBp,
+      })
+    } else if (samplot) {
+      arcs.push({
+        p1: { refName: p1Ref, bp: p1Bp },
+        p2: { refName: p1Ref, bp: p2Bp },
+        colorType,
+        shapeType: 2,
+        yBp,
       })
     } else if (longRange && absrad > VERTICAL_LINE_THRESHOLD) {
       if (drawLongRange) {
@@ -393,14 +451,16 @@ export function computeArcsFromPileupData(
         p1: { refName: p1Ref, bp: p1Bp },
         p2: { refName: p1Ref, bp: p2Bp },
         colorType,
-        isArc: 1,
+        shapeType: 1,
+        yBp,
       })
     } else {
       arcs.push({
         p1: { refName: p1Ref, bp: p1Bp },
         p2: { refName: p1Ref, bp: p2Bp },
         colorType,
-        isArc: 0,
+        shapeType: 0,
+        yBp,
       })
     }
   }
@@ -420,13 +480,15 @@ export function arcsToRegionResult(
   const arcX1 = new Uint32Array(regionArcs.length)
   const arcX2 = new Uint32Array(regionArcs.length)
   const arcColorTypes = new Float32Array(regionArcs.length)
-  const arcIsArc = new Uint8Array(regionArcs.length)
+  const arcShapeTypes = new Uint8Array(regionArcs.length)
+  const arcYBp = new Uint32Array(regionArcs.length)
 
   for (const [i, arc] of regionArcs.entries()) {
     arcX1[i] = arc.p1.bp
     arcX2[i] = arc.p2.bp
     arcColorTypes[i] = arc.colorType
-    arcIsArc[i] = arc.isArc
+    arcShapeTypes[i] = arc.shapeType
+    arcYBp[i] = arc.yBp
   }
 
   const regionLines = lines.filter(l => l.x.refName === regionRefName)
@@ -447,7 +509,8 @@ export function arcsToRegionResult(
     arcX1,
     arcX2,
     arcColorTypes,
-    arcIsArc,
+    arcShapeTypes,
+    arcYBp,
     numArcs: regionArcs.length,
     linePositions,
     lineYs,

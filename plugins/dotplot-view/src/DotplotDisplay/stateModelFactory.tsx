@@ -6,7 +6,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { renderSvg } from './renderSvg.tsx'
 
 import type { DotplotGeometryData } from './dotplotBackendTypes.ts'
-import type { DotplotFeatPos } from './types.ts'
+import type { DotplotRpcData } from './types.ts'
 import type { ExportSvgOptions } from '../DotplotView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
@@ -46,17 +46,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           features: undefined as Feature[] | undefined,
           /**
            * #volatile
-           * RPC-computed feature positions in pixel coords, with the
-           * bpPerPx the conversion was performed at. One bundle so the
-           * geometry recompute reads them atomically.
+           * RPC-computed feature data
            */
-          featPositions: undefined as
-            | {
-                positions: DotplotFeatPos[]
-                bpPerPxH: number
-                bpPerPxV: number
-              }
-            | undefined,
+          rpcData: undefined as DotplotRpcData | undefined,
           /**
            * #volatile
            */
@@ -134,12 +126,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setFeatPositions(arg: {
-        positions: DotplotFeatPos[]
-        bpPerPxH: number
-        bpPerPxV: number
-      }) {
-        self.featPositions = arg
+      setRpcData(data: DotplotRpcData) {
+        self.rpcData = data
       },
       setGeometry(data: DotplotGeometryData | undefined) {
         self.geometry = data

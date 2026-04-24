@@ -269,7 +269,7 @@ Four independently-landable items, ordered by ROI for whole-genome alignment
    not pixels), `GpuSyntenyRenderer.writeUniforms`,
    `Canvas2DSyntenyRenderer` (bp→pixel per frame),
    `executeSyntenyFeaturesAndPositions.ts`. Medium risk; needs browser-
-   test coverage.
+   test coverage. Look at this for dotplot too, claims "p11..p22 (pixel offsets) — Float64Array. 53-bit mantissa covers the whole 0..3e9 pixel range exactly without rounding (Float32 can't; Uint32 would need Math.round)."
 
    **Honest value prop** (revised after diagnosis): this buys (a) deep-
    zoom precision — float32 pixel offsets drift once you zoom past ~2×
@@ -372,3 +372,30 @@ explicitly document the fold in the code.
 - MUI v9 migration: review checklist at https://mui.com/material-ui/migration/upgrade-to-v9
 - SVPlaudit-style game but with JBrowse
 - Static renderings via `jbrowse-img`; command-line tool for batch variant rendering
+
+## SyRI coloring
+
+- Assess whether interspecies alignments work with syri assumptions
+- Investigate how popular papers in nature, science, etc make pangenome and synteny diagrams
+
+
+## Stride
+
+- Avoid manual strides like const base = instanceIndex * 20 use slang codegen
+
+## MUI v9 migration
+
+
+  Manual todos from the migration guide:
+
+  - color="textSecondary" / color="textPrimary" on <Typography> — 18 occurrences across plugins. These palette string shorthands are deprecated; the fix is color="text.secondary" / color="text.primary".
+  The typography-props codemod didn't catch them because they already work at runtime but may emit TS warnings.
+  - inputProps on <InputBase> in packages/core/src/ui/EditableTypography.tsx:74 — should be slotProps={{ htmlInput: {...} }}. This one was not caught by the codemod.
+  - ButtonBase click event type change — click events from Enter/Space now fire MouseEvent instead of KeyboardEvent. Worth auditing any onClick handlers on ButtonBase-based components that check event.key.
+  - TablePagination locale formatting — numbers now use locale formatting by default. If any tests assert on raw numbers in pagination labels they may break.
+  - Stepper/Step semantic HTML change — Stepper is now <ol>, Step is <li>. Only matters if there are CSS selectors or tests targeting div in those components.
+
+
+## Dotplot
+
+- Shows infinite loading bar

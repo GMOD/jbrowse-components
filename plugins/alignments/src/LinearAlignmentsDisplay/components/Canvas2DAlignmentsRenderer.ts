@@ -20,7 +20,7 @@ import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import { getReadColor, rgb255 } from '../colorUtils.ts'
 import { getChainBounds } from './chainOverlayUtils.ts'
-import { arcColorPalette, arcLineColorPalette } from './shaders/palettes.ts'
+import { arcLineColorPalette, getArcPalette } from './shaders/palettes.ts'
 
 import type {
   AlignmentsBackend,
@@ -108,7 +108,8 @@ interface Canvas2DRegionData {
   arcX1: Uint32Array
   arcX2: Uint32Array
   arcColorTypes: Float32Array
-  arcIsArc: Uint8Array
+  arcShapeTypes: Uint8Array
+  arcYBp: Uint32Array
   numArcs: number
   arcLinePositions: Uint32Array
   arcLineYs: Float32Array
@@ -208,7 +209,8 @@ function emptyRegion(): Canvas2DRegionData {
     arcX1: empty32,
     arcX2: empty32,
     arcColorTypes: emptyF32,
-    arcIsArc: empty8,
+    arcShapeTypes: empty8,
+    arcYBp: empty32,
     numArcs: 0,
     arcLinePositions: empty32,
     arcLineYs: emptyF32,
@@ -428,7 +430,8 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     r.arcX1 = data.arcX1
     r.arcX2 = data.arcX2
     r.arcColorTypes = data.arcColorTypes
-    r.arcIsArc = data.arcIsArc
+    r.arcShapeTypes = data.arcShapeTypes
+    r.arcYBp = data.arcYBp
     r.numArcs = data.numArcs
     r.arcLinePositions = data.linePositions
     r.arcLineYs = data.lineYs
@@ -967,26 +970,33 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   ) {
     const lineWidth = state.arcLineWidth ?? 1
 
+    const pxPerBp = fullBlockWidth / bpLength
     for (let i = 0; i < region.numArcs; i++) {
       const x1Bp = region.arcX1[i]!
       const x2Bp = region.arcX2[i]!
       const colorIdx = Math.round(region.arcColorTypes[i]!)
+      const shape = region.arcShapeTypes[i] ?? 0
+      const yBp = region.arcYBp[i] ?? Math.abs(x2Bp - x1Bp) / 2
 
       const sx1 = bpToScreenX(x1Bp, block, bpLength, fullBlockWidth)
       const sx2 = bpToScreenX(x2Bp, block, bpLength, fullBlockWidth)
       const midX = (sx1 + sx2) / 2
-      const span = Math.abs(sx2 - sx1)
-      const arcH = Math.min(span * 0.5, arcsH - 2)
+      const arcH = Math.min(yBp * pxPerBp, arcsH - 2)
 
-      ctx.strokeStyle = this.paletteColor(arcColorPalette, colorIdx)
+      ctx.strokeStyle = this.paletteColor(
+        getArcPalette(state.arcColorByType),
+        colorIdx,
+      )
       ctx.lineWidth = lineWidth
       ctx.beginPath()
-      if (pairedArcsDown) {
-        ctx.moveTo(sx1, arcsTop + arcsH)
-        ctx.quadraticCurveTo(midX, arcsTop + arcsH - arcH, sx2, arcsTop + arcsH)
+      const baseY = pairedArcsDown ? arcsTop + arcsH : arcsTop
+      const apexY = pairedArcsDown ? baseY - arcH : baseY + arcH
+      if (shape === 2) {
+        ctx.moveTo(sx1, apexY)
+        ctx.lineTo(sx2, apexY)
       } else {
-        ctx.moveTo(sx1, arcsTop)
-        ctx.quadraticCurveTo(midX, arcsTop + arcH, sx2, arcsTop)
+        ctx.moveTo(sx1, baseY)
+        ctx.quadraticCurveTo(midX, apexY, sx2, baseY)
       }
       ctx.stroke()
     }

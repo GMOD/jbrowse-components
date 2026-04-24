@@ -1,7 +1,15 @@
-// Paired-read arc pass: each instance is either a semicircle (is_arc=1)
-// or a cubic-bezier curve connecting read pairs. Rendered as a stroked
-// path via a triangle-strip that inflates the curve by a half-width on
-// each side; fragment shader smooths the edge into AA.
+// Paired-read arc pass: each instance is a stroked path rendered as a
+// triangle-strip that inflates the curve by a half-width on each side;
+// fragment shader smooths the edge into AA.
+//
+// shapeType encodes the curve form:
+//   0 = cubic bezier (close-range pair)
+//   1 = semicircle (long-range pair; drawn as half-circle arc)
+//   2 = flat horizontal line at Y = destY (samplot mode)
+//
+// yBp is the target Y position in genomic bp — for arc/bezier this is the
+// apex height; for flat it is the line's Y. Samplot sets yBp = |tlen|; arc
+// mode sets yBp = |x2-x1|/2 (reproducing the original radius-based height).
 //! targets: wgsl, glsl
 
 import alignmentsUniforms;
@@ -20,7 +28,8 @@ struct Instance {
   uint  x1        : ATTR0;
   uint  x2        : ATTR1;
   float colorType : ATTR2;
-  float isArc     : ATTR3;
+  float shapeType : ATTR3;
+  uint  yBp       : ATTR4;
 };
 
 struct VsOut {
@@ -66,25 +75,27 @@ float3 arcColor(float ct, Uniforms u) {
 // Evaluates the curve at parameter t ∈ [0,1] in screen pixels.
 // x1/x2 are absolute genomic uint32. Convert each to a normalized fraction
 // in the visible window via hp-math (preserves 3-Gbp precision), then run
-// the bezier in that small-float space.
+// the curve in that small-float space.
 float2 evalArc(float t, Instance inst, Uniforms u) {
   float x1Norm = hpLinear(hpSplitUint(inst.x1), u);
   float x2Norm = hpLinear(hpSplitUint(inst.x2), u);
-  float radius = (x2Norm - x1Norm) * 0.5 * u.bpLen;
-  float absrad = abs(radius);
   float pxPerBp = u.blockWidth / u.bpLen;
-  float absradPx = absrad * pxPerBp;
+  float absYPx = float(inst.yBp) * pxPerBp;
   float availH = u.canvasH - ARC_HEIGHT_MARGIN;
-  float destY = min(availH, absradPx);
+  float destY = min(availH, absYPx);
   float yDir = (u.pairedArcsDown > 0.5) ? 1.0 : -1.0;
 
   float xNorm, yPx;
-  if (inst.isArc > 0.5) {
+  if (inst.shapeType > 1.5) {
+    // Flat line: x interpolates from x1 to x2, y is constant at destY.
+    xNorm = x1Norm + t * (x2Norm - x1Norm);
+    yPx = destY * yDir;
+  } else if (inst.shapeType > 0.5) {
     float angle = t * PI;
     float cxNorm = (x1Norm + x2Norm) * 0.5;
     float rNorm = (x2Norm - x1Norm) * 0.5;
     xNorm = cxNorm + cos(angle) * rNorm;
-    yPx = (absradPx > 0.0) ? sin(angle) * destY * yDir : 0.0;
+    yPx = (absYPx > 0.0) ? sin(angle) * destY * yDir : 0.0;
   } else {
     // Cubic Bezier with control points at x1,x1,x2,x2 (so the curve
     // approaches each anchor tangent to the x-axis).

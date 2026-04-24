@@ -26,9 +26,13 @@ export interface SyriClassification {
 // Only SYN alignments participate in DUP detection — INV/TRANS are already
 // classified and must not be overwritten (an inversion's target coords are
 // typically nested inside the surrounding syntenic block).
-export function computeSyriTypes(records: AlignmentRecord[]): SyriClassification {
+export function computeSyriTypes(
+  records: AlignmentRecord[],
+): SyriClassification {
   const types = new Array<SyriType>(records.length).fill('SYN')
-  const dupConflicts: (DupConflict | undefined)[] = new Array(records.length).fill(undefined)
+  const dupConflicts: (DupConflict | undefined)[] = new Array(
+    records.length,
+  ).fill(undefined)
 
   const queryCoverage = new Map<string, Map<string, number>>()
   for (const r of records) {
@@ -54,7 +58,10 @@ export function computeSyriTypes(records: AlignmentRecord[]): SyriClassification
     primaryTarget.set(qname, best)
   }
 
-  const targetGroups = new Map<string, { idx: number; rec: AlignmentRecord }[]>()
+  const targetGroups = new Map<
+    string,
+    { idx: number; rec: AlignmentRecord }[]
+  >()
   for (let i = 0; i < records.length; i++) {
     const r = records[i]!
     let group = targetGroups.get(r.tname)

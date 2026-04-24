@@ -1,7 +1,10 @@
 import { assembleLocString, toLocale } from '@jbrowse/core/util'
 
 import type { FeatPos } from '../model.ts'
-import type { DupConflict, SyriType } from '@jbrowse/plugin-comparative-adapters'
+import type {
+  DupConflict,
+  SyriType,
+} from '@jbrowse/plugin-comparative-adapters'
 
 export interface ClickCoord {
   clientX: number

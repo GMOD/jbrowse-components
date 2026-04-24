@@ -441,6 +441,49 @@ describe('computeArcsFromPileupData', () => {
     expect(result.lines.length).toBe(2)
     expect(result.lines[0]!.colorType).toBe(1)
   })
+
+  test('samplot coloring classifies by pair orientation', () => {
+    const mkData = (orient: number) =>
+      makePileupData({
+        numReads: 1,
+        regionStart: 0,
+        readPositions: new Uint32Array([0, 100]),
+        readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
+        readStrands: new Int8Array([1]),
+        readInsertSizes: new Float32Array([500]),
+        readPairOrientations: new Uint8Array([orient]),
+        readNames: ['readA'],
+        readNextRefs: ['chr1'],
+        readNextPositions: new Uint32Array([500]),
+      })
+    const regions = [
+      { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
+    ]
+    const opts = {
+      colorByType: 'samplot' as const,
+      drawInter: false,
+      drawLongRange: true,
+    }
+    // LR/normal → DEL slot 0
+    expect(
+      computeArcsFromPileupData(new Map([[0, mkData(1)]]), regions, opts)
+        .arcs[0]!.colorType,
+    ).toBe(0)
+    // RL/everted → DUP slot 1
+    expect(
+      computeArcsFromPileupData(new Map([[0, mkData(2)]]), regions, opts)
+        .arcs[0]!.colorType,
+    ).toBe(1)
+    // FF/RR same-strand → INV slot 2
+    expect(
+      computeArcsFromPileupData(new Map([[0, mkData(3)]]), regions, opts)
+        .arcs[0]!.colorType,
+    ).toBe(2)
+    expect(
+      computeArcsFromPileupData(new Map([[0, mkData(4)]]), regions, opts)
+        .arcs[0]!.colorType,
+    ).toBe(2)
+  })
 })
 
 describe('arcsToRegionResult', () => {

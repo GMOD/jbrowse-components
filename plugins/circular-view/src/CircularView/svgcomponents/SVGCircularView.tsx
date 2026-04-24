@@ -50,7 +50,7 @@ export async function renderToSvg(
             ))}
             {displayResults.map(({ result }, i) => (
               /* biome-ignore lint/suspicious/noArrayIndexKey: */
-              (<Fragment key={i}>{result}</Fragment>)
+              <Fragment key={i}>{result}</Fragment>
             ))}
           </g>
         </svg>

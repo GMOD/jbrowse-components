@@ -13,8 +13,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { ErrorBoundary } from './ErrorBoundary.tsx'
 import ErrorBanner from './ErrorBanner.tsx'
+import { ErrorBoundary } from './ErrorBoundary.tsx'
 import SanitizedHTML from './SanitizedHTML.tsx'
 import { makeStyles } from '../util/tss-react/index.ts'
 

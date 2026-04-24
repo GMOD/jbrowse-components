@@ -1,26 +1,37 @@
-import type { DotplotFeatPos } from './types.ts'
+import type { DotplotColorFn } from './dotplotWebGLColors.ts'
+import type { DotplotRpcData } from './types.ts'
 
-export interface LineSegments {
-  x1s: number[]
-  y1s: number[]
-  x2s: number[]
-  y2s: number[]
-  colors: number[]
+export interface LineSegmentArrays {
+  x1s: Float32Array
+  y1s: Float32Array
+  x2s: Float32Array
+  y2s: Float32Array
+  colors: Uint32Array
+  count: number
 }
 
 const MIN_CIGAR_PX_WIDTH = 4
 
-type ColorFn = (f: DotplotFeatPos, index: number) => number
+interface Cursor {
+  n: number
+  x1s: Float32Array
+  y1s: Float32Array
+  x2s: Float32Array
+  y2s: Float32Array
+  colors: Uint32Array
+}
 
 function decomposeCigar(
-  feat: DotplotFeatPos,
-  index: number,
-  colorFn: ColorFn,
+  p11: number,
+  p12: number,
+  p21: number,
+  p22: number,
+  cigar: string[],
+  color: number,
   hBpPerPx: number,
   vBpPerPx: number,
-  out: LineSegments,
+  out: Cursor,
 ) {
-  const { p11, p12, p21, p22, cigar } = feat
   const hRange = p12 - p11
   const vRange = p22 - p21
 
@@ -48,7 +59,6 @@ function decomposeCigar(
   let cy = p21
   let segStartX = cx
   let segStartY = cy
-  const color = colorFn(feat, index)
 
   for (let j = 0; j < cigar.length; j += 2) {
     const len = +cigar[j]!
@@ -64,11 +74,13 @@ function decomposeCigar(
     }
 
     if (Math.abs(cx - segStartX) > 0.5 || Math.abs(cy - segStartY) > 0.5) {
-      out.x1s.push(segStartX)
-      out.y1s.push(segStartY)
-      out.x2s.push(cx)
-      out.y2s.push(cy)
-      out.colors.push(color)
+      const n = out.n
+      out.x1s[n] = segStartX
+      out.y1s[n] = segStartY
+      out.x2s[n] = cx
+      out.y2s[n] = cy
+      out.colors[n] = color
+      out.n = n + 1
       segStartX = cx
       segStartY = cy
     }
@@ -97,35 +109,80 @@ function ensureMinExtent(x1: number, y1: number, x2: number, y2: number) {
 }
 
 export function buildLineSegments(
-  featPositions: DotplotFeatPos[],
-  colorFn: ColorFn,
+  data: DotplotRpcData,
+  colorFn: DotplotColorFn,
   drawCigar: boolean,
-  hBpPerPx: number,
-  vBpPerPx: number,
-) {
-  const out: LineSegments = {
-    x1s: [],
-    y1s: [],
-    x2s: [],
-    y2s: [],
-    colors: [],
+  minAlignmentLength: number,
+): LineSegmentArrays {
+  const {
+    p11s,
+    p12s,
+    p21s,
+    p22s,
+    starts,
+    ends,
+    parsedCigars,
+    bpPerPxH,
+    bpPerPxV,
+  } = data
+  const count = p11s.length
+
+  // Upper bound: one segment per non-filtered feature, plus one extra
+  // per cigar op when drawing CIGARs. Over-allocates a bit, final
+  // arrays are subarray'd to the true count.
+  let maxSegments = 0
+  if (drawCigar) {
+    for (let i = 0; i < count; i++) {
+      maxSegments += 1 + parsedCigars[i]!.length / 2
+    }
+  } else {
+    maxSegments = count
   }
 
-  for (const [i, feat] of featPositions.entries()) {
-    const { p11, p12, p21, p22, cigar } = feat
-    const featureWidth = Math.max(Math.abs(p12 - p11), Math.abs(p22 - p21))
+  const out: Cursor = {
+    n: 0,
+    x1s: new Float32Array(maxSegments),
+    y1s: new Float32Array(maxSegments),
+    x2s: new Float32Array(maxSegments),
+    y2s: new Float32Array(maxSegments),
+    colors: new Uint32Array(maxSegments),
+  }
 
-    if (cigar.length >= 2 && drawCigar && featureWidth >= MIN_CIGAR_PX_WIDTH) {
-      decomposeCigar(feat, i, colorFn, hBpPerPx, vBpPerPx, out)
+  for (let i = 0; i < count; i++) {
+    if (
+      minAlignmentLength > 0 &&
+      Math.abs(ends[i]! - starts[i]!) < minAlignmentLength
+    ) {
+      continue
+    }
+    const p11 = p11s[i]!
+    const p12 = p12s[i]!
+    const p21 = p21s[i]!
+    const p22 = p22s[i]!
+    const cigar = parsedCigars[i]!
+    const featureWidth = Math.max(Math.abs(p12 - p11), Math.abs(p22 - p21))
+    const color = colorFn(data, i)
+
+    if (cigar.length > 0 && drawCigar && featureWidth >= MIN_CIGAR_PX_WIDTH) {
+      decomposeCigar(p11, p12, p21, p22, cigar, color, bpPerPxH, bpPerPxV, out)
     } else {
       const { x1, y1, x2, y2 } = ensureMinExtent(p11, p21, p12, p22)
-      out.x1s.push(x1)
-      out.y1s.push(y1)
-      out.x2s.push(x2)
-      out.y2s.push(y2)
-      out.colors.push(colorFn(feat, i))
+      const n = out.n
+      out.x1s[n] = x1
+      out.y1s[n] = y1
+      out.x2s[n] = x2
+      out.y2s[n] = y2
+      out.colors[n] = color
+      out.n = n + 1
     }
   }
 
-  return out
+  return {
+    x1s: out.x1s.subarray(0, out.n),
+    y1s: out.y1s.subarray(0, out.n),
+    x2s: out.x2s.subarray(0, out.n),
+    y2s: out.y2s.subarray(0, out.n),
+    colors: out.colors.subarray(0, out.n),
+    count: out.n,
+  }
 }

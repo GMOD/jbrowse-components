@@ -9,13 +9,15 @@ import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 function makeModFlatbush(positions: number[], rows: number[]) {
   const fb = new Flatbush(positions.length)
   for (let i = 0; i < positions.length; i++) {
-    fb.add(positions[i]!, rows[i]!, positions[i]!, rows[i]!)
+    fb.add(positions[i]!, rows[i]!, positions[i], rows[i])
   }
   fb.finish()
   return fb
 }
 
-function makeRpcData(overrides: Partial<PileupDataResult> = {}): PileupDataResult {
+function makeRpcData(
+  overrides: Partial<PileupDataResult> = {},
+): PileupDataResult {
   return {
     readPositions: new Uint32Array(),
     readYs: new Uint16Array(),
@@ -97,7 +99,9 @@ describe('hitTestModification', () => {
     })
     const resolved = makeResolved(rpcData)
     // yWithinRow > featureHeightSetting → miss
-    expect(hitTestModification(resolved, makeCoords({ yWithinRow: 15 }), 10)).toBeUndefined()
+    expect(
+      hitTestModification(resolved, makeCoords({ yWithinRow: 15 }), 10),
+    ).toBeUndefined()
   })
 
   it('returns undefined when mouse is far from any modification', () => {
@@ -111,7 +115,9 @@ describe('hitTestModification', () => {
     })
     const resolved = makeResolved(rpcData)
     // genomicPos far from mod position
-    expect(hitTestModification(resolved, makeCoords({ genomicPos: 1050 }), 10)).toBeUndefined()
+    expect(
+      hitTestModification(resolved, makeCoords({ genomicPos: 1050 }), 10),
+    ).toBeUndefined()
   })
 
   it('hits a modification at the visual center (pos + 0.5)', () => {
@@ -125,7 +131,11 @@ describe('hitTestModification', () => {
     })
     const resolved = makeResolved(rpcData)
     // Mouse exactly at visual center pos+0.5
-    const hit = hitTestModification(resolved, makeCoords({ genomicPos: pos + 0.5 }), 10)
+    const hit = hitTestModification(
+      resolved,
+      makeCoords({ genomicPos: pos + 0.5 }),
+      10,
+    )
     expect(hit).toBeDefined()
     expect(hit!.position).toBe(pos)
   })
@@ -140,7 +150,11 @@ describe('hitTestModification', () => {
       modFlatbush: makeModFlatbush([pos], [0]),
     })
     const resolved = makeResolved(rpcData)
-    const hit = hitTestModification(resolved, makeCoords({ genomicPos: pos + 0.5 }), 10)
+    const hit = hitTestModification(
+      resolved,
+      makeCoords({ genomicPos: pos + 0.5 }),
+      10,
+    )
     expect(hit!.color).toBe('rgb(200,100,50)')
   })
 
@@ -156,7 +170,11 @@ describe('hitTestModification', () => {
       modFlatbush: makeModFlatbush([pos], [0]),
     })
     const resolved = makeResolved(rpcData)
-    const hit = hitTestModification(resolved, makeCoords({ genomicPos: pos + 0.5 }), 10)
+    const hit = hitTestModification(
+      resolved,
+      makeCoords({ genomicPos: pos + 0.5 }),
+      10,
+    )
     expect(hit!.modType).toBe('5mC')
   })
 
@@ -170,7 +188,11 @@ describe('hitTestModification', () => {
       modFlatbush: makeModFlatbush([pos], [0]),
     })
     const resolved = makeResolved(rpcData)
-    const hit = hitTestModification(resolved, makeCoords({ genomicPos: pos + 0.5 }), 10)
+    const hit = hitTestModification(
+      resolved,
+      makeCoords({ genomicPos: pos + 0.5 }),
+      10,
+    )
     expect(hit!.modType).toBeUndefined()
   })
 })

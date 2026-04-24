@@ -76,9 +76,7 @@ export default function QuickstartPanel({
 
       {isVisible ? (
         <div className={classes.panel}>
-          {listError && !quickstarts ? (
-            <ErrorBanner error={listError} />
-          ) : null}
+          {listError && !quickstarts ? <ErrorBanner error={listError} /> : null}
 
           {quickstarts !== undefined ? (
             quickstarts.length ? (

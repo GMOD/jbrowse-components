@@ -196,5 +196,5 @@ export default function ExportSvgDialog({
         </Button>
       </DialogActions>
     </Dialog>
-  );
+  )
 }

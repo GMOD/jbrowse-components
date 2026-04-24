@@ -38,4 +38,3 @@ export {
   type CircularViewStateModel,
   type ExportSvgOptions,
 } from './CircularView/model.ts'
-

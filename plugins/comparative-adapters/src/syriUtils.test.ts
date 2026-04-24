@@ -54,7 +54,11 @@ test('detects duplications (overlapping SYN target regions)', () => {
   expect(types[0]).toBe('SYN')
   expect(types[1]).toBe('DUP')
   // The conflict should point to the first alignment's target coords
-  expect(dupConflicts[1]).toMatchObject({ tname: 'chr1', tstart: 0, tend: 2000 })
+  expect(dupConflicts[1]).toMatchObject({
+    tname: 'chr1',
+    tstart: 0,
+    tend: 2000,
+  })
   expect(dupConflicts[0]).toBeUndefined()
 })
 
@@ -62,9 +66,9 @@ test('inversion nested in syntenic region is NOT misclassified as DUP', () => {
   // A typical inversion: the INV target coords fall inside the surrounding SYN
   // block. This was previously a bug — the INV was overwritten as DUP.
   const records = [
-    rec('chr1', 0, 5000, 'chr1', 0, 5000),          // SYN covering [0,5000]
+    rec('chr1', 0, 5000, 'chr1', 0, 5000), // SYN covering [0,5000]
     rec('chr1', 2000, 4000, 'chr1', 2000, 4000, -1), // INV nested inside
-    rec('chr1', 5000, 9000, 'chr1', 5000, 9000),     // SYN following
+    rec('chr1', 5000, 9000, 'chr1', 5000, 9000), // SYN following
   ]
   const { types } = computeSyriTypes(records)
   expect(types[0]).toBe('SYN')
@@ -111,11 +115,15 @@ test('negative strand on non-primary target is translocation not inversion', () 
 
 test('DUP conflict has correct coords of the prior SYN', () => {
   const records = [
-    rec('chr1', 0, 500, 'chr1', 100, 600),   // SYN: target [100,600]
+    rec('chr1', 0, 500, 'chr1', 100, 600), // SYN: target [100,600]
     rec('chr1', 600, 1000, 'chr1', 400, 900), // SYN: target [400,900] overlaps [100,600]
   ]
   const { types, dupConflicts } = computeSyriTypes(records)
   expect(types[0]).toBe('SYN')
   expect(types[1]).toBe('DUP')
-  expect(dupConflicts[1]).toMatchObject({ tname: 'chr1', tstart: 100, tend: 600 })
+  expect(dupConflicts[1]).toMatchObject({
+    tname: 'chr1',
+    tstart: 100,
+    tend: 600,
+  })
 })

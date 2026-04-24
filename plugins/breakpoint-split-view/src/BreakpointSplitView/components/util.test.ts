@@ -1,7 +1,4 @@
-import {
-  classifyVariantFeatures,
-  getMatchedBreakendFeatures,
-} from './util.ts'
+import { classifyVariantFeatures, getMatchedBreakendFeatures } from './util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -92,18 +89,15 @@ describe('classifyVariantFeatures', () => {
   test('paired wins over breakend', () => {
     expect(
       classifyVariantFeatures(
-        mapOf(
-          fakeFeature('a', 'breakend'),
-          fakeFeature('b', 'paired_feature'),
-        ),
+        mapOf(fakeFeature('a', 'breakend'), fakeFeature('b', 'paired_feature')),
       ),
     ).toBe('paired')
   })
 
   test('defaults to breakend', () => {
-    expect(
-      classifyVariantFeatures(mapOf(fakeFeature('a', 'breakend'))),
-    ).toBe('breakend')
+    expect(classifyVariantFeatures(mapOf(fakeFeature('a', 'breakend')))).toBe(
+      'breakend',
+    )
   })
 
   test('empty defaults to breakend', () => {

@@ -16,7 +16,12 @@ import type { SyntenyTrackRenderParams } from './syntenyBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { AlignmentRecord, DupConflict, SyriClassification, SyriType } from '@jbrowse/plugin-comparative-adapters'
+import type {
+  AlignmentRecord,
+  DupConflict,
+  SyriClassification,
+  SyriType,
+} from '@jbrowse/plugin-comparative-adapters'
 
 // Duck-typed view to avoid circular imports. Display only reads LGV-ish
 // fields off the containing view.
@@ -352,7 +357,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           for (let i = 0; i < n; i++) {
             types[i] = (syriTypes[i] || 'SYN') as SyriType
           }
-          return { types, dupConflicts: new Array<DupConflict | undefined>(n).fill(undefined) }
+          return {
+            types,
+            dupConflicts: new Array<DupConflict | undefined>(n).fill(undefined),
+          }
         }
         const input = new Array<AlignmentRecord>(n)
         for (let i = 0; i < n; i++) {

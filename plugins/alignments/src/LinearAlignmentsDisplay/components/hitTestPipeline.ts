@@ -115,7 +115,13 @@ export function performHitTest(
     return {
       type: 'modification',
       hit: modificationHit,
-      featureHit: hitTestFeatureFn(canvasX, canvasY, resolved, coords, featureHeightSetting),
+      featureHit: hitTestFeatureFn(
+        canvasX,
+        canvasY,
+        resolved,
+        coords,
+        featureHeightSetting,
+      ),
       cigarHit: hitTestCigarItemFn(resolved, coords, featureHeightSetting),
       resolved,
     }

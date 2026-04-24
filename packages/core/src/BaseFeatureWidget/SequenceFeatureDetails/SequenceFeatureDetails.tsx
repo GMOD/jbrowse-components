@@ -9,7 +9,7 @@ import {
   createSequenceFeatureDetailsModel,
   destroySequenceFeatureDetailsModel,
 } from './model.ts'
-import { ErrorBanner, LoadingEllipses } from '../../ui/index.ts' 
+import { ErrorBanner, LoadingEllipses } from '../../ui/index.ts'
 import { getSession } from '../../util/index.ts'
 import { useFeatureSequence } from '../../util/useFeatureSequence.ts'
 

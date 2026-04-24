@@ -153,7 +153,14 @@ export interface CanvasLike {
   strokeStyle: string | CanvasGradient | CanvasPattern
   lineWidth: number
   globalAlpha: number
-  setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void
+  setTransform(
+    a: number,
+    b: number,
+    c: number,
+    d: number,
+    e: number,
+    f: number,
+  ): void
   beginPath(): void
   closePath(): void
   moveTo(x: number, y: number): void
@@ -403,7 +410,15 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
           continue
         }
 
-        buildFeaturePath(ctx, w.sx1, w.sx2, w.sx3, w.sx4, height, params.drawCurves)
+        buildFeaturePath(
+          ctx,
+          w.sx1,
+          w.sx2,
+          w.sx3,
+          w.sx4,
+          height,
+          params.drawCurves,
+        )
 
         if (ctx.isPointInPath(x, localY)) {
           topHit = { key, featureIndex: i }

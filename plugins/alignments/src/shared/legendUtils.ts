@@ -1,7 +1,5 @@
-import {
-  methylated5mC,
-  unmethylated5mC,
-} from '@jbrowse/core/ui/theme'
+import { methylated5mC, unmethylated5mC } from '@jbrowse/core/ui/theme'
+
 import { fillColor } from './color.ts'
 
 import type { ColorBy, ModificationTypeWithColor } from './types.ts'
@@ -58,6 +56,13 @@ const insertSizeAndOrientationLegendItems: LegendItem[] = [
   ...insertSizeItems,
   unmappedMateItem,
   supplementaryItem,
+]
+
+const samplotLegendItems: LegendItem[] = [
+  { color: fillColor.color_samplot_del, label: 'Deletion / normal (FR)' },
+  { color: fillColor.color_samplot_dup, label: 'Duplication (RF)' },
+  { color: fillColor.color_samplot_inv, label: 'Inversion (FF / RR)' },
+  { color: fillColor.color_samplot_bnd, label: 'Translocation / BND' },
 ]
 
 function getBaseItems(theme: Theme): LegendItem[] {
@@ -167,6 +172,9 @@ export function getReadDisplayLegendItems(
   }
   if (colorType === 'orientation') {
     return orientationLegendItems
+  }
+  if (colorType === 'samplot') {
+    return samplotLegendItems
   }
   if (colorType === 'mappingQuality') {
     return [

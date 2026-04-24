@@ -1,9 +1,9 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import {
-  methylated5mC,
   methylated5hmC,
-  unmethylated5mC,
+  methylated5mC,
   unmethylated5hmC,
+  unmethylated5mC,
 } from '@jbrowse/core/ui/theme'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 import { firstValueFrom } from 'rxjs'
@@ -295,7 +295,11 @@ export function extractMethylation(
         modType: 'm',
         isSimplex: true,
         strand: methStrand,
-        ...methColorAndProb(methProbs[i] ?? 0, METH_5MC_METHYLATED_RGB, METH_5MC_UNMETHYLATED_RGB),
+        ...methColorAndProb(
+          methProbs[i] ?? 0,
+          METH_5MC_METHYLATED_RGB,
+          METH_5MC_UNMETHYLATED_RGB,
+        ),
       })
     }
     if (hydroxyMethBins[i]) {
@@ -306,7 +310,11 @@ export function extractMethylation(
         modType: 'h',
         isSimplex: true,
         strand: methStrand,
-        ...methColorAndProb(hydroxyMethProbs[i] ?? 0, METH_5HMC_METHYLATED_RGB, METH_5HMC_UNMETHYLATED_RGB),
+        ...methColorAndProb(
+          hydroxyMethProbs[i] ?? 0,
+          METH_5HMC_METHYLATED_RGB,
+          METH_5HMC_UNMETHYLATED_RGB,
+        ),
       })
     }
   }

@@ -162,7 +162,8 @@ export function computeModificationCoverage(
       })
 
       // depthAtPosition cancels: (mod/depth * probTotal/det) * (depth/maxDepth)
-      const height = (modifiable * entry.probabilityTotal) / (detectable * regionMaxDepth)
+      const height =
+        (modifiable * entry.probabilityTotal) / (detectable * regionMaxDepth)
 
       const avgProbability =
         entry.probabilityCount > 0

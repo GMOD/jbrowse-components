@@ -1,3 +1,4 @@
+import { modProbAt } from './getModProbabilities.ts'
 import { getNextRefPos } from '../MismatchParser/index.ts'
 import {
   CIGAR_D,
@@ -8,7 +9,6 @@ import {
   CIGAR_S,
   CIGAR_X,
 } from '../shared/cigarUtil.ts'
-import { modProbAt } from './getModProbabilities.ts'
 
 import type { getModPositions } from './getModPositions.ts'
 
@@ -54,7 +54,13 @@ export function getMethBins({
       if (ref < 0 || ref >= flen || !isCpGAt(seq, positions[idx]!, isReverse)) {
         return
       }
-      const prob = modProbAt(probabilities, probIndex, isReverse, idx, positions.length)
+      const prob = modProbAt(
+        probabilities,
+        probIndex,
+        isReverse,
+        idx,
+        positions.length,
+      )
       if (type === 'm') {
         methBins[ref] = 1
         methProbs[ref] = prob
@@ -86,7 +92,12 @@ export function getMethBins({
       for (let j = 0; j < len; j++) {
         const rp = readPos + j
         const rf = refPos + j
-        if (isCpGAt(seq, rp, isReverse) && rf >= 0 && rf < flen && !methBins[rf]) {
+        if (
+          isCpGAt(seq, rp, isReverse) &&
+          rf >= 0 &&
+          rf < flen &&
+          !methBins[rf]
+        ) {
           methBins[rf] = 1
           methProbs[rf] = 0
         }

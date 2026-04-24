@@ -15,9 +15,7 @@ export function modProbAt(
   idx: number,
   posLen: number,
 ) {
-  return (
-    probabilities?.[probIndex + (isReverse ? posLen - 1 - idx : idx)] ?? 0
-  )
+  return probabilities?.[probIndex + (isReverse ? posLen - 1 - idx : idx)] ?? 0
 }
 
 export function getModProbabilities(feature: Feature) {

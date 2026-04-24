@@ -42,7 +42,11 @@ export default function ErrorBar({
         action={
           <>
             <Tooltip title="Show stack trace">
-              <IconButton onClick={() => setShowStack(true)}>
+              <IconButton
+                onClick={() => {
+                  setShowStack(true)
+                }}
+              >
                 <ReportIcon />
               </IconButton>
             </Tooltip>
@@ -55,7 +59,9 @@ export default function ErrorBar({
               <Suspense fallback={null}>
                 <ErrorMessageStackTraceDialog
                   error={error}
-                  onClose={() => setShowStack(false)}
+                  onClose={() => {
+                    setShowStack(false)
+                  }}
                 />
               </Suspense>
             ) : null}

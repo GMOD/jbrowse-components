@@ -5,8 +5,8 @@
  * and GPU data upload coordination.
  */
 
-import { toLocale } from '@jbrowse/core/util'
 import { countSnpsAtPosition } from '@jbrowse/alignments-core'
+import { toLocale } from '@jbrowse/core/util'
 
 import { toRgb } from './shaders/colors.ts'
 import { fillColor } from '../../shared/color.ts'

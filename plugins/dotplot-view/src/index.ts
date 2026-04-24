@@ -4,7 +4,7 @@ import TimelineIcon from '@mui/icons-material/Timeline'
 
 import ComparativeRenderer from './ComparativeRenderer/index.ts'
 import DiagonalizeDotplotRpc from './DiagonalizeDotplotRpc.ts'
-import { DotplotGetWebGLGeometry } from './DotplotDisplay/DotplotGetWebGLGeometry.ts'
+import { DotplotGetFeaturesAndPositions } from './DotplotDisplay/DotplotGetFeaturesAndPositions.ts'
 import DotplotDisplayF from './DotplotDisplay/index.ts'
 import DotplotReadVsRefMenuItem from './DotplotReadVsRef/index.ts'
 import DotplotRendererF from './DotplotRenderer/index.ts'
@@ -29,7 +29,9 @@ export default class DotplotPlugin extends Plugin {
     // install our comparative rendering rpc callback
     pluginManager.addRpcMethod(() => new ComparativeRenderer(pluginManager))
     pluginManager.addRpcMethod(() => new DiagonalizeDotplotRpc(pluginManager))
-    pluginManager.addRpcMethod(() => new DotplotGetWebGLGeometry(pluginManager))
+    pluginManager.addRpcMethod(
+      () => new DotplotGetFeaturesAndPositions(pluginManager),
+    )
   }
 
   configure(pluginManager: PluginManager) {

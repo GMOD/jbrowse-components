@@ -28,11 +28,7 @@ const Slices = observer(function Slices({
   return (
     <>
       {model.staticSlices.map(slice => (
-        <Ruler
-          key={slice.key}
-          model={model}
-          slice={slice}
-        />
+        <Ruler key={slice.key} model={model} slice={slice} />
       ))}
       {model.tracks.map(track => {
         const display = track.displays[0]

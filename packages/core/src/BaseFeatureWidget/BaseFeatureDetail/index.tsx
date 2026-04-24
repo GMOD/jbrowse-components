@@ -2,7 +2,7 @@ import { observer } from 'mobx-react'
 
 import FeatureDetails from './FeatureDetails.tsx'
 import { isEmpty } from './util.ts'
-import { ErrorBanner } from '../../ui/index.ts' 
+import { ErrorBanner } from '../../ui/index.ts'
 import { replaceUndefinedWithNull } from '../util.tsx'
 
 import type { BaseInputProps } from './types.ts'

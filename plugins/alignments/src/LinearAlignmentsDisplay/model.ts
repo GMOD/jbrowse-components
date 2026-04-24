@@ -784,6 +784,7 @@ export default function stateModelFactory(
             renderingMode: self.renderingMode,
             flipStrandLongReadChains: self.flipStrandLongReadChains,
             arcLineWidth: self.arcsState.lineWidth,
+            arcColorByType: self.arcsState.colorByType,
             bpRangeX: [0, 0],
           }
         },
@@ -1263,7 +1264,8 @@ export default function stateModelFactory(
                   arcX1: data.arcX1,
                   arcX2: data.arcX2,
                   arcColorTypes: data.arcColorTypes,
-                  arcIsArc: data.arcIsArc,
+                  arcShapeTypes: data.arcShapeTypes,
+                  arcYBp: data.arcYBp,
                   numArcs: data.numArcs,
                   linePositions: data.linePositions,
                   lineYs: data.lineYs,
@@ -1586,6 +1588,19 @@ export default function stateModelFactory(
                       onClick: () => {
                         self.setShowArcs(true)
                         self.setArcsDown(true)
+                      },
+                    },
+                    { type: 'divider' as const },
+                    {
+                      label: 'Samplot SV coloring',
+                      type: 'checkbox' as const,
+                      checked: self.arcsState.colorByType === 'samplot',
+                      onClick: () => {
+                        self.arcsState.setColorByType(
+                          self.arcsState.colorByType === 'samplot'
+                            ? 'insertSizeAndOrientation'
+                            : 'samplot',
+                        )
                       },
                     },
                   ],

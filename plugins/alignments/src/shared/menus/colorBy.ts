@@ -179,7 +179,7 @@ interface ColorByModel {
 interface ArcsState {
   colorByType: string
   setColorByType: (
-    type: 'insertSizeAndOrientation' | 'insertSize' | 'orientation',
+    type: 'insertSizeAndOrientation' | 'insertSize' | 'orientation' | 'samplot',
   ) => void
 }
 

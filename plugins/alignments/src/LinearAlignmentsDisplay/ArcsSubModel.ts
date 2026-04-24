@@ -8,10 +8,11 @@ export type ArcColorByType =
   | 'insertSizeAndOrientation'
   | 'insertSize'
   | 'orientation'
+  | 'samplot'
 
 export const arcColorByTypes = types.enumeration<ArcColorByType>(
   'ArcColorByType',
-  ['insertSizeAndOrientation', 'insertSize', 'orientation'],
+  ['insertSizeAndOrientation', 'insertSize', 'orientation', 'samplot'],
 )
 
 export const ArcsSubModel = types

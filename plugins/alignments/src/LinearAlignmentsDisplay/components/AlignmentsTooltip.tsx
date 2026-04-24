@@ -6,11 +6,11 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/plugin-wiggle'
 import { observer } from 'mobx-react'
 
-import { getInterbaseTypeLabel } from '../../shared/types.ts'
 import { getModificationName } from '../../shared/modificationData.ts'
+import { getInterbaseTypeLabel } from '../../shared/types.ts'
 
-import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 import type { ModificationTooltipPayload } from './alignmentComponentUtils.ts'
+import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 
 const useStyles = makeStyles()(theme => ({
   hoverVertical: {
@@ -444,7 +444,9 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
               </tr>
               <tr>
                 <td>Probability</td>
-                <td className={classes.td}>{(probability * 100).toFixed(1)}%</td>
+                <td className={classes.td}>
+                  {(probability * 100).toFixed(1)}%
+                </td>
               </tr>
               {snpBase && (
                 <tr>

@@ -73,7 +73,12 @@ function ErrorButtons({
     <div className={classes.iconFloat}>
       {typeof error === 'object' && error && 'stack' in error ? (
         <Tooltip title="Show stack trace">
-          <IconButton onClick={() => setShowStack(true)} color="primary">
+          <IconButton
+            onClick={() => {
+              setShowStack(true)
+            }}
+            color="primary"
+          >
             <ReportIcon />
           </IconButton>
         </Tooltip>
@@ -89,7 +94,9 @@ function ErrorButtons({
         <Suspense fallback={null}>
           <ErrorMessageStackTraceDialog
             error={error}
-            onClose={() => setShowStack(false)}
+            onClose={() => {
+              setShowStack(false)
+            }}
           />
         </Suspense>
       ) : null}

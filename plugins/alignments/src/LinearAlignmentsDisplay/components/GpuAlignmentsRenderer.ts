@@ -5,7 +5,7 @@ import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
-import { arcColorPalette, arcLineColorPalette } from './shaders/palettes.ts'
+import { arcLineColorPalette, getArcPalette } from './shaders/palettes.ts'
 import * as arcShader from './shaders/slang/arc.generated.ts'
 import * as arcLineShader from './shaders/slang/arcLine.generated.ts'
 import * as clipShader from './shaders/slang/clip.generated.ts'
@@ -297,13 +297,15 @@ function packArcs(data: ArcsUploadData): ArrayBuffer {
   const x1 = data.arcX1
   const x2 = data.arcX2
   const cts = data.arcColorTypes
-  const isArc = data.arcIsArc
+  const shape = data.arcShapeTypes
+  const yBp = data.arcYBp
   for (let i = 0; i < n; i++) {
     const o = i * s32
     u32[o + F.x1] = x1[i]!
     u32[o + F.x2] = x2[i]!
     f32[o + F.colorType] = cts[i]!
-    f32[o + F.isArc] = isArc[i]!
+    f32[o + F.shapeType] = shape[i]!
+    u32[o + F.yBp] = yBp[i]!
   }
   return buf
 }
@@ -394,7 +396,11 @@ function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
 
 // Pack every palette color into the UBO as u32 ABGR. Pure — writes through
 // the given u32 view only, no rendering side effects.
-function writePaletteToUbo(u: Uint32Array, c: ColorPalette) {
+function writePaletteToUbo(
+  u: Uint32Array,
+  c: ColorPalette,
+  arcColorByType: string | undefined,
+) {
   const pack = (rgb: RGBColor) => normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])
   u[U.colorFwd] = pack(c.colorFwdStrand)
   u[U.colorRev] = pack(c.colorRevStrand)
@@ -419,8 +425,9 @@ function writePaletteToUbo(u: Uint32Array, c: ColorPalette) {
   u[U.colorShortInsert] = pack(c.colorShortInsert)
   u[U.colorSupplementary] = pack(c.colorSupplementary)
   u[U.colorUnmappedMate] = pack(c.colorUnmappedMate)
-  for (let i = 0; i < arcColorPalette.length; i++) {
-    u[ARC_COLOR_SLOTS[i]!] = pack(arcColorPalette[i]!)
+  const arcPal = getArcPalette(arcColorByType)
+  for (let i = 0; i < arcPal.length; i++) {
+    u[ARC_COLOR_SLOTS[i]!] = pack(arcPal[i]!)
   }
   for (let i = 0; i < arcLineColorPalette.length; i++) {
     u[ARC_LINE_SLOTS[i]!] = pack(arcLineColorPalette[i]!)
@@ -759,7 +766,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
   private writeUniforms(state: RenderState, frame: BlockFrame) {
     fillFrameUniforms(this.uF32, this.uU32, this.uI32, state, frame)
-    writePaletteToUbo(this.uU32, state.colors)
+    writePaletteToUbo(this.uU32, state.colors, state.arcColorByType)
     if (state.showModifications) {
       const m = state.colors.colorMutedSnpBase
       const grey = normalizedRgbToABGR(m[0], m[1], m[2])
