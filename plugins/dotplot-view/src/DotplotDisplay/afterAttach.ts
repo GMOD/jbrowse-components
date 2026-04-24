@@ -128,12 +128,12 @@ export function doAfterAttach(
           minAlignmentLength,
         )
         self.setGeometry({
-          x1s: new Float32Array(segments.x1s),
-          y1s: new Float32Array(segments.y1s),
-          x2s: new Float32Array(segments.x2s),
-          y2s: new Float32Array(segments.y2s),
-          colors: new Uint32Array(segments.colors),
-          instanceCount: segments.x1s.length,
+          x1s: segments.x1s,
+          y1s: segments.y1s,
+          x2s: segments.x2s,
+          y2s: segments.y2s,
+          colors: segments.colors,
+          instanceCount: segments.count,
           bpPerPxH: rpcData.bpPerPxH,
           bpPerPxV: rpcData.bpPerPxV,
         })
