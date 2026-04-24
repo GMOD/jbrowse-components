@@ -94,7 +94,7 @@
     "./ui/DropDownMenu": "./src/ui/DropDownMenu.tsx",
     "./ui/EditableTypography": "./src/ui/EditableTypography.tsx",
     "./ui/ErrorBoundary": "./src/ui/ErrorBoundary.tsx",
-    "./ui/ErrorMessage": "./src/ui/ErrorMessage.tsx",
+    "./ui/ErrorBanner": "./src/ui/ErrorBanner.tsx",
     "./ui/ErrorMessageStackTraceDialog": "./src/ui/ErrorMessageStackTraceDialog.tsx",
     "./ui/Icons": "./src/ui/Icons.tsx",
     "./ui/LoadingEllipses": "./src/ui/LoadingEllipses.tsx",
@@ -488,9 +488,9 @@
         "types": "./esm/ui/ErrorBoundary.d.ts",
         "import": "./esm/ui/ErrorBoundary.js"
       },
-      "./ui/ErrorMessage": {
-        "types": "./esm/ui/ErrorMessage.d.ts",
-        "import": "./esm/ui/ErrorMessage.js"
+      "./ui/ErrorBanner": {
+        "types": "./esm/ui/ErrorBanner.d.ts",
+        "import": "./esm/ui/ErrorBanner.js"
       },
       "./ui/ErrorMessageStackTraceDialog": {
         "types": "./esm/ui/ErrorMessageStackTraceDialog.d.ts",
@@ -920,8 +920,8 @@
         "ui/ErrorBoundary": [
           "esm/ui/ErrorBoundary.d.ts"
         ],
-        "ui/ErrorMessage": [
-          "esm/ui/ErrorMessage.d.ts"
+        "ui/ErrorBanner": [
+          "esm/ui/ErrorBanner.d.ts"
         ],
         "ui/ErrorMessageStackTraceDialog": [
           "esm/ui/ErrorMessageStackTraceDialog.d.ts"
