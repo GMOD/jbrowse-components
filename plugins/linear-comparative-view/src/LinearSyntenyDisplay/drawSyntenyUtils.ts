@@ -13,6 +13,8 @@ import {
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
 
+import type { SyriType } from '@jbrowse/plugin-comparative-adapters'
+
 export const lineLimit = 3
 
 export const oobLimit = 1600
@@ -64,7 +66,7 @@ export const syriColors = {
   INV: '#FFA500',
   TRANS: '#9ACD32',
   DUP: '#00BBFF',
-}
+} satisfies Record<SyriType, string>
 
 // Color scheme configuration. `query` and `syri` reuse the default CIGAR
 // palette; only `strand` differs (indels in purple instead of blue, plus

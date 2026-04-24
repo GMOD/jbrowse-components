@@ -69,7 +69,7 @@ const ColorBySelector = observer(function ColorBySelector({
             setColorBy('syri')
           },
           helpText:
-            'Color alignments by structural variant type using SyRI-style classification: syntenic (gray), inversions (orange), translocations (blue), and duplications (cyan). Compatible with plotsr color conventions.',
+            'Color alignments by structural variant type using SyRI-style classification: syntenic (gray), inversions (orange), translocations (yellow-green), and duplications (cyan). Colors match plotsr defaults.',
         },
       ]}
     >
