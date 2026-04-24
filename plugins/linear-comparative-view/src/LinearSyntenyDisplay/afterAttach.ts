@@ -78,7 +78,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
               drawLocationMarkers,
               chainMerge,
               statusCallback: (msg: string) => {
-                if (isAlive(self)) {
+                if (thisStopToken === currentStopToken && isAlive(self)) {
                   self.setStatusMessage(msg)
                 }
               },
@@ -90,7 +90,11 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           const { instanceData, ...featureData } = result
           self.setRpcData(featureData, instanceData)
         } catch (e) {
-          if (!isAbortException(e) && isAlive(self)) {
+          if (
+            thisStopToken === currentStopToken &&
+            !isAbortException(e) &&
+            isAlive(self)
+          ) {
             console.error(e)
             self.setError(e)
           }
@@ -109,5 +113,3 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     }
   })
 }
-
-export { type SyntenyRpcResult } from '../LinearSyntenyRPC/executeSyntenyFeaturesAndPositions.ts'

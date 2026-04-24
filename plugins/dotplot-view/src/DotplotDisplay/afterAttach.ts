@@ -96,7 +96,11 @@ export function doAfterAttach(
           }
           self.setFeatures({ features: dedupe(rawFeatures, f => f.id()) })
         } catch (e) {
-          if (!isAbortException(e) && isAlive(self)) {
+          if (
+            thisStopToken === featureStopToken &&
+            !isAbortException(e) &&
+            isAlive(self)
+          ) {
             self.setError(e)
           }
         }
@@ -105,6 +109,8 @@ export function doAfterAttach(
     ),
   )
 
+  // Features serialization is cached across pan-triggered position
+  // re-fetches; serializeFeatures is O(N) and called once per fire.
   let cachedFeatures: Feature[] | undefined
   let cachedSerialized: DotplotFeatureData[] = []
 
@@ -128,7 +134,6 @@ export function doAfterAttach(
           cachedFeatures = features
           cachedSerialized = serializeFeatures(features, assemblyManager)
         }
-        const serialized = cachedSerialized
 
         if (positionStopToken) {
           stopStopToken(positionStopToken)
@@ -142,7 +147,7 @@ export function doAfterAttach(
             sessionId,
             'DotplotGetWebGLGeometry',
             {
-              features: serialized,
+              features: cachedSerialized,
               hViewSnap,
               vViewSnap,
               sessionId,
@@ -151,24 +156,32 @@ export function doAfterAttach(
           if (thisStopToken !== positionStopToken || !isAlive(self)) {
             return
           }
-          const featureMap = new Map(features.map(f => [f.id(), f]))
+          // result.featureIds is the input-order subsequence of features
+          // that the worker kept (those outside visible regions are
+          // filtered). Walk both arrays with a single output index.
           const positions: DotplotFeatPos[] = []
-          for (let i = 0; i < result.featureIds.length; i++) {
-            const f = featureMap.get(result.featureIds[i]!)
-            if (f) {
+          const ids = result.featureIds
+          let j = 0
+          for (const f of features) {
+            if (j < ids.length && f.id() === ids[j]) {
               positions.push({
-                p11: result.p11_offsetPx[i]!,
-                p12: result.p12_offsetPx[i]!,
-                p21: result.p21_offsetPx[i]!,
-                p22: result.p22_offsetPx[i]!,
+                p11: result.p11_offsetPx[j]!,
+                p12: result.p12_offsetPx[j]!,
+                p21: result.p21_offsetPx[j]!,
+                p22: result.p22_offsetPx[j]!,
                 f,
-                cigar: parseCigar(result.cigars[i]),
+                cigar: parseCigar(result.cigars[j]),
               })
+              j++
             }
           }
           self.setFeatPositions({ positions, bpPerPxH, bpPerPxV })
         } catch (e) {
-          if (!isAbortException(e) && isAlive(self)) {
+          if (
+            thisStopToken === positionStopToken &&
+            !isAbortException(e) &&
+            isAlive(self)
+          ) {
             self.setError(e)
           }
         }
