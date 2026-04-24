@@ -1,6 +1,6 @@
 # Active Work Items
 
-**Updated:** 2026-04-20 | Move completed items to `agent-docs/completed/COMPLETED.md`. PRD.md holds invariants; this file is the categorized backlog.
+**Updated:** 2026-04-24 | Move completed items to `agent-docs/completed/COMPLETED.md`. PRD.md holds invariants; this file is the categorized backlog.
 
 Sections roughly in working order — high-leverage architectural items first, then config / tests, then bugs and polish.
 
@@ -21,6 +21,8 @@ sync Canvas2D picking; synteny needs it.
 **Structural `RenderSvgModel`.** Matrix + variants use the structural form;
 wiggle / alignments / canvas still import the MST type. Mechanical
 conversion; hardens against type circularity across lazy boundaries.
+
+**`getRpcSessionId` for `plugins/graph`.** Consider using the view id (currently unset).
 
 ---
 
@@ -135,6 +137,10 @@ LinearGenomeView reactivity or JS event throttling.
 **Canvas SNP cutoff.** Remove SNP clickmap at megabase zoom levels (no
 reason to render).
 
+**Dotplot feature requests debounced / slow.** Review request timing in dotplot.
+
+**`paf_chain2paf` / `parseCigar2` speed.** Profile and optimize.
+
 ---
 
 ## Bugs
@@ -185,15 +191,29 @@ synteny feature at high zoom and check whether markers reach both
 endpoints symmetrically. Fix if not: divide by `numMarkers - 1` (safe
 because `numMarkers >= 2` is already enforced).
 
+**SyRI z-ordering in GPU path.** Canvas2D and SVG export now draw SYN first so
+INV / TRANS / DUP ribbons appear on top (plotsr-compatible). The WebGL2 and
+WebGPU paths do not yet respect this order — instances are drawn in arrival
+order. To fix: sort the `SyntenyInstanceData` arrays at `uploadGeometry` time
+so SYN instances come first; or use depth-buffer values (SYN = 0.5, others =
+0.0) in `syntenyFill.slang`. The latter avoids re-sorting but requires a shader
+change.
+
+**Alignments `regionSequence` undefined error.** Seen in the wild:
+`TypeError: can't access property "toUpperCase", regionSequence[(position - regionSequenceStart)] is undefined`
+in `computeModificationCoverage.ts:80` / `executeRenderPileupData.ts:178`.
+Needs a reproduction case.
+
 ---
 
 ## Features & UX
 
-**Synteny large-data interactivity.** Four independently-landable items,
-ordered by ROI for whole-genome alignment (millions of features). `colorBy`
-is already main-thread (see recent `LinearSyntenyDisplay` refactor: per-
-instance `kinds`/`instanceFeatureIdx` + `renderInstanceData` getter); the
-items below tackle pan/zoom/pick.
+### Synteny large-data interactivity
+
+Four independently-landable items, ordered by ROI for whole-genome alignment
+(millions of features). `colorBy` is already main-thread (see recent
+`LinearSyntenyDisplay` refactor: per-instance `kinds`/`instanceFeatureIdx` +
+`renderInstanceData` getter); the items below tackle pan/zoom/pick.
 
 1. *Canvas2D picking spatial index.* `Canvas2DSyntenyRenderer.pick()` is
    O(n) per hover across all tracks + instances. Build a Flatbush over
@@ -206,21 +226,39 @@ items below tackle pan/zoom/pick.
    at `0.5× viewWidth`; every pan fires RPC + debounced rebuild. Grow
    margin to ~`2× viewWidth` per side, return the actual emitted genomic
    range, have `afterAttach` skip the RPC when new viewport ⊂ loaded
-   range and `bpPerPx` is unchanged. Medium scope. Subsumed by #3 if
-   that lands, but a good interim.
+   range and `bpPerPx` is unchanged. Medium scope. Complementary to #3:
+   #2 eliminates pan re-fetches on indexed adapters (where region-eager
+   fetch would OOM); #3 eliminates zoom re-fetches and fixes deep-zoom
+   precision. Different problems, both worth doing.
 
 3. *GPU-smooth-zoom (full alignments-style architecture).* Worker emits
    absolute genomic uint32 per vertex (not float32 pixel offsets). Shader
    converts bp → clip via `hpMath` against per-view `bpHi/bpLo/bpLen`
-   uniforms — top verts use view-A, bottom verts use view-B. Pan and zoom
-   become zero-CPU uniform updates; RPC only fires on feature-set change.
-   Touches `syntenyTypes.slang`, `syntenyFill/Edge/Picking.slang`,
+   uniforms — top verts use view-A, bottom verts use view-B. Touches
+   `syntenyTypes.slang`, `syntenyFill/Edge/Picking.slang`,
    `instanceInterleave.ts`, `buildSyntenyGeometry.ts` (CIGAR layout in bp
    not pixels), `GpuSyntenyRenderer.writeUniforms`,
    `Canvas2DSyntenyRenderer` (bp→pixel per frame),
    `executeSyntenyFeaturesAndPositions.ts`. Medium risk; needs browser-
-   test coverage. Makes #2 moot; this is the architecturally correct
-   endgame and matches the pattern documented in ARCHITECTURE.md.
+   test coverage.
+
+   **Honest value prop** (revised after diagnosis): this buys (a) deep-
+   zoom precision — float32 pixel offsets drift once you zoom past ~2×
+   the worker's geometry `bpPerPx`, which bp uint32 + `hpMath` fixes; (b)
+   zoom becomes a zero-RPC uniform update instead of a worker re-run
+   (today any `bpPerPx` change invalidates the pixel-space buffer).
+
+   It does **not** on its own fix pan smoothness — with the
+   `pairwiseIndexedPAFadapter` the worker legitimately streams per-block
+   data, so panning into new blocks will still RPC regardless of output
+   format. Pan smoothness is #2's problem (widen the margin, cache by
+   loaded range), not #3's. Sell this on precision + zoom-RPC removal.
+
+   Multi-region handling: one draw call per `(topRegionIdx, botRegionIdx)`
+   pair per strip, with per-region `bpHi/bpLo/bpLen` uniforms — mirrors
+   alignments' per-block draw pattern, doubled. Features that straddle
+   a region boundary on either strip are rare; simplest handling is to
+   split at the boundary during worker-side bucketing.
 
 4. *`drawCIGAR` / `drawCIGARMatchesOnly` / `drawLocationMarkers` →
    gpuProps.* Worker always emits full CIGAR + marker geometry; per-
@@ -229,75 +267,18 @@ items below tackle pan/zoom/pick.
    Payload always pays CIGAR cost — only worth it if users toggle these
    frequently. Optional polish.
 
-Recommended sequence: **1 → 3**. Skip 2 if committing to 3. 4 is optional.
+Recommended sequence: **1 → 2 → 3**. #2 and #3 are complementary (pan
+smoothness vs. zoom precision), not substitutes. 4 is optional.
 
-**Synteny / dotplot UX.** Linked views, swap axes, better defaults for
-human vs mouse.
+### Synteny misc UX
 
-**Gene glyph compact modes.** Add super-compact for dense layouts; side
-labels for genes.
+- Linked views, swap axes, better defaults for human vs mouse.
+- Collapse synteny view: add a button to collapse each LinearGenomeView row
+  to a single thin line (~1–2 px). The LGV currently takes ≥150 px of chrome,
+  which limits the number of synteny rows visible at once; collapsing rows
+  would dramatically increase capacity for multi-way comparisons.
 
-
-
-
-## Verify
-
-- Clustering UI not updating?
-- `?renderer=X` URL parameter working?
-- Canvas: right-side padding excessive? Subpixel drawing crowded at dense zoom?
-- Canvas: features collapsed to y=0 on NCBI (needs reproduction steps).
-
-## Internal
-
-- getRpcSessionId for plugins/graph, maybe use view id
-
-## Alignments
-
-- True samplot style plots
-  - [ ] Implement samplot color palette (Phase 1)
-  - [ ] Update arc computation for SV classification (Phase 2)
-  - [ ] Update GPU renderer for stacked arc layout (Phase 3)
-
-## Cleanup
-
-Look at mui v9 migration checklist https://mui.com/material-ui/migration/upgrade-to-v9
-
-## Graph issues/Features
-
-- Self loops too large
-- allows too far zoom out
-- The header buttons and options should look more like other view headers
-- Sequence search/blast similar to bandage
-- Test on large GFA files
-- interactive force directed layout
-- Customizable layout e.g. choose d3-force layout at runtime
-- Interactive mouseover connection between linear genome view and graph and vice versa
-
-
-## Game
-
-- Make SVPlaudit but with jbrowse
-- Static renderings of jbrowse still needed with jbrowse-img
-- Command line tool that can do this for many many variants quickly
-
-## Alignments
-
-
-
-- Potentially weird for our demo data but saw : Fetch failed: TypeError: can't access property "toUpperCase", regionSequence[(position - regionSequenceStart)] is undefined
-    computeModificationCoverage webpack://@jbrowse/web/../../plugins/alignments/src/shared/computeModificationCoverage.ts?:80
-    executeRenderPileupData webpack://@jbrowse/web/../../plugins/alignments/src/RenderPileupDataRPC/executeRenderPileupData.ts?:178
-FetchMixin.ts:98:19
-
-
-- Modifications track - use smoothed line for wiggle coverage of methylation using matrix style view https://github.com/GMOD/jbrowse-components/issues/5510
-
-## Synteny
-
-
-- Dotplot sort of slow or debounced feature requests, review
-
-- Speed up paf_chain2paf, parseCigar2
+### Synteny adapters & classification
 
 **SyRI adapter (browser).** Add a `SyriOutAdapter` that reads raw `syri.out`
 files directly in the browser (or a bgzipped + tabix-indexed version). The
@@ -306,32 +287,64 @@ mapping (`refChr refStart refEnd - - qryChr qryStart qryEnd ID parent type`).
 A browser adapter would emit `syriType` directly from column 10, bypassing the
 `computeSyriTypes` inference entirely and giving exact classifications including
 `INVTR` (inverted translocation) which the inference currently maps to TRANS.
-Acceptance: load the test file at
-`test/data/synteny-demo/plotsr/syri.out` and confirm SYN / INV / TRANS / DUP /
-INVTR / INVDP are all colored correctly.
-
-**SyRI z-ordering in GPU path.** Canvas2D and SVG export now draw SYN first so
-INV / TRANS / DUP ribbons appear on top (plotsr-compatible). The WebGL2 and
-WebGPU paths do not yet respect this order — instances are drawn in arrival
-order. To fix: sort the `SyntenyInstanceData` arrays at `uploadGeometry` time
-so SYN instances come first; or use depth-buffer values (SYN = 0.5, others =
-0.0) in `syntenyFill.slang`. The latter avoids re-sorting but requires a shader
-change.
+Acceptance: load `test/data/synteny-demo/plotsr/syri.out` and confirm SYN /
+INV / TRANS / DUP / INVTR / INVDP are all colored correctly.
 
 **SyRI `computeSyriTypes` cross-validation.** Add a test that parses a real
-`syri.out` file (e.g. `test/data/synteny-demo/plotsr/syri.out`), extracts the
-SYNAL/INVAL/TRANSAL/DUPAL alignment rows, feeds them into `computeSyriTypes`
-as PAF-like records, and checks that the inferred types match the types
-declared in the file. This will surface any remaining cases where the
-inference diverges from true SyRI output.
+`syri.out` file, extracts the SYNAL/INVAL/TRANSAL/DUPAL alignment rows, feeds
+them into `computeSyriTypes` as PAF-like records, and checks that the inferred
+types match the types declared in the file. Surfaces any remaining inference
+divergence.
 
 **SyRI `INVTR` / `INVDP` types.** `computeSyriTypes` and `SyriType` currently
 do not model inverted translocation (`INVTR`) or inverted duplication (`INVDP`).
-These are real SyRI output types (plotsr handles them by folding `INVTR` →
-`TRANS` and `INVDP` → `DUP`). Consider adding them as first-class types with
-distinct colors, or explicitly document the fold in the code.
+These are real SyRI output types (plotsr folds `INVTR` → `TRANS` and `INVDP` →
+`DUP`). Consider adding them as first-class types with distinct colors, or
+explicitly document the fold in the code.
 
+### Alignments
 
-## Collapse in synteny view
+- True samplot-style plots:
+  - Implement samplot color palette (Phase 1)
+  - Update arc computation for SV classification (Phase 2)
+  - Update GPU renderer for stacked arc layout (Phase 3)
+- Modifications track: use smoothed line for wiggle coverage of methylation
+  (matrix-style view, see [#5510](https://github.com/GMOD/jbrowse-components/issues/5510))
 
-A button to collapse the 'synteny area' in the linearsyntenyview was added but a key notion to make compact views is actually the inverse: literalyl collapsing the linear genoem view to a single thin line. the linear genome view by default takes 150px at least of random stuff, which strongly limits the number of synteny rows that can be compared at once
+### Graph view
+
+- Self-loops render too large
+- Allows too far zoom out
+- Header buttons/options should match other view headers visually
+- Sequence search / BLAST (similar to Bandage)
+- Test on large GFA files
+- Interactive force-directed layout
+- Customizable layout (e.g. choose d3-force layout at runtime)
+- Interactive mouseover connection between LinearGenomeView and graph
+
+### Gene glyphs
+
+- Add super-compact mode for dense layouts
+- Side labels for genes
+
+---
+
+## Verify
+
+- Clustering UI not updating?
+- `?renderer=X` URL parameter working?
+- Canvas: right-side padding excessive? Subpixel drawing crowded at dense zoom?
+- Canvas: features collapsed to y=0 on NCBI (needs reproduction steps).
+
+---
+
+## Cleanup
+
+- MUI v9 migration: review checklist at https://mui.com/material-ui/migration/upgrade-to-v9
+
+---
+
+## Backlog / stretch
+
+- SVPlaudit-style game but with JBrowse
+- Static renderings via `jbrowse-img`; command-line tool for batch variant rendering

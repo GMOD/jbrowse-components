@@ -2,10 +2,11 @@ import {
   dedupe,
   getContainingView,
   getSession,
-  makeAbortableReaction,
+  isAbortException,
 } from '@jbrowse/core/util'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { parseCigar } from '@jbrowse/plugin-alignments'
 import { autorun } from 'mobx'
 
@@ -17,6 +18,7 @@ import type { DotplotFeatPos, DotplotFeatureData } from './types.ts'
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
 import type { Feature, ViewSnap } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 const RPC_DEBOUNCE_MS = 1000
 
@@ -61,40 +63,46 @@ function serializeFeatures(
 export function doAfterAttach(
   self: Omit<DotplotDisplayModel, 'afterAttach' | 'beforeDestroy'>,
 ) {
-  makeAbortableReaction(
+  let featureStopToken: StopToken | undefined
+  let positionStopToken: StopToken | undefined
+
+  addDisposer(
     self,
-    () => {
-      const view = getContainingView(self) as DotplotViewModel
-      if (!view.initialized) {
-        return undefined
-      }
-      const { hview } = view
-      return {
-        adapterConfig: self.adapterConfig,
-        regions: hview.dynamicBlocks.contentBlocks,
-        sessionId: getRpcSessionId(self),
-      }
-    },
-    async args => {
-      if (!args) {
-        return undefined
-      }
-      const { rpcManager } = getSession(self)
-      const { adapterConfig, regions, sessionId } = args
-      const rawFeatures = await rpcManager.call(sessionId, 'CoreGetFeatures', {
-        regions,
-        adapterConfig,
-      })
-      return { features: dedupe(rawFeatures, f => f.id()) }
-    },
-    {
-      name: `${self.type} ${self.id} feature loading`,
-      delay: RPC_DEBOUNCE_MS,
-      fireImmediately: true,
-    },
-    self.setLoading,
-    self.setFeatures,
-    self.setError,
+    autorun(
+      async function dotplotFeatureFetch() {
+        const view = getContainingView(self) as DotplotViewModel
+        if (!view.initialized) {
+          return
+        }
+        const regions = view.hview.dynamicBlocks.contentBlocks
+        const { adapterConfig } = self
+
+        if (featureStopToken) {
+          stopStopToken(featureStopToken)
+        }
+        const thisStopToken = createStopToken()
+        featureStopToken = thisStopToken
+        self.setLoading(thisStopToken)
+
+        try {
+          const sessionId = getRpcSessionId(self)
+          const rawFeatures = (await getSession(self).rpcManager.call(
+            sessionId,
+            'CoreGetFeatures',
+            { regions, adapterConfig },
+          ))
+          if (thisStopToken !== featureStopToken || !isAlive(self)) {
+            return
+          }
+          self.setFeatures({ features: dedupe(rawFeatures, f => f.id()) })
+        } catch (e) {
+          if (!isAbortException(e) && isAlive(self)) {
+            self.setError(e)
+          }
+        }
+      },
+      { name: 'DotplotFeatures', delay: RPC_DEBOUNCE_MS },
+    ),
   )
 
   let cachedFeatures: Feature[] | undefined
@@ -103,53 +111,67 @@ export function doAfterAttach(
   addDisposer(
     self,
     autorun(
-      async function dotplotPositionsAutorun() {
+      async function dotplotPositionsFetch() {
         const view = getContainingView(self) as DotplotViewModel
         if (!view.initialized || !self.features) {
           return
         }
-
         const { hview, vview } = view
         const bpPerPxH = hview.bpPerPx
         const bpPerPxV = vview.bpPerPx
         const hViewSnap = makeViewSnap(hview)
         const vViewSnap = makeViewSnap(vview)
+        const features = self.features
 
-        const { assemblyManager, rpcManager } = getSession(self)
-        const sessionId = getRpcSessionId(self)
-
-        if (self.features !== cachedFeatures) {
-          cachedFeatures = self.features
-          cachedSerialized = serializeFeatures(self.features, assemblyManager)
+        const { assemblyManager } = getSession(self)
+        if (features !== cachedFeatures) {
+          cachedFeatures = features
+          cachedSerialized = serializeFeatures(features, assemblyManager)
         }
+        const serialized = cachedSerialized
 
-        const result = await rpcManager.call(
-          sessionId,
-          'DotplotGetWebGLGeometry',
-          {
-            features: cachedSerialized,
-            hViewSnap,
-            vViewSnap,
+        if (positionStopToken) {
+          stopStopToken(positionStopToken)
+        }
+        const thisStopToken = createStopToken()
+        positionStopToken = thisStopToken
+
+        try {
+          const sessionId = getRpcSessionId(self)
+          const result = await getSession(self).rpcManager.call(
             sessionId,
-          },
-        )
-
-        const featureMap = new Map(self.features.map(f => [f.id(), f]))
-        const positions: DotplotFeatPos[] = []
-        for (let i = 0; i < result.featureIds.length; i++) {
-          const f = featureMap.get(result.featureIds[i]!)
-          if (f) {
-            positions.push({
-              p11: result.p11_offsetPx[i]!,
-              p12: result.p12_offsetPx[i]!,
-              p21: result.p21_offsetPx[i]!,
-              p22: result.p22_offsetPx[i]!,
-              f,
-              cigar: parseCigar(result.cigars[i]),
-            })
+            'DotplotGetWebGLGeometry',
+            {
+              features: serialized,
+              hViewSnap,
+              vViewSnap,
+              sessionId,
+            },
+          )
+          if (thisStopToken !== positionStopToken || !isAlive(self)) {
+            return
+          }
+          const featureMap = new Map(features.map(f => [f.id(), f]))
+          const positions: DotplotFeatPos[] = []
+          for (let i = 0; i < result.featureIds.length; i++) {
+            const f = featureMap.get(result.featureIds[i]!)
+            if (f) {
+              positions.push({
+                p11: result.p11_offsetPx[i]!,
+                p12: result.p12_offsetPx[i]!,
+                p21: result.p21_offsetPx[i]!,
+                p22: result.p22_offsetPx[i]!,
+                f,
+                cigar: parseCigar(result.cigars[i]),
+              })
+            }
+          }
+          self.setFeatPositions({ positions, bpPerPxH, bpPerPxV })
+        } catch (e) {
+          if (!isAbortException(e) && isAlive(self)) {
+            self.setError(e)
           }
         }
-        self.setFeatPositions({ positions, bpPerPxH, bpPerPxV })
       },
       { name: 'DotplotPositions', delay: RPC_DEBOUNCE_MS },
     ),
@@ -167,18 +189,18 @@ export function doAfterAttach(
         const { drawCigar } = view
         const { positions, bpPerPxH, bpPerPxV } = featPositions
 
-        let filtered = positions
-        if (minAlignmentLength > 0) {
-          filtered = positions.filter(fp => {
-            const len = Math.abs(fp.f.get('end') - fp.f.get('start'))
-            return len >= minAlignmentLength
-          })
-        }
+        const filtered =
+          minAlignmentLength > 0
+            ? positions.filter(
+                fp =>
+                  Math.abs(fp.f.get('end') - fp.f.get('start')) >=
+                  minAlignmentLength,
+              )
+            : positions
 
-        const colorFn = createDotplotColorFunction(colorBy, alpha)
         const segments = buildLineSegments(
           filtered,
-          colorFn,
+          createDotplotColorFunction(colorBy, alpha),
           drawCigar,
           bpPerPxH,
           bpPerPxV,
@@ -197,4 +219,13 @@ export function doAfterAttach(
       { name: 'DotplotGeometryRecompute' },
     ),
   )
+
+  addDisposer(self, () => {
+    if (featureStopToken) {
+      stopStopToken(featureStopToken)
+    }
+    if (positionStopToken) {
+      stopStopToken(positionStopToken)
+    }
+  })
 }

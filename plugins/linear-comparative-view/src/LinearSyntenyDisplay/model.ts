@@ -153,11 +153,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       statusMessage: undefined as string | undefined,
     }))
     .actions(self => ({
-      setFeatureData(arg: SyntenyFeatureData | undefined) {
-        self.featureData = arg
-      },
-      setInstanceData(data: SyntenyInstanceData | undefined) {
-        self.instanceData = data
+      /**
+       * #action
+       * Set both feature and instance data in one MST action so downstream
+       * autoruns (upload, render) fire once per RPC completion, not twice.
+       */
+      setRpcData(
+        featureData: SyntenyFeatureData | undefined,
+        instanceData: SyntenyInstanceData | undefined,
+      ) {
+        self.featureData = featureData
+        self.instanceData = instanceData
       },
       setStatusMessage(msg?: string) {
         self.statusMessage = msg

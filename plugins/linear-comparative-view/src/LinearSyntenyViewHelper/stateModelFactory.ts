@@ -203,20 +203,28 @@ export function linearSyntenyViewHelperModelFactory(
          */
         startGpuBackendLifecycle(backend: SyntenyBackend) {
           self.gpuBackend = backend
-          let lastKeys = new Set<number>()
+          // renderInstanceData is MST-cached; its reference is stable while
+          // upstream deps are unchanged. Track what we last uploaded per
+          // key so an upload-autorun re-fire from one display doesn't push
+          // identical bytes back to the GPU for the others.
+          const lastUploaded = new Map<number, SyntenyInstanceData>()
           self.installGpuDisplay<SyntenyBackend>(backend, {
             upload: b => {
               const currentKeys = new Set<number>()
               for (const [key, data] of self.geometryByDisplayKey) {
-                b.uploadGeometry(key, data)
                 currentKeys.add(key)
+                if (lastUploaded.get(key) === data) {
+                  continue
+                }
+                b.uploadGeometry(key, data)
+                lastUploaded.set(key, data)
               }
-              for (const key of lastKeys) {
+              for (const key of lastUploaded.keys()) {
                 if (!currentKeys.has(key)) {
                   b.deleteGeometry(key)
+                  lastUploaded.delete(key)
                 }
               }
-              lastKeys = currentKeys
             },
             render: b => {
               const state = self.syntenyRenderState

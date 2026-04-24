@@ -134,7 +134,6 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
       refOffset0: data.refOffset0,
       refOffset1: data.refOffset1,
     })
-
     const interleaved = interleaveInstances(data)
     this.hal.uploadBuffer(key, PASS_FILL, interleaved, data.instanceCount)
     this.hal.uploadBuffer(
@@ -153,7 +152,6 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
   render(state: SyntenyRenderState) {
     this.hal.beginFrame(1, 1, 1, 1)
     this.tracks = []
-
     for (const [key, params] of state.perTrack) {
       const region = this.regions.get(key)
       if (!region || region.instanceCount === 0) {
@@ -172,7 +170,6 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
         this.hal.drawPass(PASS_EDGE, key)
       }
     }
-
     this.hal.endFrame()
   }
 

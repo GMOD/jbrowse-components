@@ -12,133 +12,98 @@ import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
-type LSV = LinearSyntenyViewModel
-
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   let currentStopToken: StopToken | undefined
-  let debounceTimer: ReturnType<typeof setTimeout> | undefined
 
   addDisposer(
     self,
     autorun(
-      function syntenyFetchAutorun() {
+      async function syntenyFetchAutorun() {
         if (self.isMinimized || self.isLevelCollapsed) {
           return
         }
-        const view = getContainingView(self) as LSV
+        const view = getContainingView(self) as LinearSyntenyViewModel
         if (
           !view.initialized ||
           !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
         ) {
           return
         }
-
-        // access observables to track them (issue #3456)
-        for (const v of view.views) {
-          void v.displayedRegions
-          void v.bpPerPx
-          for (const b of v.staticBlocks.contentBlocks) {
-            void b.key
-          }
+        const { level, adapterConfig } = self
+        if (level + 1 >= view.views.length) {
+          return
         }
 
-        // colorBy is NOT read here: colors are computed main-side via
-        // `display.renderInstanceData`, so a colorBy change re-uploads
-        // without refetching from the worker.
+        // Snapshot every RPC input synchronously. All reads here track,
+        // but `delay: 500` on this autorun debounces pan/zoom firehoses
+        // into one fire per ~500ms of quiet.
+        const viewSnaps = view.views.map(v => ({
+          bpPerPx: v.bpPerPx,
+          offsetPx: v.offsetPx,
+          displayedRegions: v.displayedRegions,
+          staticBlocks: {
+            contentBlocks: v.staticBlocks.contentBlocks,
+            blocks: v.staticBlocks.blocks,
+          },
+          interRegionPaddingWidth: v.interRegionPaddingWidth,
+          minimumBlockWidth: v.minimumBlockWidth,
+          width: v.width,
+        }))
+        const regions = view.views[level]!.staticBlocks.contentBlocks
         const drawCIGAR = view.drawCIGAR
         const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
         const drawLocationMarkers = view.drawLocationMarkers
         const chainMerge = view.chainMerge
 
-        if (debounceTimer) {
-          clearTimeout(debounceTimer)
-        }
         if (currentStopToken) {
           stopStopToken(currentStopToken)
         }
-
         const thisStopToken = createStopToken()
         currentStopToken = thisStopToken
 
-        debounceTimer = setTimeout(async () => {
-          try {
-            const { level, adapterConfig } = self
-            const { rpcManager } = getSession(self)
-            const view = getContainingView(self) as LSV
-            if (
-              !view.initialized ||
-              level + 1 >= view.views.length ||
-              !view.views.every(
-                a => a.displayedRegions.length > 0 && a.initialized,
-              )
-            ) {
-              return
-            }
-            const sessionId = getRpcSessionId(self)
-
-            const viewSnaps = view.views.map(v => ({
-              bpPerPx: v.bpPerPx,
-              offsetPx: v.offsetPx,
-              displayedRegions: v.displayedRegions,
-              staticBlocks: {
-                contentBlocks: v.staticBlocks.contentBlocks,
-                blocks: v.staticBlocks.blocks,
-              },
-              interRegionPaddingWidth: v.interRegionPaddingWidth,
-              minimumBlockWidth: v.minimumBlockWidth,
-              width: v.width,
-            }))
-
-            const regions = view.views[level]!.staticBlocks.contentBlocks
-
-            const result = await rpcManager.call(
+        try {
+          const sessionId = getRpcSessionId(self)
+          const result = await getSession(self).rpcManager.call(
+            sessionId,
+            'SyntenyGetFeaturesAndPositions',
+            {
+              adapterConfig,
+              regions,
+              viewSnaps,
+              level,
               sessionId,
-              'SyntenyGetFeaturesAndPositions',
-              {
-                adapterConfig,
-                regions,
-                viewSnaps,
-                level,
-                sessionId,
-                stopToken: thisStopToken,
-                drawCIGAR,
-                drawCIGARMatchesOnly,
-                drawLocationMarkers,
-                chainMerge,
-                statusCallback: (msg: string) => {
-                  if (isAlive(self)) {
-                    self.setStatusMessage(msg)
-                  }
-                },
+              stopToken: thisStopToken,
+              drawCIGAR,
+              drawCIGARMatchesOnly,
+              drawLocationMarkers,
+              chainMerge,
+              statusCallback: (msg: string) => {
+                if (isAlive(self)) {
+                  self.setStatusMessage(msg)
+                }
               },
-            )
-
-            if (thisStopToken !== currentStopToken || !isAlive(self)) {
-              return
-            }
-
-            const { instanceData, ...featureData } = result
-            self.setFeatureData(featureData)
-            self.setInstanceData(instanceData)
-          } catch (e) {
-            if (!isAbortException(e)) {
-              if (isAlive(self)) {
-                console.error(e)
-                self.setError(e)
-              }
-            }
-          } finally {
-            if (isAlive(self) && thisStopToken === currentStopToken) {
-              self.setStatusMessage(undefined)
-            }
+            },
+          )
+          if (thisStopToken !== currentStopToken || !isAlive(self)) {
+            return
           }
-        }, 300)
+          const { instanceData, ...featureData } = result
+          self.setRpcData(featureData, instanceData)
+        } catch (e) {
+          if (!isAbortException(e) && isAlive(self)) {
+            console.error(e)
+            self.setError(e)
+          }
+        } finally {
+          if (isAlive(self) && thisStopToken === currentStopToken) {
+            self.setStatusMessage(undefined)
+          }
+        }
       },
-      { name: 'SyntenyFetch' },
+      { name: 'SyntenyFetch', delay: 500 },
     ),
   )
   addDisposer(self, () => {
-    clearTimeout(debounceTimer)
     if (currentStopToken) {
       stopStopToken(currentStopToken)
     }
