@@ -4,6 +4,8 @@ import { LoadingEllipses } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { MINIMIZED_TRACK_HEIGHT } from '../consts.ts'
+
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
@@ -58,7 +60,7 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
     <div
       className={classes.trackRenderingContainer}
       style={{
-        height: minimized ? 20 : height,
+        height: minimized ? MINIMIZED_TRACK_HEIGHT : height,
       }}
       onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
       data-testid={`trackRenderingContainer-${id}-${trackId}`}

@@ -24,8 +24,6 @@ import {
   hasPairedReads,
 } from './components/util.ts'
 import {
-  MINIMIZED_TRACK_HEIGHT,
-  TRACK_RESIZE_HANDLE_HEIGHT,
   VIEW_DIVIDER_HEIGHT,
   calc,
   getBlockFeatures,
@@ -307,7 +305,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const { views } = self
         const tracks = this.getMatchedTracks(trackId)
         const n = views.length
-        const displays = new Array(n)
         const scrollTops = new Array(n)
         const heights = new Array(n)
         const coverageOffsets = new Array(n)
@@ -318,59 +315,36 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         for (let level = 0; level < n; level++) {
           const view = views[level]!
           const d = tracks[level]!.displays[0]!
-          displays[level] = d
           scrollTops[level] = yOffsetsOverride ? 0 : (d.scrollTop ?? 0)
           heights[level] = d.height
           coverageOffsets[level] = d.coverageDisplayHeight ?? 0
           viewOffsetPxs[level] = view.offsetPx
 
           if (!yOffsetsOverride) {
-            let y = viewTop + view.headerHeight + view.scalebarHeight
-            let found = false
-            for (const t of view.pinnedTracks) {
-              if (t.configuration.trackId === trackId) {
-                found = true
-                break
-              }
-              y +=
-                (t.minimized
-                  ? MINIMIZED_TRACK_HEIGHT
-                  : t.displays[0]!.height) + TRACK_RESIZE_HANDLE_HEIGHT
-            }
-            if (!found) {
-              for (const t of view.unpinnedTracks) {
-                if (t.configuration.trackId === trackId) {
-                  break
-                }
-                y +=
-                  (t.minimized
-                    ? MINIMIZED_TRACK_HEIGHT
-                    : t.displays[0]!.height) + TRACK_RESIZE_HANDLE_HEIGHT
-              }
-            }
-            yOffsets[level] = y
+            yOffsets[level] = viewTop + (view.getTrackYOffset(trackId) ?? 0)
           }
-          viewTop += view.height + VIEW_DIVIDER_HEIGHT
+          if (level < n - 1) {
+            viewTop += view.height + VIEW_DIVIDER_HEIGHT
+          }
         }
 
         function getY(level: number, c: LayoutRecord) {
           const off = coverageOffsets[level]
           const top = c[1]
-          const mid = top - scrollTops[level] + (c[3] - top) / 2 + off
+          const bot = c[3]
+          const mid = top - scrollTops[level] + (bot - top) / 2 + off
           const max = heights[level]
-          return (
-            yOffsets[level] + (mid < off ? off : Math.min(mid, max))
-          )
+          return yOffsets[level] + (mid < off ? off : Math.min(mid, max))
         }
 
         function getX(level: number, refName: string, coord: number) {
           return (
-            (views[level]!.bpToPx({ refName, coord })?.offsetPx || 0) -
+            (views[level]!.bpToPx({ refName, coord })?.offsetPx ?? 0) -
             viewOffsetPxs[level]
           )
         }
 
-        return { tracks, displays, yOffsets, heights, getX, getY }
+        return { tracks, yOffsets, heights, getX, getY }
       },
 
       getMatchedFeaturesInLayout(trackConfigId: string, features: Feature[][]) {

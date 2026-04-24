@@ -40,6 +40,7 @@ import {
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
   INTER_REGION_PADDING_WIDTH,
+  MINIMIZED_TRACK_HEIGHT,
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
 } from './consts.ts'
@@ -571,6 +572,40 @@ export function stateModelFactory(pluginManager: PluginManager) {
           this.headerHeight +
           this.scalebarHeight
         )
+      },
+
+      /**
+       * #method
+       * Y offset (in pixels, from the top of the view) where a track's
+       * rendering container starts. Walks tracks in DOM render order (pinned
+       * first, then unpinned), matching TrackContainer's layout and using the
+       * same constants it renders with. Returns `undefined` if the track is
+       * not present in the view.
+       */
+      getTrackYOffset(trackId: string) {
+        let y = this.headerHeight + this.scalebarHeight
+        let found = false
+        for (const t of self.pinnedTracks) {
+          if (t.configuration.trackId === trackId) {
+            found = true
+            break
+          }
+          y +=
+            (t.minimized ? MINIMIZED_TRACK_HEIGHT : t.displays[0].height) +
+            RESIZE_HANDLE_HEIGHT
+        }
+        if (!found) {
+          for (const t of self.unpinnedTracks) {
+            if (t.configuration.trackId === trackId) {
+              found = true
+              break
+            }
+            y +=
+              (t.minimized ? MINIMIZED_TRACK_HEIGHT : t.displays[0].height) +
+              RESIZE_HANDLE_HEIGHT
+          }
+        }
+        return found ? y : undefined
       },
 
       /**

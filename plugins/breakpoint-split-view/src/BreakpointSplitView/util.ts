@@ -18,10 +18,6 @@ interface Track {
 
 // Must match the CSS height of viewDivider in BreakpointSplitView.tsx
 export const VIEW_DIVIDER_HEIGHT = 3
-// Must match RESIZE_HANDLE_HEIGHT in @jbrowse/plugin-linear-genome-view
-export const TRACK_RESIZE_HANDLE_HEIGHT = 3
-// Must match the minimized track height in TrackRenderingContainer.tsx
-export const MINIMIZED_TRACK_HEIGHT = 20
 
 // https://stackoverflow.com/a/49186706/2129219 the array-intersection package
 // on npm has a large kb size, and we are just intersecting open track ids so
