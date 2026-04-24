@@ -1,6 +1,6 @@
 import { fromNewick } from '@gmod/hclust'
 
-import { clusterLayout, hierarchy, sort, sum } from './hierarchy.ts'
+import { hierarchy, sort, sum } from './hierarchy.ts'
 
 import type { ClusterHierarchyNode, ClusterNodeData } from './types.ts'
 
@@ -64,11 +64,3 @@ export function buildClusteredLayout<S extends { name: string }>(
   })
 }
 
-export function computeHierarchyLayout(
-  root: ClusterHierarchyNode,
-  layoutHeight: number,
-  layoutWidth: number,
-) {
-  clusterLayout(root, layoutHeight, layoutWidth)
-  return root
-}

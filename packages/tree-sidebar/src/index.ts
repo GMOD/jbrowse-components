@@ -2,11 +2,7 @@ export { default as TreeSidebar } from './TreeSidebar.tsx'
 export { SvgRowLabels } from './SvgRowLabels.tsx'
 export { SvgTreePath } from './SvgTreePath.tsx'
 export { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
-export {
-  buildClusteredLayout,
-  computeHierarchyLayout,
-  parseClusterTree,
-} from './clusterUtils.ts'
+export { buildClusteredLayout, parseClusterTree } from './clusterUtils.ts'
 export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 export {
   clusterLayout,

@@ -18,10 +18,7 @@ function computeHeight<T>(node: HierarchyNode<T>): number {
   let h = 0
   if (node.children) {
     for (const child of node.children) {
-      const ch = computeHeight(child) + 1
-      if (ch > h) {
-        h = ch
-      }
+      h = Math.max(h, computeHeight(child) + 1)
     }
   }
   node.height = h
@@ -156,7 +153,7 @@ export function clusterLayout<T>(
   root: HierarchyNode<T>,
   sizeX: number,
   sizeY: number,
-) {
+): HierarchyNode<T> {
   const leafNodes = leaves(root)
   const n = leafNodes.length
   const step = n > 0 ? sizeX / n : 0
@@ -169,11 +166,9 @@ export function clusterLayout<T>(
     if (!node.children) {
       return
     }
-    for (const child of node.children) {
-      assignX(child)
-    }
     let totalX = 0
     for (const child of node.children) {
+      assignX(child)
       totalX += child.x!
     }
     node.x = totalX / node.children.length
@@ -190,6 +185,7 @@ export function clusterLayout<T>(
     }
   }
   assignY(root, 0)
+  return root
 }
 
 export function renderTreeSVG<T>(hierarchy: HierarchyNode<T>) {

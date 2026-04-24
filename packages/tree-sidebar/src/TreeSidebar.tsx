@@ -19,8 +19,6 @@ interface MenuAnchor {
   names: string[]
 }
 
-const SIDEBAR_BACKGROUND_OPACITY = 0.8
-
 const TreeSidebar = observer(function TreeSidebar({
   model,
 }: {
@@ -48,7 +46,6 @@ const TreeSidebar = observer(function TreeSidebar({
     (ref: HTMLCanvasElement | null) => {
       model.setTreeCanvasRef(ref)
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, treeAreaWidth, height, lineZoneHeight],
   )
 
@@ -57,7 +54,6 @@ const TreeSidebar = observer(function TreeSidebar({
     (ref: HTMLCanvasElement | null) => {
       model.setMouseoverCanvasRef(ref)
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, viewWidth, height, lineZoneHeight],
   )
 
@@ -145,7 +141,7 @@ const TreeSidebar = observer(function TreeSidebar({
             left: 0,
             width: treeAreaWidth,
             height: contentHeight,
-            background: alpha('#fff', SIDEBAR_BACKGROUND_OPACITY),
+            background: alpha('#fff', 0.8),
           }}
         />
         <canvas
@@ -235,7 +231,7 @@ const TreeSidebar = observer(function TreeSidebar({
             setMenuAnchor(null)
           }}
         >
-          Show only subtree ({menuAnchor?.names.length} samples)
+          Show only subtree ({menuAnchor!.names.length} samples)
         </MenuItem>
       </Menu>
     </>

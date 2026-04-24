@@ -15,14 +15,9 @@ export function SvgRowLabels({
 }) {
   const fontSize = Math.min(rowHeight, 12)
   const boxHeight = Math.min(rowHeight, 20)
-  let maxWidth = 0
-  for (const s of sources) {
-    const w = measureText(s.name, fontSize)
-    if (w > maxWidth) {
-      maxWidth = w
-    }
-  }
-  const labelWidth = maxWidth + 10
+  const labelWidth =
+    sources.reduce((m, s) => Math.max(m, measureText(s.name, fontSize)), 0) +
+    10
   return (
     <g transform={`translate(${labelOffset} 0)`}>
       {sources.map((source, idx) => {
