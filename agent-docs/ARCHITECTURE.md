@@ -313,13 +313,14 @@ UBO fields. Every alignments shader and the wiggle shader use this path.
 
 ---
 
-## Coordinate convention (all alignments data)
+## Coordinate convention (alignments and wiggle data)
 
-**Every** position array emitted by the alignments worker is stored as
-**absolute genomic uint32** — reads, gaps, mismatches, interbase (ins/soft/
+**Every** position array emitted by the alignments or wiggle worker is stored
+as **absolute genomic uint32** — reads, gaps, mismatches, interbase (ins/soft/
 hardclip), softclip bases, modifications, SNP/noncov/indicator/modCov
 segments, sashimi junctions, chain connecting lines, `coverageStartPos`,
-and `readNextPositions`. One convention across the whole pipeline.
+`readNextPositions`, and wiggle `featurePositions`. One convention across all
+plugins.
 
 **Why absolute, not regionStart-relative:**
 
