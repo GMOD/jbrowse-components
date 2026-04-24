@@ -11,8 +11,9 @@ interface AlignmentRecord {
 }
 
 // Classifies PAF alignments into SyRI-style structural types.
-// This is a standalone copy for CLI use - the canonical version lives
-// in plugins/comparative-adapters/src/syriUtils.ts
+// Standalone copy for CLI use; classification logic mirrors
+// plugins/comparative-adapters/src/syriUtils.ts but returns SyriType[]
+// directly (no DupConflict info needed by the CLI path).
 export function computeSyriTypes(records: AlignmentRecord[]): SyriType[] {
   const types = new Array<SyriType>(records.length).fill('SYN')
 
