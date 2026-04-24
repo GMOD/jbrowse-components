@@ -50,8 +50,8 @@ function ensureSlangc() {
   }
   const ver = SLANG_VERSION.replace(/^v/, '')
   if (existsSync(SLANGC_CACHE)) {
-    const result = spawnSync(SLANGC_CACHE, ['-v'], { encoding: 'utf8' })
-    if ((result.stdout ?? result.stderr ?? '').trim() === ver) {
+    const { stderr } = spawnSync(SLANGC_CACHE, ['-v'], { encoding: 'utf8' })
+    if (stderr.trim() === ver) {
       return SLANGC_CACHE
     }
   }

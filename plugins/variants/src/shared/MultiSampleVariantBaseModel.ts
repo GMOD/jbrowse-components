@@ -801,18 +801,17 @@ export default function MultiSampleVariantBaseModelF(
             },
             {
               label: 'Copy to clipboard',
-              onClick: () => {
-                const loc = `${feat.get('refName')}:${feat.get('start') + 1}..${feat.get('end')}`
-                const id = feat.get('name') || feat.id()
-                import('copy-to-clipboard')
-                  .then(({ default: copy }) => {
-                    copy(`${id} ${loc}`)
-                    getSession(self).notify('Copied to clipboard', 'info')
-                  })
-                  .catch((e: unknown) => {
-                    console.error(e)
-                    getSession(self).notifyError(`${e}`, e)
-                  })
+              onClick: async () => {
+                try {
+                  const loc = `${feat.get('refName')}:${feat.get('start') + 1}..${feat.get('end')}`
+                  const id = feat.get('name') || feat.id()
+                  const { default: copy } = await import('copy-to-clipboard')
+                  await copy(`${id} ${loc}`)
+                  getSession(self).notify('Copied to clipboard', 'info')
+                } catch (e) {
+                  console.error(e)
+                  getSession(self).notifyError(`${e}`, e)
+                }
               },
             },
             {
