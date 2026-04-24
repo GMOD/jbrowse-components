@@ -71,8 +71,11 @@ export function drawRef(
     const refName = featureData.refNames[fi]!
 
     if (queryTotalLengths) {
-      const queryName = featureData.names[fi] || featureData.featureIds[fi]!
-      const totalLength = queryTotalLengths.get(queryName) ?? 0
+      const name = featureData.names[fi]!
+      const totalLength =
+        name !== ''
+          ? queryTotalLengths.get(name)!
+          : Math.abs(featureData.ends[fi]! - featureData.starts[fi]!)
       if (totalLength < minAlignmentLength) {
         continue
       }
@@ -122,6 +125,10 @@ export function drawRef(
       let cx2 = s1 === -1 ? x22 : x21
       const cigar = parsedCigars[fi]!
       if (cigar.length > 0 && drawCIGAR) {
+        // NOTE: the accumulator (small-indel merge, op classification,
+        // cull) mirrors the worker loop in
+        // LinearSyntenyRPC/buildSyntenyGeometry.ts. Keep them in sync —
+        // any fix here needs the same fix there.
         let continuingFlag = false
         let px1 = 0
         let px2 = 0

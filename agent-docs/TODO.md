@@ -152,6 +152,39 @@ variant got `clearDisplaySpecificData()` + prune-on-empty-set.
 `stateModelFactory.ts` never calls `clearAllBlocks()` when navigating to a
 new chromosome. Check whether stale GPU buffers accumulate.
 
+**Duplicated CIGAR accumulation loop (worker vs. SVG export).**
+`buildSyntenyGeometry.ts:372-442` and `drawRef.ts:132-210` implement the
+same small-indel merging + op-classification + off-screen-culling loop,
+but one writes polygons into typed arrays (worker) and the other issues
+Canvas2D draws (SVG export path). Both carry the same suspect expression
+at line 406 / 177 respectively (see below) — any fix needs to land in
+both. Extraction candidate: a generator-style `iterateCigarSegments`
+yielding `{ px1, cx1, px2, cx2, resolvedOp, continuingFlag }` that each
+caller consumes. Non-trivial; defer until the suspect expression is
+resolved so the refactor doesn't preserve a bug.
+
+**Suspect CIGAR op classification in `buildSyntenyGeometry.ts:406`
+(also `drawRef.ts:177`).**
+`const resolvedOp = (continuingFlag && d1 > 1) || d2 > 1 ? op : CIGAR_M`.
+The asymmetric precedence — `continuingFlag` gates only the `d1 > 1` arm,
+not `d2 > 1` — looks like a typo. Likely-intended forms:
+`continuingFlag && (d1 > 1 || d2 > 1)` or plain `(d1 > 1 || d2 > 1)`.
+Expression has been there since PR #2874 (2022-04) so may be load-bearing
+in a non-obvious way. To verify: construct a PAF/CIGAR where a small-indel
+run (continuingFlag=true) resolves on an op with `d2 > 1, d1 < 1` and
+check whether the emitted color matches the op or falls through to
+`CIGAR_M`. If miscolor reproduces, the fix is trivial.
+
+**Synteny location markers never reach polygon endpoint.**
+`buildSyntenyGeometry.ts:250-251`: `t = step / numMarkers` with
+`step < numMarkers` produces t ∈ [0, (n-1)/n] — the last marker lands
+short of the right edge. May be intentional (avoid overlap at polygon
+joins), but the `+1` in the `numMarkers` calc at line 245 suggests
+someone was trying to compensate. To verify: screenshot a single-polygon
+synteny feature at high zoom and check whether markers reach both
+endpoints symmetrically. Fix if not: divide by `numMarkers - 1` (safe
+because `numMarkers >= 2` is already enforced).
+
 ---
 
 ## Features & UX

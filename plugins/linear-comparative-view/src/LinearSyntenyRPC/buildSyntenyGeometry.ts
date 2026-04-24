@@ -140,21 +140,24 @@ export function buildSyntenyGeometry({
 }): SyntenyInstanceData {
   const featureCount = p11_offsetPx.length
 
-  // Build per-feature total-length-across-same-query-name. Cache the
-  // fallback name and final length per feature so downstream loops can look
-  // them up by index without repeating the `||` and map get.
-  const queryNames = new Array<string>(featureCount)
+  // Per-feature total-length-across-same-query-name. Features without a
+  // query name don't aggregate — they contribute only their own length.
   const queryTotalLengths = new Map<string, number>()
   for (let i = 0; i < featureCount; i++) {
-    const queryName = names[i] || `feat-${i}`
-    queryNames[i] = queryName
-    const alignmentLength = Math.abs(ends[i]! - starts[i]!)
-    const current = queryTotalLengths.get(queryName) ?? 0
-    queryTotalLengths.set(queryName, current + alignmentLength)
+    const name = names[i]!
+    if (name !== '') {
+      const alignmentLength = Math.abs(ends[i]! - starts[i]!)
+      const current = queryTotalLengths.get(name) ?? 0
+      queryTotalLengths.set(name, current + alignmentLength)
+    }
   }
   const qtls = new Float32Array(featureCount)
   for (let i = 0; i < featureCount; i++) {
-    qtls[i] = queryTotalLengths.get(queryNames[i]!)!
+    const name = names[i]!
+    qtls[i] =
+      name !== ''
+        ? queryTotalLengths.get(name)!
+        : Math.abs(ends[i]! - starts[i]!)
   }
 
   // Pre-allocate buffers with estimated capacity
@@ -278,8 +281,8 @@ export function buildSyntenyGeometry({
   const viewOff0 = viewOffsets[level]!
   const viewOff1 = viewOffsets[level + 1]!
   const offScreenMargin = viewWidth + 1000
-  const fallbackBpPerPxInv0 = 1 / bpPerPxs[level]!
-  const fallbackBpPerPxInv1 = 1 / bpPerPxs[level + 1]!
+  const bpPerPxInv0 = 1 / bpPerPxs[level]!
+  const bpPerPxInv1 = 1 / bpPerPxs[level + 1]!
   const minCigarPxWidth = 4
   const willDrawCigarArr = new Uint8Array(featureCount)
 
@@ -324,7 +327,10 @@ export function buildSyntenyGeometry({
 
   const nonCigarInstanceCount = idx
 
-  // Second loop: CIGAR instances (using cached parsed CIGARs)
+  // Second loop: CIGAR instances (using cached parsed CIGARs).
+  // NOTE: the accumulator (small-indel merge, op classification, cull)
+  // mirrors the Canvas2D/SVG loop in LinearSyntenyDisplay/drawRef.ts.
+  // Keep them in sync — any fix here needs the same fix there.
   for (let i = 0; i < featureCount; i++) {
     if (!willDrawCigarArr[i]) {
       continue
@@ -355,7 +361,7 @@ export function buildSyntenyGeometry({
         }
       }
     }
-    if (maxIndelLen * Math.max(fallbackBpPerPxInv0, fallbackBpPerPxInv1) < 1) {
+    if (maxIndelLen * Math.max(bpPerPxInv0, bpPerPxInv1) < 1) {
       addInstance(x11, x12, x22, x21, KIND_BASE, i, qtl, padTop, padBottom)
       if (drawLocationMarkers) {
         addLocationMarkers(x11, x12, x22, x21, i, qtl, padTop, padBottom)
@@ -379,8 +385,8 @@ export function buildSyntenyGeometry({
         px2 = cx2
       }
 
-      const d1 = len * fallbackBpPerPxInv0
-      const d2 = len * fallbackBpPerPxInv1
+      const d1 = len * bpPerPxInv0
+      const d2 = len * bpPerPxInv1
 
       if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
         cx1 += d1 * rev1
