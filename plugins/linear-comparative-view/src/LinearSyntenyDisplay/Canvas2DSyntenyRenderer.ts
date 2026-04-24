@@ -17,7 +17,7 @@ function smoothstep(t: number) {
 }
 
 function buildFeaturePath(
-  ctx: CanvasRenderingContext2D,
+  ctx: CanvasLike,
   sx1: number,
   sx2: number,
   sx3: number,
@@ -94,10 +94,10 @@ function projectCorners(
   }
 }
 
-// Widen sub-pixel trapezoid corners so thin features render and pick at a
-// consistent visual width across both Canvas2D and GPU backends. Slope-aware
-// so shallow (near-horizontal) trapezoids stay visible perpendicular to their
-// direction. Must match the formula in syntenyFill.slang's vertex shader.
+// SYNC: matches the minW computation in syntenyFill.slang's vs_main. Both
+// backends widen sub-pixel trapezoids the same way so on-screen visual
+// density (and SVG export) stay consistent. If you change the formula here,
+// change it there too — there's no shared source.
 function widenCorners(c: ProjectedCorners, height: number): ProjectedCorners {
   const xTopMid = (c.sx1 + c.sx2) * 0.5
   const xBotMid = (c.sx3 + c.sx4) * 0.5
@@ -132,6 +132,106 @@ function isEdgeCulled(
     botMax < leftLimit ||
     botMin > rightLimit
   )
+}
+
+// Subset of the 2D canvas surface the draw loop needs. Both
+// CanvasRenderingContext2D and SvgCanvas (packages/core/src/util/SvgCanvas.ts)
+// satisfy this, so renderSvg.tsx reuses this exact draw path.
+export interface CanvasLike {
+  fillStyle: string | CanvasGradient | CanvasPattern
+  strokeStyle: string | CanvasGradient | CanvasPattern
+  lineWidth: number
+  globalAlpha: number
+  setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void
+  beginPath(): void
+  closePath(): void
+  moveTo(x: number, y: number): void
+  lineTo(x: number, y: number): void
+  bezierCurveTo(
+    cp1x: number,
+    cp1y: number,
+    cp2x: number,
+    cp2y: number,
+    x: number,
+    y: number,
+  ): void
+  fill(): void
+  stroke(): void
+}
+
+export function drawSyntenyTrack(
+  ctx: CanvasLike,
+  data: SyntenyInstanceData,
+  params: SyntenyTrackRenderParams,
+  logicalW: number,
+  maxOffScreenPx: number,
+  dpr = 1,
+) {
+  const {
+    yTop,
+    height,
+    alpha,
+    minAlignmentLength,
+    hoveredFeatureId,
+    clickedFeatureId,
+  } = params
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, yTop * dpr)
+  const transform = computeTransform(data, params)
+
+  const fillStyleCache = new Map<number, string>()
+  const leftLimit = -maxOffScreenPx
+  const rightLimit = logicalW + maxOffScreenPx
+  ctx.globalAlpha = 1
+
+  for (let i = 0; i < data.instanceCount; i++) {
+    if (data.queryTotalLengths[i]! < minAlignmentLength) {
+      continue
+    }
+    const packed = data.colors[i]!
+    const a = ((packed >>> 24) & 0xff) / 255
+    if (a < 0.01) {
+      continue
+    }
+
+    const c = projectCorners(data, i, transform)
+    if (isEdgeCulled(c, leftLimit, rightLimit)) {
+      continue
+    }
+
+    const isHovered = data.featureIds[i] === hoveredFeatureId
+    const isClicked = data.featureIds[i] === clickedFeatureId
+
+    let fillStyle: string
+    if (isHovered) {
+      const r = ((packed & 0xff) * 0.7) | 0
+      const g = (((packed >> 8) & 0xff) * 0.7) | 0
+      const b = (((packed >> 16) & 0xff) * 0.7) | 0
+      const effectiveAlpha = Math.min(a * alpha * 5, 0.35)
+      fillStyle = `rgba(${r},${g},${b},${effectiveAlpha})`
+    } else {
+      let cached = fillStyleCache.get(packed)
+      if (cached === undefined) {
+        const r = packed & 0xff
+        const g = (packed >> 8) & 0xff
+        const b = (packed >> 16) & 0xff
+        cached = `rgba(${r},${g},${b},${a * alpha})`
+        fillStyleCache.set(packed, cached)
+      }
+      fillStyle = cached
+    }
+
+    ctx.fillStyle = fillStyle
+    const w = widenCorners(c, height)
+    buildFeaturePath(ctx, w.sx1, w.sx2, w.sx3, w.sx4, height, params.drawCurves)
+    ctx.fill()
+
+    if (isClicked) {
+      ctx.strokeStyle = 'rgba(0,0,0,0.4)'
+      ctx.lineWidth = 1
+      ctx.stroke()
+    }
+  }
 }
 
 export class Canvas2DSyntenyRenderer implements SyntenyBackend {
@@ -189,90 +289,11 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
       if (!data || data.instanceCount === 0) {
         continue
       }
-      this.renderOne(data, params, logicalW, maxOffScreenPx)
+      drawSyntenyTrack(ctx, data, params, logicalW, maxOffScreenPx, dpr)
     }
 
     ctx.globalAlpha = 1
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-  }
-
-  private renderOne(
-    data: SyntenyInstanceData,
-    params: SyntenyTrackRenderParams,
-    logicalW: number,
-    maxOffScreenPx: number,
-  ) {
-    const ctx = this.ctx
-    const dpr = this.dpr
-    const {
-      yTop,
-      height,
-      alpha,
-      minAlignmentLength,
-      hoveredFeatureId,
-      clickedFeatureId,
-    } = params
-
-    ctx.setTransform(dpr, 0, 0, dpr, 0, yTop * dpr)
-    const transform = computeTransform(data, params)
-
-    // Cache rgba() strings per packed color within this render call. Canvas2D
-    // parses fillStyle on every assignment, so reusing the string for the
-    // common case of many instances sharing a color (CIGAR fills) saves work.
-    const fillStyleCache = new Map<number, string>()
-    const leftLimit = -maxOffScreenPx
-    const rightLimit = logicalW + maxOffScreenPx
-    ctx.globalAlpha = 1
-
-    for (let i = 0; i < data.instanceCount; i++) {
-      if (data.queryTotalLengths[i]! < minAlignmentLength) {
-        continue
-      }
-
-      const packed = data.colors[i]!
-      const a = ((packed >>> 24) & 0xff) / 255
-      if (a < 0.01) {
-        continue
-      }
-
-      const c = projectCorners(data, i, transform)
-      if (isEdgeCulled(c, leftLimit, rightLimit)) {
-        continue
-      }
-
-      const isHovered = data.featureIds[i] === hoveredFeatureId
-      const isClicked = data.featureIds[i] === clickedFeatureId
-
-      let fillStyle: string
-      if (isHovered) {
-        const r = ((packed & 0xff) * 0.7) | 0
-        const g = (((packed >> 8) & 0xff) * 0.7) | 0
-        const b = (((packed >> 16) & 0xff) * 0.7) | 0
-        const effectiveAlpha = Math.min(a * alpha * 5, 0.35)
-        fillStyle = `rgba(${r},${g},${b},${effectiveAlpha})`
-      } else {
-        let cached = fillStyleCache.get(packed)
-        if (cached === undefined) {
-          const r = packed & 0xff
-          const g = (packed >> 8) & 0xff
-          const b = (packed >> 16) & 0xff
-          cached = `rgba(${r},${g},${b},${a * alpha})`
-          fillStyleCache.set(packed, cached)
-        }
-        fillStyle = cached
-      }
-
-      ctx.fillStyle = fillStyle
-      const w = widenCorners(c, height)
-      buildFeaturePath(ctx, w.sx1, w.sx2, w.sx3, w.sx4, height, params.drawCurves)
-      ctx.fill()
-
-      if (isClicked) {
-        ctx.strokeStyle = 'rgba(0,0,0,0.4)'
-        ctx.lineWidth = 1
-        ctx.stroke()
-      }
-    }
   }
 
   pick(

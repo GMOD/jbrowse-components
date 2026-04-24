@@ -35,11 +35,10 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float t, side;
   computeFillSegmentT(vid, c, t, side);
   float3 e = hermiteEdges(c, t, u);
-  // Enforce minimum visual horizontal width so sub-pixel trapezoids render
-  // like canvas-main's thin-feature stroke path. Bump the min more for
-  // shallow (near-horizontal) slopes so the perpendicular thickness stays
-  // visible at low angles — matches the slope-aware lineWidth in the
-  // Canvas2D backend.
+  // SYNC: matches widenCorners() in Canvas2DSyntenyRenderer.ts. Both
+  // backends enforce the same slope-aware minimum horizontal width so
+  // sub-pixel trapezoids render at consistent visual density. If you change
+  // this formula, change it there too — there's no shared source.
   float w = abs(e.x - e.y);
   float topMid = (c.x1 + c.x2) * 0.5;
   float botMid = (c.x3 + c.x4) * 0.5;
