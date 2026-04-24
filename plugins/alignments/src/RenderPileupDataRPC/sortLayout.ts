@@ -1,3 +1,4 @@
+import Flatbush from '@jbrowse/core/util/flatbush'
 import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
 
 import {
@@ -326,6 +327,17 @@ export function cloneWithLayout(
       softclipBaseYs[i] = readYs[src[i]!]!
     }
   }
+  let modFlatbush: Flatbush | undefined
+  if (data.numModifications > 0) {
+    modFlatbush = new Flatbush(data.numModifications)
+    for (let i = 0; i < data.numModifications; i++) {
+      const pos = data.modificationPositions[i]!
+      const row = modificationYs[i]!
+      modFlatbush.add(pos, row, pos, row)
+    }
+    modFlatbush.finish()
+  }
+
   return {
     ...data,
     readYs,
@@ -335,6 +347,7 @@ export function cloneWithLayout(
     modificationYs,
     softclipBaseYs,
     maxY,
+    modFlatbush,
   }
 }
 

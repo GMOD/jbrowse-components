@@ -284,6 +284,7 @@ export async function executeRenderChainData({
         modifications,
         regionStart,
         getReadIndex,
+        detectedModifications,
       ),
       segmentArrays: buildSegmentArrays(
         features,
@@ -504,6 +505,9 @@ export async function executeRenderChainData({
       : []),
     ...(result.modificationReadIndices
       ? [result.modificationReadIndices.buffer]
+      : []),
+    ...(result.modificationTypeIndices
+      ? [result.modificationTypeIndices.buffer]
       : []),
   ] as ArrayBuffer[]
 

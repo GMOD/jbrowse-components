@@ -7,6 +7,7 @@
  * convention" and "BP precision" for details.
  */
 
+import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { FilterBy } from '../shared/types'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -163,6 +164,7 @@ export interface PileupDataResult {
   // Packed ABGR u32 per modification; alpha byte = probability * 255.
   modificationColors: Uint32Array
   modificationReadIndices?: Uint32Array // maps each modification to its parent read index
+  modificationTypeIndices?: Uint8Array // maps each modification to index in detectedModifications
   numModifications: number
 
   // Modification coverage data - stacked colored bars in coverage area
@@ -220,6 +222,10 @@ export interface PileupDataResult {
   // Populated by main-thread layout after chain layout is computed.
   chainFlatbushData?: ArrayBuffer
   chainFirstReadIndices?: Uint32Array // maps Flatbush item index → first read index
+
+  // Flatbush R-tree over modification points for spatial hit testing.
+  // Built by cloneWithLayout after Y assignment; Flatbush item index == modification index.
+  modFlatbush?: Flatbush
 
   // Insert size statistics (mean ± 3 SD thresholds for coloring)
   insertSizeStats?: {

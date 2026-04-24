@@ -5,6 +5,7 @@
  * and GPU data upload coordination.
  */
 
+import { toLocale } from '@jbrowse/core/util'
 import { countSnpsAtPosition } from '@jbrowse/alignments-core'
 
 import { toRgb } from './shaders/colors.ts'
@@ -222,7 +223,7 @@ export function formatChainTooltip(
  * Format a CIGAR hit result as human-readable tooltip text
  */
 export function formatCigarTooltip(cigarHit: CigarHitResult) {
-  const pos = cigarHit.position.toLocaleString()
+  const pos = toLocale(cigarHit.position + 1)
   switch (cigarHit.type) {
     case 'mismatch':
       return `SNP: ${cigarHit.base} at ${pos}`

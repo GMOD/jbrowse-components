@@ -76,6 +76,7 @@ export function openCoverageWidget(
   position: number,
   refName: string,
   blockRpcData: PileupDataResult | undefined,
+  modType?: string,
 ) {
   const tooltipBin = getTooltipBin(position, blockRpcData)
   if (!tooltipBin) {
@@ -99,6 +100,18 @@ export function openCoverageWidget(
   for (const [type, interbaseEntry] of Object.entries(tooltipBin.interbase)) {
     featureData[type] =
       `${interbaseEntry.count}/${tooltipBin.interbaseDepth} (${pct(interbaseEntry.count, tooltipBin.interbaseDepth)}) (${interbaseEntry.minLen}-${interbaseEntry.maxLen}bp)`
+  }
+  const modifications =
+    modType && tooltipBin.modifications?.[modType]
+      ? { [modType]: tooltipBin.modifications[modType] }
+      : tooltipBin.modifications
+  if (modifications) {
+    for (const [, entry] of Object.entries(modifications)) {
+      const avgProb =
+        entry.count > 0 ? entry.probabilityTotal / entry.count : 0
+      featureData[`modification ${entry.name}`] =
+        `${entry.count}/${tooltipBin.depth} (${pct(entry.count, tooltipBin.depth)}) avg prob ${avgProb.toFixed(2)} (${entry.fwd}(+) ${entry.rev}(-))`
+    }
   }
 
   showWidget(model, featureData)

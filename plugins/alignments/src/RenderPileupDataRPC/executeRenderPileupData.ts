@@ -211,6 +211,7 @@ export async function executeRenderPileupData({
         modifications,
         regionStart,
         getReadIndex,
+        detectedModifications,
       ),
       segmentArrays: buildSegmentArrays(
         features,
@@ -431,6 +432,9 @@ export async function executeRenderPileupData({
       : []),
     ...(result.modificationReadIndices
       ? [result.modificationReadIndices.buffer]
+      : []),
+    ...(result.modificationTypeIndices
+      ? [result.modificationTypeIndices.buffer]
       : []),
   ] as ArrayBuffer[]
 
