@@ -137,7 +137,36 @@ LinearGenomeView reactivity or JS event throttling.
 **Canvas SNP cutoff.** Remove SNP clickmap at megabase zoom levels (no
 reason to render).
 
-**Dotplot feature requests debounced / slow.** Review request timing in dotplot.
+**Dotplot: consolidate features + positions into one RPC (match synteny
+pattern).** Today `plugins/dotplot-view/src/DotplotDisplay/afterAttach.ts`
+runs two cascaded autoruns — `CoreGetFeatures` → main-thread
+`serializeFeatures` → `DotplotGetWebGLGeometry`. With `RPC_DEBOUNCE_MS =
+1000` on each, pan-into-new-blocks waits ~2 s for geometry. Serialize is
+O(N) `.get()` + `assemblyManager.getCanonicalRefName` per feature — fine
+at ~10 k, real stall at ~100 k.
+
+*Target:* one worker RPC `DotplotGetFeaturesAndPositions` that fetches
+via the adapter, returns flat typed-array `featureData` + px positions
+in one round-trip. Reference implementation:
+`plugins/linear-comparative-view/src/LinearSyntenyRPC/executeSyntenyFeaturesAndPositions.ts`
+(result shape, transferables list) and the post-refactor
+`plugins/linear-comparative-view/src/LinearSyntenyDisplay/afterAttach.ts`
+(single-autorun consumer).
+
+*Wins:* eliminates main-thread `serializeFeatures`; one debounce instead
+of two; collapses `setFeatures` + `setFeatPositions` into one
+`setRpcData`-style action (one upload-autorun fire per result); drops
+`self.features: Feature[]` from volatile state.
+
+*Touches:* new `DotplotGetFeaturesAndPositions.ts` + `executeDotplotFeaturesAndPositions.ts`
+(merge with current `executeDotplotWebGLGeometry.ts`); delete
+`DotplotGetWebGLGeometry` RPC; rewrite `afterAttach.ts` single-autorun;
+update `stateModelFactory.tsx` volatile + `isLoading`/`isRefetching`
+getters; grep `self.features` inside dotplot plugin and rewrite to index
+flat typed arrays (`DotplotRenderer`, `buildLineSegments`, SVG export,
+`DotplotSemanticZoom`). Canonical refName resolution moves server-side
+via `getSession(pluginManager).assemblyManager` — same hook synteny's
+worker uses. No public API break; all consumers are inside this plugin.
 
 **`paf_chain2paf` / `parseCigar2` speed.** Profile and optimize.
 
@@ -338,13 +367,8 @@ explicitly document the fold in the code.
 
 ---
 
-## Cleanup
-
-- MUI v9 migration: review checklist at https://mui.com/material-ui/migration/upgrade-to-v9
-
----
-
 ## Backlog / stretch
 
+- MUI v9 migration: review checklist at https://mui.com/material-ui/migration/upgrade-to-v9
 - SVPlaudit-style game but with JBrowse
 - Static renderings via `jbrowse-img`; command-line tool for batch variant rendering
