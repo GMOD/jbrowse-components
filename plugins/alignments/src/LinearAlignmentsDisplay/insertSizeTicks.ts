@@ -4,7 +4,9 @@ import type { YScaleTicks } from './components/YScaleBar.tsx'
 
 // Format bp values with a compact unit (matches the X-axis ruler style).
 function formatBp(v: number) {
-  if (v === 0) {return '0'}
+  if (v === 0) {
+    return '0'
+  }
   if (v >= 1_000_000) {
     const mb = v / 1_000_000
     return `${mb % 1 === 0 ? mb : mb.toFixed(1)}Mb`

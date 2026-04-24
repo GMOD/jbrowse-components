@@ -223,16 +223,16 @@ const TreeSidebar = observer(function TreeSidebar({
             Clear subtree filter
           </MenuItem>
         ) : null}
-        <MenuItem
-          onClick={() => {
-            if (menuAnchor) {
+        {menuAnchor ? (
+          <MenuItem
+            onClick={() => {
               model.setSubtreeFilter(menuAnchor.names)
-            }
-            setMenuAnchor(null)
-          }}
-        >
-          Show only subtree ({menuAnchor!.names.length} samples)
-        </MenuItem>
+              setMenuAnchor(null)
+            }}
+          >
+            Show only subtree ({menuAnchor.names.length} samples)
+          </MenuItem>
+        ) : null}
       </Menu>
     </>
   )

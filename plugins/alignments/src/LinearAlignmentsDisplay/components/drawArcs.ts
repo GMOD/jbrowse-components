@@ -34,11 +34,7 @@ interface DrawArcsOpts {
 // export path (via SvgCanvas). See ARC_SHAPE_* in computeArcsFromPileupData.
 // yBp is the Y apex in genomic bp — for flat it is the constant line Y,
 // otherwise it is the curve apex.
-export function drawArcsToCtx(
-  ctx: Ctx,
-  data: ArcFields,
-  opts: DrawArcsOpts,
-) {
+export function drawArcsToCtx(ctx: Ctx, data: ArcFields, opts: DrawArcsOpts) {
   const {
     bpToScreenX,
     arcsYDomainBp,

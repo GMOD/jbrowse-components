@@ -1,7 +1,7 @@
 import {
   bpInRegionFromCoord,
-  buildBpInRegionIndex,
   bpInRegionFromIndex,
+  buildBpInRegionIndex,
   buildViewProjection,
   projectBpToScreenPx,
 } from './syntenyProjection.ts'
@@ -92,7 +92,13 @@ describe('bpInRegionFromCoord', () => {
   const regions = [
     { assemblyName: 'a', refName: 'chr1', start: 0, end: 100 },
     { assemblyName: 'a', refName: 'chr2', start: 100, end: 200 },
-    { assemblyName: 'a', refName: 'chr1', start: 200, end: 300, reversed: true },
+    {
+      assemblyName: 'a',
+      refName: 'chr1',
+      start: 200,
+      end: 300,
+      reversed: true,
+    },
   ]
 
   it('finds forward region', () => {
@@ -127,7 +133,13 @@ describe('bpInRegionFromIndex', () => {
   const regions = [
     { assemblyName: 'a', refName: 'chr1', start: 0, end: 100 },
     { assemblyName: 'a', refName: 'chr2', start: 100, end: 200 },
-    { assemblyName: 'a', refName: 'chr1', start: 200, end: 300, reversed: true },
+    {
+      assemblyName: 'a',
+      refName: 'chr1',
+      start: 200,
+      end: 300,
+      reversed: true,
+    },
   ]
   const index = buildBpInRegionIndex(regions)
 

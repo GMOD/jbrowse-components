@@ -10,7 +10,10 @@ import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 
 import { draw, drawLocationMarkers } from './components/util.ts'
 import { OP_TO_CIGAR_KEY, lineLimit, oobLimit } from './drawSyntenyUtils.ts'
-import { buildViewProjection, projectBpToScreenPx } from './syntenyProjection.ts'
+import {
+  buildViewProjection,
+  projectBpToScreenPx,
+} from './syntenyProjection.ts'
 
 import type { CanvasLike } from './components/util.ts'
 import type { defaultCigarColors } from './drawSyntenyUtils.ts'

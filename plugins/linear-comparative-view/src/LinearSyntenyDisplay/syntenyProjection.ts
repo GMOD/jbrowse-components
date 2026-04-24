@@ -43,8 +43,7 @@ export function buildViewProjection(view: SyntenyViewLike): ViewProjection {
   let cumulativePaddingPx = 0
   for (let i = 0; i < n; i++) {
     const r = displayedRegions[i]!
-    regionOffsetPx[i] =
-      cumulativeBp / bpPerPx + cumulativePaddingPx - offsetPx
+    regionOffsetPx[i] = cumulativeBp / bpPerPx + cumulativePaddingPx - offsetPx
     const len = r.end - r.start
     cumulativeBp += len
     const regionWidthPx = len / bpPerPx

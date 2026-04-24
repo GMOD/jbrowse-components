@@ -8,9 +8,9 @@ import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
-import YScaleBar from './YScaleBar.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
+import YScaleBar from './YScaleBar.tsx'
 import {
   formatChainTooltip,
   formatFeatureTooltip,
@@ -280,10 +280,7 @@ const PileupInner = observer(function PileupInner({
             }}
           >
             <g transform="translate(0, 0)">
-              <YScaleBar
-                ticks={model.insertSizeTicks}
-                orientation="right"
-              />
+              <YScaleBar ticks={model.insertSizeTicks} orientation="right" />
             </g>
           </svg>
         ) : null}

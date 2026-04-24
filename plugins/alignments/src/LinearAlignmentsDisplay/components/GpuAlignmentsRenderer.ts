@@ -389,7 +389,8 @@ function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
   // `yBp * pxPerBp` math.
   const availH = a.arcViewportH / dpr - ARC_HEIGHT_MARGIN
   const pxPerBp = blockW / (block.bpRangeX[1] - block.bpRangeX[0])
-  f[U.arcsYDomainBp] = state.arcsYDomainBp ?? (pxPerBp > 0 ? availH / pxPerBp : 1)
+  f[U.arcsYDomainBp] =
+    state.arcsYDomainBp ?? (pxPerBp > 0 ? availH / pxPerBp : 1)
 }
 
 // Pack every palette color into the UBO as u32 ABGR. Pure — writes through

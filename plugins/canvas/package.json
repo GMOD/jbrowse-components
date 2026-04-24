@@ -36,7 +36,7 @@
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@mui/icons-material": "^9.0.0",
     "@mui/material": "^9.0.0",
-    "copy-to-clipboard": "^3.3.3",
+    "copy-to-clipboard": "^4.0.1",
     "g2p_mapper": "^2.0.0",
     "mobx": "^6.15.0",
     "mobx-react": "^9.2.1",

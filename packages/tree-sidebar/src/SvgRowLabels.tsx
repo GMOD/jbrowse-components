@@ -1,4 +1,4 @@
-import { measureText } from '@jbrowse/core/util'
+import { max, measureText } from '@jbrowse/core/util'
 
 export function SvgRowLabels({
   sources,
@@ -15,9 +15,7 @@ export function SvgRowLabels({
 }) {
   const fontSize = Math.min(rowHeight, 12)
   const boxHeight = Math.min(rowHeight, 20)
-  const labelWidth =
-    sources.reduce((m, s) => Math.max(m, measureText(s.name, fontSize)), 0) +
-    10
+  const labelWidth = max(sources.map(s => measureText(s.name, fontSize))) + 10
   return (
     <g transform={`translate(${labelOffset} 0)`}>
       {sources.map((source, idx) => {

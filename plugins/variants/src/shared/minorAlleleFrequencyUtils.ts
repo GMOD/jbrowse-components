@@ -153,24 +153,79 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
       if (sep === '/' || sep === '|') {
         const a0 = genotype[0]!
         const a1 = genotype[2]!
-        if (a0 === '0') { count0++ } else if (a0 === '1') { count1++ } else if (a0 === '2') { count2++ } else if (a0 === '3') { count3++ } else if (a0 === '.') { countDot++ } else { otherCounts[a0] = (otherCounts[a0] || 0) + 1 }
-        if (a1 === '0') { count0++ } else if (a1 === '1') { count1++ } else if (a1 === '2') { count2++ } else if (a1 === '3') { count3++ } else if (a1 === '.') { countDot++ } else { otherCounts[a1] = (otherCounts[a1] || 0) + 1 }
+        if (a0 === '0') {
+          count0++
+        } else if (a0 === '1') {
+          count1++
+        } else if (a0 === '2') {
+          count2++
+        } else if (a0 === '3') {
+          count3++
+        } else if (a0 === '.') {
+          countDot++
+        } else {
+          otherCounts[a0] = (otherCounts[a0] || 0) + 1
+        }
+        if (a1 === '0') {
+          count0++
+        } else if (a1 === '1') {
+          count1++
+        } else if (a1 === '2') {
+          count2++
+        } else if (a1 === '3') {
+          count3++
+        } else if (a1 === '.') {
+          countDot++
+        } else {
+          otherCounts[a1] = (otherCounts[a1] || 0) + 1
+        }
         continue
       }
     }
 
     if (len === 1) {
-      if (genotype === '0') { count0++ } else if (genotype === '1') { count1++ } else if (genotype === '2') { count2++ } else if (genotype === '3') { count3++ } else if (genotype === '.') { countDot++ } else { otherCounts[genotype] = (otherCounts[genotype] || 0) + 1 }
+      if (genotype === '0') {
+        count0++
+      } else if (genotype === '1') {
+        count1++
+      } else if (genotype === '2') {
+        count2++
+      } else if (genotype === '3') {
+        count3++
+      } else if (genotype === '.') {
+        countDot++
+      } else {
+        otherCounts[genotype] = (otherCounts[genotype] || 0) + 1
+      }
       continue
     }
 
     // General case: polyploid or multi-digit alleles
     for (const allele of genotype.split(GENOTYPE_SPLITTER)) {
-      if (allele === '0') { count0++ } else if (allele === '1') { count1++ } else if (allele === '2') { count2++ } else if (allele === '3') { count3++ } else if (allele === '.') { countDot++ } else { otherCounts[allele] = (otherCounts[allele] || 0) + 1 }
+      if (allele === '0') {
+        count0++
+      } else if (allele === '1') {
+        count1++
+      } else if (allele === '2') {
+        count2++
+      } else if (allele === '3') {
+        count3++
+      } else if (allele === '.') {
+        countDot++
+      } else {
+        otherCounts[allele] = (otherCounts[allele] || 0) + 1
+      }
     }
   }
 
-  return buildAlleleCounts(count0, count1, count2, count3, countDot, otherCounts)
+  return buildAlleleCounts(
+    count0,
+    count1,
+    count2,
+    count3,
+    countDot,
+    otherCounts,
+  )
 }
 
 export function calculateMinorAlleleFrequency(
