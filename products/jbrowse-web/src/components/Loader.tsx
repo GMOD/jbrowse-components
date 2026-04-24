@@ -8,7 +8,7 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 
 import { setGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
-import { FatalErrorDialog } from '@jbrowse/core/ui'
+import { ErrorBanner, FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { destroy, getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
@@ -17,6 +17,7 @@ import '@fontsource/roboto'
 
 import JBrowse from './JBrowse.tsx'
 import Loading from './Loading.tsx'
+import NoConfigMessage from './NoConfigMessage.tsx'
 import SessionLoader from '../SessionLoader.ts'
 import { createPluginManager } from '../createPluginManager.ts'
 import factoryReset from '../factoryReset.ts'
@@ -30,9 +31,6 @@ setGpuOverride(
 )
 
 const SessionTriaged = lazy(() => import('./SessionTriaged.tsx'))
-const StartScreenErrorMessage = lazy(
-  () => import('./StartScreenErrorMessage.tsx'),
-)
 
 const paramsToDelete = [
   'loc',
@@ -190,10 +188,32 @@ const Renderer = observer(function Renderer({
 
   const err = configError || error
   if (err) {
-    return (
-      <Suspense fallback={null}>
-        <StartScreenErrorMessage error={err} />
-      </Suspense>
+    return /HTTP 404 fetching config.json/.exec(`${err}`) ? (
+      <div>
+        <h1>It worked!</h1>
+        <p
+          style={{
+            margin: 8,
+            padding: 8,
+            background: '#9f9',
+            border: '1px solid green',
+          }}
+        >
+          JBrowse 2 is installed. Your next step is to add and configure an
+          assembly. Follow our{' '}
+          <a href="https://jbrowse.org/jb2/docs/quickstart_web/">
+            quick start guide
+          </a>{' '}
+          to continue or browse the sample data{' '}
+          <a href="?config=test_data/volvox/config.json">here</a>.
+        </p>
+        <NoConfigMessage />
+      </div>
+    ) : (
+      <div>
+        <h1>JBrowse Error</h1>
+        <ErrorBanner error={err} />
+      </div>
     )
   } else if (sessionTriaged) {
     return (
