@@ -26,7 +26,7 @@ const TubeMapToolbar = observer(function TubeMapToolbar({
           {model.graphName}
         </Typography>
       ) : null}
-      <Typography variant="body2" color="textSecondary">
+      <Typography variant="body2" color="text.secondary">
         {model.nodeCount} nodes, {model.trackCount} tracks
       </Typography>
       <Button

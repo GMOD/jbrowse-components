@@ -35,7 +35,7 @@ const SetModificationThresholdDialog = observer(
           <Typography>
             Set the minimum probability threshold for displaying modifications
           </Typography>
-          <Typography color="textSecondary">
+          <Typography color="text.secondary">
             Only modifications with probability above this threshold will be
             displayed (0-100%)
           </Typography>

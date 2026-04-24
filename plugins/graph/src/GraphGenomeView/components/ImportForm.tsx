@@ -230,7 +230,7 @@ function FileMode({ model }: { model: GraphGenomeViewModel }) {
             onChange={handleFileUpload}
           />
         </Button>
-        <Typography variant="caption" color="textSecondary">
+        <Typography variant="caption" color="text.secondary">
           Whole-file GFA; best for small/medium graphs.
         </Typography>
       </div>

@@ -71,12 +71,14 @@ const EditableTypography = forwardRef<HTMLDivElement, Props>(
             setInputNode(node)
           }}
           className={classes.inputBase}
-          inputProps={{
-            style: {
-              width,
-              ...(variant && variant !== 'inherit'
-                ? theme.typography[variant]
-                : {}),
+          slotProps={{
+            input: {
+              style: {
+                width,
+                ...(variant && variant !== 'inherit'
+                  ? theme.typography[variant]
+                  : {}),
+              },
             },
           }}
           classes={{

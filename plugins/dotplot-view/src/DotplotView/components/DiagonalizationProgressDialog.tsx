@@ -182,7 +182,7 @@ const DiagonalizationProgressDialog = observer(
               />
               <Typography
                 variant="caption"
-                color="textSecondary"
+                color="text.secondary"
                 style={{ marginTop: 8, display: 'block' }}
               >
                 {Math.round(progress)}% complete

@@ -33,7 +33,7 @@ const HeaderSearchBoxes = observer(function HeaderSearchBoxes({
         minWidth={100}
         style={{ margin: 0 }}
       />
-      <Typography variant="body2" color="textSecondary" className={classes.bp}>
+      <Typography variant="body2" color="text.secondary" className={classes.bp}>
         {assemblyDisplayNames.join(',')} {getBpDisplayStr(coarseTotalBp)}
       </Typography>
     </span>

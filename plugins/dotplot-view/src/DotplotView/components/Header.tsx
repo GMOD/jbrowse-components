@@ -35,7 +35,7 @@ const DotplotHeader = observer(function DotplotHeader({
   return (
     <div className={classes.headerBar}>
       <DotplotControls model={model} />
-      <Typography className={classes.bp} variant="body2" color="textSecondary">
+      <Typography className={classes.bp} variant="body2" color="text.secondary">
         x: {hview.assemblyNames.join(',')} {getBpDisplayStr(hview.currBp)}
         <br />
         y: {vview.assemblyNames.join(',')} {getBpDisplayStr(vview.currBp)}
@@ -44,7 +44,7 @@ const DotplotHeader = observer(function DotplotHeader({
         <Typography
           className={classes.bp}
           variant="body2"
-          color="textSecondary"
+          color="text.secondary"
         >
           {`width:${getBpDisplayStr(hview.bpPerPx * selection.width)}`} <br />
           {`height:${getBpDisplayStr(vview.bpPerPx * selection.height)}`}

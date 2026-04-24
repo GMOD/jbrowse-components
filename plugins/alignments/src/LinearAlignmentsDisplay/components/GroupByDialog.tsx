@@ -199,7 +199,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
         </TextField>
         {type === 'tag' ? (
           <>
-            <Typography color="textSecondary">
+            <Typography color="text.secondary">
               Examples: HP for haplotype, RG for read group, etc.
             </Typography>
 

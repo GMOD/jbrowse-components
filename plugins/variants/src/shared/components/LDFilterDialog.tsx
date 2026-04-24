@@ -131,7 +131,7 @@ export default function LDFilterDialog({
         <Typography variant="subtitle1" gutterBottom>
           Minor Allele Frequency (MAF) Filter
         </Typography>
-        <Typography variant="body2" color="textSecondary" component="p">
+        <Typography variant="body2" color="text.secondary" component="p">
           Exclude variants with minor allele frequency below this threshold.
         </Typography>
         <TextField
@@ -152,7 +152,7 @@ export default function LDFilterDialog({
         <Typography variant="subtitle1" gutterBottom>
           Hardy-Weinberg Equilibrium (HWE) Filter
         </Typography>
-        <Typography variant="body2" color="textSecondary" component="p">
+        <Typography variant="body2" color="text.secondary" component="p">
           Exclude variants that deviate significantly from HWE, which may
           indicate genotyping errors or population stratification. This follows
           Haploview&apos;s approach.
@@ -193,7 +193,7 @@ export default function LDFilterDialog({
         <Typography variant="subtitle1" gutterBottom>
           Call Rate Filter
         </Typography>
-        <Typography variant="body2" color="textSecondary" component="p">
+        <Typography variant="body2" color="text.secondary" component="p">
           Exclude variants with too many missing genotypes. Call rate is the
           proportion of samples with non-missing genotype calls.
         </Typography>

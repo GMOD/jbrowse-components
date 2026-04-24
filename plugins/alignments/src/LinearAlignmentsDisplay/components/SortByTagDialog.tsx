@@ -23,7 +23,7 @@ const SortByTagDialog = observer(function SortByTagDialog(props: {
     <Dialog open onClose={handleClose} title="Sort by tag">
       <DialogContent>
         <Typography>Set the tag to sort by</Typography>
-        <Typography color="textSecondary">
+        <Typography color="text.secondary">
           Examples: HP for haplotype, RG for read group, etc.
         </Typography>
         <TextField
