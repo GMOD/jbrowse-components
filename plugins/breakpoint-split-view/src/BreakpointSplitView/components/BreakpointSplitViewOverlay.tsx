@@ -26,6 +26,33 @@ const useStyles = makeStyles()({
   },
 })
 
+// NOTE: These helpers mirror the zoom normalizer in
+// plugins/linear-genome-view/src/LinearGenomeView/components/useWheelScroll.ts
+// Keep them in sync if you change the zoom logic there.
+function getNormalizer(deltaY: number) {
+  const abs = Math.abs(deltaY)
+  if (abs < 6) {
+    return 25
+  }
+  if (abs > 150) {
+    return 500
+  }
+  if (abs > 30) {
+    return 150
+  }
+  return 75
+}
+
+function normalizeWheel(delta: number, mode: number) {
+  if (mode === 1) {
+    return delta * 16
+  }
+  if (mode === 2) {
+    return delta * 100
+  }
+  return delta
+}
+
 const BreakpointSplitViewOverlay = observer(
   function BreakpointSplitViewOverlay({
     model,
@@ -46,35 +73,6 @@ const BreakpointSplitViewOverlay = observer(
       const div = divRef.current
       if (!div || views.length === 0) {
         return
-      }
-
-      // NOTE: This wheel handling is intrinsically linked to useWheelScroll in
-      // plugins/linear-genome-view/src/LinearGenomeView/components/useWheelScroll.ts
-      // If you modify the zoom normalizer or zoom logic there, you must update
-      // the getNormalizer and zoom calculations below to stay in sync.
-
-      function getNormalizer(deltaY: number) {
-        const abs = Math.abs(deltaY)
-        if (abs < 6) {
-          return 25
-        }
-        if (abs > 150) {
-          return 500
-        }
-        if (abs > 30) {
-          return 150
-        }
-        return 75
-      }
-
-      function normalizeWheel(delta: number, mode: number) {
-        if (mode === 1) {
-          return delta * 16
-        }
-        if (mode === 2) {
-          return delta * 100
-        }
-        return delta
       }
 
       function handleWheel(event: WheelEvent) {
