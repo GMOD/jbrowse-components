@@ -39,5 +39,3 @@ export {
   type ExportSvgOptions,
 } from './CircularView/model.ts'
 
-export type { AnyRegion, Block } from './ChordRenderer/types.ts'
-export { default as SVChordsReactComponent } from './ChordRenderer/ReactComponent.tsx'

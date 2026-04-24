@@ -12,9 +12,7 @@ import type { Feature } from '@jbrowse/core/util'
 
 function bpToRadians(block: Block, pos: number) {
   const blockStart = block.region.elided ? 0 : block.region.start
-  const blockEnd = block.region.elided ? 0 : block.region.end
-  const bpOffset = block.flipped ? blockEnd - pos : pos - blockStart
-  return bpOffset / block.bpPerRadian + block.startRadians
+  return (pos - blockStart) / block.bpPerRadian + block.startRadians
 }
 
 function getEndpoint(

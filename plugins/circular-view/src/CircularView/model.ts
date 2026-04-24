@@ -19,7 +19,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { autorun } from 'mobx'
 
-import { calculateStaticSlices, sliceIsVisible } from './slices.ts'
+import { calculateStaticSlices } from './slices.ts'
 import { viewportVisibleSection } from './viewportVisibleRegion.ts'
 
 import type { SliceRegion } from './slices.ts'
@@ -416,15 +416,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         return calculateStaticSlices(self)
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get visibleStaticSlices() {
-        return self.staticSlices.filter(s => sliceIsVisible(self, s))
-      },
-    }))
-
     .actions(self => ({
       /**
        * #action
@@ -473,14 +464,14 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       rotateClockwiseButton() {
-        this.rotateClockwise(Math.PI / 6)
+        self.offsetRadians += Math.PI / 6
       },
 
       /**
        * #action
        */
       rotateCounterClockwiseButton() {
-        this.rotateCounterClockwise(Math.PI / 6)
+        self.offsetRadians -= Math.PI / 6
       },
 
       /**
@@ -488,20 +479,6 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       rotate(delta: number) {
         self.offsetRadians += delta
-      },
-
-      /**
-       * #action
-       */
-      rotateClockwise(distance = 0.17) {
-        self.offsetRadians += distance
-      },
-
-      /**
-       * #action
-       */
-      rotateCounterClockwise(distance = 0.17) {
-        self.offsetRadians -= distance
       },
 
       /**

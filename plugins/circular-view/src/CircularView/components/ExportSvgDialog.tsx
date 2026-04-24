@@ -161,7 +161,7 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
         </Button>
       </DialogActions>
     </Dialog>
-  )
+  );
 })
 
 export default ExportSvgDialog

@@ -14,7 +14,6 @@ import type { Feature } from '@jbrowse/core/util'
 
 interface DisplayModel {
   id: string
-  filled: boolean
   error: unknown
   features: Map<string, Feature> | undefined
   blockDefinitions: Block[]
@@ -40,7 +39,7 @@ const ChordVariantDisplay = observer(function ChordVariantDisplay({
   if (display.error) {
     return <DisplayError model={display} radius={radius} />
   }
-  if (!display.filled || !display.features) {
+  if (!display.features) {
     return <Loading radius={radius} />
   }
 

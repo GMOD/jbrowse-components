@@ -67,7 +67,6 @@ const ElisionRulerArc = observer(function ElisionRulerArc({
   const endXY = polarToCartesian(radiusPx, endRadians)
   const widthPx = (endRadians - startRadians) * radiusPx
   const largeArc = endRadians - startRadians > Math.PI ? '1' : '0'
-  // TODO: draw the elision
   const centerRadians = (endRadians + startRadians) / 2
   const regionCount = `[${toLocale(region.regions.length)}]`
   return (

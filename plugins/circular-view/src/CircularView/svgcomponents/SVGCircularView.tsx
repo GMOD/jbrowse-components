@@ -24,7 +24,7 @@ export async function renderToSvg(
   const displayResults = await Promise.all(
     tracks.map(async track => {
       const display = track.displays[0]
-      await when(() => (display.ready !== undefined ? display.ready : true))
+      await when(() => display.ready)
       return { track, result: await display.renderSvg({ ...opts, theme }) }
     }),
   )
@@ -50,7 +50,7 @@ export async function renderToSvg(
             ))}
             {displayResults.map(({ result }, i) => (
               /* biome-ignore lint/suspicious/noArrayIndexKey: */
-              <Fragment key={i}>{result}</Fragment>
+              (<Fragment key={i}>{result}</Fragment>)
             ))}
           </g>
         </svg>

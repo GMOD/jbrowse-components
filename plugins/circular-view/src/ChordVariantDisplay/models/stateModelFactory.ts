@@ -54,10 +54,6 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
       /**
        * #volatile
        */
-      filled: false,
-      /**
-       * #volatile
-       */
       features: undefined as Map<string, Feature> | undefined,
       /**
        * #volatile
@@ -69,7 +65,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
        * #getter
        */
       get ready() {
-        return self.filled
+        return self.features !== undefined
       },
 
       /**
@@ -122,17 +118,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
         /**
          * #action
          */
-        setFetching() {
-          self.filled = false
-          self.features = undefined
-          self.error = undefined
-        },
-
-        /**
-         * #action
-         */
         setFeatures(features: Map<string, Feature>) {
-          self.filled = true
           self.features = features
           self.error = undefined
         },
@@ -170,7 +156,8 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
               const stopToken = createStopToken()
               renderStopToken = stopToken
 
-              self.setFetching()
+              self.features = undefined
+              self.error = undefined
 
               try {
                 const feats = (await rpcManager.call(
