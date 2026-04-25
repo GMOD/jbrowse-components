@@ -1,7 +1,3 @@
-// Linear (non-log) Hi-C color scaling divides max by this so most cells aren't
-// saturated to the top of the ramp. Mirrored as a literal in hic.slang's
-// fragment shader — keep in sync.
-export const HIC_LINEAR_SCORE_DIVISOR = 20
 
 export type RGBA = readonly [number, number, number, number]
 
@@ -162,14 +158,16 @@ export {
 // Map a contact count into [0, 1] for color-ramp sampling. Mirrors the logic
 // in hic.slang's fragment shader so Canvas2D + SVG rendering stay consistent
 // with the GPU path.
+// colorMaxScore: 95th-percentile count (linear mode) or maxScore (log mode)
 export function mapHicCount(
   count: number,
+  colorMaxScore: number,
   maxScore: number,
   useLogScale: boolean,
 ) {
-  const m = useLogScale ? maxScore : maxScore / HIC_LINEAR_SCORE_DIVISOR
-  const t = useLogScale
-    ? Math.log2(Math.max(count, 1)) / Math.log2(Math.max(m, 1))
-    : count / Math.max(m, 0.001)
-  return Math.max(0, Math.min(1, t))
+  if (useLogScale) {
+    const m = Math.max(maxScore, 1)
+    return Math.max(0, Math.min(1, Math.log2(Math.max(count, 1)) / Math.log2(m)))
+  }
+  return Math.max(0, Math.min(1, count / Math.max(colorMaxScore, 0.001)))
 }

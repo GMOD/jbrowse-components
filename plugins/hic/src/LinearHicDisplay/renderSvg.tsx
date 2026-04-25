@@ -24,12 +24,12 @@ export async function renderSvg(
 ) {
   const view = getContainingView(self) as LGV
   await when(() => self.rpcData != null || !!self.error || self.regionTooLarge)
-  const { rpcData, useLogScale, colorScheme, showLegend } = self
+  const { rpcData, useLogScale, colorScheme, showLegend, yScalar } = self
   if (!rpcData || rpcData.numContacts === 0) {
     return null
   }
 
-  const { positions, counts, numContacts, maxScore, binWidth, yScalar } =
+  const { positions, counts, numContacts, maxScore, colorMaxScore, binWidth } =
     rpcData
   const height = opts.overrideHeight ?? self.height
   const visibleWidth = view.width
@@ -60,7 +60,7 @@ export async function renderSvg(
         const px = positions[i * 2]!
         const py = positions[i * 2 + 1]!
         const count = counts[i]!
-        const t = mapHicCount(count, maxScore, useLogScale)
+        const t = mapHicCount(count, colorMaxScore, maxScore, useLogScale)
         ctx.fillStyle = lookupColorRampCSS(ramp, t)
         ctx.fillRect(px, py, binWidth, binWidth)
       }
@@ -86,6 +86,7 @@ export async function renderSvg(
       canvasWidth: visibleWidth,
       canvasHeight: height,
       maxScore,
+      colorMaxScore,
       useLogScale,
       viewScale: 1,
       viewOffsetX: 0,
@@ -105,7 +106,7 @@ export async function renderSvg(
       <g clipPath={`url(#${clipId})`}>{matrixEl}</g>
       {showLegend && maxScore > 0 ? (
         <HicSVGColorLegend
-          maxScore={maxScore}
+          maxScore={useLogScale ? maxScore : colorMaxScore}
           colorScheme={colorScheme}
           useLogScale={useLogScale}
           width={visibleWidth}

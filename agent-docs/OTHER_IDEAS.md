@@ -123,6 +123,36 @@ Distinguish initialized vs. loading state in LinearGenomeView.
 
 ---
 
+## Hi-C
+
+**User-adjustable color threshold**
+Add a draggable slider on the HiC color legend (like Juicebox's color scale
+widget) so users can set the saturation threshold manually. The 95th-percentile
+auto-scale is a good default but some datasets benefit from manual tuning.
+Store as a `colorThresholdMultiplier` override in the display model.
+
+**Normalization availability check**
+Before calling hic-straw with a normalization (e.g. KR), check whether a
+normalization vector exists for the current resolution/chromosome. If not,
+warn the user and fall back to NONE — mirroring Juicebox's behavior in
+`contactMatrixView.js:checkColorScale`. hic-straw doesn't expose
+`hasNormalizationVector` directly; could detect by catching empty results
+or by inspecting the masterIndex keys.
+
+**A/B compartment ratio mode**
+Juicebox supports A÷B log-ratio display (diverging red/blue color scale) when
+a control/background map is loaded. Would require a second `hicLocation` in the
+adapter config and `RatioColorScale` logic (log-scale positive=red,
+negative=blue).
+
+**Inter-chromosomal UI**
+`getHeader` already computes `hasInterChromosomalData` from the masterIndex but
+it is never surfaced. When true, show a chromosome-pair selector (chr1 × chr2)
+so users can navigate to specific inter-chromosomal contact blocks without
+needing to set up a multi-region view manually.
+
+---
+
 ## Known Issues
 
 | Issue                             | Status               |

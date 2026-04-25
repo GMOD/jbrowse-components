@@ -4,17 +4,9 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { calcRegionCombinedOffsets } from '../regionOffsets.ts'
 
 import type { HicDataResult, HicFlatbushItem } from './types.ts'
-import type { MultiRegionContactRecord } from '../HicAdapter/HicAdapter.ts'
+import type HicAdapter from '../HicAdapter/HicAdapter.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util/types'
-
-interface HicDataAdapter {
-  getResolution: (bp: number) => Promise<number>
-  getMultiRegionContactRecords: (
-    regions: Region[],
-    opts: Record<string, unknown>,
-  ) => Promise<MultiRegionContactRecord[]>
-}
 
 interface RenderHicDataArgs {
   sessionId: string
@@ -23,8 +15,6 @@ interface RenderHicDataArgs {
   bpPerPx: number
   resolution: number
   normalization: string
-  displayHeight?: number
-  mode?: string
 }
 
 export async function executeRenderHicData({
@@ -41,8 +31,6 @@ export async function executeRenderHicData({
     bpPerPx,
     resolution,
     normalization,
-    displayHeight,
-    mode,
   } = args
 
   const { dataAdapter } = await getAdapter(
@@ -50,23 +38,17 @@ export async function executeRenderHicData({
     sessionId,
     adapterConfig,
   )
-  const adapter = dataAdapter as unknown as HicDataAdapter
+  const adapter = dataAdapter as unknown as HicAdapter
 
-  const res = await adapter.getResolution(bpPerPx / resolution)
+  const { records: features, resolution: res } =
+    await adapter.getMultiRegionContactRecords(regions, {
+      resolution,
+      normalization,
+      bpPerPx,
+    })
+
   const w = res / (bpPerPx * Math.SQRT2)
   const regionCombinedOffsets = calcRegionCombinedOffsets(regions, bpPerPx, res)
-
-  const totalWidthBp = regions.reduce((sum, r) => sum + r.end - r.start, 0)
-  const width = totalWidthBp / bpPerPx
-  const hyp = width / 2
-  const height = mode === 'adjust' ? (displayHeight ?? hyp) : hyp
-  const yScalar = height / Math.max(height, hyp)
-
-  const features = await adapter.getMultiRegionContactRecords(regions, {
-    resolution,
-    normalization,
-    bpPerPx,
-  })
 
   if (!features.length) {
     const emptyFlatbush = new Flatbush(1)
@@ -77,8 +59,8 @@ export async function executeRenderHicData({
       counts: new Float32Array(0),
       numContacts: 0,
       maxScore: 0,
+      colorMaxScore: 0,
       binWidth: w,
-      yScalar,
       flatbush: emptyFlatbush.data,
       items: [],
     }
@@ -90,6 +72,8 @@ export async function executeRenderHicData({
       maxScore = counts
     }
   }
+
+  const colorMaxScore = computePercentile(features, 95)
 
   const positions = new Float32Array(features.length * 2)
   const countValues = new Float32Array(features.length)
@@ -117,9 +101,18 @@ export async function executeRenderHicData({
     counts: countValues,
     numContacts: features.length,
     maxScore,
+    colorMaxScore,
     binWidth: w,
-    yScalar,
     flatbush: flatbush.data,
     items,
   }
+}
+
+function computePercentile(
+  features: { counts: number }[],
+  p: number,
+): number {
+  const sorted = features.map(f => f.counts).sort((a, b) => a - b)
+  const idx = Math.floor((p / 100) * sorted.length)
+  return sorted[Math.min(idx, sorted.length - 1)] ?? 0
 }

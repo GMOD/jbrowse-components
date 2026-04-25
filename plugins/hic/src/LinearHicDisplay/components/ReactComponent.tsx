@@ -95,6 +95,7 @@ const HicCanvas = observer(function HicCanvas({
     yScalar,
     showLegend,
     maxScore,
+    colorMaxScore,
     colorScheme,
     useLogScale,
   } = model
@@ -216,7 +217,7 @@ const HicCanvas = observer(function HicCanvas({
       ) : null}
       {showLegend && maxScore > 0 ? (
         <HicColorLegend
-          maxScore={maxScore}
+          maxScore={useLogScale ? maxScore : colorMaxScore}
           colorScheme={colorScheme}
           useLogScale={useLogScale}
         />

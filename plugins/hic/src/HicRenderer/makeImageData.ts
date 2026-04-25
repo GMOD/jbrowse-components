@@ -14,13 +14,12 @@ import {
 } from '@mui/x-charts-vendor/d3-scale'
 
 import interpolateViridis from './viridis.ts'
-import { HIC_LINEAR_SCORE_DIVISOR } from '../LinearHicDisplay/components/colorRamp.ts'
 import { calcRegionCombinedOffsets } from '../regionOffsets.ts'
 
 import type { RenderArgsDeserializedWithFeatures } from './HicRenderer.tsx'
+import type HicAdapter from '../HicAdapter/HicAdapter.ts'
 import type { HicFlatbushItem } from '../RenderHicDataRPC/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderArgs as ServerSideRenderArgs } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import type { Region } from '@jbrowse/core/util/types'
 
@@ -47,10 +46,6 @@ export interface MakeImageDataResult {
   items: HicFlatbushItem[]
   maxScore: number
   w: number
-}
-
-interface HicDataAdapter extends BaseFeatureDataAdapter {
-  getResolution: (bp: number) => Promise<number>
 }
 
 export interface RenderArgs extends ServerSideRenderArgs {
@@ -86,7 +81,7 @@ export async function makeImageData(
     sessionId,
     adapterConfig,
   )
-  const res = await (dataAdapter as HicDataAdapter).getResolution(
+  const res = await (dataAdapter as unknown as HicAdapter).getResolution(
     bpPerPx / resolution,
   )
 
@@ -108,7 +103,8 @@ export async function makeImageData(
   }
   checkStopToken(stopToken)
 
-  const m = useLogScale ? maxScore : maxScore / HIC_LINEAR_SCORE_DIVISOR
+  const colorMaxScore = computePercentile(features, 95)
+  const m = useLogScale ? maxScore : colorMaxScore
   const schemeName = (colorScheme ?? 'juicebox') as keyof typeof COLOR_SCHEMES
   const x1 = COLOR_SCHEMES[schemeName]
   const scale = useLogScale
@@ -155,7 +151,7 @@ export async function makeImageData(
       flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
     }
   } else {
-    flatbush.add(0, 0)
+    flatbush.add(0, 0, 0, 0)
   }
   flatbush.finish()
 
@@ -165,4 +161,10 @@ export async function makeImageData(
     maxScore,
     w,
   }
+}
+
+function computePercentile(features: { counts: number }[], p: number) {
+  const sorted = features.map(f => f.counts).sort((a, b) => a - b)
+  const idx = Math.floor((p / 100) * sorted.length)
+  return sorted[Math.min(idx, sorted.length - 1)] ?? 0
 }

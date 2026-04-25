@@ -16,7 +16,6 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { generateColorRamp } from './components/HicRenderer.ts'
-import { HIC_LINEAR_SCORE_DIVISOR } from './components/colorRamp.ts'
 
 import type {
   HicDataResult,
@@ -105,8 +104,14 @@ export default function stateModelFactory(
       get maxScore() {
         return self.rpcData?.maxScore ?? 0
       },
+      get colorMaxScore() {
+        return self.rpcData?.colorMaxScore ?? 0
+      },
       get yScalar() {
-        return self.rpcData?.yScalar ?? 1
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const hyp = Math.round(view.dynamicBlocks.totalWidthPx) / 2
+        const h = self.height
+        return self.mode === 'adjust' ? h / Math.max(h, hyp) : 1
       },
     }))
     .views(self => ({
@@ -118,8 +123,6 @@ export default function stateModelFactory(
         return {
           resolution: self.resolution,
           normalization: self.activeNormalization,
-          mode: self.mode,
-          displayHeight: self.mode === 'adjust' ? self.height : undefined,
         }
       },
 
@@ -137,10 +140,11 @@ export default function stateModelFactory(
         const { scale, translateX } = self.viewportTransform(view)
         return {
           binWidth: data.binWidth,
-          yScalar: data.yScalar,
+          yScalar: self.yScalar,
           canvasWidth: Math.round(view.dynamicBlocks.totalWidthPx),
           canvasHeight: self.height,
           maxScore: data.maxScore,
+          colorMaxScore: data.colorMaxScore,
           useLogScale: self.useLogScale,
           viewScale: scale,
           viewOffsetX: translateX,
@@ -153,9 +157,9 @@ export default function stateModelFactory(
        */
       legendItems(): LegendItem[] {
         const colorScheme = self.colorScheme ?? 'juicebox'
-        const displayMax = self.useLogScale
-          ? self.maxScore
-          : Math.round(self.maxScore / HIC_LINEAR_SCORE_DIVISOR)
+        const displayMax = Math.round(
+          self.useLogScale ? self.maxScore : self.colorMaxScore,
+        )
         const minLabel = self.useLogScale ? '1' : '0'
         const maxLabel = `${displayMax.toLocaleString()}${self.useLogScale ? ' (log)' : ''}`
 

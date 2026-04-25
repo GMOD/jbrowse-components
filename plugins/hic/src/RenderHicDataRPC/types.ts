@@ -11,8 +11,8 @@ export interface HicDataResult {
   counts: Float32Array
   numContacts: number
   maxScore: number
+  colorMaxScore: number
   binWidth: number
-  yScalar: number
   flatbush: ArrayBuffer
   items: HicFlatbushItem[]
 }

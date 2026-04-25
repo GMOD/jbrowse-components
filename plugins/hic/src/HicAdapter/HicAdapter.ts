@@ -144,7 +144,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   async getMultiRegionContactRecords(
     regions: Region[],
     opts: HicOptions = {},
-  ): Promise<MultiRegionContactRecord[]> {
+  ): Promise<{ records: MultiRegionContactRecord[]; resolution: number }> {
     const {
       resolution,
       normalization = 'KR',
@@ -153,7 +153,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     } = opts
 
     const metadata = await this.setup(opts)
-    const res = await this.getResolution(bpPerPx / (resolution || 1000), opts)
+    const res = await this.getResolution(bpPerPx / (resolution ?? 1), opts)
 
     // Build a chromosome → hic-file index map. hic-straw transposes queries
     // when idx(chr1) > idx(chr2), returning bin1/bin2 in the swapped order.
@@ -207,7 +207,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       }
     })
 
-    return allRecords
+    return { records: allRecords, resolution: res }
   }
 
   // don't do feature stats estimation, similar to bigwigadapter

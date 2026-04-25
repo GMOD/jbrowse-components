@@ -20,8 +20,6 @@ interface RenderHicDataArgs {
   bpPerPx: number
   resolution: number
   normalization: string
-  displayHeight?: number
-  mode?: string
 }
 
 export default class RenderHicData extends RpcMethodType {
