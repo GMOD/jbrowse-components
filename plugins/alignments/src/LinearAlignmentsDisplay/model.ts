@@ -1264,7 +1264,6 @@ export default function stateModelFactory(
                 }),
               )
             }
-            session.setSelection(feature)
           },
         }
       })
