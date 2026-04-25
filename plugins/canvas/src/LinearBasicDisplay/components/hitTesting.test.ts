@@ -450,3 +450,97 @@ test('handles reversed region', () => {
   expect(result.feature).not.toBeNull()
   expect(result.feature!.featureId).toBe('gene1')
 })
+
+function makeDataWithLabel(
+  flatbushItems: FlatbushItem[],
+  labelTextWidth: number,
+): FeatureDataResult {
+  const data = makeData(flatbushItems)
+  const item = flatbushItems[0]!
+  return {
+    ...data,
+    floatingLabelsData: {
+      [item.featureId]: {
+        featureId: item.featureId,
+        minX: item.startBp,
+        maxX: item.endBp,
+        topY: 0,
+        featureHeight: item.bottomPx - item.topPx,
+        nameLabel: {
+          text: 'longname',
+          relativeY: 0,
+          color: '#000',
+          textWidth: labelTextWidth,
+        },
+      },
+    },
+  }
+}
+
+test('label hit area extends past feature when showLabels is true', () => {
+  const item = makeItem('gene1', 1000, 1100, 0, 20)
+  const data = makeDataWithLabel([item], 200)
+
+  const laidOutDataMap = new Map([[0, data]])
+  const region = makeRegion(0, 0, 10000, 0, 800)
+
+  const hit = performMultiRegionHitDetection(
+    freshCacheMap(),
+    laidOutDataMap,
+    [region],
+    250,
+    10,
+    { showLabels: true, showDescriptions: false },
+  )
+
+  expect(hit.feature).not.toBeNull()
+})
+
+test('label hit area collapses when showLabels is false', () => {
+  const item = makeItem('gene1', 1000, 1100, 0, 20)
+  const data = makeDataWithLabel([item], 200)
+
+  const laidOutDataMap = new Map([[0, data]])
+  const region = makeRegion(0, 0, 10000, 0, 800)
+
+  const hit = performMultiRegionHitDetection(
+    freshCacheMap(),
+    laidOutDataMap,
+    [region],
+    250,
+    10,
+    { showLabels: false, showDescriptions: false },
+  )
+
+  expect(hit.feature).toBeNull()
+})
+
+test('cache rebuilds when label visibility flags change', () => {
+  const item = makeItem('gene1', 1000, 1100, 0, 20)
+  const data = makeDataWithLabel([item], 200)
+
+  const laidOutDataMap = new Map([[0, data]])
+  const region = makeRegion(0, 0, 10000, 0, 800)
+  const cacheMap = freshCacheMap()
+
+  performMultiRegionHitDetection(
+    cacheMap,
+    laidOutDataMap,
+    [region],
+    50,
+    10,
+    { showLabels: true, showDescriptions: false },
+  )
+  const firstIndex = cacheMap.get(0)!.featureIndex
+
+  performMultiRegionHitDetection(
+    cacheMap,
+    laidOutDataMap,
+    [region],
+    50,
+    10,
+    { showLabels: false, showDescriptions: false },
+  )
+
+  expect(cacheMap.get(0)!.featureIndex).not.toBe(firstIndex)
+})

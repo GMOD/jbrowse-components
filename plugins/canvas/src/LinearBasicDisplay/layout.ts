@@ -1,6 +1,7 @@
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
 import { STRAND_ARROW_WIDTH } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
+import { maxLabelTextWidth } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
 import type {
   FeatureDataResult,
@@ -18,22 +19,13 @@ export interface LayoutInputs {
   labelFontSize?: number
 }
 
-function effectiveLabelWidthPx(
+function reservedLabelWidthPx(
   labelData: FeatureLabelData,
   showLabels: boolean,
   showDescriptions: boolean,
 ) {
-  let maxWidth = 0
-  if (showLabels && labelData.nameLabel) {
-    maxWidth = Math.max(maxWidth, labelData.nameLabel.textWidth)
-  }
-  if (showDescriptions && labelData.descriptionLabel) {
-    maxWidth = Math.max(maxWidth, labelData.descriptionLabel.textWidth)
-  }
-  if (labelData.subfeatureLabel) {
-    maxWidth = Math.max(maxWidth, labelData.subfeatureLabel.textWidth)
-  }
-  return maxWidth > 0 ? maxWidth + LABEL_PADDING_PX : 0
+  const width = maxLabelTextWidth(labelData, showLabels, showDescriptions)
+  return width > 0 ? width + LABEL_PADDING_PX : 0
 }
 
 // Pure layout. Raw data from the worker has Y coordinates relative to feature
@@ -123,7 +115,7 @@ function packRef(
   for (const [, data] of regions) {
     for (const labelData of Object.values(data.floatingLabelsData)) {
       const targetId = labelData.parentFeatureId ?? labelData.featureId
-      const widthPx = effectiveLabelWidthPx(
+      const widthPx = reservedLabelWidthPx(
         labelData,
         showLabels,
         showDescriptions,
