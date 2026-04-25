@@ -1,5 +1,3 @@
-import { projectBpToScreenPx } from '@jbrowse/core/util/bpProjection'
-
 import type {
   DotplotBackend,
   DotplotGeometryData,
@@ -44,7 +42,7 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
   }
 
   render(state: DotplotRenderState) {
-    const { lineWidth, trackProjections } = state
+    const { offsetX, offsetY, lineWidth, trackScales } = state
     const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1
     const ctx = this.ctx
 
@@ -53,19 +51,17 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
     ctx.lineWidth = lineWidth
     ctx.lineCap = 'round'
 
-    for (const { displayKey, projH, projV } of trackProjections) {
+    for (const { displayKey, scaleX, scaleY } of trackScales) {
       const geo = this.geometries.get(displayKey)
       if (!geo || geo.instanceCount === 0) {
         continue
       }
 
       for (let i = 0; i < geo.instanceCount; i++) {
-        const xRegIdx = geo.xRegionIdx[i]!
-        const yRegIdx = geo.yRegionIdx[i]!
-        const sx1 = projectBpToScreenPx(geo.x1s[i]!, xRegIdx, projH)
-        const sy1 = this.height - projectBpToScreenPx(geo.y1s[i]!, yRegIdx, projV)
-        const sx2 = projectBpToScreenPx(geo.x2s[i]!, xRegIdx, projH)
-        const sy2 = this.height - projectBpToScreenPx(geo.y2s[i]!, yRegIdx, projV)
+        const sx1 = geo.x1s[i]! * scaleX - offsetX
+        const sy1 = this.height - (geo.y1s[i]! * scaleY - offsetY)
+        const sx2 = geo.x2s[i]! * scaleX - offsetX
+        const sy2 = this.height - (geo.y2s[i]! * scaleY - offsetY)
 
         const packed = geo.colors[i]!
         const r = packed & 0xff

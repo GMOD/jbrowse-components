@@ -1,8 +1,4 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import {
-  bpInRegionFromIndex,
-  buildBpInRegionIndex,
-} from '@jbrowse/core/util/bpProjection'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -12,15 +8,78 @@ import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAda
 import type { Region, ViewSnap } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
+interface RegionIndexEntry {
+  region: { refName: string; start: number; end: number; reversed?: boolean }
+  bpBefore: number
+  paddingBpBefore: number
+}
+
+interface BpToPxIndex {
+  entries: Map<string, RegionIndexEntry[]>
+  bpPerPx: number
+}
+
+function buildBpToPxIndex(self: ViewSnap): BpToPxIndex {
+  const {
+    interRegionPaddingWidth,
+    bpPerPx,
+    displayedRegions,
+    minimumBlockWidth,
+  } = self
+  const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
+  const entries = new Map<string, RegionIndexEntry[]>()
+  let bpSoFar = 0
+  let paddingBp = 0
+
+  for (let i = 0, l = displayedRegions.length; i < l; i++) {
+    const r = displayedRegions[i]!
+    const len = r.end - r.start
+    const entry: RegionIndexEntry = {
+      region: r,
+      bpBefore: bpSoFar,
+      paddingBpBefore: paddingBp,
+    }
+    let list = entries.get(r.refName)
+    if (!list) {
+      list = []
+      entries.set(r.refName, list)
+    }
+    list.push(entry)
+
+    bpSoFar += len
+    const regionWidthPx = len / bpPerPx
+    if (regionWidthPx >= minimumBlockWidth && i < l - 1) {
+      paddingBp += interRegionPaddingBp
+    }
+  }
+  return { entries, bpPerPx }
+}
+
+function bpToPxFromIndex(idx: BpToPxIndex, refName: string, coord: number) {
+  const list = idx.entries.get(refName)
+  if (!list) {
+    return undefined
+  }
+  for (const entry of list) {
+    const r = entry.region
+    if (coord >= r.start && coord <= r.end) {
+      const bpOffset = r.reversed ? r.end - coord : coord - r.start
+      return (entry.bpBefore + bpOffset + entry.paddingBpBefore) / idx.bpPerPx
+    }
+  }
+  return undefined
+}
+
+// Pixel offsets stored as Float64: needed because Float32's 24-bit mantissa
+// loses integer precision above ~16M, and at low bpPerPx on large genomes a
+// pixel offset can approach the raw 3Gbp range. Float64 is exact for any
+// value we'd ever see, and avoids the sub-pixel rounding that Uint32 would
+// require.
 export interface DotplotFeaturesAndPositionsResult {
-  // bp-in-region for each corner. Renderer projects these against per-view
-  // ViewProjection tables (see @jbrowse/core/util/bpProjection).
-  p11_bp: Uint32Array
-  p12_bp: Uint32Array
-  p21_bp: Uint32Array
-  p22_bp: Uint32Array
-  xRegionIdx: Uint8Array
-  yRegionIdx: Uint8Array
+  p11_offsetPx: Float64Array
+  p12_offsetPx: Float64Array
+  p21_offsetPx: Float64Array
+  p22_offsetPx: Float64Array
   strands: Int8Array
   starts: Uint32Array
   ends: Uint32Array
@@ -29,6 +88,8 @@ export interface DotplotFeaturesAndPositionsResult {
   mappingQuals: Float32Array
   refNames: string[]
   cigars: string[]
+  bpPerPxH: number
+  bpPerPxV: number
 }
 
 export async function executeDotplotFeaturesAndPositions({
@@ -86,16 +147,14 @@ export async function executeDotplotFeaturesAndPositions({
     return a
   }
 
-  const hIndex = buildBpInRegionIndex(hViewSnap.displayedRegions)
-  const vIndex = buildBpInRegionIndex(vViewSnap.displayedRegions)
+  const hIndex = buildBpToPxIndex(hViewSnap)
+  const vIndex = buildBpToPxIndex(vViewSnap)
 
   const count = features.length
-  const p11Array = new Uint32Array(count)
-  const p12Array = new Uint32Array(count)
-  const p21Array = new Uint32Array(count)
-  const p22Array = new Uint32Array(count)
-  const xRegionIdxArray = new Uint8Array(count)
-  const yRegionIdxArray = new Uint8Array(count)
+  const p11Array = new Float64Array(count)
+  const p12Array = new Float64Array(count)
+  const p21Array = new Float64Array(count)
+  const p22Array = new Float64Array(count)
   const strandsArray = new Int8Array(count)
   const startsArray = new Uint32Array(count)
   const endsArray = new Uint32Array(count)
@@ -130,10 +189,10 @@ export async function executeDotplotFeaturesAndPositions({
       ;[f1e, f1s] = [f1s, f1e]
     }
 
-    const p11 = bpInRegionFromIndex(hIndex, refName, f1s)
-    const p12 = bpInRegionFromIndex(hIndex, refName, f1e)
-    const p21 = bpInRegionFromIndex(vIndex, mateRefName, mate.start)
-    const p22 = bpInRegionFromIndex(vIndex, mateRefName, mate.end)
+    const p11 = bpToPxFromIndex(hIndex, refName, f1s)
+    const p12 = bpToPxFromIndex(hIndex, refName, f1e)
+    const p21 = bpToPxFromIndex(vIndex, mateRefName, mate.start)
+    const p22 = bpToPxFromIndex(vIndex, mateRefName, mate.end)
 
     if (
       p11 === undefined ||
@@ -143,18 +202,11 @@ export async function executeDotplotFeaturesAndPositions({
     ) {
       continue
     }
-    // Drop straddlers: feature spans across two displayed regions on the
-    // same axis. See agent-docs/SYNTENY_BP_REFACTOR.md "Straddler handling".
-    if (p11.regionIdx !== p12.regionIdx || p21.regionIdx !== p22.regionIdx) {
-      continue
-    }
 
-    p11Array[validCount] = p11.bpInRegion
-    p12Array[validCount] = p12.bpInRegion
-    p21Array[validCount] = p21.bpInRegion
-    p22Array[validCount] = p22.bpInRegion
-    xRegionIdxArray[validCount] = p11.regionIdx
-    yRegionIdxArray[validCount] = p21.regionIdx
+    p11Array[validCount] = p11
+    p12Array[validCount] = p12
+    p21Array[validCount] = p21
+    p22Array[validCount] = p22
     strandsArray[validCount] = strand
     startsArray[validCount] = start
     endsArray[validCount] = end
@@ -170,12 +222,10 @@ export async function executeDotplotFeaturesAndPositions({
   }
 
   const result: DotplotFeaturesAndPositionsResult = {
-    p11_bp: p11Array.subarray(0, validCount),
-    p12_bp: p12Array.subarray(0, validCount),
-    p21_bp: p21Array.subarray(0, validCount),
-    p22_bp: p22Array.subarray(0, validCount),
-    xRegionIdx: xRegionIdxArray.subarray(0, validCount),
-    yRegionIdx: yRegionIdxArray.subarray(0, validCount),
+    p11_offsetPx: p11Array.subarray(0, validCount),
+    p12_offsetPx: p12Array.subarray(0, validCount),
+    p21_offsetPx: p21Array.subarray(0, validCount),
+    p22_offsetPx: p22Array.subarray(0, validCount),
     strands: strandsArray.subarray(0, validCount),
     starts: startsArray.subarray(0, validCount),
     ends: endsArray.subarray(0, validCount),
@@ -184,6 +234,8 @@ export async function executeDotplotFeaturesAndPositions({
     mappingQuals: mappingQualsArray.subarray(0, validCount),
     refNames,
     cigars,
+    bpPerPxH: hViewSnap.bpPerPx,
+    bpPerPxV: vViewSnap.bpPerPx,
   }
 
   return rpcResult(result, [
@@ -191,8 +243,6 @@ export async function executeDotplotFeaturesAndPositions({
     p12Array.buffer,
     p21Array.buffer,
     p22Array.buffer,
-    xRegionIdxArray.buffer,
-    yRegionIdxArray.buffer,
     strandsArray.buffer,
     startsArray.buffer,
     endsArray.buffer,

@@ -1,11 +1,10 @@
 # Synteny bp-coordinate refactor (Phase 2 + 3)
 
 Status: **Phase 1 + 2 + 3 landed on `webgl-poc`. Projection helpers live at
-`packages/core/src/util/bpProjection.ts`. Straddlers are dropped at the
-executor in both synteny and dotplot. Dotplot port landed: worker emits
-bp + regionIdx, geometry runs in integer bp, shader projects via hpmath +
-per-region uniforms, Canvas2D/SVG project per frame. Browser testing at
-deep zoom not yet run on either plugin.**
+`packages/core/src/util/bpProjection.ts` (extracted so dotplot can reuse).
+Straddlers are dropped at the executor (simplest correct behavior, see
+"Straddler handling"). Browser testing at deep zoom not yet run. Dotplot
+follow-up not started — file-by-file plan below.**
 
 ## Current state (implementation log)
 

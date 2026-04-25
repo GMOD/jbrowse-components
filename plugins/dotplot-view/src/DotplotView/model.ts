@@ -3,7 +3,6 @@ import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
-import { buildViewProjection } from '@jbrowse/core/util/bpProjection'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
@@ -391,27 +390,27 @@ export default function stateModelFactory(pm: PluginManager) {
             return undefined
           }
           const { hview, vview } = self
-          const projH = buildViewProjection(hview)
-          const projV = buildViewProjection(vview)
           const displays = this.dotplotDisplays
-          const trackProjections = []
+          const trackScales = []
           for (let idx = 0, l = displays.length; idx < l; idx++) {
             const { geometry } = displays[idx]!
             if (!geometry) {
               continue
             }
-            trackProjections.push({
+            trackScales.push({
               displayKey: idx,
-              projH,
-              projV,
+              scaleX: geometry.bpPerPxH / hview.bpPerPx,
+              scaleY: geometry.bpPerPxV / vview.bpPerPx,
             })
           }
-          if (trackProjections.length === 0) {
+          if (trackScales.length === 0) {
             return undefined
           }
           return {
+            offsetX: hview.offsetPx,
+            offsetY: vview.offsetPx,
             lineWidth: displays[0]!.lineWidth,
-            trackProjections,
+            trackScales,
           }
         },
       }))
