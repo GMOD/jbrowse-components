@@ -27,7 +27,7 @@ export interface LDDataResult {
   snps: LDMatrixResult['snps']
   filterStats?: FilterStats
   recombination?: {
-    values: number[]
+    values: Float32Array
     positions: number[]
   }
   // Only present for genomic positions mode (pre-computed per-cell positions

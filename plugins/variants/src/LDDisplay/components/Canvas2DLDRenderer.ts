@@ -46,17 +46,17 @@ export function drawLDBlocks(
 
       // Inline the -45° rotation and viewport transform for the 4 diamond
       // vertices, avoiding a per-cell array allocation and inner loop.
-      const base = (px + py) * s + viewOffsetX
-      const rBase = (-px + py) * s * yScalar
-      const hw = cw * s
-      const hh = ch * s * yScalar
+      const leftX = (px + py) * s + viewOffsetX
+      const centerY = (-px + py) * s * yScalar
+      const halfW = cw * s
+      const halfH = ch * s * yScalar
 
       ctx.fillStyle = `rgba(${r},${g},${b},${a})`
       ctx.beginPath()
-      ctx.moveTo(base, rBase)
-      ctx.lineTo(base + hw, rBase - hh)
-      ctx.lineTo(base + 2 * hw, rBase)
-      ctx.lineTo(base + hw, rBase + hh)
+      ctx.moveTo(leftX, centerY)
+      ctx.lineTo(leftX + halfW, centerY - halfH)
+      ctx.lineTo(leftX + 2 * halfW, centerY)
+      ctx.lineTo(leftX + halfW, centerY + halfH)
       ctx.closePath()
       ctx.fill()
     }

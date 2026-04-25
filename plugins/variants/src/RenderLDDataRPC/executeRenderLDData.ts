@@ -118,9 +118,9 @@ export async function executeRenderLDData({
 
   const totalWidthBp = regions.reduce((sum, r) => sum + r.end - r.start, 0)
   const width = totalWidthBp / bpPerPx
-  const hyp = width / 2
-  const height = fitToHeight ? (displayHeight ?? hyp) : hyp
-  const yScalar = fitToHeight ? height / hyp : 1
+  const triangleHeight = width / 2
+  const height = fitToHeight ? (displayHeight ?? triangleHeight) : triangleHeight
+  const yScalar = fitToHeight ? height / triangleHeight : 1
 
   const uniformW = width / (n * Math.SQRT2)
   const numCells = (n * (n - 1)) / 2
@@ -181,7 +181,7 @@ export async function executeRenderLDData({
     snps: ldData.snps,
     filterStats: ldData.filterStats,
     recombination: {
-      values: Array.from(ldData.recombination.values),
+      values: ldData.recombination.values,
       positions: ldData.recombination.positions,
     },
     ...(positions && cellSizes && { positions, cellSizes }),

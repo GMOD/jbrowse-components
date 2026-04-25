@@ -92,9 +92,9 @@ export class GpuLDRenderer implements LDBackend {
       this.hal.uploadBuffer(REGION_KEY, PASS_GENOMIC, buf, data.numCells)
     } else {
       this.hal.deleteBuffer(REGION_KEY, PASS_GENOMIC)
-      // numCells = n*n; need at least 2 variants for a meaningful LD display
-      const n = Math.round(Math.sqrt(data.numCells))
-      if (n < 2) {
+      // numCells is the triangular count n*(n-1)/2; one cell means n=2 with a
+      // single pair, which is a degenerate LD display.
+      if (data.numCells < 2) {
         this.hal.deleteRegion(REGION_KEY)
         return
       }

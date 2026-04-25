@@ -6,7 +6,7 @@ const FILL_COLOR = 'rgba(59, 130, 246, 0.2)'
 const STROKE_COLOR = 'rgb(59, 130, 246)'
 
 interface RecombinationTrackModel {
-  recombination?: { values: number[]; positions: number[] }
+  recombination?: { values: ArrayLike<number>; positions: number[] }
   recombinationZoneHeight: number
 }
 
@@ -31,7 +31,7 @@ const RecombinationTrack = observer(function RecombinationTrack({
   bpPerPx,
 }: {
   model?: RecombinationTrackModel
-  recombination?: { values: number[]; positions: number[] }
+  recombination?: { values: ArrayLike<number>; positions: number[] }
   width: number
   height?: number
   exportSVG?: boolean

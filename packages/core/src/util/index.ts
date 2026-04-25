@@ -1218,31 +1218,35 @@ export function localStorageSetItem(str: string, item: string) {
   }
 }
 
-export function max(arr: Iterable<number>, init = Number.NEGATIVE_INFINITY) {
+// Index iteration so these accept both arrays and typed arrays (e.g.
+// Float32Array) without requiring Iterable.
+/* eslint-disable @typescript-eslint/prefer-for-of */
+export function max(arr: ArrayLike<number>, init = Number.NEGATIVE_INFINITY) {
   let max = init
-  for (const entry of arr) {
-    max = Math.max(entry, max)
+  for (let i = 0; i < arr.length; i++) {
+    max = Math.max(arr[i]!, max)
   }
   return max
 }
 
-export function min(arr: Iterable<number>, init = Number.POSITIVE_INFINITY) {
+export function min(arr: ArrayLike<number>, init = Number.POSITIVE_INFINITY) {
   let min = init
-  for (const entry of arr) {
-    min = Math.min(entry, min)
+  for (let i = 0; i < arr.length; i++) {
+    min = Math.min(arr[i]!, min)
   }
   return min
 }
 
-export function sum(arr: Iterable<number>) {
+export function sum(arr: ArrayLike<number>) {
   let sum = 0
-  for (const entry of arr) {
-    sum += entry
+  for (let i = 0; i < arr.length; i++) {
+    sum += arr[i]!
   }
   return sum
 }
+/* eslint-enable @typescript-eslint/prefer-for-of */
 
-export function avg(arr: number[]) {
+export function avg(arr: ArrayLike<number>) {
   return sum(arr) / arr.length
 }
 

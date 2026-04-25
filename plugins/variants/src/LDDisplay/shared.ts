@@ -39,6 +39,9 @@ import type {
  * extends
  * - [BaseDisplay](../basedisplay)
  * - [TrackHeightMixin](../trackheightmixin)
+ * - [GlobalDataDisplayMixin](../globaldatadisplaymixin)
+ * - [StaleViewportRescaleMixin](../staleviewportrescalemixin)
+ * - [ConfigOverrideMixin](../configoverridemixin)
  */
 export default function sharedModelFactory(
   configSchema: AnyConfigurationSchemaType,
