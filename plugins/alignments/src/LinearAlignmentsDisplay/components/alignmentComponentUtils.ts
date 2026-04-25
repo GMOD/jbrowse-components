@@ -17,6 +17,10 @@ import type { PileupDataResult } from '../../RenderPileupDataRPC/types'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 import type { Theme } from '@mui/material'
 
+export function pct(n: number, total = 1) {
+  return `${((n / (total || 1)) * 100).toFixed(1)}%`
+}
+
 /**
  * Build a ColorPalette from the MUI theme
  */

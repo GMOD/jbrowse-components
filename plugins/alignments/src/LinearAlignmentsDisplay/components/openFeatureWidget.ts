@@ -5,15 +5,15 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 
-import { CIGAR_TYPE_LABELS, getTooltipBin } from './alignmentComponentUtils.ts'
+import {
+  CIGAR_TYPE_LABELS,
+  getTooltipBin,
+  pct,
+} from './alignmentComponentUtils.ts'
 
 import type { CigarHitResult, IndicatorHitResult } from './hitTesting.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
-
-function pct(n: number, total: number) {
-  return `${((n / (total || 1)) * 100).toFixed(1)}%`
-}
 
 function showWidget(
   model: IAnyStateTreeNode,

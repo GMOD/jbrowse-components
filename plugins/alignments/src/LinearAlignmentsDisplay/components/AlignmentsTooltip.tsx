@@ -6,6 +6,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/plugin-wiggle'
 import { observer } from 'mobx-react'
 
+import { pct } from './alignmentComponentUtils.ts'
 import { getModificationName } from '../../shared/modificationData.ts'
 import { getInterbaseTypeLabel } from '../../shared/types.ts'
 
@@ -37,10 +38,6 @@ const useStyles = makeStyles()(theme => ({
     },
   },
 }))
-
-function pct(n: number, total = 1) {
-  return `${((n / (total || 1)) * 100).toFixed(1)}%`
-}
 
 function formatLocation(refName?: string, position?: number) {
   if (position === undefined) {
