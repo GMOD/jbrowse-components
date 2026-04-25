@@ -34,6 +34,7 @@ import * as snpCoverageShader from './shaders/slang/snpCoverage.generated.ts'
 
 import type {
   AlignmentsBackend,
+  AlignmentsSources,
   ArcsUploadData,
   BaseRegionData,
   CigarUploadData,
@@ -47,7 +48,6 @@ import type {
   RenderBlock,
   RenderState,
 } from './rendererTypes.ts'
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 // Shader strides — every pass shares the same Uniforms struct (see
@@ -552,24 +552,28 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     this.hal = hal
   }
 
-  pruneRegions(activeRegions: number[]) {
-    pruneRegionMap(this.regions, activeRegions, n => {
+  sync(sources: AlignmentsSources) {
+    const active: number[] = []
+    for (const [idx, data] of sources.laidOutPileupMap) {
+      active.push(idx)
+      this.uploadReads(idx, data)
+      this.uploadCigar(idx, data)
+      this.uploadModifications(idx, data)
+      this.uploadCoverage(idx, data)
+      this.uploadModCoverage(idx, data)
+      if (data.numConnectingLines > 0) {
+        this.uploadConnectingLines(idx, data)
+      }
+    }
+    pruneRegionMap(this.regions, active, n => {
       this.hal.deleteRegion(n)
     })
+    for (const [idx, data] of sources.arcsRpcDataMap) {
+      this.uploadArcs(idx, data)
+    }
   }
 
-  uploadRegion(displayedRegionIndex: number, data: PileupDataResult) {
-    this.uploadFromTypedArraysForRegion(displayedRegionIndex, data)
-    this.uploadCigarFromTypedArraysForRegion(displayedRegionIndex, data)
-    this.uploadModificationsFromTypedArraysForRegion(displayedRegionIndex, data)
-    this.uploadCoverageFromTypedArraysForRegion(displayedRegionIndex, data)
-    this.uploadModCoverageFromTypedArraysForRegion(displayedRegionIndex, data)
-  }
-
-  uploadFromTypedArraysForRegion(
-    displayedRegionIndex: number,
-    data: ReadUploadData,
-  ) {
+  uploadReads(displayedRegionIndex: number, data: ReadUploadData) {
     this.hal.deleteRegion(displayedRegionIndex)
     const r = emptyRegion()
     r.insertSizeStats = data.insertSizeStats
@@ -589,10 +593,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  uploadCigarFromTypedArraysForRegion(
-    displayedRegionIndex: number,
-    data: CigarUploadData,
-  ) {
+  uploadCigar(displayedRegionIndex: number, data: CigarUploadData) {
     if (!this.regions.has(displayedRegionIndex)) {
       return
     }
@@ -639,7 +640,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  uploadModificationsFromTypedArraysForRegion(
+  uploadModifications(
     displayedRegionIndex: number,
     data: ModificationUploadData,
   ) {
@@ -653,10 +654,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  uploadCoverageFromTypedArraysForRegion(
-    displayedRegionIndex: number,
-    data: CoverageUploadData,
-  ) {
+  uploadCoverage(displayedRegionIndex: number, data: CoverageUploadData) {
     const r = this.regions.get(displayedRegionIndex)
     if (!r) {
       return
@@ -705,7 +703,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  uploadModCoverageFromTypedArraysForRegion(
+  uploadModCoverage(
     displayedRegionIndex: number,
     data: ModCoverageUploadData,
   ) {
@@ -719,10 +717,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  uploadArcsFromTypedArraysForRegion(
-    displayedRegionIndex: number,
-    data: ArcsUploadData,
-  ) {
+  uploadArcs(displayedRegionIndex: number, data: ArcsUploadData) {
     // Arcs/connectingLines can arrive from their own RPC before the main
     // read upload has registered this region.
     ensureRegion(this.regions, displayedRegionIndex, emptyRegion)
@@ -745,7 +740,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  uploadConnectingLinesForRegion(
+  uploadConnectingLines(
     displayedRegionIndex: number,
     data: ConnectingLinesUploadData,
   ) {
@@ -936,6 +931,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     if (arcViewportH <= 0) {
       return
     }
+    const savedUBO = this.uData.slice(0)
     fillArcUniforms(this.uF32, this.uU32, {
       region,
       block,
@@ -956,8 +952,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     this.hal.drawPass(PASS_ARC, block.displayedRegionIndex)
     this.hal.drawPass(PASS_ARC_LINE, block.displayedRegionIndex)
 
-    this.uF32[U.covOffset] = state.pileupTopOffset
-    this.uF32[U.canvasH] = state.canvasHeight
+    this.uF32.set(new Float32Array(savedUBO))
     this.hal.setViewport(vpX, 0, vpW, bufH)
     this.hal.writeUniforms(this.uData)
   }
