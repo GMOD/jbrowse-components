@@ -314,16 +314,34 @@ export default function baseStateModelFactory(
           return undefined
         },
 
+        get featureIdIndex() {
+          const map = new Map<string, FlatbushItem>()
+          for (const data of this.laidOutDataMap.values()) {
+            for (const f of data.flatbushItems) {
+              if (!map.has(f.featureId)) {
+                map.set(f.featureId, f)
+              }
+            }
+          }
+          return map
+        },
+
+        get subfeatureIdIndex() {
+          const map = new Map<string, SubfeatureInfo>()
+          for (const data of this.laidOutDataMap.values()) {
+            for (const s of data.subfeatureInfos) {
+              if (!map.has(s.featureId)) {
+                map.set(s.featureId, s)
+              }
+            }
+          }
+          return map
+        },
+
         get hoveredFeature() {
           const id = self.featureIdUnderMouse
           if (id) {
-            for (const data of this.laidOutDataMap.values()) {
-              for (const f of data.flatbushItems) {
-                if (f.featureId === id) {
-                  return f
-                }
-              }
-            }
+            return this.featureIdIndex.get(id) ?? null
           }
           return null
         },
@@ -331,13 +349,7 @@ export default function baseStateModelFactory(
         get hoveredSubfeature() {
           const id = self.subfeatureIdUnderMouse
           if (id) {
-            for (const data of this.laidOutDataMap.values()) {
-              for (const s of data.subfeatureInfos) {
-                if (s.featureId === id) {
-                  return s
-                }
-              }
-            }
+            return this.subfeatureIdIndex.get(id) ?? null
           }
           return null
         },
@@ -379,16 +391,8 @@ export default function baseStateModelFactory(
           return map
         },
 
-        getFeatureById(featureId: string): FlatbushItem | undefined {
-          for (const data of this.laidOutDataMap.values()) {
-            const found = data.flatbushItems.find(
-              f => f.featureId === featureId,
-            )
-            if (found) {
-              return found
-            }
-          }
-          return undefined
+        getFeatureById(featureId: string) {
+          return this.featureIdIndex.get(featureId)
         },
 
         searchFeatureByID(id: string) {
