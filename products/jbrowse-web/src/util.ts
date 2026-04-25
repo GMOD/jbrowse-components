@@ -167,3 +167,5 @@ export function removeAttr(obj: Record<string, unknown>, attr: string) {
   }
   return obj
 }
+
+export const reloadPage = () => window.location.reload()

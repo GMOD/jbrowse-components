@@ -10,6 +10,10 @@ import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import {
+  restoreFileHandles,
+  restoreFileHandlesFromSnapshot,
+} from '@jbrowse/core/util/tracks'
+import {
   addDisposer,
   cast,
   getParent,
@@ -125,6 +129,10 @@ export function BaseWebSession({
        * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
+      /**
+       * #volatile
+       */
+      pendingFileHandleIds: [] as string[],
     }))
     .views(self => ({
       /**
@@ -513,6 +521,11 @@ export function BaseWebSession({
       },
     }))
     .actions(self => ({
+      setPendingFileHandleIds(ids: string[]) {
+        self.pendingFileHandleIds = ids
+      },
+    }))
+    .actions(self => ({
       afterAttach() {
         addDisposer(
           self,
@@ -523,6 +536,20 @@ export function BaseWebSession({
             { name: 'SessionLocalStorage' },
           ),
         )
+        restoreFileHandlesFromSnapshot(getSnapshot(self), false)
+          .then(results => {
+            const failed = results.filter(r => !r.success)
+            if (failed.length > 0) {
+              self.setPendingFileHandleIds(failed.map(f => f.handleId))
+            }
+          })
+          .catch((err: unknown) => {
+            console.error('Error restoring file handles:', err)
+          })
+      },
+      async restorePendingFileHandles() {
+        const results = await restoreFileHandles(self.pendingFileHandleIds, true)
+        self.setPendingFileHandleIds(results.filter(r => !r.success).map(r => r.handleId))
       },
     }))
 
