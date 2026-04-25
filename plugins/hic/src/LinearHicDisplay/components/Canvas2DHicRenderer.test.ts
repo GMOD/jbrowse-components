@@ -1,5 +1,7 @@
 import { Canvas2DHicRenderer } from './Canvas2DHicRenderer.ts'
 
+import type { HicRenderState } from './hicBackendTypes.ts'
+
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
 
 function createMockCanvas() {
@@ -33,24 +35,13 @@ function makeColorRamp() {
   return ramp
 }
 
-function makeRenderState(
-  overrides?: Partial<{
-    binWidth: number
-    yScalar: number
-    canvasWidth: number
-    canvasHeight: number
-    maxScore: number
-    useLogScale: boolean
-    viewScale: number
-    viewOffsetX: number
-  }>,
-) {
+function makeRenderState(overrides?: Partial<HicRenderState>): HicRenderState {
   return {
     binWidth: 10,
     yScalar: 1,
     canvasWidth: 800,
     canvasHeight: 600,
-    maxScore: 100,
+    colorMaxScore: 100,
     useLogScale: false,
     viewScale: 1,
     viewOffsetX: 0,

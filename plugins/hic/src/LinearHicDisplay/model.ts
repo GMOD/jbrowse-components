@@ -169,7 +169,7 @@ export default function stateModelFactory(
        * Returns the width needed for the SVG legend if showLegend is enabled.
        */
       svgLegendWidth(): number {
-        return self.showLegend && self.maxScore > 0 ? 140 : 0
+        return self.showLegend && self.colorMaxScore > 0 ? 140 : 0
       },
     }))
     .actions(self => ({

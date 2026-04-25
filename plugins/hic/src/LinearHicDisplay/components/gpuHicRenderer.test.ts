@@ -14,7 +14,7 @@ function makeRenderState(overrides?: Partial<HicRenderState>): HicRenderState {
     canvasHeight: 600,
     binWidth: 10,
     yScalar: 1,
-    maxScore: 100,
+    colorMaxScore: 100,
     useLogScale: false,
     viewScale: 1,
     viewOffsetX: 400,

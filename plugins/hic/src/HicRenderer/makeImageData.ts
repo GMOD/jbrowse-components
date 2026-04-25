@@ -47,6 +47,7 @@ const COLOR_SCHEMES = {
 export interface MakeImageDataResult {
   flatbush: ArrayBuffer
   items: HicFlatbushItem[]
+  colorMaxScore: number
   w: number
 }
 
@@ -153,7 +154,7 @@ export async function makeImageData(
   return {
     flatbush: flatbush.data,
     items,
-    maxScore,
+    colorMaxScore,
     w,
   }
 }
