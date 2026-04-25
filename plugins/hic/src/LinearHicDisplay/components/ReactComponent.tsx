@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import { CanvasDisplayWrapper, ErrorOverlay } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
@@ -125,44 +125,41 @@ const HicCanvas = observer(function HicCanvas({
     [flatbush],
   )
 
-  const onMouseMove = useCallback(
-    (event: React.MouseEvent) => {
-      if (!containerRef.current || !flatbushIndex || !flatbushItems.length) {
-        setHoveredItem(undefined)
-        setMousePosition(undefined)
-        return
-      }
+  const onMouseMove = (event: React.MouseEvent) => {
+    if (!containerRef.current || !flatbushIndex || !flatbushItems.length) {
+      setHoveredItem(undefined)
+      setMousePosition(undefined)
+      return
+    }
 
-      const rect = containerRef.current.getBoundingClientRect()
-      const mouseX = event.clientX - rect.left
-      const mouseY = event.clientY - rect.top
+    const rect = containerRef.current.getBoundingClientRect()
+    const mouseX = event.clientX - rect.left
+    const mouseY = event.clientY - rect.top
 
-      setMousePosition({ x: event.clientX, y: event.clientY })
-      setLocalMousePos({ x: mouseX, y: mouseY })
+    setMousePosition({ x: event.clientX, y: event.clientY })
+    setLocalMousePos({ x: mouseX, y: mouseY })
 
-      // Reverse the shader transform to get data-space screen coordinates
-      const dataScreenX = (mouseX - viewOffsetX) / viewScale
-      const dataScreenY = mouseY / viewScale
+    // Reverse the shader transform to get data-space screen coordinates
+    const dataScreenX = (mouseX - viewOffsetX) / viewScale
+    const dataScreenY = mouseY / viewScale
 
-      const { x, y } = screenToUnrotated(dataScreenX, dataScreenY, yScalar)
+    const { x, y } = screenToUnrotated(dataScreenX, dataScreenY, yScalar)
 
-      const results = flatbushIndex.search(x - 1, y - 1, x + 1, y + 1)
+    const results = flatbushIndex.search(x - 1, y - 1, x + 1, y + 1)
 
-      if (results.length > 0) {
-        const item = flatbushItems[results[0]!]
-        setHoveredItem(item)
-      } else {
-        setHoveredItem(undefined)
-      }
-    },
-    [flatbushIndex, flatbushItems, yScalar, viewScale, viewOffsetX],
-  )
+    if (results.length > 0) {
+      const item = flatbushItems[results[0]!]
+      setHoveredItem(item)
+    } else {
+      setHoveredItem(undefined)
+    }
+  }
 
-  const onMouseLeave = useCallback(() => {
+  const onMouseLeave = () => {
     setHoveredItem(undefined)
     setMousePosition(undefined)
     setLocalMousePos(undefined)
-  }, [])
+  }
 
   if (error) {
     return (

@@ -199,10 +199,8 @@ function screenToUnrotated(
   screenX: number,
   screenY: number,
   yScalar: number,
-  lineZoneHeight: number,
 ): { x: number; y: number } {
-  const matrixY = screenY - lineZoneHeight
-  const scaledY = matrixY / yScalar
+  const scaledY = screenY / yScalar
   const x = (screenX - scaledY) / SQRT2
   const y = (screenX + scaledY) / SQRT2
   return { x, y }
@@ -352,7 +350,7 @@ const LDCanvas = observer(function LDCanvas({
     const dataScreenX = (mouseX - viewOffsetX) / viewScale
     const dataScreenY = (mouseY - effectiveLineZoneHeight) / viewScale
 
-    const { x, y } = screenToUnrotated(dataScreenX, dataScreenY, yScalar, 0)
+    const { x, y } = screenToUnrotated(dataScreenX, dataScreenY, yScalar)
 
     const { boundaries, ldValues } = data
     const n = boundaries.length - 1
