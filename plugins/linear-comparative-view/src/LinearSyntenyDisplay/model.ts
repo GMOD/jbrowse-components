@@ -5,10 +5,11 @@ import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 import { computeSyriTypes } from '@jbrowse/plugin-comparative-adapters'
 
+import { buildViewProjection } from '@jbrowse/core/util/bpProjection'
+
 import { getTooltip } from './components/util.ts'
 import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
 import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
-import { buildViewProjection } from './syntenyProjection.ts'
 import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
 
 import type { ClickCoord } from './components/util.ts'
@@ -28,7 +29,7 @@ import type {
 export interface SyntenyFeatureData {
   // bp-in-region positions for each corner of the synteny feature. The
   // main-thread renderer projects these against per-view `ViewProjection`
-  // tables to get screen pixels. See syntenyProjection.ts.
+  // tables to get screen pixels. See @jbrowse/core/util/bpProjection.
   p11_bp: Uint32Array
   p12_bp: Uint32Array
   p21_bp: Uint32Array

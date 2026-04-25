@@ -14,7 +14,7 @@ import { chainCollinearAlignments } from './chainCollinearAlignments.ts'
 import {
   bpInRegionFromIndex,
   buildBpInRegionIndex,
-} from '../LinearSyntenyDisplay/syntenyProjection.ts'
+} from '@jbrowse/core/util/bpProjection'
 
 import type { SyntenyInstanceData } from './buildSyntenyGeometry.ts'
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
@@ -153,6 +153,13 @@ export async function executeSyntenyFeaturesAndPositions({
       p21 === undefined ||
       p22 === undefined
     ) {
+      continue
+    }
+    // Drop straddlers: feature spans across two displayed regions on the same
+    // side. Rare (only when same refName appears as ≥2 displayedRegions and a
+    // single record crosses between them). Cleaner to skip than to misrender
+    // into the inter-region pad. See agent-docs/SYNTENY_BP_REFACTOR.md.
+    if (p11.regionIdx !== p12.regionIdx || p21.regionIdx !== p22.regionIdx) {
       continue
     }
 

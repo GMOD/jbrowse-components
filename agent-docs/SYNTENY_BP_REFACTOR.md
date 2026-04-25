@@ -1,8 +1,10 @@
 # Synteny bp-coordinate refactor (Phase 2 + 3)
 
-Status: **Phase 1 landed. Phase 2+3 code-complete on `webgl-poc` (uncommitted).
-Typechecks clean across the workspace. Not yet exercised in a browser;
-straddler split deferred. Dotplot follow-up not started.**
+Status: **Phase 1 + 2 + 3 landed on `webgl-poc`. Projection helpers live at
+`packages/core/src/util/bpProjection.ts` (extracted so dotplot can reuse).
+Straddlers are dropped at the executor (simplest correct behavior, see
+"Straddler handling"). Browser testing at deep zoom not yet run. Dotplot
+follow-up not started — file-by-file plan below.**
 
 ## Current state (implementation log)
 
@@ -43,26 +45,22 @@ straddler split deferred. Dotplot follow-up not started.**
   removed exports; `syntenyProjection.test.ts` covers the replacement).
   Renderer test fixtures updated to the new shape (no new tests yet).
 
-## Follow-up: straddler split (deferred)
+## Straddler handling (current: drop)
 
-The plan called for splitting CIGAR walks at region boundaries so a
-straddling alignment renders as N fragments sharing `featureId`. This
-landing keeps the simpler "use initial region for all fragments" approach.
-Symptoms when the shortcut bites:
-- Alignment spans two displayed regions with the same refName ⇒ bp >
-  region.end ⇒ `hpScaleLinear(bp, bpPerPx)` over-shoots, misrendering across
-  the inter-region pad.
+When a feature's `start` and `end` land in different displayed regions
+(`p11.regionIdx !== p12.regionIdx` or the bottom equivalent),
+`executeSyntenyFeaturesAndPositions` drops the feature. This is the simplest
+correct behavior: the misrender-into-the-pad bug doesn't happen and we don't
+have to guess where the alignment "really" crosses the region boundary
+without consulting CIGAR.
 
-To implement correctly:
-- Track `(cx1_bp, topRegIdx)` and `(cx2_bp, botRegIdx)` as the CIGAR walk
-  accumulator advances.
-- When cx crosses out of `[0, regionLen]` on a step, clamp to the boundary,
-  emit the partial, compute the absolute genomic coord at the boundary
-  (`region.start + cx_bp` forward / `region.end - cx_bp` reversed), re-look
-  up via `bpInRegionFromIndex`, reset accumulator in the new region.
-- Drop the feature if the lookup fails.
-- Unit test: PAF alignment crossing a displayed-region boundary yields N
-  instances with the same `featureId`.
+Real-world likelihood is low: it requires the same refName to appear as ≥2
+separate displayed regions AND a single record to cross between them. Most
+synteny views show one region per chromosome per side, where this can't
+happen. If we ever want to render straddlers, the options (in increasing
+order of effort) are: clamp the polygon to the region boundary, or split
+into N ribbons sharing `featureId` (CIGAR-aware split walks the ops to find
+the genomic coord at the boundary).
 
 ## Follow-up: browser testing
 

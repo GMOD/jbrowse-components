@@ -15,7 +15,7 @@ import type {
   SyntenyRenderState,
   SyntenyTrackRenderParams,
 } from './syntenyBackendTypes.ts'
-import type { ViewProjection } from './syntenyProjection.ts'
+import type { ViewProjection } from '@jbrowse/core/util/bpProjection'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 

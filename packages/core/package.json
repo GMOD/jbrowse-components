@@ -111,6 +111,7 @@
     "./util/Base1DUtils": "./src/util/Base1DUtils.ts",
     "./util/Base1DViewModel": "./src/util/Base1DViewModel.ts",
     "./util/blockTypes": "./src/util/blockTypes.ts",
+    "./util/bpProjection": "./src/util/bpProjection.ts",
     "./util/calculateDynamicBlocks": "./src/util/calculateDynamicBlocks.ts",
     "./util/calculateStaticBlocks": "./src/util/calculateStaticBlocks.ts",
     "./util/color": "./src/util/color/index.ts",
@@ -556,6 +557,10 @@
         "types": "./esm/util/blockTypes.d.ts",
         "import": "./esm/util/blockTypes.js"
       },
+      "./util/bpProjection": {
+        "types": "./esm/util/bpProjection.d.ts",
+        "import": "./esm/util/bpProjection.js"
+      },
       "./util/calculateDynamicBlocks": {
         "types": "./esm/util/calculateDynamicBlocks.d.ts",
         "import": "./esm/util/calculateDynamicBlocks.js"
@@ -970,6 +975,9 @@
         ],
         "util/blockTypes": [
           "esm/util/blockTypes.d.ts"
+        ],
+        "util/bpProjection": [
+          "esm/util/bpProjection.d.ts"
         ],
         "util/calculateDynamicBlocks": [
           "esm/util/calculateDynamicBlocks.d.ts"

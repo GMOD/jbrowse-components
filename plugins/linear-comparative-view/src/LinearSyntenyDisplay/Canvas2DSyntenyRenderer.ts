@@ -1,7 +1,8 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
+import { projectBpToScreenPx } from '@jbrowse/core/util/bpProjection'
+
 import { syriColors } from './drawSyntenyUtils.ts'
-import { projectBpToScreenPx } from './syntenyProjection.ts'
 
 import type {
   SyntenyBackend,
@@ -9,7 +10,7 @@ import type {
   SyntenyRenderState,
   SyntenyTrackRenderParams,
 } from './syntenyBackendTypes.ts'
-import type { ViewProjection } from './syntenyProjection.ts'
+import type { ViewProjection } from '@jbrowse/core/util/bpProjection'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
 const PACKED_SYN = cssColorToABGR(syriColors.SYN)

@@ -53,7 +53,7 @@ function estimateInstanceCount(
 export interface SyntenyInstanceData {
   // bp-in-region for each corner. The main thread and shader project these
   // against per-view `regionOffsetPx[regionIdx]` + `bpPerPx` tables to get
-  // screen pixels. See syntenyProjection.ts.
+  // screen pixels. See @jbrowse/core/util/bpProjection.
   x1: Uint32Array
   x2: Uint32Array
   x3: Uint32Array

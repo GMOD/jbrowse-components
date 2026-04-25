@@ -1,5 +1,6 @@
+import { buildViewProjection } from '@jbrowse/core/util/bpProjection'
+
 import { GpuSyntenyRenderer, SYNTENY_PASSES } from './GpuSyntenyRenderer.ts'
-import { buildViewProjection } from './syntenyProjection.ts'
 import { MockHal } from '../../../../packages/core/src/gpu/hal/mockHal.ts'
 
 import type {

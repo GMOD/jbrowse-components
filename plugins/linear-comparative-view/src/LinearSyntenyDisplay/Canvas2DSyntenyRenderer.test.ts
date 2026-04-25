@@ -1,5 +1,6 @@
+import { buildViewProjection } from '@jbrowse/core/util/bpProjection'
+
 import { Canvas2DSyntenyRenderer } from './Canvas2DSyntenyRenderer.ts'
-import { buildViewProjection } from './syntenyProjection.ts'
 
 import type {
   SyntenyRenderState,

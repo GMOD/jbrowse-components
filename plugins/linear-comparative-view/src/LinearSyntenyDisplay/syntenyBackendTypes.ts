@@ -1,4 +1,4 @@
-import type { ViewProjection } from './syntenyProjection.ts'
+import type { ViewProjection } from '@jbrowse/core/util/bpProjection'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
 export interface SyntenyTrackRenderParams {
