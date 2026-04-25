@@ -842,33 +842,20 @@ export default function stateModelFactory(
           if (!info) {
             return undefined
           }
-          // Return a minimal Feature-like object for tooltip support
-          return {
-            id: () => info.id,
-            get: (key: string) => {
-              switch (key) {
-                case 'name':
-                  return info.name || info.id
-                case 'id':
-                  return info.id
-                case 'start':
-                  return info.start
-                case 'end':
-                  return info.end
-                case 'refName':
-                  return info.refName
-                case 'strand':
-                  return info.strand === '-' ? -1 : 1
-                case 'flags':
-                  return info.flags
-                case 'score':
-                case 'MAPQ':
-                  return info.mapq
-                default:
-                  return undefined
-              }
-            },
-          } as Feature
+          return new SimpleFeature({
+            uniqueId: info.id,
+            name: info.name || info.id,
+            start: info.start,
+            end: info.end,
+            refName: info.refName,
+            // Bake the string→numeric strand coercion + score/MAPQ aliasing
+            // into construction so consumers can `.get(key)` without a
+            // bespoke adapter.
+            strand: info.strand === '-' ? -1 : 1,
+            flags: info.flags,
+            score: info.mapq,
+            MAPQ: info.mapq,
+          })
         },
       }))
       .actions(self => {

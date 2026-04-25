@@ -44,7 +44,6 @@ import type {
   RenderState,
 } from './rendererTypes.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
-import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 interface Canvas2DRegionData extends BaseRegionData {

@@ -221,6 +221,23 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   const width = view.initialized ? view.width : undefined
 
+  function runHitTest(canvasX: number, canvasY: number) {
+    const resolved = resolveBlockForCanvasX(canvasX)
+    return {
+      resolved,
+      result: performHitTest(canvasX, canvasY, resolved, {
+        showCoverage,
+        showInterbaseIndicators,
+        coverageHeight,
+        topOffset,
+        featureHeightSetting,
+        featureSpacing,
+        rangeY: model.currentRangeY,
+        isChainMode,
+      }),
+    }
+  }
+
   function resolveBlockForCanvasX(canvasX: number): ResolvedBlock | undefined {
     if (!view.initialized) {
       return undefined
@@ -312,17 +329,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       return
     }
 
-    const resolved = resolveBlockForCanvasX(coords.canvasX)
-    const result = performHitTest(coords.canvasX, coords.canvasY, resolved, {
-      showCoverage,
-      showInterbaseIndicators,
-      coverageHeight,
-      topOffset,
-      featureHeightSetting,
-      featureSpacing,
-      rangeY: model.currentRangeY,
-      isChainMode,
-    })
+    const { resolved, result } = runHitTest(coords.canvasX, coords.canvasY)
     if (
       result.type === 'cigar' ||
       result.type === 'indicator' ||
@@ -362,17 +369,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       return
     }
 
-    const resolved = resolveBlockForCanvasX(coords.canvasX)
-    const result = performHitTest(coords.canvasX, coords.canvasY, resolved, {
-      showCoverage,
-      showInterbaseIndicators,
-      coverageHeight,
-      topOffset,
-      featureHeightSetting,
-      featureSpacing,
-      rangeY: model.currentRangeY,
-      isChainMode,
-    })
+    const { result } = runHitTest(coords.canvasX, coords.canvasY)
 
     if (result.type === 'indicator') {
       model.setOverCigarItem(true)
@@ -447,18 +444,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     }
     const { canvasX, canvasY } = coords
 
-    const resolved = resolveBlockForCanvasX(canvasX)
-
-    const result = performHitTest(canvasX, canvasY, resolved, {
-      showCoverage,
-      showInterbaseIndicators,
-      coverageHeight,
-      topOffset,
-      featureHeightSetting,
-      featureSpacing,
-      rangeY: model.currentRangeY,
-      isChainMode,
-    })
+    const { result } = runHitTest(canvasX, canvasY)
 
     if (result.type === 'indicator') {
       const refName = result.resolved.refName
