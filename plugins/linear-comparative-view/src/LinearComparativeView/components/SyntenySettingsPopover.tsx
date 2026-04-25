@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -54,14 +54,12 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
   const sliderToAlpha = (s: number) => Math.pow(s, exponent)
   const sliderValue = alphaToSlider(alpha)
 
-  // Min length: log2 scaling
-  const [minLengthValue, setMinLengthValue] = useState(
-    Math.log2(Math.max(1, minAlignmentLength)) * 100,
+  // Min length: log2 scaling. null = not dragging, derive from model.
+  const [minLengthDragValue, setMinLengthDragValue] = useState<number | null>(
+    null,
   )
-
-  useEffect(() => {
-    setMinLengthValue(Math.log2(Math.max(1, minAlignmentLength)) * 100)
-  }, [minAlignmentLength])
+  const minLengthValue =
+    minLengthDragValue ?? Math.log2(Math.max(1, minAlignmentLength)) * 100
 
   const hasOffScreen = 'maxOffScreenDrawPx' in model
   const view = model as unknown as LinearSyntenyViewModel
@@ -118,10 +116,11 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
             <Slider
               value={minLengthValue}
               onChange={(_, val) => {
-                setMinLengthValue(val)
+                setMinLengthDragValue(val)
               }}
               onChangeCommitted={() => {
                 const newMinLength = Math.round(2 ** (minLengthValue / 100))
+                setMinLengthDragValue(null)
                 for (const level of levels) {
                   for (const track of level.tracks) {
                     for (const display of track.displays) {

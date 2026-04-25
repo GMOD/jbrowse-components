@@ -87,14 +87,12 @@ export function drawRef(
     const x22 = featureData.p22_offsetPx[fi]! - offsetsL1
     const l1 = Math.abs(x12 - x11)
     const l2 = Math.abs(x22 - x21)
-    const minX = Math.min(x21, x22)
-    const maxX = Math.max(x21, x22)
 
     if (
       l1 <= lineLimit &&
       l2 <= lineLimit &&
-      x21 < width + oobLimit &&
-      x21 > -oobLimit
+      ((x21 > -oobLimit && x21 < width + oobLimit) ||
+        (x11 > -oobLimit && x11 < width + oobLimit))
     ) {
       if (useStrandColor) {
         mainCanvas.strokeStyle =
@@ -113,7 +111,20 @@ export function drawRef(
         mainCanvas.lineTo(x21, y2)
       }
       mainCanvas.stroke()
-    } else if (doesIntersect2(minX, maxX, -oobLimit, view.width + oobLimit)) {
+    } else if (
+      doesIntersect2(
+        Math.min(x21, x22),
+        Math.max(x21, x22),
+        -oobLimit,
+        view.width + oobLimit,
+      ) ||
+      doesIntersect2(
+        Math.min(x11, x12),
+        Math.max(x11, x12),
+        -oobLimit,
+        view.width + oobLimit,
+      )
+    ) {
       const s1 = strand
       const k1 = s1 === -1 ? x12 : x11
       const k2 = s1 === -1 ? x11 : x12
