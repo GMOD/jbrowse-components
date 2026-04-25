@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
+
 import { WIGGLE_FUDGE_FACTOR, makeScoreNormalizer } from '../util.ts'
 import {
   RENDERING_TYPE_DENSITY,
@@ -20,6 +21,7 @@ import type {
   WiggleGPURenderState,
   WiggleRenderBlock,
 } from './wiggleBackendTypes.ts'
+import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
 interface Canvas2DRegionData {
   sources: SourceRenderData[]
@@ -74,8 +76,13 @@ function featureAt(
   }
 }
 
+// SvgCanvas duck-types as CanvasRenderingContext2D for the methods used here,
+// so the same draw path serves on-screen rendering and SVG export. Mirrors
+// the pattern in plugin-alignments' Canvas2DAlignmentsRenderer.
+type Ctx = CanvasRenderingContext2D | SvgCanvas
+
 function drawXYPlot(
-  ctx: CanvasRenderingContext2D,
+  ctx: Ctx,
   source: SourceRenderData,
   block: WiggleRenderBlock,
   rowHeight: number,
@@ -101,7 +108,7 @@ function drawXYPlot(
 }
 
 function drawDensity(
-  ctx: CanvasRenderingContext2D,
+  ctx: Ctx,
   source: SourceRenderData,
   block: WiggleRenderBlock,
   rowHeight: number,
@@ -137,7 +144,7 @@ function drawDensity(
 }
 
 function drawLine(
-  ctx: CanvasRenderingContext2D,
+  ctx: Ctx,
   source: SourceRenderData,
   block: WiggleRenderBlock,
   rowHeight: number,
@@ -170,7 +177,7 @@ function drawLine(
 }
 
 function drawScatter(
-  ctx: CanvasRenderingContext2D,
+  ctx: Ctx,
   source: SourceRenderData,
   block: WiggleRenderBlock,
   rowHeight: number,
@@ -189,18 +196,122 @@ function drawScatter(
   }
 }
 
+/**
+ * Pure draw entry point. Takes any 2D-canvas-like context (real
+ * CanvasRenderingContext2D or SvgCanvas) plus a regions map and paints the
+ * wiggle display: line / density / scatter / xyplot per render type, one
+ * source per row.
+ *
+ * No `this`, no DOM, no DPR scaling — just data → ctx. The on-screen
+ * `Canvas2DWiggleRenderer` wraps this with `prepareCanvas` + lifecycle upload
+ * state; SVG export calls it directly with an `SvgCanvas`.
+ */
+export function drawWiggleBlocks(
+  ctx: Ctx,
+  regions: ReadonlyMap<number, Canvas2DRegionData>,
+  blocks: WiggleRenderBlock[],
+  state: WiggleGPURenderState,
+) {
+  const { canvasWidth, canvasHeight, renderingType, scaleType, domainY } = state
+
+  for (const block of blocks) {
+    const region = regions.get(block.displayedRegionIndex)
+    if (!region || region.sources.length === 0) {
+      continue
+    }
+    const clip = clipBlockForCanvas(block, canvasWidth)
+    if (!clip) {
+      continue
+    }
+
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
+    ctx.clip()
+
+    const rowHeight = canvasHeight / region.numRows
+
+    for (const source of region.sources) {
+      const rowTop = source.rowIndex * rowHeight
+      const r = Math.round(source.color[0] * 255)
+      const g = Math.round(source.color[1] * 255)
+      const b = Math.round(source.color[2] * 255)
+      const rgb = `rgb(${r},${g},${b})`
+
+      if (renderingType === RENDERING_TYPE_LINE) {
+        drawLine(ctx, source, block, rowHeight, rowTop, domainY, scaleType, rgb)
+      } else if (renderingType === RENDERING_TYPE_DENSITY) {
+        drawDensity(
+          ctx,
+          source,
+          block,
+          rowHeight,
+          rowTop,
+          domainY,
+          scaleType,
+          r,
+          g,
+          b,
+        )
+      } else if (renderingType === RENDERING_TYPE_SCATTER) {
+        drawScatter(
+          ctx,
+          source,
+          block,
+          rowHeight,
+          rowTop,
+          domainY,
+          scaleType,
+          rgb,
+        )
+      } else {
+        drawXYPlot(
+          ctx,
+          source,
+          block,
+          rowHeight,
+          rowTop,
+          domainY,
+          scaleType,
+          rgb,
+        )
+      }
+    }
+    ctx.restore()
+  }
+}
+
+/**
+ * Streaming-upload lifecycle holder around a `regions` Map, with the
+ * `renderBlocks` lifecycle wrapper that runs `prepareCanvas` (DPR + size) and
+ * delegates to the pure `drawWiggleBlocks`.
+ *
+ * Two construction modes:
+ *
+ *   1. **Bound** — `new Canvas2DWiggleRenderer(canvas)`.
+ *      Used by the on-screen lifecycle (initDualBackend). `renderBlocks` works.
+ *
+ *   2. **Headless** — `new Canvas2DWiggleRenderer(null)`.
+ *      Used by SVG export. Caller runs `uploadRegion` to fill the regions map,
+ *      then calls `drawWiggleBlocks(svgCanvas, instance.getRegions(), blocks,
+ *      state)` directly. `renderBlocks` throws — there's no canvas to prepare.
+ */
 export class Canvas2DWiggleRenderer implements WiggleBackend {
-  private canvas: HTMLCanvasElement
-  private ctx: CanvasRenderingContext2D
+  private canvas: HTMLCanvasElement | null
+  private ctx: CanvasRenderingContext2D | null
   private regions = new Map<number, Canvas2DRegionData>()
 
-  constructor(canvas: HTMLCanvasElement) {
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('Canvas 2D context not available')
-    }
+  constructor(canvas: HTMLCanvasElement | null) {
     this.canvas = canvas
-    this.ctx = ctx
+    if (canvas) {
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        throw new Error('Canvas 2D context not available')
+      }
+      this.ctx = ctx
+    } else {
+      this.ctx = null
+    }
   }
 
   uploadRegion(displayedRegionIndex: number, sources: SourceRenderData[]) {
@@ -218,86 +329,14 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
     })
   }
 
-  renderBlocks(blocks: WiggleRenderBlock[], renderState: WiggleGPURenderState) {
-    const { canvasWidth, canvasHeight, renderingType, scaleType, domainY } =
-      renderState
-    const { canvas, ctx, regions } = this
-    prepareCanvas(canvas, ctx, canvasWidth, canvasHeight)
-
-    for (const block of blocks) {
-      const region = regions.get(block.displayedRegionIndex)
-      if (!region || region.sources.length === 0) {
-        continue
-      }
-      const clip = clipBlockForCanvas(block, canvasWidth)
-      if (!clip) {
-        continue
-      }
-
-      ctx.save()
-      ctx.beginPath()
-      ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
-      ctx.clip()
-
-      const rowHeight = canvasHeight / region.numRows
-
-      for (const source of region.sources) {
-        const rowTop = source.rowIndex * rowHeight
-        const r = Math.round(source.color[0] * 255)
-        const g = Math.round(source.color[1] * 255)
-        const b = Math.round(source.color[2] * 255)
-        const rgb = `rgb(${r},${g},${b})`
-
-        if (renderingType === RENDERING_TYPE_LINE) {
-          drawLine(
-            ctx,
-            source,
-            block,
-            rowHeight,
-            rowTop,
-            domainY,
-            scaleType,
-            rgb,
-          )
-        } else if (renderingType === RENDERING_TYPE_DENSITY) {
-          drawDensity(
-            ctx,
-            source,
-            block,
-            rowHeight,
-            rowTop,
-            domainY,
-            scaleType,
-            r,
-            g,
-            b,
-          )
-        } else if (renderingType === RENDERING_TYPE_SCATTER) {
-          drawScatter(
-            ctx,
-            source,
-            block,
-            rowHeight,
-            rowTop,
-            domainY,
-            scaleType,
-            rgb,
-          )
-        } else {
-          drawXYPlot(
-            ctx,
-            source,
-            block,
-            rowHeight,
-            rowTop,
-            domainY,
-            scaleType,
-            rgb,
-          )
-        }
-      }
-      ctx.restore()
+  renderBlocks(blocks: WiggleRenderBlock[], state: WiggleGPURenderState) {
+    if (!this.canvas || !this.ctx) {
+      throw new Error(
+        'Canvas2DWiggleRenderer.renderBlocks called without a canvas — call drawWiggleBlocks(ctx, regions, …) directly for headless rendering',
+      )
     }
+    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
+    drawWiggleBlocks(this.ctx, this.regions, blocks, state)
   }
 
   pruneRegions(activeRegions: number[]) {
@@ -306,5 +345,11 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
 
   dispose() {
     this.regions.clear()
+  }
+
+  // Expose for headless callers (SVG export) that need to drive
+  // drawWiggleBlocks with an SvgCanvas after running upload methods.
+  getRegions(): ReadonlyMap<number, Canvas2DRegionData> {
+    return this.regions
   }
 }

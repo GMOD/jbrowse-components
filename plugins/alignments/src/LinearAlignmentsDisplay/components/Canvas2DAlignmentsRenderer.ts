@@ -524,7 +524,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
  */
 export function drawAlignmentBlocks(
   ctx: Ctx,
-  regions: Map<number, Canvas2DRegionData>,
+  regions: ReadonlyMap<number, Canvas2DRegionData>,
   blocks: RenderBlock[],
   state: RenderState,
 ) {

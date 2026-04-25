@@ -1,45 +1,24 @@
 import type React from 'react'
 
-import {
-  YSCALEBAR_LABEL_OFFSET,
-  drawIndicatorTriangle,
-} from '@jbrowse/alignments-core'
+import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
-import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
+import { rgb255 } from './colorUtils.ts'
 import {
-  getBaseColorString,
-  getBaseColorStringWithAlpha,
-  getReadColor,
-  makeBasePalette,
-  rgb255,
-  rgba255,
-} from './colorUtils.ts'
+  Canvas2DAlignmentsRenderer,
+  drawAlignmentBlocks,
+} from './components/Canvas2DAlignmentsRenderer.ts'
 import CoverageYScaleBar from './components/CoverageYScaleBar.tsx'
 import YScaleBar from './components/YScaleBar.tsx'
-import { buildColorPaletteFromTheme } from './components/alignmentComponentUtils.ts'
-import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from '../shared/types.ts'
-import { drawArcsToCtx } from './components/drawArcs.ts'
-import {
-  ARC_HEIGHT_MARGIN,
-  arcLineColorPalette,
-  getArcPalette,
-  sashimiColorPalette,
-} from './components/shaders/palettes.ts'
-import {
-  INSERTION_SERIF_MIN_PX_PER_BP,
-  LONG_INSERTION_MIN_LENGTH,
-  insertionBarWidth,
-} from './constants.ts'
+import { sashimiColorPalette } from './components/shaders/palettes.ts'
 
-import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
-import type { ArcsDataResult } from '../shared/computeArcsFromPileupData.ts'
-import type { ColorPalette } from './components/shaders/colors.ts'
 import type { LinearAlignmentsDisplayModel } from './model.ts'
+import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
@@ -48,58 +27,9 @@ import type {
 type LGV = LinearGenomeViewModel
 type Ctx = CanvasRenderingContext2D | SvgCanvas
 
-function blendedAlpha(base: number, freq8bit: number) {
-  const freq = freq8bit / 255
-  return base + freq * (1 - base)
-}
-
-function drawPairedArcs(
-  ctx: Ctx,
-  arcsData: ArcsDataResult,
-  blockStartPx: number,
-  bpStartOffset: number,
-  regionLengthBp: number,
-  blockWidth: number,
-  arcsHeight: number,
-  lineWidth: number,
-  arcColorByType: string | undefined,
-  arcsYDomainBp: number | undefined,
-  pairedArcsDown: boolean,
-) {
-  const pxPerBp = blockWidth / regionLengthBp
-  const availH = arcsHeight - ARC_HEIGHT_MARGIN
-  const fallbackDomain = pxPerBp > 0 ? availH / pxPerBp : 1
-
-  drawArcsToCtx(ctx, arcsData, {
-    bpToScreenX: bp => blockStartPx + (bp - bpStartOffset) * pxPerBp,
-    arcsYDomainBp: arcsYDomainBp ?? fallbackDomain,
-    arcsTop: 0,
-    arcsH: availH,
-    pairedArcsDown,
-    lineWidth,
-    palette: getArcPalette(arcColorByType),
-  })
-
-  for (let i = 0; i < arcsData.numLines; i++) {
-    const xPos = arcsData.linePositions[i * 2]!
-    const y0 = arcsData.lineYs[i * 2]!
-    const y1 = arcsData.lineYs[i * 2 + 1]!
-    const colorType = arcsData.lineColorTypes[i * 2]!
-
-    ctx.strokeStyle =
-      colorType < arcLineColorPalette.length
-        ? rgb255(arcLineColorPalette[colorType]!)
-        : 'grey'
-    ctx.lineWidth = 1
-
-    const screenX = blockStartPx + (xPos - bpStartOffset) * pxPerBp
-    ctx.beginPath()
-    ctx.moveTo(screenX, y0)
-    ctx.lineTo(screenX, y1)
-    ctx.stroke()
-  }
-}
-
+// Sashimi stays a deliberate SVG-only path: arc counts are low enough that
+// vector output performs fine and gives native hover/tooltip behavior, which
+// the rasterized/canvas pipeline can't match. Not a porting placeholder.
 function drawSashimiArcs(
   ctx: Ctx,
   data: PileupDataResult,
@@ -107,13 +37,12 @@ function drawSashimiArcs(
   bpStartOffset: number,
   regionLengthBp: number,
   blockWidth: number,
-  coverageHeight: number,
-  coverageOffset: number,
-  arcsDown = false,
+  bandHeight: number,
+  arcsDown: boolean,
 ) {
   const pxPerBp = blockWidth / regionLengthBp
-  const anchorY = (arcsDown ? 0.1 : 0.9) * coverageHeight + coverageOffset
-  const apexY = (arcsDown ? 0.9 : 0.1) * coverageHeight + coverageOffset
+  const anchorY = (arcsDown ? 0.1 : 0.9) * bandHeight
+  const apexY = (arcsDown ? 0.9 : 0.1) * bandHeight
   // Quadratic bezier with control at cy reaches its peak at (anchor+cy)/2, so
   // cy = 2*apex - anchor makes the rendered peak actually touch apexY.
   const controlY = 2 * apexY - anchorY
@@ -141,403 +70,6 @@ function drawSashimiArcs(
   }
 }
 
-function drawConnectingLines(
-  ctx: Ctx,
-  data: PileupDataResult,
-  blockStart: number,
-  blockEnd: number,
-  blockScreenX: number,
-  bpPerPx: number,
-  pileupTopOffset: number,
-  featureHeightSetting: number,
-  rowHeight: number,
-) {
-  const numLines = data.numConnectingLines ?? 0
-  const positions = data.connectingLinePositions
-  const ys = data.connectingLineYs
-  if (!positions || !ys || numLines === 0) {
-    return
-  }
-
-  ctx.strokeStyle = 'rgba(0,0,0,0.45)'
-  ctx.lineWidth = 1
-
-  for (let i = 0; i < numLines; i++) {
-    const startBp = positions[i * 2]!
-    const endBp = positions[i * 2 + 1]!
-
-    if (endBp < blockStart || startBp > blockEnd) {
-      continue
-    }
-
-    const clippedStart = Math.max(startBp, blockStart)
-    const clippedEnd = Math.min(endBp, blockEnd)
-
-    const x1 = (clippedStart - blockStart) / bpPerPx + blockScreenX
-    const x2 = (clippedEnd - blockStart) / bpPerPx + blockScreenX
-    const rowCenter =
-      pileupTopOffset + ys[i]! * rowHeight + featureHeightSetting * 0.5
-
-    ctx.beginPath()
-    ctx.moveTo(x1, rowCenter)
-    ctx.lineTo(x2, rowCenter)
-    ctx.stroke()
-  }
-}
-
-function drawCoverage(
-  ctx: Ctx,
-  data: PileupDataResult,
-  block: { start: number; end: number },
-  blockScreenX: number,
-  bpPerPx: number,
-  coverageHeight: number,
-  offset: number,
-  effectiveHeight: number,
-  coverageColor: string,
-  palette: ColorPalette,
-  theme: ReturnType<typeof createJBrowseTheme>,
-  showModifications: boolean,
-) {
-  const {
-    coverageDepths,
-    coverageMaxDepth,
-    coverageStartPos,
-    numCoverageBins,
-    snpPositions,
-    snpYOffsets,
-    snpHeights,
-    snpColorTypes,
-    numSnpSegments,
-  } = data
-
-  if (coverageMaxDepth <= 0) {
-    return
-  }
-
-  const pxPerBp = 1 / bpPerPx
-
-  for (let i = 0; i < numCoverageBins; i++) {
-    const depth = coverageDepths[i]
-    if (depth === undefined || depth === 0) {
-      continue
-    }
-
-    const binStart = coverageStartPos + i
-    const binEnd = binStart + 1
-
-    if (binEnd < block.start || binStart > block.end) {
-      continue
-    }
-
-    const x = (binStart - block.start) / bpPerPx + blockScreenX
-    const w = Math.max(pxPerBp, 1)
-    const barHeight = (depth / coverageMaxDepth) * effectiveHeight
-    const y = coverageHeight - offset - barHeight
-
-    ctx.fillStyle = coverageColor
-    ctx.fillRect(x, y, w, barHeight)
-  }
-
-  if (showModifications && data.numModCovSegments > 0) {
-    for (let i = 0; i < data.numModCovSegments; i++) {
-      const modStart = data.modCovPositions[i]!
-      if (modStart < block.start || modStart > block.end) {
-        continue
-      }
-      const yOff = data.modCovYOffsets[i]!
-      const segH = data.modCovHeights[i]!
-
-      const x = (modStart - block.start) / bpPerPx + blockScreenX
-      const w = Math.max(pxPerBp, 1)
-      const barY = coverageHeight - offset - (yOff + segH) * effectiveHeight
-      const barH = segH * effectiveHeight
-
-      ctx.fillStyle = abgrToCssRgba(data.modCovColors[i]!)
-      ctx.fillRect(x, barY, w, barH)
-    }
-  } else {
-    const baseNames = ['A', 'C', 'G', 'T']
-    for (let i = 0; i < numSnpSegments; i++) {
-      const pos = snpPositions[i]
-      const yOffset = snpYOffsets[i]
-      const segHeight = snpHeights[i]
-      const colorType = snpColorTypes[i]
-
-      if (
-        pos === undefined ||
-        yOffset === undefined ||
-        segHeight === undefined ||
-        colorType === undefined
-      ) {
-        continue
-      }
-
-      if (pos < block.start || pos > block.end) {
-        continue
-      }
-
-      const x = (pos - block.start) / bpPerPx + blockScreenX
-      const w = Math.max(pxPerBp, 1)
-      const barY =
-        coverageHeight - offset - (yOffset + segHeight) * effectiveHeight
-      const barH = segHeight * effectiveHeight
-
-      const baseName = baseNames[colorType - 1]
-      ctx.fillStyle = baseName
-        ? theme.palette.bases[baseName as 'A' | 'C' | 'G' | 'T'].main
-        : theme.palette.grey[600]
-
-      ctx.fillRect(x, barY, w, barH)
-    }
-  }
-}
-
-function drawInterbaseIndicators(
-  ctx: Ctx,
-  data: PileupDataResult,
-  block: { start: number; end: number },
-  blockScreenX: number,
-  bpPerPx: number,
-  palette: ColorPalette,
-) {
-  const insertionColor = rgb255(palette.colorInsertion)
-  const softclipColor = rgb255(palette.colorSoftclip)
-  const hardclipColor = rgb255(palette.colorHardclip)
-  const noncovColors = [insertionColor, softclipColor, hardclipColor]
-
-  const noncovHeight = 15
-  const indicatorTriangleH = 4.5
-
-  for (let i = 0; i < data.numNoncovSegments; i++) {
-    const pos = data.noncovPositions[i]!
-    if (pos < block.start || pos > block.end) {
-      continue
-    }
-    const cx = (pos - block.start) / bpPerPx + blockScreenX
-    const yOff = data.noncovYOffsets[i]!
-    const segH = data.noncovHeights[i]!
-    const colorType = data.noncovColorTypes[i]!
-    const color = noncovColors[colorType - 1] ?? noncovColors[0]!
-    const segTopPx = indicatorTriangleH + yOff * noncovHeight
-    const segHeightPx = segH * noncovHeight
-
-    ctx.fillStyle = color
-    ctx.fillRect(cx - 0.5, segTopPx, 1, segHeightPx)
-  }
-
-  for (let i = 0; i < data.numIndicators; i++) {
-    const pos = data.indicatorPositions[i]!
-    if (pos < block.start || pos > block.end) {
-      continue
-    }
-    const cx = (pos - block.start) / bpPerPx + blockScreenX
-    const colorType = data.indicatorColorTypes[i]!
-    ctx.fillStyle = noncovColors[colorType - 1] ?? noncovColors[0]!
-    drawIndicatorTriangle(ctx, cx)
-  }
-}
-
-function drawPileup(
-  ctx: Ctx,
-  data: PileupDataResult,
-  block: { start: number; end: number },
-  blockScreenX: number,
-  bpPerPx: number,
-  yOffset: number,
-  featureHeightSetting: number,
-  rowHeight: number,
-  colorSchemeIndex: number,
-  palette: ColorPalette,
-  renderingMode: string,
-  showMismatches: boolean,
-  showModifications: boolean,
-  showSoftClipping: boolean,
-) {
-  const { numReads, readPositions, readYs } = data
-  const basePal = makeBasePalette(palette)
-  const pxPerBp = 1 / bpPerPx
-
-  for (let i = 0; i < numReads; i++) {
-    const startBp = readPositions[i * 2]!
-    const endBp = readPositions[i * 2 + 1]!
-    if (endBp < block.start || startBp > block.end) {
-      continue
-    }
-    const clippedStart = Math.max(startBp, block.start)
-    const clippedEnd = Math.min(endBp, block.end)
-    const x = (clippedStart - block.start) / bpPerPx + blockScreenX
-    const x2 = (clippedEnd - block.start) / bpPerPx + blockScreenX
-    const w = Math.max(x2 - x, 0.5)
-    const y = yOffset + readYs[i]! * rowHeight
-    ctx.fillStyle = getReadColor(i, data, colorSchemeIndex, palette, {
-      renderingMode,
-    })
-    ctx.fillRect(x, y, w, featureHeightSetting)
-  }
-
-  if (showMismatches) {
-    const { mismatchPositions, mismatchYs, mismatchBases, numMismatches } = data
-
-    for (let i = 0; i < numMismatches; i++) {
-      const pos = mismatchPositions[i]!
-      if (pos < block.start || pos > block.end) {
-        continue
-      }
-      const x = (pos - block.start) / bpPerPx + blockScreenX
-      const w = Math.max(pxPerBp, 1)
-      const y = yOffset + mismatchYs[i]! * rowHeight
-      const mismatchAlpha =
-        pxPerBp < 1 ? blendedAlpha(pxPerBp, data.mismatchFrequencies[i]!) : 1
-      if (mismatchAlpha > 0) {
-        const base = String.fromCharCode(mismatchBases[i]!)
-        ctx.fillStyle = getBaseColorStringWithAlpha(
-          base,
-          basePal,
-          palette,
-          mismatchAlpha,
-        )
-        ctx.fillRect(x, y, w, featureHeightSetting)
-      }
-    }
-
-    const skipColor = rgb255(palette.colorSkip)
-
-    for (let i = 0; i < data.numGaps; i++) {
-      const startBp = data.gapPositions[i * 2]!
-      const endBp = data.gapPositions[i * 2 + 1]!
-      if (endBp < block.start || startBp > block.end) {
-        continue
-      }
-      const gapType = data.gapTypes[i]!
-      const clippedStart = Math.max(startBp, block.start)
-      const clippedEnd = Math.min(endBp, block.end)
-      const gx = (clippedStart - block.start) / bpPerPx + blockScreenX
-      const gx2 = (clippedEnd - block.start) / bpPerPx + blockScreenX
-      const gw = gx2 - gx
-      const gy = yOffset + data.gapYs[i]! * rowHeight
-
-      if (gapType === 0) {
-        const widthPx = (endBp - startBp) * pxPerBp
-        const alpha =
-          widthPx < 1
-            ? blendedAlpha(widthPx * widthPx, data.gapFrequencies[i]!)
-            : 1
-        if (alpha > 0) {
-          ctx.fillStyle = rgba255(palette.colorDeletion, alpha)
-          ctx.fillRect(gx, gy, gw, featureHeightSetting)
-        }
-      } else {
-        const midY = gy + featureHeightSetting * 0.5
-        ctx.strokeStyle = skipColor
-        ctx.lineWidth = 1
-        ctx.beginPath()
-        ctx.moveTo(gx, midY)
-        ctx.lineTo(gx + gw, midY)
-        ctx.stroke()
-      }
-    }
-
-    for (let i = 0; i < data.numInterbases; i++) {
-      const pos = data.interbasePositions[i]!
-      if (pos < block.start || pos > block.end) {
-        continue
-      }
-      const ibType = data.interbaseTypes[i]!
-      const ibY = yOffset + data.interbaseYs[i]! * rowHeight
-      const cx = (pos - block.start) / bpPerPx + blockScreenX
-
-      if (ibType === INTERBASE_INSERTION) {
-        const len = data.interbaseLengths[i]!
-        const isLong = len >= LONG_INSERTION_MIN_LENGTH
-        const barW = insertionBarWidth(len, pxPerBp)
-        const isLarge = barW > 5
-        const insertionAlpha =
-          !isLong && pxPerBp < 1
-            ? blendedAlpha(pxPerBp * pxPerBp, data.interbaseFrequencies[i]!)
-            : 1
-        if (insertionAlpha > 0) {
-          ctx.fillStyle = rgba255(palette.colorInsertion, insertionAlpha)
-          ctx.fillRect(cx - barW / 2, ibY, barW, featureHeightSetting)
-          if (!isLong && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP) {
-            ctx.fillRect(cx - 1.5, ibY, 3, 1)
-            ctx.fillRect(cx - 1.5, ibY + featureHeightSetting - 1, 3, 1)
-          }
-          if (isLarge) {
-            ctx.fillStyle = `rgba(255,255,255,${insertionAlpha})`
-            ctx.font = '9px sans-serif'
-            ctx.textAlign = 'center'
-            ctx.textBaseline = 'middle'
-            ctx.fillText(`${len}`, cx, ibY + featureHeightSetting / 2)
-          }
-        }
-      } else {
-        const barWidthBp = Math.max(bpPerPx, Math.min(2 * bpPerPx, 1))
-        const bw = Math.max(barWidthBp / bpPerPx, 1)
-        const clipAlpha =
-          pxPerBp < 1 ? blendedAlpha(pxPerBp, data.interbaseFrequencies[i]!) : 1
-        if (clipAlpha > 0) {
-          const clipColor =
-            ibType === INTERBASE_SOFTCLIP
-              ? palette.colorSoftclip
-              : palette.colorHardclip
-          ctx.fillStyle = rgba255(clipColor, clipAlpha)
-          ctx.fillRect(cx - bw / 2, ibY, bw, featureHeightSetting)
-        }
-      }
-    }
-
-    if (showModifications && data.numModifications > 0) {
-      for (let i = 0; i < data.numModifications; i++) {
-        const pos = data.modificationPositions[i]!
-        if (pos < block.start || pos > block.end) {
-          continue
-        }
-        const mx = (pos - block.start) / bpPerPx + blockScreenX
-        const mw = Math.max(pxPerBp, 0.5)
-        const my = yOffset + data.modificationYs[i]! * rowHeight
-        ctx.fillStyle = abgrToCssRgba(data.modificationColors[i]!)
-        ctx.fillRect(mx, my, mw, featureHeightSetting)
-      }
-    }
-  }
-
-  if (showSoftClipping && data.numSoftclipBases > 0) {
-    for (let i = 0; i < data.numSoftclipBases; i++) {
-      const pos = data.softclipBasePositions[i]!
-      if (pos < block.start || pos > block.end) {
-        continue
-      }
-      const base = String.fromCharCode(data.softclipBaseBases[i]!)
-      const x = (pos - block.start) / bpPerPx + blockScreenX
-      const w = Math.max(pxPerBp, 0.5)
-      const y = yOffset + data.softclipBaseYs[i]! * rowHeight
-      ctx.fillStyle = getBaseColorString(base, basePal, palette)
-      ctx.fillRect(x, y, w, featureHeightSetting)
-    }
-  }
-}
-
-function createCtx(
-  rasterize: boolean | undefined,
-  width: number,
-  height: number,
-  opts?: ExportSvgDisplayOptions,
-) {
-  if (rasterize && width > 0 && height > 0) {
-    const canvas =
-      opts?.createCanvas?.(width * 2, height * 2) ??
-      document.createElement('canvas')
-    canvas.width = width * 2
-    canvas.height = height * 2
-    const ctx = canvas.getContext('2d')
-    ctx?.scale(2, 2)
-    return { canvas, ctx: ctx ?? undefined }
-  }
-  const svgCtx = new SvgCanvas()
-  return { canvas: undefined, ctx: svgCtx as Ctx }
-}
-
 export async function renderSvg(
   model: LinearAlignmentsDisplayModel,
   opts?: ExportSvgDisplayOptions,
@@ -547,27 +79,6 @@ export async function renderSvg(
   await when(
     () => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge,
   )
-  const { offsetPx, bpPerPx } = view
-  const {
-    laidOutPileupMap: rpcDataMap,
-    showCoverage,
-    coverageHeight,
-    coverageTicks,
-    featureHeightSetting,
-    featureSpacing,
-    colorSchemeIndex,
-    showArcs,
-    arcsHeight,
-    pairedArcsDown,
-    arcsState,
-    showSashimiArcs,
-    sashimiArcsDown,
-    sashimiArcsHeight,
-    showLinkedReads,
-    showInterbaseIndicators,
-    showSoftClipping,
-    coverageDisplayHeight: pileupTopOffset,
-  } = model
 
   if (model.error) {
     return (
@@ -579,161 +90,109 @@ export async function renderSvg(
     )
   }
 
-  if (rpcDataMap.size === 0) {
+  const baseState = model.renderState
+  if (!baseState || model.laidOutPileupMap.size === 0) {
     return null
   }
 
-  const palette = model.colorPalette ?? buildColorPaletteFromTheme(theme)
+  const {
+    laidOutPileupMap: rpcDataMap,
+    showCoverage,
+    coverageHeight,
+    coverageTicks,
+    arcsState,
+    showSashimiArcs,
+    sashimiArcsDown,
+    sashimiArcsHeight,
+  } = model
+
+  const { offsetPx } = view
   const blocks = view.dynamicBlocks.contentBlocks
-  const offset = YSCALEBAR_LABEL_OFFSET
-  const effectiveHeight = coverageHeight - offset * 2
-  const rowHeight = featureHeightSetting + featureSpacing
-  const arcLineWidth = arcsState.lineWidth
-  const arcColorByType = arcsState.colorByType
-  const arcsYDomainBp = model.arcsYDomainBp
-  const rasterize = opts?.rasterizeLayers
   const totalWidth = Math.round(view.dynamicBlocks.totalWidthPx)
-  const pileupHeight = Math.max(0, model.height - pileupTopOffset)
   const displayHeight = model.height
-  const renderingMode = showLinkedReads ? 'linkedRead' : 'pileup'
 
-  const coverageColor = theme.palette.coverage
-
-  // Create contexts — either real canvas (rasterize) or SvgCanvas (vector)
-  const pileup = createCtx(rasterize, totalWidth, pileupHeight, opts)
-  const arcsCtxHeight = pairedArcsDown ? arcsHeight : coverageHeight
-  const arcsCtxObj = showArcs
-    ? createCtx(rasterize, totalWidth, arcsCtxHeight, opts)
-    : undefined
-
-  // Coverage + indicators always use SvgCanvas (lightweight, no rasterize needed)
-  const covCtx = new SvgCanvas()
-  const indicatorCtx = new SvgCanvas()
-  const sashimiCtx =
-    showSashimiArcs && sashimiArcsDown && showCoverage
-      ? new SvgCanvas()
-      : undefined
-
-  for (const block of blocks) {
-    if (block.displayedRegionIndex === undefined) {
+  // Headless renderer: drive the same drawAlignmentBlocks pipeline used
+  // on-screen. Upload region data, then paint into either a real canvas
+  // (rasterize) or an SvgCanvas (vector). Coverage, indicators, paired arcs,
+  // pileup reads, mismatches, soft/hard clips, modifications, and connecting
+  // lines all flow through the unified pass.
+  const renderer = new Canvas2DAlignmentsRenderer(null)
+  for (const [displayedRegionIndex, data] of rpcDataMap) {
+    if (data.numReads === 0) {
       continue
     }
-    const data = rpcDataMap.get(block.displayedRegionIndex)
-    if (!data) {
-      continue
+    renderer.uploadRegion(displayedRegionIndex, data)
+    if (
+      data.connectingLinePositions &&
+      data.connectingLineYs &&
+      data.numConnectingLines
+    ) {
+      renderer.uploadConnectingLinesForRegion(displayedRegionIndex, {
+        connectingLinePositions: data.connectingLinePositions,
+        connectingLineYs: data.connectingLineYs,
+        numConnectingLines: data.numConnectingLines,
+      })
     }
+  }
+  for (const [displayedRegionIndex, data] of arcsState.rpcDataMap) {
+    renderer.uploadArcsFromTypedArraysForRegion(displayedRegionIndex, {
+      arcX1: data.arcX1,
+      arcX2: data.arcX2,
+      arcColorTypes: data.arcColorTypes,
+      arcShapeTypes: data.arcShapeTypes,
+      arcYBp: data.arcYBp,
+      numArcs: data.numArcs,
+      linePositions: data.linePositions,
+      lineYs: data.lineYs,
+      lineColorTypes: data.lineColorTypes,
+      numLines: data.numLines,
+    })
+  }
 
-    const blockScreenX = block.offsetPx - offsetPx
-    const blockWidth = block.widthPx
-    const regionLengthBp = block.end - block.start
+  // SVG export renders the full display from y=0 with no Y scroll. Reuse the
+  // model's renderState — only viewport-related fields are overridden.
+  const state = {
+    ...baseState,
+    rangeY: [0, displayHeight] as [number, number],
+    canvasWidth: totalWidth,
+    canvasHeight: displayHeight,
+  }
+  const renderBlocks = buildRenderBlocks(view.visibleRegions)
+  const pileupNode = paintLayer(totalWidth, displayHeight, opts, ctx => {
+    drawAlignmentBlocks(ctx, renderer.getRegions(), renderBlocks, state)
+  })
 
-    if (showCoverage) {
-      drawCoverage(
-        covCtx,
-        data,
-        block,
-        blockScreenX,
-        bpPerPx,
-        coverageHeight,
-        offset,
-        effectiveHeight,
-        coverageColor,
-        palette,
-        theme,
-        model.showModifications,
-      )
-
-      if (showSashimiArcs && data.numSashimiArcs > 0) {
-        if (sashimiArcsDown && sashimiCtx) {
-          drawSashimiArcs(
-            sashimiCtx,
-            data,
-            blockScreenX,
-            block.start,
-            regionLengthBp,
-            blockWidth,
-            sashimiArcsHeight,
-            0,
-            true,
-          )
-        } else {
-          drawSashimiArcs(
-            covCtx,
-            data,
-            blockScreenX,
-            block.start,
-            regionLengthBp,
-            blockWidth,
-            coverageHeight,
-            0,
-            false,
-          )
-        }
+  // Sashimi: own SvgCanvas, translated by the band offset in JSX so the local
+  // draw uses band-relative Y. Vector by design (see drawSashimiArcs).
+  let sashimiNode: React.ReactNode = null
+  if (showSashimiArcs && showCoverage) {
+    const sashimiCtx = new SvgCanvas()
+    const bandHeight = sashimiArcsDown ? sashimiArcsHeight : coverageHeight
+    for (const block of blocks) {
+      if (block.displayedRegionIndex === undefined) {
+        continue
       }
-    }
-
-    if (showArcs && arcsCtxObj?.ctx) {
-      const arcsData = arcsState.rpcDataMap.get(block.displayedRegionIndex)
-      if (arcsData && arcsData.numArcs > 0) {
-        drawPairedArcs(
-          arcsCtxObj.ctx,
-          arcsData,
-          blockScreenX,
-          block.start,
-          regionLengthBp,
-          blockWidth,
-          arcsCtxHeight,
-          arcLineWidth,
-          arcColorByType,
-          arcsYDomainBp,
-          pairedArcsDown,
-        )
+      const data = rpcDataMap.get(block.displayedRegionIndex)
+      if (!data || data.numSashimiArcs === 0) {
+        continue
       }
-    }
-
-    if (showLinkedReads && pileup.ctx) {
-      drawConnectingLines(
-        pileup.ctx,
+      drawSashimiArcs(
+        sashimiCtx,
         data,
+        block.offsetPx - offsetPx,
         block.start,
-        block.end,
-        blockScreenX,
-        bpPerPx,
-        rasterize ? 0 : pileupTopOffset,
-        featureHeightSetting,
-        rowHeight,
+        block.end - block.start,
+        block.widthPx,
+        bandHeight,
+        sashimiArcsDown,
       )
     }
-
-    if (pileup.ctx) {
-      drawPileup(
-        pileup.ctx,
-        data,
-        block,
-        blockScreenX,
-        bpPerPx,
-        rasterize ? 0 : pileupTopOffset,
-        featureHeightSetting,
-        rowHeight,
-        colorSchemeIndex,
-        palette,
-        renderingMode,
-        model.showMismatches,
-        model.showModifications,
-        showSoftClipping,
-      )
-    }
-
-    if (showCoverage && showInterbaseIndicators) {
-      drawInterbaseIndicators(
-        indicatorCtx,
-        data,
-        block,
-        blockScreenX,
-        bpPerPx,
-        palette,
-      )
-    }
+    sashimiNode = (
+      <g
+        transform={`translate(0,${sashimiArcsDown ? coverageHeight : 0})`}
+        dangerouslySetInnerHTML={{ __html: sashimiCtx.getSerializedSvg() }}
+      />
+    )
   }
 
   const separatorColor = theme.palette.grey[500]
@@ -745,65 +204,18 @@ export async function renderSvg(
         width={totalWidth}
         height={displayHeight}
       >
+        {pileupNode}
         {showCoverage ? (
-          <g dangerouslySetInnerHTML={{ __html: covCtx.getSerializedSvg() }} />
-        ) : null}
-        {showCoverage ? (
-          <>
-            <g
-              dangerouslySetInnerHTML={{
-                __html: indicatorCtx.getSerializedSvg(),
-              }}
-            />
-            <line
-              x1={0}
-              y1={coverageHeight}
-              x2={totalWidth}
-              y2={coverageHeight}
-              stroke={separatorColor}
-              strokeWidth={1}
-            />
-          </>
-        ) : null}
-        {sashimiCtx ? (
-          <g
-            transform={`translate(0,${showCoverage ? coverageHeight : 0})`}
-            dangerouslySetInnerHTML={{ __html: sashimiCtx.getSerializedSvg() }}
+          <line
+            x1={0}
+            y1={coverageHeight}
+            x2={totalWidth}
+            y2={coverageHeight}
+            stroke={separatorColor}
+            strokeWidth={1}
           />
         ) : null}
-        {arcsCtxObj ? (
-          arcsCtxObj.canvas ? (
-            <image
-              x={0}
-              y={pairedArcsDown && showCoverage ? coverageHeight : 0}
-              width={totalWidth}
-              height={arcsCtxHeight}
-              xlinkHref={arcsCtxObj.canvas.toDataURL('image/png')}
-            />
-          ) : (
-            <g
-              transform={`translate(0,${pairedArcsDown && showCoverage ? coverageHeight : 0})`}
-              dangerouslySetInnerHTML={{
-                __html: (arcsCtxObj.ctx as SvgCanvas).getSerializedSvg(),
-              }}
-            />
-          )
-        ) : null}
-        {pileup.canvas ? (
-          <image
-            x={0}
-            y={pileupTopOffset}
-            width={totalWidth}
-            height={pileupHeight}
-            xlinkHref={pileup.canvas.toDataURL('image/png')}
-          />
-        ) : (
-          <g
-            dangerouslySetInnerHTML={{
-              __html: (pileup.ctx as SvgCanvas).getSerializedSvg(),
-            }}
-          />
-        )}
+        {sashimiNode}
       </SvgClipRect>
       {showCoverage && coverageTicks ? (
         <g transform={`translate(${Math.max(-offsetPx, 0)})`}>

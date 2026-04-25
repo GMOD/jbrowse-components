@@ -7,12 +7,80 @@ import type { HicBackend, HicRenderState } from './hicBackendTypes.ts'
 
 const SQRT_HALF = Math.SQRT1_2
 
+type Ctx = CanvasRenderingContext2D | SvgCanvas
+
+export interface HicData {
+  positions: Float32Array
+  counts: Float32Array
+  numContacts: number
+}
+
+/**
+ * Pure draw entry point. Paints the hic contact-matrix diamonds into any
+ * 2D-canvas-like context using inline rotation/scaling math (rather than
+ * ctx.transform stack), so the same path works for on-screen rendering and
+ * SVG export.
+ */
+export function drawHicBlocks(
+  ctx: Ctx,
+  data: HicData,
+  colorRamp: Uint8Array,
+  state: HicRenderState,
+) {
+  const {
+    binWidth,
+    yScalar,
+    colorMaxScore,
+    useLogScale,
+    viewScale,
+    viewOffsetX,
+  } = state
+  const { positions, counts, numContacts } = data
+  if (numContacts === 0) {
+    return
+  }
+
+  const s = SQRT_HALF * viewScale
+  const hw = binWidth * s
+  const hh = binWidth * s * yScalar
+
+  for (let i = 0; i < numContacts; i++) {
+    const px = positions[i * 2]!
+    const py = positions[i * 2 + 1]!
+    const count = counts[i]!
+
+    const t = mapHicCount(count, colorMaxScore, useLogScale)
+    const { r, g, b, a } = lookupColorRamp(colorRamp, t)
+
+    if (a < 0.01) {
+      continue
+    }
+
+    // Rotate square corners by -45° and apply viewport transform inline.
+    // The four corners of the square [px,py]→[px+bw,py+bw] map to a diamond:
+    //   top=(base,rBase), right, bottom, left — rotated 45° in screen space.
+    const base = (px + py) * s + viewOffsetX
+    const rBase = (-px + py) * s * yScalar
+
+    ctx.beginPath()
+    ctx.moveTo(base, rBase)
+    ctx.lineTo(base + hw, rBase - hh)
+    ctx.lineTo(base + 2 * hw, rBase)
+    ctx.lineTo(base + hw, rBase + hh)
+    ctx.closePath()
+    ctx.fillStyle = `rgba(${r},${g},${b},${a})`
+    ctx.fill()
+  }
+}
+
 export class Canvas2DHicRenderer implements HicBackend {
-  private ctx: CanvasRenderingContext2D | SvgCanvas
+  private ctx: Ctx
   private canvas: HTMLCanvasElement | null = null
-  private positions: Float32Array | null = null
-  private counts: Float32Array | null = null
-  private numContacts = 0
+  private data: HicData = {
+    positions: new Float32Array(0),
+    counts: new Float32Array(0),
+    numContacts: 0,
+  }
   private colorRamp: Uint8Array | null = null
 
   constructor(canvasOrCtx: HTMLCanvasElement | SvgCanvas) {
@@ -24,14 +92,8 @@ export class Canvas2DHicRenderer implements HicBackend {
     }
   }
 
-  uploadData(data: {
-    positions: Float32Array
-    counts: Float32Array
-    numContacts: number
-  }) {
-    this.positions = data.positions
-    this.counts = data.counts
-    this.numContacts = data.numContacts
+  uploadData(data: HicData) {
+    this.data = data
   }
 
   uploadColorRamp(colors: Uint8Array) {
@@ -39,72 +101,26 @@ export class Canvas2DHicRenderer implements HicBackend {
   }
 
   render(state: HicRenderState) {
-    const {
-      canvasWidth,
-      canvasHeight,
-      binWidth,
-      yScalar,
-      colorMaxScore,
-      useLogScale,
-      viewScale,
-      viewOffsetX,
-    } = state
-
-    const ctx = this.ctx
     if (this.canvas) {
       prepareCanvas(
         this.canvas,
-        ctx as CanvasRenderingContext2D,
-        canvasWidth,
-        canvasHeight,
+        this.ctx as CanvasRenderingContext2D,
+        state.canvasWidth,
+        state.canvasHeight,
       )
     }
-
-    if (
-      this.numContacts === 0 ||
-      !this.positions ||
-      !this.counts ||
-      !this.colorRamp
-    ) {
+    if (!this.colorRamp) {
       return
     }
-
-    const s = SQRT_HALF * viewScale
-    const hw = binWidth * s
-    const hh = binWidth * s * yScalar
-
-    for (let i = 0; i < this.numContacts; i++) {
-      const px = this.positions[i * 2]!
-      const py = this.positions[i * 2 + 1]!
-      const count = this.counts[i]!
-
-      const t = mapHicCount(count, colorMaxScore, useLogScale)
-      const { r, g, b, a } = lookupColorRamp(this.colorRamp, t)
-
-      if (a < 0.01) {
-        continue
-      }
-
-      // Rotate square corners by -45° and apply viewport transform inline.
-      // The four corners of the square [px,py]→[px+bw,py+bw] map to a diamond:
-      //   top=(base,rBase), right, bottom, left — rotated 45° in screen space.
-      const base = (px + py) * s + viewOffsetX
-      const rBase = (-px + py) * s * yScalar
-
-      ctx.beginPath()
-      ctx.moveTo(base, rBase)
-      ctx.lineTo(base + hw, rBase - hh)
-      ctx.lineTo(base + 2 * hw, rBase)
-      ctx.lineTo(base + hw, rBase + hh)
-      ctx.closePath()
-      ctx.fillStyle = `rgba(${r},${g},${b},${a})`
-      ctx.fill()
-    }
+    drawHicBlocks(this.ctx, this.data, this.colorRamp, state)
   }
 
   dispose() {
-    this.positions = null
-    this.counts = null
+    this.data = {
+      positions: new Float32Array(0),
+      counts: new Float32Array(0),
+      numContacts: 0,
+    }
     this.colorRamp = null
   }
 }

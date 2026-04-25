@@ -28,3 +28,24 @@ fast-path that matches end-array performance in the common case.
 `executeRenderChainData.ts` returns chain metadata arrays and all Y arrays
 initialized to 0. The main thread fills real Y values and builds connecting
 lines / Flatbush.
+
+## SVG export pipeline
+
+`renderSvg.tsx` drives the same `drawAlignmentBlocks(ctx, regions, blocks,
+state)` entry point used on-screen — it instantiates a headless
+`Canvas2DAlignmentsRenderer(null)`, runs `uploadRegion` /
+`uploadConnectingLinesForRegion` / `uploadArcsFromTypedArraysForRegion` from
+`laidOutPileupMap` + `arcsState.rpcDataMap`, then paints into a real canvas
+(when `opts.rasterizeLayers`) or an `SvgCanvas` (vector). Coverage,
+indicators, paired arcs, pileup reads, mismatches, soft/hard clips,
+modifications, and connecting lines all flow through the unified pass — do
+not reintroduce parallel SVG-only draw functions.
+
+### Sashimi is intentionally SVG-only
+
+`drawSashimiArcs` lives in `renderSvg.tsx` (not in
+`Canvas2DAlignmentsRenderer`) on purpose. Arc counts are low, vector output
+performs fine, and SVG `<path>` elements give native hover/tooltip behavior
+that the rasterized/canvas pipeline can't reproduce. This is a deliberate
+keep, not a porting backlog item — do not "unify" sashimi into
+`drawAlignmentBlocks`.

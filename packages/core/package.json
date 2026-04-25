@@ -136,6 +136,8 @@
     "./util/rxjs": "./src/util/rxjs.ts",
     "./util/simpleFeature": "./src/util/simpleFeature.ts",
     "./util/SvgCanvas": "./src/util/SvgCanvas.ts",
+    "./util/createSvgRasterCanvas": "./src/util/createSvgRasterCanvas.ts",
+    "./util/paintLayer": "./src/util/paintLayer.tsx",
     "./util/stats": "./src/util/stats.ts",
     "./util/stopToken": "./src/util/stopToken.ts",
     "./util/TimeTraveller": "./src/util/TimeTraveller.ts",
@@ -652,6 +654,14 @@
         "types": "./esm/util/SvgCanvas.d.ts",
         "import": "./esm/util/SvgCanvas.js"
       },
+      "./util/createSvgRasterCanvas": {
+        "types": "./esm/util/createSvgRasterCanvas.d.ts",
+        "import": "./esm/util/createSvgRasterCanvas.js"
+      },
+      "./util/paintLayer": {
+        "types": "./esm/util/paintLayer.d.ts",
+        "import": "./esm/util/paintLayer.js"
+      },
       "./util/stats": {
         "types": "./esm/util/stats.d.ts",
         "import": "./esm/util/stats.js"
@@ -1042,6 +1052,12 @@
         ],
         "util/SvgCanvas": [
           "esm/util/SvgCanvas.d.ts"
+        ],
+        "util/createSvgRasterCanvas": [
+          "esm/util/createSvgRasterCanvas.d.ts"
+        ],
+        "util/paintLayer": [
+          "esm/util/paintLayer.d.ts"
         ],
         "util/stats": [
           "esm/util/stats.d.ts"
