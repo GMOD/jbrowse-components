@@ -78,8 +78,7 @@ describe('fetch autorun integration with MobX observables', () => {
     const fetches: DisplayedRegionWithIndex[][] = []
 
     const dispose = autorun(() => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      model.fetchGeneration
+      void model.fetchGeneration
       if (!view.initialized || model.error || model.regionTooLargeState) {
         return
       }
@@ -116,8 +115,7 @@ describe('fetch autorun integration with MobX observables', () => {
     const fetches: number[] = []
 
     const dispose = autorun(() => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      model.fetchGeneration
+      void model.fetchGeneration
       if (!view.initialized || model.error || model.regionTooLargeState) {
         return
       }
@@ -170,8 +168,7 @@ describe('fetch autorun integration with MobX observables', () => {
     const fetches: number[] = []
 
     const dispose = autorun(() => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      model.fetchGeneration
+      void model.fetchGeneration
       if (!view.initialized || model.error || model.regionTooLargeState) {
         return
       }
@@ -248,8 +245,7 @@ describe('fetch autorun integration with MobX observables', () => {
     let prevBpPerPx: number | undefined
 
     const disposeFetch = autorun(() => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      model.fetchGeneration
+      void model.fetchGeneration
       if (!view.initialized || model.error || model.regionTooLargeState) {
         return
       }
@@ -306,8 +302,7 @@ describe('fetch autorun integration with MobX observables', () => {
     let prevBpPerPx: number | undefined
 
     const disposeFetch = autorun(() => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      model.fetchGeneration
+      void model.fetchGeneration
       if (!view.initialized || model.error || model.regionTooLargeState) {
         return
       }
@@ -417,7 +412,6 @@ describe('untracked() semantics', () => {
       const state = observable({
         fetchGeneration: 0,
         isLoading: false,
-        error: undefined as unknown,
         regionTooLarge: false,
         loadedRegions: new Map<number, Region>(),
       })
@@ -430,7 +424,7 @@ describe('untracked() semantics', () => {
       const dispose = autorun(() => {
         void state.fetchGeneration
         void view.visibleBlocks
-        if (!view.initialized || state.error || state.regionTooLarge) {
+        if (!view.initialized || state.regionTooLarge) {
           return
         }
         if (untracked(() => state.isLoading)) {
@@ -462,7 +456,7 @@ describe('untracked() semantics', () => {
       const state = observable({
         fetchGeneration: 0,
         isLoading: false,
-        error: undefined as unknown,
+        error: undefined,
         regionTooLarge: false,
         loadedRegions: new Map<number, Region>(),
       })
@@ -508,7 +502,6 @@ describe('untracked() semantics', () => {
       const state = observable({
         fetchGeneration: 0,
         isLoading: false,
-        error: undefined as unknown,
         regionTooLarge: false,
         loadedRegions: new Map<number, Region>(),
       })
@@ -521,7 +514,7 @@ describe('untracked() semantics', () => {
       const dispose = autorun(() => {
         void state.fetchGeneration
         const { visibleBlocks } = view
-        if (!view.initialized || state.error || state.regionTooLarge) {
+        if (!view.initialized || state.regionTooLarge) {
           return
         }
         if (untracked(() => state.isLoading)) {
@@ -559,7 +552,7 @@ describe('untracked() semantics', () => {
       const state = observable({
         fetchGeneration: 0,
         isLoading: false,
-        error: undefined as unknown,
+        error: undefined,
         regionTooLarge: false,
         loadedRegions: new Map<number, Region>(),
       })
@@ -611,7 +604,7 @@ describe('untracked() semantics', () => {
       const state = observable({
         fetchGeneration: 0,
         regionTooLarge: false,
-        error: undefined as unknown,
+        error: undefined,
       })
       const view = observable({
         bpPerPx: 10,
@@ -656,21 +649,17 @@ describe('untracked() semantics', () => {
     // ClearBlockingStateOnViewportChange, which wipes it before any viewport change.
     // This is the cycle the untracked() call is preventing.
     test('tracking regionTooLarge immediately clears it — confirms untracked is a correctness requirement', () => {
-      const state = observable({
-        regionTooLarge: false,
-        error: undefined as unknown,
-      })
+      const state = observable({ regionTooLarge: false })
       const view = observable({ bpPerPx: 10 })
       let clearCount = 0
 
       const dispose = autorun(() => {
         void view.bpPerPx
-        if (state.regionTooLarge || state.error) {
+        if (state.regionTooLarge) {
           // tracked — no untracked()
           clearCount++
           runInAction(() => {
             state.regionTooLarge = false
-            state.error = undefined
           })
         }
       })

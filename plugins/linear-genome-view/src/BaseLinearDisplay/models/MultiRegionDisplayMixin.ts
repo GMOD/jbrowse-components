@@ -179,8 +179,7 @@ export default function MultiRegionDisplayMixin() {
           autorun(
             () => {
               const view = getContainingView(self) as LinearGenomeViewModel
-              // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-              self.fetchSignal
+              void self.fetchSignal
               if (!view.initialized || self.error || self.regionTooLarge) {
                 return
               }

@@ -25,22 +25,11 @@ export interface FetchContext {
 //   self.statusMessage    — work-in-progress status string.
 //   self.fetchSignal      — see below.
 //
-// What `fetchSignal` is for:
-//   It's a tracked observable counter that bumps once whenever a fetch
-//   ENDS (success, error, or cancel). It does NOT bump at fetch start
-//   (the start is signalled by isLoading flipping true).
-//
-//   Autoruns that need to re-evaluate after a fetch finishes — e.g.
-//   FetchVisibleRegions — read `void self.fetchSignal` to subscribe.
-//   isLoading is intentionally not used as a dependency: it would cause
-//   an extra autorun fire on fetch start, wasting a 600ms debounce window.
-//
-//   The counter value is opaque; only mobx's tracked-read matters. The
-//   counter doubles as the staleness epoch inside runFetch — captured
-//   at start, compared in isStale() — so a cancelFetch() bump trips
-//   isStale() in any in-flight flow, making it skip its commit/finally
-//   work. There is no public bumper; only runFetch's flow and
-//   cancelFetch increment it.
+// fetchSignal bumps once at every fetch END (success, error, or cancel).
+// Autoruns read `void self.fetchSignal` to re-evaluate after a fetch completes;
+// isLoading is not used as a dependency to avoid an extra fire on fetch start.
+// The counter also serves as the staleness epoch in runFetch: captured at start,
+// so a cancelFetch() bump makes isStale() return true in the in-flight flow.
 //
 // Composed by both per-region (MultiRegionDisplayMixin) and single-data
 // (GlobalDataDisplayMixin) families.
