@@ -236,28 +236,29 @@ function emptyRegion(): Canvas2DRegionData {
 }
 
 /**
- * Canvas2D fallback for the alignments renderer. Implements the same
- * AlignmentsBackend interface as the GPU renderer so initDualBackend can
- * swap them transparently.
+ * State holder for the streaming upload lifecycle that AlignmentsBackend
+ * defines (region data arrives one region at a time, with separate methods
+ * for cigar / coverage / mod / arcs / connecting-line payloads). Owns a
+ * `regions` Map and the upload methods that mutate it.
+ *
+ * **Drawing is not on this class.** The pure entry point is the top-level
+ * `drawAlignmentBlocks(ctx, regions, blocks, state)` below. The class's
+ * `renderBlocks(blocks, state)` is the on-screen wrapper that runs
+ * `prepareCanvas` (DPR + size) and then calls `drawAlignmentBlocks` with
+ * the bound canvas's 2D context.
  *
  * Two construction modes:
  *
  *   1. **Bound** — `new Canvas2DAlignmentsRenderer(canvas)`.
- *      Used by the on-screen lifecycle. Drives `renderBlocks(blocks, state)`
- *      which calls prepareCanvas (DPR + size) and then renderBlocksToCtx.
- *      This is what initDualBackend constructs.
+ *      Used by the on-screen lifecycle (initDualBackend). `renderBlocks`
+ *      works.
  *
  *   2. **Headless** — `new Canvas2DAlignmentsRenderer(null)`.
- *      Used by SVG export (renderSvg.tsx). Caller does upload* + then
- *      `renderBlocksToCtx(svgCanvas, blocks, state)` directly. Calling
- *      `renderBlocks` in this mode throws — there's no canvas to prepare,
- *      and SVG output is vector so DPR scaling is meaningless.
- *
- * The mode split lives here (not in two classes / not in standalone
- * functions) because everything else — the `regions` map, all upload
- * methods, the entire draw pipeline — is identical between modes.
- * Splitting would duplicate that surface; threading `regions` through
- * standalone functions would just relocate state without removing it.
+ *      Used by SVG export. Caller runs `upload*` to fill the regions map,
+ *      then calls `drawAlignmentBlocks(svgCanvas, instance.getRegions(),
+ *      blocks, state)` directly. `renderBlocks` throws — there's no
+ *      canvas to prepare, and SVG output is vector so DPR scaling is
+ *      meaningless.
  */
 export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   private ctx: CanvasRenderingContext2D | null
@@ -267,7 +268,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   /**
    * @param canvas the on-screen canvas, or `null` for headless mode
    *   (SVG export). Only `renderBlocks` requires the canvas;
-   *   `renderBlocksToCtx` and all upload methods work in either mode.
+   *   The upload methods + getRegions() work in either mode.
    */
   constructor(canvas: HTMLCanvasElement | null) {
     this.canvas = canvas
@@ -490,651 +491,646 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     pruneRegionMap(this.regions, activeRegions)
   }
 
+  dispose() {
+    this.regions.clear()
+  }
+
   renderBlocks(blocks: RenderBlock[], state: RenderState) {
     if (!this.canvas || !this.ctx) {
       throw new Error(
-        'Canvas2DAlignmentsRenderer.renderBlocks called without a canvas — use renderBlocksToCtx for SVG export',
+        'Canvas2DAlignmentsRenderer.renderBlocks called without a canvas — call drawAlignmentBlocks(ctx, regions, …) directly for headless rendering',
       )
     }
     prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
-    return this.renderBlocksToCtx(this.ctx, blocks, state)
+    return drawAlignmentBlocks(this.ctx, this.regions, blocks, state)
   }
 
-  // Core render path. Takes ctx as parameter so SVG export can pass an
-  // SvgCanvas instead of the on-screen 2D context.
-  renderBlocksToCtx(ctx: Ctx, blocks: RenderBlock[], state: RenderState) {
-    const { canvasWidth, canvasHeight } = state
+  // Expose for headless callers (e.g. SVG export) that need to drive
+  // drawAlignmentBlocks with an SvgCanvas after running upload* methods.
+  getRegions(): ReadonlyMap<number, Canvas2DRegionData> {
+    return this.regions
+  }
+}
 
-    if (this.regions.size === 0) {
-      return false
+/**
+ * Pure draw entry point. Takes any 2D-canvas-like context (real
+ * CanvasRenderingContext2D or SvgCanvas) plus a prepared regions map and
+ * paints the alignments display: arcs, coverage, pileup reads, mismatches,
+ * insertions, soft/hard clips, modifications, and highlight/chain overlays.
+ *
+ * No `this`, no DOM, no DPR scaling — just data → ctx. The on-screen
+ * Canvas2DAlignmentsRenderer wraps this with prepareCanvas + lifecycle
+ * upload state; renderSvg.tsx calls it directly with an SvgCanvas.
+ */
+export function drawAlignmentBlocks(
+  ctx: Ctx,
+  regions: Map<number, Canvas2DRegionData>,
+  blocks: RenderBlock[],
+  state: RenderState,
+) {
+  const { canvasWidth, canvasHeight } = state
+
+  if (regions.size === 0) {
+    return false
+  }
+
+  const { effectiveArcsHeight, covH } = computeBlockHeights(state)
+  const pileupTop = state.pileupTopOffset
+  const mode = state.renderingMode ?? 'pileup'
+
+  for (const block of blocks) {
+    const region = regions.get(block.displayedRegionIndex)
+    if (!region) {
+      continue
     }
 
-    const { effectiveArcsHeight, covH } = computeBlockHeights(state)
-    const pileupTop = state.pileupTopOffset
-    const mode = state.renderingMode ?? 'pileup'
+    const blockClip = clipBlockForCanvas(block, canvasWidth)
+    if (!blockClip) {
+      continue
+    }
 
-    for (const block of blocks) {
-      const region = this.regions.get(block.displayedRegionIndex)
-      if (!region) {
-        continue
-      }
+    const { fullBlockWidth, bpLength, scissorX, scissorW } = blockClip
 
-      const blockClip = clipBlockForCanvas(block, canvasWidth)
-      if (!blockClip) {
-        continue
-      }
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(scissorX, 0, scissorW, canvasHeight)
+    ctx.clip()
 
-      const { fullBlockWidth, bpLength, scissorX, scissorW } = blockClip
-
+    if (effectiveArcsHeight > 0 && !state.pairedArcsDown && covH > 0) {
       ctx.save()
       ctx.beginPath()
-      ctx.rect(scissorX, 0, scissorW, canvasHeight)
+      ctx.rect(scissorX, 0, scissorW, covH)
       ctx.clip()
-
-      if (effectiveArcsHeight > 0 && !state.pairedArcsDown && covH > 0) {
-        ctx.save()
-        ctx.beginPath()
-        ctx.rect(scissorX, 0, scissorW, covH)
-        ctx.clip()
-        this.drawArcs(
-          ctx,
-          region,
-          block,
-          bpLength,
-          fullBlockWidth,
-          state,
-          0,
-          covH,
-          false,
-        )
-        ctx.restore()
-      }
-
-      if (state.showCoverage) {
-        this.drawCoverage(ctx, region, block, bpLength, fullBlockWidth, state)
-      }
-
-      // Clip pileup area
-      ctx.save()
-      ctx.beginPath()
-      ctx.rect(scissorX, pileupTop, scissorW, canvasHeight - pileupTop)
-      ctx.clip()
-
-      if (mode === 'linkedRead') {
-        this.drawConnectingLines(
-          ctx,
-          region,
-          block,
-          bpLength,
-          fullBlockWidth,
-          state,
-        )
-      }
-
-      this.drawReads(ctx, region, block, bpLength, fullBlockWidth, state)
-
-      if (state.showMismatches) {
-        this.drawGaps(ctx, region, block, bpLength, fullBlockWidth, state)
-        this.drawMismatches(ctx, region, block, bpLength, fullBlockWidth, state)
-        this.drawInsertions(ctx, region, block, bpLength, fullBlockWidth, state)
-      }
-
-      this.drawClips(
+      drawArcs(
         ctx,
-        region.softclipPositions,
-        region.softclipYs,
-        region.softclipLengths,
-        region.numSoftclips,
-        rgb255(state.colors.colorSoftclip),
+        region,
         block,
         bpLength,
         fullBlockWidth,
         state,
+        0,
+        covH,
+        false,
       )
-      this.drawClips(
+      ctx.restore()
+    }
+
+    if (state.showCoverage) {
+      drawCoverage(ctx, region, block, bpLength, fullBlockWidth, state)
+    }
+
+    // Clip pileup area
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(scissorX, pileupTop, scissorW, canvasHeight - pileupTop)
+    ctx.clip()
+
+    if (mode === 'linkedRead') {
+      drawConnectingLines(ctx, region, block, bpLength, fullBlockWidth, state)
+    }
+
+    drawReads(ctx, region, block, bpLength, fullBlockWidth, state)
+
+    if (state.showMismatches) {
+      drawGaps(ctx, region, block, bpLength, fullBlockWidth, state)
+      drawMismatches(ctx, region, block, bpLength, fullBlockWidth, state)
+      drawInsertions(ctx, region, block, bpLength, fullBlockWidth, state)
+    }
+
+    drawClips(
+      ctx,
+      region.softclipPositions,
+      region.softclipYs,
+      region.softclipLengths,
+      region.numSoftclips,
+      rgb255(state.colors.colorSoftclip),
+      block,
+      bpLength,
+      fullBlockWidth,
+      state,
+    )
+    drawClips(
+      ctx,
+      region.hardclipPositions,
+      region.hardclipYs,
+      region.hardclipLengths,
+      region.numHardclips,
+      rgb255(state.colors.colorHardclip),
+      block,
+      bpLength,
+      fullBlockWidth,
+      state,
+    )
+
+    if (state.showSoftClipping) {
+      drawSoftclipBases(ctx, region, block, bpLength, fullBlockWidth, state)
+    }
+
+    if (state.showModifications) {
+      drawModifications(ctx, region, block, bpLength, fullBlockWidth, state)
+    }
+
+    drawHighlightOverlays(ctx, region, block, state)
+
+    if (mode === 'linkedRead') {
+      drawChainOverlays(ctx, region, block, state)
+    }
+
+    ctx.restore() // pileup clip
+
+    if (effectiveArcsHeight > 0 && state.pairedArcsDown) {
+      ctx.save()
+      ctx.beginPath()
+      ctx.rect(scissorX, covH, scissorW, effectiveArcsHeight)
+      ctx.clip()
+      drawArcs(
         ctx,
-        region.hardclipPositions,
-        region.hardclipYs,
-        region.hardclipLengths,
-        region.numHardclips,
-        rgb255(state.colors.colorHardclip),
+        region,
         block,
         bpLength,
         fullBlockWidth,
         state,
+        covH,
+        effectiveArcsHeight,
+        state.pairedArcsDown,
       )
-
-      if (state.showSoftClipping) {
-        this.drawSoftclipBases(
-          ctx,
-          region,
-          block,
-          bpLength,
-          fullBlockWidth,
-          state,
-        )
-      }
-
-      if (state.showModifications) {
-        this.drawModifications(
-          ctx,
-          region,
-          block,
-          bpLength,
-          fullBlockWidth,
-          state,
-        )
-      }
-
-      // Feature highlight/selection overlays
-      this.drawHighlightOverlays(ctx, region, block, state)
-
-      if (mode === 'linkedRead') {
-        this.drawChainOverlays(ctx, region, block, state)
-      }
-
-      ctx.restore() // pileup clip
-
-      if (effectiveArcsHeight > 0 && state.pairedArcsDown) {
-        ctx.save()
-        ctx.beginPath()
-        ctx.rect(scissorX, covH, scissorW, effectiveArcsHeight)
-        ctx.clip()
-        this.drawArcs(
-          ctx,
-          region,
-          block,
-          bpLength,
-          fullBlockWidth,
-          state,
-          covH,
-          effectiveArcsHeight,
-          state.pairedArcsDown,
-        )
-        ctx.restore()
-      }
-
-      ctx.restore() // block clip
+      ctx.restore()
     }
-    return true
+
+    ctx.restore() // block clip
   }
+  return true
+}
 
-  private drawReads(
-    ctx: Ctx,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    const fH = state.featureHeight
+function drawReads(
+  ctx: Ctx,
+  region: Canvas2DRegionData,
+  block: { bpRangeX: [number, number]; screenStartPx: number },
+  bpLength: number,
+  fullBlockWidth: number,
+  state: RenderState,
+) {
+  const fH = state.featureHeight
 
-    for (let i = 0; i < region.numReads; i++) {
-      const startBp = region.readPositions[i * 2]!
-      const endBp = region.readPositions[i * 2 + 1]!
-      const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const y = pileupRowY(region.readYs[i]!, state)
-      const w = Math.max(1, x2 - x1)
+  for (let i = 0; i < region.numReads; i++) {
+    const startBp = region.readPositions[i * 2]!
+    const endBp = region.readPositions[i * 2 + 1]!
+    const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
+    const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
+    const y = pileupRowY(region.readYs[i]!, state)
+    const w = Math.max(1, x2 - x1)
 
-      ctx.fillStyle = getReadColor(i, region, state.colorScheme, state.colors, {
-        renderingMode: state.renderingMode,
-        flipStrandLongReadChains: state.flipStrandLongReadChains,
-      })
-      ctx.fillRect(x1, y, w, fH)
-
-      if (state.showOutline && w > 2) {
-        ctx.strokeStyle = 'rgba(0,0,0,0.3)'
-        ctx.lineWidth = 0.5
-        ctx.strokeRect(x1, y, w, fH)
-      }
-    }
-  }
-
-  private drawGaps(
-    ctx: Ctx,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    const fH = state.featureHeight
-
-    for (let i = 0; i < region.numGaps; i++) {
-      const startBp = region.gapPositions[i * 2]!
-      const endBp = region.gapPositions[i * 2 + 1]!
-      const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const yRow = region.gapYs[i]!
-      const y = pileupRowY(yRow, state)
-      const gapType = region.gapTypes[i]!
-      const w = Math.max(1, x2 - x1)
-
-      if (gapType === GAP_DELETION) {
-        // Deletion: dark line through read
-        const midY = y + fH / 2
-        ctx.fillStyle = rgb255(state.colors.colorDeletion)
-        ctx.fillRect(x1, midY - 0.5, w, 1)
-      } else if (gapType === GAP_SKIP) {
-        // Skip/intron: thin line with lighter color
-        ctx.fillStyle = rgb255(state.colors.colorSkip)
-        // Erase the read body first
-        ctx.clearRect(x1, y, w, fH)
-        const midY = y + fH / 2
-        ctx.fillRect(x1, midY - 0.5, w, 1)
-      }
-    }
-  }
-
-  private drawMismatches(
-    ctx: Ctx,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    const fH = state.featureHeight
-    const bpPerPx = bpLength / fullBlockWidth
-    const { colors } = state
-    const mutedBase = rgb255(colors.colorMutedSnpBase)
-    // ASCII char code → theme color (65='A', 67='C', 71='G', 84='T')
-    const baseColors: Record<number, string> = state.showModifications
-      ? { 65: mutedBase, 67: mutedBase, 71: mutedBase, 84: mutedBase }
-      : {
-          65: rgb255(colors.colorBaseA),
-          67: rgb255(colors.colorBaseC),
-          71: rgb255(colors.colorBaseG),
-          84: rgb255(colors.colorBaseT),
-        }
-
-    for (let i = 0; i < region.numMismatches; i++) {
-      const bp = region.mismatchPositions[i]!
-      const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
-      const w = Math.max(1, 1 / bpPerPx)
-      const yRow = region.mismatchYs[i]!
-      const y = pileupRowY(yRow, state)
-      const base = region.mismatchBases[i]!
-      const color = baseColors[base]
-      if (color) {
-        ctx.fillStyle = color
-        ctx.fillRect(x, y, w, fH)
-      }
-    }
-  }
-
-  private drawInsertions(
-    ctx: Ctx,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    const fH = state.featureHeight
-    const insColor = rgb255(state.colors.colorInsertion)
-
-    for (let i = 0; i < region.numInsertions; i++) {
-      const bp = region.insertionPositions[i]!
-      const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
-      const yRow = region.insertionYs[i]!
-      const y = pileupRowY(yRow, state)
-
-      ctx.fillStyle = insColor
-      // Insertion indicator: vertical line + small triangle
-      ctx.fillRect(x - 0.5, y, 1, fH)
-      // Top triangle
-      ctx.beginPath()
-      ctx.moveTo(x - 2, y)
-      ctx.lineTo(x + 2, y)
-      ctx.lineTo(x, y + 2)
-      ctx.closePath()
-      ctx.fill()
-      // Bottom triangle
-      ctx.beginPath()
-      ctx.moveTo(x - 2, y + fH)
-      ctx.lineTo(x + 2, y + fH)
-      ctx.lineTo(x, y + fH - 2)
-      ctx.closePath()
-      ctx.fill()
-    }
-  }
-
-  private drawClips(
-    ctx: Ctx,
-    positions: Uint32Array,
-    ys: Uint16Array,
-    lengths: Uint16Array,
-    count: number,
-    color: string,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    if (count === 0) {
-      return
-    }
-    const fH = state.featureHeight
-    const bpPerPx = bpLength / fullBlockWidth
-
-    ctx.fillStyle = color
-    for (let i = 0; i < count; i++) {
-      const bp = positions[i]!
-      const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
-      const yRow = ys[i]!
-      const y = pileupRowY(yRow, state)
-      const len = lengths[i]!
-      const w = Math.max(1, len / bpPerPx)
-      ctx.fillRect(x, y, w, fH)
-    }
-  }
-
-  private drawSoftclipBases(
-    ctx: Ctx,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    if (region.numSoftclipBases === 0) {
-      return
-    }
-    const fH = state.featureHeight
-    const bpPerPx = bpLength / fullBlockWidth
-    const { colors } = state
-    const mutedBase = rgb255(colors.colorMutedSnpBase)
-    const baseColors: Record<number, string> = state.showModifications
-      ? { 65: mutedBase, 67: mutedBase, 71: mutedBase, 84: mutedBase }
-      : {
-          65: rgb255(colors.colorBaseA),
-          67: rgb255(colors.colorBaseC),
-          71: rgb255(colors.colorBaseG),
-          84: rgb255(colors.colorBaseT),
-        }
-
-    for (let i = 0; i < region.numSoftclipBases; i++) {
-      const bp = region.softclipBasePositions[i]!
-      const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
-      const w = Math.max(1, 1 / bpPerPx)
-      const yRow = region.softclipBaseYs[i]!
-      const y = pileupRowY(yRow, state)
-      const base = region.softclipBaseBases[i]!
-      const color = baseColors[base]
-      if (color) {
-        ctx.fillStyle = color
-        ctx.fillRect(x, y, w, fH)
-      }
-    }
-  }
-
-  private drawModifications(
-    ctx: Ctx,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    if (region.numModifications === 0) {
-      return
-    }
-    const fH = state.featureHeight
-    const bpPerPx = bpLength / fullBlockWidth
-
-    for (let i = 0; i < region.numModifications; i++) {
-      const bp = region.modificationPositions[i]!
-      const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
-      const w = Math.max(1, 1 / bpPerPx)
-      const yRow = region.modificationYs[i]!
-      const y = pileupRowY(yRow, state)
-      ctx.fillStyle = abgrToCssRgba(region.modificationColors[i]!)
-      ctx.fillRect(x, y, w, fH)
-    }
-  }
-
-  private drawCoverage(
-    ctx: Ctx,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    const covH = state.coverageHeight
-    const covColor = rgb255(state.colors.colorCoverage)
-    const bpToX = (bp: number) =>
-      bpToScreenX(bp, block, bpLength, fullBlockWidth)
-    const viewWidth = fullBlockWidth + block.screenStartPx
-
-    const snpColors = {
-      baseA: rgb255(state.colors.colorBaseA),
-      baseC: rgb255(state.colors.colorBaseC),
-      baseG: rgb255(state.colors.colorBaseG),
-      baseT: rgb255(state.colors.colorBaseT),
-      mismatch: '',
-      deletion: rgb255(state.colors.colorDeletion),
-      insertion: '',
-    }
-
-    const noncovColors = {
-      insertion: rgb255(state.colors.colorInsertion),
-      softclip: rgb255(state.colors.colorSoftclip),
-      hardclip: rgb255(state.colors.colorHardclip),
-    }
-
-    const domainMax = state.coverageMaxDepth
-    if (!domainMax) {
-      return
-    }
-    drawCoverageBins(
-      ctx,
-      region.coverageBuffer,
-      region.coverageBinCount,
-      makeScoreNormalizer(0, domainMax, state.coverageIsLog),
-      covH,
-      covColor,
-      bpToX,
-      viewWidth,
-    )
-    const snpDepthScale = region.coverageMaxDepth / domainMax
-    drawSnpSegments(
-      ctx,
-      region.snpBuffer,
-      region.snpSegmentCount,
-      snpDepthScale,
-      covH,
-      snpColors,
-      bpToX,
-      viewWidth,
-    )
-    drawModCovSegments(
-      ctx,
-      region.modCovBuffer,
-      region.modCovSegmentCount,
-      snpDepthScale,
-      covH,
-      bpToX,
-      viewWidth,
-    )
-    drawNoncovSegments(
-      ctx,
-      region.noncovBuffer,
-      region.noncovSegmentCount,
-      region.noncovMaxCount,
-      noncovColors,
-      bpToX,
-      viewWidth,
-    )
-    drawIndicators(
-      ctx,
-      region.indicatorBuffer,
-      region.indicatorCount,
-      noncovColors,
-      bpToX,
-      viewWidth,
-    )
-  }
-
-  private paletteColor(palette: [number, number, number][], idx: number) {
-    return rgb255(palette[idx % palette.length]!)
-  }
-
-  private drawArcs(
-    ctx: Ctx,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-    arcsTop: number,
-    arcsH: number,
-    pairedArcsDown: boolean,
-  ) {
-    // Samplot autoscales via state.arcsYDomainBp; arc mode falls back to the
-    // bp-span that fits availH at the current zoom.
-    const availH = arcsH - 2
-    const pxPerBp = fullBlockWidth / bpLength
-    const fallbackDomain = pxPerBp > 0 ? availH / pxPerBp : 1
-    drawArcsToCtx(ctx, region, {
-      bpToScreenX: bp => bpToScreenX(bp, block, bpLength, fullBlockWidth),
-      arcsYDomainBp: state.arcsYDomainBp ?? fallbackDomain,
-      arcsTop,
-      arcsH,
-      pairedArcsDown,
-      lineWidth: state.arcLineWidth ?? 1,
-      palette: getArcPalette(state.arcColorByType),
+    ctx.fillStyle = getReadColor(i, region, state.colorScheme, state.colors, {
+      renderingMode: state.renderingMode,
+      flipStrandLongReadChains: state.flipStrandLongReadChains,
     })
+    ctx.fillRect(x1, y, w, fH)
 
-    for (let i = 0; i < region.numArcLines; i++) {
-      const bp = region.arcLinePositions[i]!
-      const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
-      const y = arcsTop + region.arcLineYs[i]! * arcsH
-      const colorIdx = region.arcLineColorTypes[i]!
-
-      ctx.fillStyle = this.paletteColor(arcLineColorPalette, colorIdx)
-      ctx.fillRect(x - 1, y - 1, 2, 2)
+    if (state.showOutline && w > 2) {
+      ctx.strokeStyle = 'rgba(0,0,0,0.3)'
+      ctx.lineWidth = 0.5
+      ctx.strokeRect(x1, y, w, fH)
     }
   }
+}
 
-  private drawConnectingLines(
-    ctx: Ctx,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    if (region.numConnectingLines === 0) {
-      return
+function drawGaps(
+  ctx: Ctx,
+  region: Canvas2DRegionData,
+  block: { bpRangeX: [number, number]; screenStartPx: number },
+  bpLength: number,
+  fullBlockWidth: number,
+  state: RenderState,
+) {
+  const fH = state.featureHeight
+
+  for (let i = 0; i < region.numGaps; i++) {
+    const startBp = region.gapPositions[i * 2]!
+    const endBp = region.gapPositions[i * 2 + 1]!
+    const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
+    const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
+    const yRow = region.gapYs[i]!
+    const y = pileupRowY(yRow, state)
+    const gapType = region.gapTypes[i]!
+    const w = Math.max(1, x2 - x1)
+
+    if (gapType === GAP_DELETION) {
+      // Deletion: dark line through read
+      const midY = y + fH / 2
+      ctx.fillStyle = rgb255(state.colors.colorDeletion)
+      ctx.fillRect(x1, midY - 0.5, w, 1)
+    } else if (gapType === GAP_SKIP) {
+      // Skip/intron: thin line with lighter color
+      ctx.fillStyle = rgb255(state.colors.colorSkip)
+      // Erase the read body first
+      ctx.clearRect(x1, y, w, fH)
+      const midY = y + fH / 2
+      ctx.fillRect(x1, midY - 0.5, w, 1)
     }
-    const fH = state.featureHeight
+  }
+}
 
-    ctx.strokeStyle = 'rgba(0,0,0,0.3)'
-    ctx.lineWidth = 1
+function drawMismatches(
+  ctx: Ctx,
+  region: Canvas2DRegionData,
+  block: { bpRangeX: [number, number]; screenStartPx: number },
+  bpLength: number,
+  fullBlockWidth: number,
+  state: RenderState,
+) {
+  const fH = state.featureHeight
+  const bpPerPx = bpLength / fullBlockWidth
+  const { colors } = state
+  const mutedBase = rgb255(colors.colorMutedSnpBase)
+  // ASCII char code → theme color (65='A', 67='C', 71='G', 84='T')
+  const baseColors: Record<number, string> = state.showModifications
+    ? { 65: mutedBase, 67: mutedBase, 71: mutedBase, 84: mutedBase }
+    : {
+        65: rgb255(colors.colorBaseA),
+        67: rgb255(colors.colorBaseC),
+        71: rgb255(colors.colorBaseG),
+        84: rgb255(colors.colorBaseT),
+      }
 
-    for (let i = 0; i < region.numConnectingLines; i++) {
-      const startBp = region.connectingLinePositions[i * 2]!
-      const endBp = region.connectingLinePositions[i * 2 + 1]!
+  for (let i = 0; i < region.numMismatches; i++) {
+    const bp = region.mismatchPositions[i]!
+    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
+    const w = Math.max(1, 1 / bpPerPx)
+    const yRow = region.mismatchYs[i]!
+    const y = pileupRowY(yRow, state)
+    const base = region.mismatchBases[i]!
+    const color = baseColors[base]
+    if (color) {
+      ctx.fillStyle = color
+      ctx.fillRect(x, y, w, fH)
+    }
+  }
+}
+
+function drawInsertions(
+  ctx: Ctx,
+  region: Canvas2DRegionData,
+  block: { bpRangeX: [number, number]; screenStartPx: number },
+  bpLength: number,
+  fullBlockWidth: number,
+  state: RenderState,
+) {
+  const fH = state.featureHeight
+  const insColor = rgb255(state.colors.colorInsertion)
+
+  for (let i = 0; i < region.numInsertions; i++) {
+    const bp = region.insertionPositions[i]!
+    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
+    const yRow = region.insertionYs[i]!
+    const y = pileupRowY(yRow, state)
+
+    ctx.fillStyle = insColor
+    // Insertion indicator: vertical line + small triangle
+    ctx.fillRect(x - 0.5, y, 1, fH)
+    // Top triangle
+    ctx.beginPath()
+    ctx.moveTo(x - 2, y)
+    ctx.lineTo(x + 2, y)
+    ctx.lineTo(x, y + 2)
+    ctx.closePath()
+    ctx.fill()
+    // Bottom triangle
+    ctx.beginPath()
+    ctx.moveTo(x - 2, y + fH)
+    ctx.lineTo(x + 2, y + fH)
+    ctx.lineTo(x, y + fH - 2)
+    ctx.closePath()
+    ctx.fill()
+  }
+}
+
+function drawClips(
+  ctx: Ctx,
+  positions: Uint32Array,
+  ys: Uint16Array,
+  lengths: Uint16Array,
+  count: number,
+  color: string,
+  block: { bpRangeX: [number, number]; screenStartPx: number },
+  bpLength: number,
+  fullBlockWidth: number,
+  state: RenderState,
+) {
+  if (count === 0) {
+    return
+  }
+  const fH = state.featureHeight
+  const bpPerPx = bpLength / fullBlockWidth
+
+  ctx.fillStyle = color
+  for (let i = 0; i < count; i++) {
+    const bp = positions[i]!
+    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
+    const yRow = ys[i]!
+    const y = pileupRowY(yRow, state)
+    const len = lengths[i]!
+    const w = Math.max(1, len / bpPerPx)
+    ctx.fillRect(x, y, w, fH)
+  }
+}
+
+function drawSoftclipBases(
+  ctx: Ctx,
+  region: Canvas2DRegionData,
+  block: { bpRangeX: [number, number]; screenStartPx: number },
+  bpLength: number,
+  fullBlockWidth: number,
+  state: RenderState,
+) {
+  if (region.numSoftclipBases === 0) {
+    return
+  }
+  const fH = state.featureHeight
+  const bpPerPx = bpLength / fullBlockWidth
+  const { colors } = state
+  const mutedBase = rgb255(colors.colorMutedSnpBase)
+  const baseColors: Record<number, string> = state.showModifications
+    ? { 65: mutedBase, 67: mutedBase, 71: mutedBase, 84: mutedBase }
+    : {
+        65: rgb255(colors.colorBaseA),
+        67: rgb255(colors.colorBaseC),
+        71: rgb255(colors.colorBaseG),
+        84: rgb255(colors.colorBaseT),
+      }
+
+  for (let i = 0; i < region.numSoftclipBases; i++) {
+    const bp = region.softclipBasePositions[i]!
+    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
+    const w = Math.max(1, 1 / bpPerPx)
+    const yRow = region.softclipBaseYs[i]!
+    const y = pileupRowY(yRow, state)
+    const base = region.softclipBaseBases[i]!
+    const color = baseColors[base]
+    if (color) {
+      ctx.fillStyle = color
+      ctx.fillRect(x, y, w, fH)
+    }
+  }
+}
+
+function drawModifications(
+  ctx: Ctx,
+  region: Canvas2DRegionData,
+  block: { bpRangeX: [number, number]; screenStartPx: number },
+  bpLength: number,
+  fullBlockWidth: number,
+  state: RenderState,
+) {
+  if (region.numModifications === 0) {
+    return
+  }
+  const fH = state.featureHeight
+  const bpPerPx = bpLength / fullBlockWidth
+
+  for (let i = 0; i < region.numModifications; i++) {
+    const bp = region.modificationPositions[i]!
+    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
+    const w = Math.max(1, 1 / bpPerPx)
+    const yRow = region.modificationYs[i]!
+    const y = pileupRowY(yRow, state)
+    ctx.fillStyle = abgrToCssRgba(region.modificationColors[i]!)
+    ctx.fillRect(x, y, w, fH)
+  }
+}
+
+function drawCoverage(
+  ctx: Ctx,
+  region: Canvas2DRegionData,
+  block: { bpRangeX: [number, number]; screenStartPx: number },
+  bpLength: number,
+  fullBlockWidth: number,
+  state: RenderState,
+) {
+  const covH = state.coverageHeight
+  const covColor = rgb255(state.colors.colorCoverage)
+  const bpToX = (bp: number) =>
+    bpToScreenX(bp, block, bpLength, fullBlockWidth)
+  const viewWidth = fullBlockWidth + block.screenStartPx
+
+  const snpColors = {
+    baseA: rgb255(state.colors.colorBaseA),
+    baseC: rgb255(state.colors.colorBaseC),
+    baseG: rgb255(state.colors.colorBaseG),
+    baseT: rgb255(state.colors.colorBaseT),
+    mismatch: '',
+    deletion: rgb255(state.colors.colorDeletion),
+    insertion: '',
+  }
+
+  const noncovColors = {
+    insertion: rgb255(state.colors.colorInsertion),
+    softclip: rgb255(state.colors.colorSoftclip),
+    hardclip: rgb255(state.colors.colorHardclip),
+  }
+
+  const domainMax = state.coverageMaxDepth
+  if (!domainMax) {
+    return
+  }
+  drawCoverageBins(
+    ctx,
+    region.coverageBuffer,
+    region.coverageBinCount,
+    makeScoreNormalizer(0, domainMax, state.coverageIsLog),
+    covH,
+    covColor,
+    bpToX,
+    viewWidth,
+  )
+  const snpDepthScale = region.coverageMaxDepth / domainMax
+  drawSnpSegments(
+    ctx,
+    region.snpBuffer,
+    region.snpSegmentCount,
+    snpDepthScale,
+    covH,
+    snpColors,
+    bpToX,
+    viewWidth,
+  )
+  drawModCovSegments(
+    ctx,
+    region.modCovBuffer,
+    region.modCovSegmentCount,
+    snpDepthScale,
+    covH,
+    bpToX,
+    viewWidth,
+  )
+  drawNoncovSegments(
+    ctx,
+    region.noncovBuffer,
+    region.noncovSegmentCount,
+    region.noncovMaxCount,
+    noncovColors,
+    bpToX,
+    viewWidth,
+  )
+  drawIndicators(
+    ctx,
+    region.indicatorBuffer,
+    region.indicatorCount,
+    noncovColors,
+    bpToX,
+    viewWidth,
+  )
+}
+
+function drawArcs(
+  ctx: Ctx,
+  region: Canvas2DRegionData,
+  block: { bpRangeX: [number, number]; screenStartPx: number },
+  bpLength: number,
+  fullBlockWidth: number,
+  state: RenderState,
+  arcsTop: number,
+  arcsH: number,
+  pairedArcsDown: boolean,
+) {
+  // Samplot autoscales via state.arcsYDomainBp; arc mode falls back to the
+  // bp-span that fits availH at the current zoom.
+  const availH = arcsH - 2
+  const pxPerBp = fullBlockWidth / bpLength
+  const fallbackDomain = pxPerBp > 0 ? availH / pxPerBp : 1
+  drawArcsToCtx(ctx, region, {
+    bpToScreenX: bp => bpToScreenX(bp, block, bpLength, fullBlockWidth),
+    arcsYDomainBp: state.arcsYDomainBp ?? fallbackDomain,
+    arcsTop,
+    arcsH,
+    pairedArcsDown,
+    lineWidth: state.arcLineWidth ?? 1,
+    palette: getArcPalette(state.arcColorByType),
+  })
+
+  for (let i = 0; i < region.numArcLines; i++) {
+    const bp = region.arcLinePositions[i]!
+    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
+    const y = arcsTop + region.arcLineYs[i]! * arcsH
+    const colorIdx = region.arcLineColorTypes[i]!
+
+    ctx.fillStyle = rgb255(
+      arcLineColorPalette[colorIdx % arcLineColorPalette.length]!,
+    )
+    ctx.fillRect(x - 1, y - 1, 2, 2)
+  }
+}
+
+function drawConnectingLines(
+  ctx: Ctx,
+  region: Canvas2DRegionData,
+  block: { bpRangeX: [number, number]; screenStartPx: number },
+  bpLength: number,
+  fullBlockWidth: number,
+  state: RenderState,
+) {
+  if (region.numConnectingLines === 0) {
+    return
+  }
+  const fH = state.featureHeight
+
+  ctx.strokeStyle = 'rgba(0,0,0,0.3)'
+  ctx.lineWidth = 1
+
+  for (let i = 0; i < region.numConnectingLines; i++) {
+    const startBp = region.connectingLinePositions[i * 2]!
+    const endBp = region.connectingLinePositions[i * 2 + 1]!
+    const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
+    const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
+    const yRow = region.connectingLineYs[i]!
+    const y = pileupRowY(yRow, state) + fH / 2
+
+    ctx.beginPath()
+    ctx.moveTo(x1, y)
+    ctx.lineTo(x2, y)
+    ctx.stroke()
+  }
+}
+
+function drawHighlightOverlays(
+  ctx: Ctx,
+  region: Canvas2DRegionData,
+  block: {
+    bpRangeX: [number, number]
+    screenStartPx: number
+    screenEndPx: number
+  },
+  state: RenderState,
+) {
+  const fH = state.featureHeight
+  const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
+  const fullBlockWidth = block.screenEndPx - block.screenStartPx
+
+  if (state.highlightedChainIds.length === 0 && state.highlightedFeatureId) {
+    const idx = region.readIdToIndex.get(state.highlightedFeatureId)
+    if (idx !== undefined && idx < region.numReads) {
+      const startBp = region.readPositions[idx * 2]!
+      const endBp = region.readPositions[idx * 2 + 1]!
       const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const yRow = region.connectingLineYs[i]!
-      const y = pileupRowY(yRow, state) + fH / 2
-
-      ctx.beginPath()
-      ctx.moveTo(x1, y)
-      ctx.lineTo(x2, y)
-      ctx.stroke()
+      const y = pileupRowY(region.readYs[idx]!, state)
+      ctx.fillStyle = 'rgba(0,0,0,0.15)'
+      ctx.fillRect(x1, y, x2 - x1, fH)
     }
   }
 
-  private drawHighlightOverlays(
-    ctx: Ctx,
-    region: Canvas2DRegionData,
-    block: {
-      bpRangeX: [number, number]
-      screenStartPx: number
-      screenEndPx: number
-    },
-    state: RenderState,
-  ) {
-    const fH = state.featureHeight
-    const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
-    const fullBlockWidth = block.screenEndPx - block.screenStartPx
-
-    if (state.highlightedChainIds.length === 0 && state.highlightedFeatureId) {
-      const idx = region.readIdToIndex.get(state.highlightedFeatureId)
-      if (idx !== undefined && idx < region.numReads) {
-        const startBp = region.readPositions[idx * 2]!
-        const endBp = region.readPositions[idx * 2 + 1]!
-        const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-        const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-        const y = pileupRowY(region.readYs[idx]!, state)
-        ctx.fillStyle = 'rgba(0,0,0,0.15)'
-        ctx.fillRect(x1, y, x2 - x1, fH)
-      }
+  if (state.selectedChainIds.length === 0 && state.selectedFeatureId) {
+    const idx = region.readIdToIndex.get(state.selectedFeatureId)
+    if (idx !== undefined && idx < region.numReads) {
+      const startBp = region.readPositions[idx * 2]!
+      const endBp = region.readPositions[idx * 2 + 1]!
+      const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
+      const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
+      const y = pileupRowY(region.readYs[idx]!, state)
+      ctx.strokeStyle = '#00b8ff'
+      ctx.lineWidth = 2
+      ctx.strokeRect(x1, y, x2 - x1, fH)
     }
+  }
+}
 
-    if (state.selectedChainIds.length === 0 && state.selectedFeatureId) {
-      const idx = region.readIdToIndex.get(state.selectedFeatureId)
-      if (idx !== undefined && idx < region.numReads) {
-        const startBp = region.readPositions[idx * 2]!
-        const endBp = region.readPositions[idx * 2 + 1]!
-        const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-        const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-        const y = pileupRowY(region.readYs[idx]!, state)
-        ctx.strokeStyle = '#00b8ff'
-        ctx.lineWidth = 2
-        ctx.strokeRect(x1, y, x2 - x1, fH)
-      }
+function drawChainOverlays(
+  ctx: Ctx,
+  region: Canvas2DRegionData,
+  block: {
+    bpRangeX: [number, number]
+    screenStartPx: number
+    screenEndPx: number
+  },
+  state: RenderState,
+) {
+  const fH = state.featureHeight
+  const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
+  const fullBlockWidth = block.screenEndPx - block.screenStartPx
+
+  if (state.highlightedChainIds.length > 0) {
+    const bounds = getChainBounds(state.highlightedChainIds, region)
+    if (bounds) {
+      const startBp = bounds.minStart
+      const endBp = bounds.maxEnd
+      const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
+      const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
+      const y = pileupRowY(bounds.y, state)
+      ctx.fillStyle = 'rgba(0,0,0,0.4)'
+      ctx.fillRect(x1, y, x2 - x1, fH)
     }
   }
 
-  private drawChainOverlays(
-    ctx: Ctx,
-    region: Canvas2DRegionData,
-    block: {
-      bpRangeX: [number, number]
-      screenStartPx: number
-      screenEndPx: number
-    },
-    state: RenderState,
-  ) {
-    const fH = state.featureHeight
-    const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
-    const fullBlockWidth = block.screenEndPx - block.screenStartPx
-
-    if (state.highlightedChainIds.length > 0) {
-      const bounds = getChainBounds(state.highlightedChainIds, region)
-      if (bounds) {
-        const startBp = bounds.minStart
-        const endBp = bounds.maxEnd
-        const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-        const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-        const y = pileupRowY(bounds.y, state)
-        ctx.fillStyle = 'rgba(0,0,0,0.4)'
-        ctx.fillRect(x1, y, x2 - x1, fH)
-      }
+  if (state.selectedChainIds.length > 0) {
+    const bounds = getChainBounds(state.selectedChainIds, region)
+    if (bounds) {
+      const startBp = bounds.minStart
+      const endBp = bounds.maxEnd
+      const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
+      const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
+      const y = pileupRowY(bounds.y, state)
+      ctx.strokeStyle = '#00b8ff'
+      ctx.lineWidth = 2
+      ctx.strokeRect(x1, y, x2 - x1, fH)
     }
-
-    if (state.selectedChainIds.length > 0) {
-      const bounds = getChainBounds(state.selectedChainIds, region)
-      if (bounds) {
-        const startBp = bounds.minStart
-        const endBp = bounds.maxEnd
-        const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-        const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-        const y = pileupRowY(bounds.y, state)
-        ctx.strokeStyle = '#00b8ff'
-        ctx.lineWidth = 2
-        ctx.strokeRect(x1, y, x2 - x1, fH)
-      }
-    }
-  }
-
-  dispose() {
-    this.regions.clear()
   }
 }
