@@ -178,7 +178,7 @@ worker uses. No public API break; all consumers are inside this plugin.
 volvox, CIGAR `D`/`N` polygons visually exceed the LGV coordinate range.
 Check `computeCorners` in `syntenyTypes.slang` against `adjOff`/`scale`
 uniforms in `GpuSyntenyRenderer.writeUniforms`, and the CIGAR `cx1`
-accumulation in `executeSyntenyInstanceData.ts`. Compare against
+accumulation in `executeSyntenyFeaturesAndPositions.ts`. Compare against
 `origin/main` to rule out regression.
 
 **LinearSyntenyDisplay GPU leak on chromosome navigation.** MultiLGV
