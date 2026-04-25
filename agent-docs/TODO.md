@@ -455,3 +455,10 @@ Add 'synthetic whitespace' between tracks in exported svg
 Remove logging like  [useGpuRenderer] factory rejected: Error: GPU crash when jest tests are run, mock console to swallow error. the tests are passing it is just a error diagnostic
 
 Fix test errors in `pnpm jest plugins/`
+
+
+## Breakpoint
+
+- Closing tracks or something else to see if it works
+
+## Check LDzip https://github.com/23andMe/LDZip
