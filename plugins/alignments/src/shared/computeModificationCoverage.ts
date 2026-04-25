@@ -191,7 +191,8 @@ export function computeModificationCoverage(
   // Packed ABGR u32 per segment (alpha byte = seg.alpha, 0..255).
   const colors = new Uint32Array(segments.length)
 
-  for (const [i, seg] of segments.entries()) {
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i]!
     positions[i] = seg.position
     yOffsets[i] = seg.yOffset
     heights[i] = seg.height

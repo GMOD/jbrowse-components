@@ -19,9 +19,6 @@ const DELETION_CHAR = 42
  * extent of each read's soft-clipped bases, or undefined if none.
  */
 function buildSoftclipExpansions(data: PileupDataResult) {
-  if (!data.interbaseReadIndices) {
-    return undefined
-  }
   const expansions = new Map<number, { start: number; end: number }>()
   for (let i = 0; i < data.numInterbases; i++) {
     if (data.interbaseTypes[i] !== INTERBASE_SOFTCLIP) {
@@ -92,25 +89,21 @@ function sortOverlappingByIndex(
 
   if (type === 'basePair') {
     const baseAtPos = new Map<number, number>()
-    if (mismatchReadIndices) {
-      for (let i = 0; i < numMismatches; i++) {
-        if (mismatchPositions[i] === sortPos) {
-          baseAtPos.set(mismatchReadIndices[i]!, mismatchBases[i]!)
-        }
+    for (let i = 0; i < numMismatches; i++) {
+      if (mismatchPositions[i] === sortPos) {
+        baseAtPos.set(mismatchReadIndices[i]!, mismatchBases[i]!)
       }
     }
-    if (gapReadIndices) {
-      for (let i = 0; i < numGaps; i++) {
-        if (gapTypes[i] !== 0) {
-          continue
-        }
-        const gapStart = gapPositions[i * 2]!
-        const gapEnd = gapPositions[i * 2 + 1]!
-        if (gapStart <= sortPos && gapEnd > sortPos) {
-          const readIdx = gapReadIndices[i]!
-          if (!baseAtPos.has(readIdx)) {
-            baseAtPos.set(readIdx, DELETION_CHAR)
-          }
+    for (let i = 0; i < numGaps; i++) {
+      if (gapTypes[i] !== 0) {
+        continue
+      }
+      const gapStart = gapPositions[i * 2]!
+      const gapEnd = gapPositions[i * 2 + 1]!
+      if (gapStart <= sortPos && gapEnd > sortPos) {
+        const readIdx = gapReadIndices[i]!
+        if (!baseAtPos.has(readIdx)) {
+          baseAtPos.set(readIdx, DELETION_CHAR)
         }
       }
     }
@@ -130,39 +123,37 @@ function sortOverlappingByIndex(
     type === 'softclip' ||
     type === 'hardclip'
   ) {
-    if (interbaseReadIndices) {
-      const targetType =
-        type === 'insertion'
-          ? INTERBASE_INSERTION
-          : type === 'softclip'
-            ? INTERBASE_SOFTCLIP
-            : INTERBASE_HARDCLIP
-      const lengthAtPos = new Map<number, number>()
-      for (let i = 0; i < numInterbases; i++) {
-        if (interbaseTypes[i] !== targetType) {
-          continue
-        }
-        if (interbasePositions[i] === sortPos) {
-          const readIdx = interbaseReadIndices[i]!
-          const len = interbaseLengths[i]!
-          const existing = lengthAtPos.get(readIdx) ?? 0
-          if (len > existing) {
-            lengthAtPos.set(readIdx, len)
-          }
+    const targetType =
+      type === 'insertion'
+        ? INTERBASE_INSERTION
+        : type === 'softclip'
+          ? INTERBASE_SOFTCLIP
+          : INTERBASE_HARDCLIP
+    const lengthAtPos = new Map<number, number>()
+    for (let i = 0; i < numInterbases; i++) {
+      if (interbaseTypes[i] !== targetType) {
+        continue
+      }
+      if (interbasePositions[i] === sortPos) {
+        const readIdx = interbaseReadIndices[i]!
+        const len = interbaseLengths[i]!
+        const existing = lengthAtPos.get(readIdx) ?? 0
+        if (len > existing) {
+          lengthAtPos.set(readIdx, len)
         }
       }
-      overlapping.sort((a, b) => {
-        const aLen = lengthAtPos.get(a) ?? 0
-        const bLen = lengthAtPos.get(b) ?? 0
-        if (aLen !== 0 && bLen === 0) {
-          return -1
-        }
-        if (aLen === 0 && bLen !== 0) {
-          return 1
-        }
-        return bLen - aLen
-      })
     }
+    overlapping.sort((a, b) => {
+      const aLen = lengthAtPos.get(a) ?? 0
+      const bLen = lengthAtPos.get(b) ?? 0
+      if (aLen !== 0 && bLen === 0) {
+        return -1
+      }
+      if (aLen === 0 && bLen !== 0) {
+        return 1
+      }
+      return bLen - aLen
+    })
   } else if (type === 'position') {
     overlapping.sort((a, b) => readPositions[a * 2]! - readPositions[b * 2]!)
   } else if (type === 'strand') {
@@ -297,35 +288,20 @@ export function cloneWithLayout(
   const interbaseYs = new Uint16Array(data.numInterbases)
   const modificationYs = new Uint16Array(data.numModifications)
   const softclipBaseYs = new Uint16Array(data.numSoftclipBases)
-  if (data.gapReadIndices) {
-    const src = data.gapReadIndices
-    for (let i = 0; i < data.numGaps; i++) {
-      gapYs[i] = readYs[src[i]!]!
-    }
+  for (let i = 0; i < data.numGaps; i++) {
+    gapYs[i] = readYs[data.gapReadIndices[i]!]!
   }
-  if (data.mismatchReadIndices) {
-    const src = data.mismatchReadIndices
-    for (let i = 0; i < data.numMismatches; i++) {
-      mismatchYs[i] = readYs[src[i]!]!
-    }
+  for (let i = 0; i < data.numMismatches; i++) {
+    mismatchYs[i] = readYs[data.mismatchReadIndices[i]!]!
   }
-  if (data.interbaseReadIndices) {
-    const src = data.interbaseReadIndices
-    for (let i = 0; i < data.numInterbases; i++) {
-      interbaseYs[i] = readYs[src[i]!]!
-    }
+  for (let i = 0; i < data.numInterbases; i++) {
+    interbaseYs[i] = readYs[data.interbaseReadIndices[i]!]!
   }
-  if (data.modificationReadIndices) {
-    const src = data.modificationReadIndices
-    for (let i = 0; i < data.numModifications; i++) {
-      modificationYs[i] = readYs[src[i]!]!
-    }
+  for (let i = 0; i < data.numModifications; i++) {
+    modificationYs[i] = readYs[data.modificationReadIndices[i]!]!
   }
-  if (data.softclipBaseReadIndices) {
-    const src = data.softclipBaseReadIndices
-    for (let i = 0; i < data.numSoftclipBases; i++) {
-      softclipBaseYs[i] = readYs[src[i]!]!
-    }
+  for (let i = 0; i < data.numSoftclipBases; i++) {
+    softclipBaseYs[i] = readYs[data.softclipBaseReadIndices[i]!]!
   }
   let modFlatbush: Flatbush | undefined
   if (data.numModifications > 0) {
@@ -391,7 +367,7 @@ export function buildLaidOutPileupMap({
     for (const [idx, data] of withReads) {
       const readYs = new Uint16Array(data.numReads)
       for (let i = 0; i < data.numReads; i++) {
-        readYs[i] = rowMap.get(data.readIds[i]!) ?? 0
+        readYs[i] = rowMap.get(data.readIds[i]!)!
       }
       out.set(idx, cloneWithLayout(data, readYs, maxY))
     }

@@ -63,8 +63,8 @@ export async function getSAFeatures({
   }
   const features = [feat, ...suppAlns] as ReducedFeature[]
 
-  for (const [i, feature_] of features.entries()) {
-    const f = feature_
+  for (let i = 0; i < features.length; i++) {
+    const f = features[i]!
     f.refName = assembly.getCanonicalRefName2(f.refName)
     f.syntenyId = i
     f.mate.syntenyId = i

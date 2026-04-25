@@ -5,7 +5,8 @@
 // shapeType encodes the curve form:
 //   0 = cubic bezier (close-range pair)
 //   1 = semicircle (long-range pair; drawn as half-circle arc)
-//   2 = flat horizontal line at Y = destY (samplot mode)
+//   2 = flat horizontal line at Y = destY (samplot paired, solid, alpha 0.25)
+//   3 = flat horizontal line at Y = destY (samplot split read, dashed, alpha 0.25)
 //
 // yBp is the target Y position in genomic bp — for arc/bezier this is the
 // apex height; for flat it is the line's Y. Samplot sets yBp = |tlen|; arc
@@ -36,6 +37,7 @@ struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
   float  dist     : COLOR1;
+  float  dashed   : COLOR2;
 };
 
 float3 arcColorByIndex(uint idx, Uniforms u) {
@@ -138,12 +140,17 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float clipY = 1.0 - ((off.y + u.covOffset) / u.canvasH) * 2.0;
   o.position = float4(flipX(clipX, u), clipY, 0.0, 1.0);
   o.dist = side * hw;
-  o.color = float4(arcColor(inst.colorType, u), 1.0);
+  // Samplot flat arcs (shape >= 2): alpha 0.25 matches samplot.py's alpha=0.25.
+  float arcAlpha = (inst.shapeType > 1.5) ? 0.25 : 1.0;
+  o.color = float4(arcColor(inst.colorType, u), arcAlpha);
+  o.dashed = (inst.shapeType > 2.5) ? 1.0 : 0.0;
   return o;
 }
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
+  // Split-read flat arcs render dashed (samplot.py's dotted style).
+  if (fragIn.dashed > 0.5 && frac(fragIn.position.x / 6.0) > 0.5) { discard; }
   float hw = u.lineWidthPx * 0.5;
   float d = abs(fragIn.dist);
   float aa = fwidth(fragIn.dist);

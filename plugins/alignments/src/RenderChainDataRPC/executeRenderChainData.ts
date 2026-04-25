@@ -179,7 +179,8 @@ export async function executeRenderChainData({
   const chainFirstReadIndices = new Uint32Array(numChains)
 
   const featureIdToChainIdx = new Map<string, number>()
-  for (const [chainIdx, chain] of chains.entries()) {
+  for (let chainIdx = 0; chainIdx < chains.length; chainIdx++) {
+    const chain = chains[chainIdx]!
     let minStart = Number.MAX_VALUE
     let maxEnd = Number.MIN_VALUE
     let hasSupp = false
@@ -230,7 +231,8 @@ export async function executeRenderChainData({
   const featureIdToIndex = new Map<string, number>()
   const chainFirstReadSeen = new Uint8Array(numChains)
 
-  for (const [i, f] of features.entries()) {
+  for (let i = 0; i < features.length; i++) {
+    const f = features[i]!
     const cIdx = featureIdToChainIdx.get(f.id) ?? 0
     readPositions[i * 2] = Math.max(regionStart, f.start)
     readPositions[i * 2 + 1] = f.end
@@ -253,7 +255,7 @@ export async function executeRenderChainData({
     featureIdToIndex.set(f.id, i)
   }
 
-  const getReadIndex = (id: string) => featureIdToIndex.get(id) ?? 0
+  const getReadIndex = (id: string) => featureIdToIndex.get(id)!
 
   // Layout Ys are filled by the main thread (see computeChainLayout.ts);
   // the worker emits zero-filled Y arrays here.
@@ -371,6 +373,7 @@ export async function executeRenderChainData({
     softclipBasePositions: new Uint32Array(0),
     softclipBaseYs: new Uint16Array(0),
     softclipBaseBases: new Uint8Array(0),
+    softclipBaseReadIndices: new Uint32Array(0),
     numSoftclipBases: 0,
 
     readTagColors: tagColors,
@@ -501,14 +504,10 @@ export async function executeRenderChainData({
     result.noncovPackedBuffer,
     result.indicatorPackedBuffer,
     result.modCovPackedBuffer,
-    ...(result.gapReadIndices ? [result.gapReadIndices.buffer] : []),
-    ...(result.mismatchReadIndices ? [result.mismatchReadIndices.buffer] : []),
-    ...(result.interbaseReadIndices
-      ? [result.interbaseReadIndices.buffer]
-      : []),
-    ...(result.modificationReadIndices
-      ? [result.modificationReadIndices.buffer]
-      : []),
+    result.gapReadIndices.buffer,
+    result.mismatchReadIndices.buffer,
+    result.interbaseReadIndices.buffer,
+    result.modificationReadIndices.buffer,
     ...(result.modificationTypeIndices
       ? [result.modificationTypeIndices.buffer]
       : []),

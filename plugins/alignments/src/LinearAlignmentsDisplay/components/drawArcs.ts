@@ -1,5 +1,8 @@
-import { ARC_SHAPE_FLAT } from '../../shared/computeArcsFromPileupData.ts'
-import { rgb255 } from '../colorUtils.ts'
+import {
+  ARC_SHAPE_FLAT,
+  ARC_SHAPE_FLAT_SPLIT,
+} from '../../shared/computeArcsFromPileupData.ts'
+import { rgb255, rgba255 } from '../colorUtils.ts'
 import { ARC_HEIGHT_MARGIN } from './shaders/palettes.ts'
 
 import type { RGBColor } from './shaders/colors.ts'
@@ -45,8 +48,10 @@ export function drawArcsToCtx(ctx: Ctx, data: ArcFields, opts: DrawArcsOpts) {
     palette,
   } = opts
   // Pre-stringify the palette once per draw — saves N Math.round + string
-  // allocations per frame (N = numArcs, often thousands).
+  // allocations per frame (N = numArcs, often thousands). Faded variant is
+  // used for samplot flat lines (alpha 0.25 matches samplot.py).
   const cssPalette = palette.map(c => rgb255(c))
+  const cssPaletteFaded = palette.map(c => rgba255(c, 0.25))
   const paletteLen = cssPalette.length
   // Anchor = where arcs meet the adjacent band (insert-size 0). pointing-up
   // sits at the bottom of the band; pointing-down sits at the top. Matches
@@ -68,9 +73,12 @@ export function drawArcsToCtx(ctx: Ctx, data: ArcFields, opts: DrawArcsOpts) {
     const arcH = Math.min(yBp * yScale, availH)
     const apexY = pairedArcsDown ? anchorY + arcH : anchorY - arcH
 
-    ctx.strokeStyle = cssPalette[colorIdx % paletteLen]!
+    const isFlat = shape === ARC_SHAPE_FLAT || shape === ARC_SHAPE_FLAT_SPLIT
+    const paletteForShape = isFlat ? cssPaletteFaded : cssPalette
+    ctx.strokeStyle = paletteForShape[colorIdx % paletteLen]!
+    ctx.setLineDash(shape === ARC_SHAPE_FLAT_SPLIT ? [3, 3] : [])
     ctx.beginPath()
-    if (shape === ARC_SHAPE_FLAT) {
+    if (isFlat) {
       ctx.moveTo(sx1, apexY)
       ctx.lineTo(sx2, apexY)
     } else {
@@ -82,4 +90,5 @@ export function drawArcsToCtx(ctx: Ctx, data: ArcFields, opts: DrawArcsOpts) {
     }
     ctx.stroke()
   }
+  ctx.setLineDash([])
 }

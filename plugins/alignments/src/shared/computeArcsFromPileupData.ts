@@ -13,6 +13,13 @@ import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
 export const ARC_SHAPE_BEZIER = 0
 export const ARC_SHAPE_SEMICIRCLE = 1
 export const ARC_SHAPE_FLAT = 2
+// Split-read flat line (SA tag arcs) — same geometry as FLAT but rendered
+// dashed (matching samplot.py's plot_split_plan dotted-line style).
+export const ARC_SHAPE_FLAT_SPLIT = 3
+
+// Matches samplot.py --jitter const default (0.08). Applied multiplicatively
+// to |tlen| so lines at the same insert size are visually separated.
+const SAMPLOT_JITTER_BOUNDS = 0.08
 
 export interface ArcsDataResult {
   arcX1: Uint32Array
@@ -92,6 +99,87 @@ function getSamplotColorIndex(
   return 0
 }
 
+// Color-slot indices into the arc palette. Kept as named constants so the
+// classifier reads as a story rather than as magic numbers.
+const COLOR_DEFAULT = 0
+const COLOR_LONG_INSERT = 1
+const COLOR_GRADIENT = 8
+const COLOR_UNPAIRED_FR = 4
+const COLOR_UNPAIRED_RF = 7
+
+function unpairedOrientationColor(p1Strand: number, p2Strand: number) {
+  if (p1Strand === -1 && p2Strand === 1) {
+    return COLOR_UNPAIRED_RF
+  }
+  if (p1Strand === 1 && p2Strand === -1) {
+    return COLOR_UNPAIRED_FR
+  }
+  return COLOR_DEFAULT
+}
+
+function getArcColorType(args: {
+  colorByType: string
+  hasPaired: boolean
+  longRange: boolean
+  drawArcInsteadOfBezier: boolean
+  pairOrientationNum: number | undefined
+  tlen: number | undefined
+  p1Ref: string
+  p2Ref: string
+  p1Strand: number
+  p2Strand: number
+  stats: { upper: number; lower: number } | undefined
+}) {
+  const {
+    colorByType,
+    hasPaired,
+    longRange,
+    drawArcInsteadOfBezier,
+    pairOrientationNum,
+    tlen,
+    p1Ref,
+    p2Ref,
+    p1Strand,
+    p2Strand,
+    stats,
+  } = args
+
+  // Two overrides apply regardless of scheme:
+  //   samplot uses its own DEL/DUP/INV palette
+  //   long-range arcs (drawn as semicircles) always paint as long-insert
+  if (colorByType === 'samplot') {
+    return getSamplotColorIndex(pairOrientationNum ?? 0, p1Strand, p2Strand)
+  }
+  if (longRange && drawArcInsteadOfBezier) {
+    return COLOR_LONG_INSERT
+  }
+
+  // Otherwise dispatch on scheme; each branch decides paired vs unpaired.
+  const insertSizeColor = () =>
+    getInsertSizeColorIndex(p1Ref, p2Ref, tlen ?? 0, stats) ?? COLOR_DEFAULT
+
+  switch (colorByType) {
+    case 'gradient':
+      return COLOR_GRADIENT
+
+    case 'insertSize':
+      return hasPaired ? insertSizeColor() : COLOR_DEFAULT
+
+    case 'orientation':
+      return hasPaired
+        ? (getOrientationColorIndex(pairOrientationNum ?? 0) ?? COLOR_DEFAULT)
+        : unpairedOrientationColor(p1Strand, p2Strand)
+
+    case 'insertSizeAndOrientation':
+      return hasPaired
+        ? (getOrientationColorIndex(pairOrientationNum ?? 0) ?? insertSizeColor())
+        : unpairedOrientationColor(p1Strand, p2Strand)
+
+    default:
+      return COLOR_DEFAULT
+  }
+}
+
 function getInsertSizeColorIndex(
   refName: string,
   nextRef: string | undefined,
@@ -147,6 +235,7 @@ interface PendingArc {
   p2Strand: number
   pairOrientationNum: number | undefined
   tlen: number | undefined
+  isSplit: boolean
 }
 
 function parseSATag(sa: string): SAAlignment[] {
@@ -198,6 +287,7 @@ export function computeArcsFromPileupData(
   settings: ArcSettings,
 ) {
   const { colorByType, drawInter, drawLongRange } = settings
+  const samplot = colorByType === 'samplot'
 
   const readsByName = new Map<
     string,
@@ -275,6 +365,7 @@ export function computeArcsFromPileupData(
           p2Strand: mateStrand,
           pairOrientationNum: data.readPairOrientations[readIdx]!,
           tlen: data.readInsertSizes[readIdx],
+          isSplit: false,
         })
       } else {
         const sa = data.readSuppAlignments?.[readIdx] ?? ''
@@ -296,6 +387,7 @@ export function computeArcsFromPileupData(
               p2Strand: a2.strand,
               pairOrientationNum: undefined,
               tlen: undefined,
+              isSplit: true,
             })
           }
         }
@@ -337,6 +429,7 @@ export function computeArcsFromPileupData(
           p2Strand: s2,
           pairOrientationNum: e1.data.readPairOrientations[e1.readIdx],
           tlen: e1.data.readInsertSizes[e1.readIdx],
+          isSplit: false,
         })
       }
     }
@@ -356,6 +449,7 @@ export function computeArcsFromPileupData(
     p2Strand,
     pairOrientationNum,
     tlen,
+    isSplit,
   } of pendingArcs) {
     if (p1Ref !== p2Ref) {
       if (drawInter) {
@@ -374,55 +468,23 @@ export function computeArcsFromPileupData(
 
     // console.log('processArc', { p1Ref, p1Bp, p2Ref, p2Bp, longRange, absrad, longRangeThreshold, drawArcInsteadOfBezier, pairOrientationNum, tlen, hasPaired, colorByType })
 
-    let colorType: number
-    if (colorByType === 'samplot') {
-      colorType = getSamplotColorIndex(
-        pairOrientationNum ?? 0,
-        p1Strand,
-        p2Strand,
-      )
-    } else if (longRange && drawArcInsteadOfBezier) {
-      colorType = 1
-    } else if (hasPaired) {
-      if (
-        colorByType === 'insertSizeAndOrientation' ||
-        colorByType === 'orientation'
-      ) {
-        colorType =
-          getOrientationColorIndex(pairOrientationNum ?? 0) ??
-          (colorByType === 'insertSizeAndOrientation'
-            ? (getInsertSizeColorIndex(p1Ref, p2Ref, tlen ?? 0, stats) ?? 0)
-            : 0)
-      } else if (colorByType === 'insertSize') {
-        colorType = getInsertSizeColorIndex(p1Ref, p2Ref, tlen ?? 0, stats) ?? 0
-      } else if (colorByType === 'gradient') {
-        colorType = 8
-      } else {
-        colorType = 0
-      }
-    } else {
-      if (
-        colorByType === 'orientation' ||
-        colorByType === 'insertSizeAndOrientation'
-      ) {
-        if (p1Strand === -1 && p2Strand === 1) {
-          colorType = 7
-        } else if (p1Strand === 1 && p2Strand === -1) {
-          colorType = 4
-        } else {
-          colorType = 0
-        }
-      } else if (colorByType === 'gradient') {
-        colorType = 8
-      } else {
-        colorType = 0
-      }
-    }
+    const colorType = getArcColorType({
+      colorByType,
+      hasPaired,
+      longRange,
+      drawArcInsteadOfBezier,
+      pairOrientationNum,
+      tlen,
+      p1Ref,
+      p2Ref,
+      p1Strand,
+      p2Strand,
+      stats,
+    })
 
     // Samplot skips the vertical-line threshold — flat lines above the
     // arcs band cap look correct for long-range pairs and samplot.py has no
     // equivalent cutoff.
-    const samplot = colorByType === 'samplot'
     if (!samplot && longRange && absrad > VERTICAL_LINE_THRESHOLD) {
       if (drawLongRange) {
         lines.push(
@@ -435,13 +497,16 @@ export function computeArcsFromPileupData(
 
     let shapeType: number
     if (samplot) {
-      shapeType = ARC_SHAPE_FLAT
+      shapeType = isSplit ? ARC_SHAPE_FLAT_SPLIT : ARC_SHAPE_FLAT
     } else if (longRange && drawArcInsteadOfBezier) {
       shapeType = ARC_SHAPE_SEMICIRCLE
     } else {
       shapeType = ARC_SHAPE_BEZIER
     }
-    const yBp = samplot && tlen !== undefined ? Math.abs(tlen) : absrad
+    const rawYBp = samplot && tlen !== undefined ? Math.abs(tlen) : absrad
+    const yBp = samplot
+      ? Math.round(rawYBp * (1 + SAMPLOT_JITTER_BOUNDS * (Math.random() * 2 - 1)))
+      : rawYBp
 
     arcs.push({
       p1: { refName: p1Ref, bp: p1Bp },
@@ -471,13 +536,16 @@ export function arcsToRegionResult(
   const arcYBp = new Uint32Array(regionArcs.length)
 
   let maxFlatArcYBp = 0
-  for (const [i, arc] of regionArcs.entries()) {
+  for (let i = 0; i < regionArcs.length; i++) {
+    const arc = regionArcs[i]!
     arcX1[i] = arc.p1.bp
     arcX2[i] = arc.p2.bp
     arcColorTypes[i] = arc.colorType
     arcShapeTypes[i] = arc.shapeType
     arcYBp[i] = arc.yBp
-    if (arc.shapeType === ARC_SHAPE_FLAT && arc.yBp > maxFlatArcYBp) {
+    const isFlat =
+      arc.shapeType === ARC_SHAPE_FLAT || arc.shapeType === ARC_SHAPE_FLAT_SPLIT
+    if (isFlat && arc.yBp > maxFlatArcYBp) {
       maxFlatArcYBp = arc.yBp
     }
   }
@@ -487,7 +555,8 @@ export function arcsToRegionResult(
   const lineYs = new Float32Array(regionLines.length * 2)
   const lineColorTypes = new Uint8Array(regionLines.length * 2)
 
-  for (const [i, line] of regionLines.entries()) {
+  for (let i = 0; i < regionLines.length; i++) {
+    const line = regionLines[i]!
     linePositions[i * 2] = line.x.bp
     linePositions[i * 2 + 1] = line.x.bp
     lineYs[i * 2] = 0

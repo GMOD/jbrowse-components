@@ -10,6 +10,11 @@ import { toArray } from 'rxjs/operators'
 
 import { buildModTooltipData } from '../shared/buildTooltipData.ts'
 import {
+  SAM_FLAG_PROPER_PAIR,
+  SAM_FLAG_SECONDARY,
+  SAM_FLAG_SUPPLEMENTARY,
+} from '../shared/samFlags.ts'
+import {
   computeCoverage,
   computeNoncovCoverage,
   computeSNPCoverage,
@@ -146,7 +151,7 @@ export async function executeRenderPileupData({
     segmentArrays,
   } = await updateStatus('Building arrays', statusCallback, async () => {
     const featureIdToIndex = new Map<string, number>()
-    const getReadIndex = (id: string) => featureIdToIndex.get(id) ?? 0
+    const getReadIndex = (id: string) => featureIdToIndex.get(id)!
 
     const readPositions = new Uint32Array(features.length * 2)
     const readYs = new Uint16Array(features.length)
@@ -159,7 +164,8 @@ export async function executeRenderPileupData({
     const readIds: string[] = []
     const readNames: string[] = []
 
-    for (const [i, f] of features.entries()) {
+    for (let i = 0; i < features.length; i++) {
+      const f = features[i]!
       featureIdToIndex.set(f.id, i)
       readPositions[i * 2] = Math.max(regionStart, f.start)
       readPositions[i * 2 + 1] = f.end
@@ -192,14 +198,11 @@ export async function executeRenderPileupData({
         regionStart,
         getReadIndex,
       ),
-      softclipBaseArrays: showSoftClipping
-        ? buildSoftclipBaseArrays(softclips, regionStart, getReadIndex)
-        : {
-            softclipBasePositions: new Uint32Array(0),
-            softclipBaseYs: new Uint16Array(0),
-            softclipBaseBases: new Uint8Array(0),
-            softclipBaseReadIndices: undefined as Uint32Array | undefined,
-          },
+      softclipBaseArrays: buildSoftclipBaseArrays(
+        showSoftClipping ? softclips : [],
+        regionStart,
+        getReadIndex,
+      ),
       interbaseArrays: buildInterbaseArrays(
         insertions,
         softclips,
@@ -277,9 +280,14 @@ export async function executeRenderPileupData({
 
   const sashimi = computeSashimiJunctions(gaps)
 
-  const pairedInsertSizes = features
-    .filter(f => f.flags & 2 && !(f.flags & 256) && !(f.flags & 2048))
-    .map(f => f.insertSize)
+  const PRIMARY_PROPER_PAIR_MASK =
+    SAM_FLAG_SECONDARY | SAM_FLAG_SUPPLEMENTARY
+  const pairedInsertSizes: number[] = []
+  for (const f of features) {
+    if (f.flags & SAM_FLAG_PROPER_PAIR && !(f.flags & PRIMARY_PROPER_PAIR_MASK)) {
+      pairedInsertSizes.push(f.insertSize)
+    }
+  }
 
   const insertSizeStats =
     pairedInsertSizes.length > 0
@@ -425,17 +433,11 @@ export async function executeRenderPileupData({
     result.noncovPackedBuffer,
     result.indicatorPackedBuffer,
     result.modCovPackedBuffer,
-    ...(result.gapReadIndices ? [result.gapReadIndices.buffer] : []),
-    ...(result.mismatchReadIndices ? [result.mismatchReadIndices.buffer] : []),
-    ...(result.softclipBaseReadIndices
-      ? [result.softclipBaseReadIndices.buffer]
-      : []),
-    ...(result.interbaseReadIndices
-      ? [result.interbaseReadIndices.buffer]
-      : []),
-    ...(result.modificationReadIndices
-      ? [result.modificationReadIndices.buffer]
-      : []),
+    result.gapReadIndices.buffer,
+    result.mismatchReadIndices.buffer,
+    result.softclipBaseReadIndices.buffer,
+    result.interbaseReadIndices.buffer,
+    result.modificationReadIndices.buffer,
     ...(result.modificationTypeIndices
       ? [result.modificationTypeIndices.buffer]
       : []),

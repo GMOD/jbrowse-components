@@ -426,7 +426,8 @@ export function computeNoncovCoverage(
   const heights = new Float32Array(filteredSegments.length)
   const colorTypes = new Uint8Array(filteredSegments.length)
 
-  for (const [i, seg] of filteredSegments.entries()) {
+  for (let i = 0; i < filteredSegments.length; i++) {
+    const seg = filteredSegments[i]!
     positions[i] = seg.position
     yOffsets[i] = seg.yOffset
     heights[i] = seg.height
@@ -435,7 +436,8 @@ export function computeNoncovCoverage(
 
   const indicatorPositions = new Uint32Array(filteredIndicators.length)
   const indicatorColorTypes = new Uint8Array(filteredIndicators.length)
-  for (const [i, ind] of filteredIndicators.entries()) {
+  for (let i = 0; i < filteredIndicators.length; i++) {
+    const ind = filteredIndicators[i]!
     indicatorPositions[i] = ind.position
     indicatorColorTypes[i] = ind.colorType
   }

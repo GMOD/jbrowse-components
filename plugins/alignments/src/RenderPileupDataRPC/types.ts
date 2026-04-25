@@ -85,7 +85,7 @@ export interface PileupDataResult {
   gapYs: Uint16Array
   gapLengths: Uint16Array // length of each gap in bp
   gapTypes: Uint8Array // 0=deletion, 1=skip
-  gapReadIndices?: Uint32Array // maps each gap to its parent read index
+  gapReadIndices: Uint32Array // maps each gap to its parent read index
   gapFrequencies: Uint8Array // 0-255 representing 0-100% frequency at start position
 
   // Mismatch data - absolute genomic uint32
@@ -93,7 +93,7 @@ export interface PileupDataResult {
   mismatchYs: Uint16Array
   mismatchBases: Uint8Array // ASCII character code (e.g. 65='A', 67='C', 71='G', 84='T')
   mismatchStrands: Int8Array // -1=reverse, 1=forward (for tooltip strand counts)
-  mismatchReadIndices?: Uint32Array // maps each mismatch to its parent read index
+  mismatchReadIndices: Uint32Array // maps each mismatch to its parent read index
   mismatchFrequencies: Uint8Array // 0-255 representing 0-100% frequency at position
 
   // Soft clip base data - per-base rendering for showSoftClipping feature
@@ -101,7 +101,7 @@ export interface PileupDataResult {
   softclipBasePositions: Uint32Array
   softclipBaseYs: Uint16Array
   softclipBaseBases: Uint8Array // ASCII character code
-  softclipBaseReadIndices?: Uint32Array // maps each softclip base to its parent read index
+  softclipBaseReadIndices: Uint32Array // maps each softclip base to its parent read index
   numSoftclipBases: number
 
   // Interbase data — insertions, soft clips, and hard clips in one buffer
@@ -111,7 +111,7 @@ export interface PileupDataResult {
   interbaseYs: Uint16Array
   interbaseLengths: Uint16Array
   interbaseTypes: Uint8Array // 1=insertion, 2=softclip, 3=hardclip
-  interbaseReadIndices?: Uint32Array // maps each interbase to its parent read index
+  interbaseReadIndices: Uint32Array // maps each interbase to its parent read index
   interbaseSequences: string[] // insertion sequences (empty string for clips or if unavailable)
   numInsertions: number
   numSoftclips: number
@@ -165,7 +165,7 @@ export interface PileupDataResult {
   modificationColors: Uint32Array
   // Raw probability 0-255; separate from alpha to avoid lossy quadratic roundtrip in tooltip.
   modificationProbabilities?: Uint8Array
-  modificationReadIndices?: Uint32Array // maps each modification to its parent read index
+  modificationReadIndices: Uint32Array // maps each modification to its parent read index
   modificationTypeIndices?: Uint8Array // maps each modification to index in detectedModifications
   numModifications: number
 

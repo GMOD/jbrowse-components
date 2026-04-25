@@ -338,7 +338,8 @@ export function buildTagColors(
   // Pack one ABGR u32 per read. Shader reads `uint tagColor` and unpacks;
   // 0 means "no tag color set" (falls back to the palette).
   const readTagColors = new Uint32Array(featuresData.length)
-  for (const [i, featuresDatum] of featuresData.entries()) {
+  for (let i = 0; i < featuresData.length; i++) {
+    const featuresDatum = featuresData[i]!
     const val = tagColorValues[i] ?? ''
     let rgb: ColorRgbTuple
 
@@ -408,7 +409,7 @@ export function buildInterbaseArrays(
   softclips: SoftclipData[],
   hardclips: HardclipData[],
   regionStart: number,
-  getReadIndex?: (featureId: string) => number,
+  getReadIndex: (featureId: string) => number,
 ) {
   const filteredInsertions = insertions.filter(
     ins => ins.position >= regionStart,
@@ -425,9 +426,7 @@ export function buildInterbaseArrays(
   const interbaseYs = new Uint16Array(totalInterbases)
   const interbaseLengths = new Uint16Array(totalInterbases)
   const interbaseTypes = new Uint8Array(totalInterbases)
-  const interbaseReadIndices = getReadIndex
-    ? new Uint32Array(totalInterbases)
-    : undefined
+  const interbaseReadIndices = new Uint32Array(totalInterbases)
   const interbaseSequences: string[] = []
 
   let idx = 0
@@ -436,9 +435,7 @@ export function buildInterbaseArrays(
       interbasePositions[idx] = item.position
       interbaseLengths[idx] = Math.min(65535, item.length)
       interbaseTypes[idx] = type
-      if (interbaseReadIndices) {
-        interbaseReadIndices[idx] = getReadIndex!(item.featureId)
-      }
+      interbaseReadIndices[idx] = getReadIndex(item.featureId)
       interbaseSequences.push(item.sequence ?? '')
       idx++
     }
@@ -466,23 +463,20 @@ export function buildInterbaseArrays(
 export function buildMismatchArrays(
   mismatches: MismatchData[],
   regionStart: number,
-  getReadIndex?: (featureId: string) => number,
+  getReadIndex: (featureId: string) => number,
 ) {
   const filtered = mismatches.filter(mm => mm.position >= regionStart)
   const mismatchPositions = new Uint32Array(filtered.length)
   const mismatchYs = new Uint16Array(filtered.length)
   const mismatchBases = new Uint8Array(filtered.length)
   const mismatchStrands = new Int8Array(filtered.length)
-  const mismatchReadIndices = getReadIndex
-    ? new Uint32Array(filtered.length)
-    : undefined
-  for (const [i, mm] of filtered.entries()) {
+  const mismatchReadIndices = new Uint32Array(filtered.length)
+  for (let i = 0; i < filtered.length; i++) {
+    const mm = filtered[i]!
     mismatchPositions[i] = mm.position
     mismatchBases[i] = mm.base
     mismatchStrands[i] = mm.strand
-    if (mismatchReadIndices) {
-      mismatchReadIndices[i] = getReadIndex!(mm.featureId)
-    }
+    mismatchReadIndices[i] = getReadIndex(mm.featureId)
   }
   return {
     mismatchPositions,
@@ -496,7 +490,7 @@ export function buildMismatchArrays(
 export function buildSoftclipBaseArrays(
   softclips: SoftclipData[],
   regionStart: number,
-  getReadIndex?: (featureId: string) => number,
+  getReadIndex: (featureId: string) => number,
 ) {
   const count = softclips.reduce(
     (sum, sc) => sum + (sc.sequence?.length ?? 0),
@@ -505,21 +499,17 @@ export function buildSoftclipBaseArrays(
   const softclipBasePositions = new Uint32Array(count)
   const softclipBaseYs = new Uint16Array(count)
   const softclipBaseBases = new Uint8Array(count)
-  const softclipBaseReadIndices = getReadIndex
-    ? new Uint32Array(count)
-    : undefined
+  const softclipBaseReadIndices = new Uint32Array(count)
   let i = 0
   for (const sc of softclips) {
     if (!sc.sequence) {
       continue
     }
-    const ri = getReadIndex ? getReadIndex(sc.featureId) : 0
+    const ri = getReadIndex(sc.featureId)
     for (let k = 0; k < sc.sequence.length; k++) {
       softclipBasePositions[i] = sc.clipStart + k
       softclipBaseBases[i] = sc.sequence.charCodeAt(k)
-      if (softclipBaseReadIndices) {
-        softclipBaseReadIndices[i] = ri
-      }
+      softclipBaseReadIndices[i] = ri
       i++
     }
   }
@@ -534,24 +524,21 @@ export function buildSoftclipBaseArrays(
 export function buildGapArrays(
   gaps: GapData[],
   regionStart: number,
-  getReadIndex?: (featureId: string) => number,
+  getReadIndex: (featureId: string) => number,
 ) {
   const filtered = gaps.filter(g => g.end > regionStart)
   const gapPositions = new Uint32Array(filtered.length * 2)
   const gapYs = new Uint16Array(filtered.length)
   const gapLengths = new Uint16Array(filtered.length)
   const gapTypes = new Uint8Array(filtered.length)
-  const gapReadIndices = getReadIndex
-    ? new Uint32Array(filtered.length)
-    : undefined
-  for (const [i, g] of filtered.entries()) {
+  const gapReadIndices = new Uint32Array(filtered.length)
+  for (let i = 0; i < filtered.length; i++) {
+    const g = filtered[i]!
     gapPositions[i * 2] = Math.max(regionStart, g.start)
     gapPositions[i * 2 + 1] = g.end
     gapLengths[i] = Math.min(65535, g.end - g.start)
     gapTypes[i] = g.type === 'deletion' ? 0 : 1
-    if (gapReadIndices) {
-      gapReadIndices[i] = getReadIndex!(g.featureId)
-    }
+    gapReadIndices[i] = getReadIndex(g.featureId)
   }
   return { gapPositions, gapYs, gapLengths, gapTypes, gapReadIndices }
 }
@@ -559,7 +546,7 @@ export function buildGapArrays(
 export function buildModificationArrays(
   modifications: ModificationEntry[],
   regionStart: number,
-  getReadIndex?: (featureId: string) => number,
+  getReadIndex: (featureId: string) => number,
   detectedModifications?: Set<string> | string[],
 ) {
   const filtered = modifications.filter(m => m.position >= regionStart)
@@ -570,25 +557,22 @@ export function buildModificationArrays(
   // slot instead of four shifted bytes.
   const modificationColors = new Uint32Array(filtered.length)
   const modificationProbabilities = new Uint8Array(filtered.length)
-  const modificationReadIndices = getReadIndex
-    ? new Uint32Array(filtered.length)
-    : undefined
+  const modificationReadIndices = new Uint32Array(filtered.length)
   const modTypeToIdx = detectedModifications
     ? new Map([...detectedModifications].map((t, i) => [t, i]))
     : undefined
   const modificationTypeIndices = modTypeToIdx
     ? new Uint8Array(filtered.length)
     : undefined
-  for (const [i, m] of filtered.entries()) {
+  for (let i = 0; i < filtered.length; i++) {
+    const m = filtered[i]!
     modificationPositions[i] = m.position
     // Quadratic curve with 0.1 floor: low-prob mods stay faintly visible,
     // high-prob mods are strongly opaque (matches main branch alphaColor).
     const a = Math.round(Math.min(1, m.prob * m.prob + 0.1) * 255) & 0xff
     modificationColors[i] = packAbgr(m.r, m.g, m.b, a)
     modificationProbabilities[i] = Math.round(m.prob * 255) & 0xff
-    if (modificationReadIndices) {
-      modificationReadIndices[i] = getReadIndex!(m.featureId)
-    }
+    modificationReadIndices[i] = getReadIndex(m.featureId)
     if (modificationTypeIndices && modTypeToIdx) {
       modificationTypeIndices[i] = modTypeToIdx.get(m.modType) ?? 0
     }

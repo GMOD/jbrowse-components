@@ -471,9 +471,10 @@ describe('computeArcsFromPileupData', () => {
     const del = run(1)
     expect(del.arcs).toHaveLength(1)
     expect(del.arcs[0]!.colorType).toBe(0)
-    // Flat shape + Y = |tlen|
+    // Flat shape + Y ≈ |tlen| (samplot applies ±8% jitter)
     expect(del.arcs[0]!.shapeType).toBe(2)
-    expect(del.arcs[0]!.yBp).toBe(500)
+    expect(del.arcs[0]!.yBp).toBeGreaterThanOrEqual(460)
+    expect(del.arcs[0]!.yBp).toBeLessThanOrEqual(540)
 
     // RL/everted → DUP slot 1
     expect(run(2).arcs[0]!.colorType).toBe(1)
