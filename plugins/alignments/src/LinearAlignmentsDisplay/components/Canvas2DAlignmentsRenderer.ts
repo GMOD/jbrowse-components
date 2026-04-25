@@ -236,17 +236,24 @@ function emptyRegion(): Canvas2DRegionData {
 }
 
 export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
-  private ctx: CanvasRenderingContext2D
-  private canvas: HTMLCanvasElement
+  // ctx/canvas are only used by the on-screen renderBlocks() entry point.
+  // SVG export constructs with `null` and drives renderBlocksToCtx() with
+  // an SvgCanvas — see renderSvg.tsx.
+  private ctx: CanvasRenderingContext2D | null
+  private canvas: HTMLCanvasElement | null
   private regions = new Map<number, Canvas2DRegionData>()
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement | null) {
     this.canvas = canvas
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('Canvas 2D context not available')
+    if (canvas) {
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        throw new Error('Canvas 2D context not available')
+      }
+      this.ctx = ctx
+    } else {
+      this.ctx = null
     }
-    this.ctx = ctx
   }
 
   uploadRegion(displayedRegionIndex: number, data: PileupDataResult) {
@@ -458,6 +465,11 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   renderBlocks(blocks: RenderBlock[], state: RenderState) {
+    if (!this.canvas || !this.ctx) {
+      throw new Error(
+        'Canvas2DAlignmentsRenderer.renderBlocks called without a canvas — use renderBlocksToCtx for SVG export',
+      )
+    }
     prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
     return this.renderBlocksToCtx(this.ctx, blocks, state)
   }
