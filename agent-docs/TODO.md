@@ -255,49 +255,27 @@ Four independently-landable items, ordered by ROI for whole-genome alignment
    at `0.5× viewWidth`; every pan fires RPC + debounced rebuild. Grow
    margin to ~`2× viewWidth` per side, return the actual emitted genomic
    range, have `afterAttach` skip the RPC when new viewport ⊂ loaded
-   range and `bpPerPx` is unchanged. Medium scope. Complementary to #3:
-   #2 eliminates pan re-fetches on indexed adapters (where region-eager
-   fetch would OOM); #3 eliminates zoom re-fetches and fixes deep-zoom
-   precision. Different problems, both worth doing.
+   range and `bpPerPx` is unchanged. Medium scope. Eliminates pan
+   re-fetches on indexed adapters (where region-eager fetch would OOM).
 
-3. *GPU-smooth-zoom (full alignments-style architecture).* Worker emits
-   absolute genomic uint32 per vertex (not float32 pixel offsets). Shader
-   converts bp → clip via `hpMath` against per-view `bpHi/bpLo/bpLen`
-   uniforms — top verts use view-A, bottom verts use view-B. Touches
-   `syntenyTypes.slang`, `syntenyFill/Edge/Picking.slang`,
-   `instanceInterleave.ts`, `buildSyntenyGeometry.ts` (CIGAR layout in bp
-   not pixels), `GpuSyntenyRenderer.writeUniforms`,
-   `Canvas2DSyntenyRenderer` (bp→pixel per frame),
-   `executeSyntenyFeaturesAndPositions.ts`. Medium risk; needs browser-
-   test coverage. Look at this for dotplot too, claims "p11..p22 (pixel offsets) — Float64Array. 53-bit mantissa covers the whole 0..3e9 pixel range exactly without rounding (Float32 can't; Uint32 would need Math.round)."
+3. *Worker-side integer-bp CIGAR walk (precision only, conditional).*
+   If deep-zoom drift becomes visible in the wild, fix it inside the
+   worker without touching the shader/uniform shape. CIGAR accumulator
+   runs in integer bp (no Float64->Float32 lossy conversion), converts to
+   pixel offsets only at instance-buffer build time. Contained to
+   `buildSyntenyGeometry.ts` and `drawDotplotWebGL.ts`. **Don't do this
+   speculatively** -- see ADR-010 for why the larger bp+regionIdx +
+   hpmath refactor was rejected and why the precision concern is narrow.
 
-   **Honest value prop** (revised after diagnosis): this buys (a) deep-
-   zoom precision — float32 pixel offsets drift once you zoom past ~2×
-   the worker's geometry `bpPerPx`, which bp uint32 + `hpMath` fixes; (b)
-   zoom becomes a zero-RPC uniform update instead of a worker re-run
-   (today any `bpPerPx` change invalidates the pixel-space buffer).
-
-   It does **not** on its own fix pan smoothness — with the
-   `pairwiseIndexedPAFadapter` the worker legitimately streams per-block
-   data, so panning into new blocks will still RPC regardless of output
-   format. Pan smoothness is #2's problem (widen the margin, cache by
-   loaded range), not #3's. Sell this on precision + zoom-RPC removal.
-
-   Multi-region handling: one draw call per `(topRegionIdx, botRegionIdx)`
-   pair per strip, with per-region `bpHi/bpLo/bpLen` uniforms — mirrors
-   alignments' per-block draw pattern, doubled. Features that straddle
-   a region boundary on either strip are rare; simplest handling is to
-   split at the boundary during worker-side bucketing.
-
-4. *`drawCIGAR` / `drawCIGARMatchesOnly` / `drawLocationMarkers` →
+4. *`drawCIGAR` / `drawCIGARMatchesOnly` / `drawLocationMarkers` ->
    gpuProps.* Worker always emits full CIGAR + marker geometry; per-
    instance `kind` already distinguishes them. Add shader uniform bit
    flags gating draw; `computeSyntenyColors` respects the same flags.
-   Payload always pays CIGAR cost — only worth it if users toggle these
+   Payload always pays CIGAR cost -- only worth it if users toggle these
    frequently. Optional polish.
 
-Recommended sequence: **1 → 2 → 3**. #2 and #3 are complementary (pan
-smoothness vs. zoom precision), not substitutes. 4 is optional.
+Recommended sequence: **1 -> 2**. #3 is conditional on a real precision
+report. #4 is optional.
 
 ### Synteny misc UX
 

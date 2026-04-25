@@ -136,8 +136,7 @@ of the complexity. Not implemented yet — see "Revisit if".
 - The `wiggle/alignments` and `synteny/dotplot` plugins look
   superficially inconsistent (uint genomic vs. Float pixels at the
   worker boundary). The architectural reason — 1D vs. 2D-with-
-  independent-axes — is documented in this ADR and at the top of the
-  reverted `agent-docs/SYNTENY_BP_REFACTOR.md`.
+  independent-axes — is documented in this ADR.
 
 ## Revisit if
 
