@@ -1,6 +1,8 @@
 import { lookupColorRamp, prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
+import { mapLDValue } from './ldColorRamp.ts'
+
 import type {
   LDBackend,
   LDRenderState,
@@ -62,6 +64,7 @@ export class Canvas2DLDRenderer implements LDBackend {
     }
 
     const n = boundaries.length - 1
+    const s = COS45 * viewScale
     let k = 0
     for (let i = 1; i < n; i++) {
       const py = boundaries[i]!
@@ -71,36 +74,26 @@ export class Canvas2DLDRenderer implements LDBackend {
         const cw = boundaries[j + 1]! - px
         const ldVal = ldValues[k++]!
 
-        let t = signedLD ? (ldVal + 1) / 2 : ldVal
-        t = Math.max(0, Math.min(1, t))
-
+        const t = mapLDValue(ldVal, signedLD)
         const { r, g, b, a } = lookupColorRamp(colorRamp, t)
 
         if (a < 0.01) {
           continue
         }
 
-        const corners = [
-          [px, py],
-          [px + cw, py],
-          [px + cw, py + ch],
-          [px, py + ch],
-        ] as const
+        // Inline the -45° rotation and viewport transform for the 4 diamond
+        // vertices, avoiding a per-cell array allocation and inner loop.
+        const base = (px + py) * s + viewOffsetX
+        const rBase = (-px + py) * s * yScalar
+        const hw = cw * s
+        const hh = ch * s * yScalar
 
         ctx.fillStyle = `rgba(${r},${g},${b},${a})`
         ctx.beginPath()
-        for (let m = 0; m < 4; m++) {
-          const [cx, cy] = corners[m]!
-          const rx = (cx + cy) * COS45
-          const ry = (-cx + cy) * COS45
-          const sx = rx * viewScale + viewOffsetX
-          const sy = ry * viewScale * yScalar
-          if (m === 0) {
-            ctx.moveTo(sx, sy)
-          } else {
-            ctx.lineTo(sx, sy)
-          }
-        }
+        ctx.moveTo(base, rBase)
+        ctx.lineTo(base + hw, rBase - hh)
+        ctx.lineTo(base + 2 * hw, rBase)
+        ctx.lineTo(base + hw, rBase + hh)
         ctx.closePath()
         ctx.fill()
       }

@@ -75,6 +75,10 @@ const DPRIME_SIGNED_STOPS: [number, number, number][] = [
   [0, 0, 160],
 ]
 
+export function mapLDValue(ldVal: number, signedLD: boolean) {
+  return Math.max(0, Math.min(1, signedLD ? (ldVal + 1) / 2 : ldVal))
+}
+
 export function generateLDColorRamp(
   metric: string,
   signedLD: boolean,

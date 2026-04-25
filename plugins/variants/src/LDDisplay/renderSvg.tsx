@@ -8,7 +8,7 @@ import { LDSVGColorLegend } from './components/LDColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantLabels from './components/VariantLabels.tsx'
 import Wrapper from './components/Wrapper.tsx'
-import { generateLDColorRamp } from './components/ldColorRamp.ts'
+import { generateLDColorRamp, mapLDValue } from './components/ldColorRamp.ts'
 import RecombinationTrack from '../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../shared/components/RecombinationYScaleBar.tsx'
 
@@ -19,11 +19,6 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-function computeT(ldVal: number, signedLD: boolean) {
-  const t = signedLD ? (ldVal + 1) / 2 : ldVal
-  return Math.max(0, Math.min(1, t))
-}
 
 export async function renderSvg(
   self: SharedLDModel,
@@ -79,7 +74,7 @@ export async function renderSvg(
         for (let j = 0; j < i; j++) {
           const px = boundaries[j]!
           const cw = boundaries[j + 1]! - px
-          const t = computeT(ldValues[k++]!, signedLD)
+          const t = mapLDValue(ldValues[k++]!, signedLD)
           ctx.fillStyle = lookupColorRampCSS(ramp, t)
           ctx.fillRect(px, py, cw, ch)
         }

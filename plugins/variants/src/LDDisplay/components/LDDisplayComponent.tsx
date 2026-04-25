@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { CanvasDisplayWrapper, ErrorOverlay } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
@@ -328,85 +328,66 @@ const LDCanvas = observer(function LDCanvas({
     }
   }, [genomicX1, genomicX2, model.showVerticalGuides, view, viewOffsetX])
 
-  const onMouseMove = useCallback(
-    (event: React.MouseEvent) => {
-      const container = containerRef.current
-      const data = model.rpcData
-      if (!container || !data || isLoading) {
-        setHoveredItem(undefined)
-        setMousePosition(undefined)
-        return
+  const onMouseMove = (event: React.MouseEvent) => {
+    const container = containerRef.current
+    const data = model.rpcData
+    if (!container || !data || isLoading) {
+      setHoveredItem(undefined)
+      setMousePosition(undefined)
+      return
+    }
+
+    const rect = container.getBoundingClientRect()
+    const mouseX = event.clientX - rect.left
+    const mouseY = event.clientY - rect.top
+
+    setMousePosition({ x: event.clientX, y: event.clientY })
+
+    if (mouseY < effectiveLineZoneHeight) {
+      setHoveredItem(undefined)
+      return
+    }
+
+    // Reverse the viewport transform, then un-rotate to get data-space coords
+    const dataScreenX = (mouseX - viewOffsetX) / viewScale
+    const dataScreenY = (mouseY - effectiveLineZoneHeight) / viewScale
+
+    const { x, y } = screenToUnrotated(dataScreenX, dataScreenY, yScalar, 0)
+
+    const { boundaries, ldValues } = data
+    const n = boundaries.length - 1
+
+    let hitI = -1
+    let hitJ = -1
+    if (useGenomicPositions) {
+      hitJ = upperBound(boundaries, x) - 1
+      hitI = upperBound(boundaries, y) - 1
+    } else {
+      const w = cellWidth
+      if (w > 0) {
+        hitJ = Math.floor(x / w)
+        hitI = Math.floor(y / w)
       }
+    }
 
-      const rect = container.getBoundingClientRect()
-      const mouseX = event.clientX - rect.left
-      const mouseY = event.clientY - rect.top
+    if (hitI > hitJ && hitI > 0 && hitJ >= 0 && hitI < n) {
+      const ldIdx = (hitI * (hitI - 1)) / 2 + hitJ
+      setHoveredItem({
+        i: hitI,
+        j: hitJ,
+        ldValue: ldValues[ldIdx] ?? 0,
+        snp1: snps[hitI]!,
+        snp2: snps[hitJ]!,
+      })
+    } else {
+      setHoveredItem(undefined)
+    }
+  }
 
-      setMousePosition({ x: event.clientX, y: event.clientY })
-
-      if (mouseY < effectiveLineZoneHeight) {
-        setHoveredItem(undefined)
-        return
-      }
-
-      // Reverse the shader transform to get data-space (pre-rotation) coords
-      const dataScreenX = (mouseX - viewOffsetX) / viewScale
-      const dataScreenY =
-        (mouseY - effectiveLineZoneHeight) / viewScale + effectiveLineZoneHeight
-
-      const { x, y } = screenToUnrotated(
-        dataScreenX,
-        dataScreenY,
-        yScalar,
-        effectiveLineZoneHeight,
-      )
-
-      const { boundaries, ldValues } = data
-      const n = boundaries.length - 1
-
-      let hitI = -1
-      let hitJ = -1
-      if (useGenomicPositions) {
-        hitJ = upperBound(boundaries, x) - 1
-        hitI = upperBound(boundaries, y) - 1
-      } else {
-        const w = cellWidth
-        if (w > 0) {
-          hitJ = Math.floor(x / w)
-          hitI = Math.floor(y / w)
-        }
-      }
-
-      if (hitI > hitJ && hitI > 0 && hitJ >= 0 && hitI < n) {
-        const ldIdx = (hitI * (hitI - 1)) / 2 + hitJ
-        setHoveredItem({
-          i: hitI,
-          j: hitJ,
-          ldValue: ldValues[ldIdx] ?? 0,
-          snp1: snps[hitI]!,
-          snp2: snps[hitJ]!,
-        })
-      } else {
-        setHoveredItem(undefined)
-      }
-    },
-    [
-      model,
-      cellWidth,
-      useGenomicPositions,
-      yScalar,
-      effectiveLineZoneHeight,
-      viewScale,
-      viewOffsetX,
-      isLoading,
-      snps,
-    ],
-  )
-
-  const onMouseLeave = useCallback(() => {
+  const onMouseLeave = () => {
     setHoveredItem(undefined)
     setMousePosition(undefined)
-  }, [])
+  }
 
   if (error) {
     return (
