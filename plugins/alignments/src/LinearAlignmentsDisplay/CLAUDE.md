@@ -2,59 +2,29 @@
 
 ## Layout architecture
 
-Both pileup and chain (linked-read) layout are computed on the **main thread**,
-not in the RPC worker. This mirrors the wiggle autoscale design and is required
-because consistent Y-row assignment across multiple `displayedRegions` is
-impossible in per-region RPC workers — each worker sees only one region at a
-time, so mates that span region boundaries cannot be placed on the same row.
-Moving all layout to the main thread (where all region results are available
-simultaneously) solves this without requiring the RPC to process multiple
-regions in a single call, which would be far more complex and wasteful.
+Pileup and chain layout are computed on the **main thread**, not in the RPC
+worker. Required because consistent Y-row assignment across multiple
+`displayedRegions` is impossible per-region — each worker sees only one region,
+so mates spanning region boundaries can't be placed on the same row.
 
-Layout flows entirely through the `laidOutPileupMap` getter on the display
-model. Raw fetched data lives in `rpcDataMap` with zero-filled Y arrays; the
-getter returns a parallel map of shallow clones with Y arrays, `maxY`, and (in
-chain mode) connecting-line / Flatbush data derived per-frame. MobX caches this
-so layout recomputes only when `rpcDataMap`, `sortedBy`, `showSoftClipping`, or
-`renderingMode` change — and nothing mutates the raw entries. `self.maxY` is a
-pure view over the laid-out map.
+Layout flows through the `laidOutPileupMap` getter. Raw fetched data lives in
+`rpcDataMap` with zero-filled Y arrays; the getter returns shallow clones with
+filled Y arrays, `maxY`, and (chain mode) connecting-line / Flatbush data.
+MobX caches this — recomputes only when `rpcDataMap`, `sortedBy`,
+`showSoftClipping`, or `renderingMode` change. Raw entries are never mutated.
 
-### Pileup layout (`sortLayout.ts`)
+### `placeRect` invariant
 
-- `computeLayout` / `computeSortedLayout` — single-region
-- `computeMultiRegionLayout` — multi-region, rowMap keyed by feature ID
-- `cloneWithLayout` — shallow-clones a `PileupDataResult` with freshly allocated
-  Y arrays propagated from a per-read `readYs`
-- `buildLaidOutPileupMap` — combines the above; called from the
-  `laidOutPileupMap` getter in non-chain modes
-
-### Chain layout (`computeChainLayout.ts`)
-
-- `computeChainLayout` — single-region, groups by chain name
-- `computeMultiRegionChainLayout` — multi-region, rowMap keyed by chain NAME
-  (mates share QNAME, so name-keyed dedup handles cross-region pairs)
-- `readYsFromRowMap` — converts a name-keyed rowMap to a per-read Uint16Array
-- `buildChainConnectingData` — builds connecting lines + Flatbush and returns
-  them (does not mutate its input)
-- `buildLaidOutChainMap` — combines the above and reuses `cloneWithLayout` for Y
-  propagation; called from the `laidOutPileupMap` getter in chain mode
-
-**Shared layout primitive:** Both pileup (`sortLayout.ts`) and chain
-(`computeChainLayout.ts`) call `placeRect(rows, start, end)` from
-`sortLayout.ts`. Each row is a sorted `[s1,e1,s2,e2,...]` flat list; placement
-is first-fit with gap-filling. This is essential for chain layout (sorted by
-distance, not start) and for pileup sort-by-base/strand/etc. (overlapping reads
-placed in sort order, non-overlap reads fill remaining gaps) — in both cases
-features arrive out of start order, so a right-edge-only levels array would
-fragment layout. Start-sorted input hits an O(1) per-row fast-path, matching
-end-array performance in the common case. Do not reintroduce a levels array for
-either layout.
+Both pileup (`sortLayout.ts`) and chain (`computeChainLayout.ts`) use
+`placeRect(rows, start, end)`. Each row is a sorted `[s1,e1,s2,e2,...]` flat
+list; placement is first-fit with gap-filling. **Do not reintroduce a
+levels/right-edge-only array** — features arrive out of start order in both
+chain layout (sorted by distance) and pileup sort-by-base/strand, so
+right-edge-only would fragment layout. Start-sorted input hits an O(1)
+fast-path that matches end-array performance in the common case.
 
 ### Worker contract
 
-The RPC worker (`executeRenderChainData.ts`) returns chain _metadata_ arrays
-(`chainAbsMinStarts`, `chainAbsMaxEnds`, `chainDistances`, `chainNames`,
-`chainColorTypes`, `chainSuppTypes`, `chainHasMultiple`,
-`chainFirstReadIndices`) and all read/gap/mismatch Y arrays initialised to 0.
-The main thread fills in real Y values and builds derived data (connecting
-lines, Flatbush).
+`executeRenderChainData.ts` returns chain metadata arrays and all Y arrays
+initialized to 0. The main thread fills real Y values and builds connecting
+lines / Flatbush.

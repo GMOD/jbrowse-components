@@ -13,10 +13,8 @@ export const unmethylated5mC = '#0000ff'
 // …
 ```
 
-Import these constants directly — do **not** add a fallback copy of the value
-elsewhere in the codebase, and do not thread them through `theme.palette` just
-to retrieve them in worker code. The exported constant _is_ the value; there is
-no fallback needed.
+Import these constants directly — do **not** add a fallback copy elsewhere, and
+do not thread them through `theme.palette` to retrieve them in worker code.
 
 Colors that are only used in React components and can vary per user theme belong
 in the `Palette` / `PaletteOptions` interfaces and the `addMissingColors`
