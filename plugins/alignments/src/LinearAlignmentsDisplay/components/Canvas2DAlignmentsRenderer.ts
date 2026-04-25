@@ -26,6 +26,7 @@ import {
   computeBlockHeights,
   ensureRegion,
   interbaseRangeEnds,
+  pileupRowY,
 } from './rendererTypes.ts'
 import { arcLineColorPalette, getArcPalette } from './shaders/palettes.ts'
 
@@ -617,17 +618,14 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     fullBlockWidth: number,
     state: RenderState,
   ) {
-    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
 
     for (let i = 0; i < region.numReads; i++) {
       const startBp = region.readPositions[i * 2]!
       const endBp = region.readPositions[i * 2 + 1]!
       const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const y =
-        region.readYs[i]! * (fH + fSpacing) + covOffset - state.rangeY[0]
+      const y = pileupRowY(region.readYs[i]!, state)
       const w = Math.max(1, x2 - x1)
 
       ctx.fillStyle = getReadColor(i, region, state.colorScheme, state.colors, {
@@ -652,9 +650,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     fullBlockWidth: number,
     state: RenderState,
   ) {
-    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
 
     for (let i = 0; i < region.numGaps; i++) {
       const startBp = region.gapPositions[i * 2]!
@@ -662,7 +658,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
       const yRow = region.gapYs[i]!
-      const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
+      const y = pileupRowY(yRow, state)
       const gapType = region.gapTypes[i]!
       const w = Math.max(1, x2 - x1)
 
@@ -690,9 +686,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     fullBlockWidth: number,
     state: RenderState,
   ) {
-    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
     const bpPerPx = bpLength / fullBlockWidth
     const { colors } = state
     const mutedBase = rgb255(colors.colorMutedSnpBase)
@@ -711,7 +705,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
       const w = Math.max(1, 1 / bpPerPx)
       const yRow = region.mismatchYs[i]!
-      const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
+      const y = pileupRowY(yRow, state)
       const base = region.mismatchBases[i]!
       const color = baseColors[base]
       if (color) {
@@ -729,16 +723,14 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     fullBlockWidth: number,
     state: RenderState,
   ) {
-    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
     const insColor = rgb255(state.colors.colorInsertion)
 
     for (let i = 0; i < region.numInsertions; i++) {
       const bp = region.insertionPositions[i]!
       const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
       const yRow = region.insertionYs[i]!
-      const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
+      const y = pileupRowY(yRow, state)
 
       ctx.fillStyle = insColor
       // Insertion indicator: vertical line + small triangle
@@ -775,9 +767,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     if (count === 0) {
       return
     }
-    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
     const bpPerPx = bpLength / fullBlockWidth
 
     ctx.fillStyle = color
@@ -785,7 +775,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       const bp = positions[i]!
       const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
       const yRow = ys[i]!
-      const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
+      const y = pileupRowY(yRow, state)
       const len = lengths[i]!
       const w = Math.max(1, len / bpPerPx)
       ctx.fillRect(x, y, w, fH)
@@ -803,9 +793,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     if (region.numSoftclipBases === 0) {
       return
     }
-    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
     const bpPerPx = bpLength / fullBlockWidth
     const { colors } = state
     const mutedBase = rgb255(colors.colorMutedSnpBase)
@@ -823,7 +811,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
       const w = Math.max(1, 1 / bpPerPx)
       const yRow = region.softclipBaseYs[i]!
-      const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
+      const y = pileupRowY(yRow, state)
       const base = region.softclipBaseBases[i]!
       const color = baseColors[base]
       if (color) {
@@ -844,9 +832,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     if (region.numModifications === 0) {
       return
     }
-    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
     const bpPerPx = bpLength / fullBlockWidth
 
     for (let i = 0; i < region.numModifications; i++) {
@@ -854,7 +840,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
       const w = Math.max(1, 1 / bpPerPx)
       const yRow = region.modificationYs[i]!
-      const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
+      const y = pileupRowY(yRow, state)
       ctx.fillStyle = abgrToCssRgba(region.modificationColors[i]!)
       ctx.fillRect(x, y, w, fH)
     }
@@ -995,9 +981,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     if (region.numConnectingLines === 0) {
       return
     }
-    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
 
     ctx.strokeStyle = 'rgba(0,0,0,0.3)'
     ctx.lineWidth = 1
@@ -1008,7 +992,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
       const yRow = region.connectingLineYs[i]!
-      const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0] + fH / 2
+      const y = pileupRowY(yRow, state) + fH / 2
 
       ctx.beginPath()
       ctx.moveTo(x1, y)
@@ -1027,9 +1011,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     },
     state: RenderState,
   ) {
-    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
     const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
     const fullBlockWidth = block.screenEndPx - block.screenStartPx
 
@@ -1040,8 +1022,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
         const endBp = region.readPositions[idx * 2 + 1]!
         const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
         const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-        const y =
-          region.readYs[idx]! * (fH + fSpacing) + covOffset - state.rangeY[0]
+        const y = pileupRowY(region.readYs[idx]!, state)
         ctx.fillStyle = 'rgba(0,0,0,0.15)'
         ctx.fillRect(x1, y, x2 - x1, fH)
       }
@@ -1054,8 +1035,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
         const endBp = region.readPositions[idx * 2 + 1]!
         const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
         const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-        const y =
-          region.readYs[idx]! * (fH + fSpacing) + covOffset - state.rangeY[0]
+        const y = pileupRowY(region.readYs[idx]!, state)
         ctx.strokeStyle = '#00b8ff'
         ctx.lineWidth = 2
         ctx.strokeRect(x1, y, x2 - x1, fH)
@@ -1073,9 +1053,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     },
     state: RenderState,
   ) {
-    const covOffset = state.pileupTopOffset
     const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
     const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
     const fullBlockWidth = block.screenEndPx - block.screenStartPx
 
@@ -1086,7 +1064,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
         const endBp = bounds.maxEnd
         const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
         const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-        const y = bounds.y * (fH + fSpacing) + covOffset - state.rangeY[0]
+        const y = pileupRowY(bounds.y, state)
         ctx.fillStyle = 'rgba(0,0,0,0.4)'
         ctx.fillRect(x1, y, x2 - x1, fH)
       }
@@ -1099,7 +1077,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
         const endBp = bounds.maxEnd
         const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
         const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-        const y = bounds.y * (fH + fSpacing) + covOffset - state.rangeY[0]
+        const y = pileupRowY(bounds.y, state)
         ctx.strokeStyle = '#00b8ff'
         ctx.lineWidth = 2
         ctx.strokeRect(x1, y, x2 - x1, fH)

@@ -217,3 +217,14 @@ export function computeBlockHeights(state: RenderState) {
     covH: state.showCoverage ? state.coverageHeight : 0,
   }
 }
+
+// Canvas Y for a pileup row index, mirroring shader-side `pileupY()` in
+// alignmentsUniforms.slang. Single source of truth for the row → canvas-Y
+// formula used by every Canvas2D draw method.
+export function pileupRowY(yRow: number, state: RenderState) {
+  return (
+    yRow * (state.featureHeight + state.featureSpacing) +
+    state.pileupTopOffset -
+    state.rangeY[0]
+  )
+}
