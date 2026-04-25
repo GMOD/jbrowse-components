@@ -3,65 +3,199 @@
 
 import type { GlAttributeLayout } from '@jbrowse/core/gpu/hal'
 
-export const WGSL_SOURCE = "struct Uniforms_std140_0\n{\n    @align(16) resolution_0 : vec2<f32>,\n    @align(8) offsetX_0 : f32,\n    @align(4) offsetY_0 : f32,\n    @align(16) lineWidth_0 : f32,\n    @align(4) scaleX_0 : f32,\n    @align(8) scaleY_0 : f32,\n};\n\n@binding(1) @group(0) var<uniform> u_0 : Uniforms_std140_0;\nfn unpackRGBA_0( c_0 : u32) -> vec4<f32>\n{\n    return vec4<f32>(f32((((c_0 >> (u32(0)))) & (u32(255)))), f32((((c_0 >> (u32(8)))) & (u32(255)))), f32((((c_0 >> (u32(16)))) & (u32(255)))), f32((((c_0 >> (u32(24)))) & (u32(255))))) / vec4<f32>(255.0f);\n}\n\nstruct VsOut_0\n{\n    @builtin(position) position_0 : vec4<f32>,\n    @location(0) color_0 : vec4<f32>,\n    @location(1) edge_0 : f32,\n};\n\nstruct vertexInput_0\n{\n    @location(0) x1_0 : f32,\n    @location(1) y1_0 : f32,\n    @location(2) x2_0 : f32,\n    @location(3) y2_0 : f32,\n    @location(4) color_1 : u32,\n};\n\n@vertex\nfn vs_main( _S1 : vertexInput_0, @builtin(vertex_index) vid_0 : u32) -> VsOut_0\n{\n    var v_0 : u32 = vid_0 % u32(6);\n    var _S2 : bool;\n    if(v_0 == u32(2))\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(3);\n    }\n    if(_S2)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(5);\n    }\n    var t_0 : f32;\n    if(_S2)\n    {\n        t_0 = 1.0f;\n    }\n    else\n    {\n        t_0 = 0.0f;\n    }\n    if(v_0 == u32(1))\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(4);\n    }\n    if(_S2)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(5);\n    }\n    var side_0 : f32;\n    if(_S2)\n    {\n        side_0 = 1.0f;\n    }\n    else\n    {\n        side_0 = -1.0f;\n    }\n    var sx1_0 : f32 = _S1.x1_0 * u_0.scaleX_0 - u_0.offsetX_0;\n    var sy1_0 : f32 = u_0.resolution_0.y - (_S1.y1_0 * u_0.scaleY_0 - u_0.offsetY_0);\n    var sx2_0 : f32 = _S1.x2_0 * u_0.scaleX_0 - u_0.offsetX_0;\n    var sy2_0 : f32 = u_0.resolution_0.y - (_S1.y2_0 * u_0.scaleY_0 - u_0.offsetY_0);\n    var x_0 : f32 = mix(sx1_0, sx2_0, t_0);\n    var y_0 : f32 = mix(sy1_0, sy2_0, t_0);\n    var dx_0 : f32 = sx2_0 - sx1_0;\n    var dy_0 : f32 = sy2_0 - sy1_0;\n    var len_0 : f32 = sqrt(dx_0 * dx_0 + dy_0 * dy_0);\n    var normal_0 : vec2<f32>;\n    if(len_0 > 0.00100000004749745f)\n    {\n        normal_0 = vec2<f32>(- dy_0, dx_0) / vec2<f32>(len_0);\n    }\n    else\n    {\n        normal_0 = vec2<f32>(0.0f, 1.0f);\n    }\n    var clipSpace_0 : vec2<f32> = (vec2<f32>(x_0, y_0) + normal_0 * vec2<f32>(side_0) * vec2<f32>(u_0.lineWidth_0) * vec2<f32>(0.5f)) / u_0.resolution_0 * vec2<f32>(2.0f) - vec2<f32>(1.0f);\n    var o_0 : VsOut_0;\n    o_0.position_0 = vec4<f32>(clipSpace_0.x, - clipSpace_0.y, 0.0f, 1.0f);\n    o_0.color_0 = unpackRGBA_0(_S1.color_1);\n    o_0.edge_0 = side_0;\n    return o_0;\n}\n\nstruct pixelOutput_0\n{\n    @location(0) output_0 : vec4<f32>,\n};\n\nstruct pixelInput_0\n{\n    @location(0) color_2 : vec4<f32>,\n    @location(1) edge_1 : f32,\n};\n\n@fragment\nfn fs_main( _S3 : pixelInput_0, @builtin(position) position_1 : vec4<f32>) -> pixelOutput_0\n{\n    var aa_0 : f32 = (fwidth((_S3.edge_1)));\n    var finalAlpha_0 : f32 = _S3.color_2.w * (1.0f - smoothstep(0.5f - aa_0 * 0.5f, 0.5f + aa_0, abs(_S3.edge_1)));\n    var _S4 : pixelOutput_0 = pixelOutput_0( vec4<f32>(_S3.color_2.xyz * vec3<f32>(finalAlpha_0), finalAlpha_0) );\n    return _S4;\n}\n\n"
+export const WGSL_SOURCE = "struct Uniforms_std140_0\n{\n    @align(16) resolution_0 : vec2<f32>,\n    @align(8) lineWidth_0 : f32,\n    @align(4) bpPerPxH_0 : f32,\n    @align(16) bpPerPxV_0 : f32,\n    @align(4) hpZero_0 : f32,\n    @align(8) regionOffsetH0_0 : f32,\n    @align(4) regionOffsetH1_0 : f32,\n    @align(16) regionOffsetH2_0 : f32,\n    @align(4) regionOffsetH3_0 : f32,\n    @align(8) regionOffsetH4_0 : f32,\n    @align(4) regionOffsetH5_0 : f32,\n    @align(16) regionOffsetH6_0 : f32,\n    @align(4) regionOffsetH7_0 : f32,\n    @align(8) regionOffsetH8_0 : f32,\n    @align(4) regionOffsetH9_0 : f32,\n    @align(16) regionOffsetH10_0 : f32,\n    @align(4) regionOffsetH11_0 : f32,\n    @align(8) regionOffsetH12_0 : f32,\n    @align(4) regionOffsetH13_0 : f32,\n    @align(16) regionOffsetH14_0 : f32,\n    @align(4) regionOffsetH15_0 : f32,\n    @align(8) regionOffsetV0_0 : f32,\n    @align(4) regionOffsetV1_0 : f32,\n    @align(16) regionOffsetV2_0 : f32,\n    @align(4) regionOffsetV3_0 : f32,\n    @align(8) regionOffsetV4_0 : f32,\n    @align(4) regionOffsetV5_0 : f32,\n    @align(16) regionOffsetV6_0 : f32,\n    @align(4) regionOffsetV7_0 : f32,\n    @align(8) regionOffsetV8_0 : f32,\n    @align(4) regionOffsetV9_0 : f32,\n    @align(16) regionOffsetV10_0 : f32,\n    @align(4) regionOffsetV11_0 : f32,\n    @align(8) regionOffsetV12_0 : f32,\n    @align(4) regionOffsetV13_0 : f32,\n    @align(16) regionOffsetV14_0 : f32,\n    @align(4) regionOffsetV15_0 : f32,\n};\n\n@binding(1) @group(0) var<uniform> u_0 : Uniforms_std140_0;\nfn regionOffsetH_0( idx_0 : u32) -> f32\n{\n    switch(idx_0)\n    {\n    case u32(0):\n        {\n            return u_0.regionOffsetH0_0;\n        }\n    case u32(1):\n        {\n            return u_0.regionOffsetH1_0;\n        }\n    case u32(2):\n        {\n            return u_0.regionOffsetH2_0;\n        }\n    case u32(3):\n        {\n            return u_0.regionOffsetH3_0;\n        }\n    case u32(4):\n        {\n            return u_0.regionOffsetH4_0;\n        }\n    case u32(5):\n        {\n            return u_0.regionOffsetH5_0;\n        }\n    case u32(6):\n        {\n            return u_0.regionOffsetH6_0;\n        }\n    case u32(7):\n        {\n            return u_0.regionOffsetH7_0;\n        }\n    case u32(8):\n        {\n            return u_0.regionOffsetH8_0;\n        }\n    case u32(9):\n        {\n            return u_0.regionOffsetH9_0;\n        }\n    case u32(10):\n        {\n            return u_0.regionOffsetH10_0;\n        }\n    case u32(11):\n        {\n            return u_0.regionOffsetH11_0;\n        }\n    case u32(12):\n        {\n            return u_0.regionOffsetH12_0;\n        }\n    case u32(13):\n        {\n            return u_0.regionOffsetH13_0;\n        }\n    case u32(14):\n        {\n            return u_0.regionOffsetH14_0;\n        }\n    case u32(15):\n        {\n            return u_0.regionOffsetH15_0;\n        }\n    default :\n        {\n            return 0.0f;\n        }\n    }\n}\n\nfn regionOffsetV_0( idx_1 : u32) -> f32\n{\n    switch(idx_1)\n    {\n    case u32(0):\n        {\n            return u_0.regionOffsetV0_0;\n        }\n    case u32(1):\n        {\n            return u_0.regionOffsetV1_0;\n        }\n    case u32(2):\n        {\n            return u_0.regionOffsetV2_0;\n        }\n    case u32(3):\n        {\n            return u_0.regionOffsetV3_0;\n        }\n    case u32(4):\n        {\n            return u_0.regionOffsetV4_0;\n        }\n    case u32(5):\n        {\n            return u_0.regionOffsetV5_0;\n        }\n    case u32(6):\n        {\n            return u_0.regionOffsetV6_0;\n        }\n    case u32(7):\n        {\n            return u_0.regionOffsetV7_0;\n        }\n    case u32(8):\n        {\n            return u_0.regionOffsetV8_0;\n        }\n    case u32(9):\n        {\n            return u_0.regionOffsetV9_0;\n        }\n    case u32(10):\n        {\n            return u_0.regionOffsetV10_0;\n        }\n    case u32(11):\n        {\n            return u_0.regionOffsetV11_0;\n        }\n    case u32(12):\n        {\n            return u_0.regionOffsetV12_0;\n        }\n    case u32(13):\n        {\n            return u_0.regionOffsetV13_0;\n        }\n    case u32(14):\n        {\n            return u_0.regionOffsetV14_0;\n        }\n    case u32(15):\n        {\n            return u_0.regionOffsetV15_0;\n        }\n    default :\n        {\n            return 0.0f;\n        }\n    }\n}\n\nfn hpSplitUint_0( value_0 : u32) -> vec2<f32>\n{\n    var lo_0 : u32 = (value_0 & (u32(4095)));\n    return vec2<f32>(f32(value_0 - lo_0), f32(lo_0));\n}\n\nfn hpScaleLinear_0( splitPos_0 : vec2<f32>,  bpRange_0 : vec3<f32>,  hpZero_1 : f32) -> f32\n{\n    var step_0 : f32 = 1.0f / bpRange_0.z;\n    var _S1 : f32 = - (1.0f / hpZero_1);\n    return dot(vec2<f32>(max(splitPos_0.x - bpRange_0.x, _S1), max(splitPos_0.y - bpRange_0.y, _S1)), vec2<f32>(step_0, step_0));\n}\n\nfn unpackRGBA_0( c_0 : u32) -> vec4<f32>\n{\n    return vec4<f32>(f32((((c_0 >> (u32(0)))) & (u32(255)))), f32((((c_0 >> (u32(8)))) & (u32(255)))), f32((((c_0 >> (u32(16)))) & (u32(255)))), f32((((c_0 >> (u32(24)))) & (u32(255))))) / vec4<f32>(255.0f);\n}\n\nstruct VsOut_0\n{\n    @builtin(position) position_0 : vec4<f32>,\n    @location(0) color_0 : vec4<f32>,\n    @location(1) edge_0 : f32,\n};\n\nstruct vertexInput_0\n{\n    @location(0) x1_0 : u32,\n    @location(1) y1_0 : u32,\n    @location(2) x2_0 : u32,\n    @location(3) y2_0 : u32,\n    @location(4) xRegionIdx_0 : u32,\n    @location(5) yRegionIdx_0 : u32,\n    @location(6) color_1 : u32,\n};\n\n@vertex\nfn vs_main( _S2 : vertexInput_0, @builtin(vertex_index) vid_0 : u32) -> VsOut_0\n{\n    var v_0 : u32 = vid_0 % u32(6);\n    var _S3 : bool;\n    if(v_0 == u32(2))\n    {\n        _S3 = true;\n    }\n    else\n    {\n        _S3 = v_0 == u32(3);\n    }\n    if(_S3)\n    {\n        _S3 = true;\n    }\n    else\n    {\n        _S3 = v_0 == u32(5);\n    }\n    var t_0 : f32;\n    if(_S3)\n    {\n        t_0 = 1.0f;\n    }\n    else\n    {\n        t_0 = 0.0f;\n    }\n    if(v_0 == u32(1))\n    {\n        _S3 = true;\n    }\n    else\n    {\n        _S3 = v_0 == u32(4);\n    }\n    if(_S3)\n    {\n        _S3 = true;\n    }\n    else\n    {\n        _S3 = v_0 == u32(5);\n    }\n    var side_0 : f32;\n    if(_S3)\n    {\n        side_0 = 1.0f;\n    }\n    else\n    {\n        side_0 = -1.0f;\n    }\n    var bpRangeH_0 : vec3<f32> = vec3<f32>(0.0f, 0.0f, u_0.bpPerPxH_0);\n    var bpRangeV_0 : vec3<f32> = vec3<f32>(0.0f, 0.0f, u_0.bpPerPxV_0);\n    var xBase_0 : f32 = regionOffsetH_0(_S2.xRegionIdx_0);\n    var yBase_0 : f32 = regionOffsetV_0(_S2.yRegionIdx_0);\n    var sx1_0 : f32 = xBase_0 + hpScaleLinear_0(hpSplitUint_0(_S2.x1_0), bpRangeH_0, u_0.hpZero_0);\n    var sy1_0 : f32 = u_0.resolution_0.y - (yBase_0 + hpScaleLinear_0(hpSplitUint_0(_S2.y1_0), bpRangeV_0, u_0.hpZero_0));\n    var sx2_0 : f32 = xBase_0 + hpScaleLinear_0(hpSplitUint_0(_S2.x2_0), bpRangeH_0, u_0.hpZero_0);\n    var sy2_0 : f32 = u_0.resolution_0.y - (yBase_0 + hpScaleLinear_0(hpSplitUint_0(_S2.y2_0), bpRangeV_0, u_0.hpZero_0));\n    var x_0 : f32 = mix(sx1_0, sx2_0, t_0);\n    var y_0 : f32 = mix(sy1_0, sy2_0, t_0);\n    var dx_0 : f32 = sx2_0 - sx1_0;\n    var dy_0 : f32 = sy2_0 - sy1_0;\n    var len_0 : f32 = sqrt(dx_0 * dx_0 + dy_0 * dy_0);\n    var normal_0 : vec2<f32>;\n    if(len_0 > 0.00100000004749745f)\n    {\n        normal_0 = vec2<f32>(- dy_0, dx_0) / vec2<f32>(len_0);\n    }\n    else\n    {\n        normal_0 = vec2<f32>(0.0f, 1.0f);\n    }\n    var clipSpace_0 : vec2<f32> = (vec2<f32>(x_0, y_0) + normal_0 * vec2<f32>(side_0) * vec2<f32>(u_0.lineWidth_0) * vec2<f32>(0.5f)) / u_0.resolution_0 * vec2<f32>(2.0f) - vec2<f32>(1.0f);\n    var o_0 : VsOut_0;\n    o_0.position_0 = vec4<f32>(clipSpace_0.x, - clipSpace_0.y, 0.0f, 1.0f);\n    o_0.color_0 = unpackRGBA_0(_S2.color_1);\n    o_0.edge_0 = side_0;\n    return o_0;\n}\n\nstruct pixelOutput_0\n{\n    @location(0) output_0 : vec4<f32>,\n};\n\nstruct pixelInput_0\n{\n    @location(0) color_2 : vec4<f32>,\n    @location(1) edge_1 : f32,\n};\n\n@fragment\nfn fs_main( _S4 : pixelInput_0, @builtin(position) position_1 : vec4<f32>) -> pixelOutput_0\n{\n    var aa_0 : f32 = (fwidth((_S4.edge_1)));\n    var finalAlpha_0 : f32 = _S4.color_2.w * (1.0f - smoothstep(0.5f - aa_0 * 0.5f, 0.5f + aa_0, abs(_S4.edge_1)));\n    var _S5 : pixelOutput_0 = pixelOutput_0( vec4<f32>(_S4.color_2.xyz * vec3<f32>(finalAlpha_0), finalAlpha_0) );\n    return _S5;\n}\n\n"
 
-export const GLSL_VERTEX = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 28 0\nstruct Uniforms_0\n{\n    vec2 resolution_0;\n    float offsetX_0;\n    float offsetY_0;\n    float lineWidth_0;\n    float scaleX_0;\n    float scaleY_0;\n};\n\n\n#line 36\nlayout(std140) uniform Uniforms\n{\n    vec2 resolution_0;\n    float offsetX_0;\n    float offsetY_0;\n    float lineWidth_0;\n    float scaleX_0;\n    float scaleY_0;\n}u_0;\n\n#line 12\nvec4 unpackRGBA_0(uint c_0)\n{\n\n#line 13\n    return vec4(float((c_0 >> 0U) & 255U), float((c_0 >> 8U) & 255U), float((c_0 >> 16U) & 255U), float((c_0 >> 24U) & 255U)) / 255.0;\n}\n\n\n#line 13\nout vec4 v_color;\n\n\n#line 13\nout float v_edge;\n\n\n#line 13\nlayout(location = 0)\nin float a_x1;\n\n\n#line 13\nlayout(location = 1)\nin float a_y1;\n\n\n#line 13\nlayout(location = 2)\nin float a_x2;\n\n\n#line 13\nlayout(location = 3)\nin float a_y2;\n\n\n#line 13\nlayout(location = 4)\nin uint a_color;\n\n\n#line 38\nstruct VsOut_0\n{\n    vec4 position_0;\n    vec4 color_0;\n    float edge_0;\n};\n\nvoid main()\n{\n\n#line 46\n    uint v_0 = uint(gl_VertexID) % 6U;\n\n#line 46\n    bool _S1;\n\n#line 54\n    if(v_0 == 2U)\n    {\n\n#line 54\n        _S1 = true;\n\n#line 54\n    }\n    else\n    {\n\n#line 54\n        _S1 = v_0 == 3U;\n\n#line 54\n    }\n\n#line 54\n    if(_S1)\n    {\n\n#line 54\n        _S1 = true;\n\n#line 54\n    }\n    else\n    {\n\n#line 54\n        _S1 = v_0 == 5U;\n\n#line 54\n    }\n\n#line 54\n    float t_0;\n\n#line 54\n    if(_S1)\n    {\n\n#line 54\n        t_0 = 1.0;\n\n#line 54\n    }\n    else\n    {\n\n#line 54\n        t_0 = 0.0;\n\n#line 54\n    }\n    if(v_0 == 1U)\n    {\n\n#line 55\n        _S1 = true;\n\n#line 55\n    }\n    else\n    {\n\n#line 55\n        _S1 = v_0 == 4U;\n\n#line 55\n    }\n\n#line 55\n    if(_S1)\n    {\n\n#line 55\n        _S1 = true;\n\n#line 55\n    }\n    else\n    {\n\n#line 55\n        _S1 = v_0 == 5U;\n\n#line 55\n    }\n\n#line 55\n    float side_0;\n\n#line 55\n    if(_S1)\n    {\n\n#line 55\n        side_0 = 1.0;\n\n#line 55\n    }\n    else\n    {\n\n#line 55\n        side_0 = -1.0;\n\n#line 55\n    }\n\n    float sx1_0 = a_x1 * u_0.scaleX_0 - u_0.offsetX_0;\n    float sy1_0 = u_0.resolution_0.y - (a_y1 * u_0.scaleY_0 - u_0.offsetY_0);\n    float sx2_0 = a_x2 * u_0.scaleX_0 - u_0.offsetX_0;\n    float sy2_0 = u_0.resolution_0.y - (a_y2 * u_0.scaleY_0 - u_0.offsetY_0);\n\n    float x_0 = mix(sx1_0, sx2_0, t_0);\n    float y_0 = mix(sy1_0, sy2_0, t_0);\n\n    float dx_0 = sx2_0 - sx1_0;\n    float dy_0 = sy2_0 - sy1_0;\n    float len_0 = sqrt(dx_0 * dx_0 + dy_0 * dy_0);\n\n#line 67\n    vec2 normal_0;\n\n    if(len_0 > 0.00100000004749745)\n    {\n\n#line 69\n        normal_0 = vec2(- dy_0, dx_0) / len_0;\n\n#line 69\n    }\n    else\n    {\n\n#line 69\n        normal_0 = vec2(0.0, 1.0);\n\n#line 69\n    }\n\n#line 76\n    vec2 clipSpace_0 = (vec2(x_0, y_0) + normal_0 * side_0 * u_0.lineWidth_0 * 0.5) / u_0.resolution_0 * 2.0 - 1.0;\n\n    VsOut_0 o_0;\n    o_0.position_0 = vec4(clipSpace_0.x, - clipSpace_0.y, 0.0, 1.0);\n    o_0.color_0 = unpackRGBA_0(a_color);\n    o_0.edge_0 = side_0;\n    VsOut_0 _S2 = o_0;\n\n#line 82\n    gl_Position = o_0.position_0;\n\n#line 82\n    v_color = _S2.color_0;\n\n#line 82\n    v_edge = _S2.edge_0;\n\n#line 82\n    return;\n}\n\n"
+export const GLSL_VERTEX = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 40 0\nstruct Uniforms_0\n{\n    vec2 resolution_0;\n    float lineWidth_0;\n    float bpPerPxH_0;\n    float bpPerPxV_0;\n    float hpZero_0;\n    float regionOffsetH0_0;\n    float regionOffsetH1_0;\n    float regionOffsetH2_0;\n    float regionOffsetH3_0;\n    float regionOffsetH4_0;\n    float regionOffsetH5_0;\n    float regionOffsetH6_0;\n    float regionOffsetH7_0;\n    float regionOffsetH8_0;\n    float regionOffsetH9_0;\n    float regionOffsetH10_0;\n    float regionOffsetH11_0;\n    float regionOffsetH12_0;\n    float regionOffsetH13_0;\n    float regionOffsetH14_0;\n    float regionOffsetH15_0;\n    float regionOffsetV0_0;\n    float regionOffsetV1_0;\n    float regionOffsetV2_0;\n    float regionOffsetV3_0;\n    float regionOffsetV4_0;\n    float regionOffsetV5_0;\n    float regionOffsetV6_0;\n    float regionOffsetV7_0;\n    float regionOffsetV8_0;\n    float regionOffsetV9_0;\n    float regionOffsetV10_0;\n    float regionOffsetV11_0;\n    float regionOffsetV12_0;\n    float regionOffsetV13_0;\n    float regionOffsetV14_0;\n    float regionOffsetV15_0;\n};\n\nlayout(std140) uniform Uniforms\n{\n    vec2 resolution_0;\n    float lineWidth_0;\n    float bpPerPxH_0;\n    float bpPerPxV_0;\n    float hpZero_0;\n    float regionOffsetH0_0;\n    float regionOffsetH1_0;\n    float regionOffsetH2_0;\n    float regionOffsetH3_0;\n    float regionOffsetH4_0;\n    float regionOffsetH5_0;\n    float regionOffsetH6_0;\n    float regionOffsetH7_0;\n    float regionOffsetH8_0;\n    float regionOffsetH9_0;\n    float regionOffsetH10_0;\n    float regionOffsetH11_0;\n    float regionOffsetH12_0;\n    float regionOffsetH13_0;\n    float regionOffsetH14_0;\n    float regionOffsetH15_0;\n    float regionOffsetV0_0;\n    float regionOffsetV1_0;\n    float regionOffsetV2_0;\n    float regionOffsetV3_0;\n    float regionOffsetV4_0;\n    float regionOffsetV5_0;\n    float regionOffsetV6_0;\n    float regionOffsetV7_0;\n    float regionOffsetV8_0;\n    float regionOffsetV9_0;\n    float regionOffsetV10_0;\n    float regionOffsetV11_0;\n    float regionOffsetV12_0;\n    float regionOffsetV13_0;\n    float regionOffsetV14_0;\n    float regionOffsetV15_0;\n}u_0;\n\n#line 83\nfloat regionOffsetH_0(uint idx_0)\n{\n\n#line 84\n    switch(idx_0)\n    {\n    case 0U:\n        {\n\n#line 85\n            return u_0.regionOffsetH0_0;\n        }\n    case 1U:\n        {\n\n#line 86\n            return u_0.regionOffsetH1_0;\n        }\n    case 2U:\n        {\n\n#line 87\n            return u_0.regionOffsetH2_0;\n        }\n    case 3U:\n        {\n\n#line 88\n            return u_0.regionOffsetH3_0;\n        }\n    case 4U:\n        {\n\n#line 89\n            return u_0.regionOffsetH4_0;\n        }\n    case 5U:\n        {\n\n#line 90\n            return u_0.regionOffsetH5_0;\n        }\n    case 6U:\n        {\n\n#line 91\n            return u_0.regionOffsetH6_0;\n        }\n    case 7U:\n        {\n\n#line 92\n            return u_0.regionOffsetH7_0;\n        }\n    case 8U:\n        {\n\n#line 93\n            return u_0.regionOffsetH8_0;\n        }\n    case 9U:\n        {\n\n#line 94\n            return u_0.regionOffsetH9_0;\n        }\n    case 10U:\n        {\n\n#line 95\n            return u_0.regionOffsetH10_0;\n        }\n    case 11U:\n        {\n\n#line 96\n            return u_0.regionOffsetH11_0;\n        }\n    case 12U:\n        {\n\n#line 97\n            return u_0.regionOffsetH12_0;\n        }\n    case 13U:\n        {\n\n#line 98\n            return u_0.regionOffsetH13_0;\n        }\n    case 14U:\n        {\n\n#line 99\n            return u_0.regionOffsetH14_0;\n        }\n    case 15U:\n        {\n\n#line 100\n            return u_0.regionOffsetH15_0;\n        }\n    default:\n        {\n\n#line 101\n            return 0.0;\n        }\n    }\n\n#line 101\n}\n\n\n\nfloat regionOffsetV_0(uint idx_1)\n{\n\n#line 106\n    switch(idx_1)\n    {\n    case 0U:\n        {\n\n#line 107\n            return u_0.regionOffsetV0_0;\n        }\n    case 1U:\n        {\n\n#line 108\n            return u_0.regionOffsetV1_0;\n        }\n    case 2U:\n        {\n\n#line 109\n            return u_0.regionOffsetV2_0;\n        }\n    case 3U:\n        {\n\n#line 110\n            return u_0.regionOffsetV3_0;\n        }\n    case 4U:\n        {\n\n#line 111\n            return u_0.regionOffsetV4_0;\n        }\n    case 5U:\n        {\n\n#line 112\n            return u_0.regionOffsetV5_0;\n        }\n    case 6U:\n        {\n\n#line 113\n            return u_0.regionOffsetV6_0;\n        }\n    case 7U:\n        {\n\n#line 114\n            return u_0.regionOffsetV7_0;\n        }\n    case 8U:\n        {\n\n#line 115\n            return u_0.regionOffsetV8_0;\n        }\n    case 9U:\n        {\n\n#line 116\n            return u_0.regionOffsetV9_0;\n        }\n    case 10U:\n        {\n\n#line 117\n            return u_0.regionOffsetV10_0;\n        }\n    case 11U:\n        {\n\n#line 118\n            return u_0.regionOffsetV11_0;\n        }\n    case 12U:\n        {\n\n#line 119\n            return u_0.regionOffsetV12_0;\n        }\n    case 13U:\n        {\n\n#line 120\n            return u_0.regionOffsetV13_0;\n        }\n    case 14U:\n        {\n\n#line 121\n            return u_0.regionOffsetV14_0;\n        }\n    case 15U:\n        {\n\n#line 122\n            return u_0.regionOffsetV15_0;\n        }\n    default:\n        {\n\n#line 123\n            return 0.0;\n        }\n    }\n\n#line 123\n}\n\n\n#line 10 1\nvec2 hpSplitUint_0(uint value_0)\n{\n\n#line 11\n    uint lo_0 = value_0 & 4095U;\n\n    return vec2(float(value_0 - lo_0), float(lo_0));\n}\n\n\n#line 26\nfloat hpScaleLinear_0(vec2 splitPos_0, vec3 bpRange_0, float hpZero_1)\n{\n    float step_0 = 1.0 / bpRange_0.z;\n    float _S1 = - (1.0 / hpZero_1);\n\n    return dot(vec2(max(splitPos_0.x - bpRange_0.x, _S1), max(splitPos_0.y - bpRange_0.y, _S1)), vec2(step_0, step_0));\n}\n\n\n#line 20 0\nvec4 unpackRGBA_0(uint c_0)\n{\n\n#line 21\n    return vec4(float((c_0 >> 0U) & 255U), float((c_0 >> 8U) & 255U), float((c_0 >> 16U) & 255U), float((c_0 >> 24U) & 255U)) / 255.0;\n}\n\n\n#line 21\nout vec4 v_color;\n\n\n#line 21\nout float v_edge;\n\n\n#line 21\nlayout(location = 0)\nin uint a_x1;\n\n\n#line 21\nlayout(location = 1)\nin uint a_y1;\n\n\n#line 21\nlayout(location = 2)\nin uint a_x2;\n\n\n#line 21\nlayout(location = 3)\nin uint a_y2;\n\n\n#line 21\nlayout(location = 4)\nin uint a_xRegionIdx;\n\n\n#line 21\nlayout(location = 5)\nin uint a_yRegionIdx;\n\n\n#line 21\nlayout(location = 6)\nin uint a_color;\n\n\n#line 127\nstruct VsOut_0\n{\n    vec4 position_0;\n    vec4 color_0;\n    float edge_0;\n};\n\nvoid main()\n{\n\n#line 135\n    uint v_0 = uint(gl_VertexID) % 6U;\n\n#line 135\n    bool _S2;\n\n#line 143\n    if(v_0 == 2U)\n    {\n\n#line 143\n        _S2 = true;\n\n#line 143\n    }\n    else\n    {\n\n#line 143\n        _S2 = v_0 == 3U;\n\n#line 143\n    }\n\n#line 143\n    if(_S2)\n    {\n\n#line 143\n        _S2 = true;\n\n#line 143\n    }\n    else\n    {\n\n#line 143\n        _S2 = v_0 == 5U;\n\n#line 143\n    }\n\n#line 143\n    float t_0;\n\n#line 143\n    if(_S2)\n    {\n\n#line 143\n        t_0 = 1.0;\n\n#line 143\n    }\n    else\n    {\n\n#line 143\n        t_0 = 0.0;\n\n#line 143\n    }\n    if(v_0 == 1U)\n    {\n\n#line 144\n        _S2 = true;\n\n#line 144\n    }\n    else\n    {\n\n#line 144\n        _S2 = v_0 == 4U;\n\n#line 144\n    }\n\n#line 144\n    if(_S2)\n    {\n\n#line 144\n        _S2 = true;\n\n#line 144\n    }\n    else\n    {\n\n#line 144\n        _S2 = v_0 == 5U;\n\n#line 144\n    }\n\n#line 144\n    float side_0;\n\n#line 144\n    if(_S2)\n    {\n\n#line 144\n        side_0 = 1.0;\n\n#line 144\n    }\n    else\n    {\n\n#line 144\n        side_0 = -1.0;\n\n#line 144\n    }\n\n    vec3 bpRangeH_0 = vec3(0.0, 0.0, u_0.bpPerPxH_0);\n    vec3 bpRangeV_0 = vec3(0.0, 0.0, u_0.bpPerPxV_0);\n    float xBase_0 = regionOffsetH_0(a_xRegionIdx);\n    float yBase_0 = regionOffsetV_0(a_yRegionIdx);\n\n    float sx1_0 = xBase_0 + hpScaleLinear_0(hpSplitUint_0(a_x1), bpRangeH_0, u_0.hpZero_0);\n    float sy1_0 = u_0.resolution_0.y - (yBase_0 + hpScaleLinear_0(hpSplitUint_0(a_y1), bpRangeV_0, u_0.hpZero_0));\n    float sx2_0 = xBase_0 + hpScaleLinear_0(hpSplitUint_0(a_x2), bpRangeH_0, u_0.hpZero_0);\n    float sy2_0 = u_0.resolution_0.y - (yBase_0 + hpScaleLinear_0(hpSplitUint_0(a_y2), bpRangeV_0, u_0.hpZero_0));\n\n    float x_0 = mix(sx1_0, sx2_0, t_0);\n    float y_0 = mix(sy1_0, sy2_0, t_0);\n\n    float dx_0 = sx2_0 - sx1_0;\n    float dy_0 = sy2_0 - sy1_0;\n    float len_0 = sqrt(dx_0 * dx_0 + dy_0 * dy_0);\n\n#line 161\n    vec2 normal_0;\n\n    if(len_0 > 0.00100000004749745)\n    {\n\n#line 163\n        normal_0 = vec2(- dy_0, dx_0) / len_0;\n\n#line 163\n    }\n    else\n    {\n\n#line 163\n        normal_0 = vec2(0.0, 1.0);\n\n#line 163\n    }\n\n#line 170\n    vec2 clipSpace_0 = (vec2(x_0, y_0) + normal_0 * side_0 * u_0.lineWidth_0 * 0.5) / u_0.resolution_0 * 2.0 - 1.0;\n\n    VsOut_0 o_0;\n    o_0.position_0 = vec4(clipSpace_0.x, - clipSpace_0.y, 0.0, 1.0);\n    o_0.color_0 = unpackRGBA_0(a_color);\n    o_0.edge_0 = side_0;\n    VsOut_0 _S3 = o_0;\n\n#line 176\n    gl_Position = o_0.position_0;\n\n#line 176\n    v_color = _S3.color_0;\n\n#line 176\n    v_edge = _S3.edge_0;\n\n#line 176\n    return;\n}\n\n"
 
-export const GLSL_FRAGMENT = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 993 0\nlayout(location = 0)\nout vec4 entryPointParam_fs_main_0;\n\n\n#line 993\nin vec4 v_color;\n\n\n#line 993\nin float v_edge;\n\n\n#line 86 1\nvoid main()\n{\n    float aa_0 = (fwidth((v_edge)));\n\n    float finalAlpha_0 = v_color.w * (1.0 - smoothstep(0.5 - aa_0 * 0.5, 0.5 + aa_0, abs(v_edge)));\n\n#line 90\n    entryPointParam_fs_main_0 = vec4(v_color.xyz * finalAlpha_0, finalAlpha_0);\n\n#line 90\n    return;\n}\n\n"
+export const GLSL_FRAGMENT = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 993 0\nlayout(location = 0)\nout vec4 entryPointParam_fs_main_0;\n\n\n#line 993\nin vec4 v_color;\n\n\n#line 993\nin float v_edge;\n\n\n#line 180 1\nvoid main()\n{\n    float aa_0 = (fwidth((v_edge)));\n\n    float finalAlpha_0 = v_color.w * (1.0 - smoothstep(0.5 - aa_0 * 0.5, 0.5 + aa_0, abs(v_edge)));\n\n#line 184\n    entryPointParam_fs_main_0 = vec4(v_color.xyz * finalAlpha_0, finalAlpha_0);\n\n#line 184\n    return;\n}\n\n"
 
-export const UNIFORMS_SIZE_BYTES = 32
-export const UNIFORMS_SIZE_F32 = 8
+export const UNIFORMS_SIZE_BYTES = 160
+export const UNIFORMS_SIZE_F32 = 40
 
 // Byte offsets (into an ArrayBuffer / DataView).
 export const UNIFORM_OFFSET_BYTES = {
   resolution: 0,
-  offsetX: 8,
-  offsetY: 12,
-  lineWidth: 16,
-  scaleX: 20,
-  scaleY: 24,
+  lineWidth: 8,
+  bpPerPxH: 12,
+  bpPerPxV: 16,
+  hpZero: 20,
+  regionOffsetH0: 24,
+  regionOffsetH1: 28,
+  regionOffsetH2: 32,
+  regionOffsetH3: 36,
+  regionOffsetH4: 40,
+  regionOffsetH5: 44,
+  regionOffsetH6: 48,
+  regionOffsetH7: 52,
+  regionOffsetH8: 56,
+  regionOffsetH9: 60,
+  regionOffsetH10: 64,
+  regionOffsetH11: 68,
+  regionOffsetH12: 72,
+  regionOffsetH13: 76,
+  regionOffsetH14: 80,
+  regionOffsetH15: 84,
+  regionOffsetV0: 88,
+  regionOffsetV1: 92,
+  regionOffsetV2: 96,
+  regionOffsetV3: 100,
+  regionOffsetV4: 104,
+  regionOffsetV5: 108,
+  regionOffsetV6: 112,
+  regionOffsetV7: 116,
+  regionOffsetV8: 120,
+  regionOffsetV9: 124,
+  regionOffsetV10: 128,
+  regionOffsetV11: 132,
+  regionOffsetV12: 136,
+  regionOffsetV13: 140,
+  regionOffsetV14: 144,
+  regionOffsetV15: 148,
 } as const
 
 // Indices into a Float32Array / Uint32Array view.
 export const UNIFORM_OFFSET_F32 = {
   resolution: 0,
-  offsetX: 2,
-  offsetY: 3,
-  lineWidth: 4,
-  scaleX: 5,
-  scaleY: 6,
+  lineWidth: 2,
+  bpPerPxH: 3,
+  bpPerPxV: 4,
+  hpZero: 5,
+  regionOffsetH0: 6,
+  regionOffsetH1: 7,
+  regionOffsetH2: 8,
+  regionOffsetH3: 9,
+  regionOffsetH4: 10,
+  regionOffsetH5: 11,
+  regionOffsetH6: 12,
+  regionOffsetH7: 13,
+  regionOffsetH8: 14,
+  regionOffsetH9: 15,
+  regionOffsetH10: 16,
+  regionOffsetH11: 17,
+  regionOffsetH12: 18,
+  regionOffsetH13: 19,
+  regionOffsetH14: 20,
+  regionOffsetH15: 21,
+  regionOffsetV0: 22,
+  regionOffsetV1: 23,
+  regionOffsetV2: 24,
+  regionOffsetV3: 25,
+  regionOffsetV4: 26,
+  regionOffsetV5: 27,
+  regionOffsetV6: 28,
+  regionOffsetV7: 29,
+  regionOffsetV8: 30,
+  regionOffsetV9: 31,
+  regionOffsetV10: 32,
+  regionOffsetV11: 33,
+  regionOffsetV12: 34,
+  regionOffsetV13: 35,
+  regionOffsetV14: 36,
+  regionOffsetV15: 37,
 } as const
 
 
+// Palette-group slot arrays: offsets of consecutive <prefix>0..N
+// fields, indexed into the 4-byte-word uniform buffer (works with
+// either Uint32Array or Float32Array views — the field kind picks).
+export const UNIFORM_SLOT_ARRAYS = {
+  regionOffsetH: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21] as const,
+  regionOffsetV: [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37] as const,
+} as const
+
 export interface Uniforms {
   resolution: [number, number]
-  offsetX: number
-  offsetY: number
   lineWidth: number
-  scaleX: number
-  scaleY: number
+  bpPerPxH: number
+  bpPerPxV: number
+  hpZero: number
+  regionOffsetH0: number
+  regionOffsetH1: number
+  regionOffsetH2: number
+  regionOffsetH3: number
+  regionOffsetH4: number
+  regionOffsetH5: number
+  regionOffsetH6: number
+  regionOffsetH7: number
+  regionOffsetH8: number
+  regionOffsetH9: number
+  regionOffsetH10: number
+  regionOffsetH11: number
+  regionOffsetH12: number
+  regionOffsetH13: number
+  regionOffsetH14: number
+  regionOffsetH15: number
+  regionOffsetV0: number
+  regionOffsetV1: number
+  regionOffsetV2: number
+  regionOffsetV3: number
+  regionOffsetV4: number
+  regionOffsetV5: number
+  regionOffsetV6: number
+  regionOffsetV7: number
+  regionOffsetV8: number
+  regionOffsetV9: number
+  regionOffsetV10: number
+  regionOffsetV11: number
+  regionOffsetV12: number
+  regionOffsetV13: number
+  regionOffsetV14: number
+  regionOffsetV15: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   const f32 = new Float32Array(buf)
   f32[0] = uniforms.resolution[0]
   f32[1] = uniforms.resolution[1]
-  f32[2] = uniforms.offsetX
-  f32[3] = uniforms.offsetY
-  f32[4] = uniforms.lineWidth
-  f32[5] = uniforms.scaleX
-  f32[6] = uniforms.scaleY
+  f32[2] = uniforms.lineWidth
+  f32[3] = uniforms.bpPerPxH
+  f32[4] = uniforms.bpPerPxV
+  f32[5] = uniforms.hpZero
+  f32[6] = uniforms.regionOffsetH0
+  f32[7] = uniforms.regionOffsetH1
+  f32[8] = uniforms.regionOffsetH2
+  f32[9] = uniforms.regionOffsetH3
+  f32[10] = uniforms.regionOffsetH4
+  f32[11] = uniforms.regionOffsetH5
+  f32[12] = uniforms.regionOffsetH6
+  f32[13] = uniforms.regionOffsetH7
+  f32[14] = uniforms.regionOffsetH8
+  f32[15] = uniforms.regionOffsetH9
+  f32[16] = uniforms.regionOffsetH10
+  f32[17] = uniforms.regionOffsetH11
+  f32[18] = uniforms.regionOffsetH12
+  f32[19] = uniforms.regionOffsetH13
+  f32[20] = uniforms.regionOffsetH14
+  f32[21] = uniforms.regionOffsetH15
+  f32[22] = uniforms.regionOffsetV0
+  f32[23] = uniforms.regionOffsetV1
+  f32[24] = uniforms.regionOffsetV2
+  f32[25] = uniforms.regionOffsetV3
+  f32[26] = uniforms.regionOffsetV4
+  f32[27] = uniforms.regionOffsetV5
+  f32[28] = uniforms.regionOffsetV6
+  f32[29] = uniforms.regionOffsetV7
+  f32[30] = uniforms.regionOffsetV8
+  f32[31] = uniforms.regionOffsetV9
+  f32[32] = uniforms.regionOffsetV10
+  f32[33] = uniforms.regionOffsetV11
+  f32[34] = uniforms.regionOffsetV12
+  f32[35] = uniforms.regionOffsetV13
+  f32[36] = uniforms.regionOffsetV14
+  f32[37] = uniforms.regionOffsetV15
 }
 
-export const INSTANCE_STRIDE_BYTES = 20
-export const INSTANCE_STRIDE_F32 = 5
+export const INSTANCE_STRIDE_BYTES = 28
+export const INSTANCE_STRIDE_F32 = 7
 
 export const FIELD_OFFSET_BYTES = {
   x1: 0,
   y1: 4,
   x2: 8,
   y2: 12,
-  color: 16,
+  xRegionIdx: 16,
+  yRegionIdx: 20,
+  color: 24,
 } as const
 
 export const FIELD_OFFSET_F32 = {
@@ -69,15 +203,19 @@ export const FIELD_OFFSET_F32 = {
   y1: 1,
   x2: 2,
   y2: 3,
-  color: 4,
+  xRegionIdx: 4,
+  yRegionIdx: 5,
+  color: 6,
 } as const
 
 export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
-  { name: 'a_x1', components: 1, type: 'float', offsetBytes: 0, integer: false },
-  { name: 'a_y1', components: 1, type: 'float', offsetBytes: 4, integer: false },
-  { name: 'a_x2', components: 1, type: 'float', offsetBytes: 8, integer: false },
-  { name: 'a_y2', components: 1, type: 'float', offsetBytes: 12, integer: false },
-  { name: 'a_color', components: 1, type: 'uint', offsetBytes: 16, integer: true },
+  { name: 'a_x1', components: 1, type: 'uint', offsetBytes: 0, integer: true },
+  { name: 'a_y1', components: 1, type: 'uint', offsetBytes: 4, integer: true },
+  { name: 'a_x2', components: 1, type: 'uint', offsetBytes: 8, integer: true },
+  { name: 'a_y2', components: 1, type: 'uint', offsetBytes: 12, integer: true },
+  { name: 'a_xRegionIdx', components: 1, type: 'uint', offsetBytes: 16, integer: true },
+  { name: 'a_yRegionIdx', components: 1, type: 'uint', offsetBytes: 20, integer: true },
+  { name: 'a_color', components: 1, type: 'uint', offsetBytes: 24, integer: true },
 ]
 
 export interface DotplotInstance {
@@ -85,15 +223,19 @@ export interface DotplotInstance {
   y1: number
   x2: number
   y2: number
+  xRegionIdx: number
+  yRegionIdx: number
   color: number
 }
 
 export function writeDotplotInstance(buf: ArrayBuffer, instanceIndex: number, inst: DotplotInstance) {
-  const base = instanceIndex * 20
+  const base = instanceIndex * 28
   const dv = new DataView(buf)
-  dv.setFloat32(base + 0, inst.x1, true)
-  dv.setFloat32(base + 4, inst.y1, true)
-  dv.setFloat32(base + 8, inst.x2, true)
-  dv.setFloat32(base + 12, inst.y2, true)
-  dv.setUint32(base + 16, inst.color, true)
+  dv.setUint32(base + 0, inst.x1, true)
+  dv.setUint32(base + 4, inst.y1, true)
+  dv.setUint32(base + 8, inst.x2, true)
+  dv.setUint32(base + 12, inst.y2, true)
+  dv.setUint32(base + 16, inst.xRegionIdx, true)
+  dv.setUint32(base + 20, inst.yRegionIdx, true)
+  dv.setUint32(base + 24, inst.color, true)
 }

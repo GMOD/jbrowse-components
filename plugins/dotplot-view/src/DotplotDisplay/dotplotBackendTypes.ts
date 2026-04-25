@@ -1,26 +1,28 @@
-export interface TrackScale {
+import type { ViewProjection } from '@jbrowse/core/util/bpProjection'
+
+export interface DotplotTrackProjection {
   displayKey: number
-  scaleX: number
-  scaleY: number
+  projH: ViewProjection
+  projV: ViewProjection
 }
 
 export interface DotplotGeometryData {
-  x1s: Float32Array
-  y1s: Float32Array
-  x2s: Float32Array
-  y2s: Float32Array
+  // bp-in-region for each segment endpoint. Renderers project against
+  // per-view ViewProjection tables to get screen pixels. See
+  // @jbrowse/core/util/bpProjection.
+  x1s: Uint32Array
+  y1s: Uint32Array
+  x2s: Uint32Array
+  y2s: Uint32Array
+  xRegionIdx: Uint8Array
+  yRegionIdx: Uint8Array
   colors: Uint32Array
   instanceCount: number
-  // bpPerPx the buffer was built at; render-time scale = bpPerPx / view.bpPerPx
-  bpPerPxH: number
-  bpPerPxV: number
 }
 
 export interface DotplotRenderState {
-  offsetX: number
-  offsetY: number
   lineWidth: number
-  trackScales: readonly TrackScale[]
+  trackProjections: readonly DotplotTrackProjection[]
 }
 
 export interface DotplotBackend {

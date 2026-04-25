@@ -1,4 +1,8 @@
 import { getContainingView } from '@jbrowse/core/util'
+import {
+  buildViewProjection,
+  projectBpToScreenPx,
+} from '@jbrowse/core/util/bpProjection'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { when } from 'mobx'
 
@@ -22,26 +26,24 @@ export async function renderSvg(model: DotplotRenderModel) {
   }
   const view = getContainingView(model) as DotplotViewModel
   const { viewHeight, hview, vview } = view
-  const scaleX = geometry.bpPerPxH / hview.bpPerPx
-  const scaleY = geometry.bpPerPxV / vview.bpPerPx
-  const offX = hview.offsetPx
-  const offY = vview.offsetPx
+  const projH = buildViewProjection(hview)
+  const projV = buildViewProjection(vview)
 
   const ctx = new SvgCanvas()
   ctx.lineWidth = 2
   for (let i = 0; i < geometry.instanceCount; i++) {
+    const xRegIdx = geometry.xRegionIdx[i]!
+    const yRegIdx = geometry.yRegionIdx[i]!
+    const sx1 = projectBpToScreenPx(geometry.x1s[i]!, xRegIdx, projH)
+    const sy1 = viewHeight - projectBpToScreenPx(geometry.y1s[i]!, yRegIdx, projV)
+    const sx2 = projectBpToScreenPx(geometry.x2s[i]!, xRegIdx, projH)
+    const sy2 = viewHeight - projectBpToScreenPx(geometry.y2s[i]!, yRegIdx, projV)
     ctx.strokeStyle = unpackColor(geometry.colors[i]!)
     ctx.beginPath()
-    ctx.moveTo(geometry.x1s[i]!, geometry.y1s[i]!)
-    ctx.lineTo(geometry.x2s[i]!, geometry.y2s[i]!)
+    ctx.moveTo(sx1, sy1)
+    ctx.lineTo(sx2, sy2)
     ctx.stroke()
   }
 
-  return (
-    <g
-      transform={`translate(0,${viewHeight}) scale(${scaleX},-${scaleY}) translate(${-offX},${-offY})`}
-    >
-      <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
-    </g>
-  )
+  return <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
 }

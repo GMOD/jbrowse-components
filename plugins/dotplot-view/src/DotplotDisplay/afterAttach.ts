@@ -82,10 +82,12 @@ export function doAfterAttach(
           }
           const rpcData: DotplotRpcData = {
             parsedCigars,
-            p11s: result.p11_offsetPx,
-            p12s: result.p12_offsetPx,
-            p21s: result.p21_offsetPx,
-            p22s: result.p22_offsetPx,
+            p11s: result.p11_bp,
+            p12s: result.p12_bp,
+            p21s: result.p21_bp,
+            p22s: result.p22_bp,
+            xRegionIdx: result.xRegionIdx,
+            yRegionIdx: result.yRegionIdx,
             strands: result.strands,
             starts: result.starts,
             ends: result.ends,
@@ -93,8 +95,6 @@ export function doAfterAttach(
             meanScores: result.meanScores,
             mappingQuals: result.mappingQuals,
             refNames: result.refNames,
-            bpPerPxH: result.bpPerPxH,
-            bpPerPxV: result.bpPerPxV,
           }
           self.setRpcData(rpcData)
         } catch (e) {
@@ -120,22 +120,24 @@ export function doAfterAttach(
         if (!rpcData) {
           return
         }
-        const { drawCigar } = view
+        const { drawCigar, hview, vview } = view
         const segments = buildLineSegments(
           rpcData,
           createDotplotColorFunction(colorBy, alpha, rpcData),
           drawCigar,
           minAlignmentLength,
+          hview.bpPerPx,
+          vview.bpPerPx,
         )
         self.setGeometry({
           x1s: segments.x1s,
           y1s: segments.y1s,
           x2s: segments.x2s,
           y2s: segments.y2s,
+          xRegionIdx: segments.xRegionIdx,
+          yRegionIdx: segments.yRegionIdx,
           colors: segments.colors,
           instanceCount: segments.count,
-          bpPerPxH: rpcData.bpPerPxH,
-          bpPerPxV: rpcData.bpPerPxV,
         })
       },
       { name: 'DotplotGeometryRecompute' },

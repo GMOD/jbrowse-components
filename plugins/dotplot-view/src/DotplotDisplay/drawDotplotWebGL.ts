@@ -2,10 +2,12 @@ import type { DotplotColorFn } from './dotplotWebGLColors.ts'
 import type { DotplotRpcData } from './types.ts'
 
 export interface LineSegmentArrays {
-  x1s: Float32Array
-  y1s: Float32Array
-  x2s: Float32Array
-  y2s: Float32Array
+  x1s: Uint32Array
+  y1s: Uint32Array
+  x2s: Uint32Array
+  y2s: Uint32Array
+  xRegionIdx: Uint8Array
+  yRegionIdx: Uint8Array
   colors: Uint32Array
   count: number
 }
@@ -14,10 +16,12 @@ const MIN_CIGAR_PX_WIDTH = 4
 
 interface Cursor {
   n: number
-  x1s: Float32Array
-  y1s: Float32Array
-  x2s: Float32Array
-  y2s: Float32Array
+  x1s: Uint32Array
+  y1s: Uint32Array
+  x2s: Uint32Array
+  y2s: Uint32Array
+  xRegionIdx: Uint8Array
+  yRegionIdx: Uint8Array
   colors: Uint32Array
 }
 
@@ -26,10 +30,10 @@ function decomposeCigar(
   p12: number,
   p21: number,
   p22: number,
+  xRegIdx: number,
+  yRegIdx: number,
   cigar: string[],
   color: number,
-  hBpPerPx: number,
-  vBpPerPx: number,
   out: Cursor,
 ) {
   const hRange = p12 - p11
@@ -50,62 +54,44 @@ function decomposeCigar(
     }
   }
 
-  const pxPerBpH = totalBpH > 0 ? Math.abs(hRange) / totalBpH : 1 / hBpPerPx
-  const pxPerBpV = totalBpV > 0 ? Math.abs(vRange) / totalBpV : 1 / vBpPerPx
+  // Stretch handles malformed CIGARs whose op lengths don't sum to the
+  // alignment's bp span. For well-formed CIGARs both stretch factors are 1.
+  const stretchH = totalBpH > 0 ? Math.abs(hRange) / totalBpH : 1
+  const stretchV = totalBpV > 0 ? Math.abs(vRange) / totalBpV : 1
   const hDir = hRange >= 0 ? 1 : -1
   const vDir = vRange >= 0 ? 1 : -1
 
   let cx = p11
   let cy = p21
-  let segStartX = cx
-  let segStartY = cy
 
   for (let j = 0; j < cigar.length; j += 2) {
     const len = +cigar[j]!
-    const op = cigar[j + 1]!
+    const op = cigar[j + 1]
+    let nx = cx
+    let ny = cy
 
     if (op === 'M' || op === '=' || op === 'X') {
-      cx += len * pxPerBpH * hDir
-      cy += len * pxPerBpV * vDir
+      nx = cx + len * stretchH * hDir
+      ny = cy + len * stretchV * vDir
     } else if (op === 'D' || op === 'N') {
-      cx += len * pxPerBpH * hDir
+      nx = cx + len * stretchH * hDir
     } else if (op === 'I') {
-      cy += len * pxPerBpV * vDir
+      ny = cy + len * stretchV * vDir
     }
 
-    if (Math.abs(cx - segStartX) > 0.5 || Math.abs(cy - segStartY) > 0.5) {
-      const n = out.n
-      out.x1s[n] = segStartX
-      out.y1s[n] = segStartY
-      out.x2s[n] = cx
-      out.y2s[n] = cy
-      out.colors[n] = color
-      out.n = n + 1
-      segStartX = cx
-      segStartY = cy
-    }
-  }
-}
+    const n = out.n
+    out.x1s[n] = Math.max(0, Math.round(cx))
+    out.y1s[n] = Math.max(0, Math.round(cy))
+    out.x2s[n] = Math.max(0, Math.round(nx))
+    out.y2s[n] = Math.max(0, Math.round(ny))
+    out.xRegionIdx[n] = xRegIdx
+    out.yRegionIdx[n] = yRegIdx
+    out.colors[n] = color
+    out.n = n + 1
 
-function ensureMinExtent(x1: number, y1: number, x2: number, y2: number) {
-  const dx = x2 - x1
-  const dy = y2 - y1
-  const lineLen = Math.sqrt(dx * dx + dy * dy)
-  if (lineLen >= 1) {
-    return { x1, y1, x2, y2 }
+    cx = nx
+    cy = ny
   }
-  const mx = (x1 + x2) / 2
-  const my = (y1 + y2) / 2
-  if (lineLen > 0.001) {
-    const scale = 0.5 / lineLen
-    return {
-      x1: mx - dx * scale,
-      y1: my - dy * scale,
-      x2: mx + dx * scale,
-      y2: my + dy * scale,
-    }
-  }
-  return { x1: mx - 0.5, y1: my, x2: mx + 0.5, y2: my }
 }
 
 export function buildLineSegments(
@@ -113,23 +99,24 @@ export function buildLineSegments(
   colorFn: DotplotColorFn,
   drawCigar: boolean,
   minAlignmentLength: number,
+  bpPerPxH: number,
+  bpPerPxV: number,
 ): LineSegmentArrays {
   const {
     p11s,
     p12s,
     p21s,
     p22s,
+    xRegionIdx: xRegIdxIn,
+    yRegionIdx: yRegIdxIn,
     starts,
     ends,
     parsedCigars,
-    bpPerPxH,
-    bpPerPxV,
   } = data
   const count = p11s.length
 
   // Upper bound: one segment per non-filtered feature, plus one extra
-  // per cigar op when drawing CIGARs. Over-allocates a bit, final
-  // arrays are subarray'd to the true count.
+  // per cigar op when drawing CIGARs.
   let maxSegments = 0
   if (drawCigar) {
     for (let i = 0; i < count; i++) {
@@ -141,10 +128,12 @@ export function buildLineSegments(
 
   const out: Cursor = {
     n: 0,
-    x1s: new Float32Array(maxSegments),
-    y1s: new Float32Array(maxSegments),
-    x2s: new Float32Array(maxSegments),
-    y2s: new Float32Array(maxSegments),
+    x1s: new Uint32Array(maxSegments),
+    y1s: new Uint32Array(maxSegments),
+    x2s: new Uint32Array(maxSegments),
+    y2s: new Uint32Array(maxSegments),
+    xRegionIdx: new Uint8Array(maxSegments),
+    yRegionIdx: new Uint8Array(maxSegments),
     colors: new Uint32Array(maxSegments),
   }
 
@@ -159,19 +148,27 @@ export function buildLineSegments(
     const p12 = p12s[i]!
     const p21 = p21s[i]!
     const p22 = p22s[i]!
+    const xRegIdx = xRegIdxIn[i]!
+    const yRegIdx = yRegIdxIn[i]!
     const cigar = parsedCigars[i]!
-    const featureWidth = Math.max(Math.abs(p12 - p11), Math.abs(p22 - p21))
+    // featureWidth is the dominant pixel extent at the build-time bpPerPx;
+    // LOD-approximate (build bpPerPx may differ from current view bpPerPx).
+    const featureWidthPx = Math.max(
+      Math.abs(p12 - p11) / bpPerPxH,
+      Math.abs(p22 - p21) / bpPerPxV,
+    )
     const color = colorFn(data, i)
 
-    if (cigar.length > 0 && drawCigar && featureWidth >= MIN_CIGAR_PX_WIDTH) {
-      decomposeCigar(p11, p12, p21, p22, cigar, color, bpPerPxH, bpPerPxV, out)
+    if (cigar.length > 0 && drawCigar && featureWidthPx >= MIN_CIGAR_PX_WIDTH) {
+      decomposeCigar(p11, p12, p21, p22, xRegIdx, yRegIdx, cigar, color, out)
     } else {
-      const { x1, y1, x2, y2 } = ensureMinExtent(p11, p21, p12, p22)
       const n = out.n
-      out.x1s[n] = x1
-      out.y1s[n] = y1
-      out.x2s[n] = x2
-      out.y2s[n] = y2
+      out.x1s[n] = p11
+      out.y1s[n] = p21
+      out.x2s[n] = p12
+      out.y2s[n] = p22
+      out.xRegionIdx[n] = xRegIdx
+      out.yRegionIdx[n] = yRegIdx
       out.colors[n] = color
       out.n = n + 1
     }
@@ -182,6 +179,8 @@ export function buildLineSegments(
     y1s: out.y1s.subarray(0, out.n),
     x2s: out.x2s.subarray(0, out.n),
     y2s: out.y2s.subarray(0, out.n),
+    xRegionIdx: out.xRegionIdx.subarray(0, out.n),
+    yRegionIdx: out.yRegionIdx.subarray(0, out.n),
     colors: out.colors.subarray(0, out.n),
     count: out.n,
   }

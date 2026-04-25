@@ -249,7 +249,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
       <DialogActions>
         <Button
           disabled={loading || !!error}
-          onClick={() => {
+          onClick={async () => {
             await copy(str)
             setCopied(true)
             setTimeout(() => {
