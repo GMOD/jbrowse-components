@@ -1,3 +1,8 @@
+// Tests the bounds-checking and cache-validity logic inside the
+// FetchVisibleRegions autorun (MultiRegionDisplayMixin.afterAttach).
+// Uses a { region, displayedRegionIndex } wrapper shape for test regions;
+// production visibleRegion blocks are flat ({ refName, start, end, ... }).
+
 import type { Region } from '@jbrowse/core/util'
 
 interface DisplayedRegionWithIndex {
@@ -13,8 +18,8 @@ function shouldFetchRegion(
   const loaded = loadedRegions.get(vr.displayedRegionIndex)
   const boundsValid =
     loaded?.refName === vr.region.refName &&
-    vr.region.start >= loaded.start &&
-    vr.region.end <= loaded.end
+    Math.floor(vr.region.start) >= loaded.start &&
+    Math.ceil(vr.region.end) <= loaded.end
   if (boundsValid && isCacheValid(vr.displayedRegionIndex)) {
     return false
   }

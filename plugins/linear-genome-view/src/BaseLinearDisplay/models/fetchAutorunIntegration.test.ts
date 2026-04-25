@@ -365,8 +365,12 @@ describe('untracked() semantics', () => {
     return { refName, start, end, assemblyName: 'test', displayedRegionIndex }
   }
 
-  // Mirrors the FetchVisibleRegions autorun in MultiRegionDisplayMixin.
-  // trackLoadedRegions=true removes the untracked() call to test that path.
+  // Mirrors the FetchVisibleRegions autorun in MultiRegionDisplayMixin.afterAttach.
+  // Simplifications vs production:
+  //   - fetchGeneration proxies fetchSignal (same bump-at-fetch-end semantics)
+  //   - no assembly mismatch check
+  //   - uses visible blocks directly (production fetches bufferedVisibleRegions)
+  //   - trackLoadedRegions=true removes the untracked() call to test that path
   function setupFetchAutorun(
     state: {
       fetchGeneration: number
@@ -395,8 +399,8 @@ describe('untracked() semantics', () => {
           : untracked(() => state.loadedRegions.get(vr.displayedRegionIndex))
         const covered =
           loaded?.refName === vr.refName &&
-          vr.start >= loaded.start &&
-          vr.end <= loaded.end
+          Math.floor(vr.start) >= loaded.start &&
+          Math.ceil(vr.end) <= loaded.end
         if (!covered) {
           needed.push(vr)
         }
@@ -606,15 +610,15 @@ describe('untracked() semantics', () => {
         regionTooLarge: false,
         error: undefined,
       })
+      // visibleBlocks proxies view.visibleRegions (production only tracks that,
+      // not bpPerPx separately — see ClearBlockingStateOnViewportChange autorun)
       const view = observable({
-        bpPerPx: 10,
         visibleBlocks: [makeBlock(0, 0, 100000)] as VisibleBlock[],
       })
       let clearCount = 0
 
-      // Mirrors ClearBlockingStateOnViewportChange autorun
+      // Mirrors ClearBlockingStateOnViewportChange in MultiRegionDisplayMixin.afterAttach
       const dispose = autorun(() => {
-        void view.bpPerPx
         void view.visibleBlocks
         if (untracked(() => state.regionTooLarge || state.error)) {
           clearCount++
@@ -635,9 +639,9 @@ describe('untracked() semantics', () => {
       expect(clearCount).toBe(0)
       expect(state.regionTooLarge).toBe(true) // preserved
 
-      // Viewport change fires the autorun, which reads regionTooLarge untracked
+      // visibleRegions changes on zoom or pan — fires the autorun
       runInAction(() => {
-        view.bpPerPx = 5
+        view.visibleBlocks = [makeBlock(0, 0, 50000)]
       })
       expect(clearCount).toBe(1)
       expect(state.regionTooLarge).toBe(false)

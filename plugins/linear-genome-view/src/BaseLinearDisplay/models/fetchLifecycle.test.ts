@@ -1,3 +1,13 @@
+// Tests the fetch lifecycle state machine in isolation (no MobX).
+// withFetchLifecycle combines the behavior of two production functions:
+//   FetchMixin.runFetch              — stop-token rotation, staleness, error capture
+//   MultiRegionDisplayMixin.fetchRegions — byte-estimate gating, setLoadedRegion
+//
+// Field name mappings to production:
+//   renderingStopToken → activeStopToken  (FetchMixin volatile)
+//   fetchGeneration    → fetchSignal      (FetchMixin volatile)
+//   dataVersion        → test-only counter tracking setLoadedRegion call count
+
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 
 import type { StopToken } from '@jbrowse/core/util/stopToken'
