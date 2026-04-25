@@ -31,11 +31,9 @@ export interface FetchContext {
 //   (the start is signalled by isLoading flipping true).
 //
 //   Autoruns that need to re-evaluate after a fetch finishes — e.g.
-//   FetchVisibleRegions checking whether the viewport is still covered
-//   after a fetch completes — read `void self.fetchSignal` to subscribe
-//   to the signal. They cannot use `isLoading` for this (cycle risk:
-//   reading isLoading inside an autorun whose fetch flips it would
-//   re-fire the autorun mid-fetch).
+//   FetchVisibleRegions — read `void self.fetchSignal` to subscribe.
+//   isLoading is intentionally not used as a dependency: it would cause
+//   an extra autorun fire on fetch start, wasting a 600ms debounce window.
 //
 //   The counter value is opaque; only mobx's tracked-read matters. The
 //   counter doubles as the staleness epoch inside runFetch — captured

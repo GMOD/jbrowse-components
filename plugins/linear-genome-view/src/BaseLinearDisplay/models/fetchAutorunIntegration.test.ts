@@ -351,3 +351,340 @@ describe('fetch autorun integration with MobX observables', () => {
     disposeClear()
   })
 })
+
+describe('untracked() semantics', () => {
+  interface VisibleBlock {
+    refName: string
+    start: number
+    end: number
+    assemblyName: string
+    displayedRegionIndex: number
+  }
+
+  function makeBlock(
+    displayedRegionIndex: number,
+    start: number,
+    end: number,
+    refName = 'chr1',
+  ): VisibleBlock {
+    return { refName, start, end, assemblyName: 'test', displayedRegionIndex }
+  }
+
+  // Mirrors the FetchVisibleRegions autorun in MultiRegionDisplayMixin.
+  // trackLoadedRegions=true removes the untracked() call to test that path.
+  function setupFetchAutorun(
+    state: {
+      fetchGeneration: number
+      isLoading: boolean
+      error: unknown
+      regionTooLarge: boolean
+      loadedRegions: Map<number, Region>
+    },
+    view: { initialized: boolean; visibleBlocks: VisibleBlock[] },
+    onFetchNeeded: (needed: VisibleBlock[]) => void,
+    opts: { trackLoadedRegions?: boolean } = {},
+  ) {
+    return autorun(() => {
+      void state.fetchGeneration
+      const { visibleBlocks } = view
+      if (!view.initialized || state.error || state.regionTooLarge) {
+        return
+      }
+      if (untracked(() => state.isLoading)) {
+        return
+      }
+      const needed: VisibleBlock[] = []
+      for (const vr of visibleBlocks) {
+        const loaded = opts.trackLoadedRegions
+          ? state.loadedRegions.get(vr.displayedRegionIndex)
+          : untracked(() => state.loadedRegions.get(vr.displayedRegionIndex))
+        const covered =
+          loaded?.refName === vr.refName &&
+          vr.start >= loaded.start &&
+          vr.end <= loaded.end
+        if (!covered) {
+          needed.push(vr)
+        }
+      }
+      if (needed.length > 0) {
+        onFetchNeeded(needed)
+      }
+    })
+  }
+
+  describe('untracked(isLoading)', () => {
+    test('isLoading flip does not re-trigger fetch autorun', () => {
+      const state = observable({
+        fetchGeneration: 0,
+        isLoading: false,
+        error: undefined as unknown,
+        regionTooLarge: false,
+        loadedRegions: new Map<number, Region>(),
+      })
+      const view = observable({
+        initialized: true,
+        visibleBlocks: [makeBlock(0, 0, 100000)],
+      })
+      let fireCount = 0
+
+      const dispose = autorun(() => {
+        void state.fetchGeneration
+        void view.visibleBlocks
+        if (!view.initialized || state.error || state.regionTooLarge) {
+          return
+        }
+        if (untracked(() => state.isLoading)) {
+          return
+        }
+        fireCount++
+      })
+
+      expect(fireCount).toBe(1)
+
+      runInAction(() => {
+        state.isLoading = true
+      })
+      expect(fireCount).toBe(1) // isLoading untracked — no re-fire on start
+
+      runInAction(() => {
+        state.isLoading = false
+      })
+      expect(fireCount).toBe(1) // still untracked — no re-fire on end
+
+      dispose()
+    })
+
+    // Demonstrates the mechanism that makes untracked(isLoading) safe: even
+    // though viewport changes mid-fetch are blocked by the guard, the
+    // fetchGeneration bump at fetch completion re-triggers a fresh evaluation
+    // for the current (panned) viewport.
+    test('viewport pan mid-fetch triggers fetch for new position after completion', () => {
+      const state = observable({
+        fetchGeneration: 0,
+        isLoading: false,
+        error: undefined as unknown,
+        regionTooLarge: false,
+        loadedRegions: new Map<number, Region>(),
+      })
+      const view = observable({
+        initialized: true,
+        visibleBlocks: [makeBlock(0, 0, 100000)],
+      })
+      const fetchCalls: VisibleBlock[][] = []
+
+      const dispose = setupFetchAutorun(state, view, needed => {
+        fetchCalls.push(needed)
+      })
+
+      expect(fetchCalls).toHaveLength(1) // initial fetch
+
+      runInAction(() => {
+        state.isLoading = true
+      })
+
+      // Pan mid-fetch: autorun fires (visibleBlocks tracked) but isLoading guard blocks
+      runInAction(() => {
+        view.visibleBlocks = [makeBlock(0, 50000, 150000)]
+      })
+      expect(fetchCalls).toHaveLength(1) // blocked by guard
+
+      // Fetch completes — isLoading=false and fetchGeneration++ in same batch,
+      // mirroring FetchMixin's finally block
+      runInAction(() => {
+        state.isLoading = false
+        state.fetchGeneration++
+      })
+
+      // Re-evaluates for current (panned) viewport, nothing loaded there yet
+      expect(fetchCalls).toHaveLength(2)
+      expect(fetchCalls[1]![0]!.start).toBe(50000)
+
+      dispose()
+    })
+  })
+
+  describe('untracked(loadedRegions.get(...))', () => {
+    test('populating loadedRegions does not trigger fetch autorun', () => {
+      const state = observable({
+        fetchGeneration: 0,
+        isLoading: false,
+        error: undefined as unknown,
+        regionTooLarge: false,
+        loadedRegions: new Map<number, Region>(),
+      })
+      const view = observable({
+        initialized: true,
+        visibleBlocks: [makeBlock(0, 0, 100000)],
+      })
+      let autorunFires = 0
+
+      const dispose = autorun(() => {
+        void state.fetchGeneration
+        const { visibleBlocks } = view
+        if (!view.initialized || state.error || state.regionTooLarge) {
+          return
+        }
+        if (untracked(() => state.isLoading)) {
+          return
+        }
+        for (const vr of visibleBlocks) {
+          untracked(() => state.loadedRegions.get(vr.displayedRegionIndex))
+        }
+        autorunFires++
+      })
+
+      expect(autorunFires).toBe(1)
+
+      runInAction(() => {
+        state.loadedRegions.set(0, {
+          refName: 'chr1',
+          start: 0,
+          end: 100000,
+          assemblyName: 'test',
+        })
+      })
+      expect(autorunFires).toBe(1) // loadedRegions read is untracked
+
+      runInAction(() => {
+        state.fetchGeneration++
+      })
+      expect(autorunFires).toBe(2) // fetchGeneration is tracked
+
+      dispose()
+    })
+
+    // Removing untracked() from loadedRegions.get() would be safe: the isLoading
+    // guard still prevents a double-fetch when regions are populated mid-flight.
+    test('tracking loadedRegions fires autorun on populate but isLoading guard prevents double-fetch', () => {
+      const state = observable({
+        fetchGeneration: 0,
+        isLoading: false,
+        error: undefined as unknown,
+        regionTooLarge: false,
+        loadedRegions: new Map<number, Region>(),
+      })
+      const view = observable({
+        initialized: true,
+        visibleBlocks: [makeBlock(0, 0, 100000)],
+      })
+      const fetchCalls: VisibleBlock[][] = []
+
+      const dispose = setupFetchAutorun(
+        state,
+        view,
+        needed => {
+          fetchCalls.push(needed)
+        },
+        { trackLoadedRegions: true },
+      )
+
+      expect(fetchCalls).toHaveLength(1)
+
+      runInAction(() => {
+        state.isLoading = true
+      })
+
+      // Populate while loading: autorun fires (tracked) but isLoading guard stops it
+      runInAction(() => {
+        state.loadedRegions.set(0, {
+          refName: 'chr1',
+          start: 0,
+          end: 100000,
+          assemblyName: 'test',
+        })
+      })
+      expect(fetchCalls).toHaveLength(1) // guarded by isLoading
+
+      // Fetch completes: regions are all covered, no re-fetch needed
+      runInAction(() => {
+        state.isLoading = false
+        state.fetchGeneration++
+      })
+      expect(fetchCalls).toHaveLength(1) // needed=[], no extra fetch
+
+      dispose()
+    })
+  })
+
+  describe('untracked(regionTooLarge || error)', () => {
+    test('regionTooLarge is preserved until viewport changes, not cleared immediately', () => {
+      const state = observable({
+        fetchGeneration: 0,
+        regionTooLarge: false,
+        error: undefined as unknown,
+      })
+      const view = observable({
+        bpPerPx: 10,
+        visibleBlocks: [makeBlock(0, 0, 100000)] as VisibleBlock[],
+      })
+      let clearCount = 0
+
+      // Mirrors ClearBlockingStateOnViewportChange autorun
+      const dispose = autorun(() => {
+        void view.bpPerPx
+        void view.visibleBlocks
+        if (untracked(() => state.regionTooLarge || state.error)) {
+          clearCount++
+          runInAction(() => {
+            state.regionTooLarge = false
+            state.error = undefined
+            state.fetchGeneration++
+          })
+        }
+      })
+
+      expect(clearCount).toBe(0)
+
+      // regionTooLarge is untracked — setting it does not fire the autorun
+      runInAction(() => {
+        state.regionTooLarge = true
+      })
+      expect(clearCount).toBe(0)
+      expect(state.regionTooLarge).toBe(true) // preserved
+
+      // Viewport change fires the autorun, which reads regionTooLarge untracked
+      runInAction(() => {
+        view.bpPerPx = 5
+      })
+      expect(clearCount).toBe(1)
+      expect(state.regionTooLarge).toBe(false)
+
+      dispose()
+    })
+
+    // Contrast test: without untracked, setting regionTooLarge immediately fires
+    // ClearBlockingStateOnViewportChange, which wipes it before any viewport change.
+    // This is the cycle the untracked() call is preventing.
+    test('tracking regionTooLarge immediately clears it — confirms untracked is a correctness requirement', () => {
+      const state = observable({
+        regionTooLarge: false,
+        error: undefined as unknown,
+      })
+      const view = observable({ bpPerPx: 10 })
+      let clearCount = 0
+
+      const dispose = autorun(() => {
+        void view.bpPerPx
+        if (state.regionTooLarge || state.error) {
+          // tracked — no untracked()
+          clearCount++
+          runInAction(() => {
+            state.regionTooLarge = false
+            state.error = undefined
+          })
+        }
+      })
+
+      expect(clearCount).toBe(0)
+
+      runInAction(() => {
+        state.regionTooLarge = true
+      })
+      // tracked regionTooLarge fires the autorun immediately, wiping the flag
+      expect(clearCount).toBe(1)
+      expect(state.regionTooLarge).toBe(false) // lost — viewport never changed
+
+      dispose()
+    })
+  })
+})
