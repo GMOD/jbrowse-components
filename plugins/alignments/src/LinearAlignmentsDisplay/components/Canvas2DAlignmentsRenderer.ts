@@ -235,14 +235,40 @@ function emptyRegion(): Canvas2DRegionData {
   }
 }
 
+/**
+ * Canvas2D fallback for the alignments renderer. Implements the same
+ * AlignmentsBackend interface as the GPU renderer so initDualBackend can
+ * swap them transparently.
+ *
+ * Two construction modes:
+ *
+ *   1. **Bound** — `new Canvas2DAlignmentsRenderer(canvas)`.
+ *      Used by the on-screen lifecycle. Drives `renderBlocks(blocks, state)`
+ *      which calls prepareCanvas (DPR + size) and then renderBlocksToCtx.
+ *      This is what initDualBackend constructs.
+ *
+ *   2. **Headless** — `new Canvas2DAlignmentsRenderer(null)`.
+ *      Used by SVG export (renderSvg.tsx). Caller does upload* + then
+ *      `renderBlocksToCtx(svgCanvas, blocks, state)` directly. Calling
+ *      `renderBlocks` in this mode throws — there's no canvas to prepare,
+ *      and SVG output is vector so DPR scaling is meaningless.
+ *
+ * The mode split lives here (not in two classes / not in standalone
+ * functions) because everything else — the `regions` map, all upload
+ * methods, the entire draw pipeline — is identical between modes.
+ * Splitting would duplicate that surface; threading `regions` through
+ * standalone functions would just relocate state without removing it.
+ */
 export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
-  // ctx/canvas are only used by the on-screen renderBlocks() entry point.
-  // SVG export constructs with `null` and drives renderBlocksToCtx() with
-  // an SvgCanvas — see renderSvg.tsx.
   private ctx: CanvasRenderingContext2D | null
   private canvas: HTMLCanvasElement | null
   private regions = new Map<number, Canvas2DRegionData>()
 
+  /**
+   * @param canvas the on-screen canvas, or `null` for headless mode
+   *   (SVG export). Only `renderBlocks` requires the canvas;
+   *   `renderBlocksToCtx` and all upload methods work in either mode.
+   */
   constructor(canvas: HTMLCanvasElement | null) {
     this.canvas = canvas
     if (canvas) {
