@@ -258,7 +258,10 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       view.visibleRegions,
       mouseX,
       yPos,
-      model.effectiveShowDescriptions,
+      {
+        showLabels: model.showLabels,
+        showDescriptions: model.effectiveShowDescriptions,
+      },
     )
   }
 

@@ -19,12 +19,17 @@ export interface VisibleRegion {
   screenEndPx: number
 }
 
+export interface LabelVisibility {
+  showLabels: boolean
+  showDescriptions: boolean
+}
+
 export interface FlatbushRegionCache {
   featureIndex: Flatbush | null
   subfeatureIndex: Flatbush | null
   cachedItems: FlatbushItem[] | null
   cachedSubInfos: SubfeatureInfo[] | null
-  cachedShowDescriptions?: boolean
+  cachedLabelVisibility?: LabelVisibility
 }
 
 export type HitResult =
@@ -40,7 +45,7 @@ function buildFeatureIndex(
   floatingLabelsData: FeatureDataResult['floatingLabelsData'],
   bpPerPx: number,
   reversed: boolean,
-  showDescriptions: boolean,
+  labels: LabelVisibility,
 ) {
   const index = new Flatbush(items.length)
   for (const item of items) {
@@ -48,7 +53,11 @@ function buildFeatureIndex(
     let hitEndBp = item.endBp
     const labelData = floatingLabelsData[item.featureId]
     if (labelData) {
-      const maxLabelWidthPx = maxLabelTextWidth(labelData, showDescriptions)
+      const maxLabelWidthPx = maxLabelTextWidth(
+        labelData,
+        labels.showLabels,
+        labels.showDescriptions,
+      )
       const featureWidthPx = (item.endBp - item.startBp) / bpPerPx
       if (maxLabelWidthPx > featureWidthPx) {
         const extraBp = (maxLabelWidthPx - featureWidthPx) * bpPerPx
@@ -74,19 +83,30 @@ function buildSubfeatureIndex(infos: SubfeatureInfo[]) {
   return index
 }
 
+function labelVisibilityChanged(
+  a: LabelVisibility | undefined,
+  b: LabelVisibility,
+) {
+  return (
+    a === undefined ||
+    a.showLabels !== b.showLabels ||
+    a.showDescriptions !== b.showDescriptions
+  )
+}
+
 function getOrCreateFlatbushIndexes(
   cache: FlatbushRegionCache,
   data: FeatureDataResult,
   bpPerPx: number,
   reversed: boolean,
-  showDescriptions: boolean,
+  labels: LabelVisibility,
 ) {
   if (
     cache.cachedItems !== data.flatbushItems ||
-    cache.cachedShowDescriptions !== showDescriptions
+    labelVisibilityChanged(cache.cachedLabelVisibility, labels)
   ) {
     cache.cachedItems = data.flatbushItems
-    cache.cachedShowDescriptions = showDescriptions
+    cache.cachedLabelVisibility = labels
     cache.featureIndex =
       data.flatbushItems.length > 0
         ? buildFeatureIndex(
@@ -94,7 +114,7 @@ function getOrCreateFlatbushIndexes(
             data.floatingLabelsData,
             bpPerPx,
             reversed,
-            showDescriptions,
+            labels,
           )
         : null
   }
@@ -120,7 +140,7 @@ function performHitDetection(
   reversed: boolean,
   bpPos: number,
   yPos: number,
-  showDescriptions: boolean,
+  labels: LabelVisibility,
 ) {
   let feature: FlatbushItem | null = null
   let subfeature: SubfeatureInfo | null = null
@@ -130,7 +150,7 @@ function performHitDetection(
     data,
     bpPerPx,
     reversed,
-    showDescriptions,
+    labels,
   )
 
   if (subfeatureIndex) {
@@ -156,7 +176,7 @@ export function performMultiRegionHitDetection(
   visibleRegions: VisibleRegion[],
   mouseXPx: number,
   yPos: number,
-  showDescriptions: boolean,
+  labels: LabelVisibility,
 ): HitResult {
   for (const vr of visibleRegions) {
     if (mouseXPx < vr.screenStartPx || mouseXPx > vr.screenEndPx) {
@@ -192,7 +212,7 @@ export function performMultiRegionHitDetection(
       reversed,
       bpPos,
       yPos,
-      showDescriptions,
+      labels,
     )
 
     if (feature) {

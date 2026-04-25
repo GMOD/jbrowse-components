@@ -29,6 +29,7 @@ interface OverlayModel {
 }
 
 interface HighlightModel {
+  showLabels: boolean
   effectiveShowDescriptions: boolean
   selectedFeatureId: string | undefined
   hoveredFeature: FlatbushItem | null
@@ -301,6 +302,7 @@ export function useHighlightOverlays(
     hoveredFeature,
     hoveredSubfeature,
     selectedFeatureId,
+    showLabels,
     effectiveShowDescriptions,
   } = model
   return useMemo(() => {
@@ -401,6 +403,7 @@ export function useHighlightOverlays(
       return computeLabelExtraWidth(
         labelData,
         featureWidthPx,
+        showLabels,
         effectiveShowDescriptions,
       )
     }
@@ -448,6 +451,7 @@ export function useHighlightOverlays(
     hoveredFeature,
     hoveredSubfeature,
     selectedFeatureId,
+    showLabels,
     effectiveShowDescriptions,
   ])
 }

@@ -111,7 +111,7 @@ test('hits feature at correct coordinates', () => {
     [region],
     320,
     10,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
 
   expect(result.feature).not.toBeNull()
@@ -131,7 +131,7 @@ test('misses when clicking outside feature bounds', () => {
     [region],
     10,
     10,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
 
   expect(result.feature).toBeNull()
@@ -150,7 +150,7 @@ test('misses when clicking below feature', () => {
     [region],
     320,
     25,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
 
   expect(result.feature).toBeNull()
@@ -169,7 +169,7 @@ test('returns correct displayedRegionIndex', () => {
     [region],
     320,
     10,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
 
   expect(result.feature).not.toBeNull()
@@ -189,7 +189,7 @@ test('skips regions where mouseX is outside screen bounds', () => {
     [region],
     50,
     10,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
   expect(outside.feature).toBeNull()
 
@@ -199,7 +199,7 @@ test('skips regions where mouseX is outside screen bounds', () => {
     [region],
     250,
     10,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
   expect(inside.feature).not.toBeNull()
 })
@@ -218,7 +218,7 @@ test('hits subfeature when within subfeature bounds', () => {
     [region],
     200,
     10,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
 
   expect(result.feature).not.toBeNull()
@@ -241,7 +241,7 @@ test('returns null subfeature when outside subfeature but inside feature', () =>
     [region],
     120,
     25,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
 
   expect(result.feature).not.toBeNull()
@@ -258,7 +258,7 @@ test('returns no hit when laidOutDataMap is empty', () => {
     [region],
     400,
     10,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
 
   expect(result.feature).toBeNull()
@@ -274,7 +274,7 @@ test('returns no hit when no visible regions', () => {
     [],
     400,
     10,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
 
   expect(result.feature).toBeNull()
@@ -294,7 +294,7 @@ test('caches flatbush index across calls', () => {
     [region],
     320,
     10,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
 
   const cache = cacheMap.get(0)!
@@ -309,7 +309,7 @@ test('caches flatbush index across calls', () => {
     [region],
     320,
     10,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
 
   expect(cacheMap.get(0)!.featureIndex).toBe(savedIndex)
@@ -329,7 +329,7 @@ test('rebuilds cache when data changes', () => {
     [region],
     320,
     10,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
 
   const savedIndex = cacheMap.get(0)!.featureIndex
@@ -344,7 +344,7 @@ test('rebuilds cache when data changes', () => {
     [region],
     560,
     10,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
 
   expect(cacheMap.get(0)!.featureIndex).not.toBe(savedIndex)
@@ -372,7 +372,7 @@ test('multi-region selects correct region', () => {
     regions,
     100,
     10,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
   expect(hitR0.feature!.featureId).toBe('geneA')
   expect((hitR0 as any).displayedRegionIndex).toBe(0)
@@ -383,7 +383,7 @@ test('multi-region selects correct region', () => {
     regions,
     500,
     10,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
   expect(hitR1.feature!.featureId).toBe('geneB')
   expect((hitR1 as any).displayedRegionIndex).toBe(1)
@@ -414,7 +414,7 @@ test('multi-region continues to next region when first has no hit', () => {
     regions,
     100,
     999,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
   expect(miss.feature).toBeNull()
 
@@ -425,7 +425,7 @@ test('multi-region continues to next region when first has no hit', () => {
     regions,
     100,
     10,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
   expect(hit.feature!.featureId).toBe('geneA')
   expect((hit as any).displayedRegionIndex).toBe(0)
@@ -444,7 +444,7 @@ test('handles reversed region', () => {
     [reversed],
     500,
     10,
-    false,
+    { showLabels: true, showDescriptions: false },
   )
 
   expect(result.feature).not.toBeNull()

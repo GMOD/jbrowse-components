@@ -5,10 +5,11 @@ import type { FeatureLabelData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 export function computeLabelExtraWidth(
   labelData: FeatureLabelData,
   featureWidthPx: number,
+  showLabels = true,
   showDescriptions = true,
 ) {
   return Math.max(
     0,
-    maxLabelTextWidth(labelData, showDescriptions) - featureWidthPx,
+    maxLabelTextWidth(labelData, showLabels, showDescriptions) - featureWidthPx,
   )
 }

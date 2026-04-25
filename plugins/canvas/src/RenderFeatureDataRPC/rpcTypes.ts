@@ -160,13 +160,16 @@ export interface FeatureLabelData {
 
 export function maxLabelTextWidth(
   labelData: FeatureLabelData,
+  showLabels = true,
   showDescriptions = true,
 ) {
-  return Math.max(
-    labelData.nameLabel?.textWidth ?? 0,
-    showDescriptions ? (labelData.descriptionLabel?.textWidth ?? 0) : 0,
-    labelData.subfeatureLabel?.textWidth ?? 0,
-  )
+  const nameWidth = showLabels ? (labelData.nameLabel?.textWidth ?? 0) : 0
+  const descWidth =
+    showLabels && showDescriptions
+      ? (labelData.descriptionLabel?.textWidth ?? 0)
+      : 0
+  const subfeatureWidth = labelData.subfeatureLabel?.textWidth ?? 0
+  return Math.max(nameWidth, descWidth, subfeatureWidth)
 }
 
 export type FloatingLabelsDataMap = Record<string, FeatureLabelData>
