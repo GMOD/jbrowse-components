@@ -2,11 +2,12 @@ import { fromNewick } from '@gmod/hclust'
 
 import { hierarchy, sort, sum } from './hierarchy.ts'
 
+import type { HierarchyNode } from './hierarchy.ts'
 import type { ClusterHierarchyNode, ClusterNodeData } from './types.ts'
 
-export function getLeafNames(node: ClusterHierarchyNode): string[] {
+export function getLeafNames(node: HierarchyNode<ClusterNodeData>): string[] {
   const result: string[] = []
-  const stack = [node]
+  const stack: HierarchyNode<ClusterNodeData>[] = [node]
   while (stack.length) {
     const n = stack.pop()!
     if (n.children?.length) {
@@ -21,9 +22,9 @@ export function getLeafNames(node: ClusterHierarchyNode): string[] {
 }
 
 function findSubtree(
-  node: ClusterHierarchyNode,
+  node: HierarchyNode<ClusterNodeData>,
   filterSet: Set<string>,
-): ClusterHierarchyNode | undefined {
+): HierarchyNode<ClusterNodeData> | undefined {
   const leafNames = getLeafNames(node)
   if (
     leafNames.length === filterSet.size &&

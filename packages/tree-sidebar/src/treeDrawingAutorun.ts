@@ -45,10 +45,10 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         ctx.beginPath()
         for (const link of links(hierarchy)) {
           const { source, target } = link
-          const sy = source.x!
-          const ty = target.x!
-          const tx = target.y!
-          const sx = source.y!
+          const sy = source.x
+          const ty = target.x
+          const tx = target.y
+          const sx = source.y
 
           ctx.moveTo(sx, sy)
           ctx.lineTo(sx, ty)
@@ -114,7 +114,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           const { node } = hoveredTreeNode
           ctx.fillStyle = 'rgba(255,165,0,0.8)'
           ctx.beginPath()
-          ctx.arc(node.y!, node.x!, 4, 0, 2 * Math.PI)
+          ctx.arc(node.y, node.x, 4, 0, 2 * Math.PI)
           ctx.fill()
 
           ctx.strokeStyle = 'rgba(255,140,0,1)'

@@ -29,7 +29,7 @@ export function TreeSidebarMixin<
       mouseoverCanvas: null as HTMLCanvasElement | null,
     }))
     .views(self => ({
-      get root(): ClusterHierarchyNode | undefined {
+      get root() {
         const { clusterTree } = self
         if (!clusterTree) {
           return undefined
@@ -49,8 +49,8 @@ export function TreeSidebarMixin<
           const index = new Flatbush(nodes.length)
           const hitRadius = 8
           for (const node of nodes) {
-            const x = node.y!
-            const y = node.x!
+            const x = node.y
+            const y = node.x
             index.add(
               x - hitRadius,
               y - hitRadius,

@@ -12,6 +12,7 @@ export {
   links,
   renderTreeSVG,
 } from './hierarchy.ts'
+export type { PositionedHierarchyNode } from './hierarchy.ts'
 export type {
   ClusterHierarchyNode,
   ClusterNodeData,

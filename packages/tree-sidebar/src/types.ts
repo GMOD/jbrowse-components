@@ -1,4 +1,4 @@
-import type { HierarchyNode } from './hierarchy.ts'
+import type { PositionedHierarchyNode } from './hierarchy.ts'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 
 export interface ClusterNodeData {
@@ -7,7 +7,7 @@ export interface ClusterNodeData {
   children?: ClusterNodeData[]
 }
 
-export type ClusterHierarchyNode = HierarchyNode<ClusterNodeData>
+export type ClusterHierarchyNode = PositionedHierarchyNode<ClusterNodeData>
 
 export interface HoveredTreeNode {
   node: ClusterHierarchyNode

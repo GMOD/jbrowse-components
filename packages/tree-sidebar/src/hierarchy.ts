@@ -9,9 +9,11 @@ export interface HierarchyNode<T> {
   y?: number
 }
 
-export interface HierarchyLink<T> {
-  source: HierarchyNode<T>
-  target: HierarchyNode<T>
+export interface PositionedHierarchyNode<T> extends HierarchyNode<T> {
+  x: number
+  y: number
+  children: PositionedHierarchyNode<T>[] | null
+  parent: PositionedHierarchyNode<T> | null
 }
 
 function computeHeight<T>(node: HierarchyNode<T>): number {
@@ -88,27 +90,9 @@ export function sort<T>(
   return node
 }
 
-export function find<T>(
-  node: HierarchyNode<T>,
-  predicate: (n: HierarchyNode<T>) => boolean,
-): HierarchyNode<T> | undefined {
-  if (predicate(node)) {
-    return node
-  }
-  if (node.children) {
-    for (const child of node.children) {
-      const result = find(child, predicate)
-      if (result) {
-        return result
-      }
-    }
-  }
-  return undefined
-}
-
-export function leaves<T>(node: HierarchyNode<T>): HierarchyNode<T>[] {
-  const result: HierarchyNode<T>[] = []
-  function visit(n: HierarchyNode<T>) {
+export function leaves<N extends { children: N[] | null }>(node: N): N[] {
+  const result: N[] = []
+  function visit(n: N) {
     if (n.children) {
       for (const child of n.children) {
         visit(child)
@@ -121,9 +105,9 @@ export function leaves<T>(node: HierarchyNode<T>): HierarchyNode<T>[] {
   return result
 }
 
-export function descendants<T>(node: HierarchyNode<T>): HierarchyNode<T>[] {
-  const result: HierarchyNode<T>[] = []
-  function visit(n: HierarchyNode<T>) {
+export function descendants<N extends { children: N[] | null }>(node: N): N[] {
+  const result: N[] = []
+  function visit(n: N) {
     result.push(n)
     if (n.children) {
       for (const child of n.children) {
@@ -135,9 +119,11 @@ export function descendants<T>(node: HierarchyNode<T>): HierarchyNode<T>[] {
   return result
 }
 
-export function links<T>(node: HierarchyNode<T>): HierarchyLink<T>[] {
-  const result: HierarchyLink<T>[] = []
-  function visit(n: HierarchyNode<T>) {
+export function links<N extends { children: N[] | null }>(
+  node: N,
+): { source: N; target: N }[] {
+  const result: { source: N; target: N }[] = []
+  function visit(n: N) {
     if (n.children) {
       for (const child of n.children) {
         result.push({ source: n, target: child })
@@ -153,7 +139,7 @@ export function clusterLayout<T>(
   root: HierarchyNode<T>,
   sizeX: number,
   sizeY: number,
-): HierarchyNode<T> {
+): PositionedHierarchyNode<T> {
   const leafNodes = leaves(root)
   const n = leafNodes.length
   const step = n > 0 ? sizeX / n : 0
@@ -185,16 +171,16 @@ export function clusterLayout<T>(
     }
   }
   assignY(root, 0)
-  return root
+  return root as unknown as PositionedHierarchyNode<T>
 }
 
-export function renderTreeSVG<T>(hierarchy: HierarchyNode<T>) {
+export function renderTreeSVG<T>(hierarchy: PositionedHierarchyNode<T>) {
   const parts: string[] = []
   for (const link of links(hierarchy)) {
-    const sx = link.source.y!
-    const sy = link.source.x!
-    const tx = link.target.y!
-    const ty = link.target.x!
+    const sx = link.source.y
+    const sy = link.source.x
+    const tx = link.target.y
+    const ty = link.target.x
     parts.push(`M${sx},${sy}L${sx},${ty}M${sx},${ty}L${tx},${ty}`)
   }
   return parts.join('')
