@@ -136,7 +136,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                   const { uniqueId, ...rest } = feature.toJSON()
                   const session = getSession(self)
                   const { default: copy } = await import('copy-to-clipboard')
-                  await copy(JSON.stringify(rest, null, 4))
+                  copy(JSON.stringify(rest, null, 4))
                   session.notify('Copied to clipboard', 'success')
                 },
               },

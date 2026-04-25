@@ -1,5 +1,3 @@
-import { buildViewProjection } from '@jbrowse/core/util/bpProjection'
-
 import { GpuSyntenyRenderer, SYNTENY_PASSES } from './GpuSyntenyRenderer.ts'
 import { MockHal } from '../../../../packages/core/src/gpu/hal/mockHal.ts'
 
@@ -34,34 +32,29 @@ function makeMockCanvas(width = 800, height = 100): HTMLCanvasElement {
 function makeInstanceData(): SyntenyInstanceData {
   const count = 1
   return {
-    x1: new Uint32Array(count).fill(10),
-    x2: new Uint32Array(count).fill(100),
-    x3: new Uint32Array(count).fill(110),
-    x4: new Uint32Array(count).fill(20),
-    topRegionIdx: new Uint8Array(count),
-    botRegionIdx: new Uint8Array(count),
+    x1: new Float32Array(count).fill(10),
+    x2: new Float32Array(count).fill(100),
+    x3: new Float32Array(count).fill(110),
+    x4: new Float32Array(count).fill(20),
     colors: new Uint32Array(count).fill(0x80808080),
     kinds: new Uint8Array(count),
     instanceFeatureIdx: new Uint32Array(count),
     featureIds: new Float32Array(count).fill(1),
     queryTotalLengths: new Float32Array(count).fill(10000),
+    padTops: new Float32Array(count).fill(0),
+    padBottoms: new Float32Array(count).fill(0),
     instanceCount: count,
     nonCigarInstanceCount: count,
+    geometryBpPerPx0: 1,
+    geometryBpPerPx1: 1,
+    refOffset0: 0,
+    refOffset1: 0,
   }
 }
 
 function makeParams(
   overrides: Partial<SyntenyTrackRenderParams> = {},
 ): SyntenyTrackRenderParams {
-  const proj = buildViewProjection({
-    bpPerPx: 1,
-    offsetPx: 0,
-    interRegionPaddingWidth: 2,
-    minimumBlockWidth: 3,
-    displayedRegions: [
-      { refName: 'chr1', start: 0, end: 10000, assemblyName: 'a' },
-    ],
-  })
   return {
     yTop: 0,
     height: 100,
@@ -69,8 +62,10 @@ function makeParams(
     minAlignmentLength: 0,
     hoveredFeatureId: 0,
     clickedFeatureId: 0,
-    projTop: proj,
-    projBot: proj,
+    offset0: 0,
+    offset1: 0,
+    bpPerPx0: 1,
+    bpPerPx1: 1,
     drawCurves: false,
     isSyriMode: false,
     ...overrides,

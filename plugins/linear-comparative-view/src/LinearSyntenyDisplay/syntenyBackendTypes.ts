@@ -1,4 +1,3 @@
-import type { ViewProjection } from '@jbrowse/core/util/bpProjection'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
 export interface SyntenyTrackRenderParams {
@@ -10,11 +9,10 @@ export interface SyntenyTrackRenderParams {
   minAlignmentLength: number
   hoveredFeatureId: number
   clickedFeatureId: number
-  // Per-view projection tables for view[level] (top) and view[level+1] (bottom).
-  // Built from buildViewProjection — captures displayedRegions, bpPerPx,
-  // offsetPx, and inter-region padding in a single regionOffsetPx[] table.
-  projTop: ViewProjection
-  projBot: ViewProjection
+  offset0: number
+  offset1: number
+  bpPerPx0: number
+  bpPerPx1: number
   drawCurves: boolean
   /** true when colorBy='syri'; enables SYN-first z-ordering in renderers */
   isSyriMode: boolean

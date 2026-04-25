@@ -5,8 +5,6 @@ import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 import { computeSyriTypes } from '@jbrowse/plugin-comparative-adapters'
 
-import { buildViewProjection } from '@jbrowse/core/util/bpProjection'
-
 import { getTooltip } from './components/util.ts'
 import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
 import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
@@ -15,8 +13,8 @@ import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
 import type { ClickCoord } from './components/util.ts'
 import type { ColorScheme } from './drawSyntenyUtils.ts'
 import type { SyntenyTrackRenderParams } from './syntenyBackendTypes.ts'
-import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -27,19 +25,16 @@ import type {
 } from '@jbrowse/plugin-comparative-adapters'
 
 export interface SyntenyFeatureData {
-  // bp-in-region positions for each corner of the synteny feature. The
-  // main-thread renderer projects these against per-view `ViewProjection`
-  // tables to get screen pixels. See @jbrowse/core/util/bpProjection.
-  p11_bp: Uint32Array
-  p12_bp: Uint32Array
-  p21_bp: Uint32Array
-  p22_bp: Uint32Array
-  topRegionIdx: Uint8Array
-  botRegionIdx: Uint8Array
+  p11_offsetPx: Float64Array
+  p12_offsetPx: Float64Array
+  p21_offsetPx: Float64Array
+  p22_offsetPx: Float64Array
   strands: Int8Array
   starts: Float64Array
   ends: Float64Array
   identities: Float64Array
+  padTop: Float64Array
+  padBottom: Float64Array
   featureIds: string[]
   names: string[]
   refNames: string[]
@@ -483,8 +478,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           minAlignmentLength: self.minAlignmentLength,
           hoveredFeatureId: hoveredFeatureIdx >= 0 ? hoveredFeatureIdx + 1 : 0,
           clickedFeatureId: clickedFeatureIdx >= 0 ? clickedFeatureIdx + 1 : 0,
-          projTop: buildViewProjection(v0),
-          projBot: buildViewProjection(v1),
+          offset0: v0.offsetPx,
+          offset1: v1.offsetPx,
+          bpPerPx0: v0.bpPerPx,
+          bpPerPx1: v1.bpPerPx,
           drawCurves: view.drawCurves,
           isSyriMode: self.colorBy === 'syri',
         }

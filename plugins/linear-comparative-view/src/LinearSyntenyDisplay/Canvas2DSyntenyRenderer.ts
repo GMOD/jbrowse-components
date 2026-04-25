@@ -1,7 +1,5 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
-import { projectBpToScreenPx } from '@jbrowse/core/util/bpProjection'
-
 import { syriColors } from './drawSyntenyUtils.ts'
 
 import type {
@@ -10,7 +8,6 @@ import type {
   SyntenyRenderState,
   SyntenyTrackRenderParams,
 } from './syntenyBackendTypes.ts'
-import type { ViewProjection } from '@jbrowse/core/util/bpProjection'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
 const PACKED_SYN = cssColorToABGR(syriColors.SYN)
@@ -56,6 +53,31 @@ function buildFeaturePath(
   ctx.closePath()
 }
 
+interface ComputedTransform {
+  scale0: number
+  scale1: number
+  adjOff0: number
+  adjOff1: number
+  scaleDiff0: number
+  scaleDiff1: number
+}
+
+function computeTransform(
+  data: SyntenyInstanceData,
+  params: SyntenyTrackRenderParams,
+): ComputedTransform {
+  const scale0 = data.geometryBpPerPx0 / params.bpPerPx0
+  const scale1 = data.geometryBpPerPx1 / params.bpPerPx1
+  return {
+    scale0,
+    scale1,
+    adjOff0: params.offset0 / scale0 - data.refOffset0,
+    adjOff1: params.offset1 / scale1 - data.refOffset1,
+    scaleDiff0: scale0 - 1,
+    scaleDiff1: scale1 - 1,
+  }
+}
+
 interface ProjectedCorners {
   sx1: number
   sx2: number
@@ -66,16 +88,15 @@ interface ProjectedCorners {
 function projectCorners(
   data: SyntenyInstanceData,
   i: number,
-  projTop: ViewProjection,
-  projBot: ViewProjection,
+  t: ComputedTransform,
 ): ProjectedCorners {
-  const topIdx = data.topRegionIdx[i]!
-  const botIdx = data.botRegionIdx[i]!
+  const padTop = data.padTops[i]!
+  const padBottom = data.padBottoms[i]!
   return {
-    sx1: projectBpToScreenPx(data.x1[i]!, topIdx, projTop),
-    sx2: projectBpToScreenPx(data.x2[i]!, topIdx, projTop),
-    sx3: projectBpToScreenPx(data.x3[i]!, botIdx, projBot),
-    sx4: projectBpToScreenPx(data.x4[i]!, botIdx, projBot),
+    sx1: (data.x1[i]! - t.adjOff0) * t.scale0 - padTop * t.scaleDiff0,
+    sx2: (data.x2[i]! - t.adjOff0) * t.scale0 - padTop * t.scaleDiff0,
+    sx3: (data.x3[i]! - t.adjOff1) * t.scale1 - padBottom * t.scaleDiff1,
+    sx4: (data.x4[i]! - t.adjOff1) * t.scale1 - padBottom * t.scaleDiff1,
   }
 }
 
@@ -102,6 +123,11 @@ function widenCorners(c: ProjectedCorners, height: number): ProjectedCorners {
   return { sx1, sx2, sx3, sx4 }
 }
 
+// Per-edge cull (not combined AABB): drop the instance when EITHER the top
+// edge OR the bottom edge is fully off-screen. Matches isCulled() in
+// syntenyTypes.slang so Canvas2D and GPU honor the maxOffScreenPx slider
+// the same way; an AABB-only check would keep drawing trapezoids spanning
+// huge horizontal travel into off-screen space.
 function isEdgeCulled(
   c: ProjectedCorners,
   leftLimit: number,
@@ -119,6 +145,9 @@ function isEdgeCulled(
   )
 }
 
+// Subset of the 2D canvas surface the draw loop needs. Both
+// CanvasRenderingContext2D and SvgCanvas (packages/core/src/util/SvgCanvas.ts)
+// satisfy this, so renderSvg.tsx reuses this exact draw path.
 export interface CanvasLike {
   fillStyle: string | CanvasGradient | CanvasPattern
   strokeStyle: string | CanvasGradient | CanvasPattern
@@ -151,8 +180,7 @@ export interface CanvasLike {
 function drawInstances(
   ctx: CanvasLike,
   data: SyntenyInstanceData,
-  projTop: ViewProjection,
-  projBot: ViewProjection,
+  transform: ReturnType<typeof computeTransform>,
   alpha: number,
   height: number,
   minAlignmentLength: number,
@@ -178,7 +206,7 @@ function drawInstances(
       continue
     }
 
-    const c = projectCorners(data, i, projTop, projBot)
+    const c = projectCorners(data, i, transform)
     if (isEdgeCulled(c, leftLimit, rightLimit)) {
       continue
     }
@@ -189,6 +217,9 @@ function drawInstances(
 
     let fillStyle = fillStyleCache.get(packed)
     if (isHovered) {
+      // SYNC: 0.7 darkening + 5x alpha boost capped at 0.35 must match
+      // syntenyFill.slang's hover branch so the highlight looks identical
+      // across all backends.
       const r = ((packed & 0xff) * 0.7) | 0
       const g = (((packed >> 8) & 0xff) * 0.7) | 0
       const b = (((packed >> 16) & 0xff) * 0.7) | 0
@@ -232,20 +263,20 @@ export function drawSyntenyTrack(
     clickedFeatureId,
     drawCurves,
     isSyriMode,
-    projTop,
-    projBot,
   } = params
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, yTop * dpr)
   ctx.globalAlpha = 1
 
+  const transform = computeTransform(data, params)
+  // Canvas2D parses fillStyle on every assignment, so reuse the rgba string
+  // for the common case of many instances sharing a color (CIGAR fills).
   const fillStyleCache = new Map<number, string>()
   const leftLimit = -maxOffScreenPx
   const rightLimit = logicalW + maxOffScreenPx
   const args = [
     data,
-    projTop,
-    projBot,
+    transform,
     alpha,
     height,
     minAlignmentLength,
@@ -258,6 +289,7 @@ export function drawSyntenyTrack(
   ] as const
 
   if (isSyriMode) {
+    // plotsr draws SYN first so that INV/TRANS/DUP ribbons appear on top
     drawInstances(ctx, ...args, true)
     drawInstances(ctx, ...args, false)
   } else {
@@ -342,6 +374,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     const leftLimit = -state.maxOffScreenPx
     const rightLimit = this.canvas.width / this.dpr + state.maxOffScreenPx
 
+    // Iterate tracks in reverse draw order so top-most wins.
     let topHit: SyntenyPickResult | undefined
     const entries = Array.from(state.perTrack)
     for (let ei = entries.length - 1; ei >= 0; ei--) {
@@ -350,11 +383,12 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
       if (!data || data.instanceCount === 0) {
         continue
       }
-      const { yTop, height, minAlignmentLength, projTop, projBot } = params
+      const { yTop, height, minAlignmentLength } = params
       if (y < yTop || y > yTop + height) {
         continue
       }
       const localY = y - yTop
+      const transform = computeTransform(data, params)
 
       for (let i = data.instanceCount - 1; i >= 0; i--) {
         if (data.queryTotalLengths[i]! < minAlignmentLength) {
@@ -364,7 +398,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
           continue
         }
 
-        const c = projectCorners(data, i, projTop, projBot)
+        const c = projectCorners(data, i, transform)
         if (isEdgeCulled(c, leftLimit, rightLimit)) {
           continue
         }

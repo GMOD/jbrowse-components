@@ -1,5 +1,3 @@
-import { buildViewProjection } from '@jbrowse/core/util/bpProjection'
-
 import { Canvas2DSyntenyRenderer } from './Canvas2DSyntenyRenderer.ts'
 
 import type {
@@ -42,19 +40,23 @@ function makeInstanceData(
   overrides?: Partial<SyntenyInstanceData>,
 ): SyntenyInstanceData {
   return {
-    x1: new Uint32Array(count).fill(10),
-    x2: new Uint32Array(count).fill(100),
-    x3: new Uint32Array(count).fill(110),
-    x4: new Uint32Array(count).fill(20),
-    topRegionIdx: new Uint8Array(count),
-    botRegionIdx: new Uint8Array(count),
+    x1: new Float32Array(count).fill(10),
+    x2: new Float32Array(count).fill(100),
+    x3: new Float32Array(count).fill(110),
+    x4: new Float32Array(count).fill(20),
     colors: new Uint32Array(count).fill(0x80808080),
     kinds: new Uint8Array(count),
     instanceFeatureIdx: new Uint32Array(count),
     featureIds: new Float32Array(count).fill(1),
     queryTotalLengths: new Float32Array(count).fill(10000),
+    padTops: new Float32Array(count).fill(0),
+    padBottoms: new Float32Array(count).fill(0),
     instanceCount: count,
     nonCigarInstanceCount: count,
+    geometryBpPerPx0: 1,
+    geometryBpPerPx1: 1,
+    refOffset0: 0,
+    refOffset1: 0,
     ...overrides,
   }
 }
@@ -62,15 +64,6 @@ function makeInstanceData(
 function makeParams(
   overrides?: Partial<SyntenyTrackRenderParams>,
 ): SyntenyTrackRenderParams {
-  const proj = buildViewProjection({
-    bpPerPx: 1,
-    offsetPx: 0,
-    interRegionPaddingWidth: 2,
-    minimumBlockWidth: 3,
-    displayedRegions: [
-      { refName: 'chr1', start: 0, end: 10000, assemblyName: 'a' },
-    ],
-  })
   return {
     yTop: 0,
     height: 100,
@@ -78,8 +71,10 @@ function makeParams(
     minAlignmentLength: 0,
     hoveredFeatureId: 0,
     clickedFeatureId: 0,
-    projTop: proj,
-    projBot: proj,
+    offset0: 0,
+    offset1: 0,
+    bpPerPx0: 1,
+    bpPerPx1: 1,
     drawCurves: false,
     isSyriMode: false,
     ...overrides,
@@ -183,10 +178,10 @@ describe('Canvas2DSyntenyRenderer', () => {
     renderer.uploadGeometry(
       0,
       makeInstanceData(1, {
-        x1: new Uint32Array([5000]),
-        x2: new Uint32Array([6000]),
-        x3: new Uint32Array([6000]),
-        x4: new Uint32Array([5000]),
+        x1: new Float32Array([5000]),
+        x2: new Float32Array([6000]),
+        x3: new Float32Array([6000]),
+        x4: new Float32Array([5000]),
       }),
     )
     renderer.render(makeState([[0, makeParams()]]))
@@ -333,7 +328,9 @@ describe('Canvas2DSyntenyRenderer', () => {
         [1, makeParams({ yTop: 100, height: 100 })],
       ]),
     )
+    // y=50 is within track 0 only
     expect(renderer.pick(50, 50)?.key).toBe(0)
+    // y=150 is within track 1 only
     expect(renderer.pick(50, 150)?.key).toBe(1)
   })
 

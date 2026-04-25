@@ -1,16 +1,14 @@
 import {
   bpInRegionFromCoord,
-  bpInRegionFromIndex,
   buildBpInRegionIndex,
+  bpInRegionFromIndex,
   buildViewProjection,
   projectBpToScreenPx,
-} from './bpProjection.ts'
+} from './syntenyProjection.ts'
 
-import type { BpProjectionViewLike } from './bpProjection.ts'
+import type { SyntenyViewLike } from './syntenyProjection.ts'
 
-function makeView(
-  partial: Partial<BpProjectionViewLike> = {},
-): BpProjectionViewLike {
+function makeView(partial: Partial<SyntenyViewLike> = {}): SyntenyViewLike {
   return {
     bpPerPx: 1,
     offsetPx: 0,
@@ -41,19 +39,21 @@ describe('buildViewProjection', () => {
         ],
       }),
     )
+    // bpPerPx=1, padding=2, regions sized 100bp=100px (well above minBlockWidth=5)
     expect(Array.from(p.regionOffsetPx)).toEqual([0, 100 + 2, 200 + 4])
   })
 
   it('skips padding for elided regions (below minimumBlockWidth)', () => {
     const p = buildViewProjection(
       makeView({
-        bpPerPx: 100,
+        bpPerPx: 100, // regions now render at ~1px, below minBlockWidth=5
         displayedRegions: [
           { assemblyName: 'a', refName: 'chr1', start: 0, end: 100 },
           { assemblyName: 'a', refName: 'chr2', start: 0, end: 100 },
         ],
       }),
     )
+    // regionWidthPx = 100/100 = 1 < 5 → elided → no padding after first
     expect(p.regionOffsetPx[1]).toBe(1)
   })
 
@@ -92,13 +92,7 @@ describe('bpInRegionFromCoord', () => {
   const regions = [
     { assemblyName: 'a', refName: 'chr1', start: 0, end: 100 },
     { assemblyName: 'a', refName: 'chr2', start: 100, end: 200 },
-    {
-      assemblyName: 'a',
-      refName: 'chr1',
-      start: 200,
-      end: 300,
-      reversed: true,
-    },
+    { assemblyName: 'a', refName: 'chr1', start: 200, end: 300, reversed: true },
   ]
 
   it('finds forward region', () => {
@@ -133,13 +127,7 @@ describe('bpInRegionFromIndex', () => {
   const regions = [
     { assemblyName: 'a', refName: 'chr1', start: 0, end: 100 },
     { assemblyName: 'a', refName: 'chr2', start: 100, end: 200 },
-    {
-      assemblyName: 'a',
-      refName: 'chr1',
-      start: 200,
-      end: 300,
-      reversed: true,
-    },
+    { assemblyName: 'a', refName: 'chr1', start: 200, end: 300, reversed: true },
   ]
   const index = buildBpInRegionIndex(regions)
 

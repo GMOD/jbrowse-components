@@ -20,11 +20,11 @@ export function interleaveInstances(data: SyntenyInstanceData) {
     x2,
     x3,
     x4,
-    topRegionIdx,
-    botRegionIdx,
     colors,
     featureIds,
     queryTotalLengths,
+    padTops,
+    padBottoms,
     instanceCount: n,
   } = data
   const buf = new ArrayBuffer(n * INSTANCE_STRIDE_BYTES)
@@ -33,15 +33,15 @@ export function interleaveInstances(data: SyntenyInstanceData) {
 
   for (let i = 0; i < n; i++) {
     const off = i * INSTANCE_STRIDE_F32
-    u32[off + FIELD_OFFSET_F32.x1] = x1[i]!
-    u32[off + FIELD_OFFSET_F32.x2] = x2[i]!
-    u32[off + FIELD_OFFSET_F32.x3] = x3[i]!
-    u32[off + FIELD_OFFSET_F32.x4] = x4[i]!
-    u32[off + FIELD_OFFSET_F32.topRegionIdx] = topRegionIdx[i]!
-    u32[off + FIELD_OFFSET_F32.botRegionIdx] = botRegionIdx[i]!
+    f[off + FIELD_OFFSET_F32.x1] = x1[i]!
+    f[off + FIELD_OFFSET_F32.x2] = x2[i]!
+    f[off + FIELD_OFFSET_F32.x3] = x3[i]!
+    f[off + FIELD_OFFSET_F32.x4] = x4[i]!
     u32[off + FIELD_OFFSET_F32.color] = colors[i]!
     f[off + FIELD_OFFSET_F32.featureId] = featureIds[i]!
     f[off + FIELD_OFFSET_F32.queryTotalLength] = queryTotalLengths[i]!
+    f[off + FIELD_OFFSET_F32.padTop] = padTops[i]!
+    f[off + FIELD_OFFSET_F32.padBottom] = padBottoms[i]!
   }
   return buf
 }

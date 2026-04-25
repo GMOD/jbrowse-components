@@ -3,109 +3,47 @@
 
 import type { GlAttributeLayout } from '@jbrowse/core/gpu/hal'
 
-export const WGSL_SOURCE = "struct Uniforms_std140_0\n{\n    @align(16) resolution_0 : vec2<f32>,\n    @align(8) height_0 : f32,\n    @align(4) bpPerPx0_0 : f32,\n    @align(16) bpPerPx1_0 : f32,\n    @align(4) maxOffScreenPx_0 : f32,\n    @align(8) minAlignmentLength_0 : f32,\n    @align(4) alpha_0 : f32,\n    @align(16) hoveredFeatureId_0 : f32,\n    @align(4) clickedFeatureId_0 : f32,\n    @align(8) yTop_0 : f32,\n    @align(4) isCurve_0 : f32,\n    @align(16) hpZero_0 : f32,\n    @align(4) regionOffsetA0_0 : f32,\n    @align(8) regionOffsetA1_0 : f32,\n    @align(4) regionOffsetA2_0 : f32,\n    @align(16) regionOffsetA3_0 : f32,\n    @align(4) regionOffsetA4_0 : f32,\n    @align(8) regionOffsetA5_0 : f32,\n    @align(4) regionOffsetA6_0 : f32,\n    @align(16) regionOffsetA7_0 : f32,\n    @align(4) regionOffsetA8_0 : f32,\n    @align(8) regionOffsetA9_0 : f32,\n    @align(4) regionOffsetA10_0 : f32,\n    @align(16) regionOffsetA11_0 : f32,\n    @align(4) regionOffsetA12_0 : f32,\n    @align(8) regionOffsetA13_0 : f32,\n    @align(4) regionOffsetA14_0 : f32,\n    @align(16) regionOffsetA15_0 : f32,\n    @align(4) regionOffsetB0_0 : f32,\n    @align(8) regionOffsetB1_0 : f32,\n    @align(4) regionOffsetB2_0 : f32,\n    @align(16) regionOffsetB3_0 : f32,\n    @align(4) regionOffsetB4_0 : f32,\n    @align(8) regionOffsetB5_0 : f32,\n    @align(4) regionOffsetB6_0 : f32,\n    @align(16) regionOffsetB7_0 : f32,\n    @align(4) regionOffsetB8_0 : f32,\n    @align(8) regionOffsetB9_0 : f32,\n    @align(4) regionOffsetB10_0 : f32,\n    @align(16) regionOffsetB11_0 : f32,\n    @align(4) regionOffsetB12_0 : f32,\n    @align(8) regionOffsetB13_0 : f32,\n    @align(4) regionOffsetB14_0 : f32,\n    @align(16) regionOffsetB15_0 : f32,\n};\n\n@binding(1) @group(0) var<uniform> u_0 : Uniforms_std140_0;\nfn hpSplitUint_0( value_0 : u32) -> vec2<f32>\n{\n    var lo_0 : u32 = (value_0 & (u32(4095)));\n    return vec2<f32>(f32(value_0 - lo_0), f32(lo_0));\n}\n\nfn hpScaleLinear_0( splitPos_0 : vec2<f32>,  bpRange_0 : vec3<f32>,  hpZero_1 : f32) -> f32\n{\n    var step_0 : f32 = 1.0f / bpRange_0.z;\n    var _S1 : f32 = - (1.0f / hpZero_1);\n    return dot(vec2<f32>(max(splitPos_0.x - bpRange_0.x, _S1), max(splitPos_0.y - bpRange_0.y, _S1)), vec2<f32>(step_0, step_0));\n}\n\nstruct VsOut_0\n{\n    @builtin(position) position_0 : vec4<f32>,\n    @location(0) dist_0 : f32,\n};\n\nstruct vertexInput_0\n{\n    @location(0) x1_0 : u32,\n    @location(1) x2_0 : u32,\n    @location(2) x3_0 : u32,\n    @location(3) x4_0 : u32,\n    @location(4) topRegionIdx_0 : u32,\n    @location(5) botRegionIdx_0 : u32,\n    @location(6) color_0 : u32,\n    @location(7) featureId_0 : f32,\n    @location(8) queryTotalLength_0 : f32,\n};\n\nstruct Instance_0\n{\n     x1_1 : u32,\n     x2_1 : u32,\n     x3_1 : u32,\n     x4_1 : u32,\n     topRegionIdx_1 : u32,\n     botRegionIdx_1 : u32,\n     color_1 : u32,\n     featureId_1 : f32,\n     queryTotalLength_1 : f32,\n};\n\nstruct Corners_0\n{\n     x1_2 : f32,\n     x2_2 : f32,\n     x3_2 : f32,\n     x4_2 : f32,\n};\n\nfn regionOffsetA_0( _S2 : u32) -> f32\n{\n    switch(_S2)\n    {\n    case u32(0):\n        {\n            return u_0.regionOffsetA0_0;\n        }\n    case u32(1):\n        {\n            return u_0.regionOffsetA1_0;\n        }\n    case u32(2):\n        {\n            return u_0.regionOffsetA2_0;\n        }\n    case u32(3):\n        {\n            return u_0.regionOffsetA3_0;\n        }\n    case u32(4):\n        {\n            return u_0.regionOffsetA4_0;\n        }\n    case u32(5):\n        {\n            return u_0.regionOffsetA5_0;\n        }\n    case u32(6):\n        {\n            return u_0.regionOffsetA6_0;\n        }\n    case u32(7):\n        {\n            return u_0.regionOffsetA7_0;\n        }\n    case u32(8):\n        {\n            return u_0.regionOffsetA8_0;\n        }\n    case u32(9):\n        {\n            return u_0.regionOffsetA9_0;\n        }\n    case u32(10):\n        {\n            return u_0.regionOffsetA10_0;\n        }\n    case u32(11):\n        {\n            return u_0.regionOffsetA11_0;\n        }\n    case u32(12):\n        {\n            return u_0.regionOffsetA12_0;\n        }\n    case u32(13):\n        {\n            return u_0.regionOffsetA13_0;\n        }\n    case u32(14):\n        {\n            return u_0.regionOffsetA14_0;\n        }\n    case u32(15):\n        {\n            return u_0.regionOffsetA15_0;\n        }\n    default :\n        {\n            return 0.0f;\n        }\n    }\n}\n\nfn regionOffsetB_0( _S3 : u32) -> f32\n{\n    switch(_S3)\n    {\n    case u32(0):\n        {\n            return u_0.regionOffsetB0_0;\n        }\n    case u32(1):\n        {\n            return u_0.regionOffsetB1_0;\n        }\n    case u32(2):\n        {\n            return u_0.regionOffsetB2_0;\n        }\n    case u32(3):\n        {\n            return u_0.regionOffsetB3_0;\n        }\n    case u32(4):\n        {\n            return u_0.regionOffsetB4_0;\n        }\n    case u32(5):\n        {\n            return u_0.regionOffsetB5_0;\n        }\n    case u32(6):\n        {\n            return u_0.regionOffsetB6_0;\n        }\n    case u32(7):\n        {\n            return u_0.regionOffsetB7_0;\n        }\n    case u32(8):\n        {\n            return u_0.regionOffsetB8_0;\n        }\n    case u32(9):\n        {\n            return u_0.regionOffsetB9_0;\n        }\n    case u32(10):\n        {\n            return u_0.regionOffsetB10_0;\n        }\n    case u32(11):\n        {\n            return u_0.regionOffsetB11_0;\n        }\n    case u32(12):\n        {\n            return u_0.regionOffsetB12_0;\n        }\n    case u32(13):\n        {\n            return u_0.regionOffsetB13_0;\n        }\n    case u32(14):\n        {\n            return u_0.regionOffsetB14_0;\n        }\n    case u32(15):\n        {\n            return u_0.regionOffsetB15_0;\n        }\n    default :\n        {\n            return 0.0f;\n        }\n    }\n}\n\nfn computeCorners_0( _S4 : Instance_0) -> Corners_0\n{\n    var bpRangeA_0 : vec3<f32> = vec3<f32>(0.0f, 0.0f, u_0.bpPerPx0_0);\n    var bpRangeB_0 : vec3<f32> = vec3<f32>(0.0f, 0.0f, u_0.bpPerPx1_0);\n    var _S5 : f32 = regionOffsetA_0(_S4.topRegionIdx_1);\n    var _S6 : f32 = regionOffsetB_0(_S4.botRegionIdx_1);\n    var c_0 : Corners_0;\n    c_0.x1_2 = _S5 + hpScaleLinear_0(hpSplitUint_0(_S4.x1_1), bpRangeA_0, u_0.hpZero_0);\n    c_0.x2_2 = _S5 + hpScaleLinear_0(hpSplitUint_0(_S4.x2_1), bpRangeA_0, u_0.hpZero_0);\n    c_0.x3_2 = _S6 + hpScaleLinear_0(hpSplitUint_0(_S4.x3_1), bpRangeB_0, u_0.hpZero_0);\n    c_0.x4_2 = _S6 + hpScaleLinear_0(hpSplitUint_0(_S4.x4_1), bpRangeB_0, u_0.hpZero_0);\n    return c_0;\n}\n\nfn isCulled_0( _S7 : Corners_0,  _S8 : f32) -> bool\n{\n    var _S9 : f32 = u_0.minAlignmentLength_0;\n    var _S10 : bool;\n    if((u_0.minAlignmentLength_0) > 0.0f)\n    {\n        _S10 = _S8 < _S9;\n    }\n    else\n    {\n        _S10 = false;\n    }\n    if(_S10)\n    {\n        return true;\n    }\n    var mOff_0 : f32 = u_0.maxOffScreenPx_0;\n    var rW_0 : f32 = u_0.resolution_0.x;\n    var _S11 : f32 = - u_0.maxOffScreenPx_0;\n    if((max(_S7.x1_2, _S7.x2_2)) < _S11)\n    {\n        _S10 = true;\n    }\n    else\n    {\n        _S10 = (min(_S7.x1_2, _S7.x2_2)) > (rW_0 + mOff_0);\n    }\n    if(_S10)\n    {\n        _S10 = true;\n    }\n    else\n    {\n        _S10 = (max(_S7.x3_2, _S7.x4_2)) < _S11;\n    }\n    if(_S10)\n    {\n        _S10 = true;\n    }\n    else\n    {\n        _S10 = (min(_S7.x3_2, _S7.x4_2)) > (rW_0 + mOff_0);\n    }\n    return _S10;\n}\n\n@vertex\nfn vs_main( _S12 : vertexInput_0, @builtin(vertex_index) vid_0 : u32) -> VsOut_0\n{\n    var _S13 : Instance_0 = Instance_0( _S12.x1_0, _S12.x2_0, _S12.x3_0, _S12.x4_0, _S12.topRegionIdx_0, _S12.botRegionIdx_0, _S12.color_0, _S12.featureId_0, _S12.queryTotalLength_0 );\n    var o_0 : VsOut_0;\n    o_0.dist_0 = 0.0f;\n    var isClicked_0 : bool;\n    if((u_0.clickedFeatureId_0) > 0.0f)\n    {\n        isClicked_0 = (abs(_S12.featureId_0 - u_0.clickedFeatureId_0)) < 0.5f;\n    }\n    else\n    {\n        isClicked_0 = false;\n    }\n    if(!isClicked_0)\n    {\n        o_0.position_0 = vec4<f32>(0.0f);\n        return o_0;\n    }\n    var _S14 : Corners_0 = computeCorners_0(_S13);\n    if(isCulled_0(_S14, _S12.queryTotalLength_0))\n    {\n        o_0.position_0 = vec4<f32>(0.0f);\n        return o_0;\n    }\n    var edgeIdx_0 : u32 = vid_0 / u32(24);\n    var vidInEdge_0 : u32 = vid_0 % u32(24);\n    var seg_0 : u32 = vidInEdge_0 / u32(6);\n    var t0_0 : f32 = f32(seg_0) / 4.0f;\n    var t1_0 : f32 = f32(seg_0 + u32(1)) / 4.0f;\n    var t_0 : f32;\n    var side_0 : f32;\n    switch(vidInEdge_0 % u32(6))\n    {\n    case u32(0):\n        {\n            t_0 = t0_0;\n            side_0 = -1.0f;\n            break;\n        }\n    case u32(1):\n        {\n            t_0 = t0_0;\n            side_0 = 1.0f;\n            break;\n        }\n    case u32(2):\n        {\n            t_0 = t1_0;\n            side_0 = -1.0f;\n            break;\n        }\n    case u32(3):\n        {\n            t_0 = t1_0;\n            side_0 = -1.0f;\n            break;\n        }\n    case u32(4):\n        {\n            t_0 = t0_0;\n            side_0 = 1.0f;\n            break;\n        }\n    case u32(5):\n        {\n            t_0 = t1_0;\n            side_0 = 1.0f;\n            break;\n        }\n    default :\n        {\n            t_0 = 0.0f;\n            side_0 = 0.0f;\n            break;\n        }\n    }\n    var edge1_x_0 : f32;\n    var edge0_x_0 : f32;\n    var y_0 : f32;\n    var tangent_0 : vec2<f32>;\n    if((u_0.isCurve_0) > 0.5f)\n    {\n        var _S15 : f32 = t_0 * t_0;\n        var _S16 : f32 = 2.0f * t_0;\n        var s_0 : f32 = _S15 * (3.0f - _S16);\n        var _S17 : f32 = mix(_S14.x1_2, _S14.x4_2, s_0);\n        var _S18 : f32 = mix(_S14.x2_2, _S14.x3_2, s_0);\n        var _S19 : f32 = 1.0f - t_0;\n        var _S20 : f32 = u_0.yTop_0 + u_0.height_0 * (1.5f * t_0 * _S19 + _S15 * t_0);\n        var sPrime_0 : f32 = 6.0f * t_0 * _S19;\n        var dy_0 : f32 = u_0.height_0 * 1.5f * (1.0f - _S16 * _S19);\n        if(edgeIdx_0 == u32(1))\n        {\n            edge1_x_0 = sPrime_0 * (_S14.x3_2 - _S14.x2_2);\n        }\n        else\n        {\n            edge1_x_0 = sPrime_0 * (_S14.x4_2 - _S14.x1_2);\n        }\n        var _S21 : vec2<f32> = vec2<f32>(edge1_x_0, dy_0);\n        edge1_x_0 = _S18;\n        edge0_x_0 = _S17;\n        tangent_0 = _S21;\n        y_0 = _S20;\n    }\n    else\n    {\n        var _S22 : f32 = mix(_S14.x1_2, _S14.x4_2, t_0);\n        var _S23 : f32 = mix(_S14.x2_2, _S14.x3_2, t_0);\n        var _S24 : f32 = u_0.yTop_0 + t_0 * u_0.height_0;\n        if(edgeIdx_0 == u32(1))\n        {\n            edge1_x_0 = _S14.x3_2 - _S14.x2_2;\n        }\n        else\n        {\n            edge1_x_0 = _S14.x4_2 - _S14.x1_2;\n        }\n        var _S25 : vec2<f32> = vec2<f32>(edge1_x_0, u_0.height_0);\n        edge1_x_0 = _S23;\n        edge0_x_0 = _S22;\n        tangent_0 = _S25;\n        y_0 = _S24;\n    }\n    var edgeX_0 : f32;\n    if(edgeIdx_0 == u32(1))\n    {\n        edgeX_0 = edge1_x_0;\n    }\n    else\n    {\n        edgeX_0 = edge0_x_0;\n    }\n    var tangentLen_0 : f32 = length(tangent_0);\n    var normal_0 : vec2<f32>;\n    if(tangentLen_0 > 0.00100000004749745f)\n    {\n        var rawNormal_0 : vec2<f32> = vec2<f32>(- tangent_0.y, tangent_0.x) / vec2<f32>(tangentLen_0);\n        if(edgeIdx_0 == u32(0))\n        {\n            t_0 = -1.0f;\n        }\n        else\n        {\n            t_0 = 1.0f;\n        }\n        normal_0 = rawNormal_0 * vec2<f32>((t_0 * f32((i32(sign((_S14.x1_2 - _S14.x2_2)))))));\n    }\n    else\n    {\n        normal_0 = vec2<f32>(0.0f, 1.0f);\n    }\n    var pos_0 : vec2<f32> = vec2<f32>(edgeX_0, y_0) + normal_0 * vec2<f32>(side_0);\n    o_0.dist_0 = side_0;\n    var clipSpace_0 : vec2<f32> = pos_0 / u_0.resolution_0 * vec2<f32>(2.0f) - vec2<f32>(1.0f);\n    o_0.position_0 = vec4<f32>(clipSpace_0.x, - clipSpace_0.y, 0.0f, 1.0f);\n    return o_0;\n}\n\nstruct pixelOutput_0\n{\n    @location(0) output_0 : vec4<f32>,\n};\n\nstruct pixelInput_0\n{\n    @location(0) dist_1 : f32,\n};\n\n@fragment\nfn fs_main( _S26 : pixelInput_0, @builtin(position) position_1 : vec4<f32>) -> pixelOutput_0\n{\n    var aa_0 : f32 = (fwidth((_S26.dist_1)));\n    var _S27 : pixelOutput_0 = pixelOutput_0( vec4<f32>(0.0f, 0.0f, 0.0f, (1.0f - smoothstep(0.5f - aa_0 * 0.5f, 0.5f + aa_0, abs(_S26.dist_1))) * 0.40000000596046448f) );\n    return _S27;\n}\n\n"
+export const WGSL_SOURCE = "struct Uniforms_std140_0\n{\n    @align(16) resolution_0 : vec2<f32>,\n    @align(8) height_0 : f32,\n    @align(4) adjOff0_0 : f32,\n    @align(16) adjOff1_0 : f32,\n    @align(4) scale0_0 : f32,\n    @align(8) scale1_0 : f32,\n    @align(4) maxOffScreenPx_0 : f32,\n    @align(16) minAlignmentLength_0 : f32,\n    @align(4) alpha_0 : f32,\n    @align(8) hoveredFeatureId_0 : f32,\n    @align(4) clickedFeatureId_0 : f32,\n    @align(16) yTop_0 : f32,\n    @align(4) isCurve_0 : f32,\n};\n\n@binding(1) @group(0) var<uniform> u_0 : Uniforms_std140_0;\nstruct Corners_0\n{\n     x1_0 : f32,\n     x2_0 : f32,\n     x3_0 : f32,\n     x4_0 : f32,\n};\n\nstruct Instance_0\n{\n     x1_1 : f32,\n     x2_1 : f32,\n     x3_1 : f32,\n     x4_1 : f32,\n     color_0 : u32,\n     featureId_0 : f32,\n     queryTotalLength_0 : f32,\n     padTop_0 : f32,\n     padBottom_0 : f32,\n};\n\nfn computeCorners_0( inst_0 : Instance_0,  u_1 : ptr<function, Uniforms_std140_0>) -> Corners_0\n{\n    var c_0 : Corners_0;\n    var _S1 : f32 = inst_0.padTop_0 * ((*u_1).scale0_0 - 1.0f);\n    c_0.x1_0 = (inst_0.x1_1 - (*u_1).adjOff0_0) * (*u_1).scale0_0 - _S1;\n    c_0.x2_0 = (inst_0.x2_1 - (*u_1).adjOff0_0) * (*u_1).scale0_0 - _S1;\n    var _S2 : f32 = inst_0.padBottom_0 * ((*u_1).scale1_0 - 1.0f);\n    c_0.x3_0 = (inst_0.x3_1 - (*u_1).adjOff1_0) * (*u_1).scale1_0 - _S2;\n    c_0.x4_0 = (inst_0.x4_1 - (*u_1).adjOff1_0) * (*u_1).scale1_0 - _S2;\n    return c_0;\n}\n\nfn isCulled_0( c_1 : Corners_0,  queryTotalLength_1 : f32,  u_2 : ptr<function, Uniforms_std140_0>) -> bool\n{\n    var _S3 : f32 = (*u_2).minAlignmentLength_0;\n    var _S4 : bool;\n    if(((*u_2).minAlignmentLength_0) > 0.0f)\n    {\n        _S4 = queryTotalLength_1 < _S3;\n    }\n    else\n    {\n        _S4 = false;\n    }\n    if(_S4)\n    {\n        return true;\n    }\n    var _S5 : f32 = (*u_2).maxOffScreenPx_0;\n    var rW_0 : f32 = (*u_2).resolution_0.x;\n    var _S6 : f32 = - (*u_2).maxOffScreenPx_0;\n    if((max(c_1.x1_0, c_1.x2_0)) < _S6)\n    {\n        _S4 = true;\n    }\n    else\n    {\n        _S4 = (min(c_1.x1_0, c_1.x2_0)) > (rW_0 + _S5);\n    }\n    if(_S4)\n    {\n        _S4 = true;\n    }\n    else\n    {\n        _S4 = (max(c_1.x3_0, c_1.x4_0)) < _S6;\n    }\n    if(_S4)\n    {\n        _S4 = true;\n    }\n    else\n    {\n        _S4 = (min(c_1.x3_0, c_1.x4_0)) > (rW_0 + _S5);\n    }\n    return _S4;\n}\n\nstruct VsOut_0\n{\n    @builtin(position) position_0 : vec4<f32>,\n    @location(0) dist_0 : f32,\n};\n\nstruct vertexInput_0\n{\n    @location(0) x1_2 : f32,\n    @location(1) x2_2 : f32,\n    @location(2) x3_2 : f32,\n    @location(3) x4_2 : f32,\n    @location(4) color_1 : u32,\n    @location(5) featureId_1 : f32,\n    @location(6) queryTotalLength_2 : f32,\n    @location(7) padTop_1 : f32,\n    @location(8) padBottom_1 : f32,\n};\n\n@vertex\nfn vs_main( _S7 : vertexInput_0, @builtin(vertex_index) vid_0 : u32) -> VsOut_0\n{\n    var _S8 : Instance_0 = Instance_0( _S7.x1_2, _S7.x2_2, _S7.x3_2, _S7.x4_2, _S7.color_1, _S7.featureId_1, _S7.queryTotalLength_2, _S7.padTop_1, _S7.padBottom_1 );\n    var o_0 : VsOut_0;\n    o_0.dist_0 = 0.0f;\n    var isClicked_0 : bool;\n    if((u_0.clickedFeatureId_0) > 0.0f)\n    {\n        isClicked_0 = (abs(_S7.featureId_1 - u_0.clickedFeatureId_0)) < 0.5f;\n    }\n    else\n    {\n        isClicked_0 = false;\n    }\n    if(!isClicked_0)\n    {\n        o_0.position_0 = vec4<f32>(0.0f);\n        return o_0;\n    }\n    var _S9 : Uniforms_std140_0 = u_0;\n    var _S10 : Corners_0 = computeCorners_0(_S8, &(_S9));\n    var _S11 : bool = isCulled_0(_S10, _S7.queryTotalLength_2, &(_S9));\n    if(_S11)\n    {\n        o_0.position_0 = vec4<f32>(0.0f);\n        return o_0;\n    }\n    var edgeIdx_0 : u32 = vid_0 / u32(24);\n    var vidInEdge_0 : u32 = vid_0 % u32(24);\n    var seg_0 : u32 = vidInEdge_0 / u32(6);\n    var t0_0 : f32 = f32(seg_0) / 4.0f;\n    var t1_0 : f32 = f32(seg_0 + u32(1)) / 4.0f;\n    var t_0 : f32;\n    var side_0 : f32;\n    switch(vidInEdge_0 % u32(6))\n    {\n    case u32(0):\n        {\n            t_0 = t0_0;\n            side_0 = -1.0f;\n            break;\n        }\n    case u32(1):\n        {\n            t_0 = t0_0;\n            side_0 = 1.0f;\n            break;\n        }\n    case u32(2):\n        {\n            t_0 = t1_0;\n            side_0 = -1.0f;\n            break;\n        }\n    case u32(3):\n        {\n            t_0 = t1_0;\n            side_0 = -1.0f;\n            break;\n        }\n    case u32(4):\n        {\n            t_0 = t0_0;\n            side_0 = 1.0f;\n            break;\n        }\n    case u32(5):\n        {\n            t_0 = t1_0;\n            side_0 = 1.0f;\n            break;\n        }\n    default :\n        {\n            t_0 = 0.0f;\n            side_0 = 0.0f;\n            break;\n        }\n    }\n    var edge1_x_0 : f32;\n    var edge0_x_0 : f32;\n    var y_0 : f32;\n    var tangent_0 : vec2<f32>;\n    if((u_0.isCurve_0) > 0.5f)\n    {\n        var _S12 : f32 = t_0 * t_0;\n        var _S13 : f32 = 2.0f * t_0;\n        var s_0 : f32 = _S12 * (3.0f - _S13);\n        var _S14 : f32 = mix(_S10.x1_0, _S10.x4_0, s_0);\n        var _S15 : f32 = mix(_S10.x2_0, _S10.x3_0, s_0);\n        var _S16 : f32 = 1.0f - t_0;\n        var _S17 : f32 = u_0.yTop_0 + u_0.height_0 * (1.5f * t_0 * _S16 + _S12 * t_0);\n        var sPrime_0 : f32 = 6.0f * t_0 * _S16;\n        var dy_0 : f32 = u_0.height_0 * 1.5f * (1.0f - _S13 * _S16);\n        if(edgeIdx_0 == u32(1))\n        {\n            edge1_x_0 = sPrime_0 * (_S10.x3_0 - _S10.x2_0);\n        }\n        else\n        {\n            edge1_x_0 = sPrime_0 * (_S10.x4_0 - _S10.x1_0);\n        }\n        var _S18 : vec2<f32> = vec2<f32>(edge1_x_0, dy_0);\n        edge1_x_0 = _S15;\n        edge0_x_0 = _S14;\n        tangent_0 = _S18;\n        y_0 = _S17;\n    }\n    else\n    {\n        var _S19 : f32 = mix(_S10.x1_0, _S10.x4_0, t_0);\n        var _S20 : f32 = mix(_S10.x2_0, _S10.x3_0, t_0);\n        var _S21 : f32 = u_0.yTop_0 + t_0 * u_0.height_0;\n        if(edgeIdx_0 == u32(1))\n        {\n            edge1_x_0 = _S10.x3_0 - _S10.x2_0;\n        }\n        else\n        {\n            edge1_x_0 = _S10.x4_0 - _S10.x1_0;\n        }\n        var _S22 : vec2<f32> = vec2<f32>(edge1_x_0, u_0.height_0);\n        edge1_x_0 = _S20;\n        edge0_x_0 = _S19;\n        tangent_0 = _S22;\n        y_0 = _S21;\n    }\n    var edgeX_0 : f32;\n    if(edgeIdx_0 == u32(1))\n    {\n        edgeX_0 = edge1_x_0;\n    }\n    else\n    {\n        edgeX_0 = edge0_x_0;\n    }\n    var tangentLen_0 : f32 = length(tangent_0);\n    var normal_0 : vec2<f32>;\n    if(tangentLen_0 > 0.00100000004749745f)\n    {\n        var rawNormal_0 : vec2<f32> = vec2<f32>(- tangent_0.y, tangent_0.x) / vec2<f32>(tangentLen_0);\n        if(edgeIdx_0 == u32(0))\n        {\n            t_0 = -1.0f;\n        }\n        else\n        {\n            t_0 = 1.0f;\n        }\n        normal_0 = rawNormal_0 * vec2<f32>((t_0 * f32((i32(sign((_S10.x1_0 - _S10.x2_0)))))));\n    }\n    else\n    {\n        normal_0 = vec2<f32>(0.0f, 1.0f);\n    }\n    var pos_0 : vec2<f32> = vec2<f32>(edgeX_0, y_0) + normal_0 * vec2<f32>(side_0);\n    o_0.dist_0 = side_0;\n    var clipSpace_0 : vec2<f32> = pos_0 / u_0.resolution_0 * vec2<f32>(2.0f) - vec2<f32>(1.0f);\n    o_0.position_0 = vec4<f32>(clipSpace_0.x, - clipSpace_0.y, 0.0f, 1.0f);\n    return o_0;\n}\n\nstruct pixelOutput_0\n{\n    @location(0) output_0 : vec4<f32>,\n};\n\nstruct pixelInput_0\n{\n    @location(0) dist_1 : f32,\n};\n\n@fragment\nfn fs_main( _S23 : pixelInput_0, @builtin(position) position_1 : vec4<f32>) -> pixelOutput_0\n{\n    var aa_0 : f32 = (fwidth((_S23.dist_1)));\n    var _S24 : pixelOutput_0 = pixelOutput_0( vec4<f32>(0.0f, 0.0f, 0.0f, (1.0f - smoothstep(0.5f - aa_0 * 0.5f, 0.5f + aa_0, abs(_S23.dist_1))) * 0.40000000596046448f) );\n    return _S24;\n}\n\n"
 
-export const GLSL_VERTEX = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 27 0\nstruct Uniforms_0\n{\n    vec2 resolution_0;\n    float height_0;\n    float bpPerPx0_0;\n    float bpPerPx1_0;\n    float maxOffScreenPx_0;\n    float minAlignmentLength_0;\n    float alpha_0;\n    float hoveredFeatureId_0;\n    float clickedFeatureId_0;\n    float yTop_0;\n    float isCurve_0;\n    float hpZero_0;\n    float regionOffsetA0_0;\n    float regionOffsetA1_0;\n    float regionOffsetA2_0;\n    float regionOffsetA3_0;\n    float regionOffsetA4_0;\n    float regionOffsetA5_0;\n    float regionOffsetA6_0;\n    float regionOffsetA7_0;\n    float regionOffsetA8_0;\n    float regionOffsetA9_0;\n    float regionOffsetA10_0;\n    float regionOffsetA11_0;\n    float regionOffsetA12_0;\n    float regionOffsetA13_0;\n    float regionOffsetA14_0;\n    float regionOffsetA15_0;\n    float regionOffsetB0_0;\n    float regionOffsetB1_0;\n    float regionOffsetB2_0;\n    float regionOffsetB3_0;\n    float regionOffsetB4_0;\n    float regionOffsetB5_0;\n    float regionOffsetB6_0;\n    float regionOffsetB7_0;\n    float regionOffsetB8_0;\n    float regionOffsetB9_0;\n    float regionOffsetB10_0;\n    float regionOffsetB11_0;\n    float regionOffsetB12_0;\n    float regionOffsetB13_0;\n    float regionOffsetB14_0;\n    float regionOffsetB15_0;\n};\n\n\n#line 12 1\nlayout(std140) uniform Uniforms\n{\n    vec2 resolution_0;\n    float height_0;\n    float bpPerPx0_0;\n    float bpPerPx1_0;\n    float maxOffScreenPx_0;\n    float minAlignmentLength_0;\n    float alpha_0;\n    float hoveredFeatureId_0;\n    float clickedFeatureId_0;\n    float yTop_0;\n    float isCurve_0;\n    float hpZero_0;\n    float regionOffsetA0_0;\n    float regionOffsetA1_0;\n    float regionOffsetA2_0;\n    float regionOffsetA3_0;\n    float regionOffsetA4_0;\n    float regionOffsetA5_0;\n    float regionOffsetA6_0;\n    float regionOffsetA7_0;\n    float regionOffsetA8_0;\n    float regionOffsetA9_0;\n    float regionOffsetA10_0;\n    float regionOffsetA11_0;\n    float regionOffsetA12_0;\n    float regionOffsetA13_0;\n    float regionOffsetA14_0;\n    float regionOffsetA15_0;\n    float regionOffsetB0_0;\n    float regionOffsetB1_0;\n    float regionOffsetB2_0;\n    float regionOffsetB3_0;\n    float regionOffsetB4_0;\n    float regionOffsetB5_0;\n    float regionOffsetB6_0;\n    float regionOffsetB7_0;\n    float regionOffsetB8_0;\n    float regionOffsetB9_0;\n    float regionOffsetB10_0;\n    float regionOffsetB11_0;\n    float regionOffsetB12_0;\n    float regionOffsetB13_0;\n    float regionOffsetB14_0;\n    float regionOffsetB15_0;\n}u_0;\n\n#line 10 2\nvec2 hpSplitUint_0(uint value_0)\n{\n\n#line 11\n    uint lo_0 = value_0 & 4095U;\n\n    return vec2(float(value_0 - lo_0), float(lo_0));\n}\n\n\n#line 26\nfloat hpScaleLinear_0(vec2 splitPos_0, vec3 bpRange_0, float hpZero_1)\n{\n    float step_0 = 1.0 / bpRange_0.z;\n    float _S1 = - (1.0 / hpZero_1);\n\n    return dot(vec2(max(splitPos_0.x - bpRange_0.x, _S1), max(splitPos_0.y - bpRange_0.y, _S1)), vec2(step_0, step_0));\n}\n\n\n#line 14 1\nout float v_dist;\n\n\n#line 14\nlayout(location = 0)\nin uint a_x1;\n\n\n#line 14\nlayout(location = 1)\nin uint a_x2;\n\n\n#line 14\nlayout(location = 2)\nin uint a_x3;\n\n\n#line 14\nlayout(location = 3)\nin uint a_x4;\n\n\n#line 14\nlayout(location = 4)\nin uint a_topRegionIdx;\n\n\n#line 14\nlayout(location = 5)\nin uint a_botRegionIdx;\n\n\n#line 14\nlayout(location = 6)\nin uint a_color;\n\n\n#line 14\nlayout(location = 7)\nin float a_featureId;\n\n\n#line 14\nlayout(location = 8)\nin float a_queryTotalLength;\n\n\n#line 14\nstruct VsOut_0\n{\n    vec4 position_0;\n    float dist_0;\n};\n\n\n#line 13 0\nstruct Instance_0\n{\n    uint x1_0;\n    uint x2_0;\n    uint x3_0;\n    uint x4_0;\n    uint topRegionIdx_0;\n    uint botRegionIdx_0;\n    uint color_0;\n    float featureId_0;\n    float queryTotalLength_0;\n};\n\n\n#line 76\nstruct Corners_0\n{\n    float x1_1;\n    float x2_1;\n    float x3_1;\n    float x4_1;\n};\n\n\n#line 76\nfloat regionOffsetA_0(uint _S2)\n{\n\n\n\n    switch(_S2)\n    {\n    case 0U:\n        {\n\n#line 82\n            return u_0.regionOffsetA0_0;\n        }\n    case 1U:\n        {\n\n#line 83\n            return u_0.regionOffsetA1_0;\n        }\n    case 2U:\n        {\n\n#line 84\n            return u_0.regionOffsetA2_0;\n        }\n    case 3U:\n        {\n\n#line 85\n            return u_0.regionOffsetA3_0;\n        }\n    case 4U:\n        {\n\n#line 86\n            return u_0.regionOffsetA4_0;\n        }\n    case 5U:\n        {\n\n#line 87\n            return u_0.regionOffsetA5_0;\n        }\n    case 6U:\n        {\n\n#line 88\n            return u_0.regionOffsetA6_0;\n        }\n    case 7U:\n        {\n\n#line 89\n            return u_0.regionOffsetA7_0;\n        }\n    case 8U:\n        {\n\n#line 90\n            return u_0.regionOffsetA8_0;\n        }\n    case 9U:\n        {\n\n#line 91\n            return u_0.regionOffsetA9_0;\n        }\n    case 10U:\n        {\n\n#line 92\n            return u_0.regionOffsetA10_0;\n        }\n    case 11U:\n        {\n\n#line 93\n            return u_0.regionOffsetA11_0;\n        }\n    case 12U:\n        {\n\n#line 94\n            return u_0.regionOffsetA12_0;\n        }\n    case 13U:\n        {\n\n#line 95\n            return u_0.regionOffsetA13_0;\n        }\n    case 14U:\n        {\n\n#line 96\n            return u_0.regionOffsetA14_0;\n        }\n    case 15U:\n        {\n\n#line 97\n            return u_0.regionOffsetA15_0;\n        }\n    default:\n        {\n\n#line 98\n            return 0.0;\n        }\n    }\n\n#line 98\n}\n\n\n#line 98\nfloat regionOffsetB_0(uint _S3)\n{\n\n\n\n    switch(_S3)\n    {\n    case 0U:\n        {\n\n#line 104\n            return u_0.regionOffsetB0_0;\n        }\n    case 1U:\n        {\n\n#line 105\n            return u_0.regionOffsetB1_0;\n        }\n    case 2U:\n        {\n\n#line 106\n            return u_0.regionOffsetB2_0;\n        }\n    case 3U:\n        {\n\n#line 107\n            return u_0.regionOffsetB3_0;\n        }\n    case 4U:\n        {\n\n#line 108\n            return u_0.regionOffsetB4_0;\n        }\n    case 5U:\n        {\n\n#line 109\n            return u_0.regionOffsetB5_0;\n        }\n    case 6U:\n        {\n\n#line 110\n            return u_0.regionOffsetB6_0;\n        }\n    case 7U:\n        {\n\n#line 111\n            return u_0.regionOffsetB7_0;\n        }\n    case 8U:\n        {\n\n#line 112\n            return u_0.regionOffsetB8_0;\n        }\n    case 9U:\n        {\n\n#line 113\n            return u_0.regionOffsetB9_0;\n        }\n    case 10U:\n        {\n\n#line 114\n            return u_0.regionOffsetB10_0;\n        }\n    case 11U:\n        {\n\n#line 115\n            return u_0.regionOffsetB11_0;\n        }\n    case 12U:\n        {\n\n#line 116\n            return u_0.regionOffsetB12_0;\n        }\n    case 13U:\n        {\n\n#line 117\n            return u_0.regionOffsetB13_0;\n        }\n    case 14U:\n        {\n\n#line 118\n            return u_0.regionOffsetB14_0;\n        }\n    case 15U:\n        {\n\n#line 119\n            return u_0.regionOffsetB15_0;\n        }\n    default:\n        {\n\n#line 120\n            return 0.0;\n        }\n    }\n\n#line 120\n}\n\n\n#line 120\nCorners_0 computeCorners_0(Instance_0 _S4)\n{\n\n#line 126\n    vec3 bpRangeA_0 = vec3(0.0, 0.0, u_0.bpPerPx0_0);\n    vec3 bpRangeB_0 = vec3(0.0, 0.0, u_0.bpPerPx1_0);\n\n#line 127\n    float _S5 = regionOffsetA_0(_S4.topRegionIdx_0);\n\n#line 127\n    float _S6 = regionOffsetB_0(_S4.botRegionIdx_0);\n\n#line 125\n    Corners_0 c_0;\n\n#line 130\n    c_0.x1_1 = _S5 + hpScaleLinear_0(hpSplitUint_0(_S4.x1_0), bpRangeA_0, u_0.hpZero_0);\n    c_0.x2_1 = _S5 + hpScaleLinear_0(hpSplitUint_0(_S4.x2_0), bpRangeA_0, u_0.hpZero_0);\n    c_0.x3_1 = _S6 + hpScaleLinear_0(hpSplitUint_0(_S4.x3_0), bpRangeB_0, u_0.hpZero_0);\n    c_0.x4_1 = _S6 + hpScaleLinear_0(hpSplitUint_0(_S4.x4_0), bpRangeB_0, u_0.hpZero_0);\n    return c_0;\n}\n\n\n#line 134\nbool isCulled_0(Corners_0 _S7, float _S8)\n{\n\n#line 134\n    float _S9 = u_0.minAlignmentLength_0;\n\n#line 134\n    bool _S10;\n\n\n\n    if((u_0.minAlignmentLength_0) > 0.0)\n    {\n\n#line 138\n        _S10 = _S8 < _S9;\n\n#line 138\n    }\n    else\n    {\n\n#line 138\n        _S10 = false;\n\n#line 138\n    }\n\n#line 138\n    if(_S10)\n    {\n\n#line 139\n        return true;\n    }\n\n#line 139\n    float mOff_0 = u_0.maxOffScreenPx_0;\n\n\n    float rW_0 = u_0.resolution_0.x;\n    float _S11 = - u_0.maxOffScreenPx_0;\n\n#line 143\n    if((max(_S7.x1_1, _S7.x2_1)) < _S11)\n    {\n\n#line 143\n        _S10 = true;\n\n#line 143\n    }\n    else\n    {\n\n#line 143\n        _S10 = (min(_S7.x1_1, _S7.x2_1)) > (rW_0 + mOff_0);\n\n#line 143\n    }\n    if(_S10)\n    {\n\n#line 144\n        _S10 = true;\n\n#line 144\n    }\n    else\n    {\n\n#line 144\n        _S10 = (max(_S7.x3_1, _S7.x4_1)) < _S11;\n\n#line 144\n    }\n\n#line 144\n    if(_S10)\n    {\n\n#line 144\n        _S10 = true;\n\n#line 144\n    }\n    else\n    {\n\n#line 144\n        _S10 = (min(_S7.x3_1, _S7.x4_1)) > (rW_0 + mOff_0);\n\n#line 144\n    }\n\n#line 143\n    return _S10;\n}\n\n\n#line 20 1\nvoid main()\n{\n\n#line 21\n    VsOut_0 o_0;\n    o_0.dist_0 = 0.0;\n\n#line 22\n    bool isClicked_0;\n\n    if((u_0.clickedFeatureId_0) > 0.0)\n    {\n\n#line 24\n        isClicked_0 = (abs(a_featureId - u_0.clickedFeatureId_0)) < 0.5;\n\n#line 24\n    }\n    else\n    {\n\n#line 24\n        isClicked_0 = false;\n\n#line 24\n    }\n    if(!isClicked_0)\n    {\n\n#line 26\n        o_0.position_0 = vec4(0.0);\n        VsOut_0 _S12 = o_0;\n\n#line 27\n        gl_Position = o_0.position_0;\n\n#line 27\n        v_dist = _S12.dist_0;\n\n#line 27\n        return;\n    }\n\n#line 27\n    Instance_0 _S13 = Instance_0(a_x1, a_x2, a_x3, a_x4, a_topRegionIdx, a_botRegionIdx, a_color, a_featureId, a_queryTotalLength);\n\n#line 27\n    Corners_0 _S14 = computeCorners_0(_S13);\n\n\n\n    if(isCulled_0(_S14, a_queryTotalLength))\n    {\n\n#line 32\n        o_0.position_0 = vec4(0.0);\n        VsOut_0 _S15 = o_0;\n\n#line 33\n        gl_Position = o_0.position_0;\n\n#line 33\n        v_dist = _S15.dist_0;\n\n#line 33\n        return;\n    }\n\n\n    uint edgeIdx_0 = uint(gl_VertexID) / 24U;\n    uint vidInEdge_0 = uint(gl_VertexID) % 24U;\n    uint seg_0 = vidInEdge_0 / 6U;\n\n    float t0_0 = float(seg_0) / 4.0;\n    float t1_0 = float(seg_0 + 1U) / 4.0;\n\n#line 42\n    float t_0;\n\n#line 42\n    float side_0;\n\n\n    switch(vidInEdge_0 % 6U)\n    {\n    case 0U:\n        {\n\n#line 45\n            t_0 = t0_0;\n\n#line 45\n            side_0 = -1.0;\n            break;\n        }\n    case 1U:\n        {\n\n#line 46\n            t_0 = t0_0;\n\n#line 46\n            side_0 = 1.0;\n            break;\n        }\n    case 2U:\n        {\n\n#line 47\n            t_0 = t1_0;\n\n#line 47\n            side_0 = -1.0;\n            break;\n        }\n    case 3U:\n        {\n\n#line 48\n            t_0 = t1_0;\n\n#line 48\n            side_0 = -1.0;\n            break;\n        }\n    case 4U:\n        {\n\n#line 49\n            t_0 = t0_0;\n\n#line 49\n            side_0 = 1.0;\n            break;\n        }\n    case 5U:\n        {\n\n#line 50\n            t_0 = t1_0;\n\n#line 50\n            side_0 = 1.0;\n            break;\n        }\n    default:\n        {\n\n#line 51\n            t_0 = 0.0;\n\n#line 51\n            side_0 = 0.0;\n            break;\n        }\n    }\n\n#line 52\n    float edge1_x_0;\n\n#line 52\n    float edge0_x_0;\n\n#line 52\n    float y_0;\n\n#line 52\n    vec2 tangent_0;\n\n#line 58\n    if((u_0.isCurve_0) > 0.5)\n    {\n\n#line 59\n        float _S16 = t_0 * t_0;\n\n#line 59\n        float _S17 = 2.0 * t_0;\n\n#line 59\n        float s_0 = _S16 * (3.0 - _S17);\n        float _S18 = mix(_S14.x1_1, _S14.x4_1, s_0);\n        float _S19 = mix(_S14.x2_1, _S14.x3_1, s_0);\n        float _S20 = 1.0 - t_0;\n\n#line 62\n        float _S21 = u_0.yTop_0 + u_0.height_0 * (1.5 * t_0 * _S20 + _S16 * t_0);\n        float sPrime_0 = 6.0 * t_0 * _S20;\n        float dy_0 = u_0.height_0 * 1.5 * (1.0 - _S17 * _S20);\n        if(edgeIdx_0 == 1U)\n        {\n\n#line 65\n            edge1_x_0 = sPrime_0 * (_S14.x3_1 - _S14.x2_1);\n\n#line 65\n        }\n        else\n        {\n\n#line 65\n            edge1_x_0 = sPrime_0 * (_S14.x4_1 - _S14.x1_1);\n\n#line 65\n        }\n        vec2 _S22 = vec2(edge1_x_0, dy_0);\n\n#line 66\n        edge1_x_0 = _S19;\n\n#line 66\n        edge0_x_0 = _S18;\n\n#line 66\n        tangent_0 = _S22;\n\n#line 66\n        y_0 = _S21;\n\n#line 58\n    }\n    else\n    {\n\n#line 68\n        float _S23 = mix(_S14.x1_1, _S14.x4_1, t_0);\n        float _S24 = mix(_S14.x2_1, _S14.x3_1, t_0);\n        float _S25 = u_0.yTop_0 + t_0 * u_0.height_0;\n        if(edgeIdx_0 == 1U)\n        {\n\n#line 71\n            edge1_x_0 = _S14.x3_1 - _S14.x2_1;\n\n#line 71\n        }\n        else\n        {\n\n#line 71\n            edge1_x_0 = _S14.x4_1 - _S14.x1_1;\n\n#line 71\n        }\n        vec2 _S26 = vec2(edge1_x_0, u_0.height_0);\n\n#line 72\n        edge1_x_0 = _S24;\n\n#line 72\n        edge0_x_0 = _S23;\n\n#line 72\n        tangent_0 = _S26;\n\n#line 72\n        y_0 = _S25;\n\n#line 58\n    }\n\n#line 58\n    float edgeX_0;\n\n#line 75\n    if(edgeIdx_0 == 1U)\n    {\n\n#line 75\n        edgeX_0 = edge1_x_0;\n\n#line 75\n    }\n    else\n    {\n\n#line 75\n        edgeX_0 = edge0_x_0;\n\n#line 75\n    }\n    float tangentLen_0 = length(tangent_0);\n\n#line 76\n    vec2 normal_0;\n\n    if(tangentLen_0 > 0.00100000004749745)\n    {\n\n#line 79\n        vec2 rawNormal_0 = vec2(- tangent_0.y, tangent_0.x) / tangentLen_0;\n        if(edgeIdx_0 == 0U)\n        {\n\n#line 80\n            t_0 = -1.0;\n\n#line 80\n        }\n        else\n        {\n\n#line 80\n            t_0 = 1.0;\n\n#line 80\n        }\n\n#line 80\n        normal_0 = rawNormal_0 * (t_0 * float((int(sign((_S14.x1_1 - _S14.x2_1))))));\n\n#line 78\n    }\n    else\n    {\n\n#line 78\n        normal_0 = vec2(0.0, 1.0);\n\n#line 78\n    }\n\n#line 86\n    vec2 pos_0 = vec2(edgeX_0, y_0) + normal_0 * side_0;\n    o_0.dist_0 = side_0;\n    vec2 clipSpace_0 = pos_0 / u_0.resolution_0 * 2.0 - 1.0;\n    o_0.position_0 = vec4(clipSpace_0.x, - clipSpace_0.y, 0.0, 1.0);\n    VsOut_0 _S27 = o_0;\n\n#line 90\n    gl_Position = o_0.position_0;\n\n#line 90\n    v_dist = _S27.dist_0;\n\n#line 90\n    return;\n}\n\n"
+export const GLSL_VERTEX = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 18 0\nstruct Uniforms_0\n{\n    vec2 resolution_0;\n    float height_0;\n    float adjOff0_0;\n    float adjOff1_0;\n    float scale0_0;\n    float scale1_0;\n    float maxOffScreenPx_0;\n    float minAlignmentLength_0;\n    float alpha_0;\n    float hoveredFeatureId_0;\n    float clickedFeatureId_0;\n    float yTop_0;\n    float isCurve_0;\n};\n\n\n#line 12 1\nlayout(std140) uniform Uniforms\n{\n    vec2 resolution_0;\n    float height_0;\n    float adjOff0_0;\n    float adjOff1_0;\n    float scale0_0;\n    float scale1_0;\n    float maxOffScreenPx_0;\n    float minAlignmentLength_0;\n    float alpha_0;\n    float hoveredFeatureId_0;\n    float clickedFeatureId_0;\n    float yTop_0;\n    float isCurve_0;\n}u_0;\n\n#line 34 0\nstruct Corners_0\n{\n    float x1_0;\n    float x2_0;\n    float x3_0;\n    float x4_0;\n};\n\n\n#line 6\nstruct Instance_0\n{\n    float x1_1;\n    float x2_1;\n    float x3_1;\n    float x4_1;\n    uint color_0;\n    float featureId_0;\n    float queryTotalLength_0;\n    float padTop_0;\n    float padBottom_0;\n};\n\n\n#line 38\nCorners_0 computeCorners_0(Instance_0 inst_0, Uniforms_0 u_1)\n{\n\n#line 39\n    Corners_0 c_0;\n    float _S1 = inst_0.padTop_0 * (u_1.scale0_0 - 1.0);\n\n#line 40\n    c_0.x1_0 = (inst_0.x1_1 - u_1.adjOff0_0) * u_1.scale0_0 - _S1;\n    c_0.x2_0 = (inst_0.x2_1 - u_1.adjOff0_0) * u_1.scale0_0 - _S1;\n    float _S2 = inst_0.padBottom_0 * (u_1.scale1_0 - 1.0);\n\n#line 42\n    c_0.x3_0 = (inst_0.x3_1 - u_1.adjOff1_0) * u_1.scale1_0 - _S2;\n    c_0.x4_0 = (inst_0.x4_1 - u_1.adjOff1_0) * u_1.scale1_0 - _S2;\n    return c_0;\n}\n\nbool isCulled_0(Corners_0 c_1, float queryTotalLength_1, Uniforms_0 u_2)\n{\n\n#line 47\n    bool _S3;\n    if((u_2.minAlignmentLength_0) > 0.0)\n    {\n\n#line 48\n        _S3 = queryTotalLength_1 < (u_2.minAlignmentLength_0);\n\n#line 48\n    }\n    else\n    {\n\n#line 48\n        _S3 = false;\n\n#line 48\n    }\n\n#line 48\n    if(_S3)\n    {\n\n#line 49\n        return true;\n    }\n\n    float rW_0 = u_2.resolution_0.x;\n    float _S4 = - u_2.maxOffScreenPx_0;\n\n#line 53\n    if((max(c_1.x1_0, c_1.x2_0)) < _S4)\n    {\n\n#line 53\n        _S3 = true;\n\n#line 53\n    }\n    else\n    {\n\n#line 53\n        _S3 = (min(c_1.x1_0, c_1.x2_0)) > (rW_0 + u_2.maxOffScreenPx_0);\n\n#line 53\n    }\n    if(_S3)\n    {\n\n#line 54\n        _S3 = true;\n\n#line 54\n    }\n    else\n    {\n\n#line 54\n        _S3 = (max(c_1.x3_0, c_1.x4_0)) < _S4;\n\n#line 54\n    }\n\n#line 54\n    if(_S3)\n    {\n\n#line 54\n        _S3 = true;\n\n#line 54\n    }\n    else\n    {\n\n#line 54\n        _S3 = (min(c_1.x3_0, c_1.x4_0)) > (rW_0 + u_2.maxOffScreenPx_0);\n\n#line 54\n    }\n\n#line 53\n    return _S3;\n}\n\n\n#line 14 1\nout float v_dist;\n\n\n#line 14\nlayout(location = 0)\nin float a_x1;\n\n\n#line 14\nlayout(location = 1)\nin float a_x2;\n\n\n#line 14\nlayout(location = 2)\nin float a_x3;\n\n\n#line 14\nlayout(location = 3)\nin float a_x4;\n\n\n#line 14\nlayout(location = 4)\nin uint a_color;\n\n\n#line 14\nlayout(location = 5)\nin float a_featureId;\n\n\n#line 14\nlayout(location = 6)\nin float a_queryTotalLength;\n\n\n#line 14\nlayout(location = 7)\nin float a_padTop;\n\n\n#line 14\nlayout(location = 8)\nin float a_padBottom;\n\n\n#line 14\nstruct VsOut_0\n{\n    vec4 position_0;\n    float dist_0;\n};\n\nvoid main()\n{\n\n#line 21\n    VsOut_0 o_0;\n    o_0.dist_0 = 0.0;\n\n#line 22\n    bool isClicked_0;\n\n    if((u_0.clickedFeatureId_0) > 0.0)\n    {\n\n#line 24\n        isClicked_0 = (abs(a_featureId - u_0.clickedFeatureId_0)) < 0.5;\n\n#line 24\n    }\n    else\n    {\n\n#line 24\n        isClicked_0 = false;\n\n#line 24\n    }\n    if(!isClicked_0)\n    {\n\n#line 26\n        o_0.position_0 = vec4(0.0);\n        VsOut_0 _S5 = o_0;\n\n#line 27\n        gl_Position = o_0.position_0;\n\n#line 27\n        v_dist = _S5.dist_0;\n\n#line 27\n        return;\n    }\n\n#line 27\n    Uniforms_0 _S6 = Uniforms_0(u_0.resolution_0, u_0.height_0, u_0.adjOff0_0, u_0.adjOff1_0, u_0.scale0_0, u_0.scale1_0, u_0.maxOffScreenPx_0, u_0.minAlignmentLength_0, u_0.alpha_0, u_0.hoveredFeatureId_0, u_0.clickedFeatureId_0, u_0.yTop_0, u_0.isCurve_0);\n\n#line 27\n    Instance_0 _S7 = Instance_0(a_x1, a_x2, a_x3, a_x4, a_color, a_featureId, a_queryTotalLength, a_padTop, a_padBottom);\n\n\n    Corners_0 c_2 = computeCorners_0(_S7, _S6);\n    if(isCulled_0(c_2, a_queryTotalLength, _S6))\n    {\n\n#line 32\n        o_0.position_0 = vec4(0.0);\n        VsOut_0 _S8 = o_0;\n\n#line 33\n        gl_Position = o_0.position_0;\n\n#line 33\n        v_dist = _S8.dist_0;\n\n#line 33\n        return;\n    }\n\n\n    uint edgeIdx_0 = uint(gl_VertexID) / 24U;\n    uint vidInEdge_0 = uint(gl_VertexID) % 24U;\n    uint seg_0 = vidInEdge_0 / 6U;\n\n    float t0_0 = float(seg_0) / 4.0;\n    float t1_0 = float(seg_0 + 1U) / 4.0;\n\n#line 42\n    float t_0;\n\n#line 42\n    float side_0;\n\n\n    switch(vidInEdge_0 % 6U)\n    {\n    case 0U:\n        {\n\n#line 45\n            t_0 = t0_0;\n\n#line 45\n            side_0 = -1.0;\n            break;\n        }\n    case 1U:\n        {\n\n#line 46\n            t_0 = t0_0;\n\n#line 46\n            side_0 = 1.0;\n            break;\n        }\n    case 2U:\n        {\n\n#line 47\n            t_0 = t1_0;\n\n#line 47\n            side_0 = -1.0;\n            break;\n        }\n    case 3U:\n        {\n\n#line 48\n            t_0 = t1_0;\n\n#line 48\n            side_0 = -1.0;\n            break;\n        }\n    case 4U:\n        {\n\n#line 49\n            t_0 = t0_0;\n\n#line 49\n            side_0 = 1.0;\n            break;\n        }\n    case 5U:\n        {\n\n#line 50\n            t_0 = t1_0;\n\n#line 50\n            side_0 = 1.0;\n            break;\n        }\n    default:\n        {\n\n#line 51\n            t_0 = 0.0;\n\n#line 51\n            side_0 = 0.0;\n            break;\n        }\n    }\n\n#line 52\n    float edge1_x_0;\n\n#line 52\n    float edge0_x_0;\n\n#line 52\n    float y_0;\n\n#line 52\n    vec2 tangent_0;\n\n#line 58\n    if((u_0.isCurve_0) > 0.5)\n    {\n\n#line 59\n        float _S9 = t_0 * t_0;\n\n#line 59\n        float _S10 = 2.0 * t_0;\n\n#line 59\n        float s_0 = _S9 * (3.0 - _S10);\n        float _S11 = mix(c_2.x1_0, c_2.x4_0, s_0);\n        float _S12 = mix(c_2.x2_0, c_2.x3_0, s_0);\n        float _S13 = 1.0 - t_0;\n\n#line 62\n        float _S14 = u_0.yTop_0 + u_0.height_0 * (1.5 * t_0 * _S13 + _S9 * t_0);\n        float sPrime_0 = 6.0 * t_0 * _S13;\n        float dy_0 = u_0.height_0 * 1.5 * (1.0 - _S10 * _S13);\n        if(edgeIdx_0 == 1U)\n        {\n\n#line 65\n            edge1_x_0 = sPrime_0 * (c_2.x3_0 - c_2.x2_0);\n\n#line 65\n        }\n        else\n        {\n\n#line 65\n            edge1_x_0 = sPrime_0 * (c_2.x4_0 - c_2.x1_0);\n\n#line 65\n        }\n        vec2 _S15 = vec2(edge1_x_0, dy_0);\n\n#line 66\n        edge1_x_0 = _S12;\n\n#line 66\n        edge0_x_0 = _S11;\n\n#line 66\n        tangent_0 = _S15;\n\n#line 66\n        y_0 = _S14;\n\n#line 58\n    }\n    else\n    {\n\n#line 68\n        float _S16 = mix(c_2.x1_0, c_2.x4_0, t_0);\n        float _S17 = mix(c_2.x2_0, c_2.x3_0, t_0);\n        float _S18 = u_0.yTop_0 + t_0 * u_0.height_0;\n        if(edgeIdx_0 == 1U)\n        {\n\n#line 71\n            edge1_x_0 = c_2.x3_0 - c_2.x2_0;\n\n#line 71\n        }\n        else\n        {\n\n#line 71\n            edge1_x_0 = c_2.x4_0 - c_2.x1_0;\n\n#line 71\n        }\n        vec2 _S19 = vec2(edge1_x_0, u_0.height_0);\n\n#line 72\n        edge1_x_0 = _S17;\n\n#line 72\n        edge0_x_0 = _S16;\n\n#line 72\n        tangent_0 = _S19;\n\n#line 72\n        y_0 = _S18;\n\n#line 58\n    }\n\n#line 58\n    float edgeX_0;\n\n#line 75\n    if(edgeIdx_0 == 1U)\n    {\n\n#line 75\n        edgeX_0 = edge1_x_0;\n\n#line 75\n    }\n    else\n    {\n\n#line 75\n        edgeX_0 = edge0_x_0;\n\n#line 75\n    }\n    float tangentLen_0 = length(tangent_0);\n\n#line 76\n    vec2 normal_0;\n\n    if(tangentLen_0 > 0.00100000004749745)\n    {\n\n#line 79\n        vec2 rawNormal_0 = vec2(- tangent_0.y, tangent_0.x) / tangentLen_0;\n        if(edgeIdx_0 == 0U)\n        {\n\n#line 80\n            t_0 = -1.0;\n\n#line 80\n        }\n        else\n        {\n\n#line 80\n            t_0 = 1.0;\n\n#line 80\n        }\n\n#line 80\n        normal_0 = rawNormal_0 * (t_0 * float((int(sign((c_2.x1_0 - c_2.x2_0))))));\n\n#line 78\n    }\n    else\n    {\n\n#line 78\n        normal_0 = vec2(0.0, 1.0);\n\n#line 78\n    }\n\n#line 86\n    vec2 pos_0 = vec2(edgeX_0, y_0) + normal_0 * side_0;\n    o_0.dist_0 = side_0;\n    vec2 clipSpace_0 = pos_0 / u_0.resolution_0 * 2.0 - 1.0;\n    o_0.position_0 = vec4(clipSpace_0.x, - clipSpace_0.y, 0.0, 1.0);\n    VsOut_0 _S20 = o_0;\n\n#line 90\n    gl_Position = o_0.position_0;\n\n#line 90\n    v_dist = _S20.dist_0;\n\n#line 90\n    return;\n}\n\n"
 
 export const GLSL_FRAGMENT = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 993 0\nlayout(location = 0)\nout vec4 entryPointParam_fs_main_0;\n\n\n#line 993\nin float v_dist;\n\n\n#line 94 1\nvoid main()\n{\n    float aa_0 = (fwidth((v_dist)));\n\n#line 96\n    entryPointParam_fs_main_0 = vec4(0.0, 0.0, 0.0, (1.0 - smoothstep(0.5 - aa_0 * 0.5, 0.5 + aa_0, abs(v_dist))) * 0.40000000596046448);\n\n#line 96\n    return;\n}\n\n"
 
-export const UNIFORMS_SIZE_BYTES = 192
-export const UNIFORMS_SIZE_F32 = 48
+export const UNIFORMS_SIZE_BYTES = 64
+export const UNIFORMS_SIZE_F32 = 16
 
 // Byte offsets (into an ArrayBuffer / DataView).
 export const UNIFORM_OFFSET_BYTES = {
   resolution: 0,
   height: 8,
-  bpPerPx0: 12,
-  bpPerPx1: 16,
-  maxOffScreenPx: 20,
-  minAlignmentLength: 24,
-  alpha: 28,
-  hoveredFeatureId: 32,
-  clickedFeatureId: 36,
-  yTop: 40,
-  isCurve: 44,
-  hpZero: 48,
-  regionOffsetA0: 52,
-  regionOffsetA1: 56,
-  regionOffsetA2: 60,
-  regionOffsetA3: 64,
-  regionOffsetA4: 68,
-  regionOffsetA5: 72,
-  regionOffsetA6: 76,
-  regionOffsetA7: 80,
-  regionOffsetA8: 84,
-  regionOffsetA9: 88,
-  regionOffsetA10: 92,
-  regionOffsetA11: 96,
-  regionOffsetA12: 100,
-  regionOffsetA13: 104,
-  regionOffsetA14: 108,
-  regionOffsetA15: 112,
-  regionOffsetB0: 116,
-  regionOffsetB1: 120,
-  regionOffsetB2: 124,
-  regionOffsetB3: 128,
-  regionOffsetB4: 132,
-  regionOffsetB5: 136,
-  regionOffsetB6: 140,
-  regionOffsetB7: 144,
-  regionOffsetB8: 148,
-  regionOffsetB9: 152,
-  regionOffsetB10: 156,
-  regionOffsetB11: 160,
-  regionOffsetB12: 164,
-  regionOffsetB13: 168,
-  regionOffsetB14: 172,
-  regionOffsetB15: 176,
+  adjOff0: 12,
+  adjOff1: 16,
+  scale0: 20,
+  scale1: 24,
+  maxOffScreenPx: 28,
+  minAlignmentLength: 32,
+  alpha: 36,
+  hoveredFeatureId: 40,
+  clickedFeatureId: 44,
+  yTop: 48,
+  isCurve: 52,
 } as const
 
 // Indices into a Float32Array / Uint32Array view.
 export const UNIFORM_OFFSET_F32 = {
   resolution: 0,
   height: 2,
-  bpPerPx0: 3,
-  bpPerPx1: 4,
-  maxOffScreenPx: 5,
-  minAlignmentLength: 6,
-  alpha: 7,
-  hoveredFeatureId: 8,
-  clickedFeatureId: 9,
-  yTop: 10,
-  isCurve: 11,
-  hpZero: 12,
-  regionOffsetA0: 13,
-  regionOffsetA1: 14,
-  regionOffsetA2: 15,
-  regionOffsetA3: 16,
-  regionOffsetA4: 17,
-  regionOffsetA5: 18,
-  regionOffsetA6: 19,
-  regionOffsetA7: 20,
-  regionOffsetA8: 21,
-  regionOffsetA9: 22,
-  regionOffsetA10: 23,
-  regionOffsetA11: 24,
-  regionOffsetA12: 25,
-  regionOffsetA13: 26,
-  regionOffsetA14: 27,
-  regionOffsetA15: 28,
-  regionOffsetB0: 29,
-  regionOffsetB1: 30,
-  regionOffsetB2: 31,
-  regionOffsetB3: 32,
-  regionOffsetB4: 33,
-  regionOffsetB5: 34,
-  regionOffsetB6: 35,
-  regionOffsetB7: 36,
-  regionOffsetB8: 37,
-  regionOffsetB9: 38,
-  regionOffsetB10: 39,
-  regionOffsetB11: 40,
-  regionOffsetB12: 41,
-  regionOffsetB13: 42,
-  regionOffsetB14: 43,
-  regionOffsetB15: 44,
+  adjOff0: 3,
+  adjOff1: 4,
+  scale0: 5,
+  scale1: 6,
+  maxOffScreenPx: 7,
+  minAlignmentLength: 8,
+  alpha: 9,
+  hoveredFeatureId: 10,
+  clickedFeatureId: 11,
+  yTop: 12,
+  isCurve: 13,
 } as const
 
 
@@ -113,16 +51,17 @@ export const UNIFORM_OFFSET_F32 = {
 // fields, indexed into the 4-byte-word uniform buffer (works with
 // either Uint32Array or Float32Array views — the field kind picks).
 export const UNIFORM_SLOT_ARRAYS = {
-  bpPerPx: [3, 4] as const,
-  regionOffsetA: [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28] as const,
-  regionOffsetB: [29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44] as const,
+  adjOff: [3, 4] as const,
+  scale: [5, 6] as const,
 } as const
 
 export interface Uniforms {
   resolution: [number, number]
   height: number
-  bpPerPx0: number
-  bpPerPx1: number
+  adjOff0: number
+  adjOff1: number
+  scale0: number
+  scale1: number
   maxOffScreenPx: number
   minAlignmentLength: number
   alpha: number
@@ -130,39 +69,6 @@ export interface Uniforms {
   clickedFeatureId: number
   yTop: number
   isCurve: number
-  hpZero: number
-  regionOffsetA0: number
-  regionOffsetA1: number
-  regionOffsetA2: number
-  regionOffsetA3: number
-  regionOffsetA4: number
-  regionOffsetA5: number
-  regionOffsetA6: number
-  regionOffsetA7: number
-  regionOffsetA8: number
-  regionOffsetA9: number
-  regionOffsetA10: number
-  regionOffsetA11: number
-  regionOffsetA12: number
-  regionOffsetA13: number
-  regionOffsetA14: number
-  regionOffsetA15: number
-  regionOffsetB0: number
-  regionOffsetB1: number
-  regionOffsetB2: number
-  regionOffsetB3: number
-  regionOffsetB4: number
-  regionOffsetB5: number
-  regionOffsetB6: number
-  regionOffsetB7: number
-  regionOffsetB8: number
-  regionOffsetB9: number
-  regionOffsetB10: number
-  regionOffsetB11: number
-  regionOffsetB12: number
-  regionOffsetB13: number
-  regionOffsetB14: number
-  regionOffsetB15: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -170,48 +76,17 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[0] = uniforms.resolution[0]
   f32[1] = uniforms.resolution[1]
   f32[2] = uniforms.height
-  f32[3] = uniforms.bpPerPx0
-  f32[4] = uniforms.bpPerPx1
-  f32[5] = uniforms.maxOffScreenPx
-  f32[6] = uniforms.minAlignmentLength
-  f32[7] = uniforms.alpha
-  f32[8] = uniforms.hoveredFeatureId
-  f32[9] = uniforms.clickedFeatureId
-  f32[10] = uniforms.yTop
-  f32[11] = uniforms.isCurve
-  f32[12] = uniforms.hpZero
-  f32[13] = uniforms.regionOffsetA0
-  f32[14] = uniforms.regionOffsetA1
-  f32[15] = uniforms.regionOffsetA2
-  f32[16] = uniforms.regionOffsetA3
-  f32[17] = uniforms.regionOffsetA4
-  f32[18] = uniforms.regionOffsetA5
-  f32[19] = uniforms.regionOffsetA6
-  f32[20] = uniforms.regionOffsetA7
-  f32[21] = uniforms.regionOffsetA8
-  f32[22] = uniforms.regionOffsetA9
-  f32[23] = uniforms.regionOffsetA10
-  f32[24] = uniforms.regionOffsetA11
-  f32[25] = uniforms.regionOffsetA12
-  f32[26] = uniforms.regionOffsetA13
-  f32[27] = uniforms.regionOffsetA14
-  f32[28] = uniforms.regionOffsetA15
-  f32[29] = uniforms.regionOffsetB0
-  f32[30] = uniforms.regionOffsetB1
-  f32[31] = uniforms.regionOffsetB2
-  f32[32] = uniforms.regionOffsetB3
-  f32[33] = uniforms.regionOffsetB4
-  f32[34] = uniforms.regionOffsetB5
-  f32[35] = uniforms.regionOffsetB6
-  f32[36] = uniforms.regionOffsetB7
-  f32[37] = uniforms.regionOffsetB8
-  f32[38] = uniforms.regionOffsetB9
-  f32[39] = uniforms.regionOffsetB10
-  f32[40] = uniforms.regionOffsetB11
-  f32[41] = uniforms.regionOffsetB12
-  f32[42] = uniforms.regionOffsetB13
-  f32[43] = uniforms.regionOffsetB14
-  f32[44] = uniforms.regionOffsetB15
+  f32[3] = uniforms.adjOff0
+  f32[4] = uniforms.adjOff1
+  f32[5] = uniforms.scale0
+  f32[6] = uniforms.scale1
+  f32[7] = uniforms.maxOffScreenPx
+  f32[8] = uniforms.minAlignmentLength
+  f32[9] = uniforms.alpha
+  f32[10] = uniforms.hoveredFeatureId
+  f32[11] = uniforms.clickedFeatureId
+  f32[12] = uniforms.yTop
+  f32[13] = uniforms.isCurve
 }
 
 export const INSTANCE_STRIDE_BYTES = 36
@@ -222,11 +97,11 @@ export const FIELD_OFFSET_BYTES = {
   x2: 4,
   x3: 8,
   x4: 12,
-  topRegionIdx: 16,
-  botRegionIdx: 20,
-  color: 24,
-  featureId: 28,
-  queryTotalLength: 32,
+  color: 16,
+  featureId: 20,
+  queryTotalLength: 24,
+  padTop: 28,
+  padBottom: 32,
 } as const
 
 export const FIELD_OFFSET_F32 = {
@@ -234,23 +109,23 @@ export const FIELD_OFFSET_F32 = {
   x2: 1,
   x3: 2,
   x4: 3,
-  topRegionIdx: 4,
-  botRegionIdx: 5,
-  color: 6,
-  featureId: 7,
-  queryTotalLength: 8,
+  color: 4,
+  featureId: 5,
+  queryTotalLength: 6,
+  padTop: 7,
+  padBottom: 8,
 } as const
 
 export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
-  { name: 'a_x1', components: 1, type: 'uint', offsetBytes: 0, integer: true },
-  { name: 'a_x2', components: 1, type: 'uint', offsetBytes: 4, integer: true },
-  { name: 'a_x3', components: 1, type: 'uint', offsetBytes: 8, integer: true },
-  { name: 'a_x4', components: 1, type: 'uint', offsetBytes: 12, integer: true },
-  { name: 'a_topRegionIdx', components: 1, type: 'uint', offsetBytes: 16, integer: true },
-  { name: 'a_botRegionIdx', components: 1, type: 'uint', offsetBytes: 20, integer: true },
-  { name: 'a_color', components: 1, type: 'uint', offsetBytes: 24, integer: true },
-  { name: 'a_featureId', components: 1, type: 'float', offsetBytes: 28, integer: false },
-  { name: 'a_queryTotalLength', components: 1, type: 'float', offsetBytes: 32, integer: false },
+  { name: 'a_x1', components: 1, type: 'float', offsetBytes: 0, integer: false },
+  { name: 'a_x2', components: 1, type: 'float', offsetBytes: 4, integer: false },
+  { name: 'a_x3', components: 1, type: 'float', offsetBytes: 8, integer: false },
+  { name: 'a_x4', components: 1, type: 'float', offsetBytes: 12, integer: false },
+  { name: 'a_color', components: 1, type: 'uint', offsetBytes: 16, integer: true },
+  { name: 'a_featureId', components: 1, type: 'float', offsetBytes: 20, integer: false },
+  { name: 'a_queryTotalLength', components: 1, type: 'float', offsetBytes: 24, integer: false },
+  { name: 'a_padTop', components: 1, type: 'float', offsetBytes: 28, integer: false },
+  { name: 'a_padBottom', components: 1, type: 'float', offsetBytes: 32, integer: false },
 ]
 
 export interface Instance {
@@ -258,23 +133,23 @@ export interface Instance {
   x2: number
   x3: number
   x4: number
-  topRegionIdx: number
-  botRegionIdx: number
   color: number
   featureId: number
   queryTotalLength: number
+  padTop: number
+  padBottom: number
 }
 
 export function writeInstance(buf: ArrayBuffer, instanceIndex: number, inst: Instance) {
   const base = instanceIndex * 36
   const dv = new DataView(buf)
-  dv.setUint32(base + 0, inst.x1, true)
-  dv.setUint32(base + 4, inst.x2, true)
-  dv.setUint32(base + 8, inst.x3, true)
-  dv.setUint32(base + 12, inst.x4, true)
-  dv.setUint32(base + 16, inst.topRegionIdx, true)
-  dv.setUint32(base + 20, inst.botRegionIdx, true)
-  dv.setUint32(base + 24, inst.color, true)
-  dv.setFloat32(base + 28, inst.featureId, true)
-  dv.setFloat32(base + 32, inst.queryTotalLength, true)
+  dv.setFloat32(base + 0, inst.x1, true)
+  dv.setFloat32(base + 4, inst.x2, true)
+  dv.setFloat32(base + 8, inst.x3, true)
+  dv.setFloat32(base + 12, inst.x4, true)
+  dv.setUint32(base + 16, inst.color, true)
+  dv.setFloat32(base + 20, inst.featureId, true)
+  dv.setFloat32(base + 24, inst.queryTotalLength, true)
+  dv.setFloat32(base + 28, inst.padTop, true)
+  dv.setFloat32(base + 32, inst.padBottom, true)
 }

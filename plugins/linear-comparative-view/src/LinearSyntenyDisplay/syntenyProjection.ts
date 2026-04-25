@@ -1,11 +1,11 @@
-// Shared bp ↔ screen pixel projection for one view-half (synteny top/bottom,
-// dotplot horizontal/vertical). One view's displayedRegions, bpPerPx,
-// offsetPx, interRegionPaddingWidth, and minimumBlockWidth are condensed
-// into a table the CPU and GPU paths both consume. Worker output is bp +
-// regionIdx; this helper is the only place that knows how to turn those
-// back into pixels.
+// Shared bp ↔ screen pixel projection for a synteny view-half. One view's
+// displayedRegions, bpPerPx, offsetPx, interRegionPaddingWidth, and
+// minimumBlockWidth are condensed into a table the CPU path
+// (Canvas2DSyntenyRenderer) and GPU path (GpuSyntenyRenderer uniforms) both
+// consume. Worker output is bp + regionIdx; this helper is the only place
+// that knows how to turn those back into pixels.
 
-export interface BpProjectionViewLike {
+export interface SyntenyViewLike {
   bpPerPx: number
   offsetPx: number
   interRegionPaddingWidth: number
@@ -29,7 +29,7 @@ export interface ViewProjection {
   bpPerPx: number
 }
 
-export function buildViewProjection(view: BpProjectionViewLike): ViewProjection {
+export function buildViewProjection(view: SyntenyViewLike): ViewProjection {
   const {
     bpPerPx,
     offsetPx,
@@ -43,7 +43,8 @@ export function buildViewProjection(view: BpProjectionViewLike): ViewProjection 
   let cumulativePaddingPx = 0
   for (let i = 0; i < n; i++) {
     const r = displayedRegions[i]!
-    regionOffsetPx[i] = cumulativeBp / bpPerPx + cumulativePaddingPx - offsetPx
+    regionOffsetPx[i] =
+      cumulativeBp / bpPerPx + cumulativePaddingPx - offsetPx
     const len = r.end - r.start
     cumulativeBp += len
     const regionWidthPx = len / bpPerPx
@@ -67,7 +68,7 @@ export function projectBpToScreenPx(
 // bp-offset-within-region (accounting for reversed regions). Returns
 // undefined when no region matches — the worker drops the feature.
 export function bpInRegionFromCoord(
-  displayedRegions: BpProjectionViewLike['displayedRegions'],
+  displayedRegions: SyntenyViewLike['displayedRegions'],
   refName: string,
   coord: number,
   displayedRegionIndex?: number,
@@ -91,7 +92,8 @@ export function bpInRegionFromCoord(
 
 // Per-refName index built from a view's displayedRegions so the worker can
 // look up (refName, coord) → (regionIdx, bpInRegion) in O(regions-with-this-
-// refName) rather than O(all-regions) per feature.
+// refName) rather than O(all-regions) per feature. Matches today's
+// buildBpToPxIndex structure minus the pixel math.
 export interface BpInRegionIndex {
   entries: Map<
     string,
@@ -105,7 +107,7 @@ export interface BpInRegionIndex {
 }
 
 export function buildBpInRegionIndex(
-  displayedRegions: BpProjectionViewLike['displayedRegions'],
+  displayedRegions: SyntenyViewLike['displayedRegions'],
 ): BpInRegionIndex {
   const entries = new Map<
     string,

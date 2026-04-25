@@ -13,7 +13,7 @@ export default function Formatter({ value }: { value: unknown }) {
         type="button"
         onClick={async () => {
           const { default: copy } = await import('copy-to-clipboard')
-          await copy(display)
+          copy(display)
           setCopied(true)
           setTimeout(() => {
             setCopied(false)
