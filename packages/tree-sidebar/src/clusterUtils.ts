@@ -5,10 +5,19 @@ import { hierarchy, sort, sum } from './hierarchy.ts'
 import type { ClusterHierarchyNode, ClusterNodeData } from './types.ts'
 
 export function getLeafNames(node: ClusterHierarchyNode): string[] {
-  if (!node.children?.length) {
-    return [node.data.name]
+  const result: string[] = []
+  const stack = [node]
+  while (stack.length) {
+    const n = stack.pop()!
+    if (n.children?.length) {
+      for (const child of n.children) {
+        stack.push(child)
+      }
+    } else {
+      result.push(n.data.name)
+    }
   }
-  return node.children.flatMap(child => getLeafNames(child))
+  return result
 }
 
 function findSubtree(

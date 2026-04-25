@@ -189,13 +189,13 @@ export function clusterLayout<T>(
 }
 
 export function renderTreeSVG<T>(hierarchy: HierarchyNode<T>) {
-  let treePaths = ''
+  const parts: string[] = []
   for (const link of links(hierarchy)) {
     const sx = link.source.y!
     const sy = link.source.x!
     const tx = link.target.y!
     const ty = link.target.x!
-    treePaths += `M${sx},${sy}L${sx},${ty}M${sx},${ty}L${tx},${ty}`
+    parts.push(`M${sx},${sy}L${sx},${ty}M${sx},${ty}L${tx},${ty}`)
   }
-  return treePaths
+  return parts.join('')
 }

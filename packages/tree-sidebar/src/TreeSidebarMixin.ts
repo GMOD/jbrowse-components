@@ -8,6 +8,13 @@ import type { ClusterHierarchyNode, HoveredTreeNode } from './types.ts'
 
 export function TreeSidebarMixin<
   S extends { name: string } = { name: string },
+  H extends {
+    hierarchy: ClusterHierarchyNode | undefined
+    totalHeight?: number
+  } = {
+    hierarchy: ClusterHierarchyNode | undefined
+    totalHeight?: number
+  },
 >() {
   return types
     .model({
@@ -32,10 +39,11 @@ export function TreeSidebarMixin<
     }))
     .views(self => ({
       get spatialIndex() {
-        const h = (self as any).hierarchy as ClusterHierarchyNode | undefined
+        const extended = self as typeof self & H
+        const h = extended.hierarchy
         // touch treeAreaWidth and totalHeight so MobX tracks them as dependencies
         void self.treeAreaWidth
-        void (self as any).totalHeight
+        void extended.totalHeight
         if (h) {
           const nodes = descendants(h).filter(node => node.children?.length)
           const index = new Flatbush(nodes.length)
