@@ -137,6 +137,47 @@ is constructed, otherwise Canvas 2D.
 
 ---
 
+## SVG export pipeline (single source of truth)
+
+SVG export and on-screen rendering share the same draw pipeline per plugin.
+Each `Canvas2DXxxRenderer.renderBlocks` method is a thin wrapper around a
+top-level pure function `drawXxxBlocks(ctx, regions, blocks, state)` that
+takes any 2D-context-shaped surface — real `CanvasRenderingContext2D` for
+on-screen, `SvgCanvas` for vector export. The renderer class itself supports
+**headless construction** (`new Canvas2DXxxRenderer(null)` for plugins where
+the canvas is the constructor arg, or pass an `SvgCanvas` for plugins where
+both ctx types are accepted at construction).
+
+SVG export in `renderSvg.tsx` follows this recipe:
+
+1. Construct a headless renderer.
+2. Run the same `uploadRegion` (and any auxiliary upload methods) that the
+   on-screen GPU autorun runs.
+3. Call `paintLayer(width, height, opts, ctx => drawXxxBlocks(ctx, …))` —
+   `paintLayer` (in `@jbrowse/core/util/paintLayer`) decides between a 2× DPR
+   raster canvas (when `opts.rasterizeLayers`) or an `SvgCanvas`, and returns
+   one `ReactNode` (`<image xlinkHref=…>` or `<g dangerouslySetInnerHTML=…>`).
+
+This kills the older "SVG-only `renderToCtx`" pattern that drifted out of
+sync with the on-screen renderer (different bicolor handling, different
+Y-axis offsets, different bezier curves, different palettes — each plugin
+had its own flavor of drift).
+
+**Sashimi exception.** Sashimi arcs are deliberately rendered as vector SVG
+on both paths via a shared `computeSashimiArcs(opts) → SashimiArc[]`
+function: arc counts are low, vector performance is fine, and SVG `<path>`
+elements give native hover/tooltip behavior the rasterized pipeline cannot
+match. The on-screen `SashimiArcsOverlay` and the SVG export consume the
+same arc array, so geometry and colors stay in sync. This is the *only*
+draw path that intentionally avoids `paintLayer`; treat the same.
+
+**Shared utilities** (in `@jbrowse/core/util/`):
+- `createSvgRasterCanvas(width, height, opts)` — the 2× DPR canvas + `opts.createCanvas` fallback ritual.
+- `paintLayer(width, height, opts, paint) → ReactNode` — raster-vs-vector dispatch.
+- `Ctx2D = CanvasRenderingContext2D | SvgCanvas` — shared type alias used by every `drawXxxBlocks` signature.
+
+---
+
 ## `rpcProps` / `gpuProps` pattern
 
 Domain-named getters that enumerate **what affects rendering output**.

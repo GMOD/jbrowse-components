@@ -41,11 +41,15 @@ indicators, paired arcs, pileup reads, mismatches, soft/hard clips,
 modifications, and connecting lines all flow through the unified pass — do
 not reintroduce parallel SVG-only draw functions.
 
-### Sashimi is intentionally SVG-only
+### Sashimi is intentionally SVG-only — but the math is shared
 
-`drawSashimiArcs` lives in `renderSvg.tsx` (not in
-`Canvas2DAlignmentsRenderer`) on purpose. Arc counts are low, vector output
-performs fine, and SVG `<path>` elements give native hover/tooltip behavior
-that the rasterized/canvas pipeline can't reproduce. This is a deliberate
-keep, not a porting backlog item — do not "unify" sashimi into
-`drawAlignmentBlocks`.
+Sashimi arcs are vector SVG on both paths. `SashimiArcsOverlay.tsx`
+(on-screen, with hover/click) and `renderSvg.tsx` both consume
+`computeSashimiArcs(opts) → SashimiArc[]` from `components/sashimiArcs.ts`
+— same geometry (cubic Bezier), same color (`getArcColor(strand)`), same
+stroke widths. Don't add a new sashimi draw path; if the arcs need to
+change, change `computeSashimiArcs`.
+
+The "vector by design" choice is about the rendering medium (low arc count
++ native SVG hover behavior the rasterized pipeline can't match), not the
+math — do not "port sashimi into `drawAlignmentBlocks`."
