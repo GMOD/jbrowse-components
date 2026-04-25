@@ -83,7 +83,10 @@ export default function stateModelFactory(
         ...(colorScheme !== undefined && { colorScheme }),
         ...(showLegend !== undefined && { showLegend }),
       }
-      return { ...rest, configOverrides: { ...rest.configOverrides, ...overrides } }
+      return {
+        ...rest,
+        configOverrides: { ...rest.configOverrides, ...overrides },
+      }
     })
     .views(self => ({
       get colorScheme(): string | undefined {

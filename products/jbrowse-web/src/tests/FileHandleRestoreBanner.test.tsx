@@ -13,14 +13,14 @@ jest.mock('../util', () => ({
   reloadPage: jest.fn(),
 }))
 
-import { fireEvent, render, waitFor } from '@testing-library/react'
 import {
   restoreFileHandles,
   restoreFileHandlesFromSnapshot,
 } from '@jbrowse/core/util/tracks'
-import { reloadPage } from '../util'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 
-import { doBeforeEach, getPluginManager, JBrowse } from './util.tsx'
+import { reloadPage } from '../util.ts'
+import { JBrowse, doBeforeEach, getPluginManager } from './util.tsx'
 
 const mockReload = reloadPage as jest.Mock
 
@@ -71,7 +71,9 @@ test('restore access reloads page when all handles succeed', async () => {
   await findByText(/1 local file needs permission/, {}, delay)
   fireEvent.click(await findByText('Restore access', {}, delay))
 
-  await waitFor(() => expect(mockReload).toHaveBeenCalled(), delay)
+  await waitFor(() => {
+    expect(mockReload).toHaveBeenCalled()
+  }, delay)
 }, 15000)
 
 test('restore access reloads page on partial success', async () => {
@@ -90,7 +92,9 @@ test('restore access reloads page on partial success', async () => {
   await findByText(/2 local files need permission/, {}, delay)
   fireEvent.click(await findByText('Restore access', {}, delay))
 
-  await waitFor(() => expect(mockReload).toHaveBeenCalled(), delay)
+  await waitFor(() => {
+    expect(mockReload).toHaveBeenCalled()
+  }, delay)
 }, 15000)
 
 test('no reload when restore fails completely', async () => {

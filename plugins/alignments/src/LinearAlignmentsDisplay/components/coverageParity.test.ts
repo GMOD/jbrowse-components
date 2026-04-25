@@ -13,12 +13,12 @@ import {
   GpuAlignmentsRenderer,
 } from './GpuAlignmentsRenderer.ts'
 
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type {
   CoverageUploadData,
   ReadUploadData,
   RenderState,
 } from './rendererTypes.ts'
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
 Object.defineProperty(globalThis, 'devicePixelRatio', {
   value: 1,

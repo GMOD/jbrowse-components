@@ -288,14 +288,10 @@ test('caches flatbush index across calls', () => {
   const region = makeRegion(0, 0, 10000, 0, 800)
   const cacheMap = freshCacheMap()
 
-  performMultiRegionHitDetection(
-    cacheMap,
-    laidOutDataMap,
-    [region],
-    320,
-    10,
-    { showLabels: true, showDescriptions: false },
-  )
+  performMultiRegionHitDetection(cacheMap, laidOutDataMap, [region], 320, 10, {
+    showLabels: true,
+    showDescriptions: false,
+  })
 
   const cache = cacheMap.get(0)!
   expect(cache.featureIndex).not.toBeNull()
@@ -303,14 +299,10 @@ test('caches flatbush index across calls', () => {
 
   const savedIndex = cache.featureIndex
 
-  performMultiRegionHitDetection(
-    cacheMap,
-    laidOutDataMap,
-    [region],
-    320,
-    10,
-    { showLabels: true, showDescriptions: false },
-  )
+  performMultiRegionHitDetection(cacheMap, laidOutDataMap, [region], 320, 10, {
+    showLabels: true,
+    showDescriptions: false,
+  })
 
   expect(cacheMap.get(0)!.featureIndex).toBe(savedIndex)
 })
@@ -323,14 +315,10 @@ test('rebuilds cache when data changes', () => {
   const region = makeRegion(0, 0, 10000, 0, 800)
   const cacheMap = freshCacheMap()
 
-  performMultiRegionHitDetection(
-    cacheMap,
-    laidOutDataMap,
-    [region],
-    320,
-    10,
-    { showLabels: true, showDescriptions: false },
-  )
+  performMultiRegionHitDetection(cacheMap, laidOutDataMap, [region], 320, 10, {
+    showLabels: true,
+    showDescriptions: false,
+  })
 
   const savedIndex = cacheMap.get(0)!.featureIndex
 
@@ -338,14 +326,10 @@ test('rebuilds cache when data changes', () => {
   const data2 = makeData([item2])
   laidOutDataMap.set(0, data2)
 
-  performMultiRegionHitDetection(
-    cacheMap,
-    laidOutDataMap,
-    [region],
-    560,
-    10,
-    { showLabels: true, showDescriptions: false },
-  )
+  performMultiRegionHitDetection(cacheMap, laidOutDataMap, [region], 560, 10, {
+    showLabels: true,
+    showDescriptions: false,
+  })
 
   expect(cacheMap.get(0)!.featureIndex).not.toBe(savedIndex)
   expect(cacheMap.get(0)!.cachedItems).toBe(data2.flatbushItems)
@@ -523,24 +507,16 @@ test('cache rebuilds when label visibility flags change', () => {
   const region = makeRegion(0, 0, 10000, 0, 800)
   const cacheMap = freshCacheMap()
 
-  performMultiRegionHitDetection(
-    cacheMap,
-    laidOutDataMap,
-    [region],
-    50,
-    10,
-    { showLabels: true, showDescriptions: false },
-  )
+  performMultiRegionHitDetection(cacheMap, laidOutDataMap, [region], 50, 10, {
+    showLabels: true,
+    showDescriptions: false,
+  })
   const firstIndex = cacheMap.get(0)!.featureIndex
 
-  performMultiRegionHitDetection(
-    cacheMap,
-    laidOutDataMap,
-    [region],
-    50,
-    10,
-    { showLabels: false, showDescriptions: false },
-  )
+  performMultiRegionHitDetection(cacheMap, laidOutDataMap, [region], 50, 10, {
+    showLabels: false,
+    showDescriptions: false,
+  })
 
   expect(cacheMap.get(0)!.featureIndex).not.toBe(firstIndex)
 })

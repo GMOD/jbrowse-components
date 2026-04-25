@@ -119,7 +119,9 @@ export async function executeRenderLDData({
   const totalWidthBp = regions.reduce((sum, r) => sum + r.end - r.start, 0)
   const width = totalWidthBp / bpPerPx
   const triangleHeight = width / 2
-  const height = fitToHeight ? (displayHeight ?? triangleHeight) : triangleHeight
+  const height = fitToHeight
+    ? (displayHeight ?? triangleHeight)
+    : triangleHeight
   const yScalar = fitToHeight ? height / triangleHeight : 1
 
   const uniformW = width / (n * Math.SQRT2)

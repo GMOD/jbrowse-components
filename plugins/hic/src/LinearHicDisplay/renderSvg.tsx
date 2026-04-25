@@ -32,21 +32,16 @@ export async function renderSvg(
   const clipId = `clip-${self.id}-svg`
 
   const matrixEl = paintLayer(visibleWidth, height, opts, ctx => {
-    drawHicBlocks(
-      ctx,
-      { positions, counts, numContacts },
-      ramp,
-      {
-        binWidth,
-        yScalar,
-        canvasWidth: visibleWidth,
-        canvasHeight: height,
-        colorMaxScore,
-        useLogScale,
-        viewScale: 1,
-        viewOffsetX: 0,
-      },
-    )
+    drawHicBlocks(ctx, { positions, counts, numContacts }, ramp, {
+      binWidth,
+      yScalar,
+      canvasWidth: visibleWidth,
+      canvasHeight: height,
+      colorMaxScore,
+      useLogScale,
+      viewScale: 1,
+      viewOffsetX: 0,
+    })
   })
 
   return (

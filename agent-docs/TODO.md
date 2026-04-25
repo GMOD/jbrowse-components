@@ -447,3 +447,11 @@ shallow object allocation per layout, which is dwarfed by GranularRect
 packing for typical region sizes.
 
 - **Alignments typed-array refactor.** Worker return shape is flat parallel arrays. Refactor into sub-objects by group: mods, sashimi, coverage (others TBD).
+
+plugins/Canvas drawing text to canvas, does not look good. even if rasterized mode is on, draw text to svg unrasterized
+
+Add 'synthetic whitespace' between tracks in exported svg
+
+Remove logging like  [useGpuRenderer] factory rejected: Error: GPU crash when jest tests are run, mock console to swallow error. the tests are passing it is just a error diagnostic
+
+Fix test errors in `pnpm jest plugins/`

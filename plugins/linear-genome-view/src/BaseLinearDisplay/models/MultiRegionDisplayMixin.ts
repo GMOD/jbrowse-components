@@ -88,9 +88,7 @@ export default function MultiRegionDisplayMixin() {
     }))
     .actions(_self => ({
       // Overridable hooks — subclasses override these
-      fetchNeeded(
-        _needed: { region: Region; displayedRegionIndex: number }[],
-      ) {
+      fetchNeeded(_needed: { region: Region; displayedRegionIndex: number }[]) {
         // no-op base
       },
 
@@ -229,7 +227,10 @@ export default function MultiRegionDisplayMixin() {
                   Math.floor(block.start) >= loaded.start &&
                   Math.ceil(block.end) <= loaded.end
 
-                if (boundsValid && self.isCacheValid(block.displayedRegionIndex)) {
+                if (
+                  boundsValid &&
+                  self.isCacheValid(block.displayedRegionIndex)
+                ) {
                   continue
                 }
                 const buffered = bufferedByIndex.get(block.displayedRegionIndex)

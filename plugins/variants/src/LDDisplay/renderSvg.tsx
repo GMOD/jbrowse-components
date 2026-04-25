@@ -47,20 +47,15 @@ export async function renderSvg(
   const triangleHeight = height - lineZoneHeight
 
   const matrixEl = paintLayer(visibleWidth, triangleHeight, opts, ctx => {
-    drawLDBlocks(
-      ctx,
-      { ldValues, boundaries, numCells },
-      ramp,
-      {
-        yScalar,
-        canvasWidth: visibleWidth,
-        canvasHeight: triangleHeight,
-        signedLD,
-        viewScale: 1,
-        viewOffsetX: 0,
-        uniformW,
-      },
-    )
+    drawLDBlocks(ctx, { ldValues, boundaries, numCells }, ramp, {
+      yScalar,
+      canvasWidth: visibleWidth,
+      canvasHeight: triangleHeight,
+      signedLD,
+      viewScale: 1,
+      viewOffsetX: 0,
+      uniformW,
+    })
   })
 
   const clipId = `clip-${self.id}-svg`

@@ -272,7 +272,6 @@ export async function restoreFileHandlesFromSnapshot(
   return []
 }
 
-
 /**
  * creates a new location from the provided location including the appropriate
  * suffix and location type

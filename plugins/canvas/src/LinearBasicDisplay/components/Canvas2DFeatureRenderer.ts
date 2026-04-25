@@ -22,7 +22,6 @@ import type {
 } from './canvasFeatureBackendTypes.ts'
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Canvas2DRenderBlock } from '@jbrowse/core/gpu/canvas2dUtils'
-import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5

@@ -1,4 +1,3 @@
-
 export type RGBA = readonly [number, number, number, number]
 
 // Single source of truth for each scheme. Used to build the GPU/Canvas2D
@@ -167,7 +166,10 @@ export function mapHicCount(
 ) {
   if (useLogScale) {
     const m = Math.max(colorMaxScore, 2)
-    return Math.max(0, Math.min(1, Math.log2(Math.max(count, 1)) / Math.log2(m)))
+    return Math.max(
+      0,
+      Math.min(1, Math.log2(Math.max(count, 1)) / Math.log2(m)),
+    )
   }
   return Math.max(0, Math.min(1, count / Math.max(colorMaxScore, 0.001)))
 }

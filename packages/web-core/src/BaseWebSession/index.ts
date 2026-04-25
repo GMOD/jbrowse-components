@@ -548,8 +548,13 @@ export function BaseWebSession({
           })
       },
       async restorePendingFileHandles() {
-        const results = await restoreFileHandles(self.pendingFileHandleIds, true)
-        self.setPendingFileHandleIds(results.filter(r => !r.success).map(r => r.handleId))
+        const results = await restoreFileHandles(
+          self.pendingFileHandleIds,
+          true,
+        )
+        self.setPendingFileHandleIds(
+          results.filter(r => !r.success).map(r => r.handleId),
+        )
       },
     }))
 

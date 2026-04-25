@@ -36,6 +36,6 @@ Uniforms struct/UBO layout must match byte offsets in
 `pnpm gen:shaders` — Slang generates both WGSL and GLSL.
 
 **hp-math (hi/lo bp splits) is shader-only.** `splitPositionWithFrac`,
-`hpSplitUint`, and `bpHi`/`bpLo` pairs preserve float32 precision in shaders.
-JS is float64 — use plain `bp - bpStart`. Hi/lo recombination in `.ts` outside
+`hpSplitUint`, and `bpHi`/`bpLo` pairs preserve float32 precision in shaders. JS
+is float64 — use plain `bp - bpStart`. Hi/lo recombination in `.ts` outside
 shader-uniform writes is a bug.

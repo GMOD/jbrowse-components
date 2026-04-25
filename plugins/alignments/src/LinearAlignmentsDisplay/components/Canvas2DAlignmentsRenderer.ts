@@ -37,7 +37,6 @@ import type {
   CoverageUploadData,
   ModCoverageUploadData,
   ModificationUploadData,
-  ReadUploadData,
   RenderBlock,
   RenderState,
 } from './rendererTypes.ts'
@@ -903,8 +902,7 @@ function drawCoverage(
 ) {
   const covH = state.coverageHeight
   const covColor = rgb255(state.colors.colorCoverage)
-  const bpToX = (bp: number) =>
-    bpToScreenX(bp, block, bpLength, fullBlockWidth)
+  const bpToX = (bp: number) => bpToScreenX(bp, block, bpLength, fullBlockWidth)
   const viewWidth = fullBlockWidth + block.screenStartPx
 
   const snpColors = {

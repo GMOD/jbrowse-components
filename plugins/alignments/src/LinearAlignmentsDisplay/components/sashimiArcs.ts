@@ -54,9 +54,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
   } = opts
   const effectiveHeight = coverageHeight - YSCALEBAR_LABEL_OFFSET
   const baseline = sashimiArcsDown ? 0 : effectiveHeight * 0.9
-  const peak = sashimiArcsDown
-    ? sashimiArcsHeight * 0.9
-    : effectiveHeight * 0.1
+  const peak = sashimiArcsDown ? sashimiArcsHeight * 0.9 : effectiveHeight * 0.1
 
   const arcs: SashimiArc[] = []
   for (const region of visibleRegions) {

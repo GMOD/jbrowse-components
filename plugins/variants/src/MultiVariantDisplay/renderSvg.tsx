@@ -53,7 +53,8 @@ export async function renderSvg(
   // fields are flatbush + genotype maps for hit-testing), so pass through.
   const renderer = new Canvas2DVariantRenderer(null)
   for (const region of visibleRegions) {
-    const regionCellData = cellData.perRegionCellData[region.displayedRegionIndex]
+    const regionCellData =
+      cellData.perRegionCellData[region.displayedRegionIndex]
     if (regionCellData && regionCellData.numCells > 0) {
       renderer.uploadRegion(region.displayedRegionIndex, regionCellData)
     }

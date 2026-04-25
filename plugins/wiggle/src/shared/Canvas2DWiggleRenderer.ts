@@ -5,7 +5,6 @@ import {
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
-
 import { WIGGLE_FUDGE_FACTOR, makeScoreNormalizer } from '../util.ts'
 import {
   RENDERING_TYPE_DENSITY,

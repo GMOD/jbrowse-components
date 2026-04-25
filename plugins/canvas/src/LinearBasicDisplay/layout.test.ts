@@ -434,14 +434,7 @@ test('reversed region reserves label overhang on the lower-bp side', () => {
   expect(fwd.get(0)!.flatbushItems[1]!.topPx).toBe(0)
 
   // Reversed: label extends toward lower bp; collides with fLeft → different rows.
-  const rev = layout(
-    new Map([[0, mk()]]),
-    keys,
-    1,
-    true,
-    true,
-    new Set([0]),
-  )
+  const rev = layout(new Map([[0, mk()]]), keys, 1, true, true, new Set([0]))
   const rLeft = rev.get(0)!.flatbushItems[0]!
   const rLabel = rev.get(0)!.flatbushItems[1]!
   expect(rLeft.topPx).not.toBe(rLabel.topPx)

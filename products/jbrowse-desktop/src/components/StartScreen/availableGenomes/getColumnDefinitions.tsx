@@ -187,8 +187,7 @@ export function getColumnDefinitions({
 
           return (
             <div>
-              {row.commonName}{' '}
-              (
+              {row.commonName} (
               <Link href="#" onClick={handleLaunch}>
                 launch
               </Link>
