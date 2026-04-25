@@ -137,8 +137,8 @@ export async function makeImageData(
       useLogScale,
     })
 
-    const x = (bin1 + (regionCombinedOffsets[region1Idx] ?? 0)) * w
-    const y = (bin2 + (regionCombinedOffsets[region2Idx] ?? 0)) * w
+    const x = (bin1 + regionCombinedOffsets[region1Idx]!) * w
+    const y = (bin2 + regionCombinedOffsets[region2Idx]!) * w
     ctx.fillRect(x, y, w, w)
 
     // Store the unrotated rectangle coordinates for Flatbush

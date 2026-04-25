@@ -99,8 +99,8 @@ export async function executeRenderHicData({
   for (const [i, feature] of features.entries()) {
     const { bin1, bin2, counts, region1Idx, region2Idx } = feature
 
-    const x = (bin1 + (regionCombinedOffsets[region1Idx] ?? 0)) * w
-    const y = (bin2 + (regionCombinedOffsets[region2Idx] ?? 0)) * w
+    const x = (bin1 + regionCombinedOffsets[region1Idx]!) * w
+    const y = (bin2 + regionCombinedOffsets[region2Idx]!) * w
 
     positions[i * 2] = x
     positions[i * 2 + 1] = y

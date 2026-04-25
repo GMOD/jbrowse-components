@@ -77,10 +77,6 @@ export class Canvas2DLDRenderer implements LDBackend {
         const t = mapLDValue(ldVal, signedLD)
         const { r, g, b, a } = lookupColorRamp(colorRamp, t)
 
-        if (a < 0.01) {
-          continue
-        }
-
         // Inline the -45° rotation and viewport transform for the 4 diamond
         // vertices, avoiding a per-cell array allocation and inner loop.
         const base = (px + py) * s + viewOffsetX

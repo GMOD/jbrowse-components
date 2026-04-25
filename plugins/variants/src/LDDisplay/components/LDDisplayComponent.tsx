@@ -373,7 +373,7 @@ const LDCanvas = observer(function LDCanvas({
       setHoveredItem({
         i: hitI,
         j: hitJ,
-        ldValue: ldValues[ldIdx] ?? 0,
+        ldValue: ldValues[ldIdx]!,
         snp1: snps[hitI]!,
         snp2: snps[hitJ]!,
       })

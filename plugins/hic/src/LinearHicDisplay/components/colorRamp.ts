@@ -99,7 +99,7 @@ function sample(scheme: ColorStops, t: number): RGBA {
   return stops[stops.length - 1]!
 }
 
-export function generateColorRamp(colorScheme?: string): Uint8Array {
+function buildRamp(colorScheme?: string): Uint8Array {
   const scheme = getScheme(colorScheme)
   const data = new Uint8Array(256 * 4)
   for (let i = 0; i < 256; i++) {
@@ -111,6 +111,16 @@ export function generateColorRamp(colorScheme?: string): Uint8Array {
     data[i * 4 + 3] = a
   }
   return data
+}
+
+const RAMPS: Record<string, Uint8Array> = {
+  juicebox: buildRamp('juicebox'),
+  fall: buildRamp('fall'),
+  viridis: buildRamp('viridis'),
+}
+
+export function generateColorRamp(colorScheme?: string): Uint8Array {
+  return RAMPS[colorScheme ?? 'juicebox'] ?? RAMPS.juicebox!
 }
 
 // Sample N evenly-spaced legend stops from the same source as the GPU ramp.

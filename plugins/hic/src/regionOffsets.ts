@@ -14,7 +14,7 @@ export function calcRegionCombinedOffsets(
   const pxToBinFactor = bpPerPx / res
   return regions.map(
     (region, i) =>
-      (regionPixelOffsets[i] ?? 0) * pxToBinFactor -
+      regionPixelOffsets[i]! * pxToBinFactor -
       Math.floor(region.start / res),
   )
 }
