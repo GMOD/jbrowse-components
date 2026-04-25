@@ -34,9 +34,6 @@ const useStyles = makeStyles()(theme => ({
   resizeHandle: {
     height: 4,
     background: '#ccc',
-    '&:hover': {
-      background: '#aaa',
-    },
   },
   collapsedBar: {
     height: 10,

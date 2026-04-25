@@ -56,7 +56,6 @@ const useStyles = makeStyles()(theme => ({
 
   resizeHandle: {
     height: 4,
-    background: '#ccc',
     boxSizing: 'border-box',
     borderTop: '1px solid #fafafa',
   },

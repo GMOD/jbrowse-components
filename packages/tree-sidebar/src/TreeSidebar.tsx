@@ -148,22 +148,22 @@ const TreeSidebar = observer(function TreeSidebar({
             cursor: 'pointer',
           }}
         />
+        <ResizeHandle
+          onDrag={distance => {
+            model.setTreeAreaWidth(Math.max(10, treeAreaWidth + distance))
+            return undefined
+          }}
+          style={{
+            position: 'absolute',
+            top: lineZoneHeight,
+            height: contentHeight,
+            width: 4,
+            zIndex: 101,
+            left: treeAreaWidth,
+          }}
+          vertical
+        />
       </div>
-      <ResizeHandle
-        onDrag={distance => {
-          model.setTreeAreaWidth(Math.max(10, treeAreaWidth + distance))
-          return undefined
-        }}
-        style={{
-          position: 'absolute',
-          top: lineZoneHeight,
-          height: `calc(100% - ${lineZoneHeight}px)`,
-          width: 4,
-          zIndex: 101,
-          left: treeAreaWidth,
-        }}
-        vertical
-      />
       <Menu
         open={!!menuAnchor}
         onClose={() => {

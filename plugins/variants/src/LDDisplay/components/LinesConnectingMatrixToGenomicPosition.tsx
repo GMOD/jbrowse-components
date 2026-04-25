@@ -18,16 +18,12 @@ import { pointToSegmentDist } from '../../util.ts'
 import type { SharedLDModel } from '../shared.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   resizeHandle: {
     height: 5,
     boxSizing: 'border-box',
-    background: 'transparent',
-    '&:hover': {
-      background: theme.palette.divider,
-    },
   },
-}))
+})
 
 function getGenomicX(
   view: LinearGenomeViewModel,

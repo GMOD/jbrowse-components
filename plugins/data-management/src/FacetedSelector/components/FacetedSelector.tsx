@@ -20,7 +20,6 @@ const useStyles = makeStyles()({
   },
   resizeHandle: {
     marginLeft: 5,
-    background: 'grey',
     width: 5,
   },
 })

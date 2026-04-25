@@ -16,16 +16,12 @@ import { pointToSegmentDist } from '../../util.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   resizeHandle: {
     height: 5,
     boxSizing: 'border-box',
-    background: 'transparent',
-    '&:hover': {
-      background: theme.palette.divider,
-    },
   },
-}))
+})
 
 interface MinimalModel {
   setLineZoneHeight: (arg: number) => number

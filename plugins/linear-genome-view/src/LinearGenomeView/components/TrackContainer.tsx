@@ -13,7 +13,7 @@ import { shouldSwapTracks } from './util.ts'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   root: {
     marginTop: 2,
     overflow: 'hidden',
@@ -27,12 +27,8 @@ const useStyles = makeStyles()(theme => ({
     height: 4,
     boxSizing: 'border-box',
     position: 'relative',
-    background: 'transparent',
-    '&:hover': {
-      background: theme.palette.divider,
-    },
   },
-}))
+})
 
 type LGV = LinearGenomeViewModel
 

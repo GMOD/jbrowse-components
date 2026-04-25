@@ -18,7 +18,6 @@ const useStyles = makeStyles()(theme => ({
   resizeHandle: {
     height: 5,
     boxSizing: 'border-box',
-    background: theme.palette.action.disabled,
     borderTop: '1px solid #fafafa',
   },
 }))

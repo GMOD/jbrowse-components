@@ -2,24 +2,28 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { cx, makeStyles } from '../util/tss-react/index.ts'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   horizontalHandle: {
     cursor: 'row-resize',
     width: '100%',
+    '&:hover': { background: theme.palette.divider },
   },
   verticalHandle: {
     cursor: 'col-resize',
     height: '100%',
+    '&:hover': { background: theme.palette.divider },
   },
   flexbox_verticalHandle: {
     cursor: 'col-resize',
     alignSelf: 'stretch', // the height: 100% is actually unable to function inside flexbox
+    '&:hover': { background: theme.palette.divider },
   },
   flexbox_horizontalHandle: {
     cursor: 'row-resize',
     alignSelf: 'stretch', // similar to above
+    '&:hover': { background: theme.palette.divider },
   },
-})
+}))
 
 function ResizeHandle({
   onDrag,
