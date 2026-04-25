@@ -44,6 +44,13 @@ import type {
   RenderState,
 } from './rendererTypes.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
+
+// SvgCanvas duck-types as CanvasRenderingContext2D for the methods used
+// here, so the same draw path can serve both on-screen rendering and SVG
+// export. Mirrors the pattern in plugin-linear-comparative-view's synteny
+// renderer and packages/alignments-core/rendererUtils.ts.
+type Ctx = CanvasRenderingContext2D | SvgCanvas
 
 interface Canvas2DRegionData extends BaseRegionData {
   readFlags: Uint16Array
@@ -451,10 +458,14 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   renderBlocks(blocks: RenderBlock[], state: RenderState) {
-    const { canvasWidth, canvasHeight } = state
+    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
+    return this.renderBlocksToCtx(this.ctx, blocks, state)
+  }
 
-    const ctx = this.ctx
-    prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
+  // Core render path. Takes ctx as parameter so SVG export can pass an
+  // SvgCanvas instead of the on-screen 2D context.
+  renderBlocksToCtx(ctx: Ctx, blocks: RenderBlock[], state: RenderState) {
+    const { canvasWidth, canvasHeight } = state
 
     if (this.regions.size === 0) {
       return false
@@ -611,7 +622,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   private drawReads(
-    ctx: CanvasRenderingContext2D,
+    ctx: Ctx,
     region: Canvas2DRegionData,
     block: { bpRangeX: [number, number]; screenStartPx: number },
     bpLength: number,
@@ -643,7 +654,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   private drawGaps(
-    ctx: CanvasRenderingContext2D,
+    ctx: Ctx,
     region: Canvas2DRegionData,
     block: { bpRangeX: [number, number]; screenStartPx: number },
     bpLength: number,
@@ -679,7 +690,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   private drawMismatches(
-    ctx: CanvasRenderingContext2D,
+    ctx: Ctx,
     region: Canvas2DRegionData,
     block: { bpRangeX: [number, number]; screenStartPx: number },
     bpLength: number,
@@ -716,7 +727,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   private drawInsertions(
-    ctx: CanvasRenderingContext2D,
+    ctx: Ctx,
     region: Canvas2DRegionData,
     block: { bpRangeX: [number, number]; screenStartPx: number },
     bpLength: number,
@@ -753,7 +764,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   private drawClips(
-    ctx: CanvasRenderingContext2D,
+    ctx: Ctx,
     positions: Uint32Array,
     ys: Uint16Array,
     lengths: Uint16Array,
@@ -783,7 +794,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   private drawSoftclipBases(
-    ctx: CanvasRenderingContext2D,
+    ctx: Ctx,
     region: Canvas2DRegionData,
     block: { bpRangeX: [number, number]; screenStartPx: number },
     bpLength: number,
@@ -822,7 +833,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   private drawModifications(
-    ctx: CanvasRenderingContext2D,
+    ctx: Ctx,
     region: Canvas2DRegionData,
     block: { bpRangeX: [number, number]; screenStartPx: number },
     bpLength: number,
@@ -847,7 +858,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   private drawCoverage(
-    ctx: CanvasRenderingContext2D,
+    ctx: Ctx,
     region: Canvas2DRegionData,
     block: { bpRangeX: [number, number]; screenStartPx: number },
     bpLength: number,
@@ -934,7 +945,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   private drawArcs(
-    ctx: CanvasRenderingContext2D,
+    ctx: Ctx,
     region: Canvas2DRegionData,
     block: { bpRangeX: [number, number]; screenStartPx: number },
     bpLength: number,
@@ -971,7 +982,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   private drawConnectingLines(
-    ctx: CanvasRenderingContext2D,
+    ctx: Ctx,
     region: Canvas2DRegionData,
     block: { bpRangeX: [number, number]; screenStartPx: number },
     bpLength: number,
@@ -1002,7 +1013,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   private drawHighlightOverlays(
-    ctx: CanvasRenderingContext2D,
+    ctx: Ctx,
     region: Canvas2DRegionData,
     block: {
       bpRangeX: [number, number]
@@ -1044,7 +1055,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   private drawChainOverlays(
-    ctx: CanvasRenderingContext2D,
+    ctx: Ctx,
     region: Canvas2DRegionData,
     block: {
       bpRangeX: [number, number]
