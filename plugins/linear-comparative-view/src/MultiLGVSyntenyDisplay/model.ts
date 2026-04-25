@@ -151,7 +151,7 @@ const SetRowHeightDialog = lazy(
 
 // Follows the canonical GPU display architecture (see
 // agent-docs/ARCHITECTURE.md): compose MultiRegionDisplayMixin,
-// override onFetchNeeded, and call self.installGpuDisplay(backend,
+// override fetchNeeded, and call self.installGpuDisplay(backend,
 // {upload, render}) in startGpuBackendLifecycle. The mixin owns fetch
 // invalidation via rpcProps and the upload/render autorun pair via
 // installGpuDisplay.
@@ -263,7 +263,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
 
       // Settings sent to the worker via RPC. Adding a field here propagates
-      // both into the RPC payload (via onFetchNeeded) and into the
+      // both into the RPC payload (via fetchNeeded) and into the
       // mixin-owned SettingsInvalidate autorun (which reads this getter),
       // so refetch happens automatically when any field changes.
       get rpcProps() {
@@ -444,7 +444,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       const superAfterAttach = self.afterAttach
 
       return {
-        onFetchNeeded(
+        fetchNeeded(
           needed: { region: Region; displayedRegionIndex: number }[],
         ) {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises

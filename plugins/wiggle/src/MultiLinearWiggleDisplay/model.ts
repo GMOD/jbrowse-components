@@ -516,7 +516,7 @@ export default function stateModelFactory(
           return view.bpPerPx === self.loadedBpPerPx
         },
 
-        async onFetchNeeded(
+        async fetchNeeded(
           needed: { region: Region; displayedRegionIndex: number }[],
         ) {
           const view = getContainingView(self) as LGV

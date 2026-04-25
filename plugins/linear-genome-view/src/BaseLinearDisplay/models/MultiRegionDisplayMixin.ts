@@ -62,8 +62,7 @@ export default function MultiRegionDisplayMixin() {
       },
     }))
     .actions(self => ({
-      // observable.map gives per-key tracking so the GPU upload autorun
-      // only re-uploads regions whose value actually changed.
+      // Action wrapper so callers after async boundaries stay in MST strict mode.
       setLoadedRegion(displayedRegionIndex: number, region: Region) {
         self.loadedRegions.set(displayedRegionIndex, region)
       },
@@ -89,7 +88,7 @@ export default function MultiRegionDisplayMixin() {
     }))
     .actions(_self => ({
       // Overridable hooks — subclasses override these
-      onFetchNeeded(
+      fetchNeeded(
         _needed: { region: Region; displayedRegionIndex: number }[],
       ) {
         // no-op base
@@ -109,7 +108,6 @@ export default function MultiRegionDisplayMixin() {
       // as loaded only AFTER the work callback has populated display-
       // specific data (rpcDataMap, cellData, etc) so the GPU upload
       // autorun sees committed data when it observes loadedRegions.
-      // Displays must NOT call setLoadedRegion themselves.
       async fetchRegions(
         needed: { region: Region; displayedRegionIndex: number }[],
         work: (ctx: FetchContext) => Promise<void>,
@@ -179,13 +177,13 @@ export default function MultiRegionDisplayMixin() {
           autorun(
             () => {
               const view = getContainingView(self) as LinearGenomeViewModel
-              void self.fetchSignal
+              void self.fetchGeneration
               if (!view.initialized || self.error || self.regionTooLarge) {
                 return
               }
 
               // isLoading is not a dependency — it's a guard only.
-              // fetchSignal (bumped at fetch end) is the re-trigger signal.
+              // fetchGeneration (bumped at fetch end) is the re-trigger signal.
               if (untracked(() => self.isLoading)) {
                 return
               }
@@ -194,9 +192,9 @@ export default function MultiRegionDisplayMixin() {
               const trackAssemblyNames = getTrackAssemblyNames(
                 getContainingTrack(self),
               )
-              const visibleBlocks = view.visibleRegions
-              for (const vr of visibleBlocks) {
-                const regionAsm = vr.assemblyName
+              const visibleRegions = view.visibleRegions
+              for (const block of visibleRegions) {
+                const regionAsm = block.assemblyName
                 if (
                   !trackAssemblyNames.includes(regionAsm) &&
                   !trackAssemblyNames.some(name =>
@@ -212,7 +210,7 @@ export default function MultiRegionDisplayMixin() {
                 }
               }
 
-              const bufferedByRegion = new Map(
+              const bufferedByIndex = new Map(
                 view.bufferedVisibleRegions.map(b => [
                   b.displayedRegionIndex,
                   b,
@@ -222,25 +220,25 @@ export default function MultiRegionDisplayMixin() {
                 region: Region
                 displayedRegionIndex: number
               }[] = []
-              for (const vr of visibleBlocks) {
+              for (const block of visibleRegions) {
                 const loaded = untracked(() =>
-                  self.loadedRegions.get(vr.displayedRegionIndex),
+                  self.loadedRegions.get(block.displayedRegionIndex),
                 )
                 const boundsValid =
-                  loaded?.refName === vr.refName &&
-                  Math.floor(vr.start) >= loaded.start &&
-                  Math.ceil(vr.end) <= loaded.end
+                  loaded?.refName === block.refName &&
+                  Math.floor(block.start) >= loaded.start &&
+                  Math.ceil(block.end) <= loaded.end
 
-                if (boundsValid && self.isCacheValid(vr.displayedRegionIndex)) {
+                if (boundsValid && self.isCacheValid(block.displayedRegionIndex)) {
                   continue
                 }
-                const buffered = bufferedByRegion.get(vr.displayedRegionIndex)
+                const buffered = bufferedByIndex.get(block.displayedRegionIndex)
                 if (buffered) {
                   needed.push(buffered)
                 }
               }
               if (needed.length > 0) {
-                self.onFetchNeeded(needed)
+                self.fetchNeeded(needed)
               }
             },
             {

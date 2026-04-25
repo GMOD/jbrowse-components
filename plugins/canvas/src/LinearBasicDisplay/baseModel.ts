@@ -473,7 +473,7 @@ export default function baseStateModelFactory(
         clearDisplaySpecificData() {
           // Deliberately NOT clearing rpcDataMap — we keep stale data
           // visible through the refetch window (labels don't vanish and
-          // reappear). onFetchNeeded prunes regions that are no longer
+          // reappear). fetchNeeded prunes regions that are no longer
           // visible, so this doesn't leak.
           self.setRegionTooLarge(false)
           self.setScrollTop(0)
@@ -720,10 +720,10 @@ export default function baseStateModelFactory(
               return
             }
             self.clearAllRpcData()
-            self.onFetchNeeded(view.bufferedVisibleRegions)
+            self.fetchNeeded(view.bufferedVisibleRegions)
           },
 
-          onFetchNeeded(
+          fetchNeeded(
             needed: { region: Region; displayedRegionIndex: number }[],
           ) {
             const view = getContainingView(self) as LGV

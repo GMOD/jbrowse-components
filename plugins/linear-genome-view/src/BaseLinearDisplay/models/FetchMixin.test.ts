@@ -23,7 +23,7 @@ describe('FetchMixin: lifecycle state', () => {
     expect(m.isLoading).toBe(false)
     expect(m.error).toBeUndefined()
     expect(m.statusMessage).toBeUndefined()
-    expect(m.fetchSignal).toBe(0)
+    expect(m.fetchGeneration).toBe(0)
     expect(m.activeStopToken).toBeUndefined()
   })
 
@@ -83,7 +83,7 @@ describe('FetchMixin: error handling', () => {
           reject = r
         }),
     )
-    // Cancel mid-flight, then reject. cancelFetch bumps fetchSignal so
+    // Cancel mid-flight, then reject. cancelFetch bumps fetchGeneration so
     // isStale() returns true in the flow's catch block — error stays
     // undefined.
     m.cancelFetch()
@@ -95,21 +95,21 @@ describe('FetchMixin: error handling', () => {
 })
 
 describe('FetchMixin: cancellation', () => {
-  it('cancelFetch on idle still bumps fetchSignal (callers rely on this)', () => {
+  it('cancelFetch on idle still bumps fetchGeneration (callers rely on this)', () => {
     const m = makeModel()
-    const before = m.fetchSignal
+    const before = m.fetchGeneration
     m.cancelFetch()
-    expect(m.fetchSignal).toBe(before + 1)
+    expect(m.fetchGeneration).toBe(before + 1)
   })
 
   it('cancelFetch mid-flight clears stop token, bumps signal, isLoading=false', () => {
     const m = makeModel()
     m.runFetch(() => new Promise<void>(() => {})) // never resolves
     expect(m.isLoading).toBe(true)
-    const before = m.fetchSignal
+    const before = m.fetchGeneration
     m.cancelFetch()
     expect(m.isLoading).toBe(false)
-    expect(m.fetchSignal).toBe(before + 1)
+    expect(m.fetchGeneration).toBe(before + 1)
     expect(m.activeStopToken).toBeUndefined()
   })
 
@@ -141,40 +141,40 @@ describe('FetchMixin: cancellation', () => {
   })
 })
 
-describe('FetchMixin: fetchSignal bump semantics', () => {
+describe('FetchMixin: fetchGeneration bump semantics', () => {
   it('bumps once on successful completion', async () => {
     const m = makeModel()
-    const before = m.fetchSignal
+    const before = m.fetchGeneration
     m.runFetch(async () => {})
     // Not yet bumped (start does not bump).
-    expect(m.fetchSignal).toBe(before)
+    expect(m.fetchGeneration).toBe(before)
     await tick()
     await tick()
-    expect(m.fetchSignal).toBe(before + 1)
+    expect(m.fetchGeneration).toBe(before + 1)
   })
 
   it('bumps once on errored completion', async () => {
     const m = makeModel()
-    const before = m.fetchSignal
+    const before = m.fetchGeneration
     m.runFetch(() => Promise.reject(new Error('x')))
-    expect(m.fetchSignal).toBe(before)
+    expect(m.fetchGeneration).toBe(before)
     await tick()
     await tick()
-    expect(m.fetchSignal).toBe(before + 1)
+    expect(m.fetchGeneration).toBe(before + 1)
   })
 
   it('bumps once on cancellation, not again when the cancelled flow finally runs', async () => {
     const m = makeModel()
-    const before = m.fetchSignal
+    const before = m.fetchGeneration
     let resolve!: () => void
     m.runFetch(() => new Promise<void>(r => (resolve = r)))
     m.cancelFetch()
-    expect(m.fetchSignal).toBe(before + 1)
+    expect(m.fetchGeneration).toBe(before + 1)
     resolve()
     await tick()
     await tick()
     // The flow's finally sees isStale()=true and skips its bump.
-    expect(m.fetchSignal).toBe(before + 1)
+    expect(m.fetchGeneration).toBe(before + 1)
   })
 })
 

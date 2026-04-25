@@ -5,7 +5,6 @@
 //
 // Field name mappings to production:
 //   renderingStopToken → activeStopToken  (FetchMixin volatile)
-//   fetchGeneration    → fetchSignal      (FetchMixin volatile)
 //   dataVersion        → test-only counter tracking setLoadedRegion call count
 
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'

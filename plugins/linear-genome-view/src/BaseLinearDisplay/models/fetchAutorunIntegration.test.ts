@@ -367,7 +367,7 @@ describe('untracked() semantics', () => {
 
   // Mirrors the FetchVisibleRegions autorun in MultiRegionDisplayMixin.afterAttach.
   // Simplifications vs production:
-  //   - fetchGeneration proxies fetchSignal (same bump-at-fetch-end semantics)
+  //   - fetchGeneration matches production name (same bump-at-fetch-end semantics)
   //   - no assembly mismatch check
   //   - uses visible blocks directly (production fetches bufferedVisibleRegions)
   //   - trackLoadedRegions=true removes the untracked() call to test that path
@@ -380,7 +380,7 @@ describe('untracked() semantics', () => {
       loadedRegions: Map<number, Region>
     },
     view: { initialized: boolean; visibleBlocks: VisibleBlock[] },
-    onFetchNeeded: (needed: VisibleBlock[]) => void,
+    fetchNeeded: (needed: VisibleBlock[]) => void,
     opts: { trackLoadedRegions?: boolean } = {},
   ) {
     return autorun(() => {
@@ -406,7 +406,7 @@ describe('untracked() semantics', () => {
         }
       }
       if (needed.length > 0) {
-        onFetchNeeded(needed)
+        fetchNeeded(needed)
       }
     })
   }

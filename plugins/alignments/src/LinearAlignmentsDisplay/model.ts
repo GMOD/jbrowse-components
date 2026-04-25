@@ -1489,7 +1489,7 @@ export default function stateModelFactory(
 
         return {
           async fetchFeatures(region: Region, displayedRegionIndex = 0) {
-            self.onFetchNeeded([{ region, displayedRegionIndex }])
+            self.fetchNeeded([{ region, displayedRegionIndex }])
           },
 
           getByteEstimateConfig() {
@@ -1503,7 +1503,7 @@ export default function stateModelFactory(
             }
           },
 
-          async onFetchNeeded(
+          async fetchNeeded(
             needed: { region: Region; displayedRegionIndex: number }[],
           ) {
             await self.fetchRegions(needed, async (ctx: FetchContext) => {

@@ -18,15 +18,15 @@ export interface FetchContext {
 //   self.runFetch(work)   — start a cancellable fetch; cancels any prior.
 //                           Implemented as an MST flow so post-await
 //                           mutations stay inside the action context.
-//   self.cancelFetch()    — cancel any in-flight fetch and bump
-//                           fetchSignal so observers re-evaluate.
-//   self.isLoading        — true while a fetch is active.
-//   self.error            — last non-abort error (or undefined).
-//   self.statusMessage    — work-in-progress status string.
-//   self.fetchSignal      — see below.
+//   self.cancelFetch()       — cancel any in-flight fetch and bump
+//                              fetchGeneration so observers re-evaluate.
+//   self.isLoading           — true while a fetch is active.
+//   self.error               — last non-abort error (or undefined).
+//   self.statusMessage       — work-in-progress status string.
+//   self.fetchGeneration     — see below.
 //
-// fetchSignal bumps once at every fetch END (success, error, or cancel).
-// Autoruns read `void self.fetchSignal` to re-evaluate after a fetch completes;
+// fetchGeneration bumps once at every fetch END (success, error, or cancel).
+// Autoruns read `void self.fetchGeneration` to re-evaluate after a fetch completes;
 // isLoading is not used as a dependency to avoid an extra fire on fetch start.
 // The counter also serves as the staleness epoch in runFetch: captured at start,
 // so a cancelFetch() bump makes isStale() return true in the in-flight flow.
@@ -38,7 +38,7 @@ export default function FetchMixin() {
     .model('FetchMixin', {})
     .volatile(() => ({
       activeStopToken: undefined as StopToken | undefined,
-      fetchSignal: 0,
+      fetchGeneration: 0,
 
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
@@ -57,7 +57,7 @@ export default function FetchMixin() {
       setStatusMessage(msg?: string) {
         self.statusMessage = msg
       },
-      // Cancel any in-flight fetch and bump fetchSignal. Always bumps —
+      // Cancel any in-flight fetch and bump fetchGeneration. Always bumps —
       // callers (clearAllRpcData, invalidateLoadedRegions) rely on the
       // bump to retrigger fetch autoruns even when no fetch was active.
       cancelFetch() {
@@ -66,26 +66,26 @@ export default function FetchMixin() {
           self.activeStopToken = undefined
           self.statusMessage = undefined
         }
-        self.fetchSignal++
+        self.fetchGeneration++
       },
       // Run a cancel-safe fetch. Any in-flight fetch is cancelled first.
       // The work callback receives a FetchContext with a stopToken to
       // forward to the RPC and an isStale() check so it can short-circuit
       // commits when the user has moved on. Errors are caught (abort
       // exceptions silently, others stored in self.error if not stale).
-      // The finally block clears the stop token and bumps fetchSignal.
+      // The finally block clears the stop token and bumps fetchGeneration.
       runFetch: flow(function* (work: (ctx: FetchContext) => Promise<void>) {
         if (self.activeStopToken) {
           stopStopToken(self.activeStopToken)
         }
         const stopToken = createStopToken()
-        const startSignal = self.fetchSignal
+        const gen = self.fetchGeneration
         self.activeStopToken = stopToken
         self.error = undefined
 
         const isStale = () =>
           !isAlive(self) ||
-          self.fetchSignal !== startSignal ||
+          self.fetchGeneration !== gen ||
           self.activeStopToken !== stopToken
 
         try {
@@ -101,7 +101,7 @@ export default function FetchMixin() {
           if (!isStale()) {
             self.activeStopToken = undefined
             self.statusMessage = undefined
-            self.fetchSignal++
+            self.fetchGeneration++
           }
         }
       }),

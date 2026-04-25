@@ -14,7 +14,7 @@ export type { FetchContext } from './FetchMixin.ts'
  *   - GpuBackendLifecycleSlotMixin (installGpuDisplay, renderNow, …)
  *   - RegionTooLargeMixin (regionTooLarge, regionCannotBeRendered, …)
  *   - FetchMixin (runFetch, cancelFetch, isLoading, error, statusMessage,
- *                 fetchSignal)
+ *                 fetchGeneration)
  *
  * Unlike MultiRegionDisplayMixin, this mixin owns no per-region state and
  * installs no autoruns. Fetch triggering is left entirely to the display's
