@@ -33,8 +33,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
   float2 local = quadLocal(vid);
 
-  float pxPerBp = u.canvasW / u.bpLen;
-
+  float pxPerBp = u.pxPerBp;
   // Sub-pixel alpha: at <1 px/bp, blend toward full-row alpha based on the
   // per-site frequency so thinly-covered mismatches fade out.
   float alpha = 1.0;

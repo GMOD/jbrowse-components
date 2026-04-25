@@ -191,8 +191,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   // 8px-wide chevron when featHeight>=3 and zoom supports it.
   float chevronClip = 8.0 / u.canvasW * 2.0;
-  float bpPerPx = u.bpLen / u.canvasW;
-  bool showChev = (u.chainMode == 1 || bpPerPx < 10.0) && u.featHeight >= 3.0;
+  bool showChev = (u.chainMode == 1 || u.pxPerBp > 0.1) && u.featHeight >= 3.0;
 
   float featWPx = (sx2 - sx1) * u.canvasW * 0.5;
   o.featSize = float2(featWPx, u.featHeight);

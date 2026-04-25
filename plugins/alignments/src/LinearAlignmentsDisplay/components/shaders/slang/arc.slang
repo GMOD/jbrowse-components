@@ -41,14 +41,12 @@ struct VsOut {
 };
 
 float3 arcColorByIndex(uint idx, Uniforms u) {
-  if (idx == 0u) { return unpackRGBA(u.arcColor0).xyz; }
-  if (idx == 1u) { return unpackRGBA(u.arcColor1).xyz; }
-  if (idx == 2u) { return unpackRGBA(u.arcColor2).xyz; }
-  if (idx == 3u) { return unpackRGBA(u.arcColor3).xyz; }
-  if (idx == 4u) { return unpackRGBA(u.arcColor4).xyz; }
-  if (idx == 5u) { return unpackRGBA(u.arcColor5).xyz; }
-  if (idx == 6u) { return unpackRGBA(u.arcColor6).xyz; }
-  return unpackRGBA(u.arcColor7).xyz;
+  uint colors[8];
+  colors[0] = u.arcColor0; colors[1] = u.arcColor1;
+  colors[2] = u.arcColor2; colors[3] = u.arcColor3;
+  colors[4] = u.arcColor4; colors[5] = u.arcColor5;
+  colors[6] = u.arcColor6; colors[7] = u.arcColor7;
+  return unpackRGBA(colors[min(idx, 7u)]).xyz;
 }
 
 // Gradient fallback for colorType >= NUM_ARC_COLORS: HSL hue sweep from the

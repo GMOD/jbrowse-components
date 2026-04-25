@@ -100,6 +100,7 @@ public struct Uniforms {
   public uint arcColor7;
   public uint arcLineColor0;
   public uint arcLineColor1;
+  public float pxPerBp;
 };
 
 // ---- Helper functions ---------------------------------------------------

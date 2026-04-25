@@ -43,7 +43,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   uint rectIdx = vid / 6u;
   float2 local = quadLocal(vid);
 
-  float pxPerBp = u.canvasW / u.bpLen;
+  float pxPerBp = u.pxPerBp;
   float cx = hpClipX(hpSplitUint(inst.position), u);
 
   bool isLong = inst.length >= LONG_INSERTION_MIN_LENGTH;

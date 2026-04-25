@@ -94,6 +94,7 @@ function fillFrameUniforms(
   f[U.bpLen] = frame.clippedBpEnd - frame.clippedBpStart
   f[U.hpZero] = 0
   f[U.canvasW] = frame.canvasW
+  f[U.pxPerBp] = frame.canvasW / (frame.clippedBpEnd - frame.clippedBpStart)
   f[U.canvasH] = state.canvasHeight
   f[U.rangeY0] = state.rangeY[0]
   f[U.scrollTop] = state.rangeY[0]
@@ -394,6 +395,7 @@ function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
   // `yBp * pxPerBp` math.
   const availH = a.arcViewportH / dpr - ARC_HEIGHT_MARGIN
   const pxPerBp = blockW / (block.bpRangeX[1] - block.bpRangeX[0])
+  f[U.pxPerBp] = pxPerBp
   f[U.arcsYDomainBp] =
     state.arcsYDomainBp ?? (pxPerBp > 0 ? availH / pxPerBp : 1)
 }
