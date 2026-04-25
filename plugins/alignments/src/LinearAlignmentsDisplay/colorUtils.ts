@@ -25,14 +25,14 @@ function isOrientationScheme(cs: number) {
 export const rgb255 = normalizedRgbToCss
 export const rgba255 = normalizedRgbToCssRgba
 
-export function lerpRgb255(a: RGBColor, b: RGBColor, t: number) {
+function lerpRgb255(a: RGBColor, b: RGBColor, t: number) {
   const r = Math.round((a[0] + (b[0] - a[0]) * t) * 255)
   const g = Math.round((a[1] + (b[1] - a[1]) * t) * 255)
   const bl = Math.round((a[2] + (b[2] - a[2]) * t) * 255)
   return `rgb(${r},${g},${bl})`
 }
 
-export function hslToRgbString(h: number, s: number, l: number) {
+function hslToRgbString(h: number, s: number, l: number) {
   const c = (1 - Math.abs(2 * l - 1)) * s
   const hp = h * 6
   const x = c * (1 - Math.abs((hp % 2) - 1))
@@ -56,7 +56,7 @@ export function hslToRgbString(h: number, s: number, l: number) {
   return `rgb(${Math.round((r + m) * 255)},${Math.round((g + m) * 255)},${Math.round((b + m) * 255)})`
 }
 
-export interface ReadColorData {
+interface ReadColorData {
   readStrands: Int8Array
   readFlags: Uint16Array
   readMapqs: Uint8Array
