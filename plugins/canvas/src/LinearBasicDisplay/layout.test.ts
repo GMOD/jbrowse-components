@@ -57,12 +57,14 @@ function layout(
   bpPerPx: number,
   showLabels = true,
   showDescriptions = true,
+  reversedRegions?: Set<number>,
 ) {
   return computeLaidOutData(raw, {
     bpPerPx,
     regionKeys,
     showLabels,
     showDescriptions,
+    reversedRegions,
   })
 }
 
@@ -366,6 +368,13 @@ test('showLabels adds label height to the feature row', () => {
   const withoutLabels = layout(new Map([[0, mk()]]), keys, 1, false, false)
   // height 10 + 5 padding = 15
   expect(withoutLabels.get(0)!.flatbushItems[0]!.bottomPx).toBe(15)
+
+  // showLabels=false but showDescriptions=true: description is collapsed up
+  // into the vacated name row at relativeY=0 (see useOverlayElements), so it
+  // still occupies one row of height below the feature.
+  const descOnly = layout(new Map([[0, mk()]]), keys, 1, false, true)
+  // height 10 + 5 padding + 12 description = 27
+  expect(descOnly.get(0)!.flatbushItems[0]!.bottomPx).toBe(27)
 })
 
 test('strand arrow padding prevents adjacent stranded features from sharing a row', () => {
@@ -392,6 +401,50 @@ test('unstranded features without arrow padding can share a row when close', () 
   const r = out.get(0)!
   expect(r.flatbushItems[0]!.topPx).toBe(0)
   expect(r.flatbushItems[1]!.topPx).toBe(0)
+})
+
+test('reversed region reserves label overhang on the lower-bp side', () => {
+  const mk = () => {
+    const data = makeFeatureData({
+      regionStart: 0,
+      features: [
+        { featureId: 'fLeft', startBp: 50, endBp: 100, height: 10 },
+        { featureId: 'fLabel', startBp: 200, endBp: 250, height: 10 },
+      ],
+    })
+    // Long label on fLabel (300 px wide) — overhangs ~300 bp at bpPerPx=1.
+    data.floatingLabelsData = {
+      fLabel: {
+        featureId: 'fLabel',
+        minX: 200,
+        maxX: 250,
+        topY: 0,
+        featureHeight: 10,
+        nameLabel: { text: 'L', relativeY: 0, color: 'black', textWidth: 300 },
+      },
+    }
+    return data
+  }
+
+  const keys = new Map([[0, 'v:ctgA']])
+
+  // Forward: label extends toward higher bp; fLeft (bp 50-100) doesn't collide.
+  const fwd = layout(new Map([[0, mk()]]), keys, 1, true, true)
+  expect(fwd.get(0)!.flatbushItems[0]!.topPx).toBe(0)
+  expect(fwd.get(0)!.flatbushItems[1]!.topPx).toBe(0)
+
+  // Reversed: label extends toward lower bp; collides with fLeft → different rows.
+  const rev = layout(
+    new Map([[0, mk()]]),
+    keys,
+    1,
+    true,
+    true,
+    new Set([0]),
+  )
+  const rLeft = rev.get(0)!.flatbushItems[0]!
+  const rLabel = rev.get(0)!.flatbushItems[1]!
+  expect(rLeft.topPx).not.toBe(rLabel.topPx)
 })
 
 test('incremental: adding a new region does not move features in existing regions', () => {

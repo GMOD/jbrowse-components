@@ -30,6 +30,8 @@ export interface FlatbushRegionCache {
   cachedItems: FlatbushItem[] | null
   cachedSubInfos: SubfeatureInfo[] | null
   cachedLabelVisibility?: LabelVisibility
+  cachedBpPerPx?: number
+  cachedReversed?: boolean
 }
 
 export type HitResult =
@@ -103,10 +105,14 @@ function getOrCreateFlatbushIndexes(
 ) {
   if (
     cache.cachedItems !== data.flatbushItems ||
-    labelVisibilityChanged(cache.cachedLabelVisibility, labels)
+    labelVisibilityChanged(cache.cachedLabelVisibility, labels) ||
+    cache.cachedBpPerPx !== bpPerPx ||
+    cache.cachedReversed !== reversed
   ) {
     cache.cachedItems = data.flatbushItems
     cache.cachedLabelVisibility = labels
+    cache.cachedBpPerPx = bpPerPx
+    cache.cachedReversed = reversed
     cache.featureIndex =
       data.flatbushItems.length > 0
         ? buildFeatureIndex(

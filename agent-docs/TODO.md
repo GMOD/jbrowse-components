@@ -351,8 +351,99 @@ palette, shared Canvas2D ⇄ SVG rasterizer). Remaining:
 - Canvas: right-side padding excessive? Subpixel drawing crowded at dense zoom?
 - Canvas: features collapsed to y=0 on NCBI (needs reproduction steps).
 
+_Items 1, 2, 4, 5 below landed on `webgl-poc` 2026-04-25. Item 3
+(regionStart) deferred. Item 6 (offset arrays) attempted and reverted —
+see "Offset arrays: rejected approach" below._
 
-## Alignments
+**~~Layout asymmetry on reversed regions.~~** _Done._ `packRef` now
+takes a `reversedRegions: ReadonlySet<number>` and reserves label
+overhang on `layoutStartBp` (lower bp) for reversed regions and
+`layoutEndBp` (higher bp) otherwise; mixed regions get both sides. The
+asymmetric `layoutEndBp = startBp + labelWidth*bpPerPx` was guaranteed
+to either over- or under-reserve in the reversed case. Test added in
+`layout.test.ts` (long label on reversed region collides with left
+neighbor and forces row split).
 
-Current lists of typedarrays are returned from plugins/alignments. This is a bit unwieldy.
-This is a clear 3-group refactor: mods, sashimi, and coverage become optional sub-objects. there could be others also
+**~~Layout description-row height when `showLabels=false`.~~** _Done._
+Verified that `packRef`'s height calc already adds `labelFontSize`
+for descriptions whenever `showDescriptions && hasDescription`,
+independent of `showLabels`. The description gates correctly because
+`useOverlayElements` collapses description to relativeY=0 when
+`showLabels=false`, occupying the row layout already reserved. Added
+regression test asserting bottomPx=27 for the
+showLabels=false/showDescriptions=true case.
+
+**~~Verify `subfeatureLabel.textWidth` always-counted intent.~~** _Done._
+Existing comment at `rpcTypes.ts:165-176` already documents the
+always-on intent ("subfeature labels always render"). No change needed.
+
+**~~Make hit-test cache invalidation explicit.~~** _Done._ Added
+`cachedBpPerPx` and `cachedReversed` fields to `FlatbushRegionCache`;
+the cache now invalidates explicitly when either changes instead of
+relying on `flatbushItems` reference identity. Defends against future
+changes to layout that might preserve the array reference across a
+bpPerPx change.
+
+**Drop `regionStart` field; ship absolute genomic uint32.** Worker
+output stores `rectPositions`/`linePositions`/`arrowXs` as offsets
+relative to `regionStart`; consumers (4 shader uniforms,
+`Canvas2DFeatureRenderer.ts:50,98,127`, `useOverlayElements.tsx:68`)
+recombine. The offset trick exists for shader float32 precision, but
+shaders already receive `bpStart` for the visible region — they can
+subtract that themselves from absolute uint32 positions. Switching to
+absolute brings canvas in line with the project-wide rule in
+`CLAUDE.md` ("worker output is absolute genomic uint32"). Also delete
+the stale doc comment in `RenderFeatureDataRPC/rpcTypes.ts:1-8`.
+Medium-sized change; do on a dedicated branch with screenshot
+verification. _Status: deferred — not started._
+
+**Replace flatbushItem/subfeatureInfo shallow clones with offset
+arrays — rejected approach.** `cloneMutableFields` in
+`plugins/canvas/src/LinearBasicDisplay/layout.ts:86` shallow-clones
+every flatbushItem and subfeatureInfo because `applyLayoutToRegion`
+mutates `topPx`/`bottomPx`. The original idea: mirror the
+rect/line/arrow Y pattern with a parallel `Float32Array` of offsets,
+keep raw items immutable, read `item.topPx + offset` at consumer
+sites.
+
+_Tried and reverted (commit window 2026-04-25)._ Motivation: eliminate
+N flatbushItem object allocations per layout pass. **Why it didn't
+pay off in this scope:**
+
+- The hot rendering loops (rect/line/arrow Y) already use `Float32Array`
+  iteration. The clone allocations only matter for `flatbushItems` and
+  `subfeatureInfos` (object arrays).
+- `featureIdIndex`/`subfeatureIdIndex` (used for `selectedFeatureId`,
+  `hoveredFeature`/`hoveredSubfeature`) and `featureItemMap` (in
+  `FeatureComponent.tsx`) all consume `item.topPx`/`item.bottomPx`
+  directly. Removing the mutation forces these to either (a) synthesize
+  spread items `{ ...f, topPx: getFlatbushTopPx(data, i) }` — same
+  allocation count, just shifted from `cloneMutableFields` to the
+  index getter, or (b) refactor every consumer to indexed access with
+  a `Map<featureId, index>`.
+- (a) preserves only ~half the savings: 4-byte float entries replace
+  ~80-byte spread objects, but allocation count is identical. (b) is
+  the real win but cascades through `useOverlayElements` (~5 sites),
+  `FeatureComponent.tsx`, `renderSvg.tsx`, `searchFeatureByID` return
+  shape, and the `HitResult` shape returned by hit-test.
+
+_Path to do this properly:_ commit to (b). Drop `topPx`/`bottomPx` from
+`HitItemBase` entirely so the type system enforces the indexed-access
+discipline. Then add `featureOffsets`/`featureLaidOutHeights`/
+`subfeatureOffsets` Float32Arrays to `FeatureDataResult`, plus a
+`getLaidOutFeature(data, i)` helper. Touching points:
+`hitTesting.ts` (HitResult shape becomes
+`{ data, featureIndex, subfeatureIndex }` instead of inline items),
+`useOverlayElements.tsx` (FeatureItemEntry stores `{ data, index }`),
+`baseModel.ts` (`featureIdIndex` becomes
+`Map<featureId, { data, index }>`, `searchFeatureByID` resolves coords
+from the data+index), `renderSvg.tsx`. Estimate: medium PR on a
+dedicated branch, with attention to the LGV-facing
+`searchFeatureByID` contract (returns
+`[startBp, topPx, endBp, bottomPx]` to navigation code).
+
+Skip until there's a measured perf signal — the current clone is O(N)
+shallow object allocation per layout, which is dwarfed by GranularRect
+packing for typical region sizes.
+
+- **Alignments typed-array refactor.** Worker return shape is flat parallel arrays. Refactor into sub-objects by group: mods, sashimi, coverage (others TBD).

@@ -12,7 +12,7 @@ Start with `PRD.md`. It is the governing doc for agent work on this branch.
 | **[TEST_INFRASTRUCTURE.md](TEST_INFRASTRUCTURE.md)**                 | Browser + unit test runners, WebGPU CI setup            | Running or writing tests                      |
 | **[TODO.md](TODO.md)**                                               | Categorized backlog (architecture, display, UX, perf)   | Picking up a backlog item                     |
 | **[OTHER_IDEAS.md](OTHER_IDEAS.md)**                                 | Future / exploratory concepts (not current work)        | Brainstorming, product direction              |
-| **[architecture-decision-records/](architecture-decision-records/)** | Design decisions (ADR-001 … ADR-005)                    | Understanding why something is the way it is  |
+| **[architecture-decision-records/](architecture-decision-records/)** | Design decisions                                        | Understanding why something is the way it is  |
 | **[completed/](completed/)**                                        | Historical migration state; COMPLETED.md is the archive | Retracing old work                            |
 
 ## Common questions

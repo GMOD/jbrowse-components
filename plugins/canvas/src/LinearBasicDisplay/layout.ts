@@ -17,6 +17,7 @@ export interface LayoutInputs {
   showLabels: boolean
   showDescriptions: boolean
   labelFontSize?: number
+  reversedRegions?: ReadonlySet<number>
 }
 
 function reservedLabelWidthPx(
@@ -43,6 +44,7 @@ export function computeLaidOutData(
     showLabels,
     showDescriptions,
     labelFontSize = 12,
+    reversedRegions,
   } = inputs
 
   const out = new Map<number, FeatureDataResult>()
@@ -71,6 +73,7 @@ export function computeLaidOutData(
       showLabels,
       showDescriptions,
       labelFontSize,
+      reversedRegions,
     )
     for (const [, data] of regions) {
       applyLayoutToRegion(data, layoutMap, layoutHeights)
@@ -103,6 +106,7 @@ function packRef(
   showLabels: boolean,
   showDescriptions: boolean,
   labelFontSize: number,
+  reversedRegions: ReadonlySet<number> | undefined,
 ) {
   const layout = new GranularRectLayout({ displayMode: 'normal' })
   const layoutMap = new Map<string, number>()
@@ -141,16 +145,31 @@ function packRef(
     }
   }
 
+  // Track per-feature whether it appears in any reversed/non-reversed region
+  // so label-overhang space can be reserved on the correct side(s). In a
+  // reversed region the label visually extends toward lower bp, so the
+  // overhang must widen layoutStartBp; otherwise it widens layoutEndBp.
   interface FeatureExtent {
     startBp: number
+    endBp: number
+    layoutStartBp: number
     layoutEndBp: number
     height: number
     strand: number
+    hasReversed: boolean
+    hasNonReversed: boolean
   }
   const allFeatures = new Map<string, FeatureExtent>()
-  for (const [, data] of regions) {
+  for (const [displayedRegionIndex, data] of regions) {
+    const reversed = !!reversedRegions?.has(displayedRegionIndex)
     for (const item of data.flatbushItems) {
-      if (allFeatures.has(item.featureId)) {
+      const existing = allFeatures.get(item.featureId)
+      if (existing) {
+        if (reversed) {
+          existing.hasReversed = true
+        } else {
+          existing.hasNonReversed = true
+        }
         continue
       }
       let height = item.featureHeightPx + LAYOUT_Y_PADDING
@@ -162,33 +181,49 @@ function packRef(
         height += labelFontSize
       }
 
-      let layoutEndBp = item.endBp
-      if (labelInfo) {
-        const labelEndBp = item.startBp + labelInfo.maxLabelWidthPx * bpPerPx
-        if (labelEndBp > layoutEndBp) {
-          layoutEndBp = labelEndBp
-        }
-      }
-
       allFeatures.set(item.featureId, {
         startBp: item.startBp,
-        layoutEndBp,
+        endBp: item.endBp,
+        layoutStartBp: item.startBp,
+        layoutEndBp: item.endBp,
         height,
         strand: item.strand ?? 0,
+        hasReversed: reversed,
+        hasNonReversed: !reversed,
       })
     }
   }
 
+  for (const [id, ext] of allFeatures) {
+    const labelInfo = labelInfoByFeatureId.get(id)
+    if (!labelInfo) {
+      continue
+    }
+    const labelBp = labelInfo.maxLabelWidthPx * bpPerPx
+    if (ext.hasNonReversed) {
+      const labelEndBp = ext.startBp + labelBp
+      if (labelEndBp > ext.layoutEndBp) {
+        ext.layoutEndBp = labelEndBp
+      }
+    }
+    if (ext.hasReversed) {
+      const labelStartBp = ext.endBp - labelBp
+      if (labelStartBp < ext.layoutStartBp) {
+        ext.layoutStartBp = labelStartBp
+      }
+    }
+  }
+
   const sorted = [...allFeatures.entries()].sort(
-    ([, a], [, b]) => a.startBp - b.startBp,
+    ([, a], [, b]) => a.layoutStartBp - b.layoutStartBp,
   )
-  for (const [id, { startBp, layoutEndBp, height, strand }] of sorted) {
-    const arrowPadding = strand ? STRAND_ARROW_WIDTH : 0
-    const leftPx = startBp / bpPerPx - arrowPadding
-    const rightPx = layoutEndBp / bpPerPx + arrowPadding
-    const top = layout.addRect(id, leftPx, rightPx, height)
+  for (const [id, ext] of sorted) {
+    const arrowPadding = ext.strand ? STRAND_ARROW_WIDTH : 0
+    const leftPx = ext.layoutStartBp / bpPerPx - arrowPadding
+    const rightPx = ext.layoutEndBp / bpPerPx + arrowPadding
+    const top = layout.addRect(id, leftPx, rightPx, ext.height)
     layoutMap.set(id, top ?? 0)
-    layoutHeights.set(id, height)
+    layoutHeights.set(id, ext.height)
   }
 
   return { layoutMap, layoutHeights }

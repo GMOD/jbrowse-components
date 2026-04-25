@@ -209,6 +209,7 @@ export default function baseStateModelFactory(
             regionKeys: this.regionKeys,
             showLabels: this.showLabels,
             showDescriptions: this.effectiveShowDescriptions,
+            reversedRegions: this.reversedRegions,
           })
         },
 
@@ -389,6 +390,16 @@ export default function baseStateModelFactory(
             map.set(num, `${region.assemblyName}:${region.refName}`)
           }
           return map
+        },
+
+        get reversedRegions() {
+          const set = new Set<number>()
+          for (const [num, region] of self.loadedRegions) {
+            if (region.reversed) {
+              set.add(num)
+            }
+          }
+          return set
         },
 
         getFeatureById(featureId: string) {
