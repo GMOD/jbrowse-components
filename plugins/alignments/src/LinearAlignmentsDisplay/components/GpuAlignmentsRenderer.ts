@@ -1045,6 +1045,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       this.hal.getBufferCount(block.displayedRegionIndex, PASS_READ) > 0
     ) {
       if (needsFeatureHighlight) {
+        const savedUBO = this.uData.slice(0)
         this.uI32[U.highlightOnly] = 1
         this.uI32[U.highlightIdx] = regionHighlightIdx
         this.hal.writeUniforms(this.uData)
@@ -1055,7 +1056,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         this.hal.setScissor(vpX, pileupTop, vpW, pileupH)
         this.hal.drawPass(PASS_READ, block.displayedRegionIndex)
 
-        this.uI32[U.highlightOnly] = 0
+        this.uF32.set(new Float32Array(savedUBO))
         this.hal.writeUniforms(this.uData)
       }
 
