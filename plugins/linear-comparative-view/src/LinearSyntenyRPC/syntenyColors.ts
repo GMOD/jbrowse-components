@@ -24,19 +24,10 @@ export const KIND_CIGAR_D = 5
 export const KIND_CIGAR_N = 6
 export const KIND_CIGAR_HIDDEN = 7
 
-function packRGBA(r: number, g: number, b: number, a: number) {
-  return packAbgr(
-    Math.round(r * 255),
-    Math.round(g * 255),
-    Math.round(b * 255),
-    Math.round(a * 255),
-  )
-}
-
-const STRAND_POS = packRGBA(1, 0, 0, 1)
-const STRAND_NEG = packRGBA(0, 0, 1, 1)
-const DEFAULT_COLOR = packRGBA(1, 0, 0, 1)
-const BLACK = packRGBA(0, 0, 0, 1)
+const STRAND_POS = cssColorToABGR(colorSchemes.strand.posColor)
+const STRAND_NEG = cssColorToABGR(colorSchemes.strand.negColor)
+const DEFAULT_COLOR = cssColorToABGR(colorSchemes.default.cigarColors.M)
+const BLACK = packAbgr(0, 0, 0, 255)
 
 const category10Packed = category10.map(hex => cssColorToABGR(hex))
 
@@ -47,7 +38,7 @@ const syriColorMap: Record<SyriType, number> = {
   DUP: cssColorToABGR(syriColors.DUP),
 }
 
-export function createColorFunction(
+function createColorFunction(
   colorBy: string,
   syriTypes?: readonly SyriType[],
 ): (strand: number, refName: string, index: number) => number {
@@ -76,7 +67,7 @@ export function createColorFunction(
   return () => DEFAULT_COLOR
 }
 
-export function buildIndelColors(colorBy: string) {
+function buildIndelColors(colorBy: string) {
   const scheme =
     colorBy === 'strand' ? colorSchemes.strand : colorSchemes.default
   const cigarColors = scheme.cigarColors

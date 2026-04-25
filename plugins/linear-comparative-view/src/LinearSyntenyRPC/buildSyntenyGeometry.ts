@@ -1,10 +1,8 @@
 import {
   CIGAR_D,
-  CIGAR_EQ,
   CIGAR_I,
-  CIGAR_M,
   CIGAR_N,
-  CIGAR_X,
+  visitCigarRenderedSegments,
 } from '@jbrowse/alignments-core'
 
 import {
@@ -361,9 +359,6 @@ export function buildSyntenyGeometry({
   const nonCigarInstanceCount = idx
 
   // Second loop: CIGAR instances (using cached parsed CIGARs).
-  // NOTE: the accumulator (small-indel merge, op classification, cull)
-  // mirrors the Canvas2D/SVG loop in LinearSyntenyDisplay/drawRef.ts.
-  // Keep them in sync — any fix here needs the same fix there.
   for (let i = 0; i < featureCount; i++) {
     if (!willDrawCigarArr[i]) {
       continue
@@ -402,49 +397,15 @@ export function buildSyntenyGeometry({
       continue
     }
 
-    let cx1 = k1
-    let cx2 = s1 === -1 ? x22 : x21
-    let continuingFlag = false
-    let px1 = 0
-    let px2 = 0
-
-    for (let j = 0; j < cigar.length; j++) {
-      const packed = cigar[j]!
-      const len = packed >>> 4
-      const op = packed & 0xf
-
-      if (!continuingFlag) {
-        px1 = cx1
-        px2 = cx2
-      }
-
-      const d1 = len * bpPerPxInv0
-      const d2 = len * bpPerPxInv1
-
-      if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
-        cx1 += d1 * rev1
-        cx2 += d2 * rev2
-      } else if (op === CIGAR_D || op === CIGAR_N) {
-        cx1 += d1 * rev1
-      } else if (op === CIGAR_I) {
-        cx2 += d2 * rev2
-      }
-
-      if (op === CIGAR_D || op === CIGAR_N || op === CIGAR_I) {
-        const relevantPx = op === CIGAR_I ? d2 : d1
-        if (relevantPx < 1) {
-          continuingFlag = true
-          continue
-        }
-      }
-
-      const isNotLast = j < cigar.length - 1
-      if (Math.abs(cx1 - px1) <= 1 && Math.abs(cx2 - px2) <= 1 && isNotLast) {
-        continuingFlag = true
-      } else {
-        const resolvedOp = (continuingFlag && d1 > 1) || d2 > 1 ? op : CIGAR_M
-        continuingFlag = false
-
+    visitCigarRenderedSegments(
+      cigar,
+      k1,
+      s1 === -1 ? x22 : x21,
+      bpPerPxInv0,
+      bpPerPxInv1,
+      rev1,
+      rev2,
+      (resolvedOp, px1, cx1, px2, cx2) => {
         const topMin = Math.min(px1, cx1) - viewOff0
         const topMax = Math.max(px1, cx1) - viewOff0
         const botMin = Math.min(px2, cx2) - viewOff1
@@ -476,8 +437,8 @@ export function buildSyntenyGeometry({
             addLocationMarkers(px1, cx1, cx2, px2, i, qtl, padTop, padBottom)
           }
         }
-      }
-    }
+      },
+    )
   }
 
   const instanceCount = idx

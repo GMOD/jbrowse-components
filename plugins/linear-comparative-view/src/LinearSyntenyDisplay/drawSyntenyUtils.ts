@@ -19,7 +19,6 @@ export const lineLimit = 3
 
 export const oobLimit = 1600
 
-// Simple hash function to generate consistent colors for query names
 export function hashString(str: string) {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
@@ -30,7 +29,6 @@ export function hashString(str: string) {
   return Math.abs(hash)
 }
 
-// Generate a color from a query name using the category10 color palette
 export function getQueryColor(queryName: string) {
   const hash = hashString(queryName)
   return category10[hash % category10.length]!
@@ -50,7 +48,7 @@ export const defaultCigarColors = {
   '=': '#f00',
 }
 
-// Strand-specific CIGAR operation colors (purple deletion instead of blue)
+// Strand-specific CIGAR operation colors (purple indels instead of blue/green)
 export const strandCigarColors = {
   I: '#ff0',
   N: '#a020f0',
@@ -69,15 +67,15 @@ export const syriColors = {
 } satisfies Record<SyriType, string>
 
 // Color scheme configuration. `query` and `syri` reuse the default CIGAR
-// palette; only `strand` differs (indels in purple instead of blue, plus
+// palette; only `strand` differs (indels in purple instead of blue/green, plus
 // strand-aware feature colors).
 export const colorSchemes = {
   default: {
     cigarColors: defaultCigarColors,
   },
   strand: {
-    posColor: 'red',
-    negColor: 'blue',
+    posColor: '#f00',
+    negColor: '#00f',
     cigarColors: strandCigarColors,
   },
 }

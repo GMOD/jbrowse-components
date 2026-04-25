@@ -1,10 +1,8 @@
 import {
   CIGAR_D,
-  CIGAR_EQ,
   CIGAR_I,
-  CIGAR_M,
   CIGAR_N,
-  CIGAR_X,
+  visitCigarRenderedSegments,
 } from '@jbrowse/alignments-core'
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 
@@ -132,102 +130,56 @@ export function drawRef(
       const rev1 = k1 < k2 ? 1 : -1
       const rev2 = (x21 < x22 ? 1 : -1) * s1
 
-      let cx1 = k1
-      let cx2 = s1 === -1 ? x22 : x21
       const cigar = parsedCigars[fi]!
       if (cigar.length > 0 && drawCIGAR) {
-        // NOTE: the accumulator (small-indel merge, op classification,
-        // cull) mirrors the worker loop in
-        // LinearSyntenyRPC/buildSyntenyGeometry.ts. Keep them in sync —
-        // any fix here needs the same fix there.
-        let continuingFlag = false
-        let px1 = 0
-        let px2 = 0
-
-        for (let j = 0; j < cigar.length; j++) {
-          const packed = cigar[j]!
-          const len = packed >>> 4
-          const op = packed & 0xf
-
-          if (!continuingFlag) {
-            px1 = cx1
-            px2 = cx2
-          }
-
-          const d1 = len * bpPerPxInv0
-          const d2 = len * bpPerPxInv1
-
-          if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
-            cx1 += d1 * rev1
-            cx2 += d2 * rev2
-          } else if (op === CIGAR_D || op === CIGAR_N) {
-            cx1 += d1 * rev1
-          } else if (op === CIGAR_I) {
-            cx2 += d2 * rev2
-          }
-
-          if (op === CIGAR_D || op === CIGAR_N || op === CIGAR_I) {
-            const relevantPx = op === CIGAR_I ? d2 : d1
-            if (relevantPx < 1) {
-              continuingFlag = true
-              continue
-            }
-          }
-
-          if (
-            !(
+        visitCigarRenderedSegments(
+          cigar,
+          k1,
+          s1 === -1 ? x22 : x21,
+          bpPerPxInv0,
+          bpPerPxInv1,
+          rev1,
+          rev2,
+          (resolvedOp, px1, cx1, px2, cx2) => {
+            if (
               Math.max(px1, px2, cx1, cx2) < 0 ||
               Math.min(px1, px2, cx1, cx2) > width
-            )
-          ) {
-            const isNotLast = j < cigar.length - 1
-            if (
-              Math.abs(cx1 - px1) <= 1 &&
-              Math.abs(cx2 - px2) <= 1 &&
-              isNotLast
             ) {
-              continuingFlag = true
+              return
+            }
+            const letter = OP_TO_CIGAR_KEY[resolvedOp] ?? 'M'
+            const isInsertionOrDeletion =
+              resolvedOp === CIGAR_I ||
+              resolvedOp === CIGAR_D ||
+              resolvedOp === CIGAR_N
+            if (useStrandColor && !isInsertionOrDeletion) {
+              mainCanvas.fillStyle =
+                strand === -1 ? negColorWithAlpha : posColorWithAlpha
+            } else if (useQueryColor && !isInsertionOrDeletion) {
+              mainCanvas.fillStyle = getQueryColorWithAlpha(refName)
             } else {
-              const resolvedOp =
-                (continuingFlag && d1 > 1) || d2 > 1 ? op : CIGAR_M
-              const letter = OP_TO_CIGAR_KEY[resolvedOp] || 'M'
-
-              const isInsertionOrDeletion =
-                resolvedOp === CIGAR_I ||
-                resolvedOp === CIGAR_D ||
-                resolvedOp === CIGAR_N
-              if (useStrandColor && !isInsertionOrDeletion) {
-                mainCanvas.fillStyle =
-                  strand === -1 ? negColorWithAlpha : posColorWithAlpha
-              } else if (useQueryColor && !isInsertionOrDeletion) {
-                mainCanvas.fillStyle = getQueryColorWithAlpha(refName)
-              } else {
-                mainCanvas.fillStyle =
-                  colorMapWithAlpha[letter as keyof typeof defaultCigarColors]
-              }
-
-              continuingFlag = false
-
-              if (!drawCIGARMatchesOnly || letter === 'M') {
-                draw(mainCanvas, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
-                mainCanvas.fill()
-                if (drawLocationMarkersEnabled) {
-                  drawLocationMarkers(
-                    mainCanvas,
-                    px1,
-                    cx1,
-                    y1,
-                    cx2,
-                    px2,
-                    y2,
-                    mid,
-                    drawCurves,
-                  )
-                }
+              mainCanvas.fillStyle =
+                colorMapWithAlpha[letter as keyof typeof defaultCigarColors]
+            }
+            if (!drawCIGARMatchesOnly || letter === 'M') {
+              draw(mainCanvas, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+              mainCanvas.fill()
+              if (drawLocationMarkersEnabled) {
+                drawLocationMarkers(
+                  mainCanvas,
+                  px1,
+                  cx1,
+                  y1,
+                  cx2,
+                  px2,
+                  y2,
+                  mid,
+                  drawCurves,
+                )
               }
             }
-          }
-        }
+          },
+        )
       } else {
         if (useStrandColor) {
           mainCanvas.fillStyle =

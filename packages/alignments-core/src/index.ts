@@ -37,7 +37,11 @@ export {
   CIGAR_S,
   CIGAR_X,
 } from './cigarConstants.ts'
-export { visitCigarOps, visitCsOps } from './cigarOpsVisitor.ts'
+export {
+  visitCigarOps,
+  visitCigarRenderedSegments,
+  visitCsOps,
+} from './cigarOpsVisitor.ts'
 export type { CigarOpsVisitor } from './cigarOpsVisitor.ts'
 export { InstanceBuilder } from './InstanceBuilder.ts'
 export {
