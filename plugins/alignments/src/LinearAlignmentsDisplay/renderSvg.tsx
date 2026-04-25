@@ -19,19 +19,18 @@ import { sashimiColorPalette } from './components/shaders/palettes.ts'
 
 import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-type Ctx = CanvasRenderingContext2D | SvgCanvas
-
 // Sashimi stays a deliberate SVG-only path: arc counts are low enough that
 // vector output performs fine and gives native hover/tooltip behavior, which
 // the rasterized/canvas pipeline can't match. Not a porting placeholder.
 function drawSashimiArcs(
-  ctx: Ctx,
+  ctx: Ctx2D,
   data: PileupDataResult,
   blockStartPx: number,
   bpStartOffset: number,

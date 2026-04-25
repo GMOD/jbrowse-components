@@ -21,7 +21,7 @@ import type {
   WiggleGPURenderState,
   WiggleRenderBlock,
 } from './wiggleBackendTypes.ts'
-import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 interface Canvas2DRegionData {
   sources: SourceRenderData[]
@@ -76,13 +76,8 @@ function featureAt(
   }
 }
 
-// SvgCanvas duck-types as CanvasRenderingContext2D for the methods used here,
-// so the same draw path serves on-screen rendering and SVG export. Mirrors
-// the pattern in plugin-alignments' Canvas2DAlignmentsRenderer.
-type Ctx = CanvasRenderingContext2D | SvgCanvas
-
 function drawXYPlot(
-  ctx: Ctx,
+  ctx: Ctx2D,
   source: SourceRenderData,
   block: WiggleRenderBlock,
   rowHeight: number,
@@ -108,7 +103,7 @@ function drawXYPlot(
 }
 
 function drawDensity(
-  ctx: Ctx,
+  ctx: Ctx2D,
   source: SourceRenderData,
   block: WiggleRenderBlock,
   rowHeight: number,
@@ -144,7 +139,7 @@ function drawDensity(
 }
 
 function drawLine(
-  ctx: Ctx,
+  ctx: Ctx2D,
   source: SourceRenderData,
   block: WiggleRenderBlock,
   rowHeight: number,
@@ -177,7 +172,7 @@ function drawLine(
 }
 
 function drawScatter(
-  ctx: Ctx,
+  ctx: Ctx2D,
   source: SourceRenderData,
   block: WiggleRenderBlock,
   rowHeight: number,
@@ -207,7 +202,7 @@ function drawScatter(
  * state; SVG export calls it directly with an `SvgCanvas`.
  */
 export function drawWiggleBlocks(
-  ctx: Ctx,
+  ctx: Ctx2D,
   regions: ReadonlyMap<number, Canvas2DRegionData>,
   blocks: WiggleRenderBlock[],
   state: WiggleGPURenderState,

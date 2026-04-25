@@ -45,12 +45,7 @@ import type {
 } from './rendererTypes.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
-
-// SvgCanvas duck-types as CanvasRenderingContext2D for the methods used
-// here, so the same draw path can serve both on-screen rendering and SVG
-// export. Mirrors the pattern in plugin-linear-comparative-view's synteny
-// renderer and packages/alignments-core/rendererUtils.ts.
-type Ctx = CanvasRenderingContext2D | SvgCanvas
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 interface Canvas2DRegionData extends BaseRegionData {
   readFlags: Uint16Array
@@ -523,7 +518,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
  * upload state; renderSvg.tsx calls it directly with an SvgCanvas.
  */
 export function drawAlignmentBlocks(
-  ctx: Ctx,
+  ctx: Ctx2D,
   regions: ReadonlyMap<number, Canvas2DRegionData>,
   blocks: RenderBlock[],
   state: RenderState,
@@ -663,7 +658,7 @@ export function drawAlignmentBlocks(
 }
 
 function drawReads(
-  ctx: Ctx,
+  ctx: Ctx2D,
   region: Canvas2DRegionData,
   block: { bpRangeX: [number, number]; screenStartPx: number },
   bpLength: number,
@@ -695,7 +690,7 @@ function drawReads(
 }
 
 function drawGaps(
-  ctx: Ctx,
+  ctx: Ctx2D,
   region: Canvas2DRegionData,
   block: { bpRangeX: [number, number]; screenStartPx: number },
   bpLength: number,
@@ -731,7 +726,7 @@ function drawGaps(
 }
 
 function drawMismatches(
-  ctx: Ctx,
+  ctx: Ctx2D,
   region: Canvas2DRegionData,
   block: { bpRangeX: [number, number]; screenStartPx: number },
   bpLength: number,
@@ -768,7 +763,7 @@ function drawMismatches(
 }
 
 function drawInsertions(
-  ctx: Ctx,
+  ctx: Ctx2D,
   region: Canvas2DRegionData,
   block: { bpRangeX: [number, number]; screenStartPx: number },
   bpLength: number,
@@ -805,7 +800,7 @@ function drawInsertions(
 }
 
 function drawClips(
-  ctx: Ctx,
+  ctx: Ctx2D,
   positions: Uint32Array,
   ys: Uint16Array,
   lengths: Uint16Array,
@@ -835,7 +830,7 @@ function drawClips(
 }
 
 function drawSoftclipBases(
-  ctx: Ctx,
+  ctx: Ctx2D,
   region: Canvas2DRegionData,
   block: { bpRangeX: [number, number]; screenStartPx: number },
   bpLength: number,
@@ -874,7 +869,7 @@ function drawSoftclipBases(
 }
 
 function drawModifications(
-  ctx: Ctx,
+  ctx: Ctx2D,
   region: Canvas2DRegionData,
   block: { bpRangeX: [number, number]; screenStartPx: number },
   bpLength: number,
@@ -899,7 +894,7 @@ function drawModifications(
 }
 
 function drawCoverage(
-  ctx: Ctx,
+  ctx: Ctx2D,
   region: Canvas2DRegionData,
   block: { bpRangeX: [number, number]; screenStartPx: number },
   bpLength: number,
@@ -982,7 +977,7 @@ function drawCoverage(
 }
 
 function drawArcs(
-  ctx: Ctx,
+  ctx: Ctx2D,
   region: Canvas2DRegionData,
   block: { bpRangeX: [number, number]; screenStartPx: number },
   bpLength: number,
@@ -1021,7 +1016,7 @@ function drawArcs(
 }
 
 function drawConnectingLines(
-  ctx: Ctx,
+  ctx: Ctx2D,
   region: Canvas2DRegionData,
   block: { bpRangeX: [number, number]; screenStartPx: number },
   bpLength: number,
@@ -1052,7 +1047,7 @@ function drawConnectingLines(
 }
 
 function drawHighlightOverlays(
-  ctx: Ctx,
+  ctx: Ctx2D,
   region: Canvas2DRegionData,
   block: {
     bpRangeX: [number, number]
@@ -1094,7 +1089,7 @@ function drawHighlightOverlays(
 }
 
 function drawChainOverlays(
-  ctx: Ctx,
+  ctx: Ctx2D,
   region: Canvas2DRegionData,
   block: {
     bpRangeX: [number, number]

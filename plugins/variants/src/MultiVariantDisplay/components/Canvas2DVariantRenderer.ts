@@ -13,9 +13,7 @@ import type {
   VariantRenderState,
   VariantUploadData,
 } from './variantBackendTypes.ts'
-import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
-
-type Ctx = CanvasRenderingContext2D | SvgCanvas
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 /**
  * Pure draw entry point. Paints the variant matrix cells (one shape per
@@ -28,7 +26,7 @@ type Ctx = CanvasRenderingContext2D | SvgCanvas
  * SVG export calls it directly with an `SvgCanvas`.
  */
 export function drawVariantBlocks(
-  ctx: Ctx,
+  ctx: Ctx2D,
   regions: ReadonlyMap<number, VariantUploadData>,
   blocks: VariantRenderBlock[],
   state: VariantRenderState,

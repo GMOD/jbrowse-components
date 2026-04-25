@@ -4,10 +4,9 @@ import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { lookupColorRamp, mapHicCount } from './colorRamp.ts'
 
 import type { HicBackend, HicRenderState } from './hicBackendTypes.ts'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const SQRT_HALF = Math.SQRT1_2
-
-type Ctx = CanvasRenderingContext2D | SvgCanvas
 
 export interface HicData {
   positions: Float32Array
@@ -22,7 +21,7 @@ export interface HicData {
  * SVG export.
  */
 export function drawHicBlocks(
-  ctx: Ctx,
+  ctx: Ctx2D,
   data: HicData,
   colorRamp: Uint8Array,
   state: HicRenderState,
@@ -74,7 +73,7 @@ export function drawHicBlocks(
 }
 
 export class Canvas2DHicRenderer implements HicBackend {
-  private ctx: Ctx
+  private ctx: Ctx2D
   private canvas: HTMLCanvasElement | null = null
   private data: HicData = {
     positions: new Float32Array(0),

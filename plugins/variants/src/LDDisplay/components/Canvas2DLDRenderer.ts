@@ -8,10 +8,9 @@ import type {
   LDRenderState,
   LDUploadData,
 } from './ldBackendTypes.ts'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const COS45 = Math.SQRT1_2
-
-type Ctx = CanvasRenderingContext2D | SvgCanvas
 
 /**
  * Pure draw entry point. Paints the LD lower-triangle as 45°-rotated diamonds
@@ -20,7 +19,7 @@ type Ctx = CanvasRenderingContext2D | SvgCanvas
  * + lifecycle upload state; SVG export calls it directly with an SvgCanvas.
  */
 export function drawLDBlocks(
-  ctx: Ctx,
+  ctx: Ctx2D,
   data: LDUploadData,
   colorRamp: Uint8Array,
   state: LDRenderState,
@@ -65,7 +64,7 @@ export function drawLDBlocks(
 }
 
 export class Canvas2DLDRenderer implements LDBackend {
-  private ctx: Ctx
+  private ctx: Ctx2D
   private canvas: HTMLCanvasElement | null = null
   private data: LDUploadData = {
     ldValues: new Float32Array(0),

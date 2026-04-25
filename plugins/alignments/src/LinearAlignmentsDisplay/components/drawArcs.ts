@@ -7,8 +7,7 @@ import { ARC_HEIGHT_MARGIN } from './shaders/palettes.ts'
 
 import type { RGBColor } from './shaders/colors.ts'
 import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
-
-type Ctx = CanvasRenderingContext2D | SvgCanvas
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 interface ArcFields {
   arcX1: Uint32Array
@@ -37,7 +36,7 @@ interface DrawArcsOpts {
 // export path (via SvgCanvas). See ARC_SHAPE_* in computeArcsFromPileupData.
 // yBp is the Y apex in genomic bp — for flat it is the constant line Y,
 // otherwise it is the curve apex.
-export function drawArcsToCtx(ctx: Ctx, data: ArcFields, opts: DrawArcsOpts) {
+export function drawArcsToCtx(ctx: Ctx2D, data: ArcFields, opts: DrawArcsOpts) {
   const {
     bpToScreenX,
     arcsYDomainBp,

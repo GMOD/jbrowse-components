@@ -38,13 +38,11 @@ import type {
   BlockSnpUploadData,
 } from './multiSyntenyGpuData.ts'
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
-import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
-type Ctx = CanvasRenderingContext2D | SvgCanvas
-
 function drawRowBackgrounds(
-  ctx: Ctx,
+  ctx: Ctx2D,
   numGenomes: number,
   coverageHeight: number,
   rowHeight: number,
@@ -59,7 +57,7 @@ function drawRowBackgrounds(
 }
 
 function drawRowDividers(
-  ctx: Ctx,
+  ctx: Ctx2D,
   numGenomes: number,
   coverageHeight: number,
   rowHeight: number,
@@ -82,7 +80,7 @@ function drawRowDividers(
 // renderMultiSyntenyToCtx is the SVG export path — it renders from
 // high-level feature objects and a bpToPx coordinate function.
 export function renderMultiSyntenyToCtx(
-  ctx: Ctx,
+  ctx: Ctx2D,
   genomeRows: Map<string, MultiPairFeature[]>,
   displayedGenomes: string[],
   opts: MultiSyntenyCanvasRenderOpts,
@@ -181,7 +179,7 @@ export function renderMultiSyntenyToCtx(
 }
 
 function drawGenomeLabels(
-  ctx: Ctx,
+  ctx: Ctx2D,
   displayedGenomes: string[],
   coverageHeight: number,
   labelW: number,
@@ -218,7 +216,7 @@ function drawGenomeLabels(
 
 // Coverage rendering for SVG export — reads raw SyntenyRegionData
 function renderCoverageForSvg(
-  ctx: Ctx,
+  ctx: Ctx2D,
   coverage: SyntenyRegionData,
   bpToPx: (refName: string, coord: number) => number | undefined,
   width: number,

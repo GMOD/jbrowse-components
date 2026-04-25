@@ -23,11 +23,10 @@ import type {
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Canvas2DRenderBlock } from '@jbrowse/core/gpu/canvas2dUtils'
 import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5
 const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5
-
-type Ctx = CanvasRenderingContext2D | SvgCanvas
 
 // Builds a bp→screen-px mapper closed over a single block. Centralizes the
 // reversed-block handling so draw functions don't have to thread `reversed`
@@ -40,7 +39,7 @@ function bpMapper(block: Canvas2DRenderBlock) {
 }
 
 export function drawLines(
-  ctx: Ctx,
+  ctx: Ctx2D,
   region: RegionRenderData,
   block: Canvas2DRenderBlock,
   scrollY: number,
@@ -88,7 +87,7 @@ export function drawLines(
 }
 
 export function drawRects(
-  ctx: Ctx,
+  ctx: Ctx2D,
   region: RegionRenderData,
   block: Canvas2DRenderBlock,
   scrollY: number,
@@ -117,7 +116,7 @@ export function drawRects(
 }
 
 export function drawArrows(
-  ctx: Ctx,
+  ctx: Ctx2D,
   region: RegionRenderData,
   block: Canvas2DRenderBlock,
   scrollY: number,
@@ -157,7 +156,7 @@ export function drawArrows(
  * `prepareCanvas`; SVG export calls it directly with an `SvgCanvas`.
  */
 export function drawFeatureBlocks(
-  ctx: Ctx,
+  ctx: Ctx2D,
   regions: ReadonlyMap<number, RegionRenderData>,
   blocks: FeatureRenderBlock[],
   state: { scrollY: number; canvasWidth: number; canvasHeight: number },
