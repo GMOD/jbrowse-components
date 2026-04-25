@@ -101,9 +101,6 @@ export default function stateModelFactory(
       get flatbushItems(): HicFlatbushItem[] {
         return self.rpcData?.items ?? []
       },
-      get maxScore() {
-        return self.rpcData?.maxScore ?? 0
-      },
       get colorMaxScore() {
         return self.rpcData?.colorMaxScore ?? 0
       },
@@ -143,7 +140,6 @@ export default function stateModelFactory(
           yScalar: self.yScalar,
           canvasWidth: Math.round(view.dynamicBlocks.totalWidthPx),
           canvasHeight: self.height,
-          maxScore: data.maxScore,
           colorMaxScore: data.colorMaxScore,
           useLogScale: self.useLogScale,
           viewScale: scale,
@@ -157,9 +153,7 @@ export default function stateModelFactory(
        */
       legendItems(): LegendItem[] {
         const colorScheme = self.colorScheme ?? 'juicebox'
-        const displayMax = Math.round(
-          self.useLogScale ? self.maxScore : self.colorMaxScore,
-        )
+        const displayMax = Math.round(self.colorMaxScore)
         const minLabel = self.useLogScale ? '1' : '0'
         const maxLabel = `${displayMax.toLocaleString()}${self.useLogScale ? ' (log)' : ''}`
 

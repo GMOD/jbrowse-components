@@ -3,7 +3,6 @@ export interface HicRenderState {
   yScalar: number
   canvasWidth: number
   canvasHeight: number
-  maxScore: number
   colorMaxScore: number
   useLogScale: boolean
   viewScale: number

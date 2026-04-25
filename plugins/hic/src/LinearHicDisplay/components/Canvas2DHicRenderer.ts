@@ -44,7 +44,6 @@ export class Canvas2DHicRenderer implements HicBackend {
       canvasHeight,
       binWidth,
       yScalar,
-      maxScore,
       colorMaxScore,
       useLogScale,
       viewScale,
@@ -79,7 +78,7 @@ export class Canvas2DHicRenderer implements HicBackend {
       const py = this.positions[i * 2 + 1]!
       const count = this.counts[i]!
 
-      const t = mapHicCount(count, colorMaxScore, maxScore, useLogScale)
+      const t = mapHicCount(count, colorMaxScore, useLogScale)
       const { r, g, b, a } = lookupColorRamp(this.colorRamp, t)
 
       if (a < 0.01) {

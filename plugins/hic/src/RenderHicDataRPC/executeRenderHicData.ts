@@ -1,7 +1,10 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { calcRegionCombinedOffsets } from '../regionOffsets.ts'
+import {
+  calcRegionCombinedOffsets,
+  computePercentile,
+} from '../regionOffsets.ts'
 
 import type { HicDataResult, HicFlatbushItem } from './types.ts'
 import type HicAdapter from '../HicAdapter/HicAdapter.ts'
@@ -58,18 +61,10 @@ export async function executeRenderHicData({
       positions: new Float32Array(0),
       counts: new Float32Array(0),
       numContacts: 0,
-      maxScore: 0,
       colorMaxScore: 0,
       binWidth: w,
       flatbush: emptyFlatbush.data,
       items: [],
-    }
-  }
-
-  let maxScore = 0
-  for (const { counts } of features) {
-    if (counts > maxScore) {
-      maxScore = counts
     }
   }
 
@@ -100,7 +95,6 @@ export async function executeRenderHicData({
     positions,
     counts: countValues,
     numContacts: features.length,
-    maxScore,
     colorMaxScore,
     binWidth: w,
     flatbush: flatbush.data,
@@ -108,11 +102,3 @@ export async function executeRenderHicData({
   }
 }
 
-function computePercentile(
-  features: { counts: number }[],
-  p: number,
-): number {
-  const sorted = features.map(f => f.counts).sort((a, b) => a - b)
-  const idx = Math.floor((p / 100) * sorted.length)
-  return sorted[Math.min(idx, sorted.length - 1)] ?? 0
-}

@@ -29,8 +29,7 @@ export async function renderSvg(
     return null
   }
 
-  const { positions, counts, numContacts, maxScore, colorMaxScore, binWidth } =
-    rpcData
+  const { positions, counts, numContacts, colorMaxScore, binWidth } = rpcData
   const height = opts.overrideHeight ?? self.height
   const visibleWidth = view.width
 
@@ -60,7 +59,7 @@ export async function renderSvg(
         const px = positions[i * 2]!
         const py = positions[i * 2 + 1]!
         const count = counts[i]!
-        const t = mapHicCount(count, colorMaxScore, maxScore, useLogScale)
+        const t = mapHicCount(count, colorMaxScore, useLogScale)
         ctx.fillStyle = lookupColorRampCSS(ramp, t)
         ctx.fillRect(px, py, binWidth, binWidth)
       }
@@ -85,7 +84,6 @@ export async function renderSvg(
       yScalar,
       canvasWidth: visibleWidth,
       canvasHeight: height,
-      maxScore,
       colorMaxScore,
       useLogScale,
       viewScale: 1,
@@ -104,9 +102,9 @@ export async function renderSvg(
         </clipPath>
       </defs>
       <g clipPath={`url(#${clipId})`}>{matrixEl}</g>
-      {showLegend && maxScore > 0 ? (
+      {showLegend && colorMaxScore > 0 ? (
         <HicSVGColorLegend
-          maxScore={useLogScale ? maxScore : colorMaxScore}
+          maxScore={colorMaxScore}
           colorScheme={colorScheme}
           useLogScale={useLogScale}
           width={visibleWidth}

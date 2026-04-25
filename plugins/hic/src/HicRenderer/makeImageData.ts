@@ -14,7 +14,10 @@ import {
 } from '@mui/x-charts-vendor/d3-scale'
 
 import interpolateViridis from './viridis.ts'
-import { calcRegionCombinedOffsets } from '../regionOffsets.ts'
+import {
+  calcRegionCombinedOffsets,
+  computePercentile,
+} from '../regionOffsets.ts'
 
 import type { RenderArgsDeserializedWithFeatures } from './HicRenderer.tsx'
 import type HicAdapter from '../HicAdapter/HicAdapter.ts'
@@ -44,7 +47,6 @@ const COLOR_SCHEMES = {
 export interface MakeImageDataResult {
   flatbush: ArrayBuffer
   items: HicFlatbushItem[]
-  maxScore: number
   w: number
 }
 
@@ -94,22 +96,15 @@ export async function makeImageData(
     return undefined
   }
 
-  let maxScore = 0
   checkStopToken(stopToken)
-  for (const { counts } of features) {
-    if (counts > maxScore) {
-      maxScore = counts
-    }
-  }
+  const colorMaxScore = computePercentile(features, 95)
   checkStopToken(stopToken)
 
-  const colorMaxScore = computePercentile(features, 95)
-  const m = useLogScale ? maxScore : colorMaxScore
   const schemeName = (colorScheme ?? 'juicebox') as keyof typeof COLOR_SCHEMES
   const x1 = COLOR_SCHEMES[schemeName]
   const scale = useLogScale
-    ? scaleSequentialLog(x1).domain([1, m])
-    : scaleSequential(x1).domain([0, m])
+    ? scaleSequentialLog(x1).domain([1, Math.max(colorMaxScore, 2)])
+    : scaleSequential(x1).domain([0, colorMaxScore])
   if (yScalar) {
     ctx.scale(1, yScalar)
   }
@@ -127,7 +122,7 @@ export async function makeImageData(
     const { bin1, bin2, counts, region1Idx, region2Idx } = features[i]!
     ctx.fillStyle = readConfObject(config, 'color', {
       count: counts,
-      maxScore,
+      maxScore: colorMaxScore,
       baseColor,
       scale,
       useLogScale,
@@ -163,8 +158,3 @@ export async function makeImageData(
   }
 }
 
-function computePercentile(features: { counts: number }[], p: number) {
-  const sorted = features.map(f => f.counts).sort((a, b) => a - b)
-  const idx = Math.floor((p / 100) * sorted.length)
-  return sorted[Math.min(idx, sorted.length - 1)] ?? 0
-}

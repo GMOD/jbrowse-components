@@ -158,15 +158,15 @@ export {
 // Map a contact count into [0, 1] for color-ramp sampling. Mirrors the logic
 // in hic.slang's fragment shader so Canvas2D + SVG rendering stay consistent
 // with the GPU path.
-// colorMaxScore: 95th-percentile count (linear mode) or maxScore (log mode)
+// colorMaxScore: 95th-percentile count — used as the saturation point for
+// both linear and log scale so outliers don't compress the visible range.
 export function mapHicCount(
   count: number,
   colorMaxScore: number,
-  maxScore: number,
   useLogScale: boolean,
 ) {
   if (useLogScale) {
-    const m = Math.max(maxScore, 1)
+    const m = Math.max(colorMaxScore, 2)
     return Math.max(0, Math.min(1, Math.log2(Math.max(count, 1)) / Math.log2(m)))
   }
   return Math.max(0, Math.min(1, count / Math.max(colorMaxScore, 0.001)))

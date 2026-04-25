@@ -94,7 +94,6 @@ const HicCanvas = observer(function HicCanvas({
     flatbushItems,
     yScalar,
     showLegend,
-    maxScore,
     colorMaxScore,
     colorScheme,
     useLogScale,
@@ -215,9 +214,9 @@ const HicCanvas = observer(function HicCanvas({
           y={mousePosition.y}
         />
       ) : null}
-      {showLegend && maxScore > 0 ? (
+      {showLegend && colorMaxScore > 0 ? (
         <HicColorLegend
-          maxScore={useLogScale ? maxScore : colorMaxScore}
+          maxScore={colorMaxScore}
           colorScheme={colorScheme}
           useLogScale={useLogScale}
         />

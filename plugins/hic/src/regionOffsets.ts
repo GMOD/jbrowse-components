@@ -1,5 +1,11 @@
 import type { Region } from '@jbrowse/core/util/types'
 
+export function computePercentile(features: { counts: number }[], p: number) {
+  const sorted = features.map(f => f.counts).sort((a, b) => a - b)
+  const idx = Math.floor((p / 100) * sorted.length)
+  return sorted[Math.min(idx, sorted.length - 1)] ?? 0
+}
+
 export function calcRegionCombinedOffsets(
   regions: Region[],
   bpPerPx: number,

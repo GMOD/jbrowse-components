@@ -15,7 +15,6 @@ struct Uniforms {
   float2 canvasSize;
   float  binWidth;
   float  yScalar;
-  float  maxScore;
   float  colorMaxScore;
   float  viewScale;
   float  viewOffsetX;
@@ -61,7 +60,7 @@ VsOut vs_main(HicInstance inst, uint vid : SV_VertexID) {
 float4 fs_main(VsOut fragIn) : SV_Target {
   float t;
   if (u.useLogScale == 1u) {
-    t = log2(max(fragIn.count, 1.0)) / log2(max(u.maxScore, 1.0));
+    t = log2(max(fragIn.count, 1.0)) / log2(max(u.colorMaxScore, 2.0));
   } else {
     t = fragIn.count / max(u.colorMaxScore, 0.001);
   }

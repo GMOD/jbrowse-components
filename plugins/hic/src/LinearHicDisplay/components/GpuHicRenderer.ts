@@ -83,7 +83,6 @@ export class GpuHicRenderer implements HicBackend {
       this.uniformF32[U.canvasSize + 1] = canvasHeight
       this.uniformF32[U.binWidth] = state.binWidth
       this.uniformF32[U.yScalar] = state.yScalar
-      this.uniformF32[U.maxScore] = state.maxScore
       this.uniformF32[U.colorMaxScore] = state.colorMaxScore
       this.uniformF32[U.viewScale] = state.viewScale
       this.uniformF32[U.viewOffsetX] = state.viewOffsetX
