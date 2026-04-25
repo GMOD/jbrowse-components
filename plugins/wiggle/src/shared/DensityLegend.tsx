@@ -4,9 +4,8 @@ function formatScore(n: number) {
   if (n === 0) {
     return '0'
   }
-  const abs = Math.abs(n)
-  if (abs >= 1) {
-    return abs >= 100 ? n.toFixed(0) : n.toPrecision(3).replace(/\.?0+$/, '')
+  if (Math.abs(n) >= 100) {
+    return n.toFixed(0)
   }
   return n.toPrecision(3).replace(/\.?0+$/, '')
 }

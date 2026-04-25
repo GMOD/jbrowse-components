@@ -10,11 +10,6 @@ import { toArray } from 'rxjs/operators'
 
 import { buildModTooltipData } from '../shared/buildTooltipData.ts'
 import {
-  SAM_FLAG_PROPER_PAIR,
-  SAM_FLAG_SECONDARY,
-  SAM_FLAG_SUPPLEMENTARY,
-} from '../shared/samFlags.ts'
-import {
   computeCoverage,
   computeNoncovCoverage,
   computeSNPCoverage,
@@ -35,6 +30,11 @@ import {
   computeFrequenciesAndThresholds,
   fetchReferenceSequence,
 } from '../shared/processFeatureAlignments.ts'
+import {
+  SAM_FLAG_PROPER_PAIR,
+  SAM_FLAG_SECONDARY,
+  SAM_FLAG_SUPPLEMENTARY,
+} from '../shared/samFlags.ts'
 
 import type { PileupDataResult, RenderPileupDataArgs } from './types'
 import type { FilterBy } from '../shared/types'
@@ -280,11 +280,13 @@ export async function executeRenderPileupData({
 
   const sashimi = computeSashimiJunctions(gaps)
 
-  const PRIMARY_PROPER_PAIR_MASK =
-    SAM_FLAG_SECONDARY | SAM_FLAG_SUPPLEMENTARY
+  const PRIMARY_PROPER_PAIR_MASK = SAM_FLAG_SECONDARY | SAM_FLAG_SUPPLEMENTARY
   const pairedInsertSizes: number[] = []
   for (const f of features) {
-    if (f.flags & SAM_FLAG_PROPER_PAIR && !(f.flags & PRIMARY_PROPER_PAIR_MASK)) {
+    if (
+      f.flags & SAM_FLAG_PROPER_PAIR &&
+      !(f.flags & PRIMARY_PROPER_PAIR_MASK)
+    ) {
       pairedInsertSizes.push(f.insertSize)
     }
   }

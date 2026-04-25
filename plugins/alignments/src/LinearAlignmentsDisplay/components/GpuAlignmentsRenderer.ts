@@ -6,6 +6,12 @@ import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
 import {
+  buildReadIdToIndex,
+  computeBlockHeights,
+  ensureRegion,
+  interbaseRangeEnds,
+} from './rendererTypes.ts'
+import {
   ARC_HEIGHT_MARGIN,
   arcLineColorPalette,
   getArcPalette,
@@ -40,12 +46,6 @@ import type {
   ReadUploadData,
   RenderBlock,
   RenderState,
-} from './rendererTypes.ts'
-import {
-  buildReadIdToIndex,
-  computeBlockHeights,
-  ensureRegion,
-  interbaseRangeEnds,
 } from './rendererTypes.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'

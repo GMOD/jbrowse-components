@@ -52,6 +52,12 @@ Selections/zoom propagate between both views.
 **Swap axes** (dotplot & linear synteny)
 Flip comparison perspective or reverse query/reference.
 
+**Better defaults for human vs mouse**
+Tune color schemes and default display options for common interspecies comparisons.
+
+**CIGAR draw toggles via gpuProps**
+Add shader uniform bit flags to gate `drawCIGAR` / `drawCIGARMatchesOnly` / `drawLocationMarkers`; worker always emits full geometry, flags control visibility. Only worth it if users toggle these frequently.
+
 ---
 
 ## Data Formats
@@ -67,6 +73,29 @@ Smoothing option for wiggle/coverage (compute rolling mean, render as line).
 
 ---
 
+## Graph view
+
+- Self-loops render too large
+- Allows too far zoom out
+- Header buttons/options should match other view headers visually
+- Test on large GFA files
+
+
+
+**Sequence search / BLAST**
+Search graph by sequence (similar to Bandage's BLAST integration).
+
+**Interactive force-directed layout**
+Apply d3-force or similar physics layout to the graph view.
+
+**Customizable layout**
+Let users choose layout algorithm (e.g. d3-force) at runtime.
+
+**Interactive mouseover connection between LinearGenomeView and graph**
+Highlight corresponding positions in both views on hover.
+
+---
+
 ## UI/UX
 
 **Height resize**
@@ -76,6 +105,12 @@ toggle.
 **Canvas offscreen buffer**
 Add margin rendering to avoid feature re-juggling on small pans/zooms (like
 `plugins/sequence`).
+
+**Super-compact mode for dense canvas layouts**
+A mode that packs features even tighter for very dense gene annotations.
+
+**Side labels for genes**
+Display gene name labels in the left/right margin instead of inline.
 
 **Global scrollZoom**
 Per-view → global setting.

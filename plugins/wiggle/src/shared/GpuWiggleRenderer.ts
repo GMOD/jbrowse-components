@@ -62,7 +62,7 @@ export class GpuWiggleRenderer implements WiggleBackend {
     for (const source of sources) {
       totalFeatures += source.numFeatures
     }
-    if (totalFeatures === 0 || sources.length === 0) {
+    if (totalFeatures === 0) {
       this.hal.deleteRegion(displayedRegionIndex)
       this.regionInfo.delete(displayedRegionIndex)
       return

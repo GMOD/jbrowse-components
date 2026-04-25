@@ -22,7 +22,8 @@ interface WiggleOptions extends WiggleAdapterOptions {
 
 function getFilename(uri: string) {
   const filename = uri.slice(uri.lastIndexOf('/') + 1)
-  return filename.slice(0, filename.lastIndexOf('.'))
+  const dotIdx = filename.lastIndexOf('.')
+  return dotIdx !== -1 ? filename.slice(0, dotIdx) : filename
 }
 
 interface AdapterConfig {
@@ -53,7 +54,6 @@ function getFilenameFromAdapterConfig(config: AdapterConfig) {
 interface AdapterEntry {
   dataAdapter: BaseFeatureDataAdapter
   source: string
-  name: string
   [key: string]: unknown
 }
 
@@ -174,10 +174,9 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   ) {
     const adapters = await this.getAdapters()
     const allStats = await Promise.all(
-      adapters.map(async adp => {
-        const { dataAdapter } = adp
-        return dataAdapter.getRegionQuantitativeStats(region, opts)
-      }),
+      adapters.map(adp =>
+        adp.dataAdapter.getRegionQuantitativeStats(region, opts),
+      ),
     )
     return aggregateQuantitativeStats(allStats.filter(Boolean))
   }
@@ -200,10 +199,9 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     const adapters = await this.getAdapters()
 
     const allStats = await Promise.all(
-      adapters.map(async adp => {
-        const { dataAdapter } = adp
-        return dataAdapter.getMultiRegionQuantitativeStats(regions, opts)
-      }),
+      adapters.map(adp =>
+        adp.dataAdapter.getMultiRegionQuantitativeStats(regions, opts),
+      ),
     )
 
     return aggregateQuantitativeStats(allStats.filter(Boolean))

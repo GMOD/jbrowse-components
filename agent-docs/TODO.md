@@ -267,19 +267,11 @@ Four independently-landable items, ordered by ROI for whole-genome alignment
    speculatively** -- see ADR-010 for why the larger bp+regionIdx +
    hpmath refactor was rejected and why the precision concern is narrow.
 
-4. *`drawCIGAR` / `drawCIGARMatchesOnly` / `drawLocationMarkers` ->
-   gpuProps.* Worker always emits full CIGAR + marker geometry; per-
-   instance `kind` already distinguishes them. Add shader uniform bit
-   flags gating draw; `computeSyntenyColors` respects the same flags.
-   Payload always pays CIGAR cost -- only worth it if users toggle these
-   frequently. Optional polish.
-
 Recommended sequence: **1 -> 2**. #3 is conditional on a real precision
-report. #4 is optional.
+report.
 
 ### Synteny misc UX
 
-- Linked views, swap axes, better defaults for human vs mouse.
 - Collapse synteny view: add a button to collapse each LinearGenomeView row
   to a single thin line (~1–2 px). The LGV currently takes ≥150 px of chrome,
   which limits the number of synteny rows visible at once; collapsing rows
@@ -289,44 +281,78 @@ report. #4 is optional.
 ### Alignments
 
 
-- Modifications track: use smoothed line for wiggle coverage of methylation
-  (matrix-style view, see [#5510](https://github.com/GMOD/jbrowse-components/issues/5510))
+- Modifications track: methylation line/matrix view (see
+  [#5510](https://github.com/GMOD/jbrowse-components/issues/5510)).
+  The key value of methylartist locus is distinguishing haplotypes — per-HP
+  aggregate lines reveal allele-specific methylation (ASM). Options ranked by
+  ROI:
+
+  **Option A — HP-stratified aggregate lines (recommended starting point).**
+  One line per haplotype in the coverage area. At each CpG, y = methylation
+  proportion among reads with that HP tag (HP:i:1, HP:i:2, unphased). Two
+  lines when HP tags present, one when absent. Implementation:
+  - Add `haplotype: number | undefined` to `ModificationEntry`; read HP tag
+    in `extractModifications` in `processFeatureAlignments.ts`
+  - Extend `computeModificationCoverage` to stratify by haplotype; output
+    per-haplotype position/height/color arrays
+  - Add `drawModCovLine` to `rendererUtils.ts` (Canvas2D) + a new
+    `PASS_MOD_COV_LINE` GPU pass (can reuse modCoverage vertex geometry,
+    rendered as a strip not quads)
+  - Show unphased as a third dim/dashed line or omit when both HP lines present
+  - Future option: kernel-smoothed lines (aggregate over a bandwidth of nearby
+    CpGs rather than exact per-site values)
+
+  **Option B — Simple aggregate line, no haplotype (lower effort, less
+  useful).** Single line per mod type, no HP stratification. Good fallback for
+  non-phased data or bisulfite-seq. The worker already produces
+  `modCovPositions`/`modCovHeights`; only a `drawModCovLine` renderer and GPU
+  shader are needed. Can be done first as a fallback (shown when no HP tags
+  detected), then upgraded to Option A. Estimated ~2h.
+
+  **Option C — Per-read matrix with haplotype sort.** The top panel of
+  methylartist: rows = reads, columns = CpG sites, color = per-read methylation
+  probability, reads sorted HP1-above-HP2 then by methylation fingerprint. This
+  is essentially the existing per-read modification squares plus a new sort
+  mode. May already be achievable today by combining `colorBy: modifications` +
+  `sortBy: HP tag` — worth verifying before building anything. If the UX is
+  already sufficient, Option C needs only documentation.
+
+  **Recommended sequence:** B first (~2h), then A (~1d). C last or never.
 
 **Samplot mode follow-ups.** Phase 1+2 landed (flat lines, Y = |tlen|, SV-type
 palette, shared Canvas2D ⇄ SVG rasterizer). Remaining:
 
-- *Y-axis jitter for stacked samplot lines.* Samplot.py applies
-  matplotlib-style jitter (`jitter_bounds`) to de-occlude overlapping
-  events at the same |tlen|. Cheap to add as a per-instance deterministic
-  offset in the shader (hash of instance index → small delta), but skipped
-  until it's clear the occlusion actually hurts readability.
+- *Y-axis jitter.* Done — `SAMPLOT_JITTER_BOUNDS=0.08` applied multiplicatively
+  to `|tlen|` at arc build time in `computeArcsFromPileupData.ts`.
+- *Alpha 0.25 + dashed split reads.* Done — samplot flat arcs rendered at
+  0.25 alpha; SA-tag arcs use `ARC_SHAPE_FLAT_SPLIT` (dashed in both GPU and
+  Canvas2D paths).
 - *Discardable samplot strand fallback.* `getSamplotColorIndex`'s
   strand-only branch (split reads with no `pairOrientationNum`) collapses
   to same-strand→INV, else→DEL. Proper DUP classification for split reads
   requires reading query order + genomic order together; left un-wired
   because the rare case has limited signal-to-noise.
+- *Endpoint markers.* samplot.py draws square markers (`marker="s"`) at both
+  ends of paired-read lines and circle markers (`marker="o"`) at split-read
+  line ends. Would require generating extra geometry per arc instance in the
+  shader (a small square/circle quad at each x1/x2). Canvas2D path would use
+  `ctx.fillRect` / `ctx.arc`. Medium scope; skip until visual need is confirmed.
+- *Line width: split vs paired.* samplot.py uses `lw=1` for split reads and
+  `lw=0.5` for paired reads. Currently both use the same `arcLineWidth`
+  uniform. Could pass per-instance width or use two separate draw calls.
+  Low visual impact; defer.
+- *Y-axis domain margin.* samplot.py uses `ylim_margin = max(1.02 + jitter_bounds, 1.10)`
+  (percentage-based, adjusts for jitter). JBrowse uses a fixed 8 px pixel margin
+  (`ARC_HEIGHT_MARGIN`). Minor visual difference; defer.
 
-### Graph view
-
-- Self-loops render too large
-- Allows too far zoom out
-- Header buttons/options should match other view headers visually
-- Sequence search / BLAST (similar to Bandage)
-- Test on large GFA files
-- Interactive force-directed layout
-- Customizable layout (e.g. choose d3-force layout at runtime)
-- Interactive mouseover connection between LinearGenomeView and graph
-
----
-
-## investigate
-
-- Clustering tree is drawn before the Ui has 'updated' with the drawing
 
 ## Canvas
 
 - Canvas: right-side padding excessive? Subpixel drawing crowded at dense zoom?
 - Canvas: features collapsed to y=0 on NCBI (needs reproduction steps).
-- Add super-compact mode for dense layouts
-- Side labels for genes
 
+
+## Alignments
+
+Current lists of typedarrays are returned from plugins/alignments. This is a bit unwieldy.
+This is a clear 3-group refactor: mods, sashimi, and coverage become optional sub-objects. there could be others also

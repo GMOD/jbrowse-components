@@ -16,8 +16,17 @@ import type { SyntenyInstanceData } from './buildSyntenyGeometry.ts'
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { ViewSnap } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+
+export interface SyntenyViewSnap {
+  bpPerPx: number
+  interRegionPaddingWidth: number
+  minimumBlockWidth: number
+  width: number
+  offsetPx: number
+  displayedRegions: Region[]
+}
 
 export interface SyntenyRpcResult extends SyntenyFeatureData {
   instanceData: SyntenyInstanceData
@@ -33,7 +42,7 @@ export function bpToPx({
   coord,
   displayedRegionIndex,
 }: {
-  self: ViewSnap
+  self: SyntenyViewSnap
   refName: string
   coord: number
   displayedRegionIndex?: number
@@ -79,7 +88,7 @@ export function bpToPx({
 
 interface RegionIndexEntry {
   index: number
-  region: { refName: string; start: number; end: number; reversed?: boolean }
+  region: Region
   bpBefore: number
   paddingPxBefore: number
 }
@@ -89,7 +98,7 @@ export interface BpToPxIndex {
   bpPerPx: number
 }
 
-export function buildBpToPxIndex(self: ViewSnap): BpToPxIndex {
+export function buildBpToPxIndex(self: SyntenyViewSnap): BpToPxIndex {
   const {
     interRegionPaddingWidth,
     bpPerPx,
@@ -172,7 +181,7 @@ export async function executeSyntenyFeaturesAndPositions({
   pluginManager: PluginManager
   sessionId: string
   adapterConfig: Record<string, unknown>
-  viewSnaps: ViewSnap[]
+  viewSnaps: SyntenyViewSnap[]
   level: number
   stopToken?: StopToken
   drawCIGAR?: boolean

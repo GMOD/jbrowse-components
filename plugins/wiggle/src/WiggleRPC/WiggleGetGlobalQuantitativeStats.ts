@@ -28,7 +28,8 @@ export class WiggleGetGlobalQuantitativeStats extends RpcMethodTypeWithFiltersAn
     )
     const { adapterConfig, sessionId } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-    const featureAdapter = dataAdapter as BaseFeatureDataAdapter
-    return featureAdapter.getGlobalStats(deserializedArgs)
+    return (dataAdapter as BaseFeatureDataAdapter).getGlobalStats(
+      deserializedArgs,
+    )
   }
 }

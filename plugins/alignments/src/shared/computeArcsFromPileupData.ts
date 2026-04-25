@@ -172,7 +172,8 @@ function getArcColorType(args: {
 
     case 'insertSizeAndOrientation':
       return hasPaired
-        ? (getOrientationColorIndex(pairOrientationNum ?? 0) ?? insertSizeColor())
+        ? (getOrientationColorIndex(pairOrientationNum ?? 0) ??
+            insertSizeColor())
         : unpairedOrientationColor(p1Strand, p2Strand)
 
     default:
@@ -505,7 +506,9 @@ export function computeArcsFromPileupData(
     }
     const rawYBp = samplot && tlen !== undefined ? Math.abs(tlen) : absrad
     const yBp = samplot
-      ? Math.round(rawYBp * (1 + SAMPLOT_JITTER_BOUNDS * (Math.random() * 2 - 1)))
+      ? Math.round(
+          rawYBp * (1 + SAMPLOT_JITTER_BOUNDS * (Math.random() * 2 - 1)),
+        )
       : rawYBp
 
     arcs.push({

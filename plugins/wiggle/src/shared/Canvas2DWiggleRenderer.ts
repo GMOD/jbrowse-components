@@ -208,7 +208,7 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
     for (const source of sources) {
       totalFeatures += source.numFeatures
     }
-    if (totalFeatures === 0 || sources.length === 0) {
+    if (totalFeatures === 0) {
       this.regions.delete(displayedRegionIndex)
       return
     }

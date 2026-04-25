@@ -1,4 +1,5 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { syriColors } from './drawSyntenyUtils.ts'
 
@@ -297,11 +298,29 @@ export function drawSyntenyTrack(
   }
 }
 
+interface PickIndex {
+  flatbush: Flatbush
+  transform: ComputedTransform
+  height: number
+  leftLimit: number
+  rightLimit: number
+}
+
+function transformsEqual(a: ComputedTransform, b: ComputedTransform) {
+  return (
+    a.scale0 === b.scale0 &&
+    a.scale1 === b.scale1 &&
+    a.adjOff0 === b.adjOff0 &&
+    a.adjOff1 === b.adjOff1
+  )
+}
+
 export class Canvas2DSyntenyRenderer implements SyntenyBackend {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
   private regions = new Map<number, SyntenyInstanceData>()
   private lastState: SyntenyRenderState | undefined
+  private pickIndices = new Map<number, PickIndex>()
 
   private get dpr() {
     return typeof window !== 'undefined' ? window.devicePixelRatio : 1
@@ -328,10 +347,12 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
 
   uploadGeometry(key: number, data: SyntenyInstanceData) {
     this.regions.set(key, data)
+    this.pickIndices.delete(key)
   }
 
   deleteGeometry(key: number) {
     this.regions.delete(key)
+    this.pickIndices.delete(key)
   }
 
   render(state: SyntenyRenderState) {
@@ -390,7 +411,41 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
       const localY = y - yTop
       const transform = computeTransform(data, params)
 
-      for (let i = data.instanceCount - 1; i >= 0; i--) {
+      let idx = this.pickIndices.get(key)
+      if (
+        !idx ||
+        !transformsEqual(idx.transform, transform) ||
+        idx.height !== height ||
+        idx.leftLimit !== leftLimit ||
+        idx.rightLimit !== rightLimit
+      ) {
+        const flatbush = new Flatbush(data.instanceCount)
+        for (let i = 0; i < data.instanceCount; i++) {
+          const c = projectCorners(data, i, transform)
+          if (isEdgeCulled(c, leftLimit, rightLimit)) {
+            // Inverted box never matches any search
+            flatbush.add(0, 0, -1, -1)
+            continue
+          }
+          const w = widenCorners(c, height)
+          flatbush.add(
+            Math.min(w.sx1, w.sx2, w.sx3, w.sx4),
+            0,
+            Math.max(w.sx1, w.sx2, w.sx3, w.sx4),
+            height,
+          )
+        }
+        flatbush.finish()
+        idx = { flatbush, transform, height, leftLimit, rightLimit }
+        this.pickIndices.set(key, idx)
+      }
+
+      // Sort descending so the highest instance index (last drawn = topmost) wins.
+      const candidates = idx.flatbush
+        .search(x, localY, x, localY)
+        .toSorted((a, b) => b - a)
+      for (let ci = 0, l = candidates.length; ci < l; ci++) {
+        const i = candidates[ci]!
         if (data.queryTotalLengths[i]! < minAlignmentLength) {
           continue
         }
@@ -399,17 +454,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
         }
 
         const c = projectCorners(data, i, transform)
-        if (isEdgeCulled(c, leftLimit, rightLimit)) {
-          continue
-        }
-
         const w = widenCorners(c, height)
-        const minX = Math.min(w.sx1, w.sx2, w.sx3, w.sx4)
-        const maxX = Math.max(w.sx1, w.sx2, w.sx3, w.sx4)
-        if (x < minX || x > maxX) {
-          continue
-        }
-
         buildFeaturePath(
           ctx,
           w.sx1,
@@ -436,6 +481,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
 
   dispose() {
     this.regions.clear()
+    this.pickIndices.clear()
     this.lastState = undefined
   }
 }

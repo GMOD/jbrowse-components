@@ -57,11 +57,11 @@ source and re-run the command to regenerate.
 
 **hp-math (hi/lo bp splits) is shader-only.** `splitPositionWithFrac`,
 `hpSplitUint`, and the `bpHi`/`bpLo` (or `bpStartHi`/`bpStartLo`,
-`bpRangeHi`/`bpRangeLo`) pairs exist solely to preserve precision in
-shader-side **float32** (23-bit mantissa) when subtracting genomic-scale
-positions. JS numbers are **float64** (52-bit mantissa) and represent every
-genomic position up to 2^53 exactly — so JS code computing clip-space or
-pixel coordinates must use the regular `bp - bpStart` form, not a hi/lo
-split. If you see hi/lo halves being recombined in a `.ts` file outside of
-shader-uniform writes, that's a bug — pass the unsplit `bpStart`/`clippedBpStart`
-through and do plain float64 arithmetic.
+`bpRangeHi`/`bpRangeLo`) pairs exist solely to preserve precision in shader-side
+**float32** (23-bit mantissa) when subtracting genomic-scale positions. JS
+numbers are **float64** (52-bit mantissa) and represent every genomic position
+up to 2^53 exactly — so JS code computing clip-space or pixel coordinates must
+use the regular `bp - bpStart` form, not a hi/lo split. If you see hi/lo halves
+being recombined in a `.ts` file outside of shader-uniform writes, that's a bug
+— pass the unsplit `bpStart`/`clippedBpStart` through and do plain float64
+arithmetic.

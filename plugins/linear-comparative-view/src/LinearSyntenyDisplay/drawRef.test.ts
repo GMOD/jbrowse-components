@@ -40,7 +40,9 @@ function makeModel(
       assemblyNames: ['hg38'],
       cigars: [''],
       syriTypes: [undefined],
-      mates: [{ start: 0, end: 1, refName: 'chr2', name: '', assemblyName: '' }],
+      mates: [
+        { start: 0, end: 1, refName: 'chr2', name: '', assemblyName: '' },
+      ],
       p11_offsetPx: new Float64Array([p11]),
       p12_offsetPx: new Float64Array([p12]),
       p21_offsetPx: new Float64Array([p21]),
@@ -53,11 +55,18 @@ function makeModel(
     },
     parsedCigars: [[]],
     queryTotalLengths: undefined,
-    colorMapWithAlpha: { M: 'red', I: 'purple', D: 'grey', N: 'grey', X: 'red', '=': 'red' },
+    colorMapWithAlpha: {
+      M: 'red',
+      I: 'purple',
+      D: 'grey',
+      N: 'grey',
+      X: 'red',
+      '=': 'red',
+    },
     posColorWithAlpha: 'red',
     negColorWithAlpha: 'blue',
     queryColorWithAlphaMap: () => 'red',
-  } as unknown as Partial<LinearSyntenyDisplayModel>
+  }
 }
 
 function makeCanvas() {
@@ -100,7 +109,7 @@ describe('drawRef culling', () => {
     // Top: x11=x12=500 (on-screen), Bottom: x21=x22=-2000 (off-screen left)
     const model = makeModel(500, 500, -2000, -2000)
     const { ctx, strokeCount } = makeCanvas()
-    drawRef(model as unknown as LinearSyntenyDisplayModel, ctx as never)
+    drawRef(model as unknown as LinearSyntenyDisplayModel, ctx)
     expect(strokeCount()).toBe(1)
   })
 
@@ -108,7 +117,7 @@ describe('drawRef culling', () => {
     // Top: x11=x12=-2000 (off-screen), Bottom: x21=x22=400 (on-screen)
     const model = makeModel(-2000, -2000, 400, 400)
     const { ctx, strokeCount } = makeCanvas()
-    drawRef(model as unknown as LinearSyntenyDisplayModel, ctx as never)
+    drawRef(model as unknown as LinearSyntenyDisplayModel, ctx)
     expect(strokeCount()).toBe(1)
   })
 
@@ -116,14 +125,14 @@ describe('drawRef culling', () => {
     // Top: x11=x12=-2000, Bottom: x21=x22=-2000 (both off-screen)
     const model = makeModel(-2000, -2000, -2000, -2000)
     const { ctx, strokeCount } = makeCanvas()
-    drawRef(model as unknown as LinearSyntenyDisplayModel, ctx as never)
+    drawRef(model as unknown as LinearSyntenyDisplayModel, ctx)
     expect(strokeCount()).toBe(0)
   })
 
   test('draws narrow feature when both edges are on-screen', () => {
     const model = makeModel(100, 100, 200, 200)
     const { ctx, strokeCount } = makeCanvas()
-    drawRef(model as unknown as LinearSyntenyDisplayModel, ctx as never)
+    drawRef(model as unknown as LinearSyntenyDisplayModel, ctx)
     expect(strokeCount()).toBe(1)
   })
 })

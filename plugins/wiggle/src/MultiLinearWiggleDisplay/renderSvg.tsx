@@ -8,7 +8,7 @@ import DensityLegend from '../shared/DensityLegend.tsx'
 import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../shared/ScoreLegend.tsx'
 import YScaleBar from '../shared/YScaleBar.tsx'
-import { getDensityColor } from '../shared/getDensityColor.ts'
+import { makeDensityColorFn } from '../shared/getDensityColor.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
@@ -103,6 +103,26 @@ function renderFeatureSlice(
       ctx.lineTo(xEnd, y)
     }
     ctx.stroke()
+  } else if (renderType === RENDERING_TYPE_DENSITY) {
+    const densityColor = makeDensityColorFn(
+      minScore,
+      maxScore,
+      scaleType,
+      color,
+    )
+    for (let i = 0; i < numFeatures; i++) {
+      const posIdx = i * 2
+      const featureStart = positions[posIdx]!
+      const featureEnd = positions[posIdx + 1]!
+      const score = scores[i]!
+      if (featureEnd < block.start || featureStart > block.end) {
+        continue
+      }
+      const x = (featureStart - block.start) / bpPerPx + blockScreenX
+      const w = Math.max((featureEnd - featureStart) / bpPerPx, 1)
+      ctx.fillStyle = densityColor(score)
+      ctx.fillRect(x, rowY, w, rowHeight)
+    }
   } else {
     for (let i = 0; i < numFeatures; i++) {
       const posIdx = i * 2
@@ -126,15 +146,6 @@ function renderFeatureSlice(
         const y = scale(score) + rowY
         ctx.fillStyle = color
         ctx.fillRect(x, y - 1, w, 2)
-      } else if (renderType === RENDERING_TYPE_DENSITY) {
-        ctx.fillStyle = getDensityColor(
-          score,
-          minScore,
-          maxScore,
-          scaleType,
-          color,
-        )
-        ctx.fillRect(x, rowY, w, rowHeight)
       }
     }
   }
@@ -165,7 +176,6 @@ function renderToCtx(
 
   const [minScore, maxScore] = domain
   const renderType = renderingTypeToInt(renderingType)
-  const overlay = isOverlay
 
   const scale = getScale({
     scaleType,
@@ -183,19 +193,20 @@ function renderToCtx(
       continue
     }
     const blockScreenX = block.offsetPx - offsetPx
+    const sourceByName = new Map(data.sources.map(s => [s.name, s]))
 
     // Iterate modelSources so row positions follow display order, not RPC data order
     for (let modelIdx = 0; modelIdx < modelSources.length; modelIdx++) {
       const modelSource = modelSources[modelIdx]!
-      const source = data.sources.find(s => s.name === modelSource.name)
+      const source = sourceByName.get(modelSource.name)
       if (!source) {
         continue
       }
       const posColor = modelSource.color ?? defaultPosColor
-      const negColor = overlay ? posColor : defaultNegColor
-      const rowY = overlay ? 0 : getRowTop(modelIdx, rowHeight)
+      const negColor = isOverlay ? posColor : defaultNegColor
+      const rowY = isOverlay ? 0 : getRowTop(modelIdx, rowHeight)
 
-      const slices = getFeatureSlices(source, posColor, negColor, overlay)
+      const slices = getFeatureSlices(source, posColor, negColor, isOverlay)
       for (const slice of slices) {
         renderFeatureSlice(
           ctx,

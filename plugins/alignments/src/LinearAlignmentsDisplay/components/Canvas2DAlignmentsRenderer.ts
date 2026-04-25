@@ -21,6 +21,12 @@ import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 import { getReadColor, rgb255 } from '../colorUtils.ts'
 import { getChainBounds } from './chainOverlayUtils.ts'
 import { drawArcsToCtx } from './drawArcs.ts'
+import {
+  buildReadIdToIndex,
+  computeBlockHeights,
+  ensureRegion,
+  interbaseRangeEnds,
+} from './rendererTypes.ts'
 import { arcLineColorPalette, getArcPalette } from './shaders/palettes.ts'
 
 import type {
@@ -35,12 +41,6 @@ import type {
   ReadUploadData,
   RenderBlock,
   RenderState,
-} from './rendererTypes.ts'
-import {
-  buildReadIdToIndex,
-  computeBlockHeights,
-  ensureRegion,
-  interbaseRangeEnds,
 } from './rendererTypes.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 

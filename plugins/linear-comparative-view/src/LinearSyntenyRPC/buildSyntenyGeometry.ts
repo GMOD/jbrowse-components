@@ -117,6 +117,7 @@ export function buildSyntenyGeometry({
   level,
   viewOffsets,
   viewWidth,
+  syriTypes,
 }: {
   p11_offsetPx: Float64Array
   p12_offsetPx: Float64Array
@@ -137,6 +138,7 @@ export function buildSyntenyGeometry({
   level: number
   viewOffsets: number[]
   viewWidth: number
+  syriTypes?: (string | undefined)[]
 }): SyntenyInstanceData {
   const featureCount = p11_offsetPx.length
 
@@ -251,7 +253,7 @@ export function buildSyntenyGeometry({
     ensureCapacity(numMarkers)
 
     for (let step = 0; step < numMarkers; step++) {
-      const t = step / numMarkers
+      const t = step / (numMarkers - 1)
       const markerTopX = topLeft + (topRight - topLeft) * t
       const markerBottomX = bottomLeft + (bottomRight - bottomLeft) * t
 
@@ -286,28 +288,34 @@ export function buildSyntenyGeometry({
   const minCigarPxWidth = 4
   const willDrawCigarArr = new Uint8Array(featureCount)
 
-  // First loop: emit a whole-polygon instance for every feature.
-  // Features that will get CIGAR detail are emitted with KIND_BASE_HIDDEN
-  // (alpha-zero in the fill pass but still usable by the edge/outline pass).
+  // Pre-pass: compute willDrawCigar for each feature so the two-pass emission
+  // below can reference it without interleaving the decision with ordering.
   for (let i = 0; i < featureCount; i++) {
-    const x11 = p11_offsetPx[i]!
-    const x12 = p12_offsetPx[i]!
-    const x21 = p21_offsetPx[i]!
-    const x22 = p22_offsetPx[i]!
-    const qtl = qtls[i]!
-    const padTop = padTopArr[i]!
-    const padBottom = padBottomArr[i]!
-
     const cigar = parsedCigars[i]!
     let willDrawCigar = false
     if (cigar.length > 0 && drawCIGAR) {
-      const featureWidth = Math.max(Math.abs(x12 - x11), Math.abs(x22 - x21))
+      const featureWidth = Math.max(
+        Math.abs(p12_offsetPx[i]! - p11_offsetPx[i]!),
+        Math.abs(p22_offsetPx[i]! - p21_offsetPx[i]!),
+      )
       if (featureWidth >= minCigarPxWidth) {
         willDrawCigar = true
       }
     }
     willDrawCigarArr[i] = willDrawCigar ? 1 : 0
+  }
 
+  // First loop: emit whole-polygon instances, SYN features first so that
+  // INV/TRANS/DUP ribbons render on top in the GPU path (painter's order).
+  // When syriTypes is absent (non-SyRI data) the single pass is unchanged.
+  // Features with CIGAR detail use KIND_BASE_HIDDEN (alpha-zero in the fill
+  // pass but still drawn by the edge/outline pass).
+  function emitNonCigarFeature(i: number) {
+    const x11 = p11_offsetPx[i]!
+    const x12 = p12_offsetPx[i]!
+    const x21 = p21_offsetPx[i]!
+    const x22 = p22_offsetPx[i]!
+    const willDrawCigar = willDrawCigarArr[i]!
     addInstance(
       x11,
       x12,
@@ -315,13 +323,38 @@ export function buildSyntenyGeometry({
       x21,
       willDrawCigar ? KIND_BASE_HIDDEN : KIND_BASE,
       i,
-      qtl,
-      padTop,
-      padBottom,
+      qtls[i]!,
+      padTopArr[i]!,
+      padBottomArr[i]!,
     )
-
     if (!willDrawCigar && drawLocationMarkers) {
-      addLocationMarkers(x11, x12, x22, x21, i, qtl, padTop, padBottom)
+      addLocationMarkers(
+        x11,
+        x12,
+        x22,
+        x21,
+        i,
+        qtls[i]!,
+        padTopArr[i]!,
+        padBottomArr[i]!,
+      )
+    }
+  }
+
+  if (syriTypes) {
+    for (let i = 0; i < featureCount; i++) {
+      if (syriTypes[i] === 'SYN') {
+        emitNonCigarFeature(i)
+      }
+    }
+    for (let i = 0; i < featureCount; i++) {
+      if (syriTypes[i] !== 'SYN') {
+        emitNonCigarFeature(i)
+      }
+    }
+  } else {
+    for (let i = 0; i < featureCount; i++) {
+      emitNonCigarFeature(i)
     }
   }
 

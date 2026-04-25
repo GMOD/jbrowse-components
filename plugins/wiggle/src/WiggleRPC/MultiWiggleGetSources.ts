@@ -25,7 +25,6 @@ export class MultiWiggleGetSources extends RpcMethodTypeWithFiltersAndRenameRegi
     )
     const { regions, adapterConfig, sessionId } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-    const featureAdapter = dataAdapter as BaseFeatureDataAdapter
-    return featureAdapter.getSources(regions)
+    return (dataAdapter as BaseFeatureDataAdapter).getSources(regions)
   }
 }

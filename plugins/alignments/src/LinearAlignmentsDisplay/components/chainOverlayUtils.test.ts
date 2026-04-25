@@ -1,10 +1,11 @@
+import { getChainBounds } from './chainOverlayUtils.ts'
 import {
   buildReadIdToIndex,
   computeBlockHeights,
   ensureRegion,
   interbaseRangeEnds,
 } from './rendererTypes.ts'
-import { getChainBounds } from './chainOverlayUtils.ts'
+
 import type { RenderState } from './rendererTypes.ts'
 
 function makeState(overrides: Partial<RenderState> = {}): RenderState {
@@ -147,7 +148,10 @@ describe('ensureRegion', () => {
     const existing = { v: 99 }
     const m = new Map([[1, existing]])
     let called = false
-    const r = ensureRegion(m, 1, () => { called = true; return { v: 0 } })
+    const r = ensureRegion(m, 1, () => {
+      called = true
+      return { v: 0 }
+    })
     expect(r).toBe(existing)
     expect(called).toBe(false)
   })
@@ -161,7 +165,9 @@ describe('computeBlockHeights', () => {
   })
 
   it('returns coverageHeight when showCoverage is on', () => {
-    const { covH } = computeBlockHeights(makeState({ showCoverage: true, coverageHeight: 80 }))
+    const { covH } = computeBlockHeights(
+      makeState({ showCoverage: true, coverageHeight: 80 }),
+    )
     expect(covH).toBe(80)
   })
 

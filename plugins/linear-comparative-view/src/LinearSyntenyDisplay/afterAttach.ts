@@ -38,16 +38,16 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         // tracks bpPerPx only when it actually changes the output bucket.
         void self.chainMergeLodBucket
         const adapterConfig = self.adapterConfig
-        const { drawCIGAR, drawCIGARMatchesOnly, drawLocationMarkers, chainMerge } =
-          view
+        const {
+          drawCIGAR,
+          drawCIGARMatchesOnly,
+          drawLocationMarkers,
+          chainMerge,
+        } = view
         const viewSnaps = view.views.map(v => ({
           bpPerPx: v.bpPerPx,
           offsetPx: v.offsetPx,
           displayedRegions: v.displayedRegions,
-          staticBlocks: {
-            contentBlocks: v.staticBlocks.contentBlocks,
-            blocks: v.staticBlocks.blocks,
-          },
           interRegionPaddingWidth: v.interRegionPaddingWidth,
           minimumBlockWidth: v.minimumBlockWidth,
           width: v.width,

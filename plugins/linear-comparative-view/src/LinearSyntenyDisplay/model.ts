@@ -13,8 +13,8 @@ import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
 import type { ClickCoord } from './components/util.ts'
 import type { ColorScheme } from './drawSyntenyUtils.ts'
 import type { SyntenyTrackRenderParams } from './syntenyBackendTypes.ts'
-import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -344,7 +344,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         if (!self.featureData) {
           return undefined
         }
-        return getFeatureAtIndex(self.featureData, index)
+        const featureIdx = self.instanceData?.instanceFeatureIdx[index] ?? index
+        return getFeatureAtIndex(self.featureData, featureIdx)
       },
       /**
        * #getter
@@ -434,18 +435,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       get tooltipText() {
         const { hoveredFeatureIdx, featureData } = self
-        if (
-          hoveredFeatureIdx < 0 ||
-          !featureData ||
-          hoveredFeatureIdx >= featureData.featureIds.length
-        ) {
+        if (hoveredFeatureIdx < 0 || !featureData) {
+          return ''
+        }
+        const featureIdx =
+          self.instanceData?.instanceFeatureIdx[hoveredFeatureIdx] ??
+          hoveredFeatureIdx
+        if (featureIdx >= featureData.featureIds.length) {
           return ''
         }
         const sc = this.syriClassification
         return getTooltip(
-          getFeatureAtIndex(featureData, hoveredFeatureIdx),
-          sc?.types[hoveredFeatureIdx],
-          sc?.dupConflicts[hoveredFeatureIdx],
+          getFeatureAtIndex(featureData, featureIdx),
+          sc?.types[featureIdx],
+          sc?.dupConflicts[featureIdx],
         )
       },
       /**
@@ -476,8 +479,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           height: this.height,
           alpha: self.alpha,
           minAlignmentLength: self.minAlignmentLength,
-          hoveredFeatureId: hoveredFeatureIdx >= 0 ? hoveredFeatureIdx + 1 : 0,
-          clickedFeatureId: clickedFeatureIdx >= 0 ? clickedFeatureIdx + 1 : 0,
+          hoveredFeatureId:
+            hoveredFeatureIdx >= 0
+              ? (this.renderInstanceData?.featureIds[hoveredFeatureIdx] ?? 0)
+              : 0,
+          clickedFeatureId:
+            clickedFeatureIdx >= 0
+              ? (this.renderInstanceData?.featureIds[clickedFeatureIdx] ?? 0)
+              : 0,
           offset0: v0.offsetPx,
           offset1: v1.offsetPx,
           bpPerPx0: v0.bpPerPx,

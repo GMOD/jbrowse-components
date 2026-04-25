@@ -5,7 +5,7 @@ import { when } from 'mobx'
 
 import DensityLegend from '../shared/DensityLegend.tsx'
 import YScaleBar from '../shared/YScaleBar.tsx'
-import { getDensityColor } from '../shared/getDensityColor.ts'
+import { makeDensityColorFn } from '../shared/getDensityColor.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
@@ -95,6 +95,26 @@ function renderToCtx(
         ctx.lineTo(xEnd, y)
       }
       ctx.stroke()
+    } else if (renderType === RENDERING_TYPE_DENSITY) {
+      const densityColor = makeDensityColorFn(
+        minScore,
+        maxScore,
+        scaleType,
+        posColor,
+      )
+      for (let i = 0; i < numFeatures; i++) {
+        const posIdx = i * 2
+        const featureStart = featurePositions[posIdx]!
+        const featureEnd = featurePositions[posIdx + 1]!
+        const score = featureScores[i]!
+        if (featureEnd < block.start || featureStart > block.end) {
+          continue
+        }
+        const x = (featureStart - block.start) / bpPerPx + blockScreenX
+        const w = Math.max((featureEnd - featureStart) / bpPerPx, 1)
+        ctx.fillStyle = densityColor(score)
+        ctx.fillRect(x, 0, w, height)
+      }
     } else {
       for (let i = 0; i < numFeatures; i++) {
         const posIdx = i * 2
@@ -126,15 +146,6 @@ function renderToCtx(
               : negColor
             : color
           ctx.fillRect(x, y - 1, w, 2)
-        } else if (renderType === RENDERING_TYPE_DENSITY) {
-          ctx.fillStyle = getDensityColor(
-            score,
-            minScore,
-            maxScore,
-            scaleType,
-            posColor,
-          )
-          ctx.fillRect(x, 0, w, height)
         }
       }
     }

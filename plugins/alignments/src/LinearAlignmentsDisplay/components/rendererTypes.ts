@@ -212,7 +212,8 @@ export function ensureRegion<T>(
 
 export function computeBlockHeights(state: RenderState) {
   return {
-    effectiveArcsHeight: state.showArcs && state.arcsHeight ? state.arcsHeight : 0,
+    effectiveArcsHeight:
+      state.showArcs && state.arcsHeight ? state.arcsHeight : 0,
     covH: state.showCoverage ? state.coverageHeight : 0,
   }
 }

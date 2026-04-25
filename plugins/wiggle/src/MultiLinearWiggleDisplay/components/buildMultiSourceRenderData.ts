@@ -5,6 +5,7 @@ import {
   isScatterMode,
   makeWhiskersSourceData,
 } from '../../shared/wiggleComponentUtils.ts'
+import { getEffectiveScores } from '../../util.ts'
 
 import type { MultiWiggleDataResult } from '../../RenderMultiWiggleDataRPC/types.ts'
 import type { SourceRenderData } from '../../shared/wiggleBackendTypes.ts'
@@ -68,10 +69,7 @@ export function buildMultiSourceRenderData(
         result.push(s)
       }
     } else if (summaryScoreMode === 'min' || summaryScoreMode === 'max') {
-      const scores =
-        summaryScoreMode === 'min'
-          ? rpcSource.featureMinScores
-          : rpcSource.featureMaxScores
+      const scores = getEffectiveScores(rpcSource, summaryScoreMode)
       result.push({
         featurePositions: rpcSource.featurePositions,
         featureScores: scores,

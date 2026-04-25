@@ -28,10 +28,8 @@ export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodTypeWithFilt
     )
     const { regions, adapterConfig, sessionId } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-    const featureAdapter = dataAdapter as BaseFeatureDataAdapter
-    return featureAdapter.getMultiRegionQuantitativeStats(
-      regions,
-      deserializedArgs,
-    )
+    return (
+      dataAdapter as BaseFeatureDataAdapter
+    ).getMultiRegionQuantitativeStats(regions, deserializedArgs)
   }
 }

@@ -3,7 +3,7 @@ import { fromNewick } from '@gmod/hclust'
 import { hierarchy, sort, sum } from './hierarchy.ts'
 
 import type { HierarchyNode } from './hierarchy.ts'
-import type { ClusterHierarchyNode, ClusterNodeData } from './types.ts'
+import type { ClusterNodeData } from './types.ts'
 
 export function getLeafNames(node: HierarchyNode<ClusterNodeData>): string[] {
   const result: string[] = []

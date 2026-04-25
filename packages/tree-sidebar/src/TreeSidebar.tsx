@@ -39,6 +39,7 @@ const TreeSidebar = observer(function TreeSidebar({
     (ref: HTMLCanvasElement | null) => {
       model.setTreeCanvasRef(ref)
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, treeAreaWidth, height, lineZoneHeight],
   )
 
@@ -46,6 +47,7 @@ const TreeSidebar = observer(function TreeSidebar({
     (ref: HTMLCanvasElement | null) => {
       model.setMouseoverCanvasRef(ref)
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, viewWidth, height, lineZoneHeight],
   )
 
