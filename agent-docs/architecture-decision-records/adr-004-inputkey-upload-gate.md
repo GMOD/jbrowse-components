@@ -76,7 +76,7 @@ callsite) is not justified by the savings.
    (e.g. "skip if the new visible range is still within the previously buffered
    range"), would cut the number of legitimate uploads during zoom. This is the
    actual lever for the trace's cost profile.
-2. **Worker-side coverage pack.** `uploadCoverageFromTypedArraysForRegion` (~715
+2. **Worker-side coverage pack.** `uploadCoverage` (~715
    ms self-time in the trace) does not depend on main-thread Y values and could
    move to the RPC worker without touching layout. Real but bounded win. Not
    done.

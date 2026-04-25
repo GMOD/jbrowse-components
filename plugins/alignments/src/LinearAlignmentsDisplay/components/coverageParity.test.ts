@@ -13,6 +13,7 @@ import {
   GpuAlignmentsRenderer,
 } from './GpuAlignmentsRenderer.ts'
 
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type {
   CoverageUploadData,
   ReadUploadData,
@@ -113,6 +114,50 @@ function makeMinimalReadData() {
   } as ReadUploadData
 }
 
+// Stubs for the CIGAR / modification / mod-coverage fields of
+// PileupDataResult. Coverage tests don't exercise these but uploadRegion
+// reads them.
+const EMPTY_PILEUP_STUBS = {
+  gapPositions: new Uint32Array(),
+  gapYs: new Uint16Array(),
+  gapTypes: new Uint8Array(),
+  gapFrequencies: new Uint8Array(),
+  numGaps: 0,
+  mismatchPositions: new Uint32Array(),
+  mismatchYs: new Uint16Array(),
+  mismatchBases: new Uint8Array(),
+  mismatchFrequencies: new Uint8Array(),
+  numMismatches: 0,
+  interbasePositions: new Uint32Array(),
+  interbaseYs: new Uint16Array(),
+  interbaseLengths: new Uint16Array(),
+  interbaseFrequencies: new Uint8Array(),
+  numInsertions: 0,
+  numSoftclips: 0,
+  numHardclips: 0,
+  softclipBasePositions: new Uint32Array(),
+  softclipBaseYs: new Uint16Array(),
+  softclipBaseBases: new Uint8Array(),
+  numSoftclipBases: 0,
+  modificationPositions: new Uint32Array(),
+  modificationYs: new Uint16Array(),
+  modificationColors: new Uint32Array(),
+  numModifications: 0,
+  modCovPositions: new Uint32Array(),
+  modCovYOffsets: new Float32Array(),
+  modCovHeights: new Float32Array(),
+  modCovColors: new Uint32Array(),
+  numModCovSegments: 0,
+}
+
+function makeMinimalPileupResult(cov: CoverageUploadData) {
+  return {
+    ...makeMinimalReadData(),
+    ...EMPTY_PILEUP_STUBS,
+    ...cov,
+  } as unknown as PileupDataResult
+}
+
 function recordingCtx() {
   const rects: { x: number; y: number; w: number; h: number; fill: string }[] =
     []
@@ -154,8 +199,8 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     const covData = makeCoverageData()
 
     // GPU path: upload to HAL
-    gpu.uploadFromTypedArraysForRegion(0, makeMinimalReadData())
-    gpu.uploadCoverageFromTypedArraysForRegion(0, covData)
+    gpu.uploadReads(0, makeMinimalReadData())
+    gpu.uploadCoverage(0, covData)
 
     const gpuCovBuf = hal.getBuffer(0, 'coverage')
     expect(gpuCovBuf).toBeDefined()
@@ -172,8 +217,10 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       getContext: () => ({ setTransform() {}, clearRect() {} }),
     } as unknown as HTMLCanvasElement
     const canvas2d = new Canvas2DAlignmentsRenderer(canvas)
-    canvas2d.uploadFromTypedArraysForRegion(0, makeMinimalReadData())
-    canvas2d.uploadCoverageFromTypedArraysForRegion(0, covData)
+    canvas2d.sync({
+      laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
+      arcsRpcDataMap: new Map(),
+    })
 
     // The normalized depths should be identical
     const expectedDepths = [10 / 50, 30 / 50, 50 / 50, 20 / 50, 40 / 50]
@@ -187,8 +234,8 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     const gpu = new GpuAlignmentsRenderer(hal)
     const covData = makeCoverageData()
 
-    gpu.uploadFromTypedArraysForRegion(0, makeMinimalReadData())
-    gpu.uploadCoverageFromTypedArraysForRegion(0, covData)
+    gpu.uploadReads(0, makeMinimalReadData())
+    gpu.uploadCoverage(0, covData)
 
     const gpuSnpBuf = hal.getBuffer(0, 'snpCov')
     expect(gpuSnpBuf).toBeDefined()
@@ -201,8 +248,10 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       getContext: () => ({ setTransform() {}, clearRect() {} }),
     } as unknown as HTMLCanvasElement
     const canvas2d = new Canvas2DAlignmentsRenderer(canvas)
-    canvas2d.uploadFromTypedArraysForRegion(0, makeMinimalReadData())
-    canvas2d.uploadCoverageFromTypedArraysForRegion(0, covData)
+    canvas2d.sync({
+      laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
+      arcsRpcDataMap: new Map(),
+    })
 
     // Both should have same yOffset, height, colorType per segment
     // GPU positions are relative (no regionStart), Canvas2D are absolute
@@ -225,8 +274,10 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     } as unknown as HTMLCanvasElement
     const renderer = new Canvas2DAlignmentsRenderer(canvas)
 
-    renderer.uploadFromTypedArraysForRegion(0, makeMinimalReadData())
-    renderer.uploadCoverageFromTypedArraysForRegion(0, covData)
+    renderer.sync({
+      laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
+      arcsRpcDataMap: new Map(),
+    })
 
     const covH = 100
     const block = {

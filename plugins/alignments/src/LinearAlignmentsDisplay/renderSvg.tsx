@@ -8,11 +8,7 @@ import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
-
-import {
-  Canvas2DAlignmentsRenderer,
-  drawAlignmentBlocks,
-} from './components/Canvas2DAlignmentsRenderer.ts'
+import { drawAlignmentsToCtx } from './components/Canvas2DAlignmentsRenderer.ts'
 import CoverageYScaleBar from './components/CoverageYScaleBar.tsx'
 import YScaleBar from './components/YScaleBar.tsx'
 import { computeSashimiArcs } from './components/sashimiArcs.ts'
@@ -65,44 +61,6 @@ export async function renderSvg(
   const totalWidth = Math.round(view.dynamicBlocks.totalWidthPx)
   const displayHeight = model.height
 
-  // Headless renderer: drive the same drawAlignmentBlocks pipeline used
-  // on-screen. Upload region data, then paint into either a real canvas
-  // (rasterize) or an SvgCanvas (vector). Coverage, indicators, paired arcs,
-  // pileup reads, mismatches, soft/hard clips, modifications, and connecting
-  // lines all flow through the unified pass.
-  const renderer = new Canvas2DAlignmentsRenderer(null)
-  for (const [displayedRegionIndex, data] of rpcDataMap) {
-    if (data.numReads === 0) {
-      continue
-    }
-    renderer.uploadRegion(displayedRegionIndex, data)
-    if (
-      data.connectingLinePositions &&
-      data.connectingLineYs &&
-      data.numConnectingLines
-    ) {
-      renderer.uploadConnectingLinesForRegion(displayedRegionIndex, {
-        connectingLinePositions: data.connectingLinePositions,
-        connectingLineYs: data.connectingLineYs,
-        numConnectingLines: data.numConnectingLines,
-      })
-    }
-  }
-  for (const [displayedRegionIndex, data] of arcsState.rpcDataMap) {
-    renderer.uploadArcsFromTypedArraysForRegion(displayedRegionIndex, {
-      arcX1: data.arcX1,
-      arcX2: data.arcX2,
-      arcColorTypes: data.arcColorTypes,
-      arcShapeTypes: data.arcShapeTypes,
-      arcYBp: data.arcYBp,
-      numArcs: data.numArcs,
-      linePositions: data.linePositions,
-      lineYs: data.lineYs,
-      lineColorTypes: data.lineColorTypes,
-      numLines: data.numLines,
-    })
-  }
-
   // SVG export renders the full display from y=0 with no Y scroll. Reuse the
   // model's renderState — only viewport-related fields are overridden.
   const state = {
@@ -113,7 +71,12 @@ export async function renderSvg(
   }
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   const pileupNode = paintLayer(totalWidth, displayHeight, opts, ctx => {
-    drawAlignmentBlocks(ctx, renderer.getRegions(), renderBlocks, state)
+    drawAlignmentsToCtx(
+      ctx,
+      { laidOutPileupMap: rpcDataMap, arcsRpcDataMap: arcsState.rpcDataMap },
+      renderBlocks,
+      state,
+    )
   })
 
   // Sashimi: vector SVG by design (low arc count + native hover behavior in

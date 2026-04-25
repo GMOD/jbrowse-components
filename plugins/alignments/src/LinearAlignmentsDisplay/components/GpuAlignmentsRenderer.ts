@@ -593,7 +593,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  uploadCigar(displayedRegionIndex: number, data: CigarUploadData) {
+  private uploadCigar(displayedRegionIndex: number, data: CigarUploadData) {
     if (!this.regions.has(displayedRegionIndex)) {
       return
     }
@@ -640,7 +640,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  uploadModifications(
+  private uploadModifications(
     displayedRegionIndex: number,
     data: ModificationUploadData,
   ) {
@@ -703,7 +703,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  uploadModCoverage(
+  private uploadModCoverage(
     displayedRegionIndex: number,
     data: ModCoverageUploadData,
   ) {
@@ -717,7 +717,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  uploadArcs(displayedRegionIndex: number, data: ArcsUploadData) {
+  private uploadArcs(displayedRegionIndex: number, data: ArcsUploadData) {
     // Arcs/connectingLines can arrive from their own RPC before the main
     // read upload has registered this region.
     ensureRegion(this.regions, displayedRegionIndex, emptyRegion)
@@ -740,7 +740,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  uploadConnectingLines(
+  private uploadConnectingLines(
     displayedRegionIndex: number,
     data: ConnectingLinesUploadData,
   ) {

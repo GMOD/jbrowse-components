@@ -100,6 +100,9 @@ function makePileupData(
     numIndicators: 0,
     detectedModifications: [],
     simplexModifications: [],
+    connectingLinePositions: new Uint32Array(0),
+    connectingLineYs: new Uint16Array(0),
+    numConnectingLines: 0,
     ...overrides,
   }
 }

@@ -216,9 +216,9 @@ export interface PileupDataResult {
   // Connecting line data for chain modes (cloud/linkedRead).
   // One line per chain, drawn at chain Y between min(start) and max(end).
   // Populated by main-thread layout after chain layout is computed.
-  connectingLinePositions?: Uint32Array // [start, end] absolute genomic uint32 pairs
-  connectingLineYs?: Uint16Array // row for each line
-  numConnectingLines?: number
+  connectingLinePositions: Uint32Array // [start, end] absolute genomic uint32 pairs
+  connectingLineYs: Uint16Array // row for each line
+  numConnectingLines: number
 
   // Flatbush R-tree over chain bounding boxes for spatial hit testing.
   // Populated by main-thread layout after chain layout is computed.

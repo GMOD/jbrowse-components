@@ -14,7 +14,6 @@ import {
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
-import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
@@ -24,7 +23,6 @@ import { drawArcsToCtx } from './drawArcs.ts'
 import {
   buildReadIdToIndex,
   computeBlockHeights,
-  ensureRegion,
   interbaseRangeEnds,
   pileupRowY,
 } from './rendererTypes.ts'
@@ -32,10 +30,10 @@ import { arcLineColorPalette, getArcPalette } from './shaders/palettes.ts'
 
 import type {
   AlignmentsBackend,
+  AlignmentsSources,
   ArcsUploadData,
   BaseRegionData,
   CigarUploadData,
-  ConnectingLinesUploadData,
   CoverageUploadData,
   ModCoverageUploadData,
   ModificationUploadData,
@@ -46,7 +44,7 @@ import type {
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-interface Canvas2DRegionData extends BaseRegionData {
+export interface Canvas2DRegionData extends BaseRegionData {
   readFlags: Uint16Array
   readMapqs: Uint8Array
   readAvgBaseQualities: Uint8Array
@@ -150,359 +148,362 @@ function bpToScreenX(
   return block.screenStartPx + (offset / bpLength) * fullBlockWidth
 }
 
-function emptyRegion(): Canvas2DRegionData {
-  const empty32 = new Uint32Array(0)
-  const empty16 = new Uint16Array(0)
-  const empty8 = new Uint8Array(0)
-  const emptyF32 = new Float32Array(0)
+// Shared zero-length sentinels — Canvas2DRegionData is read-only after build,
+// so all empty fields can share frozen instances instead of allocating
+// per-region.
+const EMPTY_U32 = new Uint32Array(0)
+const EMPTY_U16 = new Uint16Array(0)
+const EMPTY_U8 = new Uint8Array(0)
+const EMPTY_F32 = new Float32Array(0)
+const EMPTY_I8 = new Int8Array(0)
+const EMPTY_BUF = new ArrayBuffer(0)
+
+function buildReadFields(data: PileupDataResult) {
+  return {
+    readIdToIndex: buildReadIdToIndex(data.readIds, data.numReads),
+    readPositions: data.readPositions,
+    readYs: data.readYs,
+    readFlags: data.readFlags,
+    readMapqs: data.readMapqs,
+    readAvgBaseQualities: data.readAvgBaseQualities,
+    readInsertSizes: data.readInsertSizes,
+    readPairOrientations: data.readPairOrientations,
+    readStrands: data.readStrands,
+    readTagColors: data.readTagColors,
+    readChainHasSupp: data.readChainHasSupp,
+    numReads: data.numReads,
+    insertSizeStats: data.insertSizeStats,
+  }
+}
+
+// Worker lays out interbases as (insertions, softclips, hardclips);
+// each subrange is a `subarray` view over the merged typed arrays.
+function buildCigarFields(data: CigarUploadData) {
+  const { insEnd, scEnd, hcEnd } = interbaseRangeEnds(data)
+  return {
+    gapPositions: data.gapPositions,
+    gapYs: data.gapYs,
+    gapTypes: data.gapTypes,
+    gapFrequencies: data.gapFrequencies,
+    numGaps: data.numGaps,
+    mismatchPositions: data.mismatchPositions,
+    mismatchYs: data.mismatchYs,
+    mismatchBases: data.mismatchBases,
+    mismatchFrequencies: data.mismatchFrequencies,
+    numMismatches: data.numMismatches,
+    insertionPositions: data.interbasePositions.subarray(0, insEnd),
+    insertionYs: data.interbaseYs.subarray(0, insEnd),
+    insertionLengths: data.interbaseLengths.subarray(0, insEnd),
+    insertionFrequencies: data.interbaseFrequencies.subarray(0, insEnd),
+    numInsertions: data.numInsertions,
+    softclipPositions: data.interbasePositions.subarray(insEnd, scEnd),
+    softclipYs: data.interbaseYs.subarray(insEnd, scEnd),
+    softclipLengths: data.interbaseLengths.subarray(insEnd, scEnd),
+    softclipFrequencies: data.interbaseFrequencies.subarray(insEnd, scEnd),
+    numSoftclips: data.numSoftclips,
+    hardclipPositions: data.interbasePositions.subarray(scEnd, hcEnd),
+    hardclipYs: data.interbaseYs.subarray(scEnd, hcEnd),
+    hardclipLengths: data.interbaseLengths.subarray(scEnd, hcEnd),
+    hardclipFrequencies: data.interbaseFrequencies.subarray(scEnd, hcEnd),
+    numHardclips: data.numHardclips,
+    softclipBasePositions: data.softclipBasePositions,
+    softclipBaseYs: data.softclipBaseYs,
+    softclipBaseBases: data.softclipBaseBases,
+    numSoftclipBases: data.numSoftclipBases,
+  }
+}
+
+function buildModificationFields(data: ModificationUploadData) {
+  return {
+    modificationPositions: data.modificationPositions,
+    modificationYs: data.modificationYs,
+    modificationColors: data.modificationColors,
+    numModifications: data.numModifications,
+  }
+}
+
+function buildCoverageBins(data: CoverageUploadData) {
+  if (!(data.numCoverageBins > 0 && data.coverageMaxDepth > 0)) {
+    return { coverageBuffer: EMPTY_BUF, coverageBinCount: 0 }
+  }
+  const n = data.numCoverageBins
+  const { STRIDE_F32, FIELD } = CANVAS2D_COVERAGE
+  const buf = new ArrayBuffer(n * STRIDE_F32 * 4)
+  const u32 = new Uint32Array(buf)
+  const f32 = new Float32Array(buf)
+  for (let i = 0; i < n; i++) {
+    const off = i * STRIDE_F32
+    u32[off + FIELD.position] = data.coverageStartPos + i
+    f32[off + FIELD.bandBottom] = 0
+    f32[off + FIELD.bandTop] = data.coverageDepths[i]!
+  }
+  return { coverageBuffer: buf, coverageBinCount: n }
+}
+
+function buildCoverageFields(data: CoverageUploadData) {
+  const snp =
+    data.numSnpSegments > 0
+      ? packSnpSegmentsForCanvas2D(
+          data.snpPositions,
+          data.snpYOffsets,
+          data.snpHeights,
+          data.snpColorTypes,
+          data.numSnpSegments,
+        )
+      : { buffer: EMPTY_BUF, segmentCount: 0 }
+  const noncov =
+    data.numNoncovSegments > 0
+      ? packNoncovSegmentsForCanvas2D(
+          data.noncovPositions,
+          data.noncovYOffsets,
+          data.noncovHeights,
+          data.noncovColorTypes,
+          data.numNoncovSegments,
+        )
+      : { buffer: EMPTY_BUF, segmentCount: 0 }
+  const indicator =
+    data.numIndicators > 0
+      ? packIndicatorsForCanvas2D(
+          data.indicatorPositions,
+          data.indicatorColorTypes,
+          data.numIndicators,
+        )
+      : { buffer: EMPTY_BUF, indicatorCount: 0 }
+  return {
+    ...buildCoverageBins(data),
+    coverageMaxDepth: data.coverageMaxDepth,
+    snpBuffer: snp.buffer,
+    snpSegmentCount: snp.segmentCount,
+    noncovBuffer: noncov.buffer,
+    noncovSegmentCount: noncov.segmentCount,
+    noncovMaxCount: data.noncovMaxCount,
+    indicatorBuffer: indicator.buffer,
+    indicatorCount: indicator.indicatorCount,
+  }
+}
+
+function buildModCoverageFields(data: ModCoverageUploadData) {
+  const packed =
+    data.numModCovSegments > 0
+      ? packModCovSegmentsForCanvas2D(
+          data.modCovPositions,
+          data.modCovYOffsets,
+          data.modCovHeights,
+          data.modCovColors,
+          data.numModCovSegments,
+        )
+      : { buffer: EMPTY_BUF, segmentCount: 0 }
+  return {
+    modCovBuffer: packed.buffer,
+    modCovSegmentCount: packed.segmentCount,
+  }
+}
+
+function buildArcsFields(data: ArcsUploadData | undefined) {
+  if (!data) {
+    return {
+      arcX1: EMPTY_U32,
+      arcX2: EMPTY_U32,
+      arcColorTypes: EMPTY_U8,
+      arcShapeTypes: EMPTY_U8,
+      arcYBp: EMPTY_U32,
+      numArcs: 0,
+      arcLinePositions: EMPTY_U32,
+      arcLineYs: EMPTY_F32,
+      arcLineColorTypes: EMPTY_U8,
+      numArcLines: 0,
+    }
+  }
+  return {
+    arcX1: data.arcX1,
+    arcX2: data.arcX2,
+    arcColorTypes: data.arcColorTypes,
+    arcShapeTypes: data.arcShapeTypes,
+    arcYBp: data.arcYBp,
+    numArcs: data.numArcs,
+    arcLinePositions: data.linePositions,
+    arcLineYs: data.lineYs,
+    arcLineColorTypes: data.lineColorTypes,
+    numArcLines: data.numLines,
+  }
+}
+
+function emptyPileupFields(): Omit<
+  Canvas2DRegionData,
+  | 'arcX1'
+  | 'arcX2'
+  | 'arcColorTypes'
+  | 'arcShapeTypes'
+  | 'arcYBp'
+  | 'numArcs'
+  | 'arcLinePositions'
+  | 'arcLineYs'
+  | 'arcLineColorTypes'
+  | 'numArcLines'
+> {
   return {
     readIdToIndex: new Map(),
-    readPositions: empty32,
-    readYs: empty16,
-    readFlags: empty16,
-    readMapqs: empty8,
-    readAvgBaseQualities: empty8,
-    readInsertSizes: emptyF32,
-    readPairOrientations: empty8,
-    readStrands: new Int8Array(0),
-    readTagColors: empty32,
+    readPositions: EMPTY_U32,
+    readYs: EMPTY_U16,
+    readFlags: EMPTY_U16,
+    readMapqs: EMPTY_U8,
+    readAvgBaseQualities: EMPTY_U8,
+    readInsertSizes: EMPTY_F32,
+    readPairOrientations: EMPTY_U8,
+    readStrands: EMPTY_I8,
+    readTagColors: EMPTY_U32,
     readChainHasSupp: undefined,
     numReads: 0,
-    gapPositions: empty32,
-    gapYs: empty16,
-    gapTypes: empty8,
-    gapFrequencies: empty8,
+    gapPositions: EMPTY_U32,
+    gapYs: EMPTY_U16,
+    gapTypes: EMPTY_U8,
+    gapFrequencies: EMPTY_U8,
     numGaps: 0,
-    mismatchPositions: empty32,
-    mismatchYs: empty16,
-    mismatchBases: empty8,
-    mismatchFrequencies: empty8,
+    mismatchPositions: EMPTY_U32,
+    mismatchYs: EMPTY_U16,
+    mismatchBases: EMPTY_U8,
+    mismatchFrequencies: EMPTY_U8,
     numMismatches: 0,
-    insertionPositions: empty32,
-    insertionYs: empty16,
-    insertionLengths: empty16,
-    insertionFrequencies: empty8,
+    insertionPositions: EMPTY_U32,
+    insertionYs: EMPTY_U16,
+    insertionLengths: EMPTY_U16,
+    insertionFrequencies: EMPTY_U8,
     numInsertions: 0,
-    softclipPositions: empty32,
-    softclipYs: empty16,
-    softclipLengths: empty16,
-    softclipFrequencies: empty8,
+    softclipPositions: EMPTY_U32,
+    softclipYs: EMPTY_U16,
+    softclipLengths: EMPTY_U16,
+    softclipFrequencies: EMPTY_U8,
     numSoftclips: 0,
-    hardclipPositions: empty32,
-    hardclipYs: empty16,
-    hardclipLengths: empty16,
-    hardclipFrequencies: empty8,
+    hardclipPositions: EMPTY_U32,
+    hardclipYs: EMPTY_U16,
+    hardclipLengths: EMPTY_U16,
+    hardclipFrequencies: EMPTY_U8,
     numHardclips: 0,
-    softclipBasePositions: empty32,
-    softclipBaseYs: empty16,
-    softclipBaseBases: empty8,
+    softclipBasePositions: EMPTY_U32,
+    softclipBaseYs: EMPTY_U16,
+    softclipBaseBases: EMPTY_U8,
     numSoftclipBases: 0,
-    modificationPositions: empty32,
-    modificationYs: empty16,
-    modificationColors: empty32,
+    modificationPositions: EMPTY_U32,
+    modificationYs: EMPTY_U16,
+    modificationColors: EMPTY_U32,
     numModifications: 0,
-    coverageBuffer: new ArrayBuffer(0),
+    coverageBuffer: EMPTY_BUF,
     coverageBinCount: 0,
     coverageMaxDepth: 0,
-    snpBuffer: new ArrayBuffer(0),
+    snpBuffer: EMPTY_BUF,
     snpSegmentCount: 0,
-    noncovBuffer: new ArrayBuffer(0),
+    noncovBuffer: EMPTY_BUF,
     noncovSegmentCount: 0,
     noncovMaxCount: 0,
-    indicatorBuffer: new ArrayBuffer(0),
+    indicatorBuffer: EMPTY_BUF,
     indicatorCount: 0,
-    modCovBuffer: new ArrayBuffer(0),
+    modCovBuffer: EMPTY_BUF,
     modCovSegmentCount: 0,
-    arcX1: empty32,
-    arcX2: empty32,
-    arcColorTypes: empty8,
-    arcShapeTypes: empty8,
-    arcYBp: empty32,
-    numArcs: 0,
-    arcLinePositions: empty32,
-    arcLineYs: emptyF32,
-    arcLineColorTypes: empty8,
-    numArcLines: 0,
-    connectingLinePositions: empty32,
-    connectingLineYs: empty16,
+    connectingLinePositions: EMPTY_U32,
+    connectingLineYs: EMPTY_U16,
     numConnectingLines: 0,
   }
 }
 
+function buildPileupRegion(
+  data: PileupDataResult,
+  arcs: ArcsUploadData | undefined,
+): Canvas2DRegionData {
+  return {
+    ...buildReadFields(data),
+    ...buildCigarFields(data),
+    ...buildModificationFields(data),
+    ...buildCoverageFields(data),
+    ...buildModCoverageFields(data),
+    connectingLinePositions: data.connectingLinePositions,
+    connectingLineYs: data.connectingLineYs,
+    numConnectingLines: data.numConnectingLines,
+    ...buildArcsFields(arcs),
+  }
+}
+
+function buildArcsOnlyRegion(arcs: ArcsUploadData): Canvas2DRegionData {
+  return {
+    ...emptyPileupFields(),
+    ...buildArcsFields(arcs),
+  }
+}
+
 /**
- * State holder for the streaming upload lifecycle that AlignmentsBackend
- * defines (region data arrives one region at a time, with separate methods
- * for cigar / coverage / mod / arcs / connecting-line payloads). Owns a
- * `regions` Map and the upload methods that mutate it.
- *
- * **Drawing is not on this class.** The pure entry point is the top-level
- * `drawAlignmentBlocks(ctx, regions, blocks, state)` below. The class's
- * `renderBlocks(blocks, state)` is the on-screen wrapper that runs
- * `prepareCanvas` (DPR + size) and then calls `drawAlignmentBlocks` with
- * the bound canvas's 2D context.
- *
- * Two construction modes:
- *
- *   1. **Bound** — `new Canvas2DAlignmentsRenderer(canvas)`.
- *      Used by the on-screen lifecycle (initDualBackend). `renderBlocks`
- *      works.
- *
- *   2. **Headless** — `new Canvas2DAlignmentsRenderer(null)`.
- *      Used by SVG export. Caller runs `upload*` to fill the regions map,
- *      then calls `drawAlignmentBlocks(svgCanvas, instance.getRegions(),
- *      blocks, state)` directly. `renderBlocks` throws — there's no
- *      canvas to prepare, and SVG output is vector so DPR scaling is
- *      meaningless.
+ * Pure builder: turns the model's observable per-region inputs into the
+ * regions map that `drawAlignmentBlocks` consumes. The on-screen
+ * Canvas2DAlignmentsRenderer.sync calls this directly, so on-screen and
+ * SVG export share one builder.
+ */
+export function buildAlignmentsRegionMap(
+  laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
+  arcsRpcDataMap: ReadonlyMap<number, ArcsUploadData>,
+) {
+  const regions = new Map<number, Canvas2DRegionData>()
+  for (const [idx, data] of laidOutPileupMap) {
+    regions.set(idx, buildPileupRegion(data, arcsRpcDataMap.get(idx)))
+  }
+  for (const [idx, arcs] of arcsRpcDataMap) {
+    if (!regions.has(idx)) {
+      regions.set(idx, buildArcsOnlyRegion(arcs))
+    }
+  }
+  return regions
+}
+
+/**
+ * One-shot pure entry point: build a regions map from observable sources
+ * and paint into any 2D-context-shaped surface (real canvas for raster,
+ * SvgCanvas for vector). Used by SVG export as a single call.
+ */
+export function drawAlignmentsToCtx(
+  ctx: Ctx2D,
+  sources: AlignmentsSources,
+  blocks: RenderBlock[],
+  state: RenderState,
+) {
+  return drawAlignmentBlocks(
+    ctx,
+    buildAlignmentsRegionMap(sources.laidOutPileupMap, sources.arcsRpcDataMap),
+    blocks,
+    state,
+  )
+}
+
+/**
+ * On-screen Canvas2D backend. Thin shell: `sync` rebuilds the regions map
+ * via the same pure `buildAlignmentsRegionMap` the SVG path uses; on-screen
+ * and export can't drift. `renderBlocks` paints via the pure
+ * `drawAlignmentBlocks` entry point.
  */
 export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
-  private ctx: CanvasRenderingContext2D | null
-  private canvas: HTMLCanvasElement | null
-  private regions = new Map<number, Canvas2DRegionData>()
+  private ctx: CanvasRenderingContext2D
+  private canvas: HTMLCanvasElement
+  private regions: ReadonlyMap<number, Canvas2DRegionData> = new Map()
 
-  /**
-   * @param canvas the on-screen canvas, or `null` for headless mode
-   *   (SVG export). Only `renderBlocks` requires the canvas;
-   *   The upload methods + getRegions() work in either mode.
-   */
-  constructor(canvas: HTMLCanvasElement | null) {
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
-    if (canvas) {
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        throw new Error('Canvas 2D context not available')
-      }
-      this.ctx = ctx
-    } else {
-      this.ctx = null
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      throw new Error('Canvas 2D context not available')
     }
+    this.ctx = ctx
   }
 
-  uploadRegion(displayedRegionIndex: number, data: PileupDataResult) {
-    this.uploadFromTypedArraysForRegion(displayedRegionIndex, data)
-    this.uploadCigarFromTypedArraysForRegion(displayedRegionIndex, data)
-    this.uploadModificationsFromTypedArraysForRegion(displayedRegionIndex, data)
-    this.uploadCoverageFromTypedArraysForRegion(displayedRegionIndex, data)
-    this.uploadModCoverageFromTypedArraysForRegion(displayedRegionIndex, data)
-  }
-
-  uploadFromTypedArraysForRegion(
-    displayedRegionIndex: number,
-    data: ReadUploadData,
-  ) {
-    let r = this.regions.get(displayedRegionIndex)
-    if (!r) {
-      r = emptyRegion()
-      this.regions.set(displayedRegionIndex, r)
-    }
-    r.readPositions = data.readPositions
-    r.readYs = data.readYs
-    r.readFlags = data.readFlags
-    r.readMapqs = data.readMapqs
-    r.readAvgBaseQualities = data.readAvgBaseQualities
-    r.readInsertSizes = data.readInsertSizes
-    r.readPairOrientations = data.readPairOrientations
-    r.readStrands = data.readStrands
-    r.readTagColors = data.readTagColors
-    r.readChainHasSupp = data.readChainHasSupp
-    r.numReads = data.numReads
-    r.insertSizeStats = data.insertSizeStats
-    r.readIdToIndex = buildReadIdToIndex(data.readIds, data.numReads)
-  }
-
-  uploadCigarFromTypedArraysForRegion(
-    displayedRegionIndex: number,
-    data: CigarUploadData,
-  ) {
-    const r = this.regions.get(displayedRegionIndex)
-    if (!r) {
-      return
-    }
-    r.gapPositions = data.gapPositions
-    r.gapYs = data.gapYs
-    r.gapTypes = data.gapTypes
-    r.gapFrequencies = data.gapFrequencies
-    r.numGaps = data.numGaps
-    r.mismatchPositions = data.mismatchPositions
-    r.mismatchYs = data.mismatchYs
-    r.mismatchBases = data.mismatchBases
-    r.mismatchFrequencies = data.mismatchFrequencies
-    r.numMismatches = data.numMismatches
-
-    // Worker lays out interbases as (insertions, softclips, hardclips);
-    // slice each subrange directly off the merged typed arrays.
-    const { insEnd, scEnd, hcEnd } = interbaseRangeEnds(data)
-
-    r.insertionPositions = data.interbasePositions.subarray(0, insEnd)
-    r.insertionYs = data.interbaseYs.subarray(0, insEnd)
-    r.insertionLengths = data.interbaseLengths.subarray(0, insEnd)
-    r.insertionFrequencies = data.interbaseFrequencies.subarray(0, insEnd)
-    r.numInsertions = data.numInsertions
-
-    r.softclipPositions = data.interbasePositions.subarray(insEnd, scEnd)
-    r.softclipYs = data.interbaseYs.subarray(insEnd, scEnd)
-    r.softclipLengths = data.interbaseLengths.subarray(insEnd, scEnd)
-    r.softclipFrequencies = data.interbaseFrequencies.subarray(insEnd, scEnd)
-    r.numSoftclips = data.numSoftclips
-
-    r.hardclipPositions = data.interbasePositions.subarray(scEnd, hcEnd)
-    r.hardclipYs = data.interbaseYs.subarray(scEnd, hcEnd)
-    r.hardclipLengths = data.interbaseLengths.subarray(scEnd, hcEnd)
-    r.hardclipFrequencies = data.interbaseFrequencies.subarray(scEnd, hcEnd)
-    r.numHardclips = data.numHardclips
-
-    r.softclipBasePositions = data.softclipBasePositions
-    r.softclipBaseYs = data.softclipBaseYs
-    r.softclipBaseBases = data.softclipBaseBases
-    r.numSoftclipBases = data.numSoftclipBases
-  }
-
-  uploadModificationsFromTypedArraysForRegion(
-    displayedRegionIndex: number,
-    data: ModificationUploadData,
-  ) {
-    const r = this.regions.get(displayedRegionIndex)
-    if (!r) {
-      return
-    }
-    r.modificationPositions = data.modificationPositions
-    r.modificationYs = data.modificationYs
-    r.modificationColors = data.modificationColors
-    r.numModifications = data.numModifications
-  }
-
-  uploadCoverageFromTypedArraysForRegion(
-    displayedRegionIndex: number,
-    data: CoverageUploadData,
-  ) {
-    const r = this.regions.get(displayedRegionIndex)
-    if (!r) {
-      return
-    }
-
-    r.coverageMaxDepth = data.coverageMaxDepth
-
-    if (data.numCoverageBins > 0 && data.coverageMaxDepth > 0) {
-      const n = data.numCoverageBins
-      const { STRIDE_F32, FIELD } = CANVAS2D_COVERAGE
-      const buf = new ArrayBuffer(n * STRIDE_F32 * 4)
-      const u32 = new Uint32Array(buf)
-      const f32 = new Float32Array(buf)
-      for (let i = 0; i < n; i++) {
-        const off = i * STRIDE_F32
-        u32[off + FIELD.position] = data.coverageStartPos + i
-        f32[off + FIELD.bandBottom] = 0
-        f32[off + FIELD.bandTop] = data.coverageDepths[i]!
-      }
-      r.coverageBuffer = buf
-      r.coverageBinCount = n
-    }
-
-    if (data.numSnpSegments > 0) {
-      const packed = packSnpSegmentsForCanvas2D(
-        data.snpPositions,
-        data.snpYOffsets,
-        data.snpHeights,
-        data.snpColorTypes,
-        data.numSnpSegments,
-      )
-      r.snpBuffer = packed.buffer
-      r.snpSegmentCount = packed.segmentCount
-    }
-
-    if (data.numNoncovSegments > 0) {
-      const packed = packNoncovSegmentsForCanvas2D(
-        data.noncovPositions,
-        data.noncovYOffsets,
-        data.noncovHeights,
-        data.noncovColorTypes,
-        data.numNoncovSegments,
-      )
-      r.noncovBuffer = packed.buffer
-      r.noncovSegmentCount = packed.segmentCount
-    }
-    r.noncovMaxCount = data.noncovMaxCount
-
-    if (data.numIndicators > 0) {
-      const packed = packIndicatorsForCanvas2D(
-        data.indicatorPositions,
-        data.indicatorColorTypes,
-        data.numIndicators,
-      )
-      r.indicatorBuffer = packed.buffer
-      r.indicatorCount = packed.indicatorCount
-    }
-  }
-
-  uploadModCoverageFromTypedArraysForRegion(
-    displayedRegionIndex: number,
-    data: ModCoverageUploadData,
-  ) {
-    const r = this.regions.get(displayedRegionIndex)
-    if (!r) {
-      return
-    }
-    if (data.numModCovSegments > 0) {
-      const packed = packModCovSegmentsForCanvas2D(
-        data.modCovPositions,
-        data.modCovYOffsets,
-        data.modCovHeights,
-        data.modCovColors,
-        data.numModCovSegments,
-      )
-      r.modCovBuffer = packed.buffer
-      r.modCovSegmentCount = packed.segmentCount
-    }
-  }
-
-  uploadArcsFromTypedArraysForRegion(
-    displayedRegionIndex: number,
-    data: ArcsUploadData,
-  ) {
-    const r = ensureRegion(this.regions, displayedRegionIndex, emptyRegion)
-    r.arcX1 = data.arcX1
-    r.arcX2 = data.arcX2
-    r.arcColorTypes = data.arcColorTypes
-    r.arcShapeTypes = data.arcShapeTypes
-    r.arcYBp = data.arcYBp
-    r.numArcs = data.numArcs
-    r.arcLinePositions = data.linePositions
-    r.arcLineYs = data.lineYs
-    r.arcLineColorTypes = data.lineColorTypes
-    r.numArcLines = data.numLines
-  }
-
-  uploadConnectingLinesForRegion(
-    displayedRegionIndex: number,
-    data: ConnectingLinesUploadData,
-  ) {
-    const r = ensureRegion(this.regions, displayedRegionIndex, emptyRegion)
-    r.connectingLinePositions = data.connectingLinePositions
-    r.connectingLineYs = data.connectingLineYs
-    r.numConnectingLines = data.numConnectingLines
-  }
-
-  pruneRegions(activeRegions: number[]) {
-    pruneRegionMap(this.regions, activeRegions)
-  }
-
-  dispose() {
-    this.regions.clear()
+  sync(sources: AlignmentsSources) {
+    this.regions = buildAlignmentsRegionMap(
+      sources.laidOutPileupMap,
+      sources.arcsRpcDataMap,
+    )
   }
 
   renderBlocks(blocks: RenderBlock[], state: RenderState) {
-    if (!this.canvas || !this.ctx) {
-      throw new Error(
-        'Canvas2DAlignmentsRenderer.renderBlocks called without a canvas — call drawAlignmentBlocks(ctx, regions, …) directly for headless rendering',
-      )
-    }
     prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
     return drawAlignmentBlocks(this.ctx, this.regions, blocks, state)
   }
 
-  // Expose for headless callers (e.g. SVG export) that need to drive
-  // drawAlignmentBlocks with an SvgCanvas after running upload* methods.
-  getRegions(): ReadonlyMap<number, Canvas2DRegionData> {
-    return this.regions
+  dispose() {
+    this.regions = new Map()
   }
 }
 

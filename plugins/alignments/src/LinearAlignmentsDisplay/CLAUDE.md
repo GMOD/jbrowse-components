@@ -31,15 +31,19 @@ lines / Flatbush.
 
 ## SVG export pipeline
 
-`renderSvg.tsx` drives the same `drawAlignmentBlocks(ctx, regions, blocks,
-state)` entry point used on-screen — it instantiates a headless
-`Canvas2DAlignmentsRenderer(null)`, runs `uploadRegion` /
-`uploadConnectingLinesForRegion` / `uploadArcsFromTypedArraysForRegion` from
-`laidOutPileupMap` + `arcsState.rpcDataMap`, then paints into a real canvas
-(when `opts.rasterizeLayers`) or an `SvgCanvas` (vector). Coverage,
-indicators, paired arcs, pileup reads, mismatches, soft/hard clips,
-modifications, and connecting lines all flow through the unified pass — do
-not reintroduce parallel SVG-only draw functions.
+`renderSvg.tsx` makes a single call to the pure
+`drawAlignmentsToCtx(ctx, { laidOutPileupMap, arcsRpcDataMap }, blocks,
+state)` — that wraps `buildAlignmentsRegionMap` + `drawAlignmentBlocks`,
+the latter being the same draw entry point the on-screen
+`Canvas2DAlignmentsRenderer.renderBlocks` uses. The
+context is a real canvas (when `opts.rasterizeLayers`) or an `SvgCanvas`
+(vector). No headless renderer instance — the on-screen
+`Canvas2DAlignmentsRenderer.sync(sources)` calls the same
+`buildAlignmentsRegionMap` directly, so on-screen and export literally
+share the builder. Coverage, indicators, paired arcs, pileup reads,
+mismatches, soft/hard clips, modifications, and connecting lines all flow
+through the unified pass — do not reintroduce parallel SVG-only draw
+functions.
 
 ### Sashimi is intentionally SVG-only — but the math is shared
 

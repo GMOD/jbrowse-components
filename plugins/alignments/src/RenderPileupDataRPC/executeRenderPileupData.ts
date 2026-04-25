@@ -369,6 +369,10 @@ export async function executeRenderPileupData({
     readNextRefs: nextRefs,
     readNextPositions: new Uint32Array(nextPositions),
     readSuppAlignments: suppAlignments,
+
+    connectingLinePositions: new Uint32Array(0),
+    connectingLineYs: new Uint16Array(0),
+    numConnectingLines: 0,
   }
 
   const transferables = [

@@ -1258,50 +1258,10 @@ export default function stateModelFactory(
         startGpuBackendLifecycle(backend: AlignmentsBackend) {
           self.installGpuDisplay<AlignmentsBackend>(backend, {
             upload: b => {
-              // Pileup + connecting lines: one entry per region from
-              // self.laidOutPileupMap (Y arrays filled from main-thread
-              // layout, or pass-through rpcDataMap for chain mode).
-              const active: number[] = []
-              for (const [
-                displayedRegionIndex,
-                data,
-              ] of self.laidOutPileupMap) {
-                active.push(displayedRegionIndex)
-                if (data.numReads === 0) {
-                  continue
-                }
-                b.uploadRegion(displayedRegionIndex, data)
-                if (
-                  data.connectingLinePositions &&
-                  data.connectingLineYs &&
-                  data.numConnectingLines
-                ) {
-                  b.uploadConnectingLinesForRegion(displayedRegionIndex, {
-                    connectingLinePositions: data.connectingLinePositions,
-                    connectingLineYs: data.connectingLineYs,
-                    numConnectingLines: data.numConnectingLines,
-                  })
-                }
-              }
-              b.pruneRegions(active)
-              // Arcs: independent source. Changes here re-fire the whole
-              // upload pass (including pileup), which is fine because the
-              // backend treats identity-stable pileup uploads as idempotent.
-              for (const [displayedRegionIndex, data] of self.arcsState
-                .rpcDataMap) {
-                b.uploadArcsFromTypedArraysForRegion(displayedRegionIndex, {
-                  arcX1: data.arcX1,
-                  arcX2: data.arcX2,
-                  arcColorTypes: data.arcColorTypes,
-                  arcShapeTypes: data.arcShapeTypes,
-                  arcYBp: data.arcYBp,
-                  numArcs: data.numArcs,
-                  linePositions: data.linePositions,
-                  lineYs: data.lineYs,
-                  lineColorTypes: data.lineColorTypes,
-                  numLines: data.numLines,
-                })
-              }
+              b.sync({
+                laidOutPileupMap: self.laidOutPileupMap,
+                arcsRpcDataMap: self.arcsState.rpcDataMap,
+              })
             },
             render: b => {
               const state = self.renderState

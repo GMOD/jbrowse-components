@@ -180,17 +180,13 @@ export interface ConnectingLinesUploadData {
   numConnectingLines: number
 }
 
+export interface AlignmentsSources {
+  laidOutPileupMap: ReadonlyMap<number, PileupDataResult>
+  arcsRpcDataMap: ReadonlyMap<number, ArcsUploadData>
+}
+
 export interface AlignmentsBackend {
-  pruneRegions(activeRegions: number[]): void
-  uploadRegion(displayedRegionIndex: number, data: PileupDataResult): void
-  uploadArcsFromTypedArraysForRegion(
-    displayedRegionIndex: number,
-    data: ArcsUploadData,
-  ): void
-  uploadConnectingLinesForRegion(
-    displayedRegionIndex: number,
-    data: ConnectingLinesUploadData,
-  ): void
+  sync(sources: AlignmentsSources): void
   renderBlocks(blocks: RenderBlock[], state: RenderState): boolean
   dispose(): void
 }
