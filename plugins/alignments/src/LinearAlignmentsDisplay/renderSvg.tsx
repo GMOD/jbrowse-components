@@ -1,73 +1,29 @@
 import type React from 'react'
 
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
-import { rgb255 } from './colorUtils.ts'
+
 import {
   Canvas2DAlignmentsRenderer,
   drawAlignmentBlocks,
 } from './components/Canvas2DAlignmentsRenderer.ts'
 import CoverageYScaleBar from './components/CoverageYScaleBar.tsx'
 import YScaleBar from './components/YScaleBar.tsx'
-import { sashimiColorPalette } from './components/shaders/palettes.ts'
+import { computeSashimiArcs } from './components/sashimiArcs.ts'
 
 import type { LinearAlignmentsDisplayModel } from './model.ts'
-import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-// Sashimi stays a deliberate SVG-only path: arc counts are low enough that
-// vector output performs fine and gives native hover/tooltip behavior, which
-// the rasterized/canvas pipeline can't match. Not a porting placeholder.
-function drawSashimiArcs(
-  ctx: Ctx2D,
-  data: PileupDataResult,
-  blockStartPx: number,
-  bpStartOffset: number,
-  regionLengthBp: number,
-  blockWidth: number,
-  bandHeight: number,
-  arcsDown: boolean,
-) {
-  const pxPerBp = blockWidth / regionLengthBp
-  const anchorY = (arcsDown ? 0.1 : 0.9) * bandHeight
-  const apexY = (arcsDown ? 0.9 : 0.1) * bandHeight
-  // Quadratic bezier with control at cy reaches its peak at (anchor+cy)/2, so
-  // cy = 2*apex - anchor makes the rendered peak actually touch apexY.
-  const controlY = 2 * apexY - anchorY
-
-  for (let i = 0; i < data.numSashimiArcs; i++) {
-    const x1Bp = data.sashimiX1[i]!
-    const x2Bp = data.sashimiX2[i]!
-    const colorType = data.sashimiColorTypes[i]!
-    const lw = data.sashimiScores[i]!
-
-    ctx.strokeStyle =
-      colorType < sashimiColorPalette.length
-        ? rgb255(sashimiColorPalette[colorType]!)
-        : rgb255(sashimiColorPalette[0]!)
-    ctx.lineWidth = lw
-
-    const sx1 = blockStartPx + (x1Bp - bpStartOffset) * pxPerBp
-    const sx2 = blockStartPx + (x2Bp - bpStartOffset) * pxPerBp
-    const midX = (sx1 + sx2) / 2
-
-    ctx.beginPath()
-    ctx.moveTo(sx1, anchorY)
-    ctx.quadraticCurveTo(midX, controlY, sx2, anchorY)
-    ctx.stroke()
-  }
-}
 
 export async function renderSvg(
   model: LinearAlignmentsDisplayModel,
@@ -106,7 +62,6 @@ export async function renderSvg(
   } = model
 
   const { offsetPx } = view
-  const blocks = view.dynamicBlocks.contentBlocks
   const totalWidth = Math.round(view.dynamicBlocks.totalWidthPx)
   const displayHeight = model.height
 
@@ -161,36 +116,40 @@ export async function renderSvg(
     drawAlignmentBlocks(ctx, renderer.getRegions(), renderBlocks, state)
   })
 
-  // Sashimi: own SvgCanvas, translated by the band offset in JSX so the local
-  // draw uses band-relative Y. Vector by design (see drawSashimiArcs).
+  // Sashimi: vector SVG by design (low arc count + native hover behavior in
+  // the on-screen overlay). Geometry/color/strokeWidth come from the same
+  // `computeSashimiArcs` the overlay uses, so export matches what users see.
+  // Sort by score so high-count arcs paint on top of low-count ones, mirroring
+  // the overlay's z-order.
   let sashimiNode: React.ReactNode = null
   if (showSashimiArcs && showCoverage) {
-    const sashimiCtx = new SvgCanvas()
-    const bandHeight = sashimiArcsDown ? sashimiArcsHeight : coverageHeight
-    for (const block of blocks) {
-      if (block.displayedRegionIndex === undefined) {
-        continue
-      }
-      const data = rpcDataMap.get(block.displayedRegionIndex)
-      if (!data || data.numSashimiArcs === 0) {
-        continue
-      }
-      drawSashimiArcs(
-        sashimiCtx,
-        data,
-        block.offsetPx - offsetPx,
-        block.start,
-        block.end - block.start,
-        block.widthPx,
-        bandHeight,
-        sashimiArcsDown,
-      )
-    }
+    const arcs = computeSashimiArcs({
+      rpcDataMap,
+      visibleRegions: view.visibleRegions,
+      bpToScreenX: (refName, bp) => {
+        const r = view.bpToPx({ refName, coord: bp })
+        return r === undefined ? undefined : r.offsetPx - offsetPx
+      },
+      coverageHeight,
+      sashimiArcsHeight,
+      sashimiArcsDown,
+    })
+    arcs.sort((a, b) => a.score - b.score)
+    const sashimiTopOffset = sashimiArcsDown
+      ? coverageHeight
+      : YSCALEBAR_LABEL_OFFSET
     sashimiNode = (
-      <g
-        transform={`translate(0,${sashimiArcsDown ? coverageHeight : 0})`}
-        dangerouslySetInnerHTML={{ __html: sashimiCtx.getSerializedSvg() }}
-      />
+      <g transform={`translate(0,${sashimiTopOffset})`}>
+        {arcs.map((arc, i) => (
+          <path
+            key={i}
+            d={arc.d}
+            stroke={arc.stroke}
+            strokeWidth={arc.strokeWidth}
+            fill="none"
+          />
+        ))}
+      </g>
     )
   }
 
