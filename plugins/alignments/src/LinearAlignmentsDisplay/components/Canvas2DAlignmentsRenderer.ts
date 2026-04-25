@@ -26,6 +26,7 @@ import { arcLineColorPalette, getArcPalette } from './shaders/palettes.ts'
 import type {
   AlignmentsBackend,
   ArcsUploadData,
+  BaseRegionData,
   CigarUploadData,
   ConnectingLinesUploadData,
   CoverageUploadData,
@@ -35,12 +36,15 @@ import type {
   RenderBlock,
   RenderState,
 } from './rendererTypes.ts'
+import {
+  buildReadIdToIndex,
+  computeBlockHeights,
+  ensureRegion,
+  interbaseRangeEnds,
+} from './rendererTypes.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
-interface Canvas2DRegionData {
-  readIdToIndex: Map<string, number>
-  readPositions: Uint32Array
-  readYs: Uint16Array
+interface Canvas2DRegionData extends BaseRegionData {
   readFlags: Uint16Array
   readMapqs: Uint8Array
   readAvgBaseQualities: Uint8Array
@@ -266,10 +270,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     r.readChainHasSupp = data.readChainHasSupp
     r.numReads = data.numReads
     r.insertSizeStats = data.insertSizeStats
-    r.readIdToIndex = new Map()
-    for (let i = 0; i < data.numReads; i++) {
-      r.readIdToIndex.set(data.readIds[i]!, i)
-    }
+    r.readIdToIndex = buildReadIdToIndex(data.readIds, data.numReads)
   }
 
   uploadCigarFromTypedArraysForRegion(
@@ -293,9 +294,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
 
     // Worker lays out interbases as (insertions, softclips, hardclips);
     // slice each subrange directly off the merged typed arrays.
-    const insEnd = data.numInsertions
-    const scEnd = insEnd + data.numSoftclips
-    const hcEnd = scEnd + data.numHardclips
+    const { insEnd, scEnd, hcEnd } = interbaseRangeEnds(data)
 
     r.insertionPositions = data.interbasePositions.subarray(0, insEnd)
     r.insertionYs = data.interbaseYs.subarray(0, insEnd)
@@ -423,11 +422,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     displayedRegionIndex: number,
     data: ArcsUploadData,
   ) {
-    let r = this.regions.get(displayedRegionIndex)
-    if (!r) {
-      r = emptyRegion()
-      this.regions.set(displayedRegionIndex, r)
-    }
+    const r = ensureRegion(this.regions, displayedRegionIndex, emptyRegion)
     r.arcX1 = data.arcX1
     r.arcX2 = data.arcX2
     r.arcColorTypes = data.arcColorTypes
@@ -444,11 +439,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     displayedRegionIndex: number,
     data: ConnectingLinesUploadData,
   ) {
-    let r = this.regions.get(displayedRegionIndex)
-    if (!r) {
-      r = emptyRegion()
-      this.regions.set(displayedRegionIndex, r)
-    }
+    const r = ensureRegion(this.regions, displayedRegionIndex, emptyRegion)
     r.connectingLinePositions = data.connectingLinePositions
     r.connectingLineYs = data.connectingLineYs
     r.numConnectingLines = data.numConnectingLines
@@ -468,9 +459,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
       return false
     }
 
-    const effectiveArcsHeight =
-      state.showArcs && state.arcsHeight ? state.arcsHeight : 0
-    const covH = state.showCoverage ? state.coverageHeight : 0
+    const { effectiveArcsHeight, covH } = computeBlockHeights(state)
     const pileupTop = state.pileupTopOffset
     const mode = state.renderingMode ?? 'pileup'
 
@@ -1091,12 +1080,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     const fullBlockWidth = block.screenEndPx - block.screenStartPx
 
     if (state.highlightedChainIds.length > 0) {
-      const bounds = getChainBounds(
-        state.highlightedChainIds,
-        region.readIdToIndex,
-        region.readPositions,
-        region.readYs,
-      )
+      const bounds = getChainBounds(state.highlightedChainIds, region)
       if (bounds) {
         const startBp = bounds.minStart
         const endBp = bounds.maxEnd
@@ -1109,12 +1093,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     }
 
     if (state.selectedChainIds.length > 0) {
-      const bounds = getChainBounds(
-        state.selectedChainIds,
-        region.readIdToIndex,
-        region.readPositions,
-        region.readYs,
-      )
+      const bounds = getChainBounds(state.selectedChainIds, region)
       if (bounds) {
         const startBp = bounds.minStart
         const endBp = bounds.maxEnd

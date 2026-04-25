@@ -3,6 +3,31 @@ import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 export type { ColorPalette, RGBColor } from './shaders/colors.ts'
 
+export interface BaseRegionData {
+  readIdToIndex: Map<string, number>
+  readPositions: Uint32Array
+  readYs: Uint16Array
+}
+
+export function buildReadIdToIndex(ids: string[], n: number) {
+  const m = new Map<string, number>()
+  for (let i = 0; i < n; i++) {
+    m.set(ids[i]!, i)
+  }
+  return m
+}
+
+export function interbaseRangeEnds(data: {
+  numInsertions: number
+  numSoftclips: number
+  numHardclips: number
+}) {
+  const insEnd = data.numInsertions
+  const scEnd = insEnd + data.numSoftclips
+  const hcEnd = scEnd + data.numHardclips
+  return { insEnd, scEnd, hcEnd }
+}
+
 export interface RenderState {
   bpRangeX: [number, number] // absolute genomic positions
   rangeY: [number, number]
@@ -171,3 +196,23 @@ export interface AlignmentsBackend {
 }
 
 export type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+
+export function ensureRegion<T>(
+  regions: Map<number, T>,
+  idx: number,
+  factory: () => T,
+): T {
+  let r = regions.get(idx)
+  if (!r) {
+    r = factory()
+    regions.set(idx, r)
+  }
+  return r
+}
+
+export function computeBlockHeights(state: RenderState) {
+  return {
+    effectiveArcsHeight: state.showArcs && state.arcsHeight ? state.arcsHeight : 0,
+    covH: state.showCoverage ? state.coverageHeight : 0,
+  }
+}

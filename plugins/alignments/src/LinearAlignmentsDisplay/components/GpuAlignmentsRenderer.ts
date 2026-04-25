@@ -29,6 +29,7 @@ import * as snpCoverageShader from './shaders/slang/snpCoverage.generated.ts'
 import type {
   AlignmentsBackend,
   ArcsUploadData,
+  BaseRegionData,
   CigarUploadData,
   ColorPalette,
   ConnectingLinesUploadData,
@@ -39,6 +40,12 @@ import type {
   ReadUploadData,
   RenderBlock,
   RenderState,
+} from './rendererTypes.ts'
+import {
+  buildReadIdToIndex,
+  computeBlockHeights,
+  ensureRegion,
+  interbaseRangeEnds,
 } from './rendererTypes.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
@@ -235,9 +242,7 @@ function packInsertions(data: CigarUploadData): ArrayBuffer {
 // Worker lays out interbases as (insertions, softclips, hardclips); pack
 // soft+hard into a single clip pass with a per-instance `kind` tag.
 function packClips(data: CigarUploadData): ArrayBuffer {
-  const insEnd = data.numInsertions
-  const scEnd = insEnd + data.numSoftclips
-  const hcEnd = scEnd + data.numHardclips
+  const { insEnd, scEnd, hcEnd } = interbaseRangeEnds(data)
   const count = data.numSoftclips + data.numHardclips
   const F = clipShader.FIELD_OFFSET_F32
   const s32 = clipShader.INSTANCE_STRIDE_F32
@@ -523,10 +528,7 @@ interface BlockFrame {
 }
 
 // Per-region data not tracked by the HAL
-interface LocalRegion {
-  readIdToIndex: Map<string, number>
-  readPositions: Uint32Array
-  readYs: Uint16Array
+interface LocalRegion extends BaseRegionData {
   readStrands: Int8Array
   insertSizeStats?: { upper: number; lower: number }
   maxDepth: number
@@ -572,9 +574,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     r.readPositions = data.readPositions
     r.readYs = data.readYs
     r.readStrands = data.readStrands
-    for (let i = 0; i < data.numReads; i++) {
-      r.readIdToIndex.set(data.readIds[i]!, i)
-    }
+    r.readIdToIndex = buildReadIdToIndex(data.readIds, data.numReads)
     this.regions.set(displayedRegionIndex, r)
 
     if (data.numSegments > 0) {
@@ -722,11 +722,8 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     data: ArcsUploadData,
   ) {
     // Arcs/connectingLines can arrive from their own RPC before the main
-    // read upload has registered this region. Pre-register an empty
-    // LocalRegion so renderBlocks draws them even without reads.
-    if (!this.regions.has(displayedRegionIndex)) {
-      this.regions.set(displayedRegionIndex, emptyRegion())
-    }
+    // read upload has registered this region.
+    ensureRegion(this.regions, displayedRegionIndex, emptyRegion)
 
     if (data.numArcs > 0) {
       this.hal.uploadBuffer(
@@ -750,9 +747,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     displayedRegionIndex: number,
     data: ConnectingLinesUploadData,
   ) {
-    if (!this.regions.has(displayedRegionIndex)) {
-      this.regions.set(displayedRegionIndex, emptyRegion())
-    }
+    ensureRegion(this.regions, displayedRegionIndex, emptyRegion)
     if (data.numConnectingLines > 0) {
       this.hal.uploadBuffer(
         displayedRegionIndex,
@@ -823,9 +818,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       this.writeUniforms(state, frame)
 
       const mode = state.renderingMode ?? 'pileup'
-      const effectiveArcsHeight =
-        state.showArcs && state.arcsHeight ? state.arcsHeight : 0
-      const covH = state.showCoverage ? state.coverageHeight : 0
+      const { effectiveArcsHeight, covH } = computeBlockHeights(state)
       const pileupTop = Math.round(state.pileupTopOffset * dpr)
       const pileupH = Math.max(0, bufH - pileupTop)
 
@@ -978,9 +971,8 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     pileupH: number,
     dpr: number,
   ) {
-    const { region } = frame
-    const { bpHi, bpLo } = frame
-    const bpLen = frame.clippedBpEnd - frame.clippedBpStart
+    const { region, clippedBpStart, clippedBpEnd } = frame
+    const bpLen = clippedBpEnd - clippedBpStart
     const regionHighlightIdx = state.highlightedFeatureId
       ? (region.readIdToIndex.get(state.highlightedFeatureId) ?? -1)
       : -1
@@ -1002,8 +994,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         absEnd,
         y,
         state,
-        bpHi,
-        bpLo,
+        clippedBpStart,
         bpLen,
         covOff,
         state.canvasHeight,
@@ -1096,12 +1087,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     const quads: number[] = []
 
     if (state.highlightedChainIds.length > 0) {
-      const bounds = getChainBounds(
-        state.highlightedChainIds,
-        region.readIdToIndex,
-        region.readPositions,
-        region.readYs,
-      )
+      const bounds = getChainBounds(state.highlightedChainIds, region)
       if (bounds) {
         const clip = clipFor(bounds.minStart, bounds.maxEnd, bounds.y)
         quads.push(clip.sx1, clip.syTop, clip.sx2, clip.syBot, 0, 0, 0, 0.4)
@@ -1109,12 +1095,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
 
     if (state.selectedChainIds.length > 0) {
-      const bounds = getChainBounds(
-        state.selectedChainIds,
-        region.readIdToIndex,
-        region.readPositions,
-        region.readYs,
-      )
+      const bounds = getChainBounds(state.selectedChainIds, region)
       if (bounds) {
         pushSelectionFrame(
           quads,

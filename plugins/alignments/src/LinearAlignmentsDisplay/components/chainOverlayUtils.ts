@@ -1,4 +1,4 @@
-import type { RenderState } from './rendererTypes.ts'
+import type { BaseRegionData, RenderState } from './rendererTypes.ts'
 
 export interface ClipRect {
   sx1: number
@@ -7,12 +7,8 @@ export interface ClipRect {
   syBot: number
 }
 
-export function getChainBounds(
-  ids: string[],
-  readIdToIndex: Map<string, number>,
-  readPositions: Uint32Array,
-  readYs: Uint16Array,
-) {
+export function getChainBounds(ids: string[], region: BaseRegionData) {
+  const { readIdToIndex, readPositions, readYs } = region
   let minStart = Infinity
   let maxEnd = -Infinity
   let y = 0
@@ -42,22 +38,18 @@ export function toClipRect(
   absEnd: number,
   y: number,
   state: RenderState,
-  bpStartHi: number,
-  bpStartLo: number,
+  bpStart: number,
   regionLengthBp: number,
   coverageOffset: number,
   canvasHeight: number,
   reversed = false,
 ): ClipRect {
-  const splitStart0 = Math.floor(absStart) - (Math.floor(absStart) & 0xfff)
-  const splitStart1 = Math.floor(absStart) & 0xfff
-  const splitEnd0 = Math.floor(absEnd) - (Math.floor(absEnd) & 0xfff)
-  const splitEnd1 = Math.floor(absEnd) & 0xfff
-  const rawSx1 =
-    ((splitStart0 - bpStartHi + splitStart1 - bpStartLo) / regionLengthBp) * 2 -
-    1
-  const rawSx2 =
-    ((splitEnd0 - bpStartHi + splitEnd1 - bpStartLo) / regionLengthBp) * 2 - 1
+  // JS numbers are float64 — full precision at genomic scale, no hp-split
+  // needed (unlike the GPU shader which is float32).
+  const bpToClipX = (bp: number) =>
+    ((Math.floor(bp) - bpStart) / regionLengthBp) * 2 - 1
+  const rawSx1 = bpToClipX(absStart)
+  const rawSx2 = bpToClipX(absEnd)
   const sx1 = reversed ? -rawSx2 : rawSx1
   const sx2 = reversed ? -rawSx1 : rawSx2
 
