@@ -15,6 +15,7 @@ import {
 
 import interpolateViridis from './viridis.ts'
 import { HIC_LINEAR_SCORE_DIVISOR } from '../LinearHicDisplay/components/colorRamp.ts'
+import { calcRegionCombinedOffsets } from '../regionOffsets.ts'
 
 import type { RenderArgsDeserializedWithFeatures } from './HicRenderer.tsx'
 import type { HicFlatbushItem } from '../RenderHicDataRPC/types.ts'
@@ -22,6 +23,24 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderArgs as ServerSideRenderArgs } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import type { Region } from '@jbrowse/core/util/types'
+
+const COLOR_SCHEMES = {
+  juicebox: interpolateRgbBasis(['rgba(0,0,0,0)', 'red']),
+  fall: interpolateRgbBasis([
+    'rgb(255, 255, 255)',
+    'rgb(255, 255, 204)',
+    'rgb(255, 237, 160)',
+    'rgb(254, 217, 118)',
+    'rgb(254, 178, 76)',
+    'rgb(253, 141, 60)',
+    'rgb(252, 78, 42)',
+    'rgb(227, 26, 28)',
+    'rgb(189, 0, 38)',
+    'rgb(128, 0, 38)',
+    'rgb(0, 0, 0)',
+  ]),
+  viridis: interpolateViridis,
+}
 
 export interface MakeImageDataResult {
   flatbush: ArrayBuffer
@@ -74,17 +93,7 @@ export async function makeImageData(
   const lastCheck = createStopTokenChecker(stopToken)
   const w = res / (bpPerPx * Math.SQRT2)
   const baseColor = colord(readConfObject(config, 'baseColor'))
-
-  // Calculate pixel offset for each region (cumulative)
-  const regionPixelOffsets: number[] = []
-  let cumulativePixelOffset = 0
-  for (const region of regions) {
-    regionPixelOffsets.push(cumulativePixelOffset)
-    cumulativePixelOffset += (region.end - region.start) / bpPerPx
-  }
-
-  // Calculate bin offset within each region
-  const regionBinOffsets = regions.map(region => Math.floor(region.start / res))
+  const regionCombinedOffsets = calcRegionCombinedOffsets(regions, bpPerPx, res)
 
   if (!features.length) {
     return undefined
@@ -98,27 +107,10 @@ export async function makeImageData(
     }
   }
   checkStopToken(stopToken)
-  const colorSchemes = {
-    juicebox: ['rgba(0,0,0,0)', 'red'],
-    fall: interpolateRgbBasis([
-      'rgb(255, 255, 255)',
-      'rgb(255, 255, 204)',
-      'rgb(255, 237, 160)',
-      'rgb(254, 217, 118)',
-      'rgb(254, 178, 76)',
-      'rgb(253, 141, 60)',
-      'rgb(252, 78, 42)',
-      'rgb(227, 26, 28)',
-      'rgb(189, 0, 38)',
-      'rgb(128, 0, 38)',
-      'rgb(0, 0, 0)',
-    ]),
-    viridis: interpolateViridis,
-  }
-  const m = useLogScale ? maxScore : maxScore / HIC_LINEAR_SCORE_DIVISOR
 
-  // @ts-expect-error
-  const x1 = colorSchemes[colorScheme] || colorSchemes.juicebox
+  const m = useLogScale ? maxScore : maxScore / HIC_LINEAR_SCORE_DIVISOR
+  const schemeName = (colorScheme ?? 'juicebox') as keyof typeof COLOR_SCHEMES
+  const x1 = COLOR_SCHEMES[schemeName]
   const scale = useLogScale
     ? scaleSequentialLog(x1).domain([1, m])
     : scaleSequential(x1).domain([0, m])
@@ -129,12 +121,6 @@ export async function makeImageData(
 
   // TODO: handle reversed regions for multi-region case
   ctx.rotate(-Math.PI / 4)
-
-  // Precompute combined offsets for each region (bin offset + pixel-to-bin conversion)
-  const pxToBinFactor = bpPerPx / res
-  const regionCombinedOffsets = regionBinOffsets.map(
-    (binOffset, i) => (regionPixelOffsets[i] ?? 0) * pxToBinFactor - binOffset,
-  )
 
   // Build Flatbush index and items array
   // Store coordinates in the unrotated space (before -45° rotation)

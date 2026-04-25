@@ -1,6 +1,8 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import { calcRegionCombinedOffsets } from '../regionOffsets.ts'
+
 import type { HicDataResult, HicFlatbushItem } from './types.ts'
 import type { MultiRegionContactRecord } from '../HicAdapter/HicAdapter.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -52,19 +54,7 @@ export async function executeRenderHicData({
 
   const res = await adapter.getResolution(bpPerPx / resolution)
   const w = res / (bpPerPx * Math.SQRT2)
-
-  const regionPixelOffsets: number[] = []
-  let cumulativePixelOffset = 0
-  for (const region of regions) {
-    regionPixelOffsets.push(cumulativePixelOffset)
-    cumulativePixelOffset += (region.end - region.start) / bpPerPx
-  }
-
-  const regionBinOffsets = regions.map(r => Math.floor(r.start / res))
-  const pxToBinFactor = bpPerPx / res
-  const regionCombinedOffsets = regionBinOffsets.map(
-    (binOffset, i) => (regionPixelOffsets[i] ?? 0) * pxToBinFactor - binOffset,
-  )
+  const regionCombinedOffsets = calcRegionCombinedOffsets(regions, bpPerPx, res)
 
   const totalWidthBp = regions.reduce((sum, r) => sum + r.end - r.start, 0)
   const width = totalWidthBp / bpPerPx

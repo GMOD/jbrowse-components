@@ -77,20 +77,14 @@ export default function stateModelFactory(
         return snap
       }
       const { colorScheme, showLegend, ...rest } = snap
-      const overrides: Record<string, unknown> = {}
-      if (colorScheme !== undefined) {
-        overrides.colorScheme = colorScheme
-      }
-      if (showLegend !== undefined) {
-        overrides.showLegend = showLegend
-      }
-      if (Object.keys(overrides).length === 0) {
+      if (colorScheme === undefined && showLegend === undefined) {
         return rest
       }
-      return {
-        ...rest,
-        configOverrides: { ...rest.configOverrides, ...overrides },
+      const overrides = {
+        ...(colorScheme !== undefined && { colorScheme }),
+        ...(showLegend !== undefined && { showLegend }),
       }
+      return { ...rest, configOverrides: { ...rest.configOverrides, ...overrides } }
     })
     .views(self => ({
       get colorScheme(): string | undefined {

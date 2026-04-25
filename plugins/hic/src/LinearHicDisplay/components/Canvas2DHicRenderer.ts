@@ -69,6 +69,10 @@ export class Canvas2DHicRenderer implements HicBackend {
       return
     }
 
+    const s = SQRT_HALF * viewScale
+    const hw = binWidth * s
+    const hh = binWidth * s * yScalar
+
     for (let i = 0; i < this.numContacts; i++) {
       const px = this.positions[i * 2]!
       const py = this.positions[i * 2 + 1]!
@@ -81,26 +85,17 @@ export class Canvas2DHicRenderer implements HicBackend {
         continue
       }
 
-      const corners = [
-        [px, py],
-        [px + binWidth, py],
-        [px + binWidth, py + binWidth],
-        [px, py + binWidth],
-      ] as const
+      // Rotate square corners by -45° and apply viewport transform inline.
+      // The four corners of the square [px,py]→[px+bw,py+bw] map to a diamond:
+      //   top=(base,rBase), right, bottom, left — rotated 45° in screen space.
+      const base = (px + py) * s + viewOffsetX
+      const rBase = (-px + py) * s * yScalar
 
       ctx.beginPath()
-      for (let c = 0; c < 4; c++) {
-        const cx = corners[c]![0]
-        const cy = corners[c]![1]
-        const rx = (cx + cy) * SQRT_HALF * viewScale + viewOffsetX
-        const ry = (-cx + cy) * SQRT_HALF * viewScale * yScalar
-
-        if (c === 0) {
-          ctx.moveTo(rx, ry)
-        } else {
-          ctx.lineTo(rx, ry)
-        }
-      }
+      ctx.moveTo(base, rBase)
+      ctx.lineTo(base + hw, rBase - hh)
+      ctx.lineTo(base + 2 * hw, rBase)
+      ctx.lineTo(base + hw, rBase + hh)
       ctx.closePath()
       ctx.fillStyle = `rgba(${r},${g},${b},${a})`
       ctx.fill()
