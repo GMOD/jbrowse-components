@@ -17,6 +17,10 @@ interface SavedState {
   sx: number
   sy: number
   rotation: number
+  // Number of `<g clip-path="…">` groups opened since this save() — closed
+  // on restore(). Lets clip() be properly scoped to save/restore brackets,
+  // matching the CanvasRenderingContext2D semantics.
+  groupsToClose: number
 }
 
 function escapeXml(s: string) {
@@ -59,6 +63,7 @@ export class SvgCanvas {
   private sx = 1
   private sy = 1
   private rotation = 0
+  private clipIdCounter = 0
 
   private transformPoint(x: number, y: number): [number, number] {
     const sx = x * this.sx
@@ -119,12 +124,16 @@ export class SvgCanvas {
       sx: this.sx,
       sy: this.sy,
       rotation: this.rotation,
+      groupsToClose: 0,
     })
   }
 
   restore() {
     const s = this.stack.pop()
     if (s) {
+      for (let i = 0; i < s.groupsToClose; i++) {
+        this.parts.push('</g>')
+      }
       this.fillStyle = s.fillStyle
       this.strokeStyle = s.strokeStyle
       this.lineWidth = s.lineWidth
@@ -367,7 +376,20 @@ export class SvgCanvas {
   }
 
   clip(..._args: unknown[]) {
-    // no-op: clipping is handled at the SVG wrapper level
+    // Use the current path as a clipPath, then open a `<g clip-path>`
+    // group that subsequent draws will land inside. The group is closed by
+    // restore() — see groupsToClose on the save stack. Without a preceding
+    // save() the clip becomes permanent (matches Canvas2D semantics).
+    if (!this.pathData) {
+      return
+    }
+    const id = `svgcanvas-clip-${this.clipIdCounter++}`
+    this.parts.push(
+      `<clipPath id="${id}"><path d="${this.pathData}"/></clipPath><g clip-path="url(#${id})">`,
+    )
+    if (this.stack.length > 0) {
+      this.stack[this.stack.length - 1]!.groupsToClose++
+    }
   }
 
   measureText(text: string) {
