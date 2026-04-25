@@ -1,6 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
-import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { setAbgrFill } from '@jbrowse/core/util/colorBits'
+import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { when } from 'mobx'
 
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
@@ -16,7 +16,7 @@ type LGV = LinearGenomeViewModel
 
 export async function renderSvg(
   model: RenderSvgBaseModel,
-  _opts?: ExportSvgDisplayOptions,
+  opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
   await when(
@@ -39,18 +39,18 @@ export async function renderSvg(
   const canvasWidth = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
   const colWidth = canvasWidth / numFeatures
 
-  const ctx = new SvgCanvas()
-
   const w = Math.max(colWidth, 2)
   const h = Math.max(rowHeight, 1)
-  for (let i = 0; i < numCells; i++) {
-    const y = cellRowIndices[i]! * rowHeight - scrollTop
-    if (y + rowHeight < 0 || y > availableHeight) {
-      continue
+  const cellsNode = paintLayer(canvasWidth, availableHeight, opts, ctx => {
+    for (let i = 0; i < numCells; i++) {
+      const y = cellRowIndices[i]! * rowHeight - scrollTop
+      if (y + rowHeight < 0 || y > availableHeight) {
+        continue
+      }
+      setAbgrFill(ctx, cellColors[i]!)
+      ctx.fillRect(cellFeatureIndices[i]! * colWidth, y, w, h)
     }
-    setAbgrFill(ctx, cellColors[i]!)
-    ctx.fillRect(cellFeatureIndices[i]! * colWidth, y, w, h)
-  }
+  })
 
   const sources = model.sources ?? []
   return (
@@ -58,7 +58,7 @@ export async function renderSvg(
       id={`variant-matrix-clip-${model.id}`}
       width={canvasWidth}
       height={model.height}
-      svgContent={ctx.getSerializedSvg()}
+      content={cellsNode}
       sources={sources}
       rowHeight={rowHeight}
       scrollTop={scrollTop}

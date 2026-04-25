@@ -90,9 +90,8 @@ function labelVisibilityChanged(
   b: LabelVisibility,
 ) {
   return (
-    a === undefined ||
-    a.showLabels !== b.showLabels ||
-    a.showDescriptions !== b.showDescriptions
+    a?.showLabels !== b.showLabels ||
+    a?.showDescriptions !== b.showDescriptions
   )
 }
 

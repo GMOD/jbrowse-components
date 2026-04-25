@@ -1,3 +1,5 @@
+import type React from 'react'
+
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, SvgTreePath } from '@jbrowse/tree-sidebar'
 
@@ -7,7 +9,7 @@ const SvgVariantOverlay = ({
   id,
   width,
   height,
-  svgContent,
+  content,
   sources,
   rowHeight,
   scrollTop,
@@ -20,7 +22,7 @@ const SvgVariantOverlay = ({
   id: string
   width: number
   height: number
-  svgContent: string
+  content: React.ReactNode
   sources: { name: string }[]
   rowHeight: number
   scrollTop: number
@@ -33,7 +35,7 @@ const SvgVariantOverlay = ({
   const labelOffset = showTree && hierarchy ? treeAreaWidth : 0
   return (
     <SvgClipRect id={id} width={width} height={height}>
-      <g dangerouslySetInnerHTML={{ __html: svgContent }} />
+      {content}
       {sources.length > 1 && canDisplayLabels ? (
         <SvgRowLabels
           sources={sources}

@@ -1,18 +1,19 @@
 import { bpToScreenPx } from '@jbrowse/core/gpu/canvas2dUtils'
+import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { getContainingView } from '@jbrowse/core/util'
-import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
+import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import {
-  drawArrows,
-  drawLines,
-  drawRects,
+  Canvas2DFeatureRenderer,
+  drawFeatureBlocks,
 } from './components/Canvas2DFeatureRenderer.ts'
 import { LABEL_FONT_SIZE } from './components/sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
@@ -28,8 +29,12 @@ export interface RenderSvgModel {
   laidOutDataMap: Map<number, FeatureDataResult>
 }
 
+// Labels and amino-acid overlays are rendered as DOM/React overlays
+// on-screen, so the on-screen renderer doesn't draw them. SVG export must
+// bake them into the output, so they live here as a vector-only post-pass
+// that runs after drawFeatureBlocks paints the geometry.
 function renderLabels(
-  ctx: SvgCanvas,
+  ctx: Ctx2D,
   data: FeatureDataResult,
   regionStart: number,
   regionEnd: number,
@@ -117,7 +122,7 @@ function renderLabels(
 }
 
 function renderPeptides(
-  ctx: SvgCanvas,
+  ctx: Ctx2D,
   data: FeatureDataResult,
   regionStart: number,
   regionEnd: number,
@@ -173,14 +178,13 @@ function renderPeptides(
 
 export async function renderSvg(
   model: RenderSvgModel,
-  _opts?: ExportSvgDisplayOptions,
+  opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
   await when(
     () =>
       model.laidOutDataMap.size > 0 || !!model.error || model.regionTooLarge,
   )
-  const { laidOutDataMap } = model
 
   if (model.error) {
     return (
@@ -192,50 +196,41 @@ export async function renderSvg(
     )
   }
 
-  if (laidOutDataMap.size === 0) {
+  if (model.laidOutDataMap.size === 0) {
     return null
   }
 
-  const visibleRegions = view.visibleRegions as {
-    displayedRegionIndex: number
-    start: number
-    end: number
-    reversed?: boolean
-    screenStartPx: number
-    screenEndPx: number
-  }[]
-
+  const visibleRegions = view.visibleRegions
   const renderPeptidesFlag = shouldRenderPeptideText(view.bpPerPx)
-  const svgCanvas = new SvgCanvas()
+  const totalWidth = Math.round(view.dynamicBlocks.totalWidthPx)
+  const height = model.height
 
+  // Headless renderer drives the same drawFeatureBlocks pipeline as on-screen.
+  const renderer = new Canvas2DFeatureRenderer(null)
   for (const vr of visibleRegions) {
-    const data = laidOutDataMap.get(vr.displayedRegionIndex)
-    if (!data) {
-      continue
+    const data = model.laidOutDataMap.get(vr.displayedRegionIndex)
+    if (data) {
+      renderer.uploadRegion(vr.displayedRegionIndex, data)
     }
+  }
 
-    const block = {
-      screenStartPx: vr.screenStartPx,
-      screenEndPx: vr.screenEndPx,
-      bpRangeX: [vr.start, vr.end] as [number, number],
-      reversed: vr.reversed ?? false,
-    }
-
-    drawLines(svgCanvas, data, block, 0)
-    drawRects(svgCanvas, data, block, 0)
-    drawArrows(svgCanvas, data, block, 0)
-    renderLabels(
-      svgCanvas,
-      data,
-      vr.start,
-      vr.end,
-      vr.screenStartPx,
-      vr.screenEndPx,
-      vr.reversed,
-    )
-    if (renderPeptidesFlag) {
-      renderPeptides(
-        svgCanvas,
+  const renderBlocks = buildRenderBlocks(visibleRegions)
+  const featuresNode = paintLayer(totalWidth, height, opts, ctx => {
+    drawFeatureBlocks(ctx, renderer.getRegions(), renderBlocks, {
+      scrollY: 0,
+      canvasWidth: totalWidth,
+      canvasHeight: height,
+    })
+    // Labels + peptides: SVG-only post-pass, drawn after the geometry so
+    // they overlay rects/lines/arrows the same way the React DOM overlays do
+    // on-screen. Same ctx as the geometry — they share rasterize behavior.
+    for (const vr of visibleRegions) {
+      const data = model.laidOutDataMap.get(vr.displayedRegionIndex)
+      if (!data) {
+        continue
+      }
+      renderLabels(
+        ctx,
         data,
         vr.start,
         vr.end,
@@ -243,16 +238,27 @@ export async function renderSvg(
         vr.screenEndPx,
         vr.reversed,
       )
+      if (renderPeptidesFlag) {
+        renderPeptides(
+          ctx,
+          data,
+          vr.start,
+          vr.end,
+          vr.screenStartPx,
+          vr.screenEndPx,
+          vr.reversed,
+        )
+      }
     }
-  }
+  })
 
   return (
     <SvgClipRect
       id={`canvas-features-clip-${model.id}`}
       width={view.width}
-      height={model.height}
+      height={height}
     >
-      <g dangerouslySetInnerHTML={{ __html: svgCanvas.getSerializedSvg() }} />
+      {featuresNode}
     </SvgClipRect>
   )
 }

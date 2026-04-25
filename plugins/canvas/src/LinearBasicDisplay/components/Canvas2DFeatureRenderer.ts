@@ -149,18 +149,64 @@ export function drawArrows(
   }
 }
 
+/**
+ * Pure draw entry point. Paints lines, rects, and arrows for the laid-out
+ * feature data into any 2D-canvas-like context. Per-block scissor clips so
+ * partial blocks don't bleed across boundaries. No `this`, no DOM, no DPR
+ * scaling — the on-screen `Canvas2DFeatureRenderer` wraps this with
+ * `prepareCanvas`; SVG export calls it directly with an `SvgCanvas`.
+ */
+export function drawFeatureBlocks(
+  ctx: Ctx,
+  regions: ReadonlyMap<number, RegionRenderData>,
+  blocks: FeatureRenderBlock[],
+  state: { scrollY: number; canvasWidth: number; canvasHeight: number },
+) {
+  const { canvasWidth, canvasHeight, scrollY } = state
+  if (regions.size === 0) {
+    return
+  }
+
+  for (const block of blocks) {
+    const region = regions.get(block.displayedRegionIndex)
+    if (!region) {
+      continue
+    }
+
+    const clip = clipBlockForCanvas(block, canvasWidth)
+    if (!clip) {
+      continue
+    }
+
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
+    ctx.clip()
+
+    drawLines(ctx, region, block, scrollY)
+    drawRects(ctx, region, block, scrollY)
+    drawArrows(ctx, region, block, scrollY)
+
+    ctx.restore()
+  }
+}
+
 export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
-  private ctx: CanvasRenderingContext2D
-  private canvas: HTMLCanvasElement
+  private ctx: CanvasRenderingContext2D | null
+  private canvas: HTMLCanvasElement | null
   private regions = new Map<number, RegionRenderData>()
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement | null) {
     this.canvas = canvas
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('Canvas 2D context not available')
+    if (canvas) {
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        throw new Error('Canvas 2D context not available')
+      }
+      this.ctx = ctx
+    } else {
+      this.ctx = null
     }
-    this.ctx = ctx
   }
 
   uploadRegion(displayedRegionIndex: number, data: RegionRenderData) {
@@ -171,37 +217,13 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
     blocks: FeatureRenderBlock[],
     state: { scrollY: number; canvasWidth: number; canvasHeight: number },
   ) {
-    const { canvasWidth, canvasHeight, scrollY } = state
-
-    if (this.regions.size === 0) {
-      return
+    if (!this.canvas || !this.ctx) {
+      throw new Error(
+        'Canvas2DFeatureRenderer.renderBlocks called without a canvas — call drawFeatureBlocks(ctx, regions, …) directly for headless rendering',
+      )
     }
-
-    const ctx = this.ctx
-    prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
-
-    for (const block of blocks) {
-      const region = this.regions.get(block.displayedRegionIndex)
-      if (!region) {
-        continue
-      }
-
-      const clip = clipBlockForCanvas(block, canvasWidth)
-      if (!clip) {
-        continue
-      }
-
-      ctx.save()
-      ctx.beginPath()
-      ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
-      ctx.clip()
-
-      drawLines(ctx, region, block, scrollY)
-      drawRects(ctx, region, block, scrollY)
-      drawArrows(ctx, region, block, scrollY)
-
-      ctx.restore()
-    }
+    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
+    drawFeatureBlocks(this.ctx, this.regions, blocks, state)
   }
 
   pruneRegions(activeRegions: number[]) {
@@ -210,5 +232,11 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
 
   dispose() {
     this.regions.clear()
+  }
+
+  // Expose for headless callers (SVG export) that drive drawFeatureBlocks
+  // with an SvgCanvas after running upload methods.
+  getRegions(): ReadonlyMap<number, RegionRenderData> {
+    return this.regions
   }
 }
