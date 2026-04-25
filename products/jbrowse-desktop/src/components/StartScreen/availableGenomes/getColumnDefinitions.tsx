@@ -6,7 +6,6 @@ import Close from '@mui/icons-material/Close'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { Link, Tooltip } from '@mui/material'
 
-import HighlightedText from './HighlightedText.tsx'
 import StarIcon from '../StarIcon.tsx'
 
 import type { LaunchCallback } from '../types.ts'
@@ -45,7 +44,6 @@ export function getColumnDefinitions({
   toggleFavorite,
   launch,
   onClose,
-  searchQuery,
   showAllColumns,
 }: {
   typeOption: string
@@ -53,7 +51,6 @@ export function getColumnDefinitions({
   toggleFavorite: (row: Entry) => void
   launch: LaunchCallback
   onClose: () => void
-  searchQuery: string
   showAllColumns: boolean
 }): GenomeColumn[] {
   const favoriteColumn: GenomeColumn = {
@@ -107,7 +104,7 @@ export function getColumnDefinitions({
           }
           return (
             <div>
-              <HighlightedText text={row.name || ''} query={searchQuery} /> (
+              {row.name} (
               <Link href="#" onClick={handleLaunch}>
                 launch
               </Link>
@@ -150,30 +147,9 @@ export function getColumnDefinitions({
           )
         },
       },
-      {
-        id: 'scientificName',
-        header: 'Scientific Name',
-        cell: row => (
-          <HighlightedText
-            text={row.scientificName || ''}
-            query={searchQuery}
-          />
-        ),
-      },
-      {
-        id: 'organism',
-        header: 'Organism',
-        cell: row => (
-          <HighlightedText text={row.organism || ''} query={searchQuery} />
-        ),
-      },
-      {
-        id: 'description',
-        header: 'Description',
-        cell: row => (
-          <HighlightedText text={row.description || ''} query={searchQuery} />
-        ),
-      },
+      { id: 'scientificName', header: 'Scientific Name' },
+      { id: 'organism', header: 'Organism' },
+      { id: 'description', header: 'Description' },
     ]
   } else {
     const baseColumns: GenomeColumn[] = [
@@ -211,10 +187,7 @@ export function getColumnDefinitions({
 
           return (
             <div>
-              <HighlightedText
-                text={row.commonName || ''}
-                query={searchQuery}
-              />{' '}
+              {row.commonName}{' '}
               (
               <Link href="#" onClick={handleLaunch}>
                 launch
@@ -292,26 +265,8 @@ export function getColumnDefinitions({
           return dateObj.toISOString().split('T')[0]
         },
       },
-      {
-        id: 'scientificName',
-        header: 'Scientific Name',
-        cell: row => (
-          <HighlightedText
-            text={row.scientificName || ''}
-            query={searchQuery}
-          />
-        ),
-      },
-      {
-        id: 'ncbiAssemblyName',
-        header: 'NCBI Assembly Name',
-        cell: row => (
-          <HighlightedText
-            text={row.ncbiAssemblyName || ''}
-            query={searchQuery}
-          />
-        ),
-      },
+      { id: 'scientificName', header: 'Scientific Name' },
+      { id: 'ncbiAssemblyName', header: 'NCBI Assembly Name' },
     ]
 
     const extraColumns: GenomeColumn[] = [

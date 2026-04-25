@@ -1,0 +1,60 @@
+import { useLayoutEffect, type RefObject } from 'react'
+
+const HIGHLIGHT_NAME = 'jbrowse-search'
+
+if (typeof document !== 'undefined' && typeof CSS !== 'undefined' && CSS.highlights) {
+  const style = document.createElement('style')
+  style.textContent = `::highlight(${HIGHLIGHT_NAME}) { background-color: yellow; color: black; }`
+  document.head.appendChild(style)
+}
+
+function getTextNodes(root: Element): Text[] {
+  const nodes: Text[] = []
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+  let node = walker.nextNode()
+  while (node) {
+    nodes.push(node as Text)
+    node = walker.nextNode()
+  }
+  return nodes
+}
+
+export function useSearchHighlight(
+  containerRef: RefObject<HTMLElement | null>,
+  query: string,
+) {
+  useLayoutEffect(() => {
+    if (typeof CSS === 'undefined' || !CSS.highlights) {
+      return undefined
+    }
+    const container = containerRef.current
+    if (container && query.trim()) {
+      const queryLower = query.toLowerCase().trim()
+      const highlight = new Highlight()
+      for (const textNode of getTextNodes(container)) {
+        const text = textNode.textContent ?? ''
+        const textLower = text.toLowerCase()
+        let offset = 0
+        while (offset < textLower.length) {
+          const idx = textLower.indexOf(queryLower, offset)
+          if (idx === -1) {
+            break
+          }
+          const range = new Range()
+          range.setStart(textNode, idx)
+          range.setEnd(textNode, idx + queryLower.length)
+          highlight.add(range)
+          offset = idx + queryLower.length
+        }
+      }
+      CSS.highlights.set(HIGHLIGHT_NAME, highlight)
+    } else {
+      CSS.highlights.delete(HIGHLIGHT_NAME)
+    }
+    return () => {
+      if (typeof CSS !== 'undefined' && CSS.highlights) {
+        CSS.highlights.delete(HIGHLIGHT_NAME)
+      }
+    }
+  })
+}
