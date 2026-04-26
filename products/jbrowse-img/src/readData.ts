@@ -185,7 +185,11 @@ export function readData({
 }: Opts) {
   const assemblyData =
     asm && fs.existsSync(asm) ? (read(asm) as Assembly) : undefined
-  const tracksData = tracks ? (read(tracks) as Track[]) : undefined
+  const rawTracksData = tracks ? read(tracks) : undefined
+  if (rawTracksData !== undefined && !Array.isArray(rawTracksData)) {
+    throw new Error(`${tracks}: expected a JSON array of tracks`)
+  }
+  const tracksData = rawTracksData as Track[] | undefined
   const configData = config ? (read(config) as Config) : ({} as Config)
 
   let sessionData = session

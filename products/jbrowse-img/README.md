@@ -49,7 +49,7 @@ samtools index yourfile.bam
 jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.svg
 ```
 
-If `--out` is not specified it writes to out.svg
+If `--out` is not specified it writes SVG to stdout
 
 ### Generate PNG instead of SVG
 

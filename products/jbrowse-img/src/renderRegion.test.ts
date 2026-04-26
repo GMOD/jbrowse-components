@@ -238,4 +238,18 @@ describe('readData', () => {
     const result = readData({ config: configFile })
     expect(result.defaultSession).toBeUndefined()
   })
+
+  test('loads tracks from tracks JSON file', () => {
+    const tracksFile = path.join(dataDir, 'tracks.json')
+    const result = readData({ config: configFile, tracks: tracksFile })
+    expect(Array.isArray(result.tracks)).toBe(true)
+    expect(result.tracks.length).toBeGreaterThan(0)
+  })
+
+  test('throws when tracks file is not a JSON array', () => {
+    const assemblyAsTrack = assemblyFile
+    expect(() =>
+      readData({ config: configFile, tracks: assemblyAsTrack }),
+    ).toThrow(/expected a JSON array of tracks/)
+  })
 })

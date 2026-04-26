@@ -87,7 +87,7 @@ const yargsInstance = yargs(hideBin(process.argv))
     'Render VCF variants',
   )
   .epilogue(
-    'Track options: --bam, --cram, --bigwig, --vcfgz, --gffgz, --hic, --bigbed, --bedgz',
+    `Track options: ${trackTypes.map(t => `--${t}`).join(', ')}`,
   )
   .strict(false)
   .help()
