@@ -40,7 +40,6 @@ const ConnectionRow = observer(function ConnectionRow({
   const found = instances.find(conn => name === conn.name)
   return (
     <FormControlLabel
-      key={conf.connectionId}
       control={
         <Checkbox
           checked={!!found}
@@ -77,14 +76,13 @@ const ConnectionList = observer(function ConnectionsList({
       {!session.connections.length ? (
         <Typography>No connections found</Typography>
       ) : (
-        session.connections.map((conf, idx) => (
-          <div key={`${conf.name}_${idx}`}>
-            <ConnectionRow
-              conf={conf}
-              session={session}
-              breakConnection={breakConnection}
-            />
-          </div>
+        session.connections.map(conf => (
+          <ConnectionRow
+            key={conf.connectionId}
+            conf={conf}
+            session={session}
+            breakConnection={breakConnection}
+          />
         ))
       )}
     </div>

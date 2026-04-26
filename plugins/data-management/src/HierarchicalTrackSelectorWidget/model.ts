@@ -209,7 +209,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #getter
        */
       get assemblyNames(): string[] {
-        return self.view?.assemblyNames || []
+        return self.view?.assemblyNames ?? []
       },
     }))
     .actions(self => ({
@@ -299,7 +299,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       addToRecentlyUsed(id: string) {
-        if (!self.recentlyUsed.includes(id)) {
+        if (!self.recentlyUsedSet.has(id)) {
           self.recentlyUsedCounter = Math.min(
             self.recentlyUsedCounter + 1,
             MAX_RECENTLY_USED,
@@ -569,11 +569,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const items = this.flattenedItems
         const offsets: number[] = []
         let cumulativeHeight = 0
-        const fc = new Set(self.folderCategories)
-
         for (let i = 0, l = items.length; i < l; i++) {
           offsets.push(cumulativeHeight)
-          cumulativeHeight += getItemHeight(items[i]!, fc)
+          cumulativeHeight += getItemHeight(items[i]!, self.folderCategories)
         }
         return { cumulativeHeight, offsets }
       },
@@ -634,11 +632,13 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         for (const item of self.flattenedItems) {
           if (item.type === 'category' && self.folderCategories.has(item.id)) {
             const trackNodes = getAllTrackNodes(item)
-            stats.set(item.id, {
-              active: trackNodes.filter(n => shownTrackIds.has(n.trackId))
-                .length,
-              total: trackNodes.length,
-            })
+            let active = 0
+            for (const n of trackNodes) {
+              if (shownTrackIds.has(n.trackId)) {
+                active++
+              }
+            }
+            stats.set(item.id, { active, total: trackNodes.length })
           }
         }
         return stats

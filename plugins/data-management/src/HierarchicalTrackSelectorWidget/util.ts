@@ -23,7 +23,7 @@ export function matches(
   conf: AnyConfigurationModel,
   session: AbstractSessionModel,
 ) {
-  const categories = (readConfObject(conf, 'category') || []) as string[]
+  const categories = (readConfObject(conf, 'category') ?? []) as string[]
   const queryLower = query.toLowerCase()
   return (
     getTrackName(conf, session).toLowerCase().includes(queryLower) ||
@@ -33,8 +33,8 @@ export function matches(
 
 export function matchesMetadata(query: string, conf: AnyConfigurationModel) {
   const queryLower = query.toLowerCase()
-  const description = (readConfObject(conf, 'description') || '') as string
-  const metadata = (readConfObject(conf, 'metadata') || {}) as Record<
+  const description = (readConfObject(conf, 'description') ?? '') as string
+  const metadata = (readConfObject(conf, 'metadata') ?? {}) as Record<
     string,
     unknown
   >

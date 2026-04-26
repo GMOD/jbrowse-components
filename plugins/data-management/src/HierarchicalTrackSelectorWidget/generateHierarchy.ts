@@ -79,7 +79,7 @@ export function generateHierarchy({
       id: extra ? `${extra},${conf.trackId}` : conf.trackId,
       trackId: conf.trackId,
       name: getTrackName(conf, session),
-      description: readConfObject(conf, 'description') || '',
+      description: readConfObject(conf, 'description') ?? '',
       conf,
       children: [],
       nestingLevel: nestingLevel + 1,
