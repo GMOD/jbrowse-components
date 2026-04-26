@@ -2,7 +2,6 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView } from '@jbrowse/core/util'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
 import { computeSyriTypes } from '@jbrowse/plugin-comparative-adapters'
 
 import { getTooltip } from './components/util.ts'
@@ -13,7 +12,10 @@ import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
 import type { ClickCoord } from './components/util.ts'
 import type { ColorScheme } from './drawSyntenyUtils.ts'
 import type { SyntenyTrackRenderParams } from './syntenyBackendTypes.ts'
-import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type {
+  SyntenyGeometry,
+  SyntenyInstanceData,
+} from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -39,7 +41,6 @@ export interface SyntenyFeatureData {
   names: string[]
   refNames: string[]
   assemblyNames: string[]
-  cigars: string[]
   // Per-feature SyRI type precomputed by structural-tier adapters. Populated
   // for every feature (undefined where the adapter didn't provide one) so
   // main-thread colorBy='syri' can short-circuit to precomputed values
@@ -139,7 +140,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * this on every display and uploads it to the shared backend keyed by
        * `displayKey`. Clearing it (undefined) triggers backend eviction.
        */
-      instanceData: undefined as SyntenyInstanceData | undefined,
+      instanceData: undefined as SyntenyGeometry | undefined,
       hoveredFeatureIdx: -1,
       clickedFeatureIdx: -1,
       contextMenuAnchor: undefined as ClickCoord | undefined,
@@ -153,7 +154,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setRpcData(
         featureData: SyntenyFeatureData | undefined,
-        instanceData: SyntenyInstanceData | undefined,
+        instanceData: SyntenyGeometry | undefined,
       ) {
         self.featureData = featureData
         self.instanceData = instanceData
@@ -259,9 +260,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get numFeats() {
         return self.featureData?.featureIds.length ?? 0
-      },
-      get parsedCigars() {
-        return self.featureData?.cigars.map(s => (s ? parseCigar2(s) : []))
       },
       /**
        * #getter
@@ -480,12 +478,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           alpha: self.alpha,
           minAlignmentLength: self.minAlignmentLength,
           hoveredFeatureId:
-            hoveredFeatureIdx >= 0
-              ? (this.renderInstanceData?.featureIds[hoveredFeatureIdx] ?? 0)
+            hoveredFeatureIdx >= 0 && self.instanceData
+              ? self.instanceData.instanceFeatureIdx[hoveredFeatureIdx]! + 1
               : 0,
           clickedFeatureId:
-            clickedFeatureIdx >= 0
-              ? (this.renderInstanceData?.featureIds[clickedFeatureIdx] ?? 0)
+            clickedFeatureIdx >= 0 && self.instanceData
+              ? self.instanceData.instanceFeatureIdx[clickedFeatureIdx]! + 1
               : 0,
           offset0: v0.offsetPx,
           offset1: v1.offsetPx,

@@ -212,7 +212,7 @@ function drawInstances(
       continue
     }
 
-    const featureId = data.featureIds[i]
+    const featureId = data.instanceFeatureIdx[i]! + 1
     const isHovered = featureId === hoveredFeatureId
     const isClicked = featureId === clickedFeatureId
 

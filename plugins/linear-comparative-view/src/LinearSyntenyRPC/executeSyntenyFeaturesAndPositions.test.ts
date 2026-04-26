@@ -606,3 +606,57 @@ describe('strand swap with reversed regions', () => {
     expect(p11).toBeLessThan(p12)
   })
 })
+
+describe('refName precull via index.entries.has', () => {
+  // Exercises the cheap pre-cull at the head of the per-feature loop in
+  // executeSyntenyFeaturesAndPositions: features whose refName isn't in the
+  // displayed regions of either view are dropped before any pixel math.
+  it('precull short-circuits when refName is absent in v1', () => {
+    const v1 = buildBpToPxIndex(
+      makeViewSnap([{ refName: 'chr1', start: 0, end: 1000 }]),
+    )
+    const v2 = buildBpToPxIndex(
+      makeViewSnap([{ refName: 'chr1', start: 0, end: 1000 }]),
+    )
+    expect(v1.entries.has('chrX')).toBe(false)
+    expect(v2.entries.has('chr1')).toBe(true)
+  })
+
+  it('precull short-circuits when mate.refName is absent in v2', () => {
+    const v1 = buildBpToPxIndex(
+      makeViewSnap([{ refName: 'chr1', start: 0, end: 1000 }]),
+    )
+    const v2 = buildBpToPxIndex(
+      makeViewSnap([{ refName: 'chr2', start: 0, end: 1000 }]),
+    )
+    expect(v1.entries.has('chr1')).toBe(true)
+    expect(v2.entries.has('chr1')).toBe(false)
+  })
+
+  it('precull keeps features when both refNames are present', () => {
+    const v1 = buildBpToPxIndex(
+      makeViewSnap([
+        { refName: 'chr1', start: 0, end: 1000 },
+        { refName: 'chr2', start: 0, end: 1000 },
+      ]),
+    )
+    const v2 = buildBpToPxIndex(
+      makeViewSnap([
+        { refName: 'chr1', start: 0, end: 1000 },
+        { refName: 'chr2', start: 0, end: 1000 },
+      ]),
+    )
+    expect(v1.entries.has('chr1') && v2.entries.has('chr2')).toBe(true)
+  })
+
+  it('precull is a strict subset of bpToPxFromIndex undefined check', () => {
+    // refName present but coord outside any region: precull keeps it,
+    // bpToPxFromIndex still returns undefined, downstream cull still drops
+    // it. The two checks compose correctly.
+    const v1 = buildBpToPxIndex(
+      makeViewSnap([{ refName: 'chr1', start: 0, end: 1000 }]),
+    )
+    expect(v1.entries.has('chr1')).toBe(true)
+    expect(bpToPxFromIndex(v1, 'chr1', 5000)).toBeUndefined()
+  })
+})

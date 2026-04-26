@@ -12,7 +12,7 @@ import { toArray } from 'rxjs/operators'
 import { buildSyntenyGeometry } from './buildSyntenyGeometry.ts'
 import { chainCollinearAlignments } from './chainCollinearAlignments.ts'
 
-import type { SyntenyInstanceData } from './buildSyntenyGeometry.ts'
+import type { SyntenyGeometry } from './buildSyntenyGeometry.ts'
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -29,7 +29,7 @@ export interface SyntenyViewSnap {
 }
 
 export interface SyntenyRpcResult extends SyntenyFeatureData {
-  instanceData: SyntenyInstanceData
+  instanceData: SyntenyGeometry
 }
 
 // Returns genomic-only pixel offset (no inter-region padding baked in) plus
@@ -241,7 +241,7 @@ export async function executeSyntenyFeaturesAndPositions({
   const strandsArray = new Int8Array(count)
   const startsArray = new Float64Array(count)
   const endsArray = new Float64Array(count)
-  const identitiesArray = new Float64Array(count)
+  const identitiesArray = new Float32Array(count)
   const padTopArray = new Float64Array(count)
   const padBottomArray = new Float64Array(count)
 
@@ -249,7 +249,7 @@ export async function executeSyntenyFeaturesAndPositions({
   const names: string[] = []
   const refNames: string[] = []
   const assemblyNames: string[] = []
-  const cigars: string[] = []
+  const parsedCigars: number[][] = []
   // Always collect syriType; main-thread colorBy='syri' reads this directly
   // so the RPC doesn't refetch on a color-scheme change. Undefined entries
   // fall back to main-thread computeSyriTypes when the scheme is active.
@@ -270,11 +270,13 @@ export async function executeSyntenyFeaturesAndPositions({
   const v2Offset = v2.offsetPx
   const bufferPx = viewWidth * 0.5
 
+  const v1RefNames = v1Index.entries
+  const v2RefNames = v2Index.entries
   const stopTokenChecker = createStopTokenChecker(stopToken)
   let validCount = 0
   for (const f of processedFeatures) {
     checkStopToken2(stopTokenChecker)
-    const strand = f.get('strand') as number
+    const refName = f.get('refName') as string
     const mate = f.get('mate') as {
       start: number
       end: number
@@ -282,7 +284,16 @@ export async function executeSyntenyFeaturesAndPositions({
       name: string
       assemblyName: string
     }
-    const refName = f.get('refName') as string
+    // Whole-genome PAF at low zoom: most features are on refNames not in the
+    // displayed regions of one or both views. Skip them before any bpToPx
+    // arithmetic / object allocation. bpToPxFromIndex would also return
+    // undefined here, but only after a Map.get + result-object construction
+    // per call (4 per feature).
+    if (!v1RefNames.has(refName) || !v2RefNames.has(mate.refName)) {
+      continue
+    }
+
+    const strand = f.get('strand') as number
     const start = f.get('start') as number
     const end = f.get('end') as number
 
@@ -337,7 +348,7 @@ export async function executeSyntenyFeaturesAndPositions({
     names.push((f.get('name') as string | undefined) ?? '')
     refNames.push(refName)
     assemblyNames.push((f.get('assemblyName') as string | undefined) ?? '')
-    cigars.push((f.get('CIGAR') as string | undefined) ?? '')
+    parsedCigars.push(parseCigar2((f.get('CIGAR') as string | undefined) ?? ''))
     precomputedSyriTypes.push(f.get('syriType') as string | undefined)
     mates.push(mate)
 
@@ -359,19 +370,17 @@ export async function executeSyntenyFeaturesAndPositions({
     names,
     refNames,
     assemblyNames,
-    cigars,
     syriTypes: precomputedSyriTypes,
     mates,
   }
-
-  const parsedCigars = cigars.map(s => (s ? parseCigar2(s) : []))
-  const bpPerPxs = viewSnaps.map(v => v.bpPerPx)
 
   // colorBy lives on the main thread now; the worker always emits
   // geometry + per-instance `kinds`/`instanceFeatureIdx` descriptors, and
   // the display model recomputes `colors` on colorBy change. SyRI types
   // are likewise computed on the main thread when needed.
 
+  const v0 = viewSnaps[level]!
+  const v1Snap = viewSnaps[level + 1]!
   const instanceData = await updateStatus(
     'Computing synteny layout',
     statusCallback,
@@ -382,9 +391,10 @@ export async function executeSyntenyFeaturesAndPositions({
         drawCIGAR,
         drawCIGARMatchesOnly,
         drawLocationMarkers,
-        bpPerPxs,
-        level,
-        viewOffsets: viewSnaps.map(v => v.offsetPx),
+        bpPerPx0: v0.bpPerPx,
+        bpPerPx1: v1Snap.bpPerPx,
+        viewOff0: v0.offsetPx,
+        viewOff1: v1Snap.offsetPx,
         viewWidth: viewSnaps[0]!.width,
       }),
   )
@@ -408,10 +418,8 @@ export async function executeSyntenyFeaturesAndPositions({
     instanceData.x2.buffer,
     instanceData.x3.buffer,
     instanceData.x4.buffer,
-    instanceData.colors.buffer,
     instanceData.kinds.buffer,
     instanceData.instanceFeatureIdx.buffer,
-    instanceData.featureIds.buffer,
     instanceData.queryTotalLengths.buffer,
     instanceData.padTops.buffer,
     instanceData.padBottoms.buffer,
