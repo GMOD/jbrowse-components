@@ -6,8 +6,7 @@ import { Toolbar, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
-import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
-import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
+import type { AppSession, Menu } from './types.ts'
 
 const useStyles = makeStyles()(theme => ({
   grow: {
@@ -26,18 +25,6 @@ const useStyles = makeStyles()(theme => ({
     backgroundColor: theme.palette.primary.light,
   },
 }))
-
-interface Menu {
-  label: string
-  menuItems: JBMenuItem[] | (() => JBMenuItem[])
-}
-
-type AppSession = SessionWithDrawerWidgets & {
-  menus: () => Menu[]
-  snackbarMessages: SnackbarMessage[]
-  renameCurrentSession: (arg: string) => void
-  popSnackbarMessage: () => unknown
-}
 
 function wrapMenuItems(items: JBMenuItem[], session: AppSession): JBMenuItem[] {
   return items.map(item => ({

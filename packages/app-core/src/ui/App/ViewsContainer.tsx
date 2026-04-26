@@ -3,8 +3,7 @@ import { Suspense, lazy } from 'react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
-import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
+import type { AppSession } from './types.ts'
 
 const ClassicViewsContainer = lazy(() => import('./ClassicViewsContainer.tsx'))
 const TiledViewsContainer = lazy(() => import('./TiledViewsContainer.tsx'))
@@ -19,12 +18,7 @@ const useStyles = makeStyles()({
 
 interface Props {
   HeaderButtons?: React.ReactElement
-  session: SessionWithFocusedViewAndDrawerWidgets & {
-      renameCurrentSession: (arg: string) => void
-      snackbarMessages: SnackbarMessage[]
-      popSnackbarMessage: () => unknown
-      useWorkspaces: boolean
-    }
+  session: AppSession
 }
 
 const ViewsContainer = observer(function ViewsContainer(props: Props) {
