@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import { ErrorBanner } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
 
@@ -34,11 +33,9 @@ export default function OpenSequencePanel({
   const { classes } = useStyles()
   const [sequenceDialogOpen, setSequenceDialogOpen] = useState(false)
   const [showAll, setShowAll] = useState(false)
-  const [error, setError] = useState<unknown>()
 
   return (
     <div>
-      {error ? <ErrorBanner error={error} /> : null}
       <Button
         variant="contained"
         color="primary"
@@ -62,24 +59,16 @@ export default function OpenSequencePanel({
       {sequenceDialogOpen ? (
         <OpenSequenceDialog
           onClose={async (conf: unknown) => {
-            try {
-              if (conf) {
-                const path = await ipcRenderer.invoke(
-                  'createInitialAutosaveFile',
-                  {
-                    assemblies: conf,
-                    defaultSession: {
-                      name: `New Session ${new Date().toLocaleString('en-US')}`,
-                    },
-                  },
-                )
-                setPluginManager(await loadPluginManager(path))
-              }
-            } catch (e) {
-              setError(e)
-            } finally {
-              setSequenceDialogOpen(false)
+            if (conf) {
+              const path = await ipcRenderer.invoke('createInitialAutosaveFile', {
+                assemblies: conf,
+                defaultSession: {
+                  name: `New Session ${new Date().toLocaleString('en-US')}`,
+                },
+              })
+              setPluginManager(await loadPluginManager(path))
             }
+            setSequenceDialogOpen(false)
           }}
         />
       ) : null}
