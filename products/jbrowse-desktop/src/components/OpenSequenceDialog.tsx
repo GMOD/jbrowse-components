@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import {
   Dialog,
@@ -21,10 +21,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import {
-  createOpenSequenceDialogModel,
-  destroyOpenSequenceDialogModel,
-} from './openSequenceDialogModel.ts'
+import { createOpenSequenceDialogModel } from './openSequenceDialogModel.ts'
 import { adapterLabels, adapterTypes } from './util.ts'
 
 import type { OpenSequenceDialogModel } from './openSequenceDialogModel.ts'
@@ -212,12 +209,6 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
 }) {
   const { classes } = useStyles()
   const [form] = useState(() => createOpenSequenceDialogModel())
-  useEffect(
-    () => () => {
-      destroyOpenSequenceDialogModel(form)
-    },
-    [form],
-  )
 
   type AssemblyConf = Awaited<ReturnType<typeof createAssemblyConfig>>
 

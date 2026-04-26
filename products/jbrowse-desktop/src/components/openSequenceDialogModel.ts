@@ -1,4 +1,4 @@
-import { destroy, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import {
   adapterTypes,
@@ -142,8 +142,4 @@ export type OpenSequenceDialogModel = Instance<
 
 export function createOpenSequenceDialogModel() {
   return OpenSequenceDialogModelF().create()
-}
-
-export function destroyOpenSequenceDialogModel(model: OpenSequenceDialogModel) {
-  destroy(model)
 }
