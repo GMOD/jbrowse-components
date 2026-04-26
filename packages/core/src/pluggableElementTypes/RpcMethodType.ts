@@ -184,7 +184,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   ) {
     const rootModel = this.pluginManager.rootModel
 
-    const uris = [] as UriLocation[]
+    const uris: UriLocation[] = []
     const blobMap = getBlobMap()
 
     // Convert FileHandleLocation to BlobLocation in-place

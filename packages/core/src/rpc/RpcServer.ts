@@ -73,10 +73,7 @@ export default class RpcServer {
           transferables,
         )
       } else {
-        workerSelf.postMessage(
-          { uid, method, data: response, libRpc: true },
-          [] as Transferable[],
-        )
+        workerSelf.postMessage({ uid, method, data: response, libRpc: true }, [])
       }
     } catch (e) {
       this.throw(uid, serializeError(e))
@@ -88,9 +85,6 @@ export default class RpcServer {
   }
 
   emit(eventName: string, data: unknown, transferables?: Transferable[]) {
-    workerSelf.postMessage(
-      { eventName, data, libRpc: true },
-      transferables ?? ([] as Transferable[]),
-    )
+    workerSelf.postMessage({ eventName, data, libRpc: true }, transferables ?? [])
   }
 }

@@ -6,7 +6,7 @@ import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 import { renameRegionsIfNeeded } from '../../util/index.ts'
 import SimpleFeature from '../../util/simpleFeature.ts'
 
-import type { RenderArgs } from './util.ts'
+import type { RpcArgs, RpcReturn } from '../RpcRegistry.ts'
 import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import type { Region } from '../../util/index.ts'
 import type { SimpleFeatureSerialized } from '../../util/simpleFeature.ts'
@@ -19,7 +19,7 @@ export default class CoreGetFeatures extends RpcMethodType {
     feats: SimpleFeatureSerialized[],
     args: unknown,
     rpcDriver: string,
-  ) {
+  ): Promise<RpcReturn<'CoreGetFeatures'>> {
     const superDeserialized = (await super.deserializeReturn(
       feats,
       args,
@@ -28,14 +28,14 @@ export default class CoreGetFeatures extends RpcMethodType {
     return superDeserialized.map(feat => new SimpleFeature(feat))
   }
 
-  async serializeArguments(args: RenderArgs, rpcDriver: string) {
+  async serializeArguments(
+    args: RpcArgs<'CoreGetFeatures'> & { sessionId: string },
+    rpcDriver: string,
+  ) {
     const { rootModel } = this.pluginManager
     const assemblyManager = rootModel!.session!.assemblyManager
     const renamedArgs = await renameRegionsIfNeeded(assemblyManager, args)
-    return super.serializeArguments(
-      renamedArgs,
-      rpcDriver,
-    ) as Promise<RenderArgs>
+    return super.serializeArguments(renamedArgs, rpcDriver)
   }
 
   async execute(
@@ -45,7 +45,7 @@ export default class CoreGetFeatures extends RpcMethodType {
       adapterConfig: Record<string, unknown>
       statusCallback: (arg: string) => void
       stopToken?: StopToken
-      opts?: any
+      opts?: Record<string, unknown>
     },
     rpcDriver: string,
   ) {

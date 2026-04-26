@@ -130,12 +130,7 @@ export default abstract class BaseRpcDriver {
   }
 
   getWorkerPool() {
-    if (!this.workerPool) {
-      const res = this.createWorkerPool()
-      this.workerPool = res
-      return res // making this several steps makes TS happy
-    }
-    return this.workerPool
+    return (this.workerPool ??= this.createWorkerPool())
   }
 
   async getWorker(sessionId: string): Promise<WorkerHandle> {
