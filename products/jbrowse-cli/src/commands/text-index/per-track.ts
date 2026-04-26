@@ -62,7 +62,6 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
       ...prepareIndexDriverFlags({ attributes, exclude, quiet, prefixSize }),
     })
     if (!textSearching?.textSearchAdapter) {
-      // modifies track with new text search adapter
       const index = configTracks.findIndex(track => trackId === track.trackId)
       if (index !== -1) {
         configTracks[index] = {

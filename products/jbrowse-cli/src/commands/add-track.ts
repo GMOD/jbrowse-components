@@ -1,10 +1,11 @@
 import path from 'path'
 import { parseArgs } from 'util'
 
-import { printHelp, resolveConfigPath } from '../utils.ts'
+import { printHelp, readJsonFile, resolveConfigPath } from '../utils.ts'
 import { guessAdapter } from './add-track-utils/adapter-utils.ts'
 import {
   addSyntenyAssemblyNames,
+  buildTrackConfig,
   mapLocationForFiles,
 } from './add-track-utils/track-config.ts'
 import {
@@ -15,13 +16,11 @@ import {
   validateLoadOption,
   validateTrackArg,
 } from './add-track-utils/validators.ts'
+import { saveConfigAndReport } from './shared/config-operations.ts'
 import {
   addTrackToConfig,
   buildTrackParams,
-  createTrackConfiguration,
-  loadTrackConfig,
   processTrackFiles,
-  saveTrackConfigAndReport,
 } from './track-utils.ts'
 
 import type { Config } from '../base.ts'
@@ -194,7 +193,7 @@ export async function run(args?: string[]) {
   validateLoadAndLocation(location, load)
   validateAdapterType(adapter.type)
 
-  const configContents: Config = await loadTrackConfig(targetConfigPath)
+  const configContents: Config = await readJsonFile(targetConfigPath)
   validateAssemblies(configContents, flags.assemblyNames)
 
   const trackParams = buildTrackParams({
@@ -203,10 +202,15 @@ export async function run(args?: string[]) {
     adapter,
     configContents,
   })
-  const trackConfig = createTrackConfiguration({
+  const trackConfig = buildTrackConfig({
     location,
-    trackParams,
-    flags: { category, description: trackDescription, config },
+    trackType: trackParams.trackType,
+    trackId: trackParams.trackId,
+    name: trackParams.name,
+    assemblyNames: trackParams.assemblyNames,
+    category,
+    description: trackDescription,
+    config,
     adapter,
     configContents,
   })
@@ -230,11 +234,12 @@ export async function run(args?: string[]) {
     force,
   })
 
-  await saveTrackConfigAndReport({
+  await saveConfigAndReport({
     config: updatedConfig,
-    targetConfigPath,
-    name: trackParams.name,
-    trackId: trackParams.trackId,
+    target: targetConfigPath,
+    itemType: 'track',
+    itemName: trackParams.name,
+    itemId: trackParams.trackId,
     wasOverwritten,
   })
 }

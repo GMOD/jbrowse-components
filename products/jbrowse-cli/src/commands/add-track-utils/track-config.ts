@@ -46,7 +46,7 @@ export function buildTrackConfig({
   category?: string
   description?: string
   config?: string
-  adapter: any
+  adapter: { type: string; [key: string]: unknown }
   configContents: Config
 }): Track {
   const configObj = config ? parseJSON(config) : {}
@@ -72,9 +72,9 @@ export function buildTrackConfig({
 }
 
 export function addSyntenyAssemblyNames(
-  adapter: any,
+  adapter: { type: string; [key: string]: unknown },
   assemblyNames?: string,
-): any {
+): { type: string; [key: string]: unknown } {
   if (SYNTENY_ADAPTERS.has(adapter.type)) {
     return {
       ...adapter,

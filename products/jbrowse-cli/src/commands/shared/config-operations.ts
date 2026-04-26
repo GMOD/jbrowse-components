@@ -2,11 +2,7 @@ import { debug, writeJsonFile } from '../../utils.ts'
 
 import type { Config } from '../../base.ts'
 
-/**
- * Generic function to find and update or add an item to a config array
- * Returns the updated config and whether an item was overwritten
- */
-export function findAndUpdateOrAdd<T extends Record<string, any>>({
+export function findAndUpdateOrAdd<T extends object>({
   items,
   newItem,
   idField,
@@ -41,9 +37,6 @@ export function findAndUpdateOrAdd<T extends Record<string, any>>({
   }
 }
 
-/**
- * Saves a config file and reports the result to the user
- */
 export async function saveConfigAndReport({
   config,
   target,

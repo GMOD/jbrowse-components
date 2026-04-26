@@ -12,16 +12,6 @@ interface ServerRef {
   current: http.Server | null
 }
 
-/**
- * Validates if a port number is in the valid range
- */
-export function isValidPort(port: number): boolean {
-  return port > 0 && port < 65535
-}
-
-/**
- * Parses and validates a port string
- */
 export function parsePort({
   portStr,
   defaultPort = 9090,
@@ -34,23 +24,17 @@ export function parsePort({
   }
 
   const parsedPort = Number.parseInt(portStr, 10)
-  if (!isValidPort(parsedPort)) {
+  if (!(parsedPort > 0 && parsedPort < 65535)) {
     throw new Error(`${portStr} is not a valid port`)
   }
 
   return parsedPort
 }
 
-/**
- * Generates a random alphanumeric string to serve as admin key
- */
 export function generateKey(): string {
   return crypto.randomBytes(5).toString('hex')
 }
 
-/**
- * Sets up the configuration file
- */
 export async function setupConfigFile({
   root = '.',
 }: {
@@ -69,9 +53,6 @@ export async function setupConfigFile({
   return { outFile, baseDir }
 }
 
-/**
- * Validates admin key and extracts config path from request
- */
 function validateAndExtractParams({
   req,
   key,
@@ -84,30 +65,25 @@ function validateAndExtractParams({
   outFile: string
 }): { isValid: boolean; configPath?: string; error?: string } {
   const { body } = req
-  // Check for adminKey in both query parameters and request body for backward compatibility
-  const adminKeyFromQuery = req.query.adminKey as string | undefined
-  const adminKeyFromBody = body?.adminKey as string | undefined
-  const adminKey = adminKeyFromBody || adminKeyFromQuery
+  const adminKey =
+    (body?.adminKey as string | undefined) ||
+    (req.query.adminKey as string | undefined)
 
   if (adminKey !== key) {
     return { isValid: false, error: 'Invalid admin key' }
   }
 
-  // Get configPath from either body or query parameters
   const configPathParam =
     body?.configPath || (req.query.config as string | undefined)
 
   try {
-    // Normalize the config path
     const configPath = configPathParam
       ? path.normalize(path.join(baseDir, configPathParam))
       : outFile
 
-    // Check for directory traversal attempts
     const normalizedBaseDir = path.normalize(baseDir)
     const relPath = path.relative(normalizedBaseDir, configPath)
 
-    // Ensure the config path is within the base directory and doesn't contain path traversal
     if (relPath.startsWith('..') || path.isAbsolute(relPath)) {
       return { isValid: false, error: 'Cannot perform directory traversal' }
     }
@@ -118,9 +94,6 @@ function validateAndExtractParams({
   }
 }
 
-/**
- * Sets up the API routes for the server
- */
 export function setupRoutes({
   app,
   baseDir,
@@ -134,13 +107,11 @@ export function setupRoutes({
   key: string
   serverRef: ServerRef
 }): void {
-  // Root route
   app.get('/', (_req: Request, res: Response) => {
     res.setHeader('Content-Type', 'text/plain')
     res.send('JBrowse Admin Server')
   })
 
-  // Update config route
   app.post('/updateConfig', (req: Request, res: Response) => {
     const { body } = req
     const config = body.config as string | undefined
@@ -152,7 +123,6 @@ export function setupRoutes({
       return
     }
 
-    // Remove adminKey from body before saving to config
     if (body.adminKey) {
       delete body.adminKey
     }
@@ -167,7 +137,6 @@ export function setupRoutes({
     }
   })
 
-  // Get config route
   app.get('/config', (req: Request, res: Response) => {
     const validation = validateAndExtractParams({ req, key, baseDir, outFile })
     if (!validation.isValid) {
@@ -192,7 +161,6 @@ export function setupRoutes({
     }
   })
 
-  // Shutdown route for testing
   app.post('/shutdown', (req: Request, res: Response) => {
     const { body } = req
     const adminKey = body?.adminKey as string | undefined
@@ -206,7 +174,6 @@ export function setupRoutes({
     res.setHeader('Content-Type', 'text/plain')
     res.send('Server shutting down')
 
-    // Shutdown the server after sending response
     setImmediate(() => {
       if (serverRef.current) {
         serverRef.current.close()
@@ -215,9 +182,6 @@ export function setupRoutes({
   })
 }
 
-/**
- * Starts the server and sets up shutdown handlers
- */
 export function startServer({
   app,
   port,
@@ -233,7 +197,6 @@ export function startServer({
   keyPath: string
   serverRef: ServerRef
 }): void {
-  // Start the server
   const server = app.listen(port, () => {
     console.log(
       `Admin server started on port ${port}\n\n` +
@@ -245,10 +208,8 @@ export function startServer({
     )
   })
 
-  // Store server reference for shutdown route
   serverRef.current = server
 
-  // Handle server errors
   server.on('error', (error: NodeJS.ErrnoException) => {
     if (error.code === 'EADDRINUSE') {
       console.error(`Error: Port ${port} is already in use`)
@@ -258,11 +219,9 @@ export function startServer({
     process.exit(1)
   })
 
-  // Common shutdown handler
   const shutdownHandler = () => {
     console.log('\nShutting down admin server...')
     server.close(() => {
-      // Clean up admin key file
       try {
         fs.unlinkSync(keyPath)
         debug(`Removed admin key file: ${keyPath}`)
@@ -273,7 +232,6 @@ export function startServer({
     })
   }
 
-  // Handle server shutdown
   process.on('SIGINT', shutdownHandler)
   process.on('SIGTERM', shutdownHandler)
 }

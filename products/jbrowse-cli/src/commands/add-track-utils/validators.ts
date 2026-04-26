@@ -63,7 +63,7 @@ export function validateTrackId(
   trackId: string,
   force?: boolean,
   overwrite?: boolean,
-): number {
+): void {
   if (!configContents.tracks) {
     configContents.tracks = []
   }
@@ -75,8 +75,6 @@ export function validateTrackId(
       `Cannot add track with id ${trackId}, a track with that id already exists (use --force to override)`,
     )
   }
-
-  return idx
 }
 
 export function createTargetDirectory(

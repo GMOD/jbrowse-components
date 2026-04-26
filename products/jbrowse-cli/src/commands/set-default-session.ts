@@ -81,7 +81,7 @@ export async function run(args: string[]) {
     )
   } else if (!session) {
     throw new Error('Please provide a --session file')
-  } else if (session) {
+  } else {
     await writeJsonFile(target, {
       ...configContents,
       defaultSession: await readDefaultSessionFile(session),

@@ -1,25 +1,14 @@
 import path from 'path'
 
-import { readJsonFile } from '../utils.ts'
 import {
   guessFileNames,
   guessTrackType,
 } from './add-track-utils/adapter-utils.ts'
 import { loadFile } from './add-track-utils/file-operations.ts'
-import { buildTrackConfig } from './add-track-utils/track-config.ts'
 import { validateTrackId } from './add-track-utils/validators.ts'
-import {
-  findAndUpdateOrAdd,
-  saveConfigAndReport as saveConfigAndReportBase,
-} from './shared/config-operations.ts'
+import { findAndUpdateOrAdd } from './shared/config-operations.ts'
 
-import type { Config } from '../base.ts'
-
-export async function loadTrackConfig(
-  targetConfigPath: string,
-): Promise<Config> {
-  return await readJsonFile(targetConfigPath)
-}
+import type { Config, Track } from '../base.ts'
 
 export async function processTrackFiles({
   location,
@@ -65,7 +54,7 @@ export function addTrackToConfig({
   overwrite,
 }: {
   configContents: Config
-  trackConfig: any
+  trackConfig: Track
   trackId: string
   force: boolean | undefined
   overwrite: boolean | undefined
@@ -87,38 +76,20 @@ export function addTrackToConfig({
   }
 }
 
-export async function saveTrackConfigAndReport({
-  config,
-  targetConfigPath,
-  name,
-  trackId,
-  wasOverwritten,
-}: {
-  config: Config
-  targetConfigPath: string
-  name: string
-  trackId: string
-  wasOverwritten: boolean
-}): Promise<void> {
-  await saveConfigAndReportBase({
-    config,
-    target: targetConfigPath,
-    itemType: 'track',
-    itemName: name,
-    itemId: trackId,
-    wasOverwritten,
-  })
-}
-
 export function buildTrackParams({
   flags,
   location,
   adapter,
   configContents,
 }: {
-  flags: any
+  flags: {
+    trackType?: string
+    trackId?: string
+    name?: string
+    assemblyNames?: string
+  }
   location: string
-  adapter: any
+  adapter: { type: string; [key: string]: unknown }
   configContents: Config
 }) {
   const trackType = flags.trackType || guessTrackType(adapter.type)
@@ -134,31 +105,4 @@ export function buildTrackParams({
     name,
     assemblyNames,
   }
-}
-
-export function createTrackConfiguration({
-  location,
-  trackParams,
-  flags,
-  adapter,
-  configContents,
-}: {
-  location: string
-  trackParams: ReturnType<typeof buildTrackParams>
-  flags: any
-  adapter: any
-  configContents: Config
-}) {
-  return buildTrackConfig({
-    location,
-    trackType: trackParams.trackType,
-    trackId: trackParams.trackId,
-    name: trackParams.name,
-    assemblyNames: trackParams.assemblyNames,
-    category: flags.category,
-    description: flags.description,
-    config: flags.config,
-    adapter,
-    configContents,
-  })
 }

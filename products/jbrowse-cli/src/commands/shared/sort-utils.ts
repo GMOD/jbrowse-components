@@ -1,6 +1,11 @@
+import { parseArgs } from 'util'
 import { spawn } from 'child_process'
 
 import tmp from 'tmp'
+
+import { printHelp } from '../../utils.ts'
+import { waitForProcessClose } from '../process-utils.ts'
+import { validateFileArgument, validateRequiredCommands } from './validators.ts'
 
 import type { ChildProcess } from 'child_process'
 
@@ -69,4 +74,38 @@ export function spawnSortProcess(
     env: getMinimalEnvironment(),
     stdio: 'inherit',
   })
+}
+
+export async function runSort(
+  config: SortConfig,
+  commandName: string,
+  args?: string[],
+) {
+  const options = { help: { type: 'boolean', short: 'h' } } as const
+  const { values: flags, positionals } = parseArgs({
+    args,
+    options,
+    allowPositionals: true,
+  })
+
+  if (flags.help) {
+    printHelp({
+      description: config.description,
+      examples: config.examples,
+      usage: `jbrowse ${commandName} [file] [options]`,
+      options,
+    })
+    return
+  }
+
+  const file = positionals[0]
+  validateFileArgument(file, commandName, config.fileType)
+  validateRequiredCommands(['sh', 'sort', 'grep'])
+
+  const child = spawnSortProcess(file, config.sortColumn)
+  const exitCode = await waitForProcessClose(child)
+
+  if (exitCode !== 0) {
+    throw new Error(`Sort process exited with code ${exitCode}`)
+  }
 }

@@ -5,9 +5,6 @@ import { supported } from '../../types/common.ts'
 
 import type { Config, Track } from '../../base.ts'
 
-/**
- * Parses a comma-separated string into an array of trimmed, non-empty strings
- */
 export function parseCommaSeparatedString(value?: string): string[] {
   return (
     value
@@ -17,9 +14,6 @@ export function parseCommaSeparatedString(value?: string): string[] {
   )
 }
 
-/**
- * Validates and parses a prefix size value
- */
 export function validatePrefixSize(
   value?: string | number,
 ): number | undefined {
@@ -35,9 +29,6 @@ export function validatePrefixSize(
   return parsed
 }
 
-/**
- * Prepares common indexDriver parameters from raw flag values
- */
 export function prepareIndexDriverFlags(flags: {
   attributes: string
   exclude: string
@@ -60,9 +51,6 @@ export function writeConf(obj: Config, configPath: string): void {
   fs.writeFileSync(configPath, JSON.stringify(obj, null, 2))
 }
 
-/**
- * Loads config and prepares output location for indexing
- */
 export async function loadConfigForIndexing(
   target: string | undefined,
   out: string | undefined,
@@ -86,27 +74,14 @@ export function ensureTrixDir(outLocation: string): string {
   return trixDir
 }
 
-/**
- * Extracts all assembly names from a config object
- * Handles both single assembly (config.assembly) and multiple assemblies (config.assemblies)
- */
-function extractAssemblyNamesFromConfig(config: Config): string[] {
-  if (config.assemblies) {
-    return config.assemblies.map(a => a.name)
-  }
-  if (config.assembly) {
-    return [config.assembly.name]
-  }
-  return []
-}
-
 export function getAssemblyNames(
   config: Config,
   assemblies?: string,
 ): string[] {
   const asms = assemblies
     ? parseCommaSeparatedString(assemblies)
-    : extractAssemblyNamesFromConfig(config)
+    : (config.assemblies?.map(a => a.name) ??
+        (config.assembly ? [config.assembly.name] : []))
 
   if (!asms.length) {
     throw new Error('No assemblies found')
