@@ -233,7 +233,9 @@ export async function executeVariantCellData({
         genotypesCache,
       })
       perRegionMafs.set(regionNum, regionMafs)
-      allMafs.push(...regionMafs)
+      for (const maf of regionMafs) {
+        allMafs.push(maf)
+      }
     }
     mafs = allMafs
   } else {

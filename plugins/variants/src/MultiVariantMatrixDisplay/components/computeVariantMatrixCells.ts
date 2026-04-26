@@ -10,7 +10,7 @@ import {
   getPhasedColorFromRaw,
   getRawCallGenotype,
 } from '../../shared/rawGenotypes.ts'
-import { createCachedABGR } from '../../shared/variantWebglUtils.ts'
+import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { ProcessedSource } from '../../shared/types.ts'
@@ -64,8 +64,6 @@ export function computeVariantMatrixCells({
   renderingMode: string
   genotypesCache: Map<string, Record<string, string>>
 }): MatrixCellData {
-  const getCachedABGR = createCachedABGR()
-
   const alleleColorCache: Record<string, string | undefined> = {}
   const rawColorCache = new Map<number, string>()
 
@@ -99,9 +97,16 @@ export function computeVariantMatrixCells({
   const sampleIndexMap = firstRaw
     ? buildSampleIndexMap(mafs[0]!.feature.get('sampleNames') as string[])
     : undefined
-  const sampleIndices = sampleIndexMap
-    ? sources.map(({ sampleName }) => sampleIndexMap.get(sampleName))
-    : undefined
+  let sampleIndices: Int32Array | undefined
+  if (sampleIndexMap) {
+    sampleIndices = new Int32Array(numSources).fill(-1)
+    for (let j = 0; j < numSources; j++) {
+      const si = sampleIndexMap.get(sources[j]!.sampleName)
+      if (si !== undefined) {
+        sampleIndices[j] = si
+      }
+    }
+  }
 
   for (let idx = 0; idx < numFeatures; idx++) {
     const { feature, mostFrequentAlt } = mafs[idx]!
@@ -168,8 +173,8 @@ export function computeVariantMatrixCells({
 
         for (let j = 0; j < numSources; j++) {
           const { name, HP, sampleName } = sources[j]!
-          const si = sampleIndices[j]
-          if (si === undefined) {
+          const si = sampleIndices[j]!
+          if (si < 0) {
             continue
           }
           if (renderingMode === 'phased') {
