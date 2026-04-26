@@ -6,7 +6,7 @@ function sendStatusToWindow(
   mainWindow: Electron.BrowserWindow | null,
   text: string,
 ) {
-  console.error(text)
+  console.log(text)
   if (mainWindow) {
     mainWindow.webContents.send('message', text)
   }

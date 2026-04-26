@@ -1,5 +1,5 @@
 import path from 'path'
-import url, { pathToFileURL } from 'url'
+import { pathToFileURL } from 'url'
 
 import electron, { BrowserWindow, Menu, app, shell } from 'electron'
 
@@ -102,7 +102,7 @@ export async function createMainWindow(
     appUrl.searchParams.append('config', lastArg)
   }
 
-  await mainWindow.loadURL(url.format(appUrl))
+  await mainWindow.loadURL(appUrl.href)
 
   setupWindowHandlers(mainWindow)
 
