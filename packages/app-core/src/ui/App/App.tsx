@@ -45,11 +45,12 @@ interface Menu {
 interface Props {
   HeaderButtons?: React.ReactElement
   session: SessionWithFocusedViewAndDrawerWidgets & {
-    menus: () => Menu[]
-    snackbarMessages: SnackbarMessage[]
-    renameCurrentSession: (arg: string) => void
-    popSnackbarMessage: () => unknown
-  }
+      menus: () => Menu[]
+      snackbarMessages: SnackbarMessage[]
+      renameCurrentSession: (arg: string) => void
+      popSnackbarMessage: () => unknown
+      useWorkspaces: boolean
+    }
 }
 
 const LazyDrawerWidget = observer(function LazyDrawerWidget(props: Props) {

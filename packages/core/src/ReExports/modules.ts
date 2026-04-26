@@ -49,7 +49,7 @@ import { cx, keyframes, makeStyles } from '../util/tss-react/index.ts'
 import * as mstTypes from '../util/types/mst.ts'
 
 function makeLegacyMakeStyles() {
-  return (args: Parameters<typeof makeStyles>[0]) => {
+  return (args: Parameters<ReturnType<typeof makeStyles>>[0]) => {
     const useStyles = makeStyles()(args)
     return () => useStyles().classes
   }

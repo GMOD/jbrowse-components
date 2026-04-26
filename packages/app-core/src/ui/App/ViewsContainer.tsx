@@ -4,10 +4,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
-import type {
-  AbstractViewContainer,
-  SessionWithFocusedViewAndDrawerWidgets,
-} from '@jbrowse/core/util'
+import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 
 const ClassicViewsContainer = lazy(() => import('./ClassicViewsContainer.tsx'))
 const TiledViewsContainer = lazy(() => import('./TiledViewsContainer.tsx'))
@@ -22,8 +19,7 @@ const useStyles = makeStyles()({
 
 interface Props {
   HeaderButtons?: React.ReactElement
-  session: SessionWithFocusedViewAndDrawerWidgets &
-    AbstractViewContainer & {
+  session: SessionWithFocusedViewAndDrawerWidgets & {
       renameCurrentSession: (arg: string) => void
       snackbarMessages: SnackbarMessage[]
       popSnackbarMessage: () => unknown
