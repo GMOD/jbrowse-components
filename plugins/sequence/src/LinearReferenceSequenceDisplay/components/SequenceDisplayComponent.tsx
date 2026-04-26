@@ -59,12 +59,6 @@ function rgbStyle([r, g, b]: RGB) {
   return `rgb(${r},${g},${b})`
 }
 
-function setLetterFont(ctx: CanvasRenderingContext2D, rowHeight: number) {
-  ctx.font = `${Math.min(rowHeight - 2, 14)}px sans-serif`
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-}
-
 function drawBaseRow(
   ctx: CanvasRenderingContext2D,
   seq: string,
@@ -83,12 +77,6 @@ function drawBaseRow(
   const w = 1 / bpPerPx
   const iStart = Math.max(0, Math.floor(visStartBp - seqStart))
   const iEnd = Math.min(seq.length, Math.ceil(visEndBp - seqStart))
-
-  if (showBorders) {
-    setLetterFont(ctx, rowHeight)
-    ctx.strokeStyle = BORDER_COLOR
-    ctx.lineWidth = 1
-  }
 
   for (let i = iStart; i < iEnd; i++) {
     const letter = seq[i]!
@@ -164,12 +152,6 @@ function drawTranslationRow(
     }
   }
 
-  if (showBorders) {
-    setLetterFont(ctx, rowHeight)
-    ctx.strokeStyle = BORDER_COLOR
-    ctx.lineWidth = 1
-  }
-
   for (let i = codonAlignedStart; i < Math.min(sliceEnd, clipEnd); i += 3) {
     const codon = seq.slice(i, i + 3)
     const normalizedCodon = reversed ? revcom(codon) : codon
@@ -224,6 +206,14 @@ function drawSequence(
   const showBorders = 1 / bpPerPx >= 12
   const visStartBp = offsetPx * bpPerPx
   const visEndBp = (offsetPx + trackWidthPx) * bpPerPx
+
+  if (showBorders) {
+    ctx.font = `${Math.min(rowHeight - 2, 14)}px sans-serif`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.strokeStyle = BORDER_COLOR
+    ctx.lineWidth = 1
+  }
 
   const forwardFrames: Frame[] = showTranslation && showForward ? [3, 2, 1] : []
   const reverseFrames: Frame[] =

@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
 
+import type React from 'react'
+
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { ErrorBar } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
@@ -98,12 +100,6 @@ const PileupInner = observer(function PileupInner({
 
   const view = getContainingView(model) as { scrollZoom?: boolean }
   const { scrollZoom } = view
-  const {
-    scrollableHeight,
-    pileupViewportHeight,
-    currentRangeY,
-    setCurrentRangeY,
-  } = model
 
   useEffect(() => {
     if (!canvas) {
@@ -113,6 +109,7 @@ const PileupInner = observer(function PileupInner({
       if (scrollZoom && !e.shiftKey) {
         return
       }
+      const { scrollableHeight, pileupViewportHeight, currentRangeY } = model
       if (scrollableHeight <= 0) {
         return
       }
@@ -126,21 +123,14 @@ const PileupInner = observer(function PileupInner({
       const newScroll = Math.max(0, Math.min(scrollableHeight, curScroll + dy))
       if (newScroll !== curScroll) {
         e.preventDefault()
-        setCurrentRangeY([newScroll, newScroll + pileupViewportHeight])
+        model.setCurrentRangeY([newScroll, newScroll + pileupViewportHeight])
       }
     }
     canvas.addEventListener('wheel', handler, { passive: false })
     return () => {
       canvas.removeEventListener('wheel', handler)
     }
-  }, [
-    canvas,
-    scrollZoom,
-    scrollableHeight,
-    pileupViewportHeight,
-    currentRangeY,
-    setCurrentRangeY,
-  ])
+  }, [canvas, scrollZoom, model])
 
   if (!width) {
     return null
@@ -204,17 +194,6 @@ const PileupInner = observer(function PileupInner({
     )
   }
 
-  const hasOverflow = model.scrollableHeight > 0
-  const trackHeight = model.pileupViewportHeight
-  const thumbHeight = hasOverflow
-    ? Math.max(20, trackHeight * (trackHeight / model.totalPileupHeight))
-    : 0
-  const thumbTop = hasOverflow
-    ? topOffset +
-      (model.currentRangeY[0] / model.scrollableHeight) *
-        (trackHeight - thumbHeight)
-    : 0
-
   return (
     <div>
       <div
@@ -223,69 +202,33 @@ const PileupInner = observer(function PileupInner({
         }
         style={{ position: 'relative', width: '100%', height }}
       >
-        <canvas
-          ref={canvasRef}
-          style={{
-            display: 'block',
-            width,
-            height,
-            cursor:
-              model.featureIdUnderMouse || model.overCigarItem
-                ? 'pointer'
-                : 'default',
-          }}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleCanvasMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseLeave}
-          onClick={handleClick}
-          onContextMenu={handleContextMenu}
+        <PileupCanvas
+          model={model}
+          canvasRef={canvasRef}
+          width={width}
+          height={height}
+          handleMouseDown={handleMouseDown}
+          handleCanvasMouseMove={handleCanvasMouseMove}
+          handleMouseUp={handleMouseUp}
+          handleMouseLeave={handleMouseLeave}
+          handleClick={handleClick}
+          handleContextMenu={handleContextMenu}
         />
 
         <SashimiArcsOverlay model={model} />
 
-        <VisibleLabelsOverlay
-          labels={model.visibleLabels}
+        <VisibleLabelsHost
+          model={model}
           width={width}
           height={height}
           contrastMap={contrastMap}
         />
 
-        {model.coverageTicks ? (
-          <svg
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: model.scalebarOverlapLeft,
-              pointerEvents: 'none',
-              height: model.coverageTicks.height,
-              width: 50,
-            }}
-          >
-            <g transform="translate(45, 0)">
-              <CoverageYScaleBar model={model} orientation="left" />
-            </g>
-          </svg>
-        ) : null}
+        <CoverageAxisHost model={model} />
 
-        {model.insertSizeTicks ? (
-          <svg
-            style={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              pointerEvents: 'none',
-              height: model.height,
-              width: 50,
-            }}
-          >
-            <g transform="translate(0, 0)">
-              <YScaleBar ticks={model.insertSizeTicks} orientation="right" />
-            </g>
-          </svg>
-        ) : null}
+        <InsertSizeAxisHost model={model} />
 
-        {model.showLegend ? <FloatingLegend items={model.legendItems} /> : null}
+        <LegendHost model={model} />
 
         {showCoverage ? (
           <div
@@ -360,46 +303,196 @@ const PileupInner = observer(function PileupInner({
           />
         ) : null}
 
-        {hasOverflow ? (
-          <div
-            className={classes.scrollbarTrack}
-            style={{ top: topOffset, height: trackHeight }}
-            onMouseDown={e => {
-              e.preventDefault()
-              e.stopPropagation()
-              const startY = e.clientY
-              const startScroll = model.currentRangeY[0]
-              const scrollRange = model.scrollableHeight
-              const usableTrack = trackHeight - thumbHeight
-
-              const onMouseMove = (me: MouseEvent) => {
-                const dy = me.clientY - startY
-                const scrollDelta =
-                  usableTrack > 0 ? (dy / usableTrack) * scrollRange : 0
-                const next = Math.max(
-                  0,
-                  Math.min(scrollRange, startScroll + scrollDelta),
-                )
-                model.setCurrentRangeY([
-                  next,
-                  next + model.pileupViewportHeight,
-                ])
-              }
-              const onMouseUp = () => {
-                document.removeEventListener('mousemove', onMouseMove)
-                document.removeEventListener('mouseup', onMouseUp)
-              }
-              document.addEventListener('mousemove', onMouseMove)
-              document.addEventListener('mouseup', onMouseUp)
-            }}
-          >
-            <div
-              className={classes.scrollbarThumb}
-              style={{ top: thumbTop - topOffset, height: thumbHeight }}
-            />
-          </div>
-        ) : null}
+        <PileupScrollbar model={model} topOffset={topOffset} />
       </div>
+    </div>
+  )
+})
+
+const PileupCanvas = observer(function PileupCanvas({
+  model,
+  canvasRef,
+  width,
+  height,
+  handleMouseDown,
+  handleCanvasMouseMove,
+  handleMouseUp,
+  handleMouseLeave,
+  handleClick,
+  handleContextMenu,
+}: {
+  model: LinearAlignmentsDisplayModel
+  canvasRef: (node: HTMLCanvasElement | null) => void
+  width: number
+  height: number
+  handleMouseDown: (e: React.MouseEvent) => void
+  handleCanvasMouseMove: (e: React.MouseEvent) => void
+  handleMouseUp: () => void
+  handleMouseLeave: () => void
+  handleClick: (e: React.MouseEvent) => void
+  handleContextMenu: (e: React.MouseEvent) => void
+}) {
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        display: 'block',
+        width,
+        height,
+        cursor:
+          model.featureIdUnderMouse || model.overCigarItem
+            ? 'pointer'
+            : 'default',
+      }}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleCanvasMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
+      onClick={handleClick}
+      onContextMenu={handleContextMenu}
+    />
+  )
+})
+
+const VisibleLabelsHost = observer(function VisibleLabelsHost({
+  model,
+  width,
+  height,
+  contrastMap,
+}: {
+  model: LinearAlignmentsDisplayModel
+  width: number
+  height: number
+  contrastMap: Record<string, string>
+}) {
+  return (
+    <VisibleLabelsOverlay
+      labels={model.visibleLabels}
+      width={width}
+      height={height}
+      contrastMap={contrastMap}
+    />
+  )
+})
+
+const CoverageAxisHost = observer(function CoverageAxisHost({
+  model,
+}: {
+  model: LinearAlignmentsDisplayModel
+}) {
+  const { coverageTicks } = model
+  if (!coverageTicks) {
+    return null
+  }
+  return (
+    <svg
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: model.scalebarOverlapLeft,
+        pointerEvents: 'none',
+        height: coverageTicks.height,
+        width: 50,
+      }}
+    >
+      <g transform="translate(45, 0)">
+        <CoverageYScaleBar model={model} orientation="left" />
+      </g>
+    </svg>
+  )
+})
+
+const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
+  model,
+}: {
+  model: LinearAlignmentsDisplayModel
+}) {
+  const { insertSizeTicks } = model
+  if (!insertSizeTicks) {
+    return null
+  }
+  return (
+    <svg
+      style={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        pointerEvents: 'none',
+        height: model.height,
+        width: 50,
+      }}
+    >
+      <g transform="translate(0, 0)">
+        <YScaleBar ticks={insertSizeTicks} orientation="right" />
+      </g>
+    </svg>
+  )
+})
+
+const LegendHost = observer(function LegendHost({
+  model,
+}: {
+  model: LinearAlignmentsDisplayModel
+}) {
+  if (!model.showLegend) {
+    return null
+  }
+  return <FloatingLegend items={model.legendItems} />
+})
+
+const PileupScrollbar = observer(function PileupScrollbar({
+  model,
+  topOffset,
+}: {
+  model: LinearAlignmentsDisplayModel
+  topOffset: number
+}) {
+  const { classes } = useStyles()
+  const { scrollableHeight, pileupViewportHeight, totalPileupHeight } = model
+  if (scrollableHeight <= 0) {
+    return null
+  }
+  const trackHeight = pileupViewportHeight
+  const thumbHeight = Math.max(
+    20,
+    trackHeight * (trackHeight / totalPileupHeight),
+  )
+  const thumbTop =
+    (model.currentRangeY[0] / scrollableHeight) * (trackHeight - thumbHeight)
+  return (
+    <div
+      className={classes.scrollbarTrack}
+      style={{ top: topOffset, height: trackHeight }}
+      onMouseDown={e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const startY = e.clientY
+        const startScroll = model.currentRangeY[0]
+        const scrollRange = model.scrollableHeight
+        const usableTrack = trackHeight - thumbHeight
+
+        const onMouseMove = (me: MouseEvent) => {
+          const dy = me.clientY - startY
+          const scrollDelta =
+            usableTrack > 0 ? (dy / usableTrack) * scrollRange : 0
+          const next = Math.max(
+            0,
+            Math.min(scrollRange, startScroll + scrollDelta),
+          )
+          model.setCurrentRangeY([next, next + model.pileupViewportHeight])
+        }
+        const onMouseUp = () => {
+          document.removeEventListener('mousemove', onMouseMove)
+          document.removeEventListener('mouseup', onMouseUp)
+        }
+        document.addEventListener('mousemove', onMouseMove)
+        document.addEventListener('mouseup', onMouseUp)
+      }}
+    >
+      <div
+        className={classes.scrollbarThumb}
+        style={{ top: thumbTop, height: thumbHeight }}
+      />
     </div>
   )
 })
