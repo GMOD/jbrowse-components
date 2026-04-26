@@ -109,12 +109,6 @@ export {
   getDisplayStr,
   migrateOldSettingSnapshots,
 } from './BaseLinearDisplay/index.ts'
-export { default as CollapseIntronsDialog } from './BaseLinearDisplay/components/CollapseIntronsDialog/CollapseIntronsDialog.tsx'
-export {
-  featureHasExonsOrCDS,
-  getTranscripts,
-  hasIntrons,
-} from './BaseLinearDisplay/util.ts'
 export type {
   ByteEstimateConfig,
   FetchContext,
