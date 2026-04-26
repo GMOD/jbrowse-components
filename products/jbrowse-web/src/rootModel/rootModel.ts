@@ -185,7 +185,7 @@ export default function RootModel({
           const ret = await self.sessionDB.getAll('metadata')
           this.setSavedSessionMetadata(
             ret
-              .filter(f => f.configPath === (self.configPath || ''))
+              .filter(f => f.configPath === (self.configPath ?? ''))
               .sort((a, b) => +b.createdAt - +a.createdAt),
           )
         }
@@ -241,11 +241,11 @@ export default function RootModel({
                             'metadata',
                             {
                               ...ret,
-                              favorite: ret?.favorite || false,
+                              favorite: ret?.favorite ?? false,
                               name: s.name,
                               id: s.id,
                               createdAt: ret?.createdAt ?? new Date(),
-                              configPath: self.configPath || '',
+                              configPath: self.configPath ?? '',
                             },
                             s.id,
                           )

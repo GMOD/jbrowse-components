@@ -197,11 +197,11 @@ const SessionLoader = types
      * #getter
      */
     get isSessionLoaded() {
-      return Boolean(
-        self.sessionError ||
-        self.sessionSnapshot ||
+      return (
         self.blankSession ||
-        self.sessionSpec,
+        self.sessionError !== undefined ||
+        self.sessionSnapshot !== undefined ||
+        self.sessionSpec !== undefined
       )
     },
     /**
@@ -287,7 +287,7 @@ const SessionLoader = types
     async fetchPlugins(config: { plugins?: PluginDefinition[] }) {
       try {
         const runtimePlugins = await this.loadPluginsFromDefinitions(
-          config.plugins || [],
+          config.plugins ?? [],
         )
         self.setRuntimePlugins([...runtimePlugins])
       } catch (e) {
@@ -301,7 +301,7 @@ const SessionLoader = types
     async fetchSessionPlugins(snap: { sessionPlugins?: PluginDefinition[] }) {
       try {
         const plugins = await this.loadPluginsFromDefinitions(
-          snap.sessionPlugins || [],
+          snap.sessionPlugins ?? [],
         )
         self.setSessionPlugins([...plugins])
       } catch (e) {
@@ -361,7 +361,7 @@ const SessionLoader = types
 
         // cross origin config check
         if (configUri.hostname !== window.location.hostname) {
-          const configPlugins = config.plugins || []
+          const configPlugins = config.plugins ?? []
           const configPluginsAllowed = await checkPlugins(configPlugins)
           if (!configPluginsAllowed) {
             self.setSessionTriaged({
@@ -400,7 +400,7 @@ const SessionLoader = types
     async fetchSessionFromSessionStorage(query: string) {
       const sessionStr = sessionStorage.getItem('current')
       if (sessionStr) {
-        const sessionSnap = JSON.parse(sessionStr).session || {}
+        const sessionSnap = JSON.parse(sessionStr).session ?? {}
         if (query === sessionSnap.id) {
           // Assign new ID to avoid conflicts when same session is opened in
           // multiple tabs (each tab gets its own copy with unique ID)
@@ -441,14 +441,11 @@ const SessionLoader = types
      */
     async fetchLocalSession() {
       const query = self.sessionQuery!.replace('local-', '')
-
-      if (await this.fetchSessionFromSessionStorage(query)) {
-        return
+      if (!(await this.fetchSessionFromSessionStorage(query))) {
+        if (!(await this.fetchSessionFromIndexedDB(query))) {
+          throw new Error('Local session not found')
+        }
       }
-      if (await this.fetchSessionFromIndexedDB(query)) {
-        return
-      }
-      throw new Error('Local session not found')
     },
     /**
      * #action
@@ -482,8 +479,8 @@ const SessionLoader = types
       const defaultURL = 'https://share.jbrowse.org/api/v1/'
       const decryptedSession = await readSessionFromDynamo(
         `${readConf(self.configSnapshot, 'shareURL', defaultURL)}load`,
-        self.sessionQuery || '',
-        self.password || '',
+        self.sessionQuery ?? '',
+        self.password ?? '',
       )
 
       const session = JSON.parse(await fromUrlSafeB64(decryptedSession))

@@ -44,7 +44,7 @@ export function getPluginManager(
     adminMode,
   }).create(
     {
-      jbrowse: initialState || configSnapshot,
+      jbrowse: initialState ?? configSnapshot,
     },
     { pluginManager },
   )
@@ -205,7 +205,7 @@ export async function exportAndVerifySvg({
   delay?: { timeout: number }
   findAllByText?: any
 }) {
-  const actualDelay = delay || { timeout: 40000 }
+  const actualDelay = delay ?? { timeout: 40000 }
   const opts = [{}, actualDelay]
   fireEvent.click(await findByTestId('view_menu_icon', ...opts))
 
@@ -239,7 +239,7 @@ export async function testFileReload(config: {
   expectedCanvas: string | RegExp
   timeout?: number
 }) {
-  const delay = { timeout: config.timeout || 30000 }
+  const delay = { timeout: config.timeout ?? 30000 }
   const opts = [{}, delay]
 
   await mockConsole(async () => {
@@ -275,7 +275,7 @@ export async function openSpreadsheetView({
   fileUrl: string
   timeout?: number
 }) {
-  const delay = { timeout: timeout || 50000 }
+  const delay = { timeout: timeout ?? 50000 }
   const opts = [{}, delay]
   const { session } = await createView()
 
@@ -304,7 +304,7 @@ export async function openViewWithFileInput({
   fileUrl: string
   timeout?: number
 }) {
-  const delay = { timeout: timeout || 40000 }
+  const delay = { timeout: timeout ?? 40000 }
   const result = await createView()
   const { findByTestId, getByTestId, findByText } = result
 

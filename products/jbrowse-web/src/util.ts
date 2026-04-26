@@ -152,7 +152,7 @@ export function readConf(
   const configuration = root?.configuration as
     | Record<string, unknown>
     | undefined
-  return configuration?.[attr] || def
+  return configuration?.[attr] ?? def
 }
 
 export { checkPlugins, fetchPlugins } from './checkPlugins.ts'

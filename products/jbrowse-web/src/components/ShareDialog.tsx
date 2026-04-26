@@ -53,42 +53,44 @@ const ShareDialog = observer(function ShareDialog({
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
-      // checking !error allows retry when error state is cleared
-      if (error) {
-        return
-      }
-      try {
-        if (currentSetting === 'short') {
-          setLoading(true)
-          const locationUrl = new URL(window.location.href)
-          const result = await shareSessionToDynamo(snap, url, locationUrl.href)
-          const params = new URLSearchParams(locationUrl.search)
-          params.set('session', `share-${result.json.sessionId}`)
-          params.set('password', result.password)
-          locationUrl.search = params.toString()
-          setShortUrl(locationUrl.href)
-
-          setSessionParam(`share-${result.json.sessionId}`)
-          setPasswordParam(result.password)
-        } else {
-          const sess = await toUrlSafeB64(JSON.stringify(snap))
-          const longUrl = new URL(window.location.href)
-          const longParams = new URLSearchParams(longUrl.search)
-          longParams.set('session', `encoded-${sess}`)
-          setSessionParam(`encoded-${sess}`)
-          longUrl.search = longParams.toString()
-          setLongUrl(longUrl.toString())
+      // !error allows retry when the error banner's onReset clears error state
+      if (!error) {
+        try {
+          if (currentSetting === 'short') {
+            setLoading(true)
+            const locationUrl = new URL(window.location.href)
+            const result = await shareSessionToDynamo(
+              snap,
+              url,
+              locationUrl.href,
+            )
+            const params = new URLSearchParams(locationUrl.search)
+            params.set('session', `share-${result.json.sessionId}`)
+            params.set('password', result.password)
+            locationUrl.search = params.toString()
+            setShortUrl(locationUrl.href)
+            setSessionParam(`share-${result.json.sessionId}`)
+            setPasswordParam(result.password)
+          } else {
+            const sess = await toUrlSafeB64(JSON.stringify(snap))
+            const locationUrl = new URL(window.location.href)
+            const params = new URLSearchParams(locationUrl.search)
+            params.set('session', `encoded-${sess}`)
+            setSessionParam(`encoded-${sess}`)
+            locationUrl.search = params.toString()
+            setLongUrl(locationUrl.toString())
+          }
+        } catch (e) {
+          console.error(e)
+          setError(e)
+        } finally {
+          setLoading(false)
         }
-      } catch (e) {
-        console.error(e)
-        setError(e)
-      } finally {
-        setLoading(false)
       }
     })()
   }, [currentSetting, error, url, snap])
 
-  const disabled = (currentSetting === 'short' && loading) || !!error
+  const disabled = loading || !!error
   return (
     <>
       <Dialog

@@ -328,7 +328,7 @@ export default function NoConfigMessage() {
     new URLSearchParams(search),
   )
 
-  const root = href.split('?')[0] ?? href
+  const root = href.split('?')[0]
 
   const buildConfigUrl = (config: string, params?: Record<string, string>) => {
     return `${root}?${new URLSearchParams(
