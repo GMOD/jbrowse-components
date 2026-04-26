@@ -8,7 +8,7 @@ import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { computeInitialWidths } from './computeInitialWidths.ts'
-import { useSearchHighlight } from './useSearchHighlight.ts'
+import { useSearchHighlight } from '../../useSearchHighlight.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel, FacetedRow } from '../facetedModel.ts'
@@ -316,7 +316,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   const lastColId = visibleColumns.at(-1)?.id
 
   const parentRef = useRef<HTMLDivElement>(null)
-  useSearchHighlight(parentRef, filterText)
+  useSearchHighlight(parentRef, filterText, 'jbrowse-faceted-search')
   const { items: virtualItems, totalSize } = useVirtualRows(
     parentRef,
     filteredRows.length,

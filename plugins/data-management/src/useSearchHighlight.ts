@@ -1,10 +1,18 @@
 import { type RefObject, useLayoutEffect } from 'react'
 
-const HIGHLIGHT_NAME = 'jbrowse-search'
+const registeredHighlights = new Set<string>()
 
-if (typeof document !== 'undefined' && typeof CSS !== 'undefined') {
+function ensureHighlightStyle(name: string) {
+  if (
+    registeredHighlights.has(name) ||
+    typeof document === 'undefined' ||
+    typeof CSS === 'undefined'
+  ) {
+    return
+  }
+  registeredHighlights.add(name)
   const style = document.createElement('style')
-  style.textContent = `::highlight(${HIGHLIGHT_NAME}) { background-color: yellow; color: black; }`
+  style.textContent = `::highlight(${name}) { background-color: yellow; color: black; }`
   document.head.append(style)
 }
 
@@ -22,8 +30,10 @@ function getTextNodes(root: Element): Text[] {
 export function useSearchHighlight(
   containerRef: RefObject<HTMLElement | null>,
   query: string,
+  highlightName: string,
 ) {
   useLayoutEffect(() => {
+    ensureHighlightStyle(highlightName)
     const container = containerRef.current
     if (container && query.trim()) {
       const queryLower = query.toLowerCase().trim()
@@ -44,12 +54,12 @@ export function useSearchHighlight(
           offset = idx + queryLower.length
         }
       }
-      CSS.highlights.set(HIGHLIGHT_NAME, highlight)
+      CSS.highlights.set(highlightName, highlight)
     } else {
-      CSS.highlights.delete(HIGHLIGHT_NAME)
+      CSS.highlights.delete(highlightName)
     }
     return () => {
-      CSS.highlights.delete(HIGHLIGHT_NAME)
+      CSS.highlights.delete(highlightName)
     }
   })
 }
