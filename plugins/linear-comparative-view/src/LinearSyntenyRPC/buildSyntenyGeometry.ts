@@ -189,7 +189,8 @@ export function buildSyntenyGeometry({
     willDrawCigarArr[i] = willDrawCigar ? 1 : 0
 
     // 1 base in pass 1; pass 2 emits N cigar ops if detailed, else 1 KIND_BASE.
-    estimate += 1 + (willDrawDetailedCigar ? cigar.length : willDrawCigar ? 1 : 0)
+    estimate +=
+      1 + (willDrawDetailedCigar ? cigar.length : willDrawCigar ? 1 : 0)
   }
 
   // Pre-allocate buffers with estimated capacity. Location markers grow the

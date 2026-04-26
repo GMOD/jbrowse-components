@@ -288,7 +288,13 @@ export function readData({
     if (!file) {
       throw new Error('no file specified')
     }
-    const trackConfig = makeTrackConfig(type, file, index, opts, configData.assembly)
+    const trackConfig = makeTrackConfig(
+      type,
+      file,
+      index,
+      opts,
+      configData.assembly,
+    )
     if (trackConfig) {
       configData.tracks.push(trackConfig)
     }

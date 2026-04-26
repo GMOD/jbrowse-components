@@ -13,7 +13,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
-import type { ProcessedSource, SampleInfo, Source } from './types.ts'
+import type { ProcessedSource, SampleInfo } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'

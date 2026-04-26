@@ -86,9 +86,7 @@ const yargsInstance = yargs(hideBin(process.argv))
     '$0 --fasta ref.fa --vcfgz variants.vcf.gz --loc chr1:1-50000 --out out.png',
     'Render VCF variants',
   )
-  .epilogue(
-    `Track options: ${trackTypes.map(t => `--${t}`).join(', ')}`,
-  )
+  .epilogue(`Track options: ${trackTypes.map(t => `--${t}`).join(', ')}`)
   .strict(false)
   .help()
 

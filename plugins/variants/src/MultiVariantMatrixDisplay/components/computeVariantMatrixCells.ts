@@ -128,7 +128,7 @@ export function computeVariantMatrixCells({
       featureData.push(makeFeatureData(feature, featureId, genotypes))
 
       for (let j = 0; j < numSources; j++) {
-        const { name, HP, sampleName } = sources[j]!
+        const { HP, sampleName } = sources[j]!
         const s = samp[sampleName]
         if (s) {
           const genotype = s.GT?.[0]
@@ -179,7 +179,12 @@ export function computeVariantMatrixCells({
           }
           if (renderingMode === 'phased') {
             const isPhased = callGtPhased ? Boolean(callGtPhased[si]) : false
-            const gtStr = genotypeStringFromRaw(callGt, si, ploidy, callGtPhased)
+            const gtStr = genotypeStringFromRaw(
+              callGt,
+              si,
+              ploidy,
+              callGtPhased,
+            )
             if (isPhased) {
               const allele = callGt[si * ploidy + HP!]!
               const c = getPhasedColorFromRaw(allele, mostFreqAltInt)
@@ -218,7 +223,8 @@ export function computeVariantMatrixCells({
               continue
             }
 
-            const colorKey = refCount | (altCount << 8) | (alt2Count << 16) | (uncalled << 24)
+            const colorKey =
+              refCount | (altCount << 8) | (alt2Count << 16) | (uncalled << 24)
             let c = rawColorCache.get(colorKey)
             if (c === undefined) {
               c = getColorAlleleCount(
@@ -251,7 +257,7 @@ export function computeVariantMatrixCells({
         }
         featureData.push(makeFeatureData(feature, featureId, samp))
         for (let j = 0; j < numSources; j++) {
-          const { name, HP, sampleName } = sources[j]!
+          const { HP, sampleName } = sources[j]!
           const genotype = samp[sampleName]
           if (genotype) {
             if (renderingMode === 'phased') {

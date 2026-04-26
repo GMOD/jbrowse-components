@@ -78,7 +78,6 @@ function getInsertionRenderEnd(
   return start + maxLen
 }
 
-
 const BLACK_ABGR = 0xff000000
 
 export function computeVariantCells({
@@ -332,7 +331,8 @@ export function computeVariantCells({
             continue
           }
 
-          const colorKey = refCount | (altCount << 8) | (alt2Count << 16) | (uncalled << 24)
+          const colorKey =
+            refCount | (altCount << 8) | (alt2Count << 16) | (uncalled << 24)
           let c = rawColorCache.get(colorKey)
           if (c === undefined) {
             c = getColorAlleleCount(
@@ -456,7 +456,7 @@ export function computeVariantCells({
       flatbush.add(
         outFbGenomicStarts[i]!,
         outRowIndices[i]!,
-        outFbGenomicEnds[i]!,
+        outFbGenomicEnds[i],
         outRowIndices[i]! + 1,
       )
     }

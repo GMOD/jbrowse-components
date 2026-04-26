@@ -1,6 +1,9 @@
 import type { ProcessedSource, SampleInfo, Source } from './types.ts'
 
-function makeHaplotypeSources(source: Source, ploidy: number): ProcessedSource[] {
+function makeHaplotypeSources(
+  source: Source,
+  ploidy: number,
+): ProcessedSource[] {
   const results: ProcessedSource[] = []
   const sampleName = source.sampleName ?? source.name
   for (let i = 0; i < ploidy; i++) {

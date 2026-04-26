@@ -39,7 +39,7 @@ export function useSearchHighlight(
       const queryLower = query.toLowerCase().trim()
       const highlight = new Highlight()
       for (const textNode of getTextNodes(container)) {
-        const text = textNode.textContent ?? ''
+        const text = textNode.textContent
         const textLower = text.toLowerCase()
         let offset = 0
         while (offset < textLower.length) {

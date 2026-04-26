@@ -34,7 +34,16 @@ describe('booleanize', () => {
 })
 
 describe('standardizeArgv', () => {
-  const trackTypes = ['bam', 'cram', 'bigwig', 'vcfgz', 'gffgz', 'hic', 'bigbed', 'bedgz']
+  const trackTypes = [
+    'bam',
+    'cram',
+    'bigwig',
+    'vcfgz',
+    'gffgz',
+    'hic',
+    'bigbed',
+    'bedgz',
+  ]
 
   test('separates track types from other options', () => {
     const args: [string, string[]][] = [
@@ -66,7 +75,13 @@ describe('standardizeArgv', () => {
 
 describe('makeTrackConfig', () => {
   test('bam track', () => {
-    const config = makeTrackConfig('bam', 'reads.bam', undefined, [], fakeAssembly)
+    const config = makeTrackConfig(
+      'bam',
+      'reads.bam',
+      undefined,
+      [],
+      fakeAssembly,
+    )
     expect(config).toMatchObject({
       type: 'AlignmentsTrack',
       trackId: 'reads.bam',
@@ -81,52 +96,105 @@ describe('makeTrackConfig', () => {
   })
 
   test('bam track with explicit CSI index', () => {
-    const config = makeTrackConfig('bam', 'reads.bam', 'reads.bam.csi', [], fakeAssembly)
+    const config = makeTrackConfig(
+      'bam',
+      'reads.bam',
+      'reads.bam.csi',
+      [],
+      fakeAssembly,
+    )
     expect(config?.adapter).toMatchObject({
       index: { indexType: 'CSI' },
     })
   })
 
   test('bam track with snpcov display', () => {
-    const config = makeTrackConfig('bam', 'reads.bam', undefined, ['snpcov'], fakeAssembly)
+    const config = makeTrackConfig(
+      'bam',
+      'reads.bam',
+      undefined,
+      ['snpcov'],
+      fakeAssembly,
+    )
     expect(config?.displays).toHaveLength(1)
-    expect(config?.displays[0]).toMatchObject({ type: 'LinearSNPCoverageDisplay' })
+    expect(config?.displays[0]).toMatchObject({
+      type: 'LinearSNPCoverageDisplay',
+    })
   })
 
   test('cram track', () => {
-    const config = makeTrackConfig('cram', 'reads.cram', undefined, [], fakeAssembly)
+    const config = makeTrackConfig(
+      'cram',
+      'reads.cram',
+      undefined,
+      [],
+      fakeAssembly,
+    )
     expect(config).toMatchObject({
       type: 'AlignmentsTrack',
-      adapter: { type: 'CramAdapter', craiLocation: { localPath: 'reads.cram.crai' } },
+      adapter: {
+        type: 'CramAdapter',
+        craiLocation: { localPath: 'reads.cram.crai' },
+      },
     })
   })
 
   test('bigwig track', () => {
-    const config = makeTrackConfig('bigwig', 'signal.bw', undefined, [], fakeAssembly)
+    const config = makeTrackConfig(
+      'bigwig',
+      'signal.bw',
+      undefined,
+      [],
+      fakeAssembly,
+    )
     expect(config).toMatchObject({
       type: 'QuantitativeTrack',
-      adapter: { type: 'BigWigAdapter', bigWigLocation: { localPath: 'signal.bw' } },
+      adapter: {
+        type: 'BigWigAdapter',
+        bigWigLocation: { localPath: 'signal.bw' },
+      },
     })
   })
 
   test('vcfgz track with default tbi index', () => {
-    const config = makeTrackConfig('vcfgz', 'variants.vcf.gz', undefined, [], fakeAssembly)
+    const config = makeTrackConfig(
+      'vcfgz',
+      'variants.vcf.gz',
+      undefined,
+      [],
+      fakeAssembly,
+    )
     expect(config).toMatchObject({
       type: 'VariantTrack',
       adapter: {
         type: 'VcfTabixAdapter',
-        index: { indexType: 'TBI', location: { localPath: 'variants.vcf.gz.tbi' } },
+        index: {
+          indexType: 'TBI',
+          location: { localPath: 'variants.vcf.gz.tbi' },
+        },
       },
     })
   })
 
   test('vcfgz track with explicit CSI index', () => {
-    const config = makeTrackConfig('vcfgz', 'variants.vcf.gz', 'variants.vcf.gz.csi', [], fakeAssembly)
+    const config = makeTrackConfig(
+      'vcfgz',
+      'variants.vcf.gz',
+      'variants.vcf.gz.csi',
+      [],
+      fakeAssembly,
+    )
     expect(config?.adapter).toMatchObject({ index: { indexType: 'CSI' } })
   })
 
   test('gffgz track', () => {
-    const config = makeTrackConfig('gffgz', 'genes.gff.gz', undefined, [], fakeAssembly)
+    const config = makeTrackConfig(
+      'gffgz',
+      'genes.gff.gz',
+      undefined,
+      [],
+      fakeAssembly,
+    )
     expect(config).toMatchObject({
       type: 'FeatureTrack',
       adapter: { type: 'Gff3TabixAdapter' },
@@ -134,7 +202,13 @@ describe('makeTrackConfig', () => {
   })
 
   test('hic track', () => {
-    const config = makeTrackConfig('hic', 'matrix.hic', undefined, [], fakeAssembly)
+    const config = makeTrackConfig(
+      'hic',
+      'matrix.hic',
+      undefined,
+      [],
+      fakeAssembly,
+    )
     expect(config).toMatchObject({
       type: 'HicTrack',
       adapter: { type: 'HicAdapter' },
@@ -142,7 +216,13 @@ describe('makeTrackConfig', () => {
   })
 
   test('bigbed track', () => {
-    const config = makeTrackConfig('bigbed', 'features.bb', undefined, [], fakeAssembly)
+    const config = makeTrackConfig(
+      'bigbed',
+      'features.bb',
+      undefined,
+      [],
+      fakeAssembly,
+    )
     expect(config).toMatchObject({
       type: 'FeatureTrack',
       adapter: { type: 'BigBedAdapter' },
@@ -150,7 +230,13 @@ describe('makeTrackConfig', () => {
   })
 
   test('bedgz track', () => {
-    const config = makeTrackConfig('bedgz', 'regions.bed.gz', undefined, [], fakeAssembly)
+    const config = makeTrackConfig(
+      'bedgz',
+      'regions.bed.gz',
+      undefined,
+      [],
+      fakeAssembly,
+    )
     expect(config).toMatchObject({
       type: 'FeatureTrack',
       adapter: { type: 'BedTabixAdapter' },
@@ -158,13 +244,27 @@ describe('makeTrackConfig', () => {
   })
 
   test('unknown track type returns undefined', () => {
-    const config = makeTrackConfig('unknown', 'file.txt', undefined, [], fakeAssembly)
+    const config = makeTrackConfig(
+      'unknown',
+      'file.txt',
+      undefined,
+      [],
+      fakeAssembly,
+    )
     expect(config).toBeUndefined()
   })
 
   test('http URI tracks use uri location', () => {
-    const config = makeTrackConfig('bigwig', 'https://example.com/signal.bw', undefined, [], fakeAssembly)
-    expect(config?.adapter).toMatchObject({ bigWigLocation: { uri: 'https://example.com/signal.bw' } })
+    const config = makeTrackConfig(
+      'bigwig',
+      'https://example.com/signal.bw',
+      undefined,
+      [],
+      fakeAssembly,
+    )
+    expect(config?.adapter).toMatchObject({
+      bigWigLocation: { uri: 'https://example.com/signal.bw' },
+    })
   })
 })
 
@@ -176,12 +276,16 @@ describe('readData', () => {
   test('builds assembly from fasta option', () => {
     const result = readData({ fasta: '/path/to/ref.fa' })
     expect(result.assembly.name).toBe('ref.fa')
-    expect(result.assembly.sequence).toMatchObject({ adapter: { type: 'IndexedFastaAdapter' } })
+    expect(result.assembly.sequence).toMatchObject({
+      adapter: { type: 'IndexedFastaAdapter' },
+    })
   })
 
   test('builds bgzip assembly when fasta ends with gz', () => {
     const result = readData({ fasta: '/path/to/ref.fa.gz' })
-    expect(result.assembly.sequence).toMatchObject({ adapter: { type: 'BgzipFastaAdapter' } })
+    expect(result.assembly.sequence).toMatchObject({
+      adapter: { type: 'BgzipFastaAdapter' },
+    })
   })
 
   test('adds tracks from trackList', () => {
