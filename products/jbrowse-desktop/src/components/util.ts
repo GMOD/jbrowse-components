@@ -20,6 +20,105 @@ export const adapterLabels: Record<AdapterType, string> = {
   TwoBitAdapter: '2bit file (.2bit)',
 }
 
+export interface FormState {
+  adapterSelection: AdapterType
+  assemblyName: string
+  assemblyDisplayName: string
+  fastaLocation: FileLocation
+  faiLocation: FileLocation
+  gziLocation: FileLocation
+  twoBitLocation: FileLocation
+  chromSizesLocation: FileLocation
+  refNameAliasesLocation: FileLocation
+  cytobandsLocation: FileLocation
+}
+
+const blank = { uri: '' } as FileLocation
+
+export function initialFormState(): FormState {
+  return {
+    adapterSelection: adapterTypes[0]!,
+    assemblyName: '',
+    assemblyDisplayName: '',
+    fastaLocation: blank,
+    faiLocation: blank,
+    gziLocation: blank,
+    twoBitLocation: blank,
+    chromSizesLocation: blank,
+    refNameAliasesLocation: blank,
+    cytobandsLocation: blank,
+  }
+}
+
+export function applyPrimaryFile(state: FormState, location: FileLocation): FormState {
+  const filename = getFilename(location)
+  const detected = filename ? detectAdapterType(filename) : undefined
+  const assemblyName =
+    filename && !state.assemblyName
+      ? getAssemblyNameFromFilename(filename)
+      : state.assemblyName
+  if (detected === 'TwoBitAdapter') {
+    return { ...state, twoBitLocation: location, adapterSelection: 'TwoBitAdapter', assemblyName }
+  }
+  return {
+    ...state,
+    fastaLocation: location,
+    ...(detected ? { adapterSelection: detected } : {}),
+    assemblyName,
+  }
+}
+
+export function applyTwoBitFile(state: FormState, location: FileLocation): FormState {
+  const filename = getFilename(location)
+  const assemblyName =
+    filename && !state.assemblyName
+      ? getAssemblyNameFromFilename(filename)
+      : state.assemblyName
+  return { ...state, twoBitLocation: location, assemblyName }
+}
+
+export function clearFormFields(state: FormState): FormState {
+  return {
+    ...state,
+    fastaLocation: blank,
+    faiLocation: blank,
+    gziLocation: blank,
+    twoBitLocation: blank,
+    chromSizesLocation: blank,
+    refNameAliasesLocation: blank,
+    cytobandsLocation: blank,
+    assemblyName: '',
+    assemblyDisplayName: '',
+  }
+}
+
+export function getBaseAssemblyConfig(state: FormState) {
+  return {
+    name: state.assemblyName,
+    ...(state.assemblyDisplayName ? { displayName: state.assemblyDisplayName } : {}),
+    ...(!isBlank(state.refNameAliasesLocation)
+      ? {
+          refNameAliases: {
+            adapter: {
+              type: 'RefNameAliasAdapter',
+              location: state.refNameAliasesLocation,
+            },
+          },
+        }
+      : {}),
+    ...(!isBlank(state.cytobandsLocation)
+      ? {
+          cytobands: {
+            adapter: {
+              type: 'CytobandAdapter',
+              cytobandsLocation: state.cytobandsLocation,
+            },
+          },
+        }
+      : {}),
+  }
+}
+
 export function isBlank(location: FileLocation) {
   return 'uri' in location && location.uri === ''
 }
@@ -87,11 +186,7 @@ export function getAdapterConfig({
     }
   }
   if (adapterSelection === 'BgzipFastaAdapter') {
-    if (
-      isBlank(fastaLocation) ||
-      isBlank(faiLocation) ||
-      isBlank(gziLocation)
-    ) {
+    if (isBlank(fastaLocation) || isBlank(faiLocation) || isBlank(gziLocation)) {
       throw new Error('FASTA, FAI, and GZI locations are all required')
     }
     return {
@@ -101,7 +196,6 @@ export function getAdapterConfig({
       gziLocation,
     }
   }
-  // adapterSelection === 'TwoBitAdapter' at this point
   if (isBlank(twoBitLocation)) {
     throw new Error('2bit location is required')
   }

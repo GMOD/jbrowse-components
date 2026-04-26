@@ -21,11 +21,19 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { createOpenSequenceDialogModel } from './openSequenceDialogModel.ts'
-import { adapterLabels, adapterTypes } from './util.ts'
+import {
+  adapterLabels,
+  adapterTypes,
+  applyPrimaryFile,
+  applyTwoBitFile,
+  clearFormFields,
+  getAdapterConfig,
+  getBaseAssemblyConfig,
+  initialFormState,
+} from './util.ts'
 
-import type { OpenSequenceDialogModel } from './openSequenceDialogModel.ts'
-import type { AdapterType } from './util.ts'
+import type { AdapterType, FormState } from './util.ts'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -73,10 +81,12 @@ const AdapterSelector = observer(function AdapterSelector({
   )
 })
 
-const FastaAdapterInput = observer(function FastaAdapterInput({
+function FastaAdapterInput({
   form,
+  setPrimaryFile,
 }: {
-  form: OpenSequenceDialogModel
+  form: FormState
+  setPrimaryFile: (l: FileLocation) => void
 }) {
   return (
     <>
@@ -88,16 +98,20 @@ const FastaAdapterInput = observer(function FastaAdapterInput({
         inline
         name="FASTA file"
         location={form.fastaLocation}
-        setLocation={form.setPrimaryFile}
+        setLocation={setPrimaryFile}
       />
     </>
   )
-})
+}
 
-const IndexedFastaAdapterInput = observer(function IndexedFastaAdapterInput({
+function IndexedFastaAdapterInput({
   form,
+  setPrimaryFile,
+  setFaiLocation,
 }: {
-  form: OpenSequenceDialogModel
+  form: FormState
+  setPrimaryFile: (l: FileLocation) => void
+  setFaiLocation: (l: FileLocation) => void
 }) {
   return (
     <>
@@ -105,22 +119,28 @@ const IndexedFastaAdapterInput = observer(function IndexedFastaAdapterInput({
         inline
         name="FASTA file"
         location={form.fastaLocation}
-        setLocation={form.setPrimaryFile}
+        setLocation={setPrimaryFile}
       />
       <FileSelector
         inline
         name="FASTA index (.fai) file"
         location={form.faiLocation}
-        setLocation={form.setFaiLocation}
+        setLocation={setFaiLocation}
       />
     </>
   )
-})
+}
 
-const BgzipFastaAdapterInput = observer(function BgzipFastaAdapterInput({
+function BgzipFastaAdapterInput({
   form,
+  setPrimaryFile,
+  setFaiLocation,
+  setGziLocation,
 }: {
-  form: OpenSequenceDialogModel
+  form: FormState
+  setPrimaryFile: (l: FileLocation) => void
+  setFaiLocation: (l: FileLocation) => void
+  setGziLocation: (l: FileLocation) => void
 }) {
   return (
     <>
@@ -128,28 +148,32 @@ const BgzipFastaAdapterInput = observer(function BgzipFastaAdapterInput({
         inline
         name="FASTA file (.fa.gz)"
         location={form.fastaLocation}
-        setLocation={form.setPrimaryFile}
+        setLocation={setPrimaryFile}
       />
       <FileSelector
         inline
         name="FASTA index (.fai) file"
         location={form.faiLocation}
-        setLocation={form.setFaiLocation}
+        setLocation={setFaiLocation}
       />
       <FileSelector
         inline
         name="FASTA gzip index (.gzi) file"
         location={form.gziLocation}
-        setLocation={form.setGziLocation}
+        setLocation={setGziLocation}
       />
     </>
   )
-})
+}
 
-const TwoBitAdapterInput = observer(function TwoBitAdapterInput({
+function TwoBitAdapterInput({
   form,
+  setTwoBitFile,
+  setChromSizesLocation,
 }: {
-  form: OpenSequenceDialogModel
+  form: FormState
+  setTwoBitFile: (l: FileLocation) => void
+  setChromSizesLocation: (l: FileLocation) => void
 }) {
   return (
     <>
@@ -157,22 +181,28 @@ const TwoBitAdapterInput = observer(function TwoBitAdapterInput({
         inline
         name="2bit file"
         location={form.twoBitLocation}
-        setLocation={form.setTwoBitFile}
+        setLocation={setTwoBitFile}
       />
       <FileSelector
         inline
         name=".chrom.sizes (optional, can speed up loading 2bit files with many contigs)"
         location={form.chromSizesLocation}
-        setLocation={form.setChromSizesLocation}
+        setLocation={setChromSizesLocation}
       />
     </>
   )
-})
+}
 
-const AdvancedOptions = observer(function AdvancedOptions({
+function AdvancedOptions({
   form,
+  setAssemblyDisplayName,
+  setRefNameAliasesLocation,
+  setCytobandsLocation,
 }: {
-  form: OpenSequenceDialogModel
+  form: FormState
+  setAssemblyDisplayName: (n: string) => void
+  setRefNameAliasesLocation: (l: FileLocation) => void
+  setCytobandsLocation: (l: FileLocation) => void
 }) {
   return (
     <>
@@ -183,24 +213,24 @@ const AdvancedOptions = observer(function AdvancedOptions({
         fullWidth
         value={form.assemblyDisplayName}
         onChange={event => {
-          form.setAssemblyDisplayName(event.target.value)
+          setAssemblyDisplayName(event.target.value)
         }}
       />
       <FileSelector
         inline
         name="Add refName aliases e.g. remap chr1 and 1 to same entity. Can use a tab separated file of aliases, such as a .chromAliases files from UCSC"
         location={form.refNameAliasesLocation}
-        setLocation={form.setRefNameAliasesLocation}
+        setLocation={setRefNameAliasesLocation}
       />
       <FileSelector
         inline
         name="Add cytobands for assembly with the format of cytoBands.txt/cytoBandIdeo.txt from UCSC (.gz also allowed)"
         location={form.cytobandsLocation}
-        setLocation={form.setCytobandsLocation}
+        setLocation={setCytobandsLocation}
       />
     </>
   )
-})
+}
 
 const OpenSequenceDialog = observer(function OpenSequenceDialog({
   onClose,
@@ -208,13 +238,23 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
   onClose: (conf?: unknown) => Promise<void>
 }) {
   const { classes } = useStyles()
-  const [form] = useState(() => createOpenSequenceDialogModel())
+  const [form, setForm] = useState(initialFormState)
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
 
+  const setPrimaryFile = (loc: FileLocation) => setForm(f => applyPrimaryFile(f, loc))
+  const setTwoBitFile = (loc: FileLocation) => setForm(f => applyTwoBitFile(f, loc))
+  const setFaiLocation = (loc: FileLocation) => setForm(f => ({ ...f, faiLocation: loc }))
+  const setGziLocation = (loc: FileLocation) => setForm(f => ({ ...f, gziLocation: loc }))
+  const setChromSizesLocation = (loc: FileLocation) => setForm(f => ({ ...f, chromSizesLocation: loc }))
+  const setRefNameAliasesLocation = (loc: FileLocation) => setForm(f => ({ ...f, refNameAliasesLocation: loc }))
+  const setCytobandsLocation = (loc: FileLocation) => setForm(f => ({ ...f, cytobandsLocation: loc }))
+  const setAssemblyDisplayName = (name: string) => setForm(f => ({ ...f, assemblyDisplayName: name }))
+  const setAdapterSelection = (type: AdapterType) => setForm(f => ({ ...f, adapterSelection: type }))
+
   async function createAssemblyConfig() {
-    const raw = form.adapterConfig
+    const raw = getAdapterConfig(form)
     let adapter
     if ('needsIndexing' in raw) {
       setLoading('Creating .fai file for FASTA')
@@ -231,7 +271,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
       adapter = raw
     }
     return {
-      ...form.baseAssemblyConfig,
+      ...getBaseAssemblyConfig(form),
       sequence: {
         type: 'ReferenceSequenceTrack',
         trackId: `${form.assemblyName}-${Date.now()}`,
@@ -288,23 +328,36 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
             fullWidth
             value={form.assemblyName}
             onChange={event => {
-              form.setAssemblyName(event.target.value)
+              setForm(f => ({ ...f, assemblyName: event.target.value }))
             }}
           />
 
           <AdapterSelector
             adapterSelection={form.adapterSelection}
-            setAdapterSelection={form.setAdapterSelection}
+            setAdapterSelection={setAdapterSelection}
           />
 
           {form.adapterSelection === 'FastaAdapter' ? (
-            <FastaAdapterInput form={form} />
+            <FastaAdapterInput form={form} setPrimaryFile={setPrimaryFile} />
           ) : form.adapterSelection === 'IndexedFastaAdapter' ? (
-            <IndexedFastaAdapterInput form={form} />
+            <IndexedFastaAdapterInput
+              form={form}
+              setPrimaryFile={setPrimaryFile}
+              setFaiLocation={setFaiLocation}
+            />
           ) : form.adapterSelection === 'BgzipFastaAdapter' ? (
-            <BgzipFastaAdapterInput form={form} />
+            <BgzipFastaAdapterInput
+              form={form}
+              setPrimaryFile={setPrimaryFile}
+              setFaiLocation={setFaiLocation}
+              setGziLocation={setGziLocation}
+            />
           ) : (
-            <TwoBitAdapterInput form={form} />
+            <TwoBitAdapterInput
+              form={form}
+              setTwoBitFile={setTwoBitFile}
+              setChromSizesLocation={setChromSizesLocation}
+            />
           )}
 
           <Button
@@ -316,7 +369,14 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
           >
             {showAdvanced ? 'Hide advanced options' : 'Show advanced options'}
           </Button>
-          {showAdvanced ? <AdvancedOptions form={form} /> : null}
+          {showAdvanced ? (
+            <AdvancedOptions
+              form={form}
+              setAssemblyDisplayName={setAssemblyDisplayName}
+              setRefNameAliasesLocation={setRefNameAliasesLocation}
+              setCytobandsLocation={setCytobandsLocation}
+            />
+          ) : null}
         </Paper>
       </DialogContent>
       <DialogActions>
@@ -329,7 +389,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
               setError(undefined)
               const assemblyConf = await createAssemblyConfig()
               setAssemblyConfs([...assemblyConfs, assemblyConf])
-              form.clearFormState()
+              setForm(clearFormFields)
             } catch (e) {
               setError(e)
               console.error(e)
