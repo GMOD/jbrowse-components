@@ -151,27 +151,24 @@ export default function stateModelFactory() {
               autorun(
                 async function spreadsheetViewInitAutorun() {
                   const { init, width } = self
-                  if (!width || !init) {
-                    return
-                  }
-
-                  const session = getSession(self)
-
-                  try {
-                    self.importWizard.setSelectedAssemblyName(init.assembly)
-                    self.importWizard.setFileSource({
-                      uri: init.uri,
-                      locationType: 'UriLocation',
-                    })
-                    if (init.fileType) {
-                      self.importWizard.setFileType(init.fileType)
+                  if (width && init) {
+                    const session = getSession(self)
+                    try {
+                      self.importWizard.setSelectedAssemblyName(init.assembly)
+                      self.importWizard.setFileSource({
+                        uri: init.uri,
+                        locationType: 'UriLocation',
+                      })
+                      if (init.fileType) {
+                        self.importWizard.setFileType(init.fileType)
+                      }
+                      await self.importWizard.import(init.assembly)
+                    } catch (e) {
+                      console.error(e)
+                      session.notifyError(`${e}`, e)
+                    } finally {
+                      self.setInit(undefined)
                     }
-                    await self.importWizard.import(init.assembly)
-                  } catch (e) {
-                    console.error(e)
-                    session.notifyError(`${e}`, e)
-                  } finally {
-                    self.setInit(undefined)
                   }
                 },
                 { name: 'SpreadsheetViewInit' },

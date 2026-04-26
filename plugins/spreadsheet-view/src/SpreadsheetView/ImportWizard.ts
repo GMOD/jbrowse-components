@@ -74,10 +74,8 @@ export function getFileSourceName(src: FileLocation): string | undefined {
 export function detectFileType(
   name: string,
 ): (typeof fileTypes)[number] | undefined {
-  const match = fileTypesRegexp.exec(name)?.[1]
-  return match
-    ? fileTypes.find(t => t.toLowerCase() === match.toLowerCase())
-    : undefined
+  const match = fileTypesRegexp.exec(name)?.[1]?.toLowerCase()
+  return match ? fileTypes.find(t => t.toLowerCase() === match) : undefined
 }
 
 /**
@@ -277,46 +275,46 @@ export default function stateModelFactory() {
        * the parent to display it
        */
       async import(assemblyName: string) {
-        if (!self.fileSource) {
-          return
-        }
+        if (self.fileSource) {
+          self.selectedAssemblyName = assemblyName
+          const typeParser = await fileTypeParsers[self.fileType]()
 
-        self.selectedAssemblyName = assemblyName
-        const typeParser = await fileTypeParsers[self.fileType]()
-
-        const { fetchAndMaybeUnzip } = await import('@jbrowse/core/util')
-        const { pluginManager } = getEnv(self)
-        const filehandle = openLocation(self.fileSource, pluginManager)
-        self.setLoading(true)
-        try {
+          const { fetchAndMaybeUnzip } = await import('@jbrowse/core/util')
+          const { pluginManager } = getEnv(self)
+          const filehandle = openLocation(self.fileSource, pluginManager)
+          self.setLoading(true)
           try {
-            const stat = await filehandle.stat()
-            if (stat.size > IMPORT_SIZE_LIMIT) {
+            let stat: { size: number } | undefined
+            try {
+              stat = await filehandle.stat()
+            } catch (e) {
+              // stat failure is non-fatal; proceed without size check
+              console.warn(e)
+            }
+            if (stat && stat.size > IMPORT_SIZE_LIMIT) {
               self.setError(
                 `File is too big. Tabular files are limited to at most ${(
                   IMPORT_SIZE_LIMIT / 1000
                 ).toLocaleString()}kb.`,
               )
-              return
+            } else {
+              if ('uri' in self.fileSource) {
+                self.setCachedFileHandle(self.fileSource)
+              }
+              const data = await fetchAndMaybeUnzip(filehandle)
+              getParent<{ displaySpreadsheet(d: object): void }>(
+                self,
+              ).displaySpreadsheet({
+                ...typeParser(data),
+                assemblyName,
+              })
             }
           } catch (e) {
-            // not required for stat to succeed to proceed, but it is helpful
-            console.warn(e)
+            console.error(e)
+            self.setError(e)
+          } finally {
+            self.setLoading(false)
           }
-
-          if ('uri' in self.fileSource) {
-            self.setCachedFileHandle(self.fileSource)
-          }
-          const data = await fetchAndMaybeUnzip(filehandle)
-          getParent<any>(self).displaySpreadsheet({
-            ...typeParser(data),
-            assemblyName,
-          })
-        } catch (e) {
-          console.error(e)
-          self.setError(e)
-        } finally {
-          self.setLoading(false)
         }
       },
     }))

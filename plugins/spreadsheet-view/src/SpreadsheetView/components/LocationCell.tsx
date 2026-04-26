@@ -15,7 +15,7 @@ export default function LocationCell({
   feature: SimpleFeatureSerialized
 }) {
   const session = getSession(model)
-  const spreadsheetViewId = getParent<any>(model).id
+  const spreadsheetViewId = getParent<{ id: string }>(model).id
   const assemblyName = model.assemblyName!
   const locString = assembleLocString(feature)
   return (
