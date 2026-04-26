@@ -210,12 +210,13 @@ const VariantComponent = observer(function VariantComponent({
     let bestIdx = -1
     let bestDist = Infinity
     for (const idx of hits) {
-      const item = regionCellData.flatbushItems[idx]!
+      const gStart = regionCellData.flatbushGenomicStarts[idx]!
+      const gEnd = regionCellData.flatbushGenomicEnds[idx]!
       const dx =
-        genomicPos < item.genomicStart
-          ? item.genomicStart - genomicPos
-          : genomicPos > item.genomicEnd
-            ? genomicPos - item.genomicEnd
+        genomicPos < gStart
+          ? gStart - genomicPos
+          : genomicPos > gEnd
+            ? genomicPos - gEnd
             : 0
       if (dx < bestDist) {
         bestDist = dx
@@ -224,10 +225,13 @@ const VariantComponent = observer(function VariantComponent({
     }
 
     if (bestIdx >= 0) {
-      const item = regionCellData.flatbushItems[bestIdx]!
-      const info = regionCellData.featureGenotypeMap[item.featureId]!
-      const genotype = info.genotypes[item.sourceName]!
-      const source = model.sources?.find(s => s.name === item.sourceName)
+      const featureId = regionCellData.flatbushFeatureIds[bestIdx]!
+      const sourceName = regionCellData.flatbushSourceNames[bestIdx]!
+      const genomicStart = regionCellData.flatbushGenomicStarts[bestIdx]!
+      const genomicEnd = regionCellData.flatbushGenomicEnds[bestIdx]!
+      const info = regionCellData.featureGenotypeMap[featureId]!
+      const genotype = info.genotypes[sourceName]!
+      const source = model.sources?.find(s => s.name === sourceName)
       return {
         genotype,
         alleles: makeSimpleAltString(genotype, info.ref, info.alt),
@@ -235,13 +239,13 @@ const VariantComponent = observer(function VariantComponent({
         description:
           info.alt.length >= 3 ? 'multiple ALT alleles' : info.description,
         length: getBpDisplayStr(info.length),
-        sampleName: source?.sampleName ?? item.sourceName,
-        name: item.sourceName,
-        featureId: item.featureId,
+        sampleName: source?.sampleName ?? sourceName,
+        name: sourceName,
+        featureId,
         cell: {
           rowIndex: regionCellData.cellRowIndices[bestIdx]!,
-          genomicStart: item.genomicStart,
-          genomicEnd: item.genomicEnd,
+          genomicStart,
+          genomicEnd,
           displayedRegionIndex: region.displayedRegionIndex,
         },
       }

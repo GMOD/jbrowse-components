@@ -67,7 +67,7 @@ export function computeVariantMatrixCells({
   const getCachedABGR = createCachedABGR()
 
   const alleleColorCache: Record<string, string | undefined> = {}
-  const rawColorCache: Record<string, string> = {}
+  const rawColorCache = new Map<number, string>()
 
   const numFeatures = mafs.length
   const numSources = sources.length
@@ -98,6 +98,9 @@ export function computeVariantMatrixCells({
   const firstRaw = mafs[0] ? getRawCallGenotype(mafs[0].feature) : undefined
   const sampleIndexMap = firstRaw
     ? buildSampleIndexMap(mafs[0]!.feature.get('sampleNames') as string[])
+    : undefined
+  const sampleIndices = sampleIndexMap
+    ? sources.map(({ sampleName }) => sampleIndexMap.get(sampleName))
     : undefined
 
   for (let idx = 0; idx < numFeatures; idx++) {
@@ -155,7 +158,7 @@ export function computeVariantMatrixCells({
       }
     } else {
       const callGt = getRawCallGenotype(feature)
-      if (callGt && sampleIndexMap) {
+      if (callGt && sampleIndices) {
         const callGtPhased = feature.get('callGenotypePhased') as
           | Uint8Array
           | undefined
@@ -165,32 +168,23 @@ export function computeVariantMatrixCells({
 
         for (let j = 0; j < numSources; j++) {
           const { name, HP, sampleName } = sources[j]!
-          const si = sampleIndexMap.get(sampleName)
+          const si = sampleIndices[j]
           if (si === undefined) {
             continue
           }
           if (renderingMode === 'phased') {
             const isPhased = callGtPhased ? Boolean(callGtPhased[si]) : false
+            const gtStr = genotypeStringFromRaw(callGt, si, ploidy, callGtPhased)
             if (isPhased) {
               const allele = callGt[si * ploidy + HP!]!
               const c = getPhasedColorFromRaw(allele, mostFreqAltInt)
               if (c) {
                 addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
-                genotypes[name] = genotypeStringFromRaw(
-                  callGt,
-                  si,
-                  ploidy,
-                  callGtPhased,
-                )
+                genotypes[name] = gtStr
               }
             } else {
               addCell(idx, j, BLACK_ABGR, false)
-              genotypes[name] = genotypeStringFromRaw(
-                callGt,
-                si,
-                ploidy,
-                callGtPhased,
-              )
+              genotypes[name] = gtStr
             }
           } else {
             const offset = si * ploidy
@@ -219,8 +213,8 @@ export function computeVariantMatrixCells({
               continue
             }
 
-            const cacheKey = `${refCount}:${altCount}:${alt2Count}:${uncalled}:${total}`
-            let c = rawColorCache[cacheKey]
+            const colorKey = refCount | (altCount << 8) | (alt2Count << 16) | (uncalled << 24)
+            let c = rawColorCache.get(colorKey)
             if (c === undefined) {
               c = getColorAlleleCount(
                 refCount,
@@ -230,7 +224,7 @@ export function computeVariantMatrixCells({
                 total,
                 true,
               )
-              rawColorCache[cacheKey] = c
+              rawColorCache.set(colorKey, c)
             }
             if (c) {
               addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
@@ -288,17 +282,17 @@ export function computeVariantMatrixCells({
   // Stable two-bucket reorder: ref cells first, then non-ref. Matrix always
   // draws ref (unlike the regular variant display) so both buckets always
   // land in the output.
-  let refCount = 0
+  let numRefCells = 0
   for (let i = 0; i < cellCount; i++) {
     if (isRef[i]) {
-      refCount++
+      numRefCells++
     }
   }
   const outFeatureIndices = new Float32Array(cellCount)
   const outRowIndices = new Uint32Array(cellCount)
   const outColors = new Uint32Array(cellCount)
   let refPos = 0
-  let nonRefPos = refCount
+  let nonRefPos = numRefCells
   for (let i = 0; i < cellCount; i++) {
     const w = isRef[i] ? refPos++ : nonRefPos++
     outFeatureIndices[w] = featureIndices[i]!
