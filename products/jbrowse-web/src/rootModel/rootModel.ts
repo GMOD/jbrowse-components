@@ -243,7 +243,7 @@ export default function RootModel({
                               favorite: ret?.favorite || false,
                               name: s.name,
                               id: s.id,
-                              createdAt: new Date(),
+                              createdAt: ret?.createdAt ?? new Date(),
                               configPath: self.configPath || '',
                             },
                             s.id,
@@ -384,29 +384,13 @@ export default function RootModel({
       /**
        * #action
        */
-      async favoriteSavedSession(id: string) {
+      async setSavedSessionFavorite(id: string, favorite: boolean) {
         if (self.sessionDB) {
           const ret = self.savedSessionMetadata?.find(f => f.id === id)
           if (ret) {
             await self.sessionDB.put(
               'metadata',
-              { ...ret, favorite: true },
-              ret.id,
-            )
-            await self.fetchSessionMetadata()
-          }
-        }
-      },
-      /**
-       * #action
-       */
-      async unfavoriteSavedSession(id: string) {
-        if (self.sessionDB) {
-          const ret = self.savedSessionMetadata?.find(f => f.id === id)
-          if (ret) {
-            await self.sessionDB.put(
-              'metadata',
-              { ...ret, favorite: false },
+              { ...ret, favorite },
               ret.id,
             )
             await self.fetchSessionMetadata()

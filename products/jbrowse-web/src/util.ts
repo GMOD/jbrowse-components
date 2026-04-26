@@ -161,7 +161,7 @@ export function removeAttr(obj: Record<string, unknown>, attr: string) {
   for (const prop in obj) {
     if (prop === attr) {
       delete obj[prop]
-    } else if (typeof obj[prop] === 'object') {
+    } else if (typeof obj[prop] === 'object' && obj[prop] !== null) {
       removeAttr(obj[prop] as Record<string, unknown>, attr)
     }
   }

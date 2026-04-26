@@ -42,7 +42,7 @@ export function RootAppMenuMixin() {
        *
        * @param menuName - Name of the menu to insert.
        *
-       * @param position - Position to insert menu. If negative, counts from th
+       * @param position - Position to insert menu. If negative, counts from the
        * end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the
        * second-to-last one.
        *

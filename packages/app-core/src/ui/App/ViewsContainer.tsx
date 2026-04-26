@@ -27,17 +27,14 @@ interface Props {
       renameCurrentSession: (arg: string) => void
       snackbarMessages: SnackbarMessage[]
       popSnackbarMessage: () => unknown
+      useWorkspaces: boolean
     }
 }
 
 const ViewsContainer = observer(function ViewsContainer(props: Props) {
   const { session } = props
-  const { views } = session
+  const { views, useWorkspaces } = session
   const { classes } = useStyles()
-
-  // Check if useWorkspaces property exists and is true (defaults to true if property exists)
-  const useWorkspaces =
-    'useWorkspaces' in session ? (session.useWorkspaces as boolean) : true
 
   return (
     <div className={classes.viewsContainer}>

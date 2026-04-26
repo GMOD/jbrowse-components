@@ -9,7 +9,7 @@ import type { BaseSession } from '@jbrowse/product-core'
  * #category root
  */
 export function TemporaryAssembliesMixin(
-  pluginManager: PluginManager,
+  _pluginManager: PluginManager,
   assemblyConfigSchemasType = types.frozen(),
 ) {
   return types

@@ -23,7 +23,6 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import {
   DialogQueueSessionMixin,
-  DrawerWidgetSessionMixin,
   MultipleViewsSessionMixin,
   ReferenceManagementSessionMixin,
   SessionTracksManagerSessionMixin,
@@ -65,7 +64,6 @@ interface Display {
  * used for "web based" products, including jbrowse-web and react-app
  * composed of
  * - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
- * - [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
  * - [DialogQueueSessionMixin](../dialogqueuesessionmixin)
  * - [ThemeManagerSessionMixin](../thememanagersessionmixin)
  * - [MultipleViewsSessionMixin](../multipleviewssessionmixin)
@@ -88,7 +86,6 @@ export function BaseWebSession({
       types.compose(
         'WebCoreSessionModelGroupA',
         ReferenceManagementSessionMixin(pluginManager),
-        DrawerWidgetSessionMixin(pluginManager),
         DialogQueueSessionMixin(pluginManager),
         ThemeManagerSessionMixin(pluginManager),
         MultipleViewsSessionMixin(pluginManager),
@@ -105,10 +102,6 @@ export function BaseWebSession({
       ),
     )
     .props({
-      /**
-       * #property
-       */
-      margin: 0,
       /**
        * #property
        */
@@ -215,12 +208,6 @@ export function BaseWebSession({
       get savedSessionMetadata() {
         return self.root.savedSessionMetadata
       },
-      /**
-       * #getter
-       */
-      get previousAutosaveId() {
-        return self.root.previousAutosaveId
-      },
 
       /**
        * #getter
@@ -279,14 +266,7 @@ export function BaseWebSession({
             )
           }),
         )
-        getParent<any>(self).setPluginsUpdated(true)
-      },
-
-      /**
-       * #action
-       */
-      addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
-        return self.root.addSavedSession(sessionSnapshot)
+        self.root.setPluginsUpdated(true)
       },
 
       /**
@@ -299,15 +279,8 @@ export function BaseWebSession({
       /**
        * #action
        */
-      favoriteSavedSession(id: string) {
-        return self.root.favoriteSavedSession(id)
-      },
-
-      /**
-       * #action
-       */
-      unfavoriteSavedSession(id: string) {
-        return self.root.unfavoriteSavedSession(id)
+      setSavedSessionFavorite(id: string, favorite: boolean) {
+        return self.root.setSavedSessionFavorite(id, favorite)
       },
       /**
        * #action
@@ -316,12 +289,6 @@ export function BaseWebSession({
         return self.root.renameCurrentSession(sessionName)
       },
 
-      /**
-       * #action
-       */
-      duplicateCurrentSession() {
-        return self.root.duplicateCurrentSession()
-      },
       /**
        * #action
        */
@@ -334,20 +301,6 @@ export function BaseWebSession({
        */
       setDefaultSession() {
         return self.root.setDefaultSession()
-      },
-
-      /**
-       * #action
-       */
-      saveSessionToLocalStorage() {
-        return self.root.saveSessionToLocalStorage()
-      },
-
-      /**
-       * #action
-       */
-      loadAutosaveSession() {
-        return self.root.loadAutosaveSession()
       },
 
       /**
