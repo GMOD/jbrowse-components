@@ -65,16 +65,13 @@ function validateAndExtractParams({
   outFile: string
 }): { isValid: boolean; configPath?: string; error?: string } {
   const { body } = req
-  const adminKey =
-    (body?.adminKey as string | undefined) ||
-    (req.query.adminKey as string | undefined)
+  const adminKey = body?.adminKey || (req.query.adminKey as string | undefined)
 
   if (adminKey !== key) {
     return { isValid: false, error: 'Invalid admin key' }
   }
 
-  const configPathParam =
-    body?.configPath || (req.query.config as string | undefined)
+  const configPathParam = body?.configPath || (req.query.config as string | undefined)
 
   try {
     const configPath = configPathParam
@@ -114,7 +111,7 @@ export function setupRoutes({
 
   app.post('/updateConfig', (req: Request, res: Response) => {
     const { body } = req
-    const config = body.config as string | undefined
+    const config = body.config
 
     const validation = validateAndExtractParams({ req, key, baseDir, outFile })
     if (!validation.isValid) {
@@ -163,9 +160,7 @@ export function setupRoutes({
 
   app.post('/shutdown', (req: Request, res: Response) => {
     const { body } = req
-    const adminKey = body?.adminKey as string | undefined
-
-    if (adminKey !== key) {
+    if (body?.adminKey !== key) {
       res.status(401).setHeader('Content-Type', 'text/plain')
       res.send('Error: Invalid admin key')
       return

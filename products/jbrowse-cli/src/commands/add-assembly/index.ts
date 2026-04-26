@@ -4,6 +4,7 @@ import {
   addAssemblyToConfig,
   enhanceAssembly,
   getAssembly,
+  isSequenceType,
   loadOrCreateConfig,
   resolveTargetPath,
 } from './utils.ts'
@@ -145,18 +146,19 @@ export async function run(args?: string[]) {
 
   const argsSequence = positionals[0] || ''
   const output = runFlags.target || runFlags.out || '.'
+  const flags = { ...runFlags, type: isSequenceType(runFlags.type) ? runFlags.type : undefined }
 
   debug(`Sequence location is: ${argsSequence}`)
 
   const target = await resolveTargetPath(output)
-  const baseAssembly = await getAssembly({ runFlags, argsSequence, target })
-  const assembly = await enhanceAssembly(baseAssembly, runFlags)
+  const baseAssembly = await getAssembly({ runFlags: flags, argsSequence, target })
+  const assembly = await enhanceAssembly(baseAssembly, flags)
 
   const configContents = await loadOrCreateConfig(target)
   const { config: updatedConfig, wasOverwritten } = await addAssemblyToConfig({
     config: configContents,
     assembly,
-    runFlags,
+    runFlags: flags,
   })
 
   await saveConfigAndReport({

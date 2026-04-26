@@ -12,8 +12,16 @@ import { findAndUpdateOrAdd } from '../shared/config-operations.ts'
 
 import type { Assembly, Config, Sequence } from '../../base.ts'
 
+export type SequenceType = 'indexedFasta' | 'bgzipFasta' | 'twoBit' | 'chromSizes' | 'custom'
+
+const sequenceTypes: SequenceType[] = ['indexedFasta', 'bgzipFasta', 'twoBit', 'chromSizes', 'custom']
+
+export function isSequenceType(t: string | undefined): t is SequenceType {
+  return sequenceTypes.includes(t as SequenceType)
+}
+
 interface AssemblyFlags {
-  type?: string
+  type?: SequenceType
   name?: string
   alias?: string[]
   displayName?: string
@@ -157,15 +165,7 @@ export async function getAssembly({
   }
 
   let { name } = runFlags
-  let { type } = runFlags as {
-    type:
-      | 'indexedFasta'
-      | 'bgzipFasta'
-      | 'twoBit'
-      | 'chromSizes'
-      | 'custom'
-      | undefined
-  }
+  let { type } = runFlags
   if (type) {
     debug(`Type is: ${type}`)
   } else {
