@@ -78,7 +78,7 @@ export function rectifyStats(
       s.scoreSumSquares,
       s.featureCount || s.basesCovered,
     ),
-    featureDensity: (s.featureCount || 1) / s.basesCovered,
+    featureDensity: s.featureCount / (s.basesCovered || 1),
   }
 }
 

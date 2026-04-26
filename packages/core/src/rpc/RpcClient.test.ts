@@ -160,7 +160,11 @@ describe('RpcClient worker crash (catch)', () => {
     await p.catch(() => {})
 
     expect(errors).toHaveLength(1)
-    expect(errors[0]).toMatchObject({ message: 'boom', lineno: 42, filename: 'worker.js' })
+    expect(errors[0]).toMatchObject({
+      message: 'boom',
+      lineno: 42,
+      filename: 'worker.js',
+    })
   })
 
   test('worker crash with no pending calls just emits error', () => {
@@ -180,7 +184,9 @@ describe('RpcClient worker crash (catch)', () => {
     await p.catch(() => {})
 
     // Late response should be a no-op, not throw
-    expect(() => reply(worker, '1', 'too late')).not.toThrow()
+    expect(() => {
+      reply(worker, '1', 'too late')
+    }).not.toThrow()
     expect(client.pending.size).toBe(0)
   })
 })

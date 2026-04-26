@@ -58,14 +58,14 @@ export async function writeAWSAnalytics(
     // eslint-disable-next-line unicorn/no-array-for-each
     tracks.forEach((track: Track) => {
       const key = `track-types-${track.type}`
-      stats[key] = stats[key] + 1 || 1
+      stats[key] = ((stats[key] as number) ?? 0) + 1
     })
 
     // stringifies the session track type counts, gets processed in lambda
     // eslint-disable-next-line unicorn/no-array-for-each
     session?.sessionTracks.forEach((track: Track) => {
       const key = `sessionTrack-types-${track.type}`
-      stats[key] = stats[key] + 1 || 1
+      stats[key] = ((stats[key] as number) ?? 0) + 1
     })
 
     // put stats into a query string for get request

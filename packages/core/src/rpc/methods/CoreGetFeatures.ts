@@ -6,11 +6,11 @@ import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 import { renameRegionsIfNeeded } from '../../util/index.ts'
 import SimpleFeature from '../../util/simpleFeature.ts'
 
-import type { RpcArgs, RpcReturn } from '../RpcRegistry.ts'
 import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import type { Region } from '../../util/index.ts'
 import type { SimpleFeatureSerialized } from '../../util/simpleFeature.ts'
 import type { StopToken } from '../../util/stopToken.ts'
+import type { RpcArgs, RpcReturn } from '../RpcRegistry.ts'
 
 export default class CoreGetFeatures extends RpcMethodType {
   name = 'CoreGetFeatures'

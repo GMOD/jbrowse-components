@@ -2,9 +2,9 @@ import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 import { renameRegionsIfNeeded } from '../../util/index.ts'
 
-import type { RpcArgs } from '../RpcRegistry.ts'
 import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import type { Region } from '../../util/index.ts'
+import type { RpcArgs } from '../RpcRegistry.ts'
 
 export default class CoreGetExportData extends RpcMethodType {
   name = 'CoreGetExportData'

@@ -1166,14 +1166,6 @@ export function getStr(obj: unknown) {
     : String(obj)
 }
 
-// based on autolink-js, license MIT
-// https://github.com/bryanwoods/autolink-js/blob/1418049970152c56ced73d43dcc62d80b320fb71/autolink.js#L9
-export function linkify(s: string) {
-  const pattern =
-    /(^|[\s\n]|<[A-Za-z]*\/?>)((?:https?|ftp):\/\/[-A-Z0-9+\u0026\u2019@#/%?=()~_|!:,.;]*[-A-Z0-9+\u0026@#/%=~()_|])/gi
-  return s.replaceAll(pattern, '$1<a href=\'$2\' target="_blank">$2</a>')
-}
-
 // heuristic measurement for a column of a @mui/x-data-grid, pass in
 // values from a column
 export function measureGridWidth(

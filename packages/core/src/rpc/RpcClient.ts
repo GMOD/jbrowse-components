@@ -18,7 +18,7 @@ interface PendingCall {
 
 export default class RpcClient {
   worker: Worker
-  protected pending = new Map<string, PendingCall>()
+  pending = new Map<string, PendingCall>()
   private events = new Map<string, Listener[]>()
   private counter = 0
 

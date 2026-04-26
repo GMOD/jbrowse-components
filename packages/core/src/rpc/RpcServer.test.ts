@@ -10,9 +10,12 @@ function flushPromises() {
 // In jsdom self === window === globalThis, so mocking globalThis.postMessage
 // intercepts all workerSelf.postMessage calls.
 function mockPostMessage() {
-  const sent: Array<{ data: unknown; transferables?: unknown }> = []
+  const sent: { data: unknown; transferables?: unknown }[] = []
   const original = (globalThis as any).postMessage
-  ;(globalThis as any).postMessage = (data: unknown, transferables?: unknown) => {
+  ;(globalThis as any).postMessage = (
+    data: unknown,
+    transferables?: unknown,
+  ) => {
     sent.push({ data, transferables })
   }
   return {
@@ -30,7 +33,7 @@ function makeServer(
 }
 
 function sendMessage(server: RpcServer, data: unknown) {
-  server['handler'](new MessageEvent('message', { data }))
+  server.handler(new MessageEvent('message', { data }) as any)
 }
 
 describe('RpcServer.handler()', () => {
@@ -93,7 +96,12 @@ describe('RpcServer.handler()', () => {
     const server = makeServer({
       echo: async (data: unknown) => data,
     })
-    sendMessage(server, { method: 'echo', uid: '4', data: { x: 1 }, libRpc: true })
+    sendMessage(server, {
+      method: 'echo',
+      uid: '4',
+      data: { x: 1 },
+      libRpc: true,
+    })
     await flushPromises()
     expect((sent[0]?.data as any)?.data).toEqual({ x: 1 })
     restore()
@@ -158,12 +166,13 @@ describe('RpcClient + RpcServer round-trip', () => {
     }
 
     const server = new RpcServer({ add: async (data: any) => data.a + data.b })
-    serverMessageHandlers.push(e => server['handler'](e))
+    serverMessageHandlers.push(e => {
+      server.handler(e)
+    })
 
     const client = new RpcClient(fakeWorker as unknown as Worker)
     const result = await client.call('add', { a: 3, b: 4 })
     expect(result).toBe(7)
-
     ;(globalThis as any).postMessage = originalPost
   })
 
@@ -196,11 +205,12 @@ describe('RpcClient + RpcServer round-trip', () => {
         throw new Error('intentional failure')
       },
     })
-    serverMessageHandlers.push(e => server['handler'](e))
+    serverMessageHandlers.push(e => {
+      server.handler(e)
+    })
 
     const client = new RpcClient(fakeWorker as unknown as Worker)
     await expect(client.call('fail', {})).rejects.toThrow('intentional failure')
-
     ;(globalThis as any).postMessage = originalPost
   })
 })

@@ -21,18 +21,16 @@ const compilationCache: Record<string, JexlExpression> = {}
  * @param options -
  */
 export function stringToJexlExpression(str: string, jexl?: JexlInstance) {
-  const cacheKey = `nosig|${str}`
-  if (!compilationCache[cacheKey]) {
-    const match = str.startsWith('jexl:')
-    if (!match) {
+  if (!compilationCache[str]) {
+    if (!str.startsWith('jexl:')) {
       throw new Error('string does not appear to be in jexl format')
     }
-    const code = str.split('jexl:')[1]!
+    const code = str.slice('jexl:'.length)
     const compiled = jexl
       ? jexl.compile(code)
       : createJexlInstance().compile(code)
-    compilationCache[cacheKey] = compiled
+    compilationCache[str] = compiled
   }
 
-  return compilationCache[cacheKey]
+  return compilationCache[str]
 }
