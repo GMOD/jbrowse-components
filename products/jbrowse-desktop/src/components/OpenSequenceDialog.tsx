@@ -32,7 +32,7 @@ import {
   initialFormState,
 } from './util.ts'
 
-import type { AdapterType, FormState } from './util.ts'
+import type { AdapterType, AssemblyConf, FormState } from './util.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 const { ipcRenderer } = window.require('electron')
@@ -239,9 +239,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
 }) {
   const { classes } = useStyles()
   const [form, setForm] = useState(initialFormState)
-  const [assemblyConfs, setAssemblyConfs] = useState<
-    Awaited<ReturnType<typeof createAssemblyConfig>>[]
-  >([])
+  const [assemblyConfs, setAssemblyConfs] = useState<AssemblyConf[]>([])
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
