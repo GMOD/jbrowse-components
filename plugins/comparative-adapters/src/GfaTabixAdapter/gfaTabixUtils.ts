@@ -143,9 +143,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
   }
 
   private async setup() {
-    if (!this.setupP) {
-      this.setupP = this.setupPre()
-    }
+    this.setupP ??= this.setupPre()
     return this.setupP
   }
 

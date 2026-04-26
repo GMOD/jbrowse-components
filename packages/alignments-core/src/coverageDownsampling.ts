@@ -340,9 +340,7 @@ export function countSnpsAtPosition(
   for (let i = 0; i < mismatches.numMismatches; i++) {
     if (mismatches.mismatchPositions[i] === posOffset) {
       const base = String.fromCharCode(mismatches.mismatchBases[i]!)
-      if (!snps[base]) {
-        snps[base] = { count: 0, fwd: 0, rev: 0 }
-      }
+      snps[base] ??= { count: 0, fwd: 0, rev: 0 }
       snps[base].count++
       if (mismatches.mismatchStrands) {
         if (mismatches.mismatchStrands[i] === 1) {

@@ -28,9 +28,7 @@ export function parseVcfBuffer(
       } else {
         const ret = line.indexOf('\t')
         const refName = line.slice(0, ret)
-        if (!featureMap[refName]) {
-          featureMap[refName] = []
-        }
+        featureMap[refName] ??= []
         featureMap[refName].push(line)
       }
       return true

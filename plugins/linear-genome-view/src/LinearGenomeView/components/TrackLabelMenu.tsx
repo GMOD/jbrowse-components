@@ -44,7 +44,7 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
         saveTrackData ? [saveTrackData] : [],
         effectiveConfig,
         view,
-      ) || []
+      ) ?? []
 
     return [
       {
@@ -108,7 +108,7 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
       },
       ...sessionItems,
       ...remainingTrackMenuItems,
-    ].sort((a, b) => (b.priority || 0) - (a.priority || 0))
+    ].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
   }, [track, view, session])
 
   return (

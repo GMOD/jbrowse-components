@@ -54,7 +54,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
   }
 
   async configure(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     return updateStatus('Downloading index', statusCallback, () =>
       this.configureOnce(),
     )

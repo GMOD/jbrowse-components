@@ -109,11 +109,7 @@ describe('Config-to-getter fallback logic', () => {
     const referenceDrawingModeSetting: string | undefined = undefined
 
     const result =
-      referenceDrawingModeSetting !== undefined
-        ? referenceDrawingModeSetting
-        : showReferenceAlleles
-          ? 'draw'
-          : 'skip'
+      referenceDrawingModeSetting ?? (showReferenceAlleles ? 'draw' : 'skip')
 
     expect(result).toBe('draw')
   })
@@ -123,11 +119,7 @@ describe('Config-to-getter fallback logic', () => {
     const referenceDrawingModeSetting: string | undefined = undefined
 
     const result =
-      referenceDrawingModeSetting !== undefined
-        ? referenceDrawingModeSetting
-        : showReferenceAlleles
-          ? 'draw'
-          : 'skip'
+      referenceDrawingModeSetting ?? (showReferenceAlleles ? 'draw' : 'skip')
 
     expect(result).toBe('skip')
   })
@@ -137,11 +129,7 @@ describe('Config-to-getter fallback logic', () => {
     const referenceDrawingModeSetting = 'skip'
 
     const result =
-      referenceDrawingModeSetting !== undefined
-        ? referenceDrawingModeSetting
-        : showReferenceAlleles
-          ? 'draw'
-          : 'skip'
+      referenceDrawingModeSetting ?? (showReferenceAlleles ? 'draw' : 'skip')
 
     expect(result).toBe('skip')
   })

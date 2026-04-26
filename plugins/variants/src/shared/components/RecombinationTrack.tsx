@@ -70,9 +70,7 @@ const RecombinationTrack = observer(function RecombinationTrack({
       x = ((i + 1) * width) / numSnps
     }
     const y = topPadding + plotHeight * (1 - value / maxValue)
-    if (firstX === undefined) {
-      firstX = x
-    }
+    firstX ??= x
     lastX = x
     points.push(
       `${points.length === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`,

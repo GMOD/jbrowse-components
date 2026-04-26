@@ -9,7 +9,7 @@ function gtToAlleleCounts(gt: string) {
   const alleleCounts: Record<string, number> = {}
   const alleles = gt.split(GENOTYPE_SPLITTER)
   for (const allele of alleles) {
-    alleleCounts[allele] = (alleleCounts[allele] || 0) + 1
+    alleleCounts[allele] = (alleleCounts[allele] ?? 0) + 1
   }
   return Object.entries(alleleCounts)
     .map(([key, val]) => `${key}:${val}`)
@@ -21,13 +21,13 @@ function genotypeToAlleleCounts(gt: string, ref: string, alt: string[]) {
   const alleles = gt.split(GENOTYPE_SPLITTER)
   for (const allele of alleles) {
     if (allele === '.') {
-      alleleCounts['.'] = (alleleCounts['.'] || 0) + 1
+      alleleCounts['.'] = (alleleCounts['.'] ?? 0) + 1
     } else {
       const resolved =
         +allele === 0
           ? `ref(${ref.length < 10 ? ref : getBpDisplayStr(ref.length)})`
           : getMinimalDesc(ref, alt[+allele - 1] || '')
-      alleleCounts[resolved] = (alleleCounts[resolved] || 0) + 1
+      alleleCounts[resolved] = (alleleCounts[resolved] ?? 0) + 1
     }
   }
   return Object.entries(alleleCounts)
@@ -76,7 +76,9 @@ export function getSampleGridRows(
         } as VariantSampleGridRow
       })
       .filter(row =>
-        compiledFilters.every(({ key, re }) => (re ? re.exec(row[key]!) : true)),
+        compiledFilters.every(({ key, re }) =>
+          re ? re.exec(row[key]!) : true,
+        ),
       )
   } catch (e) {
     console.error(e)

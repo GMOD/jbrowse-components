@@ -93,7 +93,7 @@ export default class ServerSideRenderer extends RendererType {
 
     const config = isStateTreeNode(args.config)
       ? args.config
-      : this.configSchema.create(args.config || {}, {
+      : this.configSchema.create(args.config ?? {}, {
           pluginManager: this.pluginManager,
         })
 
@@ -140,7 +140,7 @@ export default class ServerSideRenderer extends RendererType {
   deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
     return {
       ...args,
-      config: this.configSchema.create(args.config || {}, {
+      config: this.configSchema.create(args.config ?? {}, {
         pluginManager: this.pluginManager,
       }),
       filters: args.filters

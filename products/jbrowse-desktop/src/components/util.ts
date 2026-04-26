@@ -50,7 +50,10 @@ export function initialFormState(): FormState {
   }
 }
 
-export function applyPrimaryFile(state: FormState, location: FileLocation): FormState {
+export function applyPrimaryFile(
+  state: FormState,
+  location: FileLocation,
+): FormState {
   const filename = getFilename(location)
   const detected = filename ? detectAdapterType(filename) : undefined
   const assemblyName =
@@ -58,7 +61,12 @@ export function applyPrimaryFile(state: FormState, location: FileLocation): Form
       ? getAssemblyNameFromFilename(filename)
       : state.assemblyName
   if (detected === 'TwoBitAdapter') {
-    return { ...state, twoBitLocation: location, adapterSelection: 'TwoBitAdapter', assemblyName }
+    return {
+      ...state,
+      twoBitLocation: location,
+      adapterSelection: 'TwoBitAdapter',
+      assemblyName,
+    }
   }
   return {
     ...state,
@@ -68,7 +76,10 @@ export function applyPrimaryFile(state: FormState, location: FileLocation): Form
   }
 }
 
-export function applyTwoBitFile(state: FormState, location: FileLocation): FormState {
+export function applyTwoBitFile(
+  state: FormState,
+  location: FileLocation,
+): FormState {
   const filename = getFilename(location)
   const assemblyName =
     filename && !state.assemblyName
@@ -95,7 +106,9 @@ export function clearFormFields(state: FormState): FormState {
 export function getBaseAssemblyConfig(state: FormState) {
   return {
     name: state.assemblyName,
-    ...(state.assemblyDisplayName ? { displayName: state.assemblyDisplayName } : {}),
+    ...(state.assemblyDisplayName
+      ? { displayName: state.assemblyDisplayName }
+      : {}),
     ...(!isBlank(state.refNameAliasesLocation)
       ? {
           refNameAliases: {
@@ -190,7 +203,11 @@ export function getAdapterConfig({
     }
   }
   if (adapterSelection === 'BgzipFastaAdapter') {
-    if (isBlank(fastaLocation) || isBlank(faiLocation) || isBlank(gziLocation)) {
+    if (
+      isBlank(fastaLocation) ||
+      isBlank(faiLocation) ||
+      isBlank(gziLocation)
+    ) {
       throw new Error('FASTA, FAI, and GZI locations are all required')
     }
     return {

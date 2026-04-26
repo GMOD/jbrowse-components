@@ -41,18 +41,16 @@ export default function createViewState(opts: ViewStateOptions) {
     onChange,
   } = opts
   const { model, pluginManager } = createModel(
-    plugins || [],
+    plugins ?? [],
     makeWorkerInstance,
   )
   let { defaultSession } = opts
-  if (!defaultSession) {
-    defaultSession = {
-      name: 'this session',
-      view: {
-        id: 'circularView',
-        type: 'CircularView',
-      },
-    }
+  defaultSession ??= {
+    name: 'this session',
+    view: {
+      id: 'circularView',
+      type: 'CircularView',
+    },
   }
   const stateSnapshot = {
     config: {

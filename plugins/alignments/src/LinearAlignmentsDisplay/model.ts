@@ -221,7 +221,10 @@ export default function stateModelFactory(
           lineWidthSetting: types.maybe(types.number),
           drawInter: true,
           drawLongRange: true,
-          arcColorByType: types.optional(arcColorByTypes, 'insertSizeAndOrientation'),
+          arcColorByType: types.optional(
+            arcColorByTypes,
+            'insertSizeAndOrientation',
+          ),
           pairedArcsDown: true,
           showSashimiArcs: true,
           sashimiArcsDown: false,

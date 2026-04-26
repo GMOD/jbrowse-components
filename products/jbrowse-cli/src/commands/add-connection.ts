@@ -138,7 +138,7 @@ export async function run(args?: string[]) {
   const { assemblyNames, type, name, config, connectionId, skipCheck, force } =
     flags
 
-  const url = await resolveURL(connectionUrlOrPath, !(skipCheck || force))
+  const url = await resolveURL(connectionUrlOrPath, !(skipCheck ?? force))
   const configContents = await readJsonFile<Config>(target)
   debug(`Using config file ${target}`)
 
@@ -181,9 +181,7 @@ export async function run(args?: string[]) {
     ...(config ? parseJSON(config) : {}),
   }
 
-  if (!configContents.connections) {
-    configContents.connections = []
-  }
+  configContents.connections ??= []
   const idx = configContents.connections.findIndex(
     c => c.connectionId === connectionId,
   )

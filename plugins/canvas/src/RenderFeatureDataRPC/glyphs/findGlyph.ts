@@ -27,9 +27,7 @@ export function findGlyph(
   config: DisplayConfig,
   isTopLevel?: boolean,
 ): (args: LayoutArgs) => FeatureLayout {
-  if (isTopLevel === undefined) {
-    isTopLevel = !feature.parent?.()
-  }
+  isTopLevel ??= !feature.parent?.()
   const type = feature.get('type') ?? ''
   const subfeatures = feature.get('subfeatures')
   const hasSubfeatures = !!subfeatures?.length

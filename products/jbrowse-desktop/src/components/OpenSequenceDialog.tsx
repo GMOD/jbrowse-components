@@ -244,15 +244,33 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
   const [loading, setLoading] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
 
-  const setPrimaryFile = (loc: FileLocation) => { setForm(f => applyPrimaryFile(f, loc)) }
-  const setTwoBitFile = (loc: FileLocation) => { setForm(f => applyTwoBitFile(f, loc)) }
-  const setFaiLocation = (loc: FileLocation) => { setForm(f => ({ ...f, faiLocation: loc })) }
-  const setGziLocation = (loc: FileLocation) => { setForm(f => ({ ...f, gziLocation: loc })) }
-  const setChromSizesLocation = (loc: FileLocation) => { setForm(f => ({ ...f, chromSizesLocation: loc })) }
-  const setRefNameAliasesLocation = (loc: FileLocation) => { setForm(f => ({ ...f, refNameAliasesLocation: loc })) }
-  const setCytobandsLocation = (loc: FileLocation) => { setForm(f => ({ ...f, cytobandsLocation: loc })) }
-  const setAssemblyDisplayName = (name: string) => { setForm(f => ({ ...f, assemblyDisplayName: name })) }
-  const setAdapterSelection = (type: AdapterType) => { setForm(f => ({ ...f, adapterSelection: type })) }
+  const setPrimaryFile = (loc: FileLocation) => {
+    setForm(f => applyPrimaryFile(f, loc))
+  }
+  const setTwoBitFile = (loc: FileLocation) => {
+    setForm(f => applyTwoBitFile(f, loc))
+  }
+  const setFaiLocation = (loc: FileLocation) => {
+    setForm(f => ({ ...f, faiLocation: loc }))
+  }
+  const setGziLocation = (loc: FileLocation) => {
+    setForm(f => ({ ...f, gziLocation: loc }))
+  }
+  const setChromSizesLocation = (loc: FileLocation) => {
+    setForm(f => ({ ...f, chromSizesLocation: loc }))
+  }
+  const setRefNameAliasesLocation = (loc: FileLocation) => {
+    setForm(f => ({ ...f, refNameAliasesLocation: loc }))
+  }
+  const setCytobandsLocation = (loc: FileLocation) => {
+    setForm(f => ({ ...f, cytobandsLocation: loc }))
+  }
+  const setAssemblyDisplayName = (name: string) => {
+    setForm(f => ({ ...f, assemblyDisplayName: name }))
+  }
+  const setAdapterSelection = (type: AdapterType) => {
+    setForm(f => ({ ...f, adapterSelection: type }))
+  }
 
   async function createAssemblyConfig() {
     const raw = getAdapterConfig(form)
@@ -274,7 +292,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
     return {
       ...getBaseAssemblyConfig(form),
       sequence: {
-        type: 'ReferenceSequenceTrack',
+        type: 'ReferenceSequenceTrack' as const,
         trackId: `${form.assemblyName}-${Date.now()}`,
         adapter,
       },

@@ -62,11 +62,11 @@ export function addTrackToConfig({
   validateTrackId(configContents, trackId, force, overwrite)
 
   const { updatedItems, wasOverwritten } = findAndUpdateOrAdd({
-    items: configContents.tracks || [],
+    items: configContents.tracks ?? [],
     newItem: trackConfig,
     idField: 'trackId',
     getId: item => item.trackId,
-    allowOverwrite: force || overwrite || false,
+    allowOverwrite: force ?? overwrite ?? false,
     itemType: 'track',
   })
 

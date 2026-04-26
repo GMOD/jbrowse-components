@@ -151,7 +151,7 @@ const ArcRendering = observer(function ArcRendering({
   const width = (region.end - region.start) / bpPerPx
   const semicircle =
     (displayMode ?? readConfObject(config, 'displayMode')) === 'semicircles'
-  const { selectedFeatureId } = displayModel || {}
+  const { selectedFeatureId } = displayModel ?? {}
 
   const children = [...features.values()].map(f => (
     <ArcFeature

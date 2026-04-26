@@ -163,7 +163,7 @@ export default function RecentSessionPanel({
               disabled={!selectedSessions?.length}
               onClick={async () => {
                 try {
-                  await addToQuickstartList(selectedSessions || [])
+                  await addToQuickstartList(selectedSessions ?? [])
                 } catch (e) {
                   setError(e)
                   console.error(e)

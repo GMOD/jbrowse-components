@@ -35,7 +35,7 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
     if (!lines) {
       return undefined
     }
-    const names = (await this.getNames())?.slice(3) || []
+    const names = (await this.getNames())?.slice(3) ?? []
     const intervalTree = new IntervalTree<Feature>()
     for (let i = 0, l = lines.length; i < l; i++) {
       const line = lines[i]!
@@ -85,9 +85,7 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
         } else {
           const tab = line.indexOf('\t')
           const refName = line.slice(0, tab)
-          if (!features[refName]) {
-            features[refName] = []
-          }
+          features[refName] ??= []
           features[refName].push(line)
         }
         return true
@@ -105,24 +103,20 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
   }
 
   async loadFeatureIntervalTree(refName: string) {
-    if (!this.intervalTrees[refName]) {
-      this.intervalTrees[refName] = this.loadFeatureIntervalTreeHelper(
-        refName,
-      ).catch((e: unknown) => {
-        this.intervalTrees[refName] = undefined
-        throw e
-      })
-    }
+    this.intervalTrees[refName] ??= this.loadFeatureIntervalTreeHelper(
+      refName,
+    ).catch((e: unknown) => {
+      this.intervalTrees[refName] = undefined
+      throw e
+    })
     return this.intervalTrees[refName]
   }
 
   async loadData(opts: BaseOptions = {}) {
-    if (!this.bedFeatures) {
-      this.bedFeatures = this.loadDataP(opts).catch((e: unknown) => {
-        this.bedFeatures = undefined
-        throw e
-      })
-    }
+    this.bedFeatures ??= this.loadDataP(opts).catch((e: unknown) => {
+      this.bedFeatures = undefined
+      throw e
+    })
 
     return this.bedFeatures
   }
@@ -130,7 +124,7 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName } = query
       const intervalTree = await this.loadFeatureIntervalTree(refName)
-      for (const feature of intervalTree?.search([start, end]) || []) {
+      for (const feature of intervalTree?.search([start, end]) ?? []) {
         observer.next(feature)
       }
       observer.complete()

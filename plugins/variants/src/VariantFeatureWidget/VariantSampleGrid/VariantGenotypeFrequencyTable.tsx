@@ -21,12 +21,10 @@ export default function VariantGenotypeFrequencyTable({
   const summary = {} as FrequencyTable
   for (const row of rows) {
     const gt = row.GT
-    if (!summary[gt]) {
-      summary[gt] = {
-        count: 0,
-        GT: row.GT,
-        genotype: row.genotype,
-      }
+    summary[gt] ??= {
+      count: 0,
+      GT: row.GT,
+      genotype: row.genotype,
     }
     summary[gt].count++
   }

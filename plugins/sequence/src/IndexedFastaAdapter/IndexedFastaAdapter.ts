@@ -58,17 +58,15 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
   }
 
   public async setup() {
-    if (!this.setupP) {
-      this.setupP = this.setupPre().catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    }
+    this.setupP ??= this.setupPre().catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
 
   public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
-    const { statusCallback = () => {}, stopToken } = opts || {}
+    const { statusCallback = () => {}, stopToken } = opts ?? {}
     const { refName, start, end } = region
     return ObservableCreate<Feature>(async observer => {
       await updateStatus2(
@@ -78,7 +76,7 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
         async () => {
           const { fasta } = await this.setup()
           const size = await fasta.getSequenceSize(refName)
-          const regionEnd = Math.min(size || 0, end)
+          const regionEnd = Math.min(size ?? 0, end)
           const chunkSize = 128000
 
           const s = start - (start % chunkSize)

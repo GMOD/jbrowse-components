@@ -4,7 +4,7 @@ export function getRelativeX(
   event: { clientX: number; target: EventTarget | null },
   element: HTMLElement | null,
 ) {
-  return event.clientX - (element?.getBoundingClientRect().left || 0)
+  return event.clientX - (element?.getBoundingClientRect().left ?? 0)
 }
 
 export function getCytobands(assembly: Assembly | undefined, refName: string) {
@@ -18,7 +18,7 @@ export function getCytobands(assembly: Assembly | undefined, refName: string) {
         type: f.get('gieStain') as string,
         name: f.get('name'),
       }))
-      .filter(f => f.refName === refName) || []
+      .filter(f => f.refName === refName) ?? []
   )
 }
 

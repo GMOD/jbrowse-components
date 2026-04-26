@@ -550,7 +550,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     return new Map(
       [...this.rectangles.entries()].map(([id, rect]) => {
         const { l, r, originalHeight, top, serializableData } = rect
-        const t = (top || 0) * pitchY
+        const t = (top ?? 0) * pitchY
         const b = t + originalHeight
         return [id, [l * pitchX, t, r * pitchX, b, serializableData]] // left, top, right, bottom
       }),

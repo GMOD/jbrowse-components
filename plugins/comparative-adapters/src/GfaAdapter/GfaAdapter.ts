@@ -167,14 +167,12 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
   }
 
   private async getGfa() {
-    if (!this.gfaPromise) {
-      this.gfaPromise = (async () => {
-        const loc = this.getConf('gfaLocation') as FileLocation
-        const handle = openLocation(loc, this.pluginManager)
-        const text = await handle.readFile('utf8')
-        return parseGfa(text)
-      })()
-    }
+    this.gfaPromise ??= (async () => {
+      const loc = this.getConf('gfaLocation') as FileLocation
+      const handle = openLocation(loc, this.pluginManager)
+      const text = await handle.readFile('utf8')
+      return parseGfa(text)
+    })()
     return this.gfaPromise
   }
 

@@ -28,7 +28,7 @@ const ImportForm = observer(function ImportForm({
   const assemblyError = assemblyNames.length
     ? assembly?.error
     : 'No configured assemblies'
-  const regions = assembly?.regions || []
+  const regions = assembly?.regions ?? []
   const err = assemblyError || error
 
   return (

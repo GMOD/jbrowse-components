@@ -24,6 +24,10 @@ export function useSearchHighlight(
   query: string,
 ) {
   useLayoutEffect(() => {
+    // generally just jest test but maybe unsupported browser
+    if (typeof CSS === 'undefined') {
+      return
+    }
     const container = containerRef.current
     if (container && query.trim()) {
       const queryLower = query.toLowerCase().trim()

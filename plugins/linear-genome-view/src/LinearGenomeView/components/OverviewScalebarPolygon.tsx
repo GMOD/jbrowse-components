@@ -34,13 +34,13 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
     (overview.bpToPx({
       refName: first.refName,
       coord: first.reversed ? first.end : first.start,
-    }) || 0) +
+    }) ?? 0) +
     cytobandOffset * multiplier
   const topRight =
     (overview.bpToPx({
       refName: last.refName,
       coord: last.reversed ? last.start : last.end,
-    }) || 0) +
+    }) ?? 0) +
     cytobandOffset * multiplier
 
   const startPx = Math.max(0, -offsetPx)

@@ -131,7 +131,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         return (
           structuredClone(self.spreadsheetView.spreadsheet?.visibleRows)
             ?.map(row => row.feature)
-            .filter(f => !!f) || []
+            .filter(f => !!f) ?? []
         )
       },
       /**

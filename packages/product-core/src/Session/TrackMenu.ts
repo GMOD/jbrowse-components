@@ -38,7 +38,7 @@ export function TrackMenuSessionMixin(pluginManager: PluginManager) {
           },
           icon: InfoIcon,
         },
-        ...(extraTrackActions || []),
+        ...(extraTrackActions ?? []),
       ]
     },
   }))

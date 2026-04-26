@@ -26,7 +26,7 @@ export default class PhasedScheduler<PhaseName extends string> {
   run() {
     const errors: unknown[] = []
     for (const phaseName of this.phaseOrder) {
-      for (const callback of this.phaseCallbacks.get(phaseName) || []) {
+      for (const callback of this.phaseCallbacks.get(phaseName) ?? []) {
         try {
           callback()
         } catch (e) {

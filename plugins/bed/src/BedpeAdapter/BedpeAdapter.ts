@@ -44,12 +44,8 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
       const cols = line.split('\t')
       const r1 = cols[0]!
       const r2 = cols[3]!
-      if (!feats1[r1]) {
-        feats1[r1] = []
-      }
-      if (!feats2[r2]) {
-        feats2[r2] = []
-      }
+      feats1[r1] ??= []
+      feats2[r2] ??= []
       feats1[r1].push(line)
       feats2[r2].push(line)
     }
@@ -64,12 +60,10 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
   }
 
   private async loadData(opts: BaseOptions = {}) {
-    if (!this.bedpeFeatures) {
-      this.bedpeFeatures = this.loadDataP(opts).catch((e: unknown) => {
-        this.bedpeFeatures = undefined
-        throw e
-      })
-    }
+    this.bedpeFeatures ??= this.loadDataP(opts).catch((e: unknown) => {
+      this.bedpeFeatures = undefined
+      throw e
+    })
 
     return this.bedpeFeatures
   }
@@ -113,14 +107,12 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
   }
 
   private async loadFeatureTree(refName: string) {
-    if (!this.intervalTrees[refName]) {
-      this.intervalTrees[refName] = this.loadFeatureTreeP(refName).catch(
-        (e: unknown) => {
-          this.intervalTrees[refName] = undefined
-          throw e
-        },
-      )
-    }
+    this.intervalTrees[refName] ??= this.loadFeatureTreeP(refName).catch(
+      (e: unknown) => {
+        this.intervalTrees[refName] = undefined
+        throw e
+      },
+    )
     return this.intervalTrees[refName]
   }
 
@@ -128,7 +120,7 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName } = query
       const intervalTree = await this.loadFeatureTree(refName)
-      for (const f of intervalTree?.search([start, end]) || []) {
+      for (const f of intervalTree?.search([start, end]) ?? []) {
         observer.next(f)
       }
       observer.complete()

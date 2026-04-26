@@ -31,7 +31,7 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter/BaseOp
  */
 
 export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
-  const { statusCallback = () => {} } = opts || {}
+  const { statusCallback = () => {} } = opts ?? {}
   let rname = ''
   let qname = ''
   let qs = 0

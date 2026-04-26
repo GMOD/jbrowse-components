@@ -284,7 +284,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorByType: 'normal',
+      colorByType: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: true,
     })
@@ -361,34 +361,6 @@ describe('computeArcsFromPileupData', () => {
 
     expect(result.arcs.length).toBe(1)
     expect(result.arcs[0]!.colorType).toBe(6)
-  })
-
-  test('gradient coloring gives colorType 8', () => {
-    const data = makePileupData({
-      numReads: 1,
-      regionStart: 0,
-      readPositions: new Uint32Array([0, 100]),
-      readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
-      readStrands: new Int8Array([1]),
-      readInsertSizes: new Float32Array([500]),
-      readPairOrientations: new Uint8Array([1]),
-      readNames: ['readA'],
-      readNextRefs: ['chr1'],
-      readNextPositions: new Uint32Array([500]),
-    })
-
-    const rpcDataMap = new Map([[0, data]])
-    const regions = [
-      { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
-    ]
-    const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorByType: 'gradient',
-      drawInter: false,
-      drawLongRange: true,
-    })
-
-    expect(result.arcs.length).toBe(1)
-    expect(result.arcs[0]!.colorType).toBe(8)
   })
 
   test('insert size coloring uses worker-provided insertSizeStats', () => {

@@ -115,7 +115,7 @@ export function formatMultiLevelFeat(
     primary,
     ...(feature
       .get('subfeatures')
-      ?.map(sub => formatMultiLevelFeat(sub, featureId, featureRefName)) || []),
+      ?.map(sub => formatMultiLevelFeat(sub, featureId, featureRefName)) ?? []),
   ].join('\n')
 }
 

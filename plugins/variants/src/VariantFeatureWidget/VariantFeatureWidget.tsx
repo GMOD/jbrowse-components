@@ -41,8 +41,8 @@ function AnnotationPanel({
   regex: RegExp
 }) {
   const desc = descriptions?.INFO?.[fieldKey]?.Description
-  const fields = desc?.match(regex)?.[1]?.split('|') || []
-  const data = feature.INFO?.[fieldKey] || []
+  const fields = desc?.match(regex)?.[1]?.split('|') ?? []
+  const data = feature.INFO?.[fieldKey] ?? []
   return (
     <VariantConsequenceDataGrid fields={fields} data={data} title={title} />
   )

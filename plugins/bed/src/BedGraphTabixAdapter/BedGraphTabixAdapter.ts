@@ -41,12 +41,10 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
   }
 
   protected async configure() {
-    if (!this.configured) {
-      this.configured = this.configurePre().catch((e: unknown) => {
-        this.configured = undefined
-        throw e
-      })
-    }
+    this.configured ??= this.configurePre().catch((e: unknown) => {
+      this.configured = undefined
+      throw e
+    })
     return this.configured
   }
 
@@ -74,7 +72,7 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
       const colStart = columnNumbers.start - 1
       const colEnd = columnNumbers.end - 1
       const same = colStart === colEnd
-      const names = (await this.getNames())?.slice(same ? 2 : 3) || []
+      const names = (await this.getNames())?.slice(same ? 2 : 3) ?? []
       await bedGraph.getLines(
         query.refName,
         query.start + (same ? -1 : 0),

@@ -101,7 +101,7 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
             }
           }
           const trackType = pluginManager.getTrackType(snap.type)
-          for (const displayType of trackType?.displayTypes || []) {
+          for (const displayType of trackType?.displayTypes ?? []) {
             if (!displayTypes.has(displayType.name)) {
               displays.push({
                 displayId: `${snap.trackId}-${displayType.name}`,

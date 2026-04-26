@@ -58,8 +58,8 @@ export function getWeightedMeans(ret: PAFRecord[]) {
   const scoreMap: Record<string, { valueSum: number; weightSum: number }> = {}
   for (const entry of ret) {
     const key = `${entry.qname}-${entry.tname}`
-    const qual = entry.extra.mappingQual || 1
-    const len = entry.extra.blockLen || 1
+    const qual = entry.extra.mappingQual ?? 1
+    const len = entry.extra.blockLen ?? 1
     const existing = scoreMap[key]
     if (existing) {
       existing.valueSum += qual * len

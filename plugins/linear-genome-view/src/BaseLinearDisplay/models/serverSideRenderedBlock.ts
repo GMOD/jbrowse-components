@@ -284,7 +284,7 @@ const blockState = types
   }))
   .actions(self => ({
     afterAttach() {
-      const display = self.cachedDisplay || getContainingDisplay(self)
+      const display = self.cachedDisplay ?? getContainingDisplay(self)
       setTimeout(() => {
         if (isAlive(self)) {
           makeAbortableReaction(
@@ -318,8 +318,8 @@ export function renderBlockData(
   try {
     // Use optDisplay (for SVG export), cachedDisplay (set in addBlock), or
     // fall back to tree traversal
-    const display = (optDisplay ||
-      self.cachedDisplay ||
+    const display = (optDisplay ??
+      self.cachedDisplay ??
       getContainingDisplay(self)) as BlockDisplay
 
     const { assemblyManager, rpcManager } = getSession(display)

@@ -38,7 +38,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
   }
 
   public async setupP(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     const loc = openLocation(this.getConf('vcfLocation'), this.pluginManager)
     const buffer = await fetchAndMaybeUnzip(loc, opts)
 
@@ -77,12 +77,10 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
   }
 
   public async setup() {
-    if (!this.vcfFeatures) {
-      this.vcfFeatures = this.setupP().catch((e: unknown) => {
-        this.vcfFeatures = undefined
-        throw e
-      })
-    }
+    this.vcfFeatures ??= this.setupP().catch((e: unknown) => {
+      this.vcfFeatures = undefined
+      throw e
+    })
     return this.vcfFeatures
   }
 
@@ -98,7 +96,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       for (const f of intervalTreeMap[refName]?.(opts.statusCallback).search([
         start,
         end,
-      ]) || []) {
+      ]) ?? []) {
         observer.next(f)
       }
       observer.complete()
@@ -119,7 +117,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
     for (const region of regions) {
       const { refName, start, end } = region
-      const lines = featureMap[refName] || []
+      const lines = featureMap[refName] ?? []
 
       for (const line of lines) {
         // VCF format: CHROM POS ID REF ALT QUAL FILTER ...

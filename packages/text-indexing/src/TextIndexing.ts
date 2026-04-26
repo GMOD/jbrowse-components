@@ -206,7 +206,7 @@ async function* indexFiles({
   for (const track of tracks) {
     checkStopToken(stopToken)
     const { adapter, textSearching } = track
-    const { type } = adapter || {}
+    const { type } = adapter ?? {}
     const resolvedAttrs = textSearching?.indexingAttributes ?? attributesToIndex
     const resolvedExcludes =
       textSearching?.indexingFeatureTypesToExclude ?? featureTypesToExclude

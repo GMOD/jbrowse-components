@@ -3,11 +3,7 @@ import { type RefObject, useLayoutEffect } from 'react'
 const registeredHighlights = new Set<string>()
 
 function ensureHighlightStyle(name: string) {
-  if (
-    registeredHighlights.has(name) ||
-    typeof document === 'undefined' ||
-    typeof CSS === 'undefined'
-  ) {
+  if (registeredHighlights.has(name) || typeof document === 'undefined') {
     return
   }
   registeredHighlights.add(name)
@@ -33,6 +29,9 @@ export function useSearchHighlight(
   highlightName: string,
 ) {
   useLayoutEffect(() => {
+    if (typeof CSS === 'undefined') {
+      return
+    }
     ensureHighlightStyle(highlightName)
     const container = containerRef.current
     if (container && query.trim()) {

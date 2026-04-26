@@ -188,7 +188,7 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
             priority: 1001,
             subMenu: [
               ...self.getTrackActions(trackConfig, view),
-              ...(extraTrackActions || []),
+              ...(extraTrackActions ?? []),
             ],
           },
           { type: 'divider' as const },

@@ -30,7 +30,7 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
     out,
     resolveConfigPath,
   )
-  const configTracks = config.tracks || []
+  const configTracks = config.tracks ?? []
   validateAssembliesForPerTrack(assemblies)
   const confs = getTrackConfigs(
     config,

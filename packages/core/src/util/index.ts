@@ -203,8 +203,8 @@ export function springAnimate(
   function update(animation: Animation) {
     const time = performance.now()
     let position = animation.lastPosition
-    let lastTime = animation.lastTime || time
-    let velocity = animation.lastVelocity || 0
+    let lastTime = animation.lastTime ?? time
+    let velocity = animation.lastVelocity ?? 0
     // If we lost a lot of frames just jump to the end.
     if (time > lastTime + 64) {
       lastTime = time
@@ -574,7 +574,7 @@ export function iterMap<T, U>(
   func: (arg: T) => U,
   sizeHint?: number,
 ) {
-  const results = Array.from<U>({ length: sizeHint || 0 })
+  const results = Array.from<U>({ length: sizeHint ?? 0 })
   let counter = 0
   for (const item of iter) {
     results[counter] = func(item)
@@ -1184,7 +1184,7 @@ export function measureGridWidth(
     fontSize = 12,
     maxWidth = 1000,
     stripHTML = false,
-  } = args || {}
+  } = args ?? {}
   return max(
     elements
       .map(element => getStr(element))
@@ -1246,9 +1246,7 @@ export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
   const result = {} as Record<string, T[]>
   for (const value of array) {
     const t = predicate(value)
-    if (!result[t]) {
-      result[t] = []
-    }
+    result[t] ??= []
     result[t].push(value)
   }
   return result
@@ -1307,9 +1305,7 @@ export interface BasicFeature {
 export function gatherOverlaps<T extends BasicFeature>(regions: T[], w = 5000) {
   const memo = {} as Record<string, T[]>
   for (const x of regions) {
-    if (!memo[x.refName]) {
-      memo[x.refName] = []
-    }
+    memo[x.refName] ??= []
     memo[x.refName]!.push(x)
   }
 

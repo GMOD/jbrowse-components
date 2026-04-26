@@ -139,37 +139,35 @@ const BreakpointSplitViewOverlay = observer(
           targetView.horizontalScroll(deltaX)
         }
 
-        if (s.rafId === null) {
-          s.rafId = requestAnimationFrame(now => {
-            const elapsed = Math.min(
-              100,
-              s.lastRafTime !== null ? now - s.lastRafTime : 16.67,
+        s.rafId ??= requestAnimationFrame(now => {
+          const elapsed = Math.min(
+            100,
+            s.lastRafTime !== null ? now - s.lastRafTime : 16.67,
+          )
+          s.lastRafTime = now
+          const maxZoomDelta = (0.2 / 16.67) * elapsed
+          if (s.zoomDelta !== 0) {
+            const view = views[s.lastViewIndex]
+            const containers = document.querySelectorAll(
+              '[data-testid="tracksContainer"]',
             )
-            s.lastRafTime = now
-            const maxZoomDelta = (0.2 / 16.67) * elapsed
-            if (s.zoomDelta !== 0) {
-              const view = views[s.lastViewIndex]
-              const containers = document.querySelectorAll(
-                '[data-testid="tracksContainer"]',
+            const container = containers[s.lastViewIndex] as
+              | HTMLElement
+              | undefined
+            if (view?.zoomTo && container) {
+              const d = Math.max(
+                -maxZoomDelta,
+                Math.min(maxZoomDelta, s.zoomDelta / s.zoomDivisor),
               )
-              const container = containers[s.lastViewIndex] as
-                | HTMLElement
-                | undefined
-              if (view?.zoomTo && container) {
-                const d = Math.max(
-                  -maxZoomDelta,
-                  Math.min(maxZoomDelta, s.zoomDelta / s.zoomDivisor),
-                )
-                view.zoomTo(
-                  d > 0 ? view.bpPerPx * (1 + d) : view.bpPerPx / (1 - d),
-                  s.lastClientX - container.getBoundingClientRect().left,
-                )
-              }
-              s.zoomDelta = 0
+              view.zoomTo(
+                d > 0 ? view.bpPerPx * (1 + d) : view.bpPerPx / (1 - d),
+                s.lastClientX - container.getBoundingClientRect().left,
+              )
             }
-            s.rafId = null
-          })
-        }
+            s.zoomDelta = 0
+          }
+          s.rafId = null
+        })
       }
 
       div.addEventListener('wheel', handleWheel, { passive: false })

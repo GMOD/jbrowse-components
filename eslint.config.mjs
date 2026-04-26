@@ -15,6 +15,7 @@ export default defineConfig(
   {
     ignores: [
       // Build outputs
+      'products/jbrowse-desktop/electron/',
       '**/build',
       '**/dist*',
       '**/esm',

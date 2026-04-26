@@ -9,7 +9,7 @@ const TRANSCRIPT_PADDING = 2
 const CODING_TYPES = new Set(['CDS', 'cds'])
 
 function hasCodingSubfeature(feature: Feature): boolean {
-  const subfeatures = feature.get('subfeatures') || []
+  const subfeatures = feature.get('subfeatures') ?? []
   return subfeatures.some(
     (sub: Feature) =>
       CODING_TYPES.has(sub.get('type') ?? '') || hasCodingSubfeature(sub),
@@ -51,7 +51,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const heightPx = getFeatureHeightPx(feature, config)
 
   // Sort coding transcripts first so they render on top in stacked layout
-  let subfeatures = [...(feature.get('subfeatures') || [])]
+  let subfeatures = [...(feature.get('subfeatures') ?? [])]
   const codingStatus = new Map(
     subfeatures.map(f => [f.id(), hasCodingSubfeature(f)]),
   )

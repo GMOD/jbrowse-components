@@ -64,9 +64,7 @@ export function validateTrackId(
   force?: boolean,
   overwrite?: boolean,
 ): void {
-  if (!configContents.tracks) {
-    configContents.tracks = []
-  }
+  configContents.tracks ??= []
 
   const idx = configContents.tracks.findIndex(c => c.trackId === trackId)
 

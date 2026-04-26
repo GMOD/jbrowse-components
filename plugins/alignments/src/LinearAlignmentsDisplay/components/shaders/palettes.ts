@@ -45,7 +45,9 @@ export const arcLineColorPalette: RGBColor[] = [
   rgb(fillColor.color_longinsert),
 ]
 
-export function getArcPalette(colorByType: ArcColorByType | undefined): RGBColor[] {
+export function getArcPalette(
+  colorByType: ArcColorByType | undefined,
+): RGBColor[] {
   return colorByType === 'samplot' ? samplotArcColorPalette : arcColorPalette
 }
 

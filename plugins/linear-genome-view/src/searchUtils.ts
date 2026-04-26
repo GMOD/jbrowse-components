@@ -140,7 +140,7 @@ export async function fetchResults({
     .map(r => new BaseResult({ label: r }))
 
   return dedupe(
-    [...(refNameResults || []), ...(textSearchResults || [])],
+    [...(refNameResults ?? []), ...(textSearchResults ?? [])],
     elt => elt.getId(),
   )
 }

@@ -66,7 +66,6 @@ function buildFlatbushIndex(
   return index
 }
 
-
 const HoveredCellHighlight = observer(function HoveredCellHighlight({
   cell,
   model,
@@ -226,8 +225,12 @@ const VariantComponent = observer(function VariantComponent({
     }
 
     if (bestIdx >= 0) {
-      const featureId = regionCellData.featureIdList[regionCellData.flatbushFeatureIndices[bestIdx]!]!
-      const sourceName = regionCellData.sourceNameList[regionCellData.cellRowIndices[bestIdx]!]!
+      const featureId =
+        regionCellData.featureIdList[
+          regionCellData.flatbushFeatureIndices[bestIdx]!
+        ]!
+      const sourceName =
+        regionCellData.sourceNameList[regionCellData.cellRowIndices[bestIdx]!]!
       const genomicStart = regionCellData.flatbushGenomicStarts[bestIdx]!
       const genomicEnd = regionCellData.flatbushGenomicEnds[bestIdx]!
       const info = regionCellData.featureGenotypeMap[featureId]!

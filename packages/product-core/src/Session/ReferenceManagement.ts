@@ -89,9 +89,7 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
               view.hideTrack(track.trackId)
             })
             dereferenced = true
-            if (!dereferenceTypeCount[type]) {
-              dereferenceTypeCount[type] = 0
-            }
+            dereferenceTypeCount[type] ??= 0
             dereferenceTypeCount[type] += 1
           } catch (err1) {
             // ignore
@@ -105,9 +103,7 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
               self.hideWidget(node)
             })
             dereferenced = true
-            if (!dereferenceTypeCount[type]) {
-              dereferenceTypeCount[type] = 0
-            }
+            dereferenceTypeCount[type] ??= 0
             dereferenceTypeCount[type] += 1
           }
           if (!dereferenced) {

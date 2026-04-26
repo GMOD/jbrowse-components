@@ -94,7 +94,7 @@ export async function renderBaseLinearDisplaySvg(
           ...renderProps,
           renderingProps,
           exportSVG: opts,
-          theme: opts.theme || renderProps.theme,
+          theme: opts.theme ?? renderProps.theme,
         }),
       ] as const
     }),
@@ -140,7 +140,7 @@ export async function renderBaseLinearDisplaySvg(
                   x={0}
                   y={0}
                   width={widthPx}
-                  height={overrideHeight || height}
+                  height={overrideHeight ?? height}
                 />
               </clipPath>
             </defs>
@@ -155,7 +155,7 @@ export async function renderBaseLinearDisplaySvg(
       {/* Render floating labels with clipping */}
       <defs>
         <clipPath id={labelsClipId}>
-          <rect x={0} y={0} width={width} height={overrideHeight || height} />
+          <rect x={0} y={0} width={width} height={overrideHeight ?? height} />
         </clipPath>
       </defs>
       <g clipPath={`url(#${labelsClipId})`}>

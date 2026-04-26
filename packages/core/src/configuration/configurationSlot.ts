@@ -176,9 +176,7 @@ export default function ConfigSlot(
   if (!type) {
     throw new Error('type name required')
   }
-  if (!model) {
-    model = typeModels[type]
-  }
+  model ??= typeModels[type]
   if (!model) {
     throw new Error(
       `no builtin config slot type "${type}", and no 'model' param provided`,

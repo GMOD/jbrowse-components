@@ -129,7 +129,6 @@ export function abgrToCssRgba(c: number) {
   return `rgba(${abgrRed(c)},${abgrGreen(c)},${abgrBlue(c)},${abgrAlpha(c) / 255})`
 }
 
-
 export function cssColorToNormalizedRgba(
   color: string,
 ): [number, number, number, number] {

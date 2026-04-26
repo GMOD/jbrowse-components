@@ -208,7 +208,7 @@ export default function stateModelFactory() {
       >
       // omit rows when a URI is cached (re-fetched on load) or too large for localStorage
       const omitRows =
-        importWizard.cachedFileLocation ||
+        importWizard.cachedFileLocation ??
         (rowSet !== undefined && JSON.stringify(rowSet).length > 1_000_000)
       return {
         ...rest,

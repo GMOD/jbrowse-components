@@ -40,12 +40,10 @@ export default class MCScanSimpleAnchorsAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   async setup(opts: BaseOptions) {
-    if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    }
+    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
   async setupPre(opts: BaseOptions) {

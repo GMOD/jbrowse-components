@@ -479,7 +479,7 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
       },
     },
   }
-  return deepmerge(themeP, theme || {}, { arrayMerge: overwriteArrayMerge })
+  return deepmerge(themeP, theme ?? {}, { arrayMerge: overwriteArrayMerge })
 }
 
 type ThemeMap = Record<string, ThemeOptions>
@@ -550,9 +550,9 @@ function addMissingColors(theme: ThemeOptions = {}) {
   return augmentThemeColors(
     deepmerge(theme, {
       palette: {
-        quaternary: palette?.quaternary || lightgrey,
-        tertiary: palette?.tertiary || lightgrey,
-        highlight: palette?.highlight || mandarin,
+        quaternary: palette?.quaternary ?? lightgrey,
+        tertiary: palette?.tertiary ?? lightgrey,
+        highlight: palette?.highlight ?? mandarin,
         coverage: palette?.coverage || coverage,
         insertion: palette?.insertion || insertion,
         softclip: palette?.softclip || softclip,
@@ -564,9 +564,9 @@ function addMissingColors(theme: ThemeOptions = {}) {
         mutedSnpBase: palette?.mutedSnpBase || mutedSnpBase,
         startCodon: palette?.startCodon || startCodon,
         stopCodon: palette?.stopCodon || stopCodon,
-        bases: palette?.bases || bases,
-        frames: palette?.frames || frames,
-        framesCDS: palette?.framesCDS || framesCDS,
+        bases: palette?.bases ?? bases,
+        frames: palette?.frames ?? frames,
+        framesCDS: palette?.framesCDS ?? framesCDS,
       },
     }),
   )

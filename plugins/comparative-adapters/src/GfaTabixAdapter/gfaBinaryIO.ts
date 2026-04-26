@@ -77,13 +77,11 @@ export function parseEdgesBinary(buf: Uint8Array) {
 }
 
 export async function loadBinaryIndex(shard: IndexedBinaryShard) {
-  if (!shard.idxPromise) {
-    shard.idxPromise = shard.idxFile.readFile().then(buf => {
-      const aligned = new ArrayBuffer(buf.byteLength)
-      new Uint8Array(aligned).set(buf)
-      return new BigUint64Array(aligned)
-    })
-  }
+  shard.idxPromise ??= shard.idxFile.readFile().then(buf => {
+    const aligned = new ArrayBuffer(buf.byteLength)
+    new Uint8Array(aligned).set(buf)
+    return new BigUint64Array(aligned)
+  })
   return shard.idxPromise
 }
 

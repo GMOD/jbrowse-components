@@ -45,6 +45,7 @@ import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type {
+  ByteEstimateConfig,
   ExportSvgDisplayOptions,
   FetchContext,
   LinearGenomeViewModel,
@@ -356,6 +357,10 @@ export default function baseStateModelFactory(
         },
 
         get maxFeatureDensity() {
+          // Skip density gating when the user has already force-loaded via byte estimate
+          if (self.userByteSizeLimit !== undefined) {
+            return undefined
+          }
           const view = getContainingView(self) as LGV
           if (view.visibleBp < AUTO_FORCE_LOAD_BP) {
             return undefined
@@ -519,8 +524,15 @@ export default function baseStateModelFactory(
           })
         },
 
-        setFeatureDensityStatsLimit() {
-          self.userFeatureDensityLimit = Math.ceil(self.maxFeatureDensity! * 3)
+        setFeatureDensityStatsLimit(stats?: {
+          bytes?: number
+          fetchSizeLimit?: number
+        }) {
+          if (stats?.bytes) {
+            self.userByteSizeLimit = Math.ceil(stats.bytes * 1.5)
+          } else if (self.maxFeatureDensity !== undefined) {
+            self.userFeatureDensityLimit = Math.ceil(self.maxFeatureDensity * 3)
+          }
           self.setRegionTooLarge(false)
         },
 
@@ -662,6 +674,20 @@ export default function baseStateModelFactory(
             shouldRenderPeptideBackground(view.bpPerPx) ===
             shouldRenderPeptideBackground(regionData.loadedBpPerPx)
           )
+        },
+      }))
+      .actions(self => ({
+        getByteEstimateConfig(): ByteEstimateConfig | null {
+          const view = getContainingView(self) as LGV
+          if (view.visibleBp < AUTO_FORCE_LOAD_BP) {
+            return null
+          }
+          return {
+            adapterConfig: self.adapterConfigSnapshot,
+            fetchSizeLimit: 1_000_000,
+            userByteSizeLimit: self.userByteSizeLimit,
+            visibleBp: view.visibleBp,
+          }
         },
       }))
       .actions(self => ({

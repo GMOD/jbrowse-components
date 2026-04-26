@@ -42,7 +42,10 @@ describe('applyPrimaryFile', () => {
   })
 
   test('does not overwrite assemblyName when already set', () => {
-    const s = applyPrimaryFile({ ...initialFormState(), assemblyName: 'custom' }, fasta)
+    const s = applyPrimaryFile(
+      { ...initialFormState(), assemblyName: 'custom' },
+      fasta,
+    )
     expect(s.assemblyName).toBe('custom')
   })
 })
@@ -59,7 +62,10 @@ describe('applyTwoBitFile', () => {
   })
 
   test('does not overwrite assemblyName when already set', () => {
-    const s = applyTwoBitFile({ ...initialFormState(), assemblyName: 'custom' }, twobit)
+    const s = applyTwoBitFile(
+      { ...initialFormState(), assemblyName: 'custom' },
+      twobit,
+    )
     expect(s.assemblyName).toBe('custom')
   })
 })
@@ -80,7 +86,10 @@ describe('clearFormFields', () => {
   })
 
   test('preserves adapterSelection', () => {
-    const s = clearFormFields({ ...initialFormState(), adapterSelection: 'BgzipFastaAdapter' })
+    const s = clearFormFields({
+      ...initialFormState(),
+      adapterSelection: 'BgzipFastaAdapter',
+    })
     expect(s.adapterSelection).toBe('BgzipFastaAdapter')
   })
 })
@@ -92,13 +101,25 @@ describe('getAdapterConfig', () => {
 
   test('returns IndexedFastaAdapter config when locations are set', () => {
     expect(
-      getAdapterConfig({ ...initialFormState(), fastaLocation: fasta, faiLocation: fai }),
-    ).toMatchObject({ type: 'IndexedFastaAdapter', fastaLocation: fasta, faiLocation: fai })
+      getAdapterConfig({
+        ...initialFormState(),
+        fastaLocation: fasta,
+        faiLocation: fai,
+      }),
+    ).toMatchObject({
+      type: 'IndexedFastaAdapter',
+      fastaLocation: fasta,
+      faiLocation: fai,
+    })
   })
 
   test('returns needsIndexing for FastaAdapter', () => {
     expect(
-      getAdapterConfig({ ...initialFormState(), adapterSelection: 'FastaAdapter', fastaLocation: fasta }),
+      getAdapterConfig({
+        ...initialFormState(),
+        adapterSelection: 'FastaAdapter',
+        fastaLocation: fasta,
+      }),
     ).toMatchObject({ needsIndexing: true })
   })
 
@@ -111,42 +132,72 @@ describe('getAdapterConfig', () => {
         faiLocation: fai,
         gziLocation: gzi,
       }),
-    ).toMatchObject({ type: 'BgzipFastaAdapter', fastaLocation: fastaGz, faiLocation: fai, gziLocation: gzi })
+    ).toMatchObject({
+      type: 'BgzipFastaAdapter',
+      fastaLocation: fastaGz,
+      faiLocation: fai,
+      gziLocation: gzi,
+    })
   })
 })
 
 describe('getBaseAssemblyConfig', () => {
   test('includes name', () => {
-    expect(getBaseAssemblyConfig({ ...initialFormState(), assemblyName: 'hg38' })).toMatchObject({ name: 'hg38' })
+    expect(
+      getBaseAssemblyConfig({ ...initialFormState(), assemblyName: 'hg38' }),
+    ).toMatchObject({ name: 'hg38' })
   })
 
   test('includes displayName when set', () => {
     expect(
-      getBaseAssemblyConfig({ ...initialFormState(), assemblyDisplayName: 'Homo sapiens' }),
+      getBaseAssemblyConfig({
+        ...initialFormState(),
+        assemblyDisplayName: 'Homo sapiens',
+      }),
     ).toMatchObject({ displayName: 'Homo sapiens' })
   })
 
   test('omits displayName when empty', () => {
-    expect(getBaseAssemblyConfig(initialFormState())).not.toHaveProperty('displayName')
+    expect(getBaseAssemblyConfig(initialFormState())).not.toHaveProperty(
+      'displayName',
+    )
   })
 
   test('includes refNameAliases when location is set', () => {
     expect(
-      getBaseAssemblyConfig({ ...initialFormState(), refNameAliasesLocation: aliases }),
-    ).toMatchObject({ refNameAliases: { adapter: { type: 'RefNameAliasAdapter', location: aliases } } })
+      getBaseAssemblyConfig({
+        ...initialFormState(),
+        refNameAliasesLocation: aliases,
+      }),
+    ).toMatchObject({
+      refNameAliases: {
+        adapter: { type: 'RefNameAliasAdapter', location: aliases },
+      },
+    })
   })
 
   test('omits refNameAliases when blank', () => {
-    expect(getBaseAssemblyConfig(initialFormState())).not.toHaveProperty('refNameAliases')
+    expect(getBaseAssemblyConfig(initialFormState())).not.toHaveProperty(
+      'refNameAliases',
+    )
   })
 
   test('includes cytobands when location is set', () => {
     expect(
-      getBaseAssemblyConfig({ ...initialFormState(), cytobandsLocation: cytobands }),
-    ).toMatchObject({ cytobands: { adapter: { type: 'CytobandAdapter', cytobandsLocation: cytobands } } })
+      getBaseAssemblyConfig({
+        ...initialFormState(),
+        cytobandsLocation: cytobands,
+      }),
+    ).toMatchObject({
+      cytobands: {
+        adapter: { type: 'CytobandAdapter', cytobandsLocation: cytobands },
+      },
+    })
   })
 
   test('omits cytobands when blank', () => {
-    expect(getBaseAssemblyConfig(initialFormState())).not.toHaveProperty('cytobands')
+    expect(getBaseAssemblyConfig(initialFormState())).not.toHaveProperty(
+      'cytobands',
+    )
   })
 })

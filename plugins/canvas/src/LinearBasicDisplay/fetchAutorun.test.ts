@@ -557,3 +557,124 @@ describe('SettingsInvalidate autorun', () => {
     expect(mockRpcCall.mock.calls[0]![2]).toMatchObject({ showOnlyGenes: true })
   })
 })
+
+// AUTO_FORCE_LOAD_BP is 20,000 — use a 50,000 bp region to trigger getByteEstimateConfig
+describe('byte estimate pre-check', () => {
+  function createLargeDisplay() {
+    const env = createTestEnvironment()
+    const { display, view } = env.createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 50_000, refName: 'ctgA' },
+    ])
+    // Zoom to 62.5 bpPerPx so visibleBp = 62.5 * 800 = 50,000 > AUTO_FORCE_LOAD_BP (20,000)
+    view.zoomTo(62.5)
+    return { display, view, mockRpcCall: env.mockRpcCall }
+  }
+
+  it('sets regionTooLarge without calling RenderFeatureData when bytes exceed limit', async () => {
+    const { display, mockRpcCall } = createLargeDisplay()
+
+    mockRpcCall.mockImplementation((_sid: string, method: string) => {
+      if (method === 'CoreGetFeatureDensityStats') {
+        return Promise.resolve({ bytes: 5_000_000, fetchSizeLimit: 1_000_000 })
+      }
+      return Promise.resolve(makeEmptyFeatureData())
+    })
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+
+    const renderCalls = mockRpcCall.mock.calls.filter(
+      (c: unknown[]) => c[1] === 'RenderFeatureData',
+    )
+    expect(renderCalls).toHaveLength(0)
+  })
+
+  it('proceeds to fetch when bytes are within limit', async () => {
+    const { display, mockRpcCall } = createLargeDisplay()
+
+    mockRpcCall.mockImplementation((_sid: string, method: string) => {
+      if (method === 'CoreGetFeatureDensityStats') {
+        return Promise.resolve({ bytes: 500_000, fetchSizeLimit: 1_000_000 })
+      }
+      return Promise.resolve(makeEmptyFeatureData())
+    })
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(false)
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const renderCalls = mockRpcCall.mock.calls.filter(
+      (c: unknown[]) => c[1] === 'RenderFeatureData',
+    )
+    expect(renderCalls.length).toBeGreaterThan(0)
+  })
+
+  it('allows fetch after force load raises the byte size limit', async () => {
+    const { display, mockRpcCall } = createLargeDisplay()
+
+    const overLimitBytes = 5_000_000
+    mockRpcCall.mockImplementation((_sid: string, method: string) => {
+      if (method === 'CoreGetFeatureDensityStats') {
+        return Promise.resolve({
+          bytes: overLimitBytes,
+          fetchSizeLimit: 1_000_000,
+        })
+      }
+      return Promise.resolve(makeEmptyFeatureData())
+    })
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+
+    // Simulate "Force load": setFeatureDensityStatsLimit sets userByteSizeLimit
+    // to 1.5× the estimated bytes so the next byte-estimate check passes.
+    display.setFeatureDensityStatsLimit({ bytes: overLimitBytes })
+    display.reload()
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(false)
+      expect(display.loadedRegions.size).toBe(1)
+    })
+  })
+
+  it('does not loop after byte-estimate regionTooLarge is set', async () => {
+    const { display, mockRpcCall } = createLargeDisplay()
+
+    mockRpcCall.mockImplementation((_sid: string, method: string) => {
+      if (method === 'CoreGetFeatureDensityStats') {
+        return Promise.resolve({ bytes: 5_000_000, fetchSizeLimit: 1_000_000 })
+      }
+      return Promise.resolve(makeEmptyFeatureData())
+    })
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+
+    const callCount = mockRpcCall.mock.calls.length
+
+    jest.advanceTimersByTime(5000)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBe(callCount)
+  })
+})

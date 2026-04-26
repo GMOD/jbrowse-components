@@ -34,7 +34,7 @@ function countStringAllele(allele: string, b: AlleleBuckets) {
   } else if (allele === '.') {
     b.countDot++
   } else {
-    b.otherCounts[allele] = (b.otherCounts[allele] || 0) + 1
+    b.otherCounts[allele] = (b.otherCounts[allele] ?? 0) + 1
   }
 }
 
@@ -76,7 +76,7 @@ export function calculateAlleleCountsFast(
           b.countDot++
         } else {
           const a0 = str[start]!
-          b.otherCounts[a0] = (b.otherCounts[a0] || 0) + 1
+          b.otherCounts[a0] = (b.otherCounts[a0] ?? 0) + 1
         }
 
         if (c1 === 48) {
@@ -91,7 +91,7 @@ export function calculateAlleleCountsFast(
           b.countDot++
         } else {
           const a1 = str[start + 2]!
-          b.otherCounts[a1] = (b.otherCounts[a1] || 0) + 1
+          b.otherCounts[a1] = (b.otherCounts[a1] ?? 0) + 1
         }
         return
       }
@@ -111,7 +111,7 @@ export function calculateAlleleCountsFast(
         b.countDot++
       } else {
         const a = str[start]!
-        b.otherCounts[a] = (b.otherCounts[a] || 0) + 1
+        b.otherCounts[a] = (b.otherCounts[a] ?? 0) + 1
       }
       return
     }
@@ -164,7 +164,7 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
         } else if (a0 === '.') {
           countDot++
         } else {
-          otherCounts[a0] = (otherCounts[a0] || 0) + 1
+          otherCounts[a0] = (otherCounts[a0] ?? 0) + 1
         }
         if (a1 === '0') {
           count0++
@@ -177,7 +177,7 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
         } else if (a1 === '.') {
           countDot++
         } else {
-          otherCounts[a1] = (otherCounts[a1] || 0) + 1
+          otherCounts[a1] = (otherCounts[a1] ?? 0) + 1
         }
         continue
       }
@@ -195,7 +195,7 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
       } else if (genotype === '.') {
         countDot++
       } else {
-        otherCounts[genotype] = (otherCounts[genotype] || 0) + 1
+        otherCounts[genotype] = (otherCounts[genotype] ?? 0) + 1
       }
       continue
     }
@@ -213,7 +213,7 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
       } else if (allele === '.') {
         countDot++
       } else {
-        otherCounts[allele] = (otherCounts[allele] || 0) + 1
+        otherCounts[allele] = (otherCounts[allele] ?? 0) + 1
       }
     }
   }

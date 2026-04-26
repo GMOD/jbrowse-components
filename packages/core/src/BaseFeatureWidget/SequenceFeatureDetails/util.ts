@@ -97,7 +97,7 @@ function calculateRemainder(
   charactersPerRow: number,
 ) {
   // Get the length of the last segment without spaces
-  const lastSegmentLength = segments.at(-1)?.replaceAll(' ', '').length || 0
+  const lastSegmentLength = segments.at(-1)?.replaceAll(' ', '').length ?? 0
 
   // If we're on the first chunk, include the previous remainder
   const additionalRemainder = chunkIndex < 2 ? currRemainder : 0

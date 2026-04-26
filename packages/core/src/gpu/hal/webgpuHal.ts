@@ -812,12 +812,10 @@ export class WebGPUHal implements GpuHal {
       format: 'rgba8unorm',
       usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
     })
-    if (!this.pickingStagingBuffer) {
-      this.pickingStagingBuffer = this.device.createBuffer({
-        size: 256,
-        usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
-      })
-    }
+    this.pickingStagingBuffer ??= this.device.createBuffer({
+      size: 256,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
+    })
   }
 
   private resetStagingBuffer() {

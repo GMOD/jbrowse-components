@@ -75,7 +75,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   }
 
   private async setup(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     return updateStatus('Downloading .hic header', statusCallback, () =>
       this.hic.getMetaData(),
     )
@@ -123,7 +123,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
         bpPerPx = 1,
         statusCallback = () => {},
       } = opts
-      const res = await this.getResolution(bpPerPx / (resolution || 1000), opts)
+      const res = await this.getResolution(bpPerPx / (resolution ?? 1000), opts)
 
       await updateStatus('Downloading .hic data', statusCallback, async () => {
         const records = await this.hic.getContactRecords(

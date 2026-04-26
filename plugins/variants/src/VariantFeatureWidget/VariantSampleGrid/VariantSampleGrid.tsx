@@ -60,7 +60,7 @@ export default function VariantSampleGrid(props: {
   const columns = useMemo(() => {
     const keys = [
       'sample',
-      ...Object.keys(rows[0] || {}).filter(k => k !== 'id' && k !== 'sample'),
+      ...Object.keys(rows[0] ?? {}).filter(k => k !== 'id' && k !== 'sample'),
     ]
     return keys.map(
       field =>

@@ -63,17 +63,15 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   }
 
   private async configure() {
-    if (!this.setupP) {
-      this.setupP = this.bed.getMetadata().catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    }
+    this.setupP ??= this.bed.getMetadata().catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
 
   async getMetadata(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     return updateStatus('Downloading index', statusCallback, () =>
       this.configure(),
     )
@@ -87,7 +85,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   }
 
   public getFeatures(query: Region, opts?: BaseOptions) {
-    const { stopToken, statusCallback = () => {} } = opts || {}
+    const { stopToken, statusCallback = () => {} } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
       const { columnNumbers } = await this.getMetadata()
       const colRef = columnNumbers.ref - 1

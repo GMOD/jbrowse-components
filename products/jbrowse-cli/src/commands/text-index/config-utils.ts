@@ -103,7 +103,7 @@ export function getTrackConfigs(
   const trackIdsToIndex = trackIds?.length
     ? trackIds
     : tracks.map(track => track.trackId)
-  const excludeSet = new Set(excludeTrackIds || [])
+  const excludeSet = new Set(excludeTrackIds)
 
   return trackIdsToIndex
     .map(trackId => {

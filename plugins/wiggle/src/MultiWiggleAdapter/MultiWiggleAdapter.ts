@@ -69,9 +69,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   private adaptersP?: Promise<AdapterEntry[]>
 
   public async getAdapters(): Promise<AdapterEntry[]> {
-    if (!this.adaptersP) {
-      this.adaptersP = this.getAdaptersImpl()
-    }
+    this.adaptersP ??= this.getAdaptersImpl()
     return this.adaptersP
   }
 

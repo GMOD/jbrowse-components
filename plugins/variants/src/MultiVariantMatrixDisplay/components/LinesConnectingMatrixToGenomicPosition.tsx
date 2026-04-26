@@ -40,7 +40,7 @@ function getGenomicX(
     (view.bpToPx({
       refName: assembly.getCanonicalRefName2(feature.get('refName')),
       coord: feature.get('start'),
-    })?.offsetPx || 0) - offsetAdj
+    })?.offsetPx ?? 0) - offsetAdj
   )
 }
 
@@ -93,7 +93,7 @@ const AllLines = observer(function AllLines({
   const { offsetPx, assemblyNames, dynamicBlocks } = view
   const assembly = assemblyManager.get(assemblyNames[0]!)
   const b0 = dynamicBlocks.totalWidthPxWithoutBorders
-  const n = featuresVolatile?.length || 0
+  const n = featuresVolatile?.length ?? 0
   const w = b0 / (n || 1)
   const offsetAdj = Math.max(offsetPx, 0)
 
@@ -212,7 +212,7 @@ const HighlightedLine = observer(function HighlightedLine({
   const { offsetPx, assemblyNames, dynamicBlocks } = view
   const assembly = assemblyManager.get(assemblyNames[0]!)
   const b0 = dynamicBlocks.totalWidthPxWithoutBorders
-  const n = featuresVolatile?.length || 0
+  const n = featuresVolatile?.length ?? 0
   const w = b0 / (n || 1)
   const left = Math.max(0, -offsetPx)
   const svgX = crosshairX - left
@@ -265,7 +265,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
     const [hovered, setHovered] = useState<HoveredLine>()
     const b0 = (getContainingView(model) as LinearGenomeViewModel).dynamicBlocks
       .totalWidthPxWithoutBorders
-    const n = featuresVolatile?.length || 0
+    const n = featuresVolatile?.length ?? 0
     const w = b0 / (n || 1)
 
     if (!featuresVolatile || n === 0) {

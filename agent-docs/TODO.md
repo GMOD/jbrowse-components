@@ -131,3 +131,34 @@ inline-render pattern. A few remaining call sites don't fit the helper as-is:
 the gfatabixadapter also, it is not panning out...
 plugins/tube-map and plugins/graph remove
 put these on a new branch though
+
+## Alignments
+
+
+
+High-value but complex:
+- The two RPC executors (executeRenderPileupData.ts / executeRenderChainData.ts) are ~70% identical
+— same read-array packing, same gap/mismatch/coverage pipeline, same transferables list. Merging
+them would remove ~300 lines and eliminate the risk of future buffer-list divergence. The only real
+divergence is chain-specific metadata arrays.
+- buildLaidOutPileupMap / buildLaidOutChainMap have identical multi-region/single-region branching —
+ a shared driver would unify them.
+
+Constrained:
+- The LinearAlignmentsDisplayModel interface in useAlignmentsBase.ts manually duplicates ~110 model
+fields and will drift. The fix would be Instance<typeof ...> but the file is in components/ which
+model.ts already imports from, so a direct import of the model type creates a circular dependency.
+The real fix is breaking that cycle — probably by moving the component imports in model.ts to lazy
+imports or extracting a separate types file — which is a bigger refactor.
+
+## Multi-sample regionTooLarge
+
+When i see regiontoolarge, and then zoom in, and it is still regiontoolarge, it actually hides the regiontoolarge while zooming, and shows the contents while zooming, and then re-shows the regiontoolarge once zooming stops
+
+## LGV vertical scroll canvas
+
+in linear-genome-view plugins/canvas we have the idea of 'hold shift+scroll' to vertically scroll
+but i don't believe it is working, it moves a little but instantly stops. please investigate
+
+
+## Audit regionTooLarge concepts in general

@@ -27,17 +27,15 @@ export default class ShardedGfaTabixAdapter extends BaseGfaTabixAdapter {
   }
 
   private async getManifest() {
-    if (!this.manifestPromise) {
-      this.manifestPromise = (async () => {
-        const manifestLoc = this.getConf(
-          'segmentsManifestLocation',
-        ) as FileLocation
-        const fh = openLocation(manifestLoc, this.pluginManager)
-        const buf = await fh.readFile()
-        const text = new TextDecoder().decode(buf)
-        return JSON.parse(text) as SegmentsManifest
-      })()
-    }
+    this.manifestPromise ??= (async () => {
+      const manifestLoc = this.getConf(
+        'segmentsManifestLocation',
+      ) as FileLocation
+      const fh = openLocation(manifestLoc, this.pluginManager)
+      const buf = await fh.readFile()
+      const text = new TextDecoder().decode(buf)
+      return JSON.parse(text) as SegmentsManifest
+    })()
     return this.manifestPromise
   }
 

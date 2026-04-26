@@ -30,7 +30,7 @@ export default function VcfExtensionPointsF(pluginManager: PluginManager) {
             type: 'VcfTabixAdapter',
             vcfGzLocation: file,
             index: {
-              location: index || makeIndex(file, '.tbi'),
+              location: index ?? makeIndex(file, '.tbi'),
               indexType: makeIndexType(indexName, 'CSI', 'TBI'),
             },
           }
@@ -54,7 +54,7 @@ export default function VcfExtensionPointsF(pluginManager: PluginManager) {
             type: 'PlinkLDTabixAdapter',
             ldLocation: file,
             index: {
-              location: index || makeIndex(file, '.tbi'),
+              location: index ?? makeIndex(file, '.tbi'),
               indexType: makeIndexType(indexName, 'CSI', 'TBI'),
             },
           }

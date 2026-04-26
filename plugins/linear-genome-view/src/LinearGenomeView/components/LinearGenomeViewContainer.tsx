@@ -43,6 +43,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
     pinnedTracksTop,
     tracks,
     unpinnedTracks,
+    hideHeader,
   } = model
   const { classes } = useStyles()
   const session = getSession(model)
@@ -91,7 +92,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
         style={{ position: stickyViewHeaders ? 'sticky' : undefined }}
       >
         <HeaderComponent model={model} />
-        <MiniControlsComponent model={model} />
+        {hideHeader ? <MiniControlsComponent model={model} /> : null}
       </div>
       {model.scalebarOnly ? (
         <Scalebar

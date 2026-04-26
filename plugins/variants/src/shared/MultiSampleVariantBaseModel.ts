@@ -254,7 +254,7 @@ export default function MultiSampleVariantBaseModelF(
 
       get fetchSizeLimit() {
         return (
-          self.userByteSizeLimit ||
+          self.userByteSizeLimit ??
           self.getConfWithOverride<number>('fetchSizeLimit')
         )
       },
@@ -538,7 +538,7 @@ export default function MultiSampleVariantBaseModelF(
        * #getter
        */
       get nrow() {
-        return self.sources?.length || 1
+        return self.sources?.length ?? 1
       },
 
       /**
@@ -836,7 +836,7 @@ export default function MultiSampleVariantBaseModelF(
        * #getter
        */
       get totalHeight() {
-        return self.rowHeight * (self.sources?.length || 1)
+        return self.rowHeight * (self.sources?.length ?? 1)
       },
       /**
        * #getter

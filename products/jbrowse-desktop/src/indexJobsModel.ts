@@ -109,9 +109,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         const { session } = self
         const { widgets } = session
         let jobStatusWidget = widgets.get('JobsList')
-        if (!jobStatusWidget) {
-          jobStatusWidget = session.addWidget('JobsListWidget', 'JobsList')
-        }
+        jobStatusWidget ??= session.addWidget('JobsListWidget', 'JobsList')
         return jobStatusWidget as JobsListModel
       },
     }))
@@ -298,7 +296,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
               jobStatusWidget.addFinishedJob({
                 name,
                 statusMessage: statusMessage || 'done',
-                progressPct: progressPct || 100,
+                progressPct: progressPct ?? 100,
                 cancelCallback: cancelCallback!,
                 setStatusMessage: () => {},
               })
@@ -341,7 +339,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             jobStatusWidget.addJob({
               name,
               statusMessage: statusMessage || '',
-              progressPct: progressPct || 0,
+              progressPct: progressPct ?? 0,
               cancelCallback: cancelCallback!,
               setStatusMessage: () => {},
             })

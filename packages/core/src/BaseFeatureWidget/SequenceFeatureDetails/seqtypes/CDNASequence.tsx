@@ -52,8 +52,8 @@ const CDNASequence = observer(function CDNASequence({
   const mult = fullGenomicCoordinates ? strand : 1
   let coordStart = fullGenomicCoordinates
     ? strand > 0
-      ? feature.start + 1 - (upstream?.length || 0)
-      : feature.end + (upstream?.length || 0)
+      ? feature.start + 1 - (upstream?.length ?? 0)
+      : feature.end + (upstream?.length ?? 0)
     : 0
   let currStart = 0
   let currRemainder = 0

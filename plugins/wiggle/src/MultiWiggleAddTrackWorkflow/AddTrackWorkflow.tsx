@@ -141,7 +141,7 @@ const MultiWiggleAddTrackWorkflow = observer(
             multiple
             onChange={({ target }) => {
               addTracks(
-                [...(target.files || [])].map(file => ({
+                [...(target.files ?? [])].map(file => ({
                   type: 'BigWigAdapter',
                   bigWigLocation: makeFileLocation(file),
                   source: file.name,

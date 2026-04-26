@@ -86,7 +86,7 @@ export function calculateAlleleCountsFromRaw(callGenotype: Int8Array) {
       countDot++
     } else {
       const key = String(a)
-      otherCounts[key] = (otherCounts[key] || 0) + 1
+      otherCounts[key] = (otherCounts[key] ?? 0) + 1
     }
   }
 

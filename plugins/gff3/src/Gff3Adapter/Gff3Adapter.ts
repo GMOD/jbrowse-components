@@ -25,7 +25,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
   }>
 
   private async loadDataP(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     const buffer = await fetchAndMaybeUnzip(
       openLocation(this.getConf('gffLocation'), this.pluginManager),
       opts,
@@ -68,12 +68,10 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
   }
 
   private async loadData(opts: BaseOptions) {
-    if (!this.gffFeatures) {
-      this.gffFeatures = this.loadDataP(opts).catch((e: unknown) => {
-        this.gffFeatures = undefined
-        throw e
-      })
-    }
+    this.gffFeatures ??= this.loadDataP(opts).catch((e: unknown) => {
+      this.gffFeatures = undefined
+      throw e
+    })
 
     return this.gffFeatures
   }
@@ -96,7 +94,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
         for (const f of intervalTreeMap[refName]?.(opts.statusCallback).search([
           start,
           end,
-        ]) || []) {
+        ]) ?? []) {
           observer.next(f)
         }
         observer.complete()

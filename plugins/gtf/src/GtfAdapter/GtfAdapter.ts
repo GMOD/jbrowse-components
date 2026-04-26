@@ -91,12 +91,10 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
   }
 
   private async loadData(opts: BaseOptions = {}) {
-    if (!this.gtfFeatures) {
-      this.gtfFeatures = this.loadDataP(opts).catch((e: unknown) => {
-        this.gtfFeatures = undefined
-        throw e
-      })
-    }
+    this.gtfFeatures ??= this.loadDataP(opts).catch((e: unknown) => {
+      this.gtfFeatures = undefined
+      throw e
+    })
 
     return this.gtfFeatures
   }
@@ -187,9 +185,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
       const parentAggregation = {} as Record<string, SimpleFeatureSerialized[]>
       for (const feat of feats) {
         const aggr = feat[aggregateField] as string
-        if (!parentAggregation[aggr]) {
-          parentAggregation[aggr] = []
-        }
+        parentAggregation[aggr] ??= []
 
         if (aggr) {
           parentAggregation[aggr].push(feat)

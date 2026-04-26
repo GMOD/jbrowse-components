@@ -63,12 +63,10 @@ export default class GridBookmarkPlugin extends Plugin {
                 const session = getSession(self)
                 if (isSessionModelWithWidgets(session)) {
                   let bookmarkWidget = session.widgets.get('GridBookmark')
-                  if (!bookmarkWidget) {
-                    bookmarkWidget = session.addWidget(
-                      'GridBookmarkWidget',
-                      'GridBookmark',
-                    )
-                  }
+                  bookmarkWidget ??= session.addWidget(
+                    'GridBookmarkWidget',
+                    'GridBookmark',
+                  )
 
                   session.showWidget(bookmarkWidget)
                   return session.widgets.get(
@@ -275,12 +273,10 @@ export default class GridBookmarkPlugin extends Plugin {
         icon: BookmarksIcon,
         onClick: (session: SessionWithWidgets) => {
           let bookmarkWidget = session.widgets.get('GridBookmark')
-          if (!bookmarkWidget) {
-            bookmarkWidget = session.addWidget(
-              'GridBookmarkWidget',
-              'GridBookmark',
-            )
-          }
+          bookmarkWidget ??= session.addWidget(
+            'GridBookmarkWidget',
+            'GridBookmark',
+          )
           session.showWidget(bookmarkWidget)
         },
       })

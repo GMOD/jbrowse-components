@@ -35,7 +35,7 @@ function getGenomicX(
     (view.bpToPx({
       refName: assembly.getCanonicalRefName2(snp.refName),
       coord: snp.start,
-    })?.offsetPx || 0) - offsetAdj
+    })?.offsetPx ?? 0) - offsetAdj
   )
 }
 

@@ -165,7 +165,7 @@ export default function f(pluginManager: PluginManager) {
         const trackUri = getUri(self.trackData)
         const indexUri = getUri(self.indexTrackData)
         return !!(
-          indexUri?.startsWith('ftp://') || trackUri?.startsWith('ftp://')
+          indexUri?.startsWith('ftp://') ?? trackUri?.startsWith('ftp://')
         )
       },
 
@@ -209,7 +209,7 @@ export default function f(pluginManager: PluginManager) {
       get wrongProtocol() {
         return (
           window.location.protocol === 'https:' &&
-          (this.trackHttp || this.indexHttp)
+          (this.trackHttp ?? this.indexHttp)
         )
       },
 

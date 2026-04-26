@@ -27,7 +27,7 @@ export function applyColorPalette(sources: Source[], attribute: string) {
 
   const counts = new Map<string, number>()
   for (const key of keys) {
-    counts.set(key, (counts.get(key) || 0) + 1)
+    counts.set(key, (counts.get(key) ?? 0) + 1)
   }
 
   const colorMap = Object.fromEntries(

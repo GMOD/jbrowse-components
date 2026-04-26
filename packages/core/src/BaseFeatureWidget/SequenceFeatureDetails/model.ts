@@ -149,7 +149,7 @@ export function SequenceFeatureDetailsF() {
        * #getter
        */
       get hasExonOrCDS() {
-        return this.hasExon || this.hasCDS
+        return this.hasExon ?? this.hasCDS
       },
     }))
     .actions(self => ({

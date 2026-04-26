@@ -56,7 +56,7 @@ export function setupColorByAutorun(self: {
         if (!hasAttribute) {
           console.warn(
             `colorBy attribute "${colorBy}" not found in sample metadata. ` +
-              `Available attributes: ${Object.keys(sources[0] || {}).join(', ')}`,
+              `Available attributes: ${Object.keys(sources[0] ?? {}).join(', ')}`,
           )
           self.setColorByApplied(true)
           return

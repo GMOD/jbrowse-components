@@ -398,10 +398,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             const refreshToken = self.retrieveRefreshToken()
             if (refreshToken) {
               try {
-                if (!exchangedTokenPromise) {
-                  exchangedTokenPromise =
-                    self.exchangeRefreshForAccessToken(refreshToken)
-                }
+                exchangedTokenPromise ??=
+                  self.exchangeRefreshForAccessToken(refreshToken)
                 const newToken = await exchangedTokenPromise
                 exchangedTokenPromise = undefined
                 return newToken

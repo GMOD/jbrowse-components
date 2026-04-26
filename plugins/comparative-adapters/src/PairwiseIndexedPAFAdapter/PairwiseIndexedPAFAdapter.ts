@@ -56,7 +56,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     })
   }
   async getHeader(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     return updateStatus('Downloading header', statusCallback, () =>
       this.pif.getHeader(),
     )
@@ -73,49 +73,45 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   private getSummaryRefNames() {
-    if (!this.summaryRefsPromise) {
-      this.summaryRefsPromise = this.pif
-        .getReferenceSequenceNames()
-        .then(
-          names =>
-            new Set(
-              names.filter(
-                n =>
-                  n.startsWith('sq') ||
-                  n.startsWith('st') ||
-                  n.startsWith('xq') ||
-                  n.startsWith('xt'),
-              ),
+    this.summaryRefsPromise ??= this.pif
+      .getReferenceSequenceNames()
+      .then(
+        names =>
+          new Set(
+            names.filter(
+              n =>
+                n.startsWith('sq') ||
+                n.startsWith('st') ||
+                n.startsWith('xq') ||
+                n.startsWith('xt'),
             ),
-        )
-    }
+          ),
+      )
     return this.summaryRefsPromise
   }
 
   private getHeaderData() {
-    if (!this.headerDataPromise) {
-      this.headerDataPromise = this.pif.getHeader().then(header => {
-        const splitMatch = /splitThreshold=(\d+)/.exec(header)
-        const mergeMatch = /mergeGap=(\d+)/.exec(header)
-        const pairsMatch = /pairs=(\d+)/.exec(header)
-        const pairs = new Map<number, [string, string]>()
+    this.headerDataPromise ??= this.pif.getHeader().then(header => {
+      const splitMatch = /splitThreshold=(\d+)/.exec(header)
+      const mergeMatch = /mergeGap=(\d+)/.exec(header)
+      const pairsMatch = /pairs=(\d+)/.exec(header)
+      const pairs = new Map<number, [string, string]>()
 
-        if (pairsMatch) {
-          const pairRegex = /pair(\d+)=([^,\n]+),([^,\n]+)/g
-          let m: RegExpExecArray | null
-          while ((m = pairRegex.exec(header)) !== null) {
-            pairs.set(+m[1]!, [m[2]!, m[3]!])
-          }
+      if (pairsMatch) {
+        const pairRegex = /pair(\d+)=([^,\n]+),([^,\n]+)/g
+        let m: RegExpExecArray | null
+        while ((m = pairRegex.exec(header)) !== null) {
+          pairs.set(+m[1]!, [m[2]!, m[3]!])
         }
+      }
 
-        return {
-          splitThreshold: splitMatch ? +splitMatch[1]! : undefined,
-          mergeGap: mergeMatch ? +mergeMatch[1]! : undefined,
-          pairCount: pairsMatch ? +pairsMatch[1]! : undefined,
-          pairs: pairs.size > 0 ? pairs : undefined,
-        }
-      })
-    }
+      return {
+        splitThreshold: splitMatch ? +splitMatch[1]! : undefined,
+        mergeGap: mergeMatch ? +mergeMatch[1]! : undefined,
+        pairCount: pairsMatch ? +pairsMatch[1]! : undefined,
+        pairs: pairs.size > 0 ? pairs : undefined,
+      }
+    })
     return this.headerDataPromise
   }
 

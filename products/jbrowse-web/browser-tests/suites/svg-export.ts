@@ -184,7 +184,7 @@ const suite: TestSuite = {
 
         const svg = await exportSvgAndSave(page, 'svg-export-multi-wiggle')
         // multirowxy renders as lines, not rects
-        const lineCount = (svg.match(/<line/g) || []).length
+        const lineCount = (svg.match(/<line/g) ?? []).length
         if (lineCount < 10) {
           throw new Error(
             `Multi-wiggle SVG has too few lines (${lineCount}), expected rendered data`,
@@ -218,7 +218,7 @@ const suite: TestSuite = {
         await waitForLoadingToComplete(page)
 
         const svg = await exportSvgAndSave(page, 'svg-export-genes-peptides')
-        const textCount = (svg.match(/<text/g) || []).length
+        const textCount = (svg.match(/<text/g) ?? []).length
         console.log(`    ${textCount} text elements`)
         if (textCount > 0 && !svg.includes('font-family="monospace"')) {
           throw new Error('Peptide text missing monospace font-family')
@@ -243,7 +243,7 @@ const suite: TestSuite = {
         await waitForLoadingToComplete(page)
 
         const svg = await exportSvgAndSave(page, 'svg-export-sashimi-arcs')
-        const pathCount = (svg.match(/<path/g) || []).length
+        const pathCount = (svg.match(/<path/g) ?? []).length
         console.log(`    ${pathCount} path elements (includes sashimi arcs)`)
       },
     },

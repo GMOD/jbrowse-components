@@ -65,9 +65,7 @@ export default class BoxRendererType extends FeatureRendererType {
     props: LayoutSessionProps & { sessionId: string; trackInstanceId: string },
   ) {
     const key = getLayoutId(props)
-    if (!this.layoutSessions[key]) {
-      this.layoutSessions[key] = this.createLayoutSession(props)
-    }
+    this.layoutSessions[key] ??= this.createLayoutSession(props)
     return this.layoutSessions[key].update(props)
   }
 

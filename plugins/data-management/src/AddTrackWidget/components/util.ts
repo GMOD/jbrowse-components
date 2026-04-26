@@ -7,9 +7,7 @@ export function categorizeAdapters(adaptersList: AdapterType[]) {
   const map = {} as Record<string, AdapterType[]>
   for (const adapter of adaptersList) {
     const key = adapter.adapterMetadata?.category || 'Default'
-    if (!map[key]) {
-      map[key] = []
-    }
+    map[key] ??= []
     map[key].push(adapter)
   }
   return map

@@ -60,12 +60,15 @@ export default function OpenSequencePanel({
         <OpenSequenceDialog
           onClose={async (conf: unknown) => {
             if (conf) {
-              const path = await ipcRenderer.invoke('createInitialAutosaveFile', {
-                assemblies: conf,
-                defaultSession: {
-                  name: `New Session ${new Date().toLocaleString('en-US')}`,
+              const path = await ipcRenderer.invoke(
+                'createInitialAutosaveFile',
+                {
+                  assemblies: conf,
+                  defaultSession: {
+                    name: `New Session ${new Date().toLocaleString('en-US')}`,
+                  },
                 },
-              })
+              )
               setPluginManager(await loadPluginManager(path))
             }
             setSequenceDialogOpen(false)

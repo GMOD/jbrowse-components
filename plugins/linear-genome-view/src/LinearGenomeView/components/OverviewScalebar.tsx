@@ -183,12 +183,12 @@ const VisibleRegionBox = observer(function VisibleRegionBox({
     overview.bpToPx({
       refName: first.refName,
       coord: first.reversed ? first.end : first.start,
-    }) || 0
+    }) ?? 0
   const lastOverviewPx =
     overview.bpToPx({
       refName: last.refName,
       coord: last.reversed ? last.start : last.end,
-    }) || 0
+    }) ?? 0
 
   const color = showCytobands ? '#f00' : scalebarColor
   const transparency = showCytobands ? 0.1 : 0.3

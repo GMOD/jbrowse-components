@@ -150,34 +150,32 @@ export function useWheelScroll(
       // coalesce all wheel events into one update per frame so that bursts
       // of events (e.g. fast trackpad scrolling) don't each trigger expensive
       // model updates
-      if (s.rafId === null) {
-        s.rafId = requestAnimationFrame(now => {
-          const elapsed = Math.min(
-            100,
-            s.lastRafTime !== null ? now - s.lastRafTime : 16.67,
+      s.rafId ??= requestAnimationFrame(now => {
+        const elapsed = Math.min(
+          100,
+          s.lastRafTime !== null ? now - s.lastRafTime : 16.67,
+        )
+
+        s.lastRafTime = now
+        const maxZoomDelta = MAX_ZOOM_RATE_PER_MS * elapsed
+        if (s.zoomDelta !== 0) {
+          const d = Math.max(
+            -maxZoomDelta,
+            Math.min(maxZoomDelta, s.zoomDelta / s.zoomDivisor),
+          )
+          model.zoomTo(
+            d > 0 ? model.bpPerPx * (1 + d) : model.bpPerPx / (1 - d),
+            s.lastClientX - s.rectLeft,
           )
 
-          s.lastRafTime = now
-          const maxZoomDelta = MAX_ZOOM_RATE_PER_MS * elapsed
-          if (s.zoomDelta !== 0) {
-            const d = Math.max(
-              -maxZoomDelta,
-              Math.min(maxZoomDelta, s.zoomDelta / s.zoomDivisor),
-            )
-            model.zoomTo(
-              d > 0 ? model.bpPerPx * (1 + d) : model.bpPerPx / (1 - d),
-              s.lastClientX - s.rectLeft,
-            )
-
-            s.zoomDelta = 0
-          }
-          if (s.scrollDelta !== 0) {
-            model.horizontalScroll(s.scrollDelta)
-            s.scrollDelta = 0
-          }
-          s.rafId = null
-        })
-      }
+          s.zoomDelta = 0
+        }
+        if (s.scrollDelta !== 0) {
+          model.horizontalScroll(s.scrollDelta)
+          s.scrollDelta = 0
+        }
+        s.rafId = null
+      })
     }
 
     function onVisibilityChange() {

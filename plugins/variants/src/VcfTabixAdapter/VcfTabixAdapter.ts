@@ -47,17 +47,15 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
   }
 
   protected async configurePre2() {
-    if (!this.configured) {
-      this.configured = this.configurePre().catch((e: unknown) => {
-        this.configured = undefined
-        throw e
-      })
-    }
+    this.configured ??= this.configurePre().catch((e: unknown) => {
+      this.configured = undefined
+      throw e
+    })
     return this.configured
   }
 
   async configure(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     return updateStatus('Downloading index', statusCallback, () =>
       this.configurePre2(),
     )
@@ -120,7 +118,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
       return undefined
     }
 
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     const { vcf } = await this.configure(opts)
     const headerText = await vcf.getHeader()
     const exportLines: string[] = headerText.split('\n').filter(Boolean)

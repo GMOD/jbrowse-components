@@ -680,10 +680,10 @@ export default function stateModelFactory(pm: PluginManager) {
           }
           const { assemblyManager } = getSession(self)
           hview.setDisplayedRegions(
-            assemblyManager.get(assemblyNames[0]!)?.regions || [],
+            assemblyManager.get(assemblyNames[0]!)?.regions ?? [],
           )
           vview.setDisplayedRegions(
-            assemblyManager.get(assemblyNames[1]!)?.regions || [],
+            assemblyManager.get(assemblyNames[1]!)?.regions ?? [],
           )
           this.showAllRegions()
         },

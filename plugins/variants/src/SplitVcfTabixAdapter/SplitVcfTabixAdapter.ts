@@ -42,7 +42,7 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter {
   }
 
   async configure(refName: string, opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     return updateStatus('Downloading index', statusCallback, () =>
       this.configurePre(refName),
     )

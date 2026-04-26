@@ -548,7 +548,7 @@ export default function sharedModelFactory(
           if (visibleBp >= AUTO_FORCE_LOAD_BP) {
             const fetchSizeLimit =
               stats.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
-            const limit = self.userByteSizeLimit || fetchSizeLimit
+            const limit = self.userByteSizeLimit ?? fetchSizeLimit
             if (stats.bytes && stats.bytes > limit) {
               self.setRegionTooLarge(
                 true,

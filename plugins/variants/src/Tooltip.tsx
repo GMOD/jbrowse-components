@@ -46,7 +46,7 @@ const Tooltip = observer(function Tooltip({
   const { classes } = useStyles()
 
   const x = clientMouseCoord[0] + 5
-  const y = useClientY ? clientMouseCoord[1] : clientRect?.top || 0
+  const y = useClientY ? clientMouseCoord[1] : clientRect?.top ?? 0
   return featureUnderMouse ? (
     <>
       <Suspense fallback={null}>

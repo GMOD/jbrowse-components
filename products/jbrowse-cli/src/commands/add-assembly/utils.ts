@@ -204,7 +204,7 @@ export async function getAssembly({
   }
 
   const { skipCheck, force, load, faiLocation, gziLocation } = runFlags
-  const check = !(skipCheck || force)
+  const check = !(skipCheck ?? force)
   const inPlace = load === 'inPlace'
 
   switch (type) {
@@ -371,7 +371,7 @@ async function resolveRefNameAliasAdapter(runFlags: AssemblyFlags) {
   }
   const location = await resolveFileLocation(
     runFlags.refNameAliases!,
-    !(runFlags.skipCheck || runFlags.force),
+    !(runFlags.skipCheck ?? runFlags.force),
     runFlags.load === 'inPlace',
   )
   debug(`refName aliases file location resolved to: ${location}`)
@@ -435,11 +435,11 @@ export async function addAssemblyToConfig({
   runFlags: AssemblyFlags
 }): Promise<{ config: Config; wasOverwritten: boolean }> {
   const { updatedItems, wasOverwritten } = findAndUpdateOrAdd({
-    items: config.assemblies || [],
+    items: config.assemblies ?? [],
     newItem: assembly,
     idField: 'name',
     getId: item => item.name,
-    allowOverwrite: runFlags.overwrite || runFlags.force || false,
+    allowOverwrite: runFlags.overwrite ?? runFlags.force ?? false,
     itemType: 'assembly',
   })
 

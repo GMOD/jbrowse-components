@@ -41,12 +41,10 @@ class LazyWorker {
   constructor(public driver: BaseRpcDriver) {}
 
   async getWorker() {
-    if (!this.workerP) {
-      this.workerP = this.driver.makeWorker().catch((e: unknown) => {
-        this.workerP = undefined
-        throw e
-      })
-    }
+    this.workerP ??= this.driver.makeWorker().catch((e: unknown) => {
+      this.workerP = undefined
+      throw e
+    })
     return this.workerP
   }
 }

@@ -118,7 +118,7 @@ export function formatFeatWithSubfeatures(
   parentType?: string,
 ): string {
   const primary = formatFeat(feature, min, parentId, parentType)
-  const subfeatures = feature.get('subfeatures') || []
+  const subfeatures = feature.get('subfeatures') ?? []
   const cds = subfeatures
     .filter(f => f.get('type') === 'CDS')
     .sort((a, b) => a.get('start') - b.get('start'))
@@ -146,7 +146,7 @@ function formatOrigin(sequence: string): string[] {
   for (let i = 0; i < sequence.length; i += 60) {
     const pos = String(i + 1).padStart(9)
     const chunk = sequence.slice(i, i + 60).toLowerCase()
-    const groups = chunk.match(/.{1,10}/g) || []
+    const groups = chunk.match(/.{1,10}/g) ?? []
     lines.push(`${pos} ${groups.join(' ')}`)
   }
   lines.push('//')

@@ -37,12 +37,10 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
     }
   }
   async setup() {
-    if (!this.setupP) {
-      this.setupP = this.setupPre().catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    }
+    this.setupP ??= this.setupPre().catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
 

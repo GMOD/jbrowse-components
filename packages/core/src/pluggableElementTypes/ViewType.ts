@@ -46,7 +46,7 @@ export default class ViewType extends PluggableElementBase {
   }) {
     super(stuff)
     this.ReactComponent = stuff.ReactComponent
-    this.viewMetadata = stuff.viewMetadata || {}
+    this.viewMetadata = stuff.viewMetadata ?? {}
     this.stateModel = stuff.stateModel
     this.extendedName = stuff.extendedName
   }

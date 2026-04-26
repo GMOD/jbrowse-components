@@ -96,17 +96,15 @@ export default class PlinkLDTabixAdapter extends BaseAdapter {
   }
 
   protected async configurePre2() {
-    if (!this.configured) {
-      this.configured = this.configurePre().catch((e: unknown) => {
-        this.configured = undefined
-        throw e
-      })
-    }
+    this.configured ??= this.configurePre().catch((e: unknown) => {
+      this.configured = undefined
+      throw e
+    })
     return this.configured
   }
 
   async configure(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     return updateStatus('Downloading index', statusCallback, () =>
       this.configurePre2(),
     )

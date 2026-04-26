@@ -205,12 +205,10 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   getData(opts?: BaseOptions): Promise<BlastRecord[]> {
-    if (!this.data) {
-      this.data = this.setup(opts).catch((e: unknown) => {
-        this.data = undefined
-        throw e
-      })
-    }
+    this.data ??= this.setup(opts).catch((e: unknown) => {
+      this.data = undefined
+      throw e
+    })
     return this.data
   }
 

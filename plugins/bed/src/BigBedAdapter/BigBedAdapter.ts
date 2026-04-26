@@ -44,12 +44,10 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
   }
 
   public async configure(opts?: BaseOptions) {
-    if (!this.cachedP) {
-      this.cachedP = this.configurePre(opts).catch((e: unknown) => {
-        this.cachedP = undefined
-        throw e
-      })
-    }
+    this.cachedP ??= this.configurePre(opts).catch((e: unknown) => {
+      this.cachedP = undefined
+      throw e
+    })
     return this.cachedP
   }
 
@@ -162,7 +160,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           query.refName,
           `${feat.start}`,
           `${feat.end}`,
-          ...(feat.rest?.split('\t') || []),
+          ...(feat.rest?.split('\t') ?? []),
         ]
         const f = featureData2({
           scoreColumn,
@@ -178,9 +176,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
         const aggrIsNotNone =
           typeof aggr === 'string' && aggr && aggr !== 'none'
         if (aggrIsNotNone) {
-          if (!parentAggregation[aggr]) {
-            parentAggregation[aggr] = []
-          }
+          parentAggregation[aggr] ??= []
           parentAggregation[aggr].push(f)
           if (f.start < minAggStart) {
             minAggStart = f.start

@@ -117,7 +117,7 @@ function CascadingMenuList({
   )
 
   const sortedItems = menuItems.toSorted(
-    (a, b) => (b.priority || 0) - (a.priority || 0),
+    (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
   )
 
   return (

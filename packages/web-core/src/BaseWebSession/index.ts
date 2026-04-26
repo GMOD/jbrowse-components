@@ -460,7 +460,7 @@ export function BaseWebSession({
             priority: 1001,
             subMenu: [
               ...self.getTrackActions(config, view),
-              ...(extraTrackActions || []),
+              ...(extraTrackActions ?? []),
             ],
           },
           { type: 'divider' as const },

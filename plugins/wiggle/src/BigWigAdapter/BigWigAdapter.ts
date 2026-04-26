@@ -97,7 +97,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
   ]
 
   private async setupPre(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     const pluginManager = this.pluginManager
     const bigwig = new BigWig({
       filehandle: openLocation(this.getConf('bigWigLocation'), pluginManager),
@@ -113,12 +113,10 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
   }
 
   async setup(opts?: BaseOptions) {
-    if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    }
+    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
 

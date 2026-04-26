@@ -907,30 +907,28 @@ export async function getLDMatrix({
     console.warn('GPU LD computation failed, falling back to CPU', e)
   }
 
-  if (!ldValues) {
-    ldValues = await updateStatus('Computing LD values', statusCallback, () => {
-      const vals = new Float32Array(ldSize)
-      let idx = 0
-      for (let i = 1; i < n; i++) {
-        for (let j = 0; j < i; j++) {
-          const stats = dataIsPhased
-            ? calculateLDStatsPhasedBits(
-                packedHaplotypes[i]!,
-                packedHaplotypes[j]!,
-                signedLD,
-              )
-            : calculateLDStats(
-                encodedGenotypes[i]!,
-                encodedGenotypes[j]!,
-                signedLD,
-              )
-          vals[idx++] = ldMetric === 'dprime' ? stats.dprime : stats.r2
-          checkStopToken2(stopTokenCheck)
-        }
+  ldValues ??= await updateStatus('Computing LD values', statusCallback, () => {
+    const vals = new Float32Array(ldSize)
+    let idx = 0
+    for (let i = 1; i < n; i++) {
+      for (let j = 0; j < i; j++) {
+        const stats = dataIsPhased
+          ? calculateLDStatsPhasedBits(
+              packedHaplotypes[i]!,
+              packedHaplotypes[j]!,
+              signedLD,
+            )
+          : calculateLDStats(
+              encodedGenotypes[i]!,
+              encodedGenotypes[j]!,
+              signedLD,
+            )
+        vals[idx++] = ldMetric === 'dprime' ? stats.dprime : stats.r2
+        checkStopToken2(stopTokenCheck)
       }
-      return vals
-    })
-  }
+    }
+    return vals
+  })
 
   const filterStats: FilterStats = {
     totalVariants,

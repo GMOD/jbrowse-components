@@ -96,17 +96,15 @@ export default class PlinkLDAdapter extends BaseAdapter {
   }
 
   protected async configurePre2(opts?: BaseOptions) {
-    if (!this.configured) {
-      this.configured = this.configurePre(opts).catch((e: unknown) => {
-        this.configured = undefined
-        throw e
-      })
-    }
+    this.configured ??= this.configurePre(opts).catch((e: unknown) => {
+      this.configured = undefined
+      throw e
+    })
     return this.configured
   }
 
   async configure(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     return updateStatus('Loading LD data', statusCallback, () =>
       this.configurePre2(opts),
     )
