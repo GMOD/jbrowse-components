@@ -13,7 +13,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
-import type { SampleInfo, Source } from './types.ts'
+import type { ProcessedSource, SampleInfo, Source } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
@@ -23,13 +23,13 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 export function getVariantCellDataAutorun(self: {
   configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
-  sources?: Source[]
+  sources?: ProcessedSource[]
   isMinimized: boolean
   cellDataMode: 'regular' | 'matrix'
   errorRetryCount: number
   fetchSizeLimit: number
   rpcProps: {
-    sources: Source[] | undefined
+    sources: ProcessedSource[] | undefined
     minorAlleleFrequencyFilter: number
     lengthCutoffFilter: number
     renderingMode: string

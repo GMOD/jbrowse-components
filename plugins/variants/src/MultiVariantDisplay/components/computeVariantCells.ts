@@ -21,7 +21,7 @@ import {
 import { createCachedABGR } from '../../shared/variantWebglUtils.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
-import type { Source } from '../../shared/types.ts'
+import type { ProcessedSource } from '../../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export interface FeatureGenotypeInfo {
@@ -93,7 +93,7 @@ export function computeVariantCells({
   inputKey,
 }: {
   mafs: MAFFilteredFeature[]
-  sources: Source[]
+  sources: ProcessedSource[]
   renderingMode: string
   referenceDrawingMode: string
   genotypesCache: Map<string, Record<string, string>>
@@ -102,7 +102,7 @@ export function computeVariantCells({
   const getCachedABGR = createCachedABGR()
 
   const alleleColorCache: Record<string, string | undefined> = {}
-  const rawColorCache: Record<string, string> = {}
+  const rawColorCache = new Map<number, string>()
   const drawRef = referenceDrawingMode === 'draw'
 
   const numSources = sources.length
@@ -114,15 +114,12 @@ export function computeVariantCells({
   const isRef = new Uint8Array(maxCells)
   const flatbushItemsSrc: FlatbushItem[] = []
 
-  let regionStart = Number.MAX_SAFE_INTEGER
+  let regionStart = mafs[0]?.feature.get('start') ?? 0
   for (const { feature } of mafs) {
     const s = feature.get('start')
     if (s < regionStart) {
       regionStart = s
     }
-  }
-  if (regionStart === Number.MAX_SAFE_INTEGER) {
-    regionStart = 0
   }
 
   const featureGenotypeMap: Record<string, FeatureGenotypeInfo> = {}
@@ -154,6 +151,9 @@ export function computeVariantCells({
   const sampleIndexMap = firstRaw
     ? buildSampleIndexMap(mafs[0]!.feature.get('sampleNames') as string[])
     : undefined
+  const sampleIndices = sampleIndexMap
+    ? sources.map(({ sampleName }) => sampleIndexMap.get(sampleName))
+    : undefined
 
   for (const { feature, mostFrequentAlt } of mafs) {
     const featureId = feature.id()
@@ -175,7 +175,7 @@ export function computeVariantCells({
 
     const callGt = getRawCallGenotype(feature)
     if (renderingMode === 'phased') {
-      if (callGt && sampleIndexMap) {
+      if (callGt && sampleIndices) {
         const callGtPhased = feature.get('callGenotypePhased') as
           | Uint8Array
           | undefined
@@ -183,14 +183,15 @@ export function computeVariantCells({
         const mostFreqAltInt = Number.parseInt(mostFrequentAlt, 10)
 
         for (let j = 0; j < numSources; j++) {
-          const { name, HP, sampleName } = sources[j]!
-          const si = sampleIndexMap.get(sampleName ?? name)
+          const { name, HP } = sources[j]!
+          const si = sampleIndices[j]
           if (si === undefined) {
             continue
           }
           const isPhasedSample = callGtPhased
             ? Boolean(callGtPhased[si])
             : false
+          const gtStr = genotypeStringFromRaw(callGt, si, ploidy, callGtPhased)
           if (isPhasedSample) {
             const allele = callGt[si * ploidy + HP!]!
             const c = getPhasedColorFromRaw(
@@ -211,12 +212,7 @@ export function computeVariantCells({
                 featureId,
                 name,
               )
-              renderedGenotypes[name] = genotypeStringFromRaw(
-                callGt,
-                si,
-                ploidy,
-                callGtPhased,
-              )
+              renderedGenotypes[name] = gtStr
             }
           } else {
             addCell(
@@ -230,12 +226,7 @@ export function computeVariantCells({
               featureId,
               name,
             )
-            renderedGenotypes[name] = genotypeStringFromRaw(
-              callGt,
-              si,
-              ploidy,
-              callGtPhased,
-            )
+            renderedGenotypes[name] = gtStr
           }
         }
       } else {
@@ -247,7 +238,7 @@ export function computeVariantCells({
 
         for (let j = 0; j < numSources; j++) {
           const { name, HP, sampleName } = sources[j]!
-          const genotype = samp[sampleName ?? name]
+          const genotype = samp[sampleName]
           if (genotype) {
             const isPhasedGt = genotype.includes('|')
             if (isPhasedGt) {
@@ -294,7 +285,7 @@ export function computeVariantCells({
         }
       }
     } else {
-      if (callGt && sampleIndexMap) {
+      if (callGt && sampleIndices) {
         const callGtPhased = feature.get('callGenotypePhased') as
           | Uint8Array
           | undefined
@@ -302,8 +293,8 @@ export function computeVariantCells({
         const mostFreqAltInt = Number.parseInt(mostFrequentAlt, 10)
 
         for (let j = 0; j < numSources; j++) {
-          const { name, sampleName } = sources[j]!
-          const si = sampleIndexMap.get(sampleName ?? name)
+          const { name } = sources[j]!
+          const si = sampleIndices[j]
           if (si === undefined) {
             continue
           }
@@ -333,8 +324,8 @@ export function computeVariantCells({
             continue
           }
 
-          const cacheKey = `${refCount}:${altCount}:${alt2Count}:${uncalled}:${total}:${drawRef ? 1 : 0}`
-          let c = rawColorCache[cacheKey]
+          const colorKey = refCount | (altCount << 8) | (alt2Count << 16) | (uncalled << 24)
+          let c = rawColorCache.get(colorKey)
           if (c === undefined) {
             c = getColorAlleleCount(
               refCount,
@@ -344,7 +335,7 @@ export function computeVariantCells({
               total,
               drawRef,
             )
-            rawColorCache[cacheKey] = c
+            rawColorCache.set(colorKey, c)
           }
           if (c) {
             addCell(
@@ -375,7 +366,7 @@ export function computeVariantCells({
 
         for (let j = 0; j < numSources; j++) {
           const { name, sampleName } = sources[j]!
-          const genotype = samp[sampleName ?? name]
+          const genotype = samp[sampleName]
           if (genotype) {
             const c = getAlleleColor(
               genotype,
@@ -414,20 +405,20 @@ export function computeVariantCells({
 
   // Stable two-bucket reorder: ref cells first (when drawn), then non-ref.
   // Skip ref cells entirely when drawRef is false.
-  let refCount = 0
+  let numRefCells = 0
   for (let i = 0; i < cellCount; i++) {
     if (isRef[i]) {
-      refCount++
+      numRefCells++
     }
   }
-  const outCount = drawRef ? cellCount : cellCount - refCount
+  const outCount = drawRef ? cellCount : cellCount - numRefCells
   const outPositions = new Uint32Array(outCount * 2)
   const outRowIndices = new Uint32Array(outCount)
   const outColors = new Uint32Array(outCount)
   const outShapeTypes = new Uint8Array(outCount)
   const outFlatbushItems: FlatbushItem[] = new Array(outCount)
   let refPos = 0
-  let nonRefPos = drawRef ? refCount : 0
+  let nonRefPos = drawRef ? numRefCells : 0
   for (let i = 0; i < cellCount; i++) {
     const ref = isRef[i]
     if (ref && !drawRef) {

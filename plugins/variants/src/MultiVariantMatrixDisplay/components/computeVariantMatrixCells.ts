@@ -13,7 +13,7 @@ import {
 import { createCachedABGR } from '../../shared/variantWebglUtils.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
-import type { Source } from '../../shared/types.ts'
+import type { ProcessedSource } from '../../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const BLACK_ABGR = 0xff000000
@@ -60,7 +60,7 @@ export function computeVariantMatrixCells({
   genotypesCache,
 }: {
   mafs: MAFFilteredFeature[]
-  sources: Source[]
+  sources: ProcessedSource[]
   renderingMode: string
   genotypesCache: Map<string, Record<string, string>>
 }): MatrixCellData {
@@ -121,7 +121,7 @@ export function computeVariantMatrixCells({
 
       for (let j = 0; j < numSources; j++) {
         const { name, HP, sampleName } = sources[j]!
-        const s = samp[sampleName ?? name]
+        const s = samp[sampleName]
         if (s) {
           const genotype = s.GT?.[0]
           if (genotype) {
@@ -165,7 +165,7 @@ export function computeVariantMatrixCells({
 
         for (let j = 0; j < numSources; j++) {
           const { name, HP, sampleName } = sources[j]!
-          const si = sampleIndexMap.get(sampleName ?? name)
+          const si = sampleIndexMap.get(sampleName)
           if (si === undefined) {
             continue
           }
@@ -234,7 +234,7 @@ export function computeVariantMatrixCells({
             }
             if (c) {
               addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
-              genotypes[sampleName ?? name] = genotypeStringFromRaw(
+              genotypes[sampleName] = genotypeStringFromRaw(
                 callGt,
                 si,
                 ploidy,
@@ -253,7 +253,7 @@ export function computeVariantMatrixCells({
         featureData.push(makeFeatureData(feature, featureId, samp))
         for (let j = 0; j < numSources; j++) {
           const { name, HP, sampleName } = sources[j]!
-          const genotype = samp[sampleName ?? name]
+          const genotype = samp[sampleName]
           if (genotype) {
             if (renderingMode === 'phased') {
               const isPhased = genotype.includes('|')

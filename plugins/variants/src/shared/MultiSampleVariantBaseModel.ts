@@ -496,7 +496,7 @@ export default function MultiSampleVariantBaseModelF(
         // Filter to subtree if filter is active
         if (result && self.subtreeFilter?.length) {
           const filterSet = new Set(self.subtreeFilter)
-          result = result.filter(s => filterSet.has(s.sampleName ?? s.name))
+          result = result.filter(s => filterSet.has(s.sampleName))
         }
         return result
       },

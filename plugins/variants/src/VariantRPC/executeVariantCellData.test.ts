@@ -29,7 +29,7 @@ jest.mock('@jbrowse/core/data_adapters/dataAdapterCache', () => ({
 
 const baseArgs = {
   mode: 'regular' as const,
-  sources: [{ name: 'sample1' }],
+  sources: [{ name: 'sample1', sampleName: 'sample1' }],
   renderingMode: 'alleleCount',
   referenceDrawingMode: 'skip',
   minorAlleleFrequencyFilter: 0,

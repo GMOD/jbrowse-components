@@ -1,4 +1,4 @@
-import type { SampleInfo, Source } from '../shared/types.ts'
+import type { ProcessedSource, SampleInfo, Source } from '../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region, StopToken } from '@jbrowse/core/util'
 
@@ -29,7 +29,7 @@ export interface GetLDMatrixArgs extends BaseVariantRpcArgs {
 }
 
 export interface GetCellDataArgs extends BaseVariantRpcArgs {
-  sources: Source[]
+  sources: ProcessedSource[]
   renderingMode: string
   referenceDrawingMode?: string
   mode: 'regular' | 'matrix'
