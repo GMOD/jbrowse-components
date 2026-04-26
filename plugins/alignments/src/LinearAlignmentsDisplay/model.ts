@@ -283,7 +283,7 @@ export default function stateModelFactory(
 
         get fetchSizeLimit() {
           return (
-            self.userByteSizeLimit ||
+            self.userByteSizeLimit ??
             self.getConfWithOverride<number>('fetchSizeLimit')
           )
         },

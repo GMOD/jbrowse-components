@@ -724,7 +724,6 @@ function drawGaps(
   }
 }
 
-// ASCII char code → theme color (65='A', 67='C', 71='G', 84='T')
 function buildBaseColorMap(state: RenderState): Record<number, string> {
   const { colors } = state
   const mutedBase = rgb255(colors.colorMutedSnpBase)

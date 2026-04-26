@@ -5,6 +5,7 @@ import Palette from '@mui/icons-material/Palette'
 
 import { modificationData } from '../modificationData.ts'
 
+import type { ArcColorByType } from '../../LinearAlignmentsDisplay/model.ts'
 import type { ColorBy } from '../types.ts'
 
 const ColorByTagDialog = lazy(
@@ -177,10 +178,8 @@ interface ColorByModel {
 }
 
 interface ArcsState {
-  colorByType: string
-  setColorByType: (
-    type: 'insertSizeAndOrientation' | 'insertSize' | 'orientation' | 'samplot',
-  ) => void
+  colorByType: ArcColorByType
+  setColorByType: (type: ArcColorByType) => void
 }
 
 interface ColorByMenuOptions {
@@ -241,7 +240,7 @@ export function getColorByMenuItem(
       : undefined
 
   const items =
-    options.colorOptions ||
+    options.colorOptions ??
     (showLinkedReads ? linkedReadsColorOptions : defaultColorOptions)
 
   const subMenu = [

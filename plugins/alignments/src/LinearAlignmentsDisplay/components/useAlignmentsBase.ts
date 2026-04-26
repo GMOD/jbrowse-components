@@ -32,6 +32,7 @@ import type {
 } from './hitTesting.ts'
 import type { AlignmentsBackend } from './rendererTypes.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { ArcColorByType } from '../model.ts'
 import type {
   LegendItem,
   LinearGenomeViewModel,
@@ -115,7 +116,7 @@ export interface LinearAlignmentsDisplayModel {
   >
   lineWidth: number
   drawInter: boolean
-  colorByType: string
+  colorByType: ArcColorByType
   arcsYDomainBp: number | undefined
   insertSizeTicks: YScaleTicks | undefined
   showMismatches: boolean
