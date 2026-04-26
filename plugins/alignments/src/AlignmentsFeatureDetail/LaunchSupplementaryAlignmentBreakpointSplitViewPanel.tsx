@@ -54,10 +54,10 @@ export default function LaunchBreakpointSplitViewPanel({
       <Typography>Launch split view</Typography>
       {error ? <ErrorBanner error={error} /> : null}
       <ul>
-        {ret.map((arg, index) => {
+        {ret.map(arg => {
           const [f1, f2] = arg
           return (
-            <li key={`${JSON.stringify(arg)}-${index}`}>
+            <li key={`${f1.uniqueId}-${f2.uniqueId}`}>
               {f1.refName}:{toLocale(f1.strand === 1 ? f1.end : f1.start)} -&gt;{' '}
               {f2.refName}:{toLocale(f2.strand === 1 ? f2.start : f2.end)}{' '}
               <Link
