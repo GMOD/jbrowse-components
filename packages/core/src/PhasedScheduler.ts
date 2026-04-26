@@ -24,10 +24,18 @@ export default class PhasedScheduler<PhaseName extends string> {
   }
 
   run() {
+    const errors: unknown[] = []
     for (const phaseName of this.phaseOrder) {
       for (const callback of this.phaseCallbacks.get(phaseName) || []) {
-        callback()
+        try {
+          callback()
+        } catch (e) {
+          errors.push(e)
+        }
       }
+    }
+    if (errors.length) {
+      throw new AggregateError(errors, 'Errors during pluggable element creation')
     }
   }
 }

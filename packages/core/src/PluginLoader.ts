@@ -1,4 +1,3 @@
-import Plugin from './Plugin.ts'
 import ReExports from './ReExports/index.ts'
 import { isElectron } from './util/index.ts'
 
@@ -27,16 +26,7 @@ type UMDPluginDefinition = UMDLocPluginDefinition | UMDUrlPluginDefinition
 export function isUMDPluginDefinition(
   def: PluginDefinition,
 ): def is UMDPluginDefinition | LegacyUMDPluginDefinition {
-  return (
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    ((def as UMDUrlPluginDefinition).umdUrl !== undefined ||
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      (def as LegacyUMDPluginDefinition).url !== undefined ||
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      (def as UMDLocPluginDefinition).umdLoc !== undefined) &&
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    (def as LegacyUMDPluginDefinition | UMDPluginDefinition).name !== undefined
-  )
+  return 'umdUrl' in def || 'url' in def || 'umdLoc' in def
 }
 
 export interface ESMLocPluginDefinition {
@@ -56,12 +46,7 @@ export type ESMPluginDefinition =
 export function isESMPluginDefinition(
   def: PluginDefinition,
 ): def is ESMPluginDefinition {
-  return (
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    (def as ESMUrlPluginDefinition).esmUrl !== undefined ||
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    (def as ESMLocPluginDefinition).esmLoc !== undefined
-  )
+  return 'esmUrl' in def || 'esmLoc' in def
 }
 
 export interface CJSPluginDefinition {
@@ -103,8 +88,7 @@ async function loadScript(scriptUrl: string) {
 export function isCJSPluginDefinition(
   def: PluginDefinition,
 ): def is CJSPluginDefinition {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  return (def as CJSPluginDefinition).cjsUrl !== undefined
+  return 'cjsUrl' in def
 }
 
 export type PluginDefinition =
@@ -128,10 +112,7 @@ export function pluginDescriptionString(d: PluginDefinition) {
   if (isUMDPluginDefinition(d)) {
     return `UMD plugin ${d.name}`
   } else if (isESMPluginDefinition(d)) {
-    return `ESM plugin ${
-      (d as ESMUrlPluginDefinition).esmUrl ||
-      (d as ESMLocPluginDefinition).esmLoc.uri
-    }`
+    return `ESM plugin ${'esmUrl' in d ? d.esmUrl : d.esmLoc.uri}`
   } else if (isCJSPluginDefinition(d)) {
     return `CJS plugin ${d.cjsUrl}`
   } else {
@@ -140,14 +121,11 @@ export function pluginDescriptionString(d: PluginDefinition) {
 }
 export function pluginUrl(d: PluginDefinition) {
   if (isUMDPluginDefinition(d)) {
-    // @ts-expect-error
-    return d.url ?? d.umdLoc?.uri ?? d.umdUrl
+    return 'umdLoc' in d ? d.umdLoc.uri : 'umdUrl' in d ? d.umdUrl : d.url
   } else if (isESMPluginDefinition(d)) {
-    // @ts-expect-error
-    return d.esmUrl ?? d.esmUri ?? d.esmLoc?.uri
+    return 'esmUrl' in d ? d.esmUrl : d.esmLoc.uri
   } else if (isCJSPluginDefinition(d)) {
-    // @ts-expect-error
-    return d.cjsUrl || d.cjsLoc?.uri
+    return d.cjsUrl
   } else {
     return 'unknown url'
   }
@@ -155,6 +133,12 @@ export function pluginUrl(d: PluginDefinition) {
 
 function isInWebWorker() {
   return 'WorkerGlobalScope' in globalThis
+}
+
+function assertHttpProtocol(url: URL) {
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    throw new Error(`Cannot load plugins using protocol "${url.protocol}"`)
+  }
 }
 
 function addCacheBuster(url: string) {
@@ -182,20 +166,15 @@ export default class PluginLoader {
   ) {
     this.fetchESM = args?.fetchESM
     this.fetchCJS = args?.fetchCJS
-    this.definitions = JSON.parse(JSON.stringify(defs))
+    this.definitions = structuredClone(defs)
   }
 
   async loadCJSPlugin(def: CJSPluginDefinition, baseUri?: string) {
     const parsedUrl = new URL(def.cjsUrl, baseUri)
-    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
-      throw new Error(
-        `Cannot load plugins using protocol "${parsedUrl.protocol}"`,
-      )
-    }
+    assertHttpProtocol(parsedUrl)
     if (!this.fetchCJS) {
       throw new Error('No fetchCJS callback provided')
     }
-
     return this.fetchCJS(parsedUrl.href)
   }
 
@@ -204,18 +183,11 @@ export default class PluginLoader {
       'esmUrl' in def
         ? new URL(def.esmUrl, baseUri)
         : new URL(def.esmLoc.uri, def.esmLoc.baseUri)
-
-    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
-      throw new Error(
-        `cannot load plugins using protocol "${parsedUrl.protocol}"`,
-      )
-    }
-
+    assertHttpProtocol(parsedUrl)
     if (!this.fetchESM) {
       throw new Error('No ESM fetcher installed')
     }
     const plugin = await this.fetchESM(addCacheBuster(parsedUrl.href))
-
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!plugin) {
       throw new Error(`Could not load ESM plugin: ${parsedUrl}`)
@@ -234,19 +206,10 @@ export default class PluginLoader {
           ? new URL(def.umdUrl, baseUri)
           : new URL(def.umdLoc.uri, def.umdLoc.baseUri)
 
-    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
-      throw new Error(
-        `cannot load plugins using protocol "${parsedUrl.protocol}"`,
-      )
-    }
+    assertHttpProtocol(parsedUrl)
     const moduleName = def.name
     const umdName = `JBrowsePlugin${moduleName}`
-    if (typeof jest === 'undefined') {
-      await loadScript(addCacheBuster(parsedUrl.href))
-    } else {
-      // @ts-expect-error
-      globalThis[umdName] = { default: Plugin }
-    }
+    await loadScript(addCacheBuster(parsedUrl.href))
 
     // @ts-expect-error
     const plugin = globalThis[umdName] as
@@ -262,18 +225,17 @@ export default class PluginLoader {
 
   async loadPlugin(def: PluginDefinition, baseUri?: string) {
     let plugin: LoadedPlugin
-    if (isElectron && isCJSPluginDefinition(def)) {
+    if (isCJSPluginDefinition(def)) {
+      if (!isElectron) {
+        throw new Error(
+          `CommonJS plugin found, but not in a NodeJS environment: ${JSON.stringify(def)}`,
+        )
+      }
       plugin = await this.loadCJSPlugin(def, baseUri)
     } else if (isESMPluginDefinition(def)) {
       plugin = await this.loadESMPlugin(def, baseUri)
     } else if (isUMDPluginDefinition(def)) {
       plugin = await this.loadUMDPlugin(def, baseUri)
-    } else if (!isElectron && isCJSPluginDefinition(def)) {
-      throw new Error(
-        `CommonJS plugin found, but not in a NodeJS environment: ${JSON.stringify(
-          def,
-        )}`,
-      )
     } else {
       throw new Error(`Could not determine plugin type: ${JSON.stringify(def)}`)
     }
@@ -290,11 +252,7 @@ export default class PluginLoader {
 
   installGlobalReExports(target: WindowOrWorkerGlobalScope) {
     // @ts-expect-error
-    target.JBrowseExports = Object.fromEntries(
-      Object.entries(ReExports).map(([moduleName, module]) => {
-        return [moduleName, module]
-      }),
-    )
+    target.JBrowseExports = { ...ReExports }
     return this
   }
 

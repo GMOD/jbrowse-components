@@ -8,24 +8,24 @@ import {
   ConfigurationSchema,
   isBareConfigurationSchemaType,
 } from './configuration/index.ts'
-import AdapterType from './pluggableElementTypes/AdapterType.ts'
-import AddTrackWorkflowType from './pluggableElementTypes/AddTrackWorkflowType.ts'
-import ConnectionType from './pluggableElementTypes/ConnectionType.ts'
-import DisplayType from './pluggableElementTypes/DisplayType.ts'
-import GlyphType from './pluggableElementTypes/GlyphType.ts'
-import InternetAccountType from './pluggableElementTypes/InternetAccountType.ts'
-import RpcMethodType from './pluggableElementTypes/RpcMethodType.ts'
-import TextSearchAdapterType from './pluggableElementTypes/TextSearchAdapterType.ts'
-import TrackType from './pluggableElementTypes/TrackType.ts'
-import ViewType from './pluggableElementTypes/ViewType.ts'
-import WidgetType from './pluggableElementTypes/WidgetType.ts'
-import RendererType from './pluggableElementTypes/renderers/RendererType.tsx'
 import createJexlInstance from './util/jexl.ts'
 
 import type Plugin from './Plugin.ts'
 import type { PluginDefinition } from './PluginLoader.ts'
+import type AdapterType from './pluggableElementTypes/AdapterType.ts'
+import type AddTrackWorkflowType from './pluggableElementTypes/AddTrackWorkflowType.ts'
+import type ConnectionType from './pluggableElementTypes/ConnectionType.ts'
+import type DisplayType from './pluggableElementTypes/DisplayType.ts'
+import type GlyphType from './pluggableElementTypes/GlyphType.ts'
+import type InternetAccountType from './pluggableElementTypes/InternetAccountType.ts'
 import type PluggableElementBase from './pluggableElementTypes/PluggableElementBase.ts'
+import type RpcMethodType from './pluggableElementTypes/RpcMethodType.ts'
+import type TextSearchAdapterType from './pluggableElementTypes/TextSearchAdapterType.ts'
+import type TrackType from './pluggableElementTypes/TrackType.ts'
+import type ViewType from './pluggableElementTypes/ViewType.ts'
+import type WidgetType from './pluggableElementTypes/WidgetType.ts'
 import type { PluggableElementType } from './pluggableElementTypes/index.ts'
+import type RendererType from './pluggableElementTypes/renderers/RendererType.tsx'
 import type { AbstractRootModel } from './util/index.ts'
 import type { IAnyModelType, IAnyType } from '@jbrowse/mobx-state-tree'
 
@@ -47,23 +47,9 @@ type PluggableElementTypeGroup =
 class TypeRecord<ElementClass extends PluggableElementBase> {
   registeredTypes: Record<string, ElementClass> = {}
   typeName: string
-  baseClass:
-    | (new (...args: unknown[]) => ElementClass)
-    | (Function & {
-        prototype: ElementClass
-      })
 
-  constructor(
-    typeName: string,
-    baseClass:
-      | (new (...args: unknown[]) => ElementClass)
-      // covers abstract class case
-      | (Function & {
-          prototype: ElementClass
-        }),
-  ) {
+  constructor(typeName: string) {
     this.typeName = typeName
-    this.baseClass = baseClass
   }
 
   add(name: string, t: ElementClass) {
@@ -129,37 +115,33 @@ export default class PluginManager {
     'rpc method',
     'internet account',
     'add track workflow',
-  ) as PhasedScheduler<PluggableElementTypeGroup> | undefined
-
-  glyphTypes = new TypeRecord('GlyphType', GlyphType)
-
-  rendererTypes = new TypeRecord('RendererType', RendererType)
-
-  adapterTypes = new TypeRecord('AdapterType', AdapterType)
-
-  textSearchAdapterTypes = new TypeRecord(
-    'TextSearchAdapterType',
-    TextSearchAdapterType,
   )
 
-  trackTypes = new TypeRecord('TrackType', TrackType)
+  pluggableElementsCreated = false
 
-  displayTypes = new TypeRecord('DisplayType', DisplayType)
+  glyphTypes = new TypeRecord<GlyphType>('GlyphType')
 
-  connectionTypes = new TypeRecord('ConnectionType', ConnectionType)
+  rendererTypes = new TypeRecord<RendererType>('RendererType')
 
-  viewTypes = new TypeRecord('ViewType', ViewType)
+  adapterTypes = new TypeRecord<AdapterType>('AdapterType')
 
-  widgetTypes = new TypeRecord('WidgetType', WidgetType)
+  textSearchAdapterTypes = new TypeRecord<TextSearchAdapterType>('TextSearchAdapterType')
 
-  rpcMethods = new TypeRecord('RpcMethodType', RpcMethodType)
+  trackTypes = new TypeRecord<TrackType>('TrackType')
 
-  addTrackWidgets = new TypeRecord('AddTrackWorkflow', AddTrackWorkflowType)
+  displayTypes = new TypeRecord<DisplayType>('DisplayType')
 
-  internetAccountTypes = new TypeRecord(
-    'InternetAccountType',
-    InternetAccountType,
-  )
+  connectionTypes = new TypeRecord<ConnectionType>('ConnectionType')
+
+  viewTypes = new TypeRecord<ViewType>('ViewType')
+
+  widgetTypes = new TypeRecord<WidgetType>('WidgetType')
+
+  rpcMethods = new TypeRecord<RpcMethodType>('RpcMethodType')
+
+  addTrackWidgets = new TypeRecord<AddTrackWorkflowType>('AddTrackWorkflow')
+
+  internetAccountTypes = new TypeRecord<InternetAccountType>('InternetAccountType')
 
   configured = false
 
@@ -193,26 +175,20 @@ export default class PluginManager {
   }
 
   pluginConfigurationUnnamespacedSchemas() {
-    let configurationSchemas: Record<string, unknown> = {}
+    const configurationSchemas: Record<string, unknown> = {}
     for (const plugin of this.plugins) {
       if (plugin.configurationSchemaUnnamespaced) {
-        configurationSchemas = {
-          ...configurationSchemas,
-          ...plugin.configurationSchemaUnnamespaced,
-        }
+        Object.assign(configurationSchemas, plugin.configurationSchemaUnnamespaced)
       }
     }
     return configurationSchemas
   }
 
   pluginConfigurationRootSchemas() {
-    let configurationSchemas: Record<string, unknown> = {}
+    const configurationSchemas: Record<string, unknown> = {}
     for (const plugin of this.plugins) {
       if (plugin.rootConfigurationSchema) {
-        configurationSchemas = {
-          ...configurationSchemas,
-          ...plugin.rootConfigurationSchema(this),
-        }
+        Object.assign(configurationSchemas, plugin.rootConfigurationSchema(this))
       }
     }
     return configurationSchemas
@@ -223,12 +199,10 @@ export default class PluginManager {
       throw new Error('JBrowse already configured, cannot add plugins')
     }
 
-    // check for availability of 'install' and 'configure' as a proxy for being
-    // an 'instanceof Plugin'
-    const [plugin, metadata = {}] =
-      'install' in load && 'configure' in load
-        ? [load, {}]
-        : [load.plugin, load.metadata]
+    const [plugin, metadata] =
+      'plugin' in load
+        ? [load.plugin, load.metadata ?? {}]
+        : [load, {} as PluginMetadata]
 
     if (this.plugins.includes(plugin)) {
       throw new Error('plugin already installed')
@@ -254,9 +228,9 @@ export default class PluginManager {
   createPluggableElements() {
     // run the creation callbacks for each element type in order.
     // see elementCreationSchedule above for the creation order
-    if (this.elementCreationSchedule) {
+    if (!this.pluggableElementsCreated) {
       this.elementCreationSchedule.run()
-      this.elementCreationSchedule = undefined
+      this.pluggableElementsCreated = true
     }
     return this
   }
@@ -322,9 +296,14 @@ export default class PluginManager {
         'must provide a callback function that returns the new type object',
       )
     }
+    if (this.pluggableElementsCreated) {
+      throw new Error(
+        `Cannot add element type after createPluggableElements() has been called`,
+      )
+    }
     const typeRecord = this.getElementTypeRecord(groupName)
 
-    this.elementCreationSchedule?.add(groupName, () => {
+    this.elementCreationSchedule.add(groupName, () => {
       const newElement = creationCallback(this)
       if (!newElement.name) {
         throw new Error(`cannot add a ${groupName} with no name`)
@@ -394,16 +373,10 @@ export default class PluginManager {
   ) {
     const pluggableTypes = this.getElementTypeRecord(groupName)
       .all()
-      // @ts-expect-error
       .map(t => t[fieldName])
       .filter(t => isType(t) && isModelType(t)) as IAnyType[]
 
-    // try to smooth over the case when no types are registered, mostly
-    // encountered in tests
-    if (pluggableTypes.length === 0 && typeof jest === 'undefined') {
-      console.warn(
-        `No pluggable types found matching ('${groupName}','${fieldName}')`,
-      )
+    if (pluggableTypes.length === 0) {
       return fallback
     }
     return types.union(...pluggableTypes)
@@ -416,7 +389,6 @@ export default class PluginManager {
   ) {
     const pluggableTypes = this.getElementTypeRecord(typeGroup)
       .all()
-      // @ts-expect-error
       .map(t => t[fieldName])
       .filter(t => isBareConfigurationSchemaType(t)) as IAnyType[]
 
