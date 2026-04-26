@@ -19,6 +19,15 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { generateLDColorRamp } from './components/LDRenderer.ts'
+
+let cachedColorRamp: { metric: string; signed: boolean; ramp: Uint8Array } | undefined
+
+function getCachedColorRamp(metric: string, signed: boolean) {
+  if (cachedColorRamp?.metric !== metric || cachedColorRamp?.signed !== signed) {
+    cachedColorRamp = { metric, signed, ramp: generateLDColorRamp(metric, signed) }
+  }
+  return cachedColorRamp.ramp
+}
 import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
@@ -315,7 +324,7 @@ export default function sharedModelFactory(
               positions: d.positions,
               cellSizes: d.cellSizes,
             })
-            b.uploadColorRamp(generateLDColorRamp(d.metric, d.signedLD))
+            b.uploadColorRamp(getCachedColorRamp(d.metric, d.signedLD))
           },
           render: b => {
             const state = self.renderState

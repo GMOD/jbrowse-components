@@ -50,6 +50,10 @@ export function getSampleGridRows(
   const filterKeys = Object.keys(filter)
 
   try {
+    const compiledFilters = filterKeys.map(k => ({
+      key: k,
+      re: filter[k] ? new RegExp(filter[k], 'i') : null,
+    }))
     rows = Object.entries(samples)
       .map(([key, val]) => {
         const gt = val.GT?.[0]
@@ -72,14 +76,7 @@ export function getSampleGridRows(
         } as VariantSampleGridRow
       })
       .filter(row =>
-        filterKeys.length
-          ? filterKeys.every(key => {
-              const currFilter = filter[key]
-              return currFilter
-                ? new RegExp(currFilter, 'i').exec(row[key]!)
-                : true
-            })
-          : true,
+        compiledFilters.every(({ key, re }) => (re ? re.exec(row[key]!) : true)),
       )
   } catch (e) {
     console.error(e)

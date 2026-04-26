@@ -37,6 +37,10 @@ struct VsOut {
   float2 localPx  : COLOR1;
   nointerpolation float2 sizePx    : COLOR2;
   nointerpolation uint   shapeType : COLOR3;
+  // Precomputed hypotenuse terms for SDF functions — avoids per-fragment sqrt.
+  // hypRight = sqrt(h*h*0.25 + w*w), hypDown = sqrt(h*h + w*w*0.25)
+  nointerpolation float  hypRight  : COLOR4;
+  nointerpolation float  hypDown   : COLOR5;
 };
 
 [shader("vertex")]
@@ -87,20 +91,20 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   o.localPx = float2(lx * wPx, (1.0 - ly) * hPx);
   o.sizePx = float2(wPx, hPx);
   o.shapeType = effectiveShape;
+  o.hypRight = sqrt(hPx * hPx * 0.25 + wPx * wPx);
+  o.hypDown  = sqrt(hPx * hPx + wPx * wPx * 0.25);
   return o;
 }
 
-float triSdfRight(float2 p, float w, float h) {
+float triSdfRight(float2 p, float w, float h, float hyp) {
   float dLeft = p.x;
-  float hyp = sqrt(h * h * 0.25 + w * w);
   float dTop = (-0.5 * h * p.x + w * p.y) / hyp;
   float dBot = (-0.5 * h * p.x - w * (p.y - h)) / hyp;
   return min(min(dLeft, dTop), dBot);
 }
 
-float triSdfDown(float2 p, float w, float h) {
+float triSdfDown(float2 p, float w, float h, float hyp) {
   float dTop = p.y;
-  float hyp = sqrt(h * h + w * w * 0.25);
   float dLeft = (h * p.x - 0.5 * w * p.y) / hyp;
   float dRight = (w * h - h * p.x - 0.5 * w * p.y) / hyp;
   return min(min(dTop, dLeft), dRight);
@@ -116,11 +120,11 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     float h = fragIn.sizePx.y;
 
     if (fragIn.shapeType == 1u) {
-      d = triSdfRight(fragIn.localPx, w, h);
+      d = triSdfRight(fragIn.localPx, w, h, fragIn.hypRight);
     } else if (fragIn.shapeType == 2u) {
-      d = triSdfRight(float2(w - fragIn.localPx.x, fragIn.localPx.y), w, h);
+      d = triSdfRight(float2(w - fragIn.localPx.x, fragIn.localPx.y), w, h, fragIn.hypRight);
     } else {
-      d = triSdfDown(fragIn.localPx, w, h);
+      d = triSdfDown(fragIn.localPx, w, h, fragIn.hypDown);
     }
 
     alpha *= smoothstep(-0.5, 0.5, d);
