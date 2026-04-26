@@ -1,3 +1,4 @@
+import { PluggableComponent } from '@jbrowse/core/ui'
 import Dialog from '@jbrowse/core/ui/Dialog'
 import { getEnv } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
@@ -19,18 +20,14 @@ export default function AboutDialog({
   const trackName = getTrackName(config, session)
   const { pluginManager } = getEnv(session)
 
-  const AboutComponent = pluginManager.evaluateExtensionPoint(
-    'Core-replaceAbout',
-    AboutContents,
-    { session, config },
-  ) as React.FC<{
-    config: AnyConfigurationModel | Record<string, unknown>
-    session: AbstractSessionModel
-  }>
-
   return (
     <Dialog open onClose={handleClose} title={trackName} maxWidth="xl">
-      <AboutComponent config={config} session={session} />
+      <PluggableComponent
+        pluginManager={pluginManager}
+        name="Core-replaceAbout"
+        component={AboutContents}
+        props={{ config, session }}
+      />
     </Dialog>
   )
 }

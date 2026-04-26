@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react'
 
-import { SanitizedHTML } from '@jbrowse/core/ui'
 import {
   getSession,
   isElectron,

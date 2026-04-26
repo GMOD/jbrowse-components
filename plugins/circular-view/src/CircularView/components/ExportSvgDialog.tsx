@@ -61,7 +61,7 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
         ) : null}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <TextField
-            helperText="filename"
+            label="Filename"
             value={filename}
             onChange={event => {
               setFilename(event.target.value)

@@ -52,7 +52,8 @@ const PasteConfigAddTrackWorkflow = observer(
               setError(undefined)
               const session = getSession(model)
               const conf = JSON.parse(val)
-              const confs = Array.isArray(conf) ? conf : [conf]
+              const confs: { trackId: string; assemblyNames?: string[] }[] =
+                Array.isArray(conf) ? conf : [conf]
               if (
                 isSessionWithAddTracks(session) &&
                 isSessionModelWithWidgets(session)
@@ -61,13 +62,18 @@ const PasteConfigAddTrackWorkflow = observer(
                   for (const c of confs) {
                     session.addTrackConf(c)
                   }
+                  const view = model.view
                   for (const c of confs) {
-                    model.view?.showTrack?.(c.trackId)
+                    const viewAsms: string[] | undefined = view?.assemblyNames
+                    if (
+                      viewAsms?.some(a => c.assemblyNames?.includes(a))
+                    ) {
+                      view.showTrack?.(c.trackId)
+                    }
                   }
                   model.clearData()
+                  session.hideWidget(model)
                 })
-
-                session.hideWidget(model)
               }
             } catch (e) {
               console.error(e)

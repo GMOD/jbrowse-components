@@ -54,7 +54,7 @@ export default function SearchResultsDialog({
           }}
           color="primary"
         >
-          Cancel
+          Close
         </Button>
       </DialogActions>
     </Dialog>

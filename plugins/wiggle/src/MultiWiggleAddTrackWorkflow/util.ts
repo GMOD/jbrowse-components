@@ -32,6 +32,23 @@ export function urlToSubadapter(uri: string) {
   }
 }
 
+export function makeTrackId(trackName: string, adminMode: boolean) {
+  const slug = trackName.trim().toLowerCase().replaceAll(' ', '_')
+  return `${slug}-${Date.now()}${adminMode ? '' : '-sessionTrack'}`
+}
+
+export function canSubmit({
+  tracks,
+  trackName,
+  assembly,
+}: {
+  tracks: unknown[]
+  trackName: string
+  assembly: string | undefined
+}) {
+  return tracks.length > 0 && trackName.trim().length > 0 && !!assembly
+}
+
 export function buildAdapterPayload(items: TrackItem[]) {
   if (items.every(i => typeof i === 'string')) {
     return { bigWigs: items as string[] }

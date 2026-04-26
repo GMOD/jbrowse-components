@@ -1,14 +1,8 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
+import { SubmitDialog } from '@jbrowse/core/ui'
 import { toLocale } from '@jbrowse/core/util'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../model.ts'
@@ -29,49 +23,31 @@ const RegionWidthEditorDialog = observer(function RegionWidthEditorDialog({
   const val2 = val.replace(/,/g, '')
 
   return (
-    <Dialog title="Edit zoom level" open onClose={handleClose}>
-      <DialogContent
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 30,
-        }}
-      >
+    <SubmitDialog
+      open
+      title="Edit zoom level"
+      onCancel={handleClose}
+      onSubmit={() => {
+        model.zoomTo(+val2 / model.width)
+        handleClose()
+      }}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
         <Typography>
           Enter a specific number of base pairs to change the viewport to show.
           This is approximate and does not account for padding between regions
           or off-screen scrolling
         </Typography>
         <TextField
-          helperText="current zoom level (in bp)"
+          label="Zoom level (bp)"
+          autoFocus
           value={val}
           onChange={event => {
             setVal(event.target.value)
           }}
         />
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            handleClose()
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            model.zoomTo(+val2 / model.width)
-            handleClose()
-          }}
-        >
-          Submit
-        </Button>
-      </DialogActions>
-    </Dialog>
+      </div>
+    </SubmitDialog>
   )
 })
 
