@@ -11,18 +11,8 @@ import {
   renderRegion,
   setupEnv,
   standardizeArgv,
+  trackTypes,
 } from './index.ts'
-
-const trackTypes = [
-  'bam',
-  'cram',
-  'bigwig',
-  'vcfgz',
-  'gffgz',
-  'hic',
-  'bigbed',
-  'bedgz',
-]
 
 const knownOptions = new Set([
   ...trackTypes,
@@ -106,13 +96,10 @@ async function main() {
   const argv = await yargsInstance.argv
   setupEnv()
 
-  // Parse track arguments from command line (--bam, --vcf, etc.)
-  // parseArgv needs all args including values, not just flags
   const args = process.argv.slice(2)
   const parsed = parseArgv(args)
-  const standardized = standardizeArgv(parsed, trackTypes)
+  const { trackList } = standardizeArgv(parsed, trackTypes)
 
-  // Warn about unknown options
   for (const [key] of parsed) {
     if (!knownOptions.has(key)) {
       console.warn(`Warning: unknown option "--${key}"`)
@@ -126,15 +113,14 @@ async function main() {
     config: argv.config,
     session: argv.session,
     loc: argv.loc,
-    width: argv.width as number | undefined,
-    noRasterize: argv.noRasterize as boolean | undefined,
-    // defaultSession in Opts is string|undefined but used as boolean flag
-    defaultSession: argv.defaultSession ? 'true' : undefined,
-    trackList: standardized.trackList,
+    width: argv.width,
+    noRasterize: argv.noRasterize,
+    defaultSession: argv.defaultSession,
+    trackList,
   }
 
   const result = await renderRegion(opts)
-  const outFile = argv.out || standardized.out
+  const outFile = argv.out
 
   if (!outFile) {
     console.log(result)

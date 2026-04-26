@@ -1,369 +1,20 @@
-import fs from 'fs'
 import path from 'path'
 
 import { renderToSvg } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { createCanvas } from 'canvas'
 
+import { readData } from './readData.ts'
 import { booleanize } from './util.ts'
 
 import type { Entry } from './parseArgv.ts'
+import type { Opts } from './readData.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export interface Opts {
-  noRasterize?: boolean
-  loc?: string
-  width?: number
-  session?: string
-  assembly?: string
-  config?: string
-  fasta?: string
-  aliases?: string
-  cytobands?: string
-  defaultSession?: string
-  trackList?: Entry[]
-  tracks?: string
-}
+export type { Opts } from './readData.ts'
+export { makeTrackConfig, readData } from './readData.ts'
 
-function read(file: string): unknown {
-  let res: unknown
-  try {
-    res = JSON.parse(fs.readFileSync(file, 'utf8'))
-  } catch (e) {
-    throw new Error(
-      `Failed to parse ${file} as JSON, use --fasta if you mean to pass a FASTA file`,
-      { cause: e },
-    )
-  }
-  return res
-}
-function makeLocation(file: string) {
-  return file.startsWith('http') ? { uri: file } : { localPath: file }
-}
-
-function addRelativePaths(config: Record<string, unknown>, configPath: string) {
-  if (typeof config === 'object') {
-    for (const key of Object.keys(config)) {
-      if (typeof config[key] === 'object') {
-        addRelativePaths(config[key] as Record<string, unknown>, configPath)
-      } else if (key === 'localPath') {
-        config.localPath = path.resolve(configPath, config.localPath as string)
-      }
-    }
-  }
-}
-
-interface Assembly {
-  name: string
-  sequence: Record<string, unknown>
-  refNameAliases?: Record<string, unknown>
-  cytobands?: Record<string, unknown>
-}
-
-interface Track {
-  trackId: string
-  [key: string]: unknown
-}
-interface Config {
-  assemblies: Assembly[]
-  assembly: Assembly
-  tracks: Track[]
-  [key: string]: unknown
-}
-
-export function readData({
-  assembly: asm,
-  config,
-  session,
-  fasta,
-  aliases,
-  cytobands,
-  defaultSession,
-  tracks,
-  trackList = [],
-}: Opts) {
-  const assemblyData =
-    asm && fs.existsSync(asm) ? (read(asm) as Assembly) : undefined
-  const tracksData = tracks ? (read(tracks) as Track[]) : undefined
-  const configData = config ? (read(config) as Config) : ({} as Config)
-
-  let sessionData = session
-    ? (read(session) as Record<string, unknown>)
-    : undefined
-
-  if (config) {
-    addRelativePaths(configData, path.dirname(path.resolve(config)))
-  }
-
-  // the session.json can be a raw session or a json file with a "session"
-  // attribute, which is what is exported via the "File->Export session" in
-  // jbrowse-web
-  if (sessionData?.session) {
-    sessionData = sessionData.session as Record<string, unknown>
-  }
-
-  // only export first view
-  if (sessionData?.views) {
-    sessionData.view = (sessionData.views as Record<string, unknown>[])[0]
-  }
-
-  // use assembly from file if a file existed
-  if (assemblyData) {
-    configData.assembly = assemblyData
-  }
-  // else check if it was an assembly name in a config file
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  else if (configData.assemblies?.length) {
-    configData.assemblies.find(entry => entry.name === asm)
-    if (asm) {
-      const assembly = configData.assemblies.find(entry => entry.name === asm)
-      if (!assembly) {
-        throw new Error(`assembly ${asm} not found in config`)
-      }
-      configData.assembly = assembly
-    } else {
-      configData.assembly = configData.assemblies[0]!
-    }
-  }
-  // else load fasta from command line
-  else if (fasta) {
-    const bgzip = fasta.endsWith('gz')
-
-    configData.assembly = {
-      name: path.basename(fasta),
-      sequence: {
-        type: 'ReferenceSequenceTrack',
-        trackId: 'refseq',
-        adapter: {
-          type: bgzip ? 'BgzipFastaAdapter' : 'IndexedFastaAdapter',
-          fastaLocation: makeLocation(fasta),
-          faiLocation: makeLocation(`${fasta}.fai`),
-          gziLocation: bgzip ? makeLocation(`${fasta}.gzi`) : undefined,
-        },
-      },
-    }
-    if (aliases) {
-      configData.assembly.refNameAliases = {
-        adapter: {
-          type: 'RefNameAliasAdapter',
-          location: makeLocation(aliases),
-        },
-      }
-    }
-    if (cytobands) {
-      configData.assembly.cytobands = {
-        adapter: {
-          type: 'CytobandAdapter',
-          location: makeLocation(cytobands),
-        },
-      }
-    }
-  }
-
-  // throw if still no assembly
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (!configData.assembly) {
-    throw new Error(
-      'no assembly specified, use --fasta to supply an indexed FASTA file (generated with samtools faidx yourfile.fa). see README for alternatives with --assembly and --config',
-    )
-  }
-
-  if (tracksData) {
-    configData.tracks = tracksData
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  else if (!configData.tracks) {
-    configData.tracks = []
-  }
-
-  for (const track of trackList) {
-    const [type, opts] = track
-    const [file, ...rest] = opts
-    const index = rest.find(r => r.startsWith('index:'))?.replace('index:', '')
-    if (!file) {
-      throw new Error('no file specified')
-    }
-
-    if (type === 'bam') {
-      configData.tracks = [
-        ...configData.tracks,
-        {
-          type: 'AlignmentsTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
-          adapter: {
-            type: 'BamAdapter',
-            bamLocation: makeLocation(file),
-            index: {
-              location: makeLocation(index || `${file}.bai`),
-              indexType: index?.endsWith('.csi') ? 'CSI' : 'BAI',
-            },
-            sequenceAdapter: configData.assembly.sequence.adapter,
-          },
-          ...(opts.includes('snpcov')
-            ? {
-                displays: [
-                  {
-                    type: 'LinearSNPCoverageDisplay',
-                    displayId: `${path.basename(file)}-${Math.random()}`,
-                  },
-                ],
-              }
-            : {}),
-        },
-      ]
-    }
-    if (type === 'cram') {
-      configData.tracks = [
-        ...configData.tracks,
-        {
-          type: 'AlignmentsTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
-          adapter: {
-            type: 'CramAdapter',
-            cramLocation: makeLocation(file),
-            craiLocation: makeLocation(index || `${file}.crai`),
-            sequenceAdapter: configData.assembly.sequence.adapter,
-          },
-          ...(opts.includes('snpcov')
-            ? {
-                displays: [
-                  {
-                    type: 'LinearSNPCoverageDisplay',
-                    displayId: `${path.basename(file)}-${Math.random()}`,
-                  },
-                ],
-              }
-            : {}),
-        },
-      ]
-    }
-    if (type === 'bigwig') {
-      configData.tracks = [
-        ...configData.tracks,
-        {
-          type: 'QuantitativeTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
-          adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: makeLocation(file),
-          },
-        },
-      ]
-    }
-
-    if (type === 'vcfgz') {
-      configData.tracks = [
-        ...configData.tracks,
-        {
-          type: 'VariantTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
-          adapter: {
-            type: 'VcfTabixAdapter',
-            vcfGzLocation: makeLocation(file),
-            index: {
-              location: makeLocation(index || `${file}.tbi`),
-              indexType: index?.endsWith('.csi') ? 'CSI' : 'TBI',
-            },
-          },
-        },
-      ]
-    }
-
-    if (type === 'gffgz') {
-      configData.tracks = [
-        ...configData.tracks,
-        {
-          type: 'FeatureTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
-          adapter: {
-            type: 'Gff3TabixAdapter',
-            gffGzLocation: makeLocation(file),
-            index: {
-              location: makeLocation(index || `${file}.tbi`),
-              indexType: index?.endsWith('.csi') ? 'CSI' : 'TBI',
-            },
-          },
-        },
-      ]
-    }
-
-    if (type === 'hic') {
-      configData.tracks = [
-        ...configData.tracks,
-        {
-          type: 'HicTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
-          adapter: {
-            type: 'HicAdapter',
-            hicLocation: makeLocation(file),
-          },
-        },
-      ]
-    }
-    if (type === 'bigbed') {
-      configData.tracks = [
-        ...configData.tracks,
-        {
-          type: 'FeatureTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
-          adapter: {
-            type: 'BigBedAdapter',
-            bigBedLocation: makeLocation(file),
-          },
-        },
-      ]
-    }
-    if (type === 'bedgz') {
-      configData.tracks = [
-        ...configData.tracks,
-        {
-          type: 'FeatureTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
-          adapter: {
-            type: 'BedTabixAdapter',
-            bedGzLocation: makeLocation(file),
-            index: {
-              location: makeLocation(index || `${file}.tbi`),
-              indexType: index?.endsWith('.csi') ? 'CSI' : 'TBI',
-            },
-          },
-        },
-      ]
-    }
-  }
-
-  if (!defaultSession) {
-    // don't use defaultSession from config.json file, can result in assembly
-    // name confusion
-    configData.defaultSession = undefined
-  }
-
-  // only allow an external manually specified session
-  if (sessionData) {
-    configData.defaultSession = sessionData
-  }
-
-  return configData
-}
-
-function process(
+function applyTrackOpts(
   trackEntry: Entry,
   view: LinearGenomeViewModel,
   extra: (arg: string) => string = c => c,
@@ -385,8 +36,10 @@ function process(
 
     // apply sort to pileup
     else if (opt.startsWith('sort:')) {
-      const [, type, tag] = opt.split(':')
-      display.PileupDisplay.setSortedBy(type, tag)
+      if (display.PileupDisplay) {
+        const [, type, tag] = opt.split(':')
+        display.PileupDisplay.setSortedBy(type, tag)
+      }
     }
 
     // apply color scheme to pileup
@@ -444,13 +97,10 @@ function process(
 
     // set resolution:superfine to use finer bigwig bin size
     else if (opt.startsWith('resolution:')) {
-      let [, val = 1] = opt.split(':')
-      if (val === 'fine') {
-        val = '10'
-      } else if (val === 'superfine') {
-        val = '100'
-      }
-      display.setResolution(+val)
+      const [, rawVal] = opt.split(':')
+      const val =
+        rawVal === 'fine' ? 10 : rawVal === 'superfine' ? 100 : Number(rawVal)
+      display.setResolution(val || 1)
     }
   }
 }
@@ -485,7 +135,7 @@ export async function renderRegion(opts: Opts) {
   }
 
   for (const track of trackList) {
-    process(track, view, extra => path.basename(extra))
+    applyTrackOpts(track, view, extra => path.basename(extra))
   }
 
   return renderToSvg(view, {
