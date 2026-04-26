@@ -22,6 +22,7 @@ const DeleteConnectionDialog = observer(function DeleteConnectionDialog({
     <ConfirmDialog
       open
       title={`Delete connection "${name}"`}
+      submitText="Delete"
       onCancel={handleClose}
       onSubmit={() => {
         session.deleteConnection?.(connectionConf)

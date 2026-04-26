@@ -15,6 +15,7 @@ export default function FactoryResetDialog({
     <ConfirmDialog
       open={open}
       title="Reset"
+      submitText="Reset"
       onCancel={onClose}
       onSubmit={() => {
         onFactoryReset()

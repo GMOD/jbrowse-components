@@ -19,6 +19,7 @@ const CloseConnectionDialog = observer(function CloseConnectionDialog({
       open
       maxWidth="lg"
       title={`Close connection "${name}"`}
+      submitText="Close connection"
       onCancel={onClose}
       onSubmit={() => {
         safelyBreakConnection?.()

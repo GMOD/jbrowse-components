@@ -11,6 +11,7 @@ interface Props extends DialogProps {
   onSubmit: () => void
   cancelText?: string
   submitText?: string
+  submitDisabled?: boolean
 }
 
 const ConfirmDialog = observer(function ConfirmDialog(props: Props) {
@@ -19,6 +20,7 @@ const ConfirmDialog = observer(function ConfirmDialog(props: Props) {
     onCancel,
     cancelText = 'Cancel',
     submitText = 'OK',
+    submitDisabled = false,
     children,
   } = props
   return (
@@ -37,6 +39,7 @@ const ConfirmDialog = observer(function ConfirmDialog(props: Props) {
         <Button
           color="primary"
           variant="contained"
+          disabled={submitDisabled}
           onClick={() => {
             onSubmit()
           }}

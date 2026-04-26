@@ -36,7 +36,7 @@ const ConfirmDialog = ({
       onClose={() => {
         onClose(false)
       }}
-      title="Confirm multi-wiggle track create"
+      title="Create multi-wiggle track?"
     >
       <DialogContent>
         {!allQuant ? (
@@ -94,7 +94,7 @@ const ConfirmDialog = ({
           onChange={event => {
             setVal(event.target.value)
           }}
-          helperText="Track name"
+          label="Track name"
         />
         <Typography>Confirm creation of track?</Typography>
       </DialogContent>

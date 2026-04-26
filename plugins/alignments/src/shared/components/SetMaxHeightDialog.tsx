@@ -1,14 +1,8 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
+import { SubmitDialog } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
@@ -30,8 +24,18 @@ const SetMaxHeightDialog = observer(function SetMaxHeightDialog(props: {
   const [max, setMax] = useState(`${maxHeight}`)
 
   return (
-    <Dialog open onClose={handleClose} title="Set max track height">
-      <DialogContent className={classes.root}>
+    <SubmitDialog
+      open
+      title="Set max track height"
+      onCancel={handleClose}
+      onSubmit={() => {
+        model.setMaxHeight(
+          max !== '' && !Number.isNaN(+max) ? +max : undefined,
+        )
+        handleClose()
+      }}
+    >
+      <div className={classes.root}>
         <Typography>
           Set max layout height for the track. For example, you can increase
           this if the layout says &quot;Max height reached&quot;
@@ -44,32 +48,8 @@ const SetMaxHeightDialog = observer(function SetMaxHeightDialog(props: {
           }}
           label="Max height (px)"
         />
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          onClick={() => {
-            model.setMaxHeight(
-              max !== '' && !Number.isNaN(+max) ? +max : undefined,
-            )
-            handleClose()
-          }}
-        >
-          Submit
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            handleClose()
-          }}
-        >
-          Cancel
-        </Button>
-      </DialogActions>
-    </Dialog>
+      </div>
+    </SubmitDialog>
   )
 })
 export default SetMaxHeightDialog

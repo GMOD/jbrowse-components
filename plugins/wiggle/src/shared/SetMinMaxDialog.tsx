@@ -1,13 +1,7 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { SubmitDialog } from '@jbrowse/core/ui'
+import { TextField, Typography } from '@mui/material'
 
 export default function SetMinMaxDialog(props: {
   model: {
@@ -38,58 +32,42 @@ export default function SetMinMaxDialog(props: {
     scaleType === 'log' && min !== '' && !Number.isNaN(+min) ? +min > 0 : true
 
   return (
-    <Dialog open onClose={handleClose} title="Set min/max score for track">
-      <DialogContent>
-        <Typography>Enter min/max score: </Typography>
-        {!ok ? (
-          <Typography color="error">
-            Max must be greater than min
-          </Typography>
-        ) : null}
+    <SubmitDialog
+      open
+      title="Set min/max score for track"
+      submitDisabled={!ok || !logOk}
+      onCancel={handleClose}
+      onSubmit={() => {
+        model.setMinScore(min !== '' && !Number.isNaN(+min) ? +min : undefined)
+        model.setMaxScore(max !== '' && !Number.isNaN(+max) ? +max : undefined)
+        handleClose()
+      }}
+    >
+      <Typography>Enter min/max score: </Typography>
+      {!ok ? (
+        <Typography color="error">Max must be greater than min</Typography>
+      ) : null}
 
-        {!logOk ? (
-          <Typography color="error">
-            Min score should be greater than 0 for log scale
-          </Typography>
-        ) : null}
+      {!logOk ? (
+        <Typography color="error">
+          Min score should be greater than 0 for log scale
+        </Typography>
+      ) : null}
 
-        <TextField
-          value={min}
-          onChange={event => {
-            setMin(event.target.value)
-          }}
-          placeholder="Enter min score"
-        />
-        <TextField
-          value={max}
-          onChange={event => {
-            setMax(event.target.value)
-          }}
-          placeholder="Enter max score"
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          disabled={!ok}
-          onClick={() => {
-            model.setMinScore(
-              min !== '' && !Number.isNaN(+min) ? +min : undefined,
-            )
-            model.setMaxScore(
-              max !== '' && !Number.isNaN(+max) ? +max : undefined,
-            )
-            handleClose()
-          }}
-        >
-          Submit
-        </Button>
-        <Button variant="contained" color="secondary" onClick={handleClose}>
-          Cancel
-        </Button>
-      </DialogActions>
-    </Dialog>
+      <TextField
+        value={min}
+        onChange={event => {
+          setMin(event.target.value)
+        }}
+        placeholder="Enter min score"
+      />
+      <TextField
+        value={max}
+        onChange={event => {
+          setMax(event.target.value)
+        }}
+        placeholder="Enter max score"
+      />
+    </SubmitDialog>
   )
 }
