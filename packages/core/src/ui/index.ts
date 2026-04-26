@@ -7,6 +7,7 @@ export {
 } from './RefNameAutocomplete/index.tsx'
 export { default as CascadingMenu } from './CascadingMenu.tsx'
 export { default as CascadingMenuButton } from './CascadingMenuButton.tsx'
+export { default as ConfirmDialog } from './ConfirmDialog.tsx'
 export { default as Dialog } from './Dialog.tsx'
 export { default as EditableTypography } from './EditableTypography.tsx'
 export { default as ErrorBanner } from './ErrorBanner.tsx'

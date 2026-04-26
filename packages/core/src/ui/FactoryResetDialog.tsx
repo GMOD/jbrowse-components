@@ -1,11 +1,6 @@
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-} from '@mui/material'
+import { DialogContentText } from '@mui/material'
 
-import Dialog from './Dialog.tsx'
+import ConfirmDialog from './ConfirmDialog.tsx'
 
 export default function FactoryResetDialog({
   onClose,
@@ -16,46 +11,20 @@ export default function FactoryResetDialog({
   open: boolean
   onFactoryReset: () => void
 }) {
-  function handleDialogClose(action?: string) {
-    if (action === 'reset') {
-      onFactoryReset()
-    }
-    onClose()
-  }
-
   return (
-    <Dialog
-      title="Reset"
-      onClose={() => {
-        handleDialogClose()
-      }}
+    <ConfirmDialog
       open={open}
+      title="Reset"
+      onCancel={onClose}
+      onSubmit={() => {
+        onFactoryReset()
+        onClose()
+      }}
     >
-      <DialogContent>
-        <DialogContentText>
-          Are you sure you want to reset? This will restore the default
-          configuration.
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            handleDialogClose()
-          }}
-          color="primary"
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={() => {
-            handleDialogClose('reset')
-          }}
-          color="primary"
-          variant="contained"
-        >
-          OK
-        </Button>
-      </DialogActions>
-    </Dialog>
+      <DialogContentText>
+        Are you sure you want to reset? This will restore the default
+        configuration.
+      </DialogContentText>
+    </ConfirmDialog>
   )
 }

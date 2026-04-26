@@ -23,17 +23,18 @@ const SortByTagDialog = observer(function SortByTagDialog(props: {
     <Dialog open onClose={handleClose} title="Sort by tag">
       <DialogContent>
         <Typography>Set the tag to sort by</Typography>
-        <Typography color="text.secondary">
-          Examples: HP for haplotype, RG for read group, etc.
-        </Typography>
         <TextField
           value={tag}
           onChange={event => {
             setTag(event.target.value)
           }}
-          placeholder="Enter tag name"
+          label="Tag name"
+          helperText={
+            tag.length === 2 && !validTag
+              ? 'Not a valid tag'
+              : '2 characters, e.g. HP or RG'
+          }
           error={tag.length === 2 && !validTag}
-          helperText={tag.length === 2 && !validTag ? 'Not a valid tag' : ''}
           autoComplete="off"
           data-testid="sort-tag-name"
           slotProps={{
@@ -43,30 +44,30 @@ const SortByTagDialog = observer(function SortByTagDialog(props: {
             },
           }}
         />
-        <DialogActions>
-          <Button
-            variant="contained"
-            color="primary"
-            type="submit"
-            autoFocus
-            onClick={() => {
-              model.setSortedBy('tag', tag)
-              handleClose()
-            }}
-          >
-            Submit
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => {
-              handleClose()
-            }}
-          >
-            Cancel
-          </Button>
-        </DialogActions>
       </DialogContent>
+      <DialogActions>
+        <Button
+          variant="contained"
+          color="primary"
+          type="submit"
+          autoFocus
+          onClick={() => {
+            model.setSortedBy('tag', tag)
+            handleClose()
+          }}
+        >
+          Submit
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => {
+            handleClose()
+          }}
+        >
+          Cancel
+        </Button>
+      </DialogActions>
     </Dialog>
   )
 })

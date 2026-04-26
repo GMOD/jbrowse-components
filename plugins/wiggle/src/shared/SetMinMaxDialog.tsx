@@ -43,7 +43,7 @@ export default function SetMinMaxDialog(props: {
         <Typography>Enter min/max score: </Typography>
         {!ok ? (
           <Typography color="error">
-            Max is greater than or equal to min
+            Max must be greater than min
           </Typography>
         ) : null}
 
@@ -73,7 +73,6 @@ export default function SetMinMaxDialog(props: {
           variant="contained"
           color="primary"
           type="submit"
-          style={{ marginLeft: 20 }}
           disabled={!ok}
           onClick={() => {
             model.setMinScore(
@@ -86,6 +85,9 @@ export default function SetMinMaxDialog(props: {
           }}
         >
           Submit
+        </Button>
+        <Button variant="contained" color="secondary" onClick={handleClose}>
+          Cancel
         </Button>
       </DialogActions>
     </Dialog>

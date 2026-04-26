@@ -1,12 +1,5 @@
-import { Dialog } from '@jbrowse/core/ui'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  List,
-  ListItem,
-} from '@mui/material'
+import { ConfirmDialog } from '@jbrowse/core/ui'
+import { DialogContentText, List, ListItem } from '@mui/material'
 import { observer } from 'mobx-react'
 
 const CloseConnectionDialog = observer(function CloseConnectionDialog({
@@ -22,50 +15,32 @@ const CloseConnectionDialog = observer(function CloseConnectionDialog({
 }) {
   const { name, dereferenceTypeCount, safelyBreakConnection } = modalInfo
   return (
-    <Dialog
+    <ConfirmDialog
       open
       maxWidth="lg"
       title={`Close connection "${name}"`}
-      onClose={onClose}
+      onCancel={onClose}
+      onSubmit={() => {
+        safelyBreakConnection?.()
+        onClose()
+      }}
     >
-      <DialogContent>
-        {dereferenceTypeCount ? (
-          <>
-            <DialogContentText>
-              Closing this connection will close:
-            </DialogContentText>
-            <List>
-              {Object.entries(dereferenceTypeCount).map(([key, value]) => (
-                <ListItem key={key}>{`${value} ${key}`}</ListItem>
-              ))}
-            </List>
-          </>
-        ) : null}
-        <DialogContentText>
-          Are you sure you want to close this connection?
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            onClose()
-          }}
-          color="primary"
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          onClick={() => {
-            safelyBreakConnection?.()
-            onClose()
-          }}
-          color="primary"
-        >
-          OK
-        </Button>
-      </DialogActions>
-    </Dialog>
+      {dereferenceTypeCount ? (
+        <>
+          <DialogContentText>
+            Closing this connection will close:
+          </DialogContentText>
+          <List>
+            {Object.entries(dereferenceTypeCount).map(([key, value]) => (
+              <ListItem key={key}>{`${value} ${key}`}</ListItem>
+            ))}
+          </List>
+        </>
+      ) : null}
+      <DialogContentText>
+        Are you sure you want to close this connection?
+      </DialogContentText>
+    </ConfirmDialog>
   )
 })
 

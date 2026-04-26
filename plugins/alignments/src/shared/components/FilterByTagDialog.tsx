@@ -126,9 +126,13 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
             onChange={event => {
               setTag(event.target.value)
             }}
-            placeholder="Enter tag name"
+            label="Tag name"
             error={tag.length === 2 && !validTag}
-            helperText={tag.length === 2 && !validTag ? 'Not a valid tag' : ''}
+            helperText={
+              tag.length === 2 && !validTag
+                ? 'Not a valid tag'
+                : '2 characters, e.g. HP or RG'
+            }
             slotProps={{
               htmlInput: {
                 maxLength: 2,
@@ -155,41 +159,41 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
             placeholder="Enter read name"
           />
         </Paper>
-        <DialogActions>
-          <Button
-            variant="contained"
-            color="primary"
-            autoFocus
-            type="submit"
-            onClick={() => {
-              model.setFilterBy({
-                flagInclude,
-                flagExclude,
-                readName,
-                tagFilter:
-                  tag !== ''
-                    ? {
-                        tag,
-                        value: tagValue,
-                      }
-                    : undefined,
-              })
-              handleClose()
-            }}
-          >
-            Submit
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => {
-              handleClose()
-            }}
-          >
-            Cancel
-          </Button>
-        </DialogActions>
       </DialogContent>
+      <DialogActions>
+        <Button
+          variant="contained"
+          color="primary"
+          autoFocus
+          type="submit"
+          onClick={() => {
+            model.setFilterBy({
+              flagInclude,
+              flagExclude,
+              readName,
+              tagFilter:
+                tag !== ''
+                  ? {
+                      tag,
+                      value: tagValue,
+                    }
+                  : undefined,
+            })
+            handleClose()
+          }}
+        >
+          Submit
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => {
+            handleClose()
+          }}
+        >
+          Cancel
+        </Button>
+      </DialogActions>
     </Dialog>
   )
 })

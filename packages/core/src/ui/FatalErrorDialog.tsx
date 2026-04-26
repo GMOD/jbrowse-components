@@ -9,6 +9,7 @@ import {
 } from '@mui/material'
 
 import ErrorBanner from './ErrorBanner.tsx'
+import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents.tsx'
 import FactoryResetDialog from './FactoryResetDialog.tsx'
 
 const ResetComponent = ({
@@ -59,7 +60,9 @@ export default function FatalErrorDialog({
       <DialogTitle>Fatal error</DialogTitle>
       <DialogContent>
         <ErrorBanner error={error} />
-        <pre>{componentStack}</pre>
+        {componentStack ? (
+          <ErrorMessageStackTraceContents text={componentStack} />
+        ) : null}
       </DialogContent>
       <DialogActions>
         <Button

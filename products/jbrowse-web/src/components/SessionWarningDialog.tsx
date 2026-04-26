@@ -30,11 +30,13 @@ export default function SessionWarningDialog({
           </ul>
           Please ensure you trust the source of this session.
           <Button
+            type="button"
+            size="small"
             onClick={() => {
               setShow(!show)
             }}
           >
-            Why am I seeing this?
+            {show ? 'Hide details' : 'Why am I seeing this?'}
           </Button>
           {show ? (
             <div>
