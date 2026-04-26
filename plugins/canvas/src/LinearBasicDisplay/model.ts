@@ -1,18 +1,13 @@
-import { lazy } from 'react'
-
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
+import {
+  CollapseIntronsDialog,
+  getTranscripts,
+  hasIntrons,
+} from '@jbrowse/plugin-linear-genome-view'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 
 import baseStateModelFactory from './baseModel.ts'
-import {
-  getTranscripts,
-  hasIntrons,
-} from './components/CollapseIntronsDialog/util.ts'
-
-const CollapseIntronsDialog = lazy(
-  () => import('./components/CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
-)
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
