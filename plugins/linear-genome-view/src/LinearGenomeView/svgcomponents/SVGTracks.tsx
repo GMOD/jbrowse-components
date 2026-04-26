@@ -3,6 +3,7 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import SVGTrackLabel from './SVGTrackLabel.tsx'
+import { trackSpacing } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -44,7 +45,8 @@ export default function SVGTracks({
             const trackName = getTrackName(conf, session)
             const display = track.displays[0]!
             const x = Math.max(-model.offsetPx, 0)
-            const currOffset = prevOffset + display.height + textOffset
+            const currOffset =
+              prevOffset + display.height + textOffset + trackSpacing
             const clipId = `track-clip-${conf.trackId}`
             return {
               prevOffset: currOffset,

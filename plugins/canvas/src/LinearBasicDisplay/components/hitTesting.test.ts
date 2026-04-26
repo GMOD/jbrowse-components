@@ -52,7 +52,6 @@ function makeData(
   subfeatureInfos: SubfeatureInfo[] = [],
 ): FeatureDataResult {
   return {
-    regionStart: 0,
     flatbushItems,
     subfeatureInfos,
     floatingLabelsData: {},

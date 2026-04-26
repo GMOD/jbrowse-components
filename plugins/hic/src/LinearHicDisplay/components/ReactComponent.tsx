@@ -86,7 +86,7 @@ const HicCanvas = observer(function HicCanvas({
   model: LinearHicDisplayModel
 }) {
   const view = getContainingView(model) as LGV
-  const width = Math.round(view.dynamicBlocks.totalWidthPx)
+  const width = view.totalWidthPx
   const {
     height,
     rpcData,

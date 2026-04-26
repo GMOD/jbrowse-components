@@ -109,7 +109,7 @@ export default function stateModelFactory(
       },
       get yScalar() {
         const view = getContainingView(self) as LinearGenomeViewModel
-        const hyp = Math.round(view.dynamicBlocks.totalWidthPx) / 2
+        const hyp = view.totalWidthPx / 2
         const h = self.height
         return self.mode === 'adjust' ? h / Math.max(h, hyp) : 1
       },
@@ -141,7 +141,7 @@ export default function stateModelFactory(
         return {
           binWidth: data.binWidth,
           yScalar: self.yScalar,
-          canvasWidth: Math.round(view.dynamicBlocks.totalWidthPx),
+          canvasWidth: view.totalWidthPx,
           canvasHeight: self.height,
           colorMaxScore: data.colorMaxScore,
           useLogScale: self.useLogScale,

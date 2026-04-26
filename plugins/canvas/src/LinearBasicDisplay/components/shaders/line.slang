@@ -18,10 +18,8 @@ struct VsOut {
 VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   uint v = vid % 6u;
 
-  uint absStart = inst.startEnd.x + u.regionStart;
-  uint absEnd   = inst.startEnd.y + u.regionStart;
-  float sx1 = hpToClipX(hpSplitUint(absStart), u.bpRangeX, u.zero);
-  float sx2 = hpToClipX(hpSplitUint(absEnd),   u.bpRangeX, u.zero);
+  float sx1 = hpToClipX(hpSplitUint(inst.startEnd.x), u.bpRangeX, u.zero);
+  float sx2 = hpToClipX(hpSplitUint(inst.startEnd.y), u.bpRangeX, u.zero);
 
   float yPx = floor(inst.y - u.scrollY + 0.5) + 0.5;
   float cy = 1.0 - (yPx / u.canvasHeight) * 2.0;

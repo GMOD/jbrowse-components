@@ -28,8 +28,8 @@ import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 
 interface RectData {
-  startOffset: number
-  endOffset: number
+  start: number
+  end: number
   y: number
   height: number
   color: number
@@ -37,8 +37,8 @@ interface RectData {
 }
 
 interface LineData {
-  startOffset: number
-  endOffset: number
+  start: number
+  end: number
   y: number
   color: number
   direction: number
@@ -54,7 +54,6 @@ interface ArrowData {
 }
 
 interface RenderContext {
-  regionStart: number
   config: DisplayConfig
   theme: Theme
   colorByCDS: boolean
@@ -107,13 +106,12 @@ function emitIntronLines(
   const end = feature.get('end')
   const lineY = transcriptTopPx + transcript.height / 2
   const strand = feature.get('strand') ?? 0
-  const { regionStart } = ctx
   const children = transcript.children
 
   if (children.length === 0) {
     lines.push({
-      startOffset: start - regionStart,
-      endOffset: end - regionStart,
+      start,
+      end,
       y: lineY,
       color: strokeUint,
       direction: strand,
@@ -128,8 +126,8 @@ function emitIntronLines(
     const childEnd = child.feature.get('end')
     if (childStart > prevEnd) {
       lines.push({
-        startOffset: prevEnd - regionStart,
-        endOffset: childStart - regionStart,
+        start: prevEnd,
+        end: childStart,
         y: lineY,
         color: strokeUint,
         direction: strand,
@@ -142,8 +140,8 @@ function emitIntronLines(
   }
   if (prevEnd < end) {
     lines.push({
-      startOffset: prevEnd - regionStart,
-      endOffset: end - regionStart,
+      start: prevEnd,
+      end,
       y: lineY,
       color: strokeUint,
       direction: strand,
@@ -155,7 +153,6 @@ function emitIntronLines(
 function emitCodonRects(
   aminoAcids: AggregatedAminoAcid[],
   baseColor: string,
-  regionStart: number,
   y: number,
   height: number,
   flatbushIdx: number,
@@ -169,8 +166,8 @@ function emitCodonRects(
   for (const [i, aa] of aminoAcids.entries()) {
     const bgColor = i % 2 === 1 ? color2 : color1
     rects.push({
-      startOffset: aa.startBp - regionStart,
-      endOffset: aa.endBp - regionStart,
+      start: aa.startBp,
+      end: aa.endBp,
       y,
       height,
       color: colorToUint32(bgColor),
@@ -213,8 +210,8 @@ function emitChildRect(
   )
 
   rects.push({
-    startOffset: childStart - ctx.regionStart,
-    endOffset: childEnd - ctx.regionStart,
+    start: childStart,
+    end: childEnd,
     y: childTopPx,
     height: childHeight,
     color: colorToUint32(childColor),
@@ -271,7 +268,6 @@ function emitExonRects(
         emitCodonRects(
           aminoAcids,
           childColor,
-          ctx.regionStart,
           childTopPx,
           childHeight,
           flatbushIdx,
@@ -283,8 +279,8 @@ function emitExonRects(
     }
 
     collector.rects.push({
-      startOffset: childStart - ctx.regionStart,
-      endOffset: childEnd - ctx.regionStart,
+      start: childStart,
+      end: childEnd,
       y: childTopPx,
       height: childHeight,
       color: colorToUint32(childColor),
@@ -352,7 +348,7 @@ function processTranscriptLayout(
     tooltip,
   })
 
-  const { config, regionStart } = ctx
+  const { config } = ctx
   if (
     isLabelAllowed(config) &&
     config.subfeatureLabels !== 'none' &&
@@ -368,8 +364,8 @@ function processTranscriptLayout(
     if (result) {
       collector.floatingLabelsData[transcriptFeature.id()] = {
         featureId: transcriptFeature.id(),
-        minX: transcriptStart - regionStart,
-        maxX: transcriptEnd - regionStart,
+        minX: transcriptStart,
+        maxX: transcriptEnd,
         topY: transcriptTopPx,
         featureHeight: transcript.height,
         parentFeatureId: result.parentFeatureId,
@@ -381,7 +377,7 @@ function processTranscriptLayout(
   if (transcriptStrand !== 0) {
     const arrowX = transcriptStrand === 1 ? transcriptEnd : transcriptStart
     collector.arrows.push({
-      x: arrowX - ctx.regionStart,
+      x: arrowX,
       y: transcriptTopPx + transcript.height / 2,
       direction: transcriptStrand,
       color: strokeUint,
@@ -412,8 +408,8 @@ function processFeatureRecord(
   if (nameLabel || descriptionLabel) {
     collector.floatingLabelsData[feature.id()] = {
       featureId: feature.id(),
-      minX: featureStart - ctx.regionStart,
-      maxX: featureEnd - ctx.regionStart,
+      minX: featureStart,
+      maxX: featureEnd,
       topY: 0,
       featureHeight: layout.height,
       nameLabel,
@@ -501,8 +497,8 @@ function processDefaultLayout(
   )
 
   collector.rects.push({
-    startOffset: featureStart - ctx.regionStart,
-    endOffset: featureEnd - ctx.regionStart,
+    start: featureStart,
+    end: featureEnd,
     y: rectTopPx,
     height: rectHeight,
     color: colorToUint32(fillColor),
@@ -517,7 +513,7 @@ function processDefaultLayout(
     })
     const arrowX = strand === 1 ? featureEnd : featureStart
     collector.arrows.push({
-      x: arrowX - ctx.regionStart,
+      x: arrowX,
       y: layout.height / 2,
       direction: strand,
       color: colorToUint32(strokeColor),
@@ -536,7 +532,6 @@ export function collectRenderData(
   peptideDataMap?: Map<string, PeptideData>,
 ) {
   const ctx: RenderContext = {
-    regionStart,
     config,
     theme,
     colorByCDS,
@@ -561,13 +556,16 @@ export function collectRenderData(
 
   const { rects, lines, arrows } = collector
 
+  const regionEnd = regionStart + regionWidth
   const visibleRects = rects.filter(
-    r => r.endOffset > 0 && r.startOffset < regionWidth,
+    r => r.end > regionStart && r.start < regionEnd,
   )
   const visibleLines = lines.filter(
-    l => l.endOffset > 0 && l.startOffset < regionWidth,
+    l => l.end > regionStart && l.start < regionEnd,
   )
-  const visibleArrows = arrows.filter(a => a.x >= 0 && a.x < regionWidth)
+  const visibleArrows = arrows.filter(
+    a => a.x >= regionStart && a.x < regionEnd,
+  )
 
   const rectPositions = new Uint32Array(visibleRects.length * 2)
   const rectYs = new Float32Array(visibleRects.length)
@@ -579,8 +577,8 @@ export function collectRenderData(
   const rectFeatureIndices = new Uint32Array(visibleRects.length)
 
   for (const [i, rect] of visibleRects.entries()) {
-    rectPositions[i * 2] = Math.max(0, rect.startOffset)
-    rectPositions[i * 2 + 1] = Math.max(0, rect.endOffset)
+    rectPositions[i * 2] = rect.start
+    rectPositions[i * 2 + 1] = rect.end
     rectYs[i] = rect.y
     rectHeights[i] = rect.height
     rectColors[i] = rect.color
@@ -594,8 +592,8 @@ export function collectRenderData(
   const lineFeatureIndices = new Uint32Array(visibleLines.length)
 
   for (const [i, line] of visibleLines.entries()) {
-    linePositions[i * 2] = Math.max(0, line.startOffset)
-    linePositions[i * 2 + 1] = Math.max(0, line.endOffset)
+    linePositions[i * 2] = line.start
+    linePositions[i * 2 + 1] = line.end
     lineYs[i] = line.y
     lineColors[i] = line.color
     lineDirections[i] = line.direction
@@ -609,7 +607,7 @@ export function collectRenderData(
   const arrowFeatureIndices = new Uint32Array(visibleArrows.length)
 
   for (const [i, arrow] of visibleArrows.entries()) {
-    arrowXs[i] = Math.max(0, arrow.x)
+    arrowXs[i] = arrow.x
     arrowYs[i] = arrow.y
     arrowDirections[i] = arrow.direction
     arrowColors[i] = arrow.color

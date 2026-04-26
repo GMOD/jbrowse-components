@@ -101,7 +101,7 @@ export function visitCigarRenderedSegments(
     if (Math.abs(cx1 - px1) <= 1 && Math.abs(cx2 - px2) <= 1 && isNotLast) {
       continuingFlag = true
     } else {
-      const resolvedOp = (continuingFlag && d1 > 1) || d2 > 1 ? op : CIGAR_M
+      const resolvedOp = d1 > 1 || d2 > 1 ? op : CIGAR_M
       continuingFlag = false
       callback(resolvedOp, px1, cx1, px2, cx2)
     }

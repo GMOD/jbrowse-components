@@ -31,8 +31,7 @@ struct VsOut {
 VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
   uint v = vid % 9u;
 
-  uint absX = inst.x + u.regionStart;
-  float cx = hpToClipX(hpSplitUint(absX), u.bpRangeX, u.zero);
+  float cx = hpToClipX(hpSplitUint(inst.x), u.bpRangeX, u.zero);
 
   float yPx = floor(inst.y - u.scrollY + 0.5) + 0.5;
   float cy = 1.0 - (yPx / u.canvasHeight) * 2.0;

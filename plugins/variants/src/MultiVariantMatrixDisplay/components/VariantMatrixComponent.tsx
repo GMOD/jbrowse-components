@@ -73,7 +73,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
     if (!cellData || !sources?.length || cellData.numFeatures === 0) {
       return undefined
     }
-    const w = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
+    const w = view.totalWidthPxWithoutBorders
     const mouseX = eventClientX - rect.left
     const mouseY = eventClientY - rect.top
 
@@ -118,7 +118,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
     return enrichFeatureFromClick(baseFeature, feature, result)
   }
 
-  const width = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
+  const width = view.totalWidthPxWithoutBorders
   const height = model.availableHeight
 
   if (error) {

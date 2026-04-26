@@ -46,7 +46,7 @@ export async function renderSvg(
     canDisplayLabels,
   } = model
   const visibleRegions = view.visibleRegions
-  const canvasWidth = Math.round(view.width)
+  const totalWidth = view.totalWidthPx
 
   // Headless renderer: drive the same drawVariantBlocks pipeline as on-screen.
   // VariantCellData is a structural superset of VariantUploadData (extra
@@ -62,13 +62,13 @@ export async function renderSvg(
 
   const renderBlocks = buildRenderBlocks(visibleRegions)
 
-  const cellsNode = paintLayer(canvasWidth, availableHeight, opts, ctx => {
+  const cellsNode = paintLayer(totalWidth, availableHeight, opts, ctx => {
     if (referenceDrawingMode === 'skip') {
       ctx.fillStyle = REFERENCE_COLOR
-      ctx.fillRect(0, 0, canvasWidth, availableHeight)
+      ctx.fillRect(0, 0, totalWidth, availableHeight)
     }
     drawVariantBlocks(ctx, renderer.getRegions(), renderBlocks, {
-      canvasWidth,
+      canvasWidth: totalWidth,
       canvasHeight: availableHeight,
       rowHeight,
       scrollTop,
@@ -79,7 +79,7 @@ export async function renderSvg(
   return (
     <SvgVariantOverlay
       id={`variant-clip-${model.id}`}
-      width={canvasWidth}
+      width={view.width}
       height={model.height}
       content={cellsNode}
       sources={sources}

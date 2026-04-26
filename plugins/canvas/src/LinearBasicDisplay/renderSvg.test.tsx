@@ -79,7 +79,6 @@ function makeData(
 ): FeatureDataResult {
   const n = features.length
   return {
-    regionStart: 0,
     rectPositions: new Uint32Array(features.flatMap(f => [f.startBp, f.endBp])),
     rectYs: new Float32Array(n),
     rectHeights: new Float32Array(n).fill(10),

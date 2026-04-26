@@ -1,14 +1,3 @@
-/**
- * WebGL Feature Data RPC Executor
- *
- * COORDINATE SYSTEM REQUIREMENT:
- * All position data in this module uses integer coordinates. View region bounds
- * (region.start, region.end) can be fractional from scrolling/zooming, so we
- * convert to integers: regionStart = floor(region.start). All positions are then
- * stored as integer offsets from regionStart. This ensures consistent alignment
- * between feature rectangles, lines, and hit detection.
- */
-
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
@@ -170,8 +159,6 @@ export async function executeRenderFeatureData({
   checkStopToken2(stopTokenCheck)
 
   const result: FeatureDataResult = {
-    regionStart,
-
     rectPositions: packed.rectPositions,
     rectYs: packed.rectYs,
     rectHeights: packed.rectHeights,

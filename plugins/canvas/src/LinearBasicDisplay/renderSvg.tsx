@@ -42,13 +42,13 @@ function renderLabels(
   screenEndPx: number,
   reversed?: boolean,
 ) {
-  const { floatingLabelsData, regionStart: dataRegionStart } = data
+  const { floatingLabelsData } = data
 
   ctx.font = `${LABEL_FONT_SIZE}px sans-serif`
 
   for (const labelData of Object.values(floatingLabelsData)) {
-    const featureStartBp = labelData.minX + dataRegionStart
-    const featureEndBp = labelData.maxX + dataRegionStart
+    const featureStartBp = labelData.minX
+    const featureEndBp = labelData.maxX
 
     if (featureEndBp < regionStart || featureStartBp > regionEnd) {
       continue
@@ -202,7 +202,7 @@ export async function renderSvg(
 
   const visibleRegions = view.visibleRegions
   const renderPeptidesFlag = shouldRenderPeptideText(view.bpPerPx)
-  const totalWidth = Math.round(view.dynamicBlocks.totalWidthPx)
+  const totalWidth = view.totalWidthPx
   const height = model.height
 
   // Headless renderer drives the same drawFeatureBlocks pipeline as on-screen.

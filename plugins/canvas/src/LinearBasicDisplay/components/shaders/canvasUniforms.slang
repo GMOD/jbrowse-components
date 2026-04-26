@@ -7,7 +7,6 @@ module canvasUniforms;
 
 public struct CanvasUniforms {
   public float3 bpRangeX;
-  public uint   regionStart;
   public float  canvasHeight;
   public float  canvasWidth;
   public float  scrollY;

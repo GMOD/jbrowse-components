@@ -4,7 +4,7 @@ import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { IconButton, Tooltip, Typography } from '@mui/material'
+import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { Fragment } from 'react/jsx-runtime'
 
@@ -53,25 +53,29 @@ const useStyles = makeStyles()(theme => ({
     zIndex: 200,
     padding: 0,
   },
-  levelWrapper: {
+  wrapper: {
     position: 'relative',
   },
-  compactViewBar: {
-    height: 24,
-    background: theme.palette.action.hover,
-    display: 'flex',
-    alignItems: 'center',
-    paddingLeft: 8,
-    cursor: 'pointer',
-    borderBottom: `1px solid ${theme.palette.divider}`,
+  lgvCollapseButton: {
+    position: 'absolute',
+    right: 4,
+    top: 2,
+    zIndex: 1000,
+    padding: 2,
+    background: 'rgba(255,255,255,0.7)',
     '&:hover': {
-      background: theme.palette.action.selected,
+      background: 'rgba(255,255,255,0.9)',
     },
   },
-  compactViewLabel: {
-    fontSize: 12,
-    fontWeight: 500,
-    userSelect: 'none',
+  collapsedViewBar: {
+    height: 6,
+    display: 'flex',
+    cursor: 'pointer',
+    overflow: 'hidden',
+    borderBottom: `1px solid ${theme.palette.divider}`,
+    '&:hover': {
+      filter: 'brightness(1.15)',
+    },
   },
 }))
 
@@ -81,7 +85,7 @@ function View({ view }: { view: LinearGenomeViewModel }) {
   return <ReactComponent model={view} />
 }
 
-const CompactViewBar = observer(function CompactViewBar({
+const CollapsedViewBar = observer(function CollapsedViewBar({
   model,
   viewIdx,
 }: {
@@ -91,18 +95,27 @@ const CompactViewBar = observer(function CompactViewBar({
   const { classes } = useStyles()
   const view = model.views[viewIdx]!
   const assemblyName = view.assemblyNames[0] ?? 'Unknown'
+  const regions = view.displayedRegions
+  const totalBp = regions.reduce((acc, r) => acc + (r.end - r.start), 0)
   return (
-    <Tooltip title={`Expand ${assemblyName}`}>
+    <Tooltip title={`Expand ${assemblyName} — click to restore`}>
       <div
-        className={classes.compactViewBar}
+        className={classes.collapsedViewBar}
         onClick={() => {
           model.toggleCompactView(viewIdx)
         }}
       >
-        <ExpandMoreIcon style={{ fontSize: 14, marginRight: 4 }} />
-        <Typography className={classes.compactViewLabel}>
-          {assemblyName}
-        </Typography>
+        {totalBp > 0
+          ? regions.map((region, i) => (
+              <div
+                key={`${region.refName}-${i}`}
+                style={{
+                  flex: region.end - region.start,
+                  background: i % 2 === 0 ? '#778' : '#99a',
+                }}
+              />
+            ))
+          : null}
       </div>
     </Tooltip>
   )
@@ -125,9 +138,22 @@ const LinearComparativeRenderArea = observer(
               <LevelSection model={model} levelIdx={i - 1} classes={classes} />
             ) : null}
             {model.isViewCompact(i) ? (
-              <CompactViewBar model={model} viewIdx={i} />
+              <CollapsedViewBar model={model} viewIdx={i} />
             ) : (
-              <View view={view} />
+              <div className={classes.wrapper}>
+                <View view={view} />
+                <Tooltip title="Collapse this view">
+                  <IconButton
+                    className={classes.lgvCollapseButton}
+                    size="small"
+                    onClick={() => {
+                      model.toggleCompactView(i)
+                    }}
+                  >
+                    <ExpandLessIcon style={{ fontSize: 14 }} />
+                  </IconButton>
+                </Tooltip>
+              </div>
             )}
           </Fragment>
         ))}
@@ -146,9 +172,8 @@ const LevelSection = observer(function LevelSection({
   classes: Record<string, string>
 }) {
   const level = model.levels[levelIdx]!
-  const isCollapsed = level.collapsed
 
-  if (isCollapsed) {
+  if (level.collapsed) {
     return (
       <Tooltip
         title={`Expand level ${levelIdx + 1} (${model.views[levelIdx]!.assemblyNames[0] ?? ''} ↔ ${model.views[levelIdx + 1]!.assemblyNames[0] ?? ''})`}
@@ -165,7 +190,7 @@ const LevelSection = observer(function LevelSection({
 
   return (
     <>
-      <div className={classes.levelWrapper}>
+      <div className={classes.wrapper}>
         <div className={classes.container}>
           <LevelSyntenyCanvas model={level} />
           <Overlays model={model} level={levelIdx} />

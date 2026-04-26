@@ -58,7 +58,9 @@ export async function renderSvg(
   } = model
 
   const { offsetPx } = view
-  const totalWidth = Math.round(view.dynamicBlocks.totalWidthPx)
+  // anchors scale bars to left edge of content; non-zero only when scrolled before genome start
+  const scalebarLeft = Math.max(-offsetPx, 0)
+  const totalWidth = view.totalWidthPx
   const displayHeight = model.height
 
   // SVG export renders the full display from y=0 with no Y scroll. Reuse the
@@ -122,7 +124,7 @@ export async function renderSvg(
     <>
       <SvgClipRect
         id={`alignments-clip-${model.id}`}
-        width={totalWidth}
+        width={view.width}
         height={displayHeight}
       >
         {pileupNode}
@@ -139,11 +141,12 @@ export async function renderSvg(
         {sashimiNode}
       </SvgClipRect>
       {showCoverage && coverageTicks ? (
-        <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
+        <g transform={`translate(${scalebarLeft})`}>
           <CoverageYScaleBar model={model} orientation="left" />
         </g>
       ) : null}
       {model.insertSizeTicks ? (
+        // 50 matches the on-screen SVG width for the insert-size scale bar
         <g transform={`translate(${totalWidth - 50})`}>
           <YScaleBar ticks={model.insertSizeTicks} orientation="right" />
         </g>

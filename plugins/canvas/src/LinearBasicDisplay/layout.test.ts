@@ -3,7 +3,6 @@ import { computeLaidOutData } from './layout.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
 function makeFeatureData(opts: {
-  regionStart: number
   features: {
     featureId: string
     startBp: number
@@ -12,9 +11,8 @@ function makeFeatureData(opts: {
     strand?: number
   }[]
 }): FeatureDataResult {
-  const { regionStart, features } = opts
+  const { features } = opts
   return {
-    regionStart,
     flatbushItems: features.map(f => ({
       kind: 'feature' as const,
       featureId: f.featureId,
@@ -29,9 +27,7 @@ function makeFeatureData(opts: {
     })),
     subfeatureInfos: [],
     floatingLabelsData: {},
-    rectPositions: new Uint32Array(
-      features.flatMap(f => [f.startBp - regionStart, f.endBp - regionStart]),
-    ),
+    rectPositions: new Uint32Array(features.flatMap(f => [f.startBp, f.endBp])),
     rectYs: new Float32Array(features.length),
     rectHeights: new Float32Array(features.map(f => f.height)),
     rectColors: new Uint32Array(features.length),
@@ -70,7 +66,6 @@ function layout(
 
 test('layout is pure: raw data is not mutated', () => {
   const data = makeFeatureData({
-    regionStart: 0,
     features: [
       { featureId: 'f1', startBp: 100, endBp: 500, height: 20 },
       { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
@@ -91,7 +86,6 @@ test('layout is pure: raw data is not mutated', () => {
 
 test('overlapping features on same chromosome get different rows', () => {
   const data = makeFeatureData({
-    regionStart: 0,
     features: [
       { featureId: 'f1', startBp: 100, endBp: 500, height: 20 },
       { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
@@ -106,14 +100,12 @@ test('overlapping features on same chromosome get different rows', () => {
 
 test('different chromosomes get independent layouts', () => {
   const a = makeFeatureData({
-    regionStart: 0,
     features: [
       { featureId: 'f1', startBp: 100, endBp: 500, height: 20 },
       { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
     ],
   })
   const b = makeFeatureData({
-    regionStart: 0,
     features: [
       { featureId: 'f3', startBp: 100, endBp: 500, height: 20 },
       { featureId: 'f4', startBp: 200, endBp: 600, height: 20 },
@@ -137,14 +129,12 @@ test('different chromosomes get independent layouts', () => {
 
 test('same-chromosome discontiguous regions share spanning feature Y', () => {
   const r1 = makeFeatureData({
-    regionStart: 0,
     features: [
       { featureId: 'spanning', startBp: 50, endBp: 250, height: 20 },
       { featureId: 'local1', startBp: 10, endBp: 90, height: 20 },
     ],
   })
   const r2 = makeFeatureData({
-    regionStart: 200,
     features: [
       { featureId: 'spanning', startBp: 50, endBp: 250, height: 20 },
       { featureId: 'local2', startBp: 210, endBp: 290, height: 20 },
@@ -169,7 +159,6 @@ test('same-chromosome discontiguous regions share spanning feature Y', () => {
 
 test('non-overlapping features on same chromosome share the first row', () => {
   const data = makeFeatureData({
-    regionStart: 0,
     features: [
       { featureId: 'f1', startBp: 100, endBp: 200, height: 20 },
       { featureId: 'f2', startBp: 300, endBp: 400, height: 20 },
@@ -184,7 +173,6 @@ test('non-overlapping features on same chromosome share the first row', () => {
 test('same inputs produce identical output (deterministic)', () => {
   const mk = () =>
     makeFeatureData({
-      regionStart: 0,
       features: [
         { featureId: 'f1', startBp: 100, endBp: 500, height: 20 },
         { featureId: 'f2', startBp: 200, endBp: 600, height: 25 },
@@ -203,7 +191,6 @@ test('same inputs produce identical output (deterministic)', () => {
 
 test('rectYs are offset by the layout top for each feature', () => {
   const data = makeFeatureData({
-    regionStart: 0,
     features: [
       { featureId: 'f1', startBp: 100, endBp: 500, height: 20 },
       { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
@@ -218,7 +205,6 @@ test('rectYs are offset by the layout top for each feature', () => {
 
 test('bpPerPx changes label-driven packing', () => {
   const data = makeFeatureData({
-    regionStart: 0,
     features: [
       { featureId: 'f1', startBp: 100, endBp: 200, height: 20 },
       { featureId: 'f2', startBp: 300, endBp: 400, height: 20 },
@@ -257,7 +243,6 @@ test('bpPerPx changes label-driven packing', () => {
 
 test('subfeatures and floating labels inherit their parent feature offset', () => {
   const data = makeFeatureData({
-    regionStart: 0,
     features: [
       { featureId: 'gene1', startBp: 100, endBp: 500, height: 30 },
       { featureId: 'gene2', startBp: 200, endBp: 600, height: 30 },
@@ -302,7 +287,6 @@ test('subfeatures and floating labels inherit their parent feature offset', () =
 
 test('lines and arrows are offset by parent feature top', () => {
   const data = makeFeatureData({
-    regionStart: 0,
     features: [
       { featureId: 'f1', startBp: 100, endBp: 500, height: 20 },
       { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
@@ -330,7 +314,6 @@ test('lines and arrows are offset by parent feature top', () => {
 test('showLabels adds label height to the feature row', () => {
   const mk = () => {
     const data = makeFeatureData({
-      regionStart: 0,
       features: [
         { featureId: 'f1', startBp: 100, endBp: 500, height: 10 },
         { featureId: 'f2', startBp: 200, endBp: 600, height: 10 },
@@ -379,7 +362,6 @@ test('showLabels adds label height to the feature row', () => {
 
 test('strand arrow padding prevents adjacent stranded features from sharing a row', () => {
   const data = makeFeatureData({
-    regionStart: 0,
     features: [
       { featureId: 'f1', startBp: 100, endBp: 200, height: 20, strand: 1 },
       { featureId: 'f2', startBp: 208, endBp: 300, height: 20, strand: 1 },
@@ -391,7 +373,6 @@ test('strand arrow padding prevents adjacent stranded features from sharing a ro
 
 test('unstranded features without arrow padding can share a row when close', () => {
   const data = makeFeatureData({
-    regionStart: 0,
     features: [
       { featureId: 'f1', startBp: 100, endBp: 200, height: 20 },
       { featureId: 'f2', startBp: 220, endBp: 300, height: 20 },
@@ -406,7 +387,6 @@ test('unstranded features without arrow padding can share a row when close', () 
 test('reversed region reserves label overhang on the lower-bp side', () => {
   const mk = () => {
     const data = makeFeatureData({
-      regionStart: 0,
       features: [
         { featureId: 'fLeft', startBp: 50, endBp: 100, height: 10 },
         { featureId: 'fLabel', startBp: 200, endBp: 250, height: 10 },
@@ -442,7 +422,6 @@ test('reversed region reserves label overhang on the lower-bp side', () => {
 
 test('incremental: adding a new region does not move features in existing regions', () => {
   const a = makeFeatureData({
-    regionStart: 0,
     features: [
       { featureId: 'f1', startBp: 100, endBp: 500, height: 20 },
       { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
@@ -455,7 +434,6 @@ test('incremental: adding a new region does not move features in existing region
   const f2Top = aFirst.flatbushItems[1]!.topPx
 
   const b = makeFeatureData({
-    regionStart: 0,
     features: [{ featureId: 'f3', startBp: 100, endBp: 500, height: 20 }],
   })
   keys.set(1, 'v:ctgB')

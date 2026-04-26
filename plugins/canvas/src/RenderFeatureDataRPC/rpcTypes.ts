@@ -1,12 +1,3 @@
-/**
- * WebGL Feature Data RPC Types
- *
- * COORDINATE SYSTEM REQUIREMENT:
- * regionStart must be an integer (use Math.floor of view region start).
- * All position arrays store integer offsets from regionStart.
- * This is critical for alignment between features and hit detection.
- */
-
 import type { DisplayConfig } from './renderConfig.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -40,10 +31,6 @@ export interface RenderFeatureDataArgs {
 }
 
 export interface FeatureDataResult {
-  // Integer reference point for all positions (floor of view region start).
-  // All position data in this result is stored as integer offsets from regionStart.
-  regionStart: number
-
   // Feature rectangles (box, CDS, UTR, exons)
   rectPositions: Uint32Array
   rectYs: Float32Array
@@ -88,7 +75,6 @@ export interface FeatureDataResult {
 
 export type RegionRenderData = Pick<
   FeatureDataResult,
-  | 'regionStart'
   | 'rectPositions'
   | 'rectYs'
   | 'rectHeights'

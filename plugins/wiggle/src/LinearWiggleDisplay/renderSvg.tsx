@@ -31,6 +31,8 @@ export async function renderSvg(
     () => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge,
   )
   const { offsetPx } = view
+  // anchors scale bars to left edge of content; non-zero only when scrolled before genome start
+  const scalebarLeft = Math.max(-offsetPx, 0)
   const height = model.height
   const { ticks, rpcDataMap, domain, renderState } = model
 
@@ -50,12 +52,12 @@ export async function renderSvg(
       <DensityLegend
         domain={domain}
         scaleType={model.scaleType}
-        canvasWidth={Math.round(view.width)}
+        canvasWidth={view.width}
       />
     )
   } else if (ticks) {
     legendEl = (
-      <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
+      <g transform={`translate(${scalebarLeft})`}>
         <YScaleBar model={model} orientation="left" />
       </g>
     )
@@ -74,7 +76,7 @@ export async function renderSvg(
     )
   }
 
-  const totalWidth = Math.round(view.dynamicBlocks.totalWidthPx)
+  const totalWidth = view.totalWidthPx
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   const state = {
     ...renderState,

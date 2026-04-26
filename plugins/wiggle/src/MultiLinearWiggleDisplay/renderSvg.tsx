@@ -35,6 +35,8 @@ export async function renderSvg(
     () => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge,
   )
   const { offsetPx } = view
+  // anchors scale bars to left edge of content; non-zero only when scrolled before genome start
+  const scalebarLeft = Math.max(-offsetPx, 0)
   const height = model.height
   const {
     ticks,
@@ -57,8 +59,7 @@ export async function renderSvg(
     return null
   }
 
-  const canvasWidth = Math.round(view.width)
-  const tooSmallForScalebar = rowHeight < 70
+  const totalWidth = view.totalWidthPx
 
   let legendEl: React.ReactNode = null
   if (model.isDensityMode) {
@@ -66,31 +67,31 @@ export async function renderSvg(
       <DensityLegend
         domain={domain}
         scaleType={scaleType}
-        canvasWidth={canvasWidth}
+        canvasWidth={view.width}
       />
     )
   } else if (ticks) {
-    if (tooSmallForScalebar) {
+    if (rowHeight < 70) {
       legendEl = (
         <ScoreLegend
           ticks={ticks}
           scaleType={scaleType}
-          canvasWidth={canvasWidth}
+          canvasWidth={view.width}
         />
       )
     } else if (isOverlay) {
       legendEl = (
-        <g transform={`translate(${Math.max(-offsetPx, 0)} 0)`}>
+        <g transform={`translate(${scalebarLeft})`}>
           <YScaleBar model={model} orientation="left" />
         </g>
       )
     } else {
       legendEl = (
-        <g transform={`translate(${Math.max(-offsetPx, 0)} 0)`}>
+        <g transform={`translate(${scalebarLeft})`}>
           {Array.from({ length: numSources }).map((_, idx) => (
             <g
-              transform={`translate(0 ${getRowTop(idx, rowHeight)})`}
               key={`scalebar-${idx}`}
+              transform={`translate(0 ${getRowTop(idx, rowHeight)})`}
             >
               <YScaleBar model={model} orientation="left" />
             </g>
@@ -109,7 +110,7 @@ export async function renderSvg(
       <OverlayColorLegend
         sources={sources}
         fallbackColor={model.posColor}
-        canvasWidth={canvasWidth}
+        canvasWidth={view.width}
       />
     ) : (
       <SvgRowLabels
@@ -122,8 +123,6 @@ export async function renderSvg(
 
   const treeEl =
     showTree && hierarchy ? <SvgTreePath hierarchy={hierarchy} /> : null
-
-  const totalWidth = Math.round(view.dynamicBlocks.totalWidthPx)
 
   // Headless renderer: same drawWiggleBlocks pipeline as on-screen.
   // buildMultiSourceRenderData converts RPC data + gpuProps → SourceRenderData[]

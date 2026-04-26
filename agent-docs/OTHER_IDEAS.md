@@ -233,3 +233,63 @@ do not model inverted translocation (`INVTR`) or inverted duplication (`INVDP`).
 These are real SyRI output types (plotsr folds `INVTR` → `TRANS` and `INVDP` →
 `DUP`). Consider adding them as first-class types with distinct colors, or
 explicitly document the fold in the code.
+
+
+## Methylation plotting
+
+- Modifications track: methylation line/matrix view (see
+  [#5510](https://github.com/GMOD/jbrowse-components/issues/5510)).
+  The key value of methylartist locus is distinguishing haplotypes — per-HP
+  aggregate lines reveal allele-specific methylation (ASM). Options ranked by
+  ROI:
+
+  **Option A — HP-stratified aggregate lines (recommended starting point).**
+  One line per haplotype in the coverage area. At each CpG, y = methylation
+  proportion among reads with that HP tag (HP:i:1, HP:i:2, unphased). Two
+  lines when HP tags present, one when absent. Implementation:
+  - Add `haplotype: number | undefined` to `ModificationEntry`; read HP tag
+    in `extractModifications` in `processFeatureAlignments.ts`
+  - Extend `computeModificationCoverage` to stratify by haplotype; output
+    per-haplotype position/height/color arrays
+  - Add `drawModCovLine` to `rendererUtils.ts` (Canvas2D) + a new
+    `PASS_MOD_COV_LINE` GPU pass (can reuse modCoverage vertex geometry,
+    rendered as a strip not quads)
+  - Show unphased as a third dim/dashed line or omit when both HP lines present
+  - Future option: kernel-smoothed lines (aggregate over a bandwidth of nearby
+    CpGs rather than exact per-site values)
+
+  **Option B — Simple aggregate line, no haplotype (lower effort, less
+  useful).** Single line per mod type, no HP stratification. Good fallback for
+  non-phased data or bisulfite-seq. The worker already produces
+  `modCovPositions`/`modCovHeights`; only a `drawModCovLine` renderer and GPU
+  shader are needed. Can be done first as a fallback (shown when no HP tags
+  detected), then upgraded to Option A. Estimated ~2h.
+
+  **Option C — Per-read matrix with haplotype sort.** The top panel of
+  methylartist: rows = reads, columns = CpG sites, color = per-read methylation
+  probability, reads sorted HP1-above-HP2 then by methylation fingerprint. This
+  is essentially the existing per-read modification squares plus a new sort
+  mode. May already be achievable today by combining `colorBy: modifications` +
+  `sortBy: HP tag` — worth verifying before building anything. If the UX is
+  already sufficient, Option C needs only documentation.
+
+  **Recommended sequence:** B first (~2h), then A (~1d). C last or never.
+
+
+## Changing 'show/hide labels' results in rpc refetch
+
+
+**Canvas label relayout without refetch (blocked).** `showLabels` /
+`showDescriptions` flow through `rpcProps` so changing them refetches, but
+worker output doesn't depend on label placement (main thread re-derives
+via cached `rpcDataMap` view). Blocked by `ConfigOverrideMixin` reactivity
+below — destructuring label fields out of `rpcProps` doesn't help because
+mobx subscribes to the whole frozen object. *Partial mitigation via ADR-006:* refetch still fires spuriously, but
+`rawRpcDataMap` is no longer cleared during it, so labels don't visually
+disappear.
+
+
+## Check LDzip https://github.com/23andMe/LDZip
+
+
+- **Alignments typed-array refactor.** Worker return shape is flat parallel arrays. Refactor into sub-objects by group: mods, sashimi, coverage (just an idea....the flat array is simple but just long).

@@ -44,7 +44,6 @@ export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
 ]
 
 interface RegionMeta {
-  start: number
   hasRects: boolean
   hasLines: boolean
   hasArrows: boolean
@@ -73,7 +72,6 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
     }
 
     this.regions.set(displayedRegionIndex, {
-      start: data.regionStart,
       hasRects: numRects > 0,
       hasLines: numLines > 0,
       hasArrows: numArrows > 0,
@@ -145,7 +143,6 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
 
       rectShader.writeUniforms(this.uniformData, {
         bpRangeX: bpRangeXTuple(clip, block.reversed),
-        regionStart: Math.floor(meta.start),
         canvasHeight,
         canvasWidth: clip.scissorW,
         scrollY,

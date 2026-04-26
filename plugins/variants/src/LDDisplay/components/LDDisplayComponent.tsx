@@ -256,7 +256,7 @@ const LDCanvas = observer(function LDCanvas({
   model: SharedLDModel
 }) {
   const view = getContainingView(model) as LGV
-  const width = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
+  const width = view.totalWidthPxWithoutBorders
   const {
     rpcData,
     yScalar,
@@ -487,7 +487,7 @@ const LDDisplayContent = observer(function LDDisplayContent({
   model: SharedLDModel
 }) {
   const view = getContainingView(model) as LGV
-  const width = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
+  const width = view.totalWidthPxWithoutBorders
   const { height, showLDTriangle, showRecombination } = model
 
   if (!showLDTriangle && !showRecombination) {

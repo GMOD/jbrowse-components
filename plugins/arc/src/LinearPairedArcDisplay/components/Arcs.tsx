@@ -122,7 +122,7 @@ const Wrapper = observer(function Wrapper({
 }) {
   const { height } = model
   const view = getContainingView(model) as LGV
-  const width = Math.round(view.dynamicBlocks.totalWidthPx)
+  const width = view.totalWidthPx
   return exportSVG ? (
     children
   ) : (

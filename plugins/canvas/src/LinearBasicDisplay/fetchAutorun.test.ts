@@ -17,9 +17,8 @@ import stateModelFactory from './model.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-function makeEmptyFeatureData(regionStart: number): FeatureDataResult {
+function makeEmptyFeatureData(): FeatureDataResult {
   return {
-    regionStart,
     flatbushItems: [],
     subfeatureInfos: [],
     floatingLabelsData: {},
@@ -204,7 +203,7 @@ describe('FetchVisibleRegions autorun', () => {
   it('fetches regions on initial load', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 
-    mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyFeatureData())
 
     const { display, view } = createDisplay()
 
@@ -306,7 +305,7 @@ describe('FetchVisibleRegions autorun', () => {
     // Now simulate "Force Load": raise limit, clear state, reload.
     // setFeatureDensityStatsLimit triples the limit so the RPC succeeds.
     display.setFeatureDensityStatsLimit()
-    mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyFeatureData())
     display.reload()
 
     jest.advanceTimersByTime(800)
@@ -335,7 +334,7 @@ describe('FetchVisibleRegions autorun', () => {
     // Each region's RenderFeatureData call succeeds
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
       if (method === 'RenderFeatureData') {
-        return Promise.resolve(makeEmptyFeatureData(0))
+        return Promise.resolve(makeEmptyFeatureData())
       }
       return Promise.resolve({})
     })
@@ -377,7 +376,7 @@ describe('FetchVisibleRegions autorun', () => {
   it('preserves laidOutDataMap during layout refresh (soft reset)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 
-    const featureData = makeEmptyFeatureData(0)
+    const featureData = makeEmptyFeatureData()
     mockRpcCall.mockResolvedValue(featureData)
 
     const { display, view } = createDisplay()
@@ -426,7 +425,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     // Now fix the issue and retry (simulating user clicking "Retry")
-    mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyFeatureData())
     display.reload()
 
     jest.advanceTimersByTime(800)
@@ -441,7 +440,7 @@ describe('FetchVisibleRegions autorun', () => {
   it('clearAllRpcData resets state and triggers a new fetch', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 
-    mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyFeatureData())
 
     const { display } = createDisplay()
 
@@ -473,7 +472,7 @@ describe('FetchVisibleRegions autorun', () => {
 describe('SettingsInvalidate autorun', () => {
   it('triggers refetch when settings change while data is loaded', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyFeatureData())
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(800)
@@ -498,7 +497,7 @@ describe('SettingsInvalidate autorun', () => {
 
   it('keeps stale rpcDataMap visible through a settings-change refetch', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyFeatureData())
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(800)
@@ -538,7 +537,7 @@ describe('SettingsInvalidate autorun', () => {
 
   it('does not double-fetch when settings change before the initial FetchVisibleRegions fires', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyFeatureData())
     const { display } = createDisplay()
 
     // Change setting before FetchVisibleRegions fires (delay: 600ms).

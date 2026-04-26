@@ -45,8 +45,8 @@ export function drawLines(
 ) {
   const toX = bpMapper(block)
   for (let i = 0; i < region.lineYs.length; i++) {
-    const startBp = region.linePositions[i * 2]! + region.regionStart
-    const endBp = region.linePositions[i * 2 + 1]! + region.regionStart
+    const startBp = region.linePositions[i * 2]!
+    const endBp = region.linePositions[i * 2 + 1]!
     const x1 = toX(startBp)
     const x2 = toX(endBp)
     const y = Math.floor(region.lineYs[i]! - scrollY + 0.5) + 0.5
@@ -93,8 +93,8 @@ export function drawRects(
 ) {
   const toX = bpMapper(block)
   for (let i = 0; i < region.rectYs.length; i++) {
-    const startBp = region.rectPositions[i * 2]! + region.regionStart
-    const endBp = region.rectPositions[i * 2 + 1]! + region.regionStart
+    const startBp = region.rectPositions[i * 2]!
+    const endBp = region.rectPositions[i * 2 + 1]!
     const x1 = toX(startBp)
     const x2 = toX(endBp)
     const y = Math.floor(region.rectYs[i]! - scrollY + 0.5)
@@ -122,7 +122,7 @@ export function drawArrows(
 ) {
   const toX = bpMapper(block)
   for (let i = 0; i < region.arrowYs.length; i++) {
-    const xBp = region.arrowXs[i]! + region.regionStart
+    const xBp = region.arrowXs[i]!
     const cx = toX(xBp)
     const y = Math.floor(region.arrowYs[i]! - scrollY + 0.5) + 0.5
     const rawDir = region.arrowDirections[i]!

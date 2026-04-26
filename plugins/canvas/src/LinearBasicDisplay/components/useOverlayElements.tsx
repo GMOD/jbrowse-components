@@ -65,7 +65,6 @@ export function useFloatingLabels(
         continue
       }
 
-      const regionStart = data.regionStart
       const toScreen = (bp: number) =>
         bpToScreenPx(
           bp,
@@ -88,8 +87,8 @@ export function useFloatingLabels(
           continue
         }
 
-        const featureStartBp = labelData.minX + regionStart
-        const featureEndBp = labelData.maxX + regionStart
+        const featureStartBp = labelData.minX
+        const featureEndBp = labelData.maxX
 
         if (featureEndBp < vr.start || featureStartBp > vr.end) {
           continue

@@ -36,7 +36,7 @@ export async function renderSvg(
   } = cellData
 
   const { rowHeight, scrollTop, availableHeight, canDisplayLabels } = model
-  const canvasWidth = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
+  const canvasWidth = view.totalWidthPxWithoutBorders
   const colWidth = canvasWidth / numFeatures
 
   const w = Math.max(colWidth, 2)

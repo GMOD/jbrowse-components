@@ -1447,6 +1447,24 @@ export function stateModelFactory(pluginManager: PluginManager) {
         },
         /**
          * #getter
+         * Integer-rounded sum of all visible block widths. Slightly less than
+         * view.width when the genome ends before the right edge; use view.width
+         * for SVG clip rects (display boundary) and this for paint canvas sizing
+         * (actual content width).
+         */
+        get totalWidthPx(): number {
+          return Math.round(this.dynamicBlocks.totalWidthPx)
+        },
+        /**
+         * #getter
+         * Like totalWidthPx but excluding inter-region boundary blocks. Used
+         * when column layout divides the canvas width by feature count.
+         */
+        get totalWidthPxWithoutBorders(): number {
+          return Math.round(this.dynamicBlocks.totalWidthPxWithoutBorders)
+        },
+        /**
+         * #getter
          */
         get visibleBp() {
           return this.dynamicBlocks.totalBp
