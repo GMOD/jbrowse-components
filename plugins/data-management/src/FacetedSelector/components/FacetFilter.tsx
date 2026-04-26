@@ -86,7 +86,7 @@ const FacetFilter = observer(function FacetFilter({
           multiple
           native
           className={classes.select}
-          value={filters.get(column.field) || []}
+          value={filters.get(column.field) ?? []}
           onChange={event => {
             const options = (event.target as unknown as HTMLSelectElement)
               .options

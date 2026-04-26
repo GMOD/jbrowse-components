@@ -8,6 +8,7 @@ import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { computeInitialWidths } from './computeInitialWidths.ts'
+import { useSearchHighlight } from './useSearchHighlight.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel, FacetedRow } from '../facetedModel.ts'
@@ -195,17 +196,16 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
     filteredNonMetadataKeys,
     filteredMetadataKeys,
     visible,
+    filterText,
   } = faceted
 
   const [, startTransition] = useTransition()
 
   const selectedIds = useMemo(
     () =>
-      new Set(
-        useShoppingCart
-          ? selection.map(s => `${s.trackId}`)
-          : [...shownTrackIds],
-      ),
+      useShoppingCart
+        ? new Set(selection.map(s => `${s.trackId}`))
+        : shownTrackIds,
     [useShoppingCart, selection, shownTrackIds],
   )
 
@@ -225,11 +225,8 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
     [rows, filteredNonMetadataKeys, filteredMetadataKeys, visible],
   )
 
-  const [colWidths, setColWidths] =
-    useState<Record<string, number>>(initialWidths)
-  useEffect(() => {
-    setColWidths(prev => ({ ...initialWidths, ...prev }))
-  }, [initialWidths])
+  const [overrides, setOverrides] = useState<Record<string, number>>({})
+  const colWidths: Record<string, number> = { ...initialWidths, ...overrides }
 
   const onResizeStart = (colId: string, e: React.MouseEvent) => {
     e.preventDefault()
@@ -238,7 +235,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
 
     const onMouseMove = (ev: MouseEvent) => {
       const newWidth = Math.max(50, startWidth + ev.clientX - startX)
-      setColWidths(prev => ({ ...prev, [colId]: newWidth }))
+      setOverrides(prev => ({ ...prev, [colId]: newWidth }))
     }
 
     const onMouseUp = () => {
@@ -319,6 +316,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   const lastColId = visibleColumns.at(-1)?.id
 
   const parentRef = useRef<HTMLDivElement>(null)
+  useSearchHighlight(parentRef, filterText)
   const { items: virtualItems, totalSize } = useVirtualRows(
     parentRef,
     filteredRows.length,

@@ -7,7 +7,7 @@ export interface Row {
 export function getRowStr(facet: string, row: Row) {
   return `${
     (facet.startsWith('metadata.')
-      ? row.metadata?.[facet.replace('metadata.', '')]
-      : row[facet]) || ''
+      ? row.metadata?.[facet.slice('metadata.'.length)]
+      : row[facet]) ?? ''
   }`
 }

@@ -98,6 +98,16 @@ Highlight corresponding positions in both views on hover.
 
 ## UI/UX
 
+**CSS Custom Highlight API for search text.**
+`HighlightText` in `FacetedSelector` (and similar components in jbrowse-desktop)
+manually split strings and wrap matches in `<mark>` tags. The
+[CSS Custom Highlight API](https://developer.mozilla.org/en-US/docs/Web/API/Highlight)
+highlights `Range` objects without touching the DOM — no extra elements, no
+re-render on query change. jbrowse-desktop already uses this pattern. Main
+complication in the faceted selector: virtual rows mount/unmount on scroll, so
+highlight ranges must be re-registered in a scroll-aware effect.
+Firefox ≥117, Chrome ≥105, Safari ≥17.2.
+
 **Height resize**
 Double-click resize handle, drag to resize, prevent shrinking, auto-shrink
 toggle.

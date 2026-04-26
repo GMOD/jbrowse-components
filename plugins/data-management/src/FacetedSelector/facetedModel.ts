@@ -141,14 +141,6 @@ export function facetedStateTreeF() {
     .views(self => ({
       /**
        * #getter
-       */
-      get allTrackConfigurations() {
-        return self.trackConfigurations
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
        * Builds row objects from track configs. Cached and only recomputes when
        * track configurations change, not on every filterText keystroke.
        */
@@ -157,7 +149,7 @@ export function facetedStateTreeF() {
         if (!session) {
           return []
         }
-        return self.allTrackConfigurations.map(
+        return self.trackConfigurations.map(
           track =>
             ({
               id: track.trackId as string,
