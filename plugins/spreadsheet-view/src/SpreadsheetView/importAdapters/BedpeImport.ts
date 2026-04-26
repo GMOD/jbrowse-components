@@ -63,7 +63,7 @@ export function parseBedPEBuffer(buffer: Uint8Array) {
             mateStart: cols[4],
             mateEnd: cols[5],
             name: cols[6],
-            score: isNumber(cols[7]) ? +cols[7]! : cols[7],
+            score: isNumber(cols[7]) ? +cols[7] : cols[7],
             strand: cols[8],
             mateStrand: cols[9],
             ...extra,

@@ -14,16 +14,15 @@ import { Button, IconButton, Paper, TextField } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
-
 import {
   buildAdapterPayload,
   canSubmit,
   itemToName,
   makeTrackId,
   parseItems,
-} from './util'
+} from './util.ts'
 
-import type { TrackItem } from './util'
+import type { TrackItem } from './util.ts'
 import type { AddTrackModel } from '@jbrowse/plugin-data-management'
 import type { GridRowSelectionModel } from '@mui/x-data-grid'
 

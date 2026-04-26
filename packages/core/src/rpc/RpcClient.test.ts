@@ -44,6 +44,7 @@ function replyError(worker: FakeWorker, uid: string, message: string) {
 describe('RpcClient.call()', () => {
   test('sends correct postMessage format', () => {
     const { worker, client } = makeClient()
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     client.call('CoreGetFeatures', { regions: [] })
     expect(worker.sent[0]).toMatchObject({
       method: 'CoreGetFeatures',
@@ -55,7 +56,9 @@ describe('RpcClient.call()', () => {
 
   test('uids increment per call', () => {
     const { worker, client } = makeClient()
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     client.call('m1', {})
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     client.call('m2', {})
     expect((worker.sent[0] as any).uid).toBe('1')
     expect((worker.sent[1] as any).uid).toBe('2')
@@ -77,6 +80,7 @@ describe('RpcClient.call()', () => {
 
   test('ignores messages without libRpc flag', async () => {
     const { worker, client } = makeClient()
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     client.call('m', {})
     worker.dispatchEvent(
       new MessageEvent('message', {
@@ -124,6 +128,7 @@ describe('RpcClient pending map', () => {
 
   test('stale uid in response is a no-op', () => {
     const { worker, client } = makeClient()
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     client.call('m', {})
     reply(worker, '999', 'phantom') // uid that was never sent
     expect(client.pending.size).toBe(1)
