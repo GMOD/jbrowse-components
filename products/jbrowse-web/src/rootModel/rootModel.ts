@@ -50,6 +50,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { IAnyType, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
+import type { WebRootModelInterface } from '@jbrowse/web-core'
 import type { IDBPDatabase } from 'idb'
 
 // lazies
@@ -746,3 +747,10 @@ export default function RootModel({
 
 export type WebRootModelType = ReturnType<typeof RootModel>
 export type WebRootModel = Instance<WebRootModelType>
+
+// Verify WebRootModel satisfies WebRootModelInterface at compile time.
+// If this errors, the root model is missing something BaseWebSession expects.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _checkWebRootModel(m: WebRootModel): WebRootModelInterface {
+  return m
+}

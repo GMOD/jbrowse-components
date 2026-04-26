@@ -37,6 +37,7 @@ import { autorun } from 'mobx'
 
 import { WebSessionConnectionsMixin } from '../SessionConnections.ts'
 
+import type { WebRootModelInterface } from '../WebRootModel.ts'
 import type { Menu } from '@jbrowse/app-core'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -137,8 +138,8 @@ export function BaseWebSession({
       /**
        * #getter
        */
-      get root() {
-        return getParent<any>(self)
+      get root(): WebRootModelInterface {
+        return getParent<WebRootModelInterface>(self)
       },
       /**
        * #getter
@@ -286,7 +287,7 @@ export function BaseWebSession({
        * #action
        */
       renameCurrentSession(sessionName: string) {
-        return self.root.renameCurrentSession(sessionName)
+        self.root.renameCurrentSession(sessionName)
       },
 
       /**
@@ -300,14 +301,14 @@ export function BaseWebSession({
        * #action
        */
       setDefaultSession() {
-        return self.root.setDefaultSession()
+        self.root.setDefaultSession()
       },
 
       /**
        * #action
        */
       setSession(sessionSnapshot: SnapshotIn<typeof self>) {
-        return self.root.setSession(sessionSnapshot)
+        self.root.setSession(sessionSnapshot)
       },
     }))
     .actions(self => ({
