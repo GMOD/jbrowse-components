@@ -3,7 +3,7 @@ import {
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
-import { cachedAbgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
 import { drawVariantShape } from './variantShape.ts'
 
@@ -77,7 +77,7 @@ export function drawVariantBlocks(
 
       const color = region.cellColors[i]!
       if (color !== prevColor) {
-        ctx.fillStyle = cachedAbgrToCssRgba(color)
+        ctx.fillStyle = abgrToCssRgba(color)
         prevColor = color
       }
       drawVariantShape(ctx, region.cellShapeTypes[i]!, x1, y, w, rowHeight)
