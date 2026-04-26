@@ -1,11 +1,3 @@
-import {
-  CIGAR_D,
-  CIGAR_EQ,
-  CIGAR_I,
-  CIGAR_M,
-  CIGAR_N,
-  CIGAR_X,
-} from '@jbrowse/alignments-core'
 import { category10 } from '@jbrowse/core/ui/colors'
 import {
   alpha as setAlpha,
@@ -14,10 +6,6 @@ import {
 } from '@jbrowse/core/util/colorBits'
 
 import type { SyriType } from '@jbrowse/plugin-comparative-adapters'
-
-export const lineLimit = 3
-
-export const oobLimit = 1600
 
 export function hashString(str: string) {
   let hash = 0
@@ -81,15 +69,6 @@ export const colorSchemes = {
 }
 
 export type ColorScheme = keyof typeof colorSchemes
-
-export const OP_TO_CIGAR_KEY: Record<number, string> = {
-  [CIGAR_M]: 'M',
-  [CIGAR_I]: 'I',
-  [CIGAR_D]: 'D',
-  [CIGAR_N]: 'N',
-  [CIGAR_EQ]: '=',
-  [CIGAR_X]: 'X',
-}
 
 export function applyAlpha(color: string, a: number) {
   if (a === 1) {

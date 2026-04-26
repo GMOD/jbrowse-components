@@ -269,6 +269,8 @@ export async function executeSyntenyFeaturesAndPositions({
   const v1Offset = v1.offsetPx
   const v2Offset = v2.offsetPx
   const bufferPx = viewWidth * 0.5
+  const offScreenLeftBound = -bufferPx
+  const offScreenRightBound = viewWidth + bufferPx
 
   const v1RefNames = v1Index.entries
   const v2RefNames = v2Index.entries
@@ -295,12 +297,8 @@ export async function executeSyntenyFeaturesAndPositions({
     const strand = f.get('strand') as number
     const start = f.get('start') as number
     const end = f.get('end') as number
-
-    let f1s = start
-    let f1e = end
-    if (strand === -1) {
-      ;[f1e, f1s] = [f1s, f1e]
-    }
+    const f1s = strand === -1 ? end : start
+    const f1e = strand === -1 ? start : end
 
     const p11 = bpToPxFromIndex(v1Index, refName, f1s)
     const p12 = bpToPxFromIndex(v1Index, refName, f1e)
@@ -323,8 +321,10 @@ export async function executeSyntenyFeaturesAndPositions({
     const botMinX = Math.min(p21.offsetPx, p22.offsetPx) - v2Offset
     const botMaxX = Math.max(p21.offsetPx, p22.offsetPx) - v2Offset
 
-    const topOffScreen = topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
-    const botOffScreen = botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
+    const topOffScreen =
+      topMaxX < offScreenLeftBound || topMinX > offScreenRightBound
+    const botOffScreen =
+      botMaxX < offScreenLeftBound || botMinX > offScreenRightBound
 
     if (topOffScreen && botOffScreen) {
       continue
@@ -385,8 +385,6 @@ export async function executeSyntenyFeaturesAndPositions({
   // the display model recomputes `colors` on colorBy change. SyRI types
   // are likewise computed on the main thread when needed.
 
-  const v0 = viewSnaps[level]!
-  const v1Snap = viewSnaps[level + 1]!
   const instanceData = await updateStatus(
     'Computing synteny layout',
     statusCallback,
@@ -397,11 +395,11 @@ export async function executeSyntenyFeaturesAndPositions({
         drawCIGAR,
         drawCIGARMatchesOnly,
         drawLocationMarkers,
-        bpPerPx0: v0.bpPerPx,
-        bpPerPx1: v1Snap.bpPerPx,
-        viewOff0: v0.offsetPx,
-        viewOff1: v1Snap.offsetPx,
-        viewWidth: viewSnaps[0]!.width,
+        bpPerPx0: v1.bpPerPx,
+        bpPerPx1: v2.bpPerPx,
+        viewOff0: v1.offsetPx,
+        viewOff1: v2.offsetPx,
+        viewWidth,
       }),
   )
   const result = {

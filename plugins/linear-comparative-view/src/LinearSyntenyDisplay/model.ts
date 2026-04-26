@@ -321,27 +321,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return cache.get(queryName)!
         }
       },
-      /**
-       * #getter
-       */
-      get queryTotalLengths() {
-        const { featureData } = self
-        if (self.minAlignmentLength <= 0 || !featureData) {
-          return undefined
-        }
-        const lengths = new Map<string, number>()
-        for (let i = 0; i < featureData.featureIds.length; i++) {
-          const name = featureData.names[i]!
-          if (name !== '') {
-            const alignmentLength = Math.abs(
-              featureData.ends[i]! - featureData.starts[i]!,
-            )
-            const currentTotal = lengths.get(name) ?? 0
-            lengths.set(name, currentTotal + alignmentLength)
-          }
-        }
-        return lengths
-      },
       getFeature(index: number) {
         if (!self.featureData) {
           return undefined
