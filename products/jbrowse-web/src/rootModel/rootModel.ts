@@ -389,11 +389,7 @@ export default function RootModel({
         if (self.sessionDB) {
           const ret = self.savedSessionMetadata?.find(f => f.id === id)
           if (ret) {
-            await self.sessionDB.put(
-              'metadata',
-              { ...ret, favorite },
-              ret.id,
-            )
+            await self.sessionDB.put('metadata', { ...ret, favorite }, ret.id)
             await self.fetchSessionMetadata()
           }
         }

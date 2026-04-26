@@ -71,7 +71,8 @@ function validateAndExtractParams({
     return { isValid: false, error: 'Invalid admin key' }
   }
 
-  const configPathParam = body?.configPath || (req.query.config as string | undefined)
+  const configPathParam =
+    body?.configPath || (req.query.config as string | undefined)
 
   try {
     const configPath = configPathParam

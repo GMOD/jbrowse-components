@@ -8,8 +8,8 @@ import {
   loadOrCreateConfig,
   resolveTargetPath,
 } from './utils.ts'
-import { saveConfigAndReport } from '../shared/config-operations.ts'
 import { debug, printHelp } from '../../utils.ts'
+import { saveConfigAndReport } from '../shared/config-operations.ts'
 
 export async function run(args?: string[]) {
   const options = {
@@ -146,12 +146,19 @@ export async function run(args?: string[]) {
 
   const argsSequence = positionals[0] || ''
   const output = runFlags.target || runFlags.out || '.'
-  const flags = { ...runFlags, type: isSequenceType(runFlags.type) ? runFlags.type : undefined }
+  const flags = {
+    ...runFlags,
+    type: isSequenceType(runFlags.type) ? runFlags.type : undefined,
+  }
 
   debug(`Sequence location is: ${argsSequence}`)
 
   const target = await resolveTargetPath(output)
-  const baseAssembly = await getAssembly({ runFlags: flags, argsSequence, target })
+  const baseAssembly = await getAssembly({
+    runFlags: flags,
+    argsSequence,
+    target,
+  })
   const assembly = await enhanceAssembly(baseAssembly, flags)
 
   const configContents = await loadOrCreateConfig(target)

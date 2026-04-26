@@ -12,12 +12,23 @@ import { findAndUpdateOrAdd } from '../shared/config-operations.ts'
 
 import type { Assembly, Config, Sequence } from '../../base.ts'
 
-export type SequenceType = 'indexedFasta' | 'bgzipFasta' | 'twoBit' | 'chromSizes' | 'custom'
+export type SequenceType =
+  | 'indexedFasta'
+  | 'bgzipFasta'
+  | 'twoBit'
+  | 'chromSizes'
+  | 'custom'
 
-const sequenceTypes: SequenceType[] = ['indexedFasta', 'bgzipFasta', 'twoBit', 'chromSizes', 'custom']
+const sequenceTypes = new Set<SequenceType>([
+  'indexedFasta',
+  'bgzipFasta',
+  'twoBit',
+  'chromSizes',
+  'custom',
+])
 
 export function isSequenceType(t: string | undefined): t is SequenceType {
-  return sequenceTypes.includes(t as SequenceType)
+  return sequenceTypes.has(t as SequenceType)
 }
 
 interface AssemblyFlags {
@@ -125,9 +136,21 @@ export async function loadData({
   return false
 }
 
-async function maybeLoad(locs: [string, string], load: string | undefined, target: string): Promise<[string, string]>
-async function maybeLoad(locs: [string, string, string], load: string | undefined, target: string): Promise<[string, string, string]>
-async function maybeLoad(locs: string[], load: string | undefined, target: string): Promise<string[]> {
+async function maybeLoad(
+  locs: [string, string],
+  load: string | undefined,
+  target: string,
+): Promise<[string, string]>
+async function maybeLoad(
+  locs: [string, string, string],
+  load: string | undefined,
+  target: string,
+): Promise<[string, string, string]>
+async function maybeLoad(
+  locs: string[],
+  load: string | undefined,
+  target: string,
+): Promise<string[]> {
   if (!load) {
     return locs
   }
@@ -135,7 +158,11 @@ async function maybeLoad(locs: string[], load: string | undefined, target: strin
   return loaded ? locs.map(p => path.basename(p)) : locs
 }
 
-async function maybeLoadOne(loc: string, load: string | undefined, target: string): Promise<string> {
+async function maybeLoadOne(
+  loc: string,
+  load: string | undefined,
+  target: string,
+): Promise<string> {
   if (!load) {
     return loc
   }
@@ -190,7 +217,10 @@ export async function getAssembly({
       )
       debug(`FASTA: ${seqLoc}, index: ${idxLoc}`)
       if (!name) {
-        name = path.basename(seqLoc, seqLoc.endsWith('.fasta') ? '.fasta' : '.fa')
+        name = path.basename(
+          seqLoc,
+          seqLoc.endsWith('.fasta') ? '.fasta' : '.fa',
+        )
         debug(`Guessing name: ${name}`)
       }
       ;[seqLoc, idxLoc] = await maybeLoad([seqLoc, idxLoc], load, target)
@@ -219,10 +249,17 @@ export async function getAssembly({
       )
       debug(`bgzipFASTA: ${seqLoc}, fai: ${idxLoc}, gzi: ${gziLoc}`)
       if (!name) {
-        name = path.basename(seqLoc, seqLoc.endsWith('.fasta.gz') ? '.fasta.gz' : '.fa.gz')
+        name = path.basename(
+          seqLoc,
+          seqLoc.endsWith('.fasta.gz') ? '.fasta.gz' : '.fa.gz',
+        )
         debug(`Guessing name: ${name}`)
       }
-      ;[seqLoc, idxLoc, gziLoc] = await maybeLoad([seqLoc, idxLoc, gziLoc], load, target)
+      ;[seqLoc, idxLoc, gziLoc] = await maybeLoad(
+        [seqLoc, idxLoc, gziLoc],
+        load,
+        target,
+      )
       sequence = {
         type: 'ReferenceSequenceTrack',
         trackId: `${name}-ReferenceSequenceTrack`,
@@ -321,7 +358,9 @@ export async function resolveTargetPath(output: string): Promise<string> {
 
 async function resolveRefNameAliasAdapter(runFlags: AssemblyFlags) {
   if (runFlags.refNameAliasesType === 'custom') {
-    const config = await readInlineOrFileJson<{ type: string }>(runFlags.refNameAliases!)
+    const config = await readInlineOrFileJson<{ type: string }>(
+      runFlags.refNameAliases!,
+    )
     if (!config.type) {
       throw new Error(
         `No "type" specified in refNameAliases adapter "${JSON.stringify(config)}"`,
@@ -336,7 +375,10 @@ async function resolveRefNameAliasAdapter(runFlags: AssemblyFlags) {
     runFlags.load === 'inPlace',
   )
   debug(`refName aliases file location resolved to: ${location}`)
-  return { type: 'RefNameAliasAdapter', location: { uri: location, locationType: 'UriLocation' } }
+  return {
+    type: 'RefNameAliasAdapter',
+    location: { uri: location, locationType: 'UriLocation' },
+  }
 }
 
 export async function enhanceAssembly(
@@ -406,4 +448,3 @@ export async function addAssemblyToConfig({
     wasOverwritten,
   }
 }
-

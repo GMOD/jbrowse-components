@@ -1,8 +1,6 @@
 import { spawn } from 'child_process'
 import path from 'path'
 
-import type { ChildProcess } from 'child_process'
-
 import {
   extractLargeIndels,
   flipCigar,
@@ -143,19 +141,29 @@ async function writePairAlignments(
     const cigarField = rest.find(f => f.startsWith('cg:Z:'))
     const summaryRest = stripDetailFromRest(rest)
     if (cigarField) {
-      const indelTag = extractLargeIndels(cigarField.slice(5), minSummaryIndel, +s2!, +s1!)
+      const indelTag = extractLargeIndels(
+        cigarField.slice(5),
+        minSummaryIndel,
+        +s2!,
+        +s1!,
+      )
       if (indelTag) {
         summaryRest.push(indelTag)
       }
     }
 
-    await write(`${[`t${prefix}${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest, typeTag].join('\t')}\n`)
-    await write(`${[`st${prefix}${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...summaryRest, typeTag].join('\t')}\n`)
+    await write(
+      `${[`t${prefix}${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest, typeTag].join('\t')}\n`,
+    )
+    await write(
+      `${[`st${prefix}${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...summaryRest, typeTag].join('\t')}\n`,
+    )
 
     const cigarIdx = rest.findIndex(f => f.startsWith('cg:Z:'))
     const CIGAR = rest[cigarIdx]
     if (CIGAR) {
-      rest[cigarIdx] = `cg:Z:${strand === '-' ? flipCigar(parseCigar(CIGAR.slice(5))).join('') : swapIndelCigar(CIGAR.slice(5))}`
+      rest[cigarIdx] =
+        `cg:Z:${strand === '-' ? flipCigar(parseCigar(CIGAR.slice(5))).join('') : swapIndelCigar(CIGAR.slice(5))}`
     }
 
     const csIdx = rest.findIndex(f => f.startsWith('cs:Z:'))
@@ -167,22 +175,38 @@ async function writePairAlignments(
     if (cigarField) {
       const qCigarStr = rest[cigarIdx]
       if (qCigarStr) {
-        const qIndelTag = extractLargeIndels(qCigarStr.slice(5), minSummaryIndel, +s1!, +s2!)
+        const qIndelTag = extractLargeIndels(
+          qCigarStr.slice(5),
+          minSummaryIndel,
+          +s1!,
+          +s2!,
+        )
         if (qIndelTag) {
           qSummaryRest.push(qIndelTag)
         }
       }
     }
 
-    await write(`${[`q${prefix}${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest, typeTag].join('\t')}\n`)
-    await write(`${[`sq${prefix}${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...qSummaryRest, typeTag].join('\t')}\n`)
+    await write(
+      `${[`q${prefix}${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest, typeTag].join('\t')}\n`,
+    )
+    await write(
+      `${[`sq${prefix}${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...qSummaryRest, typeTag].join('\t')}\n`,
+    )
   }
 
   if (mergeGap > 0) {
-    const blocks = mergeIntoStructuralBlocks(allSubAlignments.map(sa => sa.record), mergeGap)
+    const blocks = mergeIntoStructuralBlocks(
+      allSubAlignments.map(sa => sa.record),
+      mergeGap,
+    )
     for (const b of blocks) {
-      await write(`${[`xt${prefix}${b.tname}`, b.tlen, b.tstart, b.tend, b.strand, b.qname, b.qlen, b.qstart, b.qend, b.syriType, b.meanIdentity.toFixed(4)].join('\t')}\n`)
-      await write(`${[`xq${prefix}${b.qname}`, b.qlen, b.qstart, b.qend, b.strand, b.tname, b.tlen, b.tstart, b.tend, b.syriType, b.meanIdentity.toFixed(4)].join('\t')}\n`)
+      await write(
+        `${[`xt${prefix}${b.tname}`, b.tlen, b.tstart, b.tend, b.strand, b.qname, b.qlen, b.qstart, b.qend, b.syriType, b.meanIdentity.toFixed(4)].join('\t')}\n`,
+      )
+      await write(
+        `${[`xq${prefix}${b.qname}`, b.qlen, b.qstart, b.qend, b.strand, b.tname, b.tlen, b.tstart, b.tend, b.syriType, b.meanIdentity.toFixed(4)].join('\t')}\n`,
+      )
     }
   }
 }
@@ -237,7 +261,13 @@ export async function createMultiPairPIF(
       await write(`#pair${p}=${pairData[p]!.assemblyNames.join(',')}\n`)
     }
     for (let p = 0; p < pairData.length; p++) {
-      await writePairAlignments(pairData[p]!.lines, write, splitThreshold, mergeGap, `${p}`)
+      await writePairAlignments(
+        pairData[p]!.lines,
+        write,
+        splitThreshold,
+        mergeGap,
+        `${p}`,
+      )
     }
   } catch (error) {
     console.error('Error processing multi-pair records:', error)
@@ -266,4 +296,3 @@ export function getOutputFilename(
 ): string {
   return out || `${path.basename(file || 'output', '.paf')}.pif.gz`
 }
-

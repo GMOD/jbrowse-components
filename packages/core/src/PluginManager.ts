@@ -128,7 +128,9 @@ export default class PluginManager {
 
   adapterTypes = new TypeRecord<AdapterType>('AdapterType')
 
-  textSearchAdapterTypes = new TypeRecord<TextSearchAdapterType>('TextSearchAdapterType')
+  textSearchAdapterTypes = new TypeRecord<TextSearchAdapterType>(
+    'TextSearchAdapterType',
+  )
 
   trackTypes = new TypeRecord<TrackType>('TrackType')
 
@@ -144,7 +146,9 @@ export default class PluginManager {
 
   addTrackWidgets = new TypeRecord<AddTrackWorkflowType>('AddTrackWorkflow')
 
-  internetAccountTypes = new TypeRecord<InternetAccountType>('InternetAccountType')
+  internetAccountTypes = new TypeRecord<InternetAccountType>(
+    'InternetAccountType',
+  )
 
   configured = false
 
@@ -181,7 +185,10 @@ export default class PluginManager {
     const configurationSchemas: Record<string, unknown> = {}
     for (const plugin of this.plugins) {
       if (plugin.configurationSchemaUnnamespaced) {
-        Object.assign(configurationSchemas, plugin.configurationSchemaUnnamespaced)
+        Object.assign(
+          configurationSchemas,
+          plugin.configurationSchemaUnnamespaced,
+        )
       }
     }
     return configurationSchemas
@@ -191,7 +198,10 @@ export default class PluginManager {
     const configurationSchemas: Record<string, unknown> = {}
     for (const plugin of this.plugins) {
       if (plugin.rootConfigurationSchema) {
-        Object.assign(configurationSchemas, plugin.rootConfigurationSchema(this))
+        Object.assign(
+          configurationSchemas,
+          plugin.rootConfigurationSchema(this),
+        )
       }
     }
     return configurationSchemas

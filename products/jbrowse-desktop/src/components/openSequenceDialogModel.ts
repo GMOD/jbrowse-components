@@ -28,16 +28,16 @@ function OpenSequenceDialogModelF() {
   return types
     .model('OpenSequenceDialogModel')
     .volatile(() => ({
-      adapterSelection: adapterTypes[0] as AdapterType,
+      adapterSelection: adapterTypes[0]!,
       assemblyName: '',
       assemblyDisplayName: '',
-      fastaLocation: blank as FileLocation,
-      faiLocation: blank as FileLocation,
-      gziLocation: blank as FileLocation,
-      twoBitLocation: blank as FileLocation,
-      chromSizesLocation: blank as FileLocation,
-      refNameAliasesLocation: blank as FileLocation,
-      cytobandsLocation: blank as FileLocation,
+      fastaLocation: blank,
+      faiLocation: blank,
+      gziLocation: blank,
+      twoBitLocation: blank,
+      chromSizesLocation: blank,
+      refNameAliasesLocation: blank,
+      cytobandsLocation: blank,
     }))
     .actions(self => ({
       setAdapterSelection(type: AdapterType) {

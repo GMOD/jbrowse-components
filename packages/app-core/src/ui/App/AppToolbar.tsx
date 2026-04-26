@@ -5,8 +5,8 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Toolbar, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import type { AppSession } from './types.ts'
 import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
-import type { AppSession, Menu } from './types.ts'
 
 const useStyles = makeStyles()(theme => ({
   grow: {

@@ -212,7 +212,12 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
 }) {
   const { classes } = useStyles()
   const [form] = useState(() => createOpenSequenceDialogModel())
-  useEffect(() => () => destroyOpenSequenceDialogModel(form), [form])
+  useEffect(
+    () => () => {
+      destroyOpenSequenceDialogModel(form)
+    },
+    [form],
+  )
 
   type AssemblyConf = Awaited<ReturnType<typeof createAssemblyConfig>>
 

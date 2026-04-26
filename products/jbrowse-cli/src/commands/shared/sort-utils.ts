@@ -1,5 +1,5 @@
-import { parseArgs } from 'util'
 import { spawn } from 'child_process'
+import { parseArgs } from 'util'
 
 import tmp from 'tmp'
 

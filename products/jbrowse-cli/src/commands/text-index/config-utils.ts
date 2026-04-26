@@ -81,7 +81,7 @@ export function getAssemblyNames(
   const asms = assemblies
     ? parseCommaSeparatedString(assemblies)
     : (config.assemblies?.map(a => a.name) ??
-        (config.assembly ? [config.assembly.name] : []))
+      (config.assembly ? [config.assembly.name] : []))
 
   if (!asms.length) {
     throw new Error('No assemblies found')

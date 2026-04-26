@@ -14,12 +14,12 @@ import { observer } from 'mobx-react'
 import { useDockview } from './DockviewContext.tsx'
 import { renameIds } from './copyView.ts'
 import {
-  isSessionWithDockviewLayout,
   type SessionWithDockviewLayout,
+  isSessionWithDockviewLayout,
 } from '../../DockviewLayout/index.ts'
-import type { SessionWithMultipleViews } from '@jbrowse/product-core'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+import type { SessionWithMultipleViews } from '@jbrowse/product-core'
 import type { SvgIconProps } from '@mui/material'
 
 type ViewMenuSession = SessionWithMultipleViews & SessionWithDockviewLayout

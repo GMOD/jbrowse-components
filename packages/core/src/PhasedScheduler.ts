@@ -36,7 +36,10 @@ export default class PhasedScheduler<PhaseName extends string> {
     }
     this.phaseCallbacks.clear()
     if (errors.length) {
-      throw new AggregateError(errors, 'Errors during pluggable element creation')
+      throw new AggregateError(
+        errors,
+        'Errors during pluggable element creation',
+      )
     }
   }
 }

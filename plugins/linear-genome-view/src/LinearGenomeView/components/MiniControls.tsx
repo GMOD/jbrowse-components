@@ -31,8 +31,15 @@ const MiniControls = observer(function MiniControls({
   model: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const { id, bpPerPx, maxBpPerPx, minBpPerPx, hideHeader, scalebarOnly, effectiveBpPerPx } =
-    model
+  const {
+    id,
+    bpPerPx,
+    maxBpPerPx,
+    minBpPerPx,
+    hideHeader,
+    scalebarOnly,
+    effectiveBpPerPx,
+  } = model
   const { focusedViewId } = getSession(model)
   return (
     <Paper className={classes.background}>
