@@ -209,10 +209,6 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
 }) {
   const { classes } = useStyles()
   const [form] = useState(() => createOpenSequenceDialogModel())
-
-  type AssemblyConf = Awaited<ReturnType<typeof createAssemblyConfig>>
-
-  const [assemblyConfs, setAssemblyConfs] = useState<AssemblyConf[]>([])
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
@@ -243,6 +239,10 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
       },
     }
   }
+
+  const [assemblyConfs, setAssemblyConfs] = useState<
+    Awaited<ReturnType<typeof createAssemblyConfig>>[]
+  >([])
 
   return (
     <Dialog
@@ -344,8 +344,9 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
           Add another assembly
         </Button>
         <Button
-          onClick={async () => {
-            await onClose()
+          onClick={() => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            onClose()
           }}
           color="secondary"
           variant="contained"
