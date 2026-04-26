@@ -119,6 +119,10 @@ export function getBaseAssemblyConfig(state: FormState) {
   }
 }
 
+export type AssemblyConf = ReturnType<typeof getBaseAssemblyConfig> & {
+  sequence: { type: 'ReferenceSequenceTrack'; trackId: string; adapter: object }
+}
+
 export function isBlank(location: FileLocation) {
   return 'uri' in location && location.uri === ''
 }
