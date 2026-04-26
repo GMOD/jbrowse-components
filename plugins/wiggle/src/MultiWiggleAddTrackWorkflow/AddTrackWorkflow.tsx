@@ -13,7 +13,15 @@ import { Button, IconButton, Paper, TextField } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
-import { buildAdapterPayload, itemToName, parseItems } from './util'
+import { SanitizedHTML } from '@jbrowse/core/ui'
+
+import {
+  buildAdapterPayload,
+  canSubmit,
+  itemToName,
+  makeTrackId,
+  parseItems,
+} from './util'
 
 import type { TrackItem } from './util'
 import type { AddTrackModel } from '@jbrowse/plugin-data-management'
@@ -61,7 +69,7 @@ function doSubmit({
   model: AddTrackModel
 }) {
   const session = getSession(model)
-  const trackId = `${trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}${session.adminMode ? '' : '-sessionTrack'}`
+  const trackId = makeTrackId(trackName, !!session.adminMode)
 
   if (isSessionWithAddTracks(session)) {
     session.addTrackConf({
@@ -140,6 +148,7 @@ const MultiWiggleAddTrackWorkflow = observer(
                   source: file.name,
                 })),
               )
+              target.value = ''
             }}
           />
         </Button>
@@ -204,7 +213,7 @@ const MultiWiggleAddTrackWorkflow = observer(
         <Button
           variant="contained"
           className={classes.submit}
-          disabled={!tracks.length}
+          disabled={!canSubmit({ tracks, trackName, assembly: model.assembly })}
           onClick={() => {
             doSubmit({ trackName, tracks, model })
           }}

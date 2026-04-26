@@ -1,6 +1,8 @@
 import {
   buildAdapterPayload,
+  canSubmit,
   itemToName,
+  makeTrackId,
   parseItems,
   urlToSubadapter,
 } from './util.ts'
@@ -43,6 +45,38 @@ describe('itemToName', () => {
 
   it('falls back to "unnamed" when neither present', () => {
     expect(itemToName({})).toBe('unnamed')
+  })
+})
+
+describe('makeTrackId', () => {
+  it('lowercases, trims, and underscores spaces', () => {
+    expect(makeTrackId('  My Track  ', true)).toMatch(/^my_track-\d+$/)
+  })
+
+  it('appends -sessionTrack when not in admin mode', () => {
+    expect(makeTrackId('x', false)).toMatch(/^x-\d+-sessionTrack$/)
+  })
+})
+
+describe('canSubmit', () => {
+  const tracks = [{}]
+
+  it('requires at least one track', () => {
+    expect(canSubmit({ tracks: [], trackName: 'n', assembly: 'a' })).toBe(false)
+  })
+
+  it('requires a non-blank track name', () => {
+    expect(canSubmit({ tracks, trackName: '   ', assembly: 'a' })).toBe(false)
+  })
+
+  it('requires an assembly', () => {
+    expect(canSubmit({ tracks, trackName: 'n', assembly: undefined })).toBe(
+      false,
+    )
+  })
+
+  it('passes when all conditions are met', () => {
+    expect(canSubmit({ tracks, trackName: 'n', assembly: 'a' })).toBe(true)
   })
 })
 
