@@ -39,6 +39,10 @@ export type HitTestResult =
     }
   | { type: 'none' }
 
+// Above ~50kbp visible region (2000px / 50000bp = 25), per-base detail is
+// too zoomed out to be meaningful.
+export const SNP_HIT_MAX_BP_PER_PX = 25
+
 export interface HitTestOptions {
   showCoverage: boolean
   showInterbaseIndicators: boolean
@@ -48,6 +52,7 @@ export interface HitTestOptions {
   featureSpacing: number
   rangeY: [number, number]
   isChainMode: boolean
+  bpPerPx: number
 }
 
 export function performHitTest(
@@ -65,30 +70,35 @@ export function performHitTest(
     featureSpacing,
     rangeY,
     isChainMode,
+    bpPerPx,
   } = options
 
-  // Indicator hits (triangles at top of coverage)
-  const indicatorHit = hitTestIndicatorFn(
-    canvasX,
-    canvasY,
-    resolved,
-    showCoverage,
-    showInterbaseIndicators,
-  )
-  if (indicatorHit && resolved) {
-    return { type: 'indicator', hit: indicatorHit, resolved }
-  }
+  const detailedHitsEnabled = bpPerPx <= SNP_HIT_MAX_BP_PER_PX
 
-  // Coverage area hits
-  const coverageHit = hitTestCoverageFn(
-    canvasX,
-    canvasY,
-    resolved,
-    showCoverage,
-    coverageHeight,
-  )
-  if (coverageHit && resolved) {
-    return { type: 'coverage', hit: coverageHit, resolved }
+  if (detailedHitsEnabled) {
+    // Indicator hits (triangles at top of coverage)
+    const indicatorHit = hitTestIndicatorFn(
+      canvasX,
+      canvasY,
+      resolved,
+      showCoverage,
+      showInterbaseIndicators,
+    )
+    if (indicatorHit && resolved) {
+      return { type: 'indicator', hit: indicatorHit, resolved }
+    }
+
+    // Coverage area hits
+    const coverageHit = hitTestCoverageFn(
+      canvasX,
+      canvasY,
+      resolved,
+      showCoverage,
+      coverageHeight,
+    )
+    if (coverageHit && resolved) {
+      return { type: 'coverage', hit: coverageHit, resolved }
+    }
   }
 
   // CIGAR item hits (on top of reads)
@@ -104,49 +114,51 @@ export function performHitTest(
       )
     : undefined
 
-  // Modification hit testing before CIGAR: in modification mode a modified+
-  // mismatched base should resolve as a modification hit, not a mismatch hit.
-  // When not in modification mode modFlatbush is undefined so this is a no-op.
-  const modificationHit =
-    resolved && coords
-      ? hitTestModificationFn(resolved, coords, featureHeightSetting)
-      : undefined
-  if (modificationHit && resolved && coords) {
-    return {
-      type: 'modification',
-      hit: modificationHit,
-      featureHit: hitTestFeatureFn(
-        canvasX,
-        canvasY,
-        resolved,
-        coords,
-        featureHeightSetting,
-      ),
-      cigarHit: hitTestCigarItemFn(resolved, coords, featureHeightSetting),
-      resolved,
-    }
-  }
-
-  const cigarHit =
-    resolved && coords
-      ? hitTestCigarItemFn(resolved, coords, featureHeightSetting)
-      : undefined
-  if (cigarHit && resolved) {
-    // Also get the feature hit for the underlying read
-    const featureHit = coords
-      ? hitTestFeatureFn(
+  if (detailedHitsEnabled) {
+    // Modification hit testing before CIGAR: in modification mode a modified+
+    // mismatched base should resolve as a modification hit, not a mismatch hit.
+    // When not in modification mode modFlatbush is undefined so this is a no-op.
+    const modificationHit =
+      resolved && coords
+        ? hitTestModificationFn(resolved, coords, featureHeightSetting)
+        : undefined
+    if (modificationHit && resolved && coords) {
+      return {
+        type: 'modification',
+        hit: modificationHit,
+        featureHit: hitTestFeatureFn(
           canvasX,
           canvasY,
           resolved,
           coords,
           featureHeightSetting,
-        )
-      : undefined
-    return {
-      type: 'cigar',
-      hit: cigarHit,
-      featureHit,
-      resolved,
+        ),
+        cigarHit: hitTestCigarItemFn(resolved, coords, featureHeightSetting),
+        resolved,
+      }
+    }
+
+    const cigarHit =
+      resolved && coords
+        ? hitTestCigarItemFn(resolved, coords, featureHeightSetting)
+        : undefined
+    if (cigarHit && resolved) {
+      // Also get the feature hit for the underlying read
+      const featureHit = coords
+        ? hitTestFeatureFn(
+            canvasX,
+            canvasY,
+            resolved,
+            coords,
+            featureHeightSetting,
+          )
+        : undefined
+      return {
+        type: 'cigar',
+        hit: cigarHit,
+        featureHit,
+        resolved,
+      }
     }
   }
 

@@ -234,6 +234,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         featureSpacing,
         rangeY: model.currentRangeY,
         isChainMode,
+        bpPerPx: view.bpPerPx,
       }),
     }
   }
