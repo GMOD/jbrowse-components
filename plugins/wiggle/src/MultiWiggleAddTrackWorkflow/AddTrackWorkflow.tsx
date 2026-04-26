@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 
+import { SanitizedHTML } from '@jbrowse/core/ui'
 import {
   getSession,
   isElectron,
@@ -13,7 +14,6 @@ import { Button, IconButton, Paper, TextField } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
-import { SanitizedHTML } from '@jbrowse/core/ui'
 
 import {
   buildAdapterPayload,

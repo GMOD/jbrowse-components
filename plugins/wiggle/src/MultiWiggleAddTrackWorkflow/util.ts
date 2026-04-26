@@ -51,7 +51,7 @@ export function canSubmit({
 
 export function buildAdapterPayload(items: TrackItem[]) {
   if (items.every(i => typeof i === 'string')) {
-    return { bigWigs: items as string[] }
+    return { bigWigs: items }
   }
   return {
     subadapters: items.map(i =>

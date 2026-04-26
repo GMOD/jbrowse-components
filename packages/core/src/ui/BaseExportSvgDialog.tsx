@@ -16,8 +16,8 @@ import SubmitDialog from './SubmitDialog.tsx'
 import { useExportSvgPreference } from './useExportSvgPreference.ts'
 import { getSession } from '../util/index.ts'
 
-import type { ThemeOptions } from '@mui/material'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { ThemeOptions } from '@mui/material'
 
 export interface BaseExportSvgOptions {
   rasterizeLayers: boolean

@@ -1,4 +1,9 @@
-import { calculateInitialViewState, getExonsAndCDS } from './util.ts'
+import {
+  calculateInitialViewState,
+  featureHasExonsOrCDS,
+  getExonsAndCDS,
+  getTranscripts,
+} from './util.ts'
 
 describe('CollapseIntrons utilities', () => {
   describe('getExonsAndCDS', () => {
@@ -50,6 +55,57 @@ describe('CollapseIntrons utilities', () => {
 
       const result = getExonsAndCDS(transcripts)
       expect(result).toHaveLength(0)
+    })
+  })
+
+  describe('featureHasExonsOrCDS', () => {
+    it('returns true when subfeatures include an exon', () => {
+      const feat = {
+        get: (k: string) =>
+          k === 'subfeatures'
+            ? [{ get: (kk: string) => (kk === 'type' ? 'exon' : undefined) }]
+            : undefined,
+      } as any
+      expect(featureHasExonsOrCDS(feat)).toBe(true)
+    })
+
+    it('returns false when subfeatures contain neither exon nor CDS', () => {
+      const feat = {
+        get: (k: string) =>
+          k === 'subfeatures'
+            ? [{ get: (kk: string) => (kk === 'type' ? 'UTR' : undefined) }]
+            : undefined,
+      } as any
+      expect(featureHasExonsOrCDS(feat)).toBe(false)
+    })
+
+    it('returns false when feature has no subfeatures', () => {
+      const feat = { get: () => undefined } as any
+      expect(featureHasExonsOrCDS(feat)).toBe(false)
+    })
+  })
+
+  describe('getTranscripts', () => {
+    it('returns [] for undefined feature', () => {
+      expect(getTranscripts(undefined)).toEqual([])
+    })
+
+    it('wraps a transcript-shaped feature (exons directly under it) in [feature]', () => {
+      const feat = {
+        get: (k: string) =>
+          k === 'subfeatures'
+            ? [{ get: (kk: string) => (kk === 'type' ? 'exon' : undefined) }]
+            : undefined,
+      } as any
+      expect(getTranscripts(feat)).toEqual([feat])
+    })
+
+    it('returns subfeatures for a gene-shaped feature (transcripts under it)', () => {
+      const transcript = { get: () => undefined } as any
+      const feat = {
+        get: (k: string) => (k === 'subfeatures' ? [transcript] : undefined),
+      } as any
+      expect(getTranscripts(feat)).toEqual([transcript])
     })
   })
 

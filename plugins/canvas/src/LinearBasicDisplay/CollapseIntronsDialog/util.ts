@@ -6,21 +6,17 @@ import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+const isExonOrCDS = (f: Feature) =>
+  f.get('type') === 'exon' || f.get('type') === 'CDS'
+
 export function getExonsAndCDS(transcripts: Feature[]) {
   return transcripts.flatMap(
-    transcript =>
-      transcript
-        .get('subfeatures')
-        ?.filter(f => f.get('type') === 'exon' || f.get('type') === 'CDS') ??
-      [],
+    transcript => transcript.get('subfeatures')?.filter(isExonOrCDS) ?? [],
   )
 }
 
 export function featureHasExonsOrCDS(feature: Feature) {
-  const subs = feature.get('subfeatures') ?? []
-  return subs.some(
-    (f: Feature) => f.get('type') === 'exon' || f.get('type') === 'CDS',
-  )
+  return (feature.get('subfeatures') ?? []).some(isExonOrCDS)
 }
 
 export function getTranscripts(feature?: Feature): Feature[] {
@@ -33,19 +29,12 @@ export function getTranscripts(feature?: Feature): Feature[] {
 }
 
 export function hasIntrons(transcripts: Feature[]) {
-  const subs = transcripts.flatMap(
-    transcript =>
-      transcript
-        .get('subfeatures')
-        ?.filter(
-          (f: Feature) => f.get('type') === 'exon' || f.get('type') === 'CDS',
-        ) ?? [],
-  )
+  const subs = getExonsAndCDS(transcripts)
   if (subs.length < 2) {
     return false
   }
   const merged = mergeIntervals(
-    subs.map((f: Feature) => ({ start: f.get('start'), end: f.get('end') })),
+    subs.map(f => ({ start: f.get('start'), end: f.get('end') })),
     0,
   )
   return merged.length > 1
