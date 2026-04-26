@@ -12,7 +12,7 @@ export interface BaseResultArgs {
 
   matchedAttribute?: string
 
-  matchedObject?: object
+  matchedObject?: unknown
 
   textSearchAdapter?: TextSearchAdapterType
 
@@ -38,7 +38,7 @@ export default class BaseResult {
 
   matchedAttribute?: string
 
-  matchedObject?: object
+  matchedObject?: unknown
 
   textSearchAdapter?: TextSearchAdapterType
 
@@ -62,8 +62,8 @@ export default class BaseResult {
     this.textSearchAdapter = args.textSearchAdapter
     this.relevance = args.relevance
     this.trackId = args.trackId
-    this.score = args.score || 1
-    this.results = args.results || []
+    this.score = args.score ?? 1
+    this.results = args.results ?? []
   }
 
   getLabel() {

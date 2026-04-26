@@ -129,7 +129,7 @@ export default class TextSearchManager {
     // false positive, this is not Array.prototype.filter
     // eslint-disable-next-line unicorn/no-array-method-this-argument
     const idxs = uf.filter(haystack, needle)
-    const res = []
+    const res: BaseResult[] = []
 
     // idxs can be null when the needle is non-searchable (has no alpha-numeric chars)
     if (idxs != null && idxs.length > 0) {
