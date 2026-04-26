@@ -239,8 +239,13 @@ export async function executeSyntenyFeaturesAndPositions({
   const p21Array = new Float64Array(count)
   const p22Array = new Float64Array(count)
   const strandsArray = new Int8Array(count)
-  const startsArray = new Float64Array(count)
-  const endsArray = new Float64Array(count)
+  // bp coordinates fit in uint32 (max 4.3 Gbp covers human/mouse/most genomes).
+  // Pixel offsets (p11..p22, padTop, padBottom) stay Float64 because they
+  // accumulate across regions × 1/bpPerPx and routinely exceed 2^32.
+  const startsArray = new Uint32Array(count)
+  const endsArray = new Uint32Array(count)
+  const mateStartsArray = new Uint32Array(count)
+  const mateEndsArray = new Uint32Array(count)
   const identitiesArray = new Float32Array(count)
   const padTopArray = new Float64Array(count)
   const padBottomArray = new Float64Array(count)
@@ -249,18 +254,13 @@ export async function executeSyntenyFeaturesAndPositions({
   const names: string[] = []
   const refNames: string[] = []
   const assemblyNames: string[] = []
+  const mateRefNames: string[] = []
+  const mateAssemblyNames: string[] = []
   const parsedCigars: number[][] = []
   // Always collect syriType; main-thread colorBy='syri' reads this directly
   // so the RPC doesn't refetch on a color-scheme change. Undefined entries
   // fall back to main-thread computeSyriTypes when the scheme is active.
   const precomputedSyriTypes: (string | undefined)[] = []
-  const mates: {
-    start: number
-    end: number
-    refName: string
-    name: string
-    assemblyName: string
-  }[] = []
 
   // Viewport culling: skip features entirely outside the visible area in
   // both views. A synteny parallelogram is visible when at least one of its
@@ -281,7 +281,6 @@ export async function executeSyntenyFeaturesAndPositions({
       start: number
       end: number
       refName: string
-      name: string
       assemblyName: string
     }
     // Whole-genome PAF at low zoom: most features are on refNames not in the
@@ -344,13 +343,17 @@ export async function executeSyntenyFeaturesAndPositions({
     const identity = f.get('identity') as number | undefined
     identitiesArray[validCount] = identity ?? -1
 
+    mateStartsArray[validCount] = mate.start
+    mateEndsArray[validCount] = mate.end
+
     featureIds.push(f.id())
     names.push((f.get('name') as string | undefined) ?? '')
     refNames.push(refName)
     assemblyNames.push((f.get('assemblyName') as string | undefined) ?? '')
+    mateRefNames.push(mate.refName)
+    mateAssemblyNames.push(mate.assemblyName)
     parsedCigars.push(parseCigar2((f.get('CIGAR') as string | undefined) ?? ''))
     precomputedSyriTypes.push(f.get('syriType') as string | undefined)
-    mates.push(mate)
 
     validCount++
   }
@@ -371,7 +374,10 @@ export async function executeSyntenyFeaturesAndPositions({
     refNames,
     assemblyNames,
     syriTypes: precomputedSyriTypes,
-    mates,
+    mateStarts: mateStartsArray.subarray(0, validCount),
+    mateEnds: mateEndsArray.subarray(0, validCount),
+    mateRefNames,
+    mateAssemblyNames,
   }
 
   // colorBy lives on the main thread now; the worker always emits
@@ -414,6 +420,8 @@ export async function executeSyntenyFeaturesAndPositions({
     result.identities.buffer,
     result.padTop.buffer,
     result.padBottom.buffer,
+    result.mateStarts.buffer,
+    result.mateEnds.buffer,
     instanceData.x1.buffer,
     instanceData.x2.buffer,
     instanceData.x3.buffer,

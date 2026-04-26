@@ -170,8 +170,7 @@ export function getTooltip(
     dupConflict
       ? `Overlaps (target): ${assembleLocString({ refName: dupConflict.tname, start: dupConflict.tstart, end: dupConflict.tend })}`
       : '',
-    feat.name ? `Name 1: ${feat.name}` : '',
-    feat.mate.name ? `Name 2: ${feat.mate.name}` : '',
+    feat.name ? `Name: ${feat.name}` : '',
   ]
     .filter(Boolean)
     .join('<br/>')

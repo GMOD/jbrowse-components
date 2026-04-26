@@ -32,9 +32,9 @@ export interface SyntenyFeatureData {
   p21_offsetPx: Float64Array
   p22_offsetPx: Float64Array
   strands: Int8Array
-  starts: Float64Array
-  ends: Float64Array
-  identities: Float64Array
+  starts: Uint32Array
+  ends: Uint32Array
+  identities: Float32Array
   padTop: Float64Array
   padBottom: Float64Array
   featureIds: string[]
@@ -46,13 +46,13 @@ export interface SyntenyFeatureData {
   // main-thread colorBy='syri' can short-circuit to precomputed values
   // without a worker round-trip.
   syriTypes: (string | undefined)[]
-  mates: {
-    start: number
-    end: number
-    refName: string
-    name: string
-    assemblyName: string
-  }[]
+  // Mate fields packed as parallel arrays. Uint32 buffers are RPC-transferable
+  // and match the bp coord convention used elsewhere in the codebase.
+  // mate.name was always undefined (no adapter sets it) so it's dropped.
+  mateStarts: Uint32Array
+  mateEnds: Uint32Array
+  mateRefNames: string[]
+  mateAssemblyNames: string[]
 }
 
 export interface FeatPos {
@@ -67,7 +67,6 @@ export interface FeatPos {
     start: number
     end: number
     refName: string
-    name: string
     assemblyName: string
   }
   identity?: number
@@ -86,7 +85,12 @@ export function getFeatureAtIndex(
     start: data.starts[i]!,
     end: data.ends[i]!,
     assemblyName: data.assemblyNames[i]!,
-    mate: data.mates[i]!,
+    mate: {
+      start: data.mateStarts[i]!,
+      end: data.mateEnds[i]!,
+      refName: data.mateRefNames[i]!,
+      assemblyName: data.mateAssemblyNames[i]!,
+    },
     identity: identity === -1 ? undefined : identity,
   }
 }
@@ -360,7 +364,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         if (!featureData) {
           return undefined
         }
-        const { syriTypes, names, starts, ends, mates, strands } = featureData
+        const {
+          syriTypes,
+          names,
+          starts,
+          ends,
+          mateStarts,
+          mateEnds,
+          mateRefNames,
+          strands,
+        } = featureData
         const n = names.length
         if (syriTypes.some(t => t !== undefined)) {
           const types = new Array<SyriType>(n)
@@ -374,14 +387,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         }
         const input = new Array<AlignmentRecord>(n)
         for (let i = 0; i < n; i++) {
-          const mate = mates[i]!
           input[i] = {
             qname: names[i]!,
             qstart: starts[i]!,
             qend: ends[i]!,
-            tname: mate.refName,
-            tstart: mate.start,
-            tend: mate.end,
+            tname: mateRefNames[i]!,
+            tstart: mateStarts[i]!,
+            tend: mateEnds[i]!,
             strand: strands[i]!,
           }
         }

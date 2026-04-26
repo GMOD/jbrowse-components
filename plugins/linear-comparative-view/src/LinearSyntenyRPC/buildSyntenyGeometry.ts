@@ -112,8 +112,8 @@ export function buildSyntenyGeometry({
   strands: Int8Array
   names: string[]
   parsedCigars: number[][]
-  starts: Float64Array
-  ends: Float64Array
+  starts: Uint32Array
+  ends: Uint32Array
   drawCIGAR: boolean
   drawCIGARMatchesOnly: boolean
   drawLocationMarkers: boolean
