@@ -157,7 +157,7 @@ describe('migrateAlignmentsSnapshot', () => {
     }
     const result = migrateAlignmentsSnapshot(snap)
     expect(result.type).toBe('LinearAlignmentsDisplay')
-    expect((result.sashimiArcsState as any).showSashimiArcs).toBe(false)
+    expect(result.showSashimiArcs).toBe(false)
     expect(result.showInterbaseIndicators).toBe(false)
     expect(result.showCoverage).toBe(true)
     expect(result.coverageHeight).toBe(45)

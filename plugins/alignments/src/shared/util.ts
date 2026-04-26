@@ -1,21 +1,4 @@
-import { SAM_FLAG_PAIRED } from './samFlags.ts'
-
-import type { ChainData } from './types.ts'
 import type { Theme } from '@mui/material'
-
-/**
- * Check if ChainData contains paired-end reads
- * Note: This checks the data content, not the type.
- * For type-level checking, use hasPairedChainData() from fetchChains.ts
- */
-export function hasPairedReads(features: ChainData) {
-  for (const f of features.chains.values()) {
-    if (f[0]!.get('flags') & SAM_FLAG_PAIRED) {
-      return true
-    }
-  }
-  return false
-}
 
 export const defaultFilterFlags = {
   flagInclude: 0,

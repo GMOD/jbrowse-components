@@ -51,7 +51,7 @@ export async function renderSvg(
     showCoverage,
     coverageHeight,
     coverageTicks,
-    arcsState,
+    arcsRpcDataMap,
     showSashimiArcs,
     sashimiArcsDown,
     sashimiArcsHeight,
@@ -75,7 +75,7 @@ export async function renderSvg(
   const pileupNode = paintLayer(totalWidth, displayHeight, opts, ctx => {
     drawAlignmentsToCtx(
       ctx,
-      { laidOutPileupMap: rpcDataMap, arcsRpcDataMap: arcsState.rpcDataMap },
+      { laidOutPileupMap: rpcDataMap, arcsRpcDataMap },
       renderBlocks,
       state,
     )

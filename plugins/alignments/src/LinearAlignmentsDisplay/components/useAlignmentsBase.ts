@@ -98,26 +98,24 @@ export interface LinearAlignmentsDisplayModel {
   setCoverageAutoscaleType: (val: string) => void
   setCoverageMinScore: (val?: number) => void
   setCoverageMaxScore: (val?: number) => void
-  arcsState: {
-    rpcDataMap: Map<
-      number,
-      {
-        arcX1: Uint32Array
-        arcX2: Uint32Array
-        arcColorTypes: Uint8Array
-        arcShapeTypes: Uint8Array
-        arcYBp: Uint32Array
-        numArcs: number
-        linePositions: Uint32Array
-        lineYs: Float32Array
-        lineColorTypes: Uint8Array
-        numLines: number
-      }
-    >
-    lineWidth: number
-    drawInter: boolean
-    colorByType: string
-  }
+  arcsRpcDataMap: Map<
+    number,
+    {
+      arcX1: Uint32Array
+      arcX2: Uint32Array
+      arcColorTypes: Uint8Array
+      arcShapeTypes: Uint8Array
+      arcYBp: Uint32Array
+      numArcs: number
+      linePositions: Uint32Array
+      lineYs: Float32Array
+      lineColorTypes: Uint8Array
+      numLines: number
+    }
+  >
+  lineWidth: number
+  drawInter: boolean
+  colorByType: string
   arcsYDomainBp: number | undefined
   insertSizeTicks: YScaleTicks | undefined
   showMismatches: boolean

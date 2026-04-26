@@ -34,8 +34,6 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { autorun, observable } from 'mobx'
 
-import { ArcsSubModel } from './ArcsSubModel.ts'
-import { SashimiArcsSubModel } from './SashimiArcsSubModel.ts'
 import { buildLaidOutChainMap } from './computeChainLayout.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
@@ -59,6 +57,7 @@ import { getColorForModification } from '../util.ts'
 import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
 
+import type { ArcsDataResult } from '../shared/computeArcsFromPileupData.ts'
 import type {
   ColorPalette,
   RenderState as AlignmentsRenderState,
@@ -91,6 +90,19 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
+
+export type ArcColorByType =
+  | 'insertSizeAndOrientation'
+  | 'insertSize'
+  | 'orientation'
+  | 'samplot'
+
+const arcColorByTypes = types.enumeration<ArcColorByType>('ArcColorByType', [
+  'insertSizeAndOrientation',
+  'insertSize',
+  'orientation',
+  'samplot',
+])
 
 export {
   getInsertionType,
@@ -209,8 +221,14 @@ export default function stateModelFactory(
           drawSingletons: true,
           drawProperPairs: true,
           flipStrandLongReadChains: true,
-          arcsState: types.optional(ArcsSubModel, {}),
-          sashimiArcsState: types.optional(SashimiArcsSubModel, {}),
+          lineWidthSetting: types.maybe(types.number),
+          drawInter: true,
+          drawLongRange: true,
+          colorByType: types.optional(arcColorByTypes, 'insertSizeAndOrientation'),
+          pairedArcsDown: true,
+          showSashimiArcs: true,
+          sashimiArcsDown: false,
+          sashimiArcsHeight: 40,
           showArcs: false,
           arcsHeight: 40,
           showSoftClipping: false,
@@ -232,6 +250,7 @@ export default function stateModelFactory(
         contextMenuIndicatorHit: undefined as IndicatorHitResult | undefined,
         contextMenuRefName: undefined as string | undefined,
         rpcDataMap: observable.map<number, PileupDataResult>(),
+        arcsRpcDataMap: observable.map<number, ArcsDataResult>(),
         currentRangeY: [0, 600] as [number, number],
         highlightedChainIds: [] as string[],
         selectedChainIds: [] as string[],
@@ -558,20 +577,9 @@ export default function stateModelFactory(
           return map
         },
       }))
-      // Delegates from submodels — expose arcsState.pairedArcsDown and
-      // sashimiArcsState fields directly on the display for external consumers.
       .views(self => ({
-        get pairedArcsDown() {
-          return self.arcsState.pairedArcsDown
-        },
-        get showSashimiArcs() {
-          return self.sashimiArcsState.showSashimiArcs
-        },
-        get sashimiArcsDown() {
-          return self.sashimiArcsState.sashimiArcsDown
-        },
-        get sashimiArcsHeight() {
-          return self.sashimiArcsState.sashimiArcsHeight
+        get lineWidth(): number {
+          return self.lineWidthSetting ?? 1
         },
 
         /**
@@ -785,8 +793,8 @@ export default function stateModelFactory(
             colors: palette,
             renderingMode: self.renderingMode,
             flipStrandLongReadChains: self.flipStrandLongReadChains,
-            arcLineWidth: self.arcsState.lineWidth,
-            arcColorByType: self.arcsState.colorByType,
+            arcLineWidth: self.lineWidth,
+            arcColorByType: self.colorByType,
             arcsYDomainBp: this.arcsYDomainBp,
             bpRangeX: [0, 0],
           }
@@ -798,11 +806,11 @@ export default function stateModelFactory(
         // default. Floored at 1000bp to avoid a near-zero division when the
         // data set happens to only contain concordant pairs.
         get arcsYDomainBp(): number | undefined {
-          if (self.arcsState.colorByType !== 'samplot') {
+          if (self.colorByType !== 'samplot') {
             return undefined
           }
           let maxBp = 0
-          for (const data of self.arcsState.rpcDataMap.values()) {
+          for (const data of self.arcsRpcDataMap.values()) {
             if (data.maxFlatArcYBp > maxBp) {
               maxBp = data.maxFlatArcYBp
             }
@@ -907,7 +915,7 @@ export default function stateModelFactory(
 
           clearDisplaySpecificData() {
             self.rpcDataMap.clear()
-            self.arcsState.clearAllRpcData()
+            self.arcsRpcDataMap.clear()
             self.currentRangeY = [0, 0]
             self.setRegionTooLarge(false)
           },
@@ -1100,7 +1108,7 @@ export default function stateModelFactory(
           },
 
           setShowSashimiArcs(show: boolean) {
-            self.sashimiArcsState.setShowSashimiArcs(show)
+            self.showSashimiArcs = show
           },
 
           setShowCoverage(show: boolean) {
@@ -1120,15 +1128,31 @@ export default function stateModelFactory(
           },
 
           setSashimiArcsDown(flag: boolean) {
-            self.sashimiArcsState.setSashimiArcsDown(flag)
+            self.sashimiArcsDown = flag
           },
 
           setSashimiArcsHeight(height: number) {
-            self.sashimiArcsState.setSashimiArcsHeight(height)
+            self.sashimiArcsHeight = height
           },
 
           setArcsDown(flag: boolean) {
-            self.arcsState.setArcsDown(flag)
+            self.pairedArcsDown = flag
+          },
+
+          setLineWidth(width: number) {
+            self.lineWidthSetting = width
+          },
+
+          setDrawInter(draw: boolean) {
+            self.drawInter = draw
+          },
+
+          setDrawLongRange(draw: boolean) {
+            self.drawLongRange = draw
+          },
+
+          setColorByType(type: ArcColorByType) {
+            self.colorByType = type
           },
 
           setShowMismatches(show: boolean) {
@@ -1260,7 +1284,7 @@ export default function stateModelFactory(
             upload: b => {
               b.sync({
                 laidOutPileupMap: self.laidOutPileupMap,
-                arcsRpcDataMap: self.arcsState.rpcDataMap,
+                arcsRpcDataMap: self.arcsRpcDataMap,
               })
             },
             render: b => {
@@ -1411,9 +1435,9 @@ export default function stateModelFactory(
             self.rpcDataMap,
             allRegionInfos,
             {
-              colorByType: self.arcsState.colorByType,
-              drawInter: self.arcsState.drawInter,
-              drawLongRange: self.arcsState.drawLongRange,
+              colorByType: self.colorByType,
+              drawInter: self.drawInter,
+              drawLongRange: self.drawLongRange,
             },
           )
           for (const ri of allRegionInfos) {
@@ -1421,13 +1445,10 @@ export default function stateModelFactory(
             if (!data) {
               continue
             }
-            const result = arcsToRegionResult(
-              arcs,
-              lines,
-              ri.refName,
-              self.height,
+            self.arcsRpcDataMap.set(
+              ri.displayedRegionIndex,
+              arcsToRegionResult(arcs, lines, ri.refName, self.height),
             )
-            self.arcsState.setRpcData(ri.displayedRegionIndex, result)
           }
         }
 
@@ -1536,7 +1557,7 @@ export default function stateModelFactory(
             showLinkedReads: self.showLinkedReads,
             includeModifications: true,
             includeTagOption: true,
-            arcsState: self.arcsState,
+            arcsState: self,
           })
 
           const items: MenuItem[] = [
@@ -1583,10 +1604,10 @@ export default function stateModelFactory(
                     {
                       label: 'Samplot mode (flat lines, Y = |insert size|)',
                       type: 'checkbox' as const,
-                      checked: self.arcsState.colorByType === 'samplot',
+                      checked: self.colorByType === 'samplot',
                       onClick: () => {
-                        self.arcsState.setColorByType(
-                          self.arcsState.colorByType === 'samplot'
+                        self.setColorByType(
+                          self.colorByType === 'samplot'
                             ? 'insertSizeAndOrientation'
                             : 'samplot',
                         )
