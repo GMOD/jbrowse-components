@@ -129,6 +129,18 @@ export function abgrToCssRgba(c: number) {
   return `rgba(${abgrRed(c)},${abgrGreen(c)},${abgrBlue(c)},${abgrAlpha(c) / 255})`
 }
 
+const abgrCssCache = new Map<number, string>()
+
+// Cached variant — avoids string template on repeated calls for the same color.
+export function cachedAbgrToCssRgba(c: number) {
+  let s = abgrCssCache.get(c)
+  if (s === undefined) {
+    s = abgrToCssRgba(c)
+    abgrCssCache.set(c, s)
+  }
+  return s
+}
+
 export function cssColorToNormalizedRgba(
   color: string,
 ): [number, number, number, number] {
