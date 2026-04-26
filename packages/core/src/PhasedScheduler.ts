@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
+type Callback = () => void
 
 // helper class that keeps groups of callbacks that are then run in a specified
 // order by group
 export default class PhasedScheduler<PhaseName extends string> {
-  phaseCallbacks = new Map<PhaseName, Function[]>()
+  phaseCallbacks = new Map<PhaseName, Callback[]>()
 
   phaseOrder: PhaseName[] = []
 
@@ -11,7 +11,7 @@ export default class PhasedScheduler<PhaseName extends string> {
     this.phaseOrder = phaseOrder
   }
 
-  add(phase: PhaseName, callback: Function) {
+  add(phase: PhaseName, callback: Callback) {
     if (!this.phaseOrder.includes(phase)) {
       throw new Error(`unknown phase ${phase}`)
     }
@@ -34,6 +34,7 @@ export default class PhasedScheduler<PhaseName extends string> {
         }
       }
     }
+    this.phaseCallbacks.clear()
     if (errors.length) {
       throw new AggregateError(errors, 'Errors during pluggable element creation')
     }

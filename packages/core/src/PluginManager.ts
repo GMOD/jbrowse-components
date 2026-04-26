@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { isModelType, isType, types } from '@jbrowse/mobx-state-tree'
 
 import CorePlugin from './CorePlugin.ts'
@@ -75,6 +74,10 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
 }
 
 type AnyFunction = (...args: any) => any
+type ExtensionPointCallback = (
+  extendee: unknown,
+  props?: Record<string, unknown>,
+) => unknown
 
 /**
  * free-form string-to-unknown mapping of metadata related to the instance of
@@ -147,7 +150,7 @@ export default class PluginManager {
 
   rootModel?: AbstractRootModel
 
-  extensionPoints = new Map<string, Function[]>()
+  extensionPoints = new Map<string, ExtensionPointCallback[]>()
 
   constructor(initialPlugins: (Plugin | PluginLoadRecord)[] = []) {
     // add the core plugin
@@ -588,7 +591,7 @@ export default class PluginManager {
       callbacks = []
       this.extensionPoints.set(extensionPointName, callbacks)
     }
-    callbacks.push(callback)
+    callbacks.push(callback as ExtensionPointCallback)
   }
 
   evaluateExtensionPoint(
