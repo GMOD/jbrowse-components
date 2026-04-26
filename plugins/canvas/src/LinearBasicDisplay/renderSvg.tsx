@@ -95,15 +95,13 @@ function renderLabels(
             )
 
       if (label.isOverlay) {
-        ctx.globalAlpha = 0.8
-        ctx.fillStyle = 'rgb(255,255,255)'
+        ctx.fillStyle = 'rgba(255,255,255,0.8)'
         ctx.fillRect(
           labelX - 1,
           labelY,
           label.textWidth + 2,
           LABEL_FONT_SIZE + 1,
         )
-        ctx.globalAlpha = 1
       }
       ctx.fillStyle = label.color
       ctx.fillText(label.text, labelX, labelY + LABEL_FONT_SIZE)

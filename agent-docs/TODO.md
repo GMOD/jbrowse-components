@@ -126,3 +126,8 @@ inline-render pattern. A few remaining call sites don't fit the helper as-is:
 
 
 
+## Remove graph stuff from this branch including jbrowse-cli related changes
+
+the gfatabixadapter also, it is not panning out...
+plugins/tube-map and plugins/graph remove
+put these on a new branch though

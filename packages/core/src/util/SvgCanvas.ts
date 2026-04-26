@@ -4,7 +4,6 @@ interface SavedState {
   fillStyle: string
   strokeStyle: string
   lineWidth: number
-  globalAlpha: number
   font: string
   textAlign: CanvasTextAlign
   textBaseline: CanvasTextBaseline
@@ -49,7 +48,6 @@ export class SvgCanvas {
   fillStyle: string | CanvasGradient | CanvasPattern = '#000'
   strokeStyle: string | CanvasGradient | CanvasPattern = '#000'
   lineWidth = 1
-  globalAlpha = 1
   font = '10px sans-serif'
   textAlign: CanvasTextAlign = 'start'
   textBaseline: CanvasTextBaseline = 'alphabetic'
@@ -88,10 +86,6 @@ export class SvgCanvas {
         : 'start'
   }
 
-  private alphaAttr() {
-    return this.globalAlpha < 1 ? ` opacity="${this.globalAlpha}"` : ''
-  }
-
   private strokeAttrs() {
     let attrs = ` stroke="${this.strokeStyle}" stroke-width="${this.lineWidth}"`
     if (this.lineCap !== 'butt') {
@@ -111,7 +105,6 @@ export class SvgCanvas {
       fillStyle: `${this.fillStyle}`,
       strokeStyle: `${this.strokeStyle}`,
       lineWidth: this.lineWidth,
-      globalAlpha: this.globalAlpha,
       font: this.font,
       textAlign: this.textAlign,
       textBaseline: this.textBaseline,
@@ -137,7 +130,6 @@ export class SvgCanvas {
       this.fillStyle = s.fillStyle
       this.strokeStyle = s.strokeStyle
       this.lineWidth = s.lineWidth
-      this.globalAlpha = s.globalAlpha
       this.font = s.font
       this.textAlign = s.textAlign
       this.textBaseline = s.textBaseline
@@ -221,15 +213,14 @@ export class SvgCanvas {
   fillRect(x: number, y: number, w: number, h: number) {
     const [tx, ty] = this.transformPoint(x, y)
     const [tw, th] = this.transformSize(w, h)
-    const alpha = this.alphaAttr()
     if (this.rotation !== 0 && this.rotation % (Math.PI / 2) !== 0) {
       const deg = (this.rotation * 180) / Math.PI
       this.parts.push(
-        `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" fill="${this.fillStyle}"${alpha} transform="rotate(${deg} ${tx} ${ty})"/>`,
+        `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" fill="${this.fillStyle}" transform="rotate(${deg} ${tx} ${ty})"/>`,
       )
     } else {
       this.parts.push(
-        `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" fill="${this.fillStyle}"${alpha}/>`,
+        `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" fill="${this.fillStyle}"/>`,
       )
     }
   }
@@ -241,9 +232,8 @@ export class SvgCanvas {
   strokeRect(x: number, y: number, w: number, h: number) {
     const [tx, ty] = this.transformPoint(x, y)
     const [tw, th] = this.transformSize(w, h)
-    const alpha = this.alphaAttr()
     this.parts.push(
-      `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" fill="none"${this.strokeAttrs()}${alpha}/>`,
+      `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" fill="none"${this.strokeAttrs()}/>`,
     )
   }
 
@@ -325,25 +315,22 @@ export class SvgCanvas {
 
   stroke() {
     if (this.pathData) {
-      const alpha = this.alphaAttr()
       this.parts.push(
-        `<path d="${this.pathData}" fill="none"${this.strokeAttrs()}${alpha}/>`,
+        `<path d="${this.pathData}" fill="none"${this.strokeAttrs()}/>`,
       )
     }
   }
 
   fill() {
     if (this.pathData) {
-      const alpha = this.alphaAttr()
       this.parts.push(
-        `<path d="${this.pathData}" fill="${this.fillStyle}" stroke="none"${alpha}/>`,
+        `<path d="${this.pathData}" fill="${this.fillStyle}" stroke="none"/>`,
       )
     }
   }
 
   fillText(text: string, x: number, y: number) {
     const [tx, ty] = this.transformPoint(x, y)
-    const alpha = this.alphaAttr()
     const anchor = this.textAnchor()
     const baseline =
       this.textBaseline === 'middle'
@@ -353,17 +340,16 @@ export class SvgCanvas {
           : 'auto'
     const escaped = escapeXml(text)
     this.parts.push(
-      `<text x="${tx}" y="${ty}" fill="${this.fillStyle}"${fontAttrs(this.font)} text-anchor="${anchor}" dominant-baseline="${baseline}"${alpha}>${escaped}</text>`,
+      `<text x="${tx}" y="${ty}" fill="${this.fillStyle}"${fontAttrs(this.font)} text-anchor="${anchor}" dominant-baseline="${baseline}">${escaped}</text>`,
     )
   }
 
   strokeText(text: string, x: number, y: number) {
     const [tx, ty] = this.transformPoint(x, y)
-    const alpha = this.alphaAttr()
     const anchor = this.textAnchor()
     const escaped = escapeXml(text)
     this.parts.push(
-      `<text x="${tx}" y="${ty}" fill="none"${this.strokeAttrs()}${fontAttrs(this.font)} text-anchor="${anchor}"${alpha}>${escaped}</text>`,
+      `<text x="${tx}" y="${ty}" fill="none"${this.strokeAttrs()}${fontAttrs(this.font)} text-anchor="${anchor}">${escaped}</text>`,
     )
   }
 

@@ -153,7 +153,6 @@ export interface CanvasLike {
   fillStyle: string | CanvasGradient | CanvasPattern
   strokeStyle: string | CanvasGradient | CanvasPattern
   lineWidth: number
-  globalAlpha: number
   setTransform(
     a: number,
     b: number,
@@ -267,7 +266,6 @@ export function drawSyntenyTrack(
   } = params
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, yTop * dpr)
-  ctx.globalAlpha = 1
 
   const transform = computeTransform(data, params)
   // Canvas2D parses fillStyle on every assignment, so reuse the rgba string
@@ -376,7 +374,6 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
       drawSyntenyTrack(ctx, data, params, logicalW, maxOffScreenPx, dpr)
     }
 
-    ctx.globalAlpha = 1
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   }
 

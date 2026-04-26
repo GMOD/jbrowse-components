@@ -70,10 +70,10 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
   let q_start = 0
   let q_end = 0
   let num_matches = 0
-  let cigar = ''
+  let cigarParts: string[] = []
 
   let blockStart = 0
-  let lineIndex = 0
+  let lastReported = 0
 
   while (blockStart < buffer.length) {
     const n = buffer.indexOf(10, blockStart)
@@ -99,7 +99,7 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
         const line = decoder.decode(buffer.subarray(realStart, realEnd))
         const l_vec = line.split(/[ \t]+/)
         if (l_vec[0] === 'chain') {
-          if (cigar) {
+          if (cigarParts.length) {
             records.push(
               generate_record(
                 q_name,
@@ -109,7 +109,7 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
                 t_name,
                 t_start,
                 t_end,
-                cigar,
+                cigarParts.join(''),
                 num_matches,
               ),
             )
@@ -130,7 +130,7 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
           }
 
           num_matches = 0
-          cigar = ''
+          cigarParts = []
         }
       } else {
         let pos = realStart
@@ -141,7 +141,7 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
         }
         if (size !== 0) {
           num_matches += size
-          cigar += `${size}M`
+          cigarParts.push(`${size}M`)
         }
         while (pos < realEnd && (buffer[pos] === 32 || buffer[pos] === 9)) {
           pos++
@@ -160,23 +160,24 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
           pos++
         }
         if (dq !== 0) {
-          cigar += `${dq}I`
+          cigarParts.push(`${dq}I`)
         }
         if (dt !== 0) {
-          cigar += `${dt}D`
+          cigarParts.push(`${dt}D`)
         }
       }
     }
 
-    if (lineIndex++ % 10_000 === 0) {
+    if (blockStart - lastReported > 500_000) {
       statusCallback(
         `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
       )
+      lastReported = blockStart
     }
     blockStart = lineEnd + 1
   }
 
-  if (cigar) {
+  if (cigarParts.length) {
     records.push(
       generate_record(
         q_name,
@@ -186,7 +187,7 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
         t_name,
         t_start,
         t_end,
-        cigar,
+        cigarParts.join(''),
         num_matches,
       ),
     )
