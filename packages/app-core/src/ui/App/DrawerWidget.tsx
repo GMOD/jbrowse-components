@@ -1,6 +1,10 @@
 import { Suspense, lazy, useState } from 'react'
 
-import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
+import {
+  ErrorBanner,
+  LoadingEllipses,
+  PluggableComponent,
+} from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
@@ -26,17 +30,6 @@ const DrawerWidget = observer(function DrawerWidget({
   if (visibleWidget && !widgetType) {
     throw new Error(`unknown widget type ${visibleWidget.type}`)
   }
-  const DrawerComponent = widgetType
-    ? (pluginManager.evaluateExtensionPoint(
-        'Core-replaceWidget',
-        widgetType.ReactComponent,
-        {
-          session,
-          model: visibleWidget,
-        },
-      ) as React.FC<any>)
-    : null
-
   // we track the toolbar height because components that use virtualized
   // height want to be able to fill the contained, minus the toolbar height
   // (the position static/sticky is included in AutoSizer estimates)
@@ -56,7 +49,7 @@ const DrawerWidget = observer(function DrawerWidget({
         <ErrorBoundary
           FallbackComponent={({ error }) => <ErrorBanner error={error} />}
         >
-          {DrawerComponent ? (
+          {widgetType && visibleWidget ? (
             popoutDrawer ? (
               <>
                 <div>Opened in dialog...</div>
@@ -69,10 +62,15 @@ const DrawerWidget = observer(function DrawerWidget({
               </>
             ) : (
               <>
-                <DrawerComponent
-                  model={visibleWidget}
-                  session={session}
-                  toolbarHeight={toolbarHeight}
+                <PluggableComponent
+                  pluginManager={pluginManager}
+                  name="Core-replaceWidget"
+                  component={widgetType.ReactComponent}
+                  props={{
+                    model: visibleWidget,
+                    session,
+                    toolbarHeight,
+                  }}
                 />
                 <div style={{ height: 300 }} />
               </>
