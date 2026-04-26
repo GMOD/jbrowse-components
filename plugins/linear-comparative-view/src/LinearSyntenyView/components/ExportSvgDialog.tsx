@@ -1,39 +1,7 @@
-import { useState } from 'react'
-
-import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
-import { getSession, useLocalStorage } from '@jbrowse/core/util'
-import {
-  Button,
-  Checkbox,
-  CircularProgress,
-  DialogActions,
-  DialogContent,
-  FormControlLabel,
-  MenuItem,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-} from '@mui/material'
-
-import TextField2 from './TextField2.tsx'
+import { BaseExportSvgDialog, useExportSvgPreference } from '@jbrowse/core/ui'
+import { Checkbox, FormControlLabel, MenuItem, TextField } from '@mui/material'
 
 import type { ExportSvgOptions } from '../types.ts'
-
-function LoadingMessage({ format }: { format: string }) {
-  return (
-    <div>
-      <CircularProgress size={20} style={{ marginRight: 20 }} />
-      <Typography sx={{ display: 'inline' }}>
-        Creating {format.toUpperCase()}
-      </Typography>
-    </div>
-  )
-}
-
-function useSvgLocal<T>(key: string, val: T) {
-  return useLocalStorage(`svg-${key}`, val)
-}
 
 export default function ExportSvgDialog({
   model,
@@ -42,61 +10,29 @@ export default function ExportSvgDialog({
   model: { exportSvg(opts: ExportSvgOptions): Promise<void> }
   handleClose: () => void
 }) {
-  const session = getSession(model)
-  const offscreenCanvas = typeof OffscreenCanvas !== 'undefined'
-  const [rasterizeLayers, setRasterizeLayers] = useState(offscreenCanvas)
-  const [showGridlines, setShowGridlines] = useSvgLocal('gridlines', false)
-  const [loading, setLoading] = useState(false)
-  const [format, setFormat] = useSvgLocal<'svg' | 'png'>('format', 'svg')
-  const [filename, setFilename] = useSvgLocal('file', 'jbrowse.svg')
-  const [trackLabels, setTrackLabels] = useSvgLocal('tracklabels', 'offset')
-  const [themeName, setThemeName] = useSvgLocal(
-    'theme',
-    session.themeName || 'default',
+  const [trackLabels, setTrackLabels] = useExportSvgPreference(
+    'tracklabels',
+    'offset',
   )
-  const [error, setError] = useState<unknown>()
+  const [showGridlines, setShowGridlines] = useExportSvgPreference(
+    'gridlines',
+    false,
+  )
   return (
-    <Dialog open onClose={handleClose} title="Export image">
-      <DialogContent>
-        {error ? (
-          <ErrorBanner error={error} />
-        ) : loading ? (
-          <LoadingMessage format={format} />
-        ) : null}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <TextField
-            label="Filename"
-            value={filename}
-            onChange={event => {
-              setFilename(event.target.value)
-            }}
-          />
-          <ToggleButtonGroup
-            value={format}
-            exclusive
-            onChange={(_event, value: 'svg' | 'png' | null) => {
-              if (value) {
-                setFormat(value)
-                if (filename.endsWith('.svg') && value === 'png') {
-                  setFilename(filename.replace(/\.svg$/, '.png'))
-                } else if (filename.endsWith('.png') && value === 'svg') {
-                  setFilename(filename.replace(/\.png$/, '.svg'))
-                }
-              }
-            }}
-            size="small"
-          >
-            <ToggleButton value="svg">SVG</ToggleButton>
-            <ToggleButton value="png">PNG</ToggleButton>
-          </ToggleButtonGroup>
-        </div>
-
-        <TextField2
+    <BaseExportSvgDialog
+      model={model}
+      handleClose={handleClose}
+      exportSvg={opts =>
+        model.exportSvg({ ...opts, trackLabels, showGridlines })
+      }
+    >
+      <div>
+        <TextField
           select
           label="Track label positioning"
           variant="outlined"
-          value={trackLabels}
           style={{ width: 150 }}
+          value={trackLabels}
           onChange={event => {
             setTrackLabels(event.target.value)
           }}
@@ -105,97 +41,19 @@ export default function ExportSvgDialog({
           <MenuItem value="overlay">Overlay</MenuItem>
           <MenuItem value="left">Left</MenuItem>
           <MenuItem value="none">None</MenuItem>
-        </TextField2>
-        <br />
-        {session.allThemes ? (
-          <TextField2
-            select
-            label="Theme"
-            variant="outlined"
-            value={themeName}
-            onChange={event => {
-              setThemeName(event.target.value)
+        </TextField>
+      </div>
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={showGridlines}
+            onChange={() => {
+              setShowGridlines(val => !val)
             }}
-          >
-            {Object.entries(session.allThemes()).map(([key, val]) => (
-              <MenuItem key={key} value={key}>
-                {
-                  // @ts-expect-error
-                  val.name || '(Unknown name)'
-                }
-              </MenuItem>
-            ))}
-          </TextField2>
-        ) : null}
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={showGridlines}
-              onChange={() => {
-                setShowGridlines(val => !val)
-              }}
-            />
-          }
-          label="Show gridlines"
-        />
-
-        {offscreenCanvas ? (
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={rasterizeLayers}
-                onChange={() => {
-                  setRasterizeLayers(val => !val)
-                }}
-              />
-            }
-            label="Rasterize canvas based tracks? File may be much larger if this is turned off"
           />
-        ) : (
-          <Typography>
-            Note: rasterizing layers not yet supported in this browser, so SVG
-            size may be large
-          </Typography>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            handleClose()
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          onClick={async () => {
-            setLoading(true)
-            setError(undefined)
-            try {
-              await model.exportSvg({
-                rasterizeLayers,
-                format,
-                filename,
-                themeName,
-                trackLabels,
-                showGridlines,
-              })
-              handleClose()
-            } catch (e) {
-              console.error(e)
-              setError(e)
-            } finally {
-              setLoading(false)
-            }
-          }}
-        >
-          Submit
-        </Button>
-      </DialogActions>
-    </Dialog>
+        }
+        label="Show gridlines"
+      />
+    </BaseExportSvgDialog>
   )
 }

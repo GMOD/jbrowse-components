@@ -29,9 +29,7 @@ const SetMaxHeightDialog = observer(function SetMaxHeightDialog(props: {
       title="Set max track height"
       onCancel={handleClose}
       onSubmit={() => {
-        model.setMaxHeight(
-          max !== '' && !Number.isNaN(+max) ? +max : undefined,
-        )
+        model.setMaxHeight(max !== '' && !Number.isNaN(+max) ? +max : undefined)
         handleClose()
       }}
     >

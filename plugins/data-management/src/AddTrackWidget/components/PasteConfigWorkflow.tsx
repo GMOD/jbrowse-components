@@ -65,9 +65,7 @@ const PasteConfigAddTrackWorkflow = observer(
                   const view = model.view
                   for (const c of confs) {
                     const viewAsms: string[] | undefined = view?.assemblyNames
-                    if (
-                      viewAsms?.some(a => c.assemblyNames?.includes(a))
-                    ) {
+                    if (viewAsms?.some(a => c.assemblyNames?.includes(a))) {
                       view.showTrack?.(c.trackId)
                     }
                   }

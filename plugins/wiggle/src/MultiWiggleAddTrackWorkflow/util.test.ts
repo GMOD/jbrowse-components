@@ -32,7 +32,9 @@ describe('parseItems', () => {
 
 describe('itemToName', () => {
   it('uses the string itself for URL items', () => {
-    expect(itemToName('http://example.com/x.bw')).toBe('http://example.com/x.bw')
+    expect(itemToName('http://example.com/x.bw')).toBe(
+      'http://example.com/x.bw',
+    )
   })
 
   it('prefers source over name', () => {
