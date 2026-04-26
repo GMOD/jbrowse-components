@@ -1,15 +1,11 @@
 import fs from 'fs'
 
-import { getDeletedMarkerPath, getQuickstartPath } from './paths.ts'
+import { getDeletedMarkerPath, getQuickstartPath, stringify } from './paths.ts'
 
 import type { AppPaths } from './paths.ts'
 
 const ENCODING = 'utf8'
 const LEGACY_QUICKSTARTS = ['hg19', 'hg38', 'mm10']
-
-function stringify(obj: unknown) {
-  return JSON.stringify(obj, null, 2)
-}
 
 /**
  * Ensures all required directories exist

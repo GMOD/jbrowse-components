@@ -3,7 +3,7 @@ import fs from 'fs'
 import { ipcMain } from 'electron'
 import parseJson from 'json-parse-even-better-errors'
 
-import { getThumbnailPath } from '../paths.ts'
+import { getThumbnailPath, stringify } from '../paths.ts'
 
 import type { AppPaths } from '../paths.ts'
 
@@ -22,10 +22,6 @@ export interface SessionSnap {
     name: string
   }
   [key: string]: unknown
-}
-
-function stringify(obj: unknown) {
-  return JSON.stringify(obj, null, 2)
 }
 
 async function readRecentSessions(

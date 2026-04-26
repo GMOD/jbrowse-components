@@ -69,3 +69,7 @@ export function getAutosavePath(
 export function getFaiPath(paths: AppPaths, name: string) {
   return path.join(paths.faiDir, `${encodeURIComponent(name)}.fai`)
 }
+
+export function stringify(obj: unknown) {
+  return JSON.stringify(obj, null, 2)
+}

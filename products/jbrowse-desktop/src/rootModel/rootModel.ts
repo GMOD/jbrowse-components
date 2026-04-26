@@ -171,10 +171,13 @@ export default function rootModelFactory({
                   icon: SaveAsIcon,
                   onClick: async () => {
                     try {
-                      self.setSessionPath(
-                        await ipcRenderer.invoke('promptSessionSaveAs'),
+                      const filePath = await ipcRenderer.invoke(
+                        'promptSessionSaveAs',
                       )
-                      await self.saveSession(getSaveSession(self))
+                      if (filePath) {
+                        self.setSessionPath(filePath)
+                        await self.saveSession(getSaveSession(self))
+                      }
                     } catch (e) {
                       console.error(e)
                       self.session?.notifyError(`${e}`, e)
