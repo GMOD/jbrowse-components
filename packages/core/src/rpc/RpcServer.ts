@@ -42,7 +42,7 @@ export default class RpcServer {
     })
   }
 
-  protected handler(e: MessageEvent<RpcMessageData>) {
+  handler(e: MessageEvent<RpcMessageData>) {
     const { libRpc, method, uid, data } = e.data
     if (!libRpc) {
       return
