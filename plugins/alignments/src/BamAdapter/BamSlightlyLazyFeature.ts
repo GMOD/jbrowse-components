@@ -195,8 +195,7 @@ export default class BamSlightlyLazyFeature
   }
 
   get fields(): SimpleFeatureSerialized {
-    if (this._cachedFields === undefined) {
-      this._cachedFields = {
+    this._cachedFields ??= {
         start: this.start,
         name: this.name,
         end: this.end,
@@ -212,8 +211,7 @@ export default class BamSlightlyLazyFeature
         next_pos: this.next_pos,
         next_segment_position: this.next_segment_position,
         uniqueId: this.id(),
-      }
-    }
+      };
     return this._cachedFields
   }
   get next_ref() {

@@ -73,7 +73,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   }
 
   private async setup(opts?: BaseOptions) {
-    const { statusCallback } = opts || {}
+    const { statusCallback } = opts ?? {}
     this.setupP ??= updateStatus(
       'Downloading index',
       statusCallback,
@@ -105,7 +105,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     },
   ) {
     const { refName, start, end, originalRefName } = region
-    const { stopToken, filterBy, statusCallback = () => {} } = opts || {}
+    const { stopToken, filterBy, statusCallback = () => {} } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
       const { bam } = this.configure()
       const sequenceAdapter = await this.getSequenceAdapter()
@@ -119,7 +119,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       checkStopToken(stopToken)
 
       await updateStatus('Processing alignments', statusCallback, async () => {
-        const { readName } = filterBy || {}
+        const { readName } = filterBy ?? {}
 
         // Pre-fetch reference sequence for all records that need it
         let regionSeq: string | undefined

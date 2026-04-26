@@ -273,14 +273,12 @@ export function getTooltipBin(
     if (interbasePositions[i] === position) {
       const typeName = typeNames[interbaseTypes[i]!] ?? 'insertion'
       const len = interbaseLengths[i]!
-      if (!interbase[typeName]) {
-        interbase[typeName] = {
+      interbase[typeName] ??= {
           count: 0,
           minLen: len,
           maxLen: len,
           avgLen: 0,
-        }
-      }
+        };
       const entry = interbase[typeName]
       entry.count++
       interbaseSums.set(typeName, (interbaseSums.get(typeName) ?? 0) + len)
@@ -331,9 +329,7 @@ export function getTooltipBin(
     const end = gapPositions[i * 2 + 1]!
     if (position >= start && position < end) {
       const len = end - start
-      if (!deletions) {
-        deletions = { count: 0, minLen: len, maxLen: len, avgLen: 0 }
-      }
+      deletions ??= { count: 0, minLen: len, maxLen: len, avgLen: 0 };
       deletions.count++
       deletionLenSum += len
       if (len < deletions.minLen) {

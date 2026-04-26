@@ -30,7 +30,7 @@ const SetModificationThresholdDialog = observer(
         submitDisabled={!validThreshold}
         onCancel={handleClose}
         onSubmit={() => {
-          const currentColorBy = model.colorBy || { type: 'modifications' }
+          const currentColorBy = model.colorBy ?? { type: 'modifications' }
           model.setColorScheme({
             ...currentColorBy,
             modifications: {

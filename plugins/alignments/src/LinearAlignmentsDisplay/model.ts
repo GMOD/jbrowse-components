@@ -72,6 +72,7 @@ import type { AlignmentsBackend } from './components/rendererTypes.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 import type { LegendItem } from '../shared/legendUtils.ts'
 import type {
+  ArcColorByType,
   ColorBy,
   FilterBy,
   ModificationTypeWithColor,
@@ -91,11 +92,7 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-export type ArcColorByType =
-  | 'insertSizeAndOrientation'
-  | 'insertSize'
-  | 'orientation'
-  | 'samplot'
+export type { ArcColorByType } from '../shared/types'
 
 const arcColorByTypes = types.enumeration<ArcColorByType>('ArcColorByType', [
   'insertSizeAndOrientation',
@@ -224,7 +221,7 @@ export default function stateModelFactory(
           lineWidthSetting: types.maybe(types.number),
           drawInter: true,
           drawLongRange: true,
-          colorByType: types.optional(arcColorByTypes, 'insertSizeAndOrientation'),
+          arcColorByType: types.optional(arcColorByTypes, 'insertSizeAndOrientation'),
           pairedArcsDown: true,
           showSashimiArcs: true,
           sashimiArcsDown: false,
@@ -794,7 +791,7 @@ export default function stateModelFactory(
             renderingMode: self.renderingMode,
             flipStrandLongReadChains: self.flipStrandLongReadChains,
             arcLineWidth: self.lineWidth,
-            arcColorByType: self.colorByType,
+            arcColorByType: self.arcColorByType,
             arcsYDomainBp: this.arcsYDomainBp,
             bpRangeX: [0, 0],
           }
@@ -806,7 +803,7 @@ export default function stateModelFactory(
         // default. Floored at 1000bp to avoid a near-zero division when the
         // data set happens to only contain concordant pairs.
         get arcsYDomainBp(): number | undefined {
-          if (self.colorByType !== 'samplot') {
+          if (self.arcColorByType !== 'samplot') {
             return undefined
           }
           let maxBp = 0
@@ -1135,7 +1132,7 @@ export default function stateModelFactory(
             self.sashimiArcsHeight = height
           },
 
-          setArcsDown(flag: boolean) {
+          setPairedArcsDown(flag: boolean) {
             self.pairedArcsDown = flag
           },
 
@@ -1152,7 +1149,7 @@ export default function stateModelFactory(
           },
 
           setColorByType(type: ArcColorByType) {
-            self.colorByType = type
+            self.arcColorByType = type
           },
 
           setShowMismatches(show: boolean) {
@@ -1435,7 +1432,7 @@ export default function stateModelFactory(
             self.rpcDataMap,
             allRegionInfos,
             {
-              colorByType: self.colorByType,
+              colorByType: self.arcColorByType,
               drawInter: self.drawInter,
               drawLongRange: self.drawLongRange,
             },
@@ -1519,7 +1516,7 @@ export default function stateModelFactory(
 
             // Recompute arcs when any arc-affecting setting changes (no
             // RPC refetch needed — arcs are derived from existing pileup
-            // data). `computeAndSetArcs` reads arcsState.colorByType /
+            // data). `computeAndSetArcs` reads arcColorByType /
             // drawInter / drawLongRange internally, so those deps are
             // tracked transitively — no manual `void` pokes needed.
             // `delay: 50` batches rapid fires from per-region setRpcData
@@ -1588,7 +1585,7 @@ export default function stateModelFactory(
                       checked: self.showArcs && !self.pairedArcsDown,
                       onClick: () => {
                         self.setShowArcs(true)
-                        self.setArcsDown(false)
+                        self.setPairedArcsDown(false)
                       },
                     },
                     {
@@ -1597,17 +1594,17 @@ export default function stateModelFactory(
                       checked: self.showArcs && self.pairedArcsDown,
                       onClick: () => {
                         self.setShowArcs(true)
-                        self.setArcsDown(true)
+                        self.setPairedArcsDown(true)
                       },
                     },
                     { type: 'divider' as const },
                     {
                       label: 'Samplot mode (flat lines, Y = |insert size|)',
                       type: 'checkbox' as const,
-                      checked: self.colorByType === 'samplot',
+                      checked: self.arcColorByType === 'samplot',
                       onClick: () => {
                         self.setColorByType(
-                          self.colorByType === 'samplot'
+                          self.arcColorByType === 'samplot'
                             ? 'insertSizeAndOrientation'
                             : 'samplot',
                         )

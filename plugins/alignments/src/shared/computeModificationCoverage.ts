@@ -53,9 +53,7 @@ export function computeModificationCoverage(
     }
     const base = String.fromCharCode(mm.base)
     entry.baseCounts[base] = (entry.baseCounts[base] ?? 0) + 1
-    if (!entry.strandBaseCounts[base]) {
-      entry.strandBaseCounts[base] = { fwd: 0, rev: 0 }
-    }
+    entry.strandBaseCounts[base] ??= { fwd: 0, rev: 0 };
     if (mm.strand === 1) {
       entry.strandBaseCounts[base].fwd++
     } else {
@@ -139,15 +137,11 @@ export function computeModificationCoverage(
       }
       const refFwd = Math.max(0, fwdDepthAtPosition - snpFwd)
       const refRev = Math.max(0, revDepthAtPosition - snpRev)
-      if (!strandBaseCounts[refbase]) {
-        strandBaseCounts[refbase] = { fwd: 0, rev: 0 }
-      }
+      strandBaseCounts[refbase] ??= { fwd: 0, rev: 0 };
       strandBaseCounts[refbase].fwd += refFwd
       strandBaseCounts[refbase].rev += refRev
     } else {
-      if (!strandBaseCounts[refbase]) {
-        strandBaseCounts[refbase] = { fwd: 0, rev: 0 }
-      }
+      strandBaseCounts[refbase] ??= { fwd: 0, rev: 0 };
       strandBaseCounts[refbase].fwd += refCount
     }
 

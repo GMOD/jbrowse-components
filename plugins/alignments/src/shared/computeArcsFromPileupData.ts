@@ -6,6 +6,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from './samFlags.ts'
 
+import type { ArcColorByType } from './types.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
 
 // Arc shape enum. Values are shared with arc.slang (which checks them via
@@ -50,7 +51,7 @@ interface RegionInfo {
 }
 
 interface ArcSettings {
-  colorByType: string
+  colorByType: ArcColorByType
   drawInter: boolean
   drawLongRange: boolean
 }

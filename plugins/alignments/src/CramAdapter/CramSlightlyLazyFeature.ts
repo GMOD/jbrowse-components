@@ -57,7 +57,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get qual() {
-    return (this.record.qualityScores || []).join(' ')
+    return (this.record.qualityScores ?? []).join(' ')
   }
 
   get qualRaw() {
@@ -89,7 +89,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get template_length() {
-    return this.record.templateLength || this.record.templateSize
+    return this.record.templateLength ?? this.record.templateSize
   }
 
   get next_ref() {

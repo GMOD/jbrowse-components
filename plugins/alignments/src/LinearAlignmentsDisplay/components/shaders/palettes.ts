@@ -3,6 +3,7 @@ import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 import { fillColor } from '../../../shared/color.ts'
 
 import type { RGBColor } from './colors.ts'
+import type { ArcColorByType } from '../../../shared/types.ts'
 
 // Palette indices match the Slang arc/arcLine shaders
 // (u.arcColor0..7 / u.arcLineColor0..1). Canvas2D / SVG arc renderers
@@ -44,7 +45,7 @@ export const arcLineColorPalette: RGBColor[] = [
   rgb(fillColor.color_longinsert),
 ]
 
-export function getArcPalette(colorByType: string | undefined): RGBColor[] {
+export function getArcPalette(colorByType: ArcColorByType | undefined): RGBColor[] {
   return colorByType === 'samplot' ? samplotArcColorPalette : arcColorPalette
 }
 

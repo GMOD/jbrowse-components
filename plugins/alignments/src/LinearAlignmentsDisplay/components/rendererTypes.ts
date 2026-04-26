@@ -1,5 +1,6 @@
 import type { ColorPalette } from './shaders/colors.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { ArcColorByType } from '../../shared/types.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 export type { ColorPalette, RGBColor } from './shaders/colors.ts'
 
@@ -56,7 +57,7 @@ export interface RenderState {
   flipStrandLongReadChains?: boolean
   reversed?: boolean
   arcLineWidth?: number
-  arcColorByType?: string
+  arcColorByType?: ArcColorByType
   // Genomic bp that map to the arcs band's vertical extent. Arc/bezier mode
   // passes availH/pxPerBp (zoom-proportional); samplot mode passes the
   // autoscaled max |tlen| so Y is zoom-stable. See arc.slang `arcsYDomainBp`.

@@ -178,7 +178,7 @@ interface ColorByModel {
 }
 
 interface ArcsState {
-  colorByType: ArcColorByType
+  arcColorByType: ArcColorByType
   setColorByType: (type: ArcColorByType) => void
 }
 
@@ -274,7 +274,7 @@ export function getColorByMenuItem(
             ).map(([label, type]) => ({
               label,
               type: 'radio' as const,
-              checked: arcsState.colorByType === type,
+              checked: arcsState.arcColorByType === type,
               onClick: () => {
                 arcsState.setColorByType(type)
               },

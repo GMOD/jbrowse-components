@@ -31,7 +31,7 @@ export const CHAR_FROM_CODE: string[] = Array.from({ length: 128 }, (_, i) =>
 export function getCigarOps(
   cigar: number[] | string | undefined,
 ): ArrayLike<number> {
-  return typeof cigar === 'string' ? parseCigar2(cigar) : cigar || []
+  return typeof cigar === 'string' ? parseCigar2(cigar) : cigar ?? []
 }
 
 export {

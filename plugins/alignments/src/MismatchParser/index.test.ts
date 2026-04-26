@@ -67,7 +67,7 @@ function mdToMismatchesOriginal(
     return templateOffset - (refOffset - refCoord)
   }
 
-  const md = mdstring.match(mdRegexOriginal) || []
+  const md = mdstring.match(mdRegexOriginal) ?? []
   for (const token of md) {
     const num = +token
     if (!Number.isNaN(num)) {

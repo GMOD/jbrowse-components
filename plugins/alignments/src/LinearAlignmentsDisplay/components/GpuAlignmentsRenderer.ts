@@ -48,6 +48,7 @@ import type {
   RenderBlock,
   RenderState,
 } from './rendererTypes.ts'
+import type { ArcColorByType } from '../../shared/types.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 // Shader strides — every pass shares the same Uniforms struct (see
@@ -405,7 +406,7 @@ function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
 function writePaletteToUbo(
   u: Uint32Array,
   c: ColorPalette,
-  arcColorByType: string | undefined,
+  arcColorByType: ArcColorByType | undefined,
 ) {
   const pack = (rgb: RGBColor) => normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])
   u[U.colorFwd] = pack(c.colorFwdStrand)

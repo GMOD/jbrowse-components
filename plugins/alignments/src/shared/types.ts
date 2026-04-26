@@ -102,6 +102,12 @@ export interface ModificationTypeWithColor {
   strand: string
 }
 
+export type ArcColorByType =
+  | 'insertSizeAndOrientation'
+  | 'insertSize'
+  | 'orientation'
+  | 'samplot'
+
 export interface ColorBy {
   type: string
   tag?: string

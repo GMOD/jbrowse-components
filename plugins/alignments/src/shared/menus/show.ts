@@ -17,7 +17,7 @@ interface ShowMenuModel {
   toggleMismatchAlpha: () => void
   setShowCoverage: (show: boolean) => void
   setShowArcs: (show: boolean) => void
-  setArcsDown: (flag: boolean) => void
+  setPairedArcsDown: (flag: boolean) => void
   setShowSashimiArcs: (show: boolean) => void
   setSashimiArcsDown: (flag: boolean) => void
   setShowMismatches: (show: boolean) => void
