@@ -51,6 +51,7 @@ export function drawVariantBlocks(
     ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
     ctx.clip()
 
+    let prevColor = -1
     for (let i = 0; i < region.numCells; i++) {
       // Y-cull first: y depends only on rowIndex + scroll, so off-screen
       // rows skip all the bp→px math below. Meaningful when scrolling
@@ -74,7 +75,11 @@ export function drawVariantBlocks(
       const x1 = Math.min(rawX1, rawX2)
       const w = Math.max(2, Math.max(rawX1, rawX2) - x1)
 
-      ctx.fillStyle = abgrToCssRgba(region.cellColors[i]!)
+      const color = region.cellColors[i]!
+      if (color !== prevColor) {
+        ctx.fillStyle = abgrToCssRgba(color)
+        prevColor = color
+      }
       drawVariantShape(ctx, region.cellShapeTypes[i]!, x1, y, w, rowHeight)
     }
 

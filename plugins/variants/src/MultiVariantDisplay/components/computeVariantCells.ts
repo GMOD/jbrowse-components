@@ -121,6 +121,7 @@ export function computeVariantCells({
 
   const featureGenotypeMap: Record<string, FeatureGenotypeInfo> = {}
   let cellCount = 0
+  let numRefCells = 0
 
   function addCell(
     genomicStart: number,
@@ -140,6 +141,9 @@ export function computeVariantCells({
     colors[ci] = colorAbgr
     shapeTypes[ci] = shape
     isRef[ci] = isReference ? 1 : 0
+    if (isReference) {
+      numRefCells++
+    }
     fbGenomicStarts[ci] = genomicStart
     fbGenomicEnds[ci] = genomicEnd
     fbFeatureIds[ci] = featureId
@@ -413,12 +417,6 @@ export function computeVariantCells({
 
   // Stable two-bucket reorder: ref cells first (when drawn), then non-ref.
   // Skip ref cells entirely when drawRef is false.
-  let numRefCells = 0
-  for (let i = 0; i < cellCount; i++) {
-    if (isRef[i]) {
-      numRefCells++
-    }
-  }
   const outCount = drawRef ? cellCount : cellCount - numRefCells
   const outPositions = new Uint32Array(outCount * 2)
   const outRowIndices = new Uint32Array(outCount)

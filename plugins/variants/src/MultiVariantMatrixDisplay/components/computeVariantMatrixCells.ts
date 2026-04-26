@@ -76,6 +76,7 @@ export function computeVariantMatrixCells({
   const isRef = new Uint8Array(maxCells)
 
   let cellCount = 0
+  let numRefCells = 0
 
   function addCell(
     featureIdx: number,
@@ -88,6 +89,9 @@ export function computeVariantMatrixCells({
     rowIndices[ci] = rowIdx
     colors[ci] = colorAbgr
     isRef[ci] = isReference ? 1 : 0
+    if (isReference) {
+      numRefCells++
+    }
     cellCount++
   }
 
@@ -293,12 +297,6 @@ export function computeVariantMatrixCells({
   // Stable two-bucket reorder: ref cells first, then non-ref. Matrix always
   // draws ref (unlike the regular variant display) so both buckets always
   // land in the output.
-  let numRefCells = 0
-  for (let i = 0; i < cellCount; i++) {
-    if (isRef[i]) {
-      numRefCells++
-    }
-  }
   const outFeatureIndices = new Float32Array(cellCount)
   const outRowIndices = new Uint32Array(cellCount)
   const outColors = new Uint32Array(cellCount)
