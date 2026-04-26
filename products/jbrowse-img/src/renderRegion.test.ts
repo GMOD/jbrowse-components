@@ -117,7 +117,7 @@ describe('makeTrackConfig', () => {
       fakeAssembly,
     )
     expect(config?.displays).toHaveLength(1)
-    expect(config?.displays[0]).toMatchObject({
+    expect(config?.displays?.[0]).toMatchObject({
       type: 'LinearSNPCoverageDisplay',
     })
   })

@@ -187,8 +187,8 @@ export async function executeDotplotFeaturesAndPositions({
       continue
     }
 
-    const start = f.get('start') as number
-    const end = f.get('end') as number
+    const start = f.get('start')
+    const end = f.get('end')
     const f1s = strand === -1 ? end : start
     const f1e = strand === -1 ? start : end
 

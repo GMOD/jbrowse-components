@@ -26,12 +26,15 @@ export function getBreakendCoveringRegions({
       matePos: INFO.END[0] - 1,
     }
   } else if (bnd?.MatePosition) {
-    const matePosition = bnd.MatePosition.split(':')
+    const [mateRefNameRaw, matePosRaw] = bnd.MatePosition.split(':')
+    if (!mateRefNameRaw || !matePosRaw) {
+      throw new Error(`Invalid MatePosition format: ${bnd.MatePosition}`)
+    }
     return {
       pos: startPos,
       refName: f(refName),
-      mateRefName: f(matePosition[0]!),
-      matePos: +matePosition[1]! - 1,
+      mateRefName: f(mateRefNameRaw),
+      matePos: +matePosRaw - 1,
     }
   } else if (feature.get('mate')) {
     const mate = feature.get('mate')

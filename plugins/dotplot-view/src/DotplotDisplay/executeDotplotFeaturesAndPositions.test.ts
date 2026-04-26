@@ -17,7 +17,7 @@ function makeViewSnap(
     minimumBlockWidth: 3,
     width: 800,
     staticBlocks: { contentBlocks: [], blocks: [] },
-  } as ViewSnap
+  }
 }
 
 describe('buildBpToPxIndex / bpToPxFromIndex', () => {

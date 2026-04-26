@@ -53,6 +53,7 @@ export interface Assembly {
 
 export interface Track {
   trackId: string
+  displays?: unknown[]
   [key: string]: unknown
 }
 
