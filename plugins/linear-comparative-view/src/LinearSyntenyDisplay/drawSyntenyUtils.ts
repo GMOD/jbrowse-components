@@ -7,6 +7,7 @@ import {
 
 import type { SyriType } from '@jbrowse/plugin-comparative-adapters'
 
+// SYNC: keep in sync with util.ts in dotplot-view
 export function hashString(str: string) {
   let hash = 0
   for (let i = 0; i < str.length; i++) {

@@ -98,6 +98,8 @@ export interface BpToPxIndex {
   bpPerPx: number
 }
 
+// SYNC: parallel impl in executeDotplotFeaturesAndPositions.ts in dotplot-view;
+// that version returns a scalar offsetPx (no region index needed)
 export function buildBpToPxIndex(self: SyntenyViewSnap): BpToPxIndex {
   const {
     interRegionPaddingWidth,

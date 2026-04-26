@@ -14,12 +14,14 @@ interface RegionIndexEntry {
   paddingBpBefore: number
 }
 
-interface BpToPxIndex {
+export interface BpToPxIndex {
   entries: Map<string, RegionIndexEntry[]>
   bpPerPx: number
 }
 
-function buildBpToPxIndex(self: ViewSnap): BpToPxIndex {
+// SYNC: parallel impl in executeSyntenyFeaturesAndPositions.ts in linear-comparative-view;
+// that version returns {index, offsetPx, paddingPx} for region disambiguation
+export function buildBpToPxIndex(self: ViewSnap): BpToPxIndex {
   const {
     interRegionPaddingWidth,
     bpPerPx,
@@ -55,7 +57,7 @@ function buildBpToPxIndex(self: ViewSnap): BpToPxIndex {
   return { entries, bpPerPx }
 }
 
-function bpToPxFromIndex(idx: BpToPxIndex, refName: string, coord: number) {
+export function bpToPxFromIndex(idx: BpToPxIndex, refName: string, coord: number) {
   const list = idx.entries.get(refName)
   if (!list) {
     return undefined
@@ -181,13 +183,14 @@ export async function executeDotplotFeaturesAndPositions({
     const mateRefName =
       a2?.getCanonicalRefName(rawMateRefName) || rawMateRefName
 
-    const start = f.get('start')
-    const end = f.get('end')
-    let f1s = start
-    let f1e = end
-    if (strand === -1) {
-      ;[f1e, f1s] = [f1s, f1e]
+    if (!hIndex.entries.has(refName) || !vIndex.entries.has(mateRefName)) {
+      continue
     }
+
+    const start = f.get('start') as number
+    const end = f.get('end') as number
+    const f1s = strand === -1 ? end : start
+    const f1e = strand === -1 ? start : end
 
     const p11 = bpToPxFromIndex(hIndex, refName, f1s)
     const p12 = bpToPxFromIndex(hIndex, refName, f1e)

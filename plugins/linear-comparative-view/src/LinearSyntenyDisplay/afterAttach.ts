@@ -12,6 +12,7 @@ import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
+// SYNC: stop-token autorun fetch skeleton mirrors afterAttach.ts in dotplot-view
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   let currentStopToken: StopToken | undefined
 

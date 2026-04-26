@@ -33,6 +33,7 @@ function makeViewSnap(view: Dotplot1DViewModel): ViewSnap {
   }
 }
 
+// SYNC: stop-token autorun fetch skeleton mirrors afterAttach.ts in linear-comparative-view
 export function doAfterAttach(
   self: Omit<DotplotDisplayModel, 'afterAttach' | 'beforeDestroy'>,
 ) {
