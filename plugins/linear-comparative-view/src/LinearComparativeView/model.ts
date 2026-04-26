@@ -146,11 +146,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         viewTrackConfigs: types.array(
           pluginManager.pluggableConfigSchemaType('track'),
         ),
-        /**
-         * #property
-         * per-view compact mode: when true, the LGV is collapsed to a label bar
-         */
-        compactViews: types.optional(types.array(types.boolean), []),
       }),
     )
     .volatile(() => ({
@@ -212,7 +207,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       isViewCompact(idx: number) {
-        return self.compactViews[idx] ?? false
+        return self.views[idx]?.scalebarOnly ?? false
       },
     }))
     .actions(self => ({
@@ -396,22 +391,26 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleCompactView(idx: number) {
-        while (self.compactViews.length <= idx) {
-          self.compactViews.push(false)
+        const view = self.views[idx]
+        if (view) {
+          view.setScalebarOnly(!view.scalebarOnly)
         }
-        self.compactViews[idx] = !self.compactViews[idx]
       },
       /**
        * #action
        */
       compactAllViews() {
-        self.compactViews.replace(self.views.map(() => true))
+        for (const view of self.views) {
+          view.setScalebarOnly(true)
+        }
       },
       /**
        * #action
        */
       expandAllViews() {
-        self.compactViews.clear()
+        for (const view of self.views) {
+          view.setScalebarOnly(false)
+        }
       },
       /**
        * #action
@@ -533,7 +532,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         scrollZoom,
         showDynamicControls,
         viewTrackConfigs,
-        compactViews,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -545,7 +543,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         ...(scrollZoom ? { scrollZoom } : {}),
         ...(!showDynamicControls ? { showDynamicControls } : {}),
         ...(viewTrackConfigs.length ? { viewTrackConfigs } : {}),
-        ...(compactViews.some(Boolean) ? { compactViews } : {}),
       } as typeof snap
     })
 }

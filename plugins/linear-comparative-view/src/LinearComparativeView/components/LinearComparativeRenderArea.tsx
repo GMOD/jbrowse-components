@@ -22,7 +22,7 @@ interface TrackEntry {
   }[]
 }
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()(() => ({
   container: {
     display: 'grid',
   },
@@ -46,36 +46,15 @@ const useStyles = makeStyles()(theme => ({
       background: '#d0d0d0',
     },
   },
+  wrapper: {
+    position: 'relative',
+  },
   collapseButton: {
     position: 'absolute',
     right: 4,
     top: -2,
     zIndex: 200,
     padding: 0,
-  },
-  wrapper: {
-    position: 'relative',
-  },
-  lgvCollapseButton: {
-    position: 'absolute',
-    right: 4,
-    top: 2,
-    zIndex: 1000,
-    padding: 2,
-    background: 'rgba(255,255,255,0.7)',
-    '&:hover': {
-      background: 'rgba(255,255,255,0.9)',
-    },
-  },
-  collapsedViewBar: {
-    height: 6,
-    display: 'flex',
-    cursor: 'pointer',
-    overflow: 'hidden',
-    borderBottom: `1px solid ${theme.palette.divider}`,
-    '&:hover': {
-      filter: 'brightness(1.15)',
-    },
   },
 }))
 
@@ -84,42 +63,6 @@ function View({ view }: { view: LinearGenomeViewModel }) {
   const { ReactComponent } = pluginManager.getViewType(view.type)!
   return <ReactComponent model={view} />
 }
-
-const CollapsedViewBar = observer(function CollapsedViewBar({
-  model,
-  viewIdx,
-}: {
-  model: LinearComparativeViewModel
-  viewIdx: number
-}) {
-  const { classes } = useStyles()
-  const view = model.views[viewIdx]!
-  const assemblyName = view.assemblyNames[0] ?? 'Unknown'
-  const regions = view.displayedRegions
-  const totalBp = regions.reduce((acc, r) => acc + (r.end - r.start), 0)
-  return (
-    <Tooltip title={`Expand ${assemblyName} — click to restore`}>
-      <div
-        className={classes.collapsedViewBar}
-        onClick={() => {
-          model.toggleCompactView(viewIdx)
-        }}
-      >
-        {totalBp > 0
-          ? regions.map((region, i) => (
-              <div
-                key={`${region.refName}-${i}`}
-                style={{
-                  flex: region.end - region.start,
-                  background: i % 2 === 0 ? '#778' : '#99a',
-                }}
-              />
-            ))
-          : null}
-      </div>
-    </Tooltip>
-  )
-})
 
 const LinearComparativeRenderArea = observer(
   function LinearComparativeRenderArea({
@@ -137,24 +80,7 @@ const LinearComparativeRenderArea = observer(
             {i > 0 ? (
               <LevelSection model={model} levelIdx={i - 1} classes={classes} />
             ) : null}
-            {model.isViewCompact(i) ? (
-              <CollapsedViewBar model={model} viewIdx={i} />
-            ) : (
-              <div className={classes.wrapper}>
-                <View view={view} />
-                <Tooltip title="Collapse this view">
-                  <IconButton
-                    className={classes.lgvCollapseButton}
-                    size="small"
-                    onClick={() => {
-                      model.toggleCompactView(i)
-                    }}
-                  >
-                    <ExpandLessIcon style={{ fontSize: 14 }} />
-                  </IconButton>
-                </Tooltip>
-              </div>
-            )}
+            <View view={view} />
           </Fragment>
         ))}
       </div>

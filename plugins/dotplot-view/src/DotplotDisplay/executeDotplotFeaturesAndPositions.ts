@@ -57,7 +57,11 @@ export function buildBpToPxIndex(self: ViewSnap): BpToPxIndex {
   return { entries, bpPerPx }
 }
 
-export function bpToPxFromIndex(idx: BpToPxIndex, refName: string, coord: number) {
+export function bpToPxFromIndex(
+  idx: BpToPxIndex,
+  refName: string,
+  coord: number,
+) {
   const list = idx.entries.get(refName)
   if (!list) {
     return undefined

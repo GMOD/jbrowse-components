@@ -235,6 +235,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ),
         /**
          * #property
+         * when true, only the header and coordinate scalebar are rendered
+         */
+        scalebarOnly: types.optional(types.boolean, false),
+        /**
+         * #property
          * this is a non-serialized property that can be used for loading the
          * linear genome view via session snapshots
          * example:
@@ -309,9 +314,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * temporary vertical guides that can be set by displays (e.g., LD display hover)
        */
       volatileGuides: [] as VolatileGuide[],
-      /**
-       * #volatile
-       */
     }))
     .views(self => ({
       /**
@@ -567,6 +569,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get height() {
+        if (self.scalebarOnly) {
+          return this.headerHeight + this.scalebarHeight
+        }
         return (
           this.trackHeightsWithResizeHandles +
           this.headerHeight +
@@ -856,6 +861,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setHideHeaderOverview(b: boolean) {
         self.hideHeaderOverview = b
+      },
+      /**
+       * #action
+       */
+      setScalebarOnly(b: boolean) {
+        self.scalebarOnly = b
       },
       /**
        * #action

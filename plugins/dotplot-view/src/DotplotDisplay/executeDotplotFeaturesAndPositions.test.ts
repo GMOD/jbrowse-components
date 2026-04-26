@@ -6,7 +6,12 @@ import {
 import type { ViewSnap } from '@jbrowse/core/util'
 
 function makeViewSnap(
-  regions: { refName: string; start: number; end: number; reversed?: boolean }[],
+  regions: {
+    refName: string
+    start: number
+    end: number
+    reversed?: boolean
+  }[],
   bpPerPx = 1,
 ): ViewSnap {
   return {

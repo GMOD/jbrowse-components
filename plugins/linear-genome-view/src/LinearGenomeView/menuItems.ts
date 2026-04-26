@@ -6,6 +6,8 @@ import {
 } from '@jbrowse/core/util'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import ExpandLessIcon from '@mui/icons-material/ExpandLess'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LabelIcon from '@mui/icons-material/Label'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -132,6 +134,13 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
   const { canShowCytobands, showCytobands } = self
   const session = getSession(self)
   const menuItems: MenuItem[] = [
+    {
+      label: self.scalebarOnly ? 'Expand tracks' : 'Collapse to ruler',
+      icon: self.scalebarOnly ? ExpandMoreIcon : ExpandLessIcon,
+      onClick: () => {
+        self.setScalebarOnly(!self.scalebarOnly)
+      },
+    },
     {
       label: 'Return to import form',
       onClick: () => {

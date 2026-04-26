@@ -1,10 +1,12 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import ArrowDown from '@mui/icons-material/KeyboardArrowDown'
+import AddIcon from '@mui/icons-material/Add'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import RemoveIcon from '@mui/icons-material/Remove'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
-import { IconButton, Paper, alpha } from '@mui/material'
+import { IconButton, Paper, Tooltip, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -29,38 +31,56 @@ const MiniControls = observer(function MiniControls({
   model: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const { id, bpPerPx, maxBpPerPx, minBpPerPx, hideHeader, effectiveBpPerPx } =
+  const { id, bpPerPx, maxBpPerPx, minBpPerPx, hideHeader, scalebarOnly, effectiveBpPerPx } =
     model
   const { focusedViewId } = getSession(model)
-  return hideHeader ? (
+  return (
     <Paper className={classes.background}>
       <Paper
         className={focusedViewId === id ? classes.focusedBackground : undefined}
       >
         <CascadingMenuButton menuItems={() => model.menuItems()}>
-          <ArrowDown fontSize="small" />
+          <MoreVertIcon fontSize="small" />
         </CascadingMenuButton>
-        <IconButton
-          data-testid="zoom_out"
-          onClick={() => {
-            model.zoom(bpPerPx * 2)
-          }}
-          disabled={effectiveBpPerPx >= maxBpPerPx - 0.0001}
-        >
-          <ZoomOut fontSize="small" />
-        </IconButton>
-        <IconButton
-          data-testid="zoom_in"
-          onClick={() => {
-            model.zoom(bpPerPx / 2)
-          }}
-          disabled={effectiveBpPerPx <= minBpPerPx + 0.0001}
-        >
-          <ZoomIn fontSize="small" />
-        </IconButton>
+        <Tooltip title={scalebarOnly ? 'Expand tracks' : 'Collapse to ruler'}>
+          <IconButton
+            size="small"
+            onClick={() => {
+              model.setScalebarOnly(!scalebarOnly)
+            }}
+          >
+            {scalebarOnly ? (
+              <AddIcon fontSize="small" />
+            ) : (
+              <RemoveIcon fontSize="small" />
+            )}
+          </IconButton>
+        </Tooltip>
+        {hideHeader ? (
+          <>
+            <IconButton
+              data-testid="zoom_out"
+              onClick={() => {
+                model.zoom(bpPerPx * 2)
+              }}
+              disabled={effectiveBpPerPx >= maxBpPerPx - 0.0001}
+            >
+              <ZoomOut fontSize="small" />
+            </IconButton>
+            <IconButton
+              data-testid="zoom_in"
+              onClick={() => {
+                model.zoom(bpPerPx / 2)
+              }}
+              disabled={effectiveBpPerPx <= minBpPerPx + 0.0001}
+            >
+              <ZoomIn fontSize="small" />
+            </IconButton>
+          </>
+        ) : null}
       </Paper>
     </Paper>
-  ) : null
+  )
 })
 
 export default MiniControls
