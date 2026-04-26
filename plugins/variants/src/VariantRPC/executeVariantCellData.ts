@@ -299,6 +299,7 @@ export async function executeVariantCellData({
         cellData.flatbushData,
         cellData.flatbushGenomicStarts.buffer,
         cellData.flatbushGenomicEnds.buffer,
+        cellData.flatbushFeatureIndices.buffer,
       )
     }
 

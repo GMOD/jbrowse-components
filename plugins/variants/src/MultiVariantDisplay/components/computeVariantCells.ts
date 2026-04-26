@@ -44,8 +44,9 @@ export interface VariantCellData {
   flatbushData: ArrayBuffer
   flatbushGenomicStarts: Uint32Array
   flatbushGenomicEnds: Uint32Array
-  flatbushFeatureIds: string[]
-  flatbushSourceNames: string[]
+  flatbushFeatureIndices: Uint32Array
+  featureIdList: string[]
+  sourceNameList: string[]
   inputKey: string
 }
 
@@ -108,8 +109,9 @@ export function computeVariantCells({
   const isRef = new Uint8Array(maxCells)
   const fbGenomicStarts = new Uint32Array(maxCells)
   const fbGenomicEnds = new Uint32Array(maxCells)
-  const fbFeatureIds: string[] = new Array(maxCells)
-  const fbSourceNames: string[] = new Array(maxCells)
+  const fbFeatureIndices = new Uint32Array(maxCells)
+  const sourceNameList = sources.map(s => s.name)
+  const featureIdList: string[] = []
 
   let regionStart = mafs[0]?.feature.get('start') ?? 0
   for (const { feature } of mafs) {
@@ -131,8 +133,7 @@ export function computeVariantCells({
     colorAbgr: number,
     shape: number,
     isReference: boolean,
-    featureId: string,
-    sourceName: string,
+    featureIdx: number,
   ) {
     const ci = cellCount
     positions[ci * 2] = genomicStart - regionStart
@@ -146,8 +147,7 @@ export function computeVariantCells({
     }
     fbGenomicStarts[ci] = genomicStart
     fbGenomicEnds[ci] = genomicEnd
-    fbFeatureIds[ci] = featureId
-    fbSourceNames[ci] = sourceName
+    fbFeatureIndices[ci] = featureIdx
     cellCount++
   }
 
@@ -166,6 +166,7 @@ export function computeVariantCells({
     }
   }
 
+  let featureIdx = 0
   for (const { feature, mostFrequentAlt } of mafs) {
     const featureId = feature.id()
     const start = feature.get('start')
@@ -220,8 +221,7 @@ export function computeVariantCells({
                 getCachedABGR(c),
                 shape,
                 c === REFERENCE_COLOR,
-                featureId,
-                name,
+                featureIdx,
               )
               renderedGenotypes[name] = gtStr
             }
@@ -234,8 +234,7 @@ export function computeVariantCells({
               BLACK_ABGR,
               shape,
               false,
-              featureId,
-              name,
+              featureIdx,
             )
             renderedGenotypes[name] = gtStr
           }
@@ -273,8 +272,7 @@ export function computeVariantCells({
                   getCachedABGR(c),
                   shape,
                   c === REFERENCE_COLOR,
-                  featureId,
-                  name,
+                  featureIdx,
                 )
                 renderedGenotypes[name] = genotype
               }
@@ -287,8 +285,7 @@ export function computeVariantCells({
                 BLACK_ABGR,
                 shape,
                 false,
-                featureId,
-                name,
+                featureIdx,
               )
               renderedGenotypes[name] = genotype
             }
@@ -358,8 +355,7 @@ export function computeVariantCells({
               getCachedABGR(c),
               shape,
               c === REFERENCE_COLOR,
-              featureId,
-              name,
+              featureIdx,
             )
             renderedGenotypes[name] = genotypeStringFromRaw(
               callGt,
@@ -395,8 +391,7 @@ export function computeVariantCells({
                 getCachedABGR(c),
                 shape,
                 c === REFERENCE_COLOR,
-                featureId,
-                name,
+                featureIdx,
               )
               renderedGenotypes[name] = genotype
             }
@@ -413,6 +408,8 @@ export function computeVariantCells({
       length: bpLen,
       genotypes: renderedGenotypes,
     }
+    featureIdList.push(featureId)
+    featureIdx++
   }
 
   // Stable two-bucket reorder: ref cells first (when drawn), then non-ref.
@@ -424,8 +421,7 @@ export function computeVariantCells({
   const outShapeTypes = new Uint8Array(outCount)
   const outFbGenomicStarts = new Uint32Array(outCount)
   const outFbGenomicEnds = new Uint32Array(outCount)
-  const outFbFeatureIds: string[] = new Array(outCount)
-  const outFbSourceNames: string[] = new Array(outCount)
+  const outFbFeatureIndices = new Uint32Array(outCount)
   let refPos = 0
   let nonRefPos = drawRef ? numRefCells : 0
   for (let i = 0; i < cellCount; i++) {
@@ -441,8 +437,7 @@ export function computeVariantCells({
     outShapeTypes[w] = shapeTypes[i]!
     outFbGenomicStarts[w] = fbGenomicStarts[i]!
     outFbGenomicEnds[w] = fbGenomicEnds[i]!
-    outFbFeatureIds[w] = fbFeatureIds[i]!
-    outFbSourceNames[w] = fbSourceNames[i]!
+    outFbFeatureIndices[w] = fbFeatureIndices[i]!
   }
 
   // Flatbush requires at least one add() per the constructor-declared count,
@@ -474,8 +469,9 @@ export function computeVariantCells({
     flatbushData: flatbush.data,
     flatbushGenomicStarts: outFbGenomicStarts,
     flatbushGenomicEnds: outFbGenomicEnds,
-    flatbushFeatureIds: outFbFeatureIds,
-    flatbushSourceNames: outFbSourceNames,
+    flatbushFeatureIndices: outFbFeatureIndices,
+    featureIdList,
+    sourceNameList,
     inputKey,
   }
 }
