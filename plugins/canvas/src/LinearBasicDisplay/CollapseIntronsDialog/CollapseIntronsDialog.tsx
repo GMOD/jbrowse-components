@@ -13,9 +13,9 @@ import {
 import TranscriptTable from './TranscriptTable.tsx'
 import { collapseIntrons } from './util.ts'
 
-import type { LinearGenomeViewModel } from '../../../LinearGenomeView/index.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export default function CollapseIntronsDialog({
   view,
@@ -100,22 +100,19 @@ export default function CollapseIntronsDialog({
           variant="contained"
           color="primary"
           disabled={!validWindowSize}
-          onClick={() => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            ;(async () => {
-              try {
-                await collapseIntrons({
-                  view,
-                  transcripts,
-                  assembly,
-                  padding: windowSizeNum,
-                })
-                handleClose()
-              } catch (e) {
-                getSession(view).notifyError(`${e}`, e)
-                console.error(e)
-              }
-            })()
+          onClick={async () => {
+            try {
+              await collapseIntrons({
+                view,
+                transcripts,
+                assembly,
+                padding: windowSizeNum,
+              })
+              handleClose()
+            } catch (e) {
+              getSession(view).notifyError(`${e}`, e)
+              console.error(e)
+            }
           }}
         >
           Submit

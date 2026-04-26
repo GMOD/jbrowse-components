@@ -11,9 +11,9 @@ import {
 
 import { collapseIntrons, getExonsAndCDS } from './util.ts'
 
-import type { LinearGenomeViewModel } from '../../../LinearGenomeView/index.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export default function TranscriptTable({
   transcripts,
@@ -77,22 +77,19 @@ export default function TranscriptTable({
                     variant="contained"
                     color="primary"
                     disabled={!validPadding}
-                    onClick={() => {
-                      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                      ;(async () => {
-                        try {
-                          await collapseIntrons({
-                            view,
-                            transcripts: [transcript],
-                            assembly,
-                            padding,
-                          })
-                          handleClose()
-                        } catch (e) {
-                          getSession(view).notifyError(`${e}`, e)
-                          console.error(e)
-                        }
-                      })()
+                    onClick={async () => {
+                      try {
+                        await collapseIntrons({
+                          view,
+                          transcripts: [transcript],
+                          assembly,
+                          padding,
+                        })
+                        handleClose()
+                      } catch (e) {
+                        getSession(view).notifyError(`${e}`, e)
+                        console.error(e)
+                      }
                     }}
                   >
                     Select

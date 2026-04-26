@@ -2,9 +2,9 @@ import { getSession, mergeIntervals } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { when } from 'mobx'
 
-import type { LinearGenomeViewModel } from '../../../LinearGenomeView/index.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export function getExonsAndCDS(transcripts: Feature[]) {
   return transcripts.flatMap(
@@ -14,6 +14,41 @@ export function getExonsAndCDS(transcripts: Feature[]) {
         ?.filter(f => f.get('type') === 'exon' || f.get('type') === 'CDS') ??
       [],
   )
+}
+
+export function featureHasExonsOrCDS(feature: Feature) {
+  const subs = feature.get('subfeatures') ?? []
+  return subs.some(
+    (f: Feature) => f.get('type') === 'exon' || f.get('type') === 'CDS',
+  )
+}
+
+export function getTranscripts(feature?: Feature): Feature[] {
+  if (!feature) {
+    return []
+  }
+  return featureHasExonsOrCDS(feature)
+    ? [feature]
+    : (feature.get('subfeatures') ?? [])
+}
+
+export function hasIntrons(transcripts: Feature[]) {
+  const subs = transcripts.flatMap(
+    transcript =>
+      transcript
+        .get('subfeatures')
+        ?.filter(
+          (f: Feature) => f.get('type') === 'exon' || f.get('type') === 'CDS',
+        ) ?? [],
+  )
+  if (subs.length < 2) {
+    return false
+  }
+  const merged = mergeIntervals(
+    subs.map((f: Feature) => ({ start: f.get('start'), end: f.get('end') })),
+    0,
+  )
+  return merged.length > 1
 }
 
 interface ViewState {

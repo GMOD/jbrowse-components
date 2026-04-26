@@ -2,19 +2,13 @@ import { lazy } from 'react'
 
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  getTranscripts,
-  hasIntrons,
-} from '@jbrowse/plugin-linear-genome-view/src/BaseLinearDisplay/util'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 
+import { getTranscripts, hasIntrons } from './CollapseIntronsDialog/util.ts'
 import baseStateModelFactory from './baseModel.ts'
 
 const CollapseIntronsDialog = lazy(
-  () =>
-    import(
-      '@jbrowse/plugin-linear-genome-view/src/BaseLinearDisplay/components/CollapseIntronsDialog/CollapseIntronsDialog'
-    ),
+  () => import('./CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
 )
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -218,33 +212,30 @@ export default function stateModelFactory(
             {
               label: 'Collapse introns',
               icon: CloseFullscreenIcon,
-              onClick: () => {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                ;(async () => {
-                  const session = getSession(self)
-                  const fullFeature = await self.fetchFullFeature(
-                    featureId,
-                    displayedRegionIndex,
-                  )
-                  if (!fullFeature) {
-                    return
-                  }
-                  const transcripts = getTranscripts(fullFeature)
-                  if (!hasIntrons(transcripts)) {
-                    session.notify('No introns found in this feature', 'info')
-                    return
-                  }
-                  const view = getContainingView(self) as LGV
-                  const assembly = session.assemblyManager.get(
-                    view.assemblyNames[0]!,
-                  )
-                  if (assembly) {
-                    session.queueDialog(handleClose => [
-                      CollapseIntronsDialog,
-                      { view, transcripts, handleClose, assembly },
-                    ])
-                  }
-                })()
+              onClick: async () => {
+                const session = getSession(self)
+                const fullFeature = await self.fetchFullFeature(
+                  featureId,
+                  displayedRegionIndex,
+                )
+                if (!fullFeature) {
+                  return
+                }
+                const transcripts = getTranscripts(fullFeature)
+                if (!hasIntrons(transcripts)) {
+                  session.notify('No introns found in this feature', 'info')
+                  return
+                }
+                const view = getContainingView(self) as LGV
+                const assembly = session.assemblyManager.get(
+                  view.assemblyNames[0]!,
+                )
+                if (assembly) {
+                  session.queueDialog(handleClose => [
+                    CollapseIntronsDialog,
+                    { view, transcripts, handleClose, assembly },
+                  ])
+                }
               },
             },
           ]

@@ -17,7 +17,6 @@ import {
 } from '@jbrowse/core/util/tracks'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
-import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun } from 'mobx'
@@ -28,12 +27,7 @@ import FeatureDensityMixin from '../shared/FeatureDensityMixin.tsx'
 import TrackHeightMixin from './models/TrackHeightMixin.tsx'
 import configSchema from './models/configSchema.ts'
 import BlockState from './models/serverSideRenderedBlock.ts'
-import {
-  fetchFeatureByIdRpc,
-  findSubfeatureById,
-  getTranscripts,
-  hasIntrons,
-} from './util.ts'
+import { fetchFeatureByIdRpc, findSubfeatureById } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'
 import type { LegendItem } from './components/FloatingLegend.tsx'
@@ -46,9 +40,6 @@ import type { Theme } from '@mui/material'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip.tsx'))
-const CollapseIntronsDialog = lazy(
-  () => import('./components/CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
-)
 
 type LGV = LinearGenomeViewModel
 
@@ -533,8 +524,6 @@ function stateModelFactory() {
        */
       contextMenuItems(): MenuItem[] {
         const feat = self.contextMenuFeature
-        const transcripts = getTranscripts(feat)
-
         return feat
           ? [
               {
@@ -562,32 +551,6 @@ function stateModelFactory() {
                   session.notify('Copied to clipboard', 'success')
                 },
               },
-              ...(hasIntrons(transcripts)
-                ? [
-                    {
-                      label: 'Collapse introns',
-                      icon: CloseFullscreenIcon,
-                      onClick: () => {
-                        const view = getContainingView(self) as LGV
-                        const { assemblyManager } = getSession(self)
-                        const assembly = assemblyManager.get(
-                          view.assemblyNames[0]!,
-                        )
-                        if (assembly) {
-                          getSession(self).queueDialog(handleClose => [
-                            CollapseIntronsDialog,
-                            {
-                              view,
-                              transcripts,
-                              handleClose,
-                              assembly,
-                            },
-                          ])
-                        }
-                      },
-                    },
-                  ]
-                : []),
             ]
           : []
       },
