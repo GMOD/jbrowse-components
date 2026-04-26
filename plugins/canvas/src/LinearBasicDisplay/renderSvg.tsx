@@ -221,9 +221,10 @@ export async function renderSvg(
       canvasWidth: totalWidth,
       canvasHeight: height,
     })
-    // Labels + peptides: SVG-only post-pass, drawn after the geometry so
-    // they overlay rects/lines/arrows the same way the React DOM overlays do
-    // on-screen. Same ctx as the geometry — they share rasterize behavior.
+  })
+  // Labels + peptides always vector — text should remain crisp even when
+  // rasterizeLayers is on.
+  const textNode = paintLayer(totalWidth, height, undefined, ctx => {
     for (const vr of visibleRegions) {
       const data = model.laidOutDataMap.get(vr.displayedRegionIndex)
       if (!data) {
@@ -259,6 +260,7 @@ export async function renderSvg(
       height={height}
     >
       {featuresNode}
+      {textNode}
     </SvgClipRect>
   )
 }

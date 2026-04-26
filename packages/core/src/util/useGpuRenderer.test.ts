@@ -7,8 +7,15 @@ jest.mock('../gpu/getGpuDevice.ts', () => ({
   onDeviceLost: jest.fn(() => jest.fn()),
 }))
 
+let consoleErrorSpy: jest.SpyInstance
+
 beforeEach(() => {
   jest.mocked(onDeviceLost).mockClear()
+  consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+})
+
+afterEach(() => {
+  consoleErrorSpy.mockRestore()
 })
 
 function simulateDeviceLost() {

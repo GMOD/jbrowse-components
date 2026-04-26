@@ -23,6 +23,7 @@ let mockView = {
   ],
   bpPerPx: 1,
   width: 800,
+  dynamicBlocks: { totalWidthPx: 800 },
 }
 
 jest.mock('@jbrowse/core/util', () => ({
@@ -43,6 +44,7 @@ function resetMockView() {
     ],
     bpPerPx: 1,
     width: 800,
+    dynamicBlocks: { totalWidthPx: 800 },
   }
 }
 
@@ -179,6 +181,7 @@ describe('renderSvg', () => {
       ],
       bpPerPx: 1,
       width: 800,
+      dynamicBlocks: { totalWidthPx: 800 },
     }
 
     const data = makeData([
