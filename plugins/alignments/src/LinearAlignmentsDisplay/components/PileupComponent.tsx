@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-
 import type React from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
@@ -74,7 +73,6 @@ const PileupInner = observer(function PileupInner({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const { classes } = useStyles()
   const base = useAlignmentsBase(model)
   const {
     canvas,

@@ -53,6 +53,15 @@ function normalizeWheel(delta: number, mode: number) {
   return delta
 }
 
+interface WheelState {
+  zoomDelta: number
+  zoomDivisor: number
+  lastClientX: number
+  lastViewIndex: number
+  rafId: number | null
+  lastRafTime: number | null
+}
+
 const BreakpointSplitViewOverlay = observer(
   function BreakpointSplitViewOverlay({
     model,
@@ -62,18 +71,22 @@ const BreakpointSplitViewOverlay = observer(
     const { classes } = useStyles()
     const { matchedTracks, views } = model
     const divRef = useRef<HTMLDivElement>(null)
-    const zoomDelta = useRef(0)
-    const zoomDivisor = useRef(0)
-    const lastClientX = useRef(0)
-    const lastViewIndex = useRef(0)
-    const rafId = useRef<number | null>(null)
-    const lastRafTime = useRef<number | null>(null)
+    const state = useRef<WheelState>({
+      zoomDelta: 0,
+      zoomDivisor: 0,
+      lastClientX: 0,
+      lastViewIndex: 0,
+      rafId: null,
+      lastRafTime: null,
+    })
 
     useEffect(() => {
       const div = divRef.current
       if (!div || views.length === 0) {
         return
       }
+
+      const s = state.current
 
       function handleWheel(event: WheelEvent) {
         const target = event.target as Element
@@ -117,47 +130,44 @@ const BreakpointSplitViewOverlay = observer(
           (targetView.scrollZoom && Math.abs(deltaY) >= Math.abs(deltaX))
         ) {
           event.preventDefault()
-          zoomDelta.current += deltaY
-          zoomDivisor.current = getNormalizer(deltaY)
-          lastClientX.current = event.clientX
-          lastViewIndex.current = viewIndex
+          s.zoomDelta += deltaY
+          s.zoomDivisor = getNormalizer(deltaY)
+          s.lastClientX = event.clientX
+          s.lastViewIndex = viewIndex
         } else {
           event.preventDefault()
           targetView.horizontalScroll(deltaX)
         }
 
-        if (rafId.current === null) {
-          rafId.current = requestAnimationFrame(now => {
+        if (s.rafId === null) {
+          s.rafId = requestAnimationFrame(now => {
             const elapsed = Math.min(
               100,
-              lastRafTime.current !== null ? now - lastRafTime.current : 16.67,
+              s.lastRafTime !== null ? now - s.lastRafTime : 16.67,
             )
-            lastRafTime.current = now
+            s.lastRafTime = now
             const maxZoomDelta = (0.2 / 16.67) * elapsed
-            if (zoomDelta.current !== 0) {
-              const view = views[lastViewIndex.current]
+            if (s.zoomDelta !== 0) {
+              const view = views[s.lastViewIndex]
               const containers = document.querySelectorAll(
                 '[data-testid="tracksContainer"]',
               )
-              const container = containers[lastViewIndex.current] as
+              const container = containers[s.lastViewIndex] as
                 | HTMLElement
                 | undefined
               if (view?.zoomTo && container) {
                 const d = Math.max(
                   -maxZoomDelta,
-                  Math.min(
-                    maxZoomDelta,
-                    zoomDelta.current / zoomDivisor.current,
-                  ),
+                  Math.min(maxZoomDelta, s.zoomDelta / s.zoomDivisor),
                 )
                 view.zoomTo(
                   d > 0 ? view.bpPerPx * (1 + d) : view.bpPerPx / (1 - d),
-                  lastClientX.current - container.getBoundingClientRect().left,
+                  s.lastClientX - container.getBoundingClientRect().left,
                 )
               }
-              zoomDelta.current = 0
+              s.zoomDelta = 0
             }
-            rafId.current = null
+            s.rafId = null
           })
         }
       }
@@ -165,8 +175,8 @@ const BreakpointSplitViewOverlay = observer(
       div.addEventListener('wheel', handleWheel, { passive: false })
       return () => {
         div.removeEventListener('wheel', handleWheel)
-        if (rafId.current !== null) {
-          cancelAnimationFrame(rafId.current)
+        if (s.rafId !== null) {
+          cancelAnimationFrame(s.rafId)
         }
       }
     }, [views])

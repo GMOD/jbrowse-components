@@ -42,19 +42,33 @@ function normalizeWheel(delta: number, mode: number) {
   return delta
 }
 
+interface WheelState {
+  scrollDelta: number
+  zoomDelta: number
+  zoomDivisor: number
+  lastClientX: number
+  rectLeft: number
+  rafId: number | null
+  lastRafTime: number | null
+  lastWheelTime: number | null
+  tabJustActivated: boolean
+}
+
 export function useWheelScroll(
   ref: React.RefObject<HTMLDivElement | null>,
   model: GenomeViewModel,
 ) {
-  const scrollDelta = useRef(0)
-  const zoomDelta = useRef(0)
-  const zoomDivisor = useRef(0)
-  const lastClientX = useRef(0)
-  const rectLeft = useRef(0)
-  const rafId = useRef<number | null>(null)
-  const lastRafTime = useRef<number | null>(null)
-  const lastWheelTime = useRef<number | null>(null)
-  const tabJustActivated = useRef(false)
+  const state = useRef<WheelState>({
+    scrollDelta: 0,
+    zoomDelta: 0,
+    zoomDivisor: 0,
+    lastClientX: 0,
+    rectLeft: 0,
+    rafId: null,
+    lastRafTime: null,
+    lastWheelTime: null,
+    tabJustActivated: false,
+  })
 
   useEffect(() => {
     const curr = ref.current
@@ -62,16 +76,18 @@ export function useWheelScroll(
       return () => {}
     }
 
+    const s = state.current
+
     // cache the element's left position via ResizeObserver to avoid calling
     // getBoundingClientRect() inside the wheel handler, which forces a
     // synchronous layout reflow and causes "[Violation] 'wheel' handler took
     // Nms" warnings. event.offsetX would be simpler but is unreliable here
     // since wheel events bubble from child elements
-    rectLeft.current = curr.getBoundingClientRect().left
+    s.rectLeft = curr.getBoundingClientRect().left
     const hasRO = typeof window !== 'undefined' && 'ResizeObserver' in window
     const observer = hasRO
       ? new ResizeObserver(() => {
-          rectLeft.current = curr.getBoundingClientRect().left
+          s.rectLeft = curr.getBoundingClientRect().left
         })
       : undefined
     observer?.observe(curr)
@@ -86,12 +102,11 @@ export function useWheelScroll(
       }
 
       const now = performance.now()
-      const wheelGap =
-        lastWheelTime.current !== null ? now - lastWheelTime.current : 0
-      lastWheelTime.current = now
+      const wheelGap = s.lastWheelTime !== null ? now - s.lastWheelTime : 0
+      s.lastWheelTime = now
 
-      if (tabJustActivated.current || wheelGap > 1000) {
-        tabJustActivated.current = false
+      if (s.tabJustActivated || wheelGap > 1000) {
+        s.tabJustActivated = false
       }
 
       const deltaY = normalizeWheel(event.deltaY, event.deltaMode)
@@ -108,11 +123,11 @@ export function useWheelScroll(
           )
         }
         event.preventDefault()
-        zoomDelta.current += deltaY
-        zoomDivisor.current = isCtrlZoom
+        s.zoomDelta += deltaY
+        s.zoomDivisor = isCtrlZoom
           ? getNormalizer(deltaY)
           : SCROLL_ZOOM_FACTOR_DIVISOR
-        lastClientX.current = event.clientX
+        s.lastClientX = event.clientX
       } else {
         // when scrollZoom is on, always preventDefault to stop the page
         // from scrolling on diagonal trackpad gestures that fall outside
@@ -124,51 +139,51 @@ export function useWheelScroll(
           event.preventDefault()
         }
         if (
-          scrollDelta.current !== 0 &&
-          Math.sign(deltaX) !== Math.sign(scrollDelta.current)
+          s.scrollDelta !== 0 &&
+          Math.sign(deltaX) !== Math.sign(s.scrollDelta)
         ) {
-          scrollDelta.current = 0
+          s.scrollDelta = 0
         }
-        scrollDelta.current += deltaX
+        s.scrollDelta += deltaX
       }
 
       // coalesce all wheel events into one update per frame so that bursts
       // of events (e.g. fast trackpad scrolling) don't each trigger expensive
       // model updates
-      if (rafId.current === null) {
-        rafId.current = requestAnimationFrame(now => {
+      if (s.rafId === null) {
+        s.rafId = requestAnimationFrame(now => {
           const elapsed = Math.min(
             100,
-            lastRafTime.current !== null ? now - lastRafTime.current : 16.67,
+            s.lastRafTime !== null ? now - s.lastRafTime : 16.67,
           )
 
-          lastRafTime.current = now
+          s.lastRafTime = now
           const maxZoomDelta = MAX_ZOOM_RATE_PER_MS * elapsed
-          if (zoomDelta.current !== 0) {
+          if (s.zoomDelta !== 0) {
             const d = Math.max(
               -maxZoomDelta,
-              Math.min(maxZoomDelta, zoomDelta.current / zoomDivisor.current),
+              Math.min(maxZoomDelta, s.zoomDelta / s.zoomDivisor),
             )
             model.zoomTo(
               d > 0 ? model.bpPerPx * (1 + d) : model.bpPerPx / (1 - d),
-              lastClientX.current - rectLeft.current,
+              s.lastClientX - s.rectLeft,
             )
 
-            zoomDelta.current = 0
+            s.zoomDelta = 0
           }
-          if (scrollDelta.current !== 0) {
-            model.horizontalScroll(scrollDelta.current)
-            scrollDelta.current = 0
+          if (s.scrollDelta !== 0) {
+            model.horizontalScroll(s.scrollDelta)
+            s.scrollDelta = 0
           }
-          rafId.current = null
+          s.rafId = null
         })
       }
     }
 
     function onVisibilityChange() {
       if (!document.hidden) {
-        tabJustActivated.current = true
-        lastRafTime.current = null
+        s.tabJustActivated = true
+        s.lastRafTime = null
       }
     }
     document.addEventListener('visibilitychange', onVisibilityChange)
@@ -178,8 +193,8 @@ export function useWheelScroll(
       curr.removeEventListener('wheel', onWheel)
       document.removeEventListener('visibilitychange', onVisibilityChange)
       observer?.disconnect()
-      if (rafId.current !== null) {
-        cancelAnimationFrame(rafId.current)
+      if (s.rafId !== null) {
+        cancelAnimationFrame(s.rafId)
       }
     }
   }, [model, ref])

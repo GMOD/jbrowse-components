@@ -22,6 +22,8 @@ expressions intact. See `CONFIG_PATTERN.md`.
 
 **Scroll zoom lag.** This is a tricky one but sometimes, when doing a scroll zoom, we see a ~500ms–1s delay after tab switch. Debug LinearGenomeView reactivity or JS event throttling.
 
+**`zoomDivisor` coalescing in wheel handlers.** In `useWheelScroll.ts` and `BreakpointSplitViewOverlay.tsx`, `zoomDelta` accumulates across wheel events within a RAF frame but `zoomDivisor` is overwritten by each event (last one wins). If two events fire before the RAF fires — one large-delta (normalizer=500) then one small-delta (normalizer=25) — the accumulated delta gets divided by 25, potentially making the zoom jump larger than intended. Investigate whether this is perceptible, and if so, fix by tracking divisor per-event (e.g. accumulate weighted or use first-event divisor for the frame).
+
 
 
 **`paf_chain2paf` / `parseCigar2` speed.** Profile and optimize.
