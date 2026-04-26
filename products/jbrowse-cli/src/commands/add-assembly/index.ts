@@ -6,8 +6,8 @@ import {
   getAssembly,
   loadOrCreateConfig,
   resolveTargetPath,
-  saveConfigAndReport,
 } from './utils.ts'
+import { saveConfigAndReport } from '../shared/config-operations.ts'
 import { debug, printHelp } from '../../utils.ts'
 
 export async function run(args?: string[]) {
@@ -162,7 +162,8 @@ export async function run(args?: string[]) {
   await saveConfigAndReport({
     config: updatedConfig,
     target,
-    assembly,
+    itemType: 'assembly',
+    itemName: assembly.name,
     wasOverwritten,
   })
 }
