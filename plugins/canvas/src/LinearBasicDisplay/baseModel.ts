@@ -6,6 +6,7 @@ import {
   getConfSnapshot,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { getDisplayStr } from '@jbrowse/plugin-linear-genome-view'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   SimpleFeature,
@@ -181,6 +182,15 @@ export default function baseStateModelFactory(
       })
       .volatile(() => ({
         rpcDataMap: observable.map<number, LoadedFeatureData>(),
+        // Per-region density stats (featureCount over genomic span) populated
+        // for both successful fetches and worker-side too-large responses.
+        // Drives the derived `regionTooLarge` getter so banner state is a
+        // pure function of cached data + current bpPerPx (no flicker on
+        // small zoom changes).
+        densityStatsPerRegion: observable.map<
+          number,
+          { featureCount: number; regionWidthBp: number }
+        >(),
         canvasDrawn: false,
         featureIdUnderMouse: null as string | null,
         subfeatureIdUnderMouse: null as string | null,
@@ -347,16 +357,28 @@ export default function baseStateModelFactory(
         get maxFeatureDensity() {
           // Skip density gating when the user has already force-loaded via byte estimate
           if (self.userByteSizeLimit !== undefined) {
+            console.log(
+              `[canvas maxFeatureDensity] skipped: userByteSizeLimit=${self.userByteSizeLimit}`,
+            )
             return undefined
           }
           const view = getContainingView(self) as LGV
           if (view.visibleBp < AUTO_FORCE_LOAD_BP) {
+            console.log(
+              `[canvas maxFeatureDensity] skipped: visibleBp=${view.visibleBp} < AUTO_FORCE_LOAD_BP=${AUTO_FORCE_LOAD_BP}`,
+            )
             return undefined
           }
-          return (
+          const result =
             self.userFeatureDensityLimit ??
             self.getConfWithOverride<number>('maxFeatureScreenDensity')
+          console.log(
+            `[canvas maxFeatureDensity] visibleBp=${view.visibleBp} ` +
+              `userFeatureDensityLimit=${self.userFeatureDensityLimit} ` +
+              `configValue=${self.getConfWithOverride<number>('maxFeatureScreenDensity')} ` +
+              `result=${result}`,
           )
+          return result
         },
 
         get colorByCDS() {
@@ -453,6 +475,79 @@ export default function baseStateModelFactory(
           }
         },
       }))
+      // Derived regionTooLarge: a pure function of cached stats × current
+      // bpPerPx + visible regions. No imperative clear-and-reset, so small
+      // zoom/pan moves don't flicker the banner. Shadows RegionTooLargeMixin's
+      // imperative getter and the earlier laidOutDataMap.
+      .views(self => ({
+        get bytesEstimateTooLarge() {
+          const view = getContainingView(self) as LGV
+          if (view.visibleBp < AUTO_FORCE_LOAD_BP) {
+            return false
+          }
+          const stats = self.featureDensityStats
+          if (!stats?.bytes) {
+            return false
+          }
+          const adapterLimit = stats.fetchSizeLimit || undefined
+          const limit =
+            self.userByteSizeLimit ??
+            adapterLimit ??
+            (getConf(self, 'fetchSizeLimit') as number)
+          return stats.bytes > limit
+        },
+
+        get densityTooLarge() {
+          const max = self.maxFeatureDensity
+          if (max === undefined) {
+            return false
+          }
+          const view = getContainingView(self) as LGV
+          for (const r of view.visibleRegions) {
+            const ds = self.densityStatsPerRegion.get(r.displayedRegionIndex)
+            if (
+              ds &&
+              (ds.featureCount / ds.regionWidthBp) * view.bpPerPx > max
+            ) {
+              return true
+            }
+          }
+          return false
+        },
+      }))
+      .views(self => ({
+        get regionTooLarge() {
+          return self.bytesEstimateTooLarge || self.densityTooLarge
+        },
+
+        get regionTooLargeReason() {
+          if (self.bytesEstimateTooLarge) {
+            const bytes = self.featureDensityStats?.bytes ?? 0
+            return `Requested too much data (${getDisplayStr(bytes)})`
+          }
+          return self.densityTooLarge ? 'Too many features' : ''
+        },
+      }))
+      // Empty layout when too-large so the GPU upload autorun has nothing
+      // to push — banner UI hides the canvas, this prevents any stale flash.
+      .views(self => ({
+        get laidOutDataMap(): Map<number, FeatureDataResult> {
+          if (self.regionTooLarge) {
+            return new Map()
+          }
+          const view = getContainingView(self) as LGV
+          if (!view.initialized || self.rpcDataMap.size === 0) {
+            return new Map()
+          }
+          return computeLaidOutData(self.rpcDataMap, {
+            bpPerPx: view.coarseBpPerPx,
+            regionKeys: self.regionKeys,
+            showLabels: self.showLabels,
+            showDescriptions: self.effectiveShowDescriptions,
+            reversedRegions: self.reversedRegions,
+          })
+        },
+      }))
       .actions(self => ({
         expandToFit() {
           self.heightBeforeExpand = self.height
@@ -474,16 +569,24 @@ export default function baseStateModelFactory(
           self.rpcDataMap.set(displayedRegionIndex, { ...data, loadedBpPerPx })
         },
 
+        setDensityStats(
+          displayedRegionIndex: number,
+          stats: { featureCount: number; regionWidthBp: number },
+        ) {
+          self.densityStatsPerRegion.set(displayedRegionIndex, stats)
+        },
+
         setFeatureDensityPerPx(value: number) {
           self.featureDensityPerPx = value
         },
 
         clearDisplaySpecificData() {
-          // Deliberately NOT clearing rpcDataMap — we keep stale data
-          // visible through the refetch window (labels don't vanish and
-          // reappear). fetchNeeded prunes regions that are no longer
-          // visible, so this doesn't leak.
-          self.setRegionTooLarge(false)
+          // Density stats survive viewport-change clearAllRpcData calls so
+          // the derived `regionTooLarge` banner stays stable across small
+          // zoom or pan moves. pruneRpcDataMapToVisible drops off-screen
+          // entries during fetchNeeded. rpcDataMap is similarly preserved;
+          // when regionTooLarge is true, laidOutDataMap returns empty so no
+          // stale features render through the banner.
           self.setScrollTop(0)
         },
 
@@ -491,6 +594,11 @@ export default function baseStateModelFactory(
           for (const key of self.rpcDataMap.keys()) {
             if (!visibleDisplayedRegionIndices.has(key)) {
               self.rpcDataMap.delete(key)
+            }
+          }
+          for (const key of self.densityStatsPerRegion.keys()) {
+            if (!visibleDisplayedRegionIndices.has(key)) {
+              self.densityStatsPerRegion.delete(key)
             }
           }
         },
@@ -521,7 +629,8 @@ export default function baseStateModelFactory(
           } else if (self.maxFeatureDensity !== undefined) {
             self.userFeatureDensityLimit = Math.ceil(self.maxFeatureDensity * 3)
           }
-          self.setRegionTooLarge(false)
+          // Derived regionTooLarge recomputes once the limit changes — no
+          // imperative flag to clear.
         },
 
         setFeatureIdUnderMouse(featureId: string | null) {
@@ -652,12 +761,25 @@ export default function baseStateModelFactory(
         // overlay was fetched (gated by `shouldRenderPeptideBackground`).
         // Refetch only when crossing that discrete threshold — never on
         // continuous zoom drift.
+        //
+        // For too-large regions (loadedRegions set, but no rpcData because
+        // the worker bailed on density), treat the cache as valid while the
+        // density × bpPerPx still trips the threshold; refetch when it no
+        // longer does so the banner can clear.
         isCacheValid(displayedRegionIndex: number) {
+          const view = getContainingView(self) as LGV
           const regionData = self.rpcDataMap.get(displayedRegionIndex)
           if (regionData === undefined) {
-            return true
+            const ds = self.densityStatsPerRegion.get(displayedRegionIndex)
+            if (!ds) {
+              return true
+            }
+            const max = self.maxFeatureDensity
+            if (max === undefined) {
+              return false
+            }
+            return (ds.featureCount / ds.regionWidthBp) * view.bpPerPx > max
           }
-          const view = getContainingView(self) as LGV
           return (
             shouldRenderPeptideBackground(view.bpPerPx) ===
             shouldRenderPeptideBackground(regionData.loadedBpPerPx)
@@ -694,10 +816,18 @@ export default function baseStateModelFactory(
       }))
       .actions(self => {
         interface FetchResult {
+          kind: 'ok'
           displayedRegionIndex: number
           data: FeatureDataResult
           region: Region
           bpPerPx: number
+        }
+
+        interface TooLargeResult {
+          kind: 'tooLarge'
+          displayedRegionIndex: number
+          region: Region
+          featureCount: number
         }
 
         async function fetchFeaturesForRegion(
@@ -705,7 +835,7 @@ export default function baseStateModelFactory(
           displayedRegionIndex: number,
           bpPerPx: number,
           stopToken: StopToken,
-        ): Promise<FetchResult | 'regionTooLarge'> {
+        ): Promise<FetchResult | TooLargeResult> {
           const sessionId = getRpcSessionId(self)
           const result = await getSession(self).rpcManager.call(
             sessionId,
@@ -724,18 +854,43 @@ export default function baseStateModelFactory(
             },
           )
           if ('regionTooLarge' in result) {
-            return 'regionTooLarge'
+            return {
+              kind: 'tooLarge',
+              displayedRegionIndex,
+              region,
+              featureCount: result.featureCount,
+            }
           }
-          return { displayedRegionIndex, data: result, region, bpPerPx }
+          return {
+            kind: 'ok',
+            displayedRegionIndex,
+            data: result,
+            region,
+            bpPerPx,
+          }
         }
 
-        function applyFetchResults(results: FetchResult[]) {
+        function applyFetchResults(
+          results: (FetchResult | TooLargeResult)[],
+        ) {
           let totalFeatures = 0
           let totalSpanPx = 0
           for (const r of results) {
-            self.setRpcData(r.displayedRegionIndex, r.data, r.bpPerPx)
-            totalFeatures += r.data.featureCount
-            totalSpanPx += (r.region.end - r.region.start) / r.bpPerPx
+            const regionWidthBp = r.region.end - r.region.start
+            if (r.kind === 'ok') {
+              self.setRpcData(r.displayedRegionIndex, r.data, r.bpPerPx)
+              self.setDensityStats(r.displayedRegionIndex, {
+                featureCount: r.data.featureCount,
+                regionWidthBp,
+              })
+              totalFeatures += r.data.featureCount
+              totalSpanPx += regionWidthBp / r.bpPerPx
+            } else {
+              self.setDensityStats(r.displayedRegionIndex, {
+                featureCount: r.featureCount,
+                regionWidthBp,
+              })
+            }
           }
           self.setFeatureDensityPerPx(
             totalSpanPx > 0 ? totalFeatures / totalSpanPx : 0,
@@ -757,10 +912,10 @@ export default function baseStateModelFactory(
           ) {
             const view = getContainingView(self) as LGV
             const bpPerPx = view.bpPerPx
-            // Drop cached regions that are no longer visible. Keeps stale data
-            // for regions still on screen (so labels stay up during the
-            // refetch window) without letting rpcDataMap grow unboundedly as
-            // the user pans.
+            // Drop cached entries (rpcDataMap + density stats) for regions no
+            // longer visible. Keeps on-screen data so labels stay up during
+            // the refetch window without letting either map grow unboundedly
+            // as the user pans.
             self.pruneRpcDataMapToVisible(
               new Set(
                 view.bufferedVisibleRegions.map(b => b.displayedRegionIndex),
@@ -780,17 +935,17 @@ export default function baseStateModelFactory(
               if (ctx.isStale()) {
                 return
               }
-              if (results.includes('regionTooLarge')) {
-                self.setRegionTooLarge(true, 'Too many features')
-                return
-              }
-              applyFetchResults(
-                results.filter((r): r is FetchResult => r !== 'regionTooLarge'),
-              )
+              applyFetchResults(results)
             })
           },
         }
       })
+      .actions(self => ({
+        clearStaleDensityState() {
+          self.densityStatsPerRegion.clear()
+          self.setFeatureDensityStats(undefined)
+        },
+      }))
       .actions(self => {
         const superAfterAttach = self.afterAttach
         return {
@@ -815,6 +970,23 @@ export default function baseStateModelFactory(
                   self.setHeight(target)
                 },
                 { name: 'CanvasAutoHeight' },
+              ),
+            )
+
+            // Drop density-derived state when displayedRegions change
+            // (chromosome navigation). Both maps are keyed by
+            // displayedRegionIndex which gets reused across chromosomes —
+            // stale entries would otherwise gate the derived regionTooLarge
+            // banner against the wrong region's stats and block refetch.
+            addDisposer(
+              self,
+              autorun(
+                () => {
+                  const view = getContainingView(self) as LGV
+                  void view.displayedRegions
+                  self.clearStaleDensityState()
+                },
+                { name: 'CanvasClearDensityOnDisplayedRegions' },
               ),
             )
           },

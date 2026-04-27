@@ -259,9 +259,17 @@ describe('FetchVisibleRegions autorun', () => {
   it('does not loop after regionTooLarge is set', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 
-    const { display } = createDisplay()
+    const { display, view } = createDisplay()
+    // Derived regionTooLarge gates densityTooLarge on visibleBp >=
+    // AUTO_FORCE_LOAD_BP (20_000). Use a 50_000 bp region zoomed out so
+    // visibleBp = 50_000.
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 50_000, refName: 'ctgA' },
+    ])
+    view.zoomTo(62.5)
 
-    // RPC returns regionTooLarge when feature count exceeds limit
+    // RPC returns regionTooLarge with a featureCount that, at this bpPerPx,
+    // trips the density threshold (10_000 / 50_000 * 62.5 = 12.5 > 1).
     mockRpcCall.mockResolvedValue({
       regionTooLarge: true,
       featureCount: 10_000,
@@ -287,9 +295,13 @@ describe('FetchVisibleRegions autorun', () => {
   it('clears regionTooLarge and re-fetches after force load + reload', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 
-    const { display } = createDisplay()
+    const { display, view } = createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 50_000, refName: 'ctgA' },
+    ])
+    view.zoomTo(62.5)
 
-    // First: RPC returns regionTooLarge
+    // First: RPC returns regionTooLarge (density trips at this bpPerPx)
     mockRpcCall.mockResolvedValue({
       regionTooLarge: true,
       featureCount: 10_000,
@@ -676,5 +688,254 @@ describe('byte estimate pre-check', () => {
     await jest.runAllTimersAsync()
 
     expect(mockRpcCall.mock.calls.length).toBe(callCount)
+  })
+})
+
+// Derived regionTooLarge: stays a pure function of cached density stats ×
+// current bpPerPx. These tests pin down the behavior the imperative path
+// used to get wrong (banner flicker on small zoom, refetch loops, stale
+// stats across chromosome navigation).
+//
+// Geometry: width=800, region=50kbp. view.visibleBp ≈ 406 × bpPerPx empirically
+// (sum of visible region span clipped to viewport). AUTO_FORCE_LOAD_BP=20_000
+// → density gate engages above bpPerPx ≈ 50. maxFeatureScreenDensity default=1.
+describe('derived regionTooLarge', () => {
+  function createLargeDisplay() {
+    const env = createTestEnvironment()
+    const { display, view } = env.createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 50_000, refName: 'ctgA' },
+    ])
+    view.zoomTo(62.5)
+    return { display, view, mockRpcCall: env.mockRpcCall }
+  }
+
+  it('stays true on small zoom while density still trips threshold', async () => {
+    const { display, view, mockRpcCall } = createLargeDisplay()
+
+    // After view.zoomTo(62.5) the empirical bpPerPx is ≈31.7 (visibleBp
+    // 25_375 / width 800). density × bpPerPx = 5000/50_000 * 31.7 ≈ 3.17 > 1
+    // → trips. After zoomTo(55), bpPerPx ≈ 27.9, density × bpPerPx ≈ 2.79
+    // → still trips. visibleBp stays > AUTO_FORCE_LOAD_BP so the gate stays
+    // engaged.
+    mockRpcCall.mockResolvedValue({
+      regionTooLarge: true,
+      featureCount: 5000,
+    })
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+
+    const callCount = mockRpcCall.mock.calls.length
+
+    view.zoomTo(55)
+    jest.advanceTimersByTime(2000)
+    await jest.runAllTimersAsync()
+
+    expect(display.regionTooLarge).toBe(true)
+    expect(mockRpcCall.mock.calls.length).toBe(callCount)
+  })
+
+  it('flips false and refetches when visibleBp drops below the gate', async () => {
+    const { display, view, mockRpcCall } = createLargeDisplay()
+
+    let renderCalls = 0
+    mockRpcCall.mockImplementation((_sid: string, method: string) => {
+      if (method === 'CoreGetFeatureDensityStats') {
+        return Promise.resolve({ bytes: 100, fetchSizeLimit: 1_000_000 })
+      }
+      renderCalls += 1
+      return renderCalls === 1
+        ? Promise.resolve({ regionTooLarge: true, featureCount: 5000 })
+        : Promise.resolve(makeEmptyFeatureData())
+    })
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+
+    // zoomTo(20): visibleBp ≈ 8000 < AUTO_FORCE_LOAD_BP → maxFeatureDensity
+    // returns undefined → derived densityTooLarge=false → fetch fires; the
+    // worker no longer gates either, so it returns features.
+    view.zoomTo(20)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(false)
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    expect(renderCalls).toBeGreaterThanOrEqual(2)
+  })
+
+  it('preserves density stats across viewport-change clearAllRpcData', async () => {
+    const { display, view, mockRpcCall } = createLargeDisplay()
+
+    mockRpcCall.mockResolvedValue({
+      regionTooLarge: true,
+      featureCount: 5000,
+    })
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.densityStatsPerRegion.size).toBe(1)
+    })
+
+    // ClearBlockingStateOnViewportChange autorun fires on the zoom change
+    // and calls clearAllRpcData (loadedRegions wiped). Density stats and
+    // featureDensityStats must survive so the derived banner stays stable.
+    view.zoomTo(55)
+    jest.advanceTimersByTime(100)
+
+    expect(display.densityStatsPerRegion.size).toBe(1)
+    expect(display.regionTooLarge).toBe(true)
+  })
+
+  it('clears stale density stats on chromosome (displayedRegions) change', async () => {
+    const { display, view, mockRpcCall } = createLargeDisplay()
+
+    mockRpcCall.mockResolvedValue({
+      regionTooLarge: true,
+      featureCount: 5000,
+    })
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.densityStatsPerRegion.size).toBe(1)
+    })
+
+    // Index 0 gets reused for the new chromosome; without the clear autorun
+    // the stale chrom-A stats would gate the derived banner against chrom-B
+    // and could permanently block refetch.
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 50_000, refName: 'ctgB' },
+    ])
+
+    expect(display.densityStatsPerRegion.size).toBe(0)
+    expect(display.featureDensityStats).toBeUndefined()
+  })
+
+  it('force load with density limit flips banner false via derived recomputation', async () => {
+    const { display, mockRpcCall } = createLargeDisplay()
+
+    let renderCalls = 0
+    mockRpcCall.mockImplementation((_sid: string, method: string) => {
+      if (method === 'CoreGetFeatureDensityStats') {
+        return Promise.resolve({ bytes: 100, fetchSizeLimit: 1_000_000 })
+      }
+      renderCalls += 1
+      return renderCalls === 1
+        ? Promise.resolve({ regionTooLarge: true, featureCount: 1500 })
+        : Promise.resolve(makeEmptyFeatureData())
+    })
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+
+    // featureCount=1500 chosen so density × bpPerPx is in (1, 3) at the
+    // initial bpPerPx — trips at limit=1 but not at the tripled limit=3
+    // after force load. Derived banner recomputes immediately — no
+    // imperative flag to clear.
+    display.setFeatureDensityStatsLimit()
+    expect(display.regionTooLarge).toBe(false)
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+  })
+
+  // Regression: the banner UI surfaces — regionCannotBeRendered() and
+  // regionCannotBeRenderedText() — must read through the regionTooLarge
+  // getter, not the imperative regionTooLargeState. Reading the volatile
+  // directly returned null/'' even when the canvas-derived banner was
+  // true, so the banner UI and SVG export both silently went missing.
+  it('banner UI surfaces reflect derived regionTooLarge', async () => {
+    const { display, mockRpcCall } = createLargeDisplay()
+
+    mockRpcCall.mockResolvedValue({
+      regionTooLarge: true,
+      featureCount: 5000,
+    })
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+
+    expect(display.regionCannotBeRendered()).not.toBeNull()
+    expect(display.regionCannotBeRenderedText()).toBe(
+      'Force load to see features',
+    )
+  })
+
+  it('laidOutDataMap is empty while regionTooLarge is true', async () => {
+    const { display, mockRpcCall } = createLargeDisplay()
+
+    mockRpcCall.mockResolvedValue({
+      regionTooLarge: true,
+      featureCount: 5000,
+    })
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+
+    // Empty layout means the GPU upload autorun has nothing to push, so
+    // there's no chance of a stale-feature flash through the banner.
+    expect(display.laidOutDataMap.size).toBe(0)
+  })
+
+  it('byte-estimate banner stays stable across viewport change (no flicker)', async () => {
+    const { display, view, mockRpcCall } = createLargeDisplay()
+
+    mockRpcCall.mockImplementation((_sid: string, method: string) => {
+      if (method === 'CoreGetFeatureDensityStats') {
+        return Promise.resolve({ bytes: 5_000_000, fetchSizeLimit: 1_000_000 })
+      }
+      return Promise.resolve(makeEmptyFeatureData())
+    })
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+
+    // featureDensityStats is preserved across clearAllRpcData (it's not in
+    // the clearing path), so the derived banner stays true on viewport
+    // change. The FetchVisibleRegions autorun is gated on regionTooLarge,
+    // so no new RPC calls happen.
+    const callCountBefore = mockRpcCall.mock.calls.length
+    view.zoomTo(55)
+    jest.advanceTimersByTime(2000)
+    await jest.runAllTimersAsync()
+
+    expect(display.regionTooLarge).toBe(true)
+    expect(mockRpcCall.mock.calls.length).toBe(callCountBefore)
   })
 })

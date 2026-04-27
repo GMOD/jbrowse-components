@@ -35,7 +35,7 @@ export default function RegionTooLargeMixin() {
       },
 
       regionCannotBeRenderedText() {
-        return self.regionTooLargeState ? 'Force load to see features' : ''
+        return self.regionTooLarge ? 'Force load to see features' : ''
       },
     }))
     .actions(self => ({
@@ -61,10 +61,12 @@ export default function RegionTooLargeMixin() {
       },
     }))
     .views(self => ({
+      // Reads through the `regionTooLarge` getter (not `regionTooLargeState`
+      // directly) so subclasses that override the getter with a derived
+      // computation — e.g. canvas's density-based derivation — see the
+      // banner reflect their state.
       regionCannotBeRendered() {
-        return self.regionTooLargeState ? (
-          <TooLargeMessage model={self} />
-        ) : null
+        return self.regionTooLarge ? <TooLargeMessage model={self} /> : null
       },
     }))
 }
