@@ -89,13 +89,6 @@ palette, shared Canvas2D ⇄ SVG rasterizer). Remaining:
 ## Canvas
 
 - Canvas: right-side padding excessive? Subpixel drawing crowded at dense zoom?
-- Canvas: features collapsed to y=0 on NCBI (needs reproduction steps).
-
-
-
-
-
-
 
 
 ## Remove graph stuff from this branch including jbrowse-cli related changes
@@ -103,11 +96,5 @@ palette, shared Canvas2D ⇄ SVG rasterizer). Remaining:
 the gfatabixadapter also, it is not panning out...
 plugins/tube-map and plugins/graph remove
 put these on a new branch though
-
-
-## LGV vertical scroll canvas
-
-in linear-genome-view plugins/canvas we have the idea of 'hold shift+scroll' to vertically scroll
-but i don't believe it is working, it moves a little but instantly stops. please investigate
 
 

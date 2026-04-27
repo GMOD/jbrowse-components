@@ -11,6 +11,11 @@ import type {
 const LABEL_PADDING_PX = 8
 const LAYOUT_Y_PADDING = 5
 
+// Y offset applied to features that overflow GranularRectLayout's maxHeight.
+// Pushes them far above the visible area so the renderer/hit-test drops them
+// instead of stacking them at y=0. Float32 handles this magnitude losslessly.
+const OFFSCREEN_Y = -1e6
+
 export interface LayoutInputs {
   bpPerPx: number
   regionKeys: Map<number, string>
@@ -217,13 +222,33 @@ function packRef(
   const sorted = [...allFeatures.entries()].sort(
     ([, a], [, b]) => a.layoutStartBp - b.layoutStartBp,
   )
+  let overflowCount = 0
+  let firstOverflowSample: {
+    id: string
+    leftPx: number
+    rightPx: number
+    height: number
+  } | null = null
   for (const [id, ext] of sorted) {
     const arrowPadding = ext.strand ? STRAND_ARROW_WIDTH : 0
     const leftPx = ext.layoutStartBp / bpPerPx - arrowPadding
     const rightPx = ext.layoutEndBp / bpPerPx + arrowPadding
     const top = layout.addRect(id, leftPx, rightPx, ext.height)
-    layoutMap.set(id, top ?? 0)
+    if (top === null) {
+      overflowCount++
+      firstOverflowSample ??= { id, leftPx, rightPx, height: ext.height }
+      layoutMap.set(id, OFFSCREEN_Y)
+    } else {
+      layoutMap.set(id, top)
+    }
     layoutHeights.set(id, ext.height)
+  }
+  if (overflowCount > 0) {
+    console.warn(
+      `[canvas layout] overflow: ${overflowCount}/${sorted.length} features exceeded maxHeight ` +
+        `(bpPerPx=${bpPerPx}, showLabels=${showLabels}, showDescriptions=${showDescriptions}) ` +
+        `firstOverflow=${JSON.stringify(firstOverflowSample)}`,
+    )
   }
 
   return { layoutMap, layoutHeights }
@@ -269,9 +294,17 @@ function applyLayoutToRegion(
     info.bottomPx += offset
   }
 
-  for (const labelData of Object.values(data.floatingLabelsData)) {
-    const key = labelData.parentFeatureId ?? labelData.featureId
-    labelData.topY += layoutMap.get(key) ?? 0
+  // Drop labels whose feature overflowed maxHeight: the feature itself doesn't
+  // render and we don't want to pay the React reconciliation cost of emitting
+  // thousands of off-screen <div> labels in useFloatingLabels.
+  for (const [key, labelData] of Object.entries(data.floatingLabelsData)) {
+    const layoutKey = labelData.parentFeatureId ?? labelData.featureId
+    const offset = layoutMap.get(layoutKey)
+    if (offset === undefined || offset === OFFSCREEN_Y) {
+      delete data.floatingLabelsData[key]
+      continue
+    }
+    labelData.topY += offset
   }
 
   if (data.aminoAcidOverlay) {

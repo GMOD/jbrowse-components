@@ -33,7 +33,8 @@ export default function RegionTooLargeMixin() {
       get regionTooLargeReason() {
         return self.regionTooLargeReasonState
       },
-
+    }))
+    .views(self => ({
       regionCannotBeRenderedText() {
         return self.regionTooLarge ? 'Force load to see features' : ''
       },

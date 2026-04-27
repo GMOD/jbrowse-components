@@ -163,7 +163,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
         ) {
           observer.next(
             new SimpleFeature({
-              data: feature as unknown as Record<string, unknown>,
+              data: feature,
               id: `${this.id}-offset-${feature._lineHash}`,
             }),
           )

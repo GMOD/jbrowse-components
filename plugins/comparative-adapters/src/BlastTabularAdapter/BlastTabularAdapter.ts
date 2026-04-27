@@ -211,7 +211,9 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
 
   async setup(opts?: BaseOptions): Promise<BlastRecord[]> {
     const columns: string = readConfObject(this.config, 'columns')
-    const lines: NonNullable<ReturnType<ReturnType<typeof createBlastLineParser>>>[] = []
+    const lines: NonNullable<
+      ReturnType<ReturnType<typeof createBlastLineParser>>
+    >[] = []
 
     const cb = createBlastLineParser(columns)
     parseLineByLine(

@@ -100,7 +100,7 @@ export interface BlockData {
   refName?: string
   start?: number
   end?: number
-  widthPx?: number
+  widthPx: number
   reversed?: boolean
   displayedRegionIndex?: number
   isLeftEndOfDisplayedRegion?: boolean
@@ -142,7 +142,7 @@ export class BaseBlock {
     this.end = data.end ?? 0
     this.key = data.key
     this.offsetPx = data.offsetPx
-    this.widthPx = data.widthPx ?? 0
+    this.widthPx = data.widthPx
     this.reversed = data.reversed
     this.displayedRegionIndex = data.displayedRegionIndex
     this.isLeftEndOfDisplayedRegion = data.isLeftEndOfDisplayedRegion
@@ -180,7 +180,7 @@ export class ElidedBlock extends BaseBlock {
 
   public elidedBlockCount = 0
 
-  constructor(data: BlockData & { widthPx: number }) {
+  constructor(data: BlockData) {
     super(data)
     this.widthPx = data.widthPx
   }

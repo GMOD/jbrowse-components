@@ -10,7 +10,6 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { isAbortException } from '@jbrowse/core/util/aborting'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'

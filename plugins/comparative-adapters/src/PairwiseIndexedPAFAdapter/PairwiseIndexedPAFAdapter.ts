@@ -396,7 +396,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         } else {
           const r = parsePAFLine(line)
           const { strand } = r
-          const extra = r.extra as Record<string, string | number>
+          const extra = r.extra
           features.push({
             queryGenome,
             origRefName: refName,

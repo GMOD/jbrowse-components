@@ -6,7 +6,6 @@ import {
   getConfSnapshot,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { getDisplayStr } from '@jbrowse/plugin-linear-genome-view'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   SimpleFeature,
@@ -23,6 +22,7 @@ import {
   ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
+  getDisplayStr,
 } from '@jbrowse/plugin-linear-genome-view'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -357,14 +357,14 @@ export default function baseStateModelFactory(
         get maxFeatureDensity() {
           // Skip density gating when the user has already force-loaded via byte estimate
           if (self.userByteSizeLimit !== undefined) {
-            console.log(
+            console.warn(
               `[canvas maxFeatureDensity] skipped: userByteSizeLimit=${self.userByteSizeLimit}`,
             )
             return undefined
           }
           const view = getContainingView(self) as LGV
           if (view.visibleBp < AUTO_FORCE_LOAD_BP) {
-            console.log(
+            console.warn(
               `[canvas maxFeatureDensity] skipped: visibleBp=${view.visibleBp} < AUTO_FORCE_LOAD_BP=${AUTO_FORCE_LOAD_BP}`,
             )
             return undefined
@@ -372,7 +372,7 @@ export default function baseStateModelFactory(
           const result =
             self.userFeatureDensityLimit ??
             self.getConfWithOverride<number>('maxFeatureScreenDensity')
-          console.log(
+          console.warn(
             `[canvas maxFeatureDensity] visibleBp=${view.visibleBp} ` +
               `userFeatureDensityLimit=${self.userFeatureDensityLimit} ` +
               `configValue=${self.getConfWithOverride<number>('maxFeatureScreenDensity')} ` +
@@ -489,10 +489,9 @@ export default function baseStateModelFactory(
           if (!stats?.bytes) {
             return false
           }
-          const adapterLimit = stats.fetchSizeLimit || undefined
           const limit =
             self.userByteSizeLimit ??
-            adapterLimit ??
+            stats.fetchSizeLimit ??
             (getConf(self, 'fetchSizeLimit') as number)
           return stats.bytes > limit
         },
@@ -870,9 +869,7 @@ export default function baseStateModelFactory(
           }
         }
 
-        function applyFetchResults(
-          results: (FetchResult | TooLargeResult)[],
-        ) {
+        function applyFetchResults(results: (FetchResult | TooLargeResult)[]) {
           let totalFeatures = 0
           let totalSpanPx = 0
           for (const r of results) {

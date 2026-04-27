@@ -76,7 +76,11 @@ export function rectifyStats(
   return {
     ...s,
     scoreMean: s.scoreSum / (n || s.basesCovered || 1),
-    scoreStdDev: calcStdFromSums(s.scoreSum, s.scoreSumSquares, n || s.basesCovered),
+    scoreStdDev: calcStdFromSums(
+      s.scoreSum,
+      s.scoreSumSquares,
+      n || s.basesCovered,
+    ),
     featureDensity: (s.featureCount ?? 1) / (s.basesCovered || 1),
   }
 }

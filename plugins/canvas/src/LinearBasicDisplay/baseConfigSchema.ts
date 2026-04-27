@@ -15,7 +15,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       },
       maxFeatureScreenDensity: {
         type: 'number',
-        defaultValue: 20,
+        defaultValue: 1,
         description:
           'Maximum features per pixel before showing region too large message',
       },

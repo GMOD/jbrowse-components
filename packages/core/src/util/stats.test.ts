@@ -14,7 +14,13 @@ test('calc std', () => {
   expect(calcStdFromSums(100000, 100, 5)).toEqual(0) // fake thing where sumSq probably wrong
 })
 
-const baseStats = { scoreMin: 0, scoreMax: 0, scoreSum: 0, scoreSumSquares: 0, basesCovered: 0 }
+const baseStats = {
+  scoreMin: 0,
+  scoreMax: 0,
+  scoreSum: 0,
+  scoreSumSquares: 0,
+  basesCovered: 0,
+}
 
 test('test rectify', () => {
   expect(rectifyStats(baseStats).scoreMean).toEqual(0)
@@ -24,7 +30,12 @@ test('test rectify', () => {
   expect(s.featureCount).toEqual(10)
 
   expect(
-    rectifyStats({ ...baseStats, featureCount: 3, scoreSum: 6, scoreSumSquares: 14 }).scoreStdDev,
+    rectifyStats({
+      ...baseStats,
+      featureCount: 3,
+      scoreSum: 6,
+      scoreSumSquares: 14,
+    }).scoreStdDev,
   ).toEqual(1) // calculated from a webapp about sample standard deviations
 })
 

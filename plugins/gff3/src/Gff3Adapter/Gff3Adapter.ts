@@ -47,7 +47,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
               for (let i = 0; i < features.length; i++) {
                 const f = features[i]!
                 const obj = new SimpleFeature({
-                  data: f as unknown as Record<string, unknown>,
+                  data: f,
                   id: `${this.id}-${refName}-${i}`,
                 })
                 intervalTree.insert([f.start, f.end], obj)

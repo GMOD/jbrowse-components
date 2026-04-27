@@ -8,9 +8,9 @@ import { Button, DialogActions, DialogContent } from '@mui/material'
 import ClearTreeWarningDialog from './ClearTreeWarningDialog.tsx'
 import SetColorDialogBulkEditPanel from './SetColorDialogBulkEditPanel.tsx'
 import SetColorDialogHelpfulTips from './SetColorDialogHelpfulTips.tsx'
+import SetColorDialogRowPalettizer from './SetColorDialogRowPalettizer.tsx'
 
 import type { Source } from '../types.ts'
-import SetColorDialogRowPalettizer from './SetColorDialogRowPalettizer.tsx'
 
 const useStyles = makeStyles()({
   content: {
