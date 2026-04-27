@@ -1243,7 +1243,7 @@ export function avg(arr: ArrayLike<number>) {
 }
 
 export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
-  const result = {} as Record<string, T[]>
+  const result: Record<string, T[]> = {}
   for (const value of array) {
     const t = predicate(value)
     result[t] ??= []
@@ -1265,7 +1265,7 @@ export function mergeIntervals<T extends { start: number; end: number }>(
     return intervals
   }
 
-  const stack = [] as T[]
+  const stack: T[] = []
 
   // sort the intervals based on their start values
   intervals = intervals.sort((a, b) => a.start - b.start)
@@ -1303,7 +1303,7 @@ export interface BasicFeature {
 
 // returns new array non-overlapping features
 export function gatherOverlaps<T extends BasicFeature>(regions: T[], w = 5000) {
-  const memo = {} as Record<string, T[]>
+  const memo: Record<string, T[]> = {}
   for (const x of regions) {
     memo[x.refName] ??= []
     memo[x.refName]!.push(x)

@@ -22,10 +22,10 @@ export class BlockSet {
   }
 
   push(block: BaseBlock) {
-    if (block.type === 'ElidedBlock' && this.blocks.length > 0) {
+    if (isElidedBlock(block) && this.blocks.length > 0) {
       const lastBlock = this.blocks.at(-1)
-      if (lastBlock?.type === 'ElidedBlock') {
-        ;(lastBlock as ElidedBlock).push(block as ElidedBlock)
+      if (lastBlock && isElidedBlock(lastBlock)) {
+        lastBlock.push(block)
         return
       }
     }
@@ -151,6 +151,10 @@ export class ContentBlock extends BaseBlock {
  * marker block representing one or more blocks that are
  * too small to be shown at the current zoom level
  */
+function isElidedBlock(b: BaseBlock): b is ElidedBlock {
+  return b.type === 'ElidedBlock'
+}
+
 export class ElidedBlock extends BaseBlock {
   type = 'ElidedBlock'
 

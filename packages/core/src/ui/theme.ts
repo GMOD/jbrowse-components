@@ -89,7 +89,7 @@ const bases = {
   G: refTheme.palette.augmentColor({ color: orange }),
   T: refTheme.palette.augmentColor({ color: red }),
 }
-const framesCDS = [
+const framesCDS: Frames = [
   null,
   refTheme.palette.augmentColor({ color: { main: '#FF8080' } }),
   refTheme.palette.augmentColor({ color: { main: '#80FF80' } }),
@@ -97,8 +97,8 @@ const framesCDS = [
   refTheme.palette.augmentColor({ color: { main: '#8080FF' } }),
   refTheme.palette.augmentColor({ color: { main: '#80FF80' } }),
   refTheme.palette.augmentColor({ color: { main: '#FF8080' } }),
-] as Frames
-const frames = [
+]
+const frames: Frames = [
   null,
   refTheme.palette.augmentColor({ color: { main: '#8f8f8f' } }),
   refTheme.palette.augmentColor({ color: { main: '#adadad' } }),
@@ -106,7 +106,7 @@ const frames = [
   refTheme.palette.augmentColor({ color: { main: '#d8d8d8' } }),
   refTheme.palette.augmentColor({ color: { main: '#adadad' } }),
   refTheme.palette.augmentColor({ color: { main: '#8f8f8f' } }),
-] as Frames
+]
 const stopCodon = '#e22'
 const startCodon = '#3e3'
 const coverage = grey[400]
