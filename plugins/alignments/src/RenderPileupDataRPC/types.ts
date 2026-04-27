@@ -102,7 +102,6 @@ export interface PileupDataResult {
   softclipBaseYs: Uint16Array
   softclipBaseBases: Uint8Array // ASCII character code
   softclipBaseReadIndices: Uint32Array // maps each softclip base to its parent read index
-  numSoftclipBases: number
 
   // Interbase data — insertions, soft clips, and hard clips in one buffer
   // stored sequentially as (insertions, softclips, hardclips). The three
@@ -167,14 +166,12 @@ export interface PileupDataResult {
   modificationProbabilities?: Uint8Array
   modificationReadIndices: Uint32Array // maps each modification to its parent read index
   modificationTypeIndices?: Uint8Array // maps each modification to index in detectedModifications
-  numModifications: number
 
   // Modification coverage data - stacked colored bars in coverage area
   modCovPositions: Uint32Array // absolute genomic coordinates
   modCovYOffsets: Float32Array // cumulative height below segment (normalized 0-1)
   modCovHeights: Float32Array // segment height (normalized 0-1)
   modCovColors: Uint32Array // ABGR u32 per segment
-  numModCovSegments: number
   // Pre-packed GPU buffer for PASS_MOD_COV (worker-built).
   modCovPackedBuffer: ArrayBuffer
 
@@ -184,18 +181,9 @@ export interface PileupDataResult {
   sashimiScores: Float32Array // per-arc line width = Math.log(count + 1)
   sashimiColorTypes: Uint8Array // 0=forward, 1=reverse
   sashimiCounts: Uint32Array // actual read counts per junction
-  numSashimiArcs: number
 
   // Layout info
   maxY: number
-  numReads: number
-  numGaps: number
-  numMismatches: number
-  numInterbases: number
-  numCoverageBins: number
-  numSnpSegments: number
-  numNoncovSegments: number
-  numIndicators: number
 
   // All detected modification types in this region (detected during feature processing)
   detectedModifications: string[]
@@ -218,7 +206,6 @@ export interface PileupDataResult {
   // Populated by main-thread layout after chain layout is computed.
   connectingLinePositions: Uint32Array // [start, end] absolute genomic uint32 pairs
   connectingLineYs: Uint16Array // row for each line
-  numConnectingLines: number
 
   // Flatbush R-tree over chain bounding boxes for spatial hit testing.
   // Populated by main-thread layout after chain layout is computed.

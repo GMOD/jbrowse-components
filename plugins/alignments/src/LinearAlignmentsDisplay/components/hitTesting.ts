@@ -204,7 +204,8 @@ export function hitTestFeature(
     return undefined
   }
 
-  const { readPositions, readYs, readIds, numReads } = resolved.rpcData
+  const { readPositions, readYs, readIds } = resolved.rpcData
+  const numReads = readIds.length
 
   if (yWithinRow > featureHeightSetting) {
     return undefined
@@ -255,17 +256,17 @@ export function hitTestCigarItem(
     mismatchPositions,
     mismatchYs,
     mismatchBases,
-    numMismatches,
     interbasePositions,
     interbaseYs,
     interbaseLengths,
     interbaseTypes,
     interbaseSequences,
-    numInterbases,
     gapPositions,
     gapYs,
-    numGaps,
   } = blockData
+  const numMismatches = mismatchPositions.length
+  const numInterbases = interbasePositions.length
+  const numGaps = gapPositions.length / 2
 
   const pxPerBp = 1 / bpPerPx
 
@@ -437,7 +438,7 @@ export function hitTestCoverage(
     const binEnd = binStart + Math.ceil(bpPerPx)
     const snpHit = findSignificantInBin(
       blockData.mismatchPositions,
-      blockData.numMismatches,
+      blockData.mismatchPositions.length,
       coverageDepths,
       coverageStartPos,
       binStart,
@@ -449,7 +450,7 @@ export function hitTestCoverage(
     }
     const noncovHit = findSignificantInBin(
       blockData.interbasePositions,
-      blockData.numInterbases,
+      blockData.interbasePositions.length,
       coverageDepths,
       coverageStartPos,
       binStart,
@@ -482,7 +483,8 @@ export function hitTestIndicator(
   const { genomicPos, bpPerPx } = canvasXToGenomicPos(canvasX, resolved)
   const hitToleranceBp = Math.max(1, bpPerPx * 5)
 
-  const { indicatorPositions, indicatorColorTypes, numIndicators } = blockData
+  const { indicatorPositions, indicatorColorTypes } = blockData
+  const numIndicators = indicatorPositions.length
 
   for (let i = 0; i < numIndicators; i++) {
     const pos = indicatorPositions[i]

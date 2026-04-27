@@ -85,7 +85,8 @@ export function computeVisibleLabels(
     const rowYInRange = (yPx: number) => yPx >= topOffset && yPx <= height
 
     // Process deletions (gaps)
-    const { gapPositions, gapYs, gapLengths, gapTypes, numGaps } = rpcData
+    const { gapPositions, gapYs, gapLengths, gapTypes } = rpcData
+    const numGaps = gapPositions.length / 2
     if (tallEnoughForText) {
       for (let i = 0; i < numGaps; i++) {
         if (gapTypes[i] !== 0) {
@@ -135,8 +136,8 @@ export function computeVisibleLabels(
       interbaseYs,
       interbaseLengths,
       interbaseTypes,
-      numInterbases,
     } = rpcData
+    const numInterbases = interbasePositions.length
 
     const clipPrefix: Record<number, string | undefined> = {
       [INTERBASE_SOFTCLIP]: 'S',
@@ -195,8 +196,8 @@ export function computeVisibleLabels(
     }
 
     // Process mismatches
-    const { mismatchPositions, mismatchYs, mismatchBases, numMismatches } =
-      rpcData
+    const { mismatchPositions, mismatchYs, mismatchBases } = rpcData
+    const numMismatches = mismatchPositions.length
     if (canRenderText) {
       for (let i = 0; i < numMismatches; i++) {
         const pos = mismatchPositions[i]!

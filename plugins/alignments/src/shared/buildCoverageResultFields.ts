@@ -40,15 +40,9 @@ export function buildCoverageResultFields(
     modCovYOffsets: modCoverage ? modCoverage.yOffsets : new Float32Array(0),
     modCovHeights: modCoverage ? modCoverage.heights : new Float32Array(0),
     modCovColors: modCoverage ? modCoverage.colors : new Uint32Array(0),
-    numModCovSegments: modCoverage ? modCoverage.count : 0,
 
     ...coverageAreaPacked,
     ...sashimi,
     modTooltipData,
-
-    numCoverageBins: coverage.depths.length,
-    numSnpSegments: snpCoverage.count,
-    numNoncovSegments: noncovCoverage.segmentCount,
-    numIndicators: noncovCoverage.indicatorCount,
   }
 }

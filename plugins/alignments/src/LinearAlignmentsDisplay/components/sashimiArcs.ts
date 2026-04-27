@@ -59,7 +59,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
   const arcs: SashimiArc[] = []
   for (const region of visibleRegions) {
     const rpcData = rpcDataMap.get(region.displayedRegionIndex)
-    if (!rpcData || rpcData.numSashimiArcs === 0) {
+    if (!rpcData || rpcData.sashimiX1.length === 0) {
       continue
     }
     const { refName } = region
@@ -69,8 +69,8 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
       sashimiCounts,
       sashimiColorTypes,
       sashimiScores,
-      numSashimiArcs,
     } = rpcData
+    const numSashimiArcs = sashimiX1.length
 
     for (let i = 0; i < numSashimiArcs; i++) {
       const startBp = sashimiX1[i]!

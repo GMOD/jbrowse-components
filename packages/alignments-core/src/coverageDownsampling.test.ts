@@ -172,7 +172,6 @@ describe('countSnpsAtPosition', () => {
     const mismatches = {
       mismatchPositions: new Uint32Array([5, 10]),
       mismatchBases: new Uint8Array([65, 67]),
-      numMismatches: 2,
     }
     const snps = countSnpsAtPosition(20, mismatches)
     expect(Object.keys(snps).length).toBe(0)
@@ -182,7 +181,6 @@ describe('countSnpsAtPosition', () => {
     const mismatches = {
       mismatchPositions: new Uint32Array([5, 5, 5, 10]),
       mismatchBases: new Uint8Array([65, 65, 67, 71]),
-      numMismatches: 4,
     }
     const snps = countSnpsAtPosition(5, mismatches)
     expect(snps.A!.count).toBe(2)
@@ -195,7 +193,6 @@ describe('countSnpsAtPosition', () => {
       mismatchPositions: new Uint32Array([5, 5, 5]),
       mismatchBases: new Uint8Array([65, 65, 65]),
       mismatchStrands: new Int8Array([1, 1, -1]),
-      numMismatches: 3,
     }
     const snps = countSnpsAtPosition(5, mismatches)
     expect(snps.A!.count).toBe(3)
@@ -207,7 +204,6 @@ describe('countSnpsAtPosition', () => {
     const mismatches = {
       mismatchPositions: new Uint32Array([5]),
       mismatchBases: new Uint8Array([84]),
-      numMismatches: 1,
     }
     const snps = countSnpsAtPosition(5, mismatches)
     expect(snps.T!.count).toBe(1)
@@ -219,7 +215,6 @@ describe('countSnpsAtPosition', () => {
     const mismatches = {
       mismatchPositions: new Uint32Array([5]),
       mismatchBases: new Uint8Array([78]),
-      numMismatches: 1,
     }
     const snps = countSnpsAtPosition(5, mismatches)
     expect(snps.N!.count).toBe(1)
@@ -237,7 +232,6 @@ describe('buildCoverageTooltipBin', () => {
       coverageStartPos: 100,
       mismatchPositions: new Uint32Array(mm.map(m => m.pos)),
       mismatchBases: new Uint8Array(mm.map(m => m.base)),
-      numMismatches: mm.length,
     }
   }
 

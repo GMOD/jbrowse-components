@@ -20,7 +20,7 @@ const DELETION_CHAR = 42
  */
 function buildSoftclipExpansions(data: PileupDataResult) {
   const expansions = new Map<number, { start: number; end: number }>()
-  for (let i = 0; i < data.numInterbases; i++) {
+  for (let i = 0; i < data.interbasePositions.length; i++) {
     if (data.interbaseTypes[i] !== INTERBASE_SOFTCLIP) {
       continue
     }
@@ -82,10 +82,10 @@ function sortOverlappingByIndex(
     interbasePositions,
     interbaseLengths,
     interbaseTypes,
-    numMismatches,
-    numGaps,
-    numInterbases,
   } = data
+  const numMismatches = mismatchPositions.length
+  const numGaps = gapPositions.length / 2
+  const numInterbases = interbasePositions.length
 
   if (type === 'basePair') {
     const baseAtPos = new Map<number, number>()
@@ -182,7 +182,7 @@ export function computeLayout(
   data: PileupDataResult,
   showSoftClipping?: boolean,
 ) {
-  const { numReads } = data
+  const numReads = data.readIds.length
   const expansions = showSoftClipping
     ? buildSoftclipExpansions(data)
     : undefined
@@ -207,7 +207,8 @@ export function computeSortedLayout(
   sortedBy: SortedBy,
   showSoftClipping?: boolean,
 ) {
-  const { numReads, readPositions } = data
+  const { readPositions } = data
+  const numReads = data.readIds.length
   const { pos: sortPos } = sortedBy
   const expansions = showSoftClipping
     ? buildSoftclipExpansions(data)
@@ -251,7 +252,7 @@ export function computeMultiRegionLayout(
   const seen = new Set<string>()
   const reads: { id: string; start: number; end: number }[] = []
   for (const [, data] of entries) {
-    for (let i = 0; i < data.numReads; i++) {
+    for (let i = 0; i < data.readIds.length; i++) {
       const id = data.readIds[i]!
       if (!seen.has(id)) {
         seen.add(id)
@@ -283,30 +284,35 @@ export function cloneWithLayout(
   readYs: Uint16Array,
   maxY: number,
 ): PileupDataResult {
-  const gapYs = new Uint16Array(data.numGaps)
-  const mismatchYs = new Uint16Array(data.numMismatches)
-  const interbaseYs = new Uint16Array(data.numInterbases)
-  const modificationYs = new Uint16Array(data.numModifications)
-  const softclipBaseYs = new Uint16Array(data.numSoftclipBases)
-  for (let i = 0; i < data.numGaps; i++) {
+  const numGaps = data.gapPositions.length / 2
+  const numMismatches = data.mismatchPositions.length
+  const numInterbases = data.interbasePositions.length
+  const numModifications = data.modificationPositions.length
+  const numSoftclipBases = data.softclipBasePositions.length
+  const gapYs = new Uint16Array(numGaps)
+  const mismatchYs = new Uint16Array(numMismatches)
+  const interbaseYs = new Uint16Array(numInterbases)
+  const modificationYs = new Uint16Array(numModifications)
+  const softclipBaseYs = new Uint16Array(numSoftclipBases)
+  for (let i = 0; i < numGaps; i++) {
     gapYs[i] = readYs[data.gapReadIndices[i]!]!
   }
-  for (let i = 0; i < data.numMismatches; i++) {
+  for (let i = 0; i < numMismatches; i++) {
     mismatchYs[i] = readYs[data.mismatchReadIndices[i]!]!
   }
-  for (let i = 0; i < data.numInterbases; i++) {
+  for (let i = 0; i < numInterbases; i++) {
     interbaseYs[i] = readYs[data.interbaseReadIndices[i]!]!
   }
-  for (let i = 0; i < data.numModifications; i++) {
+  for (let i = 0; i < numModifications; i++) {
     modificationYs[i] = readYs[data.modificationReadIndices[i]!]!
   }
-  for (let i = 0; i < data.numSoftclipBases; i++) {
+  for (let i = 0; i < numSoftclipBases; i++) {
     softclipBaseYs[i] = readYs[data.softclipBaseReadIndices[i]!]!
   }
   let modFlatbush: Flatbush | undefined
-  if (data.numModifications > 0) {
-    modFlatbush = new Flatbush(data.numModifications)
-    for (let i = 0; i < data.numModifications; i++) {
+  if (numModifications > 0) {
+    modFlatbush = new Flatbush(numModifications)
+    for (let i = 0; i < numModifications; i++) {
       const pos = data.modificationPositions[i]!
       const row = modificationYs[i]!
       modFlatbush.add(pos, row, pos, row)
@@ -347,7 +353,7 @@ export function buildLaidOutPileupMap({
   const out = new Map<number, PileupDataResult>()
   const withReads: [number, PileupDataResult][] = []
   for (const [k, v] of dataMap) {
-    if (v.numReads === 0) {
+    if (v.readIds.length === 0) {
       out.set(k, v)
     } else {
       withReads.push([k, v])
@@ -365,8 +371,9 @@ export function buildLaidOutPileupMap({
   } else {
     const { rowMap, maxY } = computeMultiRegionLayout(withReads)
     for (const [idx, data] of withReads) {
-      const readYs = new Uint16Array(data.numReads)
-      for (let i = 0; i < data.numReads; i++) {
+      const numReads = data.readIds.length
+      const readYs = new Uint16Array(numReads)
+      for (let i = 0; i < numReads; i++) {
         readYs[i] = rowMap.get(data.readIds[i]!)!
       }
       out.set(idx, cloneWithLayout(data, readYs, maxY))

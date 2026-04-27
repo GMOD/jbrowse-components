@@ -61,7 +61,6 @@ function makePileupData(opts: {
   }
 
   return {
-    numReads,
     readIds,
     readNames,
     readPositions,
@@ -93,7 +92,6 @@ function makePileupData(opts: {
     softclipBaseYs: new Uint16Array(0),
     softclipBaseBases: new Uint8Array(0),
     softclipBaseReadIndices: new Uint32Array(0),
-    numSoftclipBases: 0,
     interbasePositions: new Uint32Array(0),
     interbaseYs: new Uint16Array(0),
     interbaseLengths: new Uint16Array(0),
@@ -123,36 +121,25 @@ function makePileupData(opts: {
     modificationYs: new Uint16Array(0),
     modificationColors: new Uint32Array(0),
     modificationReadIndices: new Uint32Array(0),
-    numModifications: 0,
     modCovPositions: new Uint32Array(0),
     modCovYOffsets: new Float32Array(0),
     modCovHeights: new Float32Array(0),
     modCovColors: new Uint32Array(0),
-    numModCovSegments: 0,
     modCovPackedBuffer: new ArrayBuffer(0),
     sashimiX1: new Uint32Array(0),
     sashimiX2: new Uint32Array(0),
     sashimiScores: new Float32Array(0),
     sashimiColorTypes: new Uint8Array(0),
     sashimiCounts: new Uint32Array(0),
-    numSashimiArcs: 0,
-    numGaps: 0,
-    numMismatches,
-    numInterbases: 0,
     numInsertions: 0,
     numSoftclips: 0,
     numHardclips: 0,
-    numCoverageBins: 0,
-    numSnpSegments: 0,
-    numNoncovSegments: 0,
-    numIndicators: 0,
     detectedModifications: [],
     simplexModifications: [],
     maxY: 0,
     sortTagValues,
     connectingLinePositions: new Uint32Array(0),
     connectingLineYs: new Uint16Array(0),
-    numConnectingLines: 0,
   }
 }
 
@@ -168,7 +155,8 @@ function assertNonOverlappingLayout(
   data: PileupDataResult,
   readYs: Uint16Array,
 ) {
-  const { numReads, readPositions } = data
+  const { readPositions } = data
+  const numReads = data.readIds.length
   const byRow = new Map<number, { start: number; end: number; idx: number }[]>()
   for (let i = 0; i < numReads; i++) {
     const row = readYs[i]!

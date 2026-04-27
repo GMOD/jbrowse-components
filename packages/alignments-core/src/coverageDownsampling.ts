@@ -324,7 +324,6 @@ export interface MismatchArrays {
   mismatchPositions: Uint32Array
   mismatchBases: Uint8Array
   mismatchStrands?: Uint8Array | Int8Array
-  numMismatches: number
 }
 
 export interface CoverageArrays {
@@ -337,7 +336,7 @@ export function countSnpsAtPosition(
   mismatches: MismatchArrays,
 ) {
   const snps: Record<string, { count: number; fwd: number; rev: number }> = {}
-  for (let i = 0; i < mismatches.numMismatches; i++) {
+  for (let i = 0; i < mismatches.mismatchPositions.length; i++) {
     if (mismatches.mismatchPositions[i] === posOffset) {
       const base = String.fromCharCode(mismatches.mismatchBases[i]!)
       snps[base] ??= { count: 0, fwd: 0, rev: 0 }

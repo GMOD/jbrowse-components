@@ -7,11 +7,10 @@ import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
 
 function makePileupData(
   overrides: Partial<PileupDataResult> & {
-    numReads: number
     regionStart: number
   },
 ): PileupDataResult {
-  const n = overrides.numReads
+  const n = (overrides.readPositions?.length ?? 0) / 2
   return {
     readPositions: new Uint32Array(n * 2),
     readYs: new Uint16Array(n),
@@ -44,7 +43,6 @@ function makePileupData(
     softclipBaseYs: new Uint16Array(0),
     softclipBaseBases: new Uint8Array(0),
     softclipBaseReadIndices: new Uint32Array(0),
-    numSoftclipBases: 0,
     interbasePositions: new Uint32Array(0),
     interbaseYs: new Uint16Array(0),
     interbaseLengths: new Uint16Array(0),
@@ -74,35 +72,24 @@ function makePileupData(
     modificationYs: new Uint16Array(0),
     modificationColors: new Uint32Array(0),
     modificationReadIndices: new Uint32Array(0),
-    numModifications: 0,
     modCovPositions: new Uint32Array(0),
     modCovYOffsets: new Float32Array(0),
     modCovHeights: new Float32Array(0),
     modCovColors: new Uint32Array(0),
-    numModCovSegments: 0,
     modCovPackedBuffer: new ArrayBuffer(0),
     sashimiX1: new Uint32Array(0),
     sashimiX2: new Uint32Array(0),
     sashimiScores: new Float32Array(0),
     sashimiColorTypes: new Uint8Array(0),
     sashimiCounts: new Uint32Array(0),
-    numSashimiArcs: 0,
     maxY: 0,
-    numGaps: 0,
-    numMismatches: 0,
-    numInterbases: 0,
     numInsertions: 0,
     numSoftclips: 0,
     numHardclips: 0,
-    numCoverageBins: 0,
-    numSnpSegments: 0,
-    numNoncovSegments: 0,
-    numIndicators: 0,
     detectedModifications: [],
     simplexModifications: [],
     connectingLinePositions: new Uint32Array(0),
     connectingLineYs: new Uint16Array(0),
-    numConnectingLines: 0,
     ...overrides,
   }
 }
@@ -123,7 +110,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('paired-end same-chromosome produces arc', () => {
     const data = makePileupData({
-      numReads: 1,
       regionStart: 1000,
       readPositions: new Uint32Array([1000, 1100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
@@ -154,7 +140,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('inter-chromosomal paired-end produces vertical lines when drawInter=true', () => {
     const data = makePileupData({
-      numReads: 1,
       regionStart: 1000,
       readPositions: new Uint32Array([0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
@@ -186,7 +171,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('inter-chromosomal produces nothing when drawInter=false', () => {
     const data = makePileupData({
-      numReads: 1,
       regionStart: 1000,
       readPositions: new Uint32Array([0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
@@ -214,7 +198,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('single-region reads with drawLongRange=false are skipped', () => {
     const data = makePileupData({
-      numReads: 1,
       regionStart: 1000,
       readPositions: new Uint32Array([0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
@@ -242,7 +225,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('mate-unmapped reads are skipped for paired-end arcs', () => {
     const data = makePileupData({
-      numReads: 1,
       regionStart: 1000,
       readPositions: new Uint32Array([0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED | SAM_FLAG_MATE_UNMAPPED]),
@@ -268,7 +250,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('supplementary alignment SA tag produces arcs for long reads', () => {
     const data = makePileupData({
-      numReads: 1,
       regionStart: 1000,
       readPositions: new Uint32Array([1000, 1500]),
       readFlags: new Uint16Array([0]),
@@ -296,7 +277,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('cross-region reads (same name in two regions) produce arcs', () => {
     const data0 = makePileupData({
-      numReads: 1,
       regionStart: 1000,
       readPositions: new Uint32Array([1000, 1100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
@@ -306,7 +286,6 @@ describe('computeArcsFromPileupData', () => {
       readNames: ['readA'],
     })
     const data1 = makePileupData({
-      numReads: 1,
       regionStart: 5000,
       readPositions: new Uint32Array([5000, 5100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
@@ -337,7 +316,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('orientation coloring: RL gives colorType 6', () => {
     const data = makePileupData({
-      numReads: 1,
       regionStart: 0,
       readPositions: new Uint32Array([0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
@@ -365,7 +343,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('insert size coloring uses worker-provided insertSizeStats', () => {
     const data = makePileupData({
-      numReads: 1,
       regionStart: 0,
       readPositions: new Uint32Array([0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
@@ -395,7 +372,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('very long range arcs produce vertical lines when drawLongRange=true', () => {
     const data = makePileupData({
-      numReads: 1,
       regionStart: 0,
       readPositions: new Uint32Array([0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
@@ -425,7 +401,6 @@ describe('computeArcsFromPileupData', () => {
   test('samplot coloring classifies by pair orientation', () => {
     const mkData = (orient: number) =>
       makePileupData({
-        numReads: 1,
         regionStart: 0,
         readPositions: new Uint32Array([0, 100]),
         readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
@@ -466,7 +441,6 @@ describe('computeArcsFromPileupData', () => {
   test('samplot SA-tag arcs fall back to strand-pair classification', () => {
     const mkSplit = (primaryStrand: number, saStrand: '+' | '-') =>
       makePileupData({
-        numReads: 1,
         regionStart: 1000,
         readPositions: new Uint32Array([1000, 1500]),
         readFlags: new Uint16Array([0]),

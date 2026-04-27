@@ -264,8 +264,8 @@ export function getTooltipBin(
     interbaseLengths,
     interbaseTypes,
     interbaseSequences,
-    numInterbases,
   } = blockRpcData
+  const numInterbases = interbasePositions.length
   const typeNames = ['', 'insertion', 'softclip', 'hardclip']
   const interbaseSums = new Map<string, number>()
   const seqCounts = new Map<string, Map<string, number>>()
@@ -320,7 +320,8 @@ export function getTooltipBin(
 
   let deletions: CoverageTooltipBin['deletions']
   let deletionLenSum = 0
-  const { gapPositions, gapTypes, numGaps } = blockRpcData
+  const { gapPositions, gapTypes } = blockRpcData
+  const numGaps = gapPositions.length / 2
   for (let i = 0; i < numGaps; i++) {
     if (gapTypes[i] !== 0) {
       continue

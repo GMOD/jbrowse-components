@@ -306,7 +306,7 @@ export function computeArcsFromPileupData(
     if (!data) {
       continue
     }
-    for (let i = 0; i < data.numReads; i++) {
+    for (let i = 0; i < data.readIds.length; i++) {
       const name = data.readNames[i]!
       let list = readsByName.get(name)
       if (!list) {
@@ -326,7 +326,7 @@ export function computeArcsFromPileupData(
   let stats: { upper: number; lower: number } | undefined
   for (const data of rpcDataMap.values()) {
     if (!hasPaired) {
-      for (let i = 0; i < data.numReads; i++) {
+      for (let i = 0; i < data.readIds.length; i++) {
         if (data.readFlags[i]! & SAM_FLAG_PAIRED) {
           hasPaired = true
           break

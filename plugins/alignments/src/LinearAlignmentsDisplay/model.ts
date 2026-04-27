@@ -366,7 +366,7 @@ export default function stateModelFactory(
               if (!data.readChainIndices) {
                 continue
               }
-              for (let i = 0; i < data.numReads; i++) {
+              for (let i = 0; i < data.readIds.length; i++) {
                 const chainIdx = data.readChainIndices[i]!
                 let ids = map.get(chainIdx)
                 if (!ids) {
@@ -1846,19 +1846,17 @@ export default function stateModelFactory(
           return items
         },
       }))
-      .actions(self => {
-        const superReload = self.reload
-        return {
-          async reload() {
-            self.clearAllRpcData()
-            superReload()
-          },
-          async renderSvg(opts?: ExportSvgDisplayOptions) {
-            const { renderSvg } = await import('./renderSvg.tsx')
-            return renderSvg(self as LinearAlignmentsDisplayModel, opts)
-          },
-        }
-      })
+      .actions(self => ({
+        reload() {
+          // clearAllRpcData clears error and bumps fetchGeneration to retrigger
+          // the fetch autorun.
+          self.clearAllRpcData()
+        },
+        async renderSvg(opts?: ExportSvgDisplayOptions) {
+          const { renderSvg } = await import('./renderSvg.tsx')
+          return renderSvg(self as LinearAlignmentsDisplayModel, opts)
+        },
+      }))
   )
 }
 

@@ -27,34 +27,27 @@ function makeRpcData(
     readIds: [],
     readNames: [],
     readChainIndices: undefined,
-    numReads: 0,
     mismatchPositions: new Uint32Array(),
     mismatchYs: new Uint16Array(),
     mismatchBases: new Uint8Array(),
     mismatchFrequencies: new Uint8Array(),
-    numMismatches: 0,
     interbasePositions: new Uint32Array(),
     interbaseYs: new Uint16Array(),
     interbaseLengths: new Uint16Array(),
     interbaseTypes: new Uint8Array(),
     interbaseSequences: [],
-    numInterbases: 0,
     gapPositions: new Uint32Array(),
     gapYs: new Uint16Array(),
     gapTypes: new Uint8Array(),
-    numGaps: 0,
     modificationPositions: new Uint32Array(),
     modificationYs: new Uint16Array(),
     modificationColors: new Uint32Array(),
-    numModifications: 0,
     coverageDepths: new Float32Array(),
     coverageStartPos: 0,
     indicatorPositions: new Uint32Array(),
     indicatorColorTypes: new Uint8Array(),
-    numIndicators: 0,
     softclipBasePositions: new Uint32Array(),
     softclipBaseBases: new Uint8Array(),
-    numSoftclipBases: 0,
     ...overrides,
   } as PileupDataResult
 }
@@ -91,7 +84,6 @@ describe('hitTestModification', () => {
   it('returns undefined when mouse is below feature height', () => {
     const pos = 1000
     const rpcData = makeRpcData({
-      numModifications: 1,
       modificationPositions: new Uint32Array([pos]),
       modificationColors: new Uint32Array([packAbgr(255, 0, 0, 200)]),
       modificationYs: new Uint16Array([0]),
@@ -107,7 +99,6 @@ describe('hitTestModification', () => {
   it('returns undefined when mouse is far from any modification', () => {
     const pos = 1000
     const rpcData = makeRpcData({
-      numModifications: 1,
       modificationPositions: new Uint32Array([pos]),
       modificationColors: new Uint32Array([packAbgr(255, 0, 0, 200)]),
       modificationYs: new Uint16Array([0]),
@@ -123,7 +114,6 @@ describe('hitTestModification', () => {
   it('hits a modification at the visual center (pos + 0.5)', () => {
     const pos = 1000
     const rpcData = makeRpcData({
-      numModifications: 1,
       modificationPositions: new Uint32Array([pos]),
       modificationColors: new Uint32Array([packAbgr(200, 100, 50, 180)]),
       modificationYs: new Uint16Array([0]),
@@ -143,7 +133,6 @@ describe('hitTestModification', () => {
   it('returns the correct RGB color (excludes alpha)', () => {
     const pos = 1000
     const rpcData = makeRpcData({
-      numModifications: 1,
       modificationPositions: new Uint32Array([pos]),
       modificationColors: new Uint32Array([packAbgr(200, 100, 50, 180)]),
       modificationYs: new Uint16Array([0]),
@@ -161,7 +150,6 @@ describe('hitTestModification', () => {
   it('resolves modType from detectedModifications index', () => {
     const pos = 1000
     const rpcData = makeRpcData({
-      numModifications: 1,
       modificationPositions: new Uint32Array([pos]),
       modificationColors: new Uint32Array([packAbgr(100, 200, 50, 180)]),
       modificationYs: new Uint16Array([0]),
@@ -181,7 +169,6 @@ describe('hitTestModification', () => {
   it('returns undefined modType when typeIndices are absent', () => {
     const pos = 1000
     const rpcData = makeRpcData({
-      numModifications: 1,
       modificationPositions: new Uint32Array([pos]),
       modificationColors: new Uint32Array([packAbgr(100, 200, 50, 180)]),
       modificationYs: new Uint16Array([0]),

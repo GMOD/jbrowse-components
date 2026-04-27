@@ -158,8 +158,9 @@ const EMPTY_I8 = new Int8Array(0)
 const EMPTY_BUF = new ArrayBuffer(0)
 
 function buildReadFields(data: PileupDataResult) {
+  const numReads = data.readIds.length
   return {
-    readIdToIndex: buildReadIdToIndex(data.readIds, data.numReads),
+    readIdToIndex: buildReadIdToIndex(data.readIds, numReads),
     readPositions: data.readPositions,
     readYs: data.readYs,
     readFlags: data.readFlags,
@@ -170,7 +171,7 @@ function buildReadFields(data: PileupDataResult) {
     readStrands: data.readStrands,
     readTagColors: data.readTagColors,
     readChainHasSupp: data.readChainHasSupp,
-    numReads: data.numReads,
+    numReads,
     insertSizeStats: data.insertSizeStats,
   }
 }
@@ -184,12 +185,12 @@ function buildCigarFields(data: CigarUploadData) {
     gapYs: data.gapYs,
     gapTypes: data.gapTypes,
     gapFrequencies: data.gapFrequencies,
-    numGaps: data.numGaps,
+    numGaps: data.gapPositions.length / 2,
     mismatchPositions: data.mismatchPositions,
     mismatchYs: data.mismatchYs,
     mismatchBases: data.mismatchBases,
     mismatchFrequencies: data.mismatchFrequencies,
-    numMismatches: data.numMismatches,
+    numMismatches: data.mismatchPositions.length,
     insertionPositions: data.interbasePositions.subarray(0, insEnd),
     insertionYs: data.interbaseYs.subarray(0, insEnd),
     insertionLengths: data.interbaseLengths.subarray(0, insEnd),
@@ -208,7 +209,7 @@ function buildCigarFields(data: CigarUploadData) {
     softclipBasePositions: data.softclipBasePositions,
     softclipBaseYs: data.softclipBaseYs,
     softclipBaseBases: data.softclipBaseBases,
-    numSoftclipBases: data.numSoftclipBases,
+    numSoftclipBases: data.softclipBasePositions.length,
   }
 }
 
@@ -217,15 +218,15 @@ function buildModificationFields(data: ModificationUploadData) {
     modificationPositions: data.modificationPositions,
     modificationYs: data.modificationYs,
     modificationColors: data.modificationColors,
-    numModifications: data.numModifications,
+    numModifications: data.modificationPositions.length,
   }
 }
 
 function buildCoverageBins(data: CoverageUploadData) {
-  if (!(data.numCoverageBins > 0 && data.coverageMaxDepth > 0)) {
+  const n = data.coverageDepths.length
+  if (!(n > 0 && data.coverageMaxDepth > 0)) {
     return { coverageBuffer: EMPTY_BUF, coverageBinCount: 0 }
   }
-  const n = data.numCoverageBins
   const { STRIDE_F32, FIELD } = CANVAS2D_COVERAGE
   const buf = new ArrayBuffer(n * STRIDE_F32 * 4)
   const u32 = new Uint32Array(buf)
@@ -240,32 +241,35 @@ function buildCoverageBins(data: CoverageUploadData) {
 }
 
 function buildCoverageFields(data: CoverageUploadData) {
+  const numSnpSegments = data.snpPositions.length
+  const numNoncovSegments = data.noncovPositions.length
+  const numIndicators = data.indicatorPositions.length
   const snp =
-    data.numSnpSegments > 0
+    numSnpSegments > 0
       ? packSnpSegmentsForCanvas2D(
           data.snpPositions,
           data.snpYOffsets,
           data.snpHeights,
           data.snpColorTypes,
-          data.numSnpSegments,
+          numSnpSegments,
         )
       : { buffer: EMPTY_BUF, segmentCount: 0 }
   const noncov =
-    data.numNoncovSegments > 0
+    numNoncovSegments > 0
       ? packNoncovSegmentsForCanvas2D(
           data.noncovPositions,
           data.noncovYOffsets,
           data.noncovHeights,
           data.noncovColorTypes,
-          data.numNoncovSegments,
+          numNoncovSegments,
         )
       : { buffer: EMPTY_BUF, segmentCount: 0 }
   const indicator =
-    data.numIndicators > 0
+    numIndicators > 0
       ? packIndicatorsForCanvas2D(
           data.indicatorPositions,
           data.indicatorColorTypes,
-          data.numIndicators,
+          numIndicators,
         )
       : { buffer: EMPTY_BUF, indicatorCount: 0 }
   return {
@@ -282,14 +286,15 @@ function buildCoverageFields(data: CoverageUploadData) {
 }
 
 function buildModCoverageFields(data: ModCoverageUploadData) {
+  const numModCovSegments = data.modCovPositions.length
   const packed =
-    data.numModCovSegments > 0
+    numModCovSegments > 0
       ? packModCovSegmentsForCanvas2D(
           data.modCovPositions,
           data.modCovYOffsets,
           data.modCovHeights,
           data.modCovColors,
-          data.numModCovSegments,
+          numModCovSegments,
         )
       : { buffer: EMPTY_BUF, segmentCount: 0 }
   return {
@@ -416,7 +421,7 @@ function buildPileupRegion(
     ...buildModCoverageFields(data),
     connectingLinePositions: data.connectingLinePositions,
     connectingLineYs: data.connectingLineYs,
-    numConnectingLines: data.numConnectingLines,
+    numConnectingLines: data.connectingLinePositions.length / 2,
     ...buildArcsFields(arcs),
   }
 }

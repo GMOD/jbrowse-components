@@ -178,7 +178,7 @@ function packReadSegments(data: ReadUploadData): ArrayBuffer {
 }
 
 function packGaps(data: CigarUploadData): ArrayBuffer {
-  const n = data.numGaps
+  const n = data.gapPositions.length / 2
   const F = gapShader.FIELD_OFFSET_F32
   const s32 = gapShader.INSTANCE_STRIDE_F32
   const buf = new ArrayBuffer(n * gapShader.INSTANCE_STRIDE_BYTES)
@@ -200,7 +200,7 @@ function packGaps(data: CigarUploadData): ArrayBuffer {
 }
 
 function packMismatches(data: CigarUploadData): ArrayBuffer {
-  const n = data.numMismatches
+  const n = data.mismatchPositions.length
   const F = mismatchShader.FIELD_OFFSET_F32
   const s32 = mismatchShader.INSTANCE_STRIDE_F32
   const buf = new ArrayBuffer(n * mismatchShader.INSTANCE_STRIDE_BYTES)
@@ -269,7 +269,7 @@ function packClips(data: CigarUploadData): ArrayBuffer {
 // Softclip-base bases reuse the mismatch pass's geometry. Their frequency
 // slot stays 0 (bases are always fully opaque at this zoom).
 function packSoftclipBases(data: CigarUploadData): ArrayBuffer {
-  const n = data.numSoftclipBases
+  const n = data.softclipBasePositions.length
   const F = mismatchShader.FIELD_OFFSET_F32
   const s32 = mismatchShader.INSTANCE_STRIDE_F32
   const buf = new ArrayBuffer(n * mismatchShader.INSTANCE_STRIDE_BYTES)
@@ -329,7 +329,7 @@ function packArcLines(data: ArcsUploadData): ArrayBuffer {
 }
 
 function packConnectingLines(data: ConnectingLinesUploadData): ArrayBuffer {
-  const n = data.numConnectingLines
+  const n = data.connectingLinePositions.length / 2
   const F = connectingLineShader.FIELD_OFFSET_F32
   const s32 = connectingLineShader.INSTANCE_STRIDE_F32
   const buf = new ArrayBuffer(n * connectingLineShader.INSTANCE_STRIDE_BYTES)
@@ -347,7 +347,7 @@ function packConnectingLines(data: ConnectingLinesUploadData): ArrayBuffer {
 }
 
 function packModifications(data: ModificationUploadData): ArrayBuffer {
-  const n = data.numModifications
+  const n = data.modificationPositions.length
   const F = modificationShader.FIELD_OFFSET_F32
   const s32 = modificationShader.INSTANCE_STRIDE_F32
   const buf = new ArrayBuffer(n * modificationShader.INSTANCE_STRIDE_BYTES)
@@ -562,7 +562,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       this.uploadModifications(idx, data)
       this.uploadCoverage(idx, data)
       this.uploadModCoverage(idx, data)
-      if (data.numConnectingLines > 0) {
+      if (data.connectingLinePositions.length > 0) {
         this.uploadConnectingLines(idx, data)
       }
     }
@@ -581,7 +581,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     r.readPositions = data.readPositions
     r.readYs = data.readYs
     r.readStrands = data.readStrands
-    r.readIdToIndex = buildReadIdToIndex(data.readIds, data.numReads)
+    r.readIdToIndex = buildReadIdToIndex(data.readIds, data.readIds.length)
     this.regions.set(displayedRegionIndex, r)
 
     if (data.numSegments > 0) {
@@ -598,20 +598,18 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     if (!this.regions.has(displayedRegionIndex)) {
       return
     }
-    if (data.numGaps > 0) {
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_GAP,
-        packGaps(data),
-        data.numGaps,
-      )
+    const numGaps = data.gapPositions.length / 2
+    const numMismatches = data.mismatchPositions.length
+    const numSoftclipBases = data.softclipBasePositions.length
+    if (numGaps > 0) {
+      this.hal.uploadBuffer(displayedRegionIndex, PASS_GAP, packGaps(data), numGaps)
     }
-    if (data.numMismatches > 0) {
+    if (numMismatches > 0) {
       this.hal.uploadBuffer(
         displayedRegionIndex,
         PASS_MISMATCH,
         packMismatches(data),
-        data.numMismatches,
+        numMismatches,
       )
     }
     if (data.numInsertions > 0) {
@@ -631,12 +629,12 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         clipCount,
       )
     }
-    if (data.numSoftclipBases > 0) {
+    if (numSoftclipBases > 0) {
       this.hal.uploadBuffer(
         displayedRegionIndex,
         PASS_SOFTCLIP_BASES,
         packSoftclipBases(data),
-        data.numSoftclipBases,
+        numSoftclipBases,
       )
     }
   }
@@ -645,12 +643,13 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     displayedRegionIndex: number,
     data: ModificationUploadData,
   ) {
-    if (data.numModifications > 0) {
+    const numModifications = data.modificationPositions.length
+    if (numModifications > 0) {
       this.hal.uploadBuffer(
         displayedRegionIndex,
         PASS_MOD,
         packModifications(data),
-        data.numModifications,
+        numModifications,
       )
     }
   }
@@ -661,12 +660,13 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       return
     }
 
-    if (data.numCoverageBins > 0) {
+    const numCoverageBins = data.coverageDepths.length
+    if (numCoverageBins > 0) {
       this.hal.uploadBuffer(
         displayedRegionIndex,
         PASS_COVERAGE,
         data.coveragePackedBuffer,
-        data.numCoverageBins,
+        numCoverageBins,
       )
       r.maxDepth = data.coverageMaxDepth
       r.binSize = 1
@@ -675,31 +675,34 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       })
     }
 
-    if (data.numSnpSegments > 0) {
+    const numSnpSegments = data.snpPositions.length
+    if (numSnpSegments > 0) {
       this.hal.uploadBuffer(
         displayedRegionIndex,
         PASS_SNP_COV,
         data.snpPackedBuffer,
-        data.numSnpSegments,
+        numSnpSegments,
       )
     }
 
-    if (data.numNoncovSegments > 0) {
+    const numNoncovSegments = data.noncovPositions.length
+    if (numNoncovSegments > 0) {
       this.hal.uploadBuffer(
         displayedRegionIndex,
         PASS_NONCOV,
         data.noncovPackedBuffer,
-        data.numNoncovSegments,
+        numNoncovSegments,
       )
       r.noncovMaxCount = data.noncovMaxCount
     }
 
-    if (data.numIndicators > 0) {
+    const numIndicators = data.indicatorPositions.length
+    if (numIndicators > 0) {
       this.hal.uploadBuffer(
         displayedRegionIndex,
         PASS_INDICATOR,
         data.indicatorPackedBuffer,
-        data.numIndicators,
+        numIndicators,
       )
     }
   }
@@ -708,12 +711,13 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     displayedRegionIndex: number,
     data: ModCoverageUploadData,
   ) {
-    if (data.numModCovSegments > 0) {
+    const numModCovSegments = data.modCovPositions.length
+    if (numModCovSegments > 0) {
       this.hal.uploadBuffer(
         displayedRegionIndex,
         PASS_MOD_COV,
         data.modCovPackedBuffer,
-        data.numModCovSegments,
+        numModCovSegments,
       )
     }
   }
@@ -746,12 +750,13 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     data: ConnectingLinesUploadData,
   ) {
     ensureRegion(this.regions, displayedRegionIndex, emptyRegion)
-    if (data.numConnectingLines > 0) {
+    const numConnectingLines = data.connectingLinePositions.length / 2
+    if (numConnectingLines > 0) {
       this.hal.uploadBuffer(
         displayedRegionIndex,
         PASS_CONN_LINE,
         packConnectingLines(data),
-        data.numConnectingLines,
+        numConnectingLines,
       )
     }
   }

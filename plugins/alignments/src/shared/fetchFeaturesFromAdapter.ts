@@ -7,11 +7,11 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import type { FilterBy } from './types.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 

@@ -66,7 +66,8 @@ export function readYsFromRowMap(
   data: PileupDataResult,
   rowMap: Map<string, number>,
 ) {
-  const { numReads, readChainIndices, chainNames } = data
+  const { readChainIndices, chainNames } = data
+  const numReads = data.readIds.length
   const readYs = new Uint16Array(numReads)
   if (readChainIndices && chainNames) {
     for (let i = 0; i < numReads; i++) {
@@ -205,7 +206,7 @@ export function buildLaidOutChainMap(
   const out = new Map<number, PileupDataResult>()
   const withReads: [number, PileupDataResult][] = []
   for (const [k, v] of dataMap) {
-    if (v.numReads === 0) {
+    if (v.readIds.length === 0) {
       out.set(k, v)
     } else {
       withReads.push([k, v])

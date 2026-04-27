@@ -47,7 +47,6 @@ function makeCoverageData(): CoverageUploadData {
     coverageDepths,
     coverageMaxDepth,
     coverageStartPos: COVERAGE_START_OFFSET,
-    numCoverageBins: coverageDepths.length,
     coveragePackedBuffer: packCoverageBinsForGpu(
       coverageDepths,
       coverageMaxDepth,
@@ -58,7 +57,6 @@ function makeCoverageData(): CoverageUploadData {
     snpYOffsets,
     snpHeights,
     snpColorTypes,
-    numSnpSegments: snpPositions.length,
     snpPackedBuffer: packSnpSegmentsForGpu(
       snpPositions,
       snpYOffsets,
@@ -71,7 +69,6 @@ function makeCoverageData(): CoverageUploadData {
     noncovHeights,
     noncovColorTypes,
     noncovMaxCount: 0,
-    numNoncovSegments: 0,
     noncovPackedBuffer: packNoncovSegmentsForGpu(
       noncovPositions,
       noncovYOffsets,
@@ -81,7 +78,6 @@ function makeCoverageData(): CoverageUploadData {
     ).buffer,
     indicatorPositions,
     indicatorColorTypes,
-    numIndicators: indicatorPositions.length,
     indicatorPackedBuffer: packIndicatorsForGpu(
       indicatorPositions,
       indicatorColorTypes,
@@ -103,7 +99,6 @@ function makeMinimalReadData() {
     readStrands: new Int8Array([]),
     readTagColors: new Uint32Array(0),
     readChainHasSupp: undefined,
-    numReads: 0,
     readIds: [],
     insertSizeStats: undefined,
     maxY: 0,
@@ -122,12 +117,10 @@ const EMPTY_PILEUP_STUBS = {
   gapYs: new Uint16Array(),
   gapTypes: new Uint8Array(),
   gapFrequencies: new Uint8Array(),
-  numGaps: 0,
   mismatchPositions: new Uint32Array(),
   mismatchYs: new Uint16Array(),
   mismatchBases: new Uint8Array(),
   mismatchFrequencies: new Uint8Array(),
-  numMismatches: 0,
   interbasePositions: new Uint32Array(),
   interbaseYs: new Uint16Array(),
   interbaseLengths: new Uint16Array(),
@@ -138,16 +131,15 @@ const EMPTY_PILEUP_STUBS = {
   softclipBasePositions: new Uint32Array(),
   softclipBaseYs: new Uint16Array(),
   softclipBaseBases: new Uint8Array(),
-  numSoftclipBases: 0,
   modificationPositions: new Uint32Array(),
   modificationYs: new Uint16Array(),
   modificationColors: new Uint32Array(),
-  numModifications: 0,
   modCovPositions: new Uint32Array(),
   modCovYOffsets: new Float32Array(),
   modCovHeights: new Float32Array(),
   modCovColors: new Uint32Array(),
-  numModCovSegments: 0,
+  connectingLinePositions: new Uint32Array(),
+  connectingLineYs: new Uint16Array(),
 }
 
 function makeMinimalPileupResult(cov: CoverageUploadData) {
@@ -208,7 +200,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     // GPU layout per bin: [posOffset(f32), normalizedDepth(f32)] = 2 floats
     const gpuF32 = new Float32Array(gpuCovBuf!.data)
     const gpuNormalizedDepths: number[] = []
-    for (let i = 0; i < covData.numCoverageBins; i++) {
+    for (let i = 0; i < covData.coverageDepths.length; i++) {
       gpuNormalizedDepths.push(gpuF32[i * 2 + 1]!)
     }
 
@@ -256,7 +248,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     // Both should have same yOffset, height, colorType per segment
     // GPU positions are relative (no regionStart), Canvas2D are absolute
     // But yOffset/height/colorType must match
-    for (let i = 0; i < covData.numSnpSegments; i++) {
+    for (let i = 0; i < covData.snpPositions.length; i++) {
       const gpuOff = i * 4
       expect(gpuF32[gpuOff + 1]).toBeCloseTo(covData.snpYOffsets[i]!)
       expect(gpuF32[gpuOff + 2]).toBeCloseTo(covData.snpHeights[i]!)

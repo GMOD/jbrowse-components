@@ -82,7 +82,6 @@ export interface ReadUploadData {
   readTagColors: Uint32Array
   readChainHasSupp?: Uint8Array
   readIds: string[]
-  numReads: number
   maxY: number
   insertSizeStats?: { upper: number; lower: number }
   segmentPositions: Uint32Array
@@ -96,32 +95,27 @@ export interface CigarUploadData {
   gapYs: Uint16Array
   gapTypes: Uint8Array
   gapFrequencies: Uint8Array
-  numGaps: number
   mismatchPositions: Uint32Array
   mismatchYs: Uint16Array
   mismatchBases: Uint8Array
   mismatchFrequencies: Uint8Array
-  numMismatches: number
   interbasePositions: Uint32Array
   interbaseYs: Uint16Array
   interbaseLengths: Uint16Array
   interbaseTypes: Uint8Array
   interbaseFrequencies: Uint8Array
-  numInterbases: number
   numInsertions: number
   numSoftclips: number
   numHardclips: number
   softclipBasePositions: Uint32Array
   softclipBaseYs: Uint16Array
   softclipBaseBases: Uint8Array
-  numSoftclipBases: number
 }
 
 export interface ModificationUploadData {
   modificationPositions: Uint32Array
   modificationYs: Uint16Array
   modificationColors: Uint32Array
-  numModifications: number
 }
 
 // Coverage-area upload payload. Raw arrays are kept for hit testing / tooltip
@@ -132,24 +126,20 @@ export interface CoverageUploadData {
   coverageDepths: Float32Array
   coverageMaxDepth: number
   coverageStartPos: number
-  numCoverageBins: number
   coveragePackedBuffer: ArrayBuffer
   snpPositions: Uint32Array
   snpYOffsets: Float32Array
   snpHeights: Float32Array
   snpColorTypes: Uint8Array
-  numSnpSegments: number
   snpPackedBuffer: ArrayBuffer
   noncovPositions: Uint32Array
   noncovYOffsets: Float32Array
   noncovHeights: Float32Array
   noncovColorTypes: Uint8Array
   noncovMaxCount: number
-  numNoncovSegments: number
   noncovPackedBuffer: ArrayBuffer
   indicatorPositions: Uint32Array
   indicatorColorTypes: Uint8Array
-  numIndicators: number
   indicatorPackedBuffer: ArrayBuffer
 }
 
@@ -158,7 +148,6 @@ export interface ModCoverageUploadData {
   modCovYOffsets: Float32Array
   modCovHeights: Float32Array
   modCovColors: Uint32Array
-  numModCovSegments: number
   modCovPackedBuffer: ArrayBuffer
 }
 
@@ -178,7 +167,6 @@ export interface ArcsUploadData {
 export interface ConnectingLinesUploadData {
   connectingLinePositions: Uint32Array
   connectingLineYs: Uint16Array
-  numConnectingLines: number
 }
 
 export interface AlignmentsSources {
