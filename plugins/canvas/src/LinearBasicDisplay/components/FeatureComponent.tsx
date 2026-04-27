@@ -212,20 +212,24 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       if (rafId === 0) {
         rafId = requestAnimationFrame(() => {
           rafId = 0
-          // Write DOM scroll position into the model — the autorun watches
-          // self.scrollTop via renderState and re-renders on change.
           model.setScrollTop(container.scrollTop)
         })
       }
     }
 
     const handleWheel = (e: WheelEvent) => {
-      if (model.hasOverflow) {
-        if (view.scrollZoom && !e.shiftKey) {
-          e.preventDefault()
-        } else {
-          e.stopPropagation()
-        }
+      if (!model.hasOverflow) {
+        return
+      }
+      if (e.shiftKey) {
+        // Chrome remaps shift+wheel to the horizontal axis; since overflowX
+        // is hidden the browser drops it (and can trigger overscroll
+        // back-navigation). Do the vertical scroll ourselves.
+        e.preventDefault()
+        e.stopPropagation()
+        container.scrollTop += e.deltaY
+      } else if (view.scrollZoom) {
+        e.preventDefault()
       }
     }
 

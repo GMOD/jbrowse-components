@@ -23,6 +23,8 @@ let mockView = {
   ],
   bpPerPx: 1,
   width: 800,
+  // LGV exposes totalWidthPx as a getter derived from dynamicBlocks; plain mock needs both
+  totalWidthPx: 800,
   dynamicBlocks: { totalWidthPx: 800 },
 }
 
@@ -44,6 +46,8 @@ function resetMockView() {
     ],
     bpPerPx: 1,
     width: 800,
+    // LGV exposes totalWidthPx as a getter derived from dynamicBlocks; plain mock needs both
+    totalWidthPx: 800,
     dynamicBlocks: { totalWidthPx: 800 },
   }
 }
@@ -180,6 +184,7 @@ describe('renderSvg', () => {
       ],
       bpPerPx: 1,
       width: 800,
+      totalWidthPx: 800,
       dynamicBlocks: { totalWidthPx: 800 },
     }
 
