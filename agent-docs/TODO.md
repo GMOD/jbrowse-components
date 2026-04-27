@@ -105,14 +105,9 @@ plugins/tube-map and plugins/graph remove
 put these on a new branch though
 
 
-## Multi-sample regionTooLarge
-
-When i see regiontoolarge, and then zoom in, and it is still regiontoolarge, it actually hides the regiontoolarge while zooming, and shows the contents while zooming, and then re-shows the regiontoolarge once zooming stops
-
 ## LGV vertical scroll canvas
 
 in linear-genome-view plugins/canvas we have the idea of 'hold shift+scroll' to vertically scroll
 but i don't believe it is working, it moves a little but instantly stops. please investigate
 
 
-## Audit regionTooLarge concepts in general

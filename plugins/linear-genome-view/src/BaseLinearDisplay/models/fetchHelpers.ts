@@ -42,9 +42,10 @@ export async function checkByteEstimate(
     return null
   }
 
-  // Effective limit: user override (from force-load) → adapter's own limit → display config default
+  // Effective limit: user override (from force-load) → adapter's own limit → display config default.
+  // Use || for stats.fetchSizeLimit so that 0 (meaning "no limit from adapter") falls through to config.
   const effectiveLimit =
-    config.userByteSizeLimit ?? stats.fetchSizeLimit ?? config.fetchSizeLimit
+    config.userByteSizeLimit ?? (stats.fetchSizeLimit || config.fetchSizeLimit)
 
   if (stats.bytes && stats.bytes > effectiveLimit) {
     return {

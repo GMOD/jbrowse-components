@@ -1,5 +1,9 @@
 import { parseSamplesTsv } from './parseSamplesTsv.ts'
 
+// Tests deliberately use mismatched sample sets; silence the expected warnings
+beforeEach(() => jest.spyOn(console, 'warn').mockImplementation(() => {}))
+afterEach(() => jest.restoreAllMocks())
+
 const tsv = [
   'name\tpop\tsuper_pop',
   'NA12878\tCEU\tEUR',

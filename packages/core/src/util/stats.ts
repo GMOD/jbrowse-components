@@ -78,7 +78,9 @@ export function rectifyStats(
       s.scoreSumSquares,
       s.featureCount || s.basesCovered,
     ),
-    featureDensity: s.featureCount / (s.basesCovered || 1),
+    // featureCount is absent from BigWig totalSummary (the format has no per-feature count
+    // in the global header), so fall back to 1 to avoid NaN
+    featureDensity: (s.featureCount ?? 1) / (s.basesCovered || 1),
   }
 }
 

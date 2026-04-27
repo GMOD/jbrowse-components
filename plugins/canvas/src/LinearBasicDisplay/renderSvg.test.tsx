@@ -32,6 +32,19 @@ jest.mock('@jbrowse/core/util', () => ({
   getContainingView: () => mockView,
 }))
 
+// renderToString has no outer <svg>, so React warns about clipPath casing; in
+// production it's always inside <svg> where React handles it correctly
+beforeEach(() =>
+  jest
+    .spyOn(console, 'error')
+    .mockImplementation((...args: unknown[]) => {
+      if (!String(args).includes('using incorrect casing')) {
+        console.error(...args)
+      }
+    }),
+)
+afterEach(() => jest.restoreAllMocks())
+
 function resetMockView() {
   mockView = {
     visibleRegions: [
