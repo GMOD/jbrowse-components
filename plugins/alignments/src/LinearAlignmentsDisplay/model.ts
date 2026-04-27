@@ -15,6 +15,7 @@ import {
   getSession,
   isFeature,
   isSessionModelWithWidgets,
+  measureText,
 } from '@jbrowse/core/util'
 import {
   addDisposer,
@@ -639,6 +640,15 @@ export default function stateModelFactory(
       .views(self => ({
         get pileupViewportHeight() {
           return Math.max(0, self.height - self.coverageDisplayHeight)
+        },
+
+        get scalebarOverlapLeft() {
+          const view = getContainingView(self) as { trackLabelsSetting?: string }
+          if (view.trackLabelsSetting === 'overlapping') {
+            const track = getContainingTrack(self)
+            return measureText(getConf(track, 'name'), 12.8) + 100
+          }
+          return 0
         },
 
         get showOutlineSetting() {
@@ -1855,5 +1865,8 @@ export default function stateModelFactory(
 export type LinearAlignmentsDisplayStateModel = ReturnType<
   typeof stateModelFactory
 >
-export type LinearAlignmentsDisplayModel =
-  Instance<LinearAlignmentsDisplayStateModel>
+// interface (not type alias) breaks the circular reference TypeScript would
+// encounter through React.lazy → PileupComponent → useAlignmentsBase → model
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface LinearAlignmentsDisplayModel
+  extends Instance<LinearAlignmentsDisplayStateModel> {}

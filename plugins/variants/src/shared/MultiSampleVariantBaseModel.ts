@@ -350,6 +350,12 @@ export default function MultiSampleVariantBaseModelF(
         self.simplifiedFeaturesStopToken = token
       },
 
+      clearRpcDataOnViewportChange() {
+        // getVariantCellDataAutorun fires on viewport changes independently
+        // and clears regionTooLarge when it gets a loadable region, so we
+        // leave it true here to keep the banner visible during the transition
+      },
+
       /**
        * #action
        */

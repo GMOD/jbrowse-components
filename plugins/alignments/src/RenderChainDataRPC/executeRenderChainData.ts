@@ -8,16 +8,10 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { buildModTooltipData } from '../shared/buildTooltipData.ts'
-import {
-  computeCoverage,
-  computeNoncovCoverage,
-  computeSNPCoverage,
-  computeSashimiJunctions,
-} from '../shared/computeCoverage.ts'
+import { buildCoverageResultFields } from '../shared/buildCoverageResultFields.ts'
+import { collectResultTransferables } from '../shared/collectTransferables.ts'
 import { extractFeatureArrays } from '../shared/extractFeatureArrays.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
-import { packCoverageAreaForGpu } from '../shared/packCoverageArea.ts'
 import {
   buildBaseFeatureData,
   buildGapArrays,
@@ -25,8 +19,8 @@ import {
   buildMismatchArrays,
   buildModificationArrays,
   buildSegmentArrays,
-  computeFrequenciesAndThresholds,
 } from '../shared/processFeatureAlignments.ts'
+import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
 
 import type { RenderChainDataArgs } from './types.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
@@ -257,6 +251,8 @@ export async function executeRenderChainData({
 
   const getReadIndex = (id: string) => featureIdToIndex.get(id)!
 
+  const regionEnd = Math.ceil(region.end)
+
   // Layout Ys are filled by the main thread (see computeChainLayout.ts);
   // the worker emits zero-filled Y arrays here.
   const {
@@ -292,7 +288,7 @@ export async function executeRenderChainData({
         features,
         gaps,
         regionStart,
-        Math.ceil(region.end),
+        regionEnd,
         getReadIndex,
       ),
     }),
@@ -300,52 +296,34 @@ export async function executeRenderChainData({
 
   checkStopToken2(stopTokenCheck)
 
-  const regionEnd = Math.ceil(region.end)
-
-  const coverage = await updateStatus(
-    'Computing coverage',
-    statusCallback,
-    async () => computeCoverage(features, gaps, regionStart, regionEnd),
-  )
-
-  checkStopToken2(stopTokenCheck)
-
-  const { mismatchFrequencies, interbaseFrequencies, gapFrequencies } =
-    computeFrequenciesAndThresholds(
-      mismatchArrays,
-      interbaseArrays,
-      gapArrays,
-      coverage.depths,
-      coverage.startPos,
-    )
-
-  const snpCoverage = computeSNPCoverage(
-    mismatches,
-    coverage.maxDepth,
-    regionStart,
-  )
-  const noncovCoverage = computeNoncovCoverage(
-    insertions,
-    softclips,
-    hardclips,
-    coverage.maxDepth,
-    regionStart,
-    coverage.depths,
-    coverage.startPos,
-  )
-
-  const sashimi = computeSashimiJunctions(gaps)
-
-  const modTooltipData = buildModTooltipData({ modifications, regionStart })
-
-  // Chain mode has no modCov data; pass `undefined` so the helper emits a
-  // 0-byte buffer for that pass.
-  const coverageAreaPacked = packCoverageAreaForGpu(
+  // Chain omits regionSequence so runCoveragePipeline skips mod-coverage and
+  // packCoverageAreaForGpu emits a 0-byte mod-cov pass.
+  const {
     coverage,
     snpCoverage,
     noncovCoverage,
-    undefined,
-  )
+    modTooltipData,
+    sashimi,
+    coverageAreaPacked,
+    mismatchFrequencies,
+    interbaseFrequencies,
+    gapFrequencies,
+  } = await runCoveragePipeline({
+    features,
+    gaps,
+    mismatches,
+    insertions,
+    softclips,
+    hardclips,
+    modifications,
+    regionStart,
+    regionEnd,
+    mismatchArrays,
+    interbaseArrays,
+    gapArrays,
+    statusCallback,
+    stopTokenCheck,
+  })
 
   const result: PileupDataResult = {
     readPositions,
@@ -378,35 +356,14 @@ export async function executeRenderChainData({
 
     readTagColors: tagColors,
 
-    coverageDepths: coverage.depths,
-    coverageMaxDepth: coverage.maxDepth,
-    coverageStartPos: coverage.startPos,
-
-    snpPositions: snpCoverage.positions,
-    snpYOffsets: snpCoverage.yOffsets,
-    snpHeights: snpCoverage.heights,
-    snpColorTypes: snpCoverage.colorTypes,
-
-    noncovPositions: noncovCoverage.positions,
-    noncovYOffsets: noncovCoverage.yOffsets,
-    noncovHeights: noncovCoverage.heights,
-    noncovColorTypes: noncovCoverage.colorTypes,
-    noncovMaxCount: noncovCoverage.maxCount,
-
-    indicatorPositions: noncovCoverage.indicatorPositions,
-    indicatorColorTypes: noncovCoverage.indicatorColorTypes,
-
-    modCovPositions: new Uint32Array(0),
-    modCovYOffsets: new Float32Array(0),
-    modCovHeights: new Float32Array(0),
-    modCovColors: new Uint32Array(0),
-    numModCovSegments: 0,
-
-    ...coverageAreaPacked,
-
-    ...sashimi,
-
-    modTooltipData,
+    ...buildCoverageResultFields(
+      coverage,
+      snpCoverage,
+      noncovCoverage,
+      coverageAreaPacked,
+      sashimi,
+      modTooltipData,
+    ),
 
     chainAbsMinStarts,
     chainAbsMaxEnds,
@@ -420,11 +377,7 @@ export async function executeRenderChainData({
     numGaps: gapArrays.gapPositions.length / 2,
     numMismatches: mismatchArrays.mismatchPositions.length,
     numInterbases: interbaseArrays.interbasePositions.length,
-    numCoverageBins: coverage.depths.length,
     numModifications: modificationArrays.modificationPositions.length,
-    numSnpSegments: snpCoverage.count,
-    numNoncovSegments: noncovCoverage.segmentCount,
-    numIndicators: noncovCoverage.indicatorCount,
 
     detectedModifications: Array.from(detectedModifications),
     simplexModifications: Array.from(detectedSimplexModifications),
@@ -440,82 +393,5 @@ export async function executeRenderChainData({
     numConnectingLines: 0,
   }
 
-  const transferables = [
-    result.readPositions.buffer,
-    result.readYs.buffer,
-    result.segmentPositions.buffer,
-    result.segmentReadIndices.buffer,
-    result.segmentEdgeFlags.buffer,
-    result.readFlags.buffer,
-    result.readMapqs.buffer,
-    result.readAvgBaseQualities.buffer,
-    result.readInsertSizes.buffer,
-    result.readChainHasSupp!.buffer,
-    result.readPairOrientations.buffer,
-    result.readStrands.buffer,
-    result.gapPositions.buffer,
-    result.gapYs.buffer,
-    result.gapLengths.buffer,
-    result.gapTypes.buffer,
-    result.gapFrequencies.buffer,
-    result.mismatchPositions.buffer,
-    result.mismatchYs.buffer,
-    result.mismatchBases.buffer,
-    result.mismatchStrands.buffer,
-    result.mismatchFrequencies.buffer,
-    result.interbasePositions.buffer,
-    result.interbaseYs.buffer,
-    result.interbaseLengths.buffer,
-    result.interbaseTypes.buffer,
-    result.interbaseFrequencies.buffer,
-    result.coverageDepths.buffer,
-    result.snpPositions.buffer,
-    result.snpYOffsets.buffer,
-    result.snpHeights.buffer,
-    result.snpColorTypes.buffer,
-    result.noncovPositions.buffer,
-    result.noncovYOffsets.buffer,
-    result.noncovHeights.buffer,
-    result.noncovColorTypes.buffer,
-    result.indicatorPositions.buffer,
-    result.indicatorColorTypes.buffer,
-    result.modificationPositions.buffer,
-    result.modificationYs.buffer,
-    result.modificationColors.buffer,
-    ...(result.modificationProbabilities
-      ? [result.modificationProbabilities.buffer]
-      : []),
-    result.modCovPositions.buffer,
-    result.modCovYOffsets.buffer,
-    result.modCovHeights.buffer,
-    result.modCovColors.buffer,
-    result.readTagColors.buffer,
-    result.sashimiX1.buffer,
-    result.sashimiX2.buffer,
-    result.sashimiScores.buffer,
-    result.sashimiColorTypes.buffer,
-    result.sashimiCounts.buffer,
-    result.chainAbsMinStarts!.buffer,
-    result.chainAbsMaxEnds!.buffer,
-    result.chainDistances!.buffer,
-    result.chainFirstReadIndices!.buffer,
-    result.chainHasMultiple!.buffer,
-    result.readChainIndices!.buffer,
-    result.readNextPositions!.buffer,
-    // Worker-packed GPU buffers (see ADR-004 + packCoverageArea.ts).
-    result.coveragePackedBuffer,
-    result.snpPackedBuffer,
-    result.noncovPackedBuffer,
-    result.indicatorPackedBuffer,
-    result.modCovPackedBuffer,
-    result.gapReadIndices.buffer,
-    result.mismatchReadIndices.buffer,
-    result.interbaseReadIndices.buffer,
-    result.modificationReadIndices.buffer,
-    ...(result.modificationTypeIndices
-      ? [result.modificationTypeIndices.buffer]
-      : []),
-  ] as ArrayBuffer[]
-
-  return rpcResult(result, transferables)
+  return rpcResult(result, collectResultTransferables(result))
 }

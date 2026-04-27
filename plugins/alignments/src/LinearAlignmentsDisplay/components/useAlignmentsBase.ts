@@ -21,144 +21,12 @@ import {
 } from './openFeatureWidget.ts'
 import { getContrastBaseMap } from '../../shared/util.ts'
 
-import type { ColorPalette } from './AlignmentsRenderer.ts'
-import type { CoverageTicks } from './CoverageYScaleBar.tsx'
-import type { YScaleTicks } from './YScaleBar.tsx'
-import type { VisibleLabel } from './computeVisibleLabels.ts'
-import type {
-  CigarHitResult,
-  IndicatorHitResult,
-  ResolvedBlock,
-} from './hitTesting.ts'
-import type { AlignmentsBackend } from './rendererTypes.ts'
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
-import type { ArcColorByType } from '../../shared/types'
-import type {
-  LegendItem,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LinearAlignmentsDisplayModel } from '../model.ts'
+import type { ResolvedBlock } from './hitTesting.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-interface FeatureInfo {
-  id: string
-  name: string
-  start: number
-  end: number
-  flags: number | undefined
-  mapq: number | undefined
-  strand: string
-  refName: string
-}
-
-export interface LinearAlignmentsDisplayModel {
-  height: number
-  laidOutPileupMap: Map<number, PileupDataResult>
-  isLoading: boolean
-  error: Error | null
-  featureHeightSetting: number
-  featureSpacing: number
-  showCoverage: boolean
-  coverageHeight: number
-  showArcs: boolean
-  arcsHeight: number
-  pairedArcsDown: boolean
-  sashimiArcsHeight: number
-  coverageDisplayHeight: number
-  showInterbaseIndicators: boolean
-  showSashimiArcs: boolean
-  sashimiArcsDown: boolean
-  totalPileupHeight: number
-  scrollableHeight: number
-  pileupViewportHeight: number
-  regionTooLarge: boolean
-  regionTooLargeReason: string
-  regionCannotBeRendered: () => React.ReactNode
-  setFeatureDensityStatsLimit: (s?: unknown) => void
-  reload: () => void
-  featureIdUnderMouse: string | undefined
-  coverageTicks?: CoverageTicks
-  showLegend: boolean | undefined
-  legendItems: LegendItem[]
-  currentRangeY: [number, number]
-  highlightedChainIds: string[]
-  selectedChainIds: string[]
-  chainIdMap: Map<number, string[]>
-  overCigarItem: boolean
-  visibleLabels: VisibleLabel[]
-  isChainMode: boolean
-  setOverCigarItem: (flag: boolean) => void
-  colorPalette: ColorPalette | null
-  colorSchemeIndex: number
-  canvasDrawn: boolean
-  rpcDataMap: Map<number, PileupDataResult>
-  coverageDomain: [number, number] | undefined
-  coverageScaleType: string
-  coverageAutoscaleType: string
-  coverageMinScore: number | undefined
-  coverageMaxScore: number | undefined
-  setCoverageScaleType: (val: string) => void
-  setCoverageAutoscaleType: (val: string) => void
-  setCoverageMinScore: (val?: number) => void
-  setCoverageMaxScore: (val?: number) => void
-  arcsRpcDataMap: Map<
-    number,
-    {
-      arcX1: Uint32Array
-      arcX2: Uint32Array
-      arcColorTypes: Uint8Array
-      arcShapeTypes: Uint8Array
-      arcYBp: Uint32Array
-      numArcs: number
-      linePositions: Uint32Array
-      lineYs: Float32Array
-      lineColorTypes: Uint8Array
-      numLines: number
-    }
-  >
-  lineWidth: number
-  drawInter: boolean
-  arcColorByType: ArcColorByType
-  arcsYDomainBp: number | undefined
-  insertSizeTicks: YScaleTicks | undefined
-  showMismatches: boolean
-  showSoftClipping: boolean
-  showModifications: boolean
-  showOutlineSetting: boolean
-  selectedFeatureId: string | undefined
-  flipStrandLongReadChains: boolean
-  setColorPalette: (palette: ColorPalette | null) => void
-  setCurrentRangeY: (rangeY: [number, number]) => void
-  setCoverageHeight: (height: number) => void
-  setArcsHeight: (height: number) => void
-  setSashimiArcsHeight: (height: number) => void
-  setHighlightedChainIds: (ids: string[]) => void
-  setSelectedChainIds: (ids: string[]) => void
-  clearHighlights: () => void
-  clearMouseoverState: () => void
-  clearSelection: () => void
-  setFeatureIdUnderMouse: (id: string | undefined) => void
-  setMouseoverExtraInformation: (info: string | undefined) => void
-  selectFeatureById: (featureId: string) => void
-  setContextMenuFeatureById: (featureId: string) => void
-  setContextMenuCoord: (coord?: [number, number]) => void
-  setContextMenuCigarHit: (hit?: CigarHitResult) => void
-  setContextMenuIndicatorHit: (hit?: IndicatorHitResult) => void
-  setContextMenuRefName: (refName?: string) => void
-  contextMenuCoord: [number, number] | undefined
-  contextMenuItems: () => {
-    label: string
-    onClick: () => void
-    icon?: unknown
-  }[]
-  setContextMenuFeature: (feature?: unknown) => void
-  getFeatureInfoById: (featureId: string) => FeatureInfo | undefined
-  renderingMode: 'pileup' | 'linkedRead'
-  scalebarOverlapLeft: number
-  clearAllRpcData: () => void
-  setError: (error?: unknown) => void
-  startGpuBackendLifecycle: (backend: AlignmentsBackend) => void
-  stopGpuBackendLifecycle: () => void
-  renderNow: () => void
-}
+// eslint-disable-next-line unicorn/prefer-export-from -- also used locally in function signatures
+export type { LinearAlignmentsDisplayModel }
 
 export interface FeatureHit {
   id: string
@@ -345,9 +213,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         result.type === 'indicator' ? result.hit : undefined,
       )
       if (result.type === 'cigar' && result.featureHit) {
-        model.setContextMenuFeatureById(result.featureHit.id)
+        void model.setContextMenuFeatureById(result.featureHit.id)
       } else if (result.type === 'feature') {
-        model.setContextMenuFeatureById(result.hit.id)
+        void model.setContextMenuFeatureById(result.hit.id)
       }
     }
   }

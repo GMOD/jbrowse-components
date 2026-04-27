@@ -22,7 +22,7 @@ export interface SashimiArc {
 }
 
 export interface ComputeSashimiArcsOpts {
-  rpcDataMap: Map<number, PileupDataResult>
+  rpcDataMap: ReadonlyMap<number, PileupDataResult>
   visibleRegions: {
     refName: string
     displayedRegionIndex: number

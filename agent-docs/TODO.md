@@ -2,7 +2,6 @@
 
 **Updated:** 2026-04-25 | Move completed items to `agent-docs/completed/COMPLETED.md`. PRD.md holds invariants; this file is the categorized backlog.
 
-Sections roughly in working order — high-leverage architectural items first, then config / tests, then bugs and polish.
 
 ---
 
@@ -22,11 +21,6 @@ expressions intact. See `CONFIG_PATTERN.md`.
 
 **Scroll zoom lag.** This is a tricky one but sometimes, when doing a scroll zoom, we see a ~500ms–1s delay after tab switch. Debug LinearGenomeView reactivity or JS event throttling.
 
-**`zoomDivisor` coalescing in wheel handlers.** In `useWheelScroll.ts` and `BreakpointSplitViewOverlay.tsx`, `zoomDelta` accumulates across wheel events within a RAF frame but `zoomDivisor` is overwritten by each event (last one wins). If two events fire before the RAF fires — one large-delta (normalizer=500) then one small-delta (normalizer=25) — the accumulated delta gets divided by 25, potentially making the zoom jump larger than intended. Investigate whether this is perceptible, and if so, fix by tracking divisor per-event (e.g. accumulate weighted or use first-event divisor for the frame).
-
-
-
-**`paf_chain2paf` / `parseCigar2` speed.** Profile and optimize.
 
 ---
 
@@ -98,28 +92,6 @@ palette, shared Canvas2D ⇄ SVG rasterizer). Remaining:
 - Canvas: features collapsed to y=0 on NCBI (needs reproduction steps).
 
 
-## Extension-point cleanup
-
-`PluggableComponent` (`packages/core/src/ui/PluggableComponent.tsx`) wraps the
-`evaluateExtensionPoint(name, Default, props) as React.ComponentType<P>` +
-inline-render pattern. A few remaining call sites don't fit the helper as-is:
-
-- *`Core-extraAboutPanel`* (`packages/product-core/src/ui/AboutDialogContents.tsx:48`)
-  returns `{ name, Component }` so the host can wrap it in a titled `BaseCard`.
-  To use `PluggableComponent`, change the contract so the extension returns a
-  component that renders its own card (or expose `name` via a static prop). API
-  break for any plugin registering this extension point — none in-tree today,
-  but worth checking external plugins before changing.
-
-- *`Core-extraFeaturePanel`* (`packages/core/src/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.tsx:46`)
-  — same `{ name, Component }` shape as above, same fix.
-
-- *`TrackSelector-folderDialog`* (`plugins/data-management/src/HierarchicalTrackSelectorWidget/components/tree/TrackCategory.tsx:73`)
-  resolves a component then hands `[Component, props]` to `session.queueDialog`.
-  `PluggableComponent` doesn't help because the rendering is deferred to the
-  dialog queue. Could either teach `queueDialog` to accept a
-  `PluggableComponent`-style descriptor, or leave as-is — low value.
-
 
 
 
@@ -136,13 +108,20 @@ put these on a new branch though
 
 
 
-High-value but complex:
-- The two RPC executors (executeRenderPileupData.ts / executeRenderChainData.ts) are ~70% identical
-— same read-array packing, same gap/mismatch/coverage pipeline, same transferables list. Merging
-them would remove ~300 lines and eliminate the risk of future buffer-list divergence. The only real
-divergence is chain-specific metadata arrays.
-- buildLaidOutPileupMap / buildLaidOutChainMap have identical multi-region/single-region branching —
- a shared driver would unify them.
+Done — pileup/chain executors:
+- shared/runCoveragePipeline.ts: single named operation for coverage-area computation
+  (computeCoverage → freqs → SNP → noncov → mod → modTooltip → sashimi → pack). Step order
+  cannot drift between executors.
+- shared/collectTransferables.ts: auto-derives the transferables list by walking the result
+  object for TypedArray buffers + ArrayBuffer values. Eliminates "added a buffer field, forgot
+  to transfer" as an architectural class of bug. Also fixed a latent drift where chain was
+  silently dropping softclipBaseReadIndices.buffer that pileup transferred.
+- shared/buildCoverageResultFields.ts: consolidates the ~20 shared coverage result fields.
+- Full executor merge remains not viable (chain has 125+ lines of chain-specific logic;
+  pileup has 80+ lines of pileup-only logic — ref sequence fetch, mod coverage, softclips,
+  SAM flag stats).
+- buildLaidOutPileupMap / buildLaidOutChainMap: control flow is structurally identical but
+  deduplication semantics differ (pileup: by read ID; chain: by mate-pair name). Not worth merging.
 
 Constrained:
 - The LinearAlignmentsDisplayModel interface in useAlignmentsBase.ts manually duplicates ~110 model

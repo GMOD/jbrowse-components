@@ -16,7 +16,7 @@
 | `DisplayedRegionsChange`             | `view.displayedRegions` entries change (chromosome navigation)                                          | `clearAllRpcData()`                                       |
 | `FetchVisibleRegions`                | `fetchGeneration` (bumps at fetch end), `view.visibleRegions`, `error`, `regionTooLarge` (600 ms delay) | calls `fetchNeeded` with uncovered buffered regions       |
 | `SettingsInvalidate`                 | `self.rpcProps` (any field it reads)                                                                    | `clearAllRpcData()`                                       |
-| `ClearBlockingStateOnViewportChange` | `view.visibleRegions`                                                                                   | `clearAllRpcData()` if `regionTooLarge` or `error` is set |
+| `ClearBlockingStateOnViewportChange` | `view.visibleRegions`                                                                                   | `clearAllRpcData()` if `error` set; `clearRpcDataOnViewportChange()` if `regionTooLarge` set |
 
 ### Overridable hooks — subclasses must/can override
 
@@ -27,6 +27,7 @@
 | `isCacheValid(idx)`          | `true`      | return `false` to force re-fetch at current zoom (wiggle uses this for zoom-level changes)               |
 | `getByteEstimateConfig()`    | `null`      | return config to enable byte-estimate gating before fetch                                                |
 | `clearDisplaySpecificData()` | no-op       | clear subclass-owned data maps (rpcDataMap, cellData, etc.)                                              |
+| `clearRpcDataOnViewportChange()` | calls `clearAllRpcData()` | override to no-op when display has its own fetch autorun (variants) — keeps `regionTooLarge` banner visible across viewport changes |
 
 ### `loadedRegions`
 
@@ -52,7 +53,7 @@ sort/group change.
 | ------------------------------------------------------ | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | `untracked(() => self.isLoading)`                      | perf guard      | prevents extra fire on fetch start; `fetchGeneration` already covers post-fetch re-evaluation                                                |
 | `untracked(() => self.loadedRegions.get(...))`         | perf guard      | prevents autorun re-fire when regions are populated; `fetchGeneration` bump covers it                                                        |
-| `untracked(() => self.regionTooLarge \|\| self.error)` | **correctness** | if either were tracked, setting them would immediately re-fire `ClearBlockingStateOnViewportChange` and wipe them before any viewport change |
+| `untracked(() => !!self.error)` and `untracked(() => self.regionTooLarge)` | **correctness** | if either were tracked, setting them would immediately re-fire `ClearBlockingStateOnViewportChange` and wipe them before any viewport change |
 
 ### `boundsValid` check
 

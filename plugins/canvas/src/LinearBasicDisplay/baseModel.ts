@@ -14,7 +14,6 @@ import {
   getSession,
   isFeature,
   isSessionModelWithWidgets,
-  measureText,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -237,17 +236,6 @@ export default function baseStateModelFactory(
             canvasWidth: view.trackWidthPx,
             canvasHeight: self.height,
           }
-        },
-
-        get scalebarOverlapLeft() {
-          const view = getContainingView(self) as {
-            trackLabelsSetting?: string
-          }
-          if (view.trackLabelsSetting === 'overlapping') {
-            const track = getContainingTrack(self)
-            return measureText(getConf(track, 'name'), 12.8) + 100
-          }
-          return 0
         },
 
         get adapterConfigSnapshot() {
