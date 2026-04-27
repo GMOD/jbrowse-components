@@ -1,7 +1,8 @@
+import React from 'react'
+
 import { mkdirSync, writeFileSync } from 'fs'
 import path from 'path'
 
-import React from 'react'
 import { renderToString } from 'react-dom/server'
 
 import { renderSvg } from './renderSvg.tsx'
@@ -11,30 +12,9 @@ import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
 // renderSvg calls getContainingView(model) to reach the LGV. Since the model
 // is a plain object in tests (not an MST node), we intercept the call.
-let mockView = {
-  visibleRegions: [
-    {
-      displayedRegionIndex: 0,
-      start: 1000,
-      end: 2000,
-      reversed: false,
-      screenStartPx: 0,
-      screenEndPx: 800,
-    },
-  ],
-  bpPerPx: 1,
-  width: 800,
-  // LGV exposes totalWidthPx as a getter derived from dynamicBlocks; plain mock needs both
-  totalWidthPx: 800,
-  dynamicBlocks: { totalWidthPx: 800 },
-}
-
-jest.mock('@jbrowse/core/util', () => ({
-  getContainingView: () => mockView,
-}))
-
-function resetMockView() {
-  mockView = {
+// LGV exposes totalWidthPx as a getter derived from dynamicBlocks; plain mock needs both
+function makeDefaultMockView() {
+  return {
     visibleRegions: [
       {
         displayedRegionIndex: 0,
@@ -47,11 +27,20 @@ function resetMockView() {
     ],
     bpPerPx: 1,
     width: 800,
-    // LGV exposes totalWidthPx as a getter derived from dynamicBlocks; plain mock needs both
     totalWidthPx: 800,
     dynamicBlocks: { totalWidthPx: 800 },
   }
 }
+
+let mockView = makeDefaultMockView()
+
+jest.mock('@jbrowse/core/util', () => ({
+  getContainingView: () => mockView,
+}))
+
+afterEach(() => {
+  mockView = makeDefaultMockView()
+})
 
 function extractAndWriteSvg(html: string, filename: string) {
   const outputDir = path.join(__dirname, '__test-outputs__')
@@ -59,21 +48,10 @@ function extractAndWriteSvg(html: string, filename: string) {
   writeFileSync(path.join(outputDir, filename), html, 'utf-8')
 }
 
-jest.mock('mobx', () => {
-  const actual = jest.requireActual('mobx')
-  return {
-    ...actual,
-    when: async (condition: () => boolean) => {
-      // For tests, immediately resolve if condition is true, otherwise wait a bit
-      for (let i = 0; i < 100; i++) {
-        if (condition()) {
-          return
-        }
-        await new Promise(r => setTimeout(r, 10))
-      }
-    },
-  }
-})
+jest.mock('mobx', () => ({
+  ...jest.requireActual('mobx'),
+  when: () => Promise.resolve(),
+}))
 
 function makeData(
   features: { startBp: number; endBp: number }[] = [],
@@ -196,7 +174,5 @@ describe('renderSvg', () => {
     const html = renderToString(<svg>{result as React.ReactElement}</svg>)
     extractAndWriteSvg(html, 'reversed.svg')
     expect(html).toMatchSnapshot()
-
-    resetMockView()
   })
 })

@@ -1,5 +1,6 @@
 import path from 'path'
 
+import { destroy } from '@jbrowse/mobx-state-tree'
 import { renderToSvg } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { createCanvas } from 'canvas'
@@ -138,10 +139,12 @@ export async function renderRegion(opts: Opts) {
     applyTrackOpts(track, view, extra => path.basename(extra))
   }
 
-  return renderToSvg(view, {
+  const result = await renderToSvg(view, {
     rasterizeLayers: !opts.noRasterize,
     createCanvas: (w: number, h: number) =>
       createCanvas(w, h) as unknown as HTMLCanvasElement,
     ...opts,
   })
+  destroy(model)
+  return result
 }
