@@ -37,7 +37,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   async setupPre(opts?: BaseOptions) {
-    const lines = [] as PAFRecord[]
+    const lines: PAFRecord[] = []
     parseLineByLine(
       await fetchAndMaybeUnzip(
         openLocation(this.getConf('pafLocation'), this.pluginManager),

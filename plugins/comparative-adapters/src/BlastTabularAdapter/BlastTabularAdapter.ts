@@ -158,10 +158,7 @@ function createBlastLineParser(columns: string) {
   const columnNameSet = new Map<string, number>(
     columnNames
       .map((c, idx) => [c, idx] as const)
-      .filter(
-        f =>
-          !REQUIRED_COLUMNS.includes(f[0] as (typeof REQUIRED_COLUMNS)[number]),
-      ),
+      .filter(f => !(REQUIRED_COLUMNS as readonly string[]).includes(f[0])),
   )
   return (line: string): BlastRecord | undefined => {
     if (line.startsWith('#')) {
@@ -214,9 +211,7 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
 
   async setup(opts?: BaseOptions): Promise<BlastRecord[]> {
     const columns: string = readConfObject(this.config, 'columns')
-    const lines = [] as NonNullable<
-      ReturnType<ReturnType<typeof createBlastLineParser>>
-    >[]
+    const lines: NonNullable<ReturnType<ReturnType<typeof createBlastLineParser>>>[] = []
 
     const cb = createBlastLineParser(columns)
     parseLineByLine(

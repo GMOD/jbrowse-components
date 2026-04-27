@@ -275,7 +275,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             } else {
               const r = parsePAFLine(line)
               const { strand } = r
-              const extra = r.extra as Record<string, string | number>
+              const extra = r.extra
               const { numMatches = 0, blockLen = 1, cg, sy, ...rest } = extra
 
               const start = r.qstart

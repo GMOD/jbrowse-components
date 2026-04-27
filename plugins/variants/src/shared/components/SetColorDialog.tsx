@@ -25,7 +25,7 @@ export default function SetColorDialog({
       enableBulkEdit
       enableRowPalettizer
       showTipsStorageKey="multivariant-showTips"
-      SourcesGridComponent={SourcesGrid as any}
+      SourcesGridComponent={SourcesGrid}
     />
   )
 }

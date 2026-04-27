@@ -12,6 +12,7 @@ export interface PAFRecord {
     mappingQual?: number
     numMatches?: number
     meanScore?: number
+    [key: string]: string | number | undefined
   }
 }
 // based on "weighted mean" method from https://github.com/tpoorten/dotPlotly

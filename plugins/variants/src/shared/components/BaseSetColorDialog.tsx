@@ -8,6 +8,8 @@ import { Button, DialogActions, DialogContent } from '@mui/material'
 import ClearTreeWarningDialog from './ClearTreeWarningDialog.tsx'
 import SetColorDialogBulkEditPanel from './SetColorDialogBulkEditPanel.tsx'
 import SetColorDialogHelpfulTips from './SetColorDialogHelpfulTips.tsx'
+
+import type { Source } from '../types.ts'
 import SetColorDialogRowPalettizer from './SetColorDialogRowPalettizer.tsx'
 
 const useStyles = makeStyles()({
@@ -23,15 +25,9 @@ const useStyles = makeStyles()({
 
 interface SetColorDialogProps {
   model: {
-    sources?: {
-      name: string
-      [key: string]: unknown
-    }[]
+    sources?: Source[]
     clusterTree?: string
-    setLayout: (
-      s: { name: string; [key: string]: unknown }[],
-      clearTree?: boolean,
-    ) => void
+    setLayout: (s: Source[], clearTree?: boolean) => void
     clearLayout: () => void
   }
   handleClose: () => void
@@ -40,8 +36,8 @@ interface SetColorDialogProps {
   enableRowPalettizer?: boolean
   showTipsStorageKey?: string
   SourcesGridComponent: React.ComponentType<{
-    rows: { name: string; [key: string]: unknown }[]
-    onChange: (rows: { name: string; [key: string]: unknown }[]) => void
+    rows: Source[]
+    onChange: (rows: Source[]) => void
     showTips: boolean
   }>
 }

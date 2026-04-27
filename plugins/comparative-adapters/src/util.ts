@@ -49,15 +49,15 @@ export function parsePAFLine(line: string) {
   }
 
   return {
-    tname: parts[5],
+    tname: parts[5]!,
     tstart: +parts[7]!,
     tend: +parts[8]!,
-    qname: parts[0],
+    qname: parts[0]!,
     qstart: +parts[2]!,
     qend: +parts[3]!,
     strand: parts[4] === '-' ? -1 : 1,
     extra,
-  } as PAFRecord
+  }
 }
 
 export function flipCigar(cigar: string[]) {
