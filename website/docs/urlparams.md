@@ -338,14 +338,21 @@ https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config_main_thread.js
 
 [Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config_main_thread.json&session=spec-%7B"views":%5B%7B"type":"DotplotView","views":%5B%7B"assembly":"volvox"%7D,%7B"assembly":"volvox"%7D%5D,"tracks":%5B"volvox_fake_synteny"%5D%7D%5D%7D)
 
-Expanded
+Expanded example, see that it is a self-self alignment
 
 ```json
 {
   "views": [
     {
       "type": "DotplotView",
-      "views": [{ "assembly": "volvox" }, { "assembly": "volvox" }], //  (self vs self alignment)
+      "views": [
+        {
+          "assembly": "volvox"
+        },
+        {
+          "assembly": "volvox"
+        }
+      ],
       "tracks": ["volvox_fake_synteny"]
     }
   ]
@@ -414,17 +421,23 @@ https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&sessi
 
 [Live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-30000","assembly":"volvox"},{"loc":"ctgA:1000-31000","assembly":"volvox"}]}]})
 
-Expanded
+Expanded, again showing a self-self alignment is allowed
 
 ```json
 {
   "views": [
     {
       "type": "LinearSyntenyView",
-      "tracks": ["volvox_fake_synteny"], //  (self vs self alignment)
+      "tracks": ["volvox_fake_synteny"],
       "views": [
-        { "loc": "ctgA:1-30000", "assembly": "volvox" },
-        { "loc": "ctgA:1000-31000", "assembly": "volvox" }
+        {
+          "loc": "ctgA:1-30000",
+          "assembly": "volvox"
+        },
+        {
+          "loc": "ctgA:1000-31000",
+          "assembly": "volvox"
+        }
       ]
     }
   ]
@@ -487,10 +500,10 @@ Expanded
   "views": [
     {
       "type": "LinearSyntenyView",
-      "tracks": [["volvox_ins.paf"],["volvox_del.paf"]], // this multidimensional array refers to the synteny tracks at each level of the multi-level synteny view
+      "tracks": [["volvox_ins.paf"], ["volvox_del.paf"]], // this multidimensional array refers to the synteny tracks at each level of the multi-level synteny view
       "views": [
         { "loc": "ctgA:1-50000", "assembly": "volvox-ins" },
-        { "loc": "ctgA:1000-50000", "assembly": "volvox" }
+        { "loc": "ctgA:1000-50000", "assembly": "volvox" },
         { "loc": "ctgA:1000-44000", "assembly": "volvox-del" }
       ]
     }
@@ -559,8 +572,14 @@ https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=s
   "layout": {
     "direction": "horizontal",
     "children": [
-      { "views": [0], "size": 70 },
-      { "views": [1], "size": 30 }
+      {
+        "views": [0],
+        "size": 70
+      },
+      {
+        "views": [1],
+        "size": 30
+      }
     ]
   }
 }

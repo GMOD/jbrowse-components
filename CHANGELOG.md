@@ -1,3 +1,10 @@
+## Changes since v4.2.0 (2026-04-16)
+
+### bug
+
+- Fix nav to search string via &loc=
+  ([#5544](https://github.com/GMOD/jbrowse-components/pull/5544)) @cmdcolin
+
 ## Changes since v4.1.15 (2026-04-02)
 
 ### bug

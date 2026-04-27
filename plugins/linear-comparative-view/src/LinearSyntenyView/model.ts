@@ -65,15 +65,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         maxOffScreenDrawPx: 300,
         /**
          * #property
-         * used for initializing the view from a session snapshot
+         * used for initializing the view from a session snapshot. tracks is
+         * 2D — outer index is the level (the gap between views[i] and
+         * views[i+1]), so a 3-way view has two entries.
          * example:
          * ```json
          * {
          *   views: [
          *     { loc: "chr1:1-100", assembly: "hg38", tracks: ["genes"] },
-         *     { loc: "chr1:1-100", assembly: "mm39" }
+         *     { loc: "chr1:1-100", assembly: "mm39" },
+         *     { loc: "chr1:1-100", assembly: "rn7" }
          *   ],
-         *   tracks: ["hg38_vs_mm39_synteny"]
+         *   tracks: [["hg38_vs_mm39_synteny"], ["mm39_vs_rn7_synteny"]]
          * }
          * ```
          */
@@ -520,15 +523,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   }),
                 )
 
-                // Show synteny tracks per level
-                // Normalize: flat string[] becomes [string[]] (single level)
-                if (init.tracks && init.tracks.length > 0) {
-                  const perLevel = Array.isArray(init.tracks[0])
-                    ? (init.tracks as string[][])
-                    : [init.tracks as string[]]
-                  for (const [level, levelTracks] of perLevel.entries()) {
-                    for (const trackId of levelTracks) {
-                      self.showTrack(trackId, level)
+                // Show synteny tracks. tracks is string[][] — outer index is
+                // the level (between views[i] and views[i+1]).
+                if (init.tracks) {
+                  for (let i = 0; i < init.tracks.length; i++) {
+                    const ids = init.tracks[i]
+                    if (!ids) {
+                      continue
+                    }
+                    for (const trackId of ids) {
+                      self.showTrack(trackId, i)
                     }
                   }
                 }

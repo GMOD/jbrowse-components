@@ -39,7 +39,7 @@ afterEach(() => {
 
 async function createSyntenyViewWithInit(init: {
   views: { loc?: string; assembly: string; tracks?: string[] }[]
-  tracks?: string[]
+  tracks?: string[][]
 }) {
   const { pluginManager, rootModel } = getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
@@ -62,7 +62,7 @@ test('LinearSyntenyView initializes with init property', async () => {
       { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
       { loc: 'chr1:316,306..316,364', assembly: 'grape' },
     ],
-    tracks: ['subset'],
+    tracks: [['subset']],
   })
 
   // Initially should have hasSomethingToShow true due to init

@@ -95,7 +95,6 @@
         }
       ]
     },
-
     {
       "type": "SyntenyTrack",
       "trackId": "volvox_fake_synteny",
@@ -215,5 +214,24 @@
     "activeWidgets": {
       "hierarchicalTrackSelector": "hierarchicalTrackSelector"
     }
-  }
+  },
+  "aggregateTextSearchAdapters": [
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "volvox-index",
+      "ixFilePath": {
+        "uri": "trix_main_thread/volvox.ix",
+        "locationType": "UriLocation"
+      },
+      "ixxFilePath": {
+        "uri": "trix_main_thread/volvox.ixx",
+        "locationType": "UriLocation"
+      },
+      "metaFilePath": {
+        "uri": "trix_main_thread/volvox_meta.json",
+        "locationType": "UriLocation"
+      },
+      "assemblyNames": ["volvox"]
+    }
+  ]
 }
