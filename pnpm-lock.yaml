@@ -1099,8 +1099,8 @@ importers:
         specifier: ^5.6.0
         version: 5.6.0(mobx@6.15.0)
       gff-nostream:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^3.0.4
+        version: 3.0.4
       mobx:
         specifier: ^6.15.0
         version: 6.15.0
@@ -6606,8 +6606,8 @@ packages:
     resolution: {integrity: sha512-b1O07XYq8eRuVzBNgJLstU6FYc1tS6wnMtF1I1D9lE8LxZSOGZ7LhxN54yPP6mGw5f2CkXY2BQUL9Fx41qvcIg==}
     engines: {node: '>= 14'}
 
-  gff-nostream@3.0.2:
-    resolution: {integrity: sha512-delfrjpVL3uN6UbeO/aReuiWfg4kH01iGMyrOW2LXJFf1ohS46/RId+3y+lrJBRGmCa+QAnw3LqYGMMp2i/P6g==}
+  gff-nostream@3.0.4:
+    resolution: {integrity: sha512-Z3/u+bQQIP4MhFYhkI7aUDdMpwmX0INbTnw9vl5ukzZVme/05QWnMdeWZlYukPHFKnYXCNa7RUQtdYga300m2Q==}
 
   github-from-package@0.0.0:
     resolution: {integrity: sha512-SyHy3T1v2NUXn29OsWdxmK6RwHD+vkj3v8en8AOBZ1wBQ/hCAQ5bAQTD02kW4W9tUp/3Qh6J8r9EvntiyCmOOw==}
@@ -14170,7 +14170,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  gff-nostream@3.0.2: {}
+  gff-nostream@3.0.4: {}
 
   github-from-package@0.0.0: {}
 

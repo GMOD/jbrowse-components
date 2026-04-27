@@ -20,16 +20,59 @@ variants) via four autoruns:
 | `DisplayedRegionsChange` | `view.displayedRegions` change | `clearAllRpcData()` |
 | `FetchVisibleRegions` | viewport / `fetchGeneration` (600ms debounce) | `fetchNeeded(needed)` for uncovered buffered regions; gated by `error`/`regionTooLarge` |
 | `SettingsInvalidate` | `rpcProps` change | `clearAllRpcData()` |
-| `ClearBlockingStateOnViewportChange` | viewport change while `regionTooLarge` or `error` is set | `clearAllRpcData()` to unblock retry |
+| `ClearBlockingStateOnViewportChange` | viewport change while `regionTooLarge` or `error` is set | `clearAllRpcData()` to unblock retry (no-op for canvas's derived `regionTooLarge`) |
 
 Subclasses override `fetchNeeded` to call `self.fetchRegions(needed, work)`,
 where `fetchRegions` runs an optional pre-flight byte estimate
 (via `getByteEstimateConfig`) before invoking the work callback. Oversize
-regions set `regionTooLarge=true` and skip the fetch, surfacing a banner via
-`regionCannotBeRendered()`. `error`/`regionTooLarge` reads in
-`ClearBlockingStateOnViewportChange` are `untracked` for correctness —
+regions surface a banner via `regionCannotBeRendered()`. `error`/`regionTooLarge`
+reads in `ClearBlockingStateOnViewportChange` are `untracked` for correctness —
 tracking either would let `set...` re-fire the autorun and wipe the flag
 before any viewport change.
+
+### regionTooLarge: imperative vs. derived
+
+There are two implementations of `regionTooLarge` in the codebase, both
+expressed through the `regionTooLarge` getter so consumers
+(`regionCannotBeRendered()`, `regionCannotBeRenderedText()`, the
+`FetchVisibleRegions` gate) work with either.
+
+- **Imperative** (`RegionTooLargeMixin` default; used by wiggle, alignments,
+  hic): `setRegionTooLarge(true)` flips a volatile flag inside `fetchRegions`
+  when the byte estimate exceeds the limit. `ClearBlockingStateOnViewportChange`
+  clears the flag on viewport change so `FetchVisibleRegions` can retry.
+- **Derived** (canvas's `LinearCanvasBaseDisplay`): a pure function of cached
+  stats × current `bpPerPx` + visible regions, mirroring `FeatureDensityMixin`.
+  - `bytesEstimateTooLarge` reads `featureDensityStats.bytes` (set by the
+    byte-estimate RPC) against `userByteSizeLimit ?? adapter limit ?? config`.
+  - `densityTooLarge` walks `view.visibleRegions`, looks up
+    `densityStatsPerRegion[idx]` (populated for both successful fetches and
+    worker-side too-large responses), and tests
+    `(featureCount/regionWidthBp) × bpPerPx > maxFeatureDensity`. Scoping to
+    currently-visible regions means panning past too-large areas naturally
+    releases the gate.
+  - `regionTooLarge = bytesEstimateTooLarge || densityTooLarge`.
+  - `laidOutDataMap` returns empty when `regionTooLarge` is true, so the GPU
+    upload pushes nothing — no stale-feature flash through the banner.
+  - `isCacheValid` keeps too-large regions cached while the threshold still
+    trips at the current zoom; flips invalid (forces refetch) when it doesn't.
+  - A canvas-level autorun on `view.displayedRegions` clears
+    `densityStatsPerRegion`/`featureDensityStats` on chromosome navigation
+    (`displayedRegionIndex` gets reused, so stale entries would otherwise gate
+    against the wrong region's stats and could permanently block refetch).
+
+The derived approach removes the imperative clear-and-reset cycle that caused
+the banner to flicker off and back on during small zoom or pan moves that
+didn't actually cross the threshold. Both `featureDensityStats` and
+`densityStatsPerRegion` survive `clearAllRpcData()` (they aren't in
+`clearDisplaySpecificData`'s clearing path), so
+`ClearBlockingStateOnViewportChange` is a no-op for the derived banner —
+state recomputes the same value before and after.
+
+`regionCannotBeRendered()` and `regionCannotBeRenderedText()` in
+`RegionTooLargeMixin` read through `self.regionTooLarge` (the getter) rather
+than `self.regionTooLargeState` (the volatile) so subclass overrides flow
+into the banner UI and SVG export text.
 
 Variants are monolithic: `MultiSampleVariantGetCellData` returns one batched
 payload covering all visible regions, so variants' `fetchNeeded` expands
