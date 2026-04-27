@@ -210,9 +210,9 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
         </div>
       ) : null}
       {model.regionTooLarge ? model.regionCannotBeRendered() : null}
-      {model.displayError ? (
+      {model.error ? (
         <ErrorBar
-          error={model.displayError}
+          error={model.error}
           onRetry={() => {
             model.reload()
           }}

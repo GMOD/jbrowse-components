@@ -31,19 +31,12 @@ interface CellDataBase {
   simplifiedFeatures: SimplifiedVariantFeature[]
 }
 
-export interface RegionTooLargeResult {
-  regionTooLarge: true
-  bytes: number
-  fetchSizeLimit: number
-}
-
 export type CellDataResult =
   | (CellDataBase & {
       mode: 'regular'
       perRegionCellData: Record<number, VariantCellData>
     })
   | (CellDataBase & MatrixCellData & { mode: 'matrix' })
-  | RegionTooLargeResult
 
 function computeSampleInfo(
   mafs: MAFFilteredFeature[],
@@ -138,7 +131,6 @@ export async function executeVariantCellData({
     sessionId,
     statusCallback,
     displayedRegionIndices,
-    byteSizeLimit,
   } = args
 
   const regionLookup = displayedRegionIndices
@@ -157,16 +149,6 @@ export async function executeVariantCellData({
   )
 
   const adapter = dataAdapter as BaseFeatureDataAdapter
-  if (byteSizeLimit) {
-    const stats = await adapter.getMultiRegionFeatureDensityStats(regions, args)
-    if (stats.bytes && stats.bytes > byteSizeLimit) {
-      return {
-        regionTooLarge: true as const,
-        bytes: stats.bytes,
-        fetchSizeLimit: stats.fetchSizeLimit ?? byteSizeLimit,
-      }
-    }
-  }
 
   const rawFeatures = await updateStatus(
     'Loading features',

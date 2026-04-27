@@ -35,7 +35,6 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs {
   mode: 'regular' | 'matrix'
   displayedRegionIndices?: number[]
   statusCallback: (arg: string) => void
-  byteSizeLimit?: number
 }
 
 export interface MultiSampleVariantGetSourcesArgs {

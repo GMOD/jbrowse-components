@@ -9,6 +9,38 @@ exporters that write 1-based formats add 1 on output.
 
 ---
 
+## Data fetching pipeline
+
+`MultiRegionDisplayMixin` (in `plugins/linear-genome-view/src/BaseLinearDisplay/`)
+drives RPC fetches for all LGV displays (alignments, canvas, wiggle,
+variants) via four autoruns:
+
+| Autorun | Trigger | Action |
+| --- | --- | --- |
+| `DisplayedRegionsChange` | `view.displayedRegions` change | `clearAllRpcData()` |
+| `FetchVisibleRegions` | viewport / `fetchGeneration` (600ms debounce) | `fetchNeeded(needed)` for uncovered buffered regions; gated by `error`/`regionTooLarge` |
+| `SettingsInvalidate` | `rpcProps` change | `clearAllRpcData()` |
+| `ClearBlockingStateOnViewportChange` | viewport change while `regionTooLarge` or `error` is set | `clearAllRpcData()` to unblock retry |
+
+Subclasses override `fetchNeeded` to call `self.fetchRegions(needed, work)`,
+where `fetchRegions` runs an optional pre-flight byte estimate
+(via `getByteEstimateConfig`) before invoking the work callback. Oversize
+regions set `regionTooLarge=true` and skip the fetch, surfacing a banner via
+`regionCannotBeRendered()`. `error`/`regionTooLarge` reads in
+`ClearBlockingStateOnViewportChange` are `untracked` for correctness —
+tracking either would let `set...` re-fire the autorun and wipe the flag
+before any viewport change.
+
+Variants are monolithic: `MultiSampleVariantGetCellData` returns one batched
+payload covering all visible regions, so variants' `fetchNeeded` expands
+`needed` to all `bufferedVisibleRegions` and marks them all loaded together
+when the work callback returns.
+
+See `plugins/linear-genome-view/src/BaseLinearDisplay/CLAUDE.md` for the
+overridable hook list and test-file mapping.
+
+---
+
 # GPU Rendering Architecture
 
 Canonical reference for the GPU rendering lifecycle across all display types.

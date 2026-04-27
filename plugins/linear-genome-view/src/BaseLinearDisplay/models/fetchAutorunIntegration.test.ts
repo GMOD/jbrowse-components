@@ -620,17 +620,11 @@ describe('untracked() semantics', () => {
       // Mirrors ClearBlockingStateOnViewportChange in MultiRegionDisplayMixin.afterAttach
       const dispose = autorun(() => {
         void view.visibleBlocks
-        if (untracked(() => !!state.error)) {
+        if (untracked(() => state.regionTooLarge || state.error)) {
           clearCount++
           runInAction(() => {
             state.regionTooLarge = false
             state.error = undefined
-            state.fetchGeneration++
-          })
-        } else if (untracked(() => state.regionTooLarge)) {
-          clearCount++
-          runInAction(() => {
-            state.regionTooLarge = false
             state.fetchGeneration++
           })
         }
@@ -682,61 +676,6 @@ describe('untracked() semantics', () => {
       // tracked regionTooLarge fires the autorun immediately, wiping the flag
       expect(clearCount).toBe(1)
       expect(state.regionTooLarge).toBe(false) // lost — viewport never changed
-
-      dispose()
-    })
-
-    // When a subclass overrides clearRpcDataOnViewportChange to a no-op
-    // (variants pattern: independent fetch autorun manages regionTooLarge
-    // itself), regionTooLarge stays true through viewport changes — keeping
-    // the banner visible until the next fetch result arrives, instead of
-    // flashing stale rendered content.
-    test('clearRpcDataOnViewportChange override keeps regionTooLarge through viewport changes', () => {
-      const state = observable({
-        fetchGeneration: 0,
-        regionTooLarge: false,
-        error: undefined,
-      })
-      const view = observable({
-        visibleBlocks: [makeBlock(0, 0, 100000)] as VisibleBlock[],
-      })
-      let onViewportChangeCount = 0
-
-      // Variant-style override: no-op (banner stays, own autorun handles refetch)
-      const clearRpcDataOnViewportChange = () => {
-        onViewportChangeCount++
-        // intentionally empty
-      }
-
-      const dispose = autorun(() => {
-        void view.visibleBlocks
-        if (untracked(() => !!state.error)) {
-          // would call clearAllRpcData
-        } else if (untracked(() => state.regionTooLarge)) {
-          clearRpcDataOnViewportChange()
-        }
-      })
-
-      runInAction(() => {
-        state.regionTooLarge = true
-      })
-      expect(state.regionTooLarge).toBe(true)
-      expect(onViewportChangeCount).toBe(0)
-
-      // viewport change fires the autorun — but the override is a no-op,
-      // so regionTooLarge is preserved
-      runInAction(() => {
-        view.visibleBlocks = [makeBlock(0, 0, 50000)]
-      })
-      expect(onViewportChangeCount).toBe(1)
-      expect(state.regionTooLarge).toBe(true) // banner stays
-
-      // another viewport change — still preserved
-      runInAction(() => {
-        view.visibleBlocks = [makeBlock(0, 0, 25000)]
-      })
-      expect(onViewportChangeCount).toBe(2)
-      expect(state.regionTooLarge).toBe(true)
 
       dispose()
     })

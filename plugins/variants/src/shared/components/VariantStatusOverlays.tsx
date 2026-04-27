@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 interface VariantStatusModel {
   isDisplayLoading: boolean
   statusMessage?: string
-  displayError: unknown
+  error: unknown
   reload: () => void
 }
 
@@ -24,11 +24,11 @@ export const VariantLoadingOverlay = observer(function VariantLoadingOverlay({
 export const VariantErrorBar = observer(function VariantErrorBar({
   model,
 }: {
-  model: Pick<VariantStatusModel, 'displayError' | 'reload'>
+  model: Pick<VariantStatusModel, 'error' | 'reload'>
 }) {
-  return model.displayError ? (
+  return model.error ? (
     <ErrorBar
-      error={model.displayError}
+      error={model.error}
       onRetry={() => {
         model.reload()
       }}

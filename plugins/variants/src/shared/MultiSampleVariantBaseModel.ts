@@ -4,15 +4,18 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { set1 } from '@jbrowse/core/ui/colors'
 import {
+  SimpleFeature,
   getContainingTrack,
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import { isAbortException } from '@jbrowse/core/util/aborting'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
+  AUTO_FORCE_LOAD_BP,
   ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
@@ -38,13 +41,19 @@ import {
 import { getSources } from './getSources.ts'
 import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
 
-import type { SampleInfo, Source } from './types.ts'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { ProcessedSource, SampleInfo, Source } from './types.ts'
+import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
+import type {
+  AnyConfigurationModel,
+  AnyConfigurationSchemaType,
+} from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
+  ByteEstimateConfig,
+  FetchContext,
   LegendItem,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -78,6 +87,48 @@ function encodeGenotype(gt: string) {
 
 interface GenotypeMap {
   genotypes: Record<string, string>
+}
+
+// Module-local helper for the variant cell data RPC call. Kept here (not an
+// MST action) so the RPC payload shape is easy to read at the call site. self
+// is typed structurally because cellDataMode is defined on each subclass
+// (MultiVariantDisplay = 'regular', MultiVariantMatrixDisplay = 'matrix').
+async function callMultiSampleVariantCellData(
+  self: {
+    adapterConfig: AnyConfigurationModel
+    cellDataMode: 'regular' | 'matrix'
+    rpcProps: {
+      sources: ProcessedSource[]
+      minorAlleleFrequencyFilter: number
+      lengthCutoffFilter: number
+      renderingMode: string
+      referenceDrawingMode: string
+    }
+    setStatusMessage: (msg?: string) => void
+  },
+  ctx: FetchContext,
+) {
+  const view = getContainingView(self) as LinearGenomeViewModel
+  const allBuffered = view.bufferedVisibleRegions
+  const sessionId = getRpcSessionId(self)
+  return getSession(self).rpcManager.call(
+    sessionId,
+    'MultiSampleVariantGetCellData',
+    {
+      regions: allBuffered.map(r => r.region),
+      displayedRegionIndices: allBuffered.map(r => r.displayedRegionIndex),
+      ...self.rpcProps,
+      mode: self.cellDataMode,
+      sessionId,
+      adapterConfig: self.adapterConfig,
+      stopToken: ctx.stopToken,
+      statusCallback: (msg: string) => {
+        if (isAlive(self)) {
+          self.setStatusMessage(msg)
+        }
+      },
+    },
+  ) as Promise<CellDataResult>
 }
 
 function getGenotypeMapForFeature(cellData: unknown, featureId: string) {
@@ -169,10 +220,6 @@ export default function MultiSampleVariantBaseModelF(
       /**
        * #volatile
        */
-      simplifiedFeaturesStopToken: undefined as StopToken | undefined,
-      /**
-       * #volatile
-       */
       featureUnderMouseVolatile: undefined as Feature | undefined,
       /**
        * #volatile
@@ -212,10 +259,12 @@ export default function MultiSampleVariantBaseModelF(
 
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       cellData: undefined as unknown,
-      cellDataLoading: false,
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      displayError: undefined as unknown,
-      errorRetryCount: 0,
+      // Bumped by reload() to retrigger the sources autorun. Sources is a
+      // one-shot fetch (per adapter, not per viewport), so it doesn't go
+      // through FetchMixin and can't watch fetchGeneration — that would
+      // refetch sources on every viewport change. This counter is its
+      // dedicated user-reload signal.
+      reloadCount: 0,
       pendingClusterTree: undefined as string | undefined,
     }))
     .actions(self => ({
@@ -225,12 +274,6 @@ export default function MultiSampleVariantBaseModelF(
           self.clusterTree = self.pendingClusterTree
           self.pendingClusterTree = undefined
         }
-      },
-      setCellDataLoading(val: boolean) {
-        self.cellDataLoading = val
-      },
-      setDisplayError(e: unknown) {
-        self.displayError = e
       },
       setContextMenuFeature(feature?: Feature) {
         self.contextMenuFeature = feature
@@ -340,22 +383,6 @@ export default function MultiSampleVariantBaseModelF(
         }
         self.sourcesLoadingStopToken = token
       },
-      /**
-       * #action
-       */
-      setSimplifiedFeaturesLoading(token: StopToken) {
-        if (self.simplifiedFeaturesStopToken) {
-          stopStopToken(self.simplifiedFeaturesStopToken)
-        }
-        self.simplifiedFeaturesStopToken = token
-      },
-
-      clearRpcDataOnViewportChange() {
-        // getVariantCellDataAutorun fires on viewport changes independently
-        // and clears regionTooLarge when it gets a loadable region, so we
-        // leave it true here to keep the banner visible during the transition
-      },
-
       /**
        * #action
        */
@@ -853,9 +880,9 @@ export default function MultiSampleVariantBaseModelF(
 
       get isDisplayLoading() {
         return (
-          !self.displayError &&
+          !self.error &&
           !self.regionTooLarge &&
-          (!self.cellData || self.cellDataLoading)
+          (!self.cellData || self.isLoading)
         )
       },
       /**
@@ -941,17 +968,78 @@ export default function MultiSampleVariantBaseModelF(
         return items
       },
     }))
-    .actions(self => {
-      const superReload = self.reload
-      return {
-        reload() {
-          self.displayError = undefined
-          self.setRegionTooLarge(false)
-          self.errorRetryCount++
-          superReload()
-        },
-      }
-    })
+    .views(self => ({
+      get adapterConfigSnapshot() {
+        return getConf(getContainingTrack(self), 'adapter') as Record<
+          string,
+          unknown
+        >
+      },
+    }))
+    .actions(self => ({
+      clearDisplaySpecificData() {
+        self.cellData = undefined
+        self.sampleInfo = undefined
+        self.featuresVolatile = undefined
+        self.hasPhased = false
+      },
+
+      getByteEstimateConfig(): ByteEstimateConfig | null {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (view.visibleBp < AUTO_FORCE_LOAD_BP) {
+          return null
+        }
+        return {
+          adapterConfig: self.adapterConfigSnapshot,
+          fetchSizeLimit: self.getConfWithOverride<number>('fetchSizeLimit'),
+          userByteSizeLimit: self.userByteSizeLimit,
+          visibleBp: view.visibleBp,
+        }
+      },
+
+      // Ignores `needed` and refetches all visible regions because the
+      // cellData RPC payload is monolithic — one call returns data covering
+      // all visible regions, so partial refetches don't fit. Other LGV
+      // displays pass `needed` directly to fetchRegions for per-region
+      // caching of rpcDataMap entries.
+      async fetchNeeded(
+        _needed: { region: Region; displayedRegionIndex: number }[],
+      ) {
+        if (self.isMinimized || !self.rpcProps.sources) {
+          return
+        }
+        const allBuffered = (getContainingView(self) as LinearGenomeViewModel)
+          .bufferedVisibleRegions
+        if (allBuffered.length === 0) {
+          return
+        }
+        // cellDataMode is defined per-subclass; cast widens self structurally
+        const helperSelf = self as unknown as Parameters<
+          typeof callMultiSampleVariantCellData
+        >[0]
+        await self.fetchRegions(allBuffered, async (ctx: FetchContext) => {
+          const result = await callMultiSampleVariantCellData(helperSelf, ctx)
+          if (ctx.isStale() || !isAlive(self)) {
+            return
+          }
+          self.setHasPhased(result.hasPhased)
+          self.setSampleInfo(result.sampleInfo)
+          self.setFeatures(
+            result.simplifiedFeatures.map(f => new SimpleFeature(f)),
+          )
+          self.setCellData(result)
+        })
+      },
+    }))
+    .actions(self => ({
+      reload() {
+        // Bump reloadCount so the sources autorun re-fires; clearAllRpcData
+        // clears error/regionTooLarge and bumps fetchGeneration to retrigger
+        // the cellData fetch via FetchVisibleRegions.
+        self.reloadCount++
+        self.clearAllRpcData()
+      },
+    }))
     .actions(self => ({
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises

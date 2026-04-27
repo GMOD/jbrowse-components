@@ -31,7 +31,6 @@ interface PerRegionCellData {
 
 export interface VariantDisplayModel extends VariantDisplayModelBase {
   cellData: PerRegionCellData | undefined
-  cellDataLoading: boolean
   isDisplayLoading: boolean
   statusMessage?: string
   canvasDrawn: boolean

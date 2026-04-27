@@ -420,7 +420,8 @@ export default function stateModelFactory(
       },
 
       reload() {
-        self.setError(null)
+        // clearAllRpcData clears error and bumps fetchGeneration to retrigger
+        // the fetch autorun.
         self.clearAllRpcData()
       },
 

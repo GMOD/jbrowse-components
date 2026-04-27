@@ -13,7 +13,7 @@ export interface VariantDisplayModelBase {
   referenceDrawingMode: string
   regionTooLarge: boolean
   featuresReady: boolean
-  displayError: unknown
+  error: unknown
   reload: () => void
   setFeatureDensityStatsLimit: (s?: unknown) => void
   setHoveredGenotype: (tooltip: Record<string, string> | undefined) => void

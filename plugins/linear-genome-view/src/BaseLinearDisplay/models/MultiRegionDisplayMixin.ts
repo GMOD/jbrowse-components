@@ -86,7 +86,7 @@ export default function MultiRegionDisplayMixin() {
         self.loadedRegions.clear()
       },
     }))
-    .actions(self => ({
+    .actions(_self => ({
       // Overridable hooks — subclasses override these
       fetchNeeded(_needed: { region: Region; displayedRegionIndex: number }[]) {
         // no-op base
@@ -99,14 +99,6 @@ export default function MultiRegionDisplayMixin() {
 
       getByteEstimateConfig(): ByteEstimateConfig | null {
         return null
-      },
-
-      // Hook used by ClearBlockingStateOnViewportChange when only regionTooLarge
-      // is set. Displays with their own fetch autoruns (variants) override to a
-      // no-op to keep the banner visible across viewport changes instead of
-      // flashing stale rendered content while the next fetch result arrives.
-      clearRpcDataOnViewportChange() {
-        self.clearAllRpcData()
       },
     }))
     .actions(self => ({
@@ -288,12 +280,8 @@ export default function MultiRegionDisplayMixin() {
                 return
               }
               void view.visibleRegions
-              // error always full-clears; regionTooLarge defers to a hook so
-              // subclasses can keep the banner across viewport changes.
-              if (untracked(() => !!self.error)) {
+              if (untracked(() => self.regionTooLarge || self.error)) {
                 self.clearAllRpcData()
-              } else if (untracked(() => self.regionTooLarge)) {
-                self.clearRpcDataOnViewportChange()
               }
             },
             { name: 'ClearBlockingStateOnViewportChange' },
