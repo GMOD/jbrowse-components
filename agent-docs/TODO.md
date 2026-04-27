@@ -104,31 +104,6 @@ the gfatabixadapter also, it is not panning out...
 plugins/tube-map and plugins/graph remove
 put these on a new branch though
 
-## Alignments
-
-
-
-Done — pileup/chain executors:
-- shared/runCoveragePipeline.ts: single named operation for coverage-area computation
-  (computeCoverage → freqs → SNP → noncov → mod → modTooltip → sashimi → pack). Step order
-  cannot drift between executors.
-- shared/collectTransferables.ts: auto-derives the transferables list by walking the result
-  object for TypedArray buffers + ArrayBuffer values. Eliminates "added a buffer field, forgot
-  to transfer" as an architectural class of bug. Also fixed a latent drift where chain was
-  silently dropping softclipBaseReadIndices.buffer that pileup transferred.
-- shared/buildCoverageResultFields.ts: consolidates the ~20 shared coverage result fields.
-- Full executor merge remains not viable (chain has 125+ lines of chain-specific logic;
-  pileup has 80+ lines of pileup-only logic — ref sequence fetch, mod coverage, softclips,
-  SAM flag stats).
-- buildLaidOutPileupMap / buildLaidOutChainMap: control flow is structurally identical but
-  deduplication semantics differ (pileup: by read ID; chain: by mate-pair name). Not worth merging.
-
-Constrained:
-- The LinearAlignmentsDisplayModel interface in useAlignmentsBase.ts manually duplicates ~110 model
-fields and will drift. The fix would be Instance<typeof ...> but the file is in components/ which
-model.ts already imports from, so a direct import of the model type creates a circular dependency.
-The real fix is breaking that cycle — probably by moving the component imports in model.ts to lazy
-imports or extracting a separate types file — which is a bigger refactor.
 
 ## Multi-sample regionTooLarge
 

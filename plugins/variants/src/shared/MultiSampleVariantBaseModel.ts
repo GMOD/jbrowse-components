@@ -41,7 +41,7 @@ import {
 import { getSources } from './getSources.ts'
 import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
 
-import type { ProcessedSource, SampleInfo, Source } from './types.ts'
+import type { ProcessedSource, Source } from './types.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type {
   AnyConfigurationModel,
@@ -238,27 +238,17 @@ export default function MultiSampleVariantBaseModelF(
       /**
        * #volatile
        */
-      featuresVolatile: undefined as Feature[] | undefined,
-      /**
-       * #volatile
-       */
-      hasPhased: false,
-      /**
-       * #volatile
-       */
-      sampleInfo: undefined as undefined | Record<string, SampleInfo>,
-      /**
-       * #volatile
-       */
       hoveredGenotype: undefined as
         | (Record<string, unknown> & { genotype: string; name: string })
         | undefined,
       /**
        * #volatile
+       *
+       * Single source of truth for fetched per-display data. hasPhased,
+       * sampleInfo, and featuresVolatile are derived from this via getters
+       * — fetchNeeded only needs to call setCellData(result).
        */
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      cellData: undefined as unknown,
+      cellData: undefined as CellDataResult | undefined,
       // Bumped by reload() to retrigger the sources autorun. Sources is a
       // one-shot fetch (per adapter, not per viewport), so it doesn't go
       // through FetchMixin and can't watch fetchGeneration — that would
@@ -268,7 +258,7 @@ export default function MultiSampleVariantBaseModelF(
       pendingClusterTree: undefined as string | undefined,
     }))
     .actions(self => ({
-      setCellData(data: unknown) {
+      setCellData(data: CellDataResult | undefined) {
         self.cellData = data
         if (self.pendingClusterTree !== undefined) {
           self.clusterTree = self.pendingClusterTree
@@ -277,6 +267,30 @@ export default function MultiSampleVariantBaseModelF(
       },
       setContextMenuFeature(feature?: Feature) {
         self.contextMenuFeature = feature
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * SimpleFeature instances derived from the simplifiedFeatures list in
+       * the most recent cellData payload. Cached by MobX while cellData is
+       * unchanged. Named `featuresVolatile` for backwards-compat with
+       * consumers that originally read it as a volatile field.
+       */
+      get featuresVolatile(): Feature[] | undefined {
+        return self.cellData?.simplifiedFeatures.map(f => new SimpleFeature(f))
+      },
+      /**
+       * #getter
+       */
+      get hasPhased() {
+        return self.cellData?.hasPhased ?? false
+      },
+      /**
+       * #getter
+       */
+      get sampleInfo() {
+        return self.cellData?.sampleInfo
       },
     }))
     .views(self => ({
@@ -363,13 +377,6 @@ export default function MultiSampleVariantBaseModelF(
       /**
        * #action
        */
-      setFeatures(f: Feature[]) {
-        self.featuresVolatile = f
-      },
-
-      /**
-       * #action
-       */
       setColorByApplied(value: boolean) {
         self.colorByApplied = value
       },
@@ -443,20 +450,6 @@ export default function MultiSampleVariantBaseModelF(
           self.rowHeightMode = self.rowHeightMode * (newHeight / oldHeight)
         }
         return newHeight - oldHeight
-      },
-      /**
-       * #action
-       */
-      setHasPhased(arg: boolean) {
-        self.hasPhased = arg
-      },
-      /**
-       * #action
-       */
-      setSampleInfo(arg: Record<string, SampleInfo>) {
-        if (!deepEqual(arg, self.sampleInfo)) {
-          self.sampleInfo = arg
-        }
       },
       /**
        * #action
@@ -978,10 +971,9 @@ export default function MultiSampleVariantBaseModelF(
     }))
     .actions(self => ({
       clearDisplaySpecificData() {
+        // hasPhased / sampleInfo / featuresVolatile are derived from cellData
+        // via getters, so clearing cellData clears all of them.
         self.cellData = undefined
-        self.sampleInfo = undefined
-        self.featuresVolatile = undefined
-        self.hasPhased = false
       },
 
       getByteEstimateConfig(): ByteEstimateConfig | null {
@@ -1019,15 +1011,9 @@ export default function MultiSampleVariantBaseModelF(
         >[0]
         await self.fetchRegions(allBuffered, async (ctx: FetchContext) => {
           const result = await callMultiSampleVariantCellData(helperSelf, ctx)
-          if (ctx.isStale() || !isAlive(self)) {
-            return
+          if (!ctx.isStale() && isAlive(self)) {
+            self.setCellData(result)
           }
-          self.setHasPhased(result.hasPhased)
-          self.setSampleInfo(result.sampleInfo)
-          self.setFeatures(
-            result.simplifiedFeatures.map(f => new SimpleFeature(f)),
-          )
-          self.setCellData(result)
         })
       },
     }))
