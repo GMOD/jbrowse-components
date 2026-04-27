@@ -54,8 +54,7 @@ function normalizeWheel(delta: number, mode: number) {
 }
 
 interface WheelState {
-  zoomDelta: number
-  zoomDivisor: number
+  zoomAccum: number
   lastClientX: number
   lastViewIndex: number
   rafId: number | null
@@ -72,8 +71,7 @@ const BreakpointSplitViewOverlay = observer(
     const { matchedTracks, views } = model
     const divRef = useRef<HTMLDivElement>(null)
     const state = useRef<WheelState>({
-      zoomDelta: 0,
-      zoomDivisor: 0,
+      zoomAccum: 0,
       lastClientX: 0,
       lastViewIndex: 0,
       rafId: null,
@@ -130,8 +128,7 @@ const BreakpointSplitViewOverlay = observer(
           (targetView.scrollZoom && Math.abs(deltaY) >= Math.abs(deltaX))
         ) {
           event.preventDefault()
-          s.zoomDelta += deltaY
-          s.zoomDivisor = getNormalizer(deltaY)
+          s.zoomAccum += deltaY / getNormalizer(deltaY)
           s.lastClientX = event.clientX
           s.lastViewIndex = viewIndex
         } else {
@@ -146,7 +143,7 @@ const BreakpointSplitViewOverlay = observer(
           )
           s.lastRafTime = now
           const maxZoomDelta = (0.2 / 16.67) * elapsed
-          if (s.zoomDelta !== 0) {
+          if (s.zoomAccum !== 0) {
             const view = views[s.lastViewIndex]
             const containers = document.querySelectorAll(
               '[data-testid="tracksContainer"]',
@@ -157,14 +154,14 @@ const BreakpointSplitViewOverlay = observer(
             if (view?.zoomTo && container) {
               const d = Math.max(
                 -maxZoomDelta,
-                Math.min(maxZoomDelta, s.zoomDelta / s.zoomDivisor),
+                Math.min(maxZoomDelta, s.zoomAccum),
               )
               view.zoomTo(
                 d > 0 ? view.bpPerPx * (1 + d) : view.bpPerPx / (1 - d),
                 s.lastClientX - container.getBoundingClientRect().left,
               )
             }
-            s.zoomDelta = 0
+            s.zoomAccum = 0
           }
           s.rafId = null
         })

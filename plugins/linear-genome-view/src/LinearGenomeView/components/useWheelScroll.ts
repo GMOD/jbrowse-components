@@ -18,7 +18,7 @@ const MAX_ZOOM_RATE_PER_MS = 0.2 / 16.67
 // the corresponding code in BreakpointSplitViewOverlay.tsx to keep wheel zoom behavior
 // consistent across all genome views.
 
-function getNormalizer(deltaY: number) {
+export function getNormalizer(deltaY: number) {
   const abs = Math.abs(deltaY)
   if (abs < 6) {
     return 25
@@ -32,7 +32,7 @@ function getNormalizer(deltaY: number) {
   return 75
 }
 
-function normalizeWheel(delta: number, mode: number) {
+export function normalizeWheel(delta: number, mode: number) {
   if (mode === 1) {
     return delta * 16
   }
@@ -44,8 +44,7 @@ function normalizeWheel(delta: number, mode: number) {
 
 interface WheelState {
   scrollDelta: number
-  zoomDelta: number
-  zoomDivisor: number
+  zoomAccum: number
   lastClientX: number
   rectLeft: number
   rafId: number | null
@@ -60,8 +59,7 @@ export function useWheelScroll(
 ) {
   const state = useRef<WheelState>({
     scrollDelta: 0,
-    zoomDelta: 0,
-    zoomDivisor: 0,
+    zoomAccum: 0,
     lastClientX: 0,
     rectLeft: 0,
     rafId: null,
@@ -123,10 +121,9 @@ export function useWheelScroll(
           )
         }
         event.preventDefault()
-        s.zoomDelta += deltaY
-        s.zoomDivisor = isCtrlZoom
+        s.zoomAccum += deltaY / (isCtrlZoom
           ? getNormalizer(deltaY)
-          : SCROLL_ZOOM_FACTOR_DIVISOR
+          : SCROLL_ZOOM_FACTOR_DIVISOR)
         s.lastClientX = event.clientX
       } else {
         // when scrollZoom is on, always preventDefault to stop the page
@@ -158,17 +155,17 @@ export function useWheelScroll(
 
         s.lastRafTime = now
         const maxZoomDelta = MAX_ZOOM_RATE_PER_MS * elapsed
-        if (s.zoomDelta !== 0) {
+        if (s.zoomAccum !== 0) {
           const d = Math.max(
             -maxZoomDelta,
-            Math.min(maxZoomDelta, s.zoomDelta / s.zoomDivisor),
+            Math.min(maxZoomDelta, s.zoomAccum),
           )
           model.zoomTo(
             d > 0 ? model.bpPerPx * (1 + d) : model.bpPerPx / (1 - d),
             s.lastClientX - s.rectLeft,
           )
 
-          s.zoomDelta = 0
+          s.zoomAccum = 0
         }
         if (s.scrollDelta !== 0) {
           model.horizontalScroll(s.scrollDelta)
