@@ -121,9 +121,9 @@ export function useWheelScroll(
           )
         }
         event.preventDefault()
-        s.zoomAccum += deltaY / (isCtrlZoom
-          ? getNormalizer(deltaY)
-          : SCROLL_ZOOM_FACTOR_DIVISOR)
+        s.zoomAccum +=
+          deltaY /
+          (isCtrlZoom ? getNormalizer(deltaY) : SCROLL_ZOOM_FACTOR_DIVISOR)
         s.lastClientX = event.clientX
       } else {
         // when scrollZoom is on, always preventDefault to stop the page
@@ -156,10 +156,7 @@ export function useWheelScroll(
         s.lastRafTime = now
         const maxZoomDelta = MAX_ZOOM_RATE_PER_MS * elapsed
         if (s.zoomAccum !== 0) {
-          const d = Math.max(
-            -maxZoomDelta,
-            Math.min(maxZoomDelta, s.zoomAccum),
-          )
+          const d = Math.max(-maxZoomDelta, Math.min(maxZoomDelta, s.zoomAccum))
           model.zoomTo(
             d > 0 ? model.bpPerPx * (1 + d) : model.bpPerPx / (1 - d),
             s.lastClientX - s.rectLeft,

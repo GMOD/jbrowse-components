@@ -58,33 +58,41 @@ export async function buildAlignmentDetailArrays({
   showSoftClipping?: boolean
   statusCallback: (s: string) => void
 }) {
-  return updateStatus('Building alignment arrays', statusCallback, async () => ({
-    gapArrays: buildGapArrays(gaps, regionStart, getReadIndex),
-    mismatchArrays: buildMismatchArrays(mismatches, regionStart, getReadIndex),
-    softclipBaseArrays: buildSoftclipBaseArrays(
-      showSoftClipping ? softclips : [],
-      regionStart,
-      getReadIndex,
-    ),
-    interbaseArrays: buildInterbaseArrays(
-      insertions,
-      softclips,
-      hardclips,
-      regionStart,
-      getReadIndex,
-    ),
-    modificationArrays: buildModificationArrays(
-      modifications,
-      regionStart,
-      getReadIndex,
-      detectedModifications,
-    ),
-    segmentArrays: buildSegmentArrays(
-      features,
-      gaps,
-      regionStart,
-      regionEnd,
-      getReadIndex,
-    ),
-  }))
+  return updateStatus(
+    'Building alignment arrays',
+    statusCallback,
+    async () => ({
+      gapArrays: buildGapArrays(gaps, regionStart, getReadIndex),
+      mismatchArrays: buildMismatchArrays(
+        mismatches,
+        regionStart,
+        getReadIndex,
+      ),
+      softclipBaseArrays: buildSoftclipBaseArrays(
+        showSoftClipping ? softclips : [],
+        regionStart,
+        getReadIndex,
+      ),
+      interbaseArrays: buildInterbaseArrays(
+        insertions,
+        softclips,
+        hardclips,
+        regionStart,
+        getReadIndex,
+      ),
+      modificationArrays: buildModificationArrays(
+        modifications,
+        regionStart,
+        getReadIndex,
+        detectedModifications,
+      ),
+      segmentArrays: buildSegmentArrays(
+        features,
+        gaps,
+        regionStart,
+        regionEnd,
+        getReadIndex,
+      ),
+    }),
+  )
 }

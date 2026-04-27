@@ -128,7 +128,7 @@ async function callMultiSampleVariantCellData(
         }
       },
     },
-  ) as Promise<CellDataResult>
+  )
 }
 
 function getGenotypeMapForFeature(cellData: unknown, featureId: string) {

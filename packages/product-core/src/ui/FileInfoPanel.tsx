@@ -46,7 +46,7 @@ export default function FileInfoPanel({
             .replaceAll('<', '&lt;')
             .replaceAll('>', '&gt;')}</pre>`,
         }
-      : info ?? {}
+      : (info ?? {})
 
   return (
     <BaseCard title="File info">

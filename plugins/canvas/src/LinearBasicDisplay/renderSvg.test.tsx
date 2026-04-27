@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync } from 'fs'
 import path from 'path'
 
+import React from 'react'
 import { renderToString } from 'react-dom/server'
 
 import { renderSvg } from './renderSvg.tsx'
@@ -32,19 +33,6 @@ jest.mock('@jbrowse/core/util', () => ({
   getContainingView: () => mockView,
 }))
 
-// renderToString has no outer <svg>, so React warns about clipPath casing; in
-// production it's always inside <svg> where React handles it correctly
-beforeEach(() =>
-  jest
-    .spyOn(console, 'error')
-    .mockImplementation((...args: unknown[]) => {
-      if (!String(args).includes('using incorrect casing')) {
-        console.error(...args)
-      }
-    }),
-)
-afterEach(() => jest.restoreAllMocks())
-
 function resetMockView() {
   mockView = {
     visibleRegions: [
@@ -66,13 +54,9 @@ function resetMockView() {
 }
 
 function extractAndWriteSvg(html: string, filename: string) {
-  // Write the generated SVG content to a file for visual inspection
   const outputDir = path.join(__dirname, '__test-outputs__')
   mkdirSync(outputDir, { recursive: true })
-  const svgPath = path.join(outputDir, filename)
-
-  const content = `<svg width="800" height="100" xmlns="http://www.w3.org/2000/svg">${html}</svg>`
-  writeFileSync(svgPath, content, 'utf-8')
+  writeFileSync(path.join(outputDir, filename), html, 'utf-8')
 }
 
 jest.mock('mobx', () => {
@@ -154,7 +138,7 @@ describe('renderSvg', () => {
       }),
     )
     expect(result).not.toBeNull()
-    const html = renderToString(result as React.ReactElement)
+    const html = renderToString(<svg>{result as React.ReactElement}</svg>)
     extractAndWriteSvg(html, 'error.svg')
     expect(html).toMatchSnapshot()
   })
@@ -168,7 +152,7 @@ describe('renderSvg', () => {
       makeModel({ laidOutDataMap: new Map([[0, data]]) }),
     )
     expect(result).not.toBeNull()
-    const html = renderToString(result as React.ReactElement)
+    const html = renderToString(<svg>{result as React.ReactElement}</svg>)
     extractAndWriteSvg(html, 'with-features.svg')
     expect(html).toMatchSnapshot()
   })
@@ -178,7 +162,7 @@ describe('renderSvg', () => {
       makeModel({ laidOutDataMap: new Map([[99, makeData()]]) }),
     )
     expect(result).not.toBeNull()
-    const html = renderToString(result as React.ReactElement)
+    const html = renderToString(<svg>{result as React.ReactElement}</svg>)
     extractAndWriteSvg(html, 'empty.svg')
     expect(html).toMatchSnapshot()
   })
@@ -209,7 +193,7 @@ describe('renderSvg', () => {
       makeModel({ laidOutDataMap: new Map([[0, data]]) }),
     )
     expect(result).not.toBeNull()
-    const html = renderToString(result as React.ReactElement)
+    const html = renderToString(<svg>{result as React.ReactElement}</svg>)
     extractAndWriteSvg(html, 'reversed.svg')
     expect(html).toMatchSnapshot()
 

@@ -57,8 +57,6 @@ interface AdapterEntry {
   [key: string]: unknown
 }
 
-type MaybeStats = { scoreMin: number; scoreMax: number } | undefined
-
 export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   public static capabilities = [
     'hasResolution',
@@ -124,14 +122,16 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
 
   public async getGlobalStats(opts?: BaseOptions) {
     const adapters = await this.getAdapters()
-    const stats = (
-      (await Promise.all(
-        adapters.map(adp => adp.dataAdapter.getGlobalStats(opts)),
-      )) as MaybeStats[]
-    ).filter(f => !!f)
+    const results = await Promise.all(
+      adapters.map(adp => adp.dataAdapter.getGlobalStats(opts)),
+    )
+    const stats = results.filter(s => s !== undefined)
+    if (!stats.length) {
+      return undefined
+    }
     return {
-      scoreMin: min(stats.map(s => s.scoreMin)),
-      scoreMax: max(stats.map(s => s.scoreMax)),
+      scoreMin: min(stats.map(s => s.scoreMin ?? 0)),
+      scoreMax: max(stats.map(s => s.scoreMax ?? 0)),
     }
   }
 
@@ -176,7 +176,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
         adp.dataAdapter.getRegionQuantitativeStats(region, opts),
       ),
     )
-    return aggregateQuantitativeStats(allStats.filter(Boolean))
+    return aggregateQuantitativeStats(allStats)
   }
 
   // always render bigwig instead of calculating a feature density for it
@@ -202,7 +202,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
       ),
     )
 
-    return aggregateQuantitativeStats(allStats.filter(Boolean))
+    return aggregateQuantitativeStats(allStats)
   }
 
   // in another adapter type, this could be dynamic depending on region or

@@ -15,19 +15,22 @@ import type { WiggleFeatureArrays } from '../util.ts'
 import type { WiggleAdapterOptions as WiggleOptions } from '../wiggleAdapterOptions.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
-import type { UnrectifiedQuantitativeStats } from '@jbrowse/core/util/stats'
+import type { RectifiedQuantitativeStats } from '@jbrowse/core/util/stats'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
 function computeStatsFromView(
   view: ArrayFeatureView,
   targetStart: number,
   targetEnd: number,
-) {
+): RectifiedQuantitativeStats {
   const basesCovered = targetEnd - targetStart
-  let scoreMin = Infinity
-  let scoreMax = -Infinity
-  let scoreMeanMin = Infinity
-  let scoreMeanMax = -Infinity
+  // Number.MAX_VALUE not Infinity: precautionary, since Infinity serializes as
+  // null in JSON and these stats cross the RPC boundary. In practice the
+  // sentinels are always replaced (featureCount===0 returns zeros early).
+  let scoreMin = Number.MAX_VALUE
+  let scoreMax = -Number.MAX_VALUE
+  let scoreMeanMin = Number.MAX_VALUE
+  let scoreMeanMax = -Number.MAX_VALUE
   let scoreSum = 0
   let scoreSumSquares = 0
   let featureCount = 0
@@ -132,7 +135,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
 
   public async getGlobalStats(opts?: BaseOptions) {
     const { header } = await this.setup(opts)
-    return rectifyStats(header.totalSummary as UnrectifiedQuantitativeStats)
+    return rectifyStats(header.totalSummary)
   }
 
   public getFeatures(region: Region, opts: WiggleOptions = {}) {

@@ -178,7 +178,7 @@ const PileupInner = observer(function PileupInner({
     processClick(
       e,
       (hit, resolved) => {
-        model.selectFeatureById(hit.id)
+        void model.selectFeatureById(hit.id)
         if (isChainMode) {
           const chainIdx = resolved.rpcData.readChainIndices?.[hit.index]
           const chainIds =

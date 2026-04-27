@@ -1,7 +1,6 @@
 import { updateStatus } from '@jbrowse/core/util'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
-
 import { buildModTooltipData } from './buildTooltipData.ts'
 import {
   computeCoverage,

@@ -602,7 +602,12 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     const numMismatches = data.mismatchPositions.length
     const numSoftclipBases = data.softclipBasePositions.length
     if (numGaps > 0) {
-      this.hal.uploadBuffer(displayedRegionIndex, PASS_GAP, packGaps(data), numGaps)
+      this.hal.uploadBuffer(
+        displayedRegionIndex,
+        PASS_GAP,
+        packGaps(data),
+        numGaps,
+      )
     }
     if (numMismatches > 0) {
       this.hal.uploadBuffer(

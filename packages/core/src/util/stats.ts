@@ -10,7 +10,7 @@ export interface UnrectifiedQuantitativeStats {
   scoreMax: number
   scoreSum: number
   scoreSumSquares: number
-  featureCount: number
+  featureCount?: number
   basesCovered: number
   scoreMeanMin?: number
   scoreMeanMax?: number
@@ -70,16 +70,13 @@ export function calcStdFromSums(
 export function rectifyStats(
   s: UnrectifiedQuantitativeStats,
 ): RectifiedQuantitativeStats {
+  // Normalize undefined featureCount to 0 so || below operates on plain number
+  // (0 and undefined both mean "no per-feature count, fall back to basesCovered")
+  const n = s.featureCount ?? 0
   return {
     ...s,
-    scoreMean: (s.scoreSum || 0) / (s.featureCount || s.basesCovered || 1),
-    scoreStdDev: calcStdFromSums(
-      s.scoreSum,
-      s.scoreSumSquares,
-      s.featureCount || s.basesCovered,
-    ),
-    // featureCount is absent from BigWig totalSummary (the format has no per-feature count
-    // in the global header), so fall back to 1 to avoid NaN
+    scoreMean: s.scoreSum / (n || s.basesCovered || 1),
+    scoreStdDev: calcStdFromSums(s.scoreSum, s.scoreSumSquares, n || s.basesCovered),
     featureDensity: (s.featureCount ?? 1) / (s.basesCovered || 1),
   }
 }
@@ -97,6 +94,9 @@ export async function scoresToStats(
 ) {
   const { start, end } = region
   const seed = {
+    // Number.MAX_VALUE not Infinity: precautionary, since Infinity serializes
+    // as null in JSON and these stats cross the RPC boundary. In practice the
+    // sentinels are always replaced before return (found===false → blankStats).
     scoreMin: Number.MAX_VALUE,
     scoreMax: -Number.MAX_VALUE,
     scoreMeanMin: Number.MAX_VALUE,

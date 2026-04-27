@@ -24,7 +24,7 @@ export function aggregateQuantitativeStats(
     scoreMin: min(stats.map(s => s.scoreMin)),
     scoreSum: sum(stats.map(s => s.scoreSum)),
     scoreSumSquares: sum(stats.map(s => s.scoreSumSquares)),
-    featureCount: sum(stats.map(s => s.featureCount)),
+    featureCount: sum(stats.map(s => s.featureCount ?? 0)),
     basesCovered: sum(stats.map(s => s.basesCovered)),
     ...(meanMins.length > 0 ? { scoreMeanMin: min(meanMins) } : {}),
     ...(meanMaxs.length > 0 ? { scoreMeanMax: max(meanMaxs) } : {}),

@@ -643,7 +643,9 @@ export default function stateModelFactory(
         },
 
         get scalebarOverlapLeft() {
-          const view = getContainingView(self) as { trackLabelsSetting?: string }
+          const view = getContainingView(self) as {
+            trackLabelsSetting?: string
+          }
           if (view.trackLabelsSetting === 'overlapping') {
             const track = getContainingTrack(self)
             return measureText(getConf(track, 'name'), 12.8) + 100
@@ -1866,5 +1868,4 @@ export type LinearAlignmentsDisplayStateModel = ReturnType<
 // interface (not type alias) breaks the circular reference TypeScript would
 // encounter through React.lazy → PileupComponent → useAlignmentsBase → model
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface LinearAlignmentsDisplayModel
-  extends Instance<LinearAlignmentsDisplayStateModel> {}
+export interface LinearAlignmentsDisplayModel extends Instance<LinearAlignmentsDisplayStateModel> {}
