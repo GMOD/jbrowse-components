@@ -93,6 +93,21 @@ export class BlockSet {
   }
 }
 
+export interface BlockData {
+  key: string
+  offsetPx: number
+  assemblyName?: string
+  refName?: string
+  start?: number
+  end?: number
+  widthPx?: number
+  reversed?: boolean
+  displayedRegionIndex?: number
+  isLeftEndOfDisplayedRegion?: boolean
+  parentRegion?: unknown
+  variant?: string
+}
+
 export class BaseBlock {
   type = 'BaseBlock'
 
@@ -118,18 +133,21 @@ export class BaseBlock {
 
   public isLeftEndOfDisplayedRegion?: boolean
 
-  /**
-   * a block that should be shown as filled with data
-   */
+  public parentRegion?: unknown
 
-  constructor(data: Record<string, any>) {
-    Object.assign(this, data)
-    this.assemblyName = data.assemblyName
-    this.refName = data.refName
-    this.start = data.start
-    this.end = data.end
+  constructor(data: BlockData) {
+    this.assemblyName = data.assemblyName ?? ''
+    this.refName = data.refName ?? ''
+    this.start = data.start ?? 0
+    this.end = data.end ?? 0
     this.key = data.key
     this.offsetPx = data.offsetPx
+    this.widthPx = data.widthPx ?? 0
+    this.reversed = data.reversed
+    this.displayedRegionIndex = data.displayedRegionIndex
+    this.isLeftEndOfDisplayedRegion = data.isLeftEndOfDisplayedRegion
+    this.parentRegion = data.parentRegion
+    this.variant = data.variant
   }
 
   toRegion() {
@@ -162,7 +180,7 @@ export class ElidedBlock extends BaseBlock {
 
   public elidedBlockCount = 0
 
-  constructor(data: Record<string, any>) {
+  constructor(data: BlockData & { widthPx: number }) {
     super(data)
     this.widthPx = data.widthPx
   }
