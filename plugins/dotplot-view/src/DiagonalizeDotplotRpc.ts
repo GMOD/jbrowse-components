@@ -2,9 +2,9 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 import { dedupe } from '@jbrowse/core/util'
 import {
-  diagonalizeRegions,
   type AlignmentData,
   type DiagonalizationResult,
+  diagonalizeRegions,
 } from '@jbrowse/core/util/diagonalizeRegions'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom } from 'rxjs'
@@ -13,8 +13,6 @@ import { toArray } from 'rxjs/operators'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-
-export type { DiagonalizationResult }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -121,3 +119,5 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
     return result
   }
 }
+
+export { type DiagonalizationResult } from '@jbrowse/core/util/diagonalizeRegions'

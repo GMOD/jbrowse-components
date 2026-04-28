@@ -1436,8 +1436,8 @@ export { useGpuModelLifecycle } from './useGpuModelLifecycle.ts'
 export { useGpuRenderer } from './useGpuRenderer.ts'
 export { makeDisplayedRegionKey } from './blockTypes.ts'
 export {
-  diagonalizeRegions,
   type AlignmentData,
   type DiagonalizationResult,
   type ProgressCallback,
+  diagonalizeRegions,
 } from './diagonalizeRegions.ts'

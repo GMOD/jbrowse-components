@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@gmod/bbi": "^9.0.9",
-    "@gmod/hclust": "^3.0.4",
+    "@gmod/hclust": "^3.0.6",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.6.0",
     "@jbrowse/plugin-data-management": "workspace:^",

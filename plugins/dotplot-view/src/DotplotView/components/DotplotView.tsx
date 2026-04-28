@@ -134,7 +134,8 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
     setMouseDownClient,
     setMouseUpClient,
     setMouseOvered,
-    ref,
+    refEl,
+    refCallback,
     root,
     rootRect,
     mousedown,
@@ -156,7 +157,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
   } = useCursorMode(cursorMode)
 
   // Event handlers
-  useWheelHandler(ref, hview, vview, mousecurr, rootRect.height)
+  useWheelHandler(refEl, hview, vview, mousecurr, rootRect.height)
   useMouseMoveHandler(
     mousecurrClient,
     mousedownClient,
@@ -203,7 +204,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
         <div className={classes.container}>
           <VerticalAxis model={model} />
           <HorizontalAxis model={model} />
-          <div ref={ref} className={classes.content}>
+          <div ref={refCallback} className={classes.content}>
             <DotplotTooltips
               model={model}
               mouseOvered={mouseOvered}

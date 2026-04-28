@@ -61,7 +61,11 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const textOffset = trackLabels === 'offset' ? textHeight : 0
   const trackOffsets = views.map((view, idx) =>
-    getTrackOffsets(view, textOffset, fontSize + sum(heights.slice(0, idx)) + offset),
+    getTrackOffsets(
+      view,
+      textOffset,
+      fontSize + sum(heights.slice(0, idx)) + offset,
+    ),
   )
   const w = width + trackLabelOffset
   const t = createJBrowseTheme(theme)

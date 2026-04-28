@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "build": "pnpm -r build",
+    "upgrade-gmod": "find $HOME/.cache/pnpm -path '*/@gmod/*.json' -delete && pnpm up --recursive --latest \"@gmod/*\"",
     "changelog": "scripts/generate-changelog.sh",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write .",

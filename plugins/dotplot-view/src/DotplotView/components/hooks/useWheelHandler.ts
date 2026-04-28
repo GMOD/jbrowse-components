@@ -10,7 +10,7 @@ interface View {
 }
 
 export function useWheelHandler(
-  ref: React.RefObject<HTMLDivElement | null>,
+  el: HTMLDivElement | null,
   hview: View,
   vview: View,
   mousecurr: Coord,
@@ -46,13 +46,12 @@ export function useWheelHandler(
         })
       }
     }
-    if (ref.current) {
-      const curr = ref.current
-      curr.addEventListener('wheel', onWheel)
+    if (el) {
+      el.addEventListener('wheel', onWheel)
       return () => {
-        curr.removeEventListener('wheel', onWheel)
+        el.removeEventListener('wheel', onWheel)
       }
     }
     return () => {}
-  }, [hview, vview, mousecurr, rootRectHeight, ref])
+  }, [hview, vview, mousecurr, rootRectHeight, el])
 }

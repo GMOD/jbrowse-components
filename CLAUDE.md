@@ -39,3 +39,11 @@ Uniforms struct/UBO layout must match byte offsets in
 `hpSplitUint`, and `bpHi`/`bpLo` pairs preserve float32 precision in shaders. JS
 is float64 — use plain `bp - bpStart`. Hi/lo recombination in `.ts` outside
 shader-uniform writes is a bug.
+
+## MST model files
+
+**Do not split large model files (e.g. `LinearGenomeView/model.ts`) across
+multiple files.** MST's `.views()`/`.actions()` chaining makes type inference
+harder to get right across file boundaries. Small self-contained pieces of logic
+(mixins, pure utility functions) can be extracted, but the main model chain
+should stay in one file.

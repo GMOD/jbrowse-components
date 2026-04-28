@@ -57,7 +57,6 @@ function getAllSubcategories(node: TreeCategoryNode): string[] {
   return categoryIds
 }
 
-
 function openFolderDialog(
   model: HierarchicalTrackSelectorModel,
   item: TreeCategoryNode,

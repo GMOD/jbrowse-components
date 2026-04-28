@@ -6,18 +6,13 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getEnv } from '@jbrowse/mobx-state-tree'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
-import {
-  Accordion,
-  AccordionSummary,
-  Button,
-  Typography,
-} from '@mui/material'
+import { Accordion, AccordionSummary, Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ClearableSearchField from '../../HierarchicalTrackSelectorWidget/components/ClearableSearchField.tsx'
 import InstalledPluginsList from './InstalledPluginsList.tsx'
 import PluginCard from './PluginCard.tsx'
 import { useFetchPlugins } from './util.ts'
+import ClearableSearchField from '../../HierarchicalTrackSelectorWidget/components/ClearableSearchField.tsx'
 
 import type { PluginStoreModel } from '../model.ts'
 

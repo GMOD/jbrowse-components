@@ -10,6 +10,7 @@ import {
   isFeature,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import { BlockSet } from '@jbrowse/core/util/blockTypes'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import {
   getParentRenderProps,
@@ -116,6 +117,11 @@ function stateModelFactory() {
        * #getter
        */
       get blockDefinitions() {
+        // Return empty when minimized so the blockDefinitionsAutorun's normal
+        // "delete stale" loop clears all blocks without needing special casing
+        if (self.isMinimized) {
+          return new BlockSet()
+        }
         const view = getContainingView(self) as LGV
         if (!view.initialized) {
           throw new Error('view not initialized yet')
@@ -616,7 +622,7 @@ function stateModelFactory() {
           autorun(
             function blockDefinitionsAutorun() {
               try {
-                if (!isAlive(self) || self.isMinimized) {
+                if (!isAlive(self)) {
                   return
                 }
                 const view = getContainingView(self) as LGV

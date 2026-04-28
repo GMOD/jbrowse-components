@@ -1,4 +1,5 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+
 import { parseStrand } from '../util.ts'
 
 const svTypes = new Set(['DUP', 'TRA', 'INV', 'CNV', 'DEL'])

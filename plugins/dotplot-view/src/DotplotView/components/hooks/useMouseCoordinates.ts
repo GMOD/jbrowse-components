@@ -20,10 +20,10 @@ export function useMouseCoordinates() {
   const [mousedownClient, setMouseDownClient] = useState<Coord>()
   const [mouseupClient, setMouseUpClient] = useState<Coord>()
   const [mouseOvered, setMouseOvered] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
   const root = useRef<HTMLDivElement>(null)
+  const [refEl, refCallback] = useState<HTMLDivElement | null>(null)
 
-  const rect = ref.current?.getBoundingClientRect() ?? blank
+  const rect = refEl?.getBoundingClientRect() ?? blank
   const rootRect = rect
   const mousedown = getOffset(mousedownClient, rect)
   const mousecurr = getOffset(mousecurrClient, rect)
@@ -45,7 +45,8 @@ export function useMouseCoordinates() {
     setMouseUpClient,
     setMouseOvered,
     // Refs
-    ref,
+    refEl,
+    refCallback,
     root,
     // Derived values
     rootRect,

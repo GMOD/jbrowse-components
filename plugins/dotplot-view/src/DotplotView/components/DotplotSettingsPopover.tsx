@@ -126,7 +126,7 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
             <Slider
               value={minLengthValue}
               onChange={(_, val) => {
-                const v = typeof val === 'number' ? val : val[0]!
+                const v = typeof val === 'number' ? val : val[0]
                 setMinLengthValue(v)
               }}
               onChangeCommitted={() => {
