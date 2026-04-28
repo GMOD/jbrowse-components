@@ -34,17 +34,77 @@ const PAIRED_STROKE = [
   fillColor.color_pair_ll, // 4 LL — inversion
 ]
 
-// Split-read (long read / SA tag) stroke color, keyed by effective strand
-// directions at the two endpoints.  Mirrors computeArcsFromPileupData's
-// unpairedOrientationColor logic so the overlay matches the arc-band colors.
+// Split-read stroke color keyed by effective strand at each endpoint.
+// Mirrors computeArcsFromPileupData's unpairedOrientationColor logic.
 function splitStroke(p1Strand: number, p2Strand: number): string {
   if (p1Strand === -1 && p2Strand === 1) {
-    return fillColor.color_longread_rev_fwd // RF orientation
+    return fillColor.color_longread_rev_fwd // RF
   }
   if (p1Strand === 1 && p2Strand === -1) {
-    return fillColor.color_longread_fwd_rev // FR orientation
+    return fillColor.color_longread_fwd_rev // FR
   }
   return fillColor.color_longread_same // same-strand (inversion-like)
+}
+
+// Normal LR pairs (orient 0/1) and FR split reads get a straight line;
+// aberrant orientations get a bezier curve to stand out visually.
+function isNormalOrientation(
+  hasPaired: boolean,
+  orientNum: number,
+  s1: number,
+  p2Strand: number,
+) {
+  return hasPaired ? orientNum <= 1 : s1 === 1 && p2Strand === -1
+}
+
+// Strand-aware genomic connection endpoint.
+// For paired reads: the 3' end of each read.
+// For split reads: the second alignment connects at the inverted end
+// (the junction is the 5' of the supplementary segment).
+function connectionBp(
+  hasPaired: boolean,
+  strand: number,
+  start: number,
+  end: number,
+  isSecond: boolean,
+) {
+  if (!isSecond || hasPaired) {
+    return strand === -1 ? start : end
+  }
+  // split read second segment — inverted convention
+  return strand === -1 ? end : start
+}
+
+// True if any part of the arc (including bezier peak above endpoints) is
+// within the visible Y range [0, viewportH].
+// Bezier arcs peak peakH above their endpoints, so they can be visible even
+// when both endpoints are slightly below the viewport fold.
+function arcIsVisible(
+  sy1: number,
+  sy2: number,
+  peakH: number,
+  isNormal: boolean,
+  viewportH: number,
+) {
+  const arcTop = Math.min(sy1, sy2) - (isNormal ? 0 : peakH)
+  const arcBottom = Math.max(sy1, sy2)
+  return arcTop < viewportH && arcBottom > 0
+}
+
+function bezierPath(
+  sx1: number,
+  sy1: number,
+  sx2: number,
+  sy2: number,
+  s1: number,
+  p2Strand: number,
+  peakH: number,
+) {
+  const apexY = Math.min(sy1, sy2) - peakH
+  const tangentDx = Math.max(MIN_TANGENT_PX, Math.abs(sx2 - sx1) * TANGENT_FACTOR)
+  const cp1x = sx1 + s1 * tangentDx
+  const cp2x = sx2 + p2Strand * tangentDx
+  return `M ${sx1} ${sy1} C ${cp1x} ${apexY} ${cp2x} ${apexY} ${sx2} ${sy2}`
 }
 
 export interface PileupArc {
@@ -56,7 +116,7 @@ export interface PileupArc {
 
 interface Opts {
   laidOutPileupMap: ReadonlyMap<number, PileupDataResult>
-  visibleRegions: { refName: string }[]
+  displayedRegions: { refName: string }[]
   bpToScreenX: (refName: string, bp: number) => number | undefined
   featureHeight: number
   featureSpacing: number
@@ -68,7 +128,7 @@ interface Opts {
 export function computePileupArcs(opts: Opts): PileupArc[] {
   const {
     laidOutPileupMap,
-    visibleRegions,
+    displayedRegions,
     bpToScreenX,
     featureHeight,
     featureSpacing,
@@ -80,7 +140,6 @@ export function computePileupArcs(opts: Opts): PileupArc[] {
   const rowH = featureHeight + featureSpacing
   const rangeY0 = rangeY[0]
   const peakH = rowH * PEAK_ROW_FACTOR
-  // Anchor arcs at the vertical center of the read rectangle.
   const readCenterDy = featureHeight / 2
 
   const readsByName = new Map<
@@ -90,7 +149,7 @@ export function computePileupArcs(opts: Opts): PileupArc[] {
 
   let hasPaired = false
   for (const [idx, data] of laidOutPileupMap) {
-    const region = visibleRegions[idx]
+    const region = displayedRegions[idx]
     if (!region) {
       continue
     }
@@ -138,25 +197,24 @@ export function computePileupArcs(opts: Opts): PileupArc[] {
       const e2 = filtered[j + 1]!
       const s1 = e1.data.readStrands[e1.readIdx]!
       const s2 = e2.data.readStrands[e2.readIdx]!
-      const start1 = e1.data.readPositions[e1.readIdx * 2]!
-      const end1 = e1.data.readPositions[e1.readIdx * 2 + 1]!
-      const start2 = e2.data.readPositions[e2.readIdx * 2]!
-      const end2 = e2.data.readPositions[e2.readIdx * 2 + 1]!
 
-      // Strand-aware connecting endpoint: for paired reads, the 3' end.
-      // For split reads the second alignment connects at the opposite end
-      // relative to its strand (the junction is the 5' of the next segment).
-      const bp1 = s1 === -1 ? start1 : end1
-      const bp2 = hasPaired
-        ? s2 === -1
-          ? start2
-          : end2
-        : s2 === -1
-          ? end2
-          : start2
+      const bp1 = connectionBp(
+        hasPaired,
+        s1,
+        e1.data.readPositions[e1.readIdx * 2]!,
+        e1.data.readPositions[e1.readIdx * 2 + 1]!,
+        false,
+      )
+      const bp2 = connectionBp(
+        hasPaired,
+        s2,
+        e2.data.readPositions[e2.readIdx * 2]!,
+        e2.data.readPositions[e2.readIdx * 2 + 1]!,
+        true,
+      )
 
-      // Effective tangent direction at p2. Negated for split reads because
-      // the endpoint selection formula is inverted for supplementary alignments.
+      // p2Strand is negated for split reads because the endpoint selection
+      // convention is inverted for supplementary alignments.
       const p2Strand = hasPaired ? s2 : -s2
 
       const sx1 = bpToScreenX(e1.refName, bp1)
@@ -165,43 +223,32 @@ export function computePileupArcs(opts: Opts): PileupArc[] {
         continue
       }
 
-      const yRow1 = e1.data.readYs[e1.readIdx]!
-      const yRow2 = e2.data.readYs[e2.readIdx]!
-      const sy1 = yRow1 * rowH + pileupTopOffset - rangeY0 + readCenterDy
-      const sy2 = yRow2 * rowH + pileupTopOffset - rangeY0 + readCenterDy
+      const sy1 =
+        e1.data.readYs[e1.readIdx]! * rowH + pileupTopOffset - rangeY0 + readCenterDy
+      const sy2 =
+        e2.data.readYs[e2.readIdx]! * rowH + pileupTopOffset - rangeY0 + readCenterDy
 
-      if ((sy1 < 0 && sy2 < 0) || (sy1 > viewportH && sy2 > viewportH)) {
+      const orientNum = e1.data.readPairOrientations[e1.readIdx] ?? 0
+      const isNormal = isNormalOrientation(hasPaired, orientNum, s1, p2Strand)
+
+      if (!arcIsVisible(sy1, sy2, peakH, isNormal, viewportH)) {
         continue
       }
 
-      const orientNum = e1.data.readPairOrientations[e1.readIdx] ?? 0
-      // Normal LR pairs (orient 0/1) and FR split reads get a flat line;
-      // aberrant orientations get a bezier curve so they stand out visually.
-      const isNormal = hasPaired
-        ? orientNum <= 1
-        : s1 === 1 && p2Strand === -1
-
-      let d: string
-      if (isNormal) {
-        d = `M ${sx1} ${sy1} L ${sx2} ${sy2}`
-      } else {
-        const apexY = Math.min(sy1, sy2) - peakH
-        const tangentDx = Math.max(
-          MIN_TANGENT_PX,
-          Math.abs(sx2 - sx1) * TANGENT_FACTOR,
-        )
-        const cp1x = sx1 + s1 * tangentDx
-        const cp2x = sx2 + p2Strand * tangentDx
-        d = `M ${sx1} ${sy1} C ${cp1x} ${apexY} ${cp2x} ${apexY} ${sx2} ${sy2}`
-      }
+      const d = isNormal
+        ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
+        : bezierPath(sx1, sy1, sx2, sy2, s1, p2Strand, peakH)
 
       const stroke = hasPaired
         ? (PAIRED_STROKE[orientNum] ?? PAIRED_STROKE[0]!)
         : splitStroke(s1, p2Strand)
 
-      const id1 = e1.data.readIds[e1.readIdx] ?? ''
-      const id2 = e2.data.readIds[e2.readIdx] ?? ''
-      result.push({ d, stroke, id1, id2 })
+      result.push({
+        d,
+        stroke,
+        id1: e1.data.readIds[e1.readIdx] ?? '',
+        id2: e2.data.readIds[e2.readIdx] ?? '',
+      })
     }
   }
 

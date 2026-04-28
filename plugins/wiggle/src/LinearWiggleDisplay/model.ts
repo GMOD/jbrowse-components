@@ -196,8 +196,8 @@ export default function stateModelFactory(
           }
           return [
             {
-              visStart: Math.floor(block.start!),
-              visEnd: Math.ceil(block.end!),
+              visStart: Math.floor(block.start),
+              visEnd: Math.ceil(block.end),
               data,
             },
           ]

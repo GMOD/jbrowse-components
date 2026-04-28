@@ -70,7 +70,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ParsedLocString } from '@jbrowse/core/util'
-import type { BaseBlock, BlockSet, ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { BlockSet, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 

@@ -53,7 +53,7 @@ export interface RenderState {
   selectedChainIds: string[]
   // Color palette from theme
   colors: ColorPalette
-  renderingMode?: 'pileup' | 'linkedRead'
+  renderingMode?: 'pileup' | 'linkedRead' | 'linkedReadBezier'
   flipStrandLongReadChains?: boolean
   reversed?: boolean
   arcLineWidth?: number

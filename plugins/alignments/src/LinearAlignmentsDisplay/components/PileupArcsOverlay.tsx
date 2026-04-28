@@ -8,12 +8,29 @@ import { computePileupArcs } from './computePileupArcs.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+function arcTooltip(
+  model: LinearAlignmentsDisplayModel,
+  id1: string,
+  id2: string,
+) {
+  const parts: string[] = []
+  for (const id of [id1, id2]) {
+    const info = model.getFeatureInfoById(id)
+    if (info) {
+      parts.push(
+        `${info.name || info.id} ${info.refName}:${info.start.toLocaleString()}-${info.end.toLocaleString()}`,
+      )
+    }
+  }
+  return parts.length > 0 ? parts.join(' → ') : undefined
+}
+
 const PileupArcsOverlay = observer(function PileupArcsOverlay({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const [selectedArcIdx, setSelectedArcIdx] = useState(-1)
+  const [selectedArcId, setSelectedArcId] = useState<string | null>(null)
   const view = getContainingView(model) as LinearGenomeViewModel
   const {
     showLinkedReads,
@@ -26,7 +43,7 @@ const PileupArcsOverlay = observer(function PileupArcsOverlay({
     pileupViewportHeight: viewportH,
     height,
   } = model
-  const { initialized, offsetPx, visibleRegions, width } = view
+  const { initialized, offsetPx, displayedRegions, width } = view
 
   if (!showLinkedReads || !showLinkedReadsAsBeziers || !initialized) {
     return null
@@ -34,7 +51,7 @@ const PileupArcsOverlay = observer(function PileupArcsOverlay({
 
   const arcs = computePileupArcs({
     laidOutPileupMap,
-    visibleRegions,
+    displayedRegions,
     bpToScreenX: (refName, bp) => {
       const r = view.bpToPx({ refName, coord: bp })
       return r === undefined ? undefined : r.offsetPx - offsetPx
@@ -62,11 +79,12 @@ const PileupArcsOverlay = observer(function PileupArcsOverlay({
         overflow: 'hidden',
       }}
     >
-      {arcs.map((arc, i) => {
-        const isSelected = i === selectedArcIdx
+      {arcs.map(arc => {
+        const arcId = `${arc.id1}:${arc.id2}`
+        const isSelected = arcId === selectedArcId
         return (
           <path
-            key={i}
+            key={arcId}
             d={arc.d}
             stroke={arc.stroke}
             strokeWidth={isSelected ? 3 : 1.5}
@@ -74,23 +92,16 @@ const PileupArcsOverlay = observer(function PileupArcsOverlay({
             fill="none"
             style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
             onMouseEnter={() => {
-              const info1 = model.getFeatureInfoById(arc.id1)
-              const info2 = model.getFeatureInfoById(arc.id2)
-              if (info1 || info2) {
-                const parts = [info1, info2]
-                  .filter(Boolean)
-                  .map(
-                    info =>
-                      `${info!.name || info!.id} ${info!.refName}:${info!.start.toLocaleString()}-${info!.end.toLocaleString()}`,
-                  )
-                model.setMouseoverExtraInformation(parts.join(' → '))
+              const tooltip = arcTooltip(model, arc.id1, arc.id2)
+              if (tooltip) {
+                model.setMouseoverExtraInformation(tooltip)
               }
             }}
             onMouseLeave={() => {
               model.clearMouseoverState()
             }}
             onClick={() => {
-              setSelectedArcIdx(isSelected ? -1 : i)
+              setSelectedArcId(isSelected ? null : arcId)
               void model.selectFeatureById(arc.id1)
             }}
           />

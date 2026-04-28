@@ -298,8 +298,12 @@ export default function stateModelFactory(
           return undefined
         },
 
-        get renderingMode(): 'pileup' | 'linkedRead' {
-          return self.showLinkedReads ? 'linkedRead' : 'pileup'
+        get renderingMode(): 'pileup' | 'linkedRead' | 'linkedReadBezier' {
+          return self.showLinkedReads
+            ? self.showLinkedReadsAsBeziers
+              ? 'linkedReadBezier'
+              : 'linkedRead'
+            : 'pileup'
         },
 
         get isChainMode() {
@@ -488,7 +492,7 @@ export default function stateModelFactory(
          * `sortedBy`, `showSoftClipping`, or `renderingMode` change.
          */
         get laidOutPileupMap() {
-          if (this.renderingMode === 'linkedRead') {
+          if (this.renderingMode !== 'pileup') {
             return buildLaidOutChainMap(self.rpcDataMap)
           }
           return buildLaidOutPileupMap({
@@ -804,9 +808,7 @@ export default function stateModelFactory(
             highlightedChainIds: self.highlightedChainIds,
             selectedChainIds: self.selectedChainIds,
             colors: palette,
-            renderingMode: self.showLinkedReadsAsBeziers
-              ? 'pileup'
-              : self.renderingMode,
+            renderingMode: self.renderingMode,
             flipStrandLongReadChains: self.flipStrandLongReadChains,
             arcLineWidth: self.lineWidth,
             arcColorByType: self.arcColorByType,
@@ -1405,7 +1407,7 @@ export default function stateModelFactory(
           const session = getSession(self)
           const sequenceAdapter = getSequenceAdapter(session, region)
 
-          const result = await (self.renderingMode === 'linkedRead'
+          const result = await (self.renderingMode !== 'pileup'
             ? fetchChainData(adapterConfig, sequenceAdapter, region, stopToken)
             : fetchPileupData(
                 adapterConfig,

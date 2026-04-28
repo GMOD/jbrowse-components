@@ -246,8 +246,8 @@ export default function stateModelFactory(
           if (!regionData) {
             return []
           }
-          const visStart = Math.floor(block.start!)
-          const visEnd = Math.ceil(block.end!)
+          const visStart = Math.floor(block.start)
+          const visEnd = Math.ceil(block.end)
           return regionData.sources.map(source => ({
             visStart,
             visEnd,
