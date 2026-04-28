@@ -20,23 +20,18 @@ export default class ArcPlugin extends Plugin {
       (feature: Feature, attributeName: string) =>
         Math.log(feature.get(attributeName) + 1),
     )
+    const svTypeColors: [string, string][] = [
+      ['<DEL', set1[0]!],
+      ['<DUP', set1[1]!],
+      ['<INV', set1[2]!],
+      ['<TRA', set1[3]!],
+      ['<CNV', set1[4]!],
+    ]
     pluginManager.jexl.addFunction(
       'defaultPairedArcColor',
-      (_feature: Feature, alt?: string) => {
-        if (alt?.startsWith('<DEL')) {
-          return set1[0]
-        } else if (alt?.startsWith('<DUP')) {
-          return set1[1]
-        } else if (alt?.startsWith('<INV')) {
-          return set1[2]
-        } else if (alt?.startsWith('<TRA')) {
-          return set1[3]
-        } else if (alt?.startsWith('<CNV')) {
-          return set1[4]
-        } else {
-          return set1[6] // skip 5, yellow
-        }
-      },
+      (_feature: Feature, alt?: string) =>
+        svTypeColors.find(([prefix]) => alt?.startsWith(prefix))?.[1] ??
+        set1[6]!, // skip 5, yellow
     )
   }
 }

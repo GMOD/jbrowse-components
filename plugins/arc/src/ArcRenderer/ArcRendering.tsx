@@ -42,12 +42,9 @@ function getBezierPath(
     readConfObject(config, 'height', { feature }) || 100,
     displayHeight,
   )
-  // formula: https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Cubic_B%C3%A9zier_curves
-  const t = 0.5
-  const t1 = 1 - t
   return {
     d: `M ${left} 0 C ${left} ${height}, ${right} ${height}, ${right} 0`,
-    textYCoord: 3 * (t1 * t1) * (t * height) + 3 * t1 * (t * t) * height,
+    textYCoord: 0.75 * height,
   }
 }
 

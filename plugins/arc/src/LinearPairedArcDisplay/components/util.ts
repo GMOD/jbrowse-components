@@ -74,6 +74,6 @@ export function makeSummary(feature: Feature, alt?: string) {
     feature.get('INFO')?.SVTYPE,
     alt,
   ]
-    .filter(f => !!f)
+    .filter(Boolean)
     .join('<br/>')
 }

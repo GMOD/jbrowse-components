@@ -1,4 +1,4 @@
-import { Suspense, lazy, useRef, useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import {
@@ -12,7 +12,7 @@ import { makeFeaturePair, makeSummary } from './util.ts'
 
 import type { LinearArcDisplayModel } from '../model.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const ArcTooltip = lazy(() => import('../../ArcTooltip.tsx'))
@@ -30,31 +30,23 @@ const Arc = observer(function Arc({
   alt?: string
   model: LinearArcDisplayModel
   assembly: Assembly
-  session: AbstractSessionModel
   view: LinearGenomeViewModel
 }) {
   const [mouseOvered, setMouseOvered] = useState(false)
   const { height } = model
   const { k1, k2 } = makeFeaturePair(feature, alt)
-  const ref = useRef<SVGPathElement>(null)
   const c = getConf(model, 'color', { feature, alt })
   const ra1 = assembly.getCanonicalRefName(k1.refName) || k1.refName
   const ra2 = assembly.getCanonicalRefName(k2.refName) || k2.refName
-  const p1 = k1.start
-  const p2 = k2.start
-  const r1 = view.bpToPx({ refName: ra1, coord: p1 })?.offsetPx
-  const r2 = view.bpToPx({ refName: ra2, coord: p2 })?.offsetPx
+  const r1 = view.bpToPx({ refName: ra1, coord: k1.start })?.offsetPx
+  const r2 = view.bpToPx({ refName: ra2, coord: k2.start })?.offsetPx
 
   if (r1 !== undefined && r2 !== undefined) {
-    const radius = (r2 - r1) / 2
-    const absrad = Math.abs(radius)
+    const left = r1 - view.offsetPx
+    const right = r2 - view.offsetPx
+    const absrad = Math.abs((right - left) / 2)
     const destY = Math.min(height, absrad)
-    const p1 = r1 - view.offsetPx
-    const p2 = r2 - view.offsetPx
-    const left = p1
-    const right = p2
     const col = mouseOvered ? 'black' : c
-    const sw = 3
     const events = {
       onMouseOut: () => {
         setMouseOvered(false)
@@ -71,9 +63,8 @@ const Arc = observer(function Arc({
       <>
         <path
           d={`M ${left} 0 C ${left} ${destY}, ${right} ${destY}, ${right} 0`}
-          ref={ref}
           {...getStrokeProps(col)}
-          strokeWidth={sw}
+          strokeWidth={3}
           {...events}
           fill="none"
           pointerEvents="stroke"
@@ -81,7 +72,7 @@ const Arc = observer(function Arc({
         {k1.mateDirection ? (
           <line
             {...getStrokeProps(col)}
-            strokeWidth={sw}
+            strokeWidth={3}
             {...events}
             x1={left}
             x2={left + k1.mateDirection * 20}
@@ -92,7 +83,7 @@ const Arc = observer(function Arc({
         {k2.mateDirection ? (
           <line
             {...getStrokeProps(col)}
-            strokeWidth={sw}
+            strokeWidth={3}
             {...events}
             x1={right}
             x2={right + k2.mateDirection * 20}
@@ -153,7 +144,6 @@ const Arcs = observer(function Arcs({
           alts?.map(a => (
             <Arc
               key={`${f.id()}-${a}`}
-              session={session}
               feature={f}
               alt={a}
               view={view}
@@ -163,7 +153,6 @@ const Arcs = observer(function Arcs({
           )) ?? (
             <Arc
               key={f.id()}
-              session={session}
               feature={f}
               view={view}
               model={model}
