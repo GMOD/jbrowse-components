@@ -493,7 +493,7 @@ export default function stateModelFactory(
          */
         get laidOutPileupMap() {
           if (this.renderingMode !== 'pileup') {
-            return buildLaidOutChainMap(self.rpcDataMap)
+            return buildLaidOutChainMap(self.rpcDataMap, this.renderingMode)
           }
           return buildLaidOutPileupMap({
             dataMap: self.rpcDataMap,

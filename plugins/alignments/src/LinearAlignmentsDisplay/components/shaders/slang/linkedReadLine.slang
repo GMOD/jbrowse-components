@@ -53,7 +53,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.position = float4(flipX(sx, u), sy, 0.0, 1.0);
   uint idx = uint(inst.colorType + 0.5);
   uint ci = min(idx, NUM_LINKED_READ_COLORS - 1u);
-  o.color = float4(linkedReadColorByIndex(ci, u), 0.7);
+  o.color = float4(linkedReadColorByIndex(ci, u), 0.8);
   return o;
 }
 

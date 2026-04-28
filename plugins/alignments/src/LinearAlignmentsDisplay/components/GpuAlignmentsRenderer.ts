@@ -123,7 +123,11 @@ function fillFrameUniforms(
   i[U.colorScheme] = state.colorScheme
   i[U.highlightIdx] = -1
   i[U.highlightOnly] = 0
-  i[U.chainMode] = state.renderingMode === 'linkedRead' ? 1 : 0
+  // Bezier mode is a chain mode for read-coloring purposes (supplementary
+  // colors, strand flipping, mate-unmapped coloring, chevrons) — only the
+  // connecting-line geometry differs.
+  const mode = state.renderingMode ?? 'pileup'
+  i[U.chainMode] = mode === 'linkedRead' || mode === 'linkedReadBezier' ? 1 : 0
   i[U.showStroke] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
   i[U.flipStrandLongRead] = state.flipStrandLongReadChains !== false ? 1 : 0
   f[U.reversed] = frame.reversed ? 1 : 0

@@ -59,19 +59,9 @@ export function isNormalOrientation(
 }
 
 export function pairedColorType(orientNum: number) {
-  if (orientNum === LINKED_READ_COLOR_PAIR_LR) {
-    return LINKED_READ_COLOR_PAIR_LR
-  }
-  if (orientNum === LINKED_READ_COLOR_PAIR_RL) {
-    return LINKED_READ_COLOR_PAIR_RL
-  }
-  if (orientNum === LINKED_READ_COLOR_PAIR_RR) {
-    return LINKED_READ_COLOR_PAIR_RR
-  }
-  if (orientNum === LINKED_READ_COLOR_PAIR_LL) {
-    return LINKED_READ_COLOR_PAIR_LL
-  }
-  return LINKED_READ_COLOR_PAIR_UNKNOWN
+  return orientNum >= LINKED_READ_COLOR_PAIR_LR && orientNum <= LINKED_READ_COLOR_PAIR_LL
+    ? orientNum
+    : LINKED_READ_COLOR_PAIR_UNKNOWN
 }
 
 export function splitColorType(p1Strand: number, p2Strand: number) {

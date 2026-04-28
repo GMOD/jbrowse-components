@@ -3,8 +3,8 @@ import {
   filterEntries,
   groupReadsByName,
 } from './computeLinkedReadLines.ts'
-import { fillColor } from '../../shared/color.ts'
-
+import { linkedReadColorPalette } from './shaders/palettes.ts'
+import { rgb255 } from '../colorUtils.ts'
 
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
@@ -23,28 +23,6 @@ const TANGENT_FACTOR = 0.3
 
 // Arc peak height above the read center, in units of rowHeight.
 const PEAK_ROW_FACTOR = 3
-
-// Orientation code (readPairOrientations) → CSS stroke color. Indices 0/1
-// (unknown / normal LR) intentionally use lightgrey so normal pairs are
-// de-emphasised — but for the bezier overlay we only emit aberrant pairs and
-// cross-region normals, so 0/1 hits only on the cross-region fallback path.
-const PAIRED_STROKE = [
-  fillColor.color_pair_lr,
-  fillColor.color_pair_lr,
-  fillColor.color_pair_rl,
-  fillColor.color_pair_rr,
-  fillColor.color_pair_ll,
-]
-
-function splitStroke(p1Strand: number, p2Strand: number) {
-  if (p1Strand === -1 && p2Strand === 1) {
-    return fillColor.color_longread_rev_fwd
-  }
-  if (p1Strand === 1 && p2Strand === -1) {
-    return fillColor.color_longread_fwd_rev
-  }
-  return fillColor.color_longread_same
-}
 
 function arcIsVisible(
   sy1: number,
@@ -160,9 +138,9 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
       const d = c.isNormal
         ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
         : bezierPath(sx1, sy1, sx2, sy2, c.s1, c.p2Strand, peakH)
-      const stroke = hasPaired
-        ? (PAIRED_STROKE[c.orientNum] ?? PAIRED_STROKE[0]!)
-        : splitStroke(c.s1, c.p2Strand)
+      const stroke = rgb255(
+        linkedReadColorPalette[c.colorType] ?? linkedReadColorPalette[0]!,
+      )
 
       result.push({
         d,
