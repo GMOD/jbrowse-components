@@ -169,6 +169,13 @@ export interface ConnectingLinesUploadData {
   connectingLineYs: Uint16Array
 }
 
+export interface LinkedReadLinesUploadData {
+  linkedReadLinePositions?: Uint32Array
+  linkedReadLineYs?: Uint16Array
+  linkedReadLineColorTypes?: Uint8Array
+  numLinkedReadLines?: number
+}
+
 export interface AlignmentsSources {
   laidOutPileupMap: ReadonlyMap<number, PileupDataResult>
   arcsRpcDataMap: ReadonlyMap<number, ArcsUploadData>

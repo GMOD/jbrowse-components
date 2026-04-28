@@ -100,6 +100,17 @@ public struct Uniforms {
   public uint arcColor7;
   public uint arcLineColor0;
   public uint arcLineColor1;
+  // Linked-read connecting-line palette (linkedReadBezier mode). 8 slots so
+  // every paired-orientation (unknown/LR/RL/RR/LL) and split-strand pairing
+  // (RF/FR/same) has its own ABGR color, looked up by per-instance colorType.
+  public uint linkedReadColor0;
+  public uint linkedReadColor1;
+  public uint linkedReadColor2;
+  public uint linkedReadColor3;
+  public uint linkedReadColor4;
+  public uint linkedReadColor5;
+  public uint linkedReadColor6;
+  public uint linkedReadColor7;
   public float pxPerBp;
 };
 

@@ -45,6 +45,21 @@ export const arcLineColorPalette: RGBColor[] = [
   rgb(fillColor.color_longinsert),
 ]
 
+// Indices match LINKED_READ_COLOR_* in computeLinkedReadLines.ts. Used by the
+// GPU palette UBO, the Canvas2D draw, and the SVG export so the three paths
+// stay in lockstep.
+export const NUM_LINKED_READ_COLORS = 8
+export const linkedReadColorPalette: RGBColor[] = [
+  rgb(fillColor.color_pair_lr), // 0 unknown
+  rgb(fillColor.color_pair_lr), // 1 LR
+  rgb(fillColor.color_pair_rl), // 2 RL
+  rgb(fillColor.color_pair_rr), // 3 RR
+  rgb(fillColor.color_pair_ll), // 4 LL
+  rgb(fillColor.color_longread_rev_fwd), // 5 split RF
+  rgb(fillColor.color_longread_fwd_rev), // 6 split FR
+  rgb(fillColor.color_longread_same), // 7 split same
+]
+
 export function getArcPalette(
   colorByType: ArcColorByType | undefined,
 ): RGBColor[] {

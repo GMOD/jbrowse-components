@@ -15,6 +15,7 @@ import {
   ARC_HEIGHT_MARGIN,
   arcLineColorPalette,
   getArcPalette,
+  linkedReadColorPalette,
 } from './shaders/palettes.ts'
 import * as arcShader from './shaders/slang/arc.generated.ts'
 import * as arcLineShader from './shaders/slang/arcLine.generated.ts'
@@ -25,6 +26,7 @@ import * as flatQuadShader from './shaders/slang/flatQuad.generated.ts'
 import * as gapShader from './shaders/slang/gap.generated.ts'
 import * as indicatorShader from './shaders/slang/indicator.generated.ts'
 import * as insertionShader from './shaders/slang/insertion.generated.ts'
+import * as linkedReadLineShader from './shaders/slang/linkedReadLine.generated.ts'
 import * as mismatchShader from './shaders/slang/mismatch.generated.ts'
 import * as modCoverageShader from './shaders/slang/modCoverage.generated.ts'
 import * as modificationShader from './shaders/slang/modification.generated.ts'
@@ -41,6 +43,7 @@ import type {
   ColorPalette,
   ConnectingLinesUploadData,
   CoverageUploadData,
+  LinkedReadLinesUploadData,
   ModCoverageUploadData,
   ModificationUploadData,
   RGBColor,
@@ -73,6 +76,7 @@ const PASS_INDICATOR = 'indicator'
 const PASS_ARC = 'arc'
 const PASS_ARC_LINE = 'arcLine'
 const PASS_CONN_LINE = 'connLine'
+const PASS_LINKED_READ_LINE = 'linkedReadLine'
 const PASS_FLAT_QUAD = 'flatQuad'
 const PASS_SOFTCLIP_BASES = 'softclipBases'
 
@@ -328,6 +332,27 @@ function packArcLines(data: ArcsUploadData): ArrayBuffer {
   return buf
 }
 
+function packLinkedReadLines(data: LinkedReadLinesUploadData): ArrayBuffer {
+  const n = data.numLinkedReadLines ?? 0
+  const F = linkedReadLineShader.FIELD_OFFSET_F32
+  const s32 = linkedReadLineShader.INSTANCE_STRIDE_F32
+  const buf = new ArrayBuffer(n * linkedReadLineShader.INSTANCE_STRIDE_BYTES)
+  const u32 = new Uint32Array(buf)
+  const f32 = new Float32Array(buf)
+  const pos = data.linkedReadLinePositions!
+  const ys = data.linkedReadLineYs!
+  const cts = data.linkedReadLineColorTypes!
+  for (let i = 0; i < n; i++) {
+    const o = i * s32
+    u32[o + F.bp1] = pos[i * 2]!
+    u32[o + F.bp2] = pos[i * 2 + 1]!
+    f32[o + F.y1] = ys[i * 2]!
+    f32[o + F.y2] = ys[i * 2 + 1]!
+    f32[o + F.colorType] = cts[i]!
+  }
+  return buf
+}
+
 function packConnectingLines(data: ConnectingLinesUploadData): ArrayBuffer {
   const n = data.connectingLinePositions.length / 2
   const F = connectingLineShader.FIELD_OFFSET_F32
@@ -439,6 +464,9 @@ function writePaletteToUbo(
   for (let i = 0; i < arcLineColorPalette.length; i++) {
     u[USLOTS.arcLineColor[i]!] = pack(arcLineColorPalette[i]!)
   }
+  for (let i = 0; i < linkedReadColorPalette.length; i++) {
+    u[USLOTS.linkedReadColor[i]!] = pack(linkedReadColorPalette[i]!)
+  }
 }
 
 const ARC_CURVE_SEGMENTS = 64
@@ -487,6 +515,12 @@ export const ALIGNMENTS_PASSES: PassDescriptor[] = [
     id: PASS_CONN_LINE,
     mod: connectingLineShader,
     verticesPerInstance: 6,
+  }),
+  slangPass({
+    id: PASS_LINKED_READ_LINE,
+    mod: linkedReadLineShader,
+    verticesPerInstance: 2,
+    topology: 'line-list',
   }),
   // Softclip-base bases reuse the mismatch pass geometry + colors.
   slangPass({
@@ -564,6 +598,9 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       this.uploadModCoverage(idx, data)
       if (data.connectingLinePositions.length > 0) {
         this.uploadConnectingLines(idx, data)
+      }
+      if ((data.numLinkedReadLines ?? 0) > 0) {
+        this.uploadLinkedReadLines(idx, data)
       }
     }
     pruneRegionMap(this.regions, active, n => {
@@ -766,6 +803,22 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
+  private uploadLinkedReadLines(
+    displayedRegionIndex: number,
+    data: LinkedReadLinesUploadData,
+  ) {
+    ensureRegion(this.regions, displayedRegionIndex, emptyRegion)
+    const n = data.numLinkedReadLines ?? 0
+    if (n > 0) {
+      this.hal.uploadBuffer(
+        displayedRegionIndex,
+        PASS_LINKED_READ_LINE,
+        packLinkedReadLines(data),
+        n,
+      )
+    }
+  }
+
   private writeUniforms(state: RenderState, frame: BlockFrame) {
     fillFrameUniforms(this.uF32, this.uU32, this.uI32, state, frame)
     writePaletteToUbo(this.uU32, state.colors, state.arcColorByType)
@@ -864,6 +917,8 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
       if (mode === 'linkedRead') {
         this.hal.drawPass(PASS_CONN_LINE, block.displayedRegionIndex)
+      } else if (mode === 'linkedReadBezier') {
+        this.hal.drawPass(PASS_LINKED_READ_LINE, block.displayedRegionIndex)
       }
       this.hal.drawPass(PASS_READ, block.displayedRegionIndex)
 

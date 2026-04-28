@@ -11,6 +11,7 @@ import { when } from 'mobx'
 import { drawAlignmentsToCtx } from './components/Canvas2DAlignmentsRenderer.ts'
 import CoverageYScaleBar from './components/CoverageYScaleBar.tsx'
 import YScaleBar from './components/YScaleBar.tsx'
+import { computePileupBezierArcs } from './components/computePileupArcs.ts'
 import { computeSashimiArcs } from './components/sashimiArcs.ts'
 
 import type { LinearAlignmentsDisplayModel } from './model.ts'
@@ -55,6 +56,12 @@ export async function renderSvg(
     showSashimiArcs,
     sashimiArcsDown,
     sashimiArcsHeight,
+    showLinkedReads,
+    showLinkedReadsAsBeziers,
+    featureHeightSetting,
+    featureSpacing,
+    coverageDisplayHeight,
+    pileupViewportHeight,
   } = model
 
   const { offsetPx } = view
@@ -118,6 +125,40 @@ export async function renderSvg(
     )
   }
 
+  // Mirrors the sashimi block: bezier curves (and cross-region straights)
+  // come from the same `computePileupBezierArcs` the on-screen overlay uses,
+  // so SVG export matches what users see.
+  let pileupBezierNode: React.ReactNode = null
+  if (showLinkedReads && showLinkedReadsAsBeziers) {
+    const arcs = computePileupBezierArcs({
+      laidOutPileupMap: rpcDataMap,
+      displayedRegions: view.displayedRegions,
+      bpToScreenX: (refName, bp) => {
+        const r = view.bpToPx({ refName, coord: bp })
+        return r === undefined ? undefined : r.offsetPx - offsetPx
+      },
+      featureHeight: featureHeightSetting,
+      featureSpacing,
+      pileupTopOffset: coverageDisplayHeight,
+      rangeY: [0, displayHeight],
+      viewportH: pileupViewportHeight,
+    })
+    pileupBezierNode = (
+      <g style={{ pointerEvents: 'none' }}>
+        {arcs.map((arc, i) => (
+          <path
+            key={i}
+            d={arc.d}
+            stroke={arc.stroke}
+            strokeWidth={1.5}
+            strokeOpacity={0.8}
+            fill="none"
+          />
+        ))}
+      </g>
+    )
+  }
+
   const separatorColor = theme.palette.grey[500]
 
   return (
@@ -139,6 +180,7 @@ export async function renderSvg(
           />
         ) : null}
         {sashimiNode}
+        {pileupBezierNode}
       </SvgClipRect>
       {showCoverage && coverageTicks ? (
         <g transform={`translate(${scalebarLeft})`}>

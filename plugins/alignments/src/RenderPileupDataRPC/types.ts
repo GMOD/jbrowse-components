@@ -207,6 +207,19 @@ export interface PileupDataResult {
   connectingLinePositions: Uint32Array // [start, end] absolute genomic uint32 pairs
   connectingLineYs: Uint16Array // row for each line
 
+  // Linked-read straight-line connections for `linkedReadBezier` mode. Sibling
+  // pass to `connectingLine*` because the bezier overlay's GPU pass differs:
+  // per-endpoint Y (mates can sit on different rows when `sortedBy` is in
+  // effect), and a per-line palette index instead of a hard-coded color.
+  // Cross-region pairs are excluded — those keep being drawn as SVG straight
+  // paths via PileupArcsOverlay (the GPU pass is one region per buffer).
+  // Absolute genomic uint32 like all worker output (per ARCHITECTURE.md
+  // coordinate convention).
+  linkedReadLinePositions?: Uint32Array // [bp1, bp2] pairs
+  linkedReadLineYs?: Uint16Array // [y1, y2] paired per line
+  linkedReadLineColorTypes?: Uint8Array // see LINKED_READ_COLOR_* constants
+  numLinkedReadLines?: number
+
   // Flatbush R-tree over chain bounding boxes for spatial hit testing.
   // Populated by main-thread layout after chain layout is computed.
   chainFlatbushData?: ArrayBuffer

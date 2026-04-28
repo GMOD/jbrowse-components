@@ -2,6 +2,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
 
 import { cloneWithLayout } from '../RenderPileupDataRPC/sortLayout.ts'
+import { computeLinkedReadLinesByRegion } from './components/computeLinkedReadLines.ts'
 
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 
@@ -192,6 +193,37 @@ function cloneWithChainLayout(
   }
 }
 
+// Layer linked-read straight-line records on top of an already chain-laid-out
+// map. The line builder needs Y values to be finalized (which they are once
+// `cloneWithChainLayout` has run) and traverses by readName across regions to
+// classify pairs, so this runs as a post-pass over the whole map.
+function attachLinkedReadLines(
+  laidOutMap: Map<number, PileupDataResult>,
+): Map<number, PileupDataResult> {
+  const linesByIdx = computeLinkedReadLinesByRegion({
+    laidOutPileupMap: laidOutMap,
+  })
+  if (linesByIdx.size === 0) {
+    return laidOutMap
+  }
+  const out = new Map<number, PileupDataResult>()
+  for (const [idx, data] of laidOutMap) {
+    const lines = linesByIdx.get(idx)
+    if (!lines) {
+      out.set(idx, data)
+      continue
+    }
+    out.set(idx, {
+      ...data,
+      linkedReadLinePositions: lines.positions,
+      linkedReadLineYs: lines.ys,
+      linkedReadLineColorTypes: lines.colorTypes,
+      numLinkedReadLines: lines.numLines,
+    })
+  }
+  return out
+}
+
 /**
  * Build a laid-out chain-mode pileup map from raw fetched data.
  *
@@ -226,5 +258,5 @@ export function buildLaidOutChainMap(
       out.set(idx, cloneWithChainLayout(data, readYs, maxY))
     }
   }
-  return out
+  return attachLinkedReadLines(out)
 }

@@ -26,7 +26,11 @@ import {
   interbaseRangeEnds,
   pileupRowY,
 } from './rendererTypes.ts'
-import { arcLineColorPalette, getArcPalette } from './shaders/palettes.ts'
+import {
+  arcLineColorPalette,
+  getArcPalette,
+  linkedReadColorPalette,
+} from './shaders/palettes.ts'
 
 import type {
   AlignmentsBackend,
@@ -124,6 +128,12 @@ export interface Canvas2DRegionData extends BaseRegionData {
   connectingLinePositions: Uint32Array
   connectingLineYs: Uint16Array
   numConnectingLines: number
+
+  // Linked-read straight lines (linkedReadBezier mode)
+  linkedReadLinePositions: Uint32Array
+  linkedReadLineYs: Uint16Array
+  linkedReadLineColorTypes: Uint8Array
+  numLinkedReadLines: number
 }
 
 // Gap types from CIGAR
@@ -406,6 +416,10 @@ function emptyPileupFields(): Omit<
     connectingLinePositions: EMPTY_U32,
     connectingLineYs: EMPTY_U16,
     numConnectingLines: 0,
+    linkedReadLinePositions: EMPTY_U32,
+    linkedReadLineYs: EMPTY_U16,
+    linkedReadLineColorTypes: EMPTY_U8,
+    numLinkedReadLines: 0,
   }
 }
 
@@ -422,6 +436,10 @@ function buildPileupRegion(
     connectingLinePositions: data.connectingLinePositions,
     connectingLineYs: data.connectingLineYs,
     numConnectingLines: data.connectingLinePositions.length / 2,
+    linkedReadLinePositions: data.linkedReadLinePositions ?? EMPTY_U32,
+    linkedReadLineYs: data.linkedReadLineYs ?? EMPTY_U16,
+    linkedReadLineColorTypes: data.linkedReadLineColorTypes ?? EMPTY_U8,
+    numLinkedReadLines: data.numLinkedReadLines ?? 0,
     ...buildArcsFields(arcs),
   }
 }
@@ -586,6 +604,8 @@ export function drawAlignmentBlocks(
 
     if (mode === 'linkedRead') {
       drawConnectingLines(ctx, region, block, bpLength, fullBlockWidth, state)
+    } else if (mode === 'linkedReadBezier') {
+      drawLinkedReadLines(ctx, region, block, bpLength, fullBlockWidth, state)
     }
 
     drawReads(ctx, region, block, bpLength, fullBlockWidth, state)
@@ -1039,6 +1059,36 @@ function drawConnectingLines(
     ctx.beginPath()
     ctx.moveTo(x1, y)
     ctx.lineTo(x2, y)
+    ctx.stroke()
+  }
+}
+
+function drawLinkedReadLines(
+  ctx: Ctx2D,
+  region: Canvas2DRegionData,
+  block: { bpRangeX: [number, number]; screenStartPx: number },
+  bpLength: number,
+  fullBlockWidth: number,
+  state: RenderState,
+) {
+  if (region.numLinkedReadLines === 0) {
+    return
+  }
+  const fH = state.featureHeight
+  ctx.lineWidth = 1.5
+  for (let i = 0; i < region.numLinkedReadLines; i++) {
+    const startBp = region.linkedReadLinePositions[i * 2]!
+    const endBp = region.linkedReadLinePositions[i * 2 + 1]!
+    const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
+    const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
+    const y1 = pileupRowY(region.linkedReadLineYs[i * 2]!, state) + fH / 2
+    const y2 = pileupRowY(region.linkedReadLineYs[i * 2 + 1]!, state) + fH / 2
+    const colorIdx =
+      region.linkedReadLineColorTypes[i]! % linkedReadColorPalette.length
+    ctx.strokeStyle = rgb255(linkedReadColorPalette[colorIdx]!)
+    ctx.beginPath()
+    ctx.moveTo(x1, y1)
+    ctx.lineTo(x2, y2)
     ctx.stroke()
   }
 }
