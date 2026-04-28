@@ -56,7 +56,7 @@ describe('LinearSyntenyViewInit type', () => {
       ],
       tracks: [['synteny_track_1', 'synteny_track_2']],
     }
-    expect(init.views.length).toBe(2)
+    expect(init.views.length).toBe(3)
     expect(init.tracks?.[0]?.length).toBe(2)
   })
 })
