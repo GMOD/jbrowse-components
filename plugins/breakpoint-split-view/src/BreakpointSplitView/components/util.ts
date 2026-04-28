@@ -67,15 +67,11 @@ export function hasPairedReads(features: Map<string, Feature>) {
 
 export function findMatchingAlt(feat1: Feature, feat2: Feature) {
   const alts = feat1.get('ALT') as string[] | undefined
-  if (alts) {
-    return new Map(
-      alts
-        .map(alt => parseBreakend(alt))
-        .filter(notEmpty)
-        .map(bnd => [bnd.MatePosition, bnd]),
-    ).get(`${feat2.get('refName')}:${feat2.get('start') + 1}`)
-  }
-  return undefined
+  const target = `${feat2.get('refName')}:${feat2.get('start') + 1}`
+  return alts
+    ?.map(alt => parseBreakend(alt))
+    .filter(notEmpty)
+    .find(bnd => bnd.MatePosition === target)
 }
 
 export function getMatchedBreakendFeatures(feats: Map<string, Feature>) {
