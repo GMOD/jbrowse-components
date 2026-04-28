@@ -2,9 +2,9 @@ export function isRepeatMaskerDescriptionField(desc?: unknown): desc is string {
   if (typeof desc !== 'string') {
     return false
   } else {
-    const ret = desc?.trim().split(' ')
+    const ret = desc.trim().split(' ')
     return [0, 1, 2, 3, 5, 6].every(s =>
-      ret?.[s] !== undefined ? !Number.isNaN(+ret[s]) : false,
+      ret[s] !== undefined ? !Number.isNaN(+ret[s]) : false,
     )
   }
 }
