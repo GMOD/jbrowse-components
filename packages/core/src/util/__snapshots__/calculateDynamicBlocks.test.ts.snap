@@ -2,7 +2,7 @@
 
 exports[`five 1`] = `
 [
-  ContentBlock {
+  {
     "assemblyName": "test",
     "displayedRegionIndex": 0,
     "end": 72.4,
@@ -21,7 +21,6 @@ exports[`five 1`] = `
     "reversed": false,
     "start": 26.05,
     "type": "ContentBlock",
-    "variant": undefined,
     "widthPx": 927.0000000000002,
   },
 ]
@@ -29,23 +28,14 @@ exports[`five 1`] = `
 
 exports[`four 1`] = `
 [
-  InterRegionPaddingBlock {
-    "assemblyName": undefined,
-    "displayedRegionIndex": undefined,
-    "end": undefined,
-    "isLeftEndOfDisplayedRegion": undefined,
-    "isRightEndOfDisplayedRegion": undefined,
+  {
     "key": "test:ctgA:0:250:0-beforeFirstRegion",
     "offsetPx": -100,
-    "parentRegion": undefined,
-    "refName": undefined,
-    "reversed": undefined,
-    "start": undefined,
     "type": "InterRegionPaddingBlock",
     "variant": "boundary",
     "widthPx": 100,
   },
-  ContentBlock {
+  {
     "assemblyName": "test",
     "displayedRegionIndex": 0,
     "end": 250,
@@ -63,7 +53,6 @@ exports[`four 1`] = `
     "reversed": undefined,
     "start": 0,
     "type": "ContentBlock",
-    "variant": undefined,
     "widthPx": 250,
   },
 ]
@@ -71,23 +60,14 @@ exports[`four 1`] = `
 
 exports[`one 1`] = `
 [
-  InterRegionPaddingBlock {
-    "assemblyName": undefined,
-    "displayedRegionIndex": undefined,
-    "end": undefined,
-    "isLeftEndOfDisplayedRegion": undefined,
-    "isRightEndOfDisplayedRegion": undefined,
+  {
     "key": "test:ctgA:0:200:0-beforeFirstRegion",
     "offsetPx": 0,
-    "parentRegion": undefined,
-    "refName": undefined,
-    "reversed": undefined,
-    "start": undefined,
     "type": "InterRegionPaddingBlock",
     "variant": "boundary",
     "widthPx": -0,
   },
-  ContentBlock {
+  {
     "assemblyName": "test",
     "displayedRegionIndex": 0,
     "end": 200,
@@ -105,7 +85,6 @@ exports[`one 1`] = `
     "reversed": undefined,
     "start": 0,
     "type": "ContentBlock",
-    "variant": undefined,
     "widthPx": 200,
   },
 ]
@@ -113,23 +92,14 @@ exports[`one 1`] = `
 
 exports[`three 1`] = `
 [
-  InterRegionPaddingBlock {
-    "assemblyName": undefined,
-    "displayedRegionIndex": undefined,
-    "end": undefined,
-    "isLeftEndOfDisplayedRegion": undefined,
-    "isRightEndOfDisplayedRegion": undefined,
+  {
     "key": "test:ctgA:49900:50000:0:rev-beforeFirstRegion",
     "offsetPx": -100,
-    "parentRegion": undefined,
-    "refName": undefined,
-    "reversed": undefined,
-    "start": undefined,
     "type": "InterRegionPaddingBlock",
     "variant": "boundary",
     "widthPx": 100,
   },
-  ContentBlock {
+  {
     "assemblyName": "test",
     "displayedRegionIndex": 0,
     "end": 50000,
@@ -148,7 +118,6 @@ exports[`three 1`] = `
     "reversed": true,
     "start": 49900,
     "type": "ContentBlock",
-    "variant": undefined,
     "widthPx": 100,
   },
 ]
@@ -156,23 +125,14 @@ exports[`three 1`] = `
 
 exports[`two 1`] = `
 [
-  InterRegionPaddingBlock {
-    "assemblyName": undefined,
-    "displayedRegionIndex": undefined,
-    "end": undefined,
-    "isLeftEndOfDisplayedRegion": undefined,
-    "isRightEndOfDisplayedRegion": undefined,
+  {
     "key": "test:ctgA:49800:50000:0:rev-beforeFirstRegion",
     "offsetPx": 0,
-    "parentRegion": undefined,
-    "refName": undefined,
-    "reversed": undefined,
-    "start": undefined,
     "type": "InterRegionPaddingBlock",
     "variant": "boundary",
     "widthPx": -0,
   },
-  ContentBlock {
+  {
     "assemblyName": "test",
     "displayedRegionIndex": 0,
     "end": 50000,
@@ -191,7 +151,6 @@ exports[`two 1`] = `
     "reversed": true,
     "start": 49800,
     "type": "ContentBlock",
-    "variant": undefined,
     "widthPx": 200,
   },
 ]

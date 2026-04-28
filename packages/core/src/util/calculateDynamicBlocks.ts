@@ -2,9 +2,9 @@ import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import {
   BlockSet,
-  ContentBlock,
-  ElidedBlock,
-  InterRegionPaddingBlock,
+  makeContentBlock,
+  makeElidedBlock,
+  makeInterRegionPaddingBlock,
 } from './blockTypes.ts'
 import { intersection2 } from './range.ts'
 
@@ -111,7 +111,7 @@ export default function calculateDynamicBlocks(
 
       if (padding && blocks.length === 0 && isLeftEndOfDisplayedRegion) {
         blocks.push(
-          new InterRegionPaddingBlock({
+          makeInterRegionPaddingBlock({
             key: `${key}-beforeFirstRegion`,
             widthPx: -offsetPx,
             offsetPx: blockOffsetPx + offsetPx,
@@ -122,7 +122,7 @@ export default function calculateDynamicBlocks(
 
       if (elision && regionWidthPx < minimumBlockWidth) {
         blocks.push(
-          new ElidedBlock({
+          makeElidedBlock({
             assemblyName,
             refName,
             start,
@@ -139,7 +139,7 @@ export default function calculateDynamicBlocks(
         )
       } else {
         blocks.push(
-          new ContentBlock({
+          makeContentBlock({
             assemblyName,
             refName,
             start,
@@ -163,7 +163,7 @@ export default function calculateDynamicBlocks(
           displayedRegionIndex < displayedRegions.length - 1
         ) {
           blocks.push(
-            new InterRegionPaddingBlock({
+            makeInterRegionPaddingBlock({
               key: `${key}-rightpad`,
               widthPx: interRegionPaddingWidth,
               offsetPx: blockOffsetPx + widthPx,
@@ -178,7 +178,7 @@ export default function calculateDynamicBlocks(
         ) {
           const afterOffsetPx = blockOffsetPx + widthPx
           blocks.push(
-            new InterRegionPaddingBlock({
+            makeInterRegionPaddingBlock({
               key: `${key}-afterLastRegion`,
               widthPx: width - afterOffsetPx + offsetPx,
               offsetPx: afterOffsetPx,

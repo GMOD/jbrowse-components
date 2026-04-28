@@ -2,9 +2,9 @@ import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import {
   BlockSet,
-  ContentBlock,
-  ElidedBlock,
-  InterRegionPaddingBlock,
+  makeContentBlock,
+  makeElidedBlock,
+  makeInterRegionPaddingBlock,
 } from './blockTypes.ts'
 
 import type { Region } from './types/index.ts'
@@ -109,7 +109,7 @@ export default function calculateStaticBlocks(
 
       if (padding && displayedRegionIndex === 0 && blockNum === 0) {
         blocks.push(
-          new InterRegionPaddingBlock({
+          makeInterRegionPaddingBlock({
             key: `${key}-beforeFirstRegion`,
             widthPx: width,
             offsetPx: blockOffsetPx - width,
@@ -120,7 +120,7 @@ export default function calculateStaticBlocks(
 
       if (elision && regionWidthPx < minimumBlockWidth) {
         blocks.push(
-          new ElidedBlock({
+          makeElidedBlock({
             assemblyName,
             refName,
             start,
@@ -137,7 +137,7 @@ export default function calculateStaticBlocks(
         )
       } else {
         blocks.push(
-          new ContentBlock({
+          makeContentBlock({
             assemblyName,
             refName,
             start,
@@ -162,7 +162,7 @@ export default function calculateStaticBlocks(
         ) {
           regionBpOffset += interRegionPaddingWidth * bpPerPx
           blocks.push(
-            new InterRegionPaddingBlock({
+            makeInterRegionPaddingBlock({
               key: `${key}-rightpad`,
               widthPx: interRegionPaddingWidth,
               offsetPx: blockOffsetPx + widthPx,
@@ -175,7 +175,7 @@ export default function calculateStaticBlocks(
         ) {
           regionBpOffset += interRegionPaddingWidth * bpPerPx
           blocks.push(
-            new InterRegionPaddingBlock({
+            makeInterRegionPaddingBlock({
               key: `${key}-afterLastRegion`,
               widthPx: width,
               offsetPx: blockOffsetPx + widthPx,

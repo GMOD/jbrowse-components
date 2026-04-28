@@ -1,5 +1,5 @@
 import { DEFAULT_CIGAR_OP_DRAW_COLORS as DEFAULT_SYNTENY_COLORS } from '@jbrowse/alignments-core'
-import { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import { makeContentBlock } from '@jbrowse/core/util/blockTypes'
 
 import {
   computeBlockRenderParams,
@@ -341,7 +341,7 @@ describe('prepareBlockGeometry', () => {
 
 describe('computeBlockRenderParams', () => {
   test('returns correct params for block', () => {
-    const block = new ContentBlock({
+    const block = makeContentBlock({
       refName: 'chr1',
       start: 150000000,
       end: 160000000,
@@ -357,7 +357,7 @@ describe('computeBlockRenderParams', () => {
   })
 
   test('HP splits region start into hi/lo components', () => {
-    const block = new ContentBlock({
+    const block = makeContentBlock({
       refName: 'chr1',
       start: 150000000,
       end: 160000000,

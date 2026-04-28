@@ -8,6 +8,71 @@ export function makeDisplayedRegionKey(r: {
   return `${r.assemblyName}:${r.refName}:${r.start}:${r.end}${r.reversed ? ':rev' : ''}`
 }
 
+export interface BlockData {
+  key: string
+  offsetPx: number
+  widthPx: number
+  assemblyName?: string
+  refName?: string
+  start?: number
+  end?: number
+  reversed?: boolean
+  displayedRegionIndex?: number
+  isLeftEndOfDisplayedRegion?: boolean
+  isRightEndOfDisplayedRegion?: boolean
+  parentRegion?: unknown
+  variant?: string
+}
+
+export interface ContentBlock extends BlockData {
+  type: 'ContentBlock'
+  assemblyName: string
+  refName: string
+  start: number
+  end: number
+}
+
+export interface ElidedBlock extends BlockData {
+  type: 'ElidedBlock'
+  elidedBlockCount: number
+}
+
+export interface InterRegionPaddingBlock extends BlockData {
+  type: 'InterRegionPaddingBlock'
+}
+
+export type BaseBlock = ContentBlock | ElidedBlock | InterRegionPaddingBlock
+
+export function makeContentBlock(data: Omit<ContentBlock, 'type'>): ContentBlock {
+  return { ...data, type: 'ContentBlock' }
+}
+
+export function makeElidedBlock(
+  data: Omit<ElidedBlock, 'type' | 'elidedBlockCount'>,
+): ElidedBlock {
+  return { ...data, type: 'ElidedBlock', elidedBlockCount: 0 }
+}
+
+export function makeInterRegionPaddingBlock(
+  data: Omit<InterRegionPaddingBlock, 'type'>,
+): InterRegionPaddingBlock {
+  return { ...data, type: 'InterRegionPaddingBlock' }
+}
+
+export function blockToRegion(b: BaseBlock) {
+  return {
+    refName: b.refName,
+    start: b.start,
+    end: b.end,
+    assemblyName: b.assemblyName,
+    reversed: b.reversed,
+  }
+}
+
+function isElidedBlock(b: BaseBlock): b is ElidedBlock {
+  return b.type === 'ElidedBlock'
+}
+
 type Func<T> = (value: BaseBlock, index: number, array: BaseBlock[]) => T
 
 export class BlockSet {
@@ -23,13 +88,16 @@ export class BlockSet {
 
   push(block: BaseBlock) {
     if (isElidedBlock(block) && this.blocks.length > 0) {
-      const lastBlock = this.blocks.at(-1)
-      if (lastBlock && isElidedBlock(lastBlock)) {
-        lastBlock.push(block)
+      const last = this.blocks.at(-1)
+      if (last && isElidedBlock(last)) {
+        last.elidedBlockCount += 1
+        last.refName = ''
+        last.start = 0
+        last.end = 0
+        last.widthPx += block.widthPx
         return
       }
     }
-
     this.blocks.push(block)
   }
 
@@ -38,7 +106,7 @@ export class BlockSet {
   }
 
   getRegions() {
-    return this.blocks.map(block => block.toRegion())
+    return this.blocks.map(blockToRegion)
   }
 
   map<T, U = this>(func: Func<T>, thisarg?: U) {
@@ -60,7 +128,6 @@ export class BlockSet {
     for (let i = 0, l = this.blocks.length; i < l; i++) {
       total += this.blocks[i]!.widthPx
     }
-
     return total
   }
 
@@ -71,7 +138,6 @@ export class BlockSet {
         total += this.blocks[i]!.widthPx
       }
     }
-
     return total
   }
 
@@ -93,140 +159,4 @@ export class BlockSet {
     }
     return total
   }
-}
-
-export interface BlockData {
-  key: string
-  offsetPx: number
-  assemblyName?: string
-  refName?: string
-  start?: number
-  end?: number
-  widthPx: number
-  reversed?: boolean
-  displayedRegionIndex?: number
-  isLeftEndOfDisplayedRegion?: boolean
-  isRightEndOfDisplayedRegion?: boolean
-  parentRegion?: unknown
-  variant?: string
-}
-
-export class BaseBlock {
-  type = 'BaseBlock'
-
-  public displayedRegionIndex?: number
-
-  public reversed?: boolean
-
-  public refName?: string
-
-  public start?: number
-
-  public end?: number
-
-  public assemblyName?: string
-
-  public key: string
-
-  public offsetPx: number
-
-  public widthPx = 0
-
-  public variant?: string
-
-  public isLeftEndOfDisplayedRegion?: boolean
-
-  public isRightEndOfDisplayedRegion?: boolean
-
-  public parentRegion?: unknown
-
-  constructor(data: BlockData) {
-    this.assemblyName = data.assemblyName
-    this.refName = data.refName
-    this.start = data.start
-    this.end = data.end
-    this.key = data.key
-    this.offsetPx = data.offsetPx
-    this.widthPx = data.widthPx
-    this.reversed = data.reversed
-    this.displayedRegionIndex = data.displayedRegionIndex
-    this.isLeftEndOfDisplayedRegion = data.isLeftEndOfDisplayedRegion
-    this.isRightEndOfDisplayedRegion = data.isRightEndOfDisplayedRegion
-    this.parentRegion = data.parentRegion
-    this.variant = data.variant
-  }
-
-  toRegion() {
-    return {
-      refName: this.refName,
-      start: this.start,
-      end: this.end,
-      assemblyName: this.assemblyName,
-      reversed: this.reversed,
-    }
-  }
-}
-
-export class ContentBlock extends BaseBlock {
-  type = 'ContentBlock'
-
-  constructor(
-    data: BlockData & {
-      assemblyName: string
-      refName: string
-      start: number
-      end: number
-    },
-  ) {
-    super(data)
-  }
-
-  toRegion() {
-    return {
-      refName: this.refName as string,
-      start: this.start as number,
-      end: this.end as number,
-      assemblyName: this.assemblyName as string,
-      reversed: this.reversed,
-    }
-  }
-}
-
-// interface merging narrows the optional BaseBlock fields to required without
-// emitting any JavaScript (so Babel transforms are unaffected)
-export interface ContentBlock {
-  assemblyName: string
-  refName: string
-  start: number
-  end: number
-}
-
-/**
- * marker block representing one or more blocks that are
- * too small to be shown at the current zoom level
- */
-function isElidedBlock(b: BaseBlock): b is ElidedBlock {
-  return b.type === 'ElidedBlock'
-}
-
-export class ElidedBlock extends BaseBlock {
-  type = 'ElidedBlock'
-
-  public elidedBlockCount = 0
-
-  push(otherBlock: ElidedBlock) {
-    this.elidedBlockCount += 1
-    this.refName = ''
-    this.start = 0
-    this.end = 0
-    this.widthPx += otherBlock.widthPx
-  }
-}
-
-/**
- * marker block that sits between two different displayed regions
- * and provides a thick border between them
- */
-export class InterRegionPaddingBlock extends BaseBlock {
-  type = 'InterRegionPaddingBlock'
 }
