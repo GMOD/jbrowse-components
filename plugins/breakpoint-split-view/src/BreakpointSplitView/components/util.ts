@@ -111,7 +111,7 @@ export function getMatchedTranslocationFeatures(feats: Map<string, Feature>) {
   const ret: Feature[][] = []
 
   for (const f of feats.values()) {
-    if (f.get('ALT')[0] === '<TRA>') {
+    if (f.get('ALT')?.[0] === '<TRA>') {
       ret.push([f])
     }
   }

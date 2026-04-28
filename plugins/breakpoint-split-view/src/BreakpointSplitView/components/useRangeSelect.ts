@@ -18,7 +18,7 @@ export function useRangeSelect(
   model: BreakpointViewModel,
 ) {
   const [startX, setStartX] = useState<number>()
-  const [currentX, setCurrentX] = useState<number>()
+  const [currentX, setCurrentX] = useState(0)
 
   const [anchorPosition, setAnchorPosition] = useState<AnchorPosition>()
   const [guideX, setGuideX] = useState<number>()
@@ -27,7 +27,7 @@ export function useRangeSelect(
   const handleClose = useCallback(() => {
     setAnchorPosition(undefined)
     setStartX(undefined)
-    setCurrentX(undefined)
+    setCurrentX(0)
   }, [])
 
   useEffect(() => {
@@ -126,7 +126,7 @@ export function useRangeSelect(
       handleMenuItemClick,
     }
   }
-  const right = anchorPosition ? anchorPosition.offsetX : (currentX ?? 0)
+  const right = anchorPosition ? anchorPosition.offsetX : currentX
   const left = Math.min(right, startX)
   const width = Math.abs(right - startX)
   const leftBpOffset = model.views.map(view => view.pxToBp(left))

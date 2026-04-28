@@ -1,4 +1,8 @@
-import { classifyVariantFeatures, getMatchedBreakendFeatures } from './util.ts'
+import {
+  classifyVariantFeatures,
+  getMatchedBreakendFeatures,
+  getMatchedTranslocationFeatures,
+} from './util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -70,6 +74,40 @@ describe('getMatchedBreakendFeatures', () => {
     const result = getMatchedBreakendFeatures(mapOf(A, B, E, F))
     // only the real A-B pair should match; E and F land in different buckets
     expect(result).toHaveLength(1)
+  })
+})
+
+describe('getMatchedTranslocationFeatures', () => {
+  function fakeTra(id: string, alt: string[] | undefined) {
+    return {
+      id: () => id,
+      get: (k: string) => (k === 'ALT' ? alt : undefined),
+    } as unknown as Feature
+  }
+
+  test('includes features with <TRA> ALT', () => {
+    const t = fakeTra('a', ['<TRA>'])
+    const result = getMatchedTranslocationFeatures(mapOf(t))
+    expect(result).toHaveLength(1)
+    expect(result[0]).toContain(t)
+  })
+
+  test('excludes features with non-TRA ALT', () => {
+    const t = fakeTra('a', ['<DEL>'])
+    expect(getMatchedTranslocationFeatures(mapOf(t))).toHaveLength(0)
+  })
+
+  test('does not throw when ALT is undefined', () => {
+    const t = fakeTra('a', undefined)
+    expect(() => getMatchedTranslocationFeatures(mapOf(t))).not.toThrow()
+    expect(getMatchedTranslocationFeatures(mapOf(t))).toHaveLength(0)
+  })
+
+  test('returns one group per TRA feature', () => {
+    const a = fakeTra('a', ['<TRA>'])
+    const b = fakeTra('b', ['<TRA>'])
+    const result = getMatchedTranslocationFeatures(mapOf(a, b))
+    expect(result).toHaveLength(2)
   })
 })
 

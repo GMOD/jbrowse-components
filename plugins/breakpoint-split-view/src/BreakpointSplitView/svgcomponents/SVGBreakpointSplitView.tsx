@@ -49,7 +49,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
           data: await Promise.all(
             view.tracks.map(async track => {
               const d = track.displays[0]
-              await when(() => (d.ready !== undefined ? d.ready : true))
+              await when(() => d.ready ?? true)
               return { track, result: await d.renderSvg({ ...opts, theme }) }
             }),
           ),
@@ -61,11 +61,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const textOffset = trackLabels === 'offset' ? textHeight : 0
   const trackOffsets = views.map((view, idx) =>
-    getTrackOffsets(
-      view,
-      textOffset,
-      fontSize + (idx > 0 ? heights[idx - 1]! : 0) + offset,
-    ),
+    getTrackOffsets(view, textOffset, fontSize + sum(heights.slice(0, idx)) + offset),
   )
   const w = width + trackLabelOffset
   const t = createJBrowseTheme(theme)
@@ -86,8 +82,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
         >
           <SVGBackground width={w} height={totalHeightSvg} shift={shift} />
           {displayResults.map(({ view, data }, idx) => {
-            const yOffset =
-              fontSize + heights.slice(0, idx).reduce((a, b) => a + b, 0)
+            const yOffset = fontSize + sum(heights.slice(0, idx))
             return (
               <g key={view.id} transform={`translate(${shift} ${yOffset})`}>
                 <g transform={`translate(${trackLabelOffset})`}>

@@ -338,10 +338,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         }
 
         function getX(level: number, refName: string, coord: number) {
-          return (
-            (views[level]!.bpToPx({ refName, coord })?.offsetPx ?? 0) -
-            viewOffsetPxs[level]
-          )
+          const offsetPx = views[level]!.bpToPx({ refName, coord })?.offsetPx
+          return offsetPx !== undefined
+            ? offsetPx - viewOffsetPxs[level]
+            : undefined
         }
 
         return { tracks, yOffsets, heights, getX, getY }

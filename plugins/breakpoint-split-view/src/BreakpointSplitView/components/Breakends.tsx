@@ -57,8 +57,8 @@ const Breakends = observer(function Breakends({
             f1.get('refName'),
             f2.get('refName'),
           )
-          const x1 = getX(level1, f1ref, c1[LEFT])
-          const x2 = getX(level2, f2ref, c2[LEFT])
+          const x1 = getX(level1, f1ref, c1[LEFT]) ?? 0
+          const x2 = getX(level2, f2ref, c2[LEFT]) ?? 0
           const reversed1 = views[level1]!.pxToBp(x1).reversed
           const reversed2 = views[level2]!.pxToBp(x2).reversed
 

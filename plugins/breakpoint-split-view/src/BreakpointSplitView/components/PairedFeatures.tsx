@@ -49,8 +49,8 @@ const PairedFeatures = observer(function PairedFeatures({
             f1.get('refName'),
             f2.get('refName'),
           )
-          const x1 = getX(level1, f1ref, c1[LEFT])
-          const x2 = getX(level2, f2ref, c2[LEFT])
+          const x1 = getX(level1, f1ref, c1[LEFT]) ?? 0
+          const x2 = getX(level2, f2ref, c2[LEFT]) ?? 0
           const y1 = getY(level1, c1)
           const y2 = getY(level2, c2)
           const path = buildSimplePath(x1, y1, x2, y2)

@@ -55,11 +55,11 @@ const Translocations = observer(function Translocations({
           const [myDirection, mateDirection] = res ?? ['.', '.']
 
           const x2 = getX(level2, chr2, end2)
-          if (!x2) {
+          if (x2 == null) {
             return []
           }
           const c2: LayoutRecord = [x2, 0, x2 + 1, 0]
-          const x1 = getX(level1, f1.get('refName'), c1[LEFT])
+          const x1 = getX(level1, f1.get('refName'), c1[LEFT]) ?? 0
           const reversed1 = views[level1]!.pxToBp(x1).reversed
           const reversed2 = views[level2]!.pxToBp(x2).reversed
 

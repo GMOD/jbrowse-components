@@ -62,7 +62,9 @@ export function getCanonicalRefs(
   const f1ref = assembly.getCanonicalRefName(f1RefName)
   const f2ref = assembly.getCanonicalRefName(f2RefName)
   if (!f1ref || !f2ref) {
-    throw new Error(`unable to find ref for ${f1ref || f2ref}`)
+    throw new Error(
+      `unable to find canonical ref for ${!f1ref ? f1RefName : f2RefName}`,
+    )
   }
   return { f1ref, f2ref }
 }
