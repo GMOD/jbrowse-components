@@ -6,7 +6,6 @@ import {
   ElidedBlock,
   InterRegionPaddingBlock,
 } from './blockTypes.ts'
-import { assembleLocStringFast } from './index.ts'
 import { intersection2 } from './range.ts'
 
 import type { Base1DViewModel } from './calculateStaticBlocks.ts'
@@ -67,12 +66,11 @@ export default function calculateDynamicBlocks(
       end: regionEnd,
       reversed,
     } = region!
-    const displayedRegionRightPx =
-      displayedRegionLeftPx + (regionEnd - regionStart) * invBpPerPx
-
     const regionWidthPx = (regionEnd - regionStart) * invBpPerPx
+    const displayedRegionRightPx = displayedRegionLeftPx + regionWidthPx
     const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
-    let paddingAddedInLoop = false
+    const rightEndVisible =
+      windowRightPx >= displayedRegionRightPx && windowLeftPx < displayedRegionRightPx
 
     const [leftPx, rightPx] = intersection2(
       windowLeftPx,
@@ -108,71 +106,81 @@ export default function calculateDynamicBlocks(
           displayedRegionLeftPx + (start - regionStart) * invBpPerPx
       }
       const widthPx = (end - start) * invBpPerPx
-      const blockData = {
-        assemblyName,
-        refName,
-        start,
-        end,
-        reversed,
-        offsetPx: blockOffsetPx,
-        parentRegion,
-        displayedRegionIndex,
-        widthPx,
-        isLeftEndOfDisplayedRegion,
-        isRightEndOfDisplayedRegion,
-        key: `${assembleLocStringFast({
-          assemblyName,
-          refName,
-          start,
-          end,
-          reversed,
-        })}-${displayedRegionIndex}${reversed ? '-reversed' : ''}`,
-      }
+      const key = `${assemblyName}:${refName}:${start}:${end}:${displayedRegionIndex}${reversed ? ':rev' : ''}`
 
       if (padding && blocks.length === 0 && isLeftEndOfDisplayedRegion) {
         blocks.push(
           new InterRegionPaddingBlock({
-            key: `${blockData.key}-beforeFirstRegion`,
+            key: `${key}-beforeFirstRegion`,
             widthPx: -offsetPx,
-            offsetPx: blockData.offsetPx + offsetPx,
+            offsetPx: blockOffsetPx + offsetPx,
             variant: 'boundary',
           }),
         )
       }
 
       if (elision && regionWidthPx < minimumBlockWidth) {
-        blocks.push(new ElidedBlock(blockData))
+        blocks.push(
+          new ElidedBlock({
+            assemblyName,
+            refName,
+            start,
+            end,
+            reversed,
+            offsetPx: blockOffsetPx,
+            parentRegion,
+            displayedRegionIndex,
+            widthPx,
+            isLeftEndOfDisplayedRegion,
+            isRightEndOfDisplayedRegion,
+            key,
+          }),
+        )
       } else {
-        blocks.push(new ContentBlock(blockData))
+        blocks.push(
+          new ContentBlock({
+            assemblyName,
+            refName,
+            start,
+            end,
+            reversed,
+            offsetPx: blockOffsetPx,
+            parentRegion,
+            displayedRegionIndex,
+            widthPx,
+            isLeftEndOfDisplayedRegion,
+            isRightEndOfDisplayedRegion,
+            key,
+          }),
+        )
       }
 
       if (padding) {
         if (
           regionWidthPx >= minimumBlockWidth &&
-          blockData.isRightEndOfDisplayedRegion &&
+          isRightEndOfDisplayedRegion &&
           displayedRegionIndex < displayedRegions.length - 1
         ) {
           blocks.push(
             new InterRegionPaddingBlock({
-              key: `${blockData.key}-rightpad`,
+              key: `${key}-rightpad`,
               widthPx: interRegionPaddingWidth,
-              offsetPx: blockData.offsetPx + blockData.widthPx,
+              offsetPx: blockOffsetPx + widthPx,
             }),
           )
           displayedRegionLeftPx += interRegionPaddingWidth
-          paddingAddedInLoop = true
         }
 
         if (
           displayedRegionIndex === displayedRegions.length - 1 &&
-          blockData.isRightEndOfDisplayedRegion
+          isRightEndOfDisplayedRegion
         ) {
-          blockOffsetPx = blockData.offsetPx + blockData.widthPx
+          const afterOffsetPx = blockOffsetPx + widthPx
           blocks.push(
             new InterRegionPaddingBlock({
-              key: `${blockData.key}-afterLastRegion`,
-              widthPx: width - blockOffsetPx + offsetPx,
-              offsetPx: blockOffsetPx,
+              key: `${key}-afterLastRegion`,
+              widthPx: width - afterOffsetPx + offsetPx,
+              offsetPx: afterOffsetPx,
               variant: 'boundary',
             }),
           )
@@ -181,13 +189,13 @@ export default function calculateDynamicBlocks(
     }
     if (
       padding &&
-      !paddingAddedInLoop &&
+      !rightEndVisible &&
       regionWidthPx >= minimumBlockWidth &&
       displayedRegionIndex < displayedRegions.length - 1
     ) {
       displayedRegionLeftPx += interRegionPaddingWidth
     }
-    displayedRegionLeftPx += (regionEnd - regionStart) * invBpPerPx
+    displayedRegionLeftPx += regionWidthPx
   }
   return blocks
 }

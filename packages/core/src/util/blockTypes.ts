@@ -170,10 +170,25 @@ export class BaseBlock {
 export class ContentBlock extends BaseBlock {
   type = 'ContentBlock'
 
-  assemblyName!: string
-  refName!: string
-  start!: number
-  end!: number
+  constructor(
+    data: BlockData & {
+      assemblyName: string
+      refName: string
+      start: number
+      end: number
+    },
+  ) {
+    super(data)
+  }
+}
+
+// interface merging narrows the optional BaseBlock fields to required without
+// emitting any JavaScript (so Babel transforms are unaffected)
+export interface ContentBlock {
+  assemblyName: string
+  refName: string
+  start: number
+  end: number
 }
 
 /**
