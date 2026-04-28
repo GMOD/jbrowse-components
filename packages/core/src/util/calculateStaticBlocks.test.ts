@@ -55,7 +55,7 @@ describe('block calculation', () => {
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
     })
-    expect(blockSet.getBlocks()).toEqual([])
+    expect(blockSet.blocks).toEqual([])
   })
 
   it('can calculate some blocks (should be empty because offscreen to the left)', () => {
@@ -70,7 +70,7 @@ describe('block calculation', () => {
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
     })
-    expect(blockSet.getBlocks()).toEqual([])
+    expect(blockSet.blocks).toEqual([])
   })
 
   it('can calculate some blocks 5', () => {

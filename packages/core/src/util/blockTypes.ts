@@ -59,7 +59,7 @@ export function makeInterRegionPaddingBlock(
   return { ...data, type: 'InterRegionPaddingBlock' }
 }
 
-export function blockToRegion(b: BaseBlock) {
+export function blockToRegion(b: ContentBlock) {
   return {
     refName: b.refName,
     start: b.start,
@@ -67,10 +67,6 @@ export function blockToRegion(b: BaseBlock) {
     assemblyName: b.assemblyName,
     reversed: b.reversed,
   }
-}
-
-function isElidedBlock(b: BaseBlock): b is ElidedBlock {
-  return b.type === 'ElidedBlock'
 }
 
 type Func<T> = (value: BaseBlock, index: number, array: BaseBlock[]) => T
@@ -82,31 +78,17 @@ export class BlockSet {
     this.blocks = blocks
   }
 
-  *[Symbol.iterator]() {
-    yield* this.blocks
-  }
-
   push(block: BaseBlock) {
-    if (isElidedBlock(block) && this.blocks.length > 0) {
-      const last = this.blocks.at(-1)
-      if (last && isElidedBlock(last)) {
-        last.elidedBlockCount += 1
-        last.refName = ''
-        last.start = 0
-        last.end = 0
-        last.widthPx += block.widthPx
-        return
-      }
+    const last = this.blocks.at(-1)
+    if (block.type === 'ElidedBlock' && last?.type === 'ElidedBlock') {
+      last.elidedBlockCount += 1
+      last.refName = ''
+      last.start = 0
+      last.end = 0
+      last.widthPx += block.widthPx
+    } else {
+      this.blocks.push(block)
     }
-    this.blocks.push(block)
-  }
-
-  getBlocks() {
-    return this.blocks
-  }
-
-  getRegions() {
-    return this.blocks.map(blockToRegion)
   }
 
   map<T, U = this>(func: Func<T>, thisarg?: U) {

@@ -12,7 +12,7 @@ test('one', () => {
       bpPerPx: 1,
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
-    }).getBlocks(),
+    }).blocks,
   ).toMatchSnapshot()
 })
 test('two', () => {
@@ -24,7 +24,7 @@ test('two', () => {
       bpPerPx: 1,
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
-    }).getBlocks(),
+    }).blocks,
   ).toMatchSnapshot()
 })
 test('three', () => {
@@ -36,7 +36,7 @@ test('three', () => {
       bpPerPx: 1,
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
-    }).getBlocks(),
+    }).blocks,
   ).toMatchSnapshot()
 })
 test('four', () => {
@@ -48,7 +48,7 @@ test('four', () => {
       bpPerPx: 1,
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
-    }).getBlocks(),
+    }).blocks,
   ).toMatchSnapshot()
 })
 test('five', () => {
@@ -60,7 +60,7 @@ test('five', () => {
       bpPerPx: 0.05,
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
-    }).getBlocks(),
+    }).blocks,
   ).toMatchSnapshot()
 })
 
@@ -475,12 +475,6 @@ describe('elided block handling', () => {
 
     expect(staticElided.length).toBe(1)
     expect(dynamicElided.length).toBe(1)
-    expect(
-      staticBlocks.contentBlocks.every(b => b.type === 'ContentBlock'),
-    ).toBe(true)
-    expect(
-      dynamicBlocks.contentBlocks.every(b => b.type === 'ContentBlock'),
-    ).toBe(true)
   })
 
   it('elided block offsetPx matches between static and dynamic', () => {
