@@ -33,12 +33,12 @@ function doSubmit({
   model.setError(undefined)
   transaction(() => {
     if (isSessionWithAddTracks(session)) {
-      for (const [idx, f] of toJS(importFormSyntenyTrackSelections).entries()) {
+      for (const f of toJS(importFormSyntenyTrackSelections)) {
         if (f.type === 'userOpened' && f.value !== undefined) {
           session.addTrackConf(f.value)
           model.toggleTrack(f.value.trackId)
         } else if (f.type === 'preConfigured') {
-          model.showTrack(f.value, idx)
+          model.showTrack(f.value)
         }
       }
     }
@@ -55,11 +55,11 @@ const DotplotImportForm = observer(function DotplotImportForm({
   const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames } = session
-  const [assembly2, setAssembly2] = useState(assemblyNames[0] || '')
-  const [assembly1, setAssembly1] = useState(assemblyNames[0] || '')
+  const [assembly2, setAssembly2] = useState(assemblyNames[0] ?? '')
+  const [assembly1, setAssembly1] = useState(assemblyNames[0] ?? '')
   const [error, setError] = useState<unknown>()
 
-  const displayError = error || model.error
+  const displayError = error ?? model.error
   return (
     <Container className={classes.importFormContainer}>
       {displayError ? <ErrorBanner error={displayError} /> : null}

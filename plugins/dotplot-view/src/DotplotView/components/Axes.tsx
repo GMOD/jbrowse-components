@@ -57,20 +57,14 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
     staticBlocks: hview.staticBlocks,
   }
 
-  const ticks = hticks
-    .map(
-      tick =>
-        [
-          tick,
-          bpToPx({
-            refName: tick.refName,
-            coord: tick.base,
-            self: hviewSnap,
-          })?.offsetPx,
-        ] as const,
-    )
-    .filter(f => f[1] !== undefined)
-    .map(f => [f[0], f[1]! - offsetPx] as const)
+  const ticks = hticks.flatMap(tick => {
+    const px = bpToPx({
+      refName: tick.refName,
+      coord: tick.base,
+      self: hviewSnap,
+    })?.offsetPx
+    return px !== undefined ? [[tick, px - offsetPx] as const] : []
+  })
 
   return (
     <>
@@ -166,20 +160,14 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
     width,
     staticBlocks: vview.staticBlocks,
   }
-  const ticks = vticks
-    .map(
-      tick =>
-        [
-          tick,
-          bpToPx({
-            refName: tick.refName,
-            coord: tick.base,
-            self: vviewSnap,
-          })?.offsetPx,
-        ] as const,
-    )
-    .filter(f => f[1] !== undefined)
-    .map(f => [f[0], f[1]! - offsetPx] as const)
+  const ticks = vticks.flatMap(tick => {
+    const px = bpToPx({
+      refName: tick.refName,
+      coord: tick.base,
+      self: vviewSnap,
+    })?.offsetPx
+    return px !== undefined ? [[tick, px - offsetPx] as const] : []
+  })
 
   return (
     <>

@@ -12,7 +12,7 @@ const DotplotWarnings = observer(function DotplotWarnings({
 }: {
   model: DotplotViewModel
 }) {
-  const trackWarnings = model.tracks.filter(t => t.displays[0].warnings?.length)
+  const trackWarnings = model.tracks.filter(t => t.displays[0]?.warnings?.length)
   const [shown, setShown] = useState(false)
   const [hide, setHide] = useState(false)
   return trackWarnings.length && !hide ? (

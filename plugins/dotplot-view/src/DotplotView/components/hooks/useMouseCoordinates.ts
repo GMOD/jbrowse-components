@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import type { Coord } from '../../types.ts'
 
@@ -11,8 +11,6 @@ interface Rect {
 
 const blank: Rect = { left: 0, top: 0, width: 0, height: 0 }
 
-// produces offsetX/offsetY coordinates from a clientX and an element's
-// getBoundingClientRect
 function getOffset(coord: Coord, rect: Rect) {
   return coord && ([coord[0] - rect.left, coord[1] - rect.top] as Coord)
 }
@@ -22,16 +20,10 @@ export function useMouseCoordinates() {
   const [mousedownClient, setMouseDownClient] = useState<Coord>()
   const [mouseupClient, setMouseUpClient] = useState<Coord>()
   const [mouseOvered, setMouseOvered] = useState(false)
-  const [rect, setRect] = useState(blank)
   const ref = useRef<HTMLDivElement>(null)
   const root = useRef<HTMLDivElement>(null)
 
-  useLayoutEffect(() => {
-    if (ref.current) {
-      setRect(ref.current.getBoundingClientRect())
-    }
-  }, [mousecurrClient, mousedownClient, mouseupClient])
-
+  const rect = ref.current?.getBoundingClientRect() ?? blank
   const rootRect = rect
   const mousedown = getOffset(mousedownClient, rect)
   const mousecurr = getOffset(mousecurrClient, rect)

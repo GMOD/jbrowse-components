@@ -12,6 +12,7 @@ import { autorun } from 'mobx'
 import { createDotplotColorFunction } from './dotplotWebGLColors.ts'
 import { buildLineSegments } from './drawDotplotWebGL.ts'
 
+import type { DotplotGetFeaturesAndPositionsArgs } from './DotplotGetFeaturesAndPositions.ts'
 import type { DotplotDisplayModel } from './stateModelFactory.tsx'
 import type { DotplotRpcData } from './types.ts'
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
@@ -71,7 +72,7 @@ export function doAfterAttach(
               hViewSnap,
               vViewSnap,
               stopToken: thisStopToken,
-            },
+            } satisfies DotplotGetFeaturesAndPositionsArgs,
           )
           if (thisStopToken !== currentStopToken || !isAlive(self)) {
             return

@@ -37,7 +37,7 @@ interface AlignmentData {
   strand: number
 }
 
-interface DiagonalizationResult {
+export interface DiagonalizationResult {
   newRegions: Region[]
   stats: {
     totalAlignments: number

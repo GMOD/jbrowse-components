@@ -1,3 +1,5 @@
+import { unpackColorToCSS } from './dotplotWebGLColors.ts'
+
 import type {
   DotplotBackend,
   DotplotGeometryData,
@@ -63,13 +65,7 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
         const sx2 = geo.x2s[i]! * scaleX - offsetX
         const sy2 = this.height - (geo.y2s[i]! * scaleY - offsetY)
 
-        const packed = geo.colors[i]!
-        const r = packed & 0xff
-        const g = (packed >>> 8) & 0xff
-        const b = (packed >>> 16) & 0xff
-        const a = (packed >>> 24) / 255
-
-        ctx.strokeStyle = `rgba(${r},${g},${b},${a})`
+        ctx.strokeStyle = unpackColorToCSS(geo.colors[i]!)
         ctx.beginPath()
         ctx.moveTo(sx1, sy1)
         ctx.lineTo(sx2, sy2)

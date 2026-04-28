@@ -13,6 +13,7 @@ import {
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
+import type { DiagonalizeDotplotArgs } from '../../DiagonalizeDotplotRpc.ts'
 import type { DotplotViewModel } from '../model.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -83,7 +84,7 @@ async function runDiagonalization({
         setProgress(100)
       }
     },
-  })
+  } satisfies DiagonalizeDotplotArgs)
 
   setMessage('Applying new layout...')
   setProgress(95)

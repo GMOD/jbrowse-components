@@ -183,9 +183,9 @@ export async function executeDotplotFeaturesAndPositions({
     const rawMateRefName = mate.refName
     const a1 = getAssembly(f.get('assemblyName') as string | undefined)
     const a2 = getAssembly(mate.assemblyName)
-    const refName = a1?.getCanonicalRefName(rawRefName) || rawRefName
+    const refName = a1?.getCanonicalRefName(rawRefName) ?? rawRefName
     const mateRefName =
-      a2?.getCanonicalRefName(rawMateRefName) || rawMateRefName
+      a2?.getCanonicalRefName(rawMateRefName) ?? rawMateRefName
 
     if (!hIndex.entries.has(refName) || !vIndex.entries.has(mateRefName)) {
       continue

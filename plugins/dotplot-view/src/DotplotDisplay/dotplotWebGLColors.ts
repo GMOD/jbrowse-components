@@ -27,6 +27,14 @@ function hslColor(hue: number, alpha: number) {
 
 export type DotplotColorFn = (data: DotplotRpcData, index: number) => number
 
+export function unpackColorToCSS(packed: number) {
+  const r = packed & 0xff
+  const g = (packed >>> 8) & 0xff
+  const b = (packed >>> 16) & 0xff
+  const a = (packed >>> 24) / 255
+  return `rgba(${r},${g},${b},${a})`
+}
+
 function hslColorFn(values: Float32Array, hueScale: number, alpha: number) {
   const defaultColor = packColor(255, 0, 0, alpha)
   return (_data: DotplotRpcData, index: number) => {
