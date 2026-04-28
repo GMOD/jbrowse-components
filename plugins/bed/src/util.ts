@@ -185,6 +185,7 @@ export function featureData2({
     ...rest
   } = data
 
+  // @ts-expect-error
   const score = scoreColumn ? +data[scoreColumn] : score2 ? +score2 : undefined
   const strand = parseStrand(strand2)
 
@@ -193,10 +194,10 @@ export function featureData2({
         start,
         uniqueId,
         refName,
-        chromStarts: rest.chromStarts,
-        blockCount: rest.blockCount,
-        blockSizes: rest.blockSizes,
-        blockStarts: rest.blockStarts,
+        chromStarts: rest.chromStarts as number[],
+        blockCount: rest.blockCount as number,
+        blockSizes: rest.blockSizes as number[],
+        blockStarts: rest.blockStarts as number[],
       })
     : undefined
 
@@ -208,9 +209,7 @@ export function featureData2({
       start,
       end,
     })
-  }
-
-  if (isRepeatMaskerDescriptionField(rest.description)) {
+  } else if (isRepeatMaskerDescriptionField(rest.description)) {
     const {
       chromStarts: _4,
       blockSizes: _5,
@@ -232,9 +231,7 @@ export function featureData2({
       refName,
       subfeatures,
     })
-  }
-
-  if (
+  } else if (
     !disableGeneHeuristic &&
     subfeatures &&
     isUcscTranscript({
@@ -255,17 +252,17 @@ export function featureData2({
       thickStart: rest.thickStart as number,
       thickEnd: rest.thickEnd as number,
     })
-  }
-
-  return {
-    ...rest,
-    uniqueId,
-    score,
-    start,
-    end,
-    strand,
-    refName,
-    subfeatures,
+  } else {
+    return {
+      ...rest,
+      uniqueId,
+      score,
+      start,
+      end,
+      strand,
+      refName,
+      subfeatures,
+    }
   }
 }
 

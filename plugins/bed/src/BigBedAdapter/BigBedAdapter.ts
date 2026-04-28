@@ -171,8 +171,9 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
 
         const aggr = data[aggregateField]
         const aggrIsNotNone = aggr && aggr !== 'none'
-        if (aggrIsNotNone && !parentAggregation[aggr]) {
-          parentAggregation[aggr] = []
+        const aggrKey = typeof aggr === 'string' ? aggr : `${aggr}`
+        if (aggrIsNotNone && !parentAggregation[aggrKey]) {
+          parentAggregation[aggrKey] = []
         }
         const {
           uniqueId,
@@ -197,14 +198,14 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           scoreColumn,
           splitLine,
           parser,
-          uniqueId,
+          uniqueId: uniqueId as string,
           start: feat.start,
           end: feat.end,
           refName: query.refName,
           disableGeneHeuristic,
         })
         if (aggrIsNotNone) {
-          parentAggregation[aggr]!.push(f)
+          parentAggregation[aggrKey]!.push(f)
           parentAggregationFlat.push(f)
         } else {
           if (

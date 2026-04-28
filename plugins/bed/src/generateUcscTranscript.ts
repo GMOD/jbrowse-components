@@ -5,11 +5,15 @@ export function isUcscTranscript({
   blockCount,
   strand,
 }: {
-  thickStart?: number
-  blockCount?: number
+  thickStart?: unknown
+  blockCount?: unknown
   strand?: number
 }) {
-  return thickStart && blockCount && strand !== 0
+  return (
+    typeof thickStart === 'number' &&
+    typeof blockCount === 'number' &&
+    strand !== 0
+  )
 }
 
 /**

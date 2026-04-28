@@ -1,8 +1,12 @@
-export function isRepeatMaskerDescriptionField(desc?: string): desc is string {
-  const ret = desc?.trim().split(' ')
-  return [0, 1, 2, 3, 5, 6].every(s =>
-    ret?.[s] !== undefined ? !Number.isNaN(+ret[s]) : false,
-  )
+export function isRepeatMaskerDescriptionField(desc?: unknown): desc is string {
+  if (typeof desc !== 'string') {
+    return false
+  } else {
+    const ret = desc?.trim().split(' ')
+    return [0, 1, 2, 3, 5, 6].every(s =>
+      ret?.[s] !== undefined ? !Number.isNaN(+ret[s]) : false,
+    )
+  }
 }
 
 function makeRepeatTrackDescription(description?: string) {
