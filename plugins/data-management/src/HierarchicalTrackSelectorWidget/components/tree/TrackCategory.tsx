@@ -57,11 +57,6 @@ function getAllSubcategories(node: TreeCategoryNode): string[] {
   return categoryIds
 }
 
-function getTrackIdsFromCategory(node: TreeCategoryNode): string[] {
-  return node.children
-    .filter(entry => entry.type === 'track')
-    .map(entry => entry.trackId)
-}
 
 function openFolderDialog(
   model: HierarchicalTrackSelectorModel,
@@ -234,16 +229,20 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
               {
                 label: 'Show all',
                 onClick: () => {
-                  for (const trackId of getTrackIdsFromCategory(item)) {
-                    model.view.showTrack(trackId)
+                  for (const child of item.children) {
+                    if (child.type === 'track') {
+                      model.view.showTrack(child.trackId)
+                    }
                   }
                 },
               },
               {
                 label: 'Hide all',
                 onClick: () => {
-                  for (const trackId of getTrackIdsFromCategory(item)) {
-                    model.view.hideTrack(trackId)
+                  for (const child of item.children) {
+                    if (child.type === 'track') {
+                      model.view.hideTrack(child.trackId)
+                    }
                   }
                 },
               },

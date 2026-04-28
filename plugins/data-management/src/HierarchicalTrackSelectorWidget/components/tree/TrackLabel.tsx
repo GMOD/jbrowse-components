@@ -8,7 +8,6 @@ import TrackSelectorTrackMenu from './TrackSelectorTrackMenu.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { TreeTrackNode } from '../../types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()(theme => ({
   compactCheckbox: {
@@ -25,60 +24,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function TrackCheckbox({
-  checked,
-  onChange,
-  id,
-  disabled,
-  className,
-}: {
-  checked: boolean
-  onChange: () => void
-  id: string
-  disabled: boolean
-  className: string
-}) {
-  return (
-    <Checkbox
-      className={className}
-      checked={checked}
-      onChange={onChange}
-      disabled={disabled}
-      slotProps={{
-        input: {
-          // @ts-expect-error
-          'data-testid': `htsTrackEntry-${id}`,
-        },
-      }}
-    />
-  )
-}
-
-const TrackLabelText = observer(function TrackLabelText({
-  model,
-  conf,
-  id,
-  name,
-  selectedClass,
-}: {
-  model: HierarchicalTrackSelectorModel
-  conf: AnyConfigurationModel
-  id: string
-  name: string
-  selectedClass: string
-}) {
-  const selected = model.selectionSet.has(conf)
-  return (
-    <div
-      data-testid={`htsTrackLabel-${id}`}
-      className={selected ? selectedClass : undefined}
-    >
-      <SanitizedHTML html={name} />
-    </div>
-  )
-})
-
-function TrackLabel({
+const TrackLabel = observer(function TrackLabel({
   model,
   item,
   checked,
@@ -89,6 +35,7 @@ function TrackLabel({
 }) {
   const { classes } = useStyles()
   const { id, name, conf, trackId, description } = item
+  const selected = model.selectionSet.has(conf)
 
   return (
     <>
@@ -107,29 +54,33 @@ function TrackLabel({
           }
         }}
         control={
-          <TrackCheckbox
+          <Checkbox
+            className={classes.compactCheckbox}
             checked={checked}
             onChange={() => {
               model.view.toggleTrack(trackId)
             }}
-            id={id}
             disabled={isUnsupported(name)}
-            className={classes.compactCheckbox}
+            slotProps={{
+              input: {
+                // @ts-expect-error
+                'data-testid': `htsTrackEntry-${id}`,
+              },
+            }}
           />
         }
         label={
-          <TrackLabelText
-            model={model}
-            conf={conf}
-            id={id}
-            name={name}
-            selectedClass={classes.selected}
-          />
+          <div
+            data-testid={`htsTrackLabel-${id}`}
+            className={selected ? classes.selected : undefined}
+          >
+            <SanitizedHTML html={name} />
+          </div>
         }
       />
       <TrackSelectorTrackMenu model={model} id={id} conf={conf} />
     </>
   )
-}
+})
 
 export default TrackLabel
