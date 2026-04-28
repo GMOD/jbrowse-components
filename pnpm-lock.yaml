@@ -360,8 +360,8 @@ importers:
         specifier: ^3.0.4
         version: 3.0.4
       '@gmod/bgzf-filehandle':
-        specifier: ^6.0.18
-        version: 6.0.18
+        specifier: ^6.0.19
+        version: 6.0.19
       '@gmod/http-range-fetcher':
         specifier: ^5.0.7
         version: 5.0.7
@@ -513,8 +513,8 @@ importers:
   packages/sv-core:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.0
-        version: 7.0.0
+        specifier: ^7.0.2
+        version: 7.0.2
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
@@ -596,8 +596,8 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^7.1.20
-        version: 7.1.20(buffer@6.0.3)
+        specifier: ^7.1.21
+        version: 7.1.21(buffer@6.0.3)
       '@gmod/cram':
         specifier: ^8.0.5
         version: 8.0.5(buffer@6.0.3)
@@ -653,8 +653,8 @@ importers:
   plugins/arc:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.0
-        version: 7.0.0
+        specifier: ^7.0.2
+        version: 7.0.2
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -726,8 +726,8 @@ importers:
         specifier: ^2.1.10
         version: 2.1.10
       '@gmod/tabix':
-        specifier: ^3.3.1
-        version: 3.3.1
+        specifier: ^3.3.3
+        version: 3.3.3
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -744,8 +744,8 @@ importers:
   plugins/breakpoint-split-view:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.0
-        version: 7.0.0
+        specifier: ^7.0.2
+        version: 7.0.2
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -846,8 +846,8 @@ importers:
   plugins/comparative-adapters:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.3.1
-        version: 3.3.1
+        specifier: ^3.3.3
+        version: 3.3.3
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -915,8 +915,8 @@ importers:
   plugins/data-management:
     dependencies:
       '@gmod/ucsc-hub':
-        specifier: ^2.0.3
-        version: 2.0.3
+        specifier: ^2.0.4
+        version: 2.0.4
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1033,8 +1033,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/tabix':
-        specifier: ^3.3.1
-        version: 3.3.1
+        specifier: ^3.3.3
+        version: 3.3.3
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1102,8 +1102,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/bgzf-filehandle':
-        specifier: ^6.0.18
-        version: 6.0.18
+        specifier: ^6.0.19
+        version: 6.0.19
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1192,8 +1192,8 @@ importers:
   plugins/legacy-jbrowse:
     dependencies:
       '@gmod/nclist':
-        specifier: ^3.0.6
-        version: 3.0.6
+        specifier: ^3.0.7
+        version: 3.0.7
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1375,11 +1375,11 @@ importers:
         specifier: ^3.0.4
         version: 3.0.4
       '@gmod/indexedfasta':
-        specifier: ^5.0.4
-        version: 5.0.4
+        specifier: ^5.0.5
+        version: 5.0.5
       '@gmod/twobit':
-        specifier: ^6.0.3
-        version: 6.0.3
+        specifier: ^6.0.5
+        version: 6.0.5
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1408,8 +1408,8 @@ importers:
   plugins/spreadsheet-view:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.0
-        version: 7.0.0
+        specifier: ^7.0.2
+        version: 7.0.2
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1498,8 +1498,8 @@ importers:
   plugins/trix:
     dependencies:
       '@gmod/trix':
-        specifier: ^3.0.10
-        version: 3.0.10
+        specifier: ^3.0.12
+        version: 3.0.12
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1513,14 +1513,14 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/hclust':
-        specifier: ^3.0.4
-        version: 3.0.4
+        specifier: ^3.0.6
+        version: 3.0.6
       '@gmod/tabix':
-        specifier: ^3.3.1
-        version: 3.3.1
+        specifier: ^3.3.3
+        version: 3.3.3
       '@gmod/vcf':
-        specifier: ^7.0.0
-        version: 7.0.0
+        specifier: ^7.0.2
+        version: 7.0.2
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1582,8 +1582,8 @@ importers:
         specifier: ^9.0.9
         version: 9.0.9
       '@gmod/hclust':
-        specifier: ^3.0.4
-        version: 3.0.4
+        specifier: ^3.0.6
+        version: 3.0.6
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -3580,9 +3580,8 @@ packages:
   '@gmod/abortable-promise-cache@3.0.4':
     resolution: {integrity: sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==}
 
-  '@gmod/bam@7.1.20':
-    resolution: {integrity: sha512-wsueGGdTdKz44ql2BuJSwQXHxQDuvfroaczz7tXwS57fuMRfBLfhDieuTiAkdWaKjzf5PzGYEjAgKwycK/kUHA==}
-    engines: {node: '>=20'}
+  '@gmod/bam@7.1.21':
+    resolution: {integrity: sha512-nhzb0KTeN5bwheefBJRl2mcll6UAAgwDJ8c3SijKxW1mtmFp6o5TTM27gNB21DOPPRZa6CfUMKf/aI29QI+r7Q==}
 
   '@gmod/bbi@9.0.9':
     resolution: {integrity: sha512-p2T98daTTbNyQ7oH0F9hoBC4IjMnrPyuBcFzJT66nlbl2DSpqtQDehryhf/nb+u0HTw9AFtzxI3Ew3Fs3uwhLA==}
@@ -3591,8 +3590,8 @@ packages:
     resolution: {integrity: sha512-begb47SbolFRLXUaQA8w1yBdzPFEw+FncHvfLMxfDC0nacDeU3N72BUPhK4Dq51mi8QpN4NfT3dR8O2j2g1Lww==}
     engines: {node: '>=6'}
 
-  '@gmod/bgzf-filehandle@6.0.18':
-    resolution: {integrity: sha512-nvlzcKQsXAfmPLqv3XbFr/Ah68k7xp59xN107pbjwgh/nqqdBmRhpL1+61kqi2UseM9gwHo2KwshG95H7TXAYA==}
+  '@gmod/bgzf-filehandle@6.0.19':
+    resolution: {integrity: sha512-Zs/568HtsrL5XZGDLTeVZaNFKG7/8HKG+LP+B201OdkQBa1VpZyQg95i65bSuwyqDGnRjkvNbyASwEsxzG9Rrg==}
 
   '@gmod/cram@8.0.5':
     resolution: {integrity: sha512-H74qUQuV2T98AWyoIs02TwT6Ae8fF7jreeOcxbcnT+GqYmLqr1fcP+Q+2t1OQniRvQLiEZf6JI14l8jpxUvl2Q==}
@@ -3602,34 +3601,32 @@ packages:
     resolution: {integrity: sha512-PAHRE9+qYsLO8AgytokgEPn9eof6vGxliaJsOQka/qaQBN15pIMY11diTLFSHy3QScNSo3lAnn+P8dIJokN0Qg==}
     engines: {node: '>=15'}
 
-  '@gmod/hclust@3.0.4':
-    resolution: {integrity: sha512-s+Qg6UW68Alxp0P8ruOozeXH0mBkKyVYr+Fbx5g3PZxn0E7YmxixLsPQuXaFMtVxQ2NjmkF9FTrzp8Efthdccg==}
+  '@gmod/hclust@3.0.6':
+    resolution: {integrity: sha512-DImJwEKdXXF0hdpzJLMtu0X+jfCsj36FVoJWPCI9WboptipLN+PBISyKCLdmv098b2ykQk9qxUkGDqvxMH/qXg==}
 
   '@gmod/http-range-fetcher@5.0.7':
     resolution: {integrity: sha512-WEOm5SnRbdhtB5RDXDW7LSUsam/fJH1hiGsyqjdG1vvkn6Ddv4wcCAY8AP4qqxPZicg1KNz53qhifMMksg6eLQ==}
 
-  '@gmod/indexedfasta@5.0.4':
-    resolution: {integrity: sha512-PjVf2Nzv0WnwaNmd4rRFsDbLzazvAOWfMivoluAcpFEJ1/h8yzY0R9xHUKBeBpWlEFBwpRPkJ5OdYMPX6s74Aw==}
+  '@gmod/indexedfasta@5.0.5':
+    resolution: {integrity: sha512-CB0WqY/+VbrvmHWv0v5uql2ZFfAEMqFu+XARTxePiMWJncqtJwK5C+vWzPkUN626OQO9FrK7KjLN7FFuzt8XUQ==}
 
-  '@gmod/nclist@3.0.6':
-    resolution: {integrity: sha512-NI2iNapfS95B716ibux1mi2FcfPRWmcfKhduBwudy1fqZr+vhITRIWERSnZZHmbz9HL5URJtkkzsu0lekTvDpQ==}
+  '@gmod/nclist@3.0.7':
+    resolution: {integrity: sha512-dNFcB4i/1nzv2uYOooyqCWG/9uGwiHZ+DDT2KrvcMT+ZZEGcogMfE23fXbskFuqpOM6jKb8wTKAAYYFiNCP+CQ==}
 
-  '@gmod/tabix@3.3.1':
-    resolution: {integrity: sha512-i7RTRYVwXlQM9vWKGIn5D1z5s30+7Bjr6TbXrCCutLNJvdrUiE/DaJAO9eswToajT020Mh5P9+Odruk0OgiL8g==}
+  '@gmod/tabix@3.3.3':
+    resolution: {integrity: sha512-jiq5tZEp7pi7U70wNBMv8Q2J0hLZ3knXJktJNwaVb6eYcQQUv0J4HCx7stadWrDvd2LZQEfJORx3nEmI8wvssw==}
 
-  '@gmod/trix@3.0.10':
-    resolution: {integrity: sha512-5BRXE3CYr/DogXlpTe+jass9Q6qyCHChV/wAtQM8wxN1Nut7YNn9Dk1+2RyckYMsfIO3MzxxmiGSDfsOE0PS6A==}
-    engines: {node: '>=10'}
+  '@gmod/trix@3.0.12':
+    resolution: {integrity: sha512-lDeMVkGqmPJVqW1T07lAap9LtL/dyiT85vx5Z+O5JxRD250GfdPFIoTp/twjhodP4QjjP2yCLpTsn7iFDsPHfg==}
 
-  '@gmod/twobit@6.0.3':
-    resolution: {integrity: sha512-BNCwJNh6YA3K2smuIIBIlwCmDU71typNXHWcMYUyJZJsRgqSrebMjYqGn3G9J7wuVltxeq+v1vUQeyBGEjLsfw==}
+  '@gmod/twobit@6.0.5':
+    resolution: {integrity: sha512-RK9t8+B+CoicfvH5qxnJ4saKVvsI6M+qnqz01ANJa05ZuJCGkUc14ZbwME7eYlfkZ9zgYw1+uuBllXcZOAuHRw==}
 
-  '@gmod/ucsc-hub@2.0.3':
-    resolution: {integrity: sha512-w0qs1J2rjxt/ytxYH0VhxcFW+03Uh6R216skpbc5Q4to73lmXbaatJz6cZ+M4vgBkTQXoOpvaULAha0g7nxjWA==}
+  '@gmod/ucsc-hub@2.0.4':
+    resolution: {integrity: sha512-Mlt0kU9IJeryi/r0jEdWKYEePWQmN4vUBEwvL71ymtDtoC4u/344HKmxitNoCIZSqT0wpaQY+HAcYdchtR2/4g==}
 
-  '@gmod/vcf@7.0.0':
-    resolution: {integrity: sha512-nuGPtm/reJHvhdxgAGV8qU7BNyC8i6FUh6T+hktTSAtBmnipV74vs6f+vo2qeZRx9S1yPmhmPneT3EX38xXClg==}
-    engines: {node: '>=6'}
+  '@gmod/vcf@7.0.2':
+    resolution: {integrity: sha512-kikyMVgYArgWEQT+dOPjFXbst0cL8/QqSUtIJ0VKgFF1QGsUzGGkZuDH3gAYLxE/f5Rvp+xoapT31Z76ua3KtA==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -4702,41 +4699,49 @@ packages:
     resolution: {integrity: sha512-34gw7PjDGB9JgePJEmhEqBhWvCiiWCuXsL9hYphDF7crW7UgI05gyBAi6MF58uGcMOiOqSJ2ybEeCvHcq0BCmQ==}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@unrs/resolver-binding-linux-arm64-musl@1.11.1':
     resolution: {integrity: sha512-RyMIx6Uf53hhOtJDIamSbTskA99sPHS96wxVE/bJtePJJtpdKGXO1wY90oRdXuYOGOTuqjT8ACccMc4K6QmT3w==}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@unrs/resolver-binding-linux-ppc64-gnu@1.11.1':
     resolution: {integrity: sha512-D8Vae74A4/a+mZH0FbOkFJL9DSK2R6TFPC9M+jCWYia/q2einCubX10pecpDiTmkJVUH+y8K3BZClycD8nCShA==}
     cpu: [ppc64]
     os: [linux]
+    libc: [glibc]
 
   '@unrs/resolver-binding-linux-riscv64-gnu@1.11.1':
     resolution: {integrity: sha512-frxL4OrzOWVVsOc96+V3aqTIQl1O2TjgExV4EKgRY09AJ9leZpEg8Ak9phadbuX0BA4k8U5qtvMSQQGGmaJqcQ==}
     cpu: [riscv64]
     os: [linux]
+    libc: [glibc]
 
   '@unrs/resolver-binding-linux-riscv64-musl@1.11.1':
     resolution: {integrity: sha512-mJ5vuDaIZ+l/acv01sHoXfpnyrNKOk/3aDoEdLO/Xtn9HuZlDD6jKxHlkN8ZhWyLJsRBxfv9GYM2utQ1SChKew==}
     cpu: [riscv64]
     os: [linux]
+    libc: [musl]
 
   '@unrs/resolver-binding-linux-s390x-gnu@1.11.1':
     resolution: {integrity: sha512-kELo8ebBVtb9sA7rMe1Cph4QHreByhaZ2QEADd9NzIQsYNQpt9UkM9iqr2lhGr5afh885d/cB5QeTXSbZHTYPg==}
     cpu: [s390x]
     os: [linux]
+    libc: [glibc]
 
   '@unrs/resolver-binding-linux-x64-gnu@1.11.1':
     resolution: {integrity: sha512-C3ZAHugKgovV5YvAMsxhq0gtXuwESUKc5MhEtjBpLoHPLYM+iuwSj3lflFwK3DPm68660rZ7G8BMcwSro7hD5w==}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@unrs/resolver-binding-linux-x64-musl@1.11.1':
     resolution: {integrity: sha512-rV0YSoyhK2nZ4vEswT/QwqzqQXw5I6CjoaYMOX0TqBlWhojUf8P94mvI7nuJTeaCkkds3QE4+zS8Ko+GdXuZtA==}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@unrs/resolver-binding-wasm32-wasi@1.11.1':
     resolution: {integrity: sha512-5u4RkfxJm+Ng7IWgkzi3qrFOvLvQYnPBmjmZQ8+szTK/b31fQCnleNl1GgEt7nIsZRIf5PLhPwT0WM+q45x/UQ==}
@@ -10734,9 +10739,9 @@ snapshots:
 
   '@gmod/abortable-promise-cache@3.0.4': {}
 
-  '@gmod/bam@7.1.20(buffer@6.0.3)':
+  '@gmod/bam@7.1.21(buffer@6.0.3)':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.0.18
+      '@gmod/bgzf-filehandle': 6.0.19
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2(buffer@6.0.3)
       generic-filehandle2: 2.1.4
@@ -10751,7 +10756,7 @@ snapshots:
 
   '@gmod/bed@2.1.10': {}
 
-  '@gmod/bgzf-filehandle@6.0.18':
+  '@gmod/bgzf-filehandle@6.0.19':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.4
@@ -10768,41 +10773,43 @@ snapshots:
 
   '@gmod/faidx@2.0.0': {}
 
-  '@gmod/hclust@3.0.4': {}
+  '@gmod/hclust@3.0.6': {}
 
   '@gmod/http-range-fetcher@5.0.7':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
 
-  '@gmod/indexedfasta@5.0.4':
+  '@gmod/indexedfasta@5.0.5':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.0.18
+      '@gmod/bgzf-filehandle': 6.0.19
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.4
 
-  '@gmod/nclist@3.0.6':
+  '@gmod/nclist@3.0.7':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@jbrowse/quick-lru': 7.3.5
       '@jridgewell/resolve-uri': 3.1.2
 
-  '@gmod/tabix@3.3.1':
+  '@gmod/tabix@3.3.3':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
-      '@gmod/bgzf-filehandle': 6.0.18
+      '@gmod/bgzf-filehandle': 6.0.19
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.4
 
-  '@gmod/trix@3.0.10': {}
+  '@gmod/trix@3.0.12':
+    dependencies:
+      '@jbrowse/quick-lru': 7.3.5
 
-  '@gmod/twobit@6.0.3':
+  '@gmod/twobit@6.0.5':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.4
 
-  '@gmod/ucsc-hub@2.0.3': {}
+  '@gmod/ucsc-hub@2.0.4': {}
 
-  '@gmod/vcf@7.0.0': {}
+  '@gmod/vcf@7.0.2': {}
 
   '@humanfs/core@0.19.1': {}
 
