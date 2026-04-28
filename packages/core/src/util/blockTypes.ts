@@ -8,7 +8,7 @@ export function makeDisplayedRegionKey(r: {
   return `${r.assemblyName}:${r.refName}:${r.start}:${r.end}${r.reversed ? ':rev' : ''}`
 }
 
-export interface BlockData {
+interface BlockData {
   key: string
   offsetPx: number
   widthPx: number
@@ -133,10 +133,12 @@ export class BlockSet {
   }
 
   get totalBp() {
-    const blocks = this.contentBlocks
     let total = 0
-    for (let i = 0, l = blocks.length; i < l; i++) {
-      total += blocks[i]!.end - blocks[i]!.start
+    for (let i = 0, l = this.blocks.length; i < l; i++) {
+      const b = this.blocks[i]!
+      if (b.type === 'ContentBlock') {
+        total += b.end - b.start
+      }
     }
     return total
   }

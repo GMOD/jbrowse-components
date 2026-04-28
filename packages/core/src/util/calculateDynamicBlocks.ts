@@ -9,23 +9,9 @@ import { intersection2 } from './range.ts'
 import type { Base1DViewModel } from './calculateStaticBlocks.ts'
 
 /**
- * returns a BlockSet of which the `blocks` attribute is an array of 'dynamic
- * blocks', which are blocks representing only the regions that are visible in
- * the view right now. these are mostly used by tracks for which static blocks
- * are not feasible.
- *
- * each block is a plain JS object like:
- *   `{ refName, start, end, offsetPx, reversed? }`
- *
- * start and end are in bp, and start is always less than end, but if reversed
- * is true, startBp will be on the right side of the visible region.
- *
- * offsetPx is the number of pixels from the left edge of the view to the left
- * edge of the region
- *
- * NOTE: start, end, and offsetPx may all be fractional!
- *
- * @returns BlockSet of `{ refName, startBp, end, offset, reversed? }`
+ * Returns a BlockSet covering only the regions currently visible in the view.
+ * Used by tracks where static blocks are not feasible. start/end/offsetPx may
+ * be fractional.
  */
 export default function calculateDynamicBlocks(
   model: Base1DViewModel,
