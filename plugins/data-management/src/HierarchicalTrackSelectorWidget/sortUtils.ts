@@ -14,9 +14,9 @@ export function sortConfs(
     return [
       c,
       readConfObject(c, 'name'),
-      category[0] || '',
-      category[1] || '',
-      category[2] || '',
+      category[0] ?? '',
+      category[1] ?? '',
+      category[2] ?? '',
     ]
   })
   if (sortNames) {

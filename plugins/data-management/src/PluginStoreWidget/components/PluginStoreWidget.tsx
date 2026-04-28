@@ -1,23 +1,20 @@
-import { lazy, useEffect, useState, useTransition } from 'react'
+import { lazy } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession, isElectron } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getEnv } from '@jbrowse/mobx-state-tree'
-import ClearIcon from '@mui/icons-material/Clear'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import {
   Accordion,
   AccordionSummary,
   Button,
-  IconButton,
-  InputAdornment,
-  TextField,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import ClearableSearchField from '../../HierarchicalTrackSelectorWidget/components/ClearableSearchField.tsx'
 import InstalledPluginsList from './InstalledPluginsList.tsx'
 import PluginCard from './PluginCard.tsx'
 import { useFetchPlugins } from './util.ts'
@@ -58,18 +55,9 @@ const PluginStoreWidget = observer(function PluginStoreWidget({
   const { classes } = useStyles()
   const { plugins, error } = useFetchPlugins()
   const { filterText } = model
-  const [localFilterText, setLocalFilterText] = useState(filterText)
-  const [, startTransition] = useTransition()
   const session = getSession(model)
   const { adminMode } = session
   const { pluginManager } = getEnv(model)
-
-  // Sync local state when model is cleared externally
-  useEffect(() => {
-    if (filterText === '') {
-      setLocalFilterText('')
-    }
-  }, [filterText])
 
   return (
     <div>
@@ -102,33 +90,11 @@ const PluginStoreWidget = observer(function PluginStoreWidget({
           </Button>
         </>
       )}
-      <TextField
-        label="Filter plugins"
-        value={localFilterText}
-        onChange={event => {
-          const value = event.target.value
-          setLocalFilterText(value)
-          startTransition(() => {
-            model.setFilterText(value)
-          })
-        }}
+      <ClearableSearchField
         fullWidth
-        slotProps={{
-          input: {
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton
-                  onClick={() => {
-                    setLocalFilterText('')
-                    model.clearFilterText()
-                  }}
-                >
-                  <ClearIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          },
-        }}
+        label="Filter plugins"
+        value={filterText}
+        onChange={model.setFilterText}
       />
       <Accordion defaultExpanded>
         <AccordionSummary

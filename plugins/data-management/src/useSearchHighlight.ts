@@ -60,5 +60,5 @@ export function useSearchHighlight(
     return () => {
       CSS.highlights.delete(highlightName)
     }
-  })
+  }, [containerRef, query, highlightName])
 }

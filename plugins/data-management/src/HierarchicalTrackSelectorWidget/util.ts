@@ -54,28 +54,44 @@ interface Node {
   id: string
 }
 
-export function findSubCategories(obj: Node[], paths: string[], depth = 0) {
-  let hasSubs = false
+function findSubCategoriesInner(
+  obj: Node[],
+  depth: number,
+): [paths: string[], hasDirectLeaves: boolean] {
+  const paths: string[] = []
+  let hasDirectLeaves = false
   for (const elt of obj) {
     if (elt.children.length) {
-      const hasSubCategories = findSubCategories(elt.children, paths, depth + 1)
+      const [subPaths, subHasDirectLeaves] = findSubCategoriesInner(
+        elt.children,
+        depth + 1,
+      )
       // avoid pushing the root "Tracks" node by checking depth>0
-      if (hasSubCategories && depth > 0) {
+      if (subHasDirectLeaves && depth > 0) {
         paths.push(elt.id)
       }
+      for (const p of subPaths) {
+        paths.push(p)
+      }
     } else {
-      hasSubs = true
+      hasDirectLeaves = true
     }
   }
-  return hasSubs
+  return [paths, hasDirectLeaves]
 }
 
-export function findTopLevelCategories(obj: Node[], paths: string[]) {
+export function findSubCategories(obj: Node[]) {
+  return findSubCategoriesInner(obj, 0)[0]
+}
+
+export function findTopLevelCategories(obj: Node[]) {
+  const paths: string[] = []
   for (const elt of obj) {
     if (elt.children.length) {
       paths.push(elt.id)
     }
   }
+  return paths
 }
 
 export function getAllTrackNodes(subtree?: TreeNode): TreeTrackNode[] {

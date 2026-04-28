@@ -649,9 +649,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       collapseSubCategories() {
-        const paths = [] as string[]
-        findSubCategories(self.hierarchy.children, paths)
-        for (const path of paths) {
+        for (const path of findSubCategories(self.hierarchy.children)) {
           self.setCategoryCollapsed(path, true)
         }
       },
@@ -659,14 +657,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       collapseTopLevelCategories() {
-        const paths = [] as string[]
         for (const trackGroups of self.hierarchy.children) {
           if (trackGroups.children.length) {
-            findTopLevelCategories(trackGroups.children, paths)
+            for (const path of findTopLevelCategories(trackGroups.children)) {
+              self.setCategoryCollapsed(path, true)
+            }
           }
-        }
-        for (const path of paths) {
-          self.setCategoryCollapsed(path, true)
         }
       },
     }))

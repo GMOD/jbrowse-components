@@ -165,7 +165,7 @@ export default function f(pluginManager: PluginManager) {
         const trackUri = getUri(self.trackData)
         const indexUri = getUri(self.indexTrackData)
         return !!(
-          indexUri?.startsWith('ftp://') ?? trackUri?.startsWith('ftp://')
+          indexUri?.startsWith('ftp://') || trackUri?.startsWith('ftp://')
         )
       },
 
