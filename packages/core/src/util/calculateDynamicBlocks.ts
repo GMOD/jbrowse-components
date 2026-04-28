@@ -120,41 +120,25 @@ export default function calculateDynamicBlocks(
         )
       }
 
-      if (elision && regionWidthPx < minimumBlockWidth) {
-        blocks.push(
-          makeElidedBlock({
-            assemblyName,
-            refName,
-            start,
-            end,
-            reversed,
-            offsetPx: blockOffsetPx,
-            parentRegion,
-            displayedRegionIndex,
-            widthPx,
-            isLeftEndOfDisplayedRegion,
-            isRightEndOfDisplayedRegion,
-            key,
-          }),
-        )
-      } else {
-        blocks.push(
-          makeContentBlock({
-            assemblyName,
-            refName,
-            start,
-            end,
-            reversed,
-            offsetPx: blockOffsetPx,
-            parentRegion,
-            displayedRegionIndex,
-            widthPx,
-            isLeftEndOfDisplayedRegion,
-            isRightEndOfDisplayedRegion,
-            key,
-          }),
-        )
+      const data = {
+        assemblyName,
+        refName,
+        start,
+        end,
+        reversed,
+        offsetPx: blockOffsetPx,
+        parentRegion,
+        displayedRegionIndex,
+        widthPx,
+        isLeftEndOfDisplayedRegion,
+        isRightEndOfDisplayedRegion,
+        key,
       }
+      blocks.push(
+        elision && regionWidthPx < minimumBlockWidth
+          ? makeElidedBlock(data)
+          : makeContentBlock(data),
+      )
 
       if (padding) {
         if (
