@@ -21,6 +21,7 @@ exports[`five 1`] = `
     "reversed": false,
     "start": 26.05,
     "type": "ContentBlock",
+    "variant": undefined,
     "widthPx": 927.0000000000002,
   },
 ]
@@ -30,10 +31,15 @@ exports[`four 1`] = `
 [
   InterRegionPaddingBlock {
     "assemblyName": undefined,
+    "displayedRegionIndex": undefined,
     "end": undefined,
+    "isLeftEndOfDisplayedRegion": undefined,
+    "isRightEndOfDisplayedRegion": undefined,
     "key": "{test}ctgA:1..250-0-beforeFirstRegion",
     "offsetPx": -100,
+    "parentRegion": undefined,
     "refName": undefined,
+    "reversed": undefined,
     "start": undefined,
     "type": "InterRegionPaddingBlock",
     "variant": "boundary",
@@ -57,6 +63,7 @@ exports[`four 1`] = `
     "reversed": undefined,
     "start": 0,
     "type": "ContentBlock",
+    "variant": undefined,
     "widthPx": 250,
   },
 ]
@@ -66,10 +73,15 @@ exports[`one 1`] = `
 [
   InterRegionPaddingBlock {
     "assemblyName": undefined,
+    "displayedRegionIndex": undefined,
     "end": undefined,
+    "isLeftEndOfDisplayedRegion": undefined,
+    "isRightEndOfDisplayedRegion": undefined,
     "key": "{test}ctgA:1..200-0-beforeFirstRegion",
     "offsetPx": 0,
+    "parentRegion": undefined,
     "refName": undefined,
+    "reversed": undefined,
     "start": undefined,
     "type": "InterRegionPaddingBlock",
     "variant": "boundary",
@@ -93,6 +105,7 @@ exports[`one 1`] = `
     "reversed": undefined,
     "start": 0,
     "type": "ContentBlock",
+    "variant": undefined,
     "widthPx": 200,
   },
 ]
@@ -102,10 +115,15 @@ exports[`three 1`] = `
 [
   InterRegionPaddingBlock {
     "assemblyName": undefined,
+    "displayedRegionIndex": undefined,
     "end": undefined,
+    "isLeftEndOfDisplayedRegion": undefined,
+    "isRightEndOfDisplayedRegion": undefined,
     "key": "{test}ctgA:49901..50000[rev]-0-reversed-beforeFirstRegion",
     "offsetPx": -100,
+    "parentRegion": undefined,
     "refName": undefined,
+    "reversed": undefined,
     "start": undefined,
     "type": "InterRegionPaddingBlock",
     "variant": "boundary",
@@ -130,6 +148,7 @@ exports[`three 1`] = `
     "reversed": true,
     "start": 49900,
     "type": "ContentBlock",
+    "variant": undefined,
     "widthPx": 100,
   },
 ]
@@ -139,10 +158,15 @@ exports[`two 1`] = `
 [
   InterRegionPaddingBlock {
     "assemblyName": undefined,
+    "displayedRegionIndex": undefined,
     "end": undefined,
+    "isLeftEndOfDisplayedRegion": undefined,
+    "isRightEndOfDisplayedRegion": undefined,
     "key": "{test}ctgA:49801..50000[rev]-0-reversed-beforeFirstRegion",
     "offsetPx": 0,
+    "parentRegion": undefined,
     "refName": undefined,
+    "reversed": undefined,
     "start": undefined,
     "type": "InterRegionPaddingBlock",
     "variant": "boundary",
@@ -167,6 +191,7 @@ exports[`two 1`] = `
     "reversed": true,
     "start": 49800,
     "type": "ContentBlock",
+    "variant": undefined,
     "widthPx": 200,
   },
 ]

@@ -80,7 +80,9 @@ export class BlockSet {
   }
 
   get contentBlocks() {
-    return this.blocks.filter(block => block.type === 'ContentBlock')
+    return this.blocks.filter(
+      (block): block is ContentBlock => block.type === 'ContentBlock',
+    )
   }
 
   get totalBp() {
@@ -104,6 +106,7 @@ export interface BlockData {
   reversed?: boolean
   displayedRegionIndex?: number
   isLeftEndOfDisplayedRegion?: boolean
+  isRightEndOfDisplayedRegion?: boolean
   parentRegion?: unknown
   variant?: string
 }
@@ -115,13 +118,13 @@ export class BaseBlock {
 
   public reversed?: boolean
 
-  public refName: string
+  public refName?: string
 
-  public start: number
+  public start?: number
 
-  public end: number
+  public end?: number
 
-  public assemblyName: string
+  public assemblyName?: string
 
   public key: string
 
@@ -133,19 +136,22 @@ export class BaseBlock {
 
   public isLeftEndOfDisplayedRegion?: boolean
 
+  public isRightEndOfDisplayedRegion?: boolean
+
   public parentRegion?: unknown
 
   constructor(data: BlockData) {
-    this.assemblyName = data.assemblyName ?? ''
-    this.refName = data.refName ?? ''
-    this.start = data.start ?? 0
-    this.end = data.end ?? 0
+    this.assemblyName = data.assemblyName
+    this.refName = data.refName
+    this.start = data.start
+    this.end = data.end
     this.key = data.key
     this.offsetPx = data.offsetPx
     this.widthPx = data.widthPx
     this.reversed = data.reversed
     this.displayedRegionIndex = data.displayedRegionIndex
     this.isLeftEndOfDisplayedRegion = data.isLeftEndOfDisplayedRegion
+    this.isRightEndOfDisplayedRegion = data.isRightEndOfDisplayedRegion
     this.parentRegion = data.parentRegion
     this.variant = data.variant
   }
@@ -163,6 +169,11 @@ export class BaseBlock {
 
 export class ContentBlock extends BaseBlock {
   type = 'ContentBlock'
+
+  assemblyName!: string
+  refName!: string
+  start!: number
+  end!: number
 }
 
 /**

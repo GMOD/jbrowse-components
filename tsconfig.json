@@ -5,6 +5,7 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "rootDir": "./",
     "outDir": "dist",
+    "noEmit": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "noUncheckedIndexedAccess": true,

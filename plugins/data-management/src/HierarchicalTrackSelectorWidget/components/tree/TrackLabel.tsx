@@ -42,7 +42,7 @@ const TrackCheckbox = observer(function TrackCheckbox({
   return (
     <Checkbox
       className={className}
-      checked={model.view.shownTrackIds.has(trackId)}
+      checked={model.shownTrackIds.has(trackId)}
       onChange={() => {
         model.view.toggleTrack(trackId)
       }}

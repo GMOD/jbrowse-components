@@ -133,7 +133,7 @@ const Base1DView = types
      * #getter
      */
     get currBp() {
-      return sum(this.dynamicBlocks.map(a => a.end - a.start))
+      return sum(this.dynamicBlocks.contentBlocks.map(a => a.end - a.start))
     },
   }))
   .views(self => ({
