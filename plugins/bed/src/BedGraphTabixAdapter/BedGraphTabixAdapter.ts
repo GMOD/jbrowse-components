@@ -9,7 +9,7 @@ import { parseNamesFromHeader } from '../util.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-export default class BedGraphAdapter extends BaseFeatureDataAdapter {
+export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter {
   private configured?: Promise<{
     bedGraph: TabixIndexedFile
     header: string
@@ -114,6 +114,6 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
         },
       )
       observer.complete()
-    })
+    }, opts.stopToken)
   }
 }

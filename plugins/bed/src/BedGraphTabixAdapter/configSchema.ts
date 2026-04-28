@@ -19,7 +19,7 @@ const BedGraphTabixAdapter = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
-    index: ConfigurationSchema('VcfIndex', {
+    index: ConfigurationSchema('BedGraphTabixIndex', {
       /**
        * #slot index.indexType
        */
@@ -34,7 +34,7 @@ const BedGraphTabixAdapter = ConfigurationSchema(
       location: {
         type: 'fileLocation',
         defaultValue: {
-          uri: '/path/to/my.vcf.gz.tbi',
+          uri: '/path/to/my.bedgraph.gz.tbi',
           locationType: 'UriLocation',
         },
       },

@@ -1,4 +1,5 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import { parseStrand } from '../util.ts'
 
 const svTypes = new Set(['DUP', 'TRA', 'INV', 'CNV', 'DEL'])
 
@@ -41,18 +42,6 @@ export function featureData(
       end: end2,
       strand: strand2,
     },
-    ...(ALT ? { ALT: [ALT] } : {}), // ALT is an array in VCF
+    ...(ALT ? { ALT: [ALT] } : {}),
   })
-}
-
-function parseStrand(strand: string) {
-  if (strand === '+') {
-    return 1
-  } else if (strand === '-') {
-    return -1
-  } else if (strand === '.') {
-    return 0
-  } else {
-    return undefined
-  }
 }

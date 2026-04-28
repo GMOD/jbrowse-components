@@ -208,7 +208,8 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           await this.getFeaturesHelper({
             query: {
               ...query,
-              // extend query to catch gene subfeatures outside the current view
+              // extend query to catch gene subfeatures outside the current view;
+              // 500 kbp heuristic covers most genes/transcripts
               start: minAggStart - 500_000,
               end: maxAggEnd + 500_000,
             },
@@ -241,7 +242,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
                 data: {
                   type: 'gene',
                   subfeatures: subs,
-                  strand: subs.find(s => s.strand !== 0)?.strand ?? 1,
+                  strand: subs.find(f => f.strand !== 0)?.strand ?? 1,
                   name,
                   start: s,
                   end: e,
@@ -257,7 +258,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
                   data: {
                     type: 'gene',
                     subfeatures: [sub],
-                    strand: subs.find(s => s.strand !== 0)?.strand ?? 1,
+                    strand: subs.find(f => f.strand !== 0)?.strand ?? 1,
                     name,
                     start: sub.start,
                     end: sub.end,

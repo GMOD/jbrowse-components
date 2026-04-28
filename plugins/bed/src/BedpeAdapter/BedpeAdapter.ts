@@ -31,12 +31,11 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
     )
 
     const lines = data.split(/\n|\r\n|\r/).filter(Boolean)
-    const headerLines = []
     let i = 0
-    for (; i < lines.length && lines[i]!.startsWith('#'); i++) {
-      headerLines.push(lines[i])
+    while (i < lines.length && lines[i]!.startsWith('#')) {
+      i++
     }
-    const header = headerLines.join('\n')
+    const header = lines.slice(0, i).join('\n')
     const feats1 = {} as Record<string, string[]>
     const feats2 = {} as Record<string, string[]>
     for (; i < lines.length; i++) {
@@ -87,19 +86,13 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
     const { feats1, feats2 } = await this.loadData()
     const names = await this.getNames()
     const intervalTree = new IntervalTree<Feature>()
-    const ret1 =
-      feats1[refName]?.map((f, i) =>
-        featureData(f, `${this.id}-${refName}-${i}-r1`, false, names),
-      ) ?? []
-    const ret2 =
-      feats2[refName]?.map((f, i) =>
-        featureData(f, `${this.id}-${refName}-${i}-r2`, true, names),
-      ) ?? []
 
-    for (const obj of ret1) {
+    for (const [i, f] of (feats1[refName] ?? []).entries()) {
+      const obj = featureData(f, `${this.id}-${refName}-${i}-r1`, false, names)
       intervalTree.insert([obj.get('start'), obj.get('end')], obj)
     }
-    for (const obj of ret2) {
+    for (const [i, f] of (feats2[refName] ?? []).entries()) {
+      const obj = featureData(f, `${this.id}-${refName}-${i}-r2`, true, names)
       intervalTree.insert([obj.get('start'), obj.get('end')], obj)
     }
 

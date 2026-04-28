@@ -55,7 +55,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
         } else if (
           testAdapter(
             fileName,
-            /\.bg(\.gz)?$/i,
+            /\.bg\.gz$/i,
             adapterHint,
             'BedGraphTabixAdapter',
           )

@@ -61,7 +61,7 @@ export function generateBedMethylFeature({
     start,
     end,
     code,
-    score: +fraction_modified! || 0,
+    score: +fraction_modified!,
     strand: parseStrand(strandRaw),
     color,
     source: code,
