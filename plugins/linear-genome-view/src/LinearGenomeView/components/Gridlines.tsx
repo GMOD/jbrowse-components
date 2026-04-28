@@ -8,7 +8,7 @@ import { makeTicks } from '../util.ts'
 import { ELIDED_BG, joinElements } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
@@ -44,7 +44,7 @@ function collectTicks(
   const ticks: { x: number; major: boolean }[] = []
   for (const block of blocks) {
     if (block.type === 'ContentBlock') {
-      const { start, end, reversed, widthPx } = block
+      const { start, end, reversed, widthPx } = block as ContentBlock
       const blockLeft = block.offsetPx - firstBlockOffset
       for (const { type, base } of makeTicks(start, end, bpPerPx)) {
         const x = blockLeft + (reversed ? end - base : base - start) / bpPerPx

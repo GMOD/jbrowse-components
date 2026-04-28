@@ -7,7 +7,7 @@ import type {
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { SyntenyColorPalette } from '../model.ts'
 import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 export const LABEL_WIDTH = 120
 export const LABEL_FONT_MAX = 12
@@ -24,7 +24,7 @@ export type BpToPxFn = (refName: string, coord: number) => number | undefined
 export type SyntenyColors = CigarOpDrawColors
 
 export interface MultiSyntenyRenderState {
-  contentBlocks: BaseBlock[]
+  contentBlocks: ContentBlock[]
   viewOffsetPx: number
   width: number
   height: number

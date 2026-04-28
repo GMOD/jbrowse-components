@@ -12,6 +12,7 @@ interface ShowMenuModel {
   showInterbaseIndicators: boolean
   showOutlineSetting: boolean
   showLinkedReads: boolean
+  showLinkedReadsAsBeziers: boolean
   flipStrandLongReadChains: boolean
   toggleSoftClipping: () => void
   toggleMismatchAlpha: () => void
@@ -24,6 +25,7 @@ interface ShowMenuModel {
   setShowInterbaseIndicators: (show: boolean) => void
   setShowOutline: (show: boolean) => void
   setShowLinkedReads: (show: boolean) => void
+  setShowLinkedReadsAsBeziers: (show: boolean) => void
   setFlipStrandLongReadChains: (flip: boolean) => void
   setMaxHeight: (n?: number) => void
 }
@@ -90,6 +92,18 @@ export function getShowMenuItem(model: ShowMenuModel) {
           model.setShowLinkedReads(!model.showLinkedReads)
         },
       },
+      ...(model.showLinkedReads
+        ? [
+            {
+              label: 'Show linked reads as bezier arcs',
+              type: 'checkbox' as const,
+              checked: model.showLinkedReadsAsBeziers,
+              onClick: () => {
+                model.setShowLinkedReadsAsBeziers(!model.showLinkedReadsAsBeziers)
+              },
+            },
+          ]
+        : []),
       {
         label: 'Show long read strand relative to primary',
         type: 'checkbox' as const,

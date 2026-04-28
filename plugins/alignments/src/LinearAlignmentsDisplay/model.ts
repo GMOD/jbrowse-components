@@ -231,6 +231,7 @@ export default function stateModelFactory(
           sashimiArcsDown: false,
           sashimiArcsHeight: 40,
           showArcs: false,
+          showLinkedReadsAsBeziers: false,
           arcsHeight: 40,
           showSoftClipping: false,
           jexlFilters: types.optional(types.array(types.string), []),
@@ -302,7 +303,7 @@ export default function stateModelFactory(
         },
 
         get isChainMode() {
-          return self.showLinkedReads
+          return self.showLinkedReads && !self.showLinkedReadsAsBeziers
         },
 
         /**
@@ -803,7 +804,9 @@ export default function stateModelFactory(
             highlightedChainIds: self.highlightedChainIds,
             selectedChainIds: self.selectedChainIds,
             colors: palette,
-            renderingMode: self.renderingMode,
+            renderingMode: self.showLinkedReadsAsBeziers
+              ? 'pileup'
+              : self.renderingMode,
             flipStrandLongReadChains: self.flipStrandLongReadChains,
             arcLineWidth: self.lineWidth,
             arcColorByType: self.arcColorByType,
@@ -1133,6 +1136,10 @@ export default function stateModelFactory(
 
           setShowArcs(show: boolean) {
             self.showArcs = show
+          },
+
+          setShowLinkedReadsAsBeziers(show: boolean) {
+            self.showLinkedReadsAsBeziers = show
           },
 
           setArcsHeight(height: number) {

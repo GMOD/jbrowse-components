@@ -44,7 +44,7 @@ import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.ts
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // lazies
@@ -76,7 +76,7 @@ function stringLenPx(a: string) {
 }
 
 function pxWidthForBlocks(
-  blocks: BaseBlock[],
+  blocks: ContentBlock[],
   bpPerPx: number,
   hide: Set<string>,
 ) {

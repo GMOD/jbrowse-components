@@ -21,7 +21,7 @@ import type {
   BlockSnpUploadData,
 } from './multiSyntenyGpuData.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 const PASS_FILL = 'fill'
 const PASS_COVERAGE = 'coverage'
@@ -212,7 +212,7 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
 
   private drawPassForVisibleBlocks(
     passId: string,
-    contentBlocks: BaseBlock[],
+    contentBlocks: ContentBlock[],
     viewOffsetPx: number,
     logicalW: number,
     logicalH: number,
@@ -251,7 +251,7 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
   }
 
   private *visibleBlocks(
-    contentBlocks: BaseBlock[],
+    contentBlocks: ContentBlock[],
     viewOffsetPx: number,
     viewWidth: number,
   ): Generator<[number, BlockRenderParams]> {

@@ -70,7 +70,8 @@ export default function calculateDynamicBlocks(
     const displayedRegionRightPx = displayedRegionLeftPx + regionWidthPx
     const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
     const rightEndVisible =
-      windowRightPx >= displayedRegionRightPx && windowLeftPx < displayedRegionRightPx
+      windowRightPx >= displayedRegionRightPx &&
+      windowLeftPx < displayedRegionRightPx
 
     const [leftPx, rightPx] = intersection2(
       windowLeftPx,

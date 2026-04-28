@@ -103,7 +103,8 @@ export default function calculateStaticBlocks(
         isRightEndOfDisplayedRegion = end === regionEnd
       }
       const widthPx = (end - start) * invBpPerPx
-      const blockOffsetPx = (regionBpOffset + blockNum * blockSizeBp) * invBpPerPx
+      const blockOffsetPx =
+        (regionBpOffset + blockNum * blockSizeBp) * invBpPerPx
       const key = `${assemblyName}:${refName}:${start}:${end}:${displayedRegionIndex}${reversed ? ':rev' : ''}`
 
       if (padding && displayedRegionIndex === 0 && blockNum === 0) {

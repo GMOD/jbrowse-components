@@ -180,6 +180,16 @@ export class ContentBlock extends BaseBlock {
   ) {
     super(data)
   }
+
+  toRegion() {
+    return {
+      refName: this.refName as string,
+      start: this.start as number,
+      end: this.end as number,
+      assemblyName: this.assemblyName as string,
+      reversed: this.reversed,
+    }
+  }
 }
 
 // interface merging narrows the optional BaseBlock fields to required without

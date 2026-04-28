@@ -35,7 +35,7 @@ import type { LegendItem } from './components/FloatingLegend.tsx'
 import type { ExportSvgDisplayOptions, LayoutRecord } from './types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { Theme } from '@mui/material'
 
@@ -312,7 +312,7 @@ function stateModelFactory() {
       /**
        * #action
        */
-      addBlock(key: string, block: BaseBlock) {
+      addBlock(key: string, block: ContentBlock) {
         const blockInstance = BlockState.create({
           key,
           region: block.toRegion(),

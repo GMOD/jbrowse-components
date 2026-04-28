@@ -22,7 +22,7 @@ import {
 import { INSTANCE_STRIDE_BYTES as INDICATOR_STRIDE_BYTES } from './shaders/multiSyntenyIndicator.generated.ts'
 
 import type { SyntenyColors } from './multiSyntenyBackendTypes.ts'
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
 export interface BlockGeometryData {
@@ -197,7 +197,7 @@ export function prepareBlockGeometry(
 }
 
 export function computeBlockRenderParams(
-  block: BaseBlock,
+  block: ContentBlock,
   viewOffsetPx: number,
 ): BlockRenderParams {
   const [bpRangeHi, bpRangeLo] = splitPositionWithFrac(block.start)

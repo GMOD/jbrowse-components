@@ -250,7 +250,7 @@ const Scalebar = observer(function Scalebar({
         ) : (
           <OverviewBox
             scale={scale}
-            block={block}
+            block={block as ContentBlock}
             model={model}
             overview={overview}
             key={`${JSON.stringify(block)}-${idx}`}

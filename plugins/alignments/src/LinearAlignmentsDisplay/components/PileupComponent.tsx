@@ -9,6 +9,7 @@ import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
+import PileupArcsOverlay from './PileupArcsOverlay.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import YScaleBar from './YScaleBar.tsx'
@@ -214,6 +215,7 @@ const PileupInner = observer(function PileupInner({
         />
 
         <SashimiArcsOverlay model={model} />
+        <PileupArcsOverlay model={model} />
 
         <VisibleLabelsHost
           model={model}

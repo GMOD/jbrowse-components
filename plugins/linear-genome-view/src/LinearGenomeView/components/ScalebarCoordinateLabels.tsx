@@ -8,6 +8,7 @@ import { makeTicks } from '../util.ts'
 import { ELIDED_BG, joinElements } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
@@ -53,7 +54,7 @@ export default function ScalebarCoordinateLabels({ model }: { model: LGV }) {
         const wrapper = container.children[i] as HTMLElement
 
         if (block.type === 'ContentBlock') {
-          const { start, end, reversed } = block
+          const { start, end, reversed } = block as ContentBlock
           if (block.widthPx < 20) {
             wrapper.style.cssText = `${WRAPPER_BASE_STYLE};width:${block.widthPx}px`
             joinElements(wrapper, 0)
