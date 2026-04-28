@@ -86,10 +86,10 @@ export class BlockSet {
   }
 
   get totalBp() {
+    const blocks = this.contentBlocks
     let total = 0
-    for (let i = 0, l = this.contentBlocks.length; i < l; i++) {
-      const b = this.contentBlocks[i]!
-      total += b.end - b.start
+    for (let i = 0, l = blocks.length; i < l; i++) {
+      total += blocks[i]!.end - blocks[i]!.start
     }
     return total
   }
@@ -187,14 +187,7 @@ function isElidedBlock(b: BaseBlock): b is ElidedBlock {
 export class ElidedBlock extends BaseBlock {
   type = 'ElidedBlock'
 
-  public widthPx: number
-
   public elidedBlockCount = 0
-
-  constructor(data: BlockData) {
-    super(data)
-    this.widthPx = data.widthPx
-  }
 
   push(otherBlock: ElidedBlock) {
     this.elidedBlockCount += 1
