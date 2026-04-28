@@ -201,18 +201,11 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
 
   const [, startTransition] = useTransition()
 
-  const selectedIds = useMemo(
-    () =>
-      useShoppingCart
-        ? new Set(selection.map(s => `${s.trackId}`))
-        : shownTrackIds,
-    [useShoppingCart, selection, shownTrackIds],
-  )
+  const selectedIds = useShoppingCart
+    ? new Set(selection.map(s => `${s.trackId}`))
+    : shownTrackIds
 
-  const visibleColumns = useMemo(
-    () => columns.filter(col => visible[col.id] !== false),
-    [columns, visible],
-  )
+  const visibleColumns = columns.filter(col => visible[col.id] !== false)
 
   const initialWidths = useMemo(
     () =>
