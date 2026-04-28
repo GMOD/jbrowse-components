@@ -1513,8 +1513,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/hclust':
-        specifier: ^3.0.6
-        version: 3.0.6
+        specifier: 3.0.4
+        version: 3.0.4
       '@gmod/tabix':
         specifier: ^3.3.3
         version: 3.3.3
@@ -1582,8 +1582,8 @@ importers:
         specifier: ^9.0.9
         version: 9.0.9
       '@gmod/hclust':
-        specifier: ^3.0.6
-        version: 3.0.6
+        specifier: 3.0.4
+        version: 3.0.4
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -3600,8 +3600,8 @@ packages:
     resolution: {integrity: sha512-PAHRE9+qYsLO8AgytokgEPn9eof6vGxliaJsOQka/qaQBN15pIMY11diTLFSHy3QScNSo3lAnn+P8dIJokN0Qg==}
     engines: {node: '>=15'}
 
-  '@gmod/hclust@3.0.6':
-    resolution: {integrity: sha512-DImJwEKdXXF0hdpzJLMtu0X+jfCsj36FVoJWPCI9WboptipLN+PBISyKCLdmv098b2ykQk9qxUkGDqvxMH/qXg==}
+  '@gmod/hclust@3.0.4':
+    resolution: {integrity: sha512-s+Qg6UW68Alxp0P8ruOozeXH0mBkKyVYr+Fbx5g3PZxn0E7YmxixLsPQuXaFMtVxQ2NjmkF9FTrzp8Efthdccg==}
 
   '@gmod/http-range-fetcher@5.0.7':
     resolution: {integrity: sha512-WEOm5SnRbdhtB5RDXDW7LSUsam/fJH1hiGsyqjdG1vvkn6Ddv4wcCAY8AP4qqxPZicg1KNz53qhifMMksg6eLQ==}
@@ -10772,7 +10772,7 @@ snapshots:
 
   '@gmod/faidx@2.0.0': {}
 
-  '@gmod/hclust@3.0.6': {}
+  '@gmod/hclust@3.0.4': {}
 
   '@gmod/http-range-fetcher@5.0.7':
     dependencies:
