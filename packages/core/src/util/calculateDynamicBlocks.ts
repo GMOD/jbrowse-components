@@ -1,5 +1,3 @@
-import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
-
 import {
   BlockSet,
   makeContentBlock,
@@ -68,7 +66,6 @@ export default function calculateDynamicBlocks(
     } = region!
     const regionWidthPx = (regionEnd - regionStart) * invBpPerPx
     const displayedRegionRightPx = displayedRegionLeftPx + regionWidthPx
-    const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
     const rightEndVisible =
       windowRightPx >= displayedRegionRightPx &&
       windowLeftPx < displayedRegionRightPx
@@ -127,7 +124,6 @@ export default function calculateDynamicBlocks(
         end,
         reversed,
         offsetPx: blockOffsetPx,
-        parentRegion,
         displayedRegionIndex,
         widthPx,
         isLeftEndOfDisplayedRegion,

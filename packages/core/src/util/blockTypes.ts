@@ -20,8 +20,7 @@ export interface BlockData {
   displayedRegionIndex?: number
   isLeftEndOfDisplayedRegion?: boolean
   isRightEndOfDisplayedRegion?: boolean
-  parentRegion?: unknown
-  variant?: string
+  variant?: 'boundary'
 }
 
 export interface ContentBlock extends BlockData {

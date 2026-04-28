@@ -1,5 +1,3 @@
-import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
-
 import {
   BlockSet,
   makeContentBlock,
@@ -63,7 +61,6 @@ export default function calculateStaticBlocks(
     const regionBlockCount = Math.ceil(
       (regionEnd - regionStart) * invBlockSizeBp,
     )
-    const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
 
     let windowRightBlockNum =
       Math.floor((windowRightBp - regionBpOffset) * invBlockSizeBp) + extra
@@ -125,7 +122,6 @@ export default function calculateStaticBlocks(
         end,
         reversed,
         offsetPx: blockOffsetPx,
-        parentRegion,
         displayedRegionIndex,
         widthPx,
         isLeftEndOfDisplayedRegion,
