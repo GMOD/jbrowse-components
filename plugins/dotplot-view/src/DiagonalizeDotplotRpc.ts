@@ -1,6 +1,11 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 import { dedupe } from '@jbrowse/core/util'
+import {
+  diagonalizeRegions,
+  type AlignmentData,
+  type DiagonalizationResult,
+} from '@jbrowse/core/util/diagonalizeRegions'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -9,183 +14,14 @@ import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAda
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
+export type { DiagonalizationResult }
+
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     DiagonalizeDotplot: {
       args: DiagonalizeDotplotArgs
-      return: {
-        newRegions: Region[]
-        stats: {
-          totalAlignments: number
-          regionsProcessed: number
-          regionsReordered: number
-          regionsReversed: number
-        }
-      }
+      return: DiagonalizationResult
     }
-  }
-}
-
-// copied from plugins/linear-comparative-view/src/LinearSyntenyView/util/diagonalize.ts
-interface AlignmentData {
-  queryRefName: string
-  refRefName: string
-  queryStart: number
-  queryEnd: number
-  refStart: number
-  refEnd: number
-  strand: number
-}
-
-export interface DiagonalizationResult {
-  newRegions: Region[]
-  stats: {
-    totalAlignments: number
-    regionsProcessed: number
-    regionsReordered: number
-    regionsReversed: number
-  }
-}
-
-type ProgressCallback = (progress: number, message: string) => void
-
-// copied from plugins/linear-comparative-view/src/LinearSyntenyView/util/diagonalize.ts
-function diagonalizeRegions(
-  alignments: AlignmentData[],
-  referenceRegions: Region[],
-  currentRegions: Region[],
-  progressCallback?: ProgressCallback,
-): DiagonalizationResult {
-  const updateProgress = (progress: number, message: string) => {
-    if (progressCallback) {
-      progressCallback(progress, message)
-    }
-  }
-
-  updateProgress(20, `Grouping ${alignments.length} alignments...`)
-
-  const queryGroups = new Map<
-    string,
-    {
-      refAlignments: Map<
-        string,
-        { bases: number; weightedPosSum: number; maxAlnLength: number }
-      >
-      strandWeightedSum: number
-    }
-  >()
-
-  for (const aln of alignments) {
-    const targetRefName = aln.refRefName
-
-    if (!queryGroups.has(targetRefName)) {
-      queryGroups.set(targetRefName, {
-        refAlignments: new Map(),
-        strandWeightedSum: 0,
-      })
-    }
-
-    const group = queryGroups.get(targetRefName)!
-    const alnLength = Math.abs(aln.refEnd - aln.refStart)
-
-    if (!group.refAlignments.has(aln.queryRefName)) {
-      group.refAlignments.set(aln.queryRefName, {
-        bases: 0,
-        weightedPosSum: 0,
-        maxAlnLength: 0,
-      })
-    }
-
-    const refData = group.refAlignments.get(aln.queryRefName)!
-    refData.bases += alnLength
-    refData.weightedPosSum += ((aln.queryStart + aln.queryEnd) / 2) * alnLength
-    refData.maxAlnLength = Math.max(refData.maxAlnLength, alnLength)
-
-    const direction = aln.strand >= 0 ? 1 : -1
-    group.strandWeightedSum += direction * alnLength
-  }
-
-  updateProgress(50, 'Determining optimal ordering and orientation...')
-
-  const queryOrdering: {
-    refName: string
-    bestRefName: string
-    bestRefPos: number
-    shouldReverse: boolean
-  }[] = []
-
-  for (const [targetRefName, group] of queryGroups) {
-    let bestRefName = ''
-    let maxAlnLength = 0
-    let bestBases = 0
-    let bestWeightedPosSum = 0
-
-    for (const [firstViewRefName, data] of group.refAlignments) {
-      if (data.maxAlnLength > maxAlnLength) {
-        maxAlnLength = data.maxAlnLength
-        bestRefName = firstViewRefName
-        bestBases = data.bases
-        bestWeightedPosSum = data.weightedPosSum
-      }
-    }
-
-    const bestRefPos = bestBases > 0 ? bestWeightedPosSum / bestBases : 0
-    const shouldReverse = group.strandWeightedSum < 0
-
-    queryOrdering.push({
-      refName: targetRefName,
-      bestRefName,
-      bestRefPos,
-      shouldReverse,
-    })
-  }
-
-  updateProgress(70, `Sorting ${queryOrdering.length} query regions...`)
-
-  const refOrder = new Map(referenceRegions.map((r, i) => [r.refName, i]))
-
-  queryOrdering.sort((a, b) => {
-    const aIdx = refOrder.get(a.bestRefName) ?? Infinity
-    const bIdx = refOrder.get(b.bestRefName) ?? Infinity
-    if (aIdx !== bIdx) {
-      return aIdx - bIdx
-    }
-    return a.bestRefPos - b.bestRefPos
-  })
-
-  updateProgress(85, 'Building new region layout...')
-
-  const newQueryRegions: Region[] = []
-  let regionsReversed = 0
-
-  const regionsByName = new Map(currentRegions.map(r => [r.refName, r]))
-  for (const { refName, shouldReverse } of queryOrdering) {
-    const region = regionsByName.get(refName)
-    if (region) {
-      newQueryRegions.push({
-        ...region,
-        reversed: shouldReverse,
-      })
-      if (shouldReverse !== region.reversed) {
-        regionsReversed++
-      }
-    }
-  }
-
-  const regionsWithoutAlignments = currentRegions.filter(
-    r => !newQueryRegions.some(nr => nr.refName === r.refName),
-  )
-
-  updateProgress(100, 'Diagonalization complete!')
-
-  return {
-    newRegions: [...newQueryRegions, ...regionsWithoutAlignments],
-    stats: {
-      totalAlignments: alignments.length,
-      regionsProcessed: queryOrdering.length,
-      regionsReordered: newQueryRegions.length,
-      regionsReversed,
-    },
   }
 }
 
@@ -258,7 +94,7 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
           queryEnd: feat.get('end'),
           refStart: mate.start,
           refEnd: mate.end,
-          strand: feat.get('strand')! || 1,
+          strand: feat.get('strand') ?? 1,
         })
       }
     }
@@ -271,7 +107,7 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
       `Running diagonalization on ${alignments.length} alignments...`,
     )
 
-    const result = diagonalizeRegions(
+    const result = await diagonalizeRegions(
       alignments,
       view.hview.displayedRegions,
       view.vview.displayedRegions,

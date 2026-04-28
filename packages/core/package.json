@@ -111,6 +111,7 @@
     "./util/colord": "./src/util/colord.ts",
     "./util/compositeMap": "./src/util/compositeMap.ts",
     "./util/convertCodingSequenceToPeptides": "./src/util/convertCodingSequenceToPeptides.ts",
+    "./util/diagonalizeRegions": "./src/util/diagonalizeRegions.ts",
     "./util/flatbush": "./src/util/flatbush/index.ts",
     "./util/formatFastaStrings": "./src/util/formatFastaStrings.ts",
     "./util/io": "./src/util/io/index.ts",
@@ -167,7 +168,7 @@
     "@emotion/utils": "^1.4.2",
     "@floating-ui/react": "^0.27.19",
     "@gmod/abortable-promise-cache": "^3.0.4",
-    "@gmod/bgzf-filehandle": "^6.0.18",
+    "@gmod/bgzf-filehandle": "^6.0.19",
     "@jbrowse/jexl": "^3.0.2",
     "@jbrowse/mobx-state-tree": "^5.6.0",
     "@jbrowse/quick-lru": "^7.3.5",
@@ -564,6 +565,10 @@
       "./util/convertCodingSequenceToPeptides": {
         "types": "./esm/util/convertCodingSequenceToPeptides.d.ts",
         "import": "./esm/util/convertCodingSequenceToPeptides.js"
+      },
+      "./util/diagonalizeRegions": {
+        "types": "./esm/util/diagonalizeRegions.d.ts",
+        "import": "./esm/util/diagonalizeRegions.js"
       },
       "./util/flatbush": {
         "types": "./esm/util/flatbush/index.d.ts",
@@ -976,6 +981,9 @@
         ],
         "util/convertCodingSequenceToPeptides": [
           "esm/util/convertCodingSequenceToPeptides.d.ts"
+        ],
+        "util/diagonalizeRegions": [
+          "esm/util/diagonalizeRegions.d.ts"
         ],
         "util/flatbush": [
           "esm/util/flatbush/index.d.ts"
