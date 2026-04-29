@@ -13,7 +13,10 @@ import { fillColor } from '../../shared/color.ts'
 
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types'
 import type { ColorPalette } from '../../shaders/colors.ts'
-import type { CigarHitResult, SashimiArcHitResult } from '../../shared/hitTestTypes.ts'
+import type {
+  CigarHitResult,
+  SashimiArcHitResult,
+} from '../../shared/hitTestTypes.ts'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 import type { Theme } from '@mui/material'
 

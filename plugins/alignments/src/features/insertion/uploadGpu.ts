@@ -10,6 +10,11 @@ export function uploadInsertions(
 ) {
   const n = data.numInsertions
   if (n > 0) {
-    hal.uploadBuffer(displayedRegionIndex, PASS_INSERTION, packInsertions(data), n)
+    hal.uploadBuffer(
+      displayedRegionIndex,
+      PASS_INSERTION,
+      packInsertions(data),
+      n,
+    )
   }
 }

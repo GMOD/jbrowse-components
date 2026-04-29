@@ -10,6 +10,11 @@ export function uploadMismatches(
 ) {
   const n = data.mismatchPositions.length
   if (n > 0) {
-    hal.uploadBuffer(displayedRegionIndex, PASS_MISMATCH, packMismatches(data), n)
+    hal.uploadBuffer(
+      displayedRegionIndex,
+      PASS_MISMATCH,
+      packMismatches(data),
+      n,
+    )
   }
 }

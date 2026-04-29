@@ -1,6 +1,5 @@
-import { observer } from 'mobx-react'
-
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 import {
   ContentBlock as ContentBlockComponent,
@@ -25,7 +24,7 @@ const ContentBlockBody = observer(function ContentBlockBody({
 }) {
   return (
     <>
-      {state.ReactComponent ? <state.ReactComponent model={state} /> : null}
+      <state.ReactComponent model={state} />
       {state.maxHeightReached && state.layout ? (
         <MaxHeightReached top={state.layout.getTotalHeight() - 16} />
       ) : null}

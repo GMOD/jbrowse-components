@@ -42,7 +42,9 @@ export interface InterRegionPaddingBlock extends BlockData {
 
 export type BaseBlock = ContentBlock | ElidedBlock | InterRegionPaddingBlock
 
-export function makeContentBlock(data: Omit<ContentBlock, 'type'>): ContentBlock {
+export function makeContentBlock(
+  data: Omit<ContentBlock, 'type'>,
+): ContentBlock {
   return { ...data, type: 'ContentBlock' }
 }
 

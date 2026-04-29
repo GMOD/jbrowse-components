@@ -129,7 +129,7 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
               model.setIsScalebarRefNameMenuOpen(true)
               setMenuState({
                 anchorEl: event.currentTarget,
-                refName: refName!,
+                refName: refName,
                 displayedRegionIndex: displayedRegionIndex!,
               })
             }}

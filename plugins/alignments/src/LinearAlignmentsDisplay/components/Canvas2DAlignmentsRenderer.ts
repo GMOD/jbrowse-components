@@ -98,9 +98,7 @@ import type {
   RenderState,
 } from './rendererTypes.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
-import type {
-  ArcsRegionFields,
-} from '../../features/arcs/buildRegion.ts'
+import type { ArcsRegionFields } from '../../features/arcs/buildRegion.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ConnectingLinesRegionFields } from '../../features/connectingLines/buildRegion.ts'
 import type { CoverageRegionFields } from '../../features/coverage/buildRegion.ts'

@@ -123,8 +123,11 @@ export function getReadColor(
 
   // In chain/linked-read mode, supplementary chains use orange for paired-end reads
   const chainSupp = data.readChainHasSupp?.[i] ?? 0
-  if ((opts?.renderingMode === 'linkedRead' ||
-      opts?.renderingMode === 'linkedReadBezier') && chainSupp > 0) {
+  if (
+    (opts?.renderingMode === 'linkedRead' ||
+      opts?.renderingMode === 'linkedReadBezier') &&
+    chainSupp > 0
+  ) {
     const isPaired = (flags & 1) !== 0
     if (isPaired) {
       return rgb255(palette.colorSupplementary)
@@ -141,8 +144,9 @@ export function getReadColor(
   if (
     mateUnmapped &&
     (isOrientationScheme(colorScheme) ||
-      (colorScheme === CS_NORMAL && (opts?.renderingMode === 'linkedRead' ||
-      opts?.renderingMode === 'linkedReadBezier')))
+      (colorScheme === CS_NORMAL &&
+        (opts?.renderingMode === 'linkedRead' ||
+          opts?.renderingMode === 'linkedReadBezier')))
   ) {
     return rgb255(palette.colorUnmappedMate)
   }

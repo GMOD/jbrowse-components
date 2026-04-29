@@ -46,7 +46,10 @@ function bezierPath(
   peakH: number,
 ) {
   const apexY = Math.min(sy1, sy2) - peakH
-  const tangentDx = Math.max(MIN_TANGENT_PX, Math.abs(sx2 - sx1) * TANGENT_FACTOR)
+  const tangentDx = Math.max(
+    MIN_TANGENT_PX,
+    Math.abs(sx2 - sx1) * TANGENT_FACTOR,
+  )
   const cp1x = sx1 + s1 * tangentDx
   const cp2x = sx2 + p2Strand * tangentDx
   return `M ${sx1} ${sy1} C ${cp1x} ${apexY} ${cp2x} ${apexY} ${sx2} ${sy2}`
@@ -127,9 +130,15 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
       }
 
       const sy1 =
-        e1.data.readYs[e1.readIdx]! * rowH + pileupTopOffset - rangeY0 + readCenterDy
+        e1.data.readYs[e1.readIdx]! * rowH +
+        pileupTopOffset -
+        rangeY0 +
+        readCenterDy
       const sy2 =
-        e2.data.readYs[e2.readIdx]! * rowH + pileupTopOffset - rangeY0 + readCenterDy
+        e2.data.readYs[e2.readIdx]! * rowH +
+        pileupTopOffset -
+        rangeY0 +
+        readCenterDy
 
       if (!arcIsVisible(sy1, sy2, peakH, c.isNormal, viewportH)) {
         continue

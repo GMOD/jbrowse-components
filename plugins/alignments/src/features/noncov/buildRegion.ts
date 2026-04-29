@@ -12,10 +12,16 @@ export interface NoncovRegionFields {
   noncovMaxCount: number
 }
 
-export function buildNoncovFields(data: CoverageUploadData): NoncovRegionFields {
+export function buildNoncovFields(
+  data: CoverageUploadData,
+): NoncovRegionFields {
   const n = data.noncovPositions.length
   if (n === 0) {
-    return { noncovBuffer: new ArrayBuffer(0), noncovSegmentCount: 0, noncovMaxCount: 0 }
+    return {
+      noncovBuffer: new ArrayBuffer(0),
+      noncovSegmentCount: 0,
+      noncovMaxCount: 0,
+    }
   }
   const packed = packNoncovSegmentsForCanvas2D(
     data.noncovPositions,
@@ -32,5 +38,9 @@ export function buildNoncovFields(data: CoverageUploadData): NoncovRegionFields 
 }
 
 export function emptyNoncovFields(): NoncovRegionFields {
-  return { noncovBuffer: new ArrayBuffer(0), noncovSegmentCount: 0, noncovMaxCount: 0 }
+  return {
+    noncovBuffer: new ArrayBuffer(0),
+    noncovSegmentCount: 0,
+    noncovMaxCount: 0,
+  }
 }

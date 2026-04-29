@@ -1,7 +1,4 @@
-import {
-  arcsToRegionResult,
-  computeArcsFromPileupData,
-} from './compute.ts'
+import { arcsToRegionResult, computeArcsFromPileupData } from './compute.ts'
 
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 

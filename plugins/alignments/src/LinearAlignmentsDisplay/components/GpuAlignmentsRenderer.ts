@@ -4,10 +4,7 @@ import { slangPass } from '@jbrowse/core/gpu/slangPass'
 import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
-import {
-  getChainBounds,
-  toClipRect,
-} from './chainOverlayUtils.ts'
+import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
 import {
   buildReadIdToIndex,
   computeBlockHeights,

@@ -1,9 +1,6 @@
 import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
 
-import type {
-  CigarCoords,
-  ResolvedBlock,
-} from '../../shared/hitTestTypes.ts'
+import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
 
 export interface ModificationHitResult {
   position: number

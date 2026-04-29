@@ -72,8 +72,7 @@ export function hitTestClip(
     resolved.rpcData
   const numInterbases = interbasePositions.length
   const hitToleranceBp = Math.max(0.5, bpPerPx * 3)
-  const wantType =
-    kind === 'softclip' ? INTERBASE_SOFTCLIP : INTERBASE_HARDCLIP
+  const wantType = kind === 'softclip' ? INTERBASE_SOFTCLIP : INTERBASE_HARDCLIP
 
   for (let i = 0; i < numInterbases; i++) {
     if (interbaseTypes[i] !== wantType || interbaseYs[i] !== row) {

@@ -1,7 +1,4 @@
-import type {
-  CigarCoords,
-  ResolvedBlock,
-} from '../../shared/hitTestTypes.ts'
+import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
 
 // Hit test for an aligned read at the given (genomicPos, row).
 // Walks the readPositions array linearly — fine for typical pileup density;

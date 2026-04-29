@@ -99,7 +99,9 @@ export function getShowMenuItem(model: ShowMenuModel) {
               type: 'checkbox' as const,
               checked: model.showLinkedReadsAsBeziers,
               onClick: () => {
-                model.setShowLinkedReadsAsBeziers(!model.showLinkedReadsAsBeziers)
+                model.setShowLinkedReadsAsBeziers(
+                  !model.showLinkedReadsAsBeziers,
+                )
               },
             },
           ]

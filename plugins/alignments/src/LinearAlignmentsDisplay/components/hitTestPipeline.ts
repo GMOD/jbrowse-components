@@ -207,13 +207,7 @@ export function performHitTest(
   const hit = isChainMode
     ? hitTestChain(coords, resolved?.rpcData)
     : resolved && coords
-      ? hitTestFeature(
-          canvasX,
-          canvasY,
-          resolved,
-          coords,
-          featureHeightSetting,
-        )
+      ? hitTestFeature(canvasX, canvasY, resolved, coords, featureHeightSetting)
       : undefined
   if (hit && resolved) {
     return { type: 'feature', hit, resolved }

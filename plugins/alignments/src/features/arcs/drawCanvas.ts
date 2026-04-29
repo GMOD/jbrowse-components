@@ -28,11 +28,7 @@ interface DrawArcsOpts {
 
 // Inner arc rasterizer. yBp is the Y apex in genomic bp — for flat it is the
 // constant line Y, otherwise the curve apex. See ARC_SHAPE_* in compute.ts.
-function drawArcsToCtx(
-  ctx: Ctx2D,
-  data: ArcsRegionFields,
-  opts: DrawArcsOpts,
-) {
+function drawArcsToCtx(ctx: Ctx2D, data: ArcsRegionFields, opts: DrawArcsOpts) {
   const {
     bpToScreenX,
     arcsYDomainBp,

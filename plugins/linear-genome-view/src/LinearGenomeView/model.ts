@@ -1485,15 +1485,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * rounded dynamic blocks are dynamic blocks without fractions of bp
          */
         get roundedDynamicBlocks() {
-          return this.dynamicBlocks.contentBlocks.map(
-            block =>
-              ({
-                // eslint-disable-next-line @typescript-eslint/no-misused-spread
-                ...block,
-                start: Math.floor(block.start),
-                end: Math.ceil(block.end),
-              }) as ContentBlock,
-          )
+          return this.dynamicBlocks.contentBlocks.map(block => ({
+            ...block,
+            start: Math.floor(block.start),
+            end: Math.ceil(block.end),
+          }))
         },
 
         /**

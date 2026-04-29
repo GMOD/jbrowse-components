@@ -59,7 +59,8 @@ export function isNormalOrientation(
 }
 
 export function pairedColorType(orientNum: number) {
-  return orientNum >= LINKED_READ_COLOR_PAIR_LR && orientNum <= LINKED_READ_COLOR_PAIR_LL
+  return orientNum >= LINKED_READ_COLOR_PAIR_LR &&
+    orientNum <= LINKED_READ_COLOR_PAIR_LL
     ? orientNum
     : LINKED_READ_COLOR_PAIR_UNKNOWN
 }
@@ -110,10 +111,7 @@ export function filterEntries(entries: ReadEntry[], hasPaired: boolean) {
     const out: ReadEntry[] = []
     for (const e of entries) {
       const f = e.data.readFlags[e.readIdx]!
-      if (
-        !(f & SAM_FLAG_SUPPLEMENTARY) &&
-        !(f & SAM_FLAG_MATE_UNMAPPED)
-      ) {
+      if (!(f & SAM_FLAG_SUPPLEMENTARY) && !(f & SAM_FLAG_MATE_UNMAPPED)) {
         out.push(e)
       }
     }
@@ -231,10 +229,7 @@ export function computeLinkedReadLinesByRegion(
         acc.set(idx, bucket)
       }
       bucket.positions.push(c.bp1, c.bp2)
-      bucket.ys.push(
-        e1.data.readYs[e1.readIdx]!,
-        e2.data.readYs[e2.readIdx]!,
-      )
+      bucket.ys.push(e1.data.readYs[e1.readIdx]!, e2.data.readYs[e2.readIdx]!)
       bucket.colorTypes.push(c.colorType)
     }
   }
