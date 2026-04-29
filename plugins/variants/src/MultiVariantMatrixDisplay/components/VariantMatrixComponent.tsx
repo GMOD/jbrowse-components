@@ -97,6 +97,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
           sampleName,
           name: source.name,
           featureId: feature.featureId,
+          featureData: feature,
         }
       }
     }
@@ -112,10 +113,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
     if (!baseFeature) {
       return undefined
     }
-    const feature = model.cellData?.featureData.find(
-      f => f.featureId === result.featureId,
-    )
-    return enrichFeatureFromClick(baseFeature, feature, result)
+    return enrichFeatureFromClick(baseFeature, result.featureData, result)
   }
 
   const width = view.totalWidthPxWithoutBorders
@@ -165,7 +163,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
           if (key !== lastHoveredRef.current) {
             lastHoveredRef.current = key
             if (result) {
-              const { featureId, sampleName, ...tooltip } = result
+              const { featureId, sampleName, featureData, ...tooltip } = result
               model.setHoveredGenotype(tooltip)
             } else {
               model.setHoveredGenotype(undefined)

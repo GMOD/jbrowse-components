@@ -43,24 +43,18 @@ export function useVariantVirtualScroll({
         const newScrollTop = Math.max(0, rowUnderMouse * newRowHeight - mouseY)
         setRowHeight(newRowHeight)
         setScrollTop(newScrollTop)
-        return
-      }
-      if (scrollZoom) {
-        return
-      }
-      if (scrollableHeight <= 0) {
-        return
-      }
-      let dy = e.deltaY
-      if (e.deltaMode === 1) {
-        dy *= 40
-      } else if (e.deltaMode === 2) {
-        dy *= viewportHeight
-      }
-      const next = Math.max(0, Math.min(scrollableHeight, scrollTop + dy))
-      if (next !== scrollTop) {
-        e.preventDefault()
-        setScrollTop(next)
+      } else if (!scrollZoom && scrollableHeight > 0) {
+        let dy = e.deltaY
+        if (e.deltaMode === 1) {
+          dy *= 40
+        } else if (e.deltaMode === 2) {
+          dy *= viewportHeight
+        }
+        const next = Math.max(0, Math.min(scrollableHeight, scrollTop + dy))
+        if (next !== scrollTop) {
+          e.preventDefault()
+          setScrollTop(next)
+        }
       }
     }
     canvas.addEventListener('wheel', handler, { passive: false })

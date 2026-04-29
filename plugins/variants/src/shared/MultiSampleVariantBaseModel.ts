@@ -84,10 +84,6 @@ function encodeGenotype(gt: string) {
   return uncalledCount === alleles.length ? -1 : nonRefCount
 }
 
-interface GenotypeMap {
-  genotypes: Record<string, string>
-}
-
 // Module-local helper for the variant cell data RPC call. Kept here (not an
 // MST action) so the RPC payload shape is easy to read at the call site. self
 // is typed structurally because cellDataMode is defined on each subclass
@@ -130,35 +126,23 @@ async function callMultiSampleVariantCellData(
   )
 }
 
-function getGenotypeMapForFeature(cellData: unknown, featureId: string) {
-  const data = cellData as
-    | {
-        featureGenotypeMap?: Record<string, GenotypeMap>
-        featureData?: (GenotypeMap & { featureId: string })[]
-        perRegionCellData?: Record<
-          number,
-          { featureGenotypeMap?: Record<string, GenotypeMap> }
-        >
-      }
-    | undefined
-  if (!data) {
+function getGenotypeMapForFeature(
+  cellData: CellDataResult | undefined,
+  featureId: string,
+) {
+  if (!cellData) {
     return undefined
   }
-  if (data.perRegionCellData) {
-    for (const regionData of Object.values(data.perRegionCellData)) {
-      const result = regionData.featureGenotypeMap?.[featureId]
+  if (cellData.mode === 'regular') {
+    for (const regionData of Object.values(cellData.perRegionCellData)) {
+      const result = regionData.featureGenotypeMap[featureId]
       if (result) {
         return result
       }
     }
+    return undefined
   }
-  if (data.featureGenotypeMap) {
-    return data.featureGenotypeMap[featureId]
-  }
-  if (data.featureData) {
-    return data.featureData.find(f => f.featureId === featureId)
-  }
-  return undefined
+  return cellData.featureData.find(f => f.featureId === featureId)
 }
 
 /**
@@ -205,7 +189,7 @@ export default function MultiSampleVariantBaseModelF(
         snap = { ...rest, heightPreConfig: height }
       }
 
-      return migrateVariantSettings(snap)
+      return migrateOldSettingSnapshots(snap)
     })
     .volatile(() => ({
       /**
@@ -482,15 +466,6 @@ export default function MultiSampleVariantBaseModelF(
         return self.getConfWithOverride<boolean>('showReferenceAlleles')
           ? 'draw'
           : 'skip'
-      },
-
-      activeFilters() {
-        return (
-          self.jexlFilters ??
-          self
-            .getConfWithOverride<string[]>('jexlFilters')
-            .map((r: string) => `jexl:${r}`)
-        )
       },
 
       /**
@@ -1105,6 +1080,3 @@ export type MultiSampleVariantBaseStateModel = ReturnType<
 export type MultiSampleVariantBaseModel =
   Instance<MultiSampleVariantBaseStateModel>
 
-function migrateVariantSettings(snap: Record<string, unknown>) {
-  return migrateOldSettingSnapshots(snap)
-}

@@ -245,6 +245,7 @@ const VariantComponent = observer(function VariantComponent({
         sampleName: source?.sampleName ?? sourceName,
         name: sourceName,
         featureId,
+        featureInfo: info,
         cell: {
           rowIndex: regionCellData.cellRowIndices[bestIdx]!,
           genomicStart,
@@ -266,13 +267,7 @@ const VariantComponent = observer(function VariantComponent({
     if (!baseFeature) {
       return undefined
     }
-    const cellData = model.cellData
-    const info = cellData
-      ? Object.values(cellData.perRegionCellData).find(
-          r => r.featureGenotypeMap[result.featureId],
-        )?.featureGenotypeMap[result.featureId]
-      : undefined
-    return enrichFeatureFromClick(baseFeature, info, result)
+    return enrichFeatureFromClick(baseFeature, result.featureInfo, result)
   }
 
   const width = view.trackWidthPx
@@ -316,7 +311,7 @@ const VariantComponent = observer(function VariantComponent({
           if (key !== lastHoveredRef.current) {
             lastHoveredRef.current = key
             if (result) {
-              const { featureId, cell, sampleName, ...tooltip } = result
+              const { featureId, cell, sampleName, featureInfo, ...tooltip } = result
               model.setHoveredGenotype(tooltip)
               setHoveredCell(cell)
             } else {

@@ -334,7 +334,7 @@ export async function executeVariantCellData({
         cellData.cellFeatureIndices.buffer,
         cellData.cellRowIndices.buffer,
         cellData.cellColors.buffer,
-      ] as ArrayBuffer[],
+      ],
     )
   }
 }
