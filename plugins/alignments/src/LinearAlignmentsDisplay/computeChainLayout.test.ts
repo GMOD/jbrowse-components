@@ -421,8 +421,8 @@ describe('buildChainConnectingData', () => {
     })
     const readYs = new Uint16Array([3])
     const out = buildChainConnectingData(data, readYs)
-    expect(out.numConnectingLines).toBe(0)
     expect(out.connectingLinePositions.length).toBe(0)
+    expect(out.connectingLineYs.length).toBe(0)
   })
 
   test('connecting line emitted for chain with multiple reads', () => {
@@ -440,7 +440,7 @@ describe('buildChainConnectingData', () => {
     })
     const readYs = new Uint16Array([2, 2])
     const out = buildChainConnectingData(data, readYs)
-    expect(out.numConnectingLines).toBe(1)
+    expect(out.connectingLineYs.length).toBe(1)
     expect(out.connectingLineYs[0]).toBe(2)
     expect(out.connectingLinePositions[0]).toBe(1000) // absolute minStart
     expect(out.connectingLinePositions[1]).toBe(1400) // absolute maxEnd

@@ -67,6 +67,5 @@ export function computeSashimiJunctions(gaps: CoverageGap[]) {
     sashimiScores,
     sashimiColorTypes,
     sashimiCounts,
-    numSashimiArcs: n,
   }
 }

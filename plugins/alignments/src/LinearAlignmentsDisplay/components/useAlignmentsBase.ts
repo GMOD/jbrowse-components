@@ -21,8 +21,8 @@ import {
 } from './openFeatureWidget.ts'
 import { getContrastBaseMap } from '../../shared/util.ts'
 
-import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
+import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // eslint-disable-next-line unicorn/prefer-export-from -- also used locally in function signatures

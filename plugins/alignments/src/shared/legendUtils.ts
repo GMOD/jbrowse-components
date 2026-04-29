@@ -1,13 +1,8 @@
-import { methylated5mC, unmethylated5mC } from '@jbrowse/core/ui/theme'
-
 import { fillColor } from './color.ts'
 
 import type { ColorBy, ModificationTypeWithColor } from './types.ts'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
-import type { Theme } from '@mui/material'
 
-// Re-export from linear-genome-view for convenience
-export { calculateSvgLegendWidth } from '@jbrowse/plugin-linear-genome-view'
 export type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 const supplementaryItem: LegendItem = {
@@ -33,11 +28,6 @@ const insertSizeItems: LegendItem[] = [
   { color: fillColor.color_interchrom, label: 'Inter-chromosomal' },
 ]
 
-const normalInsertItem: LegendItem = {
-  color: fillColor.color_pair_lr,
-  label: 'Normal',
-}
-
 const orientationLegendItems: LegendItem[] = [
   ...orientationItems,
   unmappedMateItem,
@@ -45,7 +35,7 @@ const orientationLegendItems: LegendItem[] = [
 ]
 
 const insertSizeLegendItems: LegendItem[] = [
-  normalInsertItem,
+  { color: fillColor.color_pair_lr, label: 'Normal' },
   ...insertSizeItems,
   unmappedMateItem,
   supplementaryItem,
@@ -64,87 +54,6 @@ const samplotLegendItems: LegendItem[] = [
   { color: fillColor.color_samplot_inv, label: 'Inversion (FF / RR)' },
   { color: fillColor.color_interchrom, label: 'Interchromosomal (BND)' },
 ]
-
-function getBaseItems(theme: Theme): LegendItem[] {
-  const { bases, insertion, deletion, hardclip, softclip } = theme.palette
-  return [
-    { color: bases.A.main, label: 'A' },
-    { color: bases.C.main, label: 'C' },
-    { color: bases.G.main, label: 'G' },
-    { color: bases.T.main, label: 'T' },
-    { color: insertion, label: 'Insertion' },
-    { color: deletion, label: 'Deletion' },
-    { color: hardclip, label: 'Hard clip' },
-    { color: softclip, label: 'Soft clip' },
-  ]
-}
-
-/**
- * Get legend items for pileup display based on colorBy setting
- */
-export function getPileupLegendItems(
-  colorBy: ColorBy | undefined,
-  theme: Theme,
-): LegendItem[] {
-  const colorType = colorBy?.type
-
-  if (colorType === 'strand') {
-    return [
-      { color: fillColor.color_fwd_strand, label: 'Forward strand' },
-      { color: fillColor.color_rev_strand, label: 'Reverse strand' },
-      supplementaryItem,
-    ]
-  } else if (colorType === 'stranded') {
-    return [
-      { color: fillColor.color_fwd_strand, label: 'First-of-pair forward' },
-      { color: fillColor.color_rev_strand, label: 'First-of-pair reverse' },
-      supplementaryItem,
-    ]
-  } else if (colorType === 'insertSize') {
-    return insertSizeLegendItems
-  } else if (colorType === 'pairOrientation') {
-    return orientationLegendItems
-  } else if (colorType === 'insertSizeAndPairOrientation') {
-    return insertSizeAndOrientationLegendItems
-  } else if (colorType === 'mappingQuality') {
-    return [
-      { color: 'hsl(0, 50%, 50%)', label: 'MAPQ 0' },
-      { color: 'hsl(30, 50%, 50%)', label: 'MAPQ 30' },
-      { color: 'hsl(60, 50%, 50%)', label: 'MAPQ 60' },
-    ]
-  } else {
-    return [
-      ...getBaseItems(theme),
-      { color: fillColor.color_pair_lr, label: 'Normal' },
-      unmappedMateItem,
-      supplementaryItem,
-    ]
-  }
-}
-
-/**
- * Get legend items for SNP coverage display based on colorBy setting
- */
-export function getSNPCoverageLegendItems(
-  colorBy: ColorBy | undefined,
-  visibleModifications: ReadonlyMap<string, ModificationTypeWithColor>,
-  theme: Theme,
-): LegendItem[] {
-  if (colorBy?.type === 'methylation') {
-    return [
-      { color: methylated5mC, label: 'CpG methylated' },
-      { color: unmethylated5mC, label: 'CpG unmethylated' },
-    ]
-  } else if (colorBy?.type === 'modifications') {
-    const items: LegendItem[] = []
-    for (const [type, mod] of visibleModifications.entries()) {
-      items.push({ color: mod.color, label: type })
-    }
-    return items
-  } else {
-    return getBaseItems(theme)
-  }
-}
 
 /**
  * Get legend items for read cloud/arcs display based on colorBy setting.

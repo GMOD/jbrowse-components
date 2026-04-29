@@ -4,12 +4,12 @@ import { INTERBASE_HARDCLIP, INTERBASE_SOFTCLIP } from './types.ts'
 import { interbaseRangeEnds } from './uploadTypes.ts'
 import * as clipShader from '../shaders/slang/clip.generated.ts'
 
-import type { CigarUploadData } from './uploadTypes.ts'
 import type {
   CigarCoords,
   CigarHitResult,
   ResolvedBlock,
 } from './hitTestTypes.ts'
+import type { CigarUploadData } from './uploadTypes.ts'
 import type { GpuHal } from '@jbrowse/core/gpu/hal'
 
 export const PASS_CLIP = 'clip'

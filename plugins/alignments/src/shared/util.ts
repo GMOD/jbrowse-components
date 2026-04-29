@@ -97,7 +97,7 @@ export function parseSamHeader(samHeader: SamHeaderLine[]): ParsedSamHeader {
   return { idToName, nameToId, readGroups }
 }
 
-export function getColorBaseMap(theme: Theme) {
+function getColorBaseMap(theme: Theme) {
   const { skip, deletion, insertion, hardclip, softclip, bases } = theme.palette
   return {
     A: bases.A.main,

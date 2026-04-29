@@ -12,12 +12,6 @@ export type {
   ReadUploadData,
 } from '../../shared/uploadTypes.ts'
 
-export interface BaseRegionData {
-  readIdToIndex: Map<string, number>
-  readPositions: Uint32Array
-  readYs: Uint16Array
-}
-
 export function buildReadIdToIndex(ids: string[], n: number) {
   const m = new Map<string, number>()
   for (let i = 0; i < n; i++) {

@@ -1,4 +1,4 @@
-import type { BaseRegionData, RenderState } from './rendererTypes.ts'
+import type { RenderState } from './rendererTypes.ts'
 
 export interface ClipRect {
   sx1: number
@@ -7,7 +7,16 @@ export interface ClipRect {
   syBot: number
 }
 
-export function getChainBounds(ids: string[], region: BaseRegionData) {
+// Minimal read-position shape `getChainBounds` needs. Both Canvas2DRegionData
+// (extends ReadRegionFields) and the GPU renderer's LocalRegion satisfy this
+// structurally — getChainBounds is the only consumer.
+export interface ChainBoundsRegion {
+  readIdToIndex: Map<string, number>
+  readPositions: Uint32Array
+  readYs: Uint16Array
+}
+
+export function getChainBounds(ids: string[], region: ChainBoundsRegion) {
   const { readIdToIndex, readPositions, readYs } = region
   let minStart = Infinity
   let maxEnd = -Infinity

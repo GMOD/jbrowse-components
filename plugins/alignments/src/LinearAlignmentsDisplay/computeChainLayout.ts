@@ -132,7 +132,6 @@ export function buildChainConnectingData(
     return {
       connectingLinePositions: new Uint32Array(0),
       connectingLineYs: new Uint16Array(0),
-      numConnectingLines: 0,
       chainFlatbush: undefined as Flatbush | undefined,
     }
   }
@@ -178,7 +177,6 @@ export function buildChainConnectingData(
   return {
     connectingLinePositions,
     connectingLineYs,
-    numConnectingLines: numLines,
     chainFlatbush,
   }
 }

@@ -4,7 +4,10 @@ import { slangPass } from '@jbrowse/core/gpu/slangPass'
 import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
-import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
+import {
+  getChainBounds,
+  toClipRect,
+} from './chainOverlayUtils.ts'
 import {
   buildReadIdToIndex,
   computeBlockHeights,
@@ -83,10 +86,10 @@ import * as flatQuadShader from '../../shaders/slang/flatQuad.generated.ts'
 import * as readShader from '../../shaders/slang/read.generated.ts'
 import { CLIP_PASS, PASS_CLIP, uploadClips } from '../../shared/clipPass.ts'
 
+import type { ChainBoundsRegion } from './chainOverlayUtils.ts'
 import type {
   AlignmentsBackend,
   AlignmentsSources,
-  BaseRegionData,
   ColorPalette,
   CoverageUploadData,
   RGBColor,
@@ -301,8 +304,9 @@ interface BlockFrame {
   reversed: boolean
 }
 
-// Per-region data not tracked by the HAL
-interface LocalRegion extends BaseRegionData {
+// Per-region data not tracked by the HAL. Extends ChainBoundsRegion so
+// `getChainBounds` accepts it directly.
+interface LocalRegion extends ChainBoundsRegion {
   readStrands: Int8Array
   insertSizeStats?: { upper: number; lower: number }
   maxDepth: number
@@ -318,10 +322,24 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
   private uF32 = new Float32Array(this.uData)
   private uU32 = new Uint32Array(this.uData)
   private uI32 = new Int32Array(this.uData)
+  // Reusable scratch for save/restore around overlay & arc passes that mutate
+  // the UBO. Pre-allocated to avoid per-overlay-block allocations during hover.
+  private uScratch = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
   private regions = new Map<number, LocalRegion>()
 
   constructor(hal: GpuHal) {
     this.hal = hal
+  }
+
+  // Save/restore the entire UBO via byte-level memcpy. Float32Array.set on a
+  // shared-byte view technically works on spec-compliant engines, but a
+  // Uint8Array copy reads as "restore the bytes" and avoids any NaN-pattern
+  // reinterpretation concerns.
+  private saveUBO() {
+    new Uint8Array(this.uScratch).set(new Uint8Array(this.uData))
+  }
+  private restoreUBO() {
+    new Uint8Array(this.uData).set(new Uint8Array(this.uScratch))
   }
 
   sync(sources: AlignmentsSources) {
@@ -342,12 +360,14 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         data.modCovPackedBuffer,
         data.modCovPositions.length,
       )
+      // uploadReads above already populated this.regions[idx], so the
+      // connecting-line and linked-read uploads don't need their own
+      // ensureRegion call. (The arcs-only loop below does — arcs can arrive
+      // for a region with no pileup data.)
       if (data.connectingLinePositions.length > 0) {
-        ensureRegion(this.regions, idx, emptyRegion)
         uploadConnectingLines(this.hal, idx, data)
       }
       if (data.numLinkedReadLines > 0) {
-        ensureRegion(this.regions, idx, emptyRegion)
         uploadLinkedReadLines(this.hal, idx, data)
       }
     }
@@ -593,7 +613,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     if (arcViewportH <= 0) {
       return
     }
-    const savedUBO = this.uData.slice(0)
+    this.saveUBO()
     fillArcUniforms(this.uF32, this.uU32, {
       region,
       block,
@@ -614,7 +634,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     this.hal.drawPass(PASS_ARC, block.displayedRegionIndex)
     this.hal.drawPass(PASS_ARC_LINE, block.displayedRegionIndex)
 
-    this.uF32.set(new Float32Array(savedUBO))
+    this.restoreUBO()
     this.hal.setViewport(vpX, 0, vpW, bufH)
     this.hal.writeUniforms(this.uData)
   }
@@ -707,7 +727,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       this.hal.getBufferCount(block.displayedRegionIndex, PASS_READ) > 0
     ) {
       if (needsFeatureHighlight) {
-        const savedUBO = this.uData.slice(0)
+        this.saveUBO()
         this.uI32[U.highlightOnly] = 1
         this.uI32[U.highlightIdx] = regionHighlightIdx
         this.hal.writeUniforms(this.uData)
@@ -718,7 +738,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         this.hal.setScissor(vpX, pileupTop, vpW, pileupH)
         this.hal.drawPass(PASS_READ, block.displayedRegionIndex)
 
-        this.uF32.set(new Float32Array(savedUBO))
+        this.restoreUBO()
         this.hal.writeUniforms(this.uData)
       }
 
