@@ -11,7 +11,7 @@ import type { GetCellDataArgs } from './types.ts'
 import type { VariantCellData } from '../MultiVariantDisplay/components/computeVariantCells.ts'
 import type { MatrixCellData } from '../MultiVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
 import type { MAFFilteredFeature } from '../shared/minorAlleleFrequencyUtils.ts'
-import type { SampleInfo } from '../shared/types.ts'
+import type { ProcessedSource, SampleInfo } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
@@ -237,6 +237,29 @@ export async function executeVariantCellData({
     () => computeSampleInfo(mafs, genotypesCache),
   )
 
+  // For phased mode: expand sources that don't yet have HP set (i.e., not
+  // from haplotype clustering). The client sends layout-ordered sources without
+  // HP to avoid a circular sampleInfo dependency; we expand here using the
+  // sampleInfo we just computed. Sources from clustering already have HP.
+  let effectiveSources = sources
+  if (renderingMode === 'phased' && sources.some(s => s.HP === undefined)) {
+    console.log(
+      '[executeVariantCellData] expanding sources for phased mode, sampleInfo:',
+      JSON.stringify(sampleInfo),
+    )
+    effectiveSources = sources.flatMap(s => {
+      if (s.HP !== undefined) {
+        return [s]
+      }
+      const ploidy = sampleInfo[s.sampleName]?.maxPloidy ?? 2
+      const results: ProcessedSource[] = []
+      for (let i = 0; i < ploidy; i++) {
+        results.push({ ...s, name: `${s.sampleName} HP${i}`, sampleName: s.sampleName, HP: i })
+      }
+      return results
+    })
+  }
+
   if (mode === 'regular') {
     const perRegionCellData = await updateStatus(
       'Computing variant cells',
@@ -248,7 +271,7 @@ export async function executeVariantCellData({
             const inputKey = `${regionMafs.length}:${regionMafs[0]?.feature.id() ?? ''}:${regionMafs.at(-1)?.feature.id() ?? ''}`
             result[regionNum] = computeVariantCells({
               mafs: regionMafs,
-              sources,
+              sources: effectiveSources,
               renderingMode,
               referenceDrawingMode: referenceDrawingMode ?? 'skip',
               genotypesCache,
@@ -261,7 +284,7 @@ export async function executeVariantCellData({
         return {
           0: computeVariantCells({
             mafs,
-            sources,
+            sources: effectiveSources,
             renderingMode,
             referenceDrawingMode: referenceDrawingMode ?? 'skip',
             genotypesCache,
@@ -302,7 +325,7 @@ export async function executeVariantCellData({
       () =>
         computeVariantMatrixCells({
           mafs,
-          sources,
+          sources: effectiveSources,
           renderingMode,
           genotypesCache,
         }),

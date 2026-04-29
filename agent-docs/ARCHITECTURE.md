@@ -79,6 +79,32 @@ payload covering all visible regions, so variants' `fetchNeeded` expands
 `needed` to all `bufferedVisibleRegions` and marks them all loaded together
 when the work callback returns.
 
+### `rpcProps` loop trap and how to break it
+
+Including any fetch-result derivative in `rpcProps` creates an infinite loop:
+
+```
+setCellData → <derived value> changes → rpcProps changes
+  → SettingsInvalidate → clearAllRpcData → cellData cleared
+  → <derived value> changes → rpcProps changes → …
+```
+
+The fix is to split the computation: `rpcProps` gets a cache-key version
+computed from user-controlled inputs only; any part that needs fetch-result
+data is kept in a separate view used only for rendering or passed directly
+to the server.
+
+In the variant case, `rpcProps.sources` calls `getSources` with
+`renderingMode: 'alleleCount'` internally so haplotype expansion (which
+needs `sampleInfo`) is never triggered. The client's `sources` view still
+reads `sampleInfo` for rendering — safe because it is not in `rpcProps`.
+The server receives the unexpanded sources and expands them after computing
+`sampleInfo` from features; sources from clustering already carry `HP` and
+pass through unchanged.
+
+**Rule**: `rpcProps` must contain only user-controlled settings. Never
+include `cellData`, `sampleInfo`, or any getter that reads them.
+
 See `plugins/linear-genome-view/src/BaseLinearDisplay/CLAUDE.md` for the
 overridable hook list and test-file mapping.
 
@@ -493,3 +519,7 @@ key on a tuple of two displayedRegion indices.
   `resetCanvasDrawn`, `renderNow`, `stopGpuBackendLifecycle`, etc.).
 - Don't hand-maintain WGSL/GLSL/offset tables next to generated modules;
   consume the generated constants.
+- Don't put fetch-result derivatives (`cellData`, `sampleInfo`, etc.) into
+  `rpcProps` — `SettingsInvalidate` watches `rpcProps` and calls
+  `clearAllRpcData`, which clears the very data `rpcProps` just read, creating
+  an infinite fetch loop.

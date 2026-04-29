@@ -258,6 +258,12 @@ export default function MultiSampleVariantBaseModelF(
     }))
     .actions(self => ({
       setCellData(data: CellDataResult | undefined) {
+        console.log(
+          '[MultiVariantDisplay] setCellData',
+          data
+            ? JSON.stringify({ mode: data.mode, sampleCount: Object.keys(data.sampleInfo).length })
+            : 'undefined',
+        )
         self.cellData = data
         if (self.pendingClusterTree !== undefined) {
           self.clusterTree = self.pendingClusterTree
@@ -528,12 +534,28 @@ export default function MultiSampleVariantBaseModelF(
     }))
     .views(self => ({
       // Literal payload shared with MultiSampleVariantGetCellData. Adding
-      // a field here flows into both the RPC call (via
-      // getVariantCellDataAutorun) and into mobx tracking — the autorun
-      // reads `self.rpcProps` once, so any field change refires it.
+      // a field here flows into both the RPC call and into mobx tracking —
+      // SettingsInvalidate reads this once so any field change clears and
+      // refetches. IMPORTANT: must NOT read self.sampleInfo here. sampleInfo
+      // comes from the RPC result; including it would cause SettingsInvalidate
+      // to fire every time cellData changes (infinite fetch loop). The server
+      // handles haplotype expansion for phased mode using its own computed
+      // sampleInfo. We use renderingMode:'alleleCount' internally so that
+      // getSources never reads sampleInfo, while still preserving HP entries
+      // that were set by clustering (those don't need expansion).
       get rpcProps() {
+        const subtreeFilter = self.subtreeFilter
+        const filterSet = subtreeFilter?.length ? new Set(subtreeFilter) : undefined
+        const base = self.sourcesVolatile
+          ? getSources({
+              sources: self.sourcesVolatile,
+              layout: self.layout.length ? self.layout : undefined,
+              renderingMode: 'alleleCount',
+            })
+          : undefined
+        const sources = filterSet && base ? base.filter(s => filterSet.has(s.sampleName)) : base
         return {
-          sources: self.sources,
+          sources,
           minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
           lengthCutoffFilter: self.lengthCutoffFilter,
           renderingMode: self.renderingMode,
@@ -563,7 +585,9 @@ export default function MultiSampleVariantBaseModelF(
        * #getter
        */
       get nrow() {
-        return self.sources?.length ?? 1
+        // sources can be empty in phased mode before sampleInfo arrives; fall
+        // back to sourcesVolatile count so we don't divide by zero in rowHeight
+        return self.sources?.length || self.sourcesVolatile?.length || 1
       },
 
       /**
@@ -970,6 +994,7 @@ export default function MultiSampleVariantBaseModelF(
     }))
     .actions(self => ({
       clearDisplaySpecificData() {
+        console.log('[MultiVariantDisplay] clearDisplaySpecificData (cellData cleared)')
         // hasPhased / sampleInfo / featuresVolatile are derived from cellData
         // via getters, so clearing cellData clears all of them.
         self.cellData = undefined
@@ -996,6 +1021,7 @@ export default function MultiSampleVariantBaseModelF(
       async fetchNeeded(
         _needed: { region: Region; displayedRegionIndex: number }[],
       ) {
+        console.log('[MultiVariantDisplay] fetchNeeded, sources count:', self.rpcProps.sources?.length)
         if (self.isMinimized || !self.rpcProps.sources) {
           return
         }
