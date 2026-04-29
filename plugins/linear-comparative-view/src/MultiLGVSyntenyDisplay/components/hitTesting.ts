@@ -2,15 +2,12 @@ import { visitCigarOps, visitCsOps } from '@jbrowse/alignments-core'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
+import { buildHitTestOpsVisitor } from '../shared/extractCigarFeatures.ts'
+
+import type { CigarHitResult } from '../shared/hitTestTypes.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
-export interface CigarHitResult {
-  type: 'mismatch' | 'insertion' | 'deletion'
-  refPosition: number
-  length: number
-  base?: string
-  insertionSeq?: string
-}
+export type { CigarHitResult } from '../shared/hitTestTypes.ts'
 
 export interface FeatureHitResult {
   feature: MultiPairFeature
@@ -35,31 +32,7 @@ export interface SyntenyFlatbushIndex {
 
 function collectOpsItems(feat: MultiPairFeature) {
   const items: CigarHitResult[] = []
-  const visitor = {
-    onMismatch(refPos: number, len: number, queryBase?: string) {
-      items.push({
-        type: 'mismatch' as const,
-        refPosition: refPos,
-        length: len,
-        base: queryBase?.toUpperCase(),
-      })
-    },
-    onDeletion(refPos: number, len: number) {
-      items.push({
-        type: 'deletion' as const,
-        refPosition: refPos,
-        length: len,
-      })
-    },
-    onInsertion(refPos: number, len: number, insertionSeq?: string) {
-      items.push({
-        type: 'insertion' as const,
-        refPosition: refPos,
-        length: len,
-        insertionSeq,
-      })
-    },
-  }
+  const visitor = buildHitTestOpsVisitor(items)
   if (feat.cs) {
     visitCsOps(feat.cs, feat.start, visitor)
   } else if (feat.cigar) {

@@ -8,6 +8,8 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
+import { buildGpuOpsVisitor } from '../shared/extractCigarFeatures.ts'
+import { addInstance, buildColorArrays } from '../shared/instanceWriter.ts'
 import {
   FIELD_OFFSET_F32 as FILL_FIELD,
   INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE,
@@ -29,71 +31,6 @@ export interface BlockRenderParams {
   bpRangeLen: number
   regionScreenLeft: number
   regionScreenWidth: number
-}
-
-function buildColorArrays(colors: SyntenyColors) {
-  const mismatch = cssColorToABGR(colors.mismatch)
-  const deletion = cssColorToABGR(colors.deletion)
-  const insertion = cssColorToABGR(colors.insertion)
-  const baseA = cssColorToABGR(colors.baseA)
-  const baseC = cssColorToABGR(colors.baseC)
-  const baseG = cssColorToABGR(colors.baseG)
-  const baseT = cssColorToABGR(colors.baseT)
-  const bases: Record<string, number> = {
-    A: baseA,
-    a: baseA,
-    C: baseC,
-    c: baseC,
-    G: baseG,
-    g: baseG,
-    T: baseT,
-    t: baseT,
-  }
-  return { mismatch, deletion, insertion, bases }
-}
-
-function addInstance(
-  builder: InstanceBuilder,
-  startBp: number,
-  endBp: number,
-  genomeRow: number,
-  featureId: number,
-  color: number,
-) {
-  const off = builder.alloc()
-  builder.u32[off + FILL_FIELD.startBp] = startBp >>> 0
-  builder.u32[off + FILL_FIELD.endBp] = endBp >>> 0
-  builder.u32[off + FILL_FIELD.genomeRow] = genomeRow >>> 0
-  builder.u32[off + FILL_FIELD.featureId] = featureId >>> 0
-  builder.u32[off + FILL_FIELD.color] = color
-}
-
-function makeGpuOpsVisitor(
-  builder: InstanceBuilder,
-  genomeRow: number,
-  featureId: number,
-  rgba: ReturnType<typeof buildColorArrays>,
-) {
-  return {
-    onMismatch(refPos: number, len: number, queryBase?: string) {
-      const color =
-        (queryBase ? rgba.bases[queryBase] : undefined) ?? rgba.mismatch
-      addInstance(builder, refPos, refPos + len, genomeRow, featureId, color)
-    },
-    onDeletion(refPos: number, len: number) {
-      addInstance(
-        builder,
-        refPos,
-        refPos + len,
-        genomeRow,
-        featureId,
-        rgba.deletion,
-      )
-    },
-    onInsertion(refPos: number, _len: number) {
-      addInstance(builder, refPos, refPos, genomeRow, featureId, rgba.insertion)
-    },
-  }
 }
 
 // SYNC: field layout must match Instance struct in multiSyntenyGpuShaders.ts
@@ -135,7 +72,7 @@ export function prepareBlockGeometry(
       )
 
       if (showSnps) {
-        const visitor = makeGpuOpsVisitor(builder, g, fId, rgba)
+        const visitor = buildGpuOpsVisitor(builder, g, fId, rgba)
         if (feat.cs) {
           visitCsOps(feat.cs, feat.start, visitor)
         } else if (feat.cigar) {
