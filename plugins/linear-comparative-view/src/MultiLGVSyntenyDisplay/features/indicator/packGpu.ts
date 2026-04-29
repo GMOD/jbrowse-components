@@ -1,4 +1,4 @@
-import { INSTANCE_STRIDE_BYTES as INDICATOR_STRIDE_BYTES } from '../../shaders/multiSyntenyIndicator.generated.ts'
+import { INSTANCE_STRIDE_BYTES as INDICATOR_STRIDE_BYTES } from '../../shaders/slang/multiSyntenyIndicator.generated.ts'
 
 export interface BlockIndicatorUploadData {
   buffer: ArrayBuffer

@@ -3,7 +3,7 @@ import { downsampleMinMax } from '@jbrowse/alignments-core'
 import {
   FIELD_OFFSET_F32 as COVERAGE_FIELD,
   INSTANCE_STRIDE_F32 as COVERAGE_STRIDE,
-} from '../../shaders/multiSyntenyCoverage.generated.ts'
+} from '../../shaders/slang/multiSyntenyCoverage.generated.ts'
 
 export interface BlockCoverageUploadData {
   buffer: ArrayBuffer

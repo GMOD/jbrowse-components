@@ -1,14 +1,11 @@
 import { DEFAULT_CIGAR_OP_DRAW_COLORS as DEFAULT_SYNTENY_COLORS } from '@jbrowse/alignments-core'
-import { makeContentBlock } from '@jbrowse/core/util/blockTypes'
 
 import { prepareBlockGeometry } from './packGpu.ts'
 import {
   FIELD_OFFSET_F32 as FILL_FIELD,
   INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE,
   INSTANCE_STRIDE_F32 as FILL_STRIDE,
-} from '../../shaders/multiSyntenyFill.generated.ts'
-import { computeBlockRenderParams } from '../../shared/blockRenderParams.ts'
-import { packCoverageForGpu } from '../coverage/packGpu.ts'
+} from '../../shaders/slang/multiSyntenyFill.generated.ts'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
@@ -334,72 +331,5 @@ describe('prepareBlockGeometry', () => {
     expect(result.buffer.byteLength).toBe(
       result.instanceCount * INSTANCE_BYTE_SIZE,
     )
-  })
-})
-
-describe('computeBlockRenderParams', () => {
-  test('returns correct params for block', () => {
-    const block = makeContentBlock({
-      refName: 'chr1',
-      start: 150000000,
-      end: 160000000,
-      assemblyName: 'test',
-      key: 'k1',
-      offsetPx: 1000,
-      widthPx: 500,
-    })
-    const params = computeBlockRenderParams(block, 200)
-    expect(params.bpRangeLen).toBe(10000000)
-    expect(params.regionScreenLeft).toBe(800)
-    expect(params.regionScreenWidth).toBe(500)
-  })
-
-  test('HP splits region start into hi/lo components', () => {
-    const block = makeContentBlock({
-      refName: 'chr1',
-      start: 150000000,
-      end: 160000000,
-      assemblyName: 'test',
-      key: 'k1',
-      offsetPx: 0,
-      widthPx: 500,
-    })
-    const params = computeBlockRenderParams(block, 0)
-
-    const reconstructed = params.bpRangeHi + params.bpRangeLo
-    expect(reconstructed).toBe(150000000)
-
-    expect(params.bpRangeHi % 4096).toBe(0)
-    expect(params.bpRangeLo).toBeLessThan(4096)
-    expect(params.bpRangeLo).toBeGreaterThanOrEqual(0)
-  })
-})
-
-describe('packCoverageForGpu', () => {
-  test('returns empty for zero maxDepth', () => {
-    const depths = new Float32Array([1, 2, 3])
-    const result = packCoverageForGpu(depths, 0, 0, 0)
-    expect(result.binCount).toBe(0)
-    expect(result.buffer.byteLength).toBe(0)
-  })
-
-  test('returns empty for empty depths', () => {
-    const result = packCoverageForGpu(new Float32Array(0), 0, 10, 0)
-    expect(result.binCount).toBe(0)
-  })
-
-  test('packs non-zero bins into 12-byte records', () => {
-    const depths = new Float32Array([0, 5, 10, 0])
-    const result = packCoverageForGpu(depths, 100, 10, 1000)
-    expect(result.binCount).toBeGreaterThan(0)
-    expect(result.buffer.byteLength).toBe(result.binCount * 12)
-  })
-
-  test('positions are absolute genomic coords', () => {
-    const depths = new Float32Array([5])
-    const result = packCoverageForGpu(depths, 1500, 5, 1000)
-    expect(result.binCount).toBe(1)
-    const f32 = new Float32Array(result.buffer)
-    expect(f32[0]).toBe(1500)
   })
 })

@@ -10,7 +10,7 @@ import {
   FIELD_OFFSET_F32 as FILL_FIELD,
   INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE,
   INSTANCE_STRIDE_F32 as FILL_STRIDE,
-} from '../../shaders/multiSyntenyFill.generated.ts'
+} from '../../shaders/slang/multiSyntenyFill.generated.ts'
 import { getFeatureColor } from '../../shared/colorUtils.ts'
 import { buildGpuOpsVisitor } from '../../shared/extractCigarFeatures.ts'
 import { addInstance, buildColorArrays } from '../../shared/instanceWriter.ts'
@@ -111,4 +111,4 @@ export function prepareBlockGeometry(
   return { buffer: sortedBuf, instanceCount: n }
 }
 
-export { INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE } from '../../shaders/multiSyntenyFill.generated.ts'
+export { INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE } from '../../shaders/slang/multiSyntenyFill.generated.ts'

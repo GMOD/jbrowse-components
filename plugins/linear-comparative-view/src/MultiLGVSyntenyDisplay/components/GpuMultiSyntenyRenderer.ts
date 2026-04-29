@@ -1,11 +1,11 @@
-import { getDevicePixelRatio } from '@jbrowse/alignments-core'
+import { YSCALEBAR_LABEL_OFFSET, getDevicePixelRatio } from '@jbrowse/alignments-core'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
-import { fillSyntenyUniforms } from './multiSyntenyGpuUtils.ts'
-import * as coverageShader from '../shaders/multiSyntenyCoverage.generated.ts'
-import * as fillShader from '../shaders/multiSyntenyFill.generated.ts'
-import * as indicatorShader from '../shaders/multiSyntenyIndicator.generated.ts'
-import * as snpShader from '../shaders/multiSyntenySnp.generated.ts'
+import * as coverageShader from '../shaders/slang/multiSyntenyCoverage.generated.ts'
+import * as fillShader from '../shaders/slang/multiSyntenyFill.generated.ts'
+import { UNIFORM_OFFSET_F32 as U } from '../shaders/slang/multiSyntenyFill.generated.ts'
+import * as indicatorShader from '../shaders/slang/multiSyntenyIndicator.generated.ts'
+import * as snpShader from '../shaders/slang/multiSyntenySnp.generated.ts'
 import { computeBlockRenderParams } from '../shared/blockRenderParams.ts'
 import { BG_COLOR_GL } from '../shared/types.ts'
 
@@ -17,6 +17,7 @@ import type { BlockCoverageUploadData } from '../features/coverage/packGpu.ts'
 import type { BlockGeometryData } from '../features/fill/packGpu.ts'
 import type { BlockIndicatorUploadData } from '../features/indicator/packGpu.ts'
 import type { BlockSnpUploadData } from '../features/snpCoverage/packGpu.ts'
+import type { SyntenyColorPalette } from '../model.ts'
 import type { BlockRenderParams } from '../shared/blockRenderParams.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
@@ -269,3 +270,46 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
 }
 
 export { UNIFORMS_SIZE_BYTES as SYNTENY_UNIFORM_BYTE_SIZE }
+
+type Rgb3 = [number, number, number]
+
+function writeRgb(f: Float32Array, offset: number, rgb: Rgb3) {
+  f[offset] = rgb[0]
+  f[offset + 1] = rgb[1]
+  f[offset + 2] = rgb[2]
+}
+
+function fillSyntenyUniforms(
+  f: Float32Array,
+  width: number,
+  height: number,
+  rowHeight: number,
+  bpRangeHi: number,
+  bpRangeLo: number,
+  bpRangeLen: number,
+  regionScreenLeft: number,
+  regionScreenWidth: number,
+  rowPadding: number,
+  coverageHeight: number,
+  depthScale: number,
+  palette: SyntenyColorPalette,
+) {
+  f[U.resolutionX] = width
+  f[U.resolutionY] = height
+  f[U.rowHeight] = rowHeight
+  f[U.coverageHeight] = coverageHeight
+  f[U.bpRangeHi] = bpRangeHi
+  f[U.bpRangeLo] = bpRangeLo
+  f[U.bpRangeLen] = bpRangeLen
+  f[U.regionScreenLeft] = regionScreenLeft
+  f[U.regionScreenWidth] = regionScreenWidth
+  f[U.hpZero] = 0
+  f[U.rowPadding] = rowPadding
+  f[U.coverageYOffset] = YSCALEBAR_LABEL_OFFSET
+  f[U.depthScale] = depthScale
+  writeRgb(f, U.coverageR, palette.coverageColorRgb)
+  writeRgb(f, U.baseAR, palette.baseColorGl.A)
+  writeRgb(f, U.baseCR, palette.baseColorGl.C)
+  writeRgb(f, U.baseGR, palette.baseColorGl.G)
+  writeRgb(f, U.baseTR, palette.baseColorGl.T)
+}

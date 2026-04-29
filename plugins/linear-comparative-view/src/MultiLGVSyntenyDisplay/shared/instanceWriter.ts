@@ -1,6 +1,6 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
-import { FIELD_OFFSET_F32 as FILL_FIELD } from '../shaders/multiSyntenyFill.generated.ts'
+import { FIELD_OFFSET_F32 as FILL_FIELD } from '../shaders/slang/multiSyntenyFill.generated.ts'
 
 import type { SyntenyColors } from './types.ts'
 import type { InstanceBuilder } from '@jbrowse/alignments-core'

@@ -3,7 +3,7 @@ import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import {
   FIELD_OFFSET_F32 as FILL_FIELD,
   INSTANCE_STRIDE_F32 as FILL_STRIDE,
-} from '../../shaders/multiSyntenyFill.generated.ts'
+} from '../../shaders/slang/multiSyntenyFill.generated.ts'
 
 import type { BlockGeometryData } from './packGpu.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'

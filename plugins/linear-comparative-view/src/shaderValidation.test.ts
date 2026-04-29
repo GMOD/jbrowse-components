@@ -6,10 +6,10 @@ import path from 'path'
 import { WGSL_SOURCE as edgeVertexShader } from './LinearSyntenyDisplay/shaders/syntenyEdge.generated.ts'
 import { WGSL_SOURCE as fillVertexShader } from './LinearSyntenyDisplay/shaders/syntenyFill.generated.ts'
 import { WGSL_SOURCE as pickingVertexShader } from './LinearSyntenyDisplay/shaders/syntenyPicking.generated.ts'
-import { WGSL_SOURCE as WGSL_COVERAGE_SHADER } from './MultiLGVSyntenyDisplay/shaders/multiSyntenyCoverage.generated.ts'
-import { WGSL_SOURCE as WGSL_FILL_SHADER } from './MultiLGVSyntenyDisplay/shaders/multiSyntenyFill.generated.ts'
-import { WGSL_SOURCE as WGSL_INDICATOR_SHADER } from './MultiLGVSyntenyDisplay/shaders/multiSyntenyIndicator.generated.ts'
-import { WGSL_SOURCE as WGSL_SNP_COVERAGE_SHADER } from './MultiLGVSyntenyDisplay/shaders/multiSyntenySnp.generated.ts'
+import { WGSL_SOURCE as WGSL_COVERAGE_SHADER } from './MultiLGVSyntenyDisplay/shaders/slang/multiSyntenyCoverage.generated.ts'
+import { WGSL_SOURCE as WGSL_FILL_SHADER } from './MultiLGVSyntenyDisplay/shaders/slang/multiSyntenyFill.generated.ts'
+import { WGSL_SOURCE as WGSL_INDICATOR_SHADER } from './MultiLGVSyntenyDisplay/shaders/slang/multiSyntenyIndicator.generated.ts'
+import { WGSL_SOURCE as WGSL_SNP_COVERAGE_SHADER } from './MultiLGVSyntenyDisplay/shaders/slang/multiSyntenySnp.generated.ts'
 
 let tmpDir: string
 

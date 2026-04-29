@@ -24,7 +24,7 @@ import { observer } from 'mobx-react'
 import { MultiSyntenyRenderer } from './MultiSyntenyRenderer.ts'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { computeMultiSyntenyLabels } from './computeVisibleLabels.ts'
-import { buildSyntenyIndex, hitTestMultiSynteny } from './hitTesting.ts'
+import { buildSyntenyIndex, hitTestMultiSynteny } from './hitTestPipeline.ts'
 import {
   LABEL_FONT_MAX,
   LABEL_WIDTH,
@@ -32,7 +32,7 @@ import {
 } from '../shared/types.ts'
 
 import type { MultiLGVSyntenyDisplayModel } from '../model.ts'
-import type { FeatureHitResult } from './hitTesting.ts'
+import type { FeatureHitResult } from './hitTestPipeline.ts'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
