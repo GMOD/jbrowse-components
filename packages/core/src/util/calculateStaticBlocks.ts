@@ -18,12 +18,12 @@ export interface Base1DViewModel {
   interRegionPaddingWidth: number
 }
 
+const blockSizeCssPx = 800
+
 export default function calculateStaticBlocks(
   model: Base1DViewModel,
   padding = true,
   elision = true,
-  extra = 0,
-  width = 800,
 ) {
   const {
     offsetPx,
@@ -36,7 +36,7 @@ export default function calculateStaticBlocks(
 
   const windowLeftBp = offsetPx * bpPerPx
   const windowRightBp = (offsetPx + modelWidth) * bpPerPx
-  const blockSizeBp = Math.ceil(width * bpPerPx)
+  const blockSizeBp = Math.ceil(blockSizeCssPx * bpPerPx)
 
   // Pre-calculate inverse values to avoid repeated divisions
   const invBpPerPx = 1 / bpPerPx
@@ -63,13 +63,13 @@ export default function calculateStaticBlocks(
     )
 
     let windowRightBlockNum =
-      Math.floor((windowRightBp - regionBpOffset) * invBlockSizeBp) + extra
+      Math.floor((windowRightBp - regionBpOffset) * invBlockSizeBp)
     if (windowRightBlockNum >= regionBlockCount) {
       windowRightBlockNum = regionBlockCount - 1
     }
 
     let windowLeftBlockNum =
-      Math.floor((windowLeftBp - regionBpOffset) * invBlockSizeBp) - extra
+      Math.floor((windowLeftBp - regionBpOffset) * invBlockSizeBp)
     if (windowLeftBlockNum < 0) {
       windowLeftBlockNum = 0
     }
@@ -84,20 +84,16 @@ export default function calculateStaticBlocks(
       blockNum <= windowRightBlockNum;
       blockNum += 1
     ) {
+      const isLeftEndOfDisplayedRegion = blockNum === 0
+      const isRightEndOfDisplayedRegion = blockNum === regionBlockCount - 1
       let start: number
       let end: number
-      let isLeftEndOfDisplayedRegion: boolean
-      let isRightEndOfDisplayedRegion: boolean
       if (reversed) {
         start = Math.max(regionStart, regionEnd - (blockNum + 1) * blockSizeBp)
         end = regionEnd - blockNum * blockSizeBp
-        isLeftEndOfDisplayedRegion = end === regionEnd
-        isRightEndOfDisplayedRegion = start === regionStart
       } else {
         start = regionStart + blockNum * blockSizeBp
         end = Math.min(regionEnd, regionStart + (blockNum + 1) * blockSizeBp)
-        isLeftEndOfDisplayedRegion = start === regionStart
-        isRightEndOfDisplayedRegion = end === regionEnd
       }
       const widthPx = (end - start) * invBpPerPx
       const blockOffsetPx =
@@ -108,8 +104,8 @@ export default function calculateStaticBlocks(
         blocks.push(
           makeInterRegionPaddingBlock({
             key: `${key}-beforeFirstRegion`,
-            widthPx: width,
-            offsetPx: blockOffsetPx - width,
+            widthPx: blockSizeCssPx,
+            offsetPx: blockOffsetPx - blockSizeCssPx,
             variant: 'boundary',
           }),
         )
@@ -157,7 +153,7 @@ export default function calculateStaticBlocks(
           blocks.push(
             makeInterRegionPaddingBlock({
               key: `${key}-afterLastRegion`,
-              widthPx: width,
+              widthPx: blockSizeCssPx,
               offsetPx: blockOffsetPx + widthPx,
               variant: 'boundary',
             }),
