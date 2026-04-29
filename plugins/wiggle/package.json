@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@gmod/bbi": "^9.0.9",
-    "@gmod/hclust": "^3.0.6",
+    "@gmod/hclust": "^3.0.10",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.6.0",
     "@jbrowse/plugin-data-management": "workspace:^",
@@ -41,7 +41,7 @@
     "@mui/icons-material": "^9.0.0",
     "@mui/material": "^9.0.0",
     "@mui/x-charts-vendor": "^8.26.0",
-    "@mui/x-data-grid": "9.0.2",
+    "@mui/x-data-grid": "9.0.4",
     "@types/file-saver-es": "^2.0.3",
     "copy-to-clipboard": "^4.0.1",
     "fast-deep-equal": "^3.1.3",

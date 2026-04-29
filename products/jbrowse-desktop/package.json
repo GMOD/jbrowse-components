@@ -77,7 +77,7 @@
     "@jbrowse/text-indexing": "workspace:^",
     "@mui/icons-material": "^9.0.0",
     "@mui/material": "^9.0.0",
-    "@mui/x-data-grid": "9.0.2",
+    "@mui/x-data-grid": "9.0.4",
     "date-fns": "^4.1.0",
     "deepmerge": "^4.3.1",
     "dockview": "^5.2.0",
@@ -97,7 +97,7 @@
     "@electron/packager": "^20.0.0",
     "@types/selenium-webdriver": "^4.35.5",
     "cross-env": "^10.1.0",
-    "electron": "41.2.2",
+    "electron": "41.3.0",
     "electron-chromedriver": "^41.3.0",
     "esbuild": "^0.28.0",
     "selenium-webdriver": "^4.43.0"
