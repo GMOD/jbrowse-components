@@ -1,5 +1,7 @@
 import { observer } from 'mobx-react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+
 import {
   ContentBlock as ContentBlockComponent,
   ElidedBlock as ElidedBlockComponent,
@@ -10,6 +12,27 @@ import MaxHeightReached from './MaxHeightReachedIndicator.tsx'
 import type { BlockModel } from '../models/serverSideRenderedBlock.ts'
 import type { BlockSet } from '@jbrowse/core/util/blockTypes'
 
+const useStyles = makeStyles()({
+  interRegionPadding: {
+    background: 'none',
+  },
+})
+
+const ContentBlockBody = observer(function ContentBlockBody({
+  state,
+}: {
+  state: BlockModel
+}) {
+  return (
+    <>
+      {state.ReactComponent ? <state.ReactComponent model={state} /> : null}
+      {state.maxHeightReached && state.layout ? (
+        <MaxHeightReached top={state.layout.getTotalHeight() - 16} />
+      ) : null}
+    </>
+  )
+})
+
 const RenderedBlocks = observer(function RenderedBlocks({
   model,
 }: {
@@ -19,34 +42,35 @@ const RenderedBlocks = observer(function RenderedBlocks({
     blockState: { get: (key: string) => BlockModel | undefined }
   }
 }) {
+  const { classes } = useStyles()
   const { blockDefinitions, blockState } = model
   return blockDefinitions.map(block => {
     const key = `${model.id}-${block.key}`
-    if (block.type === 'ContentBlock') {
-      const state = blockState.get(block.key)
-      return (
-        <ContentBlockComponent block={block} key={key}>
-          {state?.ReactComponent ? (
-            <state.ReactComponent model={state} />
-          ) : null}
-          {state?.maxHeightReached && state.layout ? (
-            <MaxHeightReached top={state.layout.getTotalHeight() - 16} />
-          ) : null}
-        </ContentBlockComponent>
-      )
-    } else if (block.type === 'ElidedBlock') {
-      return <ElidedBlockComponent key={key} width={block.widthPx} />
-    } else if (block.type === 'InterRegionPaddingBlock') {
-      return (
-        <InterRegionPaddingBlockComponent
-          key={key}
-          width={block.widthPx}
-          style={{ background: 'none' }}
-          boundary={block.variant === 'boundary'}
-        />
-      )
+    switch (block.type) {
+      case 'ContentBlock': {
+        const state = blockState.get(block.key)
+        return (
+          <ContentBlockComponent block={block} key={key}>
+            {state ? <ContentBlockBody state={state} /> : null}
+          </ContentBlockComponent>
+        )
+      }
+      case 'ElidedBlock': {
+        return <ElidedBlockComponent key={key} width={block.widthPx} />
+      }
+      case 'InterRegionPaddingBlock': {
+        return (
+          <InterRegionPaddingBlockComponent
+            key={key}
+            width={block.widthPx}
+            className={classes.interRegionPadding}
+            boundary={block.variant === 'boundary'}
+          />
+        )
+      }
+      default:
+        throw new Error(`invalid block type ${JSON.stringify(block)}`)
     }
-    throw new Error(`invalid block type ${JSON.stringify(block)}`)
   })
 })
 

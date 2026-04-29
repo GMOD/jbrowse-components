@@ -74,6 +74,14 @@ const useStyles = makeStyles()(theme => ({
     width: '100%',
     position: 'absolute',
   },
+  elidedOverviewBlock: {
+    backgroundColor: '#999',
+    backgroundImage:
+      'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
+  },
+  cytoSvg: {
+    width: '100%',
+  },
 }))
 
 type LGV = LinearGenomeViewModel
@@ -119,7 +127,7 @@ const OverviewBox = observer(function OverviewBox({
             width: block.widthPx,
           }}
         >
-          <svg style={{ width: '100%' }}>
+          <svg className={classes.cytoSvg}>
             <Cytobands overview={overview} assembly={assembly} block={block} />
           </svg>
         </div>
@@ -238,19 +246,16 @@ const Scalebar = observer(function Scalebar({
         return !(block.type === 'ContentBlock') ? (
           <div
             key={`${JSON.stringify(block)}-${idx}`}
-            className={classes.scalebarContig}
+            className={cx(classes.scalebarContig, classes.elidedOverviewBlock)}
             style={{
               width: block.widthPx,
               transform: `translateX(${block.offsetPx}px)`,
-              backgroundColor: '#999',
-              backgroundImage:
-                'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
             }}
           />
         ) : (
           <OverviewBox
             scale={scale}
-            block={block as ContentBlock}
+            block={block}
             model={model}
             overview={overview}
             key={`${JSON.stringify(block)}-${idx}`}

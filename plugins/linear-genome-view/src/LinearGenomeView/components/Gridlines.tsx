@@ -8,7 +8,7 @@ import { makeTicks } from '../util.ts'
 import { ELIDED_BG, joinElements } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
@@ -19,6 +19,16 @@ const useStyles = makeStyles()(() => ({
     height: '100%',
     width: '100%',
     pointerEvents: 'none',
+  },
+  innerContainer: {
+    position: 'absolute',
+    height: '100%',
+    pointerEvents: 'none',
+  },
+  absoluteFill: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
   },
 }))
 
@@ -44,7 +54,7 @@ function collectTicks(
   const ticks: { x: number; major: boolean }[] = []
   for (const block of blocks) {
     if (block.type === 'ContentBlock') {
-      const { start, end, reversed, widthPx } = block as ContentBlock
+      const { start, end, reversed, widthPx } = block
       const blockLeft = block.offsetPx - firstBlockOffset
       for (const { type, base } of makeTicks(start, end, bpPerPx)) {
         const x = blockLeft + (reversed ? end - base : base - start) / bpPerPx
@@ -145,18 +155,9 @@ export default function Gridlines({
 
   return (
     <div className={classes.verticalGuidesZoomContainer}>
-      <div
-        ref={innerRef}
-        style={{ position: 'absolute', height: '100%', pointerEvents: 'none' }}
-      >
-        <div
-          ref={tickRef}
-          style={{ position: 'absolute', width: '100%', height: '100%' }}
-        />
-        <div
-          ref={blockRef}
-          style={{ position: 'absolute', width: '100%', height: '100%' }}
-        />
+      <div ref={innerRef} className={classes.innerContainer}>
+        <div ref={tickRef} className={classes.absoluteFill} />
+        <div ref={blockRef} className={classes.absoluteFill} />
       </div>
     </div>
   )

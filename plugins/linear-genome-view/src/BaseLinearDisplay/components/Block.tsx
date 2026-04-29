@@ -55,24 +55,22 @@ function ElidedBlock({ width }: { width: number }) {
 function InterRegionPaddingBlock({
   boundary,
   width,
-  style = {},
+  className,
 }: {
   boundary: boolean
   width: number
-  style?: React.CSSProperties
+  className?: string
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   return (
     <div
-      style={{
-        ...style,
-        width,
-      }}
-      className={
+      style={{ width }}
+      className={cx(
         boundary
           ? classes.boundaryPaddingBlock
-          : classes.interRegionPaddingBlock
-      }
+          : classes.interRegionPaddingBlock,
+        className,
+      )}
     />
   )
 }

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 import { getTickDisplayStr } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 
@@ -8,9 +9,14 @@ import { makeTicks } from '../util.ts'
 import { ELIDED_BG, joinElements } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
+
+const useStyles = makeStyles()({
+  container: {
+    display: 'flex',
+  },
+})
 
 const WRAPPER_BASE_STYLE =
   'position:relative;flex-shrink:0;overflow:hidden;height:13px'
@@ -33,6 +39,7 @@ function createWrapperDiv() {
 }
 
 export default function ScalebarCoordinateLabels({ model }: { model: LGV }) {
+  const { classes } = useStyles()
   const theme = useTheme()
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -54,7 +61,7 @@ export default function ScalebarCoordinateLabels({ model }: { model: LGV }) {
         const wrapper = container.children[i] as HTMLElement
 
         if (block.type === 'ContentBlock') {
-          const { start, end, reversed } = block as ContentBlock
+          const { start, end, reversed } = block
           if (block.widthPx < 20) {
             wrapper.style.cssText = `${WRAPPER_BASE_STYLE};width:${block.widthPx}px`
             joinElements(wrapper, 0)
@@ -83,5 +90,5 @@ export default function ScalebarCoordinateLabels({ model }: { model: LGV }) {
     })
   }, [model, theme])
 
-  return <div ref={containerRef} style={{ display: 'flex' }} />
+  return <div ref={containerRef} className={classes.container} />
 }
