@@ -64,6 +64,26 @@ test('five', () => {
   ).toMatchSnapshot()
 })
 
+test('inter-region padding correct when bpPerPx causes float drift on region right-end', () => {
+  // bpPerPx = 3400/796 is irrational in float64: regionWidthPx * bpPerPx != regionEnd
+  // exactly, so the old end===regionEnd check would silently drop a padding segment.
+  const regions = [
+    { assemblyName: 'test', refName: 'ctgA', start: 0, end: 500 },
+    { assemblyName: 'test', refName: 'ctgB', start: 0, end: 3000 },
+    { assemblyName: 'test', refName: 'ctgC', start: 0, end: 200 },
+  ]
+  const bpPerPx = 3400 / 796
+  const params = makeParams(regions, { bpPerPx, offsetPx: 47, width: 800 })
+  const staticBlocks = calculateStaticBlocks(params)
+  const dynamicBlocks = calculateDynamicBlocks(params)
+
+  const dynamicCtgC = dynamicBlocks.contentBlocks.find(b => b.refName === 'ctgC')
+  const staticCtgC = staticBlocks.contentBlocks.find(b => b.refName === 'ctgC')
+  expect(dynamicCtgC).toBeDefined()
+  expect(staticCtgC).toBeDefined()
+  expect(Math.abs(dynamicCtgC!.offsetPx - staticCtgC!.offsetPx)).toBeLessThan(0.001)
+})
+
 test('off-screen regions contribute padding to block positions', () => {
   const regions = [
     { assemblyName: 'test', refName: 'chr1', start: 0, end: 1000 },

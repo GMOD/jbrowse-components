@@ -55,7 +55,6 @@ export default function calculateDynamicBlocks(
     const rightEndVisible =
       windowRightPx >= displayedRegionRightPx &&
       windowLeftPx < displayedRegionRightPx
-
     const [leftPx, rightPx] = intersection2(
       windowLeftPx,
       windowRightPx,
@@ -64,10 +63,12 @@ export default function calculateDynamicBlocks(
     )
     if (leftPx !== undefined && rightPx !== undefined) {
       // this displayed region overlaps the view, so make a record for it
+      // Pixel comparisons avoid the bpPerPx round-trip float drift that can
+      // make end !== regionEnd even when the full region is in view.
+      const isLeftEndOfDisplayedRegion = leftPx <= displayedRegionLeftPx
+      const isRightEndOfDisplayedRegion = rightPx >= displayedRegionRightPx
       let start: number
       let end: number
-      let isLeftEndOfDisplayedRegion: boolean
-      let isRightEndOfDisplayedRegion: boolean
       let blockOffsetPx: number
       if (reversed) {
         start = Math.max(
@@ -75,8 +76,6 @@ export default function calculateDynamicBlocks(
           regionEnd - (rightPx - displayedRegionLeftPx) * bpPerPx,
         )
         end = regionEnd - (leftPx - displayedRegionLeftPx) * bpPerPx
-        isLeftEndOfDisplayedRegion = end === regionEnd
-        isRightEndOfDisplayedRegion = start === regionStart
         blockOffsetPx = displayedRegionLeftPx + (regionEnd - end) * invBpPerPx
       } else {
         start = (leftPx - displayedRegionLeftPx) * bpPerPx + regionStart
@@ -84,8 +83,6 @@ export default function calculateDynamicBlocks(
           regionEnd,
           (rightPx - displayedRegionLeftPx) * bpPerPx + regionStart,
         )
-        isLeftEndOfDisplayedRegion = start === regionStart
-        isRightEndOfDisplayedRegion = end === regionEnd
         blockOffsetPx =
           displayedRegionLeftPx + (start - regionStart) * invBpPerPx
       }

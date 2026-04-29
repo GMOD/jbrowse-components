@@ -51,7 +51,7 @@ export function moveTo(
   let numBlocksWideEnough = 0
   for (let i = start.index, l = end.index; i < l; i++) {
     const r = displayedRegions[i]!
-    if ((r.end - r.start) / bpPerPx > minimumBlockWidth) {
+    if ((r.end - r.start) / bpPerPx >= minimumBlockWidth) {
       numBlocksWideEnough++
     }
   }
