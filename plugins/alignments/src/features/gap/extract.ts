@@ -1,8 +1,19 @@
-import { getEffectiveStrand } from '../../shared/webglRpcUtils.ts'
-
 import type { Mismatch } from '../../shared/types.ts'
 import type { GapData } from '../../shared/webglRpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
+
+function getEffectiveStrand(feature: Feature) {
+  const tags = feature.get('tags') as Record<string, string> | undefined
+  const fstrand = feature.get('strand') ?? 0
+  const xs = tags?.XS || tags?.TS
+  const ts = tags?.ts
+  if (xs === '+') {
+    return 1
+  } else if (xs === '-') {
+    return -1
+  }
+  return (ts === '+' ? 1 : ts === '-' ? -1 : 0) * fstrand
+}
 
 export function emitGap(
   mm: Extract<Mismatch, { type: 'deletion' | 'skip' }>,

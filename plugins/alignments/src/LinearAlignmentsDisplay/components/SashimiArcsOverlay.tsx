@@ -4,8 +4,8 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { formatSashimiTooltip } from './alignmentComponentUtils.ts'
 import { openSashimiWidget } from './openFeatureWidget.ts'
+import { formatSashimiTooltip } from './tooltipUtils.ts'
 import { computeSashimiArcs } from '../../features/sashimi/computeOverlay.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'

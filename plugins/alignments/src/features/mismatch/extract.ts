@@ -1,5 +1,3 @@
-import { baseToAscii } from '../../shared/webglRpcUtils.ts'
-
 import type { Mismatch } from '../../shared/types.ts'
 import type { MismatchData } from '../../shared/webglRpcTypes.ts'
 
@@ -13,7 +11,7 @@ export function emitMismatch(
   mismatchesData.push({
     featureId,
     position: featureStart + mm.start,
-    base: baseToAscii(mm.base),
+    base: mm.base.toUpperCase().charCodeAt(0),
     strand: strand === -1 ? -1 : 1,
   })
 }

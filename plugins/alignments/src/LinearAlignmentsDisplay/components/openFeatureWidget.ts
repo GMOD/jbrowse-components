@@ -5,11 +5,8 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 
-import {
-  CIGAR_TYPE_LABELS,
-  getTooltipBin,
-  pct,
-} from './alignmentComponentUtils.ts'
+import { CIGAR_TYPE_LABELS } from './alignmentComponentUtils.ts'
+import { getTooltipBin, pct } from './tooltipUtils.ts'
 
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'

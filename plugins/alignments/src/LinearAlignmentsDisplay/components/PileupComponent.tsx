@@ -16,7 +16,7 @@ import YScaleBar from './YScaleBar.tsx'
 import {
   formatChainTooltip,
   formatFeatureTooltip,
-} from './alignmentComponentUtils.ts'
+} from './tooltipUtils.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'

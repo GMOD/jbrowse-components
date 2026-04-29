@@ -7,10 +7,6 @@ import { useTheme } from '@mui/material'
 import { AlignmentsRenderer } from './AlignmentsRenderer.ts'
 import {
   buildColorPaletteFromTheme,
-  formatCigarTooltip,
-  formatCoverageTooltip,
-  formatIndicatorTooltip,
-  formatModificationTooltip,
   getCanvasCoords,
 } from './alignmentComponentUtils.ts'
 import { performHitTest } from './hitTestPipeline.ts'
@@ -19,6 +15,12 @@ import {
   openCoverageWidget,
   openIndicatorWidget,
 } from './openFeatureWidget.ts'
+import {
+  formatCigarTooltip,
+  formatCoverageTooltip,
+  formatIndicatorTooltip,
+  formatModificationTooltip,
+} from './tooltipUtils.ts'
 import { getContrastBaseMap } from '../../shared/util.ts'
 
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'

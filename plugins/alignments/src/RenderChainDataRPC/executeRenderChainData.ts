@@ -3,7 +3,7 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import { buildAlignmentDetailArrays } from '../shared/buildAlignmentDetailArrays.ts'
-import { buildBaseFeatureData } from '../shared/buildBaseFeatureData.ts'
+import { buildChainFeatureData } from '../shared/buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from '../shared/buildBaseReadArrays.ts'
 import { buildChainMetadata } from '../shared/buildChainMetadata.ts'
 import { buildCoverageResultFields } from '../shared/buildCoverageResultFields.ts'
@@ -92,20 +92,13 @@ export async function executeRenderChainData({
     detectedModifications,
     detectedSimplexModifications,
   } = await updateStatus('Processing alignments', statusCallback, async () =>
-    extractFeatureArrays(
-      keptFeatures,
-      feature => ({
-        ...buildBaseFeatureData(feature),
-        refName: feature.get('refName'),
-        nextRef: feature.get('next_ref') as string | undefined,
-        pairOrientationStr: feature.get('pair_orientation') as
-          | string
-          | undefined,
-        templateLength:
-          (feature.get('template_length') as number | undefined) ?? 0,
-      }),
-      { colorBy, colorTagMap, showSoftClipping: false, region, regionStart },
-    ),
+    extractFeatureArrays(keptFeatures, buildChainFeatureData, {
+      colorBy,
+      colorTagMap,
+      showSoftClipping: false,
+      region,
+      regionStart,
+    }),
   )
 
   checkStopToken2(stopTokenCheck)

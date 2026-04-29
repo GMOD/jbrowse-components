@@ -6,11 +6,11 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/plugin-wiggle'
 import { observer } from 'mobx-react'
 
-import { pct } from './alignmentComponentUtils.ts'
+import { pct } from './tooltipUtils.ts'
 import { getModificationName } from '../../shared/modificationData.ts'
 import { getInterbaseTypeLabel } from '../../shared/types.ts'
 
-import type { ModificationTooltipPayload } from './alignmentComponentUtils.ts'
+import type { ModificationTooltipPayload } from './tooltipUtils.ts'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 
 const useStyles = makeStyles()(theme => ({
