@@ -52,13 +52,6 @@ export interface CoverageHitResult {
   position: number
 }
 
-export interface ModificationHitResult {
-  position: number
-  modType: string | undefined
-  probability: number
-  color: string
-}
-
 export interface IndicatorHitResult {
   type: 'indicator'
   position: number

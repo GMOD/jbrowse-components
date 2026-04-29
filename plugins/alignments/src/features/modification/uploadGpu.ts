@@ -1,6 +1,6 @@
 import { PASS_MOD, packModifications } from './packGpu.ts'
 
-import type { ModificationUploadData } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+import type { ModificationUploadData } from './types.ts'
 import type { GpuHal } from '@jbrowse/core/gpu/hal'
 
 export function uploadModifications(

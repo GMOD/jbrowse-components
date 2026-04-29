@@ -30,12 +30,12 @@ import {
   interbaseRangeEnds,
   pileupRowY,
 } from './rendererTypes.ts'
+import { drawModifications } from '../../features/modification/drawCanvas.ts'
 import {
   arcLineColorPalette,
   getArcPalette,
   linkedReadColorPalette,
-} from './shaders/palettes.ts'
-import { drawModifications } from '../../features/modification/drawCanvas.ts'
+} from '../../shaders/palettes.ts'
 
 import type {
   AlignmentsBackend,
@@ -49,9 +49,12 @@ import type {
   RenderState,
 } from './rendererTypes.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { ModificationRegionFields } from '../../features/modification/buildRegion.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-export interface Canvas2DRegionData extends BaseRegionData {
+export interface Canvas2DRegionData
+  extends BaseRegionData,
+    ModificationRegionFields {
   readFlags: Uint16Array
   readMapqs: Uint8Array
   readAvgBaseQualities: Uint8Array
@@ -93,12 +96,6 @@ export interface Canvas2DRegionData extends BaseRegionData {
   softclipBaseYs: Uint16Array
   softclipBaseBases: Uint8Array
   numSoftclipBases: number
-
-  // Modifications
-  modificationPositions: Uint32Array
-  modificationYs: Uint16Array
-  modificationColors: Uint32Array
-  numModifications: number
 
   // Coverage — stored in GPU-compatible packed buffer formats
   coverageBuffer: ArrayBuffer

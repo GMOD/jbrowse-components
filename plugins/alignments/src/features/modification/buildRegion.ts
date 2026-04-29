@@ -1,4 +1,4 @@
-import type { ModificationUploadData } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+import type { ModificationUploadData } from './types.ts'
 
 const EMPTY_U32 = new Uint32Array(0)
 const EMPTY_U16 = new Uint16Array(0)

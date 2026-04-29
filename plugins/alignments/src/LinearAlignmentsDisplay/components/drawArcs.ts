@@ -1,11 +1,11 @@
+import { ARC_HEIGHT_MARGIN } from '../../shaders/palettes.ts'
 import {
   ARC_SHAPE_FLAT,
   ARC_SHAPE_FLAT_SPLIT,
 } from '../../shared/computeArcsFromPileupData.ts'
 import { rgb255, rgba255 } from '../colorUtils.ts'
-import { ARC_HEIGHT_MARGIN } from './shaders/palettes.ts'
 
-import type { RGBColor } from './shaders/colors.ts'
+import type { RGBColor } from '../../shaders/colors.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 interface ArcFields {

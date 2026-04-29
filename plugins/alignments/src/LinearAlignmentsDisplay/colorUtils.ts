@@ -4,7 +4,7 @@ import {
   normalizedRgbToCssRgba,
 } from '@jbrowse/core/util/colorBits'
 
-import type { ColorPalette, RGBColor } from './components/shaders/colors.ts'
+import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
 
 const CS_NORMAL = 0
 const CS_INSERT_SIZE = 3

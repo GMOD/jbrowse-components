@@ -12,31 +12,31 @@ import {
   interbaseRangeEnds,
 } from './rendererTypes.ts'
 import {
-  ARC_HEIGHT_MARGIN,
-  arcLineColorPalette,
-  getArcPalette,
-  linkedReadColorPalette,
-} from './shaders/palettes.ts'
-import * as arcShader from './shaders/slang/arc.generated.ts'
-import * as arcLineShader from './shaders/slang/arcLine.generated.ts'
-import * as clipShader from './shaders/slang/clip.generated.ts'
-import * as connectingLineShader from './shaders/slang/connectingLine.generated.ts'
-import * as coverageShader from './shaders/slang/coverage.generated.ts'
-import * as flatQuadShader from './shaders/slang/flatQuad.generated.ts'
-import * as gapShader from './shaders/slang/gap.generated.ts'
-import * as indicatorShader from './shaders/slang/indicator.generated.ts'
-import * as insertionShader from './shaders/slang/insertion.generated.ts'
-import * as linkedReadLineShader from './shaders/slang/linkedReadLine.generated.ts'
-import * as mismatchShader from './shaders/slang/mismatch.generated.ts'
-import * as modCoverageShader from './shaders/slang/modCoverage.generated.ts'
-import * as noncovShader from './shaders/slang/noncovHistogram.generated.ts'
-import * as readShader from './shaders/slang/read.generated.ts'
-import * as snpCoverageShader from './shaders/slang/snpCoverage.generated.ts'
-import {
   MODIFICATION_PASS,
   PASS_MOD,
 } from '../../features/modification/packGpu.ts'
 import { uploadModifications } from '../../features/modification/uploadGpu.ts'
+import {
+  ARC_HEIGHT_MARGIN,
+  arcLineColorPalette,
+  getArcPalette,
+  linkedReadColorPalette,
+} from '../../shaders/palettes.ts'
+import * as arcShader from '../../shaders/slang/arc.generated.ts'
+import * as arcLineShader from '../../shaders/slang/arcLine.generated.ts'
+import * as clipShader from '../../shaders/slang/clip.generated.ts'
+import * as connectingLineShader from '../../shaders/slang/connectingLine.generated.ts'
+import * as coverageShader from '../../shaders/slang/coverage.generated.ts'
+import * as flatQuadShader from '../../shaders/slang/flatQuad.generated.ts'
+import * as gapShader from '../../shaders/slang/gap.generated.ts'
+import * as indicatorShader from '../../shaders/slang/indicator.generated.ts'
+import * as insertionShader from '../../shaders/slang/insertion.generated.ts'
+import * as linkedReadLineShader from '../../shaders/slang/linkedReadLine.generated.ts'
+import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
+import * as modCoverageShader from '../../shaders/slang/modCoverage.generated.ts'
+import * as noncovShader from '../../shaders/slang/noncovHistogram.generated.ts'
+import * as readShader from '../../shaders/slang/read.generated.ts'
+import * as snpCoverageShader from '../../shaders/slang/snpCoverage.generated.ts'
 
 import type {
   AlignmentsBackend,

@@ -2,9 +2,15 @@ import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
 
 import type {
   CigarCoords,
-  ModificationHitResult,
   ResolvedBlock,
 } from '../../LinearAlignmentsDisplay/components/hitTesting.ts'
+
+export interface ModificationHitResult {
+  position: number
+  modType: string | undefined
+  probability: number
+  color: string
+}
 
 export function hitTestModification(
   resolved: ResolvedBlock | undefined,

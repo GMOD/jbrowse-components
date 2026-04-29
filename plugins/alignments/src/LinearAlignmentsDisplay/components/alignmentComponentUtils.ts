@@ -8,12 +8,12 @@
 import { countSnpsAtPosition } from '@jbrowse/alignments-core'
 import { toLocale } from '@jbrowse/core/util'
 
-import { toRgb } from './shaders/colors.ts'
+import { toRgb } from '../../shaders/colors.ts'
 import { fillColor } from '../../shared/color.ts'
 
 import type { CigarHitResult, SashimiArcHitResult } from './hitTesting'
-import type { ColorPalette } from './shaders/colors.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types'
+import type { ColorPalette } from '../../shaders/colors.ts'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 import type { Theme } from '@mui/material'
 

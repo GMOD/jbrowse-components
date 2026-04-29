@@ -3,7 +3,7 @@ import {
   filterEntries,
   groupReadsByName,
 } from './computeLinkedReadLines.ts'
-import { linkedReadColorPalette } from './shaders/palettes.ts'
+import { linkedReadColorPalette } from '../../shaders/palettes.ts'
 import { rgb255 } from '../colorUtils.ts'
 
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'

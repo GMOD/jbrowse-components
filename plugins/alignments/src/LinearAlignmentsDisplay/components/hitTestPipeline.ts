@@ -12,9 +12,9 @@ import type {
   CigarHitResult,
   CoverageHitResult,
   IndicatorHitResult,
-  ModificationHitResult,
   ResolvedBlock,
 } from './hitTesting.ts'
+import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
 
 export type HitTestResult =
   | { type: 'indicator'; hit: IndicatorHitResult; resolved: ResolvedBlock }

@@ -1,8 +1,8 @@
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
-import * as modificationShader from '../../LinearAlignmentsDisplay/components/shaders/slang/modification.generated.ts'
+import * as modificationShader from '../../shaders/slang/modification.generated.ts'
 
-import type { ModificationUploadData } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+import type { ModificationUploadData } from './types.ts'
 
 export const PASS_MOD = 'modification'
 

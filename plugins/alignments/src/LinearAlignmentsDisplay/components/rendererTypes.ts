@@ -1,8 +1,8 @@
-import type { ColorPalette } from './shaders/colors.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ArcColorByType } from '../../shared/types.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
-export type { ColorPalette, RGBColor } from './shaders/colors.ts'
+export type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 
 export interface BaseRegionData {
   readIdToIndex: Map<string, number>
@@ -110,12 +110,6 @@ export interface CigarUploadData {
   softclipBasePositions: Uint32Array
   softclipBaseYs: Uint16Array
   softclipBaseBases: Uint8Array
-}
-
-export interface ModificationUploadData {
-  modificationPositions: Uint32Array
-  modificationYs: Uint16Array
-  modificationColors: Uint32Array
 }
 
 // Coverage-area upload payload. Raw arrays are kept for hit testing / tooltip
