@@ -495,6 +495,9 @@ export default function MultiSampleVariantBaseModelF(
 
       /**
        * #getter
+       * Original adapter order, no layout reordering. Reads sampleInfo
+       * (cellData-derived) for phased expansion — safe in React components
+       * and user actions, never put in rpcProps (would cause infinite loop).
        */
       get sourcesWithoutLayout() {
         return self.sourcesVolatile
@@ -507,9 +510,10 @@ export default function MultiSampleVariantBaseModelF(
       },
       /**
        * #getter
-       * Layout-ordered, subtree-filtered sources — never haplotype-expanded.
-       * Safe to use in rpcProps because it never reads sampleInfo (which comes
-       * from the fetch result and would cause a SettingsInvalidate loop).
+       * Layout-ordered, subtree-filtered, never haplotype-expanded.
+       * Does NOT read sampleInfo — safe to use in rpcProps. Three-getter
+       * hierarchy: sourcesBase → sources (adds phased expansion) →
+       * sourcesWithoutLayout (no layout, reads sampleInfo for phased).
        */
       get sourcesBase() {
         if (!self.sourcesVolatile) {
@@ -586,8 +590,7 @@ export default function MultiSampleVariantBaseModelF(
        * #getter
        */
       get nrow() {
-        // || 1 guards against subtreeFilter excluding all sources
-        return self.sources?.length || 1
+        return Math.max(1, self.sources?.length ?? 0)
       },
 
       /**

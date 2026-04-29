@@ -77,11 +77,15 @@ test('inter-region padding correct when bpPerPx causes float drift on region rig
   const staticBlocks = calculateStaticBlocks(params)
   const dynamicBlocks = calculateDynamicBlocks(params)
 
-  const dynamicCtgC = dynamicBlocks.contentBlocks.find(b => b.refName === 'ctgC')
+  const dynamicCtgC = dynamicBlocks.contentBlocks.find(
+    b => b.refName === 'ctgC',
+  )
   const staticCtgC = staticBlocks.contentBlocks.find(b => b.refName === 'ctgC')
   expect(dynamicCtgC).toBeDefined()
   expect(staticCtgC).toBeDefined()
-  expect(Math.abs(dynamicCtgC!.offsetPx - staticCtgC!.offsetPx)).toBeLessThan(0.001)
+  expect(Math.abs(dynamicCtgC!.offsetPx - staticCtgC!.offsetPx)).toBeLessThan(
+    0.001,
+  )
 })
 
 test('off-screen regions contribute padding to block positions', () => {

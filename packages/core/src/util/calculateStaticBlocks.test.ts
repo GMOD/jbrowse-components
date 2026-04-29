@@ -193,7 +193,13 @@ describe('reverse block calculation', () => {
       width: 2400,
       offsetPx: 0,
       displayedRegions: [
-        { assemblyName: 'test', refName: 'ctgA', start: 0, end: 2400, reversed: true },
+        {
+          assemblyName: 'test',
+          refName: 'ctgA',
+          start: 0,
+          end: 2400,
+          reversed: true,
+        },
       ],
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,

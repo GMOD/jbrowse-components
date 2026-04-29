@@ -5,14 +5,13 @@ import { firstValueFrom, toArray } from 'rxjs'
 
 import { computeVariantCells } from '../MultiVariantDisplay/components/computeVariantCells.ts'
 import { computeVariantMatrixCells } from '../MultiVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
+import { makeHaplotypeSources } from '../shared/getSources.ts'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
 
 import type { GetCellDataArgs } from './types.ts'
 import type { VariantCellData } from '../MultiVariantDisplay/components/computeVariantCells.ts'
 import type { MatrixCellData } from '../MultiVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
 import type { MAFFilteredFeature } from '../shared/minorAlleleFrequencyUtils.ts'
-import { makeHaplotypeSources } from '../shared/getSources.ts'
-
 import type { SampleInfo } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
