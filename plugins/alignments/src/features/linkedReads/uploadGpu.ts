@@ -8,7 +8,7 @@ export function uploadLinkedReadLines(
   displayedRegionIndex: number,
   data: LinkedReadLinesUploadData,
 ) {
-  const n = data.numLinkedReadLines ?? 0
+  const n = data.numLinkedReadLines
   if (n > 0) {
     hal.uploadBuffer(
       displayedRegionIndex,

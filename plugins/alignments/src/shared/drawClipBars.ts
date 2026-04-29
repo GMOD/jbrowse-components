@@ -1,6 +1,12 @@
-import { bpToScreenX, pileupRowY } from './rendererTypes.ts'
+import {
+  bpToScreenX,
+  pileupRowY,
+} from '../LinearAlignmentsDisplay/components/rendererTypes.ts'
 
-import type { DrawBlock, RenderState } from './rendererTypes.ts'
+import type {
+  DrawBlock,
+  RenderState,
+} from '../LinearAlignmentsDisplay/components/rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // Shared Canvas2D helper for soft + hard clip bars. Both feature folders pass

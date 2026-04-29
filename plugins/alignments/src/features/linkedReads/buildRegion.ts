@@ -15,12 +15,10 @@ export function buildLinkedReadLinesFields(
   data: LinkedReadLinesUploadData,
 ): LinkedReadLinesRegionFields {
   return {
-    linkedReadLinePositions:
-      data.linkedReadLinePositions ?? new Uint32Array(0),
-    linkedReadLineYs: data.linkedReadLineYs ?? new Uint16Array(0),
-    linkedReadLineColorTypes:
-      data.linkedReadLineColorTypes ?? new Uint8Array(0),
-    numLinkedReadLines: data.numLinkedReadLines ?? 0,
+    linkedReadLinePositions: data.linkedReadLinePositions,
+    linkedReadLineYs: data.linkedReadLineYs,
+    linkedReadLineColorTypes: data.linkedReadLineColorTypes,
+    numLinkedReadLines: data.numLinkedReadLines,
   }
 }
 

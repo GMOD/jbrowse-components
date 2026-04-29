@@ -126,6 +126,8 @@ function fillFrameUniforms(
   f[U.canvasW] = frame.canvasW
   f[U.pxPerBp] = frame.canvasW / (frame.clippedBpEnd - frame.clippedBpStart)
   f[U.canvasH] = state.canvasHeight
+  // rangeY0 (pileupY) and scrollTop (connecting/linked-read shaders) are
+  // the same value held in two slots; unifying needs a shader regen.
   f[U.rangeY0] = state.rangeY[0]
   f[U.scrollTop] = state.rangeY[0]
   f[U.covOffset] = state.pileupTopOffset
@@ -387,7 +389,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         ensureRegion(this.regions, idx, emptyRegion)
         uploadConnectingLines(this.hal, idx, data)
       }
-      if ((data.numLinkedReadLines ?? 0) > 0) {
+      if (data.numLinkedReadLines > 0) {
         ensureRegion(this.regions, idx, emptyRegion)
         uploadLinkedReadLines(this.hal, idx, data)
       }

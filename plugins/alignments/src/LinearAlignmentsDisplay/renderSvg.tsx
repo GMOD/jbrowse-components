@@ -12,7 +12,7 @@ import { drawAlignmentsToCtx } from './components/Canvas2DAlignmentsRenderer.ts'
 import CoverageYScaleBar from './components/CoverageYScaleBar.tsx'
 import YScaleBar from './components/YScaleBar.tsx'
 import { computePileupBezierArcs } from './components/computePileupArcs.ts'
-import { computeSashimiArcs } from './components/sashimiArcs.ts'
+import { computeSashimiArcs } from '../features/sashimi/computeOverlay.ts'
 
 import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type {

@@ -1,19 +1,23 @@
 import { canvasToGenomicCoords } from './alignmentComponentUtils.ts'
+import { hitTestChain, hitTestFeature } from './hitTesting.ts'
+import { hitTestCoverage } from '../../features/coverage/hitTest.ts'
+import { hitTestGap } from '../../features/gap/hitTest.ts'
+import { hitTestIndicator } from '../../features/indicator/hitTest.ts'
 import {
-  hitTestChain as hitTestChainFn,
-  hitTestCigarItem as hitTestCigarItemFn,
-  hitTestCoverage as hitTestCoverageFn,
-  hitTestFeature as hitTestFeatureFn,
-  hitTestIndicator as hitTestIndicatorFn,
-} from './hitTesting.ts'
-import { hitTestModification as hitTestModificationFn } from '../../features/modification/hitTest.ts'
+  hitTestLargeInsertion,
+  hitTestSmallInsertion,
+} from '../../features/insertion/hitTest.ts'
+import { hitTestMismatch } from '../../features/mismatch/hitTest.ts'
+import { hitTestModification } from '../../features/modification/hitTest.ts'
+import { hitTestClip } from '../../shared/clipPass.ts'
 
 import type {
+  CigarCoords,
   CigarHitResult,
-  CoverageHitResult,
-  IndicatorHitResult,
   ResolvedBlock,
 } from './hitTesting.ts'
+import type { CoverageHitResult } from '../../features/coverage/types.ts'
+import type { IndicatorHitResult } from '../../features/indicator/types.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
 
 export type HitTestResult =
@@ -55,6 +59,31 @@ export interface HitTestOptions {
   bpPerPx: number
 }
 
+// Priority chain across CIGAR features, top-down:
+//  1. large insertions (wide boxes that overlap SNPs)
+//  2. mismatches (1bp features under the cursor base)
+//  3. small insertions (thin bars that don't overlap SNPs)
+//  4. gaps (deletions/skips spanning the read body)
+//  5. softclips, then hardclips (interbase bars at alignment edges)
+function hitTestCigarItem(
+  resolved: ResolvedBlock,
+  coords: CigarCoords,
+  featureHeightSetting: number,
+): CigarHitResult | undefined {
+  const { adjustedY, yWithinRow } = coords
+  if (adjustedY < 0 || yWithinRow > featureHeightSetting) {
+    return undefined
+  }
+  return (
+    hitTestLargeInsertion(resolved, coords) ??
+    hitTestMismatch(resolved, coords) ??
+    hitTestSmallInsertion(resolved, coords) ??
+    hitTestGap(resolved, coords) ??
+    hitTestClip(resolved, coords, 'softclip') ??
+    hitTestClip(resolved, coords, 'hardclip')
+  )
+}
+
 export function performHitTest(
   canvasX: number,
   canvasY: number,
@@ -76,8 +105,7 @@ export function performHitTest(
   const detailedHitsEnabled = bpPerPx <= SNP_HIT_MAX_BP_PER_PX
 
   if (detailedHitsEnabled) {
-    // Indicator hits (triangles at top of coverage)
-    const indicatorHit = hitTestIndicatorFn(
+    const indicatorHit = hitTestIndicator(
       canvasX,
       canvasY,
       resolved,
@@ -88,8 +116,7 @@ export function performHitTest(
       return { type: 'indicator', hit: indicatorHit, resolved }
     }
 
-    // Coverage area hits
-    const coverageHit = hitTestCoverageFn(
+    const coverageHit = hitTestCoverage(
       canvasX,
       canvasY,
       resolved,
@@ -101,7 +128,6 @@ export function performHitTest(
     }
   }
 
-  // CIGAR item hits (on top of reads)
   const coords = resolved
     ? canvasToGenomicCoords(
         canvasX,
@@ -115,37 +141,36 @@ export function performHitTest(
     : undefined
 
   if (detailedHitsEnabled) {
-    // Modification hit testing before CIGAR: in modification mode a modified+
-    // mismatched base should resolve as a modification hit, not a mismatch hit.
-    // When not in modification mode modFlatbush is undefined so this is a no-op.
+    // Modification before CIGAR: a modified+mismatched base resolves as a
+    // modification hit, not a mismatch hit. modFlatbush is undefined when
+    // not in modification mode so this is a no-op.
     const modificationHit =
       resolved && coords
-        ? hitTestModificationFn(resolved, coords, featureHeightSetting)
+        ? hitTestModification(resolved, coords, featureHeightSetting)
         : undefined
     if (modificationHit && resolved && coords) {
       return {
         type: 'modification',
         hit: modificationHit,
-        featureHit: hitTestFeatureFn(
+        featureHit: hitTestFeature(
           canvasX,
           canvasY,
           resolved,
           coords,
           featureHeightSetting,
         ),
-        cigarHit: hitTestCigarItemFn(resolved, coords, featureHeightSetting),
+        cigarHit: hitTestCigarItem(resolved, coords, featureHeightSetting),
         resolved,
       }
     }
 
     const cigarHit =
       resolved && coords
-        ? hitTestCigarItemFn(resolved, coords, featureHeightSetting)
+        ? hitTestCigarItem(resolved, coords, featureHeightSetting)
         : undefined
     if (cigarHit && resolved) {
-      // Also get the feature hit for the underlying read
       const featureHit = coords
-        ? hitTestFeatureFn(
+        ? hitTestFeature(
             canvasX,
             canvasY,
             resolved,
@@ -153,20 +178,14 @@ export function performHitTest(
             featureHeightSetting,
           )
         : undefined
-      return {
-        type: 'cigar',
-        hit: cigarHit,
-        featureHit,
-        resolved,
-      }
+      return { type: 'cigar', hit: cigarHit, featureHit, resolved }
     }
   }
 
-  // Feature/chain hit testing
   const hit = isChainMode
-    ? hitTestChainFn(coords, resolved?.rpcData)
+    ? hitTestChain(coords, resolved?.rpcData)
     : resolved && coords
-      ? hitTestFeatureFn(
+      ? hitTestFeature(
           canvasX,
           canvasY,
           resolved,

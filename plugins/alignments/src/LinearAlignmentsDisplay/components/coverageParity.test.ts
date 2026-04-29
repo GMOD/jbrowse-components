@@ -140,6 +140,10 @@ const EMPTY_PILEUP_STUBS = {
   modCovColors: new Uint32Array(),
   connectingLinePositions: new Uint32Array(),
   connectingLineYs: new Uint16Array(),
+  linkedReadLinePositions: new Uint32Array(),
+  linkedReadLineYs: new Uint16Array(),
+  linkedReadLineColorTypes: new Uint8Array(),
+  numLinkedReadLines: 0,
 }
 
 function makeMinimalPileupResult(cov: CoverageUploadData) {

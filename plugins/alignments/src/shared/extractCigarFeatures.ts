@@ -27,8 +27,8 @@ export interface CigarEmitOutput {
 
 // Single dispatch loop emitting per-feature CIGAR data. Each branch routes
 // into a feature folder's emitter. Per-feature primitives are passed
-// directly — extractFeatureArrays runs this in a hot loop, so we avoid
-// allocating a context object per feature.
+// directly — extractFeatureArrays runs this for thousands of features per
+// region, so we avoid allocating a context object per feature.
 export function extractCigarFeatures(
   featureMismatches: Mismatch[],
   featureId: string,

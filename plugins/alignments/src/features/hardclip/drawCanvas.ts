@@ -1,5 +1,5 @@
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { drawClipBars } from '../../LinearAlignmentsDisplay/components/drawClipBars.ts'
+import { drawClipBars } from '../../shared/drawClipBars.ts'
 
 import type { HardclipRegionFields } from './buildRegion.ts'
 import type {

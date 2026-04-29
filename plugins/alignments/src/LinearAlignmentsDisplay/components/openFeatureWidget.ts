@@ -11,8 +11,9 @@ import {
   pct,
 } from './alignmentComponentUtils.ts'
 
-import type { CigarHitResult, IndicatorHitResult } from './hitTesting.ts'
+import type { CigarHitResult } from './hitTesting.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { IndicatorHitResult } from '../../features/indicator/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 function showWidget(

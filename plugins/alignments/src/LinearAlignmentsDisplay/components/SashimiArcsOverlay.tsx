@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 
 import { formatSashimiTooltip } from './alignmentComponentUtils.ts'
 import { openSashimiWidget } from './openFeatureWidget.ts'
-import { computeSashimiArcs } from './sashimiArcs.ts'
+import { computeSashimiArcs } from '../../features/sashimi/computeOverlay.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

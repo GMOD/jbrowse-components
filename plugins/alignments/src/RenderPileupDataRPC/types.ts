@@ -215,10 +215,10 @@ export interface PileupDataResult {
   // paths via PileupArcsOverlay (the GPU pass is one region per buffer).
   // Absolute genomic uint32 like all worker output (per ARCHITECTURE.md
   // coordinate convention).
-  linkedReadLinePositions?: Uint32Array // [bp1, bp2] pairs
-  linkedReadLineYs?: Uint16Array // [y1, y2] paired per line
-  linkedReadLineColorTypes?: Uint8Array // see LINKED_READ_COLOR_* constants
-  numLinkedReadLines?: number
+  linkedReadLinePositions: Uint32Array // [bp1, bp2] pairs
+  linkedReadLineYs: Uint16Array // [y1, y2] paired per line
+  linkedReadLineColorTypes: Uint8Array // see LINKED_READ_COLOR_* constants
+  numLinkedReadLines: number
 
   // Flatbush R-tree over chain bounding boxes for spatial hit testing.
   // Populated by main-thread layout after chain layout is computed.

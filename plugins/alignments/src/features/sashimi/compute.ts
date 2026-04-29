@@ -4,9 +4,9 @@ import type { CoverageGap } from '../coverage/compute.ts'
 // junction Map is keyed by string concat — gap counts are typically small, so
 // the string-key cost is negligible vs needing two parallel maps.
 //
-// Drawing lives in components/sashimiArcs.ts (intentionally SVG-only, see
-// LinearAlignmentsDisplay/CLAUDE.md). Only the worker-side compute belongs
-// here.
+// Worker-side compute. SVG-overlay geometry (`computeSashimiArcs`) lives in
+// `./computeOverlay.ts` (intentionally SVG-only — see
+// LinearAlignmentsDisplay/CLAUDE.md).
 export function computeSashimiJunctions(gaps: CoverageGap[]) {
   const junctions = new Map<
     string,

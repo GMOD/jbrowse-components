@@ -15,15 +15,15 @@ export const LINKED_READ_LINE_PASS = slangPass({
 export function packLinkedReadLines(
   data: LinkedReadLinesUploadData,
 ): ArrayBuffer {
-  const n = data.numLinkedReadLines ?? 0
+  const n = data.numLinkedReadLines
   const F = linkedReadLineShader.FIELD_OFFSET_F32
   const s32 = linkedReadLineShader.INSTANCE_STRIDE_F32
   const buf = new ArrayBuffer(n * linkedReadLineShader.INSTANCE_STRIDE_BYTES)
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
-  const pos = data.linkedReadLinePositions!
-  const ys = data.linkedReadLineYs!
-  const cts = data.linkedReadLineColorTypes!
+  const pos = data.linkedReadLinePositions
+  const ys = data.linkedReadLineYs
+  const cts = data.linkedReadLineColorTypes
   for (let i = 0; i < n; i++) {
     const o = i * s32
     u32[o + F.bp1] = pos[i * 2]!

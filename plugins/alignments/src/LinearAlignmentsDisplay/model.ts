@@ -64,13 +64,11 @@ import type {
 } from './components/AlignmentsRenderer.ts'
 import type { YScaleTicks } from './components/YScaleBar.tsx'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
-import type {
-  CigarHitResult,
-  IndicatorHitResult,
-} from './components/hitTesting.ts'
+import type { CigarHitResult } from './components/hitTesting.ts'
 import type { AlignmentsBackend } from './components/rendererTypes.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 import type { ArcsDataResult } from '../features/arcs/compute.ts'
+import type { IndicatorHitResult } from '../features/indicator/types.ts'
 import type { LegendItem } from '../shared/legendUtils.ts'
 import type {
   ArcColorByType,

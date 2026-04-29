@@ -232,6 +232,11 @@ export async function executeRenderChainData({
 
     connectingLinePositions: new Uint32Array(0),
     connectingLineYs: new Uint16Array(0),
+
+    linkedReadLinePositions: new Uint32Array(0),
+    linkedReadLineYs: new Uint16Array(0),
+    linkedReadLineColorTypes: new Uint8Array(0),
+    numLinkedReadLines: 0,
   }
 
   return rpcResult(result, collectResultTransferables(result))

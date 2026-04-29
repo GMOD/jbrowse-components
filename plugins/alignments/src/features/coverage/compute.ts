@@ -62,28 +62,18 @@ export function computeCoverage(
   const numBins = actualEnd - actualStart
   const binSize = 1
 
-  const events: { pos: number; delta: number }[] = []
+  const allEvents: { pos: number; delta: number }[] = []
   for (const f of features) {
-    events.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
+    allEvents.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
   }
   for (const g of gaps) {
-    events.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
+    allEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
   }
-  events.sort((a, b) => a.pos - b.pos)
-
-  const depths = new Float32Array(numBins)
-  let currentDepth = 0
+  const depths = sweepDepths(allEvents, numBins, actualStart, binSize)
   let maxDepth = 0
-  let eventIdx = 0
-  for (let binIdx = 0; binIdx < numBins; binIdx++) {
-    const binEnd = actualStart + (binIdx + 1) * binSize
-    while (eventIdx < events.length && events[eventIdx]!.pos < binEnd) {
-      currentDepth += events[eventIdx]!.delta
-      eventIdx++
-    }
-    depths[binIdx] = currentDepth
-    if (currentDepth > maxDepth) {
-      maxDepth = currentDepth
+  for (let i = 0; i < numBins; i++) {
+    if (depths[i]! > maxDepth) {
+      maxDepth = depths[i]!
     }
   }
 
@@ -113,29 +103,8 @@ export function computeCoverage(
         revEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
       }
     }
-    fwdEvents.sort((a, b) => a.pos - b.pos)
-    revEvents.sort((a, b) => a.pos - b.pos)
-
-    fwdDepths = new Float32Array(numBins)
-    revDepths = new Float32Array(numBins)
-
-    let fwdDepth = 0
-    let fwdIdx = 0
-    let revDepth = 0
-    let revIdx = 0
-    for (let binIdx = 0; binIdx < numBins; binIdx++) {
-      const binEnd = actualStart + (binIdx + 1) * binSize
-      while (fwdIdx < fwdEvents.length && fwdEvents[fwdIdx]!.pos < binEnd) {
-        fwdDepth += fwdEvents[fwdIdx]!.delta
-        fwdIdx++
-      }
-      while (revIdx < revEvents.length && revEvents[revIdx]!.pos < binEnd) {
-        revDepth += revEvents[revIdx]!.delta
-        revIdx++
-      }
-      fwdDepths[binIdx] = Math.max(0, fwdDepth)
-      revDepths[binIdx] = Math.max(0, revDepth)
-    }
+    fwdDepths = sweepDepths(fwdEvents, numBins, actualStart, binSize)
+    revDepths = sweepDepths(revEvents, numBins, actualStart, binSize)
   }
 
   return {
@@ -146,4 +115,26 @@ export function computeCoverage(
     binSize,
     startPos,
   }
+}
+
+// Sweep-line depth pass: applies sorted +1/-1 events bin-by-bin.
+function sweepDepths(
+  events: { pos: number; delta: number }[],
+  numBins: number,
+  actualStart: number,
+  binSize: number,
+) {
+  events.sort((a, b) => a.pos - b.pos)
+  const depths = new Float32Array(numBins)
+  let depth = 0
+  let eventIdx = 0
+  for (let binIdx = 0; binIdx < numBins; binIdx++) {
+    const binEnd = actualStart + (binIdx + 1) * binSize
+    while (eventIdx < events.length && events[eventIdx]!.pos < binEnd) {
+      depth += events[eventIdx]!.delta
+      eventIdx++
+    }
+    depths[binIdx] = Math.max(0, depth)
+  }
+  return depths
 }

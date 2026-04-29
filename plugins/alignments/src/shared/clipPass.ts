@@ -1,8 +1,14 @@
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
+import { INTERBASE_HARDCLIP, INTERBASE_SOFTCLIP } from './types.ts'
 import { interbaseRangeEnds } from '../LinearAlignmentsDisplay/components/rendererTypes.ts'
 import * as clipShader from '../shaders/slang/clip.generated.ts'
 
+import type {
+  CigarCoords,
+  CigarHitResult,
+  ResolvedBlock,
+} from '../LinearAlignmentsDisplay/components/hitTesting.ts'
 import type { CigarUploadData } from '../LinearAlignmentsDisplay/components/rendererTypes.ts'
 import type { GpuHal } from '@jbrowse/core/gpu/hal'
 
@@ -52,4 +58,41 @@ export function uploadClips(
   if (count > 0) {
     hal.uploadBuffer(displayedRegionIndex, PASS_CLIP, packClips(data), count)
   }
+}
+
+// Shared hit test for soft + hard clips. Both bars live in the same merged
+// interbase array and only differ by `kind` and the result's literal type.
+export function hitTestClip(
+  resolved: ResolvedBlock,
+  coords: CigarCoords,
+  kind: 'softclip' | 'hardclip',
+): CigarHitResult | undefined {
+  const { bpPerPx, genomicPos, row } = coords
+  const { interbasePositions, interbaseYs, interbaseLengths, interbaseTypes } =
+    resolved.rpcData
+  const numInterbases = interbasePositions.length
+  const hitToleranceBp = Math.max(0.5, bpPerPx * 3)
+  const wantType =
+    kind === 'softclip' ? INTERBASE_SOFTCLIP : INTERBASE_HARDCLIP
+
+  for (let i = 0; i < numInterbases; i++) {
+    if (interbaseTypes[i] !== wantType || interbaseYs[i] !== row) {
+      continue
+    }
+    const pos = interbasePositions[i]
+    const len = interbaseLengths[i]
+    if (
+      pos !== undefined &&
+      len !== undefined &&
+      Math.abs(genomicPos - pos) < hitToleranceBp
+    ) {
+      return {
+        type: kind,
+        index: i,
+        position: pos,
+        length: len,
+      }
+    }
+  }
+  return undefined
 }

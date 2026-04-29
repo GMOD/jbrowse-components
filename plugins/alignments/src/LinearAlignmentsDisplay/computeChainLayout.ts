@@ -23,6 +23,9 @@ function buildChainRowMap(
   return { rowMap, maxY: rows.length }
 }
 
+// Chains spanning multiple regions are merged by name. min/max give the
+// true span; max-distance is the longest end-to-end view, which keeps the
+// largest chains packing first under placeRect's distance-sort.
 function mergeChains(datasets: PileupDataResult[]) {
   const merged = new Map<
     string,
