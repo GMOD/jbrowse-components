@@ -29,10 +29,14 @@ import * as insertionShader from './shaders/slang/insertion.generated.ts'
 import * as linkedReadLineShader from './shaders/slang/linkedReadLine.generated.ts'
 import * as mismatchShader from './shaders/slang/mismatch.generated.ts'
 import * as modCoverageShader from './shaders/slang/modCoverage.generated.ts'
-import * as modificationShader from './shaders/slang/modification.generated.ts'
 import * as noncovShader from './shaders/slang/noncovHistogram.generated.ts'
 import * as readShader from './shaders/slang/read.generated.ts'
 import * as snpCoverageShader from './shaders/slang/snpCoverage.generated.ts'
+import {
+  MODIFICATION_PASS,
+  PASS_MOD,
+} from '../../features/modification/packGpu.ts'
+import { uploadModifications } from '../../features/modification/uploadGpu.ts'
 
 import type {
   AlignmentsBackend,
@@ -45,7 +49,6 @@ import type {
   CoverageUploadData,
   LinkedReadLinesUploadData,
   ModCoverageUploadData,
-  ModificationUploadData,
   RGBColor,
   ReadUploadData,
   RenderBlock,
@@ -67,7 +70,7 @@ const PASS_GAP = 'gap'
 const PASS_MISMATCH = 'mismatch'
 const PASS_INSERTION = 'insertion'
 const PASS_CLIP = 'clip' // unified soft+hard clip bars
-const PASS_MOD = 'modification'
+// PASS_MOD is owned by features/modification/packGpu.ts; re-imported above.
 const PASS_COVERAGE = 'coverage'
 const PASS_SNP_COV = 'snpCov'
 const PASS_MOD_COV = 'modCov'
@@ -375,24 +378,6 @@ function packConnectingLines(data: ConnectingLinesUploadData): ArrayBuffer {
   return buf
 }
 
-function packModifications(data: ModificationUploadData): ArrayBuffer {
-  const n = data.modificationPositions.length
-  const F = modificationShader.FIELD_OFFSET_F32
-  const s32 = modificationShader.INSTANCE_STRIDE_F32
-  const buf = new ArrayBuffer(n * modificationShader.INSTANCE_STRIDE_BYTES)
-  const u32 = new Uint32Array(buf)
-  const pos = data.modificationPositions
-  const ys = data.modificationYs
-  const colors = data.modificationColors
-  for (let i = 0; i < n; i++) {
-    const o = i * s32
-    u32[o + F.position] = pos[i]!
-    u32[o + F.y] = ys[i]!
-    u32[o + F.packedColor] = colors[i]!
-  }
-  return buf
-}
-
 // Arc-pass UBO patch. The arc shader reads the same UBO as the read pass
 // but in a different viewport (above/below pileup), so we overwrite the
 // viewport-sensitive slots before the draw. Pure — mutates only the views.
@@ -485,7 +470,7 @@ export const ALIGNMENTS_PASSES: PassDescriptor[] = [
     verticesPerInstance: 18,
   }),
   slangPass({ id: PASS_CLIP, mod: clipShader, verticesPerInstance: 6 }),
-  slangPass({ id: PASS_MOD, mod: modificationShader, verticesPerInstance: 6 }),
+  MODIFICATION_PASS,
   slangPass({ id: PASS_COVERAGE, mod: coverageShader, verticesPerInstance: 6 }),
   slangPass({
     id: PASS_SNP_COV,
@@ -597,7 +582,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       active.push(idx)
       this.uploadReads(idx, data)
       this.uploadCigar(idx, data)
-      this.uploadModifications(idx, data)
+      uploadModifications(this.hal, idx, data)
       this.uploadCoverage(idx, data)
       this.uploadModCoverage(idx, data)
       if (data.connectingLinePositions.length > 0) {
@@ -681,21 +666,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         PASS_SOFTCLIP_BASES,
         packSoftclipBases(data),
         numSoftclipBases,
-      )
-    }
-  }
-
-  private uploadModifications(
-    displayedRegionIndex: number,
-    data: ModificationUploadData,
-  ) {
-    const numModifications = data.modificationPositions.length
-    if (numModifications > 0) {
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_MOD,
-        packModifications(data),
-        numModifications,
       )
     }
   }

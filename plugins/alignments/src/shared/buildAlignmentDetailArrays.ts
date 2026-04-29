@@ -4,10 +4,10 @@ import {
   buildGapArrays,
   buildInterbaseArrays,
   buildMismatchArrays,
-  buildModificationArrays,
   buildSegmentArrays,
   buildSoftclipBaseArrays,
 } from './processFeatureAlignments.ts'
+import { buildModificationArrays } from '../features/modification/buildArrays.ts'
 
 import type {
   FeatureData,

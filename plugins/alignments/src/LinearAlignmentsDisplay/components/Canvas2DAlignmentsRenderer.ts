@@ -14,13 +14,17 @@ import {
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
-import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
+import {
+  buildModificationFields,
+  emptyModificationFields,
+} from '../../features/modification/buildRegion.ts'
 import { getReadColor, rgb255 } from '../colorUtils.ts'
 import { getChainBounds } from './chainOverlayUtils.ts'
 import { drawArcsToCtx } from './drawArcs.ts'
 import {
+  bpToScreenX,
   buildReadIdToIndex,
   computeBlockHeights,
   interbaseRangeEnds,
@@ -31,6 +35,7 @@ import {
   getArcPalette,
   linkedReadColorPalette,
 } from './shaders/palettes.ts'
+import { drawModifications } from '../../features/modification/drawCanvas.ts'
 
 import type {
   AlignmentsBackend,
@@ -40,7 +45,6 @@ import type {
   CigarUploadData,
   CoverageUploadData,
   ModCoverageUploadData,
-  ModificationUploadData,
   RenderBlock,
   RenderState,
 } from './rendererTypes.ts'
@@ -140,23 +144,6 @@ export interface Canvas2DRegionData extends BaseRegionData {
 const GAP_DELETION = 0
 const GAP_SKIP = 1
 
-// Linear interpolation from an absolute bp position into the block's screen-
-// pixel x. `reversed` blocks flip the mapping (low-bp edge on the right).
-function bpToScreenX(
-  absBp: number,
-  block: {
-    bpRangeX: [number, number]
-    screenStartPx: number
-    reversed?: boolean
-  },
-  bpLength: number,
-  fullBlockWidth: number,
-) {
-  const bpEdge = block.reversed ? block.bpRangeX[1] : block.bpRangeX[0]
-  const offset = block.reversed ? bpEdge - absBp : absBp - bpEdge
-  return block.screenStartPx + (offset / bpLength) * fullBlockWidth
-}
-
 // Shared zero-length sentinels — Canvas2DRegionData is read-only after build,
 // so all empty fields can share frozen instances instead of allocating
 // per-region.
@@ -220,15 +207,6 @@ function buildCigarFields(data: CigarUploadData) {
     softclipBaseYs: data.softclipBaseYs,
     softclipBaseBases: data.softclipBaseBases,
     numSoftclipBases: data.softclipBasePositions.length,
-  }
-}
-
-function buildModificationFields(data: ModificationUploadData) {
-  return {
-    modificationPositions: data.modificationPositions,
-    modificationYs: data.modificationYs,
-    modificationColors: data.modificationColors,
-    numModifications: data.modificationPositions.length,
   }
 }
 
@@ -397,10 +375,7 @@ function emptyPileupFields(): Omit<
     softclipBaseYs: EMPTY_U16,
     softclipBaseBases: EMPTY_U8,
     numSoftclipBases: 0,
-    modificationPositions: EMPTY_U32,
-    modificationYs: EMPTY_U16,
-    modificationColors: EMPTY_U32,
-    numModifications: 0,
+    ...emptyModificationFields(),
     coverageBuffer: EMPTY_BUF,
     coverageBinCount: 0,
     coverageMaxDepth: 0,
@@ -883,31 +858,6 @@ function drawSoftclipBases(
       ctx.fillStyle = color
       ctx.fillRect(x, y, w, fH)
     }
-  }
-}
-
-function drawModifications(
-  ctx: Ctx2D,
-  region: Canvas2DRegionData,
-  block: { bpRangeX: [number, number]; screenStartPx: number },
-  bpLength: number,
-  fullBlockWidth: number,
-  state: RenderState,
-) {
-  if (region.numModifications === 0) {
-    return
-  }
-  const fH = state.featureHeight
-  const bpPerPx = bpLength / fullBlockWidth
-
-  for (let i = 0; i < region.numModifications; i++) {
-    const bp = region.modificationPositions[i]!
-    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
-    const w = Math.max(1, 1 / bpPerPx)
-    const yRow = region.modificationYs[i]!
-    const y = pileupRowY(yRow, state)
-    ctx.fillStyle = abgrToCssRgba(region.modificationColors[i]!)
-    ctx.fillRect(x, y, w, fH)
   }
 }
 

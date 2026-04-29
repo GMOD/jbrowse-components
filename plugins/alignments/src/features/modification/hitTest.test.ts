@@ -1,9 +1,9 @@
 import { abgrAlpha, packAbgr } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { hitTestModification } from './hitTesting.ts'
+import { hitTestModification } from './hitTest.ts'
 
-import type { CigarCoords, ResolvedBlock } from './hitTesting.ts'
+import type { CigarCoords, ResolvedBlock } from '../../LinearAlignmentsDisplay/components/hitTesting.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
 function makeModFlatbush(positions: number[], rows: number[]) {

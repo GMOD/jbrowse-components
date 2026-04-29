@@ -5,8 +5,8 @@ import {
   hitTestCoverage as hitTestCoverageFn,
   hitTestFeature as hitTestFeatureFn,
   hitTestIndicator as hitTestIndicatorFn,
-  hitTestModification as hitTestModificationFn,
 } from './hitTesting.ts'
+import { hitTestModification as hitTestModificationFn } from '../../features/modification/hitTest.ts'
 
 import type {
   CigarHitResult,

@@ -1,10 +1,12 @@
 import {
   buildTagColors,
   extractFeatureTagValue,
-  extractMethylation,
   extractMismatchData,
-  extractModifications,
 } from './processFeatureAlignments.ts'
+import {
+  extractMethylation,
+  extractModifications,
+} from '../features/modification/extract.ts'
 
 import type { ColorBy, Mismatch } from './types.ts'
 import type {

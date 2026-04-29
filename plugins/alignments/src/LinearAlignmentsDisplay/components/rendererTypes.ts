@@ -220,3 +220,25 @@ export function pileupRowY(yRow: number, state: RenderState) {
     state.rangeY[0]
   )
 }
+
+// Block geometry shared by every Canvas2D feature draw function. Defining
+// the shape here breaks an otherwise-cyclic dependency between the per-
+// feature drawCanvas modules and Canvas2DAlignmentsRenderer.
+export interface DrawBlock {
+  bpRangeX: [number, number]
+  screenStartPx: number
+  reversed?: boolean
+}
+
+// Linear interpolation from an absolute bp position into the block's screen-
+// pixel x. `reversed` blocks flip the mapping (low-bp edge on the right).
+export function bpToScreenX(
+  absBp: number,
+  block: DrawBlock,
+  bpLength: number,
+  fullBlockWidth: number,
+) {
+  const bpEdge = block.reversed ? block.bpRangeX[1] : block.bpRangeX[0]
+  const offset = block.reversed ? bpEdge - absBp : absBp - bpEdge
+  return block.screenStartPx + (offset / bpLength) * fullBlockWidth
+}

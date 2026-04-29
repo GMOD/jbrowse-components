@@ -1,10 +1,4 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import {
-  methylated5hmC,
-  methylated5mC,
-  unmethylated5hmC,
-  unmethylated5mC,
-} from '@jbrowse/core/ui/theme'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -14,24 +8,17 @@ import {
   computeMismatchFrequencies,
   computePositionFrequencies,
 } from './computeCoverage.ts'
-import { getMaxProbModAtEachPosition } from './getMaximumModificationAtEachPosition.ts'
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from './types.ts'
 import {
   baseToAscii,
   getEffectiveStrand,
   pairOrientationToNum,
 } from './webglRpcUtils.ts'
 import { featureFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
-import { parseCigar2 } from '../MismatchParser/index.ts'
-import { detectSimplexModifications } from '../ModificationParser/detectSimplexModifications.ts'
-import { getMethBins } from '../ModificationParser/getMethBins.ts'
-import { getModPositions } from '../ModificationParser/getModPositions.ts'
-import { getModProbabilities } from '../ModificationParser/getModProbabilities.ts'
-import { getColorForModification, getTagAlt } from '../util.ts'
-import {
-  INTERBASE_HARDCLIP,
-  INTERBASE_INSERTION,
-  INTERBASE_SOFTCLIP,
-} from './types.ts'
 
 import type { Mismatch } from './types.ts'
 import type {
@@ -40,10 +27,8 @@ import type {
   HardclipData,
   InsertionData,
   MismatchData,
-  ModificationEntry,
   SoftclipData,
 } from './webglRpcTypes.ts'
-import type { ParsedModData } from '../ModificationParser/getMethBins.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
@@ -176,145 +161,6 @@ export function extractMismatchData(
         featureId,
         position: featureStart + mm.start,
         length: mm.cliplen,
-      })
-    }
-  }
-}
-
-export function extractModifications(
-  feature: Feature,
-  featureId: string,
-  featureStart: number,
-  strand: number,
-  colorBy: { type: string; modifications?: { threshold?: number } } | undefined,
-  detectedModifications: Set<string>,
-  detectedSimplexModifications: Set<string>,
-  modificationsData: ModificationEntry[],
-): ParsedModData | undefined {
-  const mmTag = getTagAlt(feature, 'MM', 'Mm') as string | undefined
-  if (!mmTag) {
-    return
-  }
-  const cigarString = feature.get('CIGAR') as string | undefined
-  if (!cigarString) {
-    return
-  }
-  const seq = feature.get('seq') as string | undefined
-  if (!seq) {
-    return
-  }
-  const cigarOps = parseCigar2(cigarString)
-  const fstrand = strand as -1 | 0 | 1
-  const modifications = getModPositions(mmTag, seq, fstrand)
-  const probabilities = getModProbabilities(feature)
-  const simplexSet = detectSimplexModifications(modifications)
-  const mods = getMaxProbModAtEachPosition(
-    modifications,
-    probabilities,
-    cigarOps,
-    fstrand,
-  )
-  const modThreshold = (colorBy?.modifications?.threshold ?? 10) / 100
-  // eslint-disable-next-line unicorn/no-array-for-each
-  mods.forEach(({ prob, type, base }, refPos) => {
-    detectedModifications.add(type)
-    const isSimplex = simplexSet.has(type)
-    if (isSimplex) {
-      detectedSimplexModifications.add(type)
-    }
-    if (colorBy?.type === 'modifications' && prob >= modThreshold) {
-      const [r, g, b] = cssColorToRgb(getColorForModification(type))
-      modificationsData.push({
-        featureId,
-        position: featureStart + refPos,
-        base,
-        modType: type,
-        isSimplex,
-        strand: strand === -1 ? -1 : 1,
-        r,
-        g,
-        b,
-        prob,
-      })
-    }
-  })
-  return {
-    modifications,
-    probabilities,
-    cigarOps,
-    seq,
-    fstrand,
-    flen: feature.get('end') - feature.get('start'),
-  }
-}
-
-// Methylated/unmethylated display colors for bisulfite/ONT methylation mode.
-// These differ from the modification-mode colors in modificationData.ts.
-// Source of truth is theme.ts; converted once here for the worker context.
-const METH_5MC_METHYLATED_RGB = cssColorToRgb(methylated5mC)
-const METH_5MC_UNMETHYLATED_RGB = cssColorToRgb(unmethylated5mC)
-const METH_5HMC_METHYLATED_RGB = cssColorToRgb(methylated5hmC)
-const METH_5HMC_UNMETHYLATED_RGB = cssColorToRgb(unmethylated5hmC)
-
-function methColorAndProb(
-  methP: number,
-  methylatedRgb: readonly [number, number, number],
-  unmethylatedRgb: readonly [number, number, number],
-) {
-  const isMeth = methP > 0.5
-  const [r, g, b] = isMeth ? methylatedRgb : unmethylatedRgb
-  return { r, g, b, prob: isMeth ? methP : 1 - methP }
-}
-
-export function extractMethylation(
-  featureId: string,
-  featureStart: number,
-  strand: number,
-  regionStart: number,
-  regionEnd: number,
-  modData: ParsedModData,
-  modificationsData: ModificationEntry[],
-) {
-  const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
-    getMethBins(modData)
-
-  const methStrand = strand === -1 ? -1 : 1
-  const iStart = Math.max(0, regionStart - featureStart)
-  const iEnd = Math.min(modData.flen, regionEnd - featureStart)
-
-  for (let i = iStart; i < iEnd; i++) {
-    if (!methBins[i] && !hydroxyMethBins[i]) {
-      continue
-    }
-    const genomicPos = i + featureStart
-    if (methBins[i]) {
-      modificationsData.push({
-        featureId,
-        position: genomicPos,
-        base: 'C',
-        modType: 'm',
-        isSimplex: true,
-        strand: methStrand,
-        ...methColorAndProb(
-          methProbs[i] ?? 0,
-          METH_5MC_METHYLATED_RGB,
-          METH_5MC_UNMETHYLATED_RGB,
-        ),
-      })
-    }
-    if (hydroxyMethBins[i]) {
-      modificationsData.push({
-        featureId,
-        position: genomicPos,
-        base: 'C',
-        modType: 'h',
-        isSimplex: true,
-        strand: methStrand,
-        ...methColorAndProb(
-          hydroxyMethProbs[i] ?? 0,
-          METH_5HMC_METHYLATED_RGB,
-          METH_5HMC_UNMETHYLATED_RGB,
-        ),
       })
     }
   }
@@ -543,50 +389,6 @@ export function buildGapArrays(
   return { gapPositions, gapYs, gapLengths, gapTypes, gapReadIndices }
 }
 
-export function buildModificationArrays(
-  modifications: ModificationEntry[],
-  regionStart: number,
-  getReadIndex: (featureId: string) => number,
-  detectedModifications?: Set<string> | string[],
-) {
-  const filtered = modifications.filter(m => m.position >= regionStart)
-  const modificationPositions = new Uint32Array(filtered.length)
-  const modificationYs = new Uint16Array(filtered.length)
-  // Pre-pack each modification's RGB + probability-as-alpha into ABGR u32 so
-  // both the GPU vertex buffer and the Canvas2D shader path can read one
-  // slot instead of four shifted bytes.
-  const modificationColors = new Uint32Array(filtered.length)
-  const modificationProbabilities = new Uint8Array(filtered.length)
-  const modificationReadIndices = new Uint32Array(filtered.length)
-  const modTypeToIdx = detectedModifications
-    ? new Map([...detectedModifications].map((t, i) => [t, i]))
-    : undefined
-  const modificationTypeIndices = modTypeToIdx
-    ? new Uint8Array(filtered.length)
-    : undefined
-  for (let i = 0; i < filtered.length; i++) {
-    const m = filtered[i]!
-    modificationPositions[i] = m.position
-    // Quadratic curve with 0.1 floor: low-prob mods stay faintly visible,
-    // high-prob mods are strongly opaque (matches main branch alphaColor).
-    const a = Math.round(Math.min(1, m.prob * m.prob + 0.1) * 255) & 0xff
-    modificationColors[i] = packAbgr(m.r, m.g, m.b, a)
-    modificationProbabilities[i] = Math.round(m.prob * 255) & 0xff
-    modificationReadIndices[i] = getReadIndex(m.featureId)
-    if (modificationTypeIndices && modTypeToIdx) {
-      modificationTypeIndices[i] = modTypeToIdx.get(m.modType) ?? 0
-    }
-  }
-  return {
-    modificationPositions,
-    modificationYs,
-    modificationColors,
-    modificationProbabilities,
-    modificationReadIndices,
-    modificationTypeIndices,
-  }
-}
-
 // Splits each read into per-exon segments at CIGAR skip (N) gaps.
 // Reads without skips produce one segment. Segment starts are clamped
 // to regionStart (features starting before regionStart), but ends are NOT
@@ -742,5 +544,3 @@ export function computeFrequenciesAndThresholds(
 
   return { mismatchFrequencies, interbaseFrequencies, gapFrequencies }
 }
-
-export { type ParsedModData } from '../ModificationParser/getMethBins.ts'
