@@ -1,51 +1,54 @@
-import { YSCALEBAR_LABEL_OFFSET, getDevicePixelRatio } from '@jbrowse/alignments-core'
-import { slangPass } from '@jbrowse/core/gpu/slangPass'
+import {
+  YSCALEBAR_LABEL_OFFSET,
+  getDevicePixelRatio,
+} from '@jbrowse/alignments-core'
 
-import * as coverageShader from '../shaders/slang/multiSyntenyCoverage.generated.ts'
+import { packCoverageForGpu } from '../features/coverage/packGpu.ts'
+import {
+  COVERAGE_PASS,
+  PASS_COVERAGE,
+  uploadCoverageToGpu,
+} from '../features/coverage/uploadGpu.ts'
+import { prepareBlockGeometry } from '../features/fill/packGpu.ts'
+import {
+  FILL_PASS,
+  PASS_FILL,
+  uploadFillToGpu,
+} from '../features/fill/uploadGpu.ts'
+import { packIndicatorsForGpu } from '../features/indicator/packGpu.ts'
+import {
+  INDICATORS_PASS,
+  PASS_INDICATORS,
+  uploadIndicatorsToGpu,
+} from '../features/indicator/uploadGpu.ts'
+import { packSnpCoverageForGpu } from '../features/snpCoverage/packGpu.ts'
+import {
+  PASS_SNP,
+  SNP_PASS,
+  uploadSnpCoverageToGpu,
+} from '../features/snpCoverage/uploadGpu.ts'
 import * as fillShader from '../shaders/slang/multiSyntenyFill.generated.ts'
 import { UNIFORM_OFFSET_F32 as U } from '../shaders/slang/multiSyntenyFill.generated.ts'
-import * as indicatorShader from '../shaders/slang/multiSyntenyIndicator.generated.ts'
-import * as snpShader from '../shaders/slang/multiSyntenySnp.generated.ts'
 import { computeBlockRenderParams } from '../shared/blockRenderParams.ts'
 import { BG_COLOR_GL } from '../shared/types.ts'
 
 import type {
   MultiSyntenyBackend,
   MultiSyntenyRenderState,
+  MultiSyntenySources,
 } from './rendererTypes.ts'
-import type { BlockCoverageUploadData } from '../features/coverage/packGpu.ts'
-import type { BlockGeometryData } from '../features/fill/packGpu.ts'
-import type { BlockIndicatorUploadData } from '../features/indicator/packGpu.ts'
-import type { BlockSnpUploadData } from '../features/snpCoverage/packGpu.ts'
-import type { SyntenyColorPalette } from '../model.ts'
 import type { BlockRenderParams } from '../shared/blockRenderParams.ts'
+import type { SyntenyColorPalette } from '../shared/types.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
-
-const PASS_FILL = 'fill'
-const PASS_COVERAGE = 'coverage'
-const PASS_SNP = 'snp'
-const PASS_INDICATORS = 'indicators'
 
 const UNIFORMS_SIZE_BYTES = fillShader.UNIFORMS_SIZE_BYTES
 
 export const SYNTENY_PASSES: PassDescriptor[] = [
-  slangPass({
-    id: PASS_FILL,
-    mod: fillShader,
-  }),
-  slangPass({
-    id: PASS_COVERAGE,
-    mod: coverageShader,
-  }),
-  slangPass({
-    id: PASS_SNP,
-    mod: snpShader,
-  }),
-  slangPass({
-    id: PASS_INDICATORS,
-    mod: indicatorShader,
-  }),
+  FILL_PASS,
+  COVERAGE_PASS,
+  SNP_PASS,
+  INDICATORS_PASS,
 ]
 
 export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
@@ -57,60 +60,65 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
     this.hal = hal
   }
 
-  uploadGeometryForBlock(
-    displayedRegionIndex: number,
-    data: BlockGeometryData & { regionStart: number },
-  ) {
-    this.hal.setRegionMeta(displayedRegionIndex, {
-      regionStart: data.regionStart,
-    })
-    this.hal.uploadBuffer(
-      displayedRegionIndex,
-      PASS_FILL,
-      data.buffer,
-      data.instanceCount,
-    )
-  }
+  sync(sources: MultiSyntenySources) {
+    const {
+      rpcDataMap,
+      displayedGenomes,
+      colorBy,
+      showSnps,
+      showCoverage,
+      coverageGlobalMax,
+      viewWidth,
+      palette,
+    } = sources
 
-  uploadCoverageForBlock(
-    displayedRegionIndex: number,
-    data: BlockCoverageUploadData & { regionStart: number; maxDepth: number },
-  ) {
-    this.hal.setRegionMeta(displayedRegionIndex, { maxDepth: data.maxDepth })
-    this.hal.uploadBuffer(
-      displayedRegionIndex,
-      PASS_COVERAGE,
-      data.buffer,
-      data.binCount,
-    )
-  }
-
-  uploadSnpCoverageForBlock(
-    displayedRegionIndex: number,
-    data: BlockSnpUploadData,
-  ) {
-    this.hal.uploadBuffer(
-      displayedRegionIndex,
-      PASS_SNP,
-      data.buffer,
-      data.segmentCount,
-    )
-  }
-
-  uploadIndicatorsForBlock(
-    displayedRegionIndex: number,
-    data: BlockIndicatorUploadData,
-  ) {
-    this.hal.uploadBuffer(
-      displayedRegionIndex,
-      PASS_INDICATORS,
-      data.buffer,
-      data.indicatorCount,
-    )
-  }
-
-  clearAllBlocks() {
-    this.hal.deleteAllRegions()
+    const active = new Set<number>()
+    for (const [idx, data] of rpcDataMap) {
+      active.add(idx)
+      uploadFillToGpu(
+        this.hal,
+        idx,
+        prepareBlockGeometry(
+          data.genomeFeatures,
+          displayedGenomes,
+          colorBy,
+          showSnps,
+          palette.syntenyColors,
+        ),
+      )
+      if (showCoverage) {
+        uploadCoverageToGpu(
+          this.hal,
+          idx,
+          packCoverageForGpu(
+            data.coverageDepths,
+            data.coverageStartPos,
+            coverageGlobalMax,
+            viewWidth,
+          ),
+          data.coverageMaxDepth,
+        )
+        uploadSnpCoverageToGpu(
+          this.hal,
+          idx,
+          packSnpCoverageForGpu(
+            data.snpPositions,
+            data.snpYOffsets,
+            data.snpHeights,
+            data.snpColorTypes,
+            data.snpCount,
+          ),
+        )
+        uploadIndicatorsToGpu(
+          this.hal,
+          idx,
+          packIndicatorsForGpu(data.indicatorPositions, data.numIndicators),
+        )
+      }
+    }
+    if (active.size === 0) {
+      this.hal.deleteAllRegions()
+    }
   }
 
   renderBlocks(state: MultiSyntenyRenderState) {
@@ -130,49 +138,20 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
     const logicalW = Math.round(width * dpr) / dpr
     const logicalH = Math.round(height * dpr) / dpr
     const rowPadding = rowSpacing ? 1 : 0
-
-    let globalMaxDepth = 0
-    for (const block of contentBlocks) {
-      if (block.displayedRegionIndex !== undefined) {
-        const meta = this.hal.getRegionMeta(block.displayedRegionIndex)
-        if (meta && meta.maxDepth > globalMaxDepth) {
-          globalMaxDepth = meta.maxDepth
-        }
-      }
-    }
-    // depthScale multiplies coverage bar heights in the shader; 1 = no cross-region normalization
-    // (should eventually be region.maxDepth / globalMaxDepth, as GpuAlignmentsRenderer does)
+    // depthScale multiplies coverage bar heights in the shader; 1 = no
+    // cross-region normalization (should eventually be region.maxDepth /
+    // globalMaxDepth, as GpuAlignmentsRenderer does)
     const depthScale = 1
 
     this.hal.beginFrame(BG_COLOR_GL, BG_COLOR_GL, BG_COLOR_GL)
 
-    if (coverageHeight > 0) {
+    const passes = coverageHeight > 0
+      ? [PASS_COVERAGE, PASS_SNP, PASS_INDICATORS, PASS_FILL]
+      : [PASS_FILL]
+
+    for (const passId of passes) {
       this.drawPassForVisibleBlocks(
-        PASS_COVERAGE,
-        contentBlocks,
-        viewOffsetPx,
-        logicalW,
-        logicalH,
-        rowHeight,
-        rowPadding,
-        coverageHeight,
-        depthScale,
-        palette,
-      )
-      this.drawPassForVisibleBlocks(
-        PASS_SNP,
-        contentBlocks,
-        viewOffsetPx,
-        logicalW,
-        logicalH,
-        rowHeight,
-        rowPadding,
-        coverageHeight,
-        depthScale,
-        palette,
-      )
-      this.drawPassForVisibleBlocks(
-        PASS_INDICATORS,
+        passId,
         contentBlocks,
         viewOffsetPx,
         logicalW,
@@ -185,20 +164,8 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
       )
     }
 
-    this.drawPassForVisibleBlocks(
-      PASS_FILL,
-      contentBlocks,
-      viewOffsetPx,
-      logicalW,
-      logicalH,
-      rowHeight,
-      rowPadding,
-      coverageHeight,
-      depthScale,
-      palette,
-    )
-
     this.hal.endFrame()
+    return true
   }
 
   dispose() {
@@ -215,7 +182,7 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
     rowPadding: number,
     coverageHeight: number,
     depthScale: number,
-    palette: MultiSyntenyRenderState['palette'],
+    palette: SyntenyColorPalette,
   ) {
     for (const [regionKey, params] of this.visibleBlocks(
       contentBlocks,

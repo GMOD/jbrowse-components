@@ -31,16 +31,12 @@ import {
   getGlobalMaxDepth,
   mergeGenomeRows,
 } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
-import { packCoverageForGpu } from './features/coverage/packGpu.ts'
-import { prepareBlockGeometry } from './features/fill/packGpu.ts'
-import { packIndicatorsForGpu } from './features/indicator/packGpu.ts'
-import { packSnpCoverageForGpu } from './features/snpCoverage/packGpu.ts'
 import { legendItems as legendItemsMap } from './shared/colorUtils.ts'
 import { LABEL_WIDTH } from './shared/types.ts'
 
 import type { SyntenyRegionData } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { MultiSyntenyBackend } from './components/rendererTypes.ts'
-import type { SyntenyColors } from './shared/types.ts'
+import type { SyntenyColorPalette } from './shared/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -48,18 +44,6 @@ import type {
   FetchContext,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-
-export interface SyntenyColorPalette {
-  coverageColorRgb: [number, number, number]
-  coverageColorHex: string
-  baseColorGl: {
-    A: [number, number, number]
-    C: [number, number, number]
-    G: [number, number, number]
-    T: [number, number, number]
-  }
-  syntenyColors: SyntenyColors
-}
 
 type LGV = LinearGenomeViewModel
 
@@ -355,68 +339,28 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       startGpuBackendLifecycle(backend: MultiSyntenyBackend) {
         self.installGpuDisplay<MultiSyntenyBackend>(backend, {
           upload: b => {
-            // Geometry + coverage/SNPs/indicators share one autorun; any
-            // observable read inside re-fires the whole pass. Backend
-            // methods are idempotent against unchanged inputs.
             const palette = self.colorPalette
             const view = getContainingView(self) as LGV
-            const activeCount = self.rpcDataMap.size
-            for (const [n, data] of self.rpcDataMap) {
-              if (palette) {
-                const geometry = prepareBlockGeometry(
-                  data.genomeFeatures,
-                  self.displayedGenomes,
-                  self.colorBy,
-                  self.showSnps,
-                  palette.syntenyColors,
-                )
-                b.uploadGeometryForBlock(n, {
-                  ...geometry,
-                  regionStart: data.regionStart,
-                })
-              }
-              if (self.showCoverage && view.initialized) {
-                const coverage = packCoverageForGpu(
-                  data.coverageDepths,
-                  data.coverageStartPos,
-                  self.coverageGlobalMax,
-                  Math.ceil(view.width),
-                )
-                b.uploadCoverageForBlock(n, {
-                  ...coverage,
-                  regionStart: data.regionStart,
-                  maxDepth: data.coverageMaxDepth,
-                })
-                b.uploadSnpCoverageForBlock(
-                  n,
-                  packSnpCoverageForGpu(
-                    data.snpPositions,
-                    data.snpYOffsets,
-                    data.snpHeights,
-                    data.snpColorTypes,
-                    data.snpCount,
-                  ),
-                )
-                b.uploadIndicatorsForBlock(
-                  n,
-                  packIndicatorsForGpu(
-                    data.indicatorPositions,
-                    data.numIndicators,
-                  ),
-                )
-              }
+            if (!palette) {
+              return
             }
-            if (activeCount === 0) {
-              b.clearAllBlocks()
-            }
+            b.sync({
+              rpcDataMap: self.rpcDataMap,
+              displayedGenomes: self.displayedGenomes,
+              colorBy: self.colorBy,
+              showSnps: self.showSnps,
+              showCoverage: self.showCoverage && view.initialized,
+              coverageGlobalMax: self.coverageGlobalMax,
+              viewWidth: Math.ceil(view.width),
+              palette,
+            })
           },
           render: b => {
             const state = self.syntenyRenderState
             if (!state) {
               return false
             }
-            b.renderBlocks(state)
-            return true
+            return b.renderBlocks(state)
           },
         })
       },

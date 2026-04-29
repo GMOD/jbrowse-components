@@ -1,10 +1,9 @@
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
-import type { BlockCoverageUploadData } from '../features/coverage/packGpu.ts'
-import type { BlockGeometryData } from '../features/fill/packGpu.ts'
-import type { BlockIndicatorUploadData } from '../features/indicator/packGpu.ts'
-import type { BlockSnpUploadData } from '../features/snpCoverage/packGpu.ts'
-import type { SyntenyColorPalette } from '../model.ts'
-import type { BpToPxFn, SyntenyColors } from '../shared/types.ts'
+import type {
+  BpToPxFn,
+  SyntenyColorPalette,
+  SyntenyColors,
+} from '../shared/types.ts'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 export interface MultiSyntenyRenderState {
@@ -20,25 +19,23 @@ export interface MultiSyntenyRenderState {
   labelW: number
 }
 
+// Mirrors alignments' AlignmentsSources: the model hands the backend the
+// full RPC payload plus the settings that drive packing; the backend
+// internally calls per-feature pack/upload primitives.
+export interface MultiSyntenySources {
+  rpcDataMap: ReadonlyMap<number, SyntenyRegionData>
+  displayedGenomes: string[]
+  colorBy: string
+  showSnps: boolean
+  showCoverage: boolean
+  coverageGlobalMax: number
+  viewWidth: number
+  palette: SyntenyColorPalette
+}
+
 export interface MultiSyntenyBackend {
-  uploadGeometryForBlock(
-    displayedRegionIndex: number,
-    data: BlockGeometryData & { regionStart: number },
-  ): void
-  uploadCoverageForBlock(
-    displayedRegionIndex: number,
-    data: BlockCoverageUploadData & { regionStart: number; maxDepth: number },
-  ): void
-  uploadSnpCoverageForBlock(
-    displayedRegionIndex: number,
-    data: BlockSnpUploadData,
-  ): void
-  uploadIndicatorsForBlock(
-    displayedRegionIndex: number,
-    data: BlockIndicatorUploadData,
-  ): void
-  clearAllBlocks(): void
-  renderBlocks(state: MultiSyntenyRenderState): void
+  sync(sources: MultiSyntenySources): void
+  renderBlocks(state: MultiSyntenyRenderState): boolean
   dispose(): void
 }
 

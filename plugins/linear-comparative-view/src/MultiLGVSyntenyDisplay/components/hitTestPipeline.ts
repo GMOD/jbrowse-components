@@ -7,8 +7,6 @@ import { buildHitTestOpsVisitor } from '../shared/extractCigarFeatures.ts'
 import type { CigarHitResult } from '../shared/hitTestTypes.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
-export type { CigarHitResult } from '../shared/hitTestTypes.ts'
-
 export interface FeatureHitResult {
   feature: MultiPairFeature
   genomeName: string
