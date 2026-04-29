@@ -1,5 +1,5 @@
-import type { BlockGeometryData } from './multiSyntenyGpuData.ts'
 import type { BlockCoverageUploadData } from '../features/coverage/packGpu.ts'
+import type { BlockGeometryData } from '../features/fill/packGpu.ts'
 import type { BlockIndicatorUploadData } from '../features/indicator/packGpu.ts'
 import type { BlockSnpUploadData } from '../features/snpCoverage/packGpu.ts'
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'

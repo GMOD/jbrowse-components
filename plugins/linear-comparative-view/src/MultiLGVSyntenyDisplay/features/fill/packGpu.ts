@@ -3,21 +3,19 @@ import {
   visitCigarOps,
   visitCsOps,
 } from '@jbrowse/alignments-core'
-import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
-import { getFeatureColor } from './multiSyntenyColorUtils.ts'
-import { buildGpuOpsVisitor } from '../shared/extractCigarFeatures.ts'
-import { addInstance, buildColorArrays } from '../shared/instanceWriter.ts'
+import { getFeatureColor } from '../../components/multiSyntenyColorUtils.ts'
 import {
   FIELD_OFFSET_F32 as FILL_FIELD,
   INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE,
   INSTANCE_STRIDE_F32 as FILL_STRIDE,
-} from '../shaders/multiSyntenyFill.generated.ts'
+} from '../../shaders/multiSyntenyFill.generated.ts'
+import { buildGpuOpsVisitor } from '../../shared/extractCigarFeatures.ts'
+import { addInstance, buildColorArrays } from '../../shared/instanceWriter.ts'
 
-import type { SyntenyColors } from '../shared/types.ts'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { SyntenyColors } from '../../shared/types.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
 export interface BlockGeometryData {
@@ -25,15 +23,7 @@ export interface BlockGeometryData {
   instanceCount: number
 }
 
-export interface BlockRenderParams {
-  bpRangeHi: number
-  bpRangeLo: number
-  bpRangeLen: number
-  regionScreenLeft: number
-  regionScreenWidth: number
-}
-
-// SYNC: field layout must match Instance struct in multiSyntenyGpuShaders.ts
+// SYNC: field layout must match Instance struct in multiSyntenyFill shader
 // [startBp: u32, endBp: u32, genomeRow: u32, featureId: u32, color: u32, _pad×3]
 export function prepareBlockGeometry(
   genomeFeatures: [string, MultiPairFeature[]][],
@@ -121,22 +111,4 @@ export function prepareBlockGeometry(
   return { buffer: sortedBuf, instanceCount: n }
 }
 
-export function computeBlockRenderParams(
-  block: ContentBlock,
-  viewOffsetPx: number,
-): BlockRenderParams {
-  const [bpRangeHi, bpRangeLo] = splitPositionWithFrac(block.start)
-  const bpRangeLen = block.end - block.start
-  const regionScreenLeft = block.offsetPx - viewOffsetPx
-  const regionScreenWidth = block.widthPx
-
-  return {
-    bpRangeHi,
-    bpRangeLo,
-    bpRangeLen,
-    regionScreenLeft,
-    regionScreenWidth,
-  }
-}
-
-export { INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE } from '../shaders/multiSyntenyFill.generated.ts'
+export { INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE } from '../../shaders/multiSyntenyFill.generated.ts'

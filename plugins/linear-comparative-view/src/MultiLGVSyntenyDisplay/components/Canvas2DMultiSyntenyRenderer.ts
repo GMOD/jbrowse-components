@@ -7,18 +7,14 @@ import {
   getDevicePixelRatio,
   snpColorForType,
 } from '@jbrowse/alignments-core'
-import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
-import { computeBlockRenderParams } from './multiSyntenyGpuData.ts'
 import { drawCoverageCanvas } from '../features/coverage/drawCanvas.ts'
+import { drawFillCanvas } from '../features/fill/drawCanvas.ts'
 import { drawIndicatorCanvas } from '../features/indicator/drawCanvas.ts'
 import { drawSnpCoverageCanvas } from '../features/snpCoverage/drawCanvas.ts'
-import {
-  FIELD_OFFSET_F32 as FILL_FIELD,
-  INSTANCE_STRIDE_F32 as FILL_STRIDE,
-} from '../shaders/multiSyntenyFill.generated.ts'
+import { computeBlockRenderParams } from '../shared/blockRenderParams.ts'
 import {
   BG_COLOR_HEX,
   LABEL_FONT_MAX,
@@ -30,8 +26,8 @@ import type {
   MultiSyntenyCanvasRenderOpts,
   MultiSyntenyRenderState,
 } from './rendererTypes.ts'
-import type { BlockGeometryData } from './multiSyntenyGpuData.ts'
 import type { BlockCoverageUploadData } from '../features/coverage/packGpu.ts'
+import type { BlockGeometryData } from '../features/fill/packGpu.ts'
 import type { BlockIndicatorUploadData } from '../features/indicator/packGpu.ts'
 import type { BlockSnpUploadData } from '../features/snpCoverage/packGpu.ts'
 import type { SyntenyColors } from '../shared/types.ts'
@@ -286,8 +282,6 @@ interface RegionData {
   indicators: { buffer: ArrayBuffer; indicatorCount: number } | null
 }
 
-const STRIDE = FILL_STRIDE
-
 export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
@@ -394,13 +388,6 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
 
     drawRowBackgrounds(ctx, numGenomes, coverageHeight, rowHeight, width)
 
-    let globalMaxDepth = 0
-    for (const region of this.regions.values()) {
-      if (region.coverage && region.coverage.maxDepth > globalMaxDepth) {
-        globalMaxDepth = region.coverage.maxDepth
-      }
-    }
-
     for (const block of contentBlocks) {
       if (block.displayedRegionIndex === undefined) {
         continue
@@ -453,23 +440,16 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
         }
       }
 
-      // Geometry instances
-      if (region.geometry && region.geometry.instanceCount > 0) {
-        const u32 = new Uint32Array(region.geometry.buffer)
-        for (let i = 0; i < region.geometry.instanceCount; i++) {
-          const off = i * STRIDE
-          const x1 = bpToX(u32[off + FILL_FIELD.startBp]!)
-          const x2 = bpToX(u32[off + FILL_FIELD.endBp]!)
-          const w = Math.max(x2 - x1, 1)
-          if (x1 + w < 0 || x1 > width) {
-            continue
-          }
-          const genomeRow = u32[off + FILL_FIELD.genomeRow]!
-          const y = coverageHeight + genomeRow * rowHeight + rowPadding
-          const h = rowHeight - rowPadding * 2
-          ctx.fillStyle = abgrToCssRgba(u32[off + FILL_FIELD.color]!)
-          ctx.fillRect(x1, y, w, h)
-        }
+      if (region.geometry) {
+        drawFillCanvas(
+          ctx,
+          region.geometry,
+          bpToX,
+          width,
+          coverageHeight,
+          rowHeight,
+          rowPadding,
+        )
       }
     }
 

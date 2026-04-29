@@ -29,8 +29,8 @@ import { autorun, observable } from 'mobx'
 
 import { LABEL_WIDTH } from './shared/types.ts'
 import { legendItems as legendItemsMap } from './components/multiSyntenyColorUtils.ts'
-import { prepareBlockGeometry } from './components/multiSyntenyGpuData.ts'
 import { packCoverageForGpu } from './features/coverage/packGpu.ts'
+import { prepareBlockGeometry } from './features/fill/packGpu.ts'
 import { packIndicatorsForGpu } from './features/indicator/packGpu.ts'
 import { packSnpCoverageForGpu } from './features/snpCoverage/packGpu.ts'
 import {
