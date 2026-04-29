@@ -1,6 +1,6 @@
 import type { ProcessedSource, SampleInfo, Source } from './types.ts'
 
-function makeHaplotypeSources(
+export function makeHaplotypeSources(
   source: Source,
   ploidy: number,
 ): ProcessedSource[] {

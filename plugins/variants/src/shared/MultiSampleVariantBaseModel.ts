@@ -37,7 +37,7 @@ import {
   UNPHASED_COLOR,
   getAltColorForDosage,
 } from './constants.ts'
-import { getSources } from './getSources.ts'
+import { getSources, makeHaplotypeSources } from './getSources.ts'
 import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
 
 import type { ProcessedSource, Source } from './types.ts'
@@ -507,49 +507,56 @@ export default function MultiSampleVariantBaseModelF(
       },
       /**
        * #getter
+       * Layout-ordered, subtree-filtered sources — never haplotype-expanded.
+       * Safe to use in rpcProps because it never reads sampleInfo (which comes
+       * from the fetch result and would cause a SettingsInvalidate loop).
        */
-      get sources() {
-        let result = self.sourcesVolatile
-          ? getSources({
-              sources: self.sourcesVolatile,
-              layout: self.layout.length ? self.layout : undefined,
-              renderingMode: self.renderingMode,
-              sampleInfo: self.sampleInfo,
-            })
-          : undefined
-
-        // Filter to subtree if filter is active
-        if (result && self.subtreeFilter?.length) {
-          const filterSet = new Set(self.subtreeFilter)
-          result = result.filter(s => filterSet.has(s.sampleName))
+      get sourcesBase() {
+        if (!self.sourcesVolatile) {
+          return undefined
         }
-        return result
+        const base = getSources({
+          sources: self.sourcesVolatile,
+          layout: self.layout.length ? self.layout : undefined,
+          renderingMode: 'alleleCount',
+        })
+        if (!self.subtreeFilter?.length) {
+          return base
+        }
+        const filterSet = new Set(self.subtreeFilter)
+        return base.filter(s => filterSet.has(s.sampleName))
       },
     }))
     .views(self => ({
-      // Literal payload shared with MultiSampleVariantGetCellData. Adding
-      // a field here flows into both the RPC call and into mobx tracking —
-      // SettingsInvalidate reads this once so any field change clears and
-      // refetches. IMPORTANT: must NOT read self.sampleInfo here. sampleInfo
-      // comes from the RPC result; including it would cause SettingsInvalidate
-      // to fire every time cellData changes (infinite fetch loop). The server
-      // handles haplotype expansion for phased mode using its own computed
-      // sampleInfo. We use renderingMode:'alleleCount' internally so that
-      // getSources never reads sampleInfo, while still preserving HP entries
-      // that were set by clustering (those don't need expansion).
+      /**
+       * #getter
+       * sourcesBase expanded for phased rendering when sampleInfo is available.
+       * Sources already carrying HP (from clustering) pass through unchanged.
+       */
+      get sources() {
+        const base = self.sourcesBase
+        if (!base || self.renderingMode !== 'phased') {
+          return base
+        }
+        const sampleInfo = self.sampleInfo
+        if (!sampleInfo) {
+          return base
+        }
+        return base.flatMap(s =>
+          s.HP !== undefined
+            ? [s]
+            : makeHaplotypeSources(s, sampleInfo[s.sampleName]?.maxPloidy ?? 2),
+        )
+      },
+    }))
+    .views(self => ({
+      // Payload for MultiSampleVariantGetCellData. SettingsInvalidate watches
+      // this — any change clears loaded data and triggers a refetch. Uses
+      // sourcesBase (not sources) to avoid reading sampleInfo, which comes from
+      // the fetch result and would cause an infinite invalidation loop.
       get rpcProps() {
-        const subtreeFilter = self.subtreeFilter
-        const filterSet = subtreeFilter?.length ? new Set(subtreeFilter) : undefined
-        const base = self.sourcesVolatile
-          ? getSources({
-              sources: self.sourcesVolatile,
-              layout: self.layout.length ? self.layout : undefined,
-              renderingMode: 'alleleCount',
-            })
-          : undefined
-        const sources = filterSet && base ? base.filter(s => filterSet.has(s.sampleName)) : base
         return {
-          sources,
+          sources: self.sourcesBase,
           minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
           lengthCutoffFilter: self.lengthCutoffFilter,
           renderingMode: self.renderingMode,

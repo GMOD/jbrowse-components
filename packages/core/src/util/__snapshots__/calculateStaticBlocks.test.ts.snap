@@ -413,20 +413,6 @@ BlockSet {
       "type": "ContentBlock",
       "widthPx": 800,
     },
-    {
-      "assemblyName": "test",
-      "displayedRegionIndex": 1,
-      "end": 9200,
-      "isLeftEndOfDisplayedRegion": false,
-      "isRightEndOfDisplayedRegion": false,
-      "key": "test:ctgA:8400:9200:1:rev",
-      "offsetPx": 801,
-      "refName": "ctgA",
-      "reversed": true,
-      "start": 8400,
-      "type": "ContentBlock",
-      "widthPx": 800,
-    },
   ],
 }
 `;

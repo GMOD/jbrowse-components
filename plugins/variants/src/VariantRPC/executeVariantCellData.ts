@@ -11,7 +11,9 @@ import type { GetCellDataArgs } from './types.ts'
 import type { VariantCellData } from '../MultiVariantDisplay/components/computeVariantCells.ts'
 import type { MatrixCellData } from '../MultiVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
 import type { MAFFilteredFeature } from '../shared/minorAlleleFrequencyUtils.ts'
-import type { ProcessedSource, SampleInfo } from '../shared/types.ts'
+import { makeHaplotypeSources } from '../shared/getSources.ts'
+
+import type { SampleInfo } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
@@ -243,17 +245,11 @@ export async function executeVariantCellData({
   // sampleInfo we just computed. Sources from clustering already have HP.
   let effectiveSources = sources
   if (renderingMode === 'phased' && sources.some(s => s.HP === undefined)) {
-    effectiveSources = sources.flatMap(s => {
-      if (s.HP !== undefined) {
-        return [s]
-      }
-      const ploidy = sampleInfo[s.sampleName]?.maxPloidy ?? 2
-      const results: ProcessedSource[] = []
-      for (let i = 0; i < ploidy; i++) {
-        results.push({ ...s, name: `${s.sampleName} HP${i}`, sampleName: s.sampleName, HP: i })
-      }
-      return results
-    })
+    effectiveSources = sources.flatMap(s =>
+      s.HP !== undefined
+        ? [s]
+        : makeHaplotypeSources(s, sampleInfo[s.sampleName]?.maxPloidy ?? 2),
+    )
   }
 
   if (mode === 'regular') {
