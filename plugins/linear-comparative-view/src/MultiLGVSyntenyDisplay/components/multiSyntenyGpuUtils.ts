@@ -1,6 +1,6 @@
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 
-import { UNIFORM_OFFSET_F32 as U } from './shaders/multiSyntenyFill.generated.ts'
+import { UNIFORM_OFFSET_F32 as U } from '../shaders/multiSyntenyFill.generated.ts'
 
 import type { SyntenyColorPalette } from '../model.ts'
 

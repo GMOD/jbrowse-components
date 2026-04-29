@@ -5,23 +5,9 @@ import type {
   BlockSnpUploadData,
 } from './multiSyntenyGpuData.ts'
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
+import type { BpToPxFn, SyntenyColors } from '../shared/types.ts'
 import type { SyntenyColorPalette } from '../model.ts'
-import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
-
-export const LABEL_WIDTH = 120
-export const LABEL_FONT_MAX = 12
-
-export const BG_COLOR_HEX = '#ededed'
-export const BG_COLOR_GL = 0.93
-
-export function truncateGenomeName(name: string) {
-  return name.length > 15 ? `${name.slice(0, 12)}...` : name
-}
-
-export type BpToPxFn = (refName: string, coord: number) => number | undefined
-
-export type SyntenyColors = CigarOpDrawColors
 
 export interface MultiSyntenyRenderState {
   contentBlocks: ContentBlock[]

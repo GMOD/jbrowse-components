@@ -10,7 +10,7 @@ import {
   FIELD_OFFSET_F32 as FILL_FIELD,
   INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE,
   INSTANCE_STRIDE_F32 as FILL_STRIDE,
-} from './shaders/multiSyntenyFill.generated.ts'
+} from '../shaders/multiSyntenyFill.generated.ts'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 

@@ -7,7 +7,7 @@ import {
   SYNTENY_UNIFORM_BYTE_SIZE,
 } from './GpuMultiSyntenyRenderer.ts'
 
-import type { MultiSyntenyBackend } from './multiSyntenyBackendTypes.ts'
+import type { MultiSyntenyBackend } from './rendererTypes.ts'
 
 export function MultiSyntenyRenderer(canvas: HTMLCanvasElement) {
   return initDualBackend<MultiSyntenyBackend>(

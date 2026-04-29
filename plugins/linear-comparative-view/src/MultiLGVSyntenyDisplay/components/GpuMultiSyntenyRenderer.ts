@@ -1,18 +1,18 @@
 import { getDevicePixelRatio } from '@jbrowse/alignments-core'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
-import { BG_COLOR_GL } from './multiSyntenyBackendTypes.ts'
 import { computeBlockRenderParams } from './multiSyntenyGpuData.ts'
 import { fillSyntenyUniforms } from './multiSyntenyGpuUtils.ts'
-import * as coverageShader from './shaders/multiSyntenyCoverage.generated.ts'
-import * as fillShader from './shaders/multiSyntenyFill.generated.ts'
-import * as indicatorShader from './shaders/multiSyntenyIndicator.generated.ts'
-import * as snpShader from './shaders/multiSyntenySnp.generated.ts'
+import * as coverageShader from '../shaders/multiSyntenyCoverage.generated.ts'
+import * as fillShader from '../shaders/multiSyntenyFill.generated.ts'
+import * as indicatorShader from '../shaders/multiSyntenyIndicator.generated.ts'
+import * as snpShader from '../shaders/multiSyntenySnp.generated.ts'
+import { BG_COLOR_GL } from '../shared/types.ts'
 
 import type {
   MultiSyntenyBackend,
   MultiSyntenyRenderState,
-} from './multiSyntenyBackendTypes.ts'
+} from './rendererTypes.ts'
 import type {
   BlockCoverageUploadData,
   BlockGeometryData,

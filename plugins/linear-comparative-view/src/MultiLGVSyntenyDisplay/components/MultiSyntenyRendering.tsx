@@ -29,7 +29,7 @@ import {
   LABEL_FONT_MAX,
   LABEL_WIDTH,
   truncateGenomeName,
-} from './multiSyntenyBackendTypes.ts'
+} from '../shared/types.ts'
 
 import type { MultiLGVSyntenyDisplayModel } from '../model.ts'
 import type { FeatureHitResult } from './hitTesting.ts'

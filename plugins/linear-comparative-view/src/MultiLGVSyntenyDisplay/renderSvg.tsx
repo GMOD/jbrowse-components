@@ -7,7 +7,7 @@ import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import { renderMultiSyntenyToCtx } from './components/Canvas2DMultiSyntenyRenderer.ts'
-import { LABEL_WIDTH } from './components/multiSyntenyBackendTypes.ts'
+import { LABEL_WIDTH } from './shared/types.ts'
 
 import type { MultiLGVSyntenyDisplayModel } from './model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

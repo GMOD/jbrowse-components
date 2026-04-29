@@ -13,30 +13,30 @@ import {
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
-import {
-  BG_COLOR_HEX,
-  LABEL_FONT_MAX,
-  truncateGenomeName,
-} from './multiSyntenyBackendTypes.ts'
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
 import { computeBlockRenderParams } from './multiSyntenyGpuData.ts'
 import {
   FIELD_OFFSET_F32 as FILL_FIELD,
   INSTANCE_STRIDE_F32 as FILL_STRIDE,
-} from './shaders/multiSyntenyFill.generated.ts'
+} from '../shaders/multiSyntenyFill.generated.ts'
+import {
+  BG_COLOR_HEX,
+  LABEL_FONT_MAX,
+  truncateGenomeName,
+} from '../shared/types.ts'
 
 import type {
   MultiSyntenyBackend,
   MultiSyntenyCanvasRenderOpts,
   MultiSyntenyRenderState,
-  SyntenyColors,
-} from './multiSyntenyBackendTypes.ts'
+} from './rendererTypes.ts'
 import type {
   BlockCoverageUploadData,
   BlockGeometryData,
   BlockIndicatorUploadData,
   BlockSnpUploadData,
 } from './multiSyntenyGpuData.ts'
+import type { SyntenyColors } from '../shared/types.ts'
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'

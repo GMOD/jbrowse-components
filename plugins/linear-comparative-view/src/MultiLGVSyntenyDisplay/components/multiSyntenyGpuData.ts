@@ -13,15 +13,15 @@ import { getFeatureColor } from './multiSyntenyColorUtils.ts'
 import {
   FIELD_OFFSET_F32 as COVERAGE_FIELD,
   INSTANCE_STRIDE_F32 as COVERAGE_STRIDE,
-} from './shaders/multiSyntenyCoverage.generated.ts'
+} from '../shaders/multiSyntenyCoverage.generated.ts'
 import {
   FIELD_OFFSET_F32 as FILL_FIELD,
   INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE,
   INSTANCE_STRIDE_F32 as FILL_STRIDE,
-} from './shaders/multiSyntenyFill.generated.ts'
-import { INSTANCE_STRIDE_BYTES as INDICATOR_STRIDE_BYTES } from './shaders/multiSyntenyIndicator.generated.ts'
+} from '../shaders/multiSyntenyFill.generated.ts'
+import { INSTANCE_STRIDE_BYTES as INDICATOR_STRIDE_BYTES } from '../shaders/multiSyntenyIndicator.generated.ts'
 
-import type { SyntenyColors } from './multiSyntenyBackendTypes.ts'
+import type { SyntenyColors } from '../shared/types.ts'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
@@ -290,4 +290,4 @@ export function packIndicatorsForGpu(
   return { buffer, indicatorCount: numIndicators }
 }
 
-export { INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE } from './shaders/multiSyntenyFill.generated.ts'
+export { INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE } from '../shaders/multiSyntenyFill.generated.ts'

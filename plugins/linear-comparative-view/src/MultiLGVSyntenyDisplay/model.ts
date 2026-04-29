@@ -27,7 +27,7 @@ import TimelineIcon from '@mui/icons-material/Timeline'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 import { autorun, observable } from 'mobx'
 
-import { LABEL_WIDTH } from './components/multiSyntenyBackendTypes.ts'
+import { LABEL_WIDTH } from './shared/types.ts'
 import { legendItems as legendItemsMap } from './components/multiSyntenyColorUtils.ts'
 import {
   packCoverageForGpu,
@@ -41,10 +41,8 @@ import {
 } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 
 import type { SyntenyRegionData } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
-import type {
-  MultiSyntenyBackend,
-  SyntenyColors,
-} from './components/multiSyntenyBackendTypes.ts'
+import type { MultiSyntenyBackend } from './components/rendererTypes.ts'
+import type { SyntenyColors } from './shared/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region } from '@jbrowse/core/util'
