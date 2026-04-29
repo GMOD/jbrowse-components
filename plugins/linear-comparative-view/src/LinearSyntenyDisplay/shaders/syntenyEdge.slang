@@ -6,6 +6,8 @@
 
 import syntenyTypes;
 
+
+public static const uint VERTS_PER_INSTANCE = 2u * 4u * 6u;
 static const uint EDGE_SEGS = 4u;
 static const float STROKE_WIDTH = 1.0;
 

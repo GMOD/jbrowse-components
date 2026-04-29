@@ -7,6 +7,8 @@
 
 import hpmath;
 
+
+public static const uint VERTS_PER_INSTANCE = 6u;
 static const int RENDERING_TYPE_XYPLOT = 0;
 static const int RENDERING_TYPE_DENSITY = 1;
 static const int RENDERING_TYPE_LINE = 2;

@@ -1,8 +1,5 @@
-import {
-  buildTagColors,
-  extractFeatureTagValue,
-  extractMismatchData,
-} from './processFeatureAlignments.ts'
+import { buildTagColors, extractFeatureTagValue } from './buildTagColors.ts'
+import { extractCigarFeatures } from './extractCigarFeatures.ts'
 import {
   extractMethylation,
   extractModifications,
@@ -46,11 +43,13 @@ export function extractFeatureArrays<T extends FeatureData>(
   const detectedSimplexModifications = new Set<string>()
 
   const features: T[] = []
-  const gaps: GapData[] = []
-  const mismatches: MismatchData[] = []
-  const insertions: InsertionData[] = []
-  const softclips: SoftclipData[] = []
-  const hardclips: HardclipData[] = []
+  const cigarOutput = {
+    gaps: [] as GapData[],
+    mismatches: [] as MismatchData[],
+    insertions: [] as InsertionData[],
+    softclips: [] as SoftclipData[],
+    hardclips: [] as HardclipData[],
+  }
   const modifications: ModificationEntry[] = []
   const tagColorValues: string[] = []
   const nextPositions: number[] = []
@@ -82,17 +81,13 @@ export function extractFeatureArrays<T extends FeatureData>(
       | Mismatch[]
       | undefined
     if (featureMismatches) {
-      extractMismatchData(
+      extractCigarFeatures(
         featureMismatches,
         featureId,
         featureStart,
         strand,
         feature,
-        gaps,
-        mismatches,
-        insertions,
-        softclips,
-        hardclips,
+        cigarOutput,
         showSoftClipping,
       )
     }
@@ -133,11 +128,7 @@ export function extractFeatureArrays<T extends FeatureData>(
 
   return {
     features,
-    gaps,
-    mismatches,
-    insertions,
-    softclips,
-    hardclips,
+    ...cigarOutput,
     modifications,
     tagColors,
     uniqueTagValues,

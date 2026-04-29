@@ -1,0 +1,149 @@
+/**
+ * Coverage depth computation. Sweep-line over feature start/end events plus
+ * gap (deletion/skip) start/end events. All positions in and out are absolute
+ * genomic coordinates; depths[i] covers [startPos + i, startPos + i + 1).
+ */
+
+export interface CoverageFeature {
+  start: number
+  end: number
+  strand?: number
+}
+
+export interface CoverageGap {
+  start: number
+  end: number
+  type: 'deletion' | 'skip'
+  strand: number
+  featureStrand: number
+}
+
+function getFeatureExtent(
+  features: { start: number; end: number }[],
+  regionStart: number,
+  regionEnd: number,
+) {
+  const maxExtension = regionEnd - regionStart
+  let actualStart = regionStart
+  let actualEnd = regionEnd
+  for (const f of features) {
+    if (f.start < actualStart && f.start >= regionStart - maxExtension) {
+      actualStart = f.start
+    }
+    if (f.end > actualEnd && f.end <= regionEnd + maxExtension) {
+      actualEnd = f.end
+    }
+  }
+  return { actualStart, actualEnd }
+}
+
+export function computeCoverage(
+  features: CoverageFeature[],
+  gaps: CoverageGap[],
+  regionStart: number,
+  regionEnd: number,
+  trackStrands?: boolean,
+) {
+  if (features.length === 0) {
+    return {
+      depths: new Float32Array(0),
+      fwdDepths: undefined as Float32Array | undefined,
+      revDepths: undefined as Float32Array | undefined,
+      maxDepth: 0,
+      binSize: 1,
+      startPos: 0,
+    }
+  }
+
+  const extent = getFeatureExtent(features, regionStart, regionEnd)
+  const actualStart = Math.max(extent.actualStart, regionStart)
+  const actualEnd = extent.actualEnd
+  const startPos = actualStart
+  const numBins = actualEnd - actualStart
+  const binSize = 1
+
+  const events: { pos: number; delta: number }[] = []
+  for (const f of features) {
+    events.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
+  }
+  for (const g of gaps) {
+    events.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
+  }
+  events.sort((a, b) => a.pos - b.pos)
+
+  const depths = new Float32Array(numBins)
+  let currentDepth = 0
+  let maxDepth = 0
+  let eventIdx = 0
+  for (let binIdx = 0; binIdx < numBins; binIdx++) {
+    const binEnd = actualStart + (binIdx + 1) * binSize
+    while (eventIdx < events.length && events[eventIdx]!.pos < binEnd) {
+      currentDepth += events[eventIdx]!.delta
+      eventIdx++
+    }
+    depths[binIdx] = currentDepth
+    if (currentDepth > maxDepth) {
+      maxDepth = currentDepth
+    }
+  }
+
+  let fwdDepths: Float32Array | undefined
+  let revDepths: Float32Array | undefined
+  if (trackStrands) {
+    const fwdEvents: { pos: number; delta: number }[] = []
+    const revEvents: { pos: number; delta: number }[] = []
+    for (const f of features) {
+      const s = f.strand ?? 0
+      if (s === 1) {
+        fwdEvents.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
+      } else if (s === -1) {
+        revEvents.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
+      } else {
+        fwdEvents.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
+        revEvents.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
+      }
+    }
+    for (const g of gaps) {
+      if (g.featureStrand === 1) {
+        fwdEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
+      } else if (g.featureStrand === -1) {
+        revEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
+      } else {
+        fwdEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
+        revEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
+      }
+    }
+    fwdEvents.sort((a, b) => a.pos - b.pos)
+    revEvents.sort((a, b) => a.pos - b.pos)
+
+    fwdDepths = new Float32Array(numBins)
+    revDepths = new Float32Array(numBins)
+
+    let fwdDepth = 0
+    let fwdIdx = 0
+    let revDepth = 0
+    let revIdx = 0
+    for (let binIdx = 0; binIdx < numBins; binIdx++) {
+      const binEnd = actualStart + (binIdx + 1) * binSize
+      while (fwdIdx < fwdEvents.length && fwdEvents[fwdIdx]!.pos < binEnd) {
+        fwdDepth += fwdEvents[fwdIdx]!.delta
+        fwdIdx++
+      }
+      while (revIdx < revEvents.length && revEvents[revIdx]!.pos < binEnd) {
+        revDepth += revEvents[revIdx]!.delta
+        revIdx++
+      }
+      fwdDepths[binIdx] = Math.max(0, fwdDepth)
+      revDepths[binIdx] = Math.max(0, revDepth)
+    }
+  }
+
+  return {
+    depths,
+    fwdDepths,
+    revDepths,
+    maxDepth: maxDepth || 1,
+    binSize,
+    startPos,
+  }
+}

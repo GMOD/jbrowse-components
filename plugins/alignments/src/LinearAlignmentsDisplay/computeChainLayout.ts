@@ -2,7 +2,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
 
 import { cloneWithLayout } from '../RenderPileupDataRPC/sortLayout.ts'
-import { computeLinkedReadLinesByRegion } from './components/computeLinkedReadLines.ts'
+import { computeLinkedReadLinesByRegion } from '../features/linkedReads/compute.ts'
 
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 

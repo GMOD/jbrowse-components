@@ -34,22 +34,18 @@ export const SYNTENY_PASSES: PassDescriptor[] = [
   slangPass({
     id: PASS_FILL,
     mod: fillShader,
-    verticesPerInstance: 6,
   }),
   slangPass({
     id: PASS_COVERAGE,
     mod: coverageShader,
-    verticesPerInstance: 6,
   }),
   slangPass({
     id: PASS_SNP,
     mod: snpShader,
-    verticesPerInstance: 6,
   }),
   slangPass({
     id: PASS_INDICATORS,
     mod: indicatorShader,
-    verticesPerInstance: 3,
   }),
 ]
 

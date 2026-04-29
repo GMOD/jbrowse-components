@@ -6,6 +6,8 @@
 
 import ldUniforms;
 
+
+public static const uint VERTS_PER_INSTANCE = 6u;
 static const float ROT_45 = 0.7071067811865476;
 
 struct LDInstance {

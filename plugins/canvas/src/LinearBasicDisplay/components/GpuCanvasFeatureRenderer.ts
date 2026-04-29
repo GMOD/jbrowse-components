@@ -29,8 +29,8 @@ const PASS_ARROW = 'arrow'
 export const CANVAS_FEATURE_UNIFORM_BYTE_SIZE = rectShader.UNIFORMS_SIZE_BYTES
 
 export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
-  slangPass({ id: PASS_RECT, mod: rectShader, verticesPerInstance: 6 }),
-  slangPass({ id: PASS_LINE, mod: lineShader, verticesPerInstance: 6 }),
+  slangPass({ id: PASS_RECT, mod: rectShader }),
+  slangPass({ id: PASS_LINE, mod: lineShader }),
   // Chevron reads line's vertex buffer via drawPass(chevron, region,
   // bufferPassId=line), so its attribute layout must match line's.
   slangPass({
@@ -40,7 +40,7 @@ export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
     bufferStride: lineShader.INSTANCE_STRIDE_BYTES,
     bufferAttributes: lineShader.GL_ATTRIBUTES,
   }),
-  slangPass({ id: PASS_ARROW, mod: arrowShader, verticesPerInstance: 9 }),
+  slangPass({ id: PASS_ARROW, mod: arrowShader }),
 ]
 
 interface RegionMeta {

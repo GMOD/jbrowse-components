@@ -1,6 +1,5 @@
 **/node_modules/
 **/.vscode/
-**/coverage/
 yarn-error.log
 *.swp
 *.swo

@@ -5,6 +5,8 @@
 
 import hpmath;
 
+
+public static const uint VERTS_PER_INSTANCE = 6u;
 float4 unpackRGBA(uint c) {
   return float4(
     float((c >>  0u) & 0xFFu),

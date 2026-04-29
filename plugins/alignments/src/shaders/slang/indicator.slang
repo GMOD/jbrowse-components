@@ -8,6 +8,8 @@ import alignmentsUniforms;
 import colorPack;
 import hpmath;
 
+
+public static const uint VERTS_PER_INSTANCE = 3u;
 // SYNC(@jbrowse/alignments-core labelConstants.ts)
 static const float TRIANGLE_HW = 3.5;
 static const float TRIANGLE_H  = 4.5;

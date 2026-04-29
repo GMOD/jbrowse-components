@@ -12,7 +12,6 @@ export const PASS_MOD = 'modification'
 export const MODIFICATION_PASS = slangPass({
   id: PASS_MOD,
   mod: modificationShader,
-  verticesPerInstance: 6,
 })
 
 export function packModifications(data: ModificationUploadData): ArrayBuffer {

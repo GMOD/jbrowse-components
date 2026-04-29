@@ -2,7 +2,7 @@ import {
   classifyPair,
   filterEntries,
   groupReadsByName,
-} from './computeLinkedReadLines.ts'
+} from '../../features/linkedReads/compute.ts'
 import { linkedReadColorPalette } from '../../shaders/palettes.ts'
 import { rgb255 } from '../colorUtils.ts'
 

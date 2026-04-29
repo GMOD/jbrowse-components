@@ -4,6 +4,8 @@
 
 import multiSyntenyUniforms;
 
+
+public static const uint VERTS_PER_INSTANCE = 6u;
 struct CovBin {
   float position  : ATTR0;
   float minDepth  : ATTR1;

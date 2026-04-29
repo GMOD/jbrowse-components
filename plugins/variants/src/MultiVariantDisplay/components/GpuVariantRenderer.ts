@@ -25,7 +25,6 @@ export const VARIANT_PASSES: PassDescriptor[] = [
   slangPass({
     id: PASS_MAIN,
     mod: variantShader,
-    verticesPerInstance: 6,
     blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
   }),
 ]

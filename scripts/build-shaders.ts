@@ -112,6 +112,61 @@ function parseLayoutOut(source: string) {
   return match ? match[1]! : undefined
 }
 
+// Resolves the value of `(public)? static const uint VERTS_PER_INSTANCE`
+// from a .slang source. Slang's reflection JSON doesn't expose module-scope
+// constants, so we parse them out of the source. Other static-const ints in
+// the same file are resolved as identifiers in the expression (`16u * 6` etc),
+// matching how the shader itself sees them.
+function parseVertsPerInstance(source: string) {
+  const constRe =
+    /^\s*(?:public\s+)?static\s+const\s+uint\s+(\w+)\s*=\s*([^;]+);/gm
+  const decls = new Map<string, string>()
+  for (let m = constRe.exec(source); m; m = constRe.exec(source)) {
+    decls.set(m[1]!, m[2]!.trim())
+  }
+  const expr = decls.get('VERTS_PER_INSTANCE')
+  if (!expr) {
+    return undefined
+  }
+  const evaluating = new Set<string>()
+  const evalExpr = (raw: string): number => {
+    // Strip Slang's `u` / `U` integer suffix first so `1u` doesn't leave a
+    // stray `u` that the identifier pass would mis-resolve.
+    const stripped = raw.replace(/(\d+)[uU]\b/g, '$1')
+    // Replace identifier references with their resolved numeric values.
+    const cleaned = stripped.replace(/[A-Za-z_]\w*/g, name => {
+      if (evaluating.has(name)) {
+        throw new Error(`circular static-const reference: ${name}`)
+      }
+      const ref = decls.get(name)
+      if (ref === undefined) {
+        throw new Error(
+          `static const VERTS_PER_INSTANCE references unknown identifier ${name}`,
+        )
+      }
+      evaluating.add(name)
+      const value = evalExpr(ref)
+      evaluating.delete(name)
+      return `(${value})`
+    })
+    if (!/^[\d\s+\-*/()]+$/.test(cleaned)) {
+      throw new Error(
+        `static const VERTS_PER_INSTANCE must be a positive integer ` +
+          `arithmetic expression; got: ${raw} (post-substitution: ${cleaned})`,
+      )
+    }
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
+    return new Function(`"use strict"; return (${cleaned})`)() as number
+  }
+  const n = evalExpr(expr)
+  if (!Number.isInteger(n) || n <= 0) {
+    throw new Error(
+      `static const VERTS_PER_INSTANCE must be a positive integer; got ${n}`,
+    )
+  }
+  return n
+}
+
 function parseTargets(source: string): ('wgsl' | 'glsl')[] {
   const match = /^\/\/!\s*targets:\s*([a-zA-Z0-9,\t ]+)/m.exec(source)
   if (!match) {
@@ -375,6 +430,7 @@ function compileOne(slangPath: string) {
       glslVertex,
       glslFragment,
       textures: findCombinedSamplers(reflection),
+      vertsPerInstance: parseVertsPerInstance(source),
     })
     writeFileSync(generatedPath, generated)
     console.log(`  ok: ${generatedPath.replace(`${REPO_ROOT}/`, '')}`)

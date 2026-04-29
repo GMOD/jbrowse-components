@@ -1,12 +1,13 @@
 // Insertion pass: renders up to 3 rects per instance — the insertion bar
-// (or numeric label box when long + zoomed), plus top/bottom serifs. Vertex
-// count is 18 (3 rects * 6 verts).
+// (or numeric label box when long + zoomed), plus top/bottom serifs.
 //! targets: wgsl, glsl
 
 import alignmentsUniforms;
 import colorPack;
 import hpmath;
 
+
+public static const uint VERTS_PER_INSTANCE = 18u;
 // SYNC(@jbrowse/alignments-core labelConstants.ts)
 static const uint  LONG_INSERTION_MIN_LENGTH = 10u;
 static const float LONG_INSERTION_TEXT_THRESHOLD_PX = 15.0;

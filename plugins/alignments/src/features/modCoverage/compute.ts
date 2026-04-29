@@ -1,8 +1,11 @@
 import { packAbgr } from '@jbrowse/core/util/colorBits'
 
-import { calculateModificationCounts } from './calculateModificationCounts.ts'
+import { calculateModificationCounts } from '../../shared/calculateModificationCounts.ts'
 
-import type { MismatchData, ModificationEntry } from './webglRpcTypes.ts'
+import type {
+  MismatchData,
+  ModificationEntry,
+} from '../../shared/webglRpcTypes.ts'
 
 interface SnpCountEntry {
   baseCounts: Record<string, number>

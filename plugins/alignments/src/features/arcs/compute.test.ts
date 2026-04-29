@@ -1,9 +1,9 @@
 import {
   arcsToRegionResult,
   computeArcsFromPileupData,
-} from './computeArcsFromPileupData.ts'
+} from './compute.ts'
 
-import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
 function makePileupData(
   overrides: Partial<PileupDataResult> & {

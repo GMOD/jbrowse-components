@@ -1,3 +1,6 @@
+
+
+public static const uint VERTS_PER_INSTANCE = 6u;
 // Hi-C contact map renderer. One instance = one binned contact (square)
 // rendered at 45° into a triangle above the axis. Color comes from sampling
 // a 256×1 palette texture with `t = normalized count (optionally log)`.

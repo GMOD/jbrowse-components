@@ -3,13 +3,13 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import { buildAlignmentDetailArrays } from '../shared/buildAlignmentDetailArrays.ts'
+import { buildBaseFeatureData } from '../shared/buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from '../shared/buildBaseReadArrays.ts'
 import { buildChainMetadata } from '../shared/buildChainMetadata.ts'
 import { buildCoverageResultFields } from '../shared/buildCoverageResultFields.ts'
 import { collectResultTransferables } from '../shared/collectTransferables.ts'
 import { extractFeatureArrays } from '../shared/extractFeatureArrays.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
-import { buildBaseFeatureData } from '../shared/processFeatureAlignments.ts'
 import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
 
 import type { RenderChainDataArgs } from './types.ts'
@@ -176,17 +176,7 @@ export async function executeRenderChainData({
 
   // Chain omits regionSequence so runCoveragePipeline skips mod-coverage and
   // packCoverageAreaForGpu emits a 0-byte mod-cov pass.
-  const {
-    coverage,
-    snpCoverage,
-    noncovCoverage,
-    modTooltipData,
-    sashimi,
-    coverageAreaPacked,
-    mismatchFrequencies,
-    interbaseFrequencies,
-    gapFrequencies,
-  } = await runCoveragePipeline({
+  const pipeline = await runCoveragePipeline({
     features,
     gaps,
     mismatches,
@@ -210,24 +200,17 @@ export async function executeRenderChainData({
     readChainIndices,
     ...segmentArrays,
     ...gapArrays,
-    gapFrequencies,
+    gapFrequencies: pipeline.gapFrequencies,
     ...mismatchArrays,
-    mismatchFrequencies,
+    mismatchFrequencies: pipeline.mismatchFrequencies,
     ...softclipBaseArrays,
     ...interbaseArrays,
-    interbaseFrequencies,
+    interbaseFrequencies: pipeline.interbaseFrequencies,
     ...modificationArrays,
 
     readTagColors: tagColors,
 
-    ...buildCoverageResultFields(
-      coverage,
-      snpCoverage,
-      noncovCoverage,
-      coverageAreaPacked,
-      sashimi,
-      modTooltipData,
-    ),
+    ...buildCoverageResultFields(pipeline),
 
     chainAbsMinStarts,
     chainAbsMaxEnds,

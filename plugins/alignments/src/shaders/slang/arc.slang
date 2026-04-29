@@ -17,9 +17,9 @@ import alignmentsUniforms;
 import colorPack;
 import hpmath;
 
-// Must match (ARC_CURVE_SEGMENTS + 1) * 2 verts per instance. Keep in sync
-// with the verticesPerInstance argument on the CPU side.
+
 public static const uint ARC_CURVE_SEGMENTS = 64u;
+public static const uint VERTS_PER_INSTANCE = (ARC_CURVE_SEGMENTS + 1u) * 2u;
 static const float ARC_HEIGHT_MARGIN = 8.0;
 static const float PI = 3.14159265359;
 

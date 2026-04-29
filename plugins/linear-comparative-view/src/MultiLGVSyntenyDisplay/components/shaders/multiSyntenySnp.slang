@@ -5,6 +5,8 @@
 
 import multiSyntenyUniforms;
 
+
+public static const uint VERTS_PER_INSTANCE = 6u;
 struct SnpSegment {
   float position   : ATTR0;
   float yOffset    : ATTR1;

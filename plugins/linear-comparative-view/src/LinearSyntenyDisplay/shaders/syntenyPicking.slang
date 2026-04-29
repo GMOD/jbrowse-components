@@ -6,6 +6,8 @@
 
 import syntenyTypes;
 
+
+public static const uint VERTS_PER_INSTANCE = 16u * 6u;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct VsOut {

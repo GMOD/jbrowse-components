@@ -56,8 +56,8 @@ export {
   parseCigar2,
   parseCigar,
 } from './MismatchParser/index.ts'
-export { computeCoverage } from './shared/computeCoverage.ts'
-export type { CoverageFeature } from './shared/computeCoverage.ts'
+export { computeCoverage } from './features/coverage/compute.ts'
+export type { CoverageFeature } from './features/coverage/compute.ts'
 export { computeSNPCoverage } from '@jbrowse/alignments-core'
 export type { MismatchEntry } from '@jbrowse/alignments-core'
 export { default as CoverageYScaleBar } from './LinearAlignmentsDisplay/components/CoverageYScaleBar.tsx'

@@ -6,14 +6,6 @@ import {
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
-// SYNC: must match FILL_SEGS in syntenyFill.slang / syntenyPicking.slang.
-const FILL_SEGMENTS = 16
-// SYNC: must match EDGE_SEGS in syntenyEdge.slang.
-const EDGE_SEGMENTS = 4
-
-export const FILL_VERTS_PER_INSTANCE = FILL_SEGMENTS * 6
-export const EDGE_VERTS_PER_INSTANCE = 2 * EDGE_SEGMENTS * 6
-
 export function interleaveInstances(data: SyntenyInstanceData) {
   const {
     x1,

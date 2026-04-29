@@ -1,10 +1,6 @@
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
-import {
-  EDGE_VERTS_PER_INSTANCE,
-  FILL_VERTS_PER_INSTANCE,
-  interleaveInstances,
-} from './instanceInterleave.ts'
+import { interleaveInstances } from './instanceInterleave.ts'
 import * as syntenyEdgeShader from './shaders/syntenyEdge.generated.ts'
 import * as syntenyFillShader from './shaders/syntenyFill.generated.ts'
 import * as syntenyPickingShader from './shaders/syntenyPicking.generated.ts'
@@ -29,19 +25,16 @@ export const SYNTENY_PASSES: PassDescriptor[] = [
   slangPass({
     id: PASS_FILL,
     mod: syntenyFillShader,
-    verticesPerInstance: FILL_VERTS_PER_INSTANCE,
   }),
   slangPass({
     id: PASS_PICKING,
     mod: syntenyPickingShader,
-    verticesPerInstance: FILL_VERTS_PER_INSTANCE,
     blend: false,
     picking: true,
   }),
   slangPass({
     id: PASS_EDGE,
     mod: syntenyEdgeShader,
-    verticesPerInstance: EDGE_VERTS_PER_INSTANCE,
   }),
 ]
 

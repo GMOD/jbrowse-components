@@ -17,7 +17,6 @@ export const HIC_PASSES: PassDescriptor[] = [
   slangPass({
     id: PASS_MAIN,
     mod: hicShader,
-    verticesPerInstance: 6,
     blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
   }),
 ]

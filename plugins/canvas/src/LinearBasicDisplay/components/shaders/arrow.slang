@@ -7,6 +7,8 @@ import hpmath;
 import colorPack;
 import canvasUniforms;
 
+
+public static const uint VERTS_PER_INSTANCE = 9u;
 // Mirrors sharedRendererConstants.ts — these are the clip-space geometry
 // factors for the arrow stem and head, in pixels.
 static const float STEM_LENGTH_PX = 7.0;

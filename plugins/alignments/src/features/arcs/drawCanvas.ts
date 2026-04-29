@@ -1,21 +1,16 @@
-import { ARC_HEIGHT_MARGIN } from '../../shaders/palettes.ts'
+import { ARC_SHAPE_FLAT, ARC_SHAPE_FLAT_SPLIT } from './compute.ts'
+import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { bpToScreenX } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
 import {
-  ARC_SHAPE_FLAT,
-  ARC_SHAPE_FLAT_SPLIT,
-} from '../../shared/computeArcsFromPileupData.ts'
-import { rgb255, rgba255 } from '../colorUtils.ts'
+  ARC_HEIGHT_MARGIN,
+  arcLineColorPalette,
+  getArcPalette,
+} from '../../shaders/palettes.ts'
 
+import type { ArcsRegionFields } from './buildRegion.ts'
+import type { RenderState } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
 import type { RGBColor } from '../../shaders/colors.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
-
-interface ArcFields {
-  arcX1: Uint32Array
-  arcX2: Uint32Array
-  arcColorTypes: Uint8Array
-  arcShapeTypes: Uint8Array
-  arcYBp: Uint32Array
-  numArcs: number
-}
 
 interface DrawArcsOpts {
   bpToScreenX: (bp: number) => number
@@ -31,11 +26,13 @@ interface DrawArcsOpts {
   palette: RGBColor[]
 }
 
-// Shared arc rasterizer used by both the Canvas2D live renderer and the SVG
-// export path (via SvgCanvas). See ARC_SHAPE_* in computeArcsFromPileupData.
-// yBp is the Y apex in genomic bp — for flat it is the constant line Y,
-// otherwise it is the curve apex.
-export function drawArcsToCtx(ctx: Ctx2D, data: ArcFields, opts: DrawArcsOpts) {
+// Inner arc rasterizer. yBp is the Y apex in genomic bp — for flat it is the
+// constant line Y, otherwise the curve apex. See ARC_SHAPE_* in compute.ts.
+function drawArcsToCtx(
+  ctx: Ctx2D,
+  data: ArcsRegionFields,
+  opts: DrawArcsOpts,
+) {
   const {
     bpToScreenX,
     arcsYDomainBp,
@@ -89,4 +86,46 @@ export function drawArcsToCtx(ctx: Ctx2D, data: ArcFields, opts: DrawArcsOpts) {
     ctx.stroke()
   }
   ctx.setLineDash([])
+}
+
+// Canvas2D / SVG entry point used by drawAlignmentBlocks. Paints the arcs band
+// (bezier curves and flat lines) plus the small dots that mark arc-line
+// connector endpoints.
+export function drawArcs(
+  ctx: Ctx2D,
+  region: ArcsRegionFields,
+  block: { bpRangeX: [number, number]; screenStartPx: number },
+  bpLength: number,
+  fullBlockWidth: number,
+  state: RenderState,
+  arcsTop: number,
+  arcsH: number,
+  pairedArcsDown: boolean,
+) {
+  // Samplot autoscales via state.arcsYDomainBp; arc mode falls back to the
+  // bp-span that fits availH at the current zoom.
+  const availH = arcsH - 2
+  const pxPerBp = fullBlockWidth / bpLength
+  const fallbackDomain = pxPerBp > 0 ? availH / pxPerBp : 1
+  drawArcsToCtx(ctx, region, {
+    bpToScreenX: bp => bpToScreenX(bp, block, bpLength, fullBlockWidth),
+    arcsYDomainBp: state.arcsYDomainBp ?? fallbackDomain,
+    arcsTop,
+    arcsH,
+    pairedArcsDown,
+    lineWidth: state.arcLineWidth ?? 1,
+    palette: getArcPalette(state.arcColorByType),
+  })
+
+  for (let i = 0; i < region.numArcLines; i++) {
+    const bp = region.arcLinePositions[i]!
+    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
+    const y = arcsTop + region.arcLineYs[i]! * arcsH
+    const colorIdx = region.arcLineColorTypes[i]!
+
+    ctx.fillStyle = rgb255(
+      arcLineColorPalette[colorIdx % arcLineColorPalette.length]!,
+    )
+    ctx.fillRect(x - 1, y - 1, 2, 2)
+  }
 }

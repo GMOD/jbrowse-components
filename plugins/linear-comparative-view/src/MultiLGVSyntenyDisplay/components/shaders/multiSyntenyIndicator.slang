@@ -5,6 +5,8 @@
 
 import multiSyntenyUniforms;
 
+
+public static const uint VERTS_PER_INSTANCE = 3u;
 struct Indicator {
   float position : ATTR0;
 };

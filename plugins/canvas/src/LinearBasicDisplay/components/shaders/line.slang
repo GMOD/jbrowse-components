@@ -7,6 +7,8 @@ import colorPack;
 import lineInstance;
 import canvasUniforms;
 
+
+public static const uint VERTS_PER_INSTANCE = 6u;
 [[vk::binding(1, 0)]] ConstantBuffer<CanvasUniforms> u;
 
 struct VsOut {

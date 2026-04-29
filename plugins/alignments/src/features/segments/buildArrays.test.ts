@@ -1,6 +1,6 @@
-import { buildSegmentArrays } from './processFeatureAlignments.ts'
+import { buildSegmentArrays } from './buildArrays.ts'
 
-import type { FeatureData, GapData } from './webglRpcTypes.ts'
+import type { FeatureData, GapData } from '../../shared/webglRpcTypes.ts'
 
 function feat(id: string, start: number, end: number): FeatureData {
   return {

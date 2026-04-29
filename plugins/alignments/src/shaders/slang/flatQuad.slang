@@ -4,6 +4,8 @@
 
 import alignmentsUniforms;
 
+
+public static const uint VERTS_PER_INSTANCE = 6u;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct Instance {

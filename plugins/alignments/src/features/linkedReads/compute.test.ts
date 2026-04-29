@@ -9,9 +9,9 @@ import {
   computeLinkedReadLinesByRegion,
   connectionBp,
   isNormalOrientation,
-} from './computeLinkedReadLines.ts'
+} from './compute.ts'
 
-import type { ReadEntry } from './computeLinkedReadLines.ts'
+import type { ReadEntry } from './compute.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
 const SAM_FLAG_PAIRED = 1

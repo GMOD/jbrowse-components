@@ -6,6 +6,8 @@ import alignmentsUniforms;
 import colorPack;
 import hpmath;
 
+
+public static const uint VERTS_PER_INSTANCE = 2u;
 static const uint NUM_LINE_COLORS = 2u;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;

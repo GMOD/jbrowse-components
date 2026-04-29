@@ -6,7 +6,6 @@ import type {
   WiggleScaleType,
 } from './wiggleBackendTypes.ts'
 
-export const VERTICES_PER_INSTANCE = 6
 export const RENDERING_TYPE_XYPLOT: WiggleRenderingType = 0
 export const RENDERING_TYPE_DENSITY: WiggleRenderingType = 1
 export const RENDERING_TYPE_LINE: WiggleRenderingType = 2

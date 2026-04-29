@@ -1,6 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { buildBaseFeatureData } from './processFeatureAlignments.ts'
+import { buildBaseFeatureData } from './buildBaseFeatureData.ts'
 
 describe('buildBaseFeatureData', () => {
   test('computes avgBaseQuality from NUMERIC_QUAL', () => {

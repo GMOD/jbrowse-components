@@ -1,4 +1,5 @@
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ArcColorByType } from '../../shared/types.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
@@ -143,31 +144,6 @@ export interface ModCoverageUploadData {
   modCovHeights: Float32Array
   modCovColors: Uint32Array
   modCovPackedBuffer: ArrayBuffer
-}
-
-export interface ArcsUploadData {
-  arcX1: Uint32Array
-  arcX2: Uint32Array
-  arcColorTypes: Uint8Array
-  arcShapeTypes: Uint8Array
-  arcYBp: Uint32Array
-  numArcs: number
-  linePositions: Uint32Array
-  lineYs: Float32Array
-  lineColorTypes: Uint8Array
-  numLines: number
-}
-
-export interface ConnectingLinesUploadData {
-  connectingLinePositions: Uint32Array
-  connectingLineYs: Uint16Array
-}
-
-export interface LinkedReadLinesUploadData {
-  linkedReadLinePositions?: Uint32Array
-  linkedReadLineYs?: Uint16Array
-  linkedReadLineColorTypes?: Uint8Array
-  numLinkedReadLines?: number
 }
 
 export interface AlignmentsSources {

@@ -16,15 +16,14 @@
 
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import { hitTestGap } from '../../features/gap/hitTest.ts'
+import { hitTestHardclip } from '../../features/hardclip/hitTest.ts'
 import {
-  INTERBASE_HARDCLIP,
-  INTERBASE_INSERTION,
-  INTERBASE_SOFTCLIP,
-} from '../../shared/types.ts'
-import {
-  getInsertionType,
-  insertionBarWidth as getInsertionRectWidthPx,
-} from '../constants.ts'
+  hitTestLargeInsertion,
+  hitTestSmallInsertion,
+} from '../../features/insertion/hitTest.ts'
+import { hitTestMismatch } from '../../features/mismatch/hitTest.ts'
+import { hitTestSoftclip } from '../../features/softclip/hitTest.ts'
 
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types'
 
@@ -46,17 +45,13 @@ export interface CigarHitResult {
   sequence?: string // for insertions
 }
 
-// Types for coverage area hit testing
-export interface CoverageHitResult {
-  type: 'coverage'
-  position: number
-}
+export type { CoverageHitResult } from '../../features/coverage/types.ts'
 
-export interface IndicatorHitResult {
-  type: 'indicator'
-  position: number
-  indicatorType: 'insertion' | 'softclip' | 'hardclip'
-}
+export type {
+  IndicatorHitResult,
+  InterbaseType,
+} from '../../features/indicator/types.ts'
+export { INTERBASE_TYPES } from '../../features/indicator/types.ts'
 
 // Types for sashimi arc hit testing
 export interface SashimiArcHitResult {
@@ -83,55 +78,6 @@ export interface CigarCoords {
   row: number
   adjustedY: number
   yWithinRow: number
-}
-
-// Constants for interbase types
-export const INTERBASE_TYPES = ['insertion', 'softclip', 'hardclip'] as const
-export type InterbaseType = (typeof INTERBASE_TYPES)[number]
-
-/**
- * Helper: Calculate base pairs per pixel for a block
- */
-function calculateBpPerPx(
-  bpRange: [number, number],
-  blockWidth: number,
-): number {
-  return (bpRange[1] - bpRange[0]) / blockWidth
-}
-
-/**
- * Helper: Convert canvas X coordinate to genomic position.
- * When reversed, left edge of the block corresponds to bpRange[1].
- */
-function canvasXToGenomicPosition(
-  canvasX: number,
-  resolved: ResolvedBlock,
-): number {
-  const { bpRange, blockStartPx, blockWidth } = resolved
-  const frac = (canvasX - blockStartPx) / blockWidth
-  return resolved.reversed
-    ? bpRange[1] - frac * (bpRange[1] - bpRange[0])
-    : bpRange[0] + frac * (bpRange[1] - bpRange[0])
-}
-
-/**
- * Helper: Convert canvas X coordinate to position offset within region
- */
-function canvasXToGenomicPos(
-  canvasX: number,
-  resolved: ResolvedBlock,
-): { genomicPos: number; bpPerPx: number } {
-  const { bpRange, blockWidth } = resolved
-  const bpPerPx = calculateBpPerPx(bpRange, blockWidth)
-  const genomicPos = canvasXToGenomicPosition(canvasX, resolved)
-  return { genomicPos, bpPerPx }
-}
-
-/**
- * Helper: Map interbase color type (1-3) to type name
- */
-function getInterbaseTypeName(colorType: number): InterbaseType {
-  return INTERBASE_TYPES[(colorType - 1) % 3] ?? 'insertion'
 }
 
 // Cache reconstructed Flatbush instances keyed by their ArrayBuffer
@@ -235,264 +181,28 @@ export function hitTestCigarItem(
     return undefined
   }
 
-  const { bpPerPx, genomicPos, row, adjustedY, yWithinRow } = coords
+  const { adjustedY, yWithinRow } = coords
 
   if (adjustedY < 0 || yWithinRow > featureHeightSetting) {
     return undefined
   }
 
-  const blockData = resolved.rpcData
-
-  const hitToleranceBp = Math.max(0.5, bpPerPx * 3)
-
-  // Check mismatches first (1bp features covering [pos, pos+1))
-  const {
-    mismatchPositions,
-    mismatchYs,
-    mismatchBases,
-    interbasePositions,
-    interbaseYs,
-    interbaseLengths,
-    interbaseTypes,
-    interbaseSequences,
-    gapPositions,
-    gapYs,
-  } = blockData
-  const numMismatches = mismatchPositions.length
-  const numInterbases = interbasePositions.length
-  const numGaps = gapPositions.length / 2
-
-  const pxPerBp = 1 / bpPerPx
-
-  function checkInsertionHit(sizeFilter: 'small' | 'large') {
-    for (let i = 0; i < numInterbases; i++) {
-      if (interbaseTypes[i] !== INTERBASE_INSERTION || interbaseYs[i] !== row) {
-        continue
-      }
-      const pos = interbasePositions[i]
-      if (pos !== undefined) {
-        const len = interbaseLengths[i] ?? 0
-        const isSmall = getInsertionType(len, pxPerBp) === 'small'
-        if (sizeFilter === 'small' ? isSmall : !isSmall) {
-          const rectWidthPx = getInsertionRectWidthPx(len, pxPerBp) + 4
-          const rectHalfWidthBp = (rectWidthPx / 2) * bpPerPx
-          if (Math.abs(genomicPos - pos) < rectHalfWidthBp) {
-            return {
-              type: 'insertion' as const,
-              index: i,
-              position: pos,
-              length: len,
-              sequence: interbaseSequences[i] || undefined,
-            }
-          }
-        }
-      }
-    }
-    return undefined
-  }
-
-  function checkClipHit(
-    clipType: typeof INTERBASE_SOFTCLIP | typeof INTERBASE_HARDCLIP,
-    label: 'softclip' | 'hardclip',
-  ) {
-    for (let i = 0; i < numInterbases; i++) {
-      if (interbaseTypes[i] !== clipType || interbaseYs[i] !== row) {
-        continue
-      }
-      const pos = interbasePositions[i]
-      const len = interbaseLengths[i]
-      if (
-        pos !== undefined &&
-        len !== undefined &&
-        Math.abs(genomicPos - pos) < hitToleranceBp
-      ) {
-        return {
-          type: label,
-          index: i,
-          position: pos,
-          length: len,
-        }
-      }
-    }
-    return undefined
-  }
-
-  // Large insertions first (wide boxes that overlap SNPs)
-  const largeInsHit = checkInsertionHit('large')
-  if (largeInsHit) {
-    return largeInsHit
-  }
-
-  // Mismatches (1bp features - use floor to determine which base mouse is over)
-  const mousePos = Math.floor(genomicPos)
-  for (let i = 0; i < numMismatches; i++) {
-    if (mismatchYs[i] !== row) {
-      continue
-    }
-    const pos = mismatchPositions[i]
-    if (pos !== undefined && mousePos === pos) {
-      const baseCode = mismatchBases[i]!
-      return {
-        type: 'mismatch',
-        index: i,
-        position: pos,
-        base: String.fromCharCode(baseCode),
-      }
-    }
-  }
-
-  // Small insertions (thin bars that don't overlap SNPs)
-  const smallInsHit = checkInsertionHit('small')
-  if (smallInsHit) {
-    return smallInsHit
-  }
-
-  // Gaps (deletions/skips - have start and end)
-  const { gapTypes } = blockData
-  for (let i = 0; i < numGaps; i++) {
-    if (gapYs[i] !== row) {
-      continue
-    }
-    const startPos = gapPositions[i * 2]
-    const endPos = gapPositions[i * 2 + 1]
-    if (
-      startPos !== undefined &&
-      endPos !== undefined &&
-      genomicPos >= startPos &&
-      genomicPos <= endPos
-    ) {
-      const gapType = gapTypes[i]
-      return {
-        type: gapType === 1 ? 'skip' : 'deletion',
-        index: i,
-        position: startPos,
-        length: endPos - startPos,
-      }
-    }
-  }
-
+  // Priority order, top-down:
+  //  1. large insertions (wide boxes that overlap SNPs)
+  //  2. mismatches (1bp features under the cursor base)
+  //  3. small insertions (thin bars that don't overlap SNPs)
+  //  4. gaps (deletions/skips spanning the read body)
+  //  5. softclips, then hardclips (interbase bars at alignment edges)
   return (
-    checkClipHit(INTERBASE_SOFTCLIP, 'softclip') ??
-    checkClipHit(INTERBASE_HARDCLIP, 'hardclip')
+    hitTestLargeInsertion(resolved, coords) ??
+    hitTestMismatch(resolved, coords) ??
+    hitTestSmallInsertion(resolved, coords) ??
+    hitTestGap(resolved, coords) ??
+    hitTestSoftclip(resolved, coords) ??
+    hitTestHardclip(resolved, coords)
   )
 }
 
-// Find the first significant position in [binStart, binEnd). "Significant"
-// = at least `threshold` fraction of reads at that position, relative to
-// the local coverage depth.
-function findSignificantInBin(
-  positions: Uint32Array,
-  count: number,
-  coverageDepths: Float32Array,
-  coverageStartPos: number,
-  binStart: number,
-  binEnd: number,
-  threshold: number,
-) {
-  const hitsByPos = new Map<number, number>()
-  for (let i = 0; i < count; i++) {
-    const pos = positions[i]!
-    if (pos >= binStart && pos < binEnd) {
-      hitsByPos.set(pos, (hitsByPos.get(pos) ?? 0) + 1)
-    }
-  }
-  let best = -1
-  for (const [pos, n] of hitsByPos) {
-    const binIdx = Math.floor(pos - coverageStartPos)
-    const depth = coverageDepths[binIdx]
-    if (depth && n / depth > threshold && (best < 0 || pos < best)) {
-      best = pos
-    }
-  }
-  return best < 0 ? undefined : best
-}
-
-export function hitTestCoverage(
-  canvasX: number,
-  canvasY: number,
-  resolved: ResolvedBlock | undefined,
-  showCoverage: boolean,
-  coverageHeight: number,
-): CoverageHitResult | undefined {
-  if (!showCoverage || canvasY > coverageHeight || !resolved) {
-    return undefined
-  }
-
-  const blockData = resolved.rpcData
-  const { genomicPos, bpPerPx } = canvasXToGenomicPos(canvasX, resolved)
-
-  const { coverageDepths, coverageStartPos } = blockData
-  const binIndex = Math.floor(genomicPos - coverageStartPos)
-  if (binIndex < 0 || binIndex >= coverageDepths.length) {
-    return undefined
-  }
-
-  const binStart = coverageStartPos + binIndex
-  if (bpPerPx > 1) {
-    const binEnd = binStart + Math.ceil(bpPerPx)
-    const snpHit = findSignificantInBin(
-      blockData.mismatchPositions,
-      blockData.mismatchPositions.length,
-      coverageDepths,
-      coverageStartPos,
-      binStart,
-      binEnd,
-      0.05,
-    )
-    if (snpHit !== undefined) {
-      return { type: 'coverage', position: snpHit }
-    }
-    const noncovHit = findSignificantInBin(
-      blockData.interbasePositions,
-      blockData.interbasePositions.length,
-      coverageDepths,
-      coverageStartPos,
-      binStart,
-      binEnd,
-      0.2,
-    )
-    if (noncovHit !== undefined) {
-      return { type: 'coverage', position: noncovHit }
-    }
-  }
-
-  return { type: 'coverage', position: binStart }
-}
-
-/**
- * Hit test for interbase indicators (triangles at top of coverage)
- */
-export function hitTestIndicator(
-  canvasX: number,
-  canvasY: number,
-  resolved: ResolvedBlock | undefined,
-  showCoverage: boolean,
-  showInterbaseIndicators: boolean,
-): IndicatorHitResult | undefined {
-  if (!showCoverage || !showInterbaseIndicators || canvasY > 5 || !resolved) {
-    return undefined
-  }
-
-  const blockData = resolved.rpcData
-  const { genomicPos, bpPerPx } = canvasXToGenomicPos(canvasX, resolved)
-  const hitToleranceBp = Math.max(1, bpPerPx * 5)
-
-  const { indicatorPositions, indicatorColorTypes } = blockData
-  const numIndicators = indicatorPositions.length
-
-  for (let i = 0; i < numIndicators; i++) {
-    const pos = indicatorPositions[i]
-    if (pos !== undefined && Math.abs(genomicPos - pos) < hitToleranceBp) {
-      const colorType = indicatorColorTypes[i]
-      const indicatorType = getInterbaseTypeName(colorType ?? 1)
-      return {
-        type: 'indicator',
-        position: pos,
-        indicatorType,
-      }
-    }
-  }
-
-  return undefined
-}
+export { hitTestCoverage } from '../../features/coverage/hitTest.ts'
+export { hitTestIndicator } from '../../features/indicator/hitTest.ts'
 

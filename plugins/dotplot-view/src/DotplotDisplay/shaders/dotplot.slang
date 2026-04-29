@@ -1,3 +1,6 @@
+
+
+public static const uint VERTS_PER_INSTANCE = 6u;
 // Dotplot line segment renderer. Each instance is a line from (x1,y1) to
 // (x2,y2) in data space; the shader expands it into a screen-space quad of
 // thickness `lineWidth` pixels with smoothstep-based edge antialiasing.

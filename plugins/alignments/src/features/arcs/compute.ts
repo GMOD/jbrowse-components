@@ -4,10 +4,10 @@ import {
   SAM_FLAG_PAIRED,
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
-} from './samFlags.ts'
+} from '../../shared/samFlags.ts'
 
-import type { ArcColorByType } from './types.ts'
-import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { ArcColorByType } from '../../shared/types.ts'
 
 // Arc shape enum. Values are shared with arc.slang (which checks them via
 // `> 0.5` / `> 1.5` thresholds); keep in lockstep.

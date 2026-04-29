@@ -9,46 +9,84 @@ import {
   buildReadIdToIndex,
   computeBlockHeights,
   ensureRegion,
-  interbaseRangeEnds,
 } from './rendererTypes.ts'
+import {
+  ARC_LINE_PASS,
+  ARC_PASS,
+  PASS_ARC,
+  PASS_ARC_LINE,
+} from '../../features/arcs/packGpu.ts'
+import { uploadArcs } from '../../features/arcs/uploadGpu.ts'
+import {
+  CONN_LINE_PASS,
+  PASS_CONN_LINE,
+} from '../../features/connectingLines/packGpu.ts'
+import { uploadConnectingLines } from '../../features/connectingLines/uploadGpu.ts'
+import {
+  COVERAGE_PASS,
+  PASS_COVERAGE,
+} from '../../features/coverage/packGpu.ts'
+import { uploadCoverageBins } from '../../features/coverage/uploadGpu.ts'
+import { GAP_PASS, PASS_GAP } from '../../features/gap/packGpu.ts'
+import { uploadGaps } from '../../features/gap/uploadGpu.ts'
+import {
+  INDICATOR_PASS,
+  PASS_INDICATOR,
+} from '../../features/indicator/packGpu.ts'
+import { uploadIndicators } from '../../features/indicator/uploadGpu.ts'
+import {
+  INSERTION_PASS,
+  PASS_INSERTION,
+} from '../../features/insertion/packGpu.ts'
+import { uploadInsertions } from '../../features/insertion/uploadGpu.ts'
+import {
+  LINKED_READ_LINE_PASS,
+  PASS_LINKED_READ_LINE,
+} from '../../features/linkedReads/packGpu.ts'
+import { uploadLinkedReadLines } from '../../features/linkedReads/uploadGpu.ts'
+import {
+  MISMATCH_PASS,
+  PASS_MISMATCH,
+} from '../../features/mismatch/packGpu.ts'
+import { uploadMismatches } from '../../features/mismatch/uploadGpu.ts'
+import {
+  MOD_COVERAGE_PASS,
+  PASS_MOD_COV,
+} from '../../features/modCoverage/packGpu.ts'
+import { uploadModCoverage } from '../../features/modCoverage/uploadGpu.ts'
 import {
   MODIFICATION_PASS,
   PASS_MOD,
 } from '../../features/modification/packGpu.ts'
 import { uploadModifications } from '../../features/modification/uploadGpu.ts'
+import { NONCOV_PASS, PASS_NONCOV } from '../../features/noncov/packGpu.ts'
+import { uploadNoncov } from '../../features/noncov/uploadGpu.ts'
+import {
+  PASS_SNP_COV,
+  SNP_COVERAGE_PASS,
+} from '../../features/snpCoverage/packGpu.ts'
+import { uploadSnpCoverage } from '../../features/snpCoverage/uploadGpu.ts'
+import {
+  PASS_SOFTCLIP_BASES,
+  SOFTCLIP_BASES_PASS,
+} from '../../features/softclip/packBases.ts'
+import { uploadSoftclipBases } from '../../features/softclip/uploadBases.ts'
 import {
   ARC_HEIGHT_MARGIN,
   arcLineColorPalette,
   getArcPalette,
   linkedReadColorPalette,
 } from '../../shaders/palettes.ts'
-import * as arcShader from '../../shaders/slang/arc.generated.ts'
-import * as arcLineShader from '../../shaders/slang/arcLine.generated.ts'
-import * as clipShader from '../../shaders/slang/clip.generated.ts'
-import * as connectingLineShader from '../../shaders/slang/connectingLine.generated.ts'
-import * as coverageShader from '../../shaders/slang/coverage.generated.ts'
 import * as flatQuadShader from '../../shaders/slang/flatQuad.generated.ts'
-import * as gapShader from '../../shaders/slang/gap.generated.ts'
-import * as indicatorShader from '../../shaders/slang/indicator.generated.ts'
-import * as insertionShader from '../../shaders/slang/insertion.generated.ts'
-import * as linkedReadLineShader from '../../shaders/slang/linkedReadLine.generated.ts'
-import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
-import * as modCoverageShader from '../../shaders/slang/modCoverage.generated.ts'
-import * as noncovShader from '../../shaders/slang/noncovHistogram.generated.ts'
 import * as readShader from '../../shaders/slang/read.generated.ts'
-import * as snpCoverageShader from '../../shaders/slang/snpCoverage.generated.ts'
+import { CLIP_PASS, PASS_CLIP, uploadClips } from '../../shared/clipPass.ts'
 
 import type {
   AlignmentsBackend,
   AlignmentsSources,
-  ArcsUploadData,
   BaseRegionData,
-  CigarUploadData,
   ColorPalette,
-  ConnectingLinesUploadData,
   CoverageUploadData,
-  LinkedReadLinesUploadData,
-  ModCoverageUploadData,
   RGBColor,
   ReadUploadData,
   RenderBlock,
@@ -65,26 +103,10 @@ const U = readShader.UNIFORM_OFFSET_F32
 const USLOTS = readShader.UNIFORM_SLOT_ARRAYS
 
 // Pass IDs
+// Pass IDs not yet hosted by a feature folder. Per-feature PASS_* constants
+// are imported from features/X/packGpu.ts.
 const PASS_READ = 'read'
-const PASS_GAP = 'gap'
-const PASS_MISMATCH = 'mismatch'
-const PASS_INSERTION = 'insertion'
-const PASS_CLIP = 'clip' // unified soft+hard clip bars
-// PASS_MOD is owned by features/modification/packGpu.ts; re-imported above.
-const PASS_COVERAGE = 'coverage'
-const PASS_SNP_COV = 'snpCov'
-const PASS_MOD_COV = 'modCov'
-const PASS_NONCOV = 'noncov'
-const PASS_INDICATOR = 'indicator'
-const PASS_ARC = 'arc'
-const PASS_ARC_LINE = 'arcLine'
-const PASS_CONN_LINE = 'connLine'
-const PASS_LINKED_READ_LINE = 'linkedReadLine'
 const PASS_FLAT_QUAD = 'flatQuad'
-const PASS_SOFTCLIP_BASES = 'softclipBases'
-
-const CLIP_KIND_SOFT = 0
-const CLIP_KIND_HARD = 1
 
 // Fill the per-frame UBO slots. Pure — mutates only the given typed-array
 // views. Every field here corresponds to a `u.fieldName` in
@@ -188,196 +210,6 @@ function packReadSegments(data: ReadUploadData): ArrayBuffer {
   return buf
 }
 
-function packGaps(data: CigarUploadData): ArrayBuffer {
-  const n = data.gapPositions.length / 2
-  const F = gapShader.FIELD_OFFSET_F32
-  const s32 = gapShader.INSTANCE_STRIDE_F32
-  const buf = new ArrayBuffer(n * gapShader.INSTANCE_STRIDE_BYTES)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
-  const pos = data.gapPositions
-  const ys = data.gapYs
-  const types = data.gapTypes
-  const freq = data.gapFrequencies
-  for (let i = 0; i < n; i++) {
-    const o = i * s32
-    u32[o + F.startOff] = pos[i * 2]!
-    u32[o + F.endOff] = pos[i * 2 + 1]!
-    u32[o + F.y] = ys[i]!
-    u32[o + F.gapType] = types[i]!
-    f32[o + F.frequency] = freq[i]! / 255
-  }
-  return buf
-}
-
-function packMismatches(data: CigarUploadData): ArrayBuffer {
-  const n = data.mismatchPositions.length
-  const F = mismatchShader.FIELD_OFFSET_F32
-  const s32 = mismatchShader.INSTANCE_STRIDE_F32
-  const buf = new ArrayBuffer(n * mismatchShader.INSTANCE_STRIDE_BYTES)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
-  const pos = data.mismatchPositions
-  const ys = data.mismatchYs
-  const bases = data.mismatchBases
-  const freq = data.mismatchFrequencies
-  for (let i = 0; i < n; i++) {
-    const o = i * s32
-    u32[o + F.position] = pos[i]!
-    u32[o + F.y] = ys[i]!
-    u32[o + F.base] = bases[i]!
-    f32[o + F.frequency] = freq[i]! / 255
-  }
-  return buf
-}
-
-function packInsertions(data: CigarUploadData): ArrayBuffer {
-  const n = data.numInsertions
-  const F = insertionShader.FIELD_OFFSET_F32
-  const s32 = insertionShader.INSTANCE_STRIDE_F32
-  const buf = new ArrayBuffer(n * insertionShader.INSTANCE_STRIDE_BYTES)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
-  const pos = data.interbasePositions
-  const ys = data.interbaseYs
-  const lens = data.interbaseLengths
-  const freq = data.interbaseFrequencies
-  for (let i = 0; i < n; i++) {
-    const o = i * s32
-    u32[o + F.position] = pos[i]!
-    u32[o + F.y] = ys[i]!
-    u32[o + F.length] = lens[i]!
-    f32[o + F.frequency] = freq[i]! / 255
-  }
-  return buf
-}
-
-// Worker lays out interbases as (insertions, softclips, hardclips); pack
-// soft+hard into a single clip pass with a per-instance `kind` tag.
-function packClips(data: CigarUploadData): ArrayBuffer {
-  const { insEnd, scEnd, hcEnd } = interbaseRangeEnds(data)
-  const count = data.numSoftclips + data.numHardclips
-  const F = clipShader.FIELD_OFFSET_F32
-  const s32 = clipShader.INSTANCE_STRIDE_F32
-  const buf = new ArrayBuffer(count * clipShader.INSTANCE_STRIDE_BYTES)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
-  const pos = data.interbasePositions
-  const ys = data.interbaseYs
-  const lens = data.interbaseLengths
-  const freq = data.interbaseFrequencies
-  for (let i = insEnd; i < hcEnd; i++) {
-    const o = (i - insEnd) * s32
-    u32[o + F.position] = pos[i]!
-    u32[o + F.y] = ys[i]!
-    u32[o + F.length] = lens[i]!
-    f32[o + F.frequency] = freq[i]! / 255
-    u32[o + F.kind] = i < scEnd ? CLIP_KIND_SOFT : CLIP_KIND_HARD
-  }
-  return buf
-}
-
-// Softclip-base bases reuse the mismatch pass's geometry. Their frequency
-// slot stays 0 (bases are always fully opaque at this zoom).
-function packSoftclipBases(data: CigarUploadData): ArrayBuffer {
-  const n = data.softclipBasePositions.length
-  const F = mismatchShader.FIELD_OFFSET_F32
-  const s32 = mismatchShader.INSTANCE_STRIDE_F32
-  const buf = new ArrayBuffer(n * mismatchShader.INSTANCE_STRIDE_BYTES)
-  const u32 = new Uint32Array(buf)
-  const pos = data.softclipBasePositions
-  const ys = data.softclipBaseYs
-  const bases = data.softclipBaseBases
-  for (let i = 0; i < n; i++) {
-    const o = i * s32
-    u32[o + F.position] = pos[i]!
-    u32[o + F.y] = ys[i]!
-    u32[o + F.base] = bases[i]!
-  }
-  return buf
-}
-
-function packArcs(data: ArcsUploadData): ArrayBuffer {
-  const n = data.numArcs
-  const F = arcShader.FIELD_OFFSET_F32
-  const s32 = arcShader.INSTANCE_STRIDE_F32
-  const buf = new ArrayBuffer(n * arcShader.INSTANCE_STRIDE_BYTES)
-  const f32 = new Float32Array(buf)
-  const u32 = new Uint32Array(buf)
-  const x1 = data.arcX1
-  const x2 = data.arcX2
-  const cts = data.arcColorTypes
-  const shape = data.arcShapeTypes
-  const yBp = data.arcYBp
-  for (let i = 0; i < n; i++) {
-    const o = i * s32
-    u32[o + F.x1] = x1[i]!
-    u32[o + F.x2] = x2[i]!
-    f32[o + F.colorType] = cts[i]!
-    f32[o + F.shapeType] = shape[i]!
-    u32[o + F.yBp] = yBp[i]!
-  }
-  return buf
-}
-
-function packArcLines(data: ArcsUploadData): ArrayBuffer {
-  const n = data.numLines
-  const F = arcLineShader.FIELD_OFFSET_F32
-  const s32 = arcLineShader.INSTANCE_STRIDE_F32
-  const buf = new ArrayBuffer(n * arcLineShader.INSTANCE_STRIDE_BYTES)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
-  const pos = data.linePositions
-  const ys = data.lineYs
-  const cts = data.lineColorTypes
-  for (let i = 0; i < n; i++) {
-    const o = i * s32
-    u32[o + F.position] = pos[i]!
-    f32[o + F.y] = ys[i]!
-    f32[o + F.colorType] = cts[i]!
-  }
-  return buf
-}
-
-function packLinkedReadLines(data: LinkedReadLinesUploadData): ArrayBuffer {
-  const n = data.numLinkedReadLines ?? 0
-  const F = linkedReadLineShader.FIELD_OFFSET_F32
-  const s32 = linkedReadLineShader.INSTANCE_STRIDE_F32
-  const buf = new ArrayBuffer(n * linkedReadLineShader.INSTANCE_STRIDE_BYTES)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
-  const pos = data.linkedReadLinePositions!
-  const ys = data.linkedReadLineYs!
-  const cts = data.linkedReadLineColorTypes!
-  for (let i = 0; i < n; i++) {
-    const o = i * s32
-    u32[o + F.bp1] = pos[i * 2]!
-    u32[o + F.bp2] = pos[i * 2 + 1]!
-    f32[o + F.y1] = ys[i * 2]!
-    f32[o + F.y2] = ys[i * 2 + 1]!
-    f32[o + F.colorType] = cts[i]!
-  }
-  return buf
-}
-
-function packConnectingLines(data: ConnectingLinesUploadData): ArrayBuffer {
-  const n = data.connectingLinePositions.length / 2
-  const F = connectingLineShader.FIELD_OFFSET_F32
-  const s32 = connectingLineShader.INSTANCE_STRIDE_F32
-  const buf = new ArrayBuffer(n * connectingLineShader.INSTANCE_STRIDE_BYTES)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
-  const pos = data.connectingLinePositions
-  const ys = data.connectingLineYs
-  for (let i = 0; i < n; i++) {
-    const o = i * s32
-    u32[o + F.startOff] = pos[i * 2]!
-    u32[o + F.endOff] = pos[i * 2 + 1]!
-    f32[o + F.y] = ys[i]!
-  }
-  return buf
-}
-
 // Arc-pass UBO patch. The arc shader reads the same UBO as the read pass
 // but in a different viewport (above/below pileup), so we overwrite the
 // viewport-sensitive slots before the draw. Pure — mutates only the views.
@@ -458,69 +290,26 @@ function writePaletteToUbo(
   }
 }
 
-const ARC_CURVE_SEGMENTS = 64
-
 export const ALIGNMENTS_PASSES: PassDescriptor[] = [
-  slangPass({ id: PASS_READ, mod: readShader, verticesPerInstance: 9 }),
-  slangPass({ id: PASS_GAP, mod: gapShader, verticesPerInstance: 6 }),
-  slangPass({ id: PASS_MISMATCH, mod: mismatchShader, verticesPerInstance: 6 }),
-  slangPass({
-    id: PASS_INSERTION,
-    mod: insertionShader,
-    verticesPerInstance: 18,
-  }),
-  slangPass({ id: PASS_CLIP, mod: clipShader, verticesPerInstance: 6 }),
+  slangPass({ id: PASS_READ, mod: readShader }),
+  GAP_PASS,
+  MISMATCH_PASS,
+  INSERTION_PASS,
+  CLIP_PASS,
   MODIFICATION_PASS,
-  slangPass({ id: PASS_COVERAGE, mod: coverageShader, verticesPerInstance: 6 }),
-  slangPass({
-    id: PASS_SNP_COV,
-    mod: snpCoverageShader,
-    verticesPerInstance: 6,
-  }),
-  slangPass({
-    id: PASS_MOD_COV,
-    mod: modCoverageShader,
-    verticesPerInstance: 6,
-  }),
-  slangPass({ id: PASS_NONCOV, mod: noncovShader, verticesPerInstance: 6 }),
-  slangPass({
-    id: PASS_INDICATOR,
-    mod: indicatorShader,
-    verticesPerInstance: 3,
-  }),
-  slangPass({
-    id: PASS_ARC,
-    mod: arcShader,
-    verticesPerInstance: (ARC_CURVE_SEGMENTS + 1) * 2,
-    topology: 'triangle-strip',
-  }),
-  slangPass({
-    id: PASS_ARC_LINE,
-    mod: arcLineShader,
-    verticesPerInstance: 2,
-    topology: 'line-list',
-  }),
-  slangPass({
-    id: PASS_CONN_LINE,
-    mod: connectingLineShader,
-    verticesPerInstance: 6,
-  }),
-  slangPass({
-    id: PASS_LINKED_READ_LINE,
-    mod: linkedReadLineShader,
-    verticesPerInstance: 2,
-    topology: 'line-list',
-  }),
-  // Softclip-base bases reuse the mismatch pass geometry + colors.
-  slangPass({
-    id: PASS_SOFTCLIP_BASES,
-    mod: mismatchShader,
-    verticesPerInstance: 6,
-  }),
+  COVERAGE_PASS,
+  SNP_COVERAGE_PASS,
+  MOD_COVERAGE_PASS,
+  NONCOV_PASS,
+  INDICATOR_PASS,
+  ARC_PASS,
+  ARC_LINE_PASS,
+  CONN_LINE_PASS,
+  LINKED_READ_LINE_PASS,
+  SOFTCLIP_BASES_PASS,
   slangPass({
     id: PASS_FLAT_QUAD,
     mod: flatQuadShader,
-    verticesPerInstance: 6,
   }),
 ]
 
@@ -581,22 +370,34 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     for (const [idx, data] of sources.laidOutPileupMap) {
       active.push(idx)
       this.uploadReads(idx, data)
-      this.uploadCigar(idx, data)
+      uploadGaps(this.hal, idx, data)
+      uploadMismatches(this.hal, idx, data)
+      uploadInsertions(this.hal, idx, data)
+      uploadClips(this.hal, idx, data)
+      uploadSoftclipBases(this.hal, idx, data)
       uploadModifications(this.hal, idx, data)
       this.uploadCoverage(idx, data)
-      this.uploadModCoverage(idx, data)
+      uploadModCoverage(
+        this.hal,
+        idx,
+        data.modCovPackedBuffer,
+        data.modCovPositions.length,
+      )
       if (data.connectingLinePositions.length > 0) {
-        this.uploadConnectingLines(idx, data)
+        ensureRegion(this.regions, idx, emptyRegion)
+        uploadConnectingLines(this.hal, idx, data)
       }
       if ((data.numLinkedReadLines ?? 0) > 0) {
-        this.uploadLinkedReadLines(idx, data)
+        ensureRegion(this.regions, idx, emptyRegion)
+        uploadLinkedReadLines(this.hal, idx, data)
       }
     }
     pruneRegionMap(this.regions, active, n => {
       this.hal.deleteRegion(n)
     })
     for (const [idx, data] of sources.arcsRpcDataMap) {
-      this.uploadArcs(idx, data)
+      ensureRegion(this.regions, idx, emptyRegion)
+      uploadArcs(this.hal, idx, data)
     }
   }
 
@@ -620,56 +421,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     }
   }
 
-  private uploadCigar(displayedRegionIndex: number, data: CigarUploadData) {
-    if (!this.regions.has(displayedRegionIndex)) {
-      return
-    }
-    const numGaps = data.gapPositions.length / 2
-    const numMismatches = data.mismatchPositions.length
-    const numSoftclipBases = data.softclipBasePositions.length
-    if (numGaps > 0) {
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_GAP,
-        packGaps(data),
-        numGaps,
-      )
-    }
-    if (numMismatches > 0) {
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_MISMATCH,
-        packMismatches(data),
-        numMismatches,
-      )
-    }
-    if (data.numInsertions > 0) {
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_INSERTION,
-        packInsertions(data),
-        data.numInsertions,
-      )
-    }
-    const clipCount = data.numSoftclips + data.numHardclips
-    if (clipCount > 0) {
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_CLIP,
-        packClips(data),
-        clipCount,
-      )
-    }
-    if (numSoftclipBases > 0) {
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_SOFTCLIP_BASES,
-        packSoftclipBases(data),
-        numSoftclipBases,
-      )
-    }
-  }
-
   uploadCoverage(displayedRegionIndex: number, data: CoverageUploadData) {
     const r = this.regions.get(displayedRegionIndex)
     if (!r) {
@@ -678,119 +429,40 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
     const numCoverageBins = data.coverageDepths.length
     if (numCoverageBins > 0) {
-      this.hal.uploadBuffer(
+      uploadCoverageBins(
+        this.hal,
         displayedRegionIndex,
-        PASS_COVERAGE,
         data.coveragePackedBuffer,
         numCoverageBins,
+        data.coverageMaxDepth,
       )
       r.maxDepth = data.coverageMaxDepth
       r.binSize = 1
-      this.hal.setRegionMeta(displayedRegionIndex, {
-        maxDepth: data.coverageMaxDepth,
-      })
     }
 
-    const numSnpSegments = data.snpPositions.length
-    if (numSnpSegments > 0) {
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_SNP_COV,
-        data.snpPackedBuffer,
-        numSnpSegments,
-      )
-    }
+    uploadSnpCoverage(
+      this.hal,
+      displayedRegionIndex,
+      data.snpPackedBuffer,
+      data.snpPositions.length,
+    )
 
-    const numNoncovSegments = data.noncovPositions.length
-    if (numNoncovSegments > 0) {
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_NONCOV,
-        data.noncovPackedBuffer,
-        numNoncovSegments,
-      )
+    uploadNoncov(
+      this.hal,
+      displayedRegionIndex,
+      data.noncovPackedBuffer,
+      data.noncovPositions.length,
+    )
+    if (data.noncovPositions.length > 0) {
       r.noncovMaxCount = data.noncovMaxCount
     }
 
-    const numIndicators = data.indicatorPositions.length
-    if (numIndicators > 0) {
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_INDICATOR,
-        data.indicatorPackedBuffer,
-        numIndicators,
-      )
-    }
-  }
-
-  private uploadModCoverage(
-    displayedRegionIndex: number,
-    data: ModCoverageUploadData,
-  ) {
-    const numModCovSegments = data.modCovPositions.length
-    if (numModCovSegments > 0) {
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_MOD_COV,
-        data.modCovPackedBuffer,
-        numModCovSegments,
-      )
-    }
-  }
-
-  private uploadArcs(displayedRegionIndex: number, data: ArcsUploadData) {
-    // Arcs/connectingLines can arrive from their own RPC before the main
-    // read upload has registered this region.
-    ensureRegion(this.regions, displayedRegionIndex, emptyRegion)
-
-    if (data.numArcs > 0) {
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_ARC,
-        packArcs(data),
-        data.numArcs,
-      )
-    }
-    if (data.numLines > 0) {
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_ARC_LINE,
-        packArcLines(data),
-        data.numLines,
-      )
-    }
-  }
-
-  private uploadConnectingLines(
-    displayedRegionIndex: number,
-    data: ConnectingLinesUploadData,
-  ) {
-    ensureRegion(this.regions, displayedRegionIndex, emptyRegion)
-    const numConnectingLines = data.connectingLinePositions.length / 2
-    if (numConnectingLines > 0) {
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_CONN_LINE,
-        packConnectingLines(data),
-        numConnectingLines,
-      )
-    }
-  }
-
-  private uploadLinkedReadLines(
-    displayedRegionIndex: number,
-    data: LinkedReadLinesUploadData,
-  ) {
-    ensureRegion(this.regions, displayedRegionIndex, emptyRegion)
-    const n = data.numLinkedReadLines ?? 0
-    if (n > 0) {
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_LINKED_READ_LINE,
-        packLinkedReadLines(data),
-        n,
-      )
-    }
+    uploadIndicators(
+      this.hal,
+      displayedRegionIndex,
+      data.indicatorPackedBuffer,
+      data.indicatorPositions.length,
+    )
   }
 
   private writeUniforms(state: RenderState, frame: BlockFrame) {

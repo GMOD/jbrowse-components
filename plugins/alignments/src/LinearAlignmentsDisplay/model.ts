@@ -43,7 +43,7 @@ import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import {
   arcsToRegionResult,
   computeArcsFromPileupData,
-} from '../shared/computeArcsFromPileupData.ts'
+} from '../features/arcs/compute.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import {
   getColorByMenuItem,
@@ -58,7 +58,6 @@ import { getColorForModification } from '../util.ts'
 import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
 
-import type { ArcsDataResult } from '../shared/computeArcsFromPileupData.ts'
 import type {
   ColorPalette,
   RenderState as AlignmentsRenderState,
@@ -71,6 +70,7 @@ import type {
 } from './components/hitTesting.ts'
 import type { AlignmentsBackend } from './components/rendererTypes.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
+import type { ArcsDataResult } from '../features/arcs/compute.ts'
 import type { LegendItem } from '../shared/legendUtils.ts'
 import type {
   ArcColorByType,

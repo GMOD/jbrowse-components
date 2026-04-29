@@ -7,13 +7,12 @@
 // removes the equivalent pack loops from the main thread during refetches.
 // See ADR-004.
 
-import {
-  packCoverageBinsForGpu,
-  packIndicatorsForGpu,
-  packModCovSegmentsForGpu,
-  packNoncovSegmentsForGpu,
-  packSnpSegmentsForGpu,
-} from '@jbrowse/alignments-core'
+import { packCoverageBinsForGpu } from '@jbrowse/alignments-core'
+
+import { packIndicatorsForGpu } from '../features/indicator/packGpu.ts'
+import { packModCovSegmentsForGpu } from '../features/modCoverage/packGpu.ts'
+import { packNoncovSegmentsForGpu } from '../features/noncov/packGpu.ts'
+import { packSnpSegmentsForGpu } from '../features/snpCoverage/packGpu.ts'
 
 export interface CoverageAreaPackedBuffers {
   coveragePackedBuffer: ArrayBuffer

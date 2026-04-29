@@ -10,6 +10,8 @@ import alignmentsUniforms;
 import colorPack;
 import hpmath;
 
+
+public static const uint VERTS_PER_INSTANCE = 9u;
 // Color scheme constants — SYNC(rendererTypes.ts colorScheme enum)
 static const int CS_NORMAL        = 0;
 static const int CS_STRAND        = 1;

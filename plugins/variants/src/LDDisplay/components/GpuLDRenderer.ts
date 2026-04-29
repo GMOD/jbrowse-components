@@ -52,13 +52,11 @@ export const LD_PASSES: PassDescriptor[] = [
   slangPass({
     id: PASS_MAIN,
     mod: ldUniformShader,
-    verticesPerInstance: 6,
     blendState: BLEND_PREMUL,
   }),
   slangPass({
     id: PASS_GENOMIC,
     mod: ldGenomicShader,
-    verticesPerInstance: 6,
     blendState: BLEND_PREMUL,
   }),
 ]

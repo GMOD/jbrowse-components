@@ -8,6 +8,8 @@ import alignmentsUniforms;
 import colorPack;
 import hpmath;
 
+
+public static const uint VERTS_PER_INSTANCE = 2u;
 static const uint NUM_LINKED_READ_COLORS = 8u;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;

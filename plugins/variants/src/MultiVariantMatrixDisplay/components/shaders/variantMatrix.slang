@@ -1,3 +1,6 @@
+
+
+public static const uint VERTS_PER_INSTANCE = 6u;
 // Multi-variant matrix renderer: one instance per cell (variant × sample).
 // Each cell is a pixel-snapped column by subpixel-precise row strip so that
 // zooming / resizing doesn't cause discrete row jumps. Color is per-cell

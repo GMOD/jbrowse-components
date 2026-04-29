@@ -4,10 +4,7 @@ import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as wiggleShader from './shaders/wiggle.generated.ts'
-import {
-  RENDERING_TYPE_LINE,
-  VERTICES_PER_INSTANCE,
-} from './wiggleComponentUtils.ts'
+import { RENDERING_TYPE_LINE } from './wiggleComponentUtils.ts'
 import { computeNumRows, interleaveInstances } from './wiggleInstanceBuffer.ts'
 
 import type {
@@ -30,13 +27,11 @@ export const WIGGLE_PASSES: PassDescriptor[] = [
   slangPass({
     id: PASS_FILL,
     mod: wiggleShader,
-    verticesPerInstance: VERTICES_PER_INSTANCE,
     topology: 'triangle-list',
   }),
   slangPass({
     id: PASS_LINE,
     mod: wiggleShader,
-    verticesPerInstance: VERTICES_PER_INSTANCE,
     topology: 'line-list',
   }),
 ]

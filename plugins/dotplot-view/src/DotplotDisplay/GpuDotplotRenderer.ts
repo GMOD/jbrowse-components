@@ -10,7 +10,6 @@ import type {
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_LINE = 'line'
-const VERTICES_PER_INSTANCE = 6
 const UNIFORMS_SIZE_BYTES = dotplotShader.UNIFORMS_SIZE_BYTES
 const INSTANCE_STRIDE_F32 = dotplotShader.INSTANCE_STRIDE_F32
 const F = dotplotShader.FIELD_OFFSET_F32
@@ -20,7 +19,6 @@ export const DOTPLOT_PASSES: PassDescriptor[] = [
   slangPass({
     id: PASS_LINE,
     mod: dotplotShader,
-    verticesPerInstance: VERTICES_PER_INSTANCE,
     blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
   }),
 ]

@@ -7,6 +7,8 @@ import hpmath;
 import colorPack;
 import multiSyntenyUniforms;
 
+
+public static const uint VERTS_PER_INSTANCE = 6u;
 struct Instance {
   uint startBp    : ATTR0;
   uint endBp      : ATTR1;

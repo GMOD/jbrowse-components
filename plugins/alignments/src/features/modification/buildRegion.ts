@@ -1,7 +1,8 @@
 import type { ModificationUploadData } from './types.ts'
 
-const EMPTY_U32 = new Uint32Array(0)
-const EMPTY_U16 = new Uint16Array(0)
+// Empty TypedArrays must be allocated per-call: the worker transfers their
+// underlying ArrayBuffers, which detaches them. Module-level singletons
+// cause DataCloneError on the second RPC reply.
 
 export interface ModificationRegionFields {
   modificationPositions: Uint32Array
@@ -23,9 +24,9 @@ export function buildModificationFields(
 
 export function emptyModificationFields(): ModificationRegionFields {
   return {
-    modificationPositions: EMPTY_U32,
-    modificationYs: EMPTY_U16,
-    modificationColors: EMPTY_U32,
+    modificationPositions: new Uint32Array(0),
+    modificationYs: new Uint16Array(0),
+    modificationColors: new Uint32Array(0),
     numModifications: 0,
   }
 }

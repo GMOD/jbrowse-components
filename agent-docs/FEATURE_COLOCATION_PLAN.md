@@ -267,26 +267,166 @@ ballooning with feature-specific glue, the abstraction isn't paying off.
 
 Folders: `arcs`, `linkedReads`, `connectingLines`, `segments`.
 
-These are mostly independent already — own shaders, own data, minimal
-cross-feature concern. Likely the cleanest step. Save for last so the
-template is well-validated.
+Mostly independent — own shaders, own data, minimal cross-feature concern.
+Likely the cleanest step. No new shared third-space infra needed.
 
 ### Notes per feature
 
-- **`arcs`**: own arc shader + arcLine shader. Includes the samplot vs
-  bezier mode dispatch (state.arcsYDomainBp vs autoscaled).
-- **`linkedReads`**: covers both `linkedRead` mode (straight connecting
-  lines between mate pairs in the same chain) and `linkedReadBezier` mode
-  (bezier curves for aberrant pairs + straight lines for normal). Own
-  shader (`linkedReadLine.slang`) + own connecting-line geometry.
-- **`connectingLines`**: chain mode straight lines between supplementary
-  alignments. Own shader.
+- **`arcs`** (✅ done — step 4a): own arc shader + arcLine shader.
+- **`linkedReads`**: covers `linkedRead` mode (straight lines between mate
+  pairs in the same chain) and `linkedReadBezier` mode (bezier for
+  aberrant pairs + straight for normal). Own shader (`linkedReadLine.slang`).
+- **`connectingLines`**: chain-mode straight lines between supplementary
+  alignments. Own shader (`connectingLine.slang`).
 - **`segments`**: read splitting at CIGAR `N` gaps for spliced alignments.
-  Not really paired but it's a read-shape feature. Own arrays
-  (`buildSegmentArrays`).
+  Not really paired but a read-shape feature. Owns `buildSegmentArrays`
+  but pack is fused into the read pass — see substep notes.
 
-No new shared third-space infra needed for step 4 (each feature has its
-own shader + data layout).
+### Substep order
+
+Pick by independence + size. `connectingLines` is the smallest and has no
+cross-feature ties, so it's the cleanest validation of the step-4 template.
+`linkedReads` next because `computePileupBezierArcs` (currently in
+`components/computePileupArcs.ts`) imports `classifyPair` /
+`groupReadsByName` / `filterEntries` from `computeLinkedReadLines.ts` —
+moving it into `features/arcs/` requires those helpers to land in
+`features/linkedReads/` first. Save segments for last because it's the
+oddball (no own shader).
+
+#### 4b — `connectingLines` (template validation, smallest)
+
+Single shader, single typed-array pair, single GPU pass. Compute already
+lives in `LinearAlignmentsDisplay/computeChainLayout.ts` (main thread —
+chain-mode lines aren't worker output). The empty-state factories live
+in `RenderChainDataRPC/executeRenderChainData.ts` and
+`RenderPileupDataRPC/executeRenderPileupData.ts` for non-chain modes.
+
+Files to create in `features/connectingLines/`:
+- `types.ts` — move `ConnectingLinesUploadData` from
+  `components/rendererTypes.ts`
+- `packGpu.ts` — move `packConnectingLines`, `CONN_LINE_PASS`,
+  `PASS_CONN_LINE`
+- `uploadGpu.ts` — `uploadConnectingLines(hal, idx, data)` (replaces the
+  `private uploadConnectingLines` method on `GpuAlignmentsRenderer`)
+- `buildRegion.ts` — `ConnectingLinesRegionFields`,
+  `buildConnectingLinesFields`, `emptyConnectingLinesFields` (move the
+  three inline `connectingLine*` fields out of `Canvas2DRegionData`)
+- `drawCanvas.ts` — move the local `drawConnectingLines` from
+  `Canvas2DAlignmentsRenderer.ts`
+
+**Compute stays in `computeChainLayout.ts`** — it's main-thread chain
+layout that produces both connecting lines AND linkedRead lines AND
+chain-mode supplementary metadata in one pass. Splitting it would force
+ugly coupling. The feature folder owns the GPU/Canvas2D consumption side;
+`computeChainLayout.ts` is the chain-mode orchestrator (analogous to
+`runCoveragePipeline.ts` for step 3).
+
+Wire-up:
+- `Canvas2DRegionData extends ConnectingLinesRegionFields`
+- `ALIGNMENTS_PASSES` imports `CONN_LINE_PASS`
+- `GpuAlignmentsRenderer.sync()` calls `uploadConnectingLines(this.hal, …)`
+- Type imports updated across `executeRenderChainData.ts`,
+  `executeRenderPileupData.ts`, `computeChainLayout.ts`
+
+**Stop and assess.** This is the canonical small step-4 case. If the
+template still feels right, continue to 4c.
+
+#### 4c — `linkedReads`
+
+Bigger than connectingLines (covers two render modes, has its own classifier
+helpers used by another feature). The classifier helpers (`classifyPair`,
+`groupReadsByName`, `filterEntries` in `components/computeLinkedReadLines.ts`)
+are imported by `components/computePileupArcs.ts` (the SVG-overlay bezier
+arc generator); the new feature folder must export them so that consumer
+keeps working.
+
+Files in `features/linkedReads/`:
+- `types.ts` — move `LinkedReadLinesUploadData` from `rendererTypes.ts`
+- `packGpu.ts` — move `packLinkedReadLines`, `LINKED_READ_LINE_PASS`,
+  `PASS_LINKED_READ_LINE`
+- `uploadGpu.ts` — `uploadLinkedReadLines`
+- `buildRegion.ts` — `LinkedReadLinesRegionFields`, build/empty
+- `drawCanvas.ts` — move local `drawLinkedReadLines` from
+  `Canvas2DAlignmentsRenderer.ts`
+- `compute.ts` — move `components/computeLinkedReadLines.ts` (with test);
+  re-export `classifyPair`, `groupReadsByName`, `filterEntries`,
+  `computeLinkedReadLinesByRegion`, color-type constants
+
+After this lands, `components/computePileupArcs.ts` updates its imports
+from `./computeLinkedReadLines.ts` to `../../features/linkedReads/compute.ts`.
+That file itself stays in `components/` for now — it's an SVG-overlay
+generator that mixes arcs and linkedRead classification; its proper home
+is debatable (probably `features/arcs/computeOverlay.ts` since the output
+is bezier *arcs*, but it's a judgment call worth deferring).
+
+`computeChainLayout.ts` already imports `computeLinkedReadLinesByRegion`
+from the same place; update its import path too.
+
+**Stop and assess.** The cross-feature import (arcs overlay → linkedReads
+classifier helpers) is the test. If it feels right, the helpers genuinely
+belong in `features/linkedReads/` and arcs overlay is correctly routed
+through them. If awkward, the classifier helpers might want their own
+shared third-space module instead.
+
+#### 4d — `segments`
+
+Decision needed first: segments doesn't fit the standard template. It has
+no own shader — the read shader's instance struct includes
+`segmentPositions` / `segmentReadIndices` / `segmentEdgeFlags`, and
+`packReadSegments` packs them as part of the read pass. So:
+
+- **Option A — minimal folder**: `features/segments/` with just
+  `buildArrays.ts` (move `shared/buildSegmentArrays.ts` + test). No
+  packGpu / uploadGpu / drawCanvas — those stay with the read pass.
+- **Option B — defer**: leave `buildSegmentArrays` in `shared/` and treat
+  segments as part of step 5's read trunk.
+
+Recommend **Option A**. The build-arrays function is a self-contained
+~150-line CIGAR-walker that's clearly segments-specific (skip-aware read
+slicing); pulling it into a folder makes future "where does segment
+geometry come from?" obvious. The pack/upload coupling to the read pass
+is correct and stays.
+
+Files in `features/segments/`:
+- `buildArrays.ts` — `git mv shared/buildSegmentArrays.ts`
+- `buildArrays.test.ts` — `git mv shared/buildSegmentArrays.test.ts`
+- (no `types.ts` — fields are part of `ReadUploadData`)
+
+Update one import in `shared/buildAlignmentDetailArrays.ts`. That's it.
+
+#### 4e — Final cleanup
+
+After 4b, 4c, 4d:
+- Delete `private uploadConnectingLines` and `private uploadLinkedReadLines`
+  methods from `GpuAlignmentsRenderer` (replaced by free functions).
+- Delete the inline `drawConnectingLines` / `drawLinkedReadLines` helpers
+  from `Canvas2DAlignmentsRenderer`.
+- Delete the inline `connectingLine*` / `linkedReadLine*` fields from
+  `Canvas2DRegionData` (now via `extends X RegionFields`).
+- Delete the moved `*UploadData` interfaces from `rendererTypes.ts`.
+- Delete `PASS_CONN_LINE` and `PASS_LINKED_READ_LINE` constants from
+  `GpuAlignmentsRenderer`.
+- Final `tsgo --noEmit`, `pnpm test`, `eslint --cache --fix`.
+
+### Per-substep checklist
+
+After each of 4b–4d:
+- `npx tsgo --noEmit` clean
+- `pnpm test` 35/35 suites passing
+- `npx eslint --cache --fix` on touched files
+- Subjective: did this feel like a net clarity win?
+
+### Stop conditions for step 4
+
+- **After 4b (connectingLines)**: if moving 3 fields + 1 shader + 1 pack
+  function feels like ceremony rather than a clarity win, the rest of
+  step 4 likely is too — consider stopping with arcs as the only step-4
+  feature.
+- **After 4c (linkedReads)**: if the cross-feature import from arcs
+  overlay → linkedReads classifier feels wrong, audit whether the
+  classifier helpers should be a shared third-space module.
+- **At 4d**: if the half-foldered shape (only `buildArrays.ts`) feels
+  worse than leaving in `shared/`, take Option B and skip.
 
 ---
 

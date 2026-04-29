@@ -5,6 +5,8 @@ import alignmentsUniforms;
 import colorPack;
 import hpmath;
 
+
+public static const uint VERTS_PER_INSTANCE = 6u;
 static const uint GAP_DELETION = 0u;
 static const uint GAP_SKIP     = 1u;
 

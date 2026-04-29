@@ -3,16 +3,14 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import { buildAlignmentDetailArrays } from '../shared/buildAlignmentDetailArrays.ts'
+import { buildBaseFeatureData } from '../shared/buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from '../shared/buildBaseReadArrays.ts'
 import { buildCoverageResultFields } from '../shared/buildCoverageResultFields.ts'
 import { collectResultTransferables } from '../shared/collectTransferables.ts'
 import { computePairedInsertSizeStats } from '../shared/computePairedInsertSizeStats.ts'
 import { extractFeatureArrays } from '../shared/extractFeatureArrays.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
-import {
-  buildBaseFeatureData,
-  fetchReferenceSequence,
-} from '../shared/processFeatureAlignments.ts'
+import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
 import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
 
 import type { PileupDataResult, RenderPileupDataArgs } from './types'
@@ -138,18 +136,7 @@ export async function executeRenderPileupData({
   const trackStrands =
     colorBy?.type === 'modifications' || colorBy?.type === 'methylation'
 
-  const {
-    coverage,
-    snpCoverage,
-    noncovCoverage,
-    modCoverage,
-    modTooltipData,
-    sashimi,
-    coverageAreaPacked,
-    mismatchFrequencies,
-    interbaseFrequencies,
-    gapFrequencies,
-  } = await runCoveragePipeline({
+  const pipeline = await runCoveragePipeline({
     features,
     gaps,
     mismatches,
@@ -175,25 +162,17 @@ export async function executeRenderPileupData({
     ...readArrays,
     ...segmentArrays,
     ...gapArrays,
-    gapFrequencies,
+    gapFrequencies: pipeline.gapFrequencies,
     ...mismatchArrays,
-    mismatchFrequencies,
+    mismatchFrequencies: pipeline.mismatchFrequencies,
     ...softclipBaseArrays,
     ...interbaseArrays,
-    interbaseFrequencies,
+    interbaseFrequencies: pipeline.interbaseFrequencies,
     ...modificationArrays,
 
     readTagColors: tagColors,
 
-    ...buildCoverageResultFields(
-      coverage,
-      snpCoverage,
-      noncovCoverage,
-      coverageAreaPacked,
-      sashimi,
-      modTooltipData,
-      modCoverage,
-    ),
+    ...buildCoverageResultFields(pipeline),
 
     maxY: 0,
 
