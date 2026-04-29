@@ -8,7 +8,7 @@ import type {
   CigarCoords,
   CigarHitResult,
   ResolvedBlock,
-} from '../../LinearAlignmentsDisplay/components/hitTesting.ts'
+} from '../../shared/hitTestTypes.ts'
 
 // Insertions are hit-tested in two priority slots: large insertions (wide
 // boxes) win over mismatches; small insertions (thin bars) lose to them.

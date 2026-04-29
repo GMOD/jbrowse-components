@@ -2,7 +2,7 @@ import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as insertionShader from '../../shaders/slang/insertion.generated.ts'
 
-import type { CigarUploadData } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+import type { CigarUploadData } from '../../shared/uploadTypes.ts'
 
 export const PASS_INSERTION = 'insertion'
 

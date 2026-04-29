@@ -4,7 +4,7 @@ import { buildInterbaseArrays } from './buildInterbaseArrays.ts'
 import { buildGapArrays } from '../features/gap/buildArrays.ts'
 import { buildMismatchArrays } from '../features/mismatch/buildArrays.ts'
 import { buildModificationArrays } from '../features/modification/buildArrays.ts'
-import { buildSegmentArrays } from '../features/segments/buildArrays.ts'
+import { buildSegmentArrays } from '../features/read/buildSegments.ts'
 import { buildSoftclipBaseArrays } from '../features/softclip/buildArrays.ts'
 
 import type {

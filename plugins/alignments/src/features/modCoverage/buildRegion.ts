@@ -1,6 +1,6 @@
 import { packModCovSegmentsForCanvas2D } from '@jbrowse/alignments-core'
 
-import type { ModCoverageUploadData } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+import type { ModCoverageUploadData } from '../../shared/uploadTypes.ts'
 
 // Empty ArrayBuffers must be allocated per-call: the worker transfers them,
 // which detaches them. A module-level singleton causes DataCloneError on

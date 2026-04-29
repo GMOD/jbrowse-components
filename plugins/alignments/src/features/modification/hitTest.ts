@@ -3,7 +3,7 @@ import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
 import type {
   CigarCoords,
   ResolvedBlock,
-} from '../../LinearAlignmentsDisplay/components/hitTesting.ts'
+} from '../../shared/hitTestTypes.ts'
 
 export interface ModificationHitResult {
   position: number

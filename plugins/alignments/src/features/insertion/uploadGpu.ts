@@ -1,6 +1,6 @@
 import { PASS_INSERTION, packInsertions } from './packGpu.ts'
 
-import type { CigarUploadData } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+import type { CigarUploadData } from '../../shared/uploadTypes.ts'
 import type { GpuHal } from '@jbrowse/core/gpu/hal'
 
 export function uploadInsertions(

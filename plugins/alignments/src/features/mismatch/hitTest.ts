@@ -2,7 +2,7 @@ import type {
   CigarCoords,
   CigarHitResult,
   ResolvedBlock,
-} from '../../LinearAlignmentsDisplay/components/hitTesting.ts'
+} from '../../shared/hitTestTypes.ts'
 
 export function hitTestMismatch(
   resolved: ResolvedBlock,

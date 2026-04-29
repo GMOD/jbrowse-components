@@ -222,7 +222,10 @@ export interface PileupDataResult {
 
   // Flatbush R-tree over chain bounding boxes for spatial hit testing.
   // Populated by main-thread layout after chain layout is computed.
-  chainFlatbushData?: ArrayBuffer
+  // Stored as the live Flatbush instance (not an ArrayBuffer) — chain
+  // layout runs on the main thread, so there is no transfer boundary
+  // requiring serialization.
+  chainFlatbush?: Flatbush
   chainFirstReadIndices?: Uint32Array // maps Flatbush item index → first read index
 
   // Flatbush R-tree over modification points for spatial hit testing.

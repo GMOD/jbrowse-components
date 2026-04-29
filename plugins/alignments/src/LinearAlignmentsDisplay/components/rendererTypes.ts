@@ -4,6 +4,13 @@ import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ArcColorByType } from '../../shared/types.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 export type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
+export { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
+export type {
+  CigarUploadData,
+  CoverageUploadData,
+  ModCoverageUploadData,
+  ReadUploadData,
+} from '../../shared/uploadTypes.ts'
 
 export interface BaseRegionData {
   readIdToIndex: Map<string, number>
@@ -17,17 +24,6 @@ export function buildReadIdToIndex(ids: string[], n: number) {
     m.set(ids[i]!, i)
   }
   return m
-}
-
-export function interbaseRangeEnds(data: {
-  numInsertions: number
-  numSoftclips: number
-  numHardclips: number
-}) {
-  const insEnd = data.numInsertions
-  const scEnd = insEnd + data.numSoftclips
-  const hcEnd = scEnd + data.numHardclips
-  return { insEnd, scEnd, hcEnd }
 }
 
 export interface RenderState {
@@ -69,81 +65,6 @@ export interface RenderState {
   pairedArcsDown: boolean
   pileupTopOffset: number
   showOutline?: boolean
-}
-
-export interface ReadUploadData {
-  readPositions: Uint32Array
-  readYs: Uint16Array
-  readFlags: Uint16Array
-  readMapqs: Uint8Array
-  readAvgBaseQualities: Uint8Array
-  readInsertSizes: Float32Array
-  readPairOrientations: Uint8Array
-  readStrands: Int8Array
-  readTagColors: Uint32Array
-  readChainHasSupp?: Uint8Array
-  readIds: string[]
-  maxY: number
-  insertSizeStats?: { upper: number; lower: number }
-  segmentPositions: Uint32Array
-  segmentReadIndices: Uint32Array
-  segmentEdgeFlags: Uint8Array
-  numSegments: number
-}
-
-export interface CigarUploadData {
-  gapPositions: Uint32Array
-  gapYs: Uint16Array
-  gapTypes: Uint8Array
-  gapFrequencies: Uint8Array
-  mismatchPositions: Uint32Array
-  mismatchYs: Uint16Array
-  mismatchBases: Uint8Array
-  mismatchFrequencies: Uint8Array
-  interbasePositions: Uint32Array
-  interbaseYs: Uint16Array
-  interbaseLengths: Uint16Array
-  interbaseTypes: Uint8Array
-  interbaseFrequencies: Uint8Array
-  numInsertions: number
-  numSoftclips: number
-  numHardclips: number
-  softclipBasePositions: Uint32Array
-  softclipBaseYs: Uint16Array
-  softclipBaseBases: Uint8Array
-}
-
-// Coverage-area upload payload. Raw arrays are kept for hit testing / tooltip
-// / Canvas2D rendering; the `*PackedBuffer` fields are pre-packed GPU-layout
-// buffers produced by the RPC worker (see plugins/alignments/src/shared/
-// packCoverageArea.ts and ADR-004) that the GPU renderer uploads directly.
-export interface CoverageUploadData {
-  coverageDepths: Float32Array
-  coverageMaxDepth: number
-  coverageStartPos: number
-  coveragePackedBuffer: ArrayBuffer
-  snpPositions: Uint32Array
-  snpYOffsets: Float32Array
-  snpHeights: Float32Array
-  snpColorTypes: Uint8Array
-  snpPackedBuffer: ArrayBuffer
-  noncovPositions: Uint32Array
-  noncovYOffsets: Float32Array
-  noncovHeights: Float32Array
-  noncovColorTypes: Uint8Array
-  noncovMaxCount: number
-  noncovPackedBuffer: ArrayBuffer
-  indicatorPositions: Uint32Array
-  indicatorColorTypes: Uint8Array
-  indicatorPackedBuffer: ArrayBuffer
-}
-
-export interface ModCoverageUploadData {
-  modCovPositions: Uint32Array
-  modCovYOffsets: Float32Array
-  modCovHeights: Float32Array
-  modCovColors: Uint32Array
-  modCovPackedBuffer: ArrayBuffer
 }
 
 export interface AlignmentsSources {

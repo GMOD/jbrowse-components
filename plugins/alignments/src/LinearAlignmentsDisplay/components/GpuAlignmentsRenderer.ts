@@ -61,6 +61,8 @@ import {
 import { uploadModifications } from '../../features/modification/uploadGpu.ts'
 import { NONCOV_PASS, PASS_NONCOV } from '../../features/noncov/packGpu.ts'
 import { uploadNoncov } from '../../features/noncov/uploadGpu.ts'
+import { PASS_READ, READ_PASS } from '../../features/read/packGpu.ts'
+import { uploadReads as uploadReadSegments } from '../../features/read/uploadGpu.ts'
 import {
   PASS_SNP_COV,
   SNP_COVERAGE_PASS,
@@ -102,10 +104,8 @@ const UNIFORMS_SIZE_BYTES = readShader.UNIFORMS_SIZE_BYTES
 const U = readShader.UNIFORM_OFFSET_F32
 const USLOTS = readShader.UNIFORM_SLOT_ARRAYS
 
-// Pass IDs
 // Pass IDs not yet hosted by a feature folder. Per-feature PASS_* constants
 // are imported from features/X/packGpu.ts.
-const PASS_READ = 'read'
 const PASS_FLAT_QUAD = 'flatQuad'
 
 // Fill the per-frame UBO slots. Pure — mutates only the given typed-array
@@ -166,51 +166,8 @@ function fillFrameUniforms(
 // layout. They live outside the renderer class because they touch no HAL
 // state — and all performance-sensitive inner loops hoist the host-object
 // property accesses to locals so V8 reads through typed-array views directly.
+// Per-feature pack/upload helpers live in features/X/{packGpu,uploadGpu}.ts.
 // ---------------------------------------------------------------------------
-
-function packReadSegments(data: ReadUploadData): ArrayBuffer {
-  const n = data.numSegments
-  const stride32 = readShader.INSTANCE_STRIDE_F32
-  const F = readShader.FIELD_OFFSET_F32
-  const buf = new ArrayBuffer(n * readShader.INSTANCE_STRIDE_BYTES)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
-  const i32 = new Int32Array(buf)
-  const tagColors = data.readTagColors
-  const hasTagColors = tagColors.length > 0
-  const chainHasSupp = data.readChainHasSupp
-  const readPositions = data.readPositions
-  const readYs = data.readYs
-  const readFlags = data.readFlags
-  const readMapqs = data.readMapqs
-  const readAvgBaseQualities = data.readAvgBaseQualities
-  const readInsertSizes = data.readInsertSizes
-  const readPairOrientations = data.readPairOrientations
-  const readStrands = data.readStrands
-  const segmentPositions = data.segmentPositions
-  const segmentReadIndices = data.segmentReadIndices
-  const segmentEdgeFlags = data.segmentEdgeFlags
-  for (let j = 0; j < n; j++) {
-    const ri = segmentReadIndices[j]!
-    const o = j * stride32
-    u32[o + F.startOff] = segmentPositions[j * 2]!
-    u32[o + F.endOff] = segmentPositions[j * 2 + 1]!
-    u32[o + F.y] = readYs[ri]!
-    u32[o + F.flags] = readFlags[ri]!
-    u32[o + F.mapq] = readMapqs[ri]!
-    u32[o + F.baseQuality] = readAvgBaseQualities[ri]!
-    f32[o + F.insertSize] = readInsertSizes[ri]!
-    u32[o + F.pairOrient] = readPairOrientations[ri]!
-    i32[o + F.strand] = readStrands[ri]!
-    u32[o + F.tagColor] = hasTagColors ? tagColors[ri]! : 0
-    u32[o + F.chainHasSupp] = chainHasSupp ? chainHasSupp[ri]! : 0
-    u32[o + F.readIndex] = ri
-    u32[o + F.edgeFlags] = segmentEdgeFlags[j]!
-    u32[o + F.readStartOff] = readPositions[ri * 2]!
-    u32[o + F.readEndOff] = readPositions[ri * 2 + 1]!
-  }
-  return buf
-}
 
 // Arc-pass UBO patch. The arc shader reads the same UBO as the read pass
 // but in a different viewport (above/below pileup), so we overwrite the
@@ -293,7 +250,7 @@ function writePaletteToUbo(
 }
 
 export const ALIGNMENTS_PASSES: PassDescriptor[] = [
-  slangPass({ id: PASS_READ, mod: readShader }),
+  READ_PASS,
   GAP_PASS,
   MISMATCH_PASS,
   INSERTION_PASS,
@@ -404,7 +361,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
   }
 
   uploadReads(displayedRegionIndex: number, data: ReadUploadData) {
-    this.hal.deleteRegion(displayedRegionIndex)
     const r = emptyRegion()
     r.insertSizeStats = data.insertSizeStats
     r.readPositions = data.readPositions
@@ -412,15 +368,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     r.readStrands = data.readStrands
     r.readIdToIndex = buildReadIdToIndex(data.readIds, data.readIds.length)
     this.regions.set(displayedRegionIndex, r)
-
-    if (data.numSegments > 0) {
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_READ,
-        packReadSegments(data),
-        data.numSegments,
-      )
-    }
+    uploadReadSegments(this.hal, displayedRegionIndex, data)
   }
 
   uploadCoverage(displayedRegionIndex: number, data: CoverageUploadData) {

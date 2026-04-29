@@ -133,7 +133,7 @@ export function buildChainConnectingData(
       connectingLinePositions: new Uint32Array(0),
       connectingLineYs: new Uint16Array(0),
       numConnectingLines: 0,
-      chainFlatbushData: undefined as ArrayBuffer | undefined,
+      chainFlatbush: undefined as Flatbush | undefined,
     }
   }
 
@@ -160,27 +160,26 @@ export function buildChainConnectingData(
     lineIdx++
   }
 
-  let chainFlatbushData: ArrayBuffer | undefined
+  let chainFlatbush: Flatbush | undefined
   if (numChains > 0) {
-    const flatbush = new Flatbush(numChains)
+    chainFlatbush = new Flatbush(numChains)
     for (let chainIdx = 0; chainIdx < numChains; chainIdx++) {
       const y = readYs[chainFirstReadIndices[chainIdx]!]!
-      flatbush.add(
+      chainFlatbush.add(
         chainAbsMinStarts[chainIdx]!,
         y,
         chainAbsMaxEnds[chainIdx],
         y,
       )
     }
-    flatbush.finish()
-    chainFlatbushData = flatbush.data
+    chainFlatbush.finish()
   }
 
   return {
     connectingLinePositions,
     connectingLineYs,
     numConnectingLines: numLines,
-    chainFlatbushData,
+    chainFlatbush,
   }
 }
 

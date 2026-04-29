@@ -5,7 +5,7 @@ import { slangPass } from '@jbrowse/core/gpu/slangPass'
 // softclip bases are always fully opaque.
 import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
 
-import type { CigarUploadData } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+import type { CigarUploadData } from '../../shared/uploadTypes.ts'
 
 export const PASS_SOFTCLIP_BASES = 'softclipBases'
 

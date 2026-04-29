@@ -1,7 +1,7 @@
 import { INTERBASE_TYPES } from './types.ts'
 
 import type { IndicatorHitResult, InterbaseType } from './types.ts'
-import type { ResolvedBlock } from '../../LinearAlignmentsDisplay/components/hitTesting.ts'
+import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 
 function getInterbaseTypeName(colorType: number): InterbaseType {
   return INTERBASE_TYPES[(colorType - 1) % 3] ?? 'insertion'

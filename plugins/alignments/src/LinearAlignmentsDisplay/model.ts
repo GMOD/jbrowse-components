@@ -64,7 +64,7 @@ import type {
 } from './components/AlignmentsRenderer.ts'
 import type { YScaleTicks } from './components/YScaleBar.tsx'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
-import type { CigarHitResult } from './components/hitTesting.ts'
+import type { CigarHitResult } from '../shared/hitTestTypes.ts'
 import type { AlignmentsBackend } from './components/rendererTypes.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 import type { ArcsDataResult } from '../features/arcs/compute.ts'
@@ -484,7 +484,7 @@ export default function stateModelFactory(
          * Entries are shallow clones of the raw data with freshly
          * allocated `readYs/gapYs/mismatchYs/interbaseYs/modificationYs/
          * softclipBaseYs` (and, in chain mode, `connectingLinePositions`,
-         * `connectingLineYs`, `chainFlatbushData`) and the layout `maxY`.
+         * `connectingLineYs`, `chainFlatbush`) and the layout `maxY`.
          *
          * MobX caches this so layout recomputes only when `rpcDataMap`,
          * `sortedBy`, `showSoftClipping`, or `renderingMode` change.

@@ -6,7 +6,6 @@ import {
 import { getChainBounds } from './chainOverlayUtils.ts'
 import {
   bpToScreenX,
-  buildReadIdToIndex,
   computeBlockHeights,
   pileupRowY,
 } from './rendererTypes.ts'
@@ -71,6 +70,11 @@ import {
 } from '../../features/noncov/buildRegion.ts'
 import { drawNoncovCanvas } from '../../features/noncov/drawCanvas.ts'
 import {
+  buildReadFields,
+  emptyReadFields,
+} from '../../features/read/buildRegion.ts'
+import { drawReads } from '../../features/read/drawCanvas.ts'
+import {
   buildSnpCoverageFields,
   emptySnpCoverageFields,
 } from '../../features/snpCoverage/buildRegion.ts'
@@ -83,12 +87,10 @@ import {
 } from '../../features/softclip/buildRegion.ts'
 import { drawSoftclipBases } from '../../features/softclip/drawBases.ts'
 import { drawSoftclips } from '../../features/softclip/drawCanvas.ts'
-import { getReadColor } from '../colorUtils.ts'
 
 import type {
   AlignmentsBackend,
   AlignmentsSources,
-  BaseRegionData,
   CigarUploadData,
   CoverageUploadData,
   ModCoverageUploadData,
@@ -111,6 +113,7 @@ import type { MismatchRegionFields } from '../../features/mismatch/buildRegion.t
 import type { ModCoverageRegionFields } from '../../features/modCoverage/buildRegion.ts'
 import type { ModificationRegionFields } from '../../features/modification/buildRegion.ts'
 import type { NoncovRegionFields } from '../../features/noncov/buildRegion.ts'
+import type { ReadRegionFields } from '../../features/read/buildRegion.ts'
 import type { SnpCoverageRegionFields } from '../../features/snpCoverage/buildRegion.ts'
 import type {
   SoftclipBaseRegionFields,
@@ -120,7 +123,7 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export interface Canvas2DRegionData
   extends
-    BaseRegionData,
+    ReadRegionFields,
     ArcsRegionFields,
     ConnectingLinesRegionFields,
     CoverageRegionFields,
@@ -135,46 +138,7 @@ export interface Canvas2DRegionData
     NoncovRegionFields,
     SnpCoverageRegionFields,
     SoftclipBaseRegionFields,
-    SoftclipRegionFields {
-  readFlags: Uint16Array
-  readMapqs: Uint8Array
-  readAvgBaseQualities: Uint8Array
-  readInsertSizes: Float32Array
-  readPairOrientations: Uint8Array
-  readStrands: Int8Array
-  readTagColors: Uint32Array
-  readChainHasSupp: Uint8Array | undefined
-  numReads: number
-  insertSizeStats?: { upper: number; lower: number }
-}
-
-// Shared zero-length sentinels — Canvas2DRegionData is read-only after build,
-// so all empty fields can share frozen instances instead of allocating
-// per-region.
-const EMPTY_U32 = new Uint32Array(0)
-const EMPTY_U16 = new Uint16Array(0)
-const EMPTY_U8 = new Uint8Array(0)
-const EMPTY_F32 = new Float32Array(0)
-const EMPTY_I8 = new Int8Array(0)
-
-function buildReadFields(data: PileupDataResult) {
-  const numReads = data.readIds.length
-  return {
-    readIdToIndex: buildReadIdToIndex(data.readIds, numReads),
-    readPositions: data.readPositions,
-    readYs: data.readYs,
-    readFlags: data.readFlags,
-    readMapqs: data.readMapqs,
-    readAvgBaseQualities: data.readAvgBaseQualities,
-    readInsertSizes: data.readInsertSizes,
-    readPairOrientations: data.readPairOrientations,
-    readStrands: data.readStrands,
-    readTagColors: data.readTagColors,
-    readChainHasSupp: data.readChainHasSupp,
-    numReads,
-    insertSizeStats: data.insertSizeStats,
-  }
-}
+    SoftclipRegionFields {}
 
 // Per-feature builders own the slicing of the merged interbase array (the
 // worker lays it out as (insertions, softclips, hardclips); each feature
@@ -204,18 +168,7 @@ function buildCoverageAreaFields(
 
 function emptyPileupFields(): Canvas2DRegionData {
   return {
-    readIdToIndex: new Map(),
-    readPositions: EMPTY_U32,
-    readYs: EMPTY_U16,
-    readFlags: EMPTY_U16,
-    readMapqs: EMPTY_U8,
-    readAvgBaseQualities: EMPTY_U8,
-    readInsertSizes: EMPTY_F32,
-    readPairOrientations: EMPTY_U8,
-    readStrands: EMPTY_I8,
-    readTagColors: EMPTY_U32,
-    readChainHasSupp: undefined,
-    numReads: 0,
+    ...emptyReadFields(),
     ...emptyGapFields(),
     ...emptyMismatchFields(),
     ...emptyInsertionFields(),
@@ -464,38 +417,6 @@ export function drawAlignmentBlocks(
   return true
 }
 
-function drawReads(
-  ctx: Ctx2D,
-  region: Canvas2DRegionData,
-  block: { bpRangeX: [number, number]; screenStartPx: number },
-  bpLength: number,
-  fullBlockWidth: number,
-  state: RenderState,
-) {
-  const fH = state.featureHeight
-
-  for (let i = 0; i < region.numReads; i++) {
-    const startBp = region.readPositions[i * 2]!
-    const endBp = region.readPositions[i * 2 + 1]!
-    const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-    const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-    const y = pileupRowY(region.readYs[i]!, state)
-    const w = Math.max(1, x2 - x1)
-
-    ctx.fillStyle = getReadColor(i, region, state.colorScheme, state.colors, {
-      renderingMode: state.renderingMode,
-      flipStrandLongReadChains: state.flipStrandLongReadChains,
-    })
-    ctx.fillRect(x1, y, w, fH)
-
-    if (state.showOutline && w > 2) {
-      ctx.strokeStyle = 'rgba(0,0,0,0.3)'
-      ctx.lineWidth = 0.5
-      ctx.strokeRect(x1, y, w, fH)
-    }
-  }
-}
-
 function drawCoverage(
   ctx: Ctx2D,
   region: Canvas2DRegionData,
@@ -518,44 +439,85 @@ function drawCoverage(
   drawIndicatorCanvas(ctx, region, bpToX, viewWidth, state)
 }
 
+interface OverlayBounds {
+  startBp: number
+  endBp: number
+  yRow: number
+}
+
+interface OverlayBlock {
+  bpRangeX: [number, number]
+  screenStartPx: number
+  screenEndPx: number
+}
+
+function paintOverlayBox(
+  ctx: Ctx2D,
+  bounds: OverlayBounds,
+  block: OverlayBlock,
+  state: RenderState,
+  style: 'highlight' | 'selection' | 'chainHighlight',
+) {
+  const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
+  const fullBlockWidth = block.screenEndPx - block.screenStartPx
+  const x1 = bpToScreenX(bounds.startBp, block, bpLength, fullBlockWidth)
+  const x2 = bpToScreenX(bounds.endBp, block, bpLength, fullBlockWidth)
+  const y = pileupRowY(bounds.yRow, state)
+  const w = x2 - x1
+  const h = state.featureHeight
+  if (style === 'selection') {
+    ctx.strokeStyle = '#00b8ff'
+    ctx.lineWidth = 2
+    ctx.strokeRect(x1, y, w, h)
+  } else {
+    ctx.fillStyle =
+      style === 'chainHighlight' ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.15)'
+    ctx.fillRect(x1, y, w, h)
+  }
+}
+
+function readBoundsForId(
+  region: Canvas2DRegionData,
+  id: string,
+): OverlayBounds | undefined {
+  const idx = region.readIdToIndex.get(id)
+  if (idx === undefined || idx >= region.numReads) {
+    return undefined
+  }
+  return {
+    startBp: region.readPositions[idx * 2]!,
+    endBp: region.readPositions[idx * 2 + 1]!,
+    yRow: region.readYs[idx]!,
+  }
+}
+
+function chainBoundsFor(
+  region: Canvas2DRegionData,
+  ids: string[],
+): OverlayBounds | undefined {
+  const b = getChainBounds(ids, region)
+  if (!b) {
+    return undefined
+  }
+  return { startBp: b.minStart, endBp: b.maxEnd, yRow: b.y }
+}
+
 function drawHighlightOverlays(
   ctx: Ctx2D,
   region: Canvas2DRegionData,
-  block: {
-    bpRangeX: [number, number]
-    screenStartPx: number
-    screenEndPx: number
-  },
+  block: OverlayBlock,
   state: RenderState,
 ) {
-  const fH = state.featureHeight
-  const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
-  const fullBlockWidth = block.screenEndPx - block.screenStartPx
-
   if (state.highlightedChainIds.length === 0 && state.highlightedFeatureId) {
-    const idx = region.readIdToIndex.get(state.highlightedFeatureId)
-    if (idx !== undefined && idx < region.numReads) {
-      const startBp = region.readPositions[idx * 2]!
-      const endBp = region.readPositions[idx * 2 + 1]!
-      const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const y = pileupRowY(region.readYs[idx]!, state)
-      ctx.fillStyle = 'rgba(0,0,0,0.15)'
-      ctx.fillRect(x1, y, x2 - x1, fH)
+    const bounds = readBoundsForId(region, state.highlightedFeatureId)
+    if (bounds) {
+      paintOverlayBox(ctx, bounds, block, state, 'highlight')
     }
   }
-
   if (state.selectedChainIds.length === 0 && state.selectedFeatureId) {
-    const idx = region.readIdToIndex.get(state.selectedFeatureId)
-    if (idx !== undefined && idx < region.numReads) {
-      const startBp = region.readPositions[idx * 2]!
-      const endBp = region.readPositions[idx * 2 + 1]!
-      const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const y = pileupRowY(region.readYs[idx]!, state)
-      ctx.strokeStyle = '#00b8ff'
-      ctx.lineWidth = 2
-      ctx.strokeRect(x1, y, x2 - x1, fH)
+    const bounds = readBoundsForId(region, state.selectedFeatureId)
+    if (bounds) {
+      paintOverlayBox(ctx, bounds, block, state, 'selection')
     }
   }
 }
@@ -563,41 +525,19 @@ function drawHighlightOverlays(
 function drawChainOverlays(
   ctx: Ctx2D,
   region: Canvas2DRegionData,
-  block: {
-    bpRangeX: [number, number]
-    screenStartPx: number
-    screenEndPx: number
-  },
+  block: OverlayBlock,
   state: RenderState,
 ) {
-  const fH = state.featureHeight
-  const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
-  const fullBlockWidth = block.screenEndPx - block.screenStartPx
-
   if (state.highlightedChainIds.length > 0) {
-    const bounds = getChainBounds(state.highlightedChainIds, region)
+    const bounds = chainBoundsFor(region, state.highlightedChainIds)
     if (bounds) {
-      const startBp = bounds.minStart
-      const endBp = bounds.maxEnd
-      const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const y = pileupRowY(bounds.y, state)
-      ctx.fillStyle = 'rgba(0,0,0,0.4)'
-      ctx.fillRect(x1, y, x2 - x1, fH)
+      paintOverlayBox(ctx, bounds, block, state, 'chainHighlight')
     }
   }
-
   if (state.selectedChainIds.length > 0) {
-    const bounds = getChainBounds(state.selectedChainIds, region)
+    const bounds = chainBoundsFor(region, state.selectedChainIds)
     if (bounds) {
-      const startBp = bounds.minStart
-      const endBp = bounds.maxEnd
-      const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const y = pileupRowY(bounds.y, state)
-      ctx.strokeStyle = '#00b8ff'
-      ctx.lineWidth = 2
-      ctx.strokeRect(x1, y, x2 - x1, fH)
+      paintOverlayBox(ctx, bounds, block, state, 'selection')
     }
   }
 }

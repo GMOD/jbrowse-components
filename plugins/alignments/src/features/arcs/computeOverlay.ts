@@ -1,10 +1,10 @@
+import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { linkedReadColorPalette } from '../../shaders/palettes.ts'
 import {
   classifyPair,
   filterEntries,
   groupReadsByName,
-} from '../../features/linkedReads/compute.ts'
-import { linkedReadColorPalette } from '../../shaders/palettes.ts'
-import { rgb255 } from '../colorUtils.ts'
+} from '../linkedReads/compute.ts'
 
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 

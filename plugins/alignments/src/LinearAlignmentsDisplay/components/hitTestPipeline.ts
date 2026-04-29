@@ -1,5 +1,4 @@
 import { canvasToGenomicCoords } from './alignmentComponentUtils.ts'
-import { hitTestChain, hitTestFeature } from './hitTesting.ts'
 import { hitTestCoverage } from '../../features/coverage/hitTest.ts'
 import { hitTestGap } from '../../features/gap/hitTest.ts'
 import { hitTestIndicator } from '../../features/indicator/hitTest.ts'
@@ -9,16 +8,18 @@ import {
 } from '../../features/insertion/hitTest.ts'
 import { hitTestMismatch } from '../../features/mismatch/hitTest.ts'
 import { hitTestModification } from '../../features/modification/hitTest.ts'
+import { hitTestFeature } from '../../features/read/hitTest.ts'
 import { hitTestClip } from '../../shared/clipPass.ts'
 
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { CoverageHitResult } from '../../features/coverage/types.ts'
+import type { IndicatorHitResult } from '../../features/indicator/types.ts'
+import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
 import type {
   CigarCoords,
   CigarHitResult,
   ResolvedBlock,
-} from './hitTesting.ts'
-import type { CoverageHitResult } from '../../features/coverage/types.ts'
-import type { IndicatorHitResult } from '../../features/indicator/types.ts'
-import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
+} from '../../shared/hitTestTypes.ts'
 
 export type HitTestResult =
   | { type: 'indicator'; hit: IndicatorHitResult; resolved: ResolvedBlock }
@@ -46,6 +47,27 @@ export type HitTestResult =
 // Above ~50kbp visible region (2000px / 50000bp = 25), per-base detail is
 // too zoomed out to be meaningful.
 export const SNP_HIT_MAX_BP_PER_PX = 25
+
+// Hit test for a chain (linked-read group) using the Flatbush spatial index
+// built during chain layout. Returns the first read in the hit chain.
+function hitTestChain(
+  coords: CigarCoords | undefined,
+  rpcData: PileupDataResult | undefined,
+) {
+  if (!coords || !rpcData?.chainFlatbush || !rpcData.chainFirstReadIndices) {
+    return undefined
+  }
+  const { adjustedY, genomicPos, row } = coords
+  if (adjustedY < 0) {
+    return undefined
+  }
+  const hits = rpcData.chainFlatbush.search(genomicPos, row, genomicPos, row)
+  if (hits.length === 0) {
+    return undefined
+  }
+  const readIdx = rpcData.chainFirstReadIndices[hits[0]!]!
+  return { id: rpcData.readIds[readIdx]!, index: readIdx }
+}
 
 export interface HitTestOptions {
   showCoverage: boolean

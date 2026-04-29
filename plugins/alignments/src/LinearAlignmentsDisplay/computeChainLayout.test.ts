@@ -453,8 +453,8 @@ describe('buildChainConnectingData', () => {
     })
     const readYs = new Uint16Array([0])
     const out = buildChainConnectingData(data, readYs)
-    expect(out.chainFlatbushData).toBeDefined()
-    expect(out.chainFlatbushData!.byteLength).toBeGreaterThan(0)
+    expect(out.chainFlatbush).toBeDefined()
+    expect(out.chainFlatbush!.numItems).toBeGreaterThan(0)
   })
 
   test('line uses absolute chain extents, GPU scissor handles off-screen clipping', () => {

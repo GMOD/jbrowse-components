@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { computePileupBezierArcs } from './computePileupArcs.ts'
+import { computePileupBezierArcs } from '../../features/arcs/computeOverlay.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

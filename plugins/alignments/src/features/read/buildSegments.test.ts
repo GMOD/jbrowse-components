@@ -1,4 +1,4 @@
-import { buildSegmentArrays } from './buildArrays.ts'
+import { buildSegmentArrays } from './buildSegments.ts'
 
 import type { FeatureData, GapData } from '../../shared/webglRpcTypes.ts'
 

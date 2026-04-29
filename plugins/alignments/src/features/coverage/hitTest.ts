@@ -1,5 +1,5 @@
 import type { CoverageHitResult } from './types.ts'
-import type { ResolvedBlock } from '../../LinearAlignmentsDisplay/components/hitTesting.ts'
+import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 
 // Find the first significant position in [binStart, binEnd). "Significant"
 // = at least `threshold` fraction of reads at that position, relative to

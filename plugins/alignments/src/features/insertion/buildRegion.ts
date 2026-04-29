@@ -1,4 +1,4 @@
-import type { CigarUploadData } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+import type { CigarUploadData } from '../../shared/uploadTypes.ts'
 
 // Empty TypedArrays must be allocated per-call: the worker transfers their
 // underlying ArrayBuffers, which detaches them. Module-level singletons
