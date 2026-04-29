@@ -243,10 +243,6 @@ export async function executeVariantCellData({
   // sampleInfo we just computed. Sources from clustering already have HP.
   let effectiveSources = sources
   if (renderingMode === 'phased' && sources.some(s => s.HP === undefined)) {
-    console.log(
-      '[executeVariantCellData] expanding sources for phased mode, sampleInfo:',
-      JSON.stringify(sampleInfo),
-    )
     effectiveSources = sources.flatMap(s => {
       if (s.HP !== undefined) {
         return [s]

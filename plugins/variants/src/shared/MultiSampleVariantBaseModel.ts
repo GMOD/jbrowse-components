@@ -258,12 +258,6 @@ export default function MultiSampleVariantBaseModelF(
     }))
     .actions(self => ({
       setCellData(data: CellDataResult | undefined) {
-        console.log(
-          '[MultiVariantDisplay] setCellData',
-          data
-            ? JSON.stringify({ mode: data.mode, sampleCount: Object.keys(data.sampleInfo).length })
-            : 'undefined',
-        )
         self.cellData = data
         if (self.pendingClusterTree !== undefined) {
           self.clusterTree = self.pendingClusterTree
@@ -994,7 +988,6 @@ export default function MultiSampleVariantBaseModelF(
     }))
     .actions(self => ({
       clearDisplaySpecificData() {
-        console.log('[MultiVariantDisplay] clearDisplaySpecificData (cellData cleared)')
         // hasPhased / sampleInfo / featuresVolatile are derived from cellData
         // via getters, so clearing cellData clears all of them.
         self.cellData = undefined
@@ -1021,7 +1014,6 @@ export default function MultiSampleVariantBaseModelF(
       async fetchNeeded(
         _needed: { region: Region; displayedRegionIndex: number }[],
       ) {
-        console.log('[MultiVariantDisplay] fetchNeeded, sources count:', self.rpcProps.sources?.length)
         if (self.isMinimized || !self.rpcProps.sources) {
           return
         }
