@@ -586,9 +586,8 @@ export default function MultiSampleVariantBaseModelF(
        * #getter
        */
       get nrow() {
-        // sources can be empty in phased mode before sampleInfo arrives; fall
-        // back to sourcesVolatile count so we don't divide by zero in rowHeight
-        return self.sources?.length || self.sourcesVolatile?.length || 1
+        // || 1 guards against subtreeFilter excluding all sources
+        return self.sources?.length || 1
       },
 
       /**
