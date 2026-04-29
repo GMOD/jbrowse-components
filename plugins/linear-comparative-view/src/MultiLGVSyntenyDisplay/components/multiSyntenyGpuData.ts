@@ -1,7 +1,5 @@
 import {
   InstanceBuilder,
-  downsampleMinMax,
-  packSnpSegmentsForGpu,
   visitCigarOps,
   visitCsOps,
 } from '@jbrowse/alignments-core'
@@ -11,15 +9,10 @@ import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
 import {
-  FIELD_OFFSET_F32 as COVERAGE_FIELD,
-  INSTANCE_STRIDE_F32 as COVERAGE_STRIDE,
-} from '../shaders/multiSyntenyCoverage.generated.ts'
-import {
   FIELD_OFFSET_F32 as FILL_FIELD,
   INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE,
   INSTANCE_STRIDE_F32 as FILL_STRIDE,
 } from '../shaders/multiSyntenyFill.generated.ts'
-import { INSTANCE_STRIDE_BYTES as INDICATOR_STRIDE_BYTES } from '../shaders/multiSyntenyIndicator.generated.ts'
 
 import type { SyntenyColors } from '../shared/types.ts'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
@@ -36,11 +29,6 @@ export interface BlockRenderParams {
   bpRangeLen: number
   regionScreenLeft: number
   regionScreenWidth: number
-}
-
-export interface BlockCoverageUploadData {
-  buffer: ArrayBuffer
-  binCount: number
 }
 
 function buildColorArrays(colors: SyntenyColors) {
@@ -212,82 +200,6 @@ export function computeBlockRenderParams(
     regionScreenLeft,
     regionScreenWidth,
   }
-}
-
-// Pack per-bp coverage depths into a GPU buffer for a single block.
-// Returns downsampled min/max bands: [position: f32, minDepth: f32, maxDepth: f32] per bin.
-export function packCoverageForGpu(
-  depths: Float32Array,
-  startOffset: number,
-  maxDepth: number,
-  viewWidthPx = 2000,
-): BlockCoverageUploadData {
-  if (maxDepth === 0 || depths.length === 0) {
-    return { buffer: new ArrayBuffer(0), binCount: 0 }
-  }
-
-  const ds = downsampleMinMax(depths, startOffset, viewWidthPx, maxDepth)
-  if (ds.count === 0) {
-    return { buffer: new ArrayBuffer(0), binCount: 0 }
-  }
-
-  const buffer = new ArrayBuffer(ds.count * COVERAGE_STRIDE * 4)
-  const f32 = new Float32Array(buffer)
-  for (let i = 0; i < ds.count; i++) {
-    const o = i * COVERAGE_STRIDE
-    // Store absolute genome coordinates so the shader can map bins to
-    // any content block by subtracting block.start (bpRangeHi+bpRangeLo)
-    f32[o + COVERAGE_FIELD.position] = ds.positions[i]!
-    f32[o + COVERAGE_FIELD.minDepth] = ds.mins[i]!
-    f32[o + COVERAGE_FIELD.maxDepth] = ds.maxs[i]!
-  }
-
-  return { buffer, binCount: ds.count }
-}
-
-export interface BlockSnpUploadData {
-  buffer: ArrayBuffer
-  segmentCount: number
-}
-
-// Pack SNP coverage segments for GPU upload.
-// Positions are absolute genome coordinates from the worker.
-export function packSnpCoverageForGpu(
-  snpPositions: Uint32Array,
-  snpYOffsets: Float32Array,
-  snpHeights: Float32Array,
-  snpColorTypes: Uint8Array,
-  snpCount: number,
-): BlockSnpUploadData {
-  return packSnpSegmentsForGpu(
-    snpPositions,
-    snpYOffsets,
-    snpHeights,
-    snpColorTypes,
-    snpCount,
-  )
-}
-
-export interface BlockIndicatorUploadData {
-  buffer: ArrayBuffer
-  indicatorCount: number
-}
-
-export function packIndicatorsForGpu(
-  indicatorPositions: Uint32Array,
-  numIndicators: number,
-): BlockIndicatorUploadData {
-  if (numIndicators === 0) {
-    return { buffer: new ArrayBuffer(0), indicatorCount: 0 }
-  }
-
-  const buffer = new ArrayBuffer(numIndicators * INDICATOR_STRIDE_BYTES)
-  const f32 = new Float32Array(buffer)
-  for (let i = 0; i < numIndicators; i++) {
-    f32[i] = indicatorPositions[i]!
-  }
-
-  return { buffer, indicatorCount: numIndicators }
 }
 
 export { INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE } from '../shaders/multiSyntenyFill.generated.ts'

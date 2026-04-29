@@ -14,12 +14,12 @@ import type {
   MultiSyntenyRenderState,
 } from './rendererTypes.ts'
 import type {
-  BlockCoverageUploadData,
   BlockGeometryData,
-  BlockIndicatorUploadData,
   BlockRenderParams,
-  BlockSnpUploadData,
 } from './multiSyntenyGpuData.ts'
+import type { BlockCoverageUploadData } from '../features/coverage/packGpu.ts'
+import type { BlockIndicatorUploadData } from '../features/indicator/packGpu.ts'
+import type { BlockSnpUploadData } from '../features/snpCoverage/packGpu.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 

@@ -2,11 +2,8 @@ import {
   coverageLayout,
   downsampleMinMax,
   drawCigarOps,
-  drawCoverageBins,
   drawCsOps,
   drawIndicatorTriangle,
-  drawIndicators,
-  drawSnpSegments,
   getDevicePixelRatio,
   snpColorForType,
 } from '@jbrowse/alignments-core'
@@ -15,6 +12,9 @@ import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
 import { computeBlockRenderParams } from './multiSyntenyGpuData.ts'
+import { drawCoverageCanvas } from '../features/coverage/drawCanvas.ts'
+import { drawIndicatorCanvas } from '../features/indicator/drawCanvas.ts'
+import { drawSnpCoverageCanvas } from '../features/snpCoverage/drawCanvas.ts'
 import {
   FIELD_OFFSET_F32 as FILL_FIELD,
   INSTANCE_STRIDE_F32 as FILL_STRIDE,
@@ -30,12 +30,10 @@ import type {
   MultiSyntenyCanvasRenderOpts,
   MultiSyntenyRenderState,
 } from './rendererTypes.ts'
-import type {
-  BlockCoverageUploadData,
-  BlockGeometryData,
-  BlockIndicatorUploadData,
-  BlockSnpUploadData,
-} from './multiSyntenyGpuData.ts'
+import type { BlockGeometryData } from './multiSyntenyGpuData.ts'
+import type { BlockCoverageUploadData } from '../features/coverage/packGpu.ts'
+import type { BlockIndicatorUploadData } from '../features/indicator/packGpu.ts'
+import type { BlockSnpUploadData } from '../features/snpCoverage/packGpu.ts'
 import type { SyntenyColors } from '../shared/types.ts'
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -423,52 +421,36 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
         params.regionScreenLeft +
         ((absBp - block.start) / params.bpRangeLen) * params.regionScreenWidth
 
-      // Shared drawing functions from @jbrowse/alignments-core
-      if (
-        coverageHeight > 0 &&
-        region.coverage &&
-        region.coverage.binCount > 0
-      ) {
-        drawCoverageBins(
-          ctx,
-          region.coverage.buffer,
-          region.coverage.binCount,
-          d => d,
-          coverageHeight,
-          palette.coverageColorHex,
-          bpToX,
-          width,
-        )
-      }
-      if (coverageHeight > 0 && region.snp && region.snp.segmentCount > 0) {
-        drawSnpSegments(
-          ctx,
-          region.snp.buffer,
-          region.snp.segmentCount,
-          1,
-          coverageHeight,
-          palette.syntenyColors,
-          bpToX,
-          width,
-        )
-      }
-      if (
-        coverageHeight > 0 &&
-        region.indicators &&
-        region.indicators.indicatorCount > 0
-      ) {
-        drawIndicators(
-          ctx,
-          region.indicators.buffer,
-          region.indicators.indicatorCount,
-          {
-            insertion: palette.syntenyColors.insertion,
-            softclip: palette.syntenyColors.insertion,
-            hardclip: palette.syntenyColors.insertion,
-          },
-          bpToX,
-          width,
-        )
+      if (coverageHeight > 0) {
+        if (region.coverage) {
+          drawCoverageCanvas(
+            ctx,
+            region.coverage,
+            bpToX,
+            width,
+            coverageHeight,
+            palette.coverageColorHex,
+          )
+        }
+        if (region.snp) {
+          drawSnpCoverageCanvas(
+            ctx,
+            region.snp,
+            bpToX,
+            width,
+            coverageHeight,
+            palette.syntenyColors,
+          )
+        }
+        if (region.indicators) {
+          drawIndicatorCanvas(
+            ctx,
+            region.indicators,
+            bpToX,
+            width,
+            palette.syntenyColors.insertion,
+          )
+        }
       }
 
       // Geometry instances

@@ -3,9 +3,9 @@ import { makeContentBlock } from '@jbrowse/core/util/blockTypes'
 
 import {
   computeBlockRenderParams,
-  packCoverageForGpu,
   prepareBlockGeometry,
 } from './multiSyntenyGpuData.ts'
+import { packCoverageForGpu } from '../features/coverage/packGpu.ts'
 import {
   FIELD_OFFSET_F32 as FILL_FIELD,
   INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE,
