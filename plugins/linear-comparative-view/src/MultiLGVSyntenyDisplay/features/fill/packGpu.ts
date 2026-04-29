@@ -6,12 +6,12 @@ import {
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
-import { getFeatureColor } from '../../components/multiSyntenyColorUtils.ts'
 import {
   FIELD_OFFSET_F32 as FILL_FIELD,
   INSTANCE_STRIDE_BYTES as INSTANCE_BYTE_SIZE,
   INSTANCE_STRIDE_F32 as FILL_STRIDE,
 } from '../../shaders/multiSyntenyFill.generated.ts'
+import { getFeatureColor } from '../../shared/colorUtils.ts'
 import { buildGpuOpsVisitor } from '../../shared/extractCigarFeatures.ts'
 import { addInstance, buildColorArrays } from '../../shared/instanceWriter.ts'
 

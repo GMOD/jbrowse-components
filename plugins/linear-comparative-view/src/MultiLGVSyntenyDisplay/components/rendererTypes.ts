@@ -1,10 +1,10 @@
+import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { BlockCoverageUploadData } from '../features/coverage/packGpu.ts'
 import type { BlockGeometryData } from '../features/fill/packGpu.ts'
 import type { BlockIndicatorUploadData } from '../features/indicator/packGpu.ts'
 import type { BlockSnpUploadData } from '../features/snpCoverage/packGpu.ts'
-import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
-import type { BpToPxFn, SyntenyColors } from '../shared/types.ts'
 import type { SyntenyColorPalette } from '../model.ts'
+import type { BpToPxFn, SyntenyColors } from '../shared/types.ts'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 export interface MultiSyntenyRenderState {

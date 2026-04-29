@@ -1,7 +1,6 @@
 import { DEFAULT_CIGAR_OP_DRAW_COLORS as DEFAULT_SYNTENY_COLORS } from '@jbrowse/alignments-core'
 import { makeContentBlock } from '@jbrowse/core/util/blockTypes'
 
-import { packCoverageForGpu } from '../coverage/packGpu.ts'
 import { prepareBlockGeometry } from './packGpu.ts'
 import {
   FIELD_OFFSET_F32 as FILL_FIELD,
@@ -9,6 +8,7 @@ import {
   INSTANCE_STRIDE_F32 as FILL_STRIDE,
 } from '../../shaders/multiSyntenyFill.generated.ts'
 import { computeBlockRenderParams } from '../../shared/blockRenderParams.ts'
+import { packCoverageForGpu } from '../coverage/packGpu.ts'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 

@@ -9,12 +9,12 @@ import {
 } from '@jbrowse/alignments-core'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
-import { getFeatureColor } from './multiSyntenyColorUtils.ts'
 import { drawCoverageCanvas } from '../features/coverage/drawCanvas.ts'
 import { drawFillCanvas } from '../features/fill/drawCanvas.ts'
 import { drawIndicatorCanvas } from '../features/indicator/drawCanvas.ts'
 import { drawSnpCoverageCanvas } from '../features/snpCoverage/drawCanvas.ts'
 import { computeBlockRenderParams } from '../shared/blockRenderParams.ts'
+import { getFeatureColor } from '../shared/colorUtils.ts'
 import {
   BG_COLOR_HEX,
   LABEL_FONT_MAX,
@@ -26,12 +26,12 @@ import type {
   MultiSyntenyCanvasRenderOpts,
   MultiSyntenyRenderState,
 } from './rendererTypes.ts'
+import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { BlockCoverageUploadData } from '../features/coverage/packGpu.ts'
 import type { BlockGeometryData } from '../features/fill/packGpu.ts'
 import type { BlockIndicatorUploadData } from '../features/indicator/packGpu.ts'
 import type { BlockSnpUploadData } from '../features/snpCoverage/packGpu.ts'
 import type { SyntenyColors } from '../shared/types.ts'
-import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 

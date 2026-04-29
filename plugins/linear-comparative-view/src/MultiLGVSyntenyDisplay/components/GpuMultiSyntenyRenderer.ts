@@ -13,11 +13,11 @@ import type {
   MultiSyntenyBackend,
   MultiSyntenyRenderState,
 } from './rendererTypes.ts'
-import type { BlockRenderParams } from '../shared/blockRenderParams.ts'
 import type { BlockCoverageUploadData } from '../features/coverage/packGpu.ts'
 import type { BlockGeometryData } from '../features/fill/packGpu.ts'
 import type { BlockIndicatorUploadData } from '../features/indicator/packGpu.ts'
 import type { BlockSnpUploadData } from '../features/snpCoverage/packGpu.ts'
+import type { BlockRenderParams } from '../shared/blockRenderParams.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 

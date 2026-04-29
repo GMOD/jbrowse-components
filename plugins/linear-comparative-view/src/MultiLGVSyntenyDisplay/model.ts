@@ -27,16 +27,16 @@ import TimelineIcon from '@mui/icons-material/Timeline'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 import { autorun, observable } from 'mobx'
 
-import { LABEL_WIDTH } from './shared/types.ts'
-import { legendItems as legendItemsMap } from './components/multiSyntenyColorUtils.ts'
-import { packCoverageForGpu } from './features/coverage/packGpu.ts'
-import { prepareBlockGeometry } from './features/fill/packGpu.ts'
-import { packIndicatorsForGpu } from './features/indicator/packGpu.ts'
-import { packSnpCoverageForGpu } from './features/snpCoverage/packGpu.ts'
 import {
   getGlobalMaxDepth,
   mergeGenomeRows,
 } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
+import { packCoverageForGpu } from './features/coverage/packGpu.ts'
+import { prepareBlockGeometry } from './features/fill/packGpu.ts'
+import { packIndicatorsForGpu } from './features/indicator/packGpu.ts'
+import { packSnpCoverageForGpu } from './features/snpCoverage/packGpu.ts'
+import { legendItems as legendItemsMap } from './shared/colorUtils.ts'
+import { LABEL_WIDTH } from './shared/types.ts'
 
 import type { SyntenyRegionData } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { MultiSyntenyBackend } from './components/rendererTypes.ts'
