@@ -11,8 +11,10 @@ export function isBedMethylFeature({
   end: number
 }) {
   return (
-    +(splitLine[6] || 0) === start &&
-    +(splitLine[7] || 0) === end &&
+    splitLine[6] !== undefined &&
+    +splitLine[6] === start &&
+    splitLine[7] !== undefined &&
+    +splitLine[7] === end &&
     [9, 10, 11, 12, 13, 14, 15, 16, 17].every(
       r => splitLine[r] && !Number.isNaN(+splitLine[r]),
     )

@@ -14,8 +14,8 @@ import {
 import type { MinimalFeature } from './types.ts'
 import type BED from '@gmod/bed'
 
-function defaultParser(fields: string[], splitLine: string[]) {
-  const obj = {} as Record<string, string>
+function defaultParser(fields: string[], splitLine: string[]): BedData {
+  const obj: Record<string, string> = {}
   let hasBlockCount = false
 
   for (const [i, element] of splitLine.entries()) {
@@ -49,10 +49,10 @@ function defaultParser(fields: string[], splitLine: string[]) {
       thickStart: thickStart ? +thickStart : undefined,
       thickEnd: thickEnd ? +thickEnd : undefined,
       blockCount: blockCount ? +blockCount : undefined,
-    } as Record<string, unknown>
+    }
   }
 
-  return obj
+  return obj as BedData
 }
 
 export function makeBlocks({
@@ -151,6 +151,22 @@ export function parseStrand(strand: unknown) {
   return 0
 }
 
+interface BedData {
+  strand?: string | number
+  score?: string | number
+  chrom?: string
+  chromStart?: number | string
+  chromEnd?: number | string
+  description?: string
+  blockCount?: number
+  chromStarts?: number[]
+  blockSizes?: number[]
+  blockStarts?: number[]
+  thickStart?: number
+  thickEnd?: number
+  [key: string]: unknown
+}
+
 export interface FeatureData {
   uniqueId: string
   refName: string
@@ -195,9 +211,9 @@ export function featureData2({
     })
   }
 
-  const data = names
+  const data: BedData = names
     ? defaultParser(names, splitLine)
-    : parser.parseLine(splitLine, { uniqueId })
+    : (parser.parseLine(splitLine, { uniqueId }) as BedData)
   const {
     strand: strand2,
     score: score2,
@@ -208,7 +224,7 @@ export function featureData2({
   } = data
 
   const score = scoreColumn
-    ? +data[scoreColumn]
+    ? +(data[scoreColumn] as string | number)
     : score2 !== undefined
       ? +score2
       : undefined

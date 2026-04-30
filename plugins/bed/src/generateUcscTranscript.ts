@@ -62,20 +62,7 @@ interface UcscTranscriptInput {
   [key: string]: unknown
 }
 
-interface UcscTranscriptOutput {
-  uniqueId: string
-  strand: number
-  type: string
-  refName: string
-  start: number
-  end: number
-  subfeatures: MinimalFeature[]
-  [key: string]: unknown
-}
-
-export function generateUcscTranscript(
-  data: UcscTranscriptInput,
-): UcscTranscriptOutput {
+export function generateUcscTranscript(data: UcscTranscriptInput) {
   const { strand = 0, uniqueId, start, end, ...rest } = data
   const {
     subfeatures: oldSubfeatures,
