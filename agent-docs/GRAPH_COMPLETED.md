@@ -121,6 +121,24 @@ of truth for the *current* state of the work is still
   ~25 MB vs 91 MB plaintext (73% reduction). Implementation deferred
   per user steer; format spec is now ready for a future agent to
   ship.
+- ✅ **Refactor: cache reverse assemblyNameMap; partition helper;
+  drop bubbles try/catch swallow** — `BaseGfaTabixAdapter` now
+  builds the forward + reverse name maps once in its constructor;
+  `resolveTabixRefName` does an O(1) reverse lookup instead of
+  iterating `Object.entries(map)` per region; `remapGenome` and
+  `getChromSizes` skip per-call `getConf`; `annotateFeaturesWithBubbleCs`
+  receives the prebuilt reverse map directly so it no longer rebuilds
+  per query (HPRC chr20: 1 build per query × 90 paths previously).
+  Extracted `partitionByRef` helper that walks `allSegs` once and
+  returns `{refSegments, otherSegments, refByOrd}`; replaces the
+  inline three-step partition in `getMultiPairFeaturesFromSegments`.
+  Removed the swallowing `try/catch` around bubbles header parse —
+  if the file opened it should parse, and silent fallback hid real
+  errors. Behavior-equivalent; 70 GfaTabix tests + clean tsgo.
+  Architecture doc `GRAPH_ARCHITECTURE.md` updated with a "Fragile
+  boundaries → BaseGfaTabixAdapter abstraction" subsection pinning
+  the abstract-base / single-shard / sharded contract so a future
+  agent doesn't try to flatten it.
 
 ## Resolved Findings (from GRAPH_AUDIT.md)
 

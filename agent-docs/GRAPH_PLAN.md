@@ -206,61 +206,65 @@ next steps" pointers — don't accumulate ✅ entries here.
 Ordered by expected-value-per-effort. Re-rank when something new
 surfaces.
 
-1. **Multi-resolution / coarsened graph index for megabase scale.**
+1. **Phase 4 snarls index.** `prefix.snarls.bed.gz` from `vg snarls`
+   output, with parent-child snarl hierarchy. Promoted to top because
+   it's the gating item for the **C3 chr20 path-symmetry claim** (see
+   item 4 — chr20 needs snarl-aware expansion since strict
+   byte-isomorphism doesn't hold there) and unlocks: (a) the
+   snarl-boundary context-expansion default (currently `context` only
+   supports fixed-k), (b) zoom-to-snarl UX in GraphGenomeView, (c) the
+   snarl-collapse tier of multi-resolution coarsening, (d) the full
+   Phase 6 polish. Schema pinned in `GRAPH_INDEX_FORMAT.md:179-194`.
+   Largest single lift in the backlog but the highest leverage —
+   without it the headline figure at chr20 has no path-symmetry
+   measurement.
+2. **Multi-resolution / coarsened graph index for megabase scale.**
    Today's per-segment extraction is unusable past ~1 Mbp (chr20
    audit at 5 Mbp emits 434 K paths and the GraphRenderer geometry
-   rebuild stalls). The `maxPathsEmitted` cap (now shipped) prevents
-   the worst-case stall but does not produce a *useful* zoomed-out
-   view — it just truncates. The full fix is a multi-resolution layer
-   with snarl-collapse / tile-pyramid / haplotype-thinning detail
-   levels, dispatched on region size. The headline experiment
-   (sub-100 kb, bubble detail) is unaffected; this work makes the
-   *zoomed-out* flow functional — synteny display at low zoom,
-   import-form launch with a multi-megabase region. Design section:
-   "Multi-resolution / coarsened views for megabase scale" below.
-   Snarl-collapse tier depends on Phase 4; tile-pyramid is
-   independent and the cheapest first ship.
-2. **F3 binary-tier implementation.** Format pinned in
+   rebuild stalls). The `maxPathsEmitted` cap (shipped) prevents the
+   worst-case stall but does not produce a *useful* zoomed-out view
+   — it just truncates. Full fix: multi-resolution layer with
+   snarl-collapse / tile-pyramid / haplotype-thinning detail levels,
+   dispatched on region size. Headline experiment (sub-100 kb,
+   bubble detail) is unaffected; this makes the zoomed-out flow
+   functional — synteny display at low zoom, import-form launch with
+   a multi-megabase region. Design section below ("Multi-resolution
+   / coarsened views for megabase scale"). Tile-pyramid is independent
+   of Phase 4 and the cheapest first ship; snarl-collapse depends on
+   item 1.
+3. **Bubble-row regrouping at preprocess time.** Today
+   `bubbles.bed.gz` ships one row per `(locus, alleleA, alleleB)`
+   pair; runtime `bubbleOverlay.ts:fetchBubbleSites` groups rows
+   sharing `(start, end)` into per-site `BubbleSite` records on every
+   region query. The Rust preprocessor already has the per-site
+   shape internally before splitting on emit — flipping the emit step
+   is a ~20-line change in `tools/gfa-to-tabix/src/main.rs` and
+   deletes ~50 LOC of `bubbleOverlay.ts` (`parseBubbleLine` + the
+   grouping pass). Pre-publication is the cheap moment for the
+   schema break; post-publication v1 must keep working forever per
+   the format-spec compatibility policy. Schema impact documented in
+   `GRAPH_ARCHITECTURE.md` "On-disk-shape opportunity" and the
+   `GRAPH_INDEX_FORMAT.md` bubbles-bed section. **Cost:** Rust patch
+   + regenerate every fixture in `prepare-fixtures.sh` + re-upload
+   chr20/chrM bubble files to S3.
+4. **F3 binary-tier implementation.** Format pinned in
    `agent-docs/GRAPH_INDEX_FORMAT.md` (Option A: 2-bit ACGT +
    per-segment N-bitmap). Spike result on chr20: 67.66 Mbp segment
    sequence, 0.74% N, no IUPAC. Predicted footprint ~25 MB vs 91 MB
    plaintext. Implementation: rust preprocessor emits
    `prefix.segments.seq.bin` + `prefix.segments.seq.bin.idx`; adapter
    detects via `SEQB` magic and unpacks; new config slot
-   `seqBinaryLocation`.
-3. **C3 chr20 path-symmetry investigation.** Smoke-tested on chr20
-   (see `agent-docs/GRAPH_AUDIT.md` § chr20 finding) — strict
-   byte-isomorphism does not hold for chr20 because heterozygous
-   samples visit different alleles at variant positions. The right
-   measurement is union-of-subgraphs invariance, which requires
-   snarl-aware expansion (Phase 4). For now the chrM result stands
-   as the clean-symmetric demonstration; chr20 needs Phase 4.
-4. **Phase 4 snarls index.** `prefix.snarls.bed.gz` from `vg snarls`
-   output, with parent-child snarl hierarchy. Unlocks (a) the
-   snarl-boundary context-expansion default (currently `context` only
-   supports fixed-k), (b) zoom-to-snarl UX in GraphGenomeView, (c) the
-   snarl-collapse tier of backlog item 1, (d) the full Phase 6 polish,
-   (e) the chr20 path-symmetry measurement. Bigger lift.
-5. **Phase 5 CI integration — pipeline wiring.** Jest concordance and
-   path-symmetry tests shipped in
-   `plugins/comparative-adapters/.../auditConcordance.test.ts` (skip
-   when `vg` is missing). Remaining: provision `vg ≥ 1.59.0` (and
-   `odgi`, `chunkix`) in CI so the suite runs by default rather than
-   skipping — likely a docker container or apt install in the
-   workflow YAML.
+   `seqBinaryLocation`. Supplementary footprint claim — not gating.
+5. **Phase 5 CI provisioning.** Jest concordance and path-symmetry
+   tests shipped in
+   `plugins/comparative-adapters/src/GfaTabixAdapter/auditConcordance.test.ts`
+   (skip when `vg` is missing). Remaining: provision `vg ≥ 1.59.0`
+   (and `odgi`, `chunkix`) in CI so the suite runs by default rather
+   than skipping — likely a docker container or apt install in the
+   workflow YAML. Mechanical, not gating publication.
 
 ### Surfaced issues (track but not blocking)
 
-- **Megabase-scale viewing requires coarsening** — chr20 region
-  queries past ~1 Mbp emit so much detail (segments, edges, paths)
-  that both the network round-trip and the GraphRenderer geometry
-  rebuild become unusable. The 5 Mbp test ran but felt borderline.
-  The shipped `maxPathsEmitted` cap (default 50000 in the
-  GraphGenomeView caller) prevents the worst case but produces a
-  truncated rather than coarsened view. Backlog item 2 drives the
-  multi-resolution design — in the interim, the truncation fallback
-  is the user-visible behavior. Affects MultiLGVSyntenyDisplay at low
-  zoom and import-form large-region entry points equally.
 - **Rust preprocessor RSS at chr20 scale** — 7.9 GB peak. Streaming
   the FASTA out during the S-line pass (instead of buffering
   `seg_seqs` in memory) would shave ~200 MB but isn't urgent for
@@ -269,27 +273,33 @@ surfaces.
   biggest single file; per-(seg,path,offset) record duplication is
   inherent. A binary tier here (delta-coded offsets per path?) could
   cut this in half but is out of scope until Phase 8 perf work.
+- **`loadBinaryIndex` eager-loads the full `.idx`** — see
+  `gfaBinaryIO.ts:79`. Acceptable up to chr20 scale (`segments.idx`
+  for chr20 is ~30 MB) but is the ceiling on indexing whole-HPRC at
+  once. Range-fetched `.idx` (read only the byte-offset entries
+  needed for the current ordinal ranges) is the principled fix and
+  is a natural prerequisite for the sharded variant ramping up.
+  Phase 8 territory.
 - **`assemblyNameMap` mismatch on the GfaAdapter** path (the
   non-tabix variant) — `project_graph_view_launch.md` documents this
   as a "known issue, production uses GfaTabix so it's usually fine."
 
-### Files uploaded (S3) — chr20 (2026-04-30)
+### Files uploaded (S3) — chr20
 
-For `s3://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/`, the new
-`hprc-v1.1-mc-grch38-chr20.*` files have been refreshed with the
-F1/F6 fixes (uploaded 2026-04-30). `pos.bed.gz` does **not** yet
-include the `#input-format=` header — see backlog item 2 for the
-re-index follow-up. Files on S3:
-- `pos.bed.gz` + `.tbi` (rebuilt with F1 fix)
-- `segments.bin` + `.idx` (rebuilt with F6 fix)
-- `edges.bin` + `.idx` (rebuilt with F1 fix)
-- `segments.seq.fa` + `.idx` (Phase 1 plaintext, new)
-- `segments.seq.fa.fai` (samtools-compat sidecar, new)
+For `s3://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/`, the
+`hprc-v1.1-mc-grch38-chr20.*` files include the F1/F6 fixes plus the
+`#input-format=walks` header re-index. Files on S3:
+- `pos.bed.gz` + `.tbi`
+- `segments.bin` + `.idx`
+- `edges.bin` + `.idx`
+- `segments.seq.fa` + `.idx` + `.fa.fai`
 
 Same set for `hprc-v1.1-mc-grch38-chrM.*`. The remote
-`config_hprc_chr20.json` uses `prefix:` shorthand that already
-expands the new locations via `configSchema.preProcessSnapshot`, so
-no config change needed once the files are live.
+`config_hprc_chr20.json` uses `prefix:` shorthand that expands the
+locations via `configSchema.preProcessSnapshot`. **Bubbles file is
+not yet on S3** — uploads will happen alongside backlog item 3
+(per-site bubble schema) so we don't ship the per-pair shape and
+then immediately re-upload.
 
 ## Multi-resolution / coarsened views for megabase scale (planned)
 
@@ -507,41 +517,69 @@ You now have running infrastructure. The next thing to read is
 
 ### Plumbing (already wired)
 
-- `LinearSyntenyRPC/GetSubgraph.ts:23-60` — RPC entry; calls
-  `adapter.getSubgraph(region)`.
-- `GraphGenomeView/model.ts:535-569` — `loadFromTabixSubgraph` action;
+- `LinearSyntenyRPC/GetSubgraph.ts` — RPC entry; calls
+  `adapter.getSubgraph(region, opts)`.
+- `GraphGenomeView/model.ts:549` — `loadFromTabixSubgraph` action;
   consumes GFA text, runs through gfaParser/gfaConverter, lays out and
-  renders.
+  renders. Uses Bandage-tuned scaling overrides for tabix-subgraph
+  loads only.
 - `GfaTabixAdapter.getSubgraph` at
-  `plugins/comparative-adapters/src/GfaTabixAdapter/gfaTabixUtils.ts:333-370`
-  — entry point on the adapter side; routes to one of two builders.
+  `plugins/comparative-adapters/src/GfaTabixAdapter/gfaTabixUtils.ts:437`
+  — entry point on the adapter side; routes to one of two builders
+  based on whether `edgesLocation` is configured.
 
 ### Static index files emitted by `tools/gfa-to-tabix/src/main.rs`
 
 - `prefix.pos.bed.gz` — tabix-indexed segment positions per path. Schema in
-  the file header (`#genomes=`, `#sizes=`, `#paths=`).
+  the file header (`#genomes=`, `#sizes=`, `#paths=`, `#input-format=`).
 - `prefix.segments.bin` — fixed 15-byte records, ordinal-keyed:
   `segOrd:u32 | pathNameIdx:u16 | offset:u32 | segLen:u32 | orient:u8`.
+  Magic `SEGB` + version u32 header.
 - `prefix.segments.idx` — byte-offset table for ordinal lookup
-  (`BigUint64Array`, eager-loaded; this is acceptable but documented as a
-  bound on scaling — see format spec).
-- `prefix.edges.bin` / `.idx` — ordinal-keyed adjacency (when graph has L
-  lines).
-- `prefix.bubbles.bed.gz` — per-pair bubble CS rows from `vg deconstruct`
-  VCF. Schema: `path | start | end | alleleA | alleleB | identity | cs |
-  genomesA | genomesB`. (This is supporting infra for Phase 7 — but it
-  exists today.)
+  (`BigUint64Array`, eager-loaded; ceiling on whole-pangenome scaling —
+  see format spec). Magic `SEGI` + version u32 header.
+- `prefix.edges.bin` / `.idx` — ordinal-keyed adjacency. Magic `EDGB` /
+  `EDGI`.
+- `prefix.segments.seq.fa` + `.fai` + `.idx` — Phase 1 plaintext
+  sequence tier (binary `SEQB` tier still pending, format pinned).
+- `prefix.bubbles.bed.gz` — per-pair bubble CS rows from `vg deconstruct`.
+  Today's schema: `path | start | end | alleleA | alleleB | identity | cs |
+  genomesA | genomesB`. **Note:** backlog item 3 will rewrite this to
+  per-locus rows pre-publication; the runtime grouping pass becomes
+  redundant.
 - `prefix.vcf.gz` — rewritten `vg deconstruct` VCF (PanSN-stripped).
 
 ### Subgraph builders
 
 `plugins/comparative-adapters/src/GfaTabixAdapter/gfaSubgraphBuilders.ts`:
 
-- `buildGfaFromEdges` (lines 5-49): preferred path when `edges.bin` exists.
-  Walks edges 1 step from seed `viewportRefOrds`, adds neighbor segments,
-  emits `H` + `S` + `L` lines.
-- `buildGfaFromPathInference` (lines 51-159): fallback when no edges file.
-  Uses path co-traversal to derive links. Emits `H` + `S` + `L` + `P` lines.
+- `buildGfaFromEdges` (line 154): preferred path when `edges.bin`
+  exists. BFS k hops from seed `viewportRefOrds` through the edge
+  shard, backfills cross-edges, emits `H` + `S` + `L` + `P|W` lines
+  via the shared `assembleGfa` emitter.
+- `buildGfaFromPathInference` (line 286): fallback when no edges file.
+  Used by `ShardedGfaTabixAdapter`'s `getSubgraph` since the sharded
+  configSchema deliberately has no `edgesLocation` slot. Uses path
+  co-traversal to derive links. Emits `H` + `S` + `L` + `P|W` lines
+  via the same emitter.
+
+### Adapter abstraction
+
+`BaseGfaTabixAdapter` (`gfaTabixUtils.ts`) is abstract on exactly
+one method, `getSegsForOrdinals(ranges)`. Two concrete subclasses:
+
+- `GfaTabixAdapter` — single segments shard. The default for
+  publication-scale fixtures.
+- `ShardedGfaTabixAdapter` (in `plugins/comparative-adapters/src/ShardedGfaTabixAdapter/`)
+  — per-genome shards, queried in parallel. Optimized for
+  HPRC-pangenome `getMultiPairFeatures`. No edges/snarls support;
+  `getSubgraph` falls back to path-inferred adjacency.
+
+The forward + reverse `assemblyNameMap` is cached once on the base
+class instance; `bubbleOverlay.ts` receives the reverse map directly
+to avoid per-query rebuilds. See `agent-docs/GRAPH_ARCHITECTURE.md`
+"Fragile boundaries" → "BaseGfaTabixAdapter abstraction" for the
+contract that pins this seam.
 
 ## Likely gaps vs `vg find` — historical (most resolved)
 
@@ -1246,32 +1284,48 @@ Each artifact maps to a Claim listed at the top.
 ### Adapter side
 
 - `plugins/comparative-adapters/src/GfaTabixAdapter/gfaTabixUtils.ts`
-  — `BaseGfaTabixAdapter` class, `getSubgraph` at line 333.
+  — `BaseGfaTabixAdapter` class. `getSubgraph` at line 437; the
+  `partitionByRef` helper that splits a region's segments into
+  ref/other buckets is the single point of variance for the synteny
+  feature path.
+- `plugins/comparative-adapters/src/GfaTabixAdapter/GfaTabixAdapter.ts`
+  — concrete single-shard subclass.
+- `plugins/comparative-adapters/src/ShardedGfaTabixAdapter/`
+  — concrete sharded subclass (per-genome shards). Has its own
+  configSchema; consumes the rust tool's `--sharded` output via
+  `prefix.segments.manifest.json`.
 - `plugins/comparative-adapters/src/GfaTabixAdapter/gfaSubgraphBuilders.ts`
-  — `buildGfaFromEdges`, `buildGfaFromPathInference`.
+  — `buildGfaFromEdges` (line 154), `buildGfaFromPathInference`
+  (line 286). Shared `assembleGfa` emitter.
 - `plugins/comparative-adapters/src/GfaTabixAdapter/gfaBinaryIO.ts`
   — segment + edge binary record parsing, ordinal lookups.
   - Note: `loadBinaryIndex` (line 79) eager-loads the entire idx file.
-    Document in format spec.
+    Documented in format spec; surfaced as Phase 8 item.
+- `plugins/comparative-adapters/src/GfaTabixAdapter/bubbleOverlay.ts`
+  — bubble pipeline: `parseBubbleLine` + `fetchBubbleSites` group
+  per-pair rows into per-site `BubbleSite` records;
+  `buildCsFromCigarAndSites` walks CIGAR + sites in lockstep;
+  `findBubblePair` resolves which CS applies to a (refGenome,
+  queryGenome) pair. Backlog item 3 deletes the grouping pass.
 - `plugins/comparative-adapters/src/GfaTabixAdapter/segmentFeatureBuilder.ts`
-  — synteny feature CIGAR construction (separate from subgraph; touches
-  Phase 7).
+  — synteny feature CIGAR construction. The X-CIGAR contract for
+  equal-length segment swaps is documented in
+  `GRAPH_ARCHITECTURE.md` "Fragile boundaries".
 - `plugins/comparative-adapters/src/GfaTabixAdapter/configSchema.ts`
   — adapter config schema. Add new file locations here as Phase 1+ adds
-  them (`segmentsSeqLocation`, `snarlsLocation`).
+  them (`seqBinaryLocation`, `snarlsLocation`).
 
 ### RPC + graph view
 
 - `plugins/linear-comparative-view/src/LinearSyntenyRPC/GetSubgraph.ts`
-  — RPC entry. Will need to accept `opts` (context, etc.). API break for
-  third-party adapters; flag in release notes.
-- `plugins/graph/src/GraphGenomeView/model.ts:535-569`
-  — `loadFromTabixSubgraph`. Consumes GFA, runs through layout.
+  — RPC entry. Already accepts `opts` (context, maxPathsEmitted,
+  emitFormat). Phase 4 will add `detailLevel`/`opts.snarl=true`.
+- `plugins/graph/src/GraphGenomeView/model.ts:549`
+  — `loadFromTabixSubgraph`. Consumes GFA, runs through layout with
+  Bandage-tuned overrides for tabix-subgraph loads.
 - `plugins/graph/src/gfa/gfaParser.ts`, `gfaConverter.ts`
-  — GFA-text parser; check support for new fields. The parser at
-  `gfaParser.ts:99-160` handles GFA 1 + 1.1 S/L/E/W/P. Verify Phase 1
-  sequences and Phase 4 snarl tags pass through cleanly; if not, add a
-  Phase 0.5 "consumer audit" task.
+  — GFA-text parser; handles GFA 1 + 1.1 S/L/E/W/P. Verify Phase 4
+  snarl tags pass through cleanly when that phase lands.
 
 ### Rust preprocessor
 
