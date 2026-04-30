@@ -49,7 +49,15 @@ preprocessor checks the local vg version and warns if mismatched.
 
 ## File catalog
 
-### `prefix.pos.bed.gz` + `prefix.pos.bed.gz.tbi`
+The catalog is split by *who consumes the file*. The runtime adapter
+(`plugins/comparative-adapters/src/GfaTabixAdapter`) opens only the
+files in **Index files** below — VCF in particular is preprocessor
+input only and is shipped as a sidecar viewable track, not as a
+runtime input.
+
+### Index files (consumed by the runtime adapter)
+
+#### `prefix.pos.bed.gz` + `prefix.pos.bed.gz.tbi`
 
 Tabix-indexed segment positions per path. One BED row per segment per
 path it visits.
@@ -65,7 +73,7 @@ path it visits.
   - `#sizes=<comma-separated PathName:Length entries>`
   - `#paths=<comma-separated path names in canonical order>`
 
-### `prefix.segments.bin` + `prefix.segments.idx`
+#### `prefix.segments.bin` + `prefix.segments.idx`
 
 Fixed-size segment records, ordinal-keyed.
 
@@ -87,7 +95,7 @@ access. This is acceptable up to HPRC-chr20 scale (~tens of MB) but is
 the bound on indexing the whole HPRC pangenome at once. Documented
 here so future agents know it's a known constraint, not an oversight.
 
-### `prefix.edges.bin` + `prefix.edges.idx`
+#### `prefix.edges.bin` + `prefix.edges.idx`
 
 Ordinal-keyed adjacency records. Optional — present only when the
 input GFA had L-lines and `--emit-edges` is set.
@@ -100,7 +108,7 @@ input GFA had L-lines and `--emit-edges` is set.
   - 8-byte header: magic `EDGI` + version `u32`.
   - `BigUint64Array` byte-offset table (numSegments + 1 entries).
 
-### `prefix.segments.seq.bin` + `prefix.segments.seq.idx` (Phase 1, binary tier)
+#### `prefix.segments.seq.bin` + `prefix.segments.seq.idx` (Phase 1, binary tier)
 
 2-bit-packed sequence data, ordinal-keyed. The "BAM" tier in the
 SAM/BAM/CRAM analogy.
@@ -133,7 +141,7 @@ sparse to justify a sentinel-byte layout (Option B). At chr20 scale:
   - 8-byte header: magic `SEQI` + version `u32`.
   - `BigUint64Array` byte-offset table (numSegments + 1 entries).
 
-### `prefix.segments.seq.fa[.gz]` + `.fai` (Phase 1, plaintext tier)
+#### `prefix.segments.seq.fa[.gz]` + `.fai` (Phase 1, plaintext tier)
 
 FASTA-formatted sequence file. The "SAM" tier — debuggable, greppable,
 larger. One record per ordinal: `>seg<ord>\n<sequence>\n`. Sidecar
@@ -141,14 +149,18 @@ larger. One record per ordinal: `>seg<ord>\n<sequence>\n`. Sidecar
 `.seq.idx` BigUint64Array byte-offset table sharing the format above.
 Decision pinned during Phase 1.
 
-### `prefix.bubbles.bed.gz` + `prefix.bubbles.bed.gz.tbi`
+#### `prefix.bubbles.bed.gz` + `prefix.bubbles.bed.gz.tbi`
 
-Per-pair bubble CS rows from `vg deconstruct` VCF, post-PanSN strip.
+The bubbles index — per-allele-pair edits per bubble locus, sourced
+from `vg deconstruct` (the VCF rewrite step is *preprocessor only*;
+the runtime opens this BED file directly, never the VCF). One BED row
+per `(locus, alleleA, alleleB)` pair; the runtime parser groups rows
+sharing `(start, end)` into one `BubbleSite` record per locus.
 
 - BED schema (per row):
   `path | start | end | alleleA | alleleB | identity | cs | genomesA | genomesB`
 - `alleleA`, `alleleB`: 0-based allele indices (0 = REF) within the
-  VCF site at this locus.
+  bubble at this locus.
 - `identity`: float in `[0, 1]`, ratio of matching bases between
   alleles A and B.
 - `cs`: minimap2-style CS string describing alleleA → alleleB edits.
@@ -158,10 +170,13 @@ Per-pair bubble CS rows from `vg deconstruct` VCF, post-PanSN strip.
   list may differ from the `pos.bed.gz` `#genomes=` because VCF
   samples flatten per-haplotype).
 
-This file is supporting infra for Phase 7 bubble-CS rendering, not
-part of the headline subgraph contribution.
+For why we ship per-pair rather than per-allele or per-site, see
+`architecture-decision-records/adr-013-bubble-shape-per-pair.md`.
 
-### `prefix.snarls.bed.gz` + `.tbi` (Phase 4)
+This file is supporting infra for Phase 7 zoomed-in CS rendering,
+not part of the headline subgraph contribution.
+
+#### `prefix.snarls.bed.gz` + `.tbi` (Phase 4)
 
 Tabix-indexed snarl decomposition rows from `vg snarls -T`.
 
@@ -178,11 +193,25 @@ Tabix-indexed snarl decomposition rows from `vg snarls -T`.
   - `netGraphEdges`: edge count on those internal segments.
 - Header: `#schema=snarls/v1`, `#vgVersion=<pin>`.
 
-### `prefix.vcf.gz` + `prefix.vcf.gz.tbi`
+### Sidecar artifacts (not consumed by the runtime adapter)
+
+These files travel alongside the index but are not opened by
+`GfaTabixAdapter`. They exist for direct browsing in JBrowse and as
+preprocessor inputs/outputs.
+
+#### `prefix.vcf.gz` + `prefix.vcf.gz.tbi`
 
 Rewritten `vg deconstruct` VCF with PanSN-stripped CHROM column.
-Tabix-indexed for region lookup. Used as input to bubble CS generation
-in the Rust tool; secondary as a queryable artifact.
+Tabix-indexed for region lookup.
+
+- *Preprocessor:* if `--bubbles <vcf>` is passed to `gfa-to-tabix`,
+  this VCF is the input from which `bubbles.bed.gz` is generated, and
+  it is also rewritten/copied to `prefix.vcf.gz` for downstream use.
+- *JBrowse:* the auto-generated `--output-config` registers this file
+  as a standard `VariantTrack` so users can inspect raw VCF records
+  alongside the synteny display.
+- *Synteny display:* never opens this file. The runtime read path
+  goes through `bubbles.bed.gz` only.
 
 ## Magic-byte registry
 

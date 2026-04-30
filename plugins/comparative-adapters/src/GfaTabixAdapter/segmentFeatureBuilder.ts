@@ -91,9 +91,12 @@ export function buildFeaturesForPath(
       }
       if (refGap > 0 && refGap === queryGap) {
         // Equal-length swap of segments — SNV-like. Emit X (mismatch run)
-        // so bubbleCs/visitor can overlay per-base info from bubbles.bed.gz.
-        // Without this, alt-allele SNVs would be 1D1I pairs and bubble CS
-        // would silently drop the *xy ops because they fall inside D regions.
+        // so bubbleOverlay can substitute per-base detail from the bubbles
+        // index. Without this, alt-allele SNVs would be 1D1I pairs and the
+        // overlay would silently drop the *xy ops because they fall inside
+        // D regions. See agent-docs/GRAPH_ARCHITECTURE.md "Fragile
+        // boundaries" — this contract is gated by buildCsFromCigarAndSites
+        // tests.
         cigarParts.push(`${refGap}X`)
       } else {
         if (refGap > 0) {

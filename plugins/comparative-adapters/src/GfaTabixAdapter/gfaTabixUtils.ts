@@ -8,7 +8,7 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
-import { annotateFeaturesWithBubbleCs } from './bubbleAnnotator.ts'
+import { annotateFeaturesWithBubbleCs } from './bubbleOverlay.ts'
 import {
   mergeOrdinalRanges,
   parseGfaPathName,
@@ -46,6 +46,29 @@ interface SetupResult {
   bubblesGenomeNames?: string[]
 }
 
+// Walk allSegs once, splitting into the ref path's records and a per-other-
+// path bucket. Builds refByOrd in the same pass. Used by the synteny path
+// (every per-genome feature builder reads refByOrd to join on segOrd).
+function partitionByRef(allSegs: SegRecord[], refPathIdx: number) {
+  const refSegments: SegRecord[] = []
+  const otherSegments = new Map<number, SegRecord[]>()
+  const refByOrd = new Map<number, SegRecord>()
+  for (const rec of allSegs) {
+    if (rec.pathNameIdx === refPathIdx) {
+      refSegments.push(rec)
+      refByOrd.set(rec.segOrd, rec)
+    } else {
+      let arr = otherSegments.get(rec.pathNameIdx)
+      if (!arr) {
+        arr = []
+        otherSegments.set(rec.pathNameIdx, arr)
+      }
+      arr.push(rec)
+    }
+  }
+  return { refSegments, otherSegments, refByOrd }
+}
+
 function hasFileLocation(loc: FileLocation | undefined): loc is FileLocation {
   if (!loc) {
     return false
@@ -60,6 +83,61 @@ function hasFileLocation(loc: FileLocation | undefined): loc is FileLocation {
     return loc.blobId !== ''
   }
   return false
+}
+
+// `#key=value` BED header lookup. Returns undefined when the key is absent;
+// caller chooses how to handle (warn, default, etc.) since absence is
+// expected for some keys (e.g. `bubbles.bed.gz` has only `#genomes=`).
+function readHeaderField(header: string, key: string) {
+  const m = new RegExp(String.raw`${key}=([^\n\s]+)`).exec(header)
+  return m?.[1]
+}
+
+// `#sizes=` value: comma-separated `<pansn-path>:<length>` entries. Used
+// both to build the chromSizes map and (when `#paths=` is missing) as the
+// fallback source for path names.
+function parseSizesField(sizesField: string) {
+  const entries: { panSn: string; refName: string; genome: string; length: number }[] = []
+  for (const entry of sizesField.split(',')) {
+    const colonIdx = entry.lastIndexOf(':')
+    if (colonIdx === -1) {
+      continue
+    }
+    const panSn = entry.slice(0, colonIdx)
+    const { genome, refName } = parseGfaPathName(panSn)
+    entries.push({
+      panSn,
+      refName,
+      genome,
+      length: +entry.slice(colonIdx + 1),
+    })
+  }
+  return entries
+}
+
+// Collect the segment ordinals that the ref path traverses inside
+// [start, end), and a parallel ord→segLen map. Shared by getSubgraph (uses
+// both: viewport order + seg lengths for assembly) and getEquivalentRanges
+// (uses only the ord set).
+function collectViewportRefOrds(
+  allSegs: SegRecord[],
+  refPathIdx: number,
+  start: number,
+  end: number,
+) {
+  const viewportRefOrds: number[] = []
+  const segLens = new Map<number, number>()
+  for (const rec of allSegs) {
+    if (
+      rec.pathNameIdx === refPathIdx &&
+      rec.offset + rec.segLen > start &&
+      rec.offset < end
+    ) {
+      viewportRefOrds.push(rec.segOrd)
+      segLens.set(rec.segOrd, rec.segLen)
+    }
+  }
+  return { viewportRefOrds, segLens }
 }
 
 // Open a tabix-indexed file pair if both locations are configured. Returns
@@ -89,6 +167,15 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
   private seqShard?: SeqShard
   private setupP?: Promise<SetupResult>
 
+  // Forward map (file → display) and its inverse (display → file). Read once
+  // from config; cached on the instance so per-feature `remapGenome` and
+  // per-region `resolveTabixRefName` skip repeated `getConf` + `Object.entries`.
+  // The inverse is the routing direction for tabix lookups: tabix headers
+  // are written by the preprocessor in file-side names, so display-side
+  // queries reverse-map before opening the file.
+  private readonly assemblyNameMap: Record<string, string>
+  private readonly reverseAssemblyNameMap: Map<string, string>
+
   public constructor(
     config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
@@ -96,6 +183,17 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
   ) {
     super(config, getSubAdapter, pluginManager)
     const pm = this.pluginManager
+
+    this.assemblyNameMap = this.getConf('assemblyNameMap') as Record<
+      string,
+      string
+    >
+    this.reverseAssemblyNameMap = new Map(
+      Object.entries(this.assemblyNameMap).map(([file, display]) => [
+        display,
+        file,
+      ]),
+    )
 
     this.posFile = openTabixIfConfigured(
       this.getConf('posLocation') as FileLocation,
@@ -175,67 +273,49 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
 
   private async setupPre() {
     const header = await this.posFile.getHeader()
-    const genomesMatch = /genomes=([^\n]+)/.exec(header)
-    if (!genomesMatch) {
+    const genomesField = readHeaderField(header, 'genomes')
+    if (!genomesField) {
       console.warn(
         '[GfaTabixAdapter] pos.bed.gz header missing #genomes= line — genome names will be unavailable',
       )
     }
-    const genomes = genomesMatch ? genomesMatch[1]!.split(',') : []
+    const genomes = genomesField?.split(',') ?? []
 
-    const chromSizes = new Map<string, { refName: string; length: number }[]>()
-    const sizesMatch = /sizes=([^\n]+)/.exec(header)
-    if (!sizesMatch) {
+    const sizesField = readHeaderField(header, 'sizes')
+    if (!sizesField) {
       console.warn(
         '[GfaTabixAdapter] pos.bed.gz header missing #sizes= line — auto-assembly creation will not work',
       )
     }
-    if (sizesMatch) {
-      for (const entry of sizesMatch[1]!.split(',')) {
-        const colonIdx = entry.lastIndexOf(':')
-        if (colonIdx === -1) {
-          continue
-        }
-        const { genome, refName } = parseGfaPathName(entry.slice(0, colonIdx))
-        const length = +entry.slice(colonIdx + 1)
-        if (!chromSizes.has(genome)) {
-          chromSizes.set(genome, [])
-        }
-        chromSizes.get(genome)!.push({ refName, length })
+    const sizesEntries = sizesField ? parseSizesField(sizesField) : []
+    const chromSizes = new Map<string, { refName: string; length: number }[]>()
+    for (const { genome, refName, length } of sizesEntries) {
+      let arr = chromSizes.get(genome)
+      if (!arr) {
+        arr = []
+        chromSizes.set(genome, arr)
       }
+      arr.push({ refName, length })
     }
 
-    const posRefNames = new Set(await this.posFile.getReferenceSequenceNames())
+    const pathsField = readHeaderField(header, 'paths')
+    const pathNames = pathsField
+      ? pathsField.split(',')
+      : sizesEntries.map(e => e.panSn)
 
-    const pathsMatch = /paths=([^\n]+)/.exec(header)
-    const pathNames = pathsMatch
-      ? pathsMatch[1]!.split(',')
-      : sizesMatch
-        ? sizesMatch[1]!.split(',').map(entry => {
-            const colonIdx = entry.lastIndexOf(':')
-            return colonIdx !== -1 ? entry.slice(0, colonIdx) : entry
-          })
-        : []
-
-    const formatMatch = /input-format=([^\n\s]+)/.exec(header)
     const inputFormat: 'walks' | 'paths' =
-      formatMatch && formatMatch[1] === 'walks' ? 'walks' : 'paths'
+      readHeaderField(header, 'input-format') === 'walks' ? 'walks' : 'paths'
+
+    const posRefNames = new Set(await this.posFile.getReferenceSequenceNames())
 
     let bubblesRefNames: Set<string> | undefined
     let bubblesGenomeNames: string[] | undefined
     if (this.bubblesFile) {
-      try {
-        const bHeader = await this.bubblesFile.getHeader()
-        bubblesRefNames = new Set(
-          await this.bubblesFile.getReferenceSequenceNames(),
-        )
-        const gMatch = /genomes=([^\n]+)/.exec(bHeader)
-        if (gMatch) {
-          bubblesGenomeNames = gMatch[1]!.split(',')
-        }
-      } catch {
-        // bubbles file not available
-      }
+      const bHeader = await this.bubblesFile.getHeader()
+      bubblesRefNames = new Set(
+        await this.bubblesFile.getReferenceSequenceNames(),
+      )
+      bubblesGenomeNames = readHeaderField(bHeader, 'genomes')?.split(',')
     }
 
     return {
@@ -249,6 +329,11 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     }
   }
 
+  // Reverse the display→file rename, then qualify with the BED path's PanSN
+  // prefix (`assembly#refName`). Three forms tried in order: display-qualified
+  // (in case the user wrote display names into the file), bare refName
+  // (legacy single-genome indexes), and file-qualified via reverseAssemblyNameMap
+  // (the canonical PanSN case).
   private resolveTabixRefName(
     refNameSet: Set<string>,
     assemblyName: string,
@@ -261,25 +346,18 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     if (refNameSet.has(refName)) {
       return refName
     }
-    const nameMap = this.getAssemblyNameMap()
-    for (const [orig, mapped] of Object.entries(nameMap)) {
-      if (mapped === assemblyName) {
-        const origQualified = `${orig}#${refName}`
-        if (refNameSet.has(origQualified)) {
-          return origQualified
-        }
+    const fileGenome = this.reverseAssemblyNameMap.get(assemblyName)
+    if (fileGenome) {
+      const fileQualified = `${fileGenome}#${refName}`
+      if (refNameSet.has(fileQualified)) {
+        return fileQualified
       }
     }
     return undefined
   }
 
-  private getAssemblyNameMap() {
-    return this.getConf('assemblyNameMap') as Record<string, string>
-  }
-
   protected remapGenome(genome: string) {
-    const map = this.getAssemblyNameMap()
-    return map[genome] ?? genome
+    return this.assemblyNameMap[genome] ?? genome
   }
 
   getAssemblyNames() {
@@ -293,14 +371,9 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
 
   async getChromSizes() {
     const { chromSizes: raw } = await this.setup()
-    const map = this.getAssemblyNameMap()
-    if (Object.keys(map).length === 0) {
-      return raw
-    }
     const remapped = new Map<string, { refName: string; length: number }[]>()
     for (const [genome, sizes] of raw) {
-      const mapped = map[genome] ?? genome
-      remapped.set(mapped, sizes)
+      remapped.set(this.remapGenome(genome), sizes)
     }
     return remapped
   }
@@ -375,21 +448,12 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       return ''
     }
     const { segments: allSegs, refPathIdx, pathNames, inputFormat } = result
-    const { start, end } = region
-
-    const viewportRefOrds: number[] = []
-    const segLens = new Map<number, number>()
-
-    for (const rec of allSegs) {
-      if (
-        rec.pathNameIdx === refPathIdx &&
-        rec.offset + rec.segLen > start &&
-        rec.offset < end
-      ) {
-        viewportRefOrds.push(rec.segOrd)
-        segLens.set(rec.segOrd, rec.segLen)
-      }
-    }
+    const { viewportRefOrds, segLens } = collectViewportRefOrds(
+      allSegs,
+      refPathIdx,
+      region.start,
+      region.end,
+    )
 
     if (viewportRefOrds.length === 0) {
       return ''
@@ -447,18 +511,13 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       return new Map<string, { start: number; end: number }>()
     }
     const { segments: allSegs, refPathIdx, pathNames } = result
-    const { start, end } = region
-
-    const refOrds = new Set<number>()
-    for (const rec of allSegs) {
-      if (
-        rec.pathNameIdx === refPathIdx &&
-        rec.offset + rec.segLen > start &&
-        rec.offset < end
-      ) {
-        refOrds.add(rec.segOrd)
-      }
-    }
+    const { viewportRefOrds } = collectViewportRefOrds(
+      allSegs,
+      refPathIdx,
+      region.start,
+      region.end,
+    )
+    const refOrds = new Set(viewportRefOrds)
 
     const ranges = new Map<string, { start: number; end: number }>()
     if (refOrds.size === 0) {
@@ -503,21 +562,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     }
     const { segments: allSegs, refPathIdx, pathNames } = result
     const { refName } = query
-    const refSegments: SegRecord[] = []
-    const otherSegments = new Map<number, SegRecord[]>()
-
-    for (const rec of allSegs) {
-      if (rec.pathNameIdx === refPathIdx) {
-        refSegments.push(rec)
-      } else {
-        if (!otherSegments.has(rec.pathNameIdx)) {
-          otherSegments.set(rec.pathNameIdx, [])
-        }
-        otherSegments.get(rec.pathNameIdx)!.push(rec)
-      }
-    }
-
-    const refByOrd = new Map(refSegments.map(s => [s.segOrd, s]))
+    const { otherSegments, refByOrd } = partitionByRef(allSegs, refPathIdx)
 
     for (const [otherPathIdx, segments] of otherSegments) {
       const otherPath = pathNames[otherPathIdx] ?? String(otherPathIdx)
@@ -534,10 +579,11 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         otherPath,
       )
       if (features.length > 0) {
-        if (!genomeRows.has(genomeName)) {
-          genomeRows.set(genomeName, [])
+        let existing = genomeRows.get(genomeName)
+        if (!existing) {
+          existing = []
+          genomeRows.set(genomeName, existing)
         }
-        const existing = genomeRows.get(genomeName)!
         for (const f of features) {
           existing.push(f)
         }
@@ -559,7 +605,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
             bubblesFile: this.bubblesFile,
             bubblesGenomeNames,
             tabixRefName,
-            assemblyNameMap: this.getAssemblyNameMap(),
+            reverseAssemblyNameMap: this.reverseAssemblyNameMap,
             stopToken: opts.stopToken,
           })
         }
