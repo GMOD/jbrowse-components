@@ -510,15 +510,19 @@ fn build_edge_index(
         let src_len = *seg_lengths.get(src_name).unwrap_or(&0) as u32;
         let tgt_len = *seg_lengths.get(tgt_name).unwrap_or(&0) as u32;
 
-        // Forward direction: src → tgt
+        // Forward direction: src → tgt as `L src src_o tgt tgt_o`
         adj.entry(src_ord)
             .or_default()
             .push((tgt_ord as u32, src_o, tgt_o, tgt_len));
 
-        // Reverse direction: tgt → src
+        // Reverse direction is the bidirected partner of the forward edge:
+        // `L src src_o tgt tgt_o` ≡ `L tgt ~tgt_o src ~src_o`. Flip both
+        // orientations so the reverse record names the same physical edge,
+        // not a phantom second edge with same-side-as-forward orientations.
+        let flip = |o: u8| if o == b'+' { b'-' } else { b'+' };
         adj.entry(tgt_ord)
             .or_default()
-            .push((src_ord as u32, tgt_o, src_o, src_len));
+            .push((src_ord as u32, flip(tgt_o), flip(src_o), src_len));
     }
 
     // Write edges.bin sorted by source ordinal, with edges.idx
@@ -677,12 +681,15 @@ fn emit_path_rows(
     let mut steps: usize = 0;
 
     for step in &walk_steps {
+        // Absolute GFA orient. Previously a "relative to ref" branch existed
+        // for non-ref non-flipped paths whose segments are also visited by ref;
+        // it produced flipped orients whenever ref's last visit to that segment
+        // disagreed with the sample's visit, which made path-walks emitted from
+        // segments.bin reference L-lines that don't exist (the L-line set is in
+        // absolute coordinates). need_flip handles whole-contig rev-comp
+        // normalization separately.
         let effective_orient = if need_flip {
             if step.is_plus { "-" } else { "+" }
-        } else if is_ref {
-            if step.is_plus { "+" } else { "-" }
-        } else if let Some(&ref_is_plus) = ref_orients.get(&step.ord) {
-            if step.is_plus == ref_is_plus { "+" } else { "-" }
         } else {
             if step.is_plus { "+" } else { "-" }
         };

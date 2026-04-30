@@ -2492,6 +2492,17 @@ importers:
         specifier: ^19.2.5
         version: 19.2.5(react@19.2.5)
 
+  tools/gfa-to-tabix:
+    dependencies:
+      '@gmod/tabix':
+        specifier: ^3.3.3
+        version: 3.3.3
+      generic-filehandle2:
+        specifier: ^2.1.4
+        version: 2.1.4
+
+  tools/graph-truth-extractor: {}
+
 packages:
 
   '@adobe/css-tools@4.4.4':

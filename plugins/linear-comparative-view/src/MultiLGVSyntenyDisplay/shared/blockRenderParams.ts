@@ -1,6 +1,6 @@
 import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
 export interface BlockRenderParams {
   bpRangeHi: number
@@ -11,19 +11,16 @@ export interface BlockRenderParams {
 }
 
 export function computeBlockRenderParams(
-  block: ContentBlock,
-  viewOffsetPx: number,
+  block: RenderBlock,
 ): BlockRenderParams {
-  const [bpRangeHi, bpRangeLo] = splitPositionWithFrac(block.start)
-  const bpRangeLen = block.end - block.start
-  const regionScreenLeft = block.offsetPx - viewOffsetPx
-  const regionScreenWidth = block.widthPx
+  const [bpStart, bpEnd] = block.bpRangeX
+  const [bpRangeHi, bpRangeLo] = splitPositionWithFrac(bpStart)
 
   return {
     bpRangeHi,
     bpRangeLo,
-    bpRangeLen,
-    regionScreenLeft,
-    regionScreenWidth,
+    bpRangeLen: bpEnd - bpStart,
+    regionScreenLeft: block.screenStartPx,
+    regionScreenWidth: block.screenEndPx - block.screenStartPx,
   }
 }

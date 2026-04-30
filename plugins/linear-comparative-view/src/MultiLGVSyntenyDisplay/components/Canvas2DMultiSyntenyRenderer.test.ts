@@ -8,9 +8,15 @@ import {
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { computeCoverage } from '@jbrowse/plugin-alignments'
 
-import { renderMultiSyntenyToCtx } from './Canvas2DMultiSyntenyRenderer.ts'
+import { drawSyntenyToCtx } from './Canvas2DMultiSyntenyRenderer.ts'
 
+import type {
+  MultiSyntenyGpuProps,
+  MultiSyntenyRenderState,
+} from './rendererTypes.ts'
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
+import type { SyntenyColorPalette } from '../shared/types.ts'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
 function feat(overrides: Partial<MultiPairFeature> = {}): MultiPairFeature {
@@ -83,30 +89,85 @@ function buildRegion(
   }
 }
 
-function simpleBpToPx(refName: string, coord: number) {
-  if (refName === 'chr1') {
-    return coord * 0.01
-  }
-  if (refName === 'chr2') {
-    return 500 + coord * 0.01
-  }
-  return undefined
+const palette: SyntenyColorPalette = {
+  coverageColorRgb: [0.6, 0.6, 0.6],
+  coverageColorHex: '#999999',
+  baseColorGl: {
+    A: [0, 1, 0],
+    C: [0, 0, 1],
+    G: [1, 0.5, 0],
+    T: [1, 0, 0],
+  },
+  syntenyColors: DEFAULT_CIGAR_OP_DRAW_COLORS,
 }
 
-const baseOpts = {
-  width: 1000,
-  height: 200,
-  rowHeight: 20,
-  rowSpacing: false,
-  bpToPx: simpleBpToPx,
-  colorBy: 'strand',
-  labelW: 0,
-  showSnps: false,
-  colors: DEFAULT_CIGAR_OP_DRAW_COLORS,
-  coverageColor: '#999999',
+function block(
+  displayedRegionIndex: number,
+  bpStart: number,
+  bpEnd: number,
+  screenStartPx: number,
+  screenEndPx: number,
+): RenderBlock {
+  return {
+    displayedRegionIndex,
+    bpRangeX: [bpStart, bpEnd],
+    screenStartPx,
+    screenEndPx,
+    reversed: false,
+  }
 }
 
-describe('renderMultiSyntenyToCtx multi-region coverage', () => {
+function makeState(
+  overrides: Partial<MultiSyntenyRenderState> = {},
+): MultiSyntenyRenderState {
+  return {
+    canvasWidth: 1000,
+    canvasHeight: 200,
+    rowHeight: 20,
+    rowSpacing: false,
+    coverageHeight: 0,
+    palette,
+    displayedGenomes: ['genomeA'],
+    labelW: 0,
+    ...overrides,
+  }
+}
+
+function makeGpuProps(
+  overrides: Partial<MultiSyntenyGpuProps> = {},
+): MultiSyntenyGpuProps {
+  return {
+    displayedGenomes: ['genomeA'],
+    colorBy: 'strand',
+    showSnps: false,
+    showCoverage: false,
+    coverageGlobalMax: 1,
+    viewWidth: 1000,
+    ...overrides,
+  }
+}
+
+function draw(
+  ctx: SvgCanvas,
+  rpcDataMap: Map<number, SyntenyRegionData>,
+  blocks: RenderBlock[],
+  stateOverrides: Partial<MultiSyntenyRenderState> = {},
+  gpuPropsOverrides: Partial<MultiSyntenyGpuProps> = {},
+  paletteOverride: SyntenyColorPalette = palette,
+) {
+  drawSyntenyToCtx(
+    ctx,
+    {
+      rpcDataMap,
+      gpuProps: makeGpuProps(gpuPropsOverrides),
+      palette: paletteOverride,
+    },
+    blocks,
+    makeState({ palette: paletteOverride, ...stateOverrides }),
+  )
+}
+
+describe('drawSyntenyToCtx multi-region coverage', () => {
   test('renders coverage for multiple regions', () => {
     const region1 = buildRegion('chr1', 0, 1000, [
       feat({ origRefName: 'chr1', start: 100, end: 500 }),
@@ -116,24 +177,31 @@ describe('renderMultiSyntenyToCtx multi-region coverage', () => {
     ])
 
     const ctx = new SvgCanvas()
-    renderMultiSyntenyToCtx(ctx, new Map(), [], {
-      ...baseOpts,
-      coverageHeight: 50,
-      coverageRegions: [region1, region2],
-    })
+    draw(
+      ctx,
+      new Map([
+        [0, region1],
+        [1, region2],
+      ]),
+      [block(0, 0, 1000, 0, 500), block(1, 0, 1000, 500, 1000)],
+      { coverageHeight: 50 },
+      { showCoverage: true },
+    )
 
     const svg = ctx.getSerializedSvg()
     const rectCount = (svg.match(/<rect /g) ?? []).length
     expect(rectCount).toBeGreaterThan(1)
   })
 
-  test('renders no coverage when coverageRegions is empty', () => {
+  test('renders no coverage when rpcDataMap is empty', () => {
     const ctx = new SvgCanvas()
-    renderMultiSyntenyToCtx(ctx, new Map(), [], {
-      ...baseOpts,
-      coverageHeight: 50,
-      coverageRegions: [],
-    })
+    draw(
+      ctx,
+      new Map(),
+      [],
+      { coverageHeight: 50, displayedGenomes: [] },
+      { showCoverage: true, displayedGenomes: [] },
+    )
 
     const svg = ctx.getSerializedSvg()
     const rectCount = (svg.match(/<rect /g) ?? []).length
@@ -147,11 +215,13 @@ describe('renderMultiSyntenyToCtx multi-region coverage', () => {
     expect(region.snpCount).toBeGreaterThan(0)
 
     const ctx = new SvgCanvas()
-    renderMultiSyntenyToCtx(ctx, new Map(), [], {
-      ...baseOpts,
-      coverageHeight: 50,
-      coverageRegions: [region],
-    })
+    draw(
+      ctx,
+      new Map([[0, region]]),
+      [block(0, 0, 200, 0, 1000)],
+      { coverageHeight: 50 },
+      { showCoverage: true },
+    )
 
     const svg = ctx.getSerializedSvg()
     expect(svg).toContain(DEFAULT_CIGAR_OP_DRAW_COLORS.baseG)
@@ -159,7 +229,6 @@ describe('renderMultiSyntenyToCtx multi-region coverage', () => {
   })
 
   test('renders insertion indicator triangles from CS tag insertions', () => {
-    // Multiple features with insertions at the same position trigger an indicator
     const features = Array.from({ length: 5 }, () =>
       feat({ origRefName: 'chr1', start: 50, end: 150, cs: ':30+acgt:69' }),
     )
@@ -167,75 +236,79 @@ describe('renderMultiSyntenyToCtx multi-region coverage', () => {
     expect(region.numIndicators).toBeGreaterThan(0)
 
     const ctx = new SvgCanvas()
-    renderMultiSyntenyToCtx(ctx, new Map(), [], {
-      ...baseOpts,
-      coverageHeight: 50,
-      coverageRegions: [region],
-    })
+    draw(
+      ctx,
+      new Map([[0, region]]),
+      [block(0, 0, 200, 0, 1000)],
+      { coverageHeight: 50 },
+      { showCoverage: true },
+    )
 
     const svg = ctx.getSerializedSvg()
-    // The insertion color from the default palette should appear in triangle paths
     expect(svg).toContain(DEFAULT_CIGAR_OP_DRAW_COLORS.insertion)
   })
 
-  test('coverage uses provided color, not hardcoded', () => {
+  test('coverage uses palette color', () => {
     const region = buildRegion('chr1', 0, 200, [
       feat({ origRefName: 'chr1', start: 50, end: 150 }),
     ])
 
+    const customPalette: SyntenyColorPalette = {
+      ...palette,
+      coverageColorHex: '#abcdef',
+    }
+
     const ctx = new SvgCanvas()
-    renderMultiSyntenyToCtx(ctx, new Map(), [], {
-      ...baseOpts,
-      coverageHeight: 50,
-      coverageRegions: [region],
-      coverageColor: '#abcdef',
-    })
+    draw(
+      ctx,
+      new Map([[0, region]]),
+      [block(0, 0, 200, 0, 1000)],
+      { coverageHeight: 50 },
+      { showCoverage: true },
+      customPalette,
+    )
 
     const svg = ctx.getSerializedSvg()
     expect(svg).toContain('#abcdef')
   })
-
-  test('skips SNP segments when snpCount exceeds canvas width threshold', () => {
-    const region = buildRegion('chr1', 0, 200, [
-      feat({ origRefName: 'chr1', start: 50, end: 150, cs: ':30*ag:20*ct:49' }),
-    ])
-    expect(region.snpCount).toBeGreaterThan(0)
-
-    // Artificially inflate snpCount beyond 4x the narrow width to trigger skip
-    const narrowWidth = 2
-    const inflatedRegion = {
-      ...region,
-      snpCount: narrowWidth * 4 + 1,
-    }
-
-    const ctx = new SvgCanvas()
-    renderMultiSyntenyToCtx(ctx, new Map(), [], {
-      ...baseOpts,
-      width: narrowWidth,
-      coverageHeight: 50,
-      coverageRegions: [inflatedRegion],
-    })
-
-    const svg = ctx.getSerializedSvg()
-    expect(svg).not.toContain(DEFAULT_CIGAR_OP_DRAW_COLORS.baseG)
-    expect(svg).not.toContain(DEFAULT_CIGAR_OP_DRAW_COLORS.baseT)
-  })
 })
 
-describe('renderMultiSyntenyToCtx feature rendering', () => {
+describe('drawSyntenyToCtx feature rendering', () => {
   test('renders synteny features', () => {
-    const features = [feat({ origRefName: 'chr1', start: 100, end: 200 })]
-    const genomeRows = new Map([['genomeA', features]])
+    const region = buildRegion('chr1', 0, 200, [
+      feat({ origRefName: 'chr1', start: 100, end: 200 }),
+    ])
 
     const ctx = new SvgCanvas()
-    renderMultiSyntenyToCtx(ctx, genomeRows, ['genomeA'], {
-      ...baseOpts,
-      coverageHeight: 0,
-      coverageRegions: [],
-    })
+    draw(ctx, new Map([[0, region]]), [block(0, 0, 200, 0, 1000)])
 
     const svg = ctx.getSerializedSvg()
     const rectCount = (svg.match(/<rect /g) ?? []).length
     expect(rectCount).toBeGreaterThan(1)
+  })
+
+  test('uint32 positions exact at 3 Gbp', () => {
+    // Place feature past the float32 precision floor (2^24 ≈ 16.7 Mbp).
+    const startBp = 3_000_000_000
+    const region = buildRegion('chr1', startBp, startBp + 200, [
+      feat({
+        origRefName: 'chr1',
+        start: startBp + 100,
+        end: startBp + 150,
+        cs: ':30*ag:20',
+      }),
+    ])
+
+    const ctx = new SvgCanvas()
+    draw(
+      ctx,
+      new Map([[0, region]]),
+      [block(0, startBp, startBp + 200, 0, 1000)],
+      { coverageHeight: 50 },
+      { showCoverage: true },
+    )
+
+    const svg = ctx.getSerializedSvg()
+    expect(svg).toContain(DEFAULT_CIGAR_OP_DRAW_COLORS.baseG)
   })
 })

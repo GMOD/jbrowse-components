@@ -3,12 +3,13 @@
 // area in a fixed purple color.
 //! targets: wgsl, glsl
 
+import hpmath;
 import multiSyntenyUniforms;
 
 
 public static const uint VERTS_PER_INSTANCE = 3u;
 struct Indicator {
-  float position : ATTR0;
+  uint position : ATTR0;
 };
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
@@ -22,8 +23,8 @@ struct VsOut {
 VsOut vs_main(Indicator ind, uint vid : SV_VertexID) {
   VsOut o;
 
-  float blockStart = u.bpRangeHi + u.bpRangeLo;
-  float t = (ind.position - blockStart) / u.bpRangeLen;
+  float3 bpRange = float3(u.bpRangeHi, u.bpRangeLo, u.bpRangeLen);
+  float t = hpScaleLinear(hpSplitUint(ind.position), bpRange, u.hpZero);
   float cx = u.regionScreenLeft + t * u.regionScreenWidth;
 
   if (cx < -4.0 || cx > u.resolutionX + 4.0) {

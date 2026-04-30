@@ -1,4 +1,4 @@
-import { unpackColorToCSS } from './dotplotWebGLColors.ts'
+import { drawDotplotInstances } from './drawDotplot.ts'
 
 import type {
   DotplotBackend,
@@ -54,23 +54,17 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
     ctx.lineCap = 'round'
 
     for (const { displayKey, scaleX, scaleY } of trackScales) {
-      const geo = this.geometries.get(displayKey)
-      if (!geo || geo.instanceCount === 0) {
+      const geometry = this.geometries.get(displayKey)
+      if (!geometry || geometry.instanceCount === 0) {
         continue
       }
-
-      for (let i = 0; i < geo.instanceCount; i++) {
-        const sx1 = geo.x1s[i]! * scaleX - offsetX
-        const sy1 = this.height - (geo.y1s[i]! * scaleY - offsetY)
-        const sx2 = geo.x2s[i]! * scaleX - offsetX
-        const sy2 = this.height - (geo.y2s[i]! * scaleY - offsetY)
-
-        ctx.strokeStyle = unpackColorToCSS(geo.colors[i]!)
-        ctx.beginPath()
-        ctx.moveTo(sx1, sy1)
-        ctx.lineTo(sx2, sy2)
-        ctx.stroke()
-      }
+      drawDotplotInstances(ctx, geometry, {
+        scaleX,
+        scaleY,
+        offsetX,
+        offsetY,
+        viewHeight: this.height,
+      })
     }
   }
 

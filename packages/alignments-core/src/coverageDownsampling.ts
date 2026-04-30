@@ -201,7 +201,8 @@ export function computeGlobalCoverageStats<K, D>(
 }
 
 export interface DownsampledBins {
-  positions: Float32Array
+  // Absolute genomic positions stored as uint32 — exact at 3 Gbp.
+  positions: Uint32Array
   mins: Float32Array
   maxs: Float32Array
   count: number
@@ -219,7 +220,7 @@ export function downsampleMinMax(
   const n = depths.length
   if (n === 0) {
     return {
-      positions: new Float32Array(0),
+      positions: new Uint32Array(0),
       mins: new Float32Array(0),
       maxs: new Float32Array(0),
       count: 0,
@@ -233,7 +234,7 @@ export function downsampleMinMax(
         count++
       }
     }
-    const positions = new Float32Array(count)
+    const positions = new Uint32Array(count)
     const mins = new Float32Array(count)
     const maxs = new Float32Array(count)
     let idx = 0
@@ -250,7 +251,7 @@ export function downsampleMinMax(
   }
 
   const bpPerBin = n / targetBins
-  const positions = new Float32Array(targetBins)
+  const positions = new Uint32Array(targetBins)
   const mins = new Float32Array(targetBins)
   const maxs = new Float32Array(targetBins)
   let count = 0

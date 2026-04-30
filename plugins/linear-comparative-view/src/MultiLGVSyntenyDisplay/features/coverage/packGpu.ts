@@ -10,10 +10,11 @@ export interface BlockCoverageUploadData {
   binCount: number
 }
 
-// Pack per-bp coverage depths into a GPU buffer for a single block.
-// Returns downsampled min/max bands: [position: f32, minDepth: f32, maxDepth: f32] per bin.
-// Positions are absolute genome coordinates so the shader can map bins to
-// any content block by subtracting block.start (bpRangeHi+bpRangeLo).
+// Pack downsampled min/max coverage bands for a single block.
+// Layout (matches multiSyntenyCoverage.slang stride 3):
+//   position: uint32  (absolute genomic coord, exact at 3 Gbp)
+//   minDepth: float32 (0..1, normalized against globalMaxDepth)
+//   maxDepth: float32 (0..1, normalized against globalMaxDepth)
 export function packCoverageForGpu(
   depths: Float32Array,
   startOffset: number,
@@ -30,10 +31,11 @@ export function packCoverageForGpu(
   }
 
   const buffer = new ArrayBuffer(ds.count * COVERAGE_STRIDE * 4)
+  const u32 = new Uint32Array(buffer)
   const f32 = new Float32Array(buffer)
   for (let i = 0; i < ds.count; i++) {
     const o = i * COVERAGE_STRIDE
-    f32[o + COVERAGE_FIELD.position] = ds.positions[i]!
+    u32[o + COVERAGE_FIELD.position] = ds.positions[i]!
     f32[o + COVERAGE_FIELD.minDepth] = ds.mins[i]!
     f32[o + COVERAGE_FIELD.maxDepth] = ds.maxs[i]!
   }

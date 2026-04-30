@@ -357,7 +357,14 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     }
 
     if (this.edgeShard) {
-      return buildGfaFromEdges(viewportRefOrds, segLens, this.edgeShard)
+      return buildGfaFromEdges(
+        viewportRefOrds,
+        segLens,
+        this.edgeShard,
+        ranges => this.getSegsForOrdinals(ranges),
+        pathNames,
+        allSegs,
+      )
     }
 
     return buildGfaFromPathInference(

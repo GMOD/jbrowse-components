@@ -2,12 +2,13 @@
 // the coverage area above the main synteny rows.
 //! targets: wgsl, glsl
 
+import hpmath;
 import multiSyntenyUniforms;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 struct CovBin {
-  float position  : ATTR0;
+  uint  position  : ATTR0;
   float minDepth  : ATTR1;
   float maxDepth  : ATTR2;
 };
@@ -28,9 +29,9 @@ VsOut vs_main(CovBin bin, uint vid : SV_VertexID) {
   float localX = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
   float localY = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
 
-  float blockStart = u.bpRangeHi + u.bpRangeLo;
-  float t1 = (bin.position - blockStart) / u.bpRangeLen;
-  float t2 = (bin.position + 1.0 - blockStart) / u.bpRangeLen;
+  float3 bpRange = float3(u.bpRangeHi, u.bpRangeLo, u.bpRangeLen);
+  float t1 = hpScaleLinear(hpSplitUint(bin.position), bpRange, u.hpZero);
+  float t2 = hpScaleLinear(hpSplitUint(bin.position + 1u), bpRange, u.hpZero);
   float px1 = u.regionScreenLeft + t1 * u.regionScreenWidth;
   float px2 = u.regionScreenLeft + t2 * u.regionScreenWidth;
   px2 = max(px2, px1 + 1.0);

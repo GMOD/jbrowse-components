@@ -236,33 +236,60 @@ export function XxxRenderer(canvas: HTMLCanvasElement) {
 `initDualBackend` calls `createGpuHal`; if a HAL is returned, the GPU backend
 is constructed, otherwise Canvas 2D.
 
+### Three upload patterns
+
+Per-LGV displays use one of three upload shapes; pick the one that matches
+the data shape, not the one your neighbour copied:
+
+| Pattern | Upload methods | Render | Use when | Examples |
+|---|---|---|---|---|
+| **Per-region streamed** | `uploadRegion(idx, data)` + `pruneRegions(active)` | `renderBlocks(blocks, state)` | each region's data is independent, reactive per-region updates | canvas, wiggle, multi-variant |
+| **Whole-map synced** | `sync(sources)` | `renderBlocks(blocks, state)` | encoder settings drive packing, or multiple per-region streams must rebuild coherently | alignments, multi-LGV synteny |
+| **Monolithic** | `uploadX(data)` | `render(state)` (no blocks) | display has no region partitioning (heatmaps spanning the whole view) | LD, multi-variant matrix |
+
+All three patterns expose the same lifecycle (`installGpuDisplay({ upload,
+render })`); the difference is how the upload callback shovels bytes.
+
 ---
 
 ## SVG export pipeline (single source of truth)
 
 SVG export and on-screen rendering share the same draw pipeline per plugin.
-Each `Canvas2DXxxRenderer.renderBlocks` method is a thin wrapper around a
-top-level pure function `drawXxxBlocks(ctx, regions, blocks, state)` that
-takes any 2D-context-shaped surface — real `CanvasRenderingContext2D` for
-on-screen, `SvgCanvas` for vector export. The renderer class itself supports
-**headless construction** (`new Canvas2DXxxRenderer(null)` for plugins where
-the canvas is the constructor arg, or pass an `SvgCanvas` for plugins where
-both ctx types are accepted at construction).
+Each plugin exposes two top-level pure functions:
+
+- `drawXxxBlocks(ctx, regions, blocks, state)` — paints a pre-built regions
+  map. Used by the on-screen `Canvas2DXxxRenderer.renderBlocks`.
+- `drawXxxToCtx(ctx, sources, blocks, state)` — one-shot wrapper that
+  builds the regions map from observable sources and calls
+  `drawXxxBlocks`. Used by `renderSvg.tsx`.
+
+Both take any 2D-context-shaped surface: real `CanvasRenderingContext2D` for
+on-screen, `SvgCanvas` for vector export. `Canvas2DXxxRenderer` is bound
+(canvas required at construction) — SVG export does *not* instantiate the
+renderer. It calls `drawXxxToCtx` directly.
 
 SVG export in `renderSvg.tsx` follows this recipe:
 
-1. Construct a headless renderer.
-2. Run the same `uploadRegion` (and any auxiliary upload methods) that the
-   on-screen GPU autorun runs.
-3. Call `paintLayer(width, height, opts, ctx => drawXxxBlocks(ctx, …))` —
-   `paintLayer` (in `@jbrowse/core/util/paintLayer`) decides between a 2× DPR
-   raster canvas (when `opts.rasterizeLayers`) or an `SvgCanvas`, and returns
-   one `ReactNode` (`<image xlinkHref=…>` or `<g dangerouslySetInnerHTML=…>`).
+```tsx
+await when(() => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge)
+if (model.error) return <SVGErrorBox …/>
+const renderBlocks = buildRenderBlocks(view.visibleRegions)
+const node = paintLayer(totalWidth, height, opts, ctx => {
+  drawXxxToCtx(ctx, sources, renderBlocks, state)
+})
+```
+
+`paintLayer` (in `@jbrowse/core/util/paintLayer`) decides between a 2× DPR
+raster canvas (when `opts.rasterizeLayers`) or an `SvgCanvas`, and returns
+one `ReactNode` (`<image xlinkHref=…>` or `<g dangerouslySetInnerHTML=…>`).
 
 This kills the older "SVG-only `renderToCtx`" pattern that drifted out of
 sync with the on-screen renderer (different bicolor handling, different
 Y-axis offsets, different bezier curves, different palettes — each plugin
-had its own flavor of drift).
+had its own flavor of drift). The canonical reference implementation is
+`plugins/alignments/src/LinearAlignmentsDisplay/components/Canvas2DAlignmentsRenderer.ts`
+(`drawAlignmentsToCtx` + `drawAlignmentBlocks`); other plugins follow the
+same shape.
 
 **Sashimi exception.** Sashimi arcs are deliberately rendered as vector SVG
 on both paths via a shared `computeSashimiArcs(opts) → SashimiArc[]`
@@ -290,11 +317,11 @@ Domain-named getters that enumerate **what affects rendering output**.
 | Derived region map | Upload callback iterates it in place of raw `rpcDataMap`        | Upload autorun reads it — MobX re-uploads without an RPC roundtrip                          |
 | `renderState`      | `backend.render(state)` per frame                               | Render callback reads it — re-fires when deps shift                                         |
 
-`gpuProps` exists only where the main thread encodes the GPU buffer (wiggle,
-multi-wiggle). Canvas's worker pre-builds the buffer, so canvas has only
-`rpcProps`. This splits refetch from re-upload: wiggle color change →
-re-encode only; `bicolorPivot` change → worker output differs → `rpcProps` →
-refetch.
+`gpuProps` exists wherever the main thread encodes the GPU buffer (wiggle,
+multi-wiggle, multi-LGV synteny). Canvas's worker pre-builds the buffer, so
+canvas has only `rpcProps`. This splits refetch from re-upload: wiggle color
+change → re-encode only; `bicolorPivot` change → worker output differs →
+`rpcProps` → refetch.
 
 Derived region maps apply when upload needs whole fresh per-region payloads,
 not just encoder parameters. Alignments' `laidOutPileupMap` returns shallow

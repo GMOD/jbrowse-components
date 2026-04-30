@@ -5,6 +5,9 @@ export interface BlockIndicatorUploadData {
   indicatorCount: number
 }
 
+// Pack insertion-indicator positions for GPU upload. One uint32 position
+// per indicator (no per-instance color — synteny indicators are always
+// purple). Matches multiSyntenyIndicator.slang stride 1.
 export function packIndicatorsForGpu(
   indicatorPositions: Uint32Array,
   numIndicators: number,
@@ -14,9 +17,9 @@ export function packIndicatorsForGpu(
   }
 
   const buffer = new ArrayBuffer(numIndicators * INDICATOR_STRIDE_BYTES)
-  const f32 = new Float32Array(buffer)
+  const u32 = new Uint32Array(buffer)
   for (let i = 0; i < numIndicators; i++) {
-    f32[i] = indicatorPositions[i]!
+    u32[i] = indicatorPositions[i]!
   }
 
   return { buffer, indicatorCount: numIndicators }

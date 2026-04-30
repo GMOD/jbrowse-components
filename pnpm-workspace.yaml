@@ -2,3 +2,5 @@ packages:
   - 'packages/*'
   - 'products/*'
   - 'plugins/*'
+  - 'tools/gfa-to-tabix'
+  - 'tools/graph-truth-extractor'

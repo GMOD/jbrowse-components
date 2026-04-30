@@ -1,73 +1,58 @@
-import { MISMATCH_COLOR } from '@jbrowse/alignments-core'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import type React from 'react'
+
+import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { getContainingView } from '@jbrowse/core/util'
-import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
+import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { CoverageYScaleBar } from '@jbrowse/plugin-alignments'
-import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
+import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
-import { renderMultiSyntenyToCtx } from './components/Canvas2DMultiSyntenyRenderer.ts'
-import { LABEL_WIDTH } from './shared/types.ts'
+import { drawSyntenyToCtx } from './components/Canvas2DMultiSyntenyRenderer.ts'
 
 import type { MultiLGVSyntenyDisplayModel } from './model.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
+export async function renderSvg(
+  model: MultiLGVSyntenyDisplayModel,
+  opts?: ExportSvgDisplayOptions,
+): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
-  await when(() => model.genomeRows.size > 0 || !!model.error)
+  await when(
+    () => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge,
+  )
 
-  const {
-    genomeRows,
-    displayedGenomes,
-    colorBy,
-    syntenyAreaHeight,
-    syntenyCoverageHeight,
-    showCoverage,
-    rowHeight,
-    rowSpacing,
-    showSnps,
-    rpcDataMap,
-  } = model
-  const { width, offsetPx } = view
-  const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
+  if (model.error) {
+    return (
+      <SVGErrorBox
+        error={model.error}
+        width={view.width}
+        height={model.height}
+      />
+    )
+  }
 
-  if (genomeRows.size === 0) {
+  const palette = model.colorPalette
+  const baseState = model.syntenyRenderState
+  if (!palette || !baseState || model.rpcDataMap.size === 0) {
     return null
   }
 
-  const { palette } = createJBrowseTheme()
-  const ctx = new SvgCanvas()
-  const bpToPx = (refName: string, coord: number) => {
-    const result = view.bpToPx({ refName, coord })
-    if (result === undefined) {
-      return undefined
-    }
-    return result.offsetPx - offsetPx
-  }
+  const totalWidth = view.totalWidthPx
+  const renderBlocks = buildRenderBlocks(view.visibleRegions)
+  const state = { ...baseState, canvasWidth: totalWidth }
 
-  renderMultiSyntenyToCtx(ctx, genomeRows, displayedGenomes, {
-    width,
-    height: syntenyAreaHeight,
-    rowHeight,
-    rowSpacing,
-    bpToPx,
-    colorBy,
-    labelW,
-    showSnps,
-    coverageHeight: syntenyCoverageHeight,
-    coverageRegions: showCoverage ? [...rpcDataMap.values()] : [],
-    colors: {
-      mismatch: MISMATCH_COLOR,
-      deletion: palette.deletion,
-      insertion: palette.insertion,
-      baseA: palette.bases.A.main,
-      baseC: palette.bases.C.main,
-      baseG: palette.bases.G.main,
-      baseT: palette.bases.T.main,
-    },
-    coverageColor: palette.coverage,
+  const syntenyNode = paintLayer(totalWidth, model.height, opts, ctx => {
+    drawSyntenyToCtx(
+      ctx,
+      { rpcDataMap: model.rpcDataMap, gpuProps: model.gpuProps(), palette },
+      renderBlocks,
+      state,
+    )
   })
 
   const { coverageTicks } = model
@@ -76,13 +61,13 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
     <>
       <SvgClipRect
         id={`multi-synteny-clip-${model.id}`}
-        width={width}
+        width={view.width}
         height={model.height}
       >
-        <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
+        {syntenyNode}
       </SvgClipRect>
-      {showCoverage && coverageTicks ? (
-        <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
+      {model.showCoverage && coverageTicks ? (
+        <g transform={`translate(${Math.max(-view.offsetPx, 0)})`}>
           <CoverageYScaleBar model={{ coverageTicks }} />
         </g>
       ) : null}

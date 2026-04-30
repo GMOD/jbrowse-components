@@ -40,7 +40,7 @@ import type {
 import type { BlockRenderParams } from '../shared/blockRenderParams.ts'
 import type { SyntenyColorPalette } from '../shared/types.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
 const UNIFORMS_SIZE_BYTES = fillShader.UNIFORMS_SIZE_BYTES
 
@@ -61,16 +61,15 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
   }
 
   sync(sources: MultiSyntenySources) {
+    const { rpcDataMap, gpuProps, palette } = sources
     const {
-      rpcDataMap,
       displayedGenomes,
       colorBy,
       showSnps,
       showCoverage,
       coverageGlobalMax,
       viewWidth,
-      palette,
-    } = sources
+    } = gpuProps
 
     const active = new Set<number>()
     for (const [idx, data] of rpcDataMap) {
@@ -121,26 +120,23 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
     }
   }
 
-  renderBlocks(state: MultiSyntenyRenderState) {
+  renderBlocks(blocks: RenderBlock[], state: MultiSyntenyRenderState) {
     const {
-      contentBlocks,
-      viewOffsetPx,
-      width,
-      height,
+      canvasWidth,
+      canvasHeight,
       rowHeight,
       rowSpacing,
       coverageHeight,
       palette,
     } = state
 
-    this.hal.resize(width, height)
+    this.hal.resize(canvasWidth, canvasHeight)
     const dpr = getDevicePixelRatio()
-    const logicalW = Math.round(width * dpr) / dpr
-    const logicalH = Math.round(height * dpr) / dpr
+    const logicalW = Math.round(canvasWidth * dpr) / dpr
+    const logicalH = Math.round(canvasHeight * dpr) / dpr
     const rowPadding = rowSpacing ? 1 : 0
-    // depthScale multiplies coverage bar heights in the shader; 1 = no
-    // cross-region normalization (should eventually be region.maxDepth /
-    // globalMaxDepth, as GpuAlignmentsRenderer does)
+    // Coverage values are normalized against coverageGlobalMax at packing
+    // time (see packCoverageForGpu), so the shader multiplier is 1.
     const depthScale = 1
 
     this.hal.beginFrame(BG_COLOR_GL, BG_COLOR_GL, BG_COLOR_GL)
@@ -152,8 +148,7 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
     for (const passId of passes) {
       this.drawPassForVisibleBlocks(
         passId,
-        contentBlocks,
-        viewOffsetPx,
+        blocks,
         logicalW,
         logicalH,
         rowHeight,
@@ -174,8 +169,7 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
 
   private drawPassForVisibleBlocks(
     passId: string,
-    contentBlocks: ContentBlock[],
-    viewOffsetPx: number,
+    blocks: RenderBlock[],
     logicalW: number,
     logicalH: number,
     rowHeight: number,
@@ -184,11 +178,7 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
     depthScale: number,
     palette: SyntenyColorPalette,
   ) {
-    for (const [regionKey, params] of this.visibleBlocks(
-      contentBlocks,
-      viewOffsetPx,
-      logicalW,
-    )) {
+    for (const [regionKey, params] of this.visibleBlocks(blocks, logicalW)) {
       if (this.hal.getBufferCount(regionKey, passId) === 0) {
         continue
       }
@@ -213,18 +203,14 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
   }
 
   private *visibleBlocks(
-    contentBlocks: ContentBlock[],
-    viewOffsetPx: number,
+    blocks: RenderBlock[],
     viewWidth: number,
   ): Generator<[number, BlockRenderParams]> {
-    for (const block of contentBlocks) {
-      if (block.displayedRegionIndex === undefined) {
-        continue
-      }
+    for (const block of blocks) {
       if (!this.hal.getRegionMeta(block.displayedRegionIndex)) {
         continue
       }
-      const params = computeBlockRenderParams(block, viewOffsetPx)
+      const params = computeBlockRenderParams(block)
       if (
         params.regionScreenLeft + params.regionScreenWidth < 0 ||
         params.regionScreenLeft > viewWidth

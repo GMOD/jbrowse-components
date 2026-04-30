@@ -1,11 +1,38 @@
-import { getEdgesForOrdinals, orientChar } from './gfaBinaryIO.ts'
+import {
+  getEdgesForOrdinals,
+  mergeOrdinalRanges,
+  orientChar,
+} from './gfaBinaryIO.ts'
 
 import type { IndexedBinaryShard, SegRecord } from './gfaBinaryIO.ts'
+
+export type FetchSegmentsForOrdinals = (
+  ranges: [number, number][],
+) => Promise<SegRecord[]>
+
+// `L a oA b oB` and `L b ~oB a ~oA` are the same physical bidirected edge.
+// Pick the lexicographically smaller of (forward, reverse-partner) as the
+// canonical form so emission de-duplicates regardless of which side we read
+// the adjacency from.
+function canonicalLinkKey(
+  srcOrd: number,
+  srcO: string,
+  tgtOrd: number,
+  tgtO: string,
+) {
+  const flip = (o: string) => (o === '+' ? '-' : '+')
+  const forward = `s${srcOrd}\t${srcO}\ts${tgtOrd}\t${tgtO}`
+  const reverse = `s${tgtOrd}\t${flip(tgtO)}\ts${srcOrd}\t${flip(srcO)}`
+  return forward < reverse ? forward : reverse
+}
 
 export async function buildGfaFromEdges(
   viewportRefOrds: number[],
   segLens: Map<number, number>,
   edgeShard: IndexedBinaryShard,
+  fetchSegments: FetchSegmentsForOrdinals,
+  pathNames: string[],
+  seedSegments: SegRecord[],
 ) {
   const edgeMap = await getEdgesForOrdinals(edgeShard, viewportRefOrds)
   const allNodeOrds = new Set(viewportRefOrds)
@@ -17,7 +44,9 @@ export async function buildGfaFromEdges(
       segLens.set(edge.targetOrd, edge.tgtLen)
       const srcO = orientChar(edge.srcOrient)
       const tgtO = orientChar(edge.tgtOrient)
-      gfaLinks.add(`L\ts${srcOrd}\t${srcO}\ts${edge.targetOrd}\t${tgtO}\t*`)
+      gfaLinks.add(
+        `L\t${canonicalLinkKey(srcOrd, srcO, edge.targetOrd, tgtO)}\t*`,
+      )
     }
   }
 
@@ -30,11 +59,25 @@ export async function buildGfaFromEdges(
         if (allNodeOrds.has(edge.targetOrd)) {
           const srcO = orientChar(edge.srcOrient)
           const tgtO = orientChar(edge.tgtOrient)
-          gfaLinks.add(`L\ts${srcOrd}\t${srcO}\ts${edge.targetOrd}\t${tgtO}\t*`)
+          gfaLinks.add(
+            `L\t${canonicalLinkKey(srcOrd, srcO, edge.targetOrd, tgtO)}\t*`,
+          )
         }
       }
     }
   }
+
+  const altSegs =
+    altOrds.length > 0
+      ? await fetchSegments(
+          mergeOrdinalRanges(altOrds.map(o => [o, o] as [number, number])),
+        )
+      : []
+
+  const subwalks = computePathSubwalks(
+    [...seedSegments, ...altSegs],
+    allNodeOrds,
+  )
 
   const lines: string[] = ['H\tVN:Z:1.1']
   for (const ord of allNodeOrds) {
@@ -44,8 +87,73 @@ export async function buildGfaFromEdges(
   for (const link of gfaLinks) {
     lines.push(link)
   }
+  for (const sw of subwalks) {
+    const name = pathNames[sw.pathIdx]
+    if (!name) {
+      continue
+    }
+    const walk = sw.records
+      .map(r => `s${r.segOrd}${orientChar(r.orient)}`)
+      .join(',')
+    lines.push(`P\t${name}\t${walk}\t*`)
+  }
 
   return lines.join('\n')
+}
+
+interface Subwalk {
+  pathIdx: number
+  records: { segOrd: number; orient: number; offset: number; segLen: number }[]
+}
+
+// Walk each path's records in offset order, splitting at any gap where
+// `next.offset !== prev.offset + prev.segLen`. Each contiguous run becomes
+// one P-line — vg's xg-walk emission does the same: a re-entrant path
+// produces multiple W-lines, not one with a discontinuous walk.
+function computePathSubwalks(
+  segs: SegRecord[],
+  allNodeOrds: Set<number>,
+): Subwalk[] {
+  const seen = new Set<string>()
+  const byPath = new Map<number, SegRecord[]>()
+  for (const r of segs) {
+    if (!allNodeOrds.has(r.segOrd)) {
+      continue
+    }
+    const key = `${r.segOrd}|${r.pathNameIdx}|${r.offset}`
+    if (seen.has(key)) {
+      continue
+    }
+    seen.add(key)
+    if (!byPath.has(r.pathNameIdx)) {
+      byPath.set(r.pathNameIdx, [])
+    }
+    byPath.get(r.pathNameIdx)!.push(r)
+  }
+
+  const subwalks: Subwalk[] = []
+  for (const [pathIdx, recs] of byPath) {
+    recs.sort((a, b) => a.offset - b.offset)
+    let current: Subwalk['records'] = []
+    for (const r of recs) {
+      const prev =
+        current.length > 0 ? current[current.length - 1]! : undefined
+      if (prev && r.offset !== prev.offset + prev.segLen) {
+        subwalks.push({ pathIdx, records: current })
+        current = []
+      }
+      current.push({
+        segOrd: r.segOrd,
+        orient: r.orient,
+        offset: r.offset,
+        segLen: r.segLen,
+      })
+    }
+    if (current.length > 0) {
+      subwalks.push({ pathIdx, records: current })
+    }
+  }
+  return subwalks
 }
 
 export function buildGfaFromPathInference(

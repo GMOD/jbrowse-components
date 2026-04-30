@@ -3,12 +3,13 @@
 // uniform's baseA..T RGB triplets.
 //! targets: wgsl, glsl
 
+import hpmath;
 import multiSyntenyUniforms;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 struct SnpSegment {
-  float position   : ATTR0;
+  uint  position   : ATTR0;
   float yOffset    : ATTR1;
   float segHeight  : ATTR2;
   float colorType  : ATTR3;
@@ -37,9 +38,9 @@ VsOut vs_main(SnpSegment seg, uint vid : SV_VertexID) {
   float localX = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
   float localY = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
 
-  float blockStart = u.bpRangeHi + u.bpRangeLo;
-  float t1 = (seg.position - blockStart) / u.bpRangeLen;
-  float t2 = (seg.position + 1.0 - blockStart) / u.bpRangeLen;
+  float3 bpRange = float3(u.bpRangeHi, u.bpRangeLo, u.bpRangeLen);
+  float t1 = hpScaleLinear(hpSplitUint(seg.position), bpRange, u.hpZero);
+  float t2 = hpScaleLinear(hpSplitUint(seg.position + 1u), bpRange, u.hpZero);
   float px1 = u.regionScreenLeft + t1 * u.regionScreenWidth;
   float px2 = u.regionScreenLeft + t2 * u.regionScreenWidth;
   px2 = max(px2, px1 + 1.0);

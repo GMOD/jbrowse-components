@@ -14,7 +14,7 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
@@ -25,7 +25,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import TimelineIcon from '@mui/icons-material/Timeline'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
-import { autorun, observable } from 'mobx'
+import { observable } from 'mobx'
 
 import {
   getGlobalMaxDepth,
@@ -160,7 +160,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       rpcDataMap: observable.map<number, SyntenyRegionData>(),
       allGenomeNames: [] as string[],
       contextMenuFeature: undefined as Feature | undefined,
-      visibleMaxDepth: 0,
       colorPalette: null as SyntenyColorPalette | null,
     }))
     .views(() => ({
@@ -226,15 +225,25 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         const view = getContainingView(self) as LGV
         return view.bpPerPx < self.snpBpPerPxThreshold
       },
+      // Max depth across visible content blocks. MobX-cached.
       get coverageMaxDepth() {
-        return self.visibleMaxDepth
+        if (!self.showCoverage) {
+          return 0
+        }
+        const view = getContainingView(self) as LGV
+        if (!view.initialized) {
+          return 0
+        }
+        return computeVisibleMaxDepth(view.dynamicBlocks.contentBlocks, b =>
+          self.rpcDataMap.get(b.displayedRegionIndex!),
+        )
       },
       get coverageTicks() {
-        if (self.visibleMaxDepth === 0 || this.syntenyCoverageHeight === 0) {
+        if (this.coverageMaxDepth === 0 || this.syntenyCoverageHeight === 0) {
           return undefined
         }
         return computeCoverageTicks(
-          self.visibleMaxDepth,
+          this.coverageMaxDepth,
           this.syntenyCoverageHeight,
         )
       },
@@ -252,10 +261,22 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         }
       },
 
-      // Max coverage depth across all loaded regions; fed into the
-      // per-region coverage upload so heights share a common scale.
-      get coverageGlobalMax() {
-        return getGlobalMaxDepth(self.rpcDataMap)
+      // Settings consumed during main-thread GPU buffer encoding
+      // (buildSyntenyRegionMap), not sent to the worker. Counterpart to
+      // rpcProps for things that affect the GPU side instead of the RPC
+      // side. Defined as a method (not a getter) so subclasses can
+      // override it via the standard `super` capture pattern. Mirrors
+      // wiggle's gpuProps() pattern.
+      gpuProps() {
+        const view = getContainingView(self) as LGV
+        return {
+          displayedGenomes: this.displayedGenomes,
+          colorBy: self.colorBy,
+          showSnps: this.showSnps,
+          showCoverage: self.showCoverage && view.initialized,
+          coverageGlobalMax: getGlobalMaxDepth(self.rpcDataMap),
+          viewWidth: Math.ceil(view.width),
+        }
       },
 
       // Per-frame render state. Returns undefined to skip render until
@@ -267,10 +288,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           return undefined
         }
         return {
-          contentBlocks: view.staticBlocks.contentBlocks,
-          viewOffsetPx: view.offsetPx,
-          width: view.width,
-          height: self.height,
+          canvasWidth: view.width,
+          canvasHeight: self.height,
           rowHeight: this.rowHeight,
           rowSpacing: self.rowSpacing,
           coverageHeight: this.syntenyCoverageHeight,
@@ -317,9 +336,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       setShowCoverage(val: boolean) {
         self.showCoverage = val
       },
-      setVisibleMaxDepth(depth: number) {
-        self.visibleMaxDepth = depth
-      },
       setCoverageHeight(h: number) {
         self.coverageHeight = h
       },
@@ -340,18 +356,12 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         self.installGpuDisplay<MultiSyntenyBackend>(backend, {
           upload: b => {
             const palette = self.colorPalette
-            const view = getContainingView(self) as LGV
             if (!palette) {
               return
             }
             b.sync({
               rpcDataMap: self.rpcDataMap,
-              displayedGenomes: self.displayedGenomes,
-              colorBy: self.colorBy,
-              showSnps: self.showSnps,
-              showCoverage: self.showCoverage && view.initialized,
-              coverageGlobalMax: self.coverageGlobalMax,
-              viewWidth: Math.ceil(view.width),
+              gpuProps: self.gpuProps(),
               palette,
             })
           },
@@ -360,7 +370,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             if (!state) {
               return false
             }
-            return b.renderBlocks(state)
+            return b.renderBlocks(self.renderBlocks, state)
           },
         })
       },
@@ -381,8 +391,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
     }))
     .actions(self => {
-      const superAfterAttach = self.afterAttach
-
       return {
         fetchNeeded(
           needed: { region: Region; displayedRegionIndex: number }[],
@@ -451,40 +459,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               self.setRpcData(displayedRegionIndex, data)
             }
           })
-        },
-
-        afterAttach() {
-          superAfterAttach()
-
-          // Recompute the visible-region max-depth (debounced) for the
-          // coverage track's autoscaled Y axis. Upload / render is
-          // driven by startGpuBackendLifecycle via the framework.
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                if (!self.showCoverage) {
-                  return
-                }
-                const view = getContainingView(self) as LGV
-                if (!view.initialized) {
-                  return
-                }
-                const maxDepth = computeVisibleMaxDepth(
-                  view.dynamicBlocks.contentBlocks,
-                  b =>
-                    b.displayedRegionIndex !== undefined
-                      ? self.rpcDataMap.get(b.displayedRegionIndex)
-                      : undefined,
-                )
-                self.setVisibleMaxDepth(maxDepth)
-              },
-              {
-                delay: 400,
-                name: 'MultiLGVSyntenyDisplay:visibleMaxDepth',
-              },
-            ),
-          )
         },
 
         async renderSvg(): Promise<React.ReactNode> {
