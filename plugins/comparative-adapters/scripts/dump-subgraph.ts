@@ -25,10 +25,11 @@ import { TabixIndexedFile } from '@gmod/tabix'
 import { LocalFile } from 'generic-filehandle2'
 
 import {
+  getSegmentsForOrdinalsFromShard,
   mergeOrdinalRanges,
   parsePosLineOrdinals,
-  getSegmentsForOrdinalsFromShard,
 } from '../src/GfaTabixAdapter/gfaBinaryIO.ts'
+import { buildGfaCoarsened } from '../src/GfaTabixAdapter/gfaCoarsener.ts'
 import { getSequencesForOrdinals } from '../src/GfaTabixAdapter/gfaSeqIO.ts'
 import {
   buildGfaFromEdges,
@@ -46,16 +47,16 @@ interface Args {
   noEdges: boolean
   maxPathsEmitted?: number
   context?: number
+  coarsen?: 'auto' | 'on' | 'off'
+  bubbleThreshold?: number
 }
 
 function parseArgs(argv: string[]): Args {
-  let prefix = ''
-  let pathName = ''
-  let start = 0
-  let end = 0
   let noEdges = false
   let maxPathsEmitted: number | undefined
   let context: number | undefined
+  let coarsen: 'auto' | 'on' | 'off' = 'auto'
+  let bubbleThreshold: number | undefined
   const positional: string[] = []
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]!
@@ -75,22 +76,48 @@ function parseArgs(argv: string[]): Args {
         process.exit(2)
       }
       context = Number(next)
+    } else if (a === '--coarsen') {
+      const next = argv[++i]
+      if (!next || (next !== 'auto' && next !== 'on' && next !== 'off')) {
+        console.error('--coarsen requires auto|on|off')
+        process.exit(2)
+      }
+      coarsen = next
+    } else if (a === '--bubble-threshold') {
+      const next = argv[++i]
+      if (!next) {
+        console.error('--bubble-threshold requires a numeric argument')
+        process.exit(2)
+      }
+      bubbleThreshold = Number(next)
     } else {
       positional.push(a)
     }
   }
   if (positional.length < 4) {
     console.error(
-      'Usage: node --experimental-strip-types plugins/comparative-adapters/scripts/dump-subgraph.ts <prefix> <pathName> <start> <end> [--no-edges] [--max-paths N] [--context K]',
+      'Usage: node --experimental-strip-types plugins/comparative-adapters/scripts/dump-subgraph.ts <prefix> <pathName> <start> <end> [--no-edges] [--max-paths N] [--context K] [--coarsen auto|on|off] [--bubble-threshold BP]',
     )
     process.exit(2)
   }
-  prefix = positional[0]!
-  pathName = positional[1]!
-  start = Number(positional[2]!)
-  end = Number(positional[3]!)
-  return { prefix, pathName, start, end, noEdges, maxPathsEmitted, context }
+  return {
+    prefix: positional[0]!,
+    pathName: positional[1]!,
+    start: Number(positional[2]!),
+    end: Number(positional[3]!),
+    noEdges,
+    maxPathsEmitted,
+    context,
+    coarsen,
+    bubbleThreshold,
+  }
 }
+
+// Mirrors gfaTabixUtils.ts; CLI must use the same defaults so the adapter
+// dispatch path and the bash-harness path agree on which builder runs.
+const COARSEN_THRESHOLD_BP = 1_000_000
+const MIN_BUBBLE_THRESHOLD_BP = 20
+const BUBBLE_THRESHOLD_DIVISOR = 50_000
 
 async function main() {
   const args = parseArgs(process.argv.slice(2))
@@ -142,7 +169,7 @@ async function main() {
   const pathsMatch = /paths=([^\n]+)/.exec(header)
   const formatMatch = /input-format=([^\n\s]+)/.exec(header)
   const inputFormat: 'walks' | 'paths' =
-    formatMatch && formatMatch[1] === 'walks' ? 'walks' : 'paths'
+    formatMatch?.[1] === 'walks' ? 'walks' : 'paths'
   const pathNames = pathsMatch
     ? pathsMatch[1]!.split(',')
     : sizesMatch
@@ -188,38 +215,61 @@ async function main() {
     return
   }
 
-  const buildOpts = {
-    maxPathsEmitted: args.maxPathsEmitted,
-    context: args.context,
-    emitFormat: inputFormat,
-  }
+  const regionBp = args.end - args.start
+  const useCoarsen =
+    args.coarsen === 'on' ||
+    (args.coarsen === 'auto' &&
+      regionBp >= COARSEN_THRESHOLD_BP &&
+      edgeShard !== undefined)
+
   let gfa: string
-  if (edgeShard) {
-    gfa = await buildGfaFromEdges(
+  if (useCoarsen) {
+    if (!edgeShard) {
+      throw new Error('--coarsen on requires edges.bin (run without --no-edges)')
+    }
+    const bubbleThresholdBp =
+      args.bubbleThreshold ??
+      Math.max(
+        MIN_BUBBLE_THRESHOLD_BP,
+        Math.floor(regionBp / BUBBLE_THRESHOLD_DIVISOR),
+      )
+    gfa = await buildGfaCoarsened(
       viewportRefOrds,
       segLens,
       edgeShard,
-      ranges => getSegmentsForOrdinalsFromShard(segShard, ranges),
       pathNames,
-      segments,
-      fetchSeqs,
-      buildOpts,
+      refPathIdx,
+      bubbleThresholdBp,
     )
   } else {
-    gfa = await buildGfaFromPathInference(
-      segments,
-      refPathIdx,
-      viewportRefOrds,
-      segLens,
-      pathNames,
-      fetchSeqs,
-      buildOpts,
-    )
+    const buildOpts = {
+      maxPathsEmitted: args.maxPathsEmitted,
+      context: args.context,
+      emitFormat: inputFormat,
+    }
+    gfa = await (edgeShard ? buildGfaFromEdges(
+        viewportRefOrds,
+        segLens,
+        edgeShard,
+        ranges => getSegmentsForOrdinalsFromShard(segShard, ranges),
+        pathNames,
+        segments,
+        fetchSeqs,
+        buildOpts,
+      ) : buildGfaFromPathInference(
+        segments,
+        refPathIdx,
+        viewportRefOrds,
+        segLens,
+        pathNames,
+        fetchSeqs,
+        buildOpts,
+      ))
   }
-  process.stdout.write(gfa.endsWith('\n') ? gfa : gfa + '\n')
+  process.stdout.write(gfa.endsWith('\n') ? gfa : `${gfa  }\n`)
 }
 
-main().catch(err => {
+main().catch((err: unknown) => {
   console.error(err instanceof Error ? err.stack : String(err))
   process.exit(1)
 })

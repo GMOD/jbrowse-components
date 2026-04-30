@@ -131,7 +131,7 @@ function parseVertsPerInstance(source: string) {
   const evaluating = new Set<string>()
   const evalExpr = (raw: string): number => {
     // Strip Slang's `u` / `U` integer suffix first so `1u` doesn't leave a
-    // stray `u` that the identifier pass would mis-resolve.
+    // stray `u` that the identifier pass would fail to resolve.
     const stripped = raw.replace(/(\d+)[uU]\b/g, '$1')
     // Replace identifier references with their resolved numeric values.
     const cleaned = stripped.replace(/[A-Za-z_]\w*/g, name => {

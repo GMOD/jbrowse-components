@@ -106,6 +106,24 @@ const GfaTabixAdapter = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    seqBinaryLocation: {
+      type: 'fileLocation',
+      description:
+        'Phase 1 binary sequence tier (segments.seq.bin): SEQB-magic 2-bit ACGT pack + per-segment N-bitmap. Preferred over seqFastaLocation when present (~73% smaller than plaintext at HPRC chr20 scale).',
+      defaultValue: {
+        uri: '',
+        locationType: 'UriLocation',
+      },
+    },
+    seqBinaryIdxLocation: {
+      type: 'fileLocation',
+      description:
+        'SEQI-magic byte-offset table for segments.seq.bin (BigUint64Array, one entry per ordinal plus end-of-file sentinel).',
+      defaultValue: {
+        uri: '',
+        locationType: 'UriLocation',
+      },
+    },
     bubblesLocation: {
       type: 'fileLocation',
       description:
@@ -183,6 +201,13 @@ const GfaTabixAdapter = ConfigurationSchema(
             uri: `${snap.prefix}.segments.seq.idx`,
             baseUri: snap.baseUri,
           },
+          // Binary sequence tier (Phase 1 binary, opt-in at preprocess
+          // time via --emit-seq-binary) is intentionally NOT wired by the
+          // `prefix:` shorthand — emit defaults to plaintext-only, so
+          // unconditional auto-wiring would 404 on every getSubgraph for
+          // most existing deployments. Fixtures that do ship the binary
+          // tier should set seqBinaryLocation/seqBinaryIdxLocation
+          // explicitly in their adapter config.
           bubblesLocation: {
             uri: `${snap.prefix}.bubbles.bed.gz`,
             baseUri: snap.baseUri,

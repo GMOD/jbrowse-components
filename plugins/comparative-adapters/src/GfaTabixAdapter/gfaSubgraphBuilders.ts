@@ -3,6 +3,11 @@ import {
   mergeOrdinalRanges,
   orientChar,
 } from './gfaBinaryIO.ts'
+import {
+  canonicalLinkKey,
+  parsePanSn,
+  walkOrient,
+} from './gfaEmitHelpers.ts'
 
 import type { IndexedBinaryShard, SegRecord } from './gfaBinaryIO.ts'
 
@@ -44,14 +49,6 @@ interface Subwalk {
 
 const seqDecoder = new TextDecoder()
 
-function flipOrient(o: string) {
-  return o === '+' ? '-' : '+'
-}
-
-function walkOrient(o: number) {
-  return o === 0 ? '>' : '<'
-}
-
 // Per GFA 1.1 spec the S-line sequence column is either an alphabet string
 // or `*`; LN:i: is mandatory in the placeholder case so consumers can still
 // allocate node lengths.
@@ -59,35 +56,6 @@ function formatSegLine(ord: number, len: number, seq: Uint8Array | undefined) {
   return seq
     ? `S\ts${ord}\t${seqDecoder.decode(seq)}`
     : `S\ts${ord}\t*\tLN:i:${len}`
-}
-
-// `L a oA b oB` and `L b ~oB a ~oA` are the same physical bidirected edge.
-// Pick the lexicographically smaller representation as the canonical form so
-// emission de-duplicates regardless of which side we read the adjacency from.
-function canonicalLinkKey(
-  srcOrd: number,
-  srcO: string,
-  tgtOrd: number,
-  tgtO: string,
-) {
-  const forward = `s${srcOrd}\t${srcO}\ts${tgtOrd}\t${tgtO}`
-  const reverse = `s${tgtOrd}\t${flipOrient(tgtO)}\ts${srcOrd}\t${flipOrient(srcO)}`
-  return forward < reverse ? forward : reverse
-}
-
-// PanSN parse for W-line emission: `sample#hap#contig` → 3 fields.
-// Names without 3 `#`-separated fields fall back to `(name, 0, name)` so
-// downstream tools always see a 7-column W-line.
-function parsePanSn(name: string) {
-  const parts = name.split('#')
-  if (parts.length >= 3) {
-    return {
-      sample: parts[0]!,
-      hap: parts[1]!,
-      contig: parts.slice(2).join('#'),
-    }
-  }
-  return { sample: name, hap: '0', contig: name }
 }
 
 function formatPathLine(name: string, records: SubwalkRecord[]) {
@@ -172,7 +140,7 @@ export async function buildGfaFromEdges(
     tgtOrient: number,
   ) => {
     gfaLinks.add(
-      `L\t${canonicalLinkKey(srcOrd, orientChar(srcOrient), tgtOrd, orientChar(tgtOrient))}\t*`,
+      `L\t${canonicalLinkKey(`s${srcOrd}`, orientChar(srcOrient), `s${tgtOrd}`, orientChar(tgtOrient))}\t*`,
     )
   }
 
@@ -378,7 +346,7 @@ export async function buildGfaFromPathInference(
       const a = sw.records[i]!
       const b = sw.records[i + 1]!
       links.add(
-        `L\t${canonicalLinkKey(a.segOrd, orientChar(a.orient), b.segOrd, orientChar(b.orient))}\t*`,
+        `L\t${canonicalLinkKey(`s${a.segOrd}`, orientChar(a.orient), `s${b.segOrd}`, orientChar(b.orient))}\t*`,
       )
     }
   }

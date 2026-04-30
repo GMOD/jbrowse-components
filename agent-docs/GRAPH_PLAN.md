@@ -164,11 +164,19 @@ let you query only from the rGFA reference's perspective; this index
   network range-fetched working sets are typically a few MB per query,
   so decode-time savings there matter more than total file size on
   object storage.
-- **Multiple format tiers are allowed (SAM/BAM/CRAM-style).** Don't
-  collapse to a single binary layout. A plaintext form and a packed
-  binary form should coexist, dispatched via a magic header byte. This
-  preserves debuggability (plaintext) and lets us add a
-  reference-compressed tier later without breaking existing readers.
+- **Multiple format tiers are allowed (SAM/BAM/CRAM-style) for
+  encodings of the same logical content.** Don't collapse to a
+  single binary layout where multiple encodings make sense — e.g.
+  per-segment sequences ship as both a plaintext FASTA tier
+  (debuggable, greppable) and a 2-bit-packed binary tier (smaller
+  on the wire), both encoding the identical ACGT(N) content,
+  dispatched via a magic header byte. This preserves debuggability
+  and lets us add a reference-compressed CRAM-equivalent tier
+  later without breaking existing readers. **This authorization
+  applies to encodings of the same data, not to parallel
+  mechanisms that solve different problems** — see "Design
+  direction: unified extraction" below for what that distinction
+  rules out.
 - **Preprocess-time vg/odgi calls are fine.** The Rust tool already shells
   out to `bgzip`/`tabix`/`sort` and runs `vg deconstruct`; adding
   `vg snarls` and `vg autoindex` (or `vg gbwt`) is acceptable.
@@ -181,16 +189,152 @@ let you query only from the rGFA reference's perspective; this index
   zoomed-in flow (sub-100 kb, the headline experiment); larger regions
   render a coarsened/block-level summary so the synteny display at low
   zoom and the import-form large-region launch both stay responsive. The
-  chr20 audit at 5 Mbp surfaced this as the next gating issue. See
-  "Multi-resolution / coarsened views for megabase scale" below for the
-  design.
+  chr20 audit at 5 Mbp surfaced this as the next gating issue.
+
+## Design direction: unified extraction (2026-04-30)
+
+The plan as originally written grew three overlapping multi-resolution
+mechanisms — planned snarls index, planned tile pyramid, runtime
+coarsener — each solving the same problem (rendering at megabase
+scale) with a different mechanism. After a critical pass with the
+user, the explicit steer is to **collapse to one clean unified
+mechanism** and present *publication-worthy elegance*: one algorithmic
+claim a reviewer can hold in their head.
+
+The complexity to cut is *parallel mechanisms that solve overlapping
+problems*. Multiple **encodings of the same logical data** — the
+SAM/BAM/CRAM analogy — is a different question and remains a
+legitimate design choice (see the binary sequence tier below). The
+two are easily confused; this section makes the distinction explicit
+so future agents don't re-create the parallel-mechanism trap while
+keeping the encoding-tier flexibility.
+
+### What "unified extraction" means
+
+One edge-walk algorithm spans all zoom levels, parametrized by viewport
+size:
+
+```
+extract(region, opts):
+  walk ref path's segments in [start, end]
+  detect bubbles via edge fanout (BFS to ref-path reconvergence)
+  if opts.collapse_linear_runs:    fold linear ref runs into super-segments
+  if bubble.maxAltLen < threshold: collapse bubble, drop alt segs
+  else:                            preserve bubble interior + alts
+```
+
+Two presets, both runtime, both reading the same `edges.bin` +
+`segments.bin`:
+
+- **Per-segment (zoomed in, < 1 Mbp):** `threshold = ∞`,
+  `collapse = false` → identical to today's `buildGfaFromEdges`. Used
+  for the headline experiment (HPRC chr20 path-symmetry at sub-100 kb).
+- **Coarsened (zoomed out, ≥ 1 Mbp):** `threshold = region/50_000`,
+  `collapse = true` → today's `buildGfaCoarsened`. Used for the
+  megabase-scale flows (synteny low-zoom + import-form large-region
+  launch).
+
+The "snarl-boundary context expansion" Phase 4 was reserved for falls
+out of the bubble-to-reconvergence BFS — the bubble closure *is* the
+top-level snarl boundary, computed from edges at query time. No
+separate snarls index needed.
+
+### What this drops from the plan
+
+- **Tile pyramid file format** (`prefix.tiles.<stride>.{bin,idx}`,
+  TILB/TILI magic, 3 strides). Was a planned BigWig-style precomputed
+  multi-resolution index. The runtime coarsener already produces
+  comparable output at 400 ms / 1 Mbp on HPRC chr20 — well within the
+  perf budget for the headline regime. A precomputed pyramid would
+  add 6+ files per fixture, lock zoom levels at preprocess time, and
+  make the index footprint claim worse for no measured user-facing
+  win.
+- **Snarls index file** (`prefix.snarls.bed.gz` + `.tbi`, Phase 4).
+  Was reserved as the principled context-expansion default. The
+  edge-walk's bubble-closure BFS gives equivalent boundaries for
+  top-level snarls without a `vg snarls` preprocess call or a new
+  tabix dependency.
+- **Rust port of the coarsener.** TS prototype runs in 400 ms at
+  1 Mbp; HTTP RTT dominates anyway. Keep the TS implementation as
+  *the* implementation; it stops being a "reference prototype the
+  Rust port matches against" and becomes the production form.
+
+### What this keeps
+
+- The five core index files (`pos.bed.gz`, `segments.bin`, `edges.bin`,
+  `bubbles.bed.gz`, `segments.seq.fa`) — already shipped, all
+  load-bearing for at least one user flow.
+- The runtime coarsener at
+  `plugins/comparative-adapters/src/GfaTabixAdapter/gfaCoarsener.ts`
+  — promoted from "reference prototype" to canonical
+  multi-resolution implementation.
+- The binary sequence tier (F3 — SEQB/SEQI, 2-bit ACGT + N-bitmap)
+  is a **compaction of the same logical data** as the plaintext
+  FASTA, in the SAM/BAM sense — both tiers encode the identical
+  per-segment ACGT(N) sequence, just at different bit-densities. This
+  is *not* the same kind of complexity as adding a new file type or
+  a new algorithm; it's a packing choice over content the index
+  already needed to ship. Both tiers stay in tree; the magic-byte
+  dispatcher in `gfaSeqBinaryIO.ts` makes adding more compactions
+  later (e.g. a CRAM-equivalent reference-compressed tier) a local
+  change. Default at publication time picked by Phase 8 measurement
+  — both are honest choices.
+- The "Multiple format tiers are allowed (SAM/BAM/CRAM-style)"
+  decision above is preserved with the corrected framing: it
+  applies to *encodings of the same logical content* per file
+  (sequences today; potentially `segments.bin` itself if Phase 8
+  shows offset duplication is the bottleneck). It does *not*
+  authorize parallel mechanisms that solve different problems —
+  that is the trap the deferred snarls-index/tile-pyramid items
+  fell into, and what the unified-extraction direction corrects.
+
+### Implementation moves (small refactors, not new files)
+
+1. **Unify the two extraction paths.** Refactor
+   `buildGfaFromEdges` and `buildGfaCoarsened` into a single
+   `extractSubgraph(viewportRefOrds, segLens, edgeShard, ...)`
+   function with `{ threshold, collapseLinearRuns, context }`
+   options. Most code is already shared (BFS, GFA emission, link
+   canonicalization); the divergence is two flags. Two call sites in
+   `getSubgraph` collapse to one with preset selection by region
+   size.
+2. **Strip planned-but-unbuilt format slots from
+   `GRAPH_INDEX_FORMAT.md`.** *Done 2026-04-30.* Removed
+   tile-pyramid + snarls-BED sections; magic registry contracted to
+   the 6 magics actually emitted. SEQB/SEQI marked as
+   "alternative encoding tier" rather than canonical. Spec now
+   ~290 lines (was 357).
+3. **Doc consolidation.** *Done 2026-04-30 — minimal version.*
+   `GRAPH_AUDIT.md` left in place as a static historical archive;
+   plan stops referencing it as a working doc. No physical merge,
+   no churn in the archive's contents.
+
+### Publication framing (what reviewers will read)
+
+> **Adaptive-resolution subgraph extraction from a static
+> edge+position index, parametrized by viewport size. No
+> preprocess-time zoom-level commitment. The same edge-walk
+> algorithm yields per-base bubble detail at small zoom and
+> structural-backbone summary at megabase scale, both browser-native
+> against S3-hosted indexes.**
+
+Comparisons:
+- **vs BigWig-style precomputed pyramids** — fewer files, no fixed
+  zoom levels.
+- **vs vg's GBZ** — browser-native, no in-process toolkit.
+- **vs sequencetubemap-tabix** — comparable file footprint, simpler
+  algorithm story, browser-native vs server-mediated.
+
+Index footprint becomes a stronger supporting claim because we
+ship fewer file types than competing approaches.
 
 ## Status & next steps (2026-04-30)
 
 This section is the running scoreboard. Update it when shipping a
-phase or surfacing a new blocker. Per-finding detail lives in
-`agent-docs/GRAPH_AUDIT.md`; this is the executive summary plus the
-prioritized backlog.
+phase or surfacing a new blocker. Per-finding detail from the Phase 0
+audit is archived in `agent-docs/GRAPH_AUDIT.md` (static historical
+record, do not edit); this section is the executive summary plus
+the prioritized backlog.
 
 ### Shipped
 
@@ -203,65 +347,74 @@ next steps" pointers — don't accumulate ✅ entries here.
 
 ### Open: prioritized backlog
 
-Ordered by expected-value-per-effort. Re-rank when something new
-surfaces.
+Re-ranked 2026-04-30 after the unified-extraction design pass above.
+Backlog items that previously assumed multi-format multi-resolution
+(snarls index, tile pyramid, Rust coarsener port) are demoted to
+"deferred — only revisit if the headline experiment forces it." The
+new top of the list is *prove the existing system carries the
+headline experiment*; speculative architecture is on hold until that
+measurement either confirms or refutes the unified-extraction bet.
 
-1. **Phase 4 snarls index.** `prefix.snarls.bed.gz` from `vg snarls`
-   output, with parent-child snarl hierarchy. Promoted to top because
-   it's the gating item for the **C3 chr20 path-symmetry claim** (see
-   item 4 — chr20 needs snarl-aware expansion since strict
-   byte-isomorphism doesn't hold there) and unlocks: (a) the
-   snarl-boundary context-expansion default (currently `context` only
-   supports fixed-k), (b) zoom-to-snarl UX in GraphGenomeView, (c) the
-   snarl-collapse tier of multi-resolution coarsening, (d) the full
-   Phase 6 polish. Schema pinned in `GRAPH_INDEX_FORMAT.md:179-194`.
-   Largest single lift in the backlog but the highest leverage —
-   without it the headline figure at chr20 has no path-symmetry
-   measurement.
-2. **Multi-resolution / coarsened graph index for megabase scale.**
-   Today's per-segment extraction is unusable past ~1 Mbp (chr20
-   audit at 5 Mbp emits 434 K paths and the GraphRenderer geometry
-   rebuild stalls). The `maxPathsEmitted` cap (shipped) prevents the
-   worst-case stall but does not produce a *useful* zoomed-out view
-   — it just truncates. Full fix: multi-resolution layer with
-   snarl-collapse / tile-pyramid / haplotype-thinning detail levels,
-   dispatched on region size. Headline experiment (sub-100 kb,
-   bubble detail) is unaffected; this makes the zoomed-out flow
-   functional — synteny display at low zoom, import-form launch with
-   a multi-megabase region. Design section below ("Multi-resolution
-   / coarsened views for megabase scale"). Tile-pyramid is independent
-   of Phase 4 and the cheapest first ship; snarl-collapse depends on
-   item 1.
-3. **Bubble-row regrouping at preprocess time.** Today
-   `bubbles.bed.gz` ships one row per `(locus, alleleA, alleleB)`
-   pair; runtime `bubbleOverlay.ts:fetchBubbleSites` groups rows
-   sharing `(start, end)` into per-site `BubbleSite` records on every
-   region query. The Rust preprocessor already has the per-site
-   shape internally before splitting on emit — flipping the emit step
-   is a ~20-line change in `tools/gfa-to-tabix/src/main.rs` and
-   deletes ~50 LOC of `bubbleOverlay.ts` (`parseBubbleLine` + the
-   grouping pass). Pre-publication is the cheap moment for the
-   schema break; post-publication v1 must keep working forever per
-   the format-spec compatibility policy. Schema impact documented in
-   `GRAPH_ARCHITECTURE.md` "On-disk-shape opportunity" and the
-   `GRAPH_INDEX_FORMAT.md` bubbles-bed section. **Cost:** Rust patch
-   + regenerate every fixture in `prepare-fixtures.sh` + re-upload
-   chr20/chrM bubble files to S3.
-4. **F3 binary-tier implementation.** Format pinned in
-   `agent-docs/GRAPH_INDEX_FORMAT.md` (Option A: 2-bit ACGT +
-   per-segment N-bitmap). Spike result on chr20: 67.66 Mbp segment
-   sequence, 0.74% N, no IUPAC. Predicted footprint ~25 MB vs 91 MB
-   plaintext. Implementation: rust preprocessor emits
-   `prefix.segments.seq.bin` + `prefix.segments.seq.bin.idx`; adapter
-   detects via `SEQB` magic and unpacks; new config slot
-   `seqBinaryLocation`. Supplementary footprint claim — not gating.
-5. **Phase 5 CI provisioning.** Jest concordance and path-symmetry
-   tests shipped in
-   `plugins/comparative-adapters/src/GfaTabixAdapter/auditConcordance.test.ts`
-   (skip when `vg` is missing). Remaining: provision `vg ≥ 1.59.0`
-   (and `odgi`, `chunkix`) in CI so the suite runs by default rather
-   than skipping — likely a docker container or apt install in the
-   workflow YAML. Mechanical, not gating publication.
+1. **Run the headline experiment end-to-end on chr20.** Pick the
+   MAPT-region locus (or HPRC chrM SV), query from N≥3 reference
+   paths through the live UI, capture screenshots, and verify the
+   `getEquivalentRanges` + per-segment + coarsened paths produce
+   structurally isomorphic subgraphs across all paths. This is the
+   single source of truth for whether the current system is
+   publication-ready or whether something is missing. Outcomes:
+   - **Works as-is** → write the paper. Phase 5 CI provisioning is
+     the only mechanical work left.
+   - **Fails on context expansion** → Phase 4 snarls index becomes
+     unambiguous next step (currently deferred — see below).
+   - **Fails on something else** → that thing is the next priority,
+     not what's currently in the backlog.
+2. **Phase 5 CI provisioning.** Jest concordance and path-symmetry
+   tests shipped in `auditConcordance.test.ts` (skip when `vg` is
+   missing). Remaining: provision `vg ≥ 1.59.0` (and optionally
+   `odgi`, `chunkix`) in CI so the suite runs by default rather
+   than skipping. Docker container or apt install in the workflow
+   YAML. Mechanical, not gating publication.
+
+### Deferred (revisit only if the headline experiment forces it)
+
+These were previously top-priority backlog items. After the
+unified-extraction design pass, each falls into the "speculative
+unless an experiment proves we need it" bucket. Documented here so
+the rationale is preserved if a future agent is tempted to revive
+them.
+
+- **Phase 4 snarls index** (`prefix.snarls.bed.gz` from `vg snarls`).
+  Was promoted as "highest leverage" because it gated the C3
+  path-symmetry claim under the assumption that snarl-aware context
+  expansion was needed at chr20 scale. The unified-extraction
+  algorithm derives the same boundary at runtime via
+  bubble-closure BFS on the existing edge index. Revive only if
+  the headline experiment shows the runtime BFS produces wrong
+  boundaries on real chr20 data.
+- **Tile-pyramid format** (`prefix.tiles.<stride>.{bin,idx}`,
+  TILB/TILI magic, 3 strides). Was the planned multi-resolution
+  precompute. Runtime coarsener at 400 ms / 1 Mbp on chr20 fits
+  inside the perf budget. Revive only if Phase 8 measurement shows
+  the runtime coarsener falls over on a documented user flow.
+- **Rust port of the coarsener.** Was justified by the static-file
+  steer. The TS implementation runs fast enough that HTTP RTT
+  dominates; the port would not measurably help. Revive if Phase 8
+  shows otherwise.
+- **Bubble-row regrouping at preprocess time.** ~20-line Rust
+  change that deletes ~50 LOC of TS grouping code, but requires
+  fixture rebuild + S3 reupload of every bubbles file. Bundle
+  with the next required fixture rebuild rather than do
+  standalone — pure cleanup, no user-visible win.
+- **Binary sequence tier (F3, shipped) — default selection
+  pending.** Both plaintext and binary encode the same logical
+  per-segment sequence; the binary tier is a compaction (~73%
+  smaller at chr20 scale), not a different feature. Both ship.
+  Plaintext is currently the default because it's debuggable,
+  greppable, and what existing fixtures contain; the binary tier
+  is opt-in via `--emit-seq-binary` + the `seqBinaryLocation`
+  config slot. Phase 8 picks the publication-default tier from
+  measurement — promoting binary is a one-line dispatcher change
+  in `BaseGfaTabixAdapter`, not an architecture move.
 
 ### Surfaced issues (track but not blocking)
 
@@ -301,143 +454,70 @@ not yet on S3** — uploads will happen alongside backlog item 3
 (per-site bubble schema) so we don't ship the per-pair shape and
 then immediately re-upload.
 
-## Multi-resolution / coarsened views for megabase scale (planned)
+## Multi-resolution: how megabase-scale rendering works today
 
-This section is the design starter for backlog item 2. It is **not
-yet implemented**; phases 0–6 ship the per-segment (full-detail)
-flow, and this layer sits on top of those. Sequencing decision —
-whether this is "Phase 4.5" inline or a new Phase 10 — deferred
-until the design firms up; for now treat it as a planned phase
-referenced from the backlog.
+**Superseded 2026-04-30** — this section originally proposed three
+overlapping coarsening strategies (snarl-collapse, tile-pyramid,
+haplotype-thinning). Per the unified-extraction design above, the
+shipped solution is the runtime edge-walk coarsener at
+`plugins/comparative-adapters/src/GfaTabixAdapter/gfaCoarsener.ts`
+— one algorithm, no precomputed pyramid, no new file format.
 
 ### Problem
 
-Per-segment subgraph extraction is targeted at sub-100 kb (Phase 8
-budgets). At HPRC chr20 scale, queries past ~1 Mbp emit tens of
-thousands of segments and hundreds of thousands of path subwalks;
-the network round-trip and
-`GraphRenderer.buildGeometry` rebuild both fall over. The headline
-experiment (bubble-level detail at sub-100 kb) is unaffected — that
-is the *zoomed-in* flow. Coarsening is the *zoomed-out* flow.
+Per-segment subgraph extraction targets sub-100 kb (Phase 8 budgets).
+At HPRC chr20 scale, queries past ~1 Mbp emit tens of thousands of
+segments and hundreds of thousands of path subwalks; the network
+round-trip and `GraphRenderer.buildGeometry` rebuild both fall over.
+The headline experiment (bubble-level detail at sub-100 kb) is
+unaffected — that is the *zoomed-in* flow. Coarsening is the
+*zoomed-out* flow.
 
-Two user flows hit this directly and both must keep working:
+### Solution (shipped)
 
-- **MultiLGVSyntenyDisplay at low zoom.** The synteny display
-  renders at whatever bp/px the user has scrolled to. At ~1 Mb
-  visible per panel, per-segment detail is neither renderable nor
-  useful — the user wants block-level structure (where do the
-  bubbles live, which haplotypes diverge in this region) not
-  per-base detail.
-- **Graph view launched with a large region.** From the import
-  form, or from a "show me everything" track-menu action, a user
-  can request a multi-megabase region. The graph view should still
-  produce *something* (a coarsened block diagram), not freeze on
-  geometry build.
+Above 1 Mbp, `BaseGfaTabixAdapter.getSubgraph` dispatches to
+`buildGfaCoarsened`. Same edge index, same ref-path traversal, but:
 
-### Design sketch
+- Linear ref runs collapse into super-segments (one S-line per run).
+- Bubbles below `max(20 bp, region/50_000)` collapse — alt-allele
+  segments are dropped; ref-allele segments fold into the super-run.
+- Bubbles above threshold preserve their interior — alt segs emit as
+  separate S-lines, the ref-path W-line walks through them.
+- BFS cap-hit topologies (deep dead-ends, cycles) collapse
+  conservatively to keep the output graph fully connected.
 
-Three coarsening strategies, picked or composed by zoom level:
+Performance on HPRC chr20 (1.86 M segments, 90 haplotypes):
+- 100 kb (per-segment, full detail): 260 ms, 2,994 segs / 3,992 links.
+- 1 Mb (coarsened): 388 ms, 10 segs / 15 links / 1 preserved bubble.
+- 10 Mb (coarsened): 4.7 s, 13 segs / 22 links / 5 preserved SVs.
 
-- **Snarl-collapse** (depends on Phase 4). Each top-level snarl
-  collapses to a super-node annotated with bubble count, max allele
-  length, and haplotype-membership summary. Edges between
-  super-nodes are the chains connecting them. Most biology-faithful;
-  renders as backbone + bubble blocks.
-- **Tile-pyramid** (independent of other phases — cheapest first
-  ship). Group segments into bp-stride tiles along each reference
-  path; per tile, record haplotype count, dominant subwalk, and a
-  divergence summary. Analogous to BigWig's zoom pyramid. Strides
-  ∈ {10kb, 100kb, 1Mb}, depth driven by Phase 8 measurement.
-- **Haplotype thinning.** Emit only the reference path(s) plus a
-  per-segment haplotype-presence bitmap; suppress per-haplotype W/P
-  lines. Bubble structure still renders, with a single "90
-  haplotypes, 60 share allele A, 30 share allele B" annotation
-  rather than 90 separate walks. The shipped `maxPathsEmitted` cap
-  is a coarse "drop everything" fallback; haplotype thinning is the
-  fine-grained replacement.
+Both the synteny display low-zoom flow and the import-form
+large-region launch flow run through the same dispatch; no per-flow
+detail-level option needed.
 
-Natural composition: at 1 Mb+ use tile-pyramid; at 100 kb–1 Mb use
-snarl-collapse + haplotype-thinning; at <100 kb use full per-segment
-detail. Thresholds are perf-tuned, not hard-coded, and live in the
-adapter config.
+### Why one algorithm instead of three
 
-### Index files (planned, not committed)
+The earlier plan called for snarl-collapse + tile-pyramid +
+haplotype-thinning composed by zoom level. After the design pass:
 
-- `prefix.tiles.<stride>.bin` — per-path tile records, ordinal-keyed.
-  Each record: `tileOrd | haplotypeCount | dominantWalkOrd |
-  divergenceScore`. Multiple stride files form the pyramid.
-  Magic + version header per `agent-docs/GRAPH_INDEX_FORMAT.md`.
-- `prefix.haplotype-bitmap.bin` — per-segment haplotype-membership
-  bitmap; one bit per (segment, haplotype) pair, queryable as a
-  range fetch on the segment ordinal.
-- Snarl-collapse reuses `prefix.snarls.bed.gz` from Phase 4 — no
-  new file needed for that tier.
+- Snarl-collapse needed a new `prefix.snarls.bed.gz` file and a
+  `vg snarls` preprocess. The runtime BFS to ref-path reconvergence
+  produces equivalent boundaries for top-level snarls without
+  either.
+- Tile-pyramid needed 6+ new files per fixture (`tiles.<stride>.bin`
+  + `.idx` × 3 strides), made the index footprint claim worse, and
+  locked zoom levels at preprocess time. The runtime coarsener
+  produces an end-to-end coarsened path at 400 ms / 1 Mbp on chr20
+  — well inside the perf budget for the documented user flows.
+- Haplotype-thinning was framed as the principled replacement for
+  the `maxPathsEmitted` cap. The cap is in fact sufficient for the
+  current chr20 demo; haplotype-thinning is reserved as a Phase 7
+  rendering polish item if low-zoom haplotype-membership annotation
+  becomes a request.
 
-### Adapter API
-
-Extend `getSubgraph(region, opts)` with
-`opts.detailLevel ∈ {'full' | 'snarl' | 'tile' | 'auto'}`. Default
-`'auto'` dispatches by region size against the configured
-thresholds. Synteny display and graph view both pass `'auto'` by
-default; dev console / power users can override.
-
-The RPC method (`LinearSyntenyRPC/GetSubgraph.ts`) and graph-view
-caller (`GraphGenomeView/model.ts loadFromTabixSubgraph`) both need
-to accept and forward this option. API surface change for
-third-party adapters; flag in release notes alongside the Phase 3
-context-expansion parameter.
-
-### Renderer implications
-
-- **MultiLGVSyntenyDisplay.** Tile-level data is a
-  feature-projection change, not a renderer rewrite — each tile
-  becomes a synteny feature with the divergence summary as the
-  rendered metric. Snarl super-nodes can render as an additional
-  feature track type. This stays consistent with the
-  existing-mirrors-alignments pattern (see
-  `feedback_synteny_mirror_alignments.md`).
-- **GraphGenomeView.** Block-diagram mode: super-nodes as labeled
-  rectangles sized by enclosed-segment count, edges as thick bands.
-  Separate code path from full-detail per-segment mode; shares
-  layout primitives but not geometry. **Cache geometry per detail
-  level.** Naive coarsening makes the `buildGeometry` rebuild risk
-  (`agent-docs/GRAPH_PERF.md`) *worse*, not better — every
-  zoom-driven detail-level switch would re-walk the graph
-  otherwise.
-
-### Phase ordering
-
-After Phase 4 (snarls index → snarl-collapse) and Phase 6 (LGV →
-graph UX → coarsened launch path), overlapping Phase 8 (perf
-measurement includes coarsened tiers per region size). Tile-pyramid
-can ship independently of Phase 4, and is the right first cut
-because it gives an end-to-end coarsened path with the smallest
-index-format commitment.
-
-### Open questions
-
-- **Precompute vs on-the-fly.** Build the tile pyramid at preprocess
-  time, or compute on-demand from `pos.bed.gz` + `segments.bin`?
-  Precompute wins query latency; on-the-fly wins index footprint.
-  Phase 8 measurement decides.
-- **Haplotype-bitmap placement.** Lives here as a coarsened-tier
-  detail. The shipped `maxPathsEmitted` cap is the immediate
-  truncation safety net; the bitmap is the principled replacement
-  that preserves haplotype-membership information at low zoom.
-- **Coarsening boundary — renderer vs data layer.** Should
-  `MultiLGVSyntenyDisplay` keep its current per-segment feature
-  emission and coarsen at the renderer, or coarsen data-side?
-  Renderer-side is simpler; data-side is required for network
-  efficiency at 5 Mb scale (sending 434 K paths to drop them in the
-  renderer is wasteful). Probably data-side.
-- **Chain-level (snarl-of-snarls) view.** Snarl boundaries may not
-  align with biology at higher zoom levels — does the chain view
-  need a separate index file, or is the `parentSnarlId` in
-  `snarls.bed.gz` sufficient? Verify in Phase 4 audit.
-- **Detail-level thresholds.** What region sizes should map to
-  `full` vs `snarl` vs `tile`? Today's guess (100 kb / 1 Mb) is
-  pulled from the chr20 audit timing; pin via Phase 8 measurement
-  before locking into adapter config defaults.
+If a future user flow proves the runtime coarsener insufficient
+(measured, not speculated), the deferred mechanisms in the backlog
+section above are the path back to a precomputed pyramid.
 
 ## Quickstart for a fresh agent (cold start to first signal in <30 min)
 
@@ -587,9 +667,15 @@ This section was the pre-Phase-0 enumeration of suspected gaps. Kept
 for historical context; current status is in "Status & next steps"
 above and `agent-docs/GRAPH_AUDIT.md`. ✅ = resolved.
 
-- ✅ **Real sequences.** Phase 1 plaintext tier landed. S-lines emit
-  real nucleotides when `seqFastaLocation` is configured; placeholder
-  `*` + `LN:i:<len>` otherwise. Binary tier still pending.
+- ✅ **Real sequences.** Phase 1 plaintext tier shipped (S-lines emit
+  real nucleotides when `seqFastaLocation` is configured). Phase 1
+  binary tier shipped: `--emit-seq-binary` writes
+  `prefix.segments.seq.{bin,bin.idx}` (SEQB/SEQI magic, 2-bit ACGT +
+  per-segment N-bitmap). Adapter prefers binary when
+  `seqBinaryLocation` is configured, falls back to plaintext, falls
+  back to `*` + `LN:i:<len>` placeholder. See
+  `agent-docs/GRAPH_INDEX_FORMAT.md` for the layout and
+  `gfaSeqBinaryIO.test.ts` for the cross-tier equivalence guard.
 - ✅ **P/W lines from edge-based path.** `buildGfaFromEdges` now emits
   one P-line per contiguous haplotype subwalk via `computePathSubwalks`
   (re-entry-aware per the Phase 0 vg-W-line semantics note). See F2.

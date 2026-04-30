@@ -1,10 +1,10 @@
 # Graph Subgraph Index — Completed Work Log
 
 This is the archive of shipped items extracted from `GRAPH_PLAN.md`
-("Shipped" section) and the resolved findings from `GRAPH_AUDIT.md`
-("Findings"). Live planning, open backlog, and outstanding judgment
-calls remain in those files; this file keeps the historical record so
-those documents stay focused on what's next.
+("Shipped" section). `GRAPH_AUDIT.md` is a separate static archive of
+the Phase 0 audit deliverables. Live planning, open backlog, and
+outstanding judgment calls remain in `GRAPH_PLAN.md`; this file keeps
+the historical record so the plan stays focused on what's next.
 
 Update this file whenever an item moves from open to shipped. Source
 of truth for the *current* state of the work is still
@@ -12,6 +12,35 @@ of truth for the *current* state of the work is still
 
 ## Shipped
 
+- ✅ **Format-spec consolidation (2026-04-30)** — stripped
+  planned-but-unbuilt `prefix.tiles.<stride>.{bin,idx}` and
+  `prefix.snarls.bed.gz` sections from `GRAPH_INDEX_FORMAT.md`;
+  removed TILB/TILI/SNRB rows from the magic registry; marked
+  SEQB/SEQI as "alternative encoding tier" rather than canonical.
+  Spec contracted from 357 → ~290 lines. Five runtime-consumed
+  index files + 1 alternative encoding tier + 1 sidecar (VCF).
+- ✅ **Shared GFA-emit helpers (2026-04-30)** — extracted
+  `canonicalLinkKey`, `parsePanSn`, `flipOrient`, `walkOrient`
+  from `gfaSubgraphBuilders.ts` and `gfaCoarsener.ts` into
+  `gfaEmitHelpers.ts`. Single string-typed `canonicalLinkKey`
+  signature now serves both builders; per-segment builder formats
+  IDs as `s${ord}` at the call site, coarsener passes its mixed
+  `super_<n>` / `s<ord>` IDs unchanged. Caught a per-file
+  divergence in canonical-link formatting that was previously
+  invisible.
+- ✅ **Coarsener fidelity tests (2026-04-30)** — added two small
+  synthetic-shard tests in `gfaCoarsener.test.ts`:
+  *bp-conservation* (W-line span equals sum of viewport ref-segment
+  lengths regardless of bubble structure) and
+  *L-line-endpoints-also-S-lines* (every link emitted refers to a
+  declared segment). Locks in data-fidelity invariants any future
+  unification refactor must preserve.
+- ✅ **Doc consolidation lite (2026-04-30)** — `GRAPH_AUDIT.md`
+  marked as static historical archive (Phase 0 deliverables, all
+  resolved). Plan stops referencing it as a working doc. No
+  physical merge — it stays in place for the re-entrant-path
+  semantics note and the chr20 path-symmetry finding, both still
+  load-bearing for future agents.
 - ✅ **Phase 0 audit harness** (`tools/graph-truth-extractor/`,
   vg/naive backends, canonicalize, dump-subgraph, bash wrapper, Jest
   contract test).
@@ -118,9 +147,45 @@ of truth for the *current* state of the work is still
   C 21.61 / N 0.74%. No IUPAC ambiguity codes, no soft-mask. Format
   decision pinned in `agent-docs/GRAPH_INDEX_FORMAT.md`: 2-bit ACGT +
   per-segment N-bitmap (Option A). Predicted chr20 binary footprint
-  ~25 MB vs 91 MB plaintext (73% reduction). Implementation deferred
-  per user steer; format spec is now ready for a future agent to
-  ship.
+  ~25 MB vs 91 MB plaintext (73% reduction).
+- ✅ **F3 binary-tier emit + reader** — Rust `--emit-seq-binary` writes
+  `prefix.segments.seq.bin` (SEQB magic + per-segment `len:u32` +
+  2-bit pack + N-bitmap) and `prefix.segments.seq.bin.idx` (SEQI magic
+  + BigUint64 byte-offset table with end-of-file sentinel). Adapter:
+  new `gfaSeqBinaryIO.ts` with magic-validating idx loader,
+  `decodeSeqRecord` (substitutes N at bitmap-flagged positions
+  regardless of pack value), and range-merging `getSequencesForOrdinalsBinary`
+  mirroring the plaintext tier's HTTP coalescing. New config slots
+  `seqBinaryLocation`/`seqBinaryIdxLocation`; the binary shard is
+  preferred over plaintext when both are configured. **Not** wired by
+  the `prefix:` shorthand because emit is opt-in — fixtures that ship
+  the binary tier must list the locations explicitly. Tests:
+  `gfaSeqBinaryIO.test.ts` covers pack/unpack round-trip incl. N
+  positions, byte-boundary segments, magic + version mismatch errors,
+  and a tier-equivalence check that asserts byte-identical output
+  between binary and plaintext readers on the volvox fixture
+  (`volvox_pangenome_50.segments.seq.bin{,.idx}` checked into
+  `test_data/volvox/`). 190 tests / 4 skipped / clean tsgo.
+- ✅ **Coarsener prototype** — runtime fallback for megabase-scale
+  `getSubgraph` (`buildGfaCoarsened` in
+  `plugins/comparative-adapters/src/GfaTabixAdapter/gfaCoarsener.ts`).
+  Walks the ref-path's segments along the queried region, collapses
+  linear runs into super-segments, BFS-detects bubbles via edge
+  fanout, and either drops alt segs (small bubbles below threshold)
+  or preserves the alt-walk explicitly (large bubbles). BFS cap-hit
+  topologies always collapse to keep output graphs fully connected.
+  Threshold formula `max(20, region_bp / 50_000)` tuned against HPRC
+  chr20: 1 Mbp → 10 segs / 15 links / 388 ms; 10 Mbp → 13 segs / 22
+  links / 4.7 s preserving 5 SVs (max alt-walk 1.47 kb). 8 unit tests
+  in `gfaCoarsener.test.ts` cover linear runs, small/large bubbles,
+  cap-hit collapse, PanSN parsing, and connected-graph invariant.
+  Wired into `BaseGfaTabixAdapter.getSubgraph` at the 1 Mbp
+  threshold. Marked as **reference prototype** — production form
+  ports to Rust as a tile-pyramid emitter
+  (`tools/gfa-to-tabix` → `prefix.tiles.<stride>.bin`) per the
+  user's static-file steer; format reserved at
+  `GRAPH_INDEX_FORMAT.md` (TILB/TILI magic). Perf table in
+  `GRAPH_PERF.md`.
 - ✅ **Refactor: cache reverse assemblyNameMap; partition helper;
   drop bubbles try/catch swallow** — `BaseGfaTabixAdapter` now
   builds the forward + reverse name maps once in its constructor;

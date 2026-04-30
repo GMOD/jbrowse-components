@@ -1,5 +1,14 @@
 # Graph Subgraph Index — Phase 0 Audit
 
+> **Status: static historical archive (2026-04-30).** Phase 0 is
+> shipped, all findings resolved (see `GRAPH_COMPLETED.md`). This file
+> is preserved as the record of what the Phase 0 audit found and why
+> certain choices were made. **Do not edit.** New audit findings go
+> in `GRAPH_PLAN.md` "Status & next steps" or `GRAPH_COMPLETED.md`.
+> Two pieces of information here remain load-bearing for future
+> agents: the re-entrant-path semantics note (informs Phase 2
+> emission) and the chr20 path-symmetry finding (informs C3 claim).
+
 This document captures the Phase 0 deliverables called for in
 `agent-docs/GRAPH_PLAN.md`: a concordance audit of the GfaTabixAdapter's
 `getSubgraph` against `vg find` (and other oracles) on each fixture, a

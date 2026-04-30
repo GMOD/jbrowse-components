@@ -66,6 +66,17 @@ struct Args {
     /// Disable for index footprint when sequences aren't needed.
     #[arg(long)]
     no_emit_seq_plaintext: bool,
+
+    /// Emit binary 2-bit sequence tier alongside (or instead of) plaintext.
+    /// Writes <prefix>.segments.seq.bin (SEQB magic + per-segment u32 len +
+    /// 2-bit ACGT pack + N-bitmap) and <prefix>.segments.seq.bin.idx (SEQI
+    /// magic + BigUint64 byte-offset table). Format pinned in
+    /// agent-docs/GRAPH_INDEX_FORMAT.md (Phase 1 binary tier). At HPRC
+    /// chr20 scale the binary tier is ~25 MB vs ~91 MB plaintext (73%
+    /// reduction) — see GRAPH_INDEX_FORMAT.md spike numbers. Default off
+    /// because it duplicates content the plaintext tier already provides.
+    #[arg(long)]
+    emit_seq_binary: bool,
 }
 
 fn main() {
@@ -89,6 +100,7 @@ fn main() {
     let ref_assembly_arg = cli.ref_assembly;
     let bubbles_vcf = cli.bubbles;
     let emit_seq_plaintext = !cli.no_emit_seq_plaintext;
+    let emit_seq_binary = cli.emit_seq_binary;
     let output_config = cli.output_config;
 
     // Two-phase single-pass: reads all lines once, collecting S-lines in memory
@@ -130,7 +142,7 @@ fn main() {
                         .map(|t| t[5..].parse::<u64>().unwrap_or(0))
                 })
                 .unwrap_or_else(|| if seq == "*" { 0 } else { seq.len() as u64 });
-            if emit_seq_plaintext {
+            if emit_seq_plaintext || emit_seq_binary {
                 if seq == "*" {
                     seg_seq_missing += 1;
                 } else {
@@ -379,6 +391,27 @@ fn main() {
             } else {
                 String::new()
             }
+        );
+    }
+
+    // Phase 1 (binary tier): SEQB-magic 2-bit-packed sequence + N-bitmap,
+    // ordinal-keyed via SEQI-magic byte-offset table. Format pinned in
+    // agent-docs/GRAPH_INDEX_FORMAT.md. Opt-in via --emit-seq-binary; the
+    // adapter dispatches on file magic so this can ship alongside the
+    // plaintext tier without breaking older readers.
+    if emit_seq_binary && !seg_seqs.is_empty() {
+        eprintln!("Writing binary sequence tier...");
+        let (written, bin_bytes) = write_segments_seq_bin(
+            &output_prefix,
+            next_ordinal,
+            &seg_ordinals,
+            &seg_seqs,
+        );
+        eprintln!(
+            "  Wrote {}.segments.seq.bin ({} sequences, {:.2} MB)",
+            output_prefix,
+            written,
+            bin_bytes as f64 / (1024.0 * 1024.0),
         );
     }
 
@@ -979,6 +1012,90 @@ fn write_segments_seq_fa(
         idx.write_all(&seq_len.to_le_bytes()).unwrap();
     }
     emitted
+}
+
+// Magic bytes + version for the Phase 1 binary sequence tier. Format pinned
+// in agent-docs/GRAPH_INDEX_FORMAT.md ("Magic-byte registry").
+const SEQB_MAGIC: [u8; 4] = *b"SEQB";
+const SEQI_MAGIC: [u8; 4] = *b"SEQI";
+const SEQ_FORMAT_VERSION: u32 = 1;
+
+// Per-segment N-bitmap: 1 bit per base, low-bit-first within each byte
+// (i.e. base index `i` is `(bitmap[i >> 3] >> (i & 7)) & 1`). 1 = N at
+// that position, 0 = ACGT (whatever the 2-bit pack stores). Decoder
+// substitutes `N` regardless of the 2-bit value when the bit is set, so
+// the upstream pack_bases call doesn't need to special-case Ns.
+fn pack_n_bitmap(seq: &[u8], out: &mut Vec<u8>) {
+    let nbytes = (seq.len() + 7) / 8;
+    let start = out.len();
+    out.resize(start + nbytes, 0);
+    for (i, &b) in seq.iter().enumerate() {
+        if b == b'N' || b == b'n' {
+            out[start + (i >> 3)] |= 1 << (i & 7);
+        }
+    }
+}
+
+/// Write the binary sequence tier (`segments.seq.bin` + `.bin.idx`).
+///
+/// Per-segment record (variable length, byte-aligned at segment boundaries):
+///   `len:u32 LE | 2bit_pack:ceil(len/4) bytes | n_bitmap:ceil(len/8) bytes`
+///
+/// `segments.seq.bin` header: `SEQB` magic (4 bytes) + version `u32` LE.
+/// `segments.seq.bin.idx` header: `SEQI` magic (4 bytes) + version `u32` LE,
+/// followed by `(numSegments + 1)` u64 LE byte-offsets pointing into
+/// `seq.bin`. Entry `[ord]` = byte offset of ordinal `ord`'s record;
+/// entry `[numSegments]` = end-of-file (sentinel for slicing the last
+/// record). Missing segments (S-line was `*`) collapse to a zero-byte
+/// range — `idx[ord] == idx[ord+1]`.
+///
+/// Returns `(num_segments_written, bin_file_size_bytes)`.
+fn write_segments_seq_bin(
+    output_prefix: &str,
+    total_ordinals: u64,
+    seg_ordinals: &HashMap<String, u64>,
+    seg_seqs: &HashMap<String, Vec<u8>>,
+) -> (u64, u64) {
+    let mut name_by_ord: Vec<Option<&String>> = vec![None; total_ordinals as usize];
+    for (name, &ord) in seg_ordinals {
+        if let Some(slot) = name_by_ord.get_mut(ord as usize) {
+            *slot = Some(name);
+        }
+    }
+
+    let bin_path = format!("{}.segments.seq.bin", output_prefix);
+    let idx_path = format!("{}.segments.seq.bin.idx", output_prefix);
+    let mut bin = BufWriter::new(File::create(&bin_path).expect("create seq.bin"));
+    let mut idx = BufWriter::new(File::create(&idx_path).expect("create seq.bin.idx"));
+
+    bin.write_all(&SEQB_MAGIC).unwrap();
+    bin.write_all(&SEQ_FORMAT_VERSION.to_le_bytes()).unwrap();
+    idx.write_all(&SEQI_MAGIC).unwrap();
+    idx.write_all(&SEQ_FORMAT_VERSION.to_le_bytes()).unwrap();
+
+    let header_bytes: u64 = 8;
+    let mut byte_offset: u64 = header_bytes;
+    let mut written: u64 = 0;
+    let mut record_buf: Vec<u8> = Vec::with_capacity(4096);
+    for ord in 0..total_ordinals {
+        idx.write_all(&byte_offset.to_le_bytes()).unwrap();
+        let seq = name_by_ord[ord as usize].and_then(|n| seg_seqs.get(n));
+        let Some(seq) = seq else { continue };
+        let len = seq.len() as u32;
+        record_buf.clear();
+        record_buf.extend_from_slice(&len.to_le_bytes());
+        pack_bases(seq, &mut record_buf);
+        pack_n_bitmap(seq, &mut record_buf);
+        bin.write_all(&record_buf).unwrap();
+        byte_offset += record_buf.len() as u64;
+        written += 1;
+    }
+    // Sentinel: byte offset just past the last record (= total file size).
+    // The reader uses this to slice `[idx[N-1], idx[N])` for the last
+    // ordinal without needing a separate length lookup.
+    idx.write_all(&byte_offset.to_le_bytes()).unwrap();
+
+    (written, byte_offset)
 }
 
 fn spawn_sort_bgzip(output: &str) -> std::process::Child {

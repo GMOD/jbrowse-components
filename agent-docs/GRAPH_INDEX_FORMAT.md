@@ -55,6 +55,19 @@ files in **Index files** below — VCF in particular is preprocessor
 input only and is shipped as a sidecar viewable track, not as a
 runtime input.
 
+The shipped index has **5 file types** consumed at runtime
+(`pos.bed.gz`, `segments.bin`, `edges.bin`, `bubbles.bed.gz`,
+`segments.seq.fa`), **1 alternative encoding tier**
+(`segments.seq.bin` — opt-in; logically identical to the FASTA
+tier per the SAM/BAM analogy), and **1 sidecar artifact**
+(`vcf.gz` — JBrowse VariantTrack only, never opened by the
+synteny adapter). Earlier drafts of this spec sketched additional
+file types (`tiles.<stride>.bin`, `snarls.bed.gz`) for
+multi-resolution coarsening and snarl-boundary expansion; both
+were removed once the runtime edge-walk in
+`gfaCoarsener.ts` proved sufficient at chr20 scale (see
+`agent-docs/GRAPH_PLAN.md` "Design direction: unified extraction").
+
 ### Index files (consumed by the runtime adapter)
 
 #### `prefix.pos.bed.gz` + `prefix.pos.bed.gz.tbi`
@@ -108,10 +121,16 @@ input GFA had L-lines and `--emit-edges` is set.
   - 8-byte header: magic `EDGI` + version `u32`.
   - `BigUint64Array` byte-offset table (numSegments + 1 entries).
 
-#### `prefix.segments.seq.bin` + `prefix.segments.seq.idx` (Phase 1, binary tier)
+#### `prefix.segments.seq.bin` + `prefix.segments.seq.idx` (alternative encoding tier — opt-in)
 
 2-bit-packed sequence data, ordinal-keyed. The "BAM" tier in the
-SAM/BAM/CRAM analogy.
+SAM/BAM/CRAM analogy: identical logical content to the plaintext
+FASTA below, in a smaller wire encoding. Both tiers ship; the
+adapter prefers binary when configured, but plaintext is the
+default ("greppable, debuggable") for fixtures shipped today.
+Default tier for the publication is pending Phase 8 measurement —
+promoting binary is a one-line dispatcher change in
+`BaseGfaTabixAdapter`.
 
 **Spike result on HPRC chr20** (2026-04-30): 67.66 Mbp total in
 S-line sequences. Char distribution: A 27.73%, T 28.06%, G 21.86%,
@@ -128,18 +147,37 @@ sparse to justify a sentinel-byte layout (Option B). At chr20 scale:
 
 - `segments.seq.bin`:
   - 8-byte header: magic `SEQB` + version `u32`.
-  - Per-segment record:
-    - 2-bit packed bases (00=A, 01=C, 10=G, 11=T), concatenated.
-    - Per-segment N-bitmap, 1 bit per base (1 = N, 0 = ACGT). Decoder
-      substitutes `N` at flagged positions regardless of 2-bit value.
-    - Both layouts are byte-aligned at segment boundaries; the
-      `.seq.idx` records the byte-offset to the start of each record.
+  - Per-segment record (variable size, byte-aligned at segment boundaries):
+    - `len:u32` little-endian — the segment's base count. Self-contained
+      so a single record can be decoded without joining against
+      `segments.bin`.
+    - 2-bit packed bases (00=A, 01=C, 10=G, 11=T), `ceil(len/4)` bytes,
+      high-bit-first within each byte (base index `i` reads bits at
+      shift `6 - 2*(i & 3)`).
+    - Per-segment N-bitmap, `ceil(len/8)` bytes, 1 bit per base
+      (low-bit-first within each byte: `(bm[i>>3] >> (i & 7)) & 1`).
+      A set bit means `N` at that position; the decoder substitutes
+      `N` regardless of the 2-bit pack value, so the encoder doesn't
+      need a 2-bit code reserved for N.
+  - Missing segments (the source GFA used `*` placeholder) collapse to
+    a zero-byte range — `idx[ord] == idx[ord+1]`, no record bytes
+    written.
   - Future ambiguity codes (R/Y/K/etc.): defer until a spike on a
     fixture that contains them; magic-byte dispatcher allows a
     `SEQB` v2 with a different layout at that point.
-- `segments.seq.idx`:
+- `segments.seq.bin.idx` (note: `.bin.idx`, not `.idx` — the latter is
+  the plaintext tier's 12-byte-per-ordinal sidecar):
   - 8-byte header: magic `SEQI` + version `u32`.
-  - `BigUint64Array` byte-offset table (numSegments + 1 entries).
+  - `BigUint64Array` byte-offset table, `(numSegments + 1)` entries.
+    Entry `[ord]` = byte offset of ordinal `ord`'s record start in
+    `seq.bin`; entry `[numSegments]` = end-of-file sentinel for
+    slicing the last record.
+
+**File-naming note.** The plaintext tier already owns
+`prefix.segments.seq.idx` (12 bytes/ord = u64 offset + u32 length into
+the FASTA). The binary tier uses `prefix.segments.seq.bin.idx` to
+avoid collision. Both can ship side-by-side in the same fixture; the
+adapter prefers the binary tier when both are configured.
 
 #### `prefix.segments.seq.fa[.gz]` + `.fai` (Phase 1, plaintext tier)
 
@@ -176,23 +214,6 @@ For why we ship per-pair rather than per-allele or per-site, see
 This file is supporting infra for Phase 7 zoomed-in CS rendering,
 not part of the headline subgraph contribution.
 
-#### `prefix.snarls.bed.gz` + `.tbi` (Phase 4)
-
-Tabix-indexed snarl decomposition rows from `vg snarls -T`.
-
-- BED schema:
-  `refPath | refStart | refEnd | snarlId | parentSnarlId | LV | type | startNode | endNode | netGraphNodes | netGraphEdges`
-  - `snarlId`, `parentSnarlId`: stable IDs assignable from `vg snarls`
-    output. Root snarls have `parentSnarlId = -1` (or `.`).
-  - `LV`: nesting depth (root = 0).
-  - `type`: `ultrabubble | bubble | chain | other`. Ultrabubbles are
-    rendering-relevant: they collapse to a SNP-like view at low zoom.
-  - `startNode`, `endNode`: boundary segment ordinals.
-  - `netGraphNodes`: count of unique segment ordinals in the snarl's
-    net graph, **excluding** boundary nodes.
-  - `netGraphEdges`: edge count on those internal segments.
-- Header: `#schema=snarls/v1`, `#vgVersion=<pin>`.
-
 ### Sidecar artifacts (not consumed by the runtime adapter)
 
 These files travel alongside the index but are not opened by
@@ -217,15 +238,14 @@ Tabix-indexed for region lookup.
 
 To prevent collisions:
 
-| Magic  | File                       | Type   |
-|--------|----------------------------|--------|
-| `SEGB` | `segments.bin`             | binary |
-| `SEGI` | `segments.idx`             | binary |
-| `EDGB` | `edges.bin`                | binary |
-| `EDGI` | `edges.idx`                | binary |
-| `SEQB` | `segments.seq.bin`         | binary |
-| `SEQI` | `segments.seq.idx`         | binary |
-| `SNRB` | (reserved, future snarls binary if needed) | binary |
+| Magic  | File                       | Type      |
+|--------|----------------------------|-----------|
+| `SEGB` | `segments.bin`             | binary    |
+| `SEGI` | `segments.idx`             | binary    |
+| `EDGB` | `edges.bin`                | binary    |
+| `EDGI` | `edges.idx`                | binary    |
+| `SEQB` | `segments.seq.bin`         | binary (alternative tier) |
+| `SEQI` | `segments.seq.bin.idx`     | binary (alternative tier) |
 
 Any new binary file MUST register its magic here. Magic must be 4
 bytes ASCII, distinguishable on a byte dump.
@@ -257,12 +277,11 @@ purpose. Names align partially:
 | Haplotype walks              | derived from `segments.bin` records (binary, ordinal-keyed) | `haps.gaf.gz` (GAF, node-range-indexed) |
 | Edges                        | `prefix.edges.bin`         | implicit (derived from path co-traversal) |
 | Bubble CS                    | `prefix.bubbles.bed.gz`    | not present            |
-| Snarls (Phase 4)             | `prefix.snarls.bed.gz`     | not present            |
 
 We diverge by storing segments + walks in binary records (smaller
-working set per range fetch) and by adding edges, bubble CS, and
-snarls as separate tabix-indexed files. Use `chunkix.py` as a
-correctness oracle in the reference-extractor harness.
+working set per range fetch) and by adding edges and bubble CS as
+separate tabix-indexed files. Use `chunkix.py` as a correctness
+oracle in the reference-extractor harness.
 
 ## Cross-references
 

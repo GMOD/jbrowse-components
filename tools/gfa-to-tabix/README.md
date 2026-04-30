@@ -53,13 +53,15 @@ gfa-to-tabix --bubbles variants.vcf.gz --output-config config.json input.gfa out
 
 | Flag                     | Description                                       |
 | ------------------------ | ------------------------------------------------- |
-| `--bubbles <VCF>`        | Generate bubbles BED from a vg deconstruct VCF    |
-| `--output-config <PATH>` | Write JBrowse config JSON (GfaTabix + VCF tracks) |
-| `--no-groom`             | Skip path grooming (strand normalization)         |
-| `--ref-assembly <NAME>`  | Assembly to use as reference for grooming         |
-| `--assemblies A,B,C`     | Only process listed assemblies                    |
-| `--sharded`              | Shard segments.bin by assembly                    |
-| `--chunk-size N`         | Walk steps per pos.bed.gz chunk (default: 100)    |
+| `--bubbles <VCF>`         | Generate bubbles BED from a vg deconstruct VCF       |
+| `--output-config <PATH>`  | Write JBrowse config JSON (GfaTabix + VCF tracks)    |
+| `--no-groom`              | Skip path grooming (strand normalization)            |
+| `--ref-assembly <NAME>`   | Assembly to use as reference for grooming            |
+| `--assemblies A,B,C`      | Only process listed assemblies                       |
+| `--sharded`               | Shard segments.bin by assembly                       |
+| `--chunk-size N`          | Walk steps per pos.bed.gz chunk (default: 100)       |
+| `--no-emit-seq-plaintext` | Skip per-segment FASTA tier emission                 |
+| `--emit-seq-binary`       | Also emit `.segments.seq.bin{,.idx}` (SEQB/SEQI, 2-bit ACGT + N-bitmap; ~73% smaller than plaintext) |
 
 ## Output files
 
@@ -71,6 +73,11 @@ gfa-to-tabix --bubbles variants.vcf.gz --output-config config.json input.gfa out
 | `prefix.segments.idx`       | Segment byte-offset index                         |
 | `prefix.bubbles.bed.gz`     | Tabix-indexed bubble CS data (with `--bubbles`)   |
 | `prefix.bubbles.bed.gz.tbi` | Bubbles tabix index (with `--bubbles`)            |
+| `prefix.segments.seq.fa`    | Plaintext per-segment FASTA (Phase 1 plaintext tier; default-on) |
+| `prefix.segments.seq.fa.fai`| samtools-faidx for the plaintext FASTA                |
+| `prefix.segments.seq.idx`   | Compact 12-bytes/ord byte-offset+length index for the plaintext tier (adapter reads this; .fai is for CLI tools) |
+| `prefix.segments.seq.bin`   | Binary 2-bit ACGT + N-bitmap (Phase 1 binary tier; with `--emit-seq-binary`) |
+| `prefix.segments.seq.bin.idx` | SEQI-magic byte-offset table for the binary tier  |
 
 ## Requirements
 

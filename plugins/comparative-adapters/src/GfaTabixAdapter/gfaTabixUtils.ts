@@ -14,6 +14,8 @@ import {
   parseGfaPathName,
   parsePosLineOrdinals,
 } from './gfaBinaryIO.ts'
+import { buildGfaCoarsened } from './gfaCoarsener.ts'
+import { getSequencesForOrdinalsBinary } from './gfaSeqBinaryIO.ts'
 import { getSequencesForOrdinals } from './gfaSeqIO.ts'
 import {
   buildGfaFromEdges,
@@ -23,6 +25,7 @@ import { buildFeaturesForPath } from './segmentFeatureBuilder.ts'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 
 import type { IndexedBinaryShard, SegRecord } from './gfaBinaryIO.ts'
+import type { SeqBinaryShard } from './gfaSeqBinaryIO.ts'
 import type { SeqShard } from './gfaSeqIO.ts'
 import type { MultiPairFeature } from '../MultiPairFeature.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -32,6 +35,25 @@ import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterC
 import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { FileLocation, Region } from '@jbrowse/core/util/types'
+
+// Threshold above which `getSubgraph` dispatches to `buildGfaCoarsened`
+// instead of the per-segment builders. 1 Mbp is where chr20 latency starts
+// climbing (audit data: 100 kbp 270 ms, 1 Mbp 2.3 s, 5 Mbp 10.2 s) and
+// path-emission volume becomes a problem (1 Mbp → 219 K subwalks). Below
+// the threshold the existing per-segment GFA renders responsively in the
+// graph view; above it the geometry rebuild collapses without coarsening.
+// See `agent-docs/GRAPH_PLAN.md` "Multi-resolution / coarsened views".
+const COARSEN_THRESHOLD_BP = 1_000_000
+
+// `bubble_threshold = max(MIN_BUBBLE_THRESHOLD_BP, region_bp / BUBBLE_THRESHOLD_DIVISOR)`
+// scales the small-vs-large bubble cutoff with viewport size. Tuned against
+// HPRC chr20: 1 Mbp → 20 bp threshold (≈ 10 preserved bubbles per 1 Mbp at
+// 30 M-31 M region); 10 Mbp → 200 bp; 100 Mbp → 2 kbp. Aggressive enough
+// that the user sees structural backbone in the graph view at megabase
+// scale, conservative enough to drop the bulk of SNV-scale variation
+// (which would otherwise dominate the rendering).
+const MIN_BUBBLE_THRESHOLD_BP = 20
+const BUBBLE_THRESHOLD_DIVISOR = 50_000
 
 interface SetupResult {
   genomes: string[]
@@ -165,6 +187,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
   protected bubblesFile?: TabixIndexedFile
   private edgeShard?: IndexedBinaryShard
   private seqShard?: SeqShard
+  private seqBinaryShard?: SeqBinaryShard
   private setupP?: Promise<SetupResult>
 
   // Forward map (file → display) and its inverse (display → file). Read once
@@ -218,6 +241,23 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         fastaFile: openLocation(seqLoc, pm),
         idxFile: openLocation(
           this.getConf('seqIdxLocation') as FileLocation,
+          pm,
+        ),
+      }
+    }
+
+    // Phase 1 binary sequence tier — preferred over plaintext when both
+    // are configured (smaller working set, fewer bytes over the wire).
+    // Magic-byte check happens lazily on first idx load in
+    // gfaSeqBinaryIO.ts; mismatched/old files fail loudly there.
+    const seqBinLoc = this.getConf('seqBinaryLocation') as
+      | FileLocation
+      | undefined
+    if (hasFileLocation(seqBinLoc)) {
+      this.seqBinaryShard = {
+        binFile: openLocation(seqBinLoc, pm),
+        idxFile: openLocation(
+          this.getConf('seqBinaryIdxLocation') as FileLocation,
           pm,
         ),
       }
@@ -459,10 +499,34 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       return ''
     }
 
+    // Region-size dispatch: above COARSEN_THRESHOLD_BP, switch to the
+    // bubble-preservation coarsener so chr20-megabase queries don't choke
+    // the graph view's geometry rebuild. Threshold scales with region size
+    // so the same builder serves 100 kb (collapse only single-bp variants)
+    // through 100 Mbp (preserve only big SVs).
+    const regionBp = region.end - region.start
+    if (regionBp >= COARSEN_THRESHOLD_BP && this.edgeShard) {
+      const bubbleThresholdBp = Math.max(
+        MIN_BUBBLE_THRESHOLD_BP,
+        Math.floor(regionBp / BUBBLE_THRESHOLD_DIVISOR),
+      )
+      return buildGfaCoarsened(
+        viewportRefOrds,
+        segLens,
+        this.edgeShard,
+        pathNames,
+        refPathIdx,
+        bubbleThresholdBp,
+      )
+    }
+
+    const seqBinaryShard = this.seqBinaryShard
     const seqShard = this.seqShard
-    const fetchSeqs = seqShard
-      ? (ords: number[]) => getSequencesForOrdinals(seqShard, ords)
-      : undefined
+    const fetchSeqs = seqBinaryShard
+      ? (ords: number[]) => getSequencesForOrdinalsBinary(seqBinaryShard, ords)
+      : seqShard
+        ? (ords: number[]) => getSequencesForOrdinals(seqShard, ords)
+        : undefined
     const buildOpts = {
       maxPathsEmitted: opts.maxPathsEmitted,
       context: opts.context,
