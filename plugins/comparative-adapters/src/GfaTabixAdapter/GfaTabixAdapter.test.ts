@@ -872,6 +872,46 @@ describe('GfaTabixAdapter bubbles (volvox pangenome 50)', () => {
     expect(featuresWithCs).toBeGreaterThan(0)
   })
 
+  // Regression: bubble CS used to be built by walking ref bp linearly, which
+  // dropped structural D/I ops that segmentFeatureBuilder had recorded in the
+  // feature's CIGAR. After the CIGAR-aware refactor, structural ops survive
+  // bubble annotation and the CS string carries `+`/`-` for indels alongside
+  // bubble SNP detail.
+  it('preserves structural CIGAR ops in bubble-annotated CS', async () => {
+    const adapter = makeBubblesAdapter()
+    const result = await adapter.getMultiPairFeatures(
+      {
+        refName: 'ctgA',
+        start: 0,
+        end: 5000,
+        assemblyName: 'ref#0',
+      },
+      { bpPerPx: 1 },
+    )
+
+    // A feature with no overlapping bubbles correctly has cs=undefined and
+    // falls back to cigar in the renderer. The regression we're guarding
+    // against is bubble-annotated features (cs set) losing structural ops.
+    let annotatedWithStructure = 0
+    let preservedInCs = 0
+    for (const features of result.genomeRows.values()) {
+      for (const f of features) {
+        if (!f.cs || !f.cigar) {
+          continue
+        }
+        if (!/[ID]/.test(f.cigar)) {
+          continue
+        }
+        annotatedWithStructure++
+        if (/[+-]/.test(f.cs)) {
+          preservedInCs++
+        }
+      }
+    }
+    expect(annotatedWithStructure).toBeGreaterThan(0)
+    expect(preservedInCs).toBe(annotatedWithStructure)
+  })
+
   it('does not annotate bubbles when zoomed out', async () => {
     const adapter = makeBubblesAdapter()
     const result = await adapter.getMultiPairFeatures(
