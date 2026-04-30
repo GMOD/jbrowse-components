@@ -47,6 +47,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: sudo apt-get -y install tabix
+      - name: Install vg
+        # vg ≥ 1.59.0 is required by tools/graph-truth-extractor and the
+        # auditConcordance.test.ts Phase 5 CI suite. Without it those tests
+        # silently skip; with it they enforce vg-find concordance on every
+        # push. See agent-docs/GRAPH_PLAN.md.
+        run: |
+          curl -L -o /tmp/vg https://github.com/vgteam/vg/releases/download/v1.59.0/vg
+          chmod +x /tmp/vg
+          sudo mv /tmp/vg /usr/local/bin/vg
+          vg version | head -1
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false

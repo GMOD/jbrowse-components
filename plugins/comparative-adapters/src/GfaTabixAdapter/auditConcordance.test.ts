@@ -125,6 +125,112 @@ const describeIfSymmetry =
     ? describe
     : describe.skip
 
+// Coarsener concordance: the runtime coarsener (`buildGfaCoarsened`) is
+// used at megabase scale and was previously only covered by synthetic-
+// shard tests in `gfaCoarsener.test.ts`. This test exercises it on a real
+// fixture against vg-truth, asserting bp-conservation (the strongest
+// cheap fidelity check the coarsener vs ground truth admits without
+// needing super-segment-aware structural canonicalization).
+function dumpCoarsened(refPath: string, start: number, end: number) {
+  return execFileSync(
+    'node',
+    [
+      '--experimental-strip-types',
+      dumperScript,
+      fixturePrefix,
+      refPath,
+      String(start),
+      String(end),
+      '--coarsen',
+      'on',
+      '--bubble-threshold',
+      '0',
+    ],
+    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] },
+  )
+}
+
+// Sum the W-line span (end - start) across all W-lines in a GFA. For both
+// our coarsener output (single ref-path W-line) and vg's W-line output,
+// this measures total ref-path bp covered.
+function sumWlineSpans(gfa: string) {
+  let sum = 0
+  for (const line of gfa.split('\n')) {
+    if (!line.startsWith('W\t')) {
+      continue
+    }
+    const cols = line.split('\t')
+    sum += +cols[5]! - +cols[4]!
+  }
+  return sum
+}
+
+// Sum the bp content of all S-lines (uses LN:i: when sequence is `*`,
+// otherwise the sequence column's length).
+function sumSegmentBp(gfa: string) {
+  let sum = 0
+  for (const line of gfa.split('\n')) {
+    if (!line.startsWith('S\t')) {
+      continue
+    }
+    const cols = line.split('\t')
+    const seq = cols[2]!
+    if (seq === '*') {
+      const lnTag = cols.slice(3).find(t => t.startsWith('LN:i:'))
+      if (lnTag) {
+        sum += +lnTag.slice(5)
+      }
+    } else {
+      sum += seq.length
+    }
+  }
+  return sum
+}
+
+describeIfReady('Phase 5 CI: coarsener concordance vs vg find', () => {
+  // Coarsener W-line span equals the sum of viewport ref-segment lengths
+  // and is at least the requested region span (boundary segments can
+  // extend past `end`). Lower bound is the cheap real-fixture fidelity
+  // check that doesn't require parsing P/W-line walks.
+  it('coarsener emits a W-line whose span covers the requested region', () => {
+    const refPath = 'ref#0#ctgA'
+    const start = 0
+    const end = 1000
+    const gfa = dumpCoarsened(refPath, start, end)
+    expect(gfa.length).toBeGreaterThan(0)
+    expect(sumWlineSpans(gfa)).toBeGreaterThanOrEqual(end - start)
+  }, 30_000)
+
+  // Coarsener emits ref-path segments (collapsed into super-segments) +
+  // preserved-bubble alt segments. Its segment-bp must be ≤ the per-segment
+  // dump's segment-bp (per-segment includes every alt in `context=1` BFS
+  // expansion) and ≥ its own W-line span (super-segs alone cover the walk).
+  it('coarsener segment-bp is bounded by W-span below and per-segment dump above', () => {
+    const refPath = 'ref#0#ctgA'
+    const start = 0
+    const end = 1000
+    const coarsened = dumpCoarsened(refPath, start, end)
+    const perSeg = dumpOurs(refPath, start, end)
+    const coarsenedBp = sumSegmentBp(coarsened)
+    expect(coarsenedBp).toBeGreaterThanOrEqual(sumWlineSpans(coarsened))
+    expect(coarsenedBp).toBeLessThanOrEqual(sumSegmentBp(perSeg))
+  }, 30_000)
+
+  // The coarsener's total segment-bp must not exceed vg find's total
+  // segment-bp. vg find emits the full subgraph at the same context; we
+  // emit a coarsened view that drops collapsed-bubble alts, so our bp
+  // should be ≤ vg's. Catches regressions where the coarsener invents
+  // segments or duplicates bp.
+  it('coarsener total segment-bp does not exceed vg find on volvox', () => {
+    const refPath = 'ref#0#ctgA'
+    const start = 0
+    const end = 1000
+    const coarsened = dumpCoarsened(refPath, start, end)
+    const truth = dumpTruth(refPath, start, end)
+    expect(sumSegmentBp(coarsened)).toBeLessThanOrEqual(sumSegmentBp(truth))
+  }, 30_000)
+})
+
 describeIfSymmetry('Phase 5 CI: C3 path-symmetry across paths', () => {
   it('all paths sharing a viewport produce the same structural fingerprint', () => {
     const refPath = 'ref#0#ctgA'

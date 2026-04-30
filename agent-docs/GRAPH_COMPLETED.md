@@ -12,6 +12,32 @@ of truth for the *current* state of the work is still
 
 ## Shipped
 
+- ✅ **Lightning rod CLI half + C3 reframing (2026-04-30)** — ran
+  `test-path-symmetry.sh` against HPRC chr20 at 30M region.
+  chrM control passes (44 paths, fp `3d0e925d0f33b04a`); chr20
+  fails (11 paths, all fingerprints diverge). The chr20 result is
+  a real property of fragmented pangenomes, not a bug.
+  Tried an "intersection-restricted" reframing
+  (`intersection-symmetry.ts`); discovered it was a tautology
+  (same files in, same canonical form out) and deleted the script.
+  Resolution: drop the cross-path-symmetry framing entirely.
+  C3's defensible form is per-path correctness against `vg find`
+  (covered by `auditConcordance.test.ts`), with the strong
+  "all paths agree" property holding only for fully-traversed
+  chromosomes (chrM, verified by `test-path-symmetry.sh`). See
+  `GRAPH_PERF.md`.
+- ✅ **Coarsener concordance tests (2026-04-30)** — three tests
+  added to `auditConcordance.test.ts`: (1) coarsener W-line span
+  covers requested region, (2) segment-bp bounded between W-span
+  and per-segment dump, (3) total segment-bp does not exceed vg
+  find. Volvox is the fixture; tests skip without vg on PATH.
+  Caught the boundary-segment-overshoot behavior (viewport
+  segments aren't clipped at boundaries — documented in test
+  comments rather than treated as a bug).
+- ✅ **CI vg provisioning (2026-04-30)** — added vg v1.59.0 install
+  step to `.github/workflows/push.yml` test job. Makes
+  `auditConcordance.test.ts` run by default in CI rather than
+  silently skipping. Closes Phase 5.
 - ✅ **Format-spec consolidation (2026-04-30)** — stripped
   planned-but-unbuilt `prefix.tiles.<stride>.{bin,idx}` and
   `prefix.snarls.bed.gz` sections from `GRAPH_INDEX_FORMAT.md`;

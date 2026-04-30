@@ -1,1554 +1,235 @@
-# Graph Subgraph Index — Publication Plan
+# Graph Subgraph Index — Plan
 
-## Goal
+A static-file index for pangenome GFAs that supports `vg find`-equivalent
+subgraph extraction in the browser, integrated with JBrowse's comparative
+LGV via an "Open in graph view" drill-down. Prior art (cite, don't fight):
+sequencetubemap-tabix (Monlong, `~/src/sequencetubemap@tabix`), vg-gaf-annot.
 
-A static-file index for graph genomes (pangenomes encoded as GFA) that
-supports `vg find`-equivalent subgraph extraction from any path's
-perspective, runs entirely in the browser (no server-side process or
-subprocess launch), and integrates with comparative linear views for
-LGV→Graph-View drill-down. The aim is **publication-quality
-engineering** — works correctly, works at HPRC scale, works inside
-JBrowse — not novelty for its own sake.
+## What's proved (and what isn't)
 
-**Prior art (use, don't fight).** Tabix-indexed graph extraction has
-been done before. SequenceTubeMap on the `tabix` branch (jmonlong;
-`~/src/sequencetubemap`, `scripts/pgtabix.py` + `scripts/chunkix.py`)
-ships `pos.bed.gz` + `nodes.tsv.gz` + `haps.gaf.gz` with a Python
-`chunkix.py` extractor invoked from a Node server. We borrow the
-pattern, extend the index (edges, bubble CS, future snarls), and
-integrate with JBrowse's LGV. Use `chunkix.py` as an additional
-correctness oracle alongside `vg find`. Don't waste energy on novelty
-differentiation; cite sequencetubemap-tabix prominently and move on.
+The structural correctness story is settled. Two concrete claims,
+both with running tests:
 
-## Headline experiment (the figure reviewers will remember)
+- **Per-path correctness** (the headline). For any reference path
+  and viewport, our extraction is byte-isomorphic to
+  `vg find -p PATH:start-end -c K` under canonicalization. Verified
+  by `auditConcordance.test.ts` on volvox + chr20 spot-checks; runs
+  in CI (vg ≥ 1.59 provisioned).
+- **Cross-path symmetry on fully-traversed chromosomes.** On chrM,
+  44 haplotypes querying the same locus produce one fingerprint
+  (`3d0e925d0f33b04a`). Verified by
+  `tools/graph-truth-extractor/test-path-symmetry.sh`.
 
-Pick one structural locus that exists in multiple haplotypes (e.g.,
-HPRC chr20 MAPT-region inversion, or HPRC chrM hypervariable region).
-Query it from **three or more different reference paths** (e.g.,
-`GRCh38#0#chr20`, `CHM13#0#chr20`, `HG002#1#chr20`). The extracted
-subgraphs must be **graph-isomorphic under canonicalization** to each
-other AND to the truth produced by `vg find` AND to the truth produced
-by sequencetubemap-tabix's `chunkix.py`. One side-by-side figure pair
-(LGV view + graph view) per reference, with the same nodes highlighted
-across all three.
+What is **not** claimed: cross-path symmetry on fragmented-contig
+chromosomes (chr20). Each haplotype's contig has its own
+fragmentation, so the bounding-box equivalent-ranges mapping
+extracts structurally different subgraphs from each path. This is
+a real property of fragmented pangenomes, not a bug.
+`GRAPH_PERF.md` "Lightning-rod finding 2026-04-30" has the per-pair
+numbers and the history of the rejected intersection-restricted
+reframing.
 
-The path-symmetry property *itself* is not unique to our index
-(sequencetubemap-tabix has it too — both index per-path positions). The
-figure's contribution is showing the property fully integrated into a
-browser-native LGV→graph-view workflow, with bubble-aware rendering at
-multiple zoom levels.
+If a future agent is tempted to revive a cross-path-symmetry claim
+on fragmented chromosomes: any test restricting both extractions to
+their shared segment subset is a tautology (both sides read the
+same binary index, so shared segments necessarily share edges).
+Don't.
 
-## Claims
+## Open backlog
 
-Each claim → an experiment → a figure or table. The plan's phases are
-organized so that completing them produces every artifact below.
-Framing is "publication-quality engineering": each claim is something
-we demonstrate and measure honestly. We do not need to fight for
-novelty against sequencetubemap-tabix — citing it and matching its
-correctness is enough.
+The structural claims are proved by tests that now run in CI. The
+remaining work is the browser-side workflow for the figure plus
+writing.
 
-- **C1** *Correctness against vg find.* The static-file index extracts
-  subgraphs that are graph-isomorphic to `vg find` output for the same
-  region. *Measured by* Phase 0 (audit harness) + Phase 5 (CI
-  concordance test). *Artifact:* concordance table per category
-  (segments / edges / paths / sequences) on volvox + HPRC chrM + HPRC
-  chr20.
-- **C2** *Correctness against sequencetubemap-tabix.* Output also
-  matches `chunkix.py`'s extraction for the same region (modulo
-  expected differences from our richer index — edges, bubble
-  granularity). *Measured by* Phase 0 (chunkix backend in the
-  reference-extractor harness). *Artifact:* concordance row in the
-  C1 table.
-- **C3** *Path symmetry.* Querying the same locus from N different
-  reference paths yields the same canonical subgraph at comparable
-  latency. *Measured by* Phase 0 (path-symmetry sub-test) + Phase 8
-  (latency-per-path table). *Artifact:* path-symmetry table.
-- **C4** *Browser-native at HPRC scale.* Extraction runs entirely
-  in-browser with acceptable latency on HPRC chr20-scale data. No
-  server, no subprocess. *Measured by* Phase 8 (latency at 10kb /
-  100kb / 1Mb, cold vs warm, peak heap). *Artifact:* perf table.
-- **C5** *LGV→graph-view drill-down.* Clicking a region in a synteny
-  LGV opens a graph view of the enclosing snarls without leaving the
-  browser session. *Measured by* Phase 6 end-to-end browser test.
-  *Artifact:* workflow figure + screenshots.
-- **C6** *(Supporting.)* Per-base bubble detail surfaces structural
-  events at zoom in the comparative LGV view. *Measured by* Phase 7.
-  *Artifact:* zoom-progression screenshots.
+1. **Browser-side lightning rod (the figure).** The CLI proves
+   per-path correctness. The paper figure needs the LGV → Graph
+   drill-down running in the live UI: pick a real chr20 SV (MAPT
+   is wrong — that's chr17; SHANK2/SCARB1 region or a documented
+   inversion), open from a reference path, capture screenshots.
+   Browser-only; can't be done from the CLI.
 
-Index-footprint is reported as a supplementary table, not a headline
-claim — per the user's "runtime perf > footprint" steer.
+Deferred until needed: snarls index, tile pyramid, Rust coarsener
+port, bubble-row regrouping. None of these block publication.
+
+### Plausible follow-up cleanups (not blocking)
+
+- **`canonicalize.ts` may be redundant.** All audit comparisons go
+  through `structuralFingerprint`, which is sequence-grounded and
+  hashes sorted multisets — i.e. order-invariant by construction.
+  The `canonicalize()` step before it (WL label refinement +
+  canonical-id rewrite) does not affect the fingerprint. If true,
+  every `structuralFingerprint(canonicalize(gfa))` call site can
+  collapse to `structuralFingerprint(gfa)`. Verify by computing
+  both forms across the audit fixtures and asserting equality, then
+  delete `canonicalize()` and the WL machinery.
+- **Consolidate audit subprocess chain.** `equivalent-ranges` →
+  `dump-subgraph` per path → `truth-extractor` → `canonicalize`
+  is 3+ Node spawns per comparison, each re-loading the same
+  binary indexes. A library entry point (one process, shared
+  state) would cut wall time noticeably and let the path-symmetry
+  Jest test run on chrM in CI without a 60-second timeout.
+
+## What we're shipping
+
+Five runtime-consumed index files per fixture (`pos.bed.gz`,
+`segments.bin`, `edges.bin`, `bubbles.bed.gz`, `segments.seq.fa`),
+one alternative encoding tier (`segments.seq.bin` — 2-bit-packed
+ACGT + N-bitmap, opt-in), one sidecar (`vcf.gz` — JBrowse VariantTrack
+only). Format spec: `agent-docs/GRAPH_INDEX_FORMAT.md`.
+
+Two extraction paths in the adapter:
+- **Per-segment** (`buildGfaFromEdges`) — sub-megabase queries,
+  full bubble detail, multi-haplotype subwalks. BFS k hops from seed.
+- **Coarsened** (`buildGfaCoarsened`) — ≥1 Mbp queries, super-segment
+  GFA with threshold-gated preserved bubbles, ref-path W-line only.
+  Linear walk along ref ordinals.
+
+Both consume the same edge index. Region-size dispatch in
+`BaseGfaTabixAdapter.getSubgraph`.
 
 ## Non-goals
 
-These are stated explicitly to bound reviewer expectations and to keep
-agents from drifting:
-
-- We do **not** propose a new graph file format. Output is GFA 1.1.
-- We do **not** propose a new graph alignment / mapping algorithm.
-- We do **not** propose a new graph layout algorithm.
-- We do **not** support incremental index updates. The index is
-  rebuild-on-update; pangenome evolution is out of scope.
-- We do **not** ship a graph editing UI.
-
-## Risks
-
-- **vg version skew.** A graph indexed by `vg 1.50` queried against truth
-  generated by `vg 1.55` may diverge for non-bug reasons. Pin a specific vg
-  release in the test harness; record it in the format spec; add a
-  CI/preprocess assertion if the user's `vg` is older than that pin.
-- **Cycles, inversions, duplications.** Real pangenomes have these; the
-  current edge-walker does 1-step undirected expansion. Phase 0 audit on
-  fixtures pinned to known structural cases (see fixtures list) is the
-  surface-the-bug moment. Don't postpone past Phase 0.
-- **Format evolution.** Today's binary files (segments.bin, edges.bin) have
-  no magic + version. Adding `seq.bin` is the moment to retrofit a header.
-  See `agent-docs/GRAPH_INDEX_FORMAT.md`.
-- **Browser graph-view scale.** A 100kb HPRC subgraph can be 5-10k+ nodes.
-  The current `GraphRenderer.buildGeometry` is a full-rebuild
-  (see `agent-docs/GRAPH_PERF.md`). If Phase 6 hits this wall, either cap
-  context expansion or escalate to a graph-view perf sub-project.
-- **HTTP latency / cold-cache.** All comparisons must include cold-cache
-  numbers; warm-cache alone is dishonest in a deployment-scenario paper.
-- **Non-ACGT bases.** HPRC graphs include N (assembly gaps), occasionally
-  lowercase soft-mask. Sequence storage must be alphabet-honest (Phase 1
-  decision below).
-- **Re-indexing renumbers ordinals.** Segment ordinals are assigned in
-  GFA scan order, so re-indexing a fixture (e.g., to add bubbles to
-  `volvox_indel_pangenome`) renumbers every ordinal. Saved viewer
-  state pointing at specific ordinals breaks silently. Mitigation:
-  (a) bump the format version on every re-index so readers can
-  detect a stale state-snapshot, (b) `prepare-fixtures.sh` records a
-  `prefix.indexed-at` timestamp for cross-checks, (c) discourage
-  state snapshots that pin ordinals (use sequence hashes instead).
-
-## North-star UX
-
-A user browses a region in a normal LGV → `MultiLGVSyntenyDisplay` → clicks
-"Open in graph view" → the resulting subgraph is graph-isomorphic to what
-`vg find -p PATH:start-end -c <k> graph.xg` produces. Including: real
-sequences, all path subwalks through the region, snarl boundaries, with the
-context expansion `k` chosen via experiments (see open questions).
-
-The motivation lineage is Jean Monlong's (jmonlong) two-part research
-program on tabix-for-pangenomes:
-
-- **vg-gaf-annot** (https://jmonlong.github.io/manu-vggafannot/) —
-  tabix-indexed *annotations* on a graph (gene exons, GWAS hits,
-  RepeatMasker tracks stored as GAF). Indexes by graph node range so
-  any annotation overlapping a node is retrievable in O(1) tabix
-  lookup.
-- **sequencetubemap-tabix** (`~/src/sequencetubemap`, `tabix` branch;
-  `scripts/pgtabix.py` builds, `scripts/chunkix.py` extracts) — the
-  same approach applied to the *graph itself*: `pos.bed.gz` for
-  per-haplotype positions, `nodes.tsv.gz` for node sequences,
-  `haps.gaf.gz` for haplotype subwalks. Server-mediated subgraph
-  extraction.
-
-Files for both are co-deposited at
-`public.gi.ucsc.edu/~jmonlong/sequencetubemap_tabix/` — pangenome
-index files alongside vg-gaf-annot annotation files (`gene_exon.gaf.gz`,
-`gwasCatalog.*.gaf.gz`, `rm.gaf.gz`). They interoperate.
-
-We borrow this pattern, extend the index with edges, bubble CS, and
-(Phase 4) snarls, run extraction in the browser instead of a server,
-and integrate with JBrowse's comparative LGV. rGFA-indexed approaches
-let you query only from the rGFA reference's perspective; this index
-(and sequencetubemap-tabix's) is symmetric across all paths.
-
-## Decisions already made by user
-
-- **Static files only.** As many files as needed for efficient modular
-  fetching. No runtime vg/odgi calls.
-- **Runtime perf > index footprint.** Where they conflict, prefer
-  cheaper decode over tighter packing on the *working-set* path —
-  network range-fetched working sets are typically a few MB per query,
-  so decode-time savings there matter more than total file size on
-  object storage.
-- **Multiple format tiers are allowed (SAM/BAM/CRAM-style) for
-  encodings of the same logical content.** Don't collapse to a
-  single binary layout where multiple encodings make sense — e.g.
-  per-segment sequences ship as both a plaintext FASTA tier
-  (debuggable, greppable) and a 2-bit-packed binary tier (smaller
-  on the wire), both encoding the identical ACGT(N) content,
-  dispatched via a magic header byte. This preserves debuggability
-  and lets us add a reference-compressed CRAM-equivalent tier
-  later without breaking existing readers. **This authorization
-  applies to encodings of the same data, not to parallel
-  mechanisms that solve different problems** — see "Design
-  direction: unified extraction" below for what that distinction
-  rules out.
-- **Preprocess-time vg/odgi calls are fine.** The Rust tool already shells
-  out to `bgzip`/`tabix`/`sort` and runs `vg deconstruct`; adding
-  `vg snarls` and `vg autoindex` (or `vg gbwt`) is acceptable.
-- **Bubble-CS work is supporting**, not the headline. Don't get pulled back
-  into rendering polish unless Phase 7 is up.
-- **Context expansion default is "expand to enclosing top-level snarl"**,
-  with fixed-k as fallback when the snarls index isn't built (see Phase 3).
-- **Scale-aware granularity (added 2026-04-30).** The index must remain
-  usable at megabase scale. Per-segment detail is reserved for the
-  zoomed-in flow (sub-100 kb, the headline experiment); larger regions
-  render a coarsened/block-level summary so the synteny display at low
-  zoom and the import-form large-region launch both stay responsive. The
-  chr20 audit at 5 Mbp surfaced this as the next gating issue.
-
-## Design direction: unified extraction (2026-04-30)
-
-The plan as originally written grew three overlapping multi-resolution
-mechanisms — planned snarls index, planned tile pyramid, runtime
-coarsener — each solving the same problem (rendering at megabase
-scale) with a different mechanism. After a critical pass with the
-user, the explicit steer is to **collapse to one clean unified
-mechanism** and present *publication-worthy elegance*: one algorithmic
-claim a reviewer can hold in their head.
-
-The complexity to cut is *parallel mechanisms that solve overlapping
-problems*. Multiple **encodings of the same logical data** — the
-SAM/BAM/CRAM analogy — is a different question and remains a
-legitimate design choice (see the binary sequence tier below). The
-two are easily confused; this section makes the distinction explicit
-so future agents don't re-create the parallel-mechanism trap while
-keeping the encoding-tier flexibility.
-
-### What "unified extraction" means
-
-One edge-walk algorithm spans all zoom levels, parametrized by viewport
-size:
-
-```
-extract(region, opts):
-  walk ref path's segments in [start, end]
-  detect bubbles via edge fanout (BFS to ref-path reconvergence)
-  if opts.collapse_linear_runs:    fold linear ref runs into super-segments
-  if bubble.maxAltLen < threshold: collapse bubble, drop alt segs
-  else:                            preserve bubble interior + alts
-```
-
-Two presets, both runtime, both reading the same `edges.bin` +
-`segments.bin`:
-
-- **Per-segment (zoomed in, < 1 Mbp):** `threshold = ∞`,
-  `collapse = false` → identical to today's `buildGfaFromEdges`. Used
-  for the headline experiment (HPRC chr20 path-symmetry at sub-100 kb).
-- **Coarsened (zoomed out, ≥ 1 Mbp):** `threshold = region/50_000`,
-  `collapse = true` → today's `buildGfaCoarsened`. Used for the
-  megabase-scale flows (synteny low-zoom + import-form large-region
-  launch).
-
-The "snarl-boundary context expansion" Phase 4 was reserved for falls
-out of the bubble-to-reconvergence BFS — the bubble closure *is* the
-top-level snarl boundary, computed from edges at query time. No
-separate snarls index needed.
-
-### What this drops from the plan
-
-- **Tile pyramid file format** (`prefix.tiles.<stride>.{bin,idx}`,
-  TILB/TILI magic, 3 strides). Was a planned BigWig-style precomputed
-  multi-resolution index. The runtime coarsener already produces
-  comparable output at 400 ms / 1 Mbp on HPRC chr20 — well within the
-  perf budget for the headline regime. A precomputed pyramid would
-  add 6+ files per fixture, lock zoom levels at preprocess time, and
-  make the index footprint claim worse for no measured user-facing
-  win.
-- **Snarls index file** (`prefix.snarls.bed.gz` + `.tbi`, Phase 4).
-  Was reserved as the principled context-expansion default. The
-  edge-walk's bubble-closure BFS gives equivalent boundaries for
-  top-level snarls without a `vg snarls` preprocess call or a new
-  tabix dependency.
-- **Rust port of the coarsener.** TS prototype runs in 400 ms at
-  1 Mbp; HTTP RTT dominates anyway. Keep the TS implementation as
-  *the* implementation; it stops being a "reference prototype the
-  Rust port matches against" and becomes the production form.
-
-### What this keeps
-
-- The five core index files (`pos.bed.gz`, `segments.bin`, `edges.bin`,
-  `bubbles.bed.gz`, `segments.seq.fa`) — already shipped, all
-  load-bearing for at least one user flow.
-- The runtime coarsener at
-  `plugins/comparative-adapters/src/GfaTabixAdapter/gfaCoarsener.ts`
-  — promoted from "reference prototype" to canonical
-  multi-resolution implementation.
-- The binary sequence tier (F3 — SEQB/SEQI, 2-bit ACGT + N-bitmap)
-  is a **compaction of the same logical data** as the plaintext
-  FASTA, in the SAM/BAM sense — both tiers encode the identical
-  per-segment ACGT(N) sequence, just at different bit-densities. This
-  is *not* the same kind of complexity as adding a new file type or
-  a new algorithm; it's a packing choice over content the index
-  already needed to ship. Both tiers stay in tree; the magic-byte
-  dispatcher in `gfaSeqBinaryIO.ts` makes adding more compactions
-  later (e.g. a CRAM-equivalent reference-compressed tier) a local
-  change. Default at publication time picked by Phase 8 measurement
-  — both are honest choices.
-- The "Multiple format tiers are allowed (SAM/BAM/CRAM-style)"
-  decision above is preserved with the corrected framing: it
-  applies to *encodings of the same logical content* per file
-  (sequences today; potentially `segments.bin` itself if Phase 8
-  shows offset duplication is the bottleneck). It does *not*
-  authorize parallel mechanisms that solve different problems —
-  that is the trap the deferred snarls-index/tile-pyramid items
-  fell into, and what the unified-extraction direction corrects.
-
-### Implementation moves (small refactors, not new files)
-
-1. **Unify the two extraction paths.** Refactor
-   `buildGfaFromEdges` and `buildGfaCoarsened` into a single
-   `extractSubgraph(viewportRefOrds, segLens, edgeShard, ...)`
-   function with `{ threshold, collapseLinearRuns, context }`
-   options. Most code is already shared (BFS, GFA emission, link
-   canonicalization); the divergence is two flags. Two call sites in
-   `getSubgraph` collapse to one with preset selection by region
-   size.
-2. **Strip planned-but-unbuilt format slots from
-   `GRAPH_INDEX_FORMAT.md`.** *Done 2026-04-30.* Removed
-   tile-pyramid + snarls-BED sections; magic registry contracted to
-   the 6 magics actually emitted. SEQB/SEQI marked as
-   "alternative encoding tier" rather than canonical. Spec now
-   ~290 lines (was 357).
-3. **Doc consolidation.** *Done 2026-04-30 — minimal version.*
-   `GRAPH_AUDIT.md` left in place as a static historical archive;
-   plan stops referencing it as a working doc. No physical merge,
-   no churn in the archive's contents.
-
-### Publication framing (what reviewers will read)
-
-> **Adaptive-resolution subgraph extraction from a static
-> edge+position index, parametrized by viewport size. No
-> preprocess-time zoom-level commitment. The same edge-walk
-> algorithm yields per-base bubble detail at small zoom and
-> structural-backbone summary at megabase scale, both browser-native
-> against S3-hosted indexes.**
-
-Comparisons:
-- **vs BigWig-style precomputed pyramids** — fewer files, no fixed
-  zoom levels.
-- **vs vg's GBZ** — browser-native, no in-process toolkit.
-- **vs sequencetubemap-tabix** — comparable file footprint, simpler
-  algorithm story, browser-native vs server-mediated.
-
-Index footprint becomes a stronger supporting claim because we
-ship fewer file types than competing approaches.
-
-## Status & next steps (2026-04-30)
-
-This section is the running scoreboard. Update it when shipping a
-phase or surfacing a new blocker. Per-finding detail from the Phase 0
-audit is archived in `agent-docs/GRAPH_AUDIT.md` (static historical
-record, do not edit); this section is the executive summary plus
-the prioritized backlog.
-
-### Shipped
-
-Completed work has moved to `agent-docs/GRAPH_COMPLETED.md`. That file
-is the running archive (Phase 0 audit harness, F1/F2/F3/F6 fixes,
-HPRC chr20 verification, cross-plugin tests, `maxPathsEmitted` cap,
-Phase 3 fixed-k context expansion, and so on). When a new item ships,
-add a one-line bullet there and update this document's "Status &
-next steps" pointers — don't accumulate ✅ entries here.
-
-### Open: prioritized backlog
-
-Re-ranked 2026-04-30 after the unified-extraction design pass above.
-Backlog items that previously assumed multi-format multi-resolution
-(snarls index, tile pyramid, Rust coarsener port) are demoted to
-"deferred — only revisit if the headline experiment forces it." The
-new top of the list is *prove the existing system carries the
-headline experiment*; speculative architecture is on hold until that
-measurement either confirms or refutes the unified-extraction bet.
-
-1. **Run the headline experiment end-to-end on chr20.** Pick the
-   MAPT-region locus (or HPRC chrM SV), query from N≥3 reference
-   paths through the live UI, capture screenshots, and verify the
-   `getEquivalentRanges` + per-segment + coarsened paths produce
-   structurally isomorphic subgraphs across all paths. This is the
-   single source of truth for whether the current system is
-   publication-ready or whether something is missing. Outcomes:
-   - **Works as-is** → write the paper. Phase 5 CI provisioning is
-     the only mechanical work left.
-   - **Fails on context expansion** → Phase 4 snarls index becomes
-     unambiguous next step (currently deferred — see below).
-   - **Fails on something else** → that thing is the next priority,
-     not what's currently in the backlog.
-2. **Phase 5 CI provisioning.** Jest concordance and path-symmetry
-   tests shipped in `auditConcordance.test.ts` (skip when `vg` is
-   missing). Remaining: provision `vg ≥ 1.59.0` (and optionally
-   `odgi`, `chunkix`) in CI so the suite runs by default rather
-   than skipping. Docker container or apt install in the workflow
-   YAML. Mechanical, not gating publication.
-
-### Deferred (revisit only if the headline experiment forces it)
-
-These were previously top-priority backlog items. After the
-unified-extraction design pass, each falls into the "speculative
-unless an experiment proves we need it" bucket. Documented here so
-the rationale is preserved if a future agent is tempted to revive
-them.
-
-- **Phase 4 snarls index** (`prefix.snarls.bed.gz` from `vg snarls`).
-  Was promoted as "highest leverage" because it gated the C3
-  path-symmetry claim under the assumption that snarl-aware context
-  expansion was needed at chr20 scale. The unified-extraction
-  algorithm derives the same boundary at runtime via
-  bubble-closure BFS on the existing edge index. Revive only if
-  the headline experiment shows the runtime BFS produces wrong
-  boundaries on real chr20 data.
-- **Tile-pyramid format** (`prefix.tiles.<stride>.{bin,idx}`,
-  TILB/TILI magic, 3 strides). Was the planned multi-resolution
-  precompute. Runtime coarsener at 400 ms / 1 Mbp on chr20 fits
-  inside the perf budget. Revive only if Phase 8 measurement shows
-  the runtime coarsener falls over on a documented user flow.
-- **Rust port of the coarsener.** Was justified by the static-file
-  steer. The TS implementation runs fast enough that HTTP RTT
-  dominates; the port would not measurably help. Revive if Phase 8
-  shows otherwise.
-- **Bubble-row regrouping at preprocess time.** ~20-line Rust
-  change that deletes ~50 LOC of TS grouping code, but requires
-  fixture rebuild + S3 reupload of every bubbles file. Bundle
-  with the next required fixture rebuild rather than do
-  standalone — pure cleanup, no user-visible win.
-- **Binary sequence tier (F3, shipped) — default selection
-  pending.** Both plaintext and binary encode the same logical
-  per-segment sequence; the binary tier is a compaction (~73%
-  smaller at chr20 scale), not a different feature. Both ship.
-  Plaintext is currently the default because it's debuggable,
-  greppable, and what existing fixtures contain; the binary tier
-  is opt-in via `--emit-seq-binary` + the `seqBinaryLocation`
-  config slot. Phase 8 picks the publication-default tier from
-  measurement — promoting binary is a one-line dispatcher change
-  in `BaseGfaTabixAdapter`, not an architecture move.
-
-### Surfaced issues (track but not blocking)
-
-- **Rust preprocessor RSS at chr20 scale** — 7.9 GB peak. Streaming
-  the FASTA out during the S-line pass (instead of buffering
-  `seg_seqs` in memory) would shave ~200 MB but isn't urgent for
-  offline preprocessing on a 30 GB machine.
-- **`segments.bin` size at chr20 scale** — 1.49 GB. This is the
-  biggest single file; per-(seg,path,offset) record duplication is
-  inherent. A binary tier here (delta-coded offsets per path?) could
-  cut this in half but is out of scope until Phase 8 perf work.
-- **`loadBinaryIndex` eager-loads the full `.idx`** — see
-  `gfaBinaryIO.ts:79`. Acceptable up to chr20 scale (`segments.idx`
-  for chr20 is ~30 MB) but is the ceiling on indexing whole-HPRC at
-  once. Range-fetched `.idx` (read only the byte-offset entries
-  needed for the current ordinal ranges) is the principled fix and
-  is a natural prerequisite for the sharded variant ramping up.
-  Phase 8 territory.
-- **`assemblyNameMap` mismatch on the GfaAdapter** path (the
-  non-tabix variant) — `project_graph_view_launch.md` documents this
-  as a "known issue, production uses GfaTabix so it's usually fine."
-
-### Files uploaded (S3) — chr20
-
-For `s3://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/`, the
-`hprc-v1.1-mc-grch38-chr20.*` files include the F1/F6 fixes plus the
-`#input-format=walks` header re-index. Files on S3:
-- `pos.bed.gz` + `.tbi`
-- `segments.bin` + `.idx`
-- `edges.bin` + `.idx`
-- `segments.seq.fa` + `.idx` + `.fa.fai`
-
-Same set for `hprc-v1.1-mc-grch38-chrM.*`. The remote
-`config_hprc_chr20.json` uses `prefix:` shorthand that expands the
-locations via `configSchema.preProcessSnapshot`. **Bubbles file is
-not yet on S3** — uploads will happen alongside backlog item 3
-(per-site bubble schema) so we don't ship the per-pair shape and
-then immediately re-upload.
-
-## Multi-resolution: how megabase-scale rendering works today
-
-**Superseded 2026-04-30** — this section originally proposed three
-overlapping coarsening strategies (snarl-collapse, tile-pyramid,
-haplotype-thinning). Per the unified-extraction design above, the
-shipped solution is the runtime edge-walk coarsener at
-`plugins/comparative-adapters/src/GfaTabixAdapter/gfaCoarsener.ts`
-— one algorithm, no precomputed pyramid, no new file format.
-
-### Problem
-
-Per-segment subgraph extraction targets sub-100 kb (Phase 8 budgets).
-At HPRC chr20 scale, queries past ~1 Mbp emit tens of thousands of
-segments and hundreds of thousands of path subwalks; the network
-round-trip and `GraphRenderer.buildGeometry` rebuild both fall over.
-The headline experiment (bubble-level detail at sub-100 kb) is
-unaffected — that is the *zoomed-in* flow. Coarsening is the
-*zoomed-out* flow.
-
-### Solution (shipped)
-
-Above 1 Mbp, `BaseGfaTabixAdapter.getSubgraph` dispatches to
-`buildGfaCoarsened`. Same edge index, same ref-path traversal, but:
-
-- Linear ref runs collapse into super-segments (one S-line per run).
-- Bubbles below `max(20 bp, region/50_000)` collapse — alt-allele
-  segments are dropped; ref-allele segments fold into the super-run.
-- Bubbles above threshold preserve their interior — alt segs emit as
-  separate S-lines, the ref-path W-line walks through them.
-- BFS cap-hit topologies (deep dead-ends, cycles) collapse
-  conservatively to keep the output graph fully connected.
-
-Performance on HPRC chr20 (1.86 M segments, 90 haplotypes):
-- 100 kb (per-segment, full detail): 260 ms, 2,994 segs / 3,992 links.
-- 1 Mb (coarsened): 388 ms, 10 segs / 15 links / 1 preserved bubble.
-- 10 Mb (coarsened): 4.7 s, 13 segs / 22 links / 5 preserved SVs.
-
-Both the synteny display low-zoom flow and the import-form
-large-region launch flow run through the same dispatch; no per-flow
-detail-level option needed.
-
-### Why one algorithm instead of three
-
-The earlier plan called for snarl-collapse + tile-pyramid +
-haplotype-thinning composed by zoom level. After the design pass:
-
-- Snarl-collapse needed a new `prefix.snarls.bed.gz` file and a
-  `vg snarls` preprocess. The runtime BFS to ref-path reconvergence
-  produces equivalent boundaries for top-level snarls without
-  either.
-- Tile-pyramid needed 6+ new files per fixture (`tiles.<stride>.bin`
-  + `.idx` × 3 strides), made the index footprint claim worse, and
-  locked zoom levels at preprocess time. The runtime coarsener
-  produces an end-to-end coarsened path at 400 ms / 1 Mbp on chr20
-  — well inside the perf budget for the documented user flows.
-- Haplotype-thinning was framed as the principled replacement for
-  the `maxPathsEmitted` cap. The cap is in fact sufficient for the
-  current chr20 demo; haplotype-thinning is reserved as a Phase 7
-  rendering polish item if low-zoom haplotype-membership annotation
-  becomes a request.
-
-If a future user flow proves the runtime coarsener insufficient
-(measured, not speculated), the deferred mechanisms in the backlog
-section above are the path back to a precomputed pyramid.
-
-## Quickstart for a fresh agent (cold start to first signal in <30 min)
-
-The goal of this section: get from "no context" to "ran the audit
-harness on volvox and saw a green concordance result" before reading
-the rest of the plan. Read this, run the steps, watch it work, *then*
-go back and read Phase 0+ in detail.
-
-### 1. Install truth-backend tools
-
-Versions below are the *current pin*; verify against
-`tools/graph-truth-extractor/README.md` (which is the source of
-truth — these may be bumped). If your local versions are newer it
-will probably work, but Phase 5 CI fails loudly on mismatch.
-
-- **vg ≥ 1.59.0** —
-  `curl -L -o vg https://github.com/vgteam/vg/releases/download/v1.59.0/vg && chmod +x vg`
-  and put on PATH. Or use Docker: `quay.io/vgteam/vg:v1.59.0`.
-- **odgi ≥ 0.9.0** — `conda install -c bioconda 'odgi>=0.9'` or build
-  from source (https://github.com/pangenome/odgi).
-- **sequencetubemap (tabix branch)** — clone to `~/src/sequencetubemap`,
-  checkout `tabix` branch, pin SHA recorded in
-  `tools/graph-truth-extractor/README.md`. Needed for the `chunkix`
-  backend. `chunkix.py` requires Python ≥ 3.8.
-
-### 2. Build/refresh fixture indexes
+To bound reviewer expectations:
+
+- Not a new graph file format. Output is GFA 1.1.
+- Not a new graph alignment / mapping algorithm.
+- Not a new graph layout algorithm.
+- Not incremental index updates. Rebuild-on-update.
+- Not a graph editing UI.
+
+## Decisions locked in by the user
+
+- **Static files only.** No runtime vg/odgi calls.
+- **Runtime perf > index footprint.** Network-fetched working sets
+  matter more than total file size.
+- **Multiple encodings of the same logical content allowed
+  (SAM/BAM-style).** Sequences ship as both plaintext FASTA and
+  2-bit binary; magic-byte dispatcher picks at open time. **Not**
+  authorization for parallel mechanisms solving different problems
+  (the snarls + tile-pyramid + coarsener trap earlier plan drafts
+  fell into).
+- **Preprocess-time vg/odgi calls are fine.** Rust tool already
+  shells out to bgzip/tabix/sort/`vg deconstruct`.
+- **One algorithm for multi-resolution.** Runtime edge-walk coarsener
+  handles megabase scale. No precomputed tile pyramid; no separate
+  snarls index for context expansion.
+
+## Claims (for the paper)
+
+- **C1** Per-path correctness against `vg find` (under
+  canonicalization). *Status: proved by `auditConcordance.test.ts`.*
+- **C2** Correctness against sequencetubemap-tabix's `chunkix.py`.
+  *Status: harness backend exists, not yet wired into Jest.*
+- **C3** Path symmetry on fully-traversed chromosomes. *Status:
+  proved on chrM by `test-path-symmetry.sh` (44 paths, one
+  fingerprint). Explicitly does not extend to fragmented-contig
+  chromosomes — see "What's proved (and what isn't)" above.*
+- **C4** Browser-native at HPRC scale. *Status: chr20 latency
+  numbers in `GRAPH_PERF.md`; figure pending the browser-side
+  workflow.*
+- **C5** LGV → graph-view drill-down works end-to-end. *Status:
+  puppeteer suite covers the launch entry points; figure pending.*
+- **C6** (Supporting) per-base bubble detail at zoom. *Status:
+  bubble pipeline shipped, Phase 7 polish deferred.*
+
+Index-footprint is supplementary, not a headline claim.
+
+## Quickstart for a fresh agent
+
+Pre-reqs: `vg ≥ 1.59.0` on PATH, Node `≥ 24`
+(`--experimental-strip-types`).
 
 ```bash
+# 1. Build/refresh fixtures (idempotent).
 bash tools/gfa-to-tabix/prepare-fixtures.sh
-```
 
-Idempotent. Re-runs `gfa-to-tabix` with `--bubbles` against fixtures
-that lack `bubbles.bed.gz`; downloads the HPRC source files; converts
-`.vg` → `.gfa` via `vg view -f`; builds vg `.xg`/`.gbz` and odgi
-`.og` for each fixture.
-
-HPRC source URLs (hard-coded in the script):
-
-- chrM: `https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/freeze1/minigraph-cactus/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38.chroms/chrM.vg`
-- chr20: `https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/freeze1/minigraph-cactus/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38.chroms/chr20.vg`
-
-These are vg's native `.vg` format. Convert to GFA with
-`vg view -f chrM.vg > chrM.gfa` before passing to `gfa-to-tabix`. The
-HPRC pangenome data is permissively licensed for research; see
-https://github.com/human-pangenomics/HPRC_pangenome_resources for the
-canonical attribution and use terms — record in the paper's Methods.
-
-### 3. Run the audit harness against volvox
-
-```bash
+# 2. Volvox smoke test.
 bash tools/graph-truth-extractor/test-subgraph-concordance.sh
-```
 
-Expected output: green diff between our `getSubgraph` and `vg find`
-on `volvox_pangenome_50` for the canned region. Red output here
-means Phase 0 has work to do — see "Likely gaps" below for the
-known shortfalls.
-
-### 4. Run the Jest concordance suite
-
-```bash
+# 3. Full Jest audit.
 pnpm --filter @jbrowse/plugin-comparative-adapters test \
   GfaTabixAdapter
+
+# 4. chrM cross-path symmetry (the C3 working example).
+bash tools/graph-truth-extractor/test-path-symmetry.sh
+
+# 5. chr20 — needs local fixtures (~/chr20-test/) or wired-up S3.
+bash tools/graph-truth-extractor/test-path-symmetry.sh \
+  --prefix /home/cdiesh/chr20-test/chr20 \
+  --path GRCh38#0#chr20 --start 30000000 --end 30001000 --context 0
+# Will report DIVERGENT — that's the documented finding, not a
+# regression. See "What's proved (and what isn't)" above.
 ```
 
-Once Phase 5 lands, this runs the same check against `vg`,
-`chunkix`, and (where available) `odgi` for every fixture in CI.
-Pre-Phase 5: only the smoke test runs.
-
-### 5. Read the rest
-
-You now have running infrastructure. The next thing to read is
-"Phase 0 — Audit harness" and the Phase 0 deliverables list. Phases
-1–8 follow what Phase 0 surfaces.
-
-## What exists today
-
-### Plumbing (already wired)
-
-- `LinearSyntenyRPC/GetSubgraph.ts` — RPC entry; calls
-  `adapter.getSubgraph(region, opts)`.
-- `GraphGenomeView/model.ts:549` — `loadFromTabixSubgraph` action;
-  consumes GFA text, runs through gfaParser/gfaConverter, lays out and
-  renders. Uses Bandage-tuned scaling overrides for tabix-subgraph
-  loads only.
-- `GfaTabixAdapter.getSubgraph` at
-  `plugins/comparative-adapters/src/GfaTabixAdapter/gfaTabixUtils.ts:437`
-  — entry point on the adapter side; routes to one of two builders
-  based on whether `edgesLocation` is configured.
-
-### Static index files emitted by `tools/gfa-to-tabix/src/main.rs`
-
-- `prefix.pos.bed.gz` — tabix-indexed segment positions per path. Schema in
-  the file header (`#genomes=`, `#sizes=`, `#paths=`, `#input-format=`).
-- `prefix.segments.bin` — fixed 15-byte records, ordinal-keyed:
-  `segOrd:u32 | pathNameIdx:u16 | offset:u32 | segLen:u32 | orient:u8`.
-  Magic `SEGB` + version u32 header.
-- `prefix.segments.idx` — byte-offset table for ordinal lookup
-  (`BigUint64Array`, eager-loaded; ceiling on whole-pangenome scaling —
-  see format spec). Magic `SEGI` + version u32 header.
-- `prefix.edges.bin` / `.idx` — ordinal-keyed adjacency. Magic `EDGB` /
-  `EDGI`.
-- `prefix.segments.seq.fa` + `.fai` + `.idx` — Phase 1 plaintext
-  sequence tier (binary `SEQB` tier still pending, format pinned).
-- `prefix.bubbles.bed.gz` — per-pair bubble CS rows from `vg deconstruct`.
-  Today's schema: `path | start | end | alleleA | alleleB | identity | cs |
-  genomesA | genomesB`. **Note:** backlog item 3 will rewrite this to
-  per-locus rows pre-publication; the runtime grouping pass becomes
-  redundant.
-- `prefix.vcf.gz` — rewritten `vg deconstruct` VCF (PanSN-stripped).
-
-### Subgraph builders
-
-`plugins/comparative-adapters/src/GfaTabixAdapter/gfaSubgraphBuilders.ts`:
-
-- `buildGfaFromEdges` (line 154): preferred path when `edges.bin`
-  exists. BFS k hops from seed `viewportRefOrds` through the edge
-  shard, backfills cross-edges, emits `H` + `S` + `L` + `P|W` lines
-  via the shared `assembleGfa` emitter.
-- `buildGfaFromPathInference` (line 286): fallback when no edges file.
-  Used by `ShardedGfaTabixAdapter`'s `getSubgraph` since the sharded
-  configSchema deliberately has no `edgesLocation` slot. Uses path
-  co-traversal to derive links. Emits `H` + `S` + `L` + `P|W` lines
-  via the same emitter.
-
-### Adapter abstraction
-
-`BaseGfaTabixAdapter` (`gfaTabixUtils.ts`) is abstract on exactly
-one method, `getSegsForOrdinals(ranges)`. Two concrete subclasses:
-
-- `GfaTabixAdapter` — single segments shard. The default for
-  publication-scale fixtures.
-- `ShardedGfaTabixAdapter` (in `plugins/comparative-adapters/src/ShardedGfaTabixAdapter/`)
-  — per-genome shards, queried in parallel. Optimized for
-  HPRC-pangenome `getMultiPairFeatures`. No edges/snarls support;
-  `getSubgraph` falls back to path-inferred adjacency.
-
-The forward + reverse `assemblyNameMap` is cached once on the base
-class instance; `bubbleOverlay.ts` receives the reverse map directly
-to avoid per-query rebuilds. See `agent-docs/GRAPH_ARCHITECTURE.md`
-"Fragile boundaries" → "BaseGfaTabixAdapter abstraction" for the
-contract that pins this seam.
-
-## Likely gaps vs `vg find` — historical (most resolved)
-
-This section was the pre-Phase-0 enumeration of suspected gaps. Kept
-for historical context; current status is in "Status & next steps"
-above and `agent-docs/GRAPH_AUDIT.md`. ✅ = resolved.
-
-- ✅ **Real sequences.** Phase 1 plaintext tier shipped (S-lines emit
-  real nucleotides when `seqFastaLocation` is configured). Phase 1
-  binary tier shipped: `--emit-seq-binary` writes
-  `prefix.segments.seq.{bin,bin.idx}` (SEQB/SEQI magic, 2-bit ACGT +
-  per-segment N-bitmap). Adapter prefers binary when
-  `seqBinaryLocation` is configured, falls back to plaintext, falls
-  back to `*` + `LN:i:<len>` placeholder. See
-  `agent-docs/GRAPH_INDEX_FORMAT.md` for the layout and
-  `gfaSeqBinaryIO.test.ts` for the cross-tier equivalence guard.
-- ✅ **P/W lines from edge-based path.** `buildGfaFromEdges` now emits
-  one P-line per contiguous haplotype subwalk via `computePathSubwalks`
-  (re-entry-aware per the Phase 0 vg-W-line semantics note). See F2.
-- ⏳ **W-line emission for HPRC-style graphs.** Still emits P-lines
-  even when input was W. Phase 2 work in the backlog. Output's
-  *canonical form* is structurally equivalent (proven by audit
-  harness), but haplotype metadata in W-lines (sample/hap/contig/
-  start/end) is reconstructed from path-name parsing rather than
-  preserved natively.
-- ⏳ **Context expansion** — still hardcoded 1-hop. Phase 3 fixed-k
-  parameter is in the backlog. Snarl-boundary default needs Phase 4.
-- ⏳ **Snarl decomposition output.** Still missing as graph metadata.
-  Phase 4 work — bigger lift, unlocks zoom-to-snarl UX and the Phase
-  3 context default.
-- ✅ **Verification of graph isomorphism.** Phase 0 audit harness +
-  `structuralFingerprint` in `canonicalize.ts` provide
-  publication-grade structural-equivalence proof against vg-truth.
-  Verified on volvox + HPRC chrM (line-wise byte-isomorphic) and HPRC
-  chr20 (structurally isomorphic — automorphism among SNV nodes
-  precludes line-wise comparison at this scale).
-- ⏳ **Format magic / version on binary files.** `segments.bin`,
-  `edges.bin`, `segments.seq.idx` are headerless. Plaintext FASTA
-  intentionally has no magic byte (per user steer); binary sequence
-  tier (when added) gets a magic + version. The other binary indexes
-  could retrofit a header but the simpler path is to version through
-  filename suffix when format breaks.
-
-## Phase 0 — Audit harness (DO THIS FIRST)
-
-This is the gate. Without it, every other phase is a guess. The phase
-priorities below assume Phase 0's likely findings; re-rank if surprised.
-
-### Setup
-
-Pin a specific vg release in `tools/gfa-to-tabix/README.md` and the harness
-script. Use that version locally and in CI. Record the pin in the format
-spec.
-
-```bash
-# One-time, per fixture: build vg's index files alongside the GFA.
-vg gbwt -G "$GFA" --gbz-format -o "$GFA.gbz" -p
-vg convert -b "$GFA.gbz" > "$GFA.xg"
-# Truth-side query
-vg find -p "$PATH_NAME:$START-$END" -c "$CONTEXT" -x "$GFA.xg" > /tmp/truth.gfa
-```
-
-If `vg` is not on the host, use Docker (`quay.io/vgteam/vg:<pinned-version>`).
-
-### Test fixtures (pinned with target structural features)
-
-State-of-fixture as of writing (verify before relying):
-
-- `test_data/volvox/volvox_pangenome_50.gfa` — small, has bubbles
-  (`bubbles.bed.gz`) and edges (`edges.bin`) already indexed.
-  **Target:** simple SNP bubbles, basic concordance. Use as primary
-  CI fixture.
-- `test_data/volvox/volvox_indel_pangenome.gfa` — has structural
-  variants. Currently lacks `bubbles.bed.gz` in repo (edges.bin is
-  always emitted); re-index with `--bubbles <deconstruct.vcf>` before
-  Phase 0 audit. **Target:** indel bubbles, microinsertion path detail.
-- `test/data/synteny-demo/hprc/hprc-v1.1-mc-grch38-chrM.*` — HPRC
-  chrM, 44 haplotypes. Repo currently has `pos.bed.gz` and
-  `segments.{idx,gz}`; source `.vg` (HPRC v1.1 mc grch38 chrM) at
-  `https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/freeze1/minigraph-cactus/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38.chroms/chrM.vg`.
-  Convert with `vg view -f chrM.vg > chrM.gfa` before re-indexing.
-  **Target:** hypervariable control-region cycles + nested bubbles.
-- HPRC chr20 (`test/data/synteny-demo/hprc/config_hprc_chr20.json`
-  exists) is too big for CI fixtures. Source `.vg` at
-  `https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/freeze1/minigraph-cactus/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38.chroms/chr20.vg`.
-  **Target:** MAPT-region inversion locus + centromeric repeats.
-  Local-only (paper benchmarks).
-- HPRC chr20 again (different region): a known large deletion or
-  translocation. Same source URL as above. Local-only.
-
-For each fixture, document the expected graph features (cycle?
-inversion? nested bubbles?) so the audit is targeted, not generic.
-
-**Build script.** Add a `tools/gfa-to-tabix/prepare-fixtures.sh` that
-re-indexes any fixture lacking the indexes Phase 0 needs (edges,
-bubbles) and downloads the HPRC chrM source GFA. Idempotent; safe to
-re-run.
-
-### Reference-extractor harness (dynamic vg/odgi truth oracle)
-
-The audit needs a **persistent, first-class implementation** that
-dynamically launches `vg` and/or `odgi` to extract subgraphs for any
-region of any fixture, and returns canonicalized GFA. This is *not* a
-runtime browser path — it's a test/audit oracle that is used by Phase
-0 (correctness audit), Phase 5 (CI concordance test), Phase 8
-(latency comparison), and any future regression tests. Treating it as
-shared infrastructure (rather than a one-off bash script) makes
-path-symmetry, multi-fixture, and multi-tool comparisons trivial to
-write.
-
-#### Tool: `tools/graph-truth-extractor/` (new)
-
-A standalone TypeScript module + CLI (`node --experimental-strip-types`).
-Single entry point with a backend-selecting interface:
-
-```ts
-// tools/graph-truth-extractor/index.ts
-type TruthBackend = 'vg' | 'odgi' | 'chunkix' | 'naive'
-interface ExtractRequest {
-  gfaPath: string         // path to the source GFA (or .xg/.gbz/.og index alongside)
-  pathName: string        // PanSN-formatted path the region is on
-  start: number           // 0-based, half-open
-  end: number
-  context: number | 'snarl' // fixed-k or snarl-boundary expansion
-  backend: TruthBackend
-}
-interface ExtractResult {
-  gfa: string             // raw GFA text from the backend
-  canonicalGfa: string    // canonicalized form (segment-ID renamed,
-                          // edges/walks normalized — see Canonicalization)
-  segmentCount: number
-  edgeCount: number
-  pathCount: number
-  elapsedMs: number
-  backendVersion: string  // captured from `vg version` / `odgi version`
-}
-async function extractTruthSubgraph(req: ExtractRequest): Promise<ExtractResult>
-```
-
-Backends (each is a thin wrapper around the underlying tool):
-
-- **`vg`** — invokes `vg find -p PATH:start-end -c k -x graph.xg` (or
-  `-G graph.gbz` for newer vg releases). Reads stdout. Builds the
-  required `.xg`/`.gbz` lazily on first call per fixture; caches under
-  `<fixture>.truth-cache/`. Captures `vg version` once per process.
-- **`odgi`** — invokes `odgi extract -i graph.og -r PATH:start-end -c k`
-  (or `--full-range` per odgi semantics). Lazily builds `.og` on first
-  call. Captures `odgi version`.
-- **`chunkix`** — invokes
-  `python ~/src/sequencetubemap/scripts/chunkix.py -p <pos.bed.gz>
-   -n <nodes.tsv.gz> -g <haps.gaf.gz> -r PATH:start-end ...`. Reads
-  the resulting GFA. The closest prior-art implementation; concordance
-  with this backend is the most direct "we did the same thing
-  correctly" check. Lazy-builds `pgtabix.py` outputs on first call per
-  fixture. Captures git revision of the sequencetubemap checkout.
-- **`naive`** — pure-Node reference: parses the GFA, walks the path
-  to find the seed segments at `start`/`end`, BFS-expands by `c` edges,
-  emits a subgraph. Slow but unambiguous; useful when `vg`/`odgi`/
-  `chunkix` disagree (it has happened in the wild) and as a CI
-  fallback when none of the external tools are on PATH. Naive backend
-  ignores reverse-complement subtleties — sanity check only, not for
-  publication numbers.
-
-Three external truth backends (`vg`, `odgi`, `chunkix`) cover the
-publication's correctness story. If any pair disagrees on the
-canonical form, *that* is a finding worth documenting in
-`agent-docs/GRAPH_AUDIT.md` — and worth a paragraph in the paper if
-the disagreement is non-trivial.
-
-#### CLI
-
-```bash
-node --experimental-strip-types tools/graph-truth-extractor/cli.ts \
-  --backend vg \
-  --gfa test_data/volvox/volvox_pangenome_50.gfa \
-  --path ctgA --start 1000 --end 5000 --context 1 \
-  --emit canonical \
-  > /tmp/truth.canonical.gfa
-```
-
-`--emit raw|canonical|json` picks the output mode. `--all-backends`
-runs every configured backend (`vg`, `odgi`, `chunkix`, `naive`) and
-prints a per-backend table including elapsed time and disagreement
-summary; failure exit code if backends produce non-isomorphic
-canonicals.
-
-#### Test-harness integration
-
-The Jest suite in
-`plugins/comparative-adapters/src/GfaTabixAdapter/` imports the
-extractor as a library, not the CLI:
-
-```ts
-import { extractTruthSubgraph } from '../../../../tools/graph-truth-extractor/index.ts'
-import { canonicalize } from '../../../../tools/graph-truth-extractor/canonicalize.ts'
-
-const truth = await extractTruthSubgraph({
-  gfaPath, pathName, start, end, context: 1, backend: 'vg',
-})
-const oursGfa = await adapter.getSubgraph({ refName, start, end, assemblyName })
-expect(canonicalize(oursGfa)).toBe(truth.canonicalGfa)
-```
-
-Tests gated on tool availability — if `vg` is not on PATH, or
-`chunkix.py` not findable, or `odgi` not installed, the relevant test
-case skips with a clear message rather than fails. CI configures
-`vg`, `odgi`, and the sequencetubemap checkout (for `chunkix`)
-explicitly so skips never happen in CI.
-
-#### Why this is not the runtime answer
-
-Browsers cannot launch `vg`/`odgi`. This harness exists in the Node
-test environment only. The runtime contribution is the static-file
-index (Phases 1–6); the harness is the *oracle* that proves the
-contribution is correct. Keeping them separated is critical to the
-publication framing — confusion would invite reviewer pushback ("why
-not just use vg in the browser?").
-
-#### Bash convenience wrapper (Phase 0 ergonomics)
-
-A new `tools/graph-truth-extractor/test-subgraph-concordance.sh` is
-the bash entry point that calls the CLI for ad-hoc developer use
-(Jest tests use the library directly, not this wrapper):
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-PATH_NAME="ctgA"; START=1000; END=5000; CONTEXT=1
-GFA="test_data/volvox/volvox_pangenome_50.gfa"
-PREFIX="test_data/volvox/volvox_pangenome_50"
-
-node --experimental-strip-types tools/graph-truth-extractor/cli.ts \
-  --backend vg --gfa "$GFA" --path "$PATH_NAME" \
-  --start "$START" --end "$END" --context "$CONTEXT" \
-  --emit canonical > /tmp/truth.gfa
-
-node --experimental-strip-types tools/gfa-to-tabix/dump-subgraph.ts \
-  "$PREFIX" "$PATH_NAME" "$START" "$END" > /tmp/ours.raw.gfa
-
-node --experimental-strip-types tools/graph-truth-extractor/canonicalize-cli.ts \
-  /tmp/ours.raw.gfa > /tmp/ours.gfa
-
-diff /tmp/truth.gfa /tmp/ours.gfa
-```
-
-`dump-subgraph.ts` constructs the adapter directly (see
-`plugins/comparative-adapters/src/GfaTabixAdapter/GfaTabixAdapter.test.ts`
-for the construction pattern) and calls `getSubgraph(region)`.
-
-#### Deliverables specific to the harness
-
-- `tools/graph-truth-extractor/` skeleton with `vg` backend on day 1.
-- `chunkix` backend with Phase 0 deliverables (most direct prior-art
-  comparison; makes C2 measurable).
-- `odgi` backend before Phase 5 lands (CI value: third independent
-  oracle).
-- `naive` backend before Phase 0 deliverables ship (correctness
-  fallback for fixture cases where vg/odgi/chunkix disagree).
-- `canonicalize.ts` library function reused by Phase 0's bash diff
-  wrapper and Phase 5's Jest tests.
-- README at `tools/graph-truth-extractor/README.md` documenting
-  backend installation, version pins, sequencetubemap checkout
-  location, expected disagreements (if any).
-
-### Canonicalization (this is the publication-grade test)
-
-"Modulo segment-ID renaming" is hand-wavy. The diff must canonicalize:
-
-- **Bidirected edge equivalence.** `L s1 + s2 +` ≡ `L s2 - s1 -`. Pick a
-  canonical orientation (e.g., lexicographically smaller endpoint first;
-  flip orientations if that requires reversal).
-- **Reverse-complement walks.** A path `s1+,s2+` is the same path as the
-  reverse-complement `s2-,s1-` walked from the other end. Pick a canonical
-  direction (e.g., smaller end-of-path coordinate first).
-- **Segment-ID renaming.** Hash each segment by sequence (Phase 1+) or by
-  `(length, sorted-neighbor-set)` (Phase 0). Two GFAs are isomorphic iff
-  the canonicalized sequence-hash + canonical-edge-set + canonical-path-set
-  match exactly.
-- **Implementation.** Two acceptable approaches, both inside
-  `tools/graph-truth-extractor/canonicalize.ts`:
-  1. Pipe both GFAs through `odgi build → odgi sort -O → odgi view`
-     (subprocess) and byte-diff. (Easiest; depends on odgi.)
-  2. Roll our own canonicalizer in TypeScript. More code, no extra
-     dep, faster (no subprocess fork).
-  Pick (1) for Phase 0 to land quickly; switch to (2) in Phase 5 CI if
-  `odgi` becomes a build-time annoyance or proves slow at scale. The
-  switch is local to `canonicalize.ts`; no caller change.
-
-### Diff report
-
-`tools/graph-truth-extractor/diff-gfa.ts` (or equivalent inside the
-extractor's CLI `--emit json` mode) reports:
-
-- segments: present-in-both / only-in-truth / only-in-ours, with
-  sequence agreement (once Phase 1 lands).
-- edges: present-in-both / only-in-truth / only-in-ours.
-- paths: per path, subwalk-edit-distance vs truth's subwalk.
-- summary: graph-isomorphic? yes/no, with breakdown.
-
-### Sub-deliverable: `vg find` re-entrant-path semantics note
-
-Before Phase 2 starts: produce a one-page note in
-`agent-docs/GRAPH_AUDIT.md` documenting `vg find`'s P-line and W-line
-output for paths that re-enter the subgraph. Show example input + output.
-This unblocks Phase 2.
-
-### Path-symmetry sub-test (this is C3's measurement)
-
-For one fixture (HPRC chrM is small enough for CI, HPRC chr20 region is
-the local-only stress), pick one structural locus and query it from N≥3
-different reference paths. After canonicalization, all N subgraphs must
-be byte-identical. This is the headline experiment's measurement.
-
-### Deliverables of Phase 0
-
-- Run on volvox pangenome, volvox indel pangenome, HPRC chrM. HPRC chr20
-  region runs locally.
-- Produce `agent-docs/GRAPH_AUDIT.md` with:
-  - Concordance table per fixture per category (segments/edges/paths/seq).
-  - Path-symmetry result for the chosen locus.
-  - Re-entrant-path semantics note (for Phase 2 unblock).
-  - Judgment call about which gap (sequences / paths / context) to attack
-    first.
-
-## Phase 1 — Real sequences
-
-Likely needed; Phase 0 will confirm.
-
-### Format strategy: tiered, SAM/BAM/CRAM-style
-
-Sequence storage is **tiered**, not single-format. The adapter detects
-format from a magic header byte and dispatches accordingly. This mirrors
-the SAM/BAM/CRAM lineage in the alignment world: the same logical
-content is supported in multiple physical layouts so users (and tooling)
-pick the right tradeoff for their context.
-
-- **Plaintext tier (`prefix.segments.seq.fa[.gz]`).** A FASTA-like file
-  with one record per ordinal (record header = `>seg<ord>` or similar).
-  Indexed by a sidecar `.fai`-equivalent or by reusing the
-  `segments.seq.idx` byte-offset pattern. Useful as a debug / escape
-  hatch and for small graphs where users want to grep sequences directly.
-  Equivalent to SAM in the analogy.
-- **Binary tier (`prefix.segments.seq.bin`).** 2-bit-packed nucleotides
-  (ACGT) with a parallel N-bitmap or sentinel scheme for non-ACGT
-  positions, ordinal-keyed via `prefix.segments.seq.idx`. The existing
-  `pack_bases` at `tools/gfa-to-tabix/src/main.rs:897` is the natural
-  starting point and is already battle-tested for bubble CS. Default
-  ship format. Equivalent to BAM in the analogy.
-- **Reference-compressed tier (deferred, post-publication).** CRAM-style
-  reference compression — encode each segment as edits relative to a
-  chosen anchor sequence. Out of scope for the publication; called out
-  here so the format spec leaves room for it (magic + version headers
-  enable adding it later without breaking existing readers).
-
-The adapter must support both plaintext and binary tiers. Phase 8
-benchmarks include a tier comparison so the paper can recommend a
-default for HPRC-scale deployments. The user's "runtime perf > footprint"
-steer applies *within* a tier — don't add complexity that costs decode
-time. It does not collapse the multi-format strategy.
-
-### Files
-
-- `prefix.segments.seq.bin` (binary tier) — packed nucleotides,
-  ordinal-keyed via `prefix.segments.seq.idx`. 8-byte header: 4-byte
-  ASCII magic (`SEQB`) + 4-byte version. Non-ACGT handling via
-  per-segment bitmap segment header or a sentinel byte; pinned in the
-  format spec before Phase 1 implementation starts.
-- `prefix.segments.seq.fa[.gz]` (plaintext tier) — FASTA-like, one record
-  per ordinal. `.fai` (or equivalent byte-offset table) for ordinal
-  lookup.
-- `prefix.segments.seq.idx` — `BigUint64Array` byte-offset table; entry
-  `[ord]` = byte offset of segment `ord`'s sequence in `seq.bin`. Length
-  = numSegments + 1 (last entry = total file size, for slicing the last
-  record).
-- Sharded variants `prefix.segments.seq.<assembly>.{bin,fa.gz}` mirror
-  the existing `--sharded` flag in the Rust tool. Decision on whether
-  to ship sharded for HPRC chr20 deferred to Phase 8 (data-driven by
-  HTTP-fetch latency on real deployments).
-
-### Spike before implementation
-
-A 30-min Rust script: scan HPRC chr20 GFA, count non-ACGT chars per
-segment, report distribution. Drives the binary-tier non-ACGT scheme
-(per-segment bitmap vs sentinel byte vs reject + fall back to
-plaintext). Without this number, the binary format is guessing.
-
-### Implementation
-
-- Rust tool: emit during the GFA pass. Sequences are already read from S
-  lines for `encode_bubble_cs` (line 114 in `main.rs`); persist a
-  parallel copy in the chosen tier(s). New flags: `--emit-seq-binary`,
-  `--emit-seq-plaintext`. At least one is required; both is allowed for
-  hybrid deployments.
-- Adapter: lazy-fetch sequences only for `getSubgraph` responses (working
-  set is small — viewport-scoped). Don't load for
-  `getMultiPairFeatures` (synteny rendering doesn't need them).
-- New method on `BaseGfaTabixAdapter`:
-  `getSegmentSequences(ordinals: number[]): Promise<Map<number, Uint8Array>>`.
-  Returns `Uint8Array`, not `string` — caller decodes to ASCII only when
-  needed for GFA emission. Internal implementation dispatches on file
-  magic: binary tier returns unpacked bytes after a single decode pass;
-  plaintext tier returns a FASTA slice. Use the existing range-fetch +
-  coalescing pattern from `getEdgesForOrdinals` in `gfaBinaryIO.ts:124`.
-- Update `buildGfaFromEdges` and `buildGfaFromPathInference` to populate
-  the S-line sequence column instead of `*`.
-
-### Test
-
-- Round-trip a subgraph through `vg view` → `vg snarls` and verify
-  snarl decomposition matches `vg snarls` on the original GFA
-  restricted to the same segments.
-- Sequence-hash diff: every emitted segment's sequence must hash-match
-  truth.
-- Tier-equivalence test: for the same fixture indexed in both tiers,
-  `getSegmentSequences` returns byte-identical results.
-
-## Phase 2 — P/W lines in edge-based subgraph
-
-Depends on the Phase 0 re-entrant-path semantics note.
-
-- **Emit format follows input.** If input GFA used W-lines (HPRC-style),
-  emit W-lines (preserves haplotype metadata: sample/haplotype/contig/
-  start/end natively). Only fall back to P-lines for legacy GFA 1.0 inputs.
-- For each path visiting any segment in `allNodeOrds`, walk its records
-  via `segments.bin` (already keyed by ordinal — see
-  `getSegmentsForOrdinalsFromShard` in `gfaBinaryIO.ts:88`). Emit
-  contiguous in-subgraph subwalk(s).
-- Re-entrant paths (path enters/exits subgraph multiple times): match
-  exactly what the Phase 0 note documents. Likely vg emits multiple
-  W-lines with a `_seg<N>` suffix or splits the path; do the same.
-- Orientation tags must come from the segment record's `orient` field.
-- The reference path on which the user issued the query is encoded as the
-  first emitted W/P-line for predictable downstream consumption.
-
-### Test
-
-- P/W-line concordance with `vg find` output, per path.
-- Re-entrant-path test using a fixture with a known cycle (HPRC chrM
-  control region is the natural candidate).
-
-## Phase 3 — Context expansion
-
-**Phase ordering note.** Phase 3's default (snarl-boundary) depends
-on Phase 4 (a) `prefix.snarls.bed.gz`, so Phase 4 lands first in the
-implementation order. Phase 3's fixed-k fallback can ship
-independently and is the right thing to land for Phase 0/Phase 5
-correctness work; the snarl-boundary default is a Phase 4 follow-up.
-
-### Default: snarl-boundary expansion (gated on Phase 4)
-
-- The principled answer in pangenome theory: expand the seed region so
-  that every top-level snarl overlapping the seed is fully enclosed.
-  Corresponds to user intent ("show me the bubbles around this region").
-- Requires Phase 4 (a) static `prefix.snarls.bed.gz`. If unavailable at
-  query time, fall back to fixed-k=1.
-
-### Fallback: fixed-k
-
-- Extend `getSubgraph(region, opts)` signature. Add `context?: number`
-  (default = "snarl" sentinel; numeric override = fixed-k).
-- Walk edges k steps from seed segments. Boundary handling: cut off at
-  context limit even if a path continues — match `vg find -c k`.
-- The RPC method (`LinearSyntenyRPC/GetSubgraph.ts:23`) and the graph view
-  caller (`GraphGenomeView/model.ts:535`) both need to accept this option.
-  This is a public API change for any third-party adapter; flag in
-  release notes.
-
-### Quantitative experiment (replaces "eyeball it")
-
-For 10 random HPRC chr20 regions × 4 region sizes (1kb, 10kb, 100kb, 1Mb),
-measure:
-
-- **Snarl coverage at k.** Fraction of top-level snarls overlapping the
-  seed region that are *entirely contained* in the extracted subgraph at
-  k ∈ {1, 2, 3, 5}. Plot.
-- **Subgraph footprint.** Nodes, edges, total base content (bytes) at
-  each k. Set a target ceiling for "interactive at HPRC scale" (Phase 6
-  decides; e.g., ≤ 5k nodes for the graph view to feel snappy).
-- **Snarl-boundary vs k=2 comparison.** For the same regions, compare the
-  snarl-default subgraph against fixed k=2. Document the difference.
-
-Document the chosen default (and any region-size-dependent overrides) in
-`agent-docs/GRAPH_PLAN.md` (this file) before locking it in for Phase 5
-CI.
-
-## Phase 4 — Snarl decomposition index
-
-Strongly preferred: option (a). Option (b) is an escape hatch.
-
-- **(a) Static `prefix.snarls.bed.gz`** emitted at preprocess time.
-  Schema (extended per `vg snarls` output):
-  `refPath | refStart | refEnd | snarlId | parentSnarlId | LV |
-   type | startNode | endNode | netGraphNodes | netGraphEdges`
-  - `type` ∈ `ultrabubble | bubble | chain | other`. Ultrabubble flag is
-    rendering-relevant: ultrabubbles can collapse to a SNP-like view.
-  - `netGraphNodes` = count of unique segments in the snarl's net graph,
-    excluding boundary nodes.
-  - `LV` (level) gives nesting depth; `parentSnarlId` enables tree
-    reconstruction at query time.
-  - Compute via `vg snarls -T graph.xg` (or whatever the pinned vg version
-    requires), then convert to BED + tabix.
-  - Pure tabix lookup at query time, zero runtime tools.
-- **(b) Compute snarls from edge index at query time.** Bubble
-  decomposition from edges + paths is O(|subgraph|). Cheaper file
-  footprint, more runtime code. Reject unless (a) proves too large or too
-  slow.
-
-### Adapter API
-
-- `getSnarlsForRegion(region): Promise<SnarlRecord[]>`. Consumed by graph
-  view to color/highlight bubbles and by Phase 3's snarl-boundary
-  expansion.
-- Fallback semantics: if `snarls.bed.gz` is missing, return `[]` and
-  Phase 3 falls back to fixed-k=1.
-
-### Test
-
-Snarl boundaries match `vg snarls` output for the same GFA, modulo the
-canonicalization function from Phase 0.
-
-## Phase 5 — vg find concordance as CI test
-
-- Codify Phase 0's reference-extractor harness as a Jest test in
-  `plugins/comparative-adapters/src/GfaTabixAdapter/`. Tests import the
-  harness as a library (`tools/graph-truth-extractor/index.ts`); each
-  case picks `backend: 'vg'`, `'chunkix'`, and `'odgi'` (where
-  available) for independent oracle comparisons.
-- Test fixtures: volvox pangenome + volvox indel pangenome (small
-  enough for CI). HPRC chrM gated on local `vg` install.
-- Pass criteria: **graph-isomorphic to the truth backend's output
-  under canonicalization**. Exact match — no concordance threshold.
-  If `vg`, `odgi`, and `chunkix` backends disagree on a fixture,
-  document the disagreement, pick the publication-defensible side
-  (or report each), and the test pins to that side.
-- If divergence between ours and the chosen truth exists,
-  characterize it (one-paragraph in the test failure message), bound
-  its biological irrelevance, and either fix or document why the test
-  accepts it. The publication cannot defend a "99%" number; either
-  the index is correct or it has a known, named exception.
-- Path-symmetry CI test: same locus, multiple reference paths,
-  byte-identical canonical output. Drives `extractTruthSubgraph` once
-  per path; asserts all canonicalized results are identical.
-- Pin vg/odgi versions and the sequencetubemap checkout revision in
-  test setup; mismatched versions fail loudly with a clear error
-  including expected vs found.
-- Tests gracefully skip (not fail) when a backend is unavailable
-  (vg/odgi missing from PATH, sequencetubemap checkout missing).
-  CI configures all three explicitly so skips never happen in CI.
-
-## Phase 6 — Linear-view → graph-view UX polish
-
-- Plumbing exists (`loadFromTabixSubgraph` on `GraphGenomeView`).
-- Add an "Open in graph view" track menu item on `MultiLGVSyntenyDisplay`.
-  Pass current visible region + adapter config + context option.
-- Spawn a `GraphGenomeView` in the session (or focus existing one) and
-  dispatch to `loadFromTabixSubgraph`.
-- Keyboard shortcut consideration (deferred — pick something
-  non-conflicting).
-- **Scale gate.** Before declaring Phase 6 done: run the headline
-  experiment fixture through the live UI. If the resulting graph view is
-  unusable (>5k nodes interactive, or layout fails), either tighten the
-  default context expansion or escalate. The risk listed up top
-  (`buildGeometry` full-rebuild from `GRAPH_PERF.md`) is the live failure
-  mode here.
-- End-to-end browser test (Chrome DevTools MCP):
-  load synteny → click → graph view appears with subgraph. Pin via
-  screenshot.
-
-## Phase 7 — Bubble-CS work as supporting (the original plan)
-
-The previous plan in this conversation (`buildCsFromCigarAndBubbles`,
-`n.repeat()` removal, GPU parity, identity definition, multi-reference
-orientation) becomes Phase 7. It demonstrates that the static index also
-carries per-base bubble detail when zoomed in. **Do not start this until
-Phases 0–6 are landed and the headline contribution is solid.**
-
-The detailed sub-plan from the prior conversation:
-
-- A. Replace `n.repeat()` synthetic-base hack: bubble CS describes only
-  positions inside CIGAR `=`/`M` runs; structural ops come from CIGAR.
-- B. GPU pipeline parity: pass `len` through `onInsertion` (currently
-  `_len` is discarded at
-  `plugins/linear-comparative-view/src/MultiLGVSyntenyDisplay/shared/extractCigarFeatures.ts:36`).
-- C. Identity definition lockdown — pick `matchBp / refSpanBp`, document.
-- D. Quantify bubble-cap drops on real data (`MAX_PAIRS_PER_SITE=500`,
-  `MAX_ALLELE_LEN=10000` in the Rust tool).
-- E. Performance benchmarks.
-- F. Multi-reference orientation correctness (positional golden tests, not
-  `/[+-]/.test(cs)`).
-- G. Test rigor.
-
-## Phase 8 — Performance & scale validation
-
-The comparison must reflect the **deployment scenario**, not a microbench.
-vg's natural cost model is in-process GBZ; ours is HTTP range fetches.
-Measure both honestly.
-
-### Target budgets (drive design, not pass/fail)
-
-These are aspirational targets for "feels interactive in a browser
-tab against S3-equivalent storage." Phase 6 won't ship until we hit
-the warm-cache numbers; cold-cache can miss without blocking but
-must be reported. Region sizes refer to HPRC chr20.
-
-| Region size | Cold cache target | Warm cache target |
-|-------------|-------------------|-------------------|
-| 1 kb        | < 500 ms          | < 50 ms           |
-| 10 kb       | < 1 s             | < 200 ms          |
-| 100 kb      | < 3 s             | < 500 ms          |
-| 1 Mb        | < 10 s            | < 2 s             |
-
-Numbers above the budget mean either (a) we have a perf bug, (b) the
-deployment storage is too slow (S3 cold-fetch dominates), or (c) the
-budgets need revising — the paper reports the *actual* numbers
-either way.
-
-### Latency
-
-Driven by the reference-extractor harness's `--all-backends` mode plus
-ours, capturing `elapsedMs` per backend per region:
-
-- **vg find on local GBZ** (best-case fast path for vg) on HPRC chr20
-  at 10kb / 100kb / 1Mb regions.
-- **odgi extract on local .og** at the same regions (independent
-  oracle latency).
-- **chunkix.py on local tabix files** (sequencetubemap-tabix's
-  Python extractor, the most direct apples-to-apples prior art —
-  same conceptual approach, server-side execution).
-- **Ours, cold cache, over HTTP from S3-equivalent** (worst-case
-  deployment for us). Same regions.
-- **Ours, warm cache** (Cache API hit on every range). Same regions.
-
-Report all five in one table. The most informative comparison is
-"our browser-native vs chunkix.py server-side": same conceptual
-approach, different execution context. Vg/odgi local-process numbers
-are the lower bound on extraction time given perfect locality.
-
-### Path symmetry (C3 measurement)
-
-Same locus from N≥3 reference paths. **Method:** median of 10 trials
-per path, warm-cache only (cold-cache variance is dominated by
-network jitter and would obscure path-dependent effects).
-Mann-Whitney U-test pairwise; p > 0.05 for every pair establishes
-"statistically indistinguishable." Report medians + IQR in the
-artifact table.
-
-### Index size (supplementary, not a numbered claim)
-
-Total static-file footprint (pos.bed.gz + segments.bin + segments.idx +
-segments.seq.bin + segments.seq.idx + edges.bin + edges.idx +
-bubbles.bed.gz + snarls.bed.gz) vs HPRC's `.gbz` and vs
-sequencetubemap-tabix's `pos.bed.gz` + `nodes.tsv.gz` + `haps.gaf.gz`.
-Per the user's "runtime perf > footprint" steer, this is a secondary
-metric — report it for completeness, don't optimize against it unless
-it dominates HTTP-fetch latency.
-
-### Index build time (new)
-
-Static-file indexing is a preprocess cost paid once. Measure:
-
-- Time to index HPRC chrM (with and without `vg snarls`).
-- Time to index HPRC chr20 (with and without `vg snarls`).
-- Time to index HPRC whole-genome (extrapolate from chr20 if needed; or
-  measure if compute is available).
-
-### Streaming working set
-
-Peak heap during extraction at each region size. Worth measuring
-specifically: per `gfaBinaryIO.ts:79`, `loadBinaryIndex` eager-loads the
-whole `.idx` file into a `BigUint64Array`. For HPRC chr20, this is
-non-trivial. Quantify and document.
-
-### Concurrency
-
-Range-fetch coalescing (`gfaBinaryIO.ts` 4096-byte window in
-`getEdgesForOrdinals`). Measure round-trip count per query. Compare
-against the obvious lower bound (one trip per disjoint byte range).
-
-Document in `agent-docs/GRAPH_PERF.md` (existing file; extend, don't
-replace).
-
-## Phase 9 — Publication artifacts
-
-Each artifact maps to a Claim listed at the top.
-
-- **Headline figure (C3 + C5):** HPRC chr20 region (or chrM SV) in
-  synteny LGV → click → graph view. Side-by-side from N reference
-  paths showing isomorphic subgraphs. One screenshot panel.
-- **Concordance table (C1 + C2):** % match with `vg find` and
-  `chunkix.py` (and `odgi extract` where available) per category
-  (segments, edges, paths, sequences) on volvox + HPRC chrM + HPRC
-  chr20. Goal: 100% under canonicalization.
-- **Path-symmetry table (C3):** latency-per-path on a fixed locus,
-  showing path-independence of both correctness and latency.
-- **Performance table (C4):** latency vs `vg find`, `odgi extract`,
-  and `chunkix.py`, cold/warm/local, three region sizes.
-- **Index size table (supplementary):** static files vs `.gbz`
-  baseline and vs sequencetubemap-tabix's index. Reported for
-  completeness, not as a core claim.
-- **Methods section:** points at `agent-docs/GRAPH_INDEX_FORMAT.md`
-  for the file-format spec; one paragraph summary per file in the
-  paper. The format spec is the canonical artifact, not a methods
-  paragraph. Cite vg-gaf-annot (Monlong et al.) and
-  sequencetubemap-tabix as the antecedent prior art.
-
-## Critical files reference
-
-### Adapter side
-
-- `plugins/comparative-adapters/src/GfaTabixAdapter/gfaTabixUtils.ts`
-  — `BaseGfaTabixAdapter` class. `getSubgraph` at line 437; the
-  `partitionByRef` helper that splits a region's segments into
-  ref/other buckets is the single point of variance for the synteny
-  feature path.
-- `plugins/comparative-adapters/src/GfaTabixAdapter/GfaTabixAdapter.ts`
-  — concrete single-shard subclass.
-- `plugins/comparative-adapters/src/ShardedGfaTabixAdapter/`
-  — concrete sharded subclass (per-genome shards). Has its own
-  configSchema; consumes the rust tool's `--sharded` output via
-  `prefix.segments.manifest.json`.
-- `plugins/comparative-adapters/src/GfaTabixAdapter/gfaSubgraphBuilders.ts`
-  — `buildGfaFromEdges` (line 154), `buildGfaFromPathInference`
-  (line 286). Shared `assembleGfa` emitter.
-- `plugins/comparative-adapters/src/GfaTabixAdapter/gfaBinaryIO.ts`
-  — segment + edge binary record parsing, ordinal lookups.
-  - Note: `loadBinaryIndex` (line 79) eager-loads the entire idx file.
-    Documented in format spec; surfaced as Phase 8 item.
-- `plugins/comparative-adapters/src/GfaTabixAdapter/bubbleOverlay.ts`
-  — bubble pipeline: `parseBubbleLine` + `fetchBubbleSites` group
-  per-pair rows into per-site `BubbleSite` records;
-  `buildCsFromCigarAndSites` walks CIGAR + sites in lockstep;
-  `findBubblePair` resolves which CS applies to a (refGenome,
-  queryGenome) pair. Backlog item 3 deletes the grouping pass.
-- `plugins/comparative-adapters/src/GfaTabixAdapter/segmentFeatureBuilder.ts`
-  — synteny feature CIGAR construction. The X-CIGAR contract for
-  equal-length segment swaps is documented in
-  `GRAPH_ARCHITECTURE.md` "Fragile boundaries".
-- `plugins/comparative-adapters/src/GfaTabixAdapter/configSchema.ts`
-  — adapter config schema. Add new file locations here as Phase 1+ adds
-  them (`seqBinaryLocation`, `snarlsLocation`).
+HPRC source URLs (for fixture rebuilds):
+- chrM: `https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/freeze1/minigraph-cactus/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38.chroms/chrM.vg`
+- chr20: same prefix, `chr20.vg`
+
+Convert with `vg view -f` before passing to `gfa-to-tabix`. HPRC is
+permissively licensed; cite
+https://github.com/human-pangenomics/HPRC_pangenome_resources in
+the paper's Methods.
+
+## Critical files
+
+### Adapter
+- `plugins/comparative-adapters/src/GfaTabixAdapter/gfaTabixUtils.ts` —
+  `BaseGfaTabixAdapter.getSubgraph`. Region-size dispatch between the
+  per-segment and coarsened builders.
+- `plugins/comparative-adapters/src/GfaTabixAdapter/gfaSubgraphBuilders.ts` —
+  per-segment builder (`buildGfaFromEdges` + path-inference fallback).
+- `plugins/comparative-adapters/src/GfaTabixAdapter/gfaCoarsener.ts` —
+  coarsened builder for megabase-scale queries.
+- `plugins/comparative-adapters/src/GfaTabixAdapter/gfaEmitHelpers.ts` —
+  shared canonical-link / PanSN / orientation helpers used by both
+  builders.
+- `plugins/comparative-adapters/src/GfaTabixAdapter/bubbleOverlay.ts` —
+  bubble pipeline (per-pair → per-site grouping, CS construction).
 
 ### RPC + graph view
-
 - `plugins/linear-comparative-view/src/LinearSyntenyRPC/GetSubgraph.ts`
-  — RPC entry. Already accepts `opts` (context, maxPathsEmitted,
-  emitFormat). Phase 4 will add `detailLevel`/`opts.snarl=true`.
-- `plugins/graph/src/GraphGenomeView/model.ts:549`
-  — `loadFromTabixSubgraph`. Consumes GFA, runs through layout with
-  Bandage-tuned overrides for tabix-subgraph loads.
-- `plugins/graph/src/gfa/gfaParser.ts`, `gfaConverter.ts`
-  — GFA-text parser; handles GFA 1 + 1.1 S/L/E/W/P. Verify Phase 4
-  snarl tags pass through cleanly when that phase lands.
+- `plugins/graph/src/GraphGenomeView/model.ts:549` (`loadFromTabixSubgraph`)
 
 ### Rust preprocessor
-
 - `tools/gfa-to-tabix/src/main.rs`
-  — single-file Rust tool. Two-phase pass: scan S lines first
-  (line 110+), then walk P lines. Bubble VCF generation at lines
-  1273-1527. Sequence emission for Phase 1 fits in the existing S-line
-  scan at line 114 (the `seq` variable already holds the bases).
-- `tools/gfa-to-tabix/README.md` — current CLI reference (existing
-  flags: `--chunk-size`, `--assemblies`, `--sharded`, `--no-groom`,
-  `--ref-assembly`, `--bubbles <vcf>`, `--output-config`). Update with
-  pinned vg version + new flags (`--emit-seq-binary`,
-  `--emit-seq-plaintext`, `--snarls <vg-snarls-output>` — matching the
-  existing `--bubbles <vcf>` convention of taking an input path).
+- `tools/gfa-to-tabix/README.md`
 
-### Reference-extractor harness (Phase 0 + Phase 5 + Phase 8)
-
-- `tools/graph-truth-extractor/index.ts` (new) — library entry point;
-  `extractTruthSubgraph(req)` with `vg`/`odgi`/`chunkix`/`naive`
-  backends.
-- `tools/graph-truth-extractor/cli.ts` (new) — CLI for bash harnesses.
-- `tools/graph-truth-extractor/canonicalize.ts` (new) — shared
-  canonicalization function (used by `diff-gfa.ts`, the Jest tests,
-  and `--emit canonical` in the CLI).
-- `tools/graph-truth-extractor/README.md` (new) — backend install +
-  version pins + sequencetubemap checkout location + known
-  disagreements between backends.
-- `tools/gfa-to-tabix/dump-subgraph.ts` (new) — small adapter wrapper
-  that constructs `GfaTabixAdapter` and dumps `getSubgraph` output as
-  GFA. Used as the "ours" side of every comparison.
-
-### External prior art (read, cite, use as oracle)
-
-- `~/src/sequencetubemap/scripts/pgtabix.py` — preprocessor that
-  builds `pos.bed.gz` + `nodes.tsv.gz` + `haps.gaf.gz` from a GFA.
-  Conceptual analogue of our Rust `tools/gfa-to-tabix/src/main.rs`.
-- `~/src/sequencetubemap/scripts/chunkix.py` — region→subgraph
-  extractor using the tabix files above. Conceptual analogue of our
-  `getSubgraph`. Used as the `chunkix` backend in the
-  reference-extractor harness.
-- `~/src/sequencetubemap/README.tabix.md` — file-format documentation
-  for the prior-art index. Compare against
-  `agent-docs/GRAPH_INDEX_FORMAT.md`.
-- vg-gaf-annot manuscript (https://jmonlong.github.io/manu-vggafannot/)
-  — the broader research program this fits into. Citation target.
-
-### Linear synteny display (Phase 7 only)
-
-- `plugins/linear-comparative-view/src/MultiLGVSyntenyDisplay/`
-  — main display.
-- `plugins/linear-comparative-view/src/MultiLGVSyntenyDisplay/shared/extractCigarFeatures.ts:36`
-  — the GPU `_len` discard.
-- `plugins/linear-comparative-view/src/MultiLGVSyntenyDisplay/features/insertion/extract.ts:8`
-  — `emitInsertionGpu` collapses `endBp = startBp` (1px line).
-- `packages/alignments-core/src/labelConstants.ts:113-141`
-  — `drawInsertion` Canvas2D path with the labeled-box branch GPU lacks.
-- `plugins/comparative-adapters/src/MultiPairFeature.ts:3-18`
-  — feature schema. Both `cigar` and `cs` are strings.
+### Audit harness (oracle, not runtime)
+- `tools/graph-truth-extractor/index.ts` — `extractTruthSubgraph` with
+  `vg`/`odgi`/`chunkix`/`naive` backends.
+- `tools/graph-truth-extractor/canonicalize.ts` — `canonicalize` +
+  `structuralFingerprint`.
+- `tools/graph-truth-extractor/cli.ts`
+- `plugins/comparative-adapters/scripts/dump-subgraph.ts` — adapter
+  side of the comparison.
+- `plugins/comparative-adapters/scripts/equivalent-ranges.ts` —
+  bounding-box mapper from one path's viewport to per-other-path
+  ranges that overlap the same physical segments. Useful for
+  multi-path queries; does **not** by itself establish path
+  symmetry on fragmented chromosomes.
+- `plugins/comparative-adapters/src/GfaTabixAdapter/auditConcordance.test.ts` —
+  Jest concordance suite. Three describe blocks: per-segment vs
+  vg-find concordance, coarsener bp-bound concordance vs vg-find,
+  and intra-fixture path-symmetry on volvox `ref#0#ctgA` (the
+  chrM-shaped fully-traversed case). Skips when `vg` is not on
+  PATH; CI provisions vg ≥ 1.59.0 in `.github/workflows/push.yml`.
 
 ### Test fixtures
-
-- `test_data/volvox/volvox_pangenome_50.{gfa,pos.bed.gz,segments.bin,
-  edges.bin,bubbles.bed.gz,vcf.gz}` — primary small fixture.
-- `test_data/volvox/volvox_indel_pangenome.gfa` — has SVs.
-- `test/data/synteny-demo/hprc/hprc-v1.1-mc-grch38-chrM.*` — 44-haplotype
+- `test_data/volvox/volvox_pangenome_50.*` — primary CI fixture.
+- `test/data/synteny-demo/hprc/hprc-v1.1-mc-grch38-chrM.*` — 44-hap
   realistic case.
-- `test/data/synteny-demo/hprc/config_hprc_chr20.json` — chr20 config
-  (fixtures not in repo; for local benchmarking).
+- `test/data/synteny-demo/hprc/config_hprc_chr20.json` — chr20
+  config (fixtures on S3 at
+  `s3://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/`).
 
-## Open questions / experiments
+## Related docs
 
-- **Snarl-boundary vs fixed-k tradeoff** (Phase 3). Snarl-boundary is the
-  default per locked-in decision; the experiment quantifies how much
-  better and identifies region-size-dependent overrides.
-- **Sharded sequences file** (Phase 1). When does the sharded variant pay
-  off? Likely for HPRC chr20-scale graphs, driven by HTTP-fetch
-  parallelism rather than total size. Decide based on Phase 8 numbers.
-- **Snarl computation source** (Phase 4). `vg snarls -T` output via
-  preprocess is preferred. Alternative: compute in the Rust tool
-  (avoids vg dependency at preprocess). Defer until Phase 4 entry; the
-  vg call is acceptable per locked-in decision.
-- **Bubble-cap drops** (Phase 7 D). `MAX_PAIRS_PER_SITE=500`,
-  `MAX_ALLELE_LEN=10000` in `tools/gfa-to-tabix/src/main.rs`. Quantify on
-  HPRC chr20 before deciding to lift.
-- **Cycles, duplications, inversions.** Surfacing on HPRC chrM control
-  region (Phase 0 fixture target) and HPRC chr20 MAPT inversion (local
-  fixture target). Each fixture has a named structural feature so the
-  audit is targeted.
-
-## Memory / context bridge for fresh agents
-
-The user does not want runtime tool launches in the browser. Static files
-only. They are fine with adding files at preprocess time (the Rust tool
-already shells out to `bgzip`, `tabix`, `sort`, `vg deconstruct`; adding
-`vg snarls` and `vg autoindex` is fine).
-
-The user values **runtime performance over index file size**. Don't
-over-pack file formats if the packing costs decode time on the working
-set. But: this does not collapse the format strategy to a single tier.
-Phase 1's sequence storage is **tiered** (SAM/BAM/CRAM-style): a
-plaintext FASTA-like form and a 2-bit-packed binary form coexist, with
-the adapter dispatching on a magic header. CRAM-style
-reference-compression is reserved for a future tier behind the same
-header — don't lock the format spec to a single layout.
-
-The previous agent over-rotated on bubble-CS rendering polish (Phase 7
-material) and called it "publication-grade." It was a good bug fix but
-not the contribution. Don't repeat.
-
-**Prior art is friend, not foe.** SequenceTubeMap on the `tabix`
-branch (jmonlong) and the vg-gaf-annot manuscript are the conceptual
-antecedents of this work. We borrow the tabix-on-graph-files pattern,
-extend the index, and bring it into the browser via JBrowse. Don't
-waste energy on novelty differentiation; cite them prominently and
-use `chunkix.py` as a correctness oracle in the reference-extractor
-harness. The publication framing is "publication-quality engineering
-that works correctly inside JBrowse," not "we discovered a new way."
-
-When adding new fields to `MultiPairFeature` or new file types, follow the
-project's existing naming conventions (see `tools/gfa-to-tabix/src/main.rs`
-for emit; the test in `GfaTabixAdapter.test.ts` for the construction
-pattern). Every new binary file gets a magic + version header per
-`agent-docs/GRAPH_INDEX_FORMAT.md`.
-
-The repo has a `webgl-poc` branch as the active branch. Bubble-CS work
-already on this branch should not be reverted; it lands as Phase 7 polish.
-
-See also:
-- `CLAUDE.md` (root) for project guardrails.
-- `agent-docs/PRD.md` for the broader WebGPU migration context.
-- `agent-docs/ARCHITECTURE.md` for coordinate conventions and RPC
-  boundaries.
-- `agent-docs/GRAPH_PERF.md` for prior perf notes (extend, don't replace).
-- `agent-docs/GRAPH_INDEX_FORMAT.md` for the canonical file-format spec
-  (created in Phase 1, updated through later phases).
-- `agent-docs/GRAPH_AUDIT.md` for Phase 0 deliverables (concordance,
-  path-symmetry, re-entrant semantics note).
-- `agent-docs/GRAPH_COMPLETED.md` for the archive of shipped work
-  (audit harness, F1/F2/F3/F6 fixes, HPRC chr20 verification,
-  `maxPathsEmitted` cap, Phase 3 fixed-k context, etc.).
+- `agent-docs/GRAPH_INDEX_FORMAT.md` — file-format spec.
+- `agent-docs/GRAPH_COMPLETED.md` — shipped work.
+- `agent-docs/GRAPH_AUDIT.md` — Phase 0 audit (static archive, do not
+  edit). Re-entrant-path semantics note + chr20 path-symmetry finding
+  remain load-bearing.
+- `agent-docs/GRAPH_PERF.md` — perf numbers archive.
+- `agent-docs/GRAPH_ARCHITECTURE.md` — fragile-boundaries reference.
+- `architecture-decision-records/` — ADRs.
+- `~/src/sequencetubemap/README.tabix.md` — prior-art format spec.
