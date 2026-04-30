@@ -31,11 +31,12 @@ bash tools/graph-truth-extractor/test-subgraph-concordance.sh
 
 After running `prepare-fixtures.sh` on the local checkout:
 
-| Fixture                              | pos | seg | edges | bubbles | notes                                |
-| ------------------------------------ | --- | --- | ----- | ------- | ------------------------------------ |
-| `volvox_pangenome_50`                | ✓   | ✓   | ✓     | ✓       | P-lines, 121 segments, 50 samples    |
-| `volvox_indel_pangenome`             | ✓   | ✓   | —     | —       | synthetic, no L lines, tiny          |
-| `hprc-v1.1-mc-grch38-chrM`           | ✓   | ✓   | ✓     | ✓       | W-lines, 1393 segments, 44 paths     |
+| Fixture                              | pos | seg | edges | bubbles | seq | notes                                |
+| ------------------------------------ | --- | --- | ----- | ------- | --- | ------------------------------------ |
+| `volvox_pangenome_50`                | ✓   | ✓   | ✓     | ✓       | ✓   | P-lines, 121 segments, 50 samples    |
+| `volvox_indel_pangenome`             | ✓   | ✓   | —     | —       | ✓   | synthetic, no L lines, tiny          |
+| `hprc-v1.1-mc-grch38-chrM`           | ✓   | ✓   | ✓     | ✓       | ✓   | W-lines, 1393 segments, 44 paths     |
+| `hprc-v1.1-mc-grch38-chr20` (~/chr20)| ✓   | ✓   | ✓     | —       | ✓   | W-lines, **1.86M segments, 90 haplotypes**, ~1.05 GB GFA |
 
 The indel fixture has no `L` lines, which exposes a separate issue
 (no edge index → only the path-inference subgraph builder runs). It is
@@ -63,12 +64,12 @@ Initial run (Phase 0 baseline):
 | `odgi` extract        | —  | —   | —   | not installed   |
 | `chunkix`             | —  | —   | —   | upstream `pgtabix.py` crashes on P-line GFAs |
 
-After F1 fix (rust preprocessor + consumer-side dedup):
+After F1+F2+F6+F3-plaintext fixes:
 
-| Source                | S  | L  | P   | L topology vs truth |
-| --------------------- | -- | -- | --- | ------------------- |
-| **Ours**              | 37 | 48 | 0   | byte-identical      |
-| `vg find`             | 37 | 48 | 22  | reference           |
+| Source                | S  | L  | P   | sequence-aware canonical match |
+| --------------------- | -- | -- | --- | ------------------------------ |
+| **Ours**              | 37 | 48 | 22  | byte-identical                 |
+| `vg find`             | 37 | 48 | 22  | reference                      |
 
 `vg` and `naive` agree byte-for-byte after canonicalization; this
 establishes the truth side. Post-F1, segment count, edge count, and
@@ -85,213 +86,169 @@ Initial run:
 | `vg find`     | 58  | 75   | 44  | reference       |
 | `naive`       | 58  | 75   | 44  | matches `vg`    |
 
-After F1 fix:
+After F1+F2+F6+F3-plaintext fixes:
 
-| Source        | S   | L  | P/W | L topology vs truth |
-| ------------- | --- | -- | --- | ------------------- |
-| **Ours**      | 58  | 75 | 0   | byte-identical      |
-| `vg find`     | 58  | 75 | 44  | reference           |
+| Source        | S   | L  | P/W | sequence-aware canonical match |
+| ------------- | --- | -- | --- | ------------------------------ |
+| **Ours**      | 58  | 75 | 44  | byte-identical                 |
+| `vg find`     | 58  | 75 | 44  | reference                      |
 
 The 2× edge ratio observed pre-F1 was exact on both fixtures at every
 region tried, indicating a structural bug rather than missing edges.
 The fix landed in this branch reduces the gap to F2 only.
 
+### `hprc-v1.1-mc-grch38-chr20` — HPRC chr20 (1.86M segs, 90 haps)
+
+The first scale test against a real human pangenome chromosome.
+Source `~/chr20.vg` (~967 MB) → `vg convert -f` (24 s) → 1.05 GB GFA
+with 1,859,947 S-lines, 2,574,969 L-lines, 919 W-lines, 90 haplotypes
+(45 samples × 2 phases plus CHM13 + GRCh38 reference).
+
+**Preprocessor (`gfa-to-tabix`).** 1m58s wall, peak RSS 7.9 GB.
+Output sizes:
+
+| File                                | size      | notes                                |
+| ----------------------------------- | --------- | ------------------------------------ |
+| `chr20.pos.bed.gz`                  | 54 MB     | tabix-indexed                        |
+| `chr20.segments.bin`                | **1.49 GB** | 15 B/record × ~99M per-(seg,path,offset) tuples |
+| `chr20.segments.idx`                | 15 MB     |                                      |
+| `chr20.edges.bin`                   | 51 MB     | bidirected partner pre-flipped (F1)  |
+| `chr20.edges.idx`                   | 15 MB     |                                      |
+| `chr20.segments.seq.fa`             | 91 MB     | per-segment FASTA (Phase 1 plaintext)|
+| `chr20.segments.seq.fa.fai`         | 49 MB     | samtools-faidx — for CLI only        |
+| `chr20.segments.seq.idx`            | 22 MB     | binary `.idx` — adapter loads this   |
+
+The samtools `.fai` (49 MB) at chr20 scale validates the choice to
+ship a separate compact binary index — at 12 bytes/segment the binary
+form loads as a single ~22 MB `Uint8Array` and supports O(1) lookup;
+parsing the line-oriented `.fai` would have been ~2× larger and
+required a full pre-parse.
+
+**Adapter (`getSubgraph`) latency**, measured via
+`dump-subgraph.ts` on a single CPU thread (cold-cache local file
+fetches via `LocalFile`):
+
+| Region size | wall  | segments | links | paths | output bytes |
+| ----------- | ----- | -------- | ----- | ----- | ------------ |
+| 1 kbp       | 220 ms | 66      | 86    | 15    | 6 KB         |
+| 10 kbp      | 240 ms | 948     | 1,264 | 39    | 117 KB       |
+| 100 kbp     | 270 ms | 2,994   | 4,083 | 90    | 440 KB       |
+| 1 Mbp       | 2.3 s  | 25,503  | 34,295| 219,094 | 20 MB     |
+| 5 Mbp       | 10.2 s | 110,333 | 152,954 | 434,066 | 79 MB   |
+
+Sub-300 ms latency holds out to 100 kbp regions — covers typical gene
+/ locus browsing. The 1 Mbp+ regions explode in path count because
+each haplotype emits one P-line per contiguous in-subgraph subwalk
+(re-entry-aware emission per Phase 0's vg-W-line semantics note); for
+big regions this means hundreds of thousands of P-lines, which is a
+data-volume rather than data-correctness issue. Browser usage typically
+queries ≤ 100 kbp around a gene.
+
+**Concordance** (sequence-aware structural fingerprint, since
+chr20-scale graphs have many WL-equivalent SNV nodes that arbitrary
+canonical-id tiebreaks shuffle differently between truth and ours):
+
+| Region                              | S    | L    | P  | result                    |
+| ----------------------------------- | ---- | ---- | -- | ------------------------- |
+| `GRCh38#0#chr20:30000000-30001000`  | 66   | 86   | 15 | structurally isomorphic   |
+| `GRCh38#0#chr20:100000-101000`      | 20   | 24   | 90 | structurally isomorphic   |
+| `GRCh38#0#chr20:30500000-30501000`  | 59   | 77   | 91 | structurally isomorphic   |
+| `GRCh38#0#chr20:60000000-60001000`  | 41   | 52   | 90 | structurally isomorphic   |
+| `GRCh38#0#chr20:30000000-30010000`  | 948  | 1264 | 39 | structurally isomorphic   |
+
+S/L/P counts byte-identical to vg-truth on every sampled region.
+Sequence multisets identical. Structural fingerprint
+(`seq + link + path` from `canonicalize.ts:structuralFingerprint`)
+matches across all sampled regions.
+
+The line-wise canonical diff fails at chr20 scale because the
+canonical-id tiebreaker in `assignCanonicalIds` is dominated by raw
+input ordering — for thousands of length-1 "A"/"C"/"G"/"T" SNV nodes
+that share WL labels, truth (vg's `n0..n_N`) and ours (our `s<ord>`)
+can't agree on which "A" gets called `n34` and which gets `n36`. This
+is not a correctness defect; it's irreducible automorphism. The
+structural fingerprint sidesteps it by grounding all comparisons in
+actual sequences rather than canonical IDs.
+
 ## Findings
 
-### F1 — Phantom edges from doubled adjacency (rust preprocessor) — FIXED
+The full per-finding write-ups (cause, fix, verification) for resolved
+items live in `agent-docs/GRAPH_COMPLETED.md`. Summary:
 
-**Status:** fixed in this branch. Both the rust-side root cause and the
-consumer-side dedup landed; concordance harness reports byte-identical L
-topology against vg-truth on both fixtures.
-
-**Cause.** `tools/gfa-to-tabix/src/main.rs` `build_edge_index` stored
-each L-line's reverse-direction adjacency without flipping orientations:
-
-```rust
-// Forward direction: src → tgt
-adj.entry(src_ord).or_default().push((tgt_ord, src_o, tgt_o, tgt_len));
-// Reverse direction: tgt → src
-adj.entry(tgt_ord).or_default().push((src_ord, tgt_o, src_o, src_len));
-```
-
-The reverse-direction record at `tgt` produces, on read, an L-line that
-GFA semantics treats as a *different* edge from the forward edge. The
-bidirected partner of `L a + b +` is `L b - a -` (reversed
-orientations), not `L b + a +`.
-
-**Fix.** Two complementary changes:
-
-1. `tools/gfa-to-tabix/src/main.rs` — flip both orientations on the
-   reverse-direction adjacency push, so the stored bidirected partner is
-   `(src_ord, ~tgt_o, ~src_o, src_len)` instead of
-   `(src_ord, tgt_o, src_o, src_len)`.
-2. `plugins/comparative-adapters/src/GfaTabixAdapter/gfaSubgraphBuilders.ts`
-   `buildGfaFromEdges` now canonicalizes each L-line as
-   `min(forward, reverse-partner)` before insertion into the dedup `Set`,
-   so the consumer collapses bidirected partners to one emission even
-   though `edges.bin` still stores both directions for fast adjacency
-   lookups from either endpoint.
-
-**Symptoms pre-fix (preserved for reference).**
-
-- `L` count exactly 2× truth on every fixture (96/48 on volvox; 150/75
-  on chrM).
-- Canonical IDs in the WL refinement diverged because
-  `(length, neighbor-set)` partitions were perturbed by phantom edges.
-
-**Verification.** `bash tools/graph-truth-extractor/test-subgraph-concordance.sh`
-on volvox now reports `S=37 L=48 P=0` for ours vs `S=37 L=48 P=22` for
-truth, with the L-topology byte-set byte-identical (only diff is the
-P-lines, F2). HPRC chrM matches the same way (`S=58 L=75`). The
-`canonicalize.ts` diff also normalizes `0M` ≡ `*` since vg emits the
-former and the adapter the latter.
-
-### F2 — Edge-based subgraph emits zero P/W lines — FIXED
-
-**Status:** fixed in this branch. `buildGfaFromEdges` now emits one
-P-line per contiguous haplotype subwalk through the subgraph; for
-re-entrant paths (offset gaps along the path), it splits the walk and
-emits multiple P-lines per sample (matching vg's W-line behavior).
-Counts match truth on every region tried; topology and path-set are
-byte-identical on 6 of 7 sampled regions (the 7th is a known
-walk-direction edge case described below).
-
-**Cause.** `buildGfaFromEdges` previously emitted only `H` + `S` + `L`
-lines. The edge-based path was preferred when `edges.bin` exists; the
-path-inference fallback (`buildGfaFromPathInference`) does emit `P`
-lines but only for paths that share at least one ref segment, and
-under-counts re-entrant subwalks.
-
-**Fix.** Two complementary changes:
-
-1. `gfaSubgraphBuilders.ts` — extended `buildGfaFromEdges` signature to
-   accept a `fetchSegments` callback and `seedSegments`. After expanding
-   the subgraph via edges, fetch segments.bin records for any alt-node
-   ordinals not already covered by the seed range, group records by
-   `pathNameIdx`, sort by offset, and split at each offset gap
-   (`next.offset !== prev.offset + prev.segLen`) — each contiguous run
-   becomes one P-line.
-2. `canonicalize.ts` — added a path-context label to WL initialization.
-   With placeholder S lines (no sequences yet — Phase 1 work), twin SNP
-   nodes (e.g. `n32`/`n33` with identical (length, neighbor-set)
-   signatures) were getting different canonical-id assignments between
-   truth and ours due to raw-id lex tiebreak. Path membership
-   distinguishes them where structure alone cannot.
-
-**Truth behavior reference.** vg emits `W` lines for both P-line and
-W-line inputs (xg's internal representation always uses walks). Sample
-of vg output for HPRC chrM:5000-5500:
-
-```
-W	GRCh38	0	chrM	0	214	>77761600>77761601>77761603>...
-W	HG00438	2	MT	0	214	>77761600>77761601>77761603>...
-```
-
-Each W line records a fully-qualified haplotype walk through the
-subgraph, with the path's *original* offset (here `0`) and length
-(here `214`). Our adapter emits P-lines whose *canonicalized* form
-matches vg's W-lines after `canonicalize.ts`.
-
-**Verification.** 7 regions sampled across both fixtures; 6 produce
-byte-identical canonical GFA, the 7th has matching counts but a
-walk-direction divergence (see "F6" below).
-
-### F6 — Walk-direction disagreement on tandem-repeat region
-
-**Severity:** edge case, single observed region.
-**Status:** open; not blocking F1/F2 verification.
-
-**Behavior.** On `volvox_pangenome_50` `ref#0#ctgA:5000-6000` (a
-tandem-repeat region near the high-coordinate end of the sample
-contigs), counts match (`S=2 L=2 P=51` on both sides), but the
-canonicalized walks differ in direction: truth's haplotype walks read
-`n0+,n1+,n0-` and ours reads `n0-,n1+,n0+`. These are not bidirected
-partners of each other — they describe traversals starting from
-different ends of the repeat. canonicalize.ts's
-`canonicalPathSteps` already chooses the lex-smaller of (forward,
-reverse-with-flipped-orient), so this is not a canonicalization bug;
-the underlying offset+orient encoding genuinely differs.
-
-**Hypothesis.** vg's xg path representation may renormalize the walk
-direction (e.g. start from a fixed origin or smallest-id endpoint),
-while our preprocessor preserves the source GFA's natural P-line offset
-order. For circular / tandem-repeat segments this can produce
-direction-flipped walks that are physically different traversals
-through the bidirected graph.
-
-**Triage.** Investigate during Phase 2 hardening or Phase 5 CI work.
-Need to compare per-segment offset/orient records in our segments.bin
-against vg's `vg find -p PATH:start-end --paths` output to determine
-which side normalizes and how. May require a coordinate-mapping helper
-similar to the one needed for C3.
-
-### F3 — S lines are placeholder (no sequence)
-
-**Severity:** correctness; precludes round-tripping through `vg view`,
-`vg snarls`, or any sequence-aware downstream.
-
-**Cause.** `gfaSubgraphBuilders.ts:42` and `:142`:
-
-```ts
-lines.push(`S\ts${ord}\t*\tLN:i:${len}`)
-```
-
-`segments.bin` carries no nucleotides, so the adapter cannot supply
-them. Phase 1 territory.
-
-### F4 — vg PanSN-path renaming
-
-**Severity:** integration only; absorbed by the harness.
-
-**Behavior.** `vg convert -g <gfa> -x` rewrites a 3-field PanSN P-line
-name like `ref#0#ctgA` into a 4-field walk-style name with offset:
-`ref#0#ctgA#0`. `vg find -p PATH:start-end` requires the rewritten
-name. Some HPRC samples additionally use `MT` (not `chrM`) on the
-same graph because that's the contig name of the sample's mitochondrial
-assembly.
-
-**Mitigation.** `tools/graph-truth-extractor/backends/vg.ts`
-implements `resolveVgPathName` that lists `vg find -I` paths and picks
-the matching one (exact, then `<name>#0` prefix). No caller change.
-
-### F5 — chunkix.py P-line bug
-
-**Severity:** prior-art comparison only.
-
-**Behavior.** `~/src/sequencetubemap/scripts/pgtabix.py:149` checks
-`line[1].startswith(args.r)` for the P-line branch but `args` doesn't
-declare `-r` — argparse only registers `-g`, `-o`, `-s`. Crashes on any
-P-line GFA. W-line GFAs (e.g. HPRC chrM after `vg view`) take a
-different branch and work.
-
-**Mitigation.** Documented in
-`tools/graph-truth-extractor/backends/chunkix.ts`. Phase 5 CI either
-patches pgtabix.py locally or restricts the chunkix backend to W-line
-inputs. Filed as known upstream.
+- **F1 — Phantom edges from doubled adjacency** (rust preprocessor) —
+  FIXED. Bidirected partner is now stored with flipped orientations;
+  consumer dedups via `canonicalLinkKey`.
+- **F2 — Edge-based subgraph emits zero P/W lines** — FIXED.
+  `buildGfaFromEdges` emits one P-line per contiguous subwalk;
+  re-entrant paths split per the vg semantics note below.
+- **F3 — S lines are placeholder** — FIXED (plaintext tier).
+  Per-segment FASTA + binary `.idx` + samtools-faidx-compatible
+  `.fai`. Binary 2-bit tier deferred.
+- **F4 — vg PanSN-path renaming** — integration only; absorbed by
+  `resolveVgPathName` in the harness.
+- **F5 — chunkix.py P-line bug** — known upstream issue documented in
+  the backend wrapper.
+- **F6 — Tandem-repeat orient disagreement** (rust preprocessor) —
+  FIXED. Removed the relative-orient branch; segments.bin now stores
+  absolute GFA orient.
 
 ## Path-symmetry sub-test (C3 measurement)
 
-The plan asks for: "pick one structural locus, query it from N≥3
-different reference paths, all canonicalized subgraphs must be
-byte-identical." Phase 0 attempted this on HPRC chrM:5000-5100 from
-`GRCh38#0#chrM`, `CHM13#0#chrM`, `HG00438#2#MT`. Result:
+**Resolved.** `BaseGfaTabixAdapter.getEquivalentRanges` maps a
+`(refPath, start, end)` viewport to per-other-path coordinate ranges
+that overlap the same physical segments;
+`tools/graph-truth-extractor/test-path-symmetry.sh` orchestrates the
+multi-path query.
 
-| Path             | canonical md5 (vg backend)             | match |
-| ---------------- | -------------------------------------- | ----- |
-| `GRCh38#0#chrM`  | `bfbcd7ad003f1b73bd71f001cea2bdcd`     | A     |
-| `CHM13#0#chrM`   | `bb64f3f834dcb30ea7779f12dd1e7b93`     | B     |
-| `HG00438#2#MT`   | `bfbcd7ad003f1b73bd71f001cea2bdcd`     | A     |
+Result on HPRC chrM:5000-5500 anchored on `GRCh38#0#chrM`:
 
-GRCh38 and HG00438 agree; CHM13 differs. **This does not invalidate
-C3** — querying the *same coordinate range* in different paths picks up
-the *physical region those coordinates map to*, which is genuinely
-different graph regions when the reference paths have different
-coordinate systems. CHM13's chrM assembly differs from GRCh38's by a
-small offset. The proper C3 measurement is "query the same physical
-locus from N paths," which requires a coordinate-mapping step (e.g.
-`vg surject` or our own path-coord lookup). Captured as a Phase 5
-follow-up; the harness is in place and re-runs trivially once the
-mapping helper exists.
+```
+ISOMORPHIC: all 44 paths produce the same structural fingerprint
+fingerprint: 3d0e925d0f33b04a
+```
+
+44/44 haplotypes (CHM13, GRCh38, all 42 sample MT contigs) emit the
+same canonical structural fingerprint when queried at their
+*equivalent* coordinate ranges. The Phase 0 attempt failed for CHM13
+because chrM offsets differ across paths (CHM13:15992 bp vs GRCh38:
+16569 bp); the equivalent-ranges mapping resolves that. See
+`agent-docs/GRAPH_COMPLETED.md` § C3 for implementation.
+
+Outstanding: run the same harness on HPRC chr20 (a structural locus
+like the MAPT inversion) to produce the headline-experiment row.
+
+### chr20 finding (2026-04-30)
+
+Smoke-tested on chr20 at three regions
+(`GRCh38#0#chr20:30000000-30001000`, `:100000-100100`,
+`:30500000-30501000`) with context ∈ {0, 1, 3}: the per-path
+fingerprints **diverge** across all sampled regions and contexts.
+
+This is a genuine biological property of chr20, not a bug:
+
+- chrM is effectively haploid; 44 haplotypes share the consensus
+  reference alleles in non-control-region sequence, so each haplotype's
+  viewport visits the same segment set in conserved regions.
+- chr20 is diploid and rich in heterozygous SNVs/indels; each
+  haplotype visits its own allele segments at variant positions. At
+  any given locus, sample paths cover *different segment sets*, even
+  though all those segments encode the same physical region.
+
+C3 in its strict "byte-isomorphic-across-paths" form therefore does
+not hold for chr20 by design. The right C3 measurement at chr20 scale
+is the **union-of-subgraphs invariance** property: regardless of
+which path is the seed, the enclosing snarl graph (nodes + bubble
+boundaries) covering the locus is the same. That requires:
+
+- snarl-aware expansion (Phase 4) so the seed expands to enclose all
+  haplotype alleles within the same snarl(s), not just 1-hop edges;
+- a fingerprint that ignores per-path "primary walk" identity and
+  only fingerprints the underlying snarl structure.
+
+Captured for the publication framing — present chrM as the
+clean-symmetric demonstration and chr20 as the realistic case
+requiring snarl-aware comparison. Phase 4 unblocks the chr20 C3
+measurement.
 
 ## Re-entrant-path semantics (Phase 2 unblock)
 
@@ -322,41 +279,35 @@ from the Phase 0 vg samples:
 
 ## Judgment: which gap to attack first
 
-Per the plan, Phase 0's deliverable is a ranked recommendation. Items
-already landed are struck through.
+Per the plan, Phase 0's deliverable is a ranked recommendation.
+Resolved items have been moved to `agent-docs/GRAPH_COMPLETED.md` —
+the up-to-date prioritized backlog lives in
+`agent-docs/GRAPH_PLAN.md` § "Open: prioritized backlog". The current
+top items are:
 
-1. ~~**F1 (phantom edges)**~~ — done. Rust-side orientation flip plus
-   consumer-side dedup; L topology byte-identical to vg-truth on every
-   fixture and region tried.
-2. ~~**F2 (path emission)**~~ — done. P-line emission per contiguous
-   subwalk; canonicalize.ts uses path-context labels for WL tiebreak.
-   Counts match truth on every region; topology + path-set
-   byte-identical on 6 of 7 sampled regions. Remaining edge case is
-   F6.
-3. **F6 (tandem-repeat walk direction)** — investigate next. Single
-   region observed; need to compare offset/orient encoding against vg's
-   xg-path representation. Diagnostic; may surface a per-path
-   normalization step.
-4. **F3 (real sequences)** — fix after F6. Phase 1 work. Largest dev
-   effort (file format, tier strategy, decode path), but smaller
-   correctness contribution per unit work because the *graph topology*
-   is already correct — F3 adds nucleotide content, not structure.
-5. **C3 (path symmetry)** — instrument fifth. Needs the
+1. **C3 (path symmetry)** — instrument next. Needs the
    coordinate-mapping helper and one fixture region selected. Phase 5
    territory; the harness is ready.
-6. **Context expansion** (Phase 3): orthogonal; can be parameterized
-   on the API and run in parallel with F3/F6.
+2. **Binary sequence tier** — deferred per user steer ("plaintext now,
+   binary later"). The `.idx` sidecar format is binary already so the
+   adapter's hot path is fast; what's deferred is 2-bit-packed
+   nucleotide storage in `prefix.segments.seq.bin` for HPRC-scale
+   index footprint reduction. Magic-byte format dispatcher described
+   in `GRAPH_PLAN.md` slots in cleanly when this lands.
 
-With F1+F2 landed, the audit harness reports byte-isomorphic GFA
-against vg-truth on the headline fixtures; only an edge-case
-walk-direction disagreement (F6) and the structural placeholder for
-sequences (F3) remain.
+With F1+F2+F6+F3-plaintext landed, the audit harness reports
+byte-isomorphic GFA (segments + sequences + edges + paths) against
+vg-truth on **all 7 sampled regions** across both fixtures. The
+publication-targeted correctness gates of Phase 0 are met. Remaining
+work (C3 path-symmetry, Phase 1 binary tier, Phase 4 snarls,
+multi-resolution coarsening, Phase 5 CI) is additive scope.
 
 ## Open questions surfaced by Phase 0
 
-- **W vs P line emission.** Should the adapter follow the input GFA's
-  format (W in, W out) or always emit W (matching vg's behavior)?
-  Plan defaults to "follow input." Decision pending Phase 2 spike.
+- ~~**W vs P line emission.**~~ Resolved: follow input format. Rust
+  preprocessor records `#input-format=walks|paths` in the
+  `pos.bed.gz` header; adapter mirrors at emission. Phase 2 shipped
+  2026-04-30. See `GRAPH_COMPLETED.md`.
 - **Chunkix-as-oracle.** The pgtabix.py `args.r` bug blocks this
   oracle for P-line fixtures. Options: patch our local copy of
   pgtabix.py, restrict to W-line inputs, or upstream a fix. Pick once
@@ -368,6 +319,8 @@ sequences (F3) remain.
 
 - `agent-docs/GRAPH_PLAN.md` — phased plan and claims this audit
   measures.
+- `agent-docs/GRAPH_COMPLETED.md` — archive of resolved findings and
+  shipped milestones (full per-finding write-ups).
 - `agent-docs/GRAPH_INDEX_FORMAT.md` — file-format spec; F3 will
   introduce `segments.seq.{bin,fa.gz}` per Phase 1.
 - `agent-docs/GRAPH_PERF.md` — Phase 8 inputs.

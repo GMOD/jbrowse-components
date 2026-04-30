@@ -3,8 +3,13 @@ import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
 import type { Region } from '@jbrowse/core/util'
 
+interface SubgraphOpts {
+  maxPathsEmitted?: number
+  context?: number
+}
+
 interface SubgraphAdapter {
-  getSubgraph(region: Region): Promise<string>
+  getSubgraph(region: Region, opts?: SubgraphOpts): Promise<string>
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
@@ -14,6 +19,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
         adapterConfig: Record<string, unknown>
         region: Region
         sessionId: string
+        opts?: SubgraphOpts
       }
       return: string
     }
@@ -35,10 +41,11 @@ export class GetSubgraph extends RpcMethodType {
       args,
       rpcDriverClassName,
     )
-    const { adapterConfig, region, sessionId } = deserializedArgs as {
+    const { adapterConfig, region, sessionId, opts } = deserializedArgs as {
       adapterConfig: Record<string, unknown>
       region: Region
       sessionId: string
+      opts?: SubgraphOpts
     }
 
     const { dataAdapter } = await getAdapter(
@@ -54,7 +61,7 @@ export class GetSubgraph extends RpcMethodType {
       )
       return ''
     }
-    const result = await adapter.getSubgraph(region)
+    const result = await adapter.getSubgraph(region, opts)
     return result
   }
 }

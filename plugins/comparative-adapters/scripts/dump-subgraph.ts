@@ -9,7 +9,7 @@
 // Usage:
 //   node --experimental-strip-types \
 //     plugins/comparative-adapters/scripts/dump-subgraph.ts \
-//     <prefix> <pathName> <start> <end> [--no-edges]
+//     <prefix> <pathName> <start> <end> [--no-edges] [--max-paths N] [--context K]
 //
 // where <prefix> is e.g. test_data/volvox/volvox_pangenome_50 (the path
 // without the .pos.bed.gz suffix) and <pathName> is the PanSN-formatted path
@@ -29,12 +29,14 @@ import {
   parsePosLineOrdinals,
   getSegmentsForOrdinalsFromShard,
 } from '../src/GfaTabixAdapter/gfaBinaryIO.ts'
+import { getSequencesForOrdinals } from '../src/GfaTabixAdapter/gfaSeqIO.ts'
 import {
   buildGfaFromEdges,
   buildGfaFromPathInference,
 } from '../src/GfaTabixAdapter/gfaSubgraphBuilders.ts'
 
 import type { IndexedBinaryShard } from '../src/GfaTabixAdapter/gfaBinaryIO.ts'
+import type { SeqShard } from '../src/GfaTabixAdapter/gfaSeqIO.ts'
 
 interface Args {
   prefix: string
@@ -42,6 +44,8 @@ interface Args {
   start: number
   end: number
   noEdges: boolean
+  maxPathsEmitted?: number
+  context?: number
 }
 
 function parseArgs(argv: string[]): Args {
@@ -50,18 +54,34 @@ function parseArgs(argv: string[]): Args {
   let start = 0
   let end = 0
   let noEdges = false
+  let maxPathsEmitted: number | undefined
+  let context: number | undefined
   const positional: string[] = []
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]!
     if (a === '--no-edges') {
       noEdges = true
+    } else if (a === '--max-paths') {
+      const next = argv[++i]
+      if (!next) {
+        console.error('--max-paths requires a numeric argument')
+        process.exit(2)
+      }
+      maxPathsEmitted = Number(next)
+    } else if (a === '--context') {
+      const next = argv[++i]
+      if (!next) {
+        console.error('--context requires a numeric argument')
+        process.exit(2)
+      }
+      context = Number(next)
     } else {
       positional.push(a)
     }
   }
   if (positional.length < 4) {
     console.error(
-      'Usage: node --experimental-strip-types plugins/comparative-adapters/scripts/dump-subgraph.ts <prefix> <pathName> <start> <end> [--no-edges]',
+      'Usage: node --experimental-strip-types plugins/comparative-adapters/scripts/dump-subgraph.ts <prefix> <pathName> <start> <end> [--no-edges] [--max-paths N] [--context K]',
     )
     process.exit(2)
   }
@@ -69,7 +89,7 @@ function parseArgs(argv: string[]): Args {
   pathName = positional[1]!
   start = Number(positional[2]!)
   end = Number(positional[3]!)
-  return { prefix, pathName, start, end, noEdges }
+  return { prefix, pathName, start, end, noEdges, maxPathsEmitted, context }
 }
 
 async function main() {
@@ -103,10 +123,26 @@ async function main() {
     ? { filehandle: new LocalFile(edgesPath), idxFile: new LocalFile(edgesIdxPath) }
     : undefined
 
+  const seqFaPath = `${args.prefix}.segments.seq.fa`
+  const seqIdxPath = `${args.prefix}.segments.seq.idx`
+  const seqShard: SeqShard | undefined =
+    fs.existsSync(seqFaPath) && fs.existsSync(seqIdxPath)
+      ? {
+          fastaFile: new LocalFile(seqFaPath),
+          idxFile: new LocalFile(seqIdxPath),
+        }
+      : undefined
+  const fetchSeqs = seqShard
+    ? (ords: number[]) => getSequencesForOrdinals(seqShard, ords)
+    : undefined
+
   // Read header to discover the per-path index used by segments.bin records.
   const header = await posFile.getHeader()
   const sizesMatch = /sizes=([^\n]+)/.exec(header)
   const pathsMatch = /paths=([^\n]+)/.exec(header)
+  const formatMatch = /input-format=([^\n\s]+)/.exec(header)
+  const inputFormat: 'walks' | 'paths' =
+    formatMatch && formatMatch[1] === 'walks' ? 'walks' : 'paths'
   const pathNames = pathsMatch
     ? pathsMatch[1]!.split(',')
     : sizesMatch
@@ -152,6 +188,11 @@ async function main() {
     return
   }
 
+  const buildOpts = {
+    maxPathsEmitted: args.maxPathsEmitted,
+    context: args.context,
+    emitFormat: inputFormat,
+  }
   let gfa: string
   if (edgeShard) {
     gfa = await buildGfaFromEdges(
@@ -161,14 +202,18 @@ async function main() {
       ranges => getSegmentsForOrdinalsFromShard(segShard, ranges),
       pathNames,
       segments,
+      fetchSeqs,
+      buildOpts,
     )
   } else {
-    gfa = buildGfaFromPathInference(
+    gfa = await buildGfaFromPathInference(
       segments,
       refPathIdx,
       viewportRefOrds,
       segLens,
       pathNames,
+      fetchSeqs,
+      buildOpts,
     )
   }
   process.stdout.write(gfa.endsWith('\n') ? gfa : gfa + '\n')

@@ -88,6 +88,24 @@ const GfaTabixAdapter = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    seqFastaLocation: {
+      type: 'fileLocation',
+      description:
+        'Plaintext per-segment FASTA (>seg<ord>) for Phase 1 sequence-aware getSubgraph',
+      defaultValue: {
+        uri: '',
+        locationType: 'UriLocation',
+      },
+    },
+    seqIdxLocation: {
+      type: 'fileLocation',
+      description:
+        'Compact binary index (12 bytes per ordinal) into the per-segment FASTA. The samtools-compatible .fai is also shipped but the adapter reads this binary form for fast random access.',
+      defaultValue: {
+        uri: '',
+        locationType: 'UriLocation',
+      },
+    },
     bubblesLocation: {
       type: 'fileLocation',
       description:
@@ -155,6 +173,14 @@ const GfaTabixAdapter = ConfigurationSchema(
           },
           edgesIdxLocation: {
             uri: `${snap.prefix}.edges.idx`,
+            baseUri: snap.baseUri,
+          },
+          seqFastaLocation: {
+            uri: `${snap.prefix}.segments.seq.fa`,
+            baseUri: snap.baseUri,
+          },
+          seqIdxLocation: {
+            uri: `${snap.prefix}.segments.seq.idx`,
             baseUri: snap.baseUri,
           },
           bubblesLocation: {

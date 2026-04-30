@@ -8,20 +8,22 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
+import { annotateFeaturesWithBubbleCs } from './bubbleAnnotator.ts'
 import {
   mergeOrdinalRanges,
   parseGfaPathName,
   parsePosLineOrdinals,
 } from './gfaBinaryIO.ts'
+import { getSequencesForOrdinals } from './gfaSeqIO.ts'
 import {
   buildGfaFromEdges,
   buildGfaFromPathInference,
 } from './gfaSubgraphBuilders.ts'
-import { flipCs } from '../csUtils.ts'
 import { buildFeaturesForPath } from './segmentFeatureBuilder.ts'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 
 import type { IndexedBinaryShard, SegRecord } from './gfaBinaryIO.ts'
+import type { SeqShard } from './gfaSeqIO.ts'
 import type { MultiPairFeature } from '../MultiPairFeature.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -36,6 +38,10 @@ interface SetupResult {
   chromSizes: Map<string, { refName: string; length: number }[]>
   posRefNames: Set<string>
   pathNames: string[]
+  // 'walks' if the source GFA used W-lines, 'paths' if it used P-lines.
+  // Adapter emits the same format on subgraph extraction (Phase 2). Older
+  // indexes without `#input-format=` in the header default to 'paths'.
+  inputFormat: 'walks' | 'paths'
   bubblesRefNames?: Set<string>
   bubblesGenomeNames?: string[]
 }
@@ -56,12 +62,31 @@ function hasFileLocation(loc: FileLocation | undefined): loc is FileLocation {
   return false
 }
 
+// Open a tabix-indexed file pair if both locations are configured. Returns
+// undefined when either side is empty (the optional-bubbles / sharded-only
+// pattern at adapter setup).
+function openTabixIfConfigured(
+  loc: FileLocation | undefined,
+  idxLoc: FileLocation | undefined,
+  pm: PluginManager | undefined,
+) {
+  if (!hasFileLocation(loc) || !hasFileLocation(idxLoc)) {
+    return undefined
+  }
+  return new TabixIndexedFile({
+    filehandle: openLocation(loc, pm),
+    tbiFilehandle: openLocation(idxLoc, pm),
+    chunkCacheSize: 50 * 2 ** 20,
+  })
+}
+
 export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   protected posFile: TabixIndexedFile
   protected bubblesFile?: TabixIndexedFile
   private edgeShard?: IndexedBinaryShard
+  private seqShard?: SeqShard
   private setupP?: Promise<SetupResult>
 
   public constructor(
@@ -72,38 +97,39 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     super(config, getSubAdapter, pluginManager)
     const pm = this.pluginManager
 
-    const posLoc = this.getConf('posLocation') as FileLocation
-    const posIdxLoc = this.getConf(['posIndex', 'location']) as FileLocation
-
-    this.posFile = new TabixIndexedFile({
-      filehandle: openLocation(posLoc, pm),
-      tbiFilehandle: openLocation(posIdxLoc, pm),
-      chunkCacheSize: 50 * 2 ** 20,
-    })
+    this.posFile = openTabixIfConfigured(
+      this.getConf('posLocation') as FileLocation,
+      this.getConf(['posIndex', 'location']) as FileLocation,
+      pm,
+    )!
 
     const edgesLoc = this.getConf('edgesLocation') as FileLocation | undefined
     if (hasFileLocation(edgesLoc)) {
-      const edgesIdxLoc = this.getConf('edgesIdxLocation') as FileLocation
       this.edgeShard = {
         filehandle: openLocation(edgesLoc, pm),
-        idxFile: openLocation(edgesIdxLoc, pm),
+        idxFile: openLocation(
+          this.getConf('edgesIdxLocation') as FileLocation,
+          pm,
+        ),
       }
     }
 
-    const bubblesLoc = this.getConf('bubblesLocation') as
-      | FileLocation
-      | undefined
-    if (hasFileLocation(bubblesLoc)) {
-      const bubblesIdxLoc = this.getConf([
-        'bubblesIndex',
-        'location',
-      ]) as FileLocation
-      this.bubblesFile = new TabixIndexedFile({
-        filehandle: openLocation(bubblesLoc, pm),
-        tbiFilehandle: openLocation(bubblesIdxLoc, pm),
-        chunkCacheSize: 50 * 2 ** 20,
-      })
+    const seqLoc = this.getConf('seqFastaLocation') as FileLocation | undefined
+    if (hasFileLocation(seqLoc)) {
+      this.seqShard = {
+        fastaFile: openLocation(seqLoc, pm),
+        idxFile: openLocation(
+          this.getConf('seqIdxLocation') as FileLocation,
+          pm,
+        ),
+      }
     }
+
+    this.bubblesFile = openTabixIfConfigured(
+      this.getConf('bubblesLocation') as FileLocation | undefined,
+      this.getConf(['bubblesIndex', 'location']) as FileLocation | undefined,
+      pm,
+    )
   }
 
   protected abstract getSegsForOrdinals(
@@ -114,7 +140,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     region: Region,
     opts: { stopToken?: StopToken },
   ) {
-    const { posRefNames, pathNames } = await this.setup()
+    const { posRefNames, pathNames, inputFormat } = await this.setup()
     const { refName, start, end, assemblyName } = region
     const refPathName = this.resolveTabixRefName(
       posRefNames,
@@ -139,7 +165,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     const ordinalRanges = mergeOrdinalRanges(rawRanges)
     const segments = await this.getSegsForOrdinals(ordinalRanges)
     const refPathIdx = pathNames.indexOf(refPathName)
-    return { segments, refPathIdx, pathNames }
+    return { segments, refPathIdx, pathNames, inputFormat }
   }
 
   private async setup() {
@@ -191,6 +217,10 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
           })
         : []
 
+    const formatMatch = /input-format=([^\n\s]+)/.exec(header)
+    const inputFormat: 'walks' | 'paths' =
+      formatMatch && formatMatch[1] === 'walks' ? 'walks' : 'paths'
+
     let bubblesRefNames: Set<string> | undefined
     let bubblesGenomeNames: string[] | undefined
     if (this.bubblesFile) {
@@ -213,6 +243,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       chromSizes,
       posRefNames,
       pathNames,
+      inputFormat,
       bubblesRefNames,
       bubblesGenomeNames,
     }
@@ -330,12 +361,20 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     return { genomeRows }
   }
 
-  async getSubgraph(region: Region, opts: { stopToken?: StopToken } = {}) {
+  async getSubgraph(
+    region: Region,
+    opts: {
+      stopToken?: StopToken
+      maxPathsEmitted?: number
+      context?: number
+      emitFormat?: 'walks' | 'paths'
+    } = {},
+  ) {
     const result = await this.fetchSegmentsForRegion(region, opts)
     if (!result) {
       return ''
     }
-    const { segments: allSegs, refPathIdx, pathNames } = result
+    const { segments: allSegs, refPathIdx, pathNames, inputFormat } = result
     const { start, end } = region
 
     const viewportRefOrds: number[] = []
@@ -356,6 +395,15 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       return ''
     }
 
+    const seqShard = this.seqShard
+    const fetchSeqs = seqShard
+      ? (ords: number[]) => getSequencesForOrdinals(seqShard, ords)
+      : undefined
+    const buildOpts = {
+      maxPathsEmitted: opts.maxPathsEmitted,
+      context: opts.context,
+      emitFormat: opts.emitFormat ?? inputFormat,
+    }
     if (this.edgeShard) {
       return buildGfaFromEdges(
         viewportRefOrds,
@@ -364,6 +412,8 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         ranges => this.getSegsForOrdinals(ranges),
         pathNames,
         allSegs,
+        fetchSeqs,
+        buildOpts,
       )
     }
 
@@ -373,7 +423,73 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       viewportRefOrds,
       segLens,
       pathNames,
+      fetchSeqs,
+      buildOpts,
     )
+  }
+
+  // C3 path-symmetry helper. Given a (refPath, refStart, refEnd) viewport,
+  // return per-other-path coordinate ranges that overlap the same physical
+  // segments. Used by the audit harness to query "the same locus" from N
+  // different reference paths and assert structural fingerprints match.
+  //
+  // Algorithm: collect the set of segment ordinals that the ref path
+  // traverses inside [refStart, refEnd], then for each other path that
+  // visits any of those ordinals, take min(offset) and max(offset+segLen)
+  // over the records sharing those ordinals. Returns a map keyed by the
+  // unmapped (file-side) PanSN path name, e.g. `GRCh38#0#chr20`.
+  async getEquivalentRanges(
+    region: Region,
+    opts: { stopToken?: StopToken } = {},
+  ) {
+    const result = await this.fetchSegmentsForRegion(region, opts)
+    if (!result) {
+      return new Map<string, { start: number; end: number }>()
+    }
+    const { segments: allSegs, refPathIdx, pathNames } = result
+    const { start, end } = region
+
+    const refOrds = new Set<number>()
+    for (const rec of allSegs) {
+      if (
+        rec.pathNameIdx === refPathIdx &&
+        rec.offset + rec.segLen > start &&
+        rec.offset < end
+      ) {
+        refOrds.add(rec.segOrd)
+      }
+    }
+
+    const ranges = new Map<string, { start: number; end: number }>()
+    if (refOrds.size === 0) {
+      return ranges
+    }
+
+    for (const rec of allSegs) {
+      if (rec.pathNameIdx === refPathIdx) {
+        continue
+      }
+      if (!refOrds.has(rec.segOrd)) {
+        continue
+      }
+      const name = pathNames[rec.pathNameIdx]
+      if (!name) {
+        continue
+      }
+      const recEnd = rec.offset + rec.segLen
+      const existing = ranges.get(name)
+      if (!existing) {
+        ranges.set(name, { start: rec.offset, end: recEnd })
+      } else {
+        if (rec.offset < existing.start) {
+          existing.start = rec.offset
+        }
+        if (recEnd > existing.end) {
+          existing.end = recEnd
+        }
+      }
+    }
+    return ranges
   }
 
   private async getMultiPairFeaturesFromSegments(
@@ -429,327 +545,28 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     }
 
     if (this.bubblesFile && opts.bpPerPx && opts.bpPerPx < 50) {
-      await this.annotateFeaturesWithBubbleCs(genomeRows, query, opts)
+      const { bubblesRefNames, bubblesGenomeNames } = await this.setup()
+      if (bubblesRefNames && bubblesGenomeNames) {
+        const tabixRefName = this.resolveTabixRefName(
+          bubblesRefNames,
+          query.assemblyName,
+          query.refName,
+        )
+        if (tabixRefName) {
+          await annotateFeaturesWithBubbleCs({
+            genomeRows,
+            query,
+            bubblesFile: this.bubblesFile,
+            bubblesGenomeNames,
+            tabixRefName,
+            assemblyNameMap: this.getAssemblyNameMap(),
+            stopToken: opts.stopToken,
+          })
+        }
+      }
     }
 
     return genomeRows
   }
-
-  private async annotateFeaturesWithBubbleCs(
-    genomeRows: Map<string, MultiPairFeature[]>,
-    query: Region,
-    opts: { stopToken?: StopToken },
-  ) {
-    const { bubblesRefNames, bubblesGenomeNames } = await this.setup()
-    if (!bubblesRefNames || !bubblesGenomeNames) {
-      return
-    }
-
-    const { refName, start, end, assemblyName } = query
-    const tabixRefName = this.resolveTabixRefName(
-      bubblesRefNames,
-      assemblyName,
-      refName,
-    )
-    if (!tabixRefName) {
-      return
-    }
-
-    const genomeIdx = new Map<string, number>()
-    for (let i = 0; i < bubblesGenomeNames.length; i++) {
-      genomeIdx.set(bubblesGenomeNames[i]!, i)
-    }
-
-    const bubbles: {
-      start: number
-      end: number
-      alleleA: number
-      alleleB: number
-      identity: number
-      cs: string
-      genomesA: Set<number>
-      genomesB: Set<number>
-    }[] = []
-
-    const checker = createStopTokenChecker(opts.stopToken)
-    await this.bubblesFile!.getLines(tabixRefName, start, end, {
-      lineCallback: (line: string) => {
-        checkStopToken2(checker)
-        const cols = line.split('\t')
-        const bStart = +cols[1]!
-        const bEnd = +cols[2]!
-        const alleleA = +cols[3]!
-        const alleleB = +cols[4]!
-        const identity = +cols[5]!
-        const cs = cols[6] ?? ''
-        const genomesA = new Set(
-          (cols[7] ?? '')
-            .split(',')
-            .filter(s => s.length > 0)
-            .map(Number),
-        )
-        const genomesB = new Set(
-          (cols[8] ?? '')
-            .split(',')
-            .filter(s => s.length > 0)
-            .map(Number),
-        )
-        bubbles.push({
-          start: bStart,
-          end: bEnd,
-          alleleA,
-          alleleB,
-          identity,
-          cs,
-          genomesA,
-          genomesB,
-        })
-      },
-    })
-
-    if (bubbles.length === 0) {
-      return
-    }
-
-    bubbles.sort((a, b) => a.start - b.start || a.end - b.end)
-
-    const nameMap = this.getAssemblyNameMap()
-    const reverseNameMap = new Map<string, string>()
-    for (const [orig, mapped] of Object.entries(nameMap)) {
-      reverseNameMap.set(mapped, orig)
-    }
-
-    const refOrigName = reverseNameMap.get(assemblyName) ?? assemblyName
-    const refGenomeIdx =
-      genomeIdx.get(refOrigName) ?? genomeIdx.get(assemblyName)
-
-    for (const [genomeName, features] of genomeRows) {
-      const origName = reverseNameMap.get(genomeName) ?? genomeName
-      const gIdx = genomeIdx.get(origName) ?? genomeIdx.get(genomeName)
-      if (gIdx === undefined) {
-        continue
-      }
-
-      for (const feat of features) {
-        let lo = 0
-        let hi = bubbles.length
-        while (lo < hi) {
-          const mid = (lo + hi) >>> 1
-          if (bubbles[mid]!.end <= feat.start) {
-            lo = mid + 1
-          } else {
-            hi = mid
-          }
-        }
-
-        if (lo >= bubbles.length || bubbles[lo]!.start >= feat.end) {
-          continue
-        }
-
-        const result = buildCsFromCigarAndBubbles(
-          feat,
-          bubbles,
-          lo,
-          gIdx,
-          refGenomeIdx,
-        )
-        feat.cs = result.cs
-        if (result.identityTotalBp > 0) {
-          feat.identity = result.identityMatchBp / result.identityTotalBp
-        }
-      }
-    }
-  }
 }
 
-interface BubbleEntry {
-  alleleA: number
-  alleleB: number
-  identity: number
-  cs: string
-  genomesA: Set<number>
-  genomesB: Set<number>
-}
-
-function findAlleleForGenome(
-  bubbles: BubbleEntry[],
-  begin: number,
-  end: number,
-  gIdx: number,
-) {
-  for (let i = begin; i < end; i++) {
-    const r = bubbles[i]!
-    if (r.genomesA.has(gIdx)) {
-      return r.alleleA
-    }
-    if (r.genomesB.has(gIdx)) {
-      return r.alleleB
-    }
-  }
-  return undefined
-}
-
-export function findBubblePairRecord(
-  bubbles: BubbleEntry[],
-  begin: number,
-  end: number,
-  gIdx: number,
-  refGenomeIdx: number | undefined,
-): { cs: string; identity: number } | undefined {
-  const queryAllele = findAlleleForGenome(bubbles, begin, end, gIdx)
-  const viewRefAllele =
-    refGenomeIdx !== undefined
-      ? (findAlleleForGenome(bubbles, begin, end, refGenomeIdx) ?? 0)
-      : 0
-
-  if (queryAllele === undefined || queryAllele === viewRefAllele) {
-    return undefined
-  }
-
-  const lo = Math.min(viewRefAllele, queryAllele)
-  const hi = Math.max(viewRefAllele, queryAllele)
-  const needsFlip = viewRefAllele > queryAllele
-  for (let i = begin; i < end; i++) {
-    const r = bubbles[i]!
-    if (r.alleleA === lo && r.alleleB === hi) {
-      return {
-        cs: needsFlip ? flipCs(r.cs) : r.cs,
-        identity: r.identity,
-      }
-    }
-  }
-  return undefined
-}
-
-type BubbleRow = BubbleEntry & { start: number; end: number }
-
-// Build a single CS string for a synteny feature by walking its CIGAR
-// (structural events from segmentFeatureBuilder) and the bubble VCF detail
-// in lockstep. CIGAR `=`/`M` runs are sub-walked: bubbles overlapping the
-// run contribute their pair CS (SNPs/microindels), gaps fill with `:N`.
-// CIGAR `D`/`N`/`I` become synthetic length-only `-`/`+` ops with `n`
-// placeholder bases (the renderer reads only length, not bases).
-//
-// CS strictly supersedes CIGAR: once written, the renderer can ignore CIGAR
-// for this feature without losing structural detail.
-export function buildCsFromCigarAndBubbles(
-  feat: { start: number; end: number; cigar?: string },
-  bubbles: BubbleRow[],
-  startBi: number,
-  gIdx: number,
-  refGenomeIdx: number | undefined,
-) {
-  const csParts: string[] = []
-  let identityMatchBp = 0
-  let identityTotalBp = 0
-  let pos = feat.start
-  let bi = startBi
-
-  function consumeBubblesWithin(runEnd: number) {
-    while (bi < bubbles.length) {
-      const locusStart = bubbles[bi]!.start
-      const locusEnd = bubbles[bi]!.end
-
-      if (locusStart >= runEnd) {
-        break
-      }
-      if (locusEnd <= pos) {
-        bi++
-        continue
-      }
-      // Bubbles whose locus straddles a run boundary cannot apply cleanly —
-      // their CS describes ref bp that fall outside the alt-aligned range.
-      // Skip the whole locus group; the surrounding `:gap` fills its span.
-      if (locusStart < pos || locusEnd > runEnd) {
-        const skipStart = locusStart
-        const skipEnd = locusEnd
-        while (
-          bi < bubbles.length &&
-          bubbles[bi]!.start === skipStart &&
-          bubbles[bi]!.end === skipEnd
-        ) {
-          bi++
-        }
-        continue
-      }
-
-      if (locusStart > pos) {
-        const gap = locusStart - pos
-        csParts.push(`:${gap}`)
-        identityMatchBp += gap
-        identityTotalBp += gap
-        pos = locusStart
-      }
-
-      const locusBegin = bi
-      while (
-        bi < bubbles.length &&
-        bubbles[bi]!.start === locusStart &&
-        bubbles[bi]!.end === locusEnd
-      ) {
-        bi++
-      }
-      const locusLen = locusEnd - locusStart
-
-      const pairRecord = findBubblePairRecord(
-        bubbles,
-        locusBegin,
-        bi,
-        gIdx,
-        refGenomeIdx,
-      )
-
-      if (pairRecord && pairRecord.cs.length > 0) {
-        csParts.push(pairRecord.cs)
-        identityMatchBp += pairRecord.identity * locusLen
-      } else {
-        csParts.push(`:${locusLen}`)
-        identityMatchBp += locusLen
-      }
-      identityTotalBp += locusLen
-      pos = locusEnd
-    }
-
-    if (pos < runEnd) {
-      const trailing = runEnd - pos
-      csParts.push(`:${trailing}`)
-      identityMatchBp += trailing
-      identityTotalBp += trailing
-      pos = runEnd
-    }
-  }
-
-  if (!feat.cigar) {
-    consumeBubblesWithin(feat.end)
-  } else {
-    let cigarLen = 0
-    for (let i = 0; i < feat.cigar.length; i++) {
-      const ch = feat.cigar.charCodeAt(i)
-      if (ch >= 48 && ch <= 57) {
-        cigarLen = cigarLen * 10 + (ch - 48)
-        continue
-      }
-      const op = feat.cigar[i]!
-      if (op === '=' || op === 'M') {
-        consumeBubblesWithin(pos + cigarLen)
-      } else if (op === 'D' || op === 'N') {
-        csParts.push(`-${'n'.repeat(cigarLen)}`)
-        identityTotalBp += cigarLen
-        pos += cigarLen
-      } else if (op === 'I') {
-        csParts.push(`+${'n'.repeat(cigarLen)}`)
-      } else if (op === 'X') {
-        csParts.push(`:${cigarLen}`)
-        identityTotalBp += cigarLen
-        pos += cigarLen
-      }
-      cigarLen = 0
-    }
-  }
-
-  return {
-    cs: csParts.join(''),
-    identityMatchBp,
-    identityTotalBp,
-  }
-}

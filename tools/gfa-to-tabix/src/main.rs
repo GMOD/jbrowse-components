@@ -59,6 +59,13 @@ struct Args {
     /// variant track pointing at the source VCF.
     #[arg(long)]
     output_config: Option<String>,
+
+    /// Skip emission of plaintext per-segment FASTA. By default the tool
+    /// writes <prefix>.segments.seq.fa and <prefix>.segments.seq.fa.fai
+    /// (one record per ordinal), enabling Phase 1 sequence-aware getSubgraph.
+    /// Disable for index footprint when sequences aren't needed.
+    #[arg(long)]
+    no_emit_seq_plaintext: bool,
 }
 
 fn main() {
@@ -81,6 +88,7 @@ fn main() {
     let groom = !cli.no_groom;
     let ref_assembly_arg = cli.ref_assembly;
     let bubbles_vcf = cli.bubbles;
+    let emit_seq_plaintext = !cli.no_emit_seq_plaintext;
     let output_config = cli.output_config;
 
     // Two-phase single-pass: reads all lines once, collecting S-lines in memory
@@ -95,6 +103,8 @@ fn main() {
     let mut seg_lengths: HashMap<String, u64> = HashMap::new();
     let mut seg_ordinals: HashMap<String, u64> = HashMap::new();
     let mut next_ordinal: u64 = 0;
+    let mut seg_seqs: HashMap<String, Vec<u8>> = HashMap::new();
+    let mut seg_seq_missing: u64 = 0;
 
     // Spool P/W-lines to a temp file to avoid buffering in memory
     let paths_tmp = tmp_dir.join("paths.txt");
@@ -120,6 +130,13 @@ fn main() {
                         .map(|t| t[5..].parse::<u64>().unwrap_or(0))
                 })
                 .unwrap_or_else(|| if seq == "*" { 0 } else { seq.len() as u64 });
+            if emit_seq_plaintext {
+                if seq == "*" {
+                    seg_seq_missing += 1;
+                } else {
+                    seg_seqs.insert(name.clone(), seq.as_bytes().to_vec());
+                }
+            }
             seg_lengths.insert(name, length);
         } else if line.starts_with("L\t") {
             let cols: Vec<&str> = line.splitn(6, '\t').collect();
@@ -166,13 +183,19 @@ fn main() {
     let mut path_sizes: Vec<(String, u64)> = Vec::new();
     let mut path_count: u64 = 0;
     let mut ref_ord_walks: HashMap<String, Vec<(u64, u64)>> = HashMap::new();
+    // Track whether the input GFA used W-lines or P-lines for haplotype paths
+    // so the adapter can emit the same format on extraction (Phase 2 W-in/W-out).
+    let mut had_walk_lines = false;
+    let mut had_path_lines = false;
 
     for line in BufReader::new(File::open(&paths_tmp).expect("reopen paths tmp")).lines() {
         let line = line.expect("read error");
 
         let parsed = if line.starts_with("W\t") {
+            had_walk_lines = true;
             parse_walk(&line)
         } else if line.starts_with("P\t") {
+            had_path_lines = true;
             parse_p_line(&line)
         } else {
             None
@@ -265,12 +288,26 @@ fn main() {
         .collect();
     let sizes_header = format!("#sizes={}\n", sizes_str.join(","));
     let paths_header = format!("#paths={}\n", path_names.join(","));
-    let full_header = format!("{}{}{}", header, sizes_header, paths_header);
+    // input-format records whether the source GFA used W-lines or P-lines for
+    // haplotypes; the adapter mirrors this on emission (Phase 2 W-in/W-out).
+    // Mixed inputs are unusual but possible — pick the dominant form.
+    let input_format = if had_walk_lines && !had_path_lines {
+        "walks"
+    } else if had_path_lines && !had_walk_lines {
+        "paths"
+    } else if had_walk_lines {
+        "walks"
+    } else {
+        "paths"
+    };
+    let format_header = format!("#input-format={}\n", input_format);
+    let full_header = format!("{}{}{}{}", header, sizes_header, paths_header, format_header);
 
     // Finish pos.bed.gz
     pos_w.write_all(header.as_bytes()).unwrap();
     pos_w.write_all(sizes_header.as_bytes()).unwrap();
     pos_w.write_all(paths_header.as_bytes()).unwrap();
+    pos_w.write_all(format_header.as_bytes()).unwrap();
     drop(pos_w);
     assert!(
         pos_proc.wait().map(|s| s.success()).unwrap_or(false),
@@ -320,6 +357,29 @@ fn main() {
             &tmp_dir.to_string_lossy(),
         );
         let _ = fs::remove_file(&combined_tmp);
+    }
+
+    // Phase 1 (plaintext tier): write per-ordinal FASTA + .fai. Skipped if
+    // the source GFA used `*` placeholders for sequences or if the user
+    // passed --no-emit-seq-plaintext.
+    if emit_seq_plaintext && !seg_seqs.is_empty() {
+        eprintln!("Writing per-segment FASTA...");
+        let written = write_segments_seq_fa(
+            &output_prefix,
+            next_ordinal,
+            &seg_ordinals,
+            &seg_seqs,
+        );
+        eprintln!(
+            "  Wrote {}.segments.seq.fa ({} sequences{})",
+            output_prefix,
+            written,
+            if seg_seq_missing > 0 {
+                format!(", {} S-lines used `*` placeholder and were skipped", seg_seq_missing)
+            } else {
+                String::new()
+            }
+        );
     }
 
     // Build edges.bin + edges.idx from L-lines
@@ -849,6 +909,76 @@ fn open_file(path: &str) -> Box<dyn BufRead> {
         let file = File::open(path).unwrap_or_else(|_| panic!("failed to open {}", path));
         Box::new(BufReader::with_capacity(1 << 20, file))
     }
+}
+
+/// Write per-ordinal FASTA, samtools-faidx-compatible .fai, and a compact
+/// binary `.idx` sidecar for adapter random access.
+///
+/// Records are emitted in ordinal order (`>seg<ord>`) on a single line each
+/// (no wrapping), giving the simplest .fai entries (line_blen == length,
+/// line_len == length + 1).
+///
+/// The binary `.idx` is what the JBrowse adapter actually loads at runtime:
+/// 12 bytes per ordinal — `u64` little-endian byte offset of the sequence
+/// (i.e. the `.fai` "offset" column) and `u32` little-endian length. Missing
+/// ordinals (skipped because the source S-line had `*` placeholder) emit
+/// `(0, 0)` and are detected by `length == 0`. At 12 bytes/segment this is
+/// ~12 MB per million segments, fast to load and trivial to slice. .fai is
+/// kept for `samtools faidx` / grep workflows but the adapter never parses it.
+fn write_segments_seq_fa(
+    output_prefix: &str,
+    total_ordinals: u64,
+    seg_ordinals: &HashMap<String, u64>,
+    seg_seqs: &HashMap<String, Vec<u8>>,
+) -> u64 {
+    let mut name_by_ord: Vec<Option<&String>> = vec![None; total_ordinals as usize];
+    for (name, &ord) in seg_ordinals {
+        if let Some(slot) = name_by_ord.get_mut(ord as usize) {
+            *slot = Some(name);
+        }
+    }
+
+    let fa_path = format!("{}.segments.seq.fa", output_prefix);
+    let fai_path = format!("{}.segments.seq.fa.fai", output_prefix);
+    let idx_path = format!("{}.segments.seq.idx", output_prefix);
+    let mut fa = BufWriter::new(File::create(&fa_path).expect("create seq.fa"));
+    let mut fai = BufWriter::new(File::create(&fai_path).expect("create seq.fa.fai"));
+    let mut idx = BufWriter::new(File::create(&idx_path).expect("create seq.idx"));
+
+    let mut byte_offset: u64 = 0;
+    let mut emitted: u64 = 0;
+    for ord in 0..total_ordinals {
+        let (seq_offset, seq_len) = match name_by_ord[ord as usize]
+            .and_then(|n| seg_seqs.get(n))
+        {
+            Some(seq) => {
+                let header = format!(">seg{}\n", ord);
+                fa.write_all(header.as_bytes()).unwrap();
+                let header_len = header.len() as u64;
+                let off = byte_offset + header_len;
+                fa.write_all(seq).unwrap();
+                fa.write_all(b"\n").unwrap();
+                let len = seq.len() as u64;
+                writeln!(
+                    fai,
+                    "seg{}\t{}\t{}\t{}\t{}",
+                    ord,
+                    len,
+                    off,
+                    len,
+                    len + 1
+                )
+                .unwrap();
+                byte_offset += header_len + len + 1;
+                emitted += 1;
+                (off, len as u32)
+            }
+            None => (0u64, 0u32),
+        };
+        idx.write_all(&seq_offset.to_le_bytes()).unwrap();
+        idx.write_all(&seq_len.to_le_bytes()).unwrap();
+    }
+    emitted
 }
 
 fn spawn_sort_bgzip(output: &str) -> std::process::Child {

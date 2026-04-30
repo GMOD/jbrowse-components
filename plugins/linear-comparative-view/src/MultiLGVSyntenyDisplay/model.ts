@@ -101,6 +101,10 @@ async function launchSubgraphView(
     adapterConfig,
     region,
     sessionId,
+    // Cap path emission to avoid stalls on multi-megabase regions; matches
+    // GraphGenomeView.loadFromTabixSubgraph default. See backlog item 2 in
+    // agent-docs/GRAPH_PLAN.md.
+    opts: { maxPathsEmitted: 50000 },
   })
   if (!gfaText) {
     session.notify(

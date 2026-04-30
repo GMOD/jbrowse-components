@@ -1,4 +1,4 @@
-import { buildCsFromCigarAndBubbles } from './gfaTabixUtils.ts'
+import { buildCsFromCigarAndBubbles } from './bubbleCs.ts'
 
 interface BubbleRow {
   start: number
@@ -86,6 +86,44 @@ describe('buildCsFromCigarAndBubbles', () => {
     const bubbles: BubbleRow[] = []
     const result = buildCsFromCigarAndBubbles(feat, bubbles, 0, 1, 0)
     expect(result.cs).toBe(':100')
+    expect(result.identityTotalBp).toBe(100)
+    expect(result.identityMatchBp).toBe(100)
+  })
+
+  it('treats X like = so bubble pair CS overlays alt-allele SNVs', () => {
+    // SNV bubble at [50, 51) with alleleA=0 (ref allele) and alleleB=1
+    // (alt allele). Sample gIdx=1 has the alt allele. segmentFeatureBuilder
+    // would emit `50= 1X 49=` for this sample (1bp segment swap → X), and
+    // the bubble VCF supplies the actual *xy substitution.
+    const feat = { start: 0, end: 100, cigar: '50=1X49=' }
+    const bubbles: BubbleRow[] = [
+      {
+        start: 50,
+        end: 51,
+        alleleA: 0,
+        alleleB: 1,
+        identity: 0,
+        cs: '*ag',
+        genomesA: new Set([0]),
+        genomesB: new Set([1]),
+      },
+    ]
+    const result = buildCsFromCigarAndBubbles(feat, bubbles, 0, 1, 0)
+
+    // Mismatch overlaid from bubble cs, not silently dropped.
+    expect(result.cs).toBe(':50*ag:49')
+    expect(result.identityTotalBp).toBe(100)
+    // Match: 50 (=) + 0 (mismatch) + 49 (=) = 99
+    expect(result.identityMatchBp).toBe(99)
+  })
+
+  it('falls back to :N for X runs without bubble coverage', () => {
+    // X with no bubble — defensible fallback is :N (treated as match for
+    // identity numerics; loses per-base mismatch info but won't crash).
+    const feat = { start: 0, end: 100, cigar: '50=1X49=' }
+    const bubbles: BubbleRow[] = []
+    const result = buildCsFromCigarAndBubbles(feat, bubbles, 0, 1, 0)
+    expect(result.cs).toBe(':50:1:49')
     expect(result.identityTotalBp).toBe(100)
     expect(result.identityMatchBp).toBe(100)
   })

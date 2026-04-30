@@ -49,6 +49,22 @@
           "uri": "volvox/volvox_pangenome_50.segments.idx",
           "locationType": "UriLocation"
         },
+        "edgesLocation": {
+          "uri": "volvox/volvox_pangenome_50.edges.bin",
+          "locationType": "UriLocation"
+        },
+        "edgesIdxLocation": {
+          "uri": "volvox/volvox_pangenome_50.edges.idx",
+          "locationType": "UriLocation"
+        },
+        "seqFastaLocation": {
+          "uri": "volvox/volvox_pangenome_50.segments.seq.fa",
+          "locationType": "UriLocation"
+        },
+        "seqIdxLocation": {
+          "uri": "volvox/volvox_pangenome_50.segments.seq.idx",
+          "locationType": "UriLocation"
+        },
         "bubblesLocation": {
           "uri": "volvox/volvox_pangenome_50.bubbles.bed.gz",
           "locationType": "UriLocation"

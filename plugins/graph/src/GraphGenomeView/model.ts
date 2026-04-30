@@ -16,6 +16,13 @@ import type { GraphRenderer } from '../renderer/GraphRenderer.ts'
 import type { SubBatchKey, VertexRange } from '../renderer/types.ts'
 import type { ColorScheme, Graph, LayoutResult } from '../types.ts'
 
+interface BandageScaleOpts {
+  nodeLengthPerMegabase?: number
+  minimumNodeLength?: number
+  nodeSegmentLength?: number
+  edgeLength?: number
+}
+
 const DEFAULT_CANVAS_HEIGHT = 600
 const HOVER_BRIGHTEN = 1.4
 const SELECT_BRIGHTEN = 1.6
@@ -447,6 +454,7 @@ export default function stateModelFactory() {
             const nodeById = self.nodeById
             if (self.nodePositions && self.graph && nodeById) {
               void self.viewportDirty
+              const tBuild0 = performance.now()
               const batch = buildGeometry({
                 nodePositions: self.nodePositions,
                 graph: self.graph,
@@ -458,6 +466,10 @@ export default function stateModelFactory() {
                 scale: self.scale,
                 viewportBounds: untracked(() => computeViewportBounds(self)),
               })
+              const tBuild1 = performance.now()
+              console.log(
+                `[GraphGenomeView] geometry build=${(tBuild1 - tBuild0).toFixed(0)}ms nodeVerts=${batch.nodes.vertexCount} edgeVerts=${batch.edges.vertexCount}`,
+              )
 
               self.storeRenderBatchMeta(
                 batch.nodeVertexRanges,
@@ -490,7 +502,7 @@ export default function stateModelFactory() {
       },
     }))
     .actions(self => {
-      function callLayout(graph: Graph) {
+      function callLayout(graph: Graph, extraOpts?: BandageScaleOpts) {
         const session = getSession(self)
         const { rpcManager } = session
         const sessionId = 'graph' // getRpcSessionId(self) no 'rpcSessionId' getter
@@ -500,6 +512,7 @@ export default function stateModelFactory() {
           options: {
             quality: self.layoutQuality,
             linearLayout: self.linearLayout,
+            ...extraOpts,
           },
           statusCallback: (message: string) => {
             self.setStatusMessage(message)
@@ -507,16 +520,28 @@ export default function stateModelFactory() {
         }) as Promise<{ result: LayoutResult }>
       }
 
-      function* parseAndLayout(text: string, name: string) {
+      function* parseAndLayout(
+        text: string,
+        name: string,
+        scaleOpts?: BandageScaleOpts,
+      ) {
+        const t0 = performance.now()
         self.setStatusMessage('Parsing GFA')
         const gfaGraph = parseGFA(text)
         const graph = convertGFAToGraph(gfaGraph, name)
         self.graph = graph
+        const t1 = performance.now()
         self.setStatusMessage('Computing layout')
-        const { result } = (yield callLayout(graph)) as { result: LayoutResult }
+        const { result } = (yield callLayout(graph, scaleOpts)) as {
+          result: LayoutResult
+        }
+        const t2 = performance.now()
         if (self.graph === graph) {
           self.layoutResult = result
         }
+        console.log(
+          `[GraphGenomeView] nodes=${graph.nodes.length} edges=${graph.edges.length} paths=${graph.paths?.length ?? 0} parse=${(t1 - t0).toFixed(0)}ms layout=${(t2 - t1).toFixed(0)}ms`,
+        )
       }
 
       return {
@@ -540,6 +565,7 @@ export default function stateModelFactory() {
             start: number
             end: number
           },
+          opts: { maxPathsEmitted?: number; context?: number } = {},
         ) {
           self.isLoading = true
           self.error = undefined
@@ -548,18 +574,40 @@ export default function stateModelFactory() {
             const session = getSession(self)
             const { rpcManager } = session
             const sessionId = 'graph' // getRpcSessionId(self) no rpcSessionId getter
+            // Default cap: at HPRC chr20 scale, 1 Mbp emits ~219k subwalks
+            // and 5 Mbp ~434k. Past ~50k the browser geometry rebuild stalls
+            // and the user gains no detail; truncate emission with a comment.
+            const subgraphOpts = {
+              maxPathsEmitted: opts.maxPathsEmitted ?? 50000,
+              context: opts.context,
+            }
+            const tFetch0 = performance.now()
             const gfaText = (yield rpcManager.call(sessionId, 'GetSubgraph', {
               adapterConfig,
               region,
               sessionId,
+              opts: subgraphOpts,
             })) as string
+            const tFetch1 = performance.now()
+            console.log(
+              `[GraphGenomeView] subgraph fetch=${(tFetch1 - tFetch0).toFixed(0)}ms bytes=${gfaText?.length ?? 0}`,
+            )
             if (!gfaText) {
               throw new Error(
                 'Adapter returned no GFA — region may be outside indexed data or the adapter does not implement getSubgraph',
               )
             }
             const label = `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`
-            yield* parseAndLayout(gfaText, label)
+            // Pangenome-tuned bandage scaling. Default 1000 units/Mbp clamps
+            // every node <1kb to minimumNodeLength (1.0), making SNPs and
+            // longer contigs render at identical visual lengths. 1 unit/bp
+            // makes node length proportional to bp; nodeSegmentLength=5
+            // caps OGDF subnode count per node to keep FMMM layout fast.
+            yield* parseAndLayout(gfaText, label, {
+              nodeLengthPerMegabase: 1_000_000,
+              minimumNodeLength: 0.5,
+              nodeSegmentLength: 5,
+            })
           } catch (e) {
             console.error('[GraphGenomeView.loadFromTabixSubgraph]', e)
             self.error = e

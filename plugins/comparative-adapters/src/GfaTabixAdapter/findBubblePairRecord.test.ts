@@ -1,4 +1,4 @@
-import { findBubblePairRecord } from './gfaTabixUtils.ts'
+import { findBubblePairRecord } from './bubbleCs.ts'
 
 // BubbleEntry shape as used in gfaTabixUtils
 interface BubbleEntry {

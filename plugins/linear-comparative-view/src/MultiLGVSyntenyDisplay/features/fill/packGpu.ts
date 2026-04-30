@@ -32,10 +32,17 @@ export function prepareBlockGeometry(
   showSnps: boolean,
   colors: SyntenyColors,
 ): BlockGeometryData {
+  const tStart = performance.now()
   const rgba = buildColorArrays(colors)
   let totalFeatures = 0
+  let withCs = 0
+  let withCigar = 0
   for (const [, features] of genomeFeatures) {
     totalFeatures += features.length
+    for (const f of features) {
+      if (f.cs) withCs++
+      else if (f.cigar) withCigar++
+    }
   }
 
   const builder = new InstanceBuilder(INSTANCE_BYTE_SIZE, totalFeatures * 2)
@@ -45,6 +52,9 @@ export function prepareBlockGeometry(
   )
 
   let featureIdx = 0
+  let mmCount = 0
+  let delCount = 0
+  let insCount = 0
   for (const [genomeName, features] of genomeFeatures) {
     const g = genomeIndexMap.get(genomeName)
     if (g === undefined) {
@@ -62,7 +72,21 @@ export function prepareBlockGeometry(
       )
 
       if (showSnps) {
-        const visitor = buildGpuOpsVisitor(builder, g, fId, rgba)
+        const baseVisitor = buildGpuOpsVisitor(builder, g, fId, rgba)
+        const visitor = {
+          onMismatch: (refPos: number, len: number, queryBase?: string) => {
+            mmCount++
+            baseVisitor.onMismatch(refPos, len, queryBase)
+          },
+          onDeletion: (refPos: number, len: number) => {
+            delCount++
+            baseVisitor.onDeletion(refPos, len)
+          },
+          onInsertion: (refPos: number, len: number) => {
+            insCount++
+            baseVisitor.onInsertion(refPos, len)
+          },
+        }
         if (feat.cs) {
           visitCsOps(feat.cs, feat.start, visitor)
         } else if (feat.cigar) {
@@ -71,6 +95,9 @@ export function prepareBlockGeometry(
       }
     }
   }
+  console.log(
+    `[MultiLGVSynteny] ops emitted: mismatches=${mmCount} deletions=${delCount} insertions=${insCount}`,
+  )
 
   const n = builder.getCount()
   const rawBuf = builder.getBuffer()
@@ -108,6 +135,9 @@ export function prepareBlockGeometry(
     )
   }
 
+  console.log(
+    `[MultiLGVSynteny] prepareBlockGeometry feats=${totalFeatures} cs=${withCs} cigar=${withCigar} showSnps=${showSnps} instances=${n} ${(performance.now() - tStart).toFixed(0)}ms`,
+  )
   return { buffer: sortedBuf, instanceCount: n }
 }
 

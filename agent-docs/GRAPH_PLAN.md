@@ -176,6 +176,258 @@ let you query only from the rGFA reference's perspective; this index
   into rendering polish unless Phase 7 is up.
 - **Context expansion default is "expand to enclosing top-level snarl"**,
   with fixed-k as fallback when the snarls index isn't built (see Phase 3).
+- **Scale-aware granularity (added 2026-04-30).** The index must remain
+  usable at megabase scale. Per-segment detail is reserved for the
+  zoomed-in flow (sub-100 kb, the headline experiment); larger regions
+  render a coarsened/block-level summary so the synteny display at low
+  zoom and the import-form large-region launch both stay responsive. The
+  chr20 audit at 5 Mbp surfaced this as the next gating issue. See
+  "Multi-resolution / coarsened views for megabase scale" below for the
+  design.
+
+## Status & next steps (2026-04-30)
+
+This section is the running scoreboard. Update it when shipping a
+phase or surfacing a new blocker. Per-finding detail lives in
+`agent-docs/GRAPH_AUDIT.md`; this is the executive summary plus the
+prioritized backlog.
+
+### Shipped
+
+Completed work has moved to `agent-docs/GRAPH_COMPLETED.md`. That file
+is the running archive (Phase 0 audit harness, F1/F2/F3/F6 fixes,
+HPRC chr20 verification, cross-plugin tests, `maxPathsEmitted` cap,
+Phase 3 fixed-k context expansion, and so on). When a new item ships,
+add a one-line bullet there and update this document's "Status &
+next steps" pointers — don't accumulate ✅ entries here.
+
+### Open: prioritized backlog
+
+Ordered by expected-value-per-effort. Re-rank when something new
+surfaces.
+
+1. **Multi-resolution / coarsened graph index for megabase scale.**
+   Today's per-segment extraction is unusable past ~1 Mbp (chr20
+   audit at 5 Mbp emits 434 K paths and the GraphRenderer geometry
+   rebuild stalls). The `maxPathsEmitted` cap (now shipped) prevents
+   the worst-case stall but does not produce a *useful* zoomed-out
+   view — it just truncates. The full fix is a multi-resolution layer
+   with snarl-collapse / tile-pyramid / haplotype-thinning detail
+   levels, dispatched on region size. The headline experiment
+   (sub-100 kb, bubble detail) is unaffected; this work makes the
+   *zoomed-out* flow functional — synteny display at low zoom,
+   import-form launch with a multi-megabase region. Design section:
+   "Multi-resolution / coarsened views for megabase scale" below.
+   Snarl-collapse tier depends on Phase 4; tile-pyramid is
+   independent and the cheapest first ship.
+2. **F3 binary-tier implementation.** Format pinned in
+   `agent-docs/GRAPH_INDEX_FORMAT.md` (Option A: 2-bit ACGT +
+   per-segment N-bitmap). Spike result on chr20: 67.66 Mbp segment
+   sequence, 0.74% N, no IUPAC. Predicted footprint ~25 MB vs 91 MB
+   plaintext. Implementation: rust preprocessor emits
+   `prefix.segments.seq.bin` + `prefix.segments.seq.bin.idx`; adapter
+   detects via `SEQB` magic and unpacks; new config slot
+   `seqBinaryLocation`.
+3. **C3 chr20 path-symmetry investigation.** Smoke-tested on chr20
+   (see `agent-docs/GRAPH_AUDIT.md` § chr20 finding) — strict
+   byte-isomorphism does not hold for chr20 because heterozygous
+   samples visit different alleles at variant positions. The right
+   measurement is union-of-subgraphs invariance, which requires
+   snarl-aware expansion (Phase 4). For now the chrM result stands
+   as the clean-symmetric demonstration; chr20 needs Phase 4.
+4. **Phase 4 snarls index.** `prefix.snarls.bed.gz` from `vg snarls`
+   output, with parent-child snarl hierarchy. Unlocks (a) the
+   snarl-boundary context-expansion default (currently `context` only
+   supports fixed-k), (b) zoom-to-snarl UX in GraphGenomeView, (c) the
+   snarl-collapse tier of backlog item 1, (d) the full Phase 6 polish,
+   (e) the chr20 path-symmetry measurement. Bigger lift.
+5. **Phase 5 CI integration — pipeline wiring.** Jest concordance and
+   path-symmetry tests shipped in
+   `plugins/comparative-adapters/.../auditConcordance.test.ts` (skip
+   when `vg` is missing). Remaining: provision `vg ≥ 1.59.0` (and
+   `odgi`, `chunkix`) in CI so the suite runs by default rather than
+   skipping — likely a docker container or apt install in the
+   workflow YAML.
+
+### Surfaced issues (track but not blocking)
+
+- **Megabase-scale viewing requires coarsening** — chr20 region
+  queries past ~1 Mbp emit so much detail (segments, edges, paths)
+  that both the network round-trip and the GraphRenderer geometry
+  rebuild become unusable. The 5 Mbp test ran but felt borderline.
+  The shipped `maxPathsEmitted` cap (default 50000 in the
+  GraphGenomeView caller) prevents the worst case but produces a
+  truncated rather than coarsened view. Backlog item 2 drives the
+  multi-resolution design — in the interim, the truncation fallback
+  is the user-visible behavior. Affects MultiLGVSyntenyDisplay at low
+  zoom and import-form large-region entry points equally.
+- **Rust preprocessor RSS at chr20 scale** — 7.9 GB peak. Streaming
+  the FASTA out during the S-line pass (instead of buffering
+  `seg_seqs` in memory) would shave ~200 MB but isn't urgent for
+  offline preprocessing on a 30 GB machine.
+- **`segments.bin` size at chr20 scale** — 1.49 GB. This is the
+  biggest single file; per-(seg,path,offset) record duplication is
+  inherent. A binary tier here (delta-coded offsets per path?) could
+  cut this in half but is out of scope until Phase 8 perf work.
+- **`assemblyNameMap` mismatch on the GfaAdapter** path (the
+  non-tabix variant) — `project_graph_view_launch.md` documents this
+  as a "known issue, production uses GfaTabix so it's usually fine."
+
+### Files uploaded (S3) — chr20 (2026-04-30)
+
+For `s3://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/`, the new
+`hprc-v1.1-mc-grch38-chr20.*` files have been refreshed with the
+F1/F6 fixes (uploaded 2026-04-30). `pos.bed.gz` does **not** yet
+include the `#input-format=` header — see backlog item 2 for the
+re-index follow-up. Files on S3:
+- `pos.bed.gz` + `.tbi` (rebuilt with F1 fix)
+- `segments.bin` + `.idx` (rebuilt with F6 fix)
+- `edges.bin` + `.idx` (rebuilt with F1 fix)
+- `segments.seq.fa` + `.idx` (Phase 1 plaintext, new)
+- `segments.seq.fa.fai` (samtools-compat sidecar, new)
+
+Same set for `hprc-v1.1-mc-grch38-chrM.*`. The remote
+`config_hprc_chr20.json` uses `prefix:` shorthand that already
+expands the new locations via `configSchema.preProcessSnapshot`, so
+no config change needed once the files are live.
+
+## Multi-resolution / coarsened views for megabase scale (planned)
+
+This section is the design starter for backlog item 2. It is **not
+yet implemented**; phases 0–6 ship the per-segment (full-detail)
+flow, and this layer sits on top of those. Sequencing decision —
+whether this is "Phase 4.5" inline or a new Phase 10 — deferred
+until the design firms up; for now treat it as a planned phase
+referenced from the backlog.
+
+### Problem
+
+Per-segment subgraph extraction is targeted at sub-100 kb (Phase 8
+budgets). At HPRC chr20 scale, queries past ~1 Mbp emit tens of
+thousands of segments and hundreds of thousands of path subwalks;
+the network round-trip and
+`GraphRenderer.buildGeometry` rebuild both fall over. The headline
+experiment (bubble-level detail at sub-100 kb) is unaffected — that
+is the *zoomed-in* flow. Coarsening is the *zoomed-out* flow.
+
+Two user flows hit this directly and both must keep working:
+
+- **MultiLGVSyntenyDisplay at low zoom.** The synteny display
+  renders at whatever bp/px the user has scrolled to. At ~1 Mb
+  visible per panel, per-segment detail is neither renderable nor
+  useful — the user wants block-level structure (where do the
+  bubbles live, which haplotypes diverge in this region) not
+  per-base detail.
+- **Graph view launched with a large region.** From the import
+  form, or from a "show me everything" track-menu action, a user
+  can request a multi-megabase region. The graph view should still
+  produce *something* (a coarsened block diagram), not freeze on
+  geometry build.
+
+### Design sketch
+
+Three coarsening strategies, picked or composed by zoom level:
+
+- **Snarl-collapse** (depends on Phase 4). Each top-level snarl
+  collapses to a super-node annotated with bubble count, max allele
+  length, and haplotype-membership summary. Edges between
+  super-nodes are the chains connecting them. Most biology-faithful;
+  renders as backbone + bubble blocks.
+- **Tile-pyramid** (independent of other phases — cheapest first
+  ship). Group segments into bp-stride tiles along each reference
+  path; per tile, record haplotype count, dominant subwalk, and a
+  divergence summary. Analogous to BigWig's zoom pyramid. Strides
+  ∈ {10kb, 100kb, 1Mb}, depth driven by Phase 8 measurement.
+- **Haplotype thinning.** Emit only the reference path(s) plus a
+  per-segment haplotype-presence bitmap; suppress per-haplotype W/P
+  lines. Bubble structure still renders, with a single "90
+  haplotypes, 60 share allele A, 30 share allele B" annotation
+  rather than 90 separate walks. The shipped `maxPathsEmitted` cap
+  is a coarse "drop everything" fallback; haplotype thinning is the
+  fine-grained replacement.
+
+Natural composition: at 1 Mb+ use tile-pyramid; at 100 kb–1 Mb use
+snarl-collapse + haplotype-thinning; at <100 kb use full per-segment
+detail. Thresholds are perf-tuned, not hard-coded, and live in the
+adapter config.
+
+### Index files (planned, not committed)
+
+- `prefix.tiles.<stride>.bin` — per-path tile records, ordinal-keyed.
+  Each record: `tileOrd | haplotypeCount | dominantWalkOrd |
+  divergenceScore`. Multiple stride files form the pyramid.
+  Magic + version header per `agent-docs/GRAPH_INDEX_FORMAT.md`.
+- `prefix.haplotype-bitmap.bin` — per-segment haplotype-membership
+  bitmap; one bit per (segment, haplotype) pair, queryable as a
+  range fetch on the segment ordinal.
+- Snarl-collapse reuses `prefix.snarls.bed.gz` from Phase 4 — no
+  new file needed for that tier.
+
+### Adapter API
+
+Extend `getSubgraph(region, opts)` with
+`opts.detailLevel ∈ {'full' | 'snarl' | 'tile' | 'auto'}`. Default
+`'auto'` dispatches by region size against the configured
+thresholds. Synteny display and graph view both pass `'auto'` by
+default; dev console / power users can override.
+
+The RPC method (`LinearSyntenyRPC/GetSubgraph.ts`) and graph-view
+caller (`GraphGenomeView/model.ts loadFromTabixSubgraph`) both need
+to accept and forward this option. API surface change for
+third-party adapters; flag in release notes alongside the Phase 3
+context-expansion parameter.
+
+### Renderer implications
+
+- **MultiLGVSyntenyDisplay.** Tile-level data is a
+  feature-projection change, not a renderer rewrite — each tile
+  becomes a synteny feature with the divergence summary as the
+  rendered metric. Snarl super-nodes can render as an additional
+  feature track type. This stays consistent with the
+  existing-mirrors-alignments pattern (see
+  `feedback_synteny_mirror_alignments.md`).
+- **GraphGenomeView.** Block-diagram mode: super-nodes as labeled
+  rectangles sized by enclosed-segment count, edges as thick bands.
+  Separate code path from full-detail per-segment mode; shares
+  layout primitives but not geometry. **Cache geometry per detail
+  level.** Naive coarsening makes the `buildGeometry` rebuild risk
+  (`agent-docs/GRAPH_PERF.md`) *worse*, not better — every
+  zoom-driven detail-level switch would re-walk the graph
+  otherwise.
+
+### Phase ordering
+
+After Phase 4 (snarls index → snarl-collapse) and Phase 6 (LGV →
+graph UX → coarsened launch path), overlapping Phase 8 (perf
+measurement includes coarsened tiers per region size). Tile-pyramid
+can ship independently of Phase 4, and is the right first cut
+because it gives an end-to-end coarsened path with the smallest
+index-format commitment.
+
+### Open questions
+
+- **Precompute vs on-the-fly.** Build the tile pyramid at preprocess
+  time, or compute on-demand from `pos.bed.gz` + `segments.bin`?
+  Precompute wins query latency; on-the-fly wins index footprint.
+  Phase 8 measurement decides.
+- **Haplotype-bitmap placement.** Lives here as a coarsened-tier
+  detail. The shipped `maxPathsEmitted` cap is the immediate
+  truncation safety net; the bitmap is the principled replacement
+  that preserves haplotype-membership information at low zoom.
+- **Coarsening boundary — renderer vs data layer.** Should
+  `MultiLGVSyntenyDisplay` keep its current per-segment feature
+  emission and coarsen at the renderer, or coarsen data-side?
+  Renderer-side is simpler; data-side is required for network
+  efficiency at 5 Mb scale (sending 434 K paths to drop them in the
+  renderer is wasteful). Probably data-side.
+- **Chain-level (snarl-of-snarls) view.** Snarl boundaries may not
+  align with biology at higher zoom levels — does the chain view
+  need a separate index file, or is the `parentSnarlId` in
+  `snarls.bed.gz` sufficient? Verify in Phase 4 audit.
+- **Detail-level thresholds.** What region sizes should map to
+  `full` vs `snarl` vs `tile`? Today's guess (100 kb / 1 Mb) is
+  pulled from the chr20 audit timing; pin via Phase 8 measurement
+  before locking into adapter config defaults.
 
 ## Quickstart for a fresh agent (cold start to first signal in <30 min)
 
@@ -291,31 +543,41 @@ You now have running infrastructure. The next thing to read is
 - `buildGfaFromPathInference` (lines 51-159): fallback when no edges file.
   Uses path co-traversal to derive links. Emits `H` + `S` + `L` + `P` lines.
 
-## Likely gaps vs `vg find` (Phase 0 confirms)
+## Likely gaps vs `vg find` — historical (most resolved)
 
-Reading `buildGfaFromEdges`:
+This section was the pre-Phase-0 enumeration of suspected gaps. Kept
+for historical context; current status is in "Status & next steps"
+above and `agent-docs/GRAPH_AUDIT.md`. ✅ = resolved.
 
-- **No real sequences.** S lines emit `*` placeholder + `LN:i:<len>`.
-  `segments.bin` carries no nucleotides. Cannot round-trip through vg or
-  render base-level detail in graph view.
-- **No P/W lines from edge-based path.** Edge-based path emits zero path
-  traversals. Users see segments + edges but cannot tell which haplotype
-  takes which route through bubbles. (Path-inference fallback does emit P,
-  but only for paths sharing ref segments — not the same as vg's full
-  subwalk.)
-- **No W-line emission for HPRC-style graphs.** HPRC graphs encode paths as
-  W-lines (sample/haplotype/contig/start/end). Output is currently always P
-  even when input was W — losing haplotype metadata.
-- **Hardcoded 1-step context** — and even that is filtered to "kept only if
-  both endpoints are seed segments." `vg find -c k` is parameterized and
-  the contribution wants snarl-boundary expansion as default.
-- **No snarl decomposition output.** Bubble structure is in `bubbles.bed.gz`
-  as path-coordinate annotations, not as graph structural metadata. The
-  graph view cannot color/highlight snarl boundaries.
-- **No verification of graph isomorphism.** Currently a hope, not a
-  measurement.
-- **No format magic / version on binary files.** Format evolution is
-  unsafe.
+- ✅ **Real sequences.** Phase 1 plaintext tier landed. S-lines emit
+  real nucleotides when `seqFastaLocation` is configured; placeholder
+  `*` + `LN:i:<len>` otherwise. Binary tier still pending.
+- ✅ **P/W lines from edge-based path.** `buildGfaFromEdges` now emits
+  one P-line per contiguous haplotype subwalk via `computePathSubwalks`
+  (re-entry-aware per the Phase 0 vg-W-line semantics note). See F2.
+- ⏳ **W-line emission for HPRC-style graphs.** Still emits P-lines
+  even when input was W. Phase 2 work in the backlog. Output's
+  *canonical form* is structurally equivalent (proven by audit
+  harness), but haplotype metadata in W-lines (sample/hap/contig/
+  start/end) is reconstructed from path-name parsing rather than
+  preserved natively.
+- ⏳ **Context expansion** — still hardcoded 1-hop. Phase 3 fixed-k
+  parameter is in the backlog. Snarl-boundary default needs Phase 4.
+- ⏳ **Snarl decomposition output.** Still missing as graph metadata.
+  Phase 4 work — bigger lift, unlocks zoom-to-snarl UX and the Phase
+  3 context default.
+- ✅ **Verification of graph isomorphism.** Phase 0 audit harness +
+  `structuralFingerprint` in `canonicalize.ts` provide
+  publication-grade structural-equivalence proof against vg-truth.
+  Verified on volvox + HPRC chrM (line-wise byte-isomorphic) and HPRC
+  chr20 (structurally isomorphic — automorphism among SNV nodes
+  precludes line-wise comparison at this scale).
+- ⏳ **Format magic / version on binary files.** `segments.bin`,
+  `edges.bin`, `segments.seq.idx` are headerless. Plaintext FASTA
+  intentionally has no magic byte (per user steer); binary sequence
+  tier (when added) gets a magic + version. The other binary indexes
+  could retrofit a header but the simpler path is to version through
+  filename suffix when format breaks.
 
 ## Phase 0 — Audit harness (DO THIS FIRST)
 
@@ -1147,3 +1409,6 @@ See also:
   (created in Phase 1, updated through later phases).
 - `agent-docs/GRAPH_AUDIT.md` for Phase 0 deliverables (concordance,
   path-symmetry, re-entrant semantics note).
+- `agent-docs/GRAPH_COMPLETED.md` for the archive of shipped work
+  (audit harness, F1/F2/F3/F6 fixes, HPRC chr20 verification,
+  `maxPathsEmitted` cap, Phase 3 fixed-k context, etc.).

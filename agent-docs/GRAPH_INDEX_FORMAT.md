@@ -105,18 +105,30 @@ input GFA had L-lines and `--emit-edges` is set.
 2-bit-packed sequence data, ordinal-keyed. The "BAM" tier in the
 SAM/BAM/CRAM analogy.
 
+**Spike result on HPRC chr20** (2026-04-30): 67.66 Mbp total in
+S-line sequences. Char distribution: A 27.73%, T 28.06%, G 21.86%,
+C 21.61%, N 0.74%. No IUPAC ambiguity codes, no soft-masked
+lowercase. The clean alphabet drives the format choice below.
+
+**Decision: Option A (parallel N-bitmap).** 2-bit-pack ACGT, plus a
+1-bit-per-base bitmap flagging N positions. The 0.74% N rate is too
+sparse to justify a sentinel-byte layout (Option B). At chr20 scale:
+
+- 2-bit sequence: 67.66 Mbp / 4 = ~16.9 MB
+- N-bitmap: 67.66 Mbp / 8 = ~8.45 MB
+- Total binary tier: ~25 MB (vs 91 MB plaintext FASTA → 73% reduction)
+
 - `segments.seq.bin`:
   - 8-byte header: magic `SEQB` + version `u32`.
-  - Per-segment layout (TBD during Phase 1 implementation; pinned here
-    once decided):
-    - Option A: 2-bit packed bases concatenated, with a parallel
-      bitmap section flagging non-ACGT positions. Decoder substitutes
-      `N` (or the actual non-ACGT byte from a sidecar) at flagged
-      positions.
-    - Option B: 2-bit packed, with non-ACGT positions encoded as a
-      sentinel byte sequence prefixed with a length varint.
-    - Decision: driven by the Phase 1 spike (count non-ACGT chars in
-      HPRC chr20). Documented here once chosen.
+  - Per-segment record:
+    - 2-bit packed bases (00=A, 01=C, 10=G, 11=T), concatenated.
+    - Per-segment N-bitmap, 1 bit per base (1 = N, 0 = ACGT). Decoder
+      substitutes `N` at flagged positions regardless of 2-bit value.
+    - Both layouts are byte-aligned at segment boundaries; the
+      `.seq.idx` records the byte-offset to the start of each record.
+  - Future ambiguity codes (R/Y/K/etc.): defer until a spike on a
+    fixture that contains them; magic-byte dispatcher allows a
+    `SEQB` v2 with a different layout at that point.
 - `segments.seq.idx`:
   - 8-byte header: magic `SEQI` + version `u32`.
   - `BigUint64Array` byte-offset table (numSegments + 1 entries).
