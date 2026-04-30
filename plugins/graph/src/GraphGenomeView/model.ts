@@ -454,7 +454,6 @@ export default function stateModelFactory() {
             const nodeById = self.nodeById
             if (self.nodePositions && self.graph && nodeById) {
               void self.viewportDirty
-              const tBuild0 = performance.now()
               const batch = buildGeometry({
                 nodePositions: self.nodePositions,
                 graph: self.graph,
@@ -466,10 +465,6 @@ export default function stateModelFactory() {
                 scale: self.scale,
                 viewportBounds: untracked(() => computeViewportBounds(self)),
               })
-              const tBuild1 = performance.now()
-              console.log(
-                `[GraphGenomeView] geometry build=${(tBuild1 - tBuild0).toFixed(0)}ms nodeVerts=${batch.nodes.vertexCount} edgeVerts=${batch.edges.vertexCount}`,
-              )
 
               self.storeRenderBatchMeta(
                 batch.nodeVertexRanges,
@@ -525,23 +520,17 @@ export default function stateModelFactory() {
         name: string,
         scaleOpts?: BandageScaleOpts,
       ) {
-        const t0 = performance.now()
         self.setStatusMessage('Parsing GFA')
         const gfaGraph = parseGFA(text)
         const graph = convertGFAToGraph(gfaGraph, name)
         self.graph = graph
-        const t1 = performance.now()
         self.setStatusMessage('Computing layout')
         const { result } = (yield callLayout(graph, scaleOpts)) as {
           result: LayoutResult
         }
-        const t2 = performance.now()
         if (self.graph === graph) {
           self.layoutResult = result
         }
-        console.log(
-          `[GraphGenomeView] nodes=${graph.nodes.length} edges=${graph.edges.length} paths=${graph.paths?.length ?? 0} parse=${(t1 - t0).toFixed(0)}ms layout=${(t2 - t1).toFixed(0)}ms`,
-        )
       }
 
       return {
@@ -581,17 +570,12 @@ export default function stateModelFactory() {
               maxPathsEmitted: opts.maxPathsEmitted ?? 50000,
               context: opts.context,
             }
-            const tFetch0 = performance.now()
             const gfaText = (yield rpcManager.call(sessionId, 'GetSubgraph', {
               adapterConfig,
               region,
               sessionId,
               opts: subgraphOpts,
             })) as string
-            const tFetch1 = performance.now()
-            console.log(
-              `[GraphGenomeView] subgraph fetch=${(tFetch1 - tFetch0).toFixed(0)}ms bytes=${gfaText?.length ?? 0}`,
-            )
             if (!gfaText) {
               throw new Error(
                 'Adapter returned no GFA — region may be outside indexed data or the adapter does not implement getSubgraph',
