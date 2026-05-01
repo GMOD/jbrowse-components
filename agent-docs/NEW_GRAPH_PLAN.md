@@ -142,6 +142,18 @@ Required for all integration and browser tests in Phases 3–4.
 
 ---
 
+## Validation principle
+
+**Every phase must be validated on chr20.vg before the next phase begins.**
+Synthetic fixtures and volvox tests prove correctness in theory. chr20 (90
+haplotype paths, ~60 Mbp, HPRC-scale) is what proves the implementation works
+at production scale. Bugs that only appear at scale — wrong block boundaries,
+missing alt segments, identity drift, renderer freezing — will not show up on
+volvox. The chr20 validation step for each phase is not optional cleanup; it is
+the confidence gate.
+
+---
+
 ## Phases
 
 ### Phase 1 — Delete old code
@@ -189,6 +201,20 @@ All Phase 3–4 integration and browser tests depend on this fixture.
 - **`adapter_identity_range`** — every identity in [0, 1].
 - **`adapter_grouping`** — each feature's `mateRefName` matches its source BED row's haplotype.
 
+**chr20 validation** — run after all above tests pass.
+
+Node.js script (`scripts/validate-synteny-chr20.mjs`) against the chr20 index:
+- Query `synteny.bed.gz` for three representative regions: a dense SNP region,
+  a known large SV, and a near-telomeric region. Assert each returns > 0 blocks.
+- Check total ref-side coverage: sum all block lengths across a 1 Mbp window;
+  assert coverage ≈ 1 Mbp (no large uncovered gaps on the reference side).
+- Assert all identity values in [0, 1]; flag any block with identity = 0
+  (likely a sign of a divide-by-zero in the approximation path).
+- Assert `synteny.coarse.bed.gz` returns fewer rows than `synteny.bed.gz` for
+  the same region (coarsening is actually coarsening).
+- Puppeteer: open MultiLGVSyntenyDisplay on chr20 at bpPerPx 1, 100, 1000.
+  Assert non-empty render and no JS errors at each zoom level.
+
 ---
 
 ### Phase 3 — New GetSubgraph (unblocks GraphGenomeView small mode)
@@ -207,6 +233,19 @@ the renderer.
 
 **Browser test:** open GraphGenomeView for volvox chr1:0-10000; assert canvas has non-empty pixels, no error.
 
+**chr20 validation** — run after all above tests pass.
+
+Node.js script (`scripts/validate-subgraph-chr20.mjs`) against the chr20 index:
+- Call the adapter's `getSubgraph` directly (not via browser) for three regions:
+  a small SNP-dense region (~10 kbp), a region containing a known large SV, and
+  a region near a chr20 centromere. For each, parse the returned GFA and assert:
+  - S-line count > 0 and < 200,000 (sanity bounds).
+  - Every L-line endpoint has a corresponding S-line.
+  - Path count = 90 (all HPRC haplotypes represented).
+  - No two S-lines share the same node ID.
+- Puppeteer: open GraphGenomeView on chr20 for the small SNP region; wait for
+  OGDF layout to complete; assert non-empty canvas and no error overlay.
+
 ---
 
 ### Phase 4 — GraphGenomeView large-region renderer
@@ -224,6 +263,17 @@ infrastructure; only the geometry source changes. No new index files.
 - **`bpPerPx_routing`** — bpPerPx ≤ 1000 → synteny.bed.gz; bpPerPx > 1000 → synteny.coarse.bed.gz.
 
 **Browser tests:** large-mode render for chr1:0-500000 (non-empty canvas, no error); zoom-out transition from small to large mode without error.
+
+**chr20 validation** — run after all above tests pass.
+
+Puppeteer script (`scripts/validate-large-mode-chr20.mjs`):
+- Open GraphGenomeView for a 500 kbp chr20 region; assert large-mode renderer
+  fires (not OGDF), canvas is non-empty, no error overlay.
+- Open the same region in MultiLGVSyntenyDisplay; take a screenshot of both;
+  assert that the set of visible haplotype path names matches between the two
+  views (same paths, same region).
+- Open GraphGenomeView at full chr20 scale (bpPerPx > 1000); assert
+  `synteny.coarse.bed.gz` is fetched and render completes without error.
 
 ---
 
