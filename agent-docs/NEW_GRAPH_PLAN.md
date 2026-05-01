@@ -83,9 +83,7 @@ ref-free        → tabix synteny.rev.bed.gz
 5. faidx seq.fa.gz per unique ordinal        → sequences
 6. assemble GFA string → OGDF WASM → render
 ```
-Steps 1–4 are 93 tabix range requests (1 ref pos + 1 synteny + 90 hap pos + 1
-edges), each spatially local. Step 5 (faidx) is one request per unique ordinal
-and is the likely bottleneck at scale — profile during Phase 3.
+Replaces 784 scattered byte-range requests with 93 spatially-local tabix fetches.
 
 **GraphGenomeView — large mode (region > 100 kbp)**
 ```
@@ -196,8 +194,7 @@ All Phase 3–4 integration and browser tests depend on this fixture.
 ### Phase 3 — New GetSubgraph (unblocks GraphGenomeView small mode)
 
 Implement the 6-step algorithm above. No changes to GraphGenomeView, OGDF, or
-the renderer. Profile `seq.fa.gz` faidx access for 100/500/1000 ordinals; note
-whether range coalescing is needed before adding complexity.
+the renderer.
 
 **TS tests** (`plugins/gfa-tabix/src/__tests__/getSubgraph.test.ts`):
 
@@ -290,6 +287,6 @@ data — no re-reading of pos.bed.gz.
 ## Open questions
 
 - **Coarse gap threshold**: start 10 kbp; tune on chr20.
-- **GetSubgraph cap**: 100 kbp proposed; profile the faidx step during Phase 3 before adjusting.
+- **GetSubgraph cap**: 100 kbp proposed based on the existing 50k subwalk limit; adjust after seeing real behaviour on volvox in Phase 3.
 - **Reference-free browsing UI**: synteny.rev.bed.gz is ready; path selector UI deferred to Phase 4.
 - **vg version pin**: add to `tools/gfa-to-tabix/README.md` alongside existing pin.
