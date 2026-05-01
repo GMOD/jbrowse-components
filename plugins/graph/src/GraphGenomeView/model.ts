@@ -479,6 +479,7 @@ export default function stateModelFactory() {
                 connectorThickness: self.connectorThickness,
                 drawPaths: self.drawPaths,
                 scale: self.scale,
+                linearLayout: self.linearLayout,
                 viewportBounds: untracked(() => computeViewportBounds(self)),
               })
 

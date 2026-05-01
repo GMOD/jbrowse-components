@@ -36,6 +36,7 @@ export interface BuildOptions {
   connectorThickness: number
   drawPaths: boolean
   scale: number
+  linearLayout?: boolean
   viewportBounds?: { minX: number; minY: number; maxX: number; maxY: number }
 }
 
@@ -540,6 +541,7 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
     connectorThickness,
     drawPaths,
     scale,
+    linearLayout,
     viewportBounds,
   } = options
 
@@ -601,7 +603,8 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
       const allPoints = tessellateBezierCurves(curves, 0.5)
       edgeMesh.addPolyline(allPoints, edgeThickness, color)
 
-      if (scale > 0.1) {
+      const arrowThreshold = linearLayout ? 1 : 0.1
+      if (scale > arrowThreshold) {
         const lastPt = allPoints[allPoints.length - 1]!
         const prevPt = allPoints[allPoints.length - 2]!
         arrowMesh.addArrowhead(
