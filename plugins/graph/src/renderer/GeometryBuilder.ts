@@ -601,15 +601,17 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
       const allPoints = tessellateBezierCurves(curves, 0.5)
       edgeMesh.addPolyline(allPoints, edgeThickness, color)
 
-      const lastPt = allPoints[allPoints.length - 1]!
-      const prevPt = allPoints[allPoints.length - 2]!
-      arrowMesh.addArrowhead(
-        lastPt.x,
-        lastPt.y,
-        Math.atan2(lastPt.y - prevPt.y, lastPt.x - prevPt.x),
-        12,
-        color,
-      )
+      if (scale > 0.1) {
+        const lastPt = allPoints[allPoints.length - 1]!
+        const prevPt = allPoints[allPoints.length - 2]!
+        arrowMesh.addArrowhead(
+          lastPt.x,
+          lastPt.y,
+          Math.atan2(lastPt.y - prevPt.y, lastPt.x - prevPt.x),
+          12,
+          color,
+        )
+      }
     }
 
     const edgeStart = edgeMesh.vertexCount
