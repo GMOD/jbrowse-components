@@ -41,8 +41,8 @@ form so two equivalent graphs compare equal.
 multisets (seq, link, path, deg) over actual sequences. This is the primary
 equality check used by `--all-backends`. Walk splitting is handled by grouping
 W-lines with the same base name (stripping `:offset`) and merging them in offset
-order before hashing, so backends that split the same haplotype walk at different
-positions still produce identical path fingerprints.
+order before hashing, so backends that split the same haplotype walk at
+different positions still produce identical path fingerprints.
 
 ## Phase 0 vs Phase 1
 

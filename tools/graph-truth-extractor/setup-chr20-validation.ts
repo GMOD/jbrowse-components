@@ -4,14 +4,13 @@
 
 import { execSync } from 'child_process'
 import { existsSync } from 'fs'
-import { resolve } from 'path'
-import { fileURLToPath } from 'url'
+import path from 'path'
 
 const __dirname = import.meta.dirname
-const REPO_ROOT = resolve(__dirname, '../../..')
+const REPO_ROOT = path.resolve(__dirname, '../../..')
 
 function log(msg: string) {
-  console.log(msg)
+  console.warn(msg)
 }
 
 function error(msg: string): never {
@@ -23,8 +22,11 @@ async function main() {
   log('=== CHR20 GetSubgraph Validation Setup ===')
   log('')
 
-  const gfaFile = resolve(REPO_ROOT, 'test_data/chr20_region.gfa')
-  const tabixTool = resolve(REPO_ROOT, 'tools/gfa-to-tabix/target/release/gfa-to-tabix')
+  const gfaFile = path.resolve(REPO_ROOT, 'test_data/chr20_region.gfa')
+  const tabixTool = path.resolve(
+    REPO_ROOT,
+    'tools/gfa-to-tabix/target/release/gfa-to-tabix',
+  )
 
   // Check GFA file
   if (!existsSync(gfaFile)) {
@@ -47,13 +49,13 @@ async function main() {
     'test_data/chr20_region.seglens.bin',
   ]
 
-  const allExist = indexFiles.every(f => existsSync(resolve(REPO_ROOT, f)))
+  const allExist = indexFiles.every(f => existsSync(path.resolve(REPO_ROOT, f)))
 
   if (!allExist) {
     log('⏳ Generating tabix indices from GFA...')
     log('')
 
-    const cmd = `${tabixTool} ${gfaFile} ${resolve(REPO_ROOT, 'test_data/chr20_region')}`
+    const cmd = `${tabixTool} ${gfaFile} ${path.resolve(REPO_ROOT, 'test_data/chr20_region')}`
     execSync(cmd, { stdio: 'inherit', cwd: REPO_ROOT })
 
     log('')
@@ -83,11 +85,13 @@ async function main() {
   log('Summary:')
   log(`  - GFA file: ${gfaFile}`)
   log(`  - Tabix indices: test_data/chr20_region.*.bed.gz*`)
-  log(`  - Test file: plugins/comparative-adapters/src/GfaTabixAdapter/__tests__/getSubgraph-validation.test.ts`)
+  log(
+    `  - Test file: plugins/comparative-adapters/src/GfaTabixAdapter/__tests__/getSubgraph-validation.test.ts`,
+  )
   log('')
 }
 
-main().catch(err => {
+main().catch((err: unknown) => {
   console.error(err)
   process.exit(1)
 })

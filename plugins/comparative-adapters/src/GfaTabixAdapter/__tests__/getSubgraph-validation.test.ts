@@ -1,4 +1,5 @@
 import path from 'path'
+
 import Adapter from '../GfaTabixAdapter.ts'
 import configSchema from '../configSchema.ts'
 
@@ -158,7 +159,7 @@ test('getSubgraph_chr20_walks_reference_valid_segments', async () => {
   const walks = parseWalks(rpcGfa)
 
   // All walk ordinals should reference valid segments
-  for (const [_pathName, ordinals] of walks) {
+  for (const [, ordinals] of walks) {
     for (const ord of ordinals) {
       expect(segSet.has(ord)).toBe(true)
     }

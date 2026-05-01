@@ -2,7 +2,8 @@
 
 **Status:** ✅ PRODUCTION READY
 
-Comprehensive validation of GetSubgraph RPC implementation against chr20_region pangenome (90 samples, 278 segments).
+Comprehensive validation of GetSubgraph RPC implementation against chr20_region
+pangenome (90 samples, 278 segments).
 
 ## Test Data
 
@@ -30,6 +31,7 @@ test_data/chr20_region.seglens.bin       (1.1 KB)  - Segment lengths binary
 All 6 unit tests passing:
 
 ### 1. Small Region (0-10,000 bp)
+
 - **Status:** ✅ PASS
 - **Segments:** 199
 - **Edges:** 428
@@ -37,27 +39,32 @@ All 6 unit tests passing:
 - **Output format:** Valid GFA 1.1 with header
 
 ### 2. Medium Region (10,000-50,000 bp)
+
 - **Status:** ✅ PASS
 - **Segments:** 50+ (structure validated)
 - **Graph connectivity:** All edges reference valid segments
 - **Walk integrity:** All walk nodes are in segment set
 
 ### 3. Edge Validation
+
 - **Status:** ✅ PASS
 - **Test:** All edge endpoints (50,000 bp region)
 - **Result:** 100% of edges reference valid segments
 
 ### 4. Walk Validation
+
 - **Status:** ✅ PASS
 - **Test:** All walk node references (100,000 bp region)
 - **Result:** 100% of walk nodes are in segment set
 
 ### 5. Large Region (0-200,000 bp)
+
 - **Status:** ✅ PASS
 - **Segments:** 100+
 - **Validates:** Scaling to large regions works correctly
 
 ### 6. Empty Region Handling
+
 - **Status:** ✅ PASS
 - **Region:** (999,000,000-999,001,000)
 - **Output:** Correct GFA header-only response
@@ -65,6 +72,7 @@ All 6 unit tests passing:
 ## Algorithm Verification
 
 ### GetSubgraph Process
+
 1. Query position index for reference assembly ordinals
 2. Query synteny index for haplotype alignments
 3. Collect all related ordinals across reference and haplotypes
@@ -73,6 +81,7 @@ All 6 unit tests passing:
 6. Reconstruct W-lines (haplotype walks) for all paths
 
 ### Data Flow
+
 ```
 pos.bed.gz (ordinal ranges)
    ↓
@@ -89,24 +98,23 @@ GFA output (H/S/L/W lines)
 
 ## Quality Metrics
 
-| Metric | Result |
-|--------|--------|
-| **Unit test pass rate** | 6/6 = 100% |
-| **Edge referential integrity** | 100% |
-| **Walk node validity** | 100% |
-| **GFA format compliance** | Valid 1.1 |
-| **Empty region handling** | Correct |
-| **Large region scalability** | Verified |
+| Metric                         | Result     |
+| ------------------------------ | ---------- |
+| **Unit test pass rate**        | 6/6 = 100% |
+| **Edge referential integrity** | 100%       |
+| **Walk node validity**         | 100%       |
+| **GFA format compliance**      | Valid 1.1  |
+| **Empty region handling**      | Correct    |
+| **Large region scalability**   | Verified   |
 
 ## Known Limitations
 
 1. **vg integration:** vg XG index has path naming quirks with range suffixes
    - Workaround: Use naive backend for oracle validation (equally reliable)
-   
 2. **GFA2 format:** Only GFA 1.0 tested
    - GFA2 support not required for current use case
-   
-3. **Orientation normalization:** gfa-to-tabix automatically flips reverse-complemented haplotypes
+3. **Orientation normalization:** gfa-to-tabix automatically flips
+   reverse-complemented haplotypes
    - 38 out of 90 paths were flipped during index generation
    - This is expected and correct (PanSN assembly normalization)
 
@@ -123,8 +131,10 @@ GFA output (H/S/L/W lines)
 
 ## Recommendations
 
-1. **Continue using chr20_region.gfa and generated indices** for GetSubgraph validation in CI
-2. **Run graph-truth-extractor with naive backend** to catch algorithmic regressions
+1. **Continue using chr20_region.gfa and generated indices** for GetSubgraph
+   validation in CI
+2. **Run graph-truth-extractor with naive backend** to catch algorithmic
+   regressions
 3. **Monitor segment/edge counts** across releases for unexpected changes
 4. **Use these test fixtures** for:
    - RPC implementation regression detection
@@ -133,18 +143,18 @@ GFA output (H/S/L/W lines)
 
 ## Conclusion
 
-The GetSubgraph RPC implementation correctly extracts subgraphs from the tabix-indexed format. All 6 validation tests pass, confirming that:
+The GetSubgraph RPC implementation correctly extracts subgraphs from the
+tabix-indexed format. All 6 validation tests pass, confirming that:
 
 - Graph structure is preserved
 - Referential integrity is maintained
 - Large regions scale properly
 - Edge cases are handled correctly
 
-**The implementation is production-ready for GetSubgraph queries on large pangenomes.**
+**The implementation is production-ready for GetSubgraph queries on large
+pangenomes.**
 
 ---
 
-**Validation Date:** 2026-05-01
-**Test Framework:** Jest
-**Oracle Backend:** Naive BFS (no external dependencies)
-**Confidence Level:** HIGH ✅
+**Validation Date:** 2026-05-01 **Test Framework:** Jest **Oracle Backend:**
+Naive BFS (no external dependencies) **Confidence Level:** HIGH ✅

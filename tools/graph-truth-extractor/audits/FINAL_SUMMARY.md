@@ -1,21 +1,21 @@
-Graph Truth Extractor - Final Audit Summary
-============================================
+# Graph Truth Extractor - Final Audit Summary
 
 ## Status: ✅ PRODUCTION READY
 
-The graph truth extractor audit is complete with **29 test scenarios achieving 100% backend agreement**.
+The graph truth extractor audit is complete with **29 test scenarios achieving
+100% backend agreement**.
 
 ## Quick Results
 
-| Metric | Result |
-|--------|--------|
-| Test scenarios | 29 ✓ |
-| Agreement rate | 100% (29/29) |
-| Graphs tested | 2 (volvox, chrM) |
-| Region sizes | 100bp to 100kbp |
-| Backend agreement | vg ↔ naive perfect match |
+| Metric            | Result                                      |
+| ----------------- | ------------------------------------------- |
+| Test scenarios    | 29 ✓                                        |
+| Agreement rate    | 100% (29/29)                                |
+| Graphs tested     | 2 (volvox, chrM)                            |
+| Region sizes      | 100bp to 100kbp                             |
+| Backend agreement | vg ↔ naive perfect match                    |
 | Edge cases tested | Region boundaries, context modes, positions |
-| Performance | All backends < 500ms (mostly 20-60ms) |
+| Performance       | All backends < 500ms (mostly 20-60ms)       |
 
 ## One-Liner to Audit GetSubgraph
 
@@ -29,13 +29,16 @@ node --experimental-strip-types tools/graph-truth-extractor/cli.ts --all-backend
 ## Test Matrix Summary
 
 **Volvox (50-sample pangenome):**
+
 - 7 region sizes (100bp to 100kbp): ✅ 7/7 match
 - 4 context modes (0, 1, 2, snarl): ✅ 4/4 match
 
 **chrM (44-haplotype primate pangenome):**
+
 - 7 region positions (start, middle, end, full): ✅ 7/7 match
 
 **Chr20:**
+
 - ❌ Not available in GFA format (binary on S3)
 - Skipped: Would require custom format conversion tool
 
@@ -45,7 +48,8 @@ node --experimental-strip-types tools/graph-truth-extractor/cli.ts --all-backend
 
 1. **Extraction algorithm is correct**
    - vg and naive achieve perfect agreement across all 29 tests
-   - Verified through multiple independent methods (counts, canonical fingerprints, degree sequences)
+   - Verified through multiple independent methods (counts, canonical
+     fingerprints, degree sequences)
 
 2. **Robust across scales**
    - Works from 100bp to 100kbp regions
@@ -72,6 +76,7 @@ node --experimental-strip-types tools/graph-truth-extractor/cli.ts --all-backend
 ## How to Use
 
 ### For Production Auditing
+
 ```bash
 # Use vg as primary oracle (reference implementation)
 node --experimental-strip-types tools/graph-truth-extractor/cli.ts \
@@ -80,6 +85,7 @@ node --experimental-strip-types tools/graph-truth-extractor/cli.ts \
 ```
 
 ### For Regression Testing
+
 ```bash
 # Use naive as validation (no external deps)
 node --experimental-strip-types tools/graph-truth-extractor/cli.ts \
@@ -88,6 +94,7 @@ node --experimental-strip-types tools/graph-truth-extractor/cli.ts \
 ```
 
 ### For Full Audit
+
 ```bash
 # Compare all backends
 node --experimental-strip-types tools/graph-truth-extractor/cli.ts \
@@ -121,6 +128,5 @@ node --experimental-strip-types tools/graph-truth-extractor/cli.ts \
 
 ---
 
-**Audit completed:** 2026-05-01
-**Tested by:** Claude Code
-**Status:** ✅ Production Ready
+**Audit completed:** 2026-05-01 **Tested by:** Claude Code **Status:** ✅
+Production Ready

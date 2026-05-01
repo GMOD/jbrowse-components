@@ -14,8 +14,27 @@ a single TypeScript interface:
 - **`naive`** — pure-Node BFS from path-walked seed segments. Used as a tertiary
   oracle and as the fallback when none of the external tools is on PATH.
 
-See `agent-docs/GRAPH_PLAN.md` (Phase 0) and `agent-docs/GRAPH_AUDIT.md` for the
-surrounding plan and the audit findings on the volvox + HPRC chrM fixtures.
+See `agent-docs/NEW_GRAPH_PLAN.md` for the active plan and `agent-docs/GRAPH_AUDIT.md`
+for Phase 0 findings on volvox + HPRC chrM fixtures.
+
+## Quick Start
+
+**Validate GetSubgraph on chr20 pangenome:**
+
+```bash
+node --experimental-strip-types tools/graph-truth-extractor/setup-chr20-validation.ts
+```
+
+This generates tabix indices and runs 6 validation tests. See `CHR20_SETUP_GUIDE.md` for details.
+
+**Test a region with all backends:**
+
+```bash
+node --experimental-strip-types tools/graph-truth-extractor/cli.ts \
+  --all-backends \
+  --gfa test_data/volvox/volvox_pangenome_50.gfa \
+  --path ref#0#ctgA --start 1000 --end 5000
+```
 
 ## Pinned versions
 
@@ -120,11 +139,22 @@ canonicalization step (odgi is still useful as a third independent oracle).
   `ref#0#ctgA#0`. The `vg` backend's `resolveVgPathName` lists paths and matches
   by exact name + suffix. Documented as F4 in `agent-docs/GRAPH_AUDIT.md`.
 
+## Documentation
+
+**Active guides:**
+- `CHR20_SETUP_GUIDE.md` — Set up and run GetSubgraph validation on chr20 pangenome
+- `CLAUDE.md` — Implementation notes (canonicalization, backends)
+
+**Audits and results:** (see `audits/` folder)
+- `audits/FINAL_SUMMARY.md` — Overall audit summary
+- `audits/AUDIT_RESULTS.md` — Backend audit analysis
+- `audits/TEST_RESULTS.md` — Comprehensive test matrix
+- `audits/CHR20_VALIDATION.md` — CHR20 validation report
+
 ## See also
 
-- `agent-docs/GRAPH_PLAN.md` — phased plan that scopes this harness.
-- `agent-docs/GRAPH_AUDIT.md` — Phase 0 findings produced using this harness.
-- `agent-docs/GRAPH_INDEX_FORMAT.md` — file-format spec for the preprocessor's
-  outputs.
-- `plugins/comparative-adapters/scripts/dump-subgraph.ts` — the "ours" side
-  wrapper that constructs `GfaTabixAdapter` paths and emits raw GFA.
+- `agent-docs/NEW_GRAPH_PLAN.md` — Active pangenome browser planning
+- `agent-docs/GRAPH_AUDIT.md` — Phase 0 findings from this harness
+- `agent-docs/GRAPH_INDEX_FORMAT.md` — File-format spec for preprocessor outputs
+- `agent-docs/TEST_INFRASTRUCTURE.md` — GetSubgraph validation section
+- `plugins/comparative-adapters/scripts/dump-subgraph.ts` — "ours" side wrapper

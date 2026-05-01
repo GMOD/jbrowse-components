@@ -385,7 +385,10 @@ export function structuralFingerprint(
   // that split the same haplotype walk at different subgraph boundaries still
   // produce the same path fingerprint. Sort each group by offset and
   // concatenate steps before hashing.
-  const walkGroups = new Map<string, { offset: number; steps: GfaPath['steps'] }[]>()
+  const walkGroups = new Map<
+    string,
+    { offset: number; steps: GfaPath['steps'] }[]
+  >()
   for (const p of parsed.paths) {
     const colonIdx = p.name.lastIndexOf(':')
     const baseName = colonIdx === -1 ? p.name : p.name.slice(0, colonIdx)
@@ -406,7 +409,9 @@ export function structuralFingerprint(
         allSteps.push(step)
       }
     }
-    const fwd = allSteps.map(s => `${seqOf.get(s.id) ?? ''}${s.orient}`).join(',')
+    const fwd = allSteps
+      .map(s => `${seqOf.get(s.id) ?? ''}${s.orient}`)
+      .join(',')
     const rev = [...allSteps]
       .reverse()
       .map(s => `${seqOf.get(s.id) ?? ''}${flipOrient(s.orient)}`)
