@@ -34,9 +34,14 @@ function findSequenceTubeMapDir(): string | undefined {
     return envPath
   }
   const home = process.env.HOME ?? ''
-  const guess = path.join(home, 'src/sequencetubemap')
-  if (fs.existsSync(path.join(guess, 'scripts/chunkix.py'))) {
-    return guess
+  for (const candidate of [
+    path.join(home, 'src/vendor/sequenceTubeMap'),
+    path.join(home, 'src/sequencetubemap'),
+    path.join(home, 'src/sequenceTubeMap'),
+  ]) {
+    if (fs.existsSync(path.join(candidate, 'scripts/chunkix.py'))) {
+      return candidate
+    }
   }
   return undefined
 }
