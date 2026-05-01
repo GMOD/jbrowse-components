@@ -11,10 +11,7 @@ import { execFileSync, spawnSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
 
-import {
-  canonicalize,
-  structuralFingerprint,
-} from '../../../../tools/graph-truth-extractor/canonicalize.ts'
+import { structuralFingerprint } from '../../../../tools/graph-truth-extractor/canonicalize.ts'
 
 const repoRoot = path.resolve(__dirname, '../../../..')
 const dumperScript = path.join(
@@ -89,8 +86,7 @@ function dumpTruth(refPath: string, start: number, end: number) {
 }
 
 function fingerprint(gfa: string) {
-  const canon = canonicalize(gfa, { useSequence: true })
-  return structuralFingerprint(canon, { useSequence: true })
+  return structuralFingerprint(gfa, { useSequence: true })
 }
 
 describeIfReady('Phase 5 CI: audit-harness concordance vs vg find', () => {

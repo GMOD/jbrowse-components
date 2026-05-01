@@ -12,6 +12,34 @@ of truth for the *current* state of the work is still
 
 ## Shipped
 
+- ✅ **Single-process audit harness (2026-04-30)** — extracted shared
+  index-loading + dispatch into
+  `plugins/comparative-adapters/scripts/lib/auditShard.ts`
+  (`openAuditShard`, `getEquivalentRangesFromShard`,
+  `dumpSubgraphFromShard`). `dump-subgraph.ts` and
+  `equivalent-ranges.ts` reduced to thin CLI wrappers. New
+  `path-symmetry.ts` runner walks all equivalent ranges in-process,
+  sharing one open of the binary indexes. `test-path-symmetry.sh`
+  reduced to an `exec` call into the runner. Speedup on chrM
+  (44 paths): 17.65s → 0.74s (24×). chr20 100kbp / 18 paths runs in
+  24s, 1kbp / 3 paths in 0.5s — both DIVERGENT as documented.
+  Closes "Consolidate audit subprocess chain" backlog item.
+- ✅ **Drop redundant `canonicalize()` before `structuralFingerprint`
+  (2026-04-30)** — verified empirically across 7 audit regions (4
+  volvox, 3 chrM) × 2 emitters (ours, vg-truth) that
+  `structuralFingerprint(canonicalize(g))` and `structuralFingerprint(g)`
+  produce byte-identical fingerprints. `structuralFingerprint` is
+  sequence-grounded and hashes sorted multisets, so it's already
+  order- and node-id-invariant — the WL refinement +
+  canonical-id-rewrite pass adds nothing. Removed the redundant
+  `canonicalize()` calls from `auditConcordance.test.ts` (the
+  `fingerprint()` helper) and `test-path-symmetry.sh`. Kept
+  `canonicalize()` itself: still used by `cli.ts --emit canonical`
+  and `test-subgraph-concordance.sh` for human-readable diff output.
+  `auditConcordance` suite still all green (195 passed, 4 skipped);
+  `test-path-symmetry.sh` on chrM still reports `ISOMORPHIC: all 44
+  paths produce the same structural fingerprint`
+  (`3d0e925d0f33b04a`).
 - ✅ **Lightning rod CLI half + C3 reframing (2026-04-30)** — ran
   `test-path-symmetry.sh` against HPRC chr20 at 30M region.
   chrM control passes (44 paths, fp `3d0e925d0f33b04a`); chr20

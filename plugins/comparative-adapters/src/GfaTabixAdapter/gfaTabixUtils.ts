@@ -619,15 +619,22 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     query: Region,
     opts: { stopToken?: StopToken; bpPerPx?: number } = {},
   ) {
+    const t0 = performance.now()
+    const regionBp = query.end - query.start
     const genomeRows = new Map<string, MultiPairFeature[]>()
     const result = await this.fetchSegmentsForRegion(query, opts)
+    const tFetch = performance.now()
     if (!result) {
+      console.warn(
+        `[GfaTabix] getMultiPairFeatures empty ${query.refName}:${query.start}-${query.end} (${(regionBp / 1_000_000).toFixed(2)} Mbp) bpPerPx=${opts.bpPerPx ?? '?'} fetch=${(tFetch - t0).toFixed(0)}ms`,
+      )
       return genomeRows
     }
     const { segments: allSegs, refPathIdx, pathNames } = result
     const { refName } = query
     const { otherSegments, refByOrd } = partitionByRef(allSegs, refPathIdx)
 
+    let totalFeatures = 0
     for (const [otherPathIdx, segments] of otherSegments) {
       const otherPath = pathNames[otherPathIdx] ?? String(otherPathIdx)
       const { genome: rawGenome, refName: mateRefName } =
@@ -643,6 +650,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         otherPath,
       )
       if (features.length > 0) {
+        totalFeatures += features.length
         let existing = genomeRows.get(genomeName)
         if (!existing) {
           existing = []
@@ -653,6 +661,10 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         }
       }
     }
+    const tBuild = performance.now()
+    console.warn(
+      `[GfaTabix] getMultiPairFeatures ${query.refName}:${query.start}-${query.end} (${(regionBp / 1_000_000).toFixed(2)} Mbp) bpPerPx=${opts.bpPerPx ?? '?'} segs=${allSegs.length} other-paths=${otherSegments.size} genomes=${genomeRows.size} features=${totalFeatures} fetch=${(tFetch - t0).toFixed(0)}ms build=${(tBuild - tFetch).toFixed(0)}ms`,
+    )
 
     if (this.bubblesFile && opts.bpPerPx && opts.bpPerPx < 50) {
       const { bubblesRefNames, bubblesGenomeNames } = await this.setup()

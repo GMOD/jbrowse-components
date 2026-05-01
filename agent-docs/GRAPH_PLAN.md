@@ -38,36 +38,46 @@ Don't.
 ## Open backlog
 
 The structural claims are proved by tests that now run in CI. The
-remaining work is the browser-side workflow for the figure plus
-writing.
+remaining work is browser-side perf + the figure.
 
-1. **Browser-side lightning rod (the figure).** The CLI proves
-   per-path correctness. The paper figure needs the LGV → Graph
-   drill-down running in the live UI: pick a real chr20 SV (MAPT
-   is wrong — that's chr17; SHANK2/SCARB1 region or a documented
-   inversion), open from a reference path, capture screenshots.
-   Browser-only; can't be done from the CLI.
+### 1. chr20 MultiLGVSyntenyDisplay — fetch performance resolved
+
+**Measured 2026-04-30 via `diagnose-http.ts`:**
+- Adapter produces **3 byte-ranges** (not 784 — the old number predated
+  the current merge logic or a re-index). Total data: 14.09 MB.
+- Local: 3 reads, 14.09 MB, **7 ms**.
+- S3 current (3 ranges): **841 ms**.
+- S3 collapse-to-one-range (1 range): 966 MB span, **34 193 ms** — catastrophic
+  over-fetch; segments are scattered across ~1 GB file.
+- S3 1 MB-merge (2 ranges): 14.26 MB, **846 ms** — no improvement.
+- **Conclusion:** H1 and H2 are both non-issues. 841 ms is the network
+  floor; no fetch-strategy change will help. The 5500 ms figure in prior
+  notes was from older code or a different data layout (pre-re-index).
+
+The `diagnose-fetch.ts` and `diagnose-http.ts` throwaway scripts can
+now be deleted.
+
+**Remaining display question:** are 89 colored stripes actually
+appearing in the browser after the ~1.4 s load (841 ms S3 + 600 ms
+autorun delay)? If `[MultiSynteny] prepareBlockGeometry instances=0`
+appears in DevTools while `features > 0`, a genome-name warning
+(added to `packGpu.ts`) will fire and identify the missing name.
+
+**Working-tree state (uncommitted on `webgl-poc`):**
+- Debug logging in `plugins/comparative-adapters/src/GfaTabixAdapter/gfaTabixUtils.ts`
+  and `plugins/linear-comparative-view/src/MultiLGVSyntenyDisplay/features/fill/packGpu.ts`.
+  Filter DevTools by `[GfaTabix]` / `[MultiSynteny]`. **Per CLAUDE.md, ask before removing.**
+
+### 2. Browser-side lightning rod (the figure)
+
+Blocked on (1). The paper figure needs the LGV → Graph drill-down
+running in the live UI: pick a real chr20 SV (MAPT is wrong —
+chr17; the previous "SHANK2/SCARB1" steer is also wrong, neither is
+on chr20), open from a reference path, capture screenshots.
+Browser-only; can't be done from the CLI.
 
 Deferred until needed: snarls index, tile pyramid, Rust coarsener
 port, bubble-row regrouping. None of these block publication.
-
-### Plausible follow-up cleanups (not blocking)
-
-- **`canonicalize.ts` may be redundant.** All audit comparisons go
-  through `structuralFingerprint`, which is sequence-grounded and
-  hashes sorted multisets — i.e. order-invariant by construction.
-  The `canonicalize()` step before it (WL label refinement +
-  canonical-id rewrite) does not affect the fingerprint. If true,
-  every `structuralFingerprint(canonicalize(gfa))` call site can
-  collapse to `structuralFingerprint(gfa)`. Verify by computing
-  both forms across the audit fixtures and asserting equality, then
-  delete `canonicalize()` and the WL machinery.
-- **Consolidate audit subprocess chain.** `equivalent-ranges` →
-  `dump-subgraph` per path → `truth-extractor` → `canonicalize`
-  is 3+ Node spawns per comparison, each re-loading the same
-  binary indexes. A library entry point (one process, shared
-  state) would cut wall time noticeably and let the path-symmetry
-  Jest test run on chrM in CI without a 60-second timeout.
 
 ## What we're shipping
 
@@ -200,13 +210,21 @@ the paper's Methods.
 - `tools/graph-truth-extractor/canonicalize.ts` — `canonicalize` +
   `structuralFingerprint`.
 - `tools/graph-truth-extractor/cli.ts`
+- `plugins/comparative-adapters/scripts/lib/auditShard.ts` — shared
+  index-loading + in-process `dumpSubgraphFromShard` /
+  `getEquivalentRangesFromShard`. Both CLIs and the path-symmetry
+  runner are thin wrappers over this.
 - `plugins/comparative-adapters/scripts/dump-subgraph.ts` — adapter
-  side of the comparison.
+  side of the comparison (CLI).
 - `plugins/comparative-adapters/scripts/equivalent-ranges.ts` —
   bounding-box mapper from one path's viewport to per-other-path
   ranges that overlap the same physical segments. Useful for
   multi-path queries; does **not** by itself establish path
   symmetry on fragmented chromosomes.
+- `plugins/comparative-adapters/scripts/path-symmetry.ts` —
+  single-process runner that opens the indexes once, iterates
+  equivalent ranges, fingerprints each, asserts all match.
+  `test-path-symmetry.sh` is now a thin wrapper around this.
 - `plugins/comparative-adapters/src/GfaTabixAdapter/auditConcordance.test.ts` —
   Jest concordance suite. Three describe blocks: per-segment vs
   vg-find concordance, coarsener bp-bound concordance vs vg-find,

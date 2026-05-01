@@ -32,6 +32,7 @@ export function prepareBlockGeometry(
   showSnps: boolean,
   colors: SyntenyColors,
 ): BlockGeometryData {
+  const t0 = performance.now()
   const rgba = buildColorArrays(colors)
   let totalFeatures = 0
   for (const [, features] of genomeFeatures) {
@@ -48,6 +49,9 @@ export function prepareBlockGeometry(
   for (const [genomeName, features] of genomeFeatures) {
     const g = genomeIndexMap.get(genomeName)
     if (g === undefined) {
+      console.warn(
+        `[MultiSynteny] genome "${genomeName}" not in displayedGenomes [${displayedGenomes.join(', ')}] — ${features.length} features dropped`,
+      )
       continue
     }
     for (const feat of features) {
@@ -108,6 +112,9 @@ export function prepareBlockGeometry(
     )
   }
 
+  console.warn(
+    `[MultiSynteny] prepareBlockGeometry features=${totalFeatures} instances=${n} showSnps=${showSnps} pack=${(performance.now() - t0).toFixed(0)}ms`,
+  )
   return { buffer: sortedBuf, instanceCount: n }
 }
 
