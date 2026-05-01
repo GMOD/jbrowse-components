@@ -18,6 +18,8 @@ import type {
   SubBatchKey,
   VertexRange,
 } from '../renderer/types.ts'
+import { COLOR_SCHEMES } from '../types.ts'
+
 import type { ColorScheme, Graph, GraphNode, LayoutResult } from '../types.ts'
 
 export interface SyntenyBlock {
@@ -118,6 +120,20 @@ export default function stateModelFactory() {
       GpuBackendLifecycleSlotMixin(),
       types.model({
         type: types.literal('GraphGenomeView'),
+        layoutQuality: types.optional(types.number, 1),
+        linearLayout: types.optional(types.boolean, false),
+        colorScheme: types.optional(
+          types.enumeration([...COLOR_SCHEMES]),
+          'uniform',
+        ),
+        contigThickness: types.optional(types.number, 10),
+        connectorThickness: types.optional(types.number, 4),
+        darkMode: types.optional(types.boolean, false),
+        scale: types.optional(types.number, 1),
+        translateX: types.optional(types.number, 0),
+        translateY: types.optional(types.number, 0),
+        drawPaths: types.optional(types.boolean, false),
+        canvasHeight: types.optional(types.number, DEFAULT_CANVAS_HEIGHT),
       }),
     )
     .volatile(() => ({
@@ -128,26 +144,12 @@ export default function stateModelFactory() {
         | { refName: string; start: number; end: number }
         | undefined,
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
       isLoading: false,
       statusMessage: '',
-      layoutQuality: 1,
-      linearLayout: false,
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      colorScheme: 'uniform' as ColorScheme,
-      contigThickness: 10,
-      connectorThickness: 4,
-      darkMode: false,
       hoveredNode: null as string | null,
       hoveredEdge: null as number | null,
       selectedNode: null as string | null,
-      scale: 1,
-      translateX: 0,
-      translateY: 0,
-      drawPaths: false,
-      canvasHeight: DEFAULT_CANVAS_HEIGHT,
       viewportDirty: 0,
       nodeVertexRanges: undefined as Map<string, VertexRange> | undefined,
       edgeVertexRanges: undefined as Map<number, VertexRange> | undefined,
@@ -162,7 +164,7 @@ export default function stateModelFactory() {
         | ReturnType<typeof setTimeout>
         | undefined,
     }))
-    .views(self => ({
+    .views((self: any) => ({
       get nodeById() {
         if (self.graph) {
           const m = new Map<string, GraphNode>()
