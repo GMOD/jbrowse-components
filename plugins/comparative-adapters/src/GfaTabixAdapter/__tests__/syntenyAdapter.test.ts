@@ -59,8 +59,8 @@ test('adapter_no_ordinals', async () => {
   const { genomeRows } = await adapter.getMultiPairFeatures(region)
   for (const [, features] of genomeRows) {
     for (const f of features) {
-      expect(f['segOrd']).toBeUndefined()
-      expect(f['ordinal']).toBeUndefined()
+      expect(f.segOrd).toBeUndefined()
+      expect(f.ordinal).toBeUndefined()
     }
   }
 })

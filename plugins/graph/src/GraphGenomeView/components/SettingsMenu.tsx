@@ -2,8 +2,8 @@ import { useState } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import DeleteIcon from '@mui/icons-material/Delete'
-import SettingsIcon from '@mui/icons-material/Settings'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import SettingsIcon from '@mui/icons-material/Settings'
 import { observer } from 'mobx-react'
 
 import GraphSettingsDialog from './GraphSettingsDialog.tsx'
@@ -55,7 +55,9 @@ const SettingsMenu = observer(function SettingsMenu({
       <GraphSettingsDialog
         model={model}
         open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
+        onClose={() => {
+          setSettingsOpen(false)
+        }}
       />
     </>
   )

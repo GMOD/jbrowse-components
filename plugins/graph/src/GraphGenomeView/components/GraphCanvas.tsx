@@ -6,8 +6,8 @@ import { LinearProgress, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import GraphToolbar from './GraphToolbar.tsx'
-import { createGraphRenderer } from '../../renderer/GraphRenderer.ts'
-import { findHoveredEdge, findHoveredNode } from '../../util/hitDetection.ts'
+import { createGraphRenderer } from '../renderer/GraphRenderer.ts'
+import { findHoveredEdge, findHoveredNode } from '../util/hitDetection.ts'
 
 import type { GraphGenomeViewModel } from '../model.ts'
 

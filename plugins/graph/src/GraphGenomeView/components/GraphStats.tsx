@@ -1,5 +1,5 @@
-import { Typography } from '@mui/material'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { GraphGenomeViewModel } from '../model.ts'

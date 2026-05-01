@@ -1,6 +1,6 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
-import type { Graph, LayoutResult } from '../types.ts'
+import type { Graph, LayoutResult } from './GraphGenomeView/types.ts'
 
 export interface GraphComputeLayoutArgs {
   sessionId: string

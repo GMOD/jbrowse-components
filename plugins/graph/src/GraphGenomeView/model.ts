@@ -1,25 +1,22 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
-import { convertGFAToGraph } from '../gfa/gfaConverter.ts'
-import { parseGFA } from '../gfa/gfaParser.ts'
+import { convertGFAToGraph } from './gfa/gfaConverter.ts'
+import { parseGFA } from './gfa/gfaParser.ts'
 import {
   brightenColors,
   buildGeometry,
   extractColorSlice,
-} from '../renderer/GeometryBuilder.ts'
-import { COLOR_SCHEMES } from '../types.ts'
+} from './renderer/GeometryBuilder.ts'
+import { COLOR_SCHEMES } from './types.ts'
 
-import type { GraphRenderer } from '../renderer/GraphRenderer.ts'
-import type {
-  RenderBatch,
-  SubBatchKey,
-  VertexRange,
-} from '../renderer/types.ts'
-import type { ColorScheme, Graph, GraphNode, LayoutResult } from '../types.ts'
+import type { GraphRenderer } from './renderer/GraphRenderer.ts'
+import type { RenderBatch, SubBatchKey, VertexRange } from './renderer/types.ts'
+import type { ColorScheme, Graph, GraphNode, LayoutResult } from './types.ts'
 
 export interface SyntenyBlock {
   refStart: number
@@ -133,6 +130,15 @@ export default function stateModelFactory() {
         translateY: types.optional(types.number, 0),
         drawPaths: types.optional(types.boolean, false),
         canvasHeight: types.optional(types.number, DEFAULT_CANVAS_HEIGHT),
+        loadedTrackId: types.optional(types.string, ''),
+        loadedRegion: types.maybe(
+          types.frozen<{
+            refName: string
+            assemblyName: string
+            start: number
+            end: number
+          }>(),
+        ),
       }),
     )
     .volatile(() => ({
@@ -143,6 +149,7 @@ export default function stateModelFactory() {
         | { refName: string; start: number; end: number }
         | undefined,
 
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
       isLoading: false,
       statusMessage: '',
@@ -157,8 +164,6 @@ export default function stateModelFactory() {
       baseEdgeColors: undefined as Uint32Array | undefined,
       baseArrowColors: undefined as Uint32Array | undefined,
       draggingNode: null as string | null,
-      graphBackend: undefined as GraphRenderer | undefined,
-      graphLifecycleInstalled: false,
       viewportDirtyTimer: undefined as
         | ReturnType<typeof setTimeout>
         | undefined,
@@ -347,12 +352,228 @@ export default function stateModelFactory() {
         }, VIEWPORT_DEBOUNCE_MS)
       },
     }))
+    .actions(self => {
+      function callLayout(graph: Graph, extraOpts?: BandageScaleOpts) {
+        const session = getSession(self)
+        const { rpcManager } = session
+        const sessionId = 'graph' // getRpcSessionId(self) no 'rpcSessionId' getter
+        return rpcManager.call(sessionId, 'GraphComputeLayout', {
+          sessionId,
+          graph: { nodes: graph.nodes, edges: graph.edges },
+          options: {
+            quality: self.layoutQuality,
+            linearLayout: self.linearLayout,
+            ...extraOpts,
+          },
+          statusCallback: (message: string) => {
+            self.setStatusMessage(message)
+          },
+        }) as Promise<{ result: LayoutResult }>
+      }
+
+      function* parseAndLayout(
+        text: string,
+        name: string,
+        scaleOpts?: BandageScaleOpts,
+      ) {
+        self.setStatusMessage('Parsing GFA')
+        const gfaGraph = parseGFA(text)
+        const graph = convertGFAToGraph(gfaGraph, name)
+        self.graph = graph
+        self.setStatusMessage('Computing layout')
+        const { result } = (yield callLayout(graph, scaleOpts)) as {
+          result: LayoutResult
+        }
+        if (self.graph === graph) {
+          self.layoutResult = result
+        }
+      }
+
+      function* loadFromTabixLarge(
+        adapterConfig: Record<string, unknown>,
+        region: {
+          refName: string
+          assemblyName: string
+          start: number
+          end: number
+        },
+        bpPerPx?: number,
+      ) {
+        self.isLoading = true
+        self.error = undefined
+        self.graph = undefined
+        self.layoutResult = undefined
+        self.setStatusMessage('Fetching synteny overview')
+        try {
+          const session = getSession(self)
+          const { rpcManager } = session
+          const sessionId = 'graph'
+          const blocks = (yield rpcManager.call(sessionId, 'GetSyntenyBlocks', {
+            adapterConfig,
+            region,
+            sessionId,
+            bpPerPx,
+          })) as [string, SyntenyBlock[]][]
+          self.syntenyBlocks = blocks
+          self.largeModeRegion = {
+            refName: region.refName,
+            start: region.start,
+            end: region.end,
+          }
+        } catch (e) {
+          console.error('[GraphGenomeView.loadFromTabixLarge]', e)
+          self.error = e
+        } finally {
+          self.isLoading = false
+        }
+      }
+
+      // Inner loading logic shared by loadFromTabixSubgraph and refetchIfNeeded
+      function* doSubgraphLoad(
+        adapterConfig: Record<string, unknown>,
+        region: {
+          refName: string
+          assemblyName: string
+          start: number
+          end: number
+        },
+        opts: {
+          maxPathsEmitted?: number
+          context?: number
+          bpPerPx?: number
+        } = {},
+      ) {
+        if (region.end - region.start > 100_000) {
+          yield* loadFromTabixLarge(adapterConfig, region, opts.bpPerPx)
+          return
+        }
+        self.isLoading = true
+        self.error = undefined
+        self.syntenyBlocks = undefined
+        self.largeModeRegion = undefined
+        self.setStatusMessage('Fetching subgraph')
+        try {
+          const session = getSession(self)
+          const { rpcManager } = session
+          const sessionId = 'graph' // getRpcSessionId(self) no rpcSessionId getter
+          // Default cap: at HPRC chr20 scale, 1 Mbp emits ~219k subwalks
+          // and 5 Mbp ~434k. Past ~50k the browser geometry rebuild stalls
+          // and the user gains no detail; truncate emission with a comment.
+          const subgraphOpts = {
+            maxPathsEmitted: opts.maxPathsEmitted ?? 50000,
+            context: opts.context,
+          }
+          const gfaText = (yield rpcManager.call(sessionId, 'GetSubgraph', {
+            adapterConfig,
+            region,
+            sessionId,
+            opts: subgraphOpts,
+          })) as string
+          if (!gfaText) {
+            throw new Error(
+              'Adapter returned no GFA — region may be outside indexed data or the adapter does not implement getSubgraph',
+            )
+          }
+          const label = `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`
+          // Pangenome-tuned bandage scaling. Default 1000 units/Mbp clamps
+          // every node <1kb to minimumNodeLength (1.0), making SNPs and
+          // longer contigs render at identical visual lengths. 1 unit/bp
+          // makes node length proportional to bp; nodeSegmentLength=5
+          // caps OGDF subnode count per node to keep FMMM layout fast.
+          yield* parseAndLayout(gfaText, label, {
+            nodeLengthPerMegabase: 1_000_000,
+            minimumNodeLength: 0.5,
+            nodeSegmentLength: 5,
+          })
+        } catch (e) {
+          console.error('[GraphGenomeView.loadFromTabixSubgraph]', e)
+          self.error = e
+        } finally {
+          self.isLoading = false
+        }
+      }
+
+      return {
+        loadGFA: flow(function* (text: string, name = 'Imported GFA') {
+          self.loadedTrackId = ''
+          self.loadedRegion = undefined
+          self.isLoading = true
+          self.error = undefined
+          try {
+            yield* parseAndLayout(text, name)
+          } catch (e) {
+            console.error('[GraphGenomeView.loadGFA]', e)
+            self.error = e
+          } finally {
+            self.isLoading = false
+          }
+        }),
+        loadFromTabixSubgraph: flow(function* (
+          adapterConfig: Record<string, unknown>,
+          region: {
+            refName: string
+            assemblyName: string
+            start: number
+            end: number
+          },
+          opts: {
+            maxPathsEmitted?: number
+            context?: number
+            bpPerPx?: number
+            trackId?: string
+          } = {},
+        ) {
+          self.loadedTrackId = opts.trackId ?? ''
+          self.loadedRegion = opts.trackId ? region : undefined
+          yield* doSubgraphLoad(adapterConfig, region, opts)
+        }),
+        refetchIfNeeded: flow(function* () {
+          if (!self.loadedTrackId || !self.loadedRegion || self.graph) {
+            return
+          }
+          const session = getSession(self)
+          const track = session.tracks.find(
+            t => t.trackId === self.loadedTrackId,
+          )
+          if (!track) {
+            return
+          }
+          // Save pan/zoom — zoomToFit autorun fires when layoutResult is set,
+          // overriding the persisted transform; we restore it afterward.
+          const savedScale = self.scale
+          const savedTx = self.translateX
+          const savedTy = self.translateY
+          const adapterConfig = readConfObject(track, 'adapter')
+          yield* doSubgraphLoad(adapterConfig, self.loadedRegion, {})
+          self.scale = savedScale
+          self.translateX = savedTx
+          self.translateY = savedTy
+        }),
+        recomputeLayout: flow(function* () {
+          const graph = self.graph
+          if (!graph) {
+            return
+          }
+          self.isLoading = true
+          self.setStatusMessage('Computing layout')
+
+          try {
+            const { result } = yield callLayout(graph)
+            if (self.graph === graph) {
+              self.layoutResult = result
+            }
+          } catch (e) {
+            console.error('[GraphGenomeView.recomputeLayout]', e)
+            self.error = e
+          } finally {
+            self.isLoading = false
+          }
+        }),
+      }
+    })
     .actions(self => ({
       startGpuBackendLifecycle(backend: GraphRenderer) {
-        self.graphBackend = backend
-        if (!self.graphLifecycleInstalled) {
-          self.graphLifecycleInstalled = true
-
+        if (!self.gpuAutorunsInstalled) {
           // Autorun: zoom to fit when a new layout result arrives (skip first run)
           let firstLayout = true
           addDisposer(
@@ -390,7 +611,7 @@ export default function stateModelFactory() {
           addDisposer(
             self,
             autorun(() => {
-              const b = self.graphBackend
+              const b = self.currentGpuBackend as GraphRenderer | undefined
               const hoveredNode = self.hoveredNode
               const hoveredEdge = self.hoveredEdge
               const selectedNode = self.selectedNode
@@ -469,6 +690,8 @@ export default function stateModelFactory() {
               }
             }),
           )
+
+          void self.refetchIfNeeded()
         }
 
         self.installGpuDisplay<GraphRenderer>(backend, {
@@ -516,181 +739,6 @@ export default function stateModelFactory() {
         })
       },
     }))
-    .actions(self => {
-      function callLayout(graph: Graph, extraOpts?: BandageScaleOpts) {
-        const session = getSession(self)
-        const { rpcManager } = session
-        const sessionId = 'graph' // getRpcSessionId(self) no 'rpcSessionId' getter
-        return rpcManager.call(sessionId, 'GraphComputeLayout', {
-          sessionId,
-          graph: { nodes: graph.nodes, edges: graph.edges },
-          options: {
-            quality: self.layoutQuality,
-            linearLayout: self.linearLayout,
-            ...extraOpts,
-          },
-          statusCallback: (message: string) => {
-            self.setStatusMessage(message)
-          },
-        }) as Promise<{ result: LayoutResult }>
-      }
-
-      function* parseAndLayout(
-        text: string,
-        name: string,
-        scaleOpts?: BandageScaleOpts,
-      ) {
-        self.setStatusMessage('Parsing GFA')
-        const gfaGraph = parseGFA(text)
-        const graph = convertGFAToGraph(gfaGraph, name)
-        self.graph = graph
-        self.setStatusMessage('Computing layout')
-        const { result } = (yield callLayout(graph, scaleOpts)) as {
-          result: LayoutResult
-        }
-        if (self.graph === graph) {
-          self.layoutResult = result
-        }
-      }
-
-      function* loadFromTabixLarge(
-        adapterConfig: Record<string, unknown>,
-        region: {
-          refName: string
-          assemblyName: string
-          start: number
-          end: number
-        },
-        bpPerPx?: number,
-      ) {
-        self.isLoading = true
-        self.error = undefined
-        self.graph = undefined
-        self.layoutResult = undefined
-        self.setStatusMessage('Fetching synteny overview')
-        try {
-          const session = getSession(self)
-          const { rpcManager } = session
-          const sessionId = 'graph'
-          const blocks = (yield rpcManager.call(sessionId, 'GetSyntenyBlocks', {
-            adapterConfig,
-            region,
-            sessionId,
-            bpPerPx,
-          })) as [string, SyntenyBlock[]][]
-          self.syntenyBlocks = blocks
-          self.largeModeRegion = {
-            refName: region.refName,
-            start: region.start,
-            end: region.end,
-          }
-        } catch (e) {
-          console.error('[GraphGenomeView.loadFromTabixLarge]', e)
-          self.error = e
-        } finally {
-          self.isLoading = false
-        }
-      }
-
-      return {
-        loadGFA: flow(function* (text: string, name = 'Imported GFA') {
-          self.isLoading = true
-          self.error = undefined
-          try {
-            yield* parseAndLayout(text, name)
-          } catch (e) {
-            console.error('[GraphGenomeView.loadGFA]', e)
-            self.error = e
-          } finally {
-            self.isLoading = false
-          }
-        }),
-        loadFromTabixSubgraph: flow(function* (
-          adapterConfig: Record<string, unknown>,
-          region: {
-            refName: string
-            assemblyName: string
-            start: number
-            end: number
-          },
-          opts: {
-            maxPathsEmitted?: number
-            context?: number
-            bpPerPx?: number
-            trackId?: string
-          } = {},
-        ) {
-          if (region.end - region.start > 100_000) {
-            yield* loadFromTabixLarge(adapterConfig, region, opts.bpPerPx)
-            return
-          }
-          self.isLoading = true
-          self.error = undefined
-          self.syntenyBlocks = undefined
-          self.largeModeRegion = undefined
-          self.setStatusMessage('Fetching subgraph')
-          try {
-            const session = getSession(self)
-            const { rpcManager } = session
-            const sessionId = 'graph' // getRpcSessionId(self) no rpcSessionId getter
-            // Default cap: at HPRC chr20 scale, 1 Mbp emits ~219k subwalks
-            // and 5 Mbp ~434k. Past ~50k the browser geometry rebuild stalls
-            // and the user gains no detail; truncate emission with a comment.
-            const subgraphOpts = {
-              maxPathsEmitted: opts.maxPathsEmitted ?? 50000,
-              context: opts.context,
-            }
-            const gfaText = (yield rpcManager.call(sessionId, 'GetSubgraph', {
-              adapterConfig,
-              region,
-              sessionId,
-              opts: subgraphOpts,
-            })) as string
-            if (!gfaText) {
-              throw new Error(
-                'Adapter returned no GFA — region may be outside indexed data or the adapter does not implement getSubgraph',
-              )
-            }
-            const label = `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`
-            // Pangenome-tuned bandage scaling. Default 1000 units/Mbp clamps
-            // every node <1kb to minimumNodeLength (1.0), making SNPs and
-            // longer contigs render at identical visual lengths. 1 unit/bp
-            // makes node length proportional to bp; nodeSegmentLength=5
-            // caps OGDF subnode count per node to keep FMMM layout fast.
-            yield* parseAndLayout(gfaText, label, {
-              nodeLengthPerMegabase: 1_000_000,
-              minimumNodeLength: 0.5,
-              nodeSegmentLength: 5,
-            })
-          } catch (e) {
-            console.error('[GraphGenomeView.loadFromTabixSubgraph]', e)
-            self.error = e
-          } finally {
-            self.isLoading = false
-          }
-        }),
-        recomputeLayout: flow(function* () {
-          const graph = self.graph
-          if (!graph) {
-            return
-          }
-          self.isLoading = true
-          self.setStatusMessage('Computing layout')
-
-          try {
-            const { result } = yield callLayout(graph)
-            if (self.graph === graph) {
-              self.layoutResult = result
-            }
-          } catch (e) {
-            console.error('[GraphGenomeView.recomputeLayout]', e)
-            self.error = e
-          } finally {
-            self.isLoading = false
-          }
-        }),
-      }
-    })
 }
 
 export type GraphGenomeViewModel = ReturnType<

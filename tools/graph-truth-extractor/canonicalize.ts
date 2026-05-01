@@ -54,10 +54,10 @@ function shortHash(s: string): string {
   return createHash('sha1').update(s).digest('hex').slice(0, 16)
 }
 
-// Weisfeiler-Lehman color refinement. Iteratively refines node labels until
-// each node's label encodes the equivalence class of its rooted subgraph.
-// Two structurally isomorphic graphs converge to label sets in 1:1
-// correspondence; we use the final per-node labels as canonical IDs.
+// Weisfeiler-Leman color refinement: iteratively replace each node's label
+// with a hash of its own label plus the sorted labels of its neighbors.
+// After convergence, nodes with the same label belong to the same structural
+// equivalence class. We use these final labels as canonical node identifiers.
 function refineLabels(
   segments: GfaSegment[],
   edges: GfaEdge[],
@@ -83,8 +83,11 @@ function refineLabels(
     }
   }
 
+  // Weisfeiler-Leman stabilizes in at most n rounds for an n-node graph,
+  // but 32 is enough for the subgraphs we deal with in practice.
   const maxIters = Math.min(segments.length + 1, 32)
   for (let iter = 0; iter < maxIters; iter++) {
+    // Each node's new label is a hash of its current label + sorted neighbor labels.
     const next = new Map<string, string>()
     for (const s of segments) {
       const neighborLabels = undirectedAdj
@@ -97,6 +100,9 @@ function refineLabels(
       )
     }
 
+    // Convergence: the partition (equivalence classes) didn't change in size,
+    // meaning no two previously-distinct nodes merged and no new distinctions
+    // appeared. Further iterations won't change anything.
     const prevPartition = new Map<string, string[]>()
     for (const [id, label] of labels) {
       if (!prevPartition.has(label)) {
@@ -220,20 +226,34 @@ function emitCanonicalGfa(
   return `${lines.join('\n')}\n`
 }
 
-// Each segment's set of (canonical-path-name, step-index, orientation) tuples
-// is a strong structural signature: WL-equivalent twin SNP nodes (same length,
-// same neighbors) typically belong to *different* haplotype paths, so
-// path membership distinguishes them where (length, neighbor-set) cannot.
+// Each segment's set of (canonical-path-name, orientation, prev-seq, next-seq)
+// tuples is a strong structural signature. Twin SNP nodes that are structurally
+// indistinguishable by Weisfeiler-Leman (same length, same neighbors) typically
+// belong to *different* haplotype paths, so path membership distinguishes them
+// where (length, neighbor-set) alone cannot.
 // Without this, placeholder S lines (Phase 0, no sequences) leave us picking
-// between twins by raw-id lex order — non-portable across truth backends.
-function pathContextLabels(paths: GfaPath[]): Map<string, string> {
+// between structurally identical twins by raw ID order — non-portable across
+// truth backends.
+//
+// We use the sequences of the immediately adjacent steps (prevSeq, nextSeq)
+// rather than an absolute step index. Absolute indices break when backends
+// split the same walk at different positions, which is common for large graphs.
+// Local sequence context is portable as long as the split is not at an
+// immediate neighbor of this node — which for SNP bubbles it never is.
+function pathContextLabels(
+  paths: GfaPath[],
+  seqOf: Map<string, string>,
+): Map<string, string> {
   const ctx = new Map<string, string[]>()
   for (const p of paths) {
     const colonIdx = p.name.indexOf(':')
     const baseName = colonIdx === -1 ? p.name : p.name.slice(0, colonIdx)
     for (let i = 0; i < p.steps.length; i++) {
       const step = p.steps[i]!
-      const tag = `${baseName}|${i}|${step.orient}`
+      const prevSeq = i > 0 ? (seqOf.get(p.steps[i - 1]!.id) ?? '') : ''
+      const nextSeq =
+        i < p.steps.length - 1 ? (seqOf.get(p.steps[i + 1]!.id) ?? '') : ''
+      const tag = `${baseName}|${step.orient}|${prevSeq}|${nextSeq}`
       if (!ctx.has(step.id)) {
         ctx.set(step.id, [])
       }
@@ -248,12 +268,22 @@ function pathContextLabels(paths: GfaPath[]): Map<string, string> {
   return out
 }
 
+// Produce a canonical GFA string for a parsed graph.
+// Algorithm:
+//   1. Seed each node with a label derived from sequence (or length) + path context.
+//   2. Run WL refinement to propagate neighborhood structure into labels.
+//   3. Sort nodes by label → assign stable n0, n1, ... IDs (canonical relabeling).
+//   4. Emit edges/paths sorted and normalized so the output is deterministic.
 export function canonicalizeParsed(
   parsed: ParsedGfa,
   opts: CanonicalizeOptions = {},
 ): string {
   const useSequence = !!opts.useSequence
-  const ctxLabels = pathContextLabels(parsed.paths)
+  const seqOf = new Map<string, string>()
+  for (const s of parsed.segments) {
+    seqOf.set(s.id, s.seq && s.seq !== '*' ? s.seq : `*${s.length}`)
+  }
+  const ctxLabels = pathContextLabels(parsed.paths, seqOf)
   const initialLabel = useSequence
     ? (s: GfaSegment) =>
         s.seq && s.seq !== '*'
@@ -335,9 +365,12 @@ export function structuralFingerprint(
     const toSeq = seqOf.get(e.toId) ?? ''
     const fwd = `${fromSeq}|${e.fromOrient}|${toSeq}|${e.toOrient}`
     const rev = `${toSeq}|${flipOrient(e.toOrient)}|${fromSeq}|${flipOrient(e.fromOrient)}`
-    linkEntries.push(fwd < rev ? fwd : rev)
-    undirectedAdj.get(e.fromId)?.push(`${toSeq}|${e.toOrient}`)
-    undirectedAdj.get(e.toId)?.push(`${fromSeq}|${e.fromOrient}`)
+    const canonLink = fwd < rev ? fwd : rev // eslint-disable-line unicorn/prefer-math-min-max
+    linkEntries.push(canonLink)
+    // Store the same canonical link string in both nodes' adjacency lists so
+    // DEG is invariant to which direction the edge was written in the source GFA.
+    undirectedAdj.get(e.fromId)?.push(canonLink)
+    undirectedAdj.get(e.toId)?.push(canonLink)
   }
   linkEntries.sort()
 
@@ -348,16 +381,37 @@ export function structuralFingerprint(
   }
   degEntries.sort()
 
-  const pathEntries: string[] = []
+  // Group walks by base path name (strip W-line :offset suffix) so backends
+  // that split the same haplotype walk at different subgraph boundaries still
+  // produce the same path fingerprint. Sort each group by offset and
+  // concatenate steps before hashing.
+  const walkGroups = new Map<string, { offset: number; steps: GfaPath['steps'] }[]>()
   for (const p of parsed.paths) {
-    const fwd = p.steps
-      .map(s => `${seqOf.get(s.id) ?? ''}${s.orient}`)
-      .join(',')
-    const rev = [...p.steps]
+    const colonIdx = p.name.lastIndexOf(':')
+    const baseName = colonIdx === -1 ? p.name : p.name.slice(0, colonIdx)
+    const offsetStr = colonIdx === -1 ? '' : p.name.slice(colonIdx + 1)
+    const offset = /^\d+$/.test(offsetStr) ? parseInt(offsetStr, 10) : 0
+    if (!walkGroups.has(baseName)) {
+      walkGroups.set(baseName, [])
+    }
+    walkGroups.get(baseName)!.push({ offset, steps: p.steps })
+  }
+
+  const pathEntries: string[] = []
+  for (const [, walks] of walkGroups) {
+    walks.sort((a, b) => a.offset - b.offset)
+    const allSteps: GfaPath['steps'] = []
+    for (const w of walks) {
+      for (const step of w.steps) {
+        allSteps.push(step)
+      }
+    }
+    const fwd = allSteps.map(s => `${seqOf.get(s.id) ?? ''}${s.orient}`).join(',')
+    const rev = [...allSteps]
       .reverse()
       .map(s => `${seqOf.get(s.id) ?? ''}${flipOrient(s.orient)}`)
       .join(',')
-    pathEntries.push(fwd < rev ? fwd : rev)
+    pathEntries.push(fwd < rev ? fwd : rev) // eslint-disable-line unicorn/prefer-math-min-max
   }
   pathEntries.sort()
 

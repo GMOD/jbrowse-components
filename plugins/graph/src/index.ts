@@ -2,8 +2,8 @@ import Plugin from '@jbrowse/core/Plugin'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
 import BubbleChartIcon from '@mui/icons-material/BubbleChart'
 
+import GraphComputeLayout from './GraphComputeLayout.ts'
 import GraphGenomeViewF from './GraphGenomeView/index.ts'
-import GraphComputeLayout from './layout/GraphComputeLayout.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'

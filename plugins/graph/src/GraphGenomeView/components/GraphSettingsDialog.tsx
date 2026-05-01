@@ -1,23 +1,23 @@
 import { Dialog } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   DialogActions,
   DialogContent,
   FormControl,
   FormControlLabel,
   FormLabel,
-  RadioGroup,
-  Radio,
-  Switch,
   InputLabel,
   MenuItem,
+  Radio,
+  RadioGroup,
   Select,
+  Switch,
   Typography,
 } from '@mui/material'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Button from '@mui/material/Button'
 import { observer } from 'mobx-react'
 
-import { COLOR_SCHEME_OPTIONS } from './ColorSchemeSelect.tsx'
+import { COLOR_SCHEME_OPTIONS } from './colorSchemes.ts'
 
 import type { GraphGenomeViewModel } from '../model.ts'
 

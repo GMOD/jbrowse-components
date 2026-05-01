@@ -73,7 +73,9 @@ interface UcscTranscriptOutput extends MinimalFeature {
   [key: string]: unknown
 }
 
-export function generateUcscTranscript(data: UcscTranscriptInput): UcscTranscriptOutput {
+export function generateUcscTranscript(
+  data: UcscTranscriptInput,
+): UcscTranscriptOutput {
   const { strand = 0, uniqueId, start, end, ...rest } = data
   const {
     subfeatures: oldSubfeatures,

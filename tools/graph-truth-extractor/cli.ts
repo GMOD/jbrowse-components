@@ -1,6 +1,10 @@
 import fs from 'fs'
 
-import { canonicalize, summarizeDiff } from './canonicalize.ts'
+import {
+  canonicalize,
+  structuralFingerprint,
+  summarizeDiff,
+} from './canonicalize.ts'
 import { extractTruthSubgraph } from './index.ts'
 
 import type { ExtractRequest, TruthBackend } from './backends/types.ts'
@@ -131,13 +135,13 @@ async function runAll(args: Args) {
     segs?: number
     edges?: number
     paths?: number
+    fingerprint?: ReturnType<typeof structuralFingerprint>
     canonical?: string
     error?: string
   }[] = []
   for (const backend of backends) {
     try {
       const r = await extractTruthSubgraph(buildRequest(args, backend))
-      const canonical = canonicalize(r.gfa, { useSequence })
       results.push({
         backend,
         ok: true,
@@ -146,7 +150,8 @@ async function runAll(args: Args) {
         segs: r.segmentCount,
         edges: r.edgeCount,
         paths: r.pathCount,
-        canonical,
+        fingerprint: structuralFingerprint(r.gfa, { useSequence }),
+        canonical: canonicalize(r.gfa, { useSequence }),
       })
     } catch (e) {
       results.push({
@@ -164,22 +169,33 @@ async function runAll(args: Args) {
     )
   }
 
-  // Pairwise canonical-form comparison among ok backends
+  // Pairwise comparison using structural fingerprints as the authoritative
+  // equality test. Fingerprints are grounded in actual sequences and are
+  // invariant to node-ID conventions and walk splitting between backends.
+  // Canonical-form diff is shown as a diagnostic when fingerprints disagree,
+  // but the exit code is driven by the fingerprint result.
   const ok = results.filter(r => r.ok)
   let allMatch = true
   for (let i = 1; i < ok.length; i++) {
     const a = ok[0]!
     const b = ok[i]!
-    const same = a.canonical === b.canonical
+    const fp = a.fingerprint!
+    const fpb = b.fingerprint!
+    const same = fp.combined === fpb.combined
     console.error(
       `# ${a.backend} vs ${b.backend}: ${same ? 'isomorphic' : 'DIVERGE'}`,
     )
-    if (!same && a.canonical && b.canonical) {
-      const summary = summarizeDiff(a.canonical, b.canonical)
-      console.error(`#   segments: ${JSON.stringify(summary.segments)}`)
-      console.error(`#   edges:    ${JSON.stringify(summary.edges)}`)
-      console.error(`#   paths:    ${JSON.stringify(summary.paths)}`)
+    if (!same) {
       allMatch = false
+      console.error(
+        `#   seq  ${fp.seq === fpb.seq ? 'match' : 'DIFFER'}  link ${fp.link === fpb.link ? 'match' : 'DIFFER'}  path ${fp.path === fpb.path ? 'match' : 'DIFFER'}`,
+      )
+      if (a.canonical && b.canonical) {
+        const summary = summarizeDiff(a.canonical, b.canonical)
+        console.error(`#   segments: ${JSON.stringify(summary.segments)}`)
+        console.error(`#   edges:    ${JSON.stringify(summary.edges)}`)
+        console.error(`#   paths:    ${JSON.stringify(summary.paths)}`)
+      }
     }
   }
 
