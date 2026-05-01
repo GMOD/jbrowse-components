@@ -1,23 +1,16 @@
 # New Pangenome Browser Plan
 
-## Problem
+## Status
 
-`segments.bin` / `edges.bin` are ordinal-keyed binary files. Alt/bubble segments
-for any genomic viewport are scattered across a ~1.3 GB file, producing 784 HTTP
-byte-ranges for a 0.69 Mbp query (5500 ms on S3, 65× slower than local). The
-format cannot be fixed incrementally; we replace it entirely.
-
-**Zero odgi dependency.** pangyplot's tile system requires odgi SGD layout
-coordinates (`layout_min_x / layout_max_x`), which are topology-optimised and
-not reference-anchored. We need reference coordinates throughout.
+Phases 1–4 complete. See `NEW_GRAPH_COMPLETED.md` for detail.
 
 ---
 
-## Two views, one index
+## Two views, one index (implemented)
 
 ### MultiLGVSyntenyDisplay — linear genome view (all zoom levels)
 
-Feature contract (audited from source):
+Feature contract:
 ```
 start, end          — reference coordinates (uint32)
 mateStart, mateEnd  — haplotype coordinates (uint32)
@@ -27,13 +20,10 @@ identity            — 0–1 float, precomputed offline
 cigar / cs          — optional, bpPerPx < 100 only (from bubbles.bed.gz)
 ```
 
-### GraphGenomeView — Bandage-style graph (≤ 100 kbp regions)
+### GraphGenomeView — Bandage-style graph (≤ 100 kbp) / synteny overview (> 100 kbp)
 
-Accepts a GFA string → OGDF WASM layout → WebGL2/WebGPU/Canvas2D render.
-For regions > 100 kbp, OGDF stalls (≥ 50k subwalks at HPRC density).
-The large-region path renders synteny blocks in reference coordinate space —
-same data as MultiLGVSyntenyDisplay, different canvas — so users can zoom out
-without leaving the graph view.
+Small mode: GFA subgraph → OGDF WASM layout → WebGL2/WebGPU/Canvas2D.
+Large mode: synteny.bed.gz → coloured rectangles in reference coordinate space.
 
 ---
 
@@ -52,8 +42,8 @@ GFA — single path-replay pass in main.rs:
 
 | File | Size (chr20) | Feeds |
 |---|---|---|
-| `pos.bed.gz` | ~50 MB (unchanged) | GetSubgraph ordinal lookup |
-| `bubbles.bed.gz` | ~30 MB (unchanged) | Per-base CS detail |
+| `pos.bed.gz` | ~50 MB | GetSubgraph ordinal lookup |
+| `bubbles.bed.gz` | ~30 MB | Per-base CS detail |
 | `synteny.bed.gz` | ~70–140 MB | MultiLGVSyntenyDisplay + GGV large mode + GetSubgraph hap coords |
 | `synteny.rev.bed.gz` | ~70–140 MB | Reference-free browsing |
 | `synteny.coarse.bed.gz` | ~5–15 MB | Chromosome-scale views |
@@ -83,218 +73,51 @@ ref-free        → tabix synteny.rev.bed.gz
 5. faidx seq.fa.gz per unique ordinal        → sequences
 6. assemble GFA string → OGDF WASM → render
 ```
-Replaces 784 scattered byte-range requests with 93 spatially-local tabix fetches.
 
 **GraphGenomeView — large mode (region > 100 kbp)**
 ```
 tabix synteny.bed.gz (or synteny.coarse.bed.gz if bpPerPx > 1000)
-  → render synteny blocks as coloured rectangles in reference coordinate space
-    (x = ref bp, y = path index)
-  → reuse existing WebGL2/WebGPU/Canvas2D renderer; only geometry source changes
+  → GetSyntenyBlocks RPC → syntenyBlocks volatile → LargeModeSyntenyCanvas
 ```
 
 ---
 
-## What is deleted
-
-Once Phase 2 is verified. No copies kept.
-
-**TS files:** `gfaBinaryIO.ts`, `gfaSubgraphBuilders.ts`, `gfaCoarsener.ts`,
-`gfaEmitHelpers.ts`, `gfaSeqBinaryIO.ts`, `gfaSeqIO.ts`, `segmentFeatureBuilder.ts`,
-bulk of `gfaTabixUtils.ts` (keep pos.bed.gz helpers and `parseGfaPathName`).
-
-**Tests:** `gfaCoarsener.test.ts`, `gfaSeqBinaryIO.test.ts`, `gfaSeqIO.test.ts`,
-`parseSegmentsBytes.bench.test.ts`, `getSubgraph.test.ts`, `auditConcordance.test.ts`.
-
-**Scripts:** `diagnose-fetch.ts`, `diagnose-http.ts`, `dump-subgraph.ts`,
-`equivalent-ranges.ts`, `path-symmetry.ts`, `lib/auditShard.ts`.
-
-**Rust (main.rs):** `sort_and_build_segments`, `build_edge_index`,
-`write_segments_seq_fa`, `write_segments_seq_bin`.
-
-**Kept:** `bubbleOverlay.ts`, `configSchema.ts`, `index.ts`,
-`buildCsFromCigarAndSites.test.ts`.
-
----
-
-## Test fixtures
-
-Committed to `tools/gfa-to-tabix/tests/fixtures/` and
-`plugins/gfa-tabix/src/__tests__/fixtures/`. Never use chr20 data in unit tests.
-
-**`linear.gfa`** — A+B+C+D+E, one identical haplotype. Expected: one block,
-identity=1.0, no bubble rows.
-
-**`bubble.gfa`** — A-[B|C]-D: ref through B, alt through C. Expected: two shared
-blocks + two bubble rows. GetSubgraph must return S-lines for both B and C.
-
-**`inversion.gfa`** — ref A(+)B(+)C(+), alt A(+)B(-)C(+). Expected: middle
-block strand=`-`, flanking blocks strand=`+`.
-
-**`insertion.gfa`** — ref A-C, alt A-B1-B2-B3-C. Expected: bubble span with
-hapLen > refLen. GetSubgraph must include S-lines for B1, B2, B3.
-
-**`multipath.gfa`** — three haplotypes, two bubbles. Tests per-pair independence.
-
-**`volvox_chr1_0-50k`** — new-format bgzip+tabix files built and committed at the
-end of Phase 2 (after running the new build pipeline on the volvox test data).
-Required for all integration and browser tests in Phases 3–4.
-
----
-
-## Validation principle
-
-**Every phase must be validated on chr20.vg before the next phase begins.**
-Synthetic fixtures and volvox tests prove correctness in theory. chr20 (90
-haplotype paths, ~60 Mbp, HPRC-scale) is what proves the implementation works
-at production scale. Bugs that only appear at scale — wrong block boundaries,
-missing alt segments, identity drift, renderer freezing — will not show up on
-volvox. The chr20 validation step for each phase is not optional cleanup; it is
-the confidence gate.
-
----
-
-## Phases
-
-### Phase 1 — Delete old code
-
-Delete everything above. Build will fail until Phase 2.
-
-**Verification:**
-- `pnpm tsc --noEmit` in `plugins/gfa-tabix` fails on deleted symbols only.
-- `grep -r "gfaBinaryIO\|segmentFeatureBuilder\|gfaSubgraphBuilders" plugins/gfa-tabix/src` → zero results.
-
----
-
-### Phase 2 — `synteny_build` + MultiLGVSyntenyDisplay adapter
-
-**Before writing any code:** commit the five synthetic GFA fixtures
-(`linear.gfa`, `bubble.gfa`, `inversion.gfa`, `insertion.gfa`, `multipath.gfa`)
-to `tools/gfa-to-tabix/tests/fixtures/`. The Rust tests depend on them.
-
-Add synteny emission to `main.rs` alongside the existing pos.bed.gz pass.
-New adapter: one tabix query on `synteny.bed.gz` → `MultiPairFeature[]` grouped
-by `mateRefName`. Zero binary lookups.
-
-**After tests pass:** run the new build pipeline on the volvox test data and
-commit the outputs as `plugins/gfa-tabix/src/__tests__/fixtures/volvox_chr1_0-50k/`.
-All Phase 3–4 integration and browser tests depend on this fixture.
-
-**Rust tests** (`tools/gfa-to-tabix/src/tests/synteny_build.rs`):
-
-- **`linear_full_coverage`** — merge output ref-intervals; assert merged length = reference length.
-- **`bubble_spans`** — assert exactly 4 rows (2 shared + 2 bubble); no overlaps.
-- **`inversion_strand`** — assert middle block strand=`-`, flanking strand=`+`.
-- **`insertion_identity`** — assert identity ≈ `min/max(refLen, hapLen)` within 0.001.
-- **`multipath_independence`** — assert no block for path A appears in path B's rows.
-- **`edges_count`** — assert `edges.spatial.bed.gz` row count = 2 × GFA L-line count.
-- **`edges_bidirectional`** — for `bubble.gfa`, a tabix query on the ref-side bubble span must return ref→alt AND alt→ref edges. All four edge types reachable.
-- **`coarse_merges_small_gap`** — 5 kbp gap → one merged row in coarse.
-- **`coarse_keeps_large_gap`** — 15 kbp gap → two separate rows in coarse.
-- **`coarse_identity_weighted`** — length 1000 (0.9) + length 2000 (0.8) merged → identity ≈ 0.833 within 0.001.
-- **`rev_key_matches`** — every synteny.bed.gz row has a matching synteny.rev.bed.gz row keyed by (hapChrom, hapStart, hapEnd).
-
-**TS tests** (`plugins/gfa-tabix/src/__tests__/syntenyAdapter.test.ts`):
-
-- **`adapter_fidelity`** — old and new adapter for `volvox_chr1_0-50k` chr1:0-50000 return same `{start, end, mateStart, mateEnd, mateRefName, strand}` tuples. Delete when old adapter is removed.
-- **`adapter_no_ordinals`** — no returned feature has `segOrd` or `ordinal`.
-- **`adapter_identity_range`** — every identity in [0, 1].
-- **`adapter_grouping`** — each feature's `mateRefName` matches its source BED row's haplotype.
-
-**chr20 validation** — run after all above tests pass.
-
-Node.js script (`scripts/validate-synteny-chr20.mjs`) against the chr20 index:
-- Query `synteny.bed.gz` for three representative regions: a dense SNP region,
-  a known large SV, and a near-telomeric region. Assert each returns > 0 blocks.
-- Check total ref-side coverage: sum all block lengths across a 1 Mbp window;
-  assert coverage ≈ 1 Mbp (no large uncovered gaps on the reference side).
-- Assert all identity values in [0, 1]; flag any block with identity = 0
-  (likely a sign of a divide-by-zero in the approximation path).
-- Assert `synteny.coarse.bed.gz` returns fewer rows than `synteny.bed.gz` for
-  the same region (coarsening is actually coarsening).
-- Puppeteer: open MultiLGVSyntenyDisplay on chr20 at bpPerPx 1, 100, 1000.
-  Assert non-empty render and no JS errors at each zoom level.
-
----
-
-### Phase 3 — New GetSubgraph (unblocks GraphGenomeView small mode)
-
-Implement the 6-step algorithm above. No changes to GraphGenomeView, OGDF, or
-the renderer.
-
-**TS tests** (`plugins/gfa-tabix/src/__tests__/getSubgraph.test.ts`):
-
-- **`slines_complete`** — every ordinal from ref + haplotype pos.bed.gz queries has a non-empty S-line.
-- **`llines_no_dangling`** — every L-line endpoint has a corresponding S-line.
-- **`bubble_alt_segments`** — GFA for `bubble.gfa` region includes S-lines for B and C, L-lines A→C and C→D.
-- **`insertion_completeness`** — GFA for `insertion.gfa` region includes S-lines for B1/B2/B3 and their L-lines.
-- **`vg_oracle`** — compare node IDs, edges, path names against committed `vg find` oracle output for volvox chr1:0-10000.
-- **`empty_region`** — region with no pos.bed.gz rows returns a valid H-line-only GFA, not an error.
-
-**Browser test:** open GraphGenomeView for volvox chr1:0-10000; assert canvas has non-empty pixels, no error.
-
-**chr20 validation** — run after all above tests pass.
-
-Node.js script (`scripts/validate-subgraph-chr20.mjs`) against the chr20 index:
-- Call the adapter's `getSubgraph` directly (not via browser) for three regions:
-  a small SNP-dense region (~10 kbp), a region containing a known large SV, and
-  a region near a chr20 centromere. For each, parse the returned GFA and assert:
-  - S-line count > 0 and < 200,000 (sanity bounds).
-  - Every L-line endpoint has a corresponding S-line.
-  - Path count = 90 (all HPRC haplotypes represented).
-  - No two S-lines share the same node ID.
-- Puppeteer: open GraphGenomeView on chr20 for the small SNP region; wait for
-  OGDF layout to complete; assert non-empty canvas and no error overlay.
-
----
-
-### Phase 4 — GraphGenomeView large-region renderer
-
-When `region.end - region.start > 100_000`, fetch `synteny.bed.gz` (or
-`synteny.coarse.bed.gz` at bpPerPx > 1000) and render coloured rectangles in
-reference coordinate space. Reuse the existing WebGL2/WebGPU/Canvas2D
-infrastructure; only the geometry source changes. No new index files.
-
-**TS tests** (`plugins/gfa-tabix/src/__tests__/largeMode.test.ts`):
-
-- **`routing_small`** — 50 kbp region calls GetSubgraph (small mode).
-- **`routing_large`** — 200 kbp region calls synteny tabix path (large mode).
-- **`spatial_agreement`** — large-mode `{refStart, refEnd, mateRefName}` triples match MultiLGVSyntenyDisplay for the same region.
-- **`bpPerPx_routing`** — bpPerPx ≤ 1000 → synteny.bed.gz; bpPerPx > 1000 → synteny.coarse.bed.gz.
-
-**Browser tests:** large-mode render for chr1:0-500000 (non-empty canvas, no error); zoom-out transition from small to large mode without error.
-
-**chr20 validation** — run after all above tests pass.
-
-Puppeteer script (`scripts/validate-large-mode-chr20.mjs`):
-- Open GraphGenomeView for a 500 kbp chr20 region; assert large-mode renderer
-  fires (not OGDF), canvas is non-empty, no error overlay.
-- Open the same region in MultiLGVSyntenyDisplay; take a screenshot of both;
-  assert that the set of visible haplotype path names matches between the two
-  views (same paths, same region).
-- Open GraphGenomeView at full chr20 scale (bpPerPx > 1000); assert
-  `synteny.coarse.bed.gz` is fetched and render completes without error.
-
----
-
-### Phase 5 — Paper figure
+## Phase 5 — Paper figure
 
 MultiLGVSyntenyDisplay → select chr20 SV → drill-down to GraphGenomeView small
 mode → zoom out to large mode. Run all Phase 2–4 tests against chr20 index
 (once, not in CI). Manual screenshot review.
+
+**chr20 validation scripts** (to run manually, not in CI):
+
+- `scripts/validate-synteny-chr20.mjs` — query synteny.bed.gz for dense SNP
+  region, large SV, near-telomeric region; assert coverage ≈ 1 Mbp per window;
+  assert all identity in [0, 1]; assert coarse fewer rows than fine. Puppeteer:
+  MultiLGVSyntenyDisplay at bpPerPx 1, 100, 1000.
+
+- `scripts/validate-subgraph-chr20.mjs` — getSubgraph for ~10 kbp SNP region,
+  large SV region, centromere-adjacent; assert S-line count bounds, no dangling
+  L-lines, path count = 90, no duplicate node IDs. Puppeteer: GraphGenomeView
+  small mode, wait for OGDF layout, assert non-empty canvas.
+
+- `scripts/validate-large-mode-chr20.mjs` — GraphGenomeView 500 kbp region,
+  assert large-mode fires (not OGDF), canvas non-empty, no error overlay.
+  Screenshot both GGV and MultiLGVSyntenyDisplay for same region; assert same
+  haplotype path names visible. Full-chr20 bpPerPx > 1000: assert coarse file
+  fetched and render completes.
 
 ---
 
 ## Correctness claims
 
 - **Synteny coverage**: union of synteny.bed.gz ref-side blocks = chromosome length.
-- **Synteny fidelity**: new adapter output matches old `getMultiPairFeaturesFromSegments` for the same viewport (oracle used during Phase 2 migration only).
-- **Subgraph completeness**: GFA includes S-lines for shared and alt segments, L-lines for all four edge types. Verified against committed `vg find` oracle.
+- **Synteny fidelity**: new adapter output matches old `getMultiPairFeaturesFromSegments` for the same viewport.
+- **Subgraph completeness**: GFA includes S-lines for shared and alt segments, L-lines for all four edge types.
 - **Large-mode agreement**: large-mode block extents match MultiLGVSyntenyDisplay blocks for the same region.
 
 ---
 
-## Format reference (for implementors)
+## Format reference
 
 ### `synteny.bed.gz` row schema
 ```
@@ -309,18 +132,12 @@ GRCh38#0#chr20   0   15000   0-4,7,9-12
 HG002#1#chr20    0   14800   0-3,8-12,1001-1003
 ```
 One row per 100-step chunk. Coordinates are in the **path's own bp space**.
-A reference-range tabix query returns only reference path rows; haplotype rows
-require querying by haplotype contig name. Every traversed segment (including
-alt/bubble segments) appears in the chunk's ordinal list.
 
 ### `edges.spatial.bed.gz` row schema
 ```
 refChrom  refStart  refEnd  srcOrd  tgtOrd  srcOrient  tgtOrient
 ```
-Each L-line emits two rows — one keyed by each endpoint's reference-space
-position. For alt segments with no direct reference coordinate, use the
-reference span of the containing bubble (divergence-to-convergence interval).
-Row count = 2 × L-line count in source GFA.
+Each L-line emits two rows. Row count = 2 × L-line count in source GFA.
 
 ### `synteny_build` algorithm
 1. Walk reference path; record `(segOrd, refStart, refEnd, orient)` per segment.
@@ -329,14 +146,10 @@ Row count = 2 × L-line count in source GFA.
 4. A **bubble span** = reference/haplotype diverge then rejoin; emit one row each side.
 5. Identity: 1.0 for shared blocks; from vg deconstruct CS strings for bubbles, or `min/max(refLen, hapLen)` if unavailable.
 
-All five output streams are emitted in parallel from the same in-memory walk
-data — no re-reading of pos.bed.gz.
-
 ---
 
 ## Open questions
 
-- **Coarse gap threshold**: start 10 kbp; tune on chr20.
-- **GetSubgraph cap**: 100 kbp proposed based on the existing 50k subwalk limit; adjust after seeing real behaviour on volvox in Phase 3.
-- **Reference-free browsing UI**: synteny.rev.bed.gz is ready; path selector UI deferred to Phase 4.
-- **vg version pin**: add to `tools/gfa-to-tabix/README.md` alongside existing pin.
+- **Coarse gap threshold**: 10 kbp used; tune on chr20 if blocks look fragmented.
+- **Reference-free browsing UI**: synteny.rev.bed.gz is ready; path selector UI not yet built.
+- **vg version pin**: add to `tools/gfa-to-tabix/README.md`.
