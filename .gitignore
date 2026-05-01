@@ -27,3 +27,11 @@ tools/gfa-to-tabix/target/
 test/data
 *.log
 .cache/
+
+# Graph test data - generated and large
+test_data/chr20_region.gfa
+test_data/chr20_region*.bed.gz
+test_data/chr20_region*.bed.gz.tbi
+test_data/chr20_region.seglens.bin
+test_data/chr20_region.gfa.truth-cache/
+test_data/trich2/
