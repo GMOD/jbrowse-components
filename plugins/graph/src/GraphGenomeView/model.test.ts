@@ -6,11 +6,26 @@ const mockSession = {
   rpcManager: { call: mockRpcCall },
 }
 
-jest.mock('@jbrowse/core/util', () => ({
-  ...jest.requireActual('@jbrowse/core/util'),
-  getSession: () => mockSession,
-  isSessionModelWithWidgets: () => false,
-}))
+// Don't use jest.requireActual due to circular dependencies
+// Instead, manually mock just what we need
+jest.mock('@jbrowse/core/util', () => {
+  // Return minimal mock that doesn't trigger circular load
+  return {
+    getSession: () => mockSession,
+    isSessionModelWithWidgets: () => false,
+    // Add stubs for other potentially imported items
+    parseLocString: () => ({}),
+    getEnv: () => ({}),
+    useWidthSetter: () => {},
+    measureText: () => 0,
+    IntervalTree: class {},
+    // Add other exports that might be needed
+    checkStopToken: () => false,
+    getSnapshot: () => ({}),
+    applySnapshot: () => {},
+    objectHash: () => '',
+  }
+})
 
 jest.mock('@jbrowse/core/configuration', () => ({
   readConfObject: jest.fn((obj: Record<string, unknown>, key: string) =>

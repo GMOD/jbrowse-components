@@ -54,6 +54,8 @@ export * from './when.ts'
 export * from './range.ts'
 export * from './dedupe.ts'
 export * from './coarseStripHTML.ts'
+export * from './measureText.ts'
+export { IntervalTree } from './IntervalTree.ts'
 
 export * from './offscreenCanvasPonyfill.ts'
 export * from './offscreenCanvasUtils.tsx'
@@ -814,20 +816,6 @@ export const rIC =
         cb()
       }
 
-// prettier-ignore
-const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
-const avgWidth = 0.5279276315789471
-
-// xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
-export function measureText(str: unknown, fontSize = 10) {
-  const s = String(str)
-  let total = 0
-  for (let i = 0, l = s.length; i < l; i++) {
-    total += widths[s.charCodeAt(i)] ?? avgWidth
-  }
-  return total * fontSize
-}
-
 export type Frame = 1 | 2 | 3 | -1 | -2 | -3
 
 export function getFrame(
@@ -1431,7 +1419,6 @@ export * from './locString.ts'
 export * from './stopToken.ts'
 export * from './tracks.ts'
 export * from './fileHandleStore.ts'
-export { IntervalTree } from './IntervalTree.ts'
 export { useGpuModelLifecycle } from './useGpuModelLifecycle.ts'
 export { useGpuRenderer } from './useGpuRenderer.ts'
 export { makeDisplayedRegionKey } from './blockTypes.ts'

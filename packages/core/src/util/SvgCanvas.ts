@@ -1,4 +1,4 @@
-import { measureText as measureTextWidth } from './index.ts'
+import { measureText as measureTextWidth } from './measureText.ts'
 
 interface SavedState {
   fillStyle: string
