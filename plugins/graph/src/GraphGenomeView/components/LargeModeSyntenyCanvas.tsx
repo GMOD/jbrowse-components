@@ -72,7 +72,7 @@ const LargeModeSyntenyCanvas = observer(function LargeModeSyntenyCanvas({
             Math.max(1, ((block.refEnd - block.refStart) / refLen) * drawWidth)
           const alpha = 0.35 + 0.65 * block.identity
           ctx.globalAlpha = alpha
-          ctx.fillStyle = block.strand > 0 ? color : adjustColor(color)
+          ctx.fillStyle = block.strand > 0 ? color : reverseStrandColor(color)
           ctx.fillRect(x, y + 1, w, rowHeight - 3)
         }
         ctx.globalAlpha = 1
@@ -96,12 +96,11 @@ const LargeModeSyntenyCanvas = observer(function LargeModeSyntenyCanvas({
   )
 })
 
-function adjustColor(hex: string) {
+function reverseStrandColor(hex: string) {
   const r = parseInt(hex.slice(1, 3), 16)
   const g = parseInt(hex.slice(3, 5), 16)
   const b = parseInt(hex.slice(5, 7), 16)
-  const avg = (r + g + b) / 3
-  return `rgb(${Math.round(avg)},${Math.round(g * 0.6)},${Math.round(b * 1.2)})`
+  return `rgb(${Math.round(r * 0.65)},${Math.round(g * 0.65)},${Math.round(b * 0.65)})`
 }
 
 export default LargeModeSyntenyCanvas

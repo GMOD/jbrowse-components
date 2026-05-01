@@ -13,7 +13,7 @@ import {
 } from '../renderer/GeometryBuilder.ts'
 
 import type { GraphRenderer } from '../renderer/GraphRenderer.ts'
-import type { SubBatchKey, VertexRange } from '../renderer/types.ts'
+import type { RenderBatch, SubBatchKey, VertexRange } from '../renderer/types.ts'
 import type { ColorScheme, Graph, LayoutResult } from '../types.ts'
 
 export interface SyntenyBlock {
@@ -152,6 +152,8 @@ export default function stateModelFactory() {
       baseEdgeColors: undefined as Uint32Array | undefined,
       baseArrowColors: undefined as Uint32Array | undefined,
       draggingNode: null as string | null,
+      graphBackend: undefined as GraphRenderer | undefined,
+      graphLifecycleInstalled: false,
       viewportDirtyTimer: undefined as
         | ReturnType<typeof setTimeout>
         | undefined,
@@ -250,20 +252,13 @@ export default function stateModelFactory() {
       setViewportDirty() {
         self.viewportDirty++
       },
-      storeRenderBatchMeta(
-        nodeVertexRanges: Map<string, VertexRange>,
-        edgeVertexRanges: Map<number, VertexRange>,
-        arrowVertexRanges: Map<number, VertexRange>,
-        baseNodeColors: Uint32Array,
-        baseEdgeColors: Uint32Array,
-        baseArrowColors: Uint32Array,
-      ) {
-        self.nodeVertexRanges = nodeVertexRanges
-        self.edgeVertexRanges = edgeVertexRanges
-        self.arrowVertexRanges = arrowVertexRanges
-        self.baseNodeColors = baseNodeColors
-        self.baseEdgeColors = baseEdgeColors
-        self.baseArrowColors = baseArrowColors
+      storeRenderBatchMeta(batch: RenderBatch) {
+        self.nodeVertexRanges = batch.nodeVertexRanges
+        self.edgeVertexRanges = batch.edgeVertexRanges
+        self.arrowVertexRanges = batch.arrowVertexRanges
+        self.baseNodeColors = batch.nodes.colors
+        self.baseEdgeColors = batch.edges.colors
+        self.baseArrowColors = batch.arrows.colors
       },
       zoomToFit() {
         if (!self.layoutResult) {
@@ -342,7 +337,10 @@ export default function stateModelFactory() {
     }))
     .actions(self => ({
       startGpuBackendLifecycle(backend: GraphRenderer) {
-        if (!self.gpuAutorunsInstalled) {
+        self.graphBackend = backend
+        if (!self.graphLifecycleInstalled) {
+          self.graphLifecycleInstalled = true
+
           // Autorun: zoom to fit when a new layout result arrives (skip first run)
           let firstLayout = true
           addDisposer(
@@ -380,7 +378,7 @@ export default function stateModelFactory() {
           addDisposer(
             self,
             autorun(() => {
-              const b = self.currentGpuBackend as GraphRenderer | undefined
+              const b = self.graphBackend
               const hoveredNode = self.hoveredNode
               const hoveredEdge = self.hoveredEdge
               const selectedNode = self.selectedNode
@@ -482,15 +480,8 @@ export default function stateModelFactory() {
                 linearLayout: self.linearLayout,
                 viewportBounds: untracked(() => computeViewportBounds(self)),
               })
-
-              self.storeRenderBatchMeta(
-                batch.nodeVertexRanges,
-                batch.edgeVertexRanges,
-                batch.arrowVertexRanges,
-                batch.nodes.colors,
-                batch.edges.colors,
-                batch.arrows.colors,
-              )
+              b.uploadGeometry(batch)
+              self.storeRenderBatchMeta(batch)
             }
           },
           // Autorun: re-render on pan/zoom/darkMode without rebuilding geometry

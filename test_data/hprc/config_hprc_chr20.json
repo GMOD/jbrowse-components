@@ -37,8 +37,7 @@
       "category": ["Synteny"],
       "adapter": {
         "type": "GfaTabixAdapter",
-        "prefix": "https://s3.amazonaws.com/jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chr20",
-        "assemblyNameMap": { "GRCh38#0": "hg38" }
+        "prefix": "https://s3.amazonaws.com/jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chr20"
       },
       "assemblyNames": ["GRCh38#0"]
     },

@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react'
 
-import { fetchResults } from '@jbrowse/core/TextSearch/fetchResults'
+import {
+  fetchResults,
+  resolveLocString,
+} from '@jbrowse/core/TextSearch/fetchResults'
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   AssemblySelector,
@@ -33,27 +36,6 @@ L\t1\t+\t2\t+\t0M
 L\t1\t+\t3\t+\t0M
 L\t2\t+\t4\t+\t0M
 L\t3\t+\t4\t+\t0M`
-
-// Parses `chr1:1,000-2,000`. Returns 0-based half-open [start, end).
-function parseRegion(input: string) {
-  const s = input.replaceAll(/\s/g, '')
-  const lastColon = s.lastIndexOf(':')
-  if (lastColon === -1) {
-    throw new Error('expected format refName:start-end')
-  }
-  const refName = s.slice(0, lastColon)
-  const coords = s.slice(lastColon + 1).replaceAll(',', '')
-  const m = /^(\d+)[-–](\d+)$/.exec(coords)
-  if (!m) {
-    throw new Error('expected format refName:start-end')
-  }
-  const start = +m[1]!
-  const end = +m[2]!
-  if (!(start < end)) {
-    throw new Error('start must be less than end')
-  }
-  return { refName, start, end }
-}
 
 type Mode = 'track' | 'file'
 
@@ -159,15 +141,15 @@ const TrackMode = observer(function TrackMode({
               if (!selectedTrack) {
                 throw new Error('Pick a GfaTabix track')
               }
-              // If the user picked a feature (e.g. a gene) from the autocomplete,
-              // prefer its resolved location; else parse whatever they typed.
-              const { refName, start, end } = parseRegion(loc)
+              const region = await resolveLocString({
+                input: loc,
+                session,
+                assemblyName: assembly,
+              })
               const adapterConfig = readConfObject(selectedTrack, 'adapter')
               await model.loadFromTabixSubgraph(adapterConfig, {
-                refName,
+                ...region,
                 assemblyName: assembly,
-                start,
-                end,
               })
             } catch (e) {
               setError(e)
@@ -184,7 +166,7 @@ const TrackMode = observer(function TrackMode({
   )
 })
 
-function FileMode({ model }: { model: GraphGenomeViewModel }) {
+const FileMode = observer(function FileMode({ model }: { model: GraphGenomeViewModel }) {
   const [url, setUrl] = useState('')
   const [error, setError] = useState<unknown>()
 
@@ -261,7 +243,7 @@ function FileMode({ model }: { model: GraphGenomeViewModel }) {
       {error ? <ErrorBanner error={error} /> : null}
     </div>
   )
-}
+})
 
 const ImportForm = observer(function ImportForm({
   model,

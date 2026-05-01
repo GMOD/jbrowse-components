@@ -1331,7 +1331,8 @@ fn align_pair(
             }
         }
 
-        // Close run
+        // Close run — normalize so ref_start <= ref_end (inverted runs have
+        // step_a at the higher ref position when run_strand is false).
         let (_, step_last) = shared_hap[j - 1];
         let (ref_start_run, _, _) = ref_by_ord[&step_a.ord];
         let (_, ref_end_run, _) = ref_by_ord[&step_last.ord];
@@ -1340,8 +1341,8 @@ fn align_pair(
 
         rows.push(SyntenyRow {
             ref_path: ref_path.name.clone(),
-            ref_start: ref_start_run,
-            ref_end: ref_end_run,
+            ref_start: ref_start_run.min(ref_end_run),
+            ref_end: ref_start_run.max(ref_end_run),
             hap_path: hap_path.name.clone(),
             hap_start: hap_start_run,
             hap_end: hap_end_run,
@@ -1354,8 +1355,8 @@ fn align_pair(
             let (_, step_next) = shared_hap[j];
             let (_, ref_end_last, _) = ref_by_ord[&step_last.ord];
             let (ref_start_next, _, _) = ref_by_ord[&step_next.ord];
-            let bubble_ref_start = ref_end_last;
-            let bubble_ref_end = ref_start_next;
+            let bubble_ref_start = ref_end_last.min(ref_start_next);
+            let bubble_ref_end = ref_end_last.max(ref_start_next);
             let bubble_hap_start = hap_end_run;
             let bubble_hap_end = step_next.offset;
             let r_len = bubble_ref_end.saturating_sub(bubble_ref_start);

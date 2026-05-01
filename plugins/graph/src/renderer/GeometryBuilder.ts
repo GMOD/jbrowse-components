@@ -386,7 +386,6 @@ class MeshBuilder {
     if (points.length < 2) {
       return
     }
-    // ... rest of method (logic for pointNormals and start/end caps is the same, just adding edgeDist)
 
     const pointNormals: { nx: number; ny: number }[] = []
     for (let i = 0; i < points.length; i++) {
@@ -699,5 +698,5 @@ export function brightenColors(
 }
 
 export function extractColorSlice(baseColors: Uint32Array, range: VertexRange) {
-  return baseColors.slice(range.start, range.start + range.count)
+  return baseColors.subarray(range.start, range.start + range.count)
 }

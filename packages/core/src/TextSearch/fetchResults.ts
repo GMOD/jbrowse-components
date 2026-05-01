@@ -1,5 +1,6 @@
 import BaseResult from './BaseResults.ts'
 import { dedupe } from '../util/index.ts'
+import { parseLocString } from '../util/locString.ts'
 
 import type { SearchType } from '../data_adapters/BaseAdapter/types.ts'
 import type { AbstractSessionModel } from '../util/index.ts'
@@ -45,4 +46,84 @@ export async function fetchResults({
       .map(r => new BaseResult({ label: r })) ?? []
 
   return dedupe([...refNameResults, ...textResults], elt => elt.getId())
+}
+
+/**
+ * Resolves a user-typed location string (refname, refname:start-end, or
+ * gene/feature name) to absolute 0-based half-open coordinates.
+ *
+ * Resolution order:
+ * 1. Parse as refname:start-end — returns coords directly.
+ * 2. Parse as refname-only — looks up chromosome extent from assembly regions.
+ * 3. Text search (gene/feature name) — resolves the first hit's location.
+ */
+export async function resolveLocString({
+  input,
+  session,
+  assemblyName,
+}: {
+  input: string
+  session: AbstractSessionModel
+  assemblyName: string
+}): Promise<{ refName: string; start: number; end: number }> {
+  const { assemblyManager } = session
+  const assembly = assemblyManager.get(assemblyName)
+  const isValidRefName = (ref: string) =>
+    assemblyManager.isValidRefName(ref, assemblyName)
+
+  let parsed
+  try {
+    parsed = parseLocString(input, isValidRefName)
+  } catch {
+    parsed = undefined
+  }
+
+  if (parsed) {
+    if (parsed.start !== undefined && parsed.end !== undefined) {
+      return { refName: parsed.refName, start: parsed.start, end: parsed.end }
+    }
+    const chromRegion = assembly?.regions?.find(
+      r => r.refName === parsed.refName,
+    )
+    if (chromRegion) {
+      return {
+        refName: parsed.refName,
+        start: chromRegion.start,
+        end: chromRegion.end,
+      }
+    }
+  }
+
+  const results = await fetchResults({
+    queryString: input,
+    session,
+    assemblyName,
+    searchType: 'exact',
+  })
+  const hit = results[0]
+  if (!hit) {
+    throw new Error(`"${input}" not found in assembly ${assemblyName}`)
+  }
+  const hitLoc = hit.getLocation() ?? hit.getLabel()
+  let hitParsed
+  try {
+    hitParsed = parseLocString(hitLoc, isValidRefName)
+  } catch {
+    hitParsed = undefined
+  }
+  if (hitParsed?.start !== undefined && hitParsed.end !== undefined) {
+    return {
+      refName: hitParsed.refName,
+      start: hitParsed.start,
+      end: hitParsed.end,
+    }
+  }
+  const refName = hitParsed?.refName ?? hitLoc
+  const reg = assembly?.regions?.find(r => r.refName === refName)
+  if (!reg) {
+    throw new Error(
+      `"${input}" resolved to "${hitLoc}" but no coordinates found`,
+    )
+  }
+  return { refName, start: reg.start, end: reg.end }
 }
