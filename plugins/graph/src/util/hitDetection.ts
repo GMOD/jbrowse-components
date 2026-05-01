@@ -83,34 +83,28 @@ function distanceToEdgeCurves(px: number, py: number, curves: BezierCurve[]) {
   return minDist
 }
 
-const nodeIndexCache = new WeakMap<
-  Record<string, NodeSegment[]>,
-  { version: number; index: SpatialIndex }
->()
+let cachedIndex: SpatialIndex | null = null
+let cachedPositions: Record<string, NodeSegment[]> | null = null
+let cachedVersion = 0
 
 function getSpatialIndex(
   nodePositions: Record<string, NodeSegment[]>,
   version: number,
 ) {
-  const cached = nodeIndexCache.get(nodePositions)
-  if (cached?.version === version) {
-    return cached.index
+  if (cachedPositions !== nodePositions || cachedVersion !== version) {
+    cachedPositions = nodePositions
+    cachedVersion = version
+    cachedIndex = new SpatialIndex(nodePositions)
   }
-  const index = new SpatialIndex(nodePositions)
-  nodeIndexCache.set(nodePositions, { version, index })
-  return index
+  return cachedIndex!
 }
 
-const edgeIndexCache = new WeakMap<
-  Record<string, NodeSegment[]>,
-  {
-    graph: Graph
-    drawPaths: boolean
-    scale: number
-    version: number
-    index: EdgeSpatialIndex
-  }
->()
+let cachedEdgeIndex: EdgeSpatialIndex | null = null
+let cachedEdgePositions: Record<string, NodeSegment[]> | null = null
+let cachedEdgeGraph: Graph | null = null
+let cachedEdgeDrawPaths = false
+let cachedEdgeScale = 0
+let cachedEdgeVersion = 0
 
 function getEdgeSpatialIndex(
   nodePositions: Record<string, NodeSegment[]>,
@@ -119,18 +113,21 @@ function getEdgeSpatialIndex(
   scale: number,
   version: number,
 ) {
-  const cached = edgeIndexCache.get(nodePositions)
   if (
-    cached?.graph === graph &&
-    cached.drawPaths === drawPaths &&
-    cached.scale === scale &&
-    cached.version === version
+    cachedEdgePositions !== nodePositions ||
+    cachedEdgeGraph !== graph ||
+    cachedEdgeDrawPaths !== drawPaths ||
+    cachedEdgeScale !== scale ||
+    cachedEdgeVersion !== version
   ) {
-    return cached.index
+    cachedEdgePositions = nodePositions
+    cachedEdgeGraph = graph
+    cachedEdgeDrawPaths = drawPaths
+    cachedEdgeScale = scale
+    cachedEdgeVersion = version
+    cachedEdgeIndex = new EdgeSpatialIndex(nodePositions, graph, drawPaths, scale)
   }
-  const index = new EdgeSpatialIndex(nodePositions, graph, drawPaths, scale)
-  edgeIndexCache.set(nodePositions, { graph, drawPaths, scale, version, index })
-  return index
+  return cachedEdgeIndex!
 }
 
 export function findHoveredNode(

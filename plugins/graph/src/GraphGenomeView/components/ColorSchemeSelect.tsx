@@ -21,7 +21,7 @@ const ColorSchemeSelect = observer(function ColorSchemeSelect({
         <MenuItem value="uniform">Uniform</MenuItem>
         <MenuItem value="random">Random</MenuItem>
         <MenuItem value="depth">Depth</MenuItem>
-        <MenuItem value="gc-content">GC Content</MenuItem>
+        <MenuItem value="gc-content">Node Length</MenuItem>
         <MenuItem value="grey">Grey</MenuItem>
       </Select>
     </FormControl>

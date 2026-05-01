@@ -101,28 +101,25 @@ export class Canvas2DRenderer implements Renderer {
         vertexData[b0 + NORMAL_F32]! * vertexData[b0 + THICKNESS_F32]! +
         t.translateX
       const y0 =
-        t.viewportHeight -
-        (vertexData[b0 + POS_F32 + 1]! * t.scaleY +
-          vertexData[b0 + NORMAL_F32 + 1]! * vertexData[b0 + THICKNESS_F32]! +
-          t.translateY)
+        vertexData[b0 + POS_F32 + 1]! * t.scaleY +
+        vertexData[b0 + NORMAL_F32 + 1]! * vertexData[b0 + THICKNESS_F32]! +
+        t.translateY
       const x1 =
         vertexData[b1 + POS_F32]! * t.scaleX +
         vertexData[b1 + NORMAL_F32]! * vertexData[b1 + THICKNESS_F32]! +
         t.translateX
       const y1 =
-        t.viewportHeight -
-        (vertexData[b1 + POS_F32 + 1]! * t.scaleY +
-          vertexData[b1 + NORMAL_F32 + 1]! * vertexData[b1 + THICKNESS_F32]! +
-          t.translateY)
+        vertexData[b1 + POS_F32 + 1]! * t.scaleY +
+        vertexData[b1 + NORMAL_F32 + 1]! * vertexData[b1 + THICKNESS_F32]! +
+        t.translateY
       const x2 =
         vertexData[b2 + POS_F32]! * t.scaleX +
         vertexData[b2 + NORMAL_F32]! * vertexData[b2 + THICKNESS_F32]! +
         t.translateX
       const y2 =
-        t.viewportHeight -
-        (vertexData[b2 + POS_F32 + 1]! * t.scaleY +
-          vertexData[b2 + NORMAL_F32 + 1]! * vertexData[b2 + THICKNESS_F32]! +
-          t.translateY)
+        vertexData[b2 + POS_F32 + 1]! * t.scaleY +
+        vertexData[b2 + NORMAL_F32 + 1]! * vertexData[b2 + THICKNESS_F32]! +
+        t.translateY
 
       const c = vertexDataU32[b0 + COLOR_F32]!
       const r = c & 0xff
