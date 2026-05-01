@@ -1,3 +1,8 @@
+import {
+  abgrToCssRgba,
+  normalizedRgbToCssRgba,
+} from '@jbrowse/core/util/colorBits'
+
 import * as graphShader from './shaders/graph.generated.ts'
 import { SUB_BATCH_KEYS } from './types.ts'
 
@@ -72,7 +77,10 @@ export class Canvas2DRenderer implements Renderer {
     const ctx = this.ctx
     const { width, height } = ctx.canvas
 
-    ctx.fillStyle = `rgba(${Math.round(clearColor[0] * 255)},${Math.round(clearColor[1] * 255)},${Math.round(clearColor[2] * 255)},${clearColor[3]})`
+    ctx.fillStyle = normalizedRgbToCssRgba(
+      [clearColor[0], clearColor[1], clearColor[2]],
+      clearColor[3],
+    )
     ctx.fillRect(0, 0, width, height)
 
     for (const key of SUB_BATCH_KEYS) {
@@ -88,6 +96,7 @@ export class Canvas2DRenderer implements Renderer {
     const t = this.transform
     const { vertexData, vertexDataU32, indices } = batch
 
+    let lastColor = -1
     for (let i = 0; i < indices.length; i += 3) {
       const i0 = indices[i]!
       const i1 = indices[i + 1]!
@@ -122,12 +131,10 @@ export class Canvas2DRenderer implements Renderer {
         t.translateY
 
       const c = vertexDataU32[b0 + COLOR_F32]!
-      const r = c & 0xff
-      const g = (c >>> 8) & 0xff
-      const b = (c >>> 16) & 0xff
-      const a = ((c >>> 24) & 0xff) / 255
-
-      ctx.fillStyle = `rgba(${r},${g},${b},${a})`
+      if (c !== lastColor) {
+        ctx.fillStyle = abgrToCssRgba(c)
+        lastColor = c
+      }
       ctx.beginPath()
       ctx.moveTo(x0, y0)
       ctx.lineTo(x1, y1)

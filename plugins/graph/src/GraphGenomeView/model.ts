@@ -307,6 +307,7 @@ export default function stateModelFactory() {
         self.hoveredNode = null
         self.hoveredEdge = null
         self.selectedNode = null
+        self.draggingNode = null
         self.nodeVertexRanges = undefined
         self.edgeVertexRanges = undefined
         self.arrowVertexRanges = undefined

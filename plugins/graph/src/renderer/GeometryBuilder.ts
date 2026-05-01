@@ -1,4 +1,10 @@
-import { packAbgr } from '@jbrowse/core/util/colorBits'
+import {
+  abgrAlpha,
+  abgrBlue,
+  abgrGreen,
+  abgrRed,
+  packAbgr,
+} from '@jbrowse/core/util/colorBits'
 
 import { computeEdgeCurves } from '../util/geometry.ts'
 import {
@@ -154,7 +160,7 @@ export function getNodeColor(
       return packAbgr(Math.round(r), Math.round(g), Math.round(b), 255)
     }
 
-    case 'gc-content': {
+    case 'node-length': {
       const normalized =
         range.maxLength > range.minLength
           ? (node.length - range.minLength) /
@@ -688,11 +694,10 @@ export function brightenColors(
   const slice = new Uint32Array(range.count)
   for (let v = 0; v < range.count; v++) {
     const c = baseColors[range.start + v]!
-    const r = Math.min(255, Math.round((c & 0xff) * factor))
-    const g = Math.min(255, Math.round(((c >>> 8) & 0xff) * factor))
-    const b = Math.min(255, Math.round(((c >>> 16) & 0xff) * factor))
-    const a = (c >>> 24) & 0xff
-    slice[v] = packAbgr(r, g, b, a)
+    const r = Math.min(255, Math.round(abgrRed(c) * factor))
+    const g = Math.min(255, Math.round(abgrGreen(c) * factor))
+    const b = Math.min(255, Math.round(abgrBlue(c) * factor))
+    slice[v] = packAbgr(r, g, b, abgrAlpha(c))
   }
   return slice
 }

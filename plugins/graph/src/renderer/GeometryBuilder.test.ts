@@ -1,3 +1,5 @@
+import { abgrAlpha, abgrBlue, abgrGreen, abgrRed, packAbgr } from '@jbrowse/core/util/colorBits'
+
 import {
   brightenColors,
   buildGeometry,
@@ -219,4 +221,67 @@ test('viewport culling skips off-screen nodes', () => {
 
   expect(batch.nodeVertexRanges.has('A+')).toBe(true)
   expect(batch.nodeVertexRanges.has('B+')).toBe(false)
+})
+
+test('node-length color scheme produces distinct colors for different lengths', () => {
+  const nodes = [
+    { id: 'short+', name: 'short', length: 10, depth: 1 },
+    { id: 'long+', name: 'long', length: 10000, depth: 1 },
+  ]
+  const positions = {
+    'short+': [
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+    ],
+    'long+': [
+      { x: 20, y: 0 },
+      { x: 30, y: 0 },
+    ],
+  }
+  const graph = { name: 'test', nodes, edges: [] }
+  const nodeById = new Map(nodes.map(n => [n.id, n]))
+
+  const batch = buildGeometry({
+    nodePositions: positions,
+    graph,
+    nodeById,
+    colorScheme: 'node-length',
+    scale: 1,
+    contigThickness: 5,
+    connectorThickness: 1.5,
+    drawPaths: false,
+  })
+
+  const shortRange = batch.nodeVertexRanges.get('short+')!
+  const longRange = batch.nodeVertexRanges.get('long+')!
+  expect(shortRange).toBeDefined()
+  expect(longRange).toBeDefined()
+  expect(batch.nodes.colors[shortRange.start]).not.toBe(
+    batch.nodes.colors[longRange.start],
+  )
+})
+
+test('brightenColors clamps channels at 255', () => {
+  const colors = new Uint32Array([packAbgr(200, 200, 200, 255)])
+  const range = { start: 0, count: 1 }
+  const brightened = brightenColors(colors, range, 2.0)
+  expect(abgrRed(brightened[0]!)).toBe(255)
+  expect(abgrGreen(brightened[0]!)).toBe(255)
+  expect(abgrBlue(brightened[0]!)).toBe(255)
+  expect(abgrAlpha(brightened[0]!)).toBe(255)
+})
+
+test('brightenColors preserves alpha', () => {
+  const colors = new Uint32Array([packAbgr(100, 100, 100, 128)])
+  const range = { start: 0, count: 1 }
+  const brightened = brightenColors(colors, range, 1.5)
+  expect(abgrAlpha(brightened[0]!)).toBe(128)
+})
+
+test('extractColorSlice shares the underlying buffer', () => {
+  const colors = new Uint32Array([10, 20, 30, 40, 50])
+  const range = { start: 1, count: 3 }
+  const slice = extractColorSlice(colors, range)
+  expect(slice.buffer).toBe(colors.buffer)
+  expect(Array.from(slice)).toEqual([20, 30, 40])
 })

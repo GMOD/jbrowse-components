@@ -13,7 +13,6 @@ import {
 } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   MenuItem,
