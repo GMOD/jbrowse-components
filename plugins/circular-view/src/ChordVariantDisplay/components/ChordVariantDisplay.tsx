@@ -39,14 +39,15 @@ const ChordVariantDisplay = observer(function ChordVariantDisplay({
   if (display.error) {
     return <DisplayError model={display} radius={radius} />
   }
-  if (!display.features) {
+  const blockDefs = display.blockDefinitions
+  if (!display.features || !blockDefs?.length) {
     return <Loading radius={radius} />
   }
 
   return (
     <SVChordsReactComponent
       features={display.features}
-      blockDefinitions={display.blockDefinitions}
+      blockDefinitions={blockDefs}
       radius={radius}
       bezierRadius={radius * display.bezierRadiusRatio}
       config={display.configuration.renderer}

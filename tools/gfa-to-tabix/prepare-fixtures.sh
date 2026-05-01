@@ -7,10 +7,6 @@
 # - test/data/synteny-demo/hprc/hprc-v1.1-mc-grch38-chrM.* : 44-haplotype
 #   realistic case. Source .vg downloaded if missing.
 #
-# Builds vg .xg / odgi .og as truth-extractor caches under the *.truth-cache/
-# sibling directory (created lazily by the harness — this script only ensures
-# the GfaTabixAdapter inputs exist).
-#
 # Usage:
 #   bash tools/gfa-to-tabix/prepare-fixtures.sh
 
@@ -29,14 +25,14 @@ have() {
   command -v "$1" >/dev/null 2>&1
 }
 
-# ---- volvox_pangenome_50: ensure pos/segments/edges/bubbles all present ----
+# ---- volvox_pangenome_50 ----
 
 vol50_prefix="$REPO_ROOT/test_data/volvox/volvox_pangenome_50"
 vol50_gfa="$vol50_prefix.gfa"
 
 reindex_vol50=false
-for f in "$vol50_prefix.pos.bed.gz" "$vol50_prefix.segments.bin" \
-         "$vol50_prefix.edges.bin" "$vol50_prefix.bubbles.bed.gz"; do
+for f in "$vol50_prefix.pos.bed.gz" "$vol50_prefix.synteny.bed.gz" \
+         "$vol50_prefix.edges.spatial.bed.gz"; do
   if [[ ! -f "$f" ]]; then
     reindex_vol50=true
     break
@@ -60,14 +56,14 @@ else
   echo "[volvox_pangenome_50] indexes present, skipping"
 fi
 
-# ---- volvox_indel_pangenome: re-index with edges + bubbles ----
+# ---- volvox_indel_pangenome ----
 
 vol_indel_prefix="$REPO_ROOT/test_data/volvox/volvox_indel_pangenome"
 vol_indel_gfa="$vol_indel_prefix.gfa"
 
 reindex_indel=false
-for f in "$vol_indel_prefix.pos.bed.gz" "$vol_indel_prefix.segments.bin" \
-         "$vol_indel_prefix.edges.bin" "$vol_indel_prefix.bubbles.bed.gz"; do
+for f in "$vol_indel_prefix.pos.bed.gz" "$vol_indel_prefix.synteny.bed.gz" \
+         "$vol_indel_prefix.edges.spatial.bed.gz"; do
   if [[ ! -f "$f" ]]; then
     reindex_indel=true
     break
@@ -117,8 +113,8 @@ if [[ -f "$hprc_chrm_vg" ]] && [[ ! -f "$hprc_chrm_gfa" ]]; then
 fi
 
 reindex_hprc=false
-for f in "$hprc_chrm_prefix.pos.bed.gz" "$hprc_chrm_prefix.segments.bin" \
-         "$hprc_chrm_prefix.edges.bin"; do
+for f in "$hprc_chrm_prefix.pos.bed.gz" "$hprc_chrm_prefix.synteny.bed.gz" \
+         "$hprc_chrm_prefix.edges.spatial.bed.gz"; do
   if [[ ! -f "$f" ]]; then
     reindex_hprc=true
     break
@@ -146,11 +142,11 @@ echo ""
 echo "Fixture status:"
 for prefix in "$vol50_prefix" "$vol_indel_prefix" "$hprc_chrm_prefix"; do
   echo "  $prefix:"
-  for ext in pos.bed.gz segments.bin edges.bin bubbles.bed.gz; do
+  for ext in pos.bed.gz synteny.bed.gz synteny.coarse.bed.gz edges.spatial.bed.gz bubbles.bed.gz; do
     if [[ -f "$prefix.$ext" ]]; then
-      printf "    %-20s %s\n" "$ext" "$(stat -c %s "$prefix.$ext") bytes"
+      printf "    %-30s %s\n" "$ext" "$(stat -c %s "$prefix.$ext") bytes"
     else
-      printf "    %-20s missing\n" "$ext"
+      printf "    %-30s missing\n" "$ext"
     fi
   done
 done

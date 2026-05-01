@@ -22,8 +22,7 @@ const GfaTabixAdapter = ConfigurationSchema(
      */
     posLocation: {
       type: 'fileLocation',
-      description:
-        'Location of the pos.bed.gz file (position → segment mapping)',
+      description: 'Location of pos.bed.gz (position → ordinal mapping)',
       defaultValue: {
         uri: '/path/to/data.pos.bed.gz',
         locationType: 'UriLocation',
@@ -47,91 +46,50 @@ const GfaTabixAdapter = ConfigurationSchema(
     /**
      * #slot
      */
-    segmentsLocation: {
+    syntenyLocation: {
       type: 'fileLocation',
-      description: 'Location of the segments.bin file (binary segment records)',
+      description:
+        'Location of synteny.bed.gz (haplotype alignment blocks, ref-keyed)',
       defaultValue: {
-        uri: '/path/to/data.segments.bin',
+        uri: '/path/to/data.synteny.bed.gz',
         locationType: 'UriLocation',
       },
     },
     /**
      * #slot
      */
-    segmentsIdxLocation: {
+    syntenyIndex: ConfigurationSchema('SyntenyTabixIndex', {
+      /**
+       * #slot syntenyIndex.location
+       */
+      location: {
+        type: 'fileLocation',
+        defaultValue: {
+          uri: '/path/to/data.synteny.bed.gz.tbi',
+          locationType: 'UriLocation',
+        },
+      },
+    }),
+    syntenyCoarseLocation: {
       type: 'fileLocation',
       description:
-        'Location of the segments.idx companion index (segment ID → byte offset)',
-      defaultValue: {
-        uri: '/path/to/data.segments.idx',
-        locationType: 'UriLocation',
-      },
+        'Location of synteny.coarse.bed.gz (merged blocks for bpPerPx > 1000)',
+      defaultValue: { uri: '', locationType: 'UriLocation' },
     },
+    syntenyCoarseIndex: ConfigurationSchema('SyntenyCoarseTabixIndex', {
+      location: {
+        type: 'fileLocation',
+        defaultValue: { uri: '', locationType: 'UriLocation' },
+      },
+    }),
     /**
      * #slot
      */
-    edgesLocation: {
-      type: 'fileLocation',
-      description:
-        'Location of the edges.bin file (graph adjacency lists for subgraph extraction)',
-      defaultValue: {
-        uri: '',
-        locationType: 'UriLocation',
-      },
-    },
-    edgesIdxLocation: {
-      type: 'fileLocation',
-      description:
-        'Location of the edges.idx companion index (ordinal → byte offset in edges.bin)',
-      defaultValue: {
-        uri: '',
-        locationType: 'UriLocation',
-      },
-    },
-    seqFastaLocation: {
-      type: 'fileLocation',
-      description:
-        'Plaintext per-segment FASTA (>seg<ord>) for Phase 1 sequence-aware getSubgraph',
-      defaultValue: {
-        uri: '',
-        locationType: 'UriLocation',
-      },
-    },
-    seqIdxLocation: {
-      type: 'fileLocation',
-      description:
-        'Compact binary index (12 bytes per ordinal) into the per-segment FASTA. The samtools-compatible .fai is also shipped but the adapter reads this binary form for fast random access.',
-      defaultValue: {
-        uri: '',
-        locationType: 'UriLocation',
-      },
-    },
-    seqBinaryLocation: {
-      type: 'fileLocation',
-      description:
-        'Phase 1 binary sequence tier (segments.seq.bin): SEQB-magic 2-bit ACGT pack + per-segment N-bitmap. Preferred over seqFastaLocation when present (~73% smaller than plaintext at HPRC chr20 scale).',
-      defaultValue: {
-        uri: '',
-        locationType: 'UriLocation',
-      },
-    },
-    seqBinaryIdxLocation: {
-      type: 'fileLocation',
-      description:
-        'SEQI-magic byte-offset table for segments.seq.bin (BigUint64Array, one entry per ordinal plus end-of-file sentinel).',
-      defaultValue: {
-        uri: '',
-        locationType: 'UriLocation',
-      },
-    },
     bubblesLocation: {
       type: 'fileLocation',
       description:
-        'Location of the bubbles.bed.gz file (precomputed per-snarl CS between allele pairs)',
-      defaultValue: {
-        uri: '',
-        locationType: 'UriLocation',
-      },
+        'Location of bubbles.bed.gz (per-snarl CS for bpPerPx < 50)',
+      defaultValue: { uri: '', locationType: 'UriLocation' },
     },
     /**
      * #slot
@@ -142,12 +100,26 @@ const GfaTabixAdapter = ConfigurationSchema(
        */
       location: {
         type: 'fileLocation',
-        defaultValue: {
-          uri: '',
-          locationType: 'UriLocation',
-        },
+        defaultValue: { uri: '', locationType: 'UriLocation' },
       },
     }),
+    edgesLocation: {
+      type: 'fileLocation',
+      description: 'Location of edges.spatial.bed.gz (bidirectional edge index)',
+      defaultValue: { uri: '', locationType: 'UriLocation' },
+    },
+    edgesIndex: ConfigurationSchema('EdgesTabixIndex', {
+      location: {
+        type: 'fileLocation',
+        defaultValue: { uri: '', locationType: 'UriLocation' },
+      },
+    }),
+    seqlensLocation: {
+      type: 'fileLocation',
+      description:
+        'Location of seglens.bin (flat u32 segment lengths indexed by ordinal)',
+      defaultValue: { uri: '', locationType: 'UriLocation' },
+    },
   },
   {
     explicitlyTyped: true,
@@ -157,10 +129,7 @@ const GfaTabixAdapter = ConfigurationSchema(
      *
      * Preprocessor for minimal config using prefix:
      * ```json
-     * {
-     *   "type": "GfaTabixAdapter",
-     *   "prefix": "https://example.com/data/pangenome"
-     * }
+     * { "type": "GfaTabixAdapter", "prefix": "https://example.com/data/pan" }
      * ```
      */
     preProcessSnapshot: snap => {
@@ -177,37 +146,26 @@ const GfaTabixAdapter = ConfigurationSchema(
               baseUri: snap.baseUri,
             },
           },
-          segmentsLocation: {
-            uri: `${snap.prefix}.segments.bin`,
+          syntenyLocation: {
+            uri: `${snap.prefix}.synteny.bed.gz`,
             baseUri: snap.baseUri,
           },
-          segmentsIdxLocation: {
-            uri: `${snap.prefix}.segments.idx`,
+          syntenyIndex: {
+            location: {
+              uri: `${snap.prefix}.synteny.bed.gz.tbi`,
+              baseUri: snap.baseUri,
+            },
+          },
+          syntenyCoarseLocation: {
+            uri: `${snap.prefix}.synteny.coarse.bed.gz`,
             baseUri: snap.baseUri,
           },
-          edgesLocation: {
-            uri: `${snap.prefix}.edges.bin`,
-            baseUri: snap.baseUri,
+          syntenyCoarseIndex: {
+            location: {
+              uri: `${snap.prefix}.synteny.coarse.bed.gz.tbi`,
+              baseUri: snap.baseUri,
+            },
           },
-          edgesIdxLocation: {
-            uri: `${snap.prefix}.edges.idx`,
-            baseUri: snap.baseUri,
-          },
-          seqFastaLocation: {
-            uri: `${snap.prefix}.segments.seq.fa`,
-            baseUri: snap.baseUri,
-          },
-          seqIdxLocation: {
-            uri: `${snap.prefix}.segments.seq.idx`,
-            baseUri: snap.baseUri,
-          },
-          // Binary sequence tier (Phase 1 binary, opt-in at preprocess
-          // time via --emit-seq-binary) is intentionally NOT wired by the
-          // `prefix:` shorthand — emit defaults to plaintext-only, so
-          // unconditional auto-wiring would 404 on every getSubgraph for
-          // most existing deployments. Fixtures that do ship the binary
-          // tier should set seqBinaryLocation/seqBinaryIdxLocation
-          // explicitly in their adapter config.
           bubblesLocation: {
             uri: `${snap.prefix}.bubbles.bed.gz`,
             baseUri: snap.baseUri,
@@ -217,6 +175,20 @@ const GfaTabixAdapter = ConfigurationSchema(
               uri: `${snap.prefix}.bubbles.bed.gz.tbi`,
               baseUri: snap.baseUri,
             },
+          },
+          edgesLocation: {
+            uri: `${snap.prefix}.edges.spatial.bed.gz`,
+            baseUri: snap.baseUri,
+          },
+          edgesIndex: {
+            location: {
+              uri: `${snap.prefix}.edges.spatial.bed.gz.tbi`,
+              baseUri: snap.baseUri,
+            },
+          },
+          seqlensLocation: {
+            uri: `${snap.prefix}.seglens.bin`,
+            baseUri: snap.baseUri,
           },
         }
       }

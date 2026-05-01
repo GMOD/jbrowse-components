@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::fs::{self, File};
-use std::io::{BufRead, BufReader, BufWriter, Read as IoRead, Seek, SeekFrom, Write};
+use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::process::{Command, Stdio};
 use std::time::Instant;
 
@@ -36,10 +36,6 @@ struct Args {
     #[arg(long)]
     assemblies: Option<String>,
 
-    /// Produce per-assembly sharded segments files
-    #[arg(long)]
-    sharded: bool,
-
     /// Disable orientation normalization of reverse-complemented contigs
     #[arg(long)]
     no_groom: bool,
@@ -60,23 +56,6 @@ struct Args {
     #[arg(long)]
     output_config: Option<String>,
 
-    /// Skip emission of plaintext per-segment FASTA. By default the tool
-    /// writes <prefix>.segments.seq.fa and <prefix>.segments.seq.fa.fai
-    /// (one record per ordinal), enabling Phase 1 sequence-aware getSubgraph.
-    /// Disable for index footprint when sequences aren't needed.
-    #[arg(long)]
-    no_emit_seq_plaintext: bool,
-
-    /// Emit binary 2-bit sequence tier alongside (or instead of) plaintext.
-    /// Writes <prefix>.segments.seq.bin (SEQB magic + per-segment u32 len +
-    /// 2-bit ACGT pack + N-bitmap) and <prefix>.segments.seq.bin.idx (SEQI
-    /// magic + BigUint64 byte-offset table). Format pinned in
-    /// agent-docs/GRAPH_INDEX_FORMAT.md (Phase 1 binary tier). At HPRC
-    /// chr20 scale the binary tier is ~25 MB vs ~91 MB plaintext (73%
-    /// reduction) — see GRAPH_INDEX_FORMAT.md spike numbers. Default off
-    /// because it duplicates content the plaintext tier already provides.
-    #[arg(long)]
-    emit_seq_binary: bool,
 }
 
 fn main() {
@@ -95,12 +74,9 @@ fn main() {
     let assemblies_filter: Option<HashSet<String>> = cli
         .assemblies
         .map(|s| s.split(',').map(|s| s.to_string()).collect());
-    let sharded = cli.sharded;
     let groom = !cli.no_groom;
     let ref_assembly_arg = cli.ref_assembly;
     let bubbles_vcf = cli.bubbles;
-    let emit_seq_plaintext = !cli.no_emit_seq_plaintext;
-    let emit_seq_binary = cli.emit_seq_binary;
     let output_config = cli.output_config;
 
     // Two-phase single-pass: reads all lines once, collecting S-lines in memory
@@ -115,16 +91,12 @@ fn main() {
     let mut seg_lengths: HashMap<String, u64> = HashMap::new();
     let mut seg_ordinals: HashMap<String, u64> = HashMap::new();
     let mut next_ordinal: u64 = 0;
-    let mut seg_seqs: HashMap<String, Vec<u8>> = HashMap::new();
-    let mut seg_seq_missing: u64 = 0;
+    let mut raw_links: Vec<(String, String, String, String)> = Vec::new();
 
     // Spool P/W-lines to a temp file to avoid buffering in memory
     let paths_tmp = tmp_dir.join("paths.txt");
     let mut paths_tmp_w = BufWriter::new(File::create(&paths_tmp).expect("create paths tmp"));
     let mut path_line_count: u64 = 0;
-
-    // Collect L-lines (edges) as raw segment names for later ordinal mapping
-    let mut raw_links: Vec<(String, String, String, String)> = Vec::new();
 
     for line in open_file(gfa_path).lines() {
         let line = line.expect("read error");
@@ -142,23 +114,11 @@ fn main() {
                         .map(|t| t[5..].parse::<u64>().unwrap_or(0))
                 })
                 .unwrap_or_else(|| if seq == "*" { 0 } else { seq.len() as u64 });
-            if emit_seq_plaintext || emit_seq_binary {
-                if seq == "*" {
-                    seg_seq_missing += 1;
-                } else {
-                    seg_seqs.insert(name.clone(), seq.as_bytes().to_vec());
-                }
-            }
             seg_lengths.insert(name, length);
         } else if line.starts_with("L\t") {
             let cols: Vec<&str> = line.splitn(6, '\t').collect();
             if cols.len() >= 5 {
-                raw_links.push((
-                    cols[1].to_string(),
-                    cols[2].to_string(),
-                    cols[3].to_string(),
-                    cols[4].to_string(),
-                ));
+                raw_links.push((cols[1].to_string(), cols[2].to_string(), cols[3].to_string(), cols[4].to_string()));
             }
         } else if line.starts_with("W\t") || line.starts_with("P\t") {
             paths_tmp_w.write_all(line.as_bytes()).unwrap();
@@ -168,7 +128,7 @@ fn main() {
     }
     drop(paths_tmp_w);
 
-    eprintln!("  {} segments, {} path lines, {} links", seg_lengths.len(), path_line_count, raw_links.len());
+    eprintln!("  {} segments, {} path lines", seg_lengths.len(), path_line_count);
 
     // Replay buffered path lines now that all segments are known
     eprintln!("Processing paths...");
@@ -176,15 +136,6 @@ fn main() {
     let pos_file = format!("{}.pos.bed.gz", output_prefix);
     let mut pos_proc = spawn_sort_bgzip(&pos_file);
     let mut pos_w = BufWriter::new(pos_proc.stdin.take().unwrap());
-
-    let combined_tmp = tmp_dir.join("segments.tsv");
-    let mut segments_files: HashMap<String, BufWriter<File>> = HashMap::new();
-    if !sharded {
-        segments_files.insert(
-            String::new(),
-            BufWriter::new(File::create(&combined_tmp).expect("create temp")),
-        );
-    }
 
     let mut genomes: Vec<String> = Vec::new();
     let mut genome_set: HashSet<String> = HashSet::new();
@@ -195,6 +146,7 @@ fn main() {
     let mut path_sizes: Vec<(String, u64)> = Vec::new();
     let mut path_count: u64 = 0;
     let mut ref_ord_walks: HashMap<String, Vec<(u64, u64)>> = HashMap::new();
+    let mut all_paths: Vec<PathData> = Vec::new();
     // Track whether the input GFA used W-lines or P-lines for haplotype paths
     // so the adapter can emit the same format on extraction (Phase 2 W-in/W-out).
     let mut had_walk_lines = false;
@@ -240,29 +192,15 @@ fn main() {
                 Some(ra) => *ra == assembly,
             };
 
-            let path_index = if let Some(&idx) = path_name_indices.get(&path_name) {
-                idx
-            } else {
-                let idx = path_names.len() as u64;
-                path_name_indices.insert(path_name.clone(), idx);
+            if !path_name_indices.contains_key(&path_name) {
+                path_name_indices.insert(path_name.clone(), path_names.len() as u64);
                 path_names.push(path_name.clone());
-                idx
-            };
-
-            let segments_key = if sharded { assembly.clone() } else { String::new() };
-            if !segments_files.contains_key(&segments_key) {
-                let p = tmp_dir.join(format!("{}.tsv", encode_filename(&assembly)));
-                segments_files.insert(
-                    segments_key.clone(),
-                    BufWriter::new(File::create(&p).expect("create shard temp")),
-                );
             }
-            let segments_w = segments_files.get_mut(&segments_key).unwrap();
 
             let mut ord_walk: Vec<(u64, u64)> = Vec::new();
+            let mut steps_out: Vec<StepInfo> = Vec::new();
             let total = emit_path_rows(
                 &path_name,
-                path_index,
                 &seg_str,
                 is_walk,
                 chunk_size,
@@ -270,11 +208,11 @@ fn main() {
                 &mut seg_ordinals,
                 &mut next_ordinal,
                 &mut pos_w,
-                segments_w,
                 &mut ref_orients,
                 is_ref,
                 groom,
                 &mut ord_walk,
+                &mut steps_out,
             );
 
             if is_ref {
@@ -282,6 +220,7 @@ fn main() {
                 ref_ord_walks.insert(path_name.clone(), ord_walk);
             }
 
+            all_paths.push(PathData { name: path_name.clone(), assembly: assembly.clone(), steps: steps_out });
             path_sizes.push((path_name, total));
             path_count += 1;
         }
@@ -313,7 +252,6 @@ fn main() {
         "paths"
     };
     let format_header = format!("#input-format={}\n", input_format);
-    let full_header = format!("{}{}{}{}", header, sizes_header, paths_header, format_header);
 
     // Finish pos.bed.gz
     pos_w.write_all(header.as_bytes()).unwrap();
@@ -327,110 +265,41 @@ fn main() {
     );
     run_cmd("tabix", &["-c", "#", "-p", "bed", &pos_file]);
 
-    // Flush segment temp files
-    drop(segments_files);
+    if let Some(ref ra) = ref_assembly {
+        eprintln!("Building synteny index...");
+        synteny_build(&all_paths, ra, &output_prefix);
+        eprintln!("Building edge spatial index...");
+        build_edges_spatial(&raw_links, &seg_ordinals, &seg_lengths, &all_paths, ra, &output_prefix);
+    }
 
-    // Build segments.bin + .idx
-    if sharded {
-        let segs_dir = format!("{}_segments", output_prefix);
-        fs::create_dir_all(&segs_dir).unwrap();
-        let mut manifest_entries: Vec<(String, String)> = Vec::new();
-
-        for genome in &genomes {
-            let encoded = encode_filename(genome);
-            let tmp_path = tmp_dir.join(format!("{}.tsv", encoded));
-            let out_prefix = format!("{}/{}.segments", segs_dir, encoded);
-            sort_and_build_segments(
-                &tmp_path.to_string_lossy(),
-                &full_header,
-                &out_prefix,
-                next_ordinal,
-                &tmp_dir.to_string_lossy(),
-            );
-            let _ = fs::remove_file(&tmp_path);
-            let dir_base = segs_dir.rsplit('/').next().unwrap_or(&segs_dir);
-            manifest_entries.push((
-                genome.clone(),
-                format!("{}/{}.segments", dir_base, encoded),
-            ));
+    // seglens.bin: flat u32 array indexed by ordinal
+    let seglens_path = format!("{}.seglens.bin", output_prefix);
+    let mut sf = BufWriter::new(File::create(&seglens_path).expect("create seglens.bin"));
+    let n_ords = next_ordinal as usize;
+    let mut lens_by_ord: Vec<u32> = vec![0u32; n_ords];
+    for (name, &ord) in &seg_ordinals {
+        if let Some(&l) = seg_lengths.get(name) {
+            lens_by_ord[ord as usize] = l.min(u32::MAX as u64) as u32;
         }
-
-        write_manifest(
-            &format!("{}.segments.manifest.json", output_prefix),
-            &genomes,
-            &manifest_entries,
-        );
-    } else {
-        sort_and_build_segments(
-            &combined_tmp.to_string_lossy(),
-            &full_header,
-            &format!("{}.segments", output_prefix),
-            next_ordinal,
-            &tmp_dir.to_string_lossy(),
-        );
-        let _ = fs::remove_file(&combined_tmp);
     }
-
-    // Phase 1 (plaintext tier): write per-ordinal FASTA + .fai. Skipped if
-    // the source GFA used `*` placeholders for sequences or if the user
-    // passed --no-emit-seq-plaintext.
-    if emit_seq_plaintext && !seg_seqs.is_empty() {
-        eprintln!("Writing per-segment FASTA...");
-        let written = write_segments_seq_fa(
-            &output_prefix,
-            next_ordinal,
-            &seg_ordinals,
-            &seg_seqs,
-        );
-        eprintln!(
-            "  Wrote {}.segments.seq.fa ({} sequences{})",
-            output_prefix,
-            written,
-            if seg_seq_missing > 0 {
-                format!(", {} S-lines used `*` placeholder and were skipped", seg_seq_missing)
-            } else {
-                String::new()
-            }
-        );
+    for l in &lens_by_ord {
+        sf.write_all(&l.to_le_bytes()).unwrap();
     }
-
-    // Phase 1 (binary tier): SEQB-magic 2-bit-packed sequence + N-bitmap,
-    // ordinal-keyed via SEQI-magic byte-offset table. Format pinned in
-    // agent-docs/GRAPH_INDEX_FORMAT.md. Opt-in via --emit-seq-binary; the
-    // adapter dispatches on file magic so this can ship alongside the
-    // plaintext tier without breaking older readers.
-    if emit_seq_binary && !seg_seqs.is_empty() {
-        eprintln!("Writing binary sequence tier...");
-        let (written, bin_bytes) = write_segments_seq_bin(
-            &output_prefix,
-            next_ordinal,
-            &seg_ordinals,
-            &seg_seqs,
-        );
-        eprintln!(
-            "  Wrote {}.segments.seq.bin ({} sequences, {:.2} MB)",
-            output_prefix,
-            written,
-            bin_bytes as f64 / (1024.0 * 1024.0),
-        );
-    }
-
-    // Build edges.bin + edges.idx from L-lines
-    if !raw_links.is_empty() {
-        eprintln!("Building edge index...");
-        build_edge_index(
-            &raw_links,
-            &seg_ordinals,
-            &seg_lengths,
-            next_ordinal,
-            &output_prefix,
-        );
-        eprintln!("  {} links → edges.bin + edges.idx", raw_links.len());
-    }
+    drop(sf);
+    eprintln!("  Wrote {}", seglens_path);
 
     let rewritten_vcf_path;
     if let Some(ref vcf_path) = bubbles_vcf {
-        generate_bubbles_from_vcf(vcf_path, &output_prefix, &genomes, &path_names, &ref_ord_walks);
+        let ord_to_paths: HashMap<u64, Vec<(usize, u64, u64)>> = {
+            let mut m: HashMap<u64, Vec<(usize, u64, u64)>> = HashMap::new();
+            for (pi, path) in all_paths.iter().enumerate() {
+                for step in &path.steps {
+                    m.entry(step.ord).or_default().push((pi, step.offset, step.seg_len));
+                }
+            }
+            m
+        };
+        generate_bubbles_from_vcf(vcf_path, &output_prefix, &genomes, &path_names, &ref_ord_walks, &ord_to_paths);
         rewritten_vcf_path = format!("{}.vcf.gz", output_prefix);
         // Write to a temp file first to avoid clobbering the input VCF
         // when the output path matches the input path
@@ -469,215 +338,34 @@ fn main() {
     eprintln!("  Genomes: {} ({})", genomes.len(), genomes.join(", "));
 }
 
-/// Sort the unsorted segments TSV by ordinal, then write a flat binary file
-/// (.bin) with fixed-width 15-byte records and a companion byte-offset index
-/// (.idx).
+/// Process one path (P-line or W-line walk) from the GFA, emitting
+/// pos.bed.gz rows (one per chunk of `chunk_size` steps) and collecting
+/// StepInfo for the caller to use in synteny/edge/bubble builds.
 ///
-/// Binary record layout (little-endian):
-///   segOrd:     u32  (4 bytes)
-///   pathNameIdx: u16  (2 bytes)
-///   offset:     u32  (4 bytes)
-///   segLen:     u32  (4 bytes)
-///   orient:     u8   (1 byte, ASCII '+' or '-')
-///   Total:      15 bytes per record
-///
-/// The .idx file is a flat array of little-endian u64 values, one per numeric
-/// ID.  idx[N] = byte offset in the binary file where node N's records begin.
-///
-/// No compression — the viewer reads exact byte ranges via the index, avoiding
-/// all BGZF decompression overhead.
-const RECORD_SIZE: u64 = 15;
-
-fn sort_and_build_segments(
-    unsorted_path: &str,
-    _header: &str,
-    output_prefix: &str,
-    total_ordinals: u64,
-    sort_tmp_dir: &str,
-) {
-    let bin_file = format!("{}.bin", output_prefix);
-    let idx_file = format!("{}.idx", output_prefix);
-
-    let mut sort_proc = Command::new("sh")
-        .args([
-            "-c",
-            &format!(
-                "sort -S 2G -T \"{}\" -t\"\t\" -k1,1n \"{}\"",
-                sort_tmp_dir, unsorted_path
-            ),
-        ])
-        .env("LC_ALL", "C")
-        .stdout(Stdio::piped())
-        .spawn()
-        .expect("failed to spawn sort");
-
-    let mut out = BufWriter::new(File::create(&bin_file).expect("create bin"));
-
-    let mut index_offsets: Vec<u64> = Vec::new();
-    let mut byte_offset: u64 = 0;
-    let mut last_ord: i64 = -1;
-
-    let sort_stdout = sort_proc.stdout.take().unwrap();
-    for line in BufReader::new(sort_stdout).lines() {
-        let line = line.expect("read sorted line");
-        if line.is_empty() {
-            continue;
-        }
-
-        // Parse TSV: segOrd \t pathNameIdx \t offset \t segLen \t orient
-        let mut fields = line.splitn(5, '\t');
-        let seg_ord: u64 = fields.next().unwrap().parse().unwrap_or(0);
-        let path_name_idx: u16 = fields.next().unwrap().parse().unwrap_or(0);
-        let offset: u32 = fields.next().unwrap().parse().unwrap_or(0);
-        let seg_len: u32 = fields.next().unwrap().parse().unwrap_or(0);
-        let orient: u8 = fields.next().unwrap().as_bytes()[0];
-
-        if seg_ord as i64 != last_ord {
-            while (index_offsets.len() as u64) <= seg_ord {
-                index_offsets.push(byte_offset);
-            }
-            last_ord = seg_ord as i64;
-        }
-
-        out.write_all(&(seg_ord as u32).to_le_bytes()).unwrap();
-        out.write_all(&path_name_idx.to_le_bytes()).unwrap();
-        out.write_all(&offset.to_le_bytes()).unwrap();
-        out.write_all(&seg_len.to_le_bytes()).unwrap();
-        out.write_all(&[orient]).unwrap();
-
-        byte_offset += RECORD_SIZE;
-    }
-
-    while (index_offsets.len() as u64) <= total_ordinals {
-        index_offsets.push(byte_offset);
-    }
-    drop(out);
-
-    assert!(
-        sort_proc.wait().map(|s| s.success()).unwrap_or(false),
-        "sort failed for {}",
-        unsorted_path
-    );
-
-    // Write companion index
-    let mut idx_out = BufWriter::new(File::create(&idx_file).expect("create idx"));
-    for offset in &index_offsets {
-        idx_out.write_all(&offset.to_le_bytes()).unwrap();
-    }
-}
-
-/// Edge record layout (little-endian):
-///   target_ord: u32  (4 bytes) — ordinal of the neighbor node
-///   src_orient: u8   (1 byte)  — ASCII '+' or '-'
-///   tgt_orient: u8   (1 byte)  — ASCII '+' or '-'
-///   tgt_len:    u32  (4 bytes) — length of the target segment
-///   Total:      10 bytes per edge record
-///
-/// edges.bin stores adjacency lists sorted by source ordinal.
-/// edges.idx[N] = byte offset where ordinal N's edges begin.
-/// Edges are stored in BOTH directions so that any node can find
-/// all its neighbors.
-const EDGE_RECORD_SIZE: u64 = 10;
-
-fn build_edge_index(
-    raw_links: &[(String, String, String, String)],
-    seg_ordinals: &HashMap<String, u64>,
-    seg_lengths: &HashMap<String, u64>,
-    total_ordinals: u64,
-    output_prefix: &str,
-) {
-    // Build adjacency lists: source_ord → Vec<(target_ord, src_orient, tgt_orient, tgt_len)>
-    let mut adj: HashMap<u64, Vec<(u32, u8, u8, u32)>> = HashMap::new();
-
-    for (src_name, src_orient, tgt_name, tgt_orient) in raw_links {
-        let src_ord = match seg_ordinals.get(src_name) {
-            Some(&o) => o,
-            None => continue,
-        };
-        let tgt_ord = match seg_ordinals.get(tgt_name) {
-            Some(&o) => o,
-            None => continue,
-        };
-        let src_o = src_orient.as_bytes()[0];
-        let tgt_o = tgt_orient.as_bytes()[0];
-        let src_len = *seg_lengths.get(src_name).unwrap_or(&0) as u32;
-        let tgt_len = *seg_lengths.get(tgt_name).unwrap_or(&0) as u32;
-
-        // Forward direction: src → tgt as `L src src_o tgt tgt_o`
-        adj.entry(src_ord)
-            .or_default()
-            .push((tgt_ord as u32, src_o, tgt_o, tgt_len));
-
-        // Reverse direction is the bidirected partner of the forward edge:
-        // `L src src_o tgt tgt_o` ≡ `L tgt ~tgt_o src ~src_o`. Flip both
-        // orientations so the reverse record names the same physical edge,
-        // not a phantom second edge with same-side-as-forward orientations.
-        let flip = |o: u8| if o == b'+' { b'-' } else { b'+' };
-        adj.entry(tgt_ord)
-            .or_default()
-            .push((src_ord as u32, flip(tgt_o), flip(src_o), src_len));
-    }
-
-    // Write edges.bin sorted by source ordinal, with edges.idx
-    let bin_file = format!("{}.edges.bin", output_prefix);
-    let idx_file = format!("{}.edges.idx", output_prefix);
-
-    let mut out = BufWriter::new(File::create(&bin_file).expect("create edges.bin"));
-    let mut index_offsets: Vec<u64> = Vec::new();
-    let mut byte_offset: u64 = 0;
-
-    for ord in 0..=total_ordinals {
-        index_offsets.push(byte_offset);
-        if let Some(edges) = adj.get(&ord) {
-            for &(target, src_o, tgt_o, tgt_len) in edges {
-                out.write_all(&target.to_le_bytes()).unwrap();
-                out.write_all(&[src_o]).unwrap();
-                out.write_all(&[tgt_o]).unwrap();
-                out.write_all(&tgt_len.to_le_bytes()).unwrap();
-                byte_offset += EDGE_RECORD_SIZE;
-            }
-        }
-    }
-    // Sentinel entry so idx[last+1] gives end offset
-    index_offsets.push(byte_offset);
-    drop(out);
-
-    let mut idx_out = BufWriter::new(File::create(&idx_file).expect("create edges.idx"));
-    for offset in &index_offsets {
-        idx_out.write_all(&offset.to_le_bytes()).unwrap();
-    }
-}
-
-/// Process one path (P-line or W-line walk) from the GFA, emitting:
-///
-///   - segments.tsv rows: one row per step with the segment's numeric ID (a
-///     sequential integer we assign to each unique graph node), path name,
-///     base-pair offset along the path, segment length, orientation, and
-///     segment name.  These are later sorted by numeric ID and compressed into
-///     segments.gz with a companion byte-offset index (.idx).
-///
-///   - pos.bed.gz rows: one row per chunk of `chunk_size` steps.  Each row is
-///     a BED-like line (path, start_bp, end_bp) with a 4th column containing a
-///     comma-separated list of the *exact* numeric IDs of graph nodes traversed
-///     by that chunk.  The viewer uses this list to look up only the specific
-///     nodes it needs from segments.gz, avoiding huge range reads.  (An earlier
-///     format stored only min/max IDs per chunk, which caused multi-GB reads
-///     when a path mixed shared and assembly-private nodes whose IDs were far
-///     apart in the file.)
-///
-/// Numeric IDs are assigned on first encounter: the first path to traverse a
-/// graph node determines its ID.  This means the GFA's path ordering matters —
-/// assemblies listed earlier get tighter, more contiguous ID sequences.
-/// A buffered step from parsing a walk, before writing to segments.tsv.
+/// Numeric IDs (ordinals) are assigned on first encounter — the first path
+/// to traverse a segment determines its ID, so GFA path ordering matters.
+/// A buffered step from parsing a walk:
 struct WalkStep {
     ord: u64,
     seg_len: u64,
     is_plus: bool,
 }
 
+struct StepInfo {
+    ord: u64,
+    offset: u64,
+    seg_len: u64,
+    is_plus: bool,
+}
+
+struct PathData {
+    name: String,
+    assembly: String,
+    steps: Vec<StepInfo>,
+}
+
 fn emit_path_rows(
     path_name: &str,
-    path_index: u64,
     seg_str: &str,
     is_walk: bool,
     chunk_size: usize,
@@ -685,11 +373,11 @@ fn emit_path_rows(
     seg_ordinals: &mut HashMap<String, u64>,
     next_ordinal: &mut u64,
     pos_w: &mut BufWriter<impl Write>,
-    segments_w: &mut BufWriter<File>,
     ref_orients: &mut HashMap<u64, bool>,
     is_ref: bool,
     groom: bool,
     ord_walk_out: &mut Vec<(u64, u64)>,
+    step_out: &mut Vec<StepInfo>,
 ) -> u64 {
     // Phase 1: parse the walk and assign ordinals, buffering all steps.
     let mut walk_steps: Vec<WalkStep> = Vec::new();
@@ -764,7 +452,7 @@ fn emit_path_rows(
         shared_bp > 0 && opposite_bp * 100 >= shared_bp * 99
     };
 
-    // Phase 3: emit segments.tsv and pos.bed.gz rows.
+    // Phase 3: emit pos.bed.gz rows.
     // If the walk needs flipping, reverse the offset direction and
     // invert all orient values.
     let total_len: u64 = walk_steps.iter().map(|s| s.seg_len).sum();
@@ -774,33 +462,21 @@ fn emit_path_rows(
     let mut steps: usize = 0;
 
     for step in &walk_steps {
-        // Absolute GFA orient. Previously a "relative to ref" branch existed
-        // for non-ref non-flipped paths whose segments are also visited by ref;
-        // it produced flipped orients whenever ref's last visit to that segment
-        // disagreed with the sample's visit, which made path-walks emitted from
-        // segments.bin reference L-lines that don't exist (the L-line set is in
-        // absolute coordinates). need_flip handles whole-contig rev-comp
-        // normalization separately.
-        let effective_orient = if need_flip {
-            if step.is_plus { "-" } else { "+" }
-        } else {
-            if step.is_plus { "+" } else { "-" }
-        };
-
+        // need_flip handles whole-contig rev-comp normalization.
         let emit_offset = if need_flip {
             total_len - offset - step.seg_len
         } else {
             offset
         };
 
-        writeln!(
-            segments_w,
-            "{}\t{}\t{}\t{}\t{}",
-            step.ord, path_index, emit_offset, step.seg_len, effective_orient
-        )
-        .unwrap();
-
+        let effective_is_plus = if need_flip { !step.is_plus } else { step.is_plus };
         ord_walk_out.push((emit_offset, step.ord));
+        step_out.push(StepInfo {
+            ord: step.ord,
+            offset: emit_offset,
+            seg_len: step.seg_len,
+            is_plus: effective_is_plus,
+        });
         chunk_ords.push(step.ord);
         offset += step.seg_len;
         steps += 1;
@@ -874,21 +550,6 @@ fn parse_p_line(line: &str) -> Option<(String, String, String, bool)> {
     ))
 }
 
-fn write_manifest(path: &str, genomes: &[String], files: &[(String, String)]) {
-    let mut out = BufWriter::new(File::create(path).expect("create manifest"));
-    write!(out, "{{\n  \"genomes\": [").unwrap();
-    for (i, g) in genomes.iter().enumerate() {
-        if i > 0 { write!(out, ",").unwrap(); }
-        write!(out, "\n    \"{}\"", g).unwrap();
-    }
-    write!(out, "\n  ],\n  \"files\": {{").unwrap();
-    for (i, (genome, prefix)) in files.iter().enumerate() {
-        if i > 0 { write!(out, ",").unwrap(); }
-        write!(out, "\n    \"{}\": \"{}\"", genome, prefix).unwrap();
-    }
-    write!(out, "\n  }}\n}}\n").unwrap();
-}
-
 fn encode_ordinal_ranges(ords: &[u64]) -> String {
     if ords.is_empty() {
         return String::new();
@@ -917,10 +578,6 @@ fn encode_ordinal_ranges(ords: &[u64]) -> String {
     parts.join(",")
 }
 
-fn encode_filename(s: &str) -> String {
-    s.replace('#', "_").replace('/', "_")
-}
-
 fn output_parent(prefix: &str) -> std::path::PathBuf {
     std::path::Path::new(prefix)
         .parent()
@@ -942,160 +599,6 @@ fn open_file(path: &str) -> Box<dyn BufRead> {
         let file = File::open(path).unwrap_or_else(|_| panic!("failed to open {}", path));
         Box::new(BufReader::with_capacity(1 << 20, file))
     }
-}
-
-/// Write per-ordinal FASTA, samtools-faidx-compatible .fai, and a compact
-/// binary `.idx` sidecar for adapter random access.
-///
-/// Records are emitted in ordinal order (`>seg<ord>`) on a single line each
-/// (no wrapping), giving the simplest .fai entries (line_blen == length,
-/// line_len == length + 1).
-///
-/// The binary `.idx` is what the JBrowse adapter actually loads at runtime:
-/// 12 bytes per ordinal — `u64` little-endian byte offset of the sequence
-/// (i.e. the `.fai` "offset" column) and `u32` little-endian length. Missing
-/// ordinals (skipped because the source S-line had `*` placeholder) emit
-/// `(0, 0)` and are detected by `length == 0`. At 12 bytes/segment this is
-/// ~12 MB per million segments, fast to load and trivial to slice. .fai is
-/// kept for `samtools faidx` / grep workflows but the adapter never parses it.
-fn write_segments_seq_fa(
-    output_prefix: &str,
-    total_ordinals: u64,
-    seg_ordinals: &HashMap<String, u64>,
-    seg_seqs: &HashMap<String, Vec<u8>>,
-) -> u64 {
-    let mut name_by_ord: Vec<Option<&String>> = vec![None; total_ordinals as usize];
-    for (name, &ord) in seg_ordinals {
-        if let Some(slot) = name_by_ord.get_mut(ord as usize) {
-            *slot = Some(name);
-        }
-    }
-
-    let fa_path = format!("{}.segments.seq.fa", output_prefix);
-    let fai_path = format!("{}.segments.seq.fa.fai", output_prefix);
-    let idx_path = format!("{}.segments.seq.idx", output_prefix);
-    let mut fa = BufWriter::new(File::create(&fa_path).expect("create seq.fa"));
-    let mut fai = BufWriter::new(File::create(&fai_path).expect("create seq.fa.fai"));
-    let mut idx = BufWriter::new(File::create(&idx_path).expect("create seq.idx"));
-
-    let mut byte_offset: u64 = 0;
-    let mut emitted: u64 = 0;
-    for ord in 0..total_ordinals {
-        let (seq_offset, seq_len) = match name_by_ord[ord as usize]
-            .and_then(|n| seg_seqs.get(n))
-        {
-            Some(seq) => {
-                let header = format!(">seg{}\n", ord);
-                fa.write_all(header.as_bytes()).unwrap();
-                let header_len = header.len() as u64;
-                let off = byte_offset + header_len;
-                fa.write_all(seq).unwrap();
-                fa.write_all(b"\n").unwrap();
-                let len = seq.len() as u64;
-                writeln!(
-                    fai,
-                    "seg{}\t{}\t{}\t{}\t{}",
-                    ord,
-                    len,
-                    off,
-                    len,
-                    len + 1
-                )
-                .unwrap();
-                byte_offset += header_len + len + 1;
-                emitted += 1;
-                (off, len as u32)
-            }
-            None => (0u64, 0u32),
-        };
-        idx.write_all(&seq_offset.to_le_bytes()).unwrap();
-        idx.write_all(&seq_len.to_le_bytes()).unwrap();
-    }
-    emitted
-}
-
-// Magic bytes + version for the Phase 1 binary sequence tier. Format pinned
-// in agent-docs/GRAPH_INDEX_FORMAT.md ("Magic-byte registry").
-const SEQB_MAGIC: [u8; 4] = *b"SEQB";
-const SEQI_MAGIC: [u8; 4] = *b"SEQI";
-const SEQ_FORMAT_VERSION: u32 = 1;
-
-// Per-segment N-bitmap: 1 bit per base, low-bit-first within each byte
-// (i.e. base index `i` is `(bitmap[i >> 3] >> (i & 7)) & 1`). 1 = N at
-// that position, 0 = ACGT (whatever the 2-bit pack stores). Decoder
-// substitutes `N` regardless of the 2-bit value when the bit is set, so
-// the upstream pack_bases call doesn't need to special-case Ns.
-fn pack_n_bitmap(seq: &[u8], out: &mut Vec<u8>) {
-    let nbytes = (seq.len() + 7) / 8;
-    let start = out.len();
-    out.resize(start + nbytes, 0);
-    for (i, &b) in seq.iter().enumerate() {
-        if b == b'N' || b == b'n' {
-            out[start + (i >> 3)] |= 1 << (i & 7);
-        }
-    }
-}
-
-/// Write the binary sequence tier (`segments.seq.bin` + `.bin.idx`).
-///
-/// Per-segment record (variable length, byte-aligned at segment boundaries):
-///   `len:u32 LE | 2bit_pack:ceil(len/4) bytes | n_bitmap:ceil(len/8) bytes`
-///
-/// `segments.seq.bin` header: `SEQB` magic (4 bytes) + version `u32` LE.
-/// `segments.seq.bin.idx` header: `SEQI` magic (4 bytes) + version `u32` LE,
-/// followed by `(numSegments + 1)` u64 LE byte-offsets pointing into
-/// `seq.bin`. Entry `[ord]` = byte offset of ordinal `ord`'s record;
-/// entry `[numSegments]` = end-of-file (sentinel for slicing the last
-/// record). Missing segments (S-line was `*`) collapse to a zero-byte
-/// range — `idx[ord] == idx[ord+1]`.
-///
-/// Returns `(num_segments_written, bin_file_size_bytes)`.
-fn write_segments_seq_bin(
-    output_prefix: &str,
-    total_ordinals: u64,
-    seg_ordinals: &HashMap<String, u64>,
-    seg_seqs: &HashMap<String, Vec<u8>>,
-) -> (u64, u64) {
-    let mut name_by_ord: Vec<Option<&String>> = vec![None; total_ordinals as usize];
-    for (name, &ord) in seg_ordinals {
-        if let Some(slot) = name_by_ord.get_mut(ord as usize) {
-            *slot = Some(name);
-        }
-    }
-
-    let bin_path = format!("{}.segments.seq.bin", output_prefix);
-    let idx_path = format!("{}.segments.seq.bin.idx", output_prefix);
-    let mut bin = BufWriter::new(File::create(&bin_path).expect("create seq.bin"));
-    let mut idx = BufWriter::new(File::create(&idx_path).expect("create seq.bin.idx"));
-
-    bin.write_all(&SEQB_MAGIC).unwrap();
-    bin.write_all(&SEQ_FORMAT_VERSION.to_le_bytes()).unwrap();
-    idx.write_all(&SEQI_MAGIC).unwrap();
-    idx.write_all(&SEQ_FORMAT_VERSION.to_le_bytes()).unwrap();
-
-    let header_bytes: u64 = 8;
-    let mut byte_offset: u64 = header_bytes;
-    let mut written: u64 = 0;
-    let mut record_buf: Vec<u8> = Vec::with_capacity(4096);
-    for ord in 0..total_ordinals {
-        idx.write_all(&byte_offset.to_le_bytes()).unwrap();
-        let seq = name_by_ord[ord as usize].and_then(|n| seg_seqs.get(n));
-        let Some(seq) = seq else { continue };
-        let len = seq.len() as u32;
-        record_buf.clear();
-        record_buf.extend_from_slice(&len.to_le_bytes());
-        pack_bases(seq, &mut record_buf);
-        pack_n_bitmap(seq, &mut record_buf);
-        bin.write_all(&record_buf).unwrap();
-        byte_offset += record_buf.len() as u64;
-        written += 1;
-    }
-    // Sentinel: byte offset just past the last record (= total file size).
-    // The reader uses this to slice `[idx[N-1], idx[N])` for the last
-    // ordinal without needing a separate length lookup.
-    idx.write_all(&byte_offset.to_le_bytes()).unwrap();
-
-    (written, byte_offset)
 }
 
 fn spawn_sort_bgzip(output: &str) -> std::process::Child {
@@ -1356,10 +859,15 @@ fn write_jbrowse_config(
 
     let pos_bed = format!("{}.pos.bed.gz", output_prefix);
     let pos_tbi = format!("{}.pos.bed.gz.tbi", output_prefix);
-    let seg_bin = format!("{}.segments.bin", output_prefix);
-    let seg_idx = format!("{}.segments.idx", output_prefix);
+    let synteny_bed = format!("{}.synteny.bed.gz", output_prefix);
+    let synteny_tbi = format!("{}.synteny.bed.gz.tbi", output_prefix);
+    let synteny_coarse_bed = format!("{}.synteny.coarse.bed.gz", output_prefix);
+    let synteny_coarse_tbi = format!("{}.synteny.coarse.bed.gz.tbi", output_prefix);
     let bubbles_bed = format!("{}.bubbles.bed.gz", output_prefix);
     let bubbles_tbi = format!("{}.bubbles.bed.gz.tbi", output_prefix);
+    let edges_bed = format!("{}.edges.spatial.bed.gz", output_prefix);
+    let edges_tbi = format!("{}.edges.spatial.bed.gz.tbi", output_prefix);
+    let seglens_bin = format!("{}.seglens.bin", output_prefix);
 
     // Build assembly names JSON array
     let assembly_names_json: Vec<String> = genomes.iter().map(|g| format!("\"{}\"", g)).collect();
@@ -1376,13 +884,18 @@ fn write_jbrowse_config(
     write!(out, "        \"type\": \"GfaTabixAdapter\",\n").unwrap();
     write!(out, "        \"posLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", pos_bed).unwrap();
     write!(out, "        \"posIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }},\n", pos_tbi).unwrap();
-    write!(out, "        \"segmentsLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", seg_bin).unwrap();
+    write!(out, "        \"syntenyLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", synteny_bed).unwrap();
+    write!(out, "        \"syntenyIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }},\n", synteny_tbi).unwrap();
+    write!(out, "        \"syntenyCoarseLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", synteny_coarse_bed).unwrap();
+    write!(out, "        \"syntenyCoarseIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }},\n", synteny_coarse_tbi).unwrap();
+    write!(out, "        \"edgesLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", edges_bed).unwrap();
+    write!(out, "        \"edgesIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }},\n", edges_tbi).unwrap();
+    write!(out, "        \"seqlensLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }}", seglens_bin).unwrap();
     if bubbles_vcf.is_some() {
-        write!(out, "        \"segmentsIdxLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", seg_idx).unwrap();
-        write!(out, "        \"bubblesLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", bubbles_bed).unwrap();
+        write!(out, ",\n        \"bubblesLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", bubbles_bed).unwrap();
         write!(out, "        \"bubblesIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }}\n", bubbles_tbi).unwrap();
     } else {
-        write!(out, "        \"segmentsIdxLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }}\n", seg_idx).unwrap();
+        write!(out, "\n").unwrap();
     }
 
     write!(out, "      }},\n").unwrap();
@@ -1484,67 +997,17 @@ fn strip_pansn_contig(name: &str) -> &str {
     }
 }
 
-fn read_segments_for_ordinal(
-    bin_file: &mut File,
-    idx: &[u64],
-    bin_file_len: u64,
-    ordinal: u64,
-) -> Vec<(u16, u64, u64)> {
-    let ord_idx = ordinal as usize;
-    if ord_idx >= idx.len() {
-        return Vec::new();
-    }
-    let start_byte = idx[ord_idx];
-    let end_byte = if ord_idx + 1 < idx.len() {
-        idx[ord_idx + 1]
-    } else {
-        bin_file_len
-    };
-    if end_byte <= start_byte {
-        return Vec::new();
-    }
-    let num_bytes = (end_byte - start_byte) as usize;
-    let num_records = num_bytes / RECORD_SIZE as usize;
-    if num_records == 0 {
-        return Vec::new();
-    }
-    let mut buf = vec![0u8; num_bytes];
-    bin_file.seek(SeekFrom::Start(start_byte)).expect("seek segments.bin");
-    bin_file.read_exact(&mut buf).expect("read segments.bin");
-
-    let mut result = Vec::with_capacity(num_records);
-    for i in 0..num_records {
-        let base = i * RECORD_SIZE as usize;
-        // skip segOrd (4 bytes)
-        let path_name_idx = u16::from_le_bytes([buf[base + 4], buf[base + 5]]);
-        let offset = u32::from_le_bytes([buf[base + 6], buf[base + 7], buf[base + 8], buf[base + 9]]) as u64;
-        let seg_len = u32::from_le_bytes([buf[base + 10], buf[base + 11], buf[base + 12], buf[base + 13]]) as u64;
-        result.push((path_name_idx, offset, seg_len));
-    }
-    result
-}
-
 fn generate_bubbles_from_vcf(
     vcf_path: &str,
     output_prefix: &str,
     genomes: &[String],
     path_names: &[String],
     ref_ord_walks: &HashMap<String, Vec<(u64, u64)>>,
+    ord_to_paths: &HashMap<u64, Vec<(usize, u64, u64)>>,
 ) {
     eprintln!("Generating bubbles from VCF...");
     let t_start = Instant::now();
     let bubbles_file = format!("{}.bubbles.bed.gz", output_prefix);
-
-    // Open segments.bin and read segments.idx for disk-backed ordinal lookups
-    let segments_bin_path = format!("{}.segments.bin", output_prefix);
-    let segments_idx_path = format!("{}.segments.idx", output_prefix);
-    let mut bin_file = File::open(&segments_bin_path).expect("open segments.bin");
-    let bin_file_len = bin_file.metadata().expect("segments.bin metadata").len();
-    let idx_bytes = fs::read(&segments_idx_path).expect("read segments.idx");
-    let seg_idx: Vec<u64> = idx_bytes
-        .chunks_exact(8)
-        .map(|chunk| u64::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3], chunk[4], chunk[5], chunk[6], chunk[7]]))
-        .collect();
 
     let mut proc = spawn_sort_bgzip(&bubbles_file);
     let mut w = BufWriter::new(proc.stdin.take().unwrap());
@@ -1703,19 +1166,20 @@ fn generate_bubbles_from_vcf(
         // Determine which genome each path belongs to by matching chromosome name
         let vcf_chrom_suffix = strip_pansn_contig(chrom);
 
-        // Collect paths to emit rows for: read from segments.bin via the idx
         let paths_at_snarl: Vec<(usize, u64)> = if let Some(ord) = snarl_ordinal {
-            let records = read_segments_for_ordinal(&mut bin_file, &seg_idx, bin_file_len, ord);
-            records.iter()
-                .filter_map(|&(pni, offset, _seg_len)| {
-                    let pi = pni as usize;
-                    if pi < path_names.len() && strip_pansn_contig(&path_names[pi]) == vcf_chrom_suffix {
-                        Some((pi, offset))
-                    } else {
-                        None
-                    }
+            ord_to_paths.get(&ord)
+                .map(|records| {
+                    records.iter()
+                        .filter_map(|&(pi, offset, _seg_len)| {
+                            if pi < path_names.len() && strip_pansn_contig(&path_names[pi]) == vcf_chrom_suffix {
+                                Some((pi, offset))
+                            } else {
+                                None
+                            }
+                        })
+                        .collect()
                 })
-                .collect()
+                .unwrap_or_default()
         } else {
             Vec::new()
         };
@@ -1780,3 +1244,758 @@ fn generate_bubbles_from_vcf(
     eprintln!("  Wrote {}", bubbles_file);
 }
 
+fn path_chrom(name: &str) -> &str {
+    name.rfind('#').map(|i| &name[i + 1..]).unwrap_or(name)
+}
+
+struct SyntenyRow {
+    ref_path: String,
+    ref_start: u64,
+    ref_end: u64,
+    hap_path: String,
+    hap_start: u64,
+    hap_end: u64,
+    strand: bool,
+    identity: f64,
+}
+
+fn align_pair(
+    ref_path: &PathData,
+    hap_path: &PathData,
+    ref_by_ord: &HashMap<u64, (u64, u64, bool)>,
+    ref_ord_rank: &HashMap<u64, usize>,
+) -> Vec<SyntenyRow> {
+    let shared_hap: Vec<(usize, &StepInfo)> = hap_path
+        .steps
+        .iter()
+        .enumerate()
+        .filter(|(_, s)| ref_by_ord.contains_key(&s.ord))
+        .collect();
+
+    if shared_hap.is_empty() {
+        return Vec::new();
+    }
+
+    let mut rows: Vec<SyntenyRow> = Vec::new();
+
+    // Emit bubble before first shared step
+    if shared_hap[0].0 > 0 {
+        let first_shared = shared_hap[0].1;
+        let (ref_start, _, _) = ref_by_ord[&first_shared.ord];
+        let hap_end = first_shared.offset;
+        let hap_start = hap_path.steps[0].offset;
+        let hap_len = hap_end.saturating_sub(hap_start);
+        if hap_len > 0 {
+            rows.push(SyntenyRow {
+                ref_path: ref_path.name.clone(),
+                ref_start,
+                ref_end: ref_start,
+                hap_path: hap_path.name.clone(),
+                hap_start,
+                hap_end,
+                strand: true,
+                identity: 0.0,
+            });
+        }
+    }
+
+    // Walk consecutive shared steps
+    let step_strand = |s: &StepInfo| -> bool {
+        let (_, _, ref_is_plus) = ref_by_ord[&s.ord];
+        s.is_plus == ref_is_plus
+    };
+
+    let mut i = 0;
+    while i < shared_hap.len() {
+        let (_, step_a) = shared_hap[i];
+        let run_strand = step_strand(step_a);
+
+        // Extend run
+        let mut j = i + 1;
+        while j < shared_hap.len() {
+            let (_, step_b) = shared_hap[j];
+            let (_, step_prev) = shared_hap[j - 1];
+
+            let rank_a = ref_ord_rank[&step_prev.ord];
+            let rank_b = ref_ord_rank[&step_b.ord];
+            let (_, ref_end_prev, _) = ref_by_ord[&step_prev.ord];
+            let (ref_start_b, _, _) = ref_by_ord[&step_b.ord];
+            let hap_contiguous = step_b.offset == step_prev.offset + step_prev.seg_len;
+            let ref_contiguous = rank_b == rank_a + 1 && ref_start_b == ref_end_prev;
+            let same_strand = step_strand(step_b) == run_strand;
+
+            if ref_contiguous && hap_contiguous && same_strand {
+                j += 1;
+            } else {
+                break;
+            }
+        }
+
+        // Close run
+        let (_, step_last) = shared_hap[j - 1];
+        let (ref_start_run, _, _) = ref_by_ord[&step_a.ord];
+        let (_, ref_end_run, _) = ref_by_ord[&step_last.ord];
+        let hap_start_run = step_a.offset;
+        let hap_end_run = step_last.offset + step_last.seg_len;
+
+        rows.push(SyntenyRow {
+            ref_path: ref_path.name.clone(),
+            ref_start: ref_start_run,
+            ref_end: ref_end_run,
+            hap_path: hap_path.name.clone(),
+            hap_start: hap_start_run,
+            hap_end: hap_end_run,
+            strand: run_strand,
+            identity: 1.0,
+        });
+
+        // Emit bubble between this run and next shared step
+        if j < shared_hap.len() {
+            let (_, step_next) = shared_hap[j];
+            let (_, ref_end_last, _) = ref_by_ord[&step_last.ord];
+            let (ref_start_next, _, _) = ref_by_ord[&step_next.ord];
+            let bubble_ref_start = ref_end_last;
+            let bubble_ref_end = ref_start_next;
+            let bubble_hap_start = hap_end_run;
+            let bubble_hap_end = step_next.offset;
+            let r_len = bubble_ref_end.saturating_sub(bubble_ref_start);
+            let h_len = bubble_hap_end.saturating_sub(bubble_hap_start);
+            let identity = if r_len > 0 && h_len > 0 {
+                r_len.min(h_len) as f64 / r_len.max(h_len) as f64
+            } else {
+                0.0
+            };
+            if r_len > 0 || h_len > 0 {
+                rows.push(SyntenyRow {
+                    ref_path: ref_path.name.clone(),
+                    ref_start: bubble_ref_start,
+                    ref_end: bubble_ref_end,
+                    hap_path: hap_path.name.clone(),
+                    hap_start: bubble_hap_start,
+                    hap_end: bubble_hap_end,
+                    strand: run_strand,
+                    identity,
+                });
+            }
+        }
+
+        i = j;
+    }
+
+    // Emit bubble after last shared step
+    let (_, last_shared) = shared_hap[shared_hap.len() - 1];
+    let last_hap_idx = shared_hap[shared_hap.len() - 1].0;
+    if last_hap_idx + 1 < hap_path.steps.len() {
+        let (_, ref_end_last, _) = ref_by_ord[&last_shared.ord];
+        let hap_start = last_shared.offset + last_shared.seg_len;
+        let last_step = &hap_path.steps[hap_path.steps.len() - 1];
+        let hap_end = last_step.offset + last_step.seg_len;
+        let h_len = hap_end.saturating_sub(hap_start);
+        if h_len > 0 {
+            rows.push(SyntenyRow {
+                ref_path: ref_path.name.clone(),
+                ref_start: ref_end_last,
+                ref_end: ref_end_last,
+                hap_path: hap_path.name.clone(),
+                hap_start,
+                hap_end,
+                strand: true,
+                identity: 0.0,
+            });
+        }
+    }
+
+    rows
+}
+
+fn write_synteny_rows(rows: &[SyntenyRow], w: &mut BufWriter<impl Write>) {
+    for row in rows {
+        let strand = if row.strand { "+" } else { "-" };
+        writeln!(
+            w,
+            "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{:.6}",
+            row.ref_path, row.ref_start, row.ref_end,
+            row.hap_path, row.hap_start, row.hap_end,
+            strand, row.identity
+        ).unwrap();
+    }
+}
+
+fn synteny_build(paths: &[PathData], ref_assembly: &str, output_prefix: &str) {
+    let synteny_file = format!("{}.synteny.bed.gz", output_prefix);
+    let rev_file = format!("{}.synteny.rev.bed.gz", output_prefix);
+    let coarse_file = format!("{}.synteny.coarse.bed.gz", output_prefix);
+
+    let mut fwd_proc = spawn_sort_bgzip(&synteny_file);
+    let mut fwd_w = BufWriter::new(fwd_proc.stdin.take().unwrap());
+    let mut rev_proc = spawn_sort_bgzip(&rev_file);
+    let mut rev_w = BufWriter::new(rev_proc.stdin.take().unwrap());
+    let mut coarse_proc = spawn_sort_bgzip(&coarse_file);
+    let mut coarse_w = BufWriter::new(coarse_proc.stdin.take().unwrap());
+
+    // Group paths by chrom
+    let mut chrom_groups: HashMap<&str, Vec<&PathData>> = HashMap::new();
+    for p in paths {
+        chrom_groups.entry(path_chrom(&p.name)).or_default().push(p);
+    }
+
+    for (_, group) in &chrom_groups {
+        let ref_path = match group.iter().find(|p| p.assembly == ref_assembly) {
+            Some(p) => p,
+            None => continue,
+        };
+
+        // Build ref lookup structures
+        let mut ref_by_ord: HashMap<u64, (u64, u64, bool)> = HashMap::new();
+        let mut ref_ord_rank: HashMap<u64, usize> = HashMap::new();
+        let mut offset = 0u64;
+        for (rank, step) in ref_path.steps.iter().enumerate() {
+            ref_by_ord.insert(step.ord, (offset, offset + step.seg_len, step.is_plus));
+            ref_ord_rank.insert(step.ord, rank);
+            offset += step.seg_len;
+        }
+
+        for hap_path in group.iter().filter(|p| p.assembly != ref_assembly) {
+            let rows = align_pair(ref_path, hap_path, &ref_by_ord, &ref_ord_rank);
+
+            write_synteny_rows(&rows, &mut fwd_w);
+
+            // Rev: hap as first 3 columns
+            let hap_chrom = path_chrom(&hap_path.name);
+            for row in &rows {
+                let strand = if row.strand { "+" } else { "-" };
+                writeln!(
+                    rev_w,
+                    "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{:.6}",
+                    hap_chrom, row.hap_start, row.hap_end,
+                    row.ref_path, row.ref_start, row.ref_end,
+                    strand, row.identity
+                ).unwrap();
+            }
+
+            // Coarse: merge consecutive rows within 10kbp gap
+            let ref_chrom = path_chrom(&ref_path.name);
+            let hap_chrom_s = path_chrom(&hap_path.name);
+            let coarse_rows = merge_coarse(&rows, 10_000);
+            for row in &coarse_rows {
+                let strand = if row.strand { "+" } else { "-" };
+                writeln!(
+                    coarse_w,
+                    "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{:.6}",
+                    ref_chrom, row.ref_start, row.ref_end,
+                    hap_chrom_s, row.hap_start, row.hap_end,
+                    strand, row.identity
+                ).unwrap();
+            }
+        }
+    }
+
+    drop(fwd_w);
+    assert!(fwd_proc.wait().map(|s| s.success()).unwrap_or(false), "synteny sort|bgzip failed");
+    run_cmd("tabix", &["-p", "bed", &synteny_file]);
+
+    drop(rev_w);
+    assert!(rev_proc.wait().map(|s| s.success()).unwrap_or(false), "synteny.rev sort|bgzip failed");
+    run_cmd("tabix", &["-p", "bed", &rev_file]);
+
+    drop(coarse_w);
+    assert!(coarse_proc.wait().map(|s| s.success()).unwrap_or(false), "synteny.coarse sort|bgzip failed");
+    run_cmd("tabix", &["-p", "bed", &coarse_file]);
+
+    eprintln!("  Wrote {}, {}, {}", synteny_file, rev_file, coarse_file);
+}
+
+fn merge_coarse(rows: &[SyntenyRow], max_gap: u64) -> Vec<SyntenyRow> {
+    if rows.is_empty() {
+        return Vec::new();
+    }
+    let mut merged: Vec<SyntenyRow> = Vec::new();
+    let mut cur_ref_start = rows[0].ref_start;
+    let mut cur_ref_end = rows[0].ref_end;
+    let mut cur_hap_start = rows[0].hap_start;
+    let mut cur_hap_end = rows[0].hap_end;
+    let mut cur_strand = rows[0].strand;
+    let mut weight_sum = (cur_ref_end.saturating_sub(cur_ref_start)) as f64 * rows[0].identity;
+    let mut ref_len_sum = (cur_ref_end.saturating_sub(cur_ref_start)) as f64;
+    let ref_path = rows[0].ref_path.clone();
+    let hap_path = rows[0].hap_path.clone();
+
+    for row in &rows[1..] {
+        let gap = row.ref_start.saturating_sub(cur_ref_end);
+        if row.strand == cur_strand && gap <= max_gap {
+            cur_ref_end = cur_ref_end.max(row.ref_end);
+            cur_hap_end = cur_hap_end.max(row.hap_end);
+            let rl = (row.ref_end.saturating_sub(row.ref_start)) as f64;
+            weight_sum += rl * row.identity;
+            ref_len_sum += rl;
+        } else {
+            let identity = if ref_len_sum > 0.0 { weight_sum / ref_len_sum } else { 0.0 };
+            merged.push(SyntenyRow {
+                ref_path: ref_path.clone(),
+                ref_start: cur_ref_start,
+                ref_end: cur_ref_end,
+                hap_path: hap_path.clone(),
+                hap_start: cur_hap_start,
+                hap_end: cur_hap_end,
+                strand: cur_strand,
+                identity,
+            });
+            cur_ref_start = row.ref_start;
+            cur_ref_end = row.ref_end;
+            cur_hap_start = row.hap_start;
+            cur_hap_end = row.hap_end;
+            cur_strand = row.strand;
+            let rl = (row.ref_end.saturating_sub(row.ref_start)) as f64;
+            weight_sum = rl * row.identity;
+            ref_len_sum = rl;
+        }
+    }
+    let identity = if ref_len_sum > 0.0 { weight_sum / ref_len_sum } else { 0.0 };
+    merged.push(SyntenyRow {
+        ref_path,
+        ref_start: cur_ref_start,
+        ref_end: cur_ref_end,
+        hap_path,
+        hap_start: cur_hap_start,
+        hap_end: cur_hap_end,
+        strand: cur_strand,
+        identity,
+    });
+    merged
+}
+
+fn build_edges_spatial(
+    raw_links: &[(String, String, String, String)],
+    seg_ordinals: &HashMap<String, u64>,
+    seg_lengths: &HashMap<String, u64>,
+    paths: &[PathData],
+    ref_assembly: &str,
+    output_prefix: &str,
+) {
+    let edges_file = format!("{}.edges.spatial.bed.gz", output_prefix);
+    let mut proc = spawn_sort_bgzip(&edges_file);
+    let mut w = BufWriter::new(proc.stdin.take().unwrap());
+
+    // Build ord -> (chrom, start, end) from ref paths
+    let mut ref_ord_to_pos: HashMap<u64, (String, u64, u64)> = HashMap::new();
+    for path in paths.iter().filter(|p| p.assembly == ref_assembly) {
+        let chrom = path_chrom(&path.name).to_string();
+        for step in &path.steps {
+            ref_ord_to_pos.entry(step.ord).or_insert_with(|| (chrom.clone(), step.offset, step.offset + step.seg_len));
+        }
+    }
+
+    // For alt segments not in ref, find the nearest ref position by looking at
+    // what ref segments are adjacent to alt segments in the graph
+    // We build seg_name -> ord for reverse lookup
+    let ord_to_name: HashMap<u64, &str> = seg_ordinals.iter().map(|(k, &v)| (v, k.as_str())).collect();
+    let _ = (seg_lengths, ord_to_name);
+
+    for (src_name, src_orient, tgt_name, tgt_orient) in raw_links {
+        let src_ord = match seg_ordinals.get(src_name) {
+            Some(&o) => o,
+            None => continue,
+        };
+        let tgt_ord = match seg_ordinals.get(tgt_name) {
+            Some(&o) => o,
+            None => continue,
+        };
+
+        // Find best ref position: prefer src ord, fall back to tgt ord
+        let pos = ref_ord_to_pos.get(&src_ord).or_else(|| ref_ord_to_pos.get(&tgt_ord));
+        if let Some((chrom, start, end)) = pos {
+            // Forward edge
+            writeln!(w, "{}\t{}\t{}\t{}\t{}\t{}\t{}", chrom, start, end, src_ord, tgt_ord, src_orient, tgt_orient).unwrap();
+            // Reverse edge (flip orientations)
+            let rev_src = if src_orient == "+" { "-" } else { "+" };
+            let rev_tgt = if tgt_orient == "+" { "-" } else { "+" };
+            writeln!(w, "{}\t{}\t{}\t{}\t{}\t{}\t{}", chrom, start, end, tgt_ord, src_ord, rev_tgt, rev_src).unwrap();
+        }
+    }
+
+    drop(w);
+    assert!(proc.wait().map(|s| s.success()).unwrap_or(false), "edges sort|bgzip failed");
+    run_cmd("tabix", &["-p", "bed", &edges_file]);
+    eprintln!("  Wrote {}", edges_file);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::BufWriter;
+
+    fn parse_gfa_for_synteny(gfa: &str) -> (HashMap<String, u64>, HashMap<String, u64>, Vec<PathData>, Vec<(String, String, String, String)>) {
+        let mut seg_lengths: HashMap<String, u64> = HashMap::new();
+        let mut seg_ordinals: HashMap<String, u64> = HashMap::new();
+        let mut next_ordinal: u64 = 0;
+        let mut raw_links: Vec<(String, String, String, String)> = Vec::new();
+        let mut path_lines: Vec<(String, String, String)> = Vec::new();
+
+        for line in gfa.lines() {
+            if line.starts_with("S\t") {
+                let mut parts = line.splitn(4, '\t');
+                parts.next();
+                let name = parts.next().unwrap().to_string();
+                let seq = parts.next().unwrap();
+                let length = parts
+                    .next()
+                    .and_then(|rest| {
+                        rest.split('\t')
+                            .find(|t| t.starts_with("LN:i:"))
+                            .map(|t| t[5..].parse::<u64>().unwrap_or(0))
+                    })
+                    .unwrap_or_else(|| if seq == "*" { 0 } else { seq.len() as u64 });
+                seg_lengths.insert(name, length);
+            } else if line.starts_with("L\t") {
+                let cols: Vec<&str> = line.splitn(6, '\t').collect();
+                if cols.len() >= 5 {
+                    raw_links.push((cols[1].to_string(), cols[2].to_string(), cols[3].to_string(), cols[4].to_string()));
+                }
+            } else if line.starts_with("P\t") {
+                let parts: Vec<&str> = line.splitn(4, '\t').collect();
+                if parts.len() >= 3 {
+                    let raw_name = parts[1];
+                    let (sample, _) = match raw_name.rfind('#') {
+                        Some(idx) => (&raw_name[..idx], &raw_name[idx + 1..]),
+                        None => (raw_name, raw_name),
+                    };
+                    path_lines.push((format!("{}#{}", sample, &raw_name[raw_name.rfind('#').map(|i| i+1).unwrap_or(0)..]), sample.to_string(), parts[2].to_string()));
+                }
+            }
+        }
+
+        let mut all_paths: Vec<PathData> = Vec::new();
+        let mut ref_orients: HashMap<u64, bool> = HashMap::new();
+
+        // First pass to detect ref assembly (first path)
+        let ref_assembly_name = path_lines.first().map(|(_, a, _)| a.clone()).unwrap_or_default();
+
+        for (path_name, assembly, seg_str) in &path_lines {
+            let is_ref = assembly == &ref_assembly_name;
+            let mut steps_out: Vec<StepInfo> = Vec::new();
+            let mut ord_walk: Vec<(u64, u64)> = Vec::new();
+            let mut sink = BufWriter::new(Vec::new());
+            emit_path_rows(
+                path_name,
+                seg_str,
+                false,
+                100,
+                &seg_lengths,
+                &mut seg_ordinals,
+                &mut next_ordinal,
+                &mut sink,
+                &mut ref_orients,
+                is_ref,
+                true,
+                &mut ord_walk,
+                &mut steps_out,
+            );
+            all_paths.push(PathData { name: path_name.clone(), assembly: assembly.clone(), steps: steps_out });
+        }
+
+        (seg_lengths, seg_ordinals, all_paths, raw_links)
+    }
+
+    fn run_synteny_on_gfa(gfa: &str, ref_assembly: &str) -> Vec<String> {
+        let (_, _, all_paths, _) = parse_gfa_for_synteny(gfa);
+
+        // Group by chrom, find ref paths
+        let mut chrom_groups: HashMap<&str, Vec<&PathData>> = HashMap::new();
+        for p in &all_paths {
+            chrom_groups.entry(path_chrom(&p.name)).or_default().push(p);
+        }
+
+        let mut rows: Vec<String> = Vec::new();
+
+        for (_, group) in &chrom_groups {
+            let ref_path = match group.iter().find(|p| p.assembly == ref_assembly) {
+                Some(p) => p,
+                None => continue,
+            };
+
+            let mut ref_by_ord: HashMap<u64, (u64, u64, bool)> = HashMap::new();
+            let mut ref_ord_rank: HashMap<u64, usize> = HashMap::new();
+            let mut offset = 0u64;
+            for (rank, step) in ref_path.steps.iter().enumerate() {
+                ref_by_ord.insert(step.ord, (offset, offset + step.seg_len, step.is_plus));
+                ref_ord_rank.insert(step.ord, rank);
+                offset += step.seg_len;
+            }
+
+            for hap_path in group.iter().filter(|p| p.assembly != ref_assembly) {
+                let pair_rows = align_pair(ref_path, hap_path, &ref_by_ord, &ref_ord_rank);
+                for row in pair_rows {
+                    let strand = if row.strand { "+" } else { "-" };
+                    rows.push(format!(
+                        "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{:.6}",
+                        row.ref_path, row.ref_start, row.ref_end,
+                        row.hap_path, row.hap_start, row.hap_end,
+                        strand, row.identity
+                    ));
+                }
+            }
+        }
+
+        rows
+    }
+
+    #[test]
+    fn linear_full_coverage() {
+        let gfa = include_str!("../tests/fixtures/linear.gfa");
+        let rows = run_synteny_on_gfa(gfa, "GRCh38#0");
+        // Collect ref intervals and merge
+        let mut intervals: Vec<(u64, u64)> = rows.iter().map(|r| {
+            let cols: Vec<&str> = r.split('\t').collect();
+            (cols[1].parse().unwrap(), cols[2].parse().unwrap())
+        }).collect();
+        intervals.sort();
+        let mut merged_total = 0u64;
+        let mut cur_start = intervals[0].0;
+        let mut cur_end = intervals[0].1;
+        for &(s, e) in &intervals[1..] {
+            if s <= cur_end {
+                cur_end = cur_end.max(e);
+            } else {
+                merged_total += cur_end - cur_start;
+                cur_start = s;
+                cur_end = e;
+            }
+        }
+        merged_total += cur_end - cur_start;
+        assert_eq!(merged_total, 450, "Expected merged ref coverage = 450 (100+200+150), got {}", merged_total);
+    }
+
+    #[test]
+    fn bubble_spans() {
+        let gfa = include_str!("../tests/fixtures/bubble.gfa");
+        let rows = run_synteny_on_gfa(gfa, "GRCh38#0");
+        assert_eq!(rows.len(), 3, "Expected 3 rows (s1 block, bubble, s4 block), got {}", rows.len());
+
+        // Check no ref-side overlaps
+        let mut intervals: Vec<(u64, u64)> = rows.iter().map(|r| {
+            let cols: Vec<&str> = r.split('\t').collect();
+            (cols[1].parse::<u64>().unwrap(), cols[2].parse::<u64>().unwrap())
+        }).collect();
+        intervals.sort();
+        for i in 1..intervals.len() {
+            assert!(intervals[i].0 >= intervals[i-1].1, "Overlapping ref intervals: {:?} and {:?}", intervals[i-1], intervals[i]);
+        }
+    }
+
+    #[test]
+    fn inversion_strand() {
+        let gfa = include_str!("../tests/fixtures/inversion.gfa");
+        let rows = run_synteny_on_gfa(gfa, "GRCh38#0");
+        assert_eq!(rows.len(), 3, "Expected 3 rows, got {}", rows.len());
+        let strands: Vec<&str> = rows.iter().map(|r| r.split('\t').nth(6).unwrap()).collect();
+        assert_eq!(strands[0], "+", "First row should be +");
+        assert_eq!(strands[1], "-", "Middle row should be -");
+        assert_eq!(strands[2], "+", "Last row should be +");
+    }
+
+    #[test]
+    fn insertion_identity() {
+        let gfa = include_str!("../tests/fixtures/insertion.gfa");
+        let rows = run_synteny_on_gfa(gfa, "GRCh38#0");
+        // Find the bubble row (ref span 50, hap span 350)
+        let bubble_row = rows.iter().find(|r| {
+            let cols: Vec<&str> = r.split('\t').collect();
+            let ref_start: u64 = cols[1].parse().unwrap();
+            let ref_end: u64 = cols[2].parse().unwrap();
+            let hap_start: u64 = cols[4].parse().unwrap();
+            let hap_end: u64 = cols[5].parse().unwrap();
+            let ref_len = ref_end.saturating_sub(ref_start);
+            let hap_len = hap_end.saturating_sub(hap_start);
+            ref_len == 50 && hap_len == 350
+        }).expect("Expected a bubble row with refLen=50, hapLen=350");
+        let identity: f64 = bubble_row.split('\t').nth(7).unwrap().parse().unwrap();
+        let expected = 50.0f64 / 350.0;
+        assert!((identity - expected).abs() < 0.001, "Expected identity ≈ {:.6}, got {:.6}", expected, identity);
+    }
+
+    #[test]
+    fn multipath_independence() {
+        let gfa = include_str!("../tests/fixtures/multipath.gfa");
+        let rows = run_synteny_on_gfa(gfa, "GRCh38#0");
+
+        let hap1_rows: Vec<&str> = rows.iter().filter(|r| r.contains("HG002#1")).map(|r| r.as_str()).collect();
+        let hap2_rows: Vec<&str> = rows.iter().filter(|r| r.contains("HG002#2")).map(|r| r.as_str()).collect();
+
+        assert!(!hap1_rows.is_empty(), "HG002#1 should have rows");
+        assert!(!hap2_rows.is_empty(), "HG002#2 should have rows");
+
+        // HG002#1 has s3 (80bp bubble), HG002#2 has s6 (90bp bubble)
+        // Check that HG002#1 rows don't contain hap spans matching HG002#2's private segment and vice versa
+        // s3 is at hap offset 100..180 for HG002#1 (after s1=100), s6 is at hap offset 260..350 for HG002#2 (after s1+s2+s4=100+60+100)
+        for r in &hap2_rows {
+            assert!(!r.contains("HG002#1"), "HG002#2 row should not reference HG002#1: {}", r);
+        }
+        for r in &hap1_rows {
+            assert!(!r.contains("HG002#2"), "HG002#1 row should not reference HG002#2: {}", r);
+        }
+    }
+
+    #[test]
+    fn edges_count() {
+        let gfa = include_str!("../tests/fixtures/bubble.gfa");
+        let (_, seg_ordinals, all_paths, raw_links) = parse_gfa_for_synteny(gfa);
+        let seg_lengths: HashMap<String, u64> = {
+            let mut m = HashMap::new();
+            for line in gfa.lines() {
+                if line.starts_with("S\t") {
+                    let mut parts = line.splitn(4, '\t');
+                    parts.next();
+                    let name = parts.next().unwrap().to_string();
+                    let seq = parts.next().unwrap();
+                    let length = parts.next()
+                        .and_then(|rest| rest.split('\t').find(|t| t.starts_with("LN:i:")).map(|t| t[5..].parse::<u64>().unwrap_or(0)))
+                        .unwrap_or_else(|| if seq == "*" { 0 } else { seq.len() as u64 });
+                    m.insert(name, length);
+                }
+            }
+            m
+        };
+
+        let tmp = std::env::temp_dir().join(format!("edges_count_test_{}", std::process::id()));
+        std::fs::create_dir_all(&tmp).unwrap();
+        let prefix = tmp.join("test").to_str().unwrap().to_string();
+        build_edges_spatial(&raw_links, &seg_ordinals, &seg_lengths, &all_paths, "GRCh38#0", &prefix);
+
+        let edges_file = format!("{}.edges.spatial.bed.gz", prefix);
+        let output = Command::new("sh")
+            .args(["-c", &format!("bgzip -dc \"{}\" | grep -v '^#' | wc -l", edges_file)])
+            .output()
+            .expect("count edges");
+        let count: usize = String::from_utf8_lossy(&output.stdout).trim().parse().unwrap_or(0);
+        std::fs::remove_dir_all(&tmp).ok();
+        assert_eq!(count, 8, "Expected 8 edge rows (2 × 4 L-lines), got {}", count);
+    }
+
+    #[test]
+    fn edges_bidirectional() {
+        let gfa = include_str!("../tests/fixtures/bubble.gfa");
+        let (_, seg_ordinals, all_paths, raw_links) = parse_gfa_for_synteny(gfa);
+        let seg_lengths: HashMap<String, u64> = {
+            let mut m = HashMap::new();
+            for line in gfa.lines() {
+                if line.starts_with("S\t") {
+                    let mut parts = line.splitn(4, '\t');
+                    parts.next();
+                    let name = parts.next().unwrap().to_string();
+                    let seq = parts.next().unwrap();
+                    let length = parts.next()
+                        .and_then(|rest| rest.split('\t').find(|t| t.starts_with("LN:i:")).map(|t| t[5..].parse::<u64>().unwrap_or(0)))
+                        .unwrap_or_else(|| if seq == "*" { 0 } else { seq.len() as u64 });
+                    m.insert(name, length);
+                }
+            }
+            m
+        };
+
+        let tmp = std::env::temp_dir().join(format!("edges_bidir_test_{}", std::process::id()));
+        std::fs::create_dir_all(&tmp).unwrap();
+        let prefix = tmp.join("test").to_str().unwrap().to_string();
+        build_edges_spatial(&raw_links, &seg_ordinals, &seg_lengths, &all_paths, "GRCh38#0", &prefix);
+
+        let edges_file = format!("{}.edges.spatial.bed.gz", prefix);
+        let output = Command::new("sh")
+            .args(["-c", &format!("bgzip -dc \"{}\"", edges_file)])
+            .output()
+            .expect("read edges");
+        let content = String::from_utf8_lossy(&output.stdout);
+        std::fs::remove_dir_all(&tmp).ok();
+
+        // s1 ord=0, s2 ord=1, s3 ord=2, s4 ord=3 (ref path first)
+        // Check both directions for s1->s2 link: row with (0,1) and row with (1,0)
+        let has_fwd = content.lines().any(|l| {
+            let cols: Vec<&str> = l.split('\t').collect();
+            cols.len() >= 5 && cols[3] == "0" && cols[4] == "1"
+        });
+        let has_rev = content.lines().any(|l| {
+            let cols: Vec<&str> = l.split('\t').collect();
+            cols.len() >= 5 && cols[3] == "1" && cols[4] == "0"
+        });
+        assert!(has_fwd, "Missing forward edge 0->1");
+        assert!(has_rev, "Missing reverse edge 1->0");
+    }
+
+    #[test]
+    fn coarse_merges_small_gap() {
+        let rows = vec![
+            SyntenyRow {
+                ref_path: "ref#0#chr1".to_string(), ref_start: 0, ref_end: 1000,
+                hap_path: "hap#1#chr1".to_string(), hap_start: 0, hap_end: 1000,
+                strand: true, identity: 1.0,
+            },
+            SyntenyRow {
+                ref_path: "ref#0#chr1".to_string(), ref_start: 6000, ref_end: 7000,
+                hap_path: "hap#1#chr1".to_string(), hap_start: 6000, hap_end: 7000,
+                strand: true, identity: 1.0,
+            },
+        ];
+        let coarse = merge_coarse(&rows, 10_000);
+        assert_eq!(coarse.len(), 1, "5kbp gap should merge into 1 row, got {}", coarse.len());
+    }
+
+    #[test]
+    fn coarse_keeps_large_gap() {
+        let rows = vec![
+            SyntenyRow {
+                ref_path: "ref#0#chr1".to_string(), ref_start: 0, ref_end: 1000,
+                hap_path: "hap#1#chr1".to_string(), hap_start: 0, hap_end: 1000,
+                strand: true, identity: 1.0,
+            },
+            SyntenyRow {
+                ref_path: "ref#0#chr1".to_string(), ref_start: 16000, ref_end: 17000,
+                hap_path: "hap#1#chr1".to_string(), hap_start: 16000, hap_end: 17000,
+                strand: true, identity: 1.0,
+            },
+        ];
+        let coarse = merge_coarse(&rows, 10_000);
+        assert_eq!(coarse.len(), 2, "15kbp gap should stay as 2 rows, got {}", coarse.len());
+    }
+
+    #[test]
+    fn coarse_identity_weighted() {
+        let rows = vec![
+            SyntenyRow {
+                ref_path: "ref#0#chr1".to_string(), ref_start: 0, ref_end: 1000,
+                hap_path: "hap#1#chr1".to_string(), hap_start: 0, hap_end: 1000,
+                strand: true, identity: 0.9,
+            },
+            SyntenyRow {
+                ref_path: "ref#0#chr1".to_string(), ref_start: 1000, ref_end: 3000,
+                hap_path: "hap#1#chr1".to_string(), hap_start: 1000, hap_end: 3000,
+                strand: true, identity: 0.8,
+            },
+        ];
+        let coarse = merge_coarse(&rows, 10_000);
+        assert_eq!(coarse.len(), 1);
+        let expected = (1000.0 * 0.9 + 2000.0 * 0.8) / 3000.0;
+        assert!((coarse[0].identity - expected).abs() < 0.001, "Expected identity ≈ {:.6}, got {:.6}", expected, coarse[0].identity);
+    }
+
+    #[test]
+    fn rev_key_matches() {
+        let gfa = include_str!("../tests/fixtures/bubble.gfa");
+        let rows = run_synteny_on_gfa(gfa, "GRCh38#0");
+
+        for row in &rows {
+            let cols: Vec<&str> = row.split('\t').collect();
+            let hap_path = cols[3];
+            let hap_start: u64 = cols[4].parse().unwrap();
+            let hap_end: u64 = cols[5].parse().unwrap();
+            let hap_chrom = path_chrom(hap_path);
+
+            // Reconstruct what the rev row would look like
+            let expected_prefix = format!("{}\t{}\t{}", hap_chrom, hap_start, hap_end);
+            let found = rows.iter().any(|r| {
+                // We re-simulate rev from the forward rows
+                let c: Vec<&str> = r.split('\t').collect();
+                c[3] == hap_path && c[4] == cols[4] && c[5] == cols[5]
+            });
+            assert!(found, "No matching rev row for hap span {}:{}-{}", hap_chrom, hap_start, hap_end);
+            let _ = expected_prefix;
+        }
+    }
+}

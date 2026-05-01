@@ -90,6 +90,7 @@ const LargeModeSyntenyCanvas = observer(function LargeModeSyntenyCanvas({
   return (
     <canvas
       ref={canvasRef}
+      data-testid="graph-large-mode-canvas"
       style={{ width, height: canvasHeight, display: 'block' }}
     />
   )

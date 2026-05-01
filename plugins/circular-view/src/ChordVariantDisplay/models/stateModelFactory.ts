@@ -73,7 +73,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
        */
       get blockDefinitions() {
         const view = getContainingView(self) as CircularViewModel
-        const origSlices = view.staticSlices
+        const origSlices = view.staticSlices ?? []
         if (!self.refNameMap) {
           return origSlices
         }

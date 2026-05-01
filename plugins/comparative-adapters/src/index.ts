@@ -13,7 +13,6 @@ import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter/index.ts'
 import MashMapAdapterF from './MashMapAdapter/index.ts'
 import PAFAdapterF from './PAFAdapter/index.ts'
 import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter/index.ts'
-import ShardedGfaTabixAdapterF from './ShardedGfaTabixAdapter/index.ts'
 
 export { computeSyriTypes } from './syriUtils.ts'
 export { csToCigar, flipCs } from './csUtils.ts'
@@ -42,7 +41,7 @@ export default class ComparativeAdaptersPlugin extends Plugin {
     BlastTabularAdapter(pluginManager)
     GfaAdapterF(pluginManager)
     GfaTabixAdapterF(pluginManager)
-    ShardedGfaTabixAdapterF(pluginManager)
+
     ComparativeAddTrackComponentF(pluginManager)
     MCScanAddTrackComponentF(pluginManager)
     GuessAdapterF(pluginManager)

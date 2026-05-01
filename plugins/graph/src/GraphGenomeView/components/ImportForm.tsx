@@ -105,49 +105,53 @@ const TrackMode = observer(function TrackMode({
             setTrackId('')
           }}
         />
-        <TextField
-          select
-          size="small"
-          label="GFA track"
-          variant="outlined"
-          value={trackId}
-          onChange={e => {
-            setTrackId(e.target.value)
-          }}
-          disabled={gfaTabixTracks.length === 0}
-          style={{ flex: 1, minWidth: 180 }}
-          helperText={
-            gfaTabixTracks.length === 0
-              ? `No GFA tracks for ${assembly || 'this assembly'}`
-              : ' '
-          }
-        >
-          {gfaTabixTracks.map(track => (
-            <MenuItem key={track.trackId} value={track.trackId}>
-              {readConfObject(track, 'name') as string}
-            </MenuItem>
-          ))}
-        </TextField>
+        <div data-testid="gfa-track-field" style={{ flex: 1, minWidth: 180 }}>
+          <TextField
+            select
+            size="small"
+            label="GFA track"
+            variant="outlined"
+            value={trackId}
+            onChange={e => {
+              setTrackId(e.target.value)
+            }}
+            disabled={gfaTabixTracks.length === 0}
+            style={{ width: '100%' }}
+            helperText={
+              gfaTabixTracks.length === 0
+                ? `No GFA tracks for ${assembly || 'this assembly'}`
+                : ' '
+            }
+          >
+            {gfaTabixTracks.map(track => (
+              <MenuItem key={track.trackId} value={track.trackId}>
+                {readConfObject(track, 'name') as string}
+              </MenuItem>
+            ))}
+          </TextField>
+        </div>
       </div>
 
       <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
-        <RefNameAutocomplete
-          session={session}
-          assemblyName={assembly}
-          value={loc}
-          fetchResults={q =>
-            fetchResults({ queryString: q, session, assemblyName: assembly })
-          }
-          onChange={setLoc}
-          onSelect={result => {
-            setLoc(result.getLocation() ?? result.getLabel())
-          }}
-          minWidth={240}
-          maxWidth={400}
-          style={{ flex: 1 }}
-          helperText="Refname, gene/feature name, or refname:start-end"
-        />
+        <div data-testid="gfa-loc-field" style={{ flex: 1 }}>
+          <RefNameAutocomplete
+            session={session}
+            assemblyName={assembly}
+            value={loc}
+            fetchResults={q =>
+              fetchResults({ queryString: q, session, assemblyName: assembly })
+            }
+            onChange={setLoc}
+            onSelect={result => {
+              setLoc(result.getLocation() ?? result.getLabel())
+            }}
+            minWidth={240}
+            maxWidth={400}
+            helperText="Refname, gene/feature name, or refname:start-end"
+          />
+        </div>
         <Button
+          data-testid="gfa-open-btn"
           variant="contained"
           onClick={async () => {
             setError(undefined)
@@ -158,13 +162,7 @@ const TrackMode = observer(function TrackMode({
               // If the user picked a feature (e.g. a gene) from the autocomplete,
               // prefer its resolved location; else parse whatever they typed.
               const { refName, start, end } = parseRegion(loc)
-              const adapterNode = readConfObject(
-                selectedTrack,
-                'adapter',
-              ) as unknown
-              const adapterConfig = getSnapshot(
-                adapterNode as Parameters<typeof getSnapshot>[0],
-              ) as Record<string, unknown>
+              const adapterConfig = readConfObject(selectedTrack, 'adapter')
               await model.loadFromTabixSubgraph(adapterConfig, {
                 refName,
                 assemblyName: assembly,

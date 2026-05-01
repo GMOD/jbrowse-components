@@ -118,31 +118,33 @@ const suite: TestSuite = {
         // The import form opens in Track mode by default.
         await findByText(page, 'Load a GFA graph', 10000)
 
-        // Pick the GFA track. The TextField uses a select; the rendered MUI
-        // surface is a button/role element containing the placeholder
-        // "GFA track" label. Click it then pick the lone option.
-        const gfaTrackField = await findByText(page, 'GFA track', 10000)
-        await gfaTrackField?.click()
-        await delay(300)
-        const trackOption = await findByText(
-          page,
-          /Volvox 50-sample pangenome/i,
-          10000,
+        // Pick the GFA track using the reliable MUI select trigger selector.
+        const trackSelectTrigger = await page.waitForSelector(
+          '[data-testid="gfa-track-field"] .MuiSelect-select',
+          { timeout: 10000 },
         )
+        await trackSelectTrigger?.click()
+        await delay(400)
+        const trackOption = await page.waitForSelector('[role="option"]', {
+          timeout: 5000,
+        })
         await trackOption?.click()
         await delay(300)
 
         // Type a region into the RefNameAutocomplete.
-        const locInput = await page.$('input[placeholder*="Search" i]') ??
-          await page.$('input[type="text"]')
-        if (!locInput) {
-          throw new Error('Could not find location input on import form')
-        }
-        await locInput.click({ clickCount: 3 })
-        await locInput.type('ctgA:1-1000')
+        const locInput = await page.waitForSelector(
+          '[data-testid="gfa-loc-field"] input',
+          { timeout: 5000 },
+        )
+        await locInput?.click()
+        await locInput?.type('ctgA:1-1000', { delay: 40 })
+        await locInput?.press('Escape')
         await delay(300)
 
-        const openBtn = await findByText(page, /^Open$/, 10000)
+        const openBtn = await page.waitForSelector(
+          '[data-testid="gfa-open-btn"]',
+          { timeout: 5000 },
+        )
         await openBtn?.click()
 
         await waitForGraphRendered(page)

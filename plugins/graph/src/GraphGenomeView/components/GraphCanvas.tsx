@@ -229,6 +229,7 @@ const GraphCanvas = observer(function GraphCanvas({
 
       <canvas
         ref={canvasRef}
+        data-testid="graph-genome-canvas"
         style={{
           width: model.width,
           height: model.canvasHeight,

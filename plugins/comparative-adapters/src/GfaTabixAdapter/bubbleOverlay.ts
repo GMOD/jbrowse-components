@@ -50,8 +50,8 @@ export function findBubblePair(
 }
 
 // Build a single CS string for a synteny feature by walking its CIGAR
-// (structural events from segmentFeatureBuilder) and the bubble sites
-// covering the region in lockstep. CIGAR `=`/`X`/`M` runs are sub-walked:
+// and the bubble sites covering the region in lockstep. CIGAR `=`/`X`/`M`
+// runs are sub-walked:
 // sites overlapping the run contribute their pair CS (SNPs/microindels),
 // gaps fill with `:N`. CIGAR `D`/`N`/`I` become synthetic length-only
 // `-`/`+` ops with `n` placeholder bases (the renderer reads only length,
@@ -134,8 +134,8 @@ export function buildCsFromCigarAndSites(
       const op = feat.cigar[i]!
       if (op === '=' || op === 'M' || op === 'X') {
         // X (mismatch run) is processed like = so bubble CS supplies per-base
-        // detail. segmentFeatureBuilder emits X for equal-length segment
-        // swaps (alt-allele SNVs). Falling back to `:N` inside
+        // detail. X marks equal-length segment swaps (alt-allele SNVs).
+        // Falling back to `:N` inside
         // consumeSitesWithin loses mismatch info but keeps identity numerics
         // correct.
         consumeSitesWithin(pos + cigarLen)
