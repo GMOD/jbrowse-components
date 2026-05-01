@@ -267,6 +267,57 @@ test('node-length color scheme produces distinct colors for different lengths', 
   )
 })
 
+test('rainbow color scheme produces distinct colors for nodes at different indices', () => {
+  const nodes = [
+    { id: 'A+', name: 'A', length: 100, depth: 1 },
+    { id: 'B+', name: 'B', length: 100, depth: 1 },
+    { id: 'C+', name: 'C', length: 100, depth: 1 },
+  ]
+  const positions = {
+    'A+': [
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+    ],
+    'B+': [
+      { x: 20, y: 0 },
+      { x: 30, y: 0 },
+    ],
+    'C+': [
+      { x: 40, y: 0 },
+      { x: 50, y: 0 },
+    ],
+  }
+  const graph = { name: 'test', nodes, edges: [] }
+  const nodeById = new Map(nodes.map(n => [n.id, n]))
+
+  const batch = buildGeometry({
+    nodePositions: positions,
+    graph,
+    nodeById,
+    colorScheme: 'rainbow',
+    scale: 1,
+    contigThickness: 5,
+    connectorThickness: 1.5,
+    drawPaths: false,
+  })
+
+  const rangeA = batch.nodeVertexRanges.get('A+')!
+  const rangeB = batch.nodeVertexRanges.get('B+')!
+  const rangeC = batch.nodeVertexRanges.get('C+')!
+  expect(rangeA).toBeDefined()
+  expect(rangeB).toBeDefined()
+  expect(rangeC).toBeDefined()
+  expect(batch.nodes.colors[rangeA.start]).not.toBe(
+    batch.nodes.colors[rangeB.start],
+  )
+  expect(batch.nodes.colors[rangeB.start]).not.toBe(
+    batch.nodes.colors[rangeC.start],
+  )
+  expect(batch.nodes.colors[rangeA.start]).not.toBe(
+    batch.nodes.colors[rangeC.start],
+  )
+})
+
 test('brightenColors clamps channels at 255', () => {
   const colors = new Uint32Array([packAbgr(200, 200, 200, 255)])
   const range = { start: 0, count: 1 }

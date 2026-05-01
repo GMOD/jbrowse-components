@@ -15,6 +15,7 @@ export interface MultiPairFeature {
   segmentId: string | undefined
   cigar: string | undefined
   cs: string | undefined
+  [key: string]: unknown
 }
 
 export interface PairInfo {

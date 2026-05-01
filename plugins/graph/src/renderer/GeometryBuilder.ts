@@ -575,8 +575,10 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
   const colorRange = computeColorSchemeRange(graph)
 
   const nodeIndexMap = new Map<string, number>()
-  for (let i = 0; i < graph.nodes.length; i++) {
-    nodeIndexMap.set(graph.nodes[i]!.id, i)
+  if (colorScheme === 'rainbow') {
+    for (let i = 0; i < graph.nodes.length; i++) {
+      nodeIndexMap.set(graph.nodes[i]!.id, i)
+    }
   }
 
   const pathColors = new Map<string, number>()

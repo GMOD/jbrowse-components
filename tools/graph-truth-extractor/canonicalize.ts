@@ -335,7 +335,7 @@ export function structuralFingerprint(
     const toSeq = seqOf.get(e.toId) ?? ''
     const fwd = `${fromSeq}|${e.fromOrient}|${toSeq}|${e.toOrient}`
     const rev = `${toSeq}|${flipOrient(e.toOrient)}|${fromSeq}|${flipOrient(e.fromOrient)}`
-    linkEntries.push(Math.min(fwd, rev))
+    linkEntries.push(fwd < rev ? fwd : rev)
     undirectedAdj.get(e.fromId)?.push(`${toSeq}|${e.toOrient}`)
     undirectedAdj.get(e.toId)?.push(`${fromSeq}|${e.fromOrient}`)
   }
@@ -357,7 +357,7 @@ export function structuralFingerprint(
       .reverse()
       .map(s => `${seqOf.get(s.id) ?? ''}${flipOrient(s.orient)}`)
       .join(',')
-    pathEntries.push(Math.min(fwd, rev))
+    pathEntries.push(fwd < rev ? fwd : rev)
   }
   pathEntries.sort()
 

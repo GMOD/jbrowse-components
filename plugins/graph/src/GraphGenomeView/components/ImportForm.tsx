@@ -168,6 +168,8 @@ const TrackMode = observer(function TrackMode({
               await model.loadFromTabixSubgraph(adapterConfig, {
                 ...region,
                 assemblyName: assembly,
+              }, {
+                trackId,
               })
             } catch (e) {
               setError(e)

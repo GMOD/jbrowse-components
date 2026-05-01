@@ -36,10 +36,13 @@ export interface LayoutResult {
   nodePositions: Record<string, NodeSegment[]>
 }
 
-export type ColorScheme =
-  | 'uniform'
-  | 'random'
-  | 'depth'
-  | 'node-length'
-  | 'grey'
-  | 'rainbow'
+export const COLOR_SCHEMES = [
+  'uniform',
+  'random',
+  'rainbow',
+  'depth',
+  'node-length',
+  'grey',
+] as const
+
+export type ColorScheme = (typeof COLOR_SCHEMES)[number]

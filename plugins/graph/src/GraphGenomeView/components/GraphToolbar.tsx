@@ -7,7 +7,6 @@ import { observer } from 'mobx-react'
 
 import ColorSchemeSelect from './ColorSchemeSelect.tsx'
 import GraphStats from './GraphStats.tsx'
-import LinearLayoutToggle from './LinearLayoutToggle.tsx'
 import SettingsMenu from './SettingsMenu.tsx'
 
 import type { GraphGenomeViewModel } from '../model.ts'
@@ -39,7 +38,6 @@ const GraphToolbar = observer(function GraphToolbar({
   return (
     <div className={classes.toolbar}>
       <ColorSchemeSelect model={model} />
-      <LinearLayoutToggle model={model} />
       <Tooltip title="Zoom in">
         <IconButton
           size="small"

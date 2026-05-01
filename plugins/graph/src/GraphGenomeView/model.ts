@@ -11,6 +11,7 @@ import {
   buildGeometry,
   extractColorSlice,
 } from '../renderer/GeometryBuilder.ts'
+import { COLOR_SCHEMES } from '../types.ts'
 
 import type { GraphRenderer } from '../renderer/GraphRenderer.ts'
 import type {
@@ -18,8 +19,6 @@ import type {
   SubBatchKey,
   VertexRange,
 } from '../renderer/types.ts'
-import { COLOR_SCHEMES } from '../types.ts'
-
 import type { ColorScheme, Graph, GraphNode, LayoutResult } from '../types.ts'
 
 export interface SyntenyBlock {
@@ -164,7 +163,7 @@ export default function stateModelFactory() {
         | ReturnType<typeof setTimeout>
         | undefined,
     }))
-    .views((self: any) => ({
+    .views(self => ({
       get nodeById() {
         if (self.graph) {
           const m = new Map<string, GraphNode>()
@@ -275,7 +274,8 @@ export default function stateModelFactory() {
         if (!self.layoutResult) {
           return
         }
-        const positions = self.layoutResult.nodePositions
+        const positions: Record<string, { x: number; y: number }[]> =
+          self.layoutResult.nodePositions
         let minX = Infinity
         let minY = Infinity
         let maxX = -Infinity
@@ -617,6 +617,7 @@ export default function stateModelFactory() {
             maxPathsEmitted?: number
             context?: number
             bpPerPx?: number
+            trackId?: string
           } = {},
         ) {
           if (region.end - region.start > 100_000) {
