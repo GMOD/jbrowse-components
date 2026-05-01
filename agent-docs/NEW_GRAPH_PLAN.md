@@ -83,8 +83,9 @@ ref-free        → tabix synteny.rev.bed.gz
 5. faidx seq.fa.gz per unique ordinal        → sequences
 6. assemble GFA string → OGDF WASM → render
 ```
-90 parallel haplotype fetches (step 3) each return one HTTP range. Total: 93
-range requests vs. 784 with the old approach.
+Steps 1–4 are 93 tabix range requests (1 ref pos + 1 synteny + 90 hap pos + 1
+edges), each spatially local. Step 5 (faidx) is one request per unique ordinal
+and is the likely bottleneck at scale — profile during Phase 3.
 
 **GraphGenomeView — large mode (region > 100 kbp)**
 ```
@@ -137,8 +138,9 @@ hapLen > refLen. GetSubgraph must include S-lines for B1, B2, B3.
 
 **`multipath.gfa`** — three haplotypes, two bubbles. Tests per-pair independence.
 
-**`volvox_chr1_0-50k`** — pre-indexed new-format bgzip+tabix files, committed.
-Used for integration and browser tests without re-running the build pipeline.
+**`volvox_chr1_0-50k`** — new-format bgzip+tabix files built and committed at the
+end of Phase 2 (after running the new build pipeline on the volvox test data).
+Required for all integration and browser tests in Phases 3–4.
 
 ---
 
@@ -156,9 +158,17 @@ Delete everything above. Build will fail until Phase 2.
 
 ### Phase 2 — `synteny_build` + MultiLGVSyntenyDisplay adapter
 
+**Before writing any code:** commit the five synthetic GFA fixtures
+(`linear.gfa`, `bubble.gfa`, `inversion.gfa`, `insertion.gfa`, `multipath.gfa`)
+to `tools/gfa-to-tabix/tests/fixtures/`. The Rust tests depend on them.
+
 Add synteny emission to `main.rs` alongside the existing pos.bed.gz pass.
 New adapter: one tabix query on `synteny.bed.gz` → `MultiPairFeature[]` grouped
 by `mateRefName`. Zero binary lookups.
+
+**After tests pass:** run the new build pipeline on the volvox test data and
+commit the outputs as `plugins/gfa-tabix/src/__tests__/fixtures/volvox_chr1_0-50k/`.
+All Phase 3–4 integration and browser tests depend on this fixture.
 
 **Rust tests** (`tools/gfa-to-tabix/src/tests/synteny_build.rs`):
 
