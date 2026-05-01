@@ -16,6 +16,16 @@ import type { GraphRenderer } from '../renderer/GraphRenderer.ts'
 import type { SubBatchKey, VertexRange } from '../renderer/types.ts'
 import type { ColorScheme, Graph, LayoutResult } from '../types.ts'
 
+export interface SyntenyBlock {
+  refStart: number
+  refEnd: number
+  mateRefName: string
+  mateStart: number
+  mateEnd: number
+  strand: number
+  identity: number
+}
+
 interface BandageScaleOpts {
   nodeLengthPerMegabase?: number
   minimumNodeLength?: number
@@ -109,6 +119,10 @@ export default function stateModelFactory() {
     .volatile(() => ({
       graph: undefined as Graph | undefined,
       layoutResult: undefined as LayoutResult | undefined,
+      syntenyBlocks: undefined as [string, SyntenyBlock[]][] | undefined,
+      largeModeRegion: undefined as
+        | { refName: string; start: number; end: number }
+        | undefined,
 
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
@@ -290,6 +304,8 @@ export default function stateModelFactory() {
       clearGraph() {
         self.graph = undefined
         self.layoutResult = undefined
+        self.syntenyBlocks = undefined
+        self.largeModeRegion = undefined
         self.error = undefined
         self.isLoading = false
         self.statusMessage = ''
@@ -533,6 +549,45 @@ export default function stateModelFactory() {
         }
       }
 
+      function* loadFromTabixLarge(
+        adapterConfig: Record<string, unknown>,
+        region: {
+          refName: string
+          assemblyName: string
+          start: number
+          end: number
+        },
+        bpPerPx?: number,
+      ) {
+        self.isLoading = true
+        self.error = undefined
+        self.graph = undefined
+        self.layoutResult = undefined
+        self.setStatusMessage('Fetching synteny overview')
+        try {
+          const session = getSession(self)
+          const { rpcManager } = session
+          const sessionId = 'graph'
+          const blocks = (yield rpcManager.call(sessionId, 'GetSyntenyBlocks', {
+            adapterConfig,
+            region,
+            sessionId,
+            bpPerPx,
+          })) as [string, SyntenyBlock[]][]
+          self.syntenyBlocks = blocks
+          self.largeModeRegion = {
+            refName: region.refName,
+            start: region.start,
+            end: region.end,
+          }
+        } catch (e) {
+          console.error('[GraphGenomeView.loadFromTabixLarge]', e)
+          self.error = e
+        } finally {
+          self.isLoading = false
+        }
+      }
+
       return {
         loadGFA: flow(function* (text: string, name = 'Imported GFA') {
           self.isLoading = true
@@ -554,10 +609,20 @@ export default function stateModelFactory() {
             start: number
             end: number
           },
-          opts: { maxPathsEmitted?: number; context?: number } = {},
+          opts: {
+            maxPathsEmitted?: number
+            context?: number
+            bpPerPx?: number
+          } = {},
         ) {
+          if (region.end - region.start > 100_000) {
+            yield* loadFromTabixLarge(adapterConfig, region, opts.bpPerPx)
+            return
+          }
           self.isLoading = true
           self.error = undefined
+          self.syntenyBlocks = undefined
+          self.largeModeRegion = undefined
           self.setStatusMessage('Fetching subgraph')
           try {
             const session = getSession(self)
