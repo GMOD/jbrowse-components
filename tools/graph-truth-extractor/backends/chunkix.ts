@@ -12,10 +12,13 @@ async function getChunkixVersion(stmDir: string): Promise<string> {
     return chunkixVersionCache
   }
   try {
-    const { stdout } = await runCommand(
-      'git',
-      ['-C', stmDir, 'rev-parse', '--short', 'HEAD'],
-    )
+    const { stdout } = await runCommand('git', [
+      '-C',
+      stmDir,
+      'rev-parse',
+      '--short',
+      'HEAD',
+    ])
     chunkixVersionCache = `chunkix@${stdout.trim()}`
   } catch {
     chunkixVersionCache = 'chunkix@unknown'
@@ -75,7 +78,8 @@ export async function chunkixBackend(
     )
   }
   const cacheDir = getCacheDir(req.gfaPath, req.cacheDir)
-  const prefix = req.indexPrefix ?? (await ensurePgtabixIndex(req.gfaPath, cacheDir, stmDir))
+  const prefix =
+    req.indexPrefix ?? (await ensurePgtabixIndex(req.gfaPath, cacheDir, stmDir))
   const region = makeRegionString(req.pathName, req.start, req.end)
 
   const outDir = fs.mkdtempSync(path.join(cacheDir, 'chunkix-run-'))

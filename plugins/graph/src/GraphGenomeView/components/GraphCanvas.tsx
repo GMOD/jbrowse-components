@@ -23,6 +23,22 @@ const tooltipStyle = {
   pointerEvents: 'none' as const,
 }
 
+const loadingOverlayStyle = {
+  position: 'absolute' as const,
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  zIndex: 10,
+  background: 'rgba(255,255,255,0.8)',
+  padding: 16,
+  borderRadius: 8,
+  minWidth: 200,
+}
+
+const progressStyle = { marginTop: 8 }
+
+const wrapperStyle = { position: 'relative' as const }
+
 const HoverTooltips = observer(function HoverTooltips({
   model,
 }: {
@@ -170,16 +186,18 @@ const GraphCanvas = observer(function GraphCanvas({
     }
   }
 
-  function handleMouseUp() {
+  function stopDragging() {
     isDraggingRef.current = false
     setIsDragging(false)
     model.setDraggingNode(null)
   }
 
+  function handleMouseUp() {
+    stopDragging()
+  }
+
   function handleMouseLeave() {
-    isDraggingRef.current = false
-    setIsDragging(false)
-    model.setDraggingNode(null)
+    stopDragging()
     model.setHoveredNode(null)
     model.setHoveredEdge(null)
   }
@@ -205,25 +223,13 @@ const GraphCanvas = observer(function GraphCanvas({
   }
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={wrapperStyle}>
       <GraphToolbar model={model} />
 
       {model.isLoading ? (
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 10,
-            background: 'rgba(255,255,255,0.8)',
-            padding: 16,
-            borderRadius: 8,
-            minWidth: 200,
-          }}
-        >
+        <div style={loadingOverlayStyle}>
           <Typography>{model.statusMessage || 'Loading...'}</Typography>
-          <LinearProgress variant="indeterminate" style={{ marginTop: 8 }} />
+          <LinearProgress variant="indeterminate" style={progressStyle} />
         </div>
       ) : null}
 

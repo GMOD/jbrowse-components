@@ -1079,4 +1079,3 @@ export type MultiSampleVariantBaseStateModel = ReturnType<
 >
 export type MultiSampleVariantBaseModel =
   Instance<MultiSampleVariantBaseStateModel>
-

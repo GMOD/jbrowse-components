@@ -50,7 +50,7 @@ export function convertGFAToGraph(gfaGraph: GFAGraph, name = 'Imported GFA') {
   for (const gfaNode of gfaGraph.nodes) {
     const dp =
       gfaNode.tags.dp ?? gfaNode.tags.RC ?? gfaNode.tags.FC ?? gfaNode.tags.KC
-    const depth = typeof dp === 'number' ? dp || 1 : 1
+    const depth = typeof dp === 'number' && dp > 0 ? dp : 1
 
     if (!hasReferences || usedStrands.has(`${gfaNode.id}+`)) {
       nodes.push({
@@ -84,6 +84,18 @@ export function convertGFAToGraph(gfaGraph: GFAGraph, name = 'Imported GFA') {
   const paths: GraphPath[] = []
   const edgeToPathsMap = new Map<string, Set<string>>()
 
+  function recordPathEdges(nodeIds: string[], name: string) {
+    for (let i = 0; i < nodeIds.length - 1; i++) {
+      const from = nodeIds[i]!
+      const to = nodeIds[i + 1]!
+      const edgeKey = `${from}->${to}`
+      if (!edgeToPathsMap.has(edgeKey)) {
+        edgeToPathsMap.set(edgeKey, new Set())
+      }
+      edgeToPathsMap.get(edgeKey)!.add(name)
+    }
+  }
+
   for (const gfaPath of gfaGraph.paths) {
     const pathSegments = gfaPath.path.split(',')
     const nodeIds: string[] = []
@@ -95,17 +107,7 @@ export function convertGFAToGraph(gfaGraph: GFAGraph, name = 'Imported GFA') {
     }
 
     paths.push({ name: gfaPath.name, nodeIds } satisfies GraphPath)
-
-    for (let i = 0; i < nodeIds.length - 1; i++) {
-      const from = nodeIds[i]!
-      const to = nodeIds[i + 1]!
-      const edgeKey = `${from}->${to}`
-
-      if (!edgeToPathsMap.has(edgeKey)) {
-        edgeToPathsMap.set(edgeKey, new Set())
-      }
-      edgeToPathsMap.get(edgeKey)!.add(gfaPath.name)
-    }
+    recordPathEdges(nodeIds, gfaPath.name)
   }
 
   for (const walk of gfaGraph.walks) {
@@ -121,16 +123,7 @@ export function convertGFAToGraph(gfaGraph: GFAGraph, name = 'Imported GFA') {
       haplotype: walk.haplotype,
       contig: walk.contig,
     } satisfies GraphPath)
-
-    for (let i = 0; i < nodeIds.length - 1; i++) {
-      const from = nodeIds[i]!
-      const to = nodeIds[i + 1]!
-      const edgeKey = `${from}->${to}`
-      if (!edgeToPathsMap.has(edgeKey)) {
-        edgeToPathsMap.set(edgeKey, new Set())
-      }
-      edgeToPathsMap.get(edgeKey)!.add(name)
-    }
+    recordPathEdges(nodeIds, name)
   }
 
   for (const edge of edges) {

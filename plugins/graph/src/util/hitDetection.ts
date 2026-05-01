@@ -125,7 +125,12 @@ function getEdgeSpatialIndex(
     cachedEdgeDrawPaths = drawPaths
     cachedEdgeScale = scale
     cachedEdgeVersion = version
-    cachedEdgeIndex = new EdgeSpatialIndex(nodePositions, graph, drawPaths, scale)
+    cachedEdgeIndex = new EdgeSpatialIndex(
+      nodePositions,
+      graph,
+      drawPaths,
+      scale,
+    )
   }
   return cachedEdgeIndex!
 }

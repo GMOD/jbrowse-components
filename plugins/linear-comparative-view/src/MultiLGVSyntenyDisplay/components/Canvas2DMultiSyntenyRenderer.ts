@@ -291,12 +291,7 @@ export function drawSyntenyToCtx(
   blocks: RenderBlock[],
   state: MultiSyntenyRenderState,
 ) {
-  return drawSyntenyBlocks(
-    ctx,
-    buildSyntenyRegionMap(sources),
-    blocks,
-    state,
-  )
+  return drawSyntenyBlocks(ctx, buildSyntenyRegionMap(sources), blocks, state)
 }
 
 /**

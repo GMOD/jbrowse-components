@@ -311,7 +311,8 @@ const VariantComponent = observer(function VariantComponent({
           if (key !== lastHoveredRef.current) {
             lastHoveredRef.current = key
             if (result) {
-              const { featureId, cell, sampleName, featureInfo, ...tooltip } = result
+              const { featureId, cell, sampleName, featureInfo, ...tooltip } =
+                result
               model.setHoveredGenotype(tooltip)
               setHoveredCell(cell)
             } else {

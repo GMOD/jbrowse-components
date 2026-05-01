@@ -60,7 +60,7 @@ async function waitForGraphRendered(page: Page, timeout = 30000) {
   // status). Same predicate the existing graph-genome.ts suite uses.
   await page.waitForFunction(
     () => {
-      const body = document.body.textContent ?? ''
+      const body = document.body.textContent || ''
       const hasNodes = /\b\d+\s+nodes\b/.test(body)
       const isLoading =
         body.includes('Computing layout') ||
@@ -91,7 +91,11 @@ const suite: TestSuite = {
         await launchItem?.click()
         await delay(300)
 
-        const graphItem = await findByText(page, /Graph genome view \(local\)/i, 10000)
+        const graphItem = await findByText(
+          page,
+          /Graph genome view \(local\)/i,
+          10000,
+        )
         await graphItem?.click()
 
         await waitForGraphRendered(page)
@@ -174,7 +178,9 @@ const suite: TestSuite = {
         await delay(300)
         await (await findByText(page, /Launch/i, 10000))?.click()
         await delay(300)
-        await (await findByText(page, /Graph genome view \(local\)/i, 10000))?.click()
+        await (
+          await findByText(page, /Graph genome view \(local\)/i, 10000)
+        )?.click()
 
         await waitForGraphRendered(page)
         await delay(500)

@@ -57,13 +57,13 @@ function parseArgs(argv: string[]): Args {
 }
 
 function help() {
-  console.error(`graph-truth-extractor CLI
+  console.error(String.raw`graph-truth-extractor CLI
 
 Usage:
-  node --experimental-strip-types tools/graph-truth-extractor/cli.ts \\
-    --backend vg|odgi|chunkix|naive \\
-    --gfa <path> --path <name> --start <n> --end <n> [--context <k|snarl>] \\
-    [--emit raw|canonical|json] [--use-sequence] [--out <path>] \\
+  node --experimental-strip-types tools/graph-truth-extractor/cli.ts \
+    --backend vg|odgi|chunkix|naive \
+    --gfa <path> --path <name> --start <n> --end <n> [--context <k|snarl>] \
+    [--emit raw|canonical|json] [--use-sequence] [--out <path>] \
     [--all-backends] [--index-prefix <prefix>] [--cache-dir <dir>]
 `)
 }
@@ -93,7 +93,9 @@ async function runOne(args: Args) {
   } else if (emit === 'canonical') {
     out = canonicalize(result.gfa, { useSequence: !!args.useSequence })
   } else if (emit === 'json') {
-    const canonical = canonicalize(result.gfa, { useSequence: !!args.useSequence })
+    const canonical = canonicalize(result.gfa, {
+      useSequence: !!args.useSequence,
+    })
     out = JSON.stringify(
       {
         backend,
@@ -155,11 +157,9 @@ async function runAll(args: Args) {
     }
   }
 
-  console.log(
-    'backend\tok\telapsedMs\tsegs\tedges\tpaths\tversion',
-  )
+  console.error('backend\tok\telapsedMs\tsegs\tedges\tpaths\tversion')
   for (const r of results) {
-    console.log(
+    console.error(
       `${r.backend}\t${r.ok}\t${r.elapsedMs ?? ''}\t${r.segs ?? ''}\t${r.edges ?? ''}\t${r.paths ?? ''}\t${r.backendVersion ?? ''}`,
     )
   }
@@ -171,12 +171,14 @@ async function runAll(args: Args) {
     const a = ok[0]!
     const b = ok[i]!
     const same = a.canonical === b.canonical
-    console.log(`# ${a.backend} vs ${b.backend}: ${same ? 'isomorphic' : 'DIVERGE'}`)
+    console.error(
+      `# ${a.backend} vs ${b.backend}: ${same ? 'isomorphic' : 'DIVERGE'}`,
+    )
     if (!same && a.canonical && b.canonical) {
       const summary = summarizeDiff(a.canonical, b.canonical)
-      console.log(`#   segments: ${JSON.stringify(summary.segments)}`)
-      console.log(`#   edges:    ${JSON.stringify(summary.edges)}`)
-      console.log(`#   paths:    ${JSON.stringify(summary.paths)}`)
+      console.error(`#   segments: ${JSON.stringify(summary.segments)}`)
+      console.error(`#   edges:    ${JSON.stringify(summary.edges)}`)
+      console.error(`#   paths:    ${JSON.stringify(summary.paths)}`)
       allMatch = false
     }
   }
@@ -197,19 +199,20 @@ async function main() {
     help()
     return
   }
-  if (!args.gfa || !args.path || args.start === undefined || args.end === undefined) {
+  if (
+    !args.gfa ||
+    !args.path ||
+    args.start === undefined ||
+    args.end === undefined
+  ) {
     help()
     process.exitCode = 2
     return
   }
-  if (args.allBackends) {
-    await runAll(args)
-  } else {
-    await runOne(args)
-  }
+  await (args.allBackends ? runAll(args) : runOne(args))
 }
 
-main().catch(err => {
+main().catch((err: unknown) => {
   console.error(err instanceof Error ? err.stack : String(err))
   process.exitCode = 1
 })

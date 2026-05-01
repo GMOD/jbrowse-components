@@ -51,13 +51,13 @@ async function resolveVgPathName(
   if (paths.includes(requested)) {
     return requested
   }
-  const candidates = paths.filter(p => p.startsWith(requested + '#'))
+  const candidates = paths.filter(p => p.startsWith(`${requested}#`))
   if (candidates.length === 1) {
     return candidates[0]!
   }
   if (candidates.length > 1) {
     // Prefer the offset-0 fragment when multiple variants exist.
-    const zero = candidates.find(p => p === requested + '#0')
+    const zero = candidates.find(p => p === `${requested}#0`)
     if (zero) {
       return zero
     }

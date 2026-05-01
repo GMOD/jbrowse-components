@@ -141,9 +141,10 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
 
     this.hal.beginFrame(BG_COLOR_GL, BG_COLOR_GL, BG_COLOR_GL)
 
-    const passes = coverageHeight > 0
-      ? [PASS_COVERAGE, PASS_SNP, PASS_INDICATORS, PASS_FILL]
-      : [PASS_FILL]
+    const passes =
+      coverageHeight > 0
+        ? [PASS_COVERAGE, PASS_SNP, PASS_INDICATORS, PASS_FILL]
+        : [PASS_FILL]
 
     for (const passId of passes) {
       this.drawPassForVisibleBlocks(

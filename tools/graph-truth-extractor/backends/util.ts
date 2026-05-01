@@ -18,28 +18,39 @@ export interface RunResult {
 }
 
 export interface BinaryRunResult {
-  stdout: Buffer
+  stdout: Uint8Array
   stderr: string
   code: number | null
+}
+
+function concatUint8Arrays(arrays: Uint8Array[]): Uint8Array {
+  const totalLength = arrays.reduce((sum, arr) => sum + arr.length, 0)
+  const result = new Uint8Array(totalLength)
+  let offset = 0
+  for (const arr of arrays) {
+    result.set(arr, offset)
+    offset += arr.length
+  }
+  return result
 }
 
 function runRaw(
   cmd: string,
   args: string[],
   opts: RunOpts = {},
-): Promise<{ chunks: Buffer[]; stderr: string; code: number | null }> {
+): Promise<{ chunks: Uint8Array[]; stderr: string; code: number | null }> {
   const { input, surfaceStderr = true, ...spawnOpts } = opts
   return new Promise((resolve, reject) => {
     const proc = spawn(cmd, args, {
       ...spawnOpts,
       stdio: ['pipe', 'pipe', 'pipe'],
     })
-    const chunks: Buffer[] = []
+    const chunks: Uint8Array[] = []
     let stderr = ''
-    proc.stdout!.on('data', (d: Buffer) => {
-      chunks.push(d)
+    proc.stdout.on('data', (d: Buffer) => {
+      chunks.push(new Uint8Array(d))
     })
-    proc.stderr!.on('data', (d: Buffer) => {
+    proc.stderr.on('data', (d: Buffer) => {
       stderr += d.toString('utf8')
     })
     proc.on('error', err => {
@@ -58,9 +69,9 @@ function runRaw(
       resolve({ chunks, stderr, code })
     })
     if (input !== undefined) {
-      proc.stdin!.end(input)
+      proc.stdin.end(input)
     } else {
-      proc.stdin!.end()
+      proc.stdin.end()
     }
   })
 }
@@ -71,8 +82,9 @@ export async function runCommand(
   opts: RunOpts = {},
 ): Promise<RunResult> {
   const { chunks, stderr, code } = await runRaw(cmd, args, opts)
+  const decoder = new TextDecoder()
   return {
-    stdout: Buffer.concat(chunks).toString('utf8'),
+    stdout: decoder.decode(concatUint8Arrays(chunks)),
     stderr,
     code,
   }
@@ -85,7 +97,7 @@ export async function runCommandBinary(
 ): Promise<BinaryRunResult> {
   const { chunks, stderr, code } = await runRaw(cmd, args, opts)
   return {
-    stdout: Buffer.concat(chunks),
+    stdout: concatUint8Arrays(chunks),
     stderr,
     code,
   }

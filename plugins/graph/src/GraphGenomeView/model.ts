@@ -13,8 +13,12 @@ import {
 } from '../renderer/GeometryBuilder.ts'
 
 import type { GraphRenderer } from '../renderer/GraphRenderer.ts'
-import type { RenderBatch, SubBatchKey, VertexRange } from '../renderer/types.ts'
-import type { ColorScheme, Graph, LayoutResult } from '../types.ts'
+import type {
+  RenderBatch,
+  SubBatchKey,
+  VertexRange,
+} from '../renderer/types.ts'
+import type { ColorScheme, Graph, GraphNode, LayoutResult } from '../types.ts'
 
 export interface SyntenyBlock {
   refStart: number
@@ -160,9 +164,14 @@ export default function stateModelFactory() {
     }))
     .views(self => ({
       get nodeById() {
-        return self.graph
-          ? new Map(self.graph.nodes.map(n => [n.id, n] as const))
-          : undefined
+        if (self.graph) {
+          const m = new Map<string, GraphNode>()
+          for (const n of self.graph.nodes) {
+            m.set(n.id, n)
+          }
+          return m
+        }
+        return undefined
       },
       get nodeCount() {
         return self.graph?.nodes.length ?? 0
@@ -671,6 +680,7 @@ export default function stateModelFactory() {
               self.layoutResult = result
             }
           } catch (e) {
+            console.error('[GraphGenomeView.recomputeLayout]', e)
             self.error = e
           } finally {
             self.isLoading = false

@@ -52,7 +52,7 @@ function defaultParser(fields: string[], splitLine: string[]): BedData {
     }
   }
 
-  return obj as BedData
+  return obj
 }
 
 export function makeBlocks({
@@ -213,7 +213,7 @@ export function featureData2({
 
   const data: BedData = names
     ? defaultParser(names, splitLine)
-    : (parser.parseLine(splitLine, { uniqueId }) as BedData)
+    : parser.parseLine(splitLine, { uniqueId })
   const {
     strand: strand2,
     score: score2,
@@ -285,8 +285,8 @@ export function featureData2({
       refName,
       uniqueId,
       subfeatures,
-      thickStart: rest.thickStart as number,
-      thickEnd: rest.thickEnd as number,
+      thickStart: rest.thickStart!,
+      thickEnd: rest.thickEnd!,
     })
   }
 

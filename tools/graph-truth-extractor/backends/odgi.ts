@@ -32,9 +32,7 @@ async function ensureOg(gfaPath: string, cacheDir: string): Promise<string> {
   return ogPath
 }
 
-export async function odgiBackend(
-  req: ExtractRequest,
-): Promise<ExtractResult> {
+export async function odgiBackend(req: ExtractRequest): Promise<ExtractResult> {
   if (!which('odgi')) {
     throw new Error(
       'odgi not found on PATH — install odgi ≥ 0.9.0 or skip this backend',

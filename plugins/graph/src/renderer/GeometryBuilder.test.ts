@@ -1,4 +1,10 @@
-import { abgrAlpha, abgrBlue, abgrGreen, abgrRed, packAbgr } from '@jbrowse/core/util/colorBits'
+import {
+  abgrAlpha,
+  abgrBlue,
+  abgrGreen,
+  abgrRed,
+  packAbgr,
+} from '@jbrowse/core/util/colorBits'
 
 import {
   brightenColors,
@@ -264,7 +270,7 @@ test('node-length color scheme produces distinct colors for different lengths', 
 test('brightenColors clamps channels at 255', () => {
   const colors = new Uint32Array([packAbgr(200, 200, 200, 255)])
   const range = { start: 0, count: 1 }
-  const brightened = brightenColors(colors, range, 2.0)
+  const brightened = brightenColors(colors, range, 2)
   expect(abgrRed(brightened[0]!)).toBe(255)
   expect(abgrGreen(brightened[0]!)).toBe(255)
   expect(abgrBlue(brightened[0]!)).toBe(255)

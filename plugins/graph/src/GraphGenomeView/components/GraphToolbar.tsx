@@ -2,6 +2,7 @@ import CropFreeIcon from '@mui/icons-material/CropFree'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import ZoomOutIcon from '@mui/icons-material/ZoomOut'
 import { IconButton, Tooltip, Typography } from '@mui/material'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import ColorSchemeSelect from './ColorSchemeSelect.tsx'
@@ -10,6 +11,16 @@ import LinearLayoutToggle from './LinearLayoutToggle.tsx'
 import SettingsMenu from './SettingsMenu.tsx'
 
 import type { GraphGenomeViewModel } from '../model.ts'
+
+const useStyles = makeStyles()({
+  toolbar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+    padding: '2px 4px',
+    borderBottom: '1px solid #ddd',
+  },
+})
 
 const ZoomDisplay = observer(function ZoomDisplay({
   model,
@@ -24,16 +35,9 @@ const GraphToolbar = observer(function GraphToolbar({
 }: {
   model: GraphGenomeViewModel
 }) {
+  const { classes } = useStyles()
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 4,
-        padding: '2px 4px',
-        borderBottom: '1px solid #ddd',
-      }}
-    >
+    <div className={classes.toolbar}>
       <ColorSchemeSelect model={model} />
       <LinearLayoutToggle model={model} />
       <Tooltip title="Zoom in">

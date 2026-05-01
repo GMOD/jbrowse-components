@@ -15,8 +15,9 @@ export function parseGfaPathName(path: string) {
   return { genome: parts[0]!, refName: parts[1] ?? parts[0]! }
 }
 
-
-export function hasFileLocation(loc: FileLocation | undefined): loc is FileLocation {
+export function hasFileLocation(
+  loc: FileLocation | undefined,
+): loc is FileLocation {
   if (!loc) {
     return false
   }
@@ -38,7 +39,12 @@ export function readHeaderField(header: string, key: string) {
 }
 
 export function parseSizesField(sizesField: string) {
-  const entries: { panSn: string; refName: string; genome: string; length: number }[] = []
+  const entries: {
+    panSn: string
+    refName: string
+    genome: string
+    length: number
+  }[] = []
   for (const entry of sizesField.split(',')) {
     const colonIdx = entry.lastIndexOf(':')
     if (colonIdx === -1) {

@@ -40,7 +40,7 @@ const ChordVariantDisplay = observer(function ChordVariantDisplay({
     return <DisplayError model={display} radius={radius} />
   }
   const blockDefs = display.blockDefinitions
-  if (!display.features || !blockDefs?.length) {
+  if (!display.features || !blockDefs.length) {
     return <Loading radius={radius} />
   }
 

@@ -34,7 +34,9 @@ async function loadRegionInImportForm(page: Page, region: string) {
   await trackSelectTrigger?.click()
   await delay(400)
   // Options appear in a MUI Menu portal
-  const option = await page.waitForSelector('[role="option"]', { timeout: 5000 })
+  const option = await page.waitForSelector('[role="option"]', {
+    timeout: 5000,
+  })
   await option?.click()
   await delay(300)
 

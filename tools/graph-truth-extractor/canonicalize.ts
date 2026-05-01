@@ -37,9 +37,7 @@ function canonicalEdge(e: GfaEdge): GfaEdge {
 // just from opposite ends. Pick the lexicographically smaller of the two
 // serializations as canonical.
 function canonicalPathSteps(steps: GfaPath['steps']): GfaPath['steps'] {
-  const fwd = steps
-    .map(s => `${s.id}${s.orient}`)
-    .join(',')
+  const fwd = steps.map(s => `${s.id}${s.orient}`).join(',')
   const rev = [...steps]
     .reverse()
     .map(s => `${s.id}${flipOrient(s.orient)}`)
@@ -93,7 +91,10 @@ function refineLabels(
         .get(s.id)!
         .map(n => labels.get(n) ?? '')
         .sort()
-      next.set(s.id, shortHash(`${labels.get(s.id)}|${neighborLabels.join(',')}`))
+      next.set(
+        s.id,
+        shortHash(`${labels.get(s.id)}|${neighborLabels.join(',')}`),
+      )
     }
 
     const prevPartition = new Map<string, string[]>()
@@ -216,7 +217,7 @@ function emitCanonicalGfa(
     lines.push(l)
   }
 
-  return lines.join('\n') + '\n'
+  return `${lines.join('\n')}\n`
 }
 
 // Each segment's set of (canonical-path-name, step-index, orientation) tuples
@@ -334,7 +335,7 @@ export function structuralFingerprint(
     const toSeq = seqOf.get(e.toId) ?? ''
     const fwd = `${fromSeq}|${e.fromOrient}|${toSeq}|${e.toOrient}`
     const rev = `${toSeq}|${flipOrient(e.toOrient)}|${fromSeq}|${flipOrient(e.fromOrient)}`
-    linkEntries.push(fwd < rev ? fwd : rev)
+    linkEntries.push(Math.min(fwd, rev))
     undirectedAdj.get(e.fromId)?.push(`${toSeq}|${e.toOrient}`)
     undirectedAdj.get(e.toId)?.push(`${fromSeq}|${e.fromOrient}`)
   }
@@ -356,7 +357,7 @@ export function structuralFingerprint(
       .reverse()
       .map(s => `${seqOf.get(s.id) ?? ''}${flipOrient(s.orient)}`)
       .join(',')
-    pathEntries.push(fwd < rev ? fwd : rev)
+    pathEntries.push(Math.min(fwd, rev))
   }
   pathEntries.sort()
 

@@ -87,8 +87,7 @@ const GfaTabixAdapter = ConfigurationSchema(
      */
     bubblesLocation: {
       type: 'fileLocation',
-      description:
-        'Location of bubbles.bed.gz (per-snarl CS for bpPerPx < 50)',
+      description: 'Location of bubbles.bed.gz (per-snarl CS for bpPerPx < 50)',
       defaultValue: { uri: '', locationType: 'UriLocation' },
     },
     /**
@@ -105,7 +104,8 @@ const GfaTabixAdapter = ConfigurationSchema(
     }),
     edgesLocation: {
       type: 'fileLocation',
-      description: 'Location of edges.spatial.bed.gz (bidirectional edge index)',
+      description:
+        'Location of edges.spatial.bed.gz (bidirectional edge index)',
       defaultValue: { uri: '', locationType: 'UriLocation' },
     },
     edgesIndex: ConfigurationSchema('EdgesTabixIndex', {

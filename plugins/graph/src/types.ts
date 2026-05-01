@@ -36,4 +36,10 @@ export interface LayoutResult {
   nodePositions: Record<string, NodeSegment[]>
 }
 
-export type ColorScheme = 'uniform' | 'random' | 'depth' | 'node-length' | 'grey'
+export type ColorScheme =
+  | 'uniform'
+  | 'random'
+  | 'depth'
+  | 'node-length'
+  | 'grey'
+  | 'rainbow'

@@ -104,7 +104,9 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
 
     this.syntenyCoarseFile = openTabixIfConfigured(
       this.getConf('syntenyCoarseLocation') as FileLocation | undefined,
-      this.getConf(['syntenyCoarseIndex', 'location']) as FileLocation | undefined,
+      this.getConf(['syntenyCoarseIndex', 'location']) as
+        | FileLocation
+        | undefined,
       pm,
     )
 
@@ -120,7 +122,9 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       pm,
     )
 
-    const seqlensLoc = this.getConf('seqlensLocation') as FileLocation | undefined
+    const seqlensLoc = this.getConf('seqlensLocation') as
+      | FileLocation
+      | undefined
     if (hasFileLocation(seqlensLoc)) {
       this.seqlensHandle = openLocation(seqlensLoc, pm)
     }
@@ -339,7 +343,12 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       },
     })
 
-    if (this.bubblesFile && bpPerPx < 50 && bubblesRefNames && bubblesGenomeNames) {
+    if (
+      this.bubblesFile &&
+      bpPerPx < 50 &&
+      bubblesRefNames &&
+      bubblesGenomeNames
+    ) {
       const tabixBubbleRefName = this.resolveTabixRefName(
         bubblesRefNames,
         query.assemblyName,

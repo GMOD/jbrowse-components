@@ -68,8 +68,10 @@ const LargeModeSyntenyCanvas = observer(function LargeModeSyntenyCanvas({
           const x =
             LABEL_WIDTH +
             ((block.refStart - largeModeRegion.start) / refLen) * drawWidth
-          const w =
-            Math.max(1, ((block.refEnd - block.refStart) / refLen) * drawWidth)
+          const w = Math.max(
+            1,
+            ((block.refEnd - block.refStart) / refLen) * drawWidth,
+          )
           const alpha = 0.35 + 0.65 * block.identity
           ctx.globalAlpha = alpha
           ctx.fillStyle = block.strand > 0 ? color : reverseStrandColor(color)

@@ -13,6 +13,7 @@ import {
 } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   MenuItem,
@@ -38,11 +39,29 @@ L\t3\t+\t4\t+\t0M`
 
 type Mode = 'track' | 'file'
 
+const useStyles = makeStyles()({
+  column: { display: 'flex', flexDirection: 'column', gap: 8 },
+  rowEnd: { display: 'flex', gap: 8, alignItems: 'flex-end' },
+  rowCenter: { display: 'flex', gap: 8, alignItems: 'center' },
+  trackField: { flex: 1, minWidth: 180 },
+  fullWidth: { width: '100%' },
+  flex1: { flex: 1 },
+  paper: { padding: 16, margin: 8, maxWidth: 560, marginInline: 'auto' },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  footer: { marginTop: 12, display: 'flex', justifyContent: 'flex-end' },
+})
+
 const TrackMode = observer(function TrackMode({
   model,
 }: {
   model: GraphGenomeViewModel
 }) {
+  const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames } = session
   const [assembly, setAssembly] = useState(assemblyNames[0] ?? '')
@@ -76,8 +95,8 @@ const TrackMode = observer(function TrackMode({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+    <div className={classes.column}>
+      <div className={classes.rowEnd}>
         <AssemblySelector
           session={session}
           selected={assembly}
@@ -86,7 +105,7 @@ const TrackMode = observer(function TrackMode({
             setTrackId('')
           }}
         />
-        <div data-testid="gfa-track-field" style={{ flex: 1, minWidth: 180 }}>
+        <div data-testid="gfa-track-field" className={classes.trackField}>
           <TextField
             select
             size="small"
@@ -97,7 +116,7 @@ const TrackMode = observer(function TrackMode({
               setTrackId(e.target.value)
             }}
             disabled={gfaTabixTracks.length === 0}
-            style={{ width: '100%' }}
+            className={classes.fullWidth}
             helperText={
               gfaTabixTracks.length === 0
                 ? `No GFA tracks for ${assembly || 'this assembly'}`
@@ -113,8 +132,8 @@ const TrackMode = observer(function TrackMode({
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
-        <div data-testid="gfa-loc-field" style={{ flex: 1 }}>
+      <div className={classes.rowEnd}>
+        <div data-testid="gfa-loc-field" className={classes.flex1}>
           <RefNameAutocomplete
             session={session}
             assemblyName={assembly}
@@ -165,7 +184,12 @@ const TrackMode = observer(function TrackMode({
   )
 })
 
-const FileMode = observer(function FileMode({ model }: { model: GraphGenomeViewModel }) {
+const FileMode = observer(function FileMode({
+  model,
+}: {
+  model: GraphGenomeViewModel
+}) {
+  const { classes } = useStyles()
   const [url, setUrl] = useState('')
   const [error, setError] = useState<unknown>()
 
@@ -198,8 +222,8 @@ const FileMode = observer(function FileMode({ model }: { model: GraphGenomeViewM
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+    <div className={classes.column}>
+      <div className={classes.rowCenter}>
         <Button variant="outlined" component="label" size="small">
           Choose file
           <input
@@ -214,7 +238,7 @@ const FileMode = observer(function FileMode({ model }: { model: GraphGenomeViewM
         </Typography>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+      <div className={classes.rowEnd}>
         <TextField
           size="small"
           label="URL"
@@ -228,7 +252,7 @@ const FileMode = observer(function FileMode({ model }: { model: GraphGenomeViewM
               void handleUrlLoad()
             }
           }}
-          style={{ flex: 1 }}
+          className={classes.flex1}
         />
         <Button
           variant="contained"
@@ -249,20 +273,12 @@ const ImportForm = observer(function ImportForm({
 }: {
   model: GraphGenomeViewModel
 }) {
+  const { classes } = useStyles()
   const [mode, setMode] = useState<Mode>('track')
 
   return (
-    <Paper
-      style={{ padding: 16, margin: 8, maxWidth: 560, marginInline: 'auto' }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 12,
-        }}
-      >
+    <Paper className={classes.paper}>
+      <div className={classes.header}>
         <Typography variant="h6">Load a GFA graph</Typography>
         <ToggleButtonGroup
           value={mode}
@@ -285,13 +301,7 @@ const ImportForm = observer(function ImportForm({
         <FileMode model={model} />
       )}
 
-      <div
-        style={{
-          marginTop: 12,
-          display: 'flex',
-          justifyContent: 'flex-end',
-        }}
-      >
+      <div className={classes.footer}>
         <Button
           size="small"
           onClick={() => {

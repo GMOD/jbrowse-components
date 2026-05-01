@@ -171,7 +171,7 @@ export function computeVariantCells({
     const featureId = feature.id()
     const start = feature.get('start')
     const end = feature.get('end')
-    const featureType = feature.get('type') as string || ''
+    const featureType = feature.get('type')! || ''
     const featureStrand = feature.get('strand')
     const bpLen = end - start
     const shape = getShapeType(featureType, featureStrand)

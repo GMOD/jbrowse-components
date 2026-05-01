@@ -34,9 +34,7 @@ function findSeedSegments(
   // sequencetubemap-tabix's pgtabix.py and our parseGfa append `:offset`
   // when a W-line is encountered.
   let path = parsed.paths.find(p => p.name === pathName)
-  if (!path) {
-    path = parsed.paths.find(p => p.name.startsWith(pathName + ':'))
-  }
+  path ??= parsed.paths.find(p => p.name.startsWith(`${pathName}:`))
   if (!path) {
     throw new Error(
       `Path not found in GFA: ${pathName}. Available: ${parsed.paths
@@ -127,7 +125,7 @@ function emitSubgraph(
       lines.push(`P\t${p.name}\t${walk}\t*`)
     }
   }
-  return lines.join('\n') + '\n'
+  return `${lines.join('\n')}\n`
 }
 
 export async function naiveBackend(

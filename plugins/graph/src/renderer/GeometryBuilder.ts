@@ -84,6 +84,7 @@ export interface ColorSchemeRange {
   maxDepth: number
   minLength: number
   maxLength: number
+  nodeCount: number
 }
 
 export function computeColorSchemeRange(graph: Graph) {
@@ -105,11 +106,18 @@ export function computeColorSchemeRange(graph: Graph) {
       maxLength = n.length
     }
   }
-  return { minDepth, maxDepth, minLength, maxLength } satisfies ColorSchemeRange
+  return {
+    minDepth,
+    maxDepth,
+    minLength,
+    maxLength,
+    nodeCount: graph.nodes.length,
+  } satisfies ColorSchemeRange
 }
 
 export function getNodeColor(
   node: GraphNode,
+  nodeIndex: number,
   colorScheme: ColorScheme,
   range: ColorSchemeRange,
 ) {
@@ -177,6 +185,12 @@ export function getNodeColor(
 
     case 'grey':
       return packAbgr(160, 160, 160, 255)
+
+    case 'rainbow': {
+      const hue = range.nodeCount > 1 ? (nodeIndex / range.nodeCount) * 360 : 0
+      const [r, g, b] = hslToRgb(hue, 0.75, 0.5)
+      return packNorm(r, g, b, 1)
+    }
 
     default:
       return packAbgr(52, 152, 219, 255)
@@ -560,6 +574,11 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
 
   const colorRange = computeColorSchemeRange(graph)
 
+  const nodeIndexMap = new Map<string, number>()
+  for (let i = 0; i < graph.nodes.length; i++) {
+    nodeIndexMap.set(graph.nodes[i]!.id, i)
+  }
+
   const pathColors = new Map<string, number>()
   if (graph.paths) {
     for (const path of graph.paths) {
@@ -665,7 +684,12 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
       continue
     }
 
-    const color = getNodeColor(node, colorScheme, colorRange)
+    const color = getNodeColor(
+      node,
+      nodeIndexMap.get(nodeId) ?? 0,
+      colorScheme,
+      colorRange,
+    )
     const nodeThickness = contigThickness / 2
 
     const startVert = nodeMesh.vertexCount

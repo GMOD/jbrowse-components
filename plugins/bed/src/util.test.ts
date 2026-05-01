@@ -200,12 +200,18 @@ describe('featureData2', () => {
 describe('isBedMethylFeature', () => {
   it('returns false when col6/col7 are missing even if start and end are 0', () => {
     // guard against old `+(col6 || 0) === start` which gave true when start=0 and col6 absent
-    expect(isBedMethylFeature({ splitLine: ['chr1', '0', '1'], start: 0, end: 1 })).toBe(false)
+    expect(
+      isBedMethylFeature({ splitLine: ['chr1', '0', '1'], start: 0, end: 1 }),
+    ).toBe(false)
   })
 
   it('returns false for a short BED line that cannot be BedMethyl', () => {
     expect(
-      isBedMethylFeature({ splitLine: ['chr1', '100', '200', 'name', '0', '+'], start: 100, end: 200 }),
+      isBedMethylFeature({
+        splitLine: ['chr1', '100', '200', 'name', '0', '+'],
+        start: 100,
+        end: 200,
+      }),
     ).toBe(false)
   })
 })
