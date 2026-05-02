@@ -1,4 +1,4 @@
-import { buildBaseColorMap } from './baseColors.ts'
+import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
   pileupRowY,
@@ -11,6 +11,19 @@ import type {
 } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
+function buildBaseColorMap(state: RenderState): Record<number, [number, number, number]> {
+  const { colors } = state
+  const mutedBase = colors.colorMutedSnpBase
+  return state.showModifications
+    ? { 65: mutedBase, 67: mutedBase, 71: mutedBase, 84: mutedBase }
+    : {
+        65: colors.colorBaseA,
+        67: colors.colorBaseC,
+        71: colors.colorBaseG,
+        84: colors.colorBaseT,
+      }
+}
+
 export function drawMismatches(
   ctx: Ctx2D,
   region: MismatchRegionFields,
@@ -21,6 +34,7 @@ export function drawMismatches(
 ) {
   const fH = state.featureHeight
   const bpPerPx = bpLength / fullBlockWidth
+  const pxPerBp = 1 / bpPerPx
   const baseColors = buildBaseColorMap(state)
 
   for (let i = 0; i < region.numMismatches; i++) {
@@ -30,9 +44,14 @@ export function drawMismatches(
     const yRow = region.mismatchYs[i]!
     const y = pileupRowY(yRow, state)
     const base = region.mismatchBases[i]!
-    const color = baseColors[base]
-    if (color) {
-      ctx.fillStyle = color
+    const frequency = region.mismatchFrequencies[i]! / 255
+    const colorTuple = baseColors[base]
+    if (colorTuple) {
+      let alpha = 1.0
+      if (pxPerBp < 1.0) {
+        alpha = pxPerBp + frequency * (1.0 - pxPerBp)
+      }
+      ctx.fillStyle = alpha >= 1.0 ? rgb255(colorTuple) : rgba255(colorTuple, alpha)
       ctx.fillRect(x, y, w, fH)
     }
   }
