@@ -146,6 +146,20 @@ async function runTests(
       process.stdout.write(`    ⏳ ${test.name}...`)
 
       try {
+        // Clean up any GPU resources from previous tests before we start
+        try {
+          await page.evaluate(() => {
+            const w = window as typeof window & {
+              __jbrowseCleanupGpuBackends?: () => void
+            }
+            if (w.__jbrowseCleanupGpuBackends) {
+              w.__jbrowseCleanupGpuBackends()
+            }
+          })
+        } catch {
+          // Cleanup might fail if page is in a bad state, that's ok
+        }
+
         await page.goto(`http://localhost:${PORT}/test_data/volvox/config.json`)
         await page.evaluate(() => {
           localStorage.clear()

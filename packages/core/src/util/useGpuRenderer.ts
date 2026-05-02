@@ -29,6 +29,25 @@ interface UseGpuRendererOptions<R> {
  * stash the backend in an MST volatile so autoruns can observe it.
  */
 let instanceCounter = 0
+let allBackends: Array<{ dispose(): void }> = []
+
+// Global cleanup function that can be called before page unload
+// This ensures all GPU resources are released even if React cleanup doesn't run
+if (typeof window !== 'undefined') {
+  ;(window as typeof window & { __jbrowseCleanupGpuBackends?: () => void }).__jbrowseCleanupGpuBackends = () => {
+    console.warn(
+      `[useGpuRenderer] __jbrowseCleanupGpuBackends called, disposing ${allBackends.length} backends`,
+    )
+    for (const backend of allBackends) {
+      try {
+        backend.dispose()
+      } catch (e) {
+        console.error('[useGpuRenderer] Error disposing backend:', e)
+      }
+    }
+    allBackends = []
+  }
+}
 
 export function useGpuRenderer<R extends { dispose(): void }>(
   factory: (canvas: HTMLCanvasElement) => Promise<R>,
@@ -142,8 +161,11 @@ export function useGpuRenderer<R extends { dispose(): void }>(
         }
         backend = r
         rendererRef.current = r
+        allBackends.push(r)
+        console.warn(
+          `[useGpuRenderer #${instanceId}] GPU backend ready, added to global cleanup (total=${allBackends.length})`,
+        )
         setReady(true)
-        console.warn(`[useGpuRenderer #${instanceId}] GPU backend ready`)
         opts?.onReady?.(r)
       })
       .catch((e: unknown) => {
@@ -168,6 +190,13 @@ export function useGpuRenderer<R extends { dispose(): void }>(
           `[useGpuRenderer #${instanceId}] calling backend.dispose()`,
         )
         backend.dispose()
+        const idx = allBackends.indexOf(backend)
+        if (idx >= 0) {
+          allBackends.splice(idx, 1)
+          console.warn(
+            `[useGpuRenderer #${instanceId}] removed from global cleanup (remaining=${allBackends.length})`,
+          )
+        }
       }
       rendererRef.current = null
       setReady(false)

@@ -5,8 +5,7 @@ const originalWarn = console.warn
 console.log = (...args) => {
   const r = String(args)
   if (
-    r.includes('SharedArrayBuffer available, using fast atomic abort') ||
-    r.includes('[GPU]')
+    r.includes('SharedArrayBuffer available, using fast atomic abort')
   ) {
     return undefined
   }
@@ -22,8 +21,7 @@ console.error = (...args) => {
     r.includes('popupState') ||
     r.includes('Cannot update a component') ||
     r.includes('was not wrapped in act') ||
-    r.includes('Only HTTP(S) protocols are supported') ||
-    r.includes('[GPU]')
+    r.includes('Only HTTP(S) protocols are supported')
   ) {
     return undefined
   }
@@ -34,9 +32,7 @@ console.error = (...args) => {
 console.warn = (...args) => {
   const r = String(args)
   if (
-    r.includes('The `anchorEl` prop provided to the component is invalid') ||
-    r.includes('[GPU]') ||
-    r.includes('WebGL2Hal')
+    r.includes('The `anchorEl` prop provided to the component is invalid')
   ) {
     return undefined
   }

@@ -326,11 +326,13 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
+    console.warn('[Canvas2DSyntenyRenderer] constructor called, canvas size:', canvas.width, 'x', canvas.height)
     const ctx = canvas.getContext('2d')
     if (!ctx) {
       throw new Error('Canvas 2D context not available')
     }
     this.ctx = ctx
+    console.warn('[Canvas2DSyntenyRenderer] Canvas 2D context obtained')
   }
 
   resize(width: number, height: number) {
@@ -361,6 +363,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     const logicalW = this.canvas.width / dpr
     const logicalH = this.canvas.height / dpr
 
+    console.warn('[Canvas2DSyntenyRenderer] render called, logicalW:', logicalW, 'logicalH:', logicalH, 'tracks:', state.perTrack.size)
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.fillStyle = '#fff'
     ctx.fillRect(0, 0, logicalW, logicalH)

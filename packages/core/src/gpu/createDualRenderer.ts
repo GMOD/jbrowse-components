@@ -10,5 +10,12 @@ export async function initDualBackend<TBackend>(
   createCanvas2DBackend: (canvas: HTMLCanvasElement) => TBackend,
 ): Promise<TBackend> {
   const hal = await createGpuHal(canvas, passes, uniformByteSize)
-  return hal ? createGpuBackend(hal) : createCanvas2DBackend(canvas)
+  console.warn('[initDualBackend] hal:', !!hal, 'canvas size:', canvas.width, 'x', canvas.height)
+  if (hal) {
+    console.warn('[initDualBackend] Using GPU backend')
+    return createGpuBackend(hal)
+  } else {
+    console.warn('[initDualBackend] Falling back to Canvas2D backend')
+    return createCanvas2DBackend(canvas)
+  }
 }
