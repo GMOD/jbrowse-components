@@ -121,10 +121,15 @@ async function runTests(
   for (const suite of suitesToRun) {
     console.log(`\n  ${suite.name}`)
 
-    // Detect GPU-heavy test suites that need aggressive browser recycling
-    // to avoid WebGL resource exhaustion (swiftshaker limitation)
-    const isGpuHeavySuite = suite.name.toLowerCase().includes('bigwig') ||
-      suite.name.toLowerCase().includes('wiggle')
+    // Detect GPU-heavy test suites that need per-test browser recycling
+    // to avoid WebGL resource exhaustion (swiftshader limitation)
+    const gpuHeavySuiteNames = [
+      'bigwig', 'wiggle', 'alignments', 'synteny',
+      'dotplot', 'graph-genome', 'hic', 'pangenome', 'additional'
+    ]
+    const isGpuHeavySuite = gpuHeavySuiteNames.some(name =>
+      suite.name.toLowerCase().includes(name)
+    )
 
     // Recycle the page between suites to release accumulated GPU/memory
     // resources and prevent OOM crashes during long test runs
@@ -149,6 +154,7 @@ async function runTests(
 
       const start = performance.now()
       testStartTime = start
+      console.log(`    ⏳ [${suitesToRun.indexOf(suite) + 1}/${suitesToRun.length}] Starting: ${test.name}`)
       process.stdout.write(`    ⏳ ${test.name}...`)
 
       try {
@@ -206,7 +212,7 @@ async function runTests(
           process.stdout.clearLine(0)
           process.stdout.cursorTo(0)
         }
-        console.log(`    ✗ ${test.name}`)
+        console.log(`    ✗ FAILED: ${suite.name} > ${test.name}`)
         console.log(`      Error: ${error}`)
 
         // If the page/frame became detached (browser crash or GPU failure),
@@ -280,6 +286,7 @@ async function runTestsWithRestart(
 
       const start = performance.now()
       testStartTime = start
+      console.log(`    ⏳ Starting: ${test.name}`)
       process.stdout.write(`    ⏳ ${test.name}...`)
 
       let browser: Browser | undefined
@@ -304,7 +311,7 @@ async function runTestsWithRestart(
           process.stdout.clearLine(0)
           process.stdout.cursorTo(0)
         }
-        console.log(`    ✗ ${test.name}`)
+        console.log(`    ✗ FAILED: ${suite.name} > ${test.name}`)
         console.log(`      Error: ${error}`)
       } finally {
         if (browser) {
