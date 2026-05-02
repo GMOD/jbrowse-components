@@ -34,11 +34,11 @@ export function drawGaps(
     const yRow = region.gapYs[i]!
     const y = pileupRowY(yRow, state)
     const gapType = region.gapTypes[i]!
-    const w = Math.max(1, x2 - x1)
+    const widthPx = x2 - x1
+    const w = Math.max(1, widthPx)
 
     if (gapType === GAP_DELETION) {
       const frequency = region.gapFrequencies[i]! / 255
-      const widthPx = w
       let alpha = 1.0
       if (widthPx < 1.0) {
         const base = widthPx * widthPx
