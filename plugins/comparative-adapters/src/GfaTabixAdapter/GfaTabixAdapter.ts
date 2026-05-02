@@ -41,6 +41,7 @@ interface SetupResult {
   bubblesRefNames?: Set<string>
   bubblesGenomeNames?: string[]
   graphCoarseRefNames?: Set<string>
+  graphCoarseAssemblyMap?: Map<string, string[]>
 }
 
 function parseOrdinalRanges(line: string, out: Set<number>) {
@@ -76,6 +77,7 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
   private readonly seqlensHandle?: GenericFilehandle
   private readonly assemblyNameMap: Record<string, string>
   private readonly reverseAssemblyNameMap: Map<string, string>
+  private readonly graphCoarseAssemblyMapHandle?: GenericFilehandle
   private setupP?: Promise<SetupResult>
 
   public constructor(
@@ -143,6 +145,13 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
     if (hasFileLocation(seqlensLoc)) {
       this.seqlensHandle = openLocation(seqlensLoc, pm)
     }
+
+    const assemblyMapLoc = this.getConf('graphCoarseAssemblyMap') as
+      | FileLocation
+      | undefined
+    if (hasFileLocation(assemblyMapLoc)) {
+      this.graphCoarseAssemblyMapHandle = openLocation(assemblyMapLoc, pm)
+    }
   }
 
   private async setup() {
@@ -190,6 +199,13 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       )
     }
 
+    let graphCoarseAssemblyMap: Map<string, string[]> | undefined
+    if (this.graphCoarseAssemblyMapHandle) {
+      const text = await this.graphCoarseAssemblyMapHandle.readFile('utf8')
+      const json = JSON.parse(text) as { assemblies: Record<string, string[]> }
+      graphCoarseAssemblyMap = new Map(Object.entries(json.assemblies))
+    }
+
     return {
       genomes,
       chromSizes,
@@ -198,6 +214,7 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       bubblesRefNames,
       bubblesGenomeNames,
       graphCoarseRefNames,
+      graphCoarseAssemblyMap,
     }
   }
 
@@ -218,6 +235,42 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       const fileQualified = `${fileGenome}#${refName}`
       if (refNameSet.has(fileQualified)) {
         return fileQualified
+      }
+    }
+    return undefined
+  }
+
+  private resolveCoarseTabixRefName(
+    refNameSet: Set<string>,
+    assemblyName: string,
+    refName: string,
+    assemblyMap?: Map<string, string[]>,
+  ) {
+    const resolved = this.resolveTabixRefName(refNameSet, assemblyName, refName)
+    if (resolved) {
+      return resolved
+    }
+    if (!assemblyMap) {
+      return undefined
+    }
+    // Direct key match: JBrowse assembly name == GFA assembly name
+    const directPaths = assemblyMap.get(assemblyName)
+    if (directPaths) {
+      for (const p of directPaths) {
+        if (p.endsWith(`#${refName}`) && refNameSet.has(p)) {
+          return p
+        }
+      }
+    }
+    // Prefix match: JBrowse assembly name is a prefix of the GFA assembly key
+    // (e.g. "grch38" matches "grch38#0")
+    for (const [asmKey, asmPaths] of assemblyMap) {
+      if (asmKey.startsWith(`${assemblyName}#`)) {
+        for (const p of asmPaths) {
+          if (p.endsWith(`#${refName}`) && refNameSet.has(p)) {
+            return p
+          }
+        }
       }
     }
     return undefined
@@ -311,6 +364,9 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       query.assemblyName,
       query.refName,
     )
+    console.log(
+      `[GfaTabixAdapter] getMultiPairFeatures ${JSON.stringify({ assemblyName: query.assemblyName, refName: query.refName, tabixRefName, syntenyRefNamesCount: syntenyRefNames.size })}`,
+    )
     if (!tabixRefName) {
       return { genomeRows: new Map<string, MultiPairFeature[]>() }
     }
@@ -390,6 +446,10 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       }
     }
 
+    const genomeSummary = [...genomeRows.entries()].map(([g, fs]) => `${g}:${fs.length}`)
+    console.log(
+      `[GfaTabixAdapter] getMultiPairFeatures result ${JSON.stringify({ tabixRefName, genomes: genomeSummary })}`,
+    )
     return { genomeRows }
   }
 
@@ -398,8 +458,12 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
     console.log(
       `[GfaTabixAdapter] getSubgraph ${JSON.stringify({ refName, start, end, assemblyName })}`,
     )
-    const { posRefNames, syntenyRefNames, graphCoarseRefNames } =
-      await this.setup()
+    const {
+      posRefNames,
+      syntenyRefNames,
+      graphCoarseRefNames,
+      graphCoarseAssemblyMap,
+    } = await this.setup()
 
     const tabixRefName = this.resolveTabixRefName(
       posRefNames,
@@ -412,10 +476,11 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
 
     const regionSize = end - start
     if (regionSize > 100_000 && this.graphCoarseFile && graphCoarseRefNames) {
-      const coarseTabixRefName = this.resolveTabixRefName(
+      const coarseTabixRefName = this.resolveCoarseTabixRefName(
         graphCoarseRefNames,
         assemblyName,
         refName,
+        graphCoarseAssemblyMap,
       )
       if (coarseTabixRefName) {
         return this.getCoarseSubgraph(coarseTabixRefName, start, end)

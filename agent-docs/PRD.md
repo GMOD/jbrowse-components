@@ -97,7 +97,6 @@ Do **not** open a PR (`gh pr create`) unless explicitly asked.
 - `TEST_INFRASTRUCTURE.md` — browser + unit test invocation.
 - `architecture-decision-records/` — ADR-001 … ADR-005.
 - `OTHER_IDEAS.md` — future directions.
-- `completed/` — historical migration state.
 
 ---
 

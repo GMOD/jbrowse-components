@@ -1,15 +1,9 @@
 # GFA Tabix Index — File Format Specification
 
-This is the canonical spec for the static-file index emitted by
-`tools/gfa-to-tabix` and consumed by
-`plugins/comparative-adapters/src/GfaTabixAdapter`. Every file format
-documented here is referenced by `agent-docs/GRAPH_PLAN.md` and used to
-prove the publication's claims (see GRAPH_PLAN.md "Claims" section).
-
-This document is a living artifact. It is updated *as part of* each
-phase that introduces or modifies a file format. The paper's methods
-section references this spec; one-paragraph summaries in the methods
-text are derived from sections here, not the other way around.
+Canonical spec for the static-file index emitted by `tools/gfa-to-tabix`
+and consumed by `plugins/comparative-adapters/src/GfaTabixAdapter`. File
+formats here back the publication's claims (see `GRAPH_PLAN.md`).
+Update this file alongside any phase that adds or changes a file format.
 
 ## Versioning convention
 
@@ -23,8 +17,7 @@ text are derived from sections here, not the other way around.
   (e.g. `#schema=bubbles/v1`).
 - Readers MUST validate magic + version on open and fail loudly on
   mismatch with a clear error indicating expected vs found.
-- Endianness: little-endian throughout, on both Rust emit and JS read
-  sides. Documented here so future authors don't guess.
+- Endianness: little-endian throughout, on both Rust emit and JS read sides.
 
 ### Compatibility policy
 
@@ -102,11 +95,9 @@ Fixed-size segment records, ordinal-keyed.
     ordinal `ord`'s first record; entry `[numSegments]` = total file
     size (sentinel for slicing the last record).
 
-**Eager-load note.** The current `loadBinaryIndex` in
-`gfaBinaryIO.ts:79` reads the entire `.idx` into memory at first
-access. This is acceptable up to HPRC-chr20 scale (~tens of MB) but is
-the bound on indexing the whole HPRC pangenome at once. Documented
-here so future agents know it's a known constraint, not an oversight.
+**Eager-load note.** `loadBinaryIndex` in `gfaBinaryIO.ts:79` reads the
+entire `.idx` into memory at first access. Acceptable at HPRC-chr20
+scale (~tens of MB); would need a streaming index for whole-pangenome.
 
 #### `prefix.edges.bin` + `prefix.edges.idx`
 

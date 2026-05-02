@@ -40,6 +40,12 @@ Uniforms struct/UBO layout must match byte offsets in
 is float64 — use plain `bp - bpStart`. Hi/lo recombination in `.ts` outside
 shader-uniform writes is a bug.
 
+## Large file generation (tools/gfa-to-tabix)
+
+The `/tmp` partition is small (16 GB, often >50% full). Set `TMPDIR=~/tmpdir`
+before any `gfa-to-tabix` run that writes intermediate files (vg snarls writes
+to TMPDIR). Clean stale `/tmp/hprc-*`, `/tmp/volvox*`, etc. before long runs.
+
 ## MST model files
 
 **Do not split large model files (e.g. `LinearGenomeView/model.ts`) across

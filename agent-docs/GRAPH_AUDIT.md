@@ -1,13 +1,12 @@
 # Graph Subgraph Index — Phase 0 Audit
 
 > **Status: static historical archive (2026-04-30).** Phase 0 is
-> shipped, all findings resolved (see `GRAPH_COMPLETED.md`). This file
-> is preserved as the record of what the Phase 0 audit found and why
-> certain choices were made. **Do not edit.** New audit findings go
-> in `GRAPH_PLAN.md` "Status & next steps" or `GRAPH_COMPLETED.md`.
-> Two pieces of information here remain load-bearing for future
-> agents: the re-entrant-path semantics note (informs Phase 2
-> emission) and the chr20 path-symmetry finding (informs C3 claim).
+> shipped, all findings resolved. Preserved as the record of what
+> the Phase 0 audit found and why certain choices were made.
+> **Do not edit.** New audit findings go in `GRAPH_PLAN.md`.
+> Two pieces remain load-bearing: the re-entrant-path semantics
+> note (informs Phase 2 emission) and the chr20 path-symmetry
+> finding (informs C3 claim; see `adr-015-c3-cross-path-symmetry-claim-narrowed.md`).
 
 This document captures the Phase 0 deliverables called for in
 `agent-docs/GRAPH_PLAN.md`: a concordance audit of the GfaTabixAdapter's
@@ -181,8 +180,7 @@ actual sequences rather than canonical IDs.
 
 ## Findings
 
-The full per-finding write-ups (cause, fix, verification) for resolved
-items live in `agent-docs/GRAPH_COMPLETED.md`. Summary:
+Summary of resolved findings:
 
 - **F1 — Phantom edges from doubled adjacency** (rust preprocessor) —
   FIXED. Bidirected partner is now stored with flipped orientations;
@@ -220,11 +218,9 @@ fingerprint: 3d0e925d0f33b04a
 same canonical structural fingerprint when queried at their
 *equivalent* coordinate ranges. The Phase 0 attempt failed for CHM13
 because chrM offsets differ across paths (CHM13:15992 bp vs GRCh38:
-16569 bp); the equivalent-ranges mapping resolves that. See
-`agent-docs/GRAPH_COMPLETED.md` § C3 for implementation.
+16569 bp); the equivalent-ranges mapping resolves that.
 
-Outstanding: run the same harness on HPRC chr20 (a structural locus
-like the MAPT inversion) to produce the headline-experiment row.
+See `GRAPH_COARSE_SYSTEM.md` "Next steps" for the chr20 C3 measurement plan.
 
 ### chr20 finding (2026-04-30)
 
@@ -289,9 +285,8 @@ from the Phase 0 vg samples:
 ## Judgment: which gap to attack first
 
 Per the plan, Phase 0's deliverable is a ranked recommendation.
-Resolved items have been moved to `agent-docs/GRAPH_COMPLETED.md` —
-the up-to-date prioritized backlog lives in
-`agent-docs/GRAPH_PLAN.md` § "Open: prioritized backlog". The current
+The up-to-date prioritized backlog lives in `agent-docs/GRAPH_PLAN.md`.
+The current
 top items are:
 
 1. **C3 (path symmetry)** — instrument next. Needs the
@@ -316,7 +311,7 @@ multi-resolution coarsening, Phase 5 CI) is additive scope.
 - ~~**W vs P line emission.**~~ Resolved: follow input format. Rust
   preprocessor records `#input-format=walks|paths` in the
   `pos.bed.gz` header; adapter mirrors at emission. Phase 2 shipped
-  2026-04-30. See `GRAPH_COMPLETED.md`.
+  2026-04-30.
 - **Chunkix-as-oracle.** The pgtabix.py `args.r` bug blocks this
   oracle for P-line fixtures. Options: patch our local copy of
   pgtabix.py, restrict to W-line inputs, or upstream a fix. Pick once
@@ -326,12 +321,8 @@ multi-resolution coarsening, Phase 5 CI) is additive scope.
 
 ## See also
 
-- `agent-docs/GRAPH_PLAN.md` — phased plan and claims this audit
-  measures.
-- `agent-docs/GRAPH_COMPLETED.md` — archive of resolved findings and
-  shipped milestones (full per-finding write-ups).
-- `agent-docs/GRAPH_INDEX_FORMAT.md` — file-format spec; F3 will
-  introduce `segments.seq.{bin,fa.gz}` per Phase 1.
+- `agent-docs/GRAPH_PLAN.md` — phased plan and claims this audit measures.
+- `agent-docs/GRAPH_INDEX_FORMAT.md` — file-format spec.
 - `agent-docs/GRAPH_PERF.md` — Phase 8 inputs.
 - `tools/graph-truth-extractor/README.md` — oracle backend
   installation pins and known disagreements.

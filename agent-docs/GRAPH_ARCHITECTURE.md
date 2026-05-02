@@ -7,11 +7,10 @@ the standalone graph view. Companion to:
 - `agent-docs/GRAPH_PLAN.md` — publication plan and phase numbering.
 - `agent-docs/GRAPH_INDEX_FORMAT.md` — on-disk file-format spec (magic
   bytes, BED/BGZF schemas, versioning).
-- `agent-docs/GRAPH_AUDIT.md`, `GRAPH_PERF.md`, `GRAPH_COMPLETED.md` —
-  audits and per-phase status.
+- `agent-docs/GRAPH_AUDIT.md`, `GRAPH_PERF.md` — audits and per-phase status.
 - `agent-docs/GRAPH_COARSE_DESIGN.md` — design contract for megabase-scale
-  coarse graph viewing (offline odgi/vg orchestration; runtime tabix
-  lookups). Doc-only; phases A–D not yet implemented.
+  coarse graph viewing (tile + snarl methods; runtime tabix lookups).
+  Step 1 (preprocessor) and Step 2 routing implemented; browser dogfood pending.
 
 This file documents *what code lives where and why*, plus the cross-cutting
 invariants that hold across the whole pipeline. When code drifts, update
@@ -463,6 +462,37 @@ straight and flipped paths; `flipCs` correctness is in
 needs a test, since this is the only consumer that hits non-trivial
 cases like `+seq → -seq`).
 
+### `build_synteny` path pairing: ordinals, not chromosome names
+
+**Contract.** In `tools/gfa-to-tabix/src/main.rs`, `build_synteny` pairs
+haplotype paths to reference paths by calling `align_pair` for every
+(ref_path, hap_path) combination. `align_pair` decides relatedness through
+*shared graph ordinals* — it returns empty for pairs with no ordinal
+intersection, which is fast. Grouping paths by chromosome name before calling
+`align_pair` is wrong.
+
+**Why the contract exists.** "Same chromosome name" is a valid proxy for
+"same genomic region" only for reference-quality assemblies that follow the
+reference naming convention. HPRC haplotype assemblies name their contigs
+with assembly-specific identifiers (`HG00438#1#JAHBCB010000023.1`) that do
+not match the reference chromosome name (`chr20`). If paths are grouped by
+the last `#`-token in their PanSN name before pairing, every such contig
+lands in its own group with no reference path, and is silently dropped.
+CHM13 was the only non-reference assembly that survived the old approach
+because its contigs were explicitly named `chr*` — same tokens as GRCh38.
+
+**What breaking it looks like.** At 90-genome HPRC chr20 scale, 88 of 90
+non-reference haplotypes are silently absent from `synteny.bed.gz`. CHM13
+appears; all HG/HG-like assemblies do not. No error is emitted.
+
+**What guards it.** `synteny_cross_chrom_hprc_style` in `main.rs` asserts
+that a path named `HG00438#1#JAHBCB010000023.1` — sharing graph ordinals
+with the reference but not its chromosome name — appears in the output.
+
+**When to revisit.** If `build_synteny` ever adds a pre-filter for
+performance (e.g., skip hap paths whose ordinal sets cannot overlap a given
+reference path), that filter must still be ordinal-based, not name-based.
+
 ### `BaseGfaTabixAdapter` abstraction
 
 **Contract.** `BaseGfaTabixAdapter` is abstract on exactly one method:
@@ -518,6 +548,11 @@ matrix used in CI.
 - **Path-symmetry table mismatches.** Check `assemblyNameMap` reverse
   lookup in `getEquivalentRanges`; keys must be unmapped (file-side)
   PanSN names.
+- **Most haplotypes absent from synteny output.** If only reference-style
+  assemblies (CHM13, GRCh38) appear in `synteny.bed.gz` while HPRC haplotypes
+  are missing, `build_synteny` is grouping by chromosome name instead of
+  pairing via `align_pair` ordinal intersection. See "Fragile boundaries —
+  `build_synteny` path pairing".
 - **Graph view stalls on load.** Check `maxPathsEmitted` cap; HPRC
   chr20 past ~5 Mbp blows through 50k subwalks. Lower the cap or
   shrink the region.

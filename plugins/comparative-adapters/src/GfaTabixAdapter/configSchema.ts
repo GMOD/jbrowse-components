@@ -94,6 +94,12 @@ const GfaTabixAdapter = ConfigurationSchema(
         defaultValue: { uri: '', locationType: 'UriLocation' },
       },
     }),
+    graphCoarseAssemblyMap: {
+      type: 'fileLocation',
+      description:
+        'Location of graph.coarse.assembly_map.json (maps GFA assembly names to path lists; enables v2 multi-assembly coarse queries without manual assemblyNameMap)',
+      defaultValue: { uri: '', locationType: 'UriLocation' },
+    },
     /**
      * #slot
      */
@@ -207,6 +213,10 @@ const GfaTabixAdapter = ConfigurationSchema(
               uri: `${snap.prefix}.graph.coarse.bed.gz.tbi`,
               baseUri: snap.baseUri,
             },
+          },
+          graphCoarseAssemblyMap: {
+            uri: `${snap.prefix}.graph.coarse.assembly_map.json`,
+            baseUri: snap.baseUri,
           },
           seqlensLocation: {
             uri: `${snap.prefix}.seglens.bin`,

@@ -1,8 +1,8 @@
-# New Pangenome Browser Plan
+# Pangenome Browser Plan
 
 ## Status
 
-Phases 1–4 complete. See `NEW_GRAPH_COMPLETED.md` for detail.
+Phases 1–4 complete.
 
 ---
 

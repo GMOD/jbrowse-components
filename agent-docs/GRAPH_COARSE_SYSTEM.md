@@ -122,16 +122,17 @@ Map each top-level snarl's boundary node IDs to their first occurrence on the
 reference path to compute a reference-coordinate span. Discard snarls with span
 < `--graph-coarse-min-sv-bp` (default 100 bp). Walk the reference path emitting:
 
-- `chain` rows for backbone stretches between consecutive large snarls;
+- `chain` rows for chains between consecutive large snarls;
 - `snarl` rows for each retained top-level snarl.
 
 `superOrd` is the minimum ordinal among steps in the row's range.
 
 **What `vg snarls` computes.** The snarl decomposition (Paten, Novak, Eizenga,
 Garrison. *J. Comput. Biol.* 2018) partitions a bidirected sequence graph into
-a hierarchy of ultrabubbles and, for cyclic components, bridgeless subgraphs.
-Top-level snarls are at the root of this hierarchy — the largest structural
-variation sites that cannot be expressed as sub-cases of a larger variant.
+a snarl tree: an alternating hierarchy of snarls (variation sites delimited by
+boundary nodes) and chains (linear sequences of nodes and snarls between
+consecutive snarl boundaries). Top-level snarls are direct children of the root
+chain — the largest structural variation sites not enclosed by any other snarl.
 The `vg snarls` subcommand is part of the variation graph toolkit (Garrison,
 Sirén, Novak, Hickey, et al. *Nat. Biotechnol.* 2018).
 
@@ -144,7 +145,7 @@ Sirén, Novak, Hickey, et al. *Nat. Biotechnol.* 2018).
   the `vg snarls` output with reference span ≥ `min-sv-bp`. No rows are
   invented; no qualifying snarls are omitted (subject to the overlap-skip note
   below).
-- **Backbone completeness**: every `chain`-type row is a maximal stretch of
+- **Chain completeness**: every `chain`-type row is a maximal stretch of
   reference-path steps lying between two consecutive large snarls or between a
   chromosome endpoint and the first or last large snarl.
 
@@ -161,7 +162,7 @@ Sirén, Novak, Hickey, et al. *Nat. Biotechnol.* 2018).
   skips any snarl interval that starts before the current cursor and logs the
   skip to stderr.
 - Nested snarls (those below the root level) are not represented.
-- Snarls filtered by `min-sv-bp` are absorbed into adjacent backbone chains with
+- Snarls filtered by `min-sv-bp` are absorbed into adjacent chains with
   no record of their existence.
 - The count of chr20 top-level snarls after the ≥ 100 bp filter has not been
   measured; only the pre-filter count (497,227) is known.
@@ -368,7 +369,6 @@ for a field-by-field format comparison.
   format comparison.
 - `GRAPH_ARCHITECTURE.md` — end-to-end adapter pipeline; getSubgraph flow
   including the coarse routing added in v1.
-- `completed/GRAPH_COMPLETED.md` — running log of completed implementation phases.
 - `tools/gfa-to-tabix/src/main.rs` — `compute_tile_rows`, `graph_coarse_build_tiles`,
   `graph_coarse_build_snarls`, `emit_coarse_row`.
 - `plugins/comparative-adapters/src/GfaTabixAdapter/coarseSubgraphReader.ts` —

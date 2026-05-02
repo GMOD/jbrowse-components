@@ -1,6 +1,6 @@
 # Active Work Items
 
-**Updated:** 2026-04-25 | Move completed items to `agent-docs/completed/COMPLETED.md`. PRD.md holds invariants; this file is the categorized backlog.
+**Updated:** 2026-04-25 | PRD.md holds invariants; this file is the categorized backlog.
 
 
 ---

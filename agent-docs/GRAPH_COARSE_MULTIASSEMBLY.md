@@ -56,8 +56,8 @@ pathChrom  pathStart  pathEnd  superOrd  type  hap_count  constituentOrds
   reference assembly the values are identical to v1's `refStart`/`refEnd`; for
   other assemblies they reflect the actual span in that assembly's coordinates.
 - `superOrd` — ordinal of the snarl's entry boundary node. Graph-level identifier;
-  the same value appears on every assembly's row for the same snarl. For backbone
-  chain rows, the ordinal of the exit boundary node of the preceding snarl (or 0
+  the same value appears on every assembly's row for the same snarl. For chain
+  rows, the ordinal of the exit boundary node of the preceding snarl (or 0
   for the first chain before any snarl). Deterministic and assembly-agnostic.
 - `type` — `snarl` | `chain`. Tile type removed from v2; see "Tile method" below.
 - `hap_count` — number of assembly paths in the index that traverse this snarl.
@@ -115,7 +115,7 @@ For each assembly path P:
    `span = |path_offset_B - path_offset_A|`. If span ≥ min_sv_bp, record as
    a large snarl on P.
 3. Sort large snarls by position on P.
-4. Emit backbone chain rows between consecutive large snarls on P, with chain
+4. Emit chain rows between consecutive large snarls on P, with chain
    constituent ordinals drawn from P's steps in that span.
 5. Emit snarl rows for large snarls, with constituent ordinals drawn from P's
    steps between the two boundary nodes.

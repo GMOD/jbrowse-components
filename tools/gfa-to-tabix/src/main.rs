@@ -1524,18 +1524,16 @@ fn synteny_build(paths: &[PathData], ref_assembly: &str, output_prefix: &str) {
     let mut coarse_proc = spawn_sort_bgzip(&coarse_file);
     let mut coarse_w = BufWriter::new(coarse_proc.stdin.take().unwrap());
 
-    // Group paths by chrom
-    let mut chrom_groups: HashMap<&str, Vec<&PathData>> = HashMap::new();
-    for p in paths {
-        chrom_groups.entry(path_chrom(&p.name)).or_default().push(p);
-    }
+    // Separate reference paths from haplotype paths. We iterate all hap paths
+    // against each reference path rather than grouping by chrom name, because
+    // HPRC-style assemblies name their contigs differently from the reference
+    // (e.g. GRCh38#0#chr20 vs HG00438#1#JAHBCB010000023.1). align_pair uses
+    // shared graph ordinals so it correctly links contigs that don't share a
+    // chromosome name with the reference.
+    let ref_paths: Vec<&PathData> = paths.iter().filter(|p| p.assembly == ref_assembly).collect();
+    let hap_paths: Vec<&PathData> = paths.iter().filter(|p| p.assembly != ref_assembly).collect();
 
-    for (_, group) in &chrom_groups {
-        let ref_path = match group.iter().find(|p| p.assembly == ref_assembly) {
-            Some(p) => p,
-            None => continue,
-        };
-
+    for ref_path in &ref_paths {
         // Build ref lookup structures
         let mut ref_by_ord: HashMap<u64, (u64, u64, bool)> = HashMap::new();
         let mut ref_ord_rank: HashMap<u64, usize> = HashMap::new();
@@ -1546,8 +1544,11 @@ fn synteny_build(paths: &[PathData], ref_assembly: &str, output_prefix: &str) {
             offset += step.seg_len;
         }
 
-        for hap_path in group.iter().filter(|p| p.assembly != ref_assembly) {
+        for hap_path in &hap_paths {
             let rows = align_pair(ref_path, hap_path, &ref_by_ord, &ref_ord_rank);
+            if rows.is_empty() {
+                continue;
+            }
 
             write_synteny_rows(&rows, &mut fwd_w);
 
@@ -2092,20 +2093,11 @@ mod tests {
     fn run_synteny_on_gfa(gfa: &str, ref_assembly: &str) -> Vec<String> {
         let (_, _, all_paths, _) = parse_gfa_for_synteny(gfa);
 
-        // Group by chrom, find ref paths
-        let mut chrom_groups: HashMap<&str, Vec<&PathData>> = HashMap::new();
-        for p in &all_paths {
-            chrom_groups.entry(path_chrom(&p.name)).or_default().push(p);
-        }
-
+        let ref_paths: Vec<&PathData> = all_paths.iter().filter(|p| p.assembly == ref_assembly).collect();
+        let hap_paths: Vec<&PathData> = all_paths.iter().filter(|p| p.assembly != ref_assembly).collect();
         let mut rows: Vec<String> = Vec::new();
 
-        for (_, group) in &chrom_groups {
-            let ref_path = match group.iter().find(|p| p.assembly == ref_assembly) {
-                Some(p) => p,
-                None => continue,
-            };
-
+        for ref_path in &ref_paths {
             let mut ref_by_ord: HashMap<u64, (u64, u64, bool)> = HashMap::new();
             let mut ref_ord_rank: HashMap<u64, usize> = HashMap::new();
             let mut offset = 0u64;
@@ -2115,7 +2107,7 @@ mod tests {
                 offset += step.seg_len;
             }
 
-            for hap_path in group.iter().filter(|p| p.assembly != ref_assembly) {
+            for hap_path in &hap_paths {
                 let pair_rows = align_pair(ref_path, hap_path, &ref_by_ord, &ref_ord_rank);
                 for row in pair_rows {
                     let strand = if row.strand { "+" } else { "-" };
@@ -2570,6 +2562,34 @@ mod tests {
         assert_eq!(snarl_rows.len(), 2, "only A and B emit snarl rows");
         assert_eq!(hap_count[&1], 2, "hap_count should be 2 (A and B)");
         assert_eq!(assemblies.iter().filter(|a| *a == "c").count(), 1, "assembly C still appears in processed list");
+    }
+
+    // HPRC-style GFAs name haplotype contigs differently from the reference
+    // (e.g., GRCh38#0#chr20 vs HG00438#1#JAHBCB010000023.1). The old
+    // chrom-grouping approach missed these; the new ordinal-based pairing
+    // must link them correctly.
+    #[test]
+    fn synteny_cross_chrom_hprc_style() {
+        // seg1 shared by ref and hap (different chrom names)
+        // ref: GRCh38#0#chr20  steps: [s0, s1, s2]
+        // hap: HG00438#1#JAHBCB010000023.1  steps: [s0, s1, s2]  (same ordinals, different name)
+        let gfa = "\
+H\tVN:Z:1.1\n\
+S\ts0\tAAAA\tLN:i:4\n\
+S\ts1\tCCCC\tLN:i:4\n\
+S\ts2\tGGGG\tLN:i:4\n\
+P\tGRCh38#0#chr20\ts0+,s1+,s2+\t*\n\
+P\tCHM13#0#chr20\ts0+,s1+,s2+\t*\n\
+P\tHG00438#1#JAHBCB010000023.1\ts0+,s1+,s2+\t*\n\
+";
+        let rows = run_synteny_on_gfa(gfa, "GRCh38#0");
+        let hap_chroms: std::collections::HashSet<&str> = rows.iter()
+            .map(|r| r.split('\t').nth(3).unwrap())
+            .collect();
+        assert!(hap_chroms.contains("CHM13#0#chr20"), "CHM13 chr20 must appear");
+        assert!(hap_chroms.contains("HG00438#1#JAHBCB010000023.1"),
+            "cross-chrom hap with shared ordinals must appear; got {:?}", hap_chroms);
+        assert_eq!(hap_chroms.len(), 2, "exactly two query paths");
     }
 
     #[test]
