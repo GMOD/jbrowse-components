@@ -465,6 +465,10 @@ export default function stateModelFactory(
           const domain = this.coverageDomain
           if (!domain) {
             // Return a blank scale bar to indicate the region was checked but has no data
+            // Only if coverageHeight is valid
+            if (!Number.isFinite(self.coverageHeight)) {
+              return undefined
+            }
             return {
               ticks: [],
               height: self.coverageHeight,
