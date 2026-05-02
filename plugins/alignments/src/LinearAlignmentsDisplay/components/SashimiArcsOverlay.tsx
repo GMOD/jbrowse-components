@@ -32,8 +32,6 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
     return null
   }
 
-  console.debug('[SashimiArcsOverlay] rendering arcs')
-
   const arcs = computeSashimiArcs({
     rpcDataMap,
     visibleRegions,
