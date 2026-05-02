@@ -8,6 +8,8 @@
 
 ## Config migration
 
+On going 'back compat'. needs deep dive. We removed entire concept of renderer, so, example
+
 **PileupRenderer → display-level config.** Old configs with
 `configuration.renderer.type === 'PileupRenderer'` silently drop
 `featureHeight`, `featureSpacing`, `maxHeight`, `colorBy`, `filterBy`. Add
@@ -18,46 +20,9 @@ expressions intact. See `CONFIG_PATTERN.md`.
 ---
 
 
+## Complex issues
 
 **Scroll zoom lag.** This is a tricky one but sometimes, when doing a scroll zoom, we see a ~500ms–1s delay after tab switch. Debug LinearGenomeView reactivity or JS event throttling.
-
-
----
-
-## Features & UX
-
-### Synteny large-data interactivity
-
-Four independently-landable items, ordered by ROI for whole-genome alignment
-(millions of features). `colorBy` is already main-thread (see recent
-`LinearSyntenyDisplay` refactor: per-instance `kinds`/`instanceFeatureIdx` +
-`renderInstanceData` getter); the items below tackle pan/zoom/pick.
-
-1. *Canvas2D picking spatial index.* `Canvas2DSyntenyRenderer.pick()` is
-   O(n) per hover across all tracks + instances. Build a Flatbush over
-   `(min(x1..x4), 0, max(x1..x4), height)` AABBs at `uploadGeometry`
-   time; query returns a short candidate list for `isPointInPath`.
-   Pattern mirrors alignments chain-mode. Small scope, GPU path
-   unaffected. Low risk.
-
-2. *Pan-cache via widened worker cull + range check.* Today worker culls
-   at `0.5× viewWidth`; every pan fires RPC + debounced rebuild. Grow
-   margin to ~`2× viewWidth` per side, return the actual emitted genomic
-   range, have `afterAttach` skip the RPC when new viewport ⊂ loaded
-   range and `bpPerPx` is unchanged. Medium scope. Eliminates pan
-   re-fetches on indexed adapters (where region-eager fetch would OOM).
-
-3. *Worker-side integer-bp CIGAR walk (precision only, conditional).*
-   If deep-zoom drift becomes visible in the wild, fix it inside the
-   worker without touching the shader/uniform shape. CIGAR accumulator
-   runs in integer bp (no Float64->Float32 lossy conversion), converts to
-   pixel offsets only at instance-buffer build time. Contained to
-   `buildSyntenyGeometry.ts` and `drawDotplotWebGL.ts`. **Don't do this
-   speculatively** -- see ADR-010 for why the larger bp+regionIdx +
-   hpmath refactor was rejected and why the precision concern is narrow.
-
-Recommended sequence: **1 -> 2**. #3 is conditional on a real precision
-report.
 
 
 
@@ -93,8 +58,22 @@ palette, shared Canvas2D ⇄ SVG rasterizer). Remaining:
 
 ## Remove graph stuff from this branch including jbrowse-cli related changes
 
-the gfatabixadapter also, it is not panning out...
+we iterated on this but it needs to be removed before merger
 plugins/tube-map and plugins/graph remove
 put these on a new branch though
 
 
+
+## Tick marks
+
+The linearalignmentsdisplay does a bunch of custom stuff with yscalebar
+
+Consider sharing with something like wiggle-core
+
+Also the y-scalebar behavior is weird when looking at region with no features (shows e.g. one zero, i'd prefer a 'blank' y-scale bar with no tick labels maybe?)
+
+
+The code is also very complex, please simplify
+
+
+Aggressively simplify code where possible

@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react'
-import YScaleBar from './YScaleBar'
+
+import YScaleBar from './YScaleBar.tsx'
 
 describe('YScaleBar', () => {
   it('returns null when ticks is undefined', () => {

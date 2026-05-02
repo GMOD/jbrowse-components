@@ -34,18 +34,26 @@ export function computeCoverageTicks(
   coverageHeight: number,
   scaleType = 'linear',
 ): CoverageTicks {
+  const yTop = YSCALEBAR_LABEL_OFFSET
+  const yBottom = coverageHeight - YSCALEBAR_LABEL_OFFSET
+
+  if (maxDepth === 0) {
+    return {
+      ticks: [{ value: 0, y: yBottom }],
+      height: coverageHeight,
+      maxDepth: 0,
+      yTop,
+      yBottom,
+    }
+  }
+
   const effectiveHeight = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
   const logMax = Math.log2(Math.max(1, maxDepth))
   const yOf =
     scaleType === 'log'
       ? (value: number) =>
-          coverageHeight -
-          YSCALEBAR_LABEL_OFFSET -
-          (Math.log2(Math.max(1, value)) / logMax) * effectiveHeight
-      : (value: number) =>
-          coverageHeight -
-          YSCALEBAR_LABEL_OFFSET -
-          (value / maxDepth) * effectiveHeight
+          yBottom - (Math.log2(Math.max(1, value)) / logMax) * effectiveHeight
+      : (value: number) => yBottom - (value / maxDepth) * effectiveHeight
 
   const ticks: { value: number; y: number }[] = []
   if (scaleType === 'log') {
@@ -72,8 +80,8 @@ export function computeCoverageTicks(
     ticks,
     height: coverageHeight,
     maxDepth,
-    yTop: YSCALEBAR_LABEL_OFFSET,
-    yBottom: coverageHeight - YSCALEBAR_LABEL_OFFSET,
+    yTop,
+    yBottom,
   }
 }
 

@@ -445,42 +445,27 @@ export default function stateModelFactory(
 
         // [min, max] domain for the coverage Y axis.
         get coverageDomain(): [number, number] | undefined {
-          const stats = this.coverageStats
-          if (!stats) {
-            return undefined
-          }
-          const raw = domainFromStats(
-            stats,
-            this.coverageAutoscaleType,
-            this.coverageNumStdDev,
-          )
-          const domain = getNiceDomain({
-            domain: raw,
-            bounds: [this.coverageMinScore, this.coverageMaxScore],
-            scaleType: this.coverageScaleType,
-          })
-          // A domain with max ≤ 0 is semantically empty (no coverage data),
-          // so treat it as undefined to maintain type invariant
-          return domain && domain[1] > 0 ? domain : undefined
+          return this.coverageStats
+            ? getNiceDomain({
+                domain: domainFromStats(
+                  this.coverageStats,
+                  this.coverageAutoscaleType,
+                  this.coverageNumStdDev,
+                ),
+                bounds: [this.coverageMinScore, this.coverageMaxScore],
+                scaleType: this.coverageScaleType,
+              })
+            : undefined
         },
 
         get coverageTicks(): CoverageTicks | undefined {
-          const domain = this.coverageDomain
-          if (!domain) {
-            // Return a blank scale bar to indicate the region was checked but has no data
-            return {
-              ticks: [],
-              height: self.coverageHeight,
-              maxDepth: 0,
-              yTop: 0,
-              yBottom: self.coverageHeight,
-            }
-          }
-          return computeCoverageTicks(
-            domain[1],
-            self.coverageHeight,
-            this.coverageScaleType,
-          )
+          return this.coverageDomain
+            ? computeCoverageTicks(
+                this.coverageDomain[1],
+                self.coverageHeight,
+                this.coverageScaleType,
+              )
+            : undefined
         },
 
         get legendItems(): LegendItem[] {

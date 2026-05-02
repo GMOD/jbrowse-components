@@ -27,10 +27,7 @@ describe('SashimiArcsOverlay arc keys', () => {
     // Generate keys the way the component does
     const keys = arcs.map(arc => `${arc.refName}:${arc.start}:${arc.end}`)
 
-    expect(keys).toEqual([
-      'chr1:1000:2000',
-      'chr1:1500:2500',
-    ])
+    expect(keys).toEqual(['chr1:1000:2000', 'chr1:1500:2500'])
 
     // All keys should be unique
     expect(new Set(keys).size).toBe(keys.length)
@@ -64,7 +61,8 @@ describe('SashimiArcsOverlay arc keys', () => {
       },
     ]
 
-    const stableKey = `${arcs[0].refName}:${arcs[0].start}:${arcs[0].end}`
+    const arc = arcs[0]!
+    const stableKey = `${arc.refName}:${arc.start}:${arc.end}`
     const indexKey = '0'
 
     expect(stableKey).not.toBe(indexKey)

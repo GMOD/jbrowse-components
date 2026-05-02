@@ -1,4 +1,4 @@
-import { computeInsertSizeTicks } from './insertSizeTicks'
+import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 
 describe('computeInsertSizeTicks', () => {
   it('returns undefined when inputs are invalid', () => {
