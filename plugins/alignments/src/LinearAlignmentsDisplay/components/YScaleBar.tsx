@@ -19,7 +19,7 @@ const YScaleBar = observer(function YScaleBar({
   orientation: 'left' | 'right'
 }) {
   const theme = useTheme()
-  if (!ticks || ticks.ticks.length === 0) {
+  if (!ticks) {
     return null
   }
   const { ticks: items, yTop, yBottom } = ticks
