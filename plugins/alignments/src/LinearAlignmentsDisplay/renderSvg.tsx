@@ -112,9 +112,9 @@ export async function renderSvg(
       : YSCALEBAR_LABEL_OFFSET
     sashimiNode = (
       <g transform={`translate(0,${sashimiTopOffset})`}>
-        {arcs.map((arc, i) => (
+        {arcs.map(arc => (
           <path
-            key={i}
+            key={`${arc.refName}:${arc.start}:${arc.end}`}
             d={arc.d}
             stroke={arc.stroke}
             strokeWidth={arc.strokeWidth}
@@ -145,9 +145,9 @@ export async function renderSvg(
     })
     pileupBezierNode = (
       <g style={{ pointerEvents: 'none' }}>
-        {arcs.map((arc, i) => (
+        {arcs.map(arc => (
           <path
-            key={i}
+            key={`${arc.id1}:${arc.id2}`}
             d={arc.d}
             stroke={arc.stroke}
             strokeWidth={1.5}

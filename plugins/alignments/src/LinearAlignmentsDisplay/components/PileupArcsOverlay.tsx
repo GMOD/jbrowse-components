@@ -49,6 +49,8 @@ const PileupArcsOverlay = observer(function PileupArcsOverlay({
     return null
   }
 
+  console.debug('[PileupArcsOverlay] rendering arcs')
+
   const arcs = computePileupBezierArcs({
     laidOutPileupMap,
     displayedRegions,

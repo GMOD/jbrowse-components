@@ -16,7 +16,7 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const [selectedArcIdx, setSelectedArcIdx] = useState(-1)
+  const [selectedArcKey, setSelectedArcKey] = useState<string | null>(null)
   const view = getContainingView(model) as LinearGenomeViewModel
   const {
     showSashimiArcs,
@@ -31,6 +31,8 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
   if (!showSashimiArcs || !showCoverage || !initialized) {
     return null
   }
+
+  console.debug('[SashimiArcsOverlay] rendering arcs')
 
   const arcs = computeSashimiArcs({
     rpcDataMap,
@@ -61,11 +63,12 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
         overflow: sashimiArcsDown ? 'hidden' : 'visible',
       }}
     >
-      {arcs.map((arc, i) => {
-        const isSelected = i === selectedArcIdx
+      {arcs.map(arc => {
+        const arcKey = `${arc.refName}:${arc.start}:${arc.end}`
+        const isSelected = arcKey === selectedArcKey
         return (
           <path
-            key={i}
+            key={arcKey}
             d={arc.d}
             stroke={isSelected ? '#333' : arc.stroke}
             strokeWidth={isSelected ? arc.strokeWidth + 2 : arc.strokeWidth}
@@ -96,7 +99,7 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
               model.clearMouseoverState()
             }}
             onClick={() => {
-              setSelectedArcIdx(isSelected ? -1 : i)
+              setSelectedArcKey(isSelected ? null : arcKey)
               openSashimiWidget(model, arc)
             }}
           />

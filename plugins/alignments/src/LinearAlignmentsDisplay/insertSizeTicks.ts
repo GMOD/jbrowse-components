@@ -42,6 +42,13 @@ export function computeInsertSizeTicks({
   pairedArcsDown: boolean
   arcsTop: number
 }): YScaleTicks | undefined {
+  if (
+    !Number.isFinite(arcsYDomainBp) ||
+    !Number.isFinite(arcsHeight) ||
+    !Number.isFinite(arcsTop)
+  ) {
+    return undefined
+  }
   const availH = arcsHeight - 2 * YSCALEBAR_LABEL_OFFSET
   if (availH <= 0 || arcsYDomainBp <= 0) {
     return undefined
