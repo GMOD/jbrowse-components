@@ -12,7 +12,7 @@ import type {
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const LONG_INSERTION_MIN_LENGTH = 10
-const INSERTION_SERIF_MIN_PX_PER_BP = 3.0
+const INSERTION_SERIF_MIN_PX_PER_BP = 3
 
 export function drawInsertions(
   ctx: Ctx2D,
@@ -35,13 +35,14 @@ export function drawInsertions(
     const frequency = region.insertionFrequencies[i]! / 255
 
     const isLong = length >= LONG_INSERTION_MIN_LENGTH
-    let alpha = 1.0
-    if (!isLong && pxPerBp < 1.0) {
+    let alpha = 1
+    if (!isLong && pxPerBp < 1) {
       const base = pxPerBp * pxPerBp
-      alpha = base + frequency * (1.0 - base)
+      alpha = base + frequency * (1 - base)
     }
 
-    ctx.fillStyle = alpha >= 1.0 ? rgb255(insColorBase) : rgba255(insColorBase, alpha)
+    ctx.fillStyle =
+      alpha >= 1 ? rgb255(insColorBase) : rgba255(insColorBase, alpha)
     ctx.fillRect(x - 0.5, y, 1, fH)
 
     const drawSerifs = !isLong && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP

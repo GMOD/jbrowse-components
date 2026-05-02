@@ -23,7 +23,6 @@ export function drawGaps(
   state: RenderState,
 ) {
   const fH = state.featureHeight
-  const pxPerBp = fullBlockWidth / bpLength
   const delColorBase = state.colors.colorDeletion
 
   for (let i = 0; i < region.numGaps; i++) {
@@ -39,12 +38,13 @@ export function drawGaps(
 
     if (gapType === GAP_DELETION) {
       const frequency = region.gapFrequencies[i]! / 255
-      let alpha = 1.0
-      if (widthPx < 1.0) {
+      let alpha = 1
+      if (widthPx < 1) {
         const base = widthPx * widthPx
-        alpha = base + frequency * (1.0 - base)
+        alpha = base + frequency * (1 - base)
       }
-      ctx.fillStyle = alpha >= 1.0 ? rgb255(delColorBase) : rgba255(delColorBase, alpha)
+      ctx.fillStyle =
+        alpha >= 1 ? rgb255(delColorBase) : rgba255(delColorBase, alpha)
       ctx.fillRect(x1, y, w, fH)
     } else if (gapType === GAP_SKIP) {
       ctx.fillStyle = rgb255(state.colors.colorSkip)

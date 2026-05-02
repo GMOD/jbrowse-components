@@ -122,23 +122,6 @@ async function runTests(
   for (const suite of suitesToRun) {
     console.log(`\n  ${suite.name}`)
 
-    // Detect GPU-heavy test suites that need per-test browser recycling
-    // to avoid WebGL resource exhaustion (swiftshader limitation)
-    const gpuHeavySuiteNames = [
-      'bigwig',
-      'wiggle',
-      'alignments',
-      'synteny',
-      'dotplot',
-      'graph-genome',
-      'hic',
-      'pangenome',
-      'additional',
-    ]
-    const isGpuHeavySuite = gpuHeavySuiteNames.some(name =>
-      suite.name.toLowerCase().includes(name),
-    )
-
     // Recycle the page between suites to release accumulated GPU/memory
     // resources and prevent OOM crashes during long test runs
     try {

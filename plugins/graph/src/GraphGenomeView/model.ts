@@ -399,9 +399,6 @@ export default function stateModelFactory() {
         },
         bpPerPx?: number,
       ) {
-        console.log(
-          `[GraphGenomeView] loadFromTabixLarge ${JSON.stringify({ refName: region.refName, start: region.start, end: region.end, bpPerPx })}`,
-        )
         self.isLoading = true
         self.error = undefined
         self.graph = undefined
@@ -417,9 +414,6 @@ export default function stateModelFactory() {
             sessionId,
             bpPerPx,
           })) as [string, SyntenyBlock[]][]
-          console.log(
-            `[GraphGenomeView] loadFromTabixLarge got ${blocks.length} genome rows`,
-          )
           self.syntenyBlocks = blocks
           self.largeModeRegion = {
             refName: region.refName,
@@ -450,9 +444,6 @@ export default function stateModelFactory() {
         } = {},
       ) {
         const regionSize = region.end - region.start
-        console.log(
-          `[GraphGenomeView] loadFromTabixSubgraph ${JSON.stringify({ refName: region.refName, start: region.start, end: region.end, regionSize, largeMode: regionSize > 100_000 })}`,
-        )
         if (regionSize > 100_000) {
           yield* loadFromTabixLarge(adapterConfig, region, opts.bpPerPx)
           return

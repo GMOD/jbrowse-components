@@ -27,7 +27,6 @@ export function drawClipBars(
     return
   }
   const fH = state.featureHeight
-  const bpPerPx = bpLength / fullBlockWidth
 
   ctx.fillStyle = color
   for (let i = 0; i < count; i++) {

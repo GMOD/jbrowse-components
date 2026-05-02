@@ -364,9 +364,6 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       query.assemblyName,
       query.refName,
     )
-    console.log(
-      `[GfaTabixAdapter] getMultiPairFeatures ${JSON.stringify({ assemblyName: query.assemblyName, refName: query.refName, tabixRefName, syntenyRefNamesCount: syntenyRefNames.size })}`,
-    )
     if (!tabixRefName) {
       return { genomeRows: new Map<string, MultiPairFeature[]>() }
     }
@@ -446,20 +443,11 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       }
     }
 
-    const genomeSummary = [...genomeRows.entries()].map(
-      ([g, fs]) => `${g}:${fs.length}`,
-    )
-    console.log(
-      `[GfaTabixAdapter] getMultiPairFeatures result ${JSON.stringify({ tabixRefName, genomes: genomeSummary })}`,
-    )
     return { genomeRows }
   }
 
   async getSubgraph(region: Region) {
     const { refName, start, end, assemblyName } = region
-    console.log(
-      `[GfaTabixAdapter] getSubgraph ${JSON.stringify({ refName, start, end, assemblyName })}`,
-    )
     const {
       posRefNames,
       syntenyRefNames,
@@ -657,9 +645,6 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
     }
 
     const gfa = lines.join('\n')
-    console.log(
-      `[GfaTabixAdapter] getSubgraph done: ${JSON.stringify({ slines: lines.filter(l => l.startsWith('S\t')).length, llines: lines.filter(l => l.startsWith('L\t')).length, wlines: lines.filter(l => l.startsWith('W\t')).length })}`,
-    )
     return gfa
   }
 
@@ -677,9 +662,6 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
         }
       },
     })
-    console.log(
-      `[GfaTabixAdapter] getCoarseSubgraph done: ${JSON.stringify({ superSegments: rows.length })}`,
-    )
     return coarseRowsToGfa(rows)
   }
 }

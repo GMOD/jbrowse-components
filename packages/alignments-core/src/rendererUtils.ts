@@ -86,7 +86,7 @@ export function drawCoverageBins(
   coverageColor: string,
   bpToX: (bp: number) => number,
   viewWidth: number,
-  widthCompensation: number = 0,
+  widthCompensation = 0,
 ) {
   if (binCount === 0) {
     return
@@ -110,7 +110,12 @@ export function drawCoverageBins(
       bottom - normalizeDepth(f32[off + FIELD.bandBottom]!) * effectiveH
     const bandTop =
       bottom - normalizeDepth(f32[off + FIELD.bandTop]!) * effectiveH
-    ctx.fillRect(px, bandTop, Math.max(px2 - px + widthCompensation, 1), bandBottom - bandTop)
+    ctx.fillRect(
+      px,
+      bandTop,
+      Math.max(px2 - px + widthCompensation, 1),
+      bandBottom - bandTop,
+    )
   }
 }
 

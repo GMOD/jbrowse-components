@@ -1,8 +1,8 @@
 import { drawCoverageBins } from '@jbrowse/alignments-core'
 import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
-import { ALIGNMENTS_FUDGE_FACTOR } from '../../LinearAlignmentsDisplay/constants.ts'
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { ALIGNMENTS_FUDGE_FACTOR } from '../../LinearAlignmentsDisplay/constants.ts'
 
 import type { CoverageRegionFields } from './buildRegion.ts'
 import type { RenderState } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'

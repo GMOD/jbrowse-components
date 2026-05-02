@@ -85,7 +85,6 @@ test('sources_includes_all_three_assemblies', async () => {
   const adapter = makeAdapter()
   const sources = await adapter.getSources()
   const names = sources.map(s => s.name)
-  console.log('[test] sources:', JSON.stringify(names))
   expect(names).toContain('CHM13#0')
   expect(names).toContain('HG00438#1')
   expect(names).toContain('GRCh38#0')
@@ -94,11 +93,6 @@ test('sources_includes_all_three_assemblies', async () => {
 test('getMultiPairFeatures_returns_both_haplotypes', async () => {
   const adapter = makeAdapter()
   const { genomeRows } = await adapter.getMultiPairFeatures(refRegion)
-  const genomes = [...genomeRows.keys()]
-  console.log('[test] genomeRows genomes:', JSON.stringify(genomes))
-  for (const [genome, features] of genomeRows) {
-    console.log(`[test]   ${genome}: ${features.length} features`)
-  }
   // CHM13 was already working (same chrom name as ref)
   expect(genomeRows.has('CHM13#0')).toBe(true)
   // HG00438 was broken (different chrom name); the fix must surface it

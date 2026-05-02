@@ -29,6 +29,7 @@ export function useSearchHighlight(
   highlightName: string,
 ) {
   useLayoutEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (typeof CSS === 'undefined' || !CSS.highlights) {
       return
     }
@@ -59,9 +60,7 @@ export function useSearchHighlight(
       CSS.highlights.delete(highlightName)
     }
     return () => {
-      if (CSS && CSS.highlights) {
-        CSS.highlights.delete(highlightName)
-      }
+      CSS.highlights.delete(highlightName)
     }
   }, [containerRef, query, highlightName])
 }
