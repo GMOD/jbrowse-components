@@ -18,7 +18,7 @@ export function parseCoarseLine(line: string): CoarseRow | null {
   const t3 = line.indexOf('\t', t2 + 1)
   const t4 = line.indexOf('\t', t3 + 1)
   const t5 = line.indexOf('\t', t4 + 1)
-  if (t1 < 0 || t2 < 0 || t3 < 0 || t4 < 0 || t5 < 0) {
+  if (t1 < 0 || t2 < 0 || t3 < 0 || t4 < 0 || t5 === -1) {
     return null
   }
   const type = line.slice(t4 + 1, t5)

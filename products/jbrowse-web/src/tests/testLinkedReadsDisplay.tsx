@@ -29,7 +29,9 @@ export async function testLinkedReadsDisplay({
   } else {
     // cloud and stack modes use linked reads
     await user.click(await findByText('Show...'))
-    await user.click(await findByText('Show paired/supplementary reads as linked'))
+    await user.click(
+      await findByText('Show paired/supplementary reads as linked'),
+    )
   }
 
   const display = await findByTestId('pileup-display-done', ...opts)

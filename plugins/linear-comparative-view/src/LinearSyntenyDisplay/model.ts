@@ -447,21 +447,42 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get renderParams(): SyntenyTrackRenderParams | undefined {
         if (self.isMinimized || this.isLevelCollapsed) {
-          console.warn('[renderParams] blocked: isMinimized or isLevelCollapsed')
+          console.warn(
+            '[renderParams] blocked: isMinimized or isLevelCollapsed',
+          )
           return undefined
         }
         const view = getContainingView(self) as LinearSyntenyViewModel
         if (!view.initialized) {
-          console.warn('[renderParams] blocked: view.initialized=false, views:', view.views.length, 'width:', view.width)
+          console.warn(
+            '[renderParams] blocked: view.initialized=false, views:',
+            view.views.length,
+            'width:',
+            view.width,
+          )
           return undefined
         }
-        if (!view.views.every(a => a.displayedRegions.length > 0 && a.initialized)) {
-          console.warn('[renderParams] blocked: not all views have displayedRegions>0 and initialized', JSON.stringify(view.views.map(a => ({ dr: a.displayedRegions.length, init: a.initialized }))))
+        if (
+          !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
+        ) {
+          console.warn(
+            '[renderParams] blocked: not all views have displayedRegions>0 and initialized',
+            JSON.stringify(
+              view.views.map(a => ({
+                dr: a.displayedRegions.length,
+                init: a.initialized,
+              })),
+            ),
+          )
           return undefined
         }
         const level = this.level
         if (level + 1 >= view.views.length) {
-          console.warn('[renderParams] blocked: level+1 >= view.views.length', level, view.views.length)
+          console.warn(
+            '[renderParams] blocked: level+1 >= view.views.length',
+            level,
+            view.views.length,
+          )
           return undefined
         }
         const v0 = view.views[level]!

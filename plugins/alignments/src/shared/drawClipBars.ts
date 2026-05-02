@@ -35,8 +35,6 @@ export function drawClipBars(
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const yRow = ys[i]!
     const y = pileupRowY(yRow, state)
-    const len = lengths[i]!
-    const w = Math.max(1, len / bpPerPx)
-    ctx.fillRect(x, y, w, fH)
+    ctx.fillRect(x - 0.5, y, 1, fH)
   }
 }

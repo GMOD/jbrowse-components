@@ -125,11 +125,18 @@ async function runTests(
     // Detect GPU-heavy test suites that need per-test browser recycling
     // to avoid WebGL resource exhaustion (swiftshader limitation)
     const gpuHeavySuiteNames = [
-      'bigwig', 'wiggle', 'alignments', 'synteny',
-      'dotplot', 'graph-genome', 'hic', 'pangenome', 'additional'
+      'bigwig',
+      'wiggle',
+      'alignments',
+      'synteny',
+      'dotplot',
+      'graph-genome',
+      'hic',
+      'pangenome',
+      'additional',
     ]
     const isGpuHeavySuite = gpuHeavySuiteNames.some(name =>
-      suite.name.toLowerCase().includes(name)
+      suite.name.toLowerCase().includes(name),
     )
 
     // Recycle the page between suites to release accumulated GPU/memory
@@ -155,7 +162,9 @@ async function runTests(
 
       const start = performance.now()
       testStartTime = start
-      console.log(`    ⏳ [${suitesToRun.indexOf(suite) + 1}/${suitesToRun.length}] Starting: ${test.name}`)
+      console.log(
+        `    ⏳ [${suitesToRun.indexOf(suite) + 1}/${suitesToRun.length}] Starting: ${test.name}`,
+      )
       process.stdout.write(`    ⏳ ${test.name}...`)
 
       try {

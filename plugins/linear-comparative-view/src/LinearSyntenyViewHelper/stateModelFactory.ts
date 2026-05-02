@@ -176,7 +176,12 @@ export function linearSyntenyViewHelperModelFactory(
           }
         }
         if (perTrack.size === 0) {
-          console.warn('[syntenyRenderState] undefined: displays:', self.linearSyntenyDisplays.length, 'perTrack size:', perTrack.size)
+          console.warn(
+            '[syntenyRenderState] undefined: displays:',
+            self.linearSyntenyDisplays.length,
+            'perTrack size:',
+            perTrack.size,
+          )
           return undefined
         }
         return {
@@ -230,10 +235,16 @@ export function linearSyntenyViewHelperModelFactory(
             render: b => {
               const state = self.syntenyRenderState
               if (!state) {
-                console.warn('[LevelSyntenyCanvas render] syntenyRenderState is undefined, linearSyntenyDisplays:', self.linearSyntenyDisplays.length)
+                console.warn(
+                  '[LevelSyntenyCanvas render] syntenyRenderState is undefined, linearSyntenyDisplays:',
+                  self.linearSyntenyDisplays.length,
+                )
                 return false
               }
-              console.warn('[LevelSyntenyCanvas render] rendering, perTrack:', state.perTrack.size)
+              console.warn(
+                '[LevelSyntenyCanvas render] rendering, perTrack:',
+                state.perTrack.size,
+              )
               b.resize(self.parentView.views[0]!.width, self.effectiveHeight)
               return b.render(state)
             },

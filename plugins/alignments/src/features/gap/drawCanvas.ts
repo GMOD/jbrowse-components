@@ -1,3 +1,4 @@
+import { ALIGNMENTS_FUDGE_FACTOR } from '../../LinearAlignmentsDisplay/constants.ts'
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
@@ -32,7 +33,7 @@ export function drawGaps(
     const yRow = region.gapYs[i]!
     const y = pileupRowY(yRow, state)
     const gapType = region.gapTypes[i]!
-    const w = Math.max(1, x2 - x1)
+    const w = Math.max(1, x2 - x1 + ALIGNMENTS_FUDGE_FACTOR)
 
     if (gapType === GAP_DELETION) {
       const midY = y + fH / 2

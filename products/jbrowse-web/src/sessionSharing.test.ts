@@ -5,7 +5,6 @@ jest.mock('@jbrowse/core/util', () => ({
 
 import { readSessionFromDynamo } from './sessionSharing.ts'
 
-
 describe('readSessionFromDynamo', () => {
   describe('sessionId extraction', () => {
     it('strips share- prefix and uses remainder as sessionId in the URL', async () => {
@@ -61,10 +60,9 @@ describe('readSessionFromDynamo', () => {
     })
 
     it('uses raw body when JSON has no message field', async () => {
-      fetch.mockResponse(
-        JSON.stringify({ error: 'something went wrong' }),
-        { status: 500 },
-      )
+      fetch.mockResponse(JSON.stringify({ error: 'something went wrong' }), {
+        status: 500,
+      })
       await expect(
         readSessionFromDynamo('https://api.example.com/', 'share-xyz', 'pass'),
       ).rejects.toThrow('{"error":"something went wrong"}')

@@ -164,7 +164,12 @@ test('wlines_reference_valid_segments', async () => {
 })
 
 // coarse route: queries with regionSize > 100k use graph.coarse.bed.gz
-const largeRegion = { refName: 'ctgA', start: 0, end: 200_000, assemblyName: 'ref#0' }
+const largeRegion = {
+  refName: 'ctgA',
+  start: 0,
+  end: 200_000,
+  assemblyName: 'ref#0',
+}
 
 test('coarse_route_returns_gfa', async () => {
   const adapter = makeAdapter({ withCoarse: true })

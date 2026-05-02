@@ -29,12 +29,14 @@ interface UseGpuRendererOptions<R> {
  * stash the backend in an MST volatile so autoruns can observe it.
  */
 let instanceCounter = 0
-let allBackends: Array<{ dispose(): void }> = []
+let allBackends: { dispose(): void }[] = []
 
 // Global cleanup function that can be called before page unload
 // This ensures all GPU resources are released even if React cleanup doesn't run
 if (typeof window !== 'undefined') {
-  ;(window as typeof window & { __jbrowseCleanupGpuBackends?: () => void }).__jbrowseCleanupGpuBackends = () => {
+  ;(
+    window as typeof window & { __jbrowseCleanupGpuBackends?: () => void }
+  ).__jbrowseCleanupGpuBackends = () => {
     console.warn(
       `[useGpuRenderer] __jbrowseCleanupGpuBackends called, disposing ${allBackends.length} backends`,
     )
@@ -128,12 +130,16 @@ export function useGpuRenderer<R extends { dispose(): void }>(
   useEffect(() => {
     const instanceId = instanceIdRef.current
     if (!canvas) {
-      console.warn(`[useGpuRenderer #${instanceId}] canvas became null/undefined`)
+      console.warn(
+        `[useGpuRenderer #${instanceId}] canvas became null/undefined`,
+      )
       return undefined
     }
     console.warn(`[useGpuRenderer #${instanceId}] canvas became available`)
     return () => {
-      console.warn(`[useGpuRenderer #${instanceId}] canvas cleanup effect fired`)
+      console.warn(
+        `[useGpuRenderer #${instanceId}] canvas cleanup effect fired`,
+      )
     }
   }, [canvas])
 
@@ -191,7 +197,7 @@ export function useGpuRenderer<R extends { dispose(): void }>(
         )
         backend.dispose()
         const idx = allBackends.indexOf(backend)
-        if (idx >= 0) {
+        if (idx !== -1) {
           allBackends.splice(idx, 1)
           console.warn(
             `[useGpuRenderer #${instanceId}] removed from global cleanup (remaining=${allBackends.length})`,
@@ -201,9 +207,7 @@ export function useGpuRenderer<R extends { dispose(): void }>(
       rendererRef.current = null
       setReady(false)
       opts?.onDispose?.()
-      console.warn(
-        `[useGpuRenderer #${instanceId}] effect cleanup complete`,
-      )
+      console.warn(`[useGpuRenderer #${instanceId}] effect cleanup complete`)
     }
   }, [canvas, contextVersion, factory, opts])
 

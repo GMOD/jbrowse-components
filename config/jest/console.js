@@ -4,9 +4,7 @@ const originalWarn = console.warn
 
 console.log = (...args) => {
   const r = String(args)
-  if (
-    r.includes('SharedArrayBuffer available, using fast atomic abort')
-  ) {
+  if (r.includes('SharedArrayBuffer available, using fast atomic abort')) {
     return undefined
   }
 
@@ -31,9 +29,7 @@ console.error = (...args) => {
 
 console.warn = (...args) => {
   const r = String(args)
-  if (
-    r.includes('The `anchorEl` prop provided to the component is invalid')
-  ) {
+  if (r.includes('The `anchorEl` prop provided to the component is invalid')) {
     return undefined
   }
 

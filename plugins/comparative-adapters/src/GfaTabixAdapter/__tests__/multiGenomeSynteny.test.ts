@@ -50,15 +50,36 @@ beforeAll(() => {
 function makeAdapter() {
   return new Adapter(
     configSchema.create({
-      posLocation: { localPath: `${prefix}.pos.bed.gz`, locationType: 'LocalPathLocation' },
-      posIndex: { location: { localPath: `${prefix}.pos.bed.gz.tbi`, locationType: 'LocalPathLocation' } },
-      syntenyLocation: { localPath: `${prefix}.synteny.bed.gz`, locationType: 'LocalPathLocation' },
-      syntenyIndex: { location: { localPath: `${prefix}.synteny.bed.gz.tbi`, locationType: 'LocalPathLocation' } },
+      posLocation: {
+        localPath: `${prefix}.pos.bed.gz`,
+        locationType: 'LocalPathLocation',
+      },
+      posIndex: {
+        location: {
+          localPath: `${prefix}.pos.bed.gz.tbi`,
+          locationType: 'LocalPathLocation',
+        },
+      },
+      syntenyLocation: {
+        localPath: `${prefix}.synteny.bed.gz`,
+        locationType: 'LocalPathLocation',
+      },
+      syntenyIndex: {
+        location: {
+          localPath: `${prefix}.synteny.bed.gz.tbi`,
+          locationType: 'LocalPathLocation',
+        },
+      },
     }),
   )
 }
 
-const refRegion = { refName: 'chr20', assemblyName: 'GRCh38#0', start: 0, end: 12 }
+const refRegion = {
+  refName: 'chr20',
+  assemblyName: 'GRCh38#0',
+  start: 0,
+  end: 12,
+}
 
 test('sources_includes_all_three_assemblies', async () => {
   const adapter = makeAdapter()

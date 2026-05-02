@@ -14,8 +14,8 @@ a single TypeScript interface:
 - **`naive`** — pure-Node BFS from path-walked seed segments. Used as a tertiary
   oracle and as the fallback when none of the external tools is on PATH.
 
-See `agent-docs/NEW_GRAPH_PLAN.md` for the active plan and `agent-docs/GRAPH_AUDIT.md`
-for Phase 0 findings on volvox + HPRC chrM fixtures.
+See `agent-docs/NEW_GRAPH_PLAN.md` for the active plan and
+`agent-docs/GRAPH_AUDIT.md` for Phase 0 findings on volvox + HPRC chrM fixtures.
 
 ## Quick Start
 
@@ -25,7 +25,8 @@ for Phase 0 findings on volvox + HPRC chrM fixtures.
 node --experimental-strip-types tools/graph-truth-extractor/setup-chr20-validation.ts
 ```
 
-This generates tabix indices and runs 6 validation tests. See `CHR20_SETUP_GUIDE.md` for details.
+This generates tabix indices and runs 6 validation tests. See
+`CHR20_SETUP_GUIDE.md` for details.
 
 **Test a region with all backends:**
 
@@ -142,10 +143,13 @@ canonicalization step (odgi is still useful as a third independent oracle).
 ## Documentation
 
 **Active guides:**
-- `CHR20_SETUP_GUIDE.md` — Set up and run GetSubgraph validation on chr20 pangenome
+
+- `CHR20_SETUP_GUIDE.md` — Set up and run GetSubgraph validation on chr20
+  pangenome
 - `CLAUDE.md` — Implementation notes (canonicalization, backends)
 
 **Audits and results:** (see `audits/` folder)
+
 - `audits/FINAL_SUMMARY.md` — Overall audit summary
 - `audits/AUDIT_RESULTS.md` — Backend audit analysis
 - `audits/TEST_RESULTS.md` — Comprehensive test matrix

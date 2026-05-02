@@ -16,8 +16,8 @@ import { createRoot } from 'react-dom/client'
 
 import { coarseStripHTML } from './coarseStripHTML.ts'
 import { colord } from './colord.ts'
-import { measureText } from './measureText.ts'
 import { parseLocString } from './locString.ts'
+import { measureText } from './measureText.ts'
 import { checkStopToken } from './stopToken.ts'
 import {
   isDisplayModel,

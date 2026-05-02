@@ -29,7 +29,6 @@ export function useSearchHighlight(
   highlightName: string,
 ) {
   useLayoutEffect(() => {
-    // eslint-disable-next-line no-undef
     if (typeof CSS === 'undefined' || !CSS.highlights) {
       return
     }
@@ -54,16 +53,13 @@ export function useSearchHighlight(
           offset = idx + queryLower.length
         }
       }
-      // eslint-disable-next-line no-undef
+
       CSS.highlights.set(highlightName, highlight)
     } else {
-      // eslint-disable-next-line no-undef
       CSS.highlights.delete(highlightName)
     }
     return () => {
-      // eslint-disable-next-line no-undef
       if (CSS && CSS.highlights) {
-        // eslint-disable-next-line no-undef
         CSS.highlights.delete(highlightName)
       }
     }

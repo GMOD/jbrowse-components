@@ -516,7 +516,9 @@ export class WebGL2Hal implements GpuHal {
       `[WebGL2Hal #${this.instanceId}] dispose() CALLED, already disposed=${this.disposed}`,
     )
     if (this.disposed) {
-      console.warn(`[WebGL2Hal #${this.instanceId}] dispose() called but already disposed, returning`)
+      console.warn(
+        `[WebGL2Hal #${this.instanceId}] dispose() called but already disposed, returning`,
+      )
       return
     }
     this.disposed = true
@@ -530,7 +532,10 @@ export class WebGL2Hal implements GpuHal {
     // the context alive after disposal. This is critical for test suites where
     // multiple contexts are created in sequence (e.g. Puppeteer page navigation).
     if (this.contextLostListener) {
-      this.canvas.removeEventListener('webglcontextlost', this.contextLostListener)
+      this.canvas.removeEventListener(
+        'webglcontextlost',
+        this.contextLostListener,
+      )
       this.contextLostListener = null
     }
     if (this.contextRestoredListener) {

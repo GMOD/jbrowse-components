@@ -446,7 +446,9 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       }
     }
 
-    const genomeSummary = [...genomeRows.entries()].map(([g, fs]) => `${g}:${fs.length}`)
+    const genomeSummary = [...genomeRows.entries()].map(
+      ([g, fs]) => `${g}:${fs.length}`,
+    )
     console.log(
       `[GfaTabixAdapter] getMultiPairFeatures result ${JSON.stringify({ tabixRefName, genomes: genomeSummary })}`,
     )
