@@ -1,4 +1,3 @@
-import { ALIGNMENTS_FUDGE_FACTOR } from '../../LinearAlignmentsDisplay/constants.ts'
 import { getReadColor } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
@@ -42,7 +41,7 @@ export function drawReads(
     const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
     const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
     const y = pileupRowY(region.readYs[i]!, state)
-    const w = Math.max(1, x2 - x1 + ALIGNMENTS_FUDGE_FACTOR)
+    const w = Math.max(1, x2 - x1)
 
     ctx.fillStyle = getReadColor(i, region, state.colorScheme, state.colors, {
       renderingMode: state.renderingMode,

@@ -1,6 +1,7 @@
 import { drawCoverageBins } from '@jbrowse/alignments-core'
 import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
+import { ALIGNMENTS_FUDGE_FACTOR } from '../../LinearAlignmentsDisplay/constants.ts'
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 
 import type { CoverageRegionFields } from './buildRegion.ts'
@@ -30,5 +31,6 @@ export function drawCoverageBars(
     rgb255(state.colors.colorCoverage),
     bpToX,
     viewWidth,
+    ALIGNMENTS_FUDGE_FACTOR,
   )
 }
