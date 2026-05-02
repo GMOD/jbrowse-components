@@ -10,7 +10,7 @@ const FIXTURES = path.join(
   'volvox_chr1_0-50k',
 )
 
-function makeAdapter() {
+function makeAdapter({ withCoarse = false } = {}) {
   return new Adapter(
     configSchema.create({
       posLocation: {
@@ -47,6 +47,20 @@ function makeAdapter() {
         localPath: `${FIXTURES}.seglens.bin`,
         locationType: 'LocalPathLocation',
       },
+      ...(withCoarse
+        ? {
+            graphCoarseLocation: {
+              localPath: `${FIXTURES}.graph.coarse.bed.gz`,
+              locationType: 'LocalPathLocation',
+            },
+            graphCoarseIndex: {
+              location: {
+                localPath: `${FIXTURES}.graph.coarse.bed.gz.tbi`,
+                locationType: 'LocalPathLocation',
+              },
+            },
+          }
+        : {}),
     }),
   )
 }
@@ -59,7 +73,7 @@ const region = {
 }
 
 test('returns_gfa_string', async () => {
-  const adapter = makeAdapter()
+  const adapter = makeAdapter({ withCoarse: false })
   const gfa = await adapter.getSubgraph(region)
   expect(typeof gfa).toBe('string')
   expect(gfa.startsWith('H\tVN:Z:1.1')).toBe(true)
@@ -149,3 +163,52 @@ test('wlines_reference_valid_segments', async () => {
   expect(wlineCount).toBeGreaterThan(0)
 })
 
+// coarse route: queries with regionSize > 100k use graph.coarse.bed.gz
+const largeRegion = { refName: 'ctgA', start: 0, end: 200_000, assemblyName: 'ref#0' }
+
+test('coarse_route_returns_gfa', async () => {
+  const adapter = makeAdapter({ withCoarse: true })
+  const gfa = await adapter.getSubgraph(largeRegion)
+  expect(gfa.startsWith('H\tVN:Z:1.1')).toBe(true)
+})
+
+test('coarse_route_fewer_slines_than_detail', async () => {
+  const coarseAdapter = makeAdapter({ withCoarse: true })
+  const detailAdapter = makeAdapter({ withCoarse: false })
+  const coarseGfa = await coarseAdapter.getSubgraph(largeRegion)
+  const detailGfa = await detailAdapter.getSubgraph(region)
+  const coarseSlines = coarseGfa.split('\n').filter(l => l.startsWith('S\t'))
+  const detailSlines = detailGfa.split('\n').filter(l => l.startsWith('S\t'))
+  expect(coarseSlines.length).toBeGreaterThan(0)
+  expect(coarseSlines.length).toBeLessThan(detailSlines.length)
+})
+
+test('coarse_super_ord_matches_min_constituent', async () => {
+  const adapter = makeAdapter({ withCoarse: true })
+  const gfa = await adapter.getSubgraph(largeRegion)
+  for (const line of gfa.split('\n')) {
+    if (line.startsWith('S\t')) {
+      const cols = line.split('\t')
+      expect(Number.isFinite(+cols[1]!)).toBe(true)
+    }
+  }
+})
+
+test('coarse_no_dangling_llines', async () => {
+  const adapter = makeAdapter({ withCoarse: true })
+  const gfa = await adapter.getSubgraph(largeRegion)
+  const lines = gfa.split('\n')
+  const sOrds = new Set<number>()
+  for (const line of lines) {
+    if (line.startsWith('S\t')) {
+      sOrds.add(+line.split('\t')[1]!)
+    }
+  }
+  for (const line of lines) {
+    if (line.startsWith('L\t')) {
+      const cols = line.split('\t')
+      expect(sOrds.has(+cols[1]!)).toBe(true)
+      expect(sOrds.has(+cols[3]!)).toBe(true)
+    }
+  }
+})

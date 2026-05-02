@@ -82,6 +82,18 @@ const GfaTabixAdapter = ConfigurationSchema(
         defaultValue: { uri: '', locationType: 'UriLocation' },
       },
     }),
+    graphCoarseLocation: {
+      type: 'fileLocation',
+      description:
+        'Location of graph.coarse.bed.gz (super-segments for regionSize > 100 kbp)',
+      defaultValue: { uri: '', locationType: 'UriLocation' },
+    },
+    graphCoarseIndex: ConfigurationSchema('GraphCoarseTabixIndex', {
+      location: {
+        type: 'fileLocation',
+        defaultValue: { uri: '', locationType: 'UriLocation' },
+      },
+    }),
     /**
      * #slot
      */
@@ -183,6 +195,16 @@ const GfaTabixAdapter = ConfigurationSchema(
           edgesIndex: {
             location: {
               uri: `${snap.prefix}.edges.spatial.bed.gz.tbi`,
+              baseUri: snap.baseUri,
+            },
+          },
+          graphCoarseLocation: {
+            uri: `${snap.prefix}.graph.coarse.bed.gz`,
+            baseUri: snap.baseUri,
+          },
+          graphCoarseIndex: {
+            location: {
+              uri: `${snap.prefix}.graph.coarse.bed.gz.tbi`,
               baseUri: snap.baseUri,
             },
           },

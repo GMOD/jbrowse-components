@@ -14,7 +14,7 @@ describe('b64PadSuffix', () => {
 
   it('adds one = when length % 4 === 3', () => {
     expect(b64PadSuffix('abc')).toBe('abc=')
-    expect(b64PadSuffix('abcabc')).toBe('abcabc=')
+    expect(b64PadSuffix('abcdefg')).toBe('abcdefg=')
   })
 
   it('adds two == when length % 4 === 2', () => {

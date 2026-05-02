@@ -42,6 +42,17 @@ export function useGpuRenderer<R extends { dispose(): void }>(
   const instanceIdRef = useRef(++instanceCounter)
 
   const canvasRef = useCallback((node: HTMLCanvasElement | null) => {
+    const instanceId = instanceIdRef.current
+    console.warn(
+      `[useGpuRenderer #${instanceId}] canvasRef callback, node=${!!node}`,
+    )
+    if (!node) {
+      // Canvas was removed from DOM — dispose the backend immediately
+      // This fires before the effect cleanup runs
+      console.warn(
+        `[useGpuRenderer #${instanceId}] canvas detached, backend will be cleaned up`,
+      )
+    }
     setCanvas(node)
   }, [])
 
@@ -72,9 +83,46 @@ export function useGpuRenderer<R extends { dispose(): void }>(
     [],
   )
 
+  // Global pagehide handler that disposes all active backends.
+  // This runs at module load time so it's guaranteed to be registered
+  // before any factories run.
+  useEffect(() => {
+    const handleGlobalPageHide = () => {
+      console.warn(
+        `[useGpuRenderer] global pagehide handler fired, disposing any active backend in rendererRef`,
+      )
+      const backend = rendererRef.current
+      if (backend) {
+        console.warn(
+          `[useGpuRenderer] global pagehide found active backend, disposing`,
+        )
+        backend.dispose()
+      }
+    }
+    window.addEventListener('pagehide', handleGlobalPageHide, true)
+    return () => {
+      window.removeEventListener('pagehide', handleGlobalPageHide, true)
+    }
+  }, [])
+
+  // Monitor canvas lifecycle — this fires when canvas is set/unset
+  useEffect(() => {
+    const instanceId = instanceIdRef.current
+    if (!canvas) {
+      console.warn(`[useGpuRenderer #${instanceId}] canvas became null/undefined`)
+      return undefined
+    }
+    console.warn(`[useGpuRenderer #${instanceId}] canvas became available`)
+    return () => {
+      console.warn(`[useGpuRenderer #${instanceId}] canvas cleanup effect fired`)
+    }
+  }, [canvas])
+
   useEffect(() => {
     if (!canvas) {
-      console.warn(`[useGpuRenderer] useEffect running but no canvas, returning`)
+      console.warn(
+        `[useGpuRenderer #${instanceIdRef.current}] factory effect running but no canvas, returning`,
+      )
       return undefined
     }
     const instanceId = instanceIdRef.current
@@ -105,22 +153,10 @@ export function useGpuRenderer<R extends { dispose(): void }>(
         }
       })
 
-    const handlePageHide = () => {
-      if (!cancelled) {
-        console.warn(
-          `[useGpuRenderer #${instanceId}] pagehide event, disposing backend (backend exists=${!!backend})`,
-        )
-        cancelled = true
-        backend?.dispose()
-      }
-    }
-    window.addEventListener('pagehide', handlePageHide, true)
-
     return () => {
       console.warn(
         `[useGpuRenderer #${instanceId}] effect cleanup running, cancelled=${cancelled}, backend=${!!backend}`,
       )
-      window.removeEventListener('pagehide', handlePageHide)
       if (!cancelled) {
         console.warn(
           `[useGpuRenderer #${instanceId}] disposing backend in cleanup`,

@@ -9,6 +9,11 @@ import {
 
 import { annotateFeaturesWithBubbleCs } from './bubbleOverlay.ts'
 import {
+  type CoarseRow,
+  coarseRowsToGfa,
+  parseCoarseLine,
+} from './coarseSubgraphReader.ts'
+import {
   hasFileLocation,
   openTabixIfConfigured,
   parseGfaPathName,
@@ -35,6 +40,7 @@ interface SetupResult {
   syntenyRefNames: Set<string>
   bubblesRefNames?: Set<string>
   bubblesGenomeNames?: string[]
+  graphCoarseRefNames?: Set<string>
 }
 
 function parseOrdinalRanges(line: string, out: Set<number>) {
@@ -64,6 +70,7 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
   private readonly posFile: TabixIndexedFile
   private readonly syntenyFile: TabixIndexedFile
   private readonly syntenyCoarseFile?: TabixIndexedFile
+  private readonly graphCoarseFile?: TabixIndexedFile
   private readonly bubblesFile?: TabixIndexedFile
   private readonly edgesFile?: TabixIndexedFile
   private readonly seqlensHandle?: GenericFilehandle
@@ -105,6 +112,14 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
     this.syntenyCoarseFile = openTabixIfConfigured(
       this.getConf('syntenyCoarseLocation') as FileLocation | undefined,
       this.getConf(['syntenyCoarseIndex', 'location']) as
+        | FileLocation
+        | undefined,
+      pm,
+    )
+
+    this.graphCoarseFile = openTabixIfConfigured(
+      this.getConf('graphCoarseLocation') as FileLocation | undefined,
+      this.getConf(['graphCoarseIndex', 'location']) as
         | FileLocation
         | undefined,
       pm,
@@ -168,6 +183,13 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       bubblesGenomeNames = readHeaderField(bHeader, 'genomes')?.split(',')
     }
 
+    let graphCoarseRefNames: Set<string> | undefined
+    if (this.graphCoarseFile) {
+      graphCoarseRefNames = new Set(
+        await this.graphCoarseFile.getReferenceSequenceNames(),
+      )
+    }
+
     return {
       genomes,
       chromSizes,
@@ -175,6 +197,7 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       syntenyRefNames,
       bubblesRefNames,
       bubblesGenomeNames,
+      graphCoarseRefNames,
     }
   }
 
@@ -375,7 +398,8 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
     console.log(
       `[GfaTabixAdapter] getSubgraph ${JSON.stringify({ refName, start, end, assemblyName })}`,
     )
-    const { posRefNames, syntenyRefNames } = await this.setup()
+    const { posRefNames, syntenyRefNames, graphCoarseRefNames } =
+      await this.setup()
 
     const tabixRefName = this.resolveTabixRefName(
       posRefNames,
@@ -384,6 +408,18 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
     )
     if (!tabixRefName) {
       return 'H\tVN:Z:1.1'
+    }
+
+    const regionSize = end - start
+    if (regionSize > 100_000 && this.graphCoarseFile && graphCoarseRefNames) {
+      const coarseTabixRefName = this.resolveTabixRefName(
+        graphCoarseRefNames,
+        assemblyName,
+        refName,
+      )
+      if (coarseTabixRefName) {
+        return this.getCoarseSubgraph(coarseTabixRefName, start, end)
+      }
     }
 
     const refOrdinals = new Set<number>()
@@ -558,5 +594,25 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       `[GfaTabixAdapter] getSubgraph done: ${JSON.stringify({ slines: lines.filter(l => l.startsWith('S\t')).length, llines: lines.filter(l => l.startsWith('L\t')).length, wlines: lines.filter(l => l.startsWith('W\t')).length })}`,
     )
     return gfa
+  }
+
+  private async getCoarseSubgraph(
+    tabixRefName: string,
+    start: number,
+    end: number,
+  ) {
+    const rows: CoarseRow[] = []
+    await this.graphCoarseFile!.getLines(tabixRefName, start, end, {
+      lineCallback: (line: string) => {
+        const row = parseCoarseLine(line)
+        if (row) {
+          rows.push(row)
+        }
+      },
+    })
+    console.log(
+      `[GfaTabixAdapter] getCoarseSubgraph done: ${JSON.stringify({ superSegments: rows.length })}`,
+    )
+    return coarseRowsToGfa(rows)
   }
 }
