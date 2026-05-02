@@ -1,5 +1,16 @@
 # Jest Tests Status & Fixes
 
+## Quick Start for Next Agent
+
+⚠️ **This is the Jest test status (not Puppeteer browser tests).** Read `AGENT_HANDOFF.md` for next steps.
+
+**To continue:**
+1. Run a single failing test: `pnpm test -- products/jbrowse-web/src/tests/ReadVsRef.test.tsx`
+2. Check if it's just a snapshot mismatch (visual diff) or functional failure
+3. See "Remaining Failures" section below for categorized issues
+
+---
+
 ## Current Status (May 1, 2026)
 
 **Overall Results:**
