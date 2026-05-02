@@ -662,6 +662,10 @@ is validated.
 layout) — same as large-mode synteny, but keyed on coarse ordinals, not
 synteny blocks. Gate: chr20 1 Mbp and 10 Mbp render in < 2 s.
 
+**Status (2026-05-01): routing implemented**, config slots added, tests green.
+Browser dogfood on chr20 **not yet run**. Gate is pending. See
+`GRAPH_COARSE_SYSTEM.md` "Next steps" for the ordered list of remaining work.
+
 **Steps 3–5** unchanged from original plan (snarl annotation, synteny tier 2,
 HPRC-scale validation). Step 3 (snarl tier) may now be redundant since Step 1
 already uses snarls — evaluate after Step 2.

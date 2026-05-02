@@ -511,6 +511,18 @@ different branch and work.
 patches pgtabix.py locally or restricts the chunkix backend to W-line
 inputs. Filed as known upstream.
 
+- ✅ **Coarse tier TS adapter — Revised Step 2 routing (2026-05-01)** —
+  `configSchema.ts` gains `graphCoarseLocation` / `graphCoarseIndex` slots and
+  prefix shorthand. `GfaTabixAdapter.ts` opens the file, caches its ref names
+  in `setupPre`, and routes `regionSize > 100_000` to `getCoarseSubgraph` which
+  does a single tabix range query and returns a flat GFA (S-lines only, no L or
+  W lines). New `coarseSubgraphReader.ts` contains `parseCoarseLine` and
+  `coarseRowsToGfa` as pure functions. 16 tests green (6 existing + 4 new
+  integration + 6 new unit tests). Browser dogfood on chr20 **pending** — Step 2
+  gate not yet met. Re-entering path observation documented: ordinals 644–645
+  appear in two volvox tiles (inverted repeat); per-step disjointness holds,
+  per-ordinal uniqueness does not.
+
 ## See also
 
 - `agent-docs/GRAPH_PLAN.md` — current state of the work, open

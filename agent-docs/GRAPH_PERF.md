@@ -90,6 +90,13 @@ Gate checks for tile method:
 - Contiguity (no gaps): PASS (all fixtures)
 - superOrd = min(constituentOrds): PASS (verified)
 
+**Re-entering path observation (volvox fixture).** Ordinals 644 and 645 appear
+in two consecutive tiles (30891–41996 and 41996–50001). The volvox reference path
+revisits these segments, likely at an inverted repeat. The per-step disjointness
+invariant holds (each step is in exactly one tile); per-ordinal uniqueness does
+not hold for re-entering paths. This is a documented property, not a bug.
+See `GRAPH_COARSE_SYSTEM.md` for details.
+
 ### Snarl approach (--graph-coarse-method snarl)
 
 Implemented using `vg snarls | vg view -R` subprocess. Emits `prefix.graph.coarse.bed.gz`

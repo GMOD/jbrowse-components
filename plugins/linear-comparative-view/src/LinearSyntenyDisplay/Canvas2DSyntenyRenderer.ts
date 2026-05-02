@@ -357,6 +357,9 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
 
   render(state: SyntenyRenderState) {
     this.lastState = state
+    if (this.regions.size === 0) {
+      return false
+    }
 
     const dpr = this.dpr
     const ctx = this.ctx
@@ -378,6 +381,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     }
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    return true
   }
 
   pick(

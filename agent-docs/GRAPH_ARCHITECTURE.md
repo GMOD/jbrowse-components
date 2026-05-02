@@ -177,7 +177,16 @@ match/total bp.
 ### Graph-view path (`getSubgraph`)
 
 Used by RPC handler `GetSubgraph` (called from `GraphGenomeView.loadFromTabixSubgraph`).
-Returns plain GFA text:
+Returns plain GFA text.
+
+**Coarse tier (regionSize > 100,000 bp).** If `graphCoarseLocation` is
+configured, `getSubgraph` routes to `getCoarseSubgraph` which queries
+`prefix.graph.coarse.bed.gz` via tabix and returns a flat GFA: one S-line per
+super-segment (using `superOrd` as the segment ID and `refEnd - refStart` as
+`LN:i`), no L-lines, no W-lines. The graph view renders these as proportional
+rectangles. See `GRAPH_COARSE_SYSTEM.md` for the full coarse tier description.
+
+**Detail tier (regionSize ≤ 100,000 bp, or no coarse file configured).**
 
 - Compute `viewportRefOrds` via `collectViewportRefOrds` (helper shared
   with `getEquivalentRanges`): segments on the ref path that overlap

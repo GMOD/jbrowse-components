@@ -33,7 +33,7 @@ export interface SyntenyBackend {
   resize(width: number, height: number): void
   uploadGeometry(key: number, data: SyntenyInstanceData): void
   deleteGeometry(key: number): void
-  render(state: SyntenyRenderState): void
+  render(state: SyntenyRenderState): boolean
   pick(
     x: number,
     y: number,

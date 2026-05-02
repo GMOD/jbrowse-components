@@ -1,115 +1,113 @@
 # Graph Coarsening System — Technical Description
 
 Companion to `GRAPH_COARSE_DESIGN.md` (design decisions and phase plan),
-`GRAPH_INDEX_FORMAT.md` (file format spec), and `GRAPH_PERF.md` (benchmarks).
-This document describes the implemented system as it exists, what correctness
-properties it holds, and what its limitations are.
+`GRAPH_INDEX_FORMAT.md` (file format spec), `GRAPH_PERF.md` (benchmarks), and
+`GRAPH_ARCHITECTURE.md` (end-to-end adapter pipeline).
 
 ---
 
 ## Problem statement
 
 Pangenome graphs derived from HPRC minigraph-cactus (MC) alignments of 90
-haplotypes have a mean segment length of approximately 34 bp. At that density,
-a 1 Mbp region of GRCh38 chr20 contains approximately 30,000 segments. The
-browser graph view (`plugins/graph`) cannot render or lay out a graph of that
-size interactively; and even if it could, the resulting rendering would not
-convey biologically meaningful structure at that zoom level.
+haplotypes have a mean segment length of approximately 34 bp. A 1 Mbp region of
+GRCh38 chr20 contains approximately 30,000 segments. The browser graph view
+(`plugins/graph`) cannot render or lay out a graph of that size interactively.
 
-The goal of the coarsening system is to produce a reduced representation of the
-pangenome graph that:
+The coarsening system produces a reduced representation that:
 
-- is keyed on reference coordinates so that tabix range queries can retrieve it;
-- is computed entirely offline (at index build time, not at query time);
-- does not require client-side graph computation;
-- scales to HPRC-chromosomal inputs (tens of thousands of super-segments for a
-  full chromosome, not millions).
+- is keyed on reference coordinates for tabix range queries;
+- is computed entirely offline at index build time;
+- scales to HPRC-chromosomal inputs (thousands of super-segments per chromosome,
+  not millions).
 
 ---
 
 ## Why linear-chain contraction is not used
 
-The classical graph-coarsening primitive for sequence graphs is linear-chain
-contraction (implemented as `odgi unchop`, `vg mod -u`, and BandageNG
-`mergeAllPossible`). It collapses maximal runs of degree-2 nodes — nodes with
-exactly one predecessor and one successor — into single super-nodes, preserving
-the graph as a topological minor.
+Linear-chain contraction (`odgi unchop`, `vg mod -u`) collapses degree-2 nodes
+into single super-nodes, preserving the graph as a topological minor. Measured
+on HPRC v1.1 mc-grch38 chr20 (1,859,947 segments), `vg mod -u` yields
+1,842,238 super-segments — 0.95% reduction. The design gate required < 33% of
+input count. Gate fails.
 
-This primitive is not viable for HPRC MC pangenomes. Measured on HPRC v1.1
-mc-grch38 chr20 (1,859,947 segments; see `GRAPH_PERF.md`), `vg mod -u`
-produces 1,842,238 super-segments — a 0.95% reduction. The gate for this step
-required < 33% of the input count (< 620,000 super-segments). The gate fails.
+Root cause: at 90 haplotypes, virtually every node borders a variant site in at
+least one haplotype, giving it bidirected degree > 2. Degree-2 nodes (the input
+required by unchop) are essentially absent. HPRC MC graphs were not chopped to a
+fixed node length; their short nodes reflect natural variant density, not an
+artifact of a chopping step. See `GRAPH_PERF.md` for full measurements.
 
-The root cause is structural: MC pangenomes at 90 haplotypes have near-zero
-degree-2 nodes. At this haplotype density, virtually every node borders a
-variant site in at least one haplotype and therefore has bidirected degree > 2.
-Linear-chain contraction requires degree-2 nodes; such nodes are absent in MC
-graphs. The unchop algorithm is correct but the input has no chains to collapse.
+---
 
-This is in contrast to the use case for which unchop was designed: graphs that
-have been artificially chopped to a fixed node length (e.g., for seeding), where
-long haplotype-invariant stretches remain chainable. HPRC MC graphs were not
-chopped; their short nodes reflect actual variant density.
+## What the coarse tier actually produces (v1)
+
+**Critical framing.** The v1 coarse GFA has no L-lines (edges) and no W-lines
+(haplotype walks). It is a flat list of S-lines — one per coordinate window or
+snarl — with `LN:i` set to the window's reference span. The graph view renders
+this as a row of proportional-width rectangles, not as a graph with topology.
+Calling this "graph coarsening" is accurate in the sense that graph nodes are
+grouped into super-nodes, but the output suppresses all graph connectivity.
+
+This is a deliberate v1 choice: validate that the coordinate partition and the
+runtime routing work correctly before adding edge emission. L-lines and W-lines
+are deferred to v2 (see Next steps).
 
 ---
 
 ## Implemented methods
 
-Two coarsening methods are implemented in `tools/gfa-to-tabix/src/main.rs` and
-are selectable via `--graph-coarse-method`:
+Two coarsening methods are in `tools/gfa-to-tabix/src/main.rs`, selectable via
+`--graph-coarse-method`:
 
-### Method 1: coordinate-tile coarsening (`--graph-coarse-method tile`, default)
+### Method 1: coordinate-tile coarsening (default, `--graph-coarse-method tile`)
 
 **Algorithm.** Walk the reference path step-by-step. Accumulate steps into the
 current tile until the accumulated reference span reaches `tile_size` bp (default
-10,000). Close the tile, record its reference interval `[refStart, refEnd)` and
-the sorted, deduplicated set of constituent segment ordinals, then begin a new
-tile. The final tile holds any remainder regardless of span.
+10,000). Close the tile, record `[refStart, refEnd)` and the sorted,
+deduplicated set of constituent ordinals from those steps, then begin a new tile.
+The final tile holds the remainder regardless of span.
 
-The super-segment ID (`superOrd`) is defined as the minimum ordinal in the
-tile's constituent set. This assignment is deterministic given a fixed ordinal
-assignment in the input GFA.
+`superOrd` is the minimum ordinal in the tile's constituent set — deterministic
+given a fixed ordinal assignment, which is established by the preprocessor's
+S-line encounter order and is shared with `pos.bed.gz`, `seglens.bin`, and all
+other index files.
 
-**Output.** One BED row per tile per reference chromosome:
+**Invariants (tile method).**
 
-```
-refChrom  refStart  refEnd  superOrd  type  constituentOrds
-ctgA      0         10677   0         tile  0-112
-ctgA      10677     20691   113       tile  113-231
-```
+- **Per-step assignment**: each reference-path step is assigned to exactly one
+  tile. This is the invariant the algorithm actually enforces — no step is
+  counted twice or omitted.
+- **Contiguity**: `refEnd` of tile *i* equals `refStart` of tile *i*+1. Verified
+  on all fixtures.
+- **Determinism**: same input GFA + same preprocessor binary → byte-identical
+  output. SHA256 verified on all fixtures.
 
-`constituentOrds` uses range encoding (`lo-hi`) for contiguous ordinal runs and
-comma-separated encoding for non-contiguous sets.
+**Important caveat — re-entering reference paths.** If the reference path visits
+the same segment at two distinct genomic positions (e.g., an inverted repeat),
+that segment's ordinal appears in the `constituentOrds` of each tile that
+contains a step visiting it. It is NOT guaranteed that each ordinal appears in
+exactly one tile. This is observable in the volvox fixture: ordinals 644 and 645
+appear in both the tile covering 30891–41996 and the tile covering 41996–50001.
+The per-step assignment guarantee holds; the per-ordinal uniqueness guarantee
+does not, for re-entering paths.
 
-**Correctness properties (tile method).**
-
-- **T-COMPLETE**: The union of `constituentOrds` across all tile rows for a
-  given reference chromosome equals the set of all ordinals traversed by the
-  reference path on that chromosome. Every reference-path ordinal appears in
-  exactly one row.
-- **T-DISJOINT**: For reference-path ordinals specifically, no ordinal appears
-  in more than one tile. (Non-reference alt-allele ordinals that happen to share
-  an ordinal assignment with a reference-path ordinal follow the same
-  partitioning; ordinals not on the reference path are not represented in the
-  tile index at all.)
-- **T-DETERMINISTIC**: Given the same input GFA and the same preprocessor
-  binary, the output is byte-identical. SHA256 of output verified on all tested
-  fixtures.
-- **T-CONTIGUOUS**: Tile boundaries on the reference path are gapless and
-  non-overlapping. The `refEnd` of row `i` equals the `refStart` of row `i+1`.
+**`constituentOrds` and drill-down.** The column is designed to support future
+interactive expansion: a user clicking a coarse super-segment could request the
+detail tier for those ordinals directly from `pos.bed.gz` and `seglens.bin`,
+transitioning to per-segment resolution. This is not implemented in v1. When
+implemented, the re-entrant ordinal case must be handled — the same ordinal
+appearing in two tiles means it maps to two coordinate windows, and expanding
+one tile should show only the segments at that tile's coordinates, not the
+other occurrence.
 
 **What the tile method does not claim.**
 
-- It does not preserve graph topology within a tile. Segments from structurally
-  distinct positions in the de Bruijn graph may be grouped into the same tile if
-  they lie in the same reference coordinate window.
-- It does not produce a graph minor or topological quotient of the input graph.
-- It does not preserve haplotype-specific paths (walks) through the coarse tier.
-  The coarse file records only the reference-path partition; alt-allele structure
-  within a tile is not represented.
-- The tile boundaries do not correspond to biologically meaningful features
-  (e.g., gene boundaries, variant sites, repeat boundaries) unless they happen to
-  fall at multiples of `tile_size`.
+- Graph topology within a tile is not preserved. Segments from structurally
+  distinct positions in the variation graph may be grouped if they lie in the
+  same coordinate window.
+- It does not produce a graph minor or quotient of the input graph.
+- Alt-allele segments (ordinals visited only by non-reference paths) are absent
+  from the coarse index entirely.
+- Tile boundaries do not correspond to biologically meaningful features.
 
 **Performance.** < 1 s on chr20 (1.86 M segments, 90 haplotypes). 6,188 tiles
 at 10 kbp tile size. See `GRAPH_PERF.md`.
@@ -118,214 +116,266 @@ at 10 kbp tile size. See `GRAPH_PERF.md`.
 
 ### Method 2: snarl-based coarsening (`--graph-coarse-method snarl`)
 
-**Algorithm.** Invoke `vg snarls` on the input graph to enumerate all snarl
-boundaries. Parse the JSON output via `vg view -R`. Retain only top-level snarls
-(those with no parent in the snarl tree). For each top-level snarl, compute its
-reference-coordinate span by mapping snarl boundary node IDs to their positions
-on the reference path. Discard snarls whose reference span is less than
-`--graph-coarse-min-sv-bp` (default 100 bp). Walk the reference path, emitting:
+**Algorithm.** Invoke `vg snarls` on the input graph; parse JSON output via
+`vg view -R`. Retain only top-level snarls (no `parent` field in the JSON).
+Map each top-level snarl's boundary node IDs to their first occurrence on the
+reference path to compute a reference-coordinate span. Discard snarls with span
+< `--graph-coarse-min-sv-bp` (default 100 bp). Walk the reference path emitting:
 
-- `chain` rows for maximal backbone stretches between consecutive large snarls;
+- `chain` rows for backbone stretches between consecutive large snarls;
 - `snarl` rows for each retained top-level snarl.
 
-The `superOrd` for each row is the minimum ordinal in the step range, consistent
-with the tile method.
+`superOrd` is the minimum ordinal among steps in the row's range.
 
-**What `vg snarls` computes.** The snarl decomposition of Paten et al. (2018)
-partitions a sequence graph into a hierarchy of ultrabubbles (and, when the
-graph is non-acyclic, bridgeless components). Top-level snarls are those at the
-root of this hierarchy. In the context of a pangenome graph, top-level snarls
-correspond to the largest structural variation sites: inversions, translocations,
-complex insertions. Backbone stretches between snarls are the collinear segments
-where all haplotypes agree at the graph-topology level.
+**What `vg snarls` computes.** The snarl decomposition (Paten, Novak, Eizenga,
+Garrison. *J. Comput. Biol.* 2018) partitions a bidirected sequence graph into
+a hierarchy of ultrabubbles and, for cyclic components, bridgeless subgraphs.
+Top-level snarls are at the root of this hierarchy — the largest structural
+variation sites that cannot be expressed as sub-cases of a larger variant.
+The `vg snarls` subcommand is part of the variation graph toolkit (Garrison,
+Sirén, Novak, Hickey, et al. *Nat. Biotechnol.* 2018).
 
-**Correctness properties (snarl method).**
+**Invariants (snarl method).**
 
-- **S-COMPLETE**: Same as T-COMPLETE — all reference-path ordinals appear in
-  exactly one row.
-- **S-SNARL-FIDELITY**: Every row of type `snarl` corresponds to a top-level
-  snarl in the `vg snarls` output for the same input, with reference span ≥
-  `min-sv-bp`. No snarl rows are invented; none that meet the threshold are
-  omitted (subject to the overlap-handling note below).
-- **S-BACKBONE**: Every row of type `chain` corresponds to a maximal contiguous
-  stretch of reference-path steps that lies between two consecutive large snarls
-  (or between the chromosome start and the first large snarl, or between the last
-  large snarl and the chromosome end).
-- **S-NO-OVERLAP**: `vg snarls` guarantees that top-level snarls are
-  non-overlapping (they are the children of the root in the snarl tree). The
-  preprocessor additionally skips any snarl that begins before the current
-  cursor position, handling edge cases from GFA paths that revisit nodes.
+- **Per-step assignment**: same guarantee as the tile method. Each reference-path
+  step is assigned to exactly one row. The cursor-based walk over sorted snarl
+  intervals ensures non-overlapping coverage.
+- **Snarl fidelity**: every `snarl`-type row corresponds to a top-level snarl in
+  the `vg snarls` output with reference span ≥ `min-sv-bp`. No rows are
+  invented; no qualifying snarls are omitted (subject to the overlap-skip note
+  below).
+- **Backbone completeness**: every `chain`-type row is a maximal stretch of
+  reference-path steps lying between two consecutive large snarls or between a
+  chromosome endpoint and the first or last large snarl.
 
-**What the snarl method does not claim.**
+**Caveats.**
 
-- Nested snarls (those with a parent) are not represented. The coarse tier
-  captures only the top level of the snarl hierarchy.
-- Snarls that are filtered out by `min-sv-bp` are absorbed into the enclosing
-  backbone chain. Their presence as variant sites is not recorded in the coarse
-  tier.
-- Path-level walks through snarls are not emitted. The coarse tier records the
-  snarl boundary ordinals, not the internal haplotype structure.
+- The preprocessor maps snarl boundaries to reference coordinates using
+  first-occurrence of each boundary node ordinal on the reference path. If the
+  reference path revisits a boundary node (re-entering path), the snarl is mapped
+  to the first occurrence only — the second traversal may be silently absorbed
+  into an adjacent chain row.
+- `vg snarls` guarantees top-level snarls are non-overlapping in the graph.
+  After coordinate projection, two snarls whose boundary nodes are close together
+  on the reference path could produce overlapping intervals; the preprocessor
+  skips any snarl interval that starts before the current cursor and logs the
+  skip to stderr.
+- Nested snarls (those below the root level) are not represented.
+- Snarls filtered by `min-sv-bp` are absorbed into adjacent backbone chains with
+  no record of their existence.
+- The count of chr20 top-level snarls after the ≥ 100 bp filter has not been
+  measured; only the pre-filter count (497,227) is known.
 
-**Performance.** On chr20:
-- GFA input: 6:27 wall time (fails the 5 min gate).
-- `.vg` input (co-located file automatically preferred): 52 s (passes).
+**External tool dependency.** Snarl method requires `vg` (v1.69.0; see
+`GRAPH_INDEX_FORMAT.md` for the versioning policy). The tile method requires
+only `tabix` and `bgzip`.
 
-The preprocessor automatically uses a co-located `.vg` file (e.g., `input.vg`
-alongside `input.gfa`) as input to `vg snarls` when one is present, because vg's
-native binary format avoids GFA parsing overhead. Users can pre-generate with
+**Performance.** chr20 GFA: 6:27 (fails the 5 min gate). With a co-located
+`.vg` file (auto-detected): 52 s (passes). Pre-generate with
 `vg convert -g input.gfa > input.vg`. See `GRAPH_PERF.md`.
 
 ---
 
 ## Output format
 
-Both methods emit `prefix.graph.coarse.bed.gz` (BGZF-compressed, tabix-indexed).
-The format is:
-
 ```
-# header lines (# prefix):
 #schema=graph-coarse/v1
 #engine=<tile|snarl>
-#tile-size=<N>    (tile method only)
-#min-sv-bp=<N>    (snarl method only)
+#tile-size=<N>       (tile method only)
+#min-sv-bp=<N>       (snarl method only)
 
-# data rows:
 refChrom  refStart  refEnd  superOrd  type  constituentOrds
 ```
 
-All fields are tab-separated. `refChrom` is the chromosome or contig name
-derived from the reference path's PanSN name by stripping the
-`assembly#haplotype#` prefix. `refStart` and `refEnd` are 0-based half-open
-coordinates on the reference path. `superOrd` is a uint32 segment ordinal
-(namespace-shared with the detail tier, so drill-down requests can map directly).
-`type` is one of `tile`, `chain`, or `snarl`. `constituentOrds` is a
-comma-separated, range-encoded list of ordinals in the super-segment.
+Tab-separated BED. `refChrom` is derived from the reference path's PanSN name
+by stripping `assembly#haplotype#`. `refStart`/`refEnd` are 0-based half-open
+reference coordinates. `superOrd` shares the ordinal namespace of `pos.bed.gz`
+and `seglens.bin` (assigned in S-line encounter order during the preprocessor's
+single-pass GFA parse). `type` is `tile`, `chain`, or `snarl`.
+`constituentOrds` is a comma-separated, range-encoded ordinal list.
 
-The file is indexed with `tabix -c '#' -p bed`, making comment lines transparent
-to the tabix library. The index file is `prefix.graph.coarse.bed.gz.tbi`.
+Indexed with `tabix -c '#' -p bed`. Index file: `prefix.graph.coarse.bed.gz.tbi`.
+
+**Distinction from `synteny.coarse.bed.gz`.** The synteny coarse file merges
+*haplotype alignment blocks* from `synteny.bed.gz` for `MultiLGVSyntenyDisplay`.
+The graph coarse file merges *graph segments* for `getSubgraph` (the graph view).
+Both are tabix-indexed and reference-anchored; they carry different content and
+serve different consumers. See `GRAPH_ARCHITECTURE.md`.
 
 ---
 
 ## Runtime adapter integration
 
-`GfaTabixAdapter.getSubgraph` (in
-`plugins/comparative-adapters/src/GfaTabixAdapter/GfaTabixAdapter.ts`) routes
-on region size:
+`GfaTabixAdapter.getSubgraph` routes on region size:
 
 ```
-if (regionSize > 100_000 && graphCoarseFile configured) →
-    query graph.coarse.bed.gz → return coarse GFA
-else →
-    existing per-segment detail path (unchanged)
+regionSize > 100_000 && graphCoarseFile configured
+    → query graph.coarse.bed.gz → coarse GFA (flat S-lines, no L/W)
+else
+    → per-segment detail path (unchanged)
 ```
 
-The coarse GFA emits one `S` line per super-segment:
+The 100,000 bp threshold is hardcoded. The two paths produce structurally
+compatible GFA (same header, same S-line format) but diverge at the detail tier:
+the coarse path returns super-segment ordinals (`superOrd` values from the coarse
+file), while the detail path returns individual segment ordinals.
+
+The coarse GFA:
+
 ```
+H  VN:Z:1.1
 S  {superOrd}  *  LN:i:{refEnd - refStart}
+...
 ```
 
-`LN:i` is the reference-coordinate span of the super-segment (not the sum of
-constituent segment sequences). No `L` lines (edges) or `W` lines (haplotype
-walks) are emitted in v1. The coarse GFA is structurally valid but contains no
-topology or path information — it is a flat list of nodes with reference-span
-lengths, suitable for rendering as rectangles proportional to reference
-coverage.
+`LN:i` is the tile's reference-coordinate span. For a linear reference path with
+no overlapping segment junctions this equals the sum of the constituent segment
+sequence lengths; in practice a 1 bp discrepancy is observed in the volvox
+fixture, likely from boundary-segment junction handling. For re-entering paths
+(T-REENTER), `LN:i` reflects the tile's coordinate window, not the total
+sequence the reference path visits within it.
 
-Reference name resolution follows the same `resolveTabixRefName` logic used for
-all other tabix files: try `assemblyName#refName`, then bare `refName`, then the
-reverse `assemblyNameMap` lookup. Because the coarse file uses bare chromosome
-names (e.g., `ctgA`) rather than PanSN-qualified names, the bare-`refName`
-branch is the typical match path.
+Reference name resolution uses the same `resolveTabixRefName` logic as all other
+tabix files. The coarse file uses bare contig names (e.g., `ctgA`), so the
+bare-`refName` branch is the typical match.
 
 ---
 
-## Applicability to pangenome graph structures
+## Applicability
 
-### PanSN naming is required
+### PanSN naming
 
-The preprocessor identifies the reference path by the `--ref-assembly` argument,
-which is matched against the assembly component of PanSN-formatted path names
-(`assembly#haplotype#contig`). Pangenome graphs that use arbitrary path names
-without PanSN structure are not supported without manual specification of the
-reference path name prefix.
+The reference path is identified by `--ref-assembly` matched against the
+assembly component of PanSN path names (`assembly#haplotype#contig`). Non-PanSN
+path names are not supported without manual prefix specification.
 
-### Chromosome splitting is not required, but is the recommended workflow
+### Chromosome splitting
 
-The preprocessor operates on a single GFA file at a time. It processes all
-paths in that file and builds the coarse index anchored on the reference
-assembly's paths. A whole-genome GFA file (all chromosomes in one file) can be
-processed without modification: the resulting `graph.coarse.bed.gz` will contain
-rows for all chromosomes, each tabix-queryable by chromosome name.
+Not required. A whole-genome GFA produces a multi-chromosome `graph.coarse.bed.gz`
+queryable by contig name. In practice, HPRC data is distributed per-chromosome
+and `prepare-fixtures.sh` operates per-chromosome; this is workflow convention,
+not a system constraint.
 
-In practice, HPRC v1.1 data is distributed as per-chromosome GFA files (or can
-be split with `vg convert`), and the existing `prepare-fixtures.sh` workflow
-operates per-chromosome. The system does not impose a chromosome-split
-requirement.
+### Graphs without a reference path
 
-### Re-entering paths (segments visited multiple times by one path)
-
-The tile method calls `dedup()` on ordinals within a tile, so if the reference
-path revisits a segment, the ordinal appears once in the `constituentOrds` list.
-The snarl method similarly uses `ord_to_rank` with `entry().or_insert` semantics
-(first occurrence wins) to handle multi-visit segments. In both cases, T-COMPLETE
-and S-COMPLETE hold for the de-duplicated ordinal set.
-
-Pangenome graphs with inversion-traversing reference paths (where the reference
-path visits segments in reverse orientation) may produce tiles or snarls that
-span non-contiguous reference intervals. The BED row records `[refStart, refEnd)`
-as the extent of the reference path steps grouped into that row; the interval
-is correct but may span a region larger than the sum of constituent segment
-lengths when orientation changes occur.
-
-### Graphs without a designated reference path
-
-If no path in the GFA matches the `--ref-assembly` prefix, no coarse rows are
-emitted. The preprocessor does not fall back to any path as a reference; the
-caller must specify one. This is consistent with the rest of the index (e.g.,
-`synteny.bed.gz` is also reference-anchored).
+If no path matches `--ref-assembly`, no rows are emitted. Consistent with the
+rest of the index (`synteny.bed.gz`, `pos.bed.gz` are all reference-anchored).
 
 ### Fragmented haplotype contigs
 
-HPRC chr20 haplotype contigs are fragmented (most < 500 kb). The coarse index
-is anchored on the reference path (GRCh38) only. Haplotype-specific coordinate
-ranges are not represented in the coarse tier. The C3 path-symmetry property
-(querying the same locus from multiple reference paths yields the same subgraph)
-does not hold for fragmented-contig chromosomes; see `GRAPH_PERF.md` for the
-full finding. The coarse tier inherits this limitation — it is reference-path
-anchored and does not claim symmetry across haplotype paths.
+The coarse index is anchored on the reference path only. The C3 path-symmetry
+property does not hold for fragmented-contig chromosomes such as HPRC chr20
+haplotypes. See `GRAPH_PERF.md` for the full chr20 path-symmetry finding.
 
 ---
 
-## Limitations summary
+## Limitations
 
 | Limitation | Scope |
 |---|---|
-| Tile topology is not preserved | Tile method |
-| Alt-allele structure within tiles is not represented | Both methods |
-| Nested snarls are dropped | Snarl method |
-| No L-lines (edges) in coarse GFA | Both methods, v1 |
-| No W-lines (haplotype walks) in coarse GFA | Both methods, v1 |
-| Snarl method requires `.vg` input for chr20-scale speed | Snarl method |
-| Region size threshold (100 kbp) is hardcoded | Runtime adapter |
-| `constituentOrds` drill-down is not yet implemented in the adapter | Runtime adapter, v1 |
-| Reference path must be PanSN-named | Both methods |
-| Path-symmetry across fragmented haplotype contigs is not claimed | Both methods |
-| Linear-chain contraction is not viable for HPRC MC graphs (0.95% reduction) | Not applicable to v1 |
+| v1 output has no L-lines or W-lines — no graph topology, no haplotype paths | Both methods, v1 |
+| Per-ordinal uniqueness fails for re-entering reference paths (e.g., volvox ordinals 644–645) | Both methods |
+| Alt-allele segment ordinals are absent from the coarse index | Both methods |
+| Tile boundaries are coordinate-fixed, not biologically meaningful | Tile method |
+| Nested snarls (below root level) are not represented | Snarl method |
+| Snarl boundary nodes revisited by the reference path are mapped by first occurrence only | Snarl method |
+| Post-filter snarl count for chr20 (≥ 100 bp ref-span) is unmeasured | Snarl method |
+| Snarl method requires vg (v1.69.0); chr20 scale requires co-located `.vg` for < 5 min wall time | Snarl method |
+| Region size threshold (100 kbp) is hardcoded in the runtime adapter | Runtime |
+| `constituentOrds` drill-down to the detail tier is not implemented | Runtime, v1 |
+| Reference path must use PanSN naming | Both methods |
+| Linear-chain contraction is not viable for HPRC MC pangenomes | Background |
+
+---
+
+## Next steps
+
+The immediate gate for the current implementation (Revised Step 2 of
+`GRAPH_COARSE_DESIGN.md`) is a browser dogfood test: chr20 at 1 Mbp and 10 Mbp
+must render in < 2 s. This has not yet been run. Steps in order:
+
+**Step 2 gate (pending).** Start the dev server against a chr20 GFA-tabix index
+with `graph.coarse.bed.gz` configured. Navigate to a 1 Mbp and 10 Mbp region.
+Confirm render time < 2 s and that the coarse S-lines produce visible rectangles.
+Capture screenshots for `GRAPH_PERF.md`.
+
+**Step 2 extension — L-lines (edges).** The coarse file currently has no edges.
+For the graph view to show any topology at coarse zoom, the preprocessor must
+emit `prefix.graph.coarse.links.bed.gz` (deferred from v1; schema defined in
+`GRAPH_COARSE_DESIGN.md`). Without L-lines, the coarse graph view is
+topologically identical to the synteny view. Whether this is acceptable depends
+on the Step 2 dogfood result.
+
+**Constituentords drill-down.** When the user clicks a coarse super-segment,
+the adapter should re-query the detail tier (`pos.bed.gz`, `seglens.bin`) for
+the ordinals in `constituentOrds` and transition to per-segment resolution. This
+requires handling the re-entrant ordinal case (T-REENTER) — the drill-down must
+use the tile's `[refStart, refEnd)` as the coordinate scope, not the ordinal set
+alone, to avoid fetching segments from the wrong occurrence.
+
+**Snarl post-filter count.** The chr20 snarl count after filtering to ≥ 100 bp
+reference span is TBD. This number determines whether the snarl method produces
+a useful number of super-segments (expected: far fewer than 497,227 because most
+HPRC top-level snarls are SNP-scale). Measure and record in `GRAPH_PERF.md`.
+
+**Synteny coarse 100 kbp tier (Phase D).** A second tier of `synteny.coarse.bed.gz`
+at 100 kbp gap threshold for chromosome-scale `MultiLGVSyntenyDisplay` zoom.
+Independent of the graph coarse work. See `GRAPH_COARSE_DESIGN.md` Step 4.
+
+**HPRC-scale validation (Step 5).** Run the preprocessor on all 24 HPRC
+chromosomes. Record per-chromosome wall time, output size, and super-segment
+count in `GRAPH_PERF.md`. Browser smoke test on chr1, chr20, chrY, chrM. Gate:
+total preprocessor wall < 6 h, total output size < 500 MB. This gates
+publication submission.
+
+---
+
+## Prior art
+
+**Coordinate-binned pangenome visualization.** `odgi bin` (Guarracino et al.
+*Bioinformatics* 2022) bins graph nodes into fixed-size coordinate windows along
+a reference path for 1D visualization. The tile method here is conceptually
+equivalent but differs in output (tabix-indexed BED for interactive range queries
+vs. TSV for static whole-graph matrix output) and consumer (per-region browser
+query vs. `odgi viz` whole-graph rasterization).
+
+**Snarl decomposition.** Paten, Novak, Eizenga, Garrison. "Superbubbles,
+Ultrabubbles, and Cacti for Genome Graphs." *J. Comput. Biol.* 2018. Canonical
+reference for the algorithm implemented in `vg snarls`. Used here without
+modification as an upstream dependency.
+
+**The vg toolkit.** Garrison, Sirén, Novak, Hickey, et al. "Variation graph
+toolkit improves read mapping by representing genetic variation in the reference."
+*Nat. Biotechnol.* 2018. `vg snarls` and `vg convert` are subcommands of this
+toolkit.
+
+**sequencetubemap tabix branch.** Jean Monlong's per-region GFA extraction
+(scripts `pgtabix.py` and `chunkix.py` in `~/src/sequencetubemap`) uses a
+tabix-indexed `pos.bed.gz` for the same reference-anchored extraction pattern.
+The `GfaTabixAdapter` detail tier follows this pattern directly; the coarse tier
+is a new addition not present in sequencetubemap. See `GRAPH_INDEX_FORMAT.md`
+for a field-by-field format comparison.
 
 ---
 
 ## Cross-references
 
-- `GRAPH_COARSE_DESIGN.md` — design decisions, phase plan, gate criteria.
-- `GRAPH_PERF.md` — measured benchmarks (tile counts, wall times, gate pass/fail).
-- `GRAPH_INDEX_FORMAT.md` — file format specification for all index files.
-- `GRAPH_ARCHITECTURE.md` — end-to-end adapter pipeline.
+- `GRAPH_COARSE_DESIGN.md` — design decisions, phase plan, gate criteria, Step 0
+  spike narrative ruling out linear-chain contraction.
+- `GRAPH_PERF.md` — measured benchmarks; chr20 path-symmetry finding; Step 2
+  dogfood results (pending).
+- `GRAPH_INDEX_FORMAT.md` — file format spec for all index files; sequencetubemap
+  format comparison.
+- `GRAPH_ARCHITECTURE.md` — end-to-end adapter pipeline; getSubgraph flow
+  including the coarse routing added in v1.
+- `completed/GRAPH_COMPLETED.md` — running log of completed implementation phases.
 - `tools/gfa-to-tabix/src/main.rs` — `compute_tile_rows`, `graph_coarse_build_tiles`,
-  `graph_coarse_build_snarls`.
+  `graph_coarse_build_snarls`, `emit_coarse_row`.
 - `plugins/comparative-adapters/src/GfaTabixAdapter/coarseSubgraphReader.ts` —
-  runtime BED row parser and GFA assembler.
+  `parseCoarseLine`, `coarseRowsToGfa`.
 - `plugins/comparative-adapters/src/GfaTabixAdapter/GfaTabixAdapter.ts` —
-  `getSubgraph` routing and `getCoarseSubgraph`.
-- Paten B, Eizenga JM, et al. "Superbubbles, Ultrabubbles, and Cacti for Genome
-  Graphs." *Journal of Computational Biology* 2018 — canonical reference for
-  `vg snarls` decomposition algorithm.
+  `getSubgraph` routing, `getCoarseSubgraph`.
+- `plugins/comparative-adapters/src/GfaTabixAdapter/__tests__/getSubgraph.test.ts` —
+  integration tests for the coarse route (4 new tests).
+- `plugins/comparative-adapters/src/GfaTabixAdapter/__tests__/coarseSubgraphReader.test.ts` —
+  unit tests for `parseCoarseLine` and `coarseRowsToGfa`.

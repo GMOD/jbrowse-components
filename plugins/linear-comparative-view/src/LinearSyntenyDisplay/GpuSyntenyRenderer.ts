@@ -143,6 +143,9 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
   }
 
   render(state: SyntenyRenderState) {
+    if (this.regions.size === 0) {
+      return false
+    }
     this.hal.beginFrame(1, 1, 1, 1)
     this.tracks = []
     for (const [key, params] of state.perTrack) {
@@ -164,6 +167,7 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
       }
     }
     this.hal.endFrame()
+    return true
   }
 
   pick(
