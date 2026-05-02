@@ -207,7 +207,7 @@ export function drawNoncovSegments(
     const segTop = INDICATOR_TRIANGLE_H + yOffset * noncovHeight
     const segHeight = segH * noncovHeight
     ctx.fillStyle = colorLut[colorType - 1] ?? colorLut[0]!
-    ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segHeight)
+    ctx.fillRect(px - 0.5, segTop, 1, segHeight)
   }
 }
 
@@ -246,6 +246,6 @@ export function drawModCovSegments(
     const segBottom = bottom - yOffset * depthScale * effectiveH
     const segTop = segBottom - h * depthScale * effectiveH
     ctx.fillStyle = `rgba(${r},${g},${b},${a})`
-    ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segBottom - segTop)
+    ctx.fillRect(px - 0.5, segTop, 1, segBottom - segTop)
   }
 }
