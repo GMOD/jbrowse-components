@@ -1,4 +1,4 @@
-import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
   pileupRowY,
@@ -11,6 +11,8 @@ import type {
 } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
+const LONG_INSERTION_MIN_LENGTH = 10
+
 export function drawInsertions(
   ctx: Ctx2D,
   region: InsertionRegionFields,
@@ -20,15 +22,25 @@ export function drawInsertions(
   state: RenderState,
 ) {
   const fH = state.featureHeight
-  const insColor = rgb255(state.colors.colorInsertion)
+  const insColorBase = state.colors.colorInsertion
+  const pxPerBp = fullBlockWidth / bpLength
 
   for (let i = 0; i < region.numInsertions; i++) {
     const bp = region.insertionPositions[i]!
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const yRow = region.insertionYs[i]!
     const y = pileupRowY(yRow, state)
+    const length = region.insertionLengths[i]!
+    const frequency = region.insertionFrequencies[i]! / 255
 
-    ctx.fillStyle = insColor
+    const isLong = length >= LONG_INSERTION_MIN_LENGTH
+    let alpha = 1.0
+    if (!isLong && pxPerBp < 1.0) {
+      const base = pxPerBp * pxPerBp
+      alpha = base + frequency * (1.0 - base)
+    }
+
+    ctx.fillStyle = alpha >= 1.0 ? rgb255(insColorBase) : rgba255(insColorBase, alpha)
     ctx.fillRect(x - 0.5, y, 1, fH)
     ctx.beginPath()
     ctx.moveTo(x - 2, y)
