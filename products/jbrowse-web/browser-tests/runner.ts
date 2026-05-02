@@ -30,6 +30,7 @@ const includeRemote = args.includes('--include-remote')
 const backendArg = args.find(a => a.startsWith('--backend='))
 const backendValue = backendArg ? backendArg.split('=')[1]! : undefined
 const skipWebGPU = args.includes('--skip-webgpu')
+const quiet = args.includes('--quiet')
 const useFirefoxArg = args.find(a => a.startsWith('--firefox='))
 const firefoxPath = useFirefoxArg
   ? useFirefoxArg.split('=')[1]!
@@ -327,12 +328,15 @@ async function setupPage(browser: Browser) {
     if (text.includes('favicon')) {
       return
     }
+    const type = msg.type()
+    if (quiet && type !== 'error') {
+      return
+    }
     const elapsed =
       testStartTime > 0
         ? `+${((performance.now() - testStartTime) / 1000).toFixed(1)}s`
         : ''
     const prefix = elapsed ? `  [${elapsed}] Browser:` : '  Browser:'
-    const type = msg.type()
     if (type === 'error') {
       console.error(prefix, text)
     } else if (type === 'warn') {
