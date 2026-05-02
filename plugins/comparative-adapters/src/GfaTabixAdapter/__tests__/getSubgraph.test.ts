@@ -111,3 +111,41 @@ test('empty_region', async () => {
   })
   expect(gfa).toBe('H\tVN:Z:1.1')
 })
+
+test('no_duplicate_sline_ordinals', async () => {
+  const adapter = makeAdapter()
+  const gfa = await adapter.getSubgraph(region)
+  const seen = new Set<number>()
+  for (const line of gfa.split('\n')) {
+    if (line.startsWith('S\t')) {
+      const ord = +line.split('\t')[1]!
+      expect(seen.has(ord)).toBe(false)
+      seen.add(ord)
+    }
+  }
+})
+
+test('wlines_reference_valid_segments', async () => {
+  const adapter = makeAdapter()
+  const gfa = await adapter.getSubgraph(region)
+  const lines = gfa.split('\n')
+  const sOrds = new Set<number>()
+  for (const line of lines) {
+    if (line.startsWith('S\t')) {
+      sOrds.add(+line.split('\t')[1]!)
+    }
+  }
+  let wlineCount = 0
+  for (const line of lines) {
+    if (line.startsWith('W\t')) {
+      wlineCount++
+      const walkStr = line.split('\t')[6]!
+      const ords = (walkStr.match(/>\d+/g) ?? []).map(s => +s.slice(1))
+      for (const ord of ords) {
+        expect(sOrds.has(ord)).toBe(true)
+      }
+    }
+  }
+  expect(wlineCount).toBeGreaterThan(0)
+})
+

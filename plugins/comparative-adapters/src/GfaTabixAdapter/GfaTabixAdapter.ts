@@ -372,6 +372,9 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
 
   async getSubgraph(region: Region) {
     const { refName, start, end, assemblyName } = region
+    console.log(
+      `[GfaTabixAdapter] getSubgraph ${JSON.stringify({ refName, start, end, assemblyName })}`,
+    )
     const { posRefNames, syntenyRefNames } = await this.setup()
 
     const tabixRefName = this.resolveTabixRefName(
@@ -415,18 +418,31 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
     }
 
     const allOrdinals = new Set(refOrdinals)
-    const seenHapRanges = new Set<string>()
+
+    // Group haplotype ranges by path name and query pos.bed.gz once per path
+    // (covering min..max of all its intervals) rather than once per block.
+    // This reduces O(N*blocks) queries to O(N) — critical for 50+ haplotype datasets.
+    const hapChromSpan = new Map<string, { minStart: number; maxEnd: number }>()
     for (const { hapChrom, hapStart, hapEnd } of hapRanges) {
-      const key = `${hapChrom}:${hapStart}-${hapEnd}`
-      if (!seenHapRanges.has(key)) {
-        seenHapRanges.add(key)
-        if (posRefNames.has(hapChrom)) {
-          await this.posFile.getLines(hapChrom, hapStart, hapEnd, {
-            lineCallback: (line: string) => {
-              parseOrdinalRanges(line, allOrdinals)
-            },
-          })
+      const existing = hapChromSpan.get(hapChrom)
+      if (!existing) {
+        hapChromSpan.set(hapChrom, { minStart: hapStart, maxEnd: hapEnd })
+      } else {
+        if (hapStart < existing.minStart) {
+          existing.minStart = hapStart
         }
+        if (hapEnd > existing.maxEnd) {
+          existing.maxEnd = hapEnd
+        }
+      }
+    }
+    for (const [hapChrom, { minStart, maxEnd }] of hapChromSpan) {
+      if (posRefNames.has(hapChrom)) {
+        await this.posFile.getLines(hapChrom, minStart, maxEnd, {
+          lineCallback: (line: string) => {
+            parseOrdinalRanges(line, allOrdinals)
+          },
+        })
       }
     }
 
@@ -503,10 +519,9 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       },
     })
 
-    for (const { hapChrom, hapStart, hapEnd } of hapRanges) {
-      const key = `${hapChrom}:${hapStart}-${hapEnd}`
-      if (posRefNames.has(hapChrom) && seenHapRanges.has(key)) {
-        await this.posFile.getLines(hapChrom, hapStart, hapEnd, {
+    for (const [hapChrom, { minStart, maxEnd }] of hapChromSpan) {
+      if (posRefNames.has(hapChrom)) {
+        await this.posFile.getLines(hapChrom, minStart, maxEnd, {
           lineCallback: (line: string) => {
             const tab = line.indexOf('\t')
             const pathName = line.slice(0, tab)
@@ -538,6 +553,10 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       }
     }
 
-    return lines.join('\n')
+    const gfa = lines.join('\n')
+    console.log(
+      `[GfaTabixAdapter] getSubgraph done: ${JSON.stringify({ slines: lines.filter(l => l.startsWith('S\t')).length, llines: lines.filter(l => l.startsWith('L\t')).length, wlines: lines.filter(l => l.startsWith('W\t')).length })}`,
+    )
+    return gfa
   }
 }

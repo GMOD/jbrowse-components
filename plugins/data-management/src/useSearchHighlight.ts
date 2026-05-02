@@ -29,7 +29,8 @@ export function useSearchHighlight(
   highlightName: string,
 ) {
   useLayoutEffect(() => {
-    if (typeof CSS === 'undefined') {
+    // eslint-disable-next-line no-undef
+    if (typeof CSS === 'undefined' || !CSS.highlights) {
       return
     }
     ensureHighlightStyle(highlightName)
@@ -53,12 +54,18 @@ export function useSearchHighlight(
           offset = idx + queryLower.length
         }
       }
+      // eslint-disable-next-line no-undef
       CSS.highlights.set(highlightName, highlight)
     } else {
+      // eslint-disable-next-line no-undef
       CSS.highlights.delete(highlightName)
     }
     return () => {
-      CSS.highlights.delete(highlightName)
+      // eslint-disable-next-line no-undef
+      if (CSS && CSS.highlights) {
+        // eslint-disable-next-line no-undef
+        CSS.highlights.delete(highlightName)
+      }
     }
   }, [containerRef, query, highlightName])
 }

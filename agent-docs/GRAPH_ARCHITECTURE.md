@@ -9,6 +9,9 @@ the standalone graph view. Companion to:
   bytes, BED/BGZF schemas, versioning).
 - `agent-docs/GRAPH_AUDIT.md`, `GRAPH_PERF.md`, `GRAPH_COMPLETED.md` —
   audits and per-phase status.
+- `agent-docs/GRAPH_COARSE_DESIGN.md` — design contract for megabase-scale
+  coarse graph viewing (offline odgi/vg orchestration; runtime tabix
+  lookups). Doc-only; phases A–D not yet implemented.
 
 This file documents *what code lives where and why*, plus the cross-cutting
 invariants that hold across the whole pipeline. When code drifts, update

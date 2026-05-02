@@ -1,3 +1,75 @@
+## Step 0 — odgi spike results (2026-05-01, no-commit)
+
+**Gate result: FAIL on chr20 segment-reduction gate.**
+
+### Environment
+
+- odgi v0.9.4-2-g405be8f6 (`~/src/vendor/odgi/bin/odgi`) — **unchop broken in
+  this build**: crashes with `std::length_error: cannot create std::vector larger
+  than max_size()` on every graph, including 278-node fixtures. Root cause
+  unknown (likely a libhandlegraph ABI mismatch in the local build). Odgi build
+  command and stats commands work; only unchop and view crash.
+- vg v1.69.0 (`~/.local/bin/vg`) — fully functional. Used as primary measurement
+  tool since `vg mod -u` is the cross-check oracle anyway.
+- Fixtures: volvox (test_data/volvox/volvox_pangenome_50.gfa), chrM
+  (~/hprc-data/hprc-v1.1-mc-grch38.chrM.gfa), chr20 (~/hprc-data/hprc-v1.1-mc-grch38.chr20.vg).
+
+### Linear-chain contraction (vg mod -u) results
+
+| Fixture | Input nodes | Input edges | After unchop | After unchop edges | Wall time | Reduction |
+|---------|-------------|-------------|--------------|-------------------|-----------|-----------|
+| volvox  | 1,204       | 1,622       | 1,204        | 1,622             | < 0.1 s   | 0%        |
+| chrM    | 1,393       | 1,885       | 1,393        | 1,885             | < 0.1 s   | 0%        |
+| chr20   | 1,859,947   | 2,574,969   | 1,842,238    | 2,557,260         | 1 m 37 s  | **0.95%** |
+
+**chr20 gate check:**
+- Time gate (< 30 min): PASS (1 m 37 s).
+- Segment-reduction gate (< 1/3 of detail count = < 620 K): **FAIL** (1,842,238 >> 620,000).
+
+### Root cause
+
+HPRC minigraph-cactus pangenomes have 90 haplotypes at ~34 bp average node
+size. At that haplotype density, nearly every graph node borders a variant site
+in at least one haplotype, giving it bidirected degree > 2. Linear-chain
+contraction (unchop) requires degree-2 nodes with a single unambiguous
+predecessor and successor; such nodes are essentially absent. The algorithm is
+correct but the input has no chains to collapse.
+
+This is distinct from the unchop use-case for which it was designed (graphs
+that have been artificially chopped to a fixed node length, where long
+haplotype-invariant stretches remain chainable). HPRC MC graphs were not
+chopped; their short nodes reflect natural variation density.
+
+### Next steps (per GRAPH_COARSE_DESIGN.md gate-failure clause)
+
+Linear-chain contraction is not a viable coarsening primitive for HPRC MC
+pangenomes. Candidate alternatives:
+
+- **Coordinate-tile coarsening (odgi bin).** Group nodes by reference-coordinate
+  windows (e.g., 10 kbp). `odgi bin -w N` bins nodes by pangenome position;
+  output is already reference-anchored. Guaranteed N-fold linear compression by
+  choosing N. Disadvantage: lossy (topology within bin is summarised, not
+  preserved). But the existing runtime coarsener already does this effectively
+  (10 super-segments per 1 Mbp) — the static-file port would use `odgi bin`
+  as the engine.
+- **vg snarls (top-level only).** Snarl decomposition identifies the
+  hierarchical SV structure. Top-level snarls at chr20 scale are the large
+  inversions/translocations; the backbone chains between them are the collinear
+  stretches. This would give a semantically meaningful coarse graph (SV sites
+  as super-nodes, backbone as chain). Disadvantage: vg snarls on chr20 has not
+  been timed; could be slow.
+- **Hand-rolled Rust chain contraction with a reference-distance threshold.**
+  Define "chainable" not by graph topology but by reference position: two nodes
+  are merged if they are adjacent on the reference path and their combined
+  reference span < threshold. This is equivalent to the existing
+  `synteny.coarse.bed.gz` merge logic, applied to the graph tier.
+
+Recommendation: measure `odgi bin` on chr20 next (fast to run; odgi bin does
+not crash). If bin output is usable as coarse BED rows, pivot the design to use
+it as the engine.
+
+---
+
 ## Performance
 
 **Surgical node dragging in `plugins/graph`.** Currently, moving a single node

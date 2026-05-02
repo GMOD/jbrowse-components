@@ -119,3 +119,49 @@ test('getSources returns haplotype names', async () => {
   expect(sources.length).toBeGreaterThan(0)
   expect(sources.every(s => typeof s.name === 'string')).toBe(true)
 })
+
+test('synteny_coverage_spans_chromosome', async () => {
+  const adapter = makeAdapter()
+  const { genomeRows } = await adapter.getMultiPairFeatures(region)
+
+  const intervals: { start: number; end: number }[] = []
+  for (const [, features] of genomeRows) {
+    for (const f of features) {
+      intervals.push({ start: f.start, end: f.end })
+    }
+  }
+  intervals.sort((a, b) => a.start - b.start)
+
+  let covered = 0
+  let mergeStart = -1
+  let mergeEnd = -1
+  for (const { start, end } of intervals) {
+    if (start > mergeEnd) {
+      if (mergeEnd >= 0) {
+        covered += mergeEnd - mergeStart
+      }
+      mergeStart = start
+      mergeEnd = end
+    } else if (end > mergeEnd) {
+      mergeEnd = end
+    }
+  }
+  if (mergeEnd >= 0) {
+    covered += mergeEnd - mergeStart
+  }
+
+  expect(covered).toBeGreaterThan(50000 * 0.9)
+})
+
+test('feature_coordinates_valid', async () => {
+  const adapter = makeAdapter()
+  const { genomeRows } = await adapter.getMultiPairFeatures(region)
+  for (const [, features] of genomeRows) {
+    for (const f of features) {
+      expect(f.start).toBeLessThanOrEqual(f.end)
+      expect(f.mateStart).toBeLessThanOrEqual(f.mateEnd)
+      expect(f.start).toBeLessThan(region.end)
+      expect(f.end).toBeGreaterThan(region.start)
+    }
+  }
+})

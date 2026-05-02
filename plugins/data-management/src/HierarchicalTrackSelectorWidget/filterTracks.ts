@@ -34,11 +34,16 @@ export function filterTracks(
       const trackCanonicalAssemblyNames = trackConfigAssemblyNames
         ?.map(name => assemblyManager.getCanonicalAssemblyName(name))
         .filter(notEmpty)
-      const assemblyMatch = view.trackSelectorAnyOverlap
-        ? hasAnyOverlap(trackCanonicalAssemblyNames, viewAssemblyNames)
-        : hasAllOverlap(trackCanonicalAssemblyNames, viewAssemblyNames)
-      if (!assemblyMatch) {
-        return false
+      if (viewAssemblyNames.length > 0) {
+        const assemblyMatch = view.trackSelectorAnyOverlap
+          ? hasAnyOverlap(trackCanonicalAssemblyNames, viewAssemblyNames)
+          : hasAllOverlap(trackCanonicalAssemblyNames, viewAssemblyNames)
+        if (!assemblyMatch) {
+          return false
+        }
+      }
+      if (viewDisplaysSet.size === 0) {
+        return true
       }
       const trackType = pluginManager.getTrackType(c.type)!
       return trackType.displayTypes.some(d => viewDisplaysSet.has(d.name))

@@ -37,6 +37,9 @@ const LargeModeSyntenyCanvas = observer(function LargeModeSyntenyCanvas({
       if (!syntenyBlocks || !largeModeRegion) {
         return
       }
+      console.log(
+        `[LargeModeSyntenyCanvas] drawing ${JSON.stringify({ genomes: syntenyBlocks.length, region: largeModeRegion, width, canvasHeight })}`,
+      )
       const ctx = canvas.getContext('2d')
       if (!ctx) {
         return
