@@ -454,18 +454,20 @@ export default function stateModelFactory(
             this.coverageAutoscaleType,
             this.coverageNumStdDev,
           )
-          return getNiceDomain({
+          const domain = getNiceDomain({
             domain: raw,
             bounds: [this.coverageMinScore, this.coverageMaxScore],
             scaleType: this.coverageScaleType,
           })
+          // A domain with max ≤ 0 is semantically empty (no coverage data),
+          // so treat it as undefined to maintain type invariant
+          return domain && domain[1] > 0 ? domain : undefined
         },
 
         get coverageTicks(): CoverageTicks | undefined {
           const domain = this.coverageDomain
-          if (!domain || domain[1] === 0) {
+          if (!domain) {
             // Return a blank scale bar to indicate the region was checked but has no data
-            // domain[1] === 0 means max coverage is 0, effectively no coverage data
             return {
               ticks: [],
               height: self.coverageHeight,
