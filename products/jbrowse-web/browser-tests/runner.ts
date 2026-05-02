@@ -146,7 +146,15 @@ async function runTests(
       process.stdout.write(`    ⏳ ${test.name}...`)
 
       try {
-        // Clean up any GPU resources from previous tests before we start
+        await page.goto(`http://localhost:${PORT}/test_data/volvox/config.json`)
+        await page.evaluate(() => {
+          localStorage.clear()
+          sessionStorage.clear()
+        })
+        await page.goto('about:blank')
+        await test.fn(page, browser)
+
+        // Clean up any GPU resources after test completes, before we navigate again
         try {
           await page.evaluate(() => {
             const w = window as typeof window & {
@@ -157,16 +165,8 @@ async function runTests(
             }
           })
         } catch {
-          // Cleanup might fail if page is in a bad state, that's ok
+          // Cleanup might fail if page has been navigated away, that's ok
         }
-
-        await page.goto(`http://localhost:${PORT}/test_data/volvox/config.json`)
-        await page.evaluate(() => {
-          localStorage.clear()
-          sessionStorage.clear()
-        })
-        await page.goto('about:blank')
-        await test.fn(page, browser)
 
         const duration = performance.now() - start
         passed++
