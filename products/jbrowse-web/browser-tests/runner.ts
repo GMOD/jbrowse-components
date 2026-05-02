@@ -99,6 +99,7 @@ async function runTests(
   browser: Browser,
   suites: TestSuite[],
   includeAuth: boolean,
+  launchBrowser?: () => Promise<Browser>,
 ) {
   let passed = 0
   let failed = 0
@@ -119,6 +120,11 @@ async function runTests(
 
   for (const suite of suitesToRun) {
     console.log(`\n  ${suite.name}`)
+
+    // Detect GPU-heavy test suites that need aggressive browser recycling
+    // to avoid WebGL resource exhaustion (swiftshaker limitation)
+    const isGpuHeavySuite = suite.name.toLowerCase().includes('bigwig') ||
+      suite.name.toLowerCase().includes('wiggle')
 
     // Recycle the page between suites to release accumulated GPU/memory
     // resources and prevent OOM crashes during long test runs
@@ -176,6 +182,22 @@ async function runTests(
           process.stdout.cursorTo(0)
         }
         console.log(`    ✓ ${test.name} (${Math.round(duration)}ms)`)
+
+        // Recycle browser for GPU-heavy test suites to prevent WebGL resource exhaustion
+        // from accumulating across tests (swiftshader limitation in headless Chrome)
+        if (isGpuHeavySuite && launchBrowser) {
+          try {
+            console.log('      [browser recycle] Closing browser to release GPU resources...')
+            await browser.close()
+            browser = await launchBrowser()
+            page = await setupPage(browser)
+            console.log('      [browser recycle] Browser restarted and ready')
+          } catch (recycleErr) {
+            console.warn(
+              `      [browser recycle] Failed to recycle browser: ${recycleErr instanceof Error ? recycleErr.message : recycleErr}`,
+            )
+          }
+        }
       } catch (e) {
         failed++
         const error = e instanceof Error ? e.message : String(e)
@@ -372,8 +394,17 @@ async function runWithBackend(
 
   const page = await setupPage(browser)
 
+  // Create a factory function to relaunch the browser for GPU-heavy tests
+  const launchBrowser = () =>
+    launch({
+      headless: useHeadless,
+      slowMo,
+      args: chromeArgs,
+      defaultViewport: { width: 1280, height: 800 },
+    })
+
   try {
-    return await runTests(page, browser, suites, runAuthTests)
+    return await runTests(page, browser, suites, runAuthTests, launchBrowser)
   } finally {
     await browser.close()
   }

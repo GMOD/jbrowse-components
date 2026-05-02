@@ -512,14 +512,18 @@ export class WebGL2Hal implements GpuHal {
   }
 
   dispose() {
+    console.error(
+      `[WebGL2Hal #${this.instanceId}] dispose() CALLED, already disposed=${this.disposed}`,
+    )
     if (this.disposed) {
+      console.warn(`[WebGL2Hal #${this.instanceId}] dispose() called but already disposed, returning`)
       return
     }
     this.disposed = true
     const gl = this.gl
     totalDisposed += 1
     console.warn(
-      `[WebGL2Hal #${this.instanceId}] dispose (live=${totalCreated - totalDisposed}/${totalCreated})`,
+      `[WebGL2Hal #${this.instanceId}] DISPOSING context (live=${totalCreated - totalDisposed}/${totalCreated})`,
     )
 
     // Remove canvas event listeners to prevent closure references from keeping

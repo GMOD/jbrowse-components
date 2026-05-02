@@ -63,7 +63,9 @@ export function GpuBackendLifecycleSlotMixin() {
         }
       },
       stopGpuBackendLifecycle() {
+        console.error('[GpuBackendLifecycleSlot] stopGpuBackendLifecycle() called')
         self.currentGpuBackend = undefined
+        console.warn('[GpuBackendLifecycleSlot] GPU backend cleared')
       },
       renderNow() {
         self.renderBump += 1
