@@ -78,15 +78,19 @@ const BreakpointSplitView = observer(function BreakpointSplitView({
   const { classes } = useStyles()
   return (
     <div className={classes.rubberbandContainer}>
-      {model.showHeader ? <Header model={model} /> : null}
-      <Rubberband
-        model={model}
-        ControlComponent={<div className={classes.rubberbandDiv} />}
-      />
-      <div className={classes.container}>
-        <BreakpointSplitViewLevels model={model} />
-        <BreakpointSplitViewOverlay model={model} />
-      </div>
+      {model.showHeader && model.initialized ? <Header model={model} /> : null}
+      {model.initialized ? (
+        <>
+          <Rubberband
+            model={model}
+            ControlComponent={<div className={classes.rubberbandDiv} />}
+          />
+          <div className={classes.container}>
+            <BreakpointSplitViewLevels model={model} />
+            <BreakpointSplitViewOverlay model={model} />
+          </div>
+        </>
+      ) : null}
     </div>
   )
 })

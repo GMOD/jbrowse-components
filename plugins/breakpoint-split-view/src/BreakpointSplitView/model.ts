@@ -314,6 +314,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         let viewTop = 0
         for (let level = 0; level < n; level++) {
           const view = views[level]!
+          if (!view.initialized) {
+            continue
+          }
           const d = tracks[level]!.displays[0]!
           scrollTops[level] = yOffsetsOverride ? 0 : (d.scrollTop ?? 0)
           heights[level] = d.height
@@ -633,7 +636,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   label: 'Square view',
                   icon: CropFreeIcon,
                   onClick: () => {
-                    self.squareView()
+                    if (self.initialized) {
+                      self.squareView()
+                    }
                   },
                 },
               ]

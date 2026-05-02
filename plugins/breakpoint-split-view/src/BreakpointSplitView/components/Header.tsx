@@ -94,13 +94,15 @@ const Header = observer(function Header({
   return (
     <div className={classes.header}>
       <div className={classes.buttons}>
-        <CascadingMenuButton
-          size="small"
-          title="Menu"
-          menuItems={() => model.menuItems()}
-        >
-          <MoreVertIcon />
-        </CascadingMenuButton>
+        {model.initialized ? (
+          <CascadingMenuButton
+            size="small"
+            title="Menu"
+            menuItems={() => model.menuItems()}
+          >
+            <MoreVertIcon />
+          </CascadingMenuButton>
+        ) : null}
         <ScrollZoomButton model={model} />
         <LinkViewsButton model={model} />
         <CascadingMenuButton
