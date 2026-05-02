@@ -28,6 +28,8 @@ interface UseGpuRendererOptions<R> {
  * For displays with model-driven autoruns, pass onReady/onDispose callbacks to
  * stash the backend in an MST volatile so autoruns can observe it.
  */
+let instanceCounter = 0
+
 export function useGpuRenderer<R extends { dispose(): void }>(
   factory: (canvas: HTMLCanvasElement) => Promise<R>,
   opts?: UseGpuRendererOptions<R>,
@@ -37,6 +39,7 @@ export function useGpuRenderer<R extends { dispose(): void }>(
   const [ready, setReady] = useState(false)
   const [contextVersion, setContextVersion] = useState(0)
   const rendererRef = useRef<R | null>(null)
+  const instanceIdRef = useRef(++instanceCounter)
 
   const canvasRef = useCallback((node: HTMLCanvasElement | null) => {
     setCanvas(node)
@@ -71,19 +74,28 @@ export function useGpuRenderer<R extends { dispose(): void }>(
 
   useEffect(() => {
     if (!canvas) {
+      console.warn(`[useGpuRenderer] useEffect running but no canvas, returning`)
       return undefined
     }
+    const instanceId = instanceIdRef.current
     let cancelled = false
     let backend: R | null = null
+    console.warn(
+      `[useGpuRenderer #${instanceId}] useEffect running, calling factory(canvas)`,
+    )
     factory(canvas)
       .then(r => {
         if (cancelled) {
+          console.warn(
+            `[useGpuRenderer #${instanceId}] factory completed but initialization was cancelled, disposing`,
+          )
           r.dispose()
           return
         }
         backend = r
         rendererRef.current = r
         setReady(true)
+        console.warn(`[useGpuRenderer #${instanceId}] GPU backend ready`)
         opts?.onReady?.(r)
       })
       .catch((e: unknown) => {
@@ -93,31 +105,40 @@ export function useGpuRenderer<R extends { dispose(): void }>(
         }
       })
 
-    // When the browser performs a hard navigation (e.g. page.goto() in
-    // Puppeteer tests, or the user navigating away), the JS context is
-    // destroyed without running React cleanup effects. This means the
-    // useEffect return function (which calls renderer.dispose()) never
-    // fires, and WebGL contexts + all their GPU buffers leak until GC
-    // eventually reclaims them. Chrome caps active WebGL contexts at ~16
-    // and its GPU process can OOM well before GC runs.
-    //
-    // The pagehide event fires synchronously during navigation, giving us
-    // a reliable hook to release GPU resources before the page dies.
     const handlePageHide = () => {
       if (!cancelled) {
+        console.warn(
+          `[useGpuRenderer #${instanceId}] pagehide event, disposing backend (backend exists=${!!backend})`,
+        )
         cancelled = true
         backend?.dispose()
       }
     }
-    window.addEventListener('pagehide', handlePageHide)
+    window.addEventListener('pagehide', handlePageHide, true)
 
     return () => {
+      console.warn(
+        `[useGpuRenderer #${instanceId}] effect cleanup running, cancelled=${cancelled}, backend=${!!backend}`,
+      )
       window.removeEventListener('pagehide', handlePageHide)
+      if (!cancelled) {
+        console.warn(
+          `[useGpuRenderer #${instanceId}] disposing backend in cleanup`,
+        )
+      }
       cancelled = true
-      backend?.dispose()
+      if (backend) {
+        console.warn(
+          `[useGpuRenderer #${instanceId}] calling backend.dispose()`,
+        )
+        backend.dispose()
+      }
       rendererRef.current = null
       setReady(false)
       opts?.onDispose?.()
+      console.warn(
+        `[useGpuRenderer #${instanceId}] effect cleanup complete`,
+      )
     }
   }, [canvas, contextVersion, factory, opts])
 

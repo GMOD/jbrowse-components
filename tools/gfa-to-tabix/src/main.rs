@@ -61,8 +61,9 @@ struct Args {
     #[arg(long)]
     graph_coarse: bool,
 
-    /// Method for graph coarse index: "snarl" (default, uses vg snarls) or "tile" (fixed bp windows).
-    #[arg(long, default_value = "snarl")]
+    /// Method for graph coarse index: "tile" (default, fixed bp windows) or "snarl" (uses vg snarls,
+    /// suitable for small inputs; vg snarls on chr20 GFA takes ~6 min).
+    #[arg(long, default_value = "tile")]
     graph_coarse_method: String,
 
     /// Minimum snarl ref-span in bp to emit as a snarl super-node (snarl method only).
@@ -1779,9 +1780,28 @@ fn graph_coarse_build_snarls(
     output_prefix: &str,
     min_sv_bp: u64,
 ) {
+    // Prefer a co-located .vg file for snarls (much faster than GFA for large inputs).
+    // e.g., chr20.gfa → chr20.vg
+    let vg_input = {
+        let candidate = gfa_path
+            .trim_end_matches(".gz")
+            .trim_end_matches(".gfa")
+            .to_string()
+            + ".vg";
+        if std::path::Path::new(&candidate).exists() {
+            eprintln!("  Using {} for vg snarls (faster than GFA)", candidate);
+            candidate
+        } else {
+            gfa_path.to_string()
+        }
+    };
+
     // Run vg snarls | vg view -R to get JSON snarl records
+    let threads = std::thread::available_parallelism()
+        .map(|n| n.get().min(4).to_string())
+        .unwrap_or_else(|_| "1".to_string());
     let mut vg_snarls = Command::new("vg")
-        .args(["snarls", gfa_path])
+        .args(["snarls", "-t", &threads, &vg_input])
         .stdout(Stdio::piped())
         .stderr(Stdio::null())
         .spawn()

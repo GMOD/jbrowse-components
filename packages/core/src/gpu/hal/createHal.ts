@@ -10,15 +10,21 @@ export async function createGpuHal(
   uniformByteSize: number,
 ): Promise<GpuHal | null> {
   const override = getGpuOverride()
+  console.warn(
+    `[GPU] createGpuHal called, override=${override}, canvas.width=${canvas.width}, canvas.height=${canvas.height}`,
+  )
 
   if (override === 'canvas2d' || override === 'canvas') {
+    console.warn('[GPU] Canvas2D override, skipping GPU HAL creation')
     return null
   }
 
   if (override !== 'webgl') {
     try {
+      console.warn('[GPU] Attempting WebGPU HAL creation')
       const webgpu = await WebGPUHal.create(canvas, passes, uniformByteSize)
       if (webgpu) {
+        console.warn('[GPU] WebGPU HAL created successfully')
         return webgpu
       }
     } catch (e) {
@@ -30,6 +36,7 @@ export async function createGpuHal(
   }
 
   try {
+    console.warn('[GPU] Creating WebGL2 HAL')
     return new WebGL2Hal(canvas, passes, uniformByteSize)
   } catch (e) {
     console.error('[GPU] WebGL2 initialization failed:', e)

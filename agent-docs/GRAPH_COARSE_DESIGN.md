@@ -598,22 +598,29 @@ Full numbers in `GRAPH_PERF.md` "Step 0" section.
 
 | Approach | chr20 super-nodes | Compression | Wall time | Semantic |
 |---|---|---|---|---|
-| Coordinate tiles, 10kb | ~6,444 | 289x | < 1s | No — fixed windows |
-| vg snarls, threshold 100bp | ~1,089 | 1,700x | 32s | Yes — SV sites + backbone |
-| vg snarls, threshold 10 nodes | ~11,500 | 160x | 32s | Yes — SV sites + backbone |
+| Coordinate tiles, 10kb | 6,188 | 300x | < 1s | No — fixed windows |
+| vg snarls GFA, top-level | 497,227 (unfiltered) | TBD | 6:27 | Yes — SV sites + backbone |
 
-Both pass the < 1/3 gate (620K) by a large margin.
+**Gate status (2026-05-01 measurement):**
+- Tiles: 6,188 < 50,000 ✓; < 1 s ✓ → **PASS**
+- Snarls: 6:27 > 5 min → **FAIL time gate** (unfiltered count also very high)
 
-### Recommendation: snarls as primary, tiles as fallback
+The snarl numbers in the original table (1,089 super-nodes, 32s) were
+estimates, not measured values from actual `vg snarls` runs. The actual measurement
+shows vg snarls takes 6:27 on chr20.gfa with the integrated algorithm.
+Post-filter count (ref-span >= 100bp) is TBD.
 
-Snarls win on publication defensibility: each super-node corresponds to a real
-structural-variant site identified by `vg snarls`. The coarse graph has
-semantic meaning — backbone chains between large snarls, SV super-nodes at
-branch points. Tiles are a valid fallback if snarls prove hard to implement.
+### Resolution: tiles as v1 default
 
-**Threshold choice.** Use reference-bp span, not node count. `min_sv_bp=100`
-gives ~1,089 super-nodes for chr20. `min_sv_bp=10` gives ~11,500. Start with
-100 bp, measure render density, tune down if too sparse.
+Tiles pass all gates and are implemented. Snarls (`--graph-coarse-method snarl`)
+are available for all inputs. For chr20 scale, the snarl method automatically
+uses the co-located `.vg` file if present, reducing wall time from 6:27 to 52 s
+(PASS). Without `.vg`, users can pre-generate with `vg convert -g input.gfa > input.vg`.
+
+**Threshold choice (tiles).** 10 kbp tile size → 6,188 super-nodes for chr20.
+
+**Threshold choice (snarls).** 100 bp min span. Total top-level snarls for chr20:
+497,227. Count after ≥ 100 bp filter: TBD (most snarls are SNPs < 100 bp).
 
 ### Revised steps
 

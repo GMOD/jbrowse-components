@@ -156,8 +156,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
               const stopToken = createStopToken()
               renderStopToken = stopToken
 
-              self.features = undefined
-              self.error = undefined
+              self.setFeatures(new Map())
 
               try {
                 const feats = (await rpcManager.call(

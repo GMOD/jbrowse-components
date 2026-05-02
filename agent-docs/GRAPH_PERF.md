@@ -70,6 +70,56 @@ it as the engine.
 
 ---
 
+## Revised Step 1 — tile and snarl implementation (2026-05-01)
+
+### Tile approach (--graph-coarse-method tile)
+
+Implemented in `tools/gfa-to-tabix/src/main.rs`. Groups ref-path steps into fixed
+N-bp windows. Emits `prefix.graph.coarse.bed.gz`.
+
+| Fixture | Input segments | Tiles (10kbp) | Wall time | Gate |
+|---------|---------------|---------------|-----------|------|
+| volvox  | 1,204         | 5             | < 0.1 s   | PASS |
+| chrM    | 1,393         | 2             | < 0.1 s   | PASS |
+| chr20 (Python count) | 1,859,947 | 6,188 | < 1 s | PASS |
+
+Gate checks for tile method:
+- Super-node count < 50,000: PASS (6,188 for chr20)
+- Wall time < 5 min: PASS (< 1 s)
+- Determinism (SHA256): PASS (volvox, chrM confirmed)
+- Contiguity (no gaps): PASS (all fixtures)
+- superOrd = min(constituentOrds): PASS (verified)
+
+### Snarl approach (--graph-coarse-method snarl)
+
+Implemented using `vg snarls | vg view -R` subprocess. Emits `prefix.graph.coarse.bed.gz`
+with `type=snarl` (variation sites) and `type=chain` (backbone) rows.
+
+| Fixture | Top-level snarls | Large (>=100bp) | Total super-nodes | Wall time | Gate |
+|---------|-----------------|-----------------|-------------------|-----------|------|
+| volvox  | 383             | 265             | 283               | < 1 s     | PASS |
+| chrM    | 454             | 104             | 127               | < 1 s     | PASS |
+| chr20 GFA | 497,227 | TBD | TBD | 6:27 | **FAIL (time)** |
+
+**chr20 snarl timing:**
+
+| Input format | Threads | Wall time | Gate |
+|---|---|---|---|
+| chr20.gfa | 1 (default) | 6:27 | FAIL |
+| chr20.vg | 4 | 0:52 | PASS |
+
+- chr20 top-level snarl count: 497,227 (same for both formats, expected — same graph).
+- Count after filtering to >= 100bp ref-span: TBD.
+- The design doc estimated 32 s — that number was not measured from actual vg
+  snarls and should be treated as incorrect.
+
+**Resolution**: Tile method is v1 default (passes all gates on GFA input). Snarl
+method works on chr20 when using the `.vg` file as input to `vg snarls` with
+4 threads (52 s). The snarl implementation in main.rs automatically uses a
+co-located `.vg` file if present, otherwise falls back to the GFA.
+
+---
+
 ## Performance
 
 **Surgical node dragging in `plugins/graph`.** Currently, moving a single node
