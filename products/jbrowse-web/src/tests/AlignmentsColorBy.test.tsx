@@ -28,7 +28,7 @@ test('color by tag', async () => {
   await user.click(await screen.findByText('Color by...'))
   await user.click(await screen.findByText('Color by tag...'))
   await user.type(
-    await screen.findByPlaceholderText('Enter tag name', ...opts),
+    await screen.findByLabelText('Tag name', ...opts),
     'HP',
   )
   await user.click(await screen.findByText('Submit'))
