@@ -21,8 +21,8 @@ describe('YScaleBar', () => {
       />,
     )
     // Should render the axis line even with empty ticks
-    expect(container.querySelector('g')).toBeInTheDocument()
-    expect(container.querySelector('path')).toBeInTheDocument()
+    expect(container.querySelector('g')).toBeTruthy()
+    expect(container.querySelector('path')).toBeTruthy()
   })
 
   it('renders tick marks for valid ticks', () => {
