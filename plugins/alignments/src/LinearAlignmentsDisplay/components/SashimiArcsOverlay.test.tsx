@@ -1,5 +1,3 @@
-import { describe, it, expect } from 'vitest'
-
 describe('SashimiArcsOverlay arc keys', () => {
   it('uses stable arc identifiers as keys, not array indices', () => {
     // Test data showing the expected key format
