@@ -107,6 +107,9 @@ export class WebGL2Hal implements GpuHal {
   // isn't called twice on the same handle.
   private disposed = false
 
+  private contextLostListener: ((e: Event) => void) | null = null
+  private contextRestoredListener: (() => void) | null = null
+
   private checkGlError(label: string) {
     if (!this.debug) {
       return
@@ -133,24 +136,20 @@ export class WebGL2Hal implements GpuHal {
     console.warn(
       `[WebGL2Hal #${this.instanceId}] init (live=${totalCreated - totalDisposed}/${totalCreated}, passes=${descriptors.length})`,
     )
-    canvas.addEventListener(
-      'webglcontextlost',
-      e => {
-        const ev = e as WebGLContextEvent
-        console.error(
-          `[WebGL2Hal #${this.instanceId}] context LOST (statusMessage="${ev.statusMessage}", live=${totalCreated - totalDisposed})`,
-        )
-        e.preventDefault()
-      },
-      false,
-    )
-    canvas.addEventListener(
-      'webglcontextrestored',
-      () => {
-        console.warn(`[WebGL2Hal #${this.instanceId}] context restored`)
-      },
-      false,
-    )
+    const onContextLost = (e: Event) => {
+      const ev = e as WebGLContextEvent
+      console.error(
+        `[WebGL2Hal #${this.instanceId}] context LOST (statusMessage="${ev.statusMessage}", live=${totalCreated - totalDisposed})`,
+      )
+      e.preventDefault()
+    }
+    const onContextRestored = () => {
+      console.warn(`[WebGL2Hal #${this.instanceId}] context restored`)
+    }
+    canvas.addEventListener('webglcontextlost', onContextLost, false)
+    canvas.addEventListener('webglcontextrestored', onContextRestored, false)
+    this.contextLostListener = onContextLost
+    this.contextRestoredListener = onContextRestored
     // premultipliedAlpha:true is required for correct AA edge blending.
     // The canvas is cleared to (0,0,0,0) and drawn with SRC_ALPHA,ONE_MINUS_SRC_ALPHA
     // blend, which produces premultiplied-alpha values in the framebuffer
@@ -522,6 +521,22 @@ export class WebGL2Hal implements GpuHal {
     console.warn(
       `[WebGL2Hal #${this.instanceId}] dispose (live=${totalCreated - totalDisposed}/${totalCreated})`,
     )
+
+    // Remove canvas event listeners to prevent closure references from keeping
+    // the context alive after disposal. This is critical for test suites where
+    // multiple contexts are created in sequence (e.g. Puppeteer page navigation).
+    if (this.contextLostListener) {
+      this.canvas.removeEventListener('webglcontextlost', this.contextLostListener)
+      this.contextLostListener = null
+    }
+    if (this.contextRestoredListener) {
+      this.canvas.removeEventListener(
+        'webglcontextrestored',
+        this.contextRestoredListener,
+      )
+      this.contextRestoredListener = null
+    }
+
     this.deleteAllRegions()
     for (const pass of this.passes.values()) {
       gl.deleteVertexArray(pass.vao)
