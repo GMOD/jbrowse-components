@@ -189,15 +189,13 @@ async function runTests(
         }
         console.log(`    ✓ ${test.name} (${Math.round(duration)}ms)`)
 
-        // Recycle browser for GPU-heavy test suites to prevent WebGL resource exhaustion
-        // from accumulating across tests (swiftshader limitation in headless Chrome)
-        if (isGpuHeavySuite && launchBrowser) {
+        // Recycle browser after every test to prevent resource exhaustion
+        // (swiftshader limitation in headless Chrome accumulates resources across tests)
+        if (launchBrowser) {
           try {
-            console.log('      [browser recycle] Closing browser to release GPU resources...')
             await browser.close()
             browser = await launchBrowser()
             page = await setupPage(browser)
-            console.log('      [browser recycle] Browser restarted and ready')
           } catch (recycleErr) {
             console.warn(
               `      [browser recycle] Failed to recycle browser: ${recycleErr instanceof Error ? recycleErr.message : recycleErr}`,
@@ -215,23 +213,15 @@ async function runTests(
         console.log(`    ✗ FAILED: ${suite.name} > ${test.name}`)
         console.log(`      Error: ${error}`)
 
-        // If the page/frame became detached (browser crash or GPU failure),
-        // open a fresh page so subsequent tests can continue
-        const isPageCrash =
-          error.includes('detached') ||
-          error.includes('Session closed') ||
-          error.includes('Target closed') ||
-          error.includes('Navigating frame was detached')
-        if (isPageCrash) {
+        // Always recycle browser after failed test to ensure clean state for next test
+        if (launchBrowser) {
           try {
-            console.log(
-              '      [recovery] Page/frame crashed, opening fresh page...',
-            )
+            await browser.close().catch(() => {})
+            browser = await launchBrowser()
             page = await setupPage(browser)
-            console.log('      [recovery] Fresh page ready')
-          } catch (recoveryErr) {
+          } catch (recycleErr) {
             console.error(
-              `      [recovery] Browser itself has crashed, cannot recover: ${recoveryErr instanceof Error ? recoveryErr.message : recoveryErr}`,
+              `      [recovery] Browser recycle failed, cannot recover: ${recycleErr instanceof Error ? recycleErr.message : recycleErr}`,
             )
             return { passed, failed }
           }
