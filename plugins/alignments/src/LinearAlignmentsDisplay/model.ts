@@ -463,8 +463,9 @@ export default function stateModelFactory(
 
         get coverageTicks(): CoverageTicks | undefined {
           const domain = this.coverageDomain
-          if (!domain) {
+          if (!domain || domain[1] === 0) {
             // Return a blank scale bar to indicate the region was checked but has no data
+            // domain[1] === 0 means max coverage is 0, effectively no coverage data
             return {
               ticks: [],
               height: self.coverageHeight,
