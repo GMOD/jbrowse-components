@@ -1,4 +1,4 @@
-import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
   pileupRowY,
@@ -23,6 +23,8 @@ export function drawGaps(
   state: RenderState,
 ) {
   const fH = state.featureHeight
+  const pxPerBp = fullBlockWidth / bpLength
+  const delColorBase = state.colors.colorDeletion
 
   for (let i = 0; i < region.numGaps; i++) {
     const startBp = region.gapPositions[i * 2]!
@@ -35,9 +37,15 @@ export function drawGaps(
     const w = Math.max(1, x2 - x1)
 
     if (gapType === GAP_DELETION) {
-      const midY = y + fH / 2
-      ctx.fillStyle = rgb255(state.colors.colorDeletion)
-      ctx.fillRect(x1, midY - 0.5, w, 1)
+      const frequency = region.gapFrequencies[i]! / 255
+      const widthPx = w
+      let alpha = 1.0
+      if (widthPx < 1.0) {
+        const base = widthPx * widthPx
+        alpha = base + frequency * (1.0 - base)
+      }
+      ctx.fillStyle = alpha >= 1.0 ? rgb255(delColorBase) : rgba255(delColorBase, alpha)
+      ctx.fillRect(x1, y, w, fH)
     } else if (gapType === GAP_SKIP) {
       ctx.fillStyle = rgb255(state.colors.colorSkip)
       ctx.clearRect(x1, y, w, fH)
