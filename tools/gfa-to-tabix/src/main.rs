@@ -56,6 +56,23 @@ struct Args {
     #[arg(long)]
     output_config: Option<String>,
 
+    /// Generate a graph coarse index (prefix.graph.coarse.bed.gz).
+    /// Requires vg to be installed (for snarl method) or no external tool (for tile method).
+    #[arg(long)]
+    graph_coarse: bool,
+
+    /// Method for graph coarse index: "snarl" (default, uses vg snarls) or "tile" (fixed bp windows).
+    #[arg(long, default_value = "snarl")]
+    graph_coarse_method: String,
+
+    /// Minimum snarl ref-span in bp to emit as a snarl super-node (snarl method only).
+    #[arg(long, default_value_t = 100)]
+    graph_coarse_min_sv_bp: u64,
+
+    /// Tile size in bp for the tile method.
+    #[arg(long, default_value_t = 10_000)]
+    graph_coarse_tile_size: u64,
+
 }
 
 fn main() {
@@ -78,6 +95,10 @@ fn main() {
     let ref_assembly_arg = cli.ref_assembly;
     let bubbles_vcf = cli.bubbles;
     let output_config = cli.output_config;
+    let graph_coarse = cli.graph_coarse;
+    let graph_coarse_method = cli.graph_coarse_method;
+    let graph_coarse_min_sv_bp = cli.graph_coarse_min_sv_bp;
+    let graph_coarse_tile_size = cli.graph_coarse_tile_size;
 
     // Two-phase single-pass: reads all lines once, collecting S-lines in memory
     // and spilling P/W-lines to a temp file. Then replays the temp file to
@@ -270,6 +291,18 @@ fn main() {
         synteny_build(&all_paths, ra, &output_prefix);
         eprintln!("Building edge spatial index...");
         build_edges_spatial(&raw_links, &seg_ordinals, &seg_lengths, &all_paths, ra, &output_prefix);
+        if graph_coarse {
+            match graph_coarse_method.as_str() {
+                "snarl" => {
+                    eprintln!("Building graph coarse index (snarl method, min {}bp)...", graph_coarse_min_sv_bp);
+                    graph_coarse_build_snarls(gfa_path, &all_paths, ra, &seg_ordinals, &output_prefix, graph_coarse_min_sv_bp);
+                }
+                _ => {
+                    eprintln!("Building graph coarse index (tile method, {}bp tiles)...", graph_coarse_tile_size);
+                    graph_coarse_build_tiles(&all_paths, ra, &output_prefix, graph_coarse_tile_size);
+                }
+            }
+        }
     }
 
     // seglens.bin: flat u32 array indexed by ordinal
@@ -327,6 +360,7 @@ fn main() {
             &output_prefix,
             &genomes,
             vcf_for_config,
+            graph_coarse,
         );
     }
 
@@ -853,6 +887,7 @@ fn write_jbrowse_config(
     output_prefix: &str,
     genomes: &[String],
     bubbles_vcf: Option<&str>,
+    graph_coarse: bool,
 ) {
     eprintln!("Writing JBrowse config...");
     let mut out = BufWriter::new(File::create(config_path).expect("create config file"));
@@ -866,6 +901,8 @@ fn write_jbrowse_config(
     let bubbles_bed = format!("{}.bubbles.bed.gz", output_prefix);
     let bubbles_tbi = format!("{}.bubbles.bed.gz.tbi", output_prefix);
     let edges_bed = format!("{}.edges.spatial.bed.gz", output_prefix);
+    let graph_coarse_bed = format!("{}.graph.coarse.bed.gz", output_prefix);
+    let graph_coarse_tbi = format!("{}.graph.coarse.bed.gz.tbi", output_prefix);
     let edges_tbi = format!("{}.edges.spatial.bed.gz.tbi", output_prefix);
     let seglens_bin = format!("{}.seglens.bin", output_prefix);
 
@@ -893,7 +930,16 @@ fn write_jbrowse_config(
     write!(out, "        \"seqlensLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }}", seglens_bin).unwrap();
     if bubbles_vcf.is_some() {
         write!(out, ",\n        \"bubblesLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", bubbles_bed).unwrap();
-        write!(out, "        \"bubblesIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }}\n", bubbles_tbi).unwrap();
+        write!(out, "        \"bubblesIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }}", bubbles_tbi).unwrap();
+        if graph_coarse {
+            write!(out, ",\n        \"graphCoarseLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", graph_coarse_bed).unwrap();
+            write!(out, "        \"graphCoarseIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }}\n", graph_coarse_tbi).unwrap();
+        } else {
+            write!(out, "\n").unwrap();
+        }
+    } else if graph_coarse {
+        write!(out, ",\n        \"graphCoarseLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", graph_coarse_bed).unwrap();
+        write!(out, "        \"graphCoarseIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }}\n", graph_coarse_tbi).unwrap();
     } else {
         write!(out, "\n").unwrap();
     }
@@ -1620,6 +1666,234 @@ fn build_edges_spatial(
     eprintln!("  Wrote {}", edges_file);
 }
 
+// Returns (ref_start, ref_end, super_ord, sorted_constituent_ords) for each tile.
+// super_ord is the minimum ordinal in the tile (deterministic).
+// Tiles span at least tile_size bp; the final tile holds any remainder.
+fn compute_tile_rows(steps: &[StepInfo], tile_size: u64) -> Vec<(u64, u64, u64, Vec<u64>)> {
+    let mut result: Vec<(u64, u64, u64, Vec<u64>)> = Vec::new();
+    if steps.is_empty() {
+        return result;
+    }
+    let mut tile_ref_start = steps[0].offset;
+    let mut tile_ords: Vec<u64> = Vec::new();
+
+    for step in steps {
+        tile_ords.push(step.ord);
+        let tile_end = step.offset + step.seg_len;
+        if tile_end - tile_ref_start >= tile_size {
+            tile_ords.sort_unstable();
+            tile_ords.dedup();
+            let super_ord = tile_ords[0];
+            result.push((tile_ref_start, tile_end, super_ord, tile_ords.clone()));
+            tile_ref_start = tile_end;
+            tile_ords.clear();
+        }
+    }
+
+    if !tile_ords.is_empty() {
+        let ref_end = steps.last().map(|s| s.offset + s.seg_len).unwrap_or(tile_ref_start);
+        tile_ords.sort_unstable();
+        tile_ords.dedup();
+        let super_ord = tile_ords[0];
+        result.push((tile_ref_start, ref_end, super_ord, tile_ords));
+    }
+    result
+}
+
+fn graph_coarse_build_tiles(paths: &[PathData], ref_assembly: &str, output_prefix: &str, tile_size: u64) {
+    let coarse_file = format!("{}.graph.coarse.bed.gz", output_prefix);
+    let mut proc = spawn_sort_bgzip(&coarse_file);
+    let mut w = BufWriter::new(proc.stdin.take().unwrap());
+
+    writeln!(w, "#schema=graph-coarse/v1").unwrap();
+    writeln!(w, "#engine=tile").unwrap();
+    writeln!(w, "#tile-size={}", tile_size).unwrap();
+
+    for path in paths.iter().filter(|p| p.assembly == ref_assembly) {
+        let chrom = path_chrom(&path.name);
+        for (ref_start, ref_end, super_ord, ords) in compute_tile_rows(&path.steps, tile_size) {
+            let ords_str = encode_ordinal_ranges(&ords);
+            writeln!(w, "{}\t{}\t{}\t{}\ttile\t{}", chrom, ref_start, ref_end, super_ord, ords_str).unwrap();
+        }
+    }
+
+    drop(w);
+    assert!(proc.wait().map(|s| s.success()).unwrap_or(false), "graph.coarse sort|bgzip failed");
+    run_cmd("tabix", &["-c", "#", "-p", "bed", &coarse_file]);
+    eprintln!("  Wrote {}", coarse_file);
+}
+
+// Extracts all "node_id" string values from a vg snarls JSON line.
+fn extract_node_ids(line: &str) -> Vec<String> {
+    let mut result = Vec::new();
+    let marker = "\"node_id\"";
+    let mut from = 0;
+    while from < line.len() {
+        let rel = match line[from..].find(marker) {
+            Some(p) => p,
+            None => break,
+        };
+        let abs = from + rel + marker.len();
+        let rest = line[abs..].trim_start_matches(|c: char| c == ' ' || c == ':');
+        if rest.starts_with('"') {
+            let val = &rest[1..];
+            if let Some(end) = val.find('"') {
+                result.push(val[..end].to_string());
+            }
+        }
+        from = abs + 1;
+    }
+    result
+}
+
+// Returns the two boundary node IDs for a top-level snarl (no parent).
+// Returns None for nested snarls or malformed lines.
+fn parse_snarl_boundary(line: &str) -> Option<(String, String)> {
+    if line.contains("\"parent\"") {
+        return None;
+    }
+    let ids = extract_node_ids(line);
+    if ids.len() == 2 {
+        Some((ids[0].clone(), ids[1].clone()))
+    } else {
+        None
+    }
+}
+
+fn emit_coarse_row(w: &mut BufWriter<impl Write>, chrom: &str, steps: &[StepInfo], lo: usize, hi: usize, row_type: &str) {
+    let ref_start = steps[lo].offset;
+    let ref_end = steps[hi].offset + steps[hi].seg_len;
+    let mut ords: Vec<u64> = steps[lo..=hi].iter().map(|s| s.ord).collect();
+    ords.sort_unstable();
+    ords.dedup();
+    let super_ord = ords[0];
+    let ords_str = encode_ordinal_ranges(&ords);
+    writeln!(w, "{}\t{}\t{}\t{}\t{}\t{}", chrom, ref_start, ref_end, super_ord, row_type, ords_str).unwrap();
+}
+
+fn graph_coarse_build_snarls(
+    gfa_path: &str,
+    paths: &[PathData],
+    ref_assembly: &str,
+    seg_ordinals: &HashMap<String, u64>,
+    output_prefix: &str,
+    min_sv_bp: u64,
+) {
+    // Run vg snarls | vg view -R to get JSON snarl records
+    let mut vg_snarls = Command::new("vg")
+        .args(["snarls", gfa_path])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn()
+        .expect("failed to spawn vg snarls; is vg installed?");
+    let mut vg_view = Command::new("vg")
+        .args(["view", "-R", "-"])
+        .stdin(vg_snarls.stdout.take().unwrap())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn()
+        .expect("failed to spawn vg view");
+
+    let all_boundaries: Vec<(String, String)> = BufReader::new(vg_view.stdout.take().unwrap())
+        .lines()
+        .filter_map(|l| l.ok())
+        .filter_map(|l| parse_snarl_boundary(&l))
+        .collect();
+
+    vg_snarls.wait().ok();
+    vg_view.wait().ok();
+    eprintln!("  {} top-level snarls parsed", all_boundaries.len());
+
+    let coarse_file = format!("{}.graph.coarse.bed.gz", output_prefix);
+    let mut proc = spawn_sort_bgzip(&coarse_file);
+    let mut w = BufWriter::new(proc.stdin.take().unwrap());
+
+    writeln!(w, "#schema=graph-coarse/v1").unwrap();
+    writeln!(w, "#engine=snarl").unwrap();
+    writeln!(w, "#min-sv-bp={}", min_sv_bp).unwrap();
+
+    let mut chrom_groups: HashMap<&str, Vec<&PathData>> = HashMap::new();
+    for p in paths {
+        chrom_groups.entry(path_chrom(&p.name)).or_default().push(p);
+    }
+
+    for (_, group) in &chrom_groups {
+        let ref_path = match group.iter().find(|p| p.assembly == ref_assembly) {
+            Some(p) => p,
+            None => continue,
+        };
+        let chrom = path_chrom(&ref_path.name);
+        let steps = &ref_path.steps;
+        if steps.is_empty() {
+            continue;
+        }
+
+        // Build ordinal → first rank on this path (first occurrence wins for multi-visit segments)
+        let mut ord_to_rank: HashMap<u64, usize> = HashMap::new();
+        for (rank, step) in steps.iter().enumerate() {
+            ord_to_rank.entry(step.ord).or_insert(rank);
+        }
+
+        // Collect snarls with ref-span >= min_sv_bp, expressed as rank intervals
+        struct Interval { lo: usize, hi: usize }
+        let mut intervals: Vec<Interval> = Vec::new();
+
+        for (name_a, name_b) in &all_boundaries {
+            let ord_a = match seg_ordinals.get(name_a) { Some(&o) => o, None => continue };
+            let ord_b = match seg_ordinals.get(name_b) { Some(&o) => o, None => continue };
+            let rank_a = match ord_to_rank.get(&ord_a) { Some(&r) => r, None => continue };
+            let rank_b = match ord_to_rank.get(&ord_b) { Some(&r) => r, None => continue };
+            let (lo, hi) = if rank_a <= rank_b { (rank_a, rank_b) } else { (rank_b, rank_a) };
+
+            let ref_start = steps[lo].offset;
+            let ref_end = steps[hi].offset + steps[hi].seg_len;
+            if ref_end - ref_start >= min_sv_bp {
+                intervals.push(Interval { lo, hi });
+            }
+        }
+        intervals.sort_unstable_by_key(|i| i.lo);
+
+        eprintln!("  {} large snarls (>= {}bp) on {}", intervals.len(), min_sv_bp, chrom);
+
+        // Walk ref path, emitting backbone chains between large snarls and snarl rows.
+        let n = steps.len();
+        let mut cursor = 0usize;
+        let mut iv_idx = 0usize;
+
+        while cursor < n {
+            if iv_idx < intervals.len() {
+                let iv = &intervals[iv_idx];
+                if iv.lo > cursor {
+                    // Backbone before next snarl
+                    emit_coarse_row(&mut w, chrom, steps, cursor, iv.lo - 1, "chain");
+                    cursor = iv.lo;
+                } else if iv.lo == cursor {
+                    // Snarl starts here
+                    emit_coarse_row(&mut w, chrom, steps, iv.lo, iv.hi, "snarl");
+                    cursor = iv.hi + 1;
+                    iv_idx += 1;
+                    // Skip any overlapping snarls (shouldn't happen with vg top-level snarls)
+                    while iv_idx < intervals.len() && intervals[iv_idx].lo < cursor {
+                        iv_idx += 1;
+                    }
+                } else {
+                    // iv.lo < cursor: snarl starts before cursor (overlapping — skip)
+                    iv_idx += 1;
+                }
+            } else {
+                // No more snarls: emit remaining backbone
+                emit_coarse_row(&mut w, chrom, steps, cursor, n - 1, "chain");
+                break;
+            }
+        }
+    }
+
+    drop(w);
+    assert!(proc.wait().map(|s| s.success()).unwrap_or(false), "graph.coarse snarl sort|bgzip failed");
+    run_cmd("tabix", &["-c", "#", "-p", "bed", &coarse_file]);
+    eprintln!("  Wrote {}", coarse_file);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1998,5 +2272,93 @@ mod tests {
             assert!(found, "No matching rev row for hap span {}:{}-{}", hap_chrom, hap_start, hap_end);
             let _ = expected_prefix;
         }
+    }
+
+    fn make_steps(seg_lens: &[u64]) -> Vec<StepInfo> {
+        let mut steps = Vec::new();
+        let mut offset = 0u64;
+        for (i, &len) in seg_lens.iter().enumerate() {
+            steps.push(StepInfo { ord: i as u64, offset, seg_len: len, is_plus: true });
+            offset += len;
+        }
+        steps
+    }
+
+    #[test]
+    fn tile_collapses_short_run() {
+        let steps = make_steps(&[100, 100, 100, 100, 100]);
+        let rows = compute_tile_rows(&steps, 10_000);
+        assert_eq!(rows.len(), 1, "500bp total < 10kb tile, should be 1 tile");
+        assert_eq!(rows[0].2, 0, "super_ord should be min ord = 0");
+        assert_eq!(rows[0].3, vec![0, 1, 2, 3, 4]);
+    }
+
+    #[test]
+    fn tile_splits_long_path() {
+        // 5 segments of 3000bp = 15000bp total, tile_size=10000
+        // After seg 3 (offset 9000..12000): span = 12000 >= 10000 → emit tile [0,1,2,3]
+        // Remainder: seg 4 (12000..15000) → tile [4]
+        let steps = make_steps(&[3000, 3000, 3000, 3000, 3000]);
+        let rows = compute_tile_rows(&steps, 10_000);
+        assert_eq!(rows.len(), 2);
+        assert_eq!(rows[0].0, 0);
+        assert_eq!(rows[0].1, 12000);
+        assert_eq!(rows[0].2, 0);
+        assert_eq!(rows[1].0, 12000);
+        assert_eq!(rows[1].1, 15000);
+        assert_eq!(rows[1].2, 4);
+    }
+
+    #[test]
+    fn tile_super_ord_is_min() {
+        // ordinals assigned non-sequentially: 5,3,1,2,4
+        let seg_lens = [100u64, 100, 100, 100, 100];
+        let ords = [5u64, 3, 1, 2, 4];
+        let mut steps = Vec::new();
+        let mut offset = 0u64;
+        for (&ord, &len) in ords.iter().zip(seg_lens.iter()) {
+            steps.push(StepInfo { ord, offset, seg_len: len, is_plus: true });
+            offset += len;
+        }
+        let rows = compute_tile_rows(&steps, 10_000);
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].2, 1, "super_ord must be min ordinal = 1");
+    }
+
+    #[test]
+    fn tile_single_large_segment() {
+        // One segment larger than tile_size → single tile (no split mid-segment)
+        let steps = make_steps(&[50_000]);
+        let rows = compute_tile_rows(&steps, 10_000);
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].0, 0);
+        assert_eq!(rows[0].1, 50_000);
+        assert_eq!(rows[0].2, 0);
+    }
+
+    #[test]
+    fn snarl_parse_top_level() {
+        let line = r#"{"directed_acyclic_net_graph": true, "end": {"node_id": "22"}, "start": {"node_id": "16"}, "start_end_reachable": true, "type": 1}"#;
+        let result = parse_snarl_boundary(line);
+        assert!(result.is_some(), "should parse top-level snarl");
+        let (a, b) = result.unwrap();
+        let mut ids = vec![a, b];
+        ids.sort();
+        assert_eq!(ids, vec!["16", "22"]);
+    }
+
+    #[test]
+    fn snarl_parse_nested_returns_none() {
+        let line = r#"{"directed_acyclic_net_graph": true, "end": {"node_id": "4"}, "parent": {"end": {"node_id": "151"}, "start": {"node_id": "148"}}, "start": {"node_id": "1"}, "start_end_reachable": true, "type": 1}"#;
+        assert_eq!(parse_snarl_boundary(line), None, "nested snarl should return None");
+    }
+
+    #[test]
+    fn snarl_parse_extracts_node_ids() {
+        let line = r#"{"end": {"node_id": "abc"}, "start": {"node_id": "xyz"}}"#;
+        let ids = extract_node_ids(line);
+        assert_eq!(ids.len(), 2);
+        assert!(ids.contains(&"abc".to_string()));
+        assert!(ids.contains(&"xyz".to_string()));
     }
 }

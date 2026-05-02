@@ -587,6 +587,85 @@ The contribution is the static-file packaging that lets a browser
 read coarse graph data via tabix range queries with no compute on
 the client. That is the publishable claim.
 
+## Revised plan after Step 0 spike (2026-05-01)
+
+**Linear-chain contraction is off the table.** `vg mod -u` on chr20 gives 0.95%
+reduction (1,842,238 / 1,859,947 nodes). Gate requires < 620K. Root cause:
+HPRC MC pangenomes at 90 haplotypes have near-zero chainable (degree-2) nodes.
+Full numbers in `GRAPH_PERF.md` "Step 0" section.
+
+### Two replacement primitives measured
+
+| Approach | chr20 super-nodes | Compression | Wall time | Semantic |
+|---|---|---|---|---|
+| Coordinate tiles, 10kb | ~6,444 | 289x | < 1s | No — fixed windows |
+| vg snarls, threshold 100bp | ~1,089 | 1,700x | 32s | Yes — SV sites + backbone |
+| vg snarls, threshold 10 nodes | ~11,500 | 160x | 32s | Yes — SV sites + backbone |
+
+Both pass the < 1/3 gate (620K) by a large margin.
+
+### Recommendation: snarls as primary, tiles as fallback
+
+Snarls win on publication defensibility: each super-node corresponds to a real
+structural-variant site identified by `vg snarls`. The coarse graph has
+semantic meaning — backbone chains between large snarls, SV super-nodes at
+branch points. Tiles are a valid fallback if snarls prove hard to implement.
+
+**Threshold choice.** Use reference-bp span, not node count. `min_sv_bp=100`
+gives ~1,089 super-nodes for chr20. `min_sv_bp=10` gives ~11,500. Start with
+100 bp, measure render density, tune down if too sparse.
+
+### Revised steps
+
+**Revised Step 1 (was Phase A).** New flag `--graph-coarse` added to
+`tools/gfa-to-tabix/src/main.rs`. Two sub-approaches, both in Rust:
+
+- **Snarl approach** (`--graph-coarse-method snarl`, default): Subprocess
+  `vg snarls input.gfa > tmp.snarls.pb`; parse JSON via `vg view -R`; filter
+  snarls with ref-span >= `--graph-coarse-min-sv-bp` (default 100); merge
+  backbone runs between large snarls into chain super-segments. Emits
+  `prefix.graph.coarse.bed.gz`.
+- **Tile approach** (`--graph-coarse-method tile`): Walk reference path, group
+  into `--graph-coarse-tile-size` bp windows (default 10000). No external tool
+  needed. Emits `prefix.graph.coarse.bed.gz` with same schema.
+
+Both use the same BED schema (compatible with Revised Step 2):
+```
+refChrom  refStart  refEnd  superOrd  type  constituentOrds
+```
+`type` is `snarl`, `chain`, or `tile`. `superOrd` = min constituent ordinal.
+`constituentOrds` = range-encoded ordinal list (e.g. `1-5,7,9-12`).
+
+No `altOrds` or `identity` columns in v1 — add in v2 once render quality is
+measured.
+
+Links file (`prefix.graph.coarse.links.bed.gz`) deferred to v2. Render the
+graph using only node rectangles in v1; add edge arcs once the node layout
+is validated.
+
+**Gate (both methods must pass before Step 2):**
+- chr20 super-node count < 50,000 (well under 620K; ~1k–12k expected).
+- chr20 wall time < 5 min.
+- volvox fixture: coarse nodes are a strict subset of detail-tier nodes
+  (no invented ordinals).
+- Determinism: re-run gives byte-identical output.
+
+**Revised Step 2 (was Phase B).** TS adapter `getSubgraph` routes
+`regionSize > 100_000` to the coarse file. Render as flat rectangles (no OGDF
+layout) — same as large-mode synteny, but keyed on coarse ordinals, not
+synteny blocks. Gate: chr20 1 Mbp and 10 Mbp render in < 2 s.
+
+**Steps 3–5** unchanged from original plan (snarl annotation, synteny tier 2,
+HPRC-scale validation). Step 3 (snarl tier) may now be redundant since Step 1
+already uses snarls — evaluate after Step 2.
+
+### odgi bin status
+
+`odgi bin` in the local v0.9.4 build produces zero output on all inputs
+(separate bug from unchop crash). Not usable until rebuilt. If a working build
+is available, `odgi bin -n N` is an alternative to coordinate tiles —
+equivalent semantics, proven tool. Not blocking Step 1.
+
 ## Cross-references
 
 - `GRAPH_INDEX_FORMAT.md` — file format spec; updated by Phase A

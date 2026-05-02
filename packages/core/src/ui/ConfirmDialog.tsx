@@ -22,9 +22,10 @@ const ConfirmDialog = observer(function ConfirmDialog(props: Props) {
     submitText = 'OK',
     submitDisabled = false,
     children,
+    ...dialogProps
   } = props
   return (
-    <Dialog onClose={onCancel} {...props}>
+    <Dialog onClose={onCancel} {...dialogProps}>
       <DialogContent>{children}</DialogContent>
       <DialogActions>
         <Button

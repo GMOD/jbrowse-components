@@ -21,9 +21,10 @@ const SubmitDialog = observer(function SubmitDialog(props: Props) {
     submitText = 'Submit',
     submitDisabled = false,
     children,
+    ...dialogProps
   } = props
   return (
-    <Dialog onClose={onCancel} {...props}>
+    <Dialog onClose={onCancel} {...dialogProps}>
       <form
         onSubmit={event => {
           event.preventDefault()

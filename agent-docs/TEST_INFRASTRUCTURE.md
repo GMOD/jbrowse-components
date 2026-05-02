@@ -84,6 +84,49 @@ Chrome flags in `runner.ts` already set.
 Runner forwards `[alignments]`, `[webgl-wiggle]` logs. Add patterns in
 `runner.ts` for additional debugging.
 
+**ChunkLoadError: Loading chunk X failed**
+
+Usually indicates:
+- Stale build (run `pnpm --filter @jbrowse/web build` before tests)
+- Corrupted /tmp (clean with `rm -rf /tmp/puppeteer_* /tmp/org.chromium.*`)
+- Missing webpack chunks in build output
+
+**Environment Setup Issues**
+
+If tests crash immediately on page navigation:
+1. Check system Chrome isn't snap (broken libraries) → use Puppeteer's cached binary
+2. Clean `/tmp/puppeteer_*` directories (old test artifacts corrupt Chrome sessions)
+3. Rebuild fresh: `rm -rf build && pnpm build`
+4. Kill stray processes: `fuser -k 3333/tcp && pkill -9 chrome firefox`
+
+## Browser Test Environment (Troubleshooting)
+
+### Startup Crashes / ERR_INSUFFICIENT_RESOURCES
+
+**Common causes:**
+
+1. **Corrupted Puppeteer cache** → crashes with "HistoryService::Init() failed"
+   - Fix: `rm -rf /tmp/puppeteer_* /tmp/org.chromium.*`
+
+2. **System Chrome (snap) broken** → "libpxbackend-1.0.so not found"
+   - Fix: Use Puppeteer's cached binary (it auto-downloads to `~/.cache/puppeteer/`)
+   - Verify: Puppeteer should use its own Chrome unless explicitly configured
+
+3. **Stale build with missing chunks** → ChunkLoadError: chunk 2568
+   - Fix: Full rebuild: `rm -rf build && pnpm --filter @jbrowse/web build`
+   - Then: `pnpm test:browser`
+
+4. **Port 3333 in use** → EADDRINUSE
+   - Fix: `fuser -k 3333/tcp` or find/kill process using netstat
+
+### Resource Exhaustion
+
+Tests fail with ERR_INSUFFICIENT_RESOURCES after 3-4 tests:
+- Likely GPU/WebGL context accumulation despite event listener cleanup
+- WebGL2Hal already removes event listeners on dispose (commit be09a5bc87)
+- Monitor with: Chrome DevTools Protocol or process monitoring
+- May need additional resource cleanup in test runner between suites
+
 ## Unit Tests
 
 157 Jest tests (15 suites), co-located (`*.test.ts`). Run with `pnpm test-ci`.  
