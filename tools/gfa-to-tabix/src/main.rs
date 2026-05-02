@@ -74,6 +74,11 @@ struct Args {
     #[arg(long, default_value_t = 10_000)]
     graph_coarse_tile_size: u64,
 
+    /// Comma-separated assembly names to include in the snarl coarse index.
+    /// Omit or use "all" to process every assembly in the GFA (default).
+    #[arg(long)]
+    graph_coarse_assemblies: Option<String>,
+
 }
 
 fn main() {
@@ -100,6 +105,10 @@ fn main() {
     let graph_coarse_method = cli.graph_coarse_method;
     let graph_coarse_min_sv_bp = cli.graph_coarse_min_sv_bp;
     let graph_coarse_tile_size = cli.graph_coarse_tile_size;
+    let graph_coarse_assemblies_filter: Option<HashSet<String>> = cli
+        .graph_coarse_assemblies
+        .filter(|s| s != "all")
+        .map(|s| s.split(',').map(|a| a.to_string()).collect());
 
     // Two-phase single-pass: reads all lines once, collecting S-lines in memory
     // and spilling P/W-lines to a temp file. Then replays the temp file to
@@ -292,18 +301,17 @@ fn main() {
         synteny_build(&all_paths, ra, &output_prefix);
         eprintln!("Building edge spatial index...");
         build_edges_spatial(&raw_links, &seg_ordinals, &seg_lengths, &all_paths, ra, &output_prefix);
-        if graph_coarse {
-            match graph_coarse_method.as_str() {
-                "snarl" => {
-                    eprintln!("Building graph coarse index (snarl method, min {}bp)...", graph_coarse_min_sv_bp);
-                    graph_coarse_build_snarls(gfa_path, &all_paths, ra, &seg_ordinals, &output_prefix, graph_coarse_min_sv_bp);
-                }
-                _ => {
-                    eprintln!("Building graph coarse index (tile method, {}bp tiles)...", graph_coarse_tile_size);
-                    graph_coarse_build_tiles(&all_paths, ra, &output_prefix, graph_coarse_tile_size);
-                }
-            }
+        if graph_coarse && graph_coarse_method != "snarl" {
+            eprintln!("Building graph coarse index (tile method, {}bp tiles)...", graph_coarse_tile_size);
+            graph_coarse_build_tiles(&all_paths, ra, &output_prefix, graph_coarse_tile_size);
         }
+    }
+    if graph_coarse && graph_coarse_method == "snarl" {
+        eprintln!("Building graph coarse index (snarl method v2, min {}bp, all assemblies)...", graph_coarse_min_sv_bp);
+        graph_coarse_build_snarls(gfa_path, &all_paths, graph_coarse_assemblies_filter.as_ref(), &seg_ordinals, &output_prefix, graph_coarse_min_sv_bp);
+    }
+    if graph_coarse {
+        emit_graph_coarse_assembly_map(&all_paths, &output_prefix);
     }
 
     // seglens.bin: flat u32 array indexed by ordinal
@@ -362,6 +370,7 @@ fn main() {
             &genomes,
             vcf_for_config,
             graph_coarse,
+            &graph_coarse_method,
         );
     }
 
@@ -883,12 +892,35 @@ fn encode_bubble_cs(ref_seq: &[u8], query_seq: &[u8], cs: &mut Vec<u8>) {
     }
 }
 
+fn emit_graph_coarse_assembly_map(paths: &[PathData], output_prefix: &str) {
+    let map_path = format!("{}.graph.coarse.assembly_map.json", output_prefix);
+
+    // Group path names by assembly name (portion before the first '#').
+    let mut by_assembly: std::collections::BTreeMap<String, Vec<String>> = std::collections::BTreeMap::new();
+    for p in paths {
+        by_assembly.entry(p.assembly.clone()).or_default().push(p.name.clone());
+    }
+
+    let mut out = BufWriter::new(File::create(&map_path).expect("create assembly_map.json"));
+    write!(out, "{{\n  \"schema\": \"graph-coarse-assembly-map/v1\",\n  \"assemblies\": {{\n").unwrap();
+    let entries: Vec<(&String, &Vec<String>)> = by_assembly.iter().collect();
+    for (i, (assembly, path_names)) in entries.iter().enumerate() {
+        let paths_json: Vec<String> = path_names.iter().map(|p| format!("\"{}\"", p)).collect();
+        let comma = if i + 1 < entries.len() { "," } else { "" };
+        write!(out, "    \"{}\": [{}]{}\n", assembly, paths_json.join(", "), comma).unwrap();
+    }
+    write!(out, "  }}\n}}\n").unwrap();
+    drop(out);
+    eprintln!("  Wrote {} ({} assemblies)", map_path, by_assembly.len());
+}
+
 fn write_jbrowse_config(
     config_path: &str,
     output_prefix: &str,
     genomes: &[String],
     bubbles_vcf: Option<&str>,
     graph_coarse: bool,
+    graph_coarse_method: &str,
 ) {
     eprintln!("Writing JBrowse config...");
     let mut out = BufWriter::new(File::create(config_path).expect("create config file"));
@@ -904,6 +936,7 @@ fn write_jbrowse_config(
     let edges_bed = format!("{}.edges.spatial.bed.gz", output_prefix);
     let graph_coarse_bed = format!("{}.graph.coarse.bed.gz", output_prefix);
     let graph_coarse_tbi = format!("{}.graph.coarse.bed.gz.tbi", output_prefix);
+    let graph_coarse_assembly_map = format!("{}.graph.coarse.assembly_map.json", output_prefix);
     let edges_tbi = format!("{}.edges.spatial.bed.gz.tbi", output_prefix);
     let seglens_bin = format!("{}.seglens.bin", output_prefix);
 
@@ -934,13 +967,23 @@ fn write_jbrowse_config(
         write!(out, "        \"bubblesIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }}", bubbles_tbi).unwrap();
         if graph_coarse {
             write!(out, ",\n        \"graphCoarseLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", graph_coarse_bed).unwrap();
-            write!(out, "        \"graphCoarseIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }}\n", graph_coarse_tbi).unwrap();
+            write!(out, "        \"graphCoarseIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }}", graph_coarse_tbi).unwrap();
+            if graph_coarse_method == "snarl" {
+                write!(out, ",\n        \"graphCoarseAssemblyMap\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }}\n", graph_coarse_assembly_map).unwrap();
+            } else {
+                write!(out, "\n").unwrap();
+            }
         } else {
             write!(out, "\n").unwrap();
         }
     } else if graph_coarse {
         write!(out, ",\n        \"graphCoarseLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", graph_coarse_bed).unwrap();
-        write!(out, "        \"graphCoarseIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }}\n", graph_coarse_tbi).unwrap();
+        write!(out, "        \"graphCoarseIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }}", graph_coarse_tbi).unwrap();
+        if graph_coarse_method == "snarl" {
+            write!(out, ",\n        \"graphCoarseAssemblyMap\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }}\n", graph_coarse_assembly_map).unwrap();
+        } else {
+            write!(out, "\n").unwrap();
+        }
     } else {
         write!(out, "\n").unwrap();
     }
@@ -1761,27 +1804,136 @@ fn parse_snarl_boundary(line: &str) -> Option<(String, String)> {
     }
 }
 
-fn emit_coarse_row(w: &mut BufWriter<impl Write>, chrom: &str, steps: &[StepInfo], lo: usize, hi: usize, row_type: &str) {
-    let ref_start = steps[lo].offset;
-    let ref_end = steps[hi].offset + steps[hi].seg_len;
+fn collect_ords_from_steps(steps: &[StepInfo], lo: usize, hi: usize) -> Vec<u64> {
     let mut ords: Vec<u64> = steps[lo..=hi].iter().map(|s| s.ord).collect();
     ords.sort_unstable();
     ords.dedup();
-    let super_ord = ords[0];
-    let ords_str = encode_ordinal_ranges(&ords);
-    writeln!(w, "{}\t{}\t{}\t{}\t{}\t{}", chrom, ref_start, ref_end, super_ord, row_type, ords_str).unwrap();
+    ords
 }
+
+struct SnarlBoundary { ord_a: u64, ord_b: u64, super_ord: u64 }
+
+struct CoarseRow {
+    path_name: String,
+    start: u64,
+    end: u64,
+    super_ord: u64,
+    row_type: &'static str,
+    ords: Vec<u64>,
+}
+
+// Pure function: given pre-computed snarl boundaries and paths, produce coarse rows
+// and hap_count without any I/O. Used by graph_coarse_build_snarls and unit tests.
+fn compute_snarl_coarse_rows(
+    paths: &[PathData],
+    assemblies_filter: Option<&HashSet<String>>,
+    snarl_boundaries: &[SnarlBoundary],
+    min_sv_bp: u64,
+    verbose: bool,
+) -> (Vec<CoarseRow>, HashMap<u64, usize>, Vec<String>) {
+    let mut all_rows: Vec<CoarseRow> = Vec::new();
+    let mut hap_count: HashMap<u64, usize> = HashMap::new();
+    let mut processed_assemblies: Vec<String> = Vec::new();
+
+    for path in paths {
+        if let Some(filter) = assemblies_filter {
+            if !filter.contains(&path.assembly) {
+                continue;
+            }
+        }
+        let steps = &path.steps;
+        if steps.is_empty() {
+            continue;
+        }
+
+        processed_assemblies.push(path.assembly.clone());
+
+        let mut ord_to_rank: HashMap<u64, usize> = HashMap::new();
+        for (rank, step) in steps.iter().enumerate() {
+            ord_to_rank.entry(step.ord).or_insert(rank);
+        }
+
+        struct Interval { lo: usize, hi: usize, super_ord: u64 }
+        let mut intervals: Vec<Interval> = Vec::new();
+        for sb in snarl_boundaries {
+            let rank_a = match ord_to_rank.get(&sb.ord_a) { Some(&r) => r, None => continue };
+            let rank_b = match ord_to_rank.get(&sb.ord_b) { Some(&r) => r, None => continue };
+            let (lo, hi) = if rank_a <= rank_b { (rank_a, rank_b) } else { (rank_b, rank_a) };
+            let span = (steps[hi].offset + steps[hi].seg_len) - steps[lo].offset;
+            if span >= min_sv_bp {
+                intervals.push(Interval { lo, hi, super_ord: sb.super_ord });
+            }
+        }
+        intervals.sort_unstable_by_key(|iv| iv.lo);
+        if verbose {
+            eprintln!("  {} large snarls (>= {}bp) on {}", intervals.len(), min_sv_bp, path.name);
+        }
+
+        let n = steps.len();
+        let mut cursor = 0usize;
+        let mut iv_idx = 0usize;
+
+        while cursor < n {
+            if iv_idx < intervals.len() {
+                let iv = &intervals[iv_idx];
+                if iv.lo > cursor {
+                    let ords = collect_ords_from_steps(steps, cursor, iv.lo - 1);
+                    all_rows.push(CoarseRow {
+                        path_name: path.name.clone(),
+                        start: steps[cursor].offset,
+                        end: steps[iv.lo - 1].offset + steps[iv.lo - 1].seg_len,
+                        super_ord: ords[0],
+                        row_type: "chain",
+                        ords,
+                    });
+                    cursor = iv.lo;
+                } else if iv.lo == cursor {
+                    let ords = collect_ords_from_steps(steps, iv.lo, iv.hi);
+                    *hap_count.entry(iv.super_ord).or_insert(0) += 1;
+                    all_rows.push(CoarseRow {
+                        path_name: path.name.clone(),
+                        start: steps[iv.lo].offset,
+                        end: steps[iv.hi].offset + steps[iv.hi].seg_len,
+                        super_ord: iv.super_ord,
+                        row_type: "snarl",
+                        ords,
+                    });
+                    cursor = iv.hi + 1;
+                    iv_idx += 1;
+                    while iv_idx < intervals.len() && intervals[iv_idx].lo < cursor {
+                        iv_idx += 1;
+                    }
+                } else {
+                    iv_idx += 1;
+                }
+            } else {
+                let ords = collect_ords_from_steps(steps, cursor, n - 1);
+                all_rows.push(CoarseRow {
+                    path_name: path.name.clone(),
+                    start: steps[cursor].offset,
+                    end: steps[n - 1].offset + steps[n - 1].seg_len,
+                    super_ord: ords[0],
+                    row_type: "chain",
+                    ords,
+                });
+                break;
+            }
+        }
+    }
+
+    (all_rows, hap_count, processed_assemblies)
+}
+
 
 fn graph_coarse_build_snarls(
     gfa_path: &str,
     paths: &[PathData],
-    ref_assembly: &str,
+    assemblies_filter: Option<&HashSet<String>>,
     seg_ordinals: &HashMap<String, u64>,
     output_prefix: &str,
     min_sv_bp: u64,
 ) {
     // Prefer a co-located .vg file for snarls (much faster than GFA for large inputs).
-    // e.g., chr20.gfa → chr20.vg
     let vg_input = {
         let candidate = gfa_path
             .trim_end_matches(".gz")
@@ -1796,7 +1948,7 @@ fn graph_coarse_build_snarls(
         }
     };
 
-    // Run vg snarls | vg view -R to get JSON snarl records
+    // Run vg snarls | vg view -R to get JSON snarl records (one-time, graph-level).
     let threads = std::thread::available_parallelism()
         .map(|n| n.get().min(4).to_string())
         .unwrap_or_else(|_| "1".to_string());
@@ -1814,104 +1966,50 @@ fn graph_coarse_build_snarls(
         .spawn()
         .expect("failed to spawn vg view");
 
-    let all_boundaries: Vec<(String, String)> = BufReader::new(vg_view.stdout.take().unwrap())
+    let snarl_boundaries: Vec<SnarlBoundary> = BufReader::new(vg_view.stdout.take().unwrap())
         .lines()
         .filter_map(|l| l.ok())
         .filter_map(|l| parse_snarl_boundary(&l))
+        .filter_map(|(name_a, name_b)| {
+            let ord_a = *seg_ordinals.get(&name_a)?;
+            let ord_b = *seg_ordinals.get(&name_b)?;
+            Some(SnarlBoundary { ord_a, ord_b, super_ord: ord_a.min(ord_b) })
+        })
         .collect();
 
     vg_snarls.wait().ok();
     vg_view.wait().ok();
-    eprintln!("  {} top-level snarls parsed", all_boundaries.len());
+    eprintln!("  {} top-level snarls parsed", snarl_boundaries.len());
 
+    let (all_rows, hap_count, mut processed_assemblies) =
+        compute_snarl_coarse_rows(paths, assemblies_filter, &snarl_boundaries, min_sv_bp, true);
+
+    // Write all rows with hap_count.
     let coarse_file = format!("{}.graph.coarse.bed.gz", output_prefix);
     let mut proc = spawn_sort_bgzip(&coarse_file);
     let mut w = BufWriter::new(proc.stdin.take().unwrap());
 
-    writeln!(w, "#schema=graph-coarse/v1").unwrap();
+    processed_assemblies.sort_unstable();
+    processed_assemblies.dedup();
+    writeln!(w, "#schema=graph-coarse/v2").unwrap();
     writeln!(w, "#engine=snarl").unwrap();
     writeln!(w, "#min-sv-bp={}", min_sv_bp).unwrap();
+    writeln!(w, "#assemblies={}", processed_assemblies.join(",")).unwrap();
 
-    let mut chrom_groups: HashMap<&str, Vec<&PathData>> = HashMap::new();
-    for p in paths {
-        chrom_groups.entry(path_chrom(&p.name)).or_default().push(p);
-    }
-
-    for (_, group) in &chrom_groups {
-        let ref_path = match group.iter().find(|p| p.assembly == ref_assembly) {
-            Some(p) => p,
-            None => continue,
+    for row in &all_rows {
+        let hc = if row.row_type == "snarl" {
+            hap_count.get(&row.super_ord).copied().unwrap_or(1)
+        } else {
+            0
         };
-        let chrom = path_chrom(&ref_path.name);
-        let steps = &ref_path.steps;
-        if steps.is_empty() {
-            continue;
-        }
-
-        // Build ordinal → first rank on this path (first occurrence wins for multi-visit segments)
-        let mut ord_to_rank: HashMap<u64, usize> = HashMap::new();
-        for (rank, step) in steps.iter().enumerate() {
-            ord_to_rank.entry(step.ord).or_insert(rank);
-        }
-
-        // Collect snarls with ref-span >= min_sv_bp, expressed as rank intervals
-        struct Interval { lo: usize, hi: usize }
-        let mut intervals: Vec<Interval> = Vec::new();
-
-        for (name_a, name_b) in &all_boundaries {
-            let ord_a = match seg_ordinals.get(name_a) { Some(&o) => o, None => continue };
-            let ord_b = match seg_ordinals.get(name_b) { Some(&o) => o, None => continue };
-            let rank_a = match ord_to_rank.get(&ord_a) { Some(&r) => r, None => continue };
-            let rank_b = match ord_to_rank.get(&ord_b) { Some(&r) => r, None => continue };
-            let (lo, hi) = if rank_a <= rank_b { (rank_a, rank_b) } else { (rank_b, rank_a) };
-
-            let ref_start = steps[lo].offset;
-            let ref_end = steps[hi].offset + steps[hi].seg_len;
-            if ref_end - ref_start >= min_sv_bp {
-                intervals.push(Interval { lo, hi });
-            }
-        }
-        intervals.sort_unstable_by_key(|i| i.lo);
-
-        eprintln!("  {} large snarls (>= {}bp) on {}", intervals.len(), min_sv_bp, chrom);
-
-        // Walk ref path, emitting backbone chains between large snarls and snarl rows.
-        let n = steps.len();
-        let mut cursor = 0usize;
-        let mut iv_idx = 0usize;
-
-        while cursor < n {
-            if iv_idx < intervals.len() {
-                let iv = &intervals[iv_idx];
-                if iv.lo > cursor {
-                    // Backbone before next snarl
-                    emit_coarse_row(&mut w, chrom, steps, cursor, iv.lo - 1, "chain");
-                    cursor = iv.lo;
-                } else if iv.lo == cursor {
-                    // Snarl starts here
-                    emit_coarse_row(&mut w, chrom, steps, iv.lo, iv.hi, "snarl");
-                    cursor = iv.hi + 1;
-                    iv_idx += 1;
-                    // Skip any overlapping snarls (shouldn't happen with vg top-level snarls)
-                    while iv_idx < intervals.len() && intervals[iv_idx].lo < cursor {
-                        iv_idx += 1;
-                    }
-                } else {
-                    // iv.lo < cursor: snarl starts before cursor (overlapping — skip)
-                    iv_idx += 1;
-                }
-            } else {
-                // No more snarls: emit remaining backbone
-                emit_coarse_row(&mut w, chrom, steps, cursor, n - 1, "chain");
-                break;
-            }
-        }
+        let ords_str = encode_ordinal_ranges(&row.ords);
+        writeln!(w, "{}\t{}\t{}\t{}\t{}\t{}\t{}", row.path_name, row.start, row.end, row.super_ord, row.row_type, hc, ords_str).unwrap();
     }
 
     drop(w);
     assert!(proc.wait().map(|s| s.success()).unwrap_or(false), "graph.coarse snarl sort|bgzip failed");
     run_cmd("tabix", &["-c", "#", "-p", "bed", &coarse_file]);
-    eprintln!("  Wrote {}", coarse_file);
+    eprintln!("  Wrote {} ({} rows, {} assemblies)", coarse_file, all_rows.len(), processed_assemblies.len());
 }
 
 #[cfg(test)]
@@ -2380,5 +2478,116 @@ mod tests {
         assert_eq!(ids.len(), 2);
         assert!(ids.contains(&"abc".to_string()));
         assert!(ids.contains(&"xyz".to_string()));
+    }
+
+    // Build PathData from a simple segment list with explicit ordinals and lengths.
+    // segments: [(name, ord, len)], walk: [ord, ...] in traversal order
+    fn make_path(name: &str, assembly: &str, segments: &[(&str, u64, u64)], walk: &[u64]) -> PathData {
+        let mut offset = 0u64;
+        let steps: Vec<StepInfo> = walk.iter().map(|&ord| {
+            let len = segments.iter().find(|&&(_, o, _)| o == ord).map(|&(_, _, l)| l).unwrap_or(1);
+            let step = StepInfo { ord, offset, seg_len: len, is_plus: true };
+            offset += len;
+            step
+        }).collect();
+        PathData { name: name.to_string(), assembly: assembly.to_string(), steps }
+    }
+
+    #[test]
+    fn snarl_multiassembly_super_ord_stable() {
+        // Two assemblies traversing the same snarl (boundary ordinals 1 and 3).
+        // Assembly A: 0 → 1 → 2 → 3 → 4  (snarl interior: seg 2, 100bp)
+        // Assembly B: 0 → 1 → 5 → 3 → 4  (snarl interior: seg 5, 120bp)
+        // superOrd for the snarl should be min(1, 3) = 1 on both assembly rows.
+        let segs: &[(&str, u64, u64)] = &[
+            ("s0", 0, 50), ("s1", 1, 10), ("s2", 2, 100), ("s3", 3, 10), ("s4", 4, 50),
+            ("s5", 5, 120),
+        ];
+        let path_a = make_path("asm_a#0#chr1", "asm_a", segs, &[0, 1, 2, 3, 4]);
+        let path_b = make_path("asm_b#0#chr1", "asm_b", segs, &[0, 1, 5, 3, 4]);
+
+        let boundaries = vec![SnarlBoundary { ord_a: 1, ord_b: 3, super_ord: 1 }];
+        let (rows, hap_count, _) = compute_snarl_coarse_rows(
+            &[path_a, path_b], None, &boundaries, 50, false,
+        );
+
+        let snarl_rows: Vec<&CoarseRow> = rows.iter().filter(|r| r.row_type == "snarl").collect();
+        assert_eq!(snarl_rows.len(), 2, "should have one snarl row per assembly");
+        assert_eq!(snarl_rows[0].super_ord, 1, "superOrd must be min(1,3)=1 for assembly A");
+        assert_eq!(snarl_rows[1].super_ord, 1, "superOrd must be min(1,3)=1 for assembly B");
+        assert_eq!(hap_count[&1], 2, "hap_count for snarl with superOrd=1 should be 2");
+    }
+
+    #[test]
+    fn snarl_insertion_visible_in_alt_assembly() {
+        // Assembly A (reference): snarl interior is tiny (5bp) — filtered out at min_sv_bp=50.
+        // Assembly B (alt):       snarl interior is large (200bp) — passes filter in B's space.
+        // This is the key symmetry test: the insertion appears in B's rows even though A has no row.
+        let segs: &[(&str, u64, u64)] = &[
+            ("s0", 0, 100), ("s1", 1, 5), ("s_ins", 10, 200), ("s2", 2, 5), ("s3", 3, 100),
+        ];
+        let path_ref = make_path("ref#0#chr1", "ref", segs, &[0, 1, 2, 3]);      // ref: snarl 1→2 = 5+5=10bp
+        let path_alt = make_path("alt#0#chr1", "alt", segs, &[0, 1, 10, 2, 3]); // alt: snarl 1→2 = 5+200+5=210bp
+
+        let boundaries = vec![SnarlBoundary { ord_a: 1, ord_b: 2, super_ord: 1 }];
+        let (rows, hap_count, _) = compute_snarl_coarse_rows(
+            &[path_ref, path_alt], None, &boundaries, 50, false,
+        );
+
+        let snarl_rows: Vec<&CoarseRow> = rows.iter().filter(|r| r.row_type == "snarl").collect();
+        // Only alt assembly emits a snarl row (ref span 10bp < 50bp min)
+        assert_eq!(snarl_rows.len(), 1, "only alt assembly should have a snarl row");
+        assert_eq!(snarl_rows[0].path_name, "alt#0#chr1");
+        assert_eq!(snarl_rows[0].super_ord, 1);
+        assert_eq!(snarl_rows[0].end - snarl_rows[0].start, 210, "alt snarl span should be 210bp");
+        assert_eq!(hap_count[&1], 1, "only 1 assembly traverses this snarl above the threshold");
+
+        // Ref assembly should have the snarl absorbed into backbone chain
+        let chain_rows: Vec<&CoarseRow> = rows.iter()
+            .filter(|r| r.path_name == "ref#0#chr1" && r.row_type == "chain")
+            .collect();
+        assert!(!chain_rows.is_empty(), "ref assembly should have chain rows");
+    }
+
+    #[test]
+    fn snarl_hap_count_correct() {
+        // Three assemblies, a snarl (boundary 1→3) visible in 2 of 3.
+        // Assembly C's path doesn't include boundary node 3, so it gets no snarl row.
+        let segs: &[(&str, u64, u64)] = &[
+            ("s0", 0, 10), ("s1", 1, 100), ("s2", 2, 100), ("s3", 3, 100), ("s4", 4, 10),
+            ("s5", 5, 10), // path C uses s5 instead of s3
+        ];
+        let path_a = make_path("a#0#chr1", "a", segs, &[0, 1, 2, 3, 4]);
+        let path_b = make_path("b#0#chr1", "b", segs, &[0, 1, 2, 3, 4]);
+        let path_c = make_path("c#0#chr1", "c", segs, &[0, 1, 5, 4]); // doesn't traverse ord 3
+
+        let boundaries = vec![SnarlBoundary { ord_a: 1, ord_b: 3, super_ord: 1 }];
+        let (rows, hap_count, assemblies) = compute_snarl_coarse_rows(
+            &[path_a, path_b, path_c], None, &boundaries, 50, false,
+        );
+
+        let snarl_rows: Vec<&CoarseRow> = rows.iter().filter(|r| r.row_type == "snarl").collect();
+        assert_eq!(snarl_rows.len(), 2, "only A and B emit snarl rows");
+        assert_eq!(hap_count[&1], 2, "hap_count should be 2 (A and B)");
+        assert_eq!(assemblies.iter().filter(|a| *a == "c").count(), 1, "assembly C still appears in processed list");
+    }
+
+    #[test]
+    fn snarl_assembly_filter_respected() {
+        let segs: &[(&str, u64, u64)] = &[
+            ("s0", 0, 10), ("s1", 1, 100), ("s2", 2, 100), ("s3", 3, 10),
+        ];
+        let path_a = make_path("a#0#chr1", "a", segs, &[0, 1, 2, 3]);
+        let path_b = make_path("b#0#chr1", "b", segs, &[0, 1, 2, 3]);
+
+        let boundaries = vec![SnarlBoundary { ord_a: 1, ord_b: 2, super_ord: 1 }];
+        let filter: HashSet<String> = ["a".to_string()].into_iter().collect();
+        let (rows, _, assemblies) = compute_snarl_coarse_rows(
+            &[path_a, path_b], Some(&filter), &boundaries, 50, false,
+        );
+
+        assert!(rows.iter().all(|r| r.path_name.starts_with("a#")), "only assembly a rows emitted");
+        assert_eq!(assemblies.len(), 1);
+        assert_eq!(assemblies[0], "a");
     }
 }
