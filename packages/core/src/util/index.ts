@@ -1413,6 +1413,7 @@ export {
 } from './simpleFeature.ts'
 
 export { blobToDataURL } from './blobToDataURL.ts'
+export { saveAs } from './FileSaver/index.ts'
 export { makeAbortableReaction } from './makeAbortableReaction.ts'
 export * from './aborting.ts'
 export * from './linkify.ts'

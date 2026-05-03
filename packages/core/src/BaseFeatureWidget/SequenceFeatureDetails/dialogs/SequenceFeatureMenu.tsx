@@ -55,7 +55,7 @@ const SequenceFeatureMenu = observer(
               label: 'Download plaintext',
               onClick: async () => {
                 // eslint-disable-next-line @typescript-eslint/no-deprecated
-                const { saveAs } = await import('file-saver-es')
+                const { saveAs } = await import('../../../util')
                 const r = ref?.current
                 if (r) {
                   saveAs(
@@ -71,7 +71,7 @@ const SequenceFeatureMenu = observer(
               label: 'Download HTML',
               onClick: async () => {
                 // eslint-disable-next-line @typescript-eslint/no-deprecated
-                const { saveAs } = await import('file-saver-es')
+                const { saveAs } = await import('../../../util')
                 const r = ref?.current
                 if (r) {
                   saveAs(

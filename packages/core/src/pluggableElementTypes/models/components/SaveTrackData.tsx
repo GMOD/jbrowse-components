@@ -18,7 +18,7 @@ import {
   TextField,
 } from '@mui/material'
 import copy from 'copy-to-clipboard'
-import { saveAs } from 'file-saver-es'
+import { saveAs } from '../../../util'
 import { observer } from 'mobx-react'
 
 import { getConf } from '../../../configuration/index.ts'

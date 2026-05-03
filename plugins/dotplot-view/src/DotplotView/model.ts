@@ -777,8 +777,7 @@ export default function stateModelFactory(pm: PluginManager) {
             await import('./svgcomponents/SVGDotplotView.tsx')
           const html = await renderToSvg(self as DotplotViewModel, opts)
 
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          const { saveAs } = await import('file-saver-es')
+          const { saveAs } = await import('@jbrowse/core/util')
 
           if (opts.format === 'png') {
             const img = new Image()
