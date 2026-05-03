@@ -41,9 +41,7 @@
     "@mui/icons-material": "^9.0.0",
     "@mui/material": "^9.0.0",
     "@mui/x-data-grid": "9.0.4",
-    "@types/file-saver-es": "^2.0.3",
     "copy-to-clipboard": "^4.0.2",
-    "file-saver-es": "^2.0.5",
     "mobx": "^6.15.0",
     "mobx-react": "^9.2.1"
   },

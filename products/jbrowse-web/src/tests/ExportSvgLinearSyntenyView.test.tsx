@@ -1,8 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 
+import { saveAs } from '@jbrowse/core/util'
 import { fireEvent, waitFor } from '@testing-library/react'
-import { saveAs } from 'file-saver-es'
 
 import {
   createView,
@@ -16,7 +16,7 @@ import volvoxConfig from '../../test_data/volvox/config.json' with { type: 'json
 // @ts-expect-error
 global.Blob = (content, options) => ({ content, options })
 
-jest.mock('file-saver-es', () => ({ saveAs: jest.fn() }))
+jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()
 
@@ -203,12 +203,11 @@ test('export svg of synteny with gridlines', async () => {
     fireEvent.click(await findByText('Submit', ...opts))
 
     await waitFor(() => {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(saveAs).toHaveBeenCalled()
     }, delay)
 
     // @ts-expect-error
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+
     const svg = saveAs.mock.calls[0][0].content[0]
     const dir = path.dirname(module.filename)
     fs.writeFileSync(

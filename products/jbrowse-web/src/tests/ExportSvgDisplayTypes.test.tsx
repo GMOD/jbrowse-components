@@ -1,16 +1,16 @@
 import fs from 'fs'
 import path from 'path'
 
+import { saveAs } from '@jbrowse/core/util'
 import { fireEvent } from '@testing-library/react'
 import { createCanvas as nodeCreateCanvas } from 'canvas'
-import { saveAs } from 'file-saver-es'
 
 import { createView, doBeforeEach, hts, setup } from './util.tsx'
 
 // @ts-expect-error
 global.Blob = (content, options) => ({ content, options })
 
-jest.mock('file-saver-es', () => ({ saveAs: jest.fn() }))
+jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()
 
@@ -29,7 +29,7 @@ const snapshotDir = path.join(
 function getSavedSvg(): string {
   // saveAs is mocked; Blob is mocked as (content, opts) => ({ content, opts })
   // so the saved blob is { content: [svgString], ... }
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
+
   const mock = saveAs as unknown as { mock: { calls: unknown[][] } }
   const blob = mock.mock.calls[0]![0] as { content: string[] }
   return blob.content[0]!

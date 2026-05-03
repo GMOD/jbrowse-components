@@ -4,12 +4,13 @@ packages:
   - 'plugins/*'
   - 'tools/gfa-to-tabix'
   - 'tools/graph-truth-extractor'
-minimumReleaseAge: '1440'
-minimumReleaseAgeExclude:
-  - '@gmod/*'
 allowBuilds:
   canvas: true
   electron: true
   electron-chromedriver: true
   esbuild: true
   puppeteer: true
+  unrs-resolver: set this to true or false
+minimumReleaseAge: '1440'
+minimumReleaseAgeExclude:
+  - '@gmod/*'

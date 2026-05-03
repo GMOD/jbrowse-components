@@ -4,10 +4,10 @@ import path from 'path'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { saveAs } from '@jbrowse/core/util'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
-import { saveAs } from 'file-saver-es'
 import { LocalFile } from 'generic-filehandle2'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
@@ -218,12 +218,11 @@ export async function exportAndVerifySvg({
   fireEvent.click(await findByText('Submit', ...opts))
 
   await waitFor(() => {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(saveAs).toHaveBeenCalled()
   }, actualDelay)
 
   // @ts-expect-error
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
+
   const svg = saveAs.mock.calls[0][0].content[0]
   const dir = path.dirname(module.filename)
   fs.writeFileSync(`${dir}/__image_snapshots__/${filename}_snapshot.svg`, svg)

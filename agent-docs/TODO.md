@@ -77,3 +77,8 @@ The code is also very complex, please simplify
 
 
 Aggressively simplify code where possible
+
+
+## Linear synteny view
+
+Moves around during zoom, audit pixel usage

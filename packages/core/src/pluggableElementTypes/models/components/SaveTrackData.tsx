@@ -18,12 +18,11 @@ import {
   TextField,
 } from '@mui/material'
 import copy from 'copy-to-clipboard'
-import { saveAs } from '../../../util'
 import { observer } from 'mobx-react'
 
 import { getConf } from '../../../configuration/index.ts'
 import { Dialog, ErrorBanner } from '../../../ui/index.ts'
-import { getContainingView, getEnv, getSession } from '../../../util/index.ts'
+import { getContainingView, getEnv, getSession, saveAs } from '../../../util'
 import { getRpcSessionId } from '../../../util/tracks.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 
@@ -264,9 +263,12 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           disabled={loading || !!error}
           onClick={() => {
             const ext = options[type!]!.extension
-            const blob = new Blob([str], { type: 'text/plain;charset=utf-8' })
-
-            saveAs(blob, `jbrowse_track_data.${ext}`, { autoBom: false })
+            saveAs(
+              new Blob([str], {
+                type: 'text/plain;charset=utf-8',
+              }),
+              `jbrowse_track_data.${ext}`,
+            )
           }}
           startIcon={<GetAppIcon />}
         >
