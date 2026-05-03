@@ -33,19 +33,6 @@
     "test:browser:compare": "pnpm --filter @jbrowse/web build && node --experimental-strip-types products/jbrowse-web/browser-tests/compare-backends.ts",
     "test:e2e:desktop": "pnpm --filter @jbrowse/desktop test:e2e"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "canvas",
-      "electron",
-      "electron-chromedriver",
-      "esbuild",
-      "puppeteer"
-    ],
-    "minimumReleaseAge": "1440",
-    "minimumReleaseAgeExclude": [
-      "@gmod/*"
-    ]
-  },
   "devDependencies": {
     "@babel/core": "^7.29.0",
     "@babel/preset-env": "^7.29.3",
@@ -59,7 +46,7 @@
     "@jbrowse/mobx-state-tree": "^5.6.0",
     "@mui/material": "^9.0.0",
     "@mui/system": "^9.0.0",
-    "@mui/x-data-grid": "9.0.4",
+    "@mui/x-data-grid": "^9.0.4",
     "@node-oauth/express-oauth-server": "^4.1.5",
     "@r2wc/react-to-web-component": "^2.1.1",
     "@storybook/addon-docs": "^10.3.6",
@@ -104,7 +91,7 @@
     "cors": "^2.8.6",
     "cross-spawn": "^7.0.6",
     "css-loader": "^7.1.4",
-    "electron": "41.3.0",
+    "electron": "^41.3.0",
     "eslint": "^10.2.1",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-baseline-js": "^0.6.2",

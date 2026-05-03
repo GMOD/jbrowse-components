@@ -266,8 +266,7 @@ export function featureData2({
       })
     : undefined
 
-  if (
-    !disableGeneHeuristic &&
+  return !disableGeneHeuristic &&
     subfeatures &&
     isUcscTranscript({
       strand,
@@ -275,31 +274,28 @@ export function featureData2({
       thickStart: rest.thickStart,
       thickEnd: rest.thickEnd,
     })
-  ) {
-    return generateUcscTranscript({
-      ...rest,
-      score,
-      start,
-      end,
-      strand,
-      refName,
-      uniqueId,
-      subfeatures,
-      thickStart: rest.thickStart!,
-      thickEnd: rest.thickEnd!,
-    })
-  }
-
-  return {
-    ...rest,
-    uniqueId,
-    score,
-    start,
-    end,
-    strand,
-    refName,
-    subfeatures,
-  }
+    ? generateUcscTranscript({
+        ...rest,
+        score,
+        start,
+        end,
+        strand,
+        refName,
+        uniqueId,
+        subfeatures,
+        thickStart: rest.thickStart!,
+        thickEnd: rest.thickEnd!,
+      })
+    : {
+        ...rest,
+        uniqueId,
+        score,
+        start,
+        end,
+        strand,
+        refName,
+        subfeatures,
+      }
 }
 
 export function arrayify(f?: string | number[]) {

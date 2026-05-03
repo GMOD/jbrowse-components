@@ -452,3 +452,19 @@ test('handles undefined view gracefully', () => {
   // Should not throw when view is undefined
   expect(widget.assembly).toBeUndefined()
 })
+
+test('BAM file with .out in filename should infer BamAdapter not MashMapAdapter', () => {
+  const session = standardInitializer()
+  const { widget } = session
+
+  widget.setTrackData({
+    uri: 'brain.16493_7_8.sortedByCoord.out.bam',
+    locationType: 'UriLocation',
+  })
+  widget.setIndexTrackData({
+    uri: 'brain.16493_7_8.sortedByCoord.out.bam.bai',
+    locationType: 'UriLocation',
+  })
+  expect(widget.trackAdapterType).toBe('BamAdapter')
+  expect(widget.trackType).toBe('AlignmentsTrack')
+})
