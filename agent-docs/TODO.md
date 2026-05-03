@@ -82,3 +82,13 @@ Aggressively simplify code where possible
 ## Linear synteny view
 
 Moves around during zoom, audit pixel usage
+
+## Methylation
+
+Update snp colors when methylation
+
+## Breakpoint split view
+
+Coordinates wrong
+
+Not measuring all heights
