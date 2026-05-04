@@ -73,7 +73,7 @@
     "body-parser": "^2.2.2",
     "copy-to-clipboard": "^4.0.2",
     "date-fns": "^4.1.0",
-    "dockview-core": "^5.2.0",
+    "dockview-core": "^6.0.1",
     "generic-filehandle2": "^2.1.7",
     "idb": "^8.0.3",
     "mobx": "^6.15.0",

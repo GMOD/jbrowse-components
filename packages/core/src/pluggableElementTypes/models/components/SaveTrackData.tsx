@@ -22,7 +22,12 @@ import { observer } from 'mobx-react'
 
 import { getConf } from '../../../configuration/index.ts'
 import { Dialog, ErrorBanner } from '../../../ui/index.ts'
-import { getContainingView, getEnv, getSession, saveAs } from '../../../util'
+import {
+  getContainingView,
+  getEnv,
+  getSession,
+  saveAs,
+} from '../../../util/index.ts'
 import { getRpcSessionId } from '../../../util/tracks.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 

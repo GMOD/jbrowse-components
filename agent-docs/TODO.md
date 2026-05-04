@@ -92,3 +92,11 @@ Update snp colors when methylation
 Coordinates wrong
 
 Not measuring all heights
+
+## All tracks
+
+Slow between when track opens and loading overlay appears
+
+## Save track data
+
+SaveTrackData component quite complex
