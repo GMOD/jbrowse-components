@@ -15,7 +15,7 @@ interface DisplayResult {
     configuration: AnyConfigurationModel
     displays: { height: number }[]
   }
-  result: string
+  result: React.ReactNode
 }
 
 // SVG component, tracks
@@ -26,6 +26,7 @@ export default function SVGTracks({
   fontSize,
   trackLabels = 'offset',
   trackLabelOffset = 0,
+  leftBuffer = 0,
 }: {
   displayResults: DisplayResult[]
   model: LGV
@@ -33,6 +34,7 @@ export default function SVGTracks({
   fontSize: number
   trackLabels?: string
   trackLabelOffset?: number
+  leftBuffer?: number
 }) {
   const session = getSession(model)
   const textOffset = trackLabels === 'offset' ? textHeight : 0
@@ -56,9 +58,9 @@ export default function SVGTracks({
                   <defs>
                     <clipPath id={clipId}>
                       <rect
-                        x={0}
+                        x={-leftBuffer}
                         y={textOffset}
-                        width={model.width + trackLabelOffset}
+                        width={model.width + trackLabelOffset + leftBuffer}
                         height={display.height}
                       />
                     </clipPath>

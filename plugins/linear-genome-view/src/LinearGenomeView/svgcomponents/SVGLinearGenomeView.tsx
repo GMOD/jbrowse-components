@@ -118,6 +118,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
                 displayResults={displayResults}
                 trackLabels={trackLabels}
                 trackLabelOffset={trackLabelOffset}
+                leftBuffer={shift}
               />
             </g>
           </g>
