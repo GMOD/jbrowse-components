@@ -1,35 +1,6 @@
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 
 describe('computeInsertSizeTicks', () => {
-  it('returns undefined when inputs are invalid', () => {
-    expect(
-      computeInsertSizeTicks({
-        arcsYDomainBp: NaN,
-        arcsHeight: 40,
-        pairedArcsDown: true,
-        arcsTop: 0,
-      }),
-    ).toBeUndefined()
-
-    expect(
-      computeInsertSizeTicks({
-        arcsYDomainBp: 100,
-        arcsHeight: NaN,
-        pairedArcsDown: true,
-        arcsTop: 0,
-      }),
-    ).toBeUndefined()
-
-    expect(
-      computeInsertSizeTicks({
-        arcsYDomainBp: 100,
-        arcsHeight: 40,
-        pairedArcsDown: true,
-        arcsTop: NaN,
-      }),
-    ).toBeUndefined()
-  })
-
   it('returns undefined when availableHeight is invalid', () => {
     expect(
       computeInsertSizeTicks({

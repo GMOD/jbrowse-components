@@ -3,7 +3,7 @@ import type React from 'react'
 import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
-import { CoverageYScaleBar } from '@jbrowse/plugin-alignments'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
@@ -68,7 +68,7 @@ export async function renderSvg(
       </SvgClipRect>
       {model.showCoverage && coverageTicks ? (
         <g transform={`translate(${Math.max(-view.offsetPx, 0)})`}>
-          <CoverageYScaleBar model={{ coverageTicks }} />
+          <YScaleBar ticks={coverageTicks} orientation="left" />
         </g>
       ) : null}
     </>

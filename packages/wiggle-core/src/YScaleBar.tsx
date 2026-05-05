@@ -1,22 +1,14 @@
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-export interface YScaleTicks {
-  ticks: { value: number; y: number; label?: string }[]
-  yTop: number
-  yBottom: number
-}
+import type { YScaleTicks } from './index.ts'
 
-// Generic vertical tick axis. Used by both the coverage-depth scalebar
-// (left) and the samplot insert-size scalebar (right). Ticks are in the
-// containing SVG's coordinate space; the caller positions the `<svg>`
-// wrapper to place the bar in the right region.
 const YScaleBar = observer(function YScaleBar({
   ticks,
   orientation,
 }: {
   ticks: YScaleTicks | undefined
-  orientation: 'left' | 'right'
+  orientation?: 'left' | 'right'
 }) {
   const theme = useTheme()
   if (!ticks) {
@@ -25,7 +17,7 @@ const YScaleBar = observer(function YScaleBar({
   const { ticks: items, yTop, yBottom } = ticks
   const bg = theme.palette.background.default
   const fg = theme.palette.text.primary
-  const isLeft = orientation === 'left'
+  const isLeft = orientation !== 'right'
   const k = isLeft ? -1 : 1
   const tickLength = 6
   return (

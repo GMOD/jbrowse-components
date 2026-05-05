@@ -4,7 +4,7 @@ import { makeWhiskersSourceData } from '../../shared/wiggleComponentUtils.ts'
 import { getEffectiveScores, isDefaultBicolor } from '../../util.ts'
 
 import type { WiggleDataResult } from '../../RenderWiggleDataRPC/types.ts'
-import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
+import type { YScaleTicks } from '@jbrowse/wiggle-core'
 import type {
   SourceRenderData,
   WiggleBackend,
@@ -30,7 +30,7 @@ export interface WiggleDisplayModel extends WiggleGpuProps {
   height: number
   domain: [number, number] | undefined
   scaleType: string
-  ticks?: ReturnType<typeof axisPropsFromTickScale>
+  ticks?: YScaleTicks
   error: Error | null
   isLoading: boolean
   statusMessage?: string

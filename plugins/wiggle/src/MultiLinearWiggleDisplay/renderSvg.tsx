@@ -15,7 +15,7 @@ import {
 import DensityLegend from '../shared/DensityLegend.tsx'
 import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../shared/ScoreLegend.tsx'
-import YScaleBar from '../shared/YScaleBar.tsx'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { getRowTop } from '../shared/wiggleComponentUtils.ts'
 
 import type { MultiLinearWiggleDisplayModel } from './model.ts'
@@ -74,7 +74,7 @@ export async function renderSvg(
     if (rowHeight < 70) {
       legendEl = (
         <ScoreLegend
-          ticks={ticks}
+          domain={domain}
           scaleType={scaleType}
           canvasWidth={view.width}
         />
@@ -82,7 +82,7 @@ export async function renderSvg(
     } else if (isOverlay) {
       legendEl = (
         <g transform={`translate(${scalebarLeft})`}>
-          <YScaleBar model={model} orientation="left" />
+          <YScaleBar ticks={ticks} orientation="left" />
         </g>
       )
     } else {
@@ -93,7 +93,7 @@ export async function renderSvg(
               key={`scalebar-${idx}`}
               transform={`translate(0 ${getRowTop(idx, rowHeight)})`}
             >
-              <YScaleBar model={model} orientation="left" />
+              <YScaleBar ticks={ticks} orientation="left" />
             </g>
           ))}
         </g>

@@ -11,7 +11,7 @@ import {
   WiggleErrorBar,
   WiggleLoadingOverlay,
 } from '../../shared/WiggleStatusOverlays.tsx'
-import YScaleBar from '../../shared/YScaleBar.tsx'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import {
   findFeatureAtBp,
   hitTestMouse,
@@ -154,7 +154,7 @@ const WiggleComponent = observer(function WiggleComponent({
             width: 50,
           }}
         >
-          <YScaleBar model={model} />
+          <YScaleBar ticks={model.ticks} orientation="left" />
         </svg>
       ) : null}
       {model.displayCrossHatches && model.ticks ? (
@@ -168,23 +168,17 @@ const WiggleComponent = observer(function WiggleComponent({
             width,
           }}
         >
-          {model.ticks.values.map((v: number, idx: number) => {
-            const pos = model.ticks!.position(v)
-            if (!Number.isFinite(pos)) {
-              return null
-            }
-            return (
-              <line
-                key={idx}
-                x1={0}
-                x2={width}
-                y1={pos}
-                y2={pos}
-                stroke="rgba(200,200,200,0.8)"
-                strokeWidth={1}
-              />
-            )
-          })}
+          {model.ticks.ticks.map(({ value, y }) => (
+            <line
+              key={value}
+              x1={0}
+              x2={width}
+              y1={y}
+              y2={y}
+              stroke="rgba(200,200,200,0.8)"
+              strokeWidth={1}
+            />
+          ))}
         </svg>
       ) : null}
       <WiggleTooltip

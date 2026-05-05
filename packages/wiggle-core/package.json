@@ -31,7 +31,12 @@
     "prepack": "pnpm build"
   },
   "dependencies": {
-    "@mui/x-charts-vendor": "^8.26.0"
+    "@mui/material": "^9.0.0",
+    "@mui/x-charts-vendor": "^8.26.0",
+    "mobx-react": "^9.2.1"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public",

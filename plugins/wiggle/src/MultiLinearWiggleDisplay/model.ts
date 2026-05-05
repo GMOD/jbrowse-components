@@ -25,7 +25,6 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { observable } from 'mobx'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
-import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
 import {
   getRowHeight,
@@ -293,25 +292,25 @@ export default function stateModelFactory(
       },
 
       get ticks() {
-        const scaleType = this.scaleType
         const domain = this.domain
         const rowHeight = this.rowHeight
         if (!domain) {
           return undefined
         }
+        const scale = getScale({
+          scaleType: this.scaleType,
+          domain,
+          range: [rowHeight, 0],
+          inverted: false,
+        })
         const minimalTicks = self.getConfWithOverride<boolean>('minimalTicks')
-        const ticks = axisPropsFromTickScale(
-          getScale({
-            scaleType,
-            domain,
-            range: [rowHeight, 0],
-            inverted: false,
-          }),
-          4,
-        )
-        return rowHeight < 100 || minimalTicks
-          ? { ...ticks, values: domain }
-          : ticks
+        const values =
+          rowHeight < 100 || minimalTicks ? (domain as number[]) : scale.ticks(4)
+        return {
+          ticks: values.map(v => ({ value: v, y: scale(v) as number })),
+          yTop: 0,
+          yBottom: rowHeight,
+        }
       },
 
       get renderState() {

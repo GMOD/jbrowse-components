@@ -89,10 +89,10 @@ export {
   getGlobalMaxCoverageDepth,
   niceStep,
 } from './coverageDownsampling.ts'
+export type { YScaleTicks as CoverageTicks } from '@jbrowse/wiggle-core'
 export type {
   CoverageArrays,
   CoverageRegion,
-  CoverageTicks,
   CoverageTooltipBin,
   DownsampledBins,
   InsertionIndicatorResult,

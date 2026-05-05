@@ -3,7 +3,7 @@ import { isValidElement } from 'react'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/plugin-wiggle'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { observer } from 'mobx-react'
 
 import { pct } from './tooltipUtils.ts'

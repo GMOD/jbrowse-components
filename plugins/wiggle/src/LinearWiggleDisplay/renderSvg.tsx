@@ -12,7 +12,7 @@ import {
   drawWiggleBlocks,
 } from '../shared/Canvas2DWiggleRenderer.ts'
 import DensityLegend from '../shared/DensityLegend.tsx'
-import YScaleBar from '../shared/YScaleBar.tsx'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 
 import type { LinearWiggleDisplayModel } from './model.ts'
 import type {
@@ -58,7 +58,7 @@ export async function renderSvg(
   } else if (ticks) {
     legendEl = (
       <g transform={`translate(${scalebarLeft})`}>
-        <YScaleBar model={model} orientation="left" />
+        <YScaleBar ticks={ticks} orientation="left" />
       </g>
     )
   }

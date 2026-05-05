@@ -14,10 +14,8 @@ import {
   useGpuModelLifecycle,
 } from '@jbrowse/core/util'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
-import {
-  CoverageTooltipContents,
-  CoverageYScaleBar,
-} from '@jbrowse/plugin-alignments'
+import { CoverageTooltipContents } from '@jbrowse/plugin-alignments'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { Tooltip, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -578,7 +576,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
               overflow: 'visible',
             }}
           >
-            <CoverageYScaleBar model={{ coverageTicks }} />
+            <YScaleBar ticks={coverageTicks} orientation="left" />
           </svg>
         ) : null}
         <GenomeNameOverlay

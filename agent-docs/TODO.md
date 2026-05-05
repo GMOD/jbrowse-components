@@ -64,27 +64,9 @@ put these on a new branch though
 
 
 
-## Tick marks
-
-The linearalignmentsdisplay does a bunch of custom stuff with yscalebar
-
-Consider sharing with something like wiggle-core
-
-Also the y-scalebar behavior is weird when looking at region with no features (shows e.g. one zero, i'd prefer a 'blank' y-scale bar with no tick labels maybe?)
-
-
-The code is also very complex, please simplify
-
-
-Aggressively simplify code where possible
 
 
 ## Linear synteny view
 
 Moves around slightly during zoom, audit pixel usage
-
-## All tracks
-
-Slow between when track opens and loading overlay appears
-
 

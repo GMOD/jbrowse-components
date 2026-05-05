@@ -14,7 +14,7 @@ import {
   WiggleErrorBar,
   WiggleLoadingOverlay,
 } from '../../shared/WiggleStatusOverlays.tsx'
-import YScaleBar from '../../shared/YScaleBar.tsx'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import {
   findFeatureAtBp,
   getRowTop,
@@ -26,7 +26,7 @@ import type {
   MultiWiggleDataResult,
   MultiWiggleSourceData,
 } from '../../RenderMultiWiggleDataRPC/types.ts'
-import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
+import type { YScaleTicks } from '@jbrowse/wiggle-core'
 import type { WiggleBackend } from '../../shared/wiggleBackendTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {
@@ -53,7 +53,7 @@ export interface MultiWiggleDisplayModel {
   numSources: number
   rowHeight: number
   rowHeightTooSmallForScalebar: boolean
-  ticks?: ReturnType<typeof axisPropsFromTickScale>
+  ticks?: YScaleTicks
   error: Error | null
   isLoading: boolean
   statusMessage?: string
@@ -351,16 +351,16 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
             scaleType={model.scaleType}
             canvasWidth={totalWidth}
           />
-        ) : model.ticks ? (
+        ) : model.ticks && model.domain ? (
           model.rowHeightTooSmallForScalebar ? (
             <ScoreLegend
-              ticks={model.ticks}
+              domain={model.domain}
               scaleType={model.scaleType}
               canvasWidth={totalWidth}
             />
           ) : model.isOverlay ? (
             <g transform={`translate(${scalebarLeft || 50} 0)`}>
-              <YScaleBar model={model} />
+              <YScaleBar ticks={model.ticks} orientation="left" />
             </g>
           ) : (
             <g transform={`translate(${scalebarLeft || 50} 0)`}>
@@ -369,7 +369,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
                   transform={`translate(0 ${getRowTop(idx, rowHeight)})`}
                   key={`scalebar-${idx}`}
                 >
-                  <YScaleBar model={model} />
+                  <YScaleBar ticks={model.ticks} orientation="left" />
                 </g>
               ))}
             </g>
@@ -395,37 +395,27 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
         {model.displayCrossHatches && model.ticks
           ? model.isOverlay
-            ? model.ticks.values.map((v, idx) => {
-                const pos = model.ticks!.position(v)
-                if (!Number.isFinite(pos)) {
-                  return null
-                }
-                return (
-                  <line
-                    key={`ch-${idx}`}
-                    x1={0}
-                    x2={totalWidth}
-                    y1={pos}
-                    y2={pos}
-                    stroke="rgba(200,200,200,0.8)"
-                    strokeWidth={1}
-                  />
-                )
-              })
+            ? model.ticks.ticks.map(({ value, y }) => (
+                <line
+                  key={`ch-${value}`}
+                  x1={0}
+                  x2={totalWidth}
+                  y1={y}
+                  y2={y}
+                  stroke="rgba(200,200,200,0.8)"
+                  strokeWidth={1}
+                />
+              ))
             : Array.from({ length: numSources }).map((_, rowIdx) => {
                 const top = getRowTop(rowIdx, rowHeight)
-                return model.ticks!.values.map((v, idx) => {
-                  const pos = model.ticks!.position(v)
-                  if (!Number.isFinite(pos)) {
-                    return null
-                  }
-                  const y = top + pos
+                return model.ticks!.ticks.map(({ value, y: tickY }) => {
+                  const y = top + tickY
                   if (y < top || y > top + rowHeight) {
                     return null
                   }
                   return (
                     <line
-                      key={`ch-${rowIdx}-${idx}`}
+                      key={`ch-${rowIdx}-${value}`}
                       x1={0}
                       x2={totalWidth}
                       y1={y}

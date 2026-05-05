@@ -153,8 +153,9 @@ startGpuBackendLifecycle(backend: Backend) {
       const state = self.renderState
       if (!state) return false              // renderState not ready
       return b.renderBlocks(self.renderBlocks, state)
-      // backend returns true only if it drew something
-      // mixin sets canvasDrawn on true
+      // return true only when real content was drawn;
+      // mixin calls markCanvasDrawn() → canvasDrawn flips true →
+      // MultiRegionDisplayMixin.fullyDrawn becomes true once isLoading also clears
     },
   })
 }
@@ -167,17 +168,27 @@ startGpuBackendLifecycle(backend: Backend) {
 ```
 GpuBackendLifecycleSlotMixin
   .volatile
-    canvasDrawn: boolean          read by loading overlays
+    canvasDrawn: boolean          set true only after render() returns true with real data
     currentGpuBackend: unknown    stored backend; autoruns read it each tick
     renderBump: number            bumped by renderNow() and after every upload
     gpuAutorunsInstalled: boolean guards installGpuDisplay (idempotent)
   .actions
     markCanvasDrawn()             idempotent flip to true
     resetCanvasDrawn()            flip to false (called by clearAllRpcData)
-    stopGpuBackendLifecycle()     clears currentGpuBackend → autoruns idle
+    stopGpuBackendLifecycle()     clears currentGpuBackend + resets canvasDrawn → autoruns idle
     renderNow()                   bumps renderBump → render autorun re-fires
     installGpuDisplay(b, cbs)     spawns upload + render autoruns (once)
+
+MultiRegionDisplayMixin  (composes GpuBackendLifecycleSlotMixin)
+  .views
+    fullyDrawn: boolean           canvasDrawn && !isLoading — drives loading overlay
 ```
+
+Loading overlays read `!model.fullyDrawn`. This keeps the overlay visible from
+the moment the track opens (before GPU init and the 600ms `FetchVisibleRegions`
+debounce) through the entire fetch cycle, hiding exactly once when the first
+real frame is painted. `stopGpuBackendLifecycle` resets `canvasDrawn` so the
+overlay reappears correctly during WebGL context-loss recovery.
 
 All backend-specific plumbing lives in the plugin. All reactivity plumbing
 lives in the mixin.
@@ -543,7 +554,8 @@ key on a tuple of two displayedRegion indices.
 - Don't mutate per-region values in place; emit fresh objects.
 - Don't add or redefine volatiles/actions owned by the slot mixin
   (`canvasDrawn`, `renderBump`, `currentGpuBackend`, `markCanvasDrawn`,
-  `resetCanvasDrawn`, `renderNow`, `stopGpuBackendLifecycle`, etc.).
+  `resetCanvasDrawn`, `renderNow`, `stopGpuBackendLifecycle`, etc.) or the
+  `fullyDrawn` view owned by `MultiRegionDisplayMixin`.
 - Don't hand-maintain WGSL/GLSL/offset tables next to generated modules;
   consume the generated constants.
 - Don't put fetch-result derivatives (`cellData`, `sampleInfo`, etc.) into

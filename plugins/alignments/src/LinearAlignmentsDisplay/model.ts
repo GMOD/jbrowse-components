@@ -62,7 +62,7 @@ import type {
   ColorPalette,
   RenderState as AlignmentsRenderState,
 } from './components/AlignmentsRenderer.ts'
-import type { YScaleTicks } from './components/YScaleBar.tsx'
+import type { YScaleTicks } from '@jbrowse/wiggle-core'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type { CigarHitResult } from '../shared/hitTestTypes.ts'
 import type { AlignmentsBackend } from './components/rendererTypes.ts'
@@ -77,7 +77,6 @@ import type {
   ModificationTypeWithColor,
   SortedBy,
 } from '../shared/types'
-import type { CoverageTicks } from '@jbrowse/alignments-core'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
@@ -458,7 +457,7 @@ export default function stateModelFactory(
             : undefined
         },
 
-        get coverageTicks(): CoverageTicks | undefined {
+        get coverageTicks(): YScaleTicks | undefined {
           return this.coverageDomain
             ? computeCoverageTicks(
                 this.coverageDomain[1],

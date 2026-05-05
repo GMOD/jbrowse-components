@@ -9,8 +9,7 @@ import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import { drawAlignmentsToCtx } from './components/Canvas2DAlignmentsRenderer.ts'
-import CoverageYScaleBar from './components/CoverageYScaleBar.tsx'
-import YScaleBar from './components/YScaleBar.tsx'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { computePileupBezierArcs } from '../features/arcs/computeOverlay.ts'
 import { computeSashimiArcs } from '../features/sashimi/computeOverlay.ts'
 
@@ -184,7 +183,7 @@ export async function renderSvg(
       </SvgClipRect>
       {showCoverage && coverageTicks ? (
         <g transform={`translate(${scalebarLeft})`}>
-          <CoverageYScaleBar model={model} orientation="left" />
+          <YScaleBar ticks={model.coverageTicks} orientation="left" />
         </g>
       ) : null}
       {model.insertSizeTicks ? (

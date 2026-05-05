@@ -13,7 +13,7 @@ export type {
   ScoreStats,
 } from '@jbrowse/wiggle-core'
 
-export const YSCALEBAR_LABEL_OFFSET = 5
+export { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
 
 export const MULTI_WIGGLE_RENDERING_TYPES = [
   'multirowxy',

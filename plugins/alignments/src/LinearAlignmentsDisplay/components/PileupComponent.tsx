@@ -8,11 +8,10 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-import CoverageYScaleBar from './CoverageYScaleBar.tsx'
 import PileupArcsOverlay from './PileupArcsOverlay.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
-import YScaleBar from './YScaleBar.tsx'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { formatChainTooltip, formatFeatureTooltip } from './tooltipUtils.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
@@ -388,12 +387,12 @@ const CoverageAxisHost = observer(function CoverageAxisHost({
         top: 0,
         left: model.scalebarOverlapLeft,
         pointerEvents: 'none',
-        height: coverageTicks.height,
+        height: model.coverageHeight,
         width: 50,
       }}
     >
       <g transform="translate(45, 0)">
-        <CoverageYScaleBar model={model} orientation="left" />
+        <YScaleBar ticks={model.coverageTicks} orientation="left" />
       </g>
     </svg>
   )

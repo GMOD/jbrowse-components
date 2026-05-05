@@ -21,7 +21,6 @@ import { observable } from 'mobx'
 
 import { buildSourceRenderData } from './components/buildSourceRenderData.ts'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
-import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
 import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
 import {
@@ -227,25 +226,25 @@ export default function stateModelFactory(
       },
 
       get ticks() {
-        const scaleType = this.scaleType
         const { height } = self
         const domain = this.domain
         if (!domain) {
           return undefined
         }
+        const scale = getScale({
+          scaleType: this.scaleType,
+          domain,
+          range: [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET],
+          inverted: false,
+        })
         const minimalTicks = self.getConfWithOverride<boolean>('minimalTicks')
-        const ticks = axisPropsFromTickScale(
-          getScale({
-            scaleType,
-            domain,
-            range: [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET],
-            inverted: false,
-          }),
-          4,
-        )
-        return height < 100 || minimalTicks
-          ? { ...ticks, values: domain }
-          : ticks
+        const values =
+          height < 100 || minimalTicks ? (domain as number[]) : scale.ticks(4)
+        return {
+          ticks: values.map(v => ({ value: v, y: scale(v) as number })),
+          yTop: YSCALEBAR_LABEL_OFFSET,
+          yBottom: height - YSCALEBAR_LABEL_OFFSET,
+        }
       },
 
       get renderState() {

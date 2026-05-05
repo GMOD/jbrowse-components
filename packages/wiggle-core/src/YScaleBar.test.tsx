@@ -21,7 +21,6 @@ describe('YScaleBar', () => {
         orientation="left"
       />,
     )
-    // Should render the axis line even with empty ticks
     expect(container.querySelector('g')).toBeTruthy()
     expect(container.querySelector('path')).toBeTruthy()
   })
@@ -41,9 +40,8 @@ describe('YScaleBar', () => {
         orientation="left"
       />,
     )
-    // Should render axis line plus one group per tick
     const groups = container.querySelectorAll('g')
-    expect(groups.length).toBeGreaterThanOrEqual(3) // axis group + tick groups
+    expect(groups.length).toBeGreaterThanOrEqual(3)
   })
 
   it('uses numeric value as key for ticks', () => {
@@ -60,7 +58,6 @@ describe('YScaleBar', () => {
         orientation="left"
       />,
     )
-    // Both ticks should render without React key warnings
     const lines = container.querySelectorAll('line')
     expect(lines.length).toBeGreaterThanOrEqual(2)
   })

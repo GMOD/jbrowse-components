@@ -625,9 +625,18 @@ importers:
 
   packages/wiggle-core:
     dependencies:
+      '@mui/material':
+        specifier: ^9.0.0
+        version: 9.0.0(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.5))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.5))(@types/react@19.2.14)(react@19.2.5))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@mui/x-charts-vendor':
         specifier: ^8.26.0
         version: 8.26.0
+      mobx-react:
+        specifier: ^9.2.1
+        version: 9.2.1(mobx@6.15.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      react:
+        specifier: '>=18.0.0'
+        version: 19.2.5
 
   plugins/alignments:
     dependencies:
@@ -1626,6 +1635,9 @@ importers:
       '@jbrowse/tree-sidebar':
         specifier: workspace:^
         version: link:../../packages/tree-sidebar
+      '@jbrowse/wiggle-core':
+        specifier: workspace:^
+        version: link:../../packages/wiggle-core
       '@mui/icons-material':
         specifier: ^9.0.0
         version: 9.0.0(@mui/material@9.0.0(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.5))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.5))(@types/react@19.2.14)(react@19.2.5))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/react@19.2.14)(react@19.2.5)

@@ -9,7 +9,6 @@ import {
 describe('computeCoverageTicks', () => {
   test('produces nice round tick values', () => {
     const result = computeCoverageTicks(100, 150)
-    expect(result.maxDepth).toBe(100)
     expect(result.yTop).toBe(5)
     expect(result.yBottom).toBe(145)
     // step = 50 for maxDepth=100; ticks at 0, 50, 100

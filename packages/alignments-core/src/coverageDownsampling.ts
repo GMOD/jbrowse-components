@@ -1,15 +1,8 @@
 import type { IndelEntry } from './labelConstants.ts'
-import type { ScoreStats } from '@jbrowse/wiggle-core'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
+import type { ScoreStats, YScaleTicks } from '@jbrowse/wiggle-core'
 
-export const YSCALEBAR_LABEL_OFFSET = 5
-
-export interface CoverageTicks {
-  ticks: { value: number; y: number }[]
-  height: number
-  maxDepth: number
-  yTop: number
-  yBottom: number
-}
+export { YSCALEBAR_LABEL_OFFSET }
 
 export function niceStep(maxDepth: number) {
   const rough = maxDepth / 3
@@ -33,12 +26,12 @@ export function computeCoverageTicks(
   maxDepth: number,
   coverageHeight: number,
   scaleType = 'linear',
-): CoverageTicks {
+): YScaleTicks {
   const yTop = YSCALEBAR_LABEL_OFFSET
   const yBottom = coverageHeight - YSCALEBAR_LABEL_OFFSET
 
   if (maxDepth === 0) {
-    return { ticks: [], height: coverageHeight, maxDepth: 0, yTop, yBottom }
+    return { ticks: [], yTop, yBottom }
   }
 
   const effectiveHeight = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
@@ -49,7 +42,7 @@ export function computeCoverageTicks(
           yBottom - (Math.log2(Math.max(1, value)) / logMax) * effectiveHeight
       : (value: number) => yBottom - (value / maxDepth) * effectiveHeight
 
-  const ticks: { value: number; y: number }[] = []
+  const ticks: YScaleTicks['ticks'] = []
   if (scaleType === 'log') {
     ticks.push({ value: 1, y: yOf(1) })
     let tick = 2
@@ -70,13 +63,7 @@ export function computeCoverageTicks(
     }
   }
 
-  return {
-    ticks,
-    height: coverageHeight,
-    maxDepth,
-    yTop,
-    yBottom,
-  }
+  return { ticks, yTop, yBottom }
 }
 
 export interface CoverageRegion {

@@ -1,30 +1,17 @@
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
-import YScaleBar from './YScaleBar.tsx'
+import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
-export interface CoverageTicks {
-  ticks: { value: number; y: number }[]
-  height: number
-  maxDepth: number
-  yTop: number
-  yBottom: number
-}
-
-// Thin wrapper that reads coverage depth ticks off the model and delegates
-// rendering to the generic YScaleBar. Kept as a named export so downstream
-// plugins that import `CoverageYScaleBar` keep working.
 const CoverageYScaleBar = observer(function CoverageYScaleBar({
   model,
   orientation,
 }: {
-  model: { coverageTicks?: CoverageTicks }
+  model: { coverageTicks?: YScaleTicks }
   orientation?: 'left' | 'right'
 }) {
   return (
-    <YScaleBar
-      ticks={model.coverageTicks}
-      orientation={orientation ?? 'left'}
-    />
+    <YScaleBar ticks={model.coverageTicks} orientation={orientation ?? 'left'} />
   )
 })
 
