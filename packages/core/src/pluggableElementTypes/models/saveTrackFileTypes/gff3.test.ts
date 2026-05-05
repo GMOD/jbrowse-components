@@ -150,7 +150,7 @@ describe('GFF3 export', () => {
       end: 200,
       type: 'exon',
     })
-    const result = formatMultiLevelFeat(f, 'parent1')
+    const result = formatMultiLevelFeat({ feature: f, parentId: 'parent1' })
     // ID should come before Parent
     const idIndex = result.indexOf('ID=child1')
     const parentIndex = result.indexOf('Parent=parent1')
@@ -288,7 +288,7 @@ describe('formatMultiLevelFeat', () => {
         source: 'test',
       },
     })
-    const result = formatMultiLevelFeat(f)
+    const result = formatMultiLevelFeat({ feature: f })
     expect(result).toContain(
       'chr1\ttest\tgene\t101\t200\t.\t+\t.\tID=test_feat',
     )
@@ -304,7 +304,7 @@ describe('formatMultiLevelFeat', () => {
         end: 200,
       },
     })
-    const result = formatMultiLevelFeat(f, 'parent1', 'chr5')
+    const result = formatMultiLevelFeat({ feature: f, parentId: 'parent1', parentRef: 'chr5' })
     expect(result).toContain('chr5\t')
     expect(result).toContain('Parent=parent1')
   })

@@ -38,13 +38,7 @@ export function computeCoverageTicks(
   const yBottom = coverageHeight - YSCALEBAR_LABEL_OFFSET
 
   if (maxDepth === 0) {
-    return {
-      ticks: [{ value: 0, y: yBottom }],
-      height: coverageHeight,
-      maxDepth: 0,
-      yTop,
-      yBottom,
-    }
+    return { ticks: [], height: coverageHeight, maxDepth: 0, yTop, yBottom }
   }
 
   const effectiveHeight = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
