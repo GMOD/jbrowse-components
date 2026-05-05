@@ -38,61 +38,42 @@ export default function SVGTracks({
 }) {
   const session = getSession(model)
   const textOffset = trackLabels === 'offset' ? textHeight : 0
-  return (
-    <>
-      {
-        displayResults.reduce(
-          ({ prevOffset, reactElements }, { track, result }) => {
-            const conf = track.configuration
-            const trackName = getTrackName(conf, session)
-            const display = track.displays[0]!
-            const x = Math.max(-model.offsetPx, 0)
-            const currOffset =
-              prevOffset + display.height + textOffset + trackSpacing
-            const clipId = `track-clip-${conf.trackId}`
-            return {
-              prevOffset: currOffset,
-              reactElements: [
-                ...reactElements,
-                <g key={conf.trackId} transform={`translate(0 ${prevOffset})`}>
-                  <defs>
-                    <clipPath id={clipId}>
-                      <rect
-                        x={-leftBuffer}
-                        y={textOffset}
-                        width={model.width + trackLabelOffset + leftBuffer}
-                        height={display.height}
-                      />
-                    </clipPath>
-                  </defs>
-                  <g clipPath={`url(#${clipId})`}>
-                    <g
-                      transform={`translate(${trackLabelOffset} ${textOffset})`}
-                    >
-                      <SVGRegionSeparators
-                        model={model}
-                        height={display.height}
-                      />
-                      {result}
-                    </g>
-                  </g>
-                  <SVGTrackLabel
-                    trackName={trackName}
-                    fontSize={fontSize}
-                    trackLabels={trackLabels}
-                    trackLabelOffset={trackLabelOffset}
-                    x={x}
-                  />
-                </g>,
-              ],
-            }
-          },
-          {
-            prevOffset: 0,
-            reactElements: [] as React.ReactElement[],
-          },
-        ).reactElements
-      }
-    </>
-  )
+  const x = Math.max(-model.offsetPx, 0)
+  const elements: React.ReactElement[] = []
+  let prevOffset = 0
+  for (const { track, result } of displayResults) {
+    const conf = track.configuration
+    const trackName = getTrackName(conf, session)
+    const display = track.displays[0]!
+    const clipId = `track-clip-${conf.trackId}`
+    elements.push(
+      <g key={conf.trackId} transform={`translate(0 ${prevOffset})`}>
+        <defs>
+          <clipPath id={clipId}>
+            <rect
+              x={-leftBuffer}
+              y={textOffset}
+              width={model.width + trackLabelOffset + leftBuffer}
+              height={display.height}
+            />
+          </clipPath>
+        </defs>
+        <g clipPath={`url(#${clipId})`}>
+          <g transform={`translate(${trackLabelOffset} ${textOffset})`}>
+            <SVGRegionSeparators model={model} height={display.height} />
+            {result}
+          </g>
+        </g>
+        <SVGTrackLabel
+          trackName={trackName}
+          fontSize={fontSize}
+          trackLabels={trackLabels}
+          trackLabelOffset={trackLabelOffset}
+          x={x}
+        />
+      </g>,
+    )
+    prevOffset += display.height + textOffset + trackSpacing
+  }
+  return <>{elements}</>
 }
