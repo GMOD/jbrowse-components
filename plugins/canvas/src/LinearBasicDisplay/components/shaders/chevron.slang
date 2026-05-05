@@ -66,7 +66,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float cx = hpToClipX(splitChevron, u.bpRangeX, u.zero);
 
   float yPx = floor(inst.y - u.scrollY + 0.5) + 0.5;
-  float cy = 1.0 - (yPx / u.canvasHeight) * 2.0;
+  float cy = yPxToClipY(yPx, u.canvasHeight);
 
   float halfW = CHEVRON_W_PX / u.canvasWidth;
   float halfH = CHEVRON_H_PX / u.canvasHeight;

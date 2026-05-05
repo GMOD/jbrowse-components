@@ -24,7 +24,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float sx2 = hpToClipX(hpSplitUint(inst.startEnd.y), u.bpRangeX, u.zero);
 
   float yPx = floor(inst.y - u.scrollY + 0.5) + 0.5;
-  float cy = 1.0 - (yPx / u.canvasHeight) * 2.0;
+  float cy = yPxToClipY(yPx, u.canvasHeight);
   float halfPx = 1.0 / u.canvasHeight;
 
   float localX = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;

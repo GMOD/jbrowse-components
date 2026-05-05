@@ -35,7 +35,7 @@ VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
   float cx = hpToClipX(hpSplitUint(inst.x), u.bpRangeX, u.zero);
 
   float yPx = floor(inst.y - u.scrollY + 0.5) + 0.5;
-  float cy = 1.0 - (yPx / u.canvasHeight) * 2.0;
+  float cy = yPxToClipY(yPx, u.canvasHeight);
 
   float stemLength = STEM_LENGTH_PX / u.canvasWidth * 2.0;
   float stemHalf = STEM_HALF_H_PX / u.canvasHeight * 2.0;

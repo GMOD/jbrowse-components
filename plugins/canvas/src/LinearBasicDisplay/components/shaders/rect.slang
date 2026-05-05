@@ -53,8 +53,8 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
 
   float yTopPx = floor(inst.y - u.scrollY + 0.5);
   float yBotPx = floor(yTopPx + inst.height + 0.5);
-  float syTop = 1.0 - (yTopPx / u.canvasHeight) * 2.0;
-  float syBot = 1.0 - (yBotPx / u.canvasHeight) * 2.0;
+  float syTop = yPxToClipY(yTopPx, u.canvasHeight);
+  float syBot = yPxToClipY(yBotPx, u.canvasHeight);
   float sy = lerp(syBot, syTop, localY);
 
   float widthPx  = abs(sx2 - sx1) * u.canvasWidth * 0.5;

@@ -35,3 +35,7 @@ public float snapToPixelX(float clipX, float canvasWidth) {
   float px = (clipX + 1.0) * 0.5 * canvasWidth;
   return floor(px + 0.5) / canvasWidth * 2.0 - 1.0;
 }
+
+public float yPxToClipY(float yPx, float canvasHeight) {
+  return 1.0 - (yPx / canvasHeight) * 2.0;
+}
