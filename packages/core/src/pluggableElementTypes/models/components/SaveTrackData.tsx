@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
@@ -20,16 +20,10 @@ import {
 import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
 
-import { getConf } from '../../../configuration/index.ts'
 import { Dialog, ErrorBanner } from '../../../ui/index.ts'
-import {
-  getContainingView,
-  getEnv,
-  getSession,
-  saveAs,
-} from '../../../util/index.ts'
-import { getRpcSessionId } from '../../../util/tracks.ts'
+import { getContainingView, saveAs } from '../../../util/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
+import { fetchTrackData } from './fetchTrackData.ts'
 
 import type { AnyConfigurationModel } from '../../../configuration/index.ts'
 import type { Region } from '../../../util/index.ts'
@@ -37,33 +31,33 @@ import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()({
-  root: {
-    width: '80em',
-  },
+  root: { width: '80em' },
   textAreaFont: {
     fontFamily: 'Courier New',
     whiteSpace: 'pre',
   },
 })
 
-async function fetchFeatures(track: IAnyStateTreeNode, regions: Region[]) {
-  const session = getSession(track)
-  const { rpcManager } = session
-  const adapterConfig = getConf(track, ['adapter'])
-  const sessionId = getRpcSessionId(track)
-
-  return rpcManager.call(sessionId, 'CoreGetFeatures', {
-    adapterConfig,
-    regions,
-  })
-}
-
-function roundRegions(regions: Region[]) {
-  return regions.map(r => ({
-    ...r,
-    start: Math.floor(r.start),
-    end: Math.ceil(r.end),
-  }))
+function HelpDialog({
+  text,
+  onClose,
+}: {
+  text: string | undefined
+  onClose: () => void
+}) {
+  return (
+    <Dialog open={text !== undefined} onClose={onClose}>
+      <DialogTitle>Format Information</DialogTitle>
+      <DialogContent>
+        <DialogContentText>{text}</DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button autoFocus onClick={onClose}>
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
 }
 
 const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
@@ -80,127 +74,69 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   const options = useMemo(() => model.saveTrackFileFormatOptions(), [model])
   const [error, setError] = useState<unknown>()
   const [type, setType] = useState(Object.keys(options)[0])
-  const [str, setStr] = useState('')
-  const [usedAdapterExport, setUsedAdapterExport] = useState(false)
+  const [result, setResult] = useState({ str: '', usedAdapterExport: false })
   const [loading, setLoading] = useState(false)
-  const [helpDialogOpen, setHelpDialogOpen] = useState(false)
-  const [helpDialogContent, setHelpDialogContent] = useState('')
+  const [helpText, setHelpText] = useState<string>()
   const [copied, setCopied] = useState(false)
+  const copyTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const view = getContainingView(model) as unknown as {
     coarseVisibleLocStrings: string[]
     visibleRegions?: Region[]
   }
-
   const { visibleRegions, coarseVisibleLocStrings: regionStr } = view
 
   useEffect(() => {
-    let cancelled = false
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
+    const ctl = { cancelled: false }
+
+    async function load() {
       try {
         setError(undefined)
         setLoading(true)
-        const session = getSession(model)
         if (!visibleRegions?.length || !type) {
           return
         }
-
-        // Check if adapter supports export for this format
-        const { pluginManager } = getEnv(model)
-        const adapterConfig = getConf(model, ['adapter'])
-        const adapterType = pluginManager.getAdapterType(adapterConfig.type)
-        const supportsExport =
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          adapterType?.adapterCapabilities?.includes('exportData')
-
-        const regions = roundRegions(visibleRegions)
-        if (supportsExport) {
-          const { rpcManager } = session
-          const exportResult = await rpcManager.call(
-            getRpcSessionId(model),
-            'CoreGetExportData',
-            {
-              adapterConfig,
-              regions,
-              formatType: type,
-            },
-          )
-
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          if (cancelled) {
-            return
-          }
-          setUsedAdapterExport(true)
-          setStr(exportResult)
-        } else {
-          const features = await fetchFeatures(model, regions)
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          if (cancelled) {
-            return
-          }
-          const result = await options[type]!.callback({
-            features,
-            session,
-            assemblyName: regions[0]!.assemblyName,
-          })
-
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          if (cancelled) {
-            return
-          }
-          setUsedAdapterExport(false)
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          setStr(result ?? '')
+        const data = await fetchTrackData(model, visibleRegions, type, options)
+        if (ctl.cancelled) {
+          return
         }
+        setResult(data)
       } catch (e) {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (!cancelled) {
+        if (!ctl.cancelled) {
           setError(e)
           console.error(e)
         }
       } finally {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (!cancelled) {
+        if (!ctl.cancelled) {
           setLoading(false)
         }
       }
-    })()
+    }
 
+    void load()
     return () => {
-      cancelled = true
+      ctl.cancelled = true
     }
   }, [type, visibleRegions, options, model])
+
+  const { str, usedAdapterExport } = result
 
   return (
     <Dialog maxWidth="xl" open onClose={handleClose} title="Save track data">
       <DialogContent className={classes.root}>
         {error ? <ErrorBanner error={error} /> : null}
-
         <div>
           <TextField
             label="Region"
             value={regionStr}
-            slotProps={{
-              input: {
-                readOnly: true,
-              },
-            }}
+            slotProps={{ input: { readOnly: true } }}
           />
         </div>
-
         <FormControl>
           <FormLabel>
-            {['File type', usedAdapterExport ? '(adapter export)' : '']
-              .filter(f => !!f)
-              .join(' ')}
+            {`File type${usedAdapterExport ? ' (adapter export)' : ''}`}
           </FormLabel>
-          <RadioGroup
-            value={type}
-            onChange={e => {
-              setType(e.target.value)
-            }}
-          >
+          <RadioGroup value={type} onChange={e => setType(e.target.value)}>
             {Object.entries(options).map(([key, val]) => (
               <div
                 key={key}
@@ -214,10 +150,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
                 {val.helpText ? (
                   <IconButton
                     size="small"
-                    onClick={() => {
-                      setHelpDialogContent(val.helpText!)
-                      setHelpDialogOpen(true)
-                    }}
+                    onClick={() => setHelpText(val.helpText)}
                     title="Show help for this format"
                   >
                     <HelpOutlineIcon fontSize="small" />
@@ -243,9 +176,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           slotProps={{
             input: {
               readOnly: true,
-              classes: {
-                input: classes.textAreaFont,
-              },
+              classes: { input: classes.textAreaFont },
             },
           }}
         />
@@ -253,12 +184,11 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
       <DialogActions>
         <Button
           disabled={loading || !!error}
-          onClick={async () => {
-            await copy(str)
+          onClick={() => {
+            copy(str)
             setCopied(true)
-            setTimeout(() => {
-              setCopied(false)
-            }, 1000)
+            clearTimeout(copyTimer.current)
+            copyTimer.current = setTimeout(() => setCopied(false), 1000)
           }}
           startIcon={<ContentCopyIcon />}
         >
@@ -269,9 +199,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           onClick={() => {
             const ext = options[type!]!.extension
             saveAs(
-              new Blob([str], {
-                type: 'text/plain;charset=utf-8',
-              }),
+              new Blob([str], { type: 'text/plain;charset=utf-8' }),
               `jbrowse_track_data.${ext}`,
             )
           }}
@@ -279,39 +207,11 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
         >
           Download
         </Button>
-
-        <Button
-          variant="contained"
-          type="submit"
-          onClick={() => {
-            handleClose()
-          }}
-        >
+        <Button variant="contained" type="submit" onClick={handleClose}>
           Close
         </Button>
       </DialogActions>
-
-      <Dialog
-        open={helpDialogOpen}
-        onClose={() => {
-          setHelpDialogOpen(false)
-        }}
-      >
-        <DialogTitle>Format Information</DialogTitle>
-        <DialogContent>
-          <DialogContentText>{helpDialogContent}</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            autoFocus
-            onClick={() => {
-              setHelpDialogOpen(false)
-            }}
-          >
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <HelpDialog text={helpText} onClose={() => setHelpText(undefined)} />
     </Dialog>
   )
 })
