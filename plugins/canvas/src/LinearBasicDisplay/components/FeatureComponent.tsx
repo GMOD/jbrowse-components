@@ -32,7 +32,7 @@ interface LinearBasicDisplayModel {
   height: number
   laidOutDataMap: Map<number, FeatureDataResult>
   visibleRegions: VisibleRegion[]
-  isLoading: boolean
+  fullyDrawn: boolean
   error: Error | null
   maxY: number
   hasOverflow: boolean
@@ -491,13 +491,12 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 const CanvasLoadingOverlay = observer(function CanvasLoadingOverlay({
   model,
 }: {
-  model: Pick<LinearBasicDisplayModel, 'isLoading' | 'statusMessage'>
+  model: Pick<LinearBasicDisplayModel, 'fullyDrawn' | 'statusMessage'>
 }) {
-  const view = getContainingView(model) as LGV
   return (
     <LoadingOverlay
       statusMessage={model.statusMessage || 'Loading'}
-      isVisible={model.isLoading || !view.initialized}
+      isVisible={!model.fullyDrawn}
     />
   )
 })
