@@ -35,7 +35,7 @@ export default function MultiRegionDisplayMixin() {
       loadedRegions: observable.map<number, Region>(),
     }))
     .views(self => ({
-      get fullyDrawn() {
+      get isReady() {
         return self.canvasDrawn && !self.isLoading
       },
 

@@ -155,7 +155,7 @@ startGpuBackendLifecycle(backend: Backend) {
       return b.renderBlocks(self.renderBlocks, state)
       // return true only when real content was drawn;
       // mixin calls markCanvasDrawn() → canvasDrawn flips true →
-      // MultiRegionDisplayMixin.fullyDrawn becomes true once isLoading also clears
+      // MultiRegionDisplayMixin.isReady becomes true once isLoading also clears
     },
   })
 }
@@ -181,10 +181,10 @@ GpuBackendLifecycleSlotMixin
 
 MultiRegionDisplayMixin  (composes GpuBackendLifecycleSlotMixin)
   .views
-    fullyDrawn: boolean           canvasDrawn && !isLoading — drives loading overlay
+    isReady: boolean              canvasDrawn && !isLoading — drives loading overlay
 ```
 
-Loading overlays read `!model.fullyDrawn`. This keeps the overlay visible from
+Loading overlays read `!model.isReady`. This keeps the overlay visible from
 the moment the track opens (before GPU init and the 600ms `FetchVisibleRegions`
 debounce) through the entire fetch cycle, hiding exactly once when the first
 real frame is painted. `stopGpuBackendLifecycle` resets `canvasDrawn` so the
@@ -555,7 +555,7 @@ key on a tuple of two displayedRegion indices.
 - Don't add or redefine volatiles/actions owned by the slot mixin
   (`canvasDrawn`, `renderBump`, `currentGpuBackend`, `markCanvasDrawn`,
   `resetCanvasDrawn`, `renderNow`, `stopGpuBackendLifecycle`, etc.) or the
-  `fullyDrawn` view owned by `MultiRegionDisplayMixin`.
+  `isReady` view owned by `MultiRegionDisplayMixin`.
 - Don't hand-maintain WGSL/GLSL/offset tables next to generated modules;
   consume the generated constants.
 - Don't put fetch-result derivatives (`cellData`, `sampleInfo`, etc.) into

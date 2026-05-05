@@ -22,7 +22,7 @@ export interface InstallGpuDisplayCallbacks<B> {
  * `self.installGpuDisplay(backend, { upload, render })` from their own
  * `startGpuBackendLifecycle(backend)` action. The mixin owns:
  *
- *  - `canvasDrawn` — observable flag read by overlays / loading UI.
+ *  - `canvasDrawn` — observable flag read by test-selector `data-testid` attributes to detect first paint.
  *  - `currentGpuBackend` — the backend reference, updated on context-loss
  *    recovery. Autoruns read it each tick so they re-fire against the new
  *    one without being reinstalled.

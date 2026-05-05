@@ -48,7 +48,7 @@ export interface WiggleDisplayModel extends WiggleGpuProps {
   setFeatureUnderMouse: (feat?: WiggleDisplayModel['featureUnderMouse']) => void
   reload: () => void
   canvasDrawn: boolean
-  fullyDrawn: boolean
+  isReady: boolean
   startGpuBackendLifecycle: (backend: WiggleBackend) => void
   stopGpuBackendLifecycle: () => void
   renderNow: () => void

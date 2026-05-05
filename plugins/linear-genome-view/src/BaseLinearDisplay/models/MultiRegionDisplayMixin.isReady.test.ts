@@ -3,7 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import FetchMixin from './FetchMixin.ts'
 
-// fullyDrawn = canvasDrawn && !isLoading is defined in MultiRegionDisplayMixin.
+// isReady = canvasDrawn && !isLoading is defined in MultiRegionDisplayMixin.
 // That mixin can't be instantiated standalone (afterAttach calls getContainingView),
 // so we compose the two source mixins here and mirror the one-liner getter.
 const TestModel = types
@@ -14,7 +14,7 @@ const TestModel = types
     types.model({}),
   )
   .views(self => ({
-    get fullyDrawn() {
+    get isReady() {
       return self.canvasDrawn && !self.isLoading
     },
   }))
@@ -27,10 +27,10 @@ function tick() {
 beforeEach(() => jest.spyOn(console, 'warn').mockImplementation(() => {}))
 afterEach(() => jest.restoreAllMocks())
 
-describe('fullyDrawn: loading overlay invariant', () => {
+describe('isReady: loading overlay invariant', () => {
   test('false on create — no fetch started, no render yet', () => {
     const m = TestModel.create()
-    expect(m.fullyDrawn).toBe(false)
+    expect(m.isReady).toBe(false)
   })
 
   test('false during active fetch', async () => {
@@ -38,7 +38,7 @@ describe('fullyDrawn: loading overlay invariant', () => {
     let resolve!: () => void
     m.runFetch(() => new Promise<void>(r => (resolve = r)))
     expect(m.isLoading).toBe(true)
-    expect(m.fullyDrawn).toBe(false)
+    expect(m.isReady).toBe(false)
     resolve()
     await tick()
     await tick()
@@ -51,7 +51,7 @@ describe('fullyDrawn: loading overlay invariant', () => {
     m.markCanvasDrawn()
     expect(m.canvasDrawn).toBe(true)
     expect(m.isLoading).toBe(true)
-    expect(m.fullyDrawn).toBe(false)
+    expect(m.isReady).toBe(false)
     resolve()
     await tick()
     await tick()
@@ -71,7 +71,7 @@ describe('fullyDrawn: loading overlay invariant', () => {
     )
     expect(m.canvasDrawn).toBe(true)
     expect(m.isLoading).toBe(false)
-    expect(m.fullyDrawn).toBe(true)
+    expect(m.isReady).toBe(true)
   })
 
   test('resets to false after resetCanvasDrawn (simulates clearAllRpcData)', () => {
@@ -86,21 +86,21 @@ describe('fullyDrawn: loading overlay invariant', () => {
         },
       },
     )
-    expect(m.fullyDrawn).toBe(true)
+    expect(m.isReady).toBe(true)
     m.resetCanvasDrawn()
-    expect(m.fullyDrawn).toBe(false)
+    expect(m.isReady).toBe(false)
   })
 
-  test('full lifecycle: create → fetch → render → fullyDrawn', async () => {
+  test('full lifecycle: create → fetch → render → isReady', async () => {
     const m = TestModel.create()
 
     // Phase 1: track just opened, 600ms autorun delay not yet elapsed
-    expect(m.fullyDrawn).toBe(false)
+    expect(m.isReady).toBe(false)
 
     // Phase 2: fetch starts
     let resolve!: () => void
     m.runFetch(() => new Promise<void>(r => (resolve = r)))
-    expect(m.fullyDrawn).toBe(false)
+    expect(m.isReady).toBe(false)
 
     // Phase 3: fetch completes, GPU not yet rendered
     resolve()
@@ -108,7 +108,7 @@ describe('fullyDrawn: loading overlay invariant', () => {
     await tick()
     expect(m.isLoading).toBe(false)
     expect(m.canvasDrawn).toBe(false)
-    expect(m.fullyDrawn).toBe(false)
+    expect(m.isReady).toBe(false)
 
     // Phase 4: GPU backend installs and renders first frame
     m.installGpuDisplay(
@@ -121,6 +121,6 @@ describe('fullyDrawn: loading overlay invariant', () => {
         },
       },
     )
-    expect(m.fullyDrawn).toBe(true)
+    expect(m.isReady).toBe(true)
   })
 })

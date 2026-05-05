@@ -115,13 +115,13 @@ const AlignmentsLoadingOverlay = observer(function AlignmentsLoadingOverlay({
 }: {
   model: Pick<
     LinearAlignmentsDisplayModel,
-    'fullyDrawn' | 'statusMessage' | 'regionTooLarge' | 'error'
+    'isReady' | 'statusMessage' | 'regionTooLarge' | 'error'
   >
 }) {
   return (
     <LoadingOverlay
       statusMessage={model.statusMessage ?? 'Loading features'}
-      isVisible={!model.fullyDrawn && !model.regionTooLarge && !model.error}
+      isVisible={!model.isReady && !model.regionTooLarge && !model.error}
     />
   )
 })

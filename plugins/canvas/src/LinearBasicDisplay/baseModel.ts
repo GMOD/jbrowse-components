@@ -191,7 +191,6 @@ export default function baseStateModelFactory(
           number,
           { featureCount: number; regionWidthBp: number }
         >(),
-        canvasDrawn: false,
         featureIdUnderMouse: null as string | null,
         subfeatureIdUnderMouse: null as string | null,
         mouseoverExtraInformation: undefined as string | undefined,
