@@ -75,8 +75,8 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
     const pm = this.pluginManager
     const bedLoc = this.getConf('bedGraphLocation')
     const buffer = await fetchAndMaybeUnzip(openLocation(bedLoc, pm), opts)
-    const features = {} as Record<string, string[]>
-    const headerLines = [] as string[]
+    const features: Record<string, string[]> = {}
+    const headerLines: string[] = []
     parseLineByLine(
       buffer,
       line => {

@@ -151,7 +151,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     )
 
     await updateStatus('Processing features', statusCallback, async () => {
-      const parentAggregation = {} as Record<string, FeatureData[]>
+      const parentAggregation: Record<string, FeatureData[]> = {}
       let minAggStart = Infinity
       let maxAggEnd = -Infinity
 

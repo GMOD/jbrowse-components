@@ -80,7 +80,7 @@ const CDNASequence = observer(function CDNASequence({
     coordStart = coordStart + upstream.length * mult
   }
 
-  const middleChunks = [] as React.ReactNode[]
+  const middleChunks: React.ReactNode[] = []
   for (let idx = 0; idx < chunks.length; idx++) {
     const chunk = chunks[idx]!
     const intron = sequence.slice(chunk.end, chunks[idx + 1]?.start)

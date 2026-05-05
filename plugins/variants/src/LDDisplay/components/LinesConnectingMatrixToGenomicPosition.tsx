@@ -83,7 +83,7 @@ const AllLines = observer(function AllLines({
     if (!assembly || n === 0) {
       return ''
     }
-    const parts = [] as string[]
+    const parts: string[] = []
     for (let i = 0; i < n; i++) {
       const gx = getGenomicX(view, assembly, snps[i]!, offsetAdj)
       const mx = getMatrixX(i, blockWidth, n, viewScale, viewOffsetX)

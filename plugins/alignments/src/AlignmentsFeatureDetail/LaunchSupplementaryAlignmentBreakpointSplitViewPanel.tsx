@@ -41,7 +41,7 @@ export default function LaunchBreakpointSplitViewPanel({
     })()
   }, [feature, view])
 
-  const ret = [] as [ReducedFeature, ReducedFeature][]
+  const ret: [ReducedFeature, ReducedFeature][] = []
   if (res) {
     for (let i = 0; i < res.length - 1; i++) {
       ret.push([res[i]!, res[i + 1]!] as const)

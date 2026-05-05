@@ -475,7 +475,7 @@ export default function assemblyFactory(
         for (const r of regions) {
           checkRefName(r.refName)
         }
-        const refNameAliases = {} as Record<string, string>
+        const refNameAliases: Record<string, string> = {}
 
         const refNameAliasCollection = await getRefNameAliases({
           config: refNameAliasesAdapterConf,
@@ -496,14 +496,14 @@ export default function assemblyFactory(
         }
         // Build lowercase aliases, combined name set, and sparse canonical
         // mapping in a single pass over regions + refNameAliases
-        const lowerCaseAliases = {} as Record<string, string>
+        const lowerCaseAliases: Record<string, string> = {}
         const nameSet = new Set<string>()
-        const canonicalToSeqAdapterRefNames = {} as Record<string, string>
+        const canonicalToSeqAdapterRefNames: Record<string, string> = {}
         for (const region of regions) {
-          // add identity mapping (||= so refNameAliasAdapter can override)
-          refNameAliases[region.refName] ||= region.refName
+          // add identity mapping (??= so refNameAliasAdapter can override)
+          refNameAliases[region.refName] ??= region.refName
 
-          const canonicalName = refNameAliases[region.refName] || region.refName
+          const canonicalName = refNameAliases[region.refName] ?? region.refName
           if (canonicalName !== region.refName) {
             canonicalToSeqAdapterRefNames[canonicalName] = region.refName
           }
@@ -522,7 +522,7 @@ export default function assemblyFactory(
           refNameAliases,
           regions: regions.map(r => ({
             ...r,
-            refName: refNameAliases[r.refName] || r.refName,
+            refName: refNameAliases[r.refName] ?? r.refName,
             assemblyName,
           })),
           cytobands: await getCytobands({

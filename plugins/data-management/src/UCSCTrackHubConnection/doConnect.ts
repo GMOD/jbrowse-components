@@ -16,7 +16,7 @@ export async function doConnect(self: {
 }) {
   const { pluginManager } = getEnv(self)
   const session = getSession(self)
-  const notLoadedAssemblies = [] as string[]
+  const notLoadedAssemblies: string[] = []
   try {
     const hubFileLocation = getConf(self, 'hubTxtLocation') as UriLocation
     const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
@@ -97,7 +97,7 @@ export async function doConnect(self: {
             locationType: 'LocalPathLocation' as const,
           }
       const genomesFile = await fetchGenomesFile(genomesFileLocation)
-      const map = {} as Record<string, number>
+      const map: Record<string, number> = {}
       for (const [genomeName, genome] of Object.entries(genomesFile.data)) {
         const assemblyNames = getConf(self, 'assemblyNames')
         if (assemblyNames.length > 0 && !assemblyNames.includes(genomeName)) {

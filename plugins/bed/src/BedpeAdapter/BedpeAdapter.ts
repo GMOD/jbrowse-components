@@ -36,8 +36,8 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
       i++
     }
     const header = lines.slice(0, i).join('\n')
-    const feats1 = {} as Record<string, string[]>
-    const feats2 = {} as Record<string, string[]>
+    const feats1: Record<string, string[]> = {}
+    const feats2: Record<string, string[]> = {}
     for (; i < lines.length; i++) {
       const line = lines[i]!
       const cols = line.split('\t')

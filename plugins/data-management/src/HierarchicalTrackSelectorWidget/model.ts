@@ -533,9 +533,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       get flattenedItems() {
         const { folderCategories } = self
         const sortedChildren = (items: TreeNode[]) => {
-          const tracks = [] as TreeNode[]
-          const folders = [] as TreeNode[]
-          const categories = [] as TreeNode[]
+          const tracks: TreeNode[] = []
+          const folders: TreeNode[] = []
+          const categories: TreeNode[] = []
           for (const item of items) {
             if (item.type === 'track') {
               tracks.push(item)
@@ -547,7 +547,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           }
           return [...tracks, ...folders, ...categories]
         }
-        const flatten = (items: TreeNode[], result = [] as TreeNode[]) => {
+        const flatten = (items: TreeNode[], result: TreeNode[] = []) => {
           for (const item of sortedChildren(items)) {
             result.push(item)
             const isFolderCategory =

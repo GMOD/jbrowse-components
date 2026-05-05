@@ -18,7 +18,7 @@ export default function VariantGenotypeFrequencyTable({
   setSelectedGenotypes: (v: Set<string> | null) => void
   showToolbar?: boolean
 }) {
-  const summary = {} as FrequencyTable
+  const summary: FrequencyTable = {}
   for (const row of rows) {
     const gt = row.GT
     summary[gt] ??= {

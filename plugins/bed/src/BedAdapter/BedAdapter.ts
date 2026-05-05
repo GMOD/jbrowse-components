@@ -40,8 +40,8 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
       opts,
     )
 
-    const headerLines = [] as string[]
-    const features = {} as Record<string, string[]>
+    const headerLines: string[] = []
+    const features: Record<string, string[]> = {}
     parseLineByLine(
       buffer,
       line => {

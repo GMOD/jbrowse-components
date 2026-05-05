@@ -30,12 +30,8 @@ function getTrackWarnings({
 }: {
   trackWarnings: TrackWarning[]
 }) {
-  const rows = [] as {
-    name: string
-    message: string
-    effect: string
-    id: string
-  }[]
+  const rows: { name: string; message: string; effect: string; id: string }[] =
+    []
   for (const [i, trackWarning] of trackWarnings.entries()) {
     const track = trackWarning
     const name = getConf(track, 'name')

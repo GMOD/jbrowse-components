@@ -55,7 +55,7 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
           }
 
           if (init.tracks) {
-            const idsNotFound = [] as string[]
+            const idsNotFound: string[] = []
             for (const t of init.tracks) {
               try {
                 if (typeof t === 'string') {

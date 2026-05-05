@@ -192,7 +192,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          */
         trackLabels: types.optional(
           types.string,
-          () => localStorageGetItem('lgv-trackLabels') || '',
+          () => localStorageGetItem('lgv-trackLabels') ?? '',
         ),
 
         /**

@@ -58,7 +58,7 @@ function generate_record(
 export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
   const { statusCallback = () => {} } = opts ?? {}
   const decoder = new TextDecoder('utf8')
-  const records = [] as ReturnType<typeof generate_record>[]
+  const records: ReturnType<typeof generate_record>[] = []
 
   let t_name = ''
   let t_start = 0

@@ -57,6 +57,17 @@ export async function fetchResults({
  * 2. Parse as refname-only — looks up chromosome extent from assembly regions.
  * 3. Text search (gene/feature name) — resolves the first hit's location.
  */
+function tryParse(
+  str: string,
+  isValidRefName: (ref: string) => boolean,
+) {
+  try {
+    return parseLocString(str, isValidRefName)
+  } catch {
+    return undefined
+  }
+}
+
 export async function resolveLocString({
   input,
   session,
@@ -71,13 +82,7 @@ export async function resolveLocString({
   const isValidRefName = (ref: string) =>
     assemblyManager.isValidRefName(ref, assemblyName)
 
-  let parsed
-  try {
-    parsed = parseLocString(input, isValidRefName)
-  } catch {
-    parsed = undefined
-  }
-
+  const parsed = tryParse(input, isValidRefName)
   if (parsed) {
     if (parsed.start !== undefined && parsed.end !== undefined) {
       return { refName: parsed.refName, start: parsed.start, end: parsed.end }
@@ -105,12 +110,7 @@ export async function resolveLocString({
     throw new Error(`"${input}" not found in assembly ${assemblyName}`)
   }
   const hitLoc = hit.getLocation() ?? hit.getLabel()
-  let hitParsed
-  try {
-    hitParsed = parseLocString(hitLoc, isValidRefName)
-  } catch {
-    hitParsed = undefined
-  }
+  const hitParsed = tryParse(hitLoc, isValidRefName)
   if (hitParsed?.start !== undefined && hitParsed.end !== undefined) {
     return {
       refName: hitParsed.refName,

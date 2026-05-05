@@ -38,8 +38,8 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
   private async loadDataP(opts?: BaseOptions) {
     const loc = openLocation(this.getConf('gtfLocation'), this.pluginManager)
     const buffer = await fetchAndMaybeUnzip(loc, opts)
-    const headerLines = [] as string[]
-    const featureMap = {} as Record<string, string>
+    const headerLines: string[] = []
+    const featureMap: Record<string, string> = {}
 
     parseLineByLine(
       buffer,
@@ -182,7 +182,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
         }
       }
 
-      const parentAggregation = {} as Record<string, SimpleFeatureSerialized[]>
+      const parentAggregation: Record<string, SimpleFeatureSerialized[]> = {}
       for (const feat of feats) {
         const aggr = feat[aggregateField] as string
         parentAggregation[aggr] ??= []

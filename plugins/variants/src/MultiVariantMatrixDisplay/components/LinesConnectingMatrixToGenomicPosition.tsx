@@ -102,7 +102,7 @@ const AllLines = observer(function AllLines({
       return ''
     }
     const tickHeight = 6
-    const parts = [] as string[]
+    const parts: string[] = []
     for (let i = 0; i < n; i++) {
       const gx = getGenomicX(view, assembly, featuresVolatile[i]!, offsetAdj)
       const mx = i * w + w / 2

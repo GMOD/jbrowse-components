@@ -21,7 +21,7 @@ export class BaseAdapter {
 
   sequenceAdapterConfig?: Record<string, unknown>
 
-  static capabilities = [] as string[]
+  static capabilities: string[] = []
 
   constructor(
     config: AnyConfigurationModel = EmptyConfig.create(),

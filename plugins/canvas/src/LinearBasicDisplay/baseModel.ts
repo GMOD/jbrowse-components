@@ -339,18 +339,12 @@ export default function baseStateModelFactory(
 
         get hoveredFeature() {
           const id = self.featureIdUnderMouse
-          if (id) {
-            return this.featureIdIndex.get(id) ?? null
-          }
-          return null
+          return id ? (this.featureIdIndex.get(id) ?? null) : null
         },
 
         get hoveredSubfeature() {
           const id = self.subfeatureIdUnderMouse
-          if (id) {
-            return this.subfeatureIdIndex.get(id) ?? null
-          }
-          return null
+          return id ? (this.subfeatureIdIndex.get(id) ?? null) : null
         },
 
         get maxFeatureDensity() {

@@ -29,9 +29,12 @@ const AlignmentsDisplayComponent = observer(
   }) {
     const { classes } = useStyles()
     const ref = useRef<HTMLDivElement>(null)
-    const coord0: [number, number] = [0, 0]
-    const [offsetMouseCoord, setOffsetMouseCoord] = useState(coord0)
-    const [clientMouseCoord, setClientMouseCoord] = useState(coord0)
+    const [offsetMouseCoord, setOffsetMouseCoord] = useState<[number, number]>([
+      0, 0,
+    ])
+    const [clientMouseCoord, setClientMouseCoord] = useState<[number, number]>([
+      0, 0,
+    ])
     const view = getContainingView(model) as LinearGenomeViewModel
 
     if (!view.initialized) {
@@ -49,6 +52,12 @@ const AlignmentsDisplayComponent = observer(
       contextMenuCoord,
     } = model
     const items = contextMenuCoord ? model.contextMenuItems() : []
+    const clearContextMenu = () => {
+      model.setContextMenuCoord(undefined)
+      model.setContextMenuFeature(undefined)
+      model.setContextMenuCigarHit(undefined)
+      model.setContextMenuIndicatorHit(undefined)
+    }
     return (
       <div
         ref={ref}
@@ -81,21 +90,9 @@ const AlignmentsDisplayComponent = observer(
               callback()
               model.setContextMenuCoord(undefined)
             }}
-            onClose={() => {
-              model.setContextMenuCoord(undefined)
-              model.setContextMenuFeature(undefined)
-              model.setContextMenuCigarHit(undefined)
-              model.setContextMenuIndicatorHit(undefined)
-            }}
+            onClose={clearContextMenu}
             slotProps={{
-              transition: {
-                onExit: () => {
-                  model.setContextMenuCoord(undefined)
-                  model.setContextMenuFeature(undefined)
-                  model.setContextMenuCigarHit(undefined)
-                  model.setContextMenuIndicatorHit(undefined)
-                },
-              },
+              transition: { onExit: clearContextMenu },
             }}
             anchorReference="anchorPosition"
             anchorPosition={{
