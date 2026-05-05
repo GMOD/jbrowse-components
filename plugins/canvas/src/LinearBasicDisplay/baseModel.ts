@@ -613,6 +613,11 @@ export default function baseStateModelFactory(
               b.pruneRegions(active)
             },
             render: b => {
+              if (self.laidOutDataMap.size === 0) {
+                console.warn('[canvas render] laidOutDataMap empty, skip draw')
+                return false
+              }
+              console.warn('[canvas render] drawing, laidOutDataMap.size=', self.laidOutDataMap.size)
               b.renderBlocks(self.renderBlocks, self.renderState)
               return true
             },

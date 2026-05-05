@@ -54,11 +54,13 @@ export function GpuBackendLifecycleSlotMixin() {
     .actions(self => ({
       markCanvasDrawn() {
         if (!self.canvasDrawn) {
+          console.warn('[GpuBackend] canvasDrawn → true')
           self.canvasDrawn = true
         }
       },
       resetCanvasDrawn() {
         if (self.canvasDrawn) {
+          console.warn('[GpuBackend] canvasDrawn → false')
           self.canvasDrawn = false
         }
       },
