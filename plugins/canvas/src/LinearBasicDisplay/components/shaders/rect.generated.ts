@@ -11,6 +11,8 @@ export const GLSL_FRAGMENT = "#version 300 es\nprecision highp float;\nprecision
 
 export const VERTS_PER_INSTANCE = 6
 
+export const MIN_RECT_WIDTH_PX = 2
+
 export const UNIFORMS_SIZE_BYTES = 48
 export const UNIFORMS_SIZE_F32 = 12
 

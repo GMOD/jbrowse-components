@@ -70,7 +70,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
 
   float halfW = CHEVRON_W_PX / u.canvasWidth;
   float halfH = CHEVRON_H_PX / u.canvasHeight;
-  float thickness = CHEVRON_THICKNESS_PX * 2.0 / u.canvasHeight;
+  float halfThickness = CHEVRON_THICKNESS_PX / u.canvasHeight;
   float dir = lerp(inst.direction, -inst.direction, u.reversed);
 
   bool isTopArm = v < 6u;
@@ -83,12 +83,12 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float sx;
   float sy;
   switch (qv) {
-    case 0u: sx = outerX; sy = cy + armY;                                        break;
-    case 1u: sx = tipX;   sy = cy + thickness * 0.5;                             break;
-    case 2u: sx = tipX;   sy = cy - thickness * 0.5;                             break;
-    case 3u: sx = outerX; sy = cy + armY;                                        break;
-    case 4u: sx = tipX;   sy = cy - thickness * 0.5;                             break;
-    default: sx = outerX; sy = cy + armY - (isTopArm ? thickness : -thickness);  break;
+    case 0u: sx = outerX; sy = cy + armY;                                                    break;
+    case 1u: sx = tipX;   sy = cy + halfThickness;                                           break;
+    case 2u: sx = tipX;   sy = cy - halfThickness;                                           break;
+    case 3u: sx = outerX; sy = cy + armY;                                                    break;
+    case 4u: sx = tipX;   sy = cy - halfThickness;                                           break;
+    default: sx = outerX; sy = cy + armY - (isTopArm ? halfThickness*2 : -halfThickness*2); break;
   }
 
   o.position = float4(sx, sy, 0.0, 1.0);

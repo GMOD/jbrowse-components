@@ -5,7 +5,7 @@ export const LABEL_FONT_SIZE = 11
 export const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
 
 // Drawing dimensions (in pixels)
-export const MIN_RECT_WIDTH_PX = 2
+export { MIN_RECT_WIDTH_PX } from './shaders/rect.generated.ts'
 export {
   CHEVRON_SPACING_PX,
   CHEVRON_W_PX,

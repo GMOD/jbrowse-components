@@ -6,6 +6,7 @@
 // vertex.buffers; Slang's GLSL output emits `in T a_field;` declarations
 // that WebGL2 binds via `vertexAttribPointer` / `vertexAttribIPointer`.
 //! targets: wgsl, glsl
+//! export-consts: MIN_RECT_WIDTH_PX
 
 import hpmath;
 import colorPack;
@@ -13,7 +14,6 @@ import canvasUniforms;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
-// Mirrors sharedRendererConstants.MIN_RECT_WIDTH_PX (= 2).
 static const float MIN_RECT_WIDTH_PX = 2.0;
 
 struct RectInstance {
