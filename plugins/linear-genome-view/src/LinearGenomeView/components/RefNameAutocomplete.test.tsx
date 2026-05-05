@@ -9,34 +9,59 @@ import { userEvent } from '@testing-library/user-event'
 
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
-function setup() {
-  const session = createTestSession({
-    sessionSnapshot: {
-      views: [
+const sessionSnapshot = {
+  views: [
+    {
+      type: 'LinearGenomeView',
+      offsetPx: 0,
+      bpPerPx: 1,
+      displayedRegions: [
         {
-          type: 'LinearGenomeView',
-          offsetPx: 0,
-          bpPerPx: 1,
-          displayedRegions: [
-            {
-              assemblyName: 'volvox',
-              refName: 'ctgA',
-              start: 0,
-              end: 100,
-            },
-          ],
-          tracks: [],
-          configuration: {},
+          assemblyName: 'volvox',
+          refName: 'ctgA',
+          start: 0,
+          end: 100,
         },
       ],
+      tracks: [],
+      configuration: {},
     },
-  }) as any
+  ],
+}
+
+function setup() {
+  const session = createTestSession({ sessionSnapshot }) as any
   session.addAssemblyConf({
     name: 'volvox',
     sequence: {
       trackId: 'ref0',
       type: 'ReferenceSequenceTrack',
       adapter: { type: 'FromConfigSequenceAdapter', features: [] },
+    },
+  })
+  const model = session.views[0]
+  return { model, session: getSession(model) }
+}
+
+function setupWithChromosome() {
+  const session = createTestSession({ sessionSnapshot }) as any
+  session.addAssemblyConf({
+    name: 'volvox',
+    sequence: {
+      trackId: 'ref0',
+      type: 'ReferenceSequenceTrack',
+      adapter: {
+        type: 'FromConfigSequenceAdapter',
+        features: [
+          {
+            refName: 'ctgA',
+            uniqueId: 'ctgA',
+            start: 0,
+            end: 100,
+            seq: 'A'.repeat(100),
+          },
+        ],
+      },
     },
   })
   const model = session.views[0]
@@ -242,6 +267,27 @@ describe('RefNameAutocomplete', () => {
 
     await waitFor(() => {
       expect(screen.getByText('ctgA:1..100')).toBeTruthy()
+    }, patience)
+  })
+
+  it('shows chromosome names when value is a locstring (regression: chromosomes were filtered out)', async () => {
+    const user = userEvent.setup()
+    const { session } = setupWithChromosome()
+
+    render(
+      <RefNameAutocomplete
+        session={session}
+        assemblyName="volvox"
+        value="ctgA:1-100"
+        fetchResults={async () => []}
+      />,
+    )
+
+    const input = screen.getByPlaceholderText('Search for location')
+    await user.click(input)
+
+    await waitFor(() => {
+      expect(screen.getByText('ctgA')).toBeTruthy()
     }, patience)
   })
 })

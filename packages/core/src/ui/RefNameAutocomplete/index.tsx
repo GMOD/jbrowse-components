@@ -186,7 +186,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       }}
       options={searchOptions?.length ? searchOptions : regionOptions}
       getOptionDisabled={option => option.group === 'limitOption'}
-      filterOptions={(opts, { inputValue }) => getFiltered(opts, inputValue)}
+      filterOptions={opts => getFiltered(opts, currentSearch)}
       renderInput={({ slotProps: paramSlotProps, ...restParams }) => (
         <TextField
           onBlur={() => {
