@@ -38,7 +38,7 @@
     "@mui/x-data-grid": "9.0.4",
     "base64-js": "^1.5.1",
     "copy-to-clipboard": "^4.0.2",
-    "mobx": "^6.15.0",
+    "mobx": "6.15.0",
     "mobx-react": "^9.2.1",
     "pako-esm2": "^2.0.2"
   },

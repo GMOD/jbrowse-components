@@ -36,7 +36,7 @@
     "@mui/x-charts-vendor": "^8.26.0",
     "generic-filehandle2": "^2.1.7",
     "hic-straw": "^2.1.4",
-    "mobx": "^6.15.0",
+    "mobx": "6.15.0",
     "mobx-react": "^9.2.1",
     "rxjs": "^7.8.2"
   },

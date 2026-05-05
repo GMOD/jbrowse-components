@@ -37,7 +37,7 @@
     "@jbrowse/mobx-state-tree": "^5.6.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@mui/material": "^9.0.0",
-    "mobx": "^6.15.0",
+    "mobx": "6.15.0",
     "mobx-react": "^9.2.1"
   },
   "peerDependencies": {

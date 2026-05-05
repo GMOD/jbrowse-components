@@ -82,7 +82,7 @@
     "@mui/material": "^9.0.0",
     "base64-js": "^1.5.1",
     "dockview-core": "^6.0.1",
-    "mobx": "^6.15.0",
+    "mobx": "6.15.0",
     "mobx-react": "^9.2.1",
     "pako-esm2": "^2.0.2"
   },

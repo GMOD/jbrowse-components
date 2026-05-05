@@ -5,7 +5,7 @@ import '@fontsource/roboto'
 import Loader from './components/Loader.tsx'
 import PlatformSpecificErrorDialog from './components/PlatformSpecificErrorDialog.tsx'
 
-import 'dockview-react/dist/styles/dockview.css'
+import 'dockview/dist/styles/dockview.css'
 
 if (window.name.startsWith('JBrowseAuthWindow')) {
   window.opener?.postMessage({

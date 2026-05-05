@@ -85,7 +85,7 @@
     "electron-debug": "^4.1.0",
     "electron-updater": "^6.8.3",
     "json-parse-even-better-errors": "^5.0.0",
-    "mobx": "^6.15.0",
+    "mobx": "6.15.0",
     "mobx-react": "^9.2.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",

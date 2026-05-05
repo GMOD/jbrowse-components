@@ -10,7 +10,7 @@ allowBuilds:
   electron-chromedriver: true
   esbuild: true
   puppeteer: true
-  unrs-resolver: set this to true or false
+  unrs-resolver: true
 minimumReleaseAge: '1440'
 minimumReleaseAgeExclude:
   - '@gmod/*'

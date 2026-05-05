@@ -76,7 +76,7 @@
     "dockview-core": "^6.0.1",
     "generic-filehandle2": "^2.1.7",
     "idb": "^8.0.3",
-    "mobx": "^6.15.0",
+    "mobx": "6.15.0",
     "mobx-react": "^9.2.1",
     "pako-esm2": "^2.0.2",
     "pixelmatch": "^7.2.0",
