@@ -86,7 +86,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
-    <ThemeProvider theme={createJBrowseTheme(theme)}>
+    <ThemeProvider theme={jbrowseTheme}>
       <Wrapper>
         <svg
           width={w}
