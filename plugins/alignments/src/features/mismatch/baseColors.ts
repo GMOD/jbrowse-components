@@ -1,7 +1,7 @@
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 
-import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
 import type { RenderState } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
 
 // Canvas-side equivalents of the GPU palette swap in GpuAlignmentsRenderer.writeUniforms.
 // When showModifications is true, all per-base colors collapse to colorMutedSnpBase (grey)

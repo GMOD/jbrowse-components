@@ -11,7 +11,10 @@ const CoverageYScaleBar = observer(function CoverageYScaleBar({
   orientation?: 'left' | 'right'
 }) {
   return (
-    <YScaleBar ticks={model.coverageTicks} orientation={orientation ?? 'left'} />
+    <YScaleBar
+      ticks={model.coverageTicks}
+      orientation={orientation ?? 'left'}
+    />
   )
 })
 

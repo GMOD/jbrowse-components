@@ -23,7 +23,8 @@ export async function fetchTrackData(
   const { pluginManager } = getEnv(model)
   const adapterConfig = getConf(model, ['adapter'])
   const adapterType = pluginManager.getAdapterType(adapterConfig.type)
-  const supportsExport = adapterType?.adapterCapabilities?.includes('exportData')
+  const supportsExport =
+    adapterType?.adapterCapabilities?.includes('exportData')
   const session = getSession(model)
   const sessionId = getRpcSessionId(model)
   const regions = roundRegions(visibleRegions)
@@ -36,10 +37,14 @@ export async function fetchTrackData(
     })
     return { str, usedAdapterExport: true }
   } else {
-    const features = await session.rpcManager.call(sessionId, 'CoreGetFeatures', {
-      adapterConfig,
-      regions,
-    })
+    const features = await session.rpcManager.call(
+      sessionId,
+      'CoreGetFeatures',
+      {
+        adapterConfig,
+        regions,
+      },
+    )
     const str = await options[type]!.callback({
       features,
       session,

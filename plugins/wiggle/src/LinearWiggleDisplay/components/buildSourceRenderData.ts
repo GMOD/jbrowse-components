@@ -4,11 +4,11 @@ import { makeWhiskersSourceData } from '../../shared/wiggleComponentUtils.ts'
 import { getEffectiveScores, isDefaultBicolor } from '../../util.ts'
 
 import type { WiggleDataResult } from '../../RenderWiggleDataRPC/types.ts'
-import type { YScaleTicks } from '@jbrowse/wiggle-core'
 import type {
   SourceRenderData,
   WiggleBackend,
 } from '../../shared/wiggleBackendTypes.ts'
+import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 // The shape of `model.gpuProps` — the source of truth for "settings that
 // affect the per-instance GPU buffer encoding". buildSourceRenderData
@@ -48,6 +48,7 @@ export interface WiggleDisplayModel extends WiggleGpuProps {
   setFeatureUnderMouse: (feat?: WiggleDisplayModel['featureUnderMouse']) => void
   reload: () => void
   canvasDrawn: boolean
+  fullyDrawn: boolean
   startGpuBackendLifecycle: (backend: WiggleBackend) => void
   stopGpuBackendLifecycle: () => void
   renderNow: () => void

@@ -5,6 +5,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, SvgTreePath } from '@jbrowse/tree-sidebar'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
 import { buildMultiSourceRenderData } from './components/buildMultiSourceRenderData.ts'
@@ -15,7 +16,6 @@ import {
 import DensityLegend from '../shared/DensityLegend.tsx'
 import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../shared/ScoreLegend.tsx'
-import { YScaleBar } from '@jbrowse/wiggle-core'
 import { getRowTop } from '../shared/wiggleComponentUtils.ts'
 
 import type { MultiLinearWiggleDisplayModel } from './model.ts'

@@ -304,7 +304,11 @@ describe('formatMultiLevelFeat', () => {
         end: 200,
       },
     })
-    const result = formatMultiLevelFeat({ feature: f, parentId: 'parent1', parentRef: 'chr5' })
+    const result = formatMultiLevelFeat({
+      feature: f,
+      parentId: 'parent1',
+      parentRef: 'chr5',
+    })
     expect(result).toContain('chr5\t')
     expect(result).toContain('Parent=parent1')
   })

@@ -62,7 +62,6 @@ import type {
   ColorPalette,
   RenderState as AlignmentsRenderState,
 } from './components/AlignmentsRenderer.ts'
-import type { YScaleTicks } from '@jbrowse/wiggle-core'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type { CigarHitResult } from '../shared/hitTestTypes.ts'
 import type { AlignmentsBackend } from './components/rendererTypes.ts'
@@ -87,6 +86,7 @@ import type {
   FetchContext,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 type LGV = LinearGenomeViewModel
 

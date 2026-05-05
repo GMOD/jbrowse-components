@@ -6,10 +6,10 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
 import { drawAlignmentsToCtx } from './components/Canvas2DAlignmentsRenderer.ts'
-import { YScaleBar } from '@jbrowse/wiggle-core'
 import { computePileupBezierArcs } from '../features/arcs/computeOverlay.ts'
 import { computeSashimiArcs } from '../features/sashimi/computeOverlay.ts'
 

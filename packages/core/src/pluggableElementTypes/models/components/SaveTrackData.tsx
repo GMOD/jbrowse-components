@@ -20,10 +20,10 @@ import {
 import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
 
+import { fetchTrackData } from './fetchTrackData.ts'
 import { Dialog, ErrorBanner } from '../../../ui/index.ts'
 import { getContainingView, saveAs } from '../../../util/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
-import { fetchTrackData } from './fetchTrackData.ts'
 
 import type { AnyConfigurationModel } from '../../../configuration/index.ts'
 import type { Region } from '../../../util/index.ts'
@@ -141,7 +141,12 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           <FormLabel>
             {`File type${usedAdapterExport ? ' (adapter export)' : ''}`}
           </FormLabel>
-          <RadioGroup value={type} onChange={e => setType(e.target.value)}>
+          <RadioGroup
+            value={type}
+            onChange={e => {
+              setType(e.target.value)
+            }}
+          >
             {Object.entries(options).map(([key, val]) => (
               <div key={key} className={classes.formatRow}>
                 <FormControlLabel
@@ -152,7 +157,9 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
                 {val.helpText ? (
                   <IconButton
                     size="small"
-                    onClick={() => setHelpText(val.helpText)}
+                    onClick={() => {
+                      setHelpText(val.helpText)
+                    }}
                     title="Show help for this format"
                   >
                     <HelpOutlineIcon fontSize="small" />
@@ -190,7 +197,9 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
             copy(str)
             setCopied(true)
             clearTimeout(copyTimer.current)
-            copyTimer.current = setTimeout(() => setCopied(false), 1000)
+            copyTimer.current = setTimeout(() => {
+              setCopied(false)
+            }, 1000)
           }}
           startIcon={<ContentCopyIcon />}
         >
@@ -213,7 +222,12 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           Close
         </Button>
       </DialogActions>
-      <HelpDialog text={helpText} onClose={() => setHelpText(undefined)} />
+      <HelpDialog
+        text={helpText}
+        onClose={() => {
+          setHelpText(undefined)
+        }}
+      />
     </Dialog>
   )
 })

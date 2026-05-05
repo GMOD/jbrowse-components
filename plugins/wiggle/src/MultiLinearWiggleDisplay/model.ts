@@ -305,9 +305,11 @@ export default function stateModelFactory(
         })
         const minimalTicks = self.getConfWithOverride<boolean>('minimalTicks')
         const values =
-          rowHeight < 100 || minimalTicks ? (domain as number[]) : scale.ticks(4)
+          rowHeight < 100 || minimalTicks
+            ? (domain as number[])
+            : scale.ticks(4)
         return {
-          ticks: values.map(v => ({ value: v, y: scale(v) as number })),
+          ticks: values.map(v => ({ value: v, y: scale(v) })),
           yTop: 0,
           yBottom: rowHeight,
         }

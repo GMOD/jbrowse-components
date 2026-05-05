@@ -617,7 +617,10 @@ export default function baseStateModelFactory(
                 console.warn('[canvas render] laidOutDataMap empty, skip draw')
                 return false
               }
-              console.warn('[canvas render] drawing, laidOutDataMap.size=', self.laidOutDataMap.size)
+              console.warn(
+                '[canvas render] drawing, laidOutDataMap.size=',
+                self.laidOutDataMap.size,
+              )
               b.renderBlocks(self.renderBlocks, self.renderState)
               return true
             },

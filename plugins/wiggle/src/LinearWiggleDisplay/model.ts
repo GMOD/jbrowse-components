@@ -241,7 +241,7 @@ export default function stateModelFactory(
         const values =
           height < 100 || minimalTicks ? (domain as number[]) : scale.ticks(4)
         return {
-          ticks: values.map(v => ({ value: v, y: scale(v) as number })),
+          ticks: values.map(v => ({ value: v, y: scale(v) })),
           yTop: YSCALEBAR_LABEL_OFFSET,
           yBottom: height - YSCALEBAR_LABEL_OFFSET,
         }

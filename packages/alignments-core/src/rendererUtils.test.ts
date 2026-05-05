@@ -147,7 +147,15 @@ describe('drawSnpSegments', () => {
 })
 
 describe('drawModCovSegments', () => {
-  function makeModCovBuf(pos: number, yOffset: number, segH: number, r: number, g: number, b: number, a: number) {
+  function makeModCovBuf(
+    pos: number,
+    yOffset: number,
+    segH: number,
+    r: number,
+    g: number,
+    b: number,
+    a: number,
+  ) {
     const buf = new ArrayBuffer(16)
     const u32 = new Uint32Array(buf)
     const f32 = new Float32Array(buf)
@@ -155,7 +163,8 @@ describe('drawModCovSegments', () => {
     f32[1] = yOffset
     f32[2] = segH
     // packed ABGR: r in bits 0-7, g in 8-15, b in 16-23, a in 24-31
-    u32[3] = (r & 0xff) | ((g & 0xff) << 8) | ((b & 0xff) << 16) | ((a & 0xff) << 24)
+    u32[3] =
+      (r & 0xff) | ((g & 0xff) << 8) | ((b & 0xff) << 16) | ((a & 0xff) << 24)
     return buf
   }
 
@@ -185,8 +194,8 @@ describe('drawModCovSegments', () => {
     const buf = makeModCovBuf(100, 0.5, 0.3, 200, 100, 50, 255)
     const { ctx, calls } = makeCtx()
     drawModCovSegments(ctx, buf, 1, 1, 50, bp => (bp - 100) * 5, 200)
-    const styleCalls = calls.filter(c => c.method === 'fillStyle')
-    expect(styleCalls[0]?.args[0]).toBe('rgba(200,100,50,1)')
+    const styleCall = calls.find(c => c.method === 'fillStyle')
+    expect(styleCall?.args[0]).toBe('rgba(200,100,50,1)')
   })
 })
 

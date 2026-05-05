@@ -75,7 +75,9 @@ export default function FetchMixin() {
       // exceptions silently, others stored in self.error if not stale).
       // The finally block clears the stop token and bumps fetchGeneration.
       runFetch: flow(function* (work: (ctx: FetchContext) => Promise<void>) {
-        console.warn(`[FetchMixin] runFetch start (isLoading->true) t=${Date.now()}`)
+        console.warn(
+          `[FetchMixin] runFetch start (isLoading->true) t=${Date.now()}`,
+        )
         if (self.activeStopToken) {
           stopStopToken(self.activeStopToken)
         }

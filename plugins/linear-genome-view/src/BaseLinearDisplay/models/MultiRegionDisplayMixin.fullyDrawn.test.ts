@@ -7,7 +7,12 @@ import FetchMixin from './FetchMixin.ts'
 // That mixin can't be instantiated standalone (afterAttach calls getContainingView),
 // so we compose the two source mixins here and mirror the one-liner getter.
 const TestModel = types
-  .compose('TestModel', GpuBackendLifecycleSlotMixin(), FetchMixin(), types.model({}))
+  .compose(
+    'TestModel',
+    GpuBackendLifecycleSlotMixin(),
+    FetchMixin(),
+    types.model({}),
+  )
   .views(self => ({
     get fullyDrawn() {
       return self.canvasDrawn && !self.isLoading
@@ -54,10 +59,16 @@ describe('fullyDrawn: loading overlay invariant', () => {
 
   test('true only after canvas drawn AND no active fetch', () => {
     const m = TestModel.create()
-    m.installGpuDisplay({ renders: 0 }, {
-      upload: () => {},
-      render: b => { b.renders++; return true },
-    })
+    m.installGpuDisplay(
+      { renders: 0 },
+      {
+        upload: () => {},
+        render: b => {
+          b.renders++
+          return true
+        },
+      },
+    )
     expect(m.canvasDrawn).toBe(true)
     expect(m.isLoading).toBe(false)
     expect(m.fullyDrawn).toBe(true)
@@ -65,10 +76,16 @@ describe('fullyDrawn: loading overlay invariant', () => {
 
   test('resets to false after resetCanvasDrawn (simulates clearAllRpcData)', () => {
     const m = TestModel.create()
-    m.installGpuDisplay({ renders: 0 }, {
-      upload: () => {},
-      render: b => { b.renders++; return true },
-    })
+    m.installGpuDisplay(
+      { renders: 0 },
+      {
+        upload: () => {},
+        render: b => {
+          b.renders++
+          return true
+        },
+      },
+    )
     expect(m.fullyDrawn).toBe(true)
     m.resetCanvasDrawn()
     expect(m.fullyDrawn).toBe(false)
@@ -94,10 +111,16 @@ describe('fullyDrawn: loading overlay invariant', () => {
     expect(m.fullyDrawn).toBe(false)
 
     // Phase 4: GPU backend installs and renders first frame
-    m.installGpuDisplay({ renders: 0 }, {
-      upload: () => {},
-      render: b => { b.renders++; return true },
-    })
+    m.installGpuDisplay(
+      { renders: 0 },
+      {
+        upload: () => {},
+        render: b => {
+          b.renders++
+          return true
+        },
+      },
+    )
     expect(m.fullyDrawn).toBe(true)
   })
 })

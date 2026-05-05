@@ -70,3 +70,12 @@ put these on a new branch though
 
 Moves around slightly during zoom, audit pixel usage
 
+
+## Difference between 'fullyDrawn' vs 'canvasDrawn'
+
+
+
+## Chevrons in plugins/canvas look bad webgpu/webgl (looks sorta pixelated, not clean, ideally a bit more subtle) and canvas (slightly bolder in canvas, ideally more subtle)
+
+
+## After 'gene name' is in refnameautocomplete, can't select chr names anymore

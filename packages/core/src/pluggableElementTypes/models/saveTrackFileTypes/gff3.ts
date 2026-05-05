@@ -125,15 +125,13 @@ export function formatMultiLevelFeat({
 
   return [
     primary,
-    ...(feature
-      .get('subfeatures')
-      ?.map(sub =>
-        formatMultiLevelFeat({
-          feature: sub,
-          parentId: featureId,
-          parentRef: featureRefName,
-        }),
-      ) ?? []),
+    ...(feature.get('subfeatures')?.map(sub =>
+      formatMultiLevelFeat({
+        feature: sub,
+        parentId: featureId,
+        parentRef: featureRefName,
+      }),
+    ) ?? []),
   ].join('\n')
 }
 

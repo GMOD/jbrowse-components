@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 
 import { ErrorOverlay } from '@jbrowse/core/ui'
 import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import WiggleTooltip from './WiggleTooltip.tsx'
@@ -11,7 +12,6 @@ import {
   WiggleErrorBar,
   WiggleLoadingOverlay,
 } from '../../shared/WiggleStatusOverlays.tsx'
-import { YScaleBar } from '@jbrowse/wiggle-core'
 import {
   findFeatureAtBp,
   hitTestMouse,

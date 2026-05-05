@@ -4,6 +4,7 @@ import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
 import { buildSourceRenderData } from './components/buildSourceRenderData.ts'
@@ -12,7 +13,6 @@ import {
   drawWiggleBlocks,
 } from '../shared/Canvas2DWiggleRenderer.ts'
 import DensityLegend from '../shared/DensityLegend.tsx'
-import { YScaleBar } from '@jbrowse/wiggle-core'
 
 import type { LinearWiggleDisplayModel } from './model.ts'
 import type {

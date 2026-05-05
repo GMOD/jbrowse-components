@@ -3,6 +3,7 @@ import { useCallback, useRef, useState } from 'react'
 import { ErrorOverlay } from '@jbrowse/core/ui'
 import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
 import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import MultiWiggleTooltip from './Tooltip.tsx'
@@ -14,7 +15,6 @@ import {
   WiggleErrorBar,
   WiggleLoadingOverlay,
 } from '../../shared/WiggleStatusOverlays.tsx'
-import { YScaleBar } from '@jbrowse/wiggle-core'
 import {
   findFeatureAtBp,
   getRowTop,
@@ -26,13 +26,13 @@ import type {
   MultiWiggleDataResult,
   MultiWiggleSourceData,
 } from '../../RenderMultiWiggleDataRPC/types.ts'
-import type { YScaleTicks } from '@jbrowse/wiggle-core'
 import type { WiggleBackend } from '../../shared/wiggleBackendTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {
   ClusterHierarchyNode,
   HoveredTreeNode,
 } from '@jbrowse/tree-sidebar'
+import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 type LGV = LinearGenomeViewModel
 
@@ -97,6 +97,7 @@ export interface MultiWiggleDisplayModel {
     feat: NonNullable<MultiWiggleDisplayModel['featureUnderMouse']>,
   ) => void
   canvasDrawn: boolean
+  fullyDrawn: boolean
   startGpuBackendLifecycle: (backend: WiggleBackend) => void
   stopGpuBackendLifecycle: () => void
   renderNow: () => void

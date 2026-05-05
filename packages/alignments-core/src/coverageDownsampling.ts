@@ -1,8 +1,7 @@
-import type { IndelEntry } from './labelConstants.ts'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
-import type { ScoreStats, YScaleTicks } from '@jbrowse/wiggle-core'
 
-export { YSCALEBAR_LABEL_OFFSET }
+import type { IndelEntry } from './labelConstants.ts'
+import type { ScoreStats, YScaleTicks } from '@jbrowse/wiggle-core'
 
 export function niceStep(maxDepth: number) {
   const rough = maxDepth / 3
@@ -542,3 +541,5 @@ export function computeInsertionIndicators(
 
   return { positions, count: resultPositions.length }
 }
+
+export { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
