@@ -36,6 +36,11 @@ const useStyles = makeStyles()({
     fontFamily: 'Courier New',
     whiteSpace: 'pre',
   },
+  formatRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+  },
 })
 
 function HelpDialog({
@@ -138,10 +143,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           </FormLabel>
           <RadioGroup value={type} onChange={e => setType(e.target.value)}>
             {Object.entries(options).map(([key, val]) => (
-              <div
-                key={key}
-                style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
-              >
+              <div key={key} className={classes.formatRow}>
                 <FormControlLabel
                   value={key}
                   control={<Radio />}
