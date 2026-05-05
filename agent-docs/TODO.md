@@ -79,3 +79,11 @@ Moves around slightly during zoom, audit pixel usage
 
 
 ## After 'gene name' is in refnameautocomplete, can't select chr names anymore
+
+
+## nice
+
+ 3. niceStep into wiggle-core — it's currently in alignments-core and used only by
+  coverage/insert-size code. Unlike YSCALEBAR_LABEL_OFFSET, it's narrow enough that it's not worth
+  moving.
+
