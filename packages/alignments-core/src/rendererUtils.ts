@@ -251,6 +251,6 @@ export function drawModCovSegments(
     const segBottom = bottom - yOffset * depthScale * effectiveH
     const segTop = segBottom - h * depthScale * effectiveH
     ctx.fillStyle = `rgba(${r},${g},${b},${a})`
-    ctx.fillRect(px - 0.5, segTop, 1, segBottom - segTop)
+    ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segBottom - segTop)
   }
 }

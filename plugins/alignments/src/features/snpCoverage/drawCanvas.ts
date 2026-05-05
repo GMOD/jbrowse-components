@@ -1,6 +1,6 @@
 import { drawSnpSegments } from '@jbrowse/alignments-core'
 
-import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { buildCigarOpDrawColors } from '../mismatch/baseColors.ts'
 
 import type { SnpCoverageRegionFields } from './buildRegion.ts'
 import type { RenderState } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
@@ -29,15 +29,7 @@ export function drawSnpSegmentsCanvas(
     region.snpSegmentCount,
     snpDepthScale,
     state.coverageHeight,
-    {
-      baseA: rgb255(state.colors.colorBaseA),
-      baseC: rgb255(state.colors.colorBaseC),
-      baseG: rgb255(state.colors.colorBaseG),
-      baseT: rgb255(state.colors.colorBaseT),
-      mismatch: '',
-      deletion: rgb255(state.colors.colorDeletion),
-      insertion: '',
-    },
+    buildCigarOpDrawColors(state),
     bpToX,
     viewWidth,
   )
