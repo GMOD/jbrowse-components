@@ -2,6 +2,7 @@
 // 9 vertices per arrow: 6 stem vertices (two triangles) + 3 arrowhead
 // triangle vertices dispatched via vertex ID.
 //! targets: wgsl, glsl
+//! export-consts: STEM_LENGTH_PX, STEM_HALF_H_PX, HEAD_HALF_H_PX
 
 import hpmath;
 import colorPack;
@@ -9,8 +10,6 @@ import canvasUniforms;
 
 
 public static const uint VERTS_PER_INSTANCE = 9u;
-// Mirrors sharedRendererConstants.ts — these are the clip-space geometry
-// factors for the arrow stem and head, in pixels.
 static const float STEM_LENGTH_PX = 7.0;
 static const float STEM_HALF_H_PX = 0.5;
 static const float HEAD_HALF_H_PX = 2.5;

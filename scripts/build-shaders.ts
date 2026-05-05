@@ -167,6 +167,26 @@ function parseVertsPerInstance(source: string) {
   return n
 }
 
+function parseExportedConsts(
+  source: string,
+): Record<string, number> | undefined {
+  const directive = /^\/\/!\s*export-consts:\s*(.+)/m.exec(source)
+  if (!directive) {
+    return undefined
+  }
+  const names = new Set(directive[1]!.split(',').map(s => s.trim()))
+  const constRe =
+    /^\s*(?:public\s+)?static\s+const\s+(?:float|int|uint)\s+(\w+)\s*=\s*([^;]+);/gm
+  const result: Record<string, number> = {}
+  for (let m = constRe.exec(source); m; m = constRe.exec(source)) {
+    const name = m[1]!
+    if (names.has(name)) {
+      result[name] = parseFloat(m[2]!.trim())
+    }
+  }
+  return Object.keys(result).length ? result : undefined
+}
+
 function parseTargets(source: string): ('wgsl' | 'glsl')[] {
   const match = /^\/\/!\s*targets:\s*([a-zA-Z0-9,\t ]+)/m.exec(source)
   if (!match) {
@@ -431,6 +451,7 @@ function compileOne(slangPath: string) {
       glslFragment,
       textures: findCombinedSamplers(reflection),
       vertsPerInstance: parseVertsPerInstance(source),
+      exportedConsts: parseExportedConsts(source),
     })
     writeFileSync(generatedPath, generated)
     console.log(`  ok: ${generatedPath.replace(`${REPO_ROOT}/`, '')}`)

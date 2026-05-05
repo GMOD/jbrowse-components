@@ -7,17 +7,17 @@
 // chevron is 2 triangles = 12 vertices dispatched via vertex ID. Per-
 // chevron positioning is computed in the shader from viewport + line span.
 //! targets: wgsl, glsl
+//! export-consts: CHEVRON_SPACING_PX, CHEVRON_W_PX, CHEVRON_H_PX, CHEVRON_THICKNESS_PX
 
 import hpmath;
 import colorPack;
 import lineInstance;
 import canvasUniforms;
 
-// Mirrors sharedRendererConstants.ts — kept as `static const` so Slang
-// constant-folds the divisions into the vertex-shader math.
-static const float CHEVRON_SPACING_PX = 25.0;
-static const float CHEVRON_W_PX       = 4.5;
-static const float CHEVRON_H_PX       = 4.5;
+static const float CHEVRON_SPACING_PX  = 25.0;
+static const float CHEVRON_W_PX        = 4.5;
+static const float CHEVRON_H_PX        = 4.5;
+static const float CHEVRON_THICKNESS_PX = 1.0;
 
 [[vk::binding(1, 0)]] ConstantBuffer<CanvasUniforms> u;
 
@@ -70,7 +70,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
 
   float halfW = CHEVRON_W_PX / u.canvasWidth;
   float halfH = CHEVRON_H_PX / u.canvasHeight;
-  float thickness = 1.5 / u.canvasHeight;
+  float thickness = CHEVRON_THICKNESS_PX * 2.0 / u.canvasHeight;
   float dir = lerp(inst.direction, -inst.direction, u.reversed);
 
   bool isTopArm = v < 6u;

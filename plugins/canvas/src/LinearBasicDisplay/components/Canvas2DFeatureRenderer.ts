@@ -9,6 +9,7 @@ import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import {
   CHEVRON_H_PX,
   CHEVRON_SPACING_PX,
+  CHEVRON_THICKNESS_PX,
   CHEVRON_W_PX,
   HEAD_HALF_H_PX,
   MIN_RECT_WIDTH_PX,
@@ -63,7 +64,7 @@ export function drawLines(
     const rawDir = region.lineDirections[i]!
     const dir = block.reversed ? -rawDir : rawDir
     if (dir !== 0) {
-      ctx.lineWidth = 1.5
+      ctx.lineWidth = CHEVRON_THICKNESS_PX
       const lineWidthPx = Math.abs(x2 - x1)
       if (lineWidthPx >= CHEVRON_SPACING_PX * 0.5) {
         const totalChevrons = Math.max(
