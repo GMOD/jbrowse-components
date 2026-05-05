@@ -4,6 +4,7 @@ import { observer } from 'mobx-react'
 interface WiggleStatusModel {
   error: Error | null
   isLoading: boolean
+  fullyDrawn: boolean
   statusMessage?: string
   reload: () => void
 }
@@ -26,12 +27,12 @@ export const WiggleErrorBar = observer(function WiggleErrorBar({
 export const WiggleLoadingOverlay = observer(function WiggleLoadingOverlay({
   model,
 }: {
-  model: Pick<WiggleStatusModel, 'statusMessage' | 'isLoading'>
+  model: Pick<WiggleStatusModel, 'statusMessage' | 'fullyDrawn'>
 }) {
   return (
     <LoadingOverlay
       statusMessage={model.statusMessage || 'Loading'}
-      isVisible={model.isLoading}
+      isVisible={!model.fullyDrawn}
     />
   )
 })

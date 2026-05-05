@@ -67,6 +67,7 @@ export function GpuBackendLifecycleSlotMixin() {
           '[GpuBackendLifecycleSlot] stopGpuBackendLifecycle() called',
         )
         self.currentGpuBackend = undefined
+        self.canvasDrawn = false
         console.warn('[GpuBackendLifecycleSlot] GPU backend cleared')
       },
       renderNow() {

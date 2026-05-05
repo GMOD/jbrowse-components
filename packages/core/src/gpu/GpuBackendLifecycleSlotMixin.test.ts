@@ -92,7 +92,11 @@ test('stopGpuBackendLifecycle clears backend — autoruns idle', () => {
   const uploadsAtStop = backend.uploads.length
   const rendersAtStop = backend.renders
 
+  expect(model.canvasDrawn).toBe(true)
   model.stopGpuBackendLifecycle()
+
+  // canvasDrawn resets so the loading overlay re-appears during GPU re-init.
+  expect(model.canvasDrawn).toBe(false)
 
   // Mutate data — autoruns should early-return because backend is undefined.
   runInAction(() => {
