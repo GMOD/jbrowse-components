@@ -9,7 +9,10 @@ export const [LEFT, , RIGHT] = [0, 1, 2, 3] as const
 export interface OverlayProps {
   model: BreakpointViewModel
   trackId: string
+  /** SVG export: fixed track tops, scrollTops zeroed */
   yOffsetsOverride?: number[]
+  /** Live rendering: DOM-measured track tops relative to the overlay SVG */
+  domYOffsets?: number[]
 }
 
 export function useMouseoverElt() {

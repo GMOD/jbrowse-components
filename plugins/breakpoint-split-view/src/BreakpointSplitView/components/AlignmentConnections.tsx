@@ -22,6 +22,7 @@ const AlignmentConnections = observer(function AlignmentConnections({
   model,
   trackId,
   yOffsetsOverride,
+  domYOffsets,
 }: OverlayProps) {
   const { interactiveOverlay, views, showIntraviewLinks, assembly } = model
   const theme = useTheme()
@@ -31,6 +32,7 @@ const AlignmentConnections = observer(function AlignmentConnections({
   const { tracks, yOffsets, heights, getX, getY } = model.getTrackOverlayData(
     trackId,
     yOffsetsOverride,
+    domYOffsets,
   )
   const layoutMatches = match?.layoutMatches ?? []
   const hasPaired = match?.hasPairedReads

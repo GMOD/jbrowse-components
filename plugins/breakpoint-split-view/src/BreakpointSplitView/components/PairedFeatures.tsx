@@ -16,6 +16,7 @@ const PairedFeatures = observer(function PairedFeatures({
   model,
   trackId,
   yOffsetsOverride,
+  domYOffsets,
 }: OverlayProps) {
   const { interactiveOverlay, assembly } = model
   const session = getSession(model)
@@ -24,6 +25,7 @@ const PairedFeatures = observer(function PairedFeatures({
   const { tracks, getX, getY } = model.getTrackOverlayData(
     trackId,
     yOffsetsOverride,
+    domYOffsets,
   )
   const layoutMatches = match?.layoutMatches ?? []
   const totalFeatures = match?.allFeatures

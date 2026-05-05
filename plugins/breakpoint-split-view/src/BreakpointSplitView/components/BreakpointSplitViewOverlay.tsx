@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -6,6 +6,43 @@ import { observer } from 'mobx-react'
 import Overlay from './Overlay.tsx'
 
 import type { BreakpointViewModel } from '../model.ts'
+
+// Polls DOM positions each animation frame. Ref reads happen inside useEffect,
+// not during render, so they're safe from React's concurrent-mode constraints.
+function useDomTrackYOffsets(
+  views: BreakpointViewModel['views'],
+  matchedTracks: BreakpointViewModel['matchedTracks'],
+) {
+  const svgRef = useRef<SVGSVGElement>(null)
+  const [offsets, setOffsets] = useState<Record<string, number[]>>({})
+
+  useEffect(() => {
+    let rafId: number
+    function measure() {
+      const svg = svgRef.current
+      if (svg) {
+        const svgTop = svg.getBoundingClientRect().top
+        const next: Record<string, number[]> = {}
+        for (const track of matchedTracks) {
+          const { trackId } = track.configuration
+          next[trackId] = views.map(
+            view =>
+              (view.trackRefs[trackId]?.getBoundingClientRect().top ?? svgTop) -
+              svgTop,
+          )
+        }
+        setOffsets(next)
+      }
+      rafId = requestAnimationFrame(measure)
+    }
+    rafId = requestAnimationFrame(measure)
+    return () => {
+      cancelAnimationFrame(rafId)
+    }
+  }, [views, matchedTracks])
+
+  return { svgRef, offsets }
+}
 
 const useStyles = makeStyles()({
   overlay: {
@@ -69,6 +106,10 @@ const BreakpointSplitViewOverlay = observer(
   }) {
     const { classes } = useStyles()
     const { matchedTracks, views } = model
+    const { svgRef, offsets: domOffsetsByTrack } = useDomTrackYOffsets(
+      views,
+      matchedTracks,
+    )
     const divRef = useRef<HTMLDivElement>(null)
     const state = useRef<WheelState>({
       zoomAccum: 0,
@@ -178,10 +219,17 @@ const BreakpointSplitViewOverlay = observer(
 
     return (
       <div ref={divRef} className={classes.overlay}>
-        <svg className={classes.base}>
+        <svg ref={svgRef} className={classes.base}>
           {matchedTracks.map(track => {
             const trackId = track.configuration.trackId
-            return <Overlay key={trackId} model={model} trackId={trackId} />
+            return (
+              <Overlay
+                key={trackId}
+                model={model}
+                trackId={trackId}
+                domYOffsets={domOffsetsByTrack[trackId]}
+              />
+            )
           })}
         </svg>
       </div>

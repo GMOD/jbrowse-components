@@ -81,22 +81,10 @@ Aggressively simplify code where possible
 
 ## Linear synteny view
 
-Moves around during zoom, audit pixel usage
-
-## Methylation
-
-Update snp colors when methylation
-
-## Breakpoint split view
-
-Coordinates wrong
-
-Not measuring all heights
+Moves around slightly during zoom, audit pixel usage
 
 ## All tracks
 
 Slow between when track opens and loading overlay appears
 
-## Save track data
 
-SaveTrackData component quite complex

@@ -289,18 +289,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       * Per-render precompute for an overlay track: in a single O(views ×
-       * tracks) pass, gathers every reactive value the overlay loop needs
-       * (per-level track top, scroll top, display height, coverage offset,
-       * view offsetPx) into plain arrays, plus closures that do the hot-path
-       * math with array indexing only. Call once at the top of an observer
-       * render; the observer subscribes to every reactive read performed here
-       * so re-renders fire on any relevant change.
+       * Per-render precompute for an overlay track. Gathers scroll top,
+       * display height, coverage offset, and view offsetPx per level, then
+       * returns getX/getY closures for converting feature layout records to SVG
+       * coordinates.
        *
-       * Pass `yOffsetsOverride` during SVG export to substitute fixed track
-       * tops and disable scroll compensation.
+       * `yOffsetsOverride` — SVG export: fixed track tops, scrollTops zeroed.
+       * `domYOffsets` — live rendering: DOM-measured track tops (relative to
+       * the overlay SVG), scrollTops still read from model.
        */
-      getTrackOverlayData(trackId: string, yOffsetsOverride?: number[]) {
+      getTrackOverlayData(
+        trackId: string,
+        yOffsetsOverride?: number[],
+        domYOffsets?: number[],
+      ) {
         const { views } = self
         const tracks = this.getMatchedTracks(trackId)
         const n = views.length
@@ -323,7 +325,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           viewOffsetPxs[level] = view.offsetPx
 
           if (!yOffsetsOverride) {
-            yOffsets[level] = viewTop + (view.getTrackYOffset(trackId) ?? 0)
+            yOffsets[level] =
+              domYOffsets?.[level] ??
+              viewTop + (view.getTrackYOffset(trackId) ?? 0)
           }
           if (level < n - 1) {
             viewTop += view.height + VIEW_DIVIDER_HEIGHT

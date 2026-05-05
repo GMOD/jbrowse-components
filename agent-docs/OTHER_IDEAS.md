@@ -194,14 +194,19 @@ toggles) into submenu.
 **Breakpoint connectors** Smooth out awkward blue/green curves (currently
 arbitrary Y increase/loop).
 
+**BSV overlay: fix model-derived track Y positions.** `getTrackYOffset` in
+the LGV model computes track tops by summing `headerHeight + scalebarHeight +
+Σ(track.height + RESIZE_HANDLE_HEIGHT)`, but this diverges from the actual
+CSS layout for some reason (likely a gap, border, or constant mismatch). The
+current workaround is a `getBoundingClientRect` rAF loop in
+`useDomTrackYOffsets` (~60fps re-renders). Finding the discrepancy —
+`console.log(view.getTrackYOffset(id), trackRef.getBoundingClientRect().top -
+svgRef.getBoundingClientRect().top)` on a loaded view — would let us delete
+all the DOM measurement code and rely on MobX reactivity alone.
 
-**Migrate to pnpm 11** (when released) Remove `"pnpm"` from `package.json`,
-update `pnpm-workspace.yaml`, replace `pnpm install --frozen-lockfile` with
-`pnpm ci` in CI, bump `pnpm/action-setup` version to 11.
 
 
-
-**Compute shaders to Slang.** `plugins/variants/src/VariantRPC/{ldComputeShader,
+**Migrate not just regular shaders, but compute shaders to Slang also.** `plugins/variants/src/VariantRPC/{ldComputeShader,
 ldPhasedComputeShader}.ts` are hand-written WGSL (WebGPU-only). Migrate to
 Slang with `//! targets: wgsl`. Not urgent — they work.
 

@@ -17,6 +17,7 @@ const Breakends = observer(function Breakends({
   model,
   trackId,
   yOffsetsOverride,
+  domYOffsets,
 }: OverlayProps) {
   const { interactiveOverlay, views, assembly } = model
   const session = getSession(model)
@@ -25,6 +26,7 @@ const Breakends = observer(function Breakends({
   const { tracks, getX, getY } = model.getTrackOverlayData(
     trackId,
     yOffsetsOverride,
+    domYOffsets,
   )
   const layoutMatches = match?.layoutMatches ?? []
   const totalFeatures = match?.allFeatures
