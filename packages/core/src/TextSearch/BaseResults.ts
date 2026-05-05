@@ -63,7 +63,7 @@ export default class BaseResult {
     this.relevance = args.relevance
     this.trackId = args.trackId
     this.score = args.score ?? 1
-    this.results = args.results ?? []
+    this.results = args.results
   }
 
   getLabel() {
@@ -103,20 +103,10 @@ export default class BaseResult {
     return this.locString
   }
 
-  getComboResults() {
-    return this.results
-  }
 }
 
 export class RefSequenceResult extends BaseResult {
-  refName: string
-
   constructor(args: BaseResultArgs) {
-    super(args)
-    this.refName = args.refName ?? ''
-  }
-
-  getLocation() {
-    return this.refName
+    super({ ...args, locString: args.refName ?? args.locString })
   }
 }

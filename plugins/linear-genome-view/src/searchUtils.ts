@@ -1,4 +1,5 @@
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import { filterRefNames } from '@jbrowse/core/TextSearch/fetchResults'
 import { dedupe, getEnv, getSession } from '@jbrowse/core/util'
 
 import { parseLocStrings } from './LinearGenomeView/util.ts'
@@ -18,7 +19,7 @@ export async function navToOption({
   option: BaseResult
   assemblyName: string
 }) {
-  const location = option.getLocation() || option.getLabel()
+  const location = option.getLocation() ?? option.getLabel()
   const trackId = option.getTrackId()
   const session = getSession(model)
   const { assemblyManager } = session
@@ -129,18 +130,14 @@ export async function fetchResults({
     rankSearchResults,
   )
 
-  const q = queryString.toLowerCase()
-  const refNameResults = assembly?.allRefNames
-    ?.filter(ref =>
-      searchType === 'exact'
-        ? ref.toLowerCase() === q
-        : ref.toLowerCase().startsWith(q),
-    )
-    .slice(0, 10)
-    .map(r => new BaseResult({ label: r }))
+  const refNameResults = filterRefNames(
+    assembly?.allRefNames,
+    queryString,
+    searchType,
+  )
 
   return dedupe(
-    [...(refNameResults ?? []), ...(textSearchResults ?? [])],
+    [...refNameResults, ...(textSearchResults ?? [])],
     elt => elt.getId(),
   )
 }

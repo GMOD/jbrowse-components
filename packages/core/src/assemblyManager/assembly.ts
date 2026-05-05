@@ -89,11 +89,11 @@ async function loadRefNameMap(
     throw new Error(`error loading assembly ${assembly.name}'s refNameAliases`)
   }
 
+  for (const name of refNames) {
+    checkRefName(name)
+  }
   const refNameMap = Object.fromEntries(
-    refNames.map(name => {
-      checkRefName(name)
-      return [assembly.getCanonicalRefName(name), name]
-    }),
+    refNames.map(name => [assembly.getCanonicalRefName(name), name]),
   )
 
   return {

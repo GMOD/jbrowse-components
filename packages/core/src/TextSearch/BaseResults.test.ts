@@ -25,6 +25,7 @@ test('create RefSequenceResult', () => {
 
   expect(refSeqResult.getLabel()).toEqual('chromosome 1')
   expect(refSeqResult.getLocation()).toEqual('chr1')
+  expect(refSeqResult.hasLocation()).toBe(true)
 })
 
 test('can update score of result and throw appropriate errors', () => {

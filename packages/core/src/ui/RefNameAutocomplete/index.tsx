@@ -128,7 +128,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   }, [assemblyName, debouncedSearch, session])
 
   const inputBoxVal = value ?? ''
-  const regionOptions = useMemo(
+  const regionOptions: Option[] = useMemo(
     () =>
       assembly?.regions?.map(region => ({
         result: new RefSequenceResult({

@@ -1,9 +1,27 @@
-import BaseResult from './BaseResults.ts'
+import BaseResult, { RefSequenceResult } from './BaseResults.ts'
 import { dedupe } from '../util/index.ts'
 import { parseLocString } from '../util/locString.ts'
 
 import type { SearchType } from '../data_adapters/BaseAdapter/types.ts'
 import type { AbstractSessionModel } from '../util/index.ts'
+
+export function filterRefNames(
+  allRefNames: string[] | undefined,
+  queryString: string,
+  searchType?: SearchType,
+): RefSequenceResult[] {
+  const q = queryString.toLowerCase()
+  return (
+    allRefNames
+      ?.filter(ref =>
+        searchType === 'exact'
+          ? ref.toLowerCase() === q
+          : ref.toLowerCase().startsWith(q),
+      )
+      .slice(0, 10)
+      .map(r => new RefSequenceResult({ label: r, refName: r })) ?? []
+  )
+}
 
 /**
  * Session-aware search that combines refname prefix matches with text-search
@@ -33,17 +51,12 @@ export async function fetchResults({
       rankSearchResults,
     )) ?? []
 
-  const q = queryString.toLowerCase()
   const assembly = assemblyManager.get(assemblyName)
-  const refNameResults =
-    assembly?.allRefNames
-      ?.filter(ref =>
-        searchType === 'exact'
-          ? ref.toLowerCase() === q
-          : ref.toLowerCase().startsWith(q),
-      )
-      .slice(0, 10)
-      .map(r => new BaseResult({ label: r })) ?? []
+  const refNameResults = filterRefNames(
+    assembly?.allRefNames,
+    queryString,
+    searchType,
+  )
 
   return dedupe([...refNameResults, ...textResults], elt => elt.getId())
 }
