@@ -5,17 +5,15 @@ function generateINFO(feature: Feature) {
   if (!info) {
     return '.'
   }
-  const parts = Object.entries(info)
-    .map(([key, value]) => {
-      if (value === true) {
-        return key
-      }
-      if (Array.isArray(value)) {
-        return `${key}=${value.join(',')}`
-      }
-      return `${key}=${value}`
-    })
-    .filter(Boolean)
+  const parts = Object.entries(info).map(([key, value]) => {
+    if (value === true) {
+      return key
+    }
+    if (Array.isArray(value)) {
+      return `${key}=${value.join(',')}`
+    }
+    return `${key}=${value}`
+  })
   return parts.length ? parts.join(';') : '.'
 }
 
