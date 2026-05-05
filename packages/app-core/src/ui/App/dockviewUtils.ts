@@ -33,7 +33,7 @@ export function createPanelConfig(
 
 export function cleanLayoutForStorage(
   layout: ReturnType<DockviewApi['toJSON']>,
-) {
+): ReturnType<DockviewApi['toJSON']> {
   return {
     ...layout,
     panels: Object.fromEntries(
