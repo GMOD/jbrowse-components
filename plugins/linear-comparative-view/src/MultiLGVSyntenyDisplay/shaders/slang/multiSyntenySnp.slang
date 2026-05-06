@@ -34,9 +34,7 @@ float3 snpColor(float ct, Uniforms u) {
 VsOut vs_main(SnpSegment seg, uint vid : SV_VertexID) {
   VsOut o;
 
-  uint v = vid % 6u;
-  float localX = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
-  float localY = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
+  float2 qc = quadCorner(vid);
 
   float3 bpRange = float3(u.bpRangeHi, u.bpRangeLo, u.bpRangeLen);
   float t1 = hpScaleLinear(hpSplitUint(seg.position), bpRange, u.hpZero);
@@ -50,12 +48,12 @@ VsOut vs_main(SnpSegment seg, uint vid : SV_VertexID) {
     return o;
   }
 
-  float sx = lerp(px1, px2, localX);
+  float sx = lerp(px1, px2, qc.x);
   float effectiveHeight = u.coverageHeight - 2.0 * u.coverageYOffset;
   float coverageBottom = u.coverageHeight - u.coverageYOffset;
   float segBottom = coverageBottom - seg.yOffset * u.depthScale * effectiveHeight;
   float segTop = segBottom - seg.segHeight * u.depthScale * effectiveHeight;
-  float sy = lerp(segBottom, segTop, localY);
+  float sy = lerp(segBottom, segTop, qc.y);
 
   float2 clipPos = float2(sx, sy) / float2(u.resolutionX, u.resolutionY) * 2.0 - 1.0;
   o.position = float4(clipPos.x, -clipPos.y, 0.0, 1.0);

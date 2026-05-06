@@ -25,9 +25,7 @@ VsOut vs_main(CovBin bin, uint vid : SV_VertexID) {
   VsOut o;
   o.color = float4(u.coverageR, u.coverageG, u.coverageB, 1.0);
 
-  uint v = vid % 6u;
-  float localX = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
-  float localY = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
+  float2 qc = quadCorner(vid);
 
   float3 bpRange = float3(u.bpRangeHi, u.bpRangeLo, u.bpRangeLen);
   float t1 = hpScaleLinear(hpSplitUint(bin.position), bpRange, u.hpZero);
@@ -41,12 +39,12 @@ VsOut vs_main(CovBin bin, uint vid : SV_VertexID) {
     return o;
   }
 
-  float sx = lerp(px1, px2, localX);
+  float sx = lerp(px1, px2, qc.x);
   float effectiveHeight = u.coverageHeight - 2.0 * u.coverageYOffset;
   float coverageBottom = u.coverageHeight - u.coverageYOffset;
   float bandBottom = coverageBottom - bin.minDepth * u.depthScale * effectiveHeight;
   float bandTop = coverageBottom - bin.maxDepth * u.depthScale * effectiveHeight;
-  float sy = lerp(bandBottom, bandTop, localY);
+  float sy = lerp(bandBottom, bandTop, qc.y);
 
   float2 clipPos = float2(sx, sy) / float2(u.resolutionX, u.resolutionY) * 2.0 - 1.0;
   o.position = float4(clipPos.x, -clipPos.y, 0.0, 1.0);

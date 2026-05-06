@@ -56,38 +56,21 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     default: { t = 0.0; side = 0.0; break; }
   }
 
-  float edge0_x, edge1_x, y;
-  float2 tangent;
-
-  if (u.isCurve > 0.5) {
-    float s = t * t * (3.0 - 2.0 * t);
-    edge0_x = lerp(c.x1, c.x4, s);
-    edge1_x = lerp(c.x2, c.x3, s);
-    y = u.yTop + u.height * (1.5 * t * (1.0 - t) + t * t * t);
-    float sPrime = 6.0 * t * (1.0 - t);
-    float dy = u.height * 1.5 * (1.0 - 2.0 * t * (1.0 - t));
-    float dx = edgeIdx == 1u ? sPrime * (c.x3 - c.x2) : sPrime * (c.x4 - c.x1);
-    tangent = float2(dx, dy);
-  } else {
-    edge0_x = lerp(c.x1, c.x4, t);
-    edge1_x = lerp(c.x2, c.x3, t);
-    y = u.yTop + t * u.height;
-    float dx = edgeIdx == 1u ? c.x3 - c.x2 : c.x4 - c.x1;
-    tangent = float2(dx, u.height);
-  }
-
-  float edgeX = edgeIdx == 1u ? edge1_x : edge0_x;
+  float3 e = hermiteEdges(c, t, u);
+  float edgeX = edgeIdx == 1u ? e.y : e.x;
+  float rawDx = edgeIdx == 1u ? c.x3 - c.x2 : c.x4 - c.x1;
+  float2 tangent = edgeTangent(rawDx, t, u);
   float tangentLen = length(tangent);
   float2 normal;
   if (tangentLen > 0.001) {
     float2 rawNormal = float2(-tangent.y, tangent.x) / tangentLen;
-    float outwardSign = (edgeIdx == 0u ? -1.0 : 1.0) * sign(c.x1 - c.x2);
+    float outwardSign = (edgeIdx == 0u ? -1.0 : 1.0) * (c.x1 >= c.x2 ? 1.0 : -1.0);
     normal = rawNormal * outwardSign;
   } else {
     normal = float2(0.0, 1.0);
   }
 
-  float2 pos = float2(edgeX, y) + normal * side * STROKE_WIDTH;
+  float2 pos = float2(edgeX, e.z) + normal * side * STROKE_WIDTH;
   o.dist = side * STROKE_WIDTH;
   float2 clipSpace = pos / u.resolution * 2.0 - 1.0;
   o.position = float4(clipSpace.x, -clipSpace.y, 0.0, 1.0);

@@ -52,9 +52,9 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float y1 = u.coverageHeight + float(inst.genomeRow) * u.rowHeight + pad;
   float y2 = y1 + u.rowHeight - pad * 2.0;
 
-  uint v = vid % 6u;
-  float x = (v == 0u || v == 2u || v == 3u) ? px1 : px2;
-  float y = (v == 0u || v == 1u || v == 4u) ? y1 : y2;
+  float2 qc = quadCorner(vid);
+  float x = lerp(px1, px2, qc.x);
+  float y = lerp(y1, y2, qc.y);
 
   float2 clipPos = float2(x, y) / float2(u.resolutionX, u.resolutionY) * 2.0 - 1.0;
   o.position = float4(clipPos.x, -clipPos.y, 0.0, 1.0);

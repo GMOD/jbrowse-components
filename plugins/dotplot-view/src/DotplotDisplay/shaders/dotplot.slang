@@ -10,15 +10,7 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 // (one / one-minus-src-alpha).
 //! targets: wgsl, glsl
 
-static const uint VERTICES_PER_INSTANCE = 6u;
-
-float4 unpackRGBA(uint c) {
-  return float4(
-    float((c >>  0u) & 0xFFu),
-    float((c >>  8u) & 0xFFu),
-    float((c >> 16u) & 0xFFu),
-    float((c >> 24u) & 0xFFu)) / 255.0;
-}
+import colorPack;
 
 struct DotplotInstance {
   float x1    : ATTR0;
@@ -46,7 +38,7 @@ struct VsOut {
 
 [shader("vertex")]
 VsOut vs_main(DotplotInstance inst, uint vid : SV_VertexID) {
-  uint v = vid % VERTICES_PER_INSTANCE;
+  uint v = vid % VERTS_PER_INSTANCE;
 
   // Quad template: pairs (0,1), (2,3), (4,5) form two triangles that cover
   // the thickened line. `t` interpolates along the segment, `side` pushes

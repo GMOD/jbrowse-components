@@ -34,3 +34,12 @@ public struct Uniforms {
   public float baseTG;
   public float baseTB;
 };
+
+// Two-triangle fan (CCW): returns the (x,y) ∈ {0,1}² corner for vid 0..5.
+public float2 quadCorner(uint vid) {
+  uint v = vid % 6u;
+  return float2(
+    (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0,
+    (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0
+  );
+}
