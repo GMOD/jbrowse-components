@@ -56,6 +56,7 @@ const Header = observer(function Header({
   )
 
   const hasDisplays = levels[0]?.tracks[0]?.displays[0]
+  const syntenyModel = model as LinearSyntenyViewModel
 
   return (
     <FormGroup row className={classes.header}>
@@ -150,9 +151,9 @@ const Header = observer(function Header({
 
       {hasDisplays && showDynamicControls ? (
         <>
-          <ColorBySelector model={model as LinearSyntenyViewModel} />
-          <ColorLegend model={model as LinearSyntenyViewModel} />
-          <SyntenySettingsPopover model={model as LinearSyntenyViewModel} />
+          <ColorBySelector model={syntenyModel} />
+          <ColorLegend model={syntenyModel} />
+          <SyntenySettingsPopover model={syntenyModel} />
         </>
       ) : null}
 
