@@ -163,7 +163,7 @@ read or split alignment, making long-range connections immediately obvious.
 Enable via Track menu → Display types → Read arc display (or Replace lower panel
 with... to show arcs alongside the coverage and pileup panels).
 
-<Figure caption="Menu item for selecting the 'Read arc display'." src="/img/alignments/select_arc_display.png" />
+<Figure caption="Track menu → Display types (or Replace lower panel with...) shows three lower-panel options: Pileup display (default), Read arc display, and Linked reads display. Selecting Read arc display replaces the pileup with bezier arc curves." src="/img/alignments/select_arc_display.png" />
 
 Inter-chromosomal connections appear as vertical lines at the view edge. Track
 menu → Color scheme provides insert size, orientation, or combined coloring.
@@ -184,7 +184,7 @@ are connected by an orange line.
 Enable via Track menu → Display types → Linked reads display (or Replace lower
 panel with... to keep the coverage and pileup panels).
 
-<Figure caption="The read arc display and linked reads display shown together for the same dataset." src="/img/alignments/read_cloud.png" />
+<Figure caption="The same dataset shown in two display types simultaneously. Top track: Read arc display — the large red bezier curve spans a long-range connection (~ctgA:5,000–40,000), making the SV immediately visible at this scale. Bottom track: Linked reads display — reads are drawn as horizontal lines stratified by insert size; the red bar at the bottom row indicates an abnormally large insert corresponding to the same event." src="/img/alignments/read_cloud.png" />
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-ofjI26CNas&password=ohqlR)
 — inversion example in linked reads mode
@@ -206,7 +206,7 @@ options:
 
 Both are most useful on long reads where a single read spans a breakpoint.
 
-<Figure caption="A ~500bp insertion from a breast cancer cell line (SKBR3) PacBio read shown using 'Linear read vs ref'. The lower panel shows the synteny-style alignment." src="/img/read_vs_ref_insertion.png" />
+<Figure caption="'Linear read vs ref' for a SKBR3 PacBio read spanning a ~500 bp insertion. The top panel is a standard pileup; the bottom panel is a synteny-style split view showing the read (top lane) aligned to the reference (bottom lane). The gap in the diagonal alignment blocks in the lower panel marks the inserted sequence not present in the reference. Click-and-drag over any region in the lower panel to extract its sequence." src="/img/read_vs_ref_insertion.png" />
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-rzJ27iixQH&password=rSgZe)
 — SKBR3 PacBio read vs reference insertion
@@ -238,7 +238,7 @@ panel.
   alignment; the feature details panel includes an option to open the split view
   centered on that read and its supplementary partner.
 
-<Figure caption="The feature details panel for a BND/TRA variant has a link to open the breakpoint split view." src="/img/link_to_split_view.png" />
+<Figure caption="Feature details panel for a TRA variant. The BREAKENDS section at the bottom contains 'Launch split views with breakend source and target' — clicking that link (e.g. '14:84871468 // 17:74803924 (split view)') opens both breakpoint loci simultaneously in the breakpoint split view, with any open alignment tracks pre-loaded." src="/img/link_to_split_view.png" />
 
 The view also supports **multi-hop events** where a single read has multiple
 supplementary alignments, connecting more than two breakpoints simultaneously.
@@ -257,7 +257,7 @@ Sort and color by `HP` via Track menu → Pileup settings → Sort by → Tag �
 and Color by → Tag → `HP`. Reads from each haplotype cluster together, making it
 easy to see whether an SV is present on one or both haplotypes.
 
-<Figure caption="Step-by-step guide showing how to sort and color by haplotype with the HP tag." src="/img/alignments/haplotype.png" />
+<Figure caption="Four-step walkthrough for coloring and sorting reads by haplotype. Step 1: open Track menu → Pileup settings → Color by → Tag. Step 2: enter HP as the tag name. Step 3: reads are now colored by HP value (one color per haplotype). Step 4: open Sort by → Tag → HP to stack each haplotype's reads into contiguous rows, making it easy to see which haplotype carries the variant." src="/img/alignments/haplotype.png" />
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-psOr2x2efp&password=bErZE)
 — heterozygous small deletion in GIAB colored and sorted by HP tag
