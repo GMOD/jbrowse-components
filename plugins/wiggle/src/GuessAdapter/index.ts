@@ -34,12 +34,11 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
   )
   pluginManager.addToExtensionPoint(
     'Core-guessTrackTypeForLocation',
-    (trackTypeGuesser: TrackTypeGuesser) => {
-      return (adapterName: string) => {
+    (trackTypeGuesser: TrackTypeGuesser) =>
+      (adapterName: string, file?: FileLocation) => {
         return adapterName === 'BigWigAdapter'
           ? 'QuantitativeTrack'
-          : trackTypeGuesser(adapterName)
-      }
-    },
+          : trackTypeGuesser(adapterName, file)
+      },
   )
 }

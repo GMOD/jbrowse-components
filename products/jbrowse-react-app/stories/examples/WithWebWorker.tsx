@@ -9,30 +9,32 @@ import { JBrowseApp, createViewState } from '../../src/index.ts'
 import makeWorkerInstance from '../../src/makeWorkerInstance.ts'
 
 export const WithWebWorker = () => {
-  const [state] = useState(() => createViewState({
-    config: {
-      ...volvoxConfig,
-      configuration: {
-        rpc: {
-          defaultDriver: 'WebWorkerRpcDriver',
+  const [state] = useState(() =>
+    createViewState({
+      config: {
+        ...volvoxConfig,
+        configuration: {
+          rpc: {
+            defaultDriver: 'WebWorkerRpcDriver',
+          },
+        },
+        defaultSession: {
+          name: 'Web worker example',
+          views: [
+            {
+              type: 'LinearGenomeView',
+              init: {
+                assembly: 'volvox',
+                loc: 'ctgA:1000-2000',
+                tracks: ['Deep sequencing'],
+              },
+            },
+          ],
         },
       },
-      defaultSession: {
-        name: 'Web worker example',
-        views: [
-          {
-            type: 'LinearGenomeView',
-            init: {
-              assembly: 'volvox',
-              loc: 'ctgA:1000-2000',
-              tracks: ['Deep sequencing'],
-            },
-          },
-        ],
-      },
-    },
-    makeWorkerInstance,
-  }))
+      makeWorkerInstance,
+    }),
+  )
 
   return (
     <div>

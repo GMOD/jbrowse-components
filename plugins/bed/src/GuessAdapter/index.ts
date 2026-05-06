@@ -32,7 +32,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
           }
         } else if (
           testAdapter(fileName, /\.bb$/i, adapterHint, 'BigBedAdapter') ||
-          testAdapter(fileName, /\.bigBed?$/i, adapterHint, 'BigBedAdapter')
+          testAdapter(fileName, /\.bigbed$/i, adapterHint, 'BigBedAdapter')
         ) {
           return {
             type: 'BigBedAdapter',
@@ -69,6 +69,12 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
             },
           }
         } else if (
+          testAdapter(
+            fileName,
+            /\.bedmethyl\.gz$/i,
+            adapterHint,
+            'BedTabixAdapter',
+          ) ||
           testAdapter(fileName, /\.bed\.gz$/i, adapterHint, 'BedTabixAdapter')
         ) {
           return {
@@ -88,14 +94,22 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
 
   pluginManager.addToExtensionPoint(
     'Core-guessTrackTypeForLocation',
-    (trackTypeGuesser: TrackTypeGuesser) => (adapterName: string) => {
-      return (
-        {
-          BedpeAdapter: 'VariantTrack',
-          BedGraphAdapter: 'QuantitativeTrack',
-          BedGraphTabixAdapter: 'QuantitativeTrack',
-        }[adapterName] || trackTypeGuesser(adapterName)
-      )
-    },
+    (trackTypeGuesser: TrackTypeGuesser) =>
+      (adapterName: string, file?: FileLocation) => {
+        if (
+          adapterName === 'BedTabixAdapter' &&
+          file &&
+          /\.bedmethyl\.gz$/i.test(getFileName(file))
+        ) {
+          return 'MultiQuantitativeTrack'
+        }
+        return (
+          {
+            BedpeAdapter: 'VariantTrack',
+            BedGraphAdapter: 'QuantitativeTrack',
+            BedGraphTabixAdapter: 'QuantitativeTrack',
+          }[adapterName] || trackTypeGuesser(adapterName, file)
+        )
+      },
   )
 }

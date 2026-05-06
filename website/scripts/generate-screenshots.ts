@@ -92,7 +92,11 @@ async function openTrack(page: Page, trackId: string) {
   await label?.click()
 }
 
-async function captureLGV(page: Page, spec: ScreenshotSpec & { mode?: 'lgv' }, port: number) {
+async function captureLGV(
+  page: Page,
+  spec: ScreenshotSpec & { mode?: 'lgv' },
+  port: number,
+) {
   const config = spec.config ?? VOLVOX_CONFIG
   await page.goto(
     `http://localhost:${port}/?config=${config}&sessionName=Screenshot`,
@@ -100,7 +104,10 @@ async function captureLGV(page: Page, spec: ScreenshotSpec & { mode?: 'lgv' }, p
   )
 
   // Wait for the view to be fully initialized (ctgA appears in the default volvox session)
-  await page.waitForSelector('::-p-text(ctgA)', { visible: true, timeout: 30000 })
+  await page.waitForSelector('::-p-text(ctgA)', {
+    visible: true,
+    timeout: 30000,
+  })
   await waitForLoadingComplete(page)
 
   if (spec.loc) {
@@ -116,7 +123,11 @@ async function captureLGV(page: Page, spec: ScreenshotSpec & { mode?: 'lgv' }, p
   await delay(spec.settleMs ?? DEFAULT_SETTLE_MS)
 }
 
-async function captureUrl(page: Page, spec: ScreenshotSpec & { mode: 'url' }, port: number) {
+async function captureUrl(
+  page: Page,
+  spec: ScreenshotSpec & { mode: 'url' },
+  port: number,
+) {
   await page.goto(`http://localhost:${port}/${spec.url}`, {
     waitUntil: 'networkidle0',
     timeout: 60000,
@@ -206,7 +217,7 @@ async function main() {
   ]
   const executablePath = chromePaths.find(p => fs.existsSync(p))
 
-  const browser = await launch({
+  const launchOptions = {
     headless: !headed,
     executablePath,
     args: [
@@ -214,33 +225,36 @@ async function main() {
       '--disable-setuid-sandbox',
       '--disable-web-security',
     ],
-    defaultViewport: { width: 1280, height: 800, deviceScaleFactor: 2 },
-  })
+    // deviceScaleFactor: 1 for now — service worker caching can interfere with 2x
+    defaultViewport: { width: 1280, height: 800, deviceScaleFactor: 1 },
+  }
 
   let passed = 0
   let failed = 0
   const failures: string[] = []
 
   try {
-    const page = await browser.newPage()
-    page.on('console', msg => {
-      if (msg.type() === 'error' && !msg.text().includes('favicon')) {
-        console.error(`    browser: ${msg.text().substring(0, 120)}`)
-      }
-    })
-
     for (const spec of filteredSpecs) {
+      // Fresh browser per spec to avoid service worker caching between navigations
+      const browser = await launch(launchOptions)
       try {
+        const page = await browser.newPage()
+        page.on('console', msg => {
+          if (msg.type() === 'error' && !msg.text().includes('favicon')) {
+            console.error(`    browser: ${msg.text().substring(0, 120)}`)
+          }
+        })
         await captureSpec(page, spec, port)
         passed++
       } catch (err) {
         console.error(`  ✗ ${spec.name}: ${err}`)
         failed++
         failures.push(spec.name)
+      } finally {
+        await browser.close()
       }
     }
   } finally {
-    await browser.close()
     server?.close()
   }
 

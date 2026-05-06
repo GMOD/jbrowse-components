@@ -27,8 +27,9 @@
 
 - Add a config example showing how to load a `.bed` or `.bedMethyl` file as a
   `MultiWiggleAdapter` subadapter using `BedTabixAdapter`
-- Code improvement: auto-detect `.bedMethyl` extension in `guessAdapterFromFileName`
-  and route it to `MultiWiggleAdapter`, letting users open it via the UI
+- Code improvement: auto-detect `.bedMethyl` extension in
+  `guessAdapterFromFileName` and route it to `MultiWiggleAdapter`, letting users
+  open it via the UI
 
 ## CLI synteny formats
 
@@ -38,8 +39,8 @@
 
 ## Connections user guide
 
-- Connections (UCSC track hubs, JBrowse 1 data directories) get one sentence
-  in `basic_usage.md` and nothing else
+- Connections (UCSC track hubs, JBrowse 1 data directories) get one sentence in
+  `basic_usage.md` and nothing else
 - Add a section explaining what connections are, how to open one via
   `File → Open connection`, and what a UCSC track hub URL looks like
 
@@ -52,7 +53,8 @@
 
 - `quickstart_web.md` has no summary; readers can't scan it quickly
 - Add a shell-script block at the top showing the full workflow in ~10 lines
-- Link to small downloadable example files users can actually run the commands with
+- Link to small downloadable example files users can actually run the commands
+  with
 
 ## Dropbox/Google Drive tutorial (issue #3280)
 
@@ -66,6 +68,7 @@
 ## Cross-regional visualizations
 
 - Features like read arcs, chord display, and breakpoint split view that show
-  inter-regional data are scattered across several pages with no unifying entry point
+  inter-regional data are scattered across several pages with no unifying entry
+  point
 - Either add a dedicated page or add a summary section in the user guide index
   with links to each relevant section

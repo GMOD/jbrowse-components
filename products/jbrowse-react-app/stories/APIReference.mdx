@@ -15,12 +15,12 @@ is passed to `<JBrowseApp viewState={state} />`.
 
 ### Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `config` | object | required | Full app config — same format as a jbrowse-web `config.json` (see below) |
-| `plugins` | PluginConstructor[] | `[]` | Inline or imported plugin classes |
-| `makeWorkerInstance` | `() => Worker` | — | Web worker factory for WebWorker RPC |
-| `onChange` | `(patch, reversePatch) => void` | — | Called on every MST patch, useful for session persistence |
+| Option               | Type                            | Default  | Description                                                              |
+| -------------------- | ------------------------------- | -------- | ------------------------------------------------------------------------ |
+| `config`             | object                          | required | Full app config — same format as a jbrowse-web `config.json` (see below) |
+| `plugins`            | PluginConstructor[]             | `[]`     | Inline or imported plugin classes                                        |
+| `makeWorkerInstance` | `() => Worker`                  | —        | Web worker factory for WebWorker RPC                                     |
+| `onChange`           | `(patch, reversePatch) => void` | —        | Called on every MST patch, useful for session persistence                |
 
 ### Config structure
 
@@ -72,14 +72,14 @@ have their own `init` shape.
 
 `createViewState` returns a MST model. Key members:
 
-| Member | Description |
-|--------|-------------|
-| `state.jbrowse.addTrackConf(trackConf)` | Register a new track config at runtime. Format is identical to a track entry in `config.json`. Call from an event handler, not during render. |
-| `state.session.views` | Array of open view models |
-| `state.session.views[0].showTrack(trackId)` | Open a track by trackId in the first view |
-| `state.session.views[0].hideTrack(trackId)` | Hide a track by trackId |
-| `state.session.views[0].navToLocString(loc, assemblyName)` | Navigate to a locstring (async, can throw) |
-| `getEnv(state).pluginManager` | Plugin manager — use to call extension points |
+| Member                                                     | Description                                                                                                                                   |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `state.jbrowse.addTrackConf(trackConf)`                    | Register a new track config at runtime. Format is identical to a track entry in `config.json`. Call from an event handler, not during render. |
+| `state.session.views`                                      | Array of open view models                                                                                                                     |
+| `state.session.views[0].showTrack(trackId)`                | Open a track by trackId in the first view                                                                                                     |
+| `state.session.views[0].hideTrack(trackId)`                | Hide a track by trackId                                                                                                                       |
+| `state.session.views[0].navToLocString(loc, assemblyName)` | Navigate to a locstring (async, can throw)                                                                                                    |
+| `getEnv(state).pluginManager`                              | Plugin manager — use to call extension points                                                                                                 |
 
 ### Launching views via extension points
 
@@ -95,7 +95,8 @@ await pluginManager.evaluateAsyncExtensionPoint('LaunchView-LinearGenomeView', {
 })
 ```
 
-Other extension points: `LaunchView-LinearSyntenyView`, `LaunchView-DotplotView`.
+Other extension points: `LaunchView-LinearSyntenyView`,
+`LaunchView-DotplotView`.
 
 ---
 

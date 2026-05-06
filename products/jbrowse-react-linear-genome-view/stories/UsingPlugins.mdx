@@ -11,7 +11,8 @@ import {
 ## Using plugins with web workers
 
 If you are using web workers, add your plugin to both the main thread and the
-web worker. See this [example PR](https://github.com/GMOD/jbrowse-react-linear-genome-view-cra5-demo/pull/1/files).
+web worker. See this
+[example PR](https://github.com/GMOD/jbrowse-react-linear-genome-view-cra5-demo/pull/1/files).
 
 ## Plugins defined in your code
 
@@ -35,7 +36,10 @@ monorepo), but you can use the same pattern in your own code:
 ```js
 import Plugin from '@jbrowse/core/Plugin'
 import GWASPlugin from 'jbrowse-plugin-gwas'
-import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+import {
+  createViewState,
+  JBrowseLinearGenomeView,
+} from '@jbrowse/react-linear-genome-view2'
 import { getVolvoxConfig } from './util'
 
 export const Example = () => {

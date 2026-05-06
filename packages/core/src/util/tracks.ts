@@ -355,7 +355,10 @@ export type AdapterGuesser = (
   adapterHint?: string,
 ) => AdapterConfig | undefined
 
-export type TrackTypeGuesser = (adapterName: string) => string | undefined
+export type TrackTypeGuesser = (
+  adapterName: string,
+  file?: FileLocation,
+) => string | undefined
 
 export function getFileName(track: FileLocation) {
   const uri = 'uri' in track ? track.uri : undefined
@@ -419,6 +422,7 @@ export function guessAdapter(
 export function guessTrackType(
   adapterType: string,
   model?: IAnyStateTreeNode,
+  file?: FileLocation,
 ): string {
   if (model) {
     const session = getSession(model)
@@ -432,7 +436,7 @@ export function guessTrackType(
       },
     ) as TrackTypeGuesser
 
-    const trackType = trackTypeGuesser(adapterType)
+    const trackType = trackTypeGuesser(adapterType, file)
     if (trackType) {
       return trackType
     }

@@ -30,10 +30,18 @@ requiring any extra steps:
 
 - **Soft clipping** — reads that extend past a breakpoint have their overhanging
   bases soft-clipped; enabling Show soft clipping (Track menu → Pileup settings
-  → Show...) makes these bases visible at breakpoint edges
+  → Show soft clipping) makes these bases visible at breakpoint edges
+
+<Figure caption="Track menu → Pileup settings → Show soft clipping (checkbox at top) enables display of soft-clipped bases." src="/img/alignments_soft_clipped_menu.png" />
+
+<Figure caption="Soft-clipped reads at a breakpoint edge (right side, ~position 2,700). The dense cluster of colored nucleotide bases marks where many reads terminate at a common breakpoint; those colored bases are the overhanging sequence that could not be aligned to the reference." src="/img/alignments_soft_clipped.png" />
+
 - **Insertion/clipping indicators** — a purple triangle marks positions where
   more than 30% of reads carry an insertion; blue/red triangles mark clipping;
   larger purple rectangles appear for insertions >10 bp
+
+<Figure caption="Clipping and insertion indicators visible as colored vertical marks above the coverage track. The tall vertical colored lines (blue = left-clip, red = right-clip, purple = insertion) flag positions where many reads carry an SV signal, even without zooming into the pileup." src="/img/alignment_clipping_indicators.png" />
+
 - **Color by pair orientation** — abnormally oriented pairs produce
   characteristic colors described in the table below
 - **Color by insert size** — pairs with unexpectedly large or small inserts are
@@ -58,7 +66,7 @@ orientations are not supported. The table below assumes `fr`:
 | LL (→ →, both mates forward strand)           | teal       | abnormal orientation |
 | RR (← ←, both mates reverse strand)           | dark blue  | abnormal orientation |
 
-<Figure caption="An inverted duplication with characteristic orientation patterns: RL pairs (green) and LL/RR pairs (teal/dark blue) at the structural variant boundaries." src="/img/inverted_duplication.png" />
+<Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) with two overlapping orientation signals. Green reads are RL-oriented (mates pointing away from each other, as if →←), a signature of tandem duplication. Dark blue reads are RR/LL-oriented (mates pointing the same direction, →→ or ←←), a signature of an inversion. The feature details panel on the right confirms the variant is classified as INVdup." src="/img/inverted_duplication.png" />
 
 ### Insert size color scheme
 
@@ -96,6 +104,8 @@ is a useful companion reference.
   suggest a deletion spanning the pair
 - In the read arc display, unusually long arcs point to a deletion
 
+<Figure caption="A 27 bp heterozygous deletion (orange variant bar labeled '27bp DEL' in the top track) in HG002 ONT reads. The SNP coverage panel above the pileup shows the local depth; the pileup is sorted by HP tag, separating haplotype 1 (pink rows) and haplotype 2 (blue rows). Supporting reads carrying the deletion are concentrated in one haplotype group." src="/img/smalldel.png" />
+
 ### Insertion
 
 - Soft-clipped reads at a single site suggest an insertion; with Show soft
@@ -107,6 +117,8 @@ is a useful companion reference.
 - A purple insertion indicator triangle suggests an insertion when >30% of reads
   carry one at that position
 
+<Figure caption="An insertion (nssv15767046 INS, labeled in the variant track at top) visible as a dense column of purple insertion rectangles at ~position 55,705,920 in nanopore (top track), PacBio (middle track), and Illumina (bottom track) reads. Long reads show tall purple bars spanning the inserted bases; Illumina reads show only soft-clip artifacts at the same site because the insert exceeds the fragment size." src="/img/insertion.png" />
+
 ### Inversion
 
 - **LL (teal)** and **RR (dark blue)** read pairs at a boundary suggest an
@@ -117,6 +129,11 @@ is a useful companion reference.
 - Soft-clipped reads appear at both breakpoints, sometimes with short homology
   sequences visible in the clipped bases
 
+The inverted duplication figure in the
+[pair orientation section](#pair-orientation-color-scheme) above shows this
+signal: dark blue RR/LL reads (→→ or ←←) at the boundary are the inversion
+signature.
+
 ### Tandem duplication
 
 - **RL (green)** read pairs suggest a tandem duplication: reads appear to point
@@ -125,12 +142,19 @@ is a useful companion reference.
 - In the read arc display, arcs pointing backward (upstream) across a junction
   point to a tandem duplication
 
+The inverted duplication figure in the
+[pair orientation section](#pair-orientation-color-scheme) above also shows this
+signal: the green RL reads (→←) flanking the boundary are the tandem duplication
+signature.
+
 ### Translocation / inter-chromosomal fusion
 
 - In the read arc and linked reads displays, reads with mates on a different
   chromosome are colored **purple**; in the pileup they appear **dark grey**
 - A cluster of such reads at a locus marks one end of a translocation; open the
   breakpoint split view from the feature details to see both ends at once
+
+<Figure caption="SKBR3 PacBio translocation in the breakpoint split view. The top panel shows one breakpoint locus (~chr1:229 Mb) and the bottom shows the other (~chr1:137 Mb). Black splines connect supporting reads across the two panels; the green diagonal line with arrowheads is the SV call. The density of splines is proportional to the number of spanning reads." src="/img/skbr3_translocation.png" />
 
 ## Read arc display
 
@@ -144,7 +168,7 @@ with... to show arcs alongside the coverage and pileup panels).
 Inter-chromosomal connections appear as vertical lines at the view edge. Track
 menu → Color scheme provides insert size, orientation, or combined coloring.
 
-<Figure caption="The read arc display showing a deletion with Illumina paired-end reads and Nanopore ultra-long reads on HG002." src="/img/alignments/arc_selector.png" />
+<Figure caption="The read arc display showing a deletion in HG002. Illumina paired-end reads (short arcs, top) and Nanopore ultra-long reads (long sweeping arcs, bottom) both span the same deleted region. The unusually long arcs relative to neighboring read pairs indicate the deletion. Color scheme is set to Insert size ± 3σ: red arcs have inserts larger than expected, confirming the deletion." src="/img/alignments/arc_selector.png" />
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-fDL8SrEPoO&password=6rsxL)
 — HG002 deletion with Nanopore and Illumina reads in arc display
@@ -194,7 +218,7 @@ centered on one breakpoint locus. Splines connect supporting reads across both
 panels, and the variant call is drawn as a colored line with feet indicating
 directionality.
 
-<Figure caption="Breakpoint split view for an interchromosomal translocation. Black splines connect supporting reads; the green line with feet is the variant call." src="/img/breakpoint_split_view.png" />
+<Figure caption="Breakpoint split view for an interchromosomal translocation. The two panels are each centered on one breakpoint locus. Black splines connect supporting reads that span the junction — each spline represents a single read seen in both panels. The green line with arrowheads ('feet') is the variant call drawn across both panels to indicate directionality." src="/img/breakpoint_split_view.png" />
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-Swq8pJTX0z&password=yM41l)
 — SKBR3 interchromosomal translocation in breakpoint split view
@@ -248,9 +272,9 @@ sorting, coloring, and filtering by tag.
 
 ## Working with large SVs
 
-Loading a very large genomic region will trigger an error because JBrowse
-declines to fetch hundreds of megabytes at once. For large or inter-chromosomal
-SVs, a better approach is:
+Loading a very large genomic region can trigger an error when the window would
+require fetching more data than JBrowse allows in a single request. For large or
+inter-chromosomal SVs, a better approach is:
 
 - Use a **bigWig coverage track** (or a
   [multi-quantitative track](/docs/user_guides/multiquantitative_track) for

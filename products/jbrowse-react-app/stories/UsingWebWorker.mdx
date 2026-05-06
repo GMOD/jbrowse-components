@@ -9,8 +9,8 @@ Developers can configure their instance of `@jbrowse/react-app2` to use web
 workers. By importing `makeWorkerInstance` and adding the `WebWorkerRpcDriver`
 configuration to `createViewState`, the app will use the WebWorker RPC.
 
-Using WebWorker RPC can greatly reduce "hanging" of the main thread when browsing
-alignment datasets like BAM / CRAM.
+Using WebWorker RPC can greatly reduce "hanging" of the main thread when
+browsing alignment datasets like BAM / CRAM.
 
 [See our create-react-app v5 demo project for example using web worker](https://jbrowse.org/jb2/docs/embedded_components/)
 
@@ -28,5 +28,6 @@ If web workers don't resolve correctly in create-react-app, set
 
 Web workers require the bundler to support the `new Worker` construct, which not
 all bundlers do. We recommend enabling it when possible since it improves speed
-and user experience. See [webpack's guide](https://webpack.js.org/guides/web-workers/)
-for `new Worker` syntax support.
+and user experience. See
+[webpack's guide](https://webpack.js.org/guides/web-workers/) for `new Worker`
+syntax support.

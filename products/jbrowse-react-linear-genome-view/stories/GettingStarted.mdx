@@ -84,7 +84,8 @@ const state = createViewState({
 ## Disabling the ability to add tracks
 
 By default users can add tracks, but the `disableAddTracks` flag prevents this.
-Note that it also prevents creating sequence search tracks or multi-wiggle tracks.
+Note that it also prevents creating sequence search tracks or multi-wiggle
+tracks.
 
 ```js
 const state = createViewState({
@@ -102,7 +103,8 @@ const state = createViewState({
 
 The recommended way to set an initial location and open tracks is the `init`
 field inside `defaultSession.view`. It avoids constructing a full
-`displayedRegions` array and is much more concise than a complete session object:
+`displayedRegions` array and is much more concise than a complete session
+object:
 
 ```js
 const state = createViewState({
@@ -146,7 +148,10 @@ only once per component mount, regardless of how many times the component
 re-renders:
 
 ```js
-import { useCreateViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+import {
+  useCreateViewState,
+  JBrowseLinearGenomeView,
+} from '@jbrowse/react-linear-genome-view2'
 
 function GenomeView() {
   const state = useCreateViewState({ assembly, tracks, location: '...' })
@@ -165,9 +170,12 @@ unaffected because `useCreateViewState` keeps the state stable.
 Check out the rest of the stories to get a better feel for what the component
 can do. A few more resources:
 
-- [API Reference](?path=/docs/api-reference--docs) — all `createViewState` options and state methods
-- [Default Sessions](?path=/docs/default-sessions--docs) — full session format when you need fine-grained control
-- [More Examples](?path=/docs/more-examples--docs) — navigation, flipping, observing state, and more
+- [API Reference](?path=/docs/api-reference--docs) — all `createViewState`
+  options and state methods
+- [Default Sessions](?path=/docs/default-sessions--docs) — full session format
+  when you need fine-grained control
+- [More Examples](?path=/docs/more-examples--docs) — navigation, flipping,
+  observing state, and more
 - [Code example](https://github.com/GMOD/jbrowse-components/blob/HEAD/products/jbrowse-react-linear-genome-view/docs/example.md)
   for using @jbrowse/react-linear-genome-view2
 - [Source code for all the storybook examples](https://github.com/GMOD/jbrowse-components/tree/main/products/jbrowse-react-linear-genome-view/stories)

@@ -8,14 +8,15 @@ import {
 
 # Observing MobX State
 
-The JBrowse state tree is built on [MobX-State-Tree](https://mobx-state-tree.js.org/).
-This means any value in the state tree is observable, and React components can
-automatically re-render when those values change.
+The JBrowse state tree is built on
+[MobX-State-Tree](https://mobx-state-tree.js.org/). This means any value in the
+state tree is observable, and React components can automatically re-render when
+those values change.
 
 ## Using `observer` from mobx-react
 
-Wrap a component with `observer` from `mobx-react` to make it re-render
-whenever any MobX observable it reads changes:
+Wrap a component with `observer` from `mobx-react` to make it re-render whenever
+any MobX observable it reads changes:
 
 ```js
 import { observer } from 'mobx-react'
@@ -27,14 +28,14 @@ const MyComponent = observer(function MyComponent({ viewState }) {
 })
 ```
 
-`observer` components are automatically memoized — you do not need to wrap
-them in `React.memo`.
+`observer` components are automatically memoized — you do not need to wrap them
+in `React.memo`.
 
 ## When to use `observer`
 
-Use `observer` on any component that reads from the JBrowse view state and
-needs to stay in sync with it. Without `observer`, the component renders once
-with the initial state and never updates.
+Use `observer` on any component that reads from the JBrowse view state and needs
+to stay in sync with it. Without `observer`, the component renders once with the
+initial state and never updates.
 
 You do **not** need `observer` for components that only receive plain props
 (strings, numbers, callbacks) — those work with normal React re-rendering.

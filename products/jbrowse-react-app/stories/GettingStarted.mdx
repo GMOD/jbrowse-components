@@ -24,8 +24,8 @@ code button on the bottom right to see the source for the story being viewed.
 The @jbrowse/react-app2 component relies on the same
 [configuration](https://jbrowse.org/jb2/docs/config_guide) as the main JB2 app.
 
-The `createViewState` constructor accepts a config object in the same format as a
-`config.json` for `@jbrowse/web`. Unlike `@jbrowse/web`, it does not fetch
+The `createViewState` constructor accepts a config object in the same format as
+a `config.json` for `@jbrowse/web`. Unlike `@jbrowse/web`, it does not fetch
 `config.json` automatically; you must fetch it manually if needed.
 
 Config structure:
@@ -69,15 +69,16 @@ defaultSession: {
 ```
 
 This works for all view types: `LinearSyntenyView`, `DotplotView`, etc., with
-their own `init` fields (see the [Synteny Views](?path=/docs/synteny-views--docs)
-story for an example).
+their own `init` fields (see the
+[Synteny Views](?path=/docs/synteny-views--docs) story for an example).
 
 ## Additional resources
 
 Check out the rest of the stories to get a better feel for what the component
 can do:
 
-- [API Reference](?path=/docs/api-reference--docs) — all `createViewState` options and state methods
+- [API Reference](?path=/docs/api-reference--docs) — all `createViewState`
+  options and state methods
 - [Synteny Views](?path=/docs/synteny-views--docs) — linear synteny and dotplot
 - [Adding Tracks Programmatically](?path=/docs/adding-tracks-programmatically--docs)
 - [Using Plugins](?path=/docs/using-plugins--docs)

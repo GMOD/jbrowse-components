@@ -37,7 +37,7 @@ export function guessFileNames({
   bed1?: string
   bed2?: string
 }) {
-  if (/\.anchors(.simple)?$/i.test(location)) {
+  if (/\.anchors(\.simple)?$/i.test(location)) {
     return {
       file: location,
       bed1: bed1!,
@@ -57,6 +57,7 @@ export function guessFileNames({
     /\.gff3?\.b?gz$/i.test(location) ||
     /\.vcf\.b?gz$/i.test(location) ||
     /\.bed\.b?gz$/i.test(location) ||
+    /\.bedmethyl\.gz$/i.test(location) ||
     /\.pif\.b?gz$/i.test(location)
   ) {
     return {
@@ -82,11 +83,11 @@ export function guessFileNames({
     /\.out(\.gz)?$/i.test(location) ||
     /\.paf(\.gz)?$/i.test(location) ||
     /\.delta(\.gz)?$/i.test(location) ||
-    /\.bed?$/i.test(location) ||
+    /\.bed$/i.test(location) ||
     /\.(bw|bigwig)$/i.test(location) ||
     /\.(bb|bigbed)$/i.test(location) ||
     /\.vcf$/i.test(location) ||
-    /\.gtf?$/i.test(location) ||
+    /\.gtf$/i.test(location) ||
     /\.gff3?$/i.test(location) ||
     /\.chain(\.gz)?$/i.test(location) ||
     /\.hic$/i.test(location)
@@ -142,7 +143,7 @@ export function guessAdapter({
         indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
       },
     }
-  } else if (/\.gtf?$/i.test(location)) {
+  } else if (/\.gtf$/i.test(location)) {
     return {
       type: 'GtfAdapter',
       gtfLocation: makeLocation(location),
@@ -184,7 +185,10 @@ export function guessAdapter({
         indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
       },
     }
-  } else if (/\.bed\.b?gz$/i.test(location)) {
+  } else if (
+    /\.bedmethyl\.gz$/i.test(location) ||
+    /\.bed\.b?gz$/i.test(location)
+  ) {
     return {
       type: 'BedTabixAdapter',
       bedGzLocation: makeLocation(location),
@@ -260,14 +264,14 @@ export function guessAdapter({
       type: 'DeltaAdapter',
       deltaLocation: makeLocation(location),
     }
-  } else if (/\.anchors(.gz)?$/i.test(location)) {
+  } else if (/\.anchors(\.gz)?$/i.test(location)) {
     return {
       type: 'MCScanAnchorsAdapter',
       mcscanAnchorsLocation: makeLocation(location),
       bed1Location: bed1 ? makeLocation(bed1) : undefined,
       bed2Location: bed2 ? makeLocation(bed2) : undefined,
     }
-  } else if (/\.anchors.simple(.gz)?$/i.test(location)) {
+  } else if (/\.anchors\.simple(\.gz)?$/i.test(location)) {
     return {
       type: 'MCScanSimpleAnchorsAdapter',
       mcscanSimpleAnchorsLocation: makeLocation(location),
@@ -286,12 +290,15 @@ export const adapterTypesToTrackTypeMap: Record<string, string> = {
   CramAdapter: 'AlignmentsTrack',
   BgzipFastaAdapter: 'ReferenceSequenceTrack',
   BigWigAdapter: 'QuantitativeTrack',
+  BedGraphAdapter: 'QuantitativeTrack',
+  BedGraphTabixAdapter: 'QuantitativeTrack',
   IndexedFastaAdapter: 'ReferenceSequenceTrack',
   TwoBitAdapter: 'ReferenceSequenceTrack',
   VcfTabixAdapter: 'VariantTrack',
   VcfAdapter: 'VariantTrack',
   BedpeAdapter: 'VariantTrack',
   BedAdapter: 'FeatureTrack',
+  BedTabixAdapter: 'FeatureTrack',
   HicAdapter: 'HicTrack',
   PAFAdapter: 'SyntenyTrack',
   DeltaAdapter: 'SyntenyTrack',

@@ -1,11 +1,11 @@
 // replace with this in your code:
 // import { createViewState, JBrowseApp } from '@jbrowse/react-app2'
+import { useState } from 'react'
+
 import Plugin from '@jbrowse/core/Plugin'
 
 import { addRelativeUris } from './util.ts'
 import config from '../../public/test_data/volvox/config.json' with { type: 'json' }
-import { useState } from 'react'
-
 import { JBrowseApp, createViewState } from '../../src/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
