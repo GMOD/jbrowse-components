@@ -126,8 +126,9 @@ export function buildSyntenyGeometry({
     }
   }
 
-  const panBufferPx = 1000
-  const emitMarginPx = viewWidth + panBufferPx
+  const panBufferPx = 2000
+  const emitLeft = -panBufferPx
+  const emitRight = viewWidth + panBufferPx
   const bpPerPxInv0 = 1 / bpPerPx0
   const bpPerPxInv1 = 1 / bpPerPx1
   const minCigarPxWidth = 4
@@ -311,8 +312,8 @@ export function buildSyntenyGeometry({
       const screenTopX = markerTopX - viewOff0
       const screenBottomX = markerBottomX - viewOff1
       if (
-        (screenTopX < -emitMarginPx || screenTopX > emitMarginPx) &&
-        (screenBottomX < -emitMarginPx || screenBottomX > emitMarginPx)
+        (screenTopX < emitLeft || screenTopX > emitRight) &&
+        (screenBottomX < emitLeft || screenBottomX > emitRight)
       ) {
         continue
       }
@@ -429,8 +430,8 @@ export function buildSyntenyGeometry({
         const botMin = Math.min(px2, cx2) - viewOff1
         const botMax = Math.max(px2, cx2) - viewOff1
         const offScreen =
-          (topMax < -emitMarginPx || topMin > emitMarginPx) &&
-          (botMax < -emitMarginPx || botMin > emitMarginPx)
+          (topMax < emitLeft || topMin > emitRight) &&
+          (botMax < emitLeft || botMin > emitRight)
 
         if (!offScreen) {
           const isIndel =
