@@ -24,6 +24,18 @@ const useStyles = makeStyles()({
   root: {
     position: 'absolute',
     inset: 0,
+    background: 'transparent',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 5,
+      background: 'linear-gradient(to bottom, rgba(0,0,0,0.15), transparent)',
+      pointerEvents: 'none',
+      zIndex: 10,
+    },
   },
   canvas: {
     position: 'absolute',
