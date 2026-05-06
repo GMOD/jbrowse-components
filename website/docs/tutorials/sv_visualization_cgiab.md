@@ -14,6 +14,14 @@ matched tumor and normal tissue, sequenced with PacBio HiFi long reads. The
 project also publishes a phased de novo assembly of the tumor genome, which is
 particularly well-suited to JBrowse 2's synteny and dotplot views.
 
+C-GIAB ships several complementary assays beyond bulk sequencing —
+karyotyping, directional genome hybridization (DGH), and other cytogenetic
+characterizations — which together informed the high-quality benchmark call
+sets used here. This tutorial does not load those auxiliary datasets, but the
+[NIST C-GIAB page](https://www.nist.gov/programs-projects/cancer-genome-bottle)
+is the place to find them, along with [McDaniel et al. 2025](https://doi.org/10.1038/s41597-025-04944-7)
+for the methods behind the dataset.
+
 The general SV-visualization concepts used below are documented in the
 [SV visualization guide](/docs/user_guides/sv_visualization) and the
 [SV inspector guide](/docs/user_guides/sv_inspector_view). This tutorial focuses on the
@@ -252,6 +260,14 @@ For more on these views, see the
 
 If you hit a problem not covered above, please file an issue on the
 [JBrowse 2 GitHub repository](https://github.com/GMOD/jbrowse-components/issues).
+
+## References
+
+Diesh, C., Stevens, G. J., Xie, P., et al. (2023). [JBrowse 2: A Modular Genome Browser with Views of Synteny and Structural Variation](https://doi.org/10.1186/s13059-023-02914-z). *Genome Biology*, *24*(1), 74.
+
+McDaniel, J. H., Patel, V., Olson, N. D., et al. (2025). [Development and Extensive Sequencing of a Broadly-Consented Genome in a Bottle Matched Tumor-Normal Pair](https://doi.org/10.1038/s41597-025-04944-7). *Scientific Data*, *12*(1), 1–22.
+
+Rautiainen, M., Nurk, S., Walenz, B. P., et al. (2023). [Verkko: telomere-to-telomere assembly of diploid chromosomes](https://doi.org/10.1038/s41587-023-01662-w). *Nature Biotechnology*, *41*(6), 753–762.
 
 ## Data availability
 

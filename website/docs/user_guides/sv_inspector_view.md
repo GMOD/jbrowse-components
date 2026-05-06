@@ -8,6 +8,9 @@ import Figure from '../figure'
 The Structural Variant (SV) inspector is a "workflow" that is designed to help
 users inspect structural variant calls.
 
+For an end-to-end walkthrough using real cancer sequencing data, see the
+[C-GIAB tutorial](/docs/tutorials/sv_visualization_cgiab).
+
 We can start the SV inspector by launching it from the App level menu bar
 
 <Figure caption="The SV inspector can be launched from the main menu bar." src="/img/sv_inspector_begin.png" />

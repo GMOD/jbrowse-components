@@ -294,6 +294,8 @@ workflow end-to-end with the HG008 phased tumor assembly.
 | Linear read vs ref        | Right-click on any read                    | Complex alignment of a single long read             |
 | Breakpoint split view     | Feature details or SV inspector            | Side-by-side inspection of both breakpoint loci     |
 | Sort/color by HP tag      | Pileup settings → Sort by / Color by → Tag | Confirming heterozygous SVs on one haplotype        |
+| Dotplot view              | Launch from start screen                   | Chromosome-scale rearrangements (de novo assembly)  |
+| Linear synteny view       | Launch from dotplot selection              | Base-level alignment between two genomes            |
 
 ## Limitations
 

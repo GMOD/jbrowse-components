@@ -227,7 +227,7 @@ more detailed information.
 
 Now that you have an overview of the different pluggable element types that are
 available to you, review your
-[understanding of the configuration model](../config_model).
+[understanding of the configuration model](/docs/developer_guides/config_model).
 
 Also, checkout the [guided tutorial](/docs/developer_guides/simple_plugin/) for
 writing a plugin, which will take you through everything from installation,

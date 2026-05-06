@@ -45,3 +45,5 @@ title: Introduction - User guide
 ## Tutorials
 
 - [Analyzing a phased trio](/docs/user_guides/analyze_trio)
+- [Visualizing structural variants from the Cancer Genome in a Bottle](/docs/tutorials/sv_visualization_cgiab) -
+  end-to-end walkthrough of loading a real cancer dataset and inspecting SVs
