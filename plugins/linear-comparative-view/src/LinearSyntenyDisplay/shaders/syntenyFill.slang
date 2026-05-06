@@ -14,20 +14,18 @@ public static const uint VERTS_PER_INSTANCE = 16u * 6u;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 // Ribbons thinner than this in screen-perpendicular pixels switch to line mode:
-// a 1px-wide AA line centered on the ribbon, with alpha scaled by perpWidth for
-// subpixel coverage. Canvas2D gets equivalent quality from its built-in path AA.
+// collapse to centerline + expand ±1px along normal + SDF AA in fragment.
+// Canvas2D gets equivalent quality from its built-in path AA.
 static const float LINE_PERP_THRESHOLD = 2.0;
 
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
   nointerpolation float featureId : COLOR1;
-  // Line mode: interpolated signed perp dist from centerline (±1px range).
-  // lineDist stays 0 in fill mode; fragment skips SDF when lineAlpha == 0.
-  // lineAlpha is a 0/1 mode flag only — no subpixel brightness scaling,
-  // so line-mode features render at the same brightness as fill-mode ones.
-  float                 lineDist  : COLOR2;
-  nointerpolation float lineAlpha : COLOR3;
+  // lineMode: 0 = fill, 1 = line. lineDist is the signed perp dist from
+  // centerline (±1px); fragment uses it for SDF AA only in line mode.
+  float                 lineDist : COLOR2;
+  nointerpolation float lineMode : COLOR3;
 };
 
 [shader("vertex")]
@@ -36,7 +34,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.color = unpackRGBA(inst.color);
   o.featureId = inst.featureId;
   o.lineDist  = 0.0;
-  o.lineAlpha = 0.0;
+  o.lineMode = 0.0;
 
   Corners c = computeCorners(inst, u);
   if (isCulled(c, inst.queryTotalLength, u)) {
@@ -54,8 +52,6 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float edgeLen  = length(float2(centerDx, u.height));
 
   // Perpendicular width = horizontal_width × cos(edge_angle) = w × height / edgeLen.
-  // Use the per-segment horizontal width so lineAlpha tracks subpixel thinning
-  // smoothly along a tapered ribbon.
   float w        = abs(e.x - e.y);
   float perpWidth = w * u.height / max(edgeLen, 1.0);
 
@@ -80,7 +76,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     float lineSide = side > 0.5 ? 1.0 : -1.0;
     float2 pos = float2(centerX, e.z) + normal * lineSide;
     o.lineDist  = lineSide;
-    o.lineAlpha = 1.0;
+    o.lineMode = 1.0;
     float2 clipSpace = pos / u.resolution * 2.0 - 1.0;
     o.position = float4(clipSpace.x, -clipSpace.y, 0.0, 1.0);
     return o;
@@ -116,11 +112,10 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   if (isHovered) {
     rgb = rgb * 0.7;
   }
-  if (fragIn.lineAlpha > 0.0) {
+  if (fragIn.lineMode > 0.0) {
     float d  = abs(fragIn.lineDist);
     float aa = fwidth(fragIn.lineDist);
-    float edgeAlpha = 1.0 - smoothstep(0.5 - aa * 0.5, 0.5 + aa, d);
-    finalAlpha *= edgeAlpha * fragIn.lineAlpha;
+    finalAlpha *= 1.0 - smoothstep(0.5 - aa * 0.5, 0.5 + aa, d);
   }
   return float4(rgb, finalAlpha);
 }
