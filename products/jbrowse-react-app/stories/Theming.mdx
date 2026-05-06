@@ -1,0 +1,51 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { DarkTheme } from './JBrowseReactApp.stories'
+
+<Meta title="Theming" />
+
+# Theming
+
+Theming is configured via the `configuration.theme` key inside the config
+object. The palette follows [MUI theme palette](https://mui.com/material-ui/customization/theming/)
+conventions.
+
+## Dark mode
+
+Set `palette.mode` to `'dark'` to enable dark mode:
+
+```js
+const state = createViewState({
+  config: {
+    configuration: {
+      theme: {
+        palette: {
+          mode: 'dark',
+        },
+      },
+    },
+    assemblies: [...],
+    tracks: [...],
+  },
+})
+```
+
+<Story of={DarkTheme} />
+
+## Custom colors
+
+You can also customize the `primary`, `secondary`, `tertiary`, and `quaternary`
+palette keys used throughout the JBrowse UI:
+
+```js
+configuration: {
+  theme: {
+    palette: {
+      primary: { main: '#4d9221' },
+      secondary: { main: '#c51b7d' },
+    },
+  },
+},
+```
+
+See [the JBrowse theming guide](https://jbrowse.org/jb2/docs/config_guides/theme/)
+for the full list of customizable keys including DNA base colors.

@@ -1,6 +1,7 @@
 export {
   DefaultSession,
   DisableAddTrack,
+  UseCreateViewState,
   ExternalNavigateLocstring,
   ExternalNavigateObject,
   HorizontallyFlippedViaButton,

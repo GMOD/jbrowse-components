@@ -7,18 +7,24 @@ import { DefaultSession } from './JBrowseLinearGenomeView.stories'
 
 When using JBrowse 2, information about the current app state such as what views
 are open is stored in a session. It is possible to configure a JB2 app with a
-`defaultSession`, which will be loaded when the app first is loaded.
+`defaultSession`, which will be loaded when the app first loads.
 
 Here is an example LGV with a long reads alignment track loaded in the
 `defaultSession`:
 
 <Story of={DefaultSession} />
 
-## Creating a default session
+## The `init` shorthand (recommended)
 
-It is possible to programmatically configure a `defaultSession` for a React LGV
-component, however note that the session is an internal representation that may
-not be optimal for programmatic usage.
+For most cases the `init` field is the simplest way to set an initial location
+and open tracks. It is covered in detail in the
+[Getting Started](?path=/docs/getting-started--docs) guide. Use the full session
+format below only when you need precise control over display-level options.
+
+## Creating a full default session
+
+You can programmatically configure a `defaultSession`, but note that the session
+format is an internal representation and may be verbose.
 
 Here is the structure of the session:
 
@@ -78,15 +84,12 @@ For example, to display a ReferenceSequenceTrack with the id
 
 ## Exporting sessions from JBrowse Web/Desktop for use in @jbrowse/react-linear-genome-view2
 
-A powerful tool for learning about track types and display types for default
-sessions is the feature for exporting sessions in the main JBrowse 2 app (File
--> Export session). This feature exports a JSON file of the current session in
-the app. This feature can also be used to graphically generate the desired view
-configuration for the React LGV component.
+A useful way to build default sessions is to configure the view interactively in
+JBrowse 2 and then export it (File → Export session). This exports a JSON file
+of the current session state, which you can adapt for the LGV component.
 
-To create a default session using JB2, load whatever tracks and data you want to
-be displayed into a session with a single linear genome view open. Export the
-session from JB2 and save it as `session.json` in your app.
+Load the tracks you want, open a single linear genome view, export the session,
+and save it as `session.json` in your app.
 
 To use the view settings in your app, you can create the `defaultSession` like
 this:

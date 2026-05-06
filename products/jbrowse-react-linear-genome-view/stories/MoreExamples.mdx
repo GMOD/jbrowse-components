@@ -1,0 +1,119 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks'
+import {
+  HumanExomeExample,
+  WithTwoLinearGenomeViews,
+  ExternalNavigateLocstring,
+  ExternalNavigateObject,
+  HorizontallyFlippedViaLocstring,
+  HorizontallyFlippedViaButton,
+  HorizontallyFlippedViaDisplayedRegions,
+  WithMultipleDisplayedRegionsFlipped,
+  WithObserveVisibleRegions,
+  WithObserveVisibleFeatures,
+  WithDisableZoomAndSideScroll,
+  WithOutsideStyling,
+} from './JBrowseLinearGenomeView.stories'
+
+<Meta title="More Examples" />
+
+# More examples
+
+This page collects additional examples that show the variety of things possible
+with the LGV component.
+
+## Real data: human exome
+
+A live view of the GRCh38 assembly with NCBI RefSeq gene annotations and an
+NA12878 exome CRAM track. Note that `CramAdapter` requires a `sequenceAdapter`
+field so it can decode the reference-compressed reads.
+
+<Story of={HumanExomeExample} />
+
+## Two views on one page
+
+You can render multiple independent `JBrowseLinearGenomeView` instances on the
+same page, each with its own `createViewState`.
+
+<Story of={WithTwoLinearGenomeViews} />
+
+## Programmatic navigation
+
+### Navigate via locstring
+
+Call `view.navToLocString(locstring, assemblyName)` to navigate from outside the
+component. The call is async and can throw, so always catch errors.
+
+<Story of={ExternalNavigateLocstring} />
+
+### Navigate via region object
+
+`view.navToLocations([{ refName, start, end, assemblyName }])` accepts an array
+of region objects — useful when you have structured coordinates rather than a
+locstring.
+
+<Story of={ExternalNavigateObject} />
+
+## Horizontally flipping the view
+
+There are three ways to render a region in the reverse-complement orientation.
+
+### Via locstring `[rev]` suffix
+
+Append `[rev]` to a locstring passed to the `location` option or
+`navToLocString`.
+
+<Story of={HorizontallyFlippedViaLocstring} />
+
+### Via an external button
+
+Call `state.session.view.horizontallyFlip()` at any time to toggle the
+orientation. This is useful when you want a flip button outside the JBrowse UI.
+
+<Story of={HorizontallyFlippedViaButton} />
+
+### Via `displayedRegions` in `defaultSession`
+
+Set `reversed: true` on a region in `displayedRegions` inside your
+`defaultSession` to start in flipped orientation.
+
+<Story of={HorizontallyFlippedViaDisplayedRegions} />
+
+### Multi-region intron-collapsed view with flip
+
+This example computes an intron-collapsed (exon-only) view of a transcript by
+building a list of padded exon regions from a feature object, joins them into a
+multi-region locstring for `init.loc`, and adds a flip button. This pattern is
+the programmatic equivalent of the built-in "Collapse introns" right-click action.
+
+<Story of={WithMultipleDisplayedRegionsFlipped} />
+
+## Observing the visible region
+
+Use MobX's `observer` on a component that reads `view.coarseDynamicBlocks` to
+reactively track what region is currently visible. `coarseDynamicBlocks` is
+debounced, so it doesn't update on every pixel of scroll.
+
+<Story of={WithObserveVisibleRegions} />
+
+## Observing visible features
+
+You can call RPC methods directly against the session's `rpcManager` to fetch
+features for the currently visible region. The example below reads from the
+first track and displays a table that updates as you scroll.
+
+<Story of={WithObserveVisibleFeatures} />
+
+## Disabling zoom and scroll via plugin
+
+Use a plugin and `Core-extendPluggableElement` to override the `zoomTo` and
+`scrollTo` actions on `LinearGenomeView` with no-ops, effectively locking the
+view to a fixed region.
+
+<Story of={WithDisableZoomAndSideScroll} />
+
+## Style isolation
+
+The LGV component takes measures to prevent CSS from its parent container
+(fonts, text alignment, etc.) from leaking in.
+
+<Story of={WithOutsideStyling} />

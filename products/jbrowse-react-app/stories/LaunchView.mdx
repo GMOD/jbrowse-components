@@ -1,0 +1,35 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { WithLaunchLinearGenomeView } from './JBrowseReactApp.stories'
+
+<Meta title="Launching Views via Extension Points" />
+
+# Launching Views via Extension Points
+
+JBrowse exposes async extension points for launching views from outside the
+React tree. This is useful when you need to open a view at a specific location
+after an async operation (e.g. after fetching a gene list or waiting for data).
+
+The extension point `LaunchView-LinearGenomeView` opens an LGV at a given
+location with optional tracks pre-loaded:
+
+```js
+import { getEnv } from '@jbrowse/core/util'
+
+const state = createViewState({ config })
+const { pluginManager } = getEnv(state)
+
+await pluginManager.evaluateAsyncExtensionPoint('LaunchView-LinearGenomeView', {
+  session: state.session,
+  assembly: 'hg38',
+  loc: 'chr10:1-100000',
+  tracks: ['hg38.100way.phyloP100way'],
+})
+```
+
+Other view types have corresponding extension points, e.g.
+`LaunchView-LinearSyntenyView` and `LaunchView-DotplotView`.
+
+The example below creates the app with no default session, then opens a human
+GRCh38 linear genome view asynchronously:
+
+<Story of={WithLaunchLinearGenomeView} />

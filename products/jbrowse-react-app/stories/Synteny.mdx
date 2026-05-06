@@ -1,0 +1,39 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { SyntenyExample } from './JBrowseReactApp.stories'
+
+<Meta title="Synteny Views" />
+
+# Synteny Views
+
+The `@jbrowse/react-app2` component supports all view types available in
+jbrowse-web, including linear synteny views and dotplot views.
+
+To open a synteny view, set `type: 'LinearSyntenyView'` (or
+`'DotplotView'`) in the `defaultSession.views` array and provide the
+assemblies and synteny track in an `init` block:
+
+```js
+const state = createViewState({
+  config: {
+    ...config,
+    defaultSession: {
+      name: 'My synteny session',
+      views: [
+        {
+          id: 'synteny_view',
+          type: 'LinearSyntenyView',
+          init: {
+            views: [{ assembly: 'hg19' }, { assembly: 'hg38' }],
+            tracks: ['hg19_to_hg38_chain'],
+          },
+        },
+      ],
+    },
+  },
+})
+```
+
+The example below shows volvox vs. volvox_del using a PAF synteny track that
+is already in the volvox test config:
+
+<Story of={SyntenyExample} />

@@ -2,4 +2,5 @@ export { default as JBrowseLinearGenomeView } from './JBrowseLinearGenomeView/in
 export { default as createModel } from './createModel/index.ts'
 export { default as createViewState } from './createViewState.ts'
 export { default as loadPlugins } from './loadPlugins.ts'
+export { useCreateViewState } from './useCreateViewState.ts'
 export type { ViewModel } from './createModel/createModel.ts'

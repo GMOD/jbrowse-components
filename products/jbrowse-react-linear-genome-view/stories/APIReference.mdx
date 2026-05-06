@@ -1,0 +1,112 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="API Reference" />
+
+# API Reference
+
+> This is the API for `@jbrowse/react-linear-genome-view2`. For the full app
+> component, see the
+> [@jbrowse/react-app2 API Reference](https://jbrowse.org/storybook/app/main/?path=/docs/api-reference--docs).
+
+## `createViewState(options)`
+
+Creates the root state object for the LGV component. Returns a state tree that
+is passed to `<JBrowseLinearGenomeView viewState={state} />`.
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `assembly` | object | required | Assembly config — sequence adapter, refName aliases, cytobands |
+| `tracks` | array | required | Array of track configs |
+| `defaultSession` | object | — | Initial session. Use `view.init` for most cases (see below) |
+| `location` | string \| object | — | Initial location as a locstring (`'chr1:1-1000'`) or `{ refName, start, end }` object |
+| `highlight` | string[] | — | Array of locstrings to highlight on load |
+| `plugins` | PluginConstructor[] | `[]` | Inline or imported plugin classes |
+| `disableAddTracks` | boolean | `false` | Hides the add-track UI and prevents sequence search / multi-wiggle track creation |
+| `internetAccounts` | array | — | Internet account configs for authenticated or custom-fetch resources |
+| `aggregateTextSearchAdapters` | array | — | Text search index configs for the search box |
+| `configuration` | object | — | Global configuration, e.g. `{ rpc: { defaultDriver: 'WebWorkerRpcDriver' } }` |
+| `makeWorkerInstance` | `() => Worker` | — | Web worker factory — import from `@jbrowse/react-linear-genome-view2/makeWorkerInstance` |
+| `onChange` | `(patch, reversePatch) => void` | — | Called on every MST patch to the state tree, useful for persistence |
+
+### `defaultSession.view.init` shorthand
+
+Instead of constructing a full session object, use the `init` field to set the
+initial location and open tracks concisely:
+
+```js
+defaultSession: {
+  name: 'My session',
+  view: {
+    type: 'LinearGenomeView',
+    init: {
+      loc: 'chr1:1,000,000-2,000,000',  // locstring, including multi-region
+      assembly: 'hg38',
+      tracks: ['trackId1', 'trackId2'],
+    },
+  },
+}
+```
+
+`init.loc` accepts any locstring, including space-separated multi-region strings
+(e.g. `'chr1:100-200 chr1:500-600'`). `init.tracks` is a list of trackIds to
+open on load.
+
+---
+
+## `useCreateViewState(options)`
+
+A React hook that calls `createViewState` once on mount and returns the stable
+state object. Accepts the same options as `createViewState`.
+
+Use this instead of calling `createViewState` directly in a component body, to
+avoid recreating the entire browser state on every render:
+
+```js
+import { useCreateViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+
+function GenomeView() {
+  const state = useCreateViewState({ assembly, tracks, location: 'chr1:1-1000' })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+```
+
+---
+
+## `loadPlugins(definitions, args?)`
+
+Asynchronously loads plugins from external URLs and returns an array of plugin
+constructors that can be passed to `createViewState`.
+
+```js
+import { loadPlugins, createViewState } from '@jbrowse/react-linear-genome-view2'
+
+const plugins = await loadPlugins([
+  { name: 'MyPlugin', url: 'https://example.com/my-plugin.js' },
+])
+const state = createViewState({ assembly, tracks, plugins })
+```
+
+---
+
+## State object
+
+`createViewState` returns a MST model. Key members:
+
+| Member | Description |
+|--------|-------------|
+| `state.session.view` | The `LinearGenomeViewModel` instance |
+| `state.session.view.navToLocString(loc, assemblyName)` | Navigate to a locstring (async, can throw) |
+| `state.session.view.navToLocations([{ refName, start, end, assemblyName }])` | Navigate via region objects (async) |
+| `state.session.view.showTrack(trackId)` | Open a track by trackId |
+| `state.session.view.hideTrack(trackId)` | Hide a track by trackId |
+| `state.session.view.horizontallyFlip()` | Toggle the reverse-complement orientation |
+| `state.session.view.coarseDynamicBlocks` | Debounced array of currently visible regions |
+| `state.session.view.coarseVisibleLocStrings` | Visible region as a locstring string |
+| `state.session.view.initialized` | `true` once the view has loaded assembly data |
+| `state.session.view.error` | Any error thrown during loading |
+| `state.session.rpcManager` | RPC manager — use to call `CoreGetFeatures` and other RPC methods directly |
+
+For the full list of `LinearGenomeViewModel` actions and views, see the
+[model reference docs](https://jbrowse.org/jb2/docs/models/lineargenomeview/).

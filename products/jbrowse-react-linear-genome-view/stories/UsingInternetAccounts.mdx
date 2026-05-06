@@ -5,10 +5,9 @@ import { WithInternetAccounts } from './JBrowseLinearGenomeView.stories'
 
 # Internet accounts
 
-"Internet accounts" are used to access authenticated resources or otherwise
-override the 'fetch' behavior of the app. Starting with v2.2.1 of
-`@jbrowse/react-linear-genome-view2`, developers can use InternetAccounts in the
-embedded components.
+"Internet accounts" are used to access authenticated resources or override the
+fetch behavior of the app. Available since v2.2.1 of
+`@jbrowse/react-linear-genome-view2`.
 
 ## Using InternetAccounts
 
@@ -42,16 +41,14 @@ with a value of `Bearer <token>`.
 
 ## Notes
 
-Normally, internet accounts are used for accessing information from external
-third party resources. For accessing authenticated non-external resources,
-you'll more likely be 'automatically' be authenticated via cookies.
+Normally, internet accounts are used for external third-party resources. For
+internal authenticated resources you'll more likely be authenticated via cookies.
 
 Note that JBrowse's `DropboxOAuthInternetAccount` and
-`GoogleDriveOAuthInternetAccount` will not work as-is because
-`@jbrowse/react-linear-genome-view2` doesn't have the app-level control needed
-to properly execute an OAuth 2.0 login flow.
+`GoogleDriveOAuthInternetAccount` won't work here because
+`@jbrowse/react-linear-genome-view2` lacks the app-level control needed to
+execute an OAuth 2.0 login flow.
 
-There are some instances where InternetAccounts could be useful for non-external
-resources too though. For example, you can use a custom InternetAccount to
-override the `fetch` behavior of a particular track, allowing you to customize
-where and how the data is retrieved.
+InternetAccounts can also be useful for non-external resources — for example, a
+custom InternetAccount can override the `fetch` behavior of a track to control
+where and how data is retrieved.

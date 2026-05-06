@@ -1,0 +1,56 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks'
+import {
+  WithObserveVisibleRegions,
+  WithObserveVisibleFeatures,
+} from './JBrowseLinearGenomeView.stories'
+
+<Meta title="Observing MobX State" />
+
+# Observing MobX State
+
+The JBrowse state tree is built on [MobX-State-Tree](https://mobx-state-tree.js.org/).
+This means any value in the state tree is observable, and React components can
+automatically re-render when those values change.
+
+## Using `observer` from mobx-react
+
+Wrap a component with `observer` from `mobx-react` to make it re-render
+whenever any MobX observable it reads changes:
+
+```js
+import { observer } from 'mobx-react'
+
+const MyComponent = observer(function MyComponent({ viewState }) {
+  // This will re-render whenever view.coarseDynamicBlocks changes
+  const view = viewState.session.views[0]
+  return <div>Current location: {view.coarseVisibleLocStrings}</div>
+})
+```
+
+`observer` components are automatically memoized — you do not need to wrap
+them in `React.memo`.
+
+## When to use `observer`
+
+Use `observer` on any component that reads from the JBrowse view state and
+needs to stay in sync with it. Without `observer`, the component renders once
+with the initial state and never updates.
+
+You do **not** need `observer` for components that only receive plain props
+(strings, numbers, callbacks) — those work with normal React re-rendering.
+
+## Example: observing the visible region
+
+The `VisibleRegions` component below uses `observer` to display the currently
+visible genomic region. Pan or zoom the genome view to see the region update in
+real time.
+
+<Story of={WithObserveVisibleRegions} />
+
+## Example: observing visible features
+
+This example fetches the features in the currently visible region and displays
+them in a table. The `useEffect` inside the component re-runs whenever
+`view.coarseDynamicBlocks` changes because `observer` tracks that dependency.
+
+<Story of={WithObserveVisibleFeatures} />

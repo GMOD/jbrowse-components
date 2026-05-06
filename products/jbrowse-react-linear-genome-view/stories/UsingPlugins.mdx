@@ -8,19 +8,16 @@ import {
 
 # Using plugins
 
-## Notice: Using plugins with webworkers enabled
+## Using plugins with web workers
 
-If you are using webworkers, you have to add your plugin to both the main thread
-and the webworker
-
-Example PR
-https://github.com/GMOD/jbrowse-react-linear-genome-view-cra5-demo/pull/1/files
+If you are using web workers, add your plugin to both the main thread and the
+web worker. See this [example PR](https://github.com/GMOD/jbrowse-react-linear-genome-view-cra5-demo/pull/1/files).
 
 ## Plugins defined in your code
 
 This example loads a plugin that is defined in your own source code. The plugin
-adds an extra action from clicking and dragging a region with the mouse that
-console.log's the region that was selected
+adds an action triggered by clicking and dragging a region with the mouse that
+console.logs the region that was selected
 
 <Story of={WithInlinePlugins} />
 
@@ -32,20 +29,14 @@ This example loads a plugin from an external URL
 
 ## Plugins loaded from NPM
 
-This example is similar to defining an inline plugin. This is not a live example
-as we are not actually installing `jbrowse-plugin-gwas` into our monorepo, but
-you can do this in your own code
+This is not a live example (we don't install `jbrowse-plugin-gwas` in our
+monorepo), but you can use the same pattern in your own code:
 
-```
-
-import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import PluginManager from '@jbrowse/core/PluginManager'
+```js
 import Plugin from '@jbrowse/core/Plugin'
 import GWASPlugin from 'jbrowse-plugin-gwas'
 import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 import { getVolvoxConfig } from './util'
-
-
 
 export const Example = () => {
   const { assembly, tracks } = getVolvoxConfig()
@@ -55,13 +46,10 @@ export const Example = () => {
     tracks,
     location: 'ctgA:1105..1221',
   })
-
   return (
     <div>
       <JBrowseLinearGenomeView viewState={state} />
     </div>
   )
 }
-
-
 ```

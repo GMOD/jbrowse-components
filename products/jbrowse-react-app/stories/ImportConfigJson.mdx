@@ -6,19 +6,16 @@ import {
 
 <Meta title="Importing config.json files" />
 
-## Importing config.json files
+# Importing config.json files
 
-The jbrowse-web app is coded in such a way that it will fetch a config.json file
-from the current directory (or wherever is specified by the URL ?config=
-parameter). The @jbrowse/react-app2 does not do this however, and makes no
-assumptions about URL parameters, so a developer must hand-code this themselves.
-This is typical of low level components, the developer gains more control over
-the app but must implement some things themselves
+The jbrowse-web app fetches a config.json from the current directory (or
+wherever the `?config=` URL parameter points). `@jbrowse/react-app2` makes no
+assumptions about URL parameters, so you must supply the config yourself.
 
-## Example 1. Using 'static json imports'
+## Using static JSON imports
 
 <Story of={WithImportConfigJson} />
 
-## Example 2. Using 'fetch' to get the config.json
+## Using `fetch`
 
 <Story of={WithFetchConfigJson} />

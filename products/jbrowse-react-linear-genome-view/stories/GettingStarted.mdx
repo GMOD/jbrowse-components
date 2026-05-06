@@ -4,6 +4,8 @@ import {
   UsingLocObject,
   DisableAddTrack,
   WithShowTrack,
+  UseCreateViewState,
+  WithInit,
 } from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Getting Started" />
@@ -17,14 +19,12 @@ React application.
 
 ## Using the docs
 
-This is an example of using the @jbrowse/react-linear-genome-view2 component
+This is an example of the @jbrowse/react-linear-genome-view2 component:
 
 <Story of={OneLinearGenomeView} />
 
-You can test out the various features of the component, and open tracks and
-interact with it as you would in your app. You can also click on the code button
-on the bottom right to see what the code looks like for the component being
-viewed.
+You can open tracks and interact with it as you would in your app. Click the
+code button on the bottom right to see the source for the story being viewed.
 
 ## An overview of the LGV API
 
@@ -67,9 +67,8 @@ The LGV component only accepts a single assembly object instead of an array:
 }
 ```
 
-You can also set an initial location for when the browser first loads on the
-package when you initialize the state of the component with your configuration
-values:
+You can also set an initial location when the component first loads, by passing
+it to `createViewState`:
 
 ```js
 const state = createViewState({
@@ -80,15 +79,12 @@ const state = createViewState({
 })
 ```
 
-Example
-
 <Story of={UsingLocObject} />
 
 ## Disabling the ability to add tracks
 
-By default users can add tracks, but you can add the `disableAddTracks` flag to
-prevent this. Note that this prevents the ability to create e.g. sequence search
-tracks or multi-wiggle tracks too.
+By default users can add tracks, but the `disableAddTracks` flag prevents this.
+Note that it also prevents creating sequence search tracks or multi-wiggle tracks.
 
 ```js
 const state = createViewState({
@@ -100,71 +96,82 @@ const state = createViewState({
 })
 ```
 
-Example
-
 <Story of={DisableAddTrack} />
+
+## Opening tracks with the `init` shorthand
+
+The recommended way to set an initial location and open tracks is the `init`
+field inside `defaultSession.view`. It avoids constructing a full
+`displayedRegions` array and is much more concise than a complete session object:
+
+```js
+const state = createViewState({
+  assembly,
+  tracks,
+  defaultSession: {
+    name: 'My session',
+    view: {
+      type: 'LinearGenomeView',
+      init: {
+        loc: 'chr1:11,106,077-11,261,675',
+        assembly: 'hg38',
+        tracks: ['trackId1', 'trackId2'],
+      },
+    },
+  },
+})
+```
+
+`init.loc` accepts any locstring (including multi-region, e.g.
+`'chr1:100-200 chr1:500-600'`). `init.tracks` is a list of trackIds to open.
+
+<Story of={WithInit} />
 
 ## Opening up tracks by default
 
-You can use the `showTrack` function on the object returned by `createViewState`
-to show a track with a given trackId. This can be easier than using the
-defaultSession.
+`showTrack` on the object returned by `createViewState` is an alternative to
+`init` when you want to open a track imperatively after state is created.
 
 <Story of={WithShowTrack} />
 
-## An overview of the LGV API
+## Using the useCreateViewState hook
 
-The LGV component relies on the same
-[configuration](https://jbrowse.org/jb2/docs/config_guide) as the main JB2 app,
-with a few noteworthy differences.
+`createViewState` is an expensive operation and should not be called on every
+render. If your component re-renders (e.g. because a parent component has
+state), calling `createViewState` directly in the component body will recreate
+the entire browser state on each render.
 
-First, the component can be configured using a standalone JSON file like JB2, or
-can be configured with JavaScript objects in the source code of the app where it
-is being used, as shown
-[here](https://github.com/GMOD/jbrowse-components/blob/HEAD/products/jbrowse-react-linear-genome-view/docs/example.md).
+The `useCreateViewState` hook wraps `createViewState` so the state is created
+only once per component mount, regardless of how many times the component
+re-renders:
 
-Second, while this is the structure of a JB2 configuration file:
+```js
+import { useCreateViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
-```json
-{
-  "configuration": {
-    /* global configs here */
-  },
-  "assemblies": [
-    /* list of assembly configurations, e.g. the genomes being viewed */
-  ],
-  "tracks": [
-    /* array of tracks being loaded, contain reference to which assembl(y/ies)
-    they belong to */
-  ],
-  "defaultSession": {
-    /* optional default session */
-  }
+function GenomeView() {
+  const state = useCreateViewState({ assembly, tracks, location: '...' })
+  return <JBrowseLinearGenomeView viewState={state} />
 }
 ```
 
-The LGV component only accepts a single assembly object instead of an array:
+The example below has a counter in the parent. Clicking "Re-render parent"
+increments the counter and triggers a re-render, but the genome view is
+unaffected because `useCreateViewState` keeps the state stable.
 
-```json
-{
-  "assembly": {
-    /* the assembly being used for the browser */
-  }
-}
-```
+<Story of={UseCreateViewState} />
 
 ## Additional resources
 
-This overview is intended as a launching point for initial use of the LGV
-component. Make sure to check out the rest of the stories to get a better feel
-for what is possible with the component.
+Check out the rest of the stories to get a better feel for what the component
+can do. A few more resources:
 
-Here are a few more resources that may help:
-
-- [The guide for creating default sessions](?path=/docs/default-sessions--docs)
+- [API Reference](?path=/docs/api-reference--docs) — all `createViewState` options and state methods
+- [Default Sessions](?path=/docs/default-sessions--docs) — full session format when you need fine-grained control
+- [More Examples](?path=/docs/more-examples--docs) — navigation, flipping, observing state, and more
 - [Code example](https://github.com/GMOD/jbrowse-components/blob/HEAD/products/jbrowse-react-linear-genome-view/docs/example.md)
   for using @jbrowse/react-linear-genome-view2
 - [Source code for all the storybook examples](https://github.com/GMOD/jbrowse-components/tree/main/products/jbrowse-react-linear-genome-view/stories)
-- Examples of using @jbrowse/react-linear-genome-view2 in create-react-app,
-  vite, and next.js
-  [https://jbrowse.org/jb2/docs/embedded_components/](https://jbrowse.org/jb2/docs/embedded_components/)
+- [Embedded components overview](https://jbrowse.org/jb2/docs/embedded_components/)
+
+If you need the full JBrowse 2 app with multiple view types and a menu bar, see
+the [@jbrowse/react-app2 storybook](https://jbrowse.org/storybook/app/main).
