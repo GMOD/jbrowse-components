@@ -4,8 +4,48 @@ toplevel: true
 title: Introduction - User guide
 ---
 
-import Figure from './figure'
+## General usage
 
-This user guide is a comprehensive compilation of all general UI navigation,
-tools/features available for some of the different track types, and other useful
-features for using JBrowse.
+- [Basic usage](/docs/user_guides/basic_usage) - navigation, searching, opening
+  files, and common UI controls
+
+## Track types
+
+- [Alignments track](/docs/user_guides/alignments_track) - BAM/CRAM pileup and
+  coverage displays
+- [Quantitative tracks](/docs/user_guides/quantitative_track) - BigWig/BedGraph
+  signal tracks
+- [Multi-quantitative tracks](/docs/user_guides/multiquantitative_track) -
+  multiple signal tracks displayed together
+- [Variant tracks](/docs/user_guides/variant_track) - VCF variant display
+- [Multi-sample variant displays](/docs/user_guides/multivariant_track) -
+  population-level variant views
+- [Sequence track](/docs/user_guides/sequence_track) - reference sequence
+  display
+- [Feature sequence panel](/docs/user_guides/feature_sequence) - sequence
+  extraction for selected features
+- [Hi-C track](/docs/user_guides/hic_track) - contact matrix display
+
+## Views
+
+- [Dotplot view](/docs/user_guides/dotplot_view) - whole-genome synteny dotplot
+- [Linear synteny view](/docs/user_guides/linear_synteny_view) - linear
+  alignment of two genomes
+- [SV inspector view](/docs/user_guides/sv_inspector_view) - structural variant
+  spreadsheet and circular view
+- [Structural variant visualization](/docs/user_guides/sv_visualization) -
+  interpreting SV signals across display types
+
+## Other features
+
+- [Bookmark widget](/docs/user_guides/bookmark_widget) - saving and sharing
+  genomic locations
+- [Plugin store](/docs/user_guides/plugin_store) - installing community plugins
+
+## Tutorials
+
+- [Analyzing a phased trio](/docs/user_guides/analyze_trio)
+- [Visualizing structural variants from the Cancer Genome in a Bottle](/docs/tutorials/sv_visualization_cgiab) -
+  end-to-end walkthrough of loading a real cancer dataset and inspecting SVs
+- [Synteny visualization and genome alignment](/docs/tutorials/synteny_visualization) -
+  dotplot and linear synteny views for comparing genome assemblies

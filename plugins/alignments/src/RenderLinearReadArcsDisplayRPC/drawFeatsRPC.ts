@@ -15,6 +15,7 @@ import {
   toCoreFeatBasic,
 } from '../shared/arcUtils.ts'
 import {
+  fillColor,
   getPairedInsertSizeAndOrientationColor,
   getPairedInsertSizeColor,
   getPairedOrientationColor,
@@ -123,18 +124,22 @@ function getArcStrokeColor(params: {
     return 'grey'
   }
 
-  // Long-read coloring
+  // Long-read coloring: map strand combination to pair orientation colors so
+  // the arc display matches the linked reads display
   if (
     colorByType === 'orientation' ||
     colorByType === 'insertSizeAndOrientation'
   ) {
     if (s1 === -1 && s2 === 1) {
-      return 'navy'
+      return fillColor.color_pair_rl // RL - rev then fwd
     }
-    if (s1 === 1 && s2 === -1) {
-      return 'green'
+    if (s1 === 1 && s2 === 1) {
+      return fillColor.color_pair_ll // LL - both fwd
     }
-    return 'grey'
+    if (s1 === -1 && s2 === -1) {
+      return fillColor.color_pair_rr // RR - both rev
+    }
+    return fillColor.color_pair_lr // LR - fwd then rev (normal)
   }
   if (colorByType === 'gradient') {
     return `hsl(${Math.log10(absrad) * 10},${GRADIENT_HSL_SATURATION}%,${GRADIENT_HSL_LIGHTNESS}%)`

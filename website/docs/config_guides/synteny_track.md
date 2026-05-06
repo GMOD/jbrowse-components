@@ -69,7 +69,7 @@ for SyntenyTracks:
 {
   "type": "DeltaAdapter",
   "deltaLocation": {
-    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.paf"
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.delta"
   },
   "assemblyNames": ["YJM1447", "R64"]
 }
@@ -94,9 +94,9 @@ for SyntenyTracks:
 
 ```json
 {
-  "type": "DeltaAdapter",
-  "deltaLocation": {
-    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.paf"
+  "type": "ChainAdapter",
+  "chainLocation": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.chain"
   },
   "assemblyNames": ["YJM1447", "R64"]
 }

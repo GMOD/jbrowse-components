@@ -19,3 +19,7 @@ Here are some reasons you might want a custom display type:
 - You want to bundle your renderer and adapter as a specific thing that is
   automatically initialized rather than the `BasicTrack` (which combines any
   adapter and renderer)
+
+For a practical walkthrough of building a plugin that includes a display type,
+see the [simple plugin tutorial](/docs/developer_guides/simple_plugin) and the
+[no-build plugin tutorial](/docs/developer_guides/no_build_plugin).

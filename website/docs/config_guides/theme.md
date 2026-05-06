@@ -43,7 +43,7 @@ The customized theme screenshot uses the below configuration:
 ```json
 {
   "configuration": {
-    "theme" :{
+    "theme": {
       "palette": {
         "primary": {
           "main": "#311b92"
@@ -60,6 +60,7 @@ The customized theme screenshot uses the below configuration:
       }
     }
   }
+}
 ```
 
 ### Extra themes and dark mode

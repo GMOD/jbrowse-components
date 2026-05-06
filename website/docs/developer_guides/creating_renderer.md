@@ -89,7 +89,7 @@ class MyRenderer extends ServerSideRendererType {
   render(props) {
     const { features, width, height } = props
     // iterate over the ES6 map of features
-    for (const feature in features.values()) {
+    for (const feature of features.values()) {
       // render each feature to canvas or output SVG
     }
 

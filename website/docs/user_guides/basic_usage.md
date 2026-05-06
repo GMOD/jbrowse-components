@@ -143,7 +143,7 @@ If you are an administrator, you can add tracks with the
 
 You can undo the closing of a view, track, or any other action in the UI with
 the Tools->Undo/Redo buttons. The keyboard shortcut "ctrl+z"/"cmd+z"(mac) work
-for undo as well as "ctrl+y"/"cmd+shift"z"(mac)
+for undo as well as "ctrl+y"/"cmd+shift+z"(mac)
 
 ### Sharing sessions
 

@@ -4,6 +4,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 /**
  * #config Gff3TabixAdapter
  * #category adapter
+ * used to load bgzip-compressed, tabix-indexed GFF3 files
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 

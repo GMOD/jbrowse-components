@@ -3,6 +3,12 @@ id: pag2023_workshop
 title: PAG2023 Workshop
 ---
 
+:::caution Archived content
+
+This is workshop material from PAG 2023. External links may be stale.
+
+:::
+
 We hosted a workshop on setting up JBrowse 2 at PAG 2023.
 
 A guide to follow along is written here:

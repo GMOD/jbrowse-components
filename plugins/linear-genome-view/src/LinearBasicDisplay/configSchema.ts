@@ -7,6 +7,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 /**
  * #config LinearBasicDisplay
  * #category display
+ * the default display for feature tracks in the linear genome view; renders
+ * features using the SvgFeatureRenderer (now CanvasFeatureRenderer)
  */
 function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(

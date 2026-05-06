@@ -35,18 +35,14 @@ export const fillColor = {
   color_rev_diff_chr: '#969696',
   color_pair_lr: 'lightgrey',
   color_pair_rr: '#3a3a9d',
-  color_pair_rl: 'teal',
-  color_pair_ll: 'green',
+  color_pair_rl: 'green',
+  color_pair_ll: 'teal',
   color_nostrand: '#c8c8c8',
   color_interchrom: 'purple',
   color_longinsert: 'red',
   color_shortinsert: 'pink',
   color_unmapped_mate: '#8B4513',
   color_unknown: 'grey',
-  // Long-read split alignment orientation colors
-  color_longread_rev_fwd: 'navy',
-  color_longread_fwd_rev: 'green',
-  color_longread_same: 'grey',
   // Supplementary/split alignment color (light orange)
   color_supplementary: '#f0b878',
 }
@@ -68,18 +64,14 @@ export const strokeColor = {
   color_rev_diff_chr: '#696969',
   color_pair_lr: '#8C8C8C',
   color_pair_rr: '#00002A',
-  color_pair_rl: '#005A5A',
-  color_pair_ll: '#005A00',
+  color_pair_rl: '#005A00',
+  color_pair_ll: '#005A5A',
   color_nostrand: '#8C8C8C',
   color_interchrom: '#5A005A',
   color_longinsert: '#B30000',
   color_shortinsert: '#FF3A5C',
   color_unmapped_mate: '#5D2E0D',
   color_unknown: '#444',
-  // Long-read split alignment orientation stroke colors
-  color_longread_rev_fwd: '#00004D',
-  color_longread_fwd_rev: '#005A00',
-  color_longread_same: '#444',
   // Supplementary/split alignment stroke color
   color_supplementary: '#c88030',
 }

@@ -4,8 +4,7 @@ import configSchema from './configSchema.ts'
 
 /**
  * #config SvgFeatureRenderer
- * NOTE: This is a fake config for SvgFeatureRenderer which was deleted, please
- * update to use the real CanvasFeatureRenderer
+ * @deprecated SvgFeatureRenderer was removed. Use CanvasFeatureRenderer instead.
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 

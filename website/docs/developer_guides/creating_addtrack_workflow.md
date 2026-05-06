@@ -38,6 +38,8 @@ export default (pm: PluginManager) => {
 ```js
 // plugins/wiggle/index.jsx
 
+import MultiWiggleAddTrackWidgetF from './MultiWiggleAddTrackWidget'
+
 // ...
 
 export default class WigglePlugin extends Plugin {

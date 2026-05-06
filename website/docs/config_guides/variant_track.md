@@ -8,7 +8,7 @@ Example config:
 ```json
 {
   "type": "VariantTrack",
-  "trackId": "my track",
+  "trackId": "my_track",
   "name": "My Variants",
   "assemblyNames": ["hg19"],
   "adapter": {

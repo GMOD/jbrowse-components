@@ -16,7 +16,7 @@ There are two different display types:
 
 ## Normal mode - optimized for showing all types of variants, including structural variants
 
-In the normal mode, each variant is drawn at it's proper genomic location, and
+In the normal mode, each variant is drawn at its proper genomic location, and
 produces multiple rows for each sample.
 
 Notably, the normal mode is actually capable of showing structural variants, and

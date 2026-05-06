@@ -159,8 +159,9 @@ callback for color, it might look like this:
 This draws all SNV (single nucleotide variants) as green, and other types as
 purple (insertion, deletion, other structural variant).
 
-You can also [write your own jexl function](../pluggable_elements) and call it
-in the same way in the configuration.
+You can also
+[write your own jexl function](/docs/developer_guides/pluggable_elements) and
+call it in the same way in the configuration.
 
 :::info Note
 
@@ -193,7 +194,7 @@ Configuration types should always be created by the `ConfigurationSchema`
 factory, e.g.:
 
 ```js
-import { ConfigurationSchema } from '@jbrowse/core/utils/configuration'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 const ThingStateModel = types.model('MyThingsState', {
   foo: 42,
   configuration: ConfigurationSchema('MyThing', {

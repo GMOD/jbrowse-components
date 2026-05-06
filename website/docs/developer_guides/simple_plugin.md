@@ -11,7 +11,7 @@ adapters, etc.), and to modify behavior of the application by adding code that
 watches the application's state.
 
 For the full list of what kinds of pluggable element types plugins can add, see
-the [pluggable elements](/docs/developer_guides/pluggable_elements/) page.
+the [pluggable elements](/docs/developer_guides/pluggable_elements) page.
 
 The following tutorial will walk you through establishing your developer
 environment, spinning up a plugin, and running a local JBrowse instance with
@@ -29,7 +29,7 @@ First we're going to install and set up the project for development.
 ## Use git to clone the plugin template
 
 The easiest way to start developing your plugin for JBrowse 2 is to use the
-[plugin template](https://github.com/gmod/jbrowse-plugin-template).
+[plugin template](https://github.com/GMOD/jbrowse-plugin-template).
 
 To clone the plugin template project, on the command line run:
 
@@ -175,9 +175,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
 }
 ```
 
-With [@jbrowse/mobx-state-tree](https://@jbrowse/mobx-state-tree.js.org/), you
-can observe here we're defining the properties of our widget and some actions it
-can take.
+With [@jbrowse/mobx-state-tree](https://mobx-state-tree.js.org/), you can
+observe here we're defining the properties of our widget and some actions it can
+take.
 
 Within the `.model` method, we're defining that the model of our
 `CircularViewChordWidget` has an `id`, a `type`, and `featureData`. We can
@@ -562,12 +562,12 @@ widget byline, and one with our feature data.
 
 :::info Troubleshooting
 
-Troubleshooting If you get to this point and note that nothing happens, open the
-developer tools in your browser and investigate the console errors. Also check
-your running process in your terminal for any errors. Review the code you added
-to ensure you didn't miss any imports or statements. Check over your config file
-to ensure that "plugins", "assemblies", and "tracks" are all present for the
-configuration to work properly.
+If you get to this point and note that nothing happens, open the developer tools
+in your browser and investigate the console errors. Also check your running
+process in your terminal for any errors. Review the code you added to ensure you
+didn't miss any imports or statements. Check over your config file to ensure
+that "plugins", "assemblies", and "tracks" are all present for the configuration
+to work properly.
 
 :::
 
@@ -835,7 +835,7 @@ JBrowse plugin store, so others can access our plugin.
 
 To learn more about the various pluggable elements available in JBrowse (and
 thus more that you can do with plugins!) checkout our
-[developer guide documentation](/docs/developer_guide/).
+[developer guide documentation](/docs/developer_guide).
 
 If you have further questions about plugin development, or development with
 JBrowse in general, stop by the JBrowse team

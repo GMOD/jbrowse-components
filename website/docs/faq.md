@@ -82,7 +82,7 @@ instructs the browser to unzip the data but JBrowse should be in charge of this.
 ### How can I setup JBrowse 2 on my web server
 
 We recommend following the steps in the
-[quickstart web via CLI](../quickstart_web/) guide.
+[quickstart web via CLI](/docs/quickstart_web) guide.
 
 The general procedure is using the `jbrowse create /var/www/html/jb2` and this
 will download the latest version of jbrowse to your web folder e.g. in
@@ -108,7 +108,7 @@ config.json, it is **not used to run any server-side code**.
 You can edit the index.html that comes with jbrowse-web to have custom contents.
 The jbrowse-web app just looks at the `div` that it renders into, but any
 contents outside that you can edit for custom purposes. If you need more
-advanced embedding, you can consider @jbrowse/react-linear-genome-view or
+advanced embedding, you can consider @jbrowse/react-linear-genome-view2 or
 similar, but the jbrowse-web app is not available as an npm installable package
 yet.
 
@@ -138,15 +138,15 @@ For example, for jbrowse create, you can visit the
 download the latest jbrowse-web release tag, and unzip it into your web
 directory.
 
-Checkout our [quickstart web](../quickstart_web/) guide for a speedy start to
+Checkout our [quickstart web](/docs/quickstart_web) guide for a speedy start to
 using a manually downloaded JBrowse instance.
 
 For other things, like add-assembly and add-track, you can manually edit the
-`config.json`; reviewing the [config docs](../config_guide) and sample configs
-will be valuable.
+`config.json`; reviewing the [config docs](/docs/config_guide) and sample
+configs will be valuable.
 
 To configure JBrowse using the admin-server GUI, checkout our
-[tutorial](../quickstart_adminserver).
+[tutorial](/docs/quickstart_adminserver).
 
 Understanding the [config basics](/docs/config_guides/intro) will come in handy
 also because you can manually edit in advanced configs after your tracks are
@@ -487,7 +487,7 @@ prohibitively long, and break server side navigations, intermediate caches, etc.
 Therefore, we make "sharing a session" a manual step that generates a shortened
 URL by default.
 
-Note 1: users of @jbrowse/react-linear-genome-view have to re-implement any URL
+Note 1: users of @jbrowse/react-linear-genome-view2 have to re-implement any URL
 query param logic themselves, as this component makes no attempt to access URL
 query params.
 

@@ -91,7 +91,6 @@ format, then the alignments track can use these tags to color modifications. It
 uses two modes:
 
 1. All modifications - draws the modifications as they are
-1. modifications - draws the modifications as they are
 1. Methylation mode - draws both unmodified and modified CpGs (unmodified
    positions are not indicated by the MM tag and this mode considers the
    sequence context)
@@ -104,13 +103,11 @@ uses two modes:
 
 JBrowse uses the same color scheme as IGV for coloring by pair orientation.
 These pair orientations can be used to reveal complex patterns of structural
-variation.
+variation. For a full breakdown of what each color indicates and how to
+interpret each SV type, see the
+[structural variant visualization guide](/docs/user_guides/sv_visualization).
 
-See
-[IGV's Interpreting Color by Pair Orientation guide](https://igv.org/doc/desktop/#UserGuide/tracks/alignments/paired_end_alignments/#pair-orientation)
-for further details on interpreting these pair orientations.
-
-<Figure caption="This shows an inverted duplication, the tandem duplication can produce green arrows which have reads pointing in opposite directions e.g. <-- and -->, while blue arrows which can indicate an inversion point in the same direction e.g. --> and -->." src="/img/inverted_duplication.png" />
+<Figure caption="This shows an inverted duplication. The tandem duplication produces green arrows (RL orientation, reads pointing away from each other, e.g. <-- and -->), while the inversion boundaries produce teal (LL) and dark blue (RR) arrows pointing in the same direction." src="/img/inverted_duplication.png" />
 
 ### Sashimi-style arcs
 
