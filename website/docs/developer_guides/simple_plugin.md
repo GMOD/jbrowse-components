@@ -175,9 +175,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
 }
 ```
 
-With [@jbrowse/mobx-state-tree](https://mobx-state-tree.js.org/), you
-can observe here we're defining the properties of our widget and some actions it
-can take.
+With [@jbrowse/mobx-state-tree](https://mobx-state-tree.js.org/), you can
+observe here we're defining the properties of our widget and some actions it can
+take.
 
 Within the `.model` method, we're defining that the model of our
 `CircularViewChordWidget` has an `id`, a `type`, and `featureData`. We can
@@ -562,12 +562,12 @@ widget byline, and one with our feature data.
 
 :::info Troubleshooting
 
-If you get to this point and note that nothing happens, open the
-developer tools in your browser and investigate the console errors. Also check
-your running process in your terminal for any errors. Review the code you added
-to ensure you didn't miss any imports or statements. Check over your config file
-to ensure that "plugins", "assemblies", and "tracks" are all present for the
-configuration to work properly.
+If you get to this point and note that nothing happens, open the developer tools
+in your browser and investigate the console errors. Also check your running
+process in your terminal for any errors. Review the code you added to ensure you
+didn't miss any imports or statements. Check over your config file to ensure
+that "plugins", "assemblies", and "tracks" are all present for the configuration
+to work properly.
 
 :::
 
