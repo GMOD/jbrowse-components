@@ -194,3 +194,28 @@ RPC first, then consolidate models.
 
 Done — comments added to `MultiRegionDisplayMixin.ts` at each call site.
 
+
+
+### Synteny: rewrite CIGAR visitor in bp-space
+
+**Problem:** `executeSyntenyFeaturesAndPositions` already has `cumBp` from
+`bpToPxFromIndex` for each corner, but throws it away — the worker stores
+`offsetPx` in pixel space, processes CIGAR sub-segments through
+`visitCigarRenderedSegments` (pixel walker), then `pxArrayToBpHiLo` recomputes
+`cumBp = (px - pad) * bpPerPx` at the end. Net: 4 typed-array allocations and a
+full sweep per fetch that exist solely to undo the bp→px conversion.
+
+**Fix:** Make `visitCigarRenderedSegments` accept `(startBp1, startBp2,
+bpPerPxInv0, bpPerPxInv1, ...)` and step in bp directly. The `< 1 px` indel-merge
+threshold becomes `bpDelta * bpPerPxInv < 1` — same semantics, no roundtrip.
+Worker stores cumBp from the start; `pxArrayToBpHiLo` reduces to a hi/lo split.
+
+**Risk:** `visitCigarRenderedSegments` lives in `packages/alignments-core` and
+is shared with SVG export. Touching it ripples through dotplot/synteny SVG.
+Worth doing alongside the next reasonable touch of that visitor — not as a
+standalone refactor.
+
+**Also unrelated to bp-space but small:** trim `bpToPxFromIndex` /
+`bpToPx` returns from 4 fields to 2 (`offsetPx`, `paddingPx`). The `index` and
+`cumBp` fields are dead in callers. Tests use `.toEqual` so both functions must
+be updated together.

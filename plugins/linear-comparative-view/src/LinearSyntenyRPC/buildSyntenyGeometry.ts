@@ -155,7 +155,7 @@ export function buildSyntenyGeometry({
     }
   }
 
-  const offScreenMargin = viewWidth + 1000
+  const offScreenMargin = viewWidth
   const bpPerPxInv0 = 1 / bpPerPx0
   const bpPerPxInv1 = 1 / bpPerPx1
   const minCigarPxWidth = 4
