@@ -18,6 +18,8 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
+const DEFAULT_MAX_OFFSCREEN_DRAW_PX = 1000
+
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 const DiagonalizationProgressDialog = lazy(
@@ -62,7 +64,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * maximum number of pixels off screen before a synteny line is culled
          */
-        maxOffScreenDrawPx: 300,
+        maxOffScreenDrawPx: DEFAULT_MAX_OFFSCREEN_DRAW_PX,
         /**
          * #property
          * used for initializing the view from a session snapshot. tracks is
@@ -536,7 +538,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   }
                 }
 
-                // Auto-scale level heights for many genomes
                 if (self.levels.length >= 4) {
                   self.autoScaleLevelHeights()
                 }
@@ -573,7 +574,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ...(cigarMode !== 'full' ? { cigarMode } : {}),
         ...(drawCurves ? { drawCurves } : {}),
         ...(drawLocationMarkers ? { drawLocationMarkers } : {}),
-        ...(maxOffScreenDrawPx !== 300 ? { maxOffScreenDrawPx } : {}),
+        ...(maxOffScreenDrawPx !== DEFAULT_MAX_OFFSCREEN_DRAW_PX ? { maxOffScreenDrawPx } : {}),
         ...(chainMerge ? { chainMerge } : {}),
       } as typeof snap
     })
