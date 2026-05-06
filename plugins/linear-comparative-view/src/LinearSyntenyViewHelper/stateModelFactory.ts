@@ -214,8 +214,20 @@ export function linearSyntenyViewHelperModelFactory(
           // key so an upload-autorun re-fire from one display doesn't push
           // identical bytes back to the GPU for the others.
           const lastUploaded = new Map<number, SyntenyInstanceData>()
+          let prevUploadBackend: SyntenyBackend | undefined
           self.installGpuDisplay<SyntenyBackend>(backend, {
             upload: b => {
+              // When the backend instance changes (e.g. canvas remounted after
+              // context loss or Suspense), the new backend has no geometry —
+              // clear the cache to force a full re-upload.
+              if (b !== prevUploadBackend) {
+                console.warn(
+                  '[SyntenyUpload] backend changed, clearing lastUploaded cache for full re-upload',
+                  { prev: !!prevUploadBackend, next: !!b },
+                )
+                lastUploaded.clear()
+                prevUploadBackend = b
+              }
               const currentKeys = new Set<number>()
               for (const [key, data] of self.geometryByDisplayKey) {
                 currentKeys.add(key)

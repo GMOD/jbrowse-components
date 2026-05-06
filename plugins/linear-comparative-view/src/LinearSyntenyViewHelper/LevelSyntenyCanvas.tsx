@@ -77,6 +77,13 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
 }: {
   model: LinearSyntenyViewHelperModel
 }) {
+  console.warn('[LevelSyntenyCanvas] React render')
+  useEffect(() => {
+    console.warn('[LevelSyntenyCanvas] React MOUNTED')
+    return () => {
+      console.warn('[LevelSyntenyCanvas] React UNMOUNTING')
+    }
+  }, [])
   const { classes } = useStyles()
   const parentView = getContainingView(model) as unknown as ParentViewDuck
   const width = parentView.width
@@ -202,6 +209,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   }
 
   function handleMouseLeave() {
+    console.warn('[LevelSyntenyCanvas] handleMouseLeave')
     for (const display of model.linearSyntenyDisplays) {
       display.setHoveredFeatureIdx(-1)
     }
