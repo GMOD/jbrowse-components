@@ -22,7 +22,7 @@ but will look at trio from the 1000 genomes dataset for a Kinh-Vietnamese trio
 - VCF tabix file
   https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz
 - VCF tabix index file
-  https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz
+  https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi
 
 You can either use the JBrowse CLI or GUI to add this file to JBrowse. Note that
 this file only represents chr1

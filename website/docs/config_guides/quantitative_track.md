@@ -14,7 +14,7 @@ Example QuantitativeTrack config:
   "assemblyNames": ["hg19"],
   "type": "QuantitativeTrack",
   "adapter": {
-    "type": "BigWig",
+    "type": "BigWigAdapter",
     "bigWigLocation": {
       "uri": "http://yourhost/file.bw",
       "locationType": "UriLocation"
@@ -73,7 +73,7 @@ Example BigWig adapter config:
 
 ```json
 {
-  "type": "BigWig",
+  "type": "BigWigAdapter",
   "bigWigLocation": {
     "uri": "http://yourhost/file.bw",
     "locationType": "UriLocation"

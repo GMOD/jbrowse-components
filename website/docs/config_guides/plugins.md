@@ -69,7 +69,7 @@ helpful for storing the plugin.js in the same folder as your config
   "plugins": [
     {
       "name": "GDC",
-      "umdLoc": { "uri": "http://unpkg.com/path/to/esm/module.js" }
+      "esmUrl": "http://unpkg.com/path/to/esm/module.js"
     }
   ]
 }

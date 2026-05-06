@@ -29,7 +29,7 @@ First we're going to install and set up the project for development.
 ## Use git to clone the plugin template
 
 The easiest way to start developing your plugin for JBrowse 2 is to use the
-[plugin template](https://github.com/gmod/jbrowse-plugin-template).
+[plugin template](https://github.com/GMOD/jbrowse-plugin-template).
 
 To clone the plugin template project, on the command line run:
 
