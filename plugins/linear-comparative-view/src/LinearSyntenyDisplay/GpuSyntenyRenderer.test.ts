@@ -31,11 +31,17 @@ function makeMockCanvas(width = 800, height = 100): HTMLCanvasElement {
 
 function makeInstanceData(): SyntenyInstanceData {
   const count = 1
+  const z = () => new Float32Array(count)
+  const lo = (v: number) => new Float32Array(count).fill(v)
   return {
-    x1: new Float32Array(count).fill(10),
-    x2: new Float32Array(count).fill(100),
-    x3: new Float32Array(count).fill(110),
-    x4: new Float32Array(count).fill(20),
+    bp1Hi: z(),
+    bp1Lo: lo(10),
+    bp2Hi: z(),
+    bp2Lo: lo(100),
+    bp3Hi: z(),
+    bp3Lo: lo(110),
+    bp4Hi: z(),
+    bp4Lo: lo(20),
     colors: new Uint32Array(count).fill(0x80808080),
     kinds: new Uint8Array(count),
     instanceFeatureIdx: new Uint32Array(count),
@@ -44,10 +50,6 @@ function makeInstanceData(): SyntenyInstanceData {
     padBottoms: new Float32Array(count).fill(0),
     instanceCount: count,
     nonCigarInstanceCount: count,
-    geometryBpPerPx0: 1,
-    geometryBpPerPx1: 1,
-    refOffset0: 0,
-    refOffset1: 0,
   }
 }
 
@@ -61,8 +63,8 @@ function makeParams(
     minAlignmentLength: 0,
     hoveredFeatureId: 0,
     clickedFeatureId: 0,
-    offset0: 0,
-    offset1: 0,
+    offsetPx0: 0,
+    offsetPx1: 0,
     bpPerPx0: 1,
     bpPerPx1: 1,
     drawCurves: false,

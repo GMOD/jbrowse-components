@@ -55,27 +55,18 @@ function buildFeaturePath(
 }
 
 interface ComputedTransform {
-  scale0: number
-  scale1: number
-  adjOff0: number
-  adjOff1: number
-  scaleDiff0: number
-  scaleDiff1: number
+  bpPerPxInv0: number
+  bpPerPxInv1: number
+  viewBp0: number
+  viewBp1: number
 }
 
-function computeTransform(
-  data: SyntenyInstanceData,
-  params: SyntenyTrackRenderParams,
-): ComputedTransform {
-  const scale0 = data.geometryBpPerPx0 / params.bpPerPx0
-  const scale1 = data.geometryBpPerPx1 / params.bpPerPx1
+function computeTransform(params: SyntenyTrackRenderParams): ComputedTransform {
   return {
-    scale0,
-    scale1,
-    adjOff0: params.offset0 / scale0 - data.refOffset0,
-    adjOff1: params.offset1 / scale1 - data.refOffset1,
-    scaleDiff0: scale0 - 1,
-    scaleDiff1: scale1 - 1,
+    bpPerPxInv0: 1 / params.bpPerPx0,
+    bpPerPxInv1: 1 / params.bpPerPx1,
+    viewBp0: params.offsetPx0 * params.bpPerPx0,
+    viewBp1: params.offsetPx1 * params.bpPerPx1,
   }
 }
 
@@ -86,6 +77,9 @@ interface ProjectedCorners {
   sx4: number
 }
 
+// SYNC: matches hpCornerScreenX in syntenyTypes.slang. Canvas2D operates in
+// Float64 so we don't need the hp-math hi/lo separation, but must reproduce
+// the same arithmetic to keep visuals identical.
 function projectCorners(
   data: SyntenyInstanceData,
   i: number,
@@ -93,11 +87,15 @@ function projectCorners(
 ): ProjectedCorners {
   const padTop = data.padTops[i]!
   const padBottom = data.padBottoms[i]!
+  const bp1 = data.bp1Hi[i]! + data.bp1Lo[i]!
+  const bp2 = data.bp2Hi[i]! + data.bp2Lo[i]!
+  const bp3 = data.bp3Hi[i]! + data.bp3Lo[i]!
+  const bp4 = data.bp4Hi[i]! + data.bp4Lo[i]!
   return {
-    sx1: (data.x1[i]! - t.adjOff0) * t.scale0 - padTop * t.scaleDiff0,
-    sx2: (data.x2[i]! - t.adjOff0) * t.scale0 - padTop * t.scaleDiff0,
-    sx3: (data.x3[i]! - t.adjOff1) * t.scale1 - padBottom * t.scaleDiff1,
-    sx4: (data.x4[i]! - t.adjOff1) * t.scale1 - padBottom * t.scaleDiff1,
+    sx1: (bp1 - t.viewBp0) * t.bpPerPxInv0 + padTop,
+    sx2: (bp2 - t.viewBp0) * t.bpPerPxInv0 + padTop,
+    sx3: (bp3 - t.viewBp1) * t.bpPerPxInv1 + padBottom,
+    sx4: (bp4 - t.viewBp1) * t.bpPerPxInv1 + padBottom,
   }
 }
 
@@ -165,14 +163,6 @@ export interface CanvasLike {
   closePath(): void
   moveTo(x: number, y: number): void
   lineTo(x: number, y: number): void
-  bezierCurveTo(
-    cp1x: number,
-    cp1y: number,
-    cp2x: number,
-    cp2y: number,
-    x: number,
-    y: number,
-  ): void
   fill(): void
   stroke(): void
 }
@@ -267,7 +257,7 @@ export function drawSyntenyTrack(
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, yTop * dpr)
 
-  const transform = computeTransform(data, params)
+  const transform = computeTransform(params)
   // Canvas2D parses fillStyle on every assignment, so reuse the rgba string
   // for the common case of many instances sharing a color (CIGAR fills).
   const fillStyleCache = new Map<number, string>()
@@ -306,10 +296,10 @@ interface PickIndex {
 
 function transformsEqual(a: ComputedTransform, b: ComputedTransform) {
   return (
-    a.scale0 === b.scale0 &&
-    a.scale1 === b.scale1 &&
-    a.adjOff0 === b.adjOff0 &&
-    a.adjOff1 === b.adjOff1
+    a.bpPerPxInv0 === b.bpPerPxInv0 &&
+    a.bpPerPxInv1 === b.bpPerPxInv1 &&
+    a.viewBp0 === b.viewBp0 &&
+    a.viewBp1 === b.viewBp1
   )
 }
 
@@ -425,7 +415,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
         continue
       }
       const localY = y - yTop
-      const transform = computeTransform(data, params)
+      const transform = computeTransform(params)
 
       let idx = this.pickIndices.get(key)
       if (

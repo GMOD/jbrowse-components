@@ -8,10 +8,14 @@ import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeomet
 
 export function interleaveInstances(data: SyntenyInstanceData) {
   const {
-    x1,
-    x2,
-    x3,
-    x4,
+    bp1Hi,
+    bp1Lo,
+    bp2Hi,
+    bp2Lo,
+    bp3Hi,
+    bp3Lo,
+    bp4Hi,
+    bp4Lo,
     colors,
     instanceFeatureIdx,
     queryTotalLengths,
@@ -25,10 +29,14 @@ export function interleaveInstances(data: SyntenyInstanceData) {
 
   for (let i = 0; i < n; i++) {
     const off = i * INSTANCE_STRIDE_F32
-    f[off + FIELD_OFFSET_F32.x1] = x1[i]!
-    f[off + FIELD_OFFSET_F32.x2] = x2[i]!
-    f[off + FIELD_OFFSET_F32.x3] = x3[i]!
-    f[off + FIELD_OFFSET_F32.x4] = x4[i]!
+    f[off + FIELD_OFFSET_F32.bp1Hi] = bp1Hi[i]!
+    f[off + FIELD_OFFSET_F32.bp1Lo] = bp1Lo[i]!
+    f[off + FIELD_OFFSET_F32.bp2Hi] = bp2Hi[i]!
+    f[off + FIELD_OFFSET_F32.bp2Lo] = bp2Lo[i]!
+    f[off + FIELD_OFFSET_F32.bp3Hi] = bp3Hi[i]!
+    f[off + FIELD_OFFSET_F32.bp3Lo] = bp3Lo[i]!
+    f[off + FIELD_OFFSET_F32.bp4Hi] = bp4Hi[i]!
+    f[off + FIELD_OFFSET_F32.bp4Lo] = bp4Lo[i]!
     u32[off + FIELD_OFFSET_F32.color] = colors[i]!
     f[off + FIELD_OFFSET_F32.featureId] = instanceFeatureIdx[i]! + 1
     f[off + FIELD_OFFSET_F32.queryTotalLength] = queryTotalLengths[i]!

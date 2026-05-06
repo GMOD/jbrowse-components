@@ -9,8 +9,11 @@ export interface SyntenyTrackRenderParams {
   minAlignmentLength: number
   hoveredFeatureId: number
   clickedFeatureId: number
-  offset0: number
-  offset1: number
+  /** LGV pan offsets (CSS px). Each backend converts to its own viewBp form
+   * internally — the GPU path splits `offsetPx * bpPerPx` into hi/lo Float32
+   * for hp-math precision; the Canvas2D path uses Float64 directly. */
+  offsetPx0: number
+  offsetPx1: number
   bpPerPx0: number
   bpPerPx1: number
   drawCurves: boolean

@@ -1,27 +1,45 @@
 // Shared per-instance layout + uniform block for fill/edge synteny shaders.
-// Both read the same instance buffer (fill draws all CIGAR ops, edge only
-// outlines the clicked alignment) and use an identical uniform layout.
+// Each instance is one parallelogram (or one tessellated curve segment): four
+// corner positions in cumulative-bp space (split hi/lo for hp-math precision)
+// plus the inter-region padding pixels accumulated before the corner's
+// region. Corners 1/2 belong to the top view (view 0), corners 3/4 to the
+// bottom view (view 1).
 module syntenyTypes;
 
+import hpmath;
+
 public struct Instance {
-  public float x1                : ATTR0;
-  public float x2                : ATTR1;
-  public float x3                : ATTR2;
-  public float x4                : ATTR3;
-  public uint  color             : ATTR4;
-  public float featureId         : ATTR5;
-  public float queryTotalLength  : ATTR6;
-  public float padTop            : ATTR7;
-  public float padBottom         : ATTR8;
+  public float bp1Hi : ATTR0;
+  public float bp1Lo : ATTR1;
+  public float bp2Hi : ATTR2;
+  public float bp2Lo : ATTR3;
+  public float bp3Hi : ATTR4;
+  public float bp3Lo : ATTR5;
+  public float bp4Hi : ATTR6;
+  public float bp4Lo : ATTR7;
+  public uint  color             : ATTR8;
+  public float featureId         : ATTR9;
+  public float queryTotalLength  : ATTR10;
+  public float padTop            : ATTR11;
+  public float padBottom         : ATTR12;
 };
 
+// Per-view hp-math origin (`viewBp = offsetPx * bpPerPx`, hi/lo split) +
+// `bpPerPxInv`. The padded-bp encoding of the view origin lets the shader
+// reconstruct LGV-aligned screen positions with just the per-instance `pad`
+// field — no companion viewPad uniform is needed (math derivation in
+// hpCornerScreenX). `hpZero` is the sentinel passed through to hpmath
+// helpers (always 0 from JS).
 public struct Uniforms {
   public float2 resolution;
   public float  height;
-  public float  adjOff0;
-  public float  adjOff1;
-  public float  scale0;
-  public float  scale1;
+  public float  viewBp0Hi;
+  public float  viewBp0Lo;
+  public float  bpPerPxInv0;
+  public float  viewBp1Hi;
+  public float  viewBp1Lo;
+  public float  bpPerPxInv1;
+  public float  hpZero;
   public float  maxOffScreenPx;
   public float  minAlignmentLength;
   public float  alpha;
@@ -35,12 +53,33 @@ public struct Corners {
   public float x1, x2, x3, x4;
 };
 
+// hp-math screen-x for one corner. With `viewBp = offsetPx * bpPerPx`
+// (padded-bp), `(cumBp - viewBp)/bpPerPx + pad = cumBp/bpPerPx + pad -
+// offsetPx = featurePx_padded - offsetPx`, which is the LGV's render
+// position. The `max(..., -inf)` pattern (lifted from hpmath.slang)
+// prevents the compiler from combining the hi/lo terms before the multiply,
+// which is what preserves the extra mantissa bits.
+float hpCornerScreenX(
+  float bpHi, float bpLo,
+  float originHi, float originLo,
+  float bpPerPxInv, float pad, float hpZero,
+) {
+  float inf = 1.0 / hpZero;
+  float hi = max(bpHi - originHi, -inf);
+  float lo = max(bpLo - originLo, -inf);
+  return dot(float2(hi, lo), float2(bpPerPxInv, bpPerPxInv)) + pad;
+}
+
 public Corners computeCorners(Instance inst, Uniforms u) {
   Corners c;
-  c.x1 = (inst.x1 - u.adjOff0) * u.scale0 - inst.padTop * (u.scale0 - 1.0);
-  c.x2 = (inst.x2 - u.adjOff0) * u.scale0 - inst.padTop * (u.scale0 - 1.0);
-  c.x3 = (inst.x3 - u.adjOff1) * u.scale1 - inst.padBottom * (u.scale1 - 1.0);
-  c.x4 = (inst.x4 - u.adjOff1) * u.scale1 - inst.padBottom * (u.scale1 - 1.0);
+  c.x1 = hpCornerScreenX(inst.bp1Hi, inst.bp1Lo, u.viewBp0Hi, u.viewBp0Lo,
+                         u.bpPerPxInv0, inst.padTop, u.hpZero);
+  c.x2 = hpCornerScreenX(inst.bp2Hi, inst.bp2Lo, u.viewBp0Hi, u.viewBp0Lo,
+                         u.bpPerPxInv0, inst.padTop, u.hpZero);
+  c.x3 = hpCornerScreenX(inst.bp3Hi, inst.bp3Lo, u.viewBp1Hi, u.viewBp1Lo,
+                         u.bpPerPxInv1, inst.padBottom, u.hpZero);
+  c.x4 = hpCornerScreenX(inst.bp4Hi, inst.bp4Lo, u.viewBp1Hi, u.viewBp1Lo,
+                         u.bpPerPxInv1, inst.padBottom, u.hpZero);
   return c;
 }
 

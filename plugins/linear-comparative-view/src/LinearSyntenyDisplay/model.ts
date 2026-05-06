@@ -11,32 +11,21 @@ import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
 
 import type { ClickCoord } from './components/util.ts'
 import type { ColorScheme } from './drawSyntenyUtils.ts'
-import type { SyntenyTrackRenderParams } from './syntenyBackendTypes.ts'
-import type {
-  SyntenyGeometry,
-  SyntenyInstanceData,
-} from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   AlignmentRecord,
   DupConflict,
-  SyriClassification,
   SyriType,
 } from '@jbrowse/plugin-comparative-adapters'
 
 export interface SyntenyFeatureData {
-  p11_offsetPx: Float64Array
-  p12_offsetPx: Float64Array
-  p21_offsetPx: Float64Array
-  p22_offsetPx: Float64Array
   strands: Int8Array
   starts: Uint32Array
   ends: Uint32Array
   identities: Float32Array
-  padTop: Float64Array
-  padBottom: Float64Array
   featureIds: string[]
   names: string[]
   refNames: string[]
@@ -335,7 +324,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * present; adapter path has no conflict info so dupConflicts is all
        * undefined in that case.
        */
-      get syriClassification(): SyriClassification | undefined {
+      get syriClassification() {
         if (self.colorBy !== 'syri') {
           return undefined
         }
@@ -383,7 +372,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * SyRI types array aligned with featureData. Only computed when
        * colorBy='syri'; otherwise undefined so computedColors skips the work.
        */
-      get syriTypesForColoring(): SyriType[] | undefined {
+      get syriTypesForColoring() {
         return this.syriClassification?.types
       },
       /**
@@ -393,7 +382,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * the gpuProps half of the rpcProps/gpuProps split. colorBy changes
        * flow through here without touching the RPC.
        */
-      get computedColors(): Uint32Array | undefined {
+      get computedColors() {
         const { instanceData, featureData, colorBy } = self
         if (!instanceData || !featureData) {
           return undefined
@@ -414,7 +403,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * view's upload autorun reads this, so any colorBy change re-fires
        * upload without an RPC round-trip.
        */
-      get renderInstanceData(): SyntenyInstanceData | undefined {
+      get renderInstanceData() {
         const { instanceData } = self
         const colors = this.computedColors
         if (!instanceData || !colors) {
@@ -445,7 +434,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * Per-track render params consumed by the view's aggregator. The view
        * substitutes yTop before handing this to the backend.
        */
-      get renderParams(): SyntenyTrackRenderParams | undefined {
+      get renderParams() {
         if (self.isMinimized || this.isLevelCollapsed) {
           console.warn(
             '[renderParams] blocked: isMinimized or isLevelCollapsed',
@@ -501,8 +490,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             clickedFeatureIdx >= 0 && self.instanceData
               ? self.instanceData.instanceFeatureIdx[clickedFeatureIdx]! + 1
               : 0,
-          offset0: v0.offsetPx,
-          offset1: v1.offsetPx,
+          offsetPx0: v0.offsetPx,
+          offsetPx1: v1.offsetPx,
           bpPerPx0: v0.bpPerPx,
           bpPerPx1: v1.bpPerPx,
           drawCurves: view.drawCurves,

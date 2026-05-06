@@ -16,16 +16,27 @@ import {
   KIND_MARKER,
 } from './syntenyColors.ts'
 
-function toRelativeFloat32(
-  values: Float64Array,
+// Convert per-instance padded-pixel positions to (cumBp_hi, cumBp_lo) Float32
+// pairs. cumBp = (px - padding) * bpPerPx is exact in Float64; we then split
+// for hp-math precision in the shader. Inlines splitPositionWithFrac to avoid
+// allocating a tuple per element on the hot per-instance path.
+function pxArrayToBpHiLo(
+  pxValues: Float64Array,
+  padValues: Float32Array,
   count: number,
-  refOffset: number,
+  bpPerPx: number,
 ) {
-  const result = new Float32Array(count)
+  const hi = new Float32Array(count)
+  const lo = new Float32Array(count)
   for (let i = 0; i < count; i++) {
-    result[i] = values[i]! - refOffset
+    const cumBp = (pxValues[i]! - padValues[i]!) * bpPerPx
+    const intValue = Math.floor(cumBp)
+    const frac = cumBp - intValue
+    const loInt = intValue - Math.floor(intValue / 4096) * 4096
+    hi[i] = intValue - loInt
+    lo[i] = loInt + frac
   }
-  return result
+  return { hi, lo }
 }
 
 function growF32(old: Float32Array, count: number, newCapacity: number) {
@@ -56,11 +67,21 @@ function growF64(old: Float64Array, count: number, newCapacity: number) {
 // in the display model) and is the only field SyntenyInstanceData adds. Keeps
 // the worker output independent of colorBy and lets colorBy changes re-upload
 // without an RPC refetch.
+//
+// Corner positions are stored as cumulative-bp (NOT pixel) hi/lo Float32
+// pairs. Combined with the per-instance pad{Top,Bottom} pixel offsets these
+// reconstruct the screen position via hp-math in the vertex shader, which
+// avoids the Float32 precision blow-up that pixel-space storage suffered when
+// the mate was on a distant chromosome.
 export interface SyntenyGeometry {
-  x1: Float32Array
-  x2: Float32Array
-  x3: Float32Array
-  x4: Float32Array
+  bp1Hi: Float32Array
+  bp1Lo: Float32Array
+  bp2Hi: Float32Array
+  bp2Lo: Float32Array
+  bp3Hi: Float32Array
+  bp3Lo: Float32Array
+  bp4Hi: Float32Array
+  bp4Lo: Float32Array
   // Per-instance descriptors driving main-thread color recomputation on
   // colorBy change. `kinds` is one of the `KIND_*` constants from
   // syntenyColors.ts; `instanceFeatureIdx` is the parent feature index in
@@ -73,10 +94,6 @@ export interface SyntenyGeometry {
   padBottoms: Float32Array
   instanceCount: number
   nonCigarInstanceCount: number
-  geometryBpPerPx0: number
-  geometryBpPerPx1: number
-  refOffset0: number
-  refOffset1: number
 }
 
 export type SyntenyInstanceData = SyntenyGeometry & { colors: Uint32Array }
@@ -436,21 +453,48 @@ export function buildSyntenyGeometry({
 
   const instanceCount = idx
 
+  const padTops = padTopsArr.subarray(0, instanceCount)
+  const padBottoms = padBottomsArr.subarray(0, instanceCount)
+  const { hi: bp1Hi, lo: bp1Lo } = pxArrayToBpHiLo(
+    x1s,
+    padTops,
+    instanceCount,
+    bpPerPx0,
+  )
+  const { hi: bp2Hi, lo: bp2Lo } = pxArrayToBpHiLo(
+    x2s,
+    padTops,
+    instanceCount,
+    bpPerPx0,
+  )
+  const { hi: bp3Hi, lo: bp3Lo } = pxArrayToBpHiLo(
+    x3s,
+    padBottoms,
+    instanceCount,
+    bpPerPx1,
+  )
+  const { hi: bp4Hi, lo: bp4Lo } = pxArrayToBpHiLo(
+    x4s,
+    padBottoms,
+    instanceCount,
+    bpPerPx1,
+  )
+
   return {
-    x1: toRelativeFloat32(x1s, instanceCount, viewOff0),
-    x2: toRelativeFloat32(x2s, instanceCount, viewOff0),
-    x3: toRelativeFloat32(x3s, instanceCount, viewOff1),
-    x4: toRelativeFloat32(x4s, instanceCount, viewOff1),
+    bp1Hi,
+    bp1Lo,
+    bp2Hi,
+    bp2Lo,
+    bp3Hi,
+    bp3Lo,
+    bp4Hi,
+    bp4Lo,
     kinds: kindsArr.subarray(0, instanceCount),
     instanceFeatureIdx: featIdxArr.subarray(0, instanceCount),
     queryTotalLengths: queryTotalLengthArr.subarray(0, instanceCount),
-    padTops: padTopsArr.subarray(0, instanceCount),
-    padBottoms: padBottomsArr.subarray(0, instanceCount),
+    padTops,
+    padBottoms,
     instanceCount,
     nonCigarInstanceCount,
-    geometryBpPerPx0: bpPerPx0,
-    geometryBpPerPx1: bpPerPx1,
-    refOffset0: viewOff0,
-    refOffset1: viewOff1,
   }
 }

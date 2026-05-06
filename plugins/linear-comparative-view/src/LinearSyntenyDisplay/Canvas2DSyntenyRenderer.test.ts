@@ -35,15 +35,31 @@ function createMockCanvas() {
   return { canvas, ctx, pathOps }
 }
 
+// Helper: cum-bp positions are stored as hi/lo Float32 split. The test
+// values are well under 4096 so lo holds the full value and hi=0.
+function bpHiLo(values: number[]) {
+  const hi = new Float32Array(values.length)
+  const lo = new Float32Array(values)
+  return { hi, lo }
+}
+
 function makeInstanceData(
   count: number,
   overrides?: Partial<SyntenyInstanceData>,
 ): SyntenyInstanceData {
+  const c1 = bpHiLo(Array.from({ length: count }, () => 10))
+  const c2 = bpHiLo(Array.from({ length: count }, () => 100))
+  const c3 = bpHiLo(Array.from({ length: count }, () => 110))
+  const c4 = bpHiLo(Array.from({ length: count }, () => 20))
   return {
-    x1: new Float32Array(count).fill(10),
-    x2: new Float32Array(count).fill(100),
-    x3: new Float32Array(count).fill(110),
-    x4: new Float32Array(count).fill(20),
+    bp1Hi: c1.hi,
+    bp1Lo: c1.lo,
+    bp2Hi: c2.hi,
+    bp2Lo: c2.lo,
+    bp3Hi: c3.hi,
+    bp3Lo: c3.lo,
+    bp4Hi: c4.hi,
+    bp4Lo: c4.lo,
     colors: new Uint32Array(count).fill(0x80808080),
     kinds: new Uint8Array(count),
     instanceFeatureIdx: new Uint32Array(count),
@@ -52,10 +68,6 @@ function makeInstanceData(
     padBottoms: new Float32Array(count).fill(0),
     instanceCount: count,
     nonCigarInstanceCount: count,
-    geometryBpPerPx0: 1,
-    geometryBpPerPx1: 1,
-    refOffset0: 0,
-    refOffset1: 0,
     ...overrides,
   }
 }
@@ -70,8 +82,8 @@ function makeParams(
     minAlignmentLength: 0,
     hoveredFeatureId: 0,
     clickedFeatureId: 0,
-    offset0: 0,
-    offset1: 0,
+    offsetPx0: 0,
+    offsetPx1: 0,
     bpPerPx0: 1,
     bpPerPx1: 1,
     drawCurves: false,
@@ -174,13 +186,21 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
+    const c1 = bpHiLo([5000])
+    const c2 = bpHiLo([6000])
+    const c3 = bpHiLo([6000])
+    const c4 = bpHiLo([5000])
     renderer.uploadGeometry(
       0,
       makeInstanceData(1, {
-        x1: new Float32Array([5000]),
-        x2: new Float32Array([6000]),
-        x3: new Float32Array([6000]),
-        x4: new Float32Array([5000]),
+        bp1Hi: c1.hi,
+        bp1Lo: c1.lo,
+        bp2Hi: c2.hi,
+        bp2Lo: c2.lo,
+        bp3Hi: c3.hi,
+        bp3Lo: c3.lo,
+        bp4Hi: c4.hi,
+        bp4Lo: c4.lo,
       }),
     )
     renderer.render(makeState([[0, makeParams()]]))

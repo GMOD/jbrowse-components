@@ -81,6 +81,7 @@ export function bpToPx({
       index: i,
       offsetPx: bpSoFar / bpPerPx + paddingPx,
       paddingPx,
+      cumBp: bpSoFar,
     }
   }
   return undefined
@@ -156,11 +157,12 @@ export function bpToPxFromIndex(
         : true)
     ) {
       const bpOffset = r.reversed ? r.end - coord : coord - r.start
+      const cumBp = entry.bpBefore + bpOffset
       return {
         index: entry.index,
-        offsetPx:
-          (entry.bpBefore + bpOffset) / idx.bpPerPx + entry.paddingPxBefore,
+        offsetPx: cumBp / idx.bpPerPx + entry.paddingPxBefore,
         paddingPx: entry.paddingPxBefore,
+        cumBp,
       }
     }
   }
@@ -360,17 +362,21 @@ export async function executeSyntenyFeaturesAndPositions({
     validCount++
   }
 
-  const positionData = {
-    p11_offsetPx: p11Array.subarray(0, validCount),
-    p12_offsetPx: p12Array.subarray(0, validCount),
-    p21_offsetPx: p21Array.subarray(0, validCount),
-    p22_offsetPx: p22Array.subarray(0, validCount),
+  // Pixel-space positions / pad arrays are intermediate buffers consumed only
+  // by buildSyntenyGeometry below. They never leave the worker — the main
+  // thread reads bp-space hi/lo pairs out of `instanceData`.
+  const p11_offsetPx = p11Array.subarray(0, validCount)
+  const p12_offsetPx = p12Array.subarray(0, validCount)
+  const p21_offsetPx = p21Array.subarray(0, validCount)
+  const p22_offsetPx = p22Array.subarray(0, validCount)
+  const padTop = padTopArray.subarray(0, validCount)
+  const padBottom = padBottomArray.subarray(0, validCount)
+
+  const featureData = {
     strands: strandsArray.subarray(0, validCount),
     starts: startsArray.subarray(0, validCount),
     ends: endsArray.subarray(0, validCount),
     identities: identitiesArray.subarray(0, validCount),
-    padTop: padTopArray.subarray(0, validCount),
-    padBottom: padBottomArray.subarray(0, validCount),
     featureIds,
     names,
     refNames,
@@ -392,8 +398,17 @@ export async function executeSyntenyFeaturesAndPositions({
     statusCallback,
     () =>
       buildSyntenyGeometry({
-        ...positionData,
+        p11_offsetPx,
+        p12_offsetPx,
+        p21_offsetPx,
+        p22_offsetPx,
+        padTop,
+        padBottom,
+        strands: featureData.strands,
+        names,
         parsedCigars,
+        starts: featureData.starts,
+        ends: featureData.ends,
         drawCIGAR,
         drawCIGARMatchesOnly,
         drawLocationMarkers,
@@ -404,32 +419,29 @@ export async function executeSyntenyFeaturesAndPositions({
         viewWidth,
       }),
   )
-  const result = {
-    ...positionData,
-    instanceData,
-  }
 
-  return rpcResult(result, [
-    result.p11_offsetPx.buffer,
-    result.p12_offsetPx.buffer,
-    result.p21_offsetPx.buffer,
-    result.p22_offsetPx.buffer,
-    result.strands.buffer,
-    result.starts.buffer,
-    result.ends.buffer,
-    result.identities.buffer,
-    result.padTop.buffer,
-    result.padBottom.buffer,
-    result.mateStarts.buffer,
-    result.mateEnds.buffer,
-    instanceData.x1.buffer,
-    instanceData.x2.buffer,
-    instanceData.x3.buffer,
-    instanceData.x4.buffer,
-    instanceData.kinds.buffer,
-    instanceData.instanceFeatureIdx.buffer,
-    instanceData.queryTotalLengths.buffer,
-    instanceData.padTops.buffer,
-    instanceData.padBottoms.buffer,
-  ] as ArrayBuffer[])
+  return rpcResult(
+    { ...featureData, instanceData },
+    [
+      featureData.strands.buffer,
+      featureData.starts.buffer,
+      featureData.ends.buffer,
+      featureData.identities.buffer,
+      featureData.mateStarts.buffer,
+      featureData.mateEnds.buffer,
+      instanceData.bp1Hi.buffer,
+      instanceData.bp1Lo.buffer,
+      instanceData.bp2Hi.buffer,
+      instanceData.bp2Lo.buffer,
+      instanceData.bp3Hi.buffer,
+      instanceData.bp3Lo.buffer,
+      instanceData.bp4Hi.buffer,
+      instanceData.bp4Lo.buffer,
+      instanceData.kinds.buffer,
+      instanceData.instanceFeatureIdx.buffer,
+      instanceData.queryTotalLengths.buffer,
+      instanceData.padTops.buffer,
+      instanceData.padBottoms.buffer,
+    ] as ArrayBuffer[],
+  )
 }

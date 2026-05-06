@@ -1,4 +1,5 @@
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
+import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 
 import { interleaveInstances } from './instanceInterleave.ts'
 import * as syntenyEdgeShader from './shaders/syntenyEdge.generated.ts'
@@ -41,20 +42,12 @@ export const SYNTENY_PASSES: PassDescriptor[] = [
 interface RegionMeta {
   instanceCount: number
   nonCigarInstanceCount: number
-  geometryBpPerPx0: number
-  geometryBpPerPx1: number
-  refOffset0: number
-  refOffset1: number
 }
 
 interface TrackState {
   key: number
   region: RegionMeta
   params: SyntenyTrackRenderParams
-  adjOff0: number
-  adjOff1: number
-  scale0: number
-  scale1: number
   maxOffScreenPx: number
 }
 
@@ -64,18 +57,7 @@ function makeTrackState(
   params: SyntenyTrackRenderParams,
   maxOffScreenPx: number,
 ): TrackState {
-  const scale0 = region.geometryBpPerPx0 / params.bpPerPx0
-  const scale1 = region.geometryBpPerPx1 / params.bpPerPx1
-  return {
-    key,
-    region,
-    params,
-    scale0,
-    scale1,
-    adjOff0: params.offset0 / scale0 - region.refOffset0,
-    adjOff1: params.offset1 / scale1 - region.refOffset1,
-    maxOffScreenPx,
-  }
+  return { key, region, params, maxOffScreenPx }
 }
 
 export class GpuSyntenyRenderer implements SyntenyBackend {
@@ -122,10 +104,6 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     this.regions.set(key, {
       instanceCount: data.instanceCount,
       nonCigarInstanceCount: data.nonCigarInstanceCount,
-      geometryBpPerPx0: data.geometryBpPerPx0,
-      geometryBpPerPx1: data.geometryBpPerPx1,
-      refOffset0: data.refOffset0,
-      refOffset1: data.refOffset1,
     })
     const interleaved = interleaveInstances(data)
     this.hal.uploadBuffer(key, PASS_FILL, interleaved, data.instanceCount)
@@ -263,20 +241,26 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
   ) {
     const dpr = typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
     const u = this.uniformF32
+    const p = t.params
     u[U.resolution] = this.canvas.width / dpr
     u[U.resolution + 1] = this.canvas.height / dpr
-    u[U.height] = t.params.height
-    u[U.adjOff0] = t.adjOff0
-    u[U.adjOff1] = t.adjOff1
-    u[U.scale0] = t.scale0
-    u[U.scale1] = t.scale1
+    u[U.height] = p.height
+    const [vb0Hi, vb0Lo] = splitPositionWithFrac(p.offsetPx0 * p.bpPerPx0)
+    const [vb1Hi, vb1Lo] = splitPositionWithFrac(p.offsetPx1 * p.bpPerPx1)
+    u[U.viewBp0Hi] = vb0Hi
+    u[U.viewBp0Lo] = vb0Lo
+    u[U.bpPerPxInv0] = 1 / p.bpPerPx0
+    u[U.viewBp1Hi] = vb1Hi
+    u[U.viewBp1Lo] = vb1Lo
+    u[U.bpPerPxInv1] = 1 / p.bpPerPx1
+    u[U.hpZero] = 0
     u[U.maxOffScreenPx] = t.maxOffScreenPx
-    u[U.minAlignmentLength] = t.params.minAlignmentLength
+    u[U.minAlignmentLength] = p.minAlignmentLength
     u[U.alpha] = alpha
     u[U.hoveredFeatureId] = hoveredFeatureId
     u[U.clickedFeatureId] = clickedFeatureId
-    u[U.yTop] = t.params.yTop
-    u[U.isCurve] = t.params.drawCurves ? 1 : 0
+    u[U.yTop] = p.yTop
+    u[U.isCurve] = p.drawCurves ? 1 : 0
     this.hal.writeUniforms(this.uniformData)
   }
 }
