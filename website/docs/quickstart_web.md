@@ -267,7 +267,7 @@ files:
 
 ```bash
 ## Use minimap2 to create a PAF from your assemblies
-minimap2 grape.fa peach.fa > peach_vs_grape.paf
+minimap2 -cx asm5 grape.fa peach.fa > peach_vs_grape.paf
 
 ## add each assembly to jbrowse config
 ## the -n flag names the assemblies explicitly

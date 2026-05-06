@@ -108,8 +108,7 @@ Imported bookmarks are appended to your existing bookmarks.
 ### Deleting bookmarks
 
 Bookmarks can be removed from your system by selecting them using the left
-checkboxes, then pressing the "Delete" button within the Bookmarks widget
-menu.bookmark
+checkboxes, then pressing the "Delete" button within the Bookmarks widget menu.
 
 ### Bookmark persistence
 

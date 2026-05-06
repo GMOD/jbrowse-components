@@ -123,8 +123,8 @@ samtools faidx myfile.fa
 # install the jbrowse CLI
 npm install -g @jbrowse/cli
 
-# add the assembly using the jbrowse CLI, this will automatically copy the
-myfile.fa and myfile.fa.fai to your data folder at /var/www/html/jbrowse2
+# add the assembly using the jbrowse CLI, this will automatically copy
+# myfile.fa and myfile.fa.fai to your data folder at /var/www/html/jbrowse2
 jbrowse add-assembly myfile.fa --load copy --out /var/www/html/jbrowse2
 ```
 

@@ -51,7 +51,7 @@ minimap2. It can be used for SyntenyTracks:
 Slots
 
 - `pafLocation` - the location of the PAF file. The pafLocation can refer to a
-  gzip'ed or plaintext delta file. It will be read into memory entirely as it is
+  gzip'ed or plaintext PAF file. It will be read into memory entirely as it is
   not an indexed file format.
 - `assemblyNames` - list of assembly names, typically two (first in list is
   target assembly, second is query assembly)
@@ -105,7 +105,7 @@ for SyntenyTracks:
 Slots
 
 - `chainLocation` - the location of the UCSC chain file. The chainLocation can
-  refer to a gzip'ed or unzipped delta file. It will be read into memory
+  refer to a gzip'ed or unzipped chain file. It will be read into memory
   entirely as it is not an indexed file format.
 - `assemblyNames` - list of assembly names, typically two (first in list is
   target assembly, second is query assembly)
