@@ -698,9 +698,10 @@ The local sessions look like this
 
 https://host/jbrowse2/?session=local-Fjphq8kjY
 
-By default, after a session is loaded, it is stored into localStorage, and then
-the URL bar uses the ?session=local- format to reflect the key of the
-localStorage entry.
+By default, after a session is loaded, it is stored into sessionStorage and
+IndexedDB, and then the URL bar uses the ?session=local- format to reflect the
+session ID. Pasting the URL in the same browser tab restores from sessionStorage;
+pasting it into a new tab on the same machine restores from IndexedDB.
 
 ### &session=share-
 

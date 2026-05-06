@@ -29,7 +29,7 @@ contain a 'red' box.
 
 ### Show soft clipping
 
-If a read contains bases that do not map the the genome properly, they can
+If a read contains bases that do not map the genome properly, they can
 either be removed from the alignment (hard clipping) or can be included, and not
 shown by default (soft clipping).
 
@@ -148,20 +148,20 @@ insertion/clipping indicators" and "Draw insertion/clipping counts").
 
 :::
 
-### Using the "Arc display"
+### Using the "Read arc display"
 
 In JBrowse 2.3.0, we introduced the ability to render "Arcs" to show long range
 connections between reads. This information is very valuable for revealing
 structural variation, misassemblies, etc.
 
-To enable, use the track menu to launch "Display types"->"Arc display" or
-"Replace lower panel with..."->"Arc display"
+To enable, use the track menu to launch "Display types"->"Read arc display" or
+"Replace lower panel with..."->"Read arc display"
 
-<Figure caption="Menu item for selecting the 'Arc display' using the track menu. In this case we are just replacing the 'lower panel' allowing the arcs to be displayed alongside the coverage" src="/img/alignments/select_arc_display.png" />
+<Figure caption="Menu item for selecting the 'Read arc display' using the track menu. In this case we are just replacing the 'lower panel' allowing the arcs to be displayed alongside the coverage" src="/img/alignments/select_arc_display.png" />
 
-The "Arc display" bezier curves will automatically try to fit into the window
-when you click and drag the track height, so you can create a dense display of
-arcs using multiple data tracks
+The "Read arc display" bezier curves will automatically try to fit into the
+window when you click and drag the track height, so you can create a dense
+display of arcs using multiple data tracks
 
 Long range interactions are indicated using vertical lines (connecting to other
 chromosomes for example) or larger semi-circular arcs for off-screen
