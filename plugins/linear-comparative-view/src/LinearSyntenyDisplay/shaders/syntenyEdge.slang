@@ -1,14 +1,13 @@
 // Linear-synteny edge pass. Draws a 1px antialiased outline around the
 // currently-clicked alignment (skips all other instances via early-out).
-// Tessellates each top/bottom edge into EDGE_SEGS pieces and expands along
+// Tessellates each top/bottom edge into BEZIER_SEGMENTS pieces and expands along
 // the edge normal by STROKE_WIDTH/2 to get a screen-space thickness.
 //! targets: wgsl, glsl
 
 import syntenyTypes;
 
 
-public static const uint VERTS_PER_INSTANCE = 2u * 4u * 6u;
-static const uint EDGE_SEGS = 4u;
+public static const uint VERTS_PER_INSTANCE = 2u * 16u * 6u; // 2 edges * BEZIER_SEGMENTS * 6 verts
 static const float STROKE_WIDTH = 1.0;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
@@ -35,13 +34,13 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     return o;
   }
 
-  uint vertsPerEdge = EDGE_SEGS * 6u;
+  uint vertsPerEdge = BEZIER_SEGMENTS * 6u;
   uint edgeIdx = vid / vertsPerEdge;
   uint vidInEdge = vid % vertsPerEdge;
   uint seg = vidInEdge / 6u;
   uint vertInSeg = vidInEdge % 6u;
-  float t0 = float(seg) / float(EDGE_SEGS);
-  float t1 = float(seg + 1u) / float(EDGE_SEGS);
+  float t0 = float(seg) / float(BEZIER_SEGMENTS);
+  float t1 = float(seg + 1u) / float(BEZIER_SEGMENTS);
 
   float t, side;
   switch (vertInSeg) {

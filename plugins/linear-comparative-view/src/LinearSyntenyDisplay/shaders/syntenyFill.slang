@@ -7,7 +7,7 @@ import colorPack;
 import syntenyTypes;
 
 
-public static const uint VERTS_PER_INSTANCE = 16u * 6u;
+public static const uint VERTS_PER_INSTANCE = 16u * 6u; // BEZIER_SEGMENTS * 6 verts
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct VsOut {

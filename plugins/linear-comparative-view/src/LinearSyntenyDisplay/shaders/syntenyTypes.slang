@@ -93,8 +93,8 @@ public bool isCulled(Corners c, float queryTotalLength, Uniforms u) {
       || max(c.x3, c.x4) < -mOff || min(c.x3, c.x4) > rW + mOff;
 }
 
-// SYNC: must match FILL_SEGMENTS in instanceInterleave.ts.
-public static const uint FILL_SEGS = 16u;
+// SYNC: must match BEZIER_SEGMENTS in drawSyntenyUtils.ts
+public static const uint BEZIER_SEGMENTS = 16u;
 
 // (edge0, edge1, y) at parameter t along the parallelogram. When isCurve is
 // on, uses a cubic Hermite ease-in-out so synteny ribbons don't kink at the
@@ -127,19 +127,19 @@ public void computeFillSegmentT(uint vid, Corners c, out float t, out float side
   float t0, t1;
   if (topDiff * botDiff < 0.0) {
     float tCross = clamp(topDiff / (topDiff - botDiff), 0.01, 0.99);
-    uint nUpper = clamp(uint(round(float(FILL_SEGS) * tCross)), 1u, FILL_SEGS - 1u);
+    uint nUpper = clamp(uint(round(float(BEZIER_SEGMENTS) * tCross)), 1u, BEZIER_SEGMENTS - 1u);
     if (seg < nUpper) {
       t0 = float(seg) / float(nUpper) * tCross;
       t1 = float(seg + 1u) / float(nUpper) * tCross;
     } else {
       uint lSeg = seg - nUpper;
-      uint nLower = FILL_SEGS - nUpper;
+      uint nLower = BEZIER_SEGMENTS - nUpper;
       t0 = tCross + float(lSeg) / float(nLower) * (1.0 - tCross);
       t1 = tCross + float(lSeg + 1u) / float(nLower) * (1.0 - tCross);
     }
   } else {
-    t0 = float(seg) / float(FILL_SEGS);
-    t1 = float(seg + 1u) / float(FILL_SEGS);
+    t0 = float(seg) / float(BEZIER_SEGMENTS);
+    t1 = float(seg + 1u) / float(BEZIER_SEGMENTS);
   }
 
   switch (vertInSeg) {

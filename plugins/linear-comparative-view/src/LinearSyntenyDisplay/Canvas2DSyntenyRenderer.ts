@@ -1,6 +1,6 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
-import { BEZIER_SEGMENTS, syriColors } from './drawSyntenyUtils.ts'
+import { syriColors } from './drawSyntenyUtils.ts'
 import {
   buildFeaturePath,
   computeTransform,
