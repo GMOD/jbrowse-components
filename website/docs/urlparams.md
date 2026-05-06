@@ -399,16 +399,16 @@ https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=s
 
 Expanded
 
-```
+```json
 {
-  views: [
+  "views": [
     {
-      type: "SvInspectorView",
-      uri: "test_data/volvox/volvox.dup.vcf.gz",
-      assembly: "volvox",
-    },
-  ],
-};
+      "type": "SvInspectorView",
+      "uri": "test_data/volvox/volvox.dup.vcf.gz",
+      "assembly": "volvox"
+    }
+  ]
+}
 ```
 
 ### Linear synteny view
@@ -493,14 +493,15 @@ https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&sessi
 
 [Live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":[["volvox_ins.paf"],["volvox_del.paf"]],"views":[{"loc":"ctgA:1-50000","assembly":"volvox_ins"},{"loc":"ctgA:1000-50000","assembly":"volvox"},{"loc":"ctgA:1000-44000","assembly":"volvox_del"}]}]})
 
-Expanded
+Expanded (the `tracks` field is a multidimensional array — each sub-array
+corresponds to the synteny tracks at one level of the multi-way view)
 
 ```json
 {
   "views": [
     {
       "type": "LinearSyntenyView",
-      "tracks": [["volvox_ins.paf"], ["volvox_del.paf"]], // this multidimensional array refers to the synteny tracks at each level of the multi-level synteny view
+      "tracks": [["volvox_ins.paf"], ["volvox_del.paf"]],
       "views": [
         { "loc": "ctgA:1-50000", "assembly": "volvox_ins" },
         { "loc": "ctgA:1000-50000", "assembly": "volvox" },

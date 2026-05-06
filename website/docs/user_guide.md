@@ -33,6 +33,8 @@ title: Introduction - User guide
   alignment of two genomes
 - [SV inspector view](/docs/user_guides/sv_inspector_view) - structural variant
   spreadsheet and circular view
+- [Structural variant visualization](/docs/user_guides/sv_visualization) -
+  interpreting SV signals across display types
 
 ## Other features
 
