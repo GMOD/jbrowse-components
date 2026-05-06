@@ -7,9 +7,7 @@ import type { Config } from '../../base.ts'
 
 export function validateLoadOption(load?: string): void {
   if (load && !['copy', 'symlink', 'move', 'inPlace'].includes(load)) {
-    throw new Error(
-      'Error: --load must be one of: copy, symlink, move, inPlace',
-    )
+    throw new Error('--load must be one of: copy, symlink, move, inPlace')
   }
 }
 
@@ -63,9 +61,6 @@ export function createTargetDirectory(
   subDir?: string,
 ): void {
   if (subDir) {
-    const dir = path.join(configDir, subDir)
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir)
-    }
+    fs.mkdirSync(path.join(configDir, subDir), { recursive: true })
   }
 }

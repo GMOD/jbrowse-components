@@ -4,8 +4,10 @@ import { parseArgs } from 'util'
 import { printHelp, readJsonFile, resolveConfigPath } from '../utils.ts'
 import {
   guessAdapter,
+  guessFileNames,
   guessTrackType,
 } from './add-track-utils/adapter-utils.ts'
+import { loadFile } from './add-track-utils/file-operations.ts'
 import {
   addSyntenyAssemblyNames,
   buildTrackConfig,
@@ -19,8 +21,7 @@ import {
   validateLoadOption,
   validateTrackArg,
 } from './add-track-utils/validators.ts'
-import { saveConfigAndReport } from './shared/config-operations.ts'
-import { addTrackToConfig, processTrackFiles } from './track-utils.ts'
+import { findAndUpdateOrAdd, saveConfigAndReport } from './shared/config-operations.ts'
 
 import type { Config } from '../base.ts'
 
@@ -213,24 +214,23 @@ export async function run(args?: string[]) {
     adapter,
   })
 
-  const { updatedConfig, wasOverwritten } = addTrackToConfig({
-    configContents,
-    trackConfig,
-    trackId,
-    force,
-    overwrite,
+  const { updatedItems: tracks, wasOverwritten } = findAndUpdateOrAdd({
+    items: configContents.tracks ?? [],
+    newItem: trackConfig,
+    idField: 'trackId',
+    getId: item => item.trackId,
+    allowOverwrite: force ?? overwrite ?? false,
+    itemType: 'track',
   })
+  const updatedConfig = { ...configContents, tracks }
 
-  await processTrackFiles({
-    location,
-    index,
-    bed1,
-    bed2,
-    load,
-    configDir,
-    subDir,
-    force,
-  })
+  if (load) {
+    await Promise.all(
+      Object.values(guessFileNames({ location, index, bed1, bed2 }))
+        .filter(f => !!f)
+        .map(src => loadFile({ src, destDir: configDir, mode: load, subDir, force })),
+    )
+  }
 
   await saveConfigAndReport({
     config: updatedConfig,
