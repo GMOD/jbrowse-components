@@ -89,6 +89,9 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
   }
 
   render(state: SyntenyRenderState) {
+    if (this.disposed) {
+      return false
+    }
     this.lastState = state
     if (this.regions.size === 0) {
       return false

@@ -45,14 +45,13 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float t, side;
   computeFillSegmentT(vid, c, t, side);
   float3 e = hermiteEdges(c, t, u);
+  float edge0 = e.x, edge1 = e.y, y = e.z;
 
-  float topMid  = (c.x1 + c.x2) * 0.5;
-  float botMid  = (c.x3 + c.x4) * 0.5;
-  float centerDx = botMid - topMid;
+  float centerDx = (c.x3 + c.x4 - c.x1 - c.x2) * 0.5;
   float edgeLen  = length(float2(centerDx, u.height));
 
   // Perpendicular width = horizontal_width × cos(edge_angle) = w × height / edgeLen.
-  float w        = abs(e.x - e.y);
+  float w        = abs(edge0 - edge1);
   float perpWidth = w * u.height / max(edgeLen, 1.0);
 
   if (perpWidth < LINE_PERP_THRESHOLD) {
@@ -60,21 +59,14 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     // The fragment clips to halfW=0.5 with SDF AA, matching how syntenyEdge
     // draws its click outline — Canvas2D path fill gives equivalent quality
     // for thin ribbons via its built-in coverage AA.
-    float centerX = (e.x + e.y) * 0.5;
-    float2 tangent;
-    if (u.isCurve > 0.5) {
-      float sPrime = 6.0 * t * (1.0 - t);
-      float dy = u.height * 1.5 * (1.0 - 2.0 * t * (1.0 - t));
-      tangent = float2(sPrime * centerDx, dy);
-    } else {
-      tangent = float2(centerDx, u.height);
-    }
+    float centerX = (edge0 + edge1) * 0.5;
+    float2 tangent = edgeTangent(centerDx, t, u);
     float tangentLen = length(tangent);
     float2 normal = tangentLen > 0.001
       ? float2(-tangent.y, tangent.x) / tangentLen
       : float2(0.0, 1.0);
     float lineSide = side > 0.5 ? 1.0 : -1.0;
-    float2 pos = float2(centerX, e.z) + normal * lineSide;
+    float2 pos = float2(centerX, y) + normal * lineSide;
     o.lineDist  = lineSide;
     o.lineMode = 1.0;
     float2 clipSpace = pos / u.resolution * 2.0 - 1.0;
@@ -83,19 +75,18 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   }
 
   // Fill mode: standard ribbon geometry.
-  // SYNC: matches widenCorners() in Canvas2DSyntenyRenderer.ts and the
-  // identical block in syntenyPicking.slang. All three must stay in step so
-  // visible features remain pickable and Canvas2D/GPU look identical.
+  // SYNC: matches widenCorners() in syntenyPickEngine.ts. Both must stay in
+  // step so Canvas2D/SVG pick outlines and GPU fills look identical.
   float slope = abs(centerDx) / max(u.height, 1.0);
   float minW  = min(1.0 + max(0.0, slope - 1.0) * 0.25, 3.0);
   if (w < minW) {
-    float mid  = (e.x + e.y) * 0.5;
-    float half = e.x < e.y ? -minW * 0.5 : minW * 0.5;
-    e.x = mid + half;
-    e.y = mid - half;
+    float mid  = (edge0 + edge1) * 0.5;
+    float half = edge0 < edge1 ? -minW * 0.5 : minW * 0.5;
+    edge0 = mid + half;
+    edge1 = mid - half;
   }
-  float edgeX = side > 0.5 ? e.y : e.x;
-  float2 clipSpace = float2(edgeX, e.z) / u.resolution * 2.0 - 1.0;
+  float edgeX = side > 0.5 ? edge1 : edge0;
+  float2 clipSpace = float2(edgeX, y) / u.resolution * 2.0 - 1.0;
   o.position = float4(clipSpace.x, -clipSpace.y, 0.0, 1.0);
   return o;
 }
@@ -108,10 +99,8 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // identical across all backends.
   bool isHovered = u.hoveredFeatureId > 0.0 && abs(fragIn.featureId - u.hoveredFeatureId) < 0.5;
   float baseAlpha = fragIn.color.a * u.alpha;
+  rgb *= isHovered ? 0.7 : 1.0;
   float finalAlpha = isHovered ? min(baseAlpha * 5.0, 0.35) : baseAlpha;
-  if (isHovered) {
-    rgb = rgb * 0.7;
-  }
   if (fragIn.lineMode > 0.0) {
     float d  = abs(fragIn.lineDist);
     float aa = fwidth(fragIn.lineDist);

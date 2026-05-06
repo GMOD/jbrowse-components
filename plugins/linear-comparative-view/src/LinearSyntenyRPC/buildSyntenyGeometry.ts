@@ -402,11 +402,10 @@ export function buildSyntenyGeometry({
     const padTop = padTopArr[i]!
     const padBottom = padBottomArr[i]!
 
-    const s1 = strand
-    const k1 = s1 === -1 ? x12 : x11
-    const k2 = s1 === -1 ? x11 : x12
+    const k1 = strand === -1 ? x12 : x11
+    const k2 = strand === -1 ? x11 : x12
     const rev1 = k1 < k2 ? 1 : -1
-    const rev2 = (x21 < x22 ? 1 : -1) * s1
+    const rev2 = (x21 < x22 ? 1 : -1) * strand
 
     if (maxIndelLens[i]! * maxBpPerPxInv < 1) {
       addInstance(x11, x12, x22, x21, KIND_BASE, i, qtl, padTop, padBottom)
