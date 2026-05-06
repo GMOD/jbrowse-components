@@ -143,6 +143,16 @@ export function linearSyntenyViewHelperModelFactory(
         }
         return out
       },
+      /**
+       * #getter
+       */
+      get numFeats() {
+        let n = 0
+        for (const display of this.linearSyntenyDisplays) {
+          n += display.numFeats
+        }
+        return n
+      },
     }))
     .views(self => ({
       /**
@@ -245,6 +255,7 @@ export function linearSyntenyViewHelperModelFactory(
               }
             },
             render: b => {
+              console.log('[SyntenyRender] render autorun fired', performance.now().toFixed(1))
               const state = self.syntenyRenderState
               if (!state) {
                 return false

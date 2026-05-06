@@ -112,14 +112,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         colorBy: types.optional(types.string, 'default'),
-        /**
-         * #property
-         */
-        alpha: types.optional(types.number, 0.2),
-        /**
-         * #property
-         */
-        minAlignmentLength: types.optional(types.number, 0),
       }),
     )
     .volatile(() => ({
@@ -166,12 +158,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       closeContextMenu() {
         self.contextMenuAnchor = undefined
-      },
-      setAlpha(value: number) {
-        self.alpha = value
-      },
-      setMinAlignmentLength(value: number) {
-        self.minAlignmentLength = value
       },
       setColorBy(value: string) {
         self.colorBy = value
@@ -272,8 +258,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
+      get effectiveAlpha() {
+        return (getContainingView(self) as LinearSyntenyViewModel).effectiveAlpha
+      },
+      /**
+       * #getter
+       */
       get colorMapWithAlpha() {
-        const { alpha } = self
+        const alpha = this.effectiveAlpha
         const activeColorMap = this.colorSchemeConfig.cigarColors
         return {
           I: applyAlpha(activeColorMap.I, alpha),
@@ -288,19 +280,19 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #getter
        */
       get posColorWithAlpha() {
-        return applyAlpha('red', self.alpha)
+        return applyAlpha('red', this.effectiveAlpha)
       },
       /**
        * #getter
        */
       get negColorWithAlpha() {
-        return applyAlpha('blue', self.alpha)
+        return applyAlpha('blue', this.effectiveAlpha)
       },
       /**
        * #getter
        */
       get queryColorWithAlphaMap() {
-        const { alpha } = self
+        const alpha = this.effectiveAlpha
         const cache = new Map<string, string>()
         return (queryName: string) => {
           if (!cache.has(queryName)) {
@@ -480,8 +472,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         return {
           yTop: 0,
           height: this.height,
-          alpha: self.alpha,
-          minAlignmentLength: self.minAlignmentLength,
+          alpha: this.effectiveAlpha,
+          minAlignmentLength: view.minAlignmentLength,
           hoveredFeatureId:
             hoveredFeatureIdx >= 0 && self.instanceData
               ? self.instanceData.instanceFeatureIdx[hoveredFeatureIdx]! + 1

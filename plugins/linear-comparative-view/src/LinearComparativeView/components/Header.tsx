@@ -13,6 +13,7 @@ import ColorLegend from './ColorLegend.tsx'
 import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
 import SyntenySettingsPopover from './SyntenySettingsPopover.tsx'
 
+import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 import type { LinearComparativeViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
@@ -151,7 +152,7 @@ const Header = observer(function Header({
         <>
           <ColorBySelector model={model} />
           <ColorLegend model={model} />
-          <SyntenySettingsPopover model={model} />
+          <SyntenySettingsPopover model={model as LinearSyntenyViewModel} />
         </>
       ) : null}
 
