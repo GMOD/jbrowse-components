@@ -1,7 +1,8 @@
-import BaseResult, { RefSequenceResult } from './BaseResults.ts'
+import { RefSequenceResult } from './BaseResults.ts'
 import { dedupe } from '../util/index.ts'
 import { parseLocString } from '../util/locString.ts'
 
+import type BaseResult from './BaseResults.ts'
 import type { SearchType } from '../data_adapters/BaseAdapter/types.ts'
 import type { AbstractSessionModel } from '../util/index.ts'
 
