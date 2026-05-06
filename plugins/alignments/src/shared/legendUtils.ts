@@ -19,10 +19,10 @@ const unmappedMateItem: LegendItem = {
 }
 
 const orientationItems: LegendItem[] = [
-  { color: fillColor.color_pair_lr, label: 'Normal pair orientation' },
-  { color: fillColor.color_pair_rr, label: 'Both mates reverse strand' },
-  { color: fillColor.color_pair_rl, label: 'Both mates point outward' },
-  { color: fillColor.color_pair_ll, label: 'Both mates forward strand' },
+  { color: fillColor.color_pair_lr, label: 'LR - Normal pair orientation' },
+  { color: fillColor.color_pair_rl, label: 'RL - Mates point outward' },
+  { color: fillColor.color_pair_ll, label: 'LL - Both mates forward strand' },
+  { color: fillColor.color_pair_rr, label: 'RR - Both mates reverse strand' },
 ]
 
 const insertSizeItems: LegendItem[] = [
