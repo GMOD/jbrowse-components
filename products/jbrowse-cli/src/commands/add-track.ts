@@ -2,7 +2,10 @@ import path from 'path'
 import { parseArgs } from 'util'
 
 import { printHelp, readJsonFile, resolveConfigPath } from '../utils.ts'
-import { guessAdapter } from './add-track-utils/adapter-utils.ts'
+import {
+  guessAdapter,
+  guessTrackType,
+} from './add-track-utils/adapter-utils.ts'
 import {
   addSyntenyAssemblyNames,
   buildTrackConfig,
@@ -17,11 +20,7 @@ import {
   validateTrackArg,
 } from './add-track-utils/validators.ts'
 import { saveConfigAndReport } from './shared/config-operations.ts'
-import {
-  addTrackToConfig,
-  buildTrackParams,
-  processTrackFiles,
-} from './track-utils.ts'
+import { addTrackToConfig, processTrackFiles } from './track-utils.ts'
 
 import type { Config } from '../base.ts'
 
@@ -196,29 +195,28 @@ export async function run(args?: string[]) {
   const configContents: Config = await readJsonFile(targetConfigPath)
   validateAssemblies(configContents, flags.assemblyNames)
 
-  const trackParams = buildTrackParams({
-    flags,
-    location,
-    adapter,
-    configContents,
-  })
+  const trackType = flags.trackType || guessTrackType(adapter.type)
+  const trackId =
+    flags.trackId || path.basename(location, path.extname(location))
+  const name = flags.name || trackId
+  const assemblyNames =
+    flags.assemblyNames || configContents.assemblies?.[0]?.name || ''
+
   const trackConfig = buildTrackConfig({
-    location,
-    trackType: trackParams.trackType,
-    trackId: trackParams.trackId,
-    name: trackParams.name,
-    assemblyNames: trackParams.assemblyNames,
+    trackType,
+    trackId,
+    name,
+    assemblyNames,
     category,
     description: trackDescription,
     config,
     adapter,
-    configContents,
   })
 
   const { updatedConfig, wasOverwritten } = addTrackToConfig({
     configContents,
     trackConfig,
-    trackId: trackParams.trackId,
+    trackId,
     force,
     overwrite,
   })
@@ -238,8 +236,8 @@ export async function run(args?: string[]) {
     config: updatedConfig,
     target: targetConfigPath,
     itemType: 'track',
-    itemName: trackParams.name,
-    itemId: trackParams.trackId,
+    itemName: name,
+    itemId: trackId,
     wasOverwritten,
   })
 }

@@ -4,13 +4,11 @@ import { parseArgs } from 'util'
 import parseJSON from 'json-parse-better-errors'
 
 import fetch from '../cliFetch.ts'
+import { debug, printHelp, readJsonFile, resolveConfigPath } from '../utils.ts'
 import {
-  debug,
-  printHelp,
-  readJsonFile,
-  resolveConfigPath,
-  writeJsonFile,
-} from '../utils.ts'
+  findAndUpdateOrAdd,
+  saveConfigAndReport,
+} from './shared/config-operations.ts'
 
 import type { Config } from '../base.ts'
 
@@ -181,29 +179,21 @@ export async function run(args?: string[]) {
     ...(config ? parseJSON(config) : {}),
   }
 
-  configContents.connections ??= []
-  const idx = configContents.connections.findIndex(
-    c => c.connectionId === connectionId,
-  )
+  const { updatedItems: connections, wasOverwritten } = findAndUpdateOrAdd({
+    items: configContents.connections ?? [],
+    newItem: connectionConfig,
+    idField: 'connectionId',
+    getId: item => item.connectionId,
+    allowOverwrite: !!(force ?? flags.overwrite),
+    itemType: 'connection',
+  })
 
-  if (idx !== -1) {
-    if (force || flags.overwrite) {
-      configContents.connections[idx] = connectionConfig
-    } else {
-      throw new Error(
-        `Cannot add connection with id ${connectionId}, a connection with that id already exists.\nUse --overwrite if you would like to replace the existing connection`,
-      )
-    }
-  } else {
-    configContents.connections.push(connectionConfig)
-  }
-
-  debug(`Writing configuration to file ${target}`)
-  await writeJsonFile(target, configContents)
-
-  console.log(
-    `${idx !== -1 ? 'Overwrote' : 'Added'} connection "${name || id}" ${
-      idx !== -1 ? 'in' : 'to'
-    } ${target}`,
-  )
+  await saveConfigAndReport({
+    config: { ...configContents, connections },
+    target,
+    itemType: 'connection',
+    itemName: name || id,
+    itemId: id,
+    wasOverwritten,
+  })
 }

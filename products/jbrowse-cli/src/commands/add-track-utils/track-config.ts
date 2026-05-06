@@ -4,7 +4,7 @@ import parseJSON from 'json-parse-better-errors'
 
 import { isURL } from '../../types/common.ts'
 
-import type { Config, Track } from '../../base.ts'
+import type { Track } from '../../base.ts'
 
 const SYNTENY_ADAPTERS = new Set([
   'PAFAdapter',
@@ -27,7 +27,6 @@ export function mapLocationForFiles(
 }
 
 export function buildTrackConfig({
-  location,
   trackType,
   trackId,
   name,
@@ -36,39 +35,27 @@ export function buildTrackConfig({
   description,
   config,
   adapter,
-  configContents,
 }: {
-  location: string
-  trackType?: string
-  trackId?: string
-  name?: string
-  assemblyNames?: string
+  trackType: string
+  trackId: string
+  name: string
+  assemblyNames: string
   category?: string
   description?: string
   config?: string
   adapter: { type: string; [key: string]: unknown }
-  configContents: Config
 }): Track {
   const configObj = config ? parseJSON(config) : {}
-
-  const finalTrackId =
-    trackId || path.basename(location, path.extname(location))
-  const finalName = name || finalTrackId
-  const finalAssemblyNames =
-    assemblyNames || configContents.assemblies?.[0]?.name || ''
-
-  const trackConfig: Track = {
-    type: trackType!,
-    trackId: finalTrackId,
-    name: finalName,
+  return {
+    type: trackType,
+    trackId,
+    name,
     adapter,
     category: category?.split(',').map(c => c.trim()),
-    assemblyNames: finalAssemblyNames.split(',').map(a => a.trim()),
+    assemblyNames: assemblyNames.split(',').map(a => a.trim()),
     description,
     ...configObj,
   }
-
-  return trackConfig
 }
 
 export function addSyntenyAssemblyNames(

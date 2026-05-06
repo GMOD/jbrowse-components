@@ -59,27 +59,20 @@ export function isValidJSON(string: string) {
 }
 
 export function guessSequenceType(sequence: string) {
-  if (
-    sequence.endsWith('.fa') ||
-    sequence.endsWith('.fna') ||
-    sequence.endsWith('.fasta')
-  ) {
+  const s = sequence.toLowerCase()
+  if (s.endsWith('.fa') || s.endsWith('.fna') || s.endsWith('.fasta') || s.endsWith('.mfa')) {
     return 'indexedFasta'
   }
-  if (
-    sequence.endsWith('.fa.gz') ||
-    sequence.endsWith('.fna.gz') ||
-    sequence.endsWith('.fasta.gz')
-  ) {
+  if (s.endsWith('.fa.gz') || s.endsWith('.fna.gz') || s.endsWith('.fasta.gz') || s.endsWith('.mfa.gz')) {
     return 'bgzipFasta'
   }
-  if (sequence.endsWith('.2bit')) {
+  if (s.endsWith('.2bit')) {
     return 'twoBit'
   }
-  if (sequence.endsWith('.chrom.sizes')) {
+  if (s.endsWith('.chrom.sizes')) {
     return 'chromSizes'
   }
-  if (sequence.endsWith('.json')) {
+  if (s.endsWith('.json')) {
     return 'custom'
   }
   if (isValidJSON(sequence)) {

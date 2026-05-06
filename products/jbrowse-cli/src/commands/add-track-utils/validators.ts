@@ -58,23 +58,6 @@ export function validateAssemblies(
   }
 }
 
-export function validateTrackId(
-  configContents: Config,
-  trackId: string,
-  force?: boolean,
-  overwrite?: boolean,
-): void {
-  configContents.tracks ??= []
-
-  const idx = configContents.tracks.findIndex(c => c.trackId === trackId)
-
-  if (idx !== -1 && !force && !overwrite) {
-    throw new Error(
-      `Cannot add track with id ${trackId}, a track with that id already exists (use --force to override)`,
-    )
-  }
-}
-
 export function createTargetDirectory(
   configDir: string,
   subDir?: string,

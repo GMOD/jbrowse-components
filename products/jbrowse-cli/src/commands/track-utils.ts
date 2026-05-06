@@ -1,11 +1,5 @@
-import path from 'path'
-
-import {
-  guessFileNames,
-  guessTrackType,
-} from './add-track-utils/adapter-utils.ts'
+import { guessFileNames } from './add-track-utils/adapter-utils.ts'
 import { loadFile } from './add-track-utils/file-operations.ts'
-import { validateTrackId } from './add-track-utils/validators.ts'
 import { findAndUpdateOrAdd } from './shared/config-operations.ts'
 
 import type { Config, Track } from '../base.ts'
@@ -59,8 +53,6 @@ export function addTrackToConfig({
   force: boolean | undefined
   overwrite: boolean | undefined
 }): { updatedConfig: Config; wasOverwritten: boolean } {
-  validateTrackId(configContents, trackId, force, overwrite)
-
   const { updatedItems, wasOverwritten } = findAndUpdateOrAdd({
     items: configContents.tracks ?? [],
     newItem: trackConfig,
@@ -76,33 +68,3 @@ export function addTrackToConfig({
   }
 }
 
-export function buildTrackParams({
-  flags,
-  location,
-  adapter,
-  configContents,
-}: {
-  flags: {
-    trackType?: string
-    trackId?: string
-    name?: string
-    assemblyNames?: string
-  }
-  location: string
-  adapter: { type: string; [key: string]: unknown }
-  configContents: Config
-}) {
-  const trackType = flags.trackType || guessTrackType(adapter.type)
-  const trackId =
-    flags.trackId || path.basename(location, path.extname(location))
-  const name = flags.name || trackId
-  const assemblyNames =
-    flags.assemblyNames || configContents.assemblies?.[0]?.name || ''
-
-  return {
-    trackType,
-    trackId,
-    name,
-    assemblyNames,
-  }
-}

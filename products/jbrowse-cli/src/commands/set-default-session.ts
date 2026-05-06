@@ -1,7 +1,4 @@
-import { promises as fsPromises } from 'fs'
 import { parseArgs } from 'util'
-
-import parseJSON from 'json-parse-better-errors'
 
 import {
   printHelp,
@@ -61,7 +58,7 @@ export async function run(args: string[]) {
     printHelp({
       description,
       examples,
-      usage: 'jbrowse add-track <track> [options]',
+      usage: 'jbrowse set-default-session [options]',
       options,
     })
     return
@@ -90,23 +87,8 @@ export async function run(args: string[]) {
 }
 
 async function readDefaultSessionFile(defaultSessionFile: string) {
-  let defaultSessionJson: string
-  try {
-    defaultSessionJson = await fsPromises.readFile(defaultSessionFile, {
-      encoding: 'utf8',
-    })
-  } catch (error) {
-    throw new Error('Could not read the provided file', { cause: error })
-  }
-
-  try {
-    const session = parseJSON(defaultSessionJson)
-    // return top-level "session" if it exists, such as in files created by
-    // "File -> Export session"
-    return session.session || session
-  } catch (error) {
-    throw new Error('Could not parse the given default session file', {
-      cause: error,
-    })
-  }
+  const session = await readJsonFile<Record<string, unknown>>(defaultSessionFile)
+  // return top-level "session" if it exists, such as in files created by
+  // "File -> Export session"
+  return session['session'] ?? session
 }

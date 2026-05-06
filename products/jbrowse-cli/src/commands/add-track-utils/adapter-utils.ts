@@ -99,6 +99,13 @@ export function guessFileNames({
   return {}
 }
 
+function indexType(
+  index: string | undefined,
+  fallback: 'BAI' | 'TBI',
+): string {
+  return index?.toUpperCase().endsWith('CSI') ? 'CSI' : fallback
+}
+
 export function guessAdapter({
   location,
   protocol,
@@ -119,7 +126,7 @@ export function guessAdapter({
       bamLocation: makeLocation(location),
       index: {
         location: makeLocation(index || `${location}.bai`),
-        indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'BAI',
+        indexType: indexType(index, 'BAI'),
       },
     }
   } else if (/\.cram$/i.test(location)) {
@@ -139,7 +146,7 @@ export function guessAdapter({
       gffGzLocation: makeLocation(location),
       index: {
         location: makeLocation(index || `${location}.tbi`),
-        indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        indexType: indexType(index, 'TBI'),
       },
     }
   } else if (/\.gtf?$/i.test(location)) {
@@ -158,7 +165,7 @@ export function guessAdapter({
       vcfGzLocation: makeLocation(location),
       index: {
         location: makeLocation(index || `${location}.tbi`),
-        indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        indexType: indexType(index, 'TBI'),
       },
     }
   } else if (/\.vcf\.idx$/i.test(location)) {
@@ -181,7 +188,7 @@ export function guessAdapter({
       pifGzLocation: makeLocation(location),
       index: {
         location: makeLocation(index || `${location}.tbi`),
-        indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        indexType: indexType(index, 'TBI'),
       },
     }
   } else if (/\.bed\.b?gz$/i.test(location)) {
@@ -190,7 +197,7 @@ export function guessAdapter({
       bedGzLocation: makeLocation(location),
       index: {
         location: makeLocation(index || `${location}.tbi`),
-        indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        indexType: indexType(index, 'TBI'),
       },
     }
   } else if (/\.(bb|bigbed)$/i.test(location)) {
