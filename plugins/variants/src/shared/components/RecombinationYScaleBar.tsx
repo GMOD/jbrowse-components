@@ -1,7 +1,7 @@
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
 import { useTheme } from '@mui/material'
 
-export const Y_AXIS_WIDTH = 40
+import { Y_AXIS_WIDTH } from './recombinationConstants.ts'
 const NUM_TICKS = 4
 
 export default function RecombinationYScaleBar({

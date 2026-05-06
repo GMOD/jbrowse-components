@@ -350,28 +350,16 @@ export default function baseStateModelFactory(
         get maxFeatureDensity() {
           // Skip density gating when the user has already force-loaded via byte estimate
           if (self.userByteSizeLimit !== undefined) {
-            console.warn(
-              `[canvas maxFeatureDensity] skipped: userByteSizeLimit=${self.userByteSizeLimit}`,
-            )
             return undefined
           }
           const view = getContainingView(self) as LGV
           if (view.visibleBp < AUTO_FORCE_LOAD_BP) {
-            console.warn(
-              `[canvas maxFeatureDensity] skipped: visibleBp=${view.visibleBp} < AUTO_FORCE_LOAD_BP=${AUTO_FORCE_LOAD_BP}`,
-            )
             return undefined
           }
-          const result =
+          return (
             self.userFeatureDensityLimit ??
             self.getConfWithOverride<number>('maxFeatureScreenDensity')
-          console.warn(
-            `[canvas maxFeatureDensity] visibleBp=${view.visibleBp} ` +
-              `userFeatureDensityLimit=${self.userFeatureDensityLimit} ` +
-              `configValue=${self.getConfWithOverride<number>('maxFeatureScreenDensity')} ` +
-              `result=${result}`,
           )
-          return result
         },
 
         get colorByCDS() {
@@ -607,13 +595,8 @@ export default function baseStateModelFactory(
             },
             render: b => {
               if (self.laidOutDataMap.size === 0) {
-                console.warn('[canvas render] laidOutDataMap empty, skip draw')
                 return false
               }
-              console.warn(
-                '[canvas render] drawing, laidOutDataMap.size=',
-                self.laidOutDataMap.size,
-              )
               b.renderBlocks(self.renderBlocks, self.renderState)
               return true
             },

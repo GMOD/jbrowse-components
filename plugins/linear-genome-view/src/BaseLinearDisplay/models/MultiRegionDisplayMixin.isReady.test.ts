@@ -36,7 +36,7 @@ describe('isReady: loading overlay invariant', () => {
   test('false during active fetch', async () => {
     const m = TestModel.create()
     let resolve!: () => void
-    m.runFetch(() => new Promise<void>(r => (resolve = r)))
+    void m.runFetch(() => new Promise<void>(r => (resolve = r)))
     expect(m.isLoading).toBe(true)
     expect(m.isReady).toBe(false)
     resolve()
@@ -47,7 +47,7 @@ describe('isReady: loading overlay invariant', () => {
   test('false when canvas drawn but fetch still in flight', async () => {
     const m = TestModel.create()
     let resolve!: () => void
-    m.runFetch(() => new Promise<void>(r => (resolve = r)))
+    void m.runFetch(() => new Promise<void>(r => (resolve = r)))
     m.markCanvasDrawn()
     expect(m.canvasDrawn).toBe(true)
     expect(m.isLoading).toBe(true)
@@ -99,7 +99,7 @@ describe('isReady: loading overlay invariant', () => {
 
     // Phase 2: fetch starts
     let resolve!: () => void
-    m.runFetch(() => new Promise<void>(r => (resolve = r)))
+    void m.runFetch(() => new Promise<void>(r => (resolve = r)))
     expect(m.isReady).toBe(false)
 
     // Phase 3: fetch completes, GPU not yet rendered

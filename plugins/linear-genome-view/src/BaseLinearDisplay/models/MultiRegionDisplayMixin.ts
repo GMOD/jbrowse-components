@@ -73,10 +73,6 @@ export default function MultiRegionDisplayMixin() {
     }))
     .actions(self => ({
       clearAllRpcData() {
-        console.warn(
-          '[MultiRegion] clearAllRpcData',
-          new Error().stack?.split('\n')[2]?.trim(),
-        )
         self.cancelFetch()
         self.setError(undefined)
         self.setRegionTooLarge(false)
