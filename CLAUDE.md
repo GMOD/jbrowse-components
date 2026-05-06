@@ -27,7 +27,7 @@ worker boundary (see `agent-docs/ARCHITECTURE.md` "Coordinate convention").
 to `css * dpr`, so `N / canvas_width` = `N` CSS pixels. Do NOT scale by
 devicePixelRatio.
 
-WebGPU uses 4x MSAA; WebGL2 uses `antialias: true`. Picking passes skip MSAA.
+WebGPU uses 4x MSAA; WebGL2 uses `antialias: true`.
 
 Uniforms struct/UBO layout must match byte offsets in
 `GpuCanvasFeatureRenderer.ts`.
