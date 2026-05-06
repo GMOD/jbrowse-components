@@ -4,6 +4,7 @@
 // plus the inter-region padding pixels accumulated before the corner's
 // region. Corners 1/2 belong to the top view (view 0), corners 3/4 to the
 // bottom view (view 1).
+//! export-consts: BEZIER_SEGMENTS
 module syntenyTypes;
 
 import hpmath;
@@ -93,7 +94,6 @@ public bool isCulled(Corners c, float queryTotalLength, Uniforms u) {
       || max(c.x3, c.x4) < -mOff || min(c.x3, c.x4) > rW + mOff;
 }
 
-// SYNC: must match BEZIER_SEGMENTS in drawSyntenyUtils.ts
 public static const uint BEZIER_SEGMENTS = 16u;
 
 // (edge0, edge1, y) at parameter t along the parallelogram. When isCurve is

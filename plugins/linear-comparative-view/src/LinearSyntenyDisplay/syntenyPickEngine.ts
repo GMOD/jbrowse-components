@@ -1,6 +1,6 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { BEZIER_SEGMENTS } from './drawSyntenyUtils.ts'
+import { BEZIER_SEGMENTS } from './shaders/syntenyTypes.generated.ts'
 
 import type {
   SyntenyPickResult,
