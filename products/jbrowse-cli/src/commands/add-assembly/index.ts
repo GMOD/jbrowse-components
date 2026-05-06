@@ -89,15 +89,10 @@ export async function run(args?: string[]) {
       description:
         "Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory",
     },
-    overwrite: {
-      type: 'boolean',
-      description:
-        'Overwrite existing assembly if one with the same name exists',
-    },
     force: {
       type: 'boolean',
       short: 'f',
-      description: 'Equivalent to `--skipCheck --overwrite`',
+      description: 'Overwrite existing assembly and skip file existence checks',
     },
   } as const
   const { positionals, values: runFlags } = parseArgs({

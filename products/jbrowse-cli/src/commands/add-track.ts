@@ -21,7 +21,10 @@ import {
   validateLoadOption,
   validateTrackArg,
 } from './add-track-utils/validators.ts'
-import { findAndUpdateOrAdd, saveConfigAndReport } from './shared/config-operations.ts'
+import {
+  findAndUpdateOrAdd,
+  saveConfigAndReport,
+} from './shared/config-operations.ts'
 
 import type { Config } from '../base.ts'
 
@@ -87,18 +90,10 @@ export async function run(args?: string[]) {
       short: 'l',
       description: 'How to manage the track (copy, symlink, move, inPlace)',
     },
-    skipCheck: {
-      type: 'boolean',
-      description: 'Skip check for whether file or URL exists',
-    },
-    overwrite: {
-      type: 'boolean',
-      description: 'Overwrites existing track if it shares the same trackId',
-    },
     force: {
       type: 'boolean',
       short: 'f',
-      description: 'Equivalent to --skipCheck --overwrite',
+      description: 'Overwrite existing track and any existing files',
     },
     protocol: {
       type: 'string',
@@ -159,7 +154,6 @@ export async function run(args?: string[]) {
   const {
     config,
     force,
-    overwrite,
     category,
     description: trackDescription,
     load,
@@ -219,7 +213,7 @@ export async function run(args?: string[]) {
     newItem: trackConfig,
     idField: 'trackId',
     getId: item => item.trackId,
-    allowOverwrite: force ?? overwrite ?? false,
+    allowOverwrite: force ?? false,
     itemType: 'track',
   })
   const updatedConfig = { ...configContents, tracks }
@@ -227,8 +221,10 @@ export async function run(args?: string[]) {
   if (load) {
     await Promise.all(
       Object.values(guessFileNames({ location, index, bed1, bed2 }))
-        .filter(f => !!f)
-        .map(src => loadFile({ src, destDir: configDir, mode: load, subDir, force })),
+        .filter((f): f is string => !!f)
+        .map(src =>
+          loadFile({ src, destDir: configDir, mode: load, subDir, force }),
+        ),
     )
   }
 

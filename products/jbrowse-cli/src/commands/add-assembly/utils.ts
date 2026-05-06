@@ -43,7 +43,6 @@ interface AssemblyFlags {
   refNameColors?: string
   load?: string
   skipCheck?: boolean
-  overwrite?: boolean
   force?: boolean
 }
 
@@ -60,10 +59,20 @@ export function isValidJSON(string: string) {
 
 export function guessSequenceType(sequence: string) {
   const s = sequence.toLowerCase()
-  if (s.endsWith('.fa') || s.endsWith('.fna') || s.endsWith('.fasta') || s.endsWith('.mfa')) {
+  if (
+    s.endsWith('.fa') ||
+    s.endsWith('.fna') ||
+    s.endsWith('.fasta') ||
+    s.endsWith('.mfa')
+  ) {
     return 'indexedFasta'
   }
-  if (s.endsWith('.fa.gz') || s.endsWith('.fna.gz') || s.endsWith('.fasta.gz') || s.endsWith('.mfa.gz')) {
+  if (
+    s.endsWith('.fa.gz') ||
+    s.endsWith('.fna.gz') ||
+    s.endsWith('.fasta.gz') ||
+    s.endsWith('.mfa.gz')
+  ) {
     return 'bgzipFasta'
   }
   if (s.endsWith('.2bit')) {
@@ -432,7 +441,7 @@ export async function addAssemblyToConfig({
     newItem: assembly,
     idField: 'name',
     getId: item => item.name,
-    allowOverwrite: runFlags.overwrite ?? runFlags.force ?? false,
+    allowOverwrite: runFlags.force ?? false,
     itemType: 'assembly',
   })
 

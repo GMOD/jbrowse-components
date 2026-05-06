@@ -562,22 +562,16 @@ test('fails with invalid --load value', async () => {
   expect(error?.message).toMatchSnapshot()
 })
 
-test('adds bam track with --overwrite flag', async () => {
+test('adds bam track with --force flag (overwrite)', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    // use inPlace so file copy doesn't conflict; --overwrite targets config only
-    await runCommand([
-      'add-track',
-      '/path/to/simple.bam',
-      '--load',
-      'inPlace',
-    ])
+    await runCommand(['add-track', '/path/to/simple.bam', '--load', 'inPlace'])
     const { error } = await runCommand([
       'add-track',
       '/path/to/simple.bam',
       '--load',
       'inPlace',
-      '--overwrite',
+      '--force',
     ])
     expect(error).toBe(undefined)
     // config should have exactly one track (overwritten, not duplicated)

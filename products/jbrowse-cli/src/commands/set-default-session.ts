@@ -87,8 +87,9 @@ export async function run(args: string[]) {
 }
 
 async function readDefaultSessionFile(defaultSessionFile: string) {
-  const session = await readJsonFile<Record<string, unknown>>(defaultSessionFile)
+  const session =
+    await readJsonFile<Record<string, unknown>>(defaultSessionFile)
   // return top-level "session" if it exists, such as in files created by
   // "File -> Export session"
-  return session['session'] ?? session
+  return session.session ?? session
 }

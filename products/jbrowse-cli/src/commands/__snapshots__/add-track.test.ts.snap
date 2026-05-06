@@ -54,7 +54,7 @@ exports[`adds bam track with --load move 1`] = `
 ]
 `;
 
-exports[`adds bam track with --overwrite flag 1`] = `
+exports[`adds bam track with --force flag (overwrite) 1`] = `
 [
   {
     "adapter": {

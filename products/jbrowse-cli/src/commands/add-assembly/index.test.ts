@@ -351,18 +351,18 @@ test('can use an existing config file', async () => {
     expect(readConf(ctx)).toMatchSnapshot()
   })
 })
-test('can use --overwrite to replace an existing assembly', async () => {
+test('can use --force to replace an existing assembly', async () => {
   await runInTmpDir(async ctx => {
     await copyFile(dataDir('simple.2bit'), ctxDir(ctx, 'simple.2bit'))
     await runCommand(['add-assembly', 'simple.2bit', '--load', 'copy'])
-    await runCommand([
+    const { error } = await runCommand([
       'add-assembly',
       'simple.2bit',
-      '--overwrite',
       '--load',
       'copy',
+      '--force',
     ])
-
+    expect(error).toBe(undefined)
     expect(readConf(ctx)).toMatchSnapshot()
   })
 })

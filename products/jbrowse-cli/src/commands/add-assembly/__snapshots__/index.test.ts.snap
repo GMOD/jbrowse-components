@@ -462,7 +462,7 @@ exports[`can specify a refNameAliases file type custom 1`] = `
 }
 `;
 
-exports[`can use --overwrite to replace an existing assembly 1`] = `
+exports[`can use --force to replace an existing assembly 1`] = `
 {
   "assemblies": [
     {
