@@ -55,8 +55,8 @@ Insert size ± 3σ option uses threshold-based coloring:
 
 | Pattern | Color | Notes |
 | --- | --- | --- |
-| Insert larger than expected (>3σ) | red | indicative of a deletion spanning the pair |
-| Insert smaller than expected (<3σ) | pink | indicative of an insertion between the pair |
+| Insert larger than expected (&gt;3σ) | red | indicative of a deletion spanning the pair |
+| Insert smaller than expected (&lt;3σ) | pink | indicative of an insertion between the pair |
 | Mate on a different chromosome | purple | indicative of an inter-chromosomal event |
 
 **Insert size ± 3σ and orientation** combines both signals and is often the most

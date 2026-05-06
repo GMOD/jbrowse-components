@@ -7,6 +7,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config LinearWiggleDisplay
+ * the display type for BigWig/quantitative tracks in the linear genome view;
+ * supports XY plot, density, and line renderers
  * extends
  * - [SharedWiggleDisplay](../sharedwiggledisplay)
  */

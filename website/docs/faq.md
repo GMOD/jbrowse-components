@@ -108,7 +108,7 @@ config.json, it is **not used to run any server-side code**.
 You can edit the index.html that comes with jbrowse-web to have custom contents.
 The jbrowse-web app just looks at the `div` that it renders into, but any
 contents outside that you can edit for custom purposes. If you need more
-advanced embedding, you can consider @jbrowse/react-linear-genome-view or
+advanced embedding, you can consider @jbrowse/react-linear-genome-view2 or
 similar, but the jbrowse-web app is not available as an npm installable package
 yet.
 
@@ -487,7 +487,7 @@ prohibitively long, and break server side navigations, intermediate caches, etc.
 Therefore, we make "sharing a session" a manual step that generates a shortened
 URL by default.
 
-Note 1: users of @jbrowse/react-linear-genome-view have to re-implement any URL
+Note 1: users of @jbrowse/react-linear-genome-view2 have to re-implement any URL
 query param logic themselves, as this component makes no attempt to access URL
 query params.
 

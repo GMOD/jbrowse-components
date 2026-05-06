@@ -175,7 +175,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 }
 ```
 
-With [@jbrowse/mobx-state-tree](https://@jbrowse/mobx-state-tree.js.org/), you
+With [@jbrowse/mobx-state-tree](https://mobx-state-tree.js.org/), you
 can observe here we're defining the properties of our widget and some actions it
 can take.
 

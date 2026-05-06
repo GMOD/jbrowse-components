@@ -502,9 +502,9 @@ Expanded
       "type": "LinearSyntenyView",
       "tracks": [["volvox_ins.paf"], ["volvox_del.paf"]], // this multidimensional array refers to the synteny tracks at each level of the multi-level synteny view
       "views": [
-        { "loc": "ctgA:1-50000", "assembly": "volvox-ins" },
+        { "loc": "ctgA:1-50000", "assembly": "volvox_ins" },
         { "loc": "ctgA:1000-50000", "assembly": "volvox" },
-        { "loc": "ctgA:1000-44000", "assembly": "volvox-del" }
+        { "loc": "ctgA:1000-44000", "assembly": "volvox_del" }
       ]
     }
   ]
