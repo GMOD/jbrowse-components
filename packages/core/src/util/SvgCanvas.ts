@@ -86,8 +86,22 @@ export class SvgCanvas {
         : 'start'
   }
 
+  // Split rgba(r,g,b,a) into separate color + opacity SVG attributes for
+  // compatibility with SVG 1.1 consumers like Inkscape that don't honor the
+  // alpha component of CSS3 rgba() fill/stroke values.
+  private paintAttr(name: string, style: string | CanvasGradient | CanvasPattern) {
+    const s = `${style}`
+    const m = /^rgba\((\d+),(\d+),(\d+),([\d.]+)\)$/.exec(s)
+    if (m) {
+      const a = parseFloat(m[4]!)
+      const base = `${name}="rgb(${m[1]},${m[2]},${m[3]})"`
+      return a < 1 ? `${base} ${name}-opacity="${a}"` : base
+    }
+    return `${name}="${s}"`
+  }
+
   private strokeAttrs() {
-    let attrs = ` stroke="${this.strokeStyle}" stroke-width="${this.lineWidth}"`
+    let attrs = ` ${this.paintAttr('stroke', this.strokeStyle)} stroke-width="${this.lineWidth}"`
     if (this.lineCap !== 'butt') {
       attrs += ` stroke-linecap="${this.lineCap}"`
     }
@@ -216,11 +230,11 @@ export class SvgCanvas {
     if (this.rotation !== 0 && this.rotation % (Math.PI / 2) !== 0) {
       const deg = (this.rotation * 180) / Math.PI
       this.parts.push(
-        `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" fill="${this.fillStyle}" transform="rotate(${deg} ${tx} ${ty})"/>`,
+        `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" ${this.paintAttr('fill', this.fillStyle)} transform="rotate(${deg} ${tx} ${ty})"/>`,
       )
     } else {
       this.parts.push(
-        `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" fill="${this.fillStyle}"/>`,
+        `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" ${this.paintAttr('fill', this.fillStyle)}/>`,
       )
     }
   }
@@ -324,7 +338,7 @@ export class SvgCanvas {
   fill() {
     if (this.pathData) {
       this.parts.push(
-        `<path d="${this.pathData}" fill="${this.fillStyle}" stroke="none"/>`,
+        `<path d="${this.pathData}" ${this.paintAttr('fill', this.fillStyle)} stroke="none"/>`,
       )
     }
   }
@@ -340,7 +354,7 @@ export class SvgCanvas {
           : 'auto'
     const escaped = escapeXml(text)
     this.parts.push(
-      `<text x="${tx}" y="${ty}" fill="${this.fillStyle}"${fontAttrs(this.font)} text-anchor="${anchor}" dominant-baseline="${baseline}">${escaped}</text>`,
+      `<text x="${tx}" y="${ty}" ${this.paintAttr('fill', this.fillStyle)}${fontAttrs(this.font)} text-anchor="${anchor}" dominant-baseline="${baseline}">${escaped}</text>`,
     )
   }
 

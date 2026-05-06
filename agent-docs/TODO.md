@@ -269,3 +269,7 @@ rejected gets a real cost-benefit case.
 
 
 improve the antialiasing, color darkness
+
+## SVG export synteny
+
+too dark

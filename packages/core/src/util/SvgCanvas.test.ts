@@ -67,3 +67,23 @@ test('clip with no preceding path is a no-op', () => {
   expect(svg).not.toContain('<clipPath')
   expect(svg).not.toContain('clip-path')
 })
+
+test('rgba fill is split into fill + fill-opacity for SVG 1.1 compat', () => {
+  const ctx = new SvgCanvas()
+
+  ctx.fillStyle = 'rgba(255,0,0,0.2)'
+  ctx.beginPath()
+  ctx.rect(0, 0, 10, 10)
+  ctx.fill()
+  ctx.fillRect(20, 0, 10, 10)
+
+  ctx.fillStyle = 'rgba(0,128,0,1)'
+  ctx.fillRect(40, 0, 10, 10)
+
+  const svg = ctx.getSerializedSvg()
+
+  expect(svg).not.toContain('rgba(')
+  expect(svg).toContain('fill="rgb(255,0,0)" fill-opacity="0.2"')
+  expect(svg).toContain('fill="rgb(0,128,0)"')
+  expect(svg).not.toContain('fill-opacity="1"')
+})
