@@ -2,7 +2,13 @@
 
 ## Status
 
-Accepted
+Superseded by ADR-018 for the **synteny** path (corner storage moved to
+hi/lo Float32 cumulative-bp, eliminating the ADR-010 deep-zoom drift case
+that was filed under "known limitation"). Still accepted for **dotplot**:
+the architectural concerns documented here (per-(region-pair) draw scaling,
+codegen array support, MAX_REGIONS) all still rule out the alternatives
+ADR-010 considered, and dotplot's geometry buffer shape would need its
+own migration.
 
 ## Context
 

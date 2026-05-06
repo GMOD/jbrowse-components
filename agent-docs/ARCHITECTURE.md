@@ -540,6 +540,35 @@ float clipX = (dHi + dLo) / bpLen * 2.0 - 1.0;
 `blockClipUtils.clipBlock` emits `[bpStartHi, bpStartLo]` for the visible
 window; `splitPositionWithFrac` is the CPU equivalent for UBO fields.
 
+### Synteny: pre-split Float32 hi/lo cumulative-bp
+
+Synteny corner storage takes a different shape than the LGV-family uint32
+attributes above. A synteny ribbon connects two views with independent
+`bpPerPx` and independent inter-region paddings; per-corner positions are
+**cumulative-bp across all regions of the corner's view**, not single-region
+absolute bp. So:
+
+- The vertex attribute is `(bpHi, bpLo)` Float32 pairs, pre-split on the CPU
+  via `splitPositionWithFrac` against 4096-bp buckets — same hi/lo math as
+  the LGV path, just split up-front instead of in the shader.
+- The view origin uniform `viewBp = offsetPx * bpPerPx` is also hi/lo split
+  (`viewBp{0,1}{Hi,Lo}`). This padded-bp encoding lets the shader formula
+  `(cumBp − viewBp)/bpPerPx + pad` reconstruct LGV-aligned screen-X using
+  just the per-instance `pad` Float32 — no companion `viewPad` uniform.
+- Inter-region padding pixels stay as a per-instance Float32 attribute
+  (`padTop`, `padBottom`), accumulated up to the corner's region.
+
+Storing as cumBp instead of regional bp + region index avoids the
+per-region uniform table / per-(region-pair) draw call concerns that ruled
+out earlier hp-math attempts; padding per-instance plus a single per-view
+origin uniform handles inter-region offsets without any `MAX_REGIONS` cap.
+See ADR-010 for the rejected per-region-table alternatives, ADR-018 for
+why this shape works.
+
+Dotplot currently stays on pre-projected Float32 pixel offsets per
+ADR-010. Its geometry-buffer layout (line endpoints) differs from
+synteny's parallelogram corners and would need its own migration.
+
 ---
 
 ## Coordinate convention (alignments and wiggle data)
