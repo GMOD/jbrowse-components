@@ -90,8 +90,12 @@ public bool isCulled(Corners c, float queryTotalLength, Uniforms u) {
   }
   float mOff = u.overdrawPx;
   float rW = u.resolution.x;
+  float topCenter = (c.x1 + c.x2) * 0.5;
+  float botCenter = (c.x3 + c.x4) * 0.5;
   return max(c.x1, c.x2) < -mOff || min(c.x1, c.x2) > rW + mOff
-      || max(c.x3, c.x4) < -mOff || min(c.x3, c.x4) > rW + mOff;
+      || max(c.x3, c.x4) < -mOff || min(c.x3, c.x4) > rW + mOff
+      || (topCenter < -mOff && botCenter > rW + mOff)
+      || (topCenter > rW + mOff && botCenter < -mOff);
 }
 
 public static const uint BEZIER_SEGMENTS = 16u;

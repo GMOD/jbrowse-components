@@ -151,8 +151,9 @@ export function widenCorners(
 }
 
 // Per-edge cull: drop the instance when any single edge lies entirely outside
-// the draw limits. Matches isCulled() in syntenyTypes.slang. An AABB-only
-// check would keep drawing trapezoids that span huge horizontal travel.
+// the draw limits, or when the ribbon is a crossing diagonal whose edge
+// centers are both off-screen on opposite sides (these contribute only a thin
+// wedge in the overdraw zone). Matches isCulled() in syntenyTypes.slang.
 export function isEdgeCulled(
   c: ProjectedCorners,
   leftLimit: number,
@@ -162,11 +163,15 @@ export function isEdgeCulled(
   const topMax = Math.max(c.sx1, c.sx2)
   const botMin = Math.min(c.sx3, c.sx4)
   const botMax = Math.max(c.sx3, c.sx4)
+  const topCenter = (c.sx1 + c.sx2) * 0.5
+  const botCenter = (c.sx3 + c.sx4) * 0.5
   return (
     topMax < leftLimit ||
     topMin > rightLimit ||
     botMax < leftLimit ||
-    botMin > rightLimit
+    botMin > rightLimit ||
+    (topCenter < leftLimit && botCenter > rightLimit) ||
+    (topCenter > rightLimit && botCenter < leftLimit)
   )
 }
 
