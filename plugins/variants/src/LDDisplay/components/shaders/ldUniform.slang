@@ -5,6 +5,7 @@
 //! targets: wgsl, glsl
 
 import ldUniforms;
+import hpmath;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
@@ -34,10 +35,7 @@ VsOut vs_main(
   uint i = uint(fi);
   uint j = iid - (i * (i - 1u)) / 2u;
 
-  uint v = vid % 6u;
-  float lx = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
-  float ly = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
-  float2 pos = (float2(float(j), float(i)) + float2(lx, ly)) * u.uniformW;
+  float2 pos = (float2(float(j), float(i)) + quadLocal(vid)) * u.uniformW;
 
   float rx = (pos.x + pos.y) * ROT_45;
   float ry = (-pos.x + pos.y) * ROT_45;

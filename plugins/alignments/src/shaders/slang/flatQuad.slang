@@ -3,6 +3,7 @@
 //! targets: wgsl, glsl
 
 import alignmentsUniforms;
+import hpmath;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;

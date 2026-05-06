@@ -25,7 +25,7 @@ VsOut vs_main(CovBin bin, uint vid : SV_VertexID) {
   VsOut o;
   o.color = float4(u.coverageR, u.coverageG, u.coverageB, 1.0);
 
-  float2 qc = quadCorner(vid);
+  float2 qc = quadLocal(vid);
 
   float3 bpRange = float3(u.bpRangeHi, u.bpRangeLo, u.bpRangeLen);
   float t1 = hpScaleLinear(hpSplitUint(bin.position), bpRange, u.hpZero);

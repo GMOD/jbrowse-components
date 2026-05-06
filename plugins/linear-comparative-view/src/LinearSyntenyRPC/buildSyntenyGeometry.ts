@@ -418,7 +418,7 @@ export function buildSyntenyGeometry({
     visitCigarRenderedSegments(
       cigar,
       k1,
-      s1 === -1 ? x22 : x21,
+      strand === -1 ? x22 : x21,
       bpPerPxInv0,
       bpPerPxInv1,
       rev1,

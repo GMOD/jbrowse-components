@@ -308,3 +308,8 @@ disappear.
 
 
 - **Alignments typed-array refactor.** Worker return shape is flat parallel arrays. Refactor into sub-objects by group: mods, sashimi, coverage (just an idea....the flat array is simple but just long).
+
+## Synteny view
+
+- Connect to gene glyps for mcscan type results?
+- add 'synteny rects' in the area to show for example where there is non-ribbon based synteny e.g. non-dispayed-region translocations?

@@ -37,9 +37,8 @@ struct VsOut {
 
 [shader("vertex")]
 VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
-  uint v = vid % 6u;
-  float localX = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
-  float localY = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
+  float2 q = quadLocal(vid);
+  float localX = q.x, localY = q.y;
 
   float sx1 = snapToPixelX(hpToClipX(hpSplitUint(inst.startEnd.x), u.bpRangeX, u.zero), u.canvasWidth);
   float sx2 = snapToPixelX(hpToClipX(hpSplitUint(inst.startEnd.y), u.bpRangeX, u.zero), u.canvasWidth);

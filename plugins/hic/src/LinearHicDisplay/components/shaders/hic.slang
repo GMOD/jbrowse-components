@@ -6,6 +6,8 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 // a 256×1 palette texture with `t = normalized count (optionally log)`.
 //! targets: wgsl, glsl
 
+import hpmath;
+
 // cos(45°) = sin(45°) — shared rotation factor for the 45° projection.
 static const float ROT_45 = 0.7071067811865476;
 
@@ -38,10 +40,7 @@ struct VsOut {
 
 [shader("vertex")]
 VsOut vs_main(HicInstance inst, uint vid : SV_VertexID) {
-  uint v = vid % 6u;
-  float lx = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
-  float ly = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
-  float2 pos = inst.position + float2(lx, ly) * u.binWidth;
+  float2 pos = inst.position + quadLocal(vid) * u.binWidth;
 
   // 45° rotation + Y-axis projection into the triangular Hi-C view.
   float rx = (pos.x + pos.y) * ROT_45;

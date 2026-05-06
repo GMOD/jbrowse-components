@@ -52,7 +52,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float y1 = u.coverageHeight + float(inst.genomeRow) * u.rowHeight + pad;
   float y2 = y1 + u.rowHeight - pad * 2.0;
 
-  float2 qc = quadCorner(vid);
+  float2 qc = quadLocal(vid);
   float x = lerp(px1, px2, qc.x);
   float y = lerp(y1, y2, qc.y);
 

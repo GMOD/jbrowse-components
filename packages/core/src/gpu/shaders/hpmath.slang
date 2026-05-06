@@ -39,3 +39,13 @@ public float snapToPixelX(float clipX, float canvasWidth) {
 public float yPxToClipY(float yPx, float canvasHeight) {
   return 1.0 - (yPx / canvasHeight) * 2.0;
 }
+
+// Two-triangle fan: returns the (x,y) ∈ {0,1}² corner for vid 0..5.
+// vid%6: 0→(0,0)  1→(1,0)  2→(0,1)  3→(0,1)  4→(1,0)  5→(1,1)
+public float2 quadLocal(uint vid) {
+  uint v = vid % 6u;
+  return float2(
+    (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0,
+    (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0
+  );
+}

@@ -6,6 +6,7 @@
 //! targets: wgsl, glsl
 
 import hpmath;
+import colorPack;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
@@ -14,16 +15,6 @@ static const int RENDERING_TYPE_DENSITY = 1;
 static const int RENDERING_TYPE_LINE = 2;
 static const int RENDERING_TYPE_SCATTER = 3;
 static const int SCALE_TYPE_LOG = 1;
-
-// RGBA32 packed into a single u32 (R=byte0 … A=byte3, little-endian).
-// Matches cssColorToABGR on the CPU side.
-float4 unpackRGBA(uint c) {
-  return float4(
-    float((c >>  0u) & 0xFFu),
-    float((c >>  8u) & 0xFFu),
-    float((c >> 16u) & 0xFFu),
-    float((c >> 24u) & 0xFFu)) / 255.0;
-}
 
 struct WiggleInstance {
   uint2 startEnd  : ATTR0;
@@ -66,13 +57,6 @@ float scoreToY(float score, float domainMin, float domainMax, float h, int scale
   return (1.0 - normalizeScore(score, domainMin, domainMax, scaleType)) * h;
 }
 
-// Quad vertex layout shared by density, scatter and xyplot branches. The six
-// vertices of a triangle-list quad produce local [0,1]×[0,1] corners.
-float2 quadLocal(uint v) {
-  float localX = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
-  float localY = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
-  return float2(localX, localY);
-}
 
 [shader("vertex")]
 VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
@@ -108,7 +92,7 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
       sy = clipScoreY;
     }
   } else {
-    float2 q = quadLocal(v);
+    float2 q = quadLocal(vid);
     sx = lerp(sx1, sx2, q.x);
     if (u.renderingType == RENDERING_TYPE_DENSITY) {
       float syTop = 1.0 - rowTop * pxToClip;

@@ -8,13 +8,8 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 // based on genotype/quality.
 //! targets: wgsl, glsl
 
-float4 unpackRGBA(uint c) {
-  return float4(
-    float((c >>  0u) & 0xFFu),
-    float((c >>  8u) & 0xFFu),
-    float((c >> 16u) & 0xFFu),
-    float((c >> 24u) & 0xFFu)) / 255.0;
-}
+import colorPack;
+import hpmath;
 
 struct CellInstance {
   float featureIndex : ATTR0;
@@ -38,9 +33,8 @@ struct VsOut {
 
 [shader("vertex")]
 VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
-  uint v = vid % 6u;
-  float lx = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
-  float ly = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
+  float2 q = quadLocal(vid);
+  float lx = q.x, ly = q.y;
 
   float x1 = inst.featureIndex / u.numFeatures;
   float x2 = (inst.featureIndex + 1.0) / u.numFeatures;

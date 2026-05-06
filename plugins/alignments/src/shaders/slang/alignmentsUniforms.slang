@@ -155,15 +155,6 @@ public float covBottom(Uniforms u) {
   return 1.0 - ((u.covHeight - u.covYOffset) / u.canvasH) * 2.0;
 }
 
-// Quad vertex -> local (x,y) in [0,1] for a 6-vertex quad strip.
-// v=0 (0,0) v=1 (1,1) v=2 (0,1) v=3 (0,0) v=4 (1,0) v=5 (1,1)
-public float2 quadLocal(uint vid) {
-  uint v = vid % 6u;
-  float lx = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
-  float ly = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
-  return float2(lx, ly);
-}
-
 // Normalize a coverage depth value (relDepth = rawDepth / regionMaxDepth) to [0,1]
 // using the current coverage scale type. depthScale = regionMaxDepth / domainMax.
 // Linear: relDepth * depthScale = rawDepth / domainMax.

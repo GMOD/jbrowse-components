@@ -34,7 +34,7 @@ float3 snpColor(float ct, Uniforms u) {
 VsOut vs_main(SnpSegment seg, uint vid : SV_VertexID) {
   VsOut o;
 
-  float2 qc = quadCorner(vid);
+  float2 qc = quadLocal(vid);
 
   float3 bpRange = float3(u.bpRangeHi, u.bpRangeLo, u.bpRangeLen);
   float t1 = hpScaleLinear(hpSplitUint(seg.position), bpRange, u.hpZero);

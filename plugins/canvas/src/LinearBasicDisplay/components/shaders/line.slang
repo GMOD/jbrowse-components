@@ -18,8 +18,6 @@ struct VsOut {
 
 [shader("vertex")]
 VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
-  uint v = vid % 6u;
-
   float sx1 = hpToClipX(hpSplitUint(inst.startEnd.x), u.bpRangeX, u.zero);
   float sx2 = hpToClipX(hpSplitUint(inst.startEnd.y), u.bpRangeX, u.zero);
 
@@ -27,10 +25,9 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float cy = yPxToClipY(yPx, u.canvasHeight);
   float halfPx = 1.0 / u.canvasHeight;
 
-  float localX = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
-  float localY = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
-  float sx = lerp(sx1, sx2, localX);
-  float sy = lerp(cy - halfPx, cy + halfPx, localY);
+  float2 q = quadLocal(vid);
+  float sx = lerp(sx1, sx2, q.x);
+  float sy = lerp(cy - halfPx, cy + halfPx, q.y);
 
   VsOut o;
   o.position = float4(sx, sy, 0.0, 1.0);

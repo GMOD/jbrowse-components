@@ -89,7 +89,10 @@ export class SvgCanvas {
   // Split rgba(r,g,b,a) into separate color + opacity SVG attributes for
   // compatibility with SVG 1.1 consumers like Inkscape that don't honor the
   // alpha component of CSS3 rgba() fill/stroke values.
-  private paintAttr(name: string, style: string | CanvasGradient | CanvasPattern) {
+  private paintAttr(
+    name: string,
+    style: string | CanvasGradient | CanvasPattern,
+  ) {
     const s = `${style}`
     const m = /^rgba\((\d+),(\d+),(\d+),([\d.]+)\)$/.exec(s)
     if (m) {

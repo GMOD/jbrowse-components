@@ -72,11 +72,12 @@ float3 arcColor(float ct, Uniforms u) {
   return hueGradient(u.gradientHue);
 }
 
-// Evaluates the curve at parameter t ∈ [0,1] in screen pixels.
-// x1/x2 are absolute genomic uint32. Convert each to a normalized fraction
-// in the visible window via hp-math (preserves 3-Gbp precision), then run
-// the curve in that small-float space.
-float2 evalArc(float t, Instance inst, Uniforms u) {
+struct ArcPoint { float2 pos; float2 tang; };
+
+// Evaluates position + analytic tangent at t ∈ [0,1] in screen pixels.
+// Analytic tangent removes the 3× evalArc calls the finite-difference version
+// needed — one call per vertex instead of three.
+ArcPoint evalArcPoint(float t, Instance inst, Uniforms u) {
   float x1Norm = hpLinear(hpSplitUint(inst.x1), u);
   float x2Norm = hpLinear(hpSplitUint(inst.x2), u);
   float availH = u.canvasH - ARC_HEIGHT_MARGIN;
@@ -86,27 +87,34 @@ float2 evalArc(float t, Instance inst, Uniforms u) {
   // domain (zoom-proportional for arcs, autoscaled |tlen| for samplot).
   float destY = min(availH, (float(inst.yBp) / u.arcsYDomainBp) * availH);
 
-  float xNorm, yPx;
+  ArcPoint ap;
   if (inst.shapeType > 1.5) {
     // Flat line: x interpolates from x1 to x2, y is constant at destY.
-    xNorm = x1Norm + t * (x2Norm - x1Norm);
-    yPx = destY * yDir;
+    float xNorm = x1Norm + t * (x2Norm - x1Norm);
+    ap.pos = float2(u.blockStartPx + xNorm * u.blockWidth, destY * yDir);
+    ap.tang = float2((x2Norm - x1Norm) * u.blockWidth, 0.0);
   } else if (inst.shapeType > 0.5) {
     float angle = t * PI;
     float cxNorm = (x1Norm + x2Norm) * 0.5;
     float rNorm = (x2Norm - x1Norm) * 0.5;
-    xNorm = cxNorm + cos(angle) * rNorm;
-    yPx = (destY > 0.0) ? sin(angle) * destY * yDir : 0.0;
+    float xNorm = cxNorm + cos(angle) * rNorm;
+    float yPx = (destY > 0.0) ? sin(angle) * destY * yDir : 0.0;
+    ap.pos = float2(u.blockStartPx + xNorm * u.blockWidth, yPx);
+    float dydt = (destY > 0.0) ? PI * cos(angle) * destY * yDir : 0.0;
+    ap.tang = float2(-PI * sin(angle) * rNorm * u.blockWidth, dydt);
   } else {
     // Cubic Bezier with control points at x1,x1,x2,x2 (so the curve
     // approaches each anchor tangent to the x-axis).
+    // Derivative: B'(t) = 6(x2-x1)(1-t)t  (x), 3·destY·(1-2t) (y).
     float mt = 1.0 - t; float mt2 = mt*mt; float mt3 = mt2*mt;
     float t2 = t*t;     float t3 = t2*t;
-    xNorm = mt3*x1Norm + 3.0*mt2*t*x1Norm + 3.0*mt*t2*x2Norm + t3*x2Norm;
-    yPx = (3.0*mt2*t*destY + 3.0*mt*t2*destY) * yDir;
+    float xNorm = mt3*x1Norm + 3.0*mt2*t*x1Norm + 3.0*mt*t2*x2Norm + t3*x2Norm;
+    float yPx = (3.0*mt2*t*destY + 3.0*mt*t2*destY) * yDir;
+    ap.pos = float2(u.blockStartPx + xNorm * u.blockWidth, yPx);
+    ap.tang = float2(6.0*(x2Norm-x1Norm)*mt*t * u.blockWidth,
+                     3.0*destY*yDir*(1.0 - 2.0*t));
   }
-  float screenX = u.blockStartPx + xNorm * u.blockWidth;
-  return float2(screenX, yPx);
+  return ap;
 }
 
 [shader("vertex")]
@@ -117,11 +125,9 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float side = (sideIdx == 0u) ? -1.0 : 1.0;
   float t = float(seg) / float(ARC_CURVE_SEGMENTS);
 
-  float2 pos = evalArc(t, inst, u);
-  float eps = 1.0 / float(ARC_CURVE_SEGMENTS);
-  float2 p0 = evalArc(max(t - eps * 0.5, 0.0), inst, u);
-  float2 p1 = evalArc(min(t + eps * 0.5, 1.0), inst, u);
-  float2 tang = p1 - p0;
+  ArcPoint ap = evalArcPoint(t, inst, u);
+  float2 pos = ap.pos;
+  float2 tang = ap.tang;
   float tlen = length(tang);
   float2 normal;
   if (tlen > 0.001) {
