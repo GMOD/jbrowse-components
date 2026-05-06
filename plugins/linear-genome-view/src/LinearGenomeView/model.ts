@@ -1457,6 +1457,30 @@ export function stateModelFactory(pluginManager: PluginManager) {
         },
         /**
          * #getter
+         * Max right-edge pixel position for each displayedRegionIndex, derived
+         * from staticBlocks geometry. staticBlocks caches a stable reference
+         * when only offsetPx changes, so this getter is also stable during
+         * normal scroll — avoiding a Map rebuild every frame.
+         * Used by ScalebarRefNameLabels to clip chromosome name labels.
+         */
+        get scalebarRegionEndPx() {
+          const m = new Map<number, number>()
+          for (const block of this.staticBlocks.blocks) {
+            if (
+              block.type === 'ContentBlock' &&
+              block.displayedRegionIndex !== undefined
+            ) {
+              const endPx = block.offsetPx + block.widthPx
+              const cur = m.get(block.displayedRegionIndex)
+              if (cur === undefined || endPx > cur) {
+                m.set(block.displayedRegionIndex, endPx)
+              }
+            }
+          }
+          return m
+        },
+        /**
+         * #getter
          * Integer-rounded sum of all visible block widths. Slightly less than
          * view.width when the genome ends before the right edge; use view.width
          * for SVG clip rects (display boundary) and this for paint canvas sizing

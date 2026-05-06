@@ -252,7 +252,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #getter
        */
       get effectiveAlpha() {
-        return (getContainingView(self) as LinearSyntenyViewModel).effectiveAlpha
+        return (getContainingView(self) as LinearSyntenyViewModel)
+          .effectiveAlpha
       },
       /**
        * #getter
@@ -310,7 +311,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * undefined in that case.
        */
       get syriClassification() {
-        if ((getContainingView(self) as LinearSyntenyViewModel).colorBy !== 'syri') {
+        if (
+          (getContainingView(self) as LinearSyntenyViewModel).colorBy !== 'syri'
+        ) {
           return undefined
         }
         const { featureData } = self

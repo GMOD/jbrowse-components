@@ -255,7 +255,6 @@ export function linearSyntenyViewHelperModelFactory(
               }
             },
             render: b => {
-              console.log('[SyntenyRender] render autorun fired', performance.now().toFixed(1))
               const state = self.syntenyRenderState
               if (!state) {
                 return false
