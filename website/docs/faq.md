@@ -142,8 +142,8 @@ Checkout our [quickstart web](/docs/quickstart_web) guide for a speedy start to
 using a manually downloaded JBrowse instance.
 
 For other things, like add-assembly and add-track, you can manually edit the
-`config.json`; reviewing the [config docs](/docs/config_guide) and sample configs
-will be valuable.
+`config.json`; reviewing the [config docs](/docs/config_guide) and sample
+configs will be valuable.
 
 To configure JBrowse using the admin-server GUI, checkout our
 [tutorial](/docs/quickstart_adminserver).

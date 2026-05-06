@@ -159,8 +159,9 @@ callback for color, it might look like this:
 This draws all SNV (single nucleotide variants) as green, and other types as
 purple (insertion, deletion, other structural variant).
 
-You can also [write your own jexl function](/docs/developer_guides/pluggable_elements) and call it
-in the same way in the configuration.
+You can also
+[write your own jexl function](/docs/developer_guides/pluggable_elements) and
+call it in the same way in the configuration.
 
 :::info Note
 

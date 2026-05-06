@@ -14,18 +14,19 @@ matched tumor and normal tissue, sequenced with PacBio HiFi long reads. The
 project also publishes a phased de novo assembly of the tumor genome, which is
 particularly well-suited to JBrowse 2's synteny and dotplot views.
 
-C-GIAB ships several complementary assays beyond bulk sequencing —
-karyotyping, directional genome hybridization (DGH), and other cytogenetic
-characterizations — which together informed the high-quality benchmark call
-sets used here. This tutorial does not load those auxiliary datasets, but the
+C-GIAB ships several complementary assays beyond bulk sequencing — karyotyping,
+directional genome hybridization (DGH), and other cytogenetic characterizations
+— which together informed the high-quality benchmark call sets used here. This
+tutorial does not load those auxiliary datasets, but the
 [NIST C-GIAB page](https://www.nist.gov/programs-projects/cancer-genome-bottle)
-is the place to find them, along with [McDaniel et al. 2025](https://doi.org/10.1038/s41597-025-04944-7)
-for the methods behind the dataset.
+is the place to find them, along with
+[McDaniel et al. 2025](https://doi.org/10.1038/s41597-025-04944-7) for the
+methods behind the dataset.
 
 The general SV-visualization concepts used below are documented in the
 [SV visualization guide](/docs/user_guides/sv_visualization) and the
-[SV inspector guide](/docs/user_guides/sv_inspector_view). This tutorial focuses on the
-data-loading workflow and a few worked examples.
+[SV inspector guide](/docs/user_guides/sv_inspector_view). This tutorial focuses
+on the data-loading workflow and a few worked examples.
 
 ## What you need
 
@@ -40,8 +41,8 @@ You will need:
 - At least 32 GB of RAM for the minimap2 alignment step (you can downsize the
   machine after data prep is done; a 2 GB instance is sufficient to host the
   finished site)
-- The following command-line tools, with versions tested at the time of
-  writing in parentheses:
+- The following command-line tools, with versions tested at the time of writing
+  in parentheses:
   - [JBrowse CLI](/docs/cli) (`@jbrowse/cli` v3.6.5)
   - [Node.js](https://nodejs.org/) (v24.1.0)
   - [tabix](http://www.htslib.org/doc/tabix.html) (v1.21)
@@ -82,9 +83,9 @@ JBrowse 2 setup.
 ## Load the human reference
 
 The C-GIAB project uses a specific build of GRCh38 with decoys and several
-masked regions. The build is not critical to the visualization itself, but it
-is important to use the same reference when converting the BAM files to CRAM
-in later steps.
+masked regions. The build is not critical to the visualization itself, but it is
+important to use the same reference when converting the BAM files to CRAM in
+later steps.
 
 ```bash
 # download and prepare the GRCh38 build used by the C-GIAB project
@@ -120,8 +121,8 @@ jbrowse add-track GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls.bed 
 
 The tumor and normal BAM files at the C-GIAB FTP are large and slow to access
 remotely, and lack `MD` tags (which JBrowse uses to display SNP positions
-without re-fetching the reference). We download them with `samtools view`,
-write them out as CRAM, and compute whole-genome coverage with megadepth:
+without re-fetching the reference). We download them with `samtools view`, write
+them out as CRAM, and compute whole-genome coverage with megadepth:
 
 ```bash
 # convert remote BAM files to local CRAM files
@@ -148,9 +149,9 @@ done
 
 The C-GIAB project provides a phased de novo assembly of HG008-T (two
 haplotypes), produced with [verkko](https://github.com/marbl/verkko). Aligning
-both haplotypes against GRCh38 with minimap2 gives us PAF files that JBrowse
-can render in the synteny and dotplot views — these are particularly helpful
-for complex SVs that are hard to read directly off the alignment track.
+both haplotypes against GRCh38 with minimap2 gives us PAF files that JBrowse can
+render in the synteny and dotplot views — these are particularly helpful for
+complex SVs that are hard to read directly off the alignment track.
 
 ```bash
 # download the phased assembly (two haplotypes)
@@ -174,76 +175,113 @@ jbrowse add-track HG008T.hap2.paf -a HG008T.hap2,GRCh38_GIABv3 --out $OUT --load
 ```
 
 The `-c` flag asks minimap2 to emit base-level CIGAR strings, which encode the
-position of insertions and deletions in the alignment. The `-x asm5` preset
-sets parameters for same-species assembly-to-assembly alignment. The order of
+position of insertions and deletions in the alignment. The `-x asm5` preset sets
+parameters for same-species assembly-to-assembly alignment. The order of
 assemblies passed to `add-track -a query,ref` must match the order in the
-`minimap2` command — see the [linear synteny view guide](/docs/user_guides/linear_synteny_view).
+`minimap2` command — see the
+[linear synteny view guide](/docs/user_guides/linear_synteny_view).
 
-## Walkthrough: a chr3–chr13 translocation
+## Walkthroughs
+
+Once your JBrowse 2 instance is live, you can explore the loaded data using
+three complementary approaches: the SV inspector for whole-genome triage, the
+linear genome view for read-level detail at small-to-medium SVs, and the
+dotplot/synteny views for chromosome-scale rearrangements in the assembly.
+
+### Walkthrough: a chr3–chr13 translocation
 
 Open `http://yourhost.com/jbrowse2/` in a web browser. From the start screen,
-launch the SV inspector and use **Open from track** to pick the C-GIAB
-benchmark VCF you loaded earlier. The result is a combined data table and
-circular overview of the SV calls. Clicking the chord that connects chr3 and
-chr13 launches a breakpoint split view; opening the tumor PacBio HiFi reads on
-each panel and switching to **compact** mode highlights the supporting split
-reads as black splines connecting the two chromosomes.
+launch the SV inspector.
 
-<Figure caption="(A) The start screen with the SV inspector launcher. (B) The Open from track dialog with the C-GIAB SV benchmark VCF selected. (C) The SV inspector showing the benchmark VCF as a circular overview and a table. (D) Clicking the chord that joins chr3 and chr13 opens a breakpoint split view; black splines connect tumor PacBio HiFi reads that partially map to each chromosome, suggesting a fusion or translocation." src="/img/sv_cgiab/fig1_translocation.png" />
+<Figure caption="The start screen with the SV inspector launcher." src="/img/sv_cgiab/translocation_sv_inspector_start.png" />
 
-For the SV inspector workflow itself (filtering the table, search,
-configuring the circular overview), see the
+Use **Open from track** to pick the C-GIAB benchmark VCF you loaded earlier.
+
+<Figure caption="The Open from track dialog with the C-GIAB SV benchmark VCF selected." src="/img/sv_cgiab/translocation_open_from_track.png" />
+
+The result is a combined data table and circular overview of the SV calls.
+
+<Figure caption="The SV inspector showing the benchmark VCF as a circular overview and a table." src="/img/sv_cgiab/translocation_sv_inspector_view.png" />
+
+Clicking the chord that connects chr3 and chr13 launches a breakpoint split
+view; opening the tumor PacBio HiFi reads on each panel and switching to
+**compact** mode highlights the supporting split reads as black splines
+connecting the two chromosomes.
+
+<Figure caption="Clicking the chord joining chr3 and chr13 opens a breakpoint split view. Black splines connect tumor PacBio HiFi reads that partially map to each chromosome, suggesting a fusion or translocation." src="/img/sv_cgiab/translocation_breakpoint_split.png" />
+
+For the SV inspector workflow itself (filtering the table, search, configuring
+the circular overview), see the
 [SV inspector guide](/docs/user_guides/sv_inspector_view).
 
-## Walkthrough: a small deletion in CUZD1
+### Walkthrough: a small deletion in CUZD1
 
-For small to medium SVs, the linear genome view is usually all you need. Use
-the **search** (magnifying glass) button in the SV inspector to find a specific
-call — for example, `SV_85`, a heterozygous deletion that affects two exons of
-the CUZD1 gene. Clicking the table row opens a new linear genome view at the
-deletion. Open the gene annotations and the tumor PacBio HiFi reads, switch
-the reads to **compact** mode, and apply **Sort by → Base pair** with the
-deletion centered (View menu → **Show center line** is helpful for placing the
-center line on the breakpoint).
+For small to medium SVs, the linear genome view is usually all you need. Use the
+**search** (magnifying glass) button in the SV inspector to find a specific call
+— for example, `SV_85`, a heterozygous deletion that affects two exons of the
+CUZD1 gene.
 
-<Figure caption="(A) The SV inspector after searching for SV_85 — clicking the row opens a new linear genome view. (B) After opening the gene annotations and tumor PacBio HiFi reads, displaying reads in compact mode, and sorting by base pair with the deletion in the center. The deletion removes two CUZD1 exons and is heterozygous." src="/img/sv_cgiab/fig2_small_deletion.png" />
+<Figure caption="The SV inspector after searching for SV_85 — clicking the row opens a new linear genome view." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
+
+Opening the gene annotations and the tumor PacBio HiFi reads, switching the
+reads to **compact** mode, and applying **Sort by → Base pair** with the
+deletion centered shows the deletion (View menu → **Show center line** is
+helpful for placing the center line on the breakpoint).
+
+<Figure caption="After opening the gene annotations and tumor PacBio HiFi reads, displaying reads in compact mode, and sorting by base pair with the deletion in the center. The deletion removes two CUZD1 exons and is heterozygous." src="/img/sv_cgiab/deletion_linear_view.png" />
 
 For background on SV signals in the alignments track, see the
 [SV visualization guide](/docs/user_guides/sv_visualization).
 
-## Walkthrough: CNVs from coverage
+### Walkthrough: CNVs from coverage
 
 Loading raw reads across very large regions is impractical, but whole-genome
 coverage stored as a bigWig is fast at any zoom level. From the linear genome
 view start screen, click **Show all regions in assembly** to open every
-chromosome at once, then open the tumor and normal bigWigs as a multi-bigwig
-track for direct comparison. Apply a manual score limit (Track menu → **Score
-→ Set min/max score**) to cap the y-axis at, e.g., 300, and switch **Fill mode
-→ No fill** for a clearer line-style trace. Zooming into a region of interest
-and opening the benchmark CNV BED track lets you check whether coverage
+chromosome at once.
+
+<Figure caption="The linear genome view start screen with the 'Show all regions' button." src="/img/sv_cgiab/cnv_show_all_regions.png" />
+
+Open the tumor and normal bigWigs as a multi-bigwig track for direct comparison.
+
+<Figure caption="A multi-bigwig track with tumor and normal coverage across all chromosomes." src="/img/sv_cgiab/cnv_multi_bigwig.png" />
+
+Apply a manual score limit (Track menu → **Score → Set min/max score**) to cap
+the y-axis at, e.g., 300.
+
+<Figure caption="After applying a manual score limit of 300." src="/img/sv_cgiab/cnv_score_limit.png" />
+
+Switch **Fill mode → No fill** for a clearer line-style trace, zoom into a region
+of interest, and open the benchmark CNV BED track to check whether coverage
 changes line up with the called CNVs.
 
-<Figure caption="(A) The linear genome view start screen with the 'Show all regions' button. (B) A multi-bigwig track with tumor and normal coverage across all chromosomes. (C) After applying a manual score limit of 300. (D) After switching to no-fill mode, zooming into chromosome 5, and opening the benchmark CNV BED track — orange boxes mark individual CNVs and clicking them shows feature details." src="/img/sv_cgiab/fig3_cnv_coverage.png" />
+<Figure caption="After switching to no-fill mode, zooming into chromosome 5, and opening the benchmark CNV BED track — orange boxes mark individual CNVs and clicking them shows feature details." src="/img/sv_cgiab/cnv_with_bed_track.png" />
 
-This protocol does not perform normalization or CNV calling; the bigWig view
-is a sanity check on existing calls, not a substitute for a CNV caller. See
-the [multi-quantitative track guide](/docs/user_guides/multiquantitative_track)
-for more on tumor vs normal coverage comparison.
+This protocol does not perform normalization or CNV calling; the bigWig view is
+a sanity check on existing calls, not a substitute for a CNV caller. See the
+[multi-quantitative track guide](/docs/user_guides/multiquantitative_track) for
+more on tumor vs normal coverage comparison.
 
-## Walkthrough: synteny and dotplot views of the tumor assembly
+### Walkthrough: synteny and dotplot views of the tumor assembly
 
 Showing the tumor assembly side-by-side with the reference often makes complex
-SVs much easier to read than the alignment track alone. Open a dotplot view
-from the start screen, set the de novo assembly as one axis and GRCh38 as the
-other, and pick the matching synteny track. The resulting dotplot reveals
-chromosomal rearrangements as off-diagonal segments — for example, the chr3 ↔
-chr13 fusion shown in the SV inspector walkthrough above appears as a
-distinctive off-diagonal block. Click and drag over the rearranged region and
-choose **Launch synteny view** to see a base-level alignment of the two
-genomes; entering `chr3 chr13` in the GRCh38 search box focuses the view on
-just those chromosomes.
+SVs much easier to read than the alignment track alone. Open a dotplot view from
+the start screen, set the de novo assembly as one axis and GRCh38 as the other,
+and pick the matching synteny track.
 
-<Figure caption="(A) The dotplot import form, with the HG008-T hap1 assembly on one axis and GRCh38 on the other. (B) The resulting dotplot, showing chromosome-scale rearrangements. The chr3–chr13 fusion from the earlier walkthrough is visible as an off-diagonal block. (C) A synteny view launched by selecting the chr3/chr13 region in the dotplot — base-level alignment makes the breakpoints easy to read." src="/img/sv_cgiab/fig4_dotplot_synteny.png" />
+<Figure caption="The dotplot import form, with the HG008-T hap1 assembly on one axis and GRCh38 on the other." src="/img/sv_cgiab/dotplot_import_form.png" />
+
+The resulting dotplot reveals chromosomal rearrangements as off-diagonal
+segments — for example, the chr3 ↔ chr13 fusion shown in the SV inspector
+walkthrough above appears as a distinctive off-diagonal block.
+
+<Figure caption="The resulting dotplot, showing chromosome-scale rearrangements. The chr3–chr13 fusion from the earlier walkthrough is visible as an off-diagonal block." src="/img/sv_cgiab/dotplot_result.png" />
+
+Click and drag over the rearranged region and choose **Launch synteny view** to
+see a base-level alignment of the two genomes; entering `chr3 chr13` in the
+GRCh38 search box focuses the view on just those chromosomes.
+
+<Figure caption="A synteny view launched by selecting the chr3/chr13 region in the dotplot — base-level alignment makes the breakpoints easy to read." src="/img/sv_cgiab/synteny_view.png" />
 
 For more on these views, see the
 [dotplot view guide](/docs/user_guides/dotplot_view) and the
@@ -251,23 +289,51 @@ For more on these views, see the
 
 ## Troubleshooting
 
-| Problem                                                                                  | Possible cause                                                          | Solution                                                                                                                                                                                                                                            |
-| ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The browser stalls when viewing SV regions                                               | Too large a region is being loaded with full alignment data             | Use the **Force Load** option with care; downsample very high-depth data; or pre-filter to informative reads (e.g. discordant pairs, split reads with the `SA` tag)                                                                                 |
-| The view is blank, or every position looks like a SNP                                    | Data was aligned to a different reference than the loaded assembly      | Make sure the BAM/CRAM/VCF were aligned against the same FASTA loaded into JBrowse                                                                                                                                                                  |
-| The synteny or dotplot view is blank                                                     | The assembly arguments to `add-track -a` are flipped                    | If you ran `minimap2 ref.fa query.fa > out.paf`, then load with `jbrowse add-track -a query,ref` — the order matters                                                                                                                                |
-| Errors involving Node.js, or the wrong Node.js version is installed                      | The apt repository ships an older Node.js                               | Run `sudo apt-get purge -y nodejs npm`, then install from [nodejs.org](https://nodejs.org/en/download) or [NodeSource](https://nodesource.com/products/distributions)                                                                               |
+| Problem                                                             | Possible cause                                                     | Solution                                                                                                                                                              |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The browser stalls when viewing SV regions                          | Too large a region is being loaded with full alignment data        | Use the **Force Load** option with care; downsample very high-depth data; or pre-filter to informative reads (e.g. discordant pairs, split reads with the `SA` tag)   |
+| The view is blank, or every position looks like a SNP               | Data was aligned to a different reference than the loaded assembly | Make sure the BAM/CRAM/VCF were aligned against the same FASTA loaded into JBrowse                                                                                    |
+| The synteny or dotplot view is blank                                | The assembly arguments to `add-track -a` are flipped               | If you ran `minimap2 ref.fa query.fa > out.paf`, then load with `jbrowse add-track -a query,ref` — the order matters                                                  |
+| Errors involving Node.js, or the wrong Node.js version is installed | The apt repository ships an older Node.js                          | Run `sudo apt-get purge -y nodejs npm`, then install from [nodejs.org](https://nodejs.org/en/download) or [NodeSource](https://nodesource.com/products/distributions) |
 
 If you hit a problem not covered above, please file an issue on the
 [JBrowse 2 GitHub repository](https://github.com/GMOD/jbrowse-components/issues).
 
+## Next steps
+
+Now that you've explored the C-GIAB HG008 dataset, you can:
+
+- **Load your own SV data** — replace the C-GIAB VCF and BAM files with your own
+  calls and sequencing data. The same workflows apply; the main difference is
+  that your dataset may have different characteristics (e.g., smaller deletions,
+  germline calls, SNVs instead of SVs).
+- **Customize track displays** — try different color schemes (pair orientation,
+  insert size), read filtering (discordant pairs, soft-clipped), and display
+  modes (pileup, read arc, linked reads) to find the visualization that best
+  highlights your findings.
+- **Use JBrowse Desktop** — all of these workflows work identically in JBrowse 2
+  Desktop (Mac, Windows, Linux), which can load files from your local machine
+  without needing a web server.
+- **Design a de novo assembly alignment** — if you have a phased or haplotype-resolved
+  assembly of your own sample, follow the minimap2 steps above to create a
+  dotplot and synteny view.
+
+For more on customizing JBrowse 2, see the
+[SV visualization guide](/docs/user_guides/sv_visualization).
+
 ## References
 
-Diesh, C., Stevens, G. J., Xie, P., et al. (2023). [JBrowse 2: A Modular Genome Browser with Views of Synteny and Structural Variation](https://doi.org/10.1186/s13059-023-02914-z). *Genome Biology*, *24*(1), 74.
+Diesh, C., Stevens, G. J., Xie, P., et al. (2023).
+[JBrowse 2: A Modular Genome Browser with Views of Synteny and Structural Variation](https://doi.org/10.1186/s13059-023-02914-z).
+_Genome Biology_, _24_(1), 74.
 
-McDaniel, J. H., Patel, V., Olson, N. D., et al. (2025). [Development and Extensive Sequencing of a Broadly-Consented Genome in a Bottle Matched Tumor-Normal Pair](https://doi.org/10.1038/s41597-025-04944-7). *Scientific Data*, *12*(1), 1–22.
+McDaniel, J. H., Patel, V., Olson, N. D., et al. (2025).
+[Development and Extensive Sequencing of a Broadly-Consented Genome in a Bottle Matched Tumor-Normal Pair](https://doi.org/10.1038/s41597-025-04944-7).
+_Scientific Data_, _12_(1), 1–22.
 
-Rautiainen, M., Nurk, S., Walenz, B. P., et al. (2023). [Verkko: telomere-to-telomere assembly of diploid chromosomes](https://doi.org/10.1038/s41587-023-01662-w). *Nature Biotechnology*, *41*(6), 753–762.
+Rautiainen, M., Nurk, S., Walenz, B. P., et al. (2023).
+[Verkko: telomere-to-telomere assembly of diploid chromosomes](https://doi.org/10.1038/s41587-023-01662-w).
+_Nature Biotechnology_, _41_(6), 753–762.
 
 ## Data availability
 

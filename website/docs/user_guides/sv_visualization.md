@@ -6,16 +6,18 @@ title: Structural variant visualization
 import Figure from '../figure'
 
 JBrowse 2 has several complementary views for exploring structural variants
-(SVs). SV calls are loaded as [variant tracks](/docs/user_guides/variant_track) (VCF/BCF); reads
-as [alignments tracks](/docs/user_guides/alignments_track) (BAM/CRAM). A typical workflow starts
-with the [SV inspector](/docs/user_guides/sv_inspector_view) — a combined variant table and
-whole-genome circular overview — to triage candidates, then uses the alignments
-displays to examine read-level evidence at each breakpoint. This guide covers
-the SV-focused interpretation of those tools; see the
-[alignments track guide](/docs/user_guides/alignments_track) for general alignments features.
+(SVs). SV calls are loaded as [variant tracks](/docs/user_guides/variant_track)
+(VCF/BCF); reads as [alignments tracks](/docs/user_guides/alignments_track)
+(BAM/CRAM). A typical workflow starts with the
+[SV inspector](/docs/user_guides/sv_inspector_view) — a combined variant table
+and whole-genome circular overview — to triage candidates, then uses the
+alignments displays to examine read-level evidence at each breakpoint. This
+guide covers the SV-focused interpretation of those tools; see the
+[alignments track guide](/docs/user_guides/alignments_track) for general
+alignments features.
 
-For an end-to-end walkthrough that loads a real cancer dataset (HG008 tumor
-and normal PacBio HiFi reads plus the C-GIAB benchmark SV/CNV call sets) and
+For an end-to-end walkthrough that loads a real cancer dataset (HG008 tumor and
+normal PacBio HiFi reads plus the C-GIAB benchmark SV/CNV call sets) and
 exercises each of the views described below, see
 [Visualizing structural variants from the Cancer Genome in a Bottle](/docs/tutorials/sv_visualization_cgiab).
 
@@ -237,8 +239,8 @@ per haplotype for an even clearer visual separation. Note that group by spawns
 new track instances dynamically, so sort and color is generally faster for
 initial exploration.
 
-See the [alignments track guide](/docs/user_guides/alignments_track) for more on sorting, coloring,
-and filtering by tag.
+See the [alignments track guide](/docs/user_guides/alignments_track) for more on
+sorting, coloring, and filtering by tag.
 
 ## Working with large SVs
 
@@ -247,9 +249,10 @@ declines to fetch hundreds of megabytes at once. For large or inter-chromosomal
 SVs, a better approach is:
 
 - Use a **bigWig coverage track** (or a
-  [multi-quantitative track](/docs/user_guides/multiquantitative_track) for tumor vs normal
-  comparison) instead of a full alignments track when surveying the region — it
-  loads at any scale and makes copy-number changes immediately visible
+  [multi-quantitative track](/docs/user_guides/multiquantitative_track) for
+  tumor vs normal comparison) instead of a full alignments track when surveying
+  the region — it loads at any scale and makes copy-number changes immediately
+  visible
 - Load the **SV call set as a variant track** for a compact overview of all
   calls; clicking a feature navigates directly to it
 - Open the **breakpoint split view** to inspect the breakpoint loci themselves —
@@ -265,32 +268,30 @@ SVs, a better approach is:
 
 ## Whole-genome assembly comparison
 
-When a de novo assembly of the sample is available — for example, a phased
-tumor assembly from PacBio HiFi or ONT data — aligning it back to the
-reference with a tool like [minimap2](https://github.com/lh3/minimap2) and
-loading the resulting PAF as a synteny track gives a chromosome-scale view of
-rearrangements that read-level displays cannot. Complex events like
-chromosomal fusions appear as off-diagonal blocks in the
-[dotplot view](/docs/user_guides/dotplot_view), and clicking and dragging over
-a region in the dotplot can launch a base-level
+When a de novo assembly of the sample is available — for example, a phased tumor
+assembly from PacBio HiFi or ONT data — aligning it back to the reference with a
+tool like [minimap2](https://github.com/lh3/minimap2) and loading the resulting
+PAF as a synteny track gives a chromosome-scale view of rearrangements that
+read-level displays cannot. Complex events like chromosomal fusions appear as
+off-diagonal blocks in the [dotplot view](/docs/user_guides/dotplot_view), and
+clicking and dragging over a region in the dotplot can launch a base-level
 [linear synteny view](/docs/user_guides/linear_synteny_view) with the same
 alignment.
 
-This is particularly effective on cancer samples, where the derived genome
-often differs structurally from the reference in ways that are hard to read
-off the alignment track. The
-[C-GIAB tutorial](/docs/tutorials/sv_visualization_cgiab) walks through this
-workflow end-to-end with the HG008 phased tumor assembly.
+This is particularly effective on cancer samples, where the derived genome often
+differs structurally from the reference in ways that are hard to read off the
+alignment track. The [C-GIAB tutorial](/docs/tutorials/sv_visualization_cgiab)
+walks through this workflow end-to-end with the HG008 phased tumor assembly.
 
 ## Summary
 
-| Display / setting         | How to enable                   | Best for                                            |
-| ------------------------- | ------------------------------- | --------------------------------------------------- |
-| Pileup (default)          | Default lower panel             | Base-level detail, individual reads                 |
-| Color by pair orientation | Pileup settings → Color by...   | Abnormal orientation patterns (RL/LL/RR)            |
-| Color by insert size      | Pileup settings → Color by...   | Insert size anomalies (pileup, continuous gradient) |
-| Read arc display          | Track menu → Display types      | Overview of long-range connections                  |
-| Linked reads display      | Track menu → Display types      | Counting discordant pairs, orientation per read     |
+| Display / setting         | How to enable                              | Best for                                            |
+| ------------------------- | ------------------------------------------ | --------------------------------------------------- |
+| Pileup (default)          | Default lower panel                        | Base-level detail, individual reads                 |
+| Color by pair orientation | Pileup settings → Color by...              | Abnormal orientation patterns (RL/LL/RR)            |
+| Color by insert size      | Pileup settings → Color by...              | Insert size anomalies (pileup, continuous gradient) |
+| Read arc display          | Track menu → Display types                 | Overview of long-range connections                  |
+| Linked reads display      | Track menu → Display types                 | Counting discordant pairs, orientation per read     |
 | Linear read vs ref        | Right-click on any read                    | Complex alignment of a single long read             |
 | Breakpoint split view     | Feature details or SV inspector            | Side-by-side inspection of both breakpoint loci     |
 | Sort/color by HP tag      | Pileup settings → Sort by / Color by → Tag | Confirming heterozygous SVs on one haplotype        |
@@ -309,5 +310,5 @@ workflow end-to-end with the HG008 phased tumor assembly.
   noisy, ambiguous signals; soft-clipped reads and orientation anomalies are
   common artefacts in these regions
 - **Short-read orientation coloring** assumes `fr` (Illumina) by default; change
-  via Track menu → Pileup settings → Orientation type for `rf` or `ff` libraries.
-  SOLiD-style orientations are not supported.
+  via Track menu → Pileup settings → Orientation type for `rf` or `ff`
+  libraries. SOLiD-style orientations are not supported.
