@@ -267,7 +267,10 @@ files:
 
 ```bash
 ## Use minimap2 to create a PAF from your assemblies
-minimap2 -cx asm5 grape.fa peach.fa > peach_vs_grape.paf
+## -cx asm20 is appropriate for cross-species comparisons (~5% divergence)
+## use asm5 for same-species, asm10 for moderately diverged strains
+## consult the minimap2 docs or published protocols for your organisms
+minimap2 -cx asm20 grape.fa peach.fa > peach_vs_grape.paf
 
 ## add each assembly to jbrowse config
 ## the -n flag names the assemblies explicitly
