@@ -100,7 +100,7 @@ export function drawSyntenyTrack(
   data: SyntenyInstanceData,
   params: SyntenyTrackRenderParams,
   logicalW: number,
-  maxOffScreenPx: number,
+  overdrawPx: number,
   dpr = 1,
 ) {
   const {
@@ -120,8 +120,8 @@ export function drawSyntenyTrack(
   // Canvas2D parses fillStyle on every assignment, so reuse the rgba string
   // for the common case of many instances sharing a color (CIGAR fills).
   const fillStyleCache = new Map<number, string>()
-  const leftLimit = -maxOffScreenPx
-  const rightLimit = logicalW + maxOffScreenPx
+  const leftLimit = -overdrawPx
+  const rightLimit = logicalW + overdrawPx
   const args = [
     data,
     transform,
@@ -200,13 +200,13 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     ctx.fillStyle = '#fff'
     ctx.fillRect(0, 0, logicalW, logicalH)
 
-    const { maxOffScreenPx } = state
+    const { overdrawPx } = state
     for (const [key, params] of state.perTrack) {
       const data = this.regions.get(key)
       if (!data || data.instanceCount === 0) {
         continue
       }
-      drawSyntenyTrack(ctx, data, params, logicalW, maxOffScreenPx, dpr)
+      drawSyntenyTrack(ctx, data, params, logicalW, overdrawPx, dpr)
     }
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)

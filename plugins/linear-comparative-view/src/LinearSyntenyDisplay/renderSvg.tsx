@@ -23,7 +23,7 @@ export async function renderSvg(model: LinearSyntenyDisplayModel) {
   // (slope-aware widening, edge culling, hover/click styling) renders SVG
   // export identically to the on-screen Canvas2D backend.
   const ctx = new SvgCanvas()
-  drawSyntenyTrack(ctx, data, params, view.width, view.maxOffScreenDrawPx)
+  drawSyntenyTrack(ctx, data, params, view.width, view.overdrawPx)
   return (
     <SvgClipRect
       id={`synteny-clip-${model.id}`}

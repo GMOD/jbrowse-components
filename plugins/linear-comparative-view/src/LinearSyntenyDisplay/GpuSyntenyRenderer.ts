@@ -36,16 +36,16 @@ interface TrackState {
   key: number
   data: SyntenyInstanceData
   params: SyntenyTrackRenderParams
-  maxOffScreenPx: number
+  overdrawPx: number
 }
 
 function makeTrackState(
   key: number,
   data: SyntenyInstanceData,
   params: SyntenyTrackRenderParams,
-  maxOffScreenPx: number,
+  overdrawPx: number,
 ): TrackState {
-  return { key, data, params, maxOffScreenPx }
+  return { key, data, params, overdrawPx }
 }
 
 // Lazily-allocated 1x1 offscreen 2D context used solely to evaluate
@@ -115,7 +115,7 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
       if (!data || data.instanceCount === 0) {
         continue
       }
-      const track = makeTrackState(key, data, params, state.maxOffScreenPx)
+      const track = makeTrackState(key, data, params, state.overdrawPx)
       this.writeUniforms(
         track,
         params.hoveredFeatureId,
@@ -187,7 +187,7 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     u[U.viewBp1Lo] = vb1Lo
     u[U.bpPerPxInv1] = 1 / p.bpPerPx1
     u[U.hpZero] = 0
-    u[U.maxOffScreenPx] = t.maxOffScreenPx
+    u[U.overdrawPx] = t.overdrawPx
     u[U.minAlignmentLength] = p.minAlignmentLength
     u[U.alpha] = alpha
     u[U.hoveredFeatureId] = hoveredFeatureId

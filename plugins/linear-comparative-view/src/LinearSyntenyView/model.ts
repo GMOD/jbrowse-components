@@ -18,7 +18,7 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-const DEFAULT_MAX_OFFSCREEN_DRAW_PX = 1000
+const DEFAULT_OVERDRAW_PX = 1000
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
@@ -62,9 +62,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         chainMerge: false,
         /**
          * #property
-         * maximum number of pixels off screen before a synteny line is culled
+         * pixels beyond the visible viewport edge that synteny lines are still drawn
          */
-        maxOffScreenDrawPx: DEFAULT_MAX_OFFSCREEN_DRAW_PX,
+        overdrawPx: DEFAULT_OVERDRAW_PX,
         /**
          * #property
          * used for initializing the view from a session snapshot. tracks is
@@ -174,8 +174,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setMaxOffScreenDrawPx(arg: number) {
-        self.maxOffScreenDrawPx = arg
+      setOverdrawPx(arg: number) {
+        self.overdrawPx = arg
       },
       /**
        * #action
@@ -565,7 +565,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         cigarMode,
         drawCurves,
         drawLocationMarkers,
-        maxOffScreenDrawPx,
+        overdrawPx,
         chainMerge,
         ...rest
       } = snap as Omit<typeof snap, symbol>
@@ -574,7 +574,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ...(cigarMode !== 'full' ? { cigarMode } : {}),
         ...(drawCurves ? { drawCurves } : {}),
         ...(drawLocationMarkers ? { drawLocationMarkers } : {}),
-        ...(maxOffScreenDrawPx !== DEFAULT_MAX_OFFSCREEN_DRAW_PX ? { maxOffScreenDrawPx } : {}),
+        ...(overdrawPx !== DEFAULT_OVERDRAW_PX ? { overdrawPx } : {}),
         ...(chainMerge ? { chainMerge } : {}),
       } as typeof snap
     })

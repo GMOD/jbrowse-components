@@ -61,7 +61,7 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
   const minLengthValue =
     minLengthDragValue ?? Math.log2(Math.max(1, minAlignmentLength)) * 100
 
-  const hasOffScreen = 'maxOffScreenDrawPx' in model
+  const hasOffScreen = 'overdrawPx' in model
   const view = model as unknown as LinearSyntenyViewModel
 
   return (
@@ -151,9 +151,9 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
                 </Tooltip>
               </Typography>
               <Slider
-                value={view.maxOffScreenDrawPx}
+                value={view.overdrawPx}
                 onChange={(_, val) => {
-                  view.setMaxOffScreenDrawPx(val)
+                  view.setOverdrawPx(val)
                 }}
                 min={0}
                 max={10000}

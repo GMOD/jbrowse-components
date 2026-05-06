@@ -22,7 +22,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // the synteny view model.
 interface ParentViewDuck {
   views: LinearGenomeViewModel[]
-  maxOffScreenDrawPx: number
+  overdrawPx: number
 }
 
 export function linearSyntenyViewHelperModelFactory(
@@ -185,7 +185,7 @@ export function linearSyntenyViewHelperModelFactory(
           return undefined
         }
         return {
-          maxOffScreenPx: self.parentView.maxOffScreenDrawPx,
+          overdrawPx: self.parentView.overdrawPx,
           perTrack,
         }
       },

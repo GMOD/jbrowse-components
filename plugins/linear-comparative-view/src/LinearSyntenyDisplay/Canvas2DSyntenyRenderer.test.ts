@@ -94,9 +94,9 @@ function makeParams(
 
 function makeState(
   perTrack: [number, SyntenyTrackRenderParams][],
-  maxOffScreenPx = 300,
+  overdrawPx = 300,
 ): SyntenyRenderState {
-  return { maxOffScreenPx, perTrack: new Map(perTrack) }
+  return { overdrawPx, perTrack: new Map(perTrack) }
 }
 
 describe('Canvas2DSyntenyRenderer', () => {

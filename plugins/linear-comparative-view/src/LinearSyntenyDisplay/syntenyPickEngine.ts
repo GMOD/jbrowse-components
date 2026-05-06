@@ -152,7 +152,7 @@ export function widenCorners(
 
 // Per-edge cull (not combined AABB): drop the instance when EITHER the top
 // edge OR the bottom edge is fully off-screen. Matches isCulled() in
-// syntenyTypes.slang so Canvas2D and GPU honor the maxOffScreenPx slider
+// syntenyTypes.slang so Canvas2D and GPU honor the overdrawPx slider
 // the same way; an AABB-only check would keep drawing trapezoids spanning
 // huge horizontal travel into off-screen space.
 export function isEdgeCulled(
@@ -230,8 +230,8 @@ export function pickFeatureAtPoint(
   pc: PickContext,
 ): SyntenyPickResult | undefined {
   const { ctx, state, regions, pickIndices, canvasLogicalWidth, x, y } = pc
-  const leftLimit = -state.maxOffScreenPx
-  const rightLimit = canvasLogicalWidth + state.maxOffScreenPx
+  const leftLimit = -state.overdrawPx
+  const rightLimit = canvasLogicalWidth + state.overdrawPx
 
   // Iterate tracks in reverse draw order so top-most wins.
   const entries = Array.from(state.perTrack)

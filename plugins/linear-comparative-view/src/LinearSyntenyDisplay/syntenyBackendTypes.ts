@@ -22,7 +22,7 @@ export interface SyntenyTrackRenderParams {
 }
 
 export interface SyntenyRenderState {
-  maxOffScreenPx: number
+  overdrawPx: number
   /** Per-track render parameters keyed parallel to uploaded geometry. */
   perTrack: Map<number, SyntenyTrackRenderParams>
 }

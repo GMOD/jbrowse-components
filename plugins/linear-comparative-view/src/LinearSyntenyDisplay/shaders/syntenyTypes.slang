@@ -41,7 +41,7 @@ public struct Uniforms {
   public float  viewBp1Lo;
   public float  bpPerPxInv1;
   public float  hpZero;
-  public float  maxOffScreenPx;
+  public float  overdrawPx;
   public float  minAlignmentLength;
   public float  alpha;
   public float  hoveredFeatureId;
@@ -88,7 +88,7 @@ public bool isCulled(Corners c, float queryTotalLength, Uniforms u) {
   if (u.minAlignmentLength > 0.0 && queryTotalLength < u.minAlignmentLength) {
     return true;
   }
-  float mOff = u.maxOffScreenPx;
+  float mOff = u.overdrawPx;
   float rW = u.resolution.x;
   return max(c.x1, c.x2) < -mOff || min(c.x1, c.x2) > rW + mOff
       || max(c.x3, c.x4) < -mOff || min(c.x3, c.x4) > rW + mOff;
@@ -112,6 +112,18 @@ public float3 hermiteEdges(Corners c, float t, Uniforms u) {
     y = u.yTop + t * u.height;
   }
   return float3(edge0, edge1, y);
+}
+
+// Tangent vector at t for an edge whose raw corner-to-corner horizontal delta
+// is `dx`. In curve mode sPrime scales dx; dy comes from the y-curve derivative.
+public float2 edgeTangent(float dx, float t, Uniforms u) {
+  if (u.isCurve > 0.5) {
+    float sPrime = 6.0 * t * (1.0 - t);
+    float dy = u.height * 1.5 * (1.0 - 2.0 * t * (1.0 - t));
+    return float2(sPrime * dx, dy);
+  } else {
+    return float2(dx, u.height);
+  }
 }
 
 // Two-triangle fan tessellation of one parallelogram: vid maps to (segment,

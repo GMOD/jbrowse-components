@@ -57,7 +57,7 @@ function makeParams(
 function makeState(
   perTrack: [number, SyntenyTrackRenderParams][],
 ): SyntenyRenderState {
-  return { maxOffScreenPx: 300, perTrack: new Map(perTrack) }
+  return { overdrawPx: 300, perTrack: new Map(perTrack) }
 }
 
 // pickFeatureAtPoint uses ctx.isPointInPath; the OffscreenCanvas path is
