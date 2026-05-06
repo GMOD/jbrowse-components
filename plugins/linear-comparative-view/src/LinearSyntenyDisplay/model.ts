@@ -108,10 +108,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         */
-        colorBy: types.optional(types.string, 'default'),
       }),
     )
     .volatile(() => ({
@@ -158,9 +154,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       closeContextMenu() {
         self.contextMenuAnchor = undefined
-      },
-      setColorBy(value: string) {
-        self.colorBy = value
       },
     }))
     .views(self => ({
@@ -250,7 +243,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #getter
        */
       get colorSchemeConfig() {
-        const key = self.colorBy
+        const key = (getContainingView(self) as LinearSyntenyViewModel).colorBy
         return key in colorSchemes
           ? colorSchemes[key as ColorScheme]
           : colorSchemes.default
@@ -317,7 +310,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * undefined in that case.
        */
       get syriClassification() {
-        if (self.colorBy !== 'syri') {
+        if ((getContainingView(self) as LinearSyntenyViewModel).colorBy !== 'syri') {
           return undefined
         }
         const { featureData } = self
@@ -375,7 +368,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * flow through here without touching the RPC.
        */
       get computedColors() {
-        const { instanceData, featureData, colorBy } = self
+        const { instanceData, featureData } = self
+        const { colorBy } = getContainingView(self) as LinearSyntenyViewModel
         if (!instanceData || !featureData) {
           return undefined
         }
@@ -487,7 +481,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           bpPerPx0: v0.bpPerPx,
           bpPerPx1: v1.bpPerPx,
           drawCurves: view.drawCurves,
-          isSyriMode: self.colorBy === 'syri',
+          isSyriMode: view.colorBy === 'syri',
         }
       },
     }))

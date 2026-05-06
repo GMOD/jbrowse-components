@@ -79,6 +79,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         minAlignmentLength: types.optional(types.number, 0),
         /**
          * #property
+         */
+        colorBy: types.optional(types.string, 'default'),
+        /**
+         * #property
          * used for initializing the view from a session snapshot. tracks is
          * 2D — outer index is the level (the gap between views[i] and
          * views[i+1]), so a 3-way view has two entries.
@@ -228,6 +232,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setMinAlignmentLength(arg: number) {
         self.minAlignmentLength = arg
+      },
+      /**
+       * #action
+       */
+      setColorBy(arg: string) {
+        self.colorBy = arg
       },
       /**
        * #action

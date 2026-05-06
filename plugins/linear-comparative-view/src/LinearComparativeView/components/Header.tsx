@@ -150,8 +150,8 @@ const Header = observer(function Header({
 
       {hasDisplays && showDynamicControls ? (
         <>
-          <ColorBySelector model={model} />
-          <ColorLegend model={model} />
+          <ColorBySelector model={model as LinearSyntenyViewModel} />
+          <ColorLegend model={model as LinearSyntenyViewModel} />
           <SyntenySettingsPopover model={model as LinearSyntenyViewModel} />
         </>
       ) : null}

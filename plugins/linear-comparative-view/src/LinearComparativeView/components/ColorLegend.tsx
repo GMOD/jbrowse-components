@@ -3,8 +3,7 @@ import { observer } from 'mobx-react'
 
 import { syriColors } from '../../LinearSyntenyDisplay/drawSyntenyUtils.ts'
 
-import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
-import type { LinearComparativeViewModel } from '../model.ts'
+import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 
 const syriLegendItems = [
   { label: 'SYN', color: syriColors.SYN },
@@ -16,14 +15,9 @@ const syriLegendItems = [
 const ColorLegend = observer(function ColorLegend({
   model,
 }: {
-  model: LinearComparativeViewModel
+  model: LinearSyntenyViewModel
 }) {
-  const firstDisplay = model.levels[0]?.tracks[0]?.displays[0] as
-    | LinearSyntenyDisplayModel
-    | undefined
-  const colorBy = firstDisplay?.colorBy
-
-  if (colorBy !== 'syri') {
+  if (model.colorBy !== 'syri') {
     return null
   }
 
