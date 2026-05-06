@@ -14,5 +14,5 @@
 - Picking is CPU-side: `syntenyPickEngine.ts` mirrors the shader's geometry
   (`projectCorners`, `widenCorners`, `isEdgeCulled`) and runs a Flatbush bbox
   query refined with `isPointInPath`. Both `Canvas2DSyntenyRenderer` and
-  `GpuSyntenyRenderer` use it — the `// SYNC:` comments mark the JS↔Slang
-  pairs that must stay in lockstep.
+  `GpuSyntenyRenderer` use it — the `// SYNC:` comments mark the JS↔Slang pairs
+  that must stay in lockstep.

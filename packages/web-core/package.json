@@ -38,7 +38,7 @@
     "@jbrowse/product-core": "workspace:^",
     "@mui/icons-material": "^9.0.0",
     "@mui/material": "^9.0.0",
-    "dockview-core": "^6.0.3",
+    "dockview-core": "^6.0.1",
     "mobx": "6.15.0"
   },
   "peerDependencies": {

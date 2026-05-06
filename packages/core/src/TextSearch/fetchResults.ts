@@ -71,10 +71,7 @@ export async function fetchResults({
  * 2. Parse as refname-only — looks up chromosome extent from assembly regions.
  * 3. Text search (gene/feature name) — resolves the first hit's location.
  */
-function tryParse(
-  str: string,
-  isValidRefName: (ref: string) => boolean,
-) {
+function tryParse(str: string, isValidRefName: (ref: string) => boolean) {
   try {
     return parseLocString(str, isValidRefName)
   } catch {

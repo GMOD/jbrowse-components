@@ -48,11 +48,11 @@ to TMPDIR). Clean stale `/tmp/hprc-*`, `/tmp/volvox*`, etc. before long runs.
 
 ## rpcProps vs gpuProps — what stays in the worker
 
-The upload autorun (`installGpuDisplay`) fires for **every** `rpcDataMap`
-change and re-runs `buildSourceRenderData` / `buildMultiSourceRenderData` for
-**all** cached regions. Moving an expensive per-feature computation from the
-worker into that path multiplies the cost by the number of cached regions and
-fires it on every region arrival, not just on settings changes.
+The upload autorun (`installGpuDisplay`) fires for **every** `rpcDataMap` change
+and re-runs `buildSourceRenderData` / `buildMultiSourceRenderData` for **all**
+cached regions. Moving an expensive per-feature computation from the worker into
+that path multiplies the cost by the number of cached regions and fires it on
+every region arrival, not just on settings changes.
 
 **Rule:** Only move worker computation into `gpuProps` (main-thread re-encode)
 when the setting changes frequently (e.g., color, scale type) **and** the

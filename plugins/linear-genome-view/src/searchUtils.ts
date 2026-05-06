@@ -136,9 +136,8 @@ export async function fetchResults({
     searchType,
   )
 
-  return dedupe(
-    [...refNameResults, ...(textSearchResults ?? [])],
-    elt => elt.getId(),
+  return dedupe([...refNameResults, ...(textSearchResults ?? [])], elt =>
+    elt.getId(),
   )
 }
 

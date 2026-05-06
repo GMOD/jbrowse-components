@@ -10,12 +10,21 @@ function HelpAdornment() {
   const [isHelpDialogDisplayed, setHelpDialogDisplayed] = useState(false)
   return (
     <>
-      <IconButton onClick={() => { setHelpDialogDisplayed(true) }} size="small">
+      <IconButton
+        onClick={() => {
+          setHelpDialogDisplayed(true)
+        }}
+        size="small"
+      >
         <HelpIcon fontSize="small" />
       </IconButton>
       {isHelpDialogDisplayed ? (
         <Suspense fallback={null}>
-          <HelpDialog handleClose={() => { setHelpDialogDisplayed(false) }} />
+          <HelpDialog
+            handleClose={() => {
+              setHelpDialogDisplayed(false)
+            }}
+          />
         </Suspense>
       ) : null}
     </>

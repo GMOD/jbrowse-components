@@ -136,7 +136,10 @@ const REQUIRED_COLUMNS = [
 
 function createBlastLineParser(columns: string) {
   const columnNames = columns.trim().split(' ') as (keyof BlastRecord)[]
-  const requiredIndices = {} as Record<(typeof REQUIRED_COLUMNS)[number], number>
+  const requiredIndices = {} as Record<
+    (typeof REQUIRED_COLUMNS)[number],
+    number
+  >
   for (const col of REQUIRED_COLUMNS) {
     const idx = columnNames.indexOf(col)
     if (idx === -1) {

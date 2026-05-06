@@ -102,7 +102,6 @@ export default class BaseResult {
   getLocation() {
     return this.locString
   }
-
 }
 
 export class RefSequenceResult extends BaseResult {

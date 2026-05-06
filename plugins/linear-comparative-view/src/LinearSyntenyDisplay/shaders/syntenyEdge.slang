@@ -7,7 +7,10 @@
 import syntenyTypes;
 
 
-public static const uint VERTS_PER_INSTANCE = 2u * 16u * 6u; // 2 edges * BEZIER_SEGMENTS * 6 verts
+// SYNC: 16 must equal BEZIER_SEGMENTS in syntenyTypes.slang (not resolved via
+// codegen — cross-module import resolution in build-shaders.ts adds complexity
+// disproportionate to the benefit)
+public static const uint VERTS_PER_INSTANCE = 2u * 16u * 6u;
 static const float STROKE_WIDTH = 1.0;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;

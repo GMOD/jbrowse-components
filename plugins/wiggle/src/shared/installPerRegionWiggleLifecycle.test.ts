@@ -104,7 +104,12 @@ test('encode-tracked observable change re-fires every per-key autorun', () => {
 
   // All three per-key autoruns re-fire on the encoder dep change.
   expect(uploads).toHaveLength(6)
-  expect(uploads.slice(3).map(u => u.key).sort()).toEqual([0, 1, 2])
+  expect(
+    uploads
+      .slice(3)
+      .map(u => u.key)
+      .sort(),
+  ).toEqual([0, 1, 2])
 })
 
 test('only the changed key re-uploads when its value mutates', () => {

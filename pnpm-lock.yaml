@@ -611,8 +611,8 @@ importers:
         specifier: ^9.0.0
         version: 9.0.0(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.5))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.5))(@types/react@19.2.14)(react@19.2.5))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       dockview-core:
-        specifier: ^6.0.3
-        version: 6.0.3
+        specifier: ^6.0.1
+        version: 6.0.1
       mobx:
         specifier: 6.15.0
         version: 6.15.0
@@ -4205,12 +4205,6 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@storybook/icons@2.0.2':
-    resolution: {integrity: sha512-KZBCpXsshAIjczYNXR/rlxEtCUX/eAbpFNwKi8bcOomrLA4t/SyPz5RF+lVPO2oZBUE4sAkt43mfJUevQDSEEw==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-
   '@storybook/preset-react-webpack@10.3.6':
     resolution: {integrity: sha512-DpioH1j7zfztRmLCUV3K1R44rbmxhdEglzYZBfS7vYd6slME6+0W8Xx8eD+bzNEp4bk7gfmLexuXqmDghNiB8g==}
     peerDependencies:
@@ -4681,6 +4675,7 @@ packages:
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
+    deprecated: Potential CWE-502 - Update to 1.3.1 or higher
 
   '@unrs/resolver-binding-android-arm-eabi@1.11.1':
     resolution: {integrity: sha512-ppLRUgHVaGRWUx0R0Ut06Mjo9gBaBkg3v/8AxusGLhsIotbBLuRk51rAzqLC8gq6NyyAojEXglNjzf6R948DNw==}
@@ -5770,9 +5765,6 @@ packages:
 
   dockview-core@6.0.1:
     resolution: {integrity: sha512-Mreb+kTjSrfN9NtVU3LddpA76WXwviaFunAsPCzg04uwZIpjEx7OC607Qfrqg26C6S1r28pxxifkgUWGIs8r6w==}
-
-  dockview-core@6.0.3:
-    resolution: {integrity: sha512-O7EkWStQNWc5+4bd8OtWYp6w9AVpV19z9zilee3JNfsvEbLzpP2W9dT0Y914tWUdwk1Zq3klwOZsI/rFqVzsGA==}
 
   dockview-react@6.0.1:
     resolution: {integrity: sha512-unAUG5TgQ+Fq9oYCQ7WMr6kqTdBJDpAYi9EpTQIYQ8rwVVaY/Id7YniQ7PAP8GUAauLsoxi2nGxcflxmWfHgEw==}
@@ -11270,11 +11262,6 @@ snapshots:
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
 
-  '@storybook/icons@2.0.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
-    dependencies:
-      react: 19.2.5
-      react-dom: 19.2.5(react@19.2.5)
-
   '@storybook/preset-react-webpack@10.3.6(esbuild@0.28.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(storybook@10.3.6(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(typescript@6.0.3)(webpack-cli@7.0.2)':
     dependencies:
       '@storybook/core-webpack': 10.3.6(storybook@10.3.6(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))
@@ -11431,7 +11418,7 @@ snapshots:
     dependencies:
       '@types/http-cache-semantics': 4.2.0
       '@types/keyv': 3.1.4
-      '@types/node': 24.12.2
+      '@types/node': 25.6.0
       '@types/responselike': 1.0.3
 
   '@types/chai@5.2.3':
@@ -11593,7 +11580,7 @@ snapshots:
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 24.12.2
+      '@types/node': 25.6.0
 
   '@types/mdx@2.0.13': {}
 
@@ -11645,7 +11632,7 @@ snapshots:
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 24.12.2
+      '@types/node': 25.6.0
 
   '@types/retry@0.12.2': {}
 
@@ -12927,8 +12914,6 @@ snapshots:
       '@leichtgewicht/ip-codec': 2.0.5
 
   dockview-core@6.0.1: {}
-
-  dockview-core@6.0.3: {}
 
   dockview-react@6.0.1(react@19.2.5):
     dependencies:
@@ -16203,7 +16188,7 @@ snapshots:
   storybook@10.3.6(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5):
     dependencies:
       '@storybook/global': 5.0.0
-      '@storybook/icons': 2.0.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@storybook/icons': 2.0.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@testing-library/jest-dom': 6.9.1
       '@testing-library/user-event': 14.6.1(@testing-library/dom@10.4.1)
       '@vitest/expect': 3.2.4
