@@ -30,3 +30,7 @@ You can open a synteny view from a dotplot view by selecting a region on the
 dotplot and clicking "Open linear synteny view", shown below:
 
 <Figure caption="Screenshot showing the 'click and drag' selection over the dotplot view which prompts you to open up a linear synteny view from the selected region." src="/img/synteny_from_dotplot_view.png" />
+
+For a step-by-step walkthrough of loading assemblies, generating a PAF with
+minimap2, and using the dotplot and linear synteny views together, see the
+[Synteny and genome alignment tutorial](/docs/tutorials/synteny_visualization).
