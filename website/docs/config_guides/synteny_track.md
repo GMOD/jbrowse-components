@@ -89,7 +89,7 @@ Slots
 
 ### ChainAdapter config
 
-The ChainAdapter is used to load .chain files from MUMmer/nucmer. It can be used
+The ChainAdapter is used to load .chain files in the UCSC chain format. It can be used
 for SyntenyTracks:
 
 ```json

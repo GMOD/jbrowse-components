@@ -2,6 +2,7 @@
 id: sv_visualization_cgiab
 title: Cancer Genome in a Bottle (SVs)
 description: Load and inspect structural variants from real cancer sequencing data
+guide_category: Tutorials
 ---
 
 import Figure from '../figure'

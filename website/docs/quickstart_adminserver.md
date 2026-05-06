@@ -34,8 +34,8 @@ file.
 
 :::warning
 
-Note The `admin-server` is meant to be used temporarily for configuration, **not
-in production.**
+The `admin-server` is meant to be used temporarily for configuration, **not in
+production.**
 
 :::
 

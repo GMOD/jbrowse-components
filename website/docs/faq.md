@@ -459,10 +459,10 @@ GENEID002  ey  Pax6
 Then this will generate a new file, the .ix file, sorted in alphabetical order:
 
 ```
-ey  GENE002
-signalling  GENE001
-Pax6  GENE002
-Wnt  GENE001
+ey  GENEID002
+Pax6  GENEID002
+signalling  GENEID001
+Wnt  GENEID001
 ```
 
 Then a second file, the `.ixx` file, tells us at what byte offset certain lines

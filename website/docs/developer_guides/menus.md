@@ -17,7 +17,7 @@ existing menus and sub-menus. Sub-menus can be arbitrarily deep.
 
 You add menus in the `configure` method of your plugin. Not all JBrowse products
 will have top-level menus, though. JBrowse Web and JBrowse Desktop have them,
-but something like JBrowse Linear View (which is an just a single view designed
+but something like JBrowse Linear View (which is just a single view designed
 to be embedded in another page) does not. This means you need to check whether
 or not menus are supported using `isAbstractMenuManager` in the `configure`
 method. This way the rest of the plugin will still work if there is not a menu.
@@ -169,7 +169,7 @@ Types of `MenuItem`s:
 | onClick  | Callback of action to perform on click. Function signature is `(session) => undefined`. Required for 'normal', 'radio', and 'checkbox', not applicable to any others.                                    |
 | subMenu  | An array of menu items. Applicable only to 'subMenu'.                                                                                                                                                    |
 
-As an example, the here is an array of MenuItems and the resulting menu:
+Here is an example array of MenuItems and the resulting menu:
 
 ```js
 ;[
@@ -291,9 +291,9 @@ Insert a menu item into a top-level menu
 
 | Name     | Description                                                                                                                                      |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| menuName | Name of the top-level menu to insert into.                                                                                                       |
-| menuItem | Menu item to insert.                                                                                                                             |
-| position | Position to insert menu item. If negative, counts from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the second-to-last one. |
+| menuName | Name of the top-level menu to insert into.                                                                                                                    |
+| menuItem | Menu item to insert.                                                                                                                                          |
+| position | Position to insert menu item. If negative, counts from the end, e.g. `insertInMenu('My Menu', menuItem, -1)` will insert the item as the second-to-last one. |
 
 ##### Return Value
 
@@ -322,9 +322,9 @@ Insert a menu item into a sub-menu
 
 | Name     | Description                                                                                                                                      |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| menuPath | Path to the sub-menu to add to, starting with the top-level menu (e.g. `['File', 'Insert']`).                                                    |
-| menuItem | Menu item to insert.                                                                                                                             |
-| position | Position to insert menu item. If negative, counts from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the second-to-last one. |
+| menuPath | Path to the sub-menu to add to, starting with the top-level menu (e.g. `['File', 'Insert']`).                                                                              |
+| menuItem | Menu item to insert.                                                                                                                                                        |
+| position | Position to insert menu item. If negative, counts from the end, e.g. `insertInSubMenu(['File', 'Insert'], menuItem, -1)` will insert the item as the second-to-last one. |
 
 ##### Return value
 

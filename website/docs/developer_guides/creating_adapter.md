@@ -35,8 +35,8 @@ with your adapter.
   and [.2bit](https://genome.ucsc.edu/FAQ/FAQformat.html#format7) file formats.
 - **RefName alias adapter** - This type of adapter is used to return data about
   aliases for reference sequence names, for example to define that "chr1" is an
-  alias for "1". An example of this in JBrowse is an adapter for (alias
-  [files](http://software.broadinstitute.org/software/igv/LoadData/#aliasfile)
+  alias for "1". An example of this in JBrowse is an adapter for
+  [alias files](http://software.broadinstitute.org/software/igv/LoadData/#aliasfile).
 - **Text search adapter** - This type of adapter is used to search through text
   search indexes. Returns list of search results. An example of this in JBrowse
   is the trix text search adapter.
@@ -115,7 +115,7 @@ class MyAdapter extends BaseFeatureDataAdapter {
       try {
         const { refName, start, end } = region
         const response = await fetch(
-          'http://myservice/genes/${refName}/${start}-${end}',
+          `http://myservice/genes/${refName}/${start}-${end}`,
           options,
         )
         if (response.ok) {

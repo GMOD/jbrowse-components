@@ -23,7 +23,7 @@ Example Hi-C track config:
 
 #### HicAdapter config
 
-We just simply supply a `hicLocation` currently for the HicAdapter:
+The HicAdapter currently only requires a `hicLocation`:
 
 ```json
 {

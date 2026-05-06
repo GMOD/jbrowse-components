@@ -1,6 +1,8 @@
 ---
 id: linear_synteny_view
 title: Linear synteny view
+description: Linear alignment of two genomes
+guide_category: Views
 ---
 
 import Figure from '../figure'

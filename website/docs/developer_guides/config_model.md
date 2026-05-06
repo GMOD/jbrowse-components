@@ -15,7 +15,7 @@ you create will need its own configuration schema.
 Our configuration system is "typed" to facilitate graphical editing of the
 configuration.
 
-Each "configuration schema" has a list what "configuration slots".
+Each "configuration schema" has a list of "configuration slots".
 
 Each "configuration slot" has a name, description, a type, and a value.
 
@@ -93,7 +93,7 @@ getConf(track, 'maxHeight')
 Which would be equivalent to calling,
 
 ```js
-readConfObject(track.configuration, 'maxHeight')`
+readConfObject(track.configuration, 'maxHeight')
 ```
 
 ### Using config callbacks
@@ -149,7 +149,7 @@ callback for color, it might look like this:
       "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
       "renderer": {
         "type": "SvgFeatureRenderer",
-        "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'" # here we call our jexl function
+        "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
       }
     }
   ]

@@ -23,7 +23,7 @@ import config from '../docusaurus.config.json'
 
 ## Installing the JBrowse CLI
 
-The JBrowse CLI can help perform many tasks to help you manage JBrowse 2, such
+The JBrowse CLI can perform many tasks to help you manage JBrowse 2, such
 as:
 
 - create a new instance of JBrowse 2 automatically
@@ -75,7 +75,7 @@ jbrowse create jbrowse2
 
 This fetches the latest version of jbrowse-web and unzips it to a folder named
 "jbrowse2". You can name the folder anything you want to, it is just a folder
-containing html, css, and js files. It is not a fancy installation
+containing html, css, and js files. It is not a fancy installation.
 
 Also note: as an alternative to the jbrowse create command, you can manually
 download the jbrowse-web zip from
@@ -152,7 +152,7 @@ This will output a configuration snippet to a file named
 /var/www/html/jbrowse/config.json if it does not already exist, or append a new
 assembly to that config file if it does exist. It will also copy genome.fa and
 genome.fa.fai to the /var/www/html/jbrowse/ folder because we used --load copy.
-If you wanted to symlink instead, can use --load symlink
+If you wanted to symlink instead, you can use --load symlink
 
 JBrowse 2 also supports other assembly file formats, including bgzip-compressed
 indexed FASTA, and 2bit files.
@@ -179,8 +179,8 @@ specifying a name, run `jbrowse add-track --help`.
 
 If you have JBrowse 2
 [running as described](/docs/quickstart_web/#running-jbrowse-2) in the JBrowse
-web quickstart, you can refresh the page and an add a linear genome view of the
-volvox assembly. Then open track selector, and you will see the alignments
+web quickstart, you can refresh the page and add a linear genome view of the
+volvox assembly. Then open the track selector, and you will see the alignments
 track.
 
 <Figure caption="JBrowse 2 linear genome view with alignments track" src="/img/volvox_alignments.png"/>

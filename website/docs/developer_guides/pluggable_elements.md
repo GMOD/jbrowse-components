@@ -18,8 +18,8 @@ is only possible to have one version of a particular plugin loaded on any given
 webpage, even if multiple products are loaded and using it on the same page.**
 
 It's common for a plugin to use its `configure` method to set up
-[mobx autoruns or reactions](https://mobx.js.org/refguide/autorun.html) that
-react to changes in the application's state to modify its behavior.
+[mobx autoruns](https://mobx.js.org/refguide/autorun.html) that react to
+changes in the application's state to modify its behavior.
 
 Plugins often also have their `install` method add "pluggable elements" into the
 host JBrowse application. This is how plugins can add new kinds of views,
@@ -53,7 +53,7 @@ Examples of pluggable types include:
 - Text search adapter types
 - Add track workflow
 
-In additional to creating plugins that create new adapters, track types, etc.
+In addition to creating plugins that create new adapters, track types, etc.
 note that you can also wrap the behavior of another track, so these elements are
 composable.
 
@@ -109,12 +109,13 @@ like:
 - Choose "static-blocks" rendering styles, which keeps contents stable while the
   user scrolls, or "dynamic-blocks" that update on each scroll
 
-Example tracks: the `@jbrowse/plugin-alignments` exports multiple track types:
+Example tracks:
 
-- `VariantTrack` - displays variant features
-- `FeatureTrack` - displays generic features including gene glyphs
-- `AlignmentsTrack` - shows both a pileup or reads and the coverage as a
-  quantitative track
+- `AlignmentsTrack` (from `@jbrowse/plugin-alignments`) - shows both a pileup
+  of reads and the coverage as a quantitative track
+- `VariantTrack` (from `@jbrowse/plugin-variants`) - displays variant features
+- `FeatureTrack` (from `@jbrowse/plugin-gff3`) - displays generic features
+  including gene glyphs
 
 ### Displays
 

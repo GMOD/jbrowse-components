@@ -256,9 +256,9 @@ display options:
 
 ### Notes
 
-- The `showReferenceAlleles` option only affects the
-  `MultiLinearVariantDisplay`. The `LinearVariantMatrixDisplay` uses a different
-  visualization that doesn't draw reference alleles in the same way.
+- The `showReferenceAlleles` option can be set on both `MultiLinearVariantDisplay`
+  and `LinearVariantMatrixDisplay`, though the visual effect may differ between
+  them due to their different rendering approaches.
 - Users can still change these settings at runtime using the track menu. The
   configuration values serve as the initial defaults.
 - When a user changes a setting via the track menu, their preference is stored

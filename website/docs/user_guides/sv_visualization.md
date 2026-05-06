@@ -1,6 +1,8 @@
 ---
 id: sv_visualization
 title: Structural variant visualization
+description: Interpreting SV signals across display types
+guide_category: Views
 ---
 
 import Figure from '../figure'
@@ -69,8 +71,8 @@ Insert size ± 3σ option uses threshold-based coloring:
 
 | Pattern                               | Color  | Notes                                  |
 | ------------------------------------- | ------ | -------------------------------------- |
-| Insert larger than expected (&gt;3σ)  | red    | suggests a deletion spanning the pair  |
-| Insert smaller than expected (&lt;3σ) | pink   | suggests an insertion between the pair |
+| Insert > mean + 3σ (larger than expected)  | red    | suggests a deletion spanning the pair  |
+| Insert < mean − 3σ (smaller than expected) | pink   | suggests an insertion between the pair |
 | Mate on a different chromosome        | purple | suggests an inter-chromosomal event    |
 
 **Insert size ± 3σ and orientation** combines both signals and is often the most
@@ -87,7 +89,9 @@ is a useful companion reference.
 ### Deletion
 
 - Soft-clipped reads at two nearby positions mark the breakpoint edges
-- A coverage drop between those positions is a classic deletion signal
+- A coverage drop between those positions is a classic deletion signal;
+  heterozygous deletions typically show only a ~50% reduction rather than a
+  complete drop
 - Paired reads flanking the gap colored **red** (larger insert than expected)
   suggest a deletion spanning the pair
 - In the read arc display, unusually long arcs point to a deletion

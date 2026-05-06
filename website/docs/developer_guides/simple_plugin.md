@@ -240,7 +240,7 @@ const CircularViewChordWidget = observer(({ model }: { model: any }) => {
   return (
     <div></div>
   )
-}
+})
 
 export default CircularViewChordWidget
 ```
@@ -256,8 +256,8 @@ message we can edit.
 ```ts
 
 import { observer } from 'mobx-react'
-// JBrowse uses material-ui where possible for basic components
-import { TextField } from '@material-ui/core'
+// JBrowse uses MUI where possible for basic components
+import { TextField } from '@mui/material'
 // @jbrowse/core also has some reusable components available
 import {
   FeatureDetails,
@@ -570,141 +570,6 @@ that "plugins", "assemblies", and "tracks" are all present for the configuration
 to work properly.
 
 :::
-
-## Writing a simple integration test with cypress
-
-For completeness, we might want to write a few tests for our plugin to ensure
-that future changes we make do not break the application.
-
-The `jbrowse-plugin-template` uses cypress to write its integration tests. For
-plugins, integration tests are a particularly good way to test functionality, as
-a failing test might indicate the plugin needs to be updated for a new version
-of JBrowse, or, if interfacing with a third-party API or tool set, that the
-plugin might have to be tweaked to suit these changes.
-
-We're going to write a simple integration test suite that executes the action we
-tested [above](#run-jbrowse-with-your-new-plugin-and-manually-test).
-
-### Add a cypress test
-
-See the [cypress documentation](https://docs.cypress.io/) for a dive into
-options and best practices for writing cypress tests. The following is a very
-brief overview to get you started.
-
-Within the directory `cypress`, you'll see a number of folders; you'll likely
-only need to make use of `fixtures` and `integration`.
-
-- `fixtures`: This directory is where you might place testing files or a testing
-  config.json file.
-- `integration`: This directory is where all your integration tests go. You can
-  organize them however you want. Using the template project, there will be two
-  in there already you can use as an example, but we'll write one of our own.
-
-Make your own `circ_test.spec.ts` file within `cypress/integration`, and
-populate it with the following to start:
-
-```js
-describe('Circular chord widget tests', () => {
-  it('can access the widget', () => {
-    cy.exec('shx cp cypress/fixtures/hello_view.json .jbrowse')
-    cy.visit(
-      '/?config=hello_view.json&session=spec-{"views": [{"type": "CircularView"}]}',
-    )
-  })
-})
-```
-
-Right now our test does two things:
-
-- copies our fixture `hello_view.json` into `.jbrowse` and,
-- visits our JBrowse URL (default configured to `localhost:8999`) with that
-  configuration and a circular view open
-
-Notice the use of [URL parameters](/docs/urlparams) to speed up the test setup;
-using URL parameters like this can come in handy for larger suites.
-
-Take a moment to add the track specification to `hello_view.json` for testing
-purposes:
-
-```json
-  "tracks": [
-    {
-      "type": "VariantTrack",
-      "trackId": "demo_vcf",
-      "name": "demo_vcf",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation"],
-      "adapter": {
-        "type": "VcfAdapter",
-        "vcfLocation": {
-          "locationType": "UriLocation",
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.new.vcf"
-        }
-      },
-      "displays": [
-        {
-          "type": "ChordVariantDisplay",
-          "displayId": "demo_ch_v_disp",
-          "onChordClick": "jexl:openWidgetOnChordClick(feature, track, pluginManager)",
-          "renderer": { "type": "StructuralVariantChordRenderer" }
-        }
-      ]
-    }
-  ],
-```
-
-### Running cypress
-
-First, ensure both your plugin (`yarn start`) and JBrowse (`yarn browse`) are
-running. Open a third tab in your terminal at your project directory, and run
-`yarn cypress:open`. A cypress browser will open, click on the test you just
-wrote to run it.
-
-<Figure src="/img/plugin-dev-tutorial-cypress.png" caption="A screenshot of the cypress interface when you run yarn cypress:open." />
-
-Now that we have a visual on our test running, let's add some more complexity:
-
-```js
-// ...
-it('can access the widget', () => {
-  // ...
-  // .contains checks elements for one which displays the provided text
-  cy.contains('Open').click()
-  // .get can retrieve a given property of an element, data-testid is used for testing with jest and works well
-  cy.get('[data-testid="circular_track_select"]').click()
-  cy.contains('demo_vcf').click()
-  // if any asynchronous calls are made it might be pertinent to .wait
-  cy.wait(2000)
-  // we use force: true here to make sure we can click the chord, that's an svg overlaid over many other svg's
-  cy.get('[data-testid="chord-1591034956-148"]').click({ force: true })
-  // we can see this text, so we know we've accomplished our goal
-  cy.contains('Care to change the widget byline?')
-})
-```
-
-We can add one more small test to check data input:
-
-```js
-it('can change the byline', () => {
-  // you can use the share functionality to generate a session at any point you might want to revisit for future tests
-  cy.visit(
-    'http://localhost:8999/?config=config.json&session=share-V0PG_1mjHJ&password=ho4Uq',
-  )
-  cy.wait(2000)
-  // .get can be used to nab elements of a certain type as well, here we're referencing the third 'input'
-  cy.get('input').eq(3).type('Some testing string')
-  cy.get('input').eq(3).type('{enter}')
-  cy.contains('Some testing string')
-})
-```
-
-This test will check the functionality of our input field and updating the
-property on the widget model.
-
-Run your suite again for completeness (you may have to reset your instance of
-cypress, then run `yarn cypress:open` again).
-
-<Figure src="/img/plugin-dev-tutorial-running-cypress.png" caption="A screenshot of a cypress test running with the built-in browser; this is what your test should look like (and pass) when finished here." />
 
 ## Next steps
 

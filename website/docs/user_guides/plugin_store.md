@@ -1,6 +1,8 @@
 ---
 id: plugin_store
 title: Plugin store
+description: Installing community plugins
+guide_category: Other features
 ---
 
 import Figure from '../figure'

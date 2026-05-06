@@ -1,6 +1,8 @@
 ---
 id: feature_sequence
 title: Feature sequence panel
+description: Sequence extraction for selected features
+guide_category: Track types
 ---
 
 import Figure from '../figure'
@@ -12,8 +14,9 @@ detail sidebar will automatically stitch together the sequence for that feature.
 Options include:
 
 - CDS - the coding sequences, spliced together
-- Protein - performs protein translation on the CDS, currently assuming the
-  default codon translation table
+- Protein - performs protein translation on the CDS using the standard genetic
+  code (NCBI table 1); note that mitochondrial genes and certain organisms use
+  alternative codon tables which are not currently supported
 - cDNA - the CDS plus UTR, or just all exons if a non-coding gene
 - Gene w/ introns - the entire gene region sequence with the introns included
 - Gene w/ 10bp of introns - the spliced gene sequence with 10bp around the

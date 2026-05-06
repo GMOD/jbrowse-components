@@ -8,8 +8,6 @@ title: Extension points
 Extension points are a basic bit of logic that allows plugin developers to
 register a callback that can be called in some other part of the code
 
-## Adding to extension points
-
 ## Using extension points
 
 The basic API is that producers can say:
@@ -131,8 +129,7 @@ type: synchronous
 
 used to extend the session model itself with new features
 
-- `args` - `AbstractSessionModel` - instance of the session model to customize
-  the about dialog
+- `args` - `AbstractSessionModel` - instance of the session model
 
 ### Core-replaceAbout
 

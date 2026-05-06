@@ -3,6 +3,7 @@ id: analyze_trio
 title: Analyzing a phased trio
 description: Examine inheritance patterns and variant phasing in a trio dataset
 date: 2025-03-25
+guide_category: Tutorials
 ---
 
 import Figure from '../figure'

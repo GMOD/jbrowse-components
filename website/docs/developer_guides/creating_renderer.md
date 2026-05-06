@@ -36,7 +36,7 @@ class MyRenderer implements ServerSideRendererType {
     const canvas = createCanvas(width, height)
     const ctx = canvas.getContext('2d')
     ctx.fillStyle = 'red'
-    ctx.drawRect(0, 0, 100, 100)
+    ctx.fillRect(0, 0, 100, 100)
     const imageData = createImageBitmap(canvas)
     return {
       reactElement: React.createElement(this.ReactComponent, { ...props }),
@@ -161,14 +161,14 @@ simplified SVG renderer just to illustrate:
 
 ```jsx
 export default function SvgFeatureRendering(props) {
-  const { width, features, regions, layout, bpPerPx } = props
+  const { width, config, features, regions, layout, bpPerPx } = props
   const region = regions[0]!
 
   const feats = Array.from(features.values())
-  const height = readConfObject(config, 'height', { feature })
   return (
     <svg>
       {feats.map(feature => {
+        const height = readConfObject(config, 'height', { feature })
         // our layout determines at what y-coordinate to
         // plot our feature, given all the other features
         const top = layout.addRect(
@@ -212,8 +212,8 @@ the renderer's `getFeatures` call.
 
 The base `ServerSideRendererType` class has a built-in `getFeatures` function
 that, in turn, calls your adapter's `getFeatures` function, but if you need
-tighter control over how your adapter's `getFeatures` method is called, then
-your renderer.
+tighter control over how your adapter's `getFeatures` method is called, you can
+override `getFeatures` in your renderer class.
 
 The Hi-C renderer type does not operate on conventional features and instead
 works with contact matrices, so the Hi-C renderer has a custom `getFeatures`

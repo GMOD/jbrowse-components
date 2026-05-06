@@ -1,6 +1,8 @@
 ---
 id: variant_track
 title: Variant tracks
+description: VCF variant display
+guide_category: Track types
 ---
 
 import Figure from '../figure'
@@ -19,8 +21,7 @@ can display the details.
 
 <Figure caption="Screenshot showing the variant feature sidebar with a filtered by genotype (with alternative allele '1'). Users can also filter by sample name or other attributes." src="/img/variant_panel.png" />
 
-Example showing a deletion in a trio
-https://jbrowse.org/code/jb2/v3.2.0/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-tzYolAQWOK&password=HGZA4
+[Live demo — example showing a deletion in a trio](https://jbrowse.org/code/jb2/latest/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-tzYolAQWOK&password=HGZA4)
 
 We can use the Variant widget to sort by samples that have the genotype (e.g. GT
 being non-zero, zero is the REF allele, any non-zero value is one of the ALT

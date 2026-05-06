@@ -1,6 +1,8 @@
 ---
 id: basic_usage
 title: Basic usage
+description: Navigation, searching, opening files, and common UI controls
+guide_category: General usage
 ---
 
 import Figure from '../figure'
@@ -12,23 +14,18 @@ To open a linear genome view (LGV), use the menu bar: `Add` ->
 
 #### Scrolling
 
-You can scroll side to side using your mouse wheel or via click and drag. Left
-and right pan buttons found in the header of the LGV can also be used to scroll
-in their respective directions.
+You can scroll using the mouse wheel or by clicking and dragging. The pan
+buttons in the LGV header also scroll left and right.
 
 #### Zooming
 
-The zoom buttons and the slider bar found in the header of the linear genome
-view can be used to zoom in and out on the view
+The zoom buttons and slider in the LGV header can be used to zoom in and out.
+You can also:
 
-You can also
-
-- hold the `Ctrl` key and use your mousewheel or trackpad to scroll to zoom in
-  and out of the linear genome view
-- hold the `Shift` key and click and drag the linear genome view to create a
-  "rubberband" selection
-- hold the `Shift` key without click and drag to just reveal a red vertical
-  guide bar on the linear genome view
+- hold `Ctrl` and use the mousewheel to zoom (on Mac, trackpad pinch-to-zoom
+  also works)
+- hold `Shift` and click-and-drag to create a rubberband selection
+- hold `Shift` without dragging to reveal a red vertical guide bar
 
 #### Re-ordering tracks
 
@@ -39,27 +36,23 @@ six vertical dots) to reorder tracks.
 
 #### Re-ordering views
 
-Re-ordering views doesn't use a drag and drop like re-ordering tracks does, but
-instead, you can click the view menu (the "hamburger" menu that is available for
-each view) and select "Move up"/"Move down"
+Unlike tracks, views cannot be reordered by drag-and-drop. Instead, use the
+view menu (hamburger icon) and select "Move up"/"Move down".
 
 #### Using the location search box
 
-The location search box is located at the top of the LGV.
+The location search box at the top of the LGV accepts several search formats:
 
-You can search a location in several ways when typing in the search box:
+- Region and location, e.g. `chr1:1..100` or `chr1:1-100` or `chr1 1 100`
+- Assembly, region, and location, e.g. `{hg19}chr1:1-100`
+- Discontinuous regions (space-delimited, opened side-by-side), e.g.
+  `chr1:1..100 chr2:1..100`
+- Any of the above with `\[rev\]` appended to horizontally flip the region,
+  e.g. `chr1:1-100\[rev\]`
+- Gene name or feature keyword (if a text index is configured), e.g. `BRCA1`
 
-1. Searching by region and location, e.g. `chr1:1..100` or `chr1:1-100` or
-   `chr1 1 100`
-2. Searching by assembly, region, and location, e.g. `{hg19}chr1:1-100`
-3. Searching discontinuous regions, delimited by a space, and opening them
-   side-by-side, e.g. `chr1:1..100 chr2:1..100`
-4. Searching in any of the above ways and appending \[rev\] to the end of the
-   region will horizontally flip it, e.g. `chr1:1-100\[rev\]`
-5. If configured, searching by gene name or feature keywords, e.g. `BRCA1`
-
-To configure name searching, you or the admin of the instance will need to
-create a "text index". See the
+To enable name searching, you or the instance admin will need to create a text
+index. See the
 [configuration guide](/docs/quickstart_web/#indexing-feature-names-for-searching)
 for more information.
 
@@ -67,7 +60,7 @@ for more information.
 
 ### Opening tracks
 
-To open a new track or connection, use the menu bar: `File` -> `Open track..`
+To open a new track or connection, use the menu bar: `File` -> `Open track...`
 
 <Figure caption="After opening the menu item for 'Open track..' a drawer widget for the 'Add a track' form will appear" src="/img/add_track_form.png" />
 
@@ -80,13 +73,12 @@ that can also be used to access the "Add a track" form.
 
 <Figure caption="(1) Open the 'Available tracks' widget with the button on the far left of the linear genome view. (2) The orange plus (+) icon button in the bottom right the 'Available Tracks' widget can also be used to launch the 'Add a track' form." src="/img/add_track_tracklist.png" />
 
-In the "Add a track" form, you can provide a URL to a file to load, or you can
-also open files from your local machine. In some cases, you need to provide an
-index (bigwig files for example have no index, but BAM/CRAM or tabix filetypes
-like VCF/GFF/BED tabix do). In some cases we can automatically infer the index
-e.g. if you provide a URL for a BAM and the index filename is bamfilename
-+'.bai' but you may need to manually supply it in some cases (index inference
-can't be done with files from your local machine)
+In the "Add a track" form, you can provide a URL or open a file from your local
+machine. Some formats require an index (BAM/CRAM and tabix-indexed files like
+VCF/GFF/BED do; BigWig does not). For remote files, the index is inferred
+automatically when the filename follows standard conventions (e.g. `file.bam`
+→ `file.bam.bai`), but must be supplied manually for local files or
+non-standard names.
 
 ### File format support
 
@@ -123,12 +115,12 @@ The following file formats are supported in core JBrowse 2:
 - BGZip indexed FASTA
 - 2bit
 
-Additional data formats can be supported via plugins; checkout the
+Additional data formats can be supported via plugins; check out the
 [plugin store](/plugin_store).
 
 For tabix files, TBI or CSI indexes are allowed. CSI or BAI is allowed for BAM.
 Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files
-as filename+'.bai' for example, but if it is different than this, make sure to
+as filename+'.bai' for example, but if it is different from this, make sure to
 specify the index file explicitly.
 
 :::info Note
@@ -141,15 +133,13 @@ If you are an administrator, you can add tracks with the
 
 ### Undo and redo
 
-You can undo the closing of a view, track, or any other action in the UI with
-the Tools->Undo/Redo buttons. The keyboard shortcut "ctrl+z"/"cmd+z"(mac) work
-for undo as well as "ctrl+y"/"cmd+shift+z"(mac)
+You can undo any action via Tools → Undo/Redo, or with the keyboard shortcuts
+`ctrl+z`/`cmd+z` (undo) and `ctrl+y`/`cmd+shift+z` (redo).
 
 ### Sharing sessions
 
-On JBrowse Web, the main menu bar has a "Share" button to enable users to share
-their sessions with other people. The share button generates a URL that can be
-sent to other users.
+On JBrowse Web, the "Share" button in the main menu bar generates a URL you can
+send to other users.
 
 You **cannot** copy the URL in your address bar and send it to other users, you
 **must** use the "Share" button to share your session.
@@ -170,54 +160,48 @@ The session URL will contain the following:
 - extra tracks that you added with the "Add track workflow"
 - for the alignments track, the show soft clipping and sort settings on the
   pileup
-- ...and more!
+- ...and more
 
-This means you can share links with your custom tracks with other users, without
-being a JBrowse admin!
+This means you can share links with custom tracks without being a JBrowse admin.
 
 ### Track menu
 
-Users can access track-specific functions by using the track menu, which is
-accessible from the track selector itself ("..." icon) or on the track label
-(vertical "..."). Some functions are only available when the track is open e.g.
-from the track label, but more basic options like "About track" are available
-from the track menu on the track selector.
+The track menu (vertical "..." on the track selector or track label) provides
+access to track-specific functions. Some options are only available when the
+track is open (from the track label); basic options like "About track" are
+always available from the track selector.
 
-<Figure caption="Screenshot showing how to open the track menu (both in the track selector area and in the track label area of the linear genome view), and an example of a VCF track with it's track menu open" src="/img/track_menu.png" />
+<Figure caption="Screenshot showing how to open the track menu (both in the track selector area and in the track label area of the linear genome view), and an example of a VCF track with its track menu open" src="/img/track_menu.png" />
 
 ### Recently used and Favorite tracks
 
-Users can specify favorite tracks using the Track menu, and view them using the
-star icon button in the top right corner of the Available tracks widget.
+You can mark favorite tracks from the Track menu and view them using the star
+icon in the top right corner of the Available tracks widget.
 
 <Figure caption="Add a track to your list of favorite tracks from the Track menu, then view them in the top right menu." src="/img/favorite_tracks.png" />
 
-Tracks that have been recently opened will be automatically added to the list of
-recently used tracks, and can be viewed using the clock icon button in the top
-right corner of the Available tracks widget.
+Recently opened tracks are automatically added to the recently used list,
+viewable via the clock icon in the Available tracks widget.
 
 <Figure caption="Selected tracks will be added to a recently used list, then they can be viewed using the top right menu." src="/img/recent_tracks.png" />
 
 ### About track dialog
 
-Using the track menu as described above, you can access the "About track"
-dialog.
+The track menu provides access to the "About track" dialog.
 
 <Figure caption="Screenshot of the 'About track' dialog for a CRAM file, showing the full CRAM file header and config info. Having the full header of a BAM/CRAM file available is helpful to easily check what genome it was aligned to, for example." src="/img/about_track.png"/>
 
 ### Editing track configs
 
-As a non-admin user, in order to edit a track config, you have to make a copy of
-the track. This will copy it to your "session tracks", which you can edit
-freely.
+Non-admin users must copy a track before editing it. The copy is saved to your
+"session tracks", which you can modify freely.
 
 <Figure caption="Screenshot showing the procedure to copy the track before being able to edit the settings" src="/img/edit_track_settings.png" />
 
 ### Rubberband selection
 
-The scale bars accept a click-and-drag action to select a region. Rubberband
-selection can be performed on both the main (lower) and overview (upper) scale
-bars.
+Click and drag on either the main (lower) or overview (upper) scale bar to
+rubberband-select a region.
 
 <Figure caption="Screenshot of rubberbanding both the main and overview scalebars. The main scalebar produces extra options on selection, e.g. Zoom to region, Get sequence, etc.." src="/img/rubberband.png" />
 
@@ -231,19 +215,15 @@ hamburger menu for a specific view.
 
 ### Horizontally flip
 
-The view can be horizontally flipped, or reverse complemented, to make the
-coordinates go from right to left instead of left to right.
-
-We use triangles pointing in the direction of the orientation in the overview
-bar to help indicate whether the app is horizontally flipped or not.
-
-Here is an example of before and after horizontally flipping the view:
+The view can be horizontally flipped (reverse complemented), reversing the
+coordinate direction. Triangles in the overview bar indicate the current
+orientation.
 
 <Figure caption="Before and after horizontally flipping." src="/img/horizontally_flip.png" />
 
 ### Toggle drawer widget on left or right side of screen
 
-Using a drop-down menu in the header bar, you can toggle the drawer widget to
-the left or right side of the screen. It is on the right side by default
+The drawer widget can be toggled to the left or right side of the screen using
+the header bar dropdown. It appears on the right by default.
 
 <Figure caption="Toggling drawer widget to the left side of the screen" src="/img/drawer_widget_toggle.png" />

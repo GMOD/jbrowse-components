@@ -27,8 +27,8 @@ Our plugin store lists the URLs for unpkg URLs for these plugins
 https://jbrowse.org/jb2/plugin_store/. You can also download the plugin files
 from e.g. the unpkg URLs to your local server and serve them.
 
-There are several other ways to plugins in the config, that have particular ways
-of being resolved from your local server.
+There are several other ways to load plugins in the config, that have particular
+ways of being resolved from your local server.
 
 #### umdUrl
 
@@ -92,7 +92,7 @@ relative path in your root directory or an absolute URL to somewhere on the web.
 ```
 
 `esmLoc` is resolved relative to the config.json that is being loaded, so is
-helpful for storing the plugin.js in the same folder as your config. Note that
+helpful for storing the plugin.js in the same folder as your config.
 
 #### cjsUrl
 
