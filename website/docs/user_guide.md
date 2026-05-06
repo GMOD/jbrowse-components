@@ -42,3 +42,12 @@ title: Introduction - User guide
   genomic locations
 - [Plugin store](/docs/user_guides/plugin_store) - installing community plugins
 
+## Tutorials
+
+- [Structural variant visualization (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) -
+  end-to-end walkthrough with real cancer sequencing data
+- [Synteny and genome alignment](/docs/tutorials/synteny_visualization) -
+  comparing genome assemblies with dotplot and linear synteny views
+- [Analyzing a phased trio](/docs/tutorials/analyze_trio) -
+  inheritance patterns and variant phasing in a trio dataset
+

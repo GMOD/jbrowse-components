@@ -12,7 +12,7 @@ We recommend that you have the following:
 
 - A stable and recent version of [node](https://nodejs.org/en/)
 - Git
-- [Yarn](https://classic.yarnpkg.com/en/docs/install/debian-stable)
+- [pnpm](https://pnpm.io/installation)
 
 Then you can follow the steps from our
 [README](https://github.com/gmod/jbrowse-components).
@@ -22,20 +22,20 @@ It basically boils down to:
 ```bash
 git clone https://github.com/GMOD/jbrowse-components
 cd jbrowse-components
-yarn
+pnpm install
 cd products/jbrowse-web
-yarn start
+pnpm start
 ```
 
 This will boot up a development instance of `jbrowse-web` on port `3000`.
 
-You can use `PORT=8080 yarn start` to manually specify a different port.
+You can use `PORT=8080 pnpm start` to manually specify a different port.
 
 Alternatively, to boot up JBrowse Desktop, you can go to the
 `products/jbrowse-desktop` directory.
 
-For the embedded components e.g. `products/jbrowse-react-linear-genome-view`,
-use `yarn storybook` instead of `yarn start`.
+For the embedded components e.g. `products/jbrowse-react-linear-genome-view2`,
+use `pnpm storybook` instead of `pnpm start`.
 
 ## General
 

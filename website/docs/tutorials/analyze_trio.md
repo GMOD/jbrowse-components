@@ -3,7 +3,6 @@ id: analyze_trio
 title: Analyzing a phased trio
 description: Examine inheritance patterns and variant phasing in a trio dataset
 date: 2025-03-25
-slug: /tutorials/analyze_trio
 ---
 
 import Figure from '../figure'
@@ -143,16 +142,11 @@ and DAD A2 alleles come from the crossing over of his two copies of his
 chromosomes that he got from his parents, which then recombine into a single
 chromosome in his child
 
-## Footnote
+## Live demo
 
-The above procedure, particularly the final visualization with marked-up blocks,
-was done manually. It may be able to be improved in the future
+[Open this session](https://jbrowse.org/code/jb2/main/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-4gbEzsiqFe&password=Q2O2L)
+to explore the trio dataset described above.
 
-Author note: I found it quite wonderful to see this type of visualization. Feel
-free to let me know if I missed anything or if you have any other feedback
-
-Live link
-https://jbrowse.org/code/jb2/main/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-4gbEzsiqFe&password=Q2O2L
-
-Docs
-https://docs.google.com/presentation/d/1UqF7k4x6YJlBfSEQIMXY7HZCnSP3cUgm3kSyBkfaNY0/edit?usp=sharing
+Note: the final visualization with marked-up crossing-over blocks was produced
+manually in an image editor. Automated detection of crossing-over points is not
+currently built into JBrowse.

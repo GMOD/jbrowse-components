@@ -11,7 +11,7 @@ setup a session
 
 :::info note
 
-Note: that the embedded components like @jbrowse/react-linear-genome-view make
+Note: that the embedded components like @jbrowse/react-linear-genome-view2 make
 no assumptions on how URL parameters are used, so would have to be implemented
 by the consumer of the library
 
