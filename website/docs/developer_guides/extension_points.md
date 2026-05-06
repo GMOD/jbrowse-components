@@ -8,8 +8,6 @@ title: Extension points
 Extension points are a basic bit of logic that allows plugin developers to
 register a callback that can be called in some other part of the code
 
-## Adding to extension points
-
 ## Using extension points
 
 The basic API is that producers can say:
@@ -75,7 +73,10 @@ it runs a chain of callbacks that are registered to that extension point:
 ### Registration API
 
 ```typescript
-pluginManager.addToExtensionPoint(extensionPointName, callback => newArgs)
+pluginManager.addToExtensionPoint(extensionPointName, args => {
+  /* do something */
+  return newArgs // returned value is passed as args to the next registered callback
+})
 ```
 
 The addToExtensionPoint API will create a new one if it does not already exist,
@@ -91,14 +92,14 @@ Here are the extension points in the core codebase:
 
 ### Core-extendPluggableElement
 
-- `args` - `pluggableElement:PluggableElement` - this
-- `props` - none
-
 type: synchronous
 
-used to add extra functionality to e.g state tree models, for example, extra
-right-click context menus. your callback will receive every pluggable element
-registered to the system
+- `args` - `PluggableElement` - the pluggable element being installed
+- `props` - none
+
+Used to add extra functionality to e.g. state tree models, for example extra
+right-click context menus. Your callback receives every pluggable element
+registered to the system.
 
 https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/dotplot-view/src/extensionPoints.ts#L9-L43
 
@@ -131,8 +132,7 @@ type: synchronous
 
 used to extend the session model itself with new features
 
-- `args` - `AbstractSessionModel` - instance of the session model to customize
-  the about dialog
+- `args` - `AbstractSessionModel` - instance of the session model
 
 ### Core-replaceAbout
 
@@ -167,7 +167,7 @@ pluginManager.addToExtensionPoint(
 
 type: synchronous
 
-adds option to provide a different component for the "About this track" dialog
+adds an extra panel to the "About this track" dialog
 
 ```typescript
 interface props {
@@ -499,9 +499,9 @@ https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6
 
 type: async
 
-launches a sv inspector with given parameters. it is not common to extend this
-extension point, but you can use it as an example to create a LaunchView type
-for your own view
+launches a spreadsheet view with given parameters. it is not common to extend
+this extension point, but you can use it as an example to create a LaunchView
+type for your own view
 
 - `args` - an object with the following format
 

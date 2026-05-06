@@ -163,7 +163,7 @@ export default class MyPlugin {
       const content = React.createElement(
         'p',
         null,
-        `Diesh, Colin, et al. "JBrowse 2: A modular genome browser with views of synteny and structural variation. bioRxiv. 2022.`,
+        'Diesh, Colin, et al. "JBrowse 2: A modular genome browser with views of synteny and structural variation." bioRxiv. 2022.',
       )
 
       return React.createElement('div', null, [header, content])
@@ -194,9 +194,7 @@ export default class MyPlugin {
         label: 'Cite this JBrowse session',
         onClick: session => {
           // upon clicking on this menu item, we need to add and show our new widget
-          const widget = session.addWidget('CiteWidget', 'citeWidget', {
-            view: self,
-          })
+          const widget = session.addWidget('CiteWidget', 'citeWidget', {})
           session.showWidget(widget)
         },
       })
@@ -235,24 +233,16 @@ Congratulations! You built and ran a single file no-build plugin in JBrowse.
 Have some questions? [Contact us](/contact) through our various communication
 channels.
 
-## Footnote 1: JSX syntax
+## Note: JSX syntax
 
-You can see from the above that writing React code is a little cumbersome as JSX
-syntax is not really supported in the no build plugins since JSX generally
-requires a build step.
+Writing React code without JSX is more verbose since JSX requires a build step.
+If your plugin has dependencies or you prefer TypeScript, use the
+[plugin template](https://github.com/GMOD/jbrowse-plugin-template) which
+includes a build step, bundler, and type checking.
 
-If you are writing module code or writing a plugin that has dependencies, you
-can try our https://github.com/GMOD/jbrowse-plugin-template which has a build
-step, bundler, and type checking with typescript
+## Note: UMD vs ESM module syntax
 
-## Footnote 2: UMD vs ESM module syntax
-
-This guide was updated in 2024 to use "ESM" modules which export a simple class
-in response to browsers increased support of importing pure ESM modules.
-However, for maximum legacy browser compatibility, you can also use "UMD"
-modules also
-
-For an example of UMD, see
-https://github.com/GMOD/jbrowse-components/blob/76ce3660c9192f071d23e2478c756fff42ec533a/test_data/volvox/umd_plugin.js#L1-L127
-(it uses a function that defines a specific global variable rather than
-exporting a class)
+This guide uses ESM modules (exporting a plain class), which all modern browsers
+support. For legacy browser compatibility you can also use UMD modules — see
+[this example](https://github.com/GMOD/jbrowse-components/blob/76ce3660c9192f071d23e2478c756fff42ec533a/test_data/volvox/umd_plugin.js#L1-L127),
+which defines a specific global variable rather than exporting a class.

@@ -95,12 +95,17 @@ express all that logic may be hard. Instead, you can make a small plugin which
 adds a function to the jexl language, and call that function in your jexl
 callback.
 
-For example, create a file named "myplugin.js" (see also Footnote 1)
+For example, create a file named "myplugin.js":
 
-Note: the example below uses the IIFE/`umdLoc` format for the plugin file. If
-you are using `esmLoc`, use an ES6 `export default class MyPlugin` instead (see
+:::note
+
+The example below uses the IIFE/`umdLoc` format. If you are using `esmLoc`, use
+`export default class MyPlugin` instead (see
 [customizing feature colors](/docs/config_guides/customizing_feature_colors) for
-that pattern).
+that pattern). `myplugin.js` does not need the jbrowse-plugin-template as long
+as it is self-contained and does not import other modules.
+
+:::
 
 ```js
 // myplugin.js
@@ -167,19 +172,9 @@ use the custom `jexl` function in your config callbacks as follows:
 }
 ```
 
-The feature in the callback is a "SimpleFeature" type object, and you can call
+The feature in the callback is a "SimpleFeature" type object; you can call
 `feature.get('start')`, `feature.get('end')`, `feature.get('refName')`, or
-`feature.get('other_attribute')` for e.g. maybe a field in a GFF3 column 9
+`feature.get('other_attribute')` for e.g. a field in a GFF3 column 9.
 
-Footnote 0. See
-[our no-build plugin tutorial](/docs/developer_guides/no_build_plugin/) for more
-info on setting up a simple plugin for doing these customizations.
-
-Footnote 1. `myplugin.js` does not have to use the jbrowse-plugin-template if it
-is small and self contained like this, and does not import other modules. if you
-import other modules from your plugin, then it can be worth it to use the
-jbrowse-plugin-template.
-
-Footnote 2. if you are using embedded, there are also other methods of including
-plugins, see
-https://jbrowse.org/storybook/lgv/main/?path=/story/using-plugins--page
+See the [no-build plugin tutorial](/docs/developer_guides/no_build_plugin/) for
+a full walkthrough of setting up a plugin like this.

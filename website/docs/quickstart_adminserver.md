@@ -1,26 +1,26 @@
 ---
 id: quickstart_adminserver
-title: JBrowse web setup using the Admin server GUI
-toplevel: true
+title: Admin server GUI (experimental)
 ---
 
 import Figure from './figure'
+
+:::caution
+
+The admin server GUI is not actively tested and may not reflect the current
+state of the application. For a more reliable setup, use the
+[JBrowse CLI quickstart](/docs/quickstart_web/) instead.
+
+:::
 
 In order to display your data, JBrowse 2 needs to know about the reference
 genome for your organism of interest and needs to have tracks created that
 reference your data sources. This guide will show you how to set those up using
 JBrowse 2's graphical configuration editing.
 
-:::note
-
-You can also do this configuration with JBrowse CLI. See
-[here](/docs/quickstart_web/).
-
-:::
-
 ## Pre-requisites
 
-This tutorial requires having the following software installed
+This tutorial requires the following software
 
 - [JBrowse CLI](/docs/quickstart_web/#installing-the-jbrowse-cli)
 
@@ -34,8 +34,8 @@ file.
 
 :::warning
 
-Note The `admin-server` is meant to be used temporarily for configuration, **not
-in production.**
+The `admin-server` is meant to be used temporarily for configuration, **not in
+production.**
 
 :::
 

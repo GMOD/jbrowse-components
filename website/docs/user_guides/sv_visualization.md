@@ -1,6 +1,8 @@
 ---
 id: sv_visualization
 title: Structural variant visualization
+description: Interpreting SV signals across display types
+guide_category: Views
 ---
 
 import Figure from '../figure'
@@ -19,7 +21,7 @@ alignments features.
 For an end-to-end walkthrough that loads a real cancer dataset (HG008 tumor and
 normal PacBio HiFi reads plus the C-GIAB benchmark SV/CNV call sets) and
 exercises each of the views described below, see
-[Visualizing structural variants from the Cancer Genome in a Bottle](/docs/tutorials/sv_visualization_cgiab).
+[Cancer Genome in a Bottle (SVs)](/docs/tutorials/sv_visualization_cgiab).
 
 ## SV signals in the alignments track
 
@@ -67,11 +69,11 @@ mates on a different chromosome are dark grey.
 **In the read arc and linked reads displays** (Track menu → Color scheme), the
 Insert size ± 3σ option uses threshold-based coloring:
 
-| Pattern                               | Color  | Notes                                  |
-| ------------------------------------- | ------ | -------------------------------------- |
-| Insert larger than expected (&gt;3σ)  | red    | suggests a deletion spanning the pair  |
-| Insert smaller than expected (&lt;3σ) | pink   | suggests an insertion between the pair |
-| Mate on a different chromosome        | purple | suggests an inter-chromosomal event    |
+| Pattern                                    | Color  | Notes                                  |
+| ------------------------------------------ | ------ | -------------------------------------- |
+| Insert > mean + 3σ (larger than expected)  | red    | suggests a deletion spanning the pair  |
+| Insert < mean − 3σ (smaller than expected) | pink   | suggests an insertion between the pair |
+| Mate on a different chromosome             | purple | suggests an inter-chromosomal event    |
 
 **Insert size ± 3σ and orientation** combines both signals and is often the most
 informative setting for a general SV scan.
@@ -87,7 +89,9 @@ is a useful companion reference.
 ### Deletion
 
 - Soft-clipped reads at two nearby positions mark the breakpoint edges
-- A coverage drop between those positions is a classic deletion signal
+- A coverage drop between those positions is a classic deletion signal;
+  heterozygous deletions typically show only a ~50% reduction rather than a
+  complete drop
 - Paired reads flanking the gap colored **red** (larger insert than expected)
   suggest a deletion spanning the pair
 - In the read arc display, unusually long arcs point to a deletion

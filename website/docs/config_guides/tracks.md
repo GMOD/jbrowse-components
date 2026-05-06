@@ -41,3 +41,12 @@ paths on desktop).
   ]
 }
 ```
+
+A reduced form is also accepted:
+
+```json
+{
+  "type": "BigBedAdapter",
+  "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
+}
+```

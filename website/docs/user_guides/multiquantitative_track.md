@@ -1,6 +1,8 @@
 ---
 id: multiquantitative_track
 title: Multi-quantitative tracks
+description: Multiple signal tracks displayed together
+guide_category: Track types
 ---
 
 import Figure from '../figure'
@@ -25,10 +27,10 @@ track colors are not modified. For the overlapping (xyplot, multiline), the
 tracks will be autoassigned a color from the palette. You can manually customize
 the subtrack colors from the track menu as well.
 
-<Figure caption="The color/arrangement editor for multi-quantitative tracks let's you change individual subtrack colors, or their ordering in the row based layouts." src="/img/multiwig/multi_colorselect.png" />
+<Figure caption="The color/arrangement editor for multi-quantitative tracks lets you change individual subtrack colors, or their ordering in the row based layouts." src="/img/multiwig/multi_colorselect.png" />
 
 Oftentimes, one of the outliers on one of the subtracks may affect the
-Y-scalebar too much, so it is often helpful to use the "Autoscale type->Local
+Y-scalebar too much, so it is often helpful to use the "Autoscale type → Local
 +/- 3SD" setting (3 standard deviations are displayed). Manually configuring the
 min or max scores is available via the track menu also.
 
@@ -45,4 +47,4 @@ There are several ways to create multi-quantitative tracks from scratch.
    for more info)
 
 <Figure caption="Using the add track widget, you can use the select dropdown to access alternative 'add track workflows' including the multi-wiggle add track workflow. In the multiwiggle add track workflow, you can paste a list of bigWig file URLs, or open up multiple bigwig files from your computer." src="/img/multiwig/addtrack.png" />
-<Figure caption="Using the track selector, you can add multiple tracks to your current selection. You can use the '...' dropdown menu to add a single track or a whole category of tracks to your selection. Then, the 'shopping cart' icon in the header of the add track widget let's you create a multi-wiggle track from your selection." src="/img/multiwig/trackselector.png" />
+<Figure caption="Using the track selector, you can add multiple tracks to your current selection. You can use the '...' dropdown menu to add a single track or a whole category of tracks to your selection. Then, the 'shopping cart' icon in the header of the add track widget lets you create a multi-wiggle track from your selection." src="/img/multiwig/trackselector.png" />

@@ -1,6 +1,8 @@
 ---
 id: quantitative_track
 title: Quantitative tracks
+description: BigWig/BedGraph signal tracks
+guide_category: Track types
 ---
 
 import Figure from '../figure'
@@ -23,11 +25,11 @@ coverage visualization:
 1. Open your BigWig track
 2. Go to the view menu and select "Show all assembly regions"
 3. Adjust the "Autoscale type" to your liking, the new options for "Local +/-
-   3sd" allows the autoscaling to avoid outliers
+   3SD" allows the autoscaling to avoid outliers
 4. Go to the track menu and select "Turn off histogram fill", which then shows
    only a dot for each point on the graph
-5. Go to the track menu and select "Resolution->Finer resolution" a couple times
-   until resolution looks nice
+5. Go to the track menu and select "Resolution → Finer resolution" a couple
+   times until resolution looks nice
 
 :::info Note
 

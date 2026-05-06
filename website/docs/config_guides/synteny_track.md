@@ -51,7 +51,7 @@ minimap2. It can be used for SyntenyTracks:
 Slots
 
 - `pafLocation` - the location of the PAF file. The pafLocation can refer to a
-  gzip'ed or plaintext delta file. It will be read into memory entirely as it is
+  gzip'ed or plaintext PAF file. It will be read into memory entirely as it is
   not an indexed file format.
 - `assemblyNames` - list of assembly names, typically two (first in list is
   target assembly, second is query assembly)
@@ -59,6 +59,16 @@ Slots
   query
 - `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
   target
+
+A reduced form is also accepted:
+
+```json
+{
+  "type": "PAFAdapter",
+  "uri": "file.paf.gz",
+  "assemblyNames": ["YJM1447", "R64"]
+}
+```
 
 ### DeltaAdapter config
 
@@ -87,10 +97,20 @@ Slots
 - `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
   target
 
+A reduced form is also accepted:
+
+```json
+{
+  "type": "DeltaAdapter",
+  "uri": "yourfile.delta.gz",
+  "assemblyNames": ["YJM1447", "R64"]
+}
+```
+
 ### ChainAdapter config
 
-The ChainAdapter is used to load .chain files from MUMmer/nucmer. It can be used
-for SyntenyTracks:
+The ChainAdapter is used to load .chain files in the UCSC chain format. It can
+be used for SyntenyTracks:
 
 ```json
 {
@@ -105,7 +125,7 @@ for SyntenyTracks:
 Slots
 
 - `chainLocation` - the location of the UCSC chain file. The chainLocation can
-  refer to a gzip'ed or unzipped delta file. It will be read into memory
+  refer to a gzip'ed or unzipped chain file. It will be read into memory
   entirely as it is not an indexed file format.
 - `assemblyNames` - list of assembly names, typically two (first in list is
   target assembly, second is query assembly)
@@ -113,6 +133,16 @@ Slots
   query
 - `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
   target
+
+A reduced form is also accepted:
+
+```json
+{
+  "type": "ChainAdapter",
+  "uri": "yourfile.chain.gz",
+  "assemblyNames": ["YJM1447", "R64"]
+}
+```
 
 ### MCScanAnchorsAdapter
 
@@ -154,6 +184,18 @@ Slots:
   whole. This would refer to the gene names on the "right" side of the .anchors
   file.
 
+A reduced form is also accepted using `uri`, `bed1`, and `bed2`:
+
+```json
+{
+  "type": "MCScanAnchorsAdapter",
+  "uri": "file.anchors.gz",
+  "bed1": "grape.bed.gz",
+  "bed2": "peach.bed.gz",
+  "assemblyNames": ["grape", "peach"]
+}
+```
+
 ### MCScanSimpleAnchorsAdapter
 
 The "simple" .anchors.simple file from MCScan refers to pairs of homologous
@@ -194,3 +236,15 @@ Slots:
   MCScan workflow. It can be gzipped or ungzipped, and is read into memory
   whole. This would refer to the gene names on the "right" side of the .anchors
   file.
+
+A reduced form is also accepted using `uri`, `bed1`, and `bed2`:
+
+```json
+{
+  "type": "MCScanSimpleAnchorsAdapter",
+  "uri": "file.anchors.simple.gz",
+  "bed1": "grape.bed.gz",
+  "bed2": "peach.bed.gz",
+  "assemblyNames": ["grape", "peach"]
+}
+```

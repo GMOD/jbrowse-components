@@ -27,6 +27,7 @@ Example QuantitativeTrack config:
 
 - `scaleType` - options: linear, log, to display the coverage data. Default:
   linear
+- `autoscale` - options: local, global, localsd, globalsd. Default: local
 - `adapter` - an adapter that returns numeric score data, e.g.
   feature.get('score')
 
@@ -34,9 +35,9 @@ Example QuantitativeTrack config:
 
 Options for autoscale:
 
-- `local` - min/max values of what is visible on the screen
+- `local` - min/max values of what is visible on the screen (default)
 - `global` - min/max values in the entire dataset
-- `localsd` - mean value +- N stddevs of what is visible on screen
+- `localsd` - mean value +/- N stddevs of what is visible on screen
 - `globalsd` - mean value +/- N stddevs of everything in the dataset
 
 #### Score min/max for QuantitativeTrack
@@ -79,4 +80,10 @@ Example BigWig adapter config:
     "locationType": "UriLocation"
   }
 }
+```
+
+A reduced form is also accepted:
+
+```json
+{ "type": "BigWigAdapter", "uri": "http://yourhost/file.bw" }
 ```

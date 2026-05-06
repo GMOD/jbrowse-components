@@ -37,8 +37,10 @@ but most of them do.
 You can follow this guide for developing plugins, but you might also want to
 refer to working versions of plugins on the web now.
 
-This repo contains a template for creating new plugins
-https://github.com/GMOD/jbrowse-plugin-template.
+This repo contains a template for creating new plugins:
+https://github.com/GMOD/jbrowse-plugin-template. There is also a lightweight
+alternative based on esbuild:
+https://github.com/GMOD/jbrowse-plugin-esbuild-template.
 
 Here are some examples of working plugins:
 

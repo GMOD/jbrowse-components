@@ -75,7 +75,7 @@ export default class MyPlugin {
   install() {}
   configure(pluginManager) {
     pluginManager.jexl.addFunction('formatName', feature => {
-      return `<a href="${feature.name}">${feature.name}</a>`
+      return `<a href="https://google.com/?q=${feature.name}">${feature.name}</a>`
     })
   }
 }

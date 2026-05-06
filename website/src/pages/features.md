@@ -81,3 +81,6 @@ allow [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
 
 [^2] See
 [`@jbrowse/react-linear-genome-view` on npm](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
+
+[^3] See the full list of
+[embedded components](https://jbrowse.org/jb2/docs/embedded_components/)

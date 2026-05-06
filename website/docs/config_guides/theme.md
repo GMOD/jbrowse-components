@@ -126,9 +126,11 @@ options:
 
 ```json
 {
-  "theme": {
-    "typography": { "fontSize": 10 },
-    "spacing": 2
+  "configuration": {
+    "theme": {
+      "typography": { "fontSize": 10 },
+      "spacing": 2
+    }
   }
 }
 ```

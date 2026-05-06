@@ -11,7 +11,7 @@ setup a session
 
 :::info note
 
-Note: that the embedded components like @jbrowse/react-linear-genome-view make
+Note: that the embedded components like @jbrowse/react-linear-genome-view2 make
 no assumptions on how URL parameters are used, so would have to be implemented
 by the consumer of the library
 
@@ -26,7 +26,7 @@ Example
 
 `http://host/jbrowse2/?config=test_data/config.json&loc=chr1:6000-7000&assembly=hg19&tracks=gene_track,vcf_track`
 
-Here is a list the allowed query parameters in jbrowse-web
+Here is a list of the allowed query parameters in jbrowse-web
 
 ### ?config=
 
@@ -85,9 +85,9 @@ This will create a highlight over the specified region when combined with
 [&assembly=](#assembly) and [&loc=](#loc).
 
 Multiple highlight locations can be specified by delimiting locations with a
-space:
+space (URL-encoded as `%20`):
 
-`&highlight=chr1:6000-7000 chr1:7100-7200`
+`&highlight=chr1:6000-7000%20chr1:7100-7200`
 
 ### &tracklist=
 
@@ -131,7 +131,7 @@ https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&loc=ctgA:
 
 [Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&loc=ctgA:1-800&assembly=volvox&tracks=gff3tabix_genes,volvox_filtered_vcf,volvox_microarray,volvox_cram,url_track&sessionTracks=[{"type":"FeatureTrack","trackId":"url_track","name":"URL%20track","assemblyNames":["volvox"],"adapter":{"type":"FromConfigAdapter","features":[{"uniqueId":"one","refName":"ctgA","start":100,"end":200,"name":"Boris"}]}}])
 
-This creates a track dynamically that has a single feature at `chr1:100-200`
+This creates a track dynamically that has a single feature at `ctgA:100-200`
 
 The data to supply to `&sessionTracks=` is an array of track configs, and in the
 above URL, looks like this when pretty-printed
@@ -149,8 +149,8 @@ above URL, looks like this when pretty-printed
         {
           "uniqueId": "one",
           "refName": "ctgA",
-          "start": 190,
-          "end": 191,
+          "start": 100,
+          "end": 200,
           "name": "Boris"
         }
       ]
@@ -661,10 +661,6 @@ The `layout` parameter:
 
 ## Other session options
 
-Another useful session URL is called a "session spec" or "session
-specification". This provides a way to launch multiple views at once, including
-view types other than the linear genome view
-
 ### &session=json-
 
 Similar to encoded sessions, but more readable, `&session=json-` type sessions
@@ -702,9 +698,11 @@ The local sessions look like this
 
 https://host/jbrowse2/?session=local-Fjphq8kjY
 
-By default, after a session is loaded, it is stored into localStorage, and then
-the URL bar uses the ?session=local- format to reflect the key of the
-localStorage entry.
+By default, after a session is loaded, it is stored into sessionStorage and
+IndexedDB, and then the URL bar uses the ?session=local- format to reflect the
+session ID. Pasting the URL in the same browser tab restores from
+sessionStorage; pasting it into a new tab on the same machine restores from
+IndexedDB.
 
 ### &session=share-
 

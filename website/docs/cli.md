@@ -1,5 +1,5 @@
 ---
-title: Command line tools
+title: Command line tools (JBrowse CLI)
 id: cli
 toplevel: true
 ---

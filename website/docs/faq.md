@@ -12,7 +12,7 @@ We recommend that you have the following:
 
 - A stable and recent version of [node](https://nodejs.org/en/)
 - Git
-- [Yarn](https://classic.yarnpkg.com/en/docs/install/debian-stable)
+- [pnpm](https://pnpm.io/installation)
 
 Then you can follow the steps from our
 [README](https://github.com/gmod/jbrowse-components).
@@ -22,20 +22,20 @@ It basically boils down to:
 ```bash
 git clone https://github.com/GMOD/jbrowse-components
 cd jbrowse-components
-yarn
+pnpm install
 cd products/jbrowse-web
-yarn start
+pnpm start
 ```
 
 This will boot up a development instance of `jbrowse-web` on port `3000`.
 
-You can use `PORT=8080 yarn start` to manually specify a different port.
+You can use `PORT=8080 pnpm start` to manually specify a different port.
 
 Alternatively, to boot up JBrowse Desktop, you can go to the
 `products/jbrowse-desktop` directory.
 
 For the embedded components e.g. `products/jbrowse-react-linear-genome-view`,
-use `yarn storybook` instead of `yarn start`.
+use `pnpm storybook` instead of `pnpm start`.
 
 ## General
 
@@ -50,7 +50,8 @@ be built upon.
 
 ### What are new features in JBrowse 2
 
-See the https://jbrowse.org/jb2/features page for an overview of features
+See the [features page](https://jbrowse.org/jb2/features) for an overview of
+features
 
 ## Setup
 
@@ -60,7 +61,7 @@ JBrowse 2 by itself is just a set of JS, CSS, and HTML files that can be
 statically hosted on a web server without any backend services running.
 
 Therefore, running JBrowse 2 generally involves just copying the JBrowse 2
-folder to your web server HTML folder e.g. copy `/var/www/html/` to Amazon S3.
+folder to your web server HTML folder (e.g., `/var/www/html/`) or to Amazon S3.
 
 If you use a different platform, such as Django, you may want to put jbrowse-web
 in the static resources folder, but note that data files are not properly served
@@ -459,10 +460,10 @@ GENEID002  ey  Pax6
 Then this will generate a new file, the .ix file, sorted in alphabetical order:
 
 ```
-ey  GENE002
-signalling  GENE001
-Pax6  GENE002
-Wnt  GENE001
+ey  GENEID002
+Pax6  GENEID002
+signalling  GENEID001
+Wnt  GENEID001
 ```
 
 Then a second file, the `.ixx` file, tells us at what byte offset certain lines
@@ -481,20 +482,21 @@ an encoded format.
 ### Why can't I copy and paste my URL bar to share it with another user
 
 In JBrowse Web, the current session can become too long to store in the URL bar,
-so instead, we store it in localStorage and only keep the key to the
-localStorage entry in the URL var. This is because otherwise URLs can get
-prohibitively long, and break server side navigations, intermediate caches, etc.
-Therefore, we make "sharing a session" a manual step that generates a shortened
-URL by default.
+so instead, we store it in sessionStorage and IndexedDB and only keep the
+session ID in the URL. This is because otherwise URLs can get prohibitively
+long, and break server side navigations, intermediate caches, etc. Therefore, we
+make "sharing a session" a manual step that generates a shortened URL by
+default.
 
 Note 1: users of @jbrowse/react-linear-genome-view2 have to re-implement any URL
 query param logic themselves, as this component makes no attempt to access URL
 query params.
 
-Note 2: You can copy and paste your URL bar and put it in another tab on your
-own computer, and JBrowse will restore the session using IndexedDB
+Note 2: You can copy and paste your URL bar into another tab on your own
+computer, and JBrowse will restore the session from sessionStorage (same tab) or
+IndexedDB (new tab). Sessions stored this way are not accessible to other users.
 
-### How does the session sharing work with shortened URLs work in JBrowse Web
+### How does session sharing with shortened URLs work in JBrowse Web
 
 We have a central database hosted at AWS dynamoDB that stores encrypted session
 snapshots that users create when they use the "Share" button. The "Share" button

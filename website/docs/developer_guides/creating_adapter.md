@@ -35,8 +35,8 @@ with your adapter.
   and [.2bit](https://genome.ucsc.edu/FAQ/FAQformat.html#format7) file formats.
 - **RefName alias adapter** - This type of adapter is used to return data about
   aliases for reference sequence names, for example to define that "chr1" is an
-  alias for "1". An example of this in JBrowse is an adapter for (alias
-  [files](http://software.broadinstitute.org/software/igv/LoadData/#aliasfile)
+  alias for "1". An example of this in JBrowse is an adapter for
+  [alias files](http://software.broadinstitute.org/software/igv/LoadData/#aliasfile).
 - **Text search adapter** - This type of adapter is used to search through text
   search indexes. Returns list of search results. An example of this in JBrowse
   is the trix text search adapter.
@@ -68,7 +68,7 @@ class MyAdapter extends BaseFeatureDataAdapter {
     //    start:number, 0-based half open start coord
     //    end:number, 0-based half open end coord
     //    assemblyName:string, assembly name
-    //    originalRefName:string the name of the refName from the fasta file, e.g. 1 instead of chr1
+    //    originalRefName:string the refName before alias mapping, e.g. 1 instead of chr1
     // }
     // opts: {
     //   stopToken?: string
@@ -115,7 +115,7 @@ class MyAdapter extends BaseFeatureDataAdapter {
       try {
         const { refName, start, end } = region
         const response = await fetch(
-          'http://myservice/genes/${refName}/${start}-${end}',
+          `http://myservice/genes/${refName}/${start}-${end}`,
           options,
         )
         if (response.ok) {
@@ -144,7 +144,7 @@ class MyAdapter extends BaseFeatureDataAdapter {
     // returns the list of refseq names in the file, used for refseq renaming
     // you can hardcode this if you know it ahead of time e.g. for your own
     // remote data API or fetch this from your data file e.g. from the bam header
-    return ['chr1', 'chr2', 'chr3'] /// etc
+    return ['chr1', 'chr2', 'chr3'] // etc
   }
 
   freeResources(region) {
@@ -189,10 +189,10 @@ is used to query a specific assembly if your adapter responds to multiple
 assemblies, e.g. for a synteny data file or a REST API that queries a backend
 with multiple assemblies.
 
-The `originalRefName` are also passed, where `originalRefName` is the queried
-refname before ref renaming e.g. in BamAdapter, if the BAM file uses chr1, and
-your reference genome file uses 1, then originalRefName will be 1 and refName
-will be chr1.
+The `originalRefName` field is also passed, where `originalRefName` is the
+queried refname before ref renaming e.g. in BamAdapter, if the BAM file uses
+chr1, and your reference genome file uses 1, then originalRefName will be 1 and
+refName will be chr1.
 
 The options parameter to getFeatures can contain any number of things:
 
@@ -200,7 +200,6 @@ The options parameter to getFeatures can contain any number of things:
 interface Options {
   bpPerPx: number
   stopToken?: string
-  statusCallback: Function
   headers: Record<string, string>
 }
 ```
@@ -209,24 +208,13 @@ interface Options {
   fetched
 - `stopToken` - can be used to abort a fetch request when it is no longer
   needed, from AbortController
-- `statusCallback` - not implemented yet but in the future may allow you to
-  report the status of your loading operations
 - `headers` - set of HTTP headers as a JSON object
 - anything from the `renderProps` of the display model type gets passed to the
   getFeatures opts
 
-We return an rxjs `Observable` from `getFeatures`. This is similar to a JBrowse
-1 getFeatures call, where we pass each feature to a `featureCallback`, tell it
-when we are done with `finishCallback`, and send errors to `errorCallback`,
-except we do all those things with the `Observable`
-
-Here is a "conversion" of JBrowse-1-style `getFeatures` callbacks to JBrowse 2
-observable calls
-
-- `featureCallback(new SimpleFeature(...))` ->
-  `observer.next(new SimpleFeature(...))`
-- `finishCallback()` -> `observer.complete()`
-- `errorCallback(error)` -> `observer.error(error)`
+We return an rxjs `Observable` from `getFeatures`. Each feature is emitted with
+`observer.next(new SimpleFeature(...))`, completion with `observer.complete()`,
+and errors with `observer.error(error)`.
 
 #### freeResources
 

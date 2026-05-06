@@ -7,10 +7,9 @@ import Figure from '../figure'
 
 ### What is a renderer
 
-In JBrowse 1, a track type typically would directly call the data parser and do
-its own rendering. In JBrowse 2, the data parsing and rendering is offloaded to
-a web-worker or other RPC. This allows things to be faster in many cases. This
-is conceptually related to "server side rendering" or SSR in React terms.
+In JBrowse 1, a track type would directly call the data parser and do its own
+rendering. In JBrowse 2, data parsing and rendering is offloaded to a web worker
+via RPC, which keeps the main thread responsive.
 
 <Figure src="/img/renderer.png" caption="Conceptual diagram of how a track calls a renderer using the RPC"/>
 
@@ -36,7 +35,7 @@ class MyRenderer implements ServerSideRendererType {
     const canvas = createCanvas(width, height)
     const ctx = canvas.getContext('2d')
     ctx.fillStyle = 'red'
-    ctx.drawRect(0, 0, 100, 100)
+    ctx.fillRect(0, 0, 100, 100)
     const imageData = createImageBitmap(canvas)
     return {
       reactElement: React.createElement(this.ReactComponent, { ...props }),
@@ -55,8 +54,8 @@ contain the output.
 
 :::info
 
-The above canvas operations use an `OffscreenCanvas` for Chrome, or in other
-browsers serialize the drawing commands to be drawn in the main thread.
+The above canvas operations use an `OffscreenCanvas`, which is supported in all
+modern browsers.
 
 :::
 
@@ -160,15 +159,17 @@ Then, we have our Rendering component just be plain React code. This is a highly
 simplified SVG renderer just to illustrate:
 
 ```jsx
+import { bpSpanPx } from '@jbrowse/core/util'
+
 export default function SvgFeatureRendering(props) {
-  const { width, features, regions, layout, bpPerPx } = props
+  const { width, config, features, regions, layout, bpPerPx } = props
   const region = regions[0]!
 
   const feats = Array.from(features.values())
-  const height = readConfObject(config, 'height', { feature })
   return (
     <svg>
       {feats.map(feature => {
+        const height = readConfObject(config, 'height', { feature })
         // our layout determines at what y-coordinate to
         // plot our feature, given all the other features
         const top = layout.addRect(
@@ -212,8 +213,8 @@ the renderer's `getFeatures` call.
 
 The base `ServerSideRendererType` class has a built-in `getFeatures` function
 that, in turn, calls your adapter's `getFeatures` function, but if you need
-tighter control over how your adapter's `getFeatures` method is called, then
-your renderer.
+tighter control over how your adapter's `getFeatures` method is called, you can
+override `getFeatures` in your renderer class.
 
 The Hi-C renderer type does not operate on conventional features and instead
 works with contact matrices, so the Hi-C renderer has a custom `getFeatures`

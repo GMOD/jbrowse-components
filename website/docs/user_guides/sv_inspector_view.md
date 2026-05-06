@@ -1,21 +1,23 @@
 ---
 id: sv_inspector_view
 title: SV inspector view
+description: Structural variant spreadsheet and circular view
+guide_category: Views
 ---
 
 import Figure from '../figure'
 
-The Structural Variant (SV) inspector is a "workflow" that is designed to help
-users inspect structural variant calls.
+The SV inspector is a combined variant table and whole-genome circular view for
+triaging structural variant calls.
 
 For an end-to-end walkthrough using real cancer sequencing data, see the
 [C-GIAB tutorial](/docs/tutorials/sv_visualization_cgiab).
 
-We can start the SV inspector by launching it from the App level menu bar
+Launch it from the main menu bar:
 
 <Figure caption="The SV inspector can be launched from the main menu bar." src="/img/sv_inspector_begin.png" />
 
-This will bring up an "import form" that asks you for your SV evidence.
+An import form will appear asking for your SV data.
 
 The following formats are supported:
 
@@ -31,8 +33,7 @@ The following formats are supported:
 The SV inspector currently is designed for viewing `<TRA>` and breakend type
 entries.
 
-Examples of variant callers that produce a VCF that can be used with the SV
-inspector:
+Compatible variant callers:
 
 Short read based:
 
@@ -47,9 +48,9 @@ Long read based
 
 ### Example SV inspector workflow
 
-We can start the SV inspector workflow by opening up this file containing
-translocation events called from a breast cancer cell line SKBR3, based on
-[these published data](http://schatz-lab.org/publications/SKBR3/).
+As an example, load this file of translocation events called from the SKBR3
+breast cancer cell line
+([published data](https://schatz-lab.org/publications/SKBR3/)).
 
 ### Example VCF for use in the SV inspector
 
@@ -61,24 +62,18 @@ Copy this URL and paste it into the import form and select hg19:
 
 ### SV inspector results
 
-After loading the user's requested file, you will have a tabular view with each
-row representing a row of the file you opened, along with a whole-genome
-overview of the SVs on the right
+The loaded file appears as a searchable table with each row representing one
+variant, alongside a whole-genome circular overview.
 
 <Figure caption="The SV inspector with loaded results." src="/img/sv_inspector_importform_loaded.png" />
 
-We can search and filter the table, with filtering and searching being reflected
-in the circular view as well.
+Table filters are reflected in the circular view.
 
 <Figure caption="The SV inspector with filter applied." src="/img/sv_inspector_importform_filtered.png" />
 
 ### Launching breakpoint split view
 
-By clicking on the features in the circular view, or clicking on the triangle
-drop-down on the leftmost column of the table, we can dynamically launch a new
-view of the data that is called the "split view" or the "breakpoint split view"
-
-This allows us to inspect the breakpoints of the structural variant, and compare
-each side to the alignments.
+Click a feature in the circular view, or the triangle dropdown on any table row,
+to open the breakpoint split view for that variant.
 
 <Figure caption="Screenshot of the 'breakpoint split view' which examines the breakpoints of a structural variant, e.g. an interchromosomal translocation, and connects supporting reads (black splines) and the variant call itself (green thicker line, with feet indicating directionality)." src="/img/breakpoint_split_view.png" />
