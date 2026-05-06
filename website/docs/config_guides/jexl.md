@@ -99,8 +99,8 @@ For example, create a file named "myplugin.js":
 
 :::note
 
-The example below uses the IIFE/`umdLoc` format. If you are using `esmLoc`,
-use `export default class MyPlugin` instead (see
+The example below uses the IIFE/`umdLoc` format. If you are using `esmLoc`, use
+`export default class MyPlugin` instead (see
 [customizing feature colors](/docs/config_guides/customizing_feature_colors) for
 that pattern). `myplugin.js` does not need the jbrowse-plugin-template as long
 as it is self-contained and does not import other modules.

@@ -17,11 +17,11 @@ existing menus and sub-menus. Sub-menus can be arbitrarily deep.
 
 You add menus in the `configure` method of your plugin. Not all JBrowse products
 will have top-level menus, though. JBrowse Web and JBrowse Desktop have them,
-but something like JBrowse Linear View (which is just a single view designed
-to be embedded in another page) does not. This means you need to check whether
-or not menus are supported using `isAbstractMenuManager` in the `configure`
-method. This way the rest of the plugin will still work if there is not a menu.
-Here's an example that adds an "Open My View" item to the `Add` menu.
+but something like JBrowse Linear View (which is just a single view designed to
+be embedded in another page) does not. This means you need to check whether or
+not menus are supported using `isAbstractMenuManager` in the `configure` method.
+This way the rest of the plugin will still work if there is not a menu. Here's
+an example that adds an "Open My View" item to the `Add` menu.
 
 ```js
 import Plugin from '@jbrowse/core/Plugin'
@@ -51,13 +51,9 @@ class MyPlugin extends Plugin {
 
 ### Adding track menu items
 
-If you create a custom track, you can populate the track menu items in it using
-the `trackMenuItems` property in the track model. For example:
-
-If you'd prefer to append your track menu items onto menu items available from
-the base display, you can grab the `trackMenuItems` property from the extended
-model and redefine trackMenuItems with your new Menu Item appended at the end,
-like so:
+If you create a custom track, you can populate the track menu items using the
+`trackMenuItems` view on the track model. To append items to menu items from the
+base display, grab `trackMenuItems` from the extended model and redefine it:
 
 ```js
 types
@@ -65,12 +61,12 @@ types
     // model
   })
   .views(self => {
+    // capture before the new view is defined — accessing self.trackMenuItems
+    // inside the getter would recurse infinitely
     const { trackMenuItems: superTrackMenuItems } = self
     return {
       get trackMenuItems() {
         return [
-          // calling superTrackMenuItems retains the menu items from the base
-          // model
           ...superTrackMenuItems(),
           {
             label: 'Menu Item',
@@ -163,7 +159,7 @@ Types of `MenuItem`s:
 | type     | Options are 'normal', 'radio', 'checkbox', 'subMenu', 'subHeader', or 'divider'. If not provided, defaults to 'normal', unless a `subMenu` attribute is present, in which case it defaults to 'subMenu'. |
 | label    | The text for the menu item. Not applicable to 'divider', required for all others.                                                                                                                        |
 | subLabel | Additional descriptive text for the menu item. Not applicable to 'divider' or 'subHeader', optional for all others.                                                                                      |
-| icon     | An icon for the menu item. Must be compatible with Material-UI's [Icons](https://material-ui.com/components/icons/). Not applicable to 'divider' or 'subHeader', optional for all others.                |
+| icon     | An icon for the menu item. Must be compatible with [MUI Icons](https://mui.com/material-ui/material-ui-icons/). Not applicable to 'divider' or 'subHeader', optional for all others.                     |
 | disabled | Whether or not the menu item is disabled (meaning grayed out and not clickable). Not applicable to 'divider' or 'subHeader', optional for all others.                                                    |
 | checked  | Whether or not the checkbox or radio button are selected. Only applicable to 'radio' and 'checkbox'                                                                                                      |
 | onClick  | Callback of action to perform on click. Function signature is `(session) => undefined`. Required for 'normal', 'radio', and 'checkbox', not applicable to any others.                                    |
@@ -289,10 +285,10 @@ Insert a menu item into a top-level menu
 
 ##### Parameters
 
-| Name     | Description                                                                                                                                      |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| menuName | Name of the top-level menu to insert into.                                                                                                                    |
-| menuItem | Menu item to insert.                                                                                                                                          |
+| Name     | Description                                                                                                                                                  |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| menuName | Name of the top-level menu to insert into.                                                                                                                   |
+| menuItem | Menu item to insert.                                                                                                                                         |
 | position | Position to insert menu item. If negative, counts from the end, e.g. `insertInMenu('My Menu', menuItem, -1)` will insert the item as the second-to-last one. |
 
 ##### Return Value
@@ -320,10 +316,10 @@ Insert a menu item into a sub-menu
 
 ##### Parameters
 
-| Name     | Description                                                                                                                                      |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| menuPath | Path to the sub-menu to add to, starting with the top-level menu (e.g. `['File', 'Insert']`).                                                                              |
-| menuItem | Menu item to insert.                                                                                                                                                        |
+| Name     | Description                                                                                                                                                              |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| menuPath | Path to the sub-menu to add to, starting with the top-level menu (e.g. `['File', 'Insert']`).                                                                            |
+| menuItem | Menu item to insert.                                                                                                                                                     |
 | position | Position to insert menu item. If negative, counts from the end, e.g. `insertInSubMenu(['File', 'Insert'], menuItem, -1)` will insert the item as the second-to-last one. |
 
 ##### Return value

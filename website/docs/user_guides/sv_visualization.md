@@ -69,11 +69,11 @@ mates on a different chromosome are dark grey.
 **In the read arc and linked reads displays** (Track menu → Color scheme), the
 Insert size ± 3σ option uses threshold-based coloring:
 
-| Pattern                               | Color  | Notes                                  |
-| ------------------------------------- | ------ | -------------------------------------- |
+| Pattern                                    | Color  | Notes                                  |
+| ------------------------------------------ | ------ | -------------------------------------- |
 | Insert > mean + 3σ (larger than expected)  | red    | suggests a deletion spanning the pair  |
 | Insert < mean − 3σ (smaller than expected) | pink   | suggests an insertion between the pair |
-| Mate on a different chromosome        | purple | suggests an inter-chromosomal event    |
+| Mate on a different chromosome             | purple | suggests an inter-chromosomal event    |
 
 **Insert size ± 3σ and orientation** combines both signals and is often the most
 informative setting for a general SV scan.

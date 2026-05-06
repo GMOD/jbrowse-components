@@ -36,5 +36,5 @@ interested in adjusting these default parameters [let us know](/contact/).
 Clicking on other types of features will have the "Feature sequence" button in
 the feature details widget, but will not automatically "stitch" together
 subfeature sequences, instead just giving the literal sequence underlying a
-feature. You can also configure the number of flanking bases upstream and
-downstream to display with the gear icon
+feature. You can configure the number of flanking bases to include using the
+gear icon.

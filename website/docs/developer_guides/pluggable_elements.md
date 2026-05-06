@@ -12,14 +12,15 @@ It's implemented as a class that extends `@jbrowse/core/Plugin`. It gets
 instantiated by the application that it plugs into, and it has a `install`
 method and a `configure` method that the application calls.
 
-This class is distributed as a webpack bundle that exports it to a namespace on
-the browser's `window` object specifically for JBrowse plugins. **This means it
-is only possible to have one version of a particular plugin loaded on any given
-webpage, even if multiple products are loaded and using it on the same page.**
+This class is distributed as an ESM module (or UMD bundle for legacy
+compatibility) that gets loaded by the JBrowse application at runtime. **This
+means it is only possible to have one version of a particular plugin loaded on
+any given webpage, even if multiple products are loaded and using it on the same
+page.**
 
 It's common for a plugin to use its `configure` method to set up
-[mobx autoruns](https://mobx.js.org/refguide/autorun.html) that react to
-changes in the application's state to modify its behavior.
+[mobx autoruns](https://mobx.js.org/refguide/autorun.html) that react to changes
+in the application's state to modify its behavior.
 
 Plugins often also have their `install` method add "pluggable elements" into the
 host JBrowse application. This is how plugins can add new kinds of views,
@@ -53,8 +54,8 @@ Examples of pluggable types include:
 - Text search adapter types
 - Add track workflow
 
-In addition to creating plugins that create new adapters, track types, etc.
-note that you can also wrap the behavior of another track, so these elements are
+In addition to creating plugins that create new adapters, track types, etc. note
+that you can also wrap the behavior of another track, so these elements are
 composable.
 
 For example, we can have adapters that perform calculations on the results of
@@ -111,8 +112,8 @@ like:
 
 Example tracks:
 
-- `AlignmentsTrack` (from `@jbrowse/plugin-alignments`) - shows both a pileup
-  of reads and the coverage as a quantitative track
+- `AlignmentsTrack` (from `@jbrowse/plugin-alignments`) - shows both a pileup of
+  reads and the coverage as a quantitative track
 - `VariantTrack` (from `@jbrowse/plugin-variants`) - displays variant features
 - `FeatureTrack` (from `@jbrowse/plugin-gff3`) - displays generic features
   including gene glyphs

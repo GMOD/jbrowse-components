@@ -7,10 +7,9 @@ import Figure from '../figure'
 
 ### What is a renderer
 
-In JBrowse 1, a track type typically would directly call the data parser and do
-its own rendering. In JBrowse 2, the data parsing and rendering is offloaded to
-a web-worker or other RPC. This allows things to be faster in many cases. This
-is conceptually related to "server side rendering" or SSR in React terms.
+In JBrowse 1, a track type would directly call the data parser and do its own
+rendering. In JBrowse 2, data parsing and rendering is offloaded to a web worker
+via RPC, which keeps the main thread responsive.
 
 <Figure src="/img/renderer.png" caption="Conceptual diagram of how a track calls a renderer using the RPC"/>
 
@@ -55,8 +54,8 @@ contain the output.
 
 :::info
 
-The above canvas operations use an `OffscreenCanvas` for Chrome, or in other
-browsers serialize the drawing commands to be drawn in the main thread.
+The above canvas operations use an `OffscreenCanvas`, which is supported in all
+modern browsers.
 
 :::
 
@@ -160,6 +159,8 @@ Then, we have our Rendering component just be plain React code. This is a highly
 simplified SVG renderer just to illustrate:
 
 ```jsx
+import { bpSpanPx } from '@jbrowse/core/util'
+
 export default function SvgFeatureRendering(props) {
   const { width, config, features, regions, layout, bpPerPx } = props
   const region = regions[0]!

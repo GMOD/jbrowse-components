@@ -12,9 +12,9 @@ exploring evolutionary relationships between organisms.
 
 The tutorial covers two main workflows: using the dotplot view for an
 interactive overview of chromosome-scale alignments, and using the linear
-synteny view for base-level inspection of aligned regions. Both views operate
-on PAF (Pairwise mApping Format) or similar alignment data, which you can
-generate with tools like [minimap2](https://github.com/lh3/minimap2) or
+synteny view for base-level inspection of aligned regions. Both views operate on
+PAF (Pairwise mApping Format) or similar alignment data, which you can generate
+with tools like [minimap2](https://github.com/lh3/minimap2) or
 [nucmer](http://mummer.sourceforge.net/).
 
 For general background on synteny views and a worked example with tumor and
@@ -30,7 +30,8 @@ This tutorial assumes you already have a JBrowse 2 instance running (see the
 - A whole-genome alignment in PAF format
 - The [jbrowse CLI](/docs/cli) to add the alignment to your config
 
-To generate a PAF alignment yourself, install [minimap2](https://github.com/lh3/minimap2):
+To generate a PAF alignment yourself, install
+[minimap2](https://github.com/lh3/minimap2):
 
 ```bash
 # Align two genomes with minimap2
@@ -38,8 +39,8 @@ minimap2 -x asm5 reference.fa query.fa > alignment.paf
 ```
 
 The `-x asm5` preset is appropriate for whole-genome assembly-to-assembly
-comparison. For other comparisons (e.g., long-read to reference), use `-x map-ont`,
-`-x map-pb`, or `-x sr` as appropriate.
+comparison. For other comparisons (e.g., long-read to reference), use
+`-x map-ont`, `-x map-pb`, or `-x sr` as appropriate.
 
 ## Loading assemblies and alignments
 
@@ -59,8 +60,8 @@ jbrowse add-track alignment.paf -a query,reference --out $OUT --load copy
 ```
 
 **Important:** The order of assemblies in `-a query,reference` matters. It
-should match the order in which you ran minimap2: `minimap2 reference.fa
-query.fa` corresponds to `add-track -a query,reference`.
+should match the order in which you ran minimap2:
+`minimap2 reference.fa query.fa` corresponds to `add-track -a query,reference`.
 
 ## Dotplot view
 
@@ -81,6 +82,7 @@ Click **Open dotplot** to visualize the alignment.
 ### Reading the dotplot
 
 In the resulting plot:
+
 - **Diagonal lines** (slope ≈ 1) represent collinear aligned regions.
 - **Off-diagonal lines** indicate rearrangements: inversions, translocations, or
   duplications.
@@ -143,11 +145,11 @@ primate species, or tumor vs. normal genomes.
 
 ## Troubleshooting
 
-| Problem                                           | Possible cause                                      | Solution                                                                              |
-| ------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| The dotplot or synteny view is blank             | Assemblies or track names don't match              | Verify assembly names match your `jbrowse add-assembly` and `add-track -a` commands   |
-| Lines don't appear, or appear scattered randomly | The PAF was generated with wrong parameters        | Try re-running minimap2 with `-x asm5` for assembly comparison                       |
-| Alignments are reversed or flipped                | The PAF was generated in the opposite direction    | Try swapping the order of input genomes: `minimap2 query.fa reference.fa`             |
+| Problem                                          | Possible cause                                  | Solution                                                                            |
+| ------------------------------------------------ | ----------------------------------------------- | ----------------------------------------------------------------------------------- |
+| The dotplot or synteny view is blank             | Assemblies or track names don't match           | Verify assembly names match your `jbrowse add-assembly` and `add-track -a` commands |
+| Lines don't appear, or appear scattered randomly | The PAF was generated with wrong parameters     | Try re-running minimap2 with `-x asm5` for assembly comparison                      |
+| Alignments are reversed or flipped               | The PAF was generated in the opposite direction | Try swapping the order of input genomes: `minimap2 query.fa reference.fa`           |
 
 ## Next steps
 

@@ -9,7 +9,7 @@ Example Hi-C track config:
 {
   "type": "HicTrack",
   "trackId": "hic",
-  "name": "Hic Track",
+  "name": "HiC Track",
   "assemblyNames": ["hg19"],
   "adapter": {
     "type": "HicAdapter",
@@ -35,13 +35,23 @@ The HicAdapter currently only requires a `hicLocation`:
 }
 ```
 
+A reduced form is also accepted:
+
+```json
+{
+  "type": "HicAdapter",
+  "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
+}
+```
+
 #### HicRenderer config
 
-- `baseColor` - the default baseColor of the Hi-C plot is red #f00, you can
-  change it to blue, so then the shading will be done in blue with #00f
-- `color` - this is a color callback that adapts the current Hi-C contact
-  feature with the baseColor to generate a shaded block. The default color
-  callback function is
-  `jexl:baseColor.alpha(Math.min(1,count/(maxScore/20))).hsl().string()` where
-  it receives the count for a particular block, the maxScore over the region,
-  and the baseColor from the baseColor config
+- `baseColor` - the base color of the Hi-C plot (default `#f00`). Change to e.g.
+  `#00f` for blue shading
+- `color` - a color callback that maps a contact count to a rendered color. The
+  default is `jexl:interpolate(count,scale)`, where `count` is the contact count
+  for the block, `maxScore` is the maximum count in the current view,
+  `baseColor` is the configured base color, and `scale` is a pre-built
+  interpolator from white to `baseColor` (see
+  [configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/HicRenderer/configSchema.ts)
+  for the current defaults)

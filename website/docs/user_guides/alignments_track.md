@@ -25,12 +25,12 @@ have a T where the reference has A, half the histogram height is colored.
 
 ### Show soft clipping
 
-Aligners clip terminal bases that cannot be incorporated into an alignment:
-hard clipping discards them from the BAM record; soft clipping retains them in
-the BAM sequence (marked 'S' in the CIGAR) but excludes them from the
-alignment. JBrowse does not render soft-clipped bases by default, but enabling
-"Show soft clipping" (Pileup settings menu) can reveal signal around structural
-variants and difficult mappability regions.
+Aligners clip terminal bases that cannot be incorporated into an alignment: hard
+clipping discards them from the BAM record; soft clipping retains them in the
+BAM sequence (marked 'S' in the CIGAR) but excludes them from the alignment.
+JBrowse does not render soft-clipped bases by default, but enabling "Show soft
+clipping" (Pileup settings menu) can reveal signal around structural variants
+and difficult mappability regions.
 
 <Figure caption="The soft clipping option is a toggle in the 'Pileup settings' menu." src="/img/alignments_soft_clipped_menu.png" />
 <Figure caption="Shows what turning on soft-clipping enables for a simulated long-read dataset. There is a simulated structural variant, a deletion, at this position, so the read has bases that map to the other side of the deletion being revealed by this." src="/img/alignments_soft_clipped.png" />
@@ -61,7 +61,7 @@ Sorts the pileup by the base each read has at the center line position. To
 enable:
 
 1. Open the track menu using the vertical '...' in the track label
-2. Select `Pileup settings`->`Sort by`->`Base pair`
+2. Select `Pileup settings` → `Sort by` → `Base pair`
 
 <Figure caption="Illustrating the pileup re-ordering that happens when turning on the 'Sort by'->'Base pair'. The sorting is done by specifically what letter of each read underlies the current center line position (the center line is 1bp wide, so sorted by that exact letter)" src="/img/alignments_sort_by_base.png" />
 
@@ -97,8 +97,8 @@ interpret each SV type, see the
 
 ### Sashimi-style arcs
 
-Spliced alignments (N in the CIGAR string) are drawn with sashimi-style arcs.
-If reads carry an XS tag, arcs reflect the strand of the alignment.
+Spliced alignments (N in the CIGAR string) are drawn with sashimi-style arcs. If
+reads carry an XS tag, arcs reflect the strand of the alignment.
 
 <Figure caption="Sashimi-style arcs that are automatically drawn from spliced alignments. These arcs will be drawn by default on both short-reads e.g. RNA-seq and long reads e.g. Iso-Seq." src="/img/alignments_track_arcs.png" />
 

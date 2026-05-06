@@ -243,12 +243,6 @@ Reading the sub-config schema is as follows
 const indexType = readConfObject(config, ['index', 'indexType'])
 ```
 
-Alternatively can use
-
-```js
-const indexConf = readConfObject(config, ['index'])
-indexConf.indexType
-```
-
-However, this may miss default values from the slot, the `readConfObject` has
-special logic to fill in the default value.
+Note: avoid accessing properties directly on the result of `readConfObject`
+(e.g. `readConfObject(config, ['index']).indexType`) as this bypasses the
+default value resolution logic.

@@ -34,7 +34,7 @@ You can use `PORT=8080 pnpm start` to manually specify a different port.
 Alternatively, to boot up JBrowse Desktop, you can go to the
 `products/jbrowse-desktop` directory.
 
-For the embedded components e.g. `products/jbrowse-react-linear-genome-view2`,
+For the embedded components e.g. `products/jbrowse-react-linear-genome-view`,
 use `pnpm storybook` instead of `pnpm start`.
 
 ## General
@@ -50,7 +50,8 @@ be built upon.
 
 ### What are new features in JBrowse 2
 
-See the https://jbrowse.org/jb2/features page for an overview of features
+See the [features page](https://jbrowse.org/jb2/features) for an overview of
+features
 
 ## Setup
 
@@ -484,7 +485,8 @@ In JBrowse Web, the current session can become too long to store in the URL bar,
 so instead, we store it in sessionStorage and IndexedDB and only keep the
 session ID in the URL. This is because otherwise URLs can get prohibitively
 long, and break server side navigations, intermediate caches, etc. Therefore, we
-make "sharing a session" a manual step that generates a shortened URL by default.
+make "sharing a session" a manual step that generates a shortened URL by
+default.
 
 Note 1: users of @jbrowse/react-linear-genome-view2 have to re-implement any URL
 query param logic themselves, as this component makes no attempt to access URL
@@ -494,7 +496,7 @@ Note 2: You can copy and paste your URL bar into another tab on your own
 computer, and JBrowse will restore the session from sessionStorage (same tab) or
 IndexedDB (new tab). Sessions stored this way are not accessible to other users.
 
-### How does the session sharing work with shortened URLs work in JBrowse Web
+### How does session sharing with shortened URLs work in JBrowse Web
 
 We have a central database hosted at AWS dynamoDB that stores encrypted session
 snapshots that users create when they use the "Share" button. The "Share" button

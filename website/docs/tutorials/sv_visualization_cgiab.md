@@ -1,7 +1,8 @@
 ---
 id: sv_visualization_cgiab
 title: Cancer Genome in a Bottle (SVs)
-description: Load and inspect structural variants from real cancer sequencing data
+description:
+  Load and inspect structural variants from real cancer sequencing data
 guide_category: Tutorials
 ---
 
@@ -253,9 +254,9 @@ the y-axis at, e.g., 300.
 
 <Figure caption="After applying a manual score limit of 300." src="/img/sv_cgiab/cnv_score_limit.png" />
 
-Switch **Fill mode → No fill** for a clearer line-style trace, zoom into a region
-of interest, and open the benchmark CNV BED track to check whether coverage
-changes line up with the called CNVs.
+Switch **Fill mode → No fill** for a clearer line-style trace, zoom into a
+region of interest, and open the benchmark CNV BED track to check whether
+coverage changes line up with the called CNVs.
 
 <Figure caption="After switching to no-fill mode, zooming into chromosome 5, and opening the benchmark CNV BED track — orange boxes mark individual CNVs and clicking them shows feature details." src="/img/sv_cgiab/cnv_with_bed_track.png" />
 
@@ -289,8 +290,8 @@ For more on these views, see the
 [dotplot view guide](/docs/user_guides/dotplot_view) and the
 [linear synteny view guide](/docs/user_guides/linear_synteny_view).
 
-See also: [Synteny and genome alignment](/docs/tutorials/synteny_visualization) —
-a complementary tutorial on comparing genome assemblies using the same views.
+See also: [Synteny and genome alignment](/docs/tutorials/synteny_visualization)
+— a complementary tutorial on comparing genome assemblies using the same views.
 
 ## Troubleshooting
 
@@ -319,9 +320,9 @@ Now that you've explored the C-GIAB HG008 dataset, you can:
 - **Use JBrowse Desktop** — all of these workflows work identically in JBrowse 2
   Desktop (Mac, Windows, Linux), which can load files from your local machine
   without needing a web server.
-- **Design a de novo assembly alignment** — if you have a phased or haplotype-resolved
-  assembly of your own sample, follow the minimap2 steps above to create a
-  dotplot and synteny view.
+- **Design a de novo assembly alignment** — if you have a phased or
+  haplotype-resolved assembly of your own sample, follow the minimap2 steps
+  above to create a dotplot and synteny view.
 
 For more on customizing JBrowse 2, see the
 [SV visualization guide](/docs/user_guides/sv_visualization).

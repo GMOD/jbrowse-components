@@ -60,6 +60,16 @@ Slots
 - `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
   target
 
+A reduced form is also accepted:
+
+```json
+{
+  "type": "PAFAdapter",
+  "uri": "file.paf.gz",
+  "assemblyNames": ["YJM1447", "R64"]
+}
+```
+
 ### DeltaAdapter config
 
 The DeltaAdapter is used to load .delta files from MUMmer/nucmer. It can be used
@@ -87,10 +97,20 @@ Slots
 - `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
   target
 
+A reduced form is also accepted:
+
+```json
+{
+  "type": "DeltaAdapter",
+  "uri": "yourfile.delta.gz",
+  "assemblyNames": ["YJM1447", "R64"]
+}
+```
+
 ### ChainAdapter config
 
-The ChainAdapter is used to load .chain files in the UCSC chain format. It can be used
-for SyntenyTracks:
+The ChainAdapter is used to load .chain files in the UCSC chain format. It can
+be used for SyntenyTracks:
 
 ```json
 {
@@ -113,6 +133,16 @@ Slots
   query
 - `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
   target
+
+A reduced form is also accepted:
+
+```json
+{
+  "type": "ChainAdapter",
+  "uri": "yourfile.chain.gz",
+  "assemblyNames": ["YJM1447", "R64"]
+}
+```
 
 ### MCScanAnchorsAdapter
 
@@ -154,6 +184,18 @@ Slots:
   whole. This would refer to the gene names on the "right" side of the .anchors
   file.
 
+A reduced form is also accepted using `uri`, `bed1`, and `bed2`:
+
+```json
+{
+  "type": "MCScanAnchorsAdapter",
+  "uri": "file.anchors.gz",
+  "bed1": "grape.bed.gz",
+  "bed2": "peach.bed.gz",
+  "assemblyNames": ["grape", "peach"]
+}
+```
+
 ### MCScanSimpleAnchorsAdapter
 
 The "simple" .anchors.simple file from MCScan refers to pairs of homologous
@@ -194,3 +236,15 @@ Slots:
   MCScan workflow. It can be gzipped or ungzipped, and is read into memory
   whole. This would refer to the gene names on the "right" side of the .anchors
   file.
+
+A reduced form is also accepted using `uri`, `bed1`, and `bed2`:
+
+```json
+{
+  "type": "MCScanSimpleAnchorsAdapter",
+  "uri": "file.anchors.simple.gz",
+  "bed1": "grape.bed.gz",
+  "bed2": "peach.bed.gz",
+  "assemblyNames": ["grape", "peach"]
+}
+```

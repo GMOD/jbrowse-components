@@ -29,7 +29,9 @@ First we're going to install and set up the project for development.
 ## Use git to clone the plugin template
 
 The easiest way to start developing your plugin for JBrowse 2 is to use the
-[plugin template](https://github.com/GMOD/jbrowse-plugin-template).
+[plugin template](https://github.com/GMOD/jbrowse-plugin-template). There is
+also a lightweight alternative based on esbuild:
+[jbrowse-plugin-esbuild-template](https://github.com/GMOD/jbrowse-plugin-esbuild-template).
 
 To clone the plugin template project, on the command line run:
 
@@ -175,55 +177,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
 }
 ```
 
-With [@jbrowse/mobx-state-tree](https://mobx-state-tree.js.org/), you can
-observe here we're defining the properties of our widget and some actions it can
-take.
+With [@jbrowse/mobx-state-tree](https://mobx-state-tree.js.org/), we're defining
+the properties of our widget and the actions (mutations) it can take. You can
+add any model properties you need — they're accessible in your React component
+via `model`.
 
-Within the `.model` method, we're defining that the model of our
-`CircularViewChordWidget` has an `id`, a `type`, and `featureData`. We can
-define whatever we want in here. For example, we could add a "widgetByline"
-string property, and be able to use it later in our React component.
-
-To add the new property and some functions:
-
-```ts
-// ...
-export function stateModelFactory(pluginManager: PluginManager) {
-  const stateModel = types
-    .model('CircularViewChordWidget', {
-      id: ElementId,
-      type: types.literal('CircularViewChordWidget'),
-      featureData: types.frozen({}),
-      widgetByline: 'Default widget byline', // NEW
-    })
-    .actions(self => ({
-      setFeatureData(data: any) {
-        self.featureData = data
-      },
-      clearFeatureData() {
-        self.featureData = {}
-      },
-      // NEW
-      setWidgetByline(byline: string) {
-        self.widgetByline = byline
-      },
-      // NEW
-      getWidgetByline() {
-        return self.widgetByline
-      },
-    }))
-
-  return stateModel
-}
-// ...
-```
-
-Within the `.actions` method, we're defining methods for the model. These can be
-far more complex than just accessors and mutators (anything you want really).
-
-If you have a particularly complex model, consider moving your component's model
-into a `model.ts`, and then exporting the stateModel from `index.ts` similar to
-how the ReactComponent is exported.
+If you have a particularly complex model, consider moving it into a separate
+`model.ts` and exporting it from `index.ts`, similar to how the ReactComponent
+is exported.
 
 ### A widget's ReactComponent
 
@@ -233,59 +194,19 @@ when we click the circular genome view chord.
 `CircularViewChordWidget.tsx`
 
 ```ts
-import  { useState } from 'react'
 import { observer } from 'mobx-react'
-
-const CircularViewChordWidget = observer(({ model }: { model: any }) => {
-  return (
-    <div></div>
-  )
-})
-
-export default CircularViewChordWidget
-```
-
-It's important to note the use of the mobx observer here: when making
-modifications to the model, you'll see those changes populated in your widget,
-thanks to the observer. We export the widget such that it can be seen by
-`CircularViewChordWidget/index.tsx`.
-
-We'll make our widget do something basic: display the chord's information and a
-message we can edit.
-
-```ts
-
-import { observer } from 'mobx-react'
-// JBrowse uses MUI where possible for basic components
-import { TextField } from '@mui/material'
-// @jbrowse/core also has some reusable components available
 import {
   FeatureDetails,
   BaseCard,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 
 const CircularViewChordWidget = observer(({ model }: { model: any }) => {
-  // these are two properties we have in our model
-  // widgetByline is going to start out as an empty string
-  // but featureData will be populated with the information from our chord;
-  // we'll talk about how that happens more later
-  const { featureData, widgetByline } = model
+  const { featureData } = model
   return (
     <div>
-      {/* features will always have a name, start, end, and id; they can
-      have additional information too */}
       <BaseCard title={featureData.name}>
-        {/* here we're just demonstrating using a basic property from the
-        model and updating it with observer */}
-        <h2>{widgetByline}</h2>
-        <p>Care to change the widget byline?</p>
-        <TextField
-          onChange={(e: any) => model.setWidgetByline(e.target.value)}
-        />
+        <FeatureDetails feature={featureData} model={model} />
       </BaseCard>
-      {/* the FeatureDetails component is a proprietary JBrowse component
-      for displaying feature details clearly */}
-      <FeatureDetails feature={featureData} model={model} />
     </div>
   )
 })
@@ -293,16 +214,16 @@ const CircularViewChordWidget = observer(({ model }: { model: any }) => {
 export default CircularViewChordWidget
 ```
 
-As noted in the codeblock, @jbrowse/core has some reusable UI components
-exported. If you see something proprietary in the application you'd like to
-reuse, investigate whether it's exported by @jbrowse/core, and if not
-[make a request](https://github.com/GMOD/jbrowse-components/discussions/new) for
-that component to be exported for use in your plugin.
+The `observer` wrapper from mobx-react ensures the component re-renders when
+model properties change. `@jbrowse/core` exports reusable components like
+`FeatureDetails` and `BaseCard` — if you find something in the app you'd like to
+reuse, check whether it's exported, and if not
+[make a request](https://github.com/GMOD/jbrowse-components/discussions/new).
 
 Now that we have our component built, we can install it into our plugin and test
 it out.
 
-## Install the plugin to JBrowse at runtime
+## Register pluggable elements with JBrowse
 
 The file `src/index.ts` exports your plugin and installs all the necessary
 components to JBrowse at runtime such that it runs properly.
@@ -540,7 +461,7 @@ If you shut your instance down, restart JBrowse and your plugin (`yarn browse`
 and `yarn start`).
 
 Navigate to
-[localhost:8999/?config=localhost:3000/jbrowse_config.json](localhost:8999/?config=localhost:3000/jbrowse_config.json)
+[localhost:8999/?config=localhost:9000/jbrowse_config.json](localhost:8999/?config=localhost:9000/jbrowse_config.json)
 or equivalent to see JBrowse running with your config.
 
 Now navigate:

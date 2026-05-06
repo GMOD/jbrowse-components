@@ -29,11 +29,9 @@ alleles)
 
 ## Multi-sample variant matrix display
 
-The "matrix" style display allows users to visualize "population VCF" or
-"multi-sample" VCFs in a way that puts all variants in a dense, matrix-style or
-heatmap style view
-
-This helps to show various patterns in the data that would be difficult to see
-if the variants were only plotted at their specific genomic position
+The matrix display shows multi-sample VCFs as a dense heatmap where each row is
+a sample and each column is a variant position. This makes genotype patterns —
+shared variants, population structure, runs of homozygosity — visible at a
+glance in ways that a per-position track cannot.
 
 <Figure caption="Example screenshot of looking at a deletion structural variant, with alignment evidence from a mom, dad, and child (trio). The first two samples (mother, child) have complete (homozygous) deletion in this region, while the father has a heterozygous deletion. The blue markers show 'soft clipping' at the boundaries of the deletion. The right panel shows all the samples, sorted by their genotype" src="/img/multi-sv-trio.png" />

@@ -81,3 +81,9 @@ Example BigWig adapter config:
   }
 }
 ```
+
+A reduced form is also accepted:
+
+```json
+{ "type": "BigWigAdapter", "uri": "http://yourhost/file.bw" }
+```

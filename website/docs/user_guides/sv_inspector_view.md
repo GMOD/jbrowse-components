@@ -49,7 +49,8 @@ Long read based
 ### Example SV inspector workflow
 
 As an example, load this file of translocation events called from the SKBR3
-breast cancer cell line ([published data](https://schatz-lab.org/publications/SKBR3/)).
+breast cancer cell line
+([published data](https://schatz-lab.org/publications/SKBR3/)).
 
 ### Example VCF for use in the SV inspector
 
@@ -72,7 +73,7 @@ Table filters are reflected in the circular view.
 
 ### Launching breakpoint split view
 
-Click a feature in the circular view, or the triangle dropdown on any table
-row, to open the breakpoint split view for that variant.
+Click a feature in the circular view, or the triangle dropdown on any table row,
+to open the breakpoint split view for that variant.
 
 <Figure caption="Screenshot of the 'breakpoint split view' which examines the breakpoints of a structural variant, e.g. an interchromosomal translocation, and connects supporting reads (black splines) and the variant call itself (green thicker line, with feet indicating directionality)." src="/img/breakpoint_split_view.png" />

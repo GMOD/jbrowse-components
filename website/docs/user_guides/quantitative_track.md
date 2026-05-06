@@ -28,8 +28,8 @@ coverage visualization:
    3SD" allows the autoscaling to avoid outliers
 4. Go to the track menu and select "Turn off histogram fill", which then shows
    only a dot for each point on the graph
-5. Go to the track menu and select "Resolution->Finer resolution" a couple times
-   until resolution looks nice
+5. Go to the track menu and select "Resolution → Finer resolution" a couple
+   times until resolution looks nice
 
 :::info Note
 

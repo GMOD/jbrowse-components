@@ -26,14 +26,14 @@ Welcome to the JBrowse 2 documentation.
 
 ## Tutorials
 
-- [Admin server](/docs/quickstart_adminserver) - configuring JBrowse via the
-  GUI with the admin-server tool
+- [Admin server](/docs/quickstart_adminserver) - configuring JBrowse via the GUI
+  with the admin-server tool
 - [Structural variant visualization (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) -
   end-to-end walkthrough with real cancer sequencing data
 - [Synteny and genome alignment](/docs/tutorials/synteny_visualization) -
   comparing genome assemblies with dotplot and linear synteny views
-- [Analyzing a phased trio](/docs/tutorials/analyze_trio) -
-  inheritance patterns and variant phasing in a trio dataset
+- [Analyzing a phased trio](/docs/tutorials/analyze_trio) - inheritance patterns
+  and variant phasing in a trio dataset
 
 ## Developers
 

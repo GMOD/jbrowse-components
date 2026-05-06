@@ -30,7 +30,7 @@ the subtrack colors from the track menu as well.
 <Figure caption="The color/arrangement editor for multi-quantitative tracks lets you change individual subtrack colors, or their ordering in the row based layouts." src="/img/multiwig/multi_colorselect.png" />
 
 Oftentimes, one of the outliers on one of the subtracks may affect the
-Y-scalebar too much, so it is often helpful to use the "Autoscale type->Local
+Y-scalebar too much, so it is often helpful to use the "Autoscale type → Local
 +/- 3SD" setting (3 standard deviations are displayed). Manually configuring the
 min or max scores is available via the track menu also.
 

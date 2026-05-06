@@ -15,16 +15,15 @@ import config from '../docusaurus.config.json'
   [NodeSource](https://github.com/nodesource) or
   [NVM](https://github.com/nvm-sh/nvm).
 - [Samtools](http://www.htslib.org/) installed e.g. `sudo apt install samtools`
-  or `brew install samtools`, used for creating FASTA index and BAM/CRAM
-  processing for creating tabix GFF
+  or `brew install samtools`, used for creating FASTA indexes and BAM/CRAM index
+  files
 - [tabix](http://www.htslib.org/doc/tabix.html) installed e.g.
   `sudo apt install tabix` or `brew install htslib`, used for creating tabix
   indexes for BED/VCF/GFF files
 
 ## Installing the JBrowse CLI
 
-The JBrowse CLI can perform many tasks to help you manage JBrowse 2, such
-as:
+The JBrowse CLI can perform many tasks to help you manage JBrowse 2, such as:
 
 - create a new instance of JBrowse 2 automatically
 - update an existing instance of JBrowse 2 with the latest released version
@@ -36,13 +35,11 @@ To globally install the JBrowse CLI, run
 npm install -g @jbrowse/cli
 ```
 
-After running this command you can then test the installation with
+Test the installation with:
 
 ```sh-session
 jbrowse --version
 ```
-
-which will output the current version of the JBrowse CLI.
 
 :::note
 
@@ -57,7 +54,7 @@ npx @jbrowse/cli --version
 
 :::
 
-Another way which involves downloading a single file bundle is to use
+Alternatively, download a single-file bundle:
 
 ```sh-session
 wget https://unpkg.com/@jbrowse/cli/bundle/index.js -O jbrowse
@@ -73,12 +70,10 @@ In the directory where you would like to download JBrowse 2, run
 jbrowse create jbrowse2
 ```
 
-This fetches the latest version of jbrowse-web and unzips it to a folder named
-"jbrowse2". You can name the folder anything you want to, it is just a folder
-containing html, css, and js files. It is not a fancy installation.
+This downloads and unzips jbrowse-web into a folder named "jbrowse2" (the name
+is arbitrary — it's just static html/css/js files).
 
-Also note: as an alternative to the jbrowse create command, you can manually
-download the jbrowse-web zip from
+Alternatively, you can download the zip manually from
 https://github.com/GMOD/jbrowse-components/releases
 
 ### Checking the download
@@ -102,12 +97,10 @@ jbrowse2/
 JBrowse 2 requires a web server to run. It won't work if you try to directly
 open the `index.html` in your web browser.
 
-Oftentimes, you may put the folder on a web server in the static html folder
-e.g. /var/www/html/jbrowse2/ once in place, you can then visit
-http://yourserver/jbrowse2
+Typically you place the folder in a web server's static directory (e.g.
+`/var/www/html/jbrowse2/`) and visit `http://yourserver/jbrowse2`.
 
-You could also use a simple server to check that JBrowse 2 has been downloaded
-properly. Run
+To quickly verify the download locally, run a development server:
 
 ```sh-session
 cd jbrowse2/
@@ -116,9 +109,7 @@ npx serve .
 npx serve -S . # if you want to refer to symlinked data later on
 ```
 
-which will start a web server in our JBrowse 2 directory.
-
-Navigate to the location specified in the CLI's output (likely
+Navigate to the location shown in the CLI output (likely
 `http://localhost:3000`).
 
 Your page should look something like this:
@@ -134,25 +125,18 @@ Congratulations! You're running JBrowse 2.
 
 ## Adding tracks
 
-Now that JBrowse 2 is set up, you can configure it with your own genomes and
-tracks.
-
 ### Adding a genome assembly in FASTA format
 
-The first step to creating a jbrowse config is to load a genome assembly. This
-is normally in FASTA format, and we will start by creating a "FASTA index" with
-`samtools`:
+The first step is to index your FASTA with samtools, then add the assembly:
 
 ```bash
 samtools faidx genome.fa
 jbrowse add-assembly genome.fa --load copy --out /var/www/html/jbrowse/
 ```
 
-This will output a configuration snippet to a file named
-/var/www/html/jbrowse/config.json if it does not already exist, or append a new
-assembly to that config file if it does exist. It will also copy genome.fa and
-genome.fa.fai to the /var/www/html/jbrowse/ folder because we used --load copy.
-If you wanted to symlink instead, you can use --load symlink
+This writes an assembly entry to `/var/www/html/jbrowse/config.json` (creating
+it if needed) and copies `genome.fa` and `genome.fa.fai` into that directory.
+Use `--load symlink` to symlink the files instead of copying.
 
 JBrowse 2 also supports other assembly file formats, including bgzip-compressed
 indexed FASTA, and 2bit files.
@@ -161,10 +145,6 @@ indexed FASTA, and 2bit files.
 
 ### Adding a BAM or CRAM track
 
-For this example, we will use a BAM file to add an alignments track. As with
-assemblies, you can add a track using local files or remote locations of your
-files.
-
 ```bash
 samtools index file.bam
 jbrowse add-track file.bam --load copy --out /var/www/html/jbrowse
@@ -172,26 +152,18 @@ samtools index file.cram
 jbrowse add-track file.cram --load copy --out /var/www/html/jbrowse
 ```
 
-This will add a track configuration entry to /var/www/html/jbrowse/config.json
-and copy the files into the folder as well. If you use --load symlink, it can
-symlink the files instead. To see more options for adding the track, such as
-specifying a name, run `jbrowse add-track --help`.
+This adds a track entry to `config.json` and copies the files. Use
+`--load symlink` to symlink instead. Run `jbrowse add-track --help` for more
+options.
 
-If you have JBrowse 2
-[running as described](/docs/quickstart_web/#running-jbrowse-2) in the JBrowse
-web quickstart, you can refresh the page and add a linear genome view of the
-volvox assembly. Then open the track selector, and you will see the alignments
-track.
+After adding a track, refresh the page, open a linear genome view, then open the
+track selector to see the new track.
 
 <Figure caption="JBrowse 2 linear genome view with alignments track" src="/img/volvox_alignments.png"/>
 
 ### Adding a VCF track
 
-Adding a variant track is similar to adding an alignments track. For this
-example, we will use a VCF file for the track. JBrowse 2 expects VCFs to be
-compressed with `bgzip` and `tabix` indexed.
-
-To add the track, run
+VCFs must be bgzip-compressed and tabix-indexed:
 
 ```bash
 bgzip file.vcf
@@ -201,8 +173,7 @@ jbrowse add-track file.vcf.gz --load copy --out /var/www/html/jbrowse
 
 :::note
 
-Note if you get errors about your VCF file not being sorted when using tabix,
-you can use bcftools to sort your VCF.
+If tabix reports that your VCF is not sorted, sort it first with bcftools:
 
 ```bash
 bcftools sort file.vcf > file.sorted.vcf
@@ -227,8 +198,7 @@ https://www.htslib.org/.
 
 ### Adding a BigWig/BigBed track
 
-Probably one of the most simple track types to load is a BigWig/BigBed file
-since it does not have any external index file, it is just a single file.
+BigWig/BigBed files require no external index, so loading is straightforward:
 
 ```bash
 jbrowse add-track file.bw --load copy --out /var/www/html/jbrowse
@@ -242,21 +212,16 @@ tabix yourfile.sorted.gff.gz
 jbrowse add-track yourfile.sorted.gff.gz --load copy
 ```
 
-Note: the `jbrowse sort-gff` command just automates the following shell command
+The `jbrowse sort-gff` command is equivalent to (from the
+[tabix documentation](http://www.htslib.org/doc/tabix.html)):
 
 ```bash
 (grep "^#" in.gff; grep -v "^#" in.gff | sort -t"`printf '\t'`" -k1,1 -k4,4n)  > sorted.gff;
 ```
 
-This command comes from the
-[tabix documentation](http://www.htslib.org/doc/tabix.html)
-
 ### Adding a synteny track from a PAF file
 
-Loading synteny data makes use of all the previous functions we've used so far
-in this guide.
-
-Here, we make use of the
+Here we use the
 [grape](https://s3.amazonaws.com/jbrowse.org/genomes/grape/Vvinifera_145_Genoscope.12X.fa.gz)
 and
 [peach](https://s3.amazonaws.com/jbrowse.org/genomes/peach/Ppersica_298_v2.0.fa.gz)
@@ -293,32 +258,30 @@ jbrowse add-track peach_vs_grape.paf --assemblyNames peach,grape --load copy --o
 
 ## Indexing feature names for searching
 
-The final step of loading your JBrowse instance may include adding a "search
-index" so that you can search by genes or other features by their name or ID.
-
-To do this we can use the `jbrowse text-index` command:
+Optionally, build a text index so users can search by gene name or feature ID:
 
 ```bash
 jbrowse text-index --out /var/www/html/jbrowse
 ```
 
-This will index relevant track types e.g. any track with Gff3TabixAdapter (gene
-names and IDs) or VcfTabixAdapter (e.g. variant IDs). The command will print out
-a progress bar for each track that it is indexing.
-
-This will also update your `config.json` so that after it completes, you can
-type a gene name into the "search box" in the linear genome view or other views
-and quickly navigate to genes by gene name.
+This indexes Gff3Tabix tracks (gene names/IDs) and VcfTabix tracks (variant
+IDs), printing a progress bar per track. Once complete, gene names can be typed
+directly into the LGV search box.
 
 See the [text-index](/docs/cli#jbrowse-text-index) command docs for more info.
 Also see the [FAQ entries for text searching](/docs/faq#text-searching)
 
 ## Conclusion
 
-Now that you have JBrowse configured with an assembly and a couple of tracks,
-you can start customizing it further. Check out the rest of the docs for more
-information, especially the [JBrowse CLI](/docs/cli) docs for more details on
-some of the steps shown here.
+With an assembly and tracks configured, you're ready to explore your data.
+Useful next steps:
+
+- [User guide](/docs/user_guide) — navigating views, track types, and UI
+  features
+- [Config guide](/docs/config_guide) — advanced track and assembly configuration
+- [JBrowse CLI reference](/docs/cli) — full reference for all CLI commands used
+  here
+- [FAQ](/docs/faq) — common questions including text searching and CORS issues
 
 ## Miscellaneous tips
 
@@ -339,8 +302,8 @@ You can upgrade your JBrowse release to the latest version with:
 jbrowse upgrade
 ```
 
-The above command downloads the latest jbrowse-web from github and unzips it
-into the current directory
+This downloads the latest jbrowse-web release and unzips it into the current
+directory.
 
 ### Upgrade @jbrowse/cli to the latest
 

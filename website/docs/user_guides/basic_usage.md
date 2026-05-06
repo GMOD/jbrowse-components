@@ -9,7 +9,7 @@ import Figure from '../figure'
 
 ### Linear genome view
 
-To open a linear genome view (LGV), use the menu bar: `Add` ->
+To open a linear genome view (LGV), use the menu bar: `Add` →
 `Linear genome view`
 
 #### Scrolling
@@ -36,8 +36,8 @@ six vertical dots) to reorder tracks.
 
 #### Re-ordering views
 
-Unlike tracks, views cannot be reordered by drag-and-drop. Instead, use the
-view menu (hamburger icon) and select "Move up"/"Move down".
+Unlike tracks, views cannot be reordered by drag-and-drop. Instead, use the view
+menu (hamburger icon) and select "Move up"/"Move down".
 
 #### Using the location search box
 
@@ -47,8 +47,8 @@ The location search box at the top of the LGV accepts several search formats:
 - Assembly, region, and location, e.g. `{hg19}chr1:1-100`
 - Discontinuous regions (space-delimited, opened side-by-side), e.g.
   `chr1:1..100 chr2:1..100`
-- Any of the above with `\[rev\]` appended to horizontally flip the region,
-  e.g. `chr1:1-100\[rev\]`
+- Any of the above with `\[rev\]` appended to horizontally flip the region, e.g.
+  `chr1:1-100\[rev\]`
 - Gene name or feature keyword (if a text index is configured), e.g. `BRCA1`
 
 To enable name searching, you or the instance admin will need to create a text
@@ -60,7 +60,7 @@ for more information.
 
 ### Opening tracks
 
-To open a new track or connection, use the menu bar: `File` -> `Open track...`
+To open a new track or connection, use the menu bar: `File` → `Open track...`
 
 <Figure caption="After opening the menu item for 'Open track..' a drawer widget for the 'Add a track' form will appear" src="/img/add_track_form.png" />
 
@@ -76,9 +76,9 @@ that can also be used to access the "Add a track" form.
 In the "Add a track" form, you can provide a URL or open a file from your local
 machine. Some formats require an index (BAM/CRAM and tabix-indexed files like
 VCF/GFF/BED do; BigWig does not). For remote files, the index is inferred
-automatically when the filename follows standard conventions (e.g. `file.bam`
-→ `file.bam.bai`), but must be supplied manually for local files or
-non-standard names.
+automatically when the filename follows standard conventions (e.g. `file.bam` →
+`file.bam.bai`), but must be supplied manually for local files or non-standard
+names.
 
 ### File format support
 
@@ -120,7 +120,7 @@ Additional data formats can be supported via plugins; check out the
 
 For tabix files, TBI or CSI indexes are allowed. CSI or BAI is allowed for BAM.
 Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files
-as filename+'.bai' for example, but if it is different from this, make sure to
+as `filename+'.bai'` for example, but if it is different from this, make sure to
 specify the index file explicitly.
 
 :::info Note
@@ -227,3 +227,20 @@ The drawer widget can be toggled to the left or right side of the screen using
 the header bar dropdown. It appears on the right by default.
 
 <Figure caption="Toggling drawer widget to the left side of the screen" src="/img/drawer_widget_toggle.png" />
+
+### Faceted track selector
+
+The faceted track selector shows all tracks as a filterable table. Open it via
+the filter icon in the top right of the "Available tracks" widget.
+
+Tracks with `metadata` fields in their config get extra filterable columns:
+
+```json
+{
+  "trackId": "my_track",
+  "name": "My Track",
+  "metadata": { "origin": "public", "date_added": "2024-02-20" }
+}
+```
+
+See the [configuration guide](/docs/config_guides/track_selector) for more.

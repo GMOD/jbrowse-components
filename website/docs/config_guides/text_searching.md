@@ -119,3 +119,30 @@ created by `generate-names.pl`:
 ```
 
 - `namesIndexLocation` - the location of the JBrowse1 names index data directory
+
+## Troubleshooting
+
+### Search returns no results after running text-index
+
+The most common cause is stale 0-byte `.ix`/`.ixx` files from an interrupted
+run. Fix with `--force` to overwrite them:
+
+```bash
+jbrowse text-index --force
+```
+
+If `/tmp` is low on disk space, indexing can fail silently. Use `TMPDIR` to
+point elsewhere:
+
+```bash
+TMPDIR=~/alt_tmp_dir jbrowse text-index
+```
+
+### Only some genes are searchable
+
+`text-index` indexes `Name` and `ID` attributes by default. Add others with
+`--attributes`:
+
+```bash
+jbrowse text-index --attributes=Name,ID,gene_name
+```

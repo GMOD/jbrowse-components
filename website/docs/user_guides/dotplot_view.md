@@ -7,13 +7,14 @@ guide_category: Views
 
 import Figure from '../figure'
 
-The dotplot view is a 2D comparative view that can display alignments between
-different genome assemblies, or even compare a long-read or NGS short-read
-against the genome.
+The dotplot view is a 2D comparative view that displays alignments between
+genome assemblies, or between a single read and the genome. Syntenic regions
+appear as diagonal lines or blocks; inversions appear as reverse-diagonal
+segments; translocations and rearrangements appear as off-diagonal blocks.
 
 ### Opening a dotplot view
 
-1. Navigate on the header bar `Add`->`Dotplot view`
+1. Navigate on the header bar `Add` → `Dotplot view`
 2. Select the genome assemblies of interest
 3. Optionally, add a .paf, .out (MashMap), .delta (Mummer), .chain, .anchors or
    .anchors.simple (MCScan) file

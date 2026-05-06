@@ -23,94 +23,52 @@ External plugins can be added to the config.json file like so:
 }
 ```
 
-Our plugin store lists the URLs for unpkg URLs for these plugins
-https://jbrowse.org/jb2/plugin_store/. You can also download the plugin files
-from e.g. the unpkg URLs to your local server and serve them.
+Our plugin store lists unpkg URLs for published plugins at
+https://jbrowse.org/jb2/plugin_store/. You can also download plugin files from
+those URLs to your own server.
 
-There are several other ways to load plugins in the config, that have particular
-ways of being resolved from your local server.
+The `url` field shown above is the simplest option and is equivalent to
+`umdUrl`. There are additional fields available for different situations:
 
-#### umdUrl
+| Field    | Module format | Path resolved relative to |
+| -------- | ------------- | ------------------------- |
+| `url`    | UMD           | index.html                |
+| `umdUrl` | UMD           | index.html                |
+| `umdLoc` | UMD           | config.json               |
+| `esmUrl` | ESM           | index.html                |
+| `esmLoc` | ESM           | config.json               |
+| `cjsUrl` | CJS           | index.html (desktop only) |
 
-```json
-{
-  "plugins": [
-    {
-      "name": "GDC",
-      "umdUrl": "https://unpkg.com/jbrowse-plugin-gdc/dist/jbrowse-plugin-gdc.umd.production.min.js"
-    }
-  ]
-}
-```
+Use `umdLoc` or `esmLoc` when your plugin file lives alongside your config.json
+rather than at the app root. Use `esmUrl`/`esmLoc` for a pure ESM module. Use
+`cjsUrl` for jbrowse-desktop, since Electron does not support ESM and the
+jbrowse-plugin-template outputs CJS-specific code for desktop.
 
-`umdUrl` is resolved relative to the index.html of the file, so can be a
-relative path in your root directory or an absolute URL to somewhere on the web
-
-#### umdLoc
+#### umdLoc example
 
 ```json
 {
   "plugins": [
     {
-      "name": "GDC",
+      "name": "MyPlugin",
       "umdLoc": { "uri": "plugin.js" }
     }
   ]
 }
 ```
 
-`umdLoc` is resolved relative to the config.json that is being loaded, so is
-helpful for storing the plugin.js in the same folder as your config
-
-#### esmUrl
+#### esmUrl example
 
 ```json
 {
   "plugins": [
     {
-      "name": "GDC",
-      "esmUrl": "http://unpkg.com/path/to/esm/module.js"
+      "name": "MyPlugin",
+      "esmUrl": "https://unpkg.com/my-plugin/dist/index.mjs"
     }
   ]
 }
 ```
-
-`esmUrl` is resolved relative to the index.html of the file, so can be a
-relative path in your root directory or an absolute URL to somewhere on the web.
-
-#### esmLoc
-
-```json
-{
-  "plugins": [
-    {
-      "name": "GDC",
-      "esmLoc": { "uri": "module.js" }
-    }
-  ]
-}
-```
-
-`esmLoc` is resolved relative to the config.json that is being loaded, so is
-helpful for storing the plugin.js in the same folder as your config.
-
-#### cjsUrl
-
-```json
-{
-  "plugins": [
-    {
-      "name": "GDC",
-      "cjsUrl": "http://unpkg.com/path/to/cjs/module.js"
-    }
-  ]
-}
-```
-
-`cjsUrl` is used for desktop plugins specifically, since Electron (as of
-writing) does not support ESM, and since the jbrowse-plugin-template will not
-output some code that is helpful for desktop like true require() calls for
-desktop modules.
 
 ### Plugin store
 

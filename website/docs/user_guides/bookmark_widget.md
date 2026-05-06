@@ -7,9 +7,9 @@ guide_category: Other features
 
 import Figure from '../figure'
 
-The bookmark widget stores genomic regions for easy navigation. Each bookmark
-is a single region (chromosome, start, end); clicking one navigates a linear
-genome view to it.
+The bookmark widget stores genomic regions for easy navigation. Each bookmark is
+a single region (chromosome, start, end); clicking one navigates a linear genome
+view to it.
 
 <Figure caption="The bookmark widget can be accessed via the Tools menu, or in the view menu 'Bookmarks' submenu." src="/img/bookmark_widget_open.png"/>
 
@@ -33,8 +33,8 @@ genome view and selecting "Bookmark region."
 
 ### Selecting bookmarks
 
-Use the checkboxes to the left of the table to select bookmarks for bulk
-export, sharing, deletion, or editing.
+Use the checkboxes to the left of the table to select bookmarks for bulk export,
+sharing, deletion, or editing.
 
 <Figure caption="Select your bookmarks of interest using the left checkboxes." src="/img/bookmark_widget_select.png"/>
 
@@ -59,8 +59,8 @@ per-view (via the view menu → "Bookmarks").
 
 ### Sharing bookmarks
 
-Select bookmarks with the checkboxes and click "Share" to get a URL you can
-send to collaborators or paste into the Import form
+Select bookmarks with the checkboxes and click "Share" to get a URL you can send
+to collaborators or paste into the Import form
 [described below](#importing-bookmarks).
 
 <Figure caption="Bookmarks can be shared using the Share option in the bookmarks widget." src="/img/bookmark_widget_share_dialog.png"/>
@@ -84,8 +84,8 @@ Imported bookmarks are appended to your existing bookmarks.
 
 ### Deleting bookmarks
 
-Select bookmarks with the left checkboxes and press "Delete" in the widget
-menu to remove them.
+Select bookmarks with the left checkboxes and press "Delete" in the widget menu
+to remove them.
 
 ### Bookmark persistence
 

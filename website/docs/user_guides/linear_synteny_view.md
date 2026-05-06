@@ -9,7 +9,7 @@ import Figure from '../figure'
 
 ### Opening a linear synteny view
 
-1. Navigate on the header bar `Add`->`Linear synteny view`
+1. Navigate on the header bar `Add` → `Linear synteny view`
 2. Select the genome assemblies of interest
 3. Optionally, add a .paf, .out (MashMap), .delta (Mummer), .chain, .anchors or
    .anchors.simple (MCScan) file

@@ -31,7 +31,8 @@ Example config:
 
 - `vcfGzLocation` - a 'file location' for the bgzip'd VCF file
 - `index` - a sub-configuration schema containing
-  - indexType: 'TBI' or 'CSI'. Default: 'TBI'
+  - indexType: 'TBI' or 'CSI'. Default: 'TBI'. Use CSI for chromosomes longer
+    than 512 Mb (e.g. some plant genomes) since TBI cannot index them
   - location: a 'file location' for the index
 
 Example VcfTabixAdapter adapter config:
@@ -50,6 +51,12 @@ Example VcfTabixAdapter adapter config:
     }
   }
 }
+```
+
+A reduced form is also accepted; the index is inferred as `yourfile.vcf.gz.tbi`:
+
+```json
+{ "type": "VcfTabixAdapter", "uri": "http://yourhost/file.vcf.gz" }
 ```
 
 ## MultiVariant display configuration
@@ -256,9 +263,10 @@ display options:
 
 ### Notes
 
-- The `showReferenceAlleles` option can be set on both `MultiLinearVariantDisplay`
-  and `LinearVariantMatrixDisplay`, though the visual effect may differ between
-  them due to their different rendering approaches.
+- The `showReferenceAlleles` option can be set on both
+  `MultiLinearVariantDisplay` and `LinearVariantMatrixDisplay`, though the
+  visual effect may differ between them due to their different rendering
+  approaches.
 - Users can still change these settings at runtime using the track menu. The
   configuration values serve as the initial defaults.
 - When a user changes a setting via the track menu, their preference is stored
