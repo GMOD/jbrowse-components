@@ -11,7 +11,7 @@ adapters, etc.), and to modify behavior of the application by adding code that
 watches the application's state.
 
 For the full list of what kinds of pluggable element types plugins can add, see
-the [pluggable elements](/docs/developer_guides/pluggable_elements/) page.
+the [pluggable elements](/docs/developer_guides/pluggable_elements) page.
 
 The following tutorial will walk you through establishing your developer
 environment, spinning up a plugin, and running a local JBrowse instance with
@@ -835,7 +835,7 @@ JBrowse plugin store, so others can access our plugin.
 
 To learn more about the various pluggable elements available in JBrowse (and
 thus more that you can do with plugins!) checkout our
-[developer guide documentation](/docs/developer_guides/).
+[developer guide documentation](/docs/developer_guide).
 
 If you have further questions about plugin development, or development with
 JBrowse in general, stop by the JBrowse team

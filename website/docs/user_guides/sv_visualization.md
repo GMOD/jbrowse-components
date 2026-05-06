@@ -6,13 +6,18 @@ title: Structural variant visualization
 import Figure from '../figure'
 
 JBrowse 2 has several complementary views for exploring structural variants
-(SVs). SV calls are loaded as [variant tracks](variant_track) (VCF/BCF); reads
-as [alignments tracks](alignments_track) (BAM/CRAM). A typical workflow starts
-with the [SV inspector](sv_inspector_view) — a combined variant table and
+(SVs). SV calls are loaded as [variant tracks](/docs/user_guides/variant_track) (VCF/BCF); reads
+as [alignments tracks](/docs/user_guides/alignments_track) (BAM/CRAM). A typical workflow starts
+with the [SV inspector](/docs/user_guides/sv_inspector_view) — a combined variant table and
 whole-genome circular overview — to triage candidates, then uses the alignments
 displays to examine read-level evidence at each breakpoint. This guide covers
 the SV-focused interpretation of those tools; see the
-[alignments track guide](alignments_track) for general alignments features.
+[alignments track guide](/docs/user_guides/alignments_track) for general alignments features.
+
+For an end-to-end walkthrough that loads a real cancer dataset (HG008 tumor
+and normal PacBio HiFi reads plus the C-GIAB benchmark SV/CNV call sets) and
+exercises each of the views described below, see
+[Visualizing structural variants from the Cancer Genome in a Bottle](/docs/tutorials/sv_visualization_cgiab).
 
 ## SV signals in the alignments track
 
@@ -31,7 +36,7 @@ requiring any extra steps:
   highlighted
 
 For descriptions of these features in general use, see the
-[alignments track guide](alignments_track).
+[alignments track guide](/docs/user_guides/alignments_track).
 
 ### Pair orientation color scheme
 
@@ -195,7 +200,7 @@ panel.
 
 - **From the SV inspector** — click a feature in the circular overview or the
   triangle dropdown on any table row. See the
-  [SV inspector guide](sv_inspector_view).
+  [SV inspector guide](/docs/user_guides/sv_inspector_view).
 - **From variant feature details** — click a BND or TRA variant in a variant
   track; the feature details panel has a button to open the split view,
   automatically loading any open alignment tracks.
@@ -232,7 +237,7 @@ per haplotype for an even clearer visual separation. Note that group by spawns
 new track instances dynamically, so sort and color is generally faster for
 initial exploration.
 
-See the [alignments track guide](alignments_track) for more on sorting, coloring,
+See the [alignments track guide](/docs/user_guides/alignments_track) for more on sorting, coloring,
 and filtering by tag.
 
 ## Working with large SVs
@@ -242,7 +247,7 @@ declines to fetch hundreds of megabytes at once. For large or inter-chromosomal
 SVs, a better approach is:
 
 - Use a **bigWig coverage track** (or a
-  [multi-quantitative track](multiquantitative_track) for tumor vs normal
+  [multi-quantitative track](/docs/user_guides/multiquantitative_track) for tumor vs normal
   comparison) instead of a full alignments track when surveying the region — it
   loads at any scale and makes copy-number changes immediately visible
 - Load the **SV call set as a variant track** for a compact overview of all
@@ -257,6 +262,25 @@ SVs, a better approach is:
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-AcZSrC_yOb&password=e7b64)
 — COLO829 tumor vs normal whole-genome coverage
+
+## Whole-genome assembly comparison
+
+When a de novo assembly of the sample is available — for example, a phased
+tumor assembly from PacBio HiFi or ONT data — aligning it back to the
+reference with a tool like [minimap2](https://github.com/lh3/minimap2) and
+loading the resulting PAF as a synteny track gives a chromosome-scale view of
+rearrangements that read-level displays cannot. Complex events like
+chromosomal fusions appear as off-diagonal blocks in the
+[dotplot view](/docs/user_guides/dotplot_view), and clicking and dragging over
+a region in the dotplot can launch a base-level
+[linear synteny view](/docs/user_guides/linear_synteny_view) with the same
+alignment.
+
+This is particularly effective on cancer samples, where the derived genome
+often differs structurally from the reference in ways that are hard to read
+off the alignment track. The
+[C-GIAB tutorial](/docs/tutorials/sv_visualization_cgiab) walks through this
+workflow end-to-end with the HG008 phased tumor assembly.
 
 ## Summary
 

@@ -105,7 +105,7 @@ JBrowse uses the same color scheme as IGV for coloring by pair orientation.
 These pair orientations can be used to reveal complex patterns of structural
 variation. For a full breakdown of what each color indicates and how to
 interpret each SV type, see the
-[structural variant visualization guide](sv_visualization).
+[structural variant visualization guide](/docs/user_guides/sv_visualization).
 
 <Figure caption="This shows an inverted duplication. The tandem duplication produces green arrows (RL orientation, reads pointing away from each other, e.g. <-- and -->), while the inversion boundaries produce teal (LL) and dark blue (RR) arrows pointing in the same direction." src="/img/inverted_duplication.png" />
 

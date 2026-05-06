@@ -82,7 +82,7 @@ instructs the browser to unzip the data but JBrowse should be in charge of this.
 ### How can I setup JBrowse 2 on my web server
 
 We recommend following the steps in the
-[quickstart web via CLI](../quickstart_web/) guide.
+[quickstart web via CLI](/docs/quickstart_web) guide.
 
 The general procedure is using the `jbrowse create /var/www/html/jb2` and this
 will download the latest version of jbrowse to your web folder e.g. in
@@ -138,15 +138,15 @@ For example, for jbrowse create, you can visit the
 download the latest jbrowse-web release tag, and unzip it into your web
 directory.
 
-Checkout our [quickstart web](../quickstart_web/) guide for a speedy start to
+Checkout our [quickstart web](/docs/quickstart_web) guide for a speedy start to
 using a manually downloaded JBrowse instance.
 
 For other things, like add-assembly and add-track, you can manually edit the
-`config.json`; reviewing the [config docs](../config_guide) and sample configs
+`config.json`; reviewing the [config docs](/docs/config_guide) and sample configs
 will be valuable.
 
 To configure JBrowse using the admin-server GUI, checkout our
-[tutorial](../quickstart_adminserver).
+[tutorial](/docs/quickstart_adminserver).
 
 Understanding the [config basics](/docs/config_guides/intro) will come in handy
 also because you can manually edit in advanced configs after your tracks are
