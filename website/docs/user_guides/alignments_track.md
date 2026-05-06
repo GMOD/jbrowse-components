@@ -174,14 +174,14 @@ https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session
 
 ### Using the "Linked reads display"
 
-Similar to the "Arc display" we also offer what we call the "Read cloud"
-display. It is similar in some ways to the "Arc display" but renders paired-end
+Similar to the "Arc display" we also offer what we call the "Linked reads
+display". It is similar in some ways to the "Arc display" but renders paired-end
 or split read features as connected and stratified by the distance between their
 connections logarithmically on the "y-position" of the track. Similar to the
-"Arc display", clicking and dragging the track height of the "Read cloud
+"Arc display", clicking and dragging the track height of the "Linked reads
 display" will re-pack features into that area.
 
-<Figure caption="The 'Arc display' and 'Read cloud' being shown for the same dataset, showing some synthetic SVs on our sample volvox data. The read cloud display uniquely shows insertion (pink pairs) better than the arc display." src="/img/alignments/read_cloud.png" />
+<Figure caption="The 'Arc display' and 'Linked reads display' being shown for the same dataset, showing some synthetic SVs on our sample volvox data. The linked reads display uniquely shows insertion (pink pairs) better than the arc display." src="/img/alignments/read_cloud.png" />
 
 ### Compacting the view of alignments tracks
 

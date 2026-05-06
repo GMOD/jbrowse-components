@@ -1,6 +1,7 @@
 ---
 id: embed_linear_genome_view
 title: Embedding JBrowse
+description: Embed the linear genome view component in a custom web page
 ---
 
 import Figure from '../figure'

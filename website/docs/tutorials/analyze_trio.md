@@ -1,7 +1,9 @@
 ---
 id: analyze_trio
-title: Tutorial - Analyzing a phased trio
+title: Analyzing a phased trio
+description: Examine inheritance patterns and variant phasing in a trio dataset
 date: 2025-03-25
+slug: /tutorials/analyze_trio
 ---
 
 import Figure from '../figure'
@@ -90,11 +92,11 @@ chromosome are matches
 ```bash
 #!/bin/bash
 # create a bed file from hap-ibd output with columns "chr, start, end, sample_name1 hap1 sample_name2 hap2"
-# add this config to jbrowse get(feature,'sample1')+':HP'+get(feature,'hap1')+'     '+get(feature,'sample2')+':HP'+get(feature,'hap2')
-zcat result.ibd.gz |  cut -f 5,6,7 >! out.bed
-zcat result.ibd.gz |  cut -f 1,2,3,4 >! samples.txt
-echo "#chr	start	end	sample1	hap1	sample2	hap2" > out.bed
-paste out.bed samples.txt >> out.bed
+# add this config to jbrowse: get(feature,'sample1')+':HP'+get(feature,'hap1')+'     '+get(feature,'sample2')+':HP'+get(feature,'hap2')
+zcat result.ibd.gz | cut -f 5,6,7 > coords.bed
+zcat result.ibd.gz | cut -f 1,2,3,4 > samples.txt
+printf '#chr\tstart\tend\tsample1\thap1\tsample2\thap2\n' > out.bed
+paste coords.bed samples.txt >> out.bed
 ```
 
 After this conversion, we can load this simple BED file into JBrowse via the GUI

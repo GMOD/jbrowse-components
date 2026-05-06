@@ -29,4 +29,4 @@ against the genome.
 You can open a synteny view from a dotplot view by selecting a region on the
 dotplot and clicking "Open linear synteny view", shown below:
 
-<Figure caption="Screenshow showing the 'click and drag' selection over the dotplot view which prompts you to open up a linear synteny view from the selected region." src="/img/synteny_from_dotplot_view.png" />
+<Figure caption="Screenshot showing the 'click and drag' selection over the dotplot view which prompts you to open up a linear synteny view from the selected region." src="/img/synteny_from_dotplot_view.png" />

@@ -1,6 +1,7 @@
 ---
 id: sv_visualization_cgiab
-title: Visualizing structural variants from the Cancer Genome in a Bottle
+title: Cancer Genome in a Bottle (SVs)
+description: Load and inspect structural variants from real cancer sequencing data
 ---
 
 import Figure from '../figure'
@@ -286,6 +287,9 @@ GRCh38 search box focuses the view on just those chromosomes.
 For more on these views, see the
 [dotplot view guide](/docs/user_guides/dotplot_view) and the
 [linear synteny view guide](/docs/user_guides/linear_synteny_view).
+
+See also: [Synteny and genome alignment](/docs/tutorials/synteny_visualization) —
+a complementary tutorial on comparing genome assemblies using the same views.
 
 ## Troubleshooting
 
