@@ -1,0 +1,1 @@
+../../products/jbrowse-cli/README.md

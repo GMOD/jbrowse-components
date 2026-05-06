@@ -14,6 +14,11 @@ All tracks can contain:
 
 Example `config.json` containing a track config for a BigBed file:
 
+File locations in adapter configs use a `{ "uri": "..." }` object. The
+`"locationType": "UriLocation"` field is optional for URI locations and can be
+omitted — it is only needed when the type cannot be inferred (e.g. local file
+paths on desktop).
+
 ```json
 {
   "assemblies": [
@@ -29,7 +34,7 @@ Example `config.json` containing a track config for a BigBed file:
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/repeats.bb",
+          "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
         }
       }
     }

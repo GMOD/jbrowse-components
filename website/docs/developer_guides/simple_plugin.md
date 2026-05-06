@@ -562,7 +562,7 @@ widget byline, and one with our feature data.
 
 :::info Troubleshooting
 
-Troubleshooting If you get to this point and note that nothing happens, open the
+If you get to this point and note that nothing happens, open the
 developer tools in your browser and investigate the console errors. Also check
 your running process in your terminal for any errors. Review the code you added
 to ensure you didn't miss any imports or statements. Check over your config file
@@ -835,7 +835,7 @@ JBrowse plugin store, so others can access our plugin.
 
 To learn more about the various pluggable elements available in JBrowse (and
 thus more that you can do with plugins!) checkout our
-[developer guide documentation](/docs/developer_guide/).
+[developer guide documentation](/docs/developer_guides/).
 
 If you have further questions about plugin development, or development with
 JBrowse in general, stop by the JBrowse team

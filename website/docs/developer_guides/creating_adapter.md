@@ -36,7 +36,7 @@ with your adapter.
 - **RefName alias adapter** - This type of adapter is used to return data about
   aliases for reference sequence names, for example to define that "chr1" is an
   alias for "1". An example of this in JBrowse is an adapter for (alias
-  files)[http://software.broadinstitute.org/software/igv/LoadData/#aliasfile]
+  [files](http://software.broadinstitute.org/software/igv/LoadData/#aliasfile)
 - **Text search adapter** - This type of adapter is used to search through text
   search indexes. Returns list of search results. An example of this in JBrowse
   is the trix text search adapter.
@@ -119,7 +119,7 @@ class MyAdapter extends BaseFeatureDataAdapter {
           options,
         )
         if (response.ok) {
-          const features = await result.json()
+          const features = await response.json()
           features.forEach(feature => {
             observer.next(
               new SimpleFeature({

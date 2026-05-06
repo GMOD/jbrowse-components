@@ -97,6 +97,11 @@ callback.
 
 For example, create a file named "myplugin.js" (see also Footnote 1)
 
+Note: the example below uses the IIFE/`umdLoc` format for the plugin file. If
+you are using `esmLoc`, use an ES6 `export default class MyPlugin` instead (see
+[customizing feature colors](/docs/config_guides/customizing_feature_colors) for
+that pattern).
+
 ```js
 // myplugin.js
 ;(function () {

@@ -3,7 +3,7 @@
   "license": "Apache-2.0",
   "homepage": ".",
   "scripts": {
-    "prep": "cp ../products/jbrowse-cli/README.md docs/cli.md && pnpm fetchPlugins",
+    "prep": "pnpm fetchPlugins",
     "fetchPlugins": "rimraf plugins.json && wget -q https://s3.amazonaws.com/jbrowse.org/plugin-store/plugins.json",
     "prebuild": "pnpm prep",
     "prestart": "pnpm prep",

@@ -51,7 +51,6 @@ Examples of pluggable types include:
 - Internet account types
 - Connection types
 - Text search adapter types
-- Extension points
 - Add track workflow
 
 In additional to creating plugins that create new adapters, track types, etc.
@@ -201,9 +200,10 @@ custom display of the alignments.
 Plugins can register their own RPC methods, which can allow them to offload
 custom behaviors to a web-worker or server side process.
 
-The wiggle plugin, for example, registers two custom RPC method types:
+The wiggle plugin, for example, registers custom RPC method types including:
 
 - `WiggleGetMultiRegionQuantitativeStats`
+- `WiggleGetGlobalQuantitativeStats`
 
 These methods can run in the web worker when available.
 
