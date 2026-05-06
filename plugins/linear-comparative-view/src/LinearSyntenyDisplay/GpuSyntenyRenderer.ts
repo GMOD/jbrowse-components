@@ -32,22 +32,6 @@ export const SYNTENY_PASSES: PassDescriptor[] = [
   }),
 ]
 
-interface TrackState {
-  key: number
-  data: SyntenyInstanceData
-  params: SyntenyTrackRenderParams
-  overdrawPx: number
-}
-
-function makeTrackState(
-  key: number,
-  data: SyntenyInstanceData,
-  params: SyntenyTrackRenderParams,
-  overdrawPx: number,
-): TrackState {
-  return { key, data, params, overdrawPx }
-}
-
 // Lazily-allocated 1x1 offscreen 2D context used solely to evaluate
 // isPointInPath during CPU pick — the path is rebuilt per candidate and never
 // composited, so size doesn't matter.
@@ -115,13 +99,7 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
       if (!data || data.instanceCount === 0) {
         continue
       }
-      const track = makeTrackState(key, data, params, state.overdrawPx)
-      this.writeUniforms(
-        track,
-        params.hoveredFeatureId,
-        params.clickedFeatureId,
-        params.alpha,
-      )
+      this.writeUniforms(params, state.overdrawPx)
       this.hal.drawPass(PASS_FILL, key)
       if (params.clickedFeatureId > 0) {
         this.hal.drawPass(PASS_EDGE, key)
@@ -162,15 +140,9 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     this.hal.dispose()
   }
 
-  private writeUniforms(
-    t: TrackState,
-    hoveredFeatureId: number,
-    clickedFeatureId: number,
-    alpha: number,
-  ) {
+  private writeUniforms(p: SyntenyTrackRenderParams, overdrawPx: number) {
     const dpr = typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
     const u = this.uniformF32
-    const p = t.params
     u[U.resolution] = this.canvas.width / dpr
     u[U.resolution + 1] = this.canvas.height / dpr
     u[U.height] = p.height
@@ -187,11 +159,11 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     u[U.viewBp1Lo] = vb1Lo
     u[U.bpPerPxInv1] = 1 / p.bpPerPx1
     u[U.hpZero] = 0
-    u[U.overdrawPx] = t.overdrawPx
+    u[U.overdrawPx] = overdrawPx
     u[U.minAlignmentLength] = p.minAlignmentLength
-    u[U.alpha] = alpha
-    u[U.hoveredFeatureId] = hoveredFeatureId
-    u[U.clickedFeatureId] = clickedFeatureId
+    u[U.alpha] = p.alpha
+    u[U.hoveredFeatureId] = p.hoveredFeatureId
+    u[U.clickedFeatureId] = p.clickedFeatureId
     u[U.yTop] = p.yTop
     u[U.isCurve] = p.drawCurves ? 1 : 0
     this.hal.writeUniforms(this.uniformData)

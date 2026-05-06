@@ -150,11 +150,9 @@ export function widenCorners(
   return { sx1, sx2, sx3, sx4 }
 }
 
-// Per-edge cull (not combined AABB): drop the instance when EITHER the top
-// edge OR the bottom edge is fully off-screen. Matches isCulled() in
-// syntenyTypes.slang so Canvas2D and GPU honor the overdrawPx slider
-// the same way; an AABB-only check would keep drawing trapezoids spanning
-// huge horizontal travel into off-screen space.
+// Per-edge cull: drop the instance when any single edge lies entirely outside
+// the draw limits. Matches isCulled() in syntenyTypes.slang. An AABB-only
+// check would keep drawing trapezoids that span huge horizontal travel.
 export function isEdgeCulled(
   c: ProjectedCorners,
   leftLimit: number,
