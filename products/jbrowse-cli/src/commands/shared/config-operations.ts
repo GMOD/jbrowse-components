@@ -7,14 +7,14 @@ export function findAndUpdateOrAdd<T extends object>({
   newItem,
   idField,
   getId,
-  allowOverwrite,
+  force,
   itemType,
 }: {
   items: T[]
   newItem: T
   idField: string
   getId: (item: T) => string
-  allowOverwrite: boolean
+  force: boolean
   itemType: string
 }): { updatedItems: T[]; wasOverwritten: boolean } {
   const newId = getId(newItem)
@@ -22,7 +22,7 @@ export function findAndUpdateOrAdd<T extends object>({
 
   if (idx !== -1) {
     debug(`Found existing ${itemType} ${newId} in configuration`)
-    if (allowOverwrite) {
+    if (force) {
       debug(`Overwriting ${itemType} ${newId} in configuration`)
       const updatedItems = [...items]
       updatedItems[idx] = newItem

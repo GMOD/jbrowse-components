@@ -36,12 +36,6 @@ const testConfig = path.join(base, 'test_config.json')
 function initctx(ctx: { dir: string }) {
   return copyFile(testConfig, path.join(ctx.dir, 'config.json'))
 }
-function init2bit(ctx: { dir: string }) {
-  return copyFile(
-    path.join(base, 'simple.2bit'),
-    path.join(ctx.dir, 'simple.2bit'),
-  )
-}
 
 test('fails if no track is specified', async () => {
   const { error } = await runCommand(['add-track'])
@@ -300,9 +294,13 @@ test('adds bam track from a url', async () => {
 test('fails multiple assemblies exist but no assemblyNames passed', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    await init2bit(ctx)
 
-    await runCommand(['add-assembly', 'simple.2bit', '--load', 'copy'])
+    await runCommand([
+      'add-assembly',
+      path.join(base, 'simple.2bit'),
+      '--load',
+      'copy',
+    ])
     const { error } = await runCommand([
       'add-track',
       simpleBam,
@@ -317,9 +315,13 @@ test('fails multiple assemblies exist but no assemblyNames passed', async () => 
 test('adds track to a config with multiple assemblies', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    await init2bit(ctx)
 
-    await runCommand(['add-assembly', 'simple.2bit', '--load', 'copy'])
+    await runCommand([
+      'add-assembly',
+      path.join(base, 'simple.2bit'),
+      '--load',
+      'copy',
+    ])
     const { error } = await runCommand([
       'add-track',
       simpleBam,

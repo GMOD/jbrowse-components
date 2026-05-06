@@ -213,7 +213,7 @@ export async function run(args?: string[]) {
     newItem: trackConfig,
     idField: 'trackId',
     getId: item => item.trackId,
-    allowOverwrite: force ?? false,
+    force: force ?? false,
     itemType: 'track',
   })
   const updatedConfig = { ...configContents, tracks }

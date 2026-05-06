@@ -264,12 +264,30 @@ in `chrome://gpu` or `about:gpu`. At that point the per-region uniform table
 becomes the cheaper option, and the codegen array support that ADR-010
 rejected gets a real cost-benefit case.
 
+##  Alignments track
 
-## Rendering looks different from origin/main
+No mouseovers when zoomed out too far, but i still want coverage (perhaps can be downsampled) and significant snps,insertions. large deletions (>1px wide). audit both coverage and pileup rects
 
 
-improve the antialiasing, color darkness
+## Lines plot plugins/wiggle
 
-## SVG export synteny
+Audit how it is created. We had weird assumptions due to 'block based' code, now it is not
 
-too dark
+
+## Alignments track log scale
+
+The snp should use a 'linear scale' still. weird, but makes sense to me
+
+## Group by
+
+Audit whether there would be a way to make it more efficient. Launching n subtracks is slow for user, and probably unwanted
+
+## Color by -> Base quality
+
+Is it not per-base? Should remove if not
+
+May want legend also
+
+## Could try to make Color-by menu responsive to whether paired end reasd are present, add submenu for paired end options
+
+## Similar for whether modifications are visible

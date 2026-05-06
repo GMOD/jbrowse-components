@@ -518,7 +518,7 @@ exports[`fails if custom refNameAliases adapter has no type 2`] = `"Error: No "t
 
 exports[`fails if custom sequence adapter has no type 1`] = `"Error: No "type" specified in sequence adapter "{}""`;
 
-exports[`fails if it cannot find a file 1`] = `"Error: Could not resolve to a file or a URL: "simple.doesNotExist.fasta""`;
+exports[`fails if it cannot find a file 1`] = `"Error: Error: ENOENT: no such file or directory, copyfile 'simple.doesNotExist.fasta' -> 'simple.doesNotExist.fasta'"`;
 
 exports[`fails if it cannot guess the sequence type 1`] = `"Error: Could not determine sequence type automatically, add --type to specify it"`;
 

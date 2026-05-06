@@ -3,7 +3,6 @@ import { parseArgs } from 'util'
 
 import parseJSON from 'json-parse-better-errors'
 
-import fetch from '../cliFetch.ts'
 import { debug, printHelp, readJsonFile, resolveConfigPath } from '../utils.ts'
 import {
   findAndUpdateOrAdd,
@@ -12,22 +11,14 @@ import {
 
 import type { Config } from '../base.ts'
 
-async function resolveURL(location: string, check = true) {
-  let locationUrl: URL | undefined
+function resolveURL(location: string) {
   try {
-    locationUrl = new URL(location)
+    return new URL(location).href
   } catch (error) {
     throw new Error(`The location ${location} provided is not a valid URL`, {
       cause: error,
     })
   }
-  if (check) {
-    const response = await fetch(`${locationUrl}`, { method: 'HEAD' })
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status} fetching ${locationUrl}`)
-    }
-  }
-  return locationUrl.href
 }
 
 function determineConnectionType(url: string) {
@@ -83,18 +74,10 @@ export async function run(args?: string[]) {
       type: 'string',
       description: 'Synonym for target',
     },
-    skipCheck: {
-      type: 'boolean',
-      description: "Don't check whether the data directory URL exists",
-    },
-    overwrite: {
-      type: 'boolean',
-      description: 'Overwrites any existing connections if same connection id',
-    },
     force: {
       type: 'boolean',
       short: 'f',
-      description: 'Equivalent to --skipCheck --overwrite',
+      description: 'Overwrite existing connection if one with the same id exists',
     },
   } as const
   const { values: flags, positionals } = parseArgs({
@@ -133,10 +116,9 @@ export async function run(args?: string[]) {
 
   const target = await resolveConfigPath(flags.target, flags.out)
 
-  const { assemblyNames, type, name, config, connectionId, skipCheck, force } =
-    flags
+  const { assemblyNames, type, name, config, connectionId, force } = flags
 
-  const url = await resolveURL(connectionUrlOrPath, !(skipCheck ?? force))
+  const url = resolveURL(connectionUrlOrPath)
   const configContents = await readJsonFile<Config>(target)
   debug(`Using config file ${target}`)
 
@@ -184,7 +166,7 @@ export async function run(args?: string[]) {
     newItem: connectionConfig,
     idField: 'connectionId',
     getId: item => item.connectionId,
-    allowOverwrite: !!(force ?? flags.overwrite),
+    force: force ?? false,
     itemType: 'connection',
   })
 

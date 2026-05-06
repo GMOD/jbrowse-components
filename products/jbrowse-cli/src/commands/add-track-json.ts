@@ -82,7 +82,7 @@ export async function run(args?: string[]) {
     newItem: trackConfig,
     idField: 'trackId',
     getId: item => item.trackId,
-    allowOverwrite: update ?? false,
+    force: update ?? false,
     itemType: 'track',
   })
 

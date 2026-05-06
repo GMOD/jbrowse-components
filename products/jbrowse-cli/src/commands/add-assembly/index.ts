@@ -1,3 +1,4 @@
+import path from 'path'
 import { parseArgs } from 'util'
 
 import {
@@ -9,6 +10,7 @@ import {
   resolveTargetPath,
 } from './utils.ts'
 import { debug, printHelp } from '../../utils.ts'
+import { loadFile } from '../add-track-utils/file-operations.ts'
 import { saveConfigAndReport } from '../shared/config-operations.ts'
 
 export async function run(args?: string[]) {
@@ -84,11 +86,6 @@ export async function run(args?: string[]) {
         'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or use inPlace to modify the config without doing any file operations',
       choices: ['copy', 'symlink', 'move', 'inPlace'],
     },
-    skipCheck: {
-      type: 'boolean',
-      description:
-        "Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory",
-    },
     force: {
       type: 'boolean',
       short: 'f',
@@ -149,10 +146,9 @@ export async function run(args?: string[]) {
   debug(`Sequence location is: ${argsSequence}`)
 
   const target = await resolveTargetPath(output)
-  const baseAssembly = await getAssembly({
+  const { assembly: baseAssembly, filesToLoad } = await getAssembly({
     runFlags: flags,
     argsSequence,
-    target,
   })
   const assembly = await enhanceAssembly(baseAssembly, flags)
 
@@ -162,6 +158,15 @@ export async function run(args?: string[]) {
     assembly,
     runFlags: flags,
   })
+
+  if (flags.load) {
+    const destDir = path.dirname(target)
+    await Promise.all(
+      filesToLoad.map(src =>
+        loadFile({ src, destDir, mode: flags.load!, force: flags.force }),
+      ),
+    )
+  }
 
   await saveConfigAndReport({
     config: updatedConfig,

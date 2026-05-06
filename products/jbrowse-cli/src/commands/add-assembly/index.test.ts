@@ -71,19 +71,14 @@ test('fails if custom refNameAliases adapter has no type', async () => {
 })
 
 test('fails if trying to add an assembly with a name that already exists', async () => {
-  await runInTmpDir(async ctx => {
-    const simple2bit = path.join(
-      __dirname,
-      '..',
-      '..',
-      '..',
-      'test',
-      'data',
-      'simple.2bit',
-    )
-    await copyFile(simple2bit, path.join(ctx.dir, path.basename(simple2bit)))
-    await runCommand('add-assembly simple.2bit --load copy')
-    const { error } = await runCommand('add-assembly simple.2bit --load copy')
+  await runInTmpDir(async () => {
+    await runCommand(['add-assembly', dataDir('simple.2bit'), '--load', 'copy'])
+    const { error } = await runCommand([
+      'add-assembly',
+      dataDir('simple.2bit'),
+      '--load',
+      'copy',
+    ])
     expect(error?.message).toMatchSnapshot()
   })
 })
@@ -135,62 +130,58 @@ test('fails if load flag is passed with a URL', async () => {
 
 test('adds an assembly from a FASTA', async () => {
   await runInTmpDir(async ctx => {
-    fs.copyFileSync(dataDir('simple.fasta'), ctxDir(ctx, 'simple.fasta'))
-    fs.copyFileSync(
-      dataDir('simple.fasta.fai'),
-      ctxDir(ctx, 'simple.fasta.fai'),
-    )
-    await runCommand(['add-assembly', 'simple.fasta', '--load', 'copy'])
+    await runCommand(['add-assembly', dataDir('simple.fasta'), '--load', 'copy'])
     expect(readConf(ctx)).toMatchSnapshot()
   })
 })
 
 test('adds an assembly from a FASTA (.fa extension)', async () => {
   await runInTmpDir(async ctx => {
-    fs.copyFileSync(dataDir('simple.fasta'), ctxDir(ctx, 'simple.fa'))
-    fs.copyFileSync(dataDir('simple.fasta.fai'), ctxDir(ctx, 'simple.fa.fai'))
-    await runCommand(['add-assembly', 'simple.fa', '--load', 'copy'])
+    await mkdir(ctxDir(ctx, 'files'))
+    fs.copyFileSync(dataDir('simple.fasta'), ctxDir(ctx, 'files/simple.fa'))
+    fs.copyFileSync(dataDir('simple.fasta.fai'), ctxDir(ctx, 'files/simple.fa.fai'))
+    await runCommand([
+      'add-assembly',
+      path.join('files', 'simple.fa'),
+      '--load',
+      'copy',
+    ])
     expect(readConf(ctx)).toMatchSnapshot()
   })
 })
 
 test('adds an assembly from a FASTA (bgzip)', async () => {
   await runInTmpDir(async ctx => {
-    fs.copyFileSync(dataDir('simple.fasta.gz'), ctxDir(ctx, 'simple.fasta.gz'))
-    fs.copyFileSync(
-      dataDir('simple.fasta.gz.fai'),
-      ctxDir(ctx, 'simple.fasta.gz.fai'),
-    )
-    fs.copyFileSync(
-      dataDir('simple.fasta.gz.gzi'),
-      ctxDir(ctx, 'simple.fasta.gz.gzi'),
-    )
-    await runCommand(['add-assembly', 'simple.fasta.gz', '--load', 'copy'])
+    await runCommand([
+      'add-assembly',
+      dataDir('simple.fasta.gz'),
+      '--load',
+      'copy',
+    ])
     expect(readConf(ctx)).toMatchSnapshot()
   })
 })
 
 test('adds an assembly from a 2bit', async () => {
   await runInTmpDir(async ctx => {
-    await copyFile(dataDir('simple.2bit'), ctxDir(ctx, 'simple.2bit'))
-    await runCommand(['add-assembly', 'simple.2bit', '--load', 'copy'])
+    await runCommand(['add-assembly', dataDir('simple.2bit'), '--load', 'copy'])
     expect(readConf(ctx)).toMatchSnapshot()
   })
 })
 test('adds an assembly from chrom.sizes', async () => {
   await runInTmpDir(async ctx => {
-    await copyFile(
+    await runCommand([
+      'add-assembly',
       dataDir('simple.chrom.sizes'),
-      ctxDir(ctx, 'simple.chrom.sizes'),
-    )
-    await runCommand(['add-assembly', 'simple.chrom.sizes', '--load', 'copy'])
+      '--load',
+      'copy',
+    ])
     expect(readConf(ctx)).toMatchSnapshot()
   })
 })
 test('adds an assembly from a custom adapter JSON file', async () => {
   await runInTmpDir(async ctx => {
-    await copyFile(dataDir('simple.json'), ctxDir(ctx, 'simple.json'))
-    await runCommand(['add-assembly', 'simple.json', '--load', 'copy'])
+    await runCommand(['add-assembly', dataDir('simple.json'), '--load', 'copy'])
     expect(readConf(ctx)).toMatchSnapshot()
   })
 })
@@ -211,11 +202,12 @@ test('adds an assembly from a custom adapter inline JSON', async () => {
 
 test("can specify --type when the type can't be inferred from the extension", async () => {
   await runInTmpDir(async ctx => {
-    fs.copyFileSync(dataDir('simple.2bit'), ctxDir(ctx, 'simple.2bit.xyz'))
+    await mkdir(ctxDir(ctx, 'files'))
+    await copyFile(dataDir('simple.2bit'), ctxDir(ctx, 'files/simple.2bit.xyz'))
 
     await runCommand([
       'add-assembly',
-      'simple.2bit.xyz',
+      path.join('files', 'simple.2bit.xyz'),
       '--type',
       'twoBit',
       '--load',
@@ -226,23 +218,23 @@ test("can specify --type when the type can't be inferred from the extension", as
 })
 test('can specify a custom faiLocation and gziLocation', async () => {
   await runInTmpDir(async ctx => {
-    await copyFile(dataDir('simple.fasta.gz'), ctxDir(ctx, 'simple.fasta.gz'))
+    await mkdir(ctxDir(ctx, 'files'))
     await copyFile(
       dataDir('simple.fasta.gz.fai'),
-      ctxDir(ctx, 'simple.fasta.gz.fai.abc'),
+      ctxDir(ctx, 'files/simple.fasta.gz.fai.abc'),
     )
     await copyFile(
       dataDir('simple.fasta.gz.gzi'),
-      ctxDir(ctx, 'simple.fasta.gz.gzi.def'),
+      ctxDir(ctx, 'files/simple.fasta.gz.gzi.def'),
     )
 
     await runCommand([
       'add-assembly',
-      'simple.fasta.gz',
+      dataDir('simple.fasta.gz'),
       '--faiLocation',
-      'simple.fasta.gz.fai.abc',
+      path.join('files', 'simple.fasta.gz.fai.abc'),
       '--gziLocation',
-      'simple.fasta.gz.gzi.def',
+      path.join('files', 'simple.fasta.gz.gzi.def'),
       '--load',
       'copy',
     ])
@@ -286,14 +278,13 @@ test('can specify a multiple aliases', async () => {
 })
 test('can specify a refNameAliases file', async () => {
   await runInTmpDir(async ctx => {
-    await copyFile(dataDir('simple.aliases'), ctxDir(ctx, 'simple.aliases'))
     await runCommand([
       'add-assembly',
       '{"type":"CustomAdapter"}',
       '--name',
       'simple',
       '--refNameAliases',
-      'simple.aliases',
+      dataDir('simple.aliases'),
       '--load',
       'copy',
     ])
@@ -353,11 +344,10 @@ test('can use an existing config file', async () => {
 })
 test('can use --force to replace an existing assembly', async () => {
   await runInTmpDir(async ctx => {
-    await copyFile(dataDir('simple.2bit'), ctxDir(ctx, 'simple.2bit'))
-    await runCommand(['add-assembly', 'simple.2bit', '--load', 'copy'])
+    await runCommand(['add-assembly', dataDir('simple.2bit'), '--load', 'copy'])
     const { error } = await runCommand([
       'add-assembly',
-      'simple.2bit',
+      dataDir('simple.2bit'),
       '--load',
       'copy',
       '--force',
