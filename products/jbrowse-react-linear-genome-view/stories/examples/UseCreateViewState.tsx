@@ -3,10 +3,7 @@
 import { useState } from 'react'
 
 import { getVolvoxConfig } from './util.ts'
-import {
-  JBrowseLinearGenomeView,
-  useCreateViewState,
-} from '../../src/index.ts'
+import { JBrowseLinearGenomeView, useCreateViewState } from '../../src/index.ts'
 
 // This component renders the genome view. Because it uses useCreateViewState,
 // parent re-renders (e.g. from the counter above) do not reset the browser.
@@ -29,7 +26,13 @@ export const UseCreateViewState = () => {
         re-render, but the genome view state is preserved because{' '}
         <code>useCreateViewState</code> creates the state only once.
       </p>
-      <button onClick={() => setCount(c => c + 1)}>Re-render parent</button>
+      <button
+        onClick={() => {
+          setCount(c => c + 1)
+        }}
+      >
+        Re-render parent
+      </button>
       <GenomeView />
       <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/UseCreateViewState.tsx">
         Source code

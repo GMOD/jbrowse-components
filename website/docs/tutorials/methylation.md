@@ -17,14 +17,15 @@ methylation dataset.
 ## Per-read methylation with BAM/CRAM
 
 When a BAM or CRAM file carries base modification tags (MM/ML as specified in
-the [SAM format specification](https://samtools.github.io/hts-specs/SAMtags.pdf)),
+the
+[SAM format specification](https://samtools.github.io/hts-specs/SAMtags.pdf)),
 JBrowse 2 can color individual bases on each read by their modification
 probability. This works out of the box — no extra config is needed.
 
-Coloring is enabled via **Track menu → Pileup settings → Color by → Modifications
-or methylation**. Each modification type gets a distinct color; for 5mC/5hmC
-data the typical default is red (5mC) and blue (5hmC). The color intensity
-reflects the modification probability (ML tag value).
+Coloring is enabled via **Track menu → Pileup settings → Color by →
+Modifications or methylation**. Each modification type gets a distinct color;
+for 5mC/5hmC data the typical default is red (5mC) and blue (5hmC). The color
+intensity reflects the modification probability (ML tag value).
 
 <Figure caption="Per-read 5mC and 5hmC coloring on a chr20 Nanopore BAM. Each colored mark on a read represents a modified cytosine; unmodified sites appear as the background grey read color." src="/img/methylation/per_read_mod_bam.png" />
 
@@ -40,14 +41,20 @@ format for storing population-level methylation across a whole genome.
 ### Generating the file
 
 ```bash
-modkit pileup sample.bam output.bed --ref reference.fa --preset traditional
-bgzip output.bed
-tabix -p bed output.bed.gz
+# Standard (single modification fraction per CpG)
+modkit pileup sample.bam output.bedmethyl --ref reference.fa --preset traditional
+bgzip output.bedmethyl
+tabix -p bed output.bedmethyl.gz
+
+# Phased (produces hp1.bedmethyl, hp2.bedmethyl, combined.bedmethyl)
+modkit pileup sample.bam output_dir/ --ref reference.fa --phased
+bgzip output_dir/combined.bedmethyl
+tabix -p bed output_dir/combined.bedmethyl.gz
 ```
 
 `--preset traditional` collapses 5mC and 5hmC into a single 5mC fraction
-(standard bisulfite-equivalent output). Omit it to get separate rows for each
-modification type.
+(bisulfite-equivalent). Omit it to keep separate rows for each modification type
+(`m` for 5mC, `h` for 5hmC).
 
 ### Loading as a MultiQuantitativeTrack
 
@@ -76,8 +83,8 @@ reads the modification type from the `name` column (e.g. `m` for 5mC, `h` for
 }
 ```
 
-The Y-axis shows the percent methylation (0–100). Each CpG position appears as
-a vertical bar; the two subtracks (`h` for 5hmC and `m` for 5mC) are stacked in
+The Y-axis shows the percent methylation (0–100). Each CpG position appears as a
+vertical bar; the two subtracks (`h` for 5hmC and `m` for 5mC) are stacked in
 multirow mode by default so their scales are independent.
 
 ### Example: COLO829 tumor with CRAM and bedMethyl
@@ -93,12 +100,12 @@ a `MultiQuantitativeTrack` with `h` (5hmC) and `m` (5mC) subtracks.
 
 ## Choosing between the two approaches
 
-| Approach | Best for |
-| --- | --- |
-| Per-read BAM/CRAM coloring | Haplotype-aware methylation, allele-specific methylation, individual read inspection |
+| Approach                         | Best for                                                                                     |
+| -------------------------------- | -------------------------------------------------------------------------------------------- |
+| Per-read BAM/CRAM coloring       | Haplotype-aware methylation, allele-specific methylation, individual read inspection         |
 | bedMethyl MultiQuantitativeTrack | Whole-genome methylation overview, comparing tumor vs normal, fast loading at any zoom level |
 
-For haplotype-aware analysis, combine both: load a haplotagged BAM (with HP
-tags from WhatsHap or HiPhase), color by modification, and sort by HP tag to
-see per-haplotype methylation patterns. The bedMethyl track provides the
-aggregate signal for quick navigation to regions of interest.
+For haplotype-aware analysis, combine both: load a haplotagged BAM (with HP tags
+from WhatsHap or HiPhase), color by modification, and sort by HP tag to see
+per-haplotype methylation patterns. The bedMethyl track provides the aggregate
+signal for quick navigation to regions of interest.

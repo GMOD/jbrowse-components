@@ -259,7 +259,9 @@ import { createViewState, JBrowseApp } from '@jbrowse/react-app2'
 
 class MyPlugin {
   name = 'MyPlugin'
-  install(pluginManager) { /* ... */ }
+  install(pluginManager) {
+    /* ... */
+  }
   configure() {}
 }
 

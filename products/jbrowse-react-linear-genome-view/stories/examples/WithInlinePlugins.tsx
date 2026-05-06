@@ -3,10 +3,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 
 import { getVolvoxConfig } from './util.ts'
-import {
-  JBrowseLinearGenomeView,
-  useCreateViewState,
-} from '../../src/index.ts'
+import { JBrowseLinearGenomeView, useCreateViewState } from '../../src/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'

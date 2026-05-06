@@ -91,8 +91,8 @@ field via `get(feature,'INFO').SVTYPE` and maps it to a color:
 The `|| 'gray'` fallback colors any SVTYPE not in the map (or variants without
 an SVTYPE field) gray. You can use the same pattern for SNP/INDEL VCFs by
 reading `get(feature,'INFO').CLNSIG` or any other INFO key. See
-[customizing feature colors](/docs/config_guides/customizing_feature_colors)
-for more jexl color examples.
+[customizing feature colors](/docs/config_guides/customizing_feature_colors) for
+more jexl color examples.
 
 ## MultiVariant display configuration
 

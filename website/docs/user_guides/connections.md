@@ -14,7 +14,8 @@ is needed. Closing a connection removes all of its tracks.
 
 JBrowse supports two built-in connection types:
 
-- **UCSC Track Hub** — any [UCSC Genome Browser track hub](https://genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html)
+- **UCSC Track Hub** — any
+  [UCSC Genome Browser track hub](https://genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html)
   reachable over the network
 - **JBrowse 1 data directory** — a legacy JBrowse 1 data directory with a
   `trackList.json`
@@ -76,5 +77,5 @@ jbrowse add-connection https://myhost/jbrowse1/data/ \
   --name "JBrowse 1 data"
 ```
 
-See `jbrowse add-connection --help` or the [CLI reference](/docs/cli#jbrowse-add-connection)
-for all options.
+See `jbrowse add-connection --help` or the
+[CLI reference](/docs/cli#jbrowse-add-connection) for all options.

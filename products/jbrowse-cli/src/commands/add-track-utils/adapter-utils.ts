@@ -82,11 +82,11 @@ export function guessFileNames({
     /\.out(\.gz)?$/i.test(location) ||
     /\.paf(\.gz)?$/i.test(location) ||
     /\.delta(\.gz)?$/i.test(location) ||
-    /\.bed?$/i.test(location) ||
+    /\.bed$/i.test(location) ||
     /\.(bw|bigwig)$/i.test(location) ||
     /\.(bb|bigbed)$/i.test(location) ||
     /\.vcf$/i.test(location) ||
-    /\.gtf?$/i.test(location) ||
+    /\.gtf$/i.test(location) ||
     /\.gff3?$/i.test(location) ||
     /\.chain(\.gz)?$/i.test(location) ||
     /\.hic$/i.test(location)
@@ -184,7 +184,10 @@ export function guessAdapter({
         indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
       },
     }
-  } else if (/\.bed\.b?gz$/i.test(location)) {
+  } else if (
+    /\.bedmethyl\.gz$/i.test(location) ||
+    /\.bed\.b?gz$/i.test(location)
+  ) {
     return {
       type: 'BedTabixAdapter',
       bedGzLocation: makeLocation(location),
@@ -286,12 +289,15 @@ export const adapterTypesToTrackTypeMap: Record<string, string> = {
   CramAdapter: 'AlignmentsTrack',
   BgzipFastaAdapter: 'ReferenceSequenceTrack',
   BigWigAdapter: 'QuantitativeTrack',
+  BedGraphAdapter: 'QuantitativeTrack',
+  BedGraphTabixAdapter: 'QuantitativeTrack',
   IndexedFastaAdapter: 'ReferenceSequenceTrack',
   TwoBitAdapter: 'ReferenceSequenceTrack',
   VcfTabixAdapter: 'VariantTrack',
   VcfAdapter: 'VariantTrack',
   BedpeAdapter: 'VariantTrack',
   BedAdapter: 'FeatureTrack',
+  BedTabixAdapter: 'FeatureTrack',
   HicAdapter: 'HicTrack',
   PAFAdapter: 'SyntenyTrack',
   DeltaAdapter: 'SyntenyTrack',

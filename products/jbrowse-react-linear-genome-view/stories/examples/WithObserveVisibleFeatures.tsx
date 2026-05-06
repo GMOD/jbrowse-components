@@ -5,10 +5,7 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { observer } from 'mobx-react'
 
 import { getVolvoxConfig } from './util.ts'
-import {
-  JBrowseLinearGenomeView,
-  useCreateViewState,
-} from '../../src/index.ts'
+import { JBrowseLinearGenomeView, useCreateViewState } from '../../src/index.ts'
 
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Feature } from '@jbrowse/core/util'

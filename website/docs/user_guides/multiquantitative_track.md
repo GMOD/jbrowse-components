@@ -70,6 +70,13 @@ tabix -p bed output.bed.gz
 The `--preset traditional` flag produces 5mC calls (5hmC is combined into the
 5mC fraction). Omit it for separate 5mC and 5hmC rows.
 
+### Add-track UI
+
+In the add-track dialog (`File → Open track...`), paste the URL to your
+`.bedmethyl.gz` file. JBrowse detects the `.bedmethyl.gz` extension and
+automatically selects **BedTabixAdapter** and **MultiQuantitativeTrack** — no
+manual selection needed.
+
 ### Config example
 
 ```json
@@ -93,8 +100,8 @@ The `--preset traditional` flag produces 5mC calls (5hmC is combined into the
 ```
 
 JBrowse reads the `score` column (column 11 in bedMethyl, the methylation
-fraction 0–1) and the `name` column (column 4, the modification code such as
-`m` for 5mC or `h` for 5hmC) as the subtrack source label.
+fraction 0–1) and the `name` column (column 4, the modification code such as `m`
+for 5mC or `h` for 5hmC) as the subtrack source label.
 
 The COLO829 tumor modkit bedMethyl file is included in the
 [demo config](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json)

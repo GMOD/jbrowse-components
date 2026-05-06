@@ -350,6 +350,40 @@ exports[`file types 31`] = `
 
 exports[`file types 32`] = `
 {
+  "bedGzLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.bedmethyl.gz",
+  },
+  "index": {
+    "indexType": "TBI",
+    "location": {
+      "locationType": "UriLocation",
+      "uri": "test.bedmethyl.gz.tbi",
+    },
+  },
+  "type": "BedTabixAdapter",
+}
+`;
+
+exports[`file types 33`] = `
+{
+  "bedGzLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.combined.bedmethyl.gz",
+  },
+  "index": {
+    "indexType": "TBI",
+    "location": {
+      "locationType": "UriLocation",
+      "uri": "test.combined.bedmethyl.gz.tbi",
+    },
+  },
+  "type": "BedTabixAdapter",
+}
+`;
+
+exports[`file types 34`] = `
+{
   "bedGraphLocation": {
     "locationType": "UriLocation",
     "uri": "test.bg",
@@ -358,7 +392,7 @@ exports[`file types 32`] = `
 }
 `;
 
-exports[`file types 33`] = `
+exports[`file types 35`] = `
 {
   "bedGraphGzLocation": {
     "locationType": "UriLocation",
@@ -375,7 +409,7 @@ exports[`file types 33`] = `
 }
 `;
 
-exports[`file types 34`] = `
+exports[`file types 36`] = `
 {
   "bedpeLocation": {
     "locationType": "UriLocation",
@@ -385,7 +419,7 @@ exports[`file types 34`] = `
 }
 `;
 
-exports[`file types 35`] = `
+exports[`file types 37`] = `
 {
   "blastTableLocation": {
     "locationType": "UriLocation",
@@ -395,7 +429,7 @@ exports[`file types 35`] = `
 }
 `;
 
-exports[`file types 36`] = `
+exports[`file types 38`] = `
 {
   "mcscanAnchorsLocation": {
     "locationType": "UriLocation",
@@ -405,7 +439,7 @@ exports[`file types 36`] = `
 }
 `;
 
-exports[`file types 37`] = `
+exports[`file types 39`] = `
 {
   "mcscanAnchorsLocation": {
     "locationType": "UriLocation",
@@ -415,7 +449,7 @@ exports[`file types 37`] = `
 }
 `;
 
-exports[`file types 38`] = `
+exports[`file types 40`] = `
 {
   "mcscanSimpleAnchorsLocation": {
     "locationType": "UriLocation",
@@ -425,7 +459,7 @@ exports[`file types 38`] = `
 }
 `;
 
-exports[`file types 39`] = `
+exports[`file types 41`] = `
 {
   "mcscanSimpleAnchorsLocation": {
     "locationType": "UriLocation",

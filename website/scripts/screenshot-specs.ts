@@ -10,8 +10,8 @@ export interface ScreenshotAction {
 interface LGVSpec {
   mode?: 'lgv'
   name: string
-  config?: string     // defaults to volvox config
-  loc?: string        // location to navigate to (default: config default)
+  config?: string // defaults to volvox config
+  loc?: string // location to navigate to (default: config default)
   openTracks?: string[] // track IDs to click open in the track selector
   crop?: { x: number; y: number; width: number; height: number }
   settleMs?: number
@@ -23,8 +23,8 @@ interface LGVSpec {
 interface SessionUrlSpec {
   mode: 'url'
   name: string
-  url: string         // full query string starting with '?'
-  readyText?: string  // text to wait for before settle
+  url: string // full query string starting with '?'
+  readyText?: string // text to wait for before settle
   crop?: { x: number; y: number; width: number; height: number }
   settleMs?: number
   actions?: ScreenshotAction[]
@@ -162,12 +162,12 @@ export const specs: ScreenshotSpec[] = [
       views: [
         {
           type: 'DotplotView',
-          views: [{ assembly: 'volvox' }, { assembly: 'volvox2' }],
+          views: [{ assembly: 'grape' }, { assembly: 'peach' }],
           tracks: ['dotplot_track_small'],
         },
       ],
     }),
-    settleMs: 6000,
+    settleMs: 10000,
   },
 
   {

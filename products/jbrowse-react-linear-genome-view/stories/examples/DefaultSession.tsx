@@ -1,10 +1,7 @@
 // in your code:
 // import { useCreateViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 import { getVolvoxConfig } from './util.ts'
-import {
-  JBrowseLinearGenomeView,
-  useCreateViewState,
-} from '../../src/index.ts'
+import { JBrowseLinearGenomeView, useCreateViewState } from '../../src/index.ts'
 
 export const DefaultSession = () => {
   const { assembly, tracks } = getVolvoxConfig()

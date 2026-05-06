@@ -58,10 +58,9 @@ as height, color callbacks, or which display type is active by default. Each
 entry targets a specific display type via its `displayId`.
 
 The `displayId` convention is `{trackId}-{displayType}`, for example
-`my_bam_track-LinearAlignmentsDisplay`. JBrowse uses this convention
-internally — if you omit the `displays` array the defaults are used, but if you
-provide a `displays` entry without the correct `displayId` it will be silently
-ignored.
+`my_bam_track-LinearAlignmentsDisplay`. JBrowse uses this convention internally
+— if you omit the `displays` array the defaults are used, but if you provide a
+`displays` entry without the correct `displayId` it will be silently ignored.
 
 ```json
 {
@@ -89,12 +88,12 @@ ignored.
 
 Common display types and their `displayId` suffix:
 
-| Track type              | Display type                 |
-| ----------------------- | ---------------------------- |
-| FeatureTrack            | LinearBasicDisplay           |
-| AlignmentsTrack         | LinearAlignmentsDisplay      |
-| VariantTrack            | LinearVariantDisplay         |
-| MultiQuantitativeTrack  | MultiLinearWiggleDisplay     |
-| QuantitativeTrack       | LinearWiggleDisplay          |
+| Track type             | Display type             |
+| ---------------------- | ------------------------ |
+| FeatureTrack           | LinearBasicDisplay       |
+| AlignmentsTrack        | LinearAlignmentsDisplay  |
+| VariantTrack           | LinearVariantDisplay     |
+| MultiQuantitativeTrack | MultiLinearWiggleDisplay |
+| QuantitativeTrack      | LinearWiggleDisplay      |
 
 See the [config_guides](/docs/config_guide) for per-track display options.
